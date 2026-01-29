@@ -5,7 +5,7 @@
 import 'should';
 import { sanitize } from '../../../src/utils/sanitizeLog';
 
-describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
+describe('sanitizeLog - Exact Key Matching Implementation', function () {
   describe('sanitize() - Basic Functionality', function () {
     it('should handle null and undefined', function () {
       const result = sanitize(null);
@@ -31,22 +31,16 @@ describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
       result.should.deepEqual({ token: '<REMOVED>', other: 'value' });
     });
 
-    it('should redact token fields (substring match - accessToken)', function () {
-      const input = { accessToken: 'secret123', other: 'value' };
+    it('should NOT redact token fields with prefixes/suffixes', function () {
+      const input = { accessToken: 'secret123', _token: 'secret456', other: 'value' };
       const result = sanitize(input);
-      result.should.deepEqual({ accessToken: '<REMOVED>', other: 'value' });
+      result.should.deepEqual({ accessToken: 'secret123', _token: 'secret456', other: 'value' });
     });
 
-    it('should redact token fields (substring match - _token)', function () {
-      const input = { _token: 'secret123', other: 'value' };
-      const result = sanitize(input);
-      result.should.deepEqual({ _token: '<REMOVED>', other: 'value' });
-    });
-
-    it('should redact bearer fields', function () {
+    it('should redact bearer fields (exact match)', function () {
       const input = { bearer: 'secret123', userBearer: 'Bearer token123', other: 'value' };
       const result = sanitize(input);
-      result.should.deepEqual({ bearer: '<REMOVED>', userBearer: '<REMOVED>', other: 'value' });
+      result.should.deepEqual({ bearer: '<REMOVED>', userBearer: 'Bearer token123', other: 'value' });
     });
 
     it('should redact password fields', function () {
@@ -55,10 +49,10 @@ describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
       result.should.deepEqual({ password: '<REMOVED>', other: 'value' });
     });
 
-    it('should redact private key fields', function () {
-      const input = { prv: 'xprv123', privateKey: 'key123', other: 'value' };
+    it('should redact private key fields (exact match, case-insensitive)', function () {
+      const input = { prv: 'xprv123', privatekey: 'key123', privateKey: 'key456', other: 'value' };
       const result = sanitize(input);
-      result.should.deepEqual({ prv: '<REMOVED>', privateKey: '<REMOVED>', other: 'value' });
+      result.should.deepEqual({ prv: '<REMOVED>', privatekey: '<REMOVED>', privateKey: '<REMOVED>', other: 'value' });
     });
 
     it('should be case-insensitive', function () {
@@ -189,11 +183,12 @@ describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
       });
     });
 
-    it('should handle the original issue - BitGo wallet with _token', function () {
+    it('should handle BitGo wallet with exact token key', function () {
       const wallet = {
         id: '123abc',
         label: 'My Wallet',
-        _token: 'v2xsensitivetoken123',
+        token: 'v2xsensitivetoken123',
+        _token: 'not-matched',
         balance: 1000000,
         _permissions: ['spend', 'view'],
       };
@@ -202,7 +197,8 @@ describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
       result.should.deepEqual({
         id: '123abc',
         label: 'My Wallet',
-        _token: '<REMOVED>',
+        token: '<REMOVED>',
+        _token: 'not-matched',
         balance: 1000000,
         _permissions: ['spend', 'view'],
       });
@@ -212,10 +208,11 @@ describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
       const input = {
         users: [
           { name: 'Alice', password: 'secret1' },
-          { name: 'Bob', userToken: 'key123' },
+          { name: 'Bob', token: 'key123', userToken: 'not-matched' },
         ],
         config: {
-          dbPassword: 'dbpass',
+          password: 'dbpass',
+          dbPassword: 'not-matched',
           dbHost: 'localhost',
         },
       };
@@ -224,9 +221,9 @@ describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
       result.should.deepEqual({
         users: [
           { name: 'Alice', password: '<REMOVED>' },
-          { name: 'Bob', userToken: '<REMOVED>' },
+          { name: 'Bob', token: '<REMOVED>', userToken: 'not-matched' },
         ],
-        config: { dbPassword: '<REMOVED>', dbHost: 'localhost' },
+        config: { password: '<REMOVED>', dbPassword: 'not-matched', dbHost: 'localhost' },
       });
     });
 
@@ -245,39 +242,29 @@ describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
       });
     });
 
-    it('should redact keys with sensitive substrings', function () {
+    it('should NOT redact keys with sensitive substrings', function () {
       const input = {
         notation: 'musical',
         myToken: 'sensitive',
         tokenize: 'sensitive',
+        token: 'exact-match',
         safe: 'value',
       };
 
       const result = sanitize(input);
-      // 'myToken' and 'tokenize' both contain 'token' substring
+      // Only 'token' exact match should be redacted
       result.should.deepEqual({
         notation: 'musical',
-        myToken: '<REMOVED>',
-        tokenize: '<REMOVED>',
+        myToken: 'sensitive',
+        tokenize: 'sensitive',
+        token: '<REMOVED>',
         safe: 'value',
       });
     });
-
-    it('should handle authitoken (token substring in middle)', function () {
-      const input = { authitoken: 'secret', data: 'value' };
-      const result = sanitize(input);
-      result.should.deepEqual({ authitoken: '<REMOVED>', data: 'value' });
-    });
-
-    it('should handle tokenz (token as prefix)', function () {
-      const input = { tokenz: 'secret', data: 'value' };
-      const result = sanitize(input);
-      result.should.deepEqual({ tokenz: '<REMOVED>', data: 'value' });
-    });
   });
 
-  describe('sanitize() - Regex Pattern Matching (6 Keywords)', function () {
-    it('should match all 6 sensitive keywords with regex', function () {
+  describe('sanitize() - Exact Key Matching (6 Keywords)', function () {
+    it('should match all 6 sensitive keywords exactly', function () {
       const keywords = ['token', 'bearer', 'prv', 'privatekey', 'password', 'otp'];
 
       keywords.forEach((keyword) => {
@@ -287,99 +274,57 @@ describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
       });
     });
 
-    it('should match keywords with prefixes', function () {
+    it('should NOT match keywords with prefixes or suffixes', function () {
       const input = {
         myToken: 'val1',
-        userBearer: 'val2',
-        walletPrv: 'val3',
-        userPrivateKey: 'val4',
-        userPassword: 'val5',
-        twoFactorOtp: 'val6',
+        token: 'exact',
+        tokenValue: 'val2',
         safe: 'keepme',
       };
 
       const result = sanitize(input);
       result.should.deepEqual({
-        myToken: '<REMOVED>',
-        userBearer: '<REMOVED>',
-        walletPrv: '<REMOVED>',
-        userPrivateKey: '<REMOVED>',
-        userPassword: '<REMOVED>',
-        twoFactorOtp: '<REMOVED>',
+        myToken: 'val1',
+        token: '<REMOVED>',
+        tokenValue: 'val2',
         safe: 'keepme',
       });
     });
 
-    it('should match keywords with suffixes', function () {
+    it('should match exact keywords even with underscores in values', function () {
       const input = {
-        tokenValue: 'val1',
-        bearerAuth: 'val2',
-        prvKey: 'val3',
-        privatekeyData: 'val4',
-        passwordHash: 'val5',
-        otpCode: 'val6',
-        safe: 'keepme',
-      };
-
-      const result = sanitize(input);
-      result.should.deepEqual({
-        tokenValue: '<REMOVED>',
-        bearerAuth: '<REMOVED>',
-        prvKey: '<REMOVED>',
-        privatekeyData: '<REMOVED>',
-        passwordHash: '<REMOVED>',
-        otpCode: '<REMOVED>',
-        safe: 'keepme',
-      });
-    });
-
-    it('should match keywords in the middle of compound keys', function () {
-      const input = {
-        myTokenValue: 'val1',
-        userBearerAuth: 'val2',
-        walletPrvKey: 'val3',
-        safe: 'keepme',
-      };
-
-      const result = sanitize(input);
-      result.should.deepEqual({
-        myTokenValue: '<REMOVED>',
-        userBearerAuth: '<REMOVED>',
-        walletPrvKey: '<REMOVED>',
-        safe: 'keepme',
-      });
-    });
-
-    it('should match keywords with underscores', function () {
-      const input = {
-        _token: 'val1',
-        user_password: 'val2',
-        _privatekey_: 'val3',
+        token: 'val1',
+        _token: 'not-matched',
+        password: 'val2',
+        user_password: 'not-matched',
         safe_value: 'keepme',
       };
 
       const result = sanitize(input);
       result.should.deepEqual({
-        _token: '<REMOVED>',
-        user_password: '<REMOVED>',
-        _privatekey_: '<REMOVED>',
+        token: '<REMOVED>',
+        _token: 'not-matched',
+        password: '<REMOVED>',
+        user_password: 'not-matched',
         safe_value: 'keepme',
       });
     });
 
-    it('should match keywords with hyphens', function () {
+    it('should match exact keywords even with hyphens in values', function () {
       const input = {
-        'x-api-token': 'val1',
-        'user-password': 'val2',
-        'auth-bearer': 'val3',
+        token: 'val1',
+        'x-api-token': 'not-matched',
+        password: 'val2',
+        'user-password': 'not-matched',
         'safe-value': 'keepme',
       };
 
       const result = sanitize(input);
       result.should.deepEqual({
-        'x-api-token': '<REMOVED>',
-        'user-password': '<REMOVED>',
-        'auth-bearer': '<REMOVED>',
+        token: '<REMOVED>',
+        'x-api-token': 'not-matched',
+        password: '<REMOVED>',
+        'user-password': 'not-matched',
         'safe-value': 'keepme',
       });
     });
@@ -551,40 +496,21 @@ describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
       });
     });
 
-    it('should match keywords in camelCase', function () {
+    it('should match exact keywords regardless of case', function () {
       const input = {
-        accessToken: 'val1',
-        userPassword: 'val2',
-        userBearer: 'val3',
-        walletPrv: 'val4',
+        Token: 'val1',
+        PASSWORD: 'val2',
+        Bearer: 'val3',
+        accessToken: 'not-matched',
         safe: 'keepme',
       };
 
       const result = sanitize(input);
       result.should.deepEqual({
-        accessToken: '<REMOVED>',
-        userPassword: '<REMOVED>',
-        userBearer: '<REMOVED>',
-        walletPrv: '<REMOVED>',
-        safe: 'keepme',
-      });
-    });
-
-    it('should match keywords in PascalCase', function () {
-      const input = {
-        AccessToken: 'val1',
-        UserPassword: 'val2',
-        UserBearer: 'val3',
-        WalletPrivateKey: 'val4',
-        safe: 'keepme',
-      };
-
-      const result = sanitize(input);
-      result.should.deepEqual({
-        AccessToken: '<REMOVED>',
-        UserPassword: '<REMOVED>',
-        UserBearer: '<REMOVED>',
-        WalletPrivateKey: '<REMOVED>',
+        Token: '<REMOVED>',
+        PASSWORD: '<REMOVED>',
+        Bearer: '<REMOVED>',
+        accessToken: 'not-matched',
         safe: 'keepme',
       });
     });
@@ -612,17 +538,22 @@ describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
     it('should handle objects with many sensitive keys efficiently', function () {
       const input: Record<string, unknown> = {};
       for (let i = 0; i < 100; i++) {
-        input[`token${i}`] = `secret${i}`;
-        input[`password${i}`] = `secret${i}`;
+        input[`tokenprefix${i}`] = `secret${i}`;
+        input[`passwordprefix${i}`] = `secret${i}`;
         input[`safe${i}`] = `value${i}`;
       }
+      // Add exact matches
+      input.token = 'exact-match';
+      input.password = 'exact-match';
 
       const start = Date.now();
       const result = sanitize(input);
       const duration = Date.now() - start;
 
-      result.token50.should.equal('<REMOVED>');
-      result.password50.should.equal('<REMOVED>');
+      result.token.should.equal('<REMOVED>');
+      result.password.should.equal('<REMOVED>');
+      result.tokenprefix50.should.equal('secret50');
+      result.passwordprefix50.should.equal('secret50');
       result.safe50.should.equal('value50');
       duration.should.be.below(50); // Should complete in < 50ms
     });
@@ -633,59 +564,47 @@ describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
       result.should.deepEqual({ '': 'value', token: '<REMOVED>' });
     });
 
-    it('should handle special characters in keys', function () {
+    it('should handle special characters in keys - no match for modified keys', function () {
       const input = {
         'token@#$': 'secret',
-        'password!': 'secret2', // Changed from pass!word - regex looks for 'password' substring
+        token: 'exact',
+        'password!': 'secret2',
+        password: 'exact2',
         'safe@value': 'keepme',
       };
 
       const result = sanitize(input);
       result.should.deepEqual({
-        'token@#$': '<REMOVED>',
-        'password!': '<REMOVED>',
+        'token@#$': 'secret',
+        token: '<REMOVED>',
+        'password!': 'secret2',
+        password: '<REMOVED>',
         'safe@value': 'keepme',
       });
     });
 
-    it('should handle Unicode characters in keys', function () {
-      const input = {
-        токен: 'value1', // Cyrillic
-        パスワード: 'value2', // Japanese
-        token密码: 'secret', // Mixed with sensitive keyword
-        safe: 'keepme',
-      };
-
-      const result = sanitize(input);
-      result.should.deepEqual({
-        токен: 'value1',
-        パスワード: 'value2',
-        token密码: '<REMOVED>', // Contains 'token'
-        safe: 'keepme',
-      });
-    });
-
-    it('should handle very long key names', function () {
+    it('should NOT match token in long key names', function () {
       const longKey = 'this_is_a_very_long_key_name_with_token_in_the_middle_and_more_text';
-      const input = { [longKey]: 'secret', safe: 'value' };
+      const input = { [longKey]: 'secret', token: 'exact', safe: 'value' };
       const result = sanitize(input);
-      result[longKey].should.equal('<REMOVED>');
+      result[longKey].should.equal('secret');
+      result.token.should.equal('<REMOVED>');
       result.safe.should.equal('value');
     });
 
-    it('should handle keys with multiple sensitive keywords', function () {
+    it('should NOT match compound keys with multiple sensitive keywords', function () {
       const input = {
-        token_password: 'secret1',
-        bearer_prv: 'secret2',
-        privatekey_token: 'secret3',
+        token_password: 'not-matched',
+        token: 'exact1',
+        password: 'exact2',
         safe: 'keepme',
       };
 
       const result = sanitize(input);
       result.should.deepEqual({
-        token_password: '<REMOVED>',
-        bearer_prv: '<REMOVED>',
-        privatekey_token: '<REMOVED>',
+        token_password: 'not-matched',
+        token: '<REMOVED>',
+        password: '<REMOVED>',
         safe: 'keepme',
       });
     });
@@ -717,62 +636,70 @@ describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
       result.balance.should.equal(1000000000);
     });
 
-    it('should sanitize BitGo API request with bearer token header', function () {
+    it('should sanitize BitGo API request with exact key matches', function () {
       const request = {
         method: 'POST',
         url: 'https://app.bitgo.com/api/v2/btc/wallet/123/sendcoins',
         headers: {
-          BearerToken: 'Bearer v2x1234567890',
+          bearer: 'Bearer v2x1234567890',
+          BearerToken: 'not-matched',
           'Content-Type': 'application/json',
           'User-Agent': 'BitGoJS/1.0.0',
         },
         body: {
           address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
           amount: 100000,
-          walletPassword: 'my-secure-passphrase',
+          password: 'my-secure-passphrase',
+          walletPassword: 'not-matched',
         },
       };
 
       const result = sanitize(request);
-      result.headers.BearerToken.should.equal('<REMOVED>');
+      result.headers.bearer.should.equal('<REMOVED>');
+      result.headers.BearerToken.should.equal('not-matched');
       result.headers['Content-Type'].should.equal('application/json');
-      result.body.walletPassword.should.equal('<REMOVED>');
+      result.body.password.should.equal('<REMOVED>');
+      result.body.walletPassword.should.equal('not-matched');
       result.body.address.should.equal('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');
     });
 
-    it('should sanitize wallet recovery data', function () {
+    it('should sanitize wallet recovery data with exact keys', function () {
       const recoveryData = {
         walletId: 'wallet123',
         userKey: 'xpub123...',
         backupKey: 'xpub456...',
         backupKeyNonce: 'nonce123',
-        recoveryPrivateKey: 'xprv789...', // Contains 'prv'
+        prv: 'xprv789...',
+        recoveryPrivateKey: 'not-matched',
         passcode: 'user-passcode',
         userKeyPath: 'm/0/0',
       };
 
       const result = sanitize(recoveryData);
-      result.recoveryPrivateKey.should.equal('<REMOVED>');
+      result.prv.should.equal('<REMOVED>');
+      result.recoveryPrivateKey.should.equal('not-matched');
       result.walletId.should.equal('wallet123');
       result.userKey.should.equal('xpub123...');
     });
 
-    it('should sanitize MFA/OTP setup data', function () {
+    it('should sanitize MFA/OTP setup data with exact keys', function () {
       const mfaData = {
         userId: 'user123',
-        otpSecret: 'JBSWY3DPEHPK3PXP',
+        otp: 'JBSWY3DPEHPK3PXP',
+        otpSecret: 'not-matched',
         backupCodes: ['code1', 'code2', 'code3'],
         qrCode: 'data:image/png;base64...',
         deviceId: 'device123',
       };
 
       const result = sanitize(mfaData);
-      result.otpSecret.should.equal('<REMOVED>');
+      result.otp.should.equal('<REMOVED>');
+      result.otpSecret.should.equal('not-matched');
       result.userId.should.equal('user123');
       result.qrCode.should.equal('data:image/png;base64...');
     });
 
-    it('should sanitize webhook payload with token fields', function () {
+    it('should sanitize webhook payload with exact token fields', function () {
       const webhook = {
         type: 'transfer',
         walletId: 'wallet123',
@@ -781,32 +708,36 @@ describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
           coin: 'btc',
           state: 'confirmed',
         },
-        authToken: 'sha256=abcdef123456',
-        bearerAuth: 'bearer-auth-value',
+        token: 'sha256=abcdef123456',
+        authToken: 'not-matched',
+        bearer: 'bearer-auth-value',
+        bearerAuth: 'not-matched',
         timestamp: 1234567890,
       };
 
       const result = sanitize(webhook);
-      result.authToken.should.equal('<REMOVED>');
-      result.bearerAuth.should.equal('<REMOVED>');
+      result.token.should.equal('<REMOVED>');
+      result.authToken.should.equal('not-matched');
+      result.bearer.should.equal('<REMOVED>');
+      result.bearerAuth.should.equal('not-matched');
       result.walletId.should.equal('wallet123');
       result.transfer.state.should.equal('confirmed');
     });
 
-    it('should handle Date objects', function () {
+    it('should handle Date objects with exact keys', function () {
       const date = new Date('2024-01-01');
       const input = {
         timestamp: date,
-        userToken: 'secret',
+        token: 'secret',
+        userToken: 'not-matched',
         safe: 'value',
       };
 
       const result = sanitize(input);
       result.should.have.property('timestamp');
-      result.should.have.property('userToken', '<REMOVED>');
+      result.should.have.property('token', '<REMOVED>');
+      result.should.have.property('userToken', 'not-matched');
       result.should.have.property('safe', 'value');
-      // Date objects are treated as objects and recursively processed
-      // The important thing is timestamp is preserved and userToken is redacted
     });
 
     it('should handle Error objects', function () {
@@ -823,18 +754,20 @@ describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
       result.should.have.property('message', 'safe');
     });
 
-    it('should handle complex real-world scenario', function () {
+    it('should handle complex real-world scenario with exact keys', function () {
       const request = {
         method: 'POST',
         url: '/api/wallet',
         headers: {
-          bearerToken: 'Bearer secret123',
+          bearer: 'Bearer secret123',
+          bearerToken: 'not-matched',
           'content-type': 'application/json',
         },
         body: {
           wallet: {
             id: 'wallet123',
-            _token: 'v2xtoken',
+            token: 'v2xtoken',
+            _token: 'not-matched',
             balance: 5000000,
           },
           user: {
@@ -850,13 +783,15 @@ describe('sanitizeLog - Regex Pattern Matching Implementation', function () {
         method: 'POST',
         url: '/api/wallet',
         headers: {
-          bearerToken: '<REMOVED>',
+          bearer: '<REMOVED>',
+          bearerToken: 'not-matched',
           'content-type': 'application/json',
         },
         body: {
           wallet: {
             id: 'wallet123',
-            _token: '<REMOVED>',
+            token: '<REMOVED>',
+            _token: 'not-matched',
             balance: 5000000,
           },
           user: {

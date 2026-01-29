@@ -2,11 +2,11 @@
  * @prettier
  */
 /**
- * Compiled regex pattern for sensitive keywords (case-insensitive substring matching).
- * Matches any key containing these patterns (e.g., 'token' matches '_token', 'authtoken', etc.)
- * Pattern checks all 6 keywords simultaneously in a single pass using DFA (Deterministic Finite Automaton).
+ * Set of sensitive keywords for exact key matching (case-insensitive).
+ * Only matches exact key names (e.g., 'token' matches only 'token', not 'authtoken' or '_token').
+ * Using Set for O(1) lookup performance.
  */
-const SENSITIVE_PATTERN = /token|bearer|prv|privatekey|password|otp/i;
+const SENSITIVE_KEYS = new Set(['token', 'bearer', 'prv', 'privatekey', 'password', 'otp']);
 
 /**
  * Pattern to detect bearer v2 token values (e.g., v2xea99e123bba182f1360ad35529a7a6ae77cfc0bc4e5dcb4f88a6dd4e4bf6a8db)
@@ -57,8 +57,8 @@ export function sanitize(data: any, seen: WeakSet<Record<string, unknown>> = new
   const sanitized: any = {};
   for (const key in data) {
     if (data.hasOwnProperty(key)) {
-      // Check if key contains any sensitive pattern (regex checks all patterns in one pass)
-      if (SENSITIVE_PATTERN.test(key)) {
+      // Check if key exactly matches any sensitive keyword (case-insensitive)
+      if (SENSITIVE_KEYS.has(key.toLowerCase())) {
         // Keep the field but replace value with <REMOVED>
         sanitized[key] = '<REMOVED>';
       } else {
