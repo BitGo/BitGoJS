@@ -18,6 +18,7 @@ import {
   FormattedOfflineVaultTxInfo,
 } from '../../../src';
 import { getCoinName } from '../../../src/names';
+import type { Unspent, WalletUnspent } from '../../../src/unspent';
 import {
   defaultBitGo,
   encryptKeychain,
@@ -35,7 +36,6 @@ import {
 import { MockRecoveryProvider } from './mock';
 
 const { toOutput } = utxolib.bitgo;
-type WalletUnspent = utxolib.bitgo.WalletUnspent<bigint>;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
@@ -148,8 +148,8 @@ function run(
       sinon.restore();
     });
 
-    let recoverUnspents: utxolib.bitgo.Unspent<bigint>[];
-    let mockedApiUnspents: utxolib.bitgo.Unspent<bigint>[];
+    let recoverUnspents: Unspent<bigint>[];
+    let mockedApiUnspents: Unspent<bigint>[];
 
     before('create recovery data', async function () {
       this.timeout(10_000);
@@ -267,7 +267,7 @@ function run(
           .map((u) => toOutput(u, coin.network))
           .map((v) => ({ ...v, value: utxolib.bitgo.toTNumber(v.value, coin.amountType) }));
         tx.ins.forEach((input, inputIndex) => {
-          const unspent = recoverUnspents[inputIndex] as WalletUnspent;
+          const unspent = recoverUnspents[inputIndex] as WalletUnspent<bigint>;
           const { publicKey } = rootKey.derivePath(walletKeys.getDerivationPath(rootKey, unspent.chain, unspent.index));
           const signatures = utxolib.bitgo
             .getSignatureVerifications(

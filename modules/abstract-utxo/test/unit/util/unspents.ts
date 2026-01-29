@@ -4,12 +4,11 @@ import * as wasmUtxo from '@bitgo/wasm-utxo';
 
 import { getReplayProtectionAddresses } from '../../../src';
 import { getCoinName } from '../../../src/names';
+import type { Unspent, WalletUnspent } from '../../../src/unspent';
 
 const { scriptTypeForChain, chainCodesP2sh, getExternalChainCode, getInternalChainCode } = utxolib.bitgo;
 
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
-type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
-type WalletUnspent<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspent<TNumber>;
 type ChainCode = utxolib.bitgo.ChainCode;
 
 export type InputScriptType = utxolib.bitgo.outputScripts.ScriptType2Of3 | 'replayProtection';

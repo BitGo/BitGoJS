@@ -8,6 +8,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { UtxoCoinName } from '../../names';
+import type { Unspent } from '../../unspent';
 
 import { Musig2Participant } from './musig2';
 import { signLegacyTransaction } from './signLegacyTransaction';
@@ -60,7 +61,7 @@ export async function signTransaction<
   coinName: UtxoCoinName,
   params: {
     walletId: string | undefined;
-    txInfo: { unspents?: utxolib.bitgo.Unspent<bigint | number>[] } | undefined;
+    txInfo: { unspents?: Unspent<bigint | number>[] } | undefined;
     isLastSignature: boolean;
     signingStep: 'signerNonce' | 'cosignerNonce' | 'signerSignature' | undefined;
     /** deprecated */

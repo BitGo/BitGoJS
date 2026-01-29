@@ -4,6 +4,7 @@ export * from './config';
 export * from './recovery';
 export * from './transaction/fixedScript/replayProtection';
 export * from './transaction/fixedScript/signLegacyTransaction';
+export * from './unspent';
 
 export { UtxoWallet } from './wallet';
 export * as descriptor from './descriptor';

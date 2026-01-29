@@ -17,6 +17,7 @@ import {
   convertLtcAddressToLegacyFormat,
 } from '../../../src';
 import { isMainnetCoin, isTestnetCoin } from '../../../src/names';
+import type { Unspent, WalletUnspent } from '../../../src/unspent';
 import {
   getFixture,
   keychainsBase58,
@@ -33,8 +34,6 @@ import { createFullSignedTransaction } from '../util/transaction';
 import { getDefaultWalletUnspentSigner } from '../util/keychains';
 
 import { MockCrossChainRecoveryProvider } from './mock';
-
-type WalletUnspent<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspent<TNumber>;
 
 function getKeyId(k: KeychainBase58): string {
   return getSeed(k.pub).toString('hex');
@@ -116,7 +115,7 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
 
     let depositTx: utxolib.bitgo.UtxoTransaction<TNumber>;
 
-    function getDepositUnspents(): utxolib.bitgo.Unspent<TNumber>[] {
+    function getDepositUnspents(): Unspent<TNumber>[] {
       return [
         mockUnspent<TNumber>(
           sourceCoin.network,

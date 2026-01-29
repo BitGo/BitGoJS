@@ -7,6 +7,7 @@ import * as utxocore from '@bitgo/utxo-core';
 
 import type { Bip322Message } from '../../abstractUtxoCoin';
 import type { Output, FixedScriptWalletOutput } from '../types';
+import type { Unspent } from '../../unspent';
 import { toExtendedAddressFormat } from '../recipient';
 import { getPayGoVerificationPubkey } from '../getPayGoVerificationPubkey';
 import { toBip32Triple } from '../../keychains';
@@ -192,7 +193,7 @@ function getPsbtInputSignaturesCount(
 function getTxInputSignaturesCount<TNumber extends number | bigint>(
   tx: bitgo.UtxoTransaction<TNumber>,
   params: {
-    txInfo?: { unspents?: bitgo.Unspent<TNumber>[] };
+    txInfo?: { unspents?: Unspent<TNumber>[] };
     pubs?: bitgo.RootWalletKeys | string[];
   },
   coinName: UtxoCoinName
@@ -444,7 +445,7 @@ export function explainLegacyTx<TNumber extends number | bigint>(
   tx: bitgo.UtxoTransaction<TNumber>,
   params: {
     pubs?: string[];
-    txInfo?: { unspents?: bitgo.Unspent<TNumber>[] };
+    txInfo?: { unspents?: Unspent<TNumber>[] };
     changeInfo?: { address: string; chain: number; index: number }[];
   },
   coinName: UtxoCoinName

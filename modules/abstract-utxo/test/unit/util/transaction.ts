@@ -2,9 +2,9 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { address as wasmAddress } from '@bitgo/wasm-utxo';
 
 import { getCoinName } from '../../../src/names';
+import type { Unspent, WalletUnspent } from '../../../src/unspent';
 const { isWalletUnspent, signInputWithUnspent } = utxolib.bitgo;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
-type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
 export type TransactionObj = {
   id: string;
   hex: string;
@@ -94,7 +94,7 @@ function createTransactionBuilderWithSignedInputs<TNumber extends number | bigin
   );
   unspents.forEach((u, inputIndex) => {
     if (isWalletUnspent<TNumber>(u)) {
-      signInputWithUnspent<TNumber>(txBuilder, inputIndex, u, signer);
+      signInputWithUnspent<TNumber>(txBuilder, inputIndex, u as WalletUnspent<TNumber>, signer);
     }
   });
   return txBuilder;
