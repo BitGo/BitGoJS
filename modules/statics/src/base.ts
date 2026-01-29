@@ -3543,6 +3543,10 @@ export enum UnderlyingAsset {
   'tcanton:testcoin1' = 'tcanton:testcoin1',
   'tcanton:testtoken' = 'tcanton:testtoken',
 
+  // Canton mainnet tokens
+  'canton:usdcx' = 'canton:usdcx',
+  'canton:cbtc' = 'canton:cbtc',
+
   // fiats
   AED = 'aed',
   EUR = 'eur',

@@ -185,8 +185,7 @@ export interface AdaTokenConstructorOptions extends AccountConstructorOptions {
 
 export interface CantonTokenConstructorOptions extends AccountConstructorOptions {
   baseUrl: string;
-  admin: string;
-  assetName: string;
+  contractAddress: string;
 }
 
 export interface ContractAddress extends String {
@@ -789,15 +788,13 @@ export class AdaToken extends AccountCoinToken {
  */
 export class CantonToken extends AccountCoinToken {
   public baseUrl: string;
-  public admin: string;
-  public assetName: string;
+  public contractAddress: string;
   constructor(options: CantonTokenConstructorOptions) {
     super({
       ...options,
     });
     this.baseUrl = options.baseUrl;
-    this.admin = options.admin;
-    this.assetName = options.assetName;
+    this.contractAddress = options.contractAddress;
   }
 }
 
@@ -4207,8 +4204,7 @@ export function tjettonToken(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param baseUrl token standard base url, ref: https://docs.digitalasset.com/utilities/devnet/overview/registry-user-guide/token-standard.html#token-standard-endpoints
- * @param assetName the token instrument name
- * @param admin the instrument admin for this token
+ * @param contractAddress the contract address of the token in the form `instrumentAdmin:instrumentId`
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param features Features of this coin. Defaults to CANTON_FEATURES
  * @param prefix Optional token prefix. Defaults to empty string
@@ -4222,8 +4218,7 @@ export function cantonToken(
   fullName: string,
   decimalPlaces: number,
   baseUrl: string,
-  assetName: string,
-  admin: string,
+  contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = CANTON_TOKEN_FEATURES,
   prefix = '',
@@ -4239,8 +4234,7 @@ export function cantonToken(
       decimalPlaces,
       network,
       baseUrl,
-      assetName,
-      admin,
+      contractAddress,
       asset,
       features,
       prefix,
@@ -4260,8 +4254,7 @@ export function cantonToken(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param baseUrl token standard base url
- * @param assetName the token instrument name
- * @param admin the instrument admin for this token
+ * @param contractAddress the contract address of the token in the form `instrumentAdmin:instrumentId`
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param features Features of this coin. Defaults to the CANTON_FEATURES
  * @param prefix Optional token prefix. Defaults to empty string
@@ -4275,8 +4268,7 @@ export function tcantonToken(
   fullName: string,
   decimalPlaces: number,
   baseUrl: string,
-  assetName: string,
-  admin: string,
+  contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = CANTON_TOKEN_FEATURES,
   prefix = '',
@@ -4290,8 +4282,7 @@ export function tcantonToken(
     fullName,
     decimalPlaces,
     baseUrl,
-    assetName,
-    admin,
+    contractAddress,
     asset,
     features,
     prefix,

@@ -39,12 +39,8 @@ export class CantonToken extends Canton {
     return this.tokenConfig.baseUrl;
   }
 
-  get admin(): string {
-    return this.tokenConfig.admin;
-  }
-
-  get assetName(): string {
-    return this.tokenConfig.assetName;
+  get contractAddress(): string {
+    return this.tokenConfig.contractAddress;
   }
 
   get decimalPlaces(): number {
