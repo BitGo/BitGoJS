@@ -45,7 +45,7 @@
     "directory": "modules/utxo-ord"
   },
   "dependencies": {
-    "@bitgo/wasm-utxo": "^1.27.0"
+    "@bitgo/wasm-utxo": "^1.29.0"
   },
   "devDependencies": {
     "@bitgo/utxo-lib": "^11.19.1"
