@@ -297,6 +297,9 @@ const mainnetBase: EnvironmentTemplate = {
     morph: {
       baseUrl: 'https://explorer-api-hoodi.morphl2.io', // TODO: WIN-8134 add mainnet url when available
     },
+    morpheth: {
+      baseUrl: 'https://explorer.morph.network/',
+    },
     dogeos: {
       baseUrl: 'https://blockscout.testnet.dogeos.com', //TODO: WIN-8082 => add mainnet url when available
     },
@@ -468,6 +471,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     morph: {
       baseUrl: 'https://explorer-api-hoodi.morphl2.io',
+    },
+    morpheth: {
+      baseUrl: 'https://explorer-hoodi.morph.network/',
     },
     dogeos: {
       baseUrl: 'https://blockscout.testnet.dogeos.com',
