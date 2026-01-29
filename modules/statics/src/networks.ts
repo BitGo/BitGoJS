@@ -1700,8 +1700,8 @@ class Morph extends Mainnet implements EthereumNetwork {
 class MorphTestnet extends Testnet implements EthereumNetwork {
   name = 'Morph Testnet';
   family = CoinFamily.MORPH;
-  explorerUrl = 'https://explorer-api-hoodi.morphl2.io/tx/';
-  accountExplorerUrl = 'https://explorer-api-hoodi.morphl2.io/address/';
+  explorerUrl = 'https://explorer-hoodi.morph.network/tx/';
+  accountExplorerUrl = 'https://explorer-hoodi.morph.network/address/';
   chainId = 2910;
   nativeCoinOperationHashPrefix = '2910';
 }
