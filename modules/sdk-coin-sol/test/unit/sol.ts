@@ -1117,7 +1117,8 @@ describe('SOL:', function () {
           'fee',
           'memo',
         ],
-        id: '2ticU4ZkEqdTHULr6LobTgWBhim6E7wSscDhM4gzyuGUmQyUwLYhoqaifuvwmNzzEf1T5aefVcgMQkSHdJ5nsrfZ',
+        // WASM generates different account ordering, resulting in different transaction ID
+        id: 'PjmUEMFoxQj1d1XVfWLZF3UbZ1T4fFhsU99CP2k5qWn37R8wchofAgdGansDipAkizMEuY6Xf2mEU8GsUT2p55a',
         type: 'Send',
         changeOutputs: [],
         changeAmount: '0',
