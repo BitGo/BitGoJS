@@ -450,4 +450,5 @@ export class Transaction extends BaseTransaction {
 export interface SponsorshipInfo {
   feeAddress: string;
   feeAddressInputBalance: string;
+  isRebuild?: boolean; // hack to redirect the flow to the legacy build
 }
