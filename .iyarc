@@ -11,3 +11,9 @@ GHSA-8qq5-rm4j-mr97
 #   archive PACKING, not extraction,
 GHSA-r6q2-hw4h-h46w
 
+# Excluded because:
+# - CVE-2026-24842: node-tar hardlink path traversal vulnerability
+# - Transitive dependency through lerna and yeoman-generator, which pin tar to < 7.5.7
+# - This CVE affects archive EXTRACTION (hardlink escape during unpacking)
+# - Lerna only uses tar for PACKING, not extraction
+GHSA-34x7-hfp2-rc4v
