@@ -138,8 +138,7 @@ export type Nep141TokenConfig = BaseNetworkConfig & {
 
 export type CantonTokenConfig = BaseNetworkConfig & {
   baseUrl: string;
-  assetName: string;
-  admin: string;
+  contractAddress: string;
 };
 
 export type VetTokenConfig = BaseNetworkConfig & {
@@ -1041,8 +1040,7 @@ function getCantonTokenConfig(coin: CantonToken): CantonTokenConfig {
     name: coin.fullName,
     decimalPlaces: coin.decimalPlaces,
     baseUrl: coin.baseUrl,
-    admin: coin.admin,
-    assetName: coin.assetName,
+    contractAddress: coin.contractAddress,
   };
 }
 const getFormattedCantonTokens = (customCoinMap = coins) =>
