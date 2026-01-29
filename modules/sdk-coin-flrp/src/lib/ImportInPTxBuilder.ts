@@ -93,7 +93,7 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
       this.transaction._rawSignedBytes = rawBytes;
     }
 
-    this.computeAddressesIndexFromParsed();
+    this.computeAddressesIndex(true);
 
     // Use parsed credentials if available, otherwise create new ones based on sigIndices
     // The sigIndices from the parsed transaction (stored in addressesIndex) determine
@@ -106,7 +106,7 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
             const sigIndices = utxo.addressesIndex ?? [];
             // Use sigIndices-based method if we have valid sigIndices from parsed transaction
             if (sigIndices.length >= utxoThreshold && sigIndices.every((idx) => idx >= 0)) {
-              return this.createCredentialForUtxoWithSigIndices(utxo, utxoThreshold, sigIndices);
+              return this.createCredentialForUtxo(utxo, utxoThreshold, sigIndices);
             }
             return this.createCredentialForUtxo(utxo, utxoThreshold);
           });
@@ -116,7 +116,7 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
       const utxoThreshold = utxo.threshold || this.transaction._threshold;
       const sigIndices = utxo.addressesIndex ?? [];
       if (sigIndices.length >= utxoThreshold && sigIndices.every((idx) => idx >= 0)) {
-        return this.createAddressMapForUtxoWithSigIndices(utxo, utxoThreshold, sigIndices);
+        return this.createAddressMapForUtxo(utxo, utxoThreshold, sigIndices);
       }
       return this.createAddressMapForUtxo(utxo, utxoThreshold);
     });
@@ -180,24 +180,18 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     }
 
     const toAddresses = this.transaction._to.map((addr) => Buffer.from(addr));
-    const fromAddresses = this.transaction._fromAddresses.map((addr) => Buffer.from(addr));
 
     const invalidToAddress = toAddresses.find((addr) => addr.length !== 20);
     if (invalidToAddress) {
       throw new BuildTransactionError(`Invalid toAddress length: expected 20 bytes, got ${invalidToAddress.length}`);
     }
 
-    const invalidFromAddress = fromAddresses.find((addr) => addr.length !== 20);
-    if (invalidFromAddress) {
-      throw new BuildTransactionError(
-        `Invalid fromAddress length: expected 20 bytes, got ${invalidFromAddress.length}`
-      );
-    }
+    const signingAddresses = this.getSigningAddresses();
 
     const importTx = pvm.e.newImportTx(
       {
         feeState: this.transaction._feeState,
-        fromAddressesBytes: fromAddresses,
+        fromAddressesBytes: signingAddresses,
         sourceChainId: this.transaction._network.cChainBlockchainID,
         toAddressesBytes: toAddresses,
         utxos: nativeUtxos,
@@ -237,11 +231,11 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     this.transaction._utxos = utxosWithIndex;
 
     const txCredentials = utxosWithIndex.map((utxo) =>
-      this.createCredentialForUtxoWithSigIndices(utxo, utxo.threshold, utxo.actualSigIndices)
+      this.createCredentialForUtxo(utxo, utxo.threshold, utxo.actualSigIndices)
     );
 
     const addressMaps = utxosWithIndex.map((utxo) =>
-      this.createAddressMapForUtxoWithSigIndices(utxo, utxo.threshold, utxo.actualSigIndices)
+      this.createAddressMapForUtxo(utxo, utxo.threshold, utxo.actualSigIndices)
     );
 
     const fixedUnsignedTx = new UnsignedTx(innerTx, [], new FlareUtils.AddressMaps(addressMaps), txCredentials);

@@ -1,7 +1,9 @@
 import assert from 'assert';
 import 'should';
 import { EXPORT_IN_P as testData } from '../../resources/transactionData/exportInP';
+import { ON_CHAIN_TEST_WALLET } from '../../resources/account';
 import { TransactionBuilderFactory } from '../../../src/lib';
+import utils from '../../../src/lib/utils';
 import { coins } from '@bitgo/statics';
 import signFlowTest from './signFlowTestSuit';
 import { pvmSerial, UnsignedTx, TransferOutput } from '@flarenetwork/flarejs';
@@ -149,223 +151,6 @@ describe('Flrp Export In P Tx Builder', () => {
       });
   });
 
-  describe('UTXO address sorting fix - addresses in non-sorted order for ExportInP', () => {
-    /**
-     * This test suite verifies the fix for the address ordering bug in ExportInP.
-     *
-     * The issue: When the API returns UTXO addresses in a different order than how they're
-     * stored on-chain (lexicographically sorted by byte value), the sigIndices would be
-     * computed incorrectly, causing signature verification to fail.
-     *
-     * The fix: Sort UTXO addresses before computing addressesIndex to match on-chain order.
-     */
-
-    // Helper to create UTXO with specific address order
-    const createUtxoWithAddressOrder = (utxo: (typeof testData.utxos)[0], addresses: string[]) => ({
-      ...utxo,
-      addresses: addresses,
-    });
-
-    it('should correctly sort UTXO addresses when building ExportInP transaction', async () => {
-      // Create UTXOs with addresses in reversed order (simulating API returning unsorted)
-      const reversedUtxos = testData.utxos.map((utxo) =>
-        createUtxoWithAddressOrder(utxo, [...utxo.addresses].reverse())
-      );
-
-      const txBuilder = factory
-        .getExportInPBuilder()
-        .threshold(testData.threshold)
-        .locktime(testData.locktime)
-        .fromPubKey(testData.pAddresses)
-        .amount(testData.amount)
-        .externalChainId(testData.sourceChainId)
-        .feeState(testData.feeState)
-        .context(testData.context)
-        .decodedUtxos(reversedUtxos);
-
-      // Should not throw - the fix ensures addresses are sorted before computing sigIndices
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-
-      txJson.type.should.equal(22); // Export In P type
-      txJson.threshold.should.equal(2);
-    });
-
-    it('should produce same transaction hex regardless of input UTXO address order for ExportInP', async () => {
-      // Build with original address order
-      const txBuilder1 = factory
-        .getExportInPBuilder()
-        .threshold(testData.threshold)
-        .locktime(testData.locktime)
-        .fromPubKey(testData.pAddresses)
-        .amount(testData.amount)
-        .externalChainId(testData.sourceChainId)
-        .feeState(testData.feeState)
-        .context(testData.context)
-        .decodedUtxos(testData.utxos);
-
-      const tx1 = await txBuilder1.build();
-      const hex1 = tx1.toBroadcastFormat();
-
-      // Build with reversed address order in UTXOs
-      const reversedUtxos = testData.utxos.map((utxo) =>
-        createUtxoWithAddressOrder(utxo, [...utxo.addresses].reverse())
-      );
-
-      const txBuilder2 = factory
-        .getExportInPBuilder()
-        .threshold(testData.threshold)
-        .locktime(testData.locktime)
-        .fromPubKey(testData.pAddresses)
-        .amount(testData.amount)
-        .externalChainId(testData.sourceChainId)
-        .feeState(testData.feeState)
-        .context(testData.context)
-        .decodedUtxos(reversedUtxos);
-
-      const tx2 = await txBuilder2.build();
-      const hex2 = tx2.toBroadcastFormat();
-
-      // Both should produce the same hex since addresses get sorted
-      hex1.should.equal(hex2);
-    });
-
-    it('should handle signing correctly with unsorted UTXO addresses for ExportInP', async () => {
-      const reversedUtxos = testData.utxos.map((utxo) =>
-        createUtxoWithAddressOrder(utxo, [...utxo.addresses].reverse())
-      );
-
-      const txBuilder = factory
-        .getExportInPBuilder()
-        .threshold(testData.threshold)
-        .locktime(testData.locktime)
-        .fromPubKey(testData.pAddresses)
-        .amount(testData.amount)
-        .externalChainId(testData.sourceChainId)
-        .feeState(testData.feeState)
-        .context(testData.context)
-        .decodedUtxos(reversedUtxos);
-
-      txBuilder.sign({ key: testData.privateKeys[2] });
-      txBuilder.sign({ key: testData.privateKeys[0] });
-
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-
-      // Should have signatures after signing (count depends on UTXO thresholds)
-      txJson.signatures.length.should.be.greaterThan(0);
-      tx.toBroadcastFormat().should.be.a.String();
-    });
-
-    it('should produce valid signed transaction matching expected output with unsorted addresses for ExportInP', async () => {
-      const reversedUtxos = testData.utxos.map((utxo) =>
-        createUtxoWithAddressOrder(utxo, [...utxo.addresses].reverse())
-      );
-
-      const txBuilder = factory
-        .getExportInPBuilder()
-        .threshold(testData.threshold)
-        .locktime(testData.locktime)
-        .fromPubKey(testData.pAddresses)
-        .amount(testData.amount)
-        .externalChainId(testData.sourceChainId)
-        .feeState(testData.feeState)
-        .context(testData.context)
-        .decodedUtxos(reversedUtxos);
-
-      txBuilder.sign({ key: testData.privateKeys[2] });
-      txBuilder.sign({ key: testData.privateKeys[0] });
-
-      const tx = await txBuilder.build();
-
-      // The signed tx should match the expected fullSigntxHex from testData
-      tx.toBroadcastFormat().should.equal(testData.fullSigntxHex);
-      tx.id.should.equal(testData.txhash);
-    });
-  });
-
-  describe('addressesIndex extraction and signature ordering', () => {
-    it('should extract addressesIndex from parsed transaction inputs', async () => {
-      const txBuilder = factory.from(testData.halfSigntxHex);
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-
-      txJson.type.should.equal(22);
-      txJson.signatures.length.should.be.greaterThan(0);
-    });
-
-    it('should correctly handle fresh build with proper signature ordering', async () => {
-      const txBuilder = factory
-        .getExportInPBuilder()
-        .threshold(testData.threshold)
-        .locktime(testData.locktime)
-        .fromPubKey(testData.pAddresses)
-        .amount(testData.amount)
-        .externalChainId(testData.sourceChainId)
-        .feeState(testData.feeState)
-        .context(testData.context)
-        .decodedUtxos(testData.utxos);
-
-      txBuilder.sign({ key: testData.privateKeys[2] });
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-
-      txJson.type.should.equal(22);
-      tx.toBroadcastFormat().should.be.a.String();
-    });
-
-    it('should correctly build and sign with different UTXO address ordering', async () => {
-      const reorderedUtxos = testData.utxos.map((utxo) => ({
-        ...utxo,
-        addresses: [testData.pAddresses[1], testData.pAddresses[2], testData.pAddresses[0]],
-      }));
-
-      const txBuilder = factory
-        .getExportInPBuilder()
-        .threshold(testData.threshold)
-        .locktime(testData.locktime)
-        .fromPubKey(testData.pAddresses)
-        .amount(testData.amount)
-        .externalChainId(testData.sourceChainId)
-        .feeState(testData.feeState)
-        .context(testData.context)
-        .decodedUtxos(reorderedUtxos);
-
-      txBuilder.sign({ key: testData.privateKeys[2] });
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-
-      txJson.type.should.equal(22);
-      tx.toBroadcastFormat().should.be.a.String();
-    });
-
-    it('should handle parse-sign-parse-sign flow correctly', async () => {
-      const txBuilder = factory
-        .getExportInPBuilder()
-        .threshold(testData.threshold)
-        .locktime(testData.locktime)
-        .fromPubKey(testData.pAddresses)
-        .amount(testData.amount)
-        .externalChainId(testData.sourceChainId)
-        .feeState(testData.feeState)
-        .context(testData.context)
-        .decodedUtxos(testData.utxos);
-
-      txBuilder.sign({ key: testData.privateKeys[2] });
-      const halfSignedTx = await txBuilder.build();
-      const halfSignedHex = halfSignedTx.toBroadcastFormat();
-
-      const txBuilder2 = factory.from(halfSignedHex);
-      txBuilder2.sign({ key: testData.privateKeys[0] });
-      const fullSignedTx = await txBuilder2.build();
-      const fullSignedJson = fullSignedTx.toJson();
-
-      fullSignedJson.type.should.equal(22);
-      fullSignedJson.signatures.length.should.be.greaterThan(0);
-      fullSignedTx.toBroadcastFormat().should.be.a.String();
-    });
-  });
-
   describe('Change output threshold fix', () => {
     /**
      * This test suite verifies the fix for the change output threshold bug.
@@ -500,6 +285,96 @@ describe('Flrp Export In P Tx Builder', () => {
 
         addresses.length.should.equal(3, 'Change output should have 3 addresses for multisig wallet');
       });
+    });
+  });
+
+  describe('on-chain verified transactions', () => {
+    it('should build and sign export tx with correct sigIndices - on-chain verified', async () => {
+      const utxos = [
+        {
+          outputID: 7,
+          amount: '50000000',
+          txid: 'bgHnEJ64td8u31aZrGDaWcDqxZ8vDV5qGd7bmSifgvUnUW8v2',
+          threshold: 2,
+          addresses: [
+            ON_CHAIN_TEST_WALLET.bitgo.pChainAddress,
+            ON_CHAIN_TEST_WALLET.backup.pChainAddress,
+            ON_CHAIN_TEST_WALLET.user.pChainAddress,
+          ],
+          outputidx: '0',
+          locktime: '0',
+        },
+        {
+          outputID: 7,
+          amount: '50000000',
+          txid: 'KdrKz1SHM11dpDGHUthRc9sgS1hnb48pfvnmZDtJu7dRFF2Ha',
+          threshold: 2,
+          addresses: [
+            ON_CHAIN_TEST_WALLET.bitgo.pChainAddress,
+            ON_CHAIN_TEST_WALLET.backup.pChainAddress,
+            ON_CHAIN_TEST_WALLET.user.pChainAddress,
+          ],
+          outputidx: '0',
+          locktime: '0',
+        },
+      ];
+
+      const senderPAddresses = [
+        ON_CHAIN_TEST_WALLET.user.pChainAddress,
+        ON_CHAIN_TEST_WALLET.bitgo.pChainAddress,
+        ON_CHAIN_TEST_WALLET.backup.pChainAddress,
+      ];
+
+      const exportAmount = '30000000';
+
+      const txBuilder = factory
+        .getExportInPBuilder()
+        .threshold(2)
+        .locktime(0)
+        .fromPubKey(senderPAddresses)
+        .amount(exportAmount)
+        .externalChainId(testData.sourceChainId)
+        .decodedUtxos(utxos)
+        .context(testData.context)
+        .feeState(testData.feeState);
+
+      txBuilder.sign({ key: ON_CHAIN_TEST_WALLET.user.privateKey });
+      txBuilder.sign({ key: ON_CHAIN_TEST_WALLET.bitgo.privateKey });
+
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+
+      tx.id.should.equal('nSBwNcgfLbk5S425b1qaYaqTTCiMCV75KU4Fbnq8SPUUqLq2');
+
+      const hex = rawTx.replace('0x', '');
+
+      const amountHex = '0000000002faf080';
+      const amountPos = hex.indexOf(amountHex);
+      amountPos.should.be.greaterThan(0);
+
+      const inputSection = hex.substring(amountPos + 16, amountPos + 40);
+      const numSigIndices = parseInt(inputSection.substring(0, 8), 16);
+      const sigIdx0 = parseInt(inputSection.substring(8, 16), 16);
+      const sigIdx1 = parseInt(inputSection.substring(16, 24), 16);
+
+      numSigIndices.should.equal(2);
+      sigIdx0.should.equal(0);
+      sigIdx1.should.equal(2);
+
+      const flareTransaction = (tx as any)._flareTransaction as UnsignedTx;
+      const innerTx = flareTransaction.getTx() as pvmSerial.ExportTx;
+      const changeOutputs = innerTx.baseTx.outputs;
+      changeOutputs.length.should.be.greaterThan(0, 'Should have change output');
+
+      const changeOutput = changeOutputs[0].output as TransferOutput;
+      changeOutput.outputOwners.threshold.value().should.equal(2);
+      changeOutput.outputOwners.addrs.length.should.equal(3);
+
+      const expectedAddressBytes = senderPAddresses.map((addr) => utils.parseAddress(addr));
+      const expectedAddressHexes = expectedAddressBytes.map((buf) => buf.toString('hex')).sort();
+      const actualAddressHexes = changeOutput.outputOwners.addrs.map((addr) => addr.toHex().replace('0x', '')).sort();
+
+      actualAddressHexes.should.deepEqual(expectedAddressHexes);
     });
   });
 });

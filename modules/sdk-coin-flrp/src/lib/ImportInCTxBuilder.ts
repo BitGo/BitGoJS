@@ -74,14 +74,14 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       fee: fee.toString(),
     };
 
-    this.computeAddressesIndexFromParsed();
+    this.computeAddressesIndex(true);
 
     // Create addressMaps using sigIndices from parsed transaction for consistency
     const addressMaps = this.transaction._utxos.map((utxo) => {
       const utxoThreshold = utxo.threshold || this.transaction._threshold;
       const sigIndices = utxo.addressesIndex ?? [];
       if (sigIndices.length >= utxoThreshold && sigIndices.every((idx) => idx >= 0)) {
-        return this.createAddressMapForUtxoWithSigIndices(utxo, utxoThreshold, sigIndices);
+        return this.createAddressMapForUtxo(utxo, utxoThreshold, sigIndices);
       }
       return this.createAddressMapForUtxo(utxo, utxoThreshold);
     });
@@ -97,7 +97,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
         const utxoThreshold = utxo.threshold || this.transaction._threshold;
         const sigIndices = utxo.addressesIndex ?? [];
         if (sigIndices.length >= utxoThreshold && sigIndices.every((idx) => idx >= 0)) {
-          return this.createCredentialForUtxoWithSigIndices(utxo, utxoThreshold, sigIndices);
+          return this.createCredentialForUtxo(utxo, utxoThreshold, sigIndices);
         }
         return this.createCredentialForUtxo(utxo, utxoThreshold);
       });
@@ -165,10 +165,13 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
         `Insufficient UTXO balance: have ${totalUtxoAmount.toString()} nFLR, need more than ${actualFeeNFlr.toString()} nFLR to cover import fee`
       );
     }
+
+    const signingAddresses = this.getSigningAddresses();
+
     const importTx = evm.newImportTx(
       this.transaction._context,
       this.transaction._to[0],
-      this.transaction._fromAddresses.map((addr) => Buffer.from(addr)),
+      signingAddresses,
       nativeUtxos,
       sourceChain,
       actualFeeNFlr
@@ -204,11 +207,11 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     this.transaction._utxos = utxosWithIndex;
 
     const txCredentials = utxosWithIndex.map((utxo) =>
-      this.createCredentialForUtxoWithSigIndices(utxo, utxo.threshold, utxo.actualSigIndices)
+      this.createCredentialForUtxo(utxo, utxo.threshold, utxo.actualSigIndices)
     );
 
     const addressMaps = utxosWithIndex.map((utxo) =>
-      this.createAddressMapForUtxoWithSigIndices(utxo, utxo.threshold, utxo.actualSigIndices)
+      this.createAddressMapForUtxo(utxo, utxo.threshold, utxo.actualSigIndices)
     );
 
     const fixedUnsignedTx = new UnsignedTx(innerTx, [], new FlareUtils.AddressMaps(addressMaps), txCredentials);

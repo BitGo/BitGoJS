@@ -216,7 +216,7 @@ describe('Flrp test cases', function () {
       txExplain.type.should.equal(TransactionType.Export);
       txExplain.fee.should.have.property('fee');
       txExplain.inputs.should.be.an.Array();
-      txExplain.changeAmount.should.equal('14334500'); // 0xDABA24 from transaction
+      txExplain.changeAmount.should.equal('14339520'); // 0xDACDC0 from transaction
       txExplain.changeOutputs.should.be.an.Array();
       txExplain.changeOutputs[0].address.should.equal(
         'P-costwo106gc5h5qswhye8e0pmthq4wzf0ekv5qppsrvpu~P-costwo1cueygd7fd37g56s49k3rshqakhp6k8u3adzt6m~P-costwo1xv5mulgpe5lt4tnx2ntnylwe79azu9vpja6lut'
@@ -230,7 +230,7 @@ describe('Flrp test cases', function () {
       txExplain.id.should.equal(EXPORT_IN_P.txhash);
       txExplain.fee.should.have.property('fee');
       txExplain.inputs.should.be.an.Array();
-      txExplain.changeAmount.should.equal('14334500'); // 0xDABA24 from transaction
+      txExplain.changeAmount.should.equal('14339520'); // 0xDACDC0 from transaction
       txExplain.changeOutputs.should.be.an.Array();
       txExplain.changeOutputs[0].address.should.equal(
         'P-costwo106gc5h5qswhye8e0pmthq4wzf0ekv5qppsrvpu~P-costwo1cueygd7fd37g56s49k3rshqakhp6k8u3adzt6m~P-costwo1xv5mulgpe5lt4tnx2ntnylwe79azu9vpja6lut'

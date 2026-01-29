@@ -93,3 +93,25 @@ export const INVALID_PRIVATE_KEY_ERROR_MESSAGE = 'Unsupported private key';
 export const INVALID_PUBLIC_KEY_ERROR_MESSAGE = 'Unsupported public key';
 
 export const INVALID_LONG_KEYPAIR_PRV = SEED_ACCOUNT.privateKey + 'F1';
+
+/**
+ * On-chain verified test wallet keys
+ * Used for testing transactions that have been validated on Flare Coston2 testnet
+ */
+export const ON_CHAIN_TEST_WALLET = {
+  user: {
+    privateKey: 'c9e1638b866930153d06d30234ab80b34cd8af52715c881cb5a3b60a7aad3fef',
+    pChainAddress: 'P-costwo1cgpnd2v0a0qxevncn4m7st2lychuyn7czpd5k9',
+    corethAddress: 'C-costwo1cgpnd2v0a0qxevncn4m7st2lychuyn7czpd5k9',
+  },
+  bitgo: {
+    privateKey: '854309c49c8064a806b1d95964b35d23a3b01b4f8dd16884348f37669af6a0ed',
+    pChainAddress: 'P-costwo1xz2dh8g69l7almnks86l47m7dand9pzfnfpxwp',
+    corethAddress: 'C-costwo1xz2dh8g69l7almnks86l47m7dand9pzfnfpxwp',
+  },
+  backup: {
+    privateKey: '00bd5a0bfdb5e4b536c4ccdf181014bfb8b022d49e563f48fc799b9d2f20def0',
+    pChainAddress: 'P-costwo107q8ch4jsa58xdjlhl7ggazu6vgqgekhuszr7a',
+    corethAddress: 'C-costwo107q8ch4jsa58xdjlhl7ggazu6vgqgekhuszr7a',
+  },
+};

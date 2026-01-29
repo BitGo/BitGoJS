@@ -74,7 +74,7 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
       this.transaction._rawSignedBytes = rawBytes;
     }
 
-    this.computeAddressesIndexFromParsed();
+    this.computeAddressesIndex(true);
 
     // Use parsed credentials if available, otherwise create new ones based on sigIndices
     // The sigIndices from the parsed transaction (stored in addressesIndex) determine
@@ -87,7 +87,7 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
             const sigIndices = utxo.addressesIndex ?? [];
             // Use sigIndices-based method if we have valid sigIndices from parsed transaction
             if (sigIndices.length >= utxoThreshold && sigIndices.every((idx) => idx >= 0)) {
-              return this.createCredentialForUtxoWithSigIndices(utxo, utxoThreshold, sigIndices);
+              return this.createCredentialForUtxo(utxo, utxoThreshold, sigIndices);
             }
             return this.createCredentialForUtxo(utxo, utxoThreshold);
           });
@@ -97,7 +97,7 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
       const utxoThreshold = utxo.threshold || this.transaction._threshold;
       const sigIndices = utxo.addressesIndex ?? [];
       if (sigIndices.length >= utxoThreshold && sigIndices.every((idx) => idx >= 0)) {
-        return this.createAddressMapForUtxoWithSigIndices(utxo, utxoThreshold, sigIndices);
+        return this.createAddressMapForUtxo(utxo, utxoThreshold, sigIndices);
       }
       return this.createAddressMapForUtxo(utxo, utxoThreshold);
     });
@@ -156,19 +156,21 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
     }
 
     const assetId = utils.flareIdString(this.transaction._assetId).toString();
-    const fromAddresses = this.transaction._fromAddresses.map((addr) => Buffer.from(addr));
+    const allFromAddresses = this.transaction._fromAddresses.map((addr) => Buffer.from(addr));
     const transferableOutput = TransferableOutput.fromNative(
       assetId,
       this.transaction._amount,
-      fromAddresses,
+      allFromAddresses,
       this.transaction._locktime,
       this.transaction._threshold
     );
 
+    const signingAddresses = this.getSigningAddresses();
+
     const exportTx = pvm.e.newExportTx(
       {
         feeState,
-        fromAddressesBytes: this.transaction._fromAddresses.map((addr) => Buffer.from(addr)),
+        fromAddressesBytes: signingAddresses,
         destinationChainId: this.transaction._network.cChainBlockchainID,
         outputs: [transferableOutput],
         utxos: nativeUtxos,
@@ -183,15 +185,16 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
     let correctedExportTx: pvmSerial.ExportTx = innerTx;
 
     if (changeOutputs.length > 0) {
+      const allWalletAddresses = this.transaction._fromAddresses.map((addr) => Buffer.from(addr));
+
       const correctedChangeOutputs = changeOutputs.map((output) => {
         const transferOut = output.output as TransferOutput;
-        const originalOwners = transferOut.outputOwners;
 
         const assetIdStr = utils.flareIdString(Buffer.from(output.assetId.toBytes()).toString('hex')).toString();
         return TransferableOutput.fromNative(
           assetIdStr,
           transferOut.amount(),
-          originalOwners.addrs.map((addr) => Buffer.from(addr.toBytes())),
+          allWalletAddresses,
           this.transaction._locktime,
           this.transaction._threshold
         );
@@ -227,11 +230,11 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
     this.transaction._utxos = utxosWithIndex;
 
     const txCredentials = utxosWithIndex.map((utxo) =>
-      this.createCredentialForUtxoWithSigIndices(utxo, utxo.threshold, utxo.actualSigIndices)
+      this.createCredentialForUtxo(utxo, utxo.threshold, utxo.actualSigIndices)
     );
 
     const addressMaps = utxosWithIndex.map((utxo) =>
-      this.createAddressMapForUtxoWithSigIndices(utxo, utxo.threshold, utxo.actualSigIndices)
+      this.createAddressMapForUtxo(utxo, utxo.threshold, utxo.actualSigIndices)
     );
 
     const fixedUnsignedTx = new UnsignedTx(
