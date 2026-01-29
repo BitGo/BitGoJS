@@ -352,18 +352,19 @@ describe('Sol Custom Instruction Builder', () => {
       }
     });
 
-    it('should store VersionedTransactionData in underlying transaction', async () => {
+    it('should store VersionedTransactionData on builder for testnet (WASM path)', async () => {
+      // Test uses tsol (testnet) - stores on builder for WASM path
       const txBuilder = customInstructionBuilder();
       const versionedTxData = extractVersionedTransactionData(testData.JUPITER_VERSIONED_TX_BYTES);
 
       txBuilder.fromVersionedTransactionData(versionedTxData);
 
-      const tx = txBuilder['_transaction'];
-      const storedData = tx.getVersionedTransactionData();
-      should.exist(storedData);
-      storedData!.versionedInstructions.length.should.equal(versionedTxData.versionedInstructions.length);
-      storedData!.addressLookupTables.length.should.equal(versionedTxData.addressLookupTables.length);
-      storedData!.staticAccountKeys.length.should.equal(versionedTxData.staticAccountKeys.length);
+      // Testnet: stored on builder, nonce injection in wasm/builder.ts
+      const builderData = txBuilder['_versionedTransactionData'];
+      should.exist(builderData);
+      builderData!.versionedInstructions.length.should.equal(versionedTxData.versionedInstructions.length);
+      builderData!.addressLookupTables.length.should.equal(versionedTxData.addressLookupTables.length);
+      builderData!.staticAccountKeys.length.should.equal(versionedTxData.staticAccountKeys.length);
     });
 
     it('should validate input data', () => {

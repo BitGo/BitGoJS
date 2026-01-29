@@ -87,7 +87,11 @@ describe('Sol Transaction Builder', async () => {
     const txBuilder = factory.from(testData.STAKING_ACTIVATE_SIGNED_TX);
     const builtTx = await txBuilder.build();
     should.equal(builtTx.type, TransactionType.StakingActivate);
-    should.equal(builtTx.id, 'DCsSiGuKiWgtFRF2ZCh5x6xukApffYDs5Y9CyvYBEebMVnXH5TydKpT76srTSr1AhvDZqsnS5EVhvkS8Rzh91hH');
+    // ID is derived from the first signature in the WASM-generated fixture
+    should.equal(
+      builtTx.id,
+      '4AEzNyGV2LjLPQ7Yqq4w7k2AUCuCYNeXdAFvV5oFNRGACY3sNsZ6VpeENGArSbuSNGRXfLNfSzPpg9BjEuDtKduo'
+    );
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
       address: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
@@ -96,7 +100,7 @@ describe('Sol Transaction Builder', async () => {
     });
     builtTx.outputs.length.should.equal(1);
     const jsonTx = builtTx.toJson();
-    jsonTx.id.should.equal('DCsSiGuKiWgtFRF2ZCh5x6xukApffYDs5Y9CyvYBEebMVnXH5TydKpT76srTSr1AhvDZqsnS5EVhvkS8Rzh91hH');
+    jsonTx.id.should.equal('4AEzNyGV2LjLPQ7Yqq4w7k2AUCuCYNeXdAFvV5oFNRGACY3sNsZ6VpeENGArSbuSNGRXfLNfSzPpg9BjEuDtKduo');
     jsonTx.feePayer.should.equal('5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe');
     jsonTx.nonce.should.equal('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
     jsonTx.numSignatures.should.equal(2);
@@ -171,10 +175,8 @@ describe('Sol Transaction Builder', async () => {
     // which will then be used in txBuilder.build() by tokenTransferBuilder to add the set compute fee instruction
     const builtTx = await txBuilder.build();
     should.equal(builtTx.type, TransactionType.Send);
-    should.equal(
-      builtTx.id,
-      '2ticU4ZkEqdTHULr6LobTgWBhim6E7wSscDhM4gzyuGUmQyUwLYhoqaifuvwmNzzEf1T5aefVcgMQkSHdJ5nsrfZ'
-    );
+    // ID is derived from the first signature in the WASM-generated fixture
+    should.equal(builtTx.id, 'PjmUEMFoxQj1d1XVfWLZF3UbZ1T4fFhsU99CP2k5qWn37R8wchofAgdGansDipAkizMEuY6Xf2mEU8GsUT2p55a');
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
       address: testData.associatedTokenAccounts.accounts[0].pub,
@@ -188,7 +190,8 @@ describe('Sol Transaction Builder', async () => {
       coin: 'tsol:usdc',
     });
     const jsonTx = builtTx.toJson();
-    jsonTx.id.should.equal('2ticU4ZkEqdTHULr6LobTgWBhim6E7wSscDhM4gzyuGUmQyUwLYhoqaifuvwmNzzEf1T5aefVcgMQkSHdJ5nsrfZ');
+    // ID is derived from the first signature in the WASM-generated fixture
+    jsonTx.id.should.equal('PjmUEMFoxQj1d1XVfWLZF3UbZ1T4fFhsU99CP2k5qWn37R8wchofAgdGansDipAkizMEuY6Xf2mEU8GsUT2p55a');
     jsonTx.feePayer.should.equal(testData.associatedTokenAccounts.accounts[0].pub);
     jsonTx.nonce.should.equal('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
     jsonTx.numSignatures.should.equal(1);

@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseTransaction, BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import {
   getAssociatedTokenAccountAddress,
@@ -13,6 +13,7 @@ import { InstructionBuilderTypes } from './constants';
 import { AtaInit, TokenAssociateRecipient, TokenTransfer, SetPriorityFee } from './iface';
 import assert from 'assert';
 import { TransactionBuilder } from './transactionBuilder';
+import { WasmTransaction } from './wasm';
 import _ from 'lodash';
 
 export interface SendParams {
@@ -41,7 +42,20 @@ export class TokenTransferBuilder extends TransactionBuilder {
 
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
+    this.initFromInstructionsData();
+  }
 
+  /** @inheritdoc */
+  initBuilderFromWasm(wasmTx: WasmTransaction): void {
+    super.initBuilderFromWasm(wasmTx);
+    this.initFromInstructionsData();
+  }
+
+  /**
+   * Extract token transfer parameters from instructionsData.
+   * Called by both initBuilder and initBuilderFromWasm.
+   */
+  private initFromInstructionsData(): void {
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.TokenTransfer) {
         const transferInstruction: TokenTransfer = instruction;
@@ -115,7 +129,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
+  protected async buildImplementation(): Promise<BaseTransaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
     const sendInstructions = await Promise.all(
       this._sendParams.map(async (sendParams: SendParams): Promise<TokenTransfer> => {

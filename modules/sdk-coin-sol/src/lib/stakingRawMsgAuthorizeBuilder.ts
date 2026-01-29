@@ -8,6 +8,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
+import { WasmTransaction } from './wasm';
 import {
   Transaction as SOLTransaction,
   Message as SOLMessage,
@@ -36,6 +37,20 @@ export class StakingRawMsgAuthorizeBuilder extends BaseTransactionBuilder {
   initBuilder(tx: Transaction): void {
     if (this.validateTransaction(tx)) {
       this.transactionMessage(tx.solTransaction.serializeMessage().toString('base64'));
+    }
+  }
+
+  /**
+   * Initialize from a WASM-parsed transaction.
+   * Uses the signable payload which is equivalent to the serialized message.
+   *
+   * @param wasmTx - WasmTransaction to initialize from
+   */
+  initBuilderFromWasm(wasmTx: WasmTransaction): void {
+    const signablePayload = wasmTx.signablePayload;
+    const msg = signablePayload.toString('base64');
+    if (this.validateMessage(msg)) {
+      this.transactionMessage(msg);
     }
   }
 

@@ -35,6 +35,9 @@ import {
 import { InstructionParams, StakingActivate } from './iface';
 import { InstructionBuilderTypes } from './constants';
 import { SolStakingTypeEnum } from '@bitgo/public-types';
+import { findTokenName } from './instructionParamsFactory';
+import { getSolTokenFromAddressOnly } from './utils';
+import { SolCoin } from '@bitgo/statics';
 
 // =============================================================================
 // Types
@@ -58,11 +61,83 @@ interface NonceCombineState {
   nonceInitialize?: WasmNonceInitializeParams;
 }
 
+/**
+ * Track Jito deactivate instructions that need combining.
+ *
+ * Jito deactivate transactions serialize as 4 on-chain instructions:
+ *   1. Approve (token approval for pool tokens)
+ *   2. CreateAccount (create destination stake account)
+ *   3. StakePoolWithdrawStake (withdraw stake from Jito pool)
+ *   4. StakingDeactivate (deactivate the resulting stake account)
+ *
+ * The WASM parser returns StakePoolWithdrawStake and StakingDeactivate separately.
+ * We combine them into a single logical StakingDeactivate with full extraParams
+ * to match the format expected by BitGoJS builders (round-trip parity).
+ */
+interface JitoDeactivateCombineState {
+  stakePoolWithdrawStake?: WasmStakePoolWithdrawStakeParams;
+  nativeDeactivate?: WasmStakingDeactivateParams;
+}
+
+/**
+ * Track Marinade deactivate instructions that need combining.
+ *
+ * Marinade deactivate transactions serialize as:
+ *   1. Transfer (the actual unstaking operation)
+ *   2. Memo with JSON containing "PrepareForRevoke"
+ *
+ * We detect this pattern and combine into a StakingDeactivate with MARINADE type.
+ * Note: fromAddress and stakingAddress cannot be recovered - they are semantic
+ * metadata not present in the Transfer instruction. This matches legacy behavior.
+ */
+interface MarinadeDeactivateCombineState {
+  transfer?: WasmTransferParams;
+  memo?: string;
+}
+
 // =============================================================================
 // Transaction Type Detection
 // =============================================================================
 
+/**
+ * Detect StakingAuthorizeRaw pattern: NonceAdvance + StakingAuthorize only.
+ * This is a special transaction type for raw message signing from CLI.
+ *
+ * The pattern can be:
+ * - 2 instructions: NonceAdvance + StakingAuthorize
+ * - 3 instructions: NonceAdvance + StakingAuthorize + StakingAuthorize (for dual auth)
+ */
+function isStakingAuthorizeRawPattern(instructions: InstructionParams[]): boolean {
+  // Check for 2 instructions: NonceAdvance + StakingAuthorize
+  if (instructions.length === 2) {
+    const hasNonceAdvance = instructions.some((i) => i.type === InstructionBuilderTypes.NonceAdvance);
+    const hasStakingAuthorize = instructions.some((i) => i.type === InstructionBuilderTypes.StakingAuthorize);
+    if (hasNonceAdvance && hasStakingAuthorize) {
+      return true;
+    }
+  }
+
+  // Check for 3 instructions: NonceAdvance + 2x StakingAuthorize (dual authorization)
+  if (instructions.length === 3) {
+    const hasNonceAdvance = instructions.some((i) => i.type === InstructionBuilderTypes.NonceAdvance);
+    const stakingAuthorizeCount = instructions.filter(
+      (i) => i.type === InstructionBuilderTypes.StakingAuthorize
+    ).length;
+    if (hasNonceAdvance && stakingAuthorizeCount === 2) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function determineTransactionType(instructions: InstructionParams[]): TransactionType {
+  // Check for StakingAuthorizeRaw first (specific pattern: NonceAdvance + StakingAuthorize only)
+  // This must be checked BEFORE the general type detection
+  if (isStakingAuthorizeRawPattern(instructions)) {
+    return TransactionType.StakingAuthorizeRaw;
+  }
+
   // First pass: check for primary transaction types (highest priority)
   for (const instr of instructions) {
     switch (instr.type) {
@@ -113,15 +188,24 @@ function mapTransfer(instr: WasmTransferParams): InstructionParams {
 }
 
 function mapTokenTransfer(instr: WasmTokenTransferParams): InstructionParams {
+  // Resolve tokenName and other metadata from tokenAddress
+  const tokenAddress = instr.tokenAddress ?? '';
+  const coin = tokenAddress ? getSolTokenFromAddressOnly(tokenAddress) : undefined;
+  const tokenName = coin?.name ?? (tokenAddress ? findTokenName(tokenAddress, undefined, true) : '');
+  const programId = coin instanceof SolCoin ? coin.programId : undefined;
+  const decimalPlaces = coin?.decimalPlaces;
+
   return {
     type: InstructionBuilderTypes.TokenTransfer,
     params: {
       fromAddress: instr.fromAddress,
       toAddress: instr.toAddress,
       amount: instr.amount.toString(),
-      tokenName: '', // Will be resolved by caller if needed
+      tokenName,
       sourceAddress: instr.sourceAddress,
       tokenAddress: instr.tokenAddress,
+      programId,
+      decimalPlaces,
     },
   };
 }
@@ -163,24 +247,14 @@ function mapStakePoolDepositSol(instr: WasmStakePoolDepositSolParams): Instructi
 }
 
 function mapStakingDeactivate(instr: WasmStakingDeactivateParams): InstructionParams {
+  // Use stakingType from WASM if available, default to NATIVE
+  const stakingType = (instr as any).stakingType ?? SolStakingTypeEnum.NATIVE;
   return {
     type: InstructionBuilderTypes.StakingDeactivate,
     params: {
       fromAddress: instr.fromAddress,
       stakingAddress: instr.stakingAddress,
-      stakingType: SolStakingTypeEnum.NATIVE,
-    },
-  };
-}
-
-function mapStakePoolWithdrawStake(instr: WasmStakePoolWithdrawStakeParams): InstructionParams {
-  // Jito deactivate - maps to StakingDeactivate
-  return {
-    type: InstructionBuilderTypes.StakingDeactivate,
-    params: {
-      fromAddress: instr.sourceTransferAuthority,
-      stakingAddress: instr.stakePool,
-      stakingType: SolStakingTypeEnum.JITO,
+      stakingType,
     },
   };
 }
@@ -220,6 +294,8 @@ function mapStakingAuthorize(instr: WasmStakingAuthorizeParams): InstructionPara
 }
 
 function mapCreateAta(instr: WasmCreateAtaParams): InstructionParams {
+  // Resolve tokenName from mintAddress using findTokenName
+  const tokenName = findTokenName(instr.mintAddress, undefined, true);
   return {
     type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
     params: {
@@ -227,7 +303,7 @@ function mapCreateAta(instr: WasmCreateAtaParams): InstructionParams {
       ataAddress: instr.ataAddress,
       ownerAddress: instr.ownerAddress,
       payerAddress: instr.payerAddress,
-      tokenName: '', // Will be resolved by caller if needed
+      tokenName,
     },
   };
 }
@@ -263,6 +339,7 @@ function mapNonceAdvance(instr: WasmNonceAdvanceParams): InstructionParams {
 }
 
 function mapSetPriorityFee(instr: WasmSetPriorityFeeParams): InstructionParams {
+  // Keep fee as BigInt for compatibility with legacy format
   return {
     type: InstructionBuilderTypes.SetPriorityFee,
     params: {
@@ -299,8 +376,12 @@ function mapCreateNonceAccount(instr: WasmCreateNonceAccountParams): Instruction
 /**
  * Combine CreateAccount + StakeInitialize + StakingDelegate into StakingActivate.
  * This mirrors what the legacy instructionParamsFactory does.
+ *
+ * For NATIVE staking: CreateAccount + StakeInitialize + StakingDelegate
+ * For MARINADE staking: CreateAccount + StakeInitialize (no delegate, validator is in staker field)
  */
 function combineStakingInstructions(state: StakingCombineState): InstructionParams | null {
+  // Native staking: CreateAccount + StakeInitialize + StakingDelegate
   if (state.createAccount && state.stakeInitialize && state.delegate) {
     return {
       type: InstructionBuilderTypes.StakingActivate,
@@ -313,6 +394,25 @@ function combineStakingInstructions(state: StakingCombineState): InstructionPara
       },
     };
   }
+
+  // Marinade staking: CreateAccount + StakeInitialize (no delegate)
+  // For Marinade, the validator is stored in the staker field of StakeInitialize
+  if (state.createAccount && state.stakeInitialize && !state.delegate) {
+    const stakerAddress = (state.stakeInitialize as any).staker;
+    if (stakerAddress) {
+      return {
+        type: InstructionBuilderTypes.StakingActivate,
+        params: {
+          stakingType: SolStakingTypeEnum.MARINADE,
+          fromAddress: state.createAccount.fromAddress,
+          stakingAddress: state.createAccount.newAddress,
+          amount: state.createAccount.amount.toString(),
+          validator: stakerAddress, // Marinade uses staker as validator
+        },
+      };
+    }
+  }
+
   return null;
 }
 
@@ -329,6 +429,73 @@ function combineNonceInstructions(state: NonceCombineState): InstructionParams |
         nonceAddress: state.createAccount.newAddress,
         authAddress: state.nonceInitialize.authAddress,
         amount: state.createAccount.amount.toString(),
+      },
+    };
+  }
+  return null;
+}
+
+/**
+ * Combine StakePoolWithdrawStake + native StakingDeactivate into a single StakingDeactivate.
+ * This mirrors what the legacy instructionParamsFactory does for Jito unstaking.
+ *
+ * Jito deactivate serializes as 4 on-chain instructions:
+ *   1. Approve (token approval)
+ *   2. CreateAccount (destination stake account)
+ *   3. StakePoolWithdrawStake (withdraw from Jito pool)
+ *   4. StakingDeactivate (deactivate the resulting stake)
+ *
+ * We combine these into a single logical StakingDeactivate with extraParams.
+ */
+function combineJitoDeactivateInstructions(state: JitoDeactivateCombineState): InstructionParams | null {
+  if (state.stakePoolWithdrawStake) {
+    const ws = state.stakePoolWithdrawStake;
+    return {
+      type: InstructionBuilderTypes.StakingDeactivate,
+      params: {
+        fromAddress: ws.destinationStakeAuthority,
+        stakingAddress: ws.stakePool,
+        amount: ws.poolTokens.toString(),
+        unstakingAddress: ws.destinationStake,
+        stakingType: SolStakingTypeEnum.JITO,
+        extraParams: {
+          stakePoolData: {
+            managerFeeAccount: ws.managerFeeAccount,
+            poolMint: ws.poolMint,
+            validatorListAccount: ws.validatorList,
+          },
+          validatorAddress: ws.validatorStake,
+          transferAuthorityAddress: ws.sourceTransferAuthority,
+        },
+      },
+    };
+  }
+  return null;
+}
+
+/**
+ * Combine Transfer + PrepareForRevoke Memo into a single StakingDeactivate.
+ * This mirrors what the legacy instructionParamsFactory does for Marinade unstaking.
+ *
+ * Note: fromAddress and stakingAddress are empty because they cannot be recovered
+ * from the serialized transaction - they are semantic metadata that was never stored.
+ * This matches legacy behavior exactly.
+ */
+function combineMarinadeDeactivateInstructions(state: MarinadeDeactivateCombineState): InstructionParams | null {
+  // Check if memo contains "PrepareForRevoke" (Marinade deactivate signature)
+  if (state.transfer && state.memo && state.memo.includes('PrepareForRevoke')) {
+    return {
+      type: InstructionBuilderTypes.StakingDeactivate,
+      params: {
+        fromAddress: '',
+        stakingAddress: '',
+        stakingType: SolStakingTypeEnum.MARINADE,
+        recipients: [
+          {
+            address: state.transfer.toAddress,
+            amount: state.transfer.amount.toString(),
+          },
+        ],
       },
     };
   }
@@ -356,6 +523,8 @@ export function mapWasmInstructions(parsed: ParsedTransaction): MappedInstructio
   const instructions: InstructionParams[] = [];
   const stakingState: StakingCombineState = {};
   const nonceState: NonceCombineState = {};
+  const jitoDeactivateState: JitoDeactivateCombineState = {};
+  const marinadeDeactivateState: MarinadeDeactivateCombineState = {};
   let hasCreateAtaForJito = false;
 
   // First pass: identify instruction patterns
@@ -392,9 +561,31 @@ export function mapWasmInstructions(parsed: ParsedTransaction): MappedInstructio
       continue;
     }
 
+    // Track Jito deactivate instructions for combining
+    if (wasmInstr.type === 'StakePoolWithdrawStake') {
+      jitoDeactivateState.stakePoolWithdrawStake = wasmInstr as WasmStakePoolWithdrawStakeParams;
+      continue;
+    }
+
+    // Track native StakingDeactivate that may be part of Jito deactivate
+    if (wasmInstr.type === 'StakingDeactivate') {
+      jitoDeactivateState.nativeDeactivate = wasmInstr as WasmStakingDeactivateParams;
+      // Don't continue - we'll decide later whether to use this or combine it
+    }
+
     // Track ATA creation for Jito staking
     if (wasmInstr.type === 'CreateAssociatedTokenAccount') {
       hasCreateAtaForJito = true;
+    }
+
+    // Track Transfer for potential Marinade deactivate
+    if (wasmInstr.type === 'Transfer') {
+      marinadeDeactivateState.transfer = wasmInstr as WasmTransferParams;
+    }
+
+    // Track Memo for potential Marinade deactivate (PrepareForRevoke)
+    if (wasmInstr.type === 'Memo') {
+      marinadeDeactivateState.memo = (wasmInstr as WasmMemoParams).memo;
     }
 
     // Map other instructions directly
@@ -428,6 +619,32 @@ export function mapWasmInstructions(parsed: ParsedTransaction): MappedInstructio
   const combinedNonce = combineNonceInstructions(nonceState);
   if (combinedNonce) {
     instructions.push(combinedNonce);
+  }
+
+  // Combine Jito deactivate instructions if we have the pattern
+  const combinedJitoDeactivate = combineJitoDeactivateInstructions(jitoDeactivateState);
+  if (combinedJitoDeactivate) {
+    // Remove the native StakingDeactivate that was mapped (it's part of Jito pattern)
+    const nativeDeactivateIndex = instructions.findIndex(
+      (i) => i.type === InstructionBuilderTypes.StakingDeactivate && i.params.stakingType === SolStakingTypeEnum.NATIVE
+    );
+    if (nativeDeactivateIndex !== -1) {
+      instructions.splice(nativeDeactivateIndex, 1);
+    }
+    // Add the combined Jito deactivate
+    instructions.push(combinedJitoDeactivate);
+  }
+
+  // Combine Marinade deactivate instructions if we have the pattern
+  const combinedMarinadeDeactivate = combineMarinadeDeactivateInstructions(marinadeDeactivateState);
+  if (combinedMarinadeDeactivate) {
+    // Remove the Transfer that was mapped (it's part of Marinade pattern)
+    const transferIndex = instructions.findIndex((i) => i.type === InstructionBuilderTypes.Transfer);
+    if (transferIndex !== -1) {
+      instructions.splice(transferIndex, 1);
+    }
+    // Add the combined Marinade deactivate
+    instructions.push(combinedMarinadeDeactivate);
   }
 
   // Set Jito ATA flag if applicable
@@ -467,7 +684,8 @@ function mapSingleInstruction(instr: WasmInstructionParams): InstructionParams |
     case 'StakingDeactivate':
       return mapStakingDeactivate(instr as WasmStakingDeactivateParams);
     case 'StakePoolWithdrawStake':
-      return mapStakePoolWithdrawStake(instr as WasmStakePoolWithdrawStakeParams);
+      // Handled by Jito deactivate combining logic
+      return null;
     case 'StakingWithdraw':
       return mapStakingWithdraw(instr as WasmStakingWithdrawParams);
     case 'StakingAuthorize':
