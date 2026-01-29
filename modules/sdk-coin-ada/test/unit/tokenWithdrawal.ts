@@ -403,6 +403,101 @@ describe('ADA Token Operations', async () => {
     tx.getFee.should.equal('182485'); // Fee with two witnesses
   });
 
+  it(`should rebuild a sponsored transaction from hex with isRebuild flag`, async () => {
+    const feeAddress =
+      'addr_test1qz2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3jcu5d8ps7zex2k2xt3uqxgjqnnj83ws8lhrn648jjxtwq2ytjqp';
+    const quantity = '20';
+    const senderInputBalance = 5000000;
+    const feeAddressInputBalance = 20000000;
+    const totalAssetList = {
+      [fingerprint]: {
+        quantity: '100',
+        policy_id: policyId,
+        asset_name: asciiEncodedName,
+      },
+    };
+
+    // Step 1: Build the initial sponsored transaction
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.input({
+      transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+      transaction_index: 1,
+    });
+    txBuilder.input({
+      transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba22',
+      transaction_index: 0,
+    });
+
+    txBuilder.output({
+      address: receiverAddress,
+      amount: '0',
+      multiAssets: {
+        asset_name: asciiEncodedName,
+        policy_id: policyId,
+        quantity,
+        fingerprint,
+      },
+    });
+
+    txBuilder.changeAddress(senderAddress, senderInputBalance.toString(), totalAssetList);
+    txBuilder.sponsorshipInfo({
+      feeAddress: feeAddress,
+      feeAddressInputBalance: feeAddressInputBalance.toString(),
+    });
+    txBuilder.ttl(800000000);
+    txBuilder.isTokenTransaction();
+    const initialTx = (await txBuilder.build()) as Transaction;
+    const initialFee = initialTx.getFee;
+    const initialTxData = initialTx.toJson();
+
+    // Step 2: Rebuild with isRebuild = true
+    // This simulates rebuilding from scratch but with isRebuild flag to add sponsor witness
+    const rebuildTxBuilder = factory.getTransferBuilder();
+    rebuildTxBuilder.input({
+      transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+      transaction_index: 1,
+    });
+    rebuildTxBuilder.input({
+      transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba22',
+      transaction_index: 0,
+    });
+
+    rebuildTxBuilder.output({
+      address: receiverAddress,
+      amount: '0',
+      multiAssets: {
+        asset_name: asciiEncodedName,
+        policy_id: policyId,
+        quantity,
+        fingerprint,
+      },
+    });
+
+    rebuildTxBuilder.changeAddress(senderAddress, senderInputBalance.toString(), totalAssetList);
+    rebuildTxBuilder.sponsorshipInfo({
+      feeAddress: feeAddress,
+      feeAddressInputBalance: feeAddressInputBalance.toString(),
+      isRebuild: true,
+    });
+    rebuildTxBuilder.ttl(800000000);
+    rebuildTxBuilder.isTokenTransaction();
+
+    const rebuiltTx = (await rebuildTxBuilder.build()) as Transaction;
+    const rebuiltTxData = rebuiltTx.toJson();
+
+    // Verify the rebuilt transaction preserves the same structure
+    rebuiltTxData.inputs.length.should.equal(initialTxData.inputs.length);
+    rebuiltTxData.outputs.length.should.equal(initialTxData.outputs.length);
+
+    // Fee should be preserved from the original transaction
+    rebuiltTx.getFee.should.equal(initialFee);
+
+    // Verify receiver output is preserved
+    const receiverOutput = rebuiltTxData.outputs.filter((output) => output.address === receiverAddress);
+    receiverOutput.length.should.equal(1);
+    receiverOutput[0].amount.should.equal('1500000');
+  });
+
   describe('AdaToken verifyTransaction', () => {
     let bitgo: TestBitGoAPI;
     let adaToken;

@@ -476,7 +476,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    if (this._isTokenTransaction || (this._sponsorshipInfo && this._type === TransactionType.Send)) {
+    /**
+     * Fee address utxo reservation builds a new transaction that goes through legacy build
+     * rebuild flag is just a hack to redirect the flow to the legacy build
+     */
+    if (
+      this._isTokenTransaction ||
+      (this._sponsorshipInfo && !this._sponsorshipInfo.isRebuild && this._type === TransactionType.Send)
+    ) {
       return this.processTokenBuild();
     }
     const inputs = CardanoWasm.TransactionInputs.new();
@@ -597,6 +604,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         vkeyWitnesses.add(vkeyWitness);
         if (this._type !== TransactionType.Send) {
           vkeyWitnesses.add(vkeyWitness);
+        }
+        if (this._sponsorshipInfo?.isRebuild) {
+          const sponsorPrv = CardanoWasm.PrivateKey.generate_ed25519();
+          const sponsorVkeyWitness = CardanoWasm.make_vkey_witness(txHash, sponsorPrv);
+          vkeyWitnesses.add(sponsorVkeyWitness);
         }
       }
       witnessSet.set_vkeys(vkeyWitnesses);
