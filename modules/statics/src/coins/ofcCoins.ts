@@ -298,6 +298,22 @@ export const ofcCoins = [
     CoinKind.CRYPTO
   ),
   ofc(
+    'cdf3487e-a365-4319-83ff-ff06f02810a6',
+    'ofcmorpheth',
+    'Morph Ethereum',
+    18,
+    UnderlyingAsset.MORPHETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    '4113e0ae-41c5-4293-8b7a-5829cbc3ee92',
+    'ofctmorpheth',
+    'Morph Ethereum Testnet',
+    18,
+    UnderlyingAsset.MORPHETH,
+    CoinKind.CRYPTO
+  ),
+  ofc(
     'dc733b2f-92bf-49d3-9f5d-9774e1637f0f',
     'ofcokbxlayer',
     'OKB (X layer)',

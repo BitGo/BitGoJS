@@ -5359,6 +5359,64 @@ export const tOfcErc20Coins = [
     true,
     'tmorph'
   ),
+
+  // MorphETH tokens
+  ofcerc20(
+    '9c28b89b-1069-4bad-bf7b-8ecea440cee2',
+    'ofcmorpheth:usdc',
+    'USD Coin',
+    6,
+    UnderlyingAsset['morpheth:usdc'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'morpheth'
+  ),
+  ofcerc20(
+    '07010f84-5bc7-4715-9d19-09d694f558fb',
+    'ofcmorpheth:usdt',
+    'Tether USD',
+    6,
+    UnderlyingAsset['morpheth:usdt'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'morpheth'
+  ),
+  ofcerc20(
+    '883727b5-49e3-4fb3-99f7-fefb803710e5',
+    'ofcmorpheth:usd1',
+    'USD1',
+    18,
+    UnderlyingAsset['morpheth:usd1'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'morpheth'
+  ),
+  tofcerc20(
+    '34e77cee-2885-4a77-911c-b5f2bdd28cd7',
+    'ofctmorpheth:tmt',
+    'Test Mintable Token',
+    6,
+    underlyingAssetForSymbol('tmorpheth:tmt'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tmorpheth'
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

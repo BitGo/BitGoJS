@@ -2593,6 +2593,47 @@ export const allCoinsAndTokens = [
       CoinFeature.SUPPORTS_ERC20,
     ]
   ),
+
+  account(
+    '51de29b1-dd97-4b05-9239-a177522b469f',
+    'morpheth',
+    'Morph Ethereum Mainnet',
+    Networks.main.morpheth,
+    18,
+    UnderlyingAsset.MORPHETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    'f99419da-0ee8-46c3-af81-3bd43af29642',
+    'tmorpheth',
+    'Morph Ethereum Testnet',
+    Networks.test.morpheth,
+    18,
+    UnderlyingAsset.MORPHETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
   account(
     '887eebff-5d50-47f7-aea5-905e25c2e846',
     'tdogeos',

@@ -105,6 +105,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.JOVAYETH &&
         n.asset !== UnderlyingAsset.OKBXLAYER &&
         n.asset !== UnderlyingAsset.MORPH &&
+        n.asset !== UnderlyingAsset.MORPHETH &&
         n.asset !== UnderlyingAsset.DOGEOS &&
         n.asset !== UnderlyingAsset.MEGAETH &&
         n.asset !== UnderlyingAsset.ARCUSDC &&
