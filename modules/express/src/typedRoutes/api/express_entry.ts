@@ -33,7 +33,7 @@ import { GetPing } from './common/ping';
 // import { PostShareWallet } from './v2/shareWallet';
 // import { PutExpressWalletUpdate } from './v2/expressWalletUpdate';
 // import { PostFanoutUnspents } from './v2/fanoutUnspents';
-// import { PostSendMany } from './v2/sendmany';
+import { PostSendMany } from './v2/sendmany';
 // import { PostConsolidateUnspents } from './v2/consolidateunspents';
 // import { PostPrebuildAndSignTransaction } from './v2/prebuildAndSignTransaction';
 // import { PostCoinSign } from './v2/coinSign';
@@ -188,11 +188,11 @@ export const ExpressPingApiSpec = apiSpec({
 //   },
 // });
 
-// export const ExpressV2WalletSendManyApiSpec = apiSpec({
-//   'express.v2.wallet.sendmany': {
-//     post: PostSendMany,
-//   },
-// });
+export const ExpressV2WalletSendManyApiSpec = apiSpec({
+  'express.v2.wallet.sendmany': {
+    post: PostSendMany,
+  },
+});
 
 // export const ExpressV2WalletSendCoinsApiSpec = apiSpec({
 //   'express.v2.wallet.sendcoins': {
