@@ -3,7 +3,7 @@ import assert from 'assert';
 import { BIP32Interface } from '@bitgo/utxo-lib';
 import { BIP32, ECPair, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
-import { InputSigningError, TransactionSigningError } from './SigningError';
+import { BulkSigningError, InputSigningError, TransactionSigningError } from './SigningError';
 import { Musig2Participant } from './musig2';
 
 export type ReplayProtectionKeys = {
@@ -29,6 +29,7 @@ function hasKeyPathSpendInput(
 
 /**
  * Sign all inputs of a PSBT and verify signatures after signing.
+ * Uses bulk signing for performance (signs all matching inputs in one pass).
  * Collects and logs signing errors and verification errors, throws error in the end if any of them failed.
  */
 export function signAndVerifyPsbtWasm(
@@ -38,29 +39,21 @@ export function signAndVerifyPsbtWasm(
   replayProtection: ReplayProtectionKeys
 ): fixedScriptWallet.BitGoPsbt {
   const wasmSigner = toWasmBIP32(signerKeychain);
-  const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
 
-  const signErrors: InputSigningError<bigint>[] = [];
+  // Bulk sign all wallet inputs (ECDSA + MuSig2) - much faster than per-input signing
+  try {
+    tx.sign(wasmSigner);
+  } catch (e) {
+    throw new BulkSigningError(e);
+  }
+
+  // Verify signatures for all signed inputs (still per-input for granular error reporting)
+  const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
   const verifyErrors: InputSigningError<bigint>[] = [];
 
-  // Sign all inputs (skipping replay protection inputs)
   parsed.inputs.forEach((input, inputIndex) => {
     if (input.scriptType === 'p2shP2pk') {
       // Skip replay protection inputs - they are platform signed only
-      return;
-    }
-
-    const outputId = `${input.previousOutput.txid}:${input.previousOutput.vout}`;
-    try {
-      tx.sign(inputIndex, wasmSigner);
-    } catch (e) {
-      signErrors.push(new InputSigningError<bigint>(inputIndex, input.scriptType, { id: outputId }, e));
-    }
-  });
-
-  // Verify signatures for all signed inputs
-  parsed.inputs.forEach((input, inputIndex) => {
-    if (input.scriptType === 'p2shP2pk') {
       return;
     }
 
@@ -76,8 +69,8 @@ export function signAndVerifyPsbtWasm(
     }
   });
 
-  if (signErrors.length || verifyErrors.length) {
-    throw new TransactionSigningError(signErrors, verifyErrors);
+  if (verifyErrors.length) {
+    throw new TransactionSigningError([], verifyErrors);
   }
 
   return tx;
