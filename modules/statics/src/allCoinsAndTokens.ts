@@ -3455,6 +3455,46 @@ export const allCoinsAndTokens = [
     Networks.test.morph
   ),
 
+  // MorphEth mainnet tokens
+  erc20Token(
+    '088dcce6-6259-4012-a1e2-857534ea88fc',
+    'morpheth:usdc',
+    'USD Coin',
+    6,
+    '0xe34c91815d7fc18a9e2148bcd4241d0a5848b693',
+    UnderlyingAsset['morpheth:usdc'],
+    Networks.main.morpheth
+  ),
+  erc20Token(
+    '03257b8a-67cc-4a84-9226-b757852fff63',
+    'morpheth:usdt',
+    'Tether USD',
+    6,
+    '0xc7d67a9cbb121b3b0b9c053dd9f469523243379a',
+    UnderlyingAsset['morpheth:usdt'],
+    Networks.main.morpheth
+  ),
+  erc20Token(
+    'f0dad043-371d-48a4-a3cb-d798b4fc0fee',
+    'morpheth:usd1',
+    'USD1',
+    18,
+    '0x111111d2bf19e43c34263401e0cad979ed1cdb61',
+    UnderlyingAsset['morpheth:usd1'],
+    Networks.main.morpheth
+  ),
+
+  // MorphEth testnet tokens
+  erc20Token(
+    '3383765b-37f9-4609-baf3-37c42f0ffee7',
+    'tmorpheth:tmt',
+    'Test Mintable Token',
+    6,
+    '0x5257950b5277dac30536eae4742ffef4e5af5256',
+    UnderlyingAsset['tmorpheth:tmt'],
+    Networks.test.morpheth
+  ),
+
   // Plume testnet tokens
   erc20Token(
     '67a140e3-c73e-4984-af13-7b1555ee3ff3',
