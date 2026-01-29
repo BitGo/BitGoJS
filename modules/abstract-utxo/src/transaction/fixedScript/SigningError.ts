@@ -28,6 +28,13 @@ export class InputSigningError<TNumber extends number | bigint = number> extends
   }
 }
 
+export class BulkSigningError extends Error {
+  constructor(public reason: Error | string) {
+    const reasonMessage = reason instanceof Error ? reason.message : reason;
+    super(`bulk signing error: ${reasonMessage}`);
+  }
+}
+
 export class TransactionSigningError<TNumber extends number | bigint = number> extends Error {
   constructor(signErrors: InputSigningError<TNumber>[], verifyError: InputSigningError<TNumber>[]) {
     super(
