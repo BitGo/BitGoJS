@@ -14,6 +14,7 @@ import timeout from 'connect-timeout';
 import * as bodyParser from 'body-parser';
 
 import { Config, config } from './config';
+import './utils/consoleOverride'; // Auto-activates console sanitization in production
 
 const debug = debugLib('bitgo:express');
 
