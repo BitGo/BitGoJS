@@ -1593,8 +1593,8 @@ class HypeEVMTestnet extends Testnet implements EthereumNetwork {
 class HypeEVM extends Mainnet implements EthereumNetwork {
   name = 'HyperliquidEVM';
   family = CoinFamily.HYPEEVM;
-  explorerUrl = 'https://hyperevm-explorer.vercel.app/tx/';
-  accountExplorerUrl = 'https://hyperevm-explorer.vercel.app/address/';
+  explorerUrl = 'https://hyperevmscan.io/tx/';
+  accountExplorerUrl = 'https://hyperevmscan.io/address/';
   chainId = 999;
   nativeCoinOperationHashPrefix = '999';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
