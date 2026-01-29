@@ -49,6 +49,7 @@ import {
   TransactionExplanation,
   TransactionParams,
   TransactionRecipient,
+  TransactionType,
   VerifyTransactionOptions,
   TssVerifyAddressOptions,
   verifyEddsaTssWalletAddress,
@@ -56,7 +57,16 @@ import {
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseNetwork, CoinFamily, coins, SolCoin, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { KeyPair as SolKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
+import { parseTransaction as wasmParseTransaction, Transaction as WasmTransaction } from '@bitgo/wasm-solana';
+import {
+  KeyPair as SolKeyPair,
+  Transaction,
+  TransactionBuilder,
+  TransactionBuilderFactory,
+  InstructionBuilderTypes,
+} from './lib';
+import { combineWasmInstructionsFromBytes } from './lib/wasmInstructionCombiner';
+import { TransactionExplanation as SolLibTransactionExplanation } from './lib/iface';
 import {
   getAssociatedTokenAccountAddress,
   getSolTokenFromAddress,
@@ -66,6 +76,7 @@ import {
   isValidPublicKey,
   validateRawTransaction,
 } from './lib/utils';
+import { findTokenName } from './lib/instructionParamsFactory';
 
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 
@@ -695,6 +706,7 @@ export class Sol extends BaseCoin {
   }
 
   async parseTransaction(params: SolParseTransactionOptions): Promise<SolParsedTransaction> {
+    // explainTransaction now uses WASM for testnet automatically
     const transactionExplanation = await this.explainTransaction({
       txBase64: params.txBase64,
       feeInfo: params.feeInfo,
@@ -740,9 +752,16 @@ export class Sol extends BaseCoin {
 
   /**
    * Explain a Solana transaction from txBase64
+   * Uses WASM-based parsing for testnet, with fallback to legacy builder approach.
    * @param params
    */
   async explainTransaction(params: ExplainTransactionOptions): Promise<SolTransactionExplanation> {
+    // Use WASM-based parsing for testnet (simpler, faster, no @solana/web3.js rebuild)
+    if (this.getChain() === 'tsol') {
+      return this.explainTransactionWithWasm(params) as SolTransactionExplanation;
+    }
+
+    // Legacy approach for mainnet (until WASM is fully validated)
     const factory = this.getBuilder();
     let rebuiltTransaction;
 
@@ -764,6 +783,169 @@ export class Sol extends BaseCoin {
     const explainedTransaction = (rebuiltTransaction as BaseTransaction).explainTransaction();
 
     return explainedTransaction as SolTransactionExplanation;
+  }
+
+  /**
+   * Explain a Solana transaction using WASM parsing (bypasses @solana/web3.js rebuild).
+   * Uses the centralized combineWasmInstructions utility for DRY combining logic.
+   * @param params
+   */
+  explainTransactionWithWasm(params: ExplainTransactionOptions): SolLibTransactionExplanation {
+    const txBytes = Buffer.from(params.txBase64, 'base64');
+    const wasmTx = WasmTransaction.fromBytes(txBytes);
+    const parsed = wasmParseTransaction(txBytes);
+
+    // Use centralized combining utility - single source of truth for all combining logic
+    const { instructions: combinedInstructions, transactionType } = combineWasmInstructionsFromBytes(txBytes);
+
+    // Extract memo from parsed transaction
+    const memo = parsed.instructionsData.find((i) => i.type === 'Memo')?.memo;
+
+    // Derive outputs and tokenEnablements from combined instructions
+    const outputs: TransactionRecipient[] = [];
+    const tokenEnablements: ITokenEnablement[] = [];
+    let outputAmount = new BigNumber(0);
+
+    for (const instr of combinedInstructions) {
+      switch (instr.type) {
+        case InstructionBuilderTypes.Transfer:
+          outputs.push({
+            address: instr.params.toAddress,
+            amount: instr.params.amount,
+          });
+          outputAmount = outputAmount.plus(instr.params.amount);
+          break;
+
+        case InstructionBuilderTypes.TokenTransfer:
+          outputs.push({
+            address: instr.params.toAddress,
+            amount: instr.params.amount,
+            tokenName: findTokenName(instr.params.tokenAddress ?? '', undefined, true),
+          });
+          break;
+
+        case InstructionBuilderTypes.CreateNonceAccount:
+          outputs.push({
+            address: instr.params.nonceAddress,
+            amount: instr.params.amount,
+          });
+          outputAmount = outputAmount.plus(instr.params.amount);
+          break;
+
+        case InstructionBuilderTypes.StakingActivate:
+          outputs.push({
+            address: instr.params.stakingAddress,
+            amount: instr.params.amount,
+          });
+          outputAmount = outputAmount.plus(instr.params.amount);
+          break;
+
+        case InstructionBuilderTypes.StakingWithdraw:
+          outputs.push({
+            address: instr.params.fromAddress,
+            amount: instr.params.amount,
+          });
+          outputAmount = outputAmount.plus(instr.params.amount);
+          break;
+
+        case InstructionBuilderTypes.CreateAssociatedTokenAccount:
+          tokenEnablements.push({
+            address: instr.params.ataAddress,
+            tokenName: findTokenName(instr.params.mintAddress, undefined, true),
+            tokenAddress: instr.params.mintAddress,
+          });
+          break;
+      }
+    }
+
+    // Calculate fee: lamportsPerSignature * numSignatures + (rent * numATAs)
+    const lamportsPerSignature = parseInt(params.feeInfo?.fee || '0', 10);
+    const rentPerAta = parseInt(params.tokenAccountRentExemptAmount || '0', 10);
+    const signatureFee = lamportsPerSignature * parsed.numSignatures;
+    const rentFee = rentPerAta * tokenEnablements.length;
+    const totalFee = (signatureFee + rentFee).toString();
+
+    // Get transaction id from first signature (base58 encoded) or UNAVAILABLE
+    let txId = 'UNAVAILABLE';
+    const signatures = wasmTx.signatures();
+    if (signatures.length > 0) {
+      const firstSig = signatures[0];
+      const isEmptySignature = firstSig.every((b) => b === 0);
+      if (!isEmptySignature) {
+        txId = base58.encode(firstSig);
+      }
+    }
+
+    // Build durableNonce from WASM parsed data
+    const durableNonce = parsed.durableNonce
+      ? {
+          walletNonceAddress: parsed.durableNonce.walletNonceAddress,
+          authWalletAddress: parsed.durableNonce.authWalletAddress,
+        }
+      : undefined;
+
+    // Map TransactionType enum to string for display
+    const typeString = this.mapTransactionTypeToString(transactionType);
+
+    return {
+      displayOrder: [
+        'id',
+        'type',
+        'blockhash',
+        'durableNonce',
+        'outputAmount',
+        'changeAmount',
+        'outputs',
+        'changeOutputs',
+        'tokenEnablements',
+        'fee',
+        'memo',
+      ],
+      id: txId,
+      type: typeString,
+      changeOutputs: [],
+      changeAmount: '0',
+      outputAmount: outputAmount.toFixed(0),
+      outputs,
+      fee: {
+        fee: totalFee,
+        feeRate: lamportsPerSignature,
+      },
+      memo,
+      blockhash: parsed.nonce,
+      durableNonce,
+      tokenEnablements,
+    };
+  }
+
+  /**
+   * Map TransactionType enum to string for display.
+   */
+  private mapTransactionTypeToString(type: TransactionType): string {
+    switch (type) {
+      case TransactionType.Send:
+        return 'Send';
+      case TransactionType.WalletInitialization:
+        return 'WalletInitialization';
+      case TransactionType.StakingActivate:
+        return 'StakingActivate';
+      case TransactionType.StakingDeactivate:
+        return 'StakingDeactivate';
+      case TransactionType.StakingWithdraw:
+        return 'StakingWithdraw';
+      case TransactionType.StakingDelegate:
+        return 'StakingDelegate';
+      case TransactionType.StakingAuthorize:
+        return 'StakingAuthorize';
+      case TransactionType.AssociatedTokenAccountInitialization:
+        return 'AssociatedTokenAccountInitialization';
+      case TransactionType.CloseAssociatedTokenAccount:
+        return 'CloseAssociatedTokenAccount';
+      case TransactionType.CustomTx:
+        return 'CustomTx';
+      default:
+        return 'Send';
+    }
   }
 
   /** @inheritDoc */

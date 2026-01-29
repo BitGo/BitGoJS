@@ -3,7 +3,7 @@ import should from 'should';
 import * as testData from '../../resources/sol';
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, Utils, StakingActivateBuilder } from '../../../src';
-import { InstructionBuilderTypes, JITO_STAKE_POOL_ADDRESS, JITOSOL_MINT_ADDRESS } from '../../../src/lib/constants';
+import { InstructionBuilderTypes, JITO_STAKE_POOL_ADDRESS } from '../../../src/lib/constants';
 import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { BaseTransaction } from '@bitgo/sdk-core';
 import { InstructionParams } from '../../../src/lib/iface';
@@ -161,20 +161,9 @@ describe('Sol Staking Activate Builder', () => {
 
   const verifyBuiltTransactionJito = (tx: BaseTransaction, doMemo: boolean, doCreateATA: boolean) => {
     const txJson = tx.toJson();
+    // For Jito staking, CreateATA is represented as a flag in extraParams, NOT as a separate instruction
+    // This differs from other staking types where ATA init is a separate instruction
     const expectedInstructions: InstructionParams[] = [];
-
-    if (doCreateATA) {
-      expectedInstructions.push({
-        type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
-        params: {
-          ataAddress: '2vJrx2Bn7PifLZDRaSCpphE9WtZsx1k43SRyiQDhE1As',
-          mintAddress: JITOSOL_MINT_ADDRESS,
-          ownerAddress: wallet.pub,
-          payerAddress: wallet.pub,
-          tokenName: 'sol:jitosol',
-        },
-      });
-    }
 
     if (doMemo) {
       expectedInstructions.push({

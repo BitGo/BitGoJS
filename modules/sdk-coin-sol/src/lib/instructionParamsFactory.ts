@@ -364,6 +364,7 @@ type StakingInstructions = {
   initialize?: InitializeStakeParams;
   delegate?: DelegateStakeParams;
   hasAtaInit?: boolean;
+  ataInitInstruction?: AtaInit;
 };
 
 type JitoStakingInstructions = StakingInstructions & {
@@ -454,7 +455,9 @@ function parseStakingActivateInstructions(
 
       case ValidInstructionTypesEnum.InitializeAssociatedTokenAccount:
         stakingInstructions.hasAtaInit = true;
-        instructionData.push({
+        // Store the ATA init instruction - we'll decide later whether to add it to instructionData
+        // based on staking type (Jito staking uses a flag instead of a separate instruction)
+        stakingInstructions.ataInitInstruction = {
           type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
           params: {
             mintAddress: instruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString(),
@@ -463,7 +466,7 @@ function parseStakingActivateInstructions(
             payerAddress: instruction.keys[ataInitInstructionKeysIndexes.PayerAddress].pubkey.toString(),
             tokenName: findTokenName(instruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString()),
           },
-        });
+        };
         break;
     }
   }
@@ -534,6 +537,12 @@ function parseStakingActivateInstructions(
       const unreachable: never = stakingType;
       throw new Error(`Unknown staking type ${unreachable}`);
     }
+  }
+
+  // For non-Jito staking, add the ATA instruction as a separate instruction
+  // (Jito staking uses the createAssociatedTokenAccount flag in extraParams instead)
+  if (stakingType !== SolStakingTypeEnum.JITO && stakingInstructions.ataInitInstruction) {
+    instructionData.push(stakingInstructions.ataInitInstruction);
   }
 
   instructionData.push(stakingActivate);
@@ -1171,7 +1180,10 @@ function parseStakingAuthorizeInstructions(
  */
 function parseStakingAuthorizeRawInstructions(instructions: TransactionInstruction[]): Array<Nonce | StakingAuthorize> {
   const instructionData: Array<Nonce | StakingAuthorize> = [];
-  assert(instructions.length === 2, 'Invalid number of instructions');
+  // StakingAuthorizeRaw transactions have:
+  // - 2 instructions: NonceAdvance + 1 Authorize (changing either staking OR withdraw authority)
+  // - 3 instructions: NonceAdvance + 2 Authorizes (changing BOTH staking AND withdraw authority)
+  assert(instructions.length >= 2 && instructions.length <= 3, 'Invalid number of instructions');
   const advanceNonceInstruction = SystemInstruction.decodeNonceAdvance(instructions[0]);
   const nonce: Nonce = {
     type: InstructionBuilderTypes.NonceAdvance,
@@ -1181,17 +1193,24 @@ function parseStakingAuthorizeRawInstructions(instructions: TransactionInstructi
     },
   };
   instructionData.push(nonce);
-  const authorize = instructions[1];
-  assert(authorize.keys.length === 5, 'Invalid number of keys in authorize instruction');
-  instructionData.push({
-    type: InstructionBuilderTypes.StakingAuthorize,
-    params: {
-      stakingAddress: authorize.keys[0].pubkey.toString(),
-      oldAuthorizeAddress: authorize.keys[2].pubkey.toString(),
-      newAuthorizeAddress: authorize.keys[3].pubkey.toString(),
-      custodianAddress: authorize.keys[4].pubkey.toString(),
-    },
-  });
+
+  // Process all authorize instructions (1 or 2)
+  for (let i = 1; i < instructions.length; i++) {
+    const authorize = instructions[i];
+    // Authorize instruction keys: [stakePubkey, clockSysvar, oldAuthority, newAuthority, custodian?]
+    // - 4 keys: no custodian required
+    // - 5 keys: custodian is present (required when stake is locked)
+    assert(authorize.keys.length >= 4 && authorize.keys.length <= 5, 'Invalid number of keys in authorize instruction');
+    instructionData.push({
+      type: InstructionBuilderTypes.StakingAuthorize,
+      params: {
+        stakingAddress: authorize.keys[0].pubkey.toString(),
+        oldAuthorizeAddress: authorize.keys[2].pubkey.toString(),
+        newAuthorizeAddress: authorize.keys[3].pubkey.toString(),
+        custodianAddress: authorize.keys.length === 5 ? authorize.keys[4].pubkey.toString() : '',
+      },
+    });
+  }
   return instructionData;
 }
 
@@ -1239,7 +1258,7 @@ function parseCustomInstructions(
   return instructionData;
 }
 
-function findTokenName(
+export function findTokenName(
   mintAddress: string,
   instructionMetadata?: InstructionParams[],
   _useTokenAddressTokenName?: boolean
