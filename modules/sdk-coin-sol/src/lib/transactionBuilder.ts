@@ -3,6 +3,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   BaseAddress,
   BaseKey,
+  BaseTransaction,
   BaseTransactionBuilder,
   BuildTransactionError,
   FeeOptions,
@@ -36,9 +37,12 @@ import { solInstructionFactory } from './solInstructionFactory';
 import assert from 'assert';
 import { DurableNonceParams, InstructionParams, Memo, Nonce, SetPriorityFee, Transfer } from './iface';
 import { instructionParamsFactory } from './instructionParamsFactory';
+import { areInstructionsSupportedByWasm } from './wasmIntentMapper';
+import { WasmTransaction, buildWasmTransaction } from './wasm';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
+  protected _parsedWasmTransaction?: WasmTransaction; // WASM-parsed transaction (testnet only)
   private _signatures: Signature[] = [];
   private _lamportsPerSignature: number;
   private _tokenAccountRentExemptAmount: string;
@@ -115,17 +119,137 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
+  /**
+   * Initialize the transaction builder fields from a WASM-parsed transaction.
+   * Used for testnet where both parsing and building use WASM.
+   *
+   * @param {WasmTransaction} wasmTx the WASM-parsed transaction
+   */
+  initBuilderFromWasm(wasmTx: WasmTransaction): void {
+    this._parsedWasmTransaction = wasmTx;
+    const txData = wasmTx.toJson();
+
+    // Extract sender from transfer instruction or use fee payer
+    const filteredTransferInstructionsData = txData.instructionsData.filter(
+      (data) => data.type === InstructionBuilderTypes.Transfer
+    );
+    let sender;
+    if (filteredTransferInstructionsData.length > 0) {
+      const transferInstructionsData = filteredTransferInstructionsData[0] as Transfer;
+      sender = transferInstructionsData.params.fromAddress;
+    } else {
+      sender = txData.feePayer;
+    }
+    this.sender(sender);
+    this.feePayer(txData.feePayer as string);
+    this.nonce(txData.nonce, txData.durableNonce);
+
+    // Use instructionsData directly from WASM parsing (no need for instructionParamsFactory)
+    this._instructionsData = txData.instructionsData;
+
+    // Parse priority fee instruction data
+    const filteredPriorityFeeInstructionsData = txData.instructionsData.filter(
+      (data) => data.type === InstructionBuilderTypes.SetPriorityFee
+    );
+
+    for (const instruction of this._instructionsData) {
+      if (instruction.type === InstructionBuilderTypes.Memo) {
+        const memoInstruction: Memo = instruction;
+        this.memo(memoInstruction.params.memo);
+      }
+
+      if (instruction.type === InstructionBuilderTypes.NonceAdvance) {
+        const advanceNonceInstruction: Nonce = instruction;
+        this.nonce(txData.nonce, advanceNonceInstruction.params);
+      }
+
+      // If prio fee instruction exists, set the priority fee variable
+      if (instruction.type === InstructionBuilderTypes.SetPriorityFee) {
+        const priorityFeeInstructionsData = filteredPriorityFeeInstructionsData[0] as SetPriorityFee;
+        this.setPriorityFee({ amount: Number(priorityFeeInstructionsData.params.fee) });
+      }
+    }
+  }
+
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    const tx = new Transaction(this._coinConfig);
     this.validateRawTransaction(rawTransaction);
+
+    // Use WASM parsing for testnet
+    const isTestnet = this._coinConfig.name === 'tsol';
+    if (isTestnet) {
+      const wasmTx = new WasmTransaction(this._coinConfig);
+      wasmTx.fromRawTransaction(rawTransaction);
+      this.initBuilderFromWasm(wasmTx);
+      return this.transaction;
+    }
+
+    // Legacy parsing for mainnet
+    const tx = new Transaction(this._coinConfig);
     tx.fromRawTransaction(rawTransaction);
     this.initBuilder(tx);
     return this.transaction;
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
+  protected async buildImplementation(): Promise<BaseTransaction> {
+    // Use WASM building for testnet when all instructions are supported
+    // WASM now supports both legacy and versioned (MessageV0) transactions
+    const isTestnet = this._coinConfig.name === 'tsol';
+    const instructionsSupported = areInstructionsSupportedByWasm(this._instructionsData);
+
+    if (isTestnet && instructionsSupported) {
+      return this.buildWithWasm();
+    }
+
+    // Legacy building for mainnet or unsupported instructions
+    return this.buildLegacy();
+  }
+
+  /**
+   * Build transaction using WASM (testnet only).
+   *
+   * Delegates to the clean WASM builder module.
+   * All WASM-specific logic lives in wasm/builder.ts
+   */
+  private async buildWithWasm(): Promise<WasmTransaction> {
+    assert(this._sender, new BuildTransactionError('sender is required before building'));
+    assert(this._recentBlockhash, new BuildTransactionError('recent blockhash is required before building'));
+
+    // Add memo to instructions if set
+    if (this._memo && !this._instructionsData.some((i) => i.type === InstructionBuilderTypes.Memo)) {
+      const memoData: Memo = {
+        type: InstructionBuilderTypes.Memo,
+        params: { memo: this._memo },
+      };
+      this._instructionsData.push(memoData);
+    }
+
+    // Get versioned transaction data (ALTs) if present
+    const versionedData = this._transaction.getVersionedTransactionData();
+
+    // Delegate to the clean WASM builder
+    return buildWasmTransaction({
+      coinConfig: this._coinConfig,
+      feePayer: this._feePayer ?? this._sender,
+      recentBlockhash: this._recentBlockhash,
+      durableNonceParams: this._nonceInfo?.params,
+      instructionsData: this._instructionsData,
+      transactionType: this.transactionType,
+      signers: this._signers,
+      signatures: this._signatures.map((s) => ({ publicKey: s.publicKey.pub, signature: s.signature })),
+      lamportsPerSignature: this._lamportsPerSignature,
+      tokenAccountRentExemptAmount: this._tokenAccountRentExemptAmount,
+      parsedTransaction: this._parsedWasmTransaction,
+      addressLookupTables: versionedData?.addressLookupTables,
+      staticAccountKeys: versionedData?.staticAccountKeys,
+    });
+  }
+
+  /**
+   * Build transaction using legacy @solana/web3.js (mainnet).
+   */
+  private async buildLegacy(): Promise<Transaction> {
     const builtTransaction = this.buildSolTransaction();
 
     if (builtTransaction instanceof VersionedTransaction) {

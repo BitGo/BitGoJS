@@ -1,4 +1,4 @@
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseTransaction, BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import assert from 'assert';
 import { InstructionBuilderTypes } from './constants';
@@ -6,6 +6,7 @@ import { AtaClose } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { validateAddress } from './utils';
+import { WasmTransaction } from './wasm';
 
 export class CloseAtaBuilder extends TransactionBuilder {
   protected _accountAddress: string;
@@ -42,6 +43,20 @@ export class CloseAtaBuilder extends TransactionBuilder {
   /** @inheritDoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
+    this.initFromInstructionsData();
+  }
+
+  /** @inheritDoc */
+  initBuilderFromWasm(wasmTx: WasmTransaction): void {
+    super.initBuilderFromWasm(wasmTx);
+    this.initFromInstructionsData();
+  }
+
+  /**
+   * Extract close ATA parameters from instructionsData.
+   * Called by both initBuilder and initBuilderFromWasm.
+   */
+  private initFromInstructionsData(): void {
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.CloseAssociatedTokenAccount) {
         const ataCloseInstruction: AtaClose = instruction;
@@ -53,7 +68,7 @@ export class CloseAtaBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
+  protected async buildImplementation(): Promise<BaseTransaction> {
     assert(this._accountAddress, 'Account Address must be set before building the transaction');
     assert(this._destinationAddress, 'Destination Address must be set before building the transaction');
     assert(this._authorityAddress, 'Authority Address must be set before building the transaction');

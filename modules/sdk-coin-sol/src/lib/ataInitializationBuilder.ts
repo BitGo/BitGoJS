@@ -1,5 +1,5 @@
 import { TransactionBuilder } from './transactionBuilder';
-import { BuildTransactionError, DuplicateMethodError, TransactionType } from '@bitgo/sdk-core';
+import { BaseTransaction, BuildTransactionError, DuplicateMethodError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction } from './transaction';
 import { AtaInit, TokenAssociateRecipient } from './iface';
@@ -10,6 +10,7 @@ import {
   validateMintAddress,
   validateOwnerAddress,
 } from './utils';
+import { WasmTransaction } from './wasm';
 import assert from 'assert';
 import * as _ from 'lodash';
 
@@ -35,6 +36,20 @@ export class AtaInitializationBuilder extends TransactionBuilder {
   /** @inheritDoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
+    this.initFromInstructionsData();
+  }
+
+  /** @inheritDoc */
+  initBuilderFromWasm(wasmTx: WasmTransaction): void {
+    super.initBuilderFromWasm(wasmTx);
+    this.initFromInstructionsData();
+  }
+
+  /**
+   * Extract ATA initialization parameters from instructionsData.
+   * Called by both initBuilder and initBuilderFromWasm.
+   */
+  private initFromInstructionsData(): void {
     this._tokenAssociateRecipients = [];
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.CreateAssociatedTokenAccount) {
@@ -132,7 +147,7 @@ export class AtaInitializationBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
+  protected async buildImplementation(): Promise<BaseTransaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
     if (this._tokenAssociateRecipients.length === 0) {
       assert(this._mint && this._tokenName, 'Mint must be set before building the transaction');

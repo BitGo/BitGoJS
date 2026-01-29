@@ -1,11 +1,18 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, SolInstruction, SolVersionedInstruction, TransactionType } from '@bitgo/sdk-core';
+import {
+  BaseTransaction,
+  BuildTransactionError,
+  SolInstruction,
+  SolVersionedInstruction,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { PublicKey, SystemProgram, SYSVAR_RECENT_BLOCKHASHES_PUBKEY } from '@solana/web3.js';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { InstructionBuilderTypes } from './constants';
 import { CustomInstruction, VersionedCustomInstruction, VersionedTransactionData } from './iface';
 import { isSolLegacyInstruction } from './utils';
+import { WasmTransaction } from './wasm';
 import assert from 'assert';
 
 /**
@@ -28,7 +35,20 @@ export class CustomInstructionBuilder extends TransactionBuilder {
    */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
+    this.initFromInstructionsData();
+  }
 
+  /** @inheritDoc */
+  initBuilderFromWasm(wasmTx: WasmTransaction): void {
+    super.initBuilderFromWasm(wasmTx);
+    this.initFromInstructionsData();
+  }
+
+  /**
+   * Extract custom instruction parameters from instructionsData.
+   * Called by both initBuilder and initBuilderFromWasm.
+   */
+  private initFromInstructionsData(): void {
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.CustomInstruction) {
         const customInstruction = instruction as CustomInstruction;
@@ -317,7 +337,7 @@ export class CustomInstructionBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
+  protected async buildImplementation(): Promise<BaseTransaction> {
     assert(this._customInstructions.length > 0, 'At least one custom instruction must be specified');
 
     // Set the instructions data to our custom instructions

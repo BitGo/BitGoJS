@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseTransaction, BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { InstructionBuilderTypes } from './constants';
@@ -7,6 +7,7 @@ import { InstructionBuilderTypes } from './constants';
 import assert from 'assert';
 import { StakingDelegate } from './iface';
 import { validateAddress } from './utils';
+import { WasmTransaction } from './wasm';
 
 export class StakingDelegateBuilder extends TransactionBuilder {
   protected _stakingAddress: string;
@@ -24,6 +25,20 @@ export class StakingDelegateBuilder extends TransactionBuilder {
   /** @inheritdoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
+    this.initFromInstructionsData();
+  }
+
+  /** @inheritdoc */
+  initBuilderFromWasm(wasmTx: WasmTransaction): void {
+    super.initBuilderFromWasm(wasmTx);
+    this.initFromInstructionsData();
+  }
+
+  /**
+   * Extract staking delegate parameters from instructionsData.
+   * Called by both initBuilder and initBuilderFromWasm.
+   */
+  private initFromInstructionsData(): void {
     const stakingAddresses: string[] = [];
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.StakingDelegate) {
@@ -85,7 +100,7 @@ export class StakingDelegateBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
+  protected async buildImplementation(): Promise<BaseTransaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
     assert(this._validator, 'Validator must be set before building the transaction');
 

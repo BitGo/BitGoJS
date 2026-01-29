@@ -9,6 +9,7 @@ import {
   Entry,
   InvalidTransactionError,
   ParseTransactionError,
+  SigningError,
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -16,12 +17,17 @@ import {
   parseTransaction,
   Transaction as WasmSolanaTransaction,
   ParsedTransaction as WasmParsedTransaction,
+  // Program ID exports (eliminates hardcoded strings)
+  ataProgramId,
+  tokenProgramId,
 } from '@bitgo/wasm-solana';
+import * as nacl from 'tweetnacl';
 import base58 from 'bs58';
 import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { combineWasmInstructionsFromBytes } from '../wasmInstructionCombiner';
 import { InstructionBuilderTypes, UNAVAILABLE_TEXT } from '../constants';
-import { DurableNonceParams, InstructionParams, TxData, TransactionExplanation } from '../iface';
+import { DurableNonceParams, InstructionParams, StakingDeactivate, TxData, TransactionExplanation } from '../iface';
+import { KeyPair } from '../keyPair';
 
 /**
  * Solana transaction using WASM for all parsing operations.
@@ -48,10 +54,15 @@ export class WasmTransaction extends BaseTransaction {
   // Core Properties
   // =============================================================================
 
+  /** Transaction type */
+  get type(): TransactionType {
+    return this._type;
+  }
+
   /** Transaction ID (first signature, base58 encoded) */
   get id(): string {
     if (!this._wasmTransaction) return UNAVAILABLE_TEXT;
-    const signatures = this._wasmTransaction.signatures();
+    const signatures = this._wasmTransaction.signatures;
     if (signatures.length > 0) {
       const firstSig = signatures[0];
       // Check if signature is not a placeholder (all zeros)
@@ -73,10 +84,33 @@ export class WasmTransaction extends BaseTransaction {
   /** List of valid signatures (non-placeholder) */
   get signature(): string[] {
     if (!this._wasmTransaction) return [];
-    return this._wasmTransaction
-      .signatures()
-      .filter((sig) => sig.some((b) => b !== 0))
-      .map((sig) => base58.encode(sig));
+    return this._wasmTransaction.signatures.filter((sig) => sig.some((b) => b !== 0)).map((sig) => base58.encode(sig));
+  }
+
+  /**
+   * Get all signatures paired with their signer public keys.
+   * Returns only non-placeholder signatures.
+   */
+  getSignaturesWithPublicKeys(): Array<{ publicKey: string; signature: Uint8Array }> {
+    if (!this._wasmTransaction || !this._parsedTransaction) return [];
+
+    const rawSignatures = this._wasmTransaction.signatures;
+    const accountKeys = this._parsedTransaction.accountKeys || [];
+    const result: Array<{ publicKey: string; signature: Uint8Array }> = [];
+
+    // First N account keys are signers (where N = number of signatures)
+    for (let i = 0; i < rawSignatures.length && i < accountKeys.length; i++) {
+      const sig = rawSignatures[i];
+      // Skip placeholder signatures (all zeros)
+      if (sig.some((b) => b !== 0)) {
+        result.push({
+          publicKey: accountKeys[i],
+          signature: sig,
+        });
+      }
+    }
+
+    return result;
   }
 
   get lamportsPerSignature(): number | undefined {
@@ -100,6 +134,18 @@ export class WasmTransaction extends BaseTransaction {
     return this._instructionsData;
   }
 
+  /**
+   * Get the underlying WASM transaction.
+   * Provides access to the wasm-solana Transaction for low-level operations.
+   * Compatible with code expecting .solTransaction.serializeMessage() via duck typing.
+   */
+  get solTransaction(): WasmSolanaTransaction {
+    if (!this._wasmTransaction) {
+      throw new InvalidTransactionError('Transaction not initialized');
+    }
+    return this._wasmTransaction;
+  }
+
   // =============================================================================
   // Parsing
   // =============================================================================
@@ -118,7 +164,7 @@ export class WasmTransaction extends BaseTransaction {
       this._parsedTransaction = parseTransaction(txBytes);
 
       // Get transaction ID if signed
-      const signatures = this._wasmTransaction.signatures();
+      const signatures = this._wasmTransaction.signatures;
       if (signatures.length > 0 && signatures[0].some((b) => b !== 0)) {
         this._id = base58.encode(signatures[0]);
       }
@@ -133,6 +179,176 @@ export class WasmTransaction extends BaseTransaction {
     } catch (e) {
       throw new ParseTransactionError(`Failed to parse transaction: ${e}`);
     }
+  }
+
+  /**
+   * Initialize from WASM-built transaction bytes.
+   * Used when building transactions via WASM (not parsing existing ones).
+   *
+   * @param bytes - Transaction bytes from WASM builder
+   * @param transactionType - The transaction type
+   * @param instructionsData - The instruction data used to build this transaction
+   */
+  fromBuiltBytes(bytes: Uint8Array, transactionType: TransactionType, instructionsData: InstructionParams[]): void {
+    try {
+      this._wasmTransaction = WasmSolanaTransaction.fromBytes(bytes);
+      this._parsedTransaction = parseTransaction(bytes);
+      this._type = transactionType;
+
+      // Normalize instructions to match legacy parser behavior:
+      // CreateAssociatedTokenAccount should have programId = ATA Program ID
+      // TokenTransfer should have programId = Token Program ID
+      const ATA_PROGRAM_ID = ataProgramId();
+      const TOKEN_PROGRAM_ID = tokenProgramId();
+      this._instructionsData = instructionsData.map((instr) => {
+        if (instr.type === InstructionBuilderTypes.CreateAssociatedTokenAccount) {
+          return {
+            ...instr,
+            params: {
+              ...instr.params,
+              programId: ATA_PROGRAM_ID,
+            },
+          };
+        }
+        if (instr.type === InstructionBuilderTypes.TokenTransfer) {
+          return {
+            ...instr,
+            params: {
+              ...instr.params,
+              programId: TOKEN_PROGRAM_ID,
+            },
+          };
+        }
+        return instr;
+      });
+
+      // Load inputs and outputs from instructions
+      this.loadInputsAndOutputs();
+    } catch (e) {
+      throw new ParseTransactionError(`Failed to initialize from bytes: ${e}`);
+    }
+  }
+
+  // =============================================================================
+  // Signing
+  // =============================================================================
+
+  /**
+   * Check if a key can sign this transaction.
+   * Matches legacy Transaction behavior - always returns true.
+   */
+  canSign(): boolean {
+    return true;
+  }
+
+  /**
+   * Sign the transaction with one or more keypairs.
+   *
+   * @param keyPair - Single keypair or array of keypairs to sign with
+   */
+  async sign(keyPair: KeyPair[] | KeyPair): Promise<void> {
+    if (!this._wasmTransaction) {
+      throw new SigningError('Transaction not initialized');
+    }
+
+    const keyPairs = keyPair instanceof Array ? keyPair : [keyPair];
+    const messageToSign = this._wasmTransaction.signablePayload();
+
+    for (const kp of keyPairs) {
+      const keys = kp.getKeys(true);
+      if (!keys.prv) {
+        throw new SigningError('Missing private key');
+      }
+      const secretKey = keys.prv as Uint8Array;
+      const signature = nacl.sign.detached(messageToSign, secretKey);
+      this._wasmTransaction.addSignature(keys.pub, signature);
+    }
+  }
+
+  /**
+   * Add a pre-computed signature to the transaction.
+   *
+   * @param publicKey - The public key as base58 string
+   * @param signature - The 64-byte signature
+   */
+  addSignature(publicKey: string, signature: Uint8Array): void {
+    if (!this._wasmTransaction) {
+      throw new SigningError('Transaction not initialized');
+    }
+    this._wasmTransaction.addSignature(publicKey, signature);
+  }
+
+  /**
+   * COMPATIBILITY SHIM - Remove when legacy code is deleted.
+   *
+   * Filter out NonceAdvance instruction from instructionsData.
+   * Used by the builder's round-trip path to match the behavior of buildUnsignedWithWasm,
+   * which passes durableNonceParams separately instead of including NonceAdvance in instructionsData.
+   *
+   * Legacy builder: NonceAdvance stored in tx.nonceInfo, not in _instructionsData
+   * WASM parser: Includes NonceAdvance in instructionsData (the correct behavior)
+   *
+   * This filter exists purely for backwards compatibility with tests expecting legacy format.
+   *
+   * TODO(BTC-2955): Remove this method when legacy Transaction class is deleted.
+   * The WASM behavior (including NonceAdvance in instructionsData) is actually correct.
+   * Steps to remove:
+   * 1. Delete legacy transaction.ts
+   * 2. Update tests to expect NonceAdvance in instructionsData
+   * 3. Delete this method and all calls to it
+   */
+  filterNonceAdvanceFromInstructions(): void {
+    this._instructionsData = this._instructionsData.filter(
+      (instr) => instr.type !== InstructionBuilderTypes.NonceAdvance
+    );
+  }
+
+  /**
+   * COMPATIBILITY SHIM - Remove when legacy code is deleted.
+   *
+   * Filter out the rent-funding Transfer for partial staking deactivate.
+   * Legacy Transaction.toJson() re-parses and combines this Transfer into the StakingDeactivate,
+   * so we filter it out to match that behavior.
+   *
+   * The rent-funding Transfer is identified by:
+   * - type: Transfer
+   * - amount: STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT (2282880)
+   * - followed by a StakingDeactivate with matching unstakingAddress
+   *
+   * This filter exists purely for backwards compatibility with tests expecting legacy format.
+   * The WASM output (with the Transfer visible) is actually more accurate.
+   *
+   * TODO(BTC-2955): Remove this method when legacy Transaction class is deleted.
+   * The WASM behavior (showing the rent Transfer) is actually more accurate/transparent.
+   * Steps to remove:
+   * 1. Delete legacy transaction.ts
+   * 2. Update tests to expect the rent-funding Transfer in partial deactivate
+   * 3. Delete this method and all calls to it
+   */
+  filterRentFundingTransferForPartialDeactivate(): void {
+    const STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT = '2282880';
+
+    // Find StakingDeactivate instruction with unstakingAddress (partial deactivate)
+    const deactivateInstr = this._instructionsData.find(
+      (instr): instr is StakingDeactivate =>
+        instr.type === InstructionBuilderTypes.StakingDeactivate && instr.params.unstakingAddress !== undefined
+    );
+
+    if (!deactivateInstr) {
+      return; // Not a partial deactivate
+    }
+
+    // Filter out Transfer instructions that fund the unstaking address
+    this._instructionsData = this._instructionsData.filter((instr) => {
+      if (instr.type !== InstructionBuilderTypes.Transfer) {
+        return true; // Keep non-Transfer instructions
+      }
+      // Filter out the rent-funding Transfer
+      const isRentFundingTransfer =
+        instr.params.amount === STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT &&
+        instr.params.toAddress === deactivateInstr.params.unstakingAddress;
+      return !isRentFundingTransfer;
+    });
   }
 
   // =============================================================================
@@ -169,18 +385,6 @@ export class WasmTransaction extends BaseTransaction {
   }
 
   // =============================================================================
-  // Signing
-  // =============================================================================
-
-  /**
-   * Check if a key can sign this transaction.
-   * Matches legacy Transaction behavior - always returns true.
-   */
-  canSign(): boolean {
-    return true;
-  }
-
-  // =============================================================================
   // Explanation
   // =============================================================================
 
@@ -201,11 +405,13 @@ export class WasmTransaction extends BaseTransaction {
       'changeAmount',
       'outputs',
       'changeOutputs',
+      'tokenEnablements',
       'fee',
       'memo',
     ];
 
-    const outputs: { address: string; amount: string; memo?: string }[] = [];
+    const outputs: { address: string; amount: string; memo?: string; tokenName?: string }[] = [];
+    const tokenEnablements: { address: string; tokenName: string; tokenAddress: string }[] = [];
     let outputAmount = '0';
     let memo: string | undefined;
 
@@ -219,11 +425,12 @@ export class WasmTransaction extends BaseTransaction {
           outputAmount = (BigInt(outputAmount) + BigInt(instr.params.amount)).toString();
           break;
         case InstructionBuilderTypes.TokenTransfer:
+          // Token transfers don't contribute to outputAmount (only SOL transfers do)
           outputs.push({
             address: instr.params.toAddress,
             amount: instr.params.amount,
+            tokenName: instr.params.tokenName,
           });
-          outputAmount = (BigInt(outputAmount) + BigInt(instr.params.amount)).toString();
           break;
         case InstructionBuilderTypes.StakingActivate:
           outputs.push({
@@ -239,8 +446,24 @@ export class WasmTransaction extends BaseTransaction {
           });
           outputAmount = (BigInt(outputAmount) + BigInt(instr.params.amount)).toString();
           break;
+        case InstructionBuilderTypes.CreateNonceAccount:
+          // WalletInit / Nonce account creation
+          outputs.push({
+            address: instr.params.nonceAddress,
+            amount: instr.params.amount,
+          });
+          outputAmount = (BigInt(outputAmount) + BigInt(instr.params.amount)).toString();
+          break;
         case InstructionBuilderTypes.Memo:
           memo = instr.params.memo;
+          break;
+        case InstructionBuilderTypes.CreateAssociatedTokenAccount:
+          // Process token enablement instructions and collect them in the tokenEnablements array
+          tokenEnablements.push({
+            address: instr.params.ataAddress,
+            tokenName: instr.params.tokenName,
+            tokenAddress: instr.params.mintAddress,
+          });
           break;
       }
     }
@@ -251,18 +474,39 @@ export class WasmTransaction extends BaseTransaction {
       durableNonce = this._parsedTransaction.durableNonce;
     }
 
+    // Calculate fee: lamportsPerSignature * numberOfRequiredSignatures + rentFees (same as legacy Transaction)
+    // The rent fees are: tokenAccountRentExemptAmount * numberOfATACreationInstructions
+    const numSignatures = this._parsedTransaction.numSignatures;
+    const numberOfATACreationInstructions = this._instructionsData.filter(
+      (i) => i.type === InstructionBuilderTypes.CreateAssociatedTokenAccount
+    ).length;
+    const signatureFees =
+      this._lamportsPerSignature !== undefined ? BigInt(this._lamportsPerSignature) * BigInt(numSignatures) : BigInt(0);
+    const rentFees =
+      this._tokenAccountRentExemptAmount !== undefined
+        ? BigInt(this._tokenAccountRentExemptAmount) * BigInt(numberOfATACreationInstructions)
+        : BigInt(0);
+    const feeAmount =
+      this._lamportsPerSignature !== undefined || this._tokenAccountRentExemptAmount !== undefined
+        ? (signatureFees + rentFees).toString()
+        : UNAVAILABLE_TEXT;
+
     return {
       displayOrder,
-      id: this.id !== UNAVAILABLE_TEXT ? this.id : 'UNSIGNED',
-      type: this.type?.toString() || 'Unknown',
+      id: this.id,
+      type: TransactionType[this._type]?.toString() || 'Unknown',
       blockhash: this._parsedTransaction.nonce,
       durableNonce,
       outputs,
       outputAmount,
       changeOutputs: [],
       changeAmount: '0',
-      fee: { fee: this._lamportsPerSignature?.toString() || 'UNKNOWN' },
+      fee: {
+        fee: feeAmount,
+        feeRate: this._lamportsPerSignature,
+      },
       memo,
+      tokenEnablements,
     };
   }
 

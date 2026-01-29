@@ -1,10 +1,11 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseTransaction, BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { isValidAmount, validateAddress } from './utils';
 import { InstructionBuilderTypes } from './constants';
 import { Transfer } from './iface';
+import { WasmTransaction } from './wasm';
 
 import assert from 'assert';
 
@@ -26,7 +27,20 @@ export class TransferBuilder extends TransactionBuilder {
 
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
+    this.initFromInstructionsData();
+  }
 
+  /** @inheritdoc */
+  initBuilderFromWasm(wasmTx: WasmTransaction): void {
+    super.initBuilderFromWasm(wasmTx);
+    this.initFromInstructionsData();
+  }
+
+  /**
+   * Extract transfer parameters from instructionsData.
+   * Called by both initBuilder and initBuilderFromWasm.
+   */
+  private initFromInstructionsData(): void {
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.Transfer) {
         const transferInstruction: Transfer = instruction;
@@ -62,7 +76,7 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
+  protected async buildImplementation(): Promise<BaseTransaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
 
     const transferData = this._sendParams.map((sendParams: SendParams): Transfer => {
