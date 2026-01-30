@@ -3558,6 +3558,7 @@ export enum UnderlyingAsset {
   AED = 'aed',
   EUR = 'eur',
   GBP = 'gbp',
+  INR = 'inr',
   SGD = 'sgd',
   USD = 'usd',
 }

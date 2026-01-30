@@ -54,6 +54,7 @@ export const ofcCoins = [
   ofc('837f0cab-cad1-4510-a8e4-f2c60e1a8760', 'ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('798f2a7c-23fd-4e16-9fe5-6bf47ca438a0', 'ofceur', 'Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   ofc('f37bbb72-adfe-4d06-90dc-afd0aa34aadd', 'ofcgbp', 'Pound Sterling', 2, UnderlyingAsset.GBP, CoinKind.FIAT),
+  ofc('5d6ec3ce-b06f-4233-ad8c-27860e2d3cf9', 'ofcinr', 'Indian Rupee', 2, UnderlyingAsset.INR, CoinKind.FIAT),
   ofc('60778b32-3497-4e45-895a-3f0bd3a2f475', 'ofcsgd', 'Singapore Dollar', 2, UnderlyingAsset.SGD, CoinKind.FIAT),
   ofc(
     'fe742061-8838-4b32-ab64-d328ca587feb',
@@ -517,6 +518,7 @@ export const ofcCoins = [
     UnderlyingAsset.GBP,
     CoinKind.FIAT
   ),
+  tofc('874e72f2-dab0-4d99-825c-f94c94cece65', 'ofctinr', 'Test Indian Rupee', 2, UnderlyingAsset.INR, CoinKind.FIAT),
   tofc('e5e9dedb-4d72-4a44-a84c-32f46d275bdc', 'ofctcspr', 'Test Casper', 9, UnderlyingAsset.CSPR, CoinKind.CRYPTO),
   tofc('b84e3f27-e521-4093-9616-fc92ba352cd9', 'ofctnear', 'Test Near', 24, UnderlyingAsset.NEAR, CoinKind.CRYPTO),
   tofc('457d1c4e-5bf7-442a-90c9-dfd590f30925', 'ofctbtc', 'Test Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
