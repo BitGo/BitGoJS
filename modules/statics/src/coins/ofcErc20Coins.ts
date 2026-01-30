@@ -3383,6 +3383,20 @@ export const ofcErc20Coins = [
     underlyingAssetForSymbol('eth:ausd')
   ),
   ofcerc20(
+    'fd4cfe16-5228-4d92-9d87-5b8eaa1f89eb',
+    'ofceth:ags',
+    'Silver Standard',
+    4,
+    underlyingAssetForSymbol('eth:ags')
+  ),
+  ofcerc20(
+    '54eff6b7-6db0-4ad3-9757-e232efc78d89',
+    'ofceth:aus',
+    'Gold Standard',
+    4,
+    underlyingAssetForSymbol('eth:aus')
+  ),
+  ofcerc20(
     'a1e3c5d2-7b6e-4c9b-9f3e-4d2a4e5b6c8d',
     'ofceth:gaia',
     'Gaia Token',
@@ -3658,7 +3672,19 @@ export const ofcErc20Coins = [
   ofcerc20('a5357ba2-5a2a-4d73-8f65-e01b9158ea9c', 'ofceth:resolv', 'Resolv', 18, UnderlyingAsset['eth:resolv']),
   ofcerc20('5485e380-c3df-49ab-98f2-9c4d3f37f2fb', 'ofceth:spec', 'Spectral', 18, UnderlyingAsset['eth:spec']),
   ofcerc20('8e52ca73-1860-43e5-98d6-49c5f34b8da2', 'ofceth:prompt', 'Wayfinder', 18, UnderlyingAsset['eth:prompt']),
+  ofcerc20('44a386ad-a9d4-4cb5-8f30-72128e618286', 'ofceth:reya', 'Reya', 18, underlyingAssetForSymbol('eth:reya')),
+  ofcerc20('5485e380-c3df-49ab-98f2-9c4d3f37f2fb', 'ofceth:spec', 'Spectral', 18, UnderlyingAsset['eth:spec']),
   ofcerc20('0edacb3a-b48a-4a6e-ae28-69f8b7a84bfa', 'ofceth:yb', 'YieldBasis', 18, UnderlyingAsset['eth:yb']),
+  ofcerc20(
+    'ff16374d-c3c8-4f1f-9cd2-5dab15c1f895',
+    'ofceth:usdp',
+    'USDP Stablecoin',
+    18,
+    underlyingAssetForSymbol('eth:usdp'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcerc20('dd95c7b9-2be8-4471-920d-40e1fd583bf3', 'ofceth:grtx', 'GreatX', 6, underlyingAssetForSymbol('eth:grtx')),
   // New Base OFC tokens
   ofcerc20(
     'b096690d-92fd-4f02-83d6-e26a1ff393f3',
