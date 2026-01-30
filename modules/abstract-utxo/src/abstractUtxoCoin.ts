@@ -93,6 +93,7 @@ import { getPolicyForEnv } from './descriptor/validatePolicy';
 import { signTransaction } from './transaction/signTransaction';
 import { isUtxoWalletData, UtxoWallet } from './wallet';
 import { isDescriptorWalletData } from './descriptor/descriptorWallet';
+import type { Unspent } from './unspent';
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
@@ -141,8 +142,6 @@ type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
 };
 
 const { isChainCode, scriptTypeForChain, outputScripts } = bitgo;
-
-type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 
 /**
  * Convert ValidationError to TxIntentMismatchRecipientError with structured data

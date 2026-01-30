@@ -15,17 +15,18 @@ import { UtxoCoinName } from '../../names';
 import { ParsedTransaction } from '../../transaction/types';
 import type { TransactionExplanation } from '../../transaction/fixedScript/explainTransaction';
 import type { CrossChainRecoverySigned, CrossChainRecoveryUnsigned } from '../../recovery/crossChainRecovery';
+import type { Unspent } from '../../unspent';
 
-type UnspentJSON = bitgo.Unspent<number> & { valueString: string };
+type UnspentJSON = Unspent<number> & { valueString: string };
 type TransactionInfoJSON = TransactionInfo<number> & { unspents: UnspentJSON[] };
 type TransactionPrebuildJSON = TransactionPrebuild<number> & { txInfo: TransactionInfoJSON };
 
 function parseUnspents<TNumber extends number | bigint>(
-  unspents: UnspentJSON[] | bitgo.Unspent<TNumber>[]
-): bitgo.Unspent<bigint>[] {
-  return unspents.map((unspent: bitgo.Unspent<TNumber> | UnspentJSON): bitgo.Unspent<bigint> => {
+  unspents: UnspentJSON[] | Unspent<TNumber>[]
+): Unspent<bigint>[] {
+  return unspents.map((unspent: Unspent<TNumber> | UnspentJSON): Unspent<bigint> => {
     if (typeof unspent.value === 'bigint') {
-      return unspent as bitgo.Unspent<bigint>;
+      return unspent as Unspent<bigint>;
     }
     if ('valueString' in unspent) {
       return { ...unspent, value: BigInt(unspent.valueString) };

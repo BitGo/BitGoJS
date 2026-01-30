@@ -19,6 +19,7 @@ import { generateAddressWithChainAndIndex } from '../address';
 import { encodeTransaction } from '../transaction/decode';
 import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection';
 import { isTestnetCoin, UtxoCoinName } from '../names';
+import type { WalletUnspent } from '../unspent';
 
 import { forCoin, RecoveryProvider } from './RecoveryProvider';
 import { MempoolApi } from './mempoolApi';
@@ -28,8 +29,7 @@ import { createBackupKeyRecoveryPsbt, getRecoveryAmount, PsbtBackend, toPsbtToUt
 type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 type ChainCode = utxolib.bitgo.ChainCode;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
-type WalletUnspent<TNumber extends number | bigint> = utxolib.bitgo.WalletUnspent<TNumber>;
-type WalletUnspentJSON = utxolib.bitgo.WalletUnspent & {
+type WalletUnspentJSON = WalletUnspent & {
   valueString: string;
 };
 

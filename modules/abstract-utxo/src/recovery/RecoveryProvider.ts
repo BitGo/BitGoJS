@@ -1,9 +1,8 @@
 import { BlockchairApi, AddressInfo, TransactionIO } from '@bitgo/blockapis';
-import { bitgo } from '@bitgo/utxo-lib';
+
+import type { Unspent } from '../unspent';
 
 import { ApiNotImplementedError } from './baseApi';
-
-type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 
 /**
  * An account with bear minimum information required for recoveries.

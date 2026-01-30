@@ -7,6 +7,7 @@ import { isTriple, Triple } from '@bitgo/sdk-core';
 import debugLib from 'debug';
 
 import { UtxoCoinName } from '../../names';
+import type { Unspent, WalletUnspent } from '../../unspent';
 
 import { getReplayProtectionAddresses } from './replayProtection';
 import { InputSigningError, TransactionSigningError } from './SigningError';
@@ -14,8 +15,6 @@ import { InputSigningError, TransactionSigningError } from './SigningError';
 const debug = debugLib('bitgo:v2:utxo');
 
 const { isWalletUnspent, signInputWithUnspent, toOutput } = utxolib.bitgo;
-
-type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
 
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 
@@ -72,7 +71,7 @@ export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
         return InputSigningError.expectedWalletUnspent<TNumber>(inputIndex, null, unspent);
       }
       try {
-        signInputWithUnspent<TNumber>(txBuilder, inputIndex, unspent, walletSigner);
+        signInputWithUnspent<TNumber>(txBuilder, inputIndex, unspent as WalletUnspent<TNumber>, walletSigner);
         debug('Successfully signed input %d of %d', inputIndex + 1, unspents.length);
       } catch (e) {
         return new InputSigningError<TNumber>(inputIndex, null, unspent, e);
@@ -96,8 +95,10 @@ export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
       if (!isWalletUnspent<TNumber>(unspent)) {
         return InputSigningError.expectedWalletUnspent<TNumber>(inputIndex, null, unspent);
       }
+      const walletUnspent = unspent as WalletUnspent<TNumber>;
       try {
-        const publicKey = walletSigner.deriveForChainAndIndex(unspent.chain, unspent.index).signer.publicKey;
+        const publicKey = walletSigner.deriveForChainAndIndex(walletUnspent.chain, walletUnspent.index).signer
+          .publicKey;
         if (
           !utxolib.bitgo.verifySignatureWithPublicKey<TNumber>(signedTransaction, inputIndex, prevOutputs, publicKey)
         ) {
@@ -124,7 +125,7 @@ export function signLegacyTransaction<TNumber extends number | bigint>(
   params: {
     isLastSignature: boolean;
     signingStep: 'signerNonce' | 'cosignerNonce' | 'signerSignature' | undefined;
-    txInfo: { unspents?: utxolib.bitgo.Unspent<TNumber>[] } | undefined;
+    txInfo: { unspents?: Unspent<TNumber>[] } | undefined;
     pubs: string[] | undefined;
     cosignerPub: string | undefined;
   }

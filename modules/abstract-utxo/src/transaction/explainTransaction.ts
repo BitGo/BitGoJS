@@ -6,6 +6,7 @@ import { getDescriptorMapFromWallet, isDescriptorWallet } from '../descriptor';
 import { toBip32Triple } from '../keychains';
 import { getPolicyForEnv } from '../descriptor/validatePolicy';
 import { UtxoCoinName } from '../names';
+import type { Unspent } from '../unspent';
 
 import { getReplayProtectionPubkeys } from './fixedScript/replayProtection';
 import type {
@@ -25,7 +26,7 @@ export function explainTx<TNumber extends number | bigint>(
   params: {
     wallet?: IWallet;
     pubs?: string[];
-    txInfo?: { unspents?: utxolib.bitgo.Unspent<TNumber>[] };
+    txInfo?: { unspents?: Unspent<TNumber>[] };
     changeInfo?: fixedScript.ChangeAddressInfo[];
   },
   coinName: UtxoCoinName

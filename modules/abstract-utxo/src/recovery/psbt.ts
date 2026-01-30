@@ -3,9 +3,9 @@ import { Dimensions } from '@bitgo/unspents';
 import { CoinName, fixedScriptWallet, utxolibCompat, address as wasmAddress } from '@bitgo/wasm-utxo';
 
 import { getNetworkFromCoinName, UtxoCoinName } from '../names';
+import type { WalletUnspent } from '../unspent';
 
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
-type WalletUnspent<TNumber extends number | bigint> = utxolib.bitgo.WalletUnspent<TNumber>;
 
 const { chainCodesP2tr, chainCodesP2trMusig2 } = utxolib.bitgo;
 

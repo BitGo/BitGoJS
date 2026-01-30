@@ -6,8 +6,7 @@ import { address as wasmAddress, AddressFormat } from '@bitgo/wasm-utxo';
 import { AbstractUtxoCoin, RecoveryProvider } from '../../../src';
 import { Bch } from '../../../src/impl/bch';
 import { Bsv } from '../../../src/impl/bsv';
-
-type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
+import type { Unspent, UnspentWithPrevTx } from '../../../src/unspent';
 export class MockRecoveryProvider implements RecoveryProvider {
   public unspents: Unspent<bigint>[];
   private prevTxCache: Record<string, string> = {};
@@ -16,7 +15,7 @@ export class MockRecoveryProvider implements RecoveryProvider {
     this.unspents.forEach((u) => {
       if (utxolib.bitgo.isUnspentWithPrevTx(u)) {
         const { txid } = bitgo.parseOutputId(u.id);
-        this.prevTxCache[txid] = u.prevTx.toString('hex');
+        this.prevTxCache[txid] = (u as UnspentWithPrevTx<bigint>).prevTx.toString('hex');
       }
     });
   }

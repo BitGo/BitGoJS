@@ -11,6 +11,7 @@ import { getNetworkFromCoinName, isTestnetCoin, UtxoCoinName } from '../names';
 import { encodeTransaction } from '../transaction/decode';
 import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection';
 import { toTNumber } from '../tnumber';
+import type { Unspent, WalletUnspent } from '../unspent';
 
 import {
   PsbtBackend,
@@ -22,8 +23,6 @@ import {
 
 const { unspentSum } = utxolib.bitgo;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
-type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
-type WalletUnspent<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspent<TNumber>;
 
 export interface BuildRecoveryTransactionOptions {
   wallet: string;

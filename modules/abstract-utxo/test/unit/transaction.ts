@@ -16,6 +16,7 @@ import {
 
 import { AbstractUtxoCoin, getReplayProtectionAddresses, generateAddress, getReplayProtectionPubkeys } from '../../src';
 import { SdkBackend } from '../../src/transaction/types';
+import type { Unspent, WalletUnspent } from '../../src/unspent';
 
 import {
   utxoCoins,
@@ -34,9 +35,6 @@ import {
   getWalletKeys,
   defaultBitGo,
 } from './util';
-
-type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
-type WalletUnspent<TNumber extends number | bigint = number> = bitgo.WalletUnspent<TNumber>;
 
 function getScriptTypes2Of3() {
   return [...bitgo.outputScripts.scriptTypes2Of3, 'taprootKeyPathSpend'] as const;
@@ -486,7 +484,8 @@ function run<TNumber extends number | bigint = number>(
           assert.ok(utxolib.bitgo.getPsbtInputScriptType(input), 'p2shP2pk');
           return;
         }
-        const pubkeys = walletKeys.deriveForChainAndIndex(unspent.chain, unspent.index).publicKeys;
+        const walletUnspent = unspent as WalletUnspent<bigint>;
+        const pubkeys = walletKeys.deriveForChainAndIndex(walletUnspent.chain, walletUnspent.index).publicKeys;
         pubkeys.forEach((pk, pkIndex) => {
           psbt.validateSignaturesOfInputCommon(index, pk).should.eql(signedBy.includes(walletKeys.triple[pkIndex]));
         });
@@ -546,7 +545,7 @@ function run<TNumber extends number | bigint = number>(
     async function testExplainTx(
       stageName: string,
       txHex: string,
-      unspents: utxolib.bitgo.Unspent<TNumber>[],
+      unspents: Unspent<TNumber>[],
       pubs: Triple<string> | undefined
     ): Promise<void> {
       const explanation = await coin.explainTransaction<TNumber>({

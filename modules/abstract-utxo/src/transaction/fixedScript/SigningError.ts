@@ -1,8 +1,6 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import type { Unspent } from '../../unspent';
 
 import type { PsbtParsedScriptType } from './signPsbtUtxolib';
-
-type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
 
 export class InputSigningError<TNumber extends number | bigint = number> extends Error {
   static expectedWalletUnspent<TNumber extends number | bigint>(
