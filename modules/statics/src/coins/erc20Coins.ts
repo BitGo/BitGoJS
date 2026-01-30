@@ -4445,11 +4445,11 @@ export const erc20Coins = [
   ),
   erc20(
     '987fa929-39ff-40a2-9249-d7b3be9dc76d',
-    'okb',
-    'OKB',
+    'eth:okb',
+    'OKB ETH Token',
     18,
     '0x75231f58b43240c9718dd58b4967c5114342a86c',
-    UnderlyingAsset.OKB
+    UnderlyingAsset['eth:okb']
   ),
   erc20(
     '68a5e76f-cb79-4016-a35e-f88b5a391d95',
@@ -10945,15 +10945,6 @@ export const erc20Coins = [
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
-    '80f6ed83-3024-45c2-8d81-6debd2bf9f12',
-    'eth:usdm1',
-    'USDM1',
-    18,
-    '0xab3cfc7cf0720b75c41b4db078b4ddb338f562e7',
-    UnderlyingAsset['eth:usdm1'],
-    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
-  ),
-  erc20(
     '4400af90-30d8-43fb-98b6-ca6791c94aa2',
     'eth:sofid',
     'SoFiUSD',
@@ -12813,18 +12804,6 @@ export const erc20Coins = [
     Networks.test.hoodi
   ),
   terc20(
-    'ec5345e2-5dec-44d7-8dc7-bc46fb4b4f1d',
-    'hteth:grtx',
-    'GreatX Token',
-    6,
-    '0xa1b562a390915605a427f8f46c21917a4e1f1e0a',
-    UnderlyingAsset['hteth:grtx'],
-    undefined,
-    undefined,
-    undefined,
-    Networks.test.hoodi
-  ),
-  terc20(
     'c316d8ef-20d6-40b7-b0c1-e3cc278d0c17',
     'hterc2dp',
     'TERC2DP',
@@ -14271,5 +14250,46 @@ export const erc20Coins = [
     18,
     '0x01791f726b4103694969820be083196cc7c045ff',
     UnderlyingAsset['eth:yb']
+  ),
+  erc20(
+    '39a47119-f542-42ed-a349-1f3ebe23b0f6',
+    'eth:ags',
+    'Silver Standard',
+    4,
+    '0x843c9af34f698618f90c898e3967278a260c8d9a', // https://etherscan.io/address/0x843c9af34f698618f90c898e3967278a260c8d9a
+    UnderlyingAsset['eth:ags']
+  ),
+  erc20(
+    '7cbb994b-d26f-445f-aed8-7d7e179b94ee',
+    'eth:aus',
+    'Gold Standard',
+    4,
+    '0x171f9cfc136f2b2aaa148fcc6b660a2029bab048', // https://etherscan.io/address/0x171f9cfc136f2b2aaa148fcc6b660a2029bab048
+    UnderlyingAsset['eth:aus']
+  ),
+  erc20(
+    '06afec64-68de-4b1b-8ed6-71d690f5c387',
+    'eth:reya',
+    'Reya',
+    18,
+    '0xcc8e02d7112ddaa66a63b89d73e4eda65722b111', // https://etherscan.io/token/0xcc8e02d7112ddaa66a63b89d73e4eda65722b111
+    UnderlyingAsset['eth:reya']
+  ),
+  erc20(
+    '4b8b6cdf-94ac-48a4-8898-7e730eacb0db',
+    'eth:usdp',
+    'USDP Stablecoin',
+    18,
+    '0x1456688345527be1f37e9e627da0837d6f08c925', // https://etherscan.io/token/0x1456688345527bE1f37E9e627DA0837D6f08C925
+    UnderlyingAsset['eth:usdp'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  erc20(
+    '22c3d5be-c127-4815-97c4-2315aaeefe05',
+    'eth:grtx',
+    'GreatX',
+    6,
+    '0x4bbe27b87c20f76349e47cbc3908477f7bbd71b0', // https://etherscan.io/token/0x4bbE27b87c20f76349E47cBc3908477f7bBD71B0
+    UnderlyingAsset['eth:grtx']
   ),
 ];

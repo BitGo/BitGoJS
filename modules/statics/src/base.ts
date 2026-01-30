@@ -49,7 +49,6 @@ export enum CoinFamily {
   DOGE = 'doge',
   DOGEOS = 'dogeos',
   DOT = 'dot',
-  DYDX = 'dydx',
   ETH = 'eth',
   ETH2 = 'eth2',
   ETHW = 'ethw',
@@ -91,7 +90,7 @@ export enum CoinFamily {
   OFC = 'ofc',
   OG = 'og',
   OPBNB = 'opbnb', // opBNB Chain
-  OKBXLAYER = 'okbxlayer',
+  OKB = 'okb',
   OPETH = 'opeth',
   OSMO = 'osmo',
   PLUME = 'plume',
@@ -121,14 +120,12 @@ export enum CoinFamily {
   ZEC = 'zec',
   ZETA = 'zeta',
   ZKETH = 'zketh',
-  ZKSYNCERA = 'zksyncera', // ZkSync Era
   LINEAETH = 'lineaeth',
   IP = 'ip', // Story Chain
   SOMI = 'somi', // Somnia Chain
   FLUENTETH = 'fluenteth',
   MORPH = 'morph',
-  MORPHETH = 'morpheth',
-  ARCUSDC = 'arcusdc', // ARC network
+  ARC = 'arc', // ARC network
   TEMPO = 'tempo', // Tempo Network
 }
 
@@ -509,11 +506,6 @@ export enum CoinFeature {
   ALTERNATIVE_ADDRESS_IDENTIFIER = 'alternative-address-identifier',
 
   /**
-   * This token standard uses alternative address identifiers (e.g., DIDs for Polymesh tokens)
-   */
-  TOKEN_STANDARD_USES_ALTERNATIVE_ADDRESS_IDENTIFIER = 'token-standard-uses-alternative-address-identifier',
-
-  /**
    * This coin supports one-step deposit
    */
   SUPPORTS_ONE_STEP_DEPOSIT = 'supports-one-step-deposit',
@@ -611,11 +603,10 @@ export enum UnderlyingAsset {
   MEGAETH = 'megaeth',
   MON = 'mon',
   MORPH = 'morph',
-  MORPHETH = 'morpheth',
   NEAR = 'near',
   OAS = 'oas',
   OG = 'og',
-  OKBXLAYER = 'okbxlayer',
+  OKB = 'okb',
   OPBNB = 'opbnb', // opBNB Chain
   OPETH = 'opeth',
   OSMO = 'osmo',
@@ -650,7 +641,6 @@ export enum UnderlyingAsset {
   ZETA = 'zeta',
   ZKETH = 'zketh',
 
-  ZKSYNCERA = 'zksyncera', // ZkSync Era
   // ERC 20 tokens
   '$Evmosia.com' = '$evmosia.com',
   '0xREVIEW' = '0xreview',
@@ -716,7 +706,7 @@ export enum UnderlyingAsset {
   APPC = 'appc',
   APT = 'apt',
   AQT = 'aqt',
-  ARCUSDC = 'arcusdc',
+  ARC = 'arc',
   ARCT = 'arct',
   ARCX = 'arcx',
   ARKM = 'arkm',
@@ -1009,7 +999,6 @@ export enum UnderlyingAsset {
   ECHT = 'echt',
   'eth:eco' = 'eth:eco',
   ECOX = 'ecox',
-  'sol:eusx' = 'sol:eusx',
   EDEN = 'eden',
   EDISON = 'edison',
   EDLC = 'edlc',
@@ -1135,7 +1124,6 @@ export enum UnderlyingAsset {
   GAMMA = 'gamma',
   'sol:gari' = 'sol:gari',
   'sol:usd1' = 'sol:usd1',
-  'sol:usdm1' = 'sol:usdm1',
   'tsol:slnd' = 'tsol:slnd',
   'tsol:orca' = 'tsol:orca',
   'tsol:usdc' = 'tsol:usdc',
@@ -1445,7 +1433,6 @@ export enum UnderlyingAsset {
   MVI = 'mvi',
   MWT = 'mwt',
   MYRC = 'myrc',
-  'sol:myrc' = 'sol:myrc',
   MYTH = 'myth',
   NAAI = 'naai',
   NAS = 'nas',
@@ -1480,7 +1467,6 @@ export enum UnderlyingAsset {
   OCTAV = 'octav',
   OGN = 'ogn',
   OGV = 'ogv',
-  OKB = 'okb',
   OKBBEAR = 'okbbear',
   OKBBULL = 'okbbull',
   OKBDOOM = 'okbdoom',
@@ -1830,7 +1816,6 @@ export enum UnderlyingAsset {
   TUSDS = 'tusds',
   TGOUSD = 'tgousd',
   'hteth:gousd' = 'hteth:gousd',
-  'hteth:grtx' = 'hteth:grtx',
   'hteth:sofid' = 'hteth:sofid',
   'hteth:stgsofid' = 'hteth:stgsofid',
   'hteth:usd1' = 'hteth:usd1',
@@ -1918,6 +1903,8 @@ export enum UnderlyingAsset {
   URHD = 'urhd',
   'sol:usdt' = 'sol:usdt',
   'sol:usdc' = 'sol:usdc',
+  'sol:agri' = 'sol:agri',
+  'sol:usdc.a' = 'sol:usdc.a',
   USCC = 'uscc',
   USDC = 'usdc',
   'USDC-POS-WORMHOLE' = 'usdc-pos-wormhole',
@@ -2086,6 +2073,7 @@ export enum UnderlyingAsset {
   'ZRO-0xE5C' = 'zro-0xe5c',
   ZRX = 'zrx',
   ZUSD = 'zusd',
+  'eth:okb' = 'eth:okb',
   'eth:usdg' = 'eth:usdg',
   'eth:spxux' = 'eth:spxux',
   'eth:aleo' = 'eth:aleo',
@@ -2121,7 +2109,6 @@ export enum UnderlyingAsset {
   'eth:mon' = 'eth:mon',
   'eth:usual' = 'eth:usual',
   'eth:usd1' = 'eth:usd1',
-  'eth:usdm1' = 'eth:usdm1',
   'eth:sofid' = 'eth:sofid',
   'eth:ibtc' = 'eth:ibtc',
   'eth:pyr' = 'eth:pyr',
@@ -2144,6 +2131,11 @@ export enum UnderlyingAsset {
   'eth:deuro' = 'eth:deuro',
   'eth:usdf' = 'eth:usdf',
   'eth:ausd' = 'eth:ausd',
+  'eth:ags' = 'eth:ags',
+  'eth:aus' = 'eth:aus',
+  'eth:reya' = 'eth:reya',
+  'eth:usdp' = 'eth:usdp',
+  'eth:grtx' = 'eth:grtx',
   'eth:gaia' = 'eth:gaia',
   'eth:usds' = 'eth:usds',
   'eth:perc' = 'eth:perc',
@@ -2390,14 +2382,6 @@ export enum UnderlyingAsset {
   'eth:spec' = 'eth:spec',
   'eth:prompt' = 'eth:prompt',
   'eth:yb' = 'eth:yb',
-  'morph:usdc' = 'morph:usdc',
-  'morpheth:usdc' = 'morpheth:usdc',
-  'morph:usdt' = 'morph:usdt',
-  'morpheth:usdt' = 'morpheth:usdt',
-  'morph:usd1' = 'morph:usd1',
-  'morpheth:usd1' = 'morpheth:usd1',
-  'tmorph:tmt' = 'tmorph:tmt',
-  'tmorpheth:tmt' = 'tmorpheth:tmt',
 
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
@@ -2406,7 +2390,6 @@ export enum UnderlyingAsset {
   'xlm:ETH-GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5' = 'xlm:ETH-GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
   'xlm:WXT-GASBLVHS5FOABSDNW5SPPH3QRJYXY5JHA2AOA2QHH2FJLZBRXSG4SWXT' = 'xlm:WXT-GASBLVHS5FOABSDNW5SPPH3QRJYXY5JHA2AOA2QHH2FJLZBRXSG4SWXT',
   'xlm:USDC-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN' = 'xlm:USDC-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
-  'xlm:USDM1-GDM5QWWXCMDTQMZAKMYTCI52LA7FWBHAZMU5NJLMIFHDJISJRP2ZWPKC' = 'xlm:USDM1-GDM5QWWXCMDTQMZAKMYTCI52LA7FWBHAZMU5NJLMIFHDJISJRP2ZWPKC',
   'xlm:SIX-GDMS6EECOH6MBMCP3FYRYEVRBIV3TQGLOFQIPVAITBRJUMTI6V7A2X6Z' = 'xlm:SIX-GDMS6EECOH6MBMCP3FYRYEVRBIV3TQGLOFQIPVAITBRJUMTI6V7A2X6Z',
   'xlm:BRLT-GCHQ3F2BF5P74DMDNOOGHT5DUCKC773AW5DTOFINC26W4KGYFPYDPRSO' = 'xlm:BRLT-GCHQ3F2BF5P74DMDNOOGHT5DUCKC773AW5DTOFINC26W4KGYFPYDPRSO',
   'xlm:ARST-GCSAZVWXZKWS4XS223M5F54H2B6XPIIXZZGP7KEAIU6YSL5HDRGCI3DG' = 'xlm:ARST-GCSAZVWXZKWS4XS223M5F54H2B6XPIIXZZGP7KEAIU6YSL5HDRGCI3DG',
@@ -2937,11 +2920,8 @@ export enum UnderlyingAsset {
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
-  'baseeth:cfi' = 'baseeth:cfi',
   'baseeth:icnt' = 'baseeth:icnt',
-  'baseeth:mey' = 'baseeth:mey',
   'baseeth:morpho' = 'baseeth:morpho',
-  'baseeth:myrc' = 'baseeth:myrc',
   'baseeth:weth' = 'baseeth:weth',
   'baseeth:usdc' = 'baseeth:usdc',
   'baseeth:wbtc' = 'baseeth:wbtc',
@@ -3014,7 +2994,6 @@ export enum UnderlyingAsset {
   // XDC mainnet tokens
   'xdc:usdc' = 'xdc:usdc',
   'xdc:lbt' = 'xdc:lbt',
-  'xdc:cre' = 'xdc:cre',
   'xdc:gama' = 'xdc:gama',
   'xdc:srx' = 'xdc:srx',
   'xdc:weth' = 'xdc:weth',
@@ -3035,13 +3014,13 @@ export enum UnderlyingAsset {
   'tjovayeth:tcmn' = 'tjovayeth:tcmn',
 
   // X Layer (OKB) mainnet tokens
-  'okbxlayer:usdg' = 'okbxlayer:usdg',
-  'okbxlayer:usdt0' = 'okbxlayer:usdt0',
-  'okbxlayer:usdt' = 'okbxlayer:usdt',
-  'okbxlayer:usdc' = 'okbxlayer:usdc',
+  'okb:usdg' = 'okb:usdg',
+  'okb:usdt0' = 'okb:usdt0',
+  'okb:usdt' = 'okb:usdt',
+  'okb:usdc' = 'okb:usdc',
 
   // X Layer (OKB) testnet tokens
-  'tokbxlayer:tzeb' = 'tokbxlayer:tzeb',
+  'tokb:tzeb' = 'tokb:tzeb',
 
   // Story testnet tokens
   'tip:usdc' = 'tip:usdc',
@@ -3053,9 +3032,6 @@ export enum UnderlyingAsset {
   // MegaEth mainnet tokens
   'megaeth:mega' = 'megaeth:mega',
   'megaeth:weth' = 'megaeth:weth',
-
-  // MegaEth testnet tokens
-  'tmegaeth:tmt' = 'tmegaeth:tmt',
 
   // Plume testnet tokens
   'tplume:usdc' = 'tplume:usdc',
@@ -3074,6 +3050,7 @@ export enum UnderlyingAsset {
   'opeth:wld' = 'opeth:wld',
   'opeth:wct' = 'opeth:wct',
   'opeth:spxux' = 'opeth:spxux',
+  'opeth:perp' = 'opeth:perp',
   'opeth:flttx' = 'opeth:flttx',
   'opeth:wtsix' = 'opeth:wtsix',
   'opeth:modrx' = 'opeth:modrx',
@@ -3493,11 +3470,9 @@ export enum UnderlyingAsset {
 
   // COSMOS tokens
   'hash:ylds' = 'hash:ylds',
-  'hash:figr' = 'hash:figr',
 
   // COSMOS testnet tokens
   'thash:ylds' = 'thash:ylds',
-  'thash:tfigr' = 'thash:tfigr',
 
   // TON mainnet tokens
   'ton:usdt' = 'ton:usdt',
@@ -3545,14 +3520,6 @@ export enum UnderlyingAsset {
   'ada:djed' = 'ada:djed',
   'ada:usda' = 'ada:usda',
   'ada:night' = 'ada:night',
-
-  // Canton testnet tokens
-  'tcanton:testcoin1' = 'tcanton:testcoin1',
-  'tcanton:testtoken' = 'tcanton:testtoken',
-
-  // Canton mainnet tokens
-  'canton:usdcx' = 'canton:usdcx',
-  'canton:cbtc' = 'canton:cbtc',
 
   // fiats
   AED = 'aed',
@@ -3611,7 +3578,6 @@ export enum BaseUnit {
   IOTA = 'iota',
   ZETA = 'azeta',
   KAVA = 'ukava',
-  DYDX = 'adydx',
   COREUM = 'ucore',
   TCOREUM = 'utestcore', // Coreum testnet uses different name for native coin
   ISLM = 'aISLM',

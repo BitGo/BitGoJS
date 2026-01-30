@@ -45,15 +45,6 @@ export const ofcErc20Coins = [
   ofcerc20('28024a59-6fbb-4156-96e4-2ba7747e8581', 'ofcusdc', 'USD Coin', 6, UnderlyingAsset.USDC, undefined, [
     CoinFeature.STABLECOIN,
   ]),
-  ofcerc20(
-    'ee579200-2f43-41f3-ba2e-365bcb20ff21',
-    'ofcusdm1',
-    'USDM1',
-    18,
-    underlyingAssetForSymbol('eth:usdm1'),
-    undefined,
-    [...OfcCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
-  ),
   ofcerc20('f790e63d-9785-4e98-b323-897fdc489613', 'ofcaave', 'Aave', 18, UnderlyingAsset.AAVE),
   ofcerc20('a3b0e98b-3a50-4ee7-a290-696b4cbce666', 'ofcape', 'ApeCoin', 18, UnderlyingAsset.APE),
   ofcerc20('15c3f5fb-255c-4ef6-9df3-767b3aa2b36d', 'ofcaudio', 'Audio', 18, UnderlyingAsset.AUDIO),
@@ -206,7 +197,7 @@ export const ofcErc20Coins = [
     CoinFeature.STABLECOIN,
   ]),
   ofcerc20('dec90842-ca08-417e-9cb0-89723cc50b77', 'ofcwbtc', 'Wrapped Bitcoin', 8, UnderlyingAsset.WBTC),
-  ofcerc20('8f01bcec-f576-49f8-b925-274566954017', 'ofcokb', 'OKB', 18, UnderlyingAsset.OKB),
+  ofcerc20('8f01bcec-f576-49f8-b925-274566954017', 'ofceth:okb', 'OKB ETH Token', 18, UnderlyingAsset['eth:okb']),
   ofcerc20('37e7d659-c3a4-4761-8f42-76fb7bc5032c', 'ofcmnt', 'Mantle', 18, UnderlyingAsset.MNT),
   ofcerc20('688725ff-e582-44bc-b42e-0de600426594', 'ofcstrk', 'StarkNet Token', 18, UnderlyingAsset.STRK),
   ofcerc20('d6d6ee90-05c1-4fdd-8621-bfaefaa703ae', 'ofctkx', 'Tokenize', 8, UnderlyingAsset.TKX),
@@ -3404,6 +3395,43 @@ export const ofcErc20Coins = [
     underlyingAssetForSymbol('eth:ibenji')
   ),
   ofcerc20(
+    'fd4cfe16-5228-4d92-9d87-5b8eaa1f89eb',
+    'ofceth:ags',
+    'Silver Standard',
+    4,
+    underlyingAssetForSymbol('eth:ags')
+  ),
+  ofcerc20(
+    '54eff6b7-6db0-4ad3-9757-e232efc78d89',
+    'ofceth:aus',
+    'Gold Standard',
+    4,
+    underlyingAssetForSymbol('eth:aus')
+  ),
+  ofcerc20(
+    '44a386ad-a9d4-4cb5-8f30-72128e618286',
+    'ofceth:reya',
+    'Reya',
+    18,
+    underlyingAssetForSymbol('eth:reya')
+  ),
+  ofcerc20(
+    'ff16374d-c3c8-4f1f-9cd2-5dab15c1f895',
+    'ofceth:usdp',
+    'USDP Stablecoin',
+    18,
+    underlyingAssetForSymbol('eth:usdp'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcerc20(
+    'dd95c7b9-2be8-4471-920d-40e1fd583bf3',
+    'ofceth:grtx',
+    'GreatX',
+    6,
+    underlyingAssetForSymbol('eth:grtx')
+  ),
+  ofcerc20(
     'c3a5c5d2-5d6e-4c9b-9f3e-6d2a4e5b6c8d',
     'ofceth:usds',
     'USDS',
@@ -3841,20 +3869,6 @@ export const tOfcErc20Coins = [
     UnderlyingAsset['hteth:gousd'],
     undefined,
     [CoinFeature.STABLECOIN],
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    'hteth'
-  ),
-  tofcerc20(
-    '10c3d10e-d725-4a1c-9485-d467cc171b56',
-    'ofchteth:grtx',
-    'GreatX Token',
-    6,
-    UnderlyingAsset['hteth:grtx'],
-    undefined,
-    undefined,
     undefined,
     undefined,
     undefined,
@@ -4760,49 +4774,6 @@ export const tOfcErc20Coins = [
   ),
 
   ofcerc20(
-    '7bdb4371-8488-4395-9f91-f60abf561f47',
-    'ofcbaseeth:cfi',
-    'ConsumerFI',
-    18,
-    UnderlyingAsset['baseeth:cfi'],
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'baseeth'
-  ),
-  ofcerc20(
-    'e083e24a-292c-48e1-8edb-e15ebd6c601b',
-    'ofcbaseeth:mey',
-    'Mey Network',
-    18,
-    UnderlyingAsset['baseeth:mey'],
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'baseeth'
-  ),
-  ofcerc20(
-    '35139b9b-cbad-419c-b8d8-b9182d7b8ddb',
-    'ofcbaseeth:myrc',
-    'Malaysian Ringgit Coin',
-    18,
-    UnderlyingAsset['baseeth:myrc'],
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'baseeth'
-  ),
-
-  ofcerc20(
     'faddfbec-becf-4f9f-8f8b-9daebfcadbec',
     'ofcbaseeth:towns',
     'Towns',
@@ -5047,20 +5018,6 @@ export const tOfcErc20Coins = [
     'xdc'
   ),
   ofcerc20(
-    '26dc9e5b-7bd5-4e77-859e-56e77e2582e7',
-    'ofcxdc:cre',
-    'Crescite',
-    18,
-    underlyingAssetForSymbol('xdc:cre'),
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'xdc'
-  ),
-  ofcerc20(
     '086883c7-f7e9-458e-a0a1-ed3ec525f9c6',
     'ofcxdc:gama',
     'Gama Token',
@@ -5106,75 +5063,75 @@ export const tOfcErc20Coins = [
   // X Layer (OKB) Mainnet tokens
   ofcerc20(
     '74624f51-a9ee-4e08-a3d8-3f59221dd782',
-    'ofcokbxlayer:usdg',
+    'ofcokb:usdg',
     'Global Dollar',
     6,
-    underlyingAssetForSymbol('okbxlayer:usdg'),
+    underlyingAssetForSymbol('okb:usdg'),
     undefined,
     undefined,
     '',
     undefined,
     undefined,
     true,
-    'okbxlayer'
+    'okb'
   ),
   ofcerc20(
     '586b6383-f965-4f6a-9d40-e135ad815147',
-    'ofcokbxlayer:usdt0',
+    'ofcokb:usdt0',
     'USDT0',
     6,
-    underlyingAssetForSymbol('okbxlayer:usdt0'),
+    underlyingAssetForSymbol('okb:usdt0'),
     undefined,
     undefined,
     '',
     undefined,
     undefined,
     true,
-    'okbxlayer'
+    'okb'
   ),
   ofcerc20(
     '560de5af-59c2-421c-bb60-9086a5745539',
-    'ofcokbxlayer:usdt',
+    'ofcokb:usdt',
     'USDT',
     6,
-    underlyingAssetForSymbol('okbxlayer:usdt'),
+    underlyingAssetForSymbol('okb:usdt'),
     undefined,
     undefined,
     '',
     undefined,
     undefined,
     true,
-    'okbxlayer'
+    'okb'
   ),
   ofcerc20(
     'f22e7b40-8bfb-42b7-a741-44bb36088a50',
-    'ofcokbxlayer:usdc',
+    'ofcokb:usdc',
     'USDC',
     6,
-    underlyingAssetForSymbol('okbxlayer:usdc'),
+    underlyingAssetForSymbol('okb:usdc'),
     undefined,
     undefined,
     '',
     undefined,
     undefined,
     true,
-    'okbxlayer'
+    'okb'
   ),
 
   // X Layer (OKB) Testnet tokens
   tofcerc20(
     '1be3bd63-04d8-43f5-a772-86292fa5631d',
-    'ofctokbxlayer:tzeb',
+    'ofctokb:tzeb',
     'Zebra testnet',
     18,
-    underlyingAssetForSymbol('tokbxlayer:tzeb'),
+    underlyingAssetForSymbol('tokb:tzeb'),
     undefined,
     undefined,
     '',
     undefined,
     undefined,
     true,
-    'tokbxlayer'
+    'tokb'
   ),
 
   // Jovayeth Mainnet tokens
@@ -5291,131 +5248,6 @@ export const tOfcErc20Coins = [
     'Wrapped Ether',
     18,
     underlyingAssetForSymbol('megaeth:weth')
-  ),
-
-  // MegaEth testnet tokens
-  tofcerc20(
-    'c4e8f2a1-9b3d-4e5f-8a6c-7d2e1f0b9c8a',
-    'ofctmegaeth:tmt',
-    'Test Mintable Token',
-    6,
-    underlyingAssetForSymbol('tmegaeth:tmt')
-  ),
-
-  // Morph tokens
-  ofcerc20(
-    '4d5f4fb7-b2e2-4e63-bbda-7f315332da5b',
-    'ofcmorph:usdc',
-    'USD Coin',
-    6,
-    UnderlyingAsset['morph:usdc'],
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'morph'
-  ),
-  ofcerc20(
-    '37f51c58-9be5-4c56-adcb-2c7f3c2cfc1a',
-    'ofcmorph:usdt',
-    'Tether USD',
-    6,
-    UnderlyingAsset['morph:usdt'],
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'morph'
-  ),
-  ofcerc20(
-    'e499e7cc-22ae-4374-ae4b-27651565af15',
-    'ofcmorph:usd1',
-    'USD1',
-    18,
-    UnderlyingAsset['morph:usd1'],
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'morph'
-  ),
-  tofcerc20(
-    '299efde0-9c67-44d8-ac00-44d0259d709d',
-    'ofctmorph:tmt',
-    'Test Mintable Token',
-    6,
-    underlyingAssetForSymbol('tmorph:tmt'),
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'tmorph'
-  ),
-
-  // MorphETH tokens
-  ofcerc20(
-    '9c28b89b-1069-4bad-bf7b-8ecea440cee2',
-    'ofcmorpheth:usdc',
-    'USD Coin',
-    6,
-    UnderlyingAsset['morpheth:usdc'],
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'morpheth'
-  ),
-  ofcerc20(
-    '07010f84-5bc7-4715-9d19-09d694f558fb',
-    'ofcmorpheth:usdt',
-    'Tether USD',
-    6,
-    UnderlyingAsset['morpheth:usdt'],
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'morpheth'
-  ),
-  ofcerc20(
-    '883727b5-49e3-4fb3-99f7-fefb803710e5',
-    'ofcmorpheth:usd1',
-    'USD1',
-    18,
-    UnderlyingAsset['morpheth:usd1'],
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'morpheth'
-  ),
-  tofcerc20(
-    '34e77cee-2885-4a77-911c-b5f2bdd28cd7',
-    'ofctmorpheth:tmt',
-    'Test Mintable Token',
-    6,
-    underlyingAssetForSymbol('tmorpheth:tmt'),
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'tmorpheth'
   ),
 ];
 

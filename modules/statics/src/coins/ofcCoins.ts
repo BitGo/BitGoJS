@@ -297,38 +297,8 @@ export const ofcCoins = [
     UnderlyingAsset.MORPH,
     CoinKind.CRYPTO
   ),
-  ofc(
-    'cdf3487e-a365-4319-83ff-ff06f02810a6',
-    'ofcmorpheth',
-    'Morph Ethereum',
-    18,
-    UnderlyingAsset.MORPHETH,
-    CoinKind.CRYPTO
-  ),
-  tofc(
-    '4113e0ae-41c5-4293-8b7a-5829cbc3ee92',
-    'ofctmorpheth',
-    'Morph Ethereum Testnet',
-    18,
-    UnderlyingAsset.MORPHETH,
-    CoinKind.CRYPTO
-  ),
-  ofc(
-    'dc733b2f-92bf-49d3-9f5d-9774e1637f0f',
-    'ofcokbxlayer',
-    'OKB (X layer)',
-    18,
-    UnderlyingAsset.OKBXLAYER,
-    CoinKind.CRYPTO
-  ),
-  tofc(
-    '98460a7d-0677-4dbd-934e-fbb0e9c5f8cc',
-    'ofctokbxlayer',
-    'Testnet OKB (X layer)',
-    18,
-    UnderlyingAsset.OKBXLAYER,
-    CoinKind.CRYPTO
-  ),
+  ofc('dc733b2f-92bf-49d3-9f5d-9774e1637f0f', 'ofcokb', 'X Layer', 18, UnderlyingAsset.OKB, CoinKind.CRYPTO),
+  tofc('98460a7d-0677-4dbd-934e-fbb0e9c5f8cc', 'ofctokb', 'X Layer Testnet', 18, UnderlyingAsset.OKB, CoinKind.CRYPTO),
   ofc(
     '357901a6-9f4f-444c-abfd-c2f32638f0cb',
     'ofcmantle',
@@ -363,22 +333,6 @@ export const ofcCoins = [
   ),
   ofc('aa7e956f-2d59-4bf6-aba6-2d51bd298150', 'ofcip', 'Story', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
   tofc('773b02f6-32ea-493a-bca5-13d93cb0afff', 'ofctip', 'Story Testnet', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
-  ofc(
-    '8b50bd47-54d4-456d-a141-09f8e90df850',
-    'ofczksyncera',
-    'ZKSyncEra',
-    18,
-    UnderlyingAsset.ZKSYNCERA,
-    CoinKind.CRYPTO
-  ),
-  tofc(
-    'fef4f726-0b9c-42c6-a06a-f76a33020326',
-    'ofctzksyncera',
-    'ZKSyncEra Testnet',
-    18,
-    UnderlyingAsset.ZKSYNCERA,
-    CoinKind.CRYPTO
-  ),
   ofc('c5015165-6ae4-4925-bd3f-4b767feba2f9', 'ofcplume', 'Plume', 18, UnderlyingAsset.PLUME, CoinKind.CRYPTO),
   tofc(
     '7b81e4fb-0ca7-4626-8f0f-0ab36239a35f',
@@ -738,23 +692,7 @@ export const ofcCoins = [
     ...SOL_OFC_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
   ]),
-  ofcsolToken('daf9636e-8c99-4d62-bfaf-3ec7a4a5c883', 'ofcsol:eusx', 'Solstice eUSX', 6, UnderlyingAsset['sol:eusx'], [
-    ...SOL_OFC_TOKEN_FEATURES,
-    CoinFeature.STABLECOIN,
-  ]),
-  ofcsolToken(
-    '74ca70b5-a98c-4486-a51b-f59165bdbed8',
-    'ofcsol:myrc',
-    'Malaysian Ringgit Coin',
-    6,
-    UnderlyingAsset['sol:myrc'],
-    [...SOL_OFC_TOKEN_FEATURES]
-  ),
   ofcsolToken('0d96e2db-d01e-4ea0-ac87-3b51d563ea91', 'ofcsol:usdc', 'USD Coin', 6, UnderlyingAsset['sol:usdc'], [
-    ...SOL_OFC_TOKEN_FEATURES,
-    CoinFeature.STABLECOIN,
-  ]),
-  ofcsolToken('2ef2ca5a-139b-4797-97e1-476b2a39e63e', 'ofcsol:usdm1', 'USDM1', 9, UnderlyingAsset['sol:usdm1'], [
     ...SOL_OFC_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
   ]),
@@ -1388,6 +1326,22 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['sol:eurc'],
     SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '68a1c4e8-9a22-4177-9fae-d0356f245a85',
+    'ofcsol:agri',
+    'AgriDex',
+    6,
+    UnderlyingAsset['sol:agri'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '2ad7fab3-71f1-4201-8c6d-16ef57f012b7',
+    'ofcsol:usdc.a',
+    'USDC.a Bridged ART20',
+    6,
+    UnderlyingAsset['sol:usdc.a'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   ofcsolToken(
     '90c297d2-853b-4322-9050-809254c9cfc2',
@@ -2057,6 +2011,13 @@ export const ofcCoins = [
     'WisdomTree Siegel Moderate Digital Fund',
     18,
     UnderlyingAsset['opeth:modrx']
+  ),
+  ofcOpethErc20(
+    '550edf0d-1617-404e-bdab-931e98f37326',
+    'ofcopeth:perp',
+    'Perpetual Protocol',
+    18,
+    UnderlyingAsset['opeth:perp']
   ),
   ofcOpethErc20(
     '059ad416-681d-41c0-86b3-24e6d7025f8a',
@@ -3607,16 +3568,6 @@ export const ofcCoins = [
   ),
 
   ofcStellarToken(
-    '14d6fddf-3a96-4495-a4d7-1afaf166c25e',
-    'ofcxlm:usdm1',
-    'USDM1',
-    7,
-    UnderlyingAsset['xlm:USDM1-GDM5QWWXCMDTQMZAKMYTCI52LA7FWBHAZMU5NJLMIFHDJISJRP2ZWPKC'],
-    undefined,
-    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
-  ),
-
-  ofcStellarToken(
     '612c9f4e-3c0d-496b-97cb-b4035ded678d',
     'ofcxlm:benji',
     'Benji',
@@ -3858,14 +3809,6 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['thash:ylds']
   ),
-  ofcHashToken('f5df8376-e06c-4c96-a9c3-f5dfd41525f1', 'ofchash:figr', 'Figure', 9, UnderlyingAsset['hash:figr']),
-  tofcHashToken(
-    '726c0865-2f8b-4409-8e93-a7c9a47a6c35',
-    'ofcthash:tfigr',
-    'Testnet Figure',
-    9,
-    UnderlyingAsset['thash:tfigr']
-  ),
   ofcTonToken('c0e7396b-d21a-4b5a-b547-fdfe001cf3ba', 'ofcton:usdt', 'Ton USDT', 6, UnderlyingAsset['ton:usdt']),
   ofcTonToken('8977a6f0-0864-4250-a060-6ff385d304f9', 'ofcton:usde', 'Ethena USDe', 6, UnderlyingAsset['ton:usde']),
   ofcTonToken('827bf2c7-a741-406f-9ed4-fb0f3c33b01a', 'ofcton:not', 'Notcoin', 9, UnderlyingAsset['ton:not']),
@@ -3887,15 +3830,8 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['tsui:deep']
   ),
-  ofc('d45636f8-f120-4374-b717-70fe999baa43', 'ofcarcusdc', 'USDC (ARC)', 18, UnderlyingAsset.ARCUSDC, CoinKind.CRYPTO),
-  tofc(
-    'bc57e64d-045e-4421-aa92-64db0c51e1d7',
-    'ofctarcusdc',
-    'USDC (ARC) Testnet',
-    18,
-    UnderlyingAsset.ARCUSDC,
-    CoinKind.CRYPTO
-  ),
+  ofc('d45636f8-f120-4374-b717-70fe999baa43', 'ofcarc', 'Arc', 18, UnderlyingAsset.ARC, CoinKind.CRYPTO),
+  tofc('bc57e64d-045e-4421-aa92-64db0c51e1d7', 'ofctarc', 'Arc Testnet', 18, UnderlyingAsset.ARC, CoinKind.CRYPTO),
   // New BSC OFC token
   ofcBscToken('b4200c85-f550-44d6-a6cb-a590f19773b0', 'ofcbsc:sto', 'StakeStone', 18, UnderlyingAsset['bsc:sto']),
   // New Arbitrum OFC token
@@ -3909,13 +3845,6 @@ export const ofcCoins = [
   // New SOL OFC tokens
   ofcsolToken('0ce490e5-fba4-4f50-b059-598c151482f0', 'ofcsol:prcl', 'Parcl', 6, UnderlyingAsset['sol:prcl']),
   ofcsolToken('ddba6928-8700-4435-8970-0e75acae7025', 'ofcsol:asp', 'Aspecta', 9, UnderlyingAsset['sol:asp']),
-  ofcsolToken(
-    '2cb0b222-eeae-441b-9546-698a87c509e0',
-    'ofcsol:pengu',
-    'Pudgy Penguins',
-    6,
-    UnderlyingAsset['sol:pengu']
-  ),
   // New SUI OFC token
   ofcSuiToken('1e01eb3d-2573-4662-aa5e-4c390e4a9b38', 'ofcsui:dmc', 'DeLorean', 9, UnderlyingAsset['sui:dmc']),
 ];

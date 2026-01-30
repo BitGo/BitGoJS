@@ -2488,7 +2488,7 @@ export const solTokens = [
     '2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv',
     '2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv',
     UnderlyingAsset['sol:pengu'],
-    [...SOL_TOKEN_FEATURES, ...SOL_TOKEN_FEATURES_WITH_FRANKFURT]
+    SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
 
   solToken(
@@ -2938,26 +2938,6 @@ export const solTokens = [
     ProgramID.Token2022ProgramId
   ),
   solToken(
-    'd1a4fb13-6911-4cc7-ba80-c767cbe4bbec',
-    'sol:eusx',
-    'Solstice eUSX',
-    6,
-    '3ThdFZQKM6kRyVGLG48kaPg5TRMhYMKY1iCRa9xop1WC',
-    '3ThdFZQKM6kRyVGLG48kaPg5TRMhYMKY1iCRa9xop1WC',
-    UnderlyingAsset['sol:eusx'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
-  ),
-  solToken(
-    '58651360-5c62-4268-8bf1-0ed520f78979',
-    'sol:myrc',
-    'Malaysian Ringgit Coin',
-    6,
-    'myrcAs6bpP2g5oGHZ3qpgrfZQAFkbo9KUHdqYDXMjGv',
-    'myrcAs6bpP2g5oGHZ3qpgrfZQAFkbo9KUHdqYDXMjGv',
-    UnderlyingAsset['sol:myrc'],
-    SOL_TOKEN_FEATURES
-  ),
-  solToken(
     '2a5d3340-e68a-4baa-bae8-7bcc785d757f',
     'sol:usd1',
     'USD1',
@@ -2966,17 +2946,6 @@ export const solTokens = [
     'USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB',
     UnderlyingAsset['sol:usd1'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
-  ),
-  solToken(
-    '18e33ee6-dd70-437b-9153-e79ec01c475e',
-    'sol:usdm1',
-    'USDM1',
-    9,
-    'BNgsQdjfWmjoy3cw8T3VXWswHfgCzEMyQzUno8gmzmRC',
-    'BNgsQdjfWmjoy3cw8T3VXWswHfgCzEMyQzUno8gmzmRC',
-    UnderlyingAsset['sol:usdm1'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
-    ProgramID.Token2022ProgramId
   ),
   solToken(
     '1477933f-cda3-469a-8da6-c80e701ffc99',
@@ -3603,5 +3572,25 @@ export const solTokens = [
     'DJ7vji2BU7RjNgktPAKN4L42CiXTFHEt4Eeeyr5FiTmy',
     UnderlyingAsset['sol:asp'],
     SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '51d19d87-51ba-4d30-837f-ea4a3c6f06df',
+    'sol:agri',
+    'AgriDex',
+    6,
+    'AGRidUXLeDij9CJprkZx7WBXtTQC67jtfiwz293mVrJ', // https://solscan.io/token/AGRidUXLeDij9CJprkZx7WBXtTQC67jtfiwz293mVrJ
+    'AGRidUXLeDij9CJprkZx7WBXtTQC67jtfiwz293mVrJ',
+    UnderlyingAsset['sol:agri'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'e13fd5e0-0828-4f06-884b-de1bc5cf42c5',
+    'sol:usdc.a',
+    'USDC.a Bridged ART20',
+    6,
+    'AByhZPfGEU9a68KCAvT76Yev85oeur4SoL2VLZuB3HQj', // https://solscan.io/token/AByhZPfGEU9a68KCAvT76Yev85oeur4SoL2VLZuB3HQj
+    'AByhZPfGEU9a68KCAvT76Yev85oeur4SoL2VLZuB3HQj',
+    UnderlyingAsset['sol:usdc.a'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
 ];
