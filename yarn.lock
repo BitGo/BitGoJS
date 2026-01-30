@@ -2783,6 +2783,17 @@
   resolved "https://registry.npmjs.org/@graphql-typed-document-node/core/-/core-3.2.0.tgz"
   integrity sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==
 
+"@greymass/eosio@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.npmjs.org/@greymass/eosio/-/eosio-0.7.0.tgz#f68fa78112e205ac7e9baab7417c4e5da217f12d"
+  integrity sha512-eEFwzHPUO+WIIoEMHzaYPXLOklEKIXkjJFQ6iekfYzZ02eupW9RJdk8vr31u36TESVxKnmZ5Xnux613t+FNq2A==
+  dependencies:
+    bn.js "^4.11.9"
+    brorand "^1.1.0"
+    elliptic "^6.5.4"
+    hash.js "^1.0.0"
+    tslib "^2.0.3"
+
 "@grpc/grpc-js@^1.12.6":
   version "1.13.4"
   resolved "https://registry.npmjs.org/@grpc/grpc-js/-/grpc-js-1.13.4.tgz"

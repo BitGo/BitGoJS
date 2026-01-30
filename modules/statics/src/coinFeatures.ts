@@ -229,6 +229,13 @@ export const EOS_FEATURES = [
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG,
 ];
+export const XPR_FEATURES = [
+  ...ACCOUNT_COIN_DEFAULT_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
+];
 export const HBAR_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.SUPPORTS_TOKENS,

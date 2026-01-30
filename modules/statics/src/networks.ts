@@ -785,6 +785,18 @@ class EosTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://kylin.eosx.io/tx/';
 }
 
+class Xpr extends Mainnet implements AccountNetwork {
+  name = 'Xpr';
+  family = CoinFamily.XPR;
+  explorerUrl = 'https://explorer.xprnetwork.org/transaction/';
+}
+
+class XprTestnet extends Testnet implements AccountNetwork {
+  name = 'XprTestnet';
+  family = CoinFamily.XPR;
+  explorerUrl = 'https://testnet.explorer.xprnetwork.org/transaction/';
+}
+
 class Hedera extends Mainnet implements AccountNetwork {
   name = 'Hedera';
   family = CoinFamily.HBAR;
@@ -2474,6 +2486,7 @@ export const Networks = {
     world: Object.freeze(new World()),
     xdc: Object.freeze(new Xdc()),
     xpl: Object.freeze(new Plasma()),
+    xpr: Object.freeze(new Xpr()),
     xrp: Object.freeze(new Xrp()),
     xtz: Object.freeze(new Xtz()),
     zCash: Object.freeze(new ZCash()),
@@ -2590,6 +2603,7 @@ export const Networks = {
     world: Object.freeze(new WorldTestnet()),
     xdc: Object.freeze(new XdcTestnet()),
     xpl: Object.freeze(new PlasmaTestnet()),
+    xpr: Object.freeze(new XprTestnet()),
     xrp: Object.freeze(new XrpTestnet()),
     xtz: Object.freeze(new XtzTestnet()),
     zCash: Object.freeze(new ZCashTestnet()),

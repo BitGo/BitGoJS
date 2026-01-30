@@ -93,6 +93,7 @@ import {
   CSPR_FEATURES,
   DOT_FEATURES,
   EOS_FEATURES,
+  XPR_FEATURES,
   ETC_FEATURES,
   ETH_FEATURES,
   ETH_FEATURES_WITH_STAKING_AND_MMI,
@@ -515,6 +516,26 @@ export const allCoinsAndTokens = [
     UnderlyingAsset.EOS,
     BaseUnit.EOS,
     EOS_FEATURES
+  ),
+  account(
+    'e1f8c5d3-4a2b-4d8e-9c7f-6b3a5d2e1f0a',
+    'xpr',
+    'Proton',
+    Networks.main.xpr,
+    4,
+    UnderlyingAsset.XPR,
+    BaseUnit.XPR,
+    XPR_FEATURES
+  ),
+  account(
+    'f2a9d6e4-5b3c-4e9f-8d0a-7c4b6e3f2a1b',
+    'txpr',
+    'Testnet Proton',
+    Networks.test.xpr,
+    4,
+    UnderlyingAsset.XPR,
+    BaseUnit.XPR,
+    XPR_FEATURES
   ),
   account(
     'f465c617-752d-4f6a-b9e7-528bf38f62c3',
