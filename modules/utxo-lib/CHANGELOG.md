@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.19.1...@bitgo/utxo-lib@11.20.0) (2026-01-30)
+
+
+### Features
+
+* support node 24 ([b998bd1](https://github.com/BitGo/BitGoJS/commit/b998bd1bdb7e267e8e2f33b3599643a5c85c21d2))
+
+
+
+
+
 ## [11.19.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.19.0...@bitgo/utxo-lib@11.19.1) (2026-01-14)
 
 **Note:** Version bump only for package @bitgo/utxo-lib

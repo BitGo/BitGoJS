@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.14.0...@bitgo/sdk-coin-canton@1.15.0) (2026-01-30)
+
+
+### Features
+
+* added contractAddress for canton tokens ([de425c0](https://github.com/BitGo/BitGoJS/commit/de425c030f12e49fa4f85d85dc849919ce6f19a9))
+* support node 24 ([b998bd1](https://github.com/BitGo/BitGoJS/commit/b998bd1bdb7e267e8e2f33b3599643a5c85c21d2))
+
+
+
+
+
 # [1.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.13.5...@bitgo/sdk-coin-canton@1.14.0) (2026-01-22)
 
 

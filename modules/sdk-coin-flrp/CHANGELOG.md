@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.7.2...@bitgo/sdk-coin-flrp@1.8.0) (2026-01-30)
+
+
+### Bug Fixes
+
+* **sdk-coin-flrp:** correct change output thresholds for multisig wallets ([289e1c9](https://github.com/BitGo/BitGoJS/commit/289e1c9a5ec7f53490952ecabfea8d9b525ee23b))
+* **sdk-coin-flrp:** signature ordering according to flareJS lib ([415f7c5](https://github.com/BitGo/BitGoJS/commit/415f7c5ebcce1ec8a73340d942b3afbf1d1353fc))
+* **sdk-coin-flrp:** update address index computation and signing logic in txn builders ([facc354](https://github.com/BitGo/BitGoJS/commit/facc354ba8b6a5109ba2cb7677869d1f19406a61))
+
+
+### Features
+
+* **sdk-coin-flrp:** implement UTXO address sorting to ensure signature verification ([003ec57](https://github.com/BitGo/BitGoJS/commit/003ec578d2139f16ebbbdaea982667966e1e1efc))
+* support node 24 ([b998bd1](https://github.com/BitGo/BitGoJS/commit/b998bd1bdb7e267e8e2f33b3599643a5c85c21d2))
+
+
+
+
+
 ## [1.7.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.7.1...@bitgo/sdk-coin-flrp@1.7.2) (2026-01-22)
 
 

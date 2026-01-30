@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.18.5...@bitgo/account-lib@27.19.0) (2026-01-30)
+
+
+### Features
+
+* **sdk-coin-tempo:** integrate Tempo SDK and update references ([5268dce](https://github.com/BitGo/BitGoJS/commit/5268dce7b815880e82e34353ba27b33e9fd08dc0))
+* support node 24 ([b998bd1](https://github.com/BitGo/BitGoJS/commit/b998bd1bdb7e267e8e2f33b3599643a5c85c21d2))
+
+
+
+
+
 ## [27.18.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.18.4...@bitgo/account-lib@27.18.5) (2026-01-22)
 
 **Note:** Version bump only for package @bitgo/account-lib

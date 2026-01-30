@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.23.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.22.0...bitgo@50.23.0) (2026-01-30)
+
+
+### Bug Fixes
+
+* **sdk-core:** change password should work with ofc multi-user key ([d686502](https://github.com/BitGo/BitGoJS/commit/d68650200c9aca1c98578db24bc0658b93e2534b))
+
+
+### Features
+
+* rename eth:okb to okb and okb chain to okbxlayer ([4a33360](https://github.com/BitGo/BitGoJS/commit/4a333606dcc0a36a01d47306af90f046d28598f5))
+* **sdk-coin-tempo:** integrate Tempo SDK and update references ([5268dce](https://github.com/BitGo/BitGoJS/commit/5268dce7b815880e82e34353ba27b33e9fd08dc0))
+* **statics:** add morpheth config ([6cb8c82](https://github.com/BitGo/BitGoJS/commit/6cb8c82e2da0c58d6af36805f08f4597cba3dd3d))
+* support node 24 ([b998bd1](https://github.com/BitGo/BitGoJS/commit/b998bd1bdb7e267e8e2f33b3599643a5c85c21d2))
+
+
+
+
+
 # [50.22.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.21.1...bitgo@50.22.0) (2026-01-22)
 
 

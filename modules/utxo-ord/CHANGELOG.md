@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-ord@1.24.1...@bitgo/utxo-ord@1.25.0) (2026-01-30)
+
+
+### Features
+
+* **abstract-utxo:** update wasm-utxo dependency to 1.29.0 ([a6f9c5c](https://github.com/BitGo/BitGoJS/commit/a6f9c5c53fe87d36c231fbdc2f9f09b4e0549ca4))
+* **abstract-utxo:** use wasm-utxo for inscriptionBuilder ([e33840c](https://github.com/BitGo/BitGoJS/commit/e33840ccdca43c9611f525f99993a28791c5f898))
+
+
+
+
+
 ## [1.24.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-ord@1.24.0...@bitgo/utxo-ord@1.24.1) (2026-01-22)
 
 **Note:** Version bump only for package @bitgo/utxo-ord

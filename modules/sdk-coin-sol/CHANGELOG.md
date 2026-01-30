@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.11.4...@bitgo/sdk-coin-sol@7.12.0) (2026-01-30)
+
+
+### Features
+
+* support node 24 ([b998bd1](https://github.com/BitGo/BitGoJS/commit/b998bd1bdb7e267e8e2f33b3599643a5c85c21d2))
+
+
+
+
+
 ## [7.11.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.11.3...@bitgo/sdk-coin-sol@7.11.4) (2026-01-22)
 
 

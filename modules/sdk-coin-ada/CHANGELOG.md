@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.21.0...@bitgo/sdk-coin-ada@4.22.0) (2026-01-30)
+
+
+### Bug Fixes
+
+* **sdk-coin-ada:** token verifytransaction ([4b99418](https://github.com/BitGo/BitGoJS/commit/4b994188f3aaaadde8e996b789aa1663442cf78b))
+
+
+### Features
+
+* **sdk-coin-ada:** add dummy witness for sponsored txn ([83caec1](https://github.com/BitGo/BitGoJS/commit/83caec11a877e00f7d1083e91fc20eeed03eb221))
+* **sdk-coin-ada:** add dummy witness in legacy build for sponsored tx ([f315f96](https://github.com/BitGo/BitGoJS/commit/f315f967b93abde36b15615018bd2f0767d1ac9b))
+* support node 24 ([b998bd1](https://github.com/BitGo/BitGoJS/commit/b998bd1bdb7e267e8e2f33b3599643a5c85c21d2))
+
+
+
+
+
 # [4.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.20.8...@bitgo/sdk-coin-ada@4.21.0) (2026-01-22)
 
 

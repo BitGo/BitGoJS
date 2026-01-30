@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/abstract-utxo",
-  "version": "10.16.0",
+  "version": "10.17.0",
   "description": "BitGo SDK coin library for UTXO base implementation",
   "main": "./dist/cjs/src/index.js",
   "module": "./dist/esm/index.js",
@@ -60,14 +60,14 @@
     ]
   },
   "dependencies": {
-    "@bitgo/blockapis": "^1.12.12",
-    "@bitgo/sdk-api": "^1.73.3",
-    "@bitgo/sdk-core": "^36.29.0",
-    "@bitgo/secp256k1": "^1.9.0",
-    "@bitgo/unspents": "^0.50.14",
-    "@bitgo/utxo-core": "^1.31.0",
-    "@bitgo/utxo-lib": "^11.19.1",
-    "@bitgo/utxo-ord": "^1.24.1",
+    "@bitgo/blockapis": "^1.12.13",
+    "@bitgo/sdk-api": "^1.73.4",
+    "@bitgo/sdk-core": "^36.30.0",
+    "@bitgo/secp256k1": "^1.10.0",
+    "@bitgo/unspents": "^0.51.0",
+    "@bitgo/utxo-core": "^1.32.0",
+    "@bitgo/utxo-lib": "^11.20.0",
+    "@bitgo/utxo-ord": "^1.25.0",
     "@bitgo/wasm-utxo": "^1.29.0",
     "@types/lodash": "^4.14.121",
     "@types/superagent": "4.1.15",
@@ -79,7 +79,7 @@
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-test": "^9.1.24",
+    "@bitgo/sdk-test": "^9.1.25",
     "mocha": "^10.2.0"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"

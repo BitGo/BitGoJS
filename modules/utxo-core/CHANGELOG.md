@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.32.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.31.0...@bitgo/utxo-core@1.32.0) (2026-01-30)
+
+
+### Features
+
+* **abstract-utxo:** update wasm-utxo dependency to 1.29.0 ([a6f9c5c](https://github.com/BitGo/BitGoJS/commit/a6f9c5c53fe87d36c231fbdc2f9f09b4e0549ca4))
+
+
+
+
+
 # [1.31.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.30.0...@bitgo/utxo-core@1.31.0) (2026-01-19)
 
 
