@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.23.0...@bitgo/statics@58.24.0) (2026-01-30)
+
+
+### Features
+
+* added canton testnet tokens ([1ee5897](https://github.com/BitGo/BitGoJS/commit/1ee5897c2d175b895f642f09b2659742509c363d))
+* added contractAddress for canton tokens ([de425c0](https://github.com/BitGo/BitGoJS/commit/de425c030f12e49fa4f85d85dc849919ce6f19a9))
+* change names X Layer to OKB (X layer) ([92d2723](https://github.com/BitGo/BitGoJS/commit/92d272322541ce94d876d7eb9809b4f29fa7fd89))
+* enable the stuck tx for aptos ([57a30b3](https://github.com/BitGo/BitGoJS/commit/57a30b39dd226875e75336ece3de9212404e3c12))
+* rename eth:okb to okb and okb chain to okbxlayer ([4a33360](https://github.com/BitGo/BitGoJS/commit/4a333606dcc0a36a01d47306af90f046d28598f5))
+* **statics:** add dYdX L1 chain support ([e69e56a](https://github.com/BitGo/BitGoJS/commit/e69e56a097e7f11bc47e6ac1b964b48b40190d4c))
+* **statics:** add morpheth config ([6cb8c82](https://github.com/BitGo/BitGoJS/commit/6cb8c82e2da0c58d6af36805f08f4597cba3dd3d))
+* **statics:** add morpheth tokens ([6ade779](https://github.com/BitGo/BitGoJS/commit/6ade779722b53df4c3f0faf9ea2af78eece91f03))
+* **statics:** add polyx token alt address feature ([854fcc7](https://github.com/BitGo/BitGoJS/commit/854fcc762d1bca8534c7c99fea824ec08808b3c3))
+* **statics:** change kava to new cosmos structure ([e0a31d9](https://github.com/BitGo/BitGoJS/commit/e0a31d9ae79531f63b0a6e297842ebb2d61581f6))
+* **statics:** enable shared cosmos wp for kava ([1c56675](https://github.com/BitGo/BitGoJS/commit/1c566754b6d8a797f3bf71f986c50a0be535fcfe))
+* **statics:** fix ofc tokens on morph chain ([8eac3d8](https://github.com/BitGo/BitGoJS/commit/8eac3d80d728fdc6be64e627f2ef037c3e046629))
+* **statics:** update chainId for morph chain ([94e6755](https://github.com/BitGo/BitGoJS/commit/94e6755e1501e5ac26c4c3207e9d2fa0982aea57))
+
+
+
+
+
 # [58.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.22.0...@bitgo/statics@58.23.0) (2026-01-22)
 
 

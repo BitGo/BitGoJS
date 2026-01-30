@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.16.0...@bitgo/abstract-utxo@10.17.0) (2026-01-30)
+
+
+### Bug Fixes
+
+* **abstract-utxo:** add override keyword to preprocessBuildParams method ([836cbda](https://github.com/BitGo/BitGoJS/commit/836cbda23f977ada67dacc1671e77d0b12745a61))
+* **abstract-utxo:** check optional params for allowExternalChangeAddress ([d79d95a](https://github.com/BitGo/BitGoJS/commit/d79d95a2c74cb891bdfa1a4a916240cf0b2e3444))
+* **abstract-utxo:** move outputDifference tests to correct directory ([dd294ad](https://github.com/BitGo/BitGoJS/commit/dd294ad0045561cca47aaaf604af3807b1961341))
+* **abstract-utxo:** move toCanonicalTransactionRecipient to parseTransaction ([3a2037f](https://github.com/BitGo/BitGoJS/commit/3a2037f1be249e13f5b9baeedb409d15b1709e55))
+* **abstract-utxo:** normalize address comparison in parseOutput ([27c4e89](https://github.com/BitGo/BitGoJS/commit/27c4e89a65f94a5cb75b1b595aabc53f063009d0))
+
+
+### Features
+
+* **abstract-utxo:** add utxo-ord to project references ([1805c7b](https://github.com/BitGo/BitGoJS/commit/1805c7b67515a322b4abb5dce3b9513a0de96ce3))
+* **abstract-utxo:** allow optional expected outputs ([710e60b](https://github.com/BitGo/BitGoJS/commit/710e60bc5c075af39d885ba6c852970c6765020b))
+* **abstract-utxo:** migrate from utxolib to wasm-utxo address module ([ceb8051](https://github.com/BitGo/BitGoJS/commit/ceb8051879cd4591f0aa7052e7fcaabf1d6364e8))
+* **abstract-utxo:** optimize tx signing with bulk approach ([b3626a7](https://github.com/BitGo/BitGoJS/commit/b3626a71a17915836b50f8748798ec12f563069f))
+* **abstract-utxo:** simplify interface, use wasm types ([a71a702](https://github.com/BitGo/BitGoJS/commit/a71a702595f6fa1ea401fd772994690a39435006))
+* **abstract-utxo:** update wasm-utxo dependency to 1.29.0 ([a6f9c5c](https://github.com/BitGo/BitGoJS/commit/a6f9c5c53fe87d36c231fbdc2f9f09b4e0549ca4))
+* **abstract-utxo:** use coin name instead of network to determine chain ([cd752c6](https://github.com/BitGo/BitGoJS/commit/cd752c6409fb98d8387b3f4effc9b583e52d08a6))
+* **abstract-utxo:** use wasm address generation for fixed script ([0d339d9](https://github.com/BitGo/BitGoJS/commit/0d339d9d57655d3c9c93744097b6ea3cfcc61598))
+* **abstract-utxo:** use wasm-utxo for inscriptionBuilder ([e33840c](https://github.com/BitGo/BitGoJS/commit/e33840ccdca43c9611f525f99993a28791c5f898))
+* support node 24 ([b998bd1](https://github.com/BitGo/BitGoJS/commit/b998bd1bdb7e267e8e2f33b3599643a5c85c21d2))
+
+
+
+
+
 # [10.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.15.1...@bitgo/abstract-utxo@10.16.0) (2026-01-22)
 
 

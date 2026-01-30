@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.3.2...@bitgo/sdk-coin-tempo@1.4.0) (2026-01-30)
+
+
+### Features
+
+* **sdk-coin-tempo:** integrate Tempo SDK and update references ([5268dce](https://github.com/BitGo/BitGoJS/commit/5268dce7b815880e82e34353ba27b33e9fd08dc0))
+* support node 24 ([b998bd1](https://github.com/BitGo/BitGoJS/commit/b998bd1bdb7e267e8e2f33b3599643a5c85c21d2))
+
+
+
+
+
 ## [1.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.3.1...@bitgo/sdk-coin-tempo@1.3.2) (2026-01-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-tempo

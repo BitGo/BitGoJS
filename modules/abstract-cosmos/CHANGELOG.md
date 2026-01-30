@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.15.24...@bitgo/abstract-cosmos@11.16.0) (2026-01-30)
+
+
+### Features
+
+* support node 24 ([b998bd1](https://github.com/BitGo/BitGoJS/commit/b998bd1bdb7e267e8e2f33b3599643a5c85c21d2))
+
+
+
+
+
 ## [11.15.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.15.23...@bitgo/abstract-cosmos@11.15.24) (2026-01-22)
 
 **Note:** Version bump only for package @bitgo/abstract-cosmos

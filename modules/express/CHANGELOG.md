@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.18.5...@bitgo/express@15.19.0) (2026-01-30)
+
+
+### Features
+
+* **abstract-lightning:** make valueMsat optional add valueSat support ([ab2e237](https://github.com/BitGo/BitGoJS/commit/ab2e237086b6a07c6a3ee1a8e96efc4a76169101))
+* **express:** add derivedFromParentWithSeed for isWalletAddress ([4d55a15](https://github.com/BitGo/BitGoJS/commit/4d55a15f3c402a6341dfb4606f0651a0c6444c50))
+* support node 24 ([b998bd1](https://github.com/BitGo/BitGoJS/commit/b998bd1bdb7e267e8e2f33b3599643a5c85c21d2))
+
+
+
+
+
 ## [15.18.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.18.4...@bitgo/express@15.18.5) (2026-01-22)
 
 **Note:** Version bump only for package @bitgo/express
