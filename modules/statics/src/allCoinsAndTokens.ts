@@ -5217,6 +5217,14 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['opeth:spxux']
   ),
   opethErc20(
+    '47a91c17-d481-4dcd-a721-003ac21cfc8b',
+    'opeth:perp',
+    'Perpetual Protocol',
+    18,
+    '0x9e1028f5f1d5ede59748ffcee5532509976840e0', // https://optimistic.etherscan.io/token/0x9e1028f5f1d5ede59748ffcee5532509976840e0
+    UnderlyingAsset['opeth:perp']
+  ),
+  opethErc20(
     '7427c1fe-ad4c-41a6-84c5-2666e7baa20f',
     'opeth:flttx',
     'WisdomTree Floating Rate Treasury Digital Fund',

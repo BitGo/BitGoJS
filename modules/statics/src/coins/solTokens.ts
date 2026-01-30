@@ -3604,4 +3604,24 @@ export const solTokens = [
     UnderlyingAsset['sol:asp'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '51d19d87-51ba-4d30-837f-ea4a3c6f06df',
+    'sol:agri',
+    'AgriDex',
+    6,
+    'AGRidUXLeDij9CJprkZx7WBXtTQC67jtfiwz293mVrJ', // https://solscan.io/token/AGRidUXLeDij9CJprkZx7WBXtTQC67jtfiwz293mVrJ
+    'AGRidUXLeDij9CJprkZx7WBXtTQC67jtfiwz293mVrJ',
+    UnderlyingAsset['sol:agri'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'e13fd5e0-0828-4f06-884b-de1bc5cf42c5',
+    'sol:usdc.a',
+    'USDC.a Bridged ART20',
+    6,
+    'AByhZPfGEU9a68KCAvT76Yev85oeur4SoL2VLZuB3HQj', // https://solscan.io/token/AByhZPfGEU9a68KCAvT76Yev85oeur4SoL2VLZuB3HQj
+    'AByhZPfGEU9a68KCAvT76Yev85oeur4SoL2VLZuB3HQj',
+    UnderlyingAsset['sol:usdc.a'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
 ];
