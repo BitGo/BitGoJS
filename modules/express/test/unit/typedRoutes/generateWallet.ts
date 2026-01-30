@@ -85,6 +85,74 @@ describe('Generate Wallet Typed Routes Tests', function () {
       generateWalletStub.firstCall.args[0].should.have.property('enterprise', enterprise);
     });
 
+    it('should successfully generate lightning wallet with all parameters', async function () {
+      const coin = 'tlnbtc';
+      const label = 'Test Wallet';
+      const passphrase = 'mySecurePassphrase123';
+      const enterprise = 'enterprise123';
+      const subType = 'lightningCustody';
+
+      const mockWallet = {
+        id: 'wallet123',
+        coin,
+        label,
+        subType,
+        toJSON: sinon.stub().returns({
+          id: 'wallet123',
+          coin,
+          label,
+          subType,
+          keys: ['userKey123', 'backupKey123', 'bitgoKey123'],
+        }),
+      };
+
+      const walletResponse = {
+        wallet: mockWallet,
+        userKeychain: {
+          id: 'userKey123',
+          pub: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
+          encryptedPrv: 'encrypted_user_prv',
+        },
+        backupKeychain: {
+          id: 'backupKey123',
+          pub: 'xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa',
+          encryptedPrv: 'encrypted_backup_prv',
+        },
+        bitgoKeychain: {
+          id: 'bitgoKey123',
+          pub: 'xpub661MyMwAqRbcEYS8w7XLSVeEsBXy79zSzH1J8vCdxAZningWLdN3zgtU6LBpB85b3D2yc8sfvZU521AAwdZafEz7mnzBBsz4wKY5fTtTQBm',
+        },
+      };
+
+      const generateWalletStub = sinon.stub().resolves(walletResponse);
+      const walletsStub = { generateWallet: generateWalletStub } as any;
+      const coinStub = { wallets: sinon.stub().returns(walletsStub) } as any;
+
+      sinon.stub(BitGo.prototype, 'coin').returns(coinStub);
+
+      const res = await agent.post(`/api/v2/${coin}/wallet/generate`).send({
+        label,
+        passphrase,
+        enterprise,
+        subType,
+      });
+
+      res.status.should.equal(200);
+      res.body.should.have.property('wallet');
+      res.body.wallet.should.have.property('id', 'wallet123');
+      res.body.wallet.should.have.property('label', label);
+      res.body.wallet.should.have.property('subType', subType);
+      res.body.should.have.property('userKeychain');
+      res.body.should.have.property('backupKeychain');
+      res.body.should.have.property('bitgoKeychain');
+
+      generateWalletStub.should.have.been.calledOnce();
+      generateWalletStub.firstCall.args[0].should.have.property('label', label);
+      generateWalletStub.firstCall.args[0].should.have.property('subType', subType);
+      generateWalletStub.firstCall.args[0].should.have.property('passphrase', passphrase);
+      generateWalletStub.firstCall.args[0].should.have.property('enterprise', enterprise);
+    });
+
     it('should successfully generate wallet with optional type and multisigType', async function () {
       const coin = 'tbtc';
       const label = 'Test Wallet';
