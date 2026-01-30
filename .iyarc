@@ -11,3 +11,9 @@ GHSA-8qq5-rm4j-mr97
 #   archive PACKING, not extraction,
 GHSA-r6q2-hw4h-h46w
 
+# Excluded because:
+# - Transitive dependency through lerna and yeoman-generator requiring tar < 7.5.4
+# - This CVE affects tar's extraction process with specially crafted archives
+# - Our usage is limited to archive PACKING operations only, not extraction
+GHSA-34x7-hfp2-rc4v
+
