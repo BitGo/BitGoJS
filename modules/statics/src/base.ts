@@ -116,6 +116,7 @@ export enum CoinFamily {
   WEMIX = 'wemix',
   XDC = 'xdc',
   XLM = 'xlm',
+  XPR = 'xpr', // Proton Network
   XRP = 'xrp',
   XTZ = 'xtz',
   ZEC = 'zec',
@@ -644,6 +645,7 @@ export enum UnderlyingAsset {
   WORLD = 'world',
   XLM = 'xlm',
   XDC = 'xdc',
+  XPR = 'xpr', // Proton Network
   XRP = 'xrp',
   XTZ = 'xtz',
   ZEC = 'zec',
@@ -3594,6 +3596,7 @@ export enum BaseUnit {
   ZEC = 'zatoshi',
   CSPR = 'mote',
   DOT = 'planck',
+  XPR = 'xpr', // XPR has no base unit name, smallest amount is 4 decimals
   XRP = 'drop',
   XTZ = 'micro xtz',
   STX = 'micro-STX',

@@ -134,6 +134,7 @@ export const expectedColdFeatures = {
     'hypeevm',
     'lineaeth',
     'xpl',
+    'xpr', // Proton (XPR Network)
     'kavaevm',
     'xdc',
     'zeta',
@@ -201,6 +202,7 @@ export const expectedColdFeatures = {
     'tvet',
     'txdc',
     'txpl',
+    'txpr', // Testnet Proton (XPR Network)
     'tkavaevm',
     'twemix',
     'tzeta',
