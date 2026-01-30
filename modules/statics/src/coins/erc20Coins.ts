@@ -14272,4 +14272,45 @@ export const erc20Coins = [
     '0x01791f726b4103694969820be083196cc7c045ff',
     UnderlyingAsset['eth:yb']
   ),
+  erc20(
+    '39a47119-f542-42ed-a349-1f3ebe23b0f6',
+    'eth:ags',
+    'Silver Standard',
+    4,
+    '0x843c9af34f698618f90c898e3967278a260c8d9a', // https://etherscan.io/address/0x843c9af34f698618f90c898e3967278a260c8d9a
+    UnderlyingAsset['eth:ags']
+  ),
+  erc20(
+    '7cbb994b-d26f-445f-aed8-7d7e179b94ee',
+    'eth:aus',
+    'Gold Standard',
+    4,
+    '0x171f9cfc136f2b2aaa148fcc6b660a2029bab048', // https://etherscan.io/address/0x171f9cfc136f2b2aaa148fcc6b660a2029bab048
+    UnderlyingAsset['eth:aus']
+  ),
+  erc20(
+    '06afec64-68de-4b1b-8ed6-71d690f5c387',
+    'eth:reya',
+    'Reya',
+    18,
+    '0xcc8e02d7112ddaa66a63b89d73e4eda65722b111', // https://etherscan.io/token/0xcc8e02d7112ddaa66a63b89d73e4eda65722b111
+    UnderlyingAsset['eth:reya']
+  ),
+  erc20(
+    '4b8b6cdf-94ac-48a4-8898-7e730eacb0db',
+    'eth:usdp',
+    'USDP Stablecoin',
+    18,
+    '0x1456688345527be1f37e9e627da0837d6f08c925', // https://etherscan.io/token/0x1456688345527bE1f37E9e627DA0837D6f08C925
+    UnderlyingAsset['eth:usdp'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  erc20(
+    '22c3d5be-c127-4815-97c4-2315aaeefe05',
+    'eth:grtx',
+    'GreatX',
+    6,
+    '0x4bbe27b87c20f76349e47cbc3908477f7bbd71b0', // https://etherscan.io/token/0x4bbE27b87c20f76349E47cBc3908477f7bBD71B0
+    UnderlyingAsset['eth:grtx']
+  ),
 ];

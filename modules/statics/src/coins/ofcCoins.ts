@@ -727,6 +727,14 @@ export const ofcCoins = [
     CoinFeature.STABLECOIN,
   ]),
   ofcsolToken(
+    '2ad7fab3-71f1-4201-8c6d-16ef57f012b7',
+    'ofcsol:usdc.a',
+    'USDC.a Bridged ART20',
+    6,
+    UnderlyingAsset['sol:usdc.a'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  ofcsolToken(
     'c382f3cc-c071-4ef5-89ac-bcb85d8d415f',
     'ofcsol:wec',
     'Whole Earth Coin',
@@ -2030,6 +2038,13 @@ export const ofcCoins = [
   ),
   ofcAvaxErc20('9fb77e47-8916-4dcb-ac10-e11fa07172fb', 'ofcavaxc:nxpc', 'NEXPACE', 18, UnderlyingAsset['avaxc:nxpc']),
   ofcOpethErc20('10259b23-2e2e-4574-b146-b49f1119600f', 'ofcopeth:op', 'Optimism', 18, UnderlyingAsset['opeth:op']),
+  ofcOpethErc20(
+    '550edf0d-1617-404e-bdab-931e98f37326',
+    'ofcopeth:perp',
+    'Perpetual Protocol',
+    18,
+    UnderlyingAsset['opeth:perp']
+  ),
   ofcOpethErc20(
     'a6087e85-6c4a-40c5-83f0-3ebeabd8e39b',
     'ofcopeth:spxux',
@@ -3907,6 +3922,14 @@ export const ofcCoins = [
     UnderlyingAsset['arbeth:next']
   ),
   // New SOL OFC tokens
+  ofcsolToken(
+    '68a1c4e8-9a22-4177-9fae-d0356f245a85',
+    'ofcsol:agri',
+    'AgriDex',
+    6,
+    UnderlyingAsset['sol:agri'],
+    SOL_TOKEN_FEATURES
+  ),
   ofcsolToken('0ce490e5-fba4-4f50-b059-598c151482f0', 'ofcsol:prcl', 'Parcl', 6, UnderlyingAsset['sol:prcl']),
   ofcsolToken('ddba6928-8700-4435-8970-0e75acae7025', 'ofcsol:asp', 'Aspecta', 9, UnderlyingAsset['sol:asp']),
   ofcsolToken(
