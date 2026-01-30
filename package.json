@@ -106,6 +106,7 @@
     "**/ethers/**/ws": "7.5.10",
     "**/swarm-js/**/ws": "5.2.4",
     "**/swarm-js/**/tar": "6.2.1",
+    "tar": "^6.1.11",
     "serialize-javascript": "^6.0.2",
     "@grpc/grpc-js": "^1.12.6",
     "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10",
