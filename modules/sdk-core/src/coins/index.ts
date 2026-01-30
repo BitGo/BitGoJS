@@ -6,6 +6,8 @@ export * from './fiateur';
 export * from './tfiateur';
 export * from './fiatgbp';
 export * from './tfiatgbp';
+export * from './fiatinr';
+export * from './tfiatinr';
 export * from './fiatusd';
 export * from './tfiatusd';
 export * from './ofc';

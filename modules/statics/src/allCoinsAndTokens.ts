@@ -6159,6 +6159,15 @@ export const allCoinsAndTokens = [
     2,
     UnderlyingAsset.GBP
   ),
+  fiat('4d8c6e0e-08c4-4767-9e3b-8bc5bb78c5b5', 'fiatinr', 'Indian Rupee', Networks.main.fiat, 2, UnderlyingAsset.INR),
+  fiat(
+    '5455f07e-0b96-4e8e-a651-d68f1f13d9ce',
+    'tfiatinr',
+    'Testnet Indian Rupee',
+    Networks.test.fiat,
+    2,
+    UnderlyingAsset.INR
+  ),
   fiat(
     '414d69c3-8da1-460a-add3-ef26453fc76c',
     'fiataed',

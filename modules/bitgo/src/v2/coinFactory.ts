@@ -94,6 +94,7 @@ import {
   FiatAED,
   FiatEur,
   FiatGBP,
+  FiatINR,
   FiatSGD,
   FiatUsd,
   Gteth,
@@ -173,6 +174,7 @@ import {
   TfiatAED,
   TfiatEur,
   TfiatGBP,
+  TfiatINR,
   TfiatSGD,
   TfiatUsd,
   Thash,
@@ -275,6 +277,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('fiataed', FiatAED.createInstance);
   coinFactory.register('fiateur', FiatEur.createInstance);
   coinFactory.register('fiatgbp', FiatGBP.createInstance);
+  coinFactory.register('fiatinr', FiatINR.createInstance);
   coinFactory.register('fiatsgd', FiatSGD.createInstance);
   coinFactory.register('fiatusd', FiatUsd.createInstance);
   coinFactory.register('flr', Flr.createInstance);
@@ -346,6 +349,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tfiataed', TfiatAED.createInstance);
   coinFactory.register('tfiateur', TfiatEur.createInstance);
   coinFactory.register('tfiatgbp', TfiatGBP.createInstance);
+  coinFactory.register('tfiatinr', TfiatINR.createInstance);
   coinFactory.register('tfiatsgd', TfiatSGD.createInstance);
   coinFactory.register('tfiatusd', TfiatUsd.createInstance);
   coinFactory.register('tflr', Tflr.createInstance);
@@ -695,6 +699,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return FiatEur.createInstance;
     case 'fiatgbp':
       return FiatGBP.createInstance;
+    case 'fiatinr':
+      return FiatINR.createInstance;
     case 'fiatsgd':
       return FiatSGD.createInstance;
     case 'fiatusd':
@@ -837,6 +843,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return TfiatEur.createInstance;
     case 'tfiatgbp':
       return TfiatGBP.createInstance;
+    case 'tfiatinr':
+      return TfiatINR.createInstance;
     case 'tfiatsgd':
       return TfiatSGD.createInstance;
     case 'tfiatusd':
