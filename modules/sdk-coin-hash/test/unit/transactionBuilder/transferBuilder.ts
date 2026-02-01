@@ -310,4 +310,22 @@ describe('Hash Token Transfer Builder', () => {
       },
     ]);
   });
+
+  it('should build a Transfer tx with fee granter', async function () {
+    const feeGranterAddress = testData.testnetAddress.address2;
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.sequence(testTx.sequence);
+    txBuilder.gasBudget(testTx.gasBudget);
+    txBuilder.feeGranter(feeGranterAddress);
+    txBuilder.messages([testTx.sendMessage.value]);
+    txBuilder.publicKey(toHex(fromBase64(testTx.pubKey)));
+
+    const tx = await txBuilder.build();
+    const json = await (await txBuilder.build()).toJson();
+    should.equal(tx.type, TransactionType.Send);
+    should.deepEqual(json.gasBudget.amount, testTx.gasBudget.amount);
+    should.deepEqual(json.gasBudget.gasLimit, testTx.gasBudget.gasLimit);
+    should.equal(json.gasBudget.feeGranter, feeGranterAddress);
+    should.deepEqual(json.sendMessages, [testTx.sendMessage]);
+  });
 });

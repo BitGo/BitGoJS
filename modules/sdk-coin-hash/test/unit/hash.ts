@@ -104,6 +104,7 @@ describe('HASH', function () {
       should.equal(mainnetUtils.isValidAddress(''), false);
       should.equal(mainnetUtils.isValidAddress(mainnetAddress.validMemoIdAddress), true);
       should.equal(mainnetUtils.isValidAddress(mainnetAddress.multipleMemoIdAddress), false);
+      should.equal(mainnetUtils.isValidAddress(mainnetAddress.groupPolicyAddress), true);
 
       should.equal(testnetUtils.isValidAddress(testnetAddress.address1), true);
       should.equal(testnetUtils.isValidAddress(testnetAddress.address2), true);
@@ -114,6 +115,7 @@ describe('HASH', function () {
       should.equal(testnetUtils.isValidAddress(''), false);
       should.equal(testnetUtils.isValidAddress(testnetAddress.validMemoIdAddress), true);
       should.equal(testnetUtils.isValidAddress(testnetAddress.multipleMemoIdAddress), false);
+      should.equal(testnetUtils.isValidAddress(testnetAddress.groupPolicyAddress), true);
     });
 
     it('should validate validator addresses correctly', () => {
