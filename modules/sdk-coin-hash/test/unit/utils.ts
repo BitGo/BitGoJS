@@ -13,6 +13,11 @@ describe('utils', () => {
     should.equal(utils.isValidBlockId(''), false);
   });
 
+  it('should validate long mainnet account address correctly', () => {
+    // HASH bech32 addresses can be longer than the standard 20-byte data-part length.
+    should.equal(utils.isValidAddress('pb1w9ew2yu0w3c72j6j4m85daz7qch5x2w4cfm408js0ku087mq87gq4f9gcj'), true);
+  });
+
   it('should validate invalid block hash correctly', () => {
     should.equal(utils.isValidBlockId(''), false);
     should.equal(utils.isValidBlockId('0xade35465gfvdcsxsz24300'), false);
