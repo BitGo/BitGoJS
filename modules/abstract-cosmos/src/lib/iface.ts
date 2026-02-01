@@ -84,6 +84,7 @@ export interface MessageData<CustomMessage = never> {
 export interface FeeData {
   amount: Coin[];
   gasLimit: number;
+  feeGranter?: string;
 }
 
 export interface GasAmountDetails {

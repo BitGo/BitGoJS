@@ -179,10 +179,14 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
    * @returns {FeeData} fee data
    */
   getGasBudgetFromDecodedTx(decodedTx: DecodedTxRaw): FeeData {
-    return {
+    const feeData: FeeData = {
       amount: decodedTx.authInfo.fee?.amount as Coin[],
       gasLimit: Number(decodedTx.authInfo.fee?.gasLimit),
     };
+    if (decodedTx.authInfo.fee?.granter) {
+      feeData.feeGranter = decodedTx.authInfo.fee.granter;
+    }
+    return feeData;
   }
 
   /**
@@ -419,7 +423,7 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
       [{ pubkey: encodedPublicKey, sequence }],
       cosmosLikeTransaction.gasBudget.amount,
       cosmosLikeTransaction.gasBudget.gasLimit,
-      undefined,
+      cosmosLikeTransaction.gasBudget.feeGranter || undefined,
       undefined,
       undefined
     );
