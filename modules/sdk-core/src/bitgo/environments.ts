@@ -94,6 +94,8 @@ interface EnvironmentTemplate {
       baseUrl: string;
       apiToken?: string;
       rpcUrl?: string;
+      tokenId?: number;
+      systemAddr?: string;
     };
   };
   // The key here is coinFamily and it will be same for both mainnet and testnet (eg: 'cronos')
@@ -224,6 +226,9 @@ const mainnetBase: EnvironmentTemplate = {
     },
     hypeevm: {
       baseUrl: 'https://api.etherscan.io/v2',
+      // These are used for Bridging assets on hype chain.
+      tokenId: 150,
+      systemAddr: '0x2222222222222222222222222222222222222222',
     },
     og: {
       baseUrl: 'https://chainscan.0g.ai/open',
@@ -406,6 +411,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     hypeevm: {
       baseUrl: 'https://rpc.hyperliquid-testnet.xyz/evm', // Not Available
+      // These are used for Bridging assets on hype chain.
+      tokenId: 1105,
+      systemAddr: '0x2222222222222222222222222222222222222222',
     },
     og: {
       baseUrl: 'https://chainscan-test.0g.ai/open',
