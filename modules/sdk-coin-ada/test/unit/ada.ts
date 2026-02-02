@@ -734,7 +734,7 @@ describe('ADA', function () {
           startingScanIndex: 1,
           endingScanIndex: 2,
         })
-        .should.rejectedWith('Did not find an address with funds to recover');
+        .should.rejectedWith('Did not find an address with funds to recover.');
     });
 
     it('should throw if startingScanIndex is not ge to 1', async () => {
@@ -763,6 +763,77 @@ describe('ADA', function () {
           'Invalid starting or ending index to scan for addresses. startingScanIndex: 1, endingScanIndex: 300.'
         );
     });
+
+    it('should build unsigned consolidation recoveries', async function () {
+      const res = await basecoin.recoverConsolidations({
+        userKey: consolidationWrwUser.userKey,
+        backupKey: consolidationWrwUser.backupKey,
+        bitgoKey: consolidationWrwUser.bitgoKey,
+        walletPassphrase: consolidationWrwUser.walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(2);
+    });
+
+    it('should throw error if all addresses have balance less than 1 ADA', async function () {
+      sandBox.restore();
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack.withArgs('address_info', sinon.match.has('_addresses')).resolves({
+        status: 200,
+        body: [
+          {
+            balance: 500000,
+            utxo_set: [
+              {
+                tx_hash: '8df8d41207980f9e21de698bd5d6c395c39e420f7de27f8539052dd34e3a28d6',
+                tx_index: 0,
+                value: 500000,
+              },
+            ],
+          },
+        ],
+      });
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+
+      await basecoin
+        .recoverConsolidations({
+          userKey: consolidationWrwUser.userKey,
+          backupKey: consolidationWrwUser.backupKey,
+          bitgoKey: consolidationWrwUser.bitgoKey,
+          walletPassphrase: consolidationWrwUser.walletPassphrase,
+          startingScanIndex: 1,
+          endingScanIndex: 4,
+        })
+        .should.be.rejectedWith('Did not find an address with funds to recover.');
+    });
+
+    it('should build even if single address has no funds', async function () {
+      const res = await basecoin.recoverConsolidations({
+        userKey: consolidationWrwUser.userKey,
+        backupKey: consolidationWrwUser.backupKey,
+        bitgoKey: consolidationWrwUser.bitgoKey,
+        walletPassphrase: consolidationWrwUser.walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(2);
+    });
+
+    it('should build even if single address has insufficient funds', async function () {
+      const res = await basecoin.recoverConsolidations({
+        userKey: consolidationWrwUser.userKey,
+        backupKey: consolidationWrwUser.backupKey,
+        bitgoKey: consolidationWrwUser.bitgoKey,
+        walletPassphrase: consolidationWrwUser.walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(2);
+    });
   });
 
   describe('Recover Transactions Failure:', () => {
@@ -787,7 +858,7 @@ describe('ADA', function () {
           walletPassphrase: wrwUser.walletPassphrase,
           recoveryDestination: destAddr,
         })
-        .should.rejectedWith('Did not find address with funds to recover');
+        .should.rejectedWith('Did not find address with funds to recover.');
       sandBox.assert.calledOnce(basecoin.getDataFromNode);
     });
 
@@ -806,7 +877,7 @@ describe('ADA', function () {
           recoveryDestination: destAddr,
         })
         .should.rejectedWith(
-          'Insufficient funds to recover, minimum required is 1 ADA plus fees, got 9834455 fees: 165545'
+          'Insufficient funds to recover, minimum required is 1 ADA plus fees, got 834455 fees: 165545'
         );
       sandBox.assert.calledTwice(basecoin.getDataFromNode);
     });

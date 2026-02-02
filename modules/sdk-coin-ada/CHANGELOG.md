@@ -5,221 +5,119 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 # [4.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.20.8...@bitgo/sdk-coin-ada@4.21.0) (2026-01-22)
 
-
 ### Features
 
-* **sdk-coin-ada:** support for sponsored txns ([cb75eda](https://github.com/BitGo/BitGoJS/commit/cb75edad4850135a92e0c5ea41156491977edf73))
-* **sdk-coin-ada:** token sponsorship support ([12e0c78](https://github.com/BitGo/BitGoJS/commit/12e0c78cef2d763d0e6de4bea94973d7b0e1788a))
-
-
-
-
+- **sdk-coin-ada:** support for sponsored txns ([cb75eda](https://github.com/BitGo/BitGoJS/commit/cb75edad4850135a92e0c5ea41156491977edf73))
+- **sdk-coin-ada:** token sponsorship support ([12e0c78](https://github.com/BitGo/BitGoJS/commit/12e0c78cef2d763d0e6de4bea94973d7b0e1788a))
 
 ## [4.20.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.20.7...@bitgo/sdk-coin-ada@4.20.8) (2026-01-19)
 
-
 ### Bug Fixes
 
-* **sdk-coin-ada:** use derivedFromParentWithSeed in address verification ([852137d](https://github.com/BitGo/BitGoJS/commit/852137d53e5813aaaccc0590379f81aafd708892))
-
-
-
-
+- **sdk-coin-ada:** use derivedFromParentWithSeed in address verification ([852137d](https://github.com/BitGo/BitGoJS/commit/852137d53e5813aaaccc0590379f81aafd708892))
 
 ## [4.20.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.20.6...@bitgo/sdk-coin-ada@4.20.7) (2026-01-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
 
-
-
-
-
 ## [4.20.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.20.5...@bitgo/sdk-coin-ada@4.20.6) (2026-01-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
-
-
-
-
 
 ## [4.20.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.20.4...@bitgo/sdk-coin-ada@4.20.5) (2026-01-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
 
-
-
-
-
 ## [4.20.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.20.3...@bitgo/sdk-coin-ada@4.20.4) (2025-12-23)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
-
-
-
-
 
 ## [4.20.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.20.2...@bitgo/sdk-coin-ada@4.20.3) (2025-12-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
 
-
-
-
-
 ## [4.20.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.20.1...@bitgo/sdk-coin-ada@4.20.2) (2025-12-11)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
-
-
-
-
 
 ## [4.20.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.20.0...@bitgo/sdk-coin-ada@4.20.1) (2025-12-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
 
-
-
-
-
 # [4.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.19.0...@bitgo/sdk-coin-ada@4.20.0) (2025-12-04)
-
 
 ### Features
 
-* address verification for ada ([b4ed3c5](https://github.com/BitGo/BitGoJS/commit/b4ed3c56739ad94471b3ccd417217ac91ecb573d))
-
-
-
-
+- address verification for ada ([b4ed3c5](https://github.com/BitGo/BitGoJS/commit/b4ed3c56739ad94471b3ccd417217ac91ecb573d))
 
 # [4.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.18.3...@bitgo/sdk-coin-ada@4.19.0) (2025-11-26)
 
-
 ### Features
 
-* **sdk-coin-ada:** add build logs and modify token policy id ([8d8482a](https://github.com/BitGo/BitGoJS/commit/8d8482afa50d707bfa69caa6ccbab750a32c76ef))
-
-
-
-
+- **sdk-coin-ada:** add build logs and modify token policy id ([8d8482a](https://github.com/BitGo/BitGoJS/commit/8d8482afa50d707bfa69caa6ccbab750a32c76ef))
 
 ## [4.18.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.18.2...@bitgo/sdk-coin-ada@4.18.3) (2025-11-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
 
-
-
-
-
 ## [4.18.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.18.1...@bitgo/sdk-coin-ada@4.18.2) (2025-11-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
 
-
-
-
-
 ## [4.18.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.18.0...@bitgo/sdk-coin-ada@4.18.1) (2025-11-12)
-
 
 ### Bug Fixes
 
-* **sdk-coin-ada:** shouldn't throw insufficient qty for total token spend ([6820999](https://github.com/BitGo/BitGoJS/commit/6820999b2d8ce47110d894875db15a0569f31cba))
-
-
-
-
+- **sdk-coin-ada:** shouldn't throw insufficient qty for total token spend ([6820999](https://github.com/BitGo/BitGoJS/commit/6820999b2d8ce47110d894875db15a0569f31cba))
 
 # [4.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.17.4...@bitgo/sdk-coin-ada@4.18.0) (2025-11-06)
 
-
 ### Features
 
-* deserialize signed CIP-8 message hex ([66b973a](https://github.com/BitGo/BitGoJS/commit/66b973a4708e1b96c53c3785c65654a63b0d43bb))
-
-
-
-
+- deserialize signed CIP-8 message hex ([66b973a](https://github.com/BitGo/BitGoJS/commit/66b973a4708e1b96c53c3785c65654a63b0d43bb))
 
 ## [4.17.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.17.3...@bitgo/sdk-coin-ada@4.17.4) (2025-10-31)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
 
-
-
-
-
 ## [4.17.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.17.2...@bitgo/sdk-coin-ada@4.17.3) (2025-10-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
-
-
-
-
 
 ## [4.17.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.17.1...@bitgo/sdk-coin-ada@4.17.2) (2025-10-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
 
-
-
-
-
 ## [4.17.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.17.0...@bitgo/sdk-coin-ada@4.17.1) (2025-10-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
 
-
-
-
-
 # [4.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.16.2...@bitgo/sdk-coin-ada@4.17.0) (2025-10-16)
-
 
 ### Features
 
-* **sdk-coin-ada:** fix ada build signature handling ([34dacbc](https://github.com/BitGo/BitGoJS/commit/34dacbcc1a2e4619503f5a93410b611f55bbc847))
-* **sdk-coin-ada:** remove fallback logic for token fee calculation ([daef78e](https://github.com/BitGo/BitGoJS/commit/daef78ea58e9c93c4f1b4e0d78a0249ca6c5f524))
-
-
-
-
+- **sdk-coin-ada:** fix ada build signature handling ([34dacbc](https://github.com/BitGo/BitGoJS/commit/34dacbcc1a2e4619503f5a93410b611f55bbc847))
+- **sdk-coin-ada:** remove fallback logic for token fee calculation ([daef78e](https://github.com/BitGo/BitGoJS/commit/daef78ea58e9c93c4f1b4e0d78a0249ca6c5f524))
 
 ## [4.16.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.16.1...@bitgo/sdk-coin-ada@4.16.2) (2025-10-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
 
-
-
-
-
 ## [4.16.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.16.0...@bitgo/sdk-coin-ada@4.16.1) (2025-10-09)
-
 
 ### Bug Fixes
 
-* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
-
-
-
-
+- run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
 
 # [4.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.15.2...@bitgo/sdk-coin-ada@4.16.0) (2025-10-08)
 
-
 ### Bug Fixes
 
-* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
-
+- add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
 
 ### Features
 
-* **sdk-coin-ada:** use 1 ada as min fees ([558f621](https://github.com/BitGo/BitGoJS/commit/558f6213131e75aac3d0cefb12ac7633fe7c9419))
-
-
-
-
+- **sdk-coin-ada:** use 1 ada as min fees ([558f621](https://github.com/BitGo/BitGoJS/commit/558f6213131e75aac3d0cefb12ac7633fe7c9419))
 
 ## [4.15.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.15.1...@bitgo/sdk-coin-ada@4.15.2) (2025-10-02)
 
