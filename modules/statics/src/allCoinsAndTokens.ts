@@ -310,6 +310,7 @@ export const allCoinsAndTokens = [
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.BULK_TRANSACTION,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_ONCHAIN,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
@@ -371,6 +372,7 @@ export const allCoinsAndTokens = [
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.BULK_TRANSACTION,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_ONCHAIN,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
@@ -2025,7 +2027,7 @@ export const allCoinsAndTokens = [
     8,
     UnderlyingAsset.APT,
     BaseUnit.APT,
-    [...APT_FEATURES, CoinFeature.STAKING],
+    [...APT_FEATURES, CoinFeature.STAKING, CoinFeature.CUSTODY_BITGO_KOREA],
     KeyCurve.Ed25519,
     80,
     200
@@ -2038,7 +2040,7 @@ export const allCoinsAndTokens = [
     8,
     UnderlyingAsset.APT,
     BaseUnit.APT,
-    [...APT_FEATURES, CoinFeature.STAKING],
+    [...APT_FEATURES, CoinFeature.STAKING, CoinFeature.CUSTODY_BITGO_KOREA],
     KeyCurve.Ed25519,
     80,
     200
@@ -4027,7 +4029,7 @@ export const allCoinsAndTokens = [
     6,
     'TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8',
     UnderlyingAsset.USDC,
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA, CoinFeature.STABLECOIN]
   ),
   tronToken(
     'f96fda99-cf5a-4ac4-885e-fa95292a7135',
@@ -4036,7 +4038,7 @@ export const allCoinsAndTokens = [
     6,
     'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
     UnderlyingAsset['trx:usdt'],
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA, CoinFeature.STABLECOIN]
   ),
   tronToken(
     '77fe25dc-7871-4d9d-9cc0-2e5cba6250ff',
@@ -4313,7 +4315,7 @@ export const allCoinsAndTokens = [
     6,
     'TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id',
     UnderlyingAsset.USDC,
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA, CoinFeature.STABLECOIN]
   ),
   ttronToken(
     '85a60a5a-88e3-45df-9e2c-dc6161b4c6b1',

@@ -6466,6 +6466,7 @@ export const erc20Coins = [
       ...TOKEN_FEATURES_WITH_SWISS,
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.STABLECOIN,
     ]
   ),
@@ -6494,7 +6495,12 @@ export const erc20Coins = [
     6,
     '0xdac17f958d2ee523a2206206994597c13d831ec7',
     UnderlyingAsset.USDT,
-    [...TOKEN_FEATURES_WITH_SWISS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.STABLECOIN]
+    [
+      ...TOKEN_FEATURES_WITH_SWISS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_KOREA,
+      CoinFeature.STABLECOIN,
+    ]
   ),
   erc20(
     '7eab6610-5fa7-4a92-8317-c4d143cd58c0',
@@ -13111,7 +13117,7 @@ export const erc20Coins = [
     6,
     '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
     UnderlyingAsset.TUSDC,
-    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA, CoinFeature.STABLECOIN]
   ),
   terc20(
     '891e4428-82b1-4970-8bad-a2cece698066',
@@ -13120,7 +13126,7 @@ export const erc20Coins = [
     6,
     '0xc2c527c0cacf457746bd31b2a698fe89de2b6d49',
     UnderlyingAsset.TUSDT,
-    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA, CoinFeature.STABLECOIN]
   ),
   terc20(
     '6b43e702-d0ba-44c8-af93-c10cd9c2e730',
