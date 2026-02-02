@@ -4324,7 +4324,7 @@ export const allCoinsAndTokens = [
     6,
     'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
     UnderlyingAsset['ttrx:usdt'],
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA, CoinFeature.STABLECOIN]
   ),
   ttronToken(
     '78551a7f-17d1-4e81-b6a9-3c6e960337f4',

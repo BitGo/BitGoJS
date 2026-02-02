@@ -62,7 +62,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   avaxp: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_KOREA],
   },
   btc: {
     features: [
@@ -419,7 +419,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   tavaxp: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_KOREA],
   },
   tbtc: {
     features: [
