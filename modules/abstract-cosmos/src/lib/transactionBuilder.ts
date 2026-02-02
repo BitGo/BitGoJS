@@ -144,6 +144,21 @@ export abstract class CosmosTransactionBuilder<CustomMessage = never> extends Ba
   }
 
   /**
+   * Sets the fee granter address for this transaction.
+   * The fee granter is the address that will pay the transaction fees on behalf of the signer.
+   * @param {string} address - The address that will pay the transaction fees
+   * @returns {TransactionBuilder} this transaction builder
+   */
+  feeGranter(address: string): this {
+    this.validateAddress({ address });
+    if (!this._gasBudget) {
+      throw new BuildTransactionError('Gas budget must be set before setting fee granter');
+    }
+    this._gasBudget.feeGranter = address;
+    return this;
+  }
+
+  /**
    * Initialize the transaction builder fields using the decoded transaction data
    * @param {CosmosTransaction} tx the transaction data
    */
