@@ -192,7 +192,7 @@ export const solTokens = [
     'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // https://explorer.solana.com/address/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
     'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
     UnderlyingAsset['sol:usdc'],
-    [...SOL_TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.STABLECOIN]
+    [...SOL_TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.CUSTODY_BITGO_KOREA, CoinFeature.STABLECOIN]
   ),
   solToken(
     '2a41c38d-c79a-4734-ae3a-c60e4d1f2d99',
@@ -232,7 +232,7 @@ export const solTokens = [
     'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', // https://explorer.solana.com/address/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB
     'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
     UnderlyingAsset['sol:usdt'],
-    [...SOL_TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.STABLECOIN]
+    [...SOL_TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.CUSTODY_BITGO_KOREA, CoinFeature.STABLECOIN]
   ),
   solToken(
     '4d631f91-02e2-4b89-af01-7b42cb61b1bb',
@@ -3420,7 +3420,7 @@ export const solTokens = [
     'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
     'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
     UnderlyingAsset['tsol:usdc'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+    [...SOL_TOKEN_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA, CoinFeature.STABLECOIN]
   ),
   tsolToken(
     '6dcb8ff8-be59-471f-9e57-c3b68735d71e',
@@ -3470,7 +3470,7 @@ export const solTokens = [
     '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
     '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
     UnderlyingAsset['tsol:usdt'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+    [...SOL_TOKEN_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA, CoinFeature.STABLECOIN]
   ),
   tsolToken(
     '7ad7512f-90ca-44e3-9238-ae78c1a3e57d',
