@@ -15,7 +15,7 @@ import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin } from '../abstractUtxoCoin';
 import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction';
-import { generateAddressWithChainAndIndex } from '../address';
+import { generateAddressWithChainAndIndex, ScriptType2Of3, scriptTypes2Of3, hasWitnessData } from '../address';
 import { encodeTransaction } from '../transaction/decode';
 import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection';
 import { isTestnetCoin, UtxoCoinName } from '../names';
@@ -26,14 +26,11 @@ import { MempoolApi } from './mempoolApi';
 import { CoingeckoApi } from './coingeckoApi';
 import { createBackupKeyRecoveryPsbt, getRecoveryAmount, PsbtBackend, toPsbtToUtxolibPsbt } from './psbt';
 
-type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
-type ChainCode = utxolib.bitgo.ChainCode;
+type ChainCode = fixedScriptWallet.ChainCode;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type WalletUnspentJSON = WalletUnspent & {
   valueString: string;
 };
-
-const { getInternalChainCode, scriptTypeForChain, outputScripts, getExternalChainCode } = utxolib.bitgo;
 
 // V1 only deals with BTC. 50 sat/vbyte is very arbitrary.
 export const DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V1 = 50;
@@ -137,9 +134,8 @@ async function queryBlockchainUnspentsPath(
   walletKeys: RootWalletKeys,
   chain: ChainCode
 ): Promise<WalletUnspent<bigint>[]> {
-  const scriptType = scriptTypeForChain(chain);
-  const fetchPrevTx =
-    !utxolib.bitgo.outputScripts.hasWitnessData(scriptType) && getMainnet(coin.network) !== networks.zcash;
+  const scriptType = fixedScriptWallet.ChainCode.scriptType(chain);
+  const fetchPrevTx = !hasWitnessData(scriptType) && getMainnet(coin.network) !== networks.zcash;
   const recoveryProvider = params.recoveryProvider ?? forCoin(coin.getChain(), params.apiKey);
   const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
   let numSequentialAddressesWithoutTxs = 0;
@@ -315,15 +311,25 @@ export async function backupKeyRecovery(
 
   const unspents: WalletUnspent<bigint>[] = (
     await Promise.all(
-      outputScripts.scriptTypes2Of3
+      scriptTypes2Of3
         .filter(
           (addressType) => coin.supportsAddressType(addressType) && !params.ignoreAddressTypes?.includes(addressType)
         )
         .reduce(
           (queries, addressType) => [
             ...queries,
-            queryBlockchainUnspentsPath(coin, params, walletKeys, getExternalChainCode(addressType)),
-            queryBlockchainUnspentsPath(coin, params, walletKeys, getInternalChainCode(addressType)),
+            queryBlockchainUnspentsPath(
+              coin,
+              params,
+              walletKeys,
+              fixedScriptWallet.ChainCode.value(addressType, 'external')
+            ),
+            queryBlockchainUnspentsPath(
+              coin,
+              params,
+              walletKeys,
+              fixedScriptWallet.ChainCode.value(addressType, 'internal')
+            ),
           ],
           [] as Promise<WalletUnspent<bigint>[]>[]
         )

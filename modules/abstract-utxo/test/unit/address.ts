@@ -4,7 +4,12 @@ import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
 const { chainCodes } = utxolib.bitgo;
 
-import { AbstractUtxoCoin, GenerateFixedScriptAddressOptions, generateAddress } from '../../src';
+import {
+  AbstractUtxoCoin,
+  GenerateFixedScriptAddressOptions,
+  generateAddress,
+  utxolibScriptTypes2Of3,
+} from '../../src';
 
 import { utxoCoins, keychains as keychainsBip32, getFixture, shouldEqualJSON } from './util';
 
@@ -42,9 +47,7 @@ function run(coin: AbstractUtxoCoin) {
 
   describe(`UTXO Addresses ${coin.getChain()}`, function () {
     it('address support', function () {
-      const supportedAddressTypes = utxolib.bitgo.outputScripts.scriptTypes2Of3.filter((t) =>
-        coin.supportsAddressType(t)
-      );
+      const supportedAddressTypes = utxolibScriptTypes2Of3.filter((t) => coin.supportsAddressType(t));
       switch (coin.getChain()) {
         case 'btc':
         case 'tbtc':

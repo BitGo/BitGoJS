@@ -1,11 +1,18 @@
 import * as assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
+import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 import nock = require('nock');
 import { common, HalfSignedUtxoTransaction, Wallet } from '@bitgo/sdk-core';
 import { getSeed } from '@bitgo/sdk-test';
 
-import { AbstractUtxoCoin, getReplayProtectionAddresses } from '../../src';
+import {
+  AbstractUtxoCoin,
+  getReplayProtectionAddresses,
+  ScriptType2Of3,
+  utxolibScriptTypes2Of3,
+  UtxolibScriptType,
+} from '../../src';
 import { getMainnetCoinName } from '../../src/names';
 
 import { defaultBitGo, encryptKeychain, getDefaultWalletKeys, getUtxoWallet, keychainsBase58, utxoCoins } from './util';
@@ -24,7 +31,7 @@ type KeyDoc = {
 const walletPassphrase = 'gabagool';
 const webauthnWalletPassPhrase = 'just the gabagool';
 
-const scriptTypes = [...utxolib.bitgo.outputScripts.scriptTypes2Of3, 'taprootKeyPathSpend', 'p2shP2pk'] as const;
+const scriptTypes = [...utxolibScriptTypes2Of3, 'taprootKeyPathSpend', 'p2shP2pk'] as const;
 export type ScriptType = (typeof scriptTypes)[number];
 
 type Input = {
@@ -188,8 +195,8 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
     before(async function () {
       // Make output address information
       const outputAmount = BigInt(inputScripts.length) * BigInt(1e8) - fee;
-      const outputScriptType: utxolib.bitgo.outputScripts.ScriptType = 'p2sh';
-      const outputChain = utxolib.bitgo.getExternalChainCode(outputScriptType);
+      const outputScriptType: UtxolibScriptType = 'p2sh';
+      const outputChain = fixedScriptWallet.ChainCode.value(outputScriptType, 'external');
       const outputAddress = utxolib.bitgo.getWalletAddress(rootWalletKeys, outputChain, 0, coin.network);
 
       recipient = {
@@ -307,7 +314,7 @@ utxoCoins
       .forEach((inputScript) => {
         const inputScriptCleaned = (
           inputScript === 'taprootKeyPathSpend' ? 'p2trMusig2' : inputScript
-        ) as utxolib.bitgo.outputScripts.ScriptType2Of3;
+        ) as ScriptType2Of3;
 
         if (!coin.supportsAddressType(inputScriptCleaned)) {
           return;

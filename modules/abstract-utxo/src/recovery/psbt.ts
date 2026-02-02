@@ -6,10 +6,7 @@ import { getNetworkFromCoinName, UtxoCoinName } from '../names';
 import type { WalletUnspent } from '../unspent';
 
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
-
-const { chainCodesP2tr, chainCodesP2trMusig2 } = utxolib.bitgo;
-
-type ChainCode = utxolib.bitgo.ChainCode;
+type ChainCode = fixedScriptWallet.ChainCode;
 
 /**
  * Backend to use for PSBT creation.
@@ -22,9 +19,8 @@ export type PsbtBackend = 'wasm-utxo' | 'utxolib';
  * Check if a chain code is for a taproot script type
  */
 export function isTaprootChain(chain: ChainCode): boolean {
-  return (
-    (chainCodesP2tr as readonly number[]).includes(chain) || (chainCodesP2trMusig2 as readonly number[]).includes(chain)
-  );
+  const scriptType = fixedScriptWallet.ChainCode.scriptType(chain);
+  return scriptType === 'p2trLegacy' || scriptType === 'p2trMusig2';
 }
 
 /**

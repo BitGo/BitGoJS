@@ -84,7 +84,13 @@ import {
   UtxoCoinName,
   UtxoCoinNameMainnet,
 } from './names';
-import { assertFixedScriptWalletAddress } from './address/fixedScript';
+import {
+  assertFixedScriptWalletAddress,
+  ScriptType2Of3,
+  scriptTypes2Of3,
+  UtxolibScriptType,
+  toUtxolibScriptType,
+} from './address/fixedScript';
 import { isSdkBackend, ParsedTransaction, SdkBackend } from './transaction/types';
 import { decodePsbtWith, encodeTransaction, stringToBufferTryFormats } from './transaction/decode';
 import { fetchKeychains, toBip32Triple, UtxoKeychain } from './keychains';
@@ -94,8 +100,6 @@ import { signTransaction } from './transaction/signTransaction';
 import { isUtxoWalletData, UtxoWallet } from './wallet';
 import { isDescriptorWalletData } from './descriptor/descriptorWallet';
 import type { Unspent } from './unspent';
-
-import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
 export type TxFormat =
   // This is a legacy transaction format based around the bitcoinjs-lib serialization of unsigned transactions
@@ -140,8 +144,6 @@ type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
     signingStep?: 'signerNonce' | 'signerSignature' | 'cosignerNonce';
   }): Promise<SignedTransaction>;
 };
-
-const { isChainCode, scriptTypeForChain, outputScripts } = bitgo;
 
 /**
  * Convert ValidationError to TxIntentMismatchRecipientError with structured data
@@ -425,7 +427,7 @@ export abstract class AbstractUtxoCoin
 
   /** @deprecated */
   static get validAddressTypes(): ScriptType2Of3[] {
-    return [...outputScripts.scriptTypes2Of3];
+    return [...scriptTypes2Of3];
   }
 
   /**
@@ -533,8 +535,10 @@ export abstract class AbstractUtxoCoin
    * Determine an address' type based on its witness and redeem script presence
    * @param addressDetails
    */
-  static inferAddressType(addressDetails: { chain: number }): ScriptType2Of3 | null {
-    return isChainCode(addressDetails.chain) ? scriptTypeForChain(addressDetails.chain) : null;
+  static inferAddressType(addressDetails: { chain: number }): UtxolibScriptType | null {
+    return fixedScriptWallet.ChainCode.is(addressDetails.chain)
+      ? toUtxolibScriptType(fixedScriptWallet.ChainCode.scriptType(addressDetails.chain))
+      : null;
   }
 
   createTransactionFromHex<TNumber extends number | bigint = number>(
@@ -716,7 +720,7 @@ export abstract class AbstractUtxoCoin
    * @returns true iff coin supports spending from unspentType
    */
   supportsAddressType(addressType: ScriptType2Of3): boolean {
-    return utxolib.bitgo.outputScripts.isSupportedScriptType(this.network, addressType);
+    return fixedScriptWallet.supportsScriptType(this.name, addressType);
   }
 
   /** inherited doc */
@@ -729,7 +733,9 @@ export abstract class AbstractUtxoCoin
    * @return true iff coin supports spending from chain
    */
   supportsAddressChain(chain: number): boolean {
-    return isChainCode(chain) && this.supportsAddressType(utxolib.bitgo.scriptTypeForChain(chain));
+    return (
+      fixedScriptWallet.ChainCode.is(chain) && this.supportsAddressType(fixedScriptWallet.ChainCode.scriptType(chain))
+    );
   }
 
   keyIdsForSigning(): number[] {

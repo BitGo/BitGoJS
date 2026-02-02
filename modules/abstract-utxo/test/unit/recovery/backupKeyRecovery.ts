@@ -16,6 +16,8 @@ import {
   BackupKeyRecoveryTransansaction,
   CoingeckoApi,
   FormattedOfflineVaultTxInfo,
+  ScriptType2Of3,
+  toUtxolibScriptType,
 } from '../../../src';
 import { getCoinName } from '../../../src/names';
 import type { Unspent, WalletUnspent } from '../../../src/unspent';
@@ -37,7 +39,6 @@ import { MockRecoveryProvider } from './mock';
 
 const { toOutput } = utxolib.bitgo;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
-type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
 const config = { krsProviders };
 
@@ -154,9 +155,24 @@ function run(
     before('create recovery data', async function () {
       this.timeout(10_000);
       recoverUnspents = scriptTypes.flatMap((scriptType, index) => [
-        utxolib.testutil.toUnspent({ scriptType, value: BigInt(1e8) * valueMul }, index, coin.network, walletKeys),
-        utxolib.testutil.toUnspent({ scriptType, value: BigInt(2e8) * valueMul }, index, coin.network, walletKeys),
-        utxolib.testutil.toUnspent({ scriptType, value: BigInt(3e8) * valueMul }, index, coin.network, walletKeys),
+        utxolib.testutil.toUnspent(
+          { scriptType: toUtxolibScriptType(scriptType), value: BigInt(1e8) * valueMul },
+          index,
+          coin.network,
+          walletKeys
+        ),
+        utxolib.testutil.toUnspent(
+          { scriptType: toUtxolibScriptType(scriptType), value: BigInt(2e8) * valueMul },
+          index,
+          coin.network,
+          walletKeys
+        ),
+        utxolib.testutil.toUnspent(
+          { scriptType: toUtxolibScriptType(scriptType), value: BigInt(3e8) * valueMul },
+          index,
+          coin.network,
+          walletKeys
+        ),
       ]);
 
       // If the coin is bch, convert the mocked unspent address to cashaddr format since that is the format that blockchair

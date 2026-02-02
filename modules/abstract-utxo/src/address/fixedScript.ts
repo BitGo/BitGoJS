@@ -16,7 +16,54 @@ import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { UtxoCoinName } from '../names';
 
-type ScriptType2Of3 = fixedScriptWallet.OutputScriptType;
+/**
+ * Script type for 2-of-3 multisig outputs.
+ * This is the wasm-utxo OutputScriptType which uses 'p2trLegacy' for taproot.
+ */
+export type ScriptType2Of3 = fixedScriptWallet.OutputScriptType;
+
+/**
+ * utxolib script type format - uses 'p2tr' instead of 'p2trLegacy'.
+ * This is the format expected by utxolib functions.
+ */
+export type UtxolibScriptType = 'p2sh' | 'p2shP2wsh' | 'p2wsh' | 'p2tr' | 'p2trMusig2';
+
+/**
+ * All 2-of-3 multisig script types.
+ * Uses wasm-utxo naming ('p2trLegacy' for taproot).
+ */
+export const scriptTypes2Of3: readonly ScriptType2Of3[] = ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2trLegacy', 'p2trMusig2'];
+
+/**
+ * All 2-of-3 multisig script types in utxolib format.
+ * Uses utxolib naming ('p2tr' for taproot).
+ */
+export const utxolibScriptTypes2Of3: readonly UtxolibScriptType[] = [
+  'p2sh',
+  'p2shP2wsh',
+  'p2wsh',
+  'p2tr',
+  'p2trMusig2',
+];
+
+/**
+ * Convert ScriptType2Of3 to utxolib-compatible format.
+ * ScriptType2Of3 uses 'p2trLegacy' while utxolib uses 'p2tr'.
+ */
+export function toUtxolibScriptType(scriptType: ScriptType2Of3): UtxolibScriptType {
+  return scriptType === 'p2trLegacy' ? 'p2tr' : scriptType;
+}
+
+/**
+ * Check if a script type requires witness data.
+ * Witness data is required for segwit and taproot script types.
+ */
+export function hasWitnessData(scriptType: ScriptType2Of3): boolean {
+  return (
+    scriptType === 'p2shP2wsh' || scriptType === 'p2wsh' || scriptType === 'p2trLegacy' || scriptType === 'p2trMusig2'
+  );
+}
+
 type ChainCode = fixedScriptWallet.ChainCode;
 
 export interface FixedScriptAddressCoinSpecific {
