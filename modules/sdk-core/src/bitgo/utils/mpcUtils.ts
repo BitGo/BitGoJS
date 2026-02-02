@@ -191,7 +191,7 @@ export abstract class MpcUtils {
       isTestTransaction: params.isTestTransaction,
     };
 
-    if (['eth', 'polygon', 'bsc', 'coredao', 'seievm'].includes(baseCoin.getFamily())) {
+    if (baseCoin.isEVM() && baseCoin.supportsTss()) {
       switch (params.intentType) {
         case 'payment':
         case 'transferToken':
