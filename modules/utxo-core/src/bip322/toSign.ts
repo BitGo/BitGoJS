@@ -59,7 +59,6 @@ export function addBip322Input(psbt: Psbt, message: string, addressDetails: Addr
     hash: toSpendTx.getId(), // vin[0].prevout.hash = to_spend.txid
     index: 0, // vin[0].prevout.n = 0
     sequence: 0, // vin[0].nSequence = 0
-    nonWitnessUtxo: toSpendTx.toBuffer(), // previous transaction for us to rebuild later to verify
     sighashType: Transaction.SIGHASH_ALL,
   });
   const inputIndex = psbt.data.inputs.length - 1;
