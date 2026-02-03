@@ -1932,6 +1932,30 @@ export class BitGoAPI implements BitGoBase {
       password: this.calculateHMAC(user.username, newPassword),
     };
 
+    // Check if batching flow is enabled
+    try {
+      const batchingFlowCheck = await this.get(this.url('/user/checkBatchingPasswordFlow', 2)).result();
+
+      if (batchingFlowCheck.isBatchingFlowEnabled) {
+        await this.processKeychainPasswordUpdatesInBatches(
+          updatePasswordParams.keychains,
+          updatePasswordParams.v2_keychains,
+          batchingFlowCheck.noOfBatches,
+          3
+        );
+        // Call changepassword API without keychains for batching flow
+        return this.post(this.url('/user/changepassword'))
+          .send({
+            version: updatePasswordParams.version,
+            oldPassword: updatePasswordParams.oldPassword,
+            password: updatePasswordParams.password,
+          })
+          .result();
+      }
+    } catch (error) {
+      // batching flow check failed
+    }
+
     return this.post(this.url('/user/changepassword')).send(updatePasswordParams).result();
   }
 
@@ -2172,5 +2196,64 @@ export class BitGoAPI implements BitGoBase {
     }
     const result = await req;
     return result.body;
+  }
+
+  /**
+   * Process keychain password updates in batches with retry logic
+   * @param keychains - The v1 keychains to update
+   * @param v2Keychains - The v2 keychains to update
+   * @param noOfBatches - Number of batches to split the keychains into
+   * @param maxRetries - Maximum number of retries per batch
+   * @private
+   */
+  private async processKeychainPasswordUpdatesInBatches(
+    keychains: Record<string, string>,
+    v2Keychains: Record<string, string>,
+    noOfBatches: number,
+    maxRetries: number
+  ): Promise<void> {
+    // Split keychains into batches
+    const v1KeychainEntries = Object.entries(keychains);
+    const v2KeychainEntries = Object.entries(v2Keychains);
+
+    const v1BatchSize = Math.ceil(v1KeychainEntries.length / noOfBatches);
+    const v2BatchSize = Math.ceil(v2KeychainEntries.length / noOfBatches);
+
+    // Call batching API for each batch with retry logic
+    for (let i = 0; i < noOfBatches; i++) {
+      const v1Batch = Object.fromEntries(v1KeychainEntries.slice(i * v1BatchSize, (i + 1) * v1BatchSize));
+      const v2Batch = Object.fromEntries(v2KeychainEntries.slice(i * v2BatchSize, (i + 1) * v2BatchSize));
+
+      let retryCount = 0;
+      let success = false;
+
+      while (retryCount < maxRetries && !success) {
+        try {
+          const response = await this.put(this.url('/user/keychains', 2))
+            .send({
+              keychains: v1Batch,
+              v2_keychains: v2Batch,
+            })
+            .result();
+
+          // Check if there are any failed keychains in the response
+          const hasFailed =
+            (response.failed?.v1 && Object.keys(response.failed.v1).length > 0) ||
+            (response.failed?.v2 && Object.keys(response.failed.v2).length > 0);
+
+          if (hasFailed) {
+            throw new Error(`Batch ${i + 1} had failed keychains: ${JSON.stringify(response.failed)}`);
+          }
+
+          success = true;
+        } catch (error) {
+          retryCount++;
+
+          if (retryCount >= maxRetries) {
+            throw new Error(`Batch ${i + 1} failed after ${maxRetries} retries: ${error.message}`);
+          }
+        }
+      }
+    }
   }
 }
