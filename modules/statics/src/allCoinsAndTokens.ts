@@ -55,6 +55,7 @@ import {
 } from './account';
 import { ada } from './ada';
 import { avaxp } from './avaxp';
+import { night } from './night';
 import { BaseUnit, CoinFeature, KeyCurve, UnderlyingAsset } from './base';
 import { canton } from './canton';
 import { erc20Coins } from './coins/erc20Coins';
@@ -68,6 +69,7 @@ import { lightningCoins } from './lightning';
 import { sip10Tokens } from './coins/sip10Tokens';
 import { nep141Tokens } from './coins/nep141Tokens';
 import { vetTokens } from './coins/vetTokens';
+import { nightTokens } from './coins/nightTokens';
 import { cosmosTokens } from './coins/cosmosTokens';
 import { jettonTokens } from './coins/jettonTokens';
 import { polyxTokens } from './coins/polyxTokens';
@@ -105,6 +107,7 @@ import {
   INJECTIVE_FEATURES,
   IOTA_FEATURES,
   NEAR_FEATURES,
+  NIGHT_FEATURES,
   OAS_FEATURES,
   OPETH_FEATURES,
   POLYGON_FEATURES,
@@ -155,6 +158,7 @@ export const allCoinsAndTokens = [
   ...sip10Tokens,
   ...nep141Tokens,
   ...vetTokens,
+  ...nightTokens,
   ...cosmosTokens,
   ...botTokens,
   ...adaTokens,
@@ -198,6 +202,23 @@ export const allCoinsAndTokens = [
     Networks.test.ada,
     UnderlyingAsset.ADA,
     ADA_FEATURES
+  ),
+  // Midnight Network - Privacy-first blockchain using zero-knowledge proofs
+  night(
+    'b1c2d3e4-5f6a-7b8c-9d0e-1f2a3b4c5d6e',
+    'night',
+    'Midnight',
+    Networks.main.night,
+    UnderlyingAsset.NIGHT,
+    NIGHT_FEATURES
+  ),
+  night(
+    'c2d3e4f5-6a7b-8c9d-0e1f-2a3b4c5d6e7f',
+    'tnight',
+    'Testnet Midnight',
+    Networks.test.night,
+    UnderlyingAsset.NIGHT,
+    NIGHT_FEATURES
   ),
   account(
     'ec41e62a-cc57-4aa0-9b9e-217da1226817',

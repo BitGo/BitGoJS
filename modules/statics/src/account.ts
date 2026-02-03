@@ -169,6 +169,16 @@ export interface VetTokenConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
   gasTankToken?: string;
 }
+
+/**
+ * Midnight Network token (DUST) constructor options
+ * DUST is the fee token on the Midnight Network
+ */
+export interface NightTokenConstructorOptions extends AccountConstructorOptions {
+  // Token identifier (e.g., 'dust' for the fee token)
+  tokenId: string;
+}
+
 export interface CosmosTokenConstructorOptions extends AccountConstructorOptions {
   denom: string;
 }
@@ -703,6 +713,20 @@ export class VetToken extends AccountCoinToken {
     });
     this.contractAddress = options.contractAddress;
     this.gasTankToken = options.gasTankToken;
+  }
+}
+
+/**
+ * Midnight Network supports the DUST token for transaction fees.
+ * DUST is a native token on the Midnight Network used to pay for transaction fees.
+ */
+export class NightToken extends AccountCoinToken {
+  public tokenId: string;
+  constructor(options: NightTokenConstructorOptions) {
+    super({
+      ...options,
+    });
+    this.tokenId = options.tokenId;
   }
 }
 
@@ -3775,6 +3799,94 @@ export function tvetToken(
     network,
     KeyCurve.Secp256k1,
     gasTankToken
+  );
+}
+
+/**
+ * Factory function for Night token (DUST) instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param tokenId Token identifier (e.g., 'dust')
+ * @param asset Asset which this coin represents
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to the mainnet Night network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function nightToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  tokenId: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.night,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return Object.freeze(
+    new NightToken({
+      id,
+      name,
+      fullName,
+      network,
+      tokenId,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.NIGHT,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet Night token (DUST) instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param tokenId Token identifier (e.g., 'tdust')
+ * @param asset Asset which this coin represents
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to the testnet Night network.
+ */
+export function tnightToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  tokenId: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.night
+) {
+  return nightToken(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    tokenId,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    KeyCurve.Ed25519
   );
 }
 

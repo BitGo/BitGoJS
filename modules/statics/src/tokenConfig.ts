@@ -30,6 +30,7 @@ import {
   PolyxCoin,
   TronErc20Coin,
   VetToken,
+  NightToken,
   WorldERC20Token,
   XrpCoin,
   ZkethERC20Token,
@@ -145,6 +146,13 @@ export type VetTokenConfig = BaseNetworkConfig & {
   contractAddress: string;
 };
 
+/**
+ * Midnight Network token (DUST) configuration
+ */
+export type NightTokenConfig = BaseNetworkConfig & {
+  tokenId: string;
+};
+
 export type VetNFTCollectionConfig = BaseNetworkConfig & {
   nftCollectionId: string;
 };
@@ -186,6 +194,7 @@ export type TokenConfig =
   | CosmosTokenConfig
   | VetTokenConfig
   | VetNFTCollectionConfig
+  | NightTokenConfig
   | TaoTokenConfig
   | PolyxTokenConfig
   | JettonTokenConfig
@@ -239,6 +248,7 @@ export interface TokenNetwork {
     tokens: VetTokenConfig[];
     nftCollections: VetNFTCollectionConfig[];
   };
+  night: { tokens: NightTokenConfig[] };
   cosmos: { tokens: CosmosTokenConfig[] };
   ton: { tokens: JettonTokenConfig[] };
   tempo: { tokens: Tip20TokenConfig[] };
@@ -1070,6 +1080,25 @@ const getFormattedVetTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+function getNightTokenConfig(coin: NightToken): NightTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'night' : 'tnight',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenId: coin.tokenId,
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+
+const getFormattedNightTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: NightTokenConfig[], coin) => {
+    if (coin instanceof NightToken) {
+      acc.push(getNightTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
 const getFormattedCosmosChainTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: CosmosTokenConfig[], coin) => {
     if (coin instanceof CosmosChainToken) {
@@ -1365,6 +1394,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
           (nftCollection: VetNFTCollectionConfig) => nftCollection.network === 'Mainnet'
         ),
       },
+      night: {
+        tokens: getFormattedNightTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
     },
     testnet: {
       ...getFormattedTokensByNetwork('Testnet', coinMap),
@@ -1379,6 +1411,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
         nftCollections: formattedVetNFTCollections.filter(
           (nftCollection: VetNFTCollectionConfig) => nftCollection.network === 'Testnet'
         ),
+      },
+      night: {
+        tokens: getFormattedNightTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
     },
   };

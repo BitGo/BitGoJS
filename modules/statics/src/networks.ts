@@ -93,6 +93,16 @@ export interface AdaNetwork extends BaseNetwork {
   coinsPerUtxoWord: number;
 }
 
+/**
+ * Midnight Network - Privacy-first blockchain using zero-knowledge proofs
+ */
+export interface NightNetwork extends BaseNetwork {
+  // GraphQL indexer endpoint for querying chain state
+  readonly indexerUrl: string;
+  // RPC WebSocket endpoint for node communication
+  readonly rpcUrl: string;
+}
+
 export interface AvalancheNetwork extends BaseNetwork {
   readonly alias: string;
   readonly blockchainID: string;
@@ -234,6 +244,29 @@ class AdaTestnet extends Testnet implements AdaNetwork {
   maxValueSize = 4000;
   poolDeposit = 500000000;
   stakeKeyDeposit = 2000000;
+}
+
+/**
+ * Midnight Network - Privacy-first blockchain using zero-knowledge proofs
+ * Mainnet configuration
+ */
+class Night extends Mainnet implements NightNetwork {
+  name = 'Midnight';
+  family = CoinFamily.NIGHT;
+  explorerUrl = 'https://explorer.midnight.network/';
+  indexerUrl = 'https://indexer.midnight.network/api/v3/graphql';
+  rpcUrl = 'wss://rpc.midnight.network';
+}
+
+/**
+ * Midnight Network Testnet (Preprod)
+ */
+class NightTestnet extends Testnet implements NightNetwork {
+  name = 'MidnightTestnet';
+  family = CoinFamily.NIGHT;
+  explorerUrl = 'https://explorer.preprod.midnight.network/';
+  indexerUrl = 'https://indexer.preprod.midnight.network/api/v3/graphql';
+  rpcUrl = 'wss://rpc.preprod.midnight.network';
 }
 
 class Apt extends Mainnet implements AccountNetwork {
@@ -2460,6 +2493,7 @@ export const Networks = {
     sonic: Object.freeze(new Sonic()),
     sui: Object.freeze(new Sui()),
     near: Object.freeze(new Near()),
+    night: Object.freeze(new Night()),
     stx: Object.freeze(new Stx()),
     somi: Object.freeze(new Somi()),
     soneium: Object.freeze(new Soneium()),
@@ -2573,6 +2607,7 @@ export const Networks = {
     sol: Object.freeze(new SolTestnet()),
     sui: Object.freeze(new SuiTestnet()),
     near: Object.freeze(new NearTestnet()),
+    night: Object.freeze(new NightTestnet()),
     stx: Object.freeze(new StxTestnet()),
     stt: Object.freeze(new SomniaTestnet()),
     soneium: Object.freeze(new SoneiumTestnet()),
