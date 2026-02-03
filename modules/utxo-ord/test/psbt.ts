@@ -129,8 +129,8 @@ describe('OutputLayout to PSBT conversion', function () {
       assertValidPsbt(psbt, rootWalletKeys, signerXprvs, expectedOutputs, expectedResult.feeOutput);
       assertValidPsbt(psbt1, rootWalletKeys, signerXprvs, expectedOutputs, expectedResult.feeOutput);
       assert.strictEqual(
-        Buffer.from(psbt.extractTransaction()).toString('hex'),
-        Buffer.from(psbt1.extractTransaction()).toString('hex')
+        Buffer.from(psbt.extractTransaction().toBytes()).toString('hex'),
+        Buffer.from(psbt1.extractTransaction().toBytes()).toString('hex')
       );
     });
   }

@@ -417,7 +417,7 @@ export async function backupKeyRecovery(
     if (psbt instanceof utxolib.bitgo.UtxoPsbt) {
       txInfo.transactionHex = psbt.extractTransaction().toBuffer().toString('hex');
     } else if (psbt instanceof fixedScriptWallet.BitGoPsbt) {
-      txInfo.transactionHex = Buffer.from(psbt.extractTransaction()).toString('hex');
+      txInfo.transactionHex = Buffer.from(psbt.extractTransaction().toBytes()).toString('hex');
     } else {
       throw new Error('expected a UtxoPsbt or BitGoPsbt object');
     }

@@ -112,7 +112,7 @@ export async function signTransaction<
     );
     if (isLastSignature) {
       signedPsbt.finalizeAllInputs();
-      return Buffer.from(signedPsbt.extractTransaction());
+      return Buffer.from(signedPsbt.extractTransaction().toBytes());
     }
     return signedPsbt;
   }
