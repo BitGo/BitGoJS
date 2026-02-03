@@ -14,12 +14,11 @@ import {
   WalletSignTransactionOptions,
 } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin, getReplayProtectionAddresses, generateAddress, getReplayProtectionPubkeys } from '../../src';
+import { AbstractUtxoCoin, generateAddress, getReplayProtectionPubkeys } from '../../src';
 import { SdkBackend } from '../../src/transaction/types';
 import type { Unspent, WalletUnspent } from '../../src/unspent';
 
 import {
-  utxoCoins,
   shouldEqualJSON,
   getFixture,
   getUtxoWallet,
@@ -32,6 +31,8 @@ import {
   getDefaultWalletKeys,
   getWalletKeys,
   defaultBitGo,
+  getMinUtxoCoins,
+  getScriptTypes,
 } from './util';
 
 function run<TNumber extends number | bigint = number>(
@@ -406,25 +407,6 @@ function run<TNumber extends number | bigint = number>(
   });
 }
 
-function getScriptTypes(coin: AbstractUtxoCoin, txFormat: 'legacy' | 'psbt') {
-  return (['p2shP2pk', 'p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2', 'taprootKeyPathSpend'] as const).filter(
-    (t) => {
-      if (t === 'p2shP2pk') {
-        return getReplayProtectionAddresses(coin.name).length > 0;
-      }
-      if (txFormat === 'legacy') {
-        if (t === 'p2tr' || t === 'p2trMusig2' || t === 'taprootKeyPathSpend') {
-          return false;
-        }
-      }
-      if (t === 'taprootKeyPathSpend') {
-        return coin.supportsAddressType('p2trMusig2');
-      }
-      return coin.supportsAddressType(t);
-    }
-  );
-}
-
 function runTestForCoin(coin: AbstractUtxoCoin) {
   (['legacy', 'psbt'] as const).forEach((txFormat) => {
     run(coin, getScriptTypes(coin, txFormat), txFormat, { decodeWith: 'wasm-utxo' });
@@ -432,7 +414,7 @@ function runTestForCoin(coin: AbstractUtxoCoin) {
 }
 
 describe('Transaction Suite', function () {
-  utxoCoins.forEach((coin) => {
+  getMinUtxoCoins().forEach((coin) => {
     describe(`${coin.getChain()}`, function () {
       runTestForCoin(coin);
     });

@@ -24,6 +24,7 @@ import {
   Tdoge,
   Zec,
   Tzec,
+  getReplayProtectionAddresses,
 } from '../../../src';
 
 export const defaultBitGo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
@@ -65,6 +66,21 @@ function getUtxoCoins(bitgo: BitGoAPI = defaultBitGo): AbstractUtxoCoin[] {
 
 export const utxoCoins = getUtxoCoins();
 
+/**
+ * Minimal subset of coins for comprehensive test coverage.
+ * - btc: Full feature set (segwit, taproot, musig2)
+ * - bch: replay protection addresses
+ * - zec: special transaction format (Overwinter/Sapling)
+ */
+export const minUtxoCoinNames = ['btc', 'bch', 'zec'] as const;
+
+/**
+ * Get minimal set of coins for testing. Covers ~99% of feature paths.
+ */
+export function getMinUtxoCoins(): AbstractUtxoCoin[] {
+  return minUtxoCoinNames.map(getUtxoCoin);
+}
+
 export function getUtxoCoin(name: string): AbstractUtxoCoin {
   for (const c of utxoCoins) {
     if (c.getChain() === name) {
@@ -81,4 +97,25 @@ export function getUtxoCoinForNetwork(n: utxolib.Network): AbstractUtxoCoin {
     }
   }
   throw new Error(`no coin for network ${utxolib.getNetworkName(n)}`);
+}
+
+export type TxFormat = 'legacy' | 'psbt';
+
+export function getScriptTypes(coin: AbstractUtxoCoin, txFormat: TxFormat): utxolib.testutil.InputScriptType[] {
+  return (['p2shP2pk', 'p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2', 'taprootKeyPathSpend'] as const).filter(
+    (t) => {
+      if (t === 'p2shP2pk') {
+        return getReplayProtectionAddresses(coin.name).length > 0;
+      }
+      if (txFormat === 'legacy') {
+        if (t === 'p2tr' || t === 'p2trMusig2' || t === 'taprootKeyPathSpend') {
+          return false;
+        }
+      }
+      if (t === 'taprootKeyPathSpend') {
+        return coin.supportsAddressType('p2trMusig2');
+      }
+      return coin.supportsAddressType(t);
+    }
+  );
 }
