@@ -2951,6 +2951,15 @@ export const allCoinsAndTokens = [
     Networks.main.basechain
   ),
   erc20Token(
+    '1d6535c8-38f0-4b5b-b2d9-d5433dbaf868',
+    'baseeth:cfi',
+    'ConsumerFI',
+    18,
+    '0x0382e3fee4a420bd446367d468a6f00225853420',
+    UnderlyingAsset['baseeth:cfi'],
+    Networks.main.basechain
+  ),
+  erc20Token(
     'f5df6b74-c009-4d28-95e6-3cc7e66427b6',
     'baseeth:weth',
     'Wrapped Ether',
@@ -2966,6 +2975,24 @@ export const allCoinsAndTokens = [
     18,
     '0xbaa5cc21fd487b8fcc2f632f3f4e8d37262a0842',
     UnderlyingAsset['baseeth:morpho'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '2bd8ca07-ea27-4f6e-8503-0d9be1648fa5',
+    'baseeth:mey',
+    'Mey Network',
+    18,
+    '0x8bfac1b375bf2894d6f12fb2eb48b1c1a7916789',
+    UnderlyingAsset['baseeth:mey'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'd304292e-95c1-43b9-a690-f0ef04bd6590',
+    'baseeth:myrc',
+    'Malaysian Ringgit Coin',
+    18,
+    '0x3ed03e95dd894235090b3d4a49e0c3239edce59e',
+    UnderlyingAsset['baseeth:myrc'],
     Networks.main.basechain
   ),
   erc20Token(
@@ -3166,6 +3193,14 @@ export const allCoinsAndTokens = [
     18,
     '0x05940b2df33d6371201e7ae099ced4c363855dfe',
     UnderlyingAsset['xdc:lbt']
+  ),
+  xdcErc20(
+    '39ac0cd2-8869-4b7e-8122-89f12dc9c7c6',
+    'xdc:cre',
+    'Crescite',
+    18,
+    '0xb5fa33923ec3ff7f4b9ab7b4c20b236d31243f77',
+    UnderlyingAsset['xdc:cre']
   ),
   xdcErc20(
     'f03302de-b06b-4ddc-94a2-ad7e89896725',
@@ -3642,6 +3677,17 @@ export const allCoinsAndTokens = [
     [...XLM_TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.STABLECOIN],
     '',
     'USDC'
+  ),
+  stellarToken(
+    'b7f3e8d2-5a9c-4e6b-8f1d-3c2a7e9b4f0d',
+    'xlm:USDM1-GDM5QWWXCMDTQMZAKMYTCI52LA7FWBHAZMU5NJLMIFHDJISJRP2ZWPKC',
+    'USDM1',
+    7,
+    UnderlyingAsset['xlm:USDM1-GDM5QWWXCMDTQMZAKMYTCI52LA7FWBHAZMU5NJLMIFHDJISJRP2ZWPKC'],
+    '',
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    '',
+    'USDM1'
   ),
   stellarToken(
     '8b30dc19-aad7-426b-a98b-ee05f2e6dd71',

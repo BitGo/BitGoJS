@@ -10945,6 +10945,15 @@ export const erc20Coins = [
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
+    '80f6ed83-3024-45c2-8d81-6debd2bf9f12',
+    'eth:usdm1',
+    'USDM1',
+    18,
+    '0xab3cfc7cf0720b75c41b4db078b4ddb338f562e7',
+    UnderlyingAsset['eth:usdm1'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  erc20(
     '4400af90-30d8-43fb-98b6-ca6791c94aa2',
     'eth:sofid',
     'SoFiUSD',
@@ -12798,6 +12807,18 @@ export const erc20Coins = [
     6,
     '0x76c57d19bd3529dadf4bb66e75f0808bc8264a5e',
     UnderlyingAsset.TERC6DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
+    'ec5345e2-5dec-44d7-8dc7-bc46fb4b4f1d',
+    'hteth:grtx',
+    'GreatX Token',
+    6,
+    '0xa1b562a390915605a427f8f46c21917a4e1f1e0a',
+    UnderlyingAsset['hteth:grtx'],
     undefined,
     undefined,
     undefined,
