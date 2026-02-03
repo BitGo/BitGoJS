@@ -19,3 +19,5 @@ coverage
 /.direnv/
 .claude/
 .cursor/
+.serena/
+_bmad*
