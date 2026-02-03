@@ -129,3 +129,45 @@ This will generate the necessary boilerplate for a new coin implementation.
 ## Node.js Version Support
 
 BitGoJS supports Node.js versions >=20 and <25, with NPM >=3.10.10.
+
+## Tools guide
+
+## Code editing and discovery
+
+- **Serena MCP** — Use for all code editing and code discovery:
+  - Edit code via Serena’s symbolic or file-based editing tools.
+  - Find code by names, symbols, and patterns (e.g. `find_symbol`, `get_symbols_overview`, `search_for_pattern`).
+  - Prefer Serena over raw file reads when navigating or changing the codebase.
+
+## Definitions and references
+
+- **Knowledge-graph MCP** — Use whenever you need to understand code:
+  - Finding definitions or references of symbols, types, or files.
+  - Understanding how code is used and where it is referenced.
+  - Rely on the knowledge-graph as the primary source for "where is this defined?" and "who uses this?".
+
+## After code changes
+
+- **Knowledge-graph `index_project`** — After any code update:
+  - Call the knowledge-graph **index_project** (or equivalent) tool so the graph stays in sync with the codebase.
+  - Do this as part of your post-edit workflow so future lookups remain accurate.
+
+## Quick codebase understanding
+
+- **Knowledge-graph repo-map** — When you need a fast, high-level picture:
+  - Use the knowledge-graph **repo-map** (or equivalent) to grasp structure and relationships quickly.
+  - Use it at the start of saga work or when switching context to a new area of the codebase.
+
+## Research and documentation
+
+- **Perplexity MCP** — Use for online search:
+  - Searching for resources, patterns, solutions, or documentation on the web.
+  - Prefer Perplexity when the answer is likely to be in articles, docs, or discussions.
+
+- **Fetch (e.g. mcp web_fetch)** — Use for content from external URLs:
+  - Only when you need the actual content of a specific link.
+  - **Always evaluate security risk first** (e.g. URL origin, protocol, and sensitivity of the task) before calling fetch.
+
+- **Context7 MCP** — Use for up-to-date library docs:
+  - Fetch current documentation for any library or framework you need.
+  - Prefer Context7 when documenting or analyzing a specific library or stack.

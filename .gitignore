@@ -21,3 +21,9 @@ coverage
 .cursor/
 .serena/
 _bmad*
+# Local MPC p-shares (never commit)
+local-pshares/
+**/local-pshares/
+# MPCv2 two-script workspace (sensitive state; never commit)
+mpc-keygen-workspace/
+**/mpc-keygen-workspace/
