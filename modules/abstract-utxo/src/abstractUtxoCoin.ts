@@ -530,6 +530,7 @@ export abstract class AbstractUtxoCoin
   }
 
   /**
+   * @deprecated - will be removed when we drop support for utxolib
    * Determine an address' type based on its witness and redeem script presence
    * @param addressDetails
    */
@@ -703,7 +704,6 @@ export abstract class AbstractUtxoCoin
       address,
       keychains,
       format: params.format ?? 'base58',
-      addressType: params.addressType,
       chain,
       index,
     });
