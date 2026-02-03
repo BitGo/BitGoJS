@@ -123,6 +123,8 @@ export enum TransactionType {
   // ton whales
   TonWhalesDeposit,
   TonWhalesWithdrawal,
+  TonWhalesVestingDeposit,
+  TonWhalesVestingWithdrawal,
 }
 
 /**

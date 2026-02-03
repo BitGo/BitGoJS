@@ -8,6 +8,7 @@ import { TokenTransferBuilder } from './tokenTransferBuilder';
 import { TokenTransaction } from './tokenTransaction';
 import { TonWhalesDepositBuilder } from './tonWhalesDepositBuilder';
 import { TonWhalesWithdrawalBuilder } from './tonWhalesWithdrawalBuilder';
+import { TonWhalesVestingDepositBuilder } from './tonWhalesVestingDepositBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -45,6 +46,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         case TransactionType.TonWhalesWithdrawal:
           builder = this.getTonWhalesWithdrawalBuilder();
           break;
+        case TransactionType.TonWhalesVestingDeposit:
+          builder = this.getTonWhalesVestingDepositBuilder();
+          break;
+        case TransactionType.TonWhalesVestingWithdrawal:
+          throw new InvalidTransactionError('TonWhalesVestingWithdrawal builder not implemented yet');
         default:
           throw new InvalidTransactionError('unsupported transaction');
       }
@@ -85,5 +91,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getTonWhalesWithdrawalBuilder(): TonWhalesWithdrawalBuilder {
     return new TonWhalesWithdrawalBuilder(this._coinConfig);
+  }
+
+  getTonWhalesVestingDepositBuilder(): TonWhalesVestingDepositBuilder {
+    return new TonWhalesVestingDepositBuilder(this._coinConfig);
   }
 }

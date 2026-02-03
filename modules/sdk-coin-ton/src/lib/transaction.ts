@@ -355,6 +355,11 @@ export class Transaction extends BaseTransaction {
         if (opcode === 0) {
           const payloadBytes = order.loadBits(order.getFreeBits());
           payload = new TextDecoder().decode(payloadBytes);
+          if (payload === 'Deposit') {
+            this.transactionType = TransactionType.TonWhalesVestingDeposit;
+          } else if (payload === 'Withdraw') {
+            this.transactionType = TransactionType.TonWhalesVestingWithdrawal;
+          }
         } else if (opcode === 4096) {
           const queryId = order.loadUint(64).toNumber();
           withdrawAmount = order.loadCoins().toNumber().toString();
