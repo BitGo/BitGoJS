@@ -65,4 +65,14 @@ export const nep141Tokens = [
     UnderlyingAsset['tnear:usdc'],
     [...NEAR_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  tnep141Token(
+    '21f06a60-384a-48b2-9b88-8c4a4b0d28c0',
+    'tnear:stnear',
+    'stNEAR',
+    24,
+    'meta-v2.pool.testnet',
+    '1250000000000000000000',
+    UnderlyingAsset['tnear:stnear'],
+    NEAR_TOKEN_FEATURES
+  ),
 ];

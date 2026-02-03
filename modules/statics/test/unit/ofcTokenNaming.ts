@@ -50,6 +50,7 @@ describe('OFC Token Naming Convention Tests', function () {
         'ofctpolygon:usdt', // "Tether USD"
         'ofctpolygon:xsgd', // "XSGD"
         'ofctnear:usdc', // "USD Coin"
+        'ofctnear:stnear', // "stNEAR"
         'ofctbaseeth', // "Base Sepolia Chain"
       ];
 
