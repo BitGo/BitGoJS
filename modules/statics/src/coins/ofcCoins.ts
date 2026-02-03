@@ -3828,6 +3828,13 @@ export const ofcCoins = [
     UnderlyingAsset['tnear:usdc'],
     [CoinFeature.STABLECOIN]
   ),
+  tofcnep141Token(
+    '2b0827da-7abb-4ce2-a2f4-5129ace9dc5c',
+    'ofctnear:stnear',
+    'stNEAR',
+    24,
+    UnderlyingAsset['tnear:stnear']
+  ),
   ofcWorldErc20('809418f2-d9e7-4604-bc17-e7dc881324c3', 'ofcworld:wld', 'Worldcoin', 18, UnderlyingAsset['world:wld']),
   ofcWorldErc20(
     'b37a7ce1-3be3-4df1-808d-8cc9065c7ed7',

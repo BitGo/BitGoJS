@@ -3489,6 +3489,7 @@ export enum UnderlyingAsset {
   // Nep141 testnet tokens
   'tnear:tnep24dp' = 'tnear:tnep24dp',
   'tnear:usdc' = 'tnear:usdc',
+  'tnear:stnear' = 'tnear:stnear',
 
   // VET tokens
   'vet:vtho' = 'vet:vtho',
