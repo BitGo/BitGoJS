@@ -499,9 +499,35 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     let totalAmountToSend = CardanoWasm.BigNum.zero();
     this._transactionOutputs.forEach((output) => {
       const amount = CardanoWasm.BigNum.from_str(output.amount);
-      outputs.add(
-        CardanoWasm.TransactionOutput.new(util.getWalletAddress(output.address), CardanoWasm.Value.new(amount))
-      );
+      if (this._sponsorshipInfo && this._sponsorshipInfo.isRebuild && output.multiAssets) {
+        let txOutputBuilder = CardanoWasm.TransactionOutputBuilder.new();
+        const toAddress = util.getWalletAddress(output.address);
+        txOutputBuilder = txOutputBuilder.with_address(toAddress);
+        let txOutputAmountBuilder = txOutputBuilder.next();
+        const multiAssets = output.multiAssets as CardanoWasm.MultiAsset;
+        const multiAsset = CardanoWasm.MultiAsset.new();
+        for (let i = 0; i < multiAssets.keys().len(); i++) {
+          const policyId = multiAssets.keys().get(i);
+          const assets = multiAssets.get(policyId);
+          const asset = CardanoWasm.Assets.new();
+          if (!assets) {
+            continue;
+          }
+          const assetName = assets.keys().get(0);
+          const quantity = assets.get(assetName);
+          if (!quantity) {
+            continue;
+          }
+          asset.insert(assetName, quantity);
+          multiAsset.insert(policyId, asset);
+        }
+        txOutputAmountBuilder = txOutputAmountBuilder.with_coin_and_asset(amount, multiAsset);
+        outputs.add(txOutputAmountBuilder.build());
+      } else {
+        outputs.add(
+          CardanoWasm.TransactionOutput.new(util.getWalletAddress(output.address), CardanoWasm.Value.new(amount))
+        );
+      }
       totalAmountToSend = totalAmountToSend.checked_add(amount);
     });
 
