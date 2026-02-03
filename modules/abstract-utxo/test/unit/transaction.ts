@@ -34,10 +34,6 @@ import {
   defaultBitGo,
 } from './util';
 
-function getScriptTypes2Of3() {
-  return [...bitgo.outputScripts.scriptTypes2Of3, 'taprootKeyPathSpend'] as const;
-}
-
 function run<TNumber extends number | bigint = number>(
   coin: AbstractUtxoCoin,
   inputScripts: testutil.InputScriptType[],
@@ -410,29 +406,28 @@ function run<TNumber extends number | bigint = number>(
   });
 }
 
-function runTestForCoin(coin: AbstractUtxoCoin) {
-  getScriptTypes2Of3().forEach((type) => {
-    (['legacy', 'psbt'] as const).forEach((txFormat) => {
-      if (!coin.supportsAddressType(type === 'taprootKeyPathSpend' ? 'p2trMusig2' : type)) {
-        return;
+function getScriptTypes(coin: AbstractUtxoCoin, txFormat: 'legacy' | 'psbt') {
+  return (['p2shP2pk', 'p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2', 'taprootKeyPathSpend'] as const).filter(
+    (t) => {
+      if (t === 'p2shP2pk') {
+        return getReplayProtectionAddresses(coin.name).length > 0;
       }
-
-      if ((type === 'taprootKeyPathSpend' || type === 'p2trMusig2') && txFormat !== 'psbt') {
-        return;
-      }
-
-      run(coin, [type, type], txFormat);
-      if (getReplayProtectionAddresses(coin.name).length) {
-        run(coin, ['p2shP2pk', type], txFormat);
-      }
-
-      if (txFormat === 'psbt') {
-        run(coin, [type, type], txFormat, { decodeWith: 'wasm-utxo' });
-        if (getReplayProtectionAddresses(coin.name).length) {
-          run(coin, ['p2shP2pk', type], txFormat, { decodeWith: 'wasm-utxo' });
+      if (txFormat === 'legacy') {
+        if (t === 'p2tr' || t === 'p2trMusig2' || t === 'taprootKeyPathSpend') {
+          return false;
         }
       }
-    });
+      if (t === 'taprootKeyPathSpend') {
+        return coin.supportsAddressType('p2trMusig2');
+      }
+      return coin.supportsAddressType(t);
+    }
+  );
+}
+
+function runTestForCoin(coin: AbstractUtxoCoin) {
+  (['legacy', 'psbt'] as const).forEach((txFormat) => {
+    run(coin, getScriptTypes(coin, txFormat), txFormat, { decodeWith: 'wasm-utxo' });
   });
 }
 
