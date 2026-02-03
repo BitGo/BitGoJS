@@ -218,6 +218,9 @@ const mainnetBase: EnvironmentTemplate = {
     apechain: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
+    chiliz: {
+      baseUrl: 'https://api.chiliscan.com',
+    },
     phrs: {
       baseUrl: 'https://testnet.dplabs-internal.com', // TODO: WIN-5787 add mainnet url when its available
     },
@@ -402,6 +405,9 @@ const testnetBase: EnvironmentTemplate = {
   evm: {
     apechain: {
       baseUrl: 'https://api.etherscan.io/v2',
+    },
+    chiliz: {
+      baseUrl: 'https://api.testnet.chiliscan.com',
     },
     phrs: {
       baseUrl: 'https://testnet.dplabs-internal.com', // Wrong value, Not available yet

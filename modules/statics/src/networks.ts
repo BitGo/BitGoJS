@@ -613,6 +613,26 @@ class CeloTestnet extends Testnet implements EthereumNetwork {
   tokenOperationHashPrefix = 'CELO-ERC20';
 }
 
+class Chiliz extends Mainnet implements EthereumNetwork {
+  name = 'Chiliz';
+  family = CoinFamily.CHILIZ;
+  explorerUrl = 'https://chiliscan.com/tx/';
+  accountExplorerUrl = 'https://chiliscan.com/address/';
+  chainId = 88888;
+  nativeCoinOperationHashPrefix = '88888';
+  tokenOperationHashPrefix = '88888-ERC20';
+}
+
+class ChilizTestnet extends Testnet implements EthereumNetwork {
+  name = 'ChilizTestnet';
+  family = CoinFamily.CHILIZ;
+  explorerUrl = 'https://testnet.chiliscan.com/tx/';
+  accountExplorerUrl = 'https://testnet.chiliscan.com/address/';
+  chainId = 88882;
+  nativeCoinOperationHashPrefix = '88882';
+  tokenOperationHashPrefix = '88882-ERC20';
+}
+
 // TODO update explorerUrl STLX-1657
 class Casper extends Mainnet implements AccountNetwork {
   name = 'Casper';
@@ -2393,6 +2413,7 @@ export const Networks = {
     canton: Object.freeze(new Canton()),
     casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
+    chiliz: Object.freeze(new Chiliz()),
     coredao: Object.freeze(new Coredao()),
     coreum: Object.freeze(new Coreum()),
     cronos: Object.freeze(new Cronos()),
@@ -2506,8 +2527,9 @@ export const Networks = {
     bsc: Object.freeze(new BinanceSmartChainTestnet()),
     canton: Object.freeze(new CantonTestnet()),
     casper: Object.freeze(new CasperTestnet()),
-    coredao: Object.freeze(new CoredaoTestnet()),
     celo: Object.freeze(new CeloTestnet()),
+    chiliz: Object.freeze(new ChilizTestnet()),
+    coredao: Object.freeze(new CoredaoTestnet()),
     cronos: Object.freeze(new CronosTestnet()),
     dash: Object.freeze(new DashTestnet()),
     dogecoin: Object.freeze(new DogecoinTestnet()),

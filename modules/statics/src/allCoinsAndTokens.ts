@@ -7,6 +7,8 @@ import {
   arbethErc20,
   beraErc20,
   celoToken,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  chilizErc20,
   coredaoErc20,
   eosToken,
   erc1155,
@@ -32,6 +34,8 @@ import {
   tarbethErc20,
   tberaErc20,
   tceloToken,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  tchilizErc20,
   tcoredaoErc20,
   teosToken,
   terc1155,
@@ -2827,6 +2831,46 @@ export const allCoinsAndTokens = [
     UnderlyingAsset.CELO,
     BaseUnit.ETH,
     CELO_FEATURES
+  ),
+  account(
+    'c7e1dc7f-add5-4eed-9931-2c201801e3a2',
+    'chiliz',
+    'Chiliz',
+    Networks.main.chiliz,
+    18,
+    UnderlyingAsset.CHILIZ,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    'c014b2ec-02ea-468f-b73f-24442146208e',
+    'tchiliz',
+    'Testnet Chiliz',
+    Networks.test.chiliz,
+    18,
+    UnderlyingAsset.CHILIZ,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
   ),
   erc20Token(
     '16c438c1-714a-4ad7-bdb1-fb8d2575c466',
