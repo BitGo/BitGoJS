@@ -318,17 +318,10 @@ function getBip322MessageInfoAndVerify(psbt: bitgo.UtxoPsbt, coinName: UtxoCoinN
       if (!input.witnessUtxo) {
         throw new Error(`Missing witnessUtxo for input index ${i}`);
       }
-      if (!input.nonWitnessUtxo) {
-        throw new Error(`Missing nonWitnessUtxo for input index ${i}`);
-      }
       const scriptPubKey = input.witnessUtxo.script;
 
       // Verify that the toSpend transaction can be recreated in the PSBT and is encoded correctly in the nonWitnessUtxo
       const toSpend = bip322.buildToSpendTransaction(scriptPubKey, message);
-      const toSpendB64 = toSpend.toBuffer().toString('base64');
-      if (input.nonWitnessUtxo.toString('base64') !== toSpendB64) {
-        throw new Error(`Non-witness UTXO does not match the expected toSpend transaction at input index ${i}`);
-      }
 
       // Verify that the toSpend transaction ID matches the input's referenced transaction ID
       if (toSpend.getId() !== utxolib.bitgo.getOutputIdForInput(psbt.txInputs[i]).txid) {
