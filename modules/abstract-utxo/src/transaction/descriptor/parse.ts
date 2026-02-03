@@ -1,6 +1,5 @@
-import * as utxolib from '@bitgo/utxo-lib';
 import { ITransactionRecipient } from '@bitgo/sdk-core';
-import * as coreDescriptors from '@bitgo/utxo-core/descriptor';
+import { Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin, ParseTransactionOptions } from '../../abstractUtxoCoin';
 import { BaseOutput, BaseParsedTransaction, BaseParsedTransactionOutputs } from '../types';
@@ -10,8 +9,9 @@ import { IDescriptorWallet } from '../../descriptor/descriptorWallet';
 import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../recipient';
 import { outputDifferencesWithExpected, OutputDifferenceWithExpected } from '../outputDifference';
 import { UtxoCoinName } from '../../names';
+import { sumValues, toWasmPsbt, UtxoLibPsbt } from '../../wasmUtil';
 
-type ParsedOutput = coreDescriptors.ParsedOutput;
+type ParsedOutput = Omit<descriptorWallet.ParsedOutput, 'script'> & { script: Buffer };
 
 export type RecipientOutput = Omit<ParsedOutput, 'value'> & {
   value: bigint | 'max';
@@ -22,6 +22,7 @@ function toRecipientOutput(recipient: ITransactionRecipient, coinName: UtxoCoinN
     address: recipient.address,
     value: recipient.amount === 'max' ? 'max' : BigInt(recipient.amount),
     script: fromExtendedAddressFormatToScript(recipient.address, coinName),
+    scriptId: undefined, // Recipients are external outputs
   };
 }
 
@@ -32,22 +33,23 @@ type ParsedOutputs = OutputDifferenceWithExpected<ParsedOutput, RecipientOutput>
 };
 
 function parseOutputsWithPsbt(
-  psbt: utxolib.bitgo.UtxoPsbt,
-  descriptorMap: coreDescriptors.DescriptorMap,
-  recipientOutputs: RecipientOutput[]
+  psbt: Psbt,
+  descriptorMap: descriptorWallet.DescriptorMap,
+  recipientOutputs: RecipientOutput[],
+  coinName: UtxoCoinName
 ): ParsedOutputs {
-  const parsed = coreDescriptors.parse(psbt, descriptorMap, psbt.network);
-  const changeOutputs = parsed.outputs.filter((o) => o.scriptId !== undefined);
-  const outputDiffs = outputDifferencesWithExpected(parsed.outputs, recipientOutputs);
+  const parsed = descriptorWallet.parse(psbt, descriptorMap, coinName);
+  const outputs: ParsedOutput[] = parsed.outputs.map((output) => ({
+    ...output,
+    script: Buffer.from(output.script),
+  }));
+  const changeOutputs = outputs.filter((o) => o.scriptId !== undefined);
+  const outputDiffs = outputDifferencesWithExpected(outputs, recipientOutputs);
   return {
-    outputs: parsed.outputs,
+    outputs,
     changeOutputs,
     ...outputDiffs,
   };
-}
-
-function sumValues(arr: { value: bigint }[]): bigint {
-  return arr.reduce((sum, e) => sum + e.value, BigInt(0));
 }
 
 function toBaseOutputs(outputs: ParsedOutput[], coinName: UtxoCoinName): BaseOutput<bigint>[];
@@ -85,16 +87,18 @@ function toBaseParsedTransactionOutputs(
 }
 
 export function toBaseParsedTransactionOutputsFromPsbt(
-  psbt: utxolib.bitgo.UtxoPsbt,
-  descriptorMap: coreDescriptors.DescriptorMap,
+  psbt: Psbt | UtxoLibPsbt | Uint8Array,
+  descriptorMap: descriptorWallet.DescriptorMap,
   recipients: ITransactionRecipient[],
   coinName: UtxoCoinName
 ): ParsedOutputsBigInt {
+  const wasmPsbt = toWasmPsbt(psbt);
   return toBaseParsedTransactionOutputs(
     parseOutputsWithPsbt(
-      psbt,
+      wasmPsbt,
       descriptorMap,
-      recipients.map((r) => toRecipientOutput(r, coinName))
+      recipients.map((r) => toRecipientOutput(r, coinName)),
+      coinName
     ),
     coinName
   );
@@ -125,13 +129,16 @@ export function parse(
     throw new Error('recipients is required');
   }
   const psbt = coin.decodeTransactionFromPrebuild(params.txPrebuild);
-  if (!(psbt instanceof utxolib.bitgo.UtxoPsbt)) {
-    throw new Error('expected psbt to be an instance of UtxoPsbt');
+  let wasmPsbt: Psbt;
+  try {
+    wasmPsbt = toWasmPsbt(psbt as Psbt | UtxoLibPsbt | Uint8Array);
+  } catch (e) {
+    throw new Error(`expected psbt to be a wasm-utxo or utxo-lib PSBT: ${e instanceof Error ? e.message : e}`);
   }
   const walletKeys = toBip32Triple(keychains);
   const descriptorMap = getDescriptorMapFromWallet(wallet, walletKeys, getPolicyForEnv(params.wallet.bitgo.env));
   return {
-    ...toBaseParsedTransactionOutputsFromPsbt(psbt, descriptorMap, recipients, coin.name),
+    ...toBaseParsedTransactionOutputsFromPsbt(wasmPsbt, descriptorMap, recipients, coin.name),
     keychains,
     keySignatures: getKeySignatures(wallet) ?? {},
     customChange: undefined,

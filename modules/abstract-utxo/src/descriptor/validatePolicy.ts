@@ -1,6 +1,8 @@
 import { EnvironmentName, Triple } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
-import { DescriptorMap, toDescriptorMap } from '@bitgo/utxo-core/descriptor';
+import { descriptorWallet } from '@bitgo/wasm-utxo';
+
+import type { DescriptorMap } from '../wasmUtil';
 
 import { parseDescriptor } from './builder';
 import { hasValidSignature, NamedDescriptor, NamedDescriptorNative, toNamedDescriptorNative } from './NamedDescriptor';
@@ -91,7 +93,7 @@ export function toDescriptorMapValidate(
     toNamedDescriptorNative(v, 'derivable')
   );
   assertDescriptorPolicy(namedDescriptorsNative, policy, walletKeys);
-  return toDescriptorMap(namedDescriptorsNative);
+  return descriptorWallet.toDescriptorMap(namedDescriptorsNative);
 }
 
 export function getPolicyForEnv(env: EnvironmentName): DescriptorValidationPolicy {

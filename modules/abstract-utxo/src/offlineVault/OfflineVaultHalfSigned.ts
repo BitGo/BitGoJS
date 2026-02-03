@@ -1,5 +1,5 @@
 import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
-import * as utxolib from '@bitgo/utxo-lib';
+import { Psbt } from '@bitgo/wasm-utxo';
 import { BaseCoin } from '@bitgo/sdk-core';
 
 import { UtxoCoinName } from '../names';
@@ -11,8 +11,8 @@ export type OfflineVaultHalfSigned = {
   halfSigned: { txHex: string };
 };
 
-function createHalfSignedFromPsbt(psbt: utxolib.Psbt): OfflineVaultHalfSigned {
-  return { halfSigned: { txHex: psbt.toHex() } };
+function createHalfSignedFromPsbt(psbt: Psbt): OfflineVaultHalfSigned {
+  return { halfSigned: { txHex: Buffer.from(psbt.serialize()).toString('hex') } };
 }
 
 export function createHalfSigned(

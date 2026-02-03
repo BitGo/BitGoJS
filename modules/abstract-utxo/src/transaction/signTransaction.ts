@@ -7,6 +7,7 @@ import buildDebug from 'debug';
 import { AbstractUtxoCoin, SignTransactionOptions } from '../abstractUtxoCoin';
 import { getDescriptorMapFromWallet, getPolicyForEnv, isDescriptorWallet } from '../descriptor';
 import { fetchKeychains, toBip32Triple } from '../keychains';
+import { isUtxoLibPsbt, toWasmPsbt } from '../wasmUtil';
 
 import * as fixedScript from './fixedScript';
 import * as descriptor from './descriptor';
@@ -53,16 +54,16 @@ export async function signTransaction<TNumber extends number | bigint>(
     if (!signerKeychain) {
       throw new Error('missing signer');
     }
+    if (!isUtxoLibPsbt(tx) && !(tx instanceof Uint8Array)) {
+      throw new Error('descriptor wallets require PSBT format transactions');
+    }
     const walletKeys = toBip32Triple(await fetchKeychains(coin, wallet));
     const descriptorMap = getDescriptorMapFromWallet(wallet, walletKeys, getPolicyForEnv(bitgo.env));
-    if (tx instanceof utxolib.bitgo.UtxoPsbt) {
-      descriptor.signPsbt(tx, descriptorMap, signerKeychain, {
-        onUnknownInput: 'throw',
-      });
-      return { txHex: tx.toHex() };
-    } else {
-      throw new Error('expected a UtxoPsbt object');
-    }
+    const psbt = toWasmPsbt(tx);
+    descriptor.signPsbt(psbt, descriptorMap, signerKeychain, {
+      onUnknownInput: 'throw',
+    });
+    return { txHex: Buffer.from(psbt.serialize()).toString('hex') };
   } else {
     const signedTx = await fixedScript.signTransaction(coin, tx, getSignerKeychain(params.prv), coin.name, {
       walletId: params.txPrebuild.walletId,

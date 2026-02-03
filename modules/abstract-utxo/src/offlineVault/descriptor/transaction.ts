@@ -1,5 +1,6 @@
-import * as utxolib from '@bitgo/utxo-lib';
 import * as t from 'io-ts';
+import { Psbt } from '@bitgo/wasm-utxo';
+import type { BIP32Interface } from '@bitgo/utxo-lib';
 
 import { DescriptorMap, NamedDescriptor } from '../../descriptor';
 import { OfflineVaultSignable, toKeyTriple } from '../OfflineVaultSignable';
@@ -11,7 +12,8 @@ import {
 } from '../../descriptor/validatePolicy';
 import { explainPsbt, signPsbt } from '../../transaction/descriptor';
 import { TransactionExplanation } from '../TransactionExplanation';
-import { getNetworkFromCoinName, UtxoCoinName } from '../../names';
+import { UtxoCoinName } from '../../names';
+import { toWasmPsbt } from '../../wasmUtil';
 
 export const DescriptorTransaction = t.intersection(
   [OfflineVaultSignable, t.type({ descriptors: t.array(NamedDescriptor) })],
@@ -32,13 +34,8 @@ export function getDescriptorsFromDescriptorTransaction(tx: DescriptorTransactio
   return toDescriptorMapValidate(descriptors, pubkeys, policy);
 }
 
-export function getHalfSignedPsbt(
-  tx: DescriptorTransaction,
-  prv: utxolib.BIP32Interface,
-  coinName: UtxoCoinName
-): utxolib.Psbt {
-  const network = getNetworkFromCoinName(coinName);
-  const psbt = utxolib.bitgo.createPsbtDecode(tx.coinSpecific.txHex, network);
+export function getHalfSignedPsbt(tx: DescriptorTransaction, prv: BIP32Interface, coinName: UtxoCoinName): Psbt {
+  const psbt = toWasmPsbt(Buffer.from(tx.coinSpecific.txHex, 'hex'));
   const descriptorMap = getDescriptorsFromDescriptorTransaction(tx);
   signPsbt(psbt, descriptorMap, prv, { onUnknownInput: 'throw' });
   return psbt;
@@ -48,10 +45,9 @@ export function getTransactionExplanationFromPsbt(
   tx: DescriptorTransaction,
   coinName: UtxoCoinName
 ): TransactionExplanation<string> {
-  const network = getNetworkFromCoinName(coinName);
-  const psbt = utxolib.bitgo.createPsbtDecode(tx.coinSpecific.txHex, network);
+  const psbt = toWasmPsbt(Buffer.from(tx.coinSpecific.txHex, 'hex'));
   const descriptorMap = getDescriptorsFromDescriptorTransaction(tx);
-  const { outputs, changeOutputs, fee } = explainPsbt(psbt, descriptorMap);
+  const { outputs, changeOutputs, fee } = explainPsbt(psbt, descriptorMap, coinName);
   return {
     outputs,
     changeOutputs,
