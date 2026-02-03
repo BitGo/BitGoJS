@@ -1,16 +1,16 @@
 /**
- * Kava test data for the sdk-coin-cosmos module
- * This file extends the base configuration with kava-specific data
+ * Kava Cosmos test data for the sdk-coin-cosmos module
+ * This file extends the base configuration with kavacosmos-specific data
  */
 
 import { generateCoinData } from '../testUtils';
 
 export const chainConfig = {
-  mainnetName: 'Kava',
-  mainnetCoin: 'kava',
-  testnetName: 'Testnet Kava',
-  testnetCoin: 'tkava',
-  family: 'kava',
+  mainnetName: 'Kava Cosmos',
+  mainnetCoin: 'kavacosmos',
+  testnetName: 'Testnet Kava Cosmos',
+  testnetCoin: 'tkavacosmos',
+  family: 'kavacosmos',
   decimalPlaces: 6,
   baseDenom: 'ukava',
   chainId: 'kava_2221-16000',
@@ -80,12 +80,12 @@ export const blockHashes = {
   hash2: 'F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1',
 };
 
-// Generate the complete kava test data
-export const kava = generateCoinData(chainConfig, DEFAULTS, blockHashes, {
+// Generate the complete kavacosmos test data
+export const kavacosmos = generateCoinData(chainConfig, DEFAULTS, blockHashes, {
   TEST_SEND_TX,
   TEST_SEND_TX2,
   TEST_SEND_MANY_TX,
   TEST_TX_WITH_MEMO,
 });
 
-export default kava;
+export default kavacosmos;
