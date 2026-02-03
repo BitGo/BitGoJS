@@ -1,7 +1,6 @@
 import assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-utxo';
+import { Descriptor, descriptorWallet } from '@bitgo/wasm-utxo';
 import {
   getDefaultXPubs,
   getDescriptor,
@@ -9,12 +8,12 @@ import {
   mockPsbtDefault,
 } from '@bitgo/utxo-core/testutil/descriptor';
 import { toPlainObject } from '@bitgo/utxo-core/testutil';
-import { createAddressFromDescriptor } from '@bitgo/utxo-core/descriptor';
 
 import {
   ParsedOutputsBigInt,
   toBaseParsedTransactionOutputsFromPsbt,
 } from '../../../../src/transaction/descriptor/parse';
+import type { UtxoLibPsbt } from '../../../../src/wasmUtil';
 import {
   AggregateValidationError,
   assertExpectedOutputDifference,
@@ -62,7 +61,7 @@ describe('parse', function () {
   const psbt = mockPsbtDefault({ descriptorSelf, descriptorOther });
 
   function recipient(descriptor: Descriptor, index: number, value = 1000) {
-    return { value, address: createAddressFromDescriptor(descriptor, index, utxolib.networks.bitcoin) };
+    return { value, address: descriptorWallet.createAddressFromDescriptor(descriptor, index, 'btc') };
   }
 
   function internalRecipient(index: number, value?: number): OutputWithValue {
@@ -73,7 +72,7 @@ describe('parse', function () {
     return recipient(descriptorOther, index, value);
   }
 
-  function getBaseParsedTransaction(psbt: utxolib.bitgo.UtxoPsbt, recipients: OutputWithValue[]): ParsedOutputsBigInt {
+  function getBaseParsedTransaction(psbt: UtxoLibPsbt, recipients: OutputWithValue[]): ParsedOutputsBigInt {
     return toBaseParsedTransactionOutputsFromPsbt(
       psbt,
       getDescriptorMap('Wsh2Of3', getDefaultXPubs('a')),

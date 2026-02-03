@@ -1,11 +1,9 @@
 import assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-utxo';
-import { DescriptorMap } from '@bitgo/utxo-core/descriptor';
+import { Descriptor, address, descriptorWallet } from '@bitgo/wasm-utxo';
 
 import { UtxoCoinSpecific, VerifyAddressOptions } from '../abstractUtxoCoin';
-import { getNetworkFromCoinName, UtxoCoinName } from '../names';
+import { UtxoCoinName } from '../names';
 
 class DescriptorAddressMismatchError extends Error {
   constructor(descriptor: Descriptor, index: number, derivedAddress: string, expectedAddress: string) {
@@ -18,7 +16,7 @@ class DescriptorAddressMismatchError extends Error {
 export function assertDescriptorWalletAddress(
   coinName: UtxoCoinName,
   params: VerifyAddressOptions<UtxoCoinSpecific>,
-  descriptors: DescriptorMap
+  descriptors: descriptorWallet.DescriptorMap
 ): void {
   assert(params.coinSpecific);
   assert('descriptorName' in params.coinSpecific);
@@ -35,8 +33,7 @@ export function assertDescriptorWalletAddress(
     );
   }
   const derivedScript = Buffer.from(descriptor.atDerivationIndex(params.index).scriptPubkey());
-  const network = getNetworkFromCoinName(coinName);
-  const derivedAddress = utxolib.address.fromOutputScript(derivedScript, network);
+  const derivedAddress = address.fromOutputScriptWithCoin(derivedScript, coinName);
   if (params.address !== derivedAddress) {
     throw new DescriptorAddressMismatchError(descriptor, params.index, derivedAddress, params.address);
   }

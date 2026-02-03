@@ -1,53 +1,49 @@
-import * as utxolib from '@bitgo/utxo-lib';
 import { ITransactionRecipient } from '@bitgo/sdk-core';
-import * as coreDescriptors from '@bitgo/utxo-core/descriptor';
+import { Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
 
-import { toExtendedAddressFormat } from '../recipient';
 import type { TransactionExplanationDescriptor } from '../fixedScript/explainTransaction';
-import { getCoinName, UtxoCoinName } from '../../names';
+import { UtxoCoinName } from '../../names';
+import { sumValues } from '../../wasmUtil';
 
-function toRecipient(output: coreDescriptors.ParsedOutput, coinName: UtxoCoinName): ITransactionRecipient {
+function toRecipient(output: descriptorWallet.ParsedOutput, coinName: UtxoCoinName): ITransactionRecipient {
+  const address = output.address ?? `scriptPubKey:${Buffer.from(output.script).toString('hex')}`;
   return {
-    address: toExtendedAddressFormat(output.script, coinName),
+    address,
     amount: output.value.toString(),
   };
 }
 
-function sumValues(arr: { value: bigint }[]): bigint {
-  return arr.reduce((sum, e) => sum + e.value, BigInt(0));
-}
-
-function getInputSignaturesForInputIndex(psbt: utxolib.bitgo.UtxoPsbt, inputIndex: number): number {
-  const { partialSig } = psbt.data.inputs[inputIndex];
-  if (!partialSig) {
+function getInputSignaturesForInputIndex(psbt: Psbt, inputIndex: number): number {
+  if (!psbt.hasPartialSignatures(inputIndex)) {
     return 0;
   }
-  return partialSig.reduce((agg, p) => {
-    const valid = psbt.validateSignaturesOfInputCommon(inputIndex, p.pubkey);
+  const partialSigs = psbt.getPartialSignatures(inputIndex);
+  return partialSigs.reduce((agg, p) => {
+    const valid = psbt.validateSignatureAtInput(inputIndex, p.pubkey);
     return agg + (valid ? 1 : 0);
   }, 0);
 }
 
-function getInputSignatures(psbt: utxolib.bitgo.UtxoPsbt): number[] {
-  return psbt.data.inputs.map((_, i) => getInputSignaturesForInputIndex(psbt, i));
+function getInputSignatures(psbt: Psbt): number[] {
+  return Array.from({ length: psbt.inputCount() }, (_, i) => getInputSignaturesForInputIndex(psbt, i));
 }
 
 export function explainPsbt(
-  psbt: utxolib.bitgo.UtxoPsbt,
-  descriptors: coreDescriptors.DescriptorMap
+  psbt: Psbt,
+  descriptors: descriptorWallet.DescriptorMap,
+  coinName: UtxoCoinName
 ): TransactionExplanationDescriptor {
-  const parsedTransaction = coreDescriptors.parse(psbt, descriptors, psbt.network);
+  const parsedTransaction = descriptorWallet.parse(psbt, descriptors, coinName);
   const { inputs, outputs } = parsedTransaction;
   const externalOutputs = outputs.filter((o) => o.scriptId === undefined);
   const changeOutputs = outputs.filter((o) => o.scriptId !== undefined);
   const fee = sumValues(inputs) - sumValues(outputs);
   const inputSignatures = getInputSignatures(psbt);
-  const coinName = getCoinName(psbt.network);
   return {
     inputSignatures,
     signatures: inputSignatures.reduce((a, b) => Math.min(a, b), Infinity),
-    locktime: psbt.locktime,
-    id: psbt.getUnsignedTx().getId(),
+    locktime: psbt.lockTime(),
+    id: psbt.unsignedTxId(),
     outputs: externalOutputs.map((o) => toRecipient(o, coinName)),
     outputAmount: sumValues(externalOutputs).toString(),
     changeOutputs: changeOutputs.map((o) => toRecipient(o, coinName)),

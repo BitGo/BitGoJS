@@ -1,5 +1,6 @@
-import * as utxolib from '@bitgo/utxo-lib';
-import { DescriptorMap, findDescriptorForInput } from '@bitgo/utxo-core/descriptor';
+import { Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
+
+import type { SignerKey } from '../../wasmUtil';
 
 export class ErrorUnknownInput extends Error {
   constructor(public vin: number) {
@@ -14,33 +15,35 @@ export class ErrorUnknownInput extends Error {
  * found in the descriptor map, the behavior is determined by the `onUnknownInput`
  * parameter.
  *
- *
- * @param tx - psbt to sign
- * @param descriptorMap - map of input index to descriptor
- * @param signerKeychain - key to sign with
+ * @param psbt - psbt to sign
+ * @param descriptorMap - map of descriptor name to descriptor
+ * @param signerKey - key to sign with (BIP32 or ECPair)
  * @param params - onUnknownInput: 'throw' | 'skip' | 'sign'.
  *                 Determines what to do when an input is not found in the
  *                 descriptor map.
  */
 export function signPsbt(
-  tx: utxolib.Psbt,
-  descriptorMap: DescriptorMap,
-  signerKeychain: utxolib.BIP32Interface,
+  psbt: Psbt,
+  descriptorMap: descriptorWallet.DescriptorMap,
+  signerKey: SignerKey,
   params: {
     onUnknownInput: 'throw' | 'skip' | 'sign';
   }
 ): void {
-  for (const [vin, input] of tx.data.inputs.entries()) {
-    if (!findDescriptorForInput(input, descriptorMap)) {
-      switch (params.onUnknownInput) {
-        case 'skip':
-          continue;
-        case 'throw':
-          throw new ErrorUnknownInput(vin);
-        case 'sign':
-          break;
-      }
+  const inputs = psbt.getInputs();
+  const unknownInputs = inputs
+    .map((input, vin) => ({ input, vin }))
+    .filter(({ input }) => !descriptorWallet.findDescriptorForInput(input, descriptorMap));
+
+  if (unknownInputs.length > 0) {
+    switch (params.onUnknownInput) {
+      case 'skip':
+        return;
+      case 'throw':
+        throw new ErrorUnknownInput(unknownInputs[0].vin);
+      case 'sign':
+        break;
     }
-    tx.signInputHD(vin, signerKeychain);
   }
+  descriptorWallet.signWithKey(psbt, signerKey);
 }

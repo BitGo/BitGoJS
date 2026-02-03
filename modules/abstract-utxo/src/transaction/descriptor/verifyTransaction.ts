@@ -1,10 +1,10 @@
-import * as utxolib from '@bitgo/utxo-lib';
 import { ITransactionRecipient, TxIntentMismatchError, IBaseCoin } from '@bitgo/sdk-core';
-import { DescriptorMap } from '@bitgo/utxo-core/descriptor';
+import type { Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin, VerifyTransactionOptions } from '../../abstractUtxoCoin';
 import { BaseOutput, BaseParsedTransactionOutputs } from '../types';
 import { UtxoCoinName } from '../../names';
+import { toWasmPsbt, UtxoLibPsbt } from '../../wasmUtil';
 
 import { toBaseParsedTransactionOutputsFromPsbt } from './parse';
 
@@ -51,8 +51,8 @@ export function assertExpectedOutputDifference(
 }
 
 export function assertValidTransaction(
-  psbt: utxolib.bitgo.UtxoPsbt,
-  descriptors: DescriptorMap,
+  psbt: Psbt | UtxoLibPsbt | Uint8Array,
+  descriptors: descriptorWallet.DescriptorMap,
   recipients: ITransactionRecipient[],
   coinName: UtxoCoinName
 ): void {
@@ -74,16 +74,20 @@ export function assertValidTransaction(
 export async function verifyTransaction<TNumber extends number | bigint>(
   coin: AbstractUtxoCoin,
   params: VerifyTransactionOptions<TNumber>,
-  descriptorMap: DescriptorMap
+  descriptorMap: descriptorWallet.DescriptorMap
 ): Promise<boolean> {
   const tx = coin.decodeTransactionFromPrebuild(params.txPrebuild);
-  if (!(tx instanceof utxolib.bitgo.UtxoPsbt)) {
+  let psbt: Psbt;
+  try {
+    psbt = toWasmPsbt(tx as Psbt | UtxoLibPsbt | Uint8Array);
+  } catch (e) {
     const txExplanation = await TxIntentMismatchError.tryGetTxExplanation(
       coin as unknown as IBaseCoin,
       params.txPrebuild
     );
+    const errorDetail = e instanceof Error ? e.message : String(e);
     throw new TxIntentMismatchError(
-      'unexpected transaction type',
+      `unexpected transaction type: ${errorDetail}`,
       params.reqId,
       [params.txParams],
       params.txPrebuild.txHex,
@@ -91,7 +95,7 @@ export async function verifyTransaction<TNumber extends number | bigint>(
     );
   }
 
-  assertValidTransaction(tx, descriptorMap, params.txParams.recipients ?? [], coin.name);
+  assertValidTransaction(psbt, descriptorMap, params.txParams.recipients ?? [], coin.name);
 
   return true;
 }

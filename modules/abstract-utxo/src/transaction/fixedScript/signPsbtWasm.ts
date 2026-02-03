@@ -1,7 +1,9 @@
 import assert from 'assert';
 
 import { BIP32Interface } from '@bitgo/utxo-lib';
-import { BIP32, ECPair, fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { ECPair, fixedScriptWallet } from '@bitgo/wasm-utxo';
+
+import { toWasmBIP32 } from '../../wasmUtil';
 
 import { BulkSigningError, InputSigningError, TransactionSigningError } from './SigningError';
 import { Musig2Participant } from './musig2';
@@ -74,11 +76,6 @@ export function signAndVerifyPsbtWasm(
   }
 
   return tx;
-}
-
-function toWasmBIP32(key: BIP32Interface): BIP32 {
-  // Convert using base58 string to ensure private key is properly transferred
-  return BIP32.fromBase58(key.toBase58());
 }
 
 export async function signPsbtWithMusig2ParticipantWasm(
