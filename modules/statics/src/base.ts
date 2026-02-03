@@ -41,6 +41,7 @@ export enum CoinFamily {
   BTG = 'btg',
   CANTON = 'canton',
   CELO = 'celo',
+  CHILIZ = 'chiliz', // Chiliz Chain
   COREDAO = 'coredao',
   COREUM = 'coreum',
   CRONOS = 'cronos',
@@ -568,6 +569,7 @@ export enum UnderlyingAsset {
   DASH = 'dash',
   DOT = 'dot',
   CELO = 'celo', // Celo main coin
+  CHILIZ = 'chiliz', // Chiliz Chain native coin
   COREDAO = 'coredao',
   COREUM = 'coreum',
   CRONOS = 'cronos',

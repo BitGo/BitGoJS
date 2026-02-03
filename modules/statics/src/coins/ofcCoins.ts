@@ -134,6 +134,15 @@ export const ofcCoins = [
   ),
   ofc('8b93e788-52fa-4fd6-b499-40f13fe194fc', 'ofccoreum', 'Coreum', 6, UnderlyingAsset.COREUM, CoinKind.CRYPTO),
   ofc('a88adc55-c1c8-4a4e-8436-df3868a50daa', 'ofccelo', 'Celo Gold', 18, UnderlyingAsset.CELO, CoinKind.CRYPTO),
+  ofc('17cf28b5-f958-46c3-be88-53cc42bf0c76', 'ofcchiliz', 'Chiliz', 18, UnderlyingAsset.CHILIZ, CoinKind.CRYPTO),
+  tofc(
+    '365ea5b1-71a8-4c57-82ba-a0effb9aae47',
+    'ofctchiliz',
+    'Testnet Chiliz',
+    18,
+    UnderlyingAsset.CHILIZ,
+    CoinKind.CRYPTO
+  ),
   ofc('9e2da785-8349-4153-8276-941319575833', 'ofcxtz', 'Tezos', 6, UnderlyingAsset.XTZ, CoinKind.CRYPTO),
   ofc(
     '283b93b5-741b-4c85-a201-097267d65097',
