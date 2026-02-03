@@ -129,12 +129,30 @@ This document explains the cryptography and product terms used in the [ETH MPC s
 
 - **What it is:** During **signing**, each participant uses their (combined) signing material to compute a **signature share**—a partial contribution to the final signature. These shares are then combined (e.g. by BitGo) into one standard ECDSA signature. A **key share** is used in **key generation**; a **signature share** is used only in **signing**.
 - **Why it matters:** You never send your key share (p-share) to BitGo. You only send **signature shares** for each transaction. From signature shares, the full signature can be computed without anyone ever having the full private key.
-- **In our context:** The local signer (e.g. Express) loads your key, produces signature shares (e.g. K, MuDelta, S or MPCv2 rounds), and sends those to BitGo; BitGo combines with its share to broadcast the signed transaction.
+- **In our context:** The local signer (e.g. Express) loads your key, produces signature shares (e.g. K, MuDelta, S or MPCv2 rounds), and sends those to BitGo; BitGo combines with its share to broadcast the signed transaction. In **MPCv2 ECDSA**, signing has **3 rounds**; each round each party sends one signature share (round 1, 2, 3).
 
-### 5.5 Wallet (in this context)
+### 5.5 TxRequest (transaction request)
+
+- **What it is:** An object that represents an **unsigned transaction** and the state of the TSS signing process. It contains: `txRequestId`, `walletId`, the **unsigned transaction** (e.g. `signableHex`, `derivationPath`), and after each signing round the **signature shares** from each participant.
+- **Why it matters:** For TSS wallets, you do not build a raw tx and sign it in one go. Instead, you create a **TxRequest** (prebuild), then run a multi-round signing protocol; the TxRequest is updated after each round with new signature shares until the transaction is complete.
+- **In our context:** The online script creates a TxRequest via `wallet.prebuildTransaction(...)` (or `prebuildTxWithIntent`). The offline script reads the TxRequest from a file (`tx-request.json`), produces signature shares for each round, and the online script sends those shares to BitGo; the TxRequest is passed back and forth (as payload/response files) until signing is finalized.
+
+### 5.6 DSG (Distributed Signing Generation) / signing round
+
+- **What it is:** **DSG** is the multi-round phase of **threshold signing**: each participant uses their key share and the transaction hash to produce a **signature share** for that round. For **MPCv2 ECDSA**, there are **3 signing rounds**. Each round: the user (offline) produces a signature share, the online machine sends it to BitGo, and BitGo responds with its share and any messages needed for the next round.
+- **Why it matters:** The full signature is never computed in one place; each round only exchanges partial (signature) shares. This keeps the key material on the offline machine while still producing a valid on-chain signature.
+- **In our context:** The two-script signing flow (offline + online) implements DSG: offline steps 1–3 correspond to rounds 1–3; each offline step reads the previous round’s response and state, produces the next signature share, and writes a payload file for the online script to POST to BitGo.
+
+### 5.7 Wallet (in this context)
 
 - **What it is:** The BitGo object that represents one 2-of-3 TSS wallet: it links the three keychains (user, backup, BitGo) and holds metadata (label, wallet id, etc.). The “wallet” is the container; the keys live in the keychains.
 - **Why it matters:** “Create the wallet” means create this container on BitGo’s side so you can later create addresses, build transactions, and sign (using your keychains).
+
+### 5.8 Workspace (signing)
+
+- **What it is:** A **directory** used in the two-script (offline/online) signing flow. It holds the files exchanged between the offline and online machines: e.g. `tx-request.json`, `sign-round1-payload.json`, `sign-round1-response.json`, `sign-round1-state.json`, and so on for rounds 2 and 3, plus `sign-result.json`.
+- **Why it matters:** The offline machine never talks to the network; the online machine never sees raw keys. They communicate only by copying files in and out of this workspace (e.g. via USB). The workspace can be the same directory as keygen or a separate signing directory.
+- **In our context:** Set `MPC_WORKSPACE_DIR` or `MPC_SIGN_WORKSPACE_DIR` to point to this directory; the scripts read and write the filenames defined in the signing flow doc.
 
 ---
 
@@ -162,7 +180,7 @@ Read in this order if you want a clear build-up:
 2. **Level 2:** Multi-signature → Threshold → Key / key pair
 3. **Level 3:** MPC → TSS → ECDSA
 4. **Level 4:** Share → p-share → n-share → Key combine → Common keychain
-5. **Level 5:** Keychain (BitGo) → User/backup/BitGo keychain → Encrypted signing material → Signature share → Wallet
+5. **Level 5:** Keychain (BitGo) → User/backup/BitGo keychain → Encrypted signing material → Signature share → TxRequest → DSG / signing round → Wallet → Workspace (signing)
 6. **Level 6:** GPG → Passphrase
 
 ---
@@ -186,6 +204,9 @@ Read in this order if you want a clear build-up:
 | **Common keychain** | The public value that identifies the joint key; same for all three parties. |
 | **Keychain (BitGo)** | The record for one of the three keys (user, backup, BitGo) in the wallet. |
 | **Encrypted signing material** | Your combined signing material encrypted with a passphrase for storage. |
-| **Signature share** | A partial signature produced during signing; combined to form the final signature. |
+| **Signature share** | A partial signature produced during signing; combined to form the final signature. In MPCv2 ECDSA there are 3 rounds; each round each party sends one signature share. |
+| **TxRequest** | Object holding the unsigned transaction and per-round signature shares; used for TSS prebuild and step-by-step signing. |
+| **DSG / signing round** | Distributed Signing Generation: the multi-round phase (3 rounds in MPCv2 ECDSA) where each party produces a signature share per round. |
+| **Workspace (signing)** | Directory of files (tx-request, sign-round payload/response/state, sign-result) exchanged between offline and online machines when signing. |
 | **GPG** | Standard used here to encrypt n-shares so only the recipient can read them. |
 | **Passphrase** | Password used to encrypt/decrypt your key material locally. |

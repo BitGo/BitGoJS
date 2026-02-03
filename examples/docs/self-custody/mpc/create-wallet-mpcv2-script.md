@@ -11,6 +11,70 @@ This guide describes creating an **MPCv2 TSS self-custody hot wallet** using **t
 
 Communication between the two scripts is **file-based** in a shared workspace directory (e.g. `mpc-keygen-workspace/`). The offline machine and online machine can be the same (for testing) or different; in production, run the offline script on an air-gapped machine and copy only the payload/response files.
 
+## Sequence Diagram (Offline ↔ Online ↔ BitGo Express)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Offline as Offline (stores keys, no network)
+    participant Online as Online (proxy / networked)
+    participant BitGo as BitGo Express
+
+    Note over Offline,BitGo: Offline never communicates directly with BitGo Express
+
+    %% Step 0
+    rect rgb(14, 37, 57)
+        Note over Online,BitGo: Step 0 — Fetch BitGo configuration
+        Online->>+BitGo: GET TSS settings + GET client/constants (GPG public key)
+        BitGo-->>-Online: bitgo-gpg-public-key
+        Online->>Offline: Transfer bitgo-gpg-public-key.json (file / API)
+    end
+
+    %% Step 1 — Round 1
+    rect rgb(255, 248, 240)
+        Note over Offline: Step 1 — DKG round 1 (local)
+        Offline->>Offline: initDkg, generate GPG keys, encrypt round 1
+        Offline->>Online: round1-payload.json (file / API)
+        Online->>+BitGo: POST /api/v2/mpc/generatekey (round MPCv2-R1)
+        BitGo-->>-Online: round1-response (sessionId, bitgoMsg1, P2P R2)
+        Online->>Offline: round1-response.json (file / API)
+    end
+
+    %% Step 2 — Round 2
+    rect rgb(24, 75, 24)
+        Note over Offline: Step 2 — DKG round 2 (local)
+        Offline->>Offline: handleIncomingMessages R1, generate P2P R2
+        Offline->>Online: round2-payload.json
+        Online->>+BitGo: POST generatekey (round MPCv2-R2)
+        BitGo-->>-Online: round2-response (P2P R2, R3)
+        Online->>Offline: round2-response.json
+    end
+
+    %% Step 3 — Round 3 & 4
+    rect rgb(72, 23, 72)
+        Note over Offline: Step 3 — DKG rounds 3 & 4 (local)
+        Offline->>Offline: process R2/R3, generate R3 P2P + R4 broadcast
+        Offline->>Online: round3-payload.json
+        Online->>+BitGo: POST generatekey (round MPCv2-R3)
+        BitGo-->>-Online: round3-response (bitgoMsg4, commonKeychain)
+        Online->>Offline: round3-response.json
+    end
+
+    %% Step 4 — Keychains & Wallet
+    rect rgb(22, 22, 68)
+        Note over Offline: Step 4 — key combine, encrypt signing material (local)
+        Offline->>Offline: finalize DKG, combine keys, encrypt with passphrase
+        Offline->>Online: keychain-payloads.json (encryptedPrv only)
+        Online->>+BitGo: POST /api/v2/{coin}/key (user, backup, bitgo)
+        BitGo-->>Online: keychain IDs
+        Online->>+BitGo: POST /api/v2/{coin}/wallet
+        BitGo-->>-Online: wallet-result (wallet ID, address)
+        Online->>Offline: (optional) wallet-result.json
+    end
+```
+/End of Selection
+```
+
 ## Workspace Files
 
 | File | Written by | Read by | Description |
