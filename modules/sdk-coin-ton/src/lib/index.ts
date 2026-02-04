@@ -8,4 +8,5 @@ export { TokenTransferBuilder } from './tokenTransferBuilder';
 export { TransactionBuilder } from './transactionBuilder';
 export { TransferBuilder } from './transferBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
+export { TonWhalesVestingDepositBuilder } from './tonWhalesVestingDepositBuilder';
 export { Interface, Utils };

@@ -206,3 +206,15 @@ export const getMemberStackFixture = {
   rawAddress: '0:640f9d8b0023711a06a80319b9361b3448dea083c84d69c78d6227debfcf18ee',
   boc: 'te6cckEBAQEAJAAAQ4AMgfOxYARuI0DVAGM3JsNmiRvUEHkJrTjxrET71/njHdDqtWeh',
 };
+
+export const tonWhalesVestingDepositFixture = {
+  recipient: {
+    address: 'EQDr9Sq482A6ikIUh5mUUjJaBUUJBrye13CJiDB-R31_lwIq',
+    amount: '10000000000',
+  },
+  sender: 'EQBkD52LACNxGgaoAxm5Nhs0SN6gg8hNaceNYifev88Y7qoZ',
+  publicKey: '9d6d3714aeb1f007f6e6aa728f79fdd005ea2c7ad459b2f54d73f9e672426230',
+  seqno: 0,
+  expireTime: 1234567890,
+  bounceable: true,
+};
