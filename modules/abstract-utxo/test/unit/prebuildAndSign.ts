@@ -1,17 +1,25 @@
 import * as assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
+import { testutil } from '@bitgo/utxo-lib';
 import nock = require('nock');
 import { common, HalfSignedUtxoTransaction, Wallet } from '@bitgo/sdk-core';
 import { getSeed } from '@bitgo/sdk-test';
 
-import { AbstractUtxoCoin, getReplayProtectionAddresses } from '../../src';
-import { getMainnetCoinName } from '../../src/names';
+import { AbstractUtxoCoin } from '../../src';
 
-import { defaultBitGo, encryptKeychain, getDefaultWalletKeys, getUtxoWallet, keychainsBase58, utxoCoins } from './util';
+import {
+  defaultBitGo,
+  encryptKeychain,
+  getDefaultWalletKeys,
+  getMinUtxoCoins,
+  getUtxoWallet,
+  keychainsBase58,
+  getScriptTypes,
+  TxFormat,
+} from './util';
 
-const txFormats = ['legacy', 'psbt'] as const;
-export type TxFormat = (typeof txFormats)[number];
+type ScriptType = testutil.InputScriptType;
 
 type KeyDoc = {
   id: string;
@@ -24,9 +32,6 @@ type KeyDoc = {
 const walletPassphrase = 'gabagool';
 const webauthnWalletPassPhrase = 'just the gabagool';
 
-const scriptTypes = [...utxolib.bitgo.outputScripts.scriptTypes2Of3, 'taprootKeyPathSpend', 'p2shP2pk'] as const;
-export type ScriptType = (typeof scriptTypes)[number];
-
 type Input = {
   scriptType: ScriptType;
   value: bigint;
@@ -35,15 +40,16 @@ type Input = {
 function assertSignable(psbtHex: string, inputScripts: ScriptType[], network: utxolib.Network): void {
   const psbt = utxolib.bitgo.createPsbtFromHex(psbtHex, network);
   // Make sure that you can sign with bitgo key and extract the transaction
-  // No signatures should be present if it's a p2shP2pk input
-  if (!inputScripts.includes('p2shP2pk')) {
-    const key = inputScripts.includes('p2trMusig2') ? rootWalletKeys.backup : rootWalletKeys.bitgo;
-    psbt.signAllInputsHD(key, { deterministic: true });
-    psbt.validateSignaturesOfAllInputs();
-    psbt.finalizeAllInputs();
-    const tx = psbt.extractTransaction();
-    assert.ok(tx);
+  // Skip validation for p2shP2pk (single-sig replay protection) and taprootKeyPathSpend (requires musig2 nonce exchange)
+  if (inputScripts.includes('p2shP2pk') || inputScripts.includes('taprootKeyPathSpend')) {
+    return;
   }
+  const key = inputScripts.includes('p2trMusig2') ? rootWalletKeys.backup : rootWalletKeys.bitgo;
+  psbt.signAllInputsHD(key, { deterministic: true });
+  psbt.validateSignaturesOfAllInputs();
+  psbt.finalizeAllInputs();
+  const tx = psbt.extractTransaction();
+  assert.ok(tx);
 }
 
 // Build the key objects
@@ -295,27 +301,6 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
   });
 }
 
-utxoCoins
-  .filter((coin) => getMainnetCoinName(coin.name) !== 'bsv')
-  .forEach((coin) => {
-    scriptTypes
-      // Don't iterate over p2shP2pk - in no scenario would a wallet spend two p2shP2pk inputs as these
-      // are single signature inputs that are used for replay protection and are added to the transaction
-      // by our system from a separate wallet. We do run tests below where one of the inputs is a p2shP2pk and
-      // the other is an input spent by the user.
-      .filter((scriptType) => scriptType !== 'p2shP2pk')
-      .forEach((inputScript) => {
-        const inputScriptCleaned = (
-          inputScript === 'taprootKeyPathSpend' ? 'p2trMusig2' : inputScript
-        ) as utxolib.bitgo.outputScripts.ScriptType2Of3;
-
-        if (!coin.supportsAddressType(inputScriptCleaned)) {
-          return;
-        }
-
-        run(coin, [inputScript, inputScript], 'psbt');
-        if (getReplayProtectionAddresses(coin.name).length) {
-          run(coin, ['p2shP2pk', inputScript], 'psbt');
-        }
-      });
-  });
+getMinUtxoCoins().forEach((coin) => {
+  run(coin, getScriptTypes(coin, 'psbt'), 'psbt');
+});
