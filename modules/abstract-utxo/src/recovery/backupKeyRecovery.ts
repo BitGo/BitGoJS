@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import * as utxolib from '@bitgo/utxo-lib';
 import {
   BitGoBase,
   ErrorNoInputToRecover,
@@ -9,31 +8,28 @@ import {
   getIsUnsignedSweep,
   isTriple,
   krsProviders,
+  Triple,
 } from '@bitgo/sdk-core';
-import { getMainnet, networks } from '@bitgo/utxo-lib';
-import { fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { BIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin } from '../abstractUtxoCoin';
 import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction';
 import { generateAddressWithChainAndIndex } from '../address';
 import { encodeTransaction } from '../transaction/decode';
 import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection';
-import { isTestnetCoin, UtxoCoinName } from '../names';
-import type { WalletUnspent } from '../unspent';
+import { getMainnetCoinName, UtxoCoinName } from '../names';
+import { parseOutputId, unspentSum, type WalletUnspent } from '../unspent';
 
 import { forCoin, RecoveryProvider } from './RecoveryProvider';
 import { MempoolApi } from './mempoolApi';
 import { CoingeckoApi } from './coingeckoApi';
-import { createBackupKeyRecoveryPsbt, getRecoveryAmount, PsbtBackend, toPsbtToUtxolibPsbt } from './psbt';
+import { createBackupKeyRecoveryPsbt, getRecoveryAmount } from './psbt';
 
-type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
-type ChainCode = utxolib.bitgo.ChainCode;
-type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+type ScriptType2Of3 = fixedScriptWallet.OutputScriptType;
+type ChainCode = fixedScriptWallet.ChainCode;
 type WalletUnspentJSON = WalletUnspent & {
   valueString: string;
 };
-
-const { getInternalChainCode, scriptTypeForChain, outputScripts, getExternalChainCode } = utxolib.bitgo;
 
 // V1 only deals with BTC. 50 sat/vbyte is very arbitrary.
 export const DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V1 = 50;
@@ -120,7 +116,7 @@ export interface RecoverParams {
 function getFormattedAddress(
   coin: AbstractUtxoCoin,
   coinName: UtxoCoinName,
-  walletKeys: RootWalletKeys,
+  walletKeys: fixedScriptWallet.RootWalletKeys,
   chain: ChainCode,
   addrIndex: number
 ): string {
@@ -131,15 +127,18 @@ function getFormattedAddress(
   return format === 'cashaddr' ? address.split(':')[1] : address;
 }
 
+function hasWitnessData(scriptType: ScriptType2Of3): boolean {
+  return scriptType !== 'p2sh';
+}
+
 async function queryBlockchainUnspentsPath(
   coin: AbstractUtxoCoin,
   params: RecoverParams,
-  walletKeys: RootWalletKeys,
+  walletKeys: fixedScriptWallet.RootWalletKeys,
   chain: ChainCode
 ): Promise<WalletUnspent<bigint>[]> {
-  const scriptType = scriptTypeForChain(chain);
-  const fetchPrevTx =
-    !utxolib.bitgo.outputScripts.hasWitnessData(scriptType) && getMainnet(coin.network) !== networks.zcash;
+  const scriptType = fixedScriptWallet.ChainCode.scriptType(chain);
+  const fetchPrevTx = !hasWitnessData(scriptType) && getMainnetCoinName(coin.name) !== 'zec';
   const recoveryProvider = params.recoveryProvider ?? forCoin(coin.getChain(), params.apiKey);
   const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
   let numSequentialAddressesWithoutTxs = 0;
@@ -168,7 +167,7 @@ async function queryBlockchainUnspentsPath(
         const addressUnspents = await recoveryProvider.getUnspentsForAddresses([formattedAddress]);
         const processedUnspents = await Promise.all(
           addressUnspents.map(async (u): Promise<WalletUnspent<bigint>> => {
-            const { txid, vout } = utxolib.bitgo.parseOutputId(u.id);
+            const { txid, vout } = parseOutputId(u.id);
             let val = BigInt(u.value);
             if (coin.amountType === 'bigint') {
               // blockchair returns the number with the correct precision, but in number format
@@ -246,6 +245,14 @@ export type BackupKeyRecoveryTransansaction = {
   recoveryAmountString: string;
 };
 
+function getBip32Privkeys(bitgo: BitGoBase, params: RecoverParams): Triple<BIP32> {
+  const keys = getBip32Keys(bitgo, params, { requireBitGoXpub: true });
+  if (!isTriple(keys)) {
+    throw new Error(`expected key triple`);
+  }
+  return keys.map((k) => BIP32.from(k.toBase58())) as Triple<BIP32>;
+}
+
 /**
  * Builds a funds recovery transaction without BitGo.
  *
@@ -303,27 +310,35 @@ export async function backupKeyRecovery(
   const krsProvider = isKrsRecovery ? getKrsProvider(coin, params.krsProvider) : undefined;
 
   // check whether key material and password authenticate the users and return parent keys of all three keys of the wallet
-  const keys = getBip32Keys(bitgo, params, { requireBitGoXpub: true });
-  if (!isTriple(keys)) {
-    throw new Error(`expected key triple`);
-  }
-  const walletKeys = new utxolib.bitgo.RootWalletKeys(keys, [
-    params.userKeyPath || utxolib.bitgo.RootWalletKeys.defaultPrefix,
-    utxolib.bitgo.RootWalletKeys.defaultPrefix,
-    utxolib.bitgo.RootWalletKeys.defaultPrefix,
-  ]);
+  const keys = getBip32Privkeys(bitgo, params);
+  const walletKeys = fixedScriptWallet.RootWalletKeys.from({
+    triple: keys,
+    derivationPrefixes: [params.userKeyPath || 'm/0/0', 'm/0/0', 'm/0/0'],
+  });
 
   const unspents: WalletUnspent<bigint>[] = (
     await Promise.all(
-      outputScripts.scriptTypes2Of3
+      fixedScriptWallet.outputScriptTypes
         .filter(
-          (addressType) => coin.supportsAddressType(addressType) && !params.ignoreAddressTypes?.includes(addressType)
+          (addressType) =>
+            fixedScriptWallet.supportsScriptType(coin.name, addressType) &&
+            !params.ignoreAddressTypes?.includes(addressType)
         )
         .reduce(
           (queries, addressType) => [
             ...queries,
-            queryBlockchainUnspentsPath(coin, params, walletKeys, getExternalChainCode(addressType)),
-            queryBlockchainUnspentsPath(coin, params, walletKeys, getInternalChainCode(addressType)),
+            queryBlockchainUnspentsPath(
+              coin,
+              params,
+              walletKeys,
+              fixedScriptWallet.ChainCode.value(addressType, 'external')
+            ),
+            queryBlockchainUnspentsPath(
+              coin,
+              params,
+              walletKeys,
+              fixedScriptWallet.ChainCode.value(addressType, 'internal')
+            ),
           ],
           [] as Promise<WalletUnspent<bigint>[]>[]
         )
@@ -331,7 +346,7 @@ export async function backupKeyRecovery(
   ).flat();
 
   // Execute the queries and gather the unspents
-  const totalInputAmount = utxolib.bitgo.unspentSum(unspents, 'bigint');
+  const totalInputAmount = unspentSum(unspents);
   if (totalInputAmount <= BigInt(0)) {
     throw new ErrorNoInputToRecover();
   }
@@ -370,20 +385,12 @@ export async function backupKeyRecovery(
     }
   }
 
-  // Use wasm-utxo for testnet coins only, utxolib for mainnet
-  const backend: PsbtBackend = isTestnetCoin(coin.name) ? 'wasm-utxo' : 'utxolib';
-  let psbt = createBackupKeyRecoveryPsbt(
-    coin.getChain(),
-    walletKeys,
-    unspents,
-    {
-      feeRateSatVB: feePerByte,
-      recoveryDestination: params.recoveryDestination,
-      keyRecoveryServiceFee: krsFee,
-      keyRecoveryServiceFeeAddress: krsFeeAddress,
-    },
-    backend
-  );
+  let psbt = createBackupKeyRecoveryPsbt(coin.getChain(), walletKeys, unspents, {
+    feeRateSatVB: feePerByte,
+    recoveryDestination: params.recoveryDestination,
+    keyRecoveryServiceFee: krsFee,
+    keyRecoveryServiceFeeAddress: krsFeeAddress,
+  });
 
   if (isUnsignedSweep) {
     return {
@@ -398,7 +405,7 @@ export async function backupKeyRecovery(
   const replayProtection = { publicKeys: getReplayProtectionPubkeys(coin.name) };
 
   // Sign with user key first
-  psbt = signAndVerifyPsbt(psbt, walletKeys.user, rootWalletKeysWasm, replayProtection);
+  psbt = signAndVerifyPsbt(psbt, keys[0], rootWalletKeysWasm, replayProtection);
 
   if (isKrsRecovery) {
     // The KRS provider keyternal solely supports P2SH, P2WSH, and P2SH-P2WSH input script types.
@@ -407,20 +414,14 @@ export async function backupKeyRecovery(
     // which hinders the integration of the latest BitGoJS SDK with PSBT signing support.
     txInfo.transactionHex =
       params.krsProvider === 'keyternal'
-        ? utxolib.bitgo.extractP2msOnlyHalfSignedTx(toPsbtToUtxolibPsbt(psbt, coin.name)).toBuffer().toString('hex')
+        ? Buffer.from(psbt.getHalfSignedLegacyFormat()).toString('hex')
         : encodeTransaction(psbt).toString('hex');
   } else {
     // Sign with backup key
-    psbt = signAndVerifyPsbt(psbt, walletKeys.backup, rootWalletKeysWasm, replayProtection);
+    psbt = signAndVerifyPsbt(psbt, keys[1], rootWalletKeysWasm, replayProtection);
     // Finalize and extract transaction
     psbt.finalizeAllInputs();
-    if (psbt instanceof utxolib.bitgo.UtxoPsbt) {
-      txInfo.transactionHex = psbt.extractTransaction().toBuffer().toString('hex');
-    } else if (psbt instanceof fixedScriptWallet.BitGoPsbt) {
-      txInfo.transactionHex = Buffer.from(psbt.extractTransaction().toBytes()).toString('hex');
-    } else {
-      throw new Error('expected a UtxoPsbt or BitGoPsbt object');
-    }
+    txInfo.transactionHex = Buffer.from(psbt.extractTransaction().toBytes()).toString('hex');
   }
 
   if (isKrsRecovery) {

@@ -1,28 +1,17 @@
-import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
-import { Dimensions } from '@bitgo/unspents';
-import { CoinName, fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { CoinName, fixedScriptWallet, address as wasmAddress } from '@bitgo/wasm-utxo';
 import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
 import { decrypt } from '@bitgo/sdk-api';
 
 import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin';
 import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction';
-import { getNetworkFromCoinName, isTestnetCoin, UtxoCoinName } from '../names';
+import { UtxoCoinName } from '../names';
 import { encodeTransaction } from '../transaction/decode';
 import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection';
 import { toTNumber } from '../tnumber';
-import type { Unspent, WalletUnspent } from '../unspent';
+import { unspentSum, type Unspent, type WalletUnspent } from '../unspent';
 
-import {
-  PsbtBackend,
-  createEmptyWasmPsbt,
-  addWalletInputsToWasmPsbt,
-  addOutputToWasmPsbt,
-  getRecoveryAmount,
-} from './psbt';
-
-const { unspentSum } = utxolib.bitgo;
-type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+import { createEmptyWasmPsbt, addWalletInputsToWasmPsbt, addOutputToWasmPsbt, getRecoveryAmount } from './psbt';
 
 export interface BuildRecoveryTransactionOptions {
   wallet: string;
@@ -93,7 +82,7 @@ export async function getWallet(
 export async function getWalletKeys(
   recoveryCoin: AbstractUtxoCoin,
   wallet: IWallet | WalletV1
-): Promise<RootWalletKeys> {
+): Promise<fixedScriptWallet.RootWalletKeys> {
   let xpubs: Triple<string>;
 
   if (wallet instanceof Wallet) {
@@ -106,7 +95,7 @@ export async function getWalletKeys(
     xpubs = (wallet as WalletV1).keychains.map((k) => k.xpub) as Triple<string>;
   }
 
-  return new utxolib.bitgo.RootWalletKeys(xpubs.map((k) => bip32.fromBase58(k)) as Triple<BIP32Interface>);
+  return fixedScriptWallet.RootWalletKeys.from(xpubs);
 }
 
 export async function isWalletAddress(wallet: IWallet | WalletV1, address: string): Promise<boolean> {
@@ -125,8 +114,9 @@ export async function isWalletAddress(wallet: IWallet | WalletV1, address: strin
 }
 
 /**
- * Convert a Litecoin P2SH address from M... format (scriptHash 0x32) to the legacy 3... format (scriptHash 0x05).
- * This is needed for cross-chain recovery when LTC was sent to a BTC address, because the BTC wallet
+ * Convert a Litecoin P2SH address from M... format (scriptHash 0x32) to the legacy 3... format (scriptHash 0x05)
+ * and Q... format (scriptHash 0x32) to the legacy 2... format (scriptHash 0x05).
+ * This is needed for cross-chain recovery when (T)LTC was sent to a (T)BTC address, because the (T)BTC wallet
  * stores addresses in the 3... format while the LTC blockchain returns addresses in M... format.
  *
  * @param address - LTC address to convert
@@ -134,29 +124,19 @@ export async function isWalletAddress(wallet: IWallet | WalletV1, address: strin
  * @returns The address in legacy 3... format, or the original address if it's not a P2SH address
  */
 export function convertLtcAddressToLegacyFormat(address: string, coinName: UtxoCoinName): string {
-  const network = getNetworkFromCoinName(coinName);
-  try {
-    // Try to decode as bech32 - these don't need conversion
-    utxolib.address.fromBech32(address);
+  if (coinName !== 'ltc' && coinName !== 'tltc') {
     return address;
-  } catch (e) {
-    // Not bech32, continue to base58
   }
 
-  try {
-    const decoded = utxolib.address.fromBase58Check(address, network);
-    // Only convert P2SH addresses (scriptHash), not P2PKH (pubKeyHash)
-    if (decoded.version === network.scriptHash) {
-      // Convert to legacy format using Bitcoin's scriptHash (0x05)
-      const legacyScriptHash = utxolib.networks.bitcoin.scriptHash;
-      return utxolib.address.toBase58Check(decoded.hash, legacyScriptHash, network);
-    }
-    // P2PKH or other - return unchanged
-    return address;
-  } catch (e) {
-    // If decoding fails, return the original address
+  // only consider addresses that start with M or Q (modern ltc p2sh prefixes)
+  if (!address.startsWith('M') && !address.startsWith('Q')) {
     return address;
   }
+
+  const scriptPubKey = wasmAddress.toOutputScriptWithCoin(address, coinName);
+  const dstCoin = coinName === 'ltc' ? 'btc' : 'tbtc';
+  const dstAddress = wasmAddress.fromOutputScriptWithCoin(scriptPubKey, dstCoin);
+  return dstAddress;
 }
 
 /**
@@ -210,7 +190,7 @@ async function getAllRecoveryOutputs<TNumber extends number | bigint = number>(
     return {
       ...recoveryOutput,
       address: coin.canonicalAddress(recoveryOutput.address),
-      value: utxolib.bitgo.toTNumber<TNumber>(BigInt(recoveryOutput.value), amountType),
+      value: toTNumber(BigInt(recoveryOutput.value), amountType) as TNumber,
     };
   });
 }
@@ -223,8 +203,8 @@ type ScriptId = {
   index: number;
 };
 
-async function getScriptId(coin: AbstractUtxoCoin, wallet: IWallet | WalletV1, script: Buffer): Promise<ScriptId> {
-  const address = utxolib.address.fromOutputScript(script, coin.network);
+async function getScriptId(coin: AbstractUtxoCoin, wallet: IWallet | WalletV1, script: Uint8Array): Promise<ScriptId> {
+  const address = wasmAddress.fromOutputScriptWithCoin(script, coin.name);
   let addressData: { chain: number; index: number };
   if (wallet instanceof Wallet) {
     addressData = await wallet.getAddress({ address });
@@ -260,7 +240,7 @@ async function toWalletUnspents<TNumber extends number | bigint = number>(
   for (const address of addresses) {
     let scriptId;
     try {
-      scriptId = await getScriptId(recoveryCoin, wallet, utxolib.address.toOutputScript(address, sourceCoin.network));
+      scriptId = await getScriptId(recoveryCoin, wallet, wasmAddress.toOutputScriptWithCoin(address, sourceCoin.name));
     } catch (e) {
       console.error(`error getting scriptId for ${address}:`, e);
       continue;
@@ -338,75 +318,22 @@ async function getPrv(xprv?: string, passphrase?: string, wallet?: IWallet | Wal
 }
 
 /**
- * Create a sweep transaction for cross-chain recovery using PSBT (utxolib implementation)
- * @param network
- * @param walletKeys
- * @param unspents
- * @param targetAddress
- * @param feeRateSatVB
- * @return unsigned PSBT
- */
-function createSweepTransactionUtxolib<TNumber extends number | bigint = number>(
-  coinName: CoinName,
-  walletKeys: RootWalletKeys,
-  unspents: WalletUnspent<TNumber>[],
-  targetAddress: string,
-  feeRateSatVB: number
-): utxolib.bitgo.UtxoPsbt {
-  const network = getNetworkFromCoinName(coinName);
-  const inputValue = unspentSum<bigint>(
-    unspents.map((u) => ({ ...u, value: BigInt(u.value) })),
-    'bigint'
-  );
-  const vsize = Dimensions.fromUnspents(unspents, {
-    p2tr: { scriptPathLevel: 1 },
-    p2trMusig2: { scriptPathLevel: undefined },
-  })
-    .plus(Dimensions.fromOutput({ script: utxolib.address.toOutputScript(targetAddress, network) }))
-    .getVSize();
-  const fee = BigInt(Math.round(vsize * feeRateSatVB));
-
-  const psbt = utxolib.bitgo.createPsbtForNetwork({ network });
-  utxolib.bitgo.addXpubsToPsbt(psbt, walletKeys);
-
-  unspents.forEach((unspent) => {
-    utxolib.bitgo.addWalletUnspentToPsbt(
-      psbt,
-      { ...unspent, value: BigInt(unspent.value) },
-      walletKeys,
-      'user',
-      'backup',
-      { skipNonWitnessUtxo: true }
-    );
-  });
-
-  const recoveryOutputScript = utxolib.address.toOutputScript(targetAddress, network);
-  psbt.addOutput({ script: recoveryOutputScript, value: inputValue - fee });
-
-  return psbt;
-}
-
-/**
  * Create a sweep transaction for cross-chain recovery using wasm-utxo
- * @param network
+ * @param coinName - BitGo coin name (e.g. 'btc', 'tbtc', 'ltc')
  * @param walletKeys
  * @param unspents
  * @param targetAddress
  * @param feeRateSatVB
- * @param coinName - BitGo coin name (e.g. 'btc', 'tbtc', 'ltc')
  * @return unsigned PSBT
  */
-function createSweepTransactionWasm<TNumber extends number | bigint = number>(
+function createSweepTransaction<TNumber extends number | bigint = number>(
   coinName: CoinName,
-  walletKeys: RootWalletKeys,
+  walletKeys: fixedScriptWallet.RootWalletKeys,
   unspents: WalletUnspent<TNumber>[],
   targetAddress: string,
   feeRateSatVB: number
 ): fixedScriptWallet.BitGoPsbt {
-  const inputValue = unspentSum<bigint>(
-    unspents.map((u) => ({ ...u, value: BigInt(u.value) })),
-    'bigint'
-  );
+  const inputValue = unspentSum(unspents);
 
   // Create PSBT with wasm-utxo and add wallet inputs using shared utilities
   const unspentsBigint = unspents.map((u) => ({ ...u, value: BigInt(u.value) }));
@@ -422,34 +349,7 @@ function createSweepTransactionWasm<TNumber extends number | bigint = number>(
   // Add output to wasm PSBT
   addOutputToWasmPsbt(wasmPsbt, targetAddress, inputValue - fee, coinName);
 
-  // Convert to utxolib PSBT for signing and return
   return wasmPsbt;
-}
-
-/**
- * Create a sweep transaction for cross-chain recovery using PSBT
- * @param network
- * @param walletKeys
- * @param unspents
- * @param targetAddress
- * @param feeRateSatVB
- * @param backend - Which backend to use for PSBT creation (default: 'wasm-utxo')
- * @param coinName - BitGo coin name (required for wasm-utxo backend)
- * @return unsigned PSBT
- */
-function createSweepTransaction<TNumber extends number | bigint = number>(
-  coinName: CoinName,
-  walletKeys: RootWalletKeys,
-  unspents: WalletUnspent<TNumber>[],
-  targetAddress: string,
-  feeRateSatVB: number,
-  backend: PsbtBackend = 'wasm-utxo'
-): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt {
-  if (backend === 'wasm-utxo') {
-    return createSweepTransactionWasm(coinName, walletKeys, unspents, targetAddress, feeRateSatVB);
-  } else {
-    return createSweepTransactionUtxolib(coinName, walletKeys, unspents, targetAddress, feeRateSatVB);
-  }
 }
 
 type RecoverParams = {
@@ -494,21 +394,18 @@ export async function recoverCrossChain<TNumber extends number | bigint = number
     params.apiKey
   );
   const walletUnspents = await toWalletUnspents<TNumber>(params.sourceCoin, params.recoveryCoin, unspents, wallet);
-  const walletKeys = await getWalletKeys(params.recoveryCoin, wallet);
+  const walletKeys = fixedScriptWallet.RootWalletKeys.from(await getWalletKeys(params.recoveryCoin, wallet));
   const prv =
     params.xprv || params.walletPassphrase ? await getPrv(params.xprv, params.walletPassphrase, wallet) : undefined;
   const feeRateSatVB = await getFeeRateSatVB(params.sourceCoin);
 
   // Create PSBT for both signed and unsigned recovery
-  // Use wasm-utxo for testnet coins only, utxolib for mainnet
-  const backend: PsbtBackend = isTestnetCoin(params.sourceCoin.name) ? 'wasm-utxo' : 'utxolib';
   let psbt = createSweepTransaction<TNumber>(
     params.sourceCoin.getChain(),
     walletKeys,
     walletUnspents,
     params.recoveryAddress,
-    feeRateSatVB,
-    backend
+    feeRateSatVB
   );
 
   // For unsigned recovery, return unsigned PSBT hex
@@ -522,7 +419,7 @@ export async function recoverCrossChain<TNumber extends number | bigint = number
   }
 
   // For signed recovery, sign the PSBT with user key and return half-signed PSBT
-  psbt = signAndVerifyPsbt(psbt, prv, fixedScriptWallet.RootWalletKeys.from(walletKeys), {
+  psbt = signAndVerifyPsbt(psbt, prv, walletKeys, {
     publicKeys: getReplayProtectionPubkeys(params.sourceCoin.name),
   });
 
