@@ -218,7 +218,7 @@ const mainnetBase: EnvironmentTemplate = {
     apechain: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
-    chiliz: {
+    chz: {
       baseUrl: 'https://api.chiliscan.com',
     },
     phrs: {
@@ -406,7 +406,7 @@ const testnetBase: EnvironmentTemplate = {
     apechain: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
-    chiliz: {
+    chz: {
       baseUrl: 'https://api.testnet.chiliscan.com',
     },
     phrs: {

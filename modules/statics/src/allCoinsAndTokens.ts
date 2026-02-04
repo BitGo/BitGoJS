@@ -7,8 +7,6 @@ import {
   arbethErc20,
   beraErc20,
   celoToken,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  chilizErc20,
   coredaoErc20,
   eosToken,
   erc1155,
@@ -34,8 +32,6 @@ import {
   tarbethErc20,
   tberaErc20,
   tceloToken,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  tchilizErc20,
   tcoredaoErc20,
   teosToken,
   terc1155,
@@ -2834,11 +2830,11 @@ export const allCoinsAndTokens = [
   ),
   account(
     'c7e1dc7f-add5-4eed-9931-2c201801e3a2',
-    'chiliz',
+    'chz',
     'Chiliz',
-    Networks.main.chiliz,
+    Networks.main.chz,
     18,
-    UnderlyingAsset.CHILIZ,
+    UnderlyingAsset.CHZ,
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,
@@ -2854,11 +2850,11 @@ export const allCoinsAndTokens = [
   ),
   account(
     'c014b2ec-02ea-468f-b73f-24442146208e',
-    'tchiliz',
+    'tchz',
     'Testnet Chiliz',
-    Networks.test.chiliz,
+    Networks.test.chz,
     18,
-    UnderlyingAsset.CHILIZ,
+    UnderlyingAsset.CHZ,
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,

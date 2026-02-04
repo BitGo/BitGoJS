@@ -613,9 +613,9 @@ class CeloTestnet extends Testnet implements EthereumNetwork {
   tokenOperationHashPrefix = 'CELO-ERC20';
 }
 
-class Chiliz extends Mainnet implements EthereumNetwork {
-  name = 'Chiliz';
-  family = CoinFamily.CHILIZ;
+class Chz extends Mainnet implements EthereumNetwork {
+  name = 'Chz';
+  family = CoinFamily.CHZ;
   explorerUrl = 'https://chiliscan.com/tx/';
   accountExplorerUrl = 'https://chiliscan.com/address/';
   chainId = 88888;
@@ -623,9 +623,9 @@ class Chiliz extends Mainnet implements EthereumNetwork {
   tokenOperationHashPrefix = '88888-ERC20';
 }
 
-class ChilizTestnet extends Testnet implements EthereumNetwork {
-  name = 'ChilizTestnet';
-  family = CoinFamily.CHILIZ;
+class ChzTestnet extends Testnet implements EthereumNetwork {
+  name = 'ChzTestnet';
+  family = CoinFamily.CHZ;
   explorerUrl = 'https://testnet.chiliscan.com/tx/';
   accountExplorerUrl = 'https://testnet.chiliscan.com/address/';
   chainId = 88882;
@@ -2413,7 +2413,7 @@ export const Networks = {
     canton: Object.freeze(new Canton()),
     casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
-    chiliz: Object.freeze(new Chiliz()),
+    chz: Object.freeze(new Chz()),
     coredao: Object.freeze(new Coredao()),
     coreum: Object.freeze(new Coreum()),
     cronos: Object.freeze(new Cronos()),
@@ -2528,7 +2528,7 @@ export const Networks = {
     canton: Object.freeze(new CantonTestnet()),
     casper: Object.freeze(new CasperTestnet()),
     celo: Object.freeze(new CeloTestnet()),
-    chiliz: Object.freeze(new ChilizTestnet()),
+    chz: Object.freeze(new ChzTestnet()),
     coredao: Object.freeze(new CoredaoTestnet()),
     cronos: Object.freeze(new CronosTestnet()),
     dash: Object.freeze(new DashTestnet()),
