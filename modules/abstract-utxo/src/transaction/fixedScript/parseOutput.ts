@@ -71,7 +71,6 @@ function isMigratedAddress(wallet: IWallet, currentAddress: string): boolean {
 interface VerifyCustomChangeAddressOptions {
   coin: AbstractUtxoCoin;
   customChangeKeys: HandleVerifyAddressErrorOptions['customChangeKeys'];
-  addressType: HandleVerifyAddressErrorOptions['addressType'];
   addressDetails: HandleVerifyAddressErrorOptions['addressDetails'];
   currentAddress: HandleVerifyAddressErrorOptions['currentAddress'];
 }
@@ -82,10 +81,10 @@ interface VerifyCustomChangeAddressOptions {
  * @return {boolean}
  */
 async function verifyCustomChangeAddress(params: VerifyCustomChangeAddressOptions): Promise<boolean> {
-  const { coin, customChangeKeys, addressType, addressDetails, currentAddress } = params;
+  const { coin, customChangeKeys, addressDetails, currentAddress } = params;
   try {
     return await coin.verifyAddress(
-      _.extend({ addressType }, addressDetails, {
+      _.extend({}, addressDetails, {
         keychains: customChangeKeys,
         address: currentAddress,
       })
@@ -106,7 +105,6 @@ interface HandleVerifyAddressErrorOptions {
   customChangeKeys?: CustomChangeOptions['keys'];
   coin: AbstractUtxoCoin;
   addressDetails?: any;
-  addressType?: string;
   considerMigratedFromAddressInternal?: boolean;
 }
 
@@ -118,7 +116,6 @@ async function handleVerifyAddressError({
   customChangeKeys,
   coin,
   addressDetails,
-  addressType,
   considerMigratedFromAddressInternal,
 }: HandleVerifyAddressErrorOptions): Promise<HandleVerifyAddressErrorResponse> {
   // Todo: name server-side errors to avoid message-based checking [BG-5124]
@@ -137,7 +134,7 @@ async function handleVerifyAddressError({
       // attempt to verify address using custom change address keys if the wallet has that feature enabled
       if (
         customChangeKeys &&
-        (await verifyCustomChangeAddress({ coin, addressDetails, addressType, currentAddress, customChangeKeys }))
+        (await verifyCustomChangeAddress({ coin, addressDetails, currentAddress, customChangeKeys }))
       ) {
         // address is valid against the custom change keys. Mark address as not external
         // and request signature verification for the custom change keys
@@ -239,7 +236,6 @@ export async function parseOutput({
   const addressDetailsVerification: AddressVerificationData = verification?.addresses?.[currentAddress] ?? {};
   debug('Parsing address details for %s', currentAddress);
   let currentAddressDetails = undefined;
-  let currentAddressType: string | undefined = undefined;
   const RECIPIENT_THRESHOLD = 1000;
   try {
     // In the case of PSBTs, we can already determine the internal/external status of the output addresses
@@ -256,7 +252,6 @@ export async function parseOutput({
       // can just return the current output as is without contacting the server.
       if (isWalletOutput(currentOutput)) {
         const res = await coin.isWalletAddress({
-          addressType: AbstractUtxoCoin.inferAddressType({ chain: currentOutput.chain }) || undefined,
           keychains: keychainArray,
           address: currentAddress,
           chain: currentOutput.chain,
@@ -305,10 +300,9 @@ export async function parseOutput({
     });
     // verify that the address is on the wallet. verifyAddress throws if
     // it fails to correctly rederive the address, meaning it's external
-    currentAddressType = AbstractUtxoCoin.inferAddressType(addressDetails) || undefined;
     currentAddressDetails = addressDetails;
     await coin.verifyAddress(
-      _.extend({ addressType: currentAddressType }, addressDetails, {
+      _.extend({}, addressDetails, {
         keychains: keychainArray,
         address: currentAddress,
       })
@@ -331,7 +325,6 @@ export async function parseOutput({
         txParams,
         customChangeKeys: customChange && customChange.keys,
         addressDetails: currentAddressDetails,
-        addressType: currentAddressType,
         considerMigratedFromAddressInternal: verification.considerMigratedFromAddressInternal,
       })
     );

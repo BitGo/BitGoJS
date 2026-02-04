@@ -24,7 +24,6 @@ export interface FixedScriptAddressCoinSpecific {
 }
 
 export interface GenerateAddressOptions {
-  addressType?: ScriptType2Of3;
   chain?: number;
   index?: number;
   segwit?: boolean;
@@ -62,7 +61,6 @@ export function generateAddressWithChainAndIndex(
 
 /**
  * Generate an address for a wallet based on a set of configurations
- * @param params.addressType {string}   Deprecated
  * @param params.keychains   {[object]} Array of objects with xpubs
  * @param params.threshold   {number}   Minimum number of signatures
  * @param params.chain       {number}   Derivation chain (see https://github.com/BitGo/unspents/blob/master/src/codes.ts for
@@ -98,7 +96,7 @@ export function generateAddress(coinName: UtxoCoinName, params: GenerateFixedScr
     }
   }
 
-  const addressType = normalizeScriptType(params.addressType || convertFlagsToAddressType());
+  const addressType = normalizeScriptType(convertFlagsToAddressType());
 
   if (addressType !== fixedScriptWallet.ChainCode.scriptType(derivationChain)) {
     throw new AddressTypeChainMismatchError(addressType, derivationChain);
@@ -146,14 +144,12 @@ export function assertFixedScriptWalletAddress(
     index,
     keychains,
     format,
-    addressType,
     address,
   }: {
     chain: number | undefined;
     index: number;
     keychains: Keychain[];
     format: CreateAddressFormat;
-    addressType: string | undefined;
     address: string;
   }
 ): void {
@@ -169,7 +165,6 @@ export function assertFixedScriptWalletAddress(
 
   const expectedAddress = generateAddress(coinName, {
     format,
-    addressType: addressType as ScriptType2Of3,
     keychains,
     chain,
     index,
