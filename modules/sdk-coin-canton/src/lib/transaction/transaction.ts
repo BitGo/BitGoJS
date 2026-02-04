@@ -160,6 +160,9 @@ export class Transaction extends BaseTransaction {
     if (parsedInfo.memoId) {
       result.memoId = parsedInfo.memoId;
     }
+    if (parsedInfo.token) {
+      result.token = parsedInfo.token;
+    }
     return result;
   }
 
@@ -208,12 +211,12 @@ export class Transaction extends BaseTransaction {
     const input: Entry = {
       address: txData.sender,
       value: txData.amount,
-      coin: this._coinConfig.name,
+      coin: txData.token ? txData.token : this._coinConfig.name,
     };
     const output: Entry = {
       address: txData.receiver,
       value: txData.amount,
-      coin: this._coinConfig.name,
+      coin: txData.token ? txData.token : this._coinConfig.name,
     };
     inputs.push(input);
     outputs.push(output);
@@ -253,6 +256,9 @@ export class Transaction extends BaseTransaction {
         };
         if (txData.memoId) {
           output.memo = txData.memoId;
+        }
+        if (txData.token) {
+          output.tokenName = txData.token;
         }
         outputs.push(output);
         outputAmount = txData.amount;
