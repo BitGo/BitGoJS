@@ -120,6 +120,10 @@ node ./examples/js/self-custody-multisig/multisig-self-custody-online.js --step 
 - Key format: add keychain uses `pub` (and optionally `encryptedPrv`; this flow omits it). Format of `pub` (xpub vs address) is determined by the coin; the script uses the format returned by `baseCoin.keychains().create()`.
 - Some coins require extra wallet params (e.g. `walletVersion`). The online script calls `baseCoin.supplementGenerateWallet(walletParams, keychains)` before POST so coin-specific params are included.
 
+## Signing transactions
+
+To spend from a wallet created with this flow, use the **two-script sign flow**: online step 0 builds the transaction and writes `tx-prebuild.json`; the offline script signs with your user or backup key from `local-encrypted-keys.json` and produces `half-signed.json`; online step 1 submits to BitGo. See [Sign transaction (multisig script)](sign-transaction-multisig-script.md).
+
 ## Reference
 
 - Implementation: `modules/sdk-core/src/bitgo/wallet/wallets.ts` (`generateWallet`: userKeychainPromise, backupKeychainPromise, createBitGo, keySignatures, supplementGenerateWallet).
