@@ -10,6 +10,7 @@ import { TransferAcceptanceBuilder } from './transferAcceptanceBuilder';
 import { TransferAcknowledgeBuilder } from './transferAcknowledgeBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
+import { TransferOfferWithdrawnBuilder } from './transferOfferWithdrawnBuilder';
 import { TransferRejectionBuilder } from './transferRejectionBuilder';
 import { Transaction } from './transaction/transaction';
 import { WalletInitBuilder } from './walletInitBuilder';
@@ -41,6 +42,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         case TransactionType.TransferAcknowledge: {
           return this.getTransferAcknowledgeBuilder(tx);
         }
+        case TransactionType.TransferOfferWithdrawn: {
+          return this.getTransferOfferWithdrawnBuilder();
+        }
         case TransactionType.TransferReject: {
           return this.getTransferRejectBuilder(tx);
         }
@@ -61,6 +65,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getTransferAcknowledgeBuilder(tx?: Transaction): TransferAcknowledgeBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new TransferAcknowledgeBuilder(this._coinConfig));
+  }
+
+  getTransferOfferWithdrawnBuilder(tx?: Transaction): TransferOfferWithdrawnBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new TransferOfferWithdrawnBuilder(this._coinConfig));
   }
 
   getTransferRejectBuilder(tx?: Transaction): TransferRejectionBuilder {

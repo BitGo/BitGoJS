@@ -138,6 +138,10 @@ export interface CantonTransferAcceptRejectRequest extends CantonPrepareCommandR
   contractId: string;
 }
 
+export interface CantonTransferOfferWithdrawnRequest extends CantonTransferAcceptRejectRequest {
+  tokenName?: string;
+}
+
 export interface TransferAcknowledge {
   contractId: string;
   senderPartyId: string;
