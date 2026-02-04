@@ -98,9 +98,12 @@ export class Utils implements BaseUtils {
     let instrumentAdmin: string | undefined;
     let token: string | undefined;
     let preApprovalNode: RecordField[] = [];
+    let tokenPreApprovalNode: RecordField[] = [];
     let transferNode: RecordField[] = [];
     let transferAcceptRejectNode: RecordField[] = [];
     let tokenTransferAcceptRejectNode: RecordField[] = [];
+    let withdrawnNode: RecordField[] = [];
+    let tokenWithdrawnNode: RecordField[] = [];
     const nodes = decodedData.transaction?.nodes;
 
     nodes?.forEach((node) => {
@@ -123,6 +126,13 @@ export class Utils implements BaseUtils {
         preApprovalNode = fields;
       }
       if (
+        template?.entityName === 'TransferPreapproval' &&
+        !tokenPreApprovalNode.length &&
+        txType === TransactionType.OneStepPreApproval
+      ) {
+        tokenPreApprovalNode = fields;
+      }
+      if (
         template?.entityName === 'Amulet' &&
         !transferAcceptRejectNode.length &&
         (txType === TransactionType.TransferAccept || txType === TransactionType.TransferReject)
@@ -139,6 +149,20 @@ export class Utils implements BaseUtils {
         if (transferSum?.oneofKind === 'record') {
           tokenTransferAcceptRejectNode = transferSum.record?.fields ?? [];
         }
+      }
+      if (
+        template?.entityName === 'Amulet' &&
+        !withdrawnNode.length &&
+        txType === TransactionType.TransferOfferWithdrawn
+      ) {
+        withdrawnNode = fields;
+      }
+      if (
+        template?.entityName === 'Holding' &&
+        !tokenWithdrawnNode.length &&
+        txType === TransactionType.TransferOfferWithdrawn
+      ) {
+        tokenWithdrawnNode = fields;
       }
     });
 
@@ -166,6 +190,27 @@ export class Utils implements BaseUtils {
       const providerData = getField(preApprovalNode, 'provider');
       if (providerData?.oneofKind === 'party') sender = providerData.party ?? '';
       amount = '0';
+    } else if (tokenPreApprovalNode.length) {
+      const receiverData = getField(tokenPreApprovalNode, 'receiver');
+      if (receiverData?.oneofKind === 'party') receiver = receiverData.party ?? '';
+      const operatorData = getField(tokenPreApprovalNode, 'operator');
+      if (operatorData?.oneofKind === 'party') sender = operatorData.party ?? '';
+      amount = '0';
+      const instrumentAdminData = getField(tokenPreApprovalNode, 'instrumentAdmin');
+      if (instrumentAdminData?.oneofKind === 'party') instrumentAdmin = instrumentAdminData.party ?? '';
+      const allowancesData = getField(tokenPreApprovalNode, 'instrumentAllowances');
+      if (allowancesData?.oneofKind === 'list') {
+        // for the same instrument admin, if multiple tokens are supported then we can enable all of them,
+        // but we won't be doing that for now
+        const firstAllowance = allowancesData.list?.elements?.[0]?.sum;
+        if (firstAllowance?.oneofKind === 'record') {
+          const allowanceFields = firstAllowance.record?.fields ?? [];
+          const idData = getField(allowanceFields, 'id');
+          if (idData?.oneofKind === 'text') {
+            instrumentId = idData.text ?? '';
+          }
+        }
+      }
     } else if (transferNode.length) {
       const transferField = transferNode.find((f) => f.label === 'transfer');
       const transferSum = transferField?.value?.sum;
@@ -238,6 +283,42 @@ export class Utils implements BaseUtils {
       const instrumentSum = getField(tokenTransferAcceptRejectNode, 'instrumentIdentifier');
       if (instrumentSum?.oneofKind === 'record') {
         const instrumentFields = instrumentSum.record?.fields ?? [];
+        const adminData = getField(instrumentFields, 'source');
+        if (adminData?.oneofKind === 'party') {
+          instrumentAdmin = adminData.party ?? '';
+        }
+        const idData = getField(instrumentFields, 'id');
+        if (idData?.oneofKind === 'text') {
+          instrumentId = idData.text ?? '';
+        }
+      }
+    } else if (withdrawnNode.length) {
+      const ownerData = getField(withdrawnNode, 'owner');
+      if (ownerData?.oneofKind === 'party') {
+        receiver = ownerData.party ?? '';
+        sender = receiver;
+      }
+      const amountField = getField(withdrawnNode, 'amount');
+      if (amountField?.oneofKind === 'record') {
+        const amountFields = amountField.record?.fields ?? [];
+        const initialAmountData = getField(amountFields, 'initialAmount');
+        if (initialAmountData?.oneofKind === 'numeric') {
+          amount = initialAmountData.numeric ?? '';
+        }
+      }
+    } else if (tokenWithdrawnNode.length) {
+      const ownerData = getField(tokenWithdrawnNode, 'owner');
+      if (ownerData?.oneofKind === 'party') {
+        receiver = ownerData.party ?? '';
+        sender = receiver;
+      }
+      const amountData = getField(tokenWithdrawnNode, 'amount');
+      if (amountData?.oneofKind === 'numeric') {
+        amount = amountData.numeric ?? '';
+      }
+      const instrumentData = getField(tokenWithdrawnNode, 'instrument');
+      if (instrumentData?.oneofKind === 'record') {
+        const instrumentFields = instrumentData.record?.fields ?? [];
         const adminData = getField(instrumentFields, 'source');
         if (adminData?.oneofKind === 'party') {
           instrumentAdmin = adminData.party ?? '';
