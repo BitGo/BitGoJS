@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js';
 import crypto from 'crypto';
 
 import { BaseUtils, isValidEd25519PublicKey, TransactionType } from '@bitgo/sdk-core';
+import { coins, CantonToken } from '@bitgo/statics';
 
 import { computePreparedTransaction } from '../../resources/hash/hash.js';
 import { PreparedTransaction } from '../../resources/proto/preparedTransaction.js';
@@ -93,6 +94,9 @@ export class Utils implements BaseUtils {
     let receiver = '';
     let amount = '';
     let memoId: string | undefined;
+    let instrumentId: string | undefined;
+    let instrumentAdmin: string | undefined;
+    let token: string | undefined;
     let preApprovalNode: RecordField[] = [];
     let transferNode: RecordField[] = [];
     let transferAcceptRejectNode: RecordField[] = [];
@@ -165,6 +169,21 @@ export class Utils implements BaseUtils {
           const amountData = getField(transferRecord, 'amount');
           if (amountData?.oneofKind === 'numeric') amount = amountData.numeric ?? '';
 
+          const instrumentField = getField(transferRecord, 'instrumentId');
+          if (instrumentField?.oneofKind === 'record') {
+            const instrumentFields = instrumentField.record?.fields ?? [];
+
+            const adminData = getField(instrumentFields, 'admin');
+            if (adminData?.oneofKind === 'party') {
+              instrumentAdmin = adminData.party ?? '';
+            }
+
+            const idData = getField(instrumentFields, 'id');
+            if (idData?.oneofKind === 'text') {
+              instrumentId = idData.text ?? '';
+            }
+          }
+
           const metaField = getField(transferRecord, 'meta');
           if (metaField?.oneofKind === 'record') {
             const metaFields = metaField.record?.fields;
@@ -213,6 +232,10 @@ export class Utils implements BaseUtils {
     };
     if (memoId) {
       parsedData.memoId = memoId;
+    }
+    if (instrumentId && instrumentAdmin) {
+      token = this.findTokenNameByContractAddress(`${instrumentAdmin}:${instrumentId}`);
+      parsedData.token = token;
     }
     return parsedData;
   }
@@ -370,6 +393,21 @@ export class Utils implements BaseUtils {
    */
   private convertAmountToLowestUnit(value: BigNumber): string {
     return value.multipliedBy(new BigNumber(10).pow(10)).toFixed(0);
+  }
+
+  /**
+   * Get the bitgo token name using the on-chain instrument details
+   * @param contractAddress - the contract address of the form, `instrumentAdmin:instrumentId`
+   * @returns tokenName if contractAddress matches with any supported canton tokens
+   */
+  private findTokenNameByContractAddress(contractAddress: string): string | undefined {
+    if (contractAddress.includes('Amulet')) {
+      return undefined;
+    }
+    const cantonToken = coins
+      .filter((coin) => coin instanceof CantonToken && coin.contractAddress === contractAddress)
+      .map((coin) => coin as CantonToken);
+    return cantonToken ? cantonToken[0].name : undefined;
   }
 }
 

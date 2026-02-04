@@ -22,6 +22,7 @@ export interface TxData {
   amount: string;
   acknowledgeData?: TransferAcknowledge;
   memoId?: string;
+  token?: string;
 }
 
 export interface PreparedTxnParsedInfo {
@@ -29,6 +30,7 @@ export interface PreparedTxnParsedInfo {
   receiver: string;
   amount: string;
   memoId?: string;
+  token?: string;
 }
 
 export interface WalletInitTxData {
@@ -152,4 +154,5 @@ export interface CantonTransferRequest {
   expiryEpoch: number;
   sendViaOneStep: boolean;
   memoId?: string;
+  token?: string;
 }
