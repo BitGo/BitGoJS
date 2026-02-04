@@ -341,7 +341,7 @@ async function getPrv(xprv?: string, passphrase?: string, wallet?: IWallet | Wal
  */
 function createSweepTransaction<TNumber extends number | bigint = number>(
   coinName: CoinName,
-  walletKeys: RootWalletKeys,
+  walletKeys: fixedScriptWallet.RootWalletKeys,
   unspents: WalletUnspent<TNumber>[],
   targetAddress: string,
   feeRateSatVB: number
@@ -410,7 +410,7 @@ export async function recoverCrossChain<TNumber extends number | bigint = number
     params.apiKey
   );
   const walletUnspents = await toWalletUnspents<TNumber>(params.sourceCoin, params.recoveryCoin, unspents, wallet);
-  const walletKeys = await getWalletKeys(params.recoveryCoin, wallet);
+  const walletKeys = fixedScriptWallet.RootWalletKeys.from(await getWalletKeys(params.recoveryCoin, wallet));
   const prv =
     params.xprv || params.walletPassphrase ? await getPrv(params.xprv, params.walletPassphrase, wallet) : undefined;
   const feeRateSatVB = await getFeeRateSatVB(params.sourceCoin);
@@ -435,7 +435,7 @@ export async function recoverCrossChain<TNumber extends number | bigint = number
   }
 
   // For signed recovery, sign the PSBT with user key and return half-signed PSBT
-  psbt = signAndVerifyPsbt(psbt, prv, fixedScriptWallet.RootWalletKeys.from(walletKeys), {
+  psbt = signAndVerifyPsbt(psbt, prv, walletKeys, {
     publicKeys: getReplayProtectionPubkeys(params.sourceCoin.name),
   });
 

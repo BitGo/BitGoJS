@@ -35,7 +35,7 @@ export type PsbtParsedScriptType =
  */
 export function signAndVerifyPsbt(
   psbt: utxolib.bitgo.UtxoPsbt,
-  signerKeychain: utxolib.BIP32Interface
+  signerKeychain: BIP32Interface
 ): utxolib.bitgo.UtxoPsbt {
   const txInputs = psbt.txInputs;
   const outputIds: string[] = [];

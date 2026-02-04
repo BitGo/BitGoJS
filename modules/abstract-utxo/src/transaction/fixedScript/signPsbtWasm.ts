@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import { BIP32Interface } from '@bitgo/utxo-lib';
-import { ECPair, fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { BIP32, ECPair, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { toWasmBIP32 } from '../../wasmUtil';
 
@@ -36,7 +36,7 @@ function hasKeyPathSpendInput(
  */
 export function signAndVerifyPsbtWasm(
   tx: fixedScriptWallet.BitGoPsbt,
-  signerKeychain: BIP32Interface,
+  signerKeychain: BIP32Interface | BIP32,
   rootWalletKeys: fixedScriptWallet.RootWalletKeys,
   replayProtection: ReplayProtectionKeys
 ): fixedScriptWallet.BitGoPsbt {

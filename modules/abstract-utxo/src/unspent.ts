@@ -48,3 +48,12 @@ export interface WalletUnspent<TNumber extends number | bigint = number> extends
 export interface UnspentWithPrevTx<TNumber extends number | bigint = number> extends Unspent<TNumber> {
   prevTx: Buffer;
 }
+
+export function parseOutputId(id: string): { txid: string; vout: number } {
+  const [txid, vout] = id.split(':');
+  return { txid, vout: Number(vout) };
+}
+
+export function unspentSum(unspents: { value: number | bigint }[]): bigint {
+  return unspents.reduce((sum, unspent) => sum + BigInt(unspent.value), 0n);
+}

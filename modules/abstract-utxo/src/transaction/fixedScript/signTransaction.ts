@@ -5,7 +5,7 @@ import _ from 'lodash';
 import { BIP32Interface } from '@bitgo/secp256k1';
 import { bitgo } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
-import { fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { BIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { UtxoCoinName } from '../../names';
 import type { Unspent } from '../../unspent';
@@ -21,35 +21,37 @@ import { getReplayProtectionPubkeys } from './replayProtection';
  */
 export function signAndVerifyPsbt(
   psbt: utxolib.bitgo.UtxoPsbt,
-  signerKeychain: BIP32Interface,
+  signerKeychain: BIP32Interface | BIP32,
   rootWalletKeys: fixedScriptWallet.RootWalletKeys | undefined,
   replayProtection: ReplayProtectionKeys | undefined
 ): utxolib.bitgo.UtxoPsbt;
 export function signAndVerifyPsbt(
   psbt: fixedScriptWallet.BitGoPsbt,
-  signerKeychain: BIP32Interface,
+  signerKeychain: BIP32Interface | BIP32,
   rootWalletKeys: fixedScriptWallet.RootWalletKeys,
   replayProtection: ReplayProtectionKeys
 ): fixedScriptWallet.BitGoPsbt;
 export function signAndVerifyPsbt(
   psbt: utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt,
-  signerKeychain: BIP32Interface,
+  signerKeychain: BIP32Interface | BIP32,
   rootWalletKeys: fixedScriptWallet.RootWalletKeys,
   replayProtection: ReplayProtectionKeys
 ): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt;
 export function signAndVerifyPsbt(
   psbt: utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt,
-  signerKeychain: BIP32Interface,
+  signerKeychain: BIP32Interface | BIP32,
   rootWalletKeys: fixedScriptWallet.RootWalletKeys | undefined,
   replayProtection: ReplayProtectionKeys | undefined
 ): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt {
   if (psbt instanceof bitgo.UtxoPsbt) {
+    if (signerKeychain instanceof BIP32) {
+      signerKeychain = utxolib.bip32.fromBase58(signerKeychain.toBase58());
+    }
     return signAndVerifyPsbtUtxolib(psbt, signerKeychain);
-  } else {
-    assert(rootWalletKeys, 'rootWalletKeys required for wasm-utxo signing');
-    assert(replayProtection, 'replayProtection required for wasm-utxo signing');
-    return signAndVerifyPsbtWasm(psbt, signerKeychain, rootWalletKeys, replayProtection);
   }
+  assert(rootWalletKeys, 'rootWalletKeys required for wasm-utxo signing');
+  assert(replayProtection, 'replayProtection required for wasm-utxo signing');
+  return signAndVerifyPsbtWasm(psbt, signerKeychain, rootWalletKeys, replayProtection);
 }
 
 export async function signTransaction<
