@@ -51,7 +51,7 @@ export class WasmTransaction extends BaseTransaction {
   /** Transaction ID (first signature, base58 encoded) */
   get id(): string {
     if (!this._wasmTransaction) return UNAVAILABLE_TEXT;
-    const signatures = this._wasmTransaction.signatures();
+    const signatures = this._wasmTransaction.signatures;
     if (signatures.length > 0) {
       const firstSig = signatures[0];
       // Check if signature is not a placeholder (all zeros)
@@ -73,10 +73,7 @@ export class WasmTransaction extends BaseTransaction {
   /** List of valid signatures (non-placeholder) */
   get signature(): string[] {
     if (!this._wasmTransaction) return [];
-    return this._wasmTransaction
-      .signatures()
-      .filter((sig) => sig.some((b) => b !== 0))
-      .map((sig) => base58.encode(sig));
+    return this._wasmTransaction.signatures.filter((sig) => sig.some((b) => b !== 0)).map((sig) => base58.encode(sig));
   }
 
   get lamportsPerSignature(): number | undefined {
@@ -118,7 +115,7 @@ export class WasmTransaction extends BaseTransaction {
       this._parsedTransaction = parseTransaction(txBytes);
 
       // Get transaction ID if signed
-      const signatures = this._wasmTransaction.signatures();
+      const signatures = this._wasmTransaction.signatures;
       if (signatures.length > 0 && signatures[0].some((b) => b !== 0)) {
         this._id = base58.encode(signatures[0]);
       }
