@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import crypto from 'crypto';
 
 import { BaseUtils, isValidEd25519PublicKey, TransactionType } from '@bitgo/sdk-core';
-import { coins, CantonToken } from '@bitgo/statics';
+import { CantonToken, coins } from '@bitgo/statics';
 
 import { computePreparedTransaction } from '../../resources/hash/hash.js';
 import { PreparedTransaction } from '../../resources/proto/preparedTransaction.js';
@@ -100,6 +100,7 @@ export class Utils implements BaseUtils {
     let preApprovalNode: RecordField[] = [];
     let transferNode: RecordField[] = [];
     let transferAcceptRejectNode: RecordField[] = [];
+    let tokenTransferAcceptRejectNode: RecordField[] = [];
     const nodes = decodedData.transaction?.nodes;
 
     nodes?.forEach((node) => {
@@ -127,6 +128,17 @@ export class Utils implements BaseUtils {
         (txType === TransactionType.TransferAccept || txType === TransactionType.TransferReject)
       ) {
         transferAcceptRejectNode = fields;
+      }
+      if (
+        (template?.entityName === 'ExecutedTransfer' || template?.entityName === 'RejectedTransfer') &&
+        !tokenTransferAcceptRejectNode.length &&
+        (txType === TransactionType.TransferAccept || txType === TransactionType.TransferReject)
+      ) {
+        const transferField = fields.find((f) => f.label === 'transfer');
+        const transferSum = transferField?.value?.sum;
+        if (transferSum?.oneofKind === 'record') {
+          tokenTransferAcceptRejectNode = transferSum.record?.fields ?? [];
+        }
       }
     });
 
@@ -214,6 +226,25 @@ export class Utils implements BaseUtils {
         if (amountRecord?.length) {
           const initialAmountData = getField(amountRecord, 'initialAmount');
           if (initialAmountData?.oneofKind === 'numeric') amount = initialAmountData.numeric ?? '';
+        }
+      }
+    } else if (tokenTransferAcceptRejectNode.length) {
+      const senderData = getField(tokenTransferAcceptRejectNode, 'sender');
+      if (senderData?.oneofKind === 'party') sender = senderData.party ?? '';
+      const receiverData = getField(tokenTransferAcceptRejectNode, 'receiver');
+      if (receiverData?.oneofKind === 'party') receiver = receiverData.party ?? '';
+      const amountData = getField(tokenTransferAcceptRejectNode, 'amount');
+      if (amountData?.oneofKind === 'numeric') amount = amountData.numeric ?? '';
+      const instrumentSum = getField(tokenTransferAcceptRejectNode, 'instrumentIdentifier');
+      if (instrumentSum?.oneofKind === 'record') {
+        const instrumentFields = instrumentSum.record?.fields ?? [];
+        const adminData = getField(instrumentFields, 'source');
+        if (adminData?.oneofKind === 'party') {
+          instrumentAdmin = adminData.party ?? '';
+        }
+        const idData = getField(instrumentFields, 'id');
+        if (idData?.oneofKind === 'text') {
+          instrumentId = idData.text ?? '';
         }
       }
     }
