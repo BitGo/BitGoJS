@@ -7,8 +7,6 @@ import {
   arbethErc20,
   beraErc20,
   celoToken,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  chilizErc20,
   coredaoErc20,
   eosToken,
   erc1155,
@@ -34,8 +32,6 @@ import {
   tarbethErc20,
   tberaErc20,
   tceloToken,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  tchilizErc20,
   tcoredaoErc20,
   teosToken,
   terc1155,
