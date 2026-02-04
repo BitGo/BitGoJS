@@ -1,21 +1,17 @@
-import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
-import { CoinName, fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { CoinName, fixedScriptWallet, address as wasmAddress } from '@bitgo/wasm-utxo';
 import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
 import { decrypt } from '@bitgo/sdk-api';
 
 import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin';
 import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction';
-import { getNetworkFromCoinName, UtxoCoinName } from '../names';
+import { UtxoCoinName } from '../names';
 import { encodeTransaction } from '../transaction/decode';
 import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection';
 import { toTNumber } from '../tnumber';
-import type { Unspent, WalletUnspent } from '../unspent';
+import { unspentSum, type Unspent, type WalletUnspent } from '../unspent';
 
 import { createEmptyWasmPsbt, addWalletInputsToWasmPsbt, addOutputToWasmPsbt, getRecoveryAmount } from './psbt';
-
-const { unspentSum } = utxolib.bitgo;
-type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 
 export interface BuildRecoveryTransactionOptions {
   wallet: string;
@@ -86,7 +82,7 @@ export async function getWallet(
 export async function getWalletKeys(
   recoveryCoin: AbstractUtxoCoin,
   wallet: IWallet | WalletV1
-): Promise<RootWalletKeys> {
+): Promise<fixedScriptWallet.RootWalletKeys> {
   let xpubs: Triple<string>;
 
   if (wallet instanceof Wallet) {
@@ -99,7 +95,7 @@ export async function getWalletKeys(
     xpubs = (wallet as WalletV1).keychains.map((k) => k.xpub) as Triple<string>;
   }
 
-  return new utxolib.bitgo.RootWalletKeys(xpubs.map((k) => bip32.fromBase58(k)) as Triple<BIP32Interface>);
+  return fixedScriptWallet.RootWalletKeys.from(xpubs);
 }
 
 export async function isWalletAddress(wallet: IWallet | WalletV1, address: string): Promise<boolean> {
@@ -203,7 +199,7 @@ async function getAllRecoveryOutputs<TNumber extends number | bigint = number>(
     return {
       ...recoveryOutput,
       address: coin.canonicalAddress(recoveryOutput.address),
-      value: utxolib.bitgo.toTNumber<TNumber>(BigInt(recoveryOutput.value), amountType),
+      value: toTNumber(BigInt(recoveryOutput.value), amountType) as TNumber,
     };
   });
 }
@@ -216,8 +212,8 @@ type ScriptId = {
   index: number;
 };
 
-async function getScriptId(coin: AbstractUtxoCoin, wallet: IWallet | WalletV1, script: Buffer): Promise<ScriptId> {
-  const address = utxolib.address.fromOutputScript(script, coin.network);
+async function getScriptId(coin: AbstractUtxoCoin, wallet: IWallet | WalletV1, script: Uint8Array): Promise<ScriptId> {
+  const address = wasmAddress.fromOutputScriptWithCoin(script, coin.name);
   let addressData: { chain: number; index: number };
   if (wallet instanceof Wallet) {
     addressData = await wallet.getAddress({ address });
@@ -253,7 +249,7 @@ async function toWalletUnspents<TNumber extends number | bigint = number>(
   for (const address of addresses) {
     let scriptId;
     try {
-      scriptId = await getScriptId(recoveryCoin, wallet, utxolib.address.toOutputScript(address, sourceCoin.network));
+      scriptId = await getScriptId(recoveryCoin, wallet, wasmAddress.toOutputScriptWithCoin(address, sourceCoin.name));
     } catch (e) {
       console.error(`error getting scriptId for ${address}:`, e);
       continue;
@@ -346,10 +342,7 @@ function createSweepTransaction<TNumber extends number | bigint = number>(
   targetAddress: string,
   feeRateSatVB: number
 ): fixedScriptWallet.BitGoPsbt {
-  const inputValue = unspentSum<bigint>(
-    unspents.map((u) => ({ ...u, value: BigInt(u.value) })),
-    'bigint'
-  );
+  const inputValue = unspentSum(unspents);
 
   // Create PSBT with wasm-utxo and add wallet inputs using shared utilities
   const unspentsBigint = unspents.map((u) => ({ ...u, value: BigInt(u.value) }));
