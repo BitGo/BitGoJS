@@ -95,6 +95,7 @@ export const expectedColdFeatures = {
     'fluenteth',
     'hash',
     'hbarevm',
+    'hemi',
     'icp',
     'ip', // Story chain
     'initia',
@@ -161,6 +162,7 @@ export const expectedColdFeatures = {
     'tflow',
     'tfluenteth',
     'thbarevm',
+    'themi',
     'tjovayeth',
     'tog',
     'tokbxlayer',

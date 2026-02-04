@@ -84,6 +84,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.PHRS &&
         n.asset !== UnderlyingAsset.CTC &&
         n.asset !== UnderlyingAsset.HYPEEVM &&
+        n.asset !== UnderlyingAsset.HEMI &&
         n.asset !== UnderlyingAsset.XPL &&
         n.asset !== UnderlyingAsset.SONEIUM &&
         n.asset !== UnderlyingAsset.VET &&
