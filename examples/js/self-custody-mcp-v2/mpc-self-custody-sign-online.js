@@ -74,6 +74,7 @@ async function runStep0() {
   const recipients = [{ address: recipientAddress, amount }];
 
   const prebuildResult = await wallet.prebuildTransaction({
+    type: 'transfer',
     recipients,
     apiVersion: 'full',
   });
