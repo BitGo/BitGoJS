@@ -7,8 +7,7 @@ import nock = require('nock');
 import { BIP32Interface } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Config, krsProviders, Triple } from '@bitgo/sdk-core';
-import { Dimensions } from '@bitgo/unspents';
-import { address as wasmAddress, fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { address as wasmAddress, fixedScriptWallet, hasPsbtMagic, ECPair } from '@bitgo/wasm-utxo';
 
 import {
   AbstractUtxoCoin,
@@ -20,6 +19,7 @@ import {
 import { getCoinName } from '../../../src/names';
 import type { Unspent, WalletUnspent } from '../../../src/unspent';
 import {
+  assertEqualParsedPsbt,
   defaultBitGo,
   encryptKeychain,
   getDefaultWalletKeys,
@@ -203,17 +203,12 @@ function run(
       const outputSum = recoveryTx.txOutputs.reduce((sum, o) => sum + o.value, BigInt(0));
       const fee = inputSum - outputSum;
       // Use wasm-utxo Dimensions for testnet (matches how fee was calculated), utxolib Dimensions for mainnet
-      let vsize: number;
-      if (utxolib.isTestnet(coin.network)) {
-        const networkName = utxolib.getNetworkName(coin.network);
-        if (!networkName) {
-          throw new Error('Invalid network');
-        }
-        const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(new Uint8Array(recoveryTx.toBuffer()), networkName);
-        vsize = fixedScriptWallet.Dimensions.fromPsbt(wasmPsbt).getVSize();
-      } else {
-        vsize = Dimensions.fromPsbt(recoveryTx).getVSize();
+      const networkName = utxolib.getNetworkName(coin.network);
+      if (!networkName) {
+        throw new Error('Invalid network');
       }
+      const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(new Uint8Array(recoveryTx.toBuffer()), networkName);
+      const vsize = fixedScriptWallet.Dimensions.fromPsbt(wasmPsbt).getVSize();
       const feeRateSatB = Number(fee) / vsize;
       const diff = Math.abs(feeRateSatB - defaultFeeRateSatB) / defaultFeeRateSatB;
       // within 1%
@@ -227,14 +222,23 @@ function run(
         fixtureRecovery.coin = fixtureCoin.getChain();
       }
 
-      shouldEqualJSON(
-        fixtureRecovery,
-        await getFixture(
-          fixtureCoin,
-          `recovery/backupKeyRecovery-${(params.krsProvider ? tags.concat([params.krsProvider]) : tags).join('-')}`,
-          recovery
-        )
+      const storedFixture = await getFixture(
+        fixtureCoin,
+        `recovery/backupKeyRecovery-${(params.krsProvider ? tags.concat([params.krsProvider]) : tags).join('-')}`,
+        recovery
       );
+
+      if ('txHex' in storedFixture) {
+        const buf = Buffer.from(storedFixture.txHex, 'hex');
+        if (hasPsbtMagic(buf)) {
+          assertEqualParsedPsbt(buf, recoveryTx.toBuffer(), coin.name, walletKeys, [
+            ECPair.fromPublicKey(walletKeys.user.publicKey),
+          ]);
+          return;
+        }
+      }
+
+      shouldEqualJSON(fixtureRecovery, storedFixture);
     });
 
     it('has expected input count', function () {

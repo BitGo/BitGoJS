@@ -18,13 +18,13 @@ import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction';
 import { generateAddressWithChainAndIndex } from '../address';
 import { encodeTransaction } from '../transaction/decode';
 import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection';
-import { isTestnetCoin, UtxoCoinName } from '../names';
+import { UtxoCoinName } from '../names';
 import type { WalletUnspent } from '../unspent';
 
 import { forCoin, RecoveryProvider } from './RecoveryProvider';
 import { MempoolApi } from './mempoolApi';
 import { CoingeckoApi } from './coingeckoApi';
-import { createBackupKeyRecoveryPsbt, getRecoveryAmount, PsbtBackend, toPsbtToUtxolibPsbt } from './psbt';
+import { createBackupKeyRecoveryPsbt, getRecoveryAmount, toPsbtToUtxolibPsbt } from './psbt';
 
 type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 type ChainCode = utxolib.bitgo.ChainCode;
@@ -370,20 +370,12 @@ export async function backupKeyRecovery(
     }
   }
 
-  // Use wasm-utxo for testnet coins only, utxolib for mainnet
-  const backend: PsbtBackend = isTestnetCoin(coin.name) ? 'wasm-utxo' : 'utxolib';
-  let psbt = createBackupKeyRecoveryPsbt(
-    coin.getChain(),
-    walletKeys,
-    unspents,
-    {
-      feeRateSatVB: feePerByte,
-      recoveryDestination: params.recoveryDestination,
-      keyRecoveryServiceFee: krsFee,
-      keyRecoveryServiceFeeAddress: krsFeeAddress,
-    },
-    backend
-  );
+  let psbt = createBackupKeyRecoveryPsbt(coin.getChain(), walletKeys, unspents, {
+    feeRateSatVB: feePerByte,
+    recoveryDestination: params.recoveryDestination,
+    keyRecoveryServiceFee: krsFee,
+    keyRecoveryServiceFeeAddress: krsFeeAddress,
+  });
 
   if (isUnsignedSweep) {
     return {
@@ -414,13 +406,7 @@ export async function backupKeyRecovery(
     psbt = signAndVerifyPsbt(psbt, walletKeys.backup, rootWalletKeysWasm, replayProtection);
     // Finalize and extract transaction
     psbt.finalizeAllInputs();
-    if (psbt instanceof utxolib.bitgo.UtxoPsbt) {
-      txInfo.transactionHex = psbt.extractTransaction().toBuffer().toString('hex');
-    } else if (psbt instanceof fixedScriptWallet.BitGoPsbt) {
-      txInfo.transactionHex = Buffer.from(psbt.extractTransaction().toBytes()).toString('hex');
-    } else {
-      throw new Error('expected a UtxoPsbt or BitGoPsbt object');
-    }
+    txInfo.transactionHex = Buffer.from(psbt.extractTransaction().toBytes()).toString('hex');
   }
 
   if (isKrsRecovery) {
