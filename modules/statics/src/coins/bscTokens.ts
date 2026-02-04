@@ -17,6 +17,15 @@ export const bscTokens = [
     BSC_TOKEN_FEATURES
   ),
   bscToken(
+    '344b4235-9aec-4478-9637-0df3ddc9dff0',
+    'bsc:stable',
+    'Stable',
+    18,
+    '0x011ebe7d75e2c9d1e0bd0be0bef5c36f0a90075f',
+    UnderlyingAsset['bsc:stable'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
     'b7540916-53ed-49e9-b8a4-8a853fd7d607',
     'bsc:brise',
     'Bitrise Token',

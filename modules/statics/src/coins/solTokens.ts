@@ -2816,6 +2816,16 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    '11001926-a01a-4006-8f13-70e375c8d0bf',
+    'sol:dont',
+    'DisclaimerCoin',
+    6,
+    'FbmmdcCYHL7WETG89xtWmNFMzQAaQ8Zs9NXVbimibonk',
+    'FbmmdcCYHL7WETG89xtWmNFMzQAaQ8Zs9NXVbimibonk',
+    UnderlyingAsset['sol:dont'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     'a73223a4-e35f-4324-b0dd-21eb31d641db',
     'sol:saros',
     'Saros',

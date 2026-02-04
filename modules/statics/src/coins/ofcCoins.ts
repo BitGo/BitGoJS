@@ -87,6 +87,7 @@ export const ofcCoins = [
   ofc('afa494f3-a56d-4b81-991d-066b4aae181c', 'ofcbsv', 'Bitcoin SV', 8, UnderlyingAsset.BSV, CoinKind.CRYPTO),
   ofc('5b206383-7b8c-4199-8456-71e7a84527d5', 'ofcdot', 'Polkadot', 10, UnderlyingAsset.DOT, CoinKind.CRYPTO),
   ofc('f1ed2667-fed1-4db8-87f5-061282d6147b', 'ofceos', 'Eos', 4, UnderlyingAsset.EOS, CoinKind.CRYPTO),
+  ofc('6933eef0-7d11-498e-b810-5884b6efae2a', 'ofcsbet', 'SportBet SBET', 4, UnderlyingAsset.EOS_SBET, CoinKind.CRYPTO),
   ofc('6c0714f3-fb74-4bb7-b17d-e34e48821890', 'ofcetc', 'Ethereum Classic', 18, UnderlyingAsset.ETC, CoinKind.CRYPTO),
   ofc('49bc92d3-3085-4124-bdb3-df86385dd9b5', 'ofcstx', 'Stacks', 6, UnderlyingAsset.STX, CoinKind.CRYPTO),
   ofc('181974a6-b042-460e-acec-46733f8af941', 'ofchbar', 'Hedera', 8, UnderlyingAsset.HBAR, CoinKind.CRYPTO),
@@ -1148,6 +1149,14 @@ export const ofcCoins = [
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
+    '68cf253c-fea8-4255-922e-65ff53bd0c9d',
+    'ofcsol:dont',
+    'DisclaimerCoin',
+    6,
+    UnderlyingAsset['sol:dont'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
     '3d4bfe68-49cb-4d30-aef0-d143a9e9d9a7',
     'ofcsol:saros',
     'Saros',
@@ -1923,6 +1932,13 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['arbeth:uxlink']
   ),
+  ofcArbethErc20(
+    'b1fd241b-97a9-4074-a3ee-cbfd5b4ed431',
+    'ofcarbeth:zro',
+    'LayerZero',
+    18,
+    UnderlyingAsset['arbeth:zro']
+  ),
 
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20(
@@ -2193,6 +2209,7 @@ export const ofcCoins = [
     [CoinFeature.STABLECOIN]
   ),
   ofcBscToken('6a1e8b8c-4d7e-4f9a-9d8f-f6e72f8c7e65', 'ofcbsc:solv', 'SOLV Protocol', 9, UnderlyingAsset['bsc:solv']),
+  ofcBscToken('6d96470a-3c8e-44de-a18e-9dd224d4bcc0', 'ofcbsc:stable', 'Stable', 18, UnderlyingAsset['bsc:stable']),
   ofcBscToken('f8c3d7b5-2d9e-4b3f-8a1e-7c6d9e3a2f4b', 'ofcbsc:brise', 'Bitrise Token', 9, UnderlyingAsset['bsc:brise']),
   ofcBscToken('2e9f4c6b-8a7d-4b2e-9d3f-7c6a5e8b1f2a', 'ofcbsc:bsw', 'Biswap', 18, UnderlyingAsset['bsc:bsw']),
   ofcBscToken(
@@ -3913,6 +3930,13 @@ export const ofcCoins = [
     UnderlyingAsset['tton:ukwny-us']
   ),
   ofcSuiToken('6313a162-0c48-4c0c-ae73-27cc3df9e000', 'ofcsui:deep', 'Deepbook', 6, UnderlyingAsset['sui:deep']),
+  ofcSuiToken(
+    '51efbb9d-0cf9-48aa-a96f-7a7317807a3e',
+    'ofcsui:suiusde',
+    'eSui Dollar',
+    6,
+    UnderlyingAsset['sui:suiusde']
+  ),
   tofcSuiToken(
     'b6e53ed9-5a86-4994-8b69-ca59c243cac6',
     'ofctsui:deep',

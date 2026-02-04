@@ -98,6 +98,15 @@ export const erc20Coins = [
     UnderlyingAsset['eth:hegic']
   ),
   erc20(
+    '23661500-e738-4d87-8805-6e08e4cdbd0b',
+    'eth:xprism',
+    'Staked Portfolio of Risk-adjusted Investment Strategy',
+    18,
+    '0x12e04c932d682a2999b4582f7c9b86171b73220d',
+    UnderlyingAsset['eth:xprism'],
+    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_SINGAPORE], ETH_FEATURES)
+  ),
+  erc20(
     'e5195aca-b807-4fb9-b8c3-b4440cb24f67',
     'eth:xreth',
     'Constellation Staked ETH',
@@ -11132,6 +11141,15 @@ export const erc20Coins = [
     )
   ),
   erc20(
+    '86ed6c06-9a02-49e0-bb33-066775135704',
+    'eth:usat',
+    'Tether America USD',
+    6,
+    '0x07041776f5007aca2a54844f50503a18a72a8b68',
+    UnderlyingAsset['eth:usat'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  erc20(
     'ad73ed49-cbce-4809-a2e1-9d66c7f7a8d8',
     'eth:usdf',
     'Falcon USD',
@@ -11698,6 +11716,15 @@ export const erc20Coins = [
     UnderlyingAsset['eth:pokt']
   ),
   erc20(
+    '6b87364b-1616-48f1-8e8c-21b83e599486',
+    'eth:prism',
+    'Portfolio of Risk-adjusted Investment Strategy Mix',
+    18,
+    '0x06bb4ab600b7d22eb2c312f9babc22be6a619046',
+    UnderlyingAsset['eth:prism'],
+    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_SINGAPORE], ETH_FEATURES)
+  ),
+  erc20(
     '648bf099-cefc-4ed3-9af8-14feecc89503',
     'eth:lon',
     'Tokenlon Network',
@@ -12209,6 +12236,41 @@ export const erc20Coins = [
     18,
     '0xe868084cf08f3c3db11f4b73a95473762d9463f7',
     UnderlyingAsset['eth:yu']
+  ),
+  erc20(
+    '16b94299-9ab8-4dfb-a0e0-fb906006d890',
+    'eth:yprism',
+    'yPRISM',
+    18,
+    '0xdd5eff0756db08bad0ff16b66f88f506e7318894',
+    UnderlyingAsset['eth:yprism'],
+    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_SINGAPORE], ETH_FEATURES)
+  ),
+  erc20(
+    'dcd5baad-31a9-433c-804b-2ce8604c3d18',
+    'eth:nvylds',
+    'NUVA YLDS',
+    12,
+    '0x82c9e80f0e099bf61e061ee96e23df605388d902',
+    UnderlyingAsset['eth:nvylds'],
+    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_SINGAPORE], ETH_FEATURES)
+  ),
+  erc20(
+    '08d068f6-95a0-4550-9d57-60a706ebb610',
+    'eth:nvheloc',
+    'NUVA HELOC',
+    12,
+    '0x4acb074ff8152de067be3da282dda6469992b42d',
+    UnderlyingAsset['eth:nvheloc'],
+    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_SINGAPORE], ETH_FEATURES)
+  ),
+  erc20(
+    '529b268a-55bf-40d1-89f5-d9ed0d8d4070',
+    'eth:nil',
+    'Nillion',
+    6,
+    '0x7cf9a80db3b29ee8efe3710aadb7b95270572d47',
+    UnderlyingAsset['eth:nil']
   ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',

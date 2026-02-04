@@ -330,6 +330,13 @@ export const ofcErc20Coins = [
   ofcerc20('6f9c8419-182f-4fe4-a82c-bd99939eb3b6', 'ofceth:hard', 'Kava Lend', 6, underlyingAssetForSymbol('eth:hard')),
   ofcerc20('8ee9f243-5192-43e0-a1ea-3b6b329b1bbc', 'ofceth:hegic', 'Hegic', 18, underlyingAssetForSymbol('eth:hegic')),
   ofcerc20(
+    'f3a87df7-c341-4e36-a53d-cc71e32fb552',
+    'ofceth:xprism',
+    'Staked Portfolio of Risk-adjusted Investment Strategy',
+    18,
+    UnderlyingAsset['eth:xprism']
+  ),
+  ofcerc20(
     '9321cc5f-623e-428c-a831-43cd381bdcda',
     'ofceth:xreth',
     'Constellation Staked ETH',
@@ -3368,6 +3375,7 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:deuro')
   ),
+  ofcerc20('a2159d62-1b1c-4e8b-ba43-332959015dbc', 'ofceth:usat', 'Tether America USD', 6, UnderlyingAsset['eth:usat']),
   ofcerc20(
     'e7b1c5d2-9e6e-4c9b-9f3e-2d2a4e5b6c8d',
     'ofceth:usdf',
@@ -3975,6 +3983,14 @@ export const tOfcErc20Coins = [
     'Wrapped Pocket Network',
     6,
     underlyingAssetForSymbol('eth:pokt')
+  ),
+
+  ofcerc20(
+    '9284c8a3-e1bd-4b34-ad08-1366af0ba57b',
+    'ofceth:prism',
+    'Portfolio of Risk-adjusted Investment Strategy Mix',
+    18,
+    UnderlyingAsset['eth:prism']
   ),
 
   ofcerc20(
@@ -4982,6 +4998,10 @@ export const tOfcErc20Coins = [
     UnderlyingAsset['eth:fidd']
   ),
   ofcerc20('c71454e2-c51c-40df-8605-e57f2d97ed53', 'ofceth:yu', 'Yala Stablecoin', 18, UnderlyingAsset['eth:yu']),
+  ofcerc20('f689a6e4-d76f-4591-afda-57e3c52fad22', 'ofceth:yprism', 'yPRISM', 18, UnderlyingAsset['eth:yprism']),
+  ofcerc20('253e2858-a27b-4d39-b1fc-b8f719584d1f', 'ofceth:nvylds', 'NUVA YLDS', 12, UnderlyingAsset['eth:nvylds']),
+  ofcerc20('e68260cc-3f0c-4429-9681-5a2cd46a6c87', 'ofceth:nvheloc', 'NUVA HELOC', 12, UnderlyingAsset['eth:nvheloc']),
+  ofcerc20('02a7867a-754e-4132-8802-1b4aa979a441', 'ofceth:nil', 'Nillion', 6, UnderlyingAsset['eth:nil']),
   ofcerc20('14912a5e-254c-4c6f-9f9c-f9ce11b7b293', 'ofceth:bard', 'Lombard', 18, UnderlyingAsset['eth:bard']),
   ofcerc20('a31a6330-cbd6-49b0-b8b1-a7f9a48e770c', 'ofceth:sfp', 'SafePal Token', 18, UnderlyingAsset['eth:sfp']),
   ofcerc20('60f825f0-ed18-46b2-a03f-fd93b5e94f43', 'ofceth:aztec', 'Aztec', 18, UnderlyingAsset['eth:aztec']),

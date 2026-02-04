@@ -71,6 +71,7 @@ module.exports = {
         'FIAT-',
         'ME-',
         'ANT-',
+        'CGARD-',
         '#', // Prefix used by GitHub issues
       ],
     },
