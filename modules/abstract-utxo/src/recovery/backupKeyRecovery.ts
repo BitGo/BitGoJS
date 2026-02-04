@@ -24,7 +24,7 @@ import type { WalletUnspent } from '../unspent';
 import { forCoin, RecoveryProvider } from './RecoveryProvider';
 import { MempoolApi } from './mempoolApi';
 import { CoingeckoApi } from './coingeckoApi';
-import { createBackupKeyRecoveryPsbt, getRecoveryAmount, toPsbtToUtxolibPsbt } from './psbt';
+import { createBackupKeyRecoveryPsbt, getRecoveryAmount } from './psbt';
 
 type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 type ChainCode = utxolib.bitgo.ChainCode;
@@ -399,7 +399,7 @@ export async function backupKeyRecovery(
     // which hinders the integration of the latest BitGoJS SDK with PSBT signing support.
     txInfo.transactionHex =
       params.krsProvider === 'keyternal'
-        ? utxolib.bitgo.extractP2msOnlyHalfSignedTx(toPsbtToUtxolibPsbt(psbt, coin.name)).toBuffer().toString('hex')
+        ? Buffer.from(psbt.getHalfSignedLegacyFormat()).toString('hex')
         : encodeTransaction(psbt).toString('hex');
   } else {
     // Sign with backup key
