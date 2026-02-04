@@ -118,19 +118,23 @@ export class Canton extends BaseCoin {
       case TransactionType.Send:
         if (txParams.recipients !== undefined) {
           const filteredRecipients = txParams.recipients?.map((recipient) => {
-            const { address, amount } = recipient;
+            const { address, amount, tokenName } = recipient;
             const [addressPart, memoId] = address.split('?memoId=');
-            if (memoId) {
-              return { address: addressPart, amount, memo: memoId };
-            }
-            return { address, amount };
+            return {
+              address: addressPart,
+              amount,
+              ...(memoId && { memo: memoId }),
+              ...(tokenName && { tokenName }),
+            };
           });
           const filteredOutputs = explainedTx.outputs?.map((output) => {
-            const { address, amount, memo } = output;
-            if (memo) {
-              return { address, amount, memo };
-            }
-            return { address, amount };
+            const { address, amount, tokenName, memo } = output;
+            return {
+              address,
+              amount,
+              ...(memo && { memo }),
+              ...(tokenName && { tokenName }),
+            };
           });
           if (JSON.stringify(filteredRecipients) !== JSON.stringify(filteredOutputs)) {
             throw new Error('Tx outputs do not match with expected txParams recipients');
