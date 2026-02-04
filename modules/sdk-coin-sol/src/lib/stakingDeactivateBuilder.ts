@@ -2,12 +2,13 @@ import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import assert from 'assert';
 
-import { BuildTransactionError, Recipient, TransactionType } from '@bitgo/sdk-core';
+import { BaseTransaction, BuildTransactionError, Recipient, TransactionType } from '@bitgo/sdk-core';
 import { InstructionBuilderTypes, STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT } from './constants';
 import { StakingDeactivate, StakingDeactivateExtraParams, Transfer } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { isValidStakingAmount, validateAddress } from './utils';
+import { WasmTransaction } from './wasm';
 
 export class StakingDeactivateBuilder extends TransactionBuilder {
   protected _stakingAddress: string;
@@ -29,6 +30,20 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   /** @inheritdoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
+    this.initFromInstructionsData();
+  }
+
+  /** @inheritdoc */
+  initBuilderFromWasm(wasmTx: WasmTransaction): void {
+    super.initBuilderFromWasm(wasmTx);
+    this.initFromInstructionsData();
+  }
+
+  /**
+   * Extract staking deactivate parameters from instructionsData.
+   * Called by both initBuilder and initBuilderFromWasm.
+   */
+  private initFromInstructionsData(): void {
     const stakingAddresses: string[] = [];
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.StakingDeactivate) {
@@ -164,7 +179,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
+  protected async buildImplementation(): Promise<BaseTransaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
 
     if (this._stakingAddresses && this._stakingAddresses.length > 0) {
@@ -223,7 +238,8 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
           unstakingAddress: this._unstakingAddress,
           recipients: this._recipients,
           stakingType: this._stakingType,
-          extraParams: this._extraParams,
+          // Only include extraParams if defined (matches legacy behavior where key is omitted when undefined)
+          ...(this._extraParams && { extraParams: this._extraParams }),
         },
       };
       this._instructionsData.push(stakingDeactivateData);

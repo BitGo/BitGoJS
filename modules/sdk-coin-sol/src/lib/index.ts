@@ -22,3 +22,5 @@ export { WalletInitializationBuilder } from './walletInitializationBuilder';
 export { Interface, Utils };
 export { MessageBuilderFactory } from './messages';
 export { InstructionBuilderTypes } from './constants';
+export { mapToTransactionIntent, IntentMapperParams } from './wasmIntentMapper';
+export { buildUnsignedTransaction } from './wasmTransactionBuilder';

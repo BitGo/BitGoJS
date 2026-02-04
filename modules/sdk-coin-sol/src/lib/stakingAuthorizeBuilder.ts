@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionType } from '@bitgo/sdk-core';
+import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { InstructionBuilderTypes } from './constants';
@@ -7,6 +7,7 @@ import { InstructionBuilderTypes } from './constants';
 import assert from 'assert';
 import { StakingAuthorize } from './iface';
 import { validateAddress } from './utils';
+import { WasmTransaction } from './wasm';
 
 export class StakingAuthorizeBuilder extends TransactionBuilder {
   protected _stakingAddress: string;
@@ -24,6 +25,20 @@ export class StakingAuthorizeBuilder extends TransactionBuilder {
   /** @inheritdoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
+    this.initFromInstructionsData();
+  }
+
+  /** @inheritdoc */
+  initBuilderFromWasm(wasmTx: WasmTransaction): void {
+    super.initBuilderFromWasm(wasmTx);
+    this.initFromInstructionsData();
+  }
+
+  /**
+   * Extract staking authorize parameters from instructionsData.
+   * Called by both initBuilder and initBuilderFromWasm.
+   */
+  private initFromInstructionsData(): void {
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.StakingAuthorize) {
         const AuthorizeInstruction: StakingAuthorize = instruction;
@@ -77,7 +92,7 @@ export class StakingAuthorizeBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
+  protected async buildImplementation(): Promise<BaseTransaction> {
     assert(this._stakingAddress, 'Staking Address must be set before building the transaction');
     assert(this._newAuthorizedAddress, 'new authorized Address must be set before building the transaction');
     assert(this._oldAuthorizedAddress, 'old authorized Address must be set before building the transaction');
