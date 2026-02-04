@@ -136,37 +136,7 @@ const { WORKSPACE_DIR, FILES, workspacePath } = require('./mpc-workspace-schema'
 const ROUNDS = { 1: 'MPCv2-R1', 2: 'MPCv2-R2', 3: 'MPCv2-R3' };
 const KEYGEN_TYPE = 'MPCv2';
 
-function shouldForceV1AuthToProxy() {
-  // BitGo Express expects Authorization: Bearer <rawAccessToken>.
-  // BitGoJS "v2 auth" sends a token hash + HMAC, which Express cannot use to extract the raw token.
-  // Set BITGO_FORCE_V1_AUTH=true to force this behavior explicitly.
-  const explicit = (process.env.BITGO_FORCE_V1_AUTH || '').toLowerCase();
-  if (explicit === 'true' || explicit === '1' || explicit === 'yes') return true;
-
-  const root = process.env.BITGO_CUSTOM_ROOT_URI || '';
-  return /(^|\/\/)(localhost|127\.0\.0\.1|0\.0\.0\.0)(:|\/|$)/.test(root);
-}
-
-/**
- * Wrap BitGo instance to force v1 auth for all requests when using Express/proxy.
- * This wraps only the public API request methods (get, post, put, del, patch, options),
- * avoiding monkey-patching internal implementation.
- */
-function wrapBitGoForV1Auth(bitgo) {
-  // if (!shouldForceV1AuthToProxy()) return bitgo;
-
-  // const methods = ['get', 'post', 'put', 'del', 'patch', 'options'];
-  // methods.forEach((method) => {
-  //   const original = bitgo[method].bind(bitgo);
-  //   bitgo[method] = function (url) {
-  //     const req = original(url);
-  //     req.forceV1Auth = true;
-  //     return req;
-  //   };
-  // });
-
-  return bitgo;
-}
+const { wrapBitGoForV1Auth } = require('./bitgo-auth-utils');
 
 function ensureWorkspace() {
   if (!fs.existsSync(WORKSPACE_DIR)) {

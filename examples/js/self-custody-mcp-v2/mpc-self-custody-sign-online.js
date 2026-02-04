@@ -23,6 +23,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { WORKSPACE_DIR, FILES, workspacePath } = require('./mpc-sign-workspace-schema');
+const { wrapBitGoForV1Auth } = require('./bitgo-auth-utils');
 
 function ensureWorkspace() {
   if (!fs.existsSync(WORKSPACE_DIR)) {
@@ -52,7 +53,8 @@ function getBitGo() {
     accessToken,
   };
   if (process.env.BITGO_CUSTOM_ROOT_URI) opts.customRootURI = process.env.BITGO_CUSTOM_ROOT_URI;
-  const bitgo = new BitGo(opts);
+  let bitgo = new BitGo(opts);
+  bitgo = wrapBitGoForV1Auth(bitgo);
   bitgo.authenticateWithAccessToken({ accessToken });
   return bitgo;
 }
