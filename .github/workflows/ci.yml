@@ -87,7 +87,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: ['lint', 'format', 'commit-lint', 'dependencies', 'audit']
+        check: ['lint', 'format', 'commit-lint', 'dependencies']
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -130,9 +130,8 @@ jobs:
         if: matrix.check == 'dependencies'
         run: yarn run check-deps
 
-      - name: Audit Dependencies
-        if: matrix.check == 'audit'
-        run: yarn run improved-yarn-audit --min-severity high
+      # We conciously do not audit dependencies as a PR step since errors are typically
+      # unrelated to the PR changes. This check is performed in `publish.yml`.
 
   license-analysis:
     runs-on: ubuntu-latest

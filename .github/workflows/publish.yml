@@ -28,6 +28,9 @@ jobs:
       - name: Install BitGoJS
         run: yarn install --with-frozen-lockfile
 
+      - name: Audit Dependencies
+        run: yarn run improved-yarn-audit --min-severity high
+
       - name: Set Environment Variable for Alpha
         if: github.ref != 'refs/heads/master' # only publish changes if on feature branches
         run: |
