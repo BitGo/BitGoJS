@@ -114,8 +114,9 @@ export async function isWalletAddress(wallet: IWallet | WalletV1, address: strin
 }
 
 /**
- * Convert a Litecoin P2SH address from M... format (scriptHash 0x32) to the legacy 3... format (scriptHash 0x05).
- * This is needed for cross-chain recovery when LTC was sent to a BTC address, because the BTC wallet
+ * Convert a Litecoin P2SH address from M... format (scriptHash 0x32) to the legacy 3... format (scriptHash 0x05)
+ * and Q... format (scriptHash 0x32) to the legacy 2... format (scriptHash 0x05).
+ * This is needed for cross-chain recovery when (T)LTC was sent to a (T)BTC address, because the (T)BTC wallet
  * stores addresses in the 3... format while the LTC blockchain returns addresses in M... format.
  *
  * @param address - LTC address to convert
@@ -127,30 +128,15 @@ export function convertLtcAddressToLegacyFormat(address: string, coinName: UtxoC
     return address;
   }
 
-  const network = getNetworkFromCoinName(coinName);
-  try {
-    // Try to decode as bech32 - these don't need conversion
-    utxolib.address.fromBech32(address);
+  // only consider addresses that start with M or Q (modern ltc p2sh prefixes)
+  if (!address.startsWith('M') && !address.startsWith('Q')) {
     return address;
-  } catch (e) {
-    // Not bech32, continue to base58
   }
 
-  try {
-    const decoded = utxolib.address.fromBase58Check(address, network);
-    // Only convert P2SH addresses (scriptHash), not P2PKH (pubKeyHash)
-    if (decoded.version === network.scriptHash) {
-      // Convert to legacy format using Bitcoin's scriptHash (0x05)
-      const legacyScriptHash =
-        coinName === 'ltc' ? utxolib.networks.bitcoin.scriptHash : utxolib.networks.testnet.scriptHash;
-      return utxolib.address.toBase58Check(decoded.hash, legacyScriptHash, network);
-    }
-    // P2PKH or other - return unchanged
-    return address;
-  } catch (e) {
-    // If decoding fails, return the original address
-    return address;
-  }
+  const scriptPubKey = wasmAddress.toOutputScriptWithCoin(address, coinName);
+  const dstCoin = coinName === 'ltc' ? 'btc' : 'tbtc';
+  const dstAddress = wasmAddress.fromOutputScriptWithCoin(scriptPubKey, dstCoin);
+  return dstAddress;
 }
 
 /**
