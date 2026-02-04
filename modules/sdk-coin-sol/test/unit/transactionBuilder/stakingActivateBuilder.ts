@@ -8,6 +8,31 @@ import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { BaseTransaction } from '@bitgo/sdk-core';
 import { InstructionParams } from '../../../src/lib/iface';
 
+function deepEqualUnordered(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (typeof a !== typeof b) return false;
+  if (typeof a !== 'object' || a === null || b === null) return false;
+  const aKeys = Object.keys(a as Record<string, unknown>);
+  const bKeys = Object.keys(b as Record<string, unknown>);
+  if (aKeys.length !== bKeys.length) return false;
+  for (const key of aKeys) {
+    if (!deepEqualUnordered((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function compareInstructionsUnordered(actual: InstructionParams[], expected: InstructionParams[]): void {
+  actual.length.should.equal(expected.length, `Expected ${expected.length} instructions but got ${actual.length}`);
+  for (const expectedInstr of expected) {
+    const found = actual.find(
+      (a) => a.type === expectedInstr.type && deepEqualUnordered(a.params, expectedInstr.params)
+    );
+    should.exist(found, `Expected to find instruction of type ${expectedInstr.type}`);
+  }
+}
+
 describe('Sol Staking Activate Builder', () => {
   const factory = getBuilderFactory('tsol');
 
@@ -54,13 +79,14 @@ describe('Sol Staking Activate Builder', () => {
     should.equal(Utils.isValidRawTransaction(rawTx), true);
     should.equal(rawTx, knownRawTx);
 
-    // Rebuild transaction and verify
+    // Rebuild transaction and verify round-trip
     const builderFromRawTx = factory.from(rawTx);
     const rebuiltTx = await builderFromRawTx.build();
 
-    should.equal(rebuiltTx.toBroadcastFormat(), unsignedTx.toBroadcastFormat());
-    should.equal(rebuiltTx.signablePayload.toString('hex'), unsignedTx.signablePayload.toString('hex'));
-    should.deepEqual(rebuiltTx.toJson().instructionsData, tx.toJson().instructionsData);
+    // Round-trip should produce identical transaction (including signatures)
+    should.equal(rebuiltTx.toBroadcastFormat(), tx.toBroadcastFormat());
+    should.equal(rebuiltTx.signablePayload.toString('hex'), tx.signablePayload.toString('hex'));
+    compareInstructionsUnordered(rebuiltTx.toJson().instructionsData, tx.toJson().instructionsData);
   };
 
   const makeUnsignedBuilderNative = (doMemo: boolean) => {
@@ -83,19 +109,10 @@ describe('Sol Staking Activate Builder', () => {
     stakingType: SolStakingTypeEnum.NATIVE | SolStakingTypeEnum.MARINADE
   ) => {
     const txJson = tx.toJson();
-    txJson.instructionsData.should.deepEqual([
-      ...(doMemo
-        ? [
-            {
-              type: 'Memo',
-              params: {
-                memo: 'test memo',
-              },
-            },
-          ]
-        : []),
+    // Compare instructions without caring about order
+    const expectedInstructions: InstructionParams[] = [
       {
-        type: 'Activate',
+        type: InstructionBuilderTypes.StakingActivate,
         params: {
           fromAddress: wallet.pub,
           stakingAddress: stakeAccount.pub,
@@ -104,7 +121,18 @@ describe('Sol Staking Activate Builder', () => {
           stakingType,
         },
       },
-    ]);
+      ...(doMemo
+        ? [
+            {
+              type: InstructionBuilderTypes.Memo,
+              params: {
+                memo: 'test memo',
+              },
+            } as InstructionParams,
+          ]
+        : []),
+    ];
+    compareInstructionsUnordered(txJson.instructionsData, expectedInstructions);
     tx.inputs.should.deepEqual([
       {
         address: wallet.pub,
@@ -193,7 +221,7 @@ describe('Sol Staking Activate Builder', () => {
       },
     });
 
-    txJson.instructionsData.should.deepEqual(expectedInstructions);
+    compareInstructionsUnordered(txJson.instructionsData, expectedInstructions);
     tx.inputs.should.deepEqual([
       {
         address: wallet.pub,

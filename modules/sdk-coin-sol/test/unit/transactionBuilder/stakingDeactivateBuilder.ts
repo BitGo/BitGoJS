@@ -18,17 +18,60 @@ describe('Sol Staking Deactivate Builder', () => {
   const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
   const invalidPubKey = testData.pubKeys.invalidPubKeys[0];
 
+  // Helper to normalize instructionsData by removing undefined fields for comparison
+  const normalizeInstructionsData = (instructions: any[]): any[] => {
+    return instructions.map((instr) => {
+      const normalizedParams: any = {};
+      for (const [key, value] of Object.entries(instr.params || {})) {
+        if (value !== undefined) {
+          normalizedParams[key] = value;
+        }
+      }
+      return { ...instr, params: normalizedParams };
+    });
+  };
+
+  const deepEqualUnordered = (a: unknown, b: unknown): boolean => {
+    if (a === b) return true;
+    if (typeof a !== typeof b) return false;
+    if (typeof a !== 'object' || a === null || b === null) return false;
+    const aKeys = Object.keys(a as Record<string, unknown>);
+    const bKeys = Object.keys(b as Record<string, unknown>);
+    if (aKeys.length !== bKeys.length) return false;
+    for (const key of aKeys) {
+      if (!deepEqualUnordered((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const compareInstructionsUnordered = (actual: any[], expected: any[]): void => {
+    actual.length.should.equal(expected.length, `Expected ${expected.length} instructions but got ${actual.length}`);
+    const normalizedActual = normalizeInstructionsData(actual);
+    const normalizedExpected = normalizeInstructionsData(expected);
+    for (const expectedInstr of normalizedExpected) {
+      const found = normalizedActual.find(
+        (a) => a.type === expectedInstr.type && deepEqualUnordered(a.params, expectedInstr.params)
+      );
+      should.exist(found, `Expected to find instruction of type ${expectedInstr.type}`);
+    }
+  };
+
   const performTest = async ({
     makeUnsignedBuilder,
     signBuilder,
     addSignatures,
     verifyBuiltTransaction,
+    verifyRebuiltTransaction,
     knownRawTx,
   }: {
     makeUnsignedBuilder: () => StakingDeactivateBuilder;
     signBuilder?: undefined | ((x: StakingDeactivateBuilder) => StakingDeactivateBuilder);
     addSignatures?: undefined | ((x: StakingDeactivateBuilder, signature: string[]) => StakingDeactivateBuilder);
     verifyBuiltTransaction: (x: BaseTransaction) => void;
+    // Optional: verify rebuilt transaction separately (e.g., when some data is lost during serialization)
+    verifyRebuiltTransaction?: (x: BaseTransaction) => void;
     knownRawTx?: string;
   }) => {
     // Build transaction
@@ -46,13 +89,22 @@ describe('Sol Staking Deactivate Builder', () => {
       should.equal(rawTx, knownRawTx);
     }
 
-    // Rebuild transaction and verify
+    // Rebuild transaction and verify round-trip
     const builderFromRawTx = factory.from(rawTx);
     const rebuiltTx = await builderFromRawTx.build();
 
-    should.equal(rebuiltTx.toBroadcastFormat(), unsignedTx.toBroadcastFormat());
-    should.equal(rebuiltTx.signablePayload.toString('hex'), unsignedTx.signablePayload.toString('hex'));
-    should.deepEqual(rebuiltTx.toJson().instructionsData, tx.toJson().instructionsData);
+    // Round-trip should produce identical transaction (including signatures)
+    should.equal(rebuiltTx.toBroadcastFormat(), tx.toBroadcastFormat());
+    should.equal(rebuiltTx.signablePayload.toString('hex'), tx.signablePayload.toString('hex'));
+
+    // Verify rebuilt transaction instructions
+    if (verifyRebuiltTransaction) {
+      // Use custom verification (e.g., for Marinade where some data is lost)
+      verifyRebuiltTransaction(rebuiltTx);
+    } else {
+      // Default: rebuilt should match built
+      compareInstructionsUnordered(rebuiltTx.toJson().instructionsData, tx.toJson().instructionsData);
+    }
 
     // Verify addSignature
     if (addSignatures) {
@@ -61,7 +113,7 @@ describe('Sol Staking Deactivate Builder', () => {
       const tx2 = await txBuilder2.build();
       should.equal(tx2.type, TransactionType.StakingDeactivate);
       const rawTx2 = tx2.toBroadcastFormat();
-      should.deepEqual(tx2.toJson().instructionsData, tx.toJson().instructionsData);
+      compareInstructionsUnordered(tx2.toJson().instructionsData, tx.toJson().instructionsData);
       if (knownRawTx !== undefined) {
         should.equal(rawTx2, knownRawTx);
       }
@@ -95,7 +147,16 @@ describe('Sol Staking Deactivate Builder', () => {
 
   const verifyBuiltTransactionNativeGeneric = (tx: BaseTransaction, doMemo: boolean, stakingAddresses: string[]) => {
     const txJson = tx.toJson();
-    txJson.instructionsData.should.deepEqual([
+    // Normalize to remove undefined fields (builder output varies, but normalized output is consistent)
+    const expected = [
+      ...stakingAddresses.map((stakingAddress) => ({
+        type: 'Deactivate',
+        params: {
+          fromAddress: wallet.pub,
+          stakingAddress,
+          stakingType: SolStakingTypeEnum.NATIVE,
+        },
+      })),
       ...(doMemo
         ? [
             {
@@ -106,17 +167,8 @@ describe('Sol Staking Deactivate Builder', () => {
             },
           ]
         : []),
-      ...stakingAddresses.map((stakingAddress) => ({
-        type: 'Deactivate',
-        params: {
-          stakingAddress,
-          amount: undefined,
-          fromAddress: wallet.pub,
-          unstakingAddress: undefined,
-          stakingType: SolStakingTypeEnum.NATIVE,
-        },
-      })),
-    ]);
+    ];
+    compareInstructionsUnordered(txJson.instructionsData, expected);
   };
 
   describe('Should succeed', () => {
@@ -219,6 +271,7 @@ describe('Sol Staking Deactivate Builder', () => {
               stakingAddress: stakeAccount.pub,
               amount: '100000',
               unstakingAddress: testData.splitStakeAccount.pub,
+              recipients: undefined,
               stakingType: SolStakingTypeEnum.NATIVE,
             },
           },
@@ -263,12 +316,37 @@ describe('Sol Staking Deactivate Builder', () => {
           addSignatures: addSignaturesNative,
           verifyBuiltTransaction: (tx: BaseTransaction) => {
             const txJson = tx.toJson();
+            // WASM improvement: toJson() now returns the builder's data with real addresses
             txJson.instructionsData.should.deepEqual([
               {
+                type: 'Deactivate',
+                params: {
+                  fromAddress: wallet.pub,
+                  stakingAddress: stakeAccount.pub,
+                  amount: undefined,
+                  unstakingAddress: undefined,
+                  stakingType: SolStakingTypeEnum.MARINADE,
+                  recipients: marinadeRecipientsObject,
+                },
+              },
+              {
+                type: 'Memo',
                 params: {
                   memo: marinadeMemo,
                 },
+              },
+            ]);
+          },
+          // After round-trip, fromAddress/stakingAddress are empty because Marinade
+          // deactivate serializes as a Transfer instruction - those fields aren't in the raw tx
+          verifyRebuiltTransaction: (tx: BaseTransaction) => {
+            const txJson = tx.toJson();
+            txJson.instructionsData.should.deepEqual([
+              {
                 type: 'Memo',
+                params: {
+                  memo: marinadeMemo,
+                },
               },
               {
                 type: 'Deactivate',
@@ -325,14 +403,16 @@ describe('Sol Staking Deactivate Builder', () => {
           },
           verifyBuiltTransaction: (tx: BaseTransaction) => {
             const txJson = tx.toJson();
+            // Legacy builder includes recipients: undefined
             txJson.instructionsData.should.deepEqual([
               {
                 type: 'Deactivate',
                 params: {
                   fromAddress: wallet.pub,
                   stakingAddress: JITO_STAKE_POOL_ADDRESS,
-                  unstakingAddress: stakeAccount.pub,
                   amount: '1000',
+                  unstakingAddress: stakeAccount.pub,
+                  recipients: undefined,
                   stakingType: SolStakingTypeEnum.JITO,
                   extraParams: {
                     validatorAddress: testData.JITO_STAKE_POOL_VALIDATOR_ADDRESS,

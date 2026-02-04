@@ -21,12 +21,15 @@ describe('WasmTransaction', () => {
       wasmTx.signature.should.be.empty();
       const txJson = wasmTx.toJson();
 
-      txJson.should.have.properties(['id', 'feePayer', 'nonce', 'numSignatures', 'instructionsData']);
+      txJson.should.have.properties(['id', 'feePayer', 'nonce', 'numSignatures', 'instructionsData', 'durableNonce']);
       should.not.exist(txJson.id);
       txJson.feePayer?.should.equal('5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe');
       txJson.nonce.should.equal('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
       txJson.numSignatures.should.equal(0);
+      // Legacy includes NonceAdvance in instructionsData (3 total: NonceAdvance + Transfer + Memo)
+      // durableNonce is populated separately but NonceAdvance is NOT filtered
       txJson.instructionsData.length.should.equal(3);
+      should.exist(txJson.durableNonce);
     });
 
     it('should parse multi transfer signed tx', () => {

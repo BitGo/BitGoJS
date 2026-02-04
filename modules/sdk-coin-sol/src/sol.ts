@@ -867,7 +867,7 @@ export class Sol extends BaseCoin {
 
     // Get transaction id from first signature (base58 encoded) or UNAVAILABLE
     let txId = 'UNAVAILABLE';
-    const signatures = wasmTx.signatures();
+    const signatures = wasmTx.signatures;
     if (signatures.length > 0) {
       const firstSig = signatures[0];
       const isEmptySignature = firstSig.every((b) => b === 0);

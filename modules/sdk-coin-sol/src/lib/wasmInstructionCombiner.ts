@@ -1,5 +1,5 @@
 /**
- * WASM Instruction Combiner
+ * WASM Instruction Combiner - Adapter layer for WASM transactions.
  *
  * Entry point for converting WASM-parsed transactions to BitGoJS format.
  * Uses the mapper to convert already-decoded WASM instructions.

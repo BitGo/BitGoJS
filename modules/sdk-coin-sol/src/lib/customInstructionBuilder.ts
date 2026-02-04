@@ -1,11 +1,18 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, SolInstruction, SolVersionedInstruction, TransactionType } from '@bitgo/sdk-core';
+import {
+  BaseTransaction,
+  BuildTransactionError,
+  SolInstruction,
+  SolVersionedInstruction,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { PublicKey, SystemProgram, SYSVAR_RECENT_BLOCKHASHES_PUBKEY } from '@solana/web3.js';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { InstructionBuilderTypes } from './constants';
 import { CustomInstruction, VersionedCustomInstruction, VersionedTransactionData } from './iface';
 import { isSolLegacyInstruction } from './utils';
+import { WasmTransaction } from './wasm';
 import assert from 'assert';
 
 /**
@@ -28,7 +35,20 @@ export class CustomInstructionBuilder extends TransactionBuilder {
    */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
+    this.initFromInstructionsData();
+  }
 
+  /** @inheritDoc */
+  initBuilderFromWasm(wasmTx: WasmTransaction): void {
+    super.initBuilderFromWasm(wasmTx);
+    this.initFromInstructionsData();
+  }
+
+  /**
+   * Extract custom instruction parameters from instructionsData.
+   * Called by both initBuilder and initBuilderFromWasm.
+   */
+  private initFromInstructionsData(): void {
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.CustomInstruction) {
         const customInstruction = instruction as CustomInstruction;
@@ -125,22 +145,28 @@ export class CustomInstructionBuilder extends TransactionBuilder {
         throw new BuildTransactionError('messageHeader.numReadonlyUnsignedAccounts must be a non-negative number');
       }
 
-      let processedData = data;
-      if (this._nonceInfo && this._nonceInfo.params) {
-        processedData = this.injectNonceAdvanceInstruction(data);
+      const isTestnet = this._coinConfig.name === 'tsol';
+
+      if (isTestnet) {
+        // Testnet: store on builder for WASM path, nonce injection in wasm/builder.ts
+        this._versionedTransactionData = data;
+        this.addCustomInstructions(data.versionedInstructions);
+      } else {
+        // Mainnet: original behavior unchanged - store on Transaction, inject nonce here
+        let processedData = data;
+        if (this._nonceInfo && this._nonceInfo.params) {
+          processedData = this.injectNonceAdvanceInstruction(data);
+        }
+        this.addCustomInstructions(processedData.versionedInstructions);
+        if (!this._transaction) {
+          this._transaction = new Transaction(this._coinConfig);
+        }
+        this._transaction.setVersionedTransactionData(processedData);
+        this._transaction.setTransactionType(TransactionType.CustomTx);
       }
 
-      this.addCustomInstructions(processedData.versionedInstructions);
-
-      if (!this._transaction) {
-        this._transaction = new Transaction(this._coinConfig);
-      }
-      this._transaction.setVersionedTransactionData(processedData);
-
-      this._transaction.setTransactionType(TransactionType.CustomTx);
-
-      if (!this._sender && processedData.staticAccountKeys.length > 0) {
-        this._sender = processedData.staticAccountKeys[0];
+      if (!this._sender && data.staticAccountKeys.length > 0) {
+        this._sender = data.staticAccountKeys[0];
       }
 
       return this;
@@ -153,11 +179,8 @@ export class CustomInstructionBuilder extends TransactionBuilder {
   }
 
   /**
-   * Inject nonce advance instruction into versioned transaction data for durable nonce support.
-   * Reorders accounts so signers appear first (required by Solana MessageV0 format).
-   * @param data - Original versioned transaction data
-   * @returns Modified versioned transaction data with nonce advance instruction
-   * @private
+   * Inject nonce advance instruction into versioned transaction data.
+   * Used by mainnet legacy path for durable nonce support.
    */
   private injectNonceAdvanceInstruction(data: VersionedTransactionData): VersionedTransactionData {
     const { walletNonceAddress, authWalletAddress } = this._nonceInfo!.params;
@@ -317,7 +340,7 @@ export class CustomInstructionBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
+  protected async buildImplementation(): Promise<BaseTransaction> {
     assert(this._customInstructions.length > 0, 'At least one custom instruction must be specified');
 
     // Set the instructions data to our custom instructions

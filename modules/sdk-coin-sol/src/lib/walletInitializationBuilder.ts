@@ -1,12 +1,13 @@
 import assert from 'assert';
 
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseTransaction, BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { isValidAmount, validateAddress } from './utils';
 import { WalletInit } from './iface';
 import { InstructionBuilderTypes } from './constants';
+import { WasmTransaction } from './wasm';
 
 export class WalletInitializationBuilder extends TransactionBuilder {
   private _nonceAddress: string;
@@ -22,7 +23,20 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   /** @inheritDoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
+    this.initFromInstructionsData();
+  }
 
+  /** @inheritDoc */
+  initBuilderFromWasm(wasmTx: WasmTransaction): void {
+    super.initBuilderFromWasm(wasmTx);
+    this.initFromInstructionsData();
+  }
+
+  /**
+   * Extract wallet init parameters from instructionsData.
+   * Called by both initBuilder and initBuilderFromWasm.
+   */
+  private initFromInstructionsData(): void {
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.CreateNonceAccount) {
         const walletInitInstruction: WalletInit = instruction;
@@ -60,7 +74,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
+  protected async buildImplementation(): Promise<BaseTransaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
     assert(this._amount, 'Amount must be set before building the transaction');
     assert(this._nonceAddress, 'Nonce Address must be set before building the transaction');
