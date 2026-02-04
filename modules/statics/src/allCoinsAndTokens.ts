@@ -4499,6 +4499,18 @@ export const allCoinsAndTokens = [
     'VAULTA',
     'A'
   ),
+  eosToken(
+    'bced2aec-ed0d-4686-803d-c9368367dce0',
+    'eos:SBET',
+    'SportBet SBET',
+    4,
+    'sportbetsbet',
+    'sportbetsbet',
+    UnderlyingAsset.EOS_SBET,
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'SBET'
+  ),
   teosToken(
     '1c627bb5-4bee-4ab0-8bb6-3d535e17a769',
     'teos:CHEX',
@@ -4961,6 +4973,14 @@ export const allCoinsAndTokens = [
     '0xf84d28a8d28292842dd73d1c5f99476a80b6666a',
     UnderlyingAsset['arbeth:tbill'],
     AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  arbethErc20(
+    '7911d5d4-4138-4a9a-b046-553aa406e02e',
+    'arbeth:zro',
+    'LayerZero',
+    18,
+    '0x6985884c4392d348587b19cb9eaaf157f13271cd',
+    UnderlyingAsset['arbeth:zro']
   ),
   tarbethErc20(
     'd6a8869d-3da4-4b95-a9af-f2a059ca651f',
@@ -5764,6 +5784,18 @@ export const allCoinsAndTokens = [
     '0x5145494a5f5100e645e4b0aa950fa6b68f614e8c59e17bc5ded3495123a79178::ns::NS',
     UnderlyingAsset['sui:suins'],
     SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    '634d40ff-009a-4619-8651-9fa8e03e92e6',
+    'sui:suiusde',
+    'eSui Dollar',
+    6,
+    '0x41d587e5336f1c86cad50d38a7136db99333bb9bda91cea4ba69115defeb1402',
+    'sui_usde',
+    'SUI_USDE',
+    '0x41d587e5336f1c86cad50d38a7136db99333bb9bda91cea4ba69115defeb1402::sui_usde::SUI_USDE',
+    UnderlyingAsset['sui:suiusde'],
+    [...SUI_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   suiToken(
     '6ba90645-42ba-47d8-ba09-8b00228bfe33',

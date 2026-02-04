@@ -1056,7 +1056,12 @@ export enum UnderlyingAsset {
   'eth:bito' = 'eth:bito',
   'ETH:ECASH' = 'eth:ecash',
   'ETH:OORT' = 'eth:oort',
+  'eth:prism' = 'eth:prism',
   'eth:ultra' = 'eth:ultra',
+  'eth:yprism' = 'eth:yprism',
+  'eth:nvylds' = 'eth:nvylds',
+  'eth:nvheloc' = 'eth:nvheloc',
+  'eth:nil' = 'eth:nil',
   'eth:dragonx' = 'eth:dragonx',
   ETHHEDGE = 'ethhedge',
   ETHMOON = 'ethmoon',
@@ -2118,6 +2123,7 @@ export enum UnderlyingAsset {
   'eth:sky' = 'eth:sky',
   'eth:uco' = 'eth:uco',
   'eth:fuel' = 'eth:fuel',
+  'eth:xprism' = 'eth:xprism',
   'eth:xreth' = 'eth:xreth',
   'eth:xy' = 'eth:xy',
   'eth:yu' = 'eth:yu',
@@ -2146,6 +2152,7 @@ export enum UnderlyingAsset {
   'eth:lngvx' = 'eth:lngvx',
   'eth:eqtyx' = 'eth:eqtyx',
   'eth:deuro' = 'eth:deuro',
+  'eth:usat' = 'eth:usat',
   'eth:usdf' = 'eth:usdf',
   'eth:ausd' = 'eth:ausd',
   'eth:ags' = 'eth:ags',
@@ -2469,6 +2476,7 @@ export enum UnderlyingAsset {
   CHEX = 'chex',
   IQ = 'iq',
   EOS_BOX = 'eos:box',
+  EOS_SBET = 'eos:sbet',
   VAULTA = 'vaulta',
 
   // Avax Token ERC-20
@@ -2698,6 +2706,7 @@ export enum UnderlyingAsset {
   // BSC Token BEP-20
   'bsc:sol' = 'bsc:sol',
   'bsc:solv' = 'bsc:solv',
+  'bsc:stable' = 'bsc:stable',
   'bsc:brise' = 'bsc:brise',
   'bsc:bsw' = 'bsc:bsw',
   'bsc:burger' = 'bsc:burger',
@@ -2943,6 +2952,7 @@ export enum UnderlyingAsset {
   'arbeth:gmx' = 'arbeth:gmx',
   'arbeth:uxlink' = 'arbeth:uxlink',
   'arbeth:next' = 'arbeth:next',
+  'arbeth:zro' = 'arbeth:zro',
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
@@ -3289,6 +3299,7 @@ export enum UnderlyingAsset {
   'sol:superbonds' = 'sol:superbonds',
   'sol:would' = 'sol:would',
   'sol:dog' = 'sol:dog',
+  'sol:dont' = 'sol:dont',
   'sol:saros' = 'sol:saros',
   'sol:babydoge' = 'sol:babydoge',
   'sol:useless' = 'sol:useless',
@@ -3384,6 +3395,7 @@ export enum UnderlyingAsset {
   // Sui tokens
   'sui:deep' = 'sui:deep',
   'sui:suins' = 'sui:suins',
+  'sui:suiusde' = 'sui:suiusde',
   'sui:fdusd' = 'sui:fdusd',
   'sui:usdc' = 'sui:usdc',
   'sui:wusdc' = 'sui:wusdc',
