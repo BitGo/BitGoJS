@@ -152,4 +152,5 @@ export interface CantonTransferRequest {
   expiryEpoch: number;
   sendViaOneStep: boolean;
   memoId?: string;
+  token?: string;
 }
