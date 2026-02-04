@@ -38,7 +38,12 @@ import {
 } from './iface';
 import { CosmosKeyPair as KeyPair } from './keyPair';
 
-const { MsgSend } = require('../../resources/MsgCompiled').types;
+const MsgCompiled = require('../../resources/MsgCompiled');
+const baseNamespace = MsgCompiled.cosmos.base;
+require('../../resources/ProposalCompiled');
+MsgCompiled.cosmos.base = baseNamespace;
+const { MsgSend } = MsgCompiled.types;
+const { MsgSubmitProposal } = MsgCompiled.cosmos.group.v1;
 
 export class CosmosUtils<CustomMessage = never> implements BaseUtils {
   protected registry;
@@ -47,6 +52,7 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
     this.registry = new Registry([...defaultRegistryTypes]);
     this.registry.register(constants.executeContractMsgTypeUrl, MsgExecuteContract);
     this.registry.register('/types.MsgSend', MsgSend);
+    this.registry.register(constants.groupProposalMsgTypeUrl, MsgSubmitProposal);
   }
 
   /** @inheritdoc */
@@ -326,16 +332,27 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
    */
   getExecuteContractMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData<CustomMessage>[] {
     return decodedTx.body.messages.map((message) => {
-      const value = this.registry.decode(message);
-      return {
-        value: {
-          sender: value.sender,
-          contract: value.contract,
-          msg: value.msg,
-          funds: value.funds,
-        },
-        typeUrl: message.typeUrl,
-      };
+      if (message.typeUrl !== constants.groupProposalMsgTypeUrl) {
+        try {
+          const value = this.registry.decode(message);
+          return {
+            value: {
+              sender: value.sender,
+              contract: value.contract,
+              msg: value.msg,
+              funds: value.funds,
+            },
+            typeUrl: message.typeUrl,
+          };
+        } catch (error) {
+          throw new ParseTransactionError(`Error decoding execute contract message: ${error.message}`);
+        }
+      } else {
+        return {
+          value: message.value,
+          typeUrl: message.typeUrl,
+        } as MessageData<CustomMessage>;
+      }
     });
   }
 
@@ -367,6 +384,8 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
         return TransactionType.StakingWithdraw;
       case constants.executeContractMsgTypeUrl:
         return TransactionType.ContractCall;
+      case constants.groupProposalMsgTypeUrl:
+        return TransactionType.ContractCall;
       case constants.redelegateTypeUrl:
         return TransactionType.StakingRedelegate;
       default:
@@ -390,7 +409,33 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
    * @returns {Any[]} processed send messages
    */
   getSendMessagesForEncodingTx(cosmosLikeTransaction: CosmosLikeTransaction<CustomMessage>): Any[] {
-    return cosmosLikeTransaction.sendMessages as unknown as Any[];
+    return cosmosLikeTransaction.sendMessages.map((msg) => {
+      if (msg.value instanceof Uint8Array) {
+        if (msg.typeUrl === constants.groupProposalMsgTypeUrl) {
+          // For group proposal messages, the pre-encoded bytes contain the full MsgSubmitProposal
+          try {
+            const decoded = this.registry.decode({ typeUrl: msg.typeUrl, value: msg.value });
+            return {
+              typeUrl: msg.typeUrl,
+              value: decoded,
+            } as Any;
+          } catch (error) {
+            // If decoding fails, fall back to returning the bytes directly
+            return {
+              typeUrl: msg.typeUrl,
+              value: msg.value,
+            } as Any;
+          }
+        } else {
+          return {
+            typeUrl: msg.typeUrl,
+            value: msg.value,
+          } as Any;
+        }
+      } else {
+        return msg as unknown as Any;
+      }
+    });
   }
 
   /**
@@ -637,6 +682,10 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
         break;
       }
       case TransactionType.ContractCall: {
+        if (messageData.value instanceof Uint8Array) {
+          //TODO: Add validation for pre-encoded contract call messages
+          break;
+        }
         const value = messageData.value as ExecuteContractMessage;
         this.validateExecuteContractMessage(value, TransactionType.ContractCall);
         break;
