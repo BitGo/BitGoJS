@@ -77,6 +77,7 @@ import { jettonTokens } from './coins/jettonTokens';
 import { polyxTokens } from './coins/polyxTokens';
 import { cantonTokens } from './coins/cantonTokens';
 import { flrp } from './flrp';
+import { hypeEvm } from './hypeevm';
 import {
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
   ADA_FEATURES,
@@ -1718,7 +1719,7 @@ export const allCoinsAndTokens = [
       CoinFeature.STAKING,
     ]
   ),
-  account(
+  hypeEvm(
     'e907fdbd-2c5d-45d6-b622-9da38937da73',
     'hypeevm',
     'Hyperliquid EVM',
@@ -1726,19 +1727,10 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.HYPEEVM,
     BaseUnit.ETH,
-    [
-      ...EVM_FEATURES,
-      CoinFeature.SHARED_EVM_SIGNING,
-      CoinFeature.SHARED_EVM_SDK,
-      CoinFeature.EVM_COMPATIBLE_IMS,
-      CoinFeature.EVM_COMPATIBLE_UI,
-      CoinFeature.EVM_NON_BITGO_RECOVERY,
-      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
-      CoinFeature.SUPPORTS_ERC20,
-      CoinFeature.STAKING,
-    ]
+    150,
+    '0x2222222222222222222222222222222222222222'
   ),
-  account(
+  hypeEvm(
     'e0500947-1105-404c-af52-765b1cb2a7c1',
     'thypeevm',
     'Hyperliquid EVM Testnet',
@@ -1746,16 +1738,8 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.HYPEEVM,
     BaseUnit.ETH,
-    [
-      ...EVM_FEATURES,
-      CoinFeature.SHARED_EVM_SIGNING,
-      CoinFeature.SHARED_EVM_SDK,
-      CoinFeature.EVM_COMPATIBLE_IMS,
-      CoinFeature.EVM_COMPATIBLE_UI,
-      CoinFeature.EVM_NON_BITGO_RECOVERY,
-      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
-      CoinFeature.STAKING,
-    ]
+    1105,
+    '0x2222222222222222222222222222222222222222'
   ),
   account(
     '23e7eca6-e862-4bc5-bf4f-65eeb8174171',
