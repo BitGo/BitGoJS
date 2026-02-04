@@ -123,6 +123,10 @@ export async function isWalletAddress(wallet: IWallet | WalletV1, address: strin
  * @returns The address in legacy 3... format, or the original address if it's not a P2SH address
  */
 export function convertLtcAddressToLegacyFormat(address: string, coinName: UtxoCoinName): string {
+  if (coinName !== 'ltc' && coinName !== 'tltc') {
+    return address;
+  }
+
   const network = getNetworkFromCoinName(coinName);
   try {
     // Try to decode as bech32 - these don't need conversion
@@ -137,7 +141,8 @@ export function convertLtcAddressToLegacyFormat(address: string, coinName: UtxoC
     // Only convert P2SH addresses (scriptHash), not P2PKH (pubKeyHash)
     if (decoded.version === network.scriptHash) {
       // Convert to legacy format using Bitcoin's scriptHash (0x05)
-      const legacyScriptHash = utxolib.networks.bitcoin.scriptHash;
+      const legacyScriptHash =
+        coinName === 'ltc' ? utxolib.networks.bitcoin.scriptHash : utxolib.networks.testnet.scriptHash;
       return utxolib.address.toBase58Check(decoded.hash, legacyScriptHash, network);
     }
     // P2PKH or other - return unchanged

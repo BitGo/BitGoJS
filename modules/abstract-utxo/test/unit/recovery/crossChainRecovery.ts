@@ -5,6 +5,7 @@ import nock = require('nock');
 import * as utxolib from '@bitgo/utxo-lib';
 import { Triple } from '@bitgo/sdk-core';
 import { getSeed } from '@bitgo/sdk-test';
+import { address as wasmAddress } from '@bitgo/wasm-utxo';
 import * as sinon from 'sinon';
 
 import {
@@ -318,15 +319,24 @@ describe(`Cross-Chain Recovery getWallet`, async function () {
 });
 
 describe('convertLtcAddressToLegacyFormat', function () {
+  const scriptPubKey = Buffer.from('a9149f0bf51fab4d33ab21977e1b89f776f64161ef4287', 'hex');
   it('should convert M... P2SH address to 3... legacy format', function () {
     // These two addresses represent the same underlying script hash:
     // - MNQ7zkgMsaV67rsjA3JuP59RC5wxRXpwgE is the LTC format (scriptHash 0x32)
     // - 3GBygsGPvTdfKMbq4AKZZRu1sPMWPEsBfd is the BTC format (scriptHash 0x05)
-    const ltcAddress = 'MNQ7zkgMsaV67rsjA3JuP59RC5wxRXpwgE';
-    const expectedLegacyAddress = '3GBygsGPvTdfKMbq4AKZZRu1sPMWPEsBfd';
+    // const ltcAddress = 'MNQ7zkgMsaV67rsjA3JuP59RC5wxRXpwgE';
+    const ltcAddress = wasmAddress.fromOutputScriptWithCoin(scriptPubKey, 'ltc');
+    const tltcAddress = wasmAddress.fromOutputScriptWithCoin(scriptPubKey, 'tltc');
+    assert.strictEqual(ltcAddress, 'MNQ7zkgMsaV67rsjA3JuP59RC5wxRXpwgE');
+    assert.strictEqual(tltcAddress, 'Qb6wsd4fZ2C6fKzRMPyTG5KiE81W6QCxhU');
 
     const legacyAddress = convertLtcAddressToLegacyFormat(ltcAddress, 'ltc');
-    assert.strictEqual(legacyAddress, expectedLegacyAddress);
+    const expectedLtcLegacyAddress = '3GBygsGPvTdfKMbq4AKZZRu1sPMWPEsBfd';
+    assert.strictEqual(legacyAddress, expectedLtcLegacyAddress);
+
+    const expectedTltcLegacyAddress = '2N7kBkcCRXv91X9ENjHwSBNtH5jZg8yye6r';
+    const tltcLegacyAddress = convertLtcAddressToLegacyFormat(tltcAddress, 'tltc');
+    assert.strictEqual(tltcLegacyAddress, expectedTltcLegacyAddress);
   });
 
   it('should convert MD68PsdheKxcYsrVLyZRXgoSDLnB1MdVtE to legacy format', function () {
