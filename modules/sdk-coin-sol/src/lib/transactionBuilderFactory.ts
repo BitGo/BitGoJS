@@ -16,6 +16,7 @@ import { TransferBuilder } from './transferBuilder';
 import { TransferBuilderV2 } from './transferBuilderV2';
 import { validateRawTransaction } from './utils';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
+import { WasmTransaction } from './wasm';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -29,7 +30,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   from(raw: string): TransactionBuilder | StakingRawMsgAuthorizeBuilder {
     validateRawTransaction(raw);
-    const tx = this.parseTransaction(raw);
+    const isTestnet = this._coinConfig.name === 'tsol';
+    // For testnet, use WASM for both parsing and building
+    // For mainnet, use legacy parsing
+    const tx = isTestnet ? this.parseTransactionWasm(raw) : this.parseTransaction(raw);
     try {
       switch (tx.type) {
         case TransactionType.Send:
@@ -37,30 +41,37 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
             .map((input) => input.coin)
             .filter((coin, index, arr) => arr.indexOf(coin) === index);
           if (uniqueInputCoins.includes('sol') || uniqueInputCoins.includes('tsol')) {
-            return this.getTransferBuilderV2(tx);
+            return this.initializeBuilderFromParsedTx(tx, new TransferBuilderV2(this._coinConfig), isTestnet);
           } else {
-            return this.getTokenTransferBuilder(tx);
+            return this.initializeBuilderFromParsedTx(tx, new TokenTransferBuilder(this._coinConfig), isTestnet);
           }
         case TransactionType.WalletInitialization:
-          return this.getWalletInitializationBuilder(tx);
+          return this.initializeBuilderFromParsedTx(tx, new WalletInitializationBuilder(this._coinConfig), isTestnet);
         case TransactionType.StakingActivate:
-          return this.getStakingActivateBuilder(tx);
+          return this.initializeBuilderFromParsedTx(tx, new StakingActivateBuilder(this._coinConfig), isTestnet);
         case TransactionType.StakingDeactivate:
-          return this.getStakingDeactivateBuilder(tx);
+          return this.initializeBuilderFromParsedTx(tx, new StakingDeactivateBuilder(this._coinConfig), isTestnet);
         case TransactionType.StakingWithdraw:
-          return this.getStakingWithdrawBuilder(tx);
+          return this.initializeBuilderFromParsedTx(tx, new StakingWithdrawBuilder(this._coinConfig), isTestnet);
         case TransactionType.AssociatedTokenAccountInitialization:
-          return this.getAtaInitializationBuilder(tx);
+          return this.initializeBuilderFromParsedTx(tx, new AtaInitializationBuilder(this._coinConfig), isTestnet);
         case TransactionType.StakingAuthorize:
-          return this.getStakingAuthorizeBuilder(tx);
+          return this.initializeBuilderFromParsedTx(tx, new StakingAuthorizeBuilder(this._coinConfig), isTestnet);
         case TransactionType.StakingAuthorizeRaw:
-          return this.getStakingRawMsgAuthorizeBuilder(tx);
+          // StakingRawMsgAuthorizeBuilder extends BaseTransactionBuilder, not TransactionBuilder
+          const rawBuilder = new StakingRawMsgAuthorizeBuilder(this._coinConfig);
+          if (isTestnet && tx instanceof WasmTransaction) {
+            rawBuilder.initBuilderFromWasm(tx);
+          } else if (tx instanceof Transaction) {
+            rawBuilder.initBuilder(tx);
+          }
+          return rawBuilder;
         case TransactionType.StakingDelegate:
-          return this.getStakingDelegateBuilder(tx);
+          return this.initializeBuilderFromParsedTx(tx, new StakingDelegateBuilder(this._coinConfig), isTestnet);
         case TransactionType.CloseAssociatedTokenAccount:
-          return this.getCloseAtaInitializationBuilder(tx);
+          return this.initializeBuilderFromParsedTx(tx, new CloseAtaBuilder(this._coinConfig), isTestnet);
         case TransactionType.CustomTx:
-          return this.getCustomInstructionBuilder(tx);
+          return this.initializeBuilderFromParsedTx(tx, new CustomInstructionBuilder(this._coinConfig), isTestnet);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -199,7 +210,34 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return builder;
   }
 
-  /** Parse the transaction from a raw transaction
+  /**
+   * Initialize the builder from a parsed transaction.
+   *
+   * For testnet: Uses WasmTransaction (WASM parsing + WASM building)
+   * For mainnet: Uses Transaction (legacy parsing + legacy building)
+   *
+   * The builder automatically uses the appropriate path based on coin type.
+   * When testnet is enabled for mainnet, just remove the isTestnet check.
+   *
+   * @param {Transaction | WasmTransaction} tx - the parsed transaction
+   * @param {TransactionBuilder} builder - the builder to be initialized
+   * @param {boolean} isTestnet - whether this is a testnet transaction
+   * @returns {TransactionBuilder} the builder initialized
+   */
+  private initializeBuilderFromParsedTx<T extends TransactionBuilder>(
+    tx: Transaction | WasmTransaction,
+    builder: T,
+    isTestnet: boolean
+  ): T {
+    if (isTestnet && tx instanceof WasmTransaction) {
+      builder.initBuilderFromWasm(tx);
+    } else if (tx instanceof Transaction) {
+      builder.initBuilder(tx);
+    }
+    return builder;
+  }
+
+  /** Parse the transaction from a raw transaction using legacy Transaction
    *
    * @param {string} rawTransaction - the raw tx
    * @returns {Transaction} parsed transaction
@@ -207,6 +245,17 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   private parseTransaction(rawTransaction: string): Transaction {
     const tx = new Transaction(this._coinConfig);
     tx.setUseTokenAddressTokenName(true);
+    tx.fromRawTransaction(rawTransaction);
+    return tx;
+  }
+
+  /** Parse the transaction from a raw transaction using WasmTransaction (testnet only)
+   *
+   * @param {string} rawTransaction - the raw tx
+   * @returns {WasmTransaction} parsed transaction
+   */
+  private parseTransactionWasm(rawTransaction: string): WasmTransaction {
+    const tx = new WasmTransaction(this._coinConfig);
     tx.fromRawTransaction(rawTransaction);
     return tx;
   }
