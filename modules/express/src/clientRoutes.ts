@@ -1193,6 +1193,23 @@ async function handleNetworkV1EnterpriseClientConnections(
 }
 
 /**
+ * Helper to send request body, using raw bytes when available.
+ * For v4 HMAC authentication, we need to send the exact bytes that were
+ * received from the client to ensure the HMAC signature matches.
+ *
+ * @param request - The superagent request object
+ * @param req - The Express request containing body and rawBodyBuffer
+ * @returns The request with body attached
+ */
+function sendRequestBody(request: ReturnType<BitGo['post']>, req: express.Request) {
+  if (req.rawBodyBuffer && req.rawBodyBuffer.length > 0) {
+    return request.set('Content-Type', 'application/json').send(req.rawBodyBuffer);
+  }
+  // Fall back to parsed body for backward compatibility
+  return request.send(req.body);
+}
+
+/**
  * Redirect a request using the bitgo request functions.
  * @param bitgo
  * @param method
@@ -1214,19 +1231,19 @@ export function redirectRequest(
       request = bitgo.get(url);
       break;
     case 'POST':
-      request = bitgo.post(url).send(req.body);
+      request = sendRequestBody(bitgo.post(url), req);
       break;
     case 'PUT':
-      request = bitgo.put(url).send(req.body);
+      request = sendRequestBody(bitgo.put(url), req);
       break;
     case 'PATCH':
-      request = bitgo.patch(url).send(req.body);
+      request = sendRequestBody(bitgo.patch(url), req);
       break;
     case 'OPTIONS':
-      request = bitgo.options(url).send(req.body);
+      request = sendRequestBody(bitgo.options(url), req);
       break;
     case 'DELETE':
-      request = bitgo.del(url).send(req.body);
+      request = sendRequestBody(bitgo.del(url), req);
       break;
   }
 
