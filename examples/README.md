@@ -4,6 +4,13 @@
 
 In this directory, you can find examples on how to use the BitGoJS SDK with TypeScript. These examples use modern TypeScript/ES6 syntax with `async`/`await`. This is the recommended way to use the BitGoJS SDK for new projects.
 
+### Go Accounts (Trading Wallets)
+
+Go Accounts are trading wallets that don't require BitGo Express. See the [detailed guide](./docs/go-account-creation.md) for more information.
+
+- [Create Go Account (SDK Approach - Recommended)](./ts/create-go-account.ts) - Simple, high-level wallet creation
+- [Create Go Account (Advanced SDK Approach)](./ts/create-go-account-advanced.ts) - Manual keychain control for advanced users
+
 ### Wallet
 
 - [Backup Key Creation](./ts/backup-key-creation.ts)
