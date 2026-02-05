@@ -196,7 +196,7 @@ export class Transaction extends BaseTransaction {
         }
       }
     } catch (e) {
-      throw new InvalidTransactionError('Unable to parse raw transaction data');
+      throw new InvalidTransactionError(`Unable to parse raw transaction data: ${e instanceof Error ? e.message : e}`);
     }
   }
 
