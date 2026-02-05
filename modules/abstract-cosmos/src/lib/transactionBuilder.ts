@@ -75,10 +75,10 @@ export abstract class CosmosTransactionBuilder<CustomMessage = never> extends Ba
    * - For @see TransactionType.Send required type is @see SendMessage
    * - For @see TransactionType.StakingWithdraw required type is @see WithdrawDelegatorRewardsMessage
    * - For @see TransactionType.ContractCall required type is @see ExecuteContractMessage
-   * @param {CosmosTransactionMessage[]} messages
+   * @param {CosmosTransactionMessage[] | MessageData[]} messages
    * @returns {TransactionBuilder} This transaction builder
    */
-  abstract messages(messages: CosmosTransactionMessage<CustomMessage>[]): this;
+  abstract messages(messages: (CosmosTransactionMessage<CustomMessage> | MessageData<CustomMessage>)[]): this;
 
   publicKey(publicKey: string | undefined): this {
     this._publicKey = publicKey;
@@ -166,11 +166,15 @@ export abstract class CosmosTransactionBuilder<CustomMessage = never> extends Ba
     this._transaction = tx;
     const txData = tx.toJson();
     this.gasBudget(txData.gasBudget);
-    this.messages(
+    const messagesToSet: (MessageData<CustomMessage> | CosmosTransactionMessage<CustomMessage>)[] =
       txData.sendMessages.map((message) => {
-        return message.value;
-      })
-    );
+        if (message.value instanceof Uint8Array) {
+          return message; // Keep as MessageData for pre-encoded messages
+        } else {
+          return message.value; // Extract the actual message for typed messages
+        }
+      });
+    this.messages(messagesToSet);
     this.sequence(txData.sequence);
     this.publicKey(txData.publicKey);
     this.accountNumber(txData.accountNumber);

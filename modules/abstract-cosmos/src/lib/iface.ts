@@ -78,7 +78,7 @@ export type CosmosTransactionMessage<CustomMessage = never> =
 
 export interface MessageData<CustomMessage = never> {
   typeUrl: string;
-  value: CosmosTransactionMessage<CustomMessage>;
+  value: CosmosTransactionMessage<CustomMessage> | Uint8Array; // Uint8Array for pre-encoded messages
 }
 
 export interface FeeData {

@@ -228,6 +228,13 @@ export class CosmosTransaction<CustomMessage = never> extends BaseTransaction {
         explanationResult.type = TransactionType.ContractCall;
         outputAmount = BigInt(0);
         outputs = json.sendMessages.map((message) => {
+          //TODO: Handle pre-encoded contract call messages.
+          if (message.value instanceof Uint8Array) {
+            return {
+              address: UNAVAILABLE_TEXT,
+              amount: UNAVAILABLE_TEXT,
+            };
+          }
           const executeContractMessage = message.value as ExecuteContractMessage;
           outputAmount = outputAmount + BigInt(executeContractMessage.funds?.[0]?.amount ?? '0');
           return {
@@ -324,6 +331,20 @@ export class CosmosTransaction<CustomMessage = never> extends BaseTransaction {
         break;
       case TransactionType.ContractCall:
         this.cosmosLikeTransaction.sendMessages.forEach((message) => {
+          if (message.value instanceof Uint8Array) {
+            //TODO: Handle pre-encoded contract call messages.
+            inputs.push({
+              address: UNAVAILABLE_TEXT,
+              value: UNAVAILABLE_TEXT,
+              coin: this._coinConfig.name,
+            });
+            outputs.push({
+              address: UNAVAILABLE_TEXT,
+              value: UNAVAILABLE_TEXT,
+              coin: this._coinConfig.name,
+            });
+            return;
+          }
           const executeContractMessage = message.value as ExecuteContractMessage;
           inputs.push({
             address: executeContractMessage.sender,
