@@ -100,6 +100,7 @@
 /modules/sdk-coin-xrp/ @BitGo/ethalt-team
 /modules/sdk-coin-xtz/ @BitGo/ethalt-team
 /modules/sdk-coin-zketh/ @BitGo/ethalt-team
+/modules/sdk-coin-hash/ @BitGo/ethalt-team
 
 # Examples
 /examples/ @BitGo/ethalt-team
