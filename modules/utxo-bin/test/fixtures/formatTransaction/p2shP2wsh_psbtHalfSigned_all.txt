@@ -28,6 +28,7 @@ transaction: e4f8816466a730d07e51b5a545e072b4ca1ee78ad58a6d5c06b6dcd5fc492e87
 │   │     ├── bytes: 304402200bb8d9eff7f7f867828f7cbd22cc0d7d00fb0092cd61708f9cd2ceaef4db23ca02200517e29722fa4d880fe974c1a947f93a5d5b34be73ca73bae17fae01ab493d8e01 (71 bytes)
 │   │     ├── isCanonical: true
 │   │     ├── hashType: 1
+│   │     ├── sighashType: ALL
 │   │     ├── r: 0bb8d9eff7f7f867828f7cbd22cc0d7d00fb0092cd61708f9cd2ceaef4db23ca (32 bytes)
 │   │     ├── s: 0517e29722fa4d880fe974c1a947f93a5d5b34be73ca73bae17fae01ab493d8e (32 bytes)
 │   │     └── highS: false

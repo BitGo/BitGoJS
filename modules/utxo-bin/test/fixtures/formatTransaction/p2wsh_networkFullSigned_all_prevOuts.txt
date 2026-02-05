@@ -38,6 +38,7 @@ transaction: 2fedaa3661f6251d1a4ca23e5d4bb03fab5b75e8e471281f554755c439cd9924
 │ │     │ ├── signedBy: user
 │ │     │ ├── isCanonical: true
 │ │     │ ├── hashType: 1
+│ │     │ ├── sighashType: ALL
 │ │     │ ├── r: e665acb4a9237b32d00052b4419ed699db1cd01522cec80d4714d66452efb982 (32 bytes)
 │ │     │ ├── s: 29a3272a95f61e6a7d85b4605f735ffc4062c155d78c0b4bb3e35191997a6762 (32 bytes)
 │ │     │ └── highS: false
@@ -47,6 +48,7 @@ transaction: 2fedaa3661f6251d1a4ca23e5d4bb03fab5b75e8e471281f554755c439cd9924
 │ │       ├── signedBy: bitgo
 │ │       ├── isCanonical: true
 │ │       ├── hashType: 1
+│ │       ├── sighashType: ALL
 │ │       ├── r: 11f825047fcf6a13c7da282d27be5d5d4d82759b8c7f987f1dcaef88b4b104b1 (32 bytes)
 │ │       ├── s: 5c333b6ac321bf7150823833452e5d3073c77dbab053430a4de5c3398e9cb370 (32 bytes)
 │ │       └── highS: false
@@ -78,6 +80,7 @@ transaction: 2fedaa3661f6251d1a4ca23e5d4bb03fab5b75e8e471281f554755c439cd9924
 │       │ ├── signedBy: user
 │       │ ├── isCanonical: true
 │       │ ├── hashType: 1
+│       │ ├── sighashType: ALL
 │       │ ├── r: 021aff10c307d538600552a18b7a4187bffd43390d7944164c8054d15645673f (32 bytes)
 │       │ ├── s: 26a05412302b0c2c98b8805effc4e99e716e4f6f485dbce1a8c92a8440c498dc (32 bytes)
 │       │ └── highS: false
@@ -87,6 +90,7 @@ transaction: 2fedaa3661f6251d1a4ca23e5d4bb03fab5b75e8e471281f554755c439cd9924
 │         ├── signedBy: bitgo
 │         ├── isCanonical: true
 │         ├── hashType: 1
+│         ├── sighashType: ALL
 │         ├── r: 3436df8e3ce0c6e16d12a5f50f8c89a206e11cfd515c9e39f6f361f8f22a8b7a (32 bytes)
 │         ├── s: 2c180bd360669abab214687aa520cb6a0ca4973cc65e58f40f0b7a982489e2a1 (32 bytes)
 │         └── highS: false

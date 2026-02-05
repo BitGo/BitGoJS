@@ -1,5 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { script, ScriptSignature } from 'bitcoinjs-lib';
+import { script, ScriptSignature, Transaction } from 'bitcoinjs-lib';
 
 import { Parser, ParserNode } from './Parser';
 import { getParserTxInputProperties, getPrevOut, ParserTx, ParserTxInput } from './ParserTx';
@@ -9,6 +9,48 @@ import { ChainInfo } from './TxParser';
 import { OutputParser } from './OutputParser';
 import { parseUnknown } from './parseUnknown';
 import { ScriptParser } from './ScriptParser';
+
+/**
+ * Convert a numeric hashType to a human-readable sighash string.
+ * Handles combinations of base types and flags (ANYONECANPAY, FORKID).
+ */
+function getSighashName(hashType: number): string {
+  const parts: string[] = [];
+
+  // Extract flags
+  const hasAnyoneCanPay = (hashType & Transaction.SIGHASH_ANYONECANPAY) !== 0;
+  const hasForkId = (hashType & utxolib.bitgo.UtxoTransaction.SIGHASH_FORKID) !== 0;
+
+  // Get the base type (mask off the flags)
+  const baseType = hashType & Transaction.SIGHASH_OUTPUT_MASK;
+
+  switch (baseType) {
+    case Transaction.SIGHASH_DEFAULT:
+      parts.push('DEFAULT');
+      break;
+    case Transaction.SIGHASH_ALL:
+      parts.push('ALL');
+      break;
+    case Transaction.SIGHASH_NONE:
+      parts.push('NONE');
+      break;
+    case Transaction.SIGHASH_SINGLE:
+      parts.push('SINGLE');
+      break;
+    default:
+      parts.push(`UNKNOWN(${baseType})`);
+  }
+
+  if (hasForkId) {
+    parts.push('FORKID');
+  }
+
+  if (hasAnyoneCanPay) {
+    parts.push('ANYONECANPAY');
+  }
+
+  return parts.join('|');
+}
 
 type ParsedSignatureScript =
   | utxolib.bitgo.ParsedSignatureScriptP2ms
@@ -164,6 +206,7 @@ export class InputParser extends Parser {
       nodes.push(
         this.node('isCanonical', script.isCanonicalScriptSignature(buf)),
         this.node('hashType', hashType),
+        this.node('sighashType', getSighashName(hashType)),
         this.node('r', r),
         this.node('s', s),
         this.node('highS', isHighS(s))

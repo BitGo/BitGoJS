@@ -26,6 +26,7 @@ transaction: 91d1162f0975c30e2422f2b6e3d0cf6174ce217d2987519f1e7d3894e035a721
 │   │   │ ├── bytes: 3045022100cd89f929b9c83a3de22a663c151811b0a4fa99a9611285c0b18879306eec25d602205b579499e3405fa2fd0b709335c53733dee14e5f245e4bd64786257f6d93f97b01 (72 bytes)
 │   │   │ ├── isCanonical: true
 │   │   │ ├── hashType: 1
+│   │   │ ├── sighashType: ALL
 │   │   │ ├── r: cd89f929b9c83a3de22a663c151811b0a4fa99a9611285c0b18879306eec25d6 (32 bytes)
 │   │   │ ├── s: 5b579499e3405fa2fd0b709335c53733dee14e5f245e4bd64786257f6d93f97b (32 bytes)
 │   │   │ └── highS: false
@@ -33,6 +34,7 @@ transaction: 91d1162f0975c30e2422f2b6e3d0cf6174ce217d2987519f1e7d3894e035a721
 │   │     ├── bytes: 3045022100f38d2028cea38e7b0f34d8a55bc770d256663052a3b05fd8664ae6b7390d31ea02202832d00bea346aca4af6de97b0dcdfbe225d6f1f3fc972077ad935aff7de3b4701 (72 bytes)
 │   │     ├── isCanonical: true
 │   │     ├── hashType: 1
+│   │     ├── sighashType: ALL
 │   │     ├── r: f38d2028cea38e7b0f34d8a55bc770d256663052a3b05fd8664ae6b7390d31ea (32 bytes)
 │   │     ├── s: 2832d00bea346aca4af6de97b0dcdfbe225d6f1f3fc972077ad935aff7de3b47 (32 bytes)
 │   │     └── highS: false
