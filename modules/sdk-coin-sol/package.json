@@ -40,6 +40,7 @@
     ]
   },
   "dependencies": {
+    "@bitgo/logger": "^1.0.0",
     "@bitgo/public-types": "5.63.0",
     "@bitgo/sdk-core": "^36.30.0",
     "@bitgo/sdk-lib-mpc": "^10.9.0",

@@ -8,6 +8,7 @@
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 import { writeFile } from 'fs';
+import { logger } from '@bitgo/logger';
 import { BitGo, EnvironmentName } from 'bitgo';
 import 'dotenv/config';
 
@@ -112,4 +113,4 @@ export async function fetchKeys(ids: WalletIds, token: string, accessToken?: str
   return Promise.resolve(output);
 }
 
-fetchKeys(walletIds, accessToken).catch((e) => console.error(e));
+fetchKeys(walletIds, accessToken).catch((e) => logger.error(e));

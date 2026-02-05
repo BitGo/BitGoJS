@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@aptos-labs/ts-sdk": "1.33.1",
+    "@bitgo/logger": "^1.0.0",
     "@bitgo/sdk-core": "^36.30.0",
     "@bitgo/statics": "^58.24.0",
     "bignumber.js": "^9.1.2",

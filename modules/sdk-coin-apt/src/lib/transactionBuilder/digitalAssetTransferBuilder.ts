@@ -5,6 +5,7 @@ import utils from '../utils';
 import { TransactionPayload, TransactionPayloadEntryFunction } from '@aptos-labs/ts-sdk';
 import { DigitalAssetTransfer } from '../transaction/digitalAssetTransfer';
 import { DIGITAL_ASSET_TYPE_ARGUMENT } from '../constants';
+import { logger } from '@bitgo/logger';
 
 export class DigitalAssetTransferBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -47,7 +48,7 @@ export class DigitalAssetTransferBuilder extends TransactionBuilder {
       const recipientAddress = entryFunction.args[1].toString();
       return utils.isValidAddress(recipientAddress) && utils.isValidAddress(digitalAssetAddress);
     } catch (e) {
-      console.error('invalid transaction payload', e);
+      logger.error('invalid transaction payload', e);
       return false;
     }
   }
