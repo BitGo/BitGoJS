@@ -5329,15 +5329,6 @@
   dependencies:
     "@solana/codecs" "2.0.0-rc.1"
 
-"@solana/spl-token@0.3.1":
-  version "0.3.1"
-  resolved "https://registry.npmjs.org/@solana/spl-token/-/spl-token-0.3.1.tgz"
-  integrity sha512-26/0XlW5Lyeu3CUlBGt+0o3l4H6AJtRtMMtsxhcKj+DwfGg+QMnPl/exTmZLEsymsn03PFhogd97v5fJXhYeow==
-  dependencies:
-    "@solana/buffer-layout" "^4.0.0"
-    "@solana/buffer-layout-utils" "^0.2.0"
-    "@solana/web3.js" "^1.41.0"
-
 "@solana/spl-token@0.4.9":
   version "0.4.9"
   resolved "https://registry.npmjs.org/@solana/spl-token/-/spl-token-0.4.9.tgz"
@@ -5349,7 +5340,7 @@
     "@solana/spl-token-metadata" "^0.1.6"
     buffer "^6.0.3"
 
-"@solana/web3.js@1.92.1", "@solana/web3.js@1.95.8", "@solana/web3.js@^1.32.0", "@solana/web3.js@^1.41.0", "@solana/web3.js@^1.95.3":
+"@solana/web3.js@1.92.1", "@solana/web3.js@1.95.8", "@solana/web3.js@^1.32.0", "@solana/web3.js@^1.95.3":
   version "1.95.8"
   resolved "https://registry.npmjs.org/@solana/web3.js/-/web3.js-1.95.8.tgz#2d49abda23f7a79a3cc499ab6680f7be11786ee1"
   integrity sha512-sBHzNh7dHMrmNS5xPD1d0Xa2QffW/RXaxu/OysRXBfwTp+LYqGGmMtCYYwrHPrN5rjAmJCsQRNAwv4FM0t3B6g==
