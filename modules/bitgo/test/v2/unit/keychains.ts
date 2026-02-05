@@ -61,7 +61,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.APECHAIN &&
         n.asset !== UnderlyingAsset.DOGE &&
         n.asset !== UnderlyingAsset.ETHW &&
-        n.asset !== UnderlyingAsset.KAVA &&
+        n.asset !== UnderlyingAsset.KAVACOSMOS &&
         n.asset !== UnderlyingAsset.COREUM &&
         n.asset !== UnderlyingAsset.BERA &&
         n.asset !== UnderlyingAsset.ISLM &&

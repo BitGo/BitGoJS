@@ -995,9 +995,9 @@ class InjectiveTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://testnet.explorer.injective.network/transaction/';
 }
 
-class Kava extends Mainnet implements CosmosNetwork {
-  name = 'Kava';
-  family = CoinFamily.KAVA;
+class KavaCosmos extends Mainnet implements CosmosNetwork {
+  name = 'KavaCosmos';
+  family = CoinFamily.KAVACOSMOS;
   explorerUrl = 'https://www.mintscan.io/kava/tx/';
   addressPrefix = 'kava';
   validatorPrefix = 'kavavaloper';
@@ -1007,9 +1007,9 @@ class Kava extends Mainnet implements CosmosNetwork {
   validDenoms = ['kava', 'ukava'];
 }
 
-class KavaTestnet extends Testnet implements CosmosNetwork {
-  name = 'KavaTestnet';
-  family = CoinFamily.KAVA;
+class KavaCosmosTestnet extends Testnet implements CosmosNetwork {
+  name = 'KavaCosmosTestnet';
+  family = CoinFamily.KAVACOSMOS;
   explorerUrl = 'https://www.mintscan.io/kava-testnet/tx/';
   addressPrefix = 'kava';
   validatorPrefix = 'kavavaloper';
@@ -2446,7 +2446,7 @@ export const Networks = {
     islm: Object.freeze(new Islm()),
     jovayeth: Object.freeze(new JovayETH()),
     kaia: Object.freeze(new Kaia()),
-    kava: Object.freeze(new Kava()),
+    kavacosmos: Object.freeze(new KavaCosmos()),
     kavaevm: Object.freeze(new KavaEVM()),
     lnbtc: Object.freeze(new LightningBitcoin()),
     litecoin: Object.freeze(new Litecoin()),
@@ -2560,7 +2560,7 @@ export const Networks = {
     irys: Object.freeze(new IrysTestnet()),
     islm: Object.freeze(new IslmTestnet()),
     jovayeth: Object.freeze(new JovayETHTestnet()),
-    kava: Object.freeze(new KavaTestnet()),
+    kavacosmos: Object.freeze(new KavaCosmosTestnet()),
     kavaevm: Object.freeze(new KavaEVMTestnet()),
     kovan: Object.freeze(new Kovan()),
     goerli: Object.freeze(new Goerli()),

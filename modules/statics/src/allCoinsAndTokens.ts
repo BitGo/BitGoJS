@@ -1022,22 +1022,22 @@ export const allCoinsAndTokens = [
   ),
   account(
     'c592d110-cf6d-4630-b6e8-cfe044db0be2',
-    'kava',
-    'Kava',
-    Networks.main.kava,
+    'kavacosmos',
+    'Kava Cosmos',
+    Networks.main.kavacosmos,
     6,
-    UnderlyingAsset.KAVA,
-    BaseUnit.KAVA,
+    UnderlyingAsset.KAVACOSMOS,
+    BaseUnit.KAVACOSMOS,
     [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
   ),
   account(
     '62895d6b-6e99-4eba-82f1-9ce4e7658998',
-    'tkava',
-    'Testnet Kava',
-    Networks.test.kava,
+    'tkavacosmos',
+    'Testnet Kava Cosmos',
+    Networks.test.kavacosmos,
     6,
-    UnderlyingAsset.KAVA,
-    BaseUnit.KAVA,
+    UnderlyingAsset.KAVACOSMOS,
+    BaseUnit.KAVACOSMOS,
     [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
   ),
   account(
