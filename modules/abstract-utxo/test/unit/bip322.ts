@@ -1,6 +1,7 @@
 import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
+import { bip322 as coreBip322 } from '@bitgo/utxo-core';
 import { bip322 as wasmBip322, fixedScriptWallet, BIP32, type Triple } from '@bitgo/wasm-utxo';
 
 import {
@@ -398,6 +399,70 @@ describe('BIP322', function () {
       assert.throws(
         () => generateBIP322MessageListAndVerifyFromMessageBroadcastable(broadcastables, 'btc'),
         /did not have a successful validation/
+      );
+    });
+  });
+
+  describe('utxolib verification stack - sighash type mismatch', function () {
+    // This test reproduces the error:
+    // "Sighash type is not allowed. Retry the sign method passing the sighashTypes array
+    // of whitelisted types. Sighash type: 1"
+    //
+    // This occurs when:
+    // 1. A taproot musig2 PSBT input has sighashType set to SIGHASH_ALL (1)
+    // 2. But the partial signatures were created without an explicit sighash type suffix
+    //    (32 bytes, interpreted as SIGHASH_DEFAULT = 0)
+    // 3. During validation, getTaprootHashForSig checks if input.sighashType is in the
+    //    allowed list derived from signatures, and throws if not
+
+    it('should throw sighash type error when input.sighashType mismatches signature sighash type', function () {
+      const seed = 'p2trMusig2_sighash_test';
+      const { xprivs } = createTestWalletKeys(seed);
+
+      // Create utxolib RootWalletKeys for utxo-core PSBT construction
+      const utxolibRootWalletKeys = new utxolib.bitgo.RootWalletKeys(utxolib.testutil.getKeyTriple(seed));
+
+      // p2trMusig2 external chain code
+      const chain = utxolib.bitgo.getExternalChainCode('p2trMusig2');
+      const index = 0;
+      const messageText = 'BIP322 sighash mismatch test';
+
+      // Create BIP322 PSBT using utxo-core
+      const psbt = coreBip322.createBaseToSignPsbt(utxolibRootWalletKeys, utxolib.networks.bitcoin);
+      coreBip322.addBip322InputWithChainAndIndex(psbt, messageText, utxolibRootWalletKeys, { chain, index });
+
+      // Note: utxo-core sets sighashType: Transaction.SIGHASH_ALL (1) for BIP322 inputs
+      // Verify the sighashType is set to SIGHASH_ALL (1)
+      const SIGHASH_ALL = 1;
+      assert.strictEqual(psbt.data.inputs[0].sighashType, SIGHASH_ALL);
+
+      // Convert to wasm-utxo PSBT for cosigning
+      const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(psbt.toBuffer(), 'btc');
+
+      // Generate musig2 nonces and sign with wasm-utxo (uses SIGHASH_DEFAULT by default)
+      const userKey = BIP32.fromBase58(xprivs[0]);
+      const bitgoKey = BIP32.fromBase58(xprivs[2]);
+
+      wasmPsbt.generateMusig2Nonces(userKey);
+      wasmPsbt.generateMusig2Nonces(bitgoKey);
+      wasmPsbt.sign(0, userKey);
+      wasmPsbt.sign(0, bitgoKey);
+
+      // Convert back to utxolib PSBT for validation
+      const signedPsbt = utxolib.bitgo.createPsbtFromBuffer(
+        Buffer.from(wasmPsbt.serialize()),
+        utxolib.networks.bitcoin
+      );
+
+      // The PSBT now has:
+      // - input.sighashType = SIGHASH_ALL (1) from utxo-core BIP322 creation
+      // - musig2 partial signatures without explicit sighash suffix (interpreted as SIGHASH_DEFAULT = 0)
+      // This mismatch causes the validation error
+      assert.throws(
+        () => utxolib.bitgo.getSignatureValidationArrayPsbt(signedPsbt, utxolibRootWalletKeys),
+        (e: Error) =>
+          e.message ===
+          `Sighash type is not allowed. Retry the sign method passing the sighashTypes array of whitelisted types. Sighash type: ${SIGHASH_ALL}`
       );
     });
   });
