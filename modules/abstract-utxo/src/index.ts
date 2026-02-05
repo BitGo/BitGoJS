@@ -1,6 +1,7 @@
 export * from './abstractUtxoCoin';
 export * from './address';
 export * from './config';
+export * from './names';
 export * from './recovery';
 export * from './transaction/fixedScript/replayProtection';
 export * from './transaction/fixedScript/signLegacyTransaction';
