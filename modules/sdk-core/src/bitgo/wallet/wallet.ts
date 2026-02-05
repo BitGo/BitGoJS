@@ -40,7 +40,6 @@ import { TradingAccount } from '../trading';
 import { getTxRequest } from '../tss';
 import {
   EddsaUnsignedTransaction,
-  inferAddressType,
   IntentOptionsForMessage,
   IntentOptionsForTypedData,
   RequestTracer,
@@ -1388,11 +1387,6 @@ export class Wallet implements IWallet {
         .post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))
         .send(addressParams)
         .result()) as any;
-
-      // infer its address type
-      if (_.isObject(newAddress.coinSpecific)) {
-        newAddress.addressType = inferAddressType(newAddress);
-      }
 
       newAddress.keychains = keychains;
       newAddress.baseAddress = baseAddress ?? _.get(this._wallet, 'coinSpecific.baseAddress');
