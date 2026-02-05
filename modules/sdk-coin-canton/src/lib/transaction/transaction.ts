@@ -177,8 +177,12 @@ export class Transaction extends BaseTransaction {
   }
 
   fromRawTransaction(rawTx: string): void {
+    let decoded: TransactionBroadcastData | undefined;
     try {
-      const decoded: TransactionBroadcastData = JSON.parse(Buffer.from(rawTx, 'base64').toString('utf8'));
+      decoded = JSON.parse(Buffer.from(rawTx, 'base64').toString('utf8'));
+      if (!decoded) {
+        throw new Error('Decoded data is undefined');
+      }
       this.id = decoded.submissionId;
       this.transactionType = TransactionType[decoded.txType];
       if (this.type !== TransactionType.TransferAcknowledge) {
@@ -196,7 +200,10 @@ export class Transaction extends BaseTransaction {
         }
       }
     } catch (e) {
-      throw new InvalidTransactionError(`Unable to parse raw transaction data: ${e instanceof Error ? e.message : e}`);
+      const decodedStr = decoded ? JSON.stringify(decoded) : 'undefined';
+      throw new InvalidTransactionError(
+        `Unable to parse raw transaction data: ${e instanceof Error ? e.message : e}. Decoded data: ${decodedStr}`
+      );
     }
   }
 
