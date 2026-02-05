@@ -79,13 +79,29 @@ export type Tx =
   | evmSerial.ExportTx
   | evmSerial.ImportTx
   | pvmSerial.ExportTx
-  | pvmSerial.ImportTx;
+  | pvmSerial.ImportTx
+  | pvmSerial.AddPermissionlessDelegatorTx;
 
-export type SerializedTx = evmSerial.ExportTx | evmSerial.ImportTx | pvmSerial.ExportTx | pvmSerial.ImportTx;
+export type SerializedTx =
+  | evmSerial.ExportTx
+  | evmSerial.ImportTx
+  | pvmSerial.ExportTx
+  | pvmSerial.ImportTx
+  | pvmSerial.AddPermissionlessDelegatorTx;
 export type BaseTx = pvmSerial.BaseTx;
 export type Output = TransferableOutput;
 export interface FlrpVerifyTransactionOptions extends VerifyTransactionOptions {
   txParams: FlrpTransactionParams;
+}
+
+/**
+ * Staking options for AddPermissionlessDelegator transactions
+ */
+export interface FlrpStakingOptions {
+  nodeID: string;
+  amount: string | number;
+  durationSeconds: string | number;
+  rewardAddress: string;
 }
 
 export interface FlrpTransactionParams extends TransactionParams {
@@ -93,6 +109,7 @@ export interface FlrpTransactionParams extends TransactionParams {
   locktime?: number;
   unspents?: string[];
   sourceChain?: string;
+  stakingOptions?: FlrpStakingOptions;
 }
 
 export interface FlrpEntry extends Entry {

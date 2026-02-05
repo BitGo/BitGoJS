@@ -9,3 +9,4 @@ export { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 export { AtomicInCTransactionBuilder } from './atomicInCTransactionBuilder';
 export { ImportInCTxBuilder } from './ImportInCTxBuilder';
 export { ImportInPTxBuilder } from './ImportInPTxBuilder';
+export { PermissionlessDelegatorTxBuilder } from './permissionlessDelegatorTxBuilder';

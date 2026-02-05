@@ -559,4 +559,99 @@ describe('Flrp test cases', function () {
       recoveredPubKey.length.should.equal(33);
     });
   });
+
+  describe('Delegation Transaction Validation', () => {
+    describe('validateDelegationTx', () => {
+      const validStakingOptions = {
+        nodeID: 'NodeID-AK7sPBsZM9rQwse23aLhEEBPHZD5gkLrL',
+        amount: '50000000000000', // 50,000 FLR in nFLR
+        durationSeconds: 86400 * 14, // 14 days
+        rewardAddress: 'C-costwo1uyp5n76gjqltrddur7qlrsmt3kyh8fnrmwhqk7',
+      };
+
+      const validExplainedTx = {
+        outputAmount: '50000000000000',
+        type: TransactionType.AddPermissionlessDelegator,
+        inputs: [],
+        outputs: [],
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: '1000' },
+      };
+
+      it('should validate a correct delegation transaction', () => {
+        const txParams = { stakingOptions: validStakingOptions };
+        assert.doesNotThrow(() => basecoin.validateDelegationTx(txParams, validExplainedTx));
+      });
+
+      it('should throw when stakingOptions is missing', () => {
+        const txParams = {};
+        assert.throws(
+          () => basecoin.validateDelegationTx(txParams, validExplainedTx),
+          /Delegation transaction requires stakingOptions/
+        );
+      });
+
+      it('should throw when nodeID has invalid format', () => {
+        const txParams = {
+          stakingOptions: {
+            ...validStakingOptions,
+            nodeID: 'InvalidPrefix-123',
+          },
+        };
+        assert.throws(() => basecoin.validateDelegationTx(txParams, validExplainedTx), /Invalid nodeID format/);
+      });
+
+      it('should throw when amount is missing', () => {
+        const txParams = {
+          stakingOptions: {
+            ...validStakingOptions,
+            amount: undefined,
+          },
+        };
+        assert.throws(
+          () => basecoin.validateDelegationTx(txParams, validExplainedTx),
+          /Delegation transaction requires amount/
+        );
+      });
+
+      it('should throw when durationSeconds is missing', () => {
+        const txParams = {
+          stakingOptions: {
+            ...validStakingOptions,
+            durationSeconds: undefined,
+          },
+        };
+        assert.throws(
+          () => basecoin.validateDelegationTx(txParams, validExplainedTx),
+          /Delegation transaction requires durationSeconds/
+        );
+      });
+
+      it('should throw when rewardAddress is missing', () => {
+        const txParams = {
+          stakingOptions: {
+            ...validStakingOptions,
+            rewardAddress: undefined,
+          },
+        };
+        assert.throws(
+          () => basecoin.validateDelegationTx(txParams, validExplainedTx),
+          /Delegation transaction requires rewardAddress/
+        );
+      });
+
+      it('should throw when outputAmount does not match expected amount', () => {
+        const txParams = { stakingOptions: validStakingOptions };
+        const mismatchedExplainedTx = {
+          ...validExplainedTx,
+          outputAmount: '60000000000000', // Different from expected 50000000000000
+        };
+        assert.throws(
+          () => basecoin.validateDelegationTx(txParams, mismatchedExplainedTx),
+          /Delegation amount mismatch/
+        );
+      });
+    });
+  });
 });

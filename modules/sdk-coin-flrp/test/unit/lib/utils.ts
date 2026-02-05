@@ -25,6 +25,18 @@ describe('Utils', function () {
     utils = new Utils();
   });
 
+  describe('isValidNodeID', function () {
+    it('should return true for valid NodeID', function () {
+      assert.strictEqual(utils.isValidNodeID('NodeID-AK7sPBsZM9rQwse23aLhEEBPHZD5gkLrL'), true);
+    });
+
+    it('should return false for invalid NodeID formats', function () {
+      assert.strictEqual(utils.isValidNodeID(''), false);
+      assert.strictEqual(utils.isValidNodeID('AK7sPBsZM9rQwse23aLhEEBPHZD5gkLrL'), false); // missing prefix
+      assert.strictEqual(utils.isValidNodeID('NodeID-invalid!!!'), false); // invalid cb58
+    });
+  });
+
   describe('decodedToUtxo', function () {
     const assetId = 'fxMAKpBQQpFedrUhWMsDYfCUJxdUw4mneTczKBzNg3rc2JUub';
 
