@@ -302,7 +302,18 @@ export function app(cfg: Config): express.Application {
   checkPreconditions(cfg);
   debug('preconditions satisfied');
 
-  app.use(bodyParser.json({ limit: '20mb' }));
+  app.use(
+    bodyParser.json({
+      limit: '20mb',
+      verify: (req, res, buf) => {
+        // Store the raw body buffer on the request object.
+        // This preserves the exact bytes before JSON parsing,
+        // which may alter whitespace, key ordering, etc.
+        // Required for v4 HMAC authentication.
+        (req as express.Request).rawBodyBuffer = buf;
+      },
+    })
+  );
 
   // Be more robust about accepting URLs with double slashes
   app.use(function replaceUrlSlashes(req, res, next) {

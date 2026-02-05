@@ -121,28 +121,66 @@ function createResponseErrorString(res: superagent.Response): string {
 }
 
 /**
- * Serialize request data based on the request content type
- * Note: Not sure this is still needed or even useful. Consider removing.
+ * Serialize request data based on the request content type.
+ * If data is already a string, returns it as-is to preserve exact bytes for HMAC.
+ * If data is a Buffer, converts to UTF-8 string.
+ * If data is an object, serializes it based on Content-Type.
  * @param req
  */
 export function serializeRequestData(req: superagent.Request): string | undefined {
-  let data: string | Record<string, unknown> = (req as any)._data;
-  if (typeof data !== 'string') {
-    let contentType = req.get('Content-Type');
-    // Parse out just the content type from the header (ignore the charset)
-    if (contentType) {
-      contentType = contentType.split(';')[0];
-    }
-    let serialize = superagent.serialize[contentType];
-    if (!serialize && /[\/+]json\b/.test(contentType)) {
-      serialize = superagent.serialize['application/json'];
-    }
-    if (serialize) {
-      data = serialize(data);
-      (req as any)._data = data;
-      return data;
+  const data: string | Buffer | Record<string, unknown> | undefined = (req as any)._data;
+
+  if (typeof data === 'string') {
+    return data;
+  }
+
+  if (Buffer.isBuffer(data)) {
+    // Convert Buffer to UTF-8 string and mutate _data to ensure consistency.
+    // This is critical: if _data stays as a Buffer, superagent will serialize it
+    // as JSON ({"type":"Buffer","data":[...]}), which won't match the HMAC.
+    // By mutating to string, superagent sends the exact bytes we hash.
+    // This is safe for retries: calling again with a string will hit the early return above.
+    const stringData = data.toString('utf8');
+    (req as any)._data = stringData;
+    return stringData;
+  }
+
+  if (data === undefined || data === null) {
+    return undefined;
+  }
+
+  // Serialize object data based on Content-Type
+  let contentType = req.get('Content-Type');
+  // Parse out just the content type from the header (ignore the charset)
+  if (contentType) {
+    contentType = contentType.split(';')[0].trim();
+  }
+  let serialize: ((body: unknown) => string) | undefined;
+  const serializers = superagent.serialize as Record<string, unknown>;
+  if (contentType) {
+    if (Object.prototype.hasOwnProperty.call(serializers, contentType)) {
+      const candidate = serializers[contentType];
+      if (typeof candidate === 'function') {
+        serialize = candidate as (body: unknown) => string;
+      }
+    } else if (/[\/+]json\b/.test(contentType)) {
+      // Fall back to the built-in JSON serializer for JSON-like content types
+      if (Object.prototype.hasOwnProperty.call(serializers, 'application/json')) {
+        const jsonSerializer = serializers['application/json'];
+        if (typeof jsonSerializer === 'function') {
+          serialize = jsonSerializer as (body: unknown) => string;
+        }
+      }
     }
   }
+
+  if (serialize) {
+    const serialized = serialize(data);
+    (req as any)._data = serialized;
+    return serialized;
+  }
+
+  return undefined;
 }
 
 /**
