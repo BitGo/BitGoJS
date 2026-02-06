@@ -290,6 +290,15 @@ export const ofcCoins = [
     UnderlyingAsset.JOVAYETH,
     CoinKind.CRYPTO
   ),
+  ofc('b88981e3-e265-4c52-9184-29ee88f4c362', 'ofcmegaeth', 'MegaETH', 18, UnderlyingAsset.MEGAETH, CoinKind.CRYPTO),
+  tofc(
+    '613bb8b7-2df8-4908-ae27-55eaca9fd860',
+    'ofctmegaeth',
+    'MegaETH Testnet',
+    18,
+    UnderlyingAsset.MEGAETH,
+    CoinKind.CRYPTO
+  ),
   ofc('23b2e642-8ede-4c6e-a4e3-5355580d062f', 'ofcdogeos', 'DogeOS', 18, UnderlyingAsset.DOGEOS, CoinKind.CRYPTO),
   tofc(
     '87d11da0-1a78-4942-a5d6-e6f6568f0867',
