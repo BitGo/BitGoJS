@@ -98,6 +98,7 @@ export class Utils implements BaseUtils {
     let instrumentAdmin: string | undefined;
     let token: string | undefined;
     let preApprovalNode: RecordField[] = [];
+    let tokenPreApprovalNode: RecordField[] = [];
     let transferNode: RecordField[] = [];
     let transferAcceptRejectNode: RecordField[] = [];
     let tokenTransferAcceptRejectNode: RecordField[] = [];
@@ -123,6 +124,13 @@ export class Utils implements BaseUtils {
         txType === TransactionType.OneStepPreApproval
       ) {
         preApprovalNode = fields;
+      }
+      if (
+        template?.entityName === 'TransferPreapproval' &&
+        !tokenPreApprovalNode.length &&
+        txType === TransactionType.OneStepPreApproval
+      ) {
+        tokenPreApprovalNode = fields;
       }
       if (
         template?.entityName === 'Amulet' &&
@@ -182,6 +190,27 @@ export class Utils implements BaseUtils {
       const providerData = getField(preApprovalNode, 'provider');
       if (providerData?.oneofKind === 'party') sender = providerData.party ?? '';
       amount = '0';
+    } else if (tokenPreApprovalNode.length) {
+      const receiverData = getField(tokenPreApprovalNode, 'receiver');
+      if (receiverData?.oneofKind === 'party') receiver = receiverData.party ?? '';
+      const operatorData = getField(tokenPreApprovalNode, 'operator');
+      if (operatorData?.oneofKind === 'party') sender = operatorData.party ?? '';
+      amount = '0';
+      const instrumentAdminData = getField(tokenPreApprovalNode, 'instrumentAdmin');
+      if (instrumentAdminData?.oneofKind === 'party') instrumentAdmin = instrumentAdminData.party ?? '';
+      const allowancesData = getField(tokenPreApprovalNode, 'instrumentAllowances');
+      if (allowancesData?.oneofKind === 'list') {
+        // for the same instrument admin, if multiple tokens are supported then we can enable all of them,
+        // but we won't be doing that for now
+        const firstAllowance = allowancesData.list?.elements?.[0]?.sum;
+        if (firstAllowance?.oneofKind === 'record') {
+          const allowanceFields = firstAllowance.record?.fields ?? [];
+          const idData = getField(allowanceFields, 'id');
+          if (idData?.oneofKind === 'text') {
+            instrumentId = idData.text ?? '';
+          }
+        }
+      }
     } else if (transferNode.length) {
       const transferField = transferNode.find((f) => f.label === 'transfer');
       const transferSum = transferField?.value?.sum;

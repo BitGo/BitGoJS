@@ -7,6 +7,7 @@ import { OneStepPreApprovalBuilder, Transaction } from '../../../../src';
 import { CantonOneStepEnablementRequest } from '../../../../src/lib/iface';
 
 import {
+  CantonTokenPreApprovalPrepareResponse,
   InvalidOneStepPreApprovalPrepareResponse,
   OneStepEnablement,
   OneStepPreApprovalPrepareResponse,
@@ -24,6 +25,25 @@ describe('Wallet Pre-approval Enablement Builder', () => {
     should.exist(requestObj);
     assert.equal(requestObj.commandId, commandId);
     assert.equal(requestObj.receiverId, partyId);
+    assert.equal(requestObj.actAs.length, 1);
+    const actAs = requestObj.actAs[0];
+    assert.equal(actAs, partyId);
+  });
+
+  it('should get the one step enablement request object for token', function () {
+    const txBuilder = new OneStepPreApprovalBuilder(coins.get('tcanton'));
+    const oneStepEnablementTx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(oneStepEnablementTx);
+    txBuilder.setTransaction(CantonTokenPreApprovalPrepareResponse);
+    const commandId = '7d99789d-2f22-49e1-85cb-79d2ce5a69c1';
+    const partyId = 'ravi-2-step-party-new::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2';
+    const token = 'tcanton:testcoin1';
+    txBuilder.commandId(commandId).receiverPartyId(partyId).token(token);
+    const requestObj: CantonOneStepEnablementRequest = txBuilder.toRequestObject();
+    should.exist(requestObj);
+    assert.equal(requestObj.commandId, commandId);
+    assert.equal(requestObj.receiverId, partyId);
+    assert.equal(requestObj.token, token);
     assert.equal(requestObj.actAs.length, 1);
     const actAs = requestObj.actAs[0];
     assert.equal(actAs, partyId);

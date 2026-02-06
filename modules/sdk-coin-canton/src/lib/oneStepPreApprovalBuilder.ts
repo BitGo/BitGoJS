@@ -8,6 +8,7 @@ import utils from './utils';
 export class OneStepPreApprovalBuilder extends TransactionBuilder {
   private _commandId: string;
   private _receiverPartyId: string;
+  private _token: string;
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
@@ -74,6 +75,20 @@ export class OneStepPreApprovalBuilder extends TransactionBuilder {
   }
 
   /**
+   * Sets the optional token field if present, used for canton token preApproval setup
+   * @param name - the bitgo name of the token
+   * @returns The current builder for chaining
+   * @throws Error if name is invalid
+   */
+  token(name: string): this {
+    if (!name || !name.trim()) {
+      throw new Error('token name must be a non-empty string');
+    }
+    this._token = name.trim();
+    return this;
+  }
+
+  /**
    * Builds and returns the CantonOneStepEnablementRequest object from the builder's internal state.
    *
    * This method performs validation before constructing the object. If required fields are
@@ -91,6 +106,7 @@ export class OneStepPreApprovalBuilder extends TransactionBuilder {
       verboseHashing: false,
       actAs: [this._receiverPartyId],
       readAs: [],
+      token: this._token,
     };
   }
 
