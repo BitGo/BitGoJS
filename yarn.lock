@@ -996,10 +996,10 @@
     monocle-ts "^2.3.13"
     newtype-ts "^0.3.5"
 
-"@bitgo/wasm-utxo@^1.32.0":
-  version "1.32.0"
-  resolved "https://registry.npmjs.org/@bitgo/wasm-utxo/-/wasm-utxo-1.32.0.tgz#fc7e7803eb584ba8ad16aeb0a2805d6905d287d3"
-  integrity sha512-fqUGh8XOrzbPcTxK3lhS9UjqKxx3UaN6L+eS3vocBeWHbQvl6jm9xPPQ+TDkeiUuZdxaj0+7ca4Algt9vyiXHg==
+"@bitgo/wasm-utxo@^1.34.0":
+  version "1.34.0"
+  resolved "https://registry.npmjs.org/@bitgo/wasm-utxo/-/wasm-utxo-1.34.0.tgz#318bcc0a20acc3f35b9547548ea36506beaab237"
+  integrity sha512-aJuLQ8fNAWmI213sIwMt9WJfWvsyVAmmyUWnojUdmK2iHwf6tIo4B9gWHoPuWwNYoqc/UJVbK3dDKxnMIUk/bg==
 
 "@brandonblack/musig@^0.0.1-alpha.0":
   version "0.0.1-alpha.1"
@@ -3080,10 +3080,10 @@
   resolved "https://registry.npmjs.org/@isaacs/balanced-match/-/balanced-match-4.0.1.tgz"
   integrity sha512-yzMTt9lEb8Gv7zRioUilSglI0c0smZ9k5D65677DLWLtWJaXIS3CqcGyUFByYKlnUj6TkjLVs54fBl6+TiGQDQ==
 
-"@isaacs/brace-expansion@^5.0.0":
-  version "5.0.0"
-  resolved "https://registry.npmjs.org/@isaacs/brace-expansion/-/brace-expansion-5.0.0.tgz"
-  integrity sha512-ZT55BDLV0yv0RBm2czMiZ+SqCGO7AvmOM3G/w2xhVPH+te0aKgFjmBvGlL1dH+ql2tgGO3MVrbb3jCKyvpgnxA==
+"@isaacs/brace-expansion@5.0.1", "@isaacs/brace-expansion@^5.0.0":
+  version "5.0.1"
+  resolved "https://registry.npmjs.org/@isaacs/brace-expansion/-/brace-expansion-5.0.1.tgz#0ef5a92d91f2fff2a37646ce54da9e5f599f6eff"
+  integrity sha512-WMz71T1JS624nWj2n2fnYAuPovhv7EUhk69R6i9dsVyzxt5eM3bjwvgk9L+APE1TRscGysAVMANkB0jh0LQZrQ==
   dependencies:
     "@isaacs/balanced-match" "^4.0.1"
 
