@@ -47,6 +47,10 @@ export interface TransactionPrebuild {
   txHex: string;
 }
 
+export interface AdaTxInfo {
+  feeAddress?: string;
+}
+
 export interface ExplainTransactionOptions {
   txPrebuild: TransactionPrebuild;
 }
@@ -145,9 +149,10 @@ export class Ada extends BaseCoin {
         }
       } else if (verification?.consolidationToBaseAddress) {
         const baseAddress = wallet.coinSpecific()?.baseAddress || wallet.coinSpecific()?.rootAddress;
+        const feeAddress = (txPrebuild.txInfo as AdaTxInfo)?.feeAddress;
 
         for (const output of explainedTx.outputs) {
-          if (output.address !== baseAddress) {
+          if (output.address !== baseAddress && output.address !== feeAddress) {
             throw new Error('tx outputs does not match with expected address');
           }
         }
