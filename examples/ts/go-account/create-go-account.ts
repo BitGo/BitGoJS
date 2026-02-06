@@ -16,7 +16,7 @@
 
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins } from 'bitgo';
-require('dotenv').config({ path: '../../.env' });
+require('dotenv').config({ path: '../../../.env' });
 
 // Initialize BitGo SDK
 const bitgo = new BitGoAPI({
