@@ -10,10 +10,10 @@ This guide demonstrates how to create Go Accounts (trading wallets) using only t
 - Full control over the wallet creation process
 - Production-ready code with proper error handling
 
-## Two Approaches
+## Available Scripts
 
 ### 1. SDK Approach (Recommended)
-**File:** `examples/ts/create-go-account.ts`
+**File:** `examples/ts/go-account/create-go-account.ts`
 
 Uses the high-level `generateWallet()` method which handles keychain creation, encryption, and wallet setup automatically.
 
@@ -44,7 +44,7 @@ const { wallet, userKeychain, encryptedWalletPassphrase } = response;
 ```
 
 ### 2. Advanced SDK Approach
-**File:** `examples/ts/create-go-account-advanced.ts`
+**File:** `examples/ts/go-account/create-go-account-advanced.ts`
 
 Provides manual control over keychain creation and wallet setup using SDK methods.
 
@@ -54,7 +54,29 @@ Provides manual control over keychain creation and wallet setup using SDK method
 - Understanding the internals of Go Account creation
 - Testing and debugging
 
+### 3. Creating Addresses for Existing Wallets
+**File:** `examples/ts/go-account/create-go-account-address.ts`
+
+Demonstrates how to create additional addresses for an existing Go Account wallet.
+
+**Best for:**
+- Adding new addresses to existing wallets
+- Creating addresses for different tokens
+- Managing multiple receiving addresses
+
 **Example:**
+```typescript
+const wallet = await bitgo.coin('ofc').wallets().get({ id: walletId });
+
+const address = await wallet.createAddress({
+  label: 'My New Address',
+  onToken: 'ofctsol:usdc' // Required for OFC wallets
+});
+```
+
+## Detailed Examples
+
+### SDK Approach Example
 ```typescript
 // Step 1: Create keychain locally
 const keychain = bitgo.coin('ofc').keychains().create();
@@ -181,10 +203,16 @@ const usdtAddress = await wallet.createAddress({
 
 4. Run the script:
    ```bash
-   cd examples/ts
+   cd examples/ts/go-account
+
+   # Create a new Go Account wallet (recommended)
    npx tsx create-go-account.ts
-   # or for advanced approach:
+
+   # Create a new Go Account wallet (advanced approach)
    npx tsx create-go-account-advanced.ts
+
+   # Create an address for an existing wallet
+   npx tsx create-go-account-address.ts
    ```
 
 ## Supported Tokens
