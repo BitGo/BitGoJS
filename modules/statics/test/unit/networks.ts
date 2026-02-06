@@ -43,5 +43,23 @@ Object.entries(Networks).forEach(([category, networks]) => {
         Networks.test.zkSyncEra.walletImplementationAddress.should.equal('0x92db2759d1dca129a0d9d46877f361be819184c4');
       });
     });
+
+    describe('Sui Network', function () {
+      it('should have correct explorer URLs', function () {
+        Networks.main.sui.explorerUrl.should.equal('https://explorer.sui.io/txblock/?network=mainnet');
+        Networks.main.sui.accountExplorerUrl.should.equal('https://explorer.sui.io/address/?network=mainnet');
+        Networks.test.sui.explorerUrl.should.equal('https://explorer.sui.io/txblock/?network=testnet');
+        Networks.test.sui.accountExplorerUrl.should.equal('https://explorer.sui.io/address/?network=testnet');
+      });
+    });
+
+    describe('Ada Network', function () {
+      it('should have correct explorer URLs', function () {
+        Networks.main.ada.explorerUrl.should.equal('https://cardanoscan.io/transaction/');
+        Networks.main.ada.accountExplorerUrl.should.equal('https://cardanoscan.io/address/');
+        Networks.test.ada.explorerUrl.should.equal('https://preprod.cardanoscan.io/transaction/');
+        Networks.test.ada.accountExplorerUrl.should.equal('https://preprod.cardanoscan.io/address/');
+      });
+    });
   });
 });
