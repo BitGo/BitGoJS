@@ -2,7 +2,7 @@ import assert from 'assert';
 import { buildTransaction, type TransactionIntent, type BuildContext } from '@bitgo/wasm-dot';
 import { TransferBuilder } from '../../src/lib';
 import utils from '../../src/lib/utils';
-import { accounts, txVersion, specVersion, genesisHash, chainName, testnetMetadataRpc } from '../resources';
+import { accounts } from '../resources';
 import { buildTestConfig } from './transactionBuilder/base';
 
 /**
@@ -19,18 +19,16 @@ describe('WASM vs JS Transaction Builder Comparison', () => {
   const maxDuration = 64;
   const nonce = 200;
 
-  // Build context for wasm-dot
+  // Get material from the same source as JS builder to ensure matching metadata
+  const config = buildTestConfig();
+  const jsMaterial = utils.getMaterial(config);
+
+  // Build context for wasm-dot using the same metadata as JS builder
+  // Note: JS uses 'metadata', WASM uses 'metadataHex'
   const wasmContext = (nonceValue: number = nonce): BuildContext => ({
     sender: sender.address,
     nonce: nonceValue,
-    material: {
-      genesisHash,
-      chainName,
-      specName: 'polkadot',
-      specVersion,
-      txVersion,
-      metadataHex: testnetMetadataRpc,
-    },
+    material: { ...jsMaterial, metadataHex: jsMaterial.metadata },
     validity: { firstValid, maxDuration },
     referenceBlock,
   });
