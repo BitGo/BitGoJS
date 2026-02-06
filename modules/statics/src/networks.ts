@@ -219,6 +219,7 @@ class Ada extends Mainnet implements AdaNetwork {
   poolDeposit = 500000000;
   stakeKeyDeposit = 2000000;
   explorerUrl = 'https://cardanoscan.io/transaction/';
+  accountExplorerUrl = 'https://cardanoscan.io/address/';
   coinsPerUtxoWord = 34482;
   maxTransactionSize = 8000;
   maxValueSize = 4000;
@@ -229,6 +230,7 @@ class AdaTestnet extends Testnet implements AdaNetwork {
   family = CoinFamily.ADA;
   utxolibName = 'cardanoTestnet';
   explorerUrl = 'https://preprod.cardanoscan.io/transaction/';
+  accountExplorerUrl = 'https://preprod.cardanoscan.io/address/';
   coinsPerUtxoWord = 34482;
   maxTransactionSize = 8000;
   maxValueSize = 4000;
@@ -891,12 +893,14 @@ class Sui extends Mainnet implements AccountNetwork {
   name = 'Sui';
   family = CoinFamily.SUI;
   explorerUrl = 'https://explorer.sui.io/txblock/?network=mainnet';
+  accountExplorerUrl = 'https://explorer.sui.io/address/?network=mainnet';
 }
 
 class SuiTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Sui';
   family = CoinFamily.SUI;
   explorerUrl = 'https://explorer.sui.io/txblock/?network=testnet';
+  accountExplorerUrl = 'https://explorer.sui.io/address/?network=testnet';
 }
 
 class Atom extends Mainnet implements AccountNetwork {
