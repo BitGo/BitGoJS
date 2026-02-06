@@ -403,19 +403,17 @@ describe('BIP322', function () {
     });
   });
 
-  describe('utxolib verification stack - sighash type mismatch', function () {
-    // This test reproduces the error:
-    // "Sighash type is not allowed. Retry the sign method passing the sighashTypes array
-    // of whitelisted types. Sighash type: 1"
+  describe('utxolib verification stack - wasm-utxo respects input.sighashType', function () {
+    // This test verifies that wasm-utxo correctly respects the input.sighashType field
+    // when creating musig2 partial signatures.
     //
-    // This occurs when:
-    // 1. A taproot musig2 PSBT input has sighashType set to SIGHASH_ALL (1)
-    // 2. But the partial signatures were created without an explicit sighash type suffix
-    //    (32 bytes, interpreted as SIGHASH_DEFAULT = 0)
-    // 3. During validation, getTaprootHashForSig checks if input.sighashType is in the
-    //    allowed list derived from signatures, and throws if not
+    // Previously (before fix), wasm-utxo would always create signatures with SIGHASH_DEFAULT (0)
+    // regardless of the input.sighashType field, causing validation to fail.
+    //
+    // Now (after fix), wasm-utxo reads input.sighashType and creates signatures with the
+    // correct sighash type, allowing validation to succeed.
 
-    it('should throw sighash type error when input.sighashType mismatches signature sighash type', function () {
+    it('should validate signatures when wasm-utxo respects input.sighashType', function () {
       const seed = 'p2trMusig2_sighash_test';
       const { xprivs } = createTestWalletKeys(seed);
 
@@ -425,21 +423,21 @@ describe('BIP322', function () {
       // p2trMusig2 external chain code
       const chain = utxolib.bitgo.getExternalChainCode('p2trMusig2');
       const index = 0;
-      const messageText = 'BIP322 sighash mismatch test';
+      const messageText = 'BIP322 sighash test';
 
       // Create BIP322 PSBT using utxo-core
       const psbt = coreBip322.createBaseToSignPsbt(utxolibRootWalletKeys, utxolib.networks.bitcoin);
       coreBip322.addBip322InputWithChainAndIndex(psbt, messageText, utxolibRootWalletKeys, { chain, index });
 
       // Note: utxo-core sets sighashType: Transaction.SIGHASH_ALL (1) for BIP322 inputs
-      // Verify the sighashType is set to SIGHASH_ALL (1)
       const SIGHASH_ALL = 1;
       assert.strictEqual(psbt.data.inputs[0].sighashType, SIGHASH_ALL);
 
       // Convert to wasm-utxo PSBT for cosigning
       const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(psbt.toBuffer(), 'btc');
 
-      // Generate musig2 nonces and sign with wasm-utxo (uses SIGHASH_DEFAULT by default)
+      // Generate musig2 nonces and sign with wasm-utxo
+      // wasm-utxo now respects input.sighashType and creates signatures with SIGHASH_ALL
       const userKey = BIP32.fromBase58(xprivs[0]);
       const bitgoKey = BIP32.fromBase58(xprivs[2]);
 
@@ -454,16 +452,17 @@ describe('BIP322', function () {
         utxolib.networks.bitcoin
       );
 
-      // The PSBT now has:
-      // - input.sighashType = SIGHASH_ALL (1) from utxo-core BIP322 creation
-      // - musig2 partial signatures without explicit sighash suffix (interpreted as SIGHASH_DEFAULT = 0)
-      // This mismatch causes the validation error
-      assert.throws(
-        () => utxolib.bitgo.getSignatureValidationArrayPsbt(signedPsbt, utxolibRootWalletKeys),
-        (e: Error) =>
-          e.message ===
-          `Sighash type is not allowed. Retry the sign method passing the sighashTypes array of whitelisted types. Sighash type: ${SIGHASH_ALL}`
-      );
+      // Validation should succeed because wasm-utxo now creates signatures
+      // with the correct sighash type (SIGHASH_ALL) matching input.sighashType
+      const validationResult = utxolib.bitgo.getSignatureValidationArrayPsbt(signedPsbt, utxolibRootWalletKeys);
+
+      // Verify that both user (index 0) and bitgo (index 2) signatures are valid
+      assert.strictEqual(validationResult.length, 1);
+      const [inputIndex, sigValidation] = validationResult[0];
+      assert.strictEqual(inputIndex, 0);
+      assert.strictEqual(sigValidation[0], true, 'user signature should be valid');
+      assert.strictEqual(sigValidation[1], false, 'backup signature should not be present');
+      assert.strictEqual(sigValidation[2], true, 'bitgo signature should be valid');
     });
   });
 });
