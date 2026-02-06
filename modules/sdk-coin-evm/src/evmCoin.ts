@@ -13,7 +13,7 @@ import {
   VerifyEthTransactionOptions,
 } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
-import { recovery_HBAREVM_BlockchainExplorerQuery } from './lib/utils';
+import { recovery_HBAREVM_BlockchainExplorerQuery, validateHederaAccountId } from './lib/utils';
 import assert from 'assert';
 
 export class EvmCoin extends AbstractEthLikeNewCoins {
@@ -134,5 +134,14 @@ export class EvmCoin extends AbstractEthLikeNewCoins {
 
     // If validation passes, consider it verified
     return true;
+  }
+
+  /** @inheritDoc */
+  isValidAddress(address: string, isAlternateAddress?: boolean): boolean {
+    if (isAlternateAddress && this.getFamily() === CoinFamily.HBAREVM) {
+      const { valid } = validateHederaAccountId(address);
+      return valid;
+    }
+    return super.isValidAddress(address);
   }
 }

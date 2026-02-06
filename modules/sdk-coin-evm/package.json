@@ -22,6 +22,10 @@
     "@ethereumjs/common": "^2.6.5",
     "superagent": "^9.0.1"
   },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.73.4",
+    "@bitgo/sdk-test": "^9.1.25"
+  },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
   "repository": {
