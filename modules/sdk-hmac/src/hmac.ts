@@ -1,4 +1,4 @@
-import { type BinaryLike, createHmac, type KeyObject } from 'crypto';
+import { type BinaryLike, type KeyObject } from 'crypto';
 import * as urlLib from 'url';
 import * as sjcl from '@bitgo/sjcl';
 import {
@@ -9,6 +9,7 @@ import {
   VerifyResponseInfo,
   VerifyResponseOptions,
 } from './types';
+import { createHmacWithSha256 } from './util';
 
 /**
  * Calculate the HMAC for the given key and message
@@ -17,7 +18,7 @@ import {
  * @returns {*} - the result of the HMAC operation
  */
 export function calculateHMAC(key: string | BinaryLike | KeyObject, message: string | BinaryLike): string {
-  return createHmac('sha256', key).update(message).digest('hex');
+  return createHmacWithSha256(key, message);
 }
 
 /**
