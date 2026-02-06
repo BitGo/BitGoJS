@@ -21,14 +21,13 @@ describe('WASM vs JS Transaction Builder Comparison', () => {
 
   // Get material from the same source as JS builder to ensure matching metadata
   const config = buildTestConfig();
-  const jsMaterial = utils.getMaterial(config);
+  const material = utils.getMaterial(config);
 
-  // Build context for wasm-dot using the same metadata as JS builder
-  // Note: JS uses 'metadata', WASM uses 'metadataHex'
+  // Build context for wasm-dot using the same material as JS builder
   const wasmContext = (nonceValue: number = nonce): BuildContext => ({
     sender: sender.address,
     nonce: nonceValue,
-    material: { ...jsMaterial, metadataHex: jsMaterial.metadata },
+    material,
     validity: { firstValid, maxDuration },
     referenceBlock,
   });

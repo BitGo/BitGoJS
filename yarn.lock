@@ -1573,7 +1573,7 @@
     "@bitgo/sdk-core" "^36.30.0"
     "@bitgo/sdk-lib-mpc" "^10.9.0"
     "@bitgo/statics" "^58.24.0"
-    "@bitgo/wasm-dot" "file:../../../BitGoWasm-dot/packages/wasm-dot/bitgo-wasm-dot-0.0.1.tgz"
+    "@bitgo/wasm-dot" "file:bitgo-wasm-dot-0.0.1.tgz"
     "@polkadot/api" "14.1.1"
     "@polkadot/api-augment" "14.1.1"
     "@polkadot/keyring" "13.3.1"
@@ -2405,10 +2405,10 @@
     io-ts "npm:@bitgo-forks/io-ts@2.1.4"
     io-ts-types "^0.5.19"
 
-"@bitgo/wasm-dot@file:bitgo-wasm-dot-0.0.1.tgz":
+"@bitgo/wasm-dot@file:../../../BitGoWasm-dot/packages/wasm-dot/bitgo-wasm-dot-0.0.1.tgz":
   version "0.0.1"
-  resolved "file:modules/sdk-coin-dot/bitgo-wasm-dot-0.0.1.tgz"
-  integrity sha512-0hbjwgGdUKTaEqj3CqS0i7v4uPVLYQ6uq/wexXI06+Lo+F/cqvOtCuvaIZ1ir17GMW4hEFGabTkPp0QPg7ljGw==
+  resolved "file:../BitGoWasm-dot/packages/wasm-dot/bitgo-wasm-dot-0.0.1.tgz"
+  integrity sha512-TWX76MqUJk8L8nUhu7S4Bjg6ihs7PW9bJNroquFkbJN9iJZs26FeGlGnpuHRKyt1hPA6O59hZNZ2okwAvMqX6w==
 
 "@bitgo/wasm-utxo@^1.32.0":
   version "1.29.0"
