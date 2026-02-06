@@ -11,12 +11,19 @@ permissions:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 
+env:
+  SOCKET_SECURITY_MODE: monitor  # Options: monitor (non-blocking) or block (fails on vulnerabilities)
+
 jobs:
   publish:
     name: Publish Release
     runs-on: ubuntu-latest
 
     steps:
+      - uses: socketdev/action@v1
+        with:
+          mode: firewall-free
+
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
@@ -26,7 +33,7 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Install BitGoJS
-        run: yarn install --with-frozen-lockfile
+        run: sfw yarn install --with-frozen-lockfile
 
       - name: Audit Dependencies
         run: yarn run improved-yarn-audit --min-severity high
@@ -59,7 +66,7 @@ jobs:
           npx tsx ./scripts/prepare-release.ts ${{ env.preid }}
 
       - name: Rebuild packages
-        run: yarn
+        run: sfw yarn
 
       - name: Commit Local Changes
         run: git commit -am "Auto updated ${{ env.preid }} branch" --no-verify || echo "No changes to commit"
