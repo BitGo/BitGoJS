@@ -998,6 +998,70 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
       ),
     ];
   }
+
+  /**
+   * Checks if an ExecuteContractMessage's msg field contains a group proposal.
+   * @param {ExecuteContractMessage} message - The execute contract message to check
+   * @returns {boolean} true if the msg decodes to a group proposal
+   */
+  static isGroupProposal(message: ExecuteContractMessage): boolean {
+    if (!message.msg || message.msg.length === 0) {
+      return false;
+    }
+    const result = CosmosUtils.decodeMsg(message.msg);
+    return result.typeUrl === constants.groupProposalMsgTypeUrl;
+  }
+
+  /**
+   * Decodes a protobuf message and determines its type.
+   *
+   * @param data - Message data as base64 string or Uint8Array
+   * @returns Decoded message result with typeUrl if successfully identified
+   */
+  static decodeMsg(data: string | Uint8Array): { typeUrl?: string; error?: string } {
+    try {
+      const messageBytes = typeof data === 'string' ? Buffer.from(data, 'base64') : data;
+
+      try {
+        const proposal = MsgSubmitProposal.decode(messageBytes);
+        if (
+          proposal.groupPolicyAddress &&
+          typeof proposal.groupPolicyAddress === 'string' &&
+          proposal.groupPolicyAddress.length > 0 &&
+          Array.isArray(proposal.proposers) &&
+          proposal.proposers.length > 0
+        ) {
+          return { typeUrl: constants.groupProposalMsgTypeUrl };
+        }
+      } catch {
+        // Not a group proposal
+      }
+
+      try {
+        const executeMsg = MsgExecuteContract.decode(messageBytes);
+        if (
+          executeMsg.sender &&
+          typeof executeMsg.sender === 'string' &&
+          executeMsg.sender.length > 0 &&
+          executeMsg.contract &&
+          typeof executeMsg.contract === 'string' &&
+          executeMsg.contract.length > 0 &&
+          executeMsg.msg instanceof Uint8Array &&
+          executeMsg.msg.length > 0
+        ) {
+          return { typeUrl: constants.executeContractMsgTypeUrl };
+        }
+      } catch {
+        // Not an execute contract message
+      }
+
+      return { error: 'Unable to decode message as any known type' };
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error.message : 'Failed to decode message',
+      };
+    }
+  }
 }
 
 const utils = new CosmosUtils();

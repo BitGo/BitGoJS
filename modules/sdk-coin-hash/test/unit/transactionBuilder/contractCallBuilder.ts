@@ -4,7 +4,7 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { fromBase64, toHex } from '@cosmjs/encoding';
 import should from 'should';
 import { Hash, Thash } from '../../../src';
-import { TEST_CONTRACT_CALL } from '../../resources/hash';
+import { TEST_CONTRACT_CALL, testnetAddress } from '../../resources/hash';
 
 describe('Hash ContractCall Builder', () => {
   let bitgo: TestBitGoAPI;
@@ -24,17 +24,12 @@ describe('Hash ContractCall Builder', () => {
     txBuilder.feeGranter(TEST_CONTRACT_CALL.feeGranter);
     txBuilder.publicKey(toHex(fromBase64(TEST_CONTRACT_CALL.pubKey)));
 
-    // Wrap the inner message in a group proposal
-    // const wrappedMessage = wrapInGroupProposal(
-    //   TEST_CONTRACT_CALL.preEncodedMessageValue,
-    //   TEST_CONTRACT_CALL.proposer,
-    //   testnetAddress.groupPolicyAddress
-    // );
-
     txBuilder.messages([
       {
-        typeUrl: '/cosmos.group.v1.MsgSubmitProposal',
-        value: TEST_CONTRACT_CALL.encodedProposal,
+        sender: TEST_CONTRACT_CALL.proposer,
+        contract: testnetAddress.groupPolicyAddress,
+        msg: fromBase64(TEST_CONTRACT_CALL.encodedProposal),
+        funds: [],
       },
     ]);
     return txBuilder;

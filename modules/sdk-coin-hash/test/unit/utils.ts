@@ -1,8 +1,9 @@
 import should from 'should';
+import { CosmosUtils } from '@bitgo/abstract-cosmos';
 
 import utils from '../../src/lib/utils';
 import * as testData from '../resources/hash';
-import { blockHash, txIds } from '../resources/hash';
+import { blockHash, txIds, TEST_CONTRACT_CALL } from '../resources/hash';
 
 describe('utils', () => {
   it('should validate block hash correctly', () => {
@@ -43,5 +44,76 @@ describe('utils', () => {
     should(() => utils.validateAmountData([testData.coinAmounts.amount5])).throwError(
       'transactionBuilder: validateAmount: Invalid denom: ' + testData.coinAmounts.amount5.denom
     );
+  });
+
+  describe('decodeMsg', () => {
+    it('should detect valid base64-encoded group proposal', () => {
+      const result = CosmosUtils.decodeMsg(TEST_CONTRACT_CALL.encodedProposal);
+
+      should.exist(result.typeUrl);
+      if (result.typeUrl) {
+        result.typeUrl.should.equal('/cosmos.group.v1.MsgSubmitProposal');
+      }
+      should.not.exist(result.error);
+    });
+
+    it('should reject invalid base64 string', () => {
+      const result = CosmosUtils.decodeMsg('not-valid-base64!!!');
+
+      should.not.exist(result.typeUrl);
+      should.exist(result.error);
+    });
+
+    it('should reject valid base64 but invalid protobuf', () => {
+      const result = CosmosUtils.decodeMsg(Buffer.from('random data').toString('base64'));
+
+      should.not.exist(result.typeUrl);
+      should.exist(result.error);
+    });
+
+    it('should reject hex-encoded contract call data', () => {
+      const result = CosmosUtils.decodeMsg('7b22696e6372656d656e74223a7b7d7d');
+
+      should.not.exist(result.typeUrl);
+    });
+
+    it('should accept Uint8Array input', () => {
+      const bytes = Buffer.from(TEST_CONTRACT_CALL.encodedProposal, 'base64');
+      const result = CosmosUtils.decodeMsg(bytes);
+
+      should.exist(result.typeUrl);
+      if (result.typeUrl) {
+        result.typeUrl.should.equal('/cosmos.group.v1.MsgSubmitProposal');
+      }
+    });
+  });
+
+  describe('isGroupProposal', () => {
+    it('should return true when msg contains a group proposal', () => {
+      const message = {
+        sender: 'tp1tazefwk2e372fy2jq08w6lztg9yrrvс490r2gp4vt8d0fchlrfqqyahg0u',
+        contract: 'tp12nyn83ynewtmpkw32wq6dg83wx8nqpat65gcld',
+        msg: Buffer.from(TEST_CONTRACT_CALL.encodedProposal, 'base64'),
+      };
+      should.equal(CosmosUtils.isGroupProposal(message), true);
+    });
+
+    it('should return false when msg contains regular contract call data', () => {
+      const message = {
+        sender: 'tp1tazefwk2e372fy2jq08w6lztg9yrrvс490r2gp4vt8d0fchlrfqqyahg0u',
+        contract: 'tp12nyn83ynewtmpkw32wq6dg83wx8nqpat65gcld',
+        msg: Buffer.from(JSON.stringify({ increment: {} })),
+      };
+      should.equal(CosmosUtils.isGroupProposal(message), false);
+    });
+
+    it('should return false when msg is empty', () => {
+      const message = {
+        sender: 'tp1tazefwk2e372fy2jq08w6lztg9yrrvс490r2gp4vt8d0fchlrfqqyahg0u',
+        contract: 'tp12nyn83ynewtmpkw32wq6dg83wx8nqpat65gcld',
+        msg: new Uint8Array(0),
+      };
+      should.equal(CosmosUtils.isGroupProposal(message), false);
+    });
   });
 });
