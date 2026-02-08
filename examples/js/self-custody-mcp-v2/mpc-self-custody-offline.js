@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable no-sync */
 /**
  * MPCv2 Self-Custody Wallet: OFFLINE Script (No Network)
  *
@@ -105,7 +107,6 @@
  */
 require('dotenv').config();
 const fs = require('fs');
-const path = require('path');
 const { WORKSPACE_DIR, FILES, workspacePath } = require('./mpc-workspace-schema');
 
 // Configure OpenPGP to accept all curves (required for secp256k1 GPG keys)
@@ -163,9 +164,12 @@ function sessionDataFromJson(o) {
 
 function formatBitgoBroadcastMessage(broadcastMessage) {
   // Ensure from is always a number (BITGO = 2)
-  const from = typeof broadcastMessage.from === 'number'
-    ? broadcastMessage.from
-    : (typeof broadcastMessage.from === 'string' ? parseInt(broadcastMessage.from, 10) : MPCv2PartiesEnum.BITGO);
+  const from =
+    typeof broadcastMessage.from === 'number'
+      ? broadcastMessage.from
+      : typeof broadcastMessage.from === 'string'
+      ? parseInt(broadcastMessage.from, 10)
+      : MPCv2PartiesEnum.BITGO;
 
   // Handle different possible formats from API response
   // Case 1: Already formatted with payload: { from: 2, payload: { message, signature } }
@@ -189,7 +193,11 @@ function formatBitgoBroadcastMessage(broadcastMessage) {
       },
     };
   }
-  throw new Error(`Invalid bitgoMsg1 format. Expected { from, payload: { message, signature } } or { from, message, signature }, got: ${JSON.stringify(broadcastMessage)}`);
+  throw new Error(
+    `Invalid bitgoMsg1 format. Expected { from, payload: { message, signature } } or { from, message, signature }, got: ${JSON.stringify(
+      broadcastMessage
+    )}`
+  );
 }
 
 function formatP2PMessage(p2pMessage, commitment) {
@@ -293,7 +301,9 @@ async function runStep2() {
     throw new Error(`Invalid formatted bitgoMsg1 structure: ${JSON.stringify(formattedBitgoMsg1)}`);
   }
   if (formattedBitgoMsg1.from !== MPCv2PartiesEnum.BITGO) {
-    throw new Error(`Invalid from field in bitgoMsg1: expected ${MPCv2PartiesEnum.BITGO}, got ${formattedBitgoMsg1.from}`);
+    throw new Error(
+      `Invalid from field in bitgoMsg1: expected ${MPCv2PartiesEnum.BITGO}, got ${formattedBitgoMsg1.from}`
+    );
   }
 
   const bitgoRound1BroadcastMessages = await DklsComms.decryptAndVerifyIncomingMessages(
@@ -524,9 +534,7 @@ async function runStep3() {
     p2pMessages: [bitgoToBackupRound3Msg, userToBackupMsg3].filter(Boolean),
   });
 
-  const userRound4BroadcastMsg = userRound4Messages.broadcastMessages.find(
-    (m) => m.from === MPCv2PartiesEnum.USER
-  );
+  const userRound4BroadcastMsg = userRound4Messages.broadcastMessages.find((m) => m.from === MPCv2PartiesEnum.USER);
   const backupRound4BroadcastMsg = backupRound4Messages.broadcastMessages.find(
     (m) => m.from === MPCv2PartiesEnum.BACKUP
   );
@@ -538,10 +546,7 @@ async function runStep3() {
   // Encrypt and authenticate messages for BitGo
   const round3Messages = await DklsComms.encryptAndAuthOutgoingMessages(
     {
-      p2pMessages: [
-        DklsTypes.serializeP2PMessage(userToBitgoMsg3),
-        DklsTypes.serializeP2PMessage(backupToBitgoMsg3),
-      ],
+      p2pMessages: [DklsTypes.serializeP2PMessage(userToBitgoMsg3), DklsTypes.serializeP2PMessage(backupToBitgoMsg3)],
       broadcastMessages: [],
     },
     [bitgoGpgPubKey],
@@ -566,12 +571,8 @@ async function runStep3() {
   const backupMsg3 = round3Messages.p2pMessages.find(
     (m) => m.from === MPCv2PartiesEnum.BACKUP && m.to === MPCv2PartiesEnum.BITGO
   )?.payload;
-  const userMsg4 = round4Messages.broadcastMessages.find(
-    (m) => m.from === MPCv2PartiesEnum.USER
-  )?.payload;
-  const backupMsg4 = round4Messages.broadcastMessages.find(
-    (m) => m.from === MPCv2PartiesEnum.BACKUP
-  )?.payload;
+  const userMsg4 = round4Messages.broadcastMessages.find((m) => m.from === MPCv2PartiesEnum.USER)?.payload;
+  const backupMsg4 = round4Messages.broadcastMessages.find((m) => m.from === MPCv2PartiesEnum.BACKUP)?.payload;
 
   const round3Payload = {
     sessionId: round2State.sessionId,
@@ -626,8 +627,6 @@ async function runStep4() {
   );
 
   const bitgoGpgPubKey = { partyId: MPCv2PartiesEnum.BITGO, gpgKey: bitgoPublicGpgKey };
-  const userGpgPrvKey = { partyId: MPCv2PartiesEnum.USER, gpgKey: round3State.userGpgPrivateKey };
-  const backupGpgPrvKey = { partyId: MPCv2PartiesEnum.BACKUP, gpgKey: round3State.backupGpgPrivateKey };
 
   // Round 4: Process BitGo's round 4 broadcast message to finalize key shares
   // Load the round 4 broadcast messages generated in step 3

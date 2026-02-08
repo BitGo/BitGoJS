@@ -16,7 +16,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 
-const COINS = ['eth', 'btc', 'sol', 'bsc', 'polygon', 'sonic'];
+const COINS = ['eth', 'btc', 'sol', 'bsc', 'polygon', 'sonic', 'usdt'];
 const OUTPUT_FILE = path.join(__dirname, 'multisig-type-versions.json');
 
 async function main() {

@@ -427,3 +427,42 @@ const newWallet = await bitgo.post(baseCoin.url('/wallet/add')).send({
 - **keychain-payloads.json** contains only passphrase-encrypted private material (`encryptedPrv`); the online script never sees raw private keys or p-shares.
 - 2-of-3 threshold: transactions require 2 of 3 key shares to sign
   - Back up the offline state and keychain payloads securely; you need them (and the passphrase) to sign transactions later.
+
+
+## Simplest form of MPC creation steps:
+
+Round 0:
+- Obtain BitGo public GPG key
+
+Round 1:
+- Initialize GPG key pair
+- Create broadcast message and encrypt with BitGo public GPG key
+- Send to BitGo, receive:
+  + BitGo round 1 broadcast message
+  + BitGo round 2 P2P messages (processed in round 3)
+
+Round 2:
+- Decrypt and verify BitGo round 1 broadcast messages
+- From the 2 broadcast messages of the other parties, create round 2 P2P messages:
+  + From yourself to the other party (store this for round 3)
+  + From yourself to BitGo (this will be submitted to BitGo)
+- Submit to BitGo, receive:
+  + BitGo round 2 commitment
+  + BitGo round 3 P2P messages (BitGo is one step ahead – at this point, user and backup haven't verified round 2 P2P messages from BitGo or each other yet)
+
+Round 3:
+- From encrypted BitGo round 2 P2P messages + BitGo round 2 commitment => BitGo's round 2 P2P messages to the parties
+- From the round 2 P2P messages (BitGo and the other party) => generate your own round 3 P2P messages (these must be submitted to the other party)
+- From encrypted round 3 P2P messages from BitGo + round 3 P2P messages from the other party => generate your own round 4 broadcast messages
+- Submit to BitGo, receive:
+  + BitGo round 4 broadcast message
+
+Round 4:
+- From BitGo round 4 broadcast message, verify and obtain your private key share + common keychain
+- Encrypt private key share with passphrase
+- Send to BitGo to create keychains, receive:
+  + Keychain ID for each party
+- Format params to create wallet, submit to BitGo, receive:
+  + Wallet ID
+  + Receive address
+  + Keychain IDs for all parties
