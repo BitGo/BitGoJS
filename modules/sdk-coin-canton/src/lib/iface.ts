@@ -132,10 +132,15 @@ export interface TransactionBroadcastData {
 
 export interface CantonOneStepEnablementRequest extends CantonPrepareCommandRequest {
   receiverId: string;
+  token?: string;
 }
 
 export interface CantonTransferAcceptRejectRequest extends CantonPrepareCommandRequest {
   contractId: string;
+}
+
+export interface CantonTransferOfferWithdrawnRequest extends CantonTransferAcceptRejectRequest {
+  tokenName?: string;
 }
 
 export interface TransferAcknowledge {
