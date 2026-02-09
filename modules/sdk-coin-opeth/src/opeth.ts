@@ -32,16 +32,6 @@ export class Opeth extends AbstractEthLikeNewCoins {
     return 'ecdsa';
   }
 
-  /** @inheritDoc */
-  supportsMessageSigning(): boolean {
-    return true;
-  }
-
-  /** @inheritDoc */
-  supportsSigningTypedData(): boolean {
-    return true;
-  }
-
   /**
    * Make a query to Optimism Etherscan for information such as balance, token balance, solidity calls
    * @param {Object} query key-value pairs of parameters to append after /api

@@ -72,13 +72,6 @@ export class Tempo extends AbstractEthLikeNewCoins {
   }
 
   /**
-   * Check if message signing is supported
-   */
-  supportsMessageSigning(): boolean {
-    return true;
-  }
-
-  /**
    * Evaluates whether an address string is valid for Tempo
    * Supports addresses with optional memoId query parameter (e.g., 0x...?memoId=123)
    * @param address - The address to validate
@@ -171,13 +164,6 @@ export class Tempo extends AbstractEthLikeNewCoins {
     if (!/^(0|[1-9]\d*)$/.test(memoId)) {
       return false;
     }
-    return true;
-  }
-
-  /**
-   * Check if typed data signing is supported (EIP-712)
-   */
-  supportsSigningTypedData(): boolean {
     return true;
   }
 
