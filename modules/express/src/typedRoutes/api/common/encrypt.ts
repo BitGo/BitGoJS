@@ -11,6 +11,9 @@ export const EncryptRequestBody = {
 /**
  * Encrypt
  *
+ * Encrypt plaintext using the Express server's configured encryption scheme.
+ * Returns ciphertext suitable for storing or transmitting securely.
+ *
  * @operationId express.encrypt
  * @tag express
  */
