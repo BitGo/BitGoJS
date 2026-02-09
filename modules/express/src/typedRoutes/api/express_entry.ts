@@ -41,7 +41,6 @@ import { PostCalculateMinerFeeInfo } from './common/calculateMinerFeeInfo';
 // import { PostCoinSign } from './v2/coinSign';
 // import { PostSendCoins } from './v2/sendCoins';
 // import { PostGenerateShareTSS } from './v2/generateShareTSS';
-// import { PostCoinSign } from './v2/coinSign';
 // import { PostOfcExtSignPayload } from './v2/ofcExtSignPayload';
 // import { PostLightningWalletPayment } from './v2/lightningPayment';
 // import { PostLightningWalletWithdraw } from './v2/lightningWithdraw';
