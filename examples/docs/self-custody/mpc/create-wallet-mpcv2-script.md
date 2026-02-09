@@ -458,7 +458,7 @@ Round 3:
   + BitGo round 4 broadcast message
 
 Round 4:
-- From BitGo round 4 broadcast message, verify and obtain your private key share + common keychain
+- From BitGo & other party round 4 broadcast message, verify and obtain your private key share + common keychain
 - Encrypt private key share with passphrase
 - Send to BitGo to create keychains, receive:
   + Keychain ID for each party
