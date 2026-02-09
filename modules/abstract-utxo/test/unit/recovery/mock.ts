@@ -6,7 +6,7 @@ import { address as wasmAddress, AddressFormat } from '@bitgo/wasm-utxo';
 import { AbstractUtxoCoin, RecoveryProvider } from '../../../src';
 import { Bch } from '../../../src/impl/bch';
 import { Bsv } from '../../../src/impl/bsv';
-import type { Unspent, UnspentWithPrevTx } from '../../../src/unspent';
+import type { Unspent, UnspentWithPrevTx, WalletUnspent } from '../../../src/unspent';
 export class MockRecoveryProvider implements RecoveryProvider {
   public unspents: Unspent<bigint>[];
   private prevTxCache: Record<string, string> = {};
@@ -73,7 +73,7 @@ export class MockCrossChainRecoveryProvider<TNumber extends number | bigint> imp
         id: `${this.tx?.getId()}:${vout}`,
         address,
         value: Number(o.value),
-        valueString: this.coin.amountType === 'bigint' ? o.value.toString() : undefined,
+        ...(this.coin.amountType === 'bigint' ? { valueString: o.value.toString() } : {}),
       };
     });
   }
@@ -113,5 +113,87 @@ export class MockCrossChainRecoveryProvider<TNumber extends number | bigint> imp
 
   getTransactionInputs(txid: string): Promise<Unspent<TNumber>[]> {
     throw new Error(`not implemented`);
+  }
+}
+
+/**
+ * Cross-chain recovery mock provider using wasm-utxo only (no utxolib dependency).
+ * Uses direct unspent data instead of parsing a utxolib transaction.
+ */
+export class WasmCrossChainRecoveryProvider<TNumber extends number | bigint> implements RecoveryProvider {
+  private addressVersion: 'cashaddr' | 'base58';
+  private addressFormat: AddressFormat;
+
+  constructor(
+    public coin: AbstractUtxoCoin,
+    /** The wallet unspent representing the output on the wrong chain */
+    public depositUnspent: WalletUnspent<TNumber>,
+    /** The addresses that were inputs to the original deposit transaction */
+    public inputAddresses: string[]
+  ) {
+    this.addressFormat = this.coin instanceof Bch && !(this.coin instanceof Bsv) ? 'cashaddr' : 'default';
+    this.addressVersion = this.coin instanceof Bch && !(this.coin instanceof Bsv) ? 'cashaddr' : 'base58';
+  }
+
+  async getUnspentsForAddresses(addresses: string[]): Promise<Unspent[]> {
+    // Format the deposit address for BCH-like coins
+    let formattedAddress = this.depositUnspent.address;
+    if (this.addressFormat === 'cashaddr') {
+      formattedAddress = wasmAddress.fromOutputScriptWithCoin(
+        wasmAddress.toOutputScriptWithCoin(this.depositUnspent.address, this.coin.name),
+        this.coin.name,
+        this.addressFormat
+      );
+      if (formattedAddress.includes(':')) {
+        [, formattedAddress] = formattedAddress.split(':');
+      }
+    }
+
+    return [
+      {
+        id: this.depositUnspent.id,
+        address: formattedAddress,
+        value: Number(this.depositUnspent.value),
+        ...(this.coin.amountType === 'bigint' ? { valueString: this.depositUnspent.value.toString() } : {}),
+      },
+    ];
+  }
+
+  async getTransactionIO(txid: string): Promise<TransactionIO> {
+    // Format deposit address for output
+    let outputAddress = this.depositUnspent.address;
+    if (this.addressFormat === 'cashaddr') {
+      outputAddress = wasmAddress.fromOutputScriptWithCoin(
+        wasmAddress.toOutputScriptWithCoin(this.depositUnspent.address, this.coin.name),
+        this.coin.name,
+        this.addressFormat
+      );
+      if (outputAddress.includes(':')) {
+        [, outputAddress] = outputAddress.split(':');
+      }
+    }
+
+    return {
+      inputs: this.inputAddresses.map((addr) => {
+        let address = this.coin.canonicalAddress(addr, this.addressVersion);
+        if (address.includes(':')) {
+          [, address] = address.split(':');
+        }
+        return { address };
+      }),
+      outputs: [{ address: outputAddress }],
+    };
+  }
+
+  async getAddressInfo(address: string): Promise<AddressInfo> {
+    throw new Error('not implemented');
+  }
+
+  async getTransactionHex(txid: string): Promise<string> {
+    throw new Error('not implemented');
+  }
+
+  getTransactionInputs(txid: string): Promise<Unspent<TNumber>[]> {
+    throw new Error('not implemented');
   }
 }
