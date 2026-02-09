@@ -43,13 +43,14 @@ describe('UTXO Custom Signer Function', function () {
   });
 
   function nocks(txPrebuild: { txHex: string }) {
+    const pubs = rootWalletKey.triple.map((k) => k.neutered().toBase58());
     nock(bgUrl)
       .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
       .reply(200, { ...txPrebuild, txInfo: {} });
     nock(bgUrl).get(`/api/v2/${wallet.coin()}/public/block/latest`).reply(200, { height: 1000 });
-    nock(bgUrl).persist().get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[0]}`).reply(200, { pub: 'pub' });
-    nock(bgUrl).persist().get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[1]}`).reply(200, { pub: 'pub' });
-    nock(bgUrl).persist().get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[2]}`).reply(200, { pub: 'pub' });
+    nock(bgUrl).persist().get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[0]}`).reply(200, { pub: pubs[0] });
+    nock(bgUrl).persist().get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[1]}`).reply(200, { pub: pubs[1] });
+    nock(bgUrl).persist().get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[2]}`).reply(200, { pub: pubs[2] });
     return nock(bgUrl).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`).reply(200, { ok: true });
   }
 

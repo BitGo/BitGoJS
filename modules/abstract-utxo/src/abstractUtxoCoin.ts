@@ -57,7 +57,7 @@ import {
   v1Sweep,
   V1SweepParams,
 } from './recovery';
-import { isReplayProtectionUnspent } from './transaction/fixedScript/replayProtection';
+import { getReplayProtectionPubkeys, isReplayProtectionUnspent } from './transaction/fixedScript/replayProtection';
 import { supportedCrossChainRecoveries } from './config';
 import {
   assertValidTransactionRecipient,
@@ -81,6 +81,7 @@ import {
   getMainnetCoinName,
   getNetworkFromCoinName,
   isTestnetCoin,
+  isUtxoCoinNameMainnet,
   UtxoCoinName,
   UtxoCoinNameMainnet,
 } from './names';
@@ -142,6 +143,28 @@ type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
 };
 
 const { isChainCode, scriptTypeForChain, outputScripts } = bitgo;
+
+/**
+ * Check if a decoded transaction has at least one taproot key path spend (MuSig2) input.
+ * Works for both utxolib UtxoPsbt and wasm-utxo BitGoPsbt.
+ */
+function hasKeyPathSpendInput<TNumber extends number | bigint>(
+  tx: DecodedTransaction<TNumber>,
+  pubs: string[] | undefined,
+  coinName: UtxoCoinName
+): boolean {
+  if (tx instanceof bitgo.UtxoPsbt) {
+    return bitgo.isTransactionWithKeyPathSpendInput(tx);
+  }
+  if (tx instanceof fixedScriptWallet.BitGoPsbt) {
+    assert(pubs && isTriple(pubs), 'pub triple is required to check for key path spend inputs in wasm-utxo PSBT');
+    const rootWalletKeys = fixedScriptWallet.RootWalletKeys.fromXpubs(pubs);
+    const replayProtection = { publicKeys: getReplayProtectionPubkeys(coinName) };
+    const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
+    return parsed.inputs.some((input) => input.scriptType === 'p2trMusig2KeyPath');
+  }
+  return false;
+}
 
 /**
  * Convert ValidationError to TxIntentMismatchRecipientError with structured data
@@ -379,12 +402,15 @@ export abstract class AbstractUtxoCoin
 
   public altScriptHash?: number;
   public supportAltScriptDestination?: boolean;
-  public defaultSdkBackend: SdkBackend = 'utxolib';
   public readonly amountType: 'number' | 'bigint';
 
   protected constructor(bitgo: BitGoBase, amountType: 'number' | 'bigint' = 'number') {
     super(bitgo);
     this.amountType = amountType;
+  }
+
+  get defaultSdkBackend(): SdkBackend {
+    return isUtxoCoinNameMainnet(this.name) ? 'utxolib' : 'wasm-utxo';
   }
 
   /**
@@ -814,7 +840,7 @@ export abstract class AbstractUtxoCoin
 
     const tx = this.decodeTransaction(txHex);
 
-    const isTxWithKeyPathSpendInput = tx instanceof bitgo.UtxoPsbt && bitgo.isTransactionWithKeyPathSpendInput(tx);
+    const isTxWithKeyPathSpendInput = hasKeyPathSpendInput(tx, signTransactionParams.pubs, this.name);
 
     if (!isTxWithKeyPathSpendInput) {
       return await customSigningFunction({ ...signTransactionParams, coin: this });
