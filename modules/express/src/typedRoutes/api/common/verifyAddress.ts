@@ -9,6 +9,9 @@ export const VerifyAddressBody = {
 /**
  * Verify Address
  *
+ * Basic address format validation. Returns whether the provided address is valid.
+ * This endpoint does not require authentication.
+ *
  * @operationId express.verifyaddress
  * @tag express
  */

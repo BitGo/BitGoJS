@@ -4,11 +4,11 @@ import * as express from 'express';
 
 import { GetPing } from './common/ping';
 // import { GetPingExpress } from './common/pingExpress';
-// import { PostLogin } from './common/login';
-// import { PostDecrypt } from './common/decrypt';
-// import { PostEncrypt } from './common/encrypt';
-// import { PostVerifyAddress } from './common/verifyAddress';
-// import { PostCalculateMinerFeeInfo } from './common/calculateMinerFeeInfo';
+import { PostLogin } from './common/login';
+import { PostDecrypt } from './common/decrypt';
+import { PostEncrypt } from './common/encrypt';
+import { PostVerifyAddress } from './common/verifyAddress';
+import { PostCalculateMinerFeeInfo } from './common/calculateMinerFeeInfo';
 // import { PostAcceptShare } from './v1/acceptShare';
 // import { PostSimpleCreate } from './v1/simpleCreate';
 // import { PutPendingApproval } from './v1/pendingApproval';
@@ -71,29 +71,29 @@ export const ExpressPingApiSpec = apiSpec({
 //   },
 // });
 
-// export const ExpressLoginApiSpec = apiSpec({
-//   'express.login': {
-//     post: PostLogin,
-//   },
-// });
+export const ExpressLoginApiSpec = apiSpec({
+  'express.login': {
+    post: PostLogin,
+  },
+});
 
-// export const ExpressDecryptApiSpec = apiSpec({
-//   'express.decrypt': {
-//     post: PostDecrypt,
-//   },
-// });
+export const ExpressDecryptApiSpec = apiSpec({
+  'express.decrypt': {
+    post: PostDecrypt,
+  },
+});
 
-// export const ExpressEncryptApiSpec = apiSpec({
-//   'express.encrypt': {
-//     post: PostEncrypt,
-//   },
-// });
+export const ExpressEncryptApiSpec = apiSpec({
+  'express.encrypt': {
+    post: PostEncrypt,
+  },
+});
 
-// export const ExpressVerifyAddressApiSpec = apiSpec({
-//   'express.verifyaddress': {
-//     post: PostVerifyAddress,
-//   },
-// });
+export const ExpressVerifyAddressApiSpec = apiSpec({
+  'express.verifyaddress': {
+    post: PostVerifyAddress,
+  },
+});
 
 // export const ExpressVerifyCoinAddressApiSpec = apiSpec({
 //   'express.verifycoinaddress': {
@@ -101,11 +101,11 @@ export const ExpressPingApiSpec = apiSpec({
 //   },
 // });
 
-// export const ExpressCalculateMinerFeeInfoApiSpec = apiSpec({
-//   'express.calculateminerfeeinfo': {
-//     post: PostCalculateMinerFeeInfo,
-//   },
-// });
+export const ExpressCalculateMinerFeeInfoApiSpec = apiSpec({
+  'express.calculateminerfeeinfo': {
+    post: PostCalculateMinerFeeInfo,
+  },
+});
 
 // export const ExpressV1WalletAcceptShareApiSpec = apiSpec({
 //   'express.v1.wallet.acceptShare': {
@@ -323,16 +323,14 @@ export const ExpressPingApiSpec = apiSpec({
 //   },
 // });
 
-export type ExpressApi = typeof ExpressPingApiSpec;
-//   typeof ExpressV2WalletSendManyApiSpec &
-//   typeof ExpressExternalSigningApiSpec;
+export type ExpressApi = typeof ExpressPingApiSpec &
+  typeof ExpressLoginApiSpec &
+  typeof ExpressDecryptApiSpec &
+  typeof ExpressEncryptApiSpec &
+  typeof ExpressVerifyAddressApiSpec &
+  typeof ExpressCalculateMinerFeeInfoApiSpec;
 //   typeof ExpressPingExpressApiSpec &
-//   typeof ExpressLoginApiSpec &
-//   typeof ExpressDecryptApiSpec &
-//   typeof ExpressEncryptApiSpec &
-//   typeof ExpressVerifyAddressApiSpec &
 //   typeof ExpressVerifyCoinAddressApiSpec &
-//   typeof ExpressCalculateMinerFeeInfoApiSpec &
 //   typeof ExpressV1WalletAcceptShareApiSpec &
 //   typeof ExpressV1WalletSimpleCreateApiSpec &
 //   typeof ExpressPendingApprovalsApiSpec &
@@ -365,15 +363,15 @@ export type ExpressApi = typeof ExpressPingApiSpec;
 
 export const ExpressApi: ExpressApi = {
   ...ExpressPingApiSpec,
+  ...ExpressLoginApiSpec,
+  ...ExpressDecryptApiSpec,
+  ...ExpressEncryptApiSpec,
+  ...ExpressVerifyAddressApiSpec,
+  ...ExpressCalculateMinerFeeInfoApiSpec,
   // ...ExpressV2WalletSendManyApiSpec,
   // ...ExpressExternalSigningApiSpec,
   // ...ExpressPingExpressApiSpec,
-  // ...ExpressLoginApiSpec,
-  // ...ExpressDecryptApiSpec,
-  // ...ExpressEncryptApiSpec,
-  // ...ExpressVerifyAddressApiSpec,
   // ...ExpressVerifyCoinAddressApiSpec,
-  // ...ExpressCalculateMinerFeeInfoApiSpec,
   // ...ExpressV1WalletAcceptShareApiSpec,
   // ...ExpressV1WalletSimpleCreateApiSpec,
   // ...ExpressPendingApprovalsApiSpec,
