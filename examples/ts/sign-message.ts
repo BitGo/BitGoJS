@@ -5,7 +5,6 @@
  */
 import { BitGo } from 'bitgo';
 import { MessageStandardType } from '@bitgo/sdk-core';
-import { MIDNIGHT_TNC_HASH } from "@bitgo/account-lib";
 
 const bitgo = new BitGo({ env: 'test' });
 
@@ -19,13 +18,35 @@ async function signMessage(): Promise<void> {
   await bitgo.authenticateWithAccessToken({ accessToken });
   const walletInstance = await basecoin.wallets().get({ id: walletId });
 
-  const adaTestnetDestinationAddress = 'addr_test1vz7xs7ceu4xx9n5xn57lfe86vrwddqpp77vjwq5ptlkh49cqy3wur';
-  const testnetMessageRaw = `STAR 12345678 to ${adaTestnetDestinationAddress} ${MIDNIGHT_TNC_HASH}`;
+  // EIP712 requires a structured typed data format (JSON stringified)
+  const eip712TypedData = {
+    types: {
+      EIP712Domain: [
+        { name: 'name', type: 'string' },
+        { name: 'version', type: 'string' },
+        { name: 'chainId', type: 'uint256' },
+        { name: 'verifyingContract', type: 'address' },
+      ],
+      Message: [{ name: 'contents', type: 'string' }],
+    },
+    primaryType: 'Message',
+    domain: {
+      name: 'BitGo Wallet',
+      version: '1',
+      chainId: 17000, // Holesky testnet chain ID
+      verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC',
+    },
+    message: {
+      contents: 'Hello, this is a test message!',
+    },
+  };
+
+  const testnetMessageRaw = JSON.stringify(eip712TypedData);
 
   const messageTxn = await walletInstance.signMessage({
     message: {
       messageRaw: testnetMessageRaw,
-      messageStandardType: MessageStandardType.EIP191,
+      messageStandardType: MessageStandardType.EIP712,
     },
     walletPassphrase,
   });
