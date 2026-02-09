@@ -2194,7 +2194,11 @@ export class Wallet implements IWallet {
 
     if (_.isFunction(params.customSigningFunction)) {
       if (typeof this.baseCoin.signWithCustomSigningFunction === 'function') {
-        return this.baseCoin.signWithCustomSigningFunction(params.customSigningFunction, signTransactionParams);
+        assert(pubs, 'pubs are required for custom signing');
+        return this.baseCoin.signWithCustomSigningFunction(params.customSigningFunction, {
+          ...signTransactionParams,
+          pubs,
+        });
       }
       const keys = await this.baseCoin.keychains().getKeysForSigning({ wallet: this });
       const signTransactionParamsWithSeed = {
