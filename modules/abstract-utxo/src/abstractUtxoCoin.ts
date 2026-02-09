@@ -801,13 +801,13 @@ export abstract class AbstractUtxoCoin
   /**
    * Sign a transaction with a custom signing function. Example use case is express external signer
    * @param customSigningFunction custom signing function that returns a single signed transaction
-   * @param signTransactionParams parameters for custom signing function. Includes txPrebuild and pubs (for legacy tx only).
+   * @param signTransactionParams parameters for custom signing function. Includes txPrebuild and pubs
    *
    * @returns signed transaction as hex string
    */
   async signWithCustomSigningFunction<TNumber extends number | bigint>(
     customSigningFunction: UtxoCustomSigningFunction<TNumber>,
-    signTransactionParams: { txPrebuild: TransactionPrebuild<TNumber>; pubs?: string[] }
+    signTransactionParams: { txPrebuild: TransactionPrebuild<TNumber>; pubs: string[] }
   ): Promise<SignedTransaction> {
     const txHex = signTransactionParams.txPrebuild.txHex;
     assert(txHex, 'missing txHex parameter');
