@@ -531,6 +531,16 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     return true;
   }
 
+  /** @inheritDoc */
+  supportsMessageSigning(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
+  supportsSigningTypedData(): boolean {
+    return true;
+  }
+
   /**
    * Default expire time for a contract call (1 week)
    * @returns {number} Time in seconds

@@ -46,16 +46,6 @@ export class Mon extends AbstractEthLikeNewCoins {
     return 'ecdsa';
   }
 
-  /** @inheritDoc */
-  supportsMessageSigning(): boolean {
-    return true;
-  }
-
-  /** @inheritDoc */
-  supportsSigningTypedData(): boolean {
-    return true;
-  }
-
   protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
     return this.buildUnsignedSweepTxnMPCv2(params);
   }
