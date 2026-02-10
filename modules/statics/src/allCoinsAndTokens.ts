@@ -2459,6 +2459,15 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['jovayeth:jft'],
     Networks.main.jovayeth
   ),
+  erc20Token(
+    'bd702760-f70b-4b4c-a28c-3b45758042fc',
+    'jovayeth:usdce',
+    'USDC.e',
+    6,
+    '0x39c010df583c9de49088947190669883b41a02ab',
+    UnderlyingAsset['jovayeth:usdce'],
+    Networks.main.jovayeth
+  ),
 
   // Jovayeth testnet tokens
   erc20Token(
