@@ -1926,7 +1926,7 @@ export enum UnderlyingAsset {
   'sol:usdt' = 'sol:usdt',
   'sol:usdc' = 'sol:usdc',
   'sol:agri' = 'sol:agri',
-  'sol:usdc.a' = 'sol:usdc.a',
+  'sol:usdca' = 'sol:usdca',
   USCC = 'uscc',
   USDC = 'usdc',
   'USDC-POS-WORMHOLE' = 'usdc-pos-wormhole',

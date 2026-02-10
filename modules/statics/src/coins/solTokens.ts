@@ -3636,12 +3636,12 @@ export const solTokens = [
   ),
   solToken(
     'e13fd5e0-0828-4f06-884b-de1bc5cf42c5',
-    'sol:usdc.a',
+    'sol:usdca',
     'USDC.a Bridged ART20',
     6,
     'AByhZPfGEU9a68KCAvT76Yev85oeur4SoL2VLZuB3HQj', // https://solscan.io/token/AByhZPfGEU9a68KCAvT76Yev85oeur4SoL2VLZuB3HQj
     'AByhZPfGEU9a68KCAvT76Yev85oeur4SoL2VLZuB3HQj',
-    UnderlyingAsset['sol:usdc.a'],
+    UnderlyingAsset['sol:usdca'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
 ];
