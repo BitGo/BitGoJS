@@ -16,4 +16,6 @@ export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { SingletonRegistry } from './singletonRegistry';
 export { NativeTransferBuilder } from './nativeTransferBuilder';
 export { RemoveProxyBuilder } from './proxyBuilder';
+export { explainTransactionFromHex } from './wasmParser';
+export type { DotWasmExplanation } from './wasmParser';
 export { Interface, Utils };
