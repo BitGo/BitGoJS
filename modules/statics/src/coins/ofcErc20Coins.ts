@@ -5237,6 +5237,20 @@ export const tOfcErc20Coins = [
     true,
     'jovayeth'
   ),
+  ofcerc20(
+    '56d130a9-b5ce-46b7-8ba3-648372dd3e9c',
+    'ofcjovayeth:usdce',
+    'USDC.e',
+    6,
+    underlyingAssetForSymbol('jovayeth:usdce'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'jovayeth'
+  ),
 
   // Jovayeth Testnet tokens
   tofcerc20(
