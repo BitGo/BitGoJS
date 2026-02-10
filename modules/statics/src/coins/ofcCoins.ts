@@ -40,6 +40,7 @@ import {
   tofcTonToken,
   ofcSuiToken,
   tofcSuiToken,
+  tofcTempoToken,
 } from '../ofc';
 import { UnderlyingAsset, CoinKind, CoinFeature } from '../base';
 
@@ -3992,4 +3993,33 @@ export const ofcCoins = [
   ),
   // New SUI OFC token
   ofcSuiToken('1e01eb3d-2573-4662-aa5e-4c390e4a9b38', 'ofcsui:dmc', 'DeLorean', 9, UnderlyingAsset['sui:dmc']),
+  // Tempo testnet OFC tokens
+  tofcTempoToken(
+    '7912e76e-5a5c-4f1b-86e9-1fc2a51f5a98',
+    'ofcttempo:pathusd',
+    'Testnet pathUSD',
+    18,
+    UnderlyingAsset['ttempo:pathusd']
+  ),
+  tofcTempoToken(
+    '349f887a-e764-4640-9ba1-2e29e02d5d65',
+    'ofcttempo:alphausd',
+    'Testnet AlphaUSD',
+    18,
+    UnderlyingAsset['ttempo:alphausd']
+  ),
+  tofcTempoToken(
+    'dc2b6c3d-b7a4-4940-bee3-32defbeff3bf',
+    'ofcttempo:betausd',
+    'Testnet BetaUSD',
+    18,
+    UnderlyingAsset['ttempo:betausd']
+  ),
+  tofcTempoToken(
+    '490a65b6-e01f-4fae-9aa5-7528d1848075',
+    'ofcttempo:thetausd',
+    'Testnet ThetaUSD',
+    18,
+    UnderlyingAsset['ttempo:thetausd']
+  ),
 ];

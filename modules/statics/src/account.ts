@@ -8,6 +8,7 @@ import {
   CANTON_TOKEN_FEATURES,
   CELO_TOKEN_FEATURES,
   COSMOS_SIDECHAIN_FEATURES,
+  TEMPO_FEATURES,
 } from './coinFeatures';
 
 /**
@@ -185,6 +186,10 @@ export interface AdaTokenConstructorOptions extends AccountConstructorOptions {
 
 export interface CantonTokenConstructorOptions extends AccountConstructorOptions {
   baseUrl: string;
+  contractAddress: string;
+}
+
+export interface Tip20TokenConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
 }
 
@@ -794,6 +799,20 @@ export class CantonToken extends AccountCoinToken {
       ...options,
     });
     this.baseUrl = options.baseUrl;
+    this.contractAddress = options.contractAddress;
+  }
+}
+
+/**
+ * The Tempo network supports TIP20 tokens
+ * TIP20 tokens are ERC20-compatible tokens on the Tempo network
+ */
+export class Tip20Token extends AccountCoinToken {
+  public contractAddress: string;
+  constructor(options: Tip20TokenConstructorOptions) {
+    super({
+      ...options,
+    });
     this.contractAddress = options.contractAddress;
   }
 }
@@ -4282,6 +4301,96 @@ export function tcantonToken(
     fullName,
     decimalPlaces,
     baseUrl,
+    contractAddress,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    primaryKeyCurve
+  );
+}
+
+/**
+ * Factory function for TIP20 token instances on Tempo network.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress the contract address of the token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features Features of this coin. Defaults to the TEMPO_FEATURES
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to the mainnet Tempo network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function tip20Token(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = TEMPO_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.tempo,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new Tip20Token({
+      id,
+      name,
+      fullName,
+      decimalPlaces,
+      network,
+      contractAddress,
+      asset,
+      features,
+      prefix,
+      suffix,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.ETH,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet TIP20 token instances on Tempo network.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress the contract address of the token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features Features of this coin. Defaults to the TEMPO_FEATURES
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to the testnet Tempo network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function ttip20Token(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = TEMPO_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.tempo,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return tip20Token(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
     contractAddress,
     asset,
     features,

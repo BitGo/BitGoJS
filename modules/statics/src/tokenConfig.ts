@@ -38,6 +38,7 @@ import {
   JettonToken,
   AccountCoin,
   CantonToken,
+  Tip20Token,
 } from './account';
 import { CoinFamily, CoinKind, BaseCoin, CoinFeature } from './base';
 import { coins } from './coins';
@@ -1109,16 +1110,31 @@ const getFormattedJettonTokens = (customCoinMap = coins) =>
   }, []);
 
 /**
- * Get all formatted TIP20 tokens (skeleton)
- * TODO: Implement when Tip20Token coin class is added to @bitgo/statics
+ * Get token config for TIP-20 tokens on the Tempo network.
+ * TIP-20 is the native token standard for Tempo, similar to ERC-20 on Ethereum.
+ * If other chains need to support this token standard, the base coin can be determined
+ * dynamically
+ */
+function getTip20TokenConfig(coin: Tip20Token): Tip20TokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'tempo' : 'ttempo',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+
+/**
+ * Get all formatted TIP20 tokens
  * @param customCoinMap - Coin map to search
  */
 const getFormattedTip20Tokens = (customCoinMap = coins): Tip20TokenConfig[] =>
   customCoinMap.reduce((acc: Tip20TokenConfig[], coin) => {
-    // TODO: Uncomment when Tip20Token class is added to @bitgo/statics
-    // if (coin instanceof Tip20Token) {
-    //   acc.push(getTip20TokenConfig(coin));
-    // }
+    if (coin instanceof Tip20Token) {
+      acc.push(getTip20TokenConfig(coin));
+    }
     return acc;
   }, []);
 
@@ -1505,10 +1521,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getEthLikeERC721TokenConfig(coin);
   } else if (coin instanceof CantonToken) {
     return getCantonTokenConfig(coin);
+  } else if (coin instanceof Tip20Token) {
+    return getTip20TokenConfig(coin);
   }
-  // TODO: Add Tip20Token instance check when class is added to statics
-  // else if (coin instanceof Tip20Token) {
-  //   return getTip20TokenConfig(coin);
-  // }
   return undefined;
 }
