@@ -51,6 +51,7 @@ COPY --from=builder /tmp/bitgo/modules/statics /var/modules/statics/
 COPY --from=builder /tmp/bitgo/modules/utxo-lib /var/modules/utxo-lib/
 COPY --from=builder /tmp/bitgo/modules/blake2b /var/modules/blake2b/
 COPY --from=builder /tmp/bitgo/modules/blake2b-wasm /var/modules/blake2b-wasm/
+COPY --from=builder /tmp/bitgo/modules/logger /var/modules/logger/
 COPY --from=builder /tmp/bitgo/modules/bitgo /var/modules/bitgo/
 COPY --from=builder /tmp/bitgo/modules/abstract-utxo /var/modules/abstract-utxo/
 COPY --from=builder /tmp/bitgo/modules/blockapis /var/modules/blockapis/
@@ -150,6 +151,7 @@ cd /var/modules/statics && yarn link && \
 cd /var/modules/utxo-lib && yarn link && \
 cd /var/modules/blake2b && yarn link && \
 cd /var/modules/blake2b-wasm && yarn link && \
+cd /var/modules/logger && yarn link && \
 cd /var/modules/bitgo && yarn link && \
 cd /var/modules/abstract-utxo && yarn link && \
 cd /var/modules/blockapis && yarn link && \
@@ -252,6 +254,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/utxo-lib && \
     yarn link @bitgo/blake2b && \
     yarn link @bitgo/blake2b-wasm && \
+    yarn link @bitgo/logger && \
     yarn link bitgo && \
     yarn link @bitgo/abstract-utxo && \
     yarn link @bitgo/blockapis && \

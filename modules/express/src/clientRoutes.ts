@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import { logger } from '@bitgo/logger';
 import {
   CommitmentShareRecord,
   CreateNetworkConnectionParams,
@@ -491,7 +492,7 @@ export async function handleV2GenerateShareTSS(
       throw new Error(`MPC Algorithm ${coin.getMPCAlgorithm()} is not supported.`);
     }
   } catch (error) {
-    console.error('error while signing wallet transaction ', error);
+    logger.error('error while signing wallet transaction', error);
     throw error;
   }
 }
@@ -504,7 +505,7 @@ export async function handleV2SignTSSWalletTx(req: ExpressApiRouteRequest<'expre
   try {
     return await wallet.ensureCleanSigSharesAndSignTransaction(createTSSSendParams(req, wallet));
   } catch (error) {
-    console.error('error while signing wallet transaction ', error);
+    logger.error('error while signing wallet transaction', error);
     throw error;
   }
 }
@@ -536,7 +537,7 @@ export async function handleV2Sign(req: ExpressApiRouteRequest<'express.v2.coin.
   try {
     return await coin.signTransaction({ ...req.body, prv: privKey });
   } catch (error) {
-    console.log('error while signing wallet transaction ', error);
+    logger.error('error while signing wallet transaction', error);
     throw error;
   }
 }
@@ -586,7 +587,7 @@ export async function handleV2OFCSignPayloadInExtSigningMode(
       signature,
     };
   } catch (error) {
-    console.log('Error while signing message.', error);
+    logger.error('Error while signing message', error);
     throw error;
   }
 }
@@ -730,7 +731,7 @@ async function handleV2SignTxWallet(req: ExpressApiRouteRequest<'express.v2.wall
   try {
     return await wallet.signTransaction(createSendParams(req));
   } catch (error) {
-    console.log('error while signing wallet transaction ', error);
+    logger.error('error while signing wallet transaction', error);
     throw error;
   }
 }
@@ -745,7 +746,7 @@ async function handleV2SignTx(req: ExpressApiRouteRequest<'express.v2.coin.signt
   try {
     return await coin.signTransaction(req.decoded);
   } catch (error) {
-    console.log('error while signing the transaction ', error);
+    logger.error('error while signing the transaction', error);
     throw error;
   }
 }

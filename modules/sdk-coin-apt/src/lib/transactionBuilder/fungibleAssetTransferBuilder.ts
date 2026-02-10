@@ -5,6 +5,7 @@ import { TransactionType } from '@bitgo/sdk-core';
 import utils from '../utils';
 import { TransactionPayload, TransactionPayloadEntryFunction } from '@aptos-labs/ts-sdk';
 import { FUNGIBLE_ASSET_TYPE_ARGUMENT } from '../constants';
+import { logger } from '@bitgo/logger';
 
 export class FungibleAssetTransferBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -45,7 +46,7 @@ export class FungibleAssetTransferBuilder extends TransactionBuilder {
         utils.isValidAddress(fungibleTokenAddress) && utils.fetchAndValidateRecipients(addressArg, amountArg).isValid
       );
     } catch (e) {
-      console.error('invalid transaction payload', e);
+      logger.error('invalid transaction payload', e);
       return false;
     }
   }
