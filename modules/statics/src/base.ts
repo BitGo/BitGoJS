@@ -3049,6 +3049,7 @@ export enum UnderlyingAsset {
 
   // Jovayeth mainnet tokens
   'jovayeth:jft' = 'jovayeth:jft',
+  'jovayeth:usdce' = 'jovayeth:usdce',
 
   // Jovayeth testnet tokens
   'tjovayeth:tcmn' = 'tjovayeth:tcmn',
