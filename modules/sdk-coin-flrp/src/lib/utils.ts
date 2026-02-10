@@ -25,6 +25,10 @@ import { ADDRESS_SEPARATOR, DecodedUtxoObj, Output, SECP256K1_Transfer_Output, T
 import bs58 from 'bs58';
 import { bech32 } from 'bech32';
 
+// NodeID format constants
+const NODE_ID_PREFIX = 'NodeID-';
+const NODE_ID_DECODED_LENGTH = 24;
+
 export class Utils implements BaseUtils {
   isValidTransactionId(txId: string): boolean {
     throw new Error('Method not implemented.');
@@ -125,6 +129,26 @@ export class Utils implements BaseUtils {
    */
   allHexChars(str: string): boolean {
     return /^(0x){0,1}([0-9a-f])+$/i.test(str);
+  }
+
+  /**
+   * Validates a NodeID format
+   * @param {string} nodeID - NodeID to validate (e.g., "NodeID-xxx")
+   * @returns {boolean} - true if valid, false otherwise
+   */
+  isValidNodeID(nodeID: string): boolean {
+    if (!nodeID) {
+      return false;
+    }
+    if (!nodeID.startsWith(NODE_ID_PREFIX)) {
+      return false;
+    }
+    try {
+      const decoded = bs58.decode(nodeID.slice(NODE_ID_PREFIX.length));
+      return decoded.length === NODE_ID_DECODED_LENGTH;
+    } catch {
+      return false;
+    }
   }
 
   /**

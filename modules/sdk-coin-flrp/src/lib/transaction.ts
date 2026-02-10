@@ -376,7 +376,11 @@ export class Transaction extends BaseTransaction {
   }
 
   setTransactionType(transactionType: TransactionType): void {
-    if (![TransactionType.AddPermissionlessValidator].includes(transactionType)) {
+    if (
+      ![TransactionType.AddPermissionlessValidator, TransactionType.AddPermissionlessDelegator].includes(
+        transactionType
+      )
+    ) {
       throw new Error(`Transaction type ${transactionType} is not supported`);
     }
     this._type = transactionType;
@@ -451,6 +455,14 @@ export class Transaction extends BaseTransaction {
           },
         ];
 
+      case TransactionType.AddPermissionlessDelegator:
+        return [
+          {
+            address: (tx as pvmSerial.AddPermissionlessDelegatorTx).subnetValidator.validator.nodeId.toString(),
+            value: (tx as pvmSerial.AddPermissionlessDelegatorTx).subnetValidator.validator.weight.toJSON(),
+          },
+        ];
+
       default:
         return [];
     }
@@ -471,6 +483,9 @@ export class Transaction extends BaseTransaction {
 
       case TransactionType.AddPermissionlessValidator:
         return (tx as pvmSerial.AddPermissionlessValidatorTx).baseTx.outputs.map(utils.mapOutputToEntry(this._network));
+
+      case TransactionType.AddPermissionlessDelegator:
+        return (tx as pvmSerial.AddPermissionlessDelegatorTx).baseTx.outputs.map(utils.mapOutputToEntry(this._network));
 
       default:
         return [];
@@ -519,16 +534,31 @@ export class Transaction extends BaseTransaction {
           }));
         }
 
-      case TransactionType.AddPermissionlessValidator:
-      default:
-        const baseTx = tx as pvmSerial.AddPermissionlessValidatorTx;
-        if (baseTx.baseTx?.inputs) {
-          return baseTx.baseTx.inputs.map((input) => ({
+      case TransactionType.AddPermissionlessValidator: {
+        const validatorTx = tx as pvmSerial.AddPermissionlessValidatorTx;
+        if (validatorTx.baseTx?.inputs) {
+          return validatorTx.baseTx.inputs.map((input) => ({
             id: utils.cb58Encode(Buffer.from(input.utxoID.txID.toBytes())) + ':' + input.utxoID.outputIdx.value(),
             address: this.fromAddresses.sort().join(ADDRESS_SEPARATOR),
             value: input.amount().toString(),
           }));
         }
+        return [];
+      }
+
+      case TransactionType.AddPermissionlessDelegator: {
+        const delegatorTx = tx as pvmSerial.AddPermissionlessDelegatorTx;
+        if (delegatorTx.baseTx?.inputs) {
+          return delegatorTx.baseTx.inputs.map((input) => ({
+            id: utils.cb58Encode(Buffer.from(input.utxoID.txID.toBytes())) + ':' + input.utxoID.outputIdx.value(),
+            address: this.fromAddresses.sort().join(ADDRESS_SEPARATOR),
+            value: input.amount().toString(),
+          }));
+        }
+        return [];
+      }
+
+      default:
         return [];
     }
   }
@@ -541,7 +571,9 @@ export class Transaction extends BaseTransaction {
     const changeAmount = txJson.changeOutputs.reduce((p, n) => p + BigInt(n.value), BigInt(0)).toString();
 
     let rewardAddresses;
-    if ([TransactionType.AddPermissionlessValidator].includes(txJson.type)) {
+    if (
+      [TransactionType.AddPermissionlessValidator, TransactionType.AddPermissionlessDelegator].includes(txJson.type)
+    ) {
       rewardAddresses = this.rewardAddresses;
       displayOrder.splice(6, 0, 'rewardAddresses');
     }
