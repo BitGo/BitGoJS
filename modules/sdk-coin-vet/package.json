@@ -42,6 +42,7 @@
   "dependencies": {
     "@bitgo/abstract-eth": "^24.20.0",
     "@bitgo/blake2b": "^3.2.4",
+    "@bitgo/logger": "^1.0.0",
     "@bitgo/sdk-core": "^36.30.0",
     "@bitgo/sdk-lib-mpc": "^10.9.0",
     "@bitgo/secp256k1": "^1.10.0",

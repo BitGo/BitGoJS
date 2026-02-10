@@ -8,6 +8,7 @@ import {
   Recipient,
   TransactionType,
 } from '@bitgo/sdk-core';
+import { logger } from '@bitgo/logger';
 import { Transaction } from '../transaction/transaction';
 import utils from '../utils';
 import BigNumber from 'bignumber.js';
@@ -172,7 +173,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       const senderAddress = rawTxn.sender.toString();
       return utils.isValidAddress(senderAddress) && this.isValidTransactionPayload(rawTxn.payload);
     } catch (e) {
-      console.error('invalid raw transaction', e);
+      logger.error('invalid raw transaction', e);
       return false;
     }
   }

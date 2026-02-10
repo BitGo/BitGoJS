@@ -7,6 +7,7 @@ import BigNumber from 'bignumber.js';
 import * as base58 from 'bs58';
 import * as _ from 'lodash';
 import * as request from 'superagent';
+import { logger } from '@bitgo/logger';
 
 import {
   AuditDecryptedKeyParams,
@@ -757,7 +758,7 @@ export class Sol extends BaseCoin {
       }
       rebuiltTransaction = await transactionBuilder.build();
     } catch (e) {
-      console.log(e);
+      logger.error(e);
       throw new Error('Invalid transaction');
     }
 
@@ -1468,7 +1469,7 @@ export class Sol extends BaseCoin {
       const broadcastTokenRecoveryTxn = await this.broadcastTransaction({
         serializedSignedTransaction: serializedTokenRecoveryTxn,
       });
-      console.log(broadcastTokenRecoveryTxn);
+      logger.log(broadcastTokenRecoveryTxn);
       recovertTxns.push(broadcastTokenRecoveryTxn);
     }
 
@@ -1497,7 +1498,7 @@ export class Sol extends BaseCoin {
     const broadcastCloseATARecoveryTxn = await this.broadcastTransaction({
       serializedSignedTransaction: serializedCloseATARecoveryTxn,
     });
-    console.log(broadcastCloseATARecoveryTxn);
+    logger.log(broadcastCloseATARecoveryTxn);
     recovertTxns.push(broadcastCloseATARecoveryTxn);
 
     return recovertTxns;

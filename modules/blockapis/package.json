@@ -22,6 +22,7 @@
     "directory": "modules/blockapis"
   },
   "dependencies": {
+    "@bitgo/logger": "^1.0.0",
     "@bitgo/utxo-lib": "^11.20.0",
     "@types/superagent": "4.1.16",
     "superagent": "^9.0.1"
