@@ -38,7 +38,7 @@ export class HashUtils extends CosmosUtils {
   /** @inheritdoc */
   validateAmount(amount: Coin): void {
     const amountBig = BigNumber(amount.amount);
-    if (amountBig.isLessThanOrEqualTo(0)) {
+    if (amountBig.isLessThan(0)) {
       throw new InvalidTransactionError('transactionBuilder: validateAmount: Invalid amount: ' + amount.amount);
     }
     if (!constants.validDenoms.find((denom) => denom === amount.denom)) {
