@@ -3578,6 +3578,12 @@ export enum UnderlyingAsset {
   'canton:usdcx' = 'canton:usdcx',
   'canton:cbtc' = 'canton:cbtc',
 
+  // Tempo testnet tokens
+  'ttempo:pathusd' = 'ttempo:pathusd',
+  'ttempo:alphausd' = 'ttempo:alphausd',
+  'ttempo:betausd' = 'ttempo:betausd',
+  'ttempo:thetausd' = 'ttempo:thetausd',
+
   // fiats
   AED = 'aed',
   EUR = 'eur',

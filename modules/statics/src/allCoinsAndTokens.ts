@@ -43,6 +43,7 @@ import {
   tstellarToken,
   tsuiToken,
   ttaoToken,
+  ttip20Token,
   ttronToken,
   tvetNFTCollection,
   tworldErc20,
@@ -2736,6 +2737,43 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.TEMPO,
     BaseUnit.ETH,
+    TEMPO_FEATURES
+  ),
+  // Tempo TIP20 testnet tokens
+  ttip20Token(
+    'e1872fd8-14ee-4dc9-bc5e-fd52552d9c60',
+    'ttempo:pathusd',
+    'Testnet pathUSD',
+    18,
+    '0x20c0000000000000000000000000000000000000',
+    UnderlyingAsset['ttempo:pathusd'],
+    TEMPO_FEATURES
+  ),
+  ttip20Token(
+    '3c67eaa8-f073-4e1a-9d3a-c6756a31bef0',
+    'ttempo:alphausd',
+    'Testnet AlphaUSD',
+    18,
+    '0x20c0000000000000000000000000000000000001',
+    UnderlyingAsset['ttempo:alphausd'],
+    TEMPO_FEATURES
+  ),
+  ttip20Token(
+    'da6d27bd-ed3b-4b59-b574-6e013e5eb55d',
+    'ttempo:betausd',
+    'Testnet BetaUSD',
+    18,
+    '0x20c0000000000000000000000000000000000002',
+    UnderlyingAsset['ttempo:betausd'],
+    TEMPO_FEATURES
+  ),
+  ttip20Token(
+    '58cbb592-446e-4753-8c2a-c89f662135ba',
+    'ttempo:thetausd',
+    'Testnet ThetaUSD',
+    18,
+    '0x20c0000000000000000000000000000000000003',
+    UnderlyingAsset['ttempo:thetausd'],
     TEMPO_FEATURES
   ),
   canton(
