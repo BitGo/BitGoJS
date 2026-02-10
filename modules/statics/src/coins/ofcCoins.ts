@@ -750,10 +750,10 @@ export const ofcCoins = [
   ]),
   ofcsolToken(
     '2ad7fab3-71f1-4201-8c6d-16ef57f012b7',
-    'ofcsol:usdc.a',
+    'ofcsol:usdca',
     'USDC.a Bridged ART20',
     6,
-    UnderlyingAsset['sol:usdc.a'],
+    UnderlyingAsset['sol:usdca'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   ofcsolToken(
