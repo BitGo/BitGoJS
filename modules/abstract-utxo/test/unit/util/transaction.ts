@@ -6,7 +6,8 @@ import { ECPair, fixedScriptWallet, hasPsbtMagic, address as wasmAddress } from 
 import { getCoinName, UtxoCoinName } from '../../../src/names';
 import type { Unspent, WalletUnspent } from '../../../src/unspent';
 const { isWalletUnspent, signInputWithUnspent } = utxolib.bitgo;
-type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+type UtxolibRootWalletKeys = utxolib.bitgo.RootWalletKeys;
+type WasmRootWalletKeys = fixedScriptWallet.RootWalletKeys;
 export type TransactionObj = {
   id: string;
   hex: string;
@@ -36,7 +37,7 @@ export function assertEqualParsedPsbt(
   a: Buffer,
   b: Buffer,
   coinName: UtxoCoinName,
-  walletKeys: RootWalletKeys,
+  walletKeys: WasmRootWalletKeys,
   replayProtection: ECPair[]
 ): void {
   if (!hasPsbtMagic(a)) {
@@ -107,7 +108,7 @@ export function createPrebuildTransaction<TNumber extends number | bigint = numb
 function createTransactionBuilderWithSignedInputs<TNumber extends number | bigint = number>(
   network: utxolib.Network,
   unspents: Unspent<TNumber>[],
-  signer: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
+  signer: utxolib.bitgo.WalletUnspentSigner<UtxolibRootWalletKeys>,
   inputTransaction: utxolib.bitgo.UtxoTransaction<TNumber>
 ): utxolib.bitgo.UtxoTransactionBuilder<TNumber> {
   const txBuilder = utxolib.bitgo.createTransactionBuilderFromTransaction<TNumber>(
@@ -126,7 +127,7 @@ export function createHalfSignedTransaction<TNumber extends number | bigint = nu
   network: utxolib.Network,
   unspents: Unspent<TNumber>[],
   outputAddress: string,
-  signer: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
+  signer: utxolib.bitgo.WalletUnspentSigner<UtxolibRootWalletKeys>,
   prebuild?: utxolib.bitgo.UtxoTransaction<TNumber>
 ): utxolib.bitgo.UtxoTransaction<TNumber> {
   if (!prebuild) {
@@ -139,7 +140,7 @@ export function createFullSignedTransaction<TNumber extends number | bigint = nu
   network: utxolib.Network,
   unspents: Unspent<TNumber>[],
   outputAddress: string,
-  signer: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
+  signer: utxolib.bitgo.WalletUnspentSigner<UtxolibRootWalletKeys>,
   halfSigned?: utxolib.bitgo.UtxoTransaction<TNumber>
 ): utxolib.bitgo.UtxoTransaction<TNumber> {
   if (!halfSigned) {
