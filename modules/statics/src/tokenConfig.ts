@@ -327,7 +327,7 @@ function getErc20TokenConfig(coin: Erc20Coin): Erc20TokenConfig {
 }
 
 // Get the list of ERC-20 tokens from statics and format it properly
-const getFormattedErc20Tokens = (customCoinMap = coins) =>
+export const getFormattedErc20Tokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: Erc20TokenConfig[], coin) => {
     if (coin instanceof Erc20Coin) {
       acc.push(getErc20TokenConfig(coin));
