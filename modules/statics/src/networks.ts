@@ -2358,7 +2358,7 @@ class DogeosTestnet extends Testnet implements EthereumNetwork {
 class ArcUSDCTestnet extends Testnet implements EthereumNetwork {
   name = 'USDC (ARC) Testnet';
   family = CoinFamily.ARCUSDC;
-  explorerUrl = 'https://testnet.arcscan.app/txs/';
+  explorerUrl = 'https://testnet.arcscan.app/tx/';
   accountExplorerUrl = 'https://testnet.arcscan.app/address/';
   chainId = 5042002;
   nativeCoinOperationHashPrefix = '5042002';
@@ -2367,7 +2367,7 @@ class ArcUSDCTestnet extends Testnet implements EthereumNetwork {
 class ArcUSDC extends Mainnet implements EthereumNetwork {
   name = 'USDC (ARC)';
   family = CoinFamily.ARCUSDC;
-  explorerUrl = 'https://testnet.arcscan.app/txs/'; // change to prod explorer url
+  explorerUrl = 'https://testnet.arcscan.app/tx/'; // WIN-8844 change to prod explorer url
   accountExplorerUrl = 'https://testnet.arcscan.app/address/'; // change to prod explorer url when available
   chainId = 5042002; // change to prod chain id when available
   nativeCoinOperationHashPrefix = '5042002'; // change to prod native coin operation hash prefix when available
