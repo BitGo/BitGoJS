@@ -38,12 +38,12 @@ describe('Wallet Pre-approval Enablement Builder', () => {
     const commandId = '7d99789d-2f22-49e1-85cb-79d2ce5a69c1';
     const partyId = 'ravi-2-step-party-new::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2';
     const token = 'tcanton:testcoin1';
-    txBuilder.commandId(commandId).receiverPartyId(partyId).token(token);
+    txBuilder.commandId(commandId).receiverPartyId(partyId).tokenName(token);
     const requestObj: CantonOneStepEnablementRequest = txBuilder.toRequestObject();
     should.exist(requestObj);
     assert.equal(requestObj.commandId, commandId);
     assert.equal(requestObj.receiverId, partyId);
-    assert.equal(requestObj.token, token);
+    assert.equal(requestObj.tokenName, token);
     assert.equal(requestObj.actAs.length, 1);
     const actAs = requestObj.actAs[0];
     assert.equal(actAs, partyId);

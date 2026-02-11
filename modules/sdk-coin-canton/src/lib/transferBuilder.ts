@@ -13,7 +13,7 @@ export class TransferBuilder extends TransactionBuilder {
   private _sendOneStep = false;
   private _expiryEpoch: number;
   private _memoId: string;
-  private _token: string;
+  private _tokenName: string;
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
@@ -152,11 +152,11 @@ export class TransferBuilder extends TransactionBuilder {
    * @returns The current builder for chaining
    * @throws Error if name is invalid
    */
-  token(name: string): this {
+  tokenName(name: string): this {
     if (!name || !name.trim()) {
       throw new Error('token name must be a non-empty string');
     }
-    this._token = name.trim();
+    this._tokenName = name.trim();
     return this;
   }
 
@@ -178,8 +178,8 @@ export class TransferBuilder extends TransactionBuilder {
     if (this._memoId) {
       data.memoId = this._memoId;
     }
-    if (this._token) {
-      data.token = this._token;
+    if (this._tokenName) {
+      data.tokenName = this._tokenName;
     }
     return data;
   }
