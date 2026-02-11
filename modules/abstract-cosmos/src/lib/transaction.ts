@@ -61,13 +61,13 @@ export class CosmosTransaction<CustomMessage = never> extends BaseTransaction {
   }
 
   /** @inheritDoc **/
-  get id(): string {
+  get id(): string | undefined {
     if (this._id) {
       return this._id;
     } else if (this._cosmosLikeTransaction?.hash !== undefined) {
       return this._cosmosLikeTransaction.hash;
     }
-    return UNAVAILABLE_TEXT;
+    return undefined;
   }
 
   /** @inheritdoc */

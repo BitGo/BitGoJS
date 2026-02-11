@@ -344,7 +344,7 @@ describe('Flrp Export In P Tx Builder', () => {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
 
-      tx.id.should.equal('nSBwNcgfLbk5S425b1qaYaqTTCiMCV75KU4Fbnq8SPUUqLq2');
+      tx.id!.should.equal('nSBwNcgfLbk5S425b1qaYaqTTCiMCV75KU4Fbnq8SPUUqLq2');
 
       const hex = rawTx.replace('0x', '');
 

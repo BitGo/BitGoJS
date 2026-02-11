@@ -119,7 +119,7 @@ describe('Dot Transaction', () => {
       tx.setTxJson(json);
       tx.transactionType(TransactionType.Send);
       const explain = tx.explainTransaction();
-      explain.id.should.equal('0xecb860905342cf985b39276a07d6e6696746de4623c07df863f69cba153f939a');
+      explain.id!.should.equal('0xecb860905342cf985b39276a07d6e6696746de4623c07df863f69cba153f939a');
       explain.outputAmount.should.equal('1000000000000');
       explain.outputs[0].amount.should.equal('1000000000000');
       explain.outputs[0].address.should.equal(accounts.account2.address);

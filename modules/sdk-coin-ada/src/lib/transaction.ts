@@ -77,7 +77,7 @@ export interface PledgeDetails {
  * The transaction data returned from the toJson() function of a transaction
  */
 export interface TxData {
-  id: string;
+  id: string | undefined;
   type: TransactionType;
   inputs: TransactionInput[];
   outputs: TransactionOutput[];
@@ -387,7 +387,7 @@ export class Transaction extends BaseTransaction {
     outputAmount: string;
     fee: { fee: string };
     displayOrder: string[];
-    id: string;
+    id: string | undefined;
     changeAmount: string;
     type: string;
     withdrawals: Withdrawal[];

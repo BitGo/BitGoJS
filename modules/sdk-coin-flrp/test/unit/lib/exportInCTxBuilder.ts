@@ -137,7 +137,7 @@ describe('ExportInCTxBuilder', function () {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(testData.signedHex);
-      tx.id.should.equal(testData.txhash);
+      tx.id!.should.equal(testData.txhash);
     });
 
     it('should sign export tx built from scratch and produce valid signature', async () => {
@@ -162,7 +162,7 @@ describe('ExportInCTxBuilder', function () {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(testData.signedHex);
-      tx.id.should.equal(testData.txhash);
+      tx.id!.should.equal(testData.txhash);
     });
 
     it('should reject signing with key that does not match from address', () => {
@@ -185,7 +185,7 @@ describe('ExportInCTxBuilder', function () {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(signedExportHex);
-      tx.id.should.equal('3kXUsHix1bZRQ9hqUc24cp7sXFiy2LbPn6Eh2HQCAaMUi75s9');
+      tx.id!.should.equal('3kXUsHix1bZRQ9hqUc24cp7sXFiy2LbPn6Eh2HQCAaMUi75s9');
     });
   });
 });

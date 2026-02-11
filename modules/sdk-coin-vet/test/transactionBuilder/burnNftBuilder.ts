@@ -107,7 +107,7 @@ describe('Vet Burn NFT Transaction', () => {
       const txBuilder = factory.from(testData.BURN_NFT_TRANSACTION);
       const tx = txBuilder.transaction as BurnNftTransaction;
       const toJson = tx.toJson();
-      toJson.id.should.equal('0xf5e074f2d127fa3ef014873ec193b76823efab51891d43861092bd52b122563e');
+      toJson.id!.should.equal('0xf5e074f2d127fa3ef014873ec193b76823efab51891d43861092bd52b122563e');
       toJson.stakingContractAddress?.should.equal('0x1e02b2953adefec225cf0ec49805b1146a4429c1');
       toJson.nonce.should.equal('327224');
       toJson.gas.should.equal(349324);

@@ -197,7 +197,7 @@ describe('Flrp Import In C Tx Builder', () => {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
 
-      tx.id.should.equal('2t4gxEAdPLiiy9HsbjaQun1mVFewMoixNS64eZ56C38L4mpP1j');
+      tx.id!.should.equal('2t4gxEAdPLiiy9HsbjaQun1mVFewMoixNS64eZ56C38L4mpP1j');
 
       const hex = rawTx.replace('0x', '');
 

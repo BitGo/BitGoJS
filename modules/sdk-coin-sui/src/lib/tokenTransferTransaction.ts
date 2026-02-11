@@ -1,7 +1,7 @@
 import { SuiTransaction, TokenTransferProgrammableTransaction, TransactionExplanation, TxData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction } from './transaction';
-import { SUI_ADDRESS_LENGTH, UNAVAILABLE_TEXT } from './constants';
+import { SUI_ADDRESS_LENGTH } from './constants';
 import {
   BaseKey,
   PublicKey as BasePublicKey,
@@ -36,8 +36,8 @@ export class TokenTransferTransaction extends Transaction<TokenTransferProgramma
   }
 
   /** @inheritDoc */
-  get id(): string {
-    return this._id || UNAVAILABLE_TEXT;
+  get id(): string | undefined {
+    return this._id;
   }
 
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {

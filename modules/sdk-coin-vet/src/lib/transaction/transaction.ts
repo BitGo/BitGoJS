@@ -51,9 +51,9 @@ export class Transaction extends BaseTransaction {
     this._isRecovery = false;
   }
 
-  public get id(): string {
+  public get id(): string | undefined {
     this.generateTxnIdAndSetSender();
-    return this._id ?? 'UNAVAILABLE';
+    return this._id;
   }
 
   get rawTransaction(): VetTransaction {

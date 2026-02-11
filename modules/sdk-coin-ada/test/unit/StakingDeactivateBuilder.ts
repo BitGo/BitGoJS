@@ -131,7 +131,7 @@ describe('ADA Staking Deactivate Transaction Builder', async () => {
     txBuilder2.addSignature({ pub: keyPairPayment.getKeys().pub }, Buffer.from(signaturePayment));
     txBuilder2.addSignature({ pub: keyPairStake.getKeys().pub }, Buffer.from(signatureStake));
     const signedTransaction2 = await txBuilder2.build();
-    signedTransaction.id.should.equal(tx.id);
+    signedTransaction.id!.should.equal(tx.id);
     const serializedTransaction2 = signedTransaction2.toBroadcastFormat();
     serializedTransaction2.should.equal(serializedTransaction);
   });

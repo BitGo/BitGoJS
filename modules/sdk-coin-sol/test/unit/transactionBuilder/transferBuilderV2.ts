@@ -407,7 +407,8 @@ describe('Sol Transfer Builder V2', () => {
       txBuilder.sign({ key: walletSK });
       txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
-      tx.id.should.not.equal(undefined);
+      // tx.id is undefined because the fee payer signature slot is all zeros (partially signed)
+      should.not.exist(tx.id);
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
         address: walletPK,
@@ -439,7 +440,8 @@ describe('Sol Transfer Builder V2', () => {
       txBuilder.sign({ key: walletSK });
       txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
-      tx.id.should.not.equal(undefined);
+      // tx.id is undefined because the fee payer signature slot is all zeros (partially signed)
+      should.not.exist(tx.id);
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
         address: walletPK,
@@ -509,7 +511,8 @@ describe('Sol Transfer Builder V2', () => {
       txBuilder.sign({ key: walletSK });
       txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
-      tx.id.should.not.equal(undefined);
+      // tx.id is undefined because the fee payer signature slot is all zeros (partially signed)
+      should.not.exist(tx.id);
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
         address: walletPK,

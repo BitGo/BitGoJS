@@ -40,7 +40,7 @@ export abstract class Transaction<T> extends BaseTransaction {
   }
 
   /** @inheritDoc **/
-  get id(): string {
+  get id(): string | undefined {
     const dataBytes = this.getDataBytes();
     const hash = hashTypedData('TransactionData', dataBytes);
     this._id = bs58.encode(hash);

@@ -196,7 +196,7 @@ export interface RecoveryOptions {
 }
 
 export interface RecoveryTransaction {
-  id: string;
+  id: string | undefined;
   tx: string;
 }
 

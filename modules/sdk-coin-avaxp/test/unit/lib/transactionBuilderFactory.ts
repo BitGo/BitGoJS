@@ -80,7 +80,7 @@ describe('AvaxP Transaction Builder Factory', () => {
     });
 
     it('Should get a txid', async () => {
-      tx.id.should.equal(testData.ADD_VALIDATOR_ID_SAMPLE.txid);
+      tx.id!.should.equal(testData.ADD_VALIDATOR_ID_SAMPLE.txid);
     });
   });
 

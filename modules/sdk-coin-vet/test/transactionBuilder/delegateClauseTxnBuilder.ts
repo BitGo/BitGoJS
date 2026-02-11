@@ -159,7 +159,7 @@ describe('VET Delegation Transaction', function () {
       const txBuilder = factory.from(testData.DELEGATION_TRANSACTION);
       const tx = txBuilder.transaction as DelegateClauseTransaction;
       const toJson = tx.toJson();
-      toJson.id.should.equal('0x841fd66a1d7feff7ab3d432720a659697197e6c67da1aeb9ce9d93b131e46ab7');
+      toJson.id!.should.equal('0x841fd66a1d7feff7ab3d432720a659697197e6c67da1aeb9ce9d93b131e46ab7');
       toJson.stakingContractAddress?.should.equal('0x1e02b2953adefec225cf0ec49805b1146a4429c1');
       toJson.nonce.should.equal('0xf341b4c6b5ff5294');
       toJson.gas.should.equal(242796);

@@ -9,7 +9,7 @@ import {
 } from '@bitgo/sdk-core';
 import { SuiTransaction, TransactionExplanation, TransferProgrammableTransaction, TxData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { MAX_GAS_OBJECTS, SUI_ADDRESS_LENGTH, UNAVAILABLE_TEXT } from './constants';
+import { MAX_GAS_OBJECTS, SUI_ADDRESS_LENGTH } from './constants';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
 import { CallArg, SuiObjectRef, normalizeSuiAddress } from './mystenlab/types';
@@ -38,8 +38,8 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
   }
 
   /** @inheritDoc **/
-  get id(): string {
-    return this._id || UNAVAILABLE_TEXT;
+  get id(): string | undefined {
+    return this._id;
   }
 
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {

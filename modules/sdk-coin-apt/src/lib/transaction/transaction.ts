@@ -34,7 +34,7 @@ import {
   TransactionAuthenticatorFeePayer,
   TransactionPayload,
 } from '@aptos-labs/ts-sdk';
-import { DEFAULT_GAS_UNIT_PRICE, UNAVAILABLE_TEXT } from '../constants';
+import { DEFAULT_GAS_UNIT_PRICE } from '../constants';
 import utils from '../utils';
 import BigNumber from 'bignumber.js';
 import { AptTransactionExplanation, TxData } from '../iface';
@@ -94,9 +94,9 @@ export abstract class Transaction extends BaseTransaction {
   }
 
   /** @inheritDoc **/
-  public override get id(): string {
+  public override get id(): string | undefined {
     this.generateTxnId();
-    return this._id ?? UNAVAILABLE_TEXT;
+    return this._id;
   }
 
   get sender(): string {

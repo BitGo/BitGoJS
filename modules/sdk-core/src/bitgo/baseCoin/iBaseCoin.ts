@@ -119,7 +119,7 @@ export type AuditDecryptedKeyParams = Omit<AuditKeyParams, 'encryptedPrv' | 'wal
 export interface ITransactionExplanation<TFee = any, TAmount = any> {
   /** @deprecated */
   displayOrder?: string[];
-  id: string;
+  id: string | undefined;
   /** NOTE: External recipients */
   outputs: ITransactionRecipient[];
   /** NOTE: External amount */

@@ -149,7 +149,7 @@ describe('Flrp Import In P Tx Builder', () => {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(signedImportHex);
-      tx.id.should.equal('2vwvuXp47dsUmqb4vkaMk7UsukrZNapKXT2ruZhVibbjMDpqr9');
+      tx.id!.should.equal('2vwvuXp47dsUmqb4vkaMk7UsukrZNapKXT2ruZhVibbjMDpqr9');
     });
 
     it('should build and sign import tx with correct sigIndices - on-chain verified', async () => {
@@ -195,7 +195,7 @@ describe('Flrp Import In P Tx Builder', () => {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
 
-      tx.id.should.equal('bgHnEJ64td8u31aZrGDaWcDqxZ8vDV5qGd7bmSifgvUnUW8v2');
+      tx.id!.should.equal('bgHnEJ64td8u31aZrGDaWcDqxZ8vDV5qGd7bmSifgvUnUW8v2');
 
       const hex = rawTx.replace('0x', '');
       const amountHex = parseInt(utxo.amount, 10).toString(16).padStart(16, '0');

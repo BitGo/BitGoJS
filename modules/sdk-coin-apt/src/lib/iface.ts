@@ -14,7 +14,7 @@ export interface AptTransactionExplanation extends BaseTransactionExplanation {
  * The transaction data returned from the toJson() function of a transaction
  */
 export interface TxData {
-  id: string;
+  id: string | undefined;
   sender: string;
   /** @deprecated - use `recipients`. */
   recipient?: TransactionRecipient;

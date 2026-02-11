@@ -93,7 +93,7 @@ export class Transaction extends BaseTransaction {
   }
 
   /** @inheritDoc **/
-  get id(): string {
+  get id(): string | undefined {
     // Solana transaction ID === first signature: https://docs.solana.com/terminology#transaction-id
     if (this._versionedTransaction) {
       const sig = this._versionedTransaction.signatures?.[0];
@@ -107,7 +107,7 @@ export class Transaction extends BaseTransaction {
       return base58.encode(this._solTransaction.signature);
     }
 
-    return UNAVAILABLE_TEXT;
+    return undefined;
   }
 
   get lamportsPerSignature(): number | undefined {

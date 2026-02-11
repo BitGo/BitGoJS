@@ -33,7 +33,7 @@ describe('Ton Transfer Builder', () => {
       value: testData.recipients[0].amount,
       coin: 'tton',
     });
-    tx.id.should.equal(txId);
+    tx.id!.should.equal(txId);
     const rawTx = tx.toBroadcastFormat();
     console.log(rawTx);
     rawTx.should.equal(
@@ -66,7 +66,7 @@ describe('Ton Transfer Builder', () => {
       value: testData.recipients[0].amount,
       coin: 'tton',
     });
-    tx.id.should.equal(txId);
+    tx.id!.should.equal(txId);
     const rawTx = tx.toBroadcastFormat();
     console.log(rawTx);
     rawTx.should.equal(

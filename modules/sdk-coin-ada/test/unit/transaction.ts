@@ -47,7 +47,7 @@ describe('ADA Transaction', () => {
     it('a signed transfer transaction', async () => {
       tx.fromRawTransaction(resources.rawTx.signedTx);
       const explain = tx.explainTransaction();
-      explain.id.should.equal('1d0ac4a6496847341ddfd5087db6a687157cc6cc8ec9f999e72fbbc581a34523');
+      explain.id!.should.equal('1d0ac4a6496847341ddfd5087db6a687157cc6cc8ec9f999e72fbbc581a34523');
       explain.outputAmount.should.equal('253329150');
       explain.outputs[0].amount.should.equal(resources.rawTx.outputAddress1.value);
       explain.outputs[0].address.should.equal(resources.rawTx.outputAddress1.address);
@@ -58,7 +58,7 @@ describe('ADA Transaction', () => {
     it('an unsigned transfer transaction', async () => {
       tx.fromRawTransaction(resources.rawTx.unsignedTx);
       const explain = tx.explainTransaction();
-      explain.id.should.equal('c091e2a0ac5a8bc4f522e69b2986d3a9b2b5615e6fcb7b265d0b8d449c03e591');
+      explain.id!.should.equal('c091e2a0ac5a8bc4f522e69b2986d3a9b2b5615e6fcb7b265d0b8d449c03e591');
       explain.outputAmount.should.equal('253329150');
       explain.outputs[0].amount.should.equal(resources.rawTx.outputAddress1.value);
       explain.outputs[0].address.should.equal(resources.rawTx.outputAddress1.address);

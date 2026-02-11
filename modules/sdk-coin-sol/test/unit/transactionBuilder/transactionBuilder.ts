@@ -429,7 +429,7 @@ describe('Sol Transaction Builder', async () => {
       let signedTransaction = await transferBuilder.build();
       signedTransaction.signature.length.should.equal(1);
       signedTransaction.signature[0].should.equal(bs58.encode(rawSignature));
-      signedTransaction.id.should.equal(bs58.encode(rawSignature));
+      signedTransaction.id!.should.equal(bs58.encode(rawSignature));
 
       // signing with A and C
       A_sign_share = MPC.signShare(signablePayload, A_combine.pShare, [A_combine.jShares[3]]);
@@ -449,7 +449,7 @@ describe('Sol Transaction Builder', async () => {
       signedTransaction = await transferBuilder.build();
       signedTransaction.signature.length.should.equal(1);
       signedTransaction.signature[0].should.equal(bs58.encode(rawSignature));
-      signedTransaction.id.should.equal(bs58.encode(rawSignature));
+      signedTransaction.id!.should.equal(bs58.encode(rawSignature));
 
       // signing with B and C
       B_sign_share = MPC.signShare(signablePayload, B_combine.pShare, [B_combine.jShares[3]]);
@@ -469,11 +469,11 @@ describe('Sol Transaction Builder', async () => {
       signedTransaction = await transferBuilder.build();
       signedTransaction.signature.length.should.equal(1);
       signedTransaction.signature[0].should.equal(bs58.encode(rawSignature));
-      signedTransaction.id.should.equal(bs58.encode(rawSignature));
+      signedTransaction.id!.should.equal(bs58.encode(rawSignature));
 
       const rawTransaction = signedTransaction.toBroadcastFormat() as string;
       const rebuiltTransaction = await factory.from(rawTransaction).build();
-      rebuiltTransaction.id.should.equal(signedTransaction.id);
+      rebuiltTransaction.id!.should.equal(signedTransaction.id);
       rebuiltTransaction.signature.should.deepEqual(signedTransaction.signature);
     });
 
@@ -516,11 +516,11 @@ describe('Sol Transaction Builder', async () => {
         const signedTransaction = await transferBuilder.build();
         signedTransaction.signature.length.should.equal(1);
         signedTransaction.signature[0].should.equal(bs58.encode(rawSignature));
-        signedTransaction.id.should.equal(bs58.encode(rawSignature));
+        signedTransaction.id!.should.equal(bs58.encode(rawSignature));
 
         const rawTransaction = signedTransaction.toBroadcastFormat() as string;
         const rebuiltTransaction = await factory.from(rawTransaction).build();
-        rebuiltTransaction.id.should.equal(signedTransaction.id);
+        rebuiltTransaction.id!.should.equal(signedTransaction.id);
         rebuiltTransaction.signature.should.deepEqual(signedTransaction.signature);
       }
     });

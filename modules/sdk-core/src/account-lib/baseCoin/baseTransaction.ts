@@ -31,8 +31,8 @@ export abstract class BaseTransaction {
    * Get the transaction id as seen in the blockchain. Transactions computed offline may not have an
    * id, however, this is left to the coin implementation.
    */
-  get id(): string {
-    return this._id as string;
+  get id(): string | undefined {
+    return this._id;
   }
 
   /**

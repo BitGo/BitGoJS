@@ -34,7 +34,7 @@ export interface PreparedTxnParsedInfo {
 }
 
 export interface WalletInitTxData {
-  id: string;
+  id: string | undefined;
   type: TransactionType;
   preparedParty: PreparedParty;
 }

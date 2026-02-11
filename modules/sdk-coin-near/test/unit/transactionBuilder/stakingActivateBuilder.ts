@@ -122,7 +122,7 @@ describe('Near Staking Activate Builder', () => {
         value: '1000000',
         coin: 'tnear',
       });
-      tx.id.should.equal('GpiLLaGs2Fk2bd7SQvhkJaZjj74UnPPdF7cUa9pw15je');
+      tx.id!.should.equal('GpiLLaGs2Fk2bd7SQvhkJaZjj74UnPPdF7cUa9pw15je');
     });
 
     it('build from an signed staking activate', async () => {
@@ -140,7 +140,7 @@ describe('Near Staking Activate Builder', () => {
         value: '1000000',
         coin: 'tnear',
       });
-      tx.id.should.equal('GpiLLaGs2Fk2bd7SQvhkJaZjj74UnPPdF7cUa9pw15je');
+      tx.id!.should.equal('GpiLLaGs2Fk2bd7SQvhkJaZjj74UnPPdF7cUa9pw15je');
       const txJson = tx.toJson();
       txJson.should.have.properties(['id', 'signerId', 'publicKey', 'nonce', 'actions', 'signature']);
       txJson.id.should.equal('GpiLLaGs2Fk2bd7SQvhkJaZjj74UnPPdF7cUa9pw15je');

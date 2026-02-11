@@ -9,7 +9,6 @@ import { Transaction } from './transaction';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 import { BaseKey, InvalidTransactionError, Recipient, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
-import { UNAVAILABLE_TEXT } from './constants';
 
 export class CustomTransaction extends Transaction<CustomProgrammableTransaction> {
   private _rawTransaction: string;
@@ -42,8 +41,8 @@ export class CustomTransaction extends Transaction<CustomProgrammableTransaction
   /**
    * @inheritdoc
    */
-  get id(): string {
-    return this._id || UNAVAILABLE_TEXT;
+  get id(): string | undefined {
+    return this._id;
   }
 
   /**

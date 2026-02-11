@@ -43,7 +43,7 @@ describe('Sui Transaction Builder', async () => {
       txBuilder.send(recipients);
       txBuilder.gasData(testData.gasData);
       const tx = await txBuilder.build();
-      should.equal(tx.id, 'UNAVAILABLE');
+      should.equal(tx.id, undefined);
       const rawTx = tx.toBroadcastFormat();
       should.equal(rawTx, testData.TRANSFER);
 
@@ -70,7 +70,7 @@ describe('Sui Transaction Builder', async () => {
       txBuilder.send(recipients);
       txBuilder.gasData(testData.gasDataHavingDifferentOwner);
       const tx = await txBuilder.build();
-      should.equal(tx.id, 'UNAVAILABLE');
+      should.equal(tx.id, undefined);
       const rawTx = tx.toBroadcastFormat();
       should.equal(rawTx, testData.FEE_SPONSOR_TRANSFER);
 

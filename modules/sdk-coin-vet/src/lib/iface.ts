@@ -9,7 +9,7 @@ import { ClaimRewardsData } from './types';
  * The transaction data returned from the toJson() function of a transaction
  */
 export interface VetTransactionData {
-  id: string;
+  id: string | undefined;
   chainTag: number;
   blockRef: string;
   expiration: number;

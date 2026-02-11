@@ -2,7 +2,7 @@ import { ITransactionRecipient } from '@bitgo/sdk-core';
 
 export interface ITransactionExplanation<TFee = any, TAmount = any> {
   displayOrder: string[];
-  id: string;
+  id: string | undefined;
   outputs: ITransactionRecipient[];
   outputAmount: TAmount;
   changeOutputs: ITransactionRecipient[];

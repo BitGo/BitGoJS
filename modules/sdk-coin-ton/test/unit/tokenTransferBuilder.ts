@@ -37,7 +37,7 @@ describe('Ton Token Transfer Builder', () => {
       value: testData.tokenRecipients[0].amount,
       coin: tokenName,
     });
-    tx.id.should.equal(txId);
+    tx.id!.should.equal(txId);
     const rawTx = tx.toBroadcastFormat();
     rawTx.should.equal(testData.signedTokenSendTransaction.tx);
   });
@@ -71,7 +71,7 @@ describe('Ton Token Transfer Builder', () => {
       value: testData.tokenRecipients[0].amount,
       coin: tokenName,
     });
-    tx.id.should.equal(txId);
+    tx.id!.should.equal(txId);
     const rawTx = tx.toBroadcastFormat();
     rawTx.should.equal(testData.signedTokenSendTransaction.txBounceable);
   });

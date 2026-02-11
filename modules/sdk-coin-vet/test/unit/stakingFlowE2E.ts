@@ -76,7 +76,7 @@ describe('VET Staking Flow - End-to-End Test', function () {
       // This should NOT throw "not signed transaction: id unavailable" error anymore
       const transactionId = stakingTx.id;
       should.exist(transactionId);
-      transactionId.should.not.equal('UNAVAILABLE');
+      transactionId!.should.not.equal('UNAVAILABLE');
 
       // Step 6: Serialize the fully signed transaction
       const serializedTx = stakingTx.toBroadcastFormat();
@@ -157,7 +157,7 @@ describe('VET Staking Flow - End-to-End Test', function () {
       // This should NOT throw "not signed transaction: id unavailable" error anymore
       const transactionId = validatorRegistrationTx.id;
       should.exist(transactionId);
-      transactionId.should.not.equal('UNAVAILABLE');
+      transactionId!.should.not.equal('UNAVAILABLE');
 
       // Step 6: Serialize the fully signed transaction
       const serializedTx = validatorRegistrationTx.toBroadcastFormat();
@@ -214,11 +214,11 @@ describe('VET Staking Flow - End-to-End Test', function () {
       // Should be able to get transaction ID with both signatures
       const fullSignedId = tx.id;
       should.exist(fullSignedId);
-      fullSignedId.should.not.equal('UNAVAILABLE');
+      fullSignedId!.should.not.equal('UNAVAILABLE');
 
       // The ID should be consistent
-      fullSignedId.should.be.type('string');
-      fullSignedId.length.should.be.greaterThan(10);
+      fullSignedId!.should.be.type('string');
+      fullSignedId!.length.should.be.greaterThan(10);
     });
 
     it('should properly set transaction type for fee delegation validation', async function () {
@@ -260,7 +260,7 @@ describe('VET Staking Flow - End-to-End Test', function () {
       // Should be able to get ID without throwing errors
       const txId = tx.id;
       should.exist(txId);
-      txId.should.not.equal('UNAVAILABLE');
+      txId!.should.not.equal('UNAVAILABLE');
 
       // Verify all staking properties are preserved
       // Note: The test data uses a different contract address in the transaction

@@ -134,7 +134,7 @@ describe('VET Claim Rewards Transaction', function () {
     const txBuilder = factory.from(testData.CLAIM_REWARDS_TRANSACTION);
     const tx = txBuilder.transaction as ClaimRewardsTransaction;
     const toJson = tx.toJson();
-    toJson.id.should.equal('0x841b388ee325838eb1e3efad661c2ae3266e950b8fc86b8bb484571bdfa27c6d');
+    toJson.id!.should.equal('0x841b388ee325838eb1e3efad661c2ae3266e950b8fc86b8bb484571bdfa27c6d');
     toJson.stakingContractAddress?.should.equal('0x1e02b2953adefec225cf0ec49805b1146a4429c1');
     toJson.nonce.should.equal('973150');
     toJson.gas.should.equal(150878);

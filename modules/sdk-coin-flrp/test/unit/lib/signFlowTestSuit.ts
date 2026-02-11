@@ -67,7 +67,7 @@ export default function signFlowTestSuit(data: signFlowTestSuitArgs): void {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(data.fullSignedTxHex);
-      tx.id.should.equal(data.txHash);
+      tx.id!.should.equal(data.txHash);
     });
 
     it('Should full sign a tx for same values', async () => {
@@ -77,7 +77,7 @@ export default function signFlowTestSuit(data: signFlowTestSuitArgs): void {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(data.fullSignedTxHex);
-      tx.id.should.equal(data.txHash);
+      tx.id!.should.equal(data.txHash);
     });
 
     it('Should full sign a tx from half signed raw tx', async () => {
@@ -86,7 +86,7 @@ export default function signFlowTestSuit(data: signFlowTestSuitArgs): void {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(data.fullSignedTxHex);
-      tx.id.should.equal(data.txHash);
+      tx.id!.should.equal(data.txHash);
     });
 
     it('Should full sign a tx from unsigned raw tx', async () => {
@@ -96,7 +96,7 @@ export default function signFlowTestSuit(data: signFlowTestSuitArgs): void {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(data.fullSignedTxHex);
-      tx.id.should.equal(data.txHash);
+      tx.id!.should.equal(data.txHash);
     });
   });
 }

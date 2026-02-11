@@ -199,8 +199,8 @@ export class Tip20Transaction extends BaseTransaction {
     return await this.serialize(this._signature);
   }
 
-  get id(): string {
-    return 'pending';
+  get id(): string | undefined {
+    return undefined;
   }
 
   toString(): string {

@@ -243,7 +243,7 @@ describe('VET Staking Transaction', function () {
       const txBuilder = factory.from(testData.STAKING_TRANSACTION);
       const tx = txBuilder.transaction as StakingTransaction;
       const toJson = tx.toJson();
-      toJson.id.should.equal('0x99325b39cd04bd1821f6f6af7b679c247e6425a4eb95eb429fa8dff477298d0e');
+      toJson.id!.should.equal('0x99325b39cd04bd1821f6f6af7b679c247e6425a4eb95eb429fa8dff477298d0e');
       toJson.stakingContractAddress?.should.equal('0x1856c533ac2d94340aaa8544d35a5c1d4a21dee7');
       toJson.amountToStake?.should.equal('0xde0b6b3a7640000');
       toJson.nonce.should.equal('609363');

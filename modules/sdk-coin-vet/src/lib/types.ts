@@ -24,7 +24,7 @@ export type RecoverOptions = {
 };
 
 export interface RecoveryTransaction {
-  id: string;
+  id: string | undefined;
   tx: string;
 }
 

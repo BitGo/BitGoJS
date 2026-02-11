@@ -107,7 +107,7 @@ describe('Vet Exit Delegation Transaction', () => {
       const txBuilder = factory.from(testData.EXIT_DELEGATION_TRANSACTION);
       const tx = txBuilder.transaction as ExitDelegationTransaction;
       const toJson = tx.toJson();
-      toJson.id.should.equal('0xeca0ba2c8fa91332a1fe037232aa0af9fe6e939313458a6838c6d4060ede0278');
+      toJson.id!.should.equal('0xeca0ba2c8fa91332a1fe037232aa0af9fe6e939313458a6838c6d4060ede0278');
       toJson.stakingContractAddress?.should.equal('0x1e02b2953adefec225cf0ec49805b1146a4429c1');
       toJson.nonce.should.equal('390746');
       toJson.gas.should.equal(217695);
