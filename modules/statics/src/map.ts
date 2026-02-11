@@ -120,7 +120,7 @@ export class CoinMap {
     324: 'zketh',
     8453: 'baseeth',
     84532: 'tbaseeth',
-    30143: 'mon',
+    143: 'mon',
     10143: 'tmon',
     480: 'world',
     4801: 'tworld',
