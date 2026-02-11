@@ -10,10 +10,10 @@ import {
 } from '../../../src';
 import type { WalletUnspent } from '../../../src/unspent';
 import {
+  createWasmWalletKeys,
   getDefaultWasmWalletKeys,
   getFixture,
   getWalletAddress,
-  getWalletKeys,
   shouldEqualJSON,
   toUnspent,
   utxoCoins,
@@ -52,7 +52,7 @@ function clonePsbt(psbt: fixedScriptWallet.BitGoPsbt): fixedScriptWallet.BitGoPs
 }
 
 describe('formatBackupKeyRecoveryResult', function () {
-  const externalWallet = getWalletKeys('external');
+  const { walletKeys: externalWallet } = createWasmWalletKeys('external');
   const recoveryDestination = getWalletAddress(coin.name, externalWallet);
   const feeRateSatVB = 100;
 

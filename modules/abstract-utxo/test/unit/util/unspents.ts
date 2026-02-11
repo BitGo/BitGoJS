@@ -6,7 +6,9 @@ import { getReplayProtectionAddresses } from '../../../src';
 import { getCoinName, isUtxoCoinName, type UtxoCoinName } from '../../../src/names';
 import type { Unspent, UnspentWithPrevTx, WalletUnspent } from '../../../src/unspent';
 
-const { scriptTypeForChain, chainCodesP2sh, getExternalChainCode, getInternalChainCode } = utxolib.bitgo;
+import { getWalletAddress } from './address';
+
+const { chainCodesP2sh, getExternalChainCode, getInternalChainCode } = utxolib.bitgo;
 
 export type UtxolibRootWalletKeys = utxolib.bitgo.RootWalletKeys;
 export type WasmRootWalletKeys = wasmUtxo.fixedScriptWallet.RootWalletKeys;
@@ -38,41 +40,6 @@ export type Input = {
 
 const defaultChain: ChainCode = getExternalChainCode(chainCodesP2sh);
 
-/**
- * Check if walletKeys is wasm-utxo RootWalletKeys.
- */
-function isWasmRootWalletKeys(walletKeys: RootWalletKeys): walletKeys is WasmRootWalletKeys {
-  return walletKeys instanceof wasmUtxo.fixedScriptWallet.RootWalletKeys;
-}
-
-export function getOutputScript(
-  walletKeys: UtxolibRootWalletKeys,
-  chain = defaultChain,
-  index = 0
-): utxolib.bitgo.outputScripts.SpendableScript {
-  return utxolib.bitgo.outputScripts.createOutputScript2of3(
-    walletKeys.deriveForChainAndIndex(chain, index).publicKeys,
-    scriptTypeForChain(chain)
-  );
-}
-
-export function getWalletAddress(
-  network: NetworkArg,
-  walletKeys: RootWalletKeys,
-  chain = defaultChain,
-  index = 0
-): string {
-  const coinName = toCoinName(network);
-
-  // Use wasm-utxo address generation for wasm-utxo RootWalletKeys
-  if (isWasmRootWalletKeys(walletKeys)) {
-    return wasmUtxo.fixedScriptWallet.address(walletKeys, chain, index, coinName);
-  }
-
-  // For utxolib RootWalletKeys, generate address from output script
-  return wasmUtxo.address.fromOutputScriptWithCoin(getOutputScript(walletKeys, chain, index).scriptPubKey, coinName);
-}
-
 function mockOutputIdForAddress(address: string) {
   return getSeed(address).toString('hex') + ':1';
 }
@@ -88,7 +55,7 @@ export function mockWalletUnspent<TNumber extends number | bigint = number>(
   if (chain === undefined) {
     throw new Error(`unspent chain must be set`);
   }
-  const deriveAddress = getWalletAddress(network, walletKeys, chain, index);
+  const deriveAddress = getWalletAddress(toCoinName(network), walletKeys, chain, index);
   if (address) {
     if (address !== deriveAddress) {
       throw new Error(`derivedAddress mismatch: ${address} derived=${deriveAddress}`);
@@ -288,7 +255,7 @@ export function toUnspentWithPrevTx(
   const { prevTx, txid } = createMockPrevTx(0, outputScript, input.value);
 
   // Get the wallet address
-  const address = getWalletAddress(network, rootWalletKeys, chain, index);
+  const address = getWalletAddress(toCoinName(network), rootWalletKeys, chain, index);
 
   // Use the actual txid from the prevTx in the unspent id
   return {

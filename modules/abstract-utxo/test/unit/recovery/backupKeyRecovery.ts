@@ -8,11 +8,11 @@ import { BIP32, ECPair, fixedScriptWallet } from '@bitgo/wasm-utxo';
 import { AbstractUtxoCoin, backupKeyRecoveryWithWalletUnspents } from '../../../src';
 import type { WalletUnspent } from '../../../src/unspent';
 import {
+  createWasmWalletKeys,
   getDefaultWasmWalletKeys,
   getFixture,
   getNormalTestnetCoin,
   getWalletAddress,
-  getWalletKeys,
   toUnspent,
   utxoCoins,
 } from '../util';
@@ -48,7 +48,7 @@ function run(
   const defaultFeeRateSatB = 100;
 
   describe(`Backup Key Recovery PSBT [${[coin.getChain(), ...tags].join(',')}]`, function () {
-    const externalWallet = getWalletKeys('external');
+    const { walletKeys: externalWallet } = createWasmWalletKeys('external');
     const recoveryDestination = getWalletAddress(coin.name, externalWallet);
     const fixtureCoin = getNormalTestnetCoin(coin);
     // Get xpubs from wallet keys
