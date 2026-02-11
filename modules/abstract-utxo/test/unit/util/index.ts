@@ -5,3 +5,5 @@ export * from './wallet';
 export * from './unspents';
 export * from './transaction';
 export * from './psbt';
+export * from './address';
+export * from './nockBitGo';

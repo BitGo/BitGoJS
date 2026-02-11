@@ -1,7 +1,7 @@
 import { Triple } from '@bitgo/sdk-core';
 import { encrypt } from '@bitgo/sdk-api';
 import { getSeed } from '@bitgo/sdk-test';
-import { bip32, BIP32Interface, bitgo, testutil } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
 import { BIP32 as WasmBIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 type RootWalletKeys = bitgo.RootWalletKeys;
@@ -93,13 +93,16 @@ export function getWalletKeys(seed: string): RootWalletKeys {
 
 /**
  * Create test wallet keys from a seed string.
- * Returns xpubs and xprivs as base58 strings.
+ * Uses the same seed generation as getWalletKeys (getSeed('seed/i'))
+ * to ensure compatibility with existing test fixtures.
  */
 export function createTestWalletKeys(seed: string): {
   xpubs: Triple<string>;
   xprivs: Triple<string>;
 } {
-  const keys = testutil.getKeyTriple(seed);
+  const keys = Array.from({ length: 3 }).map((_, i) =>
+    bip32.fromSeed(getSeed(`${seed}/${i}`))
+  ) as Triple<BIP32Interface>;
   return {
     xpubs: keys.map((k) => k.neutered().toBase58()) as Triple<string>,
     xprivs: keys.map((k) => k.toBase58()) as Triple<string>,

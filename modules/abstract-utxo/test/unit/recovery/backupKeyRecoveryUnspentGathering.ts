@@ -13,12 +13,12 @@ import {
 } from '../../../src';
 import type { Unspent } from '../../../src/unspent';
 import {
+  createWasmWalletKeys,
   defaultBitGo,
   encryptKeychain,
   getDefaultWasmWalletKeys,
   getMinUtxoCoins,
   getWalletAddress,
-  getWalletKeys,
   keychainsBase58,
   toUnspentWithPrevTx,
   WalletUnspentWithPrevTx,
@@ -79,7 +79,7 @@ describe('Backup Key Recovery - Unspent Gathering', function () {
 
   getMinUtxoCoins().forEach((coin) => {
     describe(`Unspent Gathering [${coin.getChain()}]`, function () {
-      const externalWallet = getWalletKeys('external');
+      const { walletKeys: externalWallet } = createWasmWalletKeys('external');
       const recoveryDestination = getWalletAddress(coin.name, externalWallet);
 
       before('mock', function () {
