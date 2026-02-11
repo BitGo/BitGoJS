@@ -400,8 +400,6 @@ export abstract class AbstractUtxoCoin
 {
   abstract name: UtxoCoinName;
 
-  public altScriptHash?: number;
-  public supportAltScriptDestination?: boolean;
   public readonly amountType: 'number' | 'bigint';
 
   protected constructor(bitgo: BitGoBase, amountType: 'number' | 'bigint' = 'number') {
