@@ -1,20 +1,18 @@
-import { bitgo } from '@bitgo/utxo-lib';
 import { AddressInfo, TransactionIO } from '@bitgo/blockapis';
-import * as utxolib from '@bitgo/utxo-lib';
 import { address as wasmAddress, AddressFormat } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin, RecoveryProvider } from '../../../src';
 import { Bch } from '../../../src/impl/bch';
 import { Bsv } from '../../../src/impl/bsv';
-import type { Unspent, UnspentWithPrevTx, WalletUnspent } from '../../../src/unspent';
+import { parseOutputId, type Unspent, type UnspentWithPrevTx, type WalletUnspent } from '../../../src/unspent';
 export class MockRecoveryProvider implements RecoveryProvider {
   public unspents: Unspent<bigint>[];
   private prevTxCache: Record<string, string> = {};
   constructor(unspents: Unspent<bigint>[]) {
     this.unspents = unspents;
     this.unspents.forEach((u) => {
-      if (utxolib.bitgo.isUnspentWithPrevTx(u)) {
-        const { txid } = bitgo.parseOutputId(u.id);
+      if ('prevTx' in u) {
+        const { txid } = parseOutputId(u.id);
         this.prevTxCache[txid] = (u as UnspentWithPrevTx<bigint>).prevTx.toString('hex');
       }
     });
@@ -46,72 +44,6 @@ export class MockRecoveryProvider implements RecoveryProvider {
   }
 
   getTransactionIO(txid: string): Promise<TransactionIO> {
-    throw new Error(`not implemented`);
-  }
-}
-export class MockCrossChainRecoveryProvider<TNumber extends number | bigint> implements RecoveryProvider {
-  private addressVersion: 'cashaddr' | 'base58';
-  private addressFormat: AddressFormat;
-  constructor(
-    public coin: AbstractUtxoCoin,
-    public unspents: Unspent<TNumber>[],
-    public tx: utxolib.bitgo.UtxoTransaction<TNumber>
-  ) {
-    // this is how blockchair will return the data, as a cashaddr for BCH like coins
-    // BSV supports cashaddr, but at the time of writing the SDK does not support cashaddr for bsv
-    this.addressFormat = this.coin instanceof Bch && !(this.coin instanceof Bsv) ? 'cashaddr' : 'default';
-    this.addressVersion = this.coin instanceof Bch && !(this.coin instanceof Bsv) ? 'cashaddr' : 'base58';
-  }
-
-  async getUnspentsForAddresses(addresses: string[]): Promise<Unspent[]> {
-    return this.tx.outs.map((o, vout: number) => {
-      let address = wasmAddress.fromOutputScriptWithCoin(o.script, this.coin.name, this.addressFormat);
-      if (address.includes(':')) {
-        [, address] = address.split(':');
-      }
-      return {
-        id: `${this.tx?.getId()}:${vout}`,
-        address,
-        value: Number(o.value),
-        ...(this.coin.amountType === 'bigint' ? { valueString: o.value.toString() } : {}),
-      };
-    });
-  }
-
-  async getTransactionIO(txid: string): Promise<TransactionIO> {
-    const payload: TransactionIO = {
-      inputs: this.unspents.map((u) => {
-        // imitate how blockchair returns data
-        let address = this.coin.canonicalAddress(u.address, this.addressVersion);
-        if (address.includes(':')) {
-          [, address] = address.split(':');
-        }
-        return {
-          address,
-        };
-      }),
-      outputs: this.tx.outs.map((o) => {
-        let address = wasmAddress.fromOutputScriptWithCoin(o.script, this.coin.name, this.addressFormat);
-        if (address.includes(':')) {
-          [, address] = address.split(':');
-        }
-        return {
-          address,
-        };
-      }),
-    };
-    return payload;
-  }
-
-  async getAddressInfo(address: string): Promise<AddressInfo> {
-    throw new Error(`not implemented`);
-  }
-
-  async getTransactionHex(txid: string): Promise<string> {
-    throw new Error(`not implemented`);
-  }
-
-  getTransactionInputs(txid: string): Promise<Unspent<TNumber>[]> {
     throw new Error(`not implemented`);
   }
 }
