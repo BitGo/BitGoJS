@@ -3,12 +3,44 @@ import assert from 'assert';
 
 import { type TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
-import * as utxolib from '@bitgo/utxo-lib';
+import { fixedScriptWallet, type CoinName } from '@bitgo/wasm-utxo';
+import * as testutils from '@bitgo/wasm-utxo/testutils';
 import { Wallet } from '@bitgo/sdk-core';
 
 import { Tbtc } from '../../../../../src/impl/btc';
 
 import { btcBackupKey } from './fixtures';
+
+const { BitGoPsbt, ChainCode } = fixedScriptWallet;
+
+type Input = { scriptType: fixedScriptWallet.OutputScriptType; value: bigint };
+type Output = { address: string; value: bigint };
+type PsbtOptions = { lockTime?: number; sequence?: number };
+
+function constructPsbt(
+  inputs: Input[],
+  outputs: Output[],
+  network: CoinName,
+  walletKeys: fixedScriptWallet.RootWalletKeys,
+  options?: PsbtOptions
+): fixedScriptWallet.BitGoPsbt {
+  const psbt = BitGoPsbt.createEmpty(network, walletKeys, { lockTime: options?.lockTime });
+
+  inputs.forEach((input, index) => {
+    const chain = ChainCode.value(input.scriptType, 'external');
+    psbt.addWalletInput(
+      { txid: '00'.repeat(32), vout: index, value: input.value, sequence: options?.sequence },
+      walletKeys,
+      { scriptId: { chain, index }, signPath: { signer: 'user', cosigner: 'bitgo' } }
+    );
+  });
+
+  outputs.forEach((output) => {
+    psbt.addOutput(output.address, output.value);
+  });
+
+  return psbt;
+}
 
 describe('BTC:', () => {
   let bitgo: TestBitGoAPI;
@@ -53,19 +85,30 @@ describe('BTC:', () => {
     });
 
     it('should not modify locktime on postProcessPrebuild', async () => {
-      const txHex =
-        '0100000001a8ec78f09f7acb0d344622ed3082c1a98e51ba1b1ab65406044f6e0a801609020100000000ffffffff02a0860100000000001976a9149f9a7abd600c0caa03983a77c8c3df8e062cb2fa88acfbf2150000000000220020b922cc1e737e679d24ff2d2b18cfa9fff4e35a733b4fba94282eaa1b7cfe56d200000000';
+      const walletKeys = testutils.getDefaultWalletKeys();
+
+      // Create a PSBT with lockTime=0 and sequence=0xffffffff
+      const psbt = constructPsbt(
+        [{ scriptType: 'p2wsh' as const, value: BigInt(100000) }],
+        [{ address: 'tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7', value: BigInt(90000) }],
+        'tbtc',
+        walletKeys,
+        { lockTime: 0, sequence: 0xffffffff }
+      );
+
+      const txHex = Buffer.from(psbt.serialize()).toString('hex');
       const blockHeight = 100;
       const preBuild = { txHex, blockHeight };
       const postProcessBuilt = await coin.postProcessPrebuild(preBuild);
-      const transaction = utxolib.bitgo.createTransactionFromHex(
-        postProcessBuilt.txHex as string,
-        utxolib.networks.bitcoin
-      );
 
-      transaction.locktime.should.equal(0);
-      const inputs = transaction.ins;
-      for (const input of inputs) {
+      // Parse result as PSBT
+      const resultPsbt = BitGoPsbt.fromBytes(Buffer.from(postProcessBuilt.txHex as string, 'hex'), 'tbtc');
+
+      resultPsbt.lockTime.should.equal(0);
+
+      // Check sequences via parseTransactionWithWalletKeys
+      const parsed = resultPsbt.parseTransactionWithWalletKeys(walletKeys, { publicKeys: [] });
+      for (const input of parsed.inputs) {
         input.sequence.should.equal(0xffffffff);
       }
     });
@@ -120,8 +163,8 @@ describe('BTC:', () => {
     });
 
     it('should detect hex spoofing in BUILD_SIGN_SEND', async (): Promise<void> => {
-      const keyTriple = utxolib.testutil.getKeyTriple('default');
-      const rootWalletKey = new utxolib.bitgo.RootWalletKeys(keyTriple);
+      const keyTriple = testutils.getKeyTriple('default');
+      const rootWalletKey = testutils.getDefaultWalletKeys();
       const [user] = keyTriple;
 
       const wallet = new Wallet(bitgoTest, coin, {
@@ -130,23 +173,21 @@ describe('BTC:', () => {
         keys: ['user', 'backup', 'bitgo'],
       });
 
-      const originalPsbt = utxolib.testutil.constructPsbt(
+      // originalPsbt is created to show what the legitimate transaction would look like
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const originalPsbt = constructPsbt(
         [{ scriptType: 'p2wsh' as const, value: BigInt(10000) }],
         [{ address: 'tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7', value: BigInt(9000) }],
-        coin.network,
-        rootWalletKey,
-        'unsigned' as const
+        'tbtc',
+        rootWalletKey
       );
-      utxolib.bitgo.addXpubsToPsbt(originalPsbt, rootWalletKey);
-      const spoofedPsbt = utxolib.testutil.constructPsbt(
+      const spoofedPsbt = constructPsbt(
         [{ scriptType: 'p2wsh' as const, value: BigInt(10000) }],
         [{ address: 'tb1pjgg9ty3s2ztp60v6lhgrw76f7hxydzuk9t9mjsndh3p2gf2ah7gs4850kn', value: BigInt(9000) }],
-        coin.network,
-        rootWalletKey,
-        'unsigned' as const
+        'tbtc',
+        rootWalletKey
       );
-      utxolib.bitgo.addXpubsToPsbt(spoofedPsbt, rootWalletKey);
-      const spoofedHex: string = spoofedPsbt.toHex();
+      const spoofedHex: string = Buffer.from(spoofedPsbt.serialize()).toString('hex');
 
       const bgUrl: string = (bitgoTest as any)._baseUrl;
       const nock = require('nock');
@@ -194,8 +235,8 @@ describe('BTC:', () => {
     });
 
     it('should detect hex spoofing in fanout BUILD_SIGN_SEND', async (): Promise<void> => {
-      const keyTriple = utxolib.testutil.getKeyTriple('default');
-      const rootWalletKey = new utxolib.bitgo.RootWalletKeys(keyTriple);
+      const keyTriple = testutils.getKeyTriple('default');
+      const rootWalletKey = testutils.getDefaultWalletKeys();
       const [user] = keyTriple;
 
       const wallet = new Wallet(bitgoTest, coin, {
@@ -204,24 +245,22 @@ describe('BTC:', () => {
         keys: ['user', 'backup', 'bitgo'],
       });
 
-      const originalPsbt = utxolib.testutil.constructPsbt(
+      // originalPsbt is created to show what the legitimate transaction would look like
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const originalPsbt = constructPsbt(
         [{ scriptType: 'p2wsh' as const, value: BigInt(10000) }],
         [{ address: 'tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7', value: BigInt(9000) }],
-        coin.network,
-        rootWalletKey,
-        'unsigned' as const
+        'tbtc',
+        rootWalletKey
       );
-      utxolib.bitgo.addXpubsToPsbt(originalPsbt, rootWalletKey);
 
-      const spoofedPsbt = utxolib.testutil.constructPsbt(
+      const spoofedPsbt = constructPsbt(
         [{ scriptType: 'p2wsh' as const, value: BigInt(10000) }],
         [{ address: 'tb1pjgg9ty3s2ztp60v6lhgrw76f7hxydzuk9t9mjsndh3p2gf2ah7gs4850kn', value: BigInt(9000) }],
-        coin.network,
-        rootWalletKey,
-        'unsigned' as const
+        'tbtc',
+        rootWalletKey
       );
-      utxolib.bitgo.addXpubsToPsbt(spoofedPsbt, rootWalletKey);
-      const spoofedHex: string = spoofedPsbt.toHex();
+      const spoofedHex: string = Buffer.from(spoofedPsbt.serialize()).toString('hex');
 
       const bgUrl: string = (bitgoTest as any)._baseUrl;
       const nock = require('nock');
