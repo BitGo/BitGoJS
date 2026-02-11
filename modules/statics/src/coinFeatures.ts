@@ -222,6 +222,7 @@ export const DOT_FEATURES = [
   CoinFeature.EXPIRING_TRANSACTIONS,
   CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
 ];
 export const EOS_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
@@ -617,6 +618,7 @@ export const APT_FEATURES = [
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.ENTERPRISE_PAYS_FEES,
   CoinFeature.TSS_ENTERPRISE_PAYS_FEES,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
 ];
 
 export const ICP_FEATURES = [
@@ -635,6 +637,7 @@ export const TAO_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.STAKING,
   CoinFeature.SUPPORTS_TOKENS,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
 ];
 
 export const TAO_TOKEN_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
