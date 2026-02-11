@@ -8,7 +8,7 @@ import utils from './utils';
 export class OneStepPreApprovalBuilder extends TransactionBuilder {
   private _commandId: string;
   private _receiverPartyId: string;
-  private _token: string;
+  private _tokenName: string;
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
@@ -80,11 +80,11 @@ export class OneStepPreApprovalBuilder extends TransactionBuilder {
    * @returns The current builder for chaining
    * @throws Error if name is invalid
    */
-  token(name: string): this {
+  tokenName(name: string): this {
     if (!name || !name.trim()) {
       throw new Error('token name must be a non-empty string');
     }
-    this._token = name.trim();
+    this._tokenName = name.trim();
     return this;
   }
 
@@ -106,7 +106,7 @@ export class OneStepPreApprovalBuilder extends TransactionBuilder {
       verboseHashing: false,
       actAs: [this._receiverPartyId],
       readAs: [],
-      token: this._token,
+      tokenName: this._tokenName,
     };
   }
 
