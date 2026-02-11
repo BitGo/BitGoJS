@@ -774,6 +774,58 @@ describe('DOT:', function () {
           'Transaction destination address 5CZh773vKGwKFCYUjGc31AwXCbf7TPkavdeuk2XoujJMjbBD does not match wallet base address 5DxD9nT16GQLrU6aB5pSS5VtxoZbVju3NHUCcawxZyZCTf74'
         );
     });
+
+    it('should verify a transferAll (sweep) transaction with empty txParams', async function () {
+      const mockedWallet = {
+        coinSpecific: () => ({
+          baseAddress: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq',
+        }),
+      };
+
+      // TransferAll tx (sweep) - uses method 0a04 (balances.transferAll)
+      const txPrebuild = {
+        txHex:
+          '0x900a04009f7b0675db59d19b4bd9c8c72eaabba75a9863d02b30115b8b3c3ca5c20f025401d50121030000009d880f001000000067f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d00',
+      };
+
+      const result = await basecoin.verifyTransaction({
+        txPrebuild,
+        txParams: {},
+        wallet: mockedWallet as any,
+        verification: {
+          consolidationToBaseAddress: true,
+        },
+      });
+      assert.strictEqual(result, true);
+    });
+
+    it('should verify a transferAll (sweep) transaction with recipients in txParams', async function () {
+      const mockedWallet = {
+        coinSpecific: () => ({
+          baseAddress: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq',
+        }),
+      };
+
+      // TransferAll tx (sweep) - _amount is undefined for these transactions
+      const txPrebuild = {
+        txHex:
+          '0x900a04009f7b0675db59d19b4bd9c8c72eaabba75a9863d02b30115b8b3c3ca5c20f025401d50121030000009d880f001000000067f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d00',
+      };
+
+      const txParams = {
+        recipients: [{ address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq', amount: '1000000000000' }],
+      };
+
+      const result = await basecoin.verifyTransaction({
+        txPrebuild,
+        txParams,
+        wallet: mockedWallet as any,
+        verification: {
+          consolidationToBaseAddress: true,
+        },
+      });
+      assert.strictEqual(result, true);
+    });
   });
 
   describe('isWalletAddress', () => {
