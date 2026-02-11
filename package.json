@@ -96,7 +96,7 @@
     "@polkadot/api": "14.1.1",
     "elliptic": "^6.6.1",
     "cookie": "^0.7.1",
-    "axios": "^1.12.0",
+    "axios": "^1.13.0",
     "canvg": "4.0.3",
     "**/stellar-sdk/**/bignumber.js": "4.1.0",
     "**/stellar-base/**/bignumber.js": "4.1.0",
@@ -155,7 +155,7 @@
     "test:prepare-release": "mocha --require tsx ./scripts/tests/prepareRelease/prepare-release-main.test.ts"
   },
   "dependencies": {
-    "axios": "^1.12.0",
+    "axios": "^1.13.0",
     "terser": "^5.14.2",
     "tmp": "^0.2.3",
     "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10"
