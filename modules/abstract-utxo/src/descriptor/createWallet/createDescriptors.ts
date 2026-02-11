@@ -1,9 +1,12 @@
-import { BIP32Interface } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/wasm-utxo';
 
 import { createNamedDescriptorWithSignature, NamedDescriptor } from '../NamedDescriptor';
 import { getDescriptorFromBuilder, DescriptorBuilder } from '../builder';
 
-export type DescriptorFromKeys = (userKey: BIP32Interface, cosigners: BIP32Interface[]) => NamedDescriptor[];
+export type DescriptorFromKeys = (
+  userKey: bip32.BIP32Interface,
+  cosigners: bip32.BIP32Interface[]
+) => NamedDescriptor[];
 
 /**
  * Create a pair of external and internal descriptors for a 2-of-3 multisig wallet.
@@ -14,7 +17,7 @@ export type DescriptorFromKeys = (userKey: BIP32Interface, cosigners: BIP32Inter
  */
 function createExternalInternalPair(
   builder: DescriptorBuilder,
-  userKey: BIP32Interface
+  userKey: bip32.BIP32Interface
 ): [NamedDescriptor, NamedDescriptor] {
   if (userKey.isNeutered()) {
     throw new Error('User key must be private');

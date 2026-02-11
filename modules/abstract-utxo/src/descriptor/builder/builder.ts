@@ -1,9 +1,8 @@
-import { BIP32Interface } from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-utxo';
+import { bip32, Descriptor } from '@bitgo/wasm-utxo';
 
 type DescriptorWithKeys<TName extends string> = {
   name: TName;
-  keys: BIP32Interface[];
+  keys: bip32.BIP32Interface[];
   path: string;
 };
 
@@ -17,14 +16,14 @@ export type DescriptorBuilder =
    */
   | (DescriptorWithKeys<'ShWsh2Of3CltvDrop' | 'Wsh2Of3CltvDrop'> & { locktime: number });
 
-function toXPub(k: BIP32Interface | string): string {
+function toXPub(k: bip32.BIP32Interface | string): string {
   if (typeof k === 'string') {
     return k;
   }
   return k.neutered().toBase58();
 }
 
-function multi(m: number, n: number, keys: BIP32Interface[] | string[], path: string): string {
+function multi(m: number, n: number, keys: bip32.BIP32Interface[] | string[], path: string): string {
   if (n < m) {
     throw new Error(`Cannot create ${m} of ${n} multisig`);
   }

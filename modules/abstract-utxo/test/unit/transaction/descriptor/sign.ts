@@ -1,12 +1,12 @@
 import assert from 'assert';
 
-import { getKeyTriple } from '@bitgo/utxo-core/testutil';
-import { getDescriptorMap, mockPsbtDefaultWithDescriptorTemplate } from '@bitgo/utxo-core/testutil/descriptor';
 import { Psbt } from '@bitgo/wasm-utxo';
+import * as testutils from '@bitgo/wasm-utxo/testutils';
 
 import { signPsbt } from '../../../../src/transaction/descriptor';
 import { ErrorUnknownInput } from '../../../../src/transaction/descriptor/signPsbt';
-import { toWasmPsbt } from '../../../../src/wasmUtil';
+
+const { getDescriptorMap, mockPsbtDefaultWithDescriptorTemplate } = testutils.descriptor;
 
 function assertInputHasValidSignatures(psbt: Psbt, inputIndex: number) {
   assert(psbt.hasPartialSignatures(inputIndex));
@@ -18,8 +18,8 @@ function assertInputHasValidSignatures(psbt: Psbt, inputIndex: number) {
 }
 
 describe('sign', function () {
-  const psbtUnsigned = toWasmPsbt(mockPsbtDefaultWithDescriptorTemplate('Wsh2Of3'));
-  const keychain = getKeyTriple('a');
+  const psbtUnsigned = mockPsbtDefaultWithDescriptorTemplate('Wsh2Of3');
+  const keychain = testutils.getKeyTriple('a');
   const descriptorMap = getDescriptorMap('Wsh2Of3', keychain);
   const emptyDescriptorMap = new Map();
 

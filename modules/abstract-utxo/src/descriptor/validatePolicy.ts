@@ -1,13 +1,12 @@
 import { EnvironmentName, Triple } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
-import { descriptorWallet } from '@bitgo/wasm-utxo';
+import { bip32, descriptorWallet } from '@bitgo/wasm-utxo';
 
 import type { DescriptorMap } from '../wasmUtil';
 
 import { parseDescriptor } from './builder';
 import { hasValidSignature, NamedDescriptor, NamedDescriptorNative, toNamedDescriptorNative } from './NamedDescriptor';
 
-export type KeyTriple = Triple<utxolib.BIP32Interface>;
+export type KeyTriple = Triple<bip32.BIP32Interface>;
 
 export interface DescriptorValidationPolicy {
   name: string;
