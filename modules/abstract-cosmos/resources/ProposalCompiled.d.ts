@@ -147,6 +147,58 @@ export namespace cosmos {
         EXEC_UNSPECIFIED = 0,
         EXEC_TRY = 1,
       }
+
+      /** VoteOption enum. */
+      enum VoteOption {
+        VOTE_OPTION_UNSPECIFIED = 0,
+        VOTE_OPTION_YES = 1,
+        VOTE_OPTION_ABSTAIN = 2,
+        VOTE_OPTION_NO = 3,
+        VOTE_OPTION_NO_WITH_VETO = 4,
+      }
+
+      /** Properties of a MsgVote. */
+      interface IMsgVote {
+        /** MsgVote proposalId */
+        proposalId?: number | Long | null;
+
+        /** MsgVote voter */
+        voter?: string | null;
+
+        /** MsgVote option */
+        option?: cosmos.group.v1.VoteOption | null;
+
+        /** MsgVote metadata */
+        metadata?: string | null;
+
+        /** MsgVote exec */
+        exec?: cosmos.group.v1.Exec | null;
+      }
+
+      /** Represents a MsgVote. */
+      class MsgVote implements IMsgVote {
+        constructor(properties?: cosmos.group.v1.IMsgVote);
+
+        public proposalId: number | Long;
+        public voter: string;
+        public option: cosmos.group.v1.VoteOption;
+        public metadata: string;
+        public exec: cosmos.group.v1.Exec;
+
+        public static create(properties?: cosmos.group.v1.IMsgVote): cosmos.group.v1.MsgVote;
+        public static encode(message: cosmos.group.v1.IMsgVote, writer?: $protobuf.Writer): $protobuf.Writer;
+        public static encodeDelimited(message: cosmos.group.v1.IMsgVote, writer?: $protobuf.Writer): $protobuf.Writer;
+        public static decode(reader: $protobuf.Reader | Uint8Array, length?: number): cosmos.group.v1.MsgVote;
+        public static decodeDelimited(reader: $protobuf.Reader | Uint8Array): cosmos.group.v1.MsgVote;
+        public static verify(message: { [k: string]: any }): string | null;
+        public static fromObject(object: { [k: string]: any }): cosmos.group.v1.MsgVote;
+        public static toObject(
+          message: cosmos.group.v1.MsgVote,
+          options?: $protobuf.IConversionOptions
+        ): { [k: string]: any };
+        public toJSON(): { [k: string]: any };
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+      }
     }
   }
 }

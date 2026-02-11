@@ -41,7 +41,7 @@ import { initializeProtobufModules } from './protobuf-init';
 
 const { MsgCompiled, ProposalCompiled } = initializeProtobufModules();
 const { MsgSend } = MsgCompiled.types;
-const { MsgSubmitProposal } = ProposalCompiled.cosmos.group.v1;
+const { MsgSubmitProposal, MsgVote } = ProposalCompiled.cosmos.group.v1;
 
 export class CosmosUtils<CustomMessage = never> implements BaseUtils {
   protected registry;
@@ -51,6 +51,7 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
     this.registry.register(constants.executeContractMsgTypeUrl, MsgExecuteContract);
     this.registry.register('/types.MsgSend', MsgSend);
     this.registry.register(constants.groupProposalMsgTypeUrl, MsgSubmitProposal);
+    this.registry.register(constants.groupVoteMsgTypeUrl, MsgVote);
   }
 
   /** @inheritdoc */
@@ -330,7 +331,7 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
    */
   getExecuteContractMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData<CustomMessage>[] {
     return decodedTx.body.messages.map((message) => {
-      if (message.typeUrl !== constants.groupProposalMsgTypeUrl) {
+      if (message.typeUrl !== constants.groupProposalMsgTypeUrl && message.typeUrl !== constants.groupVoteMsgTypeUrl) {
         try {
           const value = this.registry.decode(message);
           return {
@@ -384,6 +385,8 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
         return TransactionType.ContractCall;
       case constants.groupProposalMsgTypeUrl:
         return TransactionType.ContractCall;
+      case constants.groupVoteMsgTypeUrl:
+        return TransactionType.ContractCall;
       case constants.redelegateTypeUrl:
         return TransactionType.StakingRedelegate;
       default:
@@ -409,8 +412,8 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
   getSendMessagesForEncodingTx(cosmosLikeTransaction: CosmosLikeTransaction<CustomMessage>): Any[] {
     return cosmosLikeTransaction.sendMessages.map((msg) => {
       if (msg.value instanceof Uint8Array) {
-        if (msg.typeUrl === constants.groupProposalMsgTypeUrl) {
-          // For group proposal messages, the pre-encoded bytes contain the full MsgSubmitProposal
+        if (msg.typeUrl === constants.groupProposalMsgTypeUrl || msg.typeUrl === constants.groupVoteMsgTypeUrl) {
+          // For group proposal/vote messages, the pre-encoded bytes contain the full message
           try {
             const decoded = this.registry.decode({ typeUrl: msg.typeUrl, value: msg.value });
             return {
@@ -1013,6 +1016,19 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
   }
 
   /**
+   * Checks if an ExecuteContractMessage's msg field contains a group vote.
+   * @param {ExecuteContractMessage} message - The execute contract message to check
+   * @returns {boolean} true if the msg decodes to a group vote
+   */
+  static isGroupVote(message: ExecuteContractMessage): boolean {
+    if (!message.msg || message.msg.length === 0) {
+      return false;
+    }
+    const result = CosmosUtils.decodeMsg(message.msg);
+    return result.typeUrl === constants.groupVoteMsgTypeUrl;
+  }
+
+  /**
    * Decodes a protobuf message and determines its type.
    *
    * @param data - Message data as base64 string or Uint8Array
@@ -1035,6 +1051,21 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
         }
       } catch {
         // Not a group proposal
+      }
+
+      try {
+        const vote = MsgVote.decode(messageBytes);
+        if (
+          vote.voter &&
+          typeof vote.voter === 'string' &&
+          vote.voter.length > 0 &&
+          vote.proposalId !== undefined &&
+          vote.proposalId !== null
+        ) {
+          return { typeUrl: constants.groupVoteMsgTypeUrl };
+        }
+      } catch {
+        // Not a group vote
       }
 
       try {

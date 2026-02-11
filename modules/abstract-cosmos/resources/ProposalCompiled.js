@@ -433,6 +433,400 @@ $root.cosmos = (function () {
         return values;
       })();
 
+      /**
+       * VoteOption enum.
+       * @name cosmos.group.v1.VoteOption
+       * @enum {number}
+       * @property {number} VOTE_OPTION_UNSPECIFIED=0 VOTE_OPTION_UNSPECIFIED value
+       * @property {number} VOTE_OPTION_YES=1 VOTE_OPTION_YES value
+       * @property {number} VOTE_OPTION_ABSTAIN=2 VOTE_OPTION_ABSTAIN value
+       * @property {number} VOTE_OPTION_NO=3 VOTE_OPTION_NO value
+       * @property {number} VOTE_OPTION_NO_WITH_VETO=4 VOTE_OPTION_NO_WITH_VETO value
+       */
+      v1.VoteOption = (function () {
+        var valuesById = {},
+          values = Object.create(valuesById);
+        values[(valuesById[0] = 'VOTE_OPTION_UNSPECIFIED')] = 0;
+        values[(valuesById[1] = 'VOTE_OPTION_YES')] = 1;
+        values[(valuesById[2] = 'VOTE_OPTION_ABSTAIN')] = 2;
+        values[(valuesById[3] = 'VOTE_OPTION_NO')] = 3;
+        values[(valuesById[4] = 'VOTE_OPTION_NO_WITH_VETO')] = 4;
+        return values;
+      })();
+
+      v1.MsgVote = (function () {
+        /**
+         * Properties of a MsgVote.
+         * @memberof cosmos.group.v1
+         * @interface IMsgVote
+         * @property {number|Long|null} [proposalId] MsgVote proposalId
+         * @property {string|null} [voter] MsgVote voter
+         * @property {cosmos.group.v1.VoteOption|null} [option] MsgVote option
+         * @property {string|null} [metadata] MsgVote metadata
+         * @property {cosmos.group.v1.Exec|null} [exec] MsgVote exec
+         */
+
+        /**
+         * Constructs a new MsgVote.
+         * @memberof cosmos.group.v1
+         * @classdesc Represents a MsgVote.
+         * @implements IMsgVote
+         * @constructor
+         * @param {cosmos.group.v1.IMsgVote=} [properties] Properties to set
+         */
+        function MsgVote(properties) {
+          if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+              if (properties[keys[i]] != null) this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MsgVote proposalId.
+         * @member {number|Long} proposalId
+         * @memberof cosmos.group.v1.MsgVote
+         * @instance
+         */
+        MsgVote.prototype.proposalId = $util.Long ? $util.Long.fromBits(0, 0, true) : 0;
+
+        /**
+         * MsgVote voter.
+         * @member {string} voter
+         * @memberof cosmos.group.v1.MsgVote
+         * @instance
+         */
+        MsgVote.prototype.voter = '';
+
+        /**
+         * MsgVote option.
+         * @member {cosmos.group.v1.VoteOption} option
+         * @memberof cosmos.group.v1.MsgVote
+         * @instance
+         */
+        MsgVote.prototype.option = 0;
+
+        /**
+         * MsgVote metadata.
+         * @member {string} metadata
+         * @memberof cosmos.group.v1.MsgVote
+         * @instance
+         */
+        MsgVote.prototype.metadata = '';
+
+        /**
+         * MsgVote exec.
+         * @member {cosmos.group.v1.Exec} exec
+         * @memberof cosmos.group.v1.MsgVote
+         * @instance
+         */
+        MsgVote.prototype.exec = 0;
+
+        /**
+         * Creates a new MsgVote instance using the specified properties.
+         * @function create
+         * @memberof cosmos.group.v1.MsgVote
+         * @static
+         * @param {cosmos.group.v1.IMsgVote=} [properties] Properties to set
+         * @returns {cosmos.group.v1.MsgVote} MsgVote instance
+         */
+        MsgVote.create = function create(properties) {
+          return new MsgVote(properties);
+        };
+
+        /**
+         * Encodes the specified MsgVote message. Does not implicitly {@link cosmos.group.v1.MsgVote.verify|verify} messages.
+         * @function encode
+         * @memberof cosmos.group.v1.MsgVote
+         * @static
+         * @param {cosmos.group.v1.IMsgVote} message MsgVote message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MsgVote.encode = function encode(message, writer) {
+          if (!writer) writer = $Writer.create();
+          if (message.proposalId != null && Object.hasOwnProperty.call(message, 'proposalId'))
+            writer.uint32(/* id 1, wireType 0 =*/ 8).uint64(message.proposalId);
+          if (message.voter != null && Object.hasOwnProperty.call(message, 'voter'))
+            writer.uint32(/* id 2, wireType 2 =*/ 18).string(message.voter);
+          if (message.option != null && Object.hasOwnProperty.call(message, 'option'))
+            writer.uint32(/* id 3, wireType 0 =*/ 24).int32(message.option);
+          if (message.metadata != null && Object.hasOwnProperty.call(message, 'metadata'))
+            writer.uint32(/* id 4, wireType 2 =*/ 34).string(message.metadata);
+          if (message.exec != null && Object.hasOwnProperty.call(message, 'exec'))
+            writer.uint32(/* id 5, wireType 0 =*/ 40).int32(message.exec);
+          return writer;
+        };
+
+        /**
+         * Encodes the specified MsgVote message, length delimited. Does not implicitly {@link cosmos.group.v1.MsgVote.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof cosmos.group.v1.MsgVote
+         * @static
+         * @param {cosmos.group.v1.IMsgVote} message MsgVote message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MsgVote.encodeDelimited = function encodeDelimited(message, writer) {
+          return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MsgVote message from the specified reader or buffer.
+         * @function decode
+         * @memberof cosmos.group.v1.MsgVote
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {cosmos.group.v1.MsgVote} MsgVote
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MsgVote.decode = function decode(reader, length, error) {
+          if (!(reader instanceof $Reader)) reader = $Reader.create(reader);
+          var end = length === undefined ? reader.len : reader.pos + length,
+            message = new $root.cosmos.group.v1.MsgVote();
+          while (reader.pos < end) {
+            var tag = reader.uint32();
+            if (tag === error) break;
+            switch (tag >>> 3) {
+              case 1: {
+                message.proposalId = reader.uint64();
+                break;
+              }
+              case 2: {
+                message.voter = reader.string();
+                break;
+              }
+              case 3: {
+                message.option = reader.int32();
+                break;
+              }
+              case 4: {
+                message.metadata = reader.string();
+                break;
+              }
+              case 5: {
+                message.exec = reader.int32();
+                break;
+              }
+              default:
+                reader.skipType(tag & 7);
+                break;
+            }
+          }
+          return message;
+        };
+
+        /**
+         * Decodes a MsgVote message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof cosmos.group.v1.MsgVote
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {cosmos.group.v1.MsgVote} MsgVote
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MsgVote.decodeDelimited = function decodeDelimited(reader) {
+          if (!(reader instanceof $Reader)) reader = new $Reader(reader);
+          return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MsgVote message.
+         * @function verify
+         * @memberof cosmos.group.v1.MsgVote
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MsgVote.verify = function verify(message) {
+          if (typeof message !== 'object' || message === null) return 'object expected';
+          if (message.proposalId != null && message.hasOwnProperty('proposalId'))
+            if (
+              !$util.isInteger(message.proposalId) &&
+              !(
+                message.proposalId &&
+                $util.isInteger(message.proposalId.low) &&
+                $util.isInteger(message.proposalId.high)
+              )
+            )
+              return 'proposalId: integer|Long expected';
+          if (message.voter != null && message.hasOwnProperty('voter'))
+            if (!$util.isString(message.voter)) return 'voter: string expected';
+          if (message.option != null && message.hasOwnProperty('option'))
+            switch (message.option) {
+              default:
+                return 'option: enum value expected';
+              case 0:
+              case 1:
+              case 2:
+              case 3:
+              case 4:
+                break;
+            }
+          if (message.metadata != null && message.hasOwnProperty('metadata'))
+            if (!$util.isString(message.metadata)) return 'metadata: string expected';
+          if (message.exec != null && message.hasOwnProperty('exec'))
+            switch (message.exec) {
+              default:
+                return 'exec: enum value expected';
+              case 0:
+              case 1:
+                break;
+            }
+          return null;
+        };
+
+        /**
+         * Creates a MsgVote message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof cosmos.group.v1.MsgVote
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {cosmos.group.v1.MsgVote} MsgVote
+         */
+        MsgVote.fromObject = function fromObject(object) {
+          if (object instanceof $root.cosmos.group.v1.MsgVote) return object;
+          var message = new $root.cosmos.group.v1.MsgVote();
+          if (object.proposalId != null)
+            if ($util.Long) (message.proposalId = $util.Long.fromValue(object.proposalId)).unsigned = true;
+            else if (typeof object.proposalId === 'string') message.proposalId = parseInt(object.proposalId, 10);
+            else if (typeof object.proposalId === 'number') message.proposalId = object.proposalId;
+            else if (typeof object.proposalId === 'object')
+              message.proposalId = new $util.LongBits(
+                object.proposalId.low >>> 0,
+                object.proposalId.high >>> 0
+              ).toNumber(true);
+          if (object.voter != null) message.voter = String(object.voter);
+          switch (object.option) {
+            default:
+              if (typeof object.option === 'number') {
+                message.option = object.option;
+                break;
+              }
+              break;
+            case 'VOTE_OPTION_UNSPECIFIED':
+            case 0:
+              message.option = 0;
+              break;
+            case 'VOTE_OPTION_YES':
+            case 1:
+              message.option = 1;
+              break;
+            case 'VOTE_OPTION_ABSTAIN':
+            case 2:
+              message.option = 2;
+              break;
+            case 'VOTE_OPTION_NO':
+            case 3:
+              message.option = 3;
+              break;
+            case 'VOTE_OPTION_NO_WITH_VETO':
+            case 4:
+              message.option = 4;
+              break;
+          }
+          if (object.metadata != null) message.metadata = String(object.metadata);
+          switch (object.exec) {
+            default:
+              if (typeof object.exec === 'number') {
+                message.exec = object.exec;
+                break;
+              }
+              break;
+            case 'EXEC_UNSPECIFIED':
+            case 0:
+              message.exec = 0;
+              break;
+            case 'EXEC_TRY':
+            case 1:
+              message.exec = 1;
+              break;
+          }
+          return message;
+        };
+
+        /**
+         * Creates a plain object from a MsgVote message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof cosmos.group.v1.MsgVote
+         * @static
+         * @param {cosmos.group.v1.MsgVote} message MsgVote
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MsgVote.toObject = function toObject(message, options) {
+          if (!options) options = {};
+          var object = {};
+          if (options.defaults) {
+            if ($util.Long) {
+              var long = new $util.Long(0, 0, true);
+              object.proposalId =
+                options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+            } else object.proposalId = options.longs === String ? '0' : 0;
+            object.voter = '';
+            object.option = options.enums === String ? 'VOTE_OPTION_UNSPECIFIED' : 0;
+            object.metadata = '';
+            object.exec = options.enums === String ? 'EXEC_UNSPECIFIED' : 0;
+          }
+          if (message.proposalId != null && message.hasOwnProperty('proposalId'))
+            if (typeof message.proposalId === 'number')
+              object.proposalId = options.longs === String ? String(message.proposalId) : message.proposalId;
+            else
+              object.proposalId =
+                options.longs === String
+                  ? $util.Long.prototype.toString.call(message.proposalId)
+                  : options.longs === Number
+                  ? new $util.LongBits(message.proposalId.low >>> 0, message.proposalId.high >>> 0).toNumber(true)
+                  : message.proposalId;
+          if (message.voter != null && message.hasOwnProperty('voter')) object.voter = message.voter;
+          if (message.option != null && message.hasOwnProperty('option'))
+            object.option =
+              options.enums === String
+                ? $root.cosmos.group.v1.VoteOption[message.option] === undefined
+                  ? message.option
+                  : $root.cosmos.group.v1.VoteOption[message.option]
+                : message.option;
+          if (message.metadata != null && message.hasOwnProperty('metadata')) object.metadata = message.metadata;
+          if (message.exec != null && message.hasOwnProperty('exec'))
+            object.exec =
+              options.enums === String
+                ? $root.cosmos.group.v1.Exec[message.exec] === undefined
+                  ? message.exec
+                  : $root.cosmos.group.v1.Exec[message.exec]
+                : message.exec;
+          return object;
+        };
+
+        /**
+         * Converts this MsgVote to JSON.
+         * @function toJSON
+         * @memberof cosmos.group.v1.MsgVote
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MsgVote.prototype.toJSON = function toJSON() {
+          return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MsgVote
+         * @function getTypeUrl
+         * @memberof cosmos.group.v1.MsgVote
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MsgVote.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+          if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = 'type.googleapis.com';
+          }
+          return typeUrlPrefix + '/cosmos.group.v1.MsgVote';
+        };
+
+        return MsgVote;
+      })();
+
       return v1;
     })();
 

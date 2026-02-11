@@ -3,7 +3,7 @@ import { CosmosUtils } from '@bitgo/abstract-cosmos';
 
 import utils from '../../src/lib/utils';
 import * as testData from '../resources/hash';
-import { blockHash, txIds, TEST_CONTRACT_CALL } from '../resources/hash';
+import { blockHash, txIds, TEST_CONTRACT_CALL, TEST_GROUP_VOTE } from '../resources/hash';
 
 describe('utils', () => {
   it('should validate block hash correctly', () => {
@@ -85,6 +85,57 @@ describe('utils', () => {
       if (result.typeUrl) {
         result.typeUrl.should.equal('/cosmos.group.v1.MsgSubmitProposal');
       }
+    });
+  });
+
+  describe('decodeMsg - group vote', () => {
+    it('should detect valid base64-encoded group vote', () => {
+      const result = CosmosUtils.decodeMsg(TEST_GROUP_VOTE.encodedVote);
+
+      should.exist(result.typeUrl);
+      if (result.typeUrl) {
+        result.typeUrl.should.equal('/cosmos.group.v1.MsgVote');
+      }
+      should.not.exist(result.error);
+    });
+
+    it('should accept Uint8Array input for group vote', () => {
+      const bytes = Buffer.from(TEST_GROUP_VOTE.encodedVote, 'base64');
+      const result = CosmosUtils.decodeMsg(bytes);
+
+      should.exist(result.typeUrl);
+      if (result.typeUrl) {
+        result.typeUrl.should.equal('/cosmos.group.v1.MsgVote');
+      }
+    });
+  });
+
+  describe('isGroupVote', () => {
+    it('should return true when msg contains a group vote', () => {
+      const message = {
+        sender: 'tp1tazefwk2e372fy2jq08w6lztg9yrrvc490r2gp4vt8d0fchlrfqqyahg0u',
+        contract: 'tp12nyn83ynewtmpkw32wq6dg83wx8nqpat65gcld',
+        msg: Buffer.from(TEST_GROUP_VOTE.encodedVote, 'base64'),
+      };
+      should.equal(CosmosUtils.isGroupVote(message), true);
+    });
+
+    it('should return false when msg contains a group proposal', () => {
+      const message = {
+        sender: 'tp1tazefwk2e372fy2jq08w6lztg9yrrvc490r2gp4vt8d0fchlrfqqyahg0u',
+        contract: 'tp12nyn83ynewtmpkw32wq6dg83wx8nqpat65gcld',
+        msg: Buffer.from(TEST_CONTRACT_CALL.encodedProposal, 'base64'),
+      };
+      should.equal(CosmosUtils.isGroupVote(message), false);
+    });
+
+    it('should return false when msg is empty', () => {
+      const message = {
+        sender: 'tp1tazefwk2e372fy2jq08w6lztg9yrrvc490r2gp4vt8d0fchlrfqqyahg0u',
+        contract: 'tp12nyn83ynewtmpkw32wq6dg83wx8nqpat65gcld',
+        msg: new Uint8Array(0),
+      };
+      should.equal(CosmosUtils.isGroupVote(message), false);
     });
   });
 

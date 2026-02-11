@@ -35,6 +35,13 @@ export class ContractCallBuilder<CustomMessage = never> extends CosmosTransactio
         } as MessageData<CustomMessage>;
       }
 
+      if (CosmosUtils.isGroupVote(executeContractMessage)) {
+        return {
+          typeUrl: constants.groupVoteMsgTypeUrl,
+          value: executeContractMessage.msg,
+        } as MessageData<CustomMessage>;
+      }
+
       this._utils.validateExecuteContractMessage(executeContractMessage, this.transactionType);
       return { typeUrl: constants.executeContractMsgTypeUrl, value: executeContractMessage };
     });
