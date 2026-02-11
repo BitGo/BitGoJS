@@ -4,3 +4,4 @@ export * from './keychains';
 export * from './wallet';
 export * from './unspents';
 export * from './transaction';
+export * from './psbt';
