@@ -7666,7 +7666,7 @@ aws4@^1.8.0:
   resolved "https://registry.npmjs.org/aws4/-/aws4-1.13.2.tgz"
   integrity sha512-lHe62zvbTB5eEABUVi/AwVh0ZKY9rMMDhmm+eeyuuUQbQ3+J+fONVQOZyj+DdrvD4BY33uYniyRJ4UJIaSKAfw==
 
-axios@0.25.0, axios@0.27.2, axios@1.7.4, axios@^0.21.2, axios@^0.26.1, axios@^1.13.0, axios@^1.6.0, axios@^1.8.3:
+axios@0.25.0, axios@0.27.2, axios@1.7.4, axios@^0.21.2, axios@^0.26.1, axios@^1.13.0, axios@^1.13.5, axios@^1.6.0, axios@^1.8.3:
   version "1.13.5"
   resolved "https://registry.npmjs.org/axios/-/axios-1.13.5.tgz#5e464688fa127e11a660a2c49441c009f6567a43"
   integrity sha512-cz4ur7Vb0xS4/KUN0tPWe44eqxrIu31me+fbang3ijiNscE129POzipJJA6zniq2C/Z6sJCjMimjS8Lc/GAs8Q==
