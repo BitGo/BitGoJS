@@ -5,7 +5,7 @@
   "module": "./dist/esm/index.js",
   "browser": "./dist/esm/index.js",
   "types": "./dist/cjs/src/index.d.ts",
-  "version": "1.25.0",
+  "version": "1.26.0",
   "exports": {
     ".": {
       "import": {
@@ -48,7 +48,7 @@
     "@bitgo/wasm-utxo": "^1.36.0"
   },
   "devDependencies": {
-    "@bitgo/utxo-lib": "^11.20.0"
+    "@bitgo/utxo-lib": "^11.21.0"
   },
   "lint-staged": {
     "*.{js,ts}": [

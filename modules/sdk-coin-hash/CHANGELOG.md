@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hash@3.7.0...@bitgo/sdk-coin-hash@3.8.0) (2026-02-12)
+
+
+### Features
+
+* **abstract-cosmos,sdk-coin-hash:** add fee granter support ([b827c52](https://github.com/BitGo/BitGoJS/commit/b827c528f94b44f87dc48771c13591c9ad61ae12))
+* **abstract-cosmos,sdk-coin-hash:** add group proposal support ([093e777](https://github.com/BitGo/BitGoJS/commit/093e77704b5092e01c86b91ac5e898179b83a4b8))
+* **abstract-cosmos,sdk-coin-hash:** add MsgVote support ([8a1f504](https://github.com/BitGo/BitGoJS/commit/8a1f5044038d37ec5631e4b1256815f8e20c2fc3))
+* **abstract-cosmos:** add contract call decoding ([199876b](https://github.com/BitGo/BitGoJS/commit/199876b0de321a723a7f643a3d4da48f8300d0f6))
+* **sdk-coin-hash:** support valuless transactions ([e165565](https://github.com/BitGo/BitGoJS/commit/e165565349fb45d63ba45f899a902536b92f49c0))
+
+
+
+
+
 # [3.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hash@3.6.24...@bitgo/sdk-coin-hash@3.7.0) (2026-01-30)
 
 

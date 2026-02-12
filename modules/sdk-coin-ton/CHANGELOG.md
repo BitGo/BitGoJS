@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.14.0...@bitgo/sdk-coin-ton@3.15.0) (2026-02-12)
+
+
+### Features
+
+* **sdk-coin-ton:** sc-5234 vest depo builder ([46dbab0](https://github.com/BitGo/BitGoJS/commit/46dbab0c63fafa9338a7a7ddcaafb613eab8e213))
+
+
+
+
+
 # [3.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.13.3...@bitgo/sdk-coin-ton@3.14.0) (2026-01-30)
 
 

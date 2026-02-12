@@ -3,6 +3,46 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.17.0...@bitgo/abstract-utxo@10.18.0) (2026-02-12)
+
+
+### Bug Fixes
+
+* **abstract-utxo:** update BIP322 test to verify wasm-utxo respects sighashType ([b721908](https://github.com/BitGo/BitGoJS/commit/b7219080087e7f65921f9416f14ea499fc6311cd))
+
+
+### Features
+
+* **abstract-utxo:** add signTransaction tests ([352beb8](https://github.com/BitGo/BitGoJS/commit/352beb887b1a2c7b0357454036e3c4c54f9eb4db))
+* **abstract-utxo:** always use wasm-utxo backend for recovery ([88e3135](https://github.com/BitGo/BitGoJS/commit/88e3135bdb7546c75320c079ddf3af24720624aa))
+* **abstract-utxo:** bump wasm-utxo to 1.32.0 ([6621f86](https://github.com/BitGo/BitGoJS/commit/6621f86777c1b3e7d803f657179aad5939e2abc6))
+* **abstract-utxo:** bump wasm-utxo to 1.34.0 ([3067511](https://github.com/BitGo/BitGoJS/commit/30675114fb1380c5d08dd339a4233b04a32a06f7))
+* **abstract-utxo:** default to wasm-utxo on testnet ([15b50c8](https://github.com/BitGo/BitGoJS/commit/15b50c89a18d7d1d48eafec2587c7fe077cc5089))
+* **abstract-utxo:** export UtxoCoinName types and type guards ([bb8bf45](https://github.com/BitGo/BitGoJS/commit/bb8bf45c3cc134fda2ef64a4971102b7caee151a))
+* **abstract-utxo:** improve Litecoin address conversion for cross-chain recovery ([2e2335d](https://github.com/BitGo/BitGoJS/commit/2e2335d64ba77f20f2a80b7fb9bb2502fabf4439))
+* **abstract-utxo:** inline unspent type definitions ([83cfd4b](https://github.com/BitGo/BitGoJS/commit/83cfd4bd201b91657293c54c0ebec717d495adf7))
+* **abstract-utxo:** make pubs parameter required for custom signing function ([945a272](https://github.com/BitGo/BitGoJS/commit/945a2722c53dcd9032fed6acf449911e4d3ba074))
+* **abstract-utxo:** optimize test suite with min coin selection ([a7228c5](https://github.com/BitGo/BitGoJS/commit/a7228c56947f595cd35a95a982134f7d61593a08))
+* **abstract-utxo:** refactor backup key recovery ([bba10c3](https://github.com/BitGo/BitGoJS/commit/bba10c3a11a3259848c225cfbff6e20351e27e64))
+* **abstract-utxo:** remove unspents dependency ([92d3e52](https://github.com/BitGo/BitGoJS/commit/92d3e52fa32625ed1aee31ceaff30855f08e566d))
+* **abstract-utxo:** remove unused addressType param ([ffb0e61](https://github.com/BitGo/BitGoJS/commit/ffb0e618fdb15a25db6a56f0dde31616a0dac5eb))
+* **abstract-utxo:** replace utxo-lib with wasm-utxo in tests ([68861ee](https://github.com/BitGo/BitGoJS/commit/68861ee5ce83aabc8bca0a70f0b05270418a9023))
+* **abstract-utxo:** simplify BIP322 message verification ([0fbc202](https://github.com/BitGo/BitGoJS/commit/0fbc2023f21dedb270e4e479c826ff706409df76))
+* **abstract-utxo:** simplify mock recovery provider ([fb8feb7](https://github.com/BitGo/BitGoJS/commit/fb8feb7157715e2cf9e10831d4693774d2c422a4))
+* **abstract-utxo:** simplify test script configuration ([4c68dbf](https://github.com/BitGo/BitGoJS/commit/4c68dbf90d6b272cbb0552d55ca053a70e1e5365))
+* **abstract-utxo:** switch to using wasm-utxo primitives ([473b076](https://github.com/BitGo/BitGoJS/commit/473b0760a69477f0463adf828dd6f7831db81152))
+* **abstract-utxo:** update check-fmt command path pattern ([8eedc51](https://github.com/BitGo/BitGoJS/commit/8eedc51febd6a630d4c2d401aeefb56f7f2bb868))
+* **abstract-utxo:** upgrade wasm-utxo to version 1.36.0 ([2f60e92](https://github.com/BitGo/BitGoJS/commit/2f60e9230d6243a2b62323b0129b3c64d08d0b2c))
+* **abstract-utxo:** use correct script hash for testnet LTC addresses ([c908b56](https://github.com/BitGo/BitGoJS/commit/c908b5661cb620d6a1831d5d587dd036ecb860ea))
+* **abstract-utxo:** use PSBT getHalfSignedLegacyFormat method ([a326192](https://github.com/BitGo/BitGoJS/commit/a326192983287dab29ee462c8aa44e43f5c727e0))
+* **abstract-utxo:** use wasm-utxo for backup key recovery ([b14a369](https://github.com/BitGo/BitGoJS/commit/b14a3693e1885b6bb9af151d6979f56f5a0ad77c))
+* **abstract-utxo:** use wasm-utxo for CCR utility functions ([0006da4](https://github.com/BitGo/BitGoJS/commit/0006da4e79c07393a9aab66b5b5713b1a8bf1799))
+* **abstract-utxo:** use wasm-utxo instead of utxo-lib ([c2fb2d5](https://github.com/BitGo/BitGoJS/commit/c2fb2d5ab3e8bb42cc17b942d4c4e957c624bb5a))
+
+
+
+
+
 # [10.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.16.0...@bitgo/abstract-utxo@10.17.0) (2026-01-30)
 
 

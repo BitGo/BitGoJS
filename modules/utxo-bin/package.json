@@ -1,7 +1,7 @@
 {
   "name": "@bitgo/utxo-bin",
   "description": "Command-line utility for BitGo UTXO transactions",
-  "version": "3.18.0",
+  "version": "3.19.0",
   "files": [
     "dist/**/*"
   ],
@@ -26,11 +26,11 @@
   },
   "bin": "./dist/bin/index.js",
   "dependencies": {
-    "@bitgo/blockapis": "^1.12.13",
-    "@bitgo/statics": "^58.24.0",
-    "@bitgo/unspents": "^0.51.0",
-    "@bitgo/utxo-core": "^1.32.0",
-    "@bitgo/utxo-lib": "^11.20.0",
+    "@bitgo/blockapis": "^1.13.0",
+    "@bitgo/statics": "^58.25.0",
+    "@bitgo/unspents": "^0.51.1",
+    "@bitgo/utxo-core": "^1.33.0",
+    "@bitgo/utxo-lib": "^11.21.0",
     "@bitgo/wasm-utxo": "^1.36.0",
     "@noble/curves": "1.8.1",
     "archy": "^1.0.0",

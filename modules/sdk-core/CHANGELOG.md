@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.31.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.30.0...@bitgo/sdk-core@36.31.0) (2026-02-12)
+
+
+### Features
+
+* **abstract-utxo:** make pubs parameter required for custom signing function ([945a272](https://github.com/BitGo/BitGoJS/commit/945a2722c53dcd9032fed6acf449911e4d3ba074))
+* add hypeevm bridging config details ([722a645](https://github.com/BitGo/BitGoJS/commit/722a6451f8be714a0f4e0a9653673b9d98a825c0))
+* add INR ([3873880](https://github.com/BitGo/BitGoJS/commit/3873880f48935c0aface32c98b3be9ffab2174ad))
+* added canton offer withdrawn builder ([325e4f3](https://github.com/BitGo/BitGoJS/commit/325e4f3bf35c3f36ab8f4c096fc294e5e7f5481c))
+* enable intent handling for all EVM chains with TSS support ([c74a0a8](https://github.com/BitGo/BitGoJS/commit/c74a0a8544e630520b44cfdb9354628fe7592d54))
+* **sdk-coin-ton:** sc-5234 vest depo builder ([46dbab0](https://github.com/BitGo/BitGoJS/commit/46dbab0c63fafa9338a7a7ddcaafb613eab8e213))
+* **sdk-core:** remove dependency on inferAddressType function ([0642c51](https://github.com/BitGo/BitGoJS/commit/0642c51df019195187db03c94f9b6cbf54dba41a))
+* **statics:** onboard Chiliz Chain (CHZ) L1 EVM ([ab2444b](https://github.com/BitGo/BitGoJS/commit/ab2444b233eaba4d4f8956b44a4e2362c1b91534))
+
+
+
+
+
 # [36.30.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.29.0...@bitgo/sdk-core@36.30.0) (2026-01-30)
 
 
