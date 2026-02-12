@@ -1,8 +1,16 @@
 /**
  * @prettier
  */
-//
-// index.js - Module definition for BitGoJS
+
+/**
+ * Main entry point for the BitGo SDK.
+ *
+ * This module re-exports the core BitGo functionality including authentication,
+ * wallet management, coin implementations, and cryptographic utilities.
+ *
+ * @module bitgo
+ */
+
 //
 // Copyright 2022, BitGo, Inc.  All Rights Reserved.
 //
