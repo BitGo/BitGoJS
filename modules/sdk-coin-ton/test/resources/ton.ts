@@ -218,3 +218,15 @@ export const tonWhalesVestingDepositFixture = {
   expireTime: 1234567890,
   bounceable: true,
 };
+
+export const tonWhalesVestingWithdrawFixture = {
+  recipient: {
+    address: 'EQDr9Sq482A6ikIUh5mUUjJaBUUJBrye13CJiDB-R31_lwIq',
+    amount: '200000000',
+  },
+  sender: 'EQBkD52LACNxGgaoAxm5Nhs0SN6gg8hNaceNYifev88Y7qoZ',
+  publicKey: '9d6d3714aeb1f007f6e6aa728f79fdd005ea2c7ad459b2f54d73f9e672426230',
+  seqno: 0,
+  expireTime: 1234567890,
+  bounceable: true,
+};
