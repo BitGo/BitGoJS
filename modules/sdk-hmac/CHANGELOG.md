@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-hmac@1.7.0...@bitgo/sdk-hmac@1.8.0) (2026-02-12)
+
+
+### Features
+
+* **sdk-hmac:** add v4 canonical preimage construction ([749faad](https://github.com/BitGo/BitGoJS/commit/749faaddbb7ca38a3fd343eee3af62720701a9aa))
+
+
+
+
+
 # [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-hmac@1.6.0...@bitgo/sdk-hmac@1.7.0) (2025-12-04)
 
 

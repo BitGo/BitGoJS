@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.28.26](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.28.25...@bitgo/key-card@0.28.26) (2026-02-12)
+
+
+### Bug Fixes
+
+* **key-card:** upgrade jspdf to 4.1.0 to fix security vulnerabilities ([d99cdc4](https://github.com/BitGo/BitGoJS/commit/d99cdc4452f388f83c2b600f0d73d20322a3a16c))
+
+
+
+
+
 ## [0.28.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.28.24...@bitgo/key-card@0.28.25) (2026-01-30)
 
 **Note:** Version bump only for package @bitgo/key-card

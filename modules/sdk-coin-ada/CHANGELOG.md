@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.22.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.22.0...@bitgo/sdk-coin-ada@4.22.1) (2026-02-12)
+
+
+### Bug Fixes
+
+* **sdk-coin-ada:** add multiassets to outputs for sponsored transactions ([5dc94e4](https://github.com/BitGo/BitGoJS/commit/5dc94e411dc8ba93a1df40de51445562bf831a26))
+* **sdk-coin-ada:** fix consolidation recovery ([ee3b5d9](https://github.com/BitGo/BitGoJS/commit/ee3b5d9bc33b713636c3ca494fbf534e18f179d9))
+
+
+
+
+
 # [4.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.21.0...@bitgo/sdk-coin-ada@4.22.0) (2026-01-30)
 
 

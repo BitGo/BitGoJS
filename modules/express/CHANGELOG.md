@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.19.0...@bitgo/express@15.20.0) (2026-02-12)
+
+
+### Features
+
+* capture raw body bytes for v4 hmac calculation ([2019b7a](https://github.com/BitGo/BitGoJS/commit/2019b7acabe77a355ff0e8c5590c4d2ed4612b8c))
+* **root:** add @bitgo/logger with sensitive data sanitization ([cb046aa](https://github.com/BitGo/BitGoJS/commit/cb046aa567c4c0dd1fc78de9de58b305486558eb))
+
+
+
+
+
 # [15.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.18.5...@bitgo/express@15.19.0) (2026-01-30)
 
 

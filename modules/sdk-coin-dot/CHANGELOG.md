@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.11.0...@bitgo/sdk-coin-dot@4.11.1) (2026-02-12)
+
+
+### Bug Fixes
+
+* **sdk-coin-dot:** add check for undefined amount ([f20e66f](https://github.com/BitGo/BitGoJS/commit/f20e66fbdb7df054fcde679e12c2885b7880816e))
+
+
+
+
+
 # [4.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.10.6...@bitgo/sdk-coin-dot@4.11.0) (2026-01-30)
 
 

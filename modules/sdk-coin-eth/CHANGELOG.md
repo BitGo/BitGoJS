@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.5.0...@bitgo/sdk-coin-eth@25.6.0) (2026-02-12)
+
+
+### Features
+
+* support erc20 token registry using custom coin map ([6005a3e](https://github.com/BitGo/BitGoJS/commit/6005a3e2e54485146d9dd3eab1e6436b6d682614))
+
+
+
+
+
 # [25.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.4.9...@bitgo/sdk-coin-eth@25.5.0) (2026-01-30)
 
 

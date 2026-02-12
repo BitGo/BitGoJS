@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.4.0...@bitgo/sdk-coin-tempo@1.5.0) (2026-02-12)
+
+
+### Features
+
+* **sdk-coin-tempo:** add memoId support for address validation ([cf86dcc](https://github.com/BitGo/BitGoJS/commit/cf86dcc08b2c0a52d785645ed472a21614b6b19e))
+
+
+
+
+
 # [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.3.2...@bitgo/sdk-coin-tempo@1.4.0) (2026-01-30)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.11.0...@bitgo/sdk-coin-vet@2.12.0) (2026-02-12)
+
+
+### Features
+
+* **root:** add @bitgo/logger with sensitive data sanitization ([cb046aa](https://github.com/BitGo/BitGoJS/commit/cb046aa567c4c0dd1fc78de9de58b305486558eb))
+
+
+
+
+
 # [2.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.10.5...@bitgo/sdk-coin-vet@2.11.0) (2026-01-30)
 
 
