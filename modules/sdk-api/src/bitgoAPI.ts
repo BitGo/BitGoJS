@@ -1932,9 +1932,15 @@ export class BitGoAPI implements BitGoBase {
       password: this.calculateHMAC(user.username, newPassword),
     };
 
+    // Calculate payload size in KB
+    const payloadSizeBytes = JSON.stringify(updatePasswordParams).length;
+    const payloadSizeKB = Math.ceil(payloadSizeBytes / 1024);
+
     // Check if batching flow is enabled
     try {
-      const batchingFlowCheck = await this.get(this.url('/user/checkBatchingPasswordFlow', 2)).result();
+      const batchingFlowCheck = await this.get(this.url('/user/checkBatchingPasswordFlow', 2))
+        .query({ payloadSize: payloadSizeKB.toString() })
+        .result();
 
       if (batchingFlowCheck.isBatchingFlowEnabled) {
         await this.processKeychainPasswordUpdatesInBatches(
