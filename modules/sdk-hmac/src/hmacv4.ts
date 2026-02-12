@@ -175,10 +175,10 @@ export function calculateV4RequestHmac({
  * });
  *
  * // Use headers to set:
- * // - Auth-Timestamp: headers.timestampSec
- * // - HMAC: headers.hmac
- * // - X-Body-Hash: headers.bodyHashHex
- * // - X-Request-Id: headers.authRequestId
+ * // - X-Request-Timestamp: headers.timestampSec
+ * // - X-Signature: headers.hmac
+ * // - X-Content-SHA256: headers.bodyHashHex
+ * // - X-Auth-Request-Id: headers.authRequestId
  * ```
  */
 export function calculateV4RequestHeaders({
