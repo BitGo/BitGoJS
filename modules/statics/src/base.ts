@@ -2133,6 +2133,8 @@ export enum UnderlyingAsset {
   'eth:usd1' = 'eth:usd1',
   'eth:usdm1' = 'eth:usdm1',
   'eth:sofid' = 'eth:sofid',
+  'eth:cusd' = 'eth:cusd',
+  'eth:fyusd' = 'eth:fyusd',
   'eth:ibtc' = 'eth:ibtc',
   'eth:pyr' = 'eth:pyr',
   'eth:una' = 'eth:una',
@@ -3014,6 +3016,7 @@ export enum UnderlyingAsset {
   'mantle:usde' = 'mantle:usde',
   'mantle:usdt0' = 'mantle:usdt0',
   'mantle:ausd' = 'mantle:ausd',
+  'mantle:usd1' = 'mantle:usd1',
 
   // Mantle testnet tokens
   'tmantle:bgerch' = 'tmantle:bgerch',

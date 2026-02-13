@@ -2393,6 +2393,15 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['mantle:ausd'],
     Networks.main.mantle
   ),
+  erc20Token(
+    '14596c97-a9d0-4042-9856-0fd8b8ee1b1f',
+    'mantle:usd1',
+    'USD1',
+    18,
+    '0x111111d2bf19e43c34263401e0cad979ed1cdb61',
+    UnderlyingAsset['mantle:usd1'],
+    Networks.main.mantle
+  ),
   // Mantle testnet tokens
   erc20Token(
     '10fd0f49-d71a-4815-bbd0-ce1ca67b7982',
