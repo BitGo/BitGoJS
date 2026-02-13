@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-xtz",
-  "version": "2.9.1",
+  "version": "2.9.2",
   "description": "BitGo SDK coin library for Tezos",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@bitgo/blake2b": "^3.2.4",
-    "@bitgo/sdk-core": "^36.31.0",
+    "@bitgo/sdk-core": "^36.31.1",
     "@bitgo/secp256k1": "^1.10.0",
     "@bitgo/statics": "^58.25.0",
     "@noble/curves": "1.8.1",
@@ -55,8 +55,8 @@
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.74.0",
-    "@bitgo/sdk-test": "^9.1.26"
+    "@bitgo/sdk-api": "^1.74.1",
+    "@bitgo/sdk-test": "^9.1.27"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [
