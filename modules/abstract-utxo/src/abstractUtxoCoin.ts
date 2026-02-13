@@ -4,7 +4,7 @@ import { randomBytes } from 'crypto';
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32 } from '@bitgo/secp256k1';
-import { bitgo, getMainnet, isMainnet } from '@bitgo/utxo-lib';
+import { bitgo, getMainnet } from '@bitgo/utxo-lib';
 import {
   AddressCoinSpecific,
   BaseCoin,
@@ -1001,22 +1001,7 @@ export abstract class AbstractUtxoCoin
       return requestedFormat;
     }
 
-    if (isTestnetCoin(this.name)) {
-      return 'psbt-lite';
-    }
-
-    const walletFlagMusigKp = wallet.flag('musigKp') === 'true';
-    const isHotWallet = wallet.type() === 'hot';
-
-    // Determine if we should default to psbt format
-    const shouldDefaultToPsbt =
-      wallet.subType() === 'distributedCustody' ||
-      // if mainnet, only default to psbt for btc hot wallets
-      (isMainnet(this.network) && getMainnet(this.network) === utxolib.networks.bitcoin && isHotWallet) ||
-      // default to psbt if it has the wallet flag
-      walletFlagMusigKp;
-
-    return shouldDefaultToPsbt ? 'psbt' : undefined;
+    return 'psbt-lite';
   }
 
   async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<{

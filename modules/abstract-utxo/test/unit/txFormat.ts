@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import { Wallet } from '@bitgo/sdk-core';
 
 import { AbstractUtxoCoin, ErrorDeprecatedTxFormat, TxFormat } from '../../src';
-import { getMainnetCoinName, isMainnetCoin, isTestnetCoin } from '../../src/names';
+import { isMainnetCoin, isTestnetCoin } from '../../src/names';
 
 import { utxoCoins, defaultBitGo } from './util';
 
@@ -110,42 +110,11 @@ describe('txFormat', function () {
       expectedTxFormat: 'psbt-lite',
     });
 
-    // DistributedCustody wallets default to PSBT (mainnet only, testnet already covered)
+    // All mainnet wallets default to psbt-lite
     runTest({
-      description: 'should return psbt for distributedCustody wallets on mainnet',
+      description: 'should return psbt-lite for all mainnet wallets',
       coinFilter: (coin) => isMainnetCoin(coin.name),
-      walletFilter: (w) => w.options.subType === 'distributedCustody',
-      expectedTxFormat: 'psbt',
-    });
-
-    // MuSig2 wallets default to PSBT (mainnet only, testnet already covered)
-    runTest({
-      description: 'should return psbt for wallets with musigKp flag on mainnet',
-      coinFilter: (coin) => isMainnetCoin(coin.name),
-      walletFilter: (w) => Boolean(w.options.walletFlags?.some((f) => f.name === 'musigKp' && f.value === 'true')),
-      expectedTxFormat: 'psbt',
-    });
-
-    // Mainnet Bitcoin hot wallets default to PSBT
-    runTest({
-      description: 'should return psbt for mainnet bitcoin hot wallets',
-      coinFilter: (coin) => isMainnetCoin(coin.name) && getMainnetCoinName(coin.name) === 'btc',
-      walletFilter: (w) => w.options.type === 'hot',
-      expectedTxFormat: 'psbt',
-    });
-
-    // Other mainnet wallets do NOT default to PSBT
-    runTest({
-      description: 'should return undefined for other mainnet wallets',
-      coinFilter: (coin) => isMainnetCoin(coin.name),
-      walletFilter: (w) => {
-        const isHotBitcoin = w.options.type === 'hot'; // This will be bitcoin hot wallets
-        const isDistributedCustody = w.options.subType === 'distributedCustody';
-        const hasMusigKpFlag = Boolean(w.options.walletFlags?.some((f) => f.name === 'musigKp' && f.value === 'true'));
-        // Only test "other" wallets - exclude the special cases
-        return !isHotBitcoin && !isDistributedCustody && !hasMusigKpFlag;
-      },
-      expectedTxFormat: undefined,
+      expectedTxFormat: 'psbt-lite',
     });
 
     // Test explicitly requested formats
