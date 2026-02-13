@@ -3976,6 +3976,34 @@ export const tOfcErc20Coins = [
     'hteth'
   ),
   tofcerc20(
+    'befb8fc3-03e8-4d63-8da6-d4013f346149',
+    'ofchteth:stgcusd',
+    'Test Catholic USD',
+    6,
+    UnderlyingAsset['hteth:stgcusd'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    '9a56cdc4-25bd-47e9-93f6-0e8f463c4afd',
+    'ofchteth:stgfyusd',
+    'Test FYUSD',
+    6,
+    UnderlyingAsset['hteth:stgfyusd'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
     'bf6a1c7b-eed7-46af-85ec-0adc09aa72d6',
     'ofchteth:aut',
     'Holesky Testnet AllUnity',
@@ -5395,6 +5423,13 @@ export const tOfcErc20Coins = [
     18,
     underlyingAssetForSymbol('tmantle:usd1')
   ),
+  tofcerc20(
+    '4fc97feb-4d66-4ab7-8538-83ccf25673bb',
+    'ofctmantle:stgusd1',
+    'Test USD1 Token',
+    18,
+    underlyingAssetForSymbol('tmantle:stgusd1')
+  ),
 
   // MegaEth Network tokens
   ofcerc20(
@@ -5542,6 +5577,20 @@ export const tOfcErc20Coins = [
     'Test USD1 Token',
     18,
     underlyingAssetForSymbol('tmorpheth:usd1'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tmorpheth'
+  ),
+  tofcerc20(
+    '15ca2074-d5bc-450c-886e-1338ffb114f8',
+    'ofctmorpheth:stgusd1',
+    'Test USD1 Token',
+    18,
+    underlyingAssetForSymbol('tmorpheth:stgusd1'),
     undefined,
     undefined,
     '',
