@@ -218,6 +218,7 @@ export interface PrebuildTransactionOptions {
   };
   txRequestId?: string;
   isTestTransaction?: boolean;
+  contractId?: string;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
