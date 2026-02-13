@@ -177,6 +177,8 @@ export interface EthereumNetwork extends AccountNetwork {
   readonly walletV4ImplementationAddress?: string;
   readonly nativeCoinOperationHashPrefix?: string;
   readonly tokenOperationHashPrefix?: string;
+  // Irys native API URL for commitment transactions (anchor, price, broadcast)
+  readonly irysApiUrl?: string;
 }
 
 export interface TronNetwork extends AccountNetwork {
@@ -1839,6 +1841,7 @@ class Irys extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://evm-explorer.irys.xyz/address/';
   chainId = 3282;
   nativeCoinOperationHashPrefix = '3282';
+  irysApiUrl = 'https://node1.irys.xyz/v1';
 }
 
 class IrysTestnet extends Testnet implements EthereumNetwork {
@@ -1853,6 +1856,7 @@ class IrysTestnet extends Testnet implements EthereumNetwork {
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  irysApiUrl = 'https://testnet-node1.irys.xyz/v1';
 }
 
 class Og extends Mainnet implements EthereumNetwork {
