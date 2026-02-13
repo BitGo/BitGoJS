@@ -12785,6 +12785,30 @@ export const erc20Coins = [
     Networks.test.hoodi
   ),
   terc20(
+    '0de5107e-a28e-4cfb-8d2d-c8ffce77cb87',
+    'hteth:cusd',
+    'Test Catholic USD',
+    6,
+    '0xb554e8dcadf5d6e18434ad29ad3f1c437bdb29a4',
+    UnderlyingAsset['hteth:cusd'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
+    'f5ca2461-5bce-4268-a507-288c4504109a',
+    'hteth:fyusd',
+    'Test FYUSD',
+    6,
+    '0xd1bbd247be78c68cdeb8486744bd4513e62025e6',
+    UnderlyingAsset['hteth:fyusd'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
     '30179af0-ca75-4cb1-99d9-028bc56bf10e',
     'tmsn',
     'meson.network-testnet',

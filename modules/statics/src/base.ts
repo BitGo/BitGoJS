@@ -1842,6 +1842,8 @@ export enum UnderlyingAsset {
   'hteth:stgsofid' = 'hteth:stgsofid',
   'hteth:usd1' = 'hteth:usd1',
   'hteth:stgusd1' = 'hteth:stgusd1',
+  'hteth:cusd' = 'hteth:cusd',
+  'hteth:fyusd' = 'hteth:fyusd',
   'hteth:tsteth' = 'hteth:tsteth',
   THKD = 'thkd',
   THUNDER = 'thunder',
@@ -2414,6 +2416,7 @@ export enum UnderlyingAsset {
   'morpheth:usd1' = 'morpheth:usd1',
   'tmorph:tmt' = 'tmorph:tmt',
   'tmorpheth:tmt' = 'tmorpheth:tmt',
+  'tmorpheth:usd1' = 'tmorpheth:usd1',
 
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
@@ -3017,6 +3020,7 @@ export enum UnderlyingAsset {
 
   // Mantle testnet tokens
   'tmantle:bgerch' = 'tmantle:bgerch',
+  'tmantle:usd1' = 'tmantle:usd1',
 
   // Flow mainnet tokens
   'flow:weth' = 'flow:weth',
