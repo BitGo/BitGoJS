@@ -771,6 +771,8 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   eip1559?: EIP1559;
   gasLimit?: number;
   custodianTransactionId?: string;
+  /** Optional blockchain identifier for specifying the target blockchain network */
+  blockChain?: string;
 }
 
 export interface FetchCrossChainUTXOsOptions {
