@@ -9,18 +9,5 @@
   },
   "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules"],
-  "references": [
-    {
-      "path": "../abstract-eth"
-    },
-    {
-      "path": "../sdk-core"
-    },
-    {
-      "path": "../statics"
-    },
-    {
-      "path": "../sdk-test"
-    }
-  ]
+  "references": []
 }
