@@ -1887,8 +1887,6 @@ export const allCoinsAndTokens = [
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,
-      CoinFeature.SHARED_EVM_SIGNING,
-      CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
@@ -1905,12 +1903,11 @@ export const allCoinsAndTokens = [
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,
-      CoinFeature.SHARED_EVM_SIGNING,
-      CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.STAKING,
     ]
   ),
   account(

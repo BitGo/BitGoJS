@@ -183,6 +183,9 @@
       "path": "../sdk-coin-iota"
     },
     {
+      "path": "../sdk-coin-irys"
+    },
+    {
       "path": "../sdk-coin-islm"
     },
     {
