@@ -141,6 +141,10 @@ export abstract class MpcUtils {
       assert(params.txRequestId, `'txRequestId' is required parameter for ${params.intentType} intent`);
     }
 
+    if (params.intentType === 'transferOfferWithdrawn' && baseCoin.getFamily() === 'canton') {
+      assert(params.contractId, `'contractId' is required parameter for ${params.intentType} intent`);
+    }
+
     if (
       ![
         'acceleration',
@@ -150,6 +154,7 @@ export abstract class MpcUtils {
         'customTx',
         'transferAccept',
         'transferReject',
+        'transferOfferWithdrawn',
       ].includes(params.intentType)
     ) {
       assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);
