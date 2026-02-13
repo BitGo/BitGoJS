@@ -2408,6 +2408,15 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['tmantle:bgerch'],
     Networks.test.mantle
   ),
+  erc20Token(
+    'c9bc1c74-2db0-4bdd-8545-f20a54815aa5',
+    'tmantle:usd1',
+    'Test USD1 Token',
+    18,
+    '0x7ef7a15922510f91672207a2f61d7ffd998079b3',
+    UnderlyingAsset['tmantle:usd1'],
+    Networks.test.mantle
+  ),
   account(
     'd7ed1781-23ff-49b7-be6b-7fec13e1c452',
     'jovayeth',
@@ -3570,6 +3579,15 @@ export const allCoinsAndTokens = [
     6,
     '0x5257950b5277dac30536eae4742ffef4e5af5256',
     UnderlyingAsset['tmorpheth:tmt'],
+    Networks.test.morpheth
+  ),
+  erc20Token(
+    '15286c32-210b-402d-84a2-5e406e584981',
+    'tmorpheth:usd1',
+    'Test USD1 Token',
+    18,
+    '0x8bdaad0ebc24fb63af6c5f29e2a2898500c87886',
+    UnderlyingAsset['tmorpheth:usd1'],
     Networks.test.morpheth
   ),
 
