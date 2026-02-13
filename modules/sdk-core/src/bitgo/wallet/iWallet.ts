@@ -34,6 +34,7 @@ import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
 import { IAddressBook } from '../address-book';
 import { WalletUser, AddressQueryResult } from '@bitgo/public-types';
 import { SubmitTransactionResponse } from '../inscriptionBuilder';
+import { z } from 'zod';
 
 export interface MaximumSpendableOptions {
   minValue?: number | string;
@@ -772,6 +773,66 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   gasLimit?: number;
   custodianTransactionId?: string;
 }
+
+const TokenTransferRecipientParamsSchema = z.object({
+  tokenType: z.enum(['ERC721', 'ERC1155', 'ERC20', 'Digital Asset']),
+  tokenQuantity: z.string(),
+  tokenContractAddress: z.string().optional(),
+  tokenName: z.string().optional(),
+  tokenId: z.string().optional(),
+  decimalPlaces: z.number().optional(),
+});
+
+const SendManyRecipientSchema = z.object({
+  address: z.string(),
+  amount: z.union([z.string(), z.number()]),
+  feeLimit: z.string().optional(),
+  data: z.union([z.string(), TokenTransferRecipientParamsSchema]).optional(),
+  tokenName: z.string().optional(),
+  tokenData: TokenTransferRecipientParamsSchema.optional(),
+});
+
+const EIP1559Schema = z.object({
+  maxPriorityFeePerGas: z.string(),
+  maxFeePerGas: z.string(),
+});
+
+const MemoSchema = z.object({
+  value: z.string(),
+  type: z.string(),
+});
+
+export const SendManyOptionsSchema = z
+  .object({
+    recipients: z.array(SendManyRecipientSchema).optional(),
+    numBlocks: z.number().optional(),
+    feeRate: z.number().optional(),
+    feeMultiplier: z.number().optional(),
+    maxFeeRate: z.number().optional(),
+    minConfirms: z.number().optional(),
+    enforceMinConfirmsForChange: z.boolean().optional(),
+    targetWalletUnspents: z.number().optional(),
+    message: z.string().optional(),
+    minValue: z.union([z.number(), z.string()]).optional(),
+    maxValue: z.union([z.number(), z.string()]).optional(),
+    sequenceId: z.string().optional(),
+    lastLedgerSequence: z.number().optional(),
+    ledgerSequenceDelta: z.number().optional(),
+    gasPrice: z.number().optional(),
+    noSplitChange: z.boolean().optional(),
+    unspents: z.array(z.string()).optional(),
+    comment: z.string().optional(),
+    otp: z.string().optional(),
+    changeAddress: z.string().optional(),
+    allowExternalChangeAddress: z.boolean().optional(),
+    instant: z.boolean().optional(),
+    memo: MemoSchema.optional(),
+    transferId: z.number().optional(),
+    eip1559: EIP1559Schema.optional(),
+    gasLimit: z.number().optional(),
+    custodianTransactionId: z.string().optional(),
+  })
+  .passthrough();
 
 export interface FetchCrossChainUTXOsOptions {
   sourceChain?: 'P' | 'C';

@@ -99,6 +99,7 @@ import {
   RemovePolicyRuleOptions,
   RemoveUserOptions,
   SendManyOptions,
+  SendManyOptionsSchema,
   SendNFTOptions,
   SendNFTResult,
   SendOptions,
@@ -2862,7 +2863,7 @@ export class Wallet implements IWallet {
    * @returns {*}
    */
   async sendMany(params: SendManyOptions = {}): Promise<any> {
-    common.validateParams(params, [], ['comment', 'otp']);
+    SendManyOptionsSchema.parse(params);
     debug('sendMany called');
     const reqId = params.reqId || new RequestTracer();
     params.reqId = reqId;
