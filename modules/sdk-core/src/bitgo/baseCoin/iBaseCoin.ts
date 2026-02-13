@@ -189,6 +189,17 @@ export interface TssVerifyAddressOptions {
   derivedFromParentWithSeed?: string;
 }
 
+/**
+ * Type guard that checks whether the given address verification options
+ * are TSS (Threshold Signature Scheme) verify address options.
+ *
+ * This determines if the params contain the required fields for TSS address
+ * verification: keychains, index, address, and at least one keychain with
+ * a commonKeychain property.
+ *
+ * @param params - The address verification options to check.
+ * @returns True if the params satisfy the {@link TssVerifyAddressOptions} interface.
+ */
 export function isTssVerifyAddressOptions<T extends VerifyAddressOptions | TssVerifyAddressOptions>(
   params: T
 ): params is T & TssVerifyAddressOptions {
