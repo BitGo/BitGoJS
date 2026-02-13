@@ -3133,6 +3133,24 @@ export const ofcErc20Coins = [
     [CoinFeature.STABLECOIN]
   ),
   ofcerc20(
+    '43e6a63a-2014-493d-b98c-b5ab10c6e5bb',
+    'ofceth:cusd',
+    'Catholic USD',
+    6,
+    underlyingAssetForSymbol('eth:cusd'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcerc20(
+    'e518b37f-a24a-454c-bbbf-eddc75de68f0',
+    'ofceth:fyusd',
+    'FYUSD',
+    6,
+    underlyingAssetForSymbol('eth:fyusd'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcerc20(
     '80bfa43e-f01c-42bd-bd14-269b88948bbf',
     'ofceth:usdg',
     'Global Dollar',
@@ -3675,6 +3693,13 @@ export const ofcErc20Coins = [
     'AUSD',
     6,
     underlyingAssetForSymbol('mantle:ausd')
+  ),
+  ofcerc20(
+    'e304dde3-8782-4e54-b6e7-c0080d1ea485',
+    'ofcmantle:usd1',
+    'USD1',
+    18,
+    underlyingAssetForSymbol('mantle:usd1')
   ),
   // New ETH OFC tokens
   ofcerc20('a5357ba2-5a2a-4d73-8f65-e01b9158ea9c', 'ofceth:resolv', 'Resolv', 18, UnderlyingAsset['eth:resolv']),

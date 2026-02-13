@@ -10978,6 +10978,24 @@ export const erc20Coins = [
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
+    '5d5188cf-5435-4189-96e7-2650522a76aa',
+    'eth:cusd',
+    'Catholic USD',
+    6,
+    '0xde9f13a6acdde90f83068c1bac151e6edba05885',
+    UnderlyingAsset['eth:cusd'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  erc20(
+    '1c2c6cba-924c-418d-a88f-e274030bf9b2',
+    'eth:fyusd',
+    'FYUSD',
+    6,
+    '0x186d0c7da30735b3f7961d0f16e037d020291571',
+    UnderlyingAsset['eth:fyusd'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  erc20(
     'e811d594-de4f-48b0-9b6b-47e8b4ba7dda',
     'eth:ibtc',
     'Token iBTC',
