@@ -966,13 +966,13 @@ class BldTestnet extends Testnet implements AccountNetwork {
 class Sei extends Mainnet implements AccountNetwork {
   name = 'Sei';
   family = CoinFamily.SEI;
-  explorerUrl = 'https://seistream.app/transactions/';
+  explorerUrl = 'https://seitrace.com/tx/';
 }
 
 class SeiTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Sei';
   family = CoinFamily.SEI;
-  explorerUrl = 'https://testnet.seistream.app/transactions/';
+  explorerUrl = 'https://testnet.seitrace.com/tx/';
 }
 
 class Zeta extends Mainnet implements AccountNetwork {
