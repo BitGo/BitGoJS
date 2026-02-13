@@ -1154,7 +1154,7 @@ export class BitGoAPI implements BitGoBase {
 
     return {
       tokenId: params.tokenId,
-      signingKey: signingKey,
+      signingKey,
     };
   }
 

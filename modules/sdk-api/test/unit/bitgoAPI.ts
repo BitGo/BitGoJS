@@ -622,12 +622,8 @@ describe('processV4TokenIssuance', function () {
 
   it('should throw error when missing required parameters', function () {
     (() => {
-      bitgo.processV4TokenIssuance({
-        tokenId: '',
-        encryptedToken: '',
-        derivationPath: '',
-        ecdhXprv: '',
-      });
+      // @ts-expect-error - Testing parameter validation with missing required fields
+      bitgo.processV4TokenIssuance({});
     }).should.throw(/tokenId/);
   });
 
@@ -767,7 +763,8 @@ describe('V4 Token Issuance', function () {
     } as any);
 
     // Stub verifyResponse to pass
-    const verifyStub = sinon.stub(bitgo as any, 'verifyResponse').returns(undefined);
+    const verifyResponseStub = sinon.stub().returns(undefined);
+    const verifyStub = sinon.stub(require('../../src/api'), 'verifyResponse').callsFake(verifyResponseStub);
 
     try {
       await bitgo.addAccessToken({

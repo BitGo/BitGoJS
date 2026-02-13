@@ -49,12 +49,12 @@ export function calculateHMACSubject<T extends string | Buffer = string>(
   let prefixedText: string;
   if (statusCode !== undefined && isFinite(statusCode) && Number.isInteger(statusCode)) {
     prefixedText =
-      authVersion === 3 || authVersion === 4
+      authVersion === 3
         ? [method.toUpperCase(), timestamp, queryPath, statusCode].join('|')
         : [timestamp, queryPath, statusCode].join('|');
   } else {
     prefixedText =
-      authVersion === 3 || authVersion === 4
+      authVersion === 3
         ? [method.toUpperCase(), timestamp, '3.0', queryPath].join('|')
         : [timestamp, queryPath].join('|');
   }
