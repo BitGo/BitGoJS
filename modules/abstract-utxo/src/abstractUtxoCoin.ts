@@ -79,7 +79,6 @@ import {
   getFullNameFromCoinName,
   getMainnetCoinName,
   getNetworkFromCoinName,
-  isTestnetCoin,
   isUtxoCoinNameMainnet,
   UtxoCoinName,
   UtxoCoinNameMainnet,
@@ -333,6 +332,11 @@ type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = 
    * transaction (nonWitnessUtxo)
    */
   allowNonSegwitSigningWithoutPrevTx?: boolean;
+  /**
+   * When true, the signed transaction will be converted from PSBT to legacy format before returning.
+   * Set automatically by presignTransaction() when the caller explicitly requested txFormat: 'legacy'.
+   */
+  returnLegacyFormat?: boolean;
   wallet?: UtxoWallet;
 };
 
@@ -991,17 +995,11 @@ export abstract class AbstractUtxoCoin
    * @param requestedFormat - Optional explicitly requested format
    * @returns The transaction format to use, or undefined if no default applies
    */
-  getDefaultTxFormat(wallet: Wallet, requestedFormat?: TxFormat): TxFormat | undefined {
-    // If format is explicitly requested, use it
-    if (requestedFormat !== undefined) {
-      if (isTestnetCoin(this.name) && requestedFormat === 'legacy') {
-        throw new ErrorDeprecatedTxFormat(requestedFormat);
-      }
-
-      return requestedFormat;
+  getDefaultTxFormat(wallet: Wallet, requestedFormat?: TxFormat): TxFormat {
+    if (requestedFormat === 'legacy') {
+      return 'psbt-lite';
     }
-
-    return 'psbt-lite';
+    return requestedFormat ?? 'psbt-lite';
   }
 
   async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<{
@@ -1035,6 +1033,9 @@ export abstract class AbstractUtxoCoin
     if (params.walletData && isUtxoWalletData(params.walletData) && isDescriptorWalletData(params.walletData)) {
       return params;
     }
+
+    const returnLegacyFormat = (params as Record<string, unknown>).txFormat === 'legacy';
+
     // In the case that we have a 'psbt-lite' transaction format, we want to indicate in signing to not fail
     const txHex = (params.txHex ?? params.txPrebuild?.txHex) as string;
     if (
@@ -1043,9 +1044,9 @@ export abstract class AbstractUtxoCoin
       utxolib.bitgo.isPsbtLite(utxolib.bitgo.createPsbtFromHex(txHex, this.network)) &&
       params.allowNonSegwitSigningWithoutPrevTx === undefined
     ) {
-      return { ...params, allowNonSegwitSigningWithoutPrevTx: true };
+      return { ...params, allowNonSegwitSigningWithoutPrevTx: true, returnLegacyFormat };
     }
-    return params;
+    return { ...params, returnLegacyFormat };
   }
 
   async supplementGenerateWallet(
