@@ -24,7 +24,7 @@ export {
 } from '@bitgo/sdk-hmac';
 export interface BitGoAPIOptions {
   accessToken?: string;
-  authVersion?: 2 | 3;
+  authVersion?: 2 | 3 | 4;
   clientConstants?:
     | Record<string, any>
     | {
@@ -137,6 +137,7 @@ export interface User {
 export interface BitGoJson {
   user?: User;
   token?: string;
+  tokenId?: string; // V4: separate token identifier
   extensionKey?: string;
   ecdhXprv?: string;
 }
@@ -149,11 +150,24 @@ export interface TokenIssuanceResponse {
   derivationPath: string;
   encryptedToken: string;
   encryptedECDHXprv?: string;
+  id?: string; // V4: token identifier
 }
 
 export interface TokenIssuance {
   token: string;
   ecdhXprv?: string;
+}
+
+export interface ProcessV4TokenIssuanceParams {
+  tokenId: string; // V4: token identifier from response.id
+  encryptedToken: string; // V4: encrypted signing key
+  derivationPath: string;
+  ecdhXprv: string;
+}
+
+export interface ProcessV4TokenIssuanceResult {
+  tokenId: string;
+  signingKey: string;
 }
 
 export interface AccessTokenSpendingLimit {
@@ -189,6 +203,7 @@ export interface AddAccessTokenResponse {
   encryptedToken: string;
   derivationPath: string;
   token: string;
+  tokenId?: string; // V4: separate token identifier
   enterprise?: string;
   extensionAddress?: string;
 }

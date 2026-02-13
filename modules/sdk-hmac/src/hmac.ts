@@ -27,7 +27,7 @@ export function calculateHMAC(key: string | BinaryLike | KeyObject, message: str
  * @param timestamp request timestamp from `Date.now()`
  * @param statusCode Only set for HTTP responses, leave blank for requests
  * @param method request method
- * @param authVersion authentication version (2 or 3)
+ * @param authVersion authentication version (2, 3, or 4)
  * @param useOriginalPath whether to use the original urlPath without parsing (default false)
  * @returns {string | Buffer}
  */
@@ -49,12 +49,12 @@ export function calculateHMACSubject<T extends string | Buffer = string>(
   let prefixedText: string;
   if (statusCode !== undefined && isFinite(statusCode) && Number.isInteger(statusCode)) {
     prefixedText =
-      authVersion === 3
+      authVersion === 3 || authVersion === 4
         ? [method.toUpperCase(), timestamp, queryPath, statusCode].join('|')
         : [timestamp, queryPath, statusCode].join('|');
   } else {
     prefixedText =
-      authVersion === 3
+      authVersion === 3 || authVersion === 4
         ? [method.toUpperCase(), timestamp, '3.0', queryPath].join('|')
         : [timestamp, queryPath].join('|');
   }

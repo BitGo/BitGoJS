@@ -75,6 +75,8 @@ import {
   SplitSecretOptions,
   TokenIssuance,
   TokenIssuanceResponse,
+  ProcessV4TokenIssuanceParams,
+  ProcessV4TokenIssuanceResult,
   UnlockOptions,
   User,
   VerifyPasswordOptions,
@@ -123,6 +125,7 @@ export class BitGoAPI implements BitGoBase {
   protected _extensionKey?: ECPairInterface;
   protected _reqId?: IRequestTracer;
   protected _token?: string;
+  protected _tokenId?: string; // V4: separate token identifier
   protected _version = pjson.version;
   protected _userAgent?: string;
   protected _ecdhXprv?: string;
@@ -735,6 +738,7 @@ export class BitGoAPI implements BitGoBase {
     return {
       user: this._user,
       token: this._token,
+      tokenId: this._tokenId,
       extensionKey: this._extensionKey ? this._extensionKey.toWIF() : undefined,
       ecdhXprv: this._ecdhXprv,
     };
@@ -758,6 +762,7 @@ export class BitGoAPI implements BitGoBase {
   fromJSON(json: BitGoJson): void {
     this._user = json.user;
     this._token = json.token;
+    this._tokenId = json.tokenId;
     this._ecdhXprv = json.ecdhXprv;
     if (json.extensionKey) {
       const network = common.Environments[this.getEnv()].network;
@@ -980,6 +985,11 @@ export class BitGoAPI implements BitGoBase {
         this._token = responseDetails.token;
         this._ecdhXprv = responseDetails.ecdhXprv;
 
+        // V4: store separate token identifier
+        if (this._authVersion === 4 && body.id) {
+          this._tokenId = body.id;
+        }
+
         // verify the response's authenticity
         verifyResponse(this, responseDetails.token, 'post', request, response, this._authVersion);
 
@@ -1045,14 +1055,18 @@ export class BitGoAPI implements BitGoBase {
    * @param responseBody Response body object
    * @param password Password for the symmetric decryption
    */
-  handleTokenIssuance(responseBody: TokenIssuanceResponse, password?: string): TokenIssuance {
+  handleTokenIssuance(
+    responseBody: TokenIssuanceResponse,
+    password?: string,
+    ecdhXprvOverride?: string
+  ): TokenIssuance {
     // make sure the response body contains the necessary properties
     common.validateParams(responseBody, ['derivationPath'], ['encryptedECDHXprv']);
 
     const environment = this._env;
     const environmentConfig = common.Environments[environment];
     const serverXpub = environmentConfig.serverXpub;
-    let ecdhXprv = this._ecdhXprv;
+    let ecdhXprv = ecdhXprvOverride || this._ecdhXprv;
     if (!ecdhXprv) {
       if (!password || !responseBody.encryptedECDHXprv) {
         throw new Error('ecdhXprv property must be set or password and encrypted encryptedECDHXprv must be provided');
@@ -1110,6 +1124,41 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
+   * Process V4 token issuance response by decrypting the signing key.
+   * This helper decrypts the ECDH-encrypted signing key from V4 issuance
+   * responses (reuses existing V2/V3 ECDH decryption logic).
+   *
+   * V4 issuance provides:
+   * - tokenId (plaintext): Used to identify the token in API requests
+   * - encryptedToken: ECDH-encrypted signing key for HMAC authentication
+   *
+   * @param params - Token issuance parameters
+   * @param params.tokenId - Token identifier from server response (response.id)
+   * @param params.encryptedToken - ECDH-encrypted signing key from server response
+   * @param params.derivationPath - BIP32 derivation path for ECDH key agreement
+   * @param params.ecdhXprv - Client's ECDH extended private key
+   * @returns Object containing token ID and decrypted signing key
+   */
+  processV4TokenIssuance(params: ProcessV4TokenIssuanceParams): ProcessV4TokenIssuanceResult {
+    common.validateParams(params, ['tokenId', 'encryptedToken', 'derivationPath', 'ecdhXprv'], []);
+
+    // Reuse existing ECDH decryption logic from V2/V3 to decrypt the signing key
+    const tokenIssuanceResponse: TokenIssuanceResponse = {
+      encryptedToken: params.encryptedToken,
+      derivationPath: params.derivationPath,
+    };
+
+    // Pass ecdhXprv directly to handleTokenIssuance to avoid mutating instance state
+    const result = this.handleTokenIssuance(tokenIssuanceResponse, undefined, params.ecdhXprv);
+    const signingKey = result.token;
+
+    return {
+      tokenId: params.tokenId,
+      signingKey: signingKey,
+    };
+  }
+
+  /**
    */
   verifyPassword(params: VerifyPasswordOptions = {}): Promise<any> {
     if (!_.isString(params.password)) {
@@ -1131,6 +1180,7 @@ export class BitGoAPI implements BitGoBase {
     // TODO: are there any other fields which should be cleared?
     this._user = undefined;
     this._token = undefined;
+    this._tokenId = undefined;
     this._refreshToken = undefined;
     this._ecdhXprv = undefined;
   }
@@ -1271,8 +1321,35 @@ export class BitGoAPI implements BitGoBase {
       // verify the authenticity of the server's response before proceeding any further
       verifyResponse(this, this._token, 'post', request, response, this._authVersion);
 
-      const responseDetails = this.handleTokenIssuance(response.body);
-      response.body.token = responseDetails.token;
+      // V4 token issuance includes separate tokenId and encrypted signing key
+      if (this._authVersion === 4) {
+        // Validate V4 response structure
+        if (!response.body.id || !response.body.encryptedToken || !response.body.derivationPath) {
+          throw new Error(
+            'Invalid V4 token issuance response: missing required fields (id, encryptedToken, or derivationPath)'
+          );
+        }
+
+        if (!this._ecdhXprv) {
+          throw new Error('ECDH private key is required for V4 token issuance');
+        }
+
+        const { tokenId, signingKey } = this.processV4TokenIssuance({
+          tokenId: response.body.id,
+          encryptedToken: response.body.encryptedToken,
+          derivationPath: response.body.derivationPath,
+          ecdhXprv: this._ecdhXprv,
+        });
+
+        // Return the decrypted signing key in the response (like V2/V3)
+        response.body.token = signingKey;
+        // Include tokenId in response for V4
+        response.body.tokenId = tokenId;
+      } else {
+        // V2/V3 token issuance
+        const responseDetails = this.handleTokenIssuance(response.body);
+        response.body.token = responseDetails.token;
+      }
 
       return handleResponseResult<AddAccessTokenResponse>()(response);
     } catch (e) {
