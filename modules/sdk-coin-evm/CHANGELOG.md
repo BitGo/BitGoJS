@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.14.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.14.0...@bitgo/sdk-coin-evm@1.14.1) (2026-02-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
 # [1.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.13.2...@bitgo/sdk-coin-evm@1.14.0) (2026-02-12)
 
 
