@@ -2723,6 +2723,7 @@ export class Wallet implements IWallet {
    * @returns {*}
    */
   async sendMany(params: SendManyOptions = {}): Promise<any> {
+    console.log('sendMany params:', params);
     common.validateParams(params, [], ['comment', 'otp']);
     debug('sendMany called');
     const reqId = params.reqId || new RequestTracer();
@@ -3992,6 +3993,7 @@ export class Wallet implements IWallet {
    * @param params send options
    */
   private async sendManyTxRequests(params: SendManyOptions = {}): Promise<any> {
+    console.log('sendManyTxRequests params:', params);
     params.apiVersion = getTxRequestApiVersion(this, params.apiVersion);
 
     const signedTransaction = (await this.prebuildAndSignTransaction(params)) as SignedTransactionRequest;

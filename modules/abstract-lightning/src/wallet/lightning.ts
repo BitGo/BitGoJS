@@ -255,6 +255,17 @@ export class LightningWallet implements ILightningWallet {
   }
 
   async payInvoice(params: SubmitPaymentParams): Promise<PayInvoiceResponse> {
+    console.log('payInvoice params:', params);
+    if (params.coin && params.coin === 'ofcbtc') {
+      // call sendMany for ofc payments
+      const sendManyResult = await this.wallet.sendMany({
+        walletPassphrase: params.passphrase,
+        sequenceId: params.sequenceId,
+        comment: params.comment,
+        recipients: [],
+      });
+      return sendManyResult as any;
+    }
     const reqId = new RequestTracer();
     this.wallet.bitgo.setRequestTracer(reqId);
 

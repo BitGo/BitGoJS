@@ -1178,6 +1178,7 @@ Wallet.prototype.sendCoins = function (params, callback) {
 //
 Wallet.prototype.sendMany = function (params, callback) {
   params = params || {};
+  console.log('sendMany params:', params);
   common.validateParams(params, [], ['message', 'otp'], callback);
   const self = this;
 

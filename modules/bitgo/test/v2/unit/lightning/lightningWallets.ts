@@ -241,6 +241,7 @@ describe('Lightning wallets', function () {
         new Wallet(bitgo, basecoin, {
           id: 'walletId',
           coin: 'tlnbtc',
+          keys: ['abc'],
           subType: 'lightningCustody',
           coinSpecific: { keys: ['def', 'ghi'] },
         })
@@ -451,6 +452,65 @@ describe('Lightning wallets', function () {
       createTransferNock.done();
       userAuthKeyNock.done();
       nodeAuthKeyNock.done();
+    });
+
+    it.only('should pay invoice for ofcbtc', async function () {
+      const params: SubmitPaymentParams = {
+        invoice: 'lnbc1...',
+        amountMsat: 1000n,
+        feeLimitMsat: 100n,
+        feeLimitRatio: 0.1,
+        sequenceId: '123',
+        comment: 'test payment',
+        passphrase: 'password123',
+        coin: 'ofcbtc',
+      };
+      console.log('params:', params);
+
+      // Create a properly encrypted keychain with 'password123'
+      const testPrv =
+        'xprv9s21ZrQH143K3GJpoapnV8SFfukcVBSfeCficPSGfubmSFDxo1kuHnLisriDvSnRRuL2Qrg5ggqHKNVpxR86QEC8w35uxmGoggxtQTPvfUu';
+      const encryptedPrv = bitgo.encrypt({ password: params.passphrase, input: testPrv });
+
+      // Mock sendMany API calls
+      const prebuildResponse = {
+        txHex: 'deadbeef',
+        txInfo: {},
+        feeInfo: { fee: 1000 },
+        walletId: wallet.wallet.id(),
+      };
+
+      const sendManyResponse = {
+        txRequestId: 'txReq123',
+        txRequestState: 'delivered',
+        transfer: { id: 'transfer123' },
+        txid: 'txid123',
+      };
+
+      const prebuildNock = nock(bgUrl)
+        .post(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/tx/build`)
+        .reply(200, prebuildResponse);
+
+      const keyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/abc')
+        .reply(200, {
+          id: 'abc',
+          pub: 'xpub661MyMwAqRbcFkPHucMnrGNzDwb6teAX1RbKQmqtEF8kK3Z7LZ59qafCjB9eCRLiTVG3uxBxgKvRgbubRhqSKXnGGb1aoaqLrpMBDrVxga8',
+          encryptedPrv,
+          source: 'user',
+        });
+
+      const sendNock = nock(bgUrl)
+        .post(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/tx/send`)
+        .reply(200, sendManyResponse);
+
+      const response = await wallet.payInvoice(params);
+      assert.strictEqual(response.txRequestId, 'txReq123');
+      assert.strictEqual(response.txRequestState, 'delivered');
+
+      prebuildNock.done();
+      keyNock.done();
+      sendNock.done();
     });
 
     it('should handle pending approval when paying invoice', async function () {

@@ -123,6 +123,7 @@ export const SubmitPaymentParams = t.intersection([
   t.partial({
     sequenceId: optionalString,
     comment: optionalString,
+    coin: optionalString,
   }),
 ]);
 
