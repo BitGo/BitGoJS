@@ -1007,11 +1007,11 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
    * @param {ExecuteContractMessage} message - The execute contract message to check
    * @returns {boolean} true if the msg decodes to a group proposal
    */
-  static isGroupProposal(message: ExecuteContractMessage): boolean {
+  isGroupProposal(message: ExecuteContractMessage): boolean {
     if (!message.msg || message.msg.length === 0) {
       return false;
     }
-    const result = CosmosUtils.decodeMsg(message.msg);
+    const result = this.decodeMsg(message.msg);
     return result.typeUrl === constants.groupProposalMsgTypeUrl;
   }
 
@@ -1020,11 +1020,11 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
    * @param {ExecuteContractMessage} message - The execute contract message to check
    * @returns {boolean} true if the msg decodes to a group vote
    */
-  static isGroupVote(message: ExecuteContractMessage): boolean {
+  isGroupVote(message: ExecuteContractMessage): boolean {
     if (!message.msg || message.msg.length === 0) {
       return false;
     }
-    const result = CosmosUtils.decodeMsg(message.msg);
+    const result = this.decodeMsg(message.msg);
     return result.typeUrl === constants.groupVoteMsgTypeUrl;
   }
 
@@ -1034,7 +1034,7 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
    * @param data - Message data as base64 string or Uint8Array
    * @returns Decoded message result with typeUrl if successfully identified
    */
-  static decodeMsg(data: string | Uint8Array): { typeUrl?: string; error?: string } {
+  decodeMsg(data: string | Uint8Array): { typeUrl?: string; error?: string } {
     try {
       const messageBytes = typeof data === 'string' ? Buffer.from(data, 'base64') : data;
 
@@ -1043,6 +1043,9 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
         if (
           proposal.groupPolicyAddress &&
           typeof proposal.groupPolicyAddress === 'string' &&
+          (this.isValidAddress(proposal.groupPolicyAddress) ||
+            this.isValidContractAddress(proposal.groupPolicyAddress) ||
+            this.isValidValidatorAddress(proposal.groupPolicyAddress)) &&
           proposal.groupPolicyAddress.length > 0 &&
           Array.isArray(proposal.proposers) &&
           proposal.proposers.length > 0
@@ -1058,6 +1061,7 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
         if (
           vote.voter &&
           typeof vote.voter === 'string' &&
+          this.isValidAddress(vote.voter) &&
           vote.voter.length > 0 &&
           vote.proposalId !== undefined &&
           vote.proposalId !== null

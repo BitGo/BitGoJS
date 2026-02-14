@@ -1,11 +1,12 @@
 import should from 'should';
-import { CosmosUtils } from '@bitgo/abstract-cosmos';
+import { NetworkType } from '@bitgo/statics';
 
-import utils from '../../src/lib/utils';
+import utils, { HashUtils } from '../../src/lib/utils';
 import * as testData from '../resources/hash';
 import { blockHash, txIds, TEST_CONTRACT_CALL, TEST_GROUP_VOTE } from '../resources/hash';
 
 describe('utils', () => {
+  const testnetHashUtils = new HashUtils(NetworkType.TESTNET);
   it('should validate block hash correctly', () => {
     should.equal(utils.isValidBlockId(blockHash.hash1), true);
     should.equal(utils.isValidBlockId(blockHash.hash2), true);
@@ -48,7 +49,7 @@ describe('utils', () => {
 
   describe('decodeMsg', () => {
     it('should detect valid base64-encoded group proposal', () => {
-      const result = CosmosUtils.decodeMsg(TEST_CONTRACT_CALL.encodedProposal);
+      const result = testnetHashUtils.decodeMsg(TEST_CONTRACT_CALL.encodedProposal);
 
       should.exist(result.typeUrl);
       if (result.typeUrl) {
@@ -58,28 +59,28 @@ describe('utils', () => {
     });
 
     it('should reject invalid base64 string', () => {
-      const result = CosmosUtils.decodeMsg('not-valid-base64!!!');
+      const result = testnetHashUtils.decodeMsg('not-valid-base64!!!');
 
       should.not.exist(result.typeUrl);
       should.exist(result.error);
     });
 
     it('should reject valid base64 but invalid protobuf', () => {
-      const result = CosmosUtils.decodeMsg(Buffer.from('random data').toString('base64'));
+      const result = testnetHashUtils.decodeMsg(Buffer.from('random data').toString('base64'));
 
       should.not.exist(result.typeUrl);
       should.exist(result.error);
     });
 
     it('should reject hex-encoded contract call data', () => {
-      const result = CosmosUtils.decodeMsg('7b22696e6372656d656e74223a7b7d7d');
+      const result = testnetHashUtils.decodeMsg('7b22696e6372656d656e74223a7b7d7d');
 
       should.not.exist(result.typeUrl);
     });
 
     it('should accept Uint8Array input', () => {
       const bytes = Buffer.from(TEST_CONTRACT_CALL.encodedProposal, 'base64');
-      const result = CosmosUtils.decodeMsg(bytes);
+      const result = testnetHashUtils.decodeMsg(bytes);
 
       should.exist(result.typeUrl);
       if (result.typeUrl) {
@@ -90,7 +91,7 @@ describe('utils', () => {
 
   describe('decodeMsg - group vote', () => {
     it('should detect valid base64-encoded group vote', () => {
-      const result = CosmosUtils.decodeMsg(TEST_GROUP_VOTE.encodedVote);
+      const result = testnetHashUtils.decodeMsg(TEST_GROUP_VOTE.encodedVote);
 
       should.exist(result.typeUrl);
       if (result.typeUrl) {
@@ -101,7 +102,7 @@ describe('utils', () => {
 
     it('should accept Uint8Array input for group vote', () => {
       const bytes = Buffer.from(TEST_GROUP_VOTE.encodedVote, 'base64');
-      const result = CosmosUtils.decodeMsg(bytes);
+      const result = testnetHashUtils.decodeMsg(bytes);
 
       should.exist(result.typeUrl);
       if (result.typeUrl) {
@@ -117,7 +118,7 @@ describe('utils', () => {
         contract: 'tp12nyn83ynewtmpkw32wq6dg83wx8nqpat65gcld',
         msg: Buffer.from(TEST_GROUP_VOTE.encodedVote, 'base64'),
       };
-      should.equal(CosmosUtils.isGroupVote(message), true);
+      should.equal(testnetHashUtils.isGroupVote(message), true);
     });
 
     it('should return false when msg contains a group proposal', () => {
@@ -126,7 +127,7 @@ describe('utils', () => {
         contract: 'tp12nyn83ynewtmpkw32wq6dg83wx8nqpat65gcld',
         msg: Buffer.from(TEST_CONTRACT_CALL.encodedProposal, 'base64'),
       };
-      should.equal(CosmosUtils.isGroupVote(message), false);
+      should.equal(testnetHashUtils.isGroupVote(message), false);
     });
 
     it('should return false when msg is empty', () => {
@@ -135,7 +136,7 @@ describe('utils', () => {
         contract: 'tp12nyn83ynewtmpkw32wq6dg83wx8nqpat65gcld',
         msg: new Uint8Array(0),
       };
-      should.equal(CosmosUtils.isGroupVote(message), false);
+      should.equal(testnetHashUtils.isGroupVote(message), false);
     });
   });
 
@@ -146,7 +147,7 @@ describe('utils', () => {
         contract: 'tp12nyn83ynewtmpkw32wq6dg83wx8nqpat65gcld',
         msg: Buffer.from(TEST_CONTRACT_CALL.encodedProposal, 'base64'),
       };
-      should.equal(CosmosUtils.isGroupProposal(message), true);
+      should.equal(testnetHashUtils.isGroupProposal(message), true);
     });
 
     it('should return false when msg contains regular contract call data', () => {
@@ -155,7 +156,7 @@ describe('utils', () => {
         contract: 'tp12nyn83ynewtmpkw32wq6dg83wx8nqpat65gcld',
         msg: Buffer.from(JSON.stringify({ increment: {} })),
       };
-      should.equal(CosmosUtils.isGroupProposal(message), false);
+      should.equal(testnetHashUtils.isGroupProposal(message), false);
     });
 
     it('should return false when msg is empty', () => {
@@ -164,7 +165,7 @@ describe('utils', () => {
         contract: 'tp12nyn83ynewtmpkw32wq6dg83wx8nqpat65gcld',
         msg: new Uint8Array(0),
       };
-      should.equal(CosmosUtils.isGroupProposal(message), false);
+      should.equal(testnetHashUtils.isGroupProposal(message), false);
     });
   });
 });

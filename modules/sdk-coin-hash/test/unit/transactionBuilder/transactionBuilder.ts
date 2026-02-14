@@ -62,6 +62,22 @@ describe('Hash Transaction Builder', async () => {
     should.equal(rawTx, testTxData.signedTxBase64);
   });
 
+  it('should be able to build a submit proposal transaction from submit proposal transaction data', async function () {
+    const txBuilder = factory.from(testData.TEST_SUBMIT_PROPOSAL.randomMsgSubmitProposalEncoded);
+    const tx = await txBuilder.build();
+    should.equal(tx.type, TransactionType.ContractCall);
+    // Should recreate the same raw tx data when re-build and turned to broadcast format
+    tx.cosmosLikeTransaction.sendMessages[0].typeUrl.should.equal('/cosmos.group.v1.MsgSubmitProposal');
+  });
+
+  it('should be able to build a group vote transaction from group vote transaction data', async function () {
+    const txBuilder = factory.from(testData.TEST_GROUP_VOTE.randomMsgVoteEncoded);
+    const tx = await txBuilder.build();
+    should.equal(tx.type, TransactionType.ContractCall);
+    // Should recreate the same raw tx data when re-build and turned to broadcast format
+    tx.cosmosLikeTransaction.sendMessages[0].typeUrl.should.equal('/cosmos.group.v1.MsgVote');
+  });
+
   it('should build a signed token tx from signed token tx data', async function () {
     const txBuilder = factory.from(tokenTestTxData.signedTxBase64);
     const tx = await txBuilder.build();

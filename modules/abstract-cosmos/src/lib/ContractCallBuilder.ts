@@ -28,14 +28,14 @@ export class ContractCallBuilder<CustomMessage = never> extends CosmosTransactio
         return message as MessageData<CustomMessage>;
       }
 
-      if (CosmosUtils.isGroupProposal(executeContractMessage)) {
+      if (this._utils.isGroupProposal(executeContractMessage)) {
         return {
           typeUrl: constants.groupProposalMsgTypeUrl,
           value: executeContractMessage.msg,
         } as MessageData<CustomMessage>;
       }
 
-      if (CosmosUtils.isGroupVote(executeContractMessage)) {
+      if (this._utils.isGroupVote(executeContractMessage)) {
         return {
           typeUrl: constants.groupVoteMsgTypeUrl,
           value: executeContractMessage.msg,
