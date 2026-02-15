@@ -58,11 +58,12 @@ import {
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseNetwork, CoinFamily, coins, SolCoin, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import {
-  explainTransaction as wasmExplainTransaction,
-  type ExplainedTransaction as WasmExplainedTransaction,
-} from '@bitgo/wasm-solana';
-import { KeyPair as SolKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
-import { UNAVAILABLE_TEXT } from './lib/constants';
+  KeyPair as SolKeyPair,
+  Transaction,
+  TransactionBuilder,
+  TransactionBuilderFactory,
+  explainSolTransaction,
+} from './lib';
 import { TransactionExplanation as SolLibTransactionExplanation } from './lib/iface';
 import {
   getAssociatedTokenAccountAddress,
@@ -73,7 +74,6 @@ import {
   isValidPublicKey,
   validateRawTransaction,
 } from './lib/utils';
-import { findTokenName } from './lib/instructionParamsFactory';
 
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 
@@ -1768,64 +1768,4 @@ export class Sol extends BaseCoin {
       intent.solVersionedTransactionData = params.solVersionedTransactionData;
     }
   }
-}
-
-/**
- * Standalone WASM-based transaction explanation — no class instance needed.
- * Thin adapter over @bitgo/wasm-solana's explainTransaction that resolves
- * token names via @bitgo/statics and maps to BitGoJS TransactionExplanation.
- */
-export function explainSolTransaction(
-  params: ExplainTransactionOptions & { coinName: string }
-): SolLibTransactionExplanation {
-  const txBytes = Buffer.from(params.txBase64, 'base64');
-  const explained: WasmExplainedTransaction = wasmExplainTransaction(txBytes, {
-    lamportsPerSignature: BigInt(params.feeInfo?.fee || '0'),
-    tokenAccountRentExemptAmount: params.tokenAccountRentExemptAmount
-      ? BigInt(params.tokenAccountRentExemptAmount)
-      : undefined,
-  });
-
-  // Resolve token mint addresses → human-readable names (e.g. "tsol:usdc")
-  // Convert bigint amounts to strings at this serialization boundary.
-  const outputs = explained.outputs.map((o) => ({
-    address: o.address,
-    amount: String(o.amount),
-    ...(o.tokenName ? { tokenName: findTokenName(o.tokenName, undefined, true) } : {}),
-  }));
-
-  // Build tokenEnablements with resolved token names
-  const tokenEnablements: ITokenEnablement[] = explained.tokenEnablements.map((te) => ({
-    address: te.address,
-    tokenName: findTokenName(te.mintAddress, undefined, true),
-    tokenAddress: te.mintAddress,
-  }));
-
-  return {
-    displayOrder: [
-      'id',
-      'type',
-      'blockhash',
-      'durableNonce',
-      'outputAmount',
-      'changeAmount',
-      'outputs',
-      'changeOutputs',
-      'tokenEnablements',
-      'fee',
-      'memo',
-    ],
-    id: explained.id ?? UNAVAILABLE_TEXT,
-    type: explained.type,
-    changeOutputs: [],
-    changeAmount: '0',
-    outputAmount: String(explained.outputAmount),
-    outputs,
-    fee: { fee: String(explained.fee), feeRate: Number(params.feeInfo?.fee || '0') },
-    memo: explained.memo,
-    blockhash: explained.blockhash,
-    durableNonce: explained.durableNonce,
-    tokenEnablements,
-    ataOwnerMap: explained.ataOwnerMap,
-  };
 }
