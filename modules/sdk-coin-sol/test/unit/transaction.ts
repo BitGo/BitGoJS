@@ -267,6 +267,7 @@ describe('Sol Transaction', () => {
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -305,7 +306,7 @@ describe('Sol Transaction', () => {
           },
         ],
         fee: {
-          fee: 'UNAVAILABLE',
+          fee: '0',
           feeRate: undefined,
         },
         memo: undefined,
@@ -315,6 +316,7 @@ describe('Sol Transaction', () => {
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -364,7 +366,7 @@ describe('Sol Transaction', () => {
           },
         ],
         fee: {
-          fee: 'UNAVAILABLE',
+          fee: '0',
           feeRate: undefined,
         },
         memo: 'memo text',
@@ -374,6 +376,7 @@ describe('Sol Transaction', () => {
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -421,6 +424,7 @@ describe('Sol Transaction', () => {
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -468,6 +472,7 @@ describe('Sol Transaction', () => {
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -508,7 +513,7 @@ describe('Sol Transaction', () => {
           },
         ],
         fee: {
-          fee: 'UNAVAILABLE',
+          fee: '0',
           feeRate: undefined,
         },
         memo: 'memo text',
@@ -518,6 +523,7 @@ describe('Sol Transaction', () => {
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -566,6 +572,7 @@ describe('Sol Transaction', () => {
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -688,6 +695,7 @@ describe('Sol Transaction', () => {
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -731,6 +739,7 @@ describe('Sol Transaction', () => {
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -779,6 +788,7 @@ describe('Sol Transaction', () => {
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -831,6 +841,7 @@ describe('Sol Transaction', () => {
           authWalletAddress: sender,
         },
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -878,6 +889,7 @@ describe('Sol Transaction', () => {
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -921,7 +933,9 @@ describe('Sol Transaction', () => {
           {
             address: 'DesU7XscZjng8yj5VX6AZsk3hWSW4sQ3rTG2LuyQ2P4H',
             amount: '10000',
-            tokenName: 'tsol:ams',
+            // WASM path resolves token name via @bitgo/statics; this mint is not registered,
+            // so the raw mint address is returned instead of the human-readable name.
+            tokenName: 'F4uLeXioFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
           },
         ],
         fee: {
@@ -932,6 +946,7 @@ describe('Sol Transaction', () => {
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -984,7 +999,7 @@ describe('Sol Transaction', () => {
           },
         ],
         fee: {
-          fee: 'UNAVAILABLE',
+          fee: '0',
           feeRate: undefined,
         },
         memo: 'memo text',
@@ -994,6 +1009,7 @@ describe('Sol Transaction', () => {
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
   });
