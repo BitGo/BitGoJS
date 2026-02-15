@@ -912,6 +912,7 @@ describe('SOL:', function () {
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -958,6 +959,7 @@ describe('SOL:', function () {
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -1002,6 +1004,7 @@ describe('SOL:', function () {
         durableNonce: undefined,
         memo: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -1046,6 +1049,7 @@ describe('SOL:', function () {
         durableNonce: undefined,
         memo: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -1093,6 +1097,7 @@ describe('SOL:', function () {
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -1140,6 +1145,7 @@ describe('SOL:', function () {
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -1194,6 +1200,7 @@ describe('SOL:', function () {
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -1241,6 +1248,7 @@ describe('SOL:', function () {
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -1294,6 +1302,7 @@ describe('SOL:', function () {
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -1351,6 +1360,9 @@ describe('SOL:', function () {
             tokenName: 'tsol:usdc',
           },
         ],
+        ataOwnerMap: {
+          '141BFNem3pknc8CzPVLv1Ri3btgKdCsafYP5nXwmXfxU': '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+        },
       });
     });
 
@@ -1423,6 +1435,10 @@ describe('SOL:', function () {
             tokenName: 'tsol:ray',
           },
         ],
+        ataOwnerMap: {
+          '141BFNem3pknc8CzPVLv1Ri3btgKdCsafYP5nXwmXfxU': '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+          '9KaLinZFNW5chL4J8UoKnTECppWVMz3ewgx4FAkxUDcf': '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+        },
       });
     });
 
@@ -1471,6 +1487,9 @@ describe('SOL:', function () {
             tokenName: 'tsol:usdc',
           },
         ],
+        ataOwnerMap: {
+          '2eKjVtzV3oPTXFdtRSDj3Em9k1MV7k8WjKkBszQUwizS': 'C4zCqCaDm4D78zgaH3CeBEEBEAoMNhzSCj23qE92ndiP',
+        },
       });
     });
   });
