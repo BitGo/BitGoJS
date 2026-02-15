@@ -259,6 +259,13 @@ describe('Sol Transaction', () => {
             amount: '10000',
           },
         ],
+        inputs: [
+          {
+            address: sender,
+            value: '10000',
+          },
+        ],
+        feePayer: sender,
         fee: {
           fee: '5000',
           feeRate: 5000,
@@ -305,6 +312,13 @@ describe('Sol Transaction', () => {
             amount: '10000',
           },
         ],
+        inputs: [
+          {
+            address: sender,
+            value: '10000',
+          },
+        ],
+        feePayer: sender,
         fee: {
           fee: '0',
           feeRate: undefined,
@@ -365,6 +379,21 @@ describe('Sol Transaction', () => {
             amount: '10000',
           },
         ],
+        inputs: [
+          {
+            address: sender,
+            value: '10000',
+          },
+          {
+            address: sender,
+            value: '10000',
+          },
+          {
+            address: sender,
+            value: '10000',
+          },
+        ],
+        feePayer: sender,
         fee: {
           fee: '0',
           feeRate: undefined,
@@ -416,6 +445,13 @@ describe('Sol Transaction', () => {
             amount: '10000',
           },
         ],
+        inputs: [
+          {
+            address: sender,
+            value: '10000',
+          },
+        ],
+        feePayer: sender,
         fee: {
           fee: '5000',
           feeRate: 5000,
@@ -464,6 +500,13 @@ describe('Sol Transaction', () => {
             amount: '10000',
           },
         ],
+        inputs: [
+          {
+            address: sender,
+            value: '10000',
+          },
+        ],
+        feePayer: sender,
         fee: {
           fee: '10000',
           feeRate: 5000,
@@ -512,6 +555,13 @@ describe('Sol Transaction', () => {
             amount: '10000',
           },
         ],
+        inputs: [
+          {
+            address: sender,
+            value: '10000',
+          },
+        ],
+        feePayer: sender,
         fee: {
           fee: '0',
           feeRate: undefined,
@@ -564,6 +614,13 @@ describe('Sol Transaction', () => {
             amount: '10000',
           },
         ],
+        inputs: [
+          {
+            address: sender,
+            value: '10000',
+          },
+        ],
+        feePayer: sender,
         fee: {
           fee: '10000',
           feeRate: 5000,
@@ -687,6 +744,13 @@ describe('Sol Transaction', () => {
             amount: '10000',
           },
         ],
+        inputs: [
+          {
+            address: sender,
+            value: '10000',
+          },
+        ],
+        feePayer: sender,
         fee: {
           fee: '10000',
           feeRate: 5000,
@@ -731,6 +795,8 @@ describe('Sol Transaction', () => {
         changeAmount: '0',
         outputAmount: '0',
         outputs: [],
+        inputs: [],
+        feePayer: sender,
         fee: {
           fee: '5000',
           feeRate: 5000,
@@ -780,6 +846,13 @@ describe('Sol Transaction', () => {
             amount: '10000',
           },
         ],
+        inputs: [
+          {
+            address: stakeAccount.pub,
+            value: '10000',
+          },
+        ],
+        feePayer: sender,
         fee: {
           fee: '5000',
           feeRate: 5000,
@@ -830,6 +903,13 @@ describe('Sol Transaction', () => {
             amount: '10000',
           },
         ],
+        inputs: [
+          {
+            address: stakeAccount.pub,
+            value: '10000',
+          },
+        ],
+        feePayer: sender,
         fee: {
           fee: '5000',
           feeRate: 5000,
@@ -881,6 +961,13 @@ describe('Sol Transaction', () => {
             tokenName: 'tsol:usdc',
           },
         ],
+        inputs: [
+          {
+            address: sender,
+            value: '10000',
+          },
+        ],
+        feePayer: sender,
         fee: {
           fee: '5000',
           feeRate: 5000,
@@ -938,6 +1025,13 @@ describe('Sol Transaction', () => {
             tokenName: 'F4uLeXioFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
           },
         ],
+        inputs: [
+          {
+            address: sender,
+            value: '10000',
+          },
+        ],
+        feePayer: sender,
         fee: {
           fee: '5000',
           feeRate: 5000,
@@ -998,6 +1092,21 @@ describe('Sol Transaction', () => {
             tokenName: 'tsol:usdc',
           },
         ],
+        inputs: [
+          {
+            address: sender,
+            value: '10000',
+          },
+          {
+            address: sender,
+            value: '10000',
+          },
+          {
+            address: sender,
+            value: '10000',
+          },
+        ],
+        feePayer: sender,
         fee: {
           fee: '0',
           feeRate: undefined,

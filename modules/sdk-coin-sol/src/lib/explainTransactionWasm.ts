@@ -60,6 +60,11 @@ export function explainSolTransaction(params: ExplainTransactionWasmOptions): So
     ...(o.tokenName ? { tokenName: findTokenName(o.tokenName, undefined, true) } : {}),
   }));
 
+  const inputs = explained.inputs.map((i) => ({
+    address: i.address,
+    value: String(i.value),
+  }));
+
   // Build tokenEnablements with resolved token names
   const tokenEnablements: ITokenEnablement[] = explained.tokenEnablements.map((te) => ({
     address: te.address,
@@ -89,6 +94,8 @@ export function explainSolTransaction(params: ExplainTransactionWasmOptions): So
     changeAmount: '0',
     outputAmount: String(explained.outputAmount),
     outputs,
+    inputs,
+    feePayer: explained.feePayer,
     fee: {
       fee: params.feeInfo ? String(explained.fee) : '0',
       feeRate: params.feeInfo ? Number(params.feeInfo.fee) : undefined,

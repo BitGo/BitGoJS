@@ -287,7 +287,7 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
   memo?: string;
   stakingAuthorize?: StakingAuthorizeParams;
   stakingDelegate?: StakingDelegateParams;
-  inputs?: Array<{ address: string; value: string; coin?: string }>;
+  inputs?: { address: string; value: string; coin?: string }[];
   feePayer?: string;
   ataOwnerMap?: Record<string, string>;
 }
