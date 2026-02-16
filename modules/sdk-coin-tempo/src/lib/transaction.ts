@@ -65,11 +65,7 @@ export class Tip20Transaction extends BaseTransaction {
    * @private
    */
   private encodeCallsAsTuples(): any[] {
-    return this.txRequest.calls.map((call) => [
-      call.to,
-      call.value ? ethers.utils.hexlify(call.value) : '0x',
-      call.data,
-    ]);
+    return this.txRequest.calls.map((call) => [call.to, this.bigintToHex(call.value), call.data]);
   }
 
   /**
@@ -82,6 +78,20 @@ export class Tip20Transaction extends BaseTransaction {
   }
 
   /**
+   * Convert bigint to hex string for RLP encoding
+   * @param value bigint value to convert
+   * @returns Hex string
+   * @private
+   */
+  private bigintToHex(value: bigint): string {
+    if (value === 0n) {
+      return '0x';
+    }
+    const hex = value.toString(16);
+    return '0x' + (hex.length % 2 ? '0' : '') + hex;
+  }
+
+  /**
    * Build base RLP data array per Tempo EIP-7702 specification
    * @param callsTuples Encoded calls
    * @param accessTuples Encoded access list
@@ -91,9 +101,9 @@ export class Tip20Transaction extends BaseTransaction {
   private buildBaseRlpData(callsTuples: any[], accessTuples: any[]): any[] {
     return [
       ethers.utils.hexlify(this.txRequest.chainId),
-      this.txRequest.maxPriorityFeePerGas ? ethers.utils.hexlify(this.txRequest.maxPriorityFeePerGas.toString()) : '0x',
-      ethers.utils.hexlify(this.txRequest.maxFeePerGas.toString()),
-      ethers.utils.hexlify(this.txRequest.gas.toString()),
+      this.txRequest.maxPriorityFeePerGas ? this.bigintToHex(this.txRequest.maxPriorityFeePerGas) : '0x',
+      this.bigintToHex(this.txRequest.maxFeePerGas),
+      this.bigintToHex(this.txRequest.gas),
       callsTuples,
       accessTuples,
       '0x', // nonceKey (reserved for 2D nonce system)
