@@ -6,9 +6,7 @@ These are actually not utxo-specific and belong in a more general module.
 import assert from 'assert';
 
 import buildDebug from 'debug';
-import * as utxolib from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/secp256k1';
-import * as bitcoinMessage from 'bitcoinjs-message';
+import { BIP32, message } from '@bitgo/wasm-utxo';
 import { BitGoBase, decryptKeychainPrivateKey, KeyIndices } from '@bitgo/sdk-core';
 
 import { VerifyKeySignaturesOptions, VerifyUserPublicKeyOptions } from './abstractUtxoCoin';
@@ -25,7 +23,6 @@ const debug = buildDebug('bitgo:abstract-utxo:verifyKey');
  * @return {{backup: boolean, bitgo: boolean}}
  */
 export function verifyKeySignature(params: VerifyKeySignaturesOptions): boolean {
-  // first, let's verify the integrity of the user key, whose public key is used for subsequent verifications
   const { userKeychain, keychainToVerify, keySignature } = params;
   if (!userKeychain) {
     throw new Error('user keychain is required');
@@ -39,38 +36,20 @@ export function verifyKeySignature(params: VerifyKeySignaturesOptions): boolean 
     throw new Error('key signature is required');
   }
 
-  // verify the signature against the user public key
   assert(userKeychain.pub);
-  const publicKey = bip32.fromBase58(userKeychain.pub).publicKey;
-  // Due to interface of `bitcoinMessage`, we need to convert the public key to an address.
-  // Note that this address has no relationship to on-chain transactions. We are
-  // only interested in the address as a representation of the public key.
-  const signingAddress = utxolib.address.toBase58Check(
-    utxolib.crypto.hash160(publicKey),
-    utxolib.networks.bitcoin.pubKeyHash,
-    // we do not pass `this.network` here because it would fail for zcash
-    // the bitcoinMessage library decodes the address and throws away the first byte
-    // because zcash has a two-byte prefix, verify() decodes zcash addresses to an invalid pubkey hash
-    utxolib.networks.bitcoin
-  );
+  const publicKey = BIP32.fromBase58(userKeychain.pub).publicKey;
 
-  // BG-5703: use BTC mainnet prefix for all key signature operations
-  // (this means do not pass a prefix parameter, and let it use the default prefix instead)
   assert(keychainToVerify.pub);
   try {
-    return bitcoinMessage.verify(keychainToVerify.pub, signingAddress, Buffer.from(keySignature, 'hex'));
+    return message.verifyMessage(keychainToVerify.pub, publicKey, Buffer.from(keySignature, 'hex'));
   } catch (e) {
-    debug('error thrown from bitcoinmessage while verifying key signature', e);
+    debug('error thrown from wasm-utxo while verifying key signature', e);
     return false;
   }
 }
 
 /**
  * Verify signatures against the user private key over the change wallet extended keys
- * @param {ParsedTransaction} tx
- * @param {Keychain} userKeychain
- * @return {boolean}
- * @protected
  */
 export function verifyCustomChangeKeySignatures<TNumber extends number | bigint>(
   tx: ParsedTransaction<TNumber>,
@@ -104,10 +83,6 @@ export function verifyCustomChangeKeySignatures<TNumber extends number | bigint>
 
 /**
  * Decrypt the wallet's user private key and verify that the claimed public key matches
- * @param {BitGoBase} bitgo
- * @param {VerifyUserPublicKeyOptions} params
- * @return {boolean}
- * @protected
  */
 export function verifyUserPublicKey(bitgo: BitGoBase, params: VerifyUserPublicKeyOptions): boolean {
   const { userKeychain, txParams, disableNetworking } = params;
@@ -117,7 +92,6 @@ export function verifyUserPublicKey(bitgo: BitGoBase, params: VerifyUserPublicKe
 
   const userPub = userKeychain.pub;
 
-  // decrypt the user private key, so we can verify that the claimed public key is a match
   let userPrv = userKeychain.prv;
   if (!userPrv && txParams.walletPassphrase) {
     userPrv = decryptKeychainPrivateKey(bitgo, userKeychain, txParams.walletPassphrase);
@@ -132,7 +106,7 @@ export function verifyUserPublicKey(bitgo: BitGoBase, params: VerifyUserPublicKe
       throw new Error(errorMessage);
     }
   } else {
-    const userPrivateKey = bip32.fromBase58(userPrv);
+    const userPrivateKey = BIP32.fromBase58(userPrv);
     if (userPrivateKey.toBase58() === userPrivateKey.neutered().toBase58()) {
       throw new Error('user private key is only public');
     }

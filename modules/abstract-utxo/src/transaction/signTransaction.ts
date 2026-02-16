@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import { BitGoBase } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/secp256k1';
+import { BIP32 } from '@bitgo/wasm-utxo';
 import buildDebug from 'debug';
 
 import { AbstractUtxoCoin, SignTransactionOptions } from '../abstractUtxoCoin';
@@ -15,14 +14,14 @@ import { encodeTransaction } from './decode';
 
 const debug = buildDebug('bitgo:abstract-utxo:transaction:signTransaction');
 
-function getSignerKeychain(userPrv: unknown): utxolib.BIP32Interface | undefined {
+function getSignerKeychain(userPrv: unknown): BIP32 | undefined {
   if (userPrv === undefined) {
     return undefined;
   }
   if (typeof userPrv !== 'string') {
     throw new Error('expected user private key to be a string');
   }
-  const signerKeychain = bip32.fromBase58(userPrv, utxolib.networks.bitcoin);
+  const signerKeychain = BIP32.fromBase58(userPrv);
   if (signerKeychain.isNeutered()) {
     throw new Error('expected user private key but received public key');
   }

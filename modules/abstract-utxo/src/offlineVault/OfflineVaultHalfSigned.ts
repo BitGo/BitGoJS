@@ -1,8 +1,8 @@
-import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
-import { Psbt } from '@bitgo/wasm-utxo';
+import { BIP32, bip32, Psbt } from '@bitgo/wasm-utxo';
 import { BaseCoin } from '@bitgo/sdk-core';
 
 import { UtxoCoinName } from '../names';
+import { toUtxolibBIP32 } from '../wasmUtil';
 
 import { OfflineVaultSignable } from './OfflineVaultSignable';
 import { DescriptorTransaction, getHalfSignedPsbt } from './descriptor';
@@ -17,19 +17,17 @@ function createHalfSignedFromPsbt(psbt: Psbt): OfflineVaultHalfSigned {
 
 export function createHalfSigned(
   coinName: UtxoCoinName,
-  prv: string | BIP32Interface,
+  prv: string | bip32.BIP32Interface,
   derivationId: string,
   tx: unknown
 ): OfflineVaultHalfSigned {
-  if (typeof prv === 'string') {
-    prv = bip32.fromBase58(prv);
-  }
-  prv = BaseCoin.deriveKeyWithSeedBip32(prv, derivationId).key;
+  const key = typeof prv === 'string' ? BIP32.fromBase58(prv) : prv;
+  const derivedKey = BaseCoin.deriveKeyWithSeedBip32(toUtxolibBIP32(key), derivationId).key;
   if (!OfflineVaultSignable.is(tx)) {
     throw new Error('unsupported transaction type');
   }
   if (DescriptorTransaction.is(tx)) {
-    return createHalfSignedFromPsbt(getHalfSignedPsbt(tx, prv, coinName));
+    return createHalfSignedFromPsbt(getHalfSignedPsbt(tx, derivedKey, coinName));
   }
   throw new Error('unsupported transaction type');
 }

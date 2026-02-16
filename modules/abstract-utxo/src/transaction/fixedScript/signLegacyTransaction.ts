@@ -1,13 +1,14 @@
 import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
 import { bitgo } from '@bitgo/utxo-lib';
 import { isTriple, Triple } from '@bitgo/sdk-core';
+import { BIP32, bip32 } from '@bitgo/wasm-utxo';
 import debugLib from 'debug';
 
 import { UtxoCoinName } from '../../names';
 import type { Unspent, WalletUnspent } from '../../unspent';
+import { toUtxolibBIP32 } from '../../wasmUtil';
 
 import { getReplayProtectionAddresses } from './replayProtection';
 import { InputSigningError, TransactionSigningError } from './SigningError';
@@ -120,7 +121,7 @@ export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
 
 export function signLegacyTransaction<TNumber extends number | bigint>(
   tx: utxolib.bitgo.UtxoTransaction<TNumber>,
-  signerKeychain: BIP32Interface | undefined,
+  signerKeychain: bip32.BIP32Interface | undefined,
   coinName: UtxoCoinName,
   params: {
     isLastSignature: boolean;
@@ -148,12 +149,16 @@ export function signLegacyTransaction<TNumber extends number | bigint>(
     throw new Error(`must provide xpub array`);
   }
 
-  const keychains = params.pubs.map((pub) => bip32.fromBase58(pub)) as Triple<BIP32Interface>;
+  const keychains = params.pubs.map((pub) => toUtxolibBIP32(BIP32.fromBase58(pub))) as Triple<utxolib.BIP32Interface>;
   const cosignerPub = params.cosignerPub ?? params.pubs[2];
-  const cosignerKeychain = bip32.fromBase58(cosignerPub);
+  const cosignerKeychain = toUtxolibBIP32(BIP32.fromBase58(cosignerPub));
 
   assert(signerKeychain);
-  const walletSigner = new bitgo.WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain);
+  const walletSigner = new bitgo.WalletUnspentSigner<RootWalletKeys>(
+    keychains,
+    toUtxolibBIP32(signerKeychain),
+    cosignerKeychain
+  );
   return signAndVerifyWalletTransaction(tx, params.txInfo.unspents, walletSigner, coinName, {
     isLastSignature: params.isLastSignature,
   }) as utxolib.bitgo.UtxoTransaction<TNumber>;

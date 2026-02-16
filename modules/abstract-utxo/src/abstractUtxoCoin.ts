@@ -3,7 +3,7 @@ import { randomBytes } from 'crypto';
 
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/secp256k1';
+import { BIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 import { bitgo, getMainnet } from '@bitgo/utxo-lib';
 import {
   AddressCoinSpecific,
@@ -42,7 +42,6 @@ import {
   isValidPrv,
   isValidXprv,
 } from '@bitgo/sdk-core';
-import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import {
   backupKeyRecovery,
@@ -496,7 +495,7 @@ export abstract class AbstractUtxoCoin
    */
   isValidPub(pub: string): boolean {
     try {
-      return bip32.fromBase58(pub).isNeutered();
+      return BIP32.fromBase58(pub).isNeutered();
     } catch (e) {
       return false;
     }
@@ -978,7 +977,7 @@ export abstract class AbstractUtxoCoin
       // maximum entropy and gives us maximum security against cracking.
       seed = randomBytes(512 / 8);
     }
-    const extendedKey = bip32.fromSeed(seed);
+    const extendedKey = BIP32.fromSeed(seed);
     return {
       pub: extendedKey.neutered().toBase58(),
       prv: extendedKey.toBase58(),
@@ -1084,7 +1083,7 @@ export abstract class AbstractUtxoCoin
       throw new Error('invalid private key');
     }
     if (publicKey) {
-      const genPubKey = bip32.fromBase58(prv).neutered().toBase58();
+      const genPubKey = BIP32.fromBase58(prv).neutered().toBase58();
       if (genPubKey !== publicKey) {
         throw new Error('public key does not match private key');
       }
