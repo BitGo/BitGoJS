@@ -2931,6 +2931,42 @@ export const allCoinsAndTokens = [
       CoinFeature.SUPPORTS_ERC20,
     ]
   ),
+  account(
+    'e10b89f6-3d14-4d85-a05a-da53d6e60489',
+    'codex',
+    'Codex',
+    Networks.main.codex,
+    18,
+    UnderlyingAsset.CODEX,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    '3fe052be-5dc0-42b1-a5a8-63406296d06f',
+    'tcodex',
+    'Testnet Codex',
+    Networks.test.codex,
+    18,
+    UnderlyingAsset.CODEX,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
   erc20Token(
     '16c438c1-714a-4ad7-bdb1-fb8d2575c466',
     'tbaseeth:usdc',

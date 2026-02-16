@@ -221,6 +221,9 @@ const mainnetBase: EnvironmentTemplate = {
     chiliz: {
       baseUrl: 'https://api.chiliscan.com',
     },
+    codex: {
+      baseUrl: 'https://explorer.codex.xyz/api',
+    },
     phrs: {
       baseUrl: 'https://testnet.dplabs-internal.com', // TODO: WIN-5787 add mainnet url when its available
     },
@@ -408,6 +411,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     chiliz: {
       baseUrl: 'https://api.testnet.chiliscan.com',
+    },
+    codex: {
+      baseUrl: 'https://explorer.codex-stg.xyz/api',
     },
     phrs: {
       baseUrl: 'https://testnet.dplabs-internal.com', // Wrong value, Not available yet
