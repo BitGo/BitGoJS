@@ -2969,11 +2969,11 @@ export const allCoinsAndTokens = [
   ),
   account(
     'e10b89f6-3d14-4d85-a05a-da53d6e60489',
-    'codex',
-    'Codex',
-    Networks.main.codex,
+    'codexeth',
+    'Codex Ethereum',
+    Networks.main.codexeth,
     18,
-    UnderlyingAsset.CODEX,
+    UnderlyingAsset.CODEXETH,
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,
@@ -2987,11 +2987,11 @@ export const allCoinsAndTokens = [
   ),
   account(
     '3fe052be-5dc0-42b1-a5a8-63406296d06f',
-    'tcodex',
-    'Testnet Codex',
-    Networks.test.codex,
+    'tcodexeth',
+    'Testnet Codex Ethereum',
+    Networks.test.codexeth,
     18,
-    UnderlyingAsset.CODEX,
+    UnderlyingAsset.CODEXETH,
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,

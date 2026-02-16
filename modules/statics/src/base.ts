@@ -42,7 +42,7 @@ export enum CoinFamily {
   CANTON = 'canton',
   CELO = 'celo',
   CHILIZ = 'chiliz', // Chiliz Chain
-  CODEX = 'codex',
+  CODEXETH = 'codexeth', // Codex Ethereum L2
   COREDAO = 'coredao',
   COREUM = 'coreum',
   CRONOS = 'cronos',
@@ -572,7 +572,7 @@ export enum UnderlyingAsset {
   DOT = 'dot',
   CELO = 'celo', // Celo main coin
   CHILIZ = 'chiliz', // Chiliz Chain native coin
-  CODEX = 'codex',
+  CODEXETH = 'codexeth', // Codex Ethereum L2
   COREDAO = 'coredao',
   COREUM = 'coreum',
   CRONOS = 'cronos',
