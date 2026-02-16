@@ -5348,6 +5348,20 @@ export const tOfcErc20Coins = [
     true,
     'tjovayeth'
   ),
+  tofcerc20(
+    'e1d2c3b4-a5f6-4e7d-8c9b-0a1b2c3d4e5f',
+    'ofctjovayeth:usdce',
+    'USDC.e',
+    6,
+    underlyingAssetForSymbol('tjovayeth:usdce'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tjovayeth'
+  ),
   // Story Network tokens
   ofcerc20(
     '452cc4f6-3c77-4193-a572-4b0d0f838c3c',
