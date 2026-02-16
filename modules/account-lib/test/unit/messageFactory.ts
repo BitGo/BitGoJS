@@ -3,7 +3,7 @@ import should from 'should';
 import sinon from 'sinon';
 import { getMessageBuilderFactory, registerMessageBuilderFactory } from '../../src';
 import { BaseMessageBuilderFactory, BuildMessageError } from '@bitgo/sdk-core';
-import { coins, BaseCoin } from '@bitgo/statics';
+import { coins, BaseCoin, CoinFeature } from '@bitgo/statics';
 import { MockMessageBuilderFactory } from './fixtures';
 
 describe('Message Builder Factory', () => {
@@ -29,6 +29,40 @@ describe('Message Builder Factory', () => {
       const htethFactory = getMessageBuilderFactory('hteth');
       should.exist(htethFactory);
       htethFactory.should.be.instanceof(BaseMessageBuilderFactory);
+    });
+
+    it('should auto-register all non-token coins with SHARED_EVM_MESSAGE_SIGNING feature', () => {
+      const evmCoins = coins.reduce<string[]>((acc, coin) => {
+        if (coin.features.includes(CoinFeature.SHARED_EVM_MESSAGE_SIGNING) && !coin.isToken) {
+          acc.push(coin.name);
+        }
+        return acc;
+      }, []);
+      evmCoins.length.should.be.greaterThan(0);
+
+      for (const coinName of evmCoins) {
+        const factory = getMessageBuilderFactory(coinName);
+        should.exist(factory, `Expected message builder factory for ${coinName}`);
+        factory.should.be.instanceof(BaseMessageBuilderFactory);
+      }
+    });
+
+    it('should not register token coins with SHARED_EVM_MESSAGE_SIGNING feature', () => {
+      const evmTokens = coins.reduce<string[]>((acc, coin) => {
+        if (coin.features.includes(CoinFeature.SHARED_EVM_MESSAGE_SIGNING) && coin.isToken) {
+          acc.push(coin.name);
+        }
+        return acc;
+      }, []);
+      evmTokens.length.should.be.greaterThan(0);
+
+      for (const tokenName of evmTokens) {
+        assert.throws(
+          () => getMessageBuilderFactory(tokenName),
+          (e: Error) => e instanceof BuildMessageError,
+          `Token ${tokenName} should not have a message builder factory`,
+        );
+      }
     });
   });
 

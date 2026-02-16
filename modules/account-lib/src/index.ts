@@ -333,29 +333,17 @@ const coinBuilderMap = {
 };
 
 const coinMessageBuilderFactoryMap = {
-  eth: Eth.MessageBuilderFactory,
-  hteth: Eth.MessageBuilderFactory,
-  bsc: Bsc.MessageBuilderFactory,
-  tbsc: Bsc.MessageBuilderFactory,
   ada: Ada.MessageBuilderFactory,
   tada: Ada.MessageBuilderFactory,
   sol: Sol.MessageBuilderFactory,
   tsol: Sol.MessageBuilderFactory,
-  arbeth: Eth.MessageBuilderFactory,
-  tarbeth: Eth.MessageBuilderFactory,
-  opeth: Eth.MessageBuilderFactory,
-  topeth: Eth.MessageBuilderFactory,
-  baseeth: Eth.MessageBuilderFactory,
-  tbaseeth: Eth.MessageBuilderFactory,
-  polygon: Eth.MessageBuilderFactory,
-  tpolygon: Eth.MessageBuilderFactory,
-  seievm: Eth.MessageBuilderFactory,
-  tseievm: Eth.MessageBuilderFactory,
-  flr: Eth.MessageBuilderFactory,
-  tflr: Eth.MessageBuilderFactory,
-  mon: Eth.MessageBuilderFactory,
-  tmon: Eth.MessageBuilderFactory,
 };
+
+coins
+  .filter((coin) => coin.features.includes(CoinFeature.SHARED_EVM_MESSAGE_SIGNING) && !coin.isToken)
+  .forEach((coin) => {
+    coinMessageBuilderFactoryMap[coin.name] = Eth.MessageBuilderFactory;
+  });
 
 coins
   .filter((coin) => coin.features.includes(CoinFeature.SHARED_EVM_SDK))
