@@ -73,6 +73,7 @@ module.exports = {
         'ANT-',
         'CGARD-',
         'CHALO-',
+        'CECHO-',
         '#', // Prefix used by GitHub issues
       ],
     },
