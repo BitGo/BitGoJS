@@ -2,9 +2,8 @@ import assert from 'assert';
 
 import * as t from 'io-ts';
 import { bitgo } from '@bitgo/utxo-lib';
-import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
 import { IRequestTracer, IWallet, KeyIndices, promiseProps, Triple } from '@bitgo/sdk-core';
-import { fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { BIP32, bip32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin } from './abstractUtxoCoin';
 import { UtxoWallet } from './wallet';
@@ -50,9 +49,9 @@ export function toKeychainTriple(keychains: UtxoNamedKeychains): Triple<UtxoKeyc
 
 export function toBip32Triple(
   keychains: bitgo.RootWalletKeys | UtxoNamedKeychains | Triple<{ pub: string }> | string[]
-): Triple<BIP32Interface> {
+): Triple<BIP32> {
   if (keychains instanceof bitgo.RootWalletKeys) {
-    return keychains.triple;
+    return keychains.triple.map((k) => BIP32.fromBase58(k.toBase58())) as Triple<BIP32>;
   }
   if (Array.isArray(keychains)) {
     if (keychains.length !== 3) {
@@ -60,14 +59,14 @@ export function toBip32Triple(
     }
     return keychains.map((keychain: { pub: string } | string) => {
       const v = typeof keychain === 'string' ? keychain : keychain.pub;
-      return bip32.fromBase58(v);
-    }) as Triple<BIP32Interface>;
+      return BIP32.fromBase58(v);
+    }) as Triple<BIP32>;
   }
 
   return toBip32Triple(toKeychainTriple(keychains));
 }
 
-function toXpub(keychain: { pub: string } | string | BIP32Interface): string {
+function toXpub(keychain: { pub: string } | string | bip32.BIP32Interface): string {
   if (typeof keychain === 'string') {
     if (keychain.startsWith('xpub')) {
       return keychain;
@@ -84,7 +83,7 @@ function toXpub(keychain: { pub: string } | string | BIP32Interface): string {
 }
 
 export function toXpubTriple(
-  keychains: UtxoNamedKeychains | Triple<{ pub: string }> | Triple<string> | Triple<BIP32Interface>
+  keychains: UtxoNamedKeychains | Triple<{ pub: string }> | Triple<string> | Triple<bip32.BIP32Interface>
 ): Triple<string> {
   if (Array.isArray(keychains)) {
     if (keychains.length !== 3) {

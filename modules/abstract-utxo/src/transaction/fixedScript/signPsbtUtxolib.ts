@@ -1,7 +1,6 @@
 import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { BIP32Interface } from '@bitgo/secp256k1';
 import { bitgo } from '@bitgo/utxo-lib';
 import debugLib from 'debug';
 
@@ -35,7 +34,7 @@ export type PsbtParsedScriptType =
  */
 export function signAndVerifyPsbt(
   psbt: utxolib.bitgo.UtxoPsbt,
-  signerKeychain: BIP32Interface
+  signerKeychain: utxolib.BIP32Interface
 ): utxolib.bitgo.UtxoPsbt {
   const txInputs = psbt.txInputs;
   const outputIds: string[] = [];
@@ -107,7 +106,7 @@ const PSBT_CACHE = new Map<string, utxolib.bitgo.UtxoPsbt>();
 export async function signPsbtWithMusig2ParticipantUtxolib(
   coin: Musig2Participant<utxolib.bitgo.UtxoPsbt>,
   tx: utxolib.bitgo.UtxoPsbt,
-  signerKeychain: BIP32Interface | undefined,
+  signerKeychain: utxolib.BIP32Interface | undefined,
   params: {
     signingStep: 'signerNonce' | 'cosignerNonce' | 'signerSignature' | undefined;
     walletId: string | undefined;

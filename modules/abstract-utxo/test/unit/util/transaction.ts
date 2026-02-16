@@ -3,8 +3,10 @@ import assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
 import { ECPair, fixedScriptWallet, hasPsbtMagic, address as wasmAddress } from '@bitgo/wasm-utxo';
 
-import { getCoinName, UtxoCoinName } from '../../../src/names';
+import type { UtxoCoinName } from '../../../src/names';
 import type { Unspent, WalletUnspent } from '../../../src/unspent';
+
+import { getCoinNameForNetwork } from './utxoCoins';
 const { isWalletUnspent, signInputWithUnspent } = utxolib.bitgo;
 type UtxolibRootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type WasmRootWalletKeys = fixedScriptWallet.RootWalletKeys;
@@ -28,7 +30,7 @@ function toTxOutput<TNumber extends number | bigint = number>(
   network: utxolib.Network
 ): utxolib.TxOutput<TNumber> {
   return {
-    script: Buffer.from(wasmAddress.toOutputScriptWithCoin(u.address, getCoinName(network))),
+    script: Buffer.from(wasmAddress.toOutputScriptWithCoin(u.address, getCoinNameForNetwork(network))),
     value: u.value,
   };
 }

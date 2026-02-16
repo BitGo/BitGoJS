@@ -1,8 +1,8 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip322 } from '@bitgo/utxo-core';
-import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
 import { bitgo } from '@bitgo/utxo-lib';
 import { ITransactionExplanation as BaseTransactionExplanation, Triple } from '@bitgo/sdk-core';
+import { BIP32 } from '@bitgo/wasm-utxo';
 import * as utxocore from '@bitgo/utxo-core';
 
 import type { Bip322Message } from '../../abstractUtxoCoin';
@@ -11,6 +11,7 @@ import type { Unspent } from '../../unspent';
 import { toExtendedAddressFormat } from '../recipient';
 import { getPayGoVerificationPubkey } from '../getPayGoVerificationPubkey';
 import { toBip32Triple } from '../../keychains';
+import { toUtxolibBIP32 } from '../../wasmUtil';
 import { getNetworkFromCoinName, UtxoCoinName } from '../../names';
 
 // ===== Transaction Explanation Type Definitions =====
@@ -174,8 +175,8 @@ function getRootWalletKeys(params: { pubs?: bitgo.RootWalletKeys | string[] }): 
   if (params.pubs instanceof bitgo.RootWalletKeys) {
     return params.pubs;
   }
-  const keys = params.pubs?.map((xpub) => bip32.fromBase58(xpub));
-  return keys && keys.length === 3 ? new bitgo.RootWalletKeys(keys as Triple<BIP32Interface>) : undefined;
+  const keys = params.pubs?.map((xpub) => toUtxolibBIP32(BIP32.fromBase58(xpub)));
+  return keys && keys.length === 3 ? new bitgo.RootWalletKeys(keys as Triple<utxolib.BIP32Interface>) : undefined;
 }
 
 function getPsbtInputSignaturesCount(
@@ -247,9 +248,15 @@ function getChainAndIndexFromBip32Derivations(output: bitgo.PsbtOutput) {
   return utxolib.bitgo.getChainAndIndexFromPath(paths[0]);
 }
 
-function getChangeInfo(psbt: bitgo.UtxoPsbt, walletKeys?: Triple<BIP32Interface>): ChangeAddressInfo[] | undefined {
+function getChangeInfo(
+  psbt: bitgo.UtxoPsbt,
+  walletKeys?: Triple<BIP32> | Triple<utxolib.BIP32Interface>
+): ChangeAddressInfo[] | undefined {
+  let utxolibKeys: Triple<utxolib.BIP32Interface>;
   try {
-    walletKeys = walletKeys ?? utxolib.bitgo.getSortedRootNodes(psbt);
+    utxolibKeys = walletKeys
+      ? (walletKeys.map((k) => toUtxolibBIP32(k)) as Triple<utxolib.BIP32Interface>)
+      : utxolib.bitgo.getSortedRootNodes(psbt);
   } catch (e) {
     if (e instanceof utxolib.bitgo.ErrorNoMultiSigInputFound) {
       return undefined;
@@ -257,7 +264,7 @@ function getChangeInfo(psbt: bitgo.UtxoPsbt, walletKeys?: Triple<BIP32Interface>
     throw e;
   }
 
-  return utxolib.bitgo.findWalletOutputIndices(psbt, walletKeys).map((i) => {
+  return utxolib.bitgo.findWalletOutputIndices(psbt, utxolibKeys).map((i) => {
     const derivationInformation = getChainAndIndexFromBip32Derivations(psbt.data.outputs[i]);
     if (!derivationInformation) {
       throw new Error('could not find derivation information on bip32Derivation or tapBip32Derivation');
@@ -392,7 +399,7 @@ export function explainPsbt(
       utxocore.paygo.verifyPayGoAddressProof(
         psbt,
         payGoVerificationInfo.outputIndex,
-        bip32.fromBase58(payGoVerificationInfo.verificationPubkey, utxolib.networks.bitcoin).publicKey
+        Buffer.from(BIP32.fromBase58(payGoVerificationInfo.verificationPubkey).publicKey)
       );
     } catch (e) {
       if (strict) {

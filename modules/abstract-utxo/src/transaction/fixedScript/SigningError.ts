@@ -1,11 +1,20 @@
 import type { Unspent } from '../../unspent';
 
-import type { PsbtParsedScriptType } from './signPsbtUtxolib';
+export type PsbtParsedScriptType =
+  | 'p2sh'
+  | 'p2wsh'
+  | 'p2shP2wsh'
+  | 'p2shP2pk'
+  | 'taprootKeyPathSpend'
+  | 'taprootScriptPathSpend'
+  | 'p2trLegacy'
+  | 'p2trMusig2ScriptPath'
+  | 'p2trMusig2KeyPath';
 
 export class InputSigningError<TNumber extends number | bigint = number> extends Error {
   static expectedWalletUnspent<TNumber extends number | bigint>(
     inputIndex: number,
-    inputType: PsbtParsedScriptType | null, // null for legacy transaction format
+    inputType: PsbtParsedScriptType | null,
     unspent: Unspent<TNumber> | { id: string }
   ): InputSigningError<TNumber> {
     return new InputSigningError(
@@ -18,7 +27,7 @@ export class InputSigningError<TNumber extends number | bigint = number> extends
 
   constructor(
     public inputIndex: number,
-    public inputType: PsbtParsedScriptType | null, // null for legacy transaction format
+    public inputType: PsbtParsedScriptType | null,
     public unspent: Unspent<TNumber> | { id: string },
     public reason: Error | string
   ) {

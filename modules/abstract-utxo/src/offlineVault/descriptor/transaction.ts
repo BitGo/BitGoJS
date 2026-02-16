@@ -1,6 +1,5 @@
 import * as t from 'io-ts';
-import { Psbt } from '@bitgo/wasm-utxo';
-import type { BIP32Interface } from '@bitgo/utxo-lib';
+import { bip32, Psbt } from '@bitgo/wasm-utxo';
 
 import { DescriptorMap, NamedDescriptor } from '../../descriptor';
 import { OfflineVaultSignable, toKeyTriple } from '../OfflineVaultSignable';
@@ -34,7 +33,7 @@ export function getDescriptorsFromDescriptorTransaction(tx: DescriptorTransactio
   return toDescriptorMapValidate(descriptors, pubkeys, policy);
 }
 
-export function getHalfSignedPsbt(tx: DescriptorTransaction, prv: BIP32Interface, coinName: UtxoCoinName): Psbt {
+export function getHalfSignedPsbt(tx: DescriptorTransaction, prv: bip32.BIP32Interface, coinName: UtxoCoinName): Psbt {
   const psbt = toWasmPsbt(Buffer.from(tx.coinSpecific.txHex, 'hex'));
   const descriptorMap = getDescriptorsFromDescriptorTransaction(tx);
   signPsbt(psbt, descriptorMap, prv, { onUnknownInput: 'throw' });

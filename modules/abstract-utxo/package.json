@@ -63,7 +63,6 @@
     "@bitgo/blockapis": "^1.13.0",
     "@bitgo/sdk-api": "^1.74.1",
     "@bitgo/sdk-core": "^36.31.1",
-    "@bitgo/secp256k1": "^1.10.0",
     "@bitgo/utxo-core": "^1.33.0",
     "@bitgo/utxo-lib": "^11.21.0",
     "@bitgo/utxo-ord": "^1.26.0",

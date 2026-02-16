@@ -1,6 +1,6 @@
-import { utxolibCompat } from '@bitgo/wasm-utxo';
+import { address, type AddressFormat } from '@bitgo/wasm-utxo';
 
-import { getNetworkFromCoinName, UtxoCoinName } from '../../names';
+import { UtxoCoinName } from '../../names';
 
 export const pubkeyProd = Buffer.from('0255b9f71ac2c78fffd83e3e37b9e17ae70d5437b7f56d0ed2e93b7de08015aa59', 'hex');
 
@@ -27,18 +27,14 @@ const replayProtectionScriptsProd = [Buffer.from('a914174315cfde84f4c45395ac6f15
 // bchtest:pqtjmnzwqffkrk2349g3cecfwwjwxusvnq87n07cal
 const replayProtectionScriptsTestnet = [Buffer.from('a914172dcc4e025361d951a9511c670973a4e3720c9887', 'hex')];
 
-export function getReplayProtectionAddresses(
-  coinName: UtxoCoinName,
-  format: 'default' | 'cashaddr' = 'default'
-): string[] {
-  const network = getNetworkFromCoinName(coinName);
+export function getReplayProtectionAddresses(coinName: UtxoCoinName, format: AddressFormat = 'default'): string[] {
   switch (coinName) {
     case 'bch':
     case 'bsv':
-      return replayProtectionScriptsProd.map((script) => utxolibCompat.fromOutputScript(script, network, format));
+      return replayProtectionScriptsProd.map((script) => address.fromOutputScriptWithCoin(script, coinName, format));
     case 'tbsv':
     case 'tbch':
-      return replayProtectionScriptsTestnet.map((script) => utxolibCompat.fromOutputScript(script, network, format));
+      return replayProtectionScriptsTestnet.map((script) => address.fromOutputScriptWithCoin(script, coinName, format));
     default:
       return [];
   }

@@ -3,9 +3,10 @@ import { getSeed } from '@bitgo/sdk-test';
 import * as wasmUtxo from '@bitgo/wasm-utxo';
 
 import { getReplayProtectionAddresses } from '../../../src';
-import { getCoinName, isUtxoCoinName, type UtxoCoinName } from '../../../src/names';
+import { isUtxoCoinName, type UtxoCoinName } from '../../../src/names';
 import type { Unspent, UnspentWithPrevTx, WalletUnspent } from '../../../src/unspent';
 
+import { getCoinNameForNetwork } from './utxoCoins';
 import { getWalletAddress } from './address';
 
 const { chainCodesP2sh, getExternalChainCode, getInternalChainCode } = utxolib.bitgo;
@@ -25,7 +26,7 @@ function toCoinName(network: NetworkArg): UtxoCoinName {
     }
     return network;
   }
-  return getCoinName(network);
+  return getCoinNameForNetwork(network);
 }
 
 export type InputScriptType = utxolib.bitgo.outputScripts.ScriptType2Of3 | 'replayProtection';

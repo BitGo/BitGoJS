@@ -26,8 +26,56 @@ import {
   Tzec,
   getReplayProtectionAddresses,
 } from '../../../src';
+import type { UtxoCoinName } from '../../../src/names';
 
 export const defaultBitGo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+
+/** Map coin names to utxolib network objects for test infrastructure */
+const coinNameToNetwork: Record<string, utxolib.Network> = {
+  btc: utxolib.networks.bitcoin,
+  tbtc: utxolib.networks.testnet,
+  tbtcsig: utxolib.networks.bitcoinPublicSignet,
+  tbtc4: utxolib.networks.bitcoinTestnet4,
+  tbtcbgsig: utxolib.networks.bitcoinBitGoSignet,
+  bch: utxolib.networks.bitcoincash,
+  tbch: utxolib.networks.bitcoincashTestnet,
+  bcha: utxolib.networks.ecash,
+  tbcha: utxolib.networks.ecashTest,
+  bsv: utxolib.networks.bitcoinsv,
+  tbsv: utxolib.networks.bitcoinsvTestnet,
+  btg: utxolib.networks.bitcoingold,
+  dash: utxolib.networks.dash,
+  tdash: utxolib.networks.dashTest,
+  doge: utxolib.networks.dogecoin,
+  tdoge: utxolib.networks.dogecoinTest,
+  ltc: utxolib.networks.litecoin,
+  tltc: utxolib.networks.litecoinTest,
+  zec: utxolib.networks.zcash,
+  tzec: utxolib.networks.zcashTest,
+};
+
+/**
+ * Get utxolib Network for a coin name. For test infrastructure only.
+ */
+export function getNetworkForCoinName(coinName: string): utxolib.Network {
+  const network = coinNameToNetwork[coinName];
+  if (!network) {
+    throw new Error(`Unknown coin name: ${coinName}`);
+  }
+  return network;
+}
+
+/**
+ * Get coin name for a utxolib Network. For test infrastructure only.
+ */
+export function getCoinNameForNetwork(network: utxolib.Network): UtxoCoinName {
+  for (const [name, n] of Object.entries(coinNameToNetwork)) {
+    if (n === network) {
+      return name as UtxoCoinName;
+    }
+  }
+  throw new Error(`Unknown network: ${utxolib.getNetworkName(network)}`);
+}
 
 const utxoCoinClasses = [
   Btc,
@@ -61,7 +109,10 @@ function getUtxoCoins(bitgo: BitGoAPI = defaultBitGo): AbstractUtxoCoin[] {
         throw new Error(`error creating ${cls.name}: ${e}`);
       }
     })
-    .sort((a, b) => utxolib.getNetworkList().indexOf(a.network) - utxolib.getNetworkList().indexOf(b.network));
+    .sort((a, b) => {
+      const networkList = utxolib.getNetworkList();
+      return networkList.indexOf(getNetworkForCoinName(a.name)) - networkList.indexOf(getNetworkForCoinName(b.name));
+    });
 }
 
 export const utxoCoins = getUtxoCoins();
@@ -92,7 +143,7 @@ export function getUtxoCoin(name: string): AbstractUtxoCoin {
 
 export function getUtxoCoinForNetwork(n: utxolib.Network): AbstractUtxoCoin {
   for (const c of utxoCoins) {
-    if (c.network === n) {
+    if (getNetworkForCoinName(c.name) === n) {
       return c;
     }
   }

@@ -1,6 +1,5 @@
 import { decodeOrElse } from '@bitgo/sdk-core';
-import { bitgo } from '@bitgo/utxo-lib';
-import { bip322, fixedScriptWallet, Transaction, type CoinName, type Triple } from '@bitgo/wasm-utxo';
+import { bip322, fixedScriptWallet, hasPsbtMagic, Transaction, type CoinName, type Triple } from '@bitgo/wasm-utxo';
 import * as t from 'io-ts';
 
 const BIP322MessageInfo = t.type({
@@ -52,7 +51,7 @@ export function verifyTransactionFromBroadcastableMessage(
   }
   const network = coinName as CoinName;
 
-  if (bitgo.isPsbt(message.txHex)) {
+  if (hasPsbtMagic(Buffer.from(message.txHex, 'hex'))) {
     const psbt = fixedScriptWallet.BitGoPsbt.fromBytes(Buffer.from(message.txHex, 'hex'), network);
     try {
       message.messageInfo.forEach((info, inputIndex) => {

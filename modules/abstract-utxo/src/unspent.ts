@@ -1,4 +1,4 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 /**
  * Unspent transaction output (UTXO) type definition
@@ -35,7 +35,7 @@ export interface Unspent<TNumber extends number | bigint = number> {
  * - index: number (index for wallet derivation)
  */
 export interface WalletUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
-  chain: utxolib.bitgo.ChainCode;
+  chain: fixedScriptWallet.ChainCode;
   index: number;
 }
 

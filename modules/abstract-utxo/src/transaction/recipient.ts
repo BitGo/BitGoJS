@@ -1,6 +1,6 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import { address } from '@bitgo/wasm-utxo';
 
-import { getNetworkFromCoinName, UtxoCoinName } from '../names';
+import { UtxoCoinName } from '../names';
 
 const ScriptRecipientPrefix = 'scriptPubKey:';
 
@@ -29,8 +29,7 @@ export function fromExtendedAddressFormatToScript(extendedAddress: string, coinN
   if ('script' in result) {
     return Buffer.from(result.script, 'hex');
   }
-  const network = getNetworkFromCoinName(coinName);
-  return utxolib.addressFormat.toOutputScriptTryFormats(result.address, network);
+  return Buffer.from(address.toOutputScriptWithCoin(result.address, coinName));
 }
 
 export function toOutputScript(v: string | { address: string } | { script: string }, coinName: UtxoCoinName): Buffer {
@@ -46,6 +45,8 @@ export function toOutputScript(v: string | { address: string } | { script: strin
   throw new Error('invalid input');
 }
 
+const OP_RETURN = 0x6a;
+
 /**
  * Convert a script or address to the extended address format.
  * @param script
@@ -53,10 +54,9 @@ export function toOutputScript(v: string | { address: string } | { script: strin
  * @returns if the script is an OP_RETURN script, then it will be prefixed with `scriptPubKey:`, otherwise it will be converted to an address.
  */
 export function toExtendedAddressFormat(script: Buffer, coinName: UtxoCoinName): string {
-  const network = getNetworkFromCoinName(coinName);
-  return script[0] === utxolib.opcodes.OP_RETURN
+  return script[0] === OP_RETURN
     ? `${ScriptRecipientPrefix}${script.toString('hex')}`
-    : utxolib.address.fromOutputScript(script, network);
+    : address.fromOutputScriptWithCoin(script, coinName);
 }
 
 export function assertValidTransactionRecipient(output: { amount: bigint | number | string; address?: string }): void {
