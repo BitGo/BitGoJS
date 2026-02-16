@@ -125,8 +125,8 @@ export const expectedColdFeatures = {
     'sol',
     'sonic',
     'somi',
-    'stable',
     'sui',
+    'usdt0',
     'tao',
     'tempo',
     'vet',
@@ -214,7 +214,7 @@ export const expectedColdFeatures = {
     'tseievm',
     'tton',
     'tsonic',
-    'tstable',
+    'tusdt0',
   ],
   neither: [
     'ethw',
