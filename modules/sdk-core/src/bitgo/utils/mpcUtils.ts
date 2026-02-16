@@ -155,6 +155,7 @@ export abstract class MpcUtils {
         'transferAccept',
         'transferReject',
         'transferOfferWithdrawn',
+        'bridgeFunds',
       ].includes(params.intentType)
     ) {
       assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);
@@ -222,6 +223,12 @@ export abstract class MpcUtils {
           return {
             ...baseIntent,
             tokenName: params.tokenName,
+            feeOptions: params.feeOptions,
+          };
+        case 'bridgeFunds':
+          return {
+            ...baseIntent,
+            amount: params.amount,
             feeOptions: params.feeOptions,
           };
         default:

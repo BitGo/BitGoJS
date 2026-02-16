@@ -219,6 +219,11 @@ export interface PrebuildTransactionOptions {
   txRequestId?: string;
   isTestTransaction?: boolean;
   contractId?: string;
+  /**
+   * Amount for intents that use a top-level amount instead of recipients (e.g. bridgeFunds).
+   * Named intentAmount to avoid collision with SendOptions.amount which is string | number.
+   */
+  intentAmount?: { value: string; symbol: string };
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
