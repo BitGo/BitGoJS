@@ -104,7 +104,6 @@ export enum CoinFamily {
   SOL = 'sol',
   SONIC = 'sonic',
   SONEIUM = 'soneium',
-  STABLE = 'stable',
   STT = 'stt',
   SUI = 'sui',
   STX = 'stx',
@@ -114,6 +113,7 @@ export enum CoinFamily {
   TIA = 'tia', // Celestia
   TON = 'ton',
   TRX = 'trx',
+  USDT0 = 'usdt0', // Stable EVM L1
   VET = 'vet',
   WORLD = 'world',
   WEMIX = 'wemix',
@@ -635,16 +635,16 @@ export enum UnderlyingAsset {
   SEIEVM = 'seievm',
   SGB = 'sgb',
   SOL = 'sol',
+  SOMI = 'somi', // Somnia Chain
+  SONEIUM = 'soneium',
   SONIC = 'sonic',
-  STABLE = 'stable',
-  SUI = 'sui',
+  STT = 'stt',
   STX = 'stx',
+  SUI = 'sui',
   TIA = 'tia', // Celestia
   TON = 'ton',
   TRX = 'trx',
-  SONEIUM = 'soneium',
-  STT = 'stt',
-  SOMI = 'somi', // Somnia Chain
+  USDT0 = 'usdt0', // Stable EVM L1
   VET = 'vet',
   WEMIX = 'wemix',
   WORLD = 'world',
