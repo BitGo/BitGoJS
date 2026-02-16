@@ -46,9 +46,13 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
   }
 
   /**
-   * Build the transaction from configured TIP-20 operations and transaction parameters
+   * Validate the transaction has all required fields for Tempo AA transactions.
+   * Overrides parent class validation since AA transactions use a different model
+   * (operations-based rather than single contract address).
+   *
+   * @throws BuildTransactionError if validation fails
    */
-  protected async buildImplementation(): Promise<BaseTransaction> {
+  validateTransaction(): void {
     if (this.operations.length === 0) {
       throw new BuildTransactionError('At least one operation is required to build a transaction');
     }
@@ -67,6 +71,24 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
 
     if (this._maxPriorityFeePerGas === undefined) {
       throw new BuildTransactionError('maxPriorityFeePerGas is required to build a transaction');
+    }
+  }
+
+  /**
+   * Build the transaction from configured TIP-20 operations and transaction parameters.
+   * Validation is performed by validateTransaction() which is called by build() before this method.
+   */
+  protected async buildImplementation(): Promise<BaseTransaction> {
+    // These checks satisfy TypeScript's type narrowing.
+    // validateTransaction() already ensures these are defined, but TypeScript
+    // doesn't track that across method boundaries.
+    if (
+      this._nonce === undefined ||
+      this._gas === undefined ||
+      this._maxFeePerGas === undefined ||
+      this._maxPriorityFeePerGas === undefined
+    ) {
+      throw new BuildTransactionError('Transaction validation failed: missing required fields');
     }
 
     const calls = this.operations.map((op) => this.operationToCall(op));
@@ -140,6 +162,7 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
       throw new BuildTransactionError(`Invalid gas limit: ${gas}`);
     }
     this._gas = gasValue;
+    this.updateEip1559Fee();
     return this;
   }
 
@@ -155,6 +178,7 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
       throw new BuildTransactionError(`Invalid maxFeePerGas: ${maxFeePerGas}`);
     }
     this._maxFeePerGas = feeValue;
+    this.updateEip1559Fee();
     return this;
   }
 
@@ -170,7 +194,25 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
       throw new BuildTransactionError(`Invalid maxPriorityFeePerGas: ${maxPriorityFeePerGas}`);
     }
     this._maxPriorityFeePerGas = feeValue;
+    this.updateEip1559Fee();
     return this;
+  }
+
+  /**
+   * Update the parent class fee structure with EIP-1559 parameters
+   * @private
+   */
+  private updateEip1559Fee(): void {
+    if (this._maxFeePerGas !== undefined && this._maxPriorityFeePerGas !== undefined && this._gas !== undefined) {
+      this.fee({
+        fee: this._maxFeePerGas.toString(),
+        gasLimit: this._gas.toString(),
+        eip1559: {
+          maxFeePerGas: this._maxFeePerGas.toString(),
+          maxPriorityFeePerGas: this._maxPriorityFeePerGas.toString(),
+        },
+      });
+    }
   }
 
   /**
