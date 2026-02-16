@@ -1771,6 +1771,42 @@ export const allCoinsAndTokens = [
     ]
   ),
   account(
+    '599ab8d6-ebda-460e-8527-677157f86021',
+    'stable',
+    'Stable',
+    Networks.main.stable,
+    18,
+    UnderlyingAsset.STABLE,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    'fd6b7af0-aff3-45fb-9a71-2d7100a1cd89',
+    'tstable',
+    'Testnet Stable',
+    Networks.test.stable,
+    18,
+    UnderlyingAsset.STABLE,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
     'df01a650-3c8b-4182-a7cb-8ee7ad115c21',
     'xpl',
     'Plasma',

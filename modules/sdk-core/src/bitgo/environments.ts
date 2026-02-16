@@ -242,6 +242,9 @@ const mainnetBase: EnvironmentTemplate = {
     sonic: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
+    stable: {
+      baseUrl: 'https://stablescan.xyz/api',
+    },
     seievm: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
@@ -429,6 +432,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     sonic: {
       baseUrl: 'https://api.etherscan.io/v2',
+    },
+    stable: {
+      baseUrl: 'https://testnet.stablescan.xyz/api',
     },
     seievm: {
       baseUrl: 'https://api.etherscan.io/v2',
