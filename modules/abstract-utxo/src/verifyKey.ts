@@ -4,12 +4,9 @@ These are actually not utxo-specific and belong in a more general module.
 
  */
 import assert from 'assert';
-import { createHash } from 'crypto';
 
 import buildDebug from 'debug';
-import { bip32 } from '@bitgo/secp256k1';
-import * as bitcoinMessage from 'bitcoinjs-message';
-import bs58check from 'bs58check';
+import { BIP32, message } from '@bitgo/wasm-utxo';
 import { BitGoBase, decryptKeychainPrivateKey, KeyIndices } from '@bitgo/sdk-core';
 
 import { VerifyKeySignaturesOptions, VerifyUserPublicKeyOptions } from './abstractUtxoCoin';
@@ -17,21 +14,6 @@ import { ParsedTransaction } from './transaction/types';
 import { UtxoKeychain } from './keychains';
 
 const debug = buildDebug('bitgo:abstract-utxo:verifyKey');
-
-function hash160(data: Buffer): Buffer {
-  const sha256 = createHash('sha256').update(data).digest();
-  return createHash('ripemd160').update(sha256).digest();
-}
-
-// Bitcoin mainnet pubKeyHash version byte
-const BITCOIN_PUBKEY_HASH_VERSION = 0x00;
-
-function toBase58Check(hash: Buffer, version: number): string {
-  const payload = Buffer.allocUnsafe(21);
-  payload.writeUInt8(version, 0);
-  hash.copy(payload, 1);
-  return bs58check.encode(payload);
-}
 
 /**
  * Verify signatures produced by the user key over the backup and bitgo keys.
@@ -55,18 +37,13 @@ export function verifyKeySignature(params: VerifyKeySignaturesOptions): boolean 
   }
 
   assert(userKeychain.pub);
-  const publicKey = bip32.fromBase58(userKeychain.pub).publicKey;
-  // Due to interface of `bitcoinMessage`, we need to convert the public key to an address.
-  // Note that this address has no relationship to on-chain transactions. We are
-  // only interested in the address as a representation of the public key.
-  // BG-5703: use BTC mainnet prefix for all key signature operations
-  const signingAddress = toBase58Check(hash160(publicKey), BITCOIN_PUBKEY_HASH_VERSION);
+  const publicKey = BIP32.fromBase58(userKeychain.pub).publicKey;
 
   assert(keychainToVerify.pub);
   try {
-    return bitcoinMessage.verify(keychainToVerify.pub, signingAddress, Buffer.from(keySignature, 'hex'));
+    return message.verifyMessage(keychainToVerify.pub, publicKey, Buffer.from(keySignature, 'hex'));
   } catch (e) {
-    debug('error thrown from bitcoinmessage while verifying key signature', e);
+    debug('error thrown from wasm-utxo while verifying key signature', e);
     return false;
   }
 }
@@ -129,7 +106,7 @@ export function verifyUserPublicKey(bitgo: BitGoBase, params: VerifyUserPublicKe
       throw new Error(errorMessage);
     }
   } else {
-    const userPrivateKey = bip32.fromBase58(userPrv);
+    const userPrivateKey = BIP32.fromBase58(userPrv);
     if (userPrivateKey.toBase58() === userPrivateKey.neutered().toBase58()) {
       throw new Error('user private key is only public');
     }
