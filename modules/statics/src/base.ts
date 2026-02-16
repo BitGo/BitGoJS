@@ -3064,6 +3064,7 @@ export enum UnderlyingAsset {
 
   // Jovayeth testnet tokens
   'tjovayeth:tcmn' = 'tjovayeth:tcmn',
+  'tjovayeth:usdce' = 'tjovayeth:usdce',
 
   // X Layer (OKB) mainnet tokens
   'okbxlayer:usdg' = 'okbxlayer:usdg',

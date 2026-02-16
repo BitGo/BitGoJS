@@ -2503,6 +2503,15 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['tjovayeth:tcmn'],
     Networks.test.jovayeth
   ),
+  erc20Token(
+    'a8f3b2c1-d4e5-4f6a-8b7c-9d0e1f2a3b4c',
+    'tjovayeth:usdce',
+    'USDC.e',
+    6,
+    '0x39c010df583c9de49088947190669883b41a02ab',
+    UnderlyingAsset['tjovayeth:usdce'],
+    Networks.test.jovayeth
+  ),
   account(
     '2c59a9f2-9bb0-42ff-b925-6049476b93a0',
     'okbxlayer',
