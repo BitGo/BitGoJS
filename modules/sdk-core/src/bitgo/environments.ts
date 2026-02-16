@@ -296,6 +296,9 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://mainnet.mirrornode.hedera.com/api/v1',
       rpcUrl: 'https://mainnet.hashio.io/api',
     },
+    hemieth: {
+      baseUrl: 'https://explorer.hemi.xyz/api',
+    },
     fluenteth: {
       baseUrl: 'https://testnet.fluentscan.xyz/api/', //TODO: COIN-6478: add mainnet url when available
     },
@@ -482,6 +485,9 @@ const testnetBase: EnvironmentTemplate = {
     hbarevm: {
       baseUrl: 'https://testnet.mirrornode.hedera.com/api/v1',
       rpcUrl: 'https://testnet.hashio.io/api',
+    },
+    hemieth: {
+      baseUrl: 'https://testnet.explorer.hemi.xyz/api',
     },
     fluenteth: {
       baseUrl: 'https://testnet.fluentscan.xyz/api/',

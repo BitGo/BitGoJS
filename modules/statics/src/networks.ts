@@ -2352,6 +2352,24 @@ class HederaEVM extends Mainnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '295';
 }
 
+class HemiEth extends Mainnet implements EthereumNetwork {
+  name = 'Hemi Ethereum';
+  family = CoinFamily.HEMIETH;
+  explorerUrl = 'https://explorer.hemi.xyz/tx/';
+  accountExplorerUrl = 'https://explorer.hemi.xyz/address/';
+  chainId = 43111;
+  nativeCoinOperationHashPrefix = '43111';
+}
+
+class HemiEthTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Hemi Ethereum';
+  family = CoinFamily.HEMIETH;
+  explorerUrl = 'https://testnet.explorer.hemi.xyz/tx/';
+  accountExplorerUrl = 'https://testnet.explorer.hemi.xyz/address/';
+  chainId = 743111;
+  nativeCoinOperationHashPrefix = '743111';
+}
+
 class PlumeTestnet extends Testnet implements EthereumNetwork {
   name = 'PlumeTestnet';
   family = CoinFamily.PLUME;
@@ -2478,6 +2496,7 @@ export const Networks = {
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
     hederaEVM: Object.freeze(new HederaEVM()),
+    hemieth: Object.freeze(new HemiEth()),
     icp: Object.freeze(new Icp()),
     ip: Object.freeze(new IP()),
     initia: Object.freeze(new Initia()),
@@ -2595,6 +2614,7 @@ export const Networks = {
     hash: Object.freeze(new HashTestnet()),
     hedera: Object.freeze(new HederaTestnet()),
     hederaEVM: Object.freeze(new HederaEVMTestnet()),
+    hemieth: Object.freeze(new HemiEthTestnet()),
     icp: Object.freeze(new IcpTestnet()),
     ip: Object.freeze(new IPTestnet()),
     initia: Object.freeze(new InitiaTestnet()),

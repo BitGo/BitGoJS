@@ -66,6 +66,7 @@ export enum CoinFamily {
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
   HBAREVM = 'hbarevm', // Hedera EVM coin
+  HEMIETH = 'hemieth', // Hemi Ethereum L2
   ICP = 'icp',
   INITIA = 'initia',
   INJECTIVE = 'injective',
@@ -597,6 +598,7 @@ export enum UnderlyingAsset {
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
   HBAREVM = 'hbarevm', // Hedera EVM coin
+  HEMIETH = 'hemieth', // Hemi Ethereum L2
   ICP = 'icp',
   IP = 'ip', // Story Chain
   INITIA = 'initia',

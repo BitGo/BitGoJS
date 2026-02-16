@@ -294,6 +294,22 @@ export const ofcCoins = [
     CoinKind.CRYPTO
   ),
   ofc(
+    'bdab1ab0-215d-4d59-b698-7cc624e5027a',
+    'ofchemieth',
+    'Hemi Ethereum',
+    18,
+    UnderlyingAsset.HEMIETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    'bc005b8a-dfb5-42db-92ad-92db5cb5b7d2',
+    'ofcthemieth',
+    'Hemi Ethereum Testnet',
+    18,
+    UnderlyingAsset.HEMIETH,
+    CoinKind.CRYPTO
+  ),
+  ofc(
     'f43afacc-0db3-4a8a-a987-ff9d93e08cb4',
     'ofcjovayeth',
     'Jovay Ethereum',

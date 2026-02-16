@@ -2285,6 +2285,42 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
+  account(
+    '68d22683-a8f2-47b3-8446-92e02a1963ae',
+    'hemieth',
+    'Hemi Ethereum',
+    Networks.main.hemieth,
+    18,
+    UnderlyingAsset.HEMIETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    'df0007d9-974b-4099-bf37-9dc59399c058',
+    'themieth',
+    'Testnet Hemi Ethereum',
+    Networks.test.hemieth,
+    18,
+    UnderlyingAsset.HEMIETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
 
   erc721Token(
     'a7604e03-7f40-41f0-8efa-2e7673ac2a9f',
