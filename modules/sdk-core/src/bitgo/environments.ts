@@ -283,6 +283,9 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://explorer.fantom.network',
       rpcUrl: 'https://rpcapi.fantom.network/',
     },
+    xtzevm: {
+      baseUrl: 'https://explorer.etherlink.com/api',
+    },
     flow: {
       baseUrl: 'https://evm.flowscan.io',
     },
@@ -469,6 +472,9 @@ const testnetBase: EnvironmentTemplate = {
     topbnb: {
       baseUrl: 'https://api.etherscan.io/v2',
       apiToken: process.env.ETHERSCAN_API_TOKEN,
+    },
+    xtzevm: {
+      baseUrl: 'https://shadownet.explorer.etherlink.com/api',
     },
     flow: {
       baseUrl: 'https://evm-testnet.flowscan.io',
