@@ -1,11 +1,19 @@
 import assert from 'assert';
 
 import _ from 'lodash';
-import { ITransactionRecipient, Triple, VerificationOptions, Wallet } from '@bitgo/sdk-core';
+import { ITransactionRecipient, KeyIndices, Triple, VerificationOptions, Wallet } from '@bitgo/sdk-core';
 
 import type { AbstractUtxoCoin, ParseTransactionOptions } from '../../abstractUtxoCoin';
 import type { FixedScriptWalletOutput, Output, ParsedTransaction } from '../types';
-import { fetchKeychains, getKeySignatures, toKeychainTriple, UtxoKeychain, UtxoNamedKeychains } from '../../keychains';
+import {
+  fetchKeychains,
+  getKeySignatures,
+  toKeychainTriple,
+  toXpubTriple,
+  UtxoKeychain,
+  UtxoNamedKeychains,
+} from '../../keychains';
+import { verifyKeySignature } from '../../verifyKey';
 import {
   assertValidTransactionRecipient,
   fromExtendedAddressFormatToScript,
@@ -112,6 +120,20 @@ function toExpectedOutputs(
   return expectedOutputs;
 }
 
+function verifyCustomChangeKeys(userKeychain: UtxoKeychain, customChange: CustomChangeOptions): void {
+  for (const keyIndex of [KeyIndices.USER, KeyIndices.BACKUP, KeyIndices.BITGO]) {
+    if (
+      !verifyKeySignature({
+        userKeychain,
+        keychainToVerify: customChange.keys[keyIndex],
+        keySignature: customChange.signatures[keyIndex],
+      })
+    ) {
+      throw new Error(`failed to verify custom change ${KeyIndices[keyIndex].toLowerCase()} key signature`);
+    }
+  }
+}
+
 export async function parseTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,
   params: ParseTransactionOptions<TNumber>
@@ -177,11 +199,18 @@ export async function parseTransaction<TNumber extends bigint | number>(
     }
   }
 
+  let customChangeXpubs: Triple<string> | undefined;
+  if (customChange) {
+    verifyCustomChangeKeys(keychainArray[KeyIndices.USER], customChange);
+    customChangeXpubs = toXpubTriple(customChange.keys);
+  }
+
   // obtain all outputs
   const explanation: TransactionExplanation = await coin.explainTransaction<TNumber>({
     txHex: txPrebuild.txHex,
     txInfo: txPrebuild.txInfo,
     pubs: keychainArray.map((k) => k.pub) as Triple<string>,
+    customChangeXpubs,
   });
 
   const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];

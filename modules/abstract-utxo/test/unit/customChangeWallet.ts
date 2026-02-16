@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import should = require('should');
 import * as sinon from 'sinon';
 import { Wallet } from '@bitgo/sdk-core';
@@ -130,6 +132,68 @@ describe('Custom Change Wallets', () => {
     });
 
     (coin.explainTransaction as any).restore();
+    (coin.wallets as any).restore();
+    (coin.keychains as any).restore();
+  });
+
+  it('should reject invalid custom change key signatures before calling explainTransaction', async () => {
+    const wrongKey = coin.keychains().create();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const sign = async ({ key }) => (await coin.signMessage({ prv: wrongKey.prv }, key.pub!)).toString('hex');
+    const invalidSignatures = {
+      user: await sign(keys.change.user),
+      backup: await sign(keys.change.backup),
+      bitgo: await sign(keys.change.bitgo),
+    };
+
+    const signedSendingWallet = sinon.createStubInstance(Wallet, stubData.signedSendingWallet as any);
+    const changeWallet = sinon.createStubInstance(Wallet, stubData.changeWallet as any);
+
+    sinon.stub(coin, 'keychains').returns({
+      get: sinon.stub().callsFake(({ id }) => {
+        switch (id) {
+          case keys.send.user.id:
+            return Promise.resolve({ id, ...keys.send.user.key });
+          case keys.send.backup.id:
+            return Promise.resolve({ id, ...keys.send.backup.key });
+          case keys.send.bitgo.id:
+            return Promise.resolve({ id, ...keys.send.bitgo.key });
+          case keys.change.user.id:
+            return Promise.resolve({ id, ...keys.change.user.key });
+          case keys.change.backup.id:
+            return Promise.resolve({ id, ...keys.change.backup.key });
+          case keys.change.bitgo.id:
+            return Promise.resolve({ id, ...keys.change.bitgo.key });
+        }
+      }),
+    } as any);
+
+    sinon.stub(coin, 'wallets').returns({
+      get: sinon.stub().callsFake(() => Promise.resolve(changeWallet)),
+    } as any);
+
+    const explainStub = sinon.stub(coin, 'explainTransaction');
+
+    signedSendingWallet._wallet = signedSendingWallet._wallet || {
+      customChangeKeySignatures: invalidSignatures,
+    };
+
+    try {
+      await coin.parseTransaction({
+        txParams: { recipients: [] },
+        txPrebuild: { txHex: '' },
+        wallet: signedSendingWallet as any,
+        verification: {},
+      });
+      assert.fail('parseTransaction should have thrown for invalid custom change key signatures');
+    } catch (e) {
+      assert.ok(e instanceof Error);
+      assert.match(e.message, /failed to verify custom change .* key signature/);
+    }
+
+    assert.strictEqual(explainStub.called, false, 'explainTransaction should not have been called');
+
+    explainStub.restore();
     (coin.wallets as any).restore();
     (coin.keychains as any).restore();
   });
