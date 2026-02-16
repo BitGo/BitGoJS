@@ -2602,47 +2602,6 @@ export const allCoinsAndTokens = [
   ),
 
   account(
-    '60203912-6332-4f44-8f83-a88a06ae170b',
-    'morph',
-    'Morph Mainnet',
-    Networks.main.morph,
-    18,
-    UnderlyingAsset.MORPH,
-    BaseUnit.ETH,
-    [
-      ...EVM_FEATURES,
-      CoinFeature.SHARED_EVM_SIGNING,
-      CoinFeature.SHARED_EVM_SDK,
-      CoinFeature.EVM_COMPATIBLE_IMS,
-      CoinFeature.EVM_COMPATIBLE_UI,
-      CoinFeature.EVM_COMPATIBLE_WP,
-      CoinFeature.EVM_NON_BITGO_RECOVERY,
-      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
-      CoinFeature.SUPPORTS_ERC20,
-    ]
-  ),
-  account(
-    '9352fddb-3b01-40a3-b09a-a047bc1595bd',
-    'tmorph',
-    'Morph Testnet',
-    Networks.test.morph,
-    18,
-    UnderlyingAsset.MORPH,
-    BaseUnit.ETH,
-    [
-      ...EVM_FEATURES,
-      CoinFeature.SHARED_EVM_SIGNING,
-      CoinFeature.SHARED_EVM_SDK,
-      CoinFeature.EVM_COMPATIBLE_IMS,
-      CoinFeature.EVM_COMPATIBLE_UI,
-      CoinFeature.EVM_COMPATIBLE_WP,
-      CoinFeature.EVM_NON_BITGO_RECOVERY,
-      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
-      CoinFeature.SUPPORTS_ERC20,
-    ]
-  ),
-
-  account(
     '51de29b1-dd97-4b05-9239-a177522b469f',
     'morpheth',
     'Morph Ethereum Mainnet',
@@ -3518,46 +3477,6 @@ export const allCoinsAndTokens = [
     '0x9abf1ca968783ba2ad3a75b6b7b2beece80a4fc2',
     UnderlyingAsset['tmegaeth:tmt'],
     Networks.test.megaeth
-  ),
-
-  // Morph mainnet tokens
-  erc20Token(
-    'd95a9238-a1e6-42df-862f-a921adf8151d',
-    'morph:usdc',
-    'USD Coin',
-    6,
-    '0xe34c91815d7fc18a9e2148bcd4241d0a5848b693',
-    UnderlyingAsset['morph:usdc'],
-    Networks.main.morph
-  ),
-  erc20Token(
-    '7c3fb96a-edaf-4c5d-85b3-4a445ce92fc8',
-    'morph:usdt',
-    'Tether USD',
-    6,
-    '0xc7d67a9cbb121b3b0b9c053dd9f469523243379a',
-    UnderlyingAsset['morph:usdt'],
-    Networks.main.morph
-  ),
-  erc20Token(
-    '03ccbfa5-c912-45f7-8b77-9e21950a5369',
-    'morph:usd1',
-    'USD1',
-    18,
-    '0x111111d2bf19e43c34263401e0cad979ed1cdb61',
-    UnderlyingAsset['morph:usd1'],
-    Networks.main.morph
-  ),
-
-  // Morph testnet tokens
-  erc20Token(
-    '7949177e-0c92-4a02-8f34-cee1cbfb38d1',
-    'tmorph:tmt',
-    'Test Mintable Token',
-    6,
-    '0x5257950b5277dac30536eae4742ffef4e5af5256',
-    UnderlyingAsset['tmorph:tmt'],
-    Networks.test.morph
   ),
 
   // MorphEth mainnet tokens

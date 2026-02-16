@@ -1736,24 +1736,6 @@ class XlayerTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '1952';
 }
 
-class Morph extends Mainnet implements EthereumNetwork {
-  name = 'Morph Mainnet';
-  family = CoinFamily.MORPH;
-  explorerUrl = 'https://explorer-api-hoodi.morphl2.io/tx/'; // TODO: WIN-8134 add mainnet url when available
-  accountExplorerUrl = 'https://explorer-api-hoodi.morphl2.io/address/'; // TODO: WIN-8134 add mainnet account explorer url when available
-  chainId = 2818;
-  nativeCoinOperationHashPrefix = '2818';
-}
-
-class MorphTestnet extends Testnet implements EthereumNetwork {
-  name = 'Morph Testnet';
-  family = CoinFamily.MORPH;
-  explorerUrl = 'https://explorer-hoodi.morph.network/tx/';
-  accountExplorerUrl = 'https://explorer-hoodi.morph.network/address/';
-  chainId = 2910;
-  nativeCoinOperationHashPrefix = '2910';
-}
-
 class MorphETH extends Mainnet implements EthereumNetwork {
   name = 'Morph Ethereum Mainnet';
   family = CoinFamily.MORPHETH;
@@ -2471,7 +2453,6 @@ export const Networks = {
     okbxlayer: Object.freeze(new Xlayer()),
     opbnb: Object.freeze(new OpBNB()),
     fantom: Object.freeze(new Fantom()),
-    morph: Object.freeze(new Morph()),
     morpheth: Object.freeze(new MorphETH()),
     optimism: Object.freeze(new Optimism()),
     osmo: Object.freeze(new Osmo()),
@@ -2586,7 +2567,6 @@ export const Networks = {
     okbxlayer: Object.freeze(new XlayerTestnet()),
     opbnb: Object.freeze(new OpBNBTestnet()),
     fantom: Object.freeze(new FantomTestnet()),
-    morph: Object.freeze(new MorphTestnet()),
     morpheth: Object.freeze(new MorphETHTestnet()),
     optimism: Object.freeze(new OptimismTestnet()),
     osmo: Object.freeze(new OsmoTestnet()),

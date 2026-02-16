@@ -309,15 +309,6 @@ export const ofcCoins = [
     UnderlyingAsset.DOGEOS,
     CoinKind.CRYPTO
   ),
-  ofc('a8f87aeb-2a87-40c6-bd04-93101f1de515', 'ofcmorph', 'Morph', 18, UnderlyingAsset.DOGEOS, CoinKind.CRYPTO),
-  tofc(
-    'dfaa5fc9-c40b-4215-804a-7f536fa29133',
-    'ofctmorph',
-    'Morph Testnet',
-    18,
-    UnderlyingAsset.MORPH,
-    CoinKind.CRYPTO
-  ),
   ofc(
     'cdf3487e-a365-4319-83ff-ff06f02810a6',
     'ofcmorpheth',

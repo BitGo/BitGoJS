@@ -302,9 +302,6 @@ const mainnetBase: EnvironmentTemplate = {
     okbxlayer: {
       baseUrl: 'https://www.oklink.com/api/v5/explorer/block/block-list?chainShortName=xlayer',
     },
-    morph: {
-      baseUrl: 'https://explorer-api-hoodi.morphl2.io', // TODO: WIN-8134 add mainnet url when available
-    },
     morpheth: {
       baseUrl: 'https://explorer.morph.network/',
     },
@@ -482,9 +479,6 @@ const testnetBase: EnvironmentTemplate = {
     },
     okbxlayer: {
       baseUrl: 'https://www.oklink.com/api/v5/explorer/block/block-list?chainShortName=xlayer_testnet',
-    },
-    morph: {
-      baseUrl: 'https://explorer-api-hoodi.morphl2.io',
     },
     morpheth: {
       baseUrl: 'https://explorer-hoodi.morph.network/',
