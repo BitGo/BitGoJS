@@ -1827,6 +1827,24 @@ class SonicTestnet extends Testnet implements EthereumNetwork {
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
+class Stable extends Mainnet implements EthereumNetwork {
+  name = 'Stable';
+  family = CoinFamily.STABLE;
+  explorerUrl = 'https://stablescan.xyz/tx/';
+  accountExplorerUrl = 'https://stablescan.xyz/address/';
+  chainId = 988;
+  nativeCoinOperationHashPrefix = '988';
+}
+
+class StableTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Stable';
+  family = CoinFamily.STABLE;
+  explorerUrl = 'https://testnet.stablescan.xyz/tx/';
+  accountExplorerUrl = 'https://testnet.stablescan.xyz/address/';
+  chainId = 2201;
+  nativeCoinOperationHashPrefix = '2201';
+}
+
 class Kaia extends Mainnet implements EthereumNetwork {
   name = 'Kaia';
   family = CoinFamily.KAIA;
@@ -2502,6 +2520,7 @@ export const Networks = {
     sgb: Object.freeze(new Songbird()),
     sol: Object.freeze(new Sol()),
     sonic: Object.freeze(new Sonic()),
+    stable: Object.freeze(new Stable()),
     sui: Object.freeze(new Sui()),
     near: Object.freeze(new Near()),
     stx: Object.freeze(new Stx()),
@@ -2623,6 +2642,7 @@ export const Networks = {
     stt: Object.freeze(new SomniaTestnet()),
     soneium: Object.freeze(new SoneiumTestnet()),
     sonic: Object.freeze(new SonicTestnet()),
+    stable: Object.freeze(new StableTestnet()),
     kaia: Object.freeze(new KaiaTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
     coreum: Object.freeze(new CoreumTestnet()),

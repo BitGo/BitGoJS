@@ -104,6 +104,7 @@ export enum CoinFamily {
   SOL = 'sol',
   SONIC = 'sonic',
   SONEIUM = 'soneium',
+  STABLE = 'stable',
   STT = 'stt',
   SUI = 'sui',
   STX = 'stx',
@@ -635,6 +636,7 @@ export enum UnderlyingAsset {
   SGB = 'sgb',
   SOL = 'sol',
   SONIC = 'sonic',
+  STABLE = 'stable',
   SUI = 'sui',
   STX = 'stx',
   TIA = 'tia', // Celestia

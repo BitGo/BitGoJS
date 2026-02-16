@@ -194,6 +194,15 @@ export const ofcCoins = [
     UnderlyingAsset.SONIC,
     CoinKind.CRYPTO
   ),
+  ofc('13151b0b-3734-452d-8ad9-21af03a08bfe', 'ofcstable', 'Stable', 18, UnderlyingAsset.STABLE, CoinKind.CRYPTO),
+  tofc(
+    '39a4dd77-b824-47b9-baff-b45398012511',
+    'ofctstable',
+    'Stable Testnet',
+    18,
+    UnderlyingAsset.STABLE,
+    CoinKind.CRYPTO
+  ),
   ofc(
     'ec31b18d-f034-4e84-837e-2c7d2908bbae',
     'ofchypeevm',
