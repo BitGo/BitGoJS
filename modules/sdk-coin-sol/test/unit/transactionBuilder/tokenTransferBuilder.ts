@@ -796,5 +796,89 @@ describe('Sol Token Transfer Builder', () => {
         })
       ).throwError('Invalid token name, got: ' + invalidTokenName);
     });
+
+    it('should fail with more than 9 recipients with ATA creation', async () => {
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.nonce(recentBlockHash);
+      txBuilder.sender(authAccount.pub);
+
+      // Generate 10 unique recipients for ATA creation
+      const recipients: string[] = [];
+      for (let i = 0; i < 10; i++) {
+        const keypair = new KeyPair();
+        recipients.push(keypair.getKeys().pub);
+      }
+
+      for (const address of recipients) {
+        txBuilder.send({ address, amount, tokenName: nameUSDC });
+        txBuilder.createAssociatedTokenAccount({
+          ownerAddress: address,
+          tokenName: nameUSDC,
+        });
+      }
+
+      await txBuilder
+        .build()
+        .should.be.rejectedWith(
+          /Transaction too large: 10 recipients with 10 ATA creations.*maximum 9 recipients with ATA creation/
+        );
+    });
+
+    it('should fail with more than 19 recipients without ATA creation', async () => {
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.nonce(recentBlockHash);
+      txBuilder.sender(authAccount.pub);
+
+      // Add 20 recipients without ATA creation (reusing addresses is fine without ATA)
+      for (let i = 0; i < 20; i++) {
+        // Only use first 3 addresses to avoid invalid address at index 3
+        const address = testData.addresses.validAddresses[i % 3];
+        txBuilder.send({ address, amount, tokenName: nameUSDC });
+      }
+
+      await txBuilder
+        .build()
+        .should.be.rejectedWith(/Transaction too large: 20 recipients.*maximum 19 recipients without ATA creation/);
+    });
+
+    it('should succeed with 9 recipients with ATA creation', async () => {
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.nonce(recentBlockHash);
+      txBuilder.sender(authAccount.pub);
+
+      // Generate exactly 9 unique recipients for ATA creation
+      const recipients: string[] = [];
+      for (let i = 0; i < 9; i++) {
+        const keypair = new KeyPair();
+        recipients.push(keypair.getKeys().pub);
+      }
+
+      for (const address of recipients) {
+        txBuilder.send({ address, amount, tokenName: nameUSDC });
+        txBuilder.createAssociatedTokenAccount({
+          ownerAddress: address,
+          tokenName: nameUSDC,
+        });
+      }
+
+      const tx = await txBuilder.build();
+      tx.should.be.ok();
+    });
+
+    it('should succeed with 19 recipients without ATA creation', async () => {
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.nonce(recentBlockHash);
+      txBuilder.sender(authAccount.pub);
+
+      // Add exactly 19 recipients without ATA creation (reusing addresses is fine without ATA)
+      for (let i = 0; i < 19; i++) {
+        // Only use first 3 addresses to avoid invalid address at index 3
+        const address = testData.addresses.validAddresses[i % 3];
+        txBuilder.send({ address, amount, tokenName: nameUSDC });
+      }
+
+      const tx = await txBuilder.build();
+      tx.should.be.ok();
+    });
   });
 });

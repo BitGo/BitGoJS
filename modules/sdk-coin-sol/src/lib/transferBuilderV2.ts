@@ -12,7 +12,7 @@ import {
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import assert from 'assert';
 import { AtaInit, TokenAssociateRecipient, TokenTransfer, Transfer, SetPriorityFee } from './iface';
-import { InstructionBuilderTypes } from './constants';
+import * as Constants from './constants';
 import _ from 'lodash';
 
 export interface SendParams {
@@ -42,14 +42,14 @@ export class TransferBuilderV2 extends TransactionBuilder {
     super.initBuilder(tx);
 
     for (const instruction of this._instructionsData) {
-      if (instruction.type === InstructionBuilderTypes.Transfer) {
+      if (instruction.type === Constants.InstructionBuilderTypes.Transfer) {
         const transferInstruction: Transfer = instruction;
         this.sender(transferInstruction.params.fromAddress);
         this.send({
           address: transferInstruction.params.toAddress,
           amount: transferInstruction.params.amount,
         });
-      } else if (instruction.type === InstructionBuilderTypes.TokenTransfer) {
+      } else if (instruction.type === Constants.InstructionBuilderTypes.TokenTransfer) {
         const transferInstruction: TokenTransfer = instruction;
         this.sender(transferInstruction.params.fromAddress);
         this.send({
@@ -57,7 +57,7 @@ export class TransferBuilderV2 extends TransactionBuilder {
           amount: transferInstruction.params.amount,
           tokenName: transferInstruction.params.tokenName,
         });
-      } else if (instruction.type === InstructionBuilderTypes.CreateAssociatedTokenAccount) {
+      } else if (instruction.type === Constants.InstructionBuilderTypes.CreateAssociatedTokenAccount) {
         const ataInitInstruction: AtaInit = instruction;
         this._createAtaParams.push({
           ownerAddress: ataInitInstruction.params.ownerAddress,
@@ -130,6 +130,30 @@ export class TransferBuilderV2 extends TransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
+
+    // Validate transaction size limits
+    const uniqueAtaCount = _.uniqBy(this._createAtaParams, (recipient: TokenAssociateRecipient) => {
+      return recipient.ownerAddress + recipient.tokenName;
+    }).length;
+
+    if (uniqueAtaCount > 0 && this._sendParams.length > Constants.MAX_RECIPIENTS_WITH_ATA_CREATION) {
+      throw new BuildTransactionError(
+        `Transaction too large: ${this._sendParams.length} recipients with ${uniqueAtaCount} ATA creations. ` +
+          `Solana legacy transactions are limited to ${Constants.SOLANA_TRANSACTION_MAX_SIZE} bytes ` +
+          `(maximum ${Constants.MAX_RECIPIENTS_WITH_ATA_CREATION} recipients with ATA creation). ` +
+          `Please split into multiple transactions with max ${Constants.MAX_RECIPIENTS_WITH_ATA_CREATION} recipients each.`
+      );
+    }
+
+    if (uniqueAtaCount === 0 && this._sendParams.length > Constants.MAX_RECIPIENTS_WITHOUT_ATA_CREATION) {
+      throw new BuildTransactionError(
+        `Transaction too large: ${this._sendParams.length} recipients. ` +
+          `Solana legacy transactions are limited to ${Constants.SOLANA_TRANSACTION_MAX_SIZE} bytes ` +
+          `(maximum ${Constants.MAX_RECIPIENTS_WITHOUT_ATA_CREATION} recipients without ATA creation). ` +
+          `Please split into multiple transactions with max ${Constants.MAX_RECIPIENTS_WITHOUT_ATA_CREATION} recipients each.`
+      );
+    }
+
     const sendInstructions = await Promise.all(
       this._sendParams.map(async (sendParams: SendParams): Promise<Transfer | TokenTransfer> => {
         if (sendParams.tokenName) {
@@ -154,7 +178,7 @@ export class TransferBuilderV2 extends TransactionBuilder {
 
           const sourceAddress = await getAssociatedTokenAccountAddress(tokenAddress, this._sender, false, programId);
           return {
-            type: InstructionBuilderTypes.TokenTransfer,
+            type: Constants.InstructionBuilderTypes.TokenTransfer,
             params: {
               fromAddress: this._sender,
               toAddress: sendParams.address,
@@ -168,7 +192,7 @@ export class TransferBuilderV2 extends TransactionBuilder {
           };
         } else {
           return {
-            type: InstructionBuilderTypes.Transfer,
+            type: Constants.InstructionBuilderTypes.Transfer,
             params: {
               fromAddress: this._sender,
               toAddress: sendParams.address,
@@ -205,7 +229,7 @@ export class TransferBuilderV2 extends TransactionBuilder {
           programId
         );
         return {
-          type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
+          type: Constants.InstructionBuilderTypes.CreateAssociatedTokenAccount,
           params: {
             ownerAddress: recipient.ownerAddress,
             tokenName: tokenName,
@@ -224,10 +248,10 @@ export class TransferBuilderV2 extends TransactionBuilder {
       this._instructionsData = [...createAtaInstructions, ...sendInstructions];
     } else if (
       createAtaInstructions.length !== 0 ||
-      sendInstructions.some((instruction) => instruction.type === InstructionBuilderTypes.TokenTransfer)
+      sendInstructions.some((instruction) => instruction.type === Constants.InstructionBuilderTypes.TokenTransfer)
     ) {
       addPriorityFeeInstruction = {
-        type: InstructionBuilderTypes.SetPriorityFee,
+        type: Constants.InstructionBuilderTypes.SetPriorityFee,
         params: {
           fee: this._priorityFee,
         },
