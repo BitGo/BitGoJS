@@ -10,6 +10,7 @@ import urlLib from 'url';
 import querystring from 'querystring';
 
 import { ApiResponseError, BitGoRequest } from '@bitgo/sdk-core';
+import { extractPathWithQuery } from '@bitgo/sdk-hmac';
 
 import { AuthVersion, VerifyResponseOptions } from './types';
 import { BitGoAPI } from './bitgoAPI';
@@ -213,6 +214,135 @@ export function setRequestQueryString(req: superagent.SuperAgentRequest): void {
   }
 }
 
+/** Result from version-specific response verification. */
+interface ResponseVerificationResult {
+  verificationResult: {
+    isValid: boolean;
+    expectedHmac: string;
+    isInResponseValidityWindow: boolean;
+    verificationTime: number;
+  };
+  hmacErrorDetails: Record<string, unknown>;
+  responseTimestamp: string | number;
+}
+
+/**
+ * Verify a v4 server response HMAC.
+ *
+ * Returns undefined if the server didn't sign the response (e.g. error before
+ * auth middleware ran), signalling the caller to pass the response through
+ * without verification.
+ *
+ * @param authToken - The raw access token (HMAC key). Guaranteed non-undefined by the caller.
+ */
+function verifyV4ResponseHeaders(
+  bitgo: BitGoAPI,
+  method: VerifyResponseOptions['method'],
+  req: superagent.SuperAgentRequest,
+  response: superagent.Response,
+  authToken: string
+): ResponseVerificationResult | undefined {
+  const hmac = response.header['x-signature'];
+  const timestamp = response.header['x-request-timestamp'];
+  const authRequestId = response.header['x-auth-request-id'];
+
+  if (!hmac || !timestamp) {
+    // request fails before reaching the auth middleware (e.g. 4xx/5xx). For
+    // successful (2xx) responses, we require v4 signature headers and treat
+    // their absence as a protocol/authentication error.
+    debug(
+      'v4 response verification %s: server response (status %d) missing HMAC headers (x-signature: %s, x-request-timestamp: %s)',
+      response.status >= 200 && response.status < 300 ? 'failed' : 'skipped',
+      response.status,
+      hmac ? 'present' : 'missing',
+      timestamp ? 'present' : 'missing'
+    );
+
+    // For 2xx responses, missing v4 signature headers are not allowed; this
+    // would permit an attacker or intermediary to strip HMAC headers and
+    // bypass response verification.
+    if (response.status >= 200 && response.status < 300) {
+      throw new ApiResponseError(
+        'Missing required v4 response signature headers (x-signature and/or x-request-timestamp) on successful response',
+        511,
+        { status: response.status, body: response.body }
+      );
+    }
+
+    return undefined;
+  }
+
+  // Hash the raw response body bytes.
+  // Convert response.text to a Buffer (UTF-8) so we're hashing the actual bytes,
+  // not relying on Node's implicit string encoding in crypto.update().
+  const rawResponseBuffer = Buffer.from(response.text || '');
+  const bodyHashHex = bitgo.calculateBodyHash(rawResponseBuffer);
+
+  // req.v4PathWithQuery is always set by requestPatch; fallback parses req.url as a safety net.
+  let pathWithQuery = req.v4PathWithQuery;
+  if (!pathWithQuery) {
+    // Use sdk-hmac's extractPathWithQuery helper which handles both absolute URLs
+    pathWithQuery = extractPathWithQuery(req.url);
+  }
+
+  const result = bitgo.verifyResponse({
+    hmac,
+    timestampSec: Number(timestamp),
+    method: req.v4Method || method,
+    pathWithQuery,
+    bodyHashHex,
+    authRequestId: authRequestId || req.v4AuthRequestId || '',
+    statusCode: response.status,
+    rawToken: authToken,
+  });
+
+  return {
+    verificationResult: result,
+    responseTimestamp: timestamp,
+    hmacErrorDetails: { expectedHmac: result.expectedHmac, receivedHmac: hmac, preimage: result.preimage },
+  };
+}
+
+/**
+ * Verify a v2/v3 server response HMAC.
+ *
+ * @param authToken - The raw access token (HMAC key). Guaranteed non-undefined by the caller.
+ */
+function verifyV2V3ResponseHeaders(
+  bitgo: BitGoAPI,
+  token: string | undefined,
+  method: VerifyResponseOptions['method'],
+  req: superagent.SuperAgentRequest,
+  response: superagent.Response,
+  authVersion: AuthVersion,
+  authToken: string
+): ResponseVerificationResult {
+  const result = bitgo.verifyResponse({
+    url: req.url,
+    hmac: response.header.hmac,
+    statusCode: response.status,
+    text: response.text,
+    timestamp: response.header.timestamp,
+    token: authToken,
+    method,
+    authVersion,
+  });
+
+  const partialBitgoToken = token ? token.substring(0, 10) : '';
+  const partialRequestToken = authToken ? authToken.substring(0, 10) : '';
+  return {
+    verificationResult: result,
+    responseTimestamp: response.header.timestamp,
+    hmacErrorDetails: {
+      expectedHmac: result.expectedHmac,
+      receivedHmac: response.header.hmac,
+      hmacInput: result.signatureSubject,
+      requestToken: partialRequestToken,
+      bitgoToken: partialBitgoToken,
+    },
+  };
+}
+
 /**
  * Verify that the response received from the server is signed correctly.
  * Right now, it is very permissive with the timestamp variance.
@@ -230,40 +360,33 @@ export function verifyResponse(
     return response;
   }
 
-  const verificationResponse = bitgo.verifyResponse({
-    url: req.url,
-    hmac: response.header.hmac,
-    statusCode: response.status,
-    text: response.text,
-    timestamp: response.header.timestamp,
-    token: req.authenticationToken,
-    method,
-    authVersion,
-  });
+  // --- Build version-specific params, call bitgo.verifyResponse(), collect error context ---
+  // req.authenticationToken is guaranteed non-undefined here (checked above).
+  const authToken = req.authenticationToken as string;
+  let result: ResponseVerificationResult;
 
-  if (!verificationResponse.isValid) {
-    // calculate the HMAC
-    const receivedHmac = response.header.hmac;
-    const expectedHmac = verificationResponse.expectedHmac;
-    const signatureSubject = verificationResponse.signatureSubject;
-    // Log only the first 10 characters of the token to ensure the full token isn't logged.
-    const partialBitgoToken = token ? token.substring(0, 10) : '';
-    const errorDetails = {
-      expectedHmac,
-      receivedHmac,
-      hmacInput: signatureSubject,
-      requestToken: req.authenticationToken,
-      bitgoToken: partialBitgoToken,
-    };
-    debug('Invalid response HMAC: %O', errorDetails);
-    throw new ApiResponseError('invalid response HMAC, possible man-in-the-middle-attack', 511, errorDetails);
+  if (authVersion === 4) {
+    const v4Result = verifyV4ResponseHeaders(bitgo, method, req, response, authToken);
+    if (!v4Result) {
+      // Server didn't sign the response — pass through without verification
+      return response;
+    }
+    result = v4Result;
+  } else {
+    result = verifyV2V3ResponseHeaders(bitgo, token, method, req, response, authVersion, authToken);
   }
 
-  if (bitgo.getAuthVersion() === 3 && !verificationResponse.isInResponseValidityWindow) {
-    const errorDetails = {
-      timestamp: response.header.timestamp,
-      verificationTime: verificationResponse.verificationTime,
-    };
+  // --- Common validation for all auth versions ---
+  const { verificationResult, hmacErrorDetails, responseTimestamp } = result;
+
+  if (!verificationResult.isValid) {
+    debug('Invalid response HMAC: %O', hmacErrorDetails);
+    throw new ApiResponseError('invalid response HMAC, possible man-in-the-middle-attack', 511, hmacErrorDetails);
+  }
+
+  // v3 and v4 enforce the response validity window; v2 does not
+  if (authVersion >= 3 && !verificationResult.isInResponseValidityWindow) {
+    const errorDetails = { timestamp: responseTimestamp, verificationTime: verificationResult.verificationTime };
     debug('Server response outside response validity time window: %O', errorDetails);
     throw new ApiResponseError(
       'server response outside response validity time window, possible man-in-the-middle-attack',
@@ -271,5 +394,6 @@ export function verifyResponse(
       errorDetails
     );
   }
+
   return response;
 }
