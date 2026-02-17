@@ -12,16 +12,16 @@ import { PostCalculateMinerFeeInfo } from './common/calculateMinerFeeInfo';
 import { PostAcceptShare } from './v1/acceptShare';
 import { PostSimpleCreate } from './v1/simpleCreate';
 import { PutPendingApproval } from './v1/pendingApproval';
-// import { PostSignTransaction } from './v1/signTransaction';
+import { PostSignTransaction } from './v1/signTransaction';
 import { PostKeychainLocal } from './v2/keychainLocal';
 import { GetLightningState } from './v2/lightningState';
 import { PostKeychainChangePassword } from './v2/keychainChangePassword';
 // import { PostLightningInitWallet } from './v2/lightningInitWallet';
 // import { PostUnlockLightningWallet } from './v2/unlockWallet';
 import { PostVerifyCoinAddress } from './v2/verifyAddress';
-// import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
-// import { PostCreateLocalKeyChain } from './v1/createLocalKeyChain';
-// import { PutConstructPendingApprovalTx } from './v1/constructPendingApprovalTx';
+import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
+import { PostCreateLocalKeyChain } from './v1/createLocalKeyChain';
+import { PutConstructPendingApprovalTx } from './v1/constructPendingApprovalTx';
 // import { PutConsolidateUnspents } from './v1/consolidateUnspents';
 // import { PostCreateAddress } from './v2/createAddress';
 // import { PutFanoutUnspents } from './v1/fanoutUnspents';
@@ -37,7 +37,7 @@ import { PostVerifyCoinAddress } from './v2/verifyAddress';
 // import { PostFanoutUnspents } from './v2/fanoutUnspents';
 // import { PostSendMany } from './v2/sendmany';
 // import { PostConsolidateUnspents } from './v2/consolidateunspents';
-// import { PostPrebuildAndSignTransaction } from './v2/prebuildAndSignTransaction';
+import { PostPrebuildAndSignTransaction } from './v2/prebuildAndSignTransaction';
 // import { PostCoinSign } from './v2/coinSign';
 // import { PostSendCoins } from './v2/sendCoins';
 // import { PostGenerateShareTSS } from './v2/generateShareTSS';
@@ -127,32 +127,32 @@ export const ExpressPendingApprovalsApiSpec = apiSpec({
   },
 });
 
-// export const ExpressWalletSignTransactionApiSpec = apiSpec({
-//   'express.v1.wallet.signTransaction': {
-//     post: PostSignTransaction,
-//   },
-//   'express.v2.wallet.prebuildandsigntransaction': {
-//     post: PostPrebuildAndSignTransaction,
-//   },
-// });
+export const ExpressWalletSignTransactionApiSpec = apiSpec({
+  'express.v1.wallet.signTransaction': {
+    post: PostSignTransaction,
+  },
+  'express.v2.wallet.prebuildandsigntransaction': {
+    post: PostPrebuildAndSignTransaction,
+  },
+});
 
-// export const ExpressV1KeychainDeriveApiSpec = apiSpec({
-//   'express.v1.keychain.derive': {
-//     post: PostDeriveLocalKeyChain,
-//   },
-// });
+export const ExpressV1KeychainDeriveApiSpec = apiSpec({
+  'express.v1.keychain.derive': {
+    post: PostDeriveLocalKeyChain,
+  },
+});
 
-// export const ExpressV1KeychainLocalApiSpec = apiSpec({
-//   'express.v1.keychain.local': {
-//     post: PostCreateLocalKeyChain,
-//   },
-// });
+export const ExpressV1KeychainLocalApiSpec = apiSpec({
+  'express.v1.keychain.local': {
+    post: PostCreateLocalKeyChain,
+  },
+});
 
-// export const ExpressV1PendingApprovalConstructTxApiSpec = apiSpec({
-//   'express.v1.pendingapproval.constructTx': {
-//     put: PutConstructPendingApprovalTx,
-//   },
-// });
+export const ExpressV1PendingApprovalConstructTxApiSpec = apiSpec({
+  'express.v1.pendingapproval.constructTx': {
+    put: PutConstructPendingApprovalTx,
+  },
+});
 
 // export const ExpressWalletConsolidateUnspentsApiSpec = apiSpec({
 //   'express.v1.wallet.consolidateunspents': {
@@ -335,11 +335,11 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressLightningGetStateApiSpec &
   typeof ExpressV1WalletAcceptShareApiSpec &
   typeof ExpressV1WalletSimpleCreateApiSpec &
-  typeof ExpressPendingApprovalsApiSpec;
-//   typeof ExpressWalletSignTransactionApiSpec &
-//   typeof ExpressV1KeychainDeriveApiSpec &
-//   typeof ExpressV1KeychainLocalApiSpec &
-//   typeof ExpressV1PendingApprovalConstructTxApiSpec &
+  typeof ExpressPendingApprovalsApiSpec &
+  typeof ExpressWalletSignTransactionApiSpec &
+  typeof ExpressV1KeychainDeriveApiSpec &
+  typeof ExpressV1KeychainLocalApiSpec &
+  typeof ExpressV1PendingApprovalConstructTxApiSpec;
 //   typeof ExpressWalletConsolidateUnspentsApiSpec &
 //   typeof ExpressV2WalletConsolidateAccountApiSpec &
 //   typeof ExpressWalletFanoutUnspentsApiSpec &
@@ -378,12 +378,12 @@ export const ExpressApi: ExpressApi = {
   ...ExpressV1WalletAcceptShareApiSpec,
   ...ExpressV1WalletSimpleCreateApiSpec,
   ...ExpressPendingApprovalsApiSpec,
+  ...ExpressWalletSignTransactionApiSpec,
+  ...ExpressV1KeychainDeriveApiSpec,
+  ...ExpressV1KeychainLocalApiSpec,
+  ...ExpressV1PendingApprovalConstructTxApiSpec,
   // ...ExpressV2WalletSendManyApiSpec,
   // ...ExpressExternalSigningApiSpec,
-  // ...ExpressWalletSignTransactionApiSpec,
-  // ...ExpressV1KeychainDeriveApiSpec,
-  // ...ExpressV1KeychainLocalApiSpec,
-  // ...ExpressV1PendingApprovalConstructTxApiSpec,
   // ...ExpressWalletConsolidateUnspentsApiSpec,
   // ...ExpressWalletFanoutUnspentsApiSpec,
   // ...ExpressV2WalletCreateAddressApiSpec,
