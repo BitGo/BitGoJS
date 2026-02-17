@@ -66,6 +66,7 @@ interface EnvironmentTemplate {
   hmacVerificationEnforced: boolean;
   tonNodeUrl: string;
   suiNodeUrl: string;
+  iotaNodeUrl: string;
   etcNodeUrl: string;
   coredaoExplorerBaseUrl?: string;
   coredaoExplorerApiToken?: string;
@@ -207,6 +208,7 @@ const mainnetBase: EnvironmentTemplate = {
   hmacVerificationEnforced: true,
   tonNodeUrl: 'https://toncenter.com/api/v2/jsonRPC',
   suiNodeUrl: 'https://fullnode.mainnet.sui.io',
+  iotaNodeUrl: 'https://api.mainnet.iota.cafe',
   etcNodeUrl: 'https://etc.blockscout.com',
   coredaoExplorerBaseUrl: 'https://openapi.coredao.org',
   oasExplorerBaseUrl: 'https://explorer.oasys.games',
@@ -402,6 +404,7 @@ const testnetBase: EnvironmentTemplate = {
   hmacVerificationEnforced: false,
   tonNodeUrl: 'https://testnet.toncenter.com/api/v2/jsonRPC',
   suiNodeUrl: 'https://fullnode.testnet.sui.io',
+  iotaNodeUrl: 'https://api.testnet.iota.cafe',
   etcNodeUrl: 'https://etc-mordor.blockscout.com',
   coredaoExplorerBaseUrl: 'https://api.test2.btcs.network',
   oasExplorerBaseUrl: 'https://explorer.testnet.oasys.games',
