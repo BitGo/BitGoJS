@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: socketdev/action@v1
+      - uses: socketdev/action@4337a545deecc20f19a909e52db7a2f6ba292f42 # v1
         with:
           mode: firewall-free
 
@@ -48,16 +49,16 @@ jobs:
         run: |
           echo "preid=beta" >> $GITHUB_ENV
 
-      - name: Configure Git & NPM
+      - name: Configure Git
         run: |
           git config --global user.name 'Git bot'
           git config --global user.email 'bot@noreply.github.com'
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git checkout -b ${{ env.preid }}-$(git rev-parse --short HEAD)
-          echo "email=${{ secrets.BETA_EMAIL }}" > .npmrc
+
+      - name: Configure NPM for Trusted Publishing
+        run: |
           echo "@bitgo-beta:registry=https://registry.npmjs.org" >> .npmrc
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.BITGO_BETA_PUBLISH_TOKEN }}" >> .npmrc
-          echo "//registry.npmjs.org/:always-auth=true" >> .npmrc
 
       - name: Prepare Release
         run: |
@@ -73,6 +74,10 @@ jobs:
 
       - name: Lerna Publish
         run: yarn lerna publish from-package --preid ${{ env.preid }} --dist-tag ${{ env.preid }} --force-publish --yes --loglevel silly
+        env:
+          NPM_CONFIG_PROVENANCE: true
 
       - name: Verify Publish
         run: npx tsx ./scripts/verify-release.ts ${{ env.preid }}
+        env:
+          NPM_CONFIG_PROVENANCE: true

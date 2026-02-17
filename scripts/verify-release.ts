@@ -27,7 +27,7 @@ async function verifyPackage(dir: string, preid = 'beta'): Promise<boolean> {
       );
       const { stdout, exitCode } = await execa(
         'npm',
-        ['publish', '--tag', preid],
+        ['publish', '--tag', preid, '--provenance'],
         { cwd },
       );
       console.log(stdout);
