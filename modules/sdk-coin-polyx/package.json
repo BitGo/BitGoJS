@@ -45,7 +45,7 @@
     "@bitgo/sdk-lib-mpc": "^10.9.0",
     "@bitgo/statics": "^58.25.0",
     "@polkadot/api": "14.1.1",
-    "@polkadot/keyring": "13.3.1",
+    "@polkadot/keyring": "13.5.6",
     "@substrate/txwrapper-core": "7.5.2",
     "@substrate/txwrapper-polkadot": "7.5.2",
     "bignumber.js": "^9.1.2",
