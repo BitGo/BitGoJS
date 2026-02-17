@@ -31,6 +31,8 @@ export const BuildParamsUTXO = t.partial({
   enforceMinConfirmsForChange: t.unknown,
   /* legacy or psbt */
   txFormat: t.unknown,
+  /* restrict which input script types WP may select (e.g. for legacy format compatibility) */
+  allowedInputScriptTypes: t.unknown,
   maxChangeOutputs: t.unknown,
   /* rbf */
   rbfTxIds: t.array(t.string),

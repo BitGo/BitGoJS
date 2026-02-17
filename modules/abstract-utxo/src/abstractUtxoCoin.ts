@@ -1005,8 +1005,10 @@ export abstract class AbstractUtxoCoin
   async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<{
     txFormat?: TxFormat;
     changeAddressType?: ScriptType2Of3[] | ScriptType2Of3;
+    allowedInputScriptTypes?: ScriptType2Of3[];
   }> {
-    const txFormat = this.getDefaultTxFormat(buildParams.wallet, buildParams.txFormat as TxFormat | undefined);
+    const requestedFormat = buildParams.txFormat as TxFormat | undefined;
+    const txFormat = this.getDefaultTxFormat(buildParams.wallet, requestedFormat);
     let changeAddressType = buildParams.changeAddressType as ScriptType2Of3[] | ScriptType2Of3 | undefined;
 
     // if the addressType is not specified, we need to default to p2trMusig2 for testnet hot wallets for staged rollout of p2trMusig2
@@ -1019,9 +1021,26 @@ export abstract class AbstractUtxoCoin
       changeAddressType = ['p2trMusig2', 'p2wsh', 'p2shP2wsh', 'p2sh', 'p2tr'];
     }
 
+    // getHalfSignedLegacyFormat() only supports p2ms-based types (p2sh, p2shP2wsh, p2wsh).
+    // Filter change outputs and restrict input selection to these types.
+    const legacyCompatibleTypes: ScriptType2Of3[] = ['p2sh', 'p2shP2wsh', 'p2wsh'];
+    let allowedInputScriptTypes: ScriptType2Of3[] | undefined;
+
+    if (requestedFormat === 'legacy') {
+      allowedInputScriptTypes = legacyCompatibleTypes;
+      if (Array.isArray(changeAddressType)) {
+        changeAddressType = changeAddressType.filter((t): t is ScriptType2Of3 =>
+          legacyCompatibleTypes.includes(t as ScriptType2Of3)
+        );
+      } else if (changeAddressType !== undefined && !legacyCompatibleTypes.includes(changeAddressType)) {
+        changeAddressType = legacyCompatibleTypes;
+      }
+    }
+
     return {
       txFormat,
       changeAddressType,
+      allowedInputScriptTypes,
     };
   }
 
