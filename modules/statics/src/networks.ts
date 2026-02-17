@@ -713,6 +713,24 @@ class EthereumW extends Mainnet implements EthereumNetwork {
   tokenOperationHashPrefix = 'ERC20';
 }
 
+class XtzEvm extends Mainnet implements EthereumNetwork {
+  name = 'XTZ EVM';
+  family = CoinFamily.XTZEVM;
+  explorerUrl = 'https://explorer.etherlink.com/tx/';
+  accountExplorerUrl = 'https://explorer.etherlink.com/address/';
+  chainId = 42793;
+  nativeCoinOperationHashPrefix = '42793';
+}
+
+class XtzEvmTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet XTZ EVM';
+  family = CoinFamily.XTZEVM;
+  explorerUrl = 'https://shadownet.explorer.etherlink.com/tx/';
+  accountExplorerUrl = 'https://shadownet.explorer.etherlink.com/address/';
+  chainId = 128123;
+  nativeCoinOperationHashPrefix = '128123';
+}
+
 class Pyrmont extends Testnet implements AccountNetwork {
   name = 'Pyrmont';
   family = CoinFamily.ETH2;
@@ -2558,6 +2576,7 @@ export const Networks = {
     xpl: Object.freeze(new Plasma()),
     xrp: Object.freeze(new Xrp()),
     xtz: Object.freeze(new Xtz()),
+    xtzevm: Object.freeze(new XtzEvm()),
     zCash: Object.freeze(new ZCash()),
     zeta: Object.freeze(new Zeta()),
     zkSync: Object.freeze(new ZkSync()),
@@ -2678,6 +2697,7 @@ export const Networks = {
     xpl: Object.freeze(new PlasmaTestnet()),
     xrp: Object.freeze(new XrpTestnet()),
     xtz: Object.freeze(new XtzTestnet()),
+    xtzevm: Object.freeze(new XtzEvmTestnet()),
     zCash: Object.freeze(new ZCashTestnet()),
     zeta: Object.freeze(new ZetaTestnet()),
     zkSync: Object.freeze(new ZkSyncTestnet()),

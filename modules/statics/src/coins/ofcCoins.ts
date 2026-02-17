@@ -218,6 +218,15 @@ export const ofcCoins = [
     UnderlyingAsset.HYPEEVM,
     CoinKind.CRYPTO
   ),
+  ofc('dc825481-0a15-44ab-84e6-6f182b13eb87', 'ofcxtzevm', 'XTZ EVM', 18, UnderlyingAsset.XTZEVM, CoinKind.CRYPTO),
+  tofc(
+    '0e42884b-c01e-461b-b108-1ed0d0fbbd7b',
+    'ofctxtzevm',
+    'XTZ EVM Testnet',
+    18,
+    UnderlyingAsset.XTZEVM,
+    CoinKind.CRYPTO
+  ),
   tofc(
     '3eb80dc2-98bc-40ee-a27c-b4572e0d7270',
     'ofcthypeevm',

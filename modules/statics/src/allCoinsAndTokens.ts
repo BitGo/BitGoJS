@@ -394,6 +394,42 @@ export const allCoinsAndTokens = [
     [...AccountCoin.DEFAULT_FEATURES]
   ),
   account(
+    '260a8571-1f89-40ad-af8d-c58a391581b5',
+    'xtzevm',
+    'XTZ EVM',
+    Networks.main.xtzevm,
+    18,
+    UnderlyingAsset.XTZEVM,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    'e7fdbd6f-93ff-4dda-8a57-81580827188e',
+    'txtzevm',
+    'Testnet XTZ EVM',
+    Networks.test.xtzevm,
+    18,
+    UnderlyingAsset.XTZEVM,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
     '2660f6f6-1980-4584-a0b3-487d4a832b9f',
     'tbaseeth',
     'Base Ethereum Testnet',
