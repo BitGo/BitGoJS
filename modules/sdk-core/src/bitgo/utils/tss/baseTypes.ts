@@ -271,6 +271,10 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   txRequestId?: string;
   isTestTransaction?: boolean;
   contractId?: string;
+  /**
+   * Amount for intents that use a top-level amount instead of recipients (e.g. bridgeFunds).
+   */
+  amount?: { value: string; symbol: string };
 }
 export interface IntentRecipient {
   address: {
@@ -342,6 +346,10 @@ export interface PopulatedIntent extends PopulatedIntentBase {
   txRequestId?: string;
   isTestTransaction?: boolean;
   contractId?: string;
+  /**
+   * Amount for intents that use a top-level amount instead of recipients (e.g. bridgeFunds).
+   */
+  amount?: { value: string; symbol: string };
 }
 
 export type TxRequestState =

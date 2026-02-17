@@ -3462,6 +3462,32 @@ describe('V2 Wallet:', function () {
         args[1]!.should.equal('full');
       });
 
+      it('should call prebuildTxWithIntent with the correct params for bridgeFunds', async function () {
+        const intentAmount = { value: '1000000', symbol: 'thypeevm' };
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          type: 'bridgeFunds',
+          intentAmount,
+          feeOptions,
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.intentType.should.equal('bridgeFunds');
+        args[0]!.amount!.should.deepEqual(intentAmount);
+        args[0]!.feeOptions!.should.deepEqual(feeOptions);
+        args[0]!.should.not.have.property('recipients');
+        args[1]!.should.equal('full');
+      });
+
       it('should call prebuildTxWithIntent with the correct feeOptions when passing using the legacy format', async function () {
         const recipients = [
           {
@@ -3720,6 +3746,27 @@ describe('V2 Wallet:', function () {
         intent.nonce!.should.equal(nonce);
         intent.isTss!.should.equal(true);
         intent.intentType.should.equal('fillNonce');
+      });
+
+      it('populate intent should return valid bridgeFunds intent', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
+        const amount = { value: '1000000', symbol: 'thypeevm' };
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('hteth'), {
+          reqId,
+          intentType: 'bridgeFunds',
+          amount,
+          feeOptions,
+        });
+
+        intent.intentType.should.equal('bridgeFunds');
+        intent.amount!.should.deepEqual(amount);
+        intent.feeOptions!.should.deepEqual(feeOptions);
+        intent.should.have.property('recipients', undefined);
       });
 
       it('should build a single recipient transfer transaction providing apiVersion parameter as "full" ', async function () {

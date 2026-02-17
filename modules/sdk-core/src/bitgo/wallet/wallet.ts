@@ -3746,6 +3746,21 @@ export class Wallet implements IWallet {
           params.preview
         );
         break;
+      case 'bridgeFunds':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'bridgeFunds',
+            sequenceId: params.sequenceId,
+            comment: params.comment,
+            amount: params.intentAmount,
+            nonce: params.nonce,
+            feeOptions,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
       default:
         throw new Error(`transaction type not supported: ${params.type}`);
     }
