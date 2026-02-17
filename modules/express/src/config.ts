@@ -4,6 +4,19 @@ import 'dotenv/config';
 
 import { args } from './args';
 
+// Falls back to auth version 2 for unrecognized values, preserving existing behavior
+// where invalid authVersion values silently defaulted to v2.
+// Returns undefined when no value is provided, so mergeConfigs can fall through to other sources.
+function parseAuthVersion(val: number | undefined): 2 | 3 | 4 | undefined {
+  if (val === undefined || isNaN(val)) {
+    return undefined;
+  }
+  if (val === 2 || val === 3 || val === 4) {
+    return val;
+  }
+  return 2;
+}
+
 function readEnvVar(name, ...deprecatedAliases): string | undefined {
   if (process.env[name] !== undefined && process.env[name] !== '') {
     return process.env[name];
@@ -36,7 +49,7 @@ export interface Config {
   timeout: number;
   customRootUri?: string;
   customBitcoinNetwork?: V1Network;
-  authVersion: number;
+  authVersion: 2 | 3 | 4;
   externalSignerUrl?: string;
   signerMode?: boolean;
   signerFileSystemPath?: string;
@@ -62,7 +75,7 @@ export const ArgConfig = (args): Partial<Config> => ({
   timeout: args.timeout,
   customRootUri: args.customrooturi,
   customBitcoinNetwork: args.custombitcoinnetwork,
-  authVersion: args.authVersion,
+  authVersion: parseAuthVersion(args.authVersion),
   externalSignerUrl: args.externalSignerUrl,
   signerMode: args.signerMode,
   signerFileSystemPath: args.signerFileSystemPath,
@@ -88,7 +101,7 @@ export const EnvConfig = (): Partial<Config> => ({
   timeout: Number(readEnvVar('BITGO_TIMEOUT')),
   customRootUri: readEnvVar('BITGO_CUSTOM_ROOT_URI'),
   customBitcoinNetwork: readEnvVar('BITGO_CUSTOM_BITCOIN_NETWORK') as V1Network,
-  authVersion: Number(readEnvVar('BITGO_AUTH_VERSION')),
+  authVersion: parseAuthVersion(Number(readEnvVar('BITGO_AUTH_VERSION'))),
   externalSignerUrl: readEnvVar('BITGO_EXTERNAL_SIGNER_URL'),
   signerMode: readEnvVar('BITGO_SIGNER_MODE') ? true : undefined,
   signerFileSystemPath: readEnvVar('BITGO_SIGNER_FILE_SYSTEM_PATH'),
