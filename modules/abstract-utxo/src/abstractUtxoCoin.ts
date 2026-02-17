@@ -243,6 +243,7 @@ export interface ExplainTransactionOptions<TNumber extends number | bigint = num
   txInfo?: TransactionInfo<TNumber>;
   feeInfo?: string;
   pubs?: Triple<string>;
+  customChangeXpubs?: Triple<string>;
   decodeWith?: SdkBackend;
 }
 

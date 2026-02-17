@@ -27,6 +27,7 @@ export function explainTx<TNumber extends number | bigint>(
   params: {
     wallet?: IWallet;
     pubs?: string[];
+    customChangeXpubs?: Triple<string>;
     txInfo?: { unspents?: Unspent<TNumber>[] };
     changeInfo?: fixedScript.ChangeAddressInfo[];
   },
@@ -49,7 +50,7 @@ export function explainTx<TNumber extends number | bigint>(
     throw new Error('legacy transactions are not supported for descriptor wallets');
   }
   if (tx instanceof utxolib.bitgo.UtxoPsbt) {
-    return fixedScript.explainPsbt(tx, params, coinName);
+    return fixedScript.explainPsbt(tx, { ...params, customChangePubs: params.customChangeXpubs }, coinName);
   } else if (tx instanceof fixedScriptWallet.BitGoPsbt) {
     const pubs = params.pubs;
     if (!pubs) {
@@ -68,6 +69,7 @@ export function explainTx<TNumber extends number | bigint>(
       replayProtection: {
         publicKeys: getReplayProtectionPubkeys(coinName),
       },
+      customChangeWalletXpubs: params.customChangeXpubs,
     });
   } else {
     return fixedScript.explainLegacyTx(tx, params, coinName);
