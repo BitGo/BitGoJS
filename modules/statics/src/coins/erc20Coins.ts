@@ -10964,7 +10964,7 @@ export const erc20Coins = [
     'eth:usdm1',
     'USDM1',
     18,
-    '0xab3cfc7cf0720b75c41b4db078b4ddb338f562e7',
+    '0x90a1717e0dabe37693f79afe43ae236dc3b65957',
     UnderlyingAsset['eth:usdm1'],
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
