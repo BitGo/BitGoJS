@@ -9,9 +9,9 @@ import { PostDecrypt } from './common/decrypt';
 import { PostEncrypt } from './common/encrypt';
 import { PostVerifyAddress } from './common/verifyAddress';
 import { PostCalculateMinerFeeInfo } from './common/calculateMinerFeeInfo';
-// import { PostAcceptShare } from './v1/acceptShare';
-// import { PostSimpleCreate } from './v1/simpleCreate';
-// import { PutPendingApproval } from './v1/pendingApproval';
+import { PostAcceptShare } from './v1/acceptShare';
+import { PostSimpleCreate } from './v1/simpleCreate';
+import { PutPendingApproval } from './v1/pendingApproval';
 // import { PostSignTransaction } from './v1/signTransaction';
 import { PostKeychainLocal } from './v2/keychainLocal';
 import { GetLightningState } from './v2/lightningState';
@@ -44,7 +44,7 @@ import { PostVerifyCoinAddress } from './v2/verifyAddress';
 // import { PostOfcExtSignPayload } from './v2/ofcExtSignPayload';
 // import { PostLightningWalletPayment } from './v2/lightningPayment';
 // import { PostLightningWalletWithdraw } from './v2/lightningWithdraw';
-// import { PutV2PendingApproval } from './v2/pendingApproval';
+import { PutV2PendingApproval } from './v2/pendingApproval';
 // import { PostConsolidateAccount } from './v2/consolidateAccount';
 // import { PostCanonicalAddress } from './v2/canonicalAddress';
 // import { PostWalletEnableTokens } from './v2/walletEnableTokens';
@@ -106,26 +106,26 @@ export const ExpressCalculateMinerFeeInfoApiSpec = apiSpec({
   },
 });
 
-// export const ExpressV1WalletAcceptShareApiSpec = apiSpec({
-//   'express.v1.wallet.acceptShare': {
-//     post: PostAcceptShare,
-//   },
-// });
+export const ExpressV1WalletAcceptShareApiSpec = apiSpec({
+  'express.v1.wallet.acceptShare': {
+    post: PostAcceptShare,
+  },
+});
 
-// export const ExpressV1WalletSimpleCreateApiSpec = apiSpec({
-//   'express.v1.wallet.simplecreate': {
-//     post: PostSimpleCreate,
-//   },
-// });
+export const ExpressV1WalletSimpleCreateApiSpec = apiSpec({
+  'express.v1.wallet.simplecreate': {
+    post: PostSimpleCreate,
+  },
+});
 
-// export const ExpressPendingApprovalsApiSpec = apiSpec({
-//   'express.v1.pendingapprovals': {
-//     put: PutPendingApproval,
-//   },
-//   'express.v2.pendingapprovals': {
-//     put: PutV2PendingApproval,
-//   },
-// });
+export const ExpressPendingApprovalsApiSpec = apiSpec({
+  'express.v1.pendingapprovals': {
+    put: PutPendingApproval,
+  },
+  'express.v2.pendingapprovals': {
+    put: PutV2PendingApproval,
+  },
+});
 
 // export const ExpressWalletSignTransactionApiSpec = apiSpec({
 //   'express.v1.wallet.signTransaction': {
@@ -332,10 +332,10 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressCalculateMinerFeeInfoApiSpec &
   typeof ExpressKeychainLocalApiSpec &
   typeof ExpressKeychainChangePasswordApiSpec &
-  typeof ExpressLightningGetStateApiSpec;
-//   typeof ExpressV1WalletAcceptShareApiSpec &
-//   typeof ExpressV1WalletSimpleCreateApiSpec &
-//   typeof ExpressPendingApprovalsApiSpec &
+  typeof ExpressLightningGetStateApiSpec &
+  typeof ExpressV1WalletAcceptShareApiSpec &
+  typeof ExpressV1WalletSimpleCreateApiSpec &
+  typeof ExpressPendingApprovalsApiSpec;
 //   typeof ExpressWalletSignTransactionApiSpec &
 //   typeof ExpressV1KeychainDeriveApiSpec &
 //   typeof ExpressV1KeychainLocalApiSpec &
@@ -375,11 +375,11 @@ export const ExpressApi: ExpressApi = {
   ...ExpressKeychainLocalApiSpec,
   ...ExpressKeychainChangePasswordApiSpec,
   ...ExpressLightningGetStateApiSpec,
+  ...ExpressV1WalletAcceptShareApiSpec,
+  ...ExpressV1WalletSimpleCreateApiSpec,
+  ...ExpressPendingApprovalsApiSpec,
   // ...ExpressV2WalletSendManyApiSpec,
   // ...ExpressExternalSigningApiSpec,
-  // ...ExpressV1WalletAcceptShareApiSpec,
-  // ...ExpressV1WalletSimpleCreateApiSpec,
-  // ...ExpressPendingApprovalsApiSpec,
   // ...ExpressWalletSignTransactionApiSpec,
   // ...ExpressV1KeychainDeriveApiSpec,
   // ...ExpressV1KeychainLocalApiSpec,
