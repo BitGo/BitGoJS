@@ -12,7 +12,7 @@ In your project install both `@bitgo/sdk-api` and `@bitgo/sdk-coin-sol`.
 npm i @bitgo/sdk-api @bitgo/sdk-coin-sol
 ```
 
-Next, you will be able to initialize an instance of "bitgo" through `@bitgo/sdk-api` instead of `bitgo`.
+Next, you will be able to initialize an instance of "bitgo" through `@bitgo/sdk-api` instead of via `bitgo`.
 
 ```javascript
 import { BitGoAPI } from '@bitgo/sdk-api';
