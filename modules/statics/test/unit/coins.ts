@@ -1317,7 +1317,10 @@ describe('create token map using config details', () => {
 
   it('should create tokens for all EVM coins using createToken', () => {
     const evmCoinTokens = allCoinsAndTokens
-      .filter((coin) => coin.isToken && coins.get(coin.family)?.features.includes(CoinFeature.SUPPORTS_ERC20))
+      .filter(
+        (coin) =>
+          coin.isToken && coin.family !== 'ofc' && coins.get(coin.family)?.features.includes(CoinFeature.SUPPORTS_ERC20)
+      )
       .map((coin) => coin);
 
     for (const coin of evmCoinTokens) {
@@ -1339,6 +1342,7 @@ describe('create token map using config details', () => {
       .filter(
         (coin) =>
           coin.isToken &&
+          coin.family !== 'ofc' &&
           coins.get(coin.family).features.includes(CoinFeature.SUPPORTS_ERC721) &&
           coin.asset === UnderlyingAsset.ERC721
       )

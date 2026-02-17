@@ -9,7 +9,7 @@ import { NetworkType } from '../../src/networks';
 
 describe('Token Naming Convention Tests', function () {
   const allTokens = [
-    ...erc20Coins,
+    ...erc20Coins.filter((coin) => coin.family !== 'ofc'),
     ...cosmosTokens,
     ...avaxTokens,
     ...bscTokens,
