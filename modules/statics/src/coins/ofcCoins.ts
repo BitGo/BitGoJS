@@ -4048,28 +4048,28 @@ export const ofcCoins = [
     '7912e76e-5a5c-4f1b-86e9-1fc2a51f5a98',
     'ofcttempo:pathusd',
     'Testnet pathUSD',
-    18,
+    6,
     UnderlyingAsset['ttempo:pathusd']
   ),
   tofcTempoToken(
     '349f887a-e764-4640-9ba1-2e29e02d5d65',
     'ofcttempo:alphausd',
     'Testnet AlphaUSD',
-    18,
+    6,
     UnderlyingAsset['ttempo:alphausd']
   ),
   tofcTempoToken(
     'dc2b6c3d-b7a4-4940-bee3-32defbeff3bf',
     'ofcttempo:betausd',
     'Testnet BetaUSD',
-    18,
+    6,
     UnderlyingAsset['ttempo:betausd']
   ),
   tofcTempoToken(
     '490a65b6-e01f-4fae-9aa5-7528d1848075',
     'ofcttempo:thetausd',
     'Testnet ThetaUSD',
-    18,
+    6,
     UnderlyingAsset['ttempo:thetausd']
   ),
 ];

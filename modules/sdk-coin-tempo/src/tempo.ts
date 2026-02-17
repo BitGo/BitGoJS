@@ -42,11 +42,9 @@ export class Tempo extends AbstractEthLikeNewCoins {
     return 'Tempo';
   }
 
-  /**
-   * Get the base factor (1 TEMPO = 1e18 wei, like Ethereum)
-   */
+  /** @inheritdoc */
   getBaseFactor(): number {
-    return 1e18;
+    return 1e6;
   }
 
   /**

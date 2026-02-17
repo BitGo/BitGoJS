@@ -40,7 +40,7 @@ describe('Tempo Coin', function () {
   it('should return the correct coin name', function () {
     basecoin.getChain().should.equal('tempo');
     basecoin.getFullName().should.equal('Tempo');
-    basecoin.getBaseFactor().should.equal(1e18);
+    basecoin.getBaseFactor().should.equal(1e6);
   });
 
   describe('Address Validation', function () {
@@ -162,7 +162,7 @@ describe('Tempo Coin', function () {
     it('should return the correct testnet coin name', function () {
       testnetBasecoin.getChain().should.equal('ttempo');
       testnetBasecoin.getFullName().should.equal('Testnet Tempo');
-      testnetBasecoin.getBaseFactor().should.equal(1e18);
+      testnetBasecoin.getBaseFactor().should.equal(1e6);
     });
 
     it('should validate address with memoId on testnet', function () {
