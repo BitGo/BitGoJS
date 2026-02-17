@@ -145,13 +145,20 @@ export const ofcCoins = [
     UnderlyingAsset.CHILIZ,
     CoinKind.CRYPTO
   ),
-  ofc('de86d783-852b-4d92-b991-20e7f028cc54', 'ofccodex', 'Codex', 18, UnderlyingAsset.CODEX, CoinKind.CRYPTO),
+  ofc(
+    'de86d783-852b-4d92-b991-20e7f028cc54',
+    'ofccodexeth',
+    'Codex Ethereum',
+    18,
+    UnderlyingAsset.CODEXETH,
+    CoinKind.CRYPTO
+  ),
   tofc(
     'dd58bac9-b4be-48cd-9113-55ab924d0c7c',
-    'ofctcodex',
-    'Codex Testnet',
+    'ofctcodexeth',
+    'Codex Ethereum Testnet',
     18,
-    UnderlyingAsset.CODEX,
+    UnderlyingAsset.CODEXETH,
     CoinKind.CRYPTO
   ),
   ofc('9e2da785-8349-4153-8276-941319575833', 'ofcxtz', 'Tezos', 6, UnderlyingAsset.XTZ, CoinKind.CRYPTO),

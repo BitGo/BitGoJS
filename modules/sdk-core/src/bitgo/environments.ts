@@ -221,7 +221,7 @@ const mainnetBase: EnvironmentTemplate = {
     chiliz: {
       baseUrl: 'https://api.chiliscan.com',
     },
-    codex: {
+    codexeth: {
       baseUrl: 'https://explorer.codex.xyz/api',
     },
     phrs: {
@@ -418,7 +418,7 @@ const testnetBase: EnvironmentTemplate = {
     chiliz: {
       baseUrl: 'https://api.testnet.chiliscan.com',
     },
-    codex: {
+    codexeth: {
       baseUrl: 'https://explorer.codex-stg.xyz/api',
     },
     phrs: {

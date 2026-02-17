@@ -635,18 +635,18 @@ class ChilizTestnet extends Testnet implements EthereumNetwork {
   tokenOperationHashPrefix = '88882-ERC20';
 }
 
-class Codex extends Mainnet implements EthereumNetwork {
-  name = 'Codex';
-  family = CoinFamily.CODEX;
+class CodexEth extends Mainnet implements EthereumNetwork {
+  name = 'Codex Ethereum';
+  family = CoinFamily.CODEXETH;
   explorerUrl = 'https://explorer.codex.xyz/tx/';
   accountExplorerUrl = 'https://explorer.codex.xyz/address/';
   chainId = 81224;
   nativeCoinOperationHashPrefix = '81224';
 }
 
-class CodexTestnet extends Testnet implements EthereumNetwork {
-  name = 'Testnet Codex';
-  family = CoinFamily.CODEX;
+class CodexEthTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Codex Ethereum';
+  family = CoinFamily.CODEXETH;
   explorerUrl = 'https://explorer.codex-stg.xyz/tx/';
   accountExplorerUrl = 'https://explorer.codex-stg.xyz/address/';
   chainId = 812242;
@@ -2472,7 +2472,7 @@ export const Networks = {
     casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
     chiliz: Object.freeze(new Chiliz()),
-    codex: Object.freeze(new Codex()),
+    codexeth: Object.freeze(new CodexEth()),
     coredao: Object.freeze(new Coredao()),
     coreum: Object.freeze(new Coreum()),
     cronos: Object.freeze(new Cronos()),
@@ -2590,7 +2590,7 @@ export const Networks = {
     casper: Object.freeze(new CasperTestnet()),
     celo: Object.freeze(new CeloTestnet()),
     chiliz: Object.freeze(new ChilizTestnet()),
-    codex: Object.freeze(new CodexTestnet()),
+    codexeth: Object.freeze(new CodexEthTestnet()),
     coredao: Object.freeze(new CoredaoTestnet()),
     cronos: Object.freeze(new CronosTestnet()),
     dash: Object.freeze(new DashTestnet()),
