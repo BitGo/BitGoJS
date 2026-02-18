@@ -1845,18 +1845,18 @@ class SonicTestnet extends Testnet implements EthereumNetwork {
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
-class Stable extends Mainnet implements EthereumNetwork {
-  name = 'Stable';
-  family = CoinFamily.STABLE;
+class Usdt0 extends Mainnet implements EthereumNetwork {
+  name = 'USDT0';
+  family = CoinFamily.USDT0;
   explorerUrl = 'https://stablescan.xyz/tx/';
   accountExplorerUrl = 'https://stablescan.xyz/address/';
   chainId = 988;
   nativeCoinOperationHashPrefix = '988';
 }
 
-class StableTestnet extends Testnet implements EthereumNetwork {
-  name = 'Testnet Stable';
-  family = CoinFamily.STABLE;
+class Usdt0Testnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet USDT0';
+  family = CoinFamily.USDT0;
   explorerUrl = 'https://testnet.stablescan.xyz/tx/';
   accountExplorerUrl = 'https://testnet.stablescan.xyz/address/';
   chainId = 2201;
@@ -2557,7 +2557,6 @@ export const Networks = {
     sgb: Object.freeze(new Songbird()),
     sol: Object.freeze(new Sol()),
     sonic: Object.freeze(new Sonic()),
-    stable: Object.freeze(new Stable()),
     sui: Object.freeze(new Sui()),
     near: Object.freeze(new Near()),
     stx: Object.freeze(new Stx()),
@@ -2569,6 +2568,7 @@ export const Networks = {
     tia: Object.freeze(new Tia()),
     ton: Object.freeze(new Ton()),
     trx: Object.freeze(new Trx()),
+    usdt0: Object.freeze(new Usdt0()),
     vet: Object.freeze(new Vet()),
     wemix: Object.freeze(new Wemix()),
     world: Object.freeze(new World()),
@@ -2681,7 +2681,6 @@ export const Networks = {
     stt: Object.freeze(new SomniaTestnet()),
     soneium: Object.freeze(new SoneiumTestnet()),
     sonic: Object.freeze(new SonicTestnet()),
-    stable: Object.freeze(new StableTestnet()),
     kaia: Object.freeze(new KaiaTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
     coreum: Object.freeze(new CoreumTestnet()),
@@ -2690,6 +2689,7 @@ export const Networks = {
     tia: Object.freeze(new TiaTestnet()),
     ton: Object.freeze(new TonTestnet()),
     trx: Object.freeze(new TrxTestnet()),
+    usdt0: Object.freeze(new Usdt0Testnet()),
     vet: Object.freeze(new VetTestnet()),
     wemix: Object.freeze(new WemixTestnet()),
     world: Object.freeze(new WorldTestnet()),

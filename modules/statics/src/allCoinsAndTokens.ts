@@ -1808,11 +1808,11 @@ export const allCoinsAndTokens = [
   ),
   account(
     '599ab8d6-ebda-460e-8527-677157f86021',
-    'stable',
-    'Stable',
-    Networks.main.stable,
+    'usdt0',
+    'USDT0',
+    Networks.main.usdt0,
     18,
-    UnderlyingAsset.STABLE,
+    UnderlyingAsset.USDT0,
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,
@@ -1826,11 +1826,11 @@ export const allCoinsAndTokens = [
   ),
   account(
     'fd6b7af0-aff3-45fb-9a71-2d7100a1cd89',
-    'tstable',
-    'Testnet Stable',
-    Networks.test.stable,
+    'tusdt0',
+    'Testnet USDT0',
+    Networks.test.usdt0,
     18,
-    UnderlyingAsset.STABLE,
+    UnderlyingAsset.USDT0,
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,

@@ -201,13 +201,13 @@ export const ofcCoins = [
     UnderlyingAsset.SONIC,
     CoinKind.CRYPTO
   ),
-  ofc('13151b0b-3734-452d-8ad9-21af03a08bfe', 'ofcstable', 'Stable', 18, UnderlyingAsset.STABLE, CoinKind.CRYPTO),
+  ofc('13151b0b-3734-452d-8ad9-21af03a08bfe', 'ofcusdt0', 'USDT0', 18, UnderlyingAsset.USDT0, CoinKind.CRYPTO),
   tofc(
     '39a4dd77-b824-47b9-baff-b45398012511',
-    'ofctstable',
-    'Stable Testnet',
+    'ofctusdt0',
+    'USDT0 Testnet',
     18,
-    UnderlyingAsset.STABLE,
+    UnderlyingAsset.USDT0,
     CoinKind.CRYPTO
   ),
   ofc(
