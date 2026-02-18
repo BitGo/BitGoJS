@@ -49,7 +49,7 @@ export function explainPsbtWasm(
     customChangeWalletXpubs?: Triple<string>;
   }
 ): TransactionExplanationWasm {
-  const parsed = psbt.parseTransactionWithWalletKeys(walletXpubs, params.replayProtection);
+  const parsed = psbt.parseTransactionWithWalletKeys(walletXpubs, { replayProtection: params.replayProtection });
 
   const changeOutputs: FixedScriptWalletOutput[] = [];
   const outputs: Output[] = [];

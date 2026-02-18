@@ -34,7 +34,7 @@ describe('Post Build Validation', function () {
     resultPsbt.lockTime.should.equal(0);
 
     // Check sequences via parseTransactionWithWalletKeys
-    const parsed = resultPsbt.parseTransactionWithWalletKeys(walletKeys, { publicKeys: [] });
+    const parsed = resultPsbt.parseTransactionWithWalletKeys(walletKeys, { replayProtection: { publicKeys: [] } });
     for (const input of parsed.inputs) {
       input.sequence.should.equal(0xffffffff);
     }

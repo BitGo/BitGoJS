@@ -50,8 +50,12 @@ export function assertEqualParsedPsbt(
   }
   const aPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(a, coinName);
   const bPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(b, coinName);
-  const aParsed = aPsbt.parseTransactionWithWalletKeys(walletKeys, { publicKeys: replayProtection });
-  const bParsed = bPsbt.parseTransactionWithWalletKeys(walletKeys, { publicKeys: replayProtection });
+  const aParsed = aPsbt.parseTransactionWithWalletKeys(walletKeys, {
+    replayProtection: { publicKeys: replayProtection },
+  });
+  const bParsed = bPsbt.parseTransactionWithWalletKeys(walletKeys, {
+    replayProtection: { publicKeys: replayProtection },
+  });
   assert.deepStrictEqual(aParsed, bParsed);
 }
 

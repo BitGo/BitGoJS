@@ -159,7 +159,7 @@ function hasKeyPathSpendInput<TNumber extends number | bigint>(
     assert(pubs && isTriple(pubs), 'pub triple is required to check for key path spend inputs in wasm-utxo PSBT');
     const rootWalletKeys = fixedScriptWallet.RootWalletKeys.fromXpubs(pubs);
     const replayProtection = { publicKeys: getReplayProtectionPubkeys(coinName) };
-    const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
+    const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, { replayProtection });
     return parsed.inputs.some((input) => input.scriptType === 'p2trMusig2KeyPath');
   }
   return false;
