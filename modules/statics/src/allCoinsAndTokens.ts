@@ -1114,7 +1114,7 @@ export const allCoinsAndTokens = [
   account(
     'df2f040b-89f3-4bb3-8da7-2445c7fdefca',
     'tcoreum',
-    'Testnet Coreum',
+    'Testnet TX',
     Networks.test.coreum,
     6,
     UnderlyingAsset.COREUM,
