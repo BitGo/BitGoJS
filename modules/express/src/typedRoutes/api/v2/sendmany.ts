@@ -16,12 +16,17 @@ export const SendManyRequestParams = {
 
 /**
  * EIP-1559 fee parameters for Ethereum transactions
- * When eip1559 object is present, both fields are REQUIRED
+ *
+ * Accepts:
+ * - Empty object {} - triggers automatic fee estimation (backward compatible)
+ * - Object with both maxFeePerGas AND maxPriorityFeePerGas - uses provided values
+ *
+ * Note: Partial objects (only one field) pass validation but backend handles them
  */
-export const EIP1559Params = t.type({
-  /** Maximum priority fee per gas (in wei) - REQUIRED */
+export const EIP1559Params = t.partial({
+  /** Maximum priority fee per gas (in wei) */
   maxPriorityFeePerGas: t.union([t.number, t.string]),
-  /** Maximum fee per gas (in wei) - REQUIRED */
+  /** Maximum fee per gas (in wei) */
   maxFeePerGas: t.union([t.number, t.string]),
 });
 
