@@ -3719,8 +3719,8 @@ export class Wallet implements IWallet {
           {
             reqId,
             intentType: 'transferOfferWithdrawn',
-            contractId: params.contractId,
-            sequenceId: params.contractId,
+            transferOfferId: params.transferOfferId,
+            sequenceId: params.transferOfferId,
           },
           apiVersion,
           params.preview
