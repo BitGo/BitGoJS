@@ -5321,7 +5321,7 @@ export const tOfcErc20Coins = [
   ofcerc20(
     '56d130a9-b5ce-46b7-8ba3-648372dd3e9c',
     'ofcjovayeth:usdce',
-    'USDC.e',
+    'Bridged USDC',
     6,
     underlyingAssetForSymbol('jovayeth:usdce'),
     undefined,
@@ -5351,7 +5351,7 @@ export const tOfcErc20Coins = [
   tofcerc20(
     'e1d2c3b4-a5f6-4e7d-8c9b-0a1b2c3d4e5f',
     'ofctjovayeth:usdce',
-    'USDC.e',
+    'Bridged USDC',
     6,
     underlyingAssetForSymbol('tjovayeth:usdce'),
     undefined,
