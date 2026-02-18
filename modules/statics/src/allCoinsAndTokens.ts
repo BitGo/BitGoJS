@@ -2594,7 +2594,7 @@ export const allCoinsAndTokens = [
   erc20Token(
     'bd702760-f70b-4b4c-a28c-3b45758042fc',
     'jovayeth:usdce',
-    'USDC.e',
+    'Bridged USDC',
     6,
     '0x39c010df583c9de49088947190669883b41a02ab',
     UnderlyingAsset['jovayeth:usdce'],
@@ -2614,7 +2614,7 @@ export const allCoinsAndTokens = [
   erc20Token(
     'a8f3b2c1-d4e5-4f6a-8b7c-9d0e1f2a3b4c',
     'tjovayeth:usdce',
-    'USDC.e',
+    'Bridged USDC',
     6,
     '0x39c010df583c9de49088947190669883b41a02ab',
     UnderlyingAsset['tjovayeth:usdce'],
