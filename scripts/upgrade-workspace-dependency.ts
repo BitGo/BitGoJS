@@ -89,9 +89,13 @@ async function updatePackageJson(
   await fs.writeFile(packagePath, JSON.stringify(packageJson, null, 2) + '\n');
 }
 
-async function runYarnInstall(): Promise<void> {
-  console.log('\nRunning yarn install to update lock file...');
-  await execa('yarn', ['install'], {
+async function runYarnInstall({ ignoreScripts }: { ignoreScripts: boolean }): Promise<void> {
+  const args = ['install'];
+  if (ignoreScripts) {
+    args.push('--ignore-scripts');
+  }
+  console.log(`\nRunning yarn ${args.join(' ')} to update lock file...`);
+  await execa('yarn', args, {
     stdio: 'inherit',
   });
 }
@@ -101,6 +105,7 @@ async function cmdUpgrade(opts: {
   version?: string;
   versionPrefix?: string;
   dryRun: boolean;
+  ignoreScripts: boolean;
 }): Promise<void> {
   const { package: depName, version: targetVersion, dryRun } = opts;
 
@@ -133,7 +138,7 @@ async function cmdUpgrade(opts: {
     for (const pkg of packagesWithDep) {
       console.log(`  ${pkg.packageName}: ${pkg.currentVersion} → ${newVersion}`);
     }
-    console.log('\nThen run: yarn install');
+    console.log(`\nThen run: yarn install${opts.ignoreScripts ? ' --ignore-scripts' : ''}`);
     return;
   }
 
@@ -145,7 +150,7 @@ async function cmdUpgrade(opts: {
 
   console.log('\n✅ Updated all package.json files');
 
-  await runYarnInstall();
+  await runYarnInstall({ ignoreScripts: opts.ignoreScripts });
 
   console.log('\n✅ Done!');
 }
@@ -177,6 +182,11 @@ yargs
           default: false,
           describe: 'Show what would be updated without making changes',
           alias: 'd',
+        },
+        ignoreScripts: {
+          type: 'boolean',
+          default: false,
+          describe: 'Pass --ignore-scripts to yarn install',
         },
       });
     },
