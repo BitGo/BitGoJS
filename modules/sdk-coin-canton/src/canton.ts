@@ -245,8 +245,8 @@ export class Canton extends BaseCoin {
     if (params.txRequestId) {
       intent.txRequestId = params.txRequestId;
     }
-    if (params.contractId) {
-      intent.contractId = params.contractId;
+    if (params.transferId) {
+      intent.transferId = params.transferId;
     }
   }
 }

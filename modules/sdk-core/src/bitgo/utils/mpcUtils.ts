@@ -142,7 +142,7 @@ export abstract class MpcUtils {
     }
 
     if (params.intentType === 'transferOfferWithdrawn' && baseCoin.getFamily() === 'canton') {
-      assert(params.contractId, `'contractId' is required parameter for ${params.intentType} intent`);
+      assert(params.transferId, `'transferId' is required parameter for ${params.intentType} intent`);
     }
 
     if (
