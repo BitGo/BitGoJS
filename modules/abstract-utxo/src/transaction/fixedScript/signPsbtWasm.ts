@@ -24,7 +24,7 @@ function hasKeyPathSpendInput(
   rootWalletKeys: fixedScriptWallet.RootWalletKeys,
   replayProtection: ReplayProtectionKeys
 ): boolean {
-  const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
+  const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, { replayProtection });
   return parsed.inputs.some((input) => input.scriptType === 'p2trMusig2KeyPath');
 }
 
@@ -49,7 +49,7 @@ export function signAndVerifyPsbtWasm(
   }
 
   // Verify signatures for all signed inputs (still per-input for granular error reporting)
-  const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
+  const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, { replayProtection });
   const verifyErrors: InputSigningError<bigint>[] = [];
 
   parsed.inputs.forEach((input, inputIndex) => {

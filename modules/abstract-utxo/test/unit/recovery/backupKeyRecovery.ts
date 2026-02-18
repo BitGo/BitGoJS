@@ -93,7 +93,9 @@ function run(
       );
 
       // Parse generated PSBT
-      parsed = psbt.parseTransactionWithWalletKeys(wasmWalletKeys, { publicKeys: replayProtection });
+      parsed = psbt.parseTransactionWithWalletKeys(wasmWalletKeys, {
+        replayProtection: { publicKeys: replayProtection },
+      });
 
       // Load and parse fixture PSBT
       const psbtHex = Buffer.from(psbt.serialize()).toString('hex');
@@ -104,7 +106,9 @@ function run(
         Buffer.from(storedFixture.psbtHex, 'hex'),
         fixtureCoin.name
       );
-      fixtureParsed = fixturePsbt.parseTransactionWithWalletKeys(wasmWalletKeys, { publicKeys: replayProtection });
+      fixtureParsed = fixturePsbt.parseTransactionWithWalletKeys(wasmWalletKeys, {
+        replayProtection: { publicKeys: replayProtection },
+      });
     });
 
     it('has expected input count', function () {

@@ -163,7 +163,7 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
     function checkRecoveryPsbtSignature(psbtHex: string) {
       // Parse using wasm-utxo for signature verification
       const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(Buffer.from(psbtHex, 'hex'), sourceCoin.name);
-      const parsed = wasmPsbt.parseTransactionWithWalletKeys(wasmWalletKeys, { publicKeys: [] });
+      const parsed = wasmPsbt.parseTransactionWithWalletKeys(wasmWalletKeys, { replayProtection: { publicKeys: [] } });
       const unspents = getRecoveryUnspents();
       should.equal(parsed.inputs.length, unspents.length);
       // Verify user key has signed each input (same pattern as backupKeyRecovery test)
