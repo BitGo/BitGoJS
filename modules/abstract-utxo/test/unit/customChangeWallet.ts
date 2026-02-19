@@ -3,6 +3,7 @@ import assert from 'assert';
 import should = require('should');
 import * as sinon from 'sinon';
 import { Wallet } from '@bitgo/sdk-core';
+import { BIP32, message } from '@bitgo/wasm-utxo';
 
 import { generateAddress } from '../../src';
 
@@ -24,11 +25,7 @@ describe('Custom Change Wallets', () => {
     },
   };
 
-  const customChangeKeySignatures = {
-    user: '',
-    backup: '',
-    bitgo: '',
-  };
+  let customChangeKeySignatures: Record<string, string>;
 
   const addressData = {
     chain: 11,
@@ -57,12 +54,14 @@ describe('Custom Change Wallets', () => {
     },
   };
 
-  before(async () => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const sign = async ({ key }) => (await coin.signMessage({ prv: keys.send.user.key.prv }, key.pub!)).toString('hex');
-    customChangeKeySignatures.user = await sign(keys.change.user);
-    customChangeKeySignatures.backup = await sign(keys.change.backup);
-    customChangeKeySignatures.bitgo = await sign(keys.change.bitgo);
+  before(() => {
+    const signerKey = BIP32.fromBase58(keys.send.user.key.prv!);
+    const sign = ({ key }) => Buffer.from(message.signMessage(key.pub!, signerKey.privateKey!)).toString('hex');
+    customChangeKeySignatures = {
+      user: sign(keys.change.user),
+      backup: sign(keys.change.backup),
+      bitgo: sign(keys.change.bitgo),
+    };
   });
 
   it('should consider addresses derived from the custom change keys as internal spends', async () => {
@@ -137,13 +136,12 @@ describe('Custom Change Wallets', () => {
   });
 
   it('should reject invalid custom change key signatures before calling explainTransaction', async () => {
-    const wrongKey = coin.keychains().create();
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const sign = async ({ key }) => (await coin.signMessage({ prv: wrongKey.prv }, key.pub!)).toString('hex');
+    const wrongKey = BIP32.fromBase58(coin.keychains().create().prv!);
+    const sign = ({ key }) => Buffer.from(message.signMessage(key.pub!, wrongKey.privateKey!)).toString('hex');
     const invalidSignatures = {
-      user: await sign(keys.change.user),
-      backup: await sign(keys.change.backup),
-      bitgo: await sign(keys.change.bitgo),
+      user: sign(keys.change.user),
+      backup: sign(keys.change.backup),
+      bitgo: sign(keys.change.bitgo),
     };
 
     const signedSendingWallet = sinon.createStubInstance(Wallet, stubData.signedSendingWallet as any);
