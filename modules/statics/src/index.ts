@@ -37,3 +37,9 @@ export {
 } from './account';
 export { CoinMap } from './map';
 export { networkFeatureMapForTokens } from './networkFeatureMapForTokens';
+export {
+  generateErc20Coin,
+  generateTestErc20Coin,
+  generateErc20Token,
+  generateTestErc20Token,
+} from './coins/generateERC20';
