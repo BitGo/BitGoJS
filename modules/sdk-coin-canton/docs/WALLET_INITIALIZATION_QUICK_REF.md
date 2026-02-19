@@ -51,7 +51,7 @@ const broadcastData = builder.transaction.toBroadcastFormat();
   publicKey: {
     format: "CRYPTO_KEY_FORMAT_RAW",        // Fixed value
     keyData: string,                        // Base64 Ed25519 public key
-    keySpec: "SIGNING_KEY_SPEC_ED25519"     // Fixed value
+    keySpec: "SIGNING_KEY_SPEC_EC_CURVE25519" // Fixed value
   },
   confirmationThreshold: number,            // Default: 1 (for multisig)
   otherConfirmingParticipantUids: string[], // Co-signers for multisig
@@ -138,12 +138,26 @@ builder
 ## Hash Computation
 
 ```typescript
-// Purpose 11: Hash each topology transaction
-individualHashes = topologyTxns.map(tx => sha256(11, tx))
+// Step 1: Hash each topology transaction with purpose 11 (returns hex with '1220' prefix)
+rawHashes = topologyTxns.map(tx => sha256Canton(11, tx))
 
-// Purpose 55: Hash the combined hashes
-multiHash = sha256(55, concat(individualHashes))
+// Step 2: Sort hashes and combine with length prefixes
+// Format: numHashes(4 bytes) + [length(4 bytes) + hash]...
+combinedHashes = sortAndCombineWithLengthPrefix(rawHashes)
+
+// Step 3: Hash the combined buffer with purpose 55
+multiHash = sha256Canton(55, combinedHashes)
+
+// Step 4: Convert hex to base64
+multiHash_base64 = Buffer.from(multiHash, 'hex').toString('base64')
 ```
+
+**Canton Hash Function:**
+```
+hash = '1220' + SHA-256(purpose_4bytes_BE || data)
+```
+- Purpose is 4-byte big-endian integer
+- `1220` is multihash prefix (12=SHA-256, 20=32 bytes)
 
 ## Canton Address Format
 

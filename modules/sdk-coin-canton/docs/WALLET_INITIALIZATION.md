@@ -37,7 +37,7 @@ interface WalletInitRequest {
 - **publicKey**: Contains:
   - `format`: "CRYPTO_KEY_FORMAT_RAW" 
   - `keyData`: Base64-encoded EdDSA public key
-  - `keySpec`: "SIGNING_KEY_SPEC_ED25519"
+  - `keySpec`: "SIGNING_KEY_SPEC_EC_CURVE25519"
 - **confirmationThreshold**: Minimum number of participants required to confirm transactions (for multi-sig)
 - **otherConfirmingParticipantUids**: List of participant unique identifiers that can confirm transactions
 - **observingParticipantUids**: List of participants that can only observe, not confirm
@@ -160,15 +160,46 @@ function computeHashFromCreatePartyResponse(topologyTransactions: string[]): str
   // 1. Convert each transaction from base64 to buffer
   const txBuffers = topologyTransactions.map(tx => Buffer.from(tx, 'base64'));
   
-  // 2. Hash each transaction with purpose 11
-  const individualHashes = txBuffers.map(tx => 
-    computeSha256CantonHash(11, tx)
-  );
+  // 2. Hash each transaction with purpose 11 (returns hex strings with '1220' prefix)
+  const rawHashes = txBuffers.map(tx => computeSha256CantonHash(11, tx));
+  // Each hash is a 68-char hex string: '1220' + SHA-256 hash (64 chars)
   
-  // 3. Combine all hashes and hash again with purpose 55
-  const combinedHash = computeSha256CantonHash(55, Buffer.concat(individualHashes));
+  // 3. Combine hashes with length prefixes
+  const combinedHashes = computeMultiHashForTopology(rawHashes);
+  // This sorts hashes, prefixes each with its length, and adds a count prefix
   
-  return combinedHash.toString('base64');
+  // 4. Hash the combined buffer with purpose 55
+  const computedHash = computeSha256CantonHash(55, combinedHashes);
+  
+  // 5. Convert final hex hash to base64
+  return Buffer.from(computedHash, 'hex').toString('base64');
+}
+
+// Canton hash function: prefixes data with purpose, hashes with SHA-256, adds multihash prefix
+function computeSha256CantonHash(purpose: number, bytes: Buffer): string {
+  const hashInput = prefixedInt(purpose, bytes);  // 4-byte big-endian purpose + data
+  const hash = crypto.createHash('sha256').update(hashInput).digest();
+  const multiprefix = Buffer.from([0x12, 0x20]);  // SHA-256 multihash indicator
+  return Buffer.concat([multiprefix, hash]).toString('hex');
+}
+
+// Combines multiple hashes with sorting and length prefixing
+function computeMultiHashForTopology(hashes: string[]): Buffer {
+  // 1. Convert hex strings to buffers and sort lexicographically
+  const sortedHashes = hashes
+    .map(hex => Buffer.from(hex, 'hex'))
+    .sort((a, b) => a.toString('hex').localeCompare(b.toString('hex')));
+  
+  // 2. Build combined buffer: count + (length + hash) for each hash
+  const numHashesBytes = encodeInt32(sortedHashes.length);
+  const parts: Buffer[] = [numHashesBytes];
+  
+  for (const h of sortedHashes) {
+    const lengthBytes = encodeInt32(h.length);
+    parts.push(lengthBytes, h);
+  }
+  
+  return Buffer.concat(parts);
 }
 ```
 
@@ -432,13 +463,19 @@ Canton uses a purpose-based hashing scheme where different hash purposes serve d
 The hash format is:
 
 ```
-SHA-256(purpose || data)
+hash = '1220' + SHA-256(purpose_as_4_bytes_big_endian || data)
 ```
 
 Where:
-- `purpose` is a single byte indicating the hash purpose
+- `purpose` is a 4-byte big-endian integer prefix indicating the hash purpose
 - `data` is the content being hashed
-- Result is prefixed with `1220` (indicating SHA-256 multihash format)
+- `||` denotes concatenation
+- Result is prefixed with `1220` (multihash format indicating SHA-256)
+- Final hash is a 68-character hex string: `1220` (4 chars) + SHA-256 (64 chars)
+
+**Multihash Prefix `1220`:**
+- `12` = SHA-256 hash function indicator
+- `20` = 32 bytes (hex representation of length)
 
 ### Topology Transactions
 
