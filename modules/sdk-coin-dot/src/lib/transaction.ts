@@ -38,6 +38,7 @@ import {
 } from './iface';
 import { getAddress, getDelegateAddress } from './iface_utils';
 import utils from './utils';
+import { explainDotTransaction } from './wasmParser';
 import BigNumber from 'bignumber.js';
 import { Vec } from '@polkadot/types';
 import { PalletConstantMetadataV14 } from '@polkadot/types/interfaces';
@@ -338,6 +339,17 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   explainTransaction(): TransactionExplanation {
+    // Testnet uses WASM-based parsing (no @polkadot/api dependency).
+    // This validates the WASM path against production traffic before
+    // replacing the legacy implementation for all networks.
+    if (this._coinConfig.name === 'tdot' && this._dotTransaction) {
+      return explainDotTransaction({
+        txHex: this.toBroadcastFormat(),
+        material: utils.getMaterial(this._coinConfig),
+        senderAddress: this._sender,
+      });
+    }
+
     const result = this.toJson();
     const displayOrder = ['outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
     const outputs: TransactionRecipient[] = [];
