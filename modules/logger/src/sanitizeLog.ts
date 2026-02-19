@@ -11,7 +11,8 @@ const SENSITIVE_KEYS = new Set([
   'password',
   'otp',
   'passphrase',
-  'walletPassphrase',
+  'walletpassphrase',
+  '_token',
 ]);
 
 const BEARER_V2_PATTERN = /^v2x[a-f0-9]{32,}$/i;
