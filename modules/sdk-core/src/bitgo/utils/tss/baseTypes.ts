@@ -270,7 +270,7 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   };
   txRequestId?: string;
   isTestTransaction?: boolean;
-  contractId?: string;
+  transferOfferId?: string;
   /**
    * Amount for intents that use a top-level amount instead of recipients (e.g. bridgeFunds).
    */
@@ -345,7 +345,7 @@ export interface PopulatedIntent extends PopulatedIntentBase {
   aptosCustomTransactionParams?: aptosCustomTransactionParams;
   txRequestId?: string;
   isTestTransaction?: boolean;
-  contractId?: string;
+  transferOfferId?: string;
   /**
    * Amount for intents that use a top-level amount instead of recipients (e.g. bridgeFunds).
    */
