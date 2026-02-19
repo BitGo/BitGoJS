@@ -29,6 +29,7 @@ Canton is a privacy-enabled blockchain with unique requirements:
 
 - **[Wallet Initialization Guide](./docs/WALLET_INITIALIZATION.md)** - Comprehensive guide to Canton wallet initialization transactions
 - **[Quick Reference](./docs/WALLET_INITIALIZATION_QUICK_REF.md)** - Quick reference for wallet initialization
+- **[Flow Diagram](./docs/WALLET_INITIALIZATION_FLOW.md)** - Visual flow diagram of the initialization process
 
 ### Key Features
 
