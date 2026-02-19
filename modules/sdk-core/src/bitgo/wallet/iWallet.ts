@@ -539,6 +539,41 @@ export interface ForwarderBalanceOptions {
   maximumBalance?: number;
 }
 
+export interface GetAccountResourcesOptions {
+  addresses: string[];
+  destinationAddress?: string;
+}
+
+export interface AccountResourceInfo {
+  address: string;
+  free_bandwidth_available: number;
+  free_bandwidth_used: number;
+  staked_bandwidth_available: number;
+  staked_bandwidth_used: number;
+  energy_available: number;
+  energy_used: number;
+  resourceDeficitForAssetTransfer?: {
+    bandwidthDeficit: number;
+    bandwidthSunRequired: string;
+    energyDeficit?: number;
+    energySunRequired?: string;
+  };
+  maxResourcesDelegatable?: {
+    bandwidthWeight: string;
+    energyWeight: string;
+  };
+}
+
+export interface FailedAddressInfo {
+  address: string;
+  error: string;
+}
+
+export interface GetAccountResourcesResponse {
+  resources: AccountResourceInfo[];
+  failedAddresses: FailedAddressInfo[];
+}
+
 export type CreateAddressFormat = 'base58' | 'cashaddr';
 
 export interface CreateAddressOptions {
@@ -988,6 +1023,7 @@ export interface IWallet {
   getAddress(params?: GetAddressOptions): Promise<any>;
   createAddress(params?: CreateAddressOptions): Promise<any>;
   updateAddress(params?: UpdateAddressOptions): Promise<any>;
+  getAccountResources(params: GetAccountResourcesOptions): Promise<GetAccountResourcesResponse>;
   listWebhooks(params?: PaginationOptions): Promise<any>;
   simulateWebhook(params?: SimulateWebhookOptions): Promise<any>;
   addWebhook(params?: ModifyWebhookOptions): Promise<any>;
