@@ -745,7 +745,7 @@ export const ofcCoins = [
     UnderlyingAsset.ARBETH,
     CoinKind.CRYPTO
   ),
-  tofc('3091d79a-7737-4493-b3e6-6765998b9486', 'ofctcoreum', 'Test Coreum', 6, UnderlyingAsset.COREUM, CoinKind.CRYPTO),
+  tofc('3091d79a-7737-4493-b3e6-6765998b9486', 'ofctcoreum', 'Testnet TX', 6, UnderlyingAsset.COREUM, CoinKind.CRYPTO),
   tofc(
     '90ac199d-4061-4c5f-9d48-4439c7ec2033',
     'ofctcelo',

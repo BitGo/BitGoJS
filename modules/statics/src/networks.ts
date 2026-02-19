@@ -1102,7 +1102,7 @@ class Coreum extends Mainnet implements AccountNetwork {
 }
 
 class CoreumTestnet extends Testnet implements AccountNetwork {
-  name = 'CoreumTestnet';
+  name = 'Testnet TX';
   family = CoinFamily.COREUM;
   explorerUrl = 'https://explorer.testnet-1.coreum.dev/coreum/transactions/';
 }

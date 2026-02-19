@@ -46,7 +46,7 @@ describe('Coreum', function () {
 
     tcoreum.getChain().should.equal('tcoreum');
     tcoreum.getFamily().should.equal('coreum');
-    tcoreum.getFullName().should.equal('Testnet Coreum');
+    tcoreum.getFullName().should.equal('Testnet TX');
     tcoreum.getBaseFactor().should.equal(1e6);
   });
 
