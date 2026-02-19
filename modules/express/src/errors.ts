@@ -59,3 +59,13 @@ export class BitGoExpressError extends BitGoJsError {
     Object.setPrototypeOf(this, BitGoExpressError.prototype);
   }
 }
+
+export class ValidationError extends BitGoJsError {
+  public readonly status = 400;
+  public override readonly name = 'ValidationError';
+
+  public constructor(message: string) {
+    super(message);
+    Object.setPrototypeOf(this, ValidationError.prototype);
+  }
+}

@@ -473,8 +473,8 @@ describe('Lightning Withdraw codec tests', function () {
 
       assert.strictEqual(result.status, 400);
       // The error response structure from io-ts validation
-      result.body.should.be.Array();
-      result.body[0].should.match(/recipients/);
+      result.body.should.have.property('error');
+      result.body.error.should.match(/recipients/);
     });
 
     it('should return 400 error for missing passphrase', async function () {
@@ -495,8 +495,8 @@ describe('Lightning Withdraw codec tests', function () {
 
       assert.strictEqual(result.status, 400);
       // The error response structure from io-ts validation
-      result.body.should.be.Array();
-      result.body[0].should.match(/passphrase/);
+      result.body.should.have.property('error');
+      result.body.error.should.match(/passphrase/);
     });
 
     it('should return 400 error for invalid amountSat format', async function () {
@@ -517,8 +517,8 @@ describe('Lightning Withdraw codec tests', function () {
         .send(invalidRequestBody);
 
       assert.strictEqual(result.status, 400);
-      result.body.should.be.Array();
-      result.body[0].should.match(/amountSat/);
+      result.body.should.have.property('error');
+      result.body.error.should.match(/amountSat/);
     });
   });
 });

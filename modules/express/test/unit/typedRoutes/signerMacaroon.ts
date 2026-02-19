@@ -281,8 +281,8 @@ describe('Signer Macaroon Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/passphrase/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/passphrase/);
     });
 
     it('should return 400 when passphrase is not a string', async function () {
@@ -294,8 +294,8 @@ describe('Signer Macaroon Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/passphrase/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/passphrase/);
     });
 
     it('should return 400 when addIpCaveatToMacaroon is not a boolean', async function () {
@@ -308,8 +308,8 @@ describe('Signer Macaroon Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/addIpCaveatToMacaroon/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/addIpCaveatToMacaroon/);
     });
   });
 
