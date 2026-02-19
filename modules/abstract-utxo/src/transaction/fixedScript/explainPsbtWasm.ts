@@ -40,13 +40,13 @@ function toExternalOutput(output: ParsedExternalOutput): Output {
 
 export function explainPsbtWasm(
   psbt: fixedScriptWallet.BitGoPsbt,
-  walletXpubs: Triple<string>,
+  walletXpubs: Triple<string> | fixedScriptWallet.RootWalletKeys,
   params: {
     replayProtection: {
       checkSignature?: boolean;
       publicKeys: Buffer[];
     };
-    customChangeWalletXpubs?: Triple<string>;
+    customChangeWalletXpubs?: Triple<string> | fixedScriptWallet.RootWalletKeys;
   }
 ): TransactionExplanationWasm {
   const parsed = psbt.parseTransactionWithWalletKeys(walletXpubs, { replayProtection: params.replayProtection });
