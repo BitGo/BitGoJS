@@ -945,7 +945,7 @@ describe('IsWalletAddress codec tests', function () {
         .send(requestBody);
 
       assert.strictEqual(result.status, 400);
-      assert.ok(Array.isArray(result.body));
+      assert.ok(result.body.error);
     });
 
     it('should return 400 for missing keychains field', async function () {
@@ -960,7 +960,7 @@ describe('IsWalletAddress codec tests', function () {
         .send(requestBody);
 
       assert.strictEqual(result.status, 400);
-      assert.ok(Array.isArray(result.body));
+      assert.ok(result.body.error);
     });
 
     it('should return 400 for invalid keychains (not an array)', async function () {
@@ -976,7 +976,7 @@ describe('IsWalletAddress codec tests', function () {
         .send(requestBody);
 
       assert.strictEqual(result.status, 400);
-      assert.ok(Array.isArray(result.body));
+      assert.ok(result.body.error);
     });
 
     it('should return 400 for invalid walletVersion type', async function () {
@@ -993,7 +993,7 @@ describe('IsWalletAddress codec tests', function () {
         .send(requestBody);
 
       assert.strictEqual(result.status, 400);
-      assert.ok(Array.isArray(result.body));
+      assert.ok(result.body.error);
     });
 
     it('should return 400 for invalid derivedFromParentWithSeed type', async function () {
@@ -1010,7 +1010,7 @@ describe('IsWalletAddress codec tests', function () {
         .send(requestBody);
 
       assert.strictEqual(result.status, 400);
-      assert.ok(Array.isArray(result.body));
+      assert.ok(result.body.error);
     });
 
     it('should handle isWalletAddress throwing InvalidAddressError', async function () {

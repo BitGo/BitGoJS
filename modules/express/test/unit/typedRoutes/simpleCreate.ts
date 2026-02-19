@@ -314,8 +314,8 @@ describe('SimpleCreate codec tests', function () {
         .send(requestBody);
 
       assert.strictEqual(result.status, 400);
-      assert.ok(Array.isArray(result.body));
-      assert.ok(result.body.length > 0);
+      assert.ok(result.body.error);
+      assert.ok(result.body.error.length > 0);
     });
 
     it('should return 400 for non-string passphrase', async function () {
@@ -330,8 +330,8 @@ describe('SimpleCreate codec tests', function () {
         .send(requestBody);
 
       assert.strictEqual(result.status, 400);
-      assert.ok(Array.isArray(result.body));
-      assert.ok(result.body.length > 0);
+      assert.ok(result.body.error);
+      assert.ok(result.body.error.length > 0);
     });
 
     it('should handle wallet creation failure', async function () {

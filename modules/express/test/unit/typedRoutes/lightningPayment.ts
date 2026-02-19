@@ -691,10 +691,10 @@ describe('Lightning Payment API Tests', function () {
           .send(requestBody);
 
         assert.strictEqual(result.status, 400);
-        result.body.should.be.Array();
-        result.body.length.should.be.above(0);
+        result.body.should.have.property('error');
+        result.body.error.length.should.be.above(0);
         // Validation error should mention missing invoice field
-        result.body[0].should.match(/invoice/);
+        result.body.error.should.match(/invoice/);
       });
 
       it('should return 400 when passphrase is missing', async function () {
@@ -709,10 +709,10 @@ describe('Lightning Payment API Tests', function () {
           .send(requestBody);
 
         assert.strictEqual(result.status, 400);
-        result.body.should.be.Array();
-        result.body.length.should.be.above(0);
+        result.body.should.have.property('error');
+        result.body.error.length.should.be.above(0);
         // Validation error should mention missing passphrase field
-        result.body[0].should.match(/passphrase/);
+        result.body.error.should.match(/passphrase/);
       });
 
       it('should return 400 when amountMsat is invalid format', async function () {
@@ -729,10 +729,10 @@ describe('Lightning Payment API Tests', function () {
           .send(requestBody);
 
         assert.strictEqual(result.status, 400);
-        result.body.should.be.Array();
-        result.body.length.should.be.above(0);
+        result.body.should.have.property('error');
+        result.body.error.length.should.be.above(0);
         // Validation error should mention amountMsat field
-        result.body[0].should.match(/amountMsat/);
+        result.body.error.should.match(/amountMsat/);
       });
 
       it('should handle wallet not found error', async function () {
