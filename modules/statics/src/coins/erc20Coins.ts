@@ -8377,7 +8377,8 @@ export const erc20Coins = [
     'Aave Interest bearing USDT',
     6,
     '0x71fc860f7d3a592a4a98740e39db31d25db65ae8',
-    UnderlyingAsset.AUSDT
+    UnderlyingAsset.AUSDT,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
   ),
   erc20(
     '8d9c0c6b-0ab7-4d98-8b9a-83ae3b77914c',
@@ -8402,7 +8403,8 @@ export const erc20Coins = [
     'Aave interest bearing YFI',
     18,
     '0x5165d24277cd063f5ac44efd447b27025e888f37',
-    UnderlyingAsset.AYFI
+    UnderlyingAsset.AYFI,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
   ),
   erc20(
     '0ff6ec5b-ebff-47b8-aa60-0b02e4ce4de8',
