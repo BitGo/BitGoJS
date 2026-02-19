@@ -3473,6 +3473,24 @@ export const allCoinsAndTokens = [
     Networks.main.basechain
   ),
   erc20Token(
+    'a9b0c1d2-3e4f-4a5b-86c7-9d9e0f1a2b3c',
+    'baseeth:common',
+    'COMMON',
+    18,
+    '0x4c87da04887a1f9f21f777e3a8dd55c3c9f84701',
+    UnderlyingAsset['baseeth:common'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'b0c1d2e3-4f5a-4b6c-87d8-9e0f1a2b3c4d',
+    'baseeth:unite',
+    'Unite',
+    18,
+    '0xa6c6ea2e0140849be02a3a34780cf61b766916c5',
+    UnderlyingAsset['baseeth:unite'],
+    Networks.main.basechain
+  ),
+  erc20Token(
     '7609fc1a-c35c-4179-97fb-18c69bd3b6d3',
     'baseeth:b3',
     'B3',
@@ -5712,6 +5730,14 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['bera:wgbera'],
     [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
   ),
+  beraErc20(
+    'c3d4e5f6-7a8b-4c9d-8e1f-2a3b4c5d6e7f',
+    'bera:ir',
+    'Infrared',
+    18,
+    '0xa1b644aec990ad6023811ced36e6a2d6d128c7c9',
+    UnderlyingAsset['bera:ir']
+  ),
   tberaErc20(
     '24af5e18-ab4b-43e5-80db-0ddb9beb01b3',
     'tbera:bgt',
@@ -6224,6 +6250,18 @@ export const allCoinsAndTokens = [
     'DMC',
     '0x4c981f3ff786cdb9e514da897ab8a953647dae2ace9679e8358eec1e3e8871ac::dmc::DMC',
     UnderlyingAsset['sui:dmc'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    'e7b8c9d0-1f2a-4b3c-85d6-ae8f9a0b1c2d',
+    'sui:mmt',
+    'Momentum',
+    9,
+    '0x35169bc93e1fddfcf3a82a9eae726d349689ed59e4b065369af8789fe59f8608',
+    'mmt',
+    'MMT',
+    '0x35169bc93e1fddfcf3a82a9eae726d349689ed59e4b065369af8789fe59f8608::mmt::MMT',
+    UnderlyingAsset['sui:mmt'],
     SUI_TOKEN_FEATURES
   ),
   tsuiToken(

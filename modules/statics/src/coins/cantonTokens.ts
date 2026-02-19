@@ -23,6 +23,16 @@ export const cantonTokens = [
     UnderlyingAsset['canton:cbtc'],
     CANTON_TOKEN_FEATURES
   ),
+  cantonToken(
+    'f6a7b8c9-0d1e-4f2a-ab4c-5d6e7f8a9b0c',
+    'canton:usdxlr',
+    'USDXLR (Canton)',
+    10,
+    'https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/',
+    '4e667aab-9089-400b-9485-74d73732f068::1220dd489bd2242472a14015e9aebc12a48879a7e3aac60875506df30f7fce4e0f78:USDXLR',
+    UnderlyingAsset['canton:usdxlr'],
+    CANTON_TOKEN_FEATURES
+  ),
   // testnet tokens
   tcantonToken(
     '46356790-0ac4-4c3b-8b70-39094106d772',

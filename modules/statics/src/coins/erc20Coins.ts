@@ -12038,6 +12038,22 @@ export const erc20Coins = [
     UnderlyingAsset['eth:arm-weth-eeth']
   ),
   erc20(
+    'd4e5f6a7-8b9c-4d0e-9f2a-3b4c5d6e7f8a',
+    'eth:cashplus',
+    'CASH+',
+    18,
+    '0x498d9329555471bf6073a5f2d047f746d522a373',
+    UnderlyingAsset['eth:cashplus']
+  ),
+  erc20(
+    'e5f6a7b8-9c0d-4e1f-aa3b-4c5d6e7f8a9b',
+    'eth:island',
+    'ISLAND Token',
+    18,
+    '0x157a6df6b74f4e5e45af4e4615fde7b49225a662',
+    UnderlyingAsset['eth:island']
+  ),
+  erc20(
     '3b5398f9-9c76-4508-8e9a-bf114506025c',
     'eth:job',
     'Jobchain',

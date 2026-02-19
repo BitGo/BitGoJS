@@ -62,6 +62,24 @@ export const bscTokens = [
     BSC_TOKEN_FEATURES
   ),
   bscToken(
+    'c1d2e3f4-5a6b-4c7d-88e9-af1a2b3c4d5e',
+    'bsc:kgen',
+    'KGeN',
+    8,
+    '0xf3d5b4c34ed623478cc5141861776e6cf7ae3a1e',
+    UnderlyingAsset['bsc:kgen'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'd2e3f4a5-6b7c-4d8e-89f0-1a2b3c4d5e6f',
+    'bsc:myx',
+    'MYX Finance',
+    18,
+    '0xd82544bf0dfe8385ef8fa34d67e6e4940cc63e16',
+    UnderlyingAsset['bsc:myx'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
     '2a3e9315-0cb8-4bdf-ba9c-d872aeeb1ce2',
     'bsc:bsw',
     'Biswap',
