@@ -532,6 +532,14 @@ export const ofcCoins = [
     UnderlyingAsset['bera:dolo'],
     CoinKind.CRYPTO
   ),
+  ofc(
+    'a8b9c0d1-2e3f-4a5b-86c7-ad0e1f2a3b4c',
+    'ofcbera:ir',
+    'Infrared',
+    18,
+    UnderlyingAsset['bera:ir'],
+    CoinKind.CRYPTO
+  ),
   ofc('411fd61a-3571-41f4-b632-6058a30a66a2', 'ofcapt', 'Aptos', 8, UnderlyingAsset.APT, CoinKind.CRYPTO),
   ofc('2fee34a2-cfb8-4882-953a-ac02f2c1577d', 'ofcvet', 'VeChain', 18, UnderlyingAsset.VET, CoinKind.CRYPTO),
   ofc('195cfca5-2a3e-4581-b47c-5582fe9bcf25', 'ofccanton', 'Canton Coin', 10, UnderlyingAsset.CANTON, CoinKind.CRYPTO),
@@ -2281,6 +2289,8 @@ export const ofcCoins = [
   ),
   ofcBscToken('8d250ad4-775f-4435-9c4c-cf0f77b26f7e', 'ofcbsc:form', 'Four', 18, UnderlyingAsset['bsc:form']),
   ofcBscToken('d4a9b8c3-5f0e-4d7a-96f2-7e3c9b4d0a8e', 'ofcbsc:ake', 'Akedo', 18, UnderlyingAsset['bsc:ake']),
+  ofcBscToken('e5b0c9d4-6a1b-4e8c-a7d3-9f4e0a5f1b2c', 'ofcbsc:kgen', 'KGeN', 8, UnderlyingAsset['bsc:kgen']),
+  ofcBscToken('f6c1d0e5-7b2c-4f9d-b8e4-ba5f1b6c2d3e', 'ofcbsc:myx', 'MYX Finance', 18, UnderlyingAsset['bsc:myx']),
   ofcBscToken(
     '7c3f2e8a-9d1f-4b6a-8e7b-1f9e4c5d2a6f',
     'ofcbsc:burger',
@@ -3572,6 +3582,13 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['polygon:chlt']
   ),
+  ofcPolygonErc20(
+    'd4a9b8c3-5f0e-4d1b-a6c2-9a3b9d4e0f1a',
+    'ofcpolygon:stg',
+    'Stargate Finance',
+    18,
+    UnderlyingAsset['polygon:stg']
+  ),
 
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
@@ -4048,8 +4065,11 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['sol:pengu']
   ),
+  ofcsolToken('c2d3e4f5-6a7b-4c8d-90e1-af3a4b5c6d7e', 'ofcsol:meta', 'MetaDAO', 9, UnderlyingAsset['sol:meta']),
+  ofcsolToken('d3e4f5a6-7b8c-4d9e-81f2-3a4b5c6d7e8f', 'ofcsol:portals', 'Portals', 9, UnderlyingAsset['sol:portals']),
   // New SUI OFC token
   ofcSuiToken('1e01eb3d-2573-4662-aa5e-4c390e4a9b38', 'ofcsui:dmc', 'DeLorean', 9, UnderlyingAsset['sui:dmc']),
+  ofcSuiToken('e4f5a6b7-8c9d-4eaf-82a3-4b5c6d7e8f9a', 'ofcsui:mmt', 'Momentum', 9, UnderlyingAsset['sui:mmt']),
   // Tempo testnet OFC tokens
   tofcTempoToken(
     '7912e76e-5a5c-4f1b-86e9-1fc2a51f5a98',

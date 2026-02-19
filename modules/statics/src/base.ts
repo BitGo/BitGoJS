@@ -2248,6 +2248,8 @@ export enum UnderlyingAsset {
   'eth:aedz' = 'eth:aedz',
   'eth:arm-susde-usde' = 'eth:arm-susde-usde',
   'eth:arm-weth-eeth' = 'eth:arm-weth-eeth',
+  'eth:cashplus' = 'eth:cashplus',
+  'eth:island' = 'eth:island',
   'eth:six' = 'eth:six',
   'eth:eden' = 'eth:eden',
   'eth:xeden' = 'eth:xeden',
@@ -2714,6 +2716,7 @@ export enum UnderlyingAsset {
   'polygon:argt' = 'polygon:argt',
   'polygon:brat' = 'polygon:brat',
   'polygon:chlt' = 'polygon:chlt',
+  'polygon:stg' = 'polygon:stg',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2744,6 +2747,8 @@ export enum UnderlyingAsset {
   'bsc:parti' = 'bsc:parti',
   'bsc:form' = 'bsc:form',
   'bsc:ake' = 'bsc:ake',
+  'bsc:kgen' = 'bsc:kgen',
+  'bsc:myx' = 'bsc:myx',
   'bsc:ltc' = 'bsc:ltc',
   'bsc:mask' = 'bsc:mask',
   'bsc:matic' = 'bsc:matic',
@@ -3005,6 +3010,8 @@ export enum UnderlyingAsset {
   'baseeth:argt' = 'baseeth:argt',
   'baseeth:brat' = 'baseeth:brat',
   'baseeth:mext' = 'baseeth:mext',
+  'baseeth:common' = 'baseeth:common',
+  'baseeth:unite' = 'baseeth:unite',
   'baseeth:b3' = 'baseeth:b3',
   'baseeth:kaito' = 'baseeth:kaito',
 
@@ -3151,6 +3158,7 @@ export enum UnderlyingAsset {
   'bera:ibera' = 'bera:ibera',
   'bera:dolo' = 'bera:dolo',
   'bera:wgbera' = 'bera:wgbera',
+  'bera:ir' = 'bera:ir',
 
   // bera testnet tokens
   'tbera:bgt' = 'tbera:bgt',
@@ -3294,6 +3302,8 @@ export enum UnderlyingAsset {
   'sol:nyan' = 'sol:nyan',
   'sol:fight' = 'sol:fight',
   'sol:wet' = 'sol:wet',
+  'sol:meta' = 'sol:meta',
+  'sol:portals' = 'sol:portals',
   'sol:virtual' = 'sol:virtual',
   'sol:zerebro' = 'sol:zerebro',
   'sol:arc' = 'sol:arc',
@@ -3435,6 +3445,7 @@ export enum UnderlyingAsset {
   'sui:xaum' = 'sui:xaum',
   'sui:alkimi' = 'sui:alkimi',
   'sui:dmc' = 'sui:dmc',
+  'sui:mmt' = 'sui:mmt',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',
@@ -3600,6 +3611,7 @@ export enum UnderlyingAsset {
   // Canton mainnet tokens
   'canton:usdcx' = 'canton:usdcx',
   'canton:cbtc' = 'canton:cbtc',
+  'canton:usdxlr' = 'canton:usdxlr',
 
   // Tempo testnet tokens
   'ttempo:pathusd' = 'ttempo:pathusd',

@@ -1296,4 +1296,13 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:chlt'],
     POLYGON_TOKEN_FEATURES
   ),
+  polygonErc20(
+    'd6a1b0c5-2f7e-4b4c-88f9-ac6f7b3e0a5d',
+    'polygon:stg',
+    'Stargate Finance',
+    18,
+    '0x2f6f07cdcf3588944bf4c42ac74ff24bf56e7590',
+    UnderlyingAsset['polygon:stg'],
+    POLYGON_TOKEN_FEATURES
+  ),
 ];
