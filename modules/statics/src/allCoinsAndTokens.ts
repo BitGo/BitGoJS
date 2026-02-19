@@ -3202,6 +3202,15 @@ export const allCoinsAndTokens = [
     Networks.main.seievm
   ),
   erc20Token(
+    'b30c2605-0a9e-448e-8ea3-8df103e20384',
+    'seievm:wsei',
+    'Wrapped SEI',
+    18,
+    '0xe30fedd158a2e3b13e9badaeabafc5516e95e8c7',
+    UnderlyingAsset['seievm:wsei'],
+    Networks.main.seievm
+  ),
+  erc20Token(
     '0ad7a932-bccf-4f37-a201-69ae3571bfa7',
     'lineaeth:linea',
     'Linea',

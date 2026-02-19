@@ -1162,6 +1162,15 @@ export const polygonTokens = [
     POLYGON_TOKEN_FEATURES
   ),
   tpolygonErc20(
+    '4563b882-fda0-4e5e-a1a5-608448f04384',
+    'tpolygon:copr3',
+    'Test COPR3',
+    18,
+    '0xb9200ddb57ef5c59fa0ef055668271aec2549588',
+    UnderlyingAsset['tpolygon:copr3'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  tpolygonErc20(
     '9da1d62e-2220-4974-a9d9-191c34dfda4e',
     'tpolygon:link',
     'Polygon Test LINK',

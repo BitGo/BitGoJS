@@ -5585,6 +5585,13 @@ export const tOfcErc20Coins = [
     true,
     'tmorpheth'
   ),
+  ofcerc20(
+    '3ea8b443-c2a7-4a3c-8b58-1a8a36aa4da8',
+    'ofcseievm:wsei',
+    'Wrapped SEI',
+    18,
+    underlyingAssetForSymbol('seievm:wsei')
+  ),
   tofcerc20(
     '8c64311b-e288-4dd4-8f9f-25dad3418837',
     'ofctmorpheth:usd1',

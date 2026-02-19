@@ -2907,6 +2907,7 @@ export enum UnderlyingAsset {
   'tpolygon:usdc' = 'tpolygon:usdc',
   'tpolygon:testcopm' = 'tpolygon:testcopm',
   'tpolygon:BitGoTest' = 'tpolygon:BitGoTest',
+  'tpolygon:copr3' = 'tpolygon:copr3',
 
   // generic NFTs
   'terc721:polygontoken' = 'terc721:polygontoken',
@@ -3018,6 +3019,7 @@ export enum UnderlyingAsset {
   'seievm:weth' = 'seievm:weth',
   'seievm:wbtc' = 'seievm:wbtc',
   'seievm:usd0' = 'seievm:usd0',
+  'seievm:wsei' = 'seievm:wsei',
 
   //Linea mainnet tokens
   'lineaeth:linea' = 'lineaeth:linea',

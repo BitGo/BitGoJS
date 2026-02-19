@@ -3619,6 +3619,13 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['polygon:txusd']
   ),
+  tofcPolygonErc20(
+    'a3f4e3a3-332e-4634-ac56-715c96d29d07',
+    'ofctpolygon:copr3',
+    'Test COPR3',
+    18,
+    UnderlyingAsset['tpolygon:copr3']
+  ),
 
   ofcAlgoToken(
     'fec37305-8fb8-4c23-b42c-b4696d579eb9',
