@@ -130,6 +130,16 @@ export class Transaction extends BaseTransaction {
       if (signature !== '0x') {
         this._signatures.push(signature);
       }
+    } else if (this._type === TransactionType.SingleSigSend) {
+      // For single-sig sends, the recipient and amount are in the basic transaction fields
+      const coinName = this._coinConfig.name;
+      if (txData.to && txData.value) {
+        this.outputs.push({
+          address: txData.to,
+          value: txData.value,
+          coin: coinName,
+        });
+      }
     }
   }
 
