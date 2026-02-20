@@ -7,6 +7,7 @@ import {
   pvmSerial,
   Credential,
   TransferOutput,
+  TransferableOutput,
 } from '@flarenetwork/flarejs';
 import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -302,7 +303,66 @@ export class PermissionlessDelegatorTxBuilder extends TransactionBuilder {
       this.transaction._context
     );
 
-    this.transaction.setTransaction(delegatorTx as UnsignedTx);
+    // Fix change output threshold bug (same as ExportInPTxBuilder)
+    const flareUnsignedTx = delegatorTx as UnsignedTx;
+    const innerTx = flareUnsignedTx.getTx() as pvmSerial.AddPermissionlessDelegatorTx;
+    const changeOutputs = innerTx.baseTx.outputs;
+    let correctedDelegatorTx: pvmSerial.AddPermissionlessDelegatorTx = innerTx;
+
+    if (changeOutputs.length > 0 && this.transaction._threshold > 1) {
+      // Only apply fix for multisig wallets (threshold > 1)
+      const allWalletAddresses = this.transaction._fromAddresses.map((addr) => Buffer.from(addr));
+
+      const correctedChangeOutputs = changeOutputs.map((output) => {
+        const transferOut = output.output as TransferOutput;
+
+        const assetIdStr = utils.flareIdString(Buffer.from(output.assetId.toBytes()).toString('hex')).toString();
+        return TransferableOutput.fromNative(
+          assetIdStr,
+          transferOut.amount(),
+          allWalletAddresses,
+          this.transaction._locktime,
+          this.transaction._threshold // Fix: use wallet's threshold instead of FlareJS's default (1)
+        );
+      });
+
+      correctedDelegatorTx = this.createCorrectedDelegatorTx(innerTx, correctedChangeOutputs);
+    }
+
+    // Create new UnsignedTx with corrected change outputs
+    const fixedUnsignedTx = new UnsignedTx(correctedDelegatorTx, [], new FlareUtils.AddressMaps([]), []);
+
+    this.transaction.setTransaction(fixedUnsignedTx);
+  }
+
+  /**
+   * Create a corrected AddPermissionlessDelegatorTx with the given change outputs.
+   * This is necessary because FlareJS's newAddPermissionlessDelegatorTx doesn't support setting
+   * the threshold and locktime for change outputs - it defaults to threshold=1.
+   *
+   * FlareJS declares baseTx.outputs as readonly, so we use Object.defineProperty
+   * to override the property with the corrected outputs. This is a workaround until
+   * FlareJS adds proper support for change output thresholds.
+   *
+   * @param originalTx - The original AddPermissionlessDelegatorTx
+   * @param correctedOutputs - The corrected change outputs with proper threshold
+   * @returns A new AddPermissionlessDelegatorTx with the corrected change outputs
+   */
+  private createCorrectedDelegatorTx(
+    originalTx: pvmSerial.AddPermissionlessDelegatorTx,
+    correctedOutputs: TransferableOutput[]
+  ): pvmSerial.AddPermissionlessDelegatorTx {
+    // FlareJS declares baseTx.outputs as `public readonly outputs: readonly TransferableOutput[]`
+    // We use Object.defineProperty to override the readonly property with our corrected outputs.
+    // This is necessary because FlareJS's newAddPermissionlessDelegatorTx doesn't support change output threshold/locktime.
+    Object.defineProperty(originalTx.baseTx, 'outputs', {
+      value: correctedOutputs,
+      writable: false,
+      enumerable: true,
+      configurable: true,
+    });
+
+    return originalTx;
   }
 
   /**
