@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.17.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.17.0...@bitgo/abstract-cosmos@11.17.1) (2026-02-13)
+
+**Note:** Version bump only for package @bitgo/abstract-cosmos
+
+
+
+
+
+# [11.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.16.0...@bitgo/abstract-cosmos@11.17.0) (2026-02-12)
+
+
+### Features
+
+* **abstract-cosmos,sdk-coin-hash:** add fee granter support ([b827c52](https://github.com/BitGo/BitGoJS/commit/b827c528f94b44f87dc48771c13591c9ad61ae12))
+* **abstract-cosmos,sdk-coin-hash:** add group proposal support ([093e777](https://github.com/BitGo/BitGoJS/commit/093e77704b5092e01c86b91ac5e898179b83a4b8))
+* **abstract-cosmos,sdk-coin-hash:** add MsgVote support ([8a1f504](https://github.com/BitGo/BitGoJS/commit/8a1f5044038d37ec5631e4b1256815f8e20c2fc3))
+* **abstract-cosmos:** add contract call decoding ([199876b](https://github.com/BitGo/BitGoJS/commit/199876b0de321a723a7f643a3d4da48f8300d0f6))
+
+
+
+
+
 # [11.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.15.24...@bitgo/abstract-cosmos@11.16.0) (2026-01-30)
 
 

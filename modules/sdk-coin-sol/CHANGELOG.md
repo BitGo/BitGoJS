@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.13.0...@bitgo/sdk-coin-sol@7.13.1) (2026-02-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sol
+
+
+
+
+
+# [7.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.12.0...@bitgo/sdk-coin-sol@7.13.0) (2026-02-12)
+
+
+### Features
+
+* **root:** add @bitgo/logger with sensitive data sanitization ([cb046aa](https://github.com/BitGo/BitGoJS/commit/cb046aa567c4c0dd1fc78de9de58b305486558eb))
+* **sdk-coin-sol:** add dual ESM/CJS build for browser WASM support ([12685c4](https://github.com/BitGo/BitGoJS/commit/12685c4f6576950ba728f2fffa3511e80e04314f))
+* **sdk-coin-sol:** upgrade @solana/spl-token from 0.3.1 to 0.4.9 ([2a0b8a3](https://github.com/BitGo/BitGoJS/commit/2a0b8a31d1e23f3f7c5cbb3532120a7040033af3))
+
+
+
+
+
 # [7.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.11.4...@bitgo/sdk-coin-sol@7.12.0) (2026-01-30)
 
 

@@ -1,4 +1,5 @@
 import * as superagent from 'superagent';
+import { logger } from '@bitgo/logger';
 
 export class ApiRequestError extends Error {
   constructor(public url: string, public reason: Error | string) {
@@ -64,7 +65,7 @@ export class BaseHttpClient implements HttpClient {
     try {
       response = await superagent(method, url).send(requestBody as Record<string, unknown>);
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       throw new ApiRequestError(url, e as Error);
     }
     if (!response.ok) {

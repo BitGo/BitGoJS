@@ -42,11 +42,9 @@ export class Tempo extends AbstractEthLikeNewCoins {
     return 'Tempo';
   }
 
-  /**
-   * Get the base factor (1 TEMPO = 1e18 wei, like Ethereum)
-   */
+  /** @inheritdoc */
   getBaseFactor(): number {
-    return 1e18;
+    return 1e6;
   }
 
   /**
@@ -69,13 +67,6 @@ export class Tempo extends AbstractEthLikeNewCoins {
    */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
-  }
-
-  /**
-   * Check if message signing is supported
-   */
-  supportsMessageSigning(): boolean {
-    return true;
   }
 
   /**
@@ -171,13 +162,6 @@ export class Tempo extends AbstractEthLikeNewCoins {
     if (!/^(0|[1-9]\d*)$/.test(memoId)) {
       return false;
     }
-    return true;
-  }
-
-  /**
-   * Check if typed data signing is supported (EIP-712)
-   */
-  supportsSigningTypedData(): boolean {
     return true;
   }
 

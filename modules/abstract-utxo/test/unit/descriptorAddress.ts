@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
 import { address as wasmAddress, CoinName } from '@bitgo/wasm-utxo';
+import * as testutils from '@bitgo/wasm-utxo/testutils';
 import { IWallet, WalletCoinSpecific } from '@bitgo/sdk-core';
 
 import { descriptor as utxod } from '../../src';
@@ -15,7 +15,7 @@ export function getDescriptorAddress(d: string, index: number, coinName: CoinNam
 
 describe('descriptor wallets', function () {
   const coin = getUtxoCoin('tbtc');
-  const xpubs = utxolib.testutil.getKeyTriple('setec astronomy').map((k) => k.neutered().toBase58());
+  const xpubs = testutils.getKeyTriple('setec astronomy').map((k) => k.neutered().toBase58());
 
   function withChecksum(descriptor: string): string {
     return utxod.Descriptor.fromString(descriptor, 'derivable').toString();

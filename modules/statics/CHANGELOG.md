@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.24.0...@bitgo/statics@58.25.0) (2026-02-12)
+
+
+### Bug Fixes
+
+* fixed the url for the tx explorere ([d7e276d](https://github.com/BitGo/BitGoJS/commit/d7e276deca8925f1095323c7dd00f44ec0f105bf))
+* **statics:** add account explorer url for sui and ada ([fe40c2e](https://github.com/BitGo/BitGoJS/commit/fe40c2eeb503ab50f13b3cf39826d58283661a7c))
+* **statics:** mon chainId in legacy chainId map ([3a9846c](https://github.com/BitGo/BitGoJS/commit/3a9846c01085b4acda67c986c65a5df198b2a168))
+* **statics:** remove unnecessary Chiliz ERC20 token classes ([3be89b5](https://github.com/BitGo/BitGoJS/commit/3be89b5553d893593a35ec24403c7f0d8ea9acdb))
+
+
+### Features
+
+* add CUSTODY_BITGO_KOREA to avaxp and ttrx:usdt ([c16c41c](https://github.com/BitGo/BitGoJS/commit/c16c41c9904df8a724db7615458a919ae474d2b4))
+* add INR ([3873880](https://github.com/BitGo/BitGoJS/commit/3873880f48935c0aface32c98b3be9ffab2174ad))
+* add support for 12 tokens ([6dd4a13](https://github.com/BitGo/BitGoJS/commit/6dd4a1355bfca5b56828219dfab670dc23d02c11))
+* added hypeEvm bridgable details to statics ([a2cbeb8](https://github.com/BitGo/BitGoJS/commit/a2cbeb87ef4b1cc20f3a006bac2216f215ad5bab))
+* asset control for Korea Trust ([6152d71](https://github.com/BitGo/BitGoJS/commit/6152d71bdcc74effbdb1e59f7fb755c86d858672))
+* enable pending txn tab for dot, tao and apt ([9e453ca](https://github.com/BitGo/BitGoJS/commit/9e453ca16a7e3f7b003fc940333cb51fd436056d))
+* **statics:** add kavacosmos and tkavacosmos networks ([b7543b5](https://github.com/BitGo/BitGoJS/commit/b7543b53552cc646af9337ee97ad734a6ca2d5bd))
+* **statics:** add ofc support for megaeth ([73c3a20](https://github.com/BitGo/BitGoJS/commit/73c3a20002d7ae134765736b2703c2730a58bb0a))
+* **statics:** add testnet tokens ([102e529](https://github.com/BitGo/BitGoJS/commit/102e529c44cf61712111efb7d2959098f4db6228))
+* **statics:** onboard AGRI, USDC.a, AGS, AUS, REYA, PERP, USDP, GRTX ([ce829b4](https://github.com/BitGo/BitGoJS/commit/ce829b46167498da693b5a5f0ff0be149ad4227e))
+* **statics:** onboard Chiliz Chain (CHZ) L1 EVM ([ab2444b](https://github.com/BitGo/BitGoJS/commit/ab2444b233eaba4d4f8956b44a4e2362c1b91534))
+* **statics:** onboard xnet sol 2022 token ([dcbb2e9](https://github.com/BitGo/BitGoJS/commit/dcbb2e9afca1c42dd6aefdc39ffc48f6be16bca4))
+* **statics:** onboarding stnear testnet ([e763ca7](https://github.com/BitGo/BitGoJS/commit/e763ca7b24942210240ad13c1ac3786f56722df8))
+* **statics:** onboarding USDC.e (JOVAYETH:USDCE) ([bcac01f](https://github.com/BitGo/BitGoJS/commit/bcac01fd5542b91900e9da662c2eacf677efe9be))
+* **statics:** rename sol:usdc.a to sol:usdca (WIN-8883) ([936048e](https://github.com/BitGo/BitGoJS/commit/936048e6cc908d70a7ee0118e4bbc051e5488997))
+* **statics:** revert gousd back to old contract in prod ([19263ed](https://github.com/BitGo/BitGoJS/commit/19263ed329655651606803c569b4ea392ac4135f))
+* support erc20 token registry using custom coin map ([6005a3e](https://github.com/BitGo/BitGoJS/commit/6005a3e2e54485146d9dd3eab1e6436b6d682614))
+
+
+
+
+
 # [58.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.23.0...@bitgo/statics@58.24.0) (2026-01-30)
 
 

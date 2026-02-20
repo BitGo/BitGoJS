@@ -2194,7 +2194,11 @@ export class Wallet implements IWallet {
 
     if (_.isFunction(params.customSigningFunction)) {
       if (typeof this.baseCoin.signWithCustomSigningFunction === 'function') {
-        return this.baseCoin.signWithCustomSigningFunction(params.customSigningFunction, signTransactionParams);
+        assert(pubs, 'pubs are required for custom signing');
+        return this.baseCoin.signWithCustomSigningFunction(params.customSigningFunction, {
+          ...signTransactionParams,
+          pubs,
+        });
       }
       const keys = await this.baseCoin.keychains().getKeysForSigning({ wallet: this });
       const signTransactionParamsWithSeed = {
@@ -3710,6 +3714,19 @@ export class Wallet implements IWallet {
         );
         break;
       }
+      case 'transferOfferWithdrawn': {
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'transferOfferWithdrawn',
+            transferOfferId: params.transferOfferId,
+            sequenceId: params.transferOfferId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
       case 'customTx':
         txRequest = await this.tssUtils!.prebuildTxWithIntent(
           {
@@ -3723,6 +3740,21 @@ export class Wallet implements IWallet {
             recipients: params.recipients || [],
             nonce: params.nonce,
             memo: params.memo,
+            feeOptions,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      case 'bridgeFunds':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'bridgeFunds',
+            sequenceId: params.sequenceId,
+            comment: params.comment,
+            amount: params.intentAmount,
+            nonce: params.nonce,
             feeOptions,
           },
           apiVersion,

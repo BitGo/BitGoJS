@@ -66,7 +66,7 @@ function assertSignedWasm(
   replayProtection: ReplayProtectionKeys
 ): void {
   const wasmUserKey = BIP32.from(userKey);
-  const parsed = psbt.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
+  const parsed = psbt.parseTransactionWithWalletKeys(rootWalletKeys, { replayProtection });
 
   // Verify that all wallet inputs have been signed by user key
   parsed.inputs.forEach((input, inputIndex) => {

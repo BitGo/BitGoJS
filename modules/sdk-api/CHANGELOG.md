@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.74.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.74.0...@bitgo/sdk-api@1.74.1) (2026-02-13)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
+
+
+
+
+# [1.74.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.73.4...@bitgo/sdk-api@1.74.0) (2026-02-12)
+
+
+### Features
+
+* capture raw body bytes for v4 hmac calculation ([2019b7a](https://github.com/BitGo/BitGoJS/commit/2019b7acabe77a355ff0e8c5590c4d2ed4612b8c))
+
+
+
+
+
 ## [1.73.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.73.3...@bitgo/sdk-api@1.73.4) (2026-01-30)
 
 **Note:** Version bump only for package @bitgo/sdk-api

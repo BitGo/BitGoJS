@@ -1,11 +1,13 @@
 import assert from 'assert';
 
-import { getDefaultXPubs, getDescriptorMap } from '@bitgo/utxo-core/testutil/descriptor';
+import * as testutils from '@bitgo/wasm-utxo/testutils';
 
 import { getDescriptorMapFromWallet, isDescriptorWallet } from '../../../src/descriptor';
 import { UtxoWallet } from '../../../src/wallet';
 import { toBip32Triple } from '../../../src/keychains';
 import { policyAllowAll } from '../../../src/descriptor/validatePolicy';
+
+const { getDefaultXPubs, getDescriptorMap } = testutils.descriptor;
 
 describe('isDescriptorWalletData', function () {
   const descriptorMap = getDescriptorMap('Wsh2Of3');

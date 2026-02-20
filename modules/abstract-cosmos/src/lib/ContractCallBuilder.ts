@@ -1,6 +1,5 @@
 import { TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { fromBase64 } from '@cosmjs/encoding';
 
 import * as constants from './constants';
 import { CosmosTransactionMessage, ExecuteContractMessage, MessageData } from './iface';
@@ -20,32 +19,31 @@ export class ContractCallBuilder<CustomMessage = never> extends CosmosTransactio
   }
 
   /** @inheritdoc */
-  messages(messages: (CosmosTransactionMessage<CustomMessage> | MessageData<CustomMessage>)[]): this {
+  messages(messages: (CosmosTransactionMessage<CustomMessage> | Partial<MessageData<CustomMessage>>)[]): this {
     this._messages = messages.map((message) => {
-      const msg = message as MessageData<CustomMessage>;
-      const { typeUrl, value } = msg;
-
-      // Handle pre-encoded messages (base64 string input)
-      if (typeUrl && typeof value === 'string') {
-        try {
-          return { typeUrl, value: fromBase64(value) } as MessageData<CustomMessage>;
-        } catch (err: unknown) {
-          throw new Error(`Invalid base64 string in message value: ${String(err)}`);
-        }
-      }
-
-      // Handle already-encoded messages (Uint8Array from deserialization)
-      if (typeUrl && value instanceof Uint8Array) {
-        return { typeUrl, value } as MessageData<CustomMessage>;
-      }
-
-      // Handle typed ExecuteContractMessage
       const executeContractMessage = message as ExecuteContractMessage;
+
+      if (!executeContractMessage.msg) {
+        // Pre-encoded message from deserialization round-trip
+        return message as MessageData<CustomMessage>;
+      }
+
+      if (this._utils.isGroupProposal(executeContractMessage)) {
+        return {
+          typeUrl: constants.groupProposalMsgTypeUrl,
+          value: executeContractMessage.msg,
+        } as MessageData<CustomMessage>;
+      }
+
+      if (this._utils.isGroupVote(executeContractMessage)) {
+        return {
+          typeUrl: constants.groupVoteMsgTypeUrl,
+          value: executeContractMessage.msg,
+        } as MessageData<CustomMessage>;
+      }
+
       this._utils.validateExecuteContractMessage(executeContractMessage, this.transactionType);
-      return {
-        typeUrl: constants.executeContractMsgTypeUrl,
-        value: executeContractMessage,
-      };
+      return { typeUrl: constants.executeContractMsgTypeUrl, value: executeContractMessage };
     });
     return this;
   }

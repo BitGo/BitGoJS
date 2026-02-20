@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/abstract-utxo",
-  "version": "10.17.0",
+  "version": "10.18.1",
   "description": "BitGo SDK coin library for UTXO base implementation",
   "main": "./dist/cjs/src/index.js",
   "module": "./dist/esm/index.js",
@@ -27,7 +27,7 @@
     "build:cjs": "yarn tsc --build --incremental --verbose .",
     "build:esm": "yarn tsc --project tsconfig.esm.json",
     "fmt": "prettier --write .",
-    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
+    "check-fmt": "prettier --check '{src,test}/**/*.{ts,js,json}'",
     "clean": "rm -rf ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
@@ -60,25 +60,23 @@
     ]
   },
   "dependencies": {
-    "@bitgo/blockapis": "^1.12.13",
-    "@bitgo/sdk-api": "^1.73.4",
-    "@bitgo/sdk-core": "^36.30.0",
-    "@bitgo/secp256k1": "^1.10.0",
-    "@bitgo/utxo-core": "^1.32.0",
-    "@bitgo/utxo-lib": "^11.20.0",
-    "@bitgo/utxo-ord": "^1.25.0",
-    "@bitgo/wasm-utxo": "^1.32.0",
+    "@bitgo/blockapis": "^1.13.0",
+    "@bitgo/sdk-api": "^1.74.1",
+    "@bitgo/sdk-core": "^36.31.1",
+    "@bitgo/utxo-core": "^1.33.0",
+    "@bitgo/utxo-lib": "^11.21.0",
+    "@bitgo/utxo-ord": "^1.26.0",
+    "@bitgo/wasm-utxo": "^1.42.0",
     "@types/lodash": "^4.14.121",
     "@types/superagent": "4.1.15",
     "bignumber.js": "^9.0.2",
-    "bitcoinjs-message": "npm:@bitgo-forks/bitcoinjs-message@1.0.0-master.3",
     "debug": "^3.1.0",
     "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
     "lodash": "^4.17.14",
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-test": "^9.1.25",
+    "@bitgo/sdk-test": "^9.1.27",
     "mocha": "^10.2.0"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"

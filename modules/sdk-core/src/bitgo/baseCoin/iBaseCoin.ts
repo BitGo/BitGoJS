@@ -613,7 +613,7 @@ export interface IBaseCoin {
   presignTransaction(params: PresignTransactionOptions): Promise<PresignTransactionOptions>;
   signWithCustomSigningFunction?(
     customSigningFunction: CustomSigningFunction,
-    signTransactionParams: { txPrebuild: TransactionPrebuild; pubs?: string[] }
+    signTransactionParams: { txPrebuild: TransactionPrebuild; pubs: string[] }
   ): Promise<SignedTransaction>;
   newWalletObject(walletParams: any): IWallet;
   feeEstimate(params: FeeEstimateOptions): Promise<any>;

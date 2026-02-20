@@ -52,11 +52,11 @@ describe('manage unspents', function () {
     );
 
     nocks.push(
-      ...psbts.map((psbt) =>
+      ...psbts.map(() =>
         nock(bgUrl)
           .post(
             `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`,
-            _.matches({ txHex: psbt.signAllInputsHD(rootWalletKey.user).toHex() })
+            _.matches({ type: 'consolidate', bulk: true })
           )
           .reply(200)
       )
@@ -92,10 +92,7 @@ describe('manage unspents', function () {
 
     nocks.push(
       nock(bgUrl)
-        .post(
-          `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`,
-          _.matches({ txHex: psbt.signAllInputsHD(rootWalletKey.user).toHex() })
-        )
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`, _.matches({ type: 'consolidate' }))
         .reply(200)
     );
 

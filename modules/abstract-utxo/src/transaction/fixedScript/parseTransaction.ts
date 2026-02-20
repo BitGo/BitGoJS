@@ -1,12 +1,19 @@
 import assert from 'assert';
 
 import _ from 'lodash';
-import { ITransactionRecipient, Triple, VerificationOptions, Wallet } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+import { ITransactionRecipient, KeyIndices, Triple, VerificationOptions, Wallet } from '@bitgo/sdk-core';
 
 import type { AbstractUtxoCoin, ParseTransactionOptions } from '../../abstractUtxoCoin';
 import type { FixedScriptWalletOutput, Output, ParsedTransaction } from '../types';
-import { fetchKeychains, getKeySignatures, toKeychainTriple, UtxoKeychain, UtxoNamedKeychains } from '../../keychains';
+import {
+  fetchKeychains,
+  getKeySignatures,
+  toKeychainTriple,
+  toXpubTriple,
+  UtxoKeychain,
+  UtxoNamedKeychains,
+} from '../../keychains';
+import { verifyKeySignature } from '../../verifyKey';
 import {
   assertValidTransactionRecipient,
   fromExtendedAddressFormatToScript,
@@ -15,6 +22,7 @@ import {
   toOutputScript,
 } from '../recipient';
 import { ComparableOutput, ExpectedOutput, outputDifference } from '../outputDifference';
+import { toTNumber } from '../../tnumber';
 
 import type { TransactionExplanation } from './explainTransaction';
 import { CustomChangeOptions, parseOutput } from './parseOutput';
@@ -112,6 +120,20 @@ function toExpectedOutputs(
   return expectedOutputs;
 }
 
+function verifyCustomChangeKeys(userKeychain: UtxoKeychain, customChange: CustomChangeOptions): void {
+  for (const keyIndex of [KeyIndices.USER, KeyIndices.BACKUP, KeyIndices.BITGO]) {
+    if (
+      !verifyKeySignature({
+        userKeychain,
+        keychainToVerify: customChange.keys[keyIndex],
+        keySignature: customChange.signatures[keyIndex],
+      })
+    ) {
+      throw new Error(`failed to verify custom change ${KeyIndices[keyIndex].toLowerCase()} key signature`);
+    }
+  }
+}
+
 export async function parseTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,
   params: ParseTransactionOptions<TNumber>
@@ -177,11 +199,18 @@ export async function parseTransaction<TNumber extends bigint | number>(
     }
   }
 
+  let customChangeXpubs: Triple<string> | undefined;
+  if (customChange) {
+    verifyCustomChangeKeys(keychainArray[KeyIndices.USER], customChange);
+    customChangeXpubs = toXpubTriple(customChange.keys);
+  }
+
   // obtain all outputs
   const explanation: TransactionExplanation = await coin.explainTransaction<TNumber>({
     txHex: txPrebuild.txHex,
     txInfo: txPrebuild.txInfo,
     pubs: keychainArray.map((k) => k.pub) as Triple<string>,
+    customChangeXpubs,
   });
 
   const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
@@ -231,10 +260,10 @@ export async function parseTransaction<TNumber extends bigint | number>(
   // these are all the non-wallet outputs that had been originally explicitly specified in recipients
   const explicitExternalOutputs = explicitOutputs.filter((output) => output.external);
   // this is the sum of all the originally explicitly specified non-wallet output values
-  const explicitExternalSpendAmount = utxolib.bitgo.toTNumber<TNumber>(
-    explicitExternalOutputs.reduce((sum: bigint, o) => sum + BigInt(o.value), BigInt(0)) as bigint,
+  const explicitExternalSpendAmount = toTNumber(
+    explicitExternalOutputs.reduce((sum: bigint, o) => sum + BigInt(o.value), BigInt(0)),
     coin.amountType
-  );
+  ) as TNumber;
 
   /**
    * The calculation of the implicit external spend amount pertains to verifying the pay-as-you-go-fee BitGo
@@ -250,10 +279,10 @@ export async function parseTransaction<TNumber extends bigint | number>(
   // make sure that all the extra addresses are change addresses
   // get all the additional external outputs the server added and calculate their values
   const implicitExternalOutputs = implicitOutputs.filter((output) => output.external);
-  const implicitExternalSpendAmount = utxolib.bitgo.toTNumber<TNumber>(
-    implicitExternalOutputs.reduce((sum: bigint, o) => sum + BigInt(o.value), BigInt(0)) as bigint,
+  const implicitExternalSpendAmount = toTNumber(
+    implicitExternalOutputs.reduce((sum: bigint, o) => sum + BigInt(o.value), BigInt(0)),
     coin.amountType
-  );
+  ) as TNumber;
 
   function toOutputs(outputs: ExpectedOutput[] | ComparableOutputWithExternal<bigint | 'max'>[]): Output[] {
     return outputs.map((output) => ({

@@ -244,7 +244,14 @@ export class Transaction extends BaseTransaction {
       case TransactionType.TransferAccept:
       case TransactionType.TransferReject: {
         const txData = this.toJson();
-        inputs.push({ address: txData.sender, amount: txData.amount });
+        const input: ITransactionRecipient = {
+          address: txData.sender,
+          amount: txData.amount,
+        };
+        if (txData.token) {
+          input.tokenName = txData.token;
+        }
+        inputs.push(input);
         inputAmount = txData.amount;
         break;
       }
@@ -262,6 +269,19 @@ export class Transaction extends BaseTransaction {
         }
         outputs.push(output);
         outputAmount = txData.amount;
+        break;
+      }
+      case TransactionType.TransferOfferWithdrawn: {
+        const txData = this.toJson();
+        const input: ITransactionRecipient = {
+          address: txData.receiver,
+          amount: txData.amount,
+        };
+        if (txData.token) {
+          input.tokenName = txData.token;
+        }
+        inputs.push(input);
+        inputAmount = txData.amount;
         break;
       }
     }

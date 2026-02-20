@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.14.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.14.0...@bitgo/sdk-coin-evm@1.14.1) (2026-02-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+# [1.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.13.2...@bitgo/sdk-coin-evm@1.14.0) (2026-02-12)
+
+
+### Features
+
+* override isValidAddress for hbarevm ([1c1cd6f](https://github.com/BitGo/BitGoJS/commit/1c1cd6fb2a809cd027ce9758980c734424601b93))
+
+
+
+
+
 ## [1.13.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.13.1...@bitgo/sdk-coin-evm@1.13.2) (2026-01-30)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-evm

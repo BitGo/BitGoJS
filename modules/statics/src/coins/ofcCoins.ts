@@ -40,6 +40,7 @@ import {
   tofcTonToken,
   ofcSuiToken,
   tofcSuiToken,
+  tofcTempoToken,
 } from '../ofc';
 import { UnderlyingAsset, CoinKind, CoinFeature } from '../base';
 
@@ -144,6 +145,22 @@ export const ofcCoins = [
     UnderlyingAsset.CHILIZ,
     CoinKind.CRYPTO
   ),
+  ofc(
+    'de86d783-852b-4d92-b991-20e7f028cc54',
+    'ofccodexeth',
+    'Codex Ethereum',
+    18,
+    UnderlyingAsset.CODEXETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    'dd58bac9-b4be-48cd-9113-55ab924d0c7c',
+    'ofctcodexeth',
+    'Codex Ethereum Testnet',
+    18,
+    UnderlyingAsset.CODEXETH,
+    CoinKind.CRYPTO
+  ),
   ofc('9e2da785-8349-4153-8276-941319575833', 'ofcxtz', 'Tezos', 6, UnderlyingAsset.XTZ, CoinKind.CRYPTO),
   ofc(
     '283b93b5-741b-4c85-a201-097267d65097',
@@ -184,12 +201,30 @@ export const ofcCoins = [
     UnderlyingAsset.SONIC,
     CoinKind.CRYPTO
   ),
+  ofc('13151b0b-3734-452d-8ad9-21af03a08bfe', 'ofcusdt0', 'USDT0', 18, UnderlyingAsset.USDT0, CoinKind.CRYPTO),
+  tofc(
+    '39a4dd77-b824-47b9-baff-b45398012511',
+    'ofctusdt0',
+    'USDT0 Testnet',
+    18,
+    UnderlyingAsset.USDT0,
+    CoinKind.CRYPTO
+  ),
   ofc(
     'ec31b18d-f034-4e84-837e-2c7d2908bbae',
     'ofchypeevm',
     'Hyperliquid EVM',
     18,
     UnderlyingAsset.HYPEEVM,
+    CoinKind.CRYPTO
+  ),
+  ofc('dc825481-0a15-44ab-84e6-6f182b13eb87', 'ofcxtzevm', 'XTZ EVM', 18, UnderlyingAsset.XTZEVM, CoinKind.CRYPTO),
+  tofc(
+    '0e42884b-c01e-461b-b108-1ed0d0fbbd7b',
+    'ofctxtzevm',
+    'XTZ EVM Testnet',
+    18,
+    UnderlyingAsset.XTZEVM,
     CoinKind.CRYPTO
   ),
   tofc(
@@ -275,6 +310,22 @@ export const ofcCoins = [
     CoinKind.CRYPTO
   ),
   ofc(
+    'bdab1ab0-215d-4d59-b698-7cc624e5027a',
+    'ofchemieth',
+    'Hemi Ethereum',
+    18,
+    UnderlyingAsset.HEMIETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    'bc005b8a-dfb5-42db-92ad-92db5cb5b7d2',
+    'ofcthemieth',
+    'Hemi Ethereum Testnet',
+    18,
+    UnderlyingAsset.HEMIETH,
+    CoinKind.CRYPTO
+  ),
+  ofc(
     'f43afacc-0db3-4a8a-a987-ff9d93e08cb4',
     'ofcjovayeth',
     'Jovay Ethereum',
@@ -288,6 +339,15 @@ export const ofcCoins = [
     'Jovay Ethereum Testnet',
     18,
     UnderlyingAsset.JOVAYETH,
+    CoinKind.CRYPTO
+  ),
+  ofc('b88981e3-e265-4c52-9184-29ee88f4c362', 'ofcmegaeth', 'MegaETH', 18, UnderlyingAsset.MEGAETH, CoinKind.CRYPTO),
+  tofc(
+    '613bb8b7-2df8-4908-ae27-55eaca9fd860',
+    'ofctmegaeth',
+    'MegaETH Testnet',
+    18,
+    UnderlyingAsset.MEGAETH,
     CoinKind.CRYPTO
   ),
   ofc('23b2e642-8ede-4c6e-a4e3-5355580d062f', 'ofcdogeos', 'DogeOS', 18, UnderlyingAsset.DOGEOS, CoinKind.CRYPTO),
@@ -470,6 +530,14 @@ export const ofcCoins = [
     'Dolomite',
     18,
     UnderlyingAsset['bera:dolo'],
+    CoinKind.CRYPTO
+  ),
+  ofc(
+    'a8b9c0d1-2e3f-4a5b-86c7-ad0e1f2a3b4c',
+    'ofcbera:ir',
+    'Infrared',
+    18,
+    UnderlyingAsset['bera:ir'],
     CoinKind.CRYPTO
   ),
   ofc('411fd61a-3571-41f4-b632-6058a30a66a2', 'ofcapt', 'Aptos', 8, UnderlyingAsset.APT, CoinKind.CRYPTO),
@@ -685,7 +753,7 @@ export const ofcCoins = [
     UnderlyingAsset.ARBETH,
     CoinKind.CRYPTO
   ),
-  tofc('3091d79a-7737-4493-b3e6-6765998b9486', 'ofctcoreum', 'Test Coreum', 6, UnderlyingAsset.COREUM, CoinKind.CRYPTO),
+  tofc('3091d79a-7737-4493-b3e6-6765998b9486', 'ofctcoreum', 'Testnet TX', 6, UnderlyingAsset.COREUM, CoinKind.CRYPTO),
   tofc(
     '90ac199d-4061-4c5f-9d48-4439c7ec2033',
     'ofctcelo',
@@ -740,10 +808,10 @@ export const ofcCoins = [
   ]),
   ofcsolToken(
     '2ad7fab3-71f1-4201-8c6d-16ef57f012b7',
-    'ofcsol:usdc.a',
+    'ofcsol:usdca',
     'USDC.a Bridged ART20',
     6,
-    UnderlyingAsset['sol:usdc.a'],
+    UnderlyingAsset['sol:usdca'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   ofcsolToken(
@@ -2221,6 +2289,8 @@ export const ofcCoins = [
   ),
   ofcBscToken('8d250ad4-775f-4435-9c4c-cf0f77b26f7e', 'ofcbsc:form', 'Four', 18, UnderlyingAsset['bsc:form']),
   ofcBscToken('d4a9b8c3-5f0e-4d7a-96f2-7e3c9b4d0a8e', 'ofcbsc:ake', 'Akedo', 18, UnderlyingAsset['bsc:ake']),
+  ofcBscToken('e5b0c9d4-6a1b-4e8c-a7d3-9f4e0a5f1b2c', 'ofcbsc:kgen', 'KGeN', 8, UnderlyingAsset['bsc:kgen']),
+  ofcBscToken('f6c1d0e5-7b2c-4f9d-b8e4-ba5f1b6c2d3e', 'ofcbsc:myx', 'MYX Finance', 18, UnderlyingAsset['bsc:myx']),
   ofcBscToken(
     '7c3f2e8a-9d1f-4b6a-8e7b-1f9e4c5d2a6f',
     'ofcbsc:burger',
@@ -3512,6 +3582,13 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['polygon:chlt']
   ),
+  ofcPolygonErc20(
+    'd4a9b8c3-5f0e-4d1b-a6c2-9a3b9d4e0f1a',
+    'ofcpolygon:stg',
+    'Stargate Finance',
+    18,
+    UnderlyingAsset['polygon:stg']
+  ),
 
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
@@ -3558,6 +3635,13 @@ export const ofcCoins = [
     'Test StraitsX USD',
     6,
     UnderlyingAsset['polygon:txusd']
+  ),
+  tofcPolygonErc20(
+    'a3f4e3a3-332e-4634-ac56-715c96d29d07',
+    'ofctpolygon:copr3',
+    'Test COPR3',
+    18,
+    UnderlyingAsset['tpolygon:copr3']
   ),
 
   ofcAlgoToken(
@@ -3981,6 +4065,38 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['sol:pengu']
   ),
+  ofcsolToken('c2d3e4f5-6a7b-4c8d-90e1-af3a4b5c6d7e', 'ofcsol:meta', 'MetaDAO', 9, UnderlyingAsset['sol:meta']),
+  ofcsolToken('d3e4f5a6-7b8c-4d9e-81f2-3a4b5c6d7e8f', 'ofcsol:portals', 'Portals', 9, UnderlyingAsset['sol:portals']),
   // New SUI OFC token
   ofcSuiToken('1e01eb3d-2573-4662-aa5e-4c390e4a9b38', 'ofcsui:dmc', 'DeLorean', 9, UnderlyingAsset['sui:dmc']),
+  ofcSuiToken('e4f5a6b7-8c9d-4eaf-82a3-4b5c6d7e8f9a', 'ofcsui:mmt', 'Momentum', 9, UnderlyingAsset['sui:mmt']),
+  // Tempo testnet OFC tokens
+  tofcTempoToken(
+    '7912e76e-5a5c-4f1b-86e9-1fc2a51f5a98',
+    'ofcttempo:pathusd',
+    'Testnet pathUSD',
+    6,
+    UnderlyingAsset['ttempo:pathusd']
+  ),
+  tofcTempoToken(
+    '349f887a-e764-4640-9ba1-2e29e02d5d65',
+    'ofcttempo:alphausd',
+    'Testnet AlphaUSD',
+    6,
+    UnderlyingAsset['ttempo:alphausd']
+  ),
+  tofcTempoToken(
+    'dc2b6c3d-b7a4-4940-bee3-32defbeff3bf',
+    'ofcttempo:betausd',
+    'Testnet BetaUSD',
+    6,
+    UnderlyingAsset['ttempo:betausd']
+  ),
+  tofcTempoToken(
+    '490a65b6-e01f-4fae-9aa5-7528d1848075',
+    'ofcttempo:thetausd',
+    'Testnet ThetaUSD',
+    6,
+    UnderlyingAsset['ttempo:thetausd']
+  ),
 ];

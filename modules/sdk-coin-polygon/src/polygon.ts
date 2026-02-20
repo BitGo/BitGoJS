@@ -53,16 +53,6 @@ export class Polygon extends AbstractEthLikeNewCoins {
   }
 
   /** @inheritDoc */
-  supportsMessageSigning(): boolean {
-    return true;
-  }
-
-  /** @inheritDoc */
-  supportsSigningTypedData(): boolean {
-    return true;
-  }
-
-  /** @inheritDoc */
   supportsTss(): boolean {
     return true;
   }

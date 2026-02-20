@@ -88,3 +88,23 @@ export const MAX_GAS_PRICE = 100000;
  * - TransferObjects: Transfer coins/objects to recipients
  */
 export const TRANSFER_TRANSACTION_COMMANDS = ['SplitCoins', 'MergeCoins', 'TransferObjects'];
+
+/**
+ * Maximum number of coin objects to include in a single recovery transaction.
+ * IOTA transactions have a max size of 128 KiB, which practically limits
+ * transactions to ~1600 objects depending on other details.
+ * We use 1280 as a safe limit, keeping room for recipients, gas data, etc.
+ * (IOTA protocol max_input_objects = 2048, max_tx_size_bytes = 131072)
+ */
+export const MAX_OBJECT_LIMIT = 1280;
+
+/**
+ * Maximum number of gas payment objects in a token recovery transaction.
+ */
+export const MAX_GAS_OBJECTS = 256;
+
+/**
+ * Default number of addresses to scan during recovery.
+ */
+export const DEFAULT_SCAN_FACTOR = 20;
+export const DEFAULT_GAS_OVERHEAD = 1.1;

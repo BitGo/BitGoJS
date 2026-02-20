@@ -113,6 +113,7 @@ export class Canton extends BaseCoin {
       case TransactionType.TransferReject:
       case TransactionType.TransferAcknowledge:
       case TransactionType.OneStepPreApproval:
+      case TransactionType.TransferOfferWithdrawn:
         // There is no input for these type of transactions, so always return true.
         return true;
       case TransactionType.Send:
@@ -243,6 +244,9 @@ export class Canton extends BaseCoin {
   setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
     if (params.txRequestId) {
       intent.txRequestId = params.txRequestId;
+    }
+    if (params.transferOfferId) {
+      intent.transferOfferId = params.transferOfferId;
     }
   }
 }

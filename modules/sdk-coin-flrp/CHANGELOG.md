@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.9.0...@bitgo/sdk-coin-flrp@1.9.1) (2026-02-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-flrp
+
+
+
+
+
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.8.0...@bitgo/sdk-coin-flrp@1.9.0) (2026-02-12)
+
+
+### Features
+
+* **sdk-coin-flrp:** add TxBuilder for P-chain staking ([c04f75f](https://github.com/BitGo/BitGoJS/commit/c04f75f083ad3db5c7451fe8f6845c1b4a9d1b13))
+
+
+
+
+
 # [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.7.2...@bitgo/sdk-coin-flrp@1.8.0) (2026-01-30)
 
 

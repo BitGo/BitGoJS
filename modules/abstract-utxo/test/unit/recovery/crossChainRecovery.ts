@@ -2,10 +2,9 @@ import * as assert from 'assert';
 
 import should = require('should');
 import nock = require('nock');
-import * as utxolib from '@bitgo/utxo-lib';
 import { Triple } from '@bitgo/sdk-core';
 import { getSeed } from '@bitgo/sdk-test';
-import { address as wasmAddress } from '@bitgo/wasm-utxo';
+import { address as wasmAddress, fixedScriptWallet } from '@bitgo/wasm-utxo';
 import * as sinon from 'sinon';
 
 import {
@@ -18,23 +17,21 @@ import {
   convertLtcAddressToLegacyFormat,
 } from '../../../src';
 import { isMainnetCoin, isTestnetCoin } from '../../../src/names';
-import type { Unspent, WalletUnspent } from '../../../src/unspent';
+import type { WalletUnspent } from '../../../src/unspent';
 import {
   getFixture,
   keychainsBase58,
   KeychainBase58,
-  mockUnspent,
   shouldEqualJSON,
   utxoCoins,
-  getDefaultWalletKeys,
+  getDefaultWasmWalletKeys,
   defaultBitGo,
   getUtxoCoin,
+  createWasmWalletUnspent,
 } from '../util';
 import { nockBitGo } from '../util/nockBitGo';
-import { createFullSignedTransaction } from '../util/transaction';
-import { getDefaultWalletUnspentSigner } from '../util/keychains';
 
-import { MockCrossChainRecoveryProvider } from './mock';
+import { WasmCrossChainRecoveryProvider } from './mock';
 
 function getKeyId(k: KeychainBase58): string {
   return getSeed(k.pub).toString('hex');
@@ -94,9 +91,11 @@ function nockWalletAddress(coin: AbstractUtxoCoin, walletId: string, address: Ad
  * @param sourceCoin - the coin to construct the transaction for
  * @param recoveryCoin - the coin the receiving wallet was set up for
  */
+// Get wasm wallet keys for signature verification
+const { walletKeys: wasmWalletKeys, xprivs } = getDefaultWasmWalletKeys();
+
 function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
   describe(`Cross-Chain Recovery [sourceCoin=${sourceCoin.getChain()} recoveryCoin=${recoveryCoin.getChain()}]`, function () {
-    const walletKeys = getDefaultWalletKeys();
     const recoveryWalletId = '5abacebe28d72fbd07e0b8cbba0ff39e';
     // the address the accidental deposit went to, in both sourceCoin and addressCoin formats
     const [depositAddressSourceCoin, depositAddressRecoveryCoin] = [sourceCoin, recoveryCoin].map((coin) => ({
@@ -114,42 +113,11 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
     });
     const nocks: nock.Scope[] = [];
 
-    let depositTx: utxolib.bitgo.UtxoTransaction<TNumber>;
-
-    function getDepositUnspents(): Unspent<TNumber>[] {
-      return [
-        mockUnspent<TNumber>(
-          sourceCoin.network,
-          walletKeys,
-          'p2sh',
-          0,
-          (sourceCoin.amountType === 'bigint' ? BigInt('10999999800000001') : 1e8) as TNumber
-        ),
-      ];
-    }
-
-    function getDepositTransaction(): utxolib.bitgo.UtxoTransaction<TNumber> {
-      return createFullSignedTransaction<TNumber>(
-        sourceCoin.network,
-        getDepositUnspents(),
-        depositAddressSourceCoin.address,
-        getDefaultWalletUnspentSigner()
-      );
-    }
-
-    before('prepare deposit tx', function () {
-      depositTx = getDepositTransaction();
-    });
-
+    // Create recovery unspent using wasm-utxo (no utxolib dependency)
     function getRecoveryUnspents(): WalletUnspent<TNumber>[] {
+      const depositValue = (sourceCoin.amountType === 'bigint' ? BigInt(1e8) : 1e8) as TNumber;
       return [
-        {
-          id: depositTx.getId(),
-          address: depositAddressSourceCoin.address,
-          chain: chain,
-          index: index,
-          value: depositTx.outs[0].value,
-        },
+        createWasmWalletUnspent<TNumber>(depositAddressSourceCoin.address, chain, index, depositValue, sourceCoin.name),
       ];
     }
 
@@ -193,23 +161,30 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
     }
 
     function checkRecoveryPsbtSignature(psbtHex: string) {
-      const psbt = utxolib.bitgo.createPsbtFromHex(psbtHex, sourceCoin.network);
+      // Parse using wasm-utxo for signature verification
+      const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(Buffer.from(psbtHex, 'hex'), sourceCoin.name);
+      const parsed = wasmPsbt.parseTransactionWithWalletKeys(wasmWalletKeys, { replayProtection: { publicKeys: [] } });
       const unspents = getRecoveryUnspents();
-      should.equal(psbt.data.inputs.length, unspents.length);
+      should.equal(parsed.inputs.length, unspents.length);
       // Verify user key has signed each input (same pattern as backupKeyRecovery test)
-      psbt.data.inputs.forEach((input, i) => {
-        const userSigned = psbt.validateSignaturesOfInputHD(i, walletKeys.user);
+      parsed.inputs.forEach((_, i) => {
+        const userSigned = wasmPsbt.verifySignature(i, xprivs[0]);
         userSigned.should.eql(true, `Input ${i} should be signed by user key`);
       });
     }
 
     it('should test signed cross chain recovery', async () => {
+      const depositUnspent = getRecoveryUnspents()[0];
+      // Parse txid from the unspent id (format: txid:vout)
+      const depositTxid = depositUnspent.id.split(':')[0];
+      // Use the deposit address as the input address (simulating a p2sh input)
+      const inputAddress = generateAddress(sourceCoin.name, { keychains: keychainsBase58, chain: 0, index: 2 });
       const getRecoveryProviderStub = sinon
         .stub(AbstractUtxoCoin.prototype, 'getRecoveryProvider')
-        .returns(new MockCrossChainRecoveryProvider<TNumber>(sourceCoin, getDepositUnspents(), depositTx));
+        .returns(new WasmCrossChainRecoveryProvider<TNumber>(sourceCoin, depositUnspent, [inputAddress]));
       const params = {
         recoveryCoin,
-        txid: depositTx.getId(),
+        txid: depositTxid,
         recoveryAddress,
         wallet: recoveryWalletId,
       };
@@ -227,12 +202,17 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
     });
 
     it('should test unsigned cross chain recovery', async () => {
+      const depositUnspent = getRecoveryUnspents()[0];
+      // Parse txid from the unspent id (format: txid:vout)
+      const depositTxid = depositUnspent.id.split(':')[0];
+      // Use the deposit address as the input address (simulating a p2sh input)
+      const inputAddress = generateAddress(sourceCoin.name, { keychains: keychainsBase58, chain: 0, index: 2 });
       const getRecoveryProviderStub = sinon
         .stub(AbstractUtxoCoin.prototype, 'getRecoveryProvider')
-        .returns(new MockCrossChainRecoveryProvider<TNumber>(sourceCoin, getDepositUnspents(), depositTx));
+        .returns(new WasmCrossChainRecoveryProvider<TNumber>(sourceCoin, depositUnspent, [inputAddress]));
       const params = {
         recoveryCoin,
-        txid: depositTx.getId(),
+        txid: depositTxid,
         recoveryAddress,
         wallet: recoveryWalletId,
       };

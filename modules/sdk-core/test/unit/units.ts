@@ -1,5 +1,5 @@
-import BigNumber from 'bignumber.js';
 import 'should';
+import BigNumber from 'bignumber.js';
 import { toFullUnits, toFullUnitsFixed, toBaseUnits, toMarketValueBaseUnits } from '../../src';
 
 describe('units', () => {

@@ -2,6 +2,7 @@ import { Triple } from '@bitgo/sdk-core';
 import { encrypt } from '@bitgo/sdk-api';
 import { getSeed } from '@bitgo/sdk-test';
 import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
+import { BIP32 as WasmBIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 type RootWalletKeys = bitgo.RootWalletKeys;
 
@@ -88,4 +89,69 @@ export function getWalletKeys(seed: string): RootWalletKeys {
   return new bitgo.RootWalletKeys(
     Array.from({ length: 3 }).map((_, i) => bip32.fromSeed(getSeed(`${seed}/${i}`))) as Triple<BIP32Interface>
   );
+}
+
+/**
+ * Create test wallet keys from a seed string.
+ * Uses the same seed generation as getWalletKeys (getSeed('seed/i'))
+ * to ensure compatibility with existing test fixtures.
+ */
+export function createTestWalletKeys(seed: string): {
+  xpubs: Triple<string>;
+  xprivs: Triple<string>;
+} {
+  const keys = Array.from({ length: 3 }).map((_, i) =>
+    bip32.fromSeed(getSeed(`${seed}/${i}`))
+  ) as Triple<BIP32Interface>;
+  return {
+    xpubs: keys.map((k) => k.neutered().toBase58()) as Triple<string>,
+    xprivs: keys.map((k) => k.toBase58()) as Triple<string>,
+  };
+}
+
+/**
+ * Create wasm-utxo RootWalletKeys from a seed string.
+ * Optionally specify custom derivation prefixes.
+ */
+export function createWasmWalletKeys(
+  seed: string,
+  derivationPrefixes: Triple<string> = ['m/0/0', 'm/0/0', 'm/0/0']
+): {
+  walletKeys: fixedScriptWallet.RootWalletKeys;
+  xpubs: Triple<WasmBIP32>;
+  xprivs: Triple<WasmBIP32>;
+} {
+  const { xpubs: xpubStrs, xprivs: xprivStrs } = createTestWalletKeys(seed);
+  const xpubs = xpubStrs.map((xpub) => WasmBIP32.from(xpub)) as Triple<WasmBIP32>;
+  const xprivs = xprivStrs.map((xpriv) => WasmBIP32.from(xpriv)) as Triple<WasmBIP32>;
+  return {
+    walletKeys: fixedScriptWallet.RootWalletKeys.from({
+      triple: xpubs,
+      derivationPrefixes,
+    }),
+    xpubs,
+    xprivs,
+  };
+}
+
+/**
+ * Get wasm-utxo RootWalletKeys from the default hardcoded keychains.
+ * Use this when you need wallet keys that match existing test fixtures.
+ * Optionally specify custom derivation prefixes.
+ */
+export function getDefaultWasmWalletKeys(derivationPrefixes: Triple<string> = ['m/0/0', 'm/0/0', 'm/0/0']): {
+  walletKeys: fixedScriptWallet.RootWalletKeys;
+  xpubs: Triple<WasmBIP32>;
+  xprivs: Triple<WasmBIP32>;
+} {
+  const xpubs = keychainsBase58.map((k) => WasmBIP32.from(k.pub)) as Triple<WasmBIP32>;
+  const xprivs = keychainsBase58.map((k) => WasmBIP32.from(k.prv)) as Triple<WasmBIP32>;
+  return {
+    walletKeys: fixedScriptWallet.RootWalletKeys.from({
+      triple: xpubs,
+      derivationPrefixes,
+    }),
+    xpubs,
+    xprivs,
+  };
 }

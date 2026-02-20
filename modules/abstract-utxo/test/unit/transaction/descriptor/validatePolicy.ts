@@ -1,10 +1,9 @@
 import assert from 'assert';
 
 import { Triple } from '@bitgo/sdk-core';
-import { BIP32Interface } from '@bitgo/utxo-lib';
-import { getKeyTriple } from '@bitgo/utxo-core/testutil';
+import { bip32 } from '@bitgo/wasm-utxo';
+import * as testutils from '@bitgo/wasm-utxo/testutils';
 
-import { DescriptorTemplate, getDescriptor } from '../../../../../utxo-core/src/testutil/descriptor';
 import {
   assertDescriptorPolicy,
   DescriptorPolicyValidationError,
@@ -18,10 +17,13 @@ import {
   toNamedDescriptorNative,
 } from '../../../../src/descriptor';
 
+type DescriptorTemplate = testutils.descriptor.DescriptorTemplate;
+const { getDescriptor } = testutils.descriptor;
+
 function testAssertDescriptorPolicy(
   ds: NamedDescriptor<string>[],
   p: DescriptorValidationPolicy,
-  k: Triple<BIP32Interface>,
+  k: Triple<bip32.BIP32Interface>,
   expectedError: DescriptorPolicyValidationError | null
 ) {
   const f = () =>
@@ -38,7 +40,7 @@ function testAssertDescriptorPolicy(
 }
 
 describe('assertDescriptorPolicy', function () {
-  const keys = getKeyTriple();
+  const keys = testutils.getKeyTriple('default');
   function getNamedDescriptorSigned(name: DescriptorTemplate): NamedDescriptor {
     return createNamedDescriptorWithSignature(name, getDescriptor(name), keys[0]);
   }

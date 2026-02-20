@@ -3,8 +3,8 @@ import { randomBytes } from 'crypto';
 
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/secp256k1';
-import { bitgo, getMainnet, isMainnet } from '@bitgo/utxo-lib';
+import { BIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { bitgo, getMainnet } from '@bitgo/utxo-lib';
 import {
   AddressCoinSpecific,
   BaseCoin,
@@ -42,7 +42,6 @@ import {
   isValidPrv,
   isValidXprv,
 } from '@bitgo/sdk-core';
-import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import {
   backupKeyRecovery,
@@ -57,7 +56,7 @@ import {
   v1Sweep,
   V1SweepParams,
 } from './recovery';
-import { isReplayProtectionUnspent } from './transaction/fixedScript/replayProtection';
+import { getReplayProtectionPubkeys, isReplayProtectionUnspent } from './transaction/fixedScript/replayProtection';
 import { supportedCrossChainRecoveries } from './config';
 import {
   assertValidTransactionRecipient,
@@ -81,6 +80,7 @@ import {
   getMainnetCoinName,
   getNetworkFromCoinName,
   isTestnetCoin,
+  isUtxoCoinNameMainnet,
   UtxoCoinName,
   UtxoCoinNameMainnet,
 } from './names';
@@ -142,6 +142,28 @@ type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
 };
 
 const { isChainCode, scriptTypeForChain, outputScripts } = bitgo;
+
+/**
+ * Check if a decoded transaction has at least one taproot key path spend (MuSig2) input.
+ * Works for both utxolib UtxoPsbt and wasm-utxo BitGoPsbt.
+ */
+function hasKeyPathSpendInput<TNumber extends number | bigint>(
+  tx: DecodedTransaction<TNumber>,
+  pubs: string[] | undefined,
+  coinName: UtxoCoinName
+): boolean {
+  if (tx instanceof bitgo.UtxoPsbt) {
+    return bitgo.isTransactionWithKeyPathSpendInput(tx);
+  }
+  if (tx instanceof fixedScriptWallet.BitGoPsbt) {
+    assert(pubs && isTriple(pubs), 'pub triple is required to check for key path spend inputs in wasm-utxo PSBT');
+    const rootWalletKeys = fixedScriptWallet.RootWalletKeys.fromXpubs(pubs);
+    const replayProtection = { publicKeys: getReplayProtectionPubkeys(coinName) };
+    const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, { replayProtection });
+    return parsed.inputs.some((input) => input.scriptType === 'p2trMusig2KeyPath');
+  }
+  return false;
+}
 
 /**
  * Convert ValidationError to TxIntentMismatchRecipientError with structured data
@@ -221,6 +243,7 @@ export interface ExplainTransactionOptions<TNumber extends number | bigint = num
   txInfo?: TransactionInfo<TNumber>;
   feeInfo?: string;
   pubs?: Triple<string>;
+  customChangeXpubs?: Triple<string>;
   decodeWith?: SdkBackend;
 }
 
@@ -377,14 +400,15 @@ export abstract class AbstractUtxoCoin
 {
   abstract name: UtxoCoinName;
 
-  public altScriptHash?: number;
-  public supportAltScriptDestination?: boolean;
-  public defaultSdkBackend: SdkBackend = 'utxolib';
   public readonly amountType: 'number' | 'bigint';
 
   protected constructor(bitgo: BitGoBase, amountType: 'number' | 'bigint' = 'number') {
     super(bitgo);
     this.amountType = amountType;
+  }
+
+  get defaultSdkBackend(): SdkBackend {
+    return isUtxoCoinNameMainnet(this.name) ? 'utxolib' : 'wasm-utxo';
   }
 
   /**
@@ -472,7 +496,7 @@ export abstract class AbstractUtxoCoin
    */
   isValidPub(pub: string): boolean {
     try {
-      return bip32.fromBase58(pub).isNeutered();
+      return BIP32.fromBase58(pub).isNeutered();
     } catch (e) {
       return false;
     }
@@ -801,20 +825,20 @@ export abstract class AbstractUtxoCoin
   /**
    * Sign a transaction with a custom signing function. Example use case is express external signer
    * @param customSigningFunction custom signing function that returns a single signed transaction
-   * @param signTransactionParams parameters for custom signing function. Includes txPrebuild and pubs (for legacy tx only).
+   * @param signTransactionParams parameters for custom signing function. Includes txPrebuild and pubs
    *
    * @returns signed transaction as hex string
    */
   async signWithCustomSigningFunction<TNumber extends number | bigint>(
     customSigningFunction: UtxoCustomSigningFunction<TNumber>,
-    signTransactionParams: { txPrebuild: TransactionPrebuild<TNumber>; pubs?: string[] }
+    signTransactionParams: { txPrebuild: TransactionPrebuild<TNumber>; pubs: string[] }
   ): Promise<SignedTransaction> {
     const txHex = signTransactionParams.txPrebuild.txHex;
     assert(txHex, 'missing txHex parameter');
 
     const tx = this.decodeTransaction(txHex);
 
-    const isTxWithKeyPathSpendInput = tx instanceof bitgo.UtxoPsbt && bitgo.isTransactionWithKeyPathSpendInput(tx);
+    const isTxWithKeyPathSpendInput = hasKeyPathSpendInput(tx, signTransactionParams.pubs, this.name);
 
     if (!isTxWithKeyPathSpendInput) {
       return await customSigningFunction({ ...signTransactionParams, coin: this });
@@ -954,7 +978,7 @@ export abstract class AbstractUtxoCoin
       // maximum entropy and gives us maximum security against cracking.
       seed = randomBytes(512 / 8);
     }
-    const extendedKey = bip32.fromSeed(seed);
+    const extendedKey = BIP32.fromSeed(seed);
     return {
       pub: extendedKey.neutered().toBase58(),
       prv: extendedKey.toBase58(),
@@ -977,22 +1001,7 @@ export abstract class AbstractUtxoCoin
       return requestedFormat;
     }
 
-    if (isTestnetCoin(this.name)) {
-      return 'psbt-lite';
-    }
-
-    const walletFlagMusigKp = wallet.flag('musigKp') === 'true';
-    const isHotWallet = wallet.type() === 'hot';
-
-    // Determine if we should default to psbt format
-    const shouldDefaultToPsbt =
-      wallet.subType() === 'distributedCustody' ||
-      // if mainnet, only default to psbt for btc hot wallets
-      (isMainnet(this.network) && getMainnet(this.network) === utxolib.networks.bitcoin && isHotWallet) ||
-      // default to psbt if it has the wallet flag
-      walletFlagMusigKp;
-
-    return shouldDefaultToPsbt ? 'psbt' : undefined;
+    return 'psbt-lite';
   }
 
   async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<{
@@ -1075,7 +1084,7 @@ export abstract class AbstractUtxoCoin
       throw new Error('invalid private key');
     }
     if (publicKey) {
-      const genPubKey = bip32.fromBase58(prv).neutered().toBase58();
+      const genPubKey = BIP32.fromBase58(prv).neutered().toBase58();
       if (genPubKey !== publicKey) {
         throw new Error('public key does not match private key');
       }

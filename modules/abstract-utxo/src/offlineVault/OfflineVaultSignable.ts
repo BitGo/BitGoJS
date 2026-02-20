@@ -1,4 +1,4 @@
-import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
+import { BIP32 } from '@bitgo/wasm-utxo';
 import { Triple } from '@bitgo/sdk-core';
 import * as t from 'io-ts';
 
@@ -28,8 +28,6 @@ export type OfflineVaultUnsigned = t.TypeOf<typeof OfflineVaultSignable>;
 
 type WithXpub = { xpub: string };
 type NamedKeys = { user: WithXpub; backup: WithXpub; bitgo: WithXpub };
-export function toKeyTriple(xpubs: NamedKeys): Triple<BIP32Interface> {
-  return [xpubs.user.xpub, xpubs.backup.xpub, xpubs.bitgo.xpub].map((xpub) =>
-    bip32.fromBase58(xpub)
-  ) as Triple<BIP32Interface>;
+export function toKeyTriple(xpubs: NamedKeys): Triple<BIP32> {
+  return [BIP32.fromBase58(xpubs.user.xpub), BIP32.fromBase58(xpubs.backup.xpub), BIP32.fromBase58(xpubs.bitgo.xpub)];
 }

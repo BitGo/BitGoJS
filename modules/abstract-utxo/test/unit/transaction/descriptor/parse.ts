@@ -1,19 +1,12 @@
 import assert from 'assert';
 
-import { Descriptor, descriptorWallet } from '@bitgo/wasm-utxo';
-import {
-  getDefaultXPubs,
-  getDescriptor,
-  getDescriptorMap,
-  mockPsbtDefault,
-} from '@bitgo/utxo-core/testutil/descriptor';
-import { toPlainObject } from '@bitgo/utxo-core/testutil';
+import { Descriptor, Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
+import * as testutils from '@bitgo/wasm-utxo/testutils';
 
 import {
   ParsedOutputsBigInt,
   toBaseParsedTransactionOutputsFromPsbt,
 } from '../../../../src/transaction/descriptor/parse';
-import type { UtxoLibPsbt } from '../../../../src/wasmUtil';
 import {
   AggregateValidationError,
   assertExpectedOutputDifference,
@@ -25,6 +18,8 @@ import { BaseOutput } from '../../../../src/transaction/types';
 
 import { getFixtureRoot } from './fixtures.utils';
 
+const { getDefaultXPubs, getDescriptor, getDescriptorMap, mockPsbtDefault } = testutils.descriptor;
+const { toPlainObject } = testutils;
 const { assertEqualFixture } = getFixtureRoot(__dirname + '/fixtures');
 
 type OutputWithValue<T = number | bigint | string> = {
@@ -72,7 +67,7 @@ describe('parse', function () {
     return recipient(descriptorOther, index, value);
   }
 
-  function getBaseParsedTransaction(psbt: UtxoLibPsbt, recipients: OutputWithValue[]): ParsedOutputsBigInt {
+  function getBaseParsedTransaction(psbt: Psbt, recipients: OutputWithValue[]): ParsedOutputsBigInt {
     return toBaseParsedTransactionOutputsFromPsbt(
       psbt,
       getDescriptorMap('Wsh2Of3', getDefaultXPubs('a')),
@@ -81,21 +76,25 @@ describe('parse', function () {
     );
   }
 
+  const psbtOutputs = psbt.getOutputsWithAddress('btc');
+  const psbtOutput0 = psbtOutputs[0];
+  const psbtOutput1 = psbtOutputs[1];
+
   describe('toBase', function () {
     it('should return the correct BaseParsedTransactionOutputs', async function () {
       await assertEqualFixture('parseWithoutRecipients.json', toPlainObject(getBaseParsedTransaction(psbt, [])));
       await assertEqualFixture(
         'parseWithExternalRecipient.json',
-        toPlainObject(getBaseParsedTransaction(psbt, [psbt.txOutputs[0]]))
+        toPlainObject(getBaseParsedTransaction(psbt, [psbtOutput0]))
       );
       await assertEqualFixture(
         'parseWithInternalRecipient.json',
-        toPlainObject(getBaseParsedTransaction(psbt, [psbt.txOutputs[1]]))
+        toPlainObject(getBaseParsedTransaction(psbt, [psbtOutput1]))
       );
       await assertEqualFixture(
         'parseWithExternalRecipient.json',
         // max recipient: ignore actual value
-        toPlainObject(getBaseParsedTransaction(psbt, [toMaxOutput(psbt.txOutputs[0])]))
+        toPlainObject(getBaseParsedTransaction(psbt, [toMaxOutput(psbtOutput0)]))
       );
     });
 
@@ -128,21 +127,21 @@ describe('parse', function () {
     it('should throw expected error: no recipient requested', function () {
       assertValidationError(
         () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [])),
-        new AggregateValidationError([implicitOutputError(psbt.txOutputs[0])])
+        new AggregateValidationError([implicitOutputError(psbtOutput0)])
       );
     });
 
     it('should throw expected error: only internal recipient requested', function () {
       assertValidationError(
-        () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [psbt.txOutputs[1]])),
-        new AggregateValidationError([implicitOutputError(psbt.txOutputs[0])])
+        () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [psbtOutput1])),
+        new AggregateValidationError([implicitOutputError(psbtOutput0)])
       );
     });
 
     it('should throw expected error: only internal max recipient requested', function () {
       assertValidationError(
-        () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [toMaxOutput(psbt.txOutputs[1])])),
-        new AggregateValidationError([implicitOutputError(psbt.txOutputs[0])])
+        () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [toMaxOutput(psbtOutput1)])),
+        new AggregateValidationError([implicitOutputError(psbtOutput0)])
       );
     });
 
@@ -150,7 +149,7 @@ describe('parse', function () {
       const recipient = externalRecipient(99);
       assertValidationError(
         () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [recipient])),
-        new AggregateValidationError([missingOutputError(recipient), implicitOutputError(psbt.txOutputs[0])])
+        new AggregateValidationError([missingOutputError(recipient), implicitOutputError(psbtOutput0)])
       );
     });
 
@@ -158,7 +157,7 @@ describe('parse', function () {
       const recipient = internalRecipient(99);
       assertValidationError(
         () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [recipient])),
-        new AggregateValidationError([missingOutputError(recipient), implicitOutputError(psbt.txOutputs[0])])
+        new AggregateValidationError([missingOutputError(recipient), implicitOutputError(psbtOutput0)])
       );
     });
   });

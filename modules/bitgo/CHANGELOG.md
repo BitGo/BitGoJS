@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [50.24.1](https://github.com/BitGo/BitGoJS/compare/bitgo@50.24.0...bitgo@50.24.1) (2026-02-13)
+
+**Note:** Version bump only for package bitgo
+
+
+
+
+
+# [50.24.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.23.0...bitgo@50.24.0) (2026-02-12)
+
+
+### Features
+
+* add INR ([3873880](https://github.com/BitGo/BitGoJS/commit/3873880f48935c0aface32c98b3be9ffab2174ad))
+* **statics:** add kavacosmos and tkavacosmos networks ([b7543b5](https://github.com/BitGo/BitGoJS/commit/b7543b53552cc646af9337ee97ad734a6ca2d5bd))
+
+
+
+
+
 # [50.23.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.22.0...bitgo@50.23.0) (2026-01-30)
 
 

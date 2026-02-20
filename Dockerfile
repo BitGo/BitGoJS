@@ -13,20 +13,23 @@ COPY modules ./modules
 RUN find modules \! -name "package.json" -mindepth 2 -maxdepth 2 -print | xargs rm -rf
 
 FROM node:22.22.0-bookworm-slim@sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb7897be2554 AS builder
+ARG SOCKET_SECURITY_MODE=monitor
+ENV SOCKET_SECURITY_MODE=${SOCKET_SECURITY_MODE}
 RUN apt-get update && apt-get install -y git python3 make g++ libtool autoconf automake
+RUN npm i -g sfw
 WORKDIR /tmp/bitgo
 COPY --from=filter-packages-json /tmp/bitgo .
 # (skip postinstall) https://github.com/yarnpkg/yarn/issues/4100#issuecomment-388944260
-RUN NOYARNPOSTINSTALL=1 yarn install --pure-lockfile --network-timeout 120000
+RUN NOYARNPOSTINSTALL=1 sfw yarn install --pure-lockfile --network-timeout 120000
 
 COPY . .
 RUN \
     # clean up unnecessary local node_modules and dist
     rm -rf modules/**/node_modules modules/**/dist && \
     # install with dev deps so we can run the prepare script
-    yarn install --frozen-lockfile && \
+    sfw yarn install --frozen-lockfile && \
     # install again to prune dev deps
-    yarn install --production --frozen-lockfile --non-interactive --ignore-scripts && \
+    sfw yarn install --production --frozen-lockfile --non-interactive --ignore-scripts && \
     # remove any src code leftover (we only want dist)
     rm -r modules/*/src
 
@@ -48,6 +51,7 @@ COPY --from=builder /tmp/bitgo/modules/statics /var/modules/statics/
 COPY --from=builder /tmp/bitgo/modules/utxo-lib /var/modules/utxo-lib/
 COPY --from=builder /tmp/bitgo/modules/blake2b /var/modules/blake2b/
 COPY --from=builder /tmp/bitgo/modules/blake2b-wasm /var/modules/blake2b-wasm/
+COPY --from=builder /tmp/bitgo/modules/logger /var/modules/logger/
 COPY --from=builder /tmp/bitgo/modules/bitgo /var/modules/bitgo/
 COPY --from=builder /tmp/bitgo/modules/abstract-utxo /var/modules/abstract-utxo/
 COPY --from=builder /tmp/bitgo/modules/blockapis /var/modules/blockapis/
@@ -147,6 +151,7 @@ cd /var/modules/statics && yarn link && \
 cd /var/modules/utxo-lib && yarn link && \
 cd /var/modules/blake2b && yarn link && \
 cd /var/modules/blake2b-wasm && yarn link && \
+cd /var/modules/logger && yarn link && \
 cd /var/modules/bitgo && yarn link && \
 cd /var/modules/abstract-utxo && yarn link && \
 cd /var/modules/blockapis && yarn link && \
@@ -249,6 +254,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/utxo-lib && \
     yarn link @bitgo/blake2b && \
     yarn link @bitgo/blake2b-wasm && \
+    yarn link @bitgo/logger && \
     yarn link bitgo && \
     yarn link @bitgo/abstract-utxo && \
     yarn link @bitgo/blockapis && \

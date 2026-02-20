@@ -322,6 +322,80 @@ describe('ADA', function () {
       }
     });
 
+    it('should verify a valid sponsored consolidation transaction', async () => {
+      const consolidationTx = {
+        txRequestId: '1b5c79c5-ab7c-4f47-912b-de6a95fb0779',
+        walletId: '64fa31a94db65a0007c9691b',
+        txHex:
+          '84a40082825820227f65d20ac6e49602d79c623c51911ead824235e01eb2a1e7e33a72f0747cbb00825820227f65d20ac6e49602d79c623c51911ead824235e01eb2a1e7e33a72f0747cbb0201828258390022098270a5c19c9fb706dce0e7e4566b234ec5f0010623cd63f198ad22098270a5c19c9fb706dce0e7e4566b234ec5f0010623cd63f198ad1a0098968082581d60cf90f9fb02c88bad3c5294d90587458c4f160a2db26ba8af3da255b11a05d42fb8021a0002a491031a06d8c048a0f5f6',
+        feeInfo: {
+          fee: 165545,
+          feeString: '165545',
+        },
+        txInfo: {
+          minerFee: '165545',
+          spendAmount: '999834455',
+          spendAmounts: [
+            {
+              coinName: 'tada',
+              amountString: '999834455',
+            },
+          ],
+          payGoFee: '0',
+          outputs: [
+            {
+              address:
+                'addr_test1qprqrlqpdtpctqy3d56jp0rkkevjnq2kqzrn356842f3gt6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsjdmg2s',
+              value: 999834455,
+              wallet: '64fa31a94db65a0007c9691b',
+              wallets: ['64fa31a94db65a0007c9691b'],
+              enterprise: '62cc59b727443a0007089033',
+              enterprises: ['62cc59b727443a0007089033'],
+              valueString: '999834455',
+              coinName: 'tada',
+              walletType: 'hot',
+              walletTypes: ['hot'],
+            },
+          ],
+          inputs: [
+            {
+              value: 1000000000,
+              address:
+                'addr_test1qqlzxfl7tlgp999x4a7334pchycpkk72pykrsr3mryl3yj6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsvpgl8w',
+              valueString: '1000000000',
+            },
+          ],
+          type: '0',
+          feeAddress: 'addr_test1vr8ep70mqtyghtfu222djpv8gkxy79s29kexh2908k39tvge02d5j',
+        },
+        consolidateId: '68b9fc18558006aab53785615fea7c28',
+        coin: 'tada',
+      };
+
+      const mockedWallet = {
+        coinSpecific: () => {
+          return {
+            rootAddress:
+              'addr_test1qq3qnqns5hqee8ahqmwwpely2e4jxnk97qqsvg7dv0ce3tfzpxp8pfwpnj0mwpkuurn7g4ntyd8vtuqpqc3u6cl3nzksvggu82',
+          };
+        },
+      };
+
+      try {
+        const isVerified = await basecoin.verifyTransaction({
+          txParams: {},
+          txPrebuild: consolidationTx,
+          wallet: mockedWallet,
+          verification: {
+            consolidationToBaseAddress: true,
+          },
+        });
+        isVerified.should.equal(true);
+      } catch (e) {
+        assert.fail('Transaction should pass verification');
+      }
+    });
+
     it('should fail to sign a spoofed consolidation transaction', async function () {
       // Set up wallet data
       const walletData = {
@@ -734,7 +808,7 @@ describe('ADA', function () {
           startingScanIndex: 1,
           endingScanIndex: 2,
         })
-        .should.rejectedWith('Did not find an address with funds to recover');
+        .should.rejectedWith('Did not find an address with funds to recover.');
     });
 
     it('should throw if startingScanIndex is not ge to 1', async () => {
@@ -763,6 +837,77 @@ describe('ADA', function () {
           'Invalid starting or ending index to scan for addresses. startingScanIndex: 1, endingScanIndex: 300.'
         );
     });
+
+    it('should build unsigned consolidation recoveries', async function () {
+      const res = await basecoin.recoverConsolidations({
+        userKey: consolidationWrwUser.userKey,
+        backupKey: consolidationWrwUser.backupKey,
+        bitgoKey: consolidationWrwUser.bitgoKey,
+        walletPassphrase: consolidationWrwUser.walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(2);
+    });
+
+    it('should throw error if all addresses have balance less than 1 ADA', async function () {
+      sandBox.restore();
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack.withArgs('address_info', sinon.match.has('_addresses')).resolves({
+        status: 200,
+        body: [
+          {
+            balance: 500000,
+            utxo_set: [
+              {
+                tx_hash: '8df8d41207980f9e21de698bd5d6c395c39e420f7de27f8539052dd34e3a28d6',
+                tx_index: 0,
+                value: 500000,
+              },
+            ],
+          },
+        ],
+      });
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+
+      await basecoin
+        .recoverConsolidations({
+          userKey: consolidationWrwUser.userKey,
+          backupKey: consolidationWrwUser.backupKey,
+          bitgoKey: consolidationWrwUser.bitgoKey,
+          walletPassphrase: consolidationWrwUser.walletPassphrase,
+          startingScanIndex: 1,
+          endingScanIndex: 4,
+        })
+        .should.be.rejectedWith('Did not find an address with funds to recover.');
+    });
+
+    it('should build even if single address has no funds', async function () {
+      const res = await basecoin.recoverConsolidations({
+        userKey: consolidationWrwUser.userKey,
+        backupKey: consolidationWrwUser.backupKey,
+        bitgoKey: consolidationWrwUser.bitgoKey,
+        walletPassphrase: consolidationWrwUser.walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(2);
+    });
+
+    it('should build even if single address has insufficient funds', async function () {
+      const res = await basecoin.recoverConsolidations({
+        userKey: consolidationWrwUser.userKey,
+        backupKey: consolidationWrwUser.backupKey,
+        bitgoKey: consolidationWrwUser.bitgoKey,
+        walletPassphrase: consolidationWrwUser.walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(2);
+    });
   });
 
   describe('Recover Transactions Failure:', () => {
@@ -787,7 +932,7 @@ describe('ADA', function () {
           walletPassphrase: wrwUser.walletPassphrase,
           recoveryDestination: destAddr,
         })
-        .should.rejectedWith('Did not find address with funds to recover');
+        .should.rejectedWith('Did not find address with funds to recover.');
       sandBox.assert.calledOnce(basecoin.getDataFromNode);
     });
 
@@ -806,7 +951,7 @@ describe('ADA', function () {
           recoveryDestination: destAddr,
         })
         .should.rejectedWith(
-          'Insufficient funds to recover, minimum required is 1 ADA plus fees, got 9834455 fees: 165545'
+          'Insufficient funds to recover, minimum required is 1 ADA plus fees, got 834455 fees: 165545'
         );
       sandBox.assert.calledTwice(basecoin.getDataFromNode);
     });

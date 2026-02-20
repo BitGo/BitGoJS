@@ -1,7 +1,5 @@
 import * as t from 'io-ts';
-import { Descriptor, DescriptorPkType } from '@bitgo/wasm-utxo';
-import { BIP32Interface, networks } from '@bitgo/utxo-lib';
-import { signMessage, verifyMessage } from '@bitgo/sdk-core';
+import { Descriptor, DescriptorPkType, bip32, message } from '@bitgo/wasm-utxo';
 
 export const NamedDescriptor = t.intersection(
   [
@@ -27,13 +25,13 @@ export type NamedDescriptorNative = NamedDescriptor<Descriptor>;
 export function createNamedDescriptorWithSignature(
   name: string,
   descriptor: string | Descriptor,
-  signingKey: BIP32Interface
+  signingKey: bip32.BIP32Interface
 ): NamedDescriptor {
   if (typeof descriptor === 'string') {
     descriptor = Descriptor.fromString(descriptor, 'derivable');
   }
   const value = descriptor.toString();
-  const signature = signMessage(value, signingKey, networks.bitcoin).toString('hex');
+  const signature = Buffer.from(message.signMessage(value, signingKey.privateKey!)).toString('hex');
   return { name, value, signatures: [signature] };
 }
 
@@ -41,18 +39,22 @@ export function toNamedDescriptorNative(e: NamedDescriptor, pkType: DescriptorPk
   return { ...e, value: Descriptor.fromString(e.value, pkType) };
 }
 
-export function hasValidSignature(descriptor: string | Descriptor, key: BIP32Interface, signatures: string[]): boolean {
+export function hasValidSignature(
+  descriptor: string | Descriptor,
+  key: bip32.BIP32Interface,
+  signatures: string[]
+): boolean {
   if (typeof descriptor === 'string') {
     descriptor = Descriptor.fromString(descriptor, 'derivable');
   }
 
-  const message = descriptor.toString();
+  const descriptorString = descriptor.toString();
   return signatures.some((signature) => {
-    return verifyMessage(message, key, Buffer.from(signature, 'hex'), networks.bitcoin);
+    return message.verifyMessage(descriptorString, key.publicKey, Buffer.from(signature, 'hex'));
   });
 }
 
-export function assertHasValidSignature(namedDescriptor: NamedDescriptor, key: BIP32Interface): void {
+export function assertHasValidSignature(namedDescriptor: NamedDescriptor, key: bip32.BIP32Interface): void {
   if (!hasValidSignature(namedDescriptor.value, key, namedDescriptor.signatures ?? [])) {
     throw new Error(`Descriptor ${namedDescriptor.name} does not have a valid signature (key=${key.toBase58()})`);
   }

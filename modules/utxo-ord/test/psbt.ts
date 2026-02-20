@@ -22,7 +22,7 @@ function assertValidPsbt(
   expectedFee: bigint
 ) {
   const replayProtection = { publicKeys: [] as Uint8Array[] };
-  const parsed = psbt.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
+  const parsed = psbt.parseTransactionWithWalletKeys(rootWalletKeys, { replayProtection });
 
   // Sign all inputs with both signers
   const signer1 = BIP32.fromBase58(signerKeys[0]);
@@ -114,7 +114,7 @@ describe('OutputLayout to PSBT conversion', function () {
       }
       const psbt1 = f();
       const replayProtection = { publicKeys: [] as Uint8Array[] };
-      const parsed1 = psbt1.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
+      const parsed1 = psbt1.parseTransactionWithWalletKeys(rootWalletKeys, { replayProtection });
       assert.deepStrictEqual(
         parsed1.inputs.map((i) => `${i.previousOutput.txid}:${i.previousOutput.vout}`),
         expectedUnspentSelection.map((u) => u.id)

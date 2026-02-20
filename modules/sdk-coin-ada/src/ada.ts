@@ -47,6 +47,10 @@ export interface TransactionPrebuild {
   txHex: string;
 }
 
+export interface AdaTxInfo {
+  feeAddress?: string;
+}
+
 export interface ExplainTransactionOptions {
   txPrebuild: TransactionPrebuild;
 }
@@ -145,9 +149,10 @@ export class Ada extends BaseCoin {
         }
       } else if (verification?.consolidationToBaseAddress) {
         const baseAddress = wallet.coinSpecific()?.baseAddress || wallet.coinSpecific()?.rootAddress;
+        const feeAddress = (txPrebuild.txInfo as AdaTxInfo)?.feeAddress;
 
         for (const output of explainedTx.outputs) {
-          if (output.address !== baseAddress) {
+          if (output.address !== baseAddress && output.address !== feeAddress) {
             throw new Error('tx outputs does not match with expected address');
           }
         }
@@ -382,10 +387,10 @@ export class Ada extends BaseCoin {
       seed: params.seed,
     };
     const { address: senderAddr, accountId } = await this.getAdaAddressAndAccountId(addressParams);
-    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+    const isUnsignedSweep = !params.walletPassphrase;
     const { balance, utxoSet } = await this.getAddressInfo(senderAddr);
     if (balance <= 0) {
-      throw new Error('Did not find address with funds to recover');
+      throw new Error('Did not find address with funds to recover.');
     }
 
     // first build the unsigned txn
@@ -407,7 +412,8 @@ export class Ada extends BaseCoin {
         (acc: BigNumber, output: { amount: string }) => new BigNumber(acc).plus(output.amount),
         new BigNumber(0)
       );
-    if (amount.isLessThan(10000000)) {
+
+    if (amount.isLessThan(1000000)) {
       throw new Error(
         'Insufficient funds to recover, minimum required is 1 ADA plus fees, got ' +
           amount.toString() +
@@ -556,7 +562,10 @@ export class Ada extends BaseCoin {
       try {
         recoveryTransaction = await this.recover(recoverParams);
       } catch (e) {
-        if (e.message === 'Did not find address with funds to recover') {
+        if (
+          e.message === 'Did not find address with funds to recover.' ||
+          e.message.startsWith('Insufficient funds to recover')
+        ) {
           lastScanIndex = i;
           continue;
         }
@@ -572,7 +581,7 @@ export class Ada extends BaseCoin {
     }
 
     if (consolidationTransactions.length == 0) {
-      throw new Error('Did not find an address with funds to recover');
+      throw new Error('Did not find an address with funds to recover.');
     }
 
     if (isUnsignedSweep) {

@@ -65,4 +65,9 @@ export class Hash extends CosmosCoin {
   getAddressFromPublicKey(publicKey: string): string {
     return new KeyPair({ pub: publicKey }).getAddress(AddressFormat.mainnet);
   }
+
+  /** @inheritDoc **/
+  valuelessTransferAllowed(): boolean {
+    return true;
+  }
 }

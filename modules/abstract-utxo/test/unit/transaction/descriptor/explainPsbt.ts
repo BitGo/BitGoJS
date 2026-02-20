@@ -1,15 +1,14 @@
 import assert from 'assert';
 
-import { getKeyTriple } from '@bitgo/utxo-core/testutil';
-import { getDescriptorMap, mockPsbtDefaultWithDescriptorTemplate } from '@bitgo/utxo-core/testutil/descriptor';
 import { descriptorWallet } from '@bitgo/wasm-utxo';
+import * as testutils from '@bitgo/wasm-utxo/testutils';
 
 import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction';
 import { explainPsbt } from '../../../../src/transaction/descriptor';
-import { toWasmPsbt } from '../../../../src/wasmUtil';
 
 import { getFixtureRoot } from './fixtures.utils';
 
+const { getDescriptorMap, mockPsbtDefaultWithDescriptorTemplate } = testutils.descriptor;
 const { assertEqualFixture } = getFixtureRoot(__dirname + '/fixtures');
 
 function assertSignatureCount(expl: TransactionExplanation, signatures: number, inputSignatures: number[]) {
@@ -21,8 +20,8 @@ function assertSignatureCount(expl: TransactionExplanation, signatures: number, 
 
 describe('explainPsbt', function () {
   it('has expected values', async function () {
-    const psbt = toWasmPsbt(mockPsbtDefaultWithDescriptorTemplate('Wsh2Of3'));
-    const keys = getKeyTriple('a');
+    const psbt = mockPsbtDefaultWithDescriptorTemplate('Wsh2Of3');
+    const keys = testutils.getKeyTriple('a');
     const descriptorMap = getDescriptorMap('Wsh2Of3', keys);
     await assertEqualFixture('explainPsbt.a.json', explainPsbt(psbt, descriptorMap, 'btc'));
     descriptorWallet.signWithKey(psbt, keys[0]);

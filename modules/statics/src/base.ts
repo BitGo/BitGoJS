@@ -42,6 +42,7 @@ export enum CoinFamily {
   CANTON = 'canton',
   CELO = 'celo',
   CHILIZ = 'chiliz', // Chiliz Chain
+  CODEXETH = 'codexeth', // Codex Ethereum L2
   COREDAO = 'coredao',
   COREUM = 'coreum',
   CRONOS = 'cronos',
@@ -51,11 +52,11 @@ export enum CoinFamily {
   DOGEOS = 'dogeos',
   DOT = 'dot',
   DYDX = 'dydx',
+  EOS = 'eos',
+  ETC = 'etc',
   ETH = 'eth',
   ETH2 = 'eth2',
   ETHW = 'ethw',
-  ETC = 'etc',
-  EOS = 'eos',
   FETCHAI = 'fetchai',
   FIAT = 'fiat',
   FLOW = 'flow',
@@ -65,6 +66,7 @@ export enum CoinFamily {
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
   HBAREVM = 'hbarevm', // Hedera EVM coin
+  HEMIETH = 'hemieth', // Hemi Ethereum L2
   ICP = 'icp',
   INITIA = 'initia',
   INJECTIVE = 'injective',
@@ -112,6 +114,7 @@ export enum CoinFamily {
   TIA = 'tia', // Celestia
   TON = 'ton',
   TRX = 'trx',
+  USDT0 = 'usdt0', // Stable EVM L1
   VET = 'vet',
   WORLD = 'world',
   WEMIX = 'wemix',
@@ -119,6 +122,7 @@ export enum CoinFamily {
   XLM = 'xlm',
   XRP = 'xrp',
   XTZ = 'xtz',
+  XTZEVM = 'xtzevm', // Etherlink (XTZ EVM L2)
   ZEC = 'zec',
   ZETA = 'zeta',
   ZKETH = 'zketh',
@@ -570,16 +574,17 @@ export enum UnderlyingAsset {
   DOT = 'dot',
   CELO = 'celo', // Celo main coin
   CHILIZ = 'chiliz', // Chiliz Chain native coin
+  CODEXETH = 'codexeth', // Codex Ethereum L2
   COREDAO = 'coredao',
   COREUM = 'coreum',
   CRONOS = 'cronos',
   CSPR = 'cspr',
+  EOS = 'eos',
+  ERD = 'erd',
+  ETC = 'etc',
   ETH = 'eth',
   ETH2 = 'eth2',
   ETHW = 'ethw',
-  ETC = 'etc',
-  EOS = 'eos',
-  ERD = 'erd',
   EURCVV0 = 'eurcvv0',
   EURCV = 'eurcv',
   EUROC = 'euroc',
@@ -594,6 +599,7 @@ export enum UnderlyingAsset {
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
   HBAREVM = 'hbarevm', // Hedera EVM coin
+  HEMIETH = 'hemieth', // Hemi Ethereum L2
   ICP = 'icp',
   IP = 'ip', // Story Chain
   INITIA = 'initia',
@@ -632,22 +638,24 @@ export enum UnderlyingAsset {
   SEIEVM = 'seievm',
   SGB = 'sgb',
   SOL = 'sol',
+  SOMI = 'somi', // Somnia Chain
+  SONEIUM = 'soneium',
   SONIC = 'sonic',
-  SUI = 'sui',
+  STT = 'stt',
   STX = 'stx',
+  SUI = 'sui',
   TIA = 'tia', // Celestia
   TON = 'ton',
   TRX = 'trx',
-  SONEIUM = 'soneium',
-  STT = 'stt',
-  SOMI = 'somi', // Somnia Chain
+  USDT0 = 'usdt0', // Stable EVM L1
   VET = 'vet',
   WEMIX = 'wemix',
   WORLD = 'world',
-  XLM = 'xlm',
   XDC = 'xdc',
+  XLM = 'xlm',
   XRP = 'xrp',
   XTZ = 'xtz',
+  XTZEVM = 'xtzevm', // Etherlink (XTZ EVM L2)
   ZEC = 'zec',
   ZETA = 'zeta',
   ZKETH = 'zketh',
@@ -1842,6 +1850,10 @@ export enum UnderlyingAsset {
   'hteth:stgsofid' = 'hteth:stgsofid',
   'hteth:usd1' = 'hteth:usd1',
   'hteth:stgusd1' = 'hteth:stgusd1',
+  'hteth:cusd' = 'hteth:cusd',
+  'hteth:fyusd' = 'hteth:fyusd',
+  'hteth:stgcusd' = 'hteth:stgcusd',
+  'hteth:stgfyusd' = 'hteth:stgfyusd',
   'hteth:tsteth' = 'hteth:tsteth',
   THKD = 'thkd',
   THUNDER = 'thunder',
@@ -1926,7 +1938,7 @@ export enum UnderlyingAsset {
   'sol:usdt' = 'sol:usdt',
   'sol:usdc' = 'sol:usdc',
   'sol:agri' = 'sol:agri',
-  'sol:usdc.a' = 'sol:usdc.a',
+  'sol:usdca' = 'sol:usdca',
   USCC = 'uscc',
   USDC = 'usdc',
   'USDC-POS-WORMHOLE' = 'usdc-pos-wormhole',
@@ -2133,6 +2145,8 @@ export enum UnderlyingAsset {
   'eth:usd1' = 'eth:usd1',
   'eth:usdm1' = 'eth:usdm1',
   'eth:sofid' = 'eth:sofid',
+  'eth:cusd' = 'eth:cusd',
+  'eth:fyusd' = 'eth:fyusd',
   'eth:ibtc' = 'eth:ibtc',
   'eth:pyr' = 'eth:pyr',
   'eth:una' = 'eth:una',
@@ -2234,6 +2248,8 @@ export enum UnderlyingAsset {
   'eth:aedz' = 'eth:aedz',
   'eth:arm-susde-usde' = 'eth:arm-susde-usde',
   'eth:arm-weth-eeth' = 'eth:arm-weth-eeth',
+  'eth:cashplus' = 'eth:cashplus',
+  'eth:island' = 'eth:island',
   'eth:six' = 'eth:six',
   'eth:eden' = 'eth:eden',
   'eth:xeden' = 'eth:xeden',
@@ -2414,6 +2430,8 @@ export enum UnderlyingAsset {
   'morpheth:usd1' = 'morpheth:usd1',
   'tmorph:tmt' = 'tmorph:tmt',
   'tmorpheth:tmt' = 'tmorpheth:tmt',
+  'tmorpheth:usd1' = 'tmorpheth:usd1',
+  'tmorpheth:stgusd1' = 'tmorpheth:stgusd1',
 
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
@@ -2698,6 +2716,7 @@ export enum UnderlyingAsset {
   'polygon:argt' = 'polygon:argt',
   'polygon:brat' = 'polygon:brat',
   'polygon:chlt' = 'polygon:chlt',
+  'polygon:stg' = 'polygon:stg',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2728,6 +2747,8 @@ export enum UnderlyingAsset {
   'bsc:parti' = 'bsc:parti',
   'bsc:form' = 'bsc:form',
   'bsc:ake' = 'bsc:ake',
+  'bsc:kgen' = 'bsc:kgen',
+  'bsc:myx' = 'bsc:myx',
   'bsc:ltc' = 'bsc:ltc',
   'bsc:mask' = 'bsc:mask',
   'bsc:matic' = 'bsc:matic',
@@ -2891,6 +2912,7 @@ export enum UnderlyingAsset {
   'tpolygon:usdc' = 'tpolygon:usdc',
   'tpolygon:testcopm' = 'tpolygon:testcopm',
   'tpolygon:BitGoTest' = 'tpolygon:BitGoTest',
+  'tpolygon:copr3' = 'tpolygon:copr3',
 
   // generic NFTs
   'terc721:polygontoken' = 'terc721:polygontoken',
@@ -2988,6 +3010,8 @@ export enum UnderlyingAsset {
   'baseeth:argt' = 'baseeth:argt',
   'baseeth:brat' = 'baseeth:brat',
   'baseeth:mext' = 'baseeth:mext',
+  'baseeth:common' = 'baseeth:common',
+  'baseeth:unite' = 'baseeth:unite',
   'baseeth:b3' = 'baseeth:b3',
   'baseeth:kaito' = 'baseeth:kaito',
 
@@ -3002,6 +3026,7 @@ export enum UnderlyingAsset {
   'seievm:weth' = 'seievm:weth',
   'seievm:wbtc' = 'seievm:wbtc',
   'seievm:usd0' = 'seievm:usd0',
+  'seievm:wsei' = 'seievm:wsei',
 
   //Linea mainnet tokens
   'lineaeth:linea' = 'lineaeth:linea',
@@ -3014,9 +3039,12 @@ export enum UnderlyingAsset {
   'mantle:usde' = 'mantle:usde',
   'mantle:usdt0' = 'mantle:usdt0',
   'mantle:ausd' = 'mantle:ausd',
+  'mantle:usd1' = 'mantle:usd1',
 
   // Mantle testnet tokens
   'tmantle:bgerch' = 'tmantle:bgerch',
+  'tmantle:usd1' = 'tmantle:usd1',
+  'tmantle:stgusd1' = 'tmantle:stgusd1',
 
   // Flow mainnet tokens
   'flow:weth' = 'flow:weth',
@@ -3049,9 +3077,11 @@ export enum UnderlyingAsset {
 
   // Jovayeth mainnet tokens
   'jovayeth:jft' = 'jovayeth:jft',
+  'jovayeth:usdce' = 'jovayeth:usdce',
 
   // Jovayeth testnet tokens
   'tjovayeth:tcmn' = 'tjovayeth:tcmn',
+  'tjovayeth:usdce' = 'tjovayeth:usdce',
 
   // X Layer (OKB) mainnet tokens
   'okbxlayer:usdg' = 'okbxlayer:usdg',
@@ -3128,6 +3158,7 @@ export enum UnderlyingAsset {
   'bera:ibera' = 'bera:ibera',
   'bera:dolo' = 'bera:dolo',
   'bera:wgbera' = 'bera:wgbera',
+  'bera:ir' = 'bera:ir',
 
   // bera testnet tokens
   'tbera:bgt' = 'tbera:bgt',
@@ -3271,6 +3302,8 @@ export enum UnderlyingAsset {
   'sol:nyan' = 'sol:nyan',
   'sol:fight' = 'sol:fight',
   'sol:wet' = 'sol:wet',
+  'sol:meta' = 'sol:meta',
+  'sol:portals' = 'sol:portals',
   'sol:virtual' = 'sol:virtual',
   'sol:zerebro' = 'sol:zerebro',
   'sol:arc' = 'sol:arc',
@@ -3412,6 +3445,7 @@ export enum UnderlyingAsset {
   'sui:xaum' = 'sui:xaum',
   'sui:alkimi' = 'sui:alkimi',
   'sui:dmc' = 'sui:dmc',
+  'sui:mmt' = 'sui:mmt',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',
@@ -3577,6 +3611,13 @@ export enum UnderlyingAsset {
   // Canton mainnet tokens
   'canton:usdcx' = 'canton:usdcx',
   'canton:cbtc' = 'canton:cbtc',
+  'canton:usdxlr' = 'canton:usdxlr',
+
+  // Tempo testnet tokens
+  'ttempo:pathusd' = 'ttempo:pathusd',
+  'ttempo:alphausd' = 'ttempo:alphausd',
+  'ttempo:betausd' = 'ttempo:betausd',
+  'ttempo:thetausd' = 'ttempo:thetausd',
 
   // fiats
   AED = 'aed',

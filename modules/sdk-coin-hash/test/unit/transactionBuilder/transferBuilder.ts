@@ -124,6 +124,38 @@ describe('Hash Transfer Builder', () => {
     ]);
   });
 
+  it('should build a transfer tx of zero amount without signature', async function () {
+    const zeroAmountTx = JSON.parse(JSON.stringify(testTx));
+    zeroAmountTx.sendMessage.value.amount[0].amount = '0';
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.sequence(zeroAmountTx.sequence);
+    txBuilder.gasBudget(zeroAmountTx.gasBudget);
+    txBuilder.messages([zeroAmountTx.sendMessage.value]);
+    txBuilder.publicKey(toHex(fromBase64(zeroAmountTx.pubKey)));
+    const tx = await txBuilder.build();
+    const json = await (await txBuilder.build()).toJson();
+    should.equal(tx.type, TransactionType.Send);
+    should.deepEqual(json.gasBudget, zeroAmountTx.gasBudget);
+    should.deepEqual(json.sendMessages, [zeroAmountTx.sendMessage]);
+    should.deepEqual(json.publicKey, toHex(fromBase64(zeroAmountTx.pubKey)));
+    should.deepEqual(json.sequence, zeroAmountTx.sequence);
+    tx.toBroadcastFormat();
+    should.deepEqual(tx.inputs, [
+      {
+        address: testData.TEST_SEND_TX.sender,
+        value: '0',
+        coin: basecoin.getChain(),
+      },
+    ]);
+    should.deepEqual(tx.outputs, [
+      {
+        address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
+        value: '0',
+        coin: basecoin.getChain(),
+      },
+    ]);
+  });
+
   it('should sign a Transfer tx', async function () {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.sequence(testTx.sequence);

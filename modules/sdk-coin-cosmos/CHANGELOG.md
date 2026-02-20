@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cosmos@1.8.0...@bitgo/sdk-coin-cosmos@1.8.1) (2026-02-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-cosmos
+
+
+
+
+
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cosmos@1.7.0...@bitgo/sdk-coin-cosmos@1.8.0) (2026-02-12)
+
+
+### Features
+
+* **statics:** add kavacosmos and tkavacosmos networks ([b7543b5](https://github.com/BitGo/BitGoJS/commit/b7543b53552cc646af9337ee97ad734a6ca2d5bd))
+
+
+
+
+
 # [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cosmos@1.6.24...@bitgo/sdk-coin-cosmos@1.7.0) (2026-01-30)
 
 

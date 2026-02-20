@@ -1,5 +1,5 @@
 import { BitGoBase } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+import { address as wasmAddress } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
 import { UtxoCoinName } from '../../names';
@@ -34,12 +34,13 @@ export class Bch extends AbstractUtxoCoin {
     }
 
     if (version === 'base58') {
-      return utxolib.addressFormat.toCanonicalFormat(address, this.network);
+      const script = wasmAddress.toOutputScriptWithCoin(address, this.name);
+      return wasmAddress.fromOutputScriptWithCoin(script, this.name, 'default');
     }
 
     if (version === 'cashaddr') {
-      const script = utxolib.addressFormat.toOutputScriptTryFormats(address, this.network);
-      return utxolib.addressFormat.fromOutputScriptWithFormat(script, version, this.network);
+      const script = wasmAddress.toOutputScriptWithCoin(address, this.name);
+      return wasmAddress.fromOutputScriptWithCoin(script, this.name, 'cashaddr');
     }
 
     throw new Error(`invalid version ${version}`);

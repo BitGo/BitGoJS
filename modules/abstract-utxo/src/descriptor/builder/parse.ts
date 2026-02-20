@@ -1,5 +1,4 @@
-import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
-import { Descriptor } from '@bitgo/wasm-utxo';
+import { BIP32, bip32, Descriptor } from '@bitgo/wasm-utxo';
 
 import { DescriptorBuilder, getDescriptorFromBuilder } from './builder';
 
@@ -26,7 +25,7 @@ function unwrapNode(node: unknown, path: string[]): unknown {
 
 function parseMulti(node: unknown): {
   threshold: number;
-  keys: BIP32Interface[];
+  keys: bip32.BIP32Interface[];
   path: string;
 } {
   if (!Array.isArray(node)) {
@@ -54,7 +53,7 @@ function parseMulti(node: unknown): {
   });
   return {
     threshold,
-    keys: keyWithPath.map((k) => bip32.fromBase58(k.xpub)),
+    keys: keyWithPath.map((k) => BIP32.fromBase58(k.xpub)),
     path: paths[0],
   };
 }

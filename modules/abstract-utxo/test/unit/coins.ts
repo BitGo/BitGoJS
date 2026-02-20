@@ -2,9 +2,9 @@ import * as assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { getMainnetCoinName, getNetworkFromCoinName, utxoCoinsMainnet, utxoCoinsTestnet } from '../../src/names';
+import { getMainnetCoinName, utxoCoinsMainnet, utxoCoinsTestnet } from '../../src/names';
 
-import { getUtxoCoinForNetwork, utxoCoins } from './util';
+import { getNetworkForCoinName, getUtxoCoinForNetwork, utxoCoins } from './util';
 
 describe('utxoCoins', function () {
   it('has expected chain/network values for items', function () {
@@ -13,7 +13,7 @@ describe('utxoCoins', function () {
         c.getChain(),
         c.getFamily(),
         c.getFullName(),
-        utxolib.getNetworkName(getNetworkFromCoinName(c.name)),
+        utxolib.getNetworkName(getNetworkForCoinName(c.name)),
       ]),
       [
         ['btc', 'btc', 'Bitcoin', 'bitcoin'],

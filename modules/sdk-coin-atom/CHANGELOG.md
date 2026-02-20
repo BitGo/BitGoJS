@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [13.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.11.0...@bitgo/sdk-coin-atom@13.11.1) (2026-02-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-atom
+
+
+
+
+
+# [13.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.10.0...@bitgo/sdk-coin-atom@13.11.0) (2026-02-12)
+
+
+### Features
+
+* **sdk-coin-hash:** support valuless transactions ([e165565](https://github.com/BitGo/BitGoJS/commit/e165565349fb45d63ba45f899a902536b92f49c0))
+
+
+
+
+
 # [13.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.9.24...@bitgo/sdk-coin-atom@13.10.0) (2026-01-30)
 
 

@@ -270,6 +270,11 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   };
   txRequestId?: string;
   isTestTransaction?: boolean;
+  transferOfferId?: string;
+  /**
+   * Amount for intents that use a top-level amount instead of recipients (e.g. bridgeFunds).
+   */
+  amount?: { value: string; symbol: string };
 }
 export interface IntentRecipient {
   address: {
@@ -340,6 +345,11 @@ export interface PopulatedIntent extends PopulatedIntentBase {
   aptosCustomTransactionParams?: aptosCustomTransactionParams;
   txRequestId?: string;
   isTestTransaction?: boolean;
+  transferOfferId?: string;
+  /**
+   * Amount for intents that use a top-level amount instead of recipients (e.g. bridgeFunds).
+   */
+  amount?: { value: string; symbol: string };
 }
 
 export type TxRequestState =

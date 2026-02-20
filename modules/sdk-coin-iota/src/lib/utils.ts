@@ -173,6 +173,26 @@ export class Utils implements BaseUtils {
     const iotaPublicKey = new Ed25519PublicKey(Buffer.from(publicKey, 'hex'));
     return iotaPublicKey.toIotaAddress();
   }
+
+  // ========================================
+  // Recovery Validation Methods
+  // ========================================
+
+  getSafeNumber(defaultVal: number, errorMsg: string, inputVal?: number): number {
+    if (inputVal === undefined) {
+      return defaultVal;
+    }
+    let nonNegativeNum: number;
+    try {
+      nonNegativeNum = Number(inputVal);
+    } catch (e) {
+      throw new Error(errorMsg);
+    }
+    if (isNaN(nonNegativeNum.valueOf()) || nonNegativeNum < 0) {
+      throw new Error(errorMsg);
+    }
+    return nonNegativeNum;
+  }
 }
 
 /**

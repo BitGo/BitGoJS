@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.16.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.16.0...@bitgo/sdk-coin-canton@1.16.1) (2026-02-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-canton
+
+
+
+
+
+# [1.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.15.0...@bitgo/sdk-coin-canton@1.16.0) (2026-02-12)
+
+
+### Features
+
+* added canton offer withdrawn builder ([325e4f3](https://github.com/BitGo/BitGoJS/commit/325e4f3bf35c3f36ab8f4c096fc294e5e7f5481c))
+* added optional token field in canton ([99aa01a](https://github.com/BitGo/BitGoJS/commit/99aa01ab2d9c251d8d32b26c8a5c8fbc44dccc5b))
+* handling canton token in verify & explain transaction ([d6ac543](https://github.com/BitGo/BitGoJS/commit/d6ac543a4ca180cd17eb2a88a1c56500ab3109f2))
+* handling token accept/reject in the parsing function ([03ca656](https://github.com/BitGo/BitGoJS/commit/03ca656ff3234d23174ed3557d8b85c51bae0553))
+
+
+
+
+
 # [1.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.14.0...@bitgo/sdk-coin-canton@1.15.0) (2026-01-30)
 
 

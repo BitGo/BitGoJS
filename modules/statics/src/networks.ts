@@ -219,6 +219,7 @@ class Ada extends Mainnet implements AdaNetwork {
   poolDeposit = 500000000;
   stakeKeyDeposit = 2000000;
   explorerUrl = 'https://cardanoscan.io/transaction/';
+  accountExplorerUrl = 'https://cardanoscan.io/address/';
   coinsPerUtxoWord = 34482;
   maxTransactionSize = 8000;
   maxValueSize = 4000;
@@ -229,6 +230,7 @@ class AdaTestnet extends Testnet implements AdaNetwork {
   family = CoinFamily.ADA;
   utxolibName = 'cardanoTestnet';
   explorerUrl = 'https://preprod.cardanoscan.io/transaction/';
+  accountExplorerUrl = 'https://preprod.cardanoscan.io/address/';
   coinsPerUtxoWord = 34482;
   maxTransactionSize = 8000;
   maxValueSize = 4000;
@@ -633,6 +635,24 @@ class ChilizTestnet extends Testnet implements EthereumNetwork {
   tokenOperationHashPrefix = '88882-ERC20';
 }
 
+class CodexEth extends Mainnet implements EthereumNetwork {
+  name = 'Codex Ethereum';
+  family = CoinFamily.CODEXETH;
+  explorerUrl = 'https://explorer.codex.xyz/tx/';
+  accountExplorerUrl = 'https://explorer.codex.xyz/address/';
+  chainId = 81224;
+  nativeCoinOperationHashPrefix = '81224';
+}
+
+class CodexEthTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Codex Ethereum';
+  family = CoinFamily.CODEXETH;
+  explorerUrl = 'https://explorer.codex-stg.xyz/tx/';
+  accountExplorerUrl = 'https://explorer.codex-stg.xyz/address/';
+  chainId = 812242;
+  nativeCoinOperationHashPrefix = '812242';
+}
+
 // TODO update explorerUrl STLX-1657
 class Casper extends Mainnet implements AccountNetwork {
   name = 'Casper';
@@ -691,6 +711,24 @@ class EthereumW extends Mainnet implements EthereumNetwork {
   forwarderImplementationAddress = '';
   nativeCoinOperationHashPrefix = 'ETHER';
   tokenOperationHashPrefix = 'ERC20';
+}
+
+class XtzEvm extends Mainnet implements EthereumNetwork {
+  name = 'XTZ EVM';
+  family = CoinFamily.XTZEVM;
+  explorerUrl = 'https://explorer.etherlink.com/tx/';
+  accountExplorerUrl = 'https://explorer.etherlink.com/address/';
+  chainId = 42793;
+  nativeCoinOperationHashPrefix = '42793';
+}
+
+class XtzEvmTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet XTZ EVM';
+  family = CoinFamily.XTZEVM;
+  explorerUrl = 'https://shadownet.explorer.etherlink.com/tx/';
+  accountExplorerUrl = 'https://shadownet.explorer.etherlink.com/address/';
+  chainId = 128123;
+  nativeCoinOperationHashPrefix = '128123';
 }
 
 class Pyrmont extends Testnet implements AccountNetwork {
@@ -891,12 +929,14 @@ class Sui extends Mainnet implements AccountNetwork {
   name = 'Sui';
   family = CoinFamily.SUI;
   explorerUrl = 'https://explorer.sui.io/txblock/?network=mainnet';
+  accountExplorerUrl = 'https://explorer.sui.io/address/?network=mainnet';
 }
 
 class SuiTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Sui';
   family = CoinFamily.SUI;
   explorerUrl = 'https://explorer.sui.io/txblock/?network=testnet';
+  accountExplorerUrl = 'https://explorer.sui.io/address/?network=testnet';
 }
 
 class Atom extends Mainnet implements AccountNetwork {
@@ -962,13 +1002,13 @@ class BldTestnet extends Testnet implements AccountNetwork {
 class Sei extends Mainnet implements AccountNetwork {
   name = 'Sei';
   family = CoinFamily.SEI;
-  explorerUrl = 'https://seistream.app/transactions/';
+  explorerUrl = 'https://seitrace.com/tx/';
 }
 
 class SeiTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Sei';
   family = CoinFamily.SEI;
-  explorerUrl = 'https://testnet.seistream.app/transactions/';
+  explorerUrl = 'https://testnet.seitrace.com/tx/';
 }
 
 class Zeta extends Mainnet implements AccountNetwork {
@@ -1062,7 +1102,7 @@ class Coreum extends Mainnet implements AccountNetwork {
 }
 
 class CoreumTestnet extends Testnet implements AccountNetwork {
-  name = 'CoreumTestnet';
+  name = 'Testnet TX';
   family = CoinFamily.COREUM;
   explorerUrl = 'https://explorer.testnet-1.coreum.dev/coreum/transactions/';
 }
@@ -1805,6 +1845,24 @@ class SonicTestnet extends Testnet implements EthereumNetwork {
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
+class Usdt0 extends Mainnet implements EthereumNetwork {
+  name = 'USDT0';
+  family = CoinFamily.USDT0;
+  explorerUrl = 'https://stablescan.xyz/tx/';
+  accountExplorerUrl = 'https://stablescan.xyz/address/';
+  chainId = 988;
+  nativeCoinOperationHashPrefix = '988';
+}
+
+class Usdt0Testnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet USDT0';
+  family = CoinFamily.USDT0;
+  explorerUrl = 'https://testnet.stablescan.xyz/tx/';
+  accountExplorerUrl = 'https://testnet.stablescan.xyz/address/';
+  chainId = 2201;
+  nativeCoinOperationHashPrefix = '2201';
+}
+
 class Kaia extends Mainnet implements EthereumNetwork {
   name = 'Kaia';
   family = CoinFamily.KAIA;
@@ -2312,6 +2370,24 @@ class HederaEVM extends Mainnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '295';
 }
 
+class HemiEth extends Mainnet implements EthereumNetwork {
+  name = 'Hemi Ethereum';
+  family = CoinFamily.HEMIETH;
+  explorerUrl = 'https://explorer.hemi.xyz/tx/';
+  accountExplorerUrl = 'https://explorer.hemi.xyz/address/';
+  chainId = 43111;
+  nativeCoinOperationHashPrefix = '43111';
+}
+
+class HemiEthTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Hemi Ethereum';
+  family = CoinFamily.HEMIETH;
+  explorerUrl = 'https://testnet.explorer.hemi.xyz/tx/';
+  accountExplorerUrl = 'https://testnet.explorer.hemi.xyz/address/';
+  chainId = 743111;
+  nativeCoinOperationHashPrefix = '743111';
+}
+
 class PlumeTestnet extends Testnet implements EthereumNetwork {
   name = 'PlumeTestnet';
   family = CoinFamily.PLUME;
@@ -2354,7 +2430,7 @@ class DogeosTestnet extends Testnet implements EthereumNetwork {
 class ArcUSDCTestnet extends Testnet implements EthereumNetwork {
   name = 'USDC (ARC) Testnet';
   family = CoinFamily.ARCUSDC;
-  explorerUrl = 'https://testnet.arcscan.app/txs/';
+  explorerUrl = 'https://testnet.arcscan.app/tx/';
   accountExplorerUrl = 'https://testnet.arcscan.app/address/';
   chainId = 5042002;
   nativeCoinOperationHashPrefix = '5042002';
@@ -2363,7 +2439,7 @@ class ArcUSDCTestnet extends Testnet implements EthereumNetwork {
 class ArcUSDC extends Mainnet implements EthereumNetwork {
   name = 'USDC (ARC)';
   family = CoinFamily.ARCUSDC;
-  explorerUrl = 'https://testnet.arcscan.app/txs/'; // change to prod explorer url
+  explorerUrl = 'https://testnet.arcscan.app/tx/'; // WIN-8844 change to prod explorer url
   accountExplorerUrl = 'https://testnet.arcscan.app/address/'; // change to prod explorer url when available
   chainId = 5042002; // change to prod chain id when available
   nativeCoinOperationHashPrefix = '5042002'; // change to prod native coin operation hash prefix when available
@@ -2414,6 +2490,7 @@ export const Networks = {
     casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
     chiliz: Object.freeze(new Chiliz()),
+    codexeth: Object.freeze(new CodexEth()),
     coredao: Object.freeze(new Coredao()),
     coreum: Object.freeze(new Coreum()),
     cronos: Object.freeze(new Cronos()),
@@ -2437,6 +2514,7 @@ export const Networks = {
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
     hederaEVM: Object.freeze(new HederaEVM()),
+    hemieth: Object.freeze(new HemiEth()),
     icp: Object.freeze(new Icp()),
     ip: Object.freeze(new IP()),
     initia: Object.freeze(new Initia()),
@@ -2490,6 +2568,7 @@ export const Networks = {
     tia: Object.freeze(new Tia()),
     ton: Object.freeze(new Ton()),
     trx: Object.freeze(new Trx()),
+    usdt0: Object.freeze(new Usdt0()),
     vet: Object.freeze(new Vet()),
     wemix: Object.freeze(new Wemix()),
     world: Object.freeze(new World()),
@@ -2497,6 +2576,7 @@ export const Networks = {
     xpl: Object.freeze(new Plasma()),
     xrp: Object.freeze(new Xrp()),
     xtz: Object.freeze(new Xtz()),
+    xtzevm: Object.freeze(new XtzEvm()),
     zCash: Object.freeze(new ZCash()),
     zeta: Object.freeze(new Zeta()),
     zkSync: Object.freeze(new ZkSync()),
@@ -2529,6 +2609,7 @@ export const Networks = {
     casper: Object.freeze(new CasperTestnet()),
     celo: Object.freeze(new CeloTestnet()),
     chiliz: Object.freeze(new ChilizTestnet()),
+    codexeth: Object.freeze(new CodexEthTestnet()),
     coredao: Object.freeze(new CoredaoTestnet()),
     cronos: Object.freeze(new CronosTestnet()),
     dash: Object.freeze(new DashTestnet()),
@@ -2552,6 +2633,7 @@ export const Networks = {
     hash: Object.freeze(new HashTestnet()),
     hedera: Object.freeze(new HederaTestnet()),
     hederaEVM: Object.freeze(new HederaEVMTestnet()),
+    hemieth: Object.freeze(new HemiEthTestnet()),
     icp: Object.freeze(new IcpTestnet()),
     ip: Object.freeze(new IPTestnet()),
     initia: Object.freeze(new InitiaTestnet()),
@@ -2607,6 +2689,7 @@ export const Networks = {
     tia: Object.freeze(new TiaTestnet()),
     ton: Object.freeze(new TonTestnet()),
     trx: Object.freeze(new TrxTestnet()),
+    usdt0: Object.freeze(new Usdt0Testnet()),
     vet: Object.freeze(new VetTestnet()),
     wemix: Object.freeze(new WemixTestnet()),
     world: Object.freeze(new WorldTestnet()),
@@ -2614,6 +2697,7 @@ export const Networks = {
     xpl: Object.freeze(new PlasmaTestnet()),
     xrp: Object.freeze(new XrpTestnet()),
     xtz: Object.freeze(new XtzTestnet()),
+    xtzevm: Object.freeze(new XtzEvmTestnet()),
     zCash: Object.freeze(new ZCashTestnet()),
     zeta: Object.freeze(new ZetaTestnet()),
     zkSync: Object.freeze(new ZkSyncTestnet()),

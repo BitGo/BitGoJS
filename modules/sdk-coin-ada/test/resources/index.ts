@@ -373,7 +373,7 @@ export const testnetUTXO = {
   UTXO_3: {
     tx_hash: '87f6e905a5796277ffb256265fd18d16f84ddb54ec8a841f7d467360c1c9fc2f',
     tx_index: 0,
-    value: 10000000,
+    value: 1000000,
   },
 };
 

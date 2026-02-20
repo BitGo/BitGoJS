@@ -1,7 +1,7 @@
-import { BIP32, ECPair, Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
+import { BIP32, bip32, ECPair, Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 
-export type BIP32Key = BIP32 | utxolib.BIP32Interface;
+export type BIP32Key = BIP32 | bip32.BIP32Interface | utxolib.BIP32Interface;
 export type ECPairKey = ECPair | utxolib.ECPairInterface | Uint8Array;
 export type UtxoLibPsbt = utxolib.Psbt | utxolib.bitgo.UtxoPsbt;
 
@@ -26,6 +26,14 @@ export function toWasmBIP32(key: BIP32Key): BIP32 {
   }
   // All utxo-lib BIP32Interface instances have toBase58
   return BIP32.fromBase58(key.toBase58());
+}
+
+/**
+ * Convert a wasm-utxo BIP32 to a utxo-lib BIP32Interface.
+ * Used at boundaries where utxo-lib APIs require their own BIP32Interface type.
+ */
+export function toUtxolibBIP32(key: BIP32Key): utxolib.BIP32Interface {
+  return utxolib.bip32.fromBase58(key.toBase58());
 }
 
 export function toWasmECPair(key: ECPairKey): ECPair {

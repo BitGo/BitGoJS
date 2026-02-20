@@ -1,14 +1,30 @@
 {
   "name": "@bitgo/sdk-coin-sol",
-  "version": "7.12.0",
+  "version": "7.13.1",
   "description": "BitGo SDK coin library for Sol",
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "main": "./dist/cjs/src/index.js",
+  "module": "./dist/esm/index.js",
+  "browser": "./dist/esm/index.js",
+  "types": "./dist/cjs/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/index.d.ts",
+        "default": "./dist/cjs/src/index.js"
+      }
+    }
+  },
   "scripts": {
-    "build": "yarn tsc --build --incremental --verbose .",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "yarn tsc --build --incremental --verbose .",
+    "build:esm": "yarn tsc --project tsconfig.esm.json",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check '**/*.{ts,js,json}'",
-    "clean": "rm -r ./dist",
+    "clean": "rm -rf ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
     "test": "npm run coverage",
@@ -40,12 +56,13 @@
     ]
   },
   "dependencies": {
+    "@bitgo/logger": "^1.1.0",
     "@bitgo/public-types": "5.63.0",
-    "@bitgo/sdk-core": "^36.30.0",
+    "@bitgo/sdk-core": "^36.31.1",
     "@bitgo/sdk-lib-mpc": "^10.9.0",
-    "@bitgo/statics": "^58.24.0",
+    "@bitgo/statics": "^58.25.0",
     "@solana/spl-stake-pool": "1.1.8",
-    "@solana/spl-token": "0.3.1",
+    "@solana/spl-token": "0.4.9",
     "@solana/web3.js": "1.92.1",
     "bignumber.js": "^9.0.0",
     "bs58": "^4.0.1",
@@ -54,12 +71,13 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.73.4",
-    "@bitgo/sdk-test": "^9.1.25",
+    "@bitgo/sdk-api": "^1.74.1",
+    "@bitgo/sdk-test": "^9.1.27",
     "@types/lodash": "^4.14.121"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [
-    "dist"
+    "dist/cjs",
+    "dist/esm"
   ]
 }

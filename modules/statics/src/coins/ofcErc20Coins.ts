@@ -3133,6 +3133,24 @@ export const ofcErc20Coins = [
     [CoinFeature.STABLECOIN]
   ),
   ofcerc20(
+    '43e6a63a-2014-493d-b98c-b5ab10c6e5bb',
+    'ofceth:cusd',
+    'Catholic USD',
+    6,
+    underlyingAssetForSymbol('eth:cusd'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcerc20(
+    'e518b37f-a24a-454c-bbbf-eddc75de68f0',
+    'ofceth:fyusd',
+    'FYUSD',
+    6,
+    underlyingAssetForSymbol('eth:fyusd'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcerc20(
     '80bfa43e-f01c-42bd-bd14-269b88948bbf',
     'ofceth:usdg',
     'Global Dollar',
@@ -3676,6 +3694,13 @@ export const ofcErc20Coins = [
     6,
     underlyingAssetForSymbol('mantle:ausd')
   ),
+  ofcerc20(
+    'e304dde3-8782-4e54-b6e7-c0080d1ea485',
+    'ofcmantle:usd1',
+    'USD1',
+    18,
+    underlyingAssetForSymbol('mantle:usd1')
+  ),
   // New ETH OFC tokens
   ofcerc20('a5357ba2-5a2a-4d73-8f65-e01b9158ea9c', 'ofceth:resolv', 'Resolv', 18, UnderlyingAsset['eth:resolv']),
   ofcerc20('5485e380-c3df-49ab-98f2-9c4d3f37f2fb', 'ofceth:spec', 'Spectral', 18, UnderlyingAsset['eth:spec']),
@@ -3914,6 +3939,62 @@ export const tOfcErc20Coins = [
     'Test SoFiUSD',
     6,
     UnderlyingAsset['hteth:sofid'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    '7a14ba73-dfce-4f76-b0ff-563f2d3c47a8',
+    'ofchteth:cusd',
+    'Test Catholic USD',
+    6,
+    UnderlyingAsset['hteth:cusd'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    'a7c586b2-6471-4874-9856-e24cb56db132',
+    'ofchteth:fyusd',
+    'Test FYUSD',
+    6,
+    UnderlyingAsset['hteth:fyusd'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    'befb8fc3-03e8-4d63-8da6-d4013f346149',
+    'ofchteth:stgcusd',
+    'Test Catholic USD',
+    6,
+    UnderlyingAsset['hteth:stgcusd'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    '9a56cdc4-25bd-47e9-93f6-0e8f463c4afd',
+    'ofchteth:stgfyusd',
+    'Test FYUSD',
+    6,
+    UnderlyingAsset['hteth:stgfyusd'],
     undefined,
     [CoinFeature.STABLECOIN],
     undefined,
@@ -4616,6 +4697,8 @@ export const tOfcErc20Coins = [
     18,
     UnderlyingAsset['eth:arm-weth-eeth']
   ),
+  ofcerc20('d8f3b2c7-4e9a-4f6b-a5c0-9e2f3a4b5c6d', 'ofceth:cashplus', 'CASH+', 18, UnderlyingAsset['eth:cashplus']),
+  ofcerc20('e9a4c3d8-5f0b-4a7c-86d1-af3a4b5c6d7e', 'ofceth:island', 'ISLAND Token', 18, UnderlyingAsset['eth:island']),
   ofcerc20('63f1d5de-5729-4a71-ba6e-dcd7095c20da', 'ofceth:job', 'jobchain', 8, UnderlyingAsset['eth:job']),
   ofcerc20('90169666-a3ee-4ff6-b447-0553a1a4cbb8', 'ofceth:irys', 'irys', 18, UnderlyingAsset['eth:irys']),
   ofcerc20('42fc787e-bd51-4ba0-915f-14b7cdae1bf3', 'ofceth:kpk', 'kpk', 18, UnderlyingAsset['eth:kpk']),
@@ -4985,6 +5068,34 @@ export const tOfcErc20Coins = [
     true,
     'baseeth'
   ),
+  ofcerc20(
+    'a1d6e5f0-7b8c-4a9d-90e1-af3a4b5c6d7e',
+    'ofcbaseeth:common',
+    'COMMON',
+    18,
+    UnderlyingAsset['baseeth:common'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    'b2e7f6a1-8c9d-4bae-81f2-3a4b5c6d7e8f',
+    'ofcbaseeth:unite',
+    'Unite',
+    18,
+    UnderlyingAsset['baseeth:unite'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 
   ofcerc20('abeefced-cfda-4afa-8f9c-aebfcadbecfd', 'ofceth:align', 'Aligned', 18, UnderlyingAsset['eth:align']),
 
@@ -5237,6 +5348,20 @@ export const tOfcErc20Coins = [
     true,
     'jovayeth'
   ),
+  ofcerc20(
+    '56d130a9-b5ce-46b7-8ba3-648372dd3e9c',
+    'ofcjovayeth:usdce',
+    'Bridged USDC',
+    6,
+    underlyingAssetForSymbol('jovayeth:usdce'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'jovayeth'
+  ),
 
   // Jovayeth Testnet tokens
   tofcerc20(
@@ -5245,6 +5370,20 @@ export const tOfcErc20Coins = [
     'Common',
     18,
     underlyingAssetForSymbol('tjovayeth:tcmn'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tjovayeth'
+  ),
+  tofcerc20(
+    'e1d2c3b4-a5f6-4e7d-8c9b-0a1b2c3d4e5f',
+    'ofctjovayeth:usdce',
+    'Bridged USDC',
+    6,
+    underlyingAssetForSymbol('tjovayeth:usdce'),
     undefined,
     undefined,
     '',
@@ -5320,6 +5459,20 @@ export const tOfcErc20Coins = [
     'BGERCH',
     18,
     underlyingAssetForSymbol('tmantle:bgerch')
+  ),
+  tofcerc20(
+    'ca77595a-dd77-4c64-a9d5-59d70ae9ac43',
+    'ofctmantle:usd1',
+    'Test USD1 Token',
+    18,
+    underlyingAssetForSymbol('tmantle:usd1')
+  ),
+  tofcerc20(
+    '4fc97feb-4d66-4ab7-8538-83ccf25673bb',
+    'ofctmantle:stgusd1',
+    'Test USD1 Token',
+    18,
+    underlyingAssetForSymbol('tmantle:stgusd1')
   ),
 
   // MegaEth Network tokens
@@ -5454,6 +5607,41 @@ export const tOfcErc20Coins = [
     'Test Mintable Token',
     6,
     underlyingAssetForSymbol('tmorpheth:tmt'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tmorpheth'
+  ),
+  ofcerc20(
+    '3ea8b443-c2a7-4a3c-8b58-1a8a36aa4da8',
+    'ofcseievm:wsei',
+    'Wrapped SEI',
+    18,
+    underlyingAssetForSymbol('seievm:wsei')
+  ),
+  tofcerc20(
+    '8c64311b-e288-4dd4-8f9f-25dad3418837',
+    'ofctmorpheth:usd1',
+    'Test USD1 Token',
+    18,
+    underlyingAssetForSymbol('tmorpheth:usd1'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tmorpheth'
+  ),
+  tofcerc20(
+    '15ca2074-d5bc-450c-886e-1338ffb114f8',
+    'ofctmorpheth:stgusd1',
+    'Test USD1 Token',
+    18,
+    underlyingAssetForSymbol('tmorpheth:stgusd1'),
     undefined,
     undefined,
     '',

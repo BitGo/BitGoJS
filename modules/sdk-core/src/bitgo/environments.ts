@@ -66,6 +66,7 @@ interface EnvironmentTemplate {
   hmacVerificationEnforced: boolean;
   tonNodeUrl: string;
   suiNodeUrl: string;
+  iotaNodeUrl: string;
   etcNodeUrl: string;
   coredaoExplorerBaseUrl?: string;
   coredaoExplorerApiToken?: string;
@@ -207,6 +208,7 @@ const mainnetBase: EnvironmentTemplate = {
   hmacVerificationEnforced: true,
   tonNodeUrl: 'https://toncenter.com/api/v2/jsonRPC',
   suiNodeUrl: 'https://fullnode.mainnet.sui.io',
+  iotaNodeUrl: 'https://api.mainnet.iota.cafe',
   etcNodeUrl: 'https://etc.blockscout.com',
   coredaoExplorerBaseUrl: 'https://openapi.coredao.org',
   oasExplorerBaseUrl: 'https://explorer.oasys.games',
@@ -220,6 +222,9 @@ const mainnetBase: EnvironmentTemplate = {
     },
     chiliz: {
       baseUrl: 'https://api.chiliscan.com',
+    },
+    codexeth: {
+      baseUrl: 'https://explorer.codex.xyz/api',
     },
     phrs: {
       baseUrl: 'https://testnet.dplabs-internal.com', // TODO: WIN-5787 add mainnet url when its available
@@ -241,6 +246,9 @@ const mainnetBase: EnvironmentTemplate = {
     },
     sonic: {
       baseUrl: 'https://api.etherscan.io/v2',
+    },
+    usdt0: {
+      baseUrl: 'https://stablescan.xyz/api',
     },
     seievm: {
       baseUrl: 'https://api.etherscan.io/v2',
@@ -277,6 +285,9 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://explorer.fantom.network',
       rpcUrl: 'https://rpcapi.fantom.network/',
     },
+    xtzevm: {
+      baseUrl: 'https://explorer.etherlink.com/api',
+    },
     flow: {
       baseUrl: 'https://evm.flowscan.io',
     },
@@ -289,6 +300,9 @@ const mainnetBase: EnvironmentTemplate = {
     hbarevm: {
       baseUrl: 'https://mainnet.mirrornode.hedera.com/api/v1',
       rpcUrl: 'https://mainnet.hashio.io/api',
+    },
+    hemieth: {
+      baseUrl: 'https://explorer.hemi.xyz/api',
     },
     fluenteth: {
       baseUrl: 'https://testnet.fluentscan.xyz/api/', //TODO: COIN-6478: add mainnet url when available
@@ -312,7 +326,7 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://blockscout.testnet.dogeos.com', //TODO: WIN-8082 => add mainnet url when available
     },
     arcusdc: {
-      baseUrl: 'https://testnet.arcscan.app/api/v2', // WIN-8039 => add mainnet url when available
+      baseUrl: 'https://testnet.arcscan.app/api', // WIN-8844 => add mainnet url when available
     },
     xdc: {
       baseUrl: 'https://api.etherscan.io/v2',
@@ -390,6 +404,7 @@ const testnetBase: EnvironmentTemplate = {
   hmacVerificationEnforced: false,
   tonNodeUrl: 'https://testnet.toncenter.com/api/v2/jsonRPC',
   suiNodeUrl: 'https://fullnode.testnet.sui.io',
+  iotaNodeUrl: 'https://api.testnet.iota.cafe',
   etcNodeUrl: 'https://etc-mordor.blockscout.com',
   coredaoExplorerBaseUrl: 'https://api.test2.btcs.network',
   oasExplorerBaseUrl: 'https://explorer.testnet.oasys.games',
@@ -408,6 +423,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     chiliz: {
       baseUrl: 'https://api.testnet.chiliscan.com',
+    },
+    codexeth: {
+      baseUrl: 'https://explorer.codex-stg.xyz/api',
     },
     phrs: {
       baseUrl: 'https://testnet.dplabs-internal.com', // Wrong value, Not available yet
@@ -429,6 +447,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     sonic: {
       baseUrl: 'https://api.etherscan.io/v2',
+    },
+    usdt0: {
+      baseUrl: 'https://testnet.stablescan.xyz/api',
     },
     seievm: {
       baseUrl: 'https://api.etherscan.io/v2',
@@ -458,6 +479,9 @@ const testnetBase: EnvironmentTemplate = {
       baseUrl: 'https://api.etherscan.io/v2',
       apiToken: process.env.ETHERSCAN_API_TOKEN,
     },
+    xtzevm: {
+      baseUrl: 'https://shadownet.explorer.etherlink.com/api',
+    },
     flow: {
       baseUrl: 'https://evm-testnet.flowscan.io',
     },
@@ -470,6 +494,9 @@ const testnetBase: EnvironmentTemplate = {
     hbarevm: {
       baseUrl: 'https://testnet.mirrornode.hedera.com/api/v1',
       rpcUrl: 'https://testnet.hashio.io/api',
+    },
+    hemieth: {
+      baseUrl: 'https://testnet.explorer.hemi.xyz/api',
     },
     fluenteth: {
       baseUrl: 'https://testnet.fluentscan.xyz/api/',
@@ -493,7 +520,7 @@ const testnetBase: EnvironmentTemplate = {
       baseUrl: 'https://blockscout.testnet.dogeos.com',
     },
     arcusdc: {
-      baseUrl: 'https://testnet.arcscan.app/api/v2',
+      baseUrl: 'https://testnet.arcscan.app/api', // WIN-8844 => add mainnet url when available
     },
     xdc: {
       baseUrl: 'https://api.etherscan.io/v2',

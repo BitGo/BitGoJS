@@ -12,7 +12,6 @@ import {
   Triple,
   xprvToRawPrv,
 } from '@bitgo/sdk-core';
-import { bip32 } from '@bitgo/secp256k1';
 import {
   createPsbtForSingleInscriptionPassingTransaction,
   DefaultInscriptionConstraints,
@@ -27,10 +26,11 @@ import {
   WalletUnspent,
   type TapLeafScript,
 } from '@bitgo/utxo-ord';
-import { fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { BIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
 import { fetchKeychains } from '../../keychains';
+import { toUtxolibBIP32 } from '../../wasmUtil';
 
 /** Key identifier for signing */
 type SignerKey = 'user' | 'backup' | 'bitgo';
@@ -58,7 +58,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     const user = await this.wallet.baseCoin.keychains().get({ id: this.wallet.keyIds()[KeyIndices.USER] });
     assert(user.pub);
 
-    const userKey = bip32.fromBase58(user.pub);
+    const userKey = toUtxolibBIP32(BIP32.fromBase58(user.pub));
     const { key: derivedKey } = BaseCoin.deriveKeyWithSeedBip32(userKey, inscriptionData.toString());
 
     const result = inscriptions.createInscriptionRevealData(

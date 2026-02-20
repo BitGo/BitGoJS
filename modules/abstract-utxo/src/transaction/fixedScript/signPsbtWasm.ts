@@ -1,7 +1,6 @@
 import assert from 'assert';
 
-import { BIP32Interface } from '@bitgo/utxo-lib';
-import { BIP32, ECPair, fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { BIP32, bip32, ECPair, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { toWasmBIP32 } from '../../wasmUtil';
 
@@ -25,7 +24,7 @@ function hasKeyPathSpendInput(
   rootWalletKeys: fixedScriptWallet.RootWalletKeys,
   replayProtection: ReplayProtectionKeys
 ): boolean {
-  const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
+  const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, { replayProtection });
   return parsed.inputs.some((input) => input.scriptType === 'p2trMusig2KeyPath');
 }
 
@@ -36,7 +35,7 @@ function hasKeyPathSpendInput(
  */
 export function signAndVerifyPsbtWasm(
   tx: fixedScriptWallet.BitGoPsbt,
-  signerKeychain: BIP32Interface | BIP32,
+  signerKeychain: bip32.BIP32Interface | BIP32,
   rootWalletKeys: fixedScriptWallet.RootWalletKeys,
   replayProtection: ReplayProtectionKeys
 ): fixedScriptWallet.BitGoPsbt {
@@ -50,7 +49,7 @@ export function signAndVerifyPsbtWasm(
   }
 
   // Verify signatures for all signed inputs (still per-input for granular error reporting)
-  const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
+  const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, { replayProtection });
   const verifyErrors: InputSigningError<bigint>[] = [];
 
   parsed.inputs.forEach((input, inputIndex) => {
@@ -81,7 +80,7 @@ export function signAndVerifyPsbtWasm(
 export async function signPsbtWithMusig2ParticipantWasm(
   coin: Musig2Participant<fixedScriptWallet.BitGoPsbt>,
   tx: fixedScriptWallet.BitGoPsbt,
-  signerKeychain: BIP32Interface | undefined,
+  signerKeychain: bip32.BIP32Interface | undefined,
   rootWalletKeys: fixedScriptWallet.RootWalletKeys,
   params: {
     replayProtection: ReplayProtectionKeys;

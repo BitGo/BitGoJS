@@ -3,10 +3,13 @@ import assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
 import { ECPair, fixedScriptWallet, hasPsbtMagic, address as wasmAddress } from '@bitgo/wasm-utxo';
 
-import { getCoinName, UtxoCoinName } from '../../../src/names';
+import type { UtxoCoinName } from '../../../src/names';
 import type { Unspent, WalletUnspent } from '../../../src/unspent';
+
+import { getCoinNameForNetwork } from './utxoCoins';
 const { isWalletUnspent, signInputWithUnspent } = utxolib.bitgo;
-type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+type UtxolibRootWalletKeys = utxolib.bitgo.RootWalletKeys;
+type WasmRootWalletKeys = fixedScriptWallet.RootWalletKeys;
 export type TransactionObj = {
   id: string;
   hex: string;
@@ -27,7 +30,7 @@ function toTxOutput<TNumber extends number | bigint = number>(
   network: utxolib.Network
 ): utxolib.TxOutput<TNumber> {
   return {
-    script: Buffer.from(wasmAddress.toOutputScriptWithCoin(u.address, getCoinName(network))),
+    script: Buffer.from(wasmAddress.toOutputScriptWithCoin(u.address, getCoinNameForNetwork(network))),
     value: u.value,
   };
 }
@@ -36,7 +39,7 @@ export function assertEqualParsedPsbt(
   a: Buffer,
   b: Buffer,
   coinName: UtxoCoinName,
-  walletKeys: RootWalletKeys,
+  walletKeys: WasmRootWalletKeys,
   replayProtection: ECPair[]
 ): void {
   if (!hasPsbtMagic(a)) {
@@ -47,8 +50,12 @@ export function assertEqualParsedPsbt(
   }
   const aPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(a, coinName);
   const bPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(b, coinName);
-  const aParsed = aPsbt.parseTransactionWithWalletKeys(walletKeys, { publicKeys: replayProtection });
-  const bParsed = bPsbt.parseTransactionWithWalletKeys(walletKeys, { publicKeys: replayProtection });
+  const aParsed = aPsbt.parseTransactionWithWalletKeys(walletKeys, {
+    replayProtection: { publicKeys: replayProtection },
+  });
+  const bParsed = bPsbt.parseTransactionWithWalletKeys(walletKeys, {
+    replayProtection: { publicKeys: replayProtection },
+  });
   assert.deepStrictEqual(aParsed, bParsed);
 }
 
@@ -107,7 +114,7 @@ export function createPrebuildTransaction<TNumber extends number | bigint = numb
 function createTransactionBuilderWithSignedInputs<TNumber extends number | bigint = number>(
   network: utxolib.Network,
   unspents: Unspent<TNumber>[],
-  signer: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
+  signer: utxolib.bitgo.WalletUnspentSigner<UtxolibRootWalletKeys>,
   inputTransaction: utxolib.bitgo.UtxoTransaction<TNumber>
 ): utxolib.bitgo.UtxoTransactionBuilder<TNumber> {
   const txBuilder = utxolib.bitgo.createTransactionBuilderFromTransaction<TNumber>(
@@ -126,7 +133,7 @@ export function createHalfSignedTransaction<TNumber extends number | bigint = nu
   network: utxolib.Network,
   unspents: Unspent<TNumber>[],
   outputAddress: string,
-  signer: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
+  signer: utxolib.bitgo.WalletUnspentSigner<UtxolibRootWalletKeys>,
   prebuild?: utxolib.bitgo.UtxoTransaction<TNumber>
 ): utxolib.bitgo.UtxoTransaction<TNumber> {
   if (!prebuild) {
@@ -139,7 +146,7 @@ export function createFullSignedTransaction<TNumber extends number | bigint = nu
   network: utxolib.Network,
   unspents: Unspent<TNumber>[],
   outputAddress: string,
-  signer: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
+  signer: utxolib.bitgo.WalletUnspentSigner<UtxolibRootWalletKeys>,
   halfSigned?: utxolib.bitgo.UtxoTransaction<TNumber>
 ): utxolib.bitgo.UtxoTransaction<TNumber> {
   if (!halfSigned) {

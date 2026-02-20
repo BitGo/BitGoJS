@@ -3,6 +3,7 @@ import BigNumber from 'bignumber.js';
 import blake2b from '@bitgo/blake2b';
 import assert from 'assert';
 import axios from 'axios';
+import { logger } from '@bitgo/logger';
 import { TransactionClause, Transaction as VetTransaction } from '@vechain/sdk-core';
 import {
   AuditDecryptedKeyParams,
@@ -570,7 +571,7 @@ export class Vet extends BaseCoin {
       // The returned data is the hex-encoded balance
       return new BigNumber(simResponse[0].data);
     } catch (error) {
-      console.error('Error fetching token balance:', error);
+      logger.error('Error fetching token balance:', error);
       throw new Error(`Failed to get token balance: ${error.message}`);
     }
   }

@@ -1,5 +1,4 @@
-import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
-import { CoinName, fixedScriptWallet, address as wasmAddress } from '@bitgo/wasm-utxo';
+import { BIP32, CoinName, fixedScriptWallet, address as wasmAddress } from '@bitgo/wasm-utxo';
 import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
 import { decrypt } from '@bitgo/sdk-api';
 
@@ -294,9 +293,9 @@ async function getFeeRateSatVB(coin: AbstractUtxoCoin): Promise<number> {
  * @param wallet
  * @return signing key
  */
-async function getPrv(xprv?: string, passphrase?: string, wallet?: IWallet | WalletV1): Promise<BIP32Interface> {
+async function getPrv(xprv?: string, passphrase?: string, wallet?: IWallet | WalletV1): Promise<BIP32> {
   if (xprv) {
-    const key = bip32.fromBase58(xprv);
+    const key = BIP32.fromBase58(xprv);
     if (key.isNeutered()) {
       throw new Error(`not a private key`);
     }

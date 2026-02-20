@@ -1162,6 +1162,15 @@ export const polygonTokens = [
     POLYGON_TOKEN_FEATURES
   ),
   tpolygonErc20(
+    '4563b882-fda0-4e5e-a1a5-608448f04384',
+    'tpolygon:copr3',
+    'Test COPR3',
+    18,
+    '0xb9200ddb57ef5c59fa0ef055668271aec2549588',
+    UnderlyingAsset['tpolygon:copr3'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  tpolygonErc20(
     '9da1d62e-2220-4974-a9d9-191c34dfda4e',
     'tpolygon:link',
     'Polygon Test LINK',
@@ -1285,6 +1294,15 @@ export const polygonTokens = [
     18,
     '0xfa658f62ca6cacaa769035adbcbed9bf75f9f72d',
     UnderlyingAsset['polygon:chlt'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  polygonErc20(
+    'd6a1b0c5-2f7e-4b4c-88f9-ac6f7b3e0a5d',
+    'polygon:stg',
+    'Stargate Finance',
+    18,
+    '0x2f6f07cdcf3588944bf4c42ac74ff24bf56e7590',
+    UnderlyingAsset['polygon:stg'],
     POLYGON_TOKEN_FEATURES
   ),
 ];

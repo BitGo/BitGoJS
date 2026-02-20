@@ -111,6 +111,10 @@ export class Flrp extends BaseCoin {
           this.validateImportTx(explainedTx.inputs, params.txParams);
         }
         break;
+      case TransactionType.AddPermissionlessDelegator:
+        // Validate delegation transaction against both txParams and explainedTx
+        this.validateDelegationTx(params.txParams, explainedTx);
+        break;
       default:
         throw new Error('Tx type is not supported yet');
     }
@@ -162,6 +166,52 @@ export class Flrp extends BaseCoin {
         if (!unspents.has(unspent.id)) {
           throw new Error(`Transaction should not contain the UTXO: ${unspent.id}`);
         }
+      }
+    }
+  }
+
+  /**
+   * Validate AddPermissionlessDelegator transaction parameters.
+   * Validates both expected txParams and the parsed explainedTx for consistency.
+   *
+   * @param {FlrpTransactionParams} txParams - Expected transaction parameters
+   * @param {FlrpLib.TransactionExplanation} explainedTx - Parsed transaction explanation
+   */
+  validateDelegationTx(txParams: FlrpTransactionParams, explainedTx: FlrpLib.TransactionExplanation): void {
+    if (!txParams.stakingOptions) {
+      throw new Error('Delegation transaction requires stakingOptions');
+    }
+
+    const { nodeID, amount, durationSeconds, rewardAddress } = txParams.stakingOptions;
+
+    if (!nodeID) {
+      throw new Error('Delegation transaction requires nodeID');
+    }
+
+    if (!amount) {
+      throw new Error('Delegation transaction requires amount');
+    }
+
+    if (!durationSeconds) {
+      throw new Error('Delegation transaction requires durationSeconds');
+    }
+
+    if (!rewardAddress) {
+      throw new Error('Delegation transaction requires rewardAddress');
+    }
+
+    // Validate nodeID format using utility method
+    if (!utils.isValidNodeID(nodeID)) {
+      throw new Error(`Invalid nodeID format: ${nodeID}`);
+    }
+
+    // Validate that the parsed transaction's output amount matches the expected staking amount
+    // The outputAmount in explainedTx represents the total stake amount in the transaction
+    if (explainedTx.outputAmount) {
+      const expectedAmount = new BigNumber(amount);
+      const actualAmount = new BigNumber(explainedTx.outputAmount);
+      if (!expectedAmount.isEqualTo(actualAmount)) {
+        throw new Error(`Delegation amount mismatch: expected ${amount}, transaction has ${explainedTx.outputAmount}`);
       }
     }
   }

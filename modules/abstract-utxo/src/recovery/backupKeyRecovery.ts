@@ -3,9 +3,7 @@ import {
   BitGoBase,
   ErrorNoInputToRecover,
   getKrsProvider,
-  getBip32Keys,
-  getIsKrsRecovery,
-  getIsUnsignedSweep,
+  getBip32Keys as getBip32KeysFromSdkCore,
   isTriple,
   krsProviders,
   Triple,
@@ -245,8 +243,175 @@ export type BackupKeyRecoveryTransansaction = {
   recoveryAmountString: string;
 };
 
-function getBip32Privkeys(bitgo: BitGoBase, params: RecoverParams): Triple<BIP32> {
-  const keys = getBip32Keys(bitgo, params, { requireBitGoXpub: true });
+/**
+ * Parameters for backup key recovery PSBT creation.
+ * All fields are pre-validated and derived - no string key parsing needed.
+ */
+export interface RecoverWithUnspentsParams {
+  /** Pre-derived wallet keys */
+  walletKeys: fixedScriptWallet.RootWalletKeys;
+  /** Pre-derived key triple (user, backup, bitgo). Check privateKey to determine signing capability. */
+  keys: Triple<BIP32>;
+  /** Validated recovery destination address */
+  recoveryDestination: string;
+  /** Fee rate in satoshi per vbyte */
+  feeRateSatVB: number;
+  /** KRS fee amount in satoshis (0 if not KRS recovery) */
+  krsFee?: bigint;
+  /** KRS fee address (required if krsFee > 0) */
+  krsFeeAddress?: string;
+}
+
+function hasPrivateKey(key: BIP32): boolean {
+  return key.privateKey !== undefined;
+}
+
+/**
+ * Builds a funds recovery PSBT without BitGo, using provided unspents.
+ *
+ * This is the core transaction building logic, separated from unspent gathering
+ * and output formatting. Returns a PSBT at the appropriate signing stage.
+ *
+ * Signing behavior is determined by the keys:
+ * - If user key has no private key: unsigned PSBT
+ * - If user key has private key but backup doesn't: half-signed PSBT (user signature only)
+ * - If both user and backup keys have private keys: fully signed PSBT (not finalized)
+ *
+ * @param coinName - The coin name for the PSBT
+ * @param params - Recovery parameters with pre-derived keys
+ * @param unspents - The wallet unspents to recover (must be non-empty)
+ * @returns The PSBT at the appropriate signing stage (never finalized)
+ */
+export function backupKeyRecoveryWithWalletUnspents(
+  coinName: UtxoCoinName,
+  params: RecoverWithUnspentsParams,
+  unspents: WalletUnspent<bigint>[]
+): fixedScriptWallet.BitGoPsbt {
+  const { walletKeys, keys, recoveryDestination, feeRateSatVB, krsFee, krsFeeAddress } = params;
+
+  const totalInputAmount = unspentSum(unspents);
+  if (totalInputAmount <= BigInt(0)) {
+    throw new ErrorNoInputToRecover();
+  }
+
+  let psbt = createBackupKeyRecoveryPsbt(coinName, walletKeys, unspents, {
+    feeRateSatVB: feeRateSatVB,
+    recoveryDestination: recoveryDestination,
+    keyRecoveryServiceFee: krsFee ?? BigInt(0),
+    keyRecoveryServiceFeeAddress: krsFeeAddress,
+  });
+
+  const userHasPrivateKey = hasPrivateKey(keys[0]);
+  const backupHasPrivateKey = hasPrivateKey(keys[1]);
+
+  if (!userHasPrivateKey) {
+    // Unsigned sweep - return unsigned PSBT
+    return psbt;
+  }
+
+  const replayProtection = { publicKeys: getReplayProtectionPubkeys(coinName) };
+
+  // Sign with user key
+  psbt = signAndVerifyPsbt(psbt, keys[0], walletKeys, replayProtection);
+
+  if (backupHasPrivateKey) {
+    // Full recovery - sign with backup key too
+    psbt = signAndVerifyPsbt(psbt, keys[1], walletKeys, replayProtection);
+  }
+
+  // Return PSBT (not finalized - let caller decide how to format)
+  return psbt;
+}
+
+/**
+ * Parameters for formatting a backup key recovery result.
+ */
+export interface FormatBackupKeyRecoveryParams {
+  /** Pre-derived wallet keys */
+  walletKeys: fixedScriptWallet.RootWalletKeys;
+  /** Pre-derived key triple (user, backup, bitgo). Check privateKey to determine signing capability. */
+  keys: Triple<BIP32>;
+  /** Recovery destination address */
+  recoveryDestination: string;
+  /** KRS provider name (if backup key is held by KRS) */
+  krsProvider?: string;
+  /** Original backup key string (needed for KRS recovery response) */
+  backupKey?: string;
+  /** The wallet unspents (needed for inputs array in response) */
+  unspents: WalletUnspent<bigint>[];
+}
+
+/**
+ * Formats a backup key recovery PSBT into the appropriate response format.
+ *
+ * Output format depends on signing state and KRS provider:
+ * - Unsigned sweep: FormattedOfflineVaultTxInfo with PSBT hex
+ * - KRS keyternal: BackupKeyRecoveryTransansaction with legacy half-signed tx hex
+ * - KRS other: BackupKeyRecoveryTransansaction with PSBT hex
+ * - Full recovery: BackupKeyRecoveryTransansaction with finalized tx hex
+ *
+ * @param coin - The coin instance
+ * @param psbt - The PSBT to format (at appropriate signing stage)
+ * @param params - Formatting parameters
+ * @returns The formatted recovery result
+ */
+export function formatBackupKeyRecoveryResult(
+  coin: AbstractUtxoCoin,
+  psbt: fixedScriptWallet.BitGoPsbt,
+  params: FormatBackupKeyRecoveryParams
+): BackupKeyRecoveryTransansaction | FormattedOfflineVaultTxInfo {
+  const { walletKeys, keys, recoveryDestination, krsProvider, backupKey, unspents } = params;
+
+  const userHasPrivateKey = hasPrivateKey(keys[0]);
+  const backupHasPrivateKey = hasPrivateKey(keys[1]);
+
+  const isUnsignedSweep = !userHasPrivateKey && !backupHasPrivateKey;
+  const isKrsRecovery = krsProvider !== undefined && userHasPrivateKey && !backupHasPrivateKey;
+  const isFullRecovery = userHasPrivateKey && backupHasPrivateKey;
+
+  // Unsigned sweep - return FormattedOfflineVaultTxInfo
+  if (isUnsignedSweep) {
+    return {
+      txHex: encodeTransaction(psbt).toString('hex'),
+      txInfo: {},
+      feeInfo: {},
+      coin: coin.getChain(),
+    };
+  }
+
+  const responseTxFormat = !isKrsRecovery || krsProvider === 'keyternal' ? 'legacy' : 'psbt';
+  const txInfo = {} as BackupKeyRecoveryTransansaction;
+
+  // Include inputs array for legacy format responses
+  txInfo.inputs =
+    responseTxFormat === 'legacy'
+      ? unspents.map((u) => ({ ...u, value: Number(u.value), valueString: u.value.toString(), prevTx: undefined }))
+      : undefined;
+
+  if (isKrsRecovery) {
+    // KRS recovery - half-signed
+    // keyternal uses legacy format, other KRS providers use PSBT format
+    txInfo.transactionHex =
+      krsProvider === 'keyternal'
+        ? Buffer.from(psbt.getHalfSignedLegacyFormat()).toString('hex')
+        : encodeTransaction(psbt).toString('hex');
+
+    txInfo.coin = coin.getChain();
+    txInfo.backupKey = backupKey ?? '';
+    const recoveryAmount = getRecoveryAmount(psbt, walletKeys, recoveryDestination);
+    txInfo.recoveryAmount = Number(recoveryAmount);
+    txInfo.recoveryAmountString = recoveryAmount.toString();
+  } else if (isFullRecovery) {
+    // Full recovery - finalize and extract transaction
+    psbt.finalizeAllInputs();
+    txInfo.transactionHex = Buffer.from(psbt.extractTransaction().toBytes()).toString('hex');
+  }
+
+  return txInfo;
+}
+
+function getBip32Keys(bitgo: BitGoBase, params: RecoverParams): Triple<BIP32> {
+  const keys = getBip32KeysFromSdkCore(bitgo, params, { requireBitGoXpub: true });
   if (!isTriple(keys)) {
     throw new Error(`expected key triple`);
   }
@@ -303,14 +468,8 @@ export async function backupKeyRecovery(
     throw new Error('feeRate must be a positive number');
   }
 
-  const isKrsRecovery = getIsKrsRecovery(params);
-  const isUnsignedSweep = getIsUnsignedSweep(params);
-  const responseTxFormat = !isKrsRecovery || params.krsProvider === 'keyternal' ? 'legacy' : 'psbt';
-
-  const krsProvider = isKrsRecovery ? getKrsProvider(coin, params.krsProvider) : undefined;
-
   // check whether key material and password authenticate the users and return parent keys of all three keys of the wallet
-  const keys = getBip32Privkeys(bitgo, params);
+  const keys = getBip32Keys(bitgo, params);
   const walletKeys = fixedScriptWallet.RootWalletKeys.from({
     triple: keys,
     derivationPrefixes: [params.userKeyPath || 'm/0/0', 'm/0/0', 'm/0/0'],
@@ -345,24 +504,19 @@ export async function backupKeyRecovery(
     )
   ).flat();
 
-  // Execute the queries and gather the unspents
-  const totalInputAmount = unspentSum(unspents);
-  if (totalInputAmount <= BigInt(0)) {
-    throw new ErrorNoInputToRecover();
-  }
-
-  const txInfo = {} as BackupKeyRecoveryTransansaction;
-  const feePerByte: number =
+  const feeRateSatVB =
     params.feeRate !== undefined
       ? params.feeRate
       : await getRecoveryFeePerBytes(coin, { defaultValue: DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V2 });
 
-  txInfo.inputs =
-    responseTxFormat === 'legacy'
-      ? unspents.map((u) => ({ ...u, value: Number(u.value), valueString: u.value.toString(), prevTx: undefined }))
-      : undefined;
+  // Calculate KRS fee if needed
+  const userHasPrivateKey = hasPrivateKey(keys[0]);
+  const backupHasPrivateKey = hasPrivateKey(keys[1]);
+  const isKrsRecovery = params.krsProvider !== undefined && userHasPrivateKey && !backupHasPrivateKey;
 
   let krsFee = BigInt(0);
+  let krsFeeAddress: string | undefined;
+
   if (isKrsRecovery && params.krsProvider) {
     try {
       krsFee = BigInt(await calculateFeeAmount(coin, { provider: params.krsProvider }));
@@ -370,69 +524,44 @@ export async function backupKeyRecovery(
       // Don't let this error block the recovery -
       console.dir(err);
     }
+
+    if (krsFee > BigInt(0)) {
+      const krsProviderConfig = getKrsProvider(coin, params.krsProvider);
+      if (!krsProviderConfig.feeAddresses) {
+        throw new Error(`keyProvider must define feeAddresses`);
+      }
+
+      krsFeeAddress = krsProviderConfig.feeAddresses[coin.getChain()];
+
+      if (!krsFeeAddress) {
+        throw new Error('this KRS provider has not configured their fee structure yet - recovery cannot be completed');
+      }
+    }
   }
 
-  let krsFeeAddress: string | undefined;
-  if (krsProvider && krsFee > BigInt(0)) {
-    if (!krsProvider.feeAddresses) {
-      throw new Error(`keyProvider must define feeAddresses`);
-    }
+  // Build and sign PSBT
+  const psbt = backupKeyRecoveryWithWalletUnspents(
+    coin.name,
+    {
+      walletKeys,
+      keys,
+      recoveryDestination: params.recoveryDestination,
+      feeRateSatVB,
+      krsFee,
+      krsFeeAddress,
+    },
+    unspents
+  );
 
-    krsFeeAddress = krsProvider.feeAddresses[coin.getChain()];
-
-    if (!krsFeeAddress) {
-      throw new Error('this KRS provider has not configured their fee structure yet - recovery cannot be completed');
-    }
-  }
-
-  let psbt = createBackupKeyRecoveryPsbt(coin.getChain(), walletKeys, unspents, {
-    feeRateSatVB: feePerByte,
+  // Format the result
+  return formatBackupKeyRecoveryResult(coin, psbt, {
+    walletKeys,
+    keys,
     recoveryDestination: params.recoveryDestination,
-    keyRecoveryServiceFee: krsFee,
-    keyRecoveryServiceFeeAddress: krsFeeAddress,
+    krsProvider: params.krsProvider,
+    backupKey: params.backupKey,
+    unspents,
   });
-
-  if (isUnsignedSweep) {
-    return {
-      txHex: encodeTransaction(psbt).toString('hex'),
-      txInfo: {},
-      feeInfo: {},
-      coin: coin.getChain(),
-    };
-  }
-
-  const rootWalletKeysWasm = fixedScriptWallet.RootWalletKeys.from(walletKeys);
-  const replayProtection = { publicKeys: getReplayProtectionPubkeys(coin.name) };
-
-  // Sign with user key first
-  psbt = signAndVerifyPsbt(psbt, keys[0], rootWalletKeysWasm, replayProtection);
-
-  if (isKrsRecovery) {
-    // The KRS provider keyternal solely supports P2SH, P2WSH, and P2SH-P2WSH input script types.
-    // It currently uses an outdated BitGoJS SDK, which relies on a legacy transaction builder for cosigning.
-    // Unfortunately, upgrading the keyternal code presents challenges,
-    // which hinders the integration of the latest BitGoJS SDK with PSBT signing support.
-    txInfo.transactionHex =
-      params.krsProvider === 'keyternal'
-        ? Buffer.from(psbt.getHalfSignedLegacyFormat()).toString('hex')
-        : encodeTransaction(psbt).toString('hex');
-  } else {
-    // Sign with backup key
-    psbt = signAndVerifyPsbt(psbt, keys[1], rootWalletKeysWasm, replayProtection);
-    // Finalize and extract transaction
-    psbt.finalizeAllInputs();
-    txInfo.transactionHex = Buffer.from(psbt.extractTransaction().toBytes()).toString('hex');
-  }
-
-  if (isKrsRecovery) {
-    txInfo.coin = coin.getChain();
-    txInfo.backupKey = params.backupKey;
-    const recoveryAmount = getRecoveryAmount(psbt, walletKeys, params.recoveryDestination);
-    txInfo.recoveryAmount = Number(recoveryAmount);
-    txInfo.recoveryAmountString = recoveryAmount.toString();
-  }
-
-  return txInfo;
 }
 
 export interface BitGoV1Unspent {

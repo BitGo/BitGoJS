@@ -549,14 +549,4 @@ export class Eth extends AbstractEthLikeNewCoins {
   protected getTransactionBuilder(): TransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
-
-  /** @inheritDoc */
-  supportsMessageSigning(): boolean {
-    return true;
-  }
-
-  /** @inheritDoc */
-  supportsSigningTypedData(): boolean {
-    return true;
-  }
 }

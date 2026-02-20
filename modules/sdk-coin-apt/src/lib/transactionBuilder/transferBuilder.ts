@@ -4,6 +4,7 @@ import { TransactionType } from '@bitgo/sdk-core';
 import { TransferTransaction } from '../transaction/transferTransaction';
 import utils from '../utils';
 import { TransactionPayload, TransactionPayloadEntryFunction } from '@aptos-labs/ts-sdk';
+import { logger } from '@bitgo/logger';
 
 export class TransferBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -40,7 +41,7 @@ export class TransferBuilder extends TransactionBuilder {
       const amountArg = entryFunction.args[1];
       return utils.fetchAndValidateRecipients(addressArg, amountArg).isValid;
     } catch (e) {
-      console.error('invalid transaction payload', e);
+      logger.error('invalid transaction payload', e);
       return false;
     }
   }

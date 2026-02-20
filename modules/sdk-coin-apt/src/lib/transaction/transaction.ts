@@ -8,6 +8,7 @@ import {
   TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
+import { logger } from '@bitgo/logger';
 import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
 import {
   AccountAddress,
@@ -222,7 +223,7 @@ export abstract class Transaction extends BaseTransaction {
         feePayerSignature
       );
     } catch (e) {
-      console.error('invalid signed transaction', e);
+      logger.error('invalid signed transaction', e);
       throw new Error('invalid signed transaction');
     }
   }

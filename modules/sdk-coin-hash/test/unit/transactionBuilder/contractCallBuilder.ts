@@ -4,7 +4,7 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { fromBase64, toHex } from '@cosmjs/encoding';
 import should from 'should';
 import { Hash, Thash } from '../../../src';
-import { TEST_CONTRACT_CALL } from '../../resources/hash';
+import { TEST_CONTRACT_CALL, TEST_GROUP_VOTE, testnetAddress } from '../../resources/hash';
 
 describe('Hash ContractCall Builder', () => {
   let bitgo: TestBitGoAPI;
@@ -24,17 +24,12 @@ describe('Hash ContractCall Builder', () => {
     txBuilder.feeGranter(TEST_CONTRACT_CALL.feeGranter);
     txBuilder.publicKey(toHex(fromBase64(TEST_CONTRACT_CALL.pubKey)));
 
-    // Wrap the inner message in a group proposal
-    // const wrappedMessage = wrapInGroupProposal(
-    //   TEST_CONTRACT_CALL.preEncodedMessageValue,
-    //   TEST_CONTRACT_CALL.proposer,
-    //   testnetAddress.groupPolicyAddress
-    // );
-
     txBuilder.messages([
       {
-        typeUrl: '/cosmos.group.v1.MsgSubmitProposal',
-        value: TEST_CONTRACT_CALL.encodedProposal,
+        sender: TEST_CONTRACT_CALL.proposer,
+        contract: testnetAddress.groupPolicyAddress,
+        msg: fromBase64(TEST_CONTRACT_CALL.encodedProposal),
+        funds: [],
       },
     ]);
     return txBuilder;
@@ -48,6 +43,30 @@ describe('Hash ContractCall Builder', () => {
     basecoin = bitgo.coin('thash');
     factory = basecoin.getBuilder();
   });
+
+  // Helper function to create a group vote transaction builder
+  const groupVoteBuilder = () => {
+    const txBuilder = factory.getContractCallBuilder();
+    txBuilder.sequence(TEST_GROUP_VOTE.sequence);
+    txBuilder.accountNumber(TEST_GROUP_VOTE.accountNumber);
+    txBuilder.chainId(TEST_GROUP_VOTE.chainId);
+    txBuilder.gasBudget({
+      amount: [{ denom: 'nhash', amount: TEST_GROUP_VOTE.fee }],
+      gasLimit: TEST_GROUP_VOTE.gasLimit,
+    });
+    txBuilder.feeGranter(TEST_GROUP_VOTE.feeGranter);
+    txBuilder.publicKey(toHex(fromBase64(TEST_GROUP_VOTE.pubKey)));
+
+    txBuilder.messages([
+      {
+        sender: TEST_GROUP_VOTE.voter,
+        contract: testnetAddress.groupPolicyAddress,
+        msg: fromBase64(TEST_GROUP_VOTE.encodedVote),
+        funds: [],
+      },
+    ]);
+    return txBuilder;
+  };
 
   describe('Contract Call Builder Tests', () => {
     it('should build transaction with expected signable payload', async function () {
@@ -87,6 +106,50 @@ describe('Hash ContractCall Builder', () => {
       // Test signed serialization
       const signedBuilder = contractCallBuilder();
       signedBuilder.sign({ key: toHex(fromBase64(TEST_CONTRACT_CALL.privateKey)) });
+      const signedTx = await signedBuilder.build();
+      const signedRaw = signedTx.toBroadcastFormat();
+      const rebuiltSigned = factory.from(signedRaw);
+      const rebuiltSignedTx = await rebuiltSigned.build();
+      should.equal(rebuiltSignedTx.toBroadcastFormat(), signedRaw);
+      should.equal(rebuiltSignedTx.signature.length, 1);
+      should.equal(rebuiltSignedTx.signature[0], signedTx.signature[0]);
+    });
+  });
+
+  describe('Group Vote Builder Tests', () => {
+    it('should build vote transaction with expected signable payload', async function () {
+      const txBuilder = groupVoteBuilder();
+      const tx = await txBuilder.build();
+      should.equal(toHex(tx.signablePayload), TEST_GROUP_VOTE.expectedSignBytesHex);
+      should.equal(tx.type, TransactionType.ContractCall);
+    });
+
+    it('should build, sign, and serialize group vote transactions', async function () {
+      const unsignedBuilder = groupVoteBuilder();
+      const unsignedTx = await unsignedBuilder.build();
+      should.equal(unsignedTx.type, TransactionType.ContractCall);
+      should.equal(unsignedTx.signature.length, 0);
+      should.exist(unsignedTx.toBroadcastFormat());
+
+      const signedBuilder = groupVoteBuilder();
+      signedBuilder.sign({ key: toHex(fromBase64(TEST_GROUP_VOTE.privateKey)) });
+      const signedTx = await signedBuilder.build();
+      should.equal(signedTx.type, TransactionType.ContractCall);
+      should.equal(signedTx.signature.length, 1);
+      should.exist(signedTx.toBroadcastFormat());
+    });
+
+    it('should handle round-trip serialization for group vote transactions', async function () {
+      const unsignedBuilder = groupVoteBuilder();
+      const unsignedTx = await unsignedBuilder.build();
+      const unsignedRaw = unsignedTx.toBroadcastFormat();
+      const rebuiltUnsigned = factory.from(unsignedRaw);
+      const rebuiltUnsignedTx = await rebuiltUnsigned.build();
+      should.equal(rebuiltUnsignedTx.toBroadcastFormat(), unsignedRaw);
+      should.equal(rebuiltUnsignedTx.type, TransactionType.ContractCall);
+
+      const signedBuilder = groupVoteBuilder();
+      signedBuilder.sign({ key: toHex(fromBase64(TEST_GROUP_VOTE.privateKey)) });
       const signedTx = await signedBuilder.build();
       const signedRaw = signedTx.toBroadcastFormat();
       const rebuiltSigned = factory.from(signedRaw);

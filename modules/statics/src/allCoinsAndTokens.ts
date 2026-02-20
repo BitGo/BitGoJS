@@ -43,6 +43,7 @@ import {
   tstellarToken,
   tsuiToken,
   ttaoToken,
+  ttip20Token,
   ttronToken,
   tvetNFTCollection,
   tworldErc20,
@@ -393,6 +394,42 @@ export const allCoinsAndTokens = [
     [...AccountCoin.DEFAULT_FEATURES]
   ),
   account(
+    '260a8571-1f89-40ad-af8d-c58a391581b5',
+    'xtzevm',
+    'XTZ EVM',
+    Networks.main.xtzevm,
+    18,
+    UnderlyingAsset.XTZEVM,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    'e7fdbd6f-93ff-4dda-8a57-81580827188e',
+    'txtzevm',
+    'Testnet XTZ EVM',
+    Networks.test.xtzevm,
+    18,
+    UnderlyingAsset.XTZEVM,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
     '2660f6f6-1980-4584-a0b3-487d4a832b9f',
     'tbaseeth',
     'Base Ethereum Testnet',
@@ -405,7 +442,6 @@ export const allCoinsAndTokens = [
       CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.SHARED_EVM_SIGNING,
-      CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
@@ -428,7 +464,6 @@ export const allCoinsAndTokens = [
       CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.SHARED_EVM_SIGNING,
-      CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
@@ -881,7 +916,6 @@ export const allCoinsAndTokens = [
       ...EVM_FEATURES,
       CoinFeature.SHARED_EVM_SIGNING,
       CoinFeature.SHARED_EVM_SDK,
-      CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
@@ -1080,7 +1114,7 @@ export const allCoinsAndTokens = [
   account(
     'df2f040b-89f3-4bb3-8da7-2445c7fdefca',
     'tcoreum',
-    'Testnet Coreum',
+    'Testnet TX',
     Networks.test.coreum,
     6,
     UnderlyingAsset.COREUM,
@@ -1565,7 +1599,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.MON,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_MESSAGE_SIGNING]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     '5c5ebe50-fa27-4312-ae3d-7032520aedb5',
@@ -1579,7 +1613,6 @@ export const allCoinsAndTokens = [
       ...EVM_FEATURES,
       CoinFeature.SHARED_EVM_SIGNING,
       CoinFeature.SHARED_EVM_SDK,
-      CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
     ]
@@ -1771,6 +1804,42 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
+    ]
+  ),
+  account(
+    '599ab8d6-ebda-460e-8527-677157f86021',
+    'usdt0',
+    'USDT0',
+    Networks.main.usdt0,
+    18,
+    UnderlyingAsset.USDT0,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    'fd6b7af0-aff3-45fb-9a71-2d7100a1cd89',
+    'tusdt0',
+    'Testnet USDT0',
+    Networks.test.usdt0,
+    18,
+    UnderlyingAsset.USDT0,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -2252,6 +2321,42 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
+  account(
+    '68d22683-a8f2-47b3-8446-92e02a1963ae',
+    'hemieth',
+    'Hemi Ethereum',
+    Networks.main.hemieth,
+    18,
+    UnderlyingAsset.HEMIETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    'df0007d9-974b-4099-bf37-9dc59399c058',
+    'themieth',
+    'Testnet Hemi Ethereum',
+    Networks.test.hemieth,
+    18,
+    UnderlyingAsset.HEMIETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
 
   erc721Token(
     'a7604e03-7f40-41f0-8efa-2e7673ac2a9f',
@@ -2392,6 +2497,15 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['mantle:ausd'],
     Networks.main.mantle
   ),
+  erc20Token(
+    '14596c97-a9d0-4042-9856-0fd8b8ee1b1f',
+    'mantle:usd1',
+    'USD1',
+    18,
+    '0x111111d2bf19e43c34263401e0cad979ed1cdb61',
+    UnderlyingAsset['mantle:usd1'],
+    Networks.main.mantle
+  ),
   // Mantle testnet tokens
   erc20Token(
     '10fd0f49-d71a-4815-bbd0-ce1ca67b7982',
@@ -2400,6 +2514,24 @@ export const allCoinsAndTokens = [
     18,
     '0x13b62c9cd2b294acbb527335eaf36f85fe37ee55',
     UnderlyingAsset['tmantle:bgerch'],
+    Networks.test.mantle
+  ),
+  erc20Token(
+    'c9bc1c74-2db0-4bdd-8545-f20a54815aa5',
+    'tmantle:usd1',
+    'Test USD1 Token',
+    18,
+    '0x7ef7a15922510f91672207a2f61d7ffd998079b3',
+    UnderlyingAsset['tmantle:usd1'],
+    Networks.test.mantle
+  ),
+  erc20Token(
+    '0659ec1e-c759-456b-9399-e1dc2f09e846',
+    'tmantle:stgusd1',
+    'Test USD1 Token',
+    18,
+    '0x334e1fe6d3518ab63a90e129701e954a44d835d8',
+    UnderlyingAsset['tmantle:stgusd1'],
     Networks.test.mantle
   ),
   account(
@@ -2459,6 +2591,15 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['jovayeth:jft'],
     Networks.main.jovayeth
   ),
+  erc20Token(
+    'bd702760-f70b-4b4c-a28c-3b45758042fc',
+    'jovayeth:usdce',
+    'Bridged USDC',
+    6,
+    '0x39c010df583c9de49088947190669883b41a02ab',
+    UnderlyingAsset['jovayeth:usdce'],
+    Networks.main.jovayeth
+  ),
 
   // Jovayeth testnet tokens
   erc20Token(
@@ -2468,6 +2609,15 @@ export const allCoinsAndTokens = [
     18,
     '0x607bafa38ab8ed0f0f15a7f28625d4399612db7f',
     UnderlyingAsset['tjovayeth:tcmn'],
+    Networks.test.jovayeth
+  ),
+  erc20Token(
+    'a8f3b2c1-d4e5-4f6a-8b7c-9d0e1f2a3b4c',
+    'tjovayeth:usdce',
+    'Bridged USDC',
+    6,
+    '0x39c010df583c9de49088947190669883b41a02ab',
+    UnderlyingAsset['tjovayeth:usdce'],
     Networks.test.jovayeth
   ),
   account(
@@ -2723,7 +2873,7 @@ export const allCoinsAndTokens = [
     'tempo',
     'Tempo',
     Networks.main.tempo,
-    18,
+    6,
     UnderlyingAsset.TEMPO,
     BaseUnit.ETH,
     TEMPO_FEATURES
@@ -2733,9 +2883,46 @@ export const allCoinsAndTokens = [
     'ttempo',
     'Tempo Testnet',
     Networks.test.tempo,
-    18,
+    6,
     UnderlyingAsset.TEMPO,
     BaseUnit.ETH,
+    TEMPO_FEATURES
+  ),
+  // Tempo TIP20 testnet tokens
+  ttip20Token(
+    'e1872fd8-14ee-4dc9-bc5e-fd52552d9c60',
+    'ttempo:pathusd',
+    'Testnet pathUSD',
+    6,
+    '0x20c0000000000000000000000000000000000000',
+    UnderlyingAsset['ttempo:pathusd'],
+    TEMPO_FEATURES
+  ),
+  ttip20Token(
+    '3c67eaa8-f073-4e1a-9d3a-c6756a31bef0',
+    'ttempo:alphausd',
+    'Testnet AlphaUSD',
+    6,
+    '0x20c0000000000000000000000000000000000001',
+    UnderlyingAsset['ttempo:alphausd'],
+    TEMPO_FEATURES
+  ),
+  ttip20Token(
+    'da6d27bd-ed3b-4b59-b574-6e013e5eb55d',
+    'ttempo:betausd',
+    'Testnet BetaUSD',
+    6,
+    '0x20c0000000000000000000000000000000000002',
+    UnderlyingAsset['ttempo:betausd'],
+    TEMPO_FEATURES
+  ),
+  ttip20Token(
+    '58cbb592-446e-4753-8c2a-c89f662135ba',
+    'ttempo:thetausd',
+    'Testnet ThetaUSD',
+    6,
+    '0x20c0000000000000000000000000000000000003',
+    UnderlyingAsset['ttempo:thetausd'],
     TEMPO_FEATURES
   ),
   canton(
@@ -2849,6 +3036,42 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    'e10b89f6-3d14-4d85-a05a-da53d6e60489',
+    'codexeth',
+    'Codex Ethereum',
+    Networks.main.codexeth,
+    18,
+    UnderlyingAsset.CODEXETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    '3fe052be-5dc0-42b1-a5a8-63406296d06f',
+    'tcodexeth',
+    'Testnet Codex Ethereum',
+    Networks.test.codexeth,
+    18,
+    UnderlyingAsset.CODEXETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.SUPPORTS_ERC20,
     ]
   ),
@@ -2976,6 +3199,15 @@ export const allCoinsAndTokens = [
     6,
     '0x9151434b16b9763660705744891fa906f660ecc5',
     UnderlyingAsset['seievm:usd0'],
+    Networks.main.seievm
+  ),
+  erc20Token(
+    'b30c2605-0a9e-448e-8ea3-8df103e20384',
+    'seievm:wsei',
+    'Wrapped SEI',
+    18,
+    '0xe30fedd158a2e3b13e9badaeabafc5516e95e8c7',
+    UnderlyingAsset['seievm:wsei'],
     Networks.main.seievm
   ),
   erc20Token(
@@ -3250,6 +3482,24 @@ export const allCoinsAndTokens = [
     Networks.main.basechain
   ),
   erc20Token(
+    'a9b0c1d2-3e4f-4a5b-86c7-9d9e0f1a2b3c',
+    'baseeth:common',
+    'COMMON',
+    18,
+    '0x4c87da04887a1f9f21f777e3a8dd55c3c9f84701',
+    UnderlyingAsset['baseeth:common'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'b0c1d2e3-4f5a-4b6c-87d8-9e0f1a2b3c4d',
+    'baseeth:unite',
+    'Unite',
+    18,
+    '0xa6c6ea2e0140849be02a3a34780cf61b766916c5',
+    UnderlyingAsset['baseeth:unite'],
+    Networks.main.basechain
+  ),
+  erc20Token(
     '7609fc1a-c35c-4179-97fb-18c69bd3b6d3',
     'baseeth:b3',
     'B3',
@@ -3518,6 +3768,24 @@ export const allCoinsAndTokens = [
     6,
     '0x5257950b5277dac30536eae4742ffef4e5af5256',
     UnderlyingAsset['tmorpheth:tmt'],
+    Networks.test.morpheth
+  ),
+  erc20Token(
+    '15286c32-210b-402d-84a2-5e406e584981',
+    'tmorpheth:usd1',
+    'Test USD1 Token',
+    18,
+    '0x8bdaad0ebc24fb63af6c5f29e2a2898500c87886',
+    UnderlyingAsset['tmorpheth:usd1'],
+    Networks.test.morpheth
+  ),
+  erc20Token(
+    'e6a1553d-0dd0-4f77-b6a8-5f265243c7d0',
+    'tmorpheth:stgusd1',
+    'Test USD1 Token',
+    18,
+    '0x055fd4bbad96a076c15187b60fe7ea07ea789b94',
+    UnderlyingAsset['tmorpheth:stgusd1'],
     Networks.test.morpheth
   ),
 
@@ -5471,6 +5739,14 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['bera:wgbera'],
     [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
   ),
+  beraErc20(
+    'c3d4e5f6-7a8b-4c9d-8e1f-2a3b4c5d6e7f',
+    'bera:ir',
+    'Infrared',
+    18,
+    '0xa1b644aec990ad6023811ced36e6a2d6d128c7c9',
+    UnderlyingAsset['bera:ir']
+  ),
   tberaErc20(
     '24af5e18-ab4b-43e5-80db-0ddb9beb01b3',
     'tbera:bgt',
@@ -5983,6 +6259,18 @@ export const allCoinsAndTokens = [
     'DMC',
     '0x4c981f3ff786cdb9e514da897ab8a953647dae2ace9679e8358eec1e3e8871ac::dmc::DMC',
     UnderlyingAsset['sui:dmc'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    'e7b8c9d0-1f2a-4b3c-85d6-ae8f9a0b1c2d',
+    'sui:mmt',
+    'Momentum',
+    9,
+    '0x35169bc93e1fddfcf3a82a9eae726d349689ed59e4b065369af8789fe59f8608',
+    'mmt',
+    'MMT',
+    '0x35169bc93e1fddfcf3a82a9eae726d349689ed59e4b065369af8789fe59f8608::mmt::MMT',
+    UnderlyingAsset['sui:mmt'],
     SUI_TOKEN_FEATURES
   ),
   tsuiToken(

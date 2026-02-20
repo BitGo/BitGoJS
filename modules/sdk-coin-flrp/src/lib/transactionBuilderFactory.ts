@@ -6,6 +6,7 @@ import { ExportInPTxBuilder } from './ExportInPTxBuilder';
 import { ImportInPTxBuilder } from './ImportInPTxBuilder';
 import { ExportInCTxBuilder } from './ExportInCTxBuilder';
 import { ImportInCTxBuilder } from './ImportInCTxBuilder';
+import { PermissionlessDelegatorTxBuilder } from './permissionlessDelegatorTxBuilder';
 import { SerializedTx } from './iface';
 import utils from './utils';
 
@@ -109,6 +110,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         builder.initBuilder(tx as pvmSerial.ExportTx, rawBuffer, credentials);
         return builder;
       }
+      if (PermissionlessDelegatorTxBuilder.verifyTxType(tx._type)) {
+        const builder = this.getDelegatorBuilder();
+        builder.initBuilder(tx as pvmSerial.AddPermissionlessDelegatorTx, rawBuffer, credentials);
+        return builder;
+      }
     }
     throw new NotSupported('Transaction type not supported');
   }
@@ -163,6 +169,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getExportInCBuilder(): ExportInCTxBuilder {
     return new ExportInCTxBuilder(this._coinConfig);
+  }
+
+  /**
+   * Get builder for AddPermissionlessDelegator transactions.
+   * Used for delegating stake to existing validators.
+   */
+  getDelegatorBuilder(): PermissionlessDelegatorTxBuilder {
+    return new PermissionlessDelegatorTxBuilder(this._coinConfig);
   }
 
   /** @inheritdoc */

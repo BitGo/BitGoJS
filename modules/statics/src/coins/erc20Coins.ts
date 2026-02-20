@@ -8377,7 +8377,8 @@ export const erc20Coins = [
     'Aave Interest bearing USDT',
     6,
     '0x71fc860f7d3a592a4a98740e39db31d25db65ae8',
-    UnderlyingAsset.AUSDT
+    UnderlyingAsset.AUSDT,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
   ),
   erc20(
     '8d9c0c6b-0ab7-4d98-8b9a-83ae3b77914c',
@@ -8402,7 +8403,8 @@ export const erc20Coins = [
     'Aave interest bearing YFI',
     18,
     '0x5165d24277cd063f5ac44efd447b27025e888f37',
-    UnderlyingAsset.AYFI
+    UnderlyingAsset.AYFI,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
   ),
   erc20(
     '0ff6ec5b-ebff-47b8-aa60-0b02e4ce4de8',
@@ -10964,7 +10966,7 @@ export const erc20Coins = [
     'eth:usdm1',
     'USDM1',
     18,
-    '0xab3cfc7cf0720b75c41b4db078b4ddb338f562e7',
+    '0x90a1717e0dabe37693f79afe43ae236dc3b65957',
     UnderlyingAsset['eth:usdm1'],
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
@@ -10975,6 +10977,24 @@ export const erc20Coins = [
     6,
     '0x0cb6d03b0ac88a463f67b7ad99f9f3ec4678092e',
     UnderlyingAsset['eth:sofid'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  erc20(
+    '5d5188cf-5435-4189-96e7-2650522a76aa',
+    'eth:cusd',
+    'Catholic USD',
+    6,
+    '0xde9f13a6acdde90f83068c1bac151e6edba05885',
+    UnderlyingAsset['eth:cusd'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  erc20(
+    '1c2c6cba-924c-418d-a88f-e274030bf9b2',
+    'eth:fyusd',
+    'FYUSD',
+    6,
+    '0x186d0c7da30735b3f7961d0f16e037d020291571',
+    UnderlyingAsset['eth:fyusd'],
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
@@ -12020,6 +12040,22 @@ export const erc20Coins = [
     UnderlyingAsset['eth:arm-weth-eeth']
   ),
   erc20(
+    'd4e5f6a7-8b9c-4d0e-9f2a-3b4c5d6e7f8a',
+    'eth:cashplus',
+    'CASH+',
+    18,
+    '0x498d9329555471bf6073a5f2d047f746d522a373',
+    UnderlyingAsset['eth:cashplus']
+  ),
+  erc20(
+    'e5f6a7b8-9c0d-4e1f-aa3b-4c5d6e7f8a9b',
+    'eth:island',
+    'ISLAND Token',
+    18,
+    '0x157a6df6b74f4e5e45af4e4615fde7b49225a662',
+    UnderlyingAsset['eth:island']
+  ),
+  erc20(
     '3b5398f9-9c76-4508-8e9a-bf114506025c',
     'eth:job',
     'Jobchain',
@@ -12779,6 +12815,54 @@ export const erc20Coins = [
     6,
     '0x5572728e36b5510010ade1db6bbaea1c402411cc',
     UnderlyingAsset['hteth:sofid'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
+    '0de5107e-a28e-4cfb-8d2d-c8ffce77cb87',
+    'hteth:cusd',
+    'Test Catholic USD',
+    6,
+    '0xb554e8dcadf5d6e18434ad29ad3f1c437bdb29a4',
+    UnderlyingAsset['hteth:cusd'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
+    'f5ca2461-5bce-4268-a507-288c4504109a',
+    'hteth:fyusd',
+    'Test FYUSD',
+    6,
+    '0xd1bbd247be78c68cdeb8486744bd4513e62025e6',
+    UnderlyingAsset['hteth:fyusd'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
+    'b800c6d9-c5fd-4ae0-8da0-22e45a489297',
+    'hteth:stgcusd',
+    'Test Catholic USD',
+    6,
+    '0xbfe885498d05beff9fb49db7d8dca46586a60a20',
+    UnderlyingAsset['hteth:stgcusd'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
+    'e2ba2384-f838-453a-991c-0b5defb9e708',
+    'hteth:stgfyusd',
+    'Test FYUSD',
+    6,
+    '0x2d95790b3b38a6d95f0bf9b0c10e7e76836512c5',
+    UnderlyingAsset['hteth:stgfyusd'],
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
     undefined,
