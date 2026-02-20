@@ -4771,7 +4771,7 @@ export const allCoinsAndTokens = [
     'sportbetsbet',
     'sportbetsbet',
     UnderlyingAsset.EOS_SBET,
-    AccountCoin.DEFAULT_FEATURES,
+    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
     '',
     'SBET'
   ),
