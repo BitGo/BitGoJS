@@ -558,7 +558,8 @@ export class Iota extends BaseCoin {
   ): Promise<IotaObjectWithBalance[]> {
     const url = rpcUrl || this.getPublicNodeUrl();
     const allObjects: IotaObjectWithBalance[] = [];
-    const normalizedCoinType = coinType || this.getNativeCoinType();
+    const innerCoinType = coinType || this.getNativeCoinType();
+    const structType = `0x2::coin::Coin<${innerCoinType}>`;
     let cursor: string | null = null;
     let hasNextPage = true;
     const MAX_PAGES = 500;
@@ -566,7 +567,7 @@ export class Iota extends BaseCoin {
     while (hasNextPage && pageCount < MAX_PAGES) {
       pageCount++;
       const query = {
-        filter: { StructType: normalizedCoinType },
+        filter: { StructType: structType },
         options: { showContent: true, showType: true },
       };
 
