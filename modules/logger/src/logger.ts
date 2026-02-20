@@ -1,25 +1,13 @@
 import { sanitize } from './sanitizeLog';
 
 /**
- * BitGo Logger with automatic sanitization in test/staging environments
+ * BitGo Logger with automatic sanitization for all environments
  */
 class BitGoLogger {
   /**
-   * Determines if sanitization should be applied based on NODE_ENV
-   */
-  private shouldSanitize(): boolean {
-    const env = process.env.NODE_ENV;
-    return env === 'test' || env === 'staging';
-  }
-
-  /**
-   * Sanitizes arguments if in test/staging environment
+   * Sanitizes arguments for all environments
    */
   private sanitizeArgs(args: unknown[]): unknown[] {
-    if (!this.shouldSanitize()) {
-      return args;
-    }
-
     return args.map((arg) => {
       if (typeof arg === 'object' && arg !== null) {
         return sanitize(arg);
