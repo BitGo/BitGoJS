@@ -7,6 +7,7 @@ import {
   Environments,
   ExplanationResult,
   KeyPair,
+  TransactionType,
   MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -39,6 +40,8 @@ import {
   Transaction,
   TransactionBuilderFactory,
   Utils,
+  explainDotTransaction,
+  type DotWasmExplanation,
 } from './lib';
 import '@polkadot/api-augment';
 import { ApiPromise, WsProvider } from '@polkadot/api';
@@ -56,14 +59,6 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions {
 export interface TransactionPrebuild {
   txHex: string;
   transaction: Interface.TxData;
-}
-
-export interface ExplainTransactionOptions {
-  txPrebuild: TransactionPrebuild;
-  publicKey: string;
-  feeInfo: {
-    fee: string;
-  };
 }
 
 export interface VerifiedTransactionParameters {
@@ -209,6 +204,25 @@ export class Dot extends BaseCoin {
    * @param unsignedTransaction
    */
   async explainTransaction(unsignedTransaction: UnsignedTransaction): Promise<ExplanationResult> {
+    // Testnet uses WASM-based parsing (no @polkadot/api dependency).
+    if (this.getChain() === 'tdot') {
+      const material = dotUtils.getMaterial(coins.get(this.getChain()));
+      const wasmExplain = explainDotTransaction({
+        txHex: unsignedTransaction.serializedTxHex,
+        material,
+      });
+      return {
+        ...wasmExplain,
+        type: TransactionType[wasmExplain.type],
+        outputs: wasmExplain.outputs.map((o) => ({
+          ...o,
+          valueString: String(o.amount),
+        })),
+        sequenceId: wasmExplain.nonce,
+        blockNumber: unsignedTransaction.coinSpecific?.blockNumber,
+      };
+    }
+
     let outputAmount = 0;
     unsignedTransaction.parsedTx.outputs.forEach((o) => {
       outputAmount += parseInt(o.valueString, 10);
@@ -237,6 +251,15 @@ export class Dot extends BaseCoin {
     };
 
     return explanationResult;
+  }
+
+  /**
+   * Explain a DOT transaction from hex using WASM parsing.
+   * Bypasses txwrapper-polkadot rebuild — delegates to explainDotTransaction().
+   */
+  explainTransactionWithWasm(txHex: string, senderAddress?: string): DotWasmExplanation {
+    const material = dotUtils.getMaterial(coins.get(this.getChain()));
+    return explainDotTransaction({ txHex, material, senderAddress });
   }
 
   verifySignTransactionParams(params: SignTransactionOptions): VerifiedTransactionParameters {

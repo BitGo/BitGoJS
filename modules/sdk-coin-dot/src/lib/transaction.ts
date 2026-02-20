@@ -38,6 +38,7 @@ import {
 } from './iface';
 import { getAddress, getDelegateAddress } from './iface_utils';
 import utils from './utils';
+import { explainDotTransaction, toJsonFromWasm } from './wasmParser';
 import BigNumber from 'bignumber.js';
 import { Vec } from '@polkadot/types';
 import { PalletConstantMetadataV14 } from '@polkadot/types/interfaces';
@@ -160,6 +161,20 @@ export class Transaction extends BaseTransaction {
   toJson(): TxData {
     if (!this._dotTransaction) {
       throw new InvalidTransactionError('Empty transaction');
+    }
+
+    // WASM path for signed tdot transactions — validates WASM parsing against production.
+    // Only for signed txs because toBroadcastFormat() returns the signed extrinsic (parseable).
+    // Unsigned txs return a signing payload (different format), so they use the legacy path.
+    if (this._coinConfig.name === 'tdot' && this._signedTransaction) {
+      return toJsonFromWasm({
+        txHex: this._signedTransaction,
+        material: utils.getMaterial(this._coinConfig),
+        senderAddress: this._sender,
+        coinConfigName: this._coinConfig.name,
+        referenceBlock: this._dotTransaction.blockHash,
+        blockNumber: Number(this._dotTransaction.blockNumber),
+      });
     }
     const decodedTx = decode(this._dotTransaction, {
       metadataRpc: this._dotTransaction.metadataRpc,
@@ -338,6 +353,17 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   explainTransaction(): TransactionExplanation {
+    // Testnet uses WASM-based parsing (no @polkadot/api dependency).
+    // This validates the WASM path against production traffic before
+    // replacing the legacy implementation for all networks.
+    if (this._coinConfig.name === 'tdot' && this._dotTransaction) {
+      return explainDotTransaction({
+        txHex: this.toBroadcastFormat(),
+        material: utils.getMaterial(this._coinConfig),
+        senderAddress: this._sender,
+      });
+    }
+
     const result = this.toJson();
     const displayOrder = ['outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
     const outputs: TransactionRecipient[] = [];
