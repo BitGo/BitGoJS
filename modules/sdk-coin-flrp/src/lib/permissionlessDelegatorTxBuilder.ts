@@ -7,6 +7,7 @@ import {
   pvmSerial,
   Credential,
   TransferOutput,
+  TransferableOutput,
 } from '@flarenetwork/flarejs';
 import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -210,12 +211,10 @@ export class PermissionlessDelegatorTxBuilder extends TransactionBuilder {
   }
 
   /**
-   * Get the user's address (index 0) for delegation.
+   * Get the user's address (index 0) for default reward address.
    *
-   * For delegation transactions, we use only the user key because:
-   * 1. On-chain rewards go to the C-chain address derived from the delegator's public key
-   * 2. Using the user key ensures rewards go to the user's corresponding C-chain address
-   * 3. The user key is at index 0 in the fromAddresses array (BitGo convention: [user, bitgo, backup])
+   * The user key is at index 0 in the fromAddresses array (BitGo convention: [user, bitgo, backup]).
+   * This is used as the default rewardAddress parameter (though the parameter is ignored by protocol).
    *
    * @returns Buffer containing the user's address
    * @protected
@@ -237,8 +236,9 @@ export class PermissionlessDelegatorTxBuilder extends TransactionBuilder {
    * Uses pvm.e.newAddPermissionlessDelegatorTx (post-Etna API).
    *
    * Note: The rewardAddresses parameter is accepted by the API but does NOT affect
-   * where rewards are sent on-chain - rewards always go to the C-chain address
-   * derived from the delegator's public key (user key at index 0).
+   * where rewards are sent on-chain. Rewards accrue to C-chain addresses derived
+   * from the P-chain addresses in the stake outputs. The stake outputs contain the
+   * addresses from fromAddressesBytes (sorted to match UTXO owner order).
    * @protected
    */
   protected buildFlareTransaction(): void {
@@ -275,19 +275,24 @@ export class PermissionlessDelegatorTxBuilder extends TransactionBuilder {
     }
     const utxos = utils.decodedToUtxos(this.transaction._utxos, this.transaction._network.assetId);
 
-    // Use only the user key (index 0) for fromAddressesBytes
-    // This ensures the C-chain reward address is derived from the user's public key
+    // Get user address for default reward address derivation
     const userAddress = this.getUserAddress();
 
     const rewardAddresses =
       this.transaction._rewardAddresses.length > 0 ? this.transaction._rewardAddresses : [userAddress];
 
     // Use Etna (post-fork) API - pvm.e.newAddPermissionlessDelegatorTx
+    // IMPORTANT: Sort fromAddresses to match the sorted order in UTXOs
+    // The SDK sorts UTXO addresses (utils.ts:574) before passing to FlareJS,
+    // so fromAddressesBytes must also be sorted to match UTXO owner addresses
+    const fromAddressBuffers = this.transaction._fromAddresses.map((addr) => Buffer.from(addr));
+    const sortedFromAddresses = utils.sortAddressBuffersByHex(fromAddressBuffers);
+
     const delegatorTx = pvm.e.newAddPermissionlessDelegatorTx(
       {
         end: this._endTime,
         feeState: this._feeState,
-        fromAddressesBytes: [userAddress],
+        fromAddressesBytes: sortedFromAddresses,
         nodeId: this._nodeID,
         rewardAddresses: rewardAddresses,
         start: this._startTime,
@@ -298,7 +303,66 @@ export class PermissionlessDelegatorTxBuilder extends TransactionBuilder {
       this.transaction._context
     );
 
-    this.transaction.setTransaction(delegatorTx as UnsignedTx);
+    // Fix change output threshold bug (same as ExportInPTxBuilder)
+    const flareUnsignedTx = delegatorTx as UnsignedTx;
+    const innerTx = flareUnsignedTx.getTx() as pvmSerial.AddPermissionlessDelegatorTx;
+    const changeOutputs = innerTx.baseTx.outputs;
+    let correctedDelegatorTx: pvmSerial.AddPermissionlessDelegatorTx = innerTx;
+
+    if (changeOutputs.length > 0 && this.transaction._threshold > 1) {
+      // Only apply fix for multisig wallets (threshold > 1)
+      const allWalletAddresses = this.transaction._fromAddresses.map((addr) => Buffer.from(addr));
+
+      const correctedChangeOutputs = changeOutputs.map((output) => {
+        const transferOut = output.output as TransferOutput;
+
+        const assetIdStr = utils.flareIdString(Buffer.from(output.assetId.toBytes()).toString('hex')).toString();
+        return TransferableOutput.fromNative(
+          assetIdStr,
+          transferOut.amount(),
+          allWalletAddresses,
+          this.transaction._locktime,
+          this.transaction._threshold // Fix: use wallet's threshold instead of FlareJS's default (1)
+        );
+      });
+
+      correctedDelegatorTx = this.createCorrectedDelegatorTx(innerTx, correctedChangeOutputs);
+    }
+
+    // Create new UnsignedTx with corrected change outputs
+    const fixedUnsignedTx = new UnsignedTx(correctedDelegatorTx, [], new FlareUtils.AddressMaps([]), []);
+
+    this.transaction.setTransaction(fixedUnsignedTx);
+  }
+
+  /**
+   * Create a corrected AddPermissionlessDelegatorTx with the given change outputs.
+   * This is necessary because FlareJS's newAddPermissionlessDelegatorTx doesn't support setting
+   * the threshold and locktime for change outputs - it defaults to threshold=1.
+   *
+   * FlareJS declares baseTx.outputs as readonly, so we use Object.defineProperty
+   * to override the property with the corrected outputs. This is a workaround until
+   * FlareJS adds proper support for change output thresholds.
+   *
+   * @param originalTx - The original AddPermissionlessDelegatorTx
+   * @param correctedOutputs - The corrected change outputs with proper threshold
+   * @returns A new AddPermissionlessDelegatorTx with the corrected change outputs
+   */
+  private createCorrectedDelegatorTx(
+    originalTx: pvmSerial.AddPermissionlessDelegatorTx,
+    correctedOutputs: TransferableOutput[]
+  ): pvmSerial.AddPermissionlessDelegatorTx {
+    // FlareJS declares baseTx.outputs as `public readonly outputs: readonly TransferableOutput[]`
+    // We use Object.defineProperty to override the readonly property with our corrected outputs.
+    // This is necessary because FlareJS's newAddPermissionlessDelegatorTx doesn't support change output threshold/locktime.
+    Object.defineProperty(originalTx.baseTx, 'outputs', {
+      value: correctedOutputs,
+      writable: false,
+      enumerable: true,
+      configurable: true,
+    });
+
+    return originalTx;
   }
 
   /**
