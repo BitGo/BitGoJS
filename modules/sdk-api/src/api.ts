@@ -230,40 +230,92 @@ export function verifyResponse(
     return response;
   }
 
-  const verificationResponse = bitgo.verifyResponse({
-    url: req.url,
-    hmac: response.header.hmac,
-    statusCode: response.status,
-    text: response.text,
-    timestamp: response.header.timestamp,
-    token: req.authenticationToken,
-    method,
-    authVersion,
-  });
+  // --- Build version-specific params, call bitgo.verifyResponse(), collect error context ---
+  let verificationResult: {
+    isValid: boolean;
+    expectedHmac: string;
+    isInResponseValidityWindow: boolean;
+    verificationTime: number;
+  };
+  let hmacErrorDetails: Record<string, unknown>;
+  let responseTimestamp: string | number;
 
-  if (!verificationResponse.isValid) {
-    // calculate the HMAC
-    const receivedHmac = response.header.hmac;
-    const expectedHmac = verificationResponse.expectedHmac;
-    const signatureSubject = verificationResponse.signatureSubject;
-    // Log only the first 10 characters of the token to ensure the full token isn't logged.
+  if (authVersion === 4) {
+    const hmac = response.header['x-signature'];
+    const timestamp = response.header['x-request-timestamp'];
+    const authRequestId = response.header['x-auth-request-id'];
+
+    if (!hmac || !timestamp) {
+      // Server didn't sign the response. This can happen legitimately when the
+      debug(
+        'v4 response verification skipped: server response (status %d) missing HMAC headers (x-signature: %s, x-request-timestamp: %s)',
+        response.status,
+        hmac ? 'present' : 'missing',
+        timestamp ? 'present' : 'missing'
+      );
+      return response;
+    }
+
+    // Hash the raw response body bytes.
+    // Convert response.text to a Buffer (UTF-8) so we're hashing the actual bytes,
+    // not relying on Node's implicit string encoding in crypto.update().
+    const rawResponseBuffer = Buffer.from(response.text || '');
+    const bodyHashHex = bitgo.calculateBodyHash(rawResponseBuffer);
+
+    // req.v4PathWithQuery is always set by requestPatch; fallback parses req.url as a safety net.
+    let pathWithQuery = req.v4PathWithQuery;
+    if (!pathWithQuery) {
+      const parsedUrl = new URL(req.url);
+      pathWithQuery = parsedUrl.pathname + parsedUrl.search;
+    }
+
+    const result = bitgo.verifyResponse({
+      hmac,
+      timestampSec: Number(timestamp),
+      method: req.v4Method || method,
+      pathWithQuery,
+      bodyHashHex,
+      authRequestId: authRequestId || req.v4AuthRequestId || '',
+      statusCode: response.status,
+      rawToken: req.authenticationToken,
+    });
+
+    verificationResult = result;
+    responseTimestamp = timestamp;
+    hmacErrorDetails = { expectedHmac: result.expectedHmac, receivedHmac: hmac, preimage: result.preimage };
+  } else {
+    const result = bitgo.verifyResponse({
+      url: req.url,
+      hmac: response.header.hmac,
+      statusCode: response.status,
+      text: response.text,
+      timestamp: response.header.timestamp,
+      token: req.authenticationToken,
+      method,
+      authVersion,
+    });
+
+    verificationResult = result;
+    responseTimestamp = response.header.timestamp;
     const partialBitgoToken = token ? token.substring(0, 10) : '';
-    const errorDetails = {
-      expectedHmac,
-      receivedHmac,
-      hmacInput: signatureSubject,
+    hmacErrorDetails = {
+      expectedHmac: result.expectedHmac,
+      receivedHmac: response.header.hmac,
+      hmacInput: result.signatureSubject,
       requestToken: req.authenticationToken,
       bitgoToken: partialBitgoToken,
     };
-    debug('Invalid response HMAC: %O', errorDetails);
-    throw new ApiResponseError('invalid response HMAC, possible man-in-the-middle-attack', 511, errorDetails);
   }
 
-  if (bitgo.getAuthVersion() === 3 && !verificationResponse.isInResponseValidityWindow) {
-    const errorDetails = {
-      timestamp: response.header.timestamp,
-      verificationTime: verificationResponse.verificationTime,
-    };
+  // --- Common validation for all auth versions ---
+  if (!verificationResult.isValid) {
+    debug('Invalid response HMAC: %O', hmacErrorDetails);
+    throw new ApiResponseError('invalid response HMAC, possible man-in-the-middle-attack', 511, hmacErrorDetails);
+  }
+
+  // v3 and v4 enforce the response validity window; v2 does not
+  if (authVersion >= 3 && !verificationResult.isInResponseValidityWindow) {
+    const errorDetails = { timestamp: responseTimestamp, verificationTime: verificationResult.verificationTime };
     debug('Server response outside response validity time window: %O', errorDetails);
     throw new ApiResponseError(
       'server response outside response validity time window, possible man-in-the-middle-attack',
@@ -271,5 +323,6 @@ export function verifyResponse(
       errorDetails
     );
   }
+
   return response;
 }

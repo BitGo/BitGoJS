@@ -1,6 +1,6 @@
 export const supportedRequestMethods = ['get', 'post', 'put', 'del', 'patch', 'options', 'delete'] as const;
 
-export type AuthVersion = 2 | 3;
+export type AuthVersion = 2 | 3 | 4;
 
 export interface CalculateHmacSubjectOptions<T> {
   urlPath: string;
