@@ -1239,7 +1239,7 @@ function parseCustomInstructions(
   return instructionData;
 }
 
-function findTokenName(
+export function findTokenName(
   mintAddress: string,
   instructionMetadata?: InstructionParams[],
   _useTokenAddressTokenName?: boolean

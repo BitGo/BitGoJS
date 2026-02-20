@@ -20,3 +20,4 @@ export { TransferBuilderV2 } from './transferBuilderV2';
 export { WalletInitializationBuilder } from './walletInitializationBuilder';
 export { Interface, Utils };
 export { MessageBuilderFactory } from './messages';
+export { explainSolTransaction, ExplainTransactionWasmOptions } from './explainTransactionWasm';

@@ -57,7 +57,14 @@ import {
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseNetwork, CoinFamily, coins, SolCoin, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { KeyPair as SolKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
+import {
+  KeyPair as SolKeyPair,
+  Transaction,
+  TransactionBuilder,
+  TransactionBuilderFactory,
+  explainSolTransaction,
+} from './lib';
+import { TransactionExplanation as SolLibTransactionExplanation } from './lib/iface';
 import {
   getAssociatedTokenAccountAddress,
   getSolTokenFromAddress,
@@ -80,6 +87,7 @@ export interface ExplainTransactionOptions {
   txBase64: string;
   feeInfo: TransactionFee;
   tokenAccountRentExemptAmount?: string;
+  coinName?: string;
 }
 
 export interface TxInfo {
@@ -696,6 +704,7 @@ export class Sol extends BaseCoin {
   }
 
   async parseTransaction(params: SolParseTransactionOptions): Promise<SolParsedTransaction> {
+    // explainTransaction now uses WASM for testnet automatically
     const transactionExplanation = await this.explainTransaction({
       txBase64: params.txBase64,
       feeInfo: params.feeInfo,
@@ -741,9 +750,16 @@ export class Sol extends BaseCoin {
 
   /**
    * Explain a Solana transaction from txBase64
+   * Uses WASM-based parsing for testnet, with fallback to legacy builder approach.
    * @param params
    */
   async explainTransaction(params: ExplainTransactionOptions): Promise<SolTransactionExplanation> {
+    // Use WASM-based parsing for testnet (simpler, faster, no @solana/web3.js rebuild)
+    if (this.getChain() === 'tsol') {
+      return this.explainTransactionWithWasm(params) as SolTransactionExplanation;
+    }
+
+    // Legacy approach for mainnet (until WASM is fully validated)
     const factory = this.getBuilder();
     let rebuiltTransaction;
 
@@ -765,6 +781,14 @@ export class Sol extends BaseCoin {
     const explainedTransaction = (rebuiltTransaction as BaseTransaction).explainTransaction();
 
     return explainedTransaction as SolTransactionExplanation;
+  }
+
+  /**
+   * Explain a Solana transaction using WASM parsing (bypasses @solana/web3.js rebuild).
+   * Delegates to standalone explainSolTransaction().
+   */
+  explainTransactionWithWasm(params: ExplainTransactionOptions): SolLibTransactionExplanation {
+    return explainSolTransaction({ ...params, coinName: params.coinName ?? this.getChain() });
   }
 
   /** @inheritDoc */

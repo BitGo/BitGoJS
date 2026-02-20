@@ -19,7 +19,7 @@ import {
 } from '@solana/web3.js';
 import BigNumber from 'bignumber.js';
 import base58 from 'bs58';
-import { KeyPair } from '.';
+import { explainSolTransaction, KeyPair } from '.';
 import {
   InstructionBuilderTypes,
   UNAVAILABLE_TEXT,
@@ -503,6 +503,18 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritDoc */
   explainTransaction(): TransactionExplanation {
+    // Testnet uses WASM-based parsing (no @solana/web3.js dependency).
+    // This validates the WASM path against production traffic before
+    // replacing the legacy implementation for all networks.
+    if (this._coinConfig.name === 'tsol') {
+      return explainSolTransaction({
+        txBase64: this.toBroadcastFormat(),
+        feeInfo: this._lamportsPerSignature ? { fee: this._lamportsPerSignature.toString() } : undefined,
+        tokenAccountRentExemptAmount: this._tokenAccountRentExemptAmount,
+        coinName: this._coinConfig.name,
+      });
+    }
+
     if (validateRawMsgInstruction(this._solTransaction.instructions)) {
       return this.explainRawMsgAuthorizeTransaction();
     }

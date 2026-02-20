@@ -19,6 +19,7 @@ module.exports = {
       // Note: We can't use global `conditionNames: ['browser', 'import', ...]` because
       // third-party packages like @solana/spl-token and @bufbuild/protobuf have broken ESM builds.
       '@bitgo/wasm-utxo': path.resolve('../../node_modules/@bitgo/wasm-utxo/dist/esm/js/index.js'),
+      '@bitgo/wasm-solana': path.resolve('../../node_modules/@bitgo/wasm-solana/dist/esm/js/index.js'),
       '@bitgo/utxo-ord': path.resolve('../utxo-ord/dist/esm/index.js'),
     },
     fallback: {
