@@ -322,8 +322,8 @@ describe('Express Wallet Update Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/signerHost/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/signerHost/);
     });
 
     it('should return 400 when signerTlsCert is missing', async function () {
@@ -337,8 +337,8 @@ describe('Express Wallet Update Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/signerTlsCert/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/signerTlsCert/);
     });
 
     it('should return 400 when passphrase is missing', async function () {
@@ -352,8 +352,8 @@ describe('Express Wallet Update Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/passphrase/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/passphrase/);
     });
 
     it('should return 400 when signerHost has invalid type', async function () {
@@ -367,8 +367,8 @@ describe('Express Wallet Update Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/signerHost/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/signerHost/);
     });
 
     it('should return 400 when signerTlsCert has invalid type', async function () {
@@ -382,8 +382,8 @@ describe('Express Wallet Update Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/signerTlsCert/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/signerTlsCert/);
     });
 
     it('should return 400 when passphrase has invalid type', async function () {
@@ -397,8 +397,8 @@ describe('Express Wallet Update Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/passphrase/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/passphrase/);
     });
 
     it('should return 400 when signerMacaroon has invalid type', async function () {
@@ -413,8 +413,8 @@ describe('Express Wallet Update Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/signerMacaroon/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/signerMacaroon/);
     });
   });
 
