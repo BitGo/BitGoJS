@@ -281,7 +281,7 @@ export const avaxTokens = [
     6,
     '0x625e7708f30ca75bfd92586e17077590c60eb4cd',
     UnderlyingAsset['avaxc:aavausdc'],
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN, CoinFeature.REBASE_TOKEN]
   ),
   avaxErc20(
     'c6fd3419-164b-46a5-be0b-50f28f8c2c81',
@@ -345,7 +345,8 @@ export const avaxTokens = [
     'Aave Avalanche DAI',
     18,
     '0x82e64f49ed5ec1bc6e43dad4fc8af9bb3a2312ee',
-    UnderlyingAsset['avaxc:aavadai']
+    UnderlyingAsset['avaxc:aavadai'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REBASE_TOKEN]
   ),
   avaxErc20(
     '2733a66b-467d-4705-b806-afc9a58789ed',
@@ -378,7 +379,7 @@ export const avaxTokens = [
     18,
     '0x6ab707aca953edaefbc4fd23ba73294241490620',
     UnderlyingAsset['avaxc:aavausdt'],
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN, CoinFeature.REBASE_TOKEN]
   ),
   avaxErc20(
     'ffec10f0-09c7-4068-a623-b95d95eb6058',
