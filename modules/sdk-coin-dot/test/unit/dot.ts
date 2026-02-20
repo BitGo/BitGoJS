@@ -206,7 +206,7 @@ describe('DOT:', function () {
 
     it('should explain a transfer via explainTransactionWithWasm', function () {
       const tx = buildTransaction({ type: 'transfer', to: RECIPIENT, amount: 1000000000000n }, wasmContext());
-      const explained = basecoin.explainTransactionWithWasm(tx.toHex(), SENDER);
+      const explained = basecoin.explainTransactionWithWasm(tx.toBroadcastFormat(), SENDER);
 
       assert.strictEqual(explained.type, TransactionType.Send);
       assert.strictEqual(explained.outputs.length, 1);
@@ -219,7 +219,7 @@ describe('DOT:', function () {
 
     it('should explain a staking bond via explainTransactionWithWasm', function () {
       const tx = buildTransaction({ type: 'stake', amount: 5000000000000n, payee: { type: 'stash' } }, wasmContext(1));
-      const explained = basecoin.explainTransactionWithWasm(tx.toHex(), SENDER);
+      const explained = basecoin.explainTransactionWithWasm(tx.toBroadcastFormat(), SENDER);
 
       assert.strictEqual(explained.type, TransactionType.StakingActivate);
       assert.strictEqual(explained.outputs.length, 1);
@@ -230,8 +230,8 @@ describe('DOT:', function () {
     it('should explain a transfer via coin class explainTransaction (WASM path)', async function () {
       const tx = buildTransaction({ type: 'transfer', to: RECIPIENT, amount: 1000000000000n }, wasmContext());
       const unsignedTransaction = {
-        serializedTxHex: tx.toHex(),
-        signableHex: tx.toHex(),
+        serializedTxHex: tx.toBroadcastFormat(),
+        signableHex: tx.toBroadcastFormat(),
         derivationPath: 'm/0',
         parsedTx: { outputs: [], spendAmount: '0', inputs: [] },
         entryValues: undefined,
