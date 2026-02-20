@@ -937,6 +937,23 @@ async function handleV2SendOne(req: ExpressApiRouteRequest<'express.v2.wallet.se
   const wallet = await coin.wallets().get({ id: req.decoded.id, reqId });
   req.body.reqId = reqId;
 
+  // Validate eip1559: reject partial objects, normalize empty objects to undefined
+  if (req.body.eip1559) {
+    const { maxFeePerGas, maxPriorityFeePerGas } = req.body.eip1559;
+    const hasMax = maxFeePerGas !== undefined;
+    const hasPriority = maxPriorityFeePerGas !== undefined;
+    if (hasMax && !hasPriority) {
+      throw new ApiResponseError('eip1559 missing maxPriorityFeePerGas', 400);
+    }
+    if (hasPriority && !hasMax) {
+      throw new ApiResponseError('eip1559 missing maxFeePerGas', 400);
+    }
+    // Normalize empty object to undefined for server-side auto-estimation
+    if (!hasMax && !hasPriority) {
+      req.body.eip1559 = undefined;
+    }
+  }
+
   let result;
   try {
     result = await wallet.send(createSendParams(req));
@@ -960,6 +977,24 @@ async function handleV2SendMany(req: ExpressApiRouteRequest<'express.v2.wallet.s
   const reqId = new RequestTracer();
   const wallet = await coin.wallets().get({ id: req.decoded.id, reqId });
   req.body.reqId = reqId;
+
+  // Validate eip1559: reject partial objects, normalize empty objects to undefined
+  if (req.body.eip1559) {
+    const { maxFeePerGas, maxPriorityFeePerGas } = req.body.eip1559;
+    const hasMax = maxFeePerGas !== undefined;
+    const hasPriority = maxPriorityFeePerGas !== undefined;
+    if (hasMax && !hasPriority) {
+      throw new ApiResponseError('eip1559 missing maxPriorityFeePerGas', 400);
+    }
+    if (hasPriority && !hasMax) {
+      throw new ApiResponseError('eip1559 missing maxFeePerGas', 400);
+    }
+    // Normalize empty object to undefined for server-side auto-estimation
+    if (!hasMax && !hasPriority) {
+      req.body.eip1559 = undefined;
+    }
+  }
+
   let result;
   try {
     if (wallet._wallet.multisigType === 'tss') {

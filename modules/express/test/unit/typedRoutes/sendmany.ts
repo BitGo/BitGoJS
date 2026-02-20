@@ -456,6 +456,68 @@ describe('SendMany V2 codec tests', function () {
       assert.strictEqual(callArgs.gasLimit, 21000);
     });
 
+    it('should normalize empty eip1559 object to undefined for server-side auto-estimation', async function () {
+      const requestBody = {
+        recipients: [{ address: '0x1234567890123456789012345678901234567890', amount: 1000 }],
+        walletPassphrase: 'test_passphrase_12345',
+        eip1559: {},
+      };
+
+      const mockWallet = {
+        sendMany: sinon.stub().resolves(mockSendManyResponse),
+        _wallet: { multisigType: 'onchain' },
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockCoin = {
+        wallets: sinon.stub().returns({
+          get: walletsGetStub,
+        }),
+      };
+
+      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/sendmany`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      assert.strictEqual(mockWallet.sendMany.firstCall.args[0].eip1559, undefined);
+    });
+
+    it('should reject partial eip1559 with 400', async function () {
+      const requestBody = {
+        recipients: [{ address: '0x1234567890123456789012345678901234567890', amount: 1000 }],
+        walletPassphrase: 'test_passphrase_12345',
+        eip1559: { maxFeePerGas: 100000000000 },
+      };
+
+      const mockWallet = {
+        sendMany: sinon.stub().resolves(mockSendManyResponse),
+        _wallet: { multisigType: 'onchain' },
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockCoin = {
+        wallets: sinon.stub().returns({
+          get: walletsGetStub,
+        }),
+      };
+
+      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/sendmany`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 400);
+      assert.ok(result.body.error.includes('eip1559 missing'));
+    });
+
     it('should support memo parameters for Stellar/XRP', async function () {
       const requestBody = {
         recipients: [
@@ -1058,6 +1120,8 @@ describe('SendMany V2 codec tests', function () {
 
         const decoded = assertDecode(t.type(SendManyRequestBody), validBody);
         assert.ok(decoded.eip1559);
+        assert.ok('maxPriorityFeePerGas' in decoded.eip1559);
+        assert.ok('maxFeePerGas' in decoded.eip1559);
         assert.strictEqual(decoded.eip1559.maxPriorityFeePerGas, 2000000000);
         assert.strictEqual(decoded.eip1559.maxFeePerGas, 100000000000);
       });

@@ -336,6 +336,77 @@ describe('SendCoins V2 codec tests', function () {
       assert.strictEqual(callArgs.gasLimit, 21000);
     });
 
+    it('should normalize empty eip1559 object to undefined for server-side auto-estimation', async function () {
+      const requestBody = {
+        address: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+        amount: '1000000000000000000',
+        walletPassphrase: 'test_passphrase_12345',
+        eip1559: {},
+      };
+
+      const mockWallet = {
+        send: sinon.stub().resolves(mockSendResponse),
+        _wallet: { multisigType: 'onchain' },
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockCoin = {
+        wallets: sinon.stub().returns({
+          get: walletsGetStub,
+        }),
+      };
+
+      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/sendcoins`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+
+      // Verify empty eip1559 is normalized to undefined for server-side auto-estimation
+      const callArgs = mockWallet.send.firstCall.args[0];
+      assert.strictEqual(callArgs.eip1559, undefined);
+    });
+
+    it('should reject partial eip1559 object with 400 error', async function () {
+      const requestBody = {
+        address: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+        amount: '1000000000000000000',
+        walletPassphrase: 'test_passphrase_12345',
+        eip1559: {
+          maxFeePerGas: 100000000000,
+          // maxPriorityFeePerGas intentionally missing
+        },
+      };
+
+      const mockWallet = {
+        send: sinon.stub().resolves(mockSendResponse),
+        _wallet: { multisigType: 'onchain' },
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockCoin = {
+        wallets: sinon.stub().returns({
+          get: walletsGetStub,
+        }),
+      };
+
+      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/sendcoins`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      // Partial eip1559 should be rejected with 400 error
+      assert.strictEqual(result.status, 400);
+      assert.ok(result.body.error.includes('eip1559 missing maxPriorityFeePerGas'));
+    });
+
     it('should successfully send with memo (XRP/Stellar)', async function () {
       const requestBody = {
         address: 'GDSAMPLE123456789',
@@ -787,7 +858,36 @@ describe('SendCoins V2 codec tests', function () {
 
         const decoded = assertDecode(t.type(SendCoinsRequestBody), validBody);
         assert.ok(decoded.eip1559);
+        assert.ok('maxPriorityFeePerGas' in decoded.eip1559);
+        assert.ok('maxFeePerGas' in decoded.eip1559);
         assert.strictEqual(decoded.eip1559.maxPriorityFeePerGas, 2000000000);
+        assert.strictEqual(decoded.eip1559.maxFeePerGas, 100000000000);
+      });
+
+      it('should allow empty eip1559 object for backward compatibility', function () {
+        const validBody = {
+          address: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+          amount: '1000000000000000000',
+          eip1559: {},
+        };
+
+        const decoded = assertDecode(t.type(SendCoinsRequestBody), validBody);
+        assert.ok(decoded.eip1559);
+        assert.deepStrictEqual(decoded.eip1559, {});
+      });
+
+      it('should pass schema validation for partial eip1559 (controller rejects)', function () {
+        const partialBody = {
+          address: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+          amount: '1000000000000000000',
+          eip1559: {
+            maxFeePerGas: 100000000000,
+          },
+        };
+
+        // Partial objects pass schema validation; controller validates and rejects
+        const decoded = assertDecode(t.type(SendCoinsRequestBody), partialBody);
+        assert.ok(decoded.eip1559);
         assert.strictEqual(decoded.eip1559.maxFeePerGas, 100000000000);
       });
 
@@ -853,21 +953,6 @@ describe('SendCoins V2 codec tests', function () {
         const invalidBody = {
           address: 'mzKTJw3XJNb7VfkFP77mzPJJz4Dkp4M1T6',
           amount: { value: 1000000 },
-        };
-
-        assert.throws(() => {
-          assertDecode(t.type(SendCoinsRequestBody), invalidBody);
-        });
-      });
-
-      it('should reject body with incomplete eip1559 params', function () {
-        const invalidBody = {
-          address: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
-          amount: '1000000000000000000',
-          eip1559: {
-            maxPriorityFeePerGas: 2000000000,
-            // Missing maxFeePerGas
-          },
         };
 
         assert.throws(() => {
