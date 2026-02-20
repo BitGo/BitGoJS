@@ -125,6 +125,7 @@ import {
   WalletType,
   BuildTokenApprovalResponse,
   WalletInitResult,
+  GetAccountResourcesOptions,
 } from './iWallet';
 
 const debug = require('debug')('bitgo:v2:wallet');
@@ -1463,6 +1464,30 @@ export class Wallet implements IWallet {
     const url = this.url('/address/' + encodeURIComponent(address));
 
     return this.bitgo.put(url).send(putParams).result();
+  }
+
+  /**
+   * Get account resources for the given addresses
+   * @param params - options object containing addresses and optional assetName
+   * @returns {Promise<any>} - response from WP API
+   */
+  async getAccountResources(params: GetAccountResourcesOptions): Promise<any> {
+    const { addresses, assetName } = params;
+
+    if (!Array.isArray(addresses)) {
+      throw new Error('addresses must be an array');
+    }
+
+    if (addresses.length === 0) {
+      throw new Error('addresses array cannot be empty');
+    }
+
+    const query: any = { addresses };
+    if (assetName) {
+      query.assetName = assetName;
+    }
+
+    return this.bitgo.get(this.url('/accountResources')).query(query).result();
   }
 
   async updateWalletBuildDefaults(params: UpdateBuildDefaultOptions): Promise<unknown> {

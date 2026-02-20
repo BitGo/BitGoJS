@@ -539,6 +539,11 @@ export interface ForwarderBalanceOptions {
   maximumBalance?: number;
 }
 
+export interface GetAccountResourcesOptions {
+  addresses: string[];
+  assetName?: string;
+}
+
 export type CreateAddressFormat = 'base58' | 'cashaddr';
 
 export interface CreateAddressOptions {
@@ -988,6 +993,7 @@ export interface IWallet {
   getAddress(params?: GetAddressOptions): Promise<any>;
   createAddress(params?: CreateAddressOptions): Promise<any>;
   updateAddress(params?: UpdateAddressOptions): Promise<any>;
+  getAccountResources(params: GetAccountResourcesOptions): Promise<any>;
   listWebhooks(params?: PaginationOptions): Promise<any>;
   simulateWebhook(params?: SimulateWebhookOptions): Promise<any>;
   addWebhook(params?: ModifyWebhookOptions): Promise<any>;
