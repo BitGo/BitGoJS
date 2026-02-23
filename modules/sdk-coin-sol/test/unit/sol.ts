@@ -901,6 +901,13 @@ describe('SOL:', function () {
             amount: '300000',
           },
         ],
+        inputs: [
+          {
+            address: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+            value: '300000',
+          },
+        ],
+        feePayer: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
         fee: {
           fee: '5000',
           feeRate: 5000,
@@ -912,6 +919,7 @@ describe('SOL:', function () {
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -947,6 +955,13 @@ describe('SOL:', function () {
             amount: '300000',
           },
         ],
+        inputs: [
+          {
+            address: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+            value: '300000',
+          },
+        ],
+        feePayer: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
         fee: {
           fee: '5000',
           feeRate: 5000,
@@ -958,6 +973,7 @@ describe('SOL:', function () {
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -994,6 +1010,13 @@ describe('SOL:', function () {
             amount: '300000',
           },
         ],
+        inputs: [
+          {
+            address: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+            value: '300000',
+          },
+        ],
+        feePayer: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
         fee: {
           fee: '10000',
           feeRate: 5000,
@@ -1002,6 +1025,7 @@ describe('SOL:', function () {
         durableNonce: undefined,
         memo: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -1038,6 +1062,13 @@ describe('SOL:', function () {
             amount: '300000',
           },
         ],
+        inputs: [
+          {
+            address: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+            value: '300000',
+          },
+        ],
+        feePayer: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
         fee: {
           fee: '10000',
           feeRate: 5000,
@@ -1046,6 +1077,7 @@ describe('SOL:', function () {
         durableNonce: undefined,
         memo: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -1082,6 +1114,13 @@ describe('SOL:', function () {
             tokenName: 'tsol:usdc',
           },
         ],
+        inputs: [
+          {
+            address: '12f6D3WubGVeQoH2m8kTvvcrasWdXWwtVzUCyRNDZxA2',
+            value: '300000',
+          },
+        ],
+        feePayer: '12f6D3WubGVeQoH2m8kTvvcrasWdXWwtVzUCyRNDZxA2',
         fee: {
           fee: '5000',
           feeRate: 5000,
@@ -1093,6 +1132,7 @@ describe('SOL:', function () {
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -1129,6 +1169,13 @@ describe('SOL:', function () {
             tokenName: 'tsol:usdc',
           },
         ],
+        inputs: [
+          {
+            address: '12f6D3WubGVeQoH2m8kTvvcrasWdXWwtVzUCyRNDZxA2',
+            value: '300000',
+          },
+        ],
+        feePayer: '12f6D3WubGVeQoH2m8kTvvcrasWdXWwtVzUCyRNDZxA2',
         fee: {
           fee: '5000',
           feeRate: 5000,
@@ -1140,6 +1187,7 @@ describe('SOL:', function () {
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -1186,6 +1234,13 @@ describe('SOL:', function () {
             amount: '10000',
           },
         ],
+        inputs: [
+          {
+            address: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+            value: '10000',
+          },
+        ],
+        feePayer: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
         fee: {
           fee: '10000',
           feeRate: 5000,
@@ -1194,6 +1249,7 @@ describe('SOL:', function () {
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -1233,6 +1289,8 @@ describe('SOL:', function () {
         changeAmount: '0',
         outputAmount: '0',
         outputs: [],
+        inputs: [],
+        feePayer: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
         fee: {
           fee: '5000',
           feeRate: 5000,
@@ -1241,6 +1299,7 @@ describe('SOL:', function () {
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -1286,6 +1345,13 @@ describe('SOL:', function () {
             amount: '10000',
           },
         ],
+        inputs: [
+          {
+            address: '7dRuGFbU2y2kijP6o1LYNzVyz4yf13MooqoionCzv5Za',
+            value: '10000',
+          },
+        ],
+        feePayer: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
         fee: {
           fee: '5000',
           feeRate: 5000,
@@ -1294,6 +1360,7 @@ describe('SOL:', function () {
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
         tokenEnablements: [],
+        ataOwnerMap: {},
       });
     });
 
@@ -1337,6 +1404,8 @@ describe('SOL:', function () {
         changeAmount: '0',
         outputAmount: '0',
         outputs: [],
+        inputs: [],
+        feePayer: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
         fee: {
           fee: '3005000',
           feeRate: 5000,
@@ -1351,6 +1420,9 @@ describe('SOL:', function () {
             tokenName: 'tsol:usdc',
           },
         ],
+        ataOwnerMap: {
+          '141BFNem3pknc8CzPVLv1Ri3btgKdCsafYP5nXwmXfxU': '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+        },
       });
     });
 
@@ -1404,6 +1476,8 @@ describe('SOL:', function () {
         changeAmount: '0',
         outputAmount: '0',
         outputs: [],
+        inputs: [],
+        feePayer: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
         fee: {
           fee: '6005000',
           feeRate: 5000,
@@ -1423,6 +1497,10 @@ describe('SOL:', function () {
             tokenName: 'tsol:ray',
           },
         ],
+        ataOwnerMap: {
+          '141BFNem3pknc8CzPVLv1Ri3btgKdCsafYP5nXwmXfxU': '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+          '9KaLinZFNW5chL4J8UoKnTECppWVMz3ewgx4FAkxUDcf': '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+        },
       });
     });
 
@@ -1460,6 +1538,13 @@ describe('SOL:', function () {
             tokenName: 'tsol:usdc',
           },
         ],
+        inputs: [
+          {
+            address: '5U3bH5b6XtG99aVWLqwVzYPVpQiFHytBD68Rz2eFPZd7',
+            value: '10000',
+          },
+        ],
+        feePayer: '5U3bH5b6XtG99aVWLqwVzYPVpQiFHytBD68Rz2eFPZd7',
         fee: { fee: '3005000', feeRate: 5000 },
         memo: undefined,
         blockhash: '27E3MXFvXMUNYeMJeX1pAbERGsJfUbkaZTfgMgpmNN5g',
@@ -1471,6 +1556,9 @@ describe('SOL:', function () {
             tokenName: 'tsol:usdc',
           },
         ],
+        ataOwnerMap: {
+          '2eKjVtzV3oPTXFdtRSDj3Em9k1MV7k8WjKkBszQUwizS': 'C4zCqCaDm4D78zgaH3CeBEEBEAoMNhzSCj23qE92ndiP',
+        },
       });
     });
   });
