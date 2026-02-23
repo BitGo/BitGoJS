@@ -19,8 +19,10 @@ GHSA-34x7-hfp2-rc4v
 
 # Excluded because:
 # - Transitive dependency through lerna, depcheck, glob, mocha, yeoman-generator
-# - minimatch 10.x introduces breaking API changes incompatible with lerna v9.0.0
+# - minimatch 10.x introduces breaking API changes incompatible with lerna v9.0.4
+#   (changed from default export to named exports, causing "is not a function" error)
 # - This CVE (ReDoS in minimatch <10.2.1) affects glob pattern matching with repeated wildcards
 # - Our usage is dev-time tooling only (build, test, file search)
 # - Mitigated by controlled inputs (our own build scripts, not user-provided patterns)
+# - No practical exploit path as all glob patterns are hardcoded in our codebase
 GHSA-3ppc-4f35-3m26
