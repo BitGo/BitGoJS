@@ -7,7 +7,10 @@ import { Dot, Tdot, KeyPair } from '../../src';
 import * as testData from '../fixtures';
 import { chainName, txVersion, genesisHash, specVersion } from '../resources';
 import * as sinon from 'sinon';
-import { Wallet } from '@bitgo/sdk-core';
+import { TransactionType, Wallet } from '@bitgo/sdk-core';
+import { coins } from '@bitgo/statics';
+import { buildTransaction, type BuildContext, type Material } from '@bitgo/wasm-dot';
+import utils from '../../src/lib/utils';
 
 describe('DOT:', function () {
   let bitgo: TestBitGoAPI;
@@ -152,7 +155,7 @@ describe('DOT:', function () {
 
   describe('Explain Transactions:', () => {
     it('should explain an unsigned transfer transaction', async function () {
-      const explainedTransaction = await basecoin.explainTransaction(testData.unsignedTransaction);
+      const explainedTransaction = await prodCoin.explainTransaction(testData.unsignedTransaction);
       explainedTransaction.should.deepEqual({
         displayOrder: [
           'outputAmount',
@@ -182,6 +185,67 @@ describe('DOT:', function () {
         changeOutputs: [],
         changeAmount: '0',
       });
+    });
+  });
+
+  describe('Explain Transactions (WASM):', () => {
+    const coin = coins.get('tdot');
+    const material = utils.getMaterial(coin);
+    const SENDER = testData.accounts.account1.address;
+    const RECIPIENT = testData.accounts.account2.address;
+
+    function wasmContext(nonce = 0): BuildContext {
+      return {
+        sender: SENDER,
+        nonce,
+        material: material as Material,
+        validity: { firstValid: testData.westendBlock.blockNumber, maxDuration: 2400 },
+        referenceBlock: testData.westendBlock.hash,
+      };
+    }
+
+    it('should explain a transfer via explainTransactionWithWasm', function () {
+      const tx = buildTransaction({ type: 'transfer', to: RECIPIENT, amount: 1000000000000n }, wasmContext());
+      const explained = basecoin.explainTransactionWithWasm(tx.toHex(), SENDER);
+
+      assert.strictEqual(explained.type, TransactionType.Send);
+      assert.strictEqual(explained.outputs.length, 1);
+      assert.strictEqual(explained.outputs[0].address, RECIPIENT);
+      assert.strictEqual(explained.outputs[0].amount, '1000000000000');
+      assert.strictEqual(explained.outputAmount, '1000000000000');
+      assert.strictEqual(explained.sender, SENDER);
+      assert.strictEqual(explained.methodName, 'balances.transferKeepAlive');
+    });
+
+    it('should explain a staking bond via explainTransactionWithWasm', function () {
+      const tx = buildTransaction({ type: 'stake', amount: 5000000000000n, payee: { type: 'stash' } }, wasmContext(1));
+      const explained = basecoin.explainTransactionWithWasm(tx.toHex(), SENDER);
+
+      assert.strictEqual(explained.type, TransactionType.StakingActivate);
+      assert.strictEqual(explained.outputs.length, 1);
+      assert.strictEqual(explained.outputs[0].address, 'STAKING');
+      assert.strictEqual(explained.outputs[0].amount, '5000000000000');
+    });
+
+    it('should explain a transfer via coin class explainTransaction (WASM path)', async function () {
+      const tx = buildTransaction({ type: 'transfer', to: RECIPIENT, amount: 1000000000000n }, wasmContext());
+      const unsignedTransaction = {
+        serializedTxHex: tx.toHex(),
+        signableHex: tx.toHex(),
+        derivationPath: 'm/0',
+        parsedTx: { outputs: [], spendAmount: '0', inputs: [] },
+        entryValues: undefined,
+        coinSpecific: { blockNumber: 12345 },
+      };
+      const explained = await basecoin.explainTransaction(unsignedTransaction);
+
+      assert.strictEqual(explained.type, 'Send');
+      assert.strictEqual(explained.outputs.length, 1);
+      assert.strictEqual(explained.outputs[0].address, RECIPIENT);
+      assert.strictEqual(explained.outputs[0].amount, '1000000000000');
+      assert.strictEqual(explained.outputs[0].valueString, '1000000000000');
+      assert.strictEqual(explained.sequenceId, 0);
+      assert.strictEqual(explained.blockNumber, 12345);
     });
   });
 

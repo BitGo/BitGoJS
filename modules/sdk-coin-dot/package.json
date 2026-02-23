@@ -43,6 +43,7 @@
     "@bitgo/sdk-core": "^36.31.1",
     "@bitgo/sdk-lib-mpc": "^10.9.0",
     "@bitgo/statics": "^58.25.0",
+    "@bitgo/wasm-dot": "file:bitgo-wasm-dot-0.0.1.tgz",
     "@polkadot/api": "14.1.1",
     "@polkadot/api-augment": "14.1.1",
     "@polkadot/keyring": "13.5.6",
