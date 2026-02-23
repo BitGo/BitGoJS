@@ -2400,13 +2400,13 @@ class PlumeTestnet extends Testnet implements EthereumNetwork {
 class Canton extends Mainnet implements BaseNetwork {
   name = 'Canton';
   family = CoinFamily.CANTON;
-  explorerUrl = 'https://ccview.io/updates/';
+  explorerUrl = 'https://lighthouse.cantonloop.com/transactions/';
 }
 
 class CantonTestnet extends Testnet implements BaseNetwork {
   name = 'CantonTestnet';
   family = CoinFamily.CANTON;
-  explorerUrl = 'https://devnet.ccview.io/updates/';
+  explorerUrl = 'https://lighthouse.devnet.cantonloop.com/transactions/';
 }
 
 class Dogeos extends Mainnet implements EthereumNetwork {
