@@ -17,3 +17,10 @@ GHSA-r6q2-hw4h-h46w
 # - Our usage is limited to archive PACKING operations only, not extraction
 GHSA-34x7-hfp2-rc4v
 
+# Excluded because:
+# - Transitive dependency through lerna, depcheck, glob, mocha, yeoman-generator
+# - minimatch 10.x introduces breaking API changes incompatible with lerna v9.0.0
+# - This CVE (ReDoS in minimatch <10.2.1) affects glob pattern matching with repeated wildcards
+# - Our usage is dev-time tooling only (build, test, file search)
+# - Mitigated by controlled inputs (our own build scripts, not user-provided patterns)
+GHSA-3ppc-4f35-3m26
