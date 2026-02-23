@@ -41,9 +41,6 @@ export const LoginRequest = {
 /**
  * Login
  *
- * Authenticate a user and establish a session for subsequent Express requests.
- * Supports OTP and device trust parameters for MFA flows.
- *
  * @operationId express.login
  * @tag express
  */

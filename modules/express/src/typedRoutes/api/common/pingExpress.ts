@@ -5,9 +5,6 @@ import { BitgoExpressError } from '../../schemas/error';
 /**
  * Ping Express
  *
- * Health check endpoint which returns a simple status payload when the Express server is running.
- * Useful for load balancers and monitoring systems that expect a JSON response body.
- *
  * @operationId express.pingExpress
  * @tag express
  */

@@ -37,10 +37,7 @@ export const KeychainChangePasswordResponse = {
 } as const;
 
 /**
- * Change keychain password
- *
- * Re encrypt a stored keychain from an old password to a new password.
- * Use this when rotating credentials for an encrypted private key.
+ * Change a keychain's passphrase, re-encrypting the key to a new password.
  *
  * @operationId express.v2.keychain.changePassword
  * @tag express

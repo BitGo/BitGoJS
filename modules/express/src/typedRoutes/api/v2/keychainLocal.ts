@@ -27,8 +27,7 @@ export const KeychainLocalResponse = {
 } as const;
 
 /**
- * Create local keychain
- *
+ * Local client-side function to create a new keychain.
  * Creating your keychains is a critical step for safely securing your Bitcoin. When generating new keychains, this API uses a random number generator that adheres to industry standards. If you provide your own seed, you must take extreme caution when creating it.
  * Returns an object containing the xprv and xpub for the new chain. The created keychain is not known to the BitGo service. To use it with the BitGo service, use the ‘Store Keychain’ API call.
  *

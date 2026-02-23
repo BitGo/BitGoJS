@@ -10,9 +10,6 @@ export const DecryptRequestBody = {
 /**
  * Decrypt
  *
- * Decrypt ciphertext using the Express server's configured encryption scheme.
- * Primarily used for decrypting locally-encrypted payloads with a password.
- *
  * @operationId express.decrypt
  * @tag express
  */
