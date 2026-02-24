@@ -15,6 +15,7 @@ module.exports = (E) => {
       DateFromISOString: () => E.right({ type: 'string', format: 'date-time' }),
       BigIntFromString: () => E.right({ type: 'string' }),
       BooleanFromString: () => E.right({ type: 'boolean' }),
+      NumberFromString: () => E.right({ type: 'string' }),
     },
     'io-ts-bigint': {
       BigIntFromString: () => E.right({ type: 'string' }),
