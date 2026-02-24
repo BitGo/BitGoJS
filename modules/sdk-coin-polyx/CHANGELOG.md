@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.13.2...@bitgo/sdk-coin-polyx@1.13.3) (2026-02-24)
+
+
+### Bug Fixes
+
+* add version resolution for polkadot deps ([16271ad](https://github.com/BitGo/BitGoJS/commit/16271ad7e6ab1d953db2b221b514d72a8fa6c93a))
+
+
+
+
+
 ## [1.13.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.13.1...@bitgo/sdk-coin-polyx@1.13.2) (2026-02-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polyx

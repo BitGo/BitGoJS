@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.9.1...@bitgo/sdk-coin-flrp@1.9.2) (2026-02-24)
+
+
+### Bug Fixes
+
+* **sdk-coin-flrp:** update fromAddresses to match UTXO owners in delegation tx ([984ee53](https://github.com/BitGo/BitGoJS/commit/984ee5342e02a8ad689d827883df641fda8a70ee))
+
+
+
+
+
 ## [1.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.9.0...@bitgo/sdk-coin-flrp@1.9.1) (2026-02-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.15.1...@bitgo/sdk-coin-ton@3.16.0) (2026-02-24)
+
+
+### Features
+
+* **sdk-coin-ton:** vesting withdrawal builder ([97510b8](https://github.com/BitGo/BitGoJS/commit/97510b835a4d715f6539ef4a8aec2b26f5044121))
+
+
+
+
+
 ## [3.15.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.15.0...@bitgo/sdk-coin-ton@3.15.1) (2026-02-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ton

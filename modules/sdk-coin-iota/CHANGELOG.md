@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@1.8.2...@bitgo/sdk-coin-iota@1.9.0) (2026-02-24)
+
+
+### Bug Fixes
+
+* **sdk-coin-iota:** use full Coin struct type in iotax_getOwnedObjects filter ([fc8c2ed](https://github.com/BitGo/BitGoJS/commit/fc8c2ed0b1d01f0edb16a9e6d4bb73e478454961))
+
+
+### Features
+
+* **sdk-coin-iota:** add recovery and consolidation support ([2775914](https://github.com/BitGo/BitGoJS/commit/27759142834a4f2eec83407e333bd45d76639d6a))
+
+
+
+
+
 ## [1.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@1.8.1...@bitgo/sdk-coin-iota@1.8.2) (2026-02-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-iota

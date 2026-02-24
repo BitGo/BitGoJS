@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.13.1...@bitgo/sdk-coin-sol@7.14.0) (2026-02-24)
+
+
+### Features
+
+* add explainSolTransaction using @bitgo/wasm-solana ([00114a6](https://github.com/BitGo/BitGoJS/commit/00114a6d35f41caec1a99559e18050c42f3b9792))
+* add inputs and feePayer to WASM explain return ([c676e77](https://github.com/BitGo/BitGoJS/commit/c676e7728dfa6c05907bfa5e6d4ae1633b61002b))
+* wire Transaction.explainTransaction() to WASM for tsol ([a326937](https://github.com/BitGo/BitGoJS/commit/a326937098da51966d64a70257649c4c3f0761fc))
+
+
+
+
+
 ## [7.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.13.0...@bitgo/sdk-coin-sol@7.13.1) (2026-02-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.5.1...@bitgo/sdk-coin-tempo@1.5.2) (2026-02-24)
+
+
+### Bug Fixes
+
+* **sdk-coin-tempo:** update tip-20 tokens to use 6 decimals ([3eeb32b](https://github.com/BitGo/BitGoJS/commit/3eeb32b308503107be9c90a3f0e023be7b62fabd))
+
+
+
+
+
 ## [1.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.5.0...@bitgo/sdk-coin-tempo@1.5.1) (2026-02-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-tempo
