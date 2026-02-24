@@ -40,12 +40,12 @@ describe('Validation Error Messages', function () {
         .send({
           address: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
           amount: '1000000000000000000',
-          eip1559: { maxPriorityFeePerGas: 100 },
+          memo: { value: 'test' }, // missing required 'type' field
         });
 
       assert.strictEqual(result.status, 400);
       assert.ok(
-        result.body.error.includes('maxFeePerGas') || result.body.error.includes('eip1559'),
+        result.body.error.includes('memo') || result.body.error.includes('type'),
         'Error should mention nested field'
       );
     });
