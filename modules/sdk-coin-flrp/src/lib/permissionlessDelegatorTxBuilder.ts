@@ -7,14 +7,17 @@ import {
   pvmSerial,
   Credential,
   TransferOutput,
+  TransferableOutput,
+  TransferInput,
+  TransferableInput,
 } from '@flarenetwork/flarejs';
 import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction } from './transaction';
-import { TransactionBuilder } from './transactionBuilder';
+import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import utils from './utils';
 import { FlrpFeeState } from '@bitgo/public-types';
-import { Tx } from './iface';
+import { Tx, DecodedUtxoObj } from './iface';
 
 /**
  * Builder for AddPermissionlessDelegator transactions on Flare P-Chain.
@@ -24,8 +27,11 @@ import { Tx } from './iface';
  * - No BLS keys required
  * - Delegates to an existing validator's nodeID
  * - Rewards go to corresponding C-chain address
+ *
+ * Extends AtomicTransactionBuilder to inherit address sorting and credential management
+ * logic needed for proper multisig UTXO handling.
  */
-export class PermissionlessDelegatorTxBuilder extends TransactionBuilder {
+export class PermissionlessDelegatorTxBuilder extends AtomicTransactionBuilder {
   protected _nodeID: string;
   protected _startTime: bigint;
   protected _endTime: bigint;
@@ -58,6 +64,8 @@ export class PermissionlessDelegatorTxBuilder extends TransactionBuilder {
     if (endTime < startTime) {
       throw new BuildTransactionError('End date cannot be less than start date');
     }
+    // Note: Minimum duration validation is handled by the network.
+    // Flare P-chain requires minimum 14 days for delegation.
   }
 
   validateStakeAmount(amount: bigint): void {
@@ -176,15 +184,49 @@ export class PermissionlessDelegatorTxBuilder extends TransactionBuilder {
       this.transaction._rewardAddresses = rewardsOwner.addrs.map((addr) => Buffer.from(addr.toBytes()));
     }
 
+    // Recover UTXOs from baseTx inputs using stake output addresses as proxy
+    this.transaction._utxos = this.recoverUtxosFromInputs(
+      [...delegatorTx.baseTx.inputs],
+      this.transaction._fromAddresses
+    );
+
     const credentials = parsedCredentials || [];
 
     if (rawBytes && credentials.length > 0) {
       this.transaction._rawSignedBytes = rawBytes;
     }
 
-    // Create the UnsignedTx with parsed credentials
-    // AddressMaps will be empty as they're computed during signing
-    const unsignedTx = new UnsignedTx(delegatorTx, [], new FlareUtils.AddressMaps([]), credentials);
+    // Compute addressesIndex to map wallet positions to sorted UTXO positions
+    // Force recompute to ensure fresh mapping from parsed transaction
+    this.computeAddressesIndex(true);
+
+    // Use parsed credentials if available, otherwise create new ones based on sigIndices
+    // The sigIndices from the parsed transaction (stored in addressesIndex) determine
+    // the correct credential ordering for on-chain verification
+    const txCredentials =
+      credentials.length > 0
+        ? credentials
+        : this.transaction._utxos.map((utxo) => {
+            const utxoThreshold = utxo.threshold || this.transaction._threshold;
+            const sigIndices = utxo.addressesIndex ?? [];
+            // Use sigIndices-based method if we have valid sigIndices from parsed transaction
+            if (sigIndices.length >= utxoThreshold && sigIndices.every((idx) => idx >= 0)) {
+              return this.createCredentialForUtxo(utxo, utxoThreshold, sigIndices);
+            }
+            return this.createCredentialForUtxo(utxo, utxoThreshold);
+          });
+
+    // Create addressMaps using sigIndices from parsed transaction for consistency
+    const addressMaps = this.transaction._utxos.map((utxo) => {
+      const utxoThreshold = utxo.threshold || this.transaction._threshold;
+      const sigIndices = utxo.addressesIndex ?? [];
+      if (sigIndices.length >= utxoThreshold && sigIndices.every((idx) => idx >= 0)) {
+        return this.createAddressMapForUtxo(utxo, utxoThreshold, sigIndices);
+      }
+      return this.createAddressMapForUtxo(utxo, utxoThreshold);
+    });
+
+    const unsignedTx = new UnsignedTx(delegatorTx, [], new FlareUtils.AddressMaps(addressMaps), txCredentials);
 
     this.transaction.setTransaction(unsignedTx);
     return this;
@@ -196,6 +238,38 @@ export class PermissionlessDelegatorTxBuilder extends TransactionBuilder {
    */
   verifyTxType(type: TypeSymbols): boolean {
     return PermissionlessDelegatorTxBuilder.verifyTxType(type);
+  }
+
+  /**
+   * Recover UTXOs from transaction inputs.
+   * Uses fromAddresses as proxy for UTXO addresses since we're reconstructing from a parsed transaction.
+   *
+   * @param inputs Array of TransferableInput from baseTx
+   * @param fromAddresses Wallet addresses to use as proxy for UTXO addresses
+   * @returns Array of decoded UTXO objects
+   * @private
+   */
+  private recoverUtxosFromInputs(inputs: TransferableInput[], fromAddresses: Uint8Array[]): DecodedUtxoObj[] {
+    const proxyAddresses = fromAddresses.map((addr) =>
+      utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, Buffer.from(addr))
+    );
+
+    return inputs.map((input) => {
+      const utxoId = input.utxoID;
+      const transferInput = input.input as TransferInput;
+      const sigIndicies = transferInput.sigIndicies();
+
+      const utxo: DecodedUtxoObj = {
+        outputID: 7, // SECP256K1 Transfer Output type
+        amount: input.amount().toString(),
+        txid: utils.cb58Encode(Buffer.from(utxoId.txID.toBytes())),
+        outputidx: utxoId.outputIdx.value().toString(),
+        threshold: sigIndicies.length || this.transaction._threshold,
+        addresses: proxyAddresses,
+        addressesIndex: sigIndicies,
+      };
+      return utxo;
+    });
   }
 
   protected async buildImplementation(): Promise<Transaction> {
@@ -210,18 +284,22 @@ export class PermissionlessDelegatorTxBuilder extends TransactionBuilder {
   }
 
   /**
-   * Get the user's address (index 0) for delegation.
+   * Get the user's address (index 0) for default reward address.
    *
-   * For delegation transactions, we use only the user key because:
-   * 1. On-chain rewards go to the C-chain address derived from the delegator's public key
-   * 2. Using the user key ensures rewards go to the user's corresponding C-chain address
-   * 3. The user key is at index 0 in the fromAddresses array (BitGo convention: [user, bitgo, backup])
+   * BitGo Convention for fromAddresses:
+   * - Index 0: User key (signer in normal mode)
+   * - Index 1: BitGo key (always a signer)
+   * - Index 2: Backup key (signer in recovery mode)
+   *
+   * For delegation transactions, the user's address at index 0 is used as the default
+   * reward address parameter (though the parameter has no on-chain effect - rewards
+   * go to C-chain addresses derived from the P-chain addresses in stake outputs).
    *
    * @returns Buffer containing the user's address
    * @protected
    */
   protected getUserAddress(): Buffer {
-    const userIndex = 0;
+    const userIndex = 0; // BitGo convention: user is always at index 0
     if (!this.transaction._fromAddresses || this.transaction._fromAddresses.length <= userIndex) {
       throw new BuildTransactionError('User address (index 0) is required for delegation');
     }
@@ -237,8 +315,9 @@ export class PermissionlessDelegatorTxBuilder extends TransactionBuilder {
    * Uses pvm.e.newAddPermissionlessDelegatorTx (post-Etna API).
    *
    * Note: The rewardAddresses parameter is accepted by the API but does NOT affect
-   * where rewards are sent on-chain - rewards always go to the C-chain address
-   * derived from the delegator's public key (user key at index 0).
+   * where rewards are sent on-chain. Rewards accrue to C-chain addresses derived
+   * from the P-chain addresses in the stake outputs. The stake outputs contain the
+   * addresses from fromAddressesBytes (sorted to match UTXO owner order).
    * @protected
    */
   protected buildFlareTransaction(): void {
@@ -269,25 +348,33 @@ export class PermissionlessDelegatorTxBuilder extends TransactionBuilder {
 
     this.validateStakeDuration(this._startTime, this._endTime);
 
+    // Compute addressesIndex to map wallet key indices to sorted UTXO address positions
+    this.computeAddressesIndex();
+
     // Convert decoded UTXOs to FlareJS Utxo objects
     if (!this.transaction._utxos || this.transaction._utxos.length === 0) {
       throw new BuildTransactionError('UTXOs are required for delegation');
     }
     const utxos = utils.decodedToUtxos(this.transaction._utxos, this.transaction._network.assetId);
 
-    // Use only the user key (index 0) for fromAddressesBytes
-    // This ensures the C-chain reward address is derived from the user's public key
+    // Get user address for default reward address derivation
     const userAddress = this.getUserAddress();
 
     const rewardAddresses =
       this.transaction._rewardAddresses.length > 0 ? this.transaction._rewardAddresses : [userAddress];
 
     // Use Etna (post-fork) API - pvm.e.newAddPermissionlessDelegatorTx
+    // IMPORTANT: Use getSigningAddresses() to get the correct 2 signing keys
+    // This ensures proper key selection for both normal and recovery modes:
+    // - Normal mode: user (index 0) + bitgo (index 1)
+    // - Recovery mode: backup (index 2) + bitgo (index 1)
+    const signingAddresses = this.getSigningAddresses();
+
     const delegatorTx = pvm.e.newAddPermissionlessDelegatorTx(
       {
         end: this._endTime,
         feeState: this._feeState,
-        fromAddressesBytes: [userAddress],
+        fromAddressesBytes: signingAddresses,
         nodeId: this._nodeID,
         rewardAddresses: rewardAddresses,
         start: this._startTime,
@@ -298,7 +385,107 @@ export class PermissionlessDelegatorTxBuilder extends TransactionBuilder {
       this.transaction._context
     );
 
-    this.transaction.setTransaction(delegatorTx as UnsignedTx);
+    // Fix change output threshold bug (same as ExportInPTxBuilder)
+    const flareUnsignedTx = delegatorTx as UnsignedTx;
+    const innerTx = flareUnsignedTx.getTx() as pvmSerial.AddPermissionlessDelegatorTx;
+    const changeOutputs = innerTx.baseTx.outputs;
+    let correctedDelegatorTx: pvmSerial.AddPermissionlessDelegatorTx = innerTx;
+
+    if (changeOutputs.length > 0 && this.transaction._threshold > 1) {
+      // Only apply fix for multisig wallets (threshold > 1)
+      const allWalletAddresses = this.transaction._fromAddresses.map((addr) => Buffer.from(addr));
+
+      const correctedChangeOutputs = changeOutputs.map((output) => {
+        const transferOut = output.output as TransferOutput;
+
+        const assetIdStr = utils.flareIdString(Buffer.from(output.assetId.toBytes()).toString('hex')).toString();
+        return TransferableOutput.fromNative(
+          assetIdStr,
+          transferOut.amount(),
+          allWalletAddresses,
+          this.transaction._locktime,
+          this.transaction._threshold // Fix: use wallet's threshold instead of FlareJS's default (1)
+        );
+      });
+
+      correctedDelegatorTx = this.createCorrectedDelegatorTx(innerTx, correctedChangeOutputs);
+    }
+
+    // Recreate credentials and addressMaps from corrected transaction inputs
+    // This follows the same pattern as ExportInPTxBuilder to ensure proper signing
+    const utxosWithIndex = correctedDelegatorTx.baseTx.inputs.map((input) => {
+      const inputTxid = utils.cb58Encode(Buffer.from(input.utxoID.txID.toBytes()));
+      const inputOutputIdx = input.utxoID.outputIdx.value().toString();
+
+      const originalUtxo = this.transaction._utxos.find(
+        (utxo) => utxo.txid === inputTxid && utxo.outputidx === inputOutputIdx
+      );
+
+      if (!originalUtxo) {
+        throw new BuildTransactionError(`Could not find matching UTXO for input ${inputTxid}:${inputOutputIdx}`);
+      }
+
+      const transferInput = input.input as TransferInput;
+      const actualSigIndices = transferInput.sigIndicies();
+
+      return {
+        ...originalUtxo,
+        addressesIndex: originalUtxo.addressesIndex,
+        addresses: originalUtxo.addresses,
+        threshold: originalUtxo.threshold || this.transaction._threshold,
+        actualSigIndices,
+      };
+    });
+
+    this.transaction._utxos = utxosWithIndex;
+
+    const txCredentials = utxosWithIndex.map((utxo) =>
+      this.createCredentialForUtxo(utxo, utxo.threshold, utxo.actualSigIndices)
+    );
+
+    const addressMaps = utxosWithIndex.map((utxo) =>
+      this.createAddressMapForUtxo(utxo, utxo.threshold, utxo.actualSigIndices)
+    );
+
+    // Create new UnsignedTx with corrected change outputs and proper credentials
+    const fixedUnsignedTx = new UnsignedTx(
+      correctedDelegatorTx,
+      [],
+      new FlareUtils.AddressMaps(addressMaps),
+      txCredentials
+    );
+
+    this.transaction.setTransaction(fixedUnsignedTx);
+  }
+
+  /**
+   * Create a corrected AddPermissionlessDelegatorTx with the given change outputs.
+   * This is necessary because FlareJS's newAddPermissionlessDelegatorTx doesn't support setting
+   * the threshold and locktime for change outputs - it defaults to threshold=1.
+   *
+   * FlareJS declares baseTx.outputs as readonly, so we use Object.defineProperty
+   * to override the property with the corrected outputs. This is a workaround until
+   * FlareJS adds proper support for change output thresholds.
+   *
+   * @param originalTx - The original AddPermissionlessDelegatorTx
+   * @param correctedOutputs - The corrected change outputs with proper threshold
+   * @returns A new AddPermissionlessDelegatorTx with the corrected change outputs
+   */
+  private createCorrectedDelegatorTx(
+    originalTx: pvmSerial.AddPermissionlessDelegatorTx,
+    correctedOutputs: TransferableOutput[]
+  ): pvmSerial.AddPermissionlessDelegatorTx {
+    // FlareJS declares baseTx.outputs as `public readonly outputs: readonly TransferableOutput[]`
+    // We use Object.defineProperty to override the readonly property with our corrected outputs.
+    // This is necessary because FlareJS's newAddPermissionlessDelegatorTx doesn't support change output threshold/locktime.
+    Object.defineProperty(originalTx.baseTx, 'outputs', {
+      value: correctedOutputs,
+      writable: false,
+      enumerable: true,
+      configurable: true,
+    });
+
+    return originalTx;
   }
 
   /**
@@ -317,4 +504,7 @@ export class PermissionlessDelegatorTxBuilder extends TransactionBuilder {
   protected set transaction(transaction: Transaction) {
     this._transaction = transaction;
   }
+
+  // Note: createCredentialForUtxo and createAddressMapForUtxo methods are inherited
+  // from AtomicTransactionBuilder and support both normal and recovery signing modes
 }
