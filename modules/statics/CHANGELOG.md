@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.25.0...@bitgo/statics@58.26.0) (2026-02-24)
+
+
+### Bug Fixes
+
+* rename jovayeth:usdce token name to Bridged USDC ([77a911f](https://github.com/BitGo/BitGoJS/commit/77a911fd82d5ff96ab252fbf2b8652b8706de020))
+* **sdk-coin-tempo:** update tip-20 tokens to use 6 decimals ([3eeb32b](https://github.com/BitGo/BitGoJS/commit/3eeb32b308503107be9c90a3f0e023be7b62fabd))
+* **statics:** rename codex to codexeth following BitGo naming convention ([0d80ff9](https://github.com/BitGo/BitGoJS/commit/0d80ff9552511c72a3344bedadf36769edbf4541))
+* **statics:** update goUSD mainnet contract address ([055e54b](https://github.com/BitGo/BitGoJS/commit/055e54bcc7bd901448f2ca0eca9dc7b6a05c0537))
+
+
+### Features
+
+* add Codex EVM chain support ([6efd0da](https://github.com/BitGo/BitGoJS/commit/6efd0da14aac333861b1cd03c1672d61d5c9a634))
+* add generator function for erc20 ([941a509](https://github.com/BitGo/BitGoJS/commit/941a50997daf1e957401676436f958b3b591d2e8))
+* add Stable EVM chain support ([464b508](https://github.com/BitGo/BitGoJS/commit/464b50883d8363df96d20897d93bb7d496cdca5c))
+* added new stablecoins and supproting usd1 on mantle and morph ([3dde5c4](https://github.com/BitGo/BitGoJS/commit/3dde5c4cb63c81c1f72865d90db5ad03bf932102))
+* adding new stablecoin & usd1 on morph and mantle chain ([54cb576](https://github.com/BitGo/BitGoJS/commit/54cb576030af1f5586344c78180e2ed07e018cdc))
+* onboarding new stablecoins and usd1 on mantle ([024fde8](https://github.com/BitGo/BitGoJS/commit/024fde852b7adb996c6760671e8f67d45067667d))
+* rebrand Coreum to TX ([b2b204e](https://github.com/BitGo/BitGoJS/commit/b2b204e8c886208daf8250c01a2ded0dd4e4263b))
+* **sdk-coin-eos:** add binary ABI for SBET token and gate for Singapore/MENA ([bebf105](https://github.com/BitGo/BitGoJS/commit/bebf105fd1930d7787478d320566971dde30c797))
+* **statics:** add Hemi Ethereum (hemieth) L2 chain support ([f4afcd8](https://github.com/BitGo/BitGoJS/commit/f4afcd85d2ef7a39e0989cda17706125023b5463))
+* **statics:** add new tokens WIN-9032 ([910c9a2](https://github.com/BitGo/BitGoJS/commit/910c9a21d85dd43cf8622ad10ec82aed11ea56ae))
+* **statics:** add tjovayeth:usdce testnet token ([f0d2de4](https://github.com/BitGo/BitGoJS/commit/f0d2de4d4c6d8273cf4faa6627a7d72982c9a6d2))
+* **statics:** add USDT0 (Stable) chain support ([45b8e97](https://github.com/BitGo/BitGoJS/commit/45b8e97e4f10bf6e0f0c7d9d0350af1d552faf22))
+* **statics:** add XTZ EVM (Etherlink) chain support ([a3c9701](https://github.com/BitGo/BitGoJS/commit/a3c9701b711a9eff0d1f6cd1c579eec6e82a13fe))
+* **statics:** enable REBASE_TOKEN for aUSDT and aYFI ([79d785c](https://github.com/BitGo/BitGoJS/commit/79d785cb24238024a93a06d3e8bd2233b53b7aa2))
+* **statics:** enable REBASE_TOKEN for Avalanche Aave tokens ([02fe28f](https://github.com/BitGo/BitGoJS/commit/02fe28f5b139a5b9ccbfeac1cb82796f1748aa90))
+* **statics:** update Canton explorer URL to lighthouse.cantonloop.com ([0a74907](https://github.com/BitGo/BitGoJS/commit/0a74907dfd01e8fcee988471f801840c24b93d92))
+
+
+
+
+
 # [58.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.24.0...@bitgo/statics@58.25.0) (2026-02-12)
 
 

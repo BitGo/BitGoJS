@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.75.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.74.1...@bitgo/sdk-api@1.75.0) (2026-02-24)
+
+
+### Bug Fixes
+
+* pass payloadsize to checkBatchFlow endpoint ([327a7b2](https://github.com/BitGo/BitGoJS/commit/327a7b22594cc74406f130abe908290dcc6cb485))
+
+
+### Features
+
+* integrate user change password batching flow ([effaa5f](https://github.com/BitGo/BitGoJS/commit/effaa5fa8da2eb88d86c16dddd433b9baed8645c))
+
+
+
+
+
 ## [1.74.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.74.0...@bitgo/sdk-api@1.74.1) (2026-02-13)
 
 **Note:** Version bump only for package @bitgo/sdk-api

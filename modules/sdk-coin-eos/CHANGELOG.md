@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eos@3.6.2...@bitgo/sdk-coin-eos@3.7.0) (2026-02-24)
+
+
+### Features
+
+* **sdk-coin-eos:** add binary ABI for SBET token and gate for Singapore/MENA ([bebf105](https://github.com/BitGo/BitGoJS/commit/bebf105fd1930d7787478d320566971dde30c797))
+
+
+
+
+
 ## [3.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eos@3.6.1...@bitgo/sdk-coin-eos@3.6.2) (2026-02-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eos

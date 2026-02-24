@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.25.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.24.1...bitgo@50.25.0) (2026-02-24)
+
+
+### Features
+
+* **sdk-core:** add bridgeFunds intent support for HyperEVM TSS wallets ([3e55481](https://github.com/BitGo/BitGoJS/commit/3e554810663131130210f90287d230286f9c651c))
+
+
+
+
+
 ## [50.24.1](https://github.com/BitGo/BitGoJS/compare/bitgo@50.24.0...bitgo@50.24.1) (2026-02-13)
 
 **Note:** Version bump only for package bitgo

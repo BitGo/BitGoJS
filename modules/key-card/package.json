@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/key-card",
-  "version": "0.28.27",
+  "version": "0.28.28",
   "description": "key card generator for BitGo wallets",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -33,9 +33,9 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-api": "^1.74.1",
-    "@bitgo/sdk-core": "^36.31.1",
-    "@bitgo/statics": "^58.25.0",
+    "@bitgo/sdk-api": "^1.75.0",
+    "@bitgo/sdk-core": "^36.32.0",
+    "@bitgo/statics": "^58.26.0",
     "jspdf": ">=4.2.0",
     "qrcode": "^1.5.1"
   },

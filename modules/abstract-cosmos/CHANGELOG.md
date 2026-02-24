@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.17.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.17.1...@bitgo/abstract-cosmos@11.17.2) (2026-02-24)
+
+
+### Bug Fixes
+
+* **sdk-coin-hash:** add address validations when decoding group policy messages ([065913b](https://github.com/BitGo/BitGoJS/commit/065913bfb180346113fa3fe51a69e3a1f64f1afe))
+
+
+
+
+
 ## [11.17.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.17.0...@bitgo/abstract-cosmos@11.17.1) (2026-02-13)
 
 **Note:** Version bump only for package @bitgo/abstract-cosmos

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.18.1...@bitgo/abstract-utxo@10.19.0) (2026-02-24)
+
+
+### Features
+
+* **abstract-utxo:** add customChangeXpubs to explainTransaction ([e37618a](https://github.com/BitGo/BitGoJS/commit/e37618af70dd75e4ddd97768c03420e7914af3fe))
+* **abstract-utxo:** bump wasm-utxo to 1.42.0 ([36ba814](https://github.com/BitGo/BitGoJS/commit/36ba814208ada5d13dacc509c9b2453e6cd7d4af))
+* **abstract-utxo:** default to psbt-lite for all coin formats ([de81aa5](https://github.com/BitGo/BitGoJS/commit/de81aa5c0e821428b5c1b1616bfe2267c9c59698))
+* **abstract-utxo:** replace bitcoinjs-message with wasm-utxo ([a6b854b](https://github.com/BitGo/BitGoJS/commit/a6b854b1d2636e610f1aea0816d735c5a4a02cff))
+* **abstract-utxo:** update parseTransactionWithWalletKeys ([8299eba](https://github.com/BitGo/BitGoJS/commit/8299ebaf8f10fad3be67d11a41ca818718f52e86))
+* **abstract-utxo:** use wasm-utxo for custom change wallet tests ([feb2432](https://github.com/BitGo/BitGoJS/commit/feb243253bf634dc2b7dd5a413189ac0fccf29c5))
+
+
+
+
+
 ## [10.18.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.18.0...@bitgo/abstract-utxo@10.18.1) (2026-02-13)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

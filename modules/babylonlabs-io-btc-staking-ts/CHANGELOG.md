@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/babylonlabs-io-btc-staking-ts@3.4.0...@bitgo/babylonlabs-io-btc-staking-ts@3.4.1) (2026-02-24)
+
+
+### Bug Fixes
+
+* add missing repository field for trusted publishing ([ed1cd1a](https://github.com/BitGo/BitGoJS/commit/ed1cd1a585696e8cd5196e7b49a97757fa191903))
+
+
+
+
+
 # [3.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/babylonlabs-io-btc-staking-ts@3.3.0...@bitgo/babylonlabs-io-btc-staking-ts@3.4.0) (2026-01-30)
 
 

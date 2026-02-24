@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.20.1...@bitgo/express@15.21.0) (2026-02-24)
+
+
+### Bug Fixes
+
+* **express:** restore backward compatibility for empty eip1559 object ([c0a0dc6](https://github.com/BitGo/BitGoJS/commit/c0a0dc686826e988d29200b1e3ee79eaeb64b6a4))
+* fix the validation errors tests ([520408f](https://github.com/BitGo/BitGoJS/commit/520408f521d9a73580d70aacfa037515672120a3))
+
+
+### Features
+
+* **express:** improve typed routes validation error messages ([29d9098](https://github.com/BitGo/BitGoJS/commit/29d9098e3ebb9d32651cede9507685c512c1e829))
+
+
+
+
+
 ## [15.20.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.20.0...@bitgo/express@15.20.1) (2026-02-13)
 
 **Note:** Version bump only for package @bitgo/express

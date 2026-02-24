@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.32.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.31.1...@bitgo/sdk-core@36.32.0) (2026-02-24)
+
+
+### Bug Fixes
+
+* changed the url for the arc ([b5c602a](https://github.com/BitGo/BitGoJS/commit/b5c602a7de802dc61bd461535a1f3edc58770778))
+* **statics:** rename codex to codexeth following BitGo naming convention ([0d80ff9](https://github.com/BitGo/BitGoJS/commit/0d80ff9552511c72a3344bedadf36769edbf4541))
+
+
+### Features
+
+* add Codex EVM chain support ([6efd0da](https://github.com/BitGo/BitGoJS/commit/6efd0da14aac333861b1cd03c1672d61d5c9a634))
+* add Stable EVM chain support ([464b508](https://github.com/BitGo/BitGoJS/commit/464b50883d8363df96d20897d93bb7d496cdca5c))
+* handling new canton intent type in prebuild ([2e9b566](https://github.com/BitGo/BitGoJS/commit/2e9b566cfd3bdc08342acf6e20228058a17de0f9))
+* **sdk-coin-iota:** add recovery and consolidation support ([2775914](https://github.com/BitGo/BitGoJS/commit/27759142834a4f2eec83407e333bd45d76639d6a))
+* **sdk-core:** add bridgeFunds intent support for HyperEVM TSS wallets ([3e55481](https://github.com/BitGo/BitGoJS/commit/3e554810663131130210f90287d230286f9c651c))
+* **statics:** add Hemi Ethereum (hemieth) L2 chain support ([f4afcd8](https://github.com/BitGo/BitGoJS/commit/f4afcd85d2ef7a39e0989cda17706125023b5463))
+* **statics:** add USDT0 (Stable) chain support ([45b8e97](https://github.com/BitGo/BitGoJS/commit/45b8e97e4f10bf6e0f0c7d9d0350af1d552faf22))
+* **statics:** add XTZ EVM (Etherlink) chain support ([a3c9701](https://github.com/BitGo/BitGoJS/commit/a3c9701b711a9eff0d1f6cd1c579eec6e82a13fe))
+
+
+
+
+
 ## [36.31.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.31.0...@bitgo/sdk-core@36.31.1) (2026-02-13)
 
 **Note:** Version bump only for package @bitgo/sdk-core
