@@ -196,8 +196,8 @@ describe('ShareWallet API Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/email/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/email/);
     });
 
     it('should return 400 when permissions is missing', async function () {
@@ -211,8 +211,8 @@ describe('ShareWallet API Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/permissions/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/permissions/);
     });
 
     it('should return 400 when request body has invalid types', async function () {
@@ -225,8 +225,8 @@ describe('ShareWallet API Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/email.*string/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/email.*string/);
     });
   });
 

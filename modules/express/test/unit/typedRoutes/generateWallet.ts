@@ -405,8 +405,8 @@ describe('Generate Wallet Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/label/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/label/);
     });
 
     it('should return 400 when label is not a string', async function () {
@@ -418,8 +418,8 @@ describe('Generate Wallet Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/label/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/label/);
     });
 
     it('should return 400 when type is invalid', async function () {
@@ -432,8 +432,8 @@ describe('Generate Wallet Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/type/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/type/);
     });
 
     it('should return 400 when multisigType is invalid', async function () {
@@ -446,8 +446,8 @@ describe('Generate Wallet Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/multisigType/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/multisigType/);
     });
 
     it('should return 400 when backupXpubProvider is invalid', async function () {
@@ -460,8 +460,8 @@ describe('Generate Wallet Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/backupXpubProvider/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/backupXpubProvider/);
     });
 
     it('should return 400 when disableTransactionNotifications is not boolean', async function () {
@@ -474,8 +474,8 @@ describe('Generate Wallet Typed Routes Tests', function () {
       });
 
       res.status.should.equal(400);
-      res.body.should.be.an.Array();
-      res.body[0].should.match(/disableTransactionNotifications/);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/disableTransactionNotifications/);
     });
   });
 
