@@ -305,6 +305,7 @@ class AvalancheC extends Mainnet implements AccountNetwork {
   explorerUrl = 'https://subnets.avax.network/c-chain/tx/';
   accountExplorerUrl = 'https://subnets.avax.network/c-chain/address/';
   chainId = 43114;
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class AvalancheCTestnet extends Testnet implements AccountNetwork {
@@ -314,6 +315,7 @@ class AvalancheCTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://subnets-test.avax.network/c-chain/tx/';
   accountExplorerUrl = 'https://subnets-test.avax.network/c-chain/address/';
   chainId = 43113;
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class AvalancheP extends Mainnet implements AvalancheNetwork {
