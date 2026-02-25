@@ -1119,6 +1119,7 @@ describe('ERC20 Bulk Transaction Feature', () => {
       'txdc',
       'bsc',
       'tbsc',
+      'tavaxc',
     ];
     erc20BulkTransactionCoins.forEach((coinName) => {
       const coin = coins.get(coinName);
