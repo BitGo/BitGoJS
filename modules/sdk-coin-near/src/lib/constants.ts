@@ -7,6 +7,7 @@ export const StakingContractMethodNames = {
   DepositAndStake: 'deposit_and_stake',
   Unstake: 'unstake',
   Withdraw: 'withdraw',
+  WithdrawAll: 'withdraw_all',
 } as const;
 
 export const FT_TRANSFER = 'ft_transfer';

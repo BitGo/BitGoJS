@@ -41,7 +41,7 @@ export const nep141Tokens = [
     'meta-pool.near',
     '1250000000000000000000',
     UnderlyingAsset['near:stnear'],
-    NEAR_TOKEN_FEATURES
+    [...NEAR_TOKEN_FEATURES, CoinFeature.LIQUID_STAKING]
   ),
 
   // testnet tokens
@@ -73,6 +73,6 @@ export const nep141Tokens = [
     'meta-v2.pool.testnet',
     '1250000000000000000000',
     UnderlyingAsset['tnear:stnear'],
-    NEAR_TOKEN_FEATURES
+    [...NEAR_TOKEN_FEATURES, CoinFeature.LIQUID_STAKING]
   ),
 ];

@@ -7,8 +7,10 @@ import { Transaction } from './transaction';
 import { StakingActivateBuilder } from './stakingActivateBuilder';
 import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
 import { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
+import { MetaPoolWithdrawBuilder } from './metaPoolWithdrawBuilder';
 import { FungibleTokenTransferBuilder } from './fungibleTokenTransferBuilder';
 import { StorageDepositTransferBuilder } from './storageDepositTransferBuilder';
+import { StakingContractMethodNames } from './constants';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -32,8 +34,13 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getStakingActivateBuilder(tx);
         case TransactionType.StakingDeactivate:
           return this.getStakingDeactivateBuilder(tx);
-        case TransactionType.StakingWithdraw:
+        case TransactionType.StakingWithdraw: {
+          const methodName = tx.nearTransaction.actions[0]?.functionCall?.methodName;
+          if (methodName === StakingContractMethodNames.WithdrawAll) {
+            return this.getMetaPoolWithdrawBuilder(tx);
+          }
           return this.getStakingWithdrawBuilder(tx);
+        }
         case TransactionType.StorageDeposit:
           return this.getStorageDepositTransferBuilder(tx);
         default:
@@ -64,6 +71,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getStakingWithdrawBuilder(tx?: Transaction): StakingWithdrawBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new StakingWithdrawBuilder(this._coinConfig));
+  }
+
+  getMetaPoolWithdrawBuilder(tx?: Transaction): MetaPoolWithdrawBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new MetaPoolWithdrawBuilder(this._coinConfig));
   }
 
   getFungibleTokenTransferBuilder(tx?: Transaction): FungibleTokenTransferBuilder {
