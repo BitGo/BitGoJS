@@ -5854,7 +5854,7 @@ export const allCoinsAndTokens = [
     18,
     '0xab6fad89389b73dbc887d31206a26fd88d719d1f',
     UnderlyingAsset['tflr:wflr'],
-    WFLR_FEATURES
+    WFLR_FEATURES.filter((f) => f !== CoinFeature.STAKING)
   ),
   tflrErc20(
     'a1c8fdc6-e5b5-4170-b490-f585db8ab922',
