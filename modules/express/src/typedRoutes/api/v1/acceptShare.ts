@@ -7,6 +7,10 @@ export const AcceptShareRequestParams = {
   shareId: t.string,
 };
 
+/**
+ * Credentials and override for accepting a wallet share.
+ * User password for ECDH decryption, new wallet passphrase, or pre-encrypted xprv for override path.
+ */
 export const AcceptShareRequestBody = {
   /**
    * User's password for authentication.

@@ -13,7 +13,8 @@ export const PendingApprovalParams = {
 } as const;
 
 /**
- * Request body for approving or rejecting a pending approval
+ * Approve or reject a pending approval with optional signing credentials.
+ * State, wallet passphrase, OTP, or pre-signed transaction hex.
  */
 export const PendingApprovalRequestBody = {
   /** State of the approval: 'approved' to approve, omit or 'rejected' to reject */

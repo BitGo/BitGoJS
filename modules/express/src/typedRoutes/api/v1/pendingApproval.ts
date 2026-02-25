@@ -7,6 +7,10 @@ export const pendingApprovalRequestParams = {
   id: t.string,
 };
 
+/**
+ * Approve or reject a pending approval.
+ * State, wallet passphrase for signing, OTP, or pre-signed transaction.
+ */
 export const pendingApprovalRequestBody = {
   /** State of the approval: 'approved' to approve, any other value or omit to reject (defaults to rejection) */
   state: optional(t.string),

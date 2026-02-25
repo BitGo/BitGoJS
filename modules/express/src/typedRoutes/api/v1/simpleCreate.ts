@@ -2,6 +2,10 @@ import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 
+/**
+ * Parameters for creating a 2-of-3 multisig wallet with keychains.
+ * Includes passphrase, label, backup key strategy, and enterprise options.
+ */
 export const SimpleCreateRequestBody = {
   /** Wallet passphrase to encrypt user and backup keys with (required) */
   passphrase: t.string,
