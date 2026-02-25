@@ -10,7 +10,7 @@ import { TransactionBuilder } from './transactionBuilder';
 import { StakingContractMethodNames } from './constants';
 
 export class StakingWithdrawBuilder extends TransactionBuilder {
-  private contractCallWrapper: ContractCallWrapper;
+  protected contractCallWrapper: ContractCallWrapper;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -61,11 +61,19 @@ export class StakingWithdrawBuilder extends TransactionBuilder {
     return this;
   }
 
+  /**
+   * Validates the contract call arguments before building.
+   * Subclasses can override to change validation behavior.
+   */
+  protected validateArgs(args: Record<string, unknown>): void {
+    assert(args?.amount, new BuildTransactionError('amount is required before building staking withdraw'));
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     const { methodName, args, gas, deposit } = this.contractCallWrapper.getParams();
     assert(gas, new BuildTransactionError('gas is required before building staking withdraw'));
-    assert(args?.amount, new BuildTransactionError('amount is required before building staking withdraw'));
+    this.validateArgs(args);
 
     super.actions([NearAPI.transactions.functionCall(methodName, args, BigInt(gas), BigInt(deposit))]);
     const tx = await super.buildImplementation();

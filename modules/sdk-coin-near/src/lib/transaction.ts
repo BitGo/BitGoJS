@@ -237,6 +237,7 @@ export class Transaction extends BaseTransaction {
         this.setTransactionType(TransactionType.StakingDeactivate);
         break;
       case StakingContractMethodNames.Withdraw:
+      case StakingContractMethodNames.WithdrawAll:
         this.setTransactionType(TransactionType.StakingWithdraw);
         break;
       case FT_TRANSFER:
@@ -370,6 +371,11 @@ export class Transaction extends BaseTransaction {
           break;
         case TransactionType.StakingWithdraw:
           if (action.functionCall) {
+            const methodName = action.functionCall.methodName;
+            if (methodName === StakingContractMethodNames.WithdrawAll) {
+              // withdraw_all has no amount arg; amount is determined on-chain
+              break;
+            }
             const stakingWithdrawAmount = JSON.parse(Buffer.from(action.functionCall.args).toString()).amount;
             inputs.push({
               address: this._nearTransaction.receiverId,
@@ -436,6 +442,20 @@ export class Transaction extends BaseTransaction {
    * @returns {TransactionExplanation}
    */
   explainStakingWithdrawTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
+    const methodName = json.actions[0].functionCall?.methodName;
+    if (methodName === StakingContractMethodNames.WithdrawAll) {
+      // withdraw_all has no amount arg; amount is resolved on-chain
+      return {
+        ...explanationResult,
+        outputAmount: '0',
+        outputs: [
+          {
+            address: json.signerId,
+            amount: '0',
+          },
+        ],
+      };
+    }
     const amount = json.actions[0].functionCall?.args.amount as string;
     return {
       ...explanationResult,

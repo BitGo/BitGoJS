@@ -124,4 +124,6 @@ export const rawTx = {
   },
 };
 
+export const metaPoolContractAddress = 'meta-v2.pool.testnet';
+
 export const AMOUNT = '1000000000000000000000000';
