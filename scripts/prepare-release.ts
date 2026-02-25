@@ -1,3 +1,15 @@
+/**
+ * Prepare packages for beta/alpha release under an alternate npm scope.
+ *
+ * This script transforms the entire monorepo:
+ *   1. Re-scopes all `@bitgo/*` packages to `@bitgo-beta/*` (or the target scope)
+ *   2. Fetches npm dist-tags and computes next prerelease versions
+ *   3. Pins all inter-module dependency versions to exact values (removes ranges)
+ *
+ * See docs/beta-release.md for detailed documentation.
+ *
+ * Usage: npx tsx scripts/prepare-release.ts [preid] --scope [scope] --root-dir [dir]
+ */
 import assert from 'node:assert';
 import { readFileSync, writeFileSync } from 'fs';
 import path from 'path';

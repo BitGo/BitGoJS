@@ -20,6 +20,9 @@
       "path": "./modules/account-lib"
     },
     {
+      "path": "./modules/beta-tools"
+    },
+    {
       "path": "./modules/bitgo"
     },
     {
