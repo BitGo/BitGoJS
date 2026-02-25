@@ -46,9 +46,13 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
   }
 
   /**
-   * Build the transaction from configured TIP-20 operations and transaction parameters
+   * Validate the transaction has all required fields for Tempo AA transactions.
+   * Overrides parent class validation since AA transactions use a different model
+   * (operations-based rather than single contract address).
+   *
+   * @throws BuildTransactionError if validation fails
    */
-  protected async buildImplementation(): Promise<BaseTransaction> {
+  validateTransaction(): void {
     if (this.operations.length === 0) {
       throw new BuildTransactionError('At least one operation is required to build a transaction');
     }
@@ -68,6 +72,29 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
     if (this._maxPriorityFeePerGas === undefined) {
       throw new BuildTransactionError('maxPriorityFeePerGas is required to build a transaction');
     }
+  }
+
+  /**
+   * Build the transaction from configured TIP-20 operations and transaction parameters.
+   */
+  protected async buildImplementation(): Promise<BaseTransaction> {
+    if (
+      this._nonce === undefined ||
+      this._gas === undefined ||
+      this._maxFeePerGas === undefined ||
+      this._maxPriorityFeePerGas === undefined
+    ) {
+      throw new BuildTransactionError('Transaction validation failed: missing required fields');
+    }
+
+    this.fee({
+      fee: this._maxFeePerGas.toString(),
+      gasLimit: this._gas.toString(),
+      eip1559: {
+        maxFeePerGas: this._maxFeePerGas.toString(),
+        maxPriorityFeePerGas: this._maxPriorityFeePerGas.toString(),
+      },
+    });
 
     const calls = this.operations.map((op) => this.operationToCall(op));
 
