@@ -23,6 +23,22 @@ const sdk = new BitGoAPI();
 sdk.register('canton', Canton.createInstance);
 ```
 
+## Documentation
+
+Canton is a privacy-enabled blockchain with unique requirements:
+
+- **[Wallet Initialization Guide](./docs/WALLET_INITIALIZATION.md)** - Comprehensive guide to Canton wallet initialization transactions
+- **[Quick Reference](./docs/WALLET_INITIALIZATION_QUICK_REF.md)** - Quick reference for wallet initialization
+- **[Flow Diagram](./docs/WALLET_INITIALIZATION_FLOW.md)** - Visual flow diagram of the initialization process
+
+### Key Features
+
+- **Party-based Model**: Wallets are registered as "parties" on the Canton network
+- **Wallet Initialization Required**: All wallets must complete an initialization transaction before use
+- **EdDSA Signatures**: Uses Ed25519 curve for cryptographic operations
+- **Multi-signature Support**: Threshold signatures with confirming and observing participants
+- **Memo-based Addressing**: Address format: `partyHint::fingerprint?memoId=index`
+
 ## Development
 
 Most of the coin implementations are derived from `@bitgo/sdk-core`, `@bitgo/statics`, and coin specific packages. These implementations are used to interact with the BitGo API and BitGo platform services.
