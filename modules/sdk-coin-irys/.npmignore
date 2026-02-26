@@ -1,0 +1,14 @@
+!dist/
+dist/test/
+dist/tsconfig.tsbuildinfo
+.idea/
+.prettierrc.yml
+tsconfig.json
+src/
+test/
+scripts/
+.nyc_output
+CODEOWNERS
+node_modules/
+.prettierignore
+.mocharc.js
