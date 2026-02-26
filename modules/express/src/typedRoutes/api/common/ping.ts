@@ -3,7 +3,8 @@ import { httpRoute, httpRequest } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 
 /**
- * Ping
+ * Health check endpoint. Returns 200 if the Express server is running.
+ * Use this to verify the Express server is up and responding.
  *
  * @operationId express.ping
  * @tag express
