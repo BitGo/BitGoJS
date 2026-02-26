@@ -6,6 +6,7 @@ export * from './tokenConfig';
 export { OfcCoin } from './ofc';
 export { UtxoCoin } from './utxo';
 export { LightningCoin } from './lightning';
+export { Night } from './night';
 export {
   AccountCoin,
   GasTankAccountCoin,
@@ -30,6 +31,7 @@ export {
   Nep141Token,
   VetToken,
   VetNFTCollection,
+  NightToken,
   CosmosChainToken,
   AdaToken,
   JettonToken,

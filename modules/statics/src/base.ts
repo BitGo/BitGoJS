@@ -90,6 +90,7 @@ export enum CoinFamily {
   CTC = 'ctc',
   HYPEEVM = 'hypeevm',
   NEAR = 'near',
+  NIGHT = 'night', // Midnight Network
   OAS = 'oas',
   OFC = 'ofc',
   OG = 'og',
@@ -621,6 +622,9 @@ export enum UnderlyingAsset {
   MORPH = 'morph',
   MORPHETH = 'morpheth',
   NEAR = 'near',
+  NIGHT = 'night', // Midnight Network
+  'night:dust' = 'night:dust', // Midnight Dust token (fee token)
+  'tnight:tdust' = 'tnight:tdust', // Testnet Midnight Dust token
   OAS = 'oas',
   OG = 'og',
   OKBXLAYER = 'okbxlayer',
@@ -3666,6 +3670,7 @@ export enum BaseUnit {
   SUI = 'MIST',
   TON = 'nanoton',
   NEAR = 'yocto',
+  NIGHT = 'dust', // Midnight Network smallest unit
   OFC = 'ofcCoin',
   OSMO = 'uosmo',
   FIAT = 'fiatCoin',
