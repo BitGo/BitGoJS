@@ -1,5 +1,5 @@
 import { erc20, erc20Token, terc20 } from '../account';
-import { CoinFeature, UnderlyingAsset } from '../base';
+import { BaseCoin, CoinFeature, UnderlyingAsset } from '../base';
 import { AccountNetwork, EthereumNetwork } from '../networks';
 import { ofcerc20, tofcerc20 } from '../ofc';
 
@@ -59,7 +59,7 @@ function createOfcCoin(
 
 // --- Ethereum ERC20 generators (erc20 / terc20) ---
 
-export function generateErc20Coin(config: Erc20CoinConfig) {
+export function generateErc20Coin(config: Erc20CoinConfig): Readonly<BaseCoin>[] {
   const onChain = erc20(
     config.id,
     config.name,
@@ -78,7 +78,7 @@ export function generateErc20Coin(config: Erc20CoinConfig) {
   return [onChain, createOfcCoin(config, onChain.features, 'eth', false)];
 }
 
-export function generateTestErc20Coin(config: Erc20CoinConfig) {
+export function generateTestErc20Coin(config: Erc20CoinConfig): Readonly<BaseCoin>[] {
   const onChain = terc20(
     config.id,
     config.name,
@@ -99,7 +99,7 @@ export function generateTestErc20Coin(config: Erc20CoinConfig) {
 
 // --- ERC20 Token generators (erc20Token for non-Ethereum EVM chains) ---
 
-export function generateErc20Token(config: Erc20TokenConfig) {
+export function generateErc20Token(config: Erc20TokenConfig): Readonly<BaseCoin>[] {
   const onChain = erc20Token(
     config.id,
     config.name,
@@ -118,7 +118,7 @@ export function generateErc20Token(config: Erc20TokenConfig) {
   return [onChain, createOfcCoin(config, onChain.features, 'eth', false)];
 }
 
-export function generateTestErc20Token(config: Erc20TokenConfig) {
+export function generateTestErc20Token(config: Erc20TokenConfig): Readonly<BaseCoin>[] {
   const onChain = erc20Token(
     config.id,
     config.name,
