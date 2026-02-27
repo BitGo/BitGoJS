@@ -507,8 +507,15 @@ export class Transaction extends BaseTransaction {
     // This validates the WASM path against production traffic before
     // replacing the legacy implementation for all networks.
     if (this._coinConfig.name === 'tsol') {
+      // explainTransaction should work on unsigned/partially-signed transactions
+      // (e.g., during parseTransaction round-trips where null signatures become
+      // zero-filled buffers). Use serialize without signature validation since
+      // we only need to read the transaction, not broadcast it.
+      const txBase64 = Buffer.from(
+        this._solTransaction.serialize({ verifySignatures: false, requireAllSignatures: false })
+      ).toString('base64');
       return explainSolTransaction({
-        txBase64: this.toBroadcastFormat(),
+        txBase64,
         feeInfo: this._lamportsPerSignature ? { fee: this._lamportsPerSignature.toString() } : undefined,
         tokenAccountRentExemptAmount: this._tokenAccountRentExemptAmount,
         coinName: this._coinConfig.name,
