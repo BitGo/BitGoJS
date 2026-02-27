@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.5.2...@bitgo/sdk-coin-tempo@1.6.0) (2026-02-27)
+
+
+### Features
+
+* **sdk-coin-tempo:** add comprehensive tests for TIP-20 transaction builder ([eca3b50](https://github.com/BitGo/BitGoJS/commit/eca3b5074fdd45dfe63ca835ceec002fd799fedb))
+
+
+
+
+
 ## [1.5.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.5.1...@bitgo/sdk-coin-tempo@1.5.2) (2026-02-24)
 
 

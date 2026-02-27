@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.26.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.25.0...bitgo@50.26.0) (2026-02-27)
+
+
+### Features
+
+* bump public types ([131dbb7](https://github.com/BitGo/BitGoJS/commit/131dbb7767b5566b7c7d29dce33010980457e6c0))
+
+
+
+
+
 # [50.25.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.24.1...bitgo@50.25.0) (2026-02-24)
 
 
