@@ -974,21 +974,10 @@
     "@scure/base" "1.1.5"
     micro-eth-signer "0.7.2"
 
-"@bitgo/public-types@5.61.0":
-  version "5.61.0"
-  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-5.61.0.tgz#38b4c6f0258a6700683daf698226ed20a22da944"
-  integrity sha512-IP7NJDhft0Vt+XhrAHOtUAroUfe2yy4i1I4oZgZXwjbYkLIKqKWarQDs/V/toh6vHdRTxtTuqI27TPcnI2IuTw==
-  dependencies:
-    fp-ts "^2.0.0"
-    io-ts "npm:@bitgo-forks/io-ts@2.1.4"
-    io-ts-types "^0.5.16"
-    monocle-ts "^2.3.13"
-    newtype-ts "^0.3.5"
-
-"@bitgo/public-types@5.63.0":
-  version "5.63.0"
-  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-5.63.0.tgz#1f75a376bcd9e340106e2607ff5508280b66f152"
-  integrity sha512-9UjiUbX1m2HBvFI2mQ9CqOfJl0bujMPUtAf8Lf14vQ5f/IvM7sfPcve0fwf2yFAFmzfLbBxazQ1ZW4g5GtRN6A==
+"@bitgo/public-types@5.76.1":
+  version "5.76.1"
+  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-5.76.1.tgz#c36b245fccc4a90068fced8a4e2985d57f561bc1"
+  integrity sha512-S3dKa1to6xQj/cmtKrip6ytG1/4qBkRhZ117cOERlRcHHJFY8/h+1zCKazlRU+FRc8JUWcLlAoFnAcqifHw3Eg==
   dependencies:
     fp-ts "^2.0.0"
     io-ts "npm:@bitgo-forks/io-ts@2.1.4"
