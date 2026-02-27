@@ -280,4 +280,87 @@ describe('Config:', () => {
     should.not.exist(parsed.disableproxy);
     argvStub.restore();
   });
+
+  describe('authVersion parsing', () => {
+    it('should correctly handle authVersion 2', () => {
+      const envStub = sinon.stub(process, 'env').value({ BITGO_AUTH_VERSION: '2' });
+      const { config: proxyConfig } = proxyquire('../../src/config', {
+        './args': {
+          args: () => {
+            return {};
+          },
+        },
+      });
+      proxyConfig().authVersion.should.equal(2);
+      envStub.restore();
+    });
+
+    it('should correctly handle authVersion 3', () => {
+      const envStub = sinon.stub(process, 'env').value({ BITGO_AUTH_VERSION: '3' });
+      const { config: proxyConfig } = proxyquire('../../src/config', {
+        './args': {
+          args: () => {
+            return {};
+          },
+        },
+      });
+      proxyConfig().authVersion.should.equal(3);
+      envStub.restore();
+    });
+
+    it('should correctly handle authVersion 4', () => {
+      const envStub = sinon.stub(process, 'env').value({ BITGO_AUTH_VERSION: '4' });
+      const { config: proxyConfig } = proxyquire('../../src/config', {
+        './args': {
+          args: () => {
+            return {};
+          },
+        },
+      });
+      proxyConfig().authVersion.should.equal(4);
+      envStub.restore();
+    });
+
+    it('should clamp invalid authVersion values to 2', () => {
+      const consoleStub = sinon.stub(console, 'warn').returns(undefined);
+      const envStub = sinon.stub(process, 'env').value({ BITGO_AUTH_VERSION: '5' });
+      const { config: proxyConfig } = proxyquire('../../src/config', {
+        './args': {
+          args: () => {
+            return {};
+          },
+        },
+      });
+      proxyConfig().authVersion.should.equal(2);
+      consoleStub.calledOnce.should.be.true();
+      consoleStub.restore();
+      envStub.restore();
+    });
+
+    it('should handle authVersion precedence: args override env', () => {
+      const envStub = sinon.stub(process, 'env').value({ BITGO_AUTH_VERSION: '3' });
+      const { config: proxyConfig } = proxyquire('../../src/config', {
+        './args': {
+          args: () => {
+            return { authversion: 4 };
+          },
+        },
+      });
+      proxyConfig().authVersion.should.equal(4);
+      envStub.restore();
+    });
+
+    it('should default to authVersion 2 when not provided', () => {
+      const envStub = sinon.stub(process, 'env').value({});
+      const { config: proxyConfig } = proxyquire('../../src/config', {
+        './args': {
+          args: () => {
+            return {};
+          },
+        },
+      });
+      proxyConfig().authVersion.should.equal(2);
+      envStub.restore();
+    });
+  });
 });
