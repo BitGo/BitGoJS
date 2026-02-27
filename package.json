@@ -79,6 +79,7 @@
     "@babel/helpers": "^7.28.2",
     "buffer": "^6.0.3",
     "body-parser": "1.20.3",
+    "basic-ftp": "5.2.0",
     "degenerator": "5.0.0",
     "eventsource": "2.0.2",
     "follow-redirects": "1.15.11",
