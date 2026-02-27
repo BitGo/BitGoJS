@@ -280,4 +280,76 @@ describe('Config:', () => {
     should.not.exist(parsed.disableproxy);
     argvStub.restore();
   });
+
+  it('should support authVersion 4 via environment variable', () => {
+    const envStub = sinon.stub(process, 'env').value({ BITGO_AUTH_VERSION: '4' });
+    const { config: proxyConfig } = proxyquire('../../src/config', {
+      './args': {
+        args: () => {
+          return {};
+        },
+      },
+    });
+    proxyConfig().authVersion.should.equal(4);
+    envStub.restore();
+  });
+
+  it('should support authVersion 4 via command line argument', () => {
+    const { config: proxyConfig } = proxyquire('../../src/config', {
+      './args': {
+        args: () => {
+          return { authVersion: 4 };
+        },
+      },
+    });
+    proxyConfig().authVersion.should.equal(4);
+  });
+
+  it('should default to authVersion 2 when not specified', () => {
+    const { config: proxyConfig } = proxyquire('../../src/config', {
+      './args': {
+        args: () => {
+          return {};
+        },
+      },
+    });
+    proxyConfig().authVersion.should.equal(2);
+  });
+
+  it('should allow command line authVersion to override environment variable', () => {
+    const envStub = sinon.stub(process, 'env').value({ BITGO_AUTH_VERSION: '2' });
+    const { config: proxyConfig } = proxyquire('../../src/config', {
+      './args': {
+        args: () => {
+          return { authVersion: 4 };
+        },
+      },
+    });
+    proxyConfig().authVersion.should.equal(4);
+    envStub.restore();
+  });
+
+  it('should fall back to authVersion 2 for invalid command line value', () => {
+    const { config: proxyConfig } = proxyquire('../../src/config', {
+      './args': {
+        args: () => {
+          return { authVersion: 5 };
+        },
+      },
+    });
+    proxyConfig().authVersion.should.equal(2);
+  });
+
+  it('should fall back to authVersion 2 for invalid environment variable', () => {
+    const envStub = sinon.stub(process, 'env').value({ BITGO_AUTH_VERSION: '99' });
+    const { config: proxyConfig } = proxyquire('../../src/config', {
+      './args': {
+        args: () => {
+          return {};
+        },
+      },
+    });
+    proxyConfig().authVersion.should.equal(2);
+    envStub.restore();
+  });
 });
