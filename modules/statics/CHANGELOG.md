@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.26.0...@bitgo/statics@58.27.0) (2026-02-27)
+
+
+### Bug Fixes
+
+* return type for generateErc20 methods ([b057eac](https://github.com/BitGo/BitGoJS/commit/b057eac852d576063ca2ab14ceb21dea52461f46))
+* **statics:** remove staking feature from tflr:wflr ([933d423](https://github.com/BitGo/BitGoJS/commit/933d4239efe58c01c18e42526f90709d51bb2a61))
+
+
+### Features
+
+* **sdk-coin-near:** adding support for metapool withdraw_all txn builder ([7fc604f](https://github.com/BitGo/BitGoJS/commit/7fc604fabbf33c6a343b05a0a132a7c78295d11c))
+* **statics:** enable token batch for avaxc ([a085e23](https://github.com/BitGo/BitGoJS/commit/a085e23cb0490e8c848ee48cd8c0717371af519b))
+
+
+
+
+
 # [58.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.25.0...@bitgo/statics@58.26.0) (2026-02-24)
 
 

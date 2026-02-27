@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.15.3...@bitgo/sdk-coin-near@2.16.0) (2026-02-27)
+
+
+### Features
+
+* **sdk-coin-near:** adding support for metapool withdraw_all txn builder ([7fc604f](https://github.com/BitGo/BitGoJS/commit/7fc604fabbf33c6a343b05a0a132a7c78295d11c))
+
+
+
+
+
 ## [2.15.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.15.2...@bitgo/sdk-coin-near@2.15.3) (2026-02-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-near
