@@ -1369,6 +1369,9 @@ function prepareBitGo(config: Config) {
         accessToken = authSplit[1];
       }
     }
+    // Get token ID from custom header (required for v4 auth)
+    const tokenId = req.headers['x-token-id'] as string | undefined;
+
     const userAgent = req.headers['user-agent']
       ? BITGOEXPRESS_USER_AGENT + ' ' + req.headers['user-agent']
       : BITGOEXPRESS_USER_AGENT;
@@ -1379,6 +1382,7 @@ function prepareBitGo(config: Config) {
       customRootURI: customRootUri,
       customBitcoinNetwork,
       accessToken,
+      tokenId,
       userAgent,
       authVersion,
       ...(useProxyUrl
@@ -1391,6 +1395,7 @@ function prepareBitGo(config: Config) {
     };
 
     req.bitgo = new BitGo(bitgoConstructorParams);
+
     req.config = config;
 
     next();
@@ -1645,6 +1650,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   // ping
   // /api/v[12]/pingexpress is the only exception to the rule above, as it explicitly checks the health of the
   // express server without running into rate limiting with the BitGo server.
+
   const router = createExpressRouter();
   app.use(router);
 

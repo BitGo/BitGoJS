@@ -26,6 +26,7 @@ import * as sdkHmac from '@bitgo/sdk-hmac';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, ECPairInterface } from '@bitgo/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
+import * as crypto from 'crypto';
 import { type Agent } from 'http';
 import debugLib from 'debug';
 import * as _ from 'lodash';
@@ -54,6 +55,9 @@ import {
   CalculateHmacSubjectOptions,
   CalculateRequestHeadersOptions,
   CalculateRequestHmacOptions,
+  CalculateV4PreimageOptions,
+  CalculateV4RequestHmacOptions,
+  CalculateV4RequestHeadersOptions,
   ChangePasswordOptions,
   Constants,
   DeprecatedVerifyAddressOptions,
@@ -69,6 +73,7 @@ import {
   ReconstituteSecretOptions,
   RegisterPushTokenOptions,
   RemoveAccessTokenOptions,
+  HashableData,
   RequestHeaders,
   RequestMethods,
   SplitSecret,
@@ -81,6 +86,9 @@ import {
   VerifyPushTokenOptions,
   VerifyResponseInfo,
   VerifyResponseOptions,
+  V4RequestHeaders,
+  VerifyV4ResponseInfo,
+  VerifyV4ResponseOptions,
   VerifyShardsOptions,
   WebhookOptions,
 } from './types';
@@ -279,6 +287,9 @@ export class BitGoAPI implements BitGoBase {
     this._baseApiUrlV2 = this._baseUrl + '/api/v2';
     this._baseApiUrlV3 = this._baseUrl + '/api/v3';
     this._token = params.accessToken;
+    if (this._authVersion === 4 && params.tokenId) {
+      this._tokenId = params.tokenId;
+    }
 
     const clientConstants = params.clientConstants;
     this._initializeClientConstants(clientConstants);
@@ -428,37 +439,89 @@ export class BitGoAPI implements BitGoBase {
       req.isV2Authenticated = true;
       req.authenticationToken = this._token;
       // some of the older tokens appear to be only 40 characters long
-      if ((this._token && this._token.length !== 67 && this._token.indexOf('v2x') !== 0) || req.forceV1Auth) {
+      // Skip the v1 fallback check entirely for v4, since v4 raw tokens may not match v2 format
+      if (
+        this._authVersion !== 4 &&
+        ((this._token && this._token.length !== 67 && this._token.indexOf('v2x') !== 0) || req.forceV1Auth)
+      ) {
         // use the old method
         req.isV2Authenticated = false;
 
         req.set('Authorization', 'Bearer ' + this._token);
-        debug('sending v1 %s request to %s with token %s', method, url, this._token?.substr(0, 8));
+        debug('sending v1 %s request to %s with token %s', method, url, this._token?.slice(0, 8));
         return originalThen(onfulfilled).catch(onrejected);
       }
 
-      const authVersionHeader = this._authVersion === 4 ? '4.0' : this._authVersion === 3 ? '3.0' : '2.0';
-      req.set('BitGo-Auth-Version', authVersionHeader);
-
       const data = serializeRequestData(req);
-      if (this._token) {
-        setRequestQueryString(req);
 
-        const requestProperties = this.calculateRequestHeaders({
-          url: req.url,
-          token: this._token,
-          method,
-          text: data || '',
-          authVersion: this._authVersion,
-        });
-        req.set('Auth-Timestamp', requestProperties.timestamp.toString());
+      if (this._authVersion === 4) {
+        req.set('BitGo-Auth-Version', '4.0');
 
-        // we're not sending the actual token, but only its hash
-        req.set('Authorization', 'Bearer ' + requestProperties.tokenHash);
-        debug('sending v2 %s request to %s with token %s', method, url, this._token?.substr(0, 8));
+        if (this._token && !this._tokenId) {
+          throw new Error(
+            'v4 auth requires both accessToken and tokenId. ' +
+              'Set tokenId in the constructor or call authenticateWithAccessToken({ accessToken, tokenId }).'
+          );
+        }
 
-        // set the HMAC
-        req.set('HMAC', requestProperties.hmac);
+        if (this._token && this._tokenId) {
+          setRequestQueryString(req);
+
+          // Convert serialized body to Buffer for exact byte hashing
+          const rawBodyBuffer = Buffer.from(data || '');
+          const authRequestId = crypto.randomUUID();
+
+          // Extract path with query from the fully resolved URL
+          const urlObj = new URL(req.url);
+          const pathWithQuery = urlObj.pathname + urlObj.search;
+
+          const v4Headers = this.calculateV4RequestHeaders({
+            method,
+            pathWithQuery,
+            rawBody: rawBodyBuffer,
+            rawToken: this._token,
+            authRequestId,
+          });
+
+          req.set('Authorization', 'Bearer ' + this._tokenId);
+          req.set('X-Request-Timestamp', v4Headers.timestampSec.toString());
+          req.set('X-Auth-Request-Id', v4Headers.authRequestId);
+          req.set('X-Content-SHA256', v4Headers.bodyHashHex);
+          req.set('X-Signature', v4Headers.hmac);
+
+          const safeTokenPrefix = (this._token ?? '').slice(0, 8).replace(/[\r\n]/g, '');
+          debug('sending v4 %s request to %s with token %s', method, url, safeTokenPrefix);
+
+          // Store request metadata for response HMAC verification.
+          // authenticationToken is the raw token (HMAC key), NOT the _tokenId.
+          req.authenticationToken = this._token;
+          req.v4AuthRequestId = authRequestId;
+          req.v4Method = method;
+          req.v4PathWithQuery = pathWithQuery;
+        }
+      } else {
+        req.set('BitGo-Auth-Version', this._authVersion === 3 ? '3.0' : '2.0');
+
+        if (this._token) {
+          setRequestQueryString(req);
+
+          const requestProperties = this.calculateRequestHeaders({
+            url: req.url,
+            token: this._token,
+            method,
+            text: data || '',
+            authVersion: this._authVersion,
+          });
+          req.set('Auth-Timestamp', requestProperties.timestamp.toString());
+
+          // we're not sending the actual token, but only its hash
+          req.set('Authorization', 'Bearer ' + requestProperties.tokenHash);
+          const tokenPrefixForLog = this._token ? this._token.slice(0, 8).replace(/[\r\n]/g, '') : undefined;
+          debug('sending v2 %s request to %s with token %s', method, url, tokenPrefixForLog);
+
+          // set the HMAC
+          req.set('HMAC', requestProperties.hmac);
+        }
       }
 
       if (this.getAdditionalHeadersCb) {
@@ -547,10 +610,56 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
-   * Verify the HMAC for an HTTP response
+   * Verify the HMAC for an HTTP response.
+   * Delegates to sdkHmac.verifyV4Response for v4, sdkHmac.verifyResponse for v2/v3.
    */
-  verifyResponse(params: VerifyResponseOptions): VerifyResponseInfo {
-    return sdkHmac.verifyResponse({ ...params, authVersion: this._authVersion });
+  verifyResponse(params: VerifyV4ResponseOptions): VerifyV4ResponseInfo;
+  verifyResponse(params: VerifyResponseOptions): VerifyResponseInfo;
+  verifyResponse(params: VerifyResponseOptions | VerifyV4ResponseOptions): VerifyResponseInfo | VerifyV4ResponseInfo {
+    if (this._authVersion === 4) {
+      return sdkHmac.verifyV4Response(params as VerifyV4ResponseOptions);
+    }
+    return sdkHmac.verifyResponse({ ...(params as VerifyResponseOptions), authVersion: this._authVersion });
+  }
+
+  /**
+   * Calculate the SHA256 hash of a request or response body.
+   * Returns the hash as a lowercase hex string.
+   * @param body - Raw body bytes (string, Buffer, Uint8Array, or ArrayBuffer)
+   */
+  calculateBodyHash(body: HashableData): string {
+    return sdkHmac.calculateBodyHash(body);
+  }
+
+  /**
+   * Build the canonical v4 preimage string for a request.
+   * Useful for debugging and testing HMAC calculations.
+   */
+  calculateV4Preimage(params: CalculateV4PreimageOptions): string {
+    return sdkHmac.calculateV4Preimage(params);
+  }
+
+  /**
+   * Calculate the HMAC-SHA256 signature for a v4 HTTP request.
+   */
+  calculateV4RequestHmac(params: CalculateV4RequestHmacOptions): string {
+    return sdkHmac.calculateV4RequestHmac(params);
+  }
+
+  /**
+   * Generate all header values required for a v4 authenticated request.
+   * Returns timestampSec, hmac, bodyHashHex, and authRequestId.
+   */
+  calculateV4RequestHeaders(params: CalculateV4RequestHeadersOptions): V4RequestHeaders {
+    return sdkHmac.calculateV4RequestHeaders(params);
+  }
+
+  /**
+   * Build the canonical v4 preimage string for a response.
+   * Includes the statusCode field. Useful for debugging and testing.
+   */
+  calculateV4ResponsePreimage(params: Omit<VerifyV4ResponseOptions, 'hmac' | 'rawToken'>): string {
+    return sdkHmac.calculateV4ResponsePreimage(params);
   }
 
   /**
@@ -751,6 +860,13 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
+   * Get the token ID (MongoDB _id) used as the v4 bearer token value.
+   */
+  get tokenId(): string | undefined {
+    return this._tokenId;
+  }
+
+  /**
    * Deserialize a JSON serialized BitGo object.
    *
    * Overwrites the properties on the current BitGo object with
@@ -862,9 +978,12 @@ export class BitGoAPI implements BitGoBase {
   /**
    * Synchronous method for activating an access token.
    */
-  authenticateWithAccessToken({ accessToken }: AccessTokenOptions): void {
+  authenticateWithAccessToken({ accessToken, tokenId }: AccessTokenOptions): void {
     debug('now authenticating with access token %s', accessToken.substring(0, 8));
     this._token = accessToken;
+    if (this._authVersion === 4 && tokenId) {
+      this._tokenId = tokenId;
+    }
   }
 
   /**
@@ -972,6 +1091,10 @@ export class BitGoAPI implements BitGoBase {
 
       if (body.access_token) {
         this._token = body.access_token;
+        // For v4, store the token ID for use as the bearer value
+        if (this._authVersion === 4 && (body.id || body.token_id)) {
+          this._tokenId = body.id || body.token_id;
+        }
         // if the downgrade was forced, adding a warning message might be prudent
       } else {
         // check the presence of an encrypted ECDH xprv
@@ -1039,6 +1162,10 @@ export class BitGoAPI implements BitGoBase {
 
       if (body.access_token) {
         this._token = body.access_token;
+        // For v4, store the token ID for use as the bearer value
+        if (this._authVersion === 4 && (body.id || body.token_id)) {
+          this._tokenId = body.id || body.token_id;
+        }
         response.body.access_token = body.access_token;
       } else {
         throw new Error('Failed to login. Please contact support@bitgo.com');
@@ -1142,6 +1269,7 @@ export class BitGoAPI implements BitGoBase {
     this._user = undefined;
     this._token = undefined;
     this._tokenId = undefined;
+    this._tokenId = undefined;
     this._refreshToken = undefined;
     this._ecdhXprv = undefined;
   }
@@ -1173,6 +1301,10 @@ export class BitGoAPI implements BitGoBase {
       .result();
     this._token = body.access_token;
     this._refreshToken = body.refresh_token;
+    // For v4, update the token ID (a new token may have a new ID)
+    if (this._authVersion === 4 && (body.id || body.token_id)) {
+      this._tokenId = body.id || body.token_id;
+    }
     return body;
   }
 
@@ -1270,7 +1402,7 @@ export class BitGoAPI implements BitGoBase {
       if (!this._ecdhXprv) {
         // without a private key, the user cannot decrypt the new access token the server will send
         request.forceV1Auth = true;
-        debug('forcing v1 auth for adding access token using token %s', this._token?.substr(0, 8));
+        debug('forcing v1 auth for adding access token using token %s', this._token?.slice(0, 8));
       }
 
       const response = await request.send(params);
@@ -1285,6 +1417,11 @@ export class BitGoAPI implements BitGoBase {
       // Decrypt token using ECDH (same for V2/V3/V4)
       const responseDetails = this.handleTokenIssuance(response.body);
       response.body.token = responseDetails.token;
+
+      // For v4, store the token ID (MongoDB _id) from the response
+      if (this._authVersion === 4 && (response.body.id || response.body.token_id)) {
+        this._tokenId = response.body.id || response.body.token_id;
+      }
 
       return handleResponseResult<AddAccessTokenResponse>()(response);
     } catch (e) {
@@ -1898,6 +2035,10 @@ export class BitGoAPI implements BitGoBase {
 
     this._token = body.access_token;
     this._refreshToken = body.refresh_token;
+    // For v4, store the token ID for use as the bearer value
+    if (this._authVersion === 4 && (body.id || body.token_id)) {
+      this._tokenId = body.id || body.token_id;
+    }
     this._user = await this.me();
     return body;
   }

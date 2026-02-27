@@ -17,13 +17,21 @@ export {
   CalculateHmacSubjectOptions,
   CalculateRequestHeadersOptions,
   CalculateRequestHmacOptions,
+  CalculateV4PreimageOptions,
+  CalculateV4RequestHmacOptions,
+  CalculateV4RequestHeadersOptions,
+  HashableData,
   RequestHeaders,
   supportedRequestMethods,
+  V4RequestHeaders,
   VerifyResponseInfo,
   VerifyResponseOptions,
+  VerifyV4ResponseInfo,
+  VerifyV4ResponseOptions,
 } from '@bitgo/sdk-hmac';
 export interface BitGoAPIOptions {
   accessToken?: string;
+  tokenId?: string; // V4: separate token identifier
   authVersion?: 2 | 3 | 4;
   clientConstants?:
     | Record<string, any>
@@ -75,6 +83,8 @@ export interface BitGoAPIOptions {
 
 export interface AccessTokenOptions {
   accessToken: string;
+  /** MongoDB _id of the access token. Required for v4 authentication (used as the Bearer value). */
+  tokenId?: string;
 }
 
 export interface PingOptions {
