@@ -61,7 +61,7 @@
     "@bitgo/sdk-core": "^36.33.0",
     "@bitgo/sdk-lib-mpc": "^10.9.0",
     "@bitgo/statics": "^58.27.0",
-    "@bitgo/wasm-solana": "^2.5.0",
+    "@bitgo/wasm-solana": "^2.6.0",
     "@solana/spl-stake-pool": "1.1.8",
     "@solana/spl-token": "0.4.9",
     "@solana/web3.js": "1.92.1",

@@ -23,10 +23,10 @@ describe('Jito WASM Verification', function () {
 
   it('should parse Jito DepositSol transaction via WASM', function () {
     // Verify the raw WASM parsing returns StakePoolDepositSol
-    const { parseTransaction } = require('@bitgo/wasm-solana');
+    const { Transaction, parseTransaction } = require('@bitgo/wasm-solana');
     const txBytes = Buffer.from(JITO_TX_BASE64, 'base64');
-    const wasmTx = parseTransaction(txBytes);
-    const wasmParsed = wasmTx.parse();
+    const tx = Transaction.fromBytes(txBytes);
+    const wasmParsed = parseTransaction(tx);
 
     // Verify WASM returns StakePoolDepositSol instruction
     const depositSolInstr = wasmParsed.instructionsData.find((i: { type: string }) => i.type === 'StakePoolDepositSol');
