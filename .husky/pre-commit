@@ -2,5 +2,9 @@
 . "$(dirname "$0")/_/husky.sh"
 rootDir=$(pwd)
 cd "$rootDir"
+
+## Check ERC20 contract addresses are lowercase
+node scripts/check-erc20-addresses.js || exit 1
+
 ## only run on packages that have changed
 yarn precommit
