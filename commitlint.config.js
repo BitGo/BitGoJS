@@ -75,7 +75,6 @@ module.exports = {
         'CHALO-',
         'CSHLD-',
         'CECHO-',
-        'CSHLD-',
         '#', // Prefix used by GitHub issues
       ],
     },
