@@ -1358,7 +1358,7 @@ function parseBody(req: express.Request, res: express.Response, next: express.Ne
  * @param config
  */
 function prepareBitGo(config: Config) {
-  const { env, customRootUri, customBitcoinNetwork } = config;
+  const { env, customRootUri, customBitcoinNetwork, authVersion } = config;
 
   return function prepBitGo(req: express.Request, res: express.Response, next: express.NextFunction) {
     // Get access token
@@ -1369,6 +1369,31 @@ function prepareBitGo(config: Config) {
         accessToken = authSplit[1];
       }
     }
+
+    // Get token ID from custom header (required for v4 auth)
+    // For v2/v3, this header is ignored if present.
+    // For v4, if both accessToken and authVersion=4 are present, tokenId must be provided
+    // or the request will be rejected with a clear error message.
+    //
+    // Header name: `Access-Key-Id`
+    // Expected value: the MongoDB ObjectId (`_id`) of the access token document.
+    // When making v4-authenticated requests through BitGoExpress, clients MUST set this
+    // header to the token's `_id` so that BitGo can correctly identify the access token.
+    const tokenIdHeader = req.headers['access-key-id'];
+    const tokenId = tokenIdHeader ? (Array.isArray(tokenIdHeader) ? tokenIdHeader[0] : tokenIdHeader) : undefined;
+
+    // Enforce v4 auth requirements at the BitGoExpress middleware level to provide
+    // an immediate, clear error when the Access-Key-Id header (tokenId) is missing.
+    if (authVersion === 4 && accessToken && !tokenId) {
+      res.status(400).send({
+        error:
+          'BitGoExpress is configured with authVersion=4 and a bearer access token, ' +
+          'but the Access-Key-Id header is missing. ' +
+          'For v4 auth, requests must include the Access-Key-Id header identifying the access token.',
+      });
+      return;
+    }
+
     const userAgent = req.headers['user-agent']
       ? BITGOEXPRESS_USER_AGENT + ' ' + req.headers['user-agent']
       : BITGOEXPRESS_USER_AGENT;
@@ -1378,7 +1403,9 @@ function prepareBitGo(config: Config) {
       env,
       customRootURI: customRootUri,
       customBitcoinNetwork,
+      authVersion,
       accessToken,
+      ...(tokenId ? { tokenId } : {}),
       userAgent,
       ...(useProxyUrl
         ? {

@@ -4,6 +4,24 @@ import 'dotenv/config';
 
 import { args } from './args';
 
+// Normalizes authVersion to valid values (2, 3, or 4).
+// Returns undefined when no value is provided, so mergeConfigs can fall through to other sources.
+// Invalid values (e.g., 1, 5) are clamped to 2 for safety.
+// Note: Previously, invalid values were passed through and handled at runtime (treated as v2).
+// This change normalizes them at config parsing time, which is safer and more explicit.
+function parseAuthVersion(val: number | undefined): 2 | 3 | 4 | undefined {
+  if (val === undefined || isNaN(val)) {
+    return undefined;
+  }
+  if (val === 2 || val === 3 || val === 4) {
+    return val;
+  }
+  console.warn(
+    `warning: invalid authVersion '${val}' provided; defaulting to authVersion 2. ` + `Valid values are 2, 3, or 4.`
+  );
+  return 2;
+}
+
 function readEnvVar(name, ...deprecatedAliases): string | undefined {
   if (process.env[name] !== undefined && process.env[name] !== '') {
     return process.env[name];
@@ -36,7 +54,7 @@ export interface Config {
   timeout: number;
   customRootUri?: string;
   customBitcoinNetwork?: V1Network;
-  authVersion: number;
+  authVersion: 2 | 3 | 4;
   externalSignerUrl?: string;
   signerMode?: boolean;
   signerFileSystemPath?: string;
@@ -62,7 +80,7 @@ export const ArgConfig = (args): Partial<Config> => ({
   timeout: args.timeout,
   customRootUri: args.customrooturi,
   customBitcoinNetwork: args.custombitcoinnetwork,
-  authVersion: args.authVersion,
+  authVersion: parseAuthVersion(args.authversion),
   externalSignerUrl: args.externalSignerUrl,
   signerMode: args.signerMode,
   signerFileSystemPath: args.signerFileSystemPath,
@@ -88,7 +106,7 @@ export const EnvConfig = (): Partial<Config> => ({
   timeout: Number(readEnvVar('BITGO_TIMEOUT')),
   customRootUri: readEnvVar('BITGO_CUSTOM_ROOT_URI'),
   customBitcoinNetwork: readEnvVar('BITGO_CUSTOM_BITCOIN_NETWORK') as V1Network,
-  authVersion: Number(readEnvVar('BITGO_AUTH_VERSION')),
+  authVersion: parseAuthVersion(Number(readEnvVar('BITGO_AUTH_VERSION'))),
   externalSignerUrl: readEnvVar('BITGO_EXTERNAL_SIGNER_URL'),
   signerMode: readEnvVar('BITGO_SIGNER_MODE') ? true : undefined,
   signerFileSystemPath: readEnvVar('BITGO_SIGNER_FILE_SYSTEM_PATH'),
