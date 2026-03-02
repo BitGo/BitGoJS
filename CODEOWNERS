@@ -2,7 +2,7 @@
 # Each line is a file pattern followed by one or more owners.
 
 # These owners and first officers will be the default owners for everything in the repo.
-*   @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
+*   @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
 
 # Order is important. The last matching pattern has the most precedence.
 
@@ -112,16 +112,16 @@
 /modules/sdk-core/src/bitgo/trading/ @BitGo/prime
 
 # Core Modules
-/modules/bitgo/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
+/modules/bitgo/ @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
 /modules/bitgo/test/v2/unit/lightning/ @BitGo/btc-team
-/modules/blake2b-wasm/  @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
-/modules/blake2b/ @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
+/modules/blake2b-wasm/ @BitGo/wallet-core @BitGo/wallet-core-india
+/modules/blake2b/ @BitGo/wallet-core @BitGo/wallet-core-india
 /modules/express/ @BitGo/wallet-core @BitGo/wallet-core-india
 /modules/express/src/lightning/ @BitGo/btc-team
 /modules/express/test/unit/lightning/ @BitGo/btc-team
 /modules/express/test/unit/clientRoutes/lightning/ @BitGo/btc-team
 /modules/key-card/ @BitGo/wallet-core @BitGo/wallet-core-india
-/modules/sdk-api/ @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
+/modules/sdk-api/ @BitGo/wallet-core @BitGo/wallet-core-india
 /modules/sdk-api/src/v1 @BitGo/btc-team
 /modules/sdk-api/test/unit/v1 @BitGo/btc-team
 /modules/sdk-core/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm @BitGo/coins
@@ -130,32 +130,32 @@
 /modules/sdk-lib-mpc/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
 /modules/deser-lib/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
 /modules/sdk-rpc-wrapper @BitGo/ethalt-team
-/modules/sdk-test/ @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
-/modules/sjcl/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
-/modules/statics/ @BitGo/web-experience @BitGo/ethalt-team
+/modules/sdk-test/ @BitGo/wallet-core @BitGo/wallet-core-india
+/modules/sjcl/ @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/modules/statics/ @BitGo/ethalt-team
 /modules/statics/src/utxo.ts @BitGo/btc-team
 /modules/web-demo/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
-/scripts/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
+/scripts/ @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
 /scripts/sdk-coin-generator-v2/ @BitGo/ethalt-team
-/types/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
-/webpack/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
+/types/ @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/webpack/ @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
 
 # Asset Metadata Service
 /modules/statics/src/coins/botTokens.ts @BitGo/ams
 /modules/statics/src/coins/botOfcTokens.ts @BitGo/ams
 
-/.eslintrc.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
-/.prettierrc.yml @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
-/check-package-versions.js @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
+/.eslintrc.json @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/.prettierrc.yml @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/check-package-versions.js @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
 /CODEOWNERS @BitGo/git-admins
-/DEVELOPERS.md @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
-/commitlint.config.js @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
-/Dockerfile @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
-/lerna.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/devops
+/DEVELOPERS.md @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/commitlint.config.js @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/Dockerfile @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/lerna.json @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/devops
 /package.json @BitGo/sdk-reviewers
 **/package.json @BitGo/sdk-reviewers
-/tsconfig.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/devops
-/tsconfig.packages.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
+/tsconfig.json @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/devops
+/tsconfig.packages.json @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
 /yarn.lock @BitGo/sdk-reviewers
 /.iyarc @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm @BitGo/velocity
 flake.nix @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
