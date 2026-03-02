@@ -1098,15 +1098,15 @@ class TonTestnet extends Testnet implements AccountNetwork {
 }
 
 class Coreum extends Mainnet implements AccountNetwork {
-  name = 'Coreum';
+  name = 'TX';
   family = CoinFamily.COREUM;
-  explorerUrl = 'https://www.mintscan.io/coreum/tx/';
+  explorerUrl = 'https://explorer.tx.org/tx/transactions/';
 }
 
 class CoreumTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet TX';
   family = CoinFamily.COREUM;
-  explorerUrl = 'https://explorer.testnet-1.coreum.dev/coreum/transactions/';
+  explorerUrl = 'https://explorer.testnet-1.tx.org/tx/transactions/';
 }
 
 class Rune extends Mainnet implements AccountNetwork {
