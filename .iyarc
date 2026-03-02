@@ -43,3 +43,9 @@ GHSA-7r86-cg39-jmmj
 # - Only affects dev-time tooling, not production code
 # - Mitigated by controlled inputs (our own build scripts, not user-provided patterns)
 GHSA-23c5-xmqv-rm74
+
+# Excluded because:
+# - Transitive devDependency through mocha, terser-webpack-plugin, copy-webpack-plugin
+# - serialize-javascript RCE via malicious RegExp.flags and Date.prototype.toISOString()
+# - Only affects dev-time tooling, not production code
+GHSA-5c6j-r48x-rmvq
