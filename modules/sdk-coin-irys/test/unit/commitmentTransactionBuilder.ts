@@ -166,12 +166,14 @@ describe('IrysCommitmentTransactionBuilder', function () {
         .setAnchor(testAnchor);
 
       const result = await builder.build();
-      result.prehash.should.be.instanceOf(Uint8Array);
-      result.prehash.length.should.equal(32);
-      result.rlpEncoded.should.be.instanceOf(Uint8Array);
-      result.rlpEncoded.length.should.be.greaterThan(0);
+      result.signableHex.should.be.a.String();
+      result.signableHex.should.have.length(64);
+      Buffer.from(result.signableHex, 'hex').length.should.equal(32);
+      result.serializedTxHex.should.be.a.String();
+      result.serializedTxHex.length.should.be.greaterThan(0);
       result.fields.version.should.equal(COMMITMENT_TX_VERSION);
       result.fields.chainId.should.equal(testChainId);
+      result.coinSpecific.should.deepEqual({ keyServerPathPrefix: 'irys' });
     });
 
     it('should build a PLEDGE transaction with manually set anchor', async function () {
@@ -183,7 +185,7 @@ describe('IrysCommitmentTransactionBuilder', function () {
         .setAnchor(testAnchor);
 
       const result = await builder.build();
-      result.prehash.length.should.equal(32);
+      result.signableHex.should.have.length(64);
       result.fields.commitmentType.should.deepEqual({ type: CommitmentTypeId.PLEDGE, pledgeCount: 5n });
     });
 
@@ -200,7 +202,7 @@ describe('IrysCommitmentTransactionBuilder', function () {
         .setSigner(testSigner);
 
       const result = await builder.build();
-      result.prehash.length.should.equal(32);
+      result.signableHex.should.have.length(64);
       Buffer.from(result.fields.anchor).equals(Buffer.from(testAnchor)).should.be.true();
       scope.done();
     });
@@ -357,11 +359,11 @@ describe('IrysCommitmentTransactionBuilder', function () {
       const expectedRlp =
         '0xf84702a06c77daebc2db4e572e4f296983d1413fc10d4852e0fabfdb8323c9c69a2b85' +
         '9e9422f9c9f1845d9b6c22b96ef35e46e265ac4af30c018204f6648a043c33c1937564800000';
-      const actualRlp = '0x' + Buffer.from(result.rlpEncoded).toString('hex');
+      const actualRlp = '0x' + result.serializedTxHex;
       actualRlp.should.equal(expectedRlp);
 
       const expectedPrehash = '0xe6fe57810c12785e3ce5fa64e2eb4da120b89ec0e469213715916abf36358d01';
-      const actualPrehash = '0x' + Buffer.from(result.prehash).toString('hex');
+      const actualPrehash = '0x' + result.signableHex;
       actualPrehash.should.equal(expectedPrehash);
     });
 
@@ -385,11 +387,11 @@ describe('IrysCommitmentTransactionBuilder', function () {
       const expectedRlp =
         '0xf84802a00ae16c8476bbde2f28b2e4629d393dfe6fa7affcf0a0c4654f8246a9ba78970594' +
         '22f9c9f1845d9b6c22b96ef35e46e265ac4af30cc202808204f66489337fe5feaf2d180000';
-      const actualRlp = '0x' + Buffer.from(result.rlpEncoded).toString('hex');
+      const actualRlp = '0x' + result.serializedTxHex;
       actualRlp.should.equal(expectedRlp);
 
       const expectedPrehash = '0xfe07c2f3c6e50d9c9e2cff57f6d7015b4528f425b6132f567e26bba745228102';
-      const actualPrehash = '0x' + Buffer.from(result.prehash).toString('hex');
+      const actualPrehash = '0x' + result.signableHex;
       actualPrehash.should.equal(expectedPrehash);
     });
   });
@@ -406,7 +408,7 @@ describe('IrysCommitmentTransactionBuilder', function () {
         .setAnchor(testAnchor);
 
       const result = await builder.build();
-      result.prehash.length.should.equal(32);
+      result.signableHex.should.have.length(64);
     });
   });
 

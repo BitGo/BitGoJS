@@ -60,16 +60,20 @@ export interface AnchorInfo {
 }
 
 /**
- * Result of building an unsigned commitment transaction.
- * Contains the prehash (for HSM signing) and the RLP-encoded bytes (for HSM validation).
+ * Build result from the commitment transaction builder (wallet-platform / standard coin pattern).
+ * Exposes serializedTxHex and signableHex for the signing pipeline and coinSpecific for HSM routing.
  */
 export interface CommitmentTransactionBuildResult {
-  /** keccak256(rlpEncoded) - 32 bytes, used as prehash for signing */
-  prehash: Uint8Array;
-  /** Full RLP-encoded transaction bytes - sent to HSM for validation before signing */
-  rlpEncoded: Uint8Array;
-  /** The transaction fields used to build this result */
+  /** Hex string of the RLP-encoded commitment transaction */
+  serializedTxHex: string;
+  /** Hex string of the prehash (keccak256 of RLP-encoded tx) for signing */
+  signableHex: string;
+  /** The transaction fields (for broadcast payload creation if needed) */
   fields: CommitmentTransactionFields;
+  /** Coin-specific data for signing pipeline (e.g. keyServerPathPrefix for HSM routing) */
+  coinSpecific: {
+    keyServerPathPrefix: 'irys';
+  };
 }
 
 /**
