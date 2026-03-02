@@ -1097,7 +1097,7 @@ export const allCoinsAndTokens = [
   account(
     '7df858d5-9da3-4071-ab06-399962ea87b7',
     'coreum',
-    'Coreum',
+    'TX',
     Networks.main.coreum,
     6,
     UnderlyingAsset.COREUM,

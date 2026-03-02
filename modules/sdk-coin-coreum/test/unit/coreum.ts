@@ -41,7 +41,7 @@ describe('Coreum', function () {
   it('should return the right info', function () {
     coreum.getChain().should.equal('coreum');
     coreum.getFamily().should.equal('coreum');
-    coreum.getFullName().should.equal('Coreum');
+    coreum.getFullName().should.equal('TX');
     coreum.getBaseFactor().should.equal(1e6);
 
     tcoreum.getChain().should.equal('tcoreum');
