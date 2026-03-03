@@ -123,6 +123,7 @@ export class BitGoAPI implements BitGoBase {
   protected _extensionKey?: ECPairInterface;
   protected _reqId?: IRequestTracer;
   protected _token?: string;
+  protected _tokenId?: string; // V4: separate token identifier
   protected _version = pjson.version;
   protected _userAgent?: string;
   protected _ecdhXprv?: string;
@@ -436,7 +437,8 @@ export class BitGoAPI implements BitGoBase {
         return originalThen(onfulfilled).catch(onrejected);
       }
 
-      req.set('BitGo-Auth-Version', this._authVersion === 3 ? '3.0' : '2.0');
+      const authVersionHeader = this._authVersion === 4 ? '4.0' : this._authVersion === 3 ? '3.0' : '2.0';
+      req.set('BitGo-Auth-Version', authVersionHeader);
 
       const data = serializeRequestData(req);
       if (this._token) {
@@ -735,6 +737,7 @@ export class BitGoAPI implements BitGoBase {
     return {
       user: this._user,
       token: this._token,
+      tokenId: this._tokenId,
       extensionKey: this._extensionKey ? this._extensionKey.toWIF() : undefined,
       ecdhXprv: this._ecdhXprv,
     };
@@ -758,6 +761,7 @@ export class BitGoAPI implements BitGoBase {
   fromJSON(json: BitGoJson): void {
     this._user = json.user;
     this._token = json.token;
+    this._tokenId = json.tokenId;
     this._ecdhXprv = json.ecdhXprv;
     if (json.extensionKey) {
       const network = common.Environments[this.getEnv()].network;
@@ -963,6 +967,7 @@ export class BitGoAPI implements BitGoBase {
       const response: superagent.Response = await request.send(authParams);
       // extract body and user information
       const body = response.body;
+
       this._user = body.user;
 
       if (body.access_token) {
@@ -979,6 +984,11 @@ export class BitGoAPI implements BitGoBase {
         const responseDetails = this.handleTokenIssuance(response.body, password);
         this._token = responseDetails.token;
         this._ecdhXprv = responseDetails.ecdhXprv;
+
+        // V4: store separate token identifier
+        if (this._authVersion === 4 && body.token_id) {
+          this._tokenId = body.token_id;
+        }
 
         // verify the response's authenticity
         verifyResponse(this, responseDetails.token, 'post', request, response, this._authVersion);
@@ -1131,6 +1141,7 @@ export class BitGoAPI implements BitGoBase {
     // TODO: are there any other fields which should be cleared?
     this._user = undefined;
     this._token = undefined;
+    this._tokenId = undefined;
     this._refreshToken = undefined;
     this._ecdhXprv = undefined;
   }
@@ -1271,6 +1282,7 @@ export class BitGoAPI implements BitGoBase {
       // verify the authenticity of the server's response before proceeding any further
       verifyResponse(this, this._token, 'post', request, response, this._authVersion);
 
+      // Decrypt token using ECDH (same for V2/V3/V4)
       const responseDetails = this.handleTokenIssuance(response.body);
       response.body.token = responseDetails.token;
 

@@ -1358,7 +1358,7 @@ function parseBody(req: express.Request, res: express.Response, next: express.Ne
  * @param config
  */
 function prepareBitGo(config: Config) {
-  const { env, customRootUri, customBitcoinNetwork } = config;
+  const { env, customRootUri, customBitcoinNetwork, authVersion } = config;
 
   return function prepBitGo(req: express.Request, res: express.Response, next: express.NextFunction) {
     // Get access token
@@ -1380,6 +1380,7 @@ function prepareBitGo(config: Config) {
       customBitcoinNetwork,
       accessToken,
       userAgent,
+      authVersion,
       ...(useProxyUrl
         ? {
             customProxyAgent: new ProxyAgent({
