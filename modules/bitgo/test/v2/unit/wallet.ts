@@ -1863,7 +1863,8 @@ describe('V2 Wallet:', function () {
       sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
       sinon.stub(basecoin, 'postProcessPrebuild').callsFake((params) => Promise.resolve(params));
       const txPrebuild = await wallet.prebuildTransaction({ ...params, reqId: reqId });
-      txPrebuild.buildParams.should.deepEqual(serverBuildParams);
+      should.exist(txPrebuild.buildParams);
+      txPrebuild.buildParams!.should.deepEqual(serverBuildParams);
     });
 
     it('should fall back to request params when server does not return buildParams', async function () {
@@ -1876,7 +1877,8 @@ describe('V2 Wallet:', function () {
       sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
       sinon.stub(basecoin, 'postProcessPrebuild').callsFake((params) => Promise.resolve(params));
       const txPrebuild = await wallet.prebuildTransaction({ ...params, reqId: reqId });
-      txPrebuild.buildParams.should.deepEqual(tbtcHotWalletDefaultParams);
+      should.exist(txPrebuild.buildParams);
+      txPrebuild.buildParams!.should.deepEqual(tbtcHotWalletDefaultParams);
     });
   });
 
