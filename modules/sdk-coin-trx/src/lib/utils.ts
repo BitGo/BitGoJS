@@ -28,7 +28,7 @@ import { AbiCoder, hexConcat } from 'ethers/lib/utils';
 import { DELEGATION_TYPE_URL } from './constants';
 
 export const TRANSACTION_MAX_EXPIRATION = 86400000; // one day
-export const TRANSACTION_DEFAULT_EXPIRATION = 3600000; // one hour
+export const TRANSACTION_DEFAULT_EXPIRATION = 10800000; // three hours
 const ADDRESS_PREFIX_REGEX = /^(41)/;
 const ADDRESS_PREFIX = '41';
 

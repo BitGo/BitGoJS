@@ -2,6 +2,7 @@ import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import { getBuilder } from '../../../src/lib/builder';
 import { WrappedBuilder } from '../../../src';
+import { TRANSACTION_DEFAULT_EXPIRATION } from '../../../src/lib/utils';
 import {
   PARTICIPANTS,
   BLOCK_HASH,
@@ -34,6 +35,23 @@ describe('TRX Token Transfer Builder', () => {
         const txJson = tx.toJson();
         const rawData = txJson.raw_data;
         assert.deepStrictEqual(rawData.contract, TOKEN_TX_CONTRACT);
+      });
+
+      it('a token transfer transaction should have a default expiration of 3 hours', async () => {
+        const before = Date.now();
+        const txBuilder = initTxBuilder();
+        txBuilder.tokenTransferData(TOKEN_TRANSFER_RECIPIENT, '1000000000').sign({ key: PARTICIPANTS.custodian.pk });
+        const tx = await txBuilder.build();
+        const after = Date.now();
+        const txJson = tx.toJson();
+        const expiration = txJson.raw_data.expiration;
+
+        assert.equal(TRANSACTION_DEFAULT_EXPIRATION, 10800000, 'TRANSACTION_DEFAULT_EXPIRATION should be 3 hours');
+        // The default expiration should be ~3 hours (10800000ms) from when the tx was built
+        assert.ok(
+          expiration >= before + TRANSACTION_DEFAULT_EXPIRATION && expiration <= after + TRANSACTION_DEFAULT_EXPIRATION,
+          `Expiration ${expiration} should be approximately 3 hours from now`
+        );
       });
 
       it('from a signed token contract call transaction', async () => {
