@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.28.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.27.0...@bitgo/statics@58.28.0) (2026-03-03)
+
+
+### Bug Fixes
+
+* add default network for testnet eth tokens ([7a1a023](https://github.com/BitGo/BitGoJS/commit/7a1a0233e5b4122ebf2e8695562563748ab6b0c0))
+* **statics:** update polygon:dai token contract address ([ac86ce7](https://github.com/BitGo/BitGoJS/commit/ac86ce7583094b61d798007ba9c03b11295f8eba))
+
+
+### Features
+
+* hbarevm testnet tokens ([c7d5595](https://github.com/BitGo/BitGoJS/commit/c7d5595802bb61ec2d402ae1a5d2980b6d0f545f))
+* rebrand Coreum to TX (mainnet) ([a679f88](https://github.com/BitGo/BitGoJS/commit/a679f8850e55951a11f8f58260fa9356a8e0ac1e))
+
+
+
+
+
 # [58.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.26.0...@bitgo/statics@58.27.0) (2026-02-27)
 
 

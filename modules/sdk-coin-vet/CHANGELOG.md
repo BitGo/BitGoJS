@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.12.3...@bitgo/sdk-coin-vet@2.13.0) (2026-03-03)
+
+
+### Features
+
+* **sdk-coin-vet:** add increaseStake builder for staking ([1e41d77](https://github.com/BitGo/BitGoJS/commit/1e41d77b90d8287396debf757bf5f3c748691c84))
+
+
+
+
+
 ## [2.12.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.12.2...@bitgo/sdk-coin-vet@2.12.3) (2026-02-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-vet
