@@ -1848,6 +1848,111 @@ describe('V2 Wallet:', function () {
 
       response.isDone().should.be.true();
     });
+
+    it('should preserve server-returned buildParams on prebuild result', async function () {
+      const serverBuildParams = {
+        recipients: [{ address: 'addr1', amount: '5000' }],
+        feeRate: 10000,
+      };
+      const params = { offlineVerification: true };
+      nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`, tbtcHotWalletDefaultParams)
+        .query(params)
+        .reply(200, { buildParams: serverBuildParams });
+      const blockHeight = 100;
+      sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
+      sinon.stub(basecoin, 'postProcessPrebuild').callsFake((params) => Promise.resolve(params));
+      const txPrebuild = await wallet.prebuildTransaction({ ...params, reqId: reqId });
+      txPrebuild.buildParams.should.deepEqual(serverBuildParams);
+    });
+
+    it('should fall back to request params when server does not return buildParams', async function () {
+      const params = { offlineVerification: true };
+      nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`, tbtcHotWalletDefaultParams)
+        .query(params)
+        .reply(200, {});
+      const blockHeight = 100;
+      sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
+      sinon.stub(basecoin, 'postProcessPrebuild').callsFake((params) => Promise.resolve(params));
+      const txPrebuild = await wallet.prebuildTransaction({ ...params, reqId: reqId });
+      txPrebuild.buildParams.should.deepEqual(tbtcHotWalletDefaultParams);
+    });
+  });
+
+  describe('sendMany buildParams pass-through for UTXO coins', function () {
+    it('should include recipients from server buildParams in /tx/send request body', async function () {
+      const recipients = [{ address: 'addr1', amount: '5000' }];
+      const serverBuildParams = { recipients, feeRate: 10000 };
+      const prebuildReturn = { txHex: 'deadbeef', buildParams: serverBuildParams };
+      sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(prebuildReturn);
+      sinon.stub(basecoin, 'getExtraPrebuildParams').resolves({});
+
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`;
+      const sendNock = nock(bgUrl)
+        .post(path, _.matches({ txHex: 'deadbeef', recipients, feeRate: 10000 }))
+        .reply(200, { status: 'signed' });
+
+      const result = await wallet.sendMany({ recipients });
+      sendNock.isDone().should.be.true();
+      result.should.have.property('status', 'signed');
+    });
+
+    it('should include RBF fields from server buildParams in /tx/send request body', async function () {
+      const recipients = [{ address: 'addr1', amount: '5000' }];
+      const serverBuildParams = {
+        recipients,
+        rbfTxIds: ['txid1'],
+        maxFee: 50000,
+        feeMultiplier: 2,
+      };
+      const prebuildReturn = { txHex: 'deadbeef', buildParams: serverBuildParams };
+      sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(prebuildReturn);
+      sinon.stub(basecoin, 'getExtraPrebuildParams').resolves({});
+
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`;
+      const sendNock = nock(bgUrl)
+        .post(path, _.matches({ txHex: 'deadbeef', rbfTxIds: ['txid1'], maxFee: 50000, feeMultiplier: 2 }))
+        .reply(200, { status: 'signed' });
+
+      const result = await wallet.sendMany({ recipients });
+      sendNock.isDone().should.be.true();
+      result.should.have.property('status', 'signed');
+    });
+
+    it('should work when server returns no buildParams in build response', async function () {
+      const recipients = [{ address: 'addr1', amount: '5000' }];
+      const prebuildReturn = { txHex: 'deadbeef' };
+      sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(prebuildReturn);
+      sinon.stub(basecoin, 'getExtraPrebuildParams').resolves({});
+
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`;
+      const sendNock = nock(bgUrl)
+        .post(path, _.matches({ txHex: 'deadbeef' }))
+        .reply(200, { status: 'signed' });
+
+      const result = await wallet.sendMany({ recipients });
+      sendNock.isDone().should.be.true();
+      result.should.have.property('status', 'signed');
+    });
+
+    it('should let explicit user params override server buildParams', async function () {
+      const userRecipients = [{ address: 'user-addr', amount: '9999' }];
+      const serverRecipients = [{ address: 'server-addr', amount: '5000' }];
+      const serverBuildParams = { recipients: serverRecipients, feeRate: 10000 };
+      const prebuildReturn = { txHex: 'deadbeef', buildParams: serverBuildParams };
+      sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(prebuildReturn);
+      sinon.stub(basecoin, 'getExtraPrebuildParams').resolves({});
+
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`;
+      const sendNock = nock(bgUrl)
+        .post(path, _.matches({ txHex: 'deadbeef', recipients: userRecipients }))
+        .reply(200, { status: 'signed' });
+
+      const result = await wallet.sendMany({ recipients: userRecipients });
+      sendNock.isDone().should.be.true();
+      result.should.have.property('status', 'signed');
+    });
   });
 
   describe('Maximum Spendable', function maximumSpendable() {

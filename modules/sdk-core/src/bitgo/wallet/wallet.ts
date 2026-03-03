@@ -2021,6 +2021,7 @@ export class Wallet implements IWallet {
     if (!_.isUndefined(blockHeight)) {
       buildResponse.blockHeight = blockHeight;
     }
+    const serverBuildParams = buildResponse.buildParams;
     let prebuild: TransactionPrebuild = (await this.baseCoin.postProcessPrebuild(
       Object.assign(buildResponse, {
         wallet: this,
@@ -2028,7 +2029,8 @@ export class Wallet implements IWallet {
       })
     )) as any;
     delete prebuild.wallet;
-    delete prebuild.buildParams;
+    // Preserve buildParams: prefer server-validated; fall back to request params
+    prebuild.buildParams = serverBuildParams ?? whitelistedParams;
     prebuild = _.extend({}, prebuild, { walletId: this.id() });
     if (this._wallet && this._wallet.coinSpecific && !params.walletContractAddress) {
       prebuild = _.extend({}, prebuild, {
@@ -2503,7 +2505,11 @@ export class Wallet implements IWallet {
     }
 
     try {
-      return await this.signTransaction(signingParams);
+      const signedTransaction = await this.signTransaction(signingParams);
+      if (txPrebuild.buildParams) {
+        (signedTransaction as any).buildParams = txPrebuild.buildParams;
+      }
+      return signedTransaction;
     } catch (error) {
       if (error.message.includes('insufficient funds')) {
         error.code = 'insufficient_funds';
@@ -2887,8 +2893,11 @@ export class Wallet implements IWallet {
     }
 
     const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
+    const { buildParams: prebuildBuildParams, ...signedTxFields } = halfSignedTransaction as any;
     const extraParams = await this.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: this }));
-    const finalTxParams = _.extend({}, halfSignedTransaction, selectParams, extraParams);
+    // Merge order: signed tx fields, then server buildParams, then user selectParams, then extraParams.
+    // selectParams overrides buildParams so explicit user values take precedence.
+    const finalTxParams = _.extend({}, signedTxFields, prebuildBuildParams, selectParams, extraParams);
     return this.sendTransaction(finalTxParams, reqId);
   }
 
