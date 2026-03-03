@@ -249,6 +249,97 @@ describe('ADA', function () {
       validTransaction.should.equal(true);
     });
 
+    it('should succeed when output amount >= requested amount for any gas tank address (WIN-9022)', async () => {
+      // WIN-9022: gas tank transactions cause the server to absorb dust change into the
+      // output, so the actual output amount may be larger than requested. The >= check
+      // allows this for ANY address as long as the output sends at least what was requested.
+      const txPrebuild = newTxPrebuild();
+      const testCases = [
+        { address: rawTx.outputAddress1.address, amount: '2000000' },
+        { address: rawTx.outputAddress1.address, amount: '1' },
+        { address: rawTx.outputAddress1.address, amount: '5000000' },
+        { address: rawTx.outputAddress2.address, amount: '1' },
+      ];
+      for (const { address, amount } of testCases) {
+        const txParams = {
+          recipients: [{ address, amount }],
+        };
+        const isTransactionVerified = await basecoin.verifyTransaction({
+          txParams,
+          txPrebuild,
+          verification: {},
+        });
+        isTransactionVerified.should.equal(true);
+      }
+    });
+
+    it('should fail when requested amount exceeds actual output amount', async () => {
+      const txPrebuild = newTxPrebuild();
+      const txParams = {
+        recipients: [
+          {
+            address: rawTx.outputAddress1.address,
+            amount: '9999999999',
+          },
+        ],
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification: {} })
+        .should.be.rejectedWith('cannot find recipient in expected output');
+    });
+
+    it('should succeed when recipient amount is max', async () => {
+      const txPrebuild = newTxPrebuild();
+      const txParams = {
+        recipients: [
+          {
+            address: rawTx.outputAddress1.address,
+            amount: 'max',
+          },
+        ],
+      };
+
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        verification: {},
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should fail when address does not match any output regardless of amount', async () => {
+      const txPrebuild = newTxPrebuild();
+      const txParams = {
+        recipients: [
+          {
+            address: 'addr_test1vrcx9yqtect97qlfq0hmttsd6ns38kvqw6lhcsyjwsh6zuqdpvg6u',
+            amount: '1',
+          },
+        ],
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification: {} })
+        .should.be.rejectedWith('cannot find recipient in expected output');
+    });
+
+    it('should fail when recipient amount is max but address does not match', async () => {
+      const txPrebuild = newTxPrebuild();
+      const txParams = {
+        recipients: [
+          {
+            address: '9f7b0675db59d19b4bd9c8c72eaabba75a9863d02b30115b8b3c3ca5c20f0254',
+            amount: 'max',
+          },
+        ],
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification: {} })
+        .should.be.rejectedWith('cannot find recipient in expected output');
+    });
+
     it('should verify a valid consolidation transaction', async () => {
       const consolidationTx = {
         txRequestId: '1b5c79c5-ab7c-4f47-912b-de6a95fb0779',

@@ -137,7 +137,7 @@ export class AdaToken extends Ada {
             }
             const multiAssets = output.multiAssets as CardanoWasm.MultiAsset;
             const tokenQty = multiAssets.get_asset(policyScriptHash, assetName);
-            return tokenQty && tokenQty.to_str() === recipient.amount;
+            return tokenQty && (recipient.amount === 'max' || BigInt(tokenQty.to_str()) >= BigInt(recipient.amount));
           });
 
           if (!found) {

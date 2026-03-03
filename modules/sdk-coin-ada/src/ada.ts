@@ -139,7 +139,10 @@ export class Ada extends BaseCoin {
         for (const recipient of txParams.recipients) {
           let find = false;
           for (const output of explainedTx.outputs) {
-            if (recipient.address === output.address && recipient.amount === output.amount) {
+            if (
+              recipient.address === output.address &&
+              (recipient.amount === 'max' || BigInt(output.amount) >= BigInt(recipient.amount))
+            ) {
               find = true;
             }
           }
