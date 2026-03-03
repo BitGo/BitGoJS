@@ -359,6 +359,7 @@ export class Wallets implements IWallets {
         evmKeyRingReferenceWalletId: evmKeyRingReferenceWalletId!,
         bitgo: this.bitgo,
         baseCoin: this.baseCoin,
+        enterprise,
       });
     }
 

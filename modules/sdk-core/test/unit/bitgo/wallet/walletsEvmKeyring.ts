@@ -201,4 +201,162 @@ describe('Wallets', function () {
       }
     });
   });
+
+  describe('EVM Keyring - Cold/Custodial wallet support', function () {
+    beforeEach(function () {
+      mockBaseCoin.isEVM.returns(true);
+      mockBaseCoin.supportsTss.returns(true);
+      mockBaseCoin.getDefaultMultisigType.returns('tss');
+    });
+
+    it('should create cold EVM keyring wallet with enterprise (type inherited from reference)', async function () {
+      const mockWalletResponse = {
+        id: '597f1f77bcf86cd799439011',
+        keys: ['user-key', 'backup-key', 'bitgo-key'],
+      };
+
+      const sendStub = sinon.stub().returns({
+        result: sinon.stub().resolves(mockWalletResponse),
+      });
+
+      mockBitGo.post.returns({
+        send: sendStub,
+      } as any);
+
+      mockBaseCoin.keychains.returns({
+        get: sinon.stub().resolves({ id: 'keychain-id', pub: 'public-key' }),
+      } as any);
+
+      const result = await wallets.generateWallet({
+        label: 'Cold EVM Keyring Wallet',
+        evmKeyRingReferenceWalletId: '507f1f77bcf86cd799439011',
+        enterprise: 'test-enterprise-id',
+      });
+
+      result.should.have.property('wallet');
+
+      const sentParams = sendStub.firstCall.args[0];
+      sentParams.should.not.have.property('type');
+      sentParams.should.have.property('enterprise', 'test-enterprise-id');
+      sentParams.should.have.property('evmKeyRingReferenceWalletId', '507f1f77bcf86cd799439011');
+    });
+
+    it('should create custodial EVM keyring wallet with enterprise (type inherited from reference)', async function () {
+      const mockWalletResponse = {
+        id: '597f1f77bcf86cd799439012',
+        keys: ['user-key', 'backup-key', 'bitgo-key'],
+      };
+
+      const sendStub = sinon.stub().returns({
+        result: sinon.stub().resolves(mockWalletResponse),
+      });
+
+      mockBitGo.post.returns({
+        send: sendStub,
+      } as any);
+
+      mockBaseCoin.keychains.returns({
+        get: sinon.stub().resolves({ id: 'keychain-id', pub: 'public-key' }),
+      } as any);
+
+      const result = await wallets.generateWallet({
+        label: 'Custodial EVM Keyring Wallet',
+        evmKeyRingReferenceWalletId: '507f1f77bcf86cd799439011',
+        enterprise: 'test-enterprise-id',
+      });
+
+      result.should.have.property('wallet');
+
+      const sentParams = sendStub.firstCall.args[0];
+      sentParams.should.not.have.property('type');
+      sentParams.should.have.property('enterprise', 'test-enterprise-id');
+      sentParams.should.have.property('evmKeyRingReferenceWalletId', '507f1f77bcf86cd799439011');
+    });
+
+    it('should create EVM keyring wallet without type (inherits from reference wallet)', async function () {
+      const mockWalletResponse = {
+        id: '597f1f77bcf86cd799439013',
+        keys: ['user-key', 'backup-key', 'bitgo-key'],
+      };
+
+      const sendStub = sinon.stub().returns({
+        result: sinon.stub().resolves(mockWalletResponse),
+      });
+
+      mockBitGo.post.returns({
+        send: sendStub,
+      } as any);
+
+      mockBaseCoin.keychains.returns({
+        get: sinon.stub().resolves({ id: 'keychain-id', pub: 'public-key' }),
+      } as any);
+
+      const result = await wallets.generateWallet({
+        label: 'Hot EVM Keyring Wallet',
+        evmKeyRingReferenceWalletId: '507f1f77bcf86cd799439011',
+      });
+
+      result.should.have.property('wallet');
+
+      const sentParams = sendStub.firstCall.args[0];
+      sentParams.should.not.have.property('type');
+      sentParams.should.have.property('evmKeyRingReferenceWalletId', '507f1f77bcf86cd799439011');
+    });
+
+    it('should pass enterprise parameter for cold EVM keyring wallet via add method', async function () {
+      const mockWalletResponse = {
+        id: 'new-cold-wallet-id',
+        keys: ['user-key', 'backup-key', 'bitgo-key'],
+      };
+
+      const sendStub = sinon.stub().returns({
+        result: sinon.stub().resolves(mockWalletResponse),
+      });
+
+      mockBitGo.post.returns({
+        send: sendStub,
+      } as any);
+
+      const result = await wallets.add({
+        label: 'Cold EVM Keyring Child',
+        evmKeyRingReferenceWalletId: 'cold-parent-wallet-id',
+        enterprise: 'enterprise-123',
+      });
+
+      result.should.have.property('wallet');
+
+      const sentParams = sendStub.firstCall.args[0];
+      sentParams.should.not.have.property('type');
+      sentParams.should.have.property('enterprise', 'enterprise-123');
+      sentParams.should.have.property('evmKeyRingReferenceWalletId', 'cold-parent-wallet-id');
+    });
+
+    it('should pass enterprise parameter for custodial EVM keyring wallet via add method', async function () {
+      const mockWalletResponse = {
+        id: 'new-custodial-wallet-id',
+        keys: ['user-key', 'backup-key', 'bitgo-key'],
+      };
+
+      const sendStub = sinon.stub().returns({
+        result: sinon.stub().resolves(mockWalletResponse),
+      });
+
+      mockBitGo.post.returns({
+        send: sendStub,
+      } as any);
+
+      const result = await wallets.add({
+        label: 'Custodial EVM Keyring Child',
+        evmKeyRingReferenceWalletId: 'custodial-parent-wallet-id',
+        enterprise: 'enterprise-456',
+      });
+
+      result.should.have.property('wallet');
+
+      const sentParams = sendStub.firstCall.args[0];
+      sentParams.should.not.have.property('type');
+      sentParams.should.have.property('enterprise', 'enterprise-456');
+      sentParams.should.have.property('evmKeyRingReferenceWalletId', 'custodial-parent-wallet-id');
+    });
+  });
 });

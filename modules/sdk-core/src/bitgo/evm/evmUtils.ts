@@ -13,6 +13,8 @@ export interface CreateEvmKeyRingWalletParams {
   evmKeyRingReferenceWalletId: string;
   bitgo: BitGoBase;
   baseCoin: IBaseCoin;
+  /** Enterprise ID - required for cold/custodial wallets */
+  enterprise?: string;
 }
 
 /**
@@ -39,11 +41,12 @@ export function validateEvmKeyRingWalletParams(params: any, baseCoin: IBaseCoin)
  * @returns Promise<WalletWithKeychains> - The created wallet with its keychains
  */
 export async function createEvmKeyRingWallet(params: CreateEvmKeyRingWalletParams): Promise<WalletWithKeychains> {
-  const { label, evmKeyRingReferenceWalletId, bitgo, baseCoin } = params;
+  const { label, evmKeyRingReferenceWalletId, bitgo, baseCoin, enterprise } = params;
   // For EVM keyring wallets, this bypasses the normal key generation process since keys are shared via keyring
   const addWalletParams = {
     label,
     evmKeyRingReferenceWalletId,
+    ...(enterprise && { enterprise }),
   };
 
   const newWallet = await bitgo.post(baseCoin.url('/wallet/add')).send(addWalletParams).result();
