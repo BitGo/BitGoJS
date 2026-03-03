@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import * as Long from 'long';
+import Long from 'long';
 import { proto } from '@hashgraph/proto';
 import { DuplicateMethodError, InvalidParameterValueError } from '@bitgo/sdk-core';
 import { Recipient } from './iface';

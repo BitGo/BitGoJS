@@ -4,7 +4,7 @@ import { hash } from '@stablelib/sha384';
 import BigNumber from 'bignumber.js';
 import { Writer } from 'protobufjs';
 import * as nacl from 'tweetnacl';
-import * as Long from 'long';
+import Long from 'long';
 import { proto } from '@hashgraph/proto';
 import { TxData, Recipient } from './iface';
 import { stringifyAccountId, stringifyTxTime, stringifyTokenId, getHederaTokenNameFromId } from './utils';
