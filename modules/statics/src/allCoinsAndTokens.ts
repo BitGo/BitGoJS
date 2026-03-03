@@ -2367,6 +2367,24 @@ export const allCoinsAndTokens = [
     GENERIC_TOKEN_FEATURES
   ),
 
+  erc721Token(
+    '48a79873-fd50-46ed-9c78-e8fc1b6ef08a',
+    'thbarevm:tmnft',
+    'Testnet HBAREVM ERC721 Token',
+    '0x5df4076613e714a4cc4284abac87caa927b918a8',
+    Networks.test.hederaEVM,
+    GENERIC_TOKEN_FEATURES
+  ),
+
+  erc721Token(
+    '58abd283-2b74-4c2e-9acd-430c18d7a012',
+    'thbarevm:tnnft',
+    'Testnet HBAREVM Native NFT Token',
+    '0x00000000000000000000000000000000007ac203',
+    Networks.test.hederaEVM,
+    GENERIC_TOKEN_FEATURES
+  ),
+
   account(
     '8f6ed7e4-cce2-4686-bdab-ae8f54e2c05e',
     'tfluenteth',
@@ -3800,7 +3818,7 @@ export const allCoinsAndTokens = [
     Networks.test.plume
   ),
 
-  // HederaEVM testnet token
+  // HederaEVM testnet tokens
   erc20Token(
     'e2926ac1-9225-4b83-9f8b-51f805040c13',
     'thbarevm:hbarnativetoken',
@@ -3808,6 +3826,24 @@ export const allCoinsAndTokens = [
     18,
     '0x0000000000000000000000000000000000728a62',
     UnderlyingAsset['thbarevm:hbarnativetoken'],
+    Networks.test.hederaEVM
+  ),
+  erc20Token(
+    '0ecceb41-3308-40d5-a460-6de27d45c964',
+    'hbarevm:tmt',
+    'Testnet HBAREVM ERC20 Token',
+    6,
+    '0xcee79325714727016c125f80ef1a5d1f47b3d8d2',
+    UnderlyingAsset['thbarevm:tmt'],
+    Networks.test.hederaEVM
+  ),
+  erc20Token(
+    '9ac4124b-c7e5-41f9-a172-6a774693497e',
+    'hbarevm:TNT',
+    'Testnet HBAREVM Native Token',
+    6,
+    '0x00000000000000000000000000000000007ac19c',
+    UnderlyingAsset['thbarevm:tnt'],
     Networks.test.hederaEVM
   ),
 

@@ -3526,6 +3526,9 @@ export enum UnderlyingAsset {
   // Hbarevm TEstnet Tokens
   'thbarevm:hbarnativetoken' = 'thbarevm:hbarnativetoken',
 
+  'thbarevm:tmt' = 'thbarevm:tmt',
+  'thbarevm:tnt' = 'thbarevm:tnt',
+
   // Nep141 tokens
   'near:usdc' = 'near:usdc',
   'near:usdt' = 'near:usdt',
