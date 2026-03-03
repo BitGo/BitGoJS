@@ -246,6 +246,103 @@ describe('sanitize', function () {
     });
   });
 
+  describe('RegExp handling', function () {
+    it('should convert RegExp to string', function () {
+      assert.strictEqual(sanitize(/test/gi), '/test/gi');
+    });
+
+    it('should handle RegExp in objects', function () {
+      const obj = { pattern: /[a-z]+/i, name: 'validator' };
+      const result = sanitize(obj) as any;
+      assert.strictEqual(result.pattern, '/[a-z]+/i');
+      assert.strictEqual(result.name, 'validator');
+    });
+  });
+
+  describe('Buffer handling', function () {
+    it('should handle Buffer objects', function () {
+      if (typeof Buffer !== 'undefined') {
+        const buf = Buffer.from('test data');
+        assert.strictEqual(sanitize(buf), '<Buffer>');
+      }
+    });
+
+    it('should handle Buffer in objects', function () {
+      if (typeof Buffer !== 'undefined') {
+        const obj = { data: Buffer.from('secret'), label: 'file' };
+        const result = sanitize(obj) as any;
+        assert.strictEqual(result.data, '<Buffer>');
+        assert.strictEqual(result.label, 'file');
+      }
+    });
+  });
+
+  describe('TypedArray handling', function () {
+    it('should handle Uint8Array', function () {
+      const arr = new Uint8Array([1, 2, 3]);
+      assert.strictEqual(sanitize(arr), '<TypedArray>');
+    });
+
+    it('should handle Int32Array in objects', function () {
+      const obj = { numbers: new Int32Array([10, 20, 30]), count: 3 };
+      const result = sanitize(obj) as any;
+      assert.strictEqual(result.numbers, '<TypedArray>');
+      assert.strictEqual(result.count, 3);
+    });
+  });
+
+  describe('Map handling', function () {
+    it('should sanitize Map entries', function () {
+      const map = new Map([
+        ['user', 'alice'],
+        ['password', 'secret'],
+      ]);
+      const result = sanitize(map) as Map<any, any>;
+      assert.ok(result instanceof Map);
+      assert.strictEqual(result.get('user'), 'alice');
+      assert.strictEqual(result.get('password'), '<REMOVED>');
+    });
+
+    it('should handle nested Map in objects', function () {
+      const obj = {
+        config: new Map([
+          ['host', 'localhost'],
+          ['token', 'secret'],
+        ]),
+      };
+      const result = sanitize(obj) as any;
+      assert.ok(result.config instanceof Map);
+      assert.strictEqual(result.config.get('host'), 'localhost');
+      assert.strictEqual(result.config.get('token'), '<REMOVED>');
+    });
+
+    it('should handle v2 token in Map values', function () {
+      const map = new Map([['auth', V2_TOKEN]]);
+      const result = sanitize(map) as Map<any, any>;
+      assert.strictEqual(result.get('auth'), '<REMOVED>');
+    });
+  });
+
+  describe('Set handling', function () {
+    it('should sanitize Set entries', function () {
+      const set = new Set(['user1', V2_TOKEN, 'user3']);
+      const result = sanitize(set) as Set<any>;
+      assert.ok(result instanceof Set);
+      assert.strictEqual(result.has('user1'), true);
+      assert.strictEqual(result.has('<REMOVED>'), true);
+      assert.strictEqual(result.has('user3'), true);
+      assert.strictEqual(result.has(V2_TOKEN), false);
+    });
+
+    it('should handle nested Set in objects', function () {
+      const obj = { tags: new Set(['public', 'private']) };
+      const result = sanitize(obj) as any;
+      assert.ok(result.tags instanceof Set);
+      assert.strictEqual(result.tags.has('public'), true);
+      assert.strictEqual(result.tags.has('private'), true);
+    });
+  });
+
   describe('mixed complex object', function () {
     it('should handle all data types together', function () {
       const complexObj = {
@@ -269,6 +366,22 @@ describe('sanitize', function () {
       assert.strictEqual(result.authToken, '<REMOVED>');
       assert.strictEqual(result.tags[0], 'transfer');
       assert.strictEqual(result.tags[1], 'urgent');
+    });
+
+    it('should handle all new data types together', function () {
+      const complexObj = {
+        pattern: /test/gi,
+        bigNum: 999n,
+        tags: new Set(['a', 'b']),
+        config: new Map([['key', 'value']]),
+        date: new Date('2026-01-01T00:00:00.000Z'),
+      };
+      const result = sanitize(complexObj) as any;
+      assert.strictEqual(result.pattern, '/test/gi');
+      assert.strictEqual(result.bigNum, '999');
+      assert.ok(result.tags instanceof Set);
+      assert.ok(result.config instanceof Map);
+      assert.strictEqual(result.date, '2026-01-01T00:00:00.000Z');
     });
   });
 });

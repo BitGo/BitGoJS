@@ -15,7 +15,7 @@ const SENSITIVE_KEYS = new Set([
   '_token',
 ]);
 
-const BEARER_V2_PATTERN = /^v2x[a-f0-9]{32,}$/i;
+const BEARER_V2_PATTERN = /^v2x[a-fA-F0-9]{32,}$/;
 
 /**
  * Checks if a key is sensitive (case-insensitive)
@@ -50,7 +50,11 @@ export function getErrorData(error: unknown): unknown {
 
 /**
  * Recursively sanitizes an object, replacing sensitive values with '<REMOVED>'
- * Handles circular references and nested structures
+ * Handles circular references, nested structures, and various JavaScript types
+ * @param obj - The value to sanitize
+ * @param seen - WeakSet to track circular references
+ * @param depth - Current recursion depth
+ * @returns Sanitized value
  */
 export function sanitize(obj: unknown, seen = new WeakSet<Record<string, unknown>>(), depth = 0): unknown {
   if (depth > 25) {
@@ -74,24 +78,63 @@ export function sanitize(obj: unknown, seen = new WeakSet<Record<string, unknown
     return obj;
   }
 
-  // Handle circular references
-  if (seen.has(obj as Record<string, unknown>)) {
+  // Handle Date objects before circular check (Dates should be converted, not tracked)
+  if (obj instanceof Date) {
+    return obj.toISOString();
+  }
+
+  // Handle circular references (only for objects that can be in WeakSet)
+  const objAsRecord = obj as Record<string, unknown>;
+  if (seen.has(objAsRecord)) {
     return '[Circular]';
   }
 
-  seen.add(obj as Record<string, unknown>);
+  seen.add(objAsRecord);
 
   // Handle arrays
   if (Array.isArray(obj)) {
     return obj.map((item) => sanitize(item, seen, depth + 1));
   }
 
-  // Handle Date objects
-  if (obj instanceof Date) {
-    return obj.toISOString();
+  // Handle RegExp
+  if (obj instanceof RegExp) {
+    return obj.toString();
   }
 
-  // Handle objects
+  // Handle Buffer (Node.js)
+  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(obj)) {
+    return '<Buffer>';
+  }
+
+  // Handle typed arrays
+  if (ArrayBuffer.isView(obj) && !(obj instanceof DataView)) {
+    return '<TypedArray>';
+  }
+
+  // Handle Map
+  if (obj instanceof Map) {
+    const sanitized = new Map();
+    for (const [key, value] of obj.entries()) {
+      const keyStr = typeof key === 'string' ? key : String(key);
+      if (isSensitiveKey(keyStr) || isBearerV2Token(value)) {
+        sanitized.set(key, '<REMOVED>');
+      } else {
+        sanitized.set(key, sanitize(value, seen, depth + 1));
+      }
+    }
+    return sanitized;
+  }
+
+  // Handle Set
+  if (obj instanceof Set) {
+    const sanitized = new Set();
+    for (const value of obj.values()) {
+      sanitized.add(sanitize(value, seen, depth + 1));
+    }
+    return sanitized;
+  }
+
+  // Handle plain objects and other object types
   const sanitized: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
