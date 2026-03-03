@@ -112,7 +112,11 @@ function deriveTransactionType(
   // Unknown instructions indicate a custom/unrecognized transaction
   if (instructions.some((i) => i.type === 'Unknown')) return TransactionType.CustomTx;
 
-  return TransactionType.Send;
+  // Send requires an explicit Transfer or TokenTransfer instruction.
+  // Everything else is a custom/unrecognized transaction.
+  if (instructions.some((i) => i.type === 'Transfer' || i.type === 'TokenTransfer')) return TransactionType.Send;
+
+  return TransactionType.CustomTx;
 }
 
 // =============================================================================
