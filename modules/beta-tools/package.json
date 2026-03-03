@@ -36,8 +36,6 @@
       "yarn eslint --fix"
     ]
   },
-  "publishConfig": {
-    "access": "public"
-  },
+  "private": true,
   "license": "MIT"
 }
