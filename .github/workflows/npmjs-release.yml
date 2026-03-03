@@ -1,0 +1,186 @@
+---
+name: BitGoJS Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: |
+          If true, only runs checks without performing the actual release
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: read
+
+env:
+  NX_NO_CLOUD: true
+  NX_SKIP_NX_CACHE: true
+
+jobs:
+  get-release-context:
+    name: Get release context
+    runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    outputs:
+      last-release-tag: ${{ steps.get-release-info.outputs.last-release-tag }}
+      last-release-sha: ${{ steps.get-release-info.outputs.last-release-sha }}
+      current-master-sha: ${{ steps.get-release-info.outputs.current-master-sha }}
+      commits-since-release: ${{ steps.get-release-info.outputs.commits-since-release }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: master
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Get release information
+        id: get-release-info
+        run: |
+          # Get the latest stable release tag
+          LAST_RELEASE_TAG=$(git tag --sort=-version:refname | grep -E 'bitgo@[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+
+          # Get the commit SHA for that release
+          LAST_RELEASE_SHA=$(git rev-parse "$LAST_RELEASE_TAG^{}")
+
+          # Get the current master HEAD commit
+          CURRENT_MASTER_SHA=$(git rev-parse HEAD)
+
+          # Count commits since last release
+          COMMITS_SINCE_RELEASE=$(git log --oneline "${LAST_RELEASE_TAG}..HEAD" | wc -l)
+
+          # Verify we have commits to process
+          if [ "$COMMITS_SINCE_RELEASE" -eq 0 ]; then
+            echo "::error::No commits found since last release $LAST_RELEASE_TAG. Nothing to process."
+            exit 1
+          fi
+
+          # Output the information
+          echo "Last release tag: $LAST_RELEASE_TAG"
+          echo "Last release SHA: $LAST_RELEASE_SHA"
+          echo "Current master SHA: $CURRENT_MASTER_SHA"
+          echo "Commits since release: $COMMITS_SINCE_RELEASE"
+
+          # Set outputs
+          {
+            echo "last-release-tag=$LAST_RELEASE_TAG"
+            echo "last-release-sha=$LAST_RELEASE_SHA"
+            echo "current-master-sha=$CURRENT_MASTER_SHA"
+            echo "commits-since-release=$COMMITS_SINCE_RELEASE"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Commits to process:"
+          git log --oneline "${LAST_RELEASE_TAG}..HEAD"
+
+      - name: Generate release commit summary
+        run: |
+          {
+            echo "## Commits to be Released"
+            echo ""
+            echo "From ${{ steps.get-release-info.outputs.last-release-sha }} to ${{ steps.get-release-info.outputs.current-master-sha }}"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Get commits excluding merge commits
+          git log --oneline --no-merges "${{ steps.get-release-info.outputs.last-release-sha }}..${{ steps.get-release-info.outputs.current-master-sha }}" | while read -r line; do
+            commit_hash=$(echo "$line" | cut -d' ' -f1)
+            commit_msg=$(echo "$line" | cut -d' ' -f2-)
+
+            # Get full commit message to check for TICKET: pattern
+            full_commit_msg=$(git log -1 --pretty=format:"%B" "$commit_hash")
+
+            # Extract Jira ticket from commit message (handles multiple patterns, case insensitive)
+            # 1. Direct pattern in subject: VL-1234, CORE-567, etc.
+            # 2. TICKET: VL-1234 pattern in body
+            jira_ticket=$(echo "$full_commit_msg" | grep -oiE '(ticket:\s*)?[A-Z]+-[0-9]+' | sed 's/[Tt][Ii][Cc][Kk][Ee][Tt]:\s*//' | head -1)
+
+            if [[ -n "$jira_ticket" ]]; then
+              jira_link="[$jira_ticket](https://bitgoinc.atlassian.net/browse/${jira_ticket})"
+              echo "- \`$commit_hash\` $commit_msg - $jira_link" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "- \`$commit_hash\` $commit_msg" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+  release-bitgojs:
+    name: Release BitGoJS
+    needs:
+      - get-release-context
+    runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
+    timeout-minutes: 60
+    environment: npmjs-release
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.get-release-context.outputs.current-master-sha }}
+          token: ${{ secrets.BITGOBOT_PAT_TOKEN || github.token }}
+          fetch-depth: 0
+
+      - name: Configure GPG
+        if: inputs.dry-run == false
+        run: |
+          echo "${{ secrets.BITGOBOT_GPG_PRIVATE_KEY }}" | gpg --batch --import
+          git config --global user.signingkey 67A9A0B77F0BD445E45CC8B719828A304678A92F
+          git config --global commit.gpgsign true
+          git config --global user.email "bitgobot@bitgo.com"
+          git config --global user.name "bitgobot"
+
+      - name: Configure npmrc
+        if: inputs.dry-run == false
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "engine-strict=true" > ~/.npmrc
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
+
+      - name: Setup Node.js with nvm
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Test NPM authentication
+        if: inputs.dry-run == false
+        run: |
+          npm whoami --registry https://registry.npmjs.org/
+
+      - name: Switch to rel/latest branch
+        run: |
+          git checkout rel/latest
+          git pull origin rel/latest
+
+      - name: Merge master into rel/latest
+        run: |
+          echo "Merging master commit ${{ needs.get-release-context.outputs.current-master-sha }} into rel/latest"
+          git merge ${{ needs.get-release-context.outputs.current-master-sha }} --no-edit
+
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+
+      - name: Run yarn audit
+        run: |
+          yarn run audit-high
+
+      - name: Run dependency check
+        run: |
+          yarn check-deps
+
+      - name: Publish new version
+        if: inputs.dry-run == false
+        run: |
+          yarn lerna publish --sign-git-tag --sign-git-commit --include-merged-tags --conventional-commits --conventional-graduate --verify-access --yes
+
+      - name: Extract published version
+        if: inputs.dry-run == false
+        id: extract-version
+        run: |
+          NEW_VERSION=$(jq -r '.version' ./modules/bitgo/package.json)
+          echo "New version: $NEW_VERSION"
+          echo "new-version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
