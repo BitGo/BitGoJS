@@ -21,6 +21,7 @@ import {
   wrwUser,
 } from '../resources';
 import * as _ from 'lodash';
+import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { Ada, KeyPair, Tada } from '../../src';
 import { Transaction } from '../../src/lib';
 import { TransactionType } from '../../../sdk-core/src/account-lib/baseCoin/enum';
@@ -584,9 +585,10 @@ describe('ADA', function () {
   describe('Recover Transactions:', () => {
     const destAddr = address.address2;
     const sandBox = sinon.createSandbox();
+    let callBack: sinon.SinonStub;
 
     beforeEach(function () {
-      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
       callBack
         .withArgs('address_info', {
           _addresses: [wrwUser.walletAddress0],
@@ -670,6 +672,56 @@ describe('ADA', function () {
       should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
       should.deepEqual(txJson.outputs[0].address, destAddr);
       should.deepEqual(Number(txJson.outputs[0].amount) + fee, testnetUTXO.UTXO_1.value);
+    });
+
+    it('should recover ADA plus token UTXOs - token and ADA both appear in outputs (signed)', async function () {
+      callBack
+        .withArgs('address_info', { _addresses: [wrwUser.walletAddress0] })
+        .resolves(endpointResponses.addressInfoResponse.ADAAndTokenUTXOs);
+
+      const res = await basecoin.recover({
+        userKey: wrwUser.userKey,
+        backupKey: wrwUser.backupKey,
+        bitgoKey: wrwUser.bitgoKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(res.serializedTx);
+      const txJson = tx.toJson();
+
+      txJson.inputs.length.should.equal(2);
+      should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson.inputs[1].transaction_id, testnetUTXO.UTXO_TOKEN.tx_hash);
+
+      // expect 2 outputs: one token output + one ADA change output, both at destAddr
+      txJson.outputs.length.should.equal(2);
+
+      const tokenPolicyId = '2533cca6eb42076e144e9f2772c390dece9fce173bc38c72294b3924';
+      const tokenEncodedAssetName = '5741544552';
+      const tokenQuantity = '111';
+      const minADAForToken = 1500000;
+
+      const tokenOutput = txJson.outputs.find((o) => o.multiAssets !== undefined);
+      should.exist(tokenOutput);
+      should.deepEqual(tokenOutput!.address, destAddr);
+      should.deepEqual(Number(tokenOutput!.amount), minADAForToken);
+      const expectedPolicyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(tokenPolicyId, 'hex'));
+      const expectedAssetName = CardanoWasm.AssetName.new(Buffer.from(tokenEncodedAssetName, 'hex'));
+      (tokenOutput!.multiAssets as CardanoWasm.MultiAsset)
+        .get_asset(expectedPolicyId, expectedAssetName)
+        .to_str()
+        .should.equal(tokenQuantity);
+
+      const adaOutput = txJson.outputs.find((o) => o.multiAssets === undefined);
+      should.exist(adaOutput);
+      should.deepEqual(adaOutput!.address, destAddr);
+      const fee = Number(tx.explainTransaction().fee.fee);
+      const totalBalance = testnetUTXO.UTXO_1.value + testnetUTXO.UTXO_TOKEN.value;
+      should.deepEqual(Number(adaOutput!.amount), totalBalance - minADAForToken - fee);
     });
   });
 
