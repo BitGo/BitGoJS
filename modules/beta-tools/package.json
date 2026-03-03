@@ -1,0 +1,43 @@
+{
+  "name": "@bitgo/beta-tools",
+  "version": "1.0.0",
+  "description": "CLI and library for bumping @bitgo-beta dependency versions",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "bin": {
+    "bump-bitgo-beta": "./dist/src/cli.js"
+  },
+  "files": [
+    "dist/src/**/*"
+  ],
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "yarn tsc --build --incremental --verbose .",
+    "lint": "eslint --quiet .",
+    "unit-test": "mocha --recursive test",
+    "fmt": "prettier --write '{src,test}/**/*.{ts,js}'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/beta-tools"
+  },
+  "dependencies": {
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/yargs": "^17.0.0",
+    "sinon": "^13.0.1",
+    "@types/sinon": "^10.0.0"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
+}

@@ -6423,7 +6423,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/sinon@^10.0.11":
+"@types/sinon@^10.0.0", "@types/sinon@^10.0.11":
   version "10.0.20"
   resolved "https://registry.npmjs.org/@types/sinon/-/sinon-10.0.20.tgz"
   integrity sha512-2APKKruFNCAZgx3daAyACGzWuJ028VVCUDk6o2rw/Z4PXT0ogwdV4KUegW0MwVs0Zu59auPXbbuBJHF12Sx1Eg==
@@ -6588,6 +6588,13 @@
   version "17.0.19"
   resolved "https://registry.npmjs.org/@types/yargs/-/yargs-17.0.19.tgz"
   integrity sha512-cAx3qamwaYX9R0fzOIZAlFpo4A+1uBVCxqpKz9D26uTF4srRXaGTTsikQmaotCtNdbhzyUH7ft6p9ktz9s6UNQ==
+  dependencies:
+    "@types/yargs-parser" "*"
+
+"@types/yargs@^17.0.0":
+  version "17.0.35"
+  resolved "https://registry.npmjs.org/@types/yargs/-/yargs-17.0.35.tgz#07013e46aa4d7d7d50a49e15604c1c5340d4eb24"
+  integrity sha512-qUHkeCyQFxMXg79wQfTtfndEC+N9ZZg76HJftDJp+qH2tV7Gj4OJi7l+PiWwJ+pWtW8GwSmqsDj/oymhrTWXjg==
   dependencies:
     "@types/yargs-parser" "*"
 
