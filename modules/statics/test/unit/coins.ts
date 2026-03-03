@@ -1376,16 +1376,14 @@ describe('create token map using config details', () => {
         CoinFeature.SUPPORTS_ERC20,
         CoinFeature.EVM_NON_BITGO_RECOVERY,
         CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
-        CoinFeature.MULTISIG_COLD,
-        CoinFeature.MULTISIG,
         CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
         CoinFeature.ETH_ROLLUP_CHAIN,
       ]);
     });
 
-    it('should have TSS_COLD feature for zksyncera (both multisig and tss cold)', function () {
+    it('should have TSS_COLD but not MULTISIG_COLD for zksyncera (tss cold only)', function () {
       const coin = coins.get('zksyncera');
-      coin.features.includes(CoinFeature.MULTISIG_COLD).should.equal(true);
+      coin.features.includes(CoinFeature.MULTISIG_COLD).should.equal(false);
       coin.features.includes(CoinFeature.TSS_COLD).should.equal(true);
     });
   });

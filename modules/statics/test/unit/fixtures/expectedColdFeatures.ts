@@ -13,8 +13,6 @@ export const expectedColdFeatures = {
     'tsoneium',
     'flr',
     'tflr',
-    'zksyncera',
-    'tzksyncera',
   ],
   justMultiSig: [
     'algo',
@@ -213,6 +211,8 @@ export const expectedColdFeatures = {
     'tkavaevm',
     'twemix',
     'tzeta',
+    'tzksyncera',
+    'zksyncera',
     'toas',
     'ton',
     'tseievm',
