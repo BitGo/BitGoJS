@@ -28,6 +28,7 @@ import {
   VALIDATOR_REGISTRATION_STAKER_CONTRACT_ADDRESS_MAINNET,
   VALIDATOR_REGISTRATION_STAKER_CONTRACT_ADDRESS_TESTNET,
   ADD_VALIDATION_METHOD_ID,
+  INCREASE_STAKE_METHOD_ID,
 } from './constants';
 import { KeyPair } from './keyPair';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -104,6 +105,8 @@ export class Utils implements BaseUtils {
       return TransactionType.StakingUnlock;
     } else if (clauses[0].data.startsWith(ADD_VALIDATION_METHOD_ID)) {
       return TransactionType.StakingLock;
+    } else if (clauses[0].data.startsWith(INCREASE_STAKE_METHOD_ID)) {
+      return TransactionType.StakingAdd;
     } else if (clauses[0].data.startsWith(BURN_NFT_METHOD_ID)) {
       return TransactionType.StakingWithdraw;
     } else if (
@@ -281,6 +284,27 @@ export class Utils implements BaseUtils {
       };
     } catch (error) {
       throw new Error(`Failed to decode add validation data: ${error.message}`);
+    }
+  }
+
+  /**
+   * Decodes increase stake transaction data to extract validator address
+   *
+   * @param {string} data - The encoded transaction data
+   * @returns {object} - Object containing validator address
+   */
+  decodeIncreaseStakeData(data: string): { validator: string } {
+    try {
+      const parameters = data.slice(10);
+
+      // Decode using ethereumjs-abi directly
+      const decoded = EthereumAbi.rawDecode(['address'], Buffer.from(parameters, 'hex'));
+
+      return {
+        validator: addHexPrefix(decoded[0].toString()).toLowerCase(),
+      };
+    } catch (error) {
+      throw new Error(`Failed to decode increase stake data: ${error.message}`);
     }
   }
 

@@ -394,7 +394,8 @@ export class Transaction extends BaseTransaction {
       this.type === TransactionType.StakingUnlock ||
       this.type === TransactionType.StakingWithdraw ||
       this.type === TransactionType.StakingClaim ||
-      this.type === TransactionType.StakingLock
+      this.type === TransactionType.StakingLock ||
+      this.type === TransactionType.StakingAdd
     ) {
       transactionBody.reserved = {
         features: 1, // mark transaction as delegated i.e. will use gas payer
