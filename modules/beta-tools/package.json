@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/beta-tools",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI and library for bumping @bitgo-beta dependency versions",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -26,9 +26,9 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "@types/sinon": "^10.0.0",
     "@types/yargs": "^17.0.0",
-    "sinon": "^13.0.1",
-    "@types/sinon": "^10.0.0"
+    "sinon": "^13.0.1"
   },
   "lint-staged": {
     "*.{js,ts}": [

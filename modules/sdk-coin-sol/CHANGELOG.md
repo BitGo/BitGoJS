@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.15.0...@bitgo/sdk-coin-sol@7.16.0) (2026-03-03)
+
+
+### Bug Fixes
+
+* deriveTransactionType defaults to CustomTx for non-transfer transactions ([23d8629](https://github.com/BitGo/BitGoJS/commit/23d862928c74ca398fea0d03c09c71f21e9c1dc4))
+* use serialize without signature validation in WASM explain path ([df7223b](https://github.com/BitGo/BitGoJS/commit/df7223b5fbb950f650271245d2150ac0e0732612))
+
+
+### Features
+
+* port solana explain logic from wasm to sdk-coin-sol ([d2955c9](https://github.com/BitGo/BitGoJS/commit/d2955c9af40892c4fed2d7caffe37721698db268)), closes [#176](https://github.com/BitGo/BitGoJS/issues/176)
+
+
+
+
+
 # [7.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.14.0...@bitgo/sdk-coin-sol@7.15.0) (2026-02-27)
 
 

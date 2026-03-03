@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [21.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coreum@21.7.1...@bitgo/sdk-coin-coreum@21.8.0) (2026-03-03)
+
+
+### Features
+
+* rebrand Coreum to TX (mainnet) ([a679f88](https://github.com/BitGo/BitGoJS/commit/a679f8850e55951a11f8f58260fa9356a8e0ac1e))
+
+
+
+
+
 ## [21.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coreum@21.7.0...@bitgo/sdk-coin-coreum@21.7.1) (2026-02-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-coreum
