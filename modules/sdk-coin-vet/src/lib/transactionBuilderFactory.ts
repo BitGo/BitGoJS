@@ -27,6 +27,8 @@ import { DelegateTxnBuilder } from './transactionBuilder/delegateTxnBuilder';
 import { DelegateClauseTransaction } from './transaction/delegateClauseTransaction';
 import { ValidatorRegistrationTransaction } from './transaction/validatorRegistrationTransaction';
 import { ValidatorRegistrationBuilder } from './transactionBuilder/validatorRegistrationBuilder';
+import { IncreaseStakeTransaction } from './transaction/increaseStakeTransaction';
+import { IncreaseStakeBuilder } from './transactionBuilder/increaseStakeBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -87,6 +89,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const validatorRegistrationTx = new ValidatorRegistrationTransaction(this._coinConfig);
           validatorRegistrationTx.fromDeserializedSignedTransaction(signedTx);
           return this.getValidatorRegistrationBuilder(validatorRegistrationTx);
+        case TransactionType.StakingAdd:
+          const increaseStakeTx = new IncreaseStakeTransaction(this._coinConfig);
+          increaseStakeTx.fromDeserializedSignedTransaction(signedTx);
+          return this.getIncreaseStakeBuilder(increaseStakeTx);
         default:
           throw new InvalidTransactionError('Invalid transaction type');
       }
@@ -122,6 +128,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getValidatorRegistrationBuilder(tx?: ValidatorRegistrationTransaction): ValidatorRegistrationBuilder {
     return this.initializeBuilder(tx, new ValidatorRegistrationBuilder(this._coinConfig));
+  }
+
+  getIncreaseStakeBuilder(tx?: IncreaseStakeTransaction): IncreaseStakeBuilder {
+    return this.initializeBuilder(tx, new IncreaseStakeBuilder(this._coinConfig));
   }
 
   getStakingActivateBuilder(tx?: StakeClauseTransaction): StakeClauseTxnBuilder {
