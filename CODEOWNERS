@@ -90,6 +90,7 @@
 /modules/sdk-coin-soneium/ @BitGo/ethalt-team
 /modules/sdk-coin-sui/ @BitGo/ethalt-team
 /modules/sdk-coin-tao/ @BitGo/ethalt-team
+/modules/sdk-coin-tempo/ @BitGo/ethalt-team
 /modules/sdk-coin-ton/ @BitGo/ethalt-team
 /modules/sdk-coin-trx/ @BitGo/ethalt-team
 /modules/sdk-coin-vet/ @Bitgo/ethalt-team
