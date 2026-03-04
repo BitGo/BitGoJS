@@ -282,7 +282,7 @@ describe('Ethereum Hop Transactions', function () {
       should.exist(res.hopTransaction.id);
       should.exist(res.hopTransaction.signature);
       should.not.exist(res.wallet);
-      should.exist(res.buildParams);
+      should.not.exist(res.buildParams);
       feeScope.isDone().should.equal(true);
       const feeReq = (feeScope as any).interceptors[0].req;
       feeReq.path.should.containEql('hop=true');
