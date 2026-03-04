@@ -1957,6 +1957,117 @@ describe('V2 Wallet:', function () {
     });
   });
 
+  describe('sendMany buildParams pass-through for account-based coins', function () {
+    let ethBasecoin;
+    let ethWalletForBuildParams: Wallet;
+
+    before(function () {
+      ethBasecoin = bitgo.coin('teth');
+      ethWalletForBuildParams = new Wallet(bitgo, ethBasecoin, {
+        id: '598f606cd8fc24710d2ebadb1d9459bb',
+        coin: 'teth',
+        keys: [
+          '598f606cd8fc24710d2ebad89dce86c2',
+          '598f606cc8e43aef09fcb785221d9dd2',
+          '5935d59cf660764331bafcade1855fd7',
+        ],
+        multisigType: 'onchain',
+        type: 'hot',
+      });
+    });
+
+    it('should include top-level recipients alongside halfSigned in /tx/send for ETH', async function () {
+      const recipients = [{ address: '0x5208d8e80c6d1aef9be37b4bd19a9cf75ed93dc8', amount: '200000000000000' }];
+      const serverBuildParams = { recipients };
+      const prebuildReturn = {
+        halfSigned: {
+          recipients,
+          txHex: '0xdeadbeef',
+          expireTime: 1234567890,
+          contractSequenceId: 1001,
+        },
+        buildParams: serverBuildParams,
+      };
+      sinon.stub(ethWalletForBuildParams, 'prebuildAndSignTransaction').resolves(prebuildReturn);
+      sinon.stub(ethBasecoin, 'getExtraPrebuildParams').resolves({});
+
+      const path = `/api/v2/${ethWalletForBuildParams.coin()}/wallet/${ethWalletForBuildParams.id()}/tx/send`;
+      const sendNock = nock(bgUrl)
+        .post(path, (body) => {
+          // recipients must be at top level (not just inside halfSigned)
+          return (
+            body.recipients !== undefined &&
+            body.recipients[0].address === recipients[0].address &&
+            body.halfSigned !== undefined
+          );
+        })
+        .reply(200, { status: 'signed' });
+
+      const result = await ethWalletForBuildParams.sendMany({ recipients });
+      sendNock.isDone().should.be.true();
+      result.should.have.property('status', 'signed');
+    });
+
+    it('should include top-level recipients from selectParams even without server buildParams for ETH', async function () {
+      const recipients = [{ address: '0x5208d8e80c6d1aef9be37b4bd19a9cf75ed93dc8', amount: '200000000000000' }];
+      // No buildParams — simulates old server that doesn't return buildParams
+      const prebuildReturn = {
+        halfSigned: {
+          recipients,
+          txHex: '0xdeadbeef',
+          expireTime: 1234567890,
+          contractSequenceId: 1001,
+        },
+      };
+      sinon.stub(ethWalletForBuildParams, 'prebuildAndSignTransaction').resolves(prebuildReturn);
+      sinon.stub(ethBasecoin, 'getExtraPrebuildParams').resolves({});
+
+      const path = `/api/v2/${ethWalletForBuildParams.coin()}/wallet/${ethWalletForBuildParams.id()}/tx/send`;
+      const sendNock = nock(bgUrl)
+        .post(path, (body) => {
+          // recipients should still be at top level via selectParams (user's original params)
+          return (
+            body.recipients !== undefined &&
+            body.recipients[0].address === recipients[0].address &&
+            body.halfSigned !== undefined
+          );
+        })
+        .reply(200, { status: 'signed' });
+
+      const result = await ethWalletForBuildParams.sendMany({ recipients });
+      sendNock.isDone().should.be.true();
+      result.should.have.property('status', 'signed');
+    });
+
+    it('should include eip1559 and nonce from server buildParams at top level for ETH', async function () {
+      const recipients = [{ address: '0x5208d8e80c6d1aef9be37b4bd19a9cf75ed93dc8', amount: '200000000000000' }];
+      const eip1559 = { maxPriorityFeePerGas: '57500000', maxFeePerGas: '510214356' };
+      const serverBuildParams = { recipients, nonce: 42, memo: { value: 'test' } };
+      const prebuildReturn = {
+        halfSigned: {
+          recipients,
+          txHex: '0xdeadbeef',
+          eip1559,
+          contractSequenceId: 3371928,
+        },
+        buildParams: serverBuildParams,
+      };
+      sinon.stub(ethWalletForBuildParams, 'prebuildAndSignTransaction').resolves(prebuildReturn);
+      sinon.stub(ethBasecoin, 'getExtraPrebuildParams').resolves({});
+
+      const path = `/api/v2/${ethWalletForBuildParams.coin()}/wallet/${ethWalletForBuildParams.id()}/tx/send`;
+      const sendNock = nock(bgUrl)
+        .post(path, (body) => {
+          return body.recipients !== undefined && body.halfSigned !== undefined && body.nonce === 42;
+        })
+        .reply(200, { status: 'signed' });
+
+      const result = await ethWalletForBuildParams.sendMany({ recipients });
+      sendNock.isDone().should.be.true();
+      result.should.have.property('status', 'signed');
+    });
+  });
+
   describe('Maximum Spendable', function maximumSpendable() {
     let bgUrl;
 
