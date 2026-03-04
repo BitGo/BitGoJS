@@ -9,6 +9,7 @@ import { BaseTransaction, ParseTransactionError, TransactionType } from '@bitgo/
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { ethers } from 'ethers';
 import { Address, Hex, Tip20Operation } from './types';
+import { amountToTip20Units } from './utils';
 
 /**
  * TIP-20 Transaction Request Structure
@@ -35,6 +36,19 @@ export interface Tip20TransactionRequest {
   feeToken?: Address;
 }
 
+export interface TxData {
+  type: number | string;
+  chainId: number;
+  nonce: number;
+  maxFeePerGas: string;
+  maxPriorityFeePerGas: string;
+  gas: string;
+  callCount: number;
+  feeToken?: string;
+  operations: Tip20Operation[];
+  signature?: { r: Hex; s: Hex; yParity: number };
+}
+
 export class Tip20Transaction extends BaseTransaction {
   private txRequest: Tip20TransactionRequest;
   private _operations: Tip20Operation[];
@@ -44,6 +58,13 @@ export class Tip20Transaction extends BaseTransaction {
     super(_coinConfig);
     this.txRequest = request;
     this._operations = operations;
+    this._outputs = operations.map((op) => ({
+      address: op.to,
+      value: amountToTip20Units(op.amount).toString(),
+      coin: op.token,
+    }));
+    const totalUnits = operations.reduce((sum, op) => sum + amountToTip20Units(op.amount), 0n);
+    this._inputs = [{ address: '', value: totalUnits.toString(), coin: _coinConfig.name }];
   }
 
   get type(): TransactionType {
@@ -190,7 +211,7 @@ export class Tip20Transaction extends BaseTransaction {
     return this._signature;
   }
 
-  toJson(): Record<string, unknown> {
+  toJson(): TxData {
     return {
       type: this.txRequest.type,
       chainId: this.txRequest.chainId,
@@ -209,8 +230,14 @@ export class Tip20Transaction extends BaseTransaction {
     return await this.serialize(this._signature);
   }
 
+  /** @inheritdoc */
   get id(): string {
-    return 'pending';
+    try {
+      const serialized = this.serializeTransaction(this._signature);
+      return ethers.utils.keccak256(ethers.utils.arrayify(serialized));
+    } catch {
+      return 'pending';
+    }
   }
 
   toString(): string {

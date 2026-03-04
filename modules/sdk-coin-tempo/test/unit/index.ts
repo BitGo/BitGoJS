@@ -2,7 +2,7 @@ import { Tempo } from '../../src/tempo';
 import { Ttempo } from '../../src/ttempo';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoBase, InvalidAddressError, InvalidMemoIdError } from '@bitgo/sdk-core';
+import { BitGoBase, InvalidAddressError, InvalidMemoIdError, UnexpectedAddressError } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import * as should from 'should';
 
@@ -144,6 +144,66 @@ describe('Tempo Coin', function () {
       basecoin.isValidMemoId('abc').should.equal(false);
       basecoin.isValidMemoId('01').should.equal(false); // Leading zero
       basecoin.isValidMemoId('00').should.equal(false);
+    });
+  });
+
+  describe('isWalletAddress', function () {
+    const baseAddress = '0x2476602c78e9a5e0563320c78878faa3952b256f';
+
+    it('should verify a plain address matching the base address', async function () {
+      const result = await basecoin.isWalletAddress({
+        address: baseAddress,
+        baseAddress,
+        coinSpecific: {},
+      });
+      result.should.equal(true);
+    });
+
+    it('should verify a memoId address whose base matches the wallet base address', async function () {
+      const result = await basecoin.isWalletAddress({
+        address: `${baseAddress}?memoId=8`,
+        baseAddress,
+        coinSpecific: {},
+      });
+      result.should.equal(true);
+    });
+
+    it('should verify using rootAddress when baseAddress is not provided', async function () {
+      const result = await basecoin.isWalletAddress({
+        address: `${baseAddress}?memoId=42`,
+        rootAddress: baseAddress,
+        coinSpecific: {},
+      });
+      result.should.equal(true);
+    });
+
+    it('should reject address with mismatched base address', async function () {
+      await basecoin
+        .isWalletAddress({
+          address: '0x0000000000000000000000000000000000000001?memoId=8',
+          baseAddress,
+          coinSpecific: {},
+        })
+        .should.be.rejectedWith(UnexpectedAddressError);
+    });
+
+    it('should reject an invalid address', async function () {
+      await basecoin
+        .isWalletAddress({
+          address: 'not-a-valid-address',
+          baseAddress,
+          coinSpecific: {},
+        })
+        .should.be.rejectedWith(InvalidAddressError);
+    });
+
+    it('should not require forwarderVersion (no forwarder contracts)', async function () {
+      const result = await basecoin.isWalletAddress({
+        address: `${baseAddress}?memoId=100`,
+        baseAddress,
+        coinSpecific: { forwarderVersion: undefined },
+      });
+      result.should.equal(true);
     });
   });
 

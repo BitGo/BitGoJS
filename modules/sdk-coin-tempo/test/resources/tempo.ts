@@ -74,5 +74,5 @@ export const ERROR_MESSAGES = {
   missingGas: /Gas limit is required/,
   missingMaxFeePerGas: /maxFeePerGas is required/,
   missingMaxPriorityFeePerGas: /maxPriorityFeePerGas is required/,
-  memoTooLong: /Memo too long/,
+  invalidMemo: /Invalid memo/,
 };

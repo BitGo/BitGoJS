@@ -7,12 +7,25 @@ import {
   OfflineVaultTxInfo,
   UnsignedSweepTxMPCv2,
   TransactionBuilder,
+  VerifyEthTransactionOptions,
+  VerifyEthAddressOptions,
+  TssVerifyEthAddressOptions,
   optionalDeps,
 } from '@bitgo/abstract-eth';
 import type * as EthLikeCommon from '@ethereumjs/common';
-import { BaseCoin, BitGoBase, InvalidAddressError, InvalidMemoIdError, MPCAlgorithm } from '@bitgo/sdk-core';
+import {
+  BaseCoin,
+  BitGoBase,
+  InvalidAddressError,
+  InvalidMemoIdError,
+  MPCAlgorithm,
+  ParseTransactionOptions,
+  ParsedTransaction,
+  UnexpectedAddressError,
+} from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { Tip20TransactionBuilder } from './lib';
+import { Tip20Transaction, Tip20TransactionBuilder } from './lib';
+import { amountToTip20Units, isValidMemoId as isValidMemoIdUtil } from './lib/utils';
 import * as url from 'url';
 import * as querystring from 'querystring';
 
@@ -155,13 +168,106 @@ export class Tempo extends AbstractEthLikeNewCoins {
    * @returns true if valid
    */
   isValidMemoId(memoId: string): boolean {
-    if (typeof memoId !== 'string' || memoId === '') {
-      return false;
+    return isValidMemoIdUtil(memoId);
+  }
+
+  /**
+   * Tempo uses memoId-based addresses rather than forwarder contracts.
+   * Verify that the address belongs to this wallet by checking that the
+   * base (EVM) portion matches the wallet's base address.
+   */
+  async isWalletAddress(params: VerifyEthAddressOptions | TssVerifyEthAddressOptions): Promise<boolean> {
+    const { address, baseAddress } = params;
+    const rootAddress = (params as unknown as Record<string, unknown>).rootAddress as string | undefined;
+
+    if (!address) {
+      throw new InvalidAddressError('address is required');
     }
-    // Must be a non-negative integer (no decimals, no negative, no leading zeros except for "0")
-    if (!/^(0|[1-9]\d*)$/.test(memoId)) {
-      return false;
+
+    if (!this.isValidAddress(address)) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
     }
+
+    const { baseAddress: addressBase } = this.getAddressDetails(address);
+
+    const walletBaseAddress = baseAddress || rootAddress;
+    if (!walletBaseAddress) {
+      throw new InvalidAddressError('baseAddress or rootAddress is required for verification');
+    }
+
+    const { baseAddress: walletBase } = this.getAddressDetails(walletBaseAddress);
+
+    if (addressBase.toLowerCase() !== walletBase.toLowerCase()) {
+      throw new UnexpectedAddressError(`address validation failure: expected ${walletBase} but got ${addressBase}`);
+    }
+
+    return true;
+  }
+
+  /**
+   * Parse a serialised Tempo transaction and return its operations as SDK outputs.
+   * @inheritdoc
+   */
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    const txHex = (params.txHex || (params as any).halfSigned?.txHex) as string | undefined;
+    if (!txHex) {
+      return {};
+    }
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txHex);
+    const tx = (await txBuilder.build()) as Tip20Transaction;
+    return {
+      inputs: tx.inputs.map((input) => ({
+        address: input.address,
+        amount: input.value,
+        coin: this.getChain(),
+      })),
+      outputs: tx.outputs.map((output) => ({
+        address: output.address,
+        amount: output.value,
+        coin: this.getChain(),
+      })),
+    };
+  }
+
+  /**
+   * Verify that a Tempo transaction matches the intended recipients and amounts.
+   * @inheritdoc
+   */
+  async verifyTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
+    const { txParams, txPrebuild } = params;
+
+    if (!txPrebuild?.txHex) {
+      return true;
+    }
+
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txPrebuild.txHex);
+    const tx = (await txBuilder.build()) as Tip20Transaction;
+    const operations = tx.getOperations();
+
+    // If the caller specified explicit recipients, verify they match the operations 1-to-1
+    const recipients = txParams?.recipients;
+    if (recipients && recipients.length > 0) {
+      if (operations.length !== recipients.length) {
+        throw new Error(
+          `Transaction has ${operations.length} operation(s) but ${recipients.length} recipient(s) were requested`
+        );
+      }
+      for (let i = 0; i < operations.length; i++) {
+        const op = operations[i];
+        const recipient = recipients[i];
+        if (op.to.toLowerCase() !== recipient.address.toLowerCase()) {
+          throw new Error(`Operation ${i} recipient mismatch: expected ${recipient.address}, got ${op.to}`);
+        }
+        // Compare amounts in base units (smallest denomination)
+        const opAmountBaseUnits = amountToTip20Units(op.amount).toString();
+        if (opAmountBaseUnits !== recipient.amount.toString()) {
+          throw new Error(`Operation ${i} amount mismatch: expected ${recipient.amount}, got ${opAmountBaseUnits}`);
+        }
+      }
+    }
+
     return true;
   }
 
