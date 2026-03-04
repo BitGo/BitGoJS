@@ -1,3 +1,7 @@
+> **Deprecated for new projects.** This megapackage bundles every coin SDK module. New integrations
+> should use `@bitgo/sdk-api` and `@bitgo/sdk-core` with individual coin modules instead.
+> See [MIGRATION.md](./MIGRATION.md) for a step-by-step migration guide.
+
 # BitGo JavaScript SDK
 
 The BitGo Platform enables you to build multisignature and MPC cryptocurrency applications for over a thousand digital assets. You can view all BitGo supported assets on the [Developer Portal](https://assets.bitgo.com/coins). The SDK is fully integrated with the BitGo co-signing service for managing all of your BitGo wallets.
