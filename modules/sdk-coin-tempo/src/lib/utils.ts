@@ -6,8 +6,10 @@
 
 import { bip32 } from '@bitgo/secp256k1';
 import { ethers } from 'ethers';
-import { TIP20_DECIMALS } from './constants';
+import { AA_TRANSACTION_TYPE, TIP20_DECIMALS } from './constants';
 import { TIP20_TRANSFER_WITH_MEMO_ABI } from './tip20Abi';
+
+const AA_TX_HEX_REGEX = new RegExp(`^${AA_TRANSACTION_TYPE}[0-9a-f]*$`, 'i');
 
 type Address = string;
 type Hex = string;
@@ -133,6 +135,20 @@ export function isValidTip20Amount(amount: string): boolean {
   }
 }
 
+/**
+ * Check if a raw transaction string is a Tempo AA transaction (type 0x76)
+ */
+export function isTip20Transaction(raw: string): boolean {
+  return AA_TX_HEX_REGEX.test(raw);
+}
+
+/**
+ * Validate that a memoId is a valid non-negative integer string
+ */
+export function isValidMemoId(memoId: string): boolean {
+  return typeof memoId === 'string' && /^(0|[1-9]\d*)$/.test(memoId);
+}
+
 const utils = {
   isValidAddress,
   isValidPublicKey,
@@ -142,6 +158,8 @@ const utils = {
   stringToBytes32,
   encodeTip20TransferWithMemo,
   isValidTip20Amount,
+  isTip20Transaction,
+  isValidMemoId,
 };
 
 export default utils;

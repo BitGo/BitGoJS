@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { describe, it } from 'mocha';
+import { describe, it, before } from 'mocha';
 import { ethers } from 'ethers';
 import { Tip20TransactionBuilder } from '../../src/lib/transactionBuilder';
 import { Tip20Transaction } from '../../src/lib/transaction';
@@ -12,6 +12,10 @@ import {
 } from '../../src/lib/utils';
 import { TIP20_DECIMALS, AA_TRANSACTION_TYPE } from '../../src/lib/constants';
 import { coins } from '@bitgo/statics';
+import { Ttempo } from '../../src/ttempo';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoBase } from '@bitgo/sdk-core';
 import {
   TESTNET_TOKENS,
   TX_PARAMS,
@@ -110,11 +114,11 @@ describe('TIP-20 Transaction Builder', () => {
       );
     });
 
-    it('should throw error for memo longer than 32 bytes', () => {
+    it('should throw error for invalid (non-numeric) memo', () => {
       const builder = new Tip20TransactionBuilder(mockCoinConfig);
       assert.throws(
-        () => builder.addOperation({ token: mockToken, to: mockRecipient, amount: '100', memo: 'a'.repeat(33) }),
-        /Memo too long/
+        () => builder.addOperation({ token: mockToken, to: mockRecipient, amount: '100', memo: 'INV-001' }),
+        /Invalid memo/
       );
     });
   });
@@ -362,6 +366,324 @@ describe('TIP-20 Transaction Build', () => {
       assert.strictEqual(json.maxPriorityFeePerGas, '1500000000');
       assert.strictEqual(json.callCount, 1);
       assert.strictEqual(json.feeToken, mockFeeToken);
+    });
+  });
+
+  describe('Transaction id getter', () => {
+    it('unsigned and signed transactions should have different ids', async () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      builder
+        .addOperation({ token: mockToken, to: mockRecipient, amount: '10' })
+        .nonce(1)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+
+      const tx = (await builder.build()) as Tip20Transaction;
+      const unsignedId = tx.id;
+
+      tx.setSignature(SIGNATURE_TEST_DATA.validSignature);
+      const signedId = tx.id;
+
+      assert.notStrictEqual(unsignedId, signedId, 'Signed and unsigned tx should have different ids');
+    });
+  });
+
+  describe('outputs / inputs population', () => {
+    it('should expose outputs with base-unit value and token address as coin', async () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      builder
+        .addOperation({ token: mockToken, to: mockRecipient, amount: '1.5', memo: '7' })
+        .nonce(0)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+
+      const tx = (await builder.build()) as Tip20Transaction;
+      assert.strictEqual(tx.outputs.length, 1);
+      assert.strictEqual(tx.outputs[0].address, mockRecipient);
+      // 1.5 tokens * 10^6 = 1_500_000 base units
+      assert.strictEqual(tx.outputs[0].value, '1500000');
+      // coin is the token contract address, not the chain name
+      assert.strictEqual(tx.outputs[0].coin?.toLowerCase(), mockToken.toLowerCase());
+    });
+
+    it('should expose a single input with the total in base units', async () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      builder
+        .addOperation({ token: mockToken, to: mockRecipient, amount: '1.5' })
+        .addOperation({ token: mockToken, to: mockRecipient, amount: '3.5' })
+        .nonce(0)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+
+      const tx = (await builder.build()) as Tip20Transaction;
+      assert.strictEqual(tx.inputs.length, 1);
+      assert.strictEqual(tx.inputs[0].address, '');
+      // (1.5 + 3.5) tokens * 10^6 = 5_000_000 base units
+      assert.strictEqual(tx.inputs[0].value, '5000000');
+    });
+  });
+
+  describe('Round-Trip: Build -> Serialize -> From (deserialization)', () => {
+    it('should round-trip a single-operation transaction without a signature', async () => {
+      const operation = { token: mockToken, to: mockRecipient, amount: '25.5', memo: '12345' };
+
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      builder
+        .addOperation(operation)
+        .feeToken(mockFeeToken)
+        .nonce(7)
+        .gas(150000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+
+      const originalTx = (await builder.build()) as Tip20Transaction;
+      const serialized = await originalTx.serialize();
+
+      // Deserialize via from()
+      const builder2 = new Tip20TransactionBuilder(mockCoinConfig);
+      builder2.from(serialized);
+      const restoredTx = (await builder2.build()) as Tip20Transaction;
+
+      const ops = restoredTx.getOperations();
+      assert.strictEqual(ops.length, 1);
+      assert.strictEqual(ops[0].token.toLowerCase(), operation.token.toLowerCase());
+      assert.strictEqual(ops[0].to.toLowerCase(), operation.to.toLowerCase());
+      assert.strictEqual(ops[0].amount, operation.amount);
+      assert.strictEqual(ops[0].memo, operation.memo);
+      assert.strictEqual(restoredTx.getFeeToken()?.toLowerCase(), mockFeeToken.toLowerCase());
+    });
+
+    it('should round-trip a batch transaction', async () => {
+      // Use amounts that match tip20UnitsToAmount output: ethers formatUnits always includes decimal
+      const operations = [
+        { token: TESTNET_TOKENS.alphaUSD.address, to: mockRecipient, amount: '10.0', memo: '1' },
+        { token: TESTNET_TOKENS.betaUSD.address, to: mockRecipient, amount: '20.0', memo: '2' },
+      ];
+
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      builder
+        .addOperation(operations[0])
+        .addOperation(operations[1])
+        .nonce(42)
+        .gas(250000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+
+      const originalTx = (await builder.build()) as Tip20Transaction;
+      const serialized = await originalTx.serialize();
+
+      const builder2 = new Tip20TransactionBuilder(mockCoinConfig);
+      builder2.from(serialized);
+      const restoredTx = (await builder2.build()) as Tip20Transaction;
+
+      assert.strictEqual(restoredTx.getOperationCount(), 2);
+      assert.ok(restoredTx.isBatch());
+
+      const json = restoredTx.toJson();
+      assert.strictEqual(json.nonce, 42);
+      assert.strictEqual(json.gas, '250000');
+      assert.strictEqual(json.maxFeePerGas, TX_PARAMS.defaultMaxFeePerGas.toString());
+      assert.strictEqual(json.maxPriorityFeePerGas, TX_PARAMS.defaultMaxPriorityFeePerGas.toString());
+
+      const ops = restoredTx.getOperations();
+      for (let i = 0; i < operations.length; i++) {
+        assert.strictEqual(ops[i].token.toLowerCase(), operations[i].token.toLowerCase());
+        assert.strictEqual(ops[i].to.toLowerCase(), mockRecipient.toLowerCase());
+        assert.strictEqual(ops[i].amount, operations[i].amount);
+        assert.strictEqual(ops[i].memo, operations[i].memo);
+      }
+    });
+
+    it('should round-trip a signed transaction and preserve the signature', async () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      builder
+        .addOperation({ token: mockToken, to: mockRecipient, amount: '5' })
+        .nonce(99)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+
+      const tx = (await builder.build()) as Tip20Transaction;
+      tx.setSignature(SIGNATURE_TEST_DATA.validSignature);
+      const signedHex = await tx.toBroadcastFormat();
+
+      // Deserialize the signed transaction
+      const builder2 = new Tip20TransactionBuilder(mockCoinConfig);
+      builder2.from(signedHex);
+      const restoredTx = (await builder2.build()) as Tip20Transaction;
+
+      const sig = restoredTx.getSignature();
+      assert.ok(sig !== undefined, 'Signature should be preserved');
+      assert.strictEqual(sig!.yParity, SIGNATURE_TEST_DATA.validSignature.yParity);
+    });
+
+    it('should produce the same tx id after a serialization round-trip', async () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      builder
+        .addOperation({ token: mockToken, to: mockRecipient, amount: '100.0', memo: '99' })
+        .nonce(3)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+
+      const originalTx = (await builder.build()) as Tip20Transaction;
+      const serialized = await originalTx.serialize();
+      const originalId = originalTx.id;
+
+      const builder2 = new Tip20TransactionBuilder(mockCoinConfig);
+      builder2.from(serialized);
+      const restoredTx = (await builder2.build()) as Tip20Transaction;
+
+      assert.strictEqual(restoredTx.id, originalId);
+
+      const originalJson = originalTx.toJson();
+      const restoredJson = restoredTx.toJson();
+      assert.strictEqual(restoredJson.nonce, originalJson.nonce);
+      assert.strictEqual(restoredJson.gas, originalJson.gas);
+      assert.strictEqual(restoredJson.maxFeePerGas, originalJson.maxFeePerGas);
+      assert.strictEqual(restoredJson.maxPriorityFeePerGas, originalJson.maxPriorityFeePerGas);
+      assert.strictEqual(restoredJson.feeToken, originalJson.feeToken);
+      assert.strictEqual(restoredJson.callCount, originalJson.callCount);
+
+      const originalOps = originalTx.getOperations();
+      const restoredOps = restoredTx.getOperations();
+      assert.strictEqual(restoredOps.length, originalOps.length);
+      assert.strictEqual(restoredOps[0].token.toLowerCase(), originalOps[0].token.toLowerCase());
+      assert.strictEqual(restoredOps[0].to.toLowerCase(), originalOps[0].to.toLowerCase());
+      assert.strictEqual(restoredOps[0].amount, originalOps[0].amount);
+      assert.strictEqual(restoredOps[0].memo, originalOps[0].memo);
+
+      const restoredSerialized = await restoredTx.serialize();
+      assert.strictEqual(restoredSerialized, serialized);
+    });
+  });
+});
+
+describe('Tempo coin - parseTransaction / verifyTransaction', () => {
+  let bitgo: TestBitGoAPI;
+  let coin: any;
+
+  const mockToken = ethers.utils.getAddress(TESTNET_TOKENS.alphaUSD.address);
+  const mockRecipient = ethers.utils.getAddress(TEST_RECIPIENT_ADDRESS);
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.safeRegister('ttempo', (bg: BitGoBase) => {
+      const mockStaticsCoin = {
+        name: 'ttempo',
+        fullName: 'Testnet Tempo',
+        network: { type: 'testnet' },
+        features: [],
+      } as any;
+      return Ttempo.createInstance(bg, mockStaticsCoin);
+    });
+    bitgo.initializeTestVars();
+    coin = bitgo.coin('ttempo');
+  });
+
+  async function buildSerializedTx(
+    operations: { token: string; to: string; amount: string; memo?: string }[],
+    nonce = 0
+  ): Promise<string> {
+    const builder = new Tip20TransactionBuilder(coins.get('ttempo'));
+    for (const op of operations) {
+      builder.addOperation(op);
+    }
+    builder
+      .nonce(nonce)
+      .gas(100000n)
+      .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+      .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+    const tx = (await builder.build()) as Tip20Transaction;
+    return tx.serialize();
+  }
+
+  describe('parseTransaction', () => {
+    it('should parse a single-operation transaction into outputs', async () => {
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '50', memo: '1' }]);
+      const parsed = await coin.parseTransaction({ txHex });
+      assert.ok(Array.isArray(parsed.outputs), 'outputs should be an array');
+      assert.strictEqual(parsed.outputs.length, 1);
+      assert.strictEqual(parsed.outputs[0].address.toLowerCase(), mockRecipient.toLowerCase());
+      // 50 tokens * 10^6 = 50_000_000 base units
+      assert.strictEqual(parsed.outputs[0].amount, '50000000');
+    });
+
+    it('should return empty object when no txHex is provided', async () => {
+      const parsed = await coin.parseTransaction({});
+      assert.deepStrictEqual(parsed, {});
+    });
+  });
+
+  describe('verifyTransaction', () => {
+    it('should return true when no recipients are specified', async () => {
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '10' }]);
+      const result = await coin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: {},
+      });
+      assert.strictEqual(result, true);
+    });
+
+    it('should return true when recipients match operations', async () => {
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '100' }]);
+      const result = await coin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: {
+          recipients: [{ address: mockRecipient, amount: '100000000' }], // 100 * 10^6 base units
+        },
+      });
+      assert.strictEqual(result, true);
+    });
+
+    it('should throw when recipient address does not match', async () => {
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '100' }]);
+      const wrongAddress = ethers.utils.getAddress('0x1111111111111111111111111111111111111111');
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: { recipients: [{ address: wrongAddress, amount: '100000000' }] },
+          }),
+        /recipient mismatch/
+      );
+    });
+
+    it('should throw when recipient amount does not match', async () => {
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '100' }]);
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: { recipients: [{ address: mockRecipient, amount: '999' }] },
+          }),
+        /amount mismatch/
+      );
+    });
+
+    it('should throw when operation count differs from recipient count', async () => {
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '10' }]);
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: {
+              recipients: [
+                { address: mockRecipient, amount: '10000000' },
+                { address: mockRecipient, amount: '10000000' },
+              ],
+            },
+          }),
+        /operation\(s\)/
+      );
+    });
+
+    it('should return true when no txHex is provided', async () => {
+      const result = await coin.verifyTransaction({ txPrebuild: {}, txParams: {} });
+      assert.strictEqual(result, true);
     });
   });
 });

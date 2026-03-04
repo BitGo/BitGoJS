@@ -8,12 +8,31 @@
  * - EIP-7702 Account Abstraction (type 0x76)
  */
 
-import { TransactionBuilder as AbstractTransactionBuilder, TransferBuilder } from '@bitgo/abstract-eth';
-import { BaseTransaction, BuildTransactionError } from '@bitgo/sdk-core';
+import {
+  Transaction as EthTransaction,
+  TransactionBuilder as AbstractTransactionBuilder,
+  TransferBuilder,
+} from '@bitgo/abstract-eth';
+import {
+  BaseTransaction,
+  BuildTransactionError,
+  InvalidTransactionError,
+  ParseTransactionError,
+} from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { ethers } from 'ethers';
 import { Address, Hex, Tip20Operation } from './types';
 import { Tip20Transaction, Tip20TransactionRequest } from './transaction';
-import { amountToTip20Units, encodeTip20TransferWithMemo, isValidAddress, isValidTip20Amount } from './utils';
+import {
+  amountToTip20Units,
+  encodeTip20TransferWithMemo,
+  isTip20Transaction,
+  isValidAddress,
+  isValidMemoId,
+  isValidTip20Amount,
+  tip20UnitsToAmount,
+} from './utils';
+import { TIP20_TRANSFER_WITH_MEMO_ABI } from './tip20Abi';
 import { AA_TRANSACTION_TYPE } from './constants';
 
 /**
@@ -27,6 +46,7 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
   private _gas?: bigint;
   private _maxFeePerGas?: bigint;
   private _maxPriorityFeePerGas?: bigint;
+  private _restoredSignature?: { r: Hex; s: Hex; yParity: number };
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -74,8 +94,133 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
     }
   }
 
+  /** @inheritdoc */
+  validateRawTransaction(rawTransaction: any): void {
+    if (typeof rawTransaction === 'string' && isTip20Transaction(rawTransaction)) {
+      try {
+        ethers.utils.RLP.decode('0x' + rawTransaction.slice(4));
+        return;
+      } catch (e) {
+        throw new ParseTransactionError(`Failed to RLP decode TIP-20 transaction: ${e}`);
+      }
+    }
+    super.validateRawTransaction(rawTransaction);
+  }
+
+  /** @inheritdoc */
+  protected fromImplementation(rawTransaction: string, isFirstSigner?: boolean): EthTransaction {
+    if (!rawTransaction) {
+      throw new InvalidTransactionError('Raw transaction is empty');
+    }
+    if (isTip20Transaction(rawTransaction)) {
+      return this.fromTip20Transaction(rawTransaction) as unknown as EthTransaction;
+    }
+    return super.fromImplementation(rawTransaction, isFirstSigner);
+  }
+
+  /**
+   * Deserialize a type 0x76 transaction and restore builder state.
+   * RLP field layout mirrors buildBaseRlpData() in transaction.ts.
+   */
+  private fromTip20Transaction(rawTransaction: string): Tip20Transaction {
+    try {
+      const rlpHex = '0x' + rawTransaction.slice(4);
+      const decoded = ethers.utils.RLP.decode(rlpHex) as any[];
+
+      if (!Array.isArray(decoded) || decoded.length < 13) {
+        throw new ParseTransactionError('Invalid TIP-20 transaction: unexpected RLP structure');
+      }
+
+      const parseBigInt = (hex: string): bigint => (!hex || hex === '0x' ? 0n : BigInt(hex));
+      const parseHexInt = (hex: string): number => (!hex || hex === '0x' ? 0 : parseInt(hex, 16));
+
+      const chainId = parseHexInt(decoded[0] as string);
+      const maxPriorityFeePerGas = parseBigInt(decoded[1] as string);
+      const maxFeePerGas = parseBigInt(decoded[2] as string);
+      const gas = parseBigInt(decoded[3] as string);
+      const callsTuples = decoded[4] as string[][];
+      const nonce = parseHexInt(decoded[7] as string);
+      const feeTokenRaw = decoded[10] as string;
+
+      const calls: { to: Address; data: Hex; value: bigint }[] = callsTuples.map((tuple) => ({
+        to: tuple[0] as Address,
+        value: parseBigInt(tuple[1] as string),
+        data: tuple[2] as Hex,
+      }));
+
+      const operations: Tip20Operation[] = calls.map((call) => this.decodeCallToOperation(call));
+
+      let signature: { r: Hex; s: Hex; yParity: number } | undefined;
+      if (decoded.length >= 14 && decoded[13] && (decoded[13] as string).length > 2) {
+        const sigBytes = ethers.utils.arrayify(decoded[13] as string);
+        if (sigBytes.length === 65) {
+          const r = ethers.utils.hexlify(sigBytes.slice(0, 32)) as Hex;
+          const s = ethers.utils.hexlify(sigBytes.slice(32, 64)) as Hex;
+          const v = sigBytes[64];
+          const yParity = v > 1 ? v - 27 : v;
+          signature = { r, s, yParity };
+        }
+      }
+
+      const feeToken = feeTokenRaw && feeTokenRaw !== '0x' ? (feeTokenRaw as Address) : undefined;
+
+      const txRequest: Tip20TransactionRequest = {
+        type: AA_TRANSACTION_TYPE,
+        chainId,
+        nonce,
+        maxFeePerGas,
+        maxPriorityFeePerGas,
+        gas,
+        calls,
+        accessList: [],
+        feeToken,
+      };
+
+      this._nonce = nonce;
+      this._gas = gas;
+      this._maxFeePerGas = maxFeePerGas;
+      this._maxPriorityFeePerGas = maxPriorityFeePerGas;
+      this._feeToken = feeToken;
+      this.operations = operations;
+      this._restoredSignature = signature;
+
+      const tx = new Tip20Transaction(this._coinConfig, txRequest, operations);
+      if (signature) {
+        tx.setSignature(signature);
+      }
+      return tx;
+    } catch (e) {
+      if (e instanceof ParseTransactionError) throw e;
+      throw new ParseTransactionError(`Failed to deserialize TIP-20 transaction: ${e}`);
+    }
+  }
+
+  /**
+   * Decode a single AA call's data back into a Tip20Operation.
+   * Expects the call data to encode transferWithMemo(address, uint256, bytes32).
+   */
+  private decodeCallToOperation(call: { to: Address; data: Hex; value: bigint }): Tip20Operation {
+    const iface = new ethers.utils.Interface(TIP20_TRANSFER_WITH_MEMO_ABI);
+    try {
+      const decoded = iface.decodeFunctionData('transferWithMemo', call.data);
+      const toAddress = decoded[0] as string;
+      const amountUnits = BigInt(decoded[1].toString());
+      const memoBytes32 = decoded[2] as string;
+
+      const amount = tip20UnitsToAmount(amountUnits);
+
+      const stripped = ethers.utils.stripZeros(memoBytes32);
+      const memo = stripped.length > 0 ? ethers.utils.toUtf8String(stripped) : undefined;
+
+      return { token: call.to, to: toAddress, amount, memo };
+    } catch {
+      return { token: call.to, to: call.to, amount: tip20UnitsToAmount(call.value) };
+    }
+  }
+
   /**
    * Build the transaction from configured TIP-20 operations and transaction parameters.
+   * Signs with _sourceKeyPair if it has been set via sign({ key }).
    */
   protected async buildImplementation(): Promise<BaseTransaction> {
     if (
@@ -110,7 +255,24 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
       feeToken: this._feeToken,
     };
 
-    return new Tip20Transaction(this._coinConfig, txRequest, this.operations);
+    const tx = new Tip20Transaction(this._coinConfig, txRequest, this.operations);
+
+    if (this._sourceKeyPair && this._sourceKeyPair.getKeys().prv) {
+      const prv = this._sourceKeyPair.getKeys().prv!;
+      const unsignedHex = await tx.serialize();
+      const msgHash = ethers.utils.keccak256(ethers.utils.arrayify(unsignedHex));
+      const signingKey = new ethers.utils.SigningKey('0x' + prv);
+      const sig = signingKey.signDigest(ethers.utils.arrayify(msgHash));
+      tx.setSignature({
+        r: sig.r as Hex,
+        s: sig.s as Hex,
+        yParity: sig.recoveryParam ?? 0,
+      });
+    } else if (this._restoredSignature) {
+      tx.setSignature(this._restoredSignature);
+    }
+
+    return tx;
   }
 
   /**
@@ -234,12 +396,8 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
       throw new BuildTransactionError(`Invalid amount: ${operation.amount}`);
     }
 
-    // Validate memo byte length (handles multi-byte UTF-8 characters)
-    if (operation.memo) {
-      const memoByteLength = new TextEncoder().encode(operation.memo).length;
-      if (memoByteLength > 32) {
-        throw new BuildTransactionError(`Memo too long: ${memoByteLength} bytes. Maximum 32 bytes.`);
-      }
+    if (operation.memo !== undefined && !isValidMemoId(operation.memo)) {
+      throw new BuildTransactionError(`Invalid memo: must be a non-negative integer`);
     }
   }
 
