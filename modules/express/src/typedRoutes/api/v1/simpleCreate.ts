@@ -2,6 +2,7 @@ import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 
+/** Wallet creation parameters including passphrase, label, and backup key configuration */
 export const SimpleCreateRequestBody = {
   /** Wallet passphrase to encrypt user and backup keys with (required) */
   passphrase: t.string,
@@ -72,7 +73,7 @@ export const SimpleCreateResponse = t.intersection([
  * you must securely back up). Otherwise, backup keychain only contains xpub.
  *
  * @operationId express.v1.wallet.simplecreate
- * @tag express
+ * @tag Express
  */
 export const PostSimpleCreate = httpRoute({
   path: '/api/v1/wallets/simplecreate',
