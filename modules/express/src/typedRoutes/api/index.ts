@@ -2,7 +2,7 @@ import * as t from 'io-ts';
 import { apiSpec } from '@api-ts/io-ts-http';
 import * as express from 'express';
 
-import { GetPing } from './common/ping';
+import { GetPing, GetPingV1 } from './common/ping';
 import { GetPingExpress } from './common/pingExpress';
 import { PostLogin } from './common/login';
 import { PostDecrypt } from './common/decrypt';
@@ -58,8 +58,14 @@ import { PostIsWalletAddress } from './v2/isWalletAddress';
 //
 // As a workaround, only construct expressApi with a single key and add it to the type union at the end
 
+export const ExpressPingV1ApiSpec = apiSpec({
+  'express.ping.v1': {
+    get: GetPingV1,
+  },
+});
+
 export const ExpressPingApiSpec = apiSpec({
-  'express.ping': {
+  'express.v2.ping': {
     get: GetPing,
   },
 });
@@ -322,7 +328,8 @@ export const ExpressV2WalletAccelerateTxApiSpec = apiSpec({
   },
 });
 
-export type ExpressApi = typeof ExpressPingApiSpec &
+export type ExpressApi = typeof ExpressPingV1ApiSpec &
+  typeof ExpressPingApiSpec &
   typeof ExpressPingExpressApiSpec &
   typeof ExpressLoginApiSpec &
   typeof ExpressDecryptApiSpec &
@@ -363,6 +370,7 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressWalletManagementApiSpec;
 
 export const ExpressApi: ExpressApi = {
+  ...ExpressPingV1ApiSpec,
   ...ExpressPingApiSpec,
   ...ExpressPingExpressApiSpec,
   ...ExpressLoginApiSpec,

@@ -7,6 +7,7 @@ export const AcceptShareRequestParams = {
   shareId: t.string,
 };
 
+/** Credentials and configuration for accepting the wallet share */
 export const AcceptShareRequestBody = {
   /**
    * User's password for authentication.
@@ -86,7 +87,7 @@ export const AcceptShareResponse = t.type({
  * - `overrideEncryptedXprv` should only be used for keys received through a separate secure channel
  *
  * @operationId express.v1.wallet.acceptShare
- * @tag express
+ * @tag Express
  */
 export const PostAcceptShare = httpRoute({
   path: '/api/v1/walletshare/{shareId}/acceptShare',
