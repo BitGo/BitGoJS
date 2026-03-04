@@ -1,6 +1,6 @@
 import { erc20, erc20Token, terc20 } from '../account';
 import { BaseCoin, CoinFeature, UnderlyingAsset } from '../base';
-import { AccountNetwork, EthereumNetwork } from '../networks';
+import { AccountNetwork, EthereumNetwork, Networks } from '../networks';
 import { ofcerc20, tofcerc20 } from '../ofc';
 
 // --- Shared config interfaces ---
@@ -89,7 +89,7 @@ export function generateTestErc20Coin(config: Erc20CoinConfig): Readonly<BaseCoi
     config.features,
     config.prefix,
     config.suffix,
-    config.network
+    config.network ?? Networks.test.hoodi //default testnet eth network for new tokens
   );
 
   if (config.skipOfc) return [onChain];

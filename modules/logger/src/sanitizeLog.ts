@@ -15,7 +15,7 @@ const SENSITIVE_KEYS = new Set([
   '_token',
 ]);
 
-const BEARER_V2_PATTERN = /^v2x[a-f0-9]{32,}$/i;
+const SENSITIVE_PREFIXES = ['v2x', 'xprv'];
 
 /**
  * Checks if a key is sensitive (case-insensitive)
@@ -25,10 +25,30 @@ function isSensitiveKey(key: string): boolean {
 }
 
 /**
- * Checks if a value matches the bearer v2 token pattern
+ * Checks if a string value is sensitive based on known prefixes.
+ * Unlike isSensitiveKey (which checks property names), this identifies
+ * sensitive data by recognizable content patterns — useful when there
+ * is no key context (e.g. top-level strings, array elements).
  */
-function isBearerV2Token(value: unknown): boolean {
-  return typeof value === 'string' && BEARER_V2_PATTERN.test(value);
+function isSensitiveStringValue(s: string): boolean {
+  return SENSITIVE_PREFIXES.some((prefix) => s.startsWith(prefix));
+}
+
+export function getErrorData(error: unknown): unknown {
+  if (!(error && error instanceof Error)) {
+    return error;
+  }
+
+  const errorData: Record<string, unknown> = {
+    name: error.name,
+  };
+
+  for (const key of Object.getOwnPropertyNames(error)) {
+    const value = (error as unknown as Record<string, unknown>)[key];
+    errorData[key] = value instanceof Error ? getErrorData(value) : value;
+  }
+
+  return errorData;
 }
 
 /**
@@ -36,14 +56,21 @@ function isBearerV2Token(value: unknown): boolean {
  * Handles circular references and nested structures
  */
 export function sanitize(obj: unknown, seen = new WeakSet<Record<string, unknown>>(), depth = 0): unknown {
-  // Prevent infinite recursion
-  if (depth > 50) {
+  if (depth > 25) {
     return '[Max Depth Exceeded]';
   }
 
-  // Handle primitives
   if (obj === null || obj === undefined) {
     return obj;
+  }
+
+  // Handle BigInt (JSON.stringify(1n) throws TypeError)
+  if (typeof obj === 'bigint') {
+    return obj.toString();
+  }
+
+  if (typeof obj === 'string') {
+    return isSensitiveStringValue(obj) ? '<REMOVED>' : obj;
   }
 
   if (typeof obj !== 'object') {
@@ -62,16 +89,21 @@ export function sanitize(obj: unknown, seen = new WeakSet<Record<string, unknown
     return obj.map((item) => sanitize(item, seen, depth + 1));
   }
 
+  // Handle Date objects
+  if (obj instanceof Date) {
+    return isNaN(obj.getTime()) ? '[Invalid Date]' : obj.toISOString();
+  }
+
   // Handle objects
   const sanitized: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    if (isSensitiveKey(key) || isBearerV2Token(value)) {
+    if (isSensitiveKey(key) || (typeof value === 'string' && isSensitiveStringValue(value))) {
       sanitized[key] = '<REMOVED>';
-    } else if (typeof value === 'object' && value !== null) {
-      sanitized[key] = sanitize(value, seen, depth + 1);
+    } else if (value instanceof Error) {
+      sanitized[key] = sanitize(getErrorData(value), seen, depth + 1);
     } else {
-      sanitized[key] = value;
+      sanitized[key] = sanitize(value, seen, depth + 1);
     }
   }
 
