@@ -70,7 +70,7 @@ const debug = debugLib('bitgo:express');
 const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version}`;
 
 function handlePing(
-  req: ExpressApiRouteRequest<'express.ping', 'get'>,
+  req: ExpressApiRouteRequest<'express.v2.ping', 'get'>,
   res: express.Response,
   next: express.NextFunction
 ) {
@@ -1647,7 +1647,8 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   const router = createExpressRouter();
   app.use(router);
 
-  router.get('express.ping', [prepareBitGo(config), typedPromiseWrapper(handlePing)]);
+  router.get('express.ping.v1', [prepareBitGo(config), typedPromiseWrapper(handlePing)]);
+  router.get('express.v2.ping', [prepareBitGo(config), typedPromiseWrapper(handlePing)]);
   router.get('express.pingExpress', [typedPromiseWrapper(handlePingExpress)]);
 
   // auth
