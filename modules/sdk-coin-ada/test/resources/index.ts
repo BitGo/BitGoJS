@@ -375,6 +375,20 @@ export const testnetUTXO = {
     tx_index: 0,
     value: 1000000,
   },
+  UTXO_TOKEN: {
+    tx_hash: 'a824b6a13e2649c7b4ef27277c23f588a67a55618b957d36320a98ac71ed4af5',
+    tx_index: 0,
+    value: 5000000,
+    asset_list: [
+      {
+        policy_id: '2533cca6eb42076e144e9f2772c390dece9fce173bc38c72294b3924',
+        asset_name: 'water',
+        encoded_asset_name: '5741544552',
+        quantity: '111',
+        fingerprint: 'asset1t9uhe7a7lkjrezseduvwvnwwn38hfm3s',
+      },
+    ],
+  },
 };
 
 const ZeroUTXO = {
@@ -427,12 +441,23 @@ const TwoUTXO = {
   ],
 };
 
+const ADAAndTokenUTXOs = {
+  status: 200,
+  body: [
+    {
+      balance: testnetUTXO.UTXO_1.value + testnetUTXO.UTXO_TOKEN.value,
+      utxo_set: [testnetUTXO.UTXO_1, testnetUTXO.UTXO_TOKEN],
+    },
+  ],
+};
+
 const addressInfoResponse = {
   ZeroUTXO,
   OneUTXO,
   OneUTXO2,
   TwoUTXO,
   OneSmallUTXO,
+  ADAAndTokenUTXOs,
 };
 
 const tipInfoResponse = {

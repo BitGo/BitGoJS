@@ -393,10 +393,32 @@ export class Ada extends BaseCoin {
       throw new Error('Did not find address with funds to recover.');
     }
 
+    // Aggregate token assets from all UTxOs into a fingerprint-keyed map for the builder
+    const aggregatedAssetList: Record<string, { policy_id: string; asset_name: string; quantity: string }> = {};
+    for (const utxo of utxoSet) {
+      for (const asset of utxo.asset_list ?? []) {
+        const fp = asset.fingerprint as string;
+        if (aggregatedAssetList[fp]) {
+          aggregatedAssetList[fp].quantity = (
+            BigInt(aggregatedAssetList[fp].quantity) + BigInt(asset.quantity)
+          ).toString();
+        } else {
+          aggregatedAssetList[fp] = {
+            policy_id: asset.policy_id,
+            asset_name: asset.encoded_asset_name ?? asset.asset_name,
+            quantity: asset.quantity,
+          };
+        }
+      }
+    }
+
     // first build the unsigned txn
     const tipAbsSlot = await this.getChainTipInfo();
     const txBuilder = this.getBuilder().getTransferBuilder();
-    txBuilder.changeAddress(params.recoveryDestination, balance.toString());
+    txBuilder.changeAddress(params.recoveryDestination, balance.toString(), aggregatedAssetList);
+    if (Object.keys(aggregatedAssetList).length > 0) {
+      txBuilder.isTokenTransaction();
+    }
     for (const utxo of utxoSet) {
       txBuilder.input({ transaction_id: utxo.tx_hash, transaction_index: utxo.tx_index });
     }
