@@ -6,7 +6,7 @@ import { coins } from '@bitgo/statics';
 import { TransferBuilder, Transaction } from '../../../../src';
 import { CantonTransferRequest } from '../../../../src/lib/iface';
 
-import { TransferObj, TrasferPrepareResponse } from '../../../resources';
+import { CantonTokenTransferPrepareResponse, TransferObj, TrasferPrepareResponse } from '../../../resources';
 
 describe('Transfer Builder', () => {
   it('should get the transfer request object', function () {
@@ -14,6 +14,28 @@ describe('Transfer Builder', () => {
     const transferTx = new Transaction(coins.get('tcanton'));
     txBuilder.initBuilder(transferTx);
     txBuilder.setTransaction(TrasferPrepareResponse);
+    const { commandId, senderPartyId, receiverPartyId, amount, sendOneStep, expiryEpoch } = TransferObj;
+    txBuilder
+      .commandId(commandId)
+      .senderId(senderPartyId)
+      .receiverId(receiverPartyId)
+      .amount(amount)
+      .sendOneStep(sendOneStep)
+      .expiryEpoch(expiryEpoch);
+    const requestObj: CantonTransferRequest = txBuilder.toRequestObject();
+    should.exist(requestObj);
+    assert.equal(requestObj.commandId, commandId);
+    assert.equal(requestObj.senderPartyId, senderPartyId);
+    assert.equal(requestObj.receiverPartyId, receiverPartyId);
+    assert.equal(requestObj.amount, amount);
+    assert.equal(requestObj.expiryEpoch, expiryEpoch);
+  });
+
+  it('should get the token transfer request object', function () {
+    const txBuilder = new TransferBuilder(coins.get('tcanton'));
+    const transferTx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(transferTx);
+    txBuilder.setTransaction(CantonTokenTransferPrepareResponse);
     const { commandId, senderPartyId, receiverPartyId, amount, sendOneStep, expiryEpoch } = TransferObj;
     txBuilder
       .commandId(commandId)

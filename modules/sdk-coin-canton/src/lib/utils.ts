@@ -90,245 +90,279 @@ export class Utils implements BaseUtils {
    */
   parseRawCantonTransactionData(rawData: string, txType: TransactionType): PreparedTxnParsedInfo {
     const decodedData = this.decodePreparedTransaction(rawData);
+    const nodes = decodedData.transaction?.nodes ?? [];
+    const getField = (fields: RecordField[], label: string) => fields.find((f) => f.label === label)?.value?.sum;
+
     let sender = '';
     let receiver = '';
     let amount = '';
     let memoId: string | undefined;
     let instrumentId: string | undefined;
     let instrumentAdmin: string | undefined;
-    let token: string | undefined;
-    let preApprovalNode: RecordField[] = [];
-    let tokenPreApprovalNode: RecordField[] = [];
-    let transferNode: RecordField[] = [];
-    let transferAcceptRejectNode: RecordField[] = [];
-    let tokenTransferAcceptRejectNode: RecordField[] = [];
-    let withdrawnNode: RecordField[] = [];
-    let tokenWithdrawnNode: RecordField[] = [];
-    const nodes = decodedData.transaction?.nodes;
 
-    nodes?.forEach((node) => {
-      const versionedNode = node.versionedNode;
-      if (!versionedNode || versionedNode.oneofKind !== 'v1') return;
-      const v1Node = versionedNode.v1;
-      const nodeType = v1Node.nodeType;
-      if (nodeType.oneofKind !== 'create') return;
-      const createNode = nodeType.create;
-      const template = createNode.templateId;
-      const argSum = createNode.argument?.sum;
-      if (!argSum || argSum.oneofKind !== 'record') return;
-      const fields = argSum.record?.fields;
-      if (!fields) return;
-      if (
-        template?.entityName === 'TransferPreapprovalProposal' &&
-        !preApprovalNode.length &&
-        txType === TransactionType.OneStepPreApproval
-      ) {
-        preApprovalNode = fields;
+    /**
+     * Returns the argument fields of the first create node matching the given entity name.
+     */
+    const findCreateNodeFields = (entityName: string): RecordField[] | undefined => {
+      for (const node of nodes) {
+        const vn = node.versionedNode;
+        if (!vn || vn.oneofKind !== 'v1') continue;
+        const nt = vn.v1.nodeType;
+        if (nt.oneofKind !== 'create') continue;
+        if (nt.create.templateId?.entityName !== entityName) continue;
+        const argSum = nt.create.argument?.sum;
+        if (!argSum || argSum.oneofKind !== 'record') continue;
+        const fields = argSum.record?.fields;
+        if (fields) return fields;
       }
-      if (
-        template?.entityName === 'TransferPreapproval' &&
-        !tokenPreApprovalNode.length &&
-        txType === TransactionType.OneStepPreApproval
-      ) {
-        tokenPreApprovalNode = fields;
-      }
-      if (
-        template?.entityName === 'Amulet' &&
-        !transferAcceptRejectNode.length &&
-        (txType === TransactionType.TransferAccept || txType === TransactionType.TransferReject)
-      ) {
-        transferAcceptRejectNode = fields;
-      }
-      if (
-        (template?.entityName === 'ExecutedTransfer' || template?.entityName === 'RejectedTransfer') &&
-        !tokenTransferAcceptRejectNode.length &&
-        (txType === TransactionType.TransferAccept || txType === TransactionType.TransferReject)
-      ) {
-        const transferField = fields.find((f) => f.label === 'transfer');
-        const transferSum = transferField?.value?.sum;
-        if (transferSum?.oneofKind === 'record') {
-          tokenTransferAcceptRejectNode = transferSum.record?.fields ?? [];
-        }
-      }
-      if (
-        template?.entityName === 'Amulet' &&
-        !withdrawnNode.length &&
-        txType === TransactionType.TransferOfferWithdrawn
-      ) {
-        withdrawnNode = fields;
-      }
-      if (
-        template?.entityName === 'Holding' &&
-        !tokenWithdrawnNode.length &&
-        txType === TransactionType.TransferOfferWithdrawn
-      ) {
-        tokenWithdrawnNode = fields;
-      }
-    });
+      return undefined;
+    };
 
-    nodes?.forEach((node) => {
-      const versionedNode = node.versionedNode;
-      if (!versionedNode || versionedNode.oneofKind !== 'v1') return;
-      const v1Node = versionedNode.v1;
-      const nodeType = v1Node.nodeType;
-      if (nodeType.oneofKind !== 'exercise') return;
-      const exerciseNode = nodeType.exercise;
-      const choiceId = exerciseNode.choiceId;
-      if (!choiceId || choiceId !== 'TransferFactory_Transfer') return;
-      const argSum = exerciseNode.chosenValue?.sum;
-      if (!argSum || argSum.oneofKind !== 'record') return;
-      const fields = argSum.record?.fields;
-      if (!fields) return;
-      transferNode = fields;
-    });
+    /**
+     * Returns the chosenValue fields of the first exercise node matching the given choiceId.
+     */
+    const findExerciseNodeFields = (choiceId: string): RecordField[] | undefined => {
+      for (const node of nodes) {
+        const vn = node.versionedNode;
+        if (!vn || vn.oneofKind !== 'v1') continue;
+        const nt = vn.v1.nodeType;
+        if (nt.oneofKind !== 'exercise') continue;
+        if (nt.exercise.choiceId !== choiceId) continue;
+        const argSum = nt.exercise.chosenValue?.sum;
+        if (!argSum || argSum.oneofKind !== 'record') continue;
+        const fields = argSum.record?.fields;
+        if (fields) return fields;
+      }
+      return undefined;
+    };
 
-    const getField = (fields: RecordField[], label: string) => fields.find((f) => f.label === label)?.value?.sum;
+    /**
+     * Returns the first acting party of the first exercise node matching the given choiceId.
+     */
+    const findExerciseActingParty = (choiceId: string): string | undefined => {
+      for (const node of nodes) {
+        const vn = node.versionedNode;
+        if (!vn || vn.oneofKind !== 'v1') continue;
+        const nt = vn.v1.nodeType;
+        if (nt.oneofKind !== 'exercise') continue;
+        if (nt.exercise.choiceId !== choiceId) continue;
+        return nt.exercise.actingParties[0];
+      }
+      return undefined;
+    };
 
-    if (preApprovalNode.length) {
-      const receiverData = getField(preApprovalNode, 'receiver');
+    /**
+     * Extracts sender, receiver, amount, and instrument fields from a transfer record.
+     * Canton coin transfers and cbtc use instrumentId.admin; regular token transfers use instrumentIdentifier.source.
+     */
+    const extractFromTransferRecord = (
+      transferRecord: RecordField[],
+      instrumentFieldName: string,
+      instrumentAdminFieldName: string
+    ): void => {
+      const senderData = getField(transferRecord, 'sender');
+      if (senderData?.oneofKind === 'party') sender = senderData.party ?? '';
+      const receiverData = getField(transferRecord, 'receiver');
       if (receiverData?.oneofKind === 'party') receiver = receiverData.party ?? '';
-      const providerData = getField(preApprovalNode, 'provider');
-      if (providerData?.oneofKind === 'party') sender = providerData.party ?? '';
-      amount = '0';
-    } else if (tokenPreApprovalNode.length) {
-      const receiverData = getField(tokenPreApprovalNode, 'receiver');
-      if (receiverData?.oneofKind === 'party') receiver = receiverData.party ?? '';
-      const operatorData = getField(tokenPreApprovalNode, 'operator');
-      if (operatorData?.oneofKind === 'party') sender = operatorData.party ?? '';
-      amount = '0';
-      const instrumentAdminData = getField(tokenPreApprovalNode, 'instrumentAdmin');
-      if (instrumentAdminData?.oneofKind === 'party') instrumentAdmin = instrumentAdminData.party ?? '';
-      const allowancesData = getField(tokenPreApprovalNode, 'instrumentAllowances');
-      if (allowancesData?.oneofKind === 'list') {
-        // for the same instrument admin, if multiple tokens are supported then we can enable all of them,
-        // but we won't be doing that for now
-        const firstAllowance = allowancesData.list?.elements?.[0]?.sum;
-        if (firstAllowance?.oneofKind === 'record') {
-          const allowanceFields = firstAllowance.record?.fields ?? [];
-          const idData = getField(allowanceFields, 'id');
-          if (idData?.oneofKind === 'text') {
-            instrumentId = idData.text ?? '';
-          }
-        }
+      const amountData = getField(transferRecord, 'amount');
+      if (amountData?.oneofKind === 'numeric') amount = amountData.numeric ?? '';
+      const instrumentField = getField(transferRecord, instrumentFieldName);
+      if (instrumentField?.oneofKind === 'record') {
+        const instrumentFields = instrumentField.record?.fields ?? [];
+        const adminData = getField(instrumentFields, instrumentAdminFieldName);
+        if (adminData?.oneofKind === 'party') instrumentAdmin = adminData.party ?? '';
+        const idData = getField(instrumentFields, 'id');
+        if (idData?.oneofKind === 'text') instrumentId = idData.text ?? '';
       }
-    } else if (transferNode.length) {
-      const transferField = transferNode.find((f) => f.label === 'transfer');
-      const transferSum = transferField?.value?.sum;
-      if (transferSum && transferSum.oneofKind === 'record') {
-        const transferRecord = transferSum.record?.fields;
-        if (transferRecord?.length) {
-          const senderData = getField(transferRecord, 'sender');
-          if (senderData?.oneofKind === 'party') sender = senderData.party ?? '';
+    };
 
-          const receiverData = getField(transferRecord, 'receiver');
+    switch (txType) {
+      case TransactionType.OneStepPreApproval: {
+        // Canton coin: TransferPreapprovalProposal create node → provider=sender, receiver
+        const coinFields = findCreateNodeFields('TransferPreapprovalProposal');
+        if (coinFields) {
+          const providerData = getField(coinFields, 'provider');
+          if (providerData?.oneofKind === 'party') sender = providerData.party ?? '';
+          const receiverData = getField(coinFields, 'receiver');
           if (receiverData?.oneofKind === 'party') receiver = receiverData.party ?? '';
-
-          const amountData = getField(transferRecord, 'amount');
-          if (amountData?.oneofKind === 'numeric') amount = amountData.numeric ?? '';
-
-          const instrumentField = getField(transferRecord, 'instrumentId');
-          if (instrumentField?.oneofKind === 'record') {
-            const instrumentFields = instrumentField.record?.fields ?? [];
-
-            const adminData = getField(instrumentFields, 'admin');
-            if (adminData?.oneofKind === 'party') {
-              instrumentAdmin = adminData.party ?? '';
-            }
-
-            const idData = getField(instrumentFields, 'id');
-            if (idData?.oneofKind === 'text') {
-              instrumentId = idData.text ?? '';
+          amount = '0';
+          break;
+        }
+        // Token: TransferPreapproval create node → operator=sender, receiver, instrumentAdmin, instrumentAllowances
+        const tokenFields = findCreateNodeFields('TransferPreapproval');
+        if (tokenFields) {
+          const operatorData = getField(tokenFields, 'operator');
+          if (operatorData?.oneofKind === 'party') sender = operatorData.party ?? '';
+          const receiverData = getField(tokenFields, 'receiver');
+          if (receiverData?.oneofKind === 'party') receiver = receiverData.party ?? '';
+          amount = '0';
+          const instrumentAdminData = getField(tokenFields, 'instrumentAdmin');
+          if (instrumentAdminData?.oneofKind === 'party') instrumentAdmin = instrumentAdminData.party ?? '';
+          const allowancesData = getField(tokenFields, 'instrumentAllowances');
+          if (allowancesData?.oneofKind === 'list') {
+            // for the same instrument admin, if multiple tokens are supported then we can enable all of them,
+            // but we won't be doing that for now
+            const firstAllowance = allowancesData.list?.elements?.[0]?.sum;
+            if (firstAllowance?.oneofKind === 'record') {
+              const allowanceFields = firstAllowance.record?.fields ?? [];
+              const idData = getField(allowanceFields, 'id');
+              if (idData?.oneofKind === 'text') instrumentId = idData.text ?? '';
             }
           }
+        }
+        break;
+      }
 
-          const metaField = getField(transferRecord, 'meta');
-          if (metaField?.oneofKind === 'record') {
-            const metaFields = metaField.record?.fields;
-            if (metaFields && metaFields.length) {
-              const valuesField = getField(metaFields, 'values');
+      case TransactionType.TransferAccept: {
+        // Canton coin: Amulet create node → dso=sender, owner=receiver, amount.initialAmount
+        const amuletFields = findCreateNodeFields('Amulet');
+        if (amuletFields) {
+          const dsoData = getField(amuletFields, 'dso');
+          if (dsoData?.oneofKind === 'party') sender = dsoData.party ?? '';
+          const ownerData = getField(amuletFields, 'owner');
+          if (ownerData?.oneofKind === 'party') receiver = ownerData.party ?? '';
+          const amountField = getField(amuletFields, 'amount');
+          if (amountField?.oneofKind === 'record') {
+            const initialAmountData = getField(amountField.record?.fields ?? [], 'initialAmount');
+            if (initialAmountData?.oneofKind === 'numeric') amount = initialAmountData.numeric ?? '';
+          }
+          break;
+        }
+        // Regular token (non-cbtc): ExecutedTransfer create node
+        // → transfer.{sender, receiver, amount, instrumentIdentifier.{source=admin, id}}
+        const executedTransferFields = findCreateNodeFields('ExecutedTransfer');
+        if (executedTransferFields) {
+          const transferSum = getField(executedTransferFields, 'transfer');
+          if (transferSum?.oneofKind === 'record') {
+            extractFromTransferRecord(transferSum.record?.fields ?? [], 'instrumentIdentifier', 'source');
+          }
+          break;
+        }
+        // cbtc token fallback: TransferRule_DirectTransfer exercise node
+        // → transfer.{sender, receiver, amount, instrumentId.{admin, id}}
+        const directTransferFields = findExerciseNodeFields('TransferRule_DirectTransfer');
+        if (directTransferFields) {
+          const transferSum = getField(directTransferFields, 'transfer');
+          if (transferSum?.oneofKind === 'record') {
+            extractFromTransferRecord(transferSum.record?.fields ?? [], 'instrumentId', 'admin');
+          }
+        }
+        break;
+      }
+
+      case TransactionType.TransferReject: {
+        // Canton coin: Amulet create node → dso=sender, owner=receiver, amount.initialAmount
+        const amuletFields = findCreateNodeFields('Amulet');
+        if (amuletFields) {
+          const dsoData = getField(amuletFields, 'dso');
+          if (dsoData?.oneofKind === 'party') sender = dsoData.party ?? '';
+          const ownerData = getField(amuletFields, 'owner');
+          if (ownerData?.oneofKind === 'party') receiver = ownerData.party ?? '';
+          const amountField = getField(amuletFields, 'amount');
+          if (amountField?.oneofKind === 'record') {
+            const initialAmountData = getField(amountField.record?.fields ?? [], 'initialAmount');
+            if (initialAmountData?.oneofKind === 'numeric') amount = initialAmountData.numeric ?? '';
+          }
+          break;
+        }
+        // Regular token (non-cbtc): RejectedTransfer create node
+        // → transfer.{sender, receiver, amount, instrumentIdentifier.{source=admin, id}}
+        const rejectedTransferFields = findCreateNodeFields('RejectedTransfer');
+        if (rejectedTransferFields) {
+          const transferSum = getField(rejectedTransferFields, 'transfer');
+          if (transferSum?.oneofKind === 'record') {
+            extractFromTransferRecord(transferSum.record?.fields ?? [], 'instrumentIdentifier', 'source');
+          }
+          break;
+        }
+        // cbtc token fallback: Holding create node (owner=sender, instrument, amount)
+        // + TransferInstruction_Reject exercise (actingParties[0]=receiver who rejected)
+        const holdingFields = findCreateNodeFields('Holding');
+        if (holdingFields) {
+          const ownerData = getField(holdingFields, 'owner');
+          if (ownerData?.oneofKind === 'party') sender = ownerData.party ?? '';
+          const amountData = getField(holdingFields, 'amount');
+          if (amountData?.oneofKind === 'numeric') amount = amountData.numeric ?? '';
+          const instrumentData = getField(holdingFields, 'instrument');
+          if (instrumentData?.oneofKind === 'record') {
+            const instrumentFields = instrumentData.record?.fields ?? [];
+            const sourceData = getField(instrumentFields, 'source');
+            if (sourceData?.oneofKind === 'party') instrumentAdmin = sourceData.party ?? '';
+            const idData = getField(instrumentFields, 'id');
+            if (idData?.oneofKind === 'text') instrumentId = idData.text ?? '';
+          }
+          const receiverParty = findExerciseActingParty('TransferInstruction_Reject');
+          if (receiverParty) receiver = receiverParty;
+        }
+        break;
+      }
+
+      case TransactionType.TransferOfferWithdrawn: {
+        // Canton coin: Amulet create node → owner=sender=receiver, amount.initialAmount
+        const amuletFields = findCreateNodeFields('Amulet');
+        if (amuletFields) {
+          const ownerData = getField(amuletFields, 'owner');
+          if (ownerData?.oneofKind === 'party') {
+            receiver = ownerData.party ?? '';
+            sender = receiver;
+          }
+          const amountField = getField(amuletFields, 'amount');
+          if (amountField?.oneofKind === 'record') {
+            const initialAmountData = getField(amountField.record?.fields ?? [], 'initialAmount');
+            if (initialAmountData?.oneofKind === 'numeric') amount = initialAmountData.numeric ?? '';
+          }
+          break;
+        }
+        // Token: Holding create node → owner=sender=receiver, instrument.{source=admin, id}, amount
+        const holdingFields = findCreateNodeFields('Holding');
+        if (holdingFields) {
+          const ownerData = getField(holdingFields, 'owner');
+          if (ownerData?.oneofKind === 'party') {
+            receiver = ownerData.party ?? '';
+            sender = receiver;
+          }
+          const amountData = getField(holdingFields, 'amount');
+          if (amountData?.oneofKind === 'numeric') amount = amountData.numeric ?? '';
+          const instrumentData = getField(holdingFields, 'instrument');
+          if (instrumentData?.oneofKind === 'record') {
+            const instrumentFields = instrumentData.record?.fields ?? [];
+            const sourceData = getField(instrumentFields, 'source');
+            if (sourceData?.oneofKind === 'party') instrumentAdmin = sourceData.party ?? '';
+            const idData = getField(instrumentFields, 'id');
+            if (idData?.oneofKind === 'text') instrumentId = idData.text ?? '';
+          }
+        }
+        break;
+      }
+
+      default: {
+        // Initial transfer (1-step and 2-step, coin and token): TransferFactory_Transfer exercise node
+        // → transfer.{sender, receiver, amount, instrumentId.{admin, id}, meta}
+        const transferFields = findExerciseNodeFields('TransferFactory_Transfer');
+        if (transferFields) {
+          const transferSum = getField(transferFields, 'transfer');
+          if (transferSum?.oneofKind === 'record') {
+            const transferRecord = transferSum.record?.fields ?? [];
+            extractFromTransferRecord(transferRecord, 'instrumentId', 'admin');
+            const metaField = getField(transferRecord, 'meta');
+            if (metaField?.oneofKind === 'record') {
+              const valuesField = getField(metaField.record?.fields ?? [], 'values');
               if (valuesField?.oneofKind === 'textMap') {
-                const entries = valuesField.textMap?.entries ?? [];
-                const memoEntry = entries.find((e) => e.key === 'splice.lfdecentralizedtrust.org/reason');
+                const memoEntry = valuesField.textMap?.entries.find(
+                  (e) => e.key === 'splice.lfdecentralizedtrust.org/reason'
+                );
                 if (memoEntry) {
                   const memoValue = memoEntry?.value?.sum;
-                  if (memoValue?.oneofKind === 'text') {
-                    memoId = memoValue.text;
-                  }
+                  if (memoValue?.oneofKind === 'text') memoId = memoValue.text;
                 }
               }
             }
           }
         }
-      }
-    } else if (transferAcceptRejectNode.length) {
-      const dsoData = getField(transferAcceptRejectNode, 'dso');
-      if (dsoData?.oneofKind === 'party') sender = dsoData.party ?? '';
-      const ownerData = getField(transferAcceptRejectNode, 'owner');
-      if (ownerData?.oneofKind === 'party') receiver = ownerData.party ?? '';
-      const amountField = getField(transferAcceptRejectNode, 'amount');
-      if (amountField && amountField.oneofKind === 'record') {
-        const amountRecord = amountField.record?.fields;
-        if (amountRecord?.length) {
-          const initialAmountData = getField(amountRecord, 'initialAmount');
-          if (initialAmountData?.oneofKind === 'numeric') amount = initialAmountData.numeric ?? '';
-        }
-      }
-    } else if (tokenTransferAcceptRejectNode.length) {
-      const senderData = getField(tokenTransferAcceptRejectNode, 'sender');
-      if (senderData?.oneofKind === 'party') sender = senderData.party ?? '';
-      const receiverData = getField(tokenTransferAcceptRejectNode, 'receiver');
-      if (receiverData?.oneofKind === 'party') receiver = receiverData.party ?? '';
-      const amountData = getField(tokenTransferAcceptRejectNode, 'amount');
-      if (amountData?.oneofKind === 'numeric') amount = amountData.numeric ?? '';
-      const instrumentSum = getField(tokenTransferAcceptRejectNode, 'instrumentIdentifier');
-      if (instrumentSum?.oneofKind === 'record') {
-        const instrumentFields = instrumentSum.record?.fields ?? [];
-        const adminData = getField(instrumentFields, 'source');
-        if (adminData?.oneofKind === 'party') {
-          instrumentAdmin = adminData.party ?? '';
-        }
-        const idData = getField(instrumentFields, 'id');
-        if (idData?.oneofKind === 'text') {
-          instrumentId = idData.text ?? '';
-        }
-      }
-    } else if (withdrawnNode.length) {
-      const ownerData = getField(withdrawnNode, 'owner');
-      if (ownerData?.oneofKind === 'party') {
-        receiver = ownerData.party ?? '';
-        sender = receiver;
-      }
-      const amountField = getField(withdrawnNode, 'amount');
-      if (amountField?.oneofKind === 'record') {
-        const amountFields = amountField.record?.fields ?? [];
-        const initialAmountData = getField(amountFields, 'initialAmount');
-        if (initialAmountData?.oneofKind === 'numeric') {
-          amount = initialAmountData.numeric ?? '';
-        }
-      }
-    } else if (tokenWithdrawnNode.length) {
-      const ownerData = getField(tokenWithdrawnNode, 'owner');
-      if (ownerData?.oneofKind === 'party') {
-        receiver = ownerData.party ?? '';
-        sender = receiver;
-      }
-      const amountData = getField(tokenWithdrawnNode, 'amount');
-      if (amountData?.oneofKind === 'numeric') {
-        amount = amountData.numeric ?? '';
-      }
-      const instrumentData = getField(tokenWithdrawnNode, 'instrument');
-      if (instrumentData?.oneofKind === 'record') {
-        const instrumentFields = instrumentData.record?.fields ?? [];
-        const adminData = getField(instrumentFields, 'source');
-        if (adminData?.oneofKind === 'party') {
-          instrumentAdmin = adminData.party ?? '';
-        }
-        const idData = getField(instrumentFields, 'id');
-        if (idData?.oneofKind === 'text') {
-          instrumentId = idData.text ?? '';
-        }
+        break;
       }
     }
+
     if (!sender || !receiver || !amount) {
       const missingFields: string[] = [];
       if (!sender) missingFields.push('sender');
@@ -346,8 +380,7 @@ export class Utils implements BaseUtils {
       parsedData.memoId = memoId;
     }
     if (instrumentId && instrumentAdmin) {
-      token = this.findTokenNameByContractAddress(`${instrumentAdmin}:${instrumentId}`);
-      parsedData.token = token;
+      parsedData.token = this.findTokenNameByContractAddress(`${instrumentAdmin}:${instrumentId}`);
     }
     return parsedData;
   }
