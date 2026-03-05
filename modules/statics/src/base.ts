@@ -3616,6 +3616,10 @@ export enum UnderlyingAsset {
   'canton:cbtc' = 'canton:cbtc',
   'canton:usdxlr' = 'canton:usdxlr',
 
+  // Tempo mainnet tokens
+  'tempo:pathusd' = 'tempo:pathusd',
+  'tempo:usdc' = 'tempo:usdc',
+
   // Tempo testnet tokens
   'ttempo:pathusd' = 'ttempo:pathusd',
   'ttempo:alphausd' = 'ttempo:alphausd',
