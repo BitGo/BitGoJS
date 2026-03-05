@@ -102,4 +102,37 @@ export const adaTokens = [
     UnderlyingAsset['ada:night'],
     ADA_TOKEN_FEATURES
   ),
+  adaToken(
+    '81ba4af5-5a5d-45a3-9b8a-f9e48a5abbef',
+    'ada:lcc',
+    'Lazy Cat Coin',
+    0,
+    '03c2eb4f942703fa965df42ba8ac57e27c5e86802d058da63f4d888b4c4343',
+    'LCC',
+    'asset1pqp0lsp4q8rhx9vpfpw5khfj03v8puda266qrd',
+    UnderlyingAsset['ada:lcc'],
+    ADA_TOKEN_FEATURES
+  ),
+  adaToken(
+    'd06d31a3-f5c9-4e2f-96bb-9657e658f581',
+    'ada:awlf',
+    'AWLF',
+    6,
+    'a64ea329436e48925c5e41a95721304fda387bf1dd06efd66e47423141574c46',
+    'AWLF',
+    'asset18fnfgvwhwxasyamptac69t93cxvjfszsqvkamq',
+    UnderlyingAsset['ada:awlf'],
+    ADA_TOKEN_FEATURES
+  ),
+  adaToken(
+    '97360499-96fb-485d-a83a-cadd1509f311',
+    'ada:asnek',
+    'ASNEK',
+    6,
+    'fe38ef97888dfde0292b7d2ed103543ecf92a419a29634f513a1d71f41534e454b',
+    'ASNEK',
+    'asset19e9dq59euafqysqugza92jdvwfx882gt2hq5rm',
+    UnderlyingAsset['ada:asnek'],
+    ADA_TOKEN_FEATURES
+  ),
 ];

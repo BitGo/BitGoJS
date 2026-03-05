@@ -3717,6 +3717,28 @@ export const ofcErc20Coins = [
     [CoinFeature.STABLECOIN]
   ),
   ofcerc20('dd95c7b9-2be8-4471-920d-40e1fd583bf3', 'ofceth:grtx', 'GreatX', 6, underlyingAssetForSymbol('eth:grtx')),
+  ofcerc20('4edef256-f213-4635-8157-61697c5b9e83', 'ofceth:shvon', 'SHVon', 18, underlyingAssetForSymbol('eth:shvon')),
+  ofcerc20(
+    'f3344177-236f-4dec-9c6a-1889dd3c7de5',
+    'ofceth:pt-cusdo-28may2026',
+    'PT-cUSDO-28MAY2026',
+    18,
+    underlyingAssetForSymbol('eth:pt-cusdo-28may2026')
+  ),
+  ofcerc20(
+    '23a5731a-e171-4079-80c4-4f165d0a59fc',
+    'ofceth:usd1cx',
+    'USD1cx',
+    18,
+    underlyingAssetForSymbol('eth:usd1cx')
+  ),
+  ofcerc20(
+    '0d2292d7-43fb-48fe-a917-e5cd89add370',
+    'ofceth:ctusd1cx',
+    'ctUSD1cx',
+    18,
+    underlyingAssetForSymbol('eth:ctusd1cx')
+  ),
   // New Base OFC tokens
   ofcerc20(
     'b096690d-92fd-4f02-83d6-e26a1ff393f3',

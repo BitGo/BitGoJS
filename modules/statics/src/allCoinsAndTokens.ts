@@ -3123,6 +3123,42 @@ export const allCoinsAndTokens = [
     Networks.test.basechain
   ),
   erc20Token(
+    '99f6ea7f-0f64-4b15-964e-c52c68a91460',
+    'tbaseeth:xusd',
+    'StraitsX USD',
+    6,
+    '0xe333e7754a2dc1e020a162ecab019254b9dab653',
+    UnderlyingAsset['tbaseeth:xusd'],
+    Networks.test.basechain
+  ),
+  erc20Token(
+    '04f00953-01ec-4e68-91b3-a11bed12203b',
+    'tbaseeth:xsgd',
+    'StraitsX SGD',
+    6,
+    '0xd8b130b01134c1d0f6ff1a9fa85142d7c1880933',
+    UnderlyingAsset['tbaseeth:xsgd'],
+    Networks.test.basechain
+  ),
+  erc20Token(
+    '4c05151a-957c-4e88-a280-d6023d831334',
+    'tbaseeth:usd1cx',
+    'USD1 Concrete Custodial Asset',
+    18,
+    '0xb988bcb8059fe2c5e3e3a09fb4873d0103775df3',
+    UnderlyingAsset['tbaseeth:usd1cx'],
+    Networks.test.basechain
+  ),
+  erc20Token(
+    '58d123bb-6ac9-4ad4-9742-c887447948b7',
+    'tbaseeth:ctusd1cx',
+    'Concrete USD1cx',
+    18,
+    '0x3d48f7edff9b64d0ae95bda88728d51bba29ddd2',
+    UnderlyingAsset['tbaseeth:ctusd1cx'],
+    Networks.test.basechain
+  ),
+  erc20Token(
     '439fb12d-fddf-4749-8a33-b7c79fefc1b4',
     'baseeth:wave',
     'Waveform',
@@ -5301,6 +5337,14 @@ export const allCoinsAndTokens = [
     18,
     '0x6985884c4392d348587b19cb9eaaf157f13271cd',
     UnderlyingAsset['arbeth:zro']
+  ),
+  arbethErc20(
+    'e342adb7-3623-41c0-b8ae-1cb7cd046f70',
+    'arbeth:tt',
+    'Test Token',
+    18,
+    '0x5f787c1615ab866ce4fd7d4880bc56b706f1942b',
+    UnderlyingAsset['arbeth:tt']
   ),
   tarbethErc20(
     'd6a8869d-3da4-4b95-a9af-f2a059ca651f',

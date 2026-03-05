@@ -2008,6 +2008,13 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['arbeth:zro']
   ),
+  ofcArbethErc20(
+    '1680b663-da25-4e0e-8661-2770f51fc348',
+    'ofcarbeth:tt',
+    'Test Token',
+    18,
+    UnderlyingAsset['arbeth:tt']
+  ),
 
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20(
