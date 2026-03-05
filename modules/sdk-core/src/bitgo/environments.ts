@@ -334,6 +334,18 @@ const mainnetBase: EnvironmentTemplate = {
     zksyncera: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
+    unieth: {
+      baseUrl: 'https://unichain.blockscout.com/api',
+    },
+    hoodeth: {
+      baseUrl: 'https://explorer.testnet.chain.robinhood.com/api', // TODO: update to mainnet explorer API when available
+    },
+    hppeth: {
+      baseUrl: 'https://explorer.hpp.io/api',
+    },
+    h: {
+      baseUrl: 'https://humanity-mainnet.explorer.alchemy.com/api',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -527,6 +539,18 @@ const testnetBase: EnvironmentTemplate = {
     },
     zksyncera: {
       baseUrl: 'https://api.etherscan.io/v2',
+    },
+    unieth: {
+      baseUrl: 'https://unichain-sepolia.blockscout.com/api',
+    },
+    hoodeth: {
+      baseUrl: 'https://explorer.testnet.chain.robinhood.com/api',
+    },
+    hppeth: {
+      baseUrl: 'https://sepolia-explorer.hpp.io/api',
+    },
+    h: {
+      baseUrl: 'https://humanity-testnet.explorer.alchemy.com/api',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',

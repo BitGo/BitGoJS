@@ -102,8 +102,12 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.FLRP &&
         n.asset !== UnderlyingAsset.FLUENTETH &&
         n.asset !== UnderlyingAsset.MANTLE &&
+        n.asset !== UnderlyingAsset.H &&
+        n.asset !== UnderlyingAsset.HOODETH &&
+        n.asset !== UnderlyingAsset.HPPETH &&
         n.asset !== UnderlyingAsset.JOVAYETH &&
         n.asset !== UnderlyingAsset.OKBXLAYER &&
+        n.asset !== UnderlyingAsset.UNIETH &&
         n.asset !== UnderlyingAsset.MORPH &&
         n.asset !== UnderlyingAsset.MORPHETH &&
         n.asset !== UnderlyingAsset.DOGEOS &&

@@ -1756,6 +1756,78 @@ class JovayETHTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '2019775';
 }
 
+class Unieth extends Mainnet implements EthereumNetwork {
+  name = 'Unichain';
+  family = CoinFamily.UNIETH;
+  explorerUrl = 'https://uniscan.xyz/tx/';
+  accountExplorerUrl = 'https://uniscan.xyz/address/';
+  chainId = 130;
+  nativeCoinOperationHashPrefix = '130';
+}
+
+class UniethTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Unichain';
+  family = CoinFamily.UNIETH;
+  explorerUrl = 'https://sepolia.uniscan.xyz/tx/';
+  accountExplorerUrl = 'https://sepolia.uniscan.xyz/address/';
+  chainId = 1301;
+  nativeCoinOperationHashPrefix = '1301';
+}
+
+class Hppeth extends Mainnet implements EthereumNetwork {
+  name = 'House Party Protocol';
+  family = CoinFamily.HPPETH;
+  explorerUrl = 'https://explorer.hpp.io/tx/';
+  accountExplorerUrl = 'https://explorer.hpp.io/address/';
+  chainId = 190415;
+  nativeCoinOperationHashPrefix = '190415';
+}
+
+class HppethTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet House Party Protocol';
+  family = CoinFamily.HPPETH;
+  explorerUrl = 'https://sepolia-explorer.hpp.io/tx/';
+  accountExplorerUrl = 'https://sepolia-explorer.hpp.io/address/';
+  chainId = 181228;
+  nativeCoinOperationHashPrefix = '181228';
+}
+
+class HoodethTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Robinhood Chain';
+  family = CoinFamily.HOODETH;
+  explorerUrl = 'https://explorer.testnet.chain.robinhood.com/tx/';
+  accountExplorerUrl = 'https://explorer.testnet.chain.robinhood.com/address/';
+  chainId = 46630;
+  nativeCoinOperationHashPrefix = '46630';
+}
+
+class Hoodeth extends Mainnet implements EthereumNetwork {
+  name = 'Robinhood Chain';
+  family = CoinFamily.HOODETH;
+  explorerUrl = 'https://explorer.testnet.chain.robinhood.com/tx/'; // TODO: update to mainnet explorer when available
+  accountExplorerUrl = 'https://explorer.testnet.chain.robinhood.com/address/'; // TODO: update to mainnet explorer when available
+  chainId = 46630; // TODO: update to mainnet chain id when available
+  nativeCoinOperationHashPrefix = '46630'; // TODO: update to mainnet chain id when available
+}
+
+class HumanityProtocol extends Mainnet implements EthereumNetwork {
+  name = 'Humanity Protocol';
+  family = CoinFamily.H;
+  explorerUrl = 'https://explorer.humanity.org/mainnet/txns/';
+  accountExplorerUrl = 'https://explorer.humanity.org/mainnet/accounts/';
+  chainId = 6985385;
+  nativeCoinOperationHashPrefix = '6985385';
+}
+
+class HumanityProtocolTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Humanity Protocol';
+  family = CoinFamily.H;
+  explorerUrl = 'https://explorer.humanity.org/testnet/txns/';
+  accountExplorerUrl = 'https://explorer.humanity.org/testnet/accounts/';
+  chainId = 7080969;
+  nativeCoinOperationHashPrefix = '7080969';
+}
+
 class Xlayer extends Mainnet implements EthereumNetwork {
   name = 'X Layer';
   family = CoinFamily.OKBXLAYER;
@@ -2513,10 +2585,13 @@ export const Networks = {
     flr: Object.freeze(new Flare()),
     flrP: Object.freeze(new FlareP()),
     fluenteth: Object.freeze(new FluentETH()),
+    h: Object.freeze(new HumanityProtocol()),
     hash: Object.freeze(new Hash()),
+    hoodeth: Object.freeze(new Hoodeth()),
     hedera: Object.freeze(new Hedera()),
     hederaEVM: Object.freeze(new HederaEVM()),
     hemieth: Object.freeze(new HemiEth()),
+    hppeth: Object.freeze(new Hppeth()),
     icp: Object.freeze(new Icp()),
     ip: Object.freeze(new IP()),
     initia: Object.freeze(new Initia()),
@@ -2583,6 +2658,7 @@ export const Networks = {
     zeta: Object.freeze(new Zeta()),
     zkSync: Object.freeze(new ZkSync()),
     zkSyncEra: Object.freeze(new ZkSyncEra()),
+    unieth: Object.freeze(new Unieth()),
   },
   test: {
     ada: Object.freeze(new AdaTestnet()),
@@ -2627,6 +2703,7 @@ export const Networks = {
     flr: Object.freeze(new FlareTestnet()),
     flrP: Object.freeze(new FlarePTestnet()),
     fluenteth: Object.freeze(new FluentETHTestnet()),
+    h: Object.freeze(new HumanityProtocolTestnet()),
     mon: Object.freeze(new MonadTestnet()),
     megaeth: Object.freeze(new MegaETHTestnet()),
     pyrmont: Object.freeze(new Pyrmont()),
@@ -2634,6 +2711,8 @@ export const Networks = {
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
     hash: Object.freeze(new HashTestnet()),
     hedera: Object.freeze(new HederaTestnet()),
+    hoodeth: Object.freeze(new HoodethTestnet()),
+    hppeth: Object.freeze(new HppethTestnet()),
     hederaEVM: Object.freeze(new HederaEVMTestnet()),
     hemieth: Object.freeze(new HemiEthTestnet()),
     icp: Object.freeze(new IcpTestnet()),
@@ -2704,5 +2783,6 @@ export const Networks = {
     zeta: Object.freeze(new ZetaTestnet()),
     zkSync: Object.freeze(new ZkSyncTestnet()),
     zkSyncEra: Object.freeze(new ZkSyncEraTestnet()),
+    unieth: Object.freeze(new UniethTestnet()),
   },
 };

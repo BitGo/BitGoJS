@@ -63,10 +63,13 @@ export enum CoinFamily {
   FANTOM = 'fantom', // Fantom
   FLR = 'flr',
   FLRP = 'flrp',
+  H = 'h', // Humanity Protocol
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
   HBAREVM = 'hbarevm', // Hedera EVM coin
   HEMIETH = 'hemieth', // Hemi Ethereum L2
+  HOODETH = 'hoodeth', // Robinhood Chain
+  HPPETH = 'hppeth', // House Party Protocol
   ICP = 'icp',
   INITIA = 'initia',
   INJECTIVE = 'injective',
@@ -135,6 +138,7 @@ export enum CoinFamily {
   MORPHETH = 'morpheth',
   ARCUSDC = 'arcusdc', // ARC network
   TEMPO = 'tempo', // Tempo Network
+  UNIETH = 'unieth', // Unichain
 }
 
 /**
@@ -596,10 +600,13 @@ export enum UnderlyingAsset {
   FLUENTETH = 'fluenteth',
   FANTOM = 'fantom', // Fantom
   GTC = 'gtc',
+  H = 'h', // Humanity Protocol
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
   HBAREVM = 'hbarevm', // Hedera EVM coin
   HEMIETH = 'hemieth', // Hemi Ethereum L2
+  HOODETH = 'hoodeth', // Robinhood Chain
+  HPPETH = 'hppeth', // House Party Protocol
   ICP = 'icp',
   IP = 'ip', // Story Chain
   INITIA = 'initia',
@@ -661,6 +668,7 @@ export enum UnderlyingAsset {
   ZKETH = 'zketh',
 
   ZKSYNCERA = 'zksyncera', // ZkSync Era
+  UNIETH = 'unieth', // Unichain
   // ERC 20 tokens
   '$Evmosia.com' = '$evmosia.com',
   '0xREVIEW' = '0xreview',
