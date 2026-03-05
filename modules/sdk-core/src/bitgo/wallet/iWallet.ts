@@ -579,6 +579,33 @@ export interface GetAccountResourcesResponse {
   failedAddresses: FailedAddressInfo[];
 }
 
+export interface GetResourceDelegationsOptions {
+  type?: 'outgoing' | 'incoming';
+  resource?: string;
+  limit?: number;
+  nextBatchPrevId?: string;
+}
+
+export interface DelegationRecord {
+  id: string;
+  coin: string;
+  ownerAddress: string;
+  receiverAddress: string;
+  resource: 'ENERGY' | 'BANDWIDTH';
+  balance: string;
+  updatedAt: string;
+}
+
+export interface GetResourceDelegationsResponse {
+  address: string;
+  coin: string;
+  delegations: {
+    outgoing: DelegationRecord[];
+    incoming: DelegationRecord[];
+    nextBatchPrevId?: string;
+  };
+}
+
 export type CreateAddressFormat = 'base58' | 'cashaddr';
 
 export interface CreateAddressOptions {
@@ -1029,6 +1056,7 @@ export interface IWallet {
   createAddress(params?: CreateAddressOptions): Promise<any>;
   updateAddress(params?: UpdateAddressOptions): Promise<any>;
   getAccountResources(params: GetAccountResourcesOptions): Promise<GetAccountResourcesResponse>;
+  getResourceDelegations(params?: GetResourceDelegationsOptions): Promise<GetResourceDelegationsResponse>;
   listWebhooks(params?: PaginationOptions): Promise<any>;
   simulateWebhook(params?: SimulateWebhookOptions): Promise<any>;
   addWebhook(params?: ModifyWebhookOptions): Promise<any>;

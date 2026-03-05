@@ -1036,17 +1036,14 @@ export async function handleV2ResourceDelegations(
   req: ExpressApiRouteRequest<'express.v2.wallet.resourcedelegations', 'get'>
 ) {
   const bitgo = req.bitgo;
-  const coin = req.decoded.coin;
-  const walletId = req.decoded.id;
-  const query: Record<string, string> = {};
-  if (req.decoded.type) query.type = req.decoded.type;
-  if (req.decoded.resource) query.resource = req.decoded.resource;
-  if (req.decoded.limit !== undefined) query.limit = String(req.decoded.limit);
-  if (req.decoded.nextBatchPrevId) query.nextBatchPrevId = req.decoded.nextBatchPrevId;
-  return bitgo
-    .get(bitgo.url(`/${coin}/wallet/${walletId}/resourcedelegations`, 2))
-    .query(query)
-    .result();
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  return wallet.getResourceDelegations({
+    type: req.decoded.type,
+    resource: req.decoded.resource,
+    limit: req.decoded.limit,
+    nextBatchPrevId: req.decoded.nextBatchPrevId,
+  });
 }
 
 /**
