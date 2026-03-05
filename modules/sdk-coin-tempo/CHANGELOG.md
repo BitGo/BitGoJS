@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.6.1...@bitgo/sdk-coin-tempo@1.7.0) (2026-03-05)
+
+
+### Features
+
+* **sdk-coin-tempo:** implement transaction deserialization, parsing, and verification ([9f2b66e](https://github.com/BitGo/BitGoJS/commit/9f2b66ed23c497c9478b8040756d0cc088a64cfa))
+
+
+
+
+
 ## [1.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.6.0...@bitgo/sdk-coin-tempo@1.6.1) (2026-03-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-tempo

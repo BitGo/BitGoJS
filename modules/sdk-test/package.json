@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-test",
-  "version": "9.1.30",
+  "version": "9.1.31",
   "private": "true",
   "description": "coin test libary for BitGoJS",
   "main": "./dist/src/index.js",
@@ -27,8 +27,8 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-api": "^1.75.2",
-    "@bitgo/sdk-core": "^36.33.1",
+    "@bitgo/sdk-api": "^1.75.3",
+    "@bitgo/sdk-core": "^36.33.2",
     "bignumber.js": "^9.1.1",
     "should-http": "^0.1.1"
   }
