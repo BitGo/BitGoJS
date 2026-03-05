@@ -12,7 +12,7 @@ on:
         default: false
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
   pull-requests: read
 
@@ -177,6 +177,12 @@ jobs:
         run: |
           yarn lerna publish --sign-git-tag --sign-git-commit --include-merged-tags --conventional-commits --conventional-graduate --verify-access --yes
 
+      - name: Generate version bump summary
+        id: version-bump-summary
+        if: inputs.dry-run == false
+        continue-on-error: true
+        uses: ./.github/actions/version-bump-summary
+
       - name: Extract published version
         if: inputs.dry-run == false
         id: extract-version
@@ -184,3 +190,14 @@ jobs:
           NEW_VERSION=$(jq -r '.version' ./modules/bitgo/package.json)
           echo "New version: $NEW_VERSION"
           echo "new-version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release draft
+        if: inputs.dry-run == false && steps.version-bump-summary.outcome == 'success'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.BITGOBOT_PAT_TOKEN || github.token }}
+        run: |
+          gh release create "v${{ steps.extract-version.outputs.new-version }}" \
+            --draft \
+            --title "v${{ steps.extract-version.outputs.new-version }}" \
+            --notes-file "${{ steps.version-bump-summary.outputs.text-file }}"

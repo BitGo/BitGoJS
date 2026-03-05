@@ -1,0 +1,24 @@
+name: Version Bump Summary
+description: Generates a JSON summary of all packages bumped in the current commit, with their previous and current versions.
+
+inputs:
+  ref:
+    description: Git commit SHA or ref to read tags from. Defaults to HEAD.
+    required: false
+    default: HEAD
+
+outputs:
+  json-file:
+    description: Path to the JSON summary temp file.
+    value: ${{ steps.summary.outputs.json-file }}
+  text-file:
+    description: Path to the text summary temp file.
+    value: ${{ steps.summary.outputs.text-file }}
+
+runs:
+  using: composite
+  steps:
+    - name: Generate version bump summary
+      id: summary
+      shell: bash
+      run: node ${{ github.action_path }}/index.js ${{ inputs.ref }}
