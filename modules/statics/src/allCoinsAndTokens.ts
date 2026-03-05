@@ -43,6 +43,7 @@ import {
   tstellarToken,
   tsuiToken,
   ttaoToken,
+  tip20Token,
   ttip20Token,
   ttronToken,
   tvetNFTCollection,
@@ -2905,6 +2906,24 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.TEMPO,
     BaseUnit.ETH,
+    TEMPO_FEATURES
+  ),
+  tip20Token(
+    '63eab677-8bf3-4079-8bb1-f57666ff21e5',
+    'tempo:pathusd',
+    'pathUSD',
+    6,
+    '0x20c0000000000000000000000000000000000000',
+    UnderlyingAsset['tempo:pathusd'],
+    TEMPO_FEATURES
+  ),
+  tip20Token(
+    '39a57b34-0ce5-40d6-a231-c53a287491a6',
+    'tempo:usdc',
+    'USDC',
+    6,
+    '0x20c000000000000000000000b9537d11c60e8b50',
+    UnderlyingAsset['tempo:usdc'],
     TEMPO_FEATURES
   ),
   // Tempo TIP20 testnet tokens
