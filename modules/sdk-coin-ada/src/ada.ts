@@ -507,13 +507,18 @@ export class Ada extends BaseCoin {
           value: new BigNumber(output.amount).toNumber(),
         },
       ];
-      const outputs = [
-        {
-          address: output.address,
-          valueString: output.amount,
-          coinName: walletCoin,
-        },
-      ];
+      const outputs = (
+        parsedTx.outputs as {
+          amount: string;
+          address: string;
+          tokenTransfers?: { policyId: string; assetName: string; quantity: string }[];
+        }[]
+      ).map((o) => ({
+        address: o.address,
+        valueString: o.amount,
+        coinName: walletCoin,
+        ...(o.tokenTransfers && { tokenTransfers: o.tokenTransfers }),
+      }));
       const spendAmount = output.amount;
       const completedParsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
       const fee = new BigNumber((parsedTx.fee as { fee: string }).fee);
