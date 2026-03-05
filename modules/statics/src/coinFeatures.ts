@@ -715,6 +715,33 @@ export const VET_FEATURES = [
 ];
 export const VET_TOKEN_FEATURES = VET_FEATURES.filter((feature) => feature !== CoinFeature.SUPPORTS_TOKENS);
 
+/**
+ * Midnight Network (NIGHT) features
+ * Night is a UTXO-based privacy chain using Ed25519 and ZK proofs
+ * Minimal features enabled for skeleton implementation
+ */
+export const NIGHT_FEATURES = [
+  CoinFeature.UNSPENT_MODEL,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.TRANSACTION_DATA,
+  CoinFeature.REQUIRES_BIG_NUMBER,
+  CoinFeature.SUPPORTS_TOKENS, // Supports DUST token
+];
+
+/**
+ * Midnight Network token (DUST) features
+ * DUST is the fee token on the Midnight Network
+ * Tokens use account model, not unspent model
+ */
+export const NIGHT_TOKEN_FEATURES = [
+  CoinFeature.ACCOUNT_MODEL,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.TRANSACTION_DATA,
+  CoinFeature.REQUIRES_BIG_NUMBER,
+];
+
 export const EVM_NON_EIP1559_FEATURES = [...EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559)];
 
 export const XDC_FEATURES = [...EVM_NON_EIP1559_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION];
