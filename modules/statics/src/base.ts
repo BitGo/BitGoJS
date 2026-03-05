@@ -131,7 +131,6 @@ export enum CoinFamily {
   IP = 'ip', // Story Chain
   SOMI = 'somi', // Somnia Chain
   FLUENTETH = 'fluenteth',
-  MORPH = 'morph',
   MORPHETH = 'morpheth',
   ARCUSDC = 'arcusdc', // ARC network
   TEMPO = 'tempo', // Tempo Network
@@ -618,7 +617,6 @@ export enum UnderlyingAsset {
   MANTRA = 'mantra',
   MEGAETH = 'megaeth',
   MON = 'mon',
-  MORPH = 'morph',
   MORPHETH = 'morpheth',
   NEAR = 'near',
   OAS = 'oas',
@@ -2422,13 +2420,9 @@ export enum UnderlyingAsset {
   'eth:spec' = 'eth:spec',
   'eth:prompt' = 'eth:prompt',
   'eth:yb' = 'eth:yb',
-  'morph:usdc' = 'morph:usdc',
   'morpheth:usdc' = 'morpheth:usdc',
-  'morph:usdt' = 'morph:usdt',
   'morpheth:usdt' = 'morpheth:usdt',
-  'morph:usd1' = 'morph:usd1',
   'morpheth:usd1' = 'morpheth:usd1',
-  'tmorph:tmt' = 'tmorph:tmt',
   'tmorpheth:tmt' = 'tmorpheth:tmt',
   'tmorpheth:usd1' = 'tmorpheth:usd1',
   'tmorpheth:stgusd1' = 'tmorpheth:stgusd1',
