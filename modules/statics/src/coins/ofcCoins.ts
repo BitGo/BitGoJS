@@ -4116,4 +4116,54 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['ttempo:thetausd']
   ),
+  ofc('6f0246cf-b792-483a-b720-9755b158c614', 'ofcunieth', 'Unichain', 18, UnderlyingAsset.UNIETH, CoinKind.CRYPTO),
+  tofc(
+    '4efb1377-8439-410a-b460-2aeeff944fb2',
+    'ofctunieth',
+    'Testnet Unichain',
+    18,
+    UnderlyingAsset.UNIETH,
+    CoinKind.CRYPTO
+  ),
+  ofc(
+    '598218e6-8b8b-45a1-9f50-f114e1c43f0d',
+    'ofchppeth',
+    'House Party Protocol',
+    18,
+    UnderlyingAsset.HPPETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    '4baee871-3e95-4a46-98cd-4854cffaea7c',
+    'ofcthppeth',
+    'Testnet House Party Protocol',
+    18,
+    UnderlyingAsset.HPPETH,
+    CoinKind.CRYPTO
+  ),
+  ofc('b0360f56-3aaa-4171-a5d6-c0c6ba56a392', 'ofch', 'Humanity Protocol', 18, UnderlyingAsset.H, CoinKind.CRYPTO),
+  tofc(
+    '74d684f5-b5fd-4bcd-88cc-96f27ee133a1',
+    'ofcth',
+    'Testnet Humanity Protocol',
+    18,
+    UnderlyingAsset.H,
+    CoinKind.CRYPTO
+  ),
+  ofc(
+    'ce1af7ad-a694-4180-9a44-2bd9aa5b031e',
+    'ofchoodeth',
+    'Robinhood Chain',
+    18,
+    UnderlyingAsset.HOODETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    '85c5c0d5-a1b0-48b7-9c40-b1ab7162053e',
+    'ofcthoodeth',
+    'Testnet Robinhood Chain',
+    18,
+    UnderlyingAsset.HOODETH,
+    CoinKind.CRYPTO
+  ),
 ];
