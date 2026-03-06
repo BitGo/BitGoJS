@@ -14465,4 +14465,48 @@ export const erc20Coins = [
     '0x4bbe27b87c20f76349e47cbc3908477f7bbd71b0', // https://etherscan.io/token/0x4bbE27b87c20f76349E47cBc3908477f7bBD71B0
     UnderlyingAsset['eth:grtx']
   ),
+  erc20(
+    '7cf7c274-ecab-4c27-b918-0b044a5cd893',
+    'eth:shvon',
+    'SHVon',
+    18,
+    '0x2d8b65306a6c23da6342cb94d4251fb4302a624f',
+    UnderlyingAsset['eth:shvon']
+  ),
+  erc20(
+    '9fff6a5f-b144-4e5b-9837-cbf1f53acc70',
+    'eth:pt-cusdo-28may2026',
+    'PT-cUSDO-28MAY2026',
+    18,
+    '0x67aeeed39c1675e0df93ad8bab543b17992d433b',
+    UnderlyingAsset['eth:pt-cusdo-28may2026']
+  ),
+  erc20(
+    '9b5cbf21-579b-4ce8-81ab-406c30fd9c22',
+    'eth:usd1cx',
+    'USD1cx',
+    18,
+    '0x01c574403f72f42c73afdfa5fa24789477e702b8',
+    UnderlyingAsset['eth:usd1cx']
+  ),
+  erc20(
+    '5c2c3787-9b6f-4d92-a5a8-bfe3d50b165c',
+    'eth:ctusd1cx',
+    'ctUSD1cx',
+    18,
+    '0xcc4d271c881d73cd38d09ae9c5e7264aef2f6d47',
+    UnderlyingAsset['eth:ctusd1cx']
+  ),
+  terc20(
+    '0c333619-e5a6-4f9d-8bbc-5b0e5dc64d03',
+    'hteth:grtxp',
+    'GRTXP',
+    18,
+    '0x1bfec9fef31efed49ca6f45cae4c7911e20015c6',
+    UnderlyingAsset['hteth:grtxp'],
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
 ];

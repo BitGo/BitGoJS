@@ -1855,6 +1855,7 @@ export enum UnderlyingAsset {
   'hteth:stgcusd' = 'hteth:stgcusd',
   'hteth:stgfyusd' = 'hteth:stgfyusd',
   'hteth:tsteth' = 'hteth:tsteth',
+  'hteth:grtxp' = 'hteth:grtxp',
   THKD = 'thkd',
   THUNDER = 'thunder',
   TIO = 'tio',
@@ -2889,6 +2890,7 @@ export enum UnderlyingAsset {
   'bsc:zbt' = 'bsc:zbt',
   'bsc:iost' = 'bsc:iost',
   'bsc:sto' = 'bsc:sto',
+  'bsc:pt-cusdo-29oct2026' = 'bsc:pt-cusdo-29oct2026',
 
   // BSC NFTs
   // generic NFTs
@@ -2975,6 +2977,7 @@ export enum UnderlyingAsset {
   'arbeth:uxlink' = 'arbeth:uxlink',
   'arbeth:next' = 'arbeth:next',
   'arbeth:zro' = 'arbeth:zro',
+  'arbeth:tt' = 'arbeth:tt',
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
@@ -3017,6 +3020,10 @@ export enum UnderlyingAsset {
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
+  'tbaseeth:xusd' = 'tbaseeth:xusd',
+  'tbaseeth:xsgd' = 'tbaseeth:xsgd',
+  'tbaseeth:usd1cx' = 'tbaseeth:usd1cx',
+  'tbaseeth:ctusd1cx' = 'tbaseeth:ctusd1cx',
 
   // Og mainnet tokens
   'og:wog' = 'og:wog',
@@ -3593,6 +3600,10 @@ export enum UnderlyingAsset {
   'eth:open' = 'eth:open',
   'eth:mbg' = 'eth:mbg',
   'eth:rekt' = 'eth:rekt',
+  'eth:shvon' = 'eth:shvon',
+  'eth:pt-cusdo-28may2026' = 'eth:pt-cusdo-28may2026',
+  'eth:usd1cx' = 'eth:usd1cx',
+  'eth:ctusd1cx' = 'eth:ctusd1cx',
 
   // ADA testnet tokens
   'tada:water' = 'tada:water',
@@ -3606,6 +3617,9 @@ export enum UnderlyingAsset {
   'ada:djed' = 'ada:djed',
   'ada:usda' = 'ada:usda',
   'ada:night' = 'ada:night',
+  'ada:lcc' = 'ada:lcc',
+  'ada:awlf' = 'ada:awlf',
+  'ada:asnek' = 'ada:asnek',
 
   // Canton testnet tokens
   'tcanton:testcoin1' = 'tcanton:testcoin1',

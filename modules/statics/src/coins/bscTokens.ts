@@ -1543,4 +1543,13 @@ export const bscTokens = [
     UnderlyingAsset['bsc:sto'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    '8956e895-8607-4434-8f62-e731a8ffbe9b',
+    'bsc:pt-cusdo-29oct2026',
+    'PT-cUSDO-29OCT2026',
+    18,
+    '0xcd18d94fda553bb956d6130ad217b63ef65888d0',
+    UnderlyingAsset['bsc:pt-cusdo-29oct2026'],
+    BSC_TOKEN_FEATURES
+  ),
 ];
