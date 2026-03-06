@@ -55,7 +55,7 @@
     "ethereumjs-util": "7.1.5",
     "ethers": "^5.1.3",
     "keccak": "^3.0.3",
-    "lodash": "4.17.21",
+    "lodash": "4.17.23",
     "secp256k1": "5.0.1",
     "superagent": "^9.0.1"
   },
