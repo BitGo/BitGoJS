@@ -1,4 +1,4 @@
-import { sanitize } from './sanitizeLog';
+import { sanitize, getErrorData } from './sanitizeLog';
 
 /**
  * BitGo Logger with automatic sanitization for all environments
@@ -9,10 +9,10 @@ class BitGoLogger {
    */
   private sanitizeArgs(args: unknown[]): unknown[] {
     return args.map((arg) => {
-      if (typeof arg === 'object' && arg !== null) {
-        return sanitize(arg);
+      if (arg instanceof Error) {
+        return sanitize(getErrorData(arg));
       }
-      return arg;
+      return sanitize(arg);
     });
   }
 
