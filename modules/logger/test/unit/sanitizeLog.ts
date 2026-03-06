@@ -33,8 +33,12 @@ describe('sanitize', function () {
       assert.strictEqual(sanitize(V2_TOKEN), '<REMOVED>');
     });
 
-    it('should redact a short string starting with v2x', function () {
-      assert.strictEqual(sanitize('v2xaabb'), '<REMOVED>');
+    it('should not redact a short string starting with v2x', function () {
+      assert.strictEqual(sanitize('v2xaabb'), 'v2xaabb');
+    });
+
+    it('should not redact a short string starting with xprv', function () {
+      assert.strictEqual(sanitize('xprv9abc'), 'xprv9abc');
     });
 
     it('should redact a string starting with xprv', function () {
@@ -106,8 +110,8 @@ describe('sanitize', function () {
       assert.deepStrictEqual(sanitize({ key: XPRV_KEY }), { key: '<REMOVED>' });
     });
 
-    it('should redact a short v2x object value', function () {
-      assert.deepStrictEqual(sanitize({ key: 'v2xaabb' }), { key: '<REMOVED>' });
+    it('should not redact a short v2x object value', function () {
+      assert.deepStrictEqual(sanitize({ key: 'v2xaabb' }), { key: 'v2xaabb' });
     });
 
     it('should not redact when sensitive prefix is not at the start of value', function () {

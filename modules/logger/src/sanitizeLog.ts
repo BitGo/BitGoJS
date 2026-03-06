@@ -17,6 +17,8 @@ const SENSITIVE_KEYS = new Set([
 
 const SENSITIVE_PREFIXES = ['v2x', 'xprv'];
 
+const MIN_SENSITIVE_STRING_LENGTH = 10;
+
 /**
  * Checks if a key is sensitive (case-insensitive)
  */
@@ -29,9 +31,10 @@ function isSensitiveKey(key: string): boolean {
  * Unlike isSensitiveKey (which checks property names), this identifies
  * sensitive data by recognizable content patterns — useful when there
  * is no key context (e.g. top-level strings, array elements).
+ * Requires a minimum length to avoid false positives on short strings.
  */
 function isSensitiveStringValue(s: string): boolean {
-  return SENSITIVE_PREFIXES.some((prefix) => s.startsWith(prefix));
+  return s.length >= MIN_SENSITIVE_STRING_LENGTH && SENSITIVE_PREFIXES.some((prefix) => s.startsWith(prefix));
 }
 
 export function getErrorData(error: unknown): unknown {
