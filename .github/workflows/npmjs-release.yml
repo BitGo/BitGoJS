@@ -191,13 +191,13 @@ jobs:
           echo "New version: $NEW_VERSION"
           echo "new-version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Create GitHub release draft
+      - name: Create GitHub release
         if: inputs.dry-run == false && steps.version-bump-summary.outcome == 'success'
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.BITGOBOT_PAT_TOKEN || github.token }}
         run: |
           gh release create "v${{ steps.extract-version.outputs.new-version }}" \
-            --draft \
+            --latest \
             --title "v${{ steps.extract-version.outputs.new-version }}" \
             --notes-file "${{ steps.version-bump-summary.outputs.text-file }}"
