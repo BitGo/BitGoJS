@@ -3884,6 +3884,26 @@ export const allCoinsAndTokens = [
     Networks.main.hypeevm
   ),
 
+  erc20Token(
+    '585fb840-1f61-4c99-9735-e8413a098f14',
+    'hypeevm:usdc',
+    'USDC',
+    6,
+    '0xb88339cb7199b77e23db6e890353e22632ba630f',
+    UnderlyingAsset['hypeevm:usdc'],
+    Networks.main.hypeevm
+  ),
+
+  erc20Token(
+    '6ce207d8-baee-4a63-b438-36c6a7587a97',
+    'hypeevm:usdt0',
+    'USDT0',
+    6,
+    '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb',
+    UnderlyingAsset['hypeevm:usdt0'],
+    Networks.main.hypeevm
+  ),
+
   // Story testnet tokens
   erc20Token(
     'f9a9c36f-8938-4206-bf0d-5016a861c58f',
