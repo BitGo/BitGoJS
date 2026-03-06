@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.29.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.28.0...@bitgo/statics@58.29.0) (2026-03-05)
+
+
+### Bug Fixes
+
+* add CoinFeature.ERC20_BULK_TRANSACTION to morpheth ([d97b56d](https://github.com/BitGo/BitGoJS/commit/d97b56dc55fbf5dbc2e933ed2ee62a25633da6eb))
+* **statics:** set xtzevm decimals to 6 (CECHO-117) ([49c2fef](https://github.com/BitGo/BitGoJS/commit/49c2fef18197ff3566f5a1f0ca6500d8ed6a8166))
+
+
+### Features
+
+* add tempo pathusd and usdc tokens ([72d80f5](https://github.com/BitGo/BitGoJS/commit/72d80f53eb702c98cf8668c5f6f9c267062038eb))
+* remove multisig support for zksyncera ([4f274d0](https://github.com/BitGo/BitGoJS/commit/4f274d0002ff02a9abb0094a587569969a673a46))
+* **statics:** add CoinFeature.STAKING to txdc coin features ([c90d7b2](https://github.com/BitGo/BitGoJS/commit/c90d7b25ce1e4b475252a374ad4f5b70d3c7640b))
+
+
+
+
+
 # [58.28.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.27.0...@bitgo/statics@58.28.0) (2026-03-03)
 
 
