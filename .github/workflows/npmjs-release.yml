@@ -133,22 +133,13 @@ jobs:
           git config --global user.name "bitgobot"
 
       - name: Configure npmrc
-        if: inputs.dry-run == false
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           echo "engine-strict=true" > ~/.npmrc
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
 
       - name: Setup Node.js with nvm
         uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
-
-      - name: Test NPM authentication
-        if: inputs.dry-run == false
-        run: |
-          npm whoami --registry https://registry.npmjs.org/
 
       - name: Switch to rel/latest branch
         run: |
@@ -175,7 +166,9 @@ jobs:
       - name: Publish new version
         if: inputs.dry-run == false
         run: |
-          yarn lerna publish --sign-git-tag --sign-git-commit --include-merged-tags --conventional-commits --conventional-graduate --verify-access --yes
+          yarn lerna publish --sign-git-tag --sign-git-commit --include-merged-tags --conventional-commits --conventional-graduate --yes
+        env:
+          NPM_CONFIG_PROVENANCE: true
 
       - name: Generate version bump summary
         id: version-bump-summary
