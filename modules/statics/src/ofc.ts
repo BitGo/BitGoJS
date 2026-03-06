@@ -2618,3 +2618,111 @@ export function tofcTempoToken(
     })
   );
 }
+
+/**
+ * Factory function for ofc ada token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the coin
+ * @param fullName Complete human-readable name of the coin
+ * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param kind Differentiates coins which represent fiat assets from those which represent crypto assets
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `OfcCoin`
+ * @param prefix? Optional coin prefix. Defaults to empty string
+ * @param suffix? Optional coin suffix. Defaults to coin name.
+ * @param isToken? Whether or not this account coin is a token of another coin
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function ofcAdaToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  kind: CoinKind = CoinKind.CRYPTO,
+  features: CoinFeature[] = [...OfcCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
+  prefix = '',
+  suffix: string = name.replace(/^ofc/, '').toUpperCase(),
+  network: OfcNetwork = Networks.main.ofc,
+  isToken = true,
+  addressCoin = 'ada',
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
+  return Object.freeze(
+    new OfcCoin({
+      id,
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      isToken,
+      asset,
+      kind,
+      addressCoin,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.ADA,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet ofc ada token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the coin
+ * @param fullName Complete human-readable name of the coin
+ * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param kind Differentiates coins which represent fiat assets from those which represent crypto assets
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `OfcCoin`
+ * @param prefix? Optional coin prefix. Defaults to empty string
+ * @param suffix? Optional coin suffix. Defaults to coin name.
+ * @param isToken? Whether or not this account coin is a token of another coin
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function tofcAdaToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  kind: CoinKind = CoinKind.CRYPTO,
+  features: CoinFeature[] = [...OfcCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
+  prefix = '',
+  suffix: string = name.replace(/^ofc/, '').toUpperCase(),
+  network: OfcNetwork = Networks.test.ofc,
+  isToken = true,
+  addressCoin = 'tada',
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
+  return Object.freeze(
+    new OfcCoin({
+      id,
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      isToken,
+      asset,
+      kind,
+      addressCoin,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.ADA,
+    })
+  );
+}

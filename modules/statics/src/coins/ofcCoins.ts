@@ -42,6 +42,8 @@ import {
   tofcSuiToken,
   ofcTempoToken,
   tofcTempoToken,
+  ofcAdaToken,
+  tofcAdaToken,
 } from '../ofc';
 import { UnderlyingAsset, CoinKind, CoinFeature } from '../base';
 
@@ -4165,5 +4167,32 @@ export const ofcCoins = [
     18,
     UnderlyingAsset.HOODETH,
     CoinKind.CRYPTO
+  ),
+  // ADA OFC tokens
+  ofcAdaToken('227d98e7-6397-45a9-acbe-c3d48fca1a7b', 'ofcada:night', 'NIGHT Token', 6, UnderlyingAsset['ada:night']),
+  ofcAdaToken('b002bfaa-43e8-41c8-9a3d-3d3fc64af866', 'ofcada:min', 'Minswap', 6, UnderlyingAsset['ada:min']),
+  ofcAdaToken('145f9663-990c-4e07-9229-820155e12db7', 'ofcada:snek', 'Snek', 0, UnderlyingAsset['ada:snek']),
+  ofcAdaToken('192b99ce-3dfb-46f9-a53c-94f54732c779', 'ofcada:iag', 'IAGON', 6, UnderlyingAsset['ada:iag']),
+  ofcAdaToken('af90c0c1-d0ab-4480-8f3e-480eea0f1368', 'ofcada:djed', 'Djed USD', 6, UnderlyingAsset['ada:djed']),
+  ofcAdaToken(
+    '9a4635c0-96e1-4343-aac4-bcb8c0a589de',
+    'ofcada:usda',
+    'Anzens USDA Stablecoin',
+    6,
+    UnderlyingAsset['ada:usda']
+  ),
+  ofcAdaToken(
+    '6bde5053-4681-4bd5-9e6c-defae2e26291',
+    'ofcada:wmtx',
+    'World Mobile Token X',
+    6,
+    UnderlyingAsset['ada:wmtx']
+  ),
+  tofcAdaToken(
+    '1f4e7747-f825-4107-a71f-766e847d557b',
+    'ofctada:water',
+    'Test ADA Water Token',
+    0,
+    UnderlyingAsset['tada:water']
   ),
 ];
