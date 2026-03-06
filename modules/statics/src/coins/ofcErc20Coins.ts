@@ -4797,12 +4797,45 @@ export const tOfcErc20Coins = [
     'ofchypeevm:hwhype',
     'Hyperwave HYPE',
     18,
-    UnderlyingAsset['hypeevm:hwhype']
+    UnderlyingAsset['hypeevm:hwhype'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'hypeevm'
   ),
 
-  ofcerc20('ce8680a7-3816-4ef6-9c1e-24c019c4b3b6', 'ofchypeevm:usdc', 'USDC', 6, UnderlyingAsset['hypeevm:usdc']),
+  ofcerc20(
+    'ce8680a7-3816-4ef6-9c1e-24c019c4b3b6',
+    'ofchypeevm:usdc',
+    'USDC',
+    6,
+    UnderlyingAsset['hypeevm:usdc'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'hypeevm'
+  ),
 
-  ofcerc20('735662e8-4f38-4b59-996c-b7890cd38e41', 'ofchypeevm:usdt0', 'USDT0', 6, UnderlyingAsset['hypeevm:usdt0']),
+  ofcerc20(
+    '735662e8-4f38-4b59-996c-b7890cd38e41',
+    'ofchypeevm:usdt0',
+    'USDT0',
+    6,
+    UnderlyingAsset['hypeevm:usdt0'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'hypeevm'
+  ),
 
   ofcerc20(
     'e3c6f4e5-4d5e-4f2e-8f1a-2c3d4e5f6a7b',
