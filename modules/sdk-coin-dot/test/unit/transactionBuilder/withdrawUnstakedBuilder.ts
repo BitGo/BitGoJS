@@ -41,7 +41,7 @@ describe('Dot WithdrawUnstaked Builder', () => {
       builder.addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
       const tx = await builder.build();
       const txJson = tx.toJson();
-      should.deepEqual(txJson.numSlashingSpans, '0');
+      should.deepEqual(txJson.numSlashingSpans, 0);
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, refBlock);
@@ -82,7 +82,7 @@ describe('Dot WithdrawUnstaked Builder', () => {
       builder.validity({ firstValid: 3933 }).referenceBlock(refBlock);
       const tx = await builder.build();
       const txJson = tx.toJson();
-      should.deepEqual(txJson.numSlashingSpans, '0');
+      should.deepEqual(txJson.numSlashingSpans, 0);
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, refBlock);
@@ -104,7 +104,7 @@ describe('Dot WithdrawUnstaked Builder', () => {
         .addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
       const tx = await builder.build();
       const txJson = tx.toJson();
-      should.deepEqual(txJson.numSlashingSpans, '0');
+      should.deepEqual(txJson.numSlashingSpans, 0);
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, refBlock);
