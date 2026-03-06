@@ -2,7 +2,7 @@
  * @prettier
  */
 import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { coins, Tip20TokenConfig } from '@bitgo/statics';
+import { coins, tokens, Tip20TokenConfig } from '@bitgo/statics';
 import { GetSendMethodArgsOptions, SendMethodArgs } from '@bitgo/abstract-eth';
 import { Address } from './lib/types';
 import { Tempo } from './tempo';
@@ -37,10 +37,12 @@ export class Tip20Token extends Tempo {
 
   /**
    * Create token constructors for all TIP20 tokens
-   * @param tokenConfigs - Array of token configurations (optional)
+   * @param tokenConfigs - Array of token configurations; defaults to all TIP20 tokens from statics
    */
-  static createTokenConstructors(tokenConfigs?: Tip20TokenConfig[]): NamedCoinConstructor[] {
-    const configs = tokenConfigs || [];
+  static createTokenConstructors(
+    tokenConfigs: Tip20TokenConfig[] = [...tokens.bitcoin.tempo.tokens, ...tokens.testnet.tempo.tokens]
+  ): NamedCoinConstructor[] {
+    const configs = tokenConfigs;
     const tokensCtors: NamedCoinConstructor[] = [];
 
     for (const token of configs) {
