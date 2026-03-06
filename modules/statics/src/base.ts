@@ -3089,6 +3089,8 @@ export enum UnderlyingAsset {
 
   // hypeevm mainnet tokens
   'hypeevm:hwhype' = 'hypeevm:hwhype',
+  'hypeevm:usdc' = 'hypeevm:usdc',
+  'hypeevm:usdt0' = 'hypeevm:usdt0',
 
   // Jovayeth mainnet tokens
   'jovayeth:jft' = 'jovayeth:jft',
