@@ -58,14 +58,6 @@ export interface TransactionPrebuild {
   transaction: Interface.TxData;
 }
 
-export interface ExplainTransactionOptions {
-  txPrebuild: TransactionPrebuild;
-  publicKey: string;
-  feeInfo: {
-    fee: string;
-  };
-}
-
 export interface VerifiedTransactionParameters {
   txHex: string;
   prv: string;
