@@ -87,6 +87,43 @@ export interface TxData {
   pledgeDetails?: PledgeDetails;
 }
 
+function extractTokenTransfers(
+  multiAssets: CardanoWasm.MultiAsset | Asset | undefined
+): Array<{ policyId: string; assetName: string; quantity: string }> | undefined {
+  if (!multiAssets) return undefined;
+
+  if (!(multiAssets instanceof CardanoWasm.MultiAsset)) {
+    return [
+      {
+        policyId: multiAssets.policy_id,
+        assetName:
+          (multiAssets as Asset & { encoded_asset_name?: string }).encoded_asset_name ?? multiAssets.asset_name,
+        quantity: multiAssets.quantity,
+      },
+    ];
+  }
+
+  const transfers: Array<{ policyId: string; assetName: string; quantity: string }> = [];
+  const scriptHashes = multiAssets.keys();
+  for (let i = 0; i < scriptHashes.len(); i++) {
+    const scriptHash = scriptHashes.get(i);
+    const assets = multiAssets.get(scriptHash);
+    if (!assets) continue;
+    const assetNames = assets.keys();
+    for (let j = 0; j < assetNames.len(); j++) {
+      const assetName = assetNames.get(j);
+      const quantity = assets.get(assetName);
+      if (!quantity) continue;
+      transfers.push({
+        policyId: Buffer.from(scriptHash.to_bytes()).toString('hex'),
+        assetName: Buffer.from(assetName.name()).toString('hex'),
+        quantity: quantity.to_str(),
+      });
+    }
+  }
+  return transfers.length > 0 ? transfers : undefined;
+}
+
 export class Transaction extends BaseTransaction {
   private _transaction: CardanoWasm.Transaction;
   private _fee: string;
@@ -381,7 +418,11 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   explainTransaction(): {
-    outputs: { amount: string; address: string }[];
+    outputs: {
+      amount: string;
+      address: string;
+      tokenTransfers?: Array<{ policyId: string; assetName: string; quantity: string }>;
+    }[];
     certificates: Cert[];
     changeOutputs: string[];
     outputAmount: string;
@@ -414,7 +455,11 @@ export class Transaction extends BaseTransaction {
     return {
       displayOrder,
       id: txJson.id,
-      outputs: txJson.outputs.map((o) => ({ address: o.address, amount: o.amount })),
+      outputs: txJson.outputs.map((o) => ({
+        address: o.address,
+        amount: o.amount,
+        ...(extractTokenTransfers(o.multiAssets) && { tokenTransfers: extractTokenTransfers(o.multiAssets) }),
+      })),
       outputAmount: outputAmount,
       changeOutputs: [],
       changeAmount: '0',
