@@ -25,7 +25,7 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { Tip20Transaction, Tip20TransactionBuilder } from './lib';
-import { amountToTip20Units, isValidMemoId as isValidMemoIdUtil } from './lib/utils';
+import { amountToTip20Units, isTip20Transaction, isValidMemoId as isValidMemoIdUtil } from './lib/utils';
 import * as url from 'url';
 import * as querystring from 'querystring';
 
@@ -213,6 +213,9 @@ export class Tempo extends AbstractEthLikeNewCoins {
     if (!txHex) {
       return {};
     }
+    if (!isTip20Transaction(txHex)) {
+      return {};
+    }
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(txHex);
     const tx = (await txBuilder.build()) as Tip20Transaction;
@@ -241,8 +244,14 @@ export class Tempo extends AbstractEthLikeNewCoins {
       return true;
     }
 
+    // signableHex may arrive without the 0x prefix (e.g. from the TSS signing flow).
+    const txHex = txPrebuild.txHex.startsWith('0x') ? txPrebuild.txHex : '0x' + txPrebuild.txHex;
+    if (!isTip20Transaction(txHex)) {
+      throw new Error(`Invalid Tempo transaction hex: expected a 0x76 TIP-20 transaction`);
+    }
+
     const txBuilder = this.getTransactionBuilder();
-    txBuilder.from(txPrebuild.txHex);
+    txBuilder.from(txHex);
     const tx = (await txBuilder.build()) as Tip20Transaction;
     const operations = tx.getOperations();
 
