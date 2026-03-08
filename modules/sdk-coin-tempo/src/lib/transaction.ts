@@ -128,7 +128,7 @@ export class Tip20Transaction extends BaseTransaction {
       callsTuples,
       accessTuples,
       '0x', // nonceKey (reserved for 2D nonce system)
-      ethers.utils.hexlify(this.txRequest.nonce),
+      this.txRequest.nonce ? this.bigintToHex(BigInt(this.txRequest.nonce)) : '0x',
       '0x', // validBefore (reserved for time bounds)
       '0x', // validAfter (reserved for time bounds)
       this.txRequest.feeToken || '0x',
