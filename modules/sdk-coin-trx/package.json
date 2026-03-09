@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "@bitgo/sdk-core": "^36.33.2",
+    "@bitgo/sdk-lib-mpc": "^10.9.0",
     "@bitgo/secp256k1": "^1.10.0",
     "@bitgo/statics": "^58.29.0",
     "@stablelib/hex": "^1.0.0",

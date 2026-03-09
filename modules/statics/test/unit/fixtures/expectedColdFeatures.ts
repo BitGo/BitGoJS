@@ -13,6 +13,8 @@ export const expectedColdFeatures = {
     'tsoneium',
     'flr',
     'tflr',
+    'trx',
+    'ttrx',
   ],
   justMultiSig: [
     'algo',
@@ -54,9 +56,7 @@ export const expectedColdFeatures = {
     'thbar',
     'tltc',
     'trbtc',
-    'trx',
     'tstx',
-    'ttrx',
     'txlm',
     'txrp',
     'txtz',
