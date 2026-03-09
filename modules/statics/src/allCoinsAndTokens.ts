@@ -3057,6 +3057,195 @@ export const allCoinsAndTokens = [
       CoinFeature.SUPPORTS_ERC20,
     ]
   ),
+  erc20Token(
+    '7e4e5692-34d0-458b-977f-4f6a4025d9ee',
+    'chiliz:acm',
+    'AC Milan Fan Token',
+    0,
+    '0xf9c0f80a6c67b1b39bddf00ecd57f2533ef5b688',
+    UnderlyingAsset['chiliz:acm'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    'ac6607db-95c5-4fb2-ae73-a6372b7e32c0',
+    'chiliz:afc',
+    'Arsenal Fan Token',
+    0,
+    '0x1d4343d35f0e0e14c14115876d01deaa4792550b',
+    UnderlyingAsset['chiliz:afc'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '99ec729b-2465-45c8-8f68-1112c1acccd6',
+    'chiliz:arg',
+    'Argentine Football Association Fan Token',
+    0,
+    '0xd34625c1c812439229ef53e06f22053249d011f5',
+    UnderlyingAsset['chiliz:arg'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '1808b187-5295-4a18-9c7a-626709ddc6d4',
+    'chiliz:asr',
+    'AS Roma Fan Token',
+    0,
+    '0xa6610b3361c4c0d206aa3364cd985016c2d89386',
+    UnderlyingAsset['chiliz:asr'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '384a289e-3504-427f-83c3-41c8db13e8d3',
+    'chiliz:atm',
+    'Atletico Madrid Fan Token',
+    0,
+    '0xe9506f70be469d2369803ccf41823713bafe8154',
+    UnderlyingAsset['chiliz:atm'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '7a33152c-a064-4ca5-ada8-1b0b81bab1db',
+    'chiliz:avl',
+    'Aston Villa Fan Token',
+    0,
+    '0x095726841dc9bf395114ac83f8fd42b176cfad10',
+    UnderlyingAsset['chiliz:avl'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '9bc007be-6bd0-4d6e-add1-24f565a61efd',
+    'chiliz:bar',
+    'FC Barcelona Fan Token',
+    0,
+    '0xfd3c73b3b09d418841dd6aff341b2d6e3aba433b',
+    UnderlyingAsset['chiliz:bar'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '91ade0a8-2217-43d8-ad08-09ce130dd8b4',
+    'chiliz:benfica',
+    'Benfica Fan Token',
+    0,
+    '0xad7c869f357b57bb03050183d1ba8ec465cd69dc',
+    UnderlyingAsset['chiliz:benfica'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '722e66d1-a7a1-4e21-951e-df6b6b4c2f1f',
+    'chiliz:city',
+    'Manchester City Fan Token',
+    0,
+    '0x6401b29f40a02578ae44241560625232a01b3f79',
+    UnderlyingAsset['chiliz:city'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '93dca3b2-ec43-4c4e-b3f4-b58efd9a2628',
+    'chiliz:gal',
+    'Galatasaray Fan Token',
+    0,
+    '0x6dab8fe8e5d425f2eb063aae58540aa04e273e0d',
+    UnderlyingAsset['chiliz:gal'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    'dd790417-65f4-42dc-b474-1992eb2c6fbc',
+    'chiliz:inter',
+    'Inter Milan Fan Token',
+    0,
+    '0xc727c9c0f2647cb90b0fca64d8ddb14878716bed',
+    UnderlyingAsset['chiliz:inter'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '58ea6a4a-34d6-40a2-8634-bb921fd3df4c',
+    'chiliz:ita',
+    'Italian National Football Team Fan Token',
+    0,
+    '0x7483263ca24bfcff716a21f4a9bbf2610bdd9ec9',
+    UnderlyingAsset['chiliz:ita'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '0d6546e1-6f32-4319-bac6-e92653fad1e3',
+    'chiliz:juv',
+    'Juventus Fan Token',
+    0,
+    '0x454038003a93cf44766af352f74bad6b745616d0',
+    UnderlyingAsset['chiliz:juv'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    'f0e34d4f-37ba-408c-a835-29a25324b914',
+    'chiliz:mengo',
+    'Flamengo Fan Token',
+    0,
+    '0xd1723eb9e7c6ee7c7e2d421b2758dc0f2166eddc',
+    UnderlyingAsset['chiliz:mengo'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '8da38245-d034-44dc-b3c9-d031676e14c2',
+    'chiliz:nap',
+    'Napoli Fan Token',
+    0,
+    '0xbe7f1ebb1fd6246844e093b04991ae0e66d12c77',
+    UnderlyingAsset['chiliz:nap'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    'aad9e75e-fd24-416c-948b-7926de77372a',
+    'chiliz:og',
+    'OG Fan Token',
+    0,
+    '0x19ca0f4adb29e2130a56b9c9422150b5dc07f294',
+    UnderlyingAsset['chiliz:og'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '40200db7-0a00-4e24-b17b-be22571057d7',
+    'chiliz:pepper',
+    'Pepper',
+    18,
+    '0x60f397acbcfb8f4e3234c659a3e10867e6fa6b67',
+    UnderlyingAsset['chiliz:pepper'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    'd4c8079a-f4ee-4fac-ab1d-f866185a2673',
+    'chiliz:por',
+    'Portugal National Team Fan Token',
+    0,
+    '0xffad7930b474d45933c93b83a2802204b8787129',
+    UnderlyingAsset['chiliz:por'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    'b4c340cb-b0da-4f89-a694-025dfb6864fc',
+    'chiliz:psg',
+    'Paris Saint-Germain Fan Token',
+    0,
+    '0xc2661815c69c2b3924d3dd0c2c1358a1e38a3105',
+    UnderlyingAsset['chiliz:psg'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    'c8de9997-6473-44ae-8acd-3bc491ec3dd2',
+    'chiliz:spurs',
+    'Tottenham Hotspur Fan Token',
+    0,
+    '0x93d84ff2c5f5a5a3d7291b11af97679e75eeac92',
+    UnderlyingAsset['chiliz:spurs'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '6ca27ed5-1b77-4376-b610-787c9d00a92e',
+    'chiliz:tra',
+    'Trabzonspor Fan Token',
+    0,
+    '0x304193f18f3b34647ae1f549fc825a7e50267c51',
+    UnderlyingAsset['chiliz:tra'],
+    Networks.main.chiliz
+  ),
   account(
     'e10b89f6-3d14-4d85-a05a-da53d6e60489',
     'codexeth',
