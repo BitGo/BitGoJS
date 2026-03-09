@@ -211,6 +211,24 @@ export class Tip20Transaction extends BaseTransaction {
     return this._signature;
   }
 
+  /**
+   * Recover the signer address from the transaction signature.
+   * @returns Checksummed sender address, or undefined if unsigned
+   */
+  getSenderAddress(): string | undefined {
+    if (!this._signature) {
+      return undefined;
+    }
+
+    const unsignedHex = this.serializeTransaction();
+    const msgHash = ethers.utils.keccak256(ethers.utils.arrayify(unsignedHex));
+    return ethers.utils.recoverAddress(msgHash, {
+      r: this._signature.r,
+      s: this._signature.s,
+      recoveryParam: this._signature.yParity,
+    });
+  }
+
   toJson(): TxData {
     return {
       type: this.txRequest.type,
