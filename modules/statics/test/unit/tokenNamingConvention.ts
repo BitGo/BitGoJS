@@ -65,6 +65,7 @@ describe('Token Naming Convention Tests', function () {
       'hteth:aut',
       'hteth:grtx',
       'hteth:grtxp',
+      'hteth:testeigen',
       'hterc6dp',
       'hterc2dp',
       'fixed',

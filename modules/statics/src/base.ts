@@ -1864,6 +1864,7 @@ export enum UnderlyingAsset {
   'hteth:stgfyusd' = 'hteth:stgfyusd',
   'hteth:tsteth' = 'hteth:tsteth',
   'hteth:grtxp' = 'hteth:grtxp',
+  'hteth:testeigen' = 'hteth:testeigen',
   THKD = 'thkd',
   THUNDER = 'thunder',
   TIO = 'tio',

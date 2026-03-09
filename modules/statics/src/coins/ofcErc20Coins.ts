@@ -4039,6 +4039,20 @@ export const tOfcErc20Coins = [
     undefined,
     'hteth'
   ),
+  tofcerc20(
+    '81a5a3df-bf30-427e-a166-4e5ae8751050',
+    'ofchteth:testeigen',
+    'Testnet EigenCloud',
+    6,
+    UnderlyingAsset['hteth:testeigen'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
 
   ofcerc20(
     'cc2a92cf-d799-463b-b08c-e9a4d5e87934',

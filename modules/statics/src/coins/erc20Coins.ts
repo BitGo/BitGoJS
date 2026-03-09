@@ -13335,6 +13335,19 @@ export const erc20Coins = [
     Networks.test.hoodi
   ),
 
+  terc20(
+    '741c768e-9584-4eec-8d0d-f0ef24ae1b01',
+    'hteth:testeigen',
+    'Testnet EigenCloud',
+    6,
+    '0x8ae2520954db7d80d66835cb71e692835bba45bf',
+    UnderlyingAsset['hteth:testeigen'],
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+
   // Ondo Tokenized Assets
   erc20(
     '1c2ed80e-c485-4c67-9dc3-22b7d23219f1',
