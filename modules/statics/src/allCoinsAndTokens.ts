@@ -4097,7 +4097,7 @@ export const allCoinsAndTokens = [
   ),
   erc20Token(
     '9ac4124b-c7e5-41f9-a172-6a774693497e',
-    'hbarevm:TNT',
+    'hbarevm:tnt',
     'Testnet HBAREVM Native Token',
     6,
     '0x00000000000000000000000000000000007ac19c',
