@@ -3180,6 +3180,9 @@ export enum UnderlyingAsset {
   'tcoredao:stcore' = 'tcoredao:stcore',
   'tcoredao:tlstbtc' = 'tcoredao:tlstbtc',
 
+  // Chiliz mainnet tokens
+  'chiliz:pepper' = 'chiliz:pepper',
+
   //world chain mainnet tokens
   'world:wld' = 'world:wld',
   'world:usdc' = 'world:usdc',

@@ -3746,6 +3746,22 @@ export const ofcErc20Coins = [
     true,
     'baseeth'
   ),
+
+  // Chiliz Network tokens
+  ofcerc20(
+    'f176d515-34e4-4aa2-a005-3f7bb4270171',
+    'ofcchiliz:pepper',
+    'Pepper',
+    18,
+    underlyingAssetForSymbol('chiliz:pepper'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'chiliz'
+  ),
 ];
 
 export const tOfcErc20Coins = [

@@ -3057,6 +3057,15 @@ export const allCoinsAndTokens = [
       CoinFeature.SUPPORTS_ERC20,
     ]
   ),
+  erc20Token(
+    '40200db7-0a00-4e24-b17b-be22571057d7',
+    'chiliz:pepper',
+    'Pepper',
+    18,
+    '0x60f397acbcfb8f4e3234c659a3e10867e6fa6b67',
+    UnderlyingAsset['chiliz:pepper'],
+    Networks.main.chiliz
+  ),
   account(
     'e10b89f6-3d14-4d85-a05a-da53d6e60489',
     'codexeth',
