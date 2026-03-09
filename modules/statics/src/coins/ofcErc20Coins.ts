@@ -3942,6 +3942,20 @@ export const tOfcErc20Coins = [
     'hteth'
   ),
   tofcerc20(
+    'ae475c8a-9fa0-49fe-9a77-66cfbc023c71',
+    'ofchteth:grtxp',
+    'GreatX Property Token',
+    18,
+    UnderlyingAsset['hteth:grtxp'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
     '4dc4534c-72b8-4a68-a914-210dae1e5d4d',
     'ofchteth:usd1',
     'Test USD1 Token',
