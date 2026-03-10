@@ -38,6 +38,7 @@ import {
 } from './iface';
 import { getAddress, getDelegateAddress } from './iface_utils';
 import utils from './utils';
+import { toJsonFromWasm } from './wasmParser';
 import BigNumber from 'bignumber.js';
 import { Vec } from '@polkadot/types';
 import { PalletConstantMetadataV14 } from '@polkadot/types/interfaces';
@@ -161,6 +162,23 @@ export class Transaction extends BaseTransaction {
     if (!this._dotTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
+
+    // Use WASM-based parsing for signed tdot transactions.
+    // Only signed transactions produce a broadcast-ready extrinsic that the WASM
+    // parser can decode. Unsigned transactions produce a signing payload in a
+    // different format, so those continue to use the legacy txwrapper path.
+    // Mainnet dot stays on the legacy path until WASM validation is complete.
+    if (this._coinConfig.name === 'tdot' && this._signedTransaction) {
+      return toJsonFromWasm({
+        txHex: this._signedTransaction,
+        material: utils.getMaterial(this._coinConfig),
+        senderAddress: this._sender,
+        coinConfigName: this._coinConfig.name,
+        referenceBlock: this._dotTransaction.blockHash,
+        blockNumber: Number(this._dotTransaction.blockNumber),
+      });
+    }
+
     const decodedTx = decode(this._dotTransaction, {
       metadataRpc: this._dotTransaction.metadataRpc,
       registry: this._registry,
