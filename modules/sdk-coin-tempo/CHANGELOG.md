@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.7.0...@bitgo/sdk-coin-tempo@1.8.0) (2026-03-10)
+
+
+### Bug Fixes
+
+* **sdk-coin-tempo:** fix nonce 0 RLP encoding and verifyTransaction for TSS flow ([bf8c899](https://github.com/BitGo/BitGoJS/commit/bf8c89929d91d5b0ba40c52df8f3544bec7df18e))
+* **sdk-coin-tempo:** register TIP20 tokens ([ebff4e2](https://github.com/BitGo/BitGoJS/commit/ebff4e247a56323bf80e39bf54a9442e0d0eb3e4))
+
+
+### Features
+
+* **sdk-coin-tempo:** add getSenderAddress to Tip20Transaction ([84062df](https://github.com/BitGo/BitGoJS/commit/84062df29a97d8286e13d26be8c20b4924363b97))
+
+
+
+
+
 # [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.6.1...@bitgo/sdk-coin-tempo@1.7.0) (2026-03-05)
 
 

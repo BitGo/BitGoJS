@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.30.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.29.0...@bitgo/statics@58.30.0) (2026-03-10)
+
+
+### Features
+
+* add sdk changes for mpc tss support for TRON ([f22f270](https://github.com/BitGo/BitGoJS/commit/f22f27075d48008d1cf15ae2999da7ea3def2250))
+* onboard HYPEEVM:USDC and HYPEEVM:USDT0 tokens ([0b1f7fd](https://github.com/BitGo/BitGoJS/commit/0b1f7fd27e10a92ae14a61975baa39af795c4216))
+* onboard HYPEEVM:USDC and HYPEEVM:USDT0 tokens ([a46c317](https://github.com/BitGo/BitGoJS/commit/a46c3170f32c470abf92f44e68c702565da79758))
+* **sdk-coin-ada:** onboarding in go accounts ([0283578](https://github.com/BitGo/BitGoJS/commit/0283578f714e9e0e393807738c2a9c553d4bcff3))
+* **sdk-coin-irys:** add commitment transaction support ([1e6f529](https://github.com/BitGo/BitGoJS/commit/1e6f52925a5899814234e642f7cde327aec50ccc))
+* **statics:** add 21 Chiliz fan tokens (CECHO-331) ([53df27c](https://github.com/BitGo/BitGoJS/commit/53df27c7bb50efc49c864582fdcc79c7f939b0b4))
+* **statics:** add ofchteth:grtxp OFC token ([1b24a81](https://github.com/BitGo/BitGoJS/commit/1b24a8187129cb82f772b5fa2e68d8f140a3872d))
+* **statics:** add testnet EigenCloud token (hteth:testeigen) and OFC counterpart ([06ef858](https://github.com/BitGo/BitGoJS/commit/06ef8585db4f103e37176762b8d3fcfaaf06fa7c))
+* **statics:** onboard client requested tokens batch 2 ([cfc9851](https://github.com/BitGo/BitGoJS/commit/cfc985157af515d80abd98a1a2ea38be8aa5be8f))
+* **statics:** onboard unieth, hppeth, h, hoodeth ([41deea3](https://github.com/BitGo/BitGoJS/commit/41deea31dbd9f1da65573126d62329e9368024bc))
+
+
+
+
+
 # [58.29.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.28.0...@bitgo/statics@58.29.0) (2026-03-05)
 
 

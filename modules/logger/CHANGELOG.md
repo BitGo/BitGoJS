@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/logger@1.2.0...@bitgo/logger@1.3.0) (2026-03-10)
+
+
+### Features
+
+* **logger:** enhance sanitize to handle  Date, BigInt, and string types ([73b168d](https://github.com/BitGo/BitGoJS/commit/73b168d058b7dc022f6fcc0c84a80cea0cd84ed1))
+
+
+
+
+
 # [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/logger@1.1.0...@bitgo/logger@1.2.0) (2026-02-24)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [24.20.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.20.6...@bitgo/abstract-eth@24.20.7) (2026-03-10)
+
+
+### Bug Fixes
+
+* added missing txn type ([3f92310](https://github.com/BitGo/BitGoJS/commit/3f92310a6b33677427aa4813c5248db77772026a))
+
+
+
+
+
 ## [24.20.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.20.5...@bitgo/abstract-eth@24.20.6) (2026-03-05)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

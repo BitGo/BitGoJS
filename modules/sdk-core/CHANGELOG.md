@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.34.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.33.2...@bitgo/sdk-core@36.34.0) (2026-03-10)
+
+
+### Features
+
+* **sdk-core:** add getAccountResources() in wallet ([d286299](https://github.com/BitGo/BitGoJS/commit/d2862993760a7c83a4948a47056173d77624ae9a))
+* **statics:** onboard unieth, hppeth, h, hoodeth ([41deea3](https://github.com/BitGo/BitGoJS/commit/41deea31dbd9f1da65573126d62329e9368024bc))
+
+
+
+
+
 ## [36.33.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.33.1...@bitgo/sdk-core@36.33.2) (2026-03-05)
 
 **Note:** Version bump only for package @bitgo/sdk-core

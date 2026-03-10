@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.27.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.26.2...bitgo@50.27.0) (2026-03-10)
+
+
+### Features
+
+* **statics:** onboard unieth, hppeth, h, hoodeth ([41deea3](https://github.com/BitGo/BitGoJS/commit/41deea31dbd9f1da65573126d62329e9368024bc))
+
+
+
+
+
 ## [50.26.2](https://github.com/BitGo/BitGoJS/compare/bitgo@50.26.1...bitgo@50.26.2) (2026-03-05)
 
 **Note:** Version bump only for package bitgo
