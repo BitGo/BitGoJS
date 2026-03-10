@@ -2,7 +2,7 @@
  * @prettier
  */
 import * as secp256k1 from 'secp256k1';
-import { randomBytes } from 'crypto';
+import { createHash, Hash, randomBytes } from 'crypto';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { bip32 } from '@bitgo/secp256k1';
 import * as request from 'superagent';
@@ -16,6 +16,7 @@ import {
   KeyPair,
   KeyIndices,
   MethodNotImplementedError,
+  MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
@@ -31,7 +32,10 @@ import {
   multisigTypes,
   AuditDecryptedKeyParams,
   AddressCoinSpecific,
+  verifyMPCWalletAddress,
+  isTssVerifyAddressOptions,
 } from '@bitgo/sdk-core';
+import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import { Interface, Utils, WrappedBuilder, KeyPair as TronKeyPair } from './lib';
 import { ValueFields, TransactionReceipt } from './lib/iface';
 import { getBuilder } from './lib/builder';
@@ -189,6 +193,21 @@ export class Trx extends BaseCoin {
     return multisigTypes.onchain;
   }
 
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
+  }
+
+  /** @inheritDoc */
+  getHashFunction(): Hash {
+    return createHash('sha256');
+  }
+
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Trx(bitgo, staticsCoin);
   }
@@ -268,6 +287,14 @@ export class Trx extends BaseCoin {
 
   async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     const { address, keychains } = params;
+
+    if (isTssVerifyAddressOptions(params)) {
+      return verifyMPCWalletAddress(
+        { ...params, keyCurve: 'secp256k1' },
+        this.isValidAddress.bind(this),
+        (pubKey: string) => new TronKeyPair({ pub: pubKey }).getAddress()
+      );
+    }
 
     if (!isTrxVerifyAddressOptions(params)) {
       throw new Error('Invalid or missing index for address verification');
@@ -402,6 +429,13 @@ export class Trx extends BaseCoin {
     }
 
     return true;
+  }
+
+  /** @inheritDoc */
+  async getSignablePayload(serializedTx: string): Promise<Buffer> {
+    const txBuilder = getBuilder(this.getChain()).from(serializedTx);
+    const rebuiltTransaction = await txBuilder.build();
+    return rebuiltTransaction.signablePayload;
   }
 
   /**
@@ -1071,7 +1105,11 @@ export class Trx extends BaseCoin {
   }
 
   /** @inheritDoc */
-  auditDecryptedKey(params: AuditDecryptedKeyParams) {
-    throw new MethodNotImplementedError();
+  auditDecryptedKey({ multiSigType, publicKey, prv }: AuditDecryptedKeyParams) {
+    if (multiSigType === 'tss') {
+      auditEcdsaPrivateKey(prv as string, publicKey as string);
+    } else {
+      throw new MethodNotImplementedError();
+    }
   }
 }

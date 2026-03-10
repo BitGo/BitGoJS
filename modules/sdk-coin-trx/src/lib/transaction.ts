@@ -318,6 +318,24 @@ export class Transaction extends BaseTransaction {
     return this._inputs;
   }
 
+  /** @inheritDoc */
+  get signablePayload(): Buffer {
+    if (!this._transaction) {
+      throw new ParseTransactionError('Empty transaction');
+    }
+    return Buffer.from(this._transaction.raw_data_hex, 'hex');
+  }
+
+  addSignature(signature: Buffer): void {
+    if (!this._transaction) {
+      throw new ParseTransactionError('Empty transaction');
+    }
+    if (!this._transaction.signature) {
+      this._transaction.signature = [];
+    }
+    this._transaction.signature.push(signature.toString('hex'));
+  }
+
   /** @inheritdoc */
   canSign(key: BaseKey): boolean {
     // Tron transaction do not contain the owners account address so it is not possible to check the

@@ -433,6 +433,10 @@ export const TRX_FEATURES = [
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG,
   CoinFeature.STAKING,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
+  CoinFeature.SHA256_WITH_ECDSA_TSS,
 ];
 export const COSMOS_SIDECHAIN_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,

@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseKey, BaseTransaction, InvalidTransactionError } from '@bitgo/sdk-core';
+import { BaseKey, BaseTransaction, InvalidTransactionError, PublicKey as BasePublicKey } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { Address } from './address';
 import { TransactionBuilder } from './transactionBuilder';
@@ -135,6 +135,11 @@ export class WrappedBuilder extends TransactionBuilder {
   /** @inheritdoc */
   sign(key: BaseKey) {
     this._builder.sign(key);
+  }
+
+  /** @inheritDoc */
+  addSignature(publicKey: BasePublicKey, signature: Buffer): void {
+    this._builder.addSignature(publicKey, signature);
   }
 
   /** @inheritdoc */

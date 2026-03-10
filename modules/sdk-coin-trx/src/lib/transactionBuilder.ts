@@ -8,6 +8,7 @@ import {
   BuildTransactionError,
   InvalidTransactionError,
   ParseTransactionError,
+  PublicKey as BasePublicKey,
   SigningError,
   ExtendTransactionError,
   InvalidParameterValueError,
@@ -160,6 +161,11 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
 
     return new Transaction(this._coinConfig, signedTransaction);
+  }
+
+  /** @inheritDoc */
+  addSignature(publicKey: BasePublicKey, signature: Buffer): void {
+    this.transaction.addSignature(signature);
   }
 
   /** @inheritdoc */
