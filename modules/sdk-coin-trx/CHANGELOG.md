@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.10.1...@bitgo/sdk-coin-trx@3.11.0) (2026-03-10)
+
+
+### Features
+
+* add sdk changes for mpc tss support for TRON ([f22f270](https://github.com/BitGo/BitGoJS/commit/f22f27075d48008d1cf15ae2999da7ea3def2250))
+
+
+
+
+
 ## [3.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.10.0...@bitgo/sdk-coin-trx@3.10.1) (2026-03-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx

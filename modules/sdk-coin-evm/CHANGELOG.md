@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.14.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.14.5...@bitgo/sdk-coin-evm@1.14.6) (2026-03-10)
+
+
+### Bug Fixes
+
+* added missing txn type ([3f92310](https://github.com/BitGo/BitGoJS/commit/3f92310a6b33677427aa4813c5248db77772026a))
+
+
+
+
+
 ## [1.14.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.14.4...@bitgo/sdk-coin-evm@1.14.5) (2026-03-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-evm
