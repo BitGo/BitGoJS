@@ -45,12 +45,6 @@ GHSA-7r86-cg39-jmmj
 GHSA-23c5-xmqv-rm74
 
 # Excluded because:
-# - Transitive devDependency through mocha, terser-webpack-plugin, copy-webpack-plugin
-# - serialize-javascript RCE via malicious RegExp.flags and Date.prototype.toISOString()
-# - Only affects dev-time tooling, not production code
-GHSA-5c6j-r48x-rmvq
-
-# Excluded because:
 # - Transitive dependency through lerna and yeoman-generator requiring tar < 7.5.7
 # - This CVE affects tar's extraction process (hardlink path traversal in crafted archives)
 # - Our usage is limited to archive PACKING operations only, not extraction
