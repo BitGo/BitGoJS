@@ -79,7 +79,6 @@ import {
   getFullNameFromCoinName,
   getMainnetCoinName,
   getNetworkFromCoinName,
-  isTestnetCoin,
   isUtxoCoinNameMainnet,
   UtxoCoinName,
   UtxoCoinNameMainnet,
@@ -333,6 +332,11 @@ type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = 
    * transaction (nonWitnessUtxo)
    */
   allowNonSegwitSigningWithoutPrevTx?: boolean;
+  /**
+   * When true, the signed transaction will be converted from PSBT to legacy format before returning.
+   * Set automatically by presignTransaction() when the caller explicitly requested txFormat: 'legacy'.
+   */
+  returnLegacyFormat?: boolean;
   wallet?: UtxoWallet;
 };
 
@@ -991,24 +995,20 @@ export abstract class AbstractUtxoCoin
    * @param requestedFormat - Optional explicitly requested format
    * @returns The transaction format to use, or undefined if no default applies
    */
-  getDefaultTxFormat(wallet: Wallet, requestedFormat?: TxFormat): TxFormat | undefined {
-    // If format is explicitly requested, use it
-    if (requestedFormat !== undefined) {
-      if (isTestnetCoin(this.name) && requestedFormat === 'legacy') {
-        throw new ErrorDeprecatedTxFormat(requestedFormat);
-      }
-
-      return requestedFormat;
+  getDefaultTxFormat(wallet: Wallet, requestedFormat?: TxFormat): TxFormat {
+    if (requestedFormat === 'legacy') {
+      return 'psbt-lite';
     }
-
-    return 'psbt-lite';
+    return requestedFormat ?? 'psbt-lite';
   }
 
   async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<{
     txFormat?: TxFormat;
     changeAddressType?: ScriptType2Of3[] | ScriptType2Of3;
+    allowedInputScriptTypes?: ScriptType2Of3[];
   }> {
-    const txFormat = this.getDefaultTxFormat(buildParams.wallet, buildParams.txFormat as TxFormat | undefined);
+    const requestedFormat = buildParams.txFormat as TxFormat | undefined;
+    const txFormat = this.getDefaultTxFormat(buildParams.wallet, requestedFormat);
     let changeAddressType = buildParams.changeAddressType as ScriptType2Of3[] | ScriptType2Of3 | undefined;
 
     // if the addressType is not specified, we need to default to p2trMusig2 for testnet hot wallets for staged rollout of p2trMusig2
@@ -1021,9 +1021,26 @@ export abstract class AbstractUtxoCoin
       changeAddressType = ['p2trMusig2', 'p2wsh', 'p2shP2wsh', 'p2sh', 'p2tr'];
     }
 
+    // getHalfSignedLegacyFormat() only supports p2ms-based types (p2sh, p2shP2wsh, p2wsh).
+    // Filter change outputs and restrict input selection to these types.
+    const legacyCompatibleTypes: ScriptType2Of3[] = ['p2sh', 'p2shP2wsh', 'p2wsh'];
+    let allowedInputScriptTypes: ScriptType2Of3[] | undefined;
+
+    if (requestedFormat === 'legacy') {
+      allowedInputScriptTypes = legacyCompatibleTypes;
+      if (Array.isArray(changeAddressType)) {
+        changeAddressType = changeAddressType.filter((t): t is ScriptType2Of3 =>
+          legacyCompatibleTypes.includes(t as ScriptType2Of3)
+        );
+      } else if (changeAddressType !== undefined && !legacyCompatibleTypes.includes(changeAddressType)) {
+        changeAddressType = legacyCompatibleTypes;
+      }
+    }
+
     return {
       txFormat,
       changeAddressType,
+      allowedInputScriptTypes,
     };
   }
 
@@ -1035,6 +1052,9 @@ export abstract class AbstractUtxoCoin
     if (params.walletData && isUtxoWalletData(params.walletData) && isDescriptorWalletData(params.walletData)) {
       return params;
     }
+
+    const returnLegacyFormat = (params as Record<string, unknown>).txFormat === 'legacy';
+
     // In the case that we have a 'psbt-lite' transaction format, we want to indicate in signing to not fail
     const txHex = (params.txHex ?? params.txPrebuild?.txHex) as string;
     if (
@@ -1043,9 +1063,9 @@ export abstract class AbstractUtxoCoin
       utxolib.bitgo.isPsbtLite(utxolib.bitgo.createPsbtFromHex(txHex, this.network)) &&
       params.allowNonSegwitSigningWithoutPrevTx === undefined
     ) {
-      return { ...params, allowNonSegwitSigningWithoutPrevTx: true };
+      return { ...params, allowNonSegwitSigningWithoutPrevTx: true, returnLegacyFormat };
     }
-    return params;
+    return { ...params, returnLegacyFormat };
   }
 
   async supplementGenerateWallet(

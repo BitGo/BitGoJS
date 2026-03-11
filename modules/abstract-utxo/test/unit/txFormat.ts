@@ -2,7 +2,7 @@ import * as assert from 'assert';
 
 import { Wallet } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin, ErrorDeprecatedTxFormat, TxFormat } from '../../src';
+import { AbstractUtxoCoin, TxFormat } from '../../src';
 import { isMainnetCoin, isTestnetCoin } from '../../src/names';
 
 import { utxoCoins, defaultBitGo } from './util';
@@ -119,9 +119,8 @@ describe('txFormat', function () {
 
     // Test explicitly requested formats
     runTest({
-      description: 'should respect explicitly requested legacy format on mainnet',
-      coinFilter: (coin) => isMainnetCoin(coin.name),
-      expectedTxFormat: 'legacy',
+      description: 'should map explicitly requested legacy format to psbt-lite',
+      expectedTxFormat: 'psbt-lite',
       requestedTxFormat: 'legacy',
     });
 
@@ -136,19 +135,45 @@ describe('txFormat', function () {
       expectedTxFormat: 'psbt-lite',
       requestedTxFormat: 'psbt-lite',
     });
+  });
 
-    // Test that legacy format is prohibited on testnet
-    it('should throw ErrorDeprecatedTxFormat when legacy format is requested on testnet', function () {
+  describe('getExtraPrebuildParams with legacy format', function () {
+    const legacyCompatibleTypes = ['p2sh', 'p2shP2wsh', 'p2wsh'];
+
+    it('should filter changeAddressType to legacy-compatible types for hot wallets', async function () {
       for (const coin of utxoCoins) {
-        if (!isTestnetCoin(coin.name)) {
-          continue;
-        }
-
         const wallet = createMockWallet(coin, { type: 'hot' });
-        assert.throws(
-          () => getTxFormat(coin, wallet, 'legacy'),
-          ErrorDeprecatedTxFormat,
-          `Expected ErrorDeprecatedTxFormat for ${coin.getChain()}`
+        const result = await coin.getExtraPrebuildParams({ txFormat: 'legacy', wallet } as any);
+        assert.ok(Array.isArray(result.changeAddressType), `${coin.getChain()}: changeAddressType should be an array`);
+        for (const t of result.changeAddressType as string[]) {
+          assert.ok(
+            legacyCompatibleTypes.includes(t),
+            `${coin.getChain()}: changeAddressType contains ${t} which is not legacy-compatible`
+          );
+        }
+      }
+    });
+
+    it('should set allowedInputScriptTypes to legacy-compatible types', async function () {
+      for (const coin of utxoCoins) {
+        const wallet = createMockWallet(coin, { type: 'hot' });
+        const result = await coin.getExtraPrebuildParams({ txFormat: 'legacy', wallet } as any);
+        assert.deepStrictEqual(
+          result.allowedInputScriptTypes,
+          legacyCompatibleTypes,
+          `${coin.getChain()}: allowedInputScriptTypes should be legacy-compatible`
+        );
+      }
+    });
+
+    it('should not set allowedInputScriptTypes when txFormat is not legacy', async function () {
+      for (const coin of utxoCoins) {
+        const wallet = createMockWallet(coin, { type: 'hot' });
+        const result = await coin.getExtraPrebuildParams({ wallet } as any);
+        assert.strictEqual(
+          result.allowedInputScriptTypes,
+          undefined,
+          `${coin.getChain()}: allowedInputScriptTypes should be undefined for default format`
         );
       }
     });

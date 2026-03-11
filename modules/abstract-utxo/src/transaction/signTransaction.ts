@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { BitGoBase } from '@bitgo/sdk-core';
-import { BIP32 } from '@bitgo/wasm-utxo';
+import { BIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 import buildDebug from 'debug';
 
 import { AbstractUtxoCoin, SignTransactionOptions } from '../abstractUtxoCoin';
@@ -10,7 +10,7 @@ import { isUtxoLibPsbt, toWasmPsbt } from '../wasmUtil';
 
 import * as fixedScript from './fixedScript';
 import * as descriptor from './descriptor';
-import { encodeTransaction } from './decode';
+import { decodePsbtWith, encodeTransaction } from './decode';
 
 const debug = buildDebug('bitgo:abstract-utxo:transaction:signTransaction');
 
@@ -43,7 +43,13 @@ export async function signTransaction<TNumber extends number | bigint>(
     throw new Error('missing txPrebuild parameter');
   }
 
-  const tx = coin.decodeTransactionFromPrebuild(params.txPrebuild);
+  let tx = coin.decodeTransactionFromPrebuild(params.txPrebuild);
+
+  // When returnLegacyFormat is set, ensure we use wasm-utxo's BitGoPsbt so
+  // getHalfSignedLegacyFormat() is available after signing.
+  if (params.returnLegacyFormat && isUtxoLibPsbt(tx)) {
+    tx = decodePsbtWith(tx.toBuffer(), coin.name, 'wasm-utxo');
+  }
 
   const signerKeychain = getSignerKeychain(params.prv);
 
@@ -73,6 +79,12 @@ export async function signTransaction<TNumber extends number | bigint>(
       pubs: params.pubs,
       cosignerPub: params.cosignerPub,
     });
+
+    // Convert half-signed PSBT to legacy format when the caller explicitly requested txFormat: 'legacy'
+    if (params.returnLegacyFormat && signedTx instanceof fixedScriptWallet.BitGoPsbt) {
+      return { txHex: Buffer.from(signedTx.getHalfSignedLegacyFormat()).toString('hex') };
+    }
+
     const buffer = Buffer.isBuffer(signedTx) ? signedTx : encodeTransaction(signedTx);
     return { txHex: buffer.toString('hex') };
   }
