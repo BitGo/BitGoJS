@@ -56,3 +56,9 @@ GHSA-5c6j-r48x-rmvq
 # - Our usage is limited to archive PACKING operations only, not extraction
 # - Forcing tar v7.5.7+ breaks lerna's packDirectory API (same constraint as GHSA-8qq5-rm4j-mr97)
 GHSA-qffp-2rhf-9h96
+
+# Excluded because:
+# - Same risk profile as existing tar exclusions: CVE affects archive extraction (unpacking malicious archives)
+# - We only use tar for packing; low risk in terms of exploitability
+# - Security exception approved
+GHSA-9ppj-qmqm-q256
