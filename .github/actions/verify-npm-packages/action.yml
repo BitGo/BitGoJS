@@ -1,0 +1,10 @@
+name: Verify npm Packages Exist
+description: Verifies that all non-private packages in the monorepo already exist on the npm registry. Required for trusted publishing.
+
+runs:
+  using: composite
+  steps:
+    - name: Verify all packages exist on npm
+      id: verify
+      shell: bash
+      run: node ${{ github.action_path }}/index.js
