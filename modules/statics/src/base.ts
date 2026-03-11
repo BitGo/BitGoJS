@@ -3026,6 +3026,8 @@ export enum UnderlyingAsset {
   'baseeth:unite' = 'baseeth:unite',
   'baseeth:b3' = 'baseeth:b3',
   'baseeth:kaito' = 'baseeth:kaito',
+  'baseeth:xsgd' = 'baseeth:xsgd',
+  'baseeth:xusd' = 'baseeth:xusd',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -3079,6 +3081,7 @@ export enum UnderlyingAsset {
   'xdc:lbt' = 'xdc:lbt',
   'xdc:cre' = 'xdc:cre',
   'xdc:gama' = 'xdc:gama',
+  'xdc:audd' = 'xdc:audd',
   'xdc:srx' = 'xdc:srx',
   'xdc:weth' = 'xdc:weth',
 
@@ -3428,6 +3431,7 @@ export enum UnderlyingAsset {
   'sol:xnetv2' = 'sol:xnetv2',
   'sol:prcl' = 'sol:prcl',
   'sol:asp' = 'sol:asp',
+  'sol:skr' = 'sol:skr',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',
@@ -3487,6 +3491,7 @@ export enum UnderlyingAsset {
   'sui:alkimi' = 'sui:alkimi',
   'sui:dmc' = 'sui:dmc',
   'sui:mmt' = 'sui:mmt',
+  'sui:usdsui' = 'sui:usdsui',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',
@@ -3634,6 +3639,11 @@ export enum UnderlyingAsset {
   'eth:open' = 'eth:open',
   'eth:mbg' = 'eth:mbg',
   'eth:rekt' = 'eth:rekt',
+  'eth:audx' = 'eth:audx',
+  'eth:chfau' = 'eth:chfau',
+  'eth:dxi' = 'eth:dxi',
+  'eth:apxusd' = 'eth:apxusd',
+  'eth:q' = 'eth:q',
   'eth:shvon' = 'eth:shvon',
   'eth:pt-cusdo-28may2026' = 'eth:pt-cusdo-28may2026',
   'eth:usd1cx' = 'eth:usd1cx',
@@ -3651,6 +3661,7 @@ export enum UnderlyingAsset {
   'ada:djed' = 'ada:djed',
   'ada:usda' = 'ada:usda',
   'ada:night' = 'ada:night',
+  'ada:usdcx' = 'ada:usdcx',
   'ada:lcc' = 'ada:lcc',
   'ada:awlf' = 'ada:awlf',
   'ada:asnek' = 'ada:asnek',
