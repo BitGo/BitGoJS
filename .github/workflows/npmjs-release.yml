@@ -163,6 +163,12 @@ jobs:
         run: |
           yarn check-deps
 
+      # Trusted publishing (OIDC) cannot publish a package that doesn't already
+      # exist on npm. Catch missing packages before the publish step so the
+      # release doesn't partially fail midway through.
+      - name: Verify all packages exist on npm
+        uses: ./.github/actions/verify-npm-packages
+
       - name: Publish new version
         if: inputs.dry-run == false
         run: |
