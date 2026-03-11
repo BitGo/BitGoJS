@@ -3724,6 +3724,24 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:kaito'],
     Networks.main.basechain
   ),
+  erc20Token(
+    'c3f63213-7cde-493b-8115-191e55dfd4f2',
+    'baseeth:xsgd',
+    'StraitsX SGD',
+    6,
+    '0x0a4c9cb2778ab3302996a34befcf9a8bc288c33b',
+    UnderlyingAsset['baseeth:xsgd'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'dabec024-c5f6-4cf3-8c15-232f436b07cc',
+    'baseeth:xusd',
+    'StraitsX USD',
+    6,
+    '0x110b77c9e90f6c353f229ccd0d9278667dad1c25',
+    UnderlyingAsset['baseeth:xusd'],
+    Networks.main.basechain
+  ),
 
   // XDC mainnet tokens
   xdcErc20(
@@ -3757,6 +3775,14 @@ export const allCoinsAndTokens = [
     18,
     '0x3a170c7c987f55c84f28733bfa27962d8cdd5d3b',
     UnderlyingAsset['xdc:gama']
+  ),
+  xdcErc20(
+    'a48247a4-29e0-4295-87aa-071704e566dd',
+    'xdc:audd',
+    'Australian Digital Dollar',
+    6,
+    '0x9fe4e6321eeb7c4bc537570f015e4734b15002b8',
+    UnderlyingAsset['xdc:audd']
   ),
   xdcErc20(
     'bdf602ea-3a6c-407a-8afd-33d6c04a8bc3',
@@ -6497,6 +6523,18 @@ export const allCoinsAndTokens = [
     '0x35169bc93e1fddfcf3a82a9eae726d349689ed59e4b065369af8789fe59f8608::mmt::MMT',
     UnderlyingAsset['sui:mmt'],
     SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    '693b237a-ae38-4dcd-af50-83299436020c',
+    'sui:usdsui',
+    'Sui Dollar',
+    6,
+    '0x44f838219cf67b058f3b37907b655f226153c18e33dfcd0da559a844fea9b1c1',
+    'usdsui',
+    'USDSUI',
+    '0x44f838219cf67b058f3b37907b655f226153c18e33dfcd0da559a844fea9b1c1::usdsui::USDSUI',
+    UnderlyingAsset['sui:usdsui'],
+    [...SUI_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   tsuiToken(
     '0b8a7919-c37e-4be8-8338-7fc13c6c875e',

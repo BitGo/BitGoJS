@@ -102,4 +102,15 @@ export const adaTokens = [
     UnderlyingAsset['ada:night'],
     ADA_TOKEN_FEATURES
   ),
+  adaToken(
+    'ada5c354-acd7-49a5-b739-c1350e91bbc7',
+    'ada:usdcx',
+    'USDCx',
+    6,
+    '1f3aec8bfe7ea4fe14c5f121e2a92e301afe414147860d557cac7e34',
+    'USDCx',
+    'asset1e7eewpjw8ua3f2gpfx7y34ww9vjl63hayn80kl',
+    UnderlyingAsset['ada:usdcx'],
+    ADA_TOKEN_FEATURES
+  ),
 ];

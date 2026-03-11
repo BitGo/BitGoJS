@@ -14465,4 +14465,44 @@ export const erc20Coins = [
     '0x4bbe27b87c20f76349e47cbc3908477f7bbd71b0', // https://etherscan.io/token/0x4bbE27b87c20f76349E47cBc3908477f7bBD71B0
     UnderlyingAsset['eth:grtx']
   ),
+  erc20(
+    'c27cb0f3-50f8-435f-85a8-78cd1632d588',
+    'eth:audx',
+    'Aussie Dollar Token',
+    18,
+    '0xd687759f35bb747a29246a4b9495c8f52c49e00c',
+    UnderlyingAsset['eth:audx']
+  ),
+  erc20(
+    'b29e3795-cb21-4330-80af-6879c405c233',
+    'eth:chfau',
+    'AllUnity CHF',
+    6,
+    '0xbd4dfc058eb95b8de5ceaf39966a1a70f5556f78',
+    UnderlyingAsset['eth:chfau']
+  ),
+  erc20(
+    '98e39b26-bd9e-4982-b5d9-c25578b4c62d',
+    'eth:dxi',
+    'DACXI',
+    18,
+    '0x5e29cf3e3fed4df50acab95f8268e9ee26ea36f2',
+    UnderlyingAsset['eth:dxi']
+  ),
+  erc20(
+    '99487262-31d3-4385-a8c6-cead93d26da6',
+    'eth:apxusd',
+    'apxUSD',
+    18,
+    '0x98a878b1cd98131b271883b390f68d2c90674665',
+    UnderlyingAsset['eth:apxusd']
+  ),
+  erc20(
+    '55ba6b0b-b0c4-4791-b152-7b9fe276bc46',
+    'eth:q',
+    'Quack-ai',
+    18,
+    '0xc07e1300dc138601fa6b0b59f8d0fa477e690589',
+    UnderlyingAsset['eth:q']
+  ),
 ];

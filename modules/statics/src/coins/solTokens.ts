@@ -3664,4 +3664,14 @@ export const solTokens = [
     UnderlyingAsset['sol:usdca'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  solToken(
+    'c8baa591-832f-42b9-b3f2-4721ac9c0dcc',
+    'sol:skr',
+    'Seeker',
+    6,
+    'SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3',
+    'SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3',
+    UnderlyingAsset['sol:skr'],
+    SOL_TOKEN_FEATURES
+  ),
 ];

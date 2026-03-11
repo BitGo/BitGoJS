@@ -3746,6 +3746,34 @@ export const ofcErc20Coins = [
     true,
     'baseeth'
   ),
+  ofcerc20(
+    'b63c799f-b943-4a9d-ae5c-75eb3c50b0bc',
+    'ofcbaseeth:xsgd',
+    'StraitsX SGD',
+    6,
+    UnderlyingAsset['baseeth:xsgd'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    'a0bbd246-f4bb-450a-a3a3-e165602287b4',
+    'ofcbaseeth:xusd',
+    'StraitsX USD',
+    6,
+    UnderlyingAsset['baseeth:xusd'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 
   // Chiliz Network tokens
   ofcerc20(
@@ -5527,6 +5555,20 @@ export const tOfcErc20Coins = [
     'xdc'
   ),
   ofcerc20(
+    '7ebdc566-3571-4da9-8feb-54d1ebbda8f3',
+    'ofcxdc:audd',
+    'Australian Digital Dollar',
+    6,
+    underlyingAssetForSymbol('xdc:audd'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'xdc'
+  ),
+  ofcerc20(
     '0c8b533c-1929-4de8-af36-9cf4b4409c0d',
     'ofcxdc:srx',
     'STORX',
@@ -5945,6 +5987,41 @@ export const tOfcErc20Coins = [
     undefined,
     true,
     'tmorpheth'
+  ),
+  ofcerc20(
+    'f82110b2-22a1-4a27-b640-9a5c05f60957',
+    'ofceth:audx',
+    'Aussie Dollar Token',
+    18,
+    underlyingAssetForSymbol('eth:audx')
+  ),
+  ofcerc20(
+    '60b75c74-e04f-4fca-bd00-d4c426fd5599',
+    'ofceth:chfau',
+    'AllUnity CHF',
+    6,
+    underlyingAssetForSymbol('eth:chfau')
+  ),
+  ofcerc20(
+    'a5698b63-928b-4fff-9a9d-5bcb7a2cb26f',
+    'ofceth:dxi',
+    'DACXI',
+    18,
+    underlyingAssetForSymbol('eth:dxi')
+  ),
+  ofcerc20(
+    '0fd2e6e6-804b-4601-b1f9-316451eb3a9d',
+    'ofceth:apxusd',
+    'apxUSD',
+    18,
+    underlyingAssetForSymbol('eth:apxusd')
+  ),
+  ofcerc20(
+    'a60515bf-4b68-42d4-94ca-b2f74449ac15',
+    'ofceth:q',
+    'Quack-ai',
+    18,
+    underlyingAssetForSymbol('eth:q')
   ),
 ];
 
