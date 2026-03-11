@@ -4190,6 +4190,7 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['ada:wmtx']
   ),
+  ofcAdaToken('e8f2a1b3-4c5d-4e6f-8a0b-1c2d3e4f5a6b', 'ofcada:usdcx', 'USDCx', 6, UnderlyingAsset['ada:usdcx']),
   tofcAdaToken(
     '1f4e7747-f825-4107-a71f-766e847d557b',
     'ofctada:water',
