@@ -266,7 +266,8 @@ export class Tempo extends AbstractEthLikeNewCoins {
       for (let i = 0; i < operations.length; i++) {
         const op = operations[i];
         const recipient = recipients[i];
-        if (op.to.toLowerCase() !== recipient.address.toLowerCase()) {
+        const recipientBaseAddress = recipient.address.split('?')[0];
+        if (op.to.toLowerCase() !== recipientBaseAddress.toLowerCase()) {
           throw new Error(`Operation ${i} recipient mismatch: expected ${recipient.address}, got ${op.to}`);
         }
         // Compare amounts in base units (smallest denomination)
