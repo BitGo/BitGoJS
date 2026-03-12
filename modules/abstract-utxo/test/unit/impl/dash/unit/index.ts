@@ -1,3 +1,5 @@
+import assert from 'node:assert/strict';
+
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 
@@ -19,18 +21,15 @@ describe('Dash', function () {
   });
 
   it('should instantiate the coin', function () {
-    let localBasecoin = bitgo.coin('tdash');
-    localBasecoin.should.be.an.instanceof(Tdash);
-
-    localBasecoin = bitgo.coin('dash');
-    localBasecoin.should.be.an.instanceof(Dash);
+    assert.ok(bitgo.coin('tdash') instanceof Tdash);
+    assert.ok(bitgo.coin('dash') instanceof Dash);
   });
 
   it('should return tdash', function () {
-    basecoin.getChain().should.equal('tdash');
+    assert.strictEqual(basecoin.getChain(), 'tdash');
   });
 
   it('should return full name', function () {
-    basecoin.getFullName().should.equal('Testnet Dash');
+    assert.strictEqual(basecoin.getFullName(), 'Testnet Dash');
   });
 });

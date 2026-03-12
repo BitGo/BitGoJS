@@ -19,7 +19,7 @@ import { SdkBackend } from '../../src/transaction/types';
 import type { Unspent, WalletUnspent } from '../../src/unspent';
 
 import {
-  shouldEqualJSON,
+  assertEqualJSON,
   getFixture,
   getUtxoWallet,
   mockUnspent,
@@ -231,7 +231,7 @@ function run<TNumber extends number | bigint = number>(
         ) as TransactionObjStages;
       }
 
-      shouldEqualJSON(
+      assertEqualJSON(
         toTransactionStagesObj(transactionStages),
         await getFixture(
           coin,
@@ -253,7 +253,10 @@ function run<TNumber extends number | bigint = number>(
         const walletUnspent = unspent as WalletUnspent<bigint>;
         const pubkeys = walletKeys.deriveForChainAndIndex(walletUnspent.chain, walletUnspent.index).publicKeys;
         pubkeys.forEach((pk, pkIndex) => {
-          psbt.validateSignaturesOfInputCommon(index, pk).should.eql(signedBy.includes(walletKeys.triple[pkIndex]));
+          assert.strictEqual(
+            psbt.validateSignaturesOfInputCommon(index, pk),
+            signedBy.includes(walletKeys.triple[pkIndex])
+          );
         });
       });
     }
@@ -293,8 +296,8 @@ function run<TNumber extends number | bigint = number>(
         const pubkeys = walletKeys.deriveForChainAndIndex(unspent.chain, unspent.index).publicKeys;
 
         pubkeys.forEach((pk, pkIndex) => {
-          utxolib.bitgo
-            .verifySignature<TNumber>(
+          assert.strictEqual(
+            utxolib.bitgo.verifySignature<TNumber>(
               transaction,
               index,
               prevOutputs[index].value,
@@ -302,8 +305,9 @@ function run<TNumber extends number | bigint = number>(
                 publicKey: pk,
               },
               prevOutputs
-            )
-            .should.eql(signedBy.includes(walletKeys.triple[pkIndex]));
+            ),
+            signedBy.includes(walletKeys.triple[pkIndex])
+          );
         });
       });
     }
@@ -329,7 +333,9 @@ function run<TNumber extends number | bigint = number>(
         expectedProperties.push('displayOrder', 'inputSignatures', 'signatures');
       }
 
-      explanation.should.have.properties(...expectedProperties);
+      for (const prop of expectedProperties) {
+        assert.ok(prop in explanation, `expected explanation to have property '${prop}'`);
+      }
 
       const expectedSignatureCount =
         stageName === 'prebuild' || pubs === undefined
@@ -341,14 +347,15 @@ function run<TNumber extends number | bigint = number>(
           : undefined;
 
       if ('inputSignatures' in explanation) {
-        explanation.inputSignatures.should.eql(
+        assert.deepStrictEqual(
+          explanation.inputSignatures,
           // FIXME(BG-35154): implement signature verification for replay protection inputs
           inputScripts.map((type) => (type === 'p2shP2pk' ? 0 : expectedSignatureCount))
         );
       }
       if ('signatures' in explanation) {
-        explanation.signatures.should.eql(expectedSignatureCount);
-        explanation.changeAmount.should.eql('0'); // no change addresses given
+        assert.deepStrictEqual(explanation.signatures, expectedSignatureCount);
+        assert.deepStrictEqual(explanation.changeAmount, '0'); // no change addresses given
       }
       let expectedOutputAmount =
         BigInt((txFormat === 'psbt' ? getUnspentsForPsbt() : getUnspents()).length) * BigInt(value);
@@ -360,7 +367,7 @@ function run<TNumber extends number | bigint = number>(
         }
       });
       expectedOutputAmount -= BigInt(1000); // fee of 1000
-      explanation.outputAmount.should.eql(expectedOutputAmount.toString());
+      assert.deepStrictEqual(explanation.outputAmount, expectedOutputAmount.toString());
     }
 
     it('have valid signature for half-signed transaction', function () {

@@ -1,4 +1,5 @@
-import 'should';
+import assert from 'node:assert/strict';
+
 import { BitGoAPI } from '@bitgo/sdk-api';
 
 import { Zec, Tzec } from '../../../../../src/impl/zec';
@@ -16,18 +17,15 @@ describe('Zec', function () {
   });
 
   it('should instantiate the coin', function () {
-    let localBasecoin = bitgo.coin('tzec');
-    localBasecoin.should.be.an.instanceof(Tzec);
-
-    localBasecoin = bitgo.coin('zec');
-    localBasecoin.should.be.an.instanceof(Zec);
+    assert.ok(bitgo.coin('tzec') instanceof Tzec);
+    assert.ok(bitgo.coin('zec') instanceof Zec);
   });
 
   it('should return tzec', function () {
-    basecoin.getChain().should.equal('tzec');
+    assert.strictEqual(basecoin.getChain(), 'tzec');
   });
 
   it('should return full name', function () {
-    basecoin.getFullName().should.equal('Testnet ZCash');
+    assert.strictEqual(basecoin.getFullName(), 'Testnet ZCash');
   });
 });

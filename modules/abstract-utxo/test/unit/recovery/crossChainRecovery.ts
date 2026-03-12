@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 
-import should = require('should');
 import nock = require('nock');
 import { Triple } from '@bitgo/sdk-core';
 import { getSeed } from '@bitgo/sdk-test';
@@ -22,7 +21,7 @@ import {
   getFixture,
   keychainsBase58,
   KeychainBase58,
-  shouldEqualJSON,
+  assertEqualJSON,
   utxoCoins,
   getDefaultWasmWalletKeys,
   defaultBitGo,
@@ -154,7 +153,7 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
           })
         );
       }
-      shouldEqualJSON(
+      assertEqualJSON(
         recoveryObj,
         await getFixture(sourceCoin, `recovery/crossChainRecovery-${recoveryCoin.getChain()}-${name}`, recoveryObj)
       );
@@ -165,11 +164,11 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
       const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(Buffer.from(psbtHex, 'hex'), sourceCoin.name);
       const parsed = wasmPsbt.parseTransactionWithWalletKeys(wasmWalletKeys, { replayProtection: { publicKeys: [] } });
       const unspents = getRecoveryUnspents();
-      should.equal(parsed.inputs.length, unspents.length);
+      assert.strictEqual(parsed.inputs.length, unspents.length);
       // Verify user key has signed each input (same pattern as backupKeyRecovery test)
       parsed.inputs.forEach((_, i) => {
         const userSigned = wasmPsbt.verifySignature(i, xprivs[0]);
-        userSigned.should.eql(true, `Input ${i} should be signed by user key`);
+        assert.strictEqual(userSigned, true, `Input ${i} should be signed by user key`);
       });
     }
 
@@ -192,7 +191,7 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
         ...params,
         xprv: keychainsBase58[0].prv,
       })) as CrossChainRecoverySigned<TNumber>;
-      should.equal(getRecoveryProviderStub.callCount, 1);
+      assert.strictEqual(getRecoveryProviderStub.callCount, 1);
 
       // Verify fixture match
       await matchFixture('signed', signedRecovery);
@@ -220,7 +219,7 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
         ...params,
         signed: false,
       })) as CrossChainRecoveryUnsigned<TNumber>;
-      should.equal(getRecoveryProviderStub.callCount, 1);
+      assert.strictEqual(getRecoveryProviderStub.callCount, 1);
 
       // Verify fixture match
       await matchFixture('unsigned', unsignedRecovery);
