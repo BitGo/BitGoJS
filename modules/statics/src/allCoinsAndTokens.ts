@@ -3977,6 +3977,15 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:xusd'],
     Networks.main.basechain
   ),
+  erc20Token(
+    '04191b92-7ad5-433f-9ee3-12d951ac095e',
+    'baseeth:home',
+    'Home (Defi App)',
+    18,
+    '0x4bfaa776991e85e5f8b1255461cbbd216cfc714f',
+    UnderlyingAsset['baseeth:home'],
+    Networks.main.basechain
+  ),
 
   // XDC mainnet tokens
   xdcErc20(
@@ -6160,6 +6169,14 @@ export const allCoinsAndTokens = [
     AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   opethErc20(
+    '332caeea-7ceb-49cd-9079-9df278ac3685',
+    'opeth:cyber',
+    'CyberConnect (CYBER)',
+    18,
+    '0x14778860e937f509e651192a90589de711fb88a9',
+    UnderlyingAsset['opeth:cyber']
+  ),
+  opethErc20(
     '73beeb1f-73a1-48c1-bc08-552f7be4a57b',
     'opeth:velo',
     'Velodrome Finance',
@@ -6653,6 +6670,18 @@ export const allCoinsAndTokens = [
     'FUD',
     '0x76cb819b01abed502bee8a702b4c2d547532c12f25001c9dea795a5e631c26f1::fud::FUD',
     UnderlyingAsset['sui:fud'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    '82c3392b-81ac-4c88-9df1-dc62a623adb7',
+    'sui:haedal',
+    'Haedal Protocol',
+    9,
+    '0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea',
+    'haedal',
+    'HAEDAL',
+    '0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL',
+    UnderlyingAsset['sui:haedal'],
     SUI_TOKEN_FEATURES
   ),
   suiToken(

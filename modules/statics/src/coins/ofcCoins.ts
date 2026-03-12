@@ -2141,6 +2141,13 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['avaxc:eurc']
   ),
+  ofcAvaxErc20(
+    '9f0a8419-c114-4809-96af-d083e2945c8d',
+    'ofcavaxc:ausd',
+    'AUSD',
+    6,
+    UnderlyingAsset['avaxc:ausd']
+  ),
   ofcAvaxErc20('9fb77e47-8916-4dcb-ac10-e11fa07172fb', 'ofcavaxc:nxpc', 'NEXPACE', 18, UnderlyingAsset['avaxc:nxpc']),
   ofcOpethErc20('10259b23-2e2e-4574-b146-b49f1119600f', 'ofcopeth:op', 'Optimism', 18, UnderlyingAsset['opeth:op']),
   ofcOpethErc20(
@@ -2477,6 +2484,7 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['bsc:high']
   ),
+  ofcBscToken('e6ab18e7-1a9a-4522-84bb-c49e9aaa0486', 'ofcbsc:hyper', 'Hyperlane (HYPER)', 18, UnderlyingAsset['bsc:hyper']),
   ofcBscToken(
     '5c977f6a-4b1e-3f2e-9d8f-7c1e8b6f2e5a',
     'ofcbsc:inj',
@@ -4078,10 +4086,13 @@ export const ofcCoins = [
   ),
   ofcsolToken('c2d3e4f5-6a7b-4c8d-90e1-af3a4b5c6d7e', 'ofcsol:meta', 'MetaDAO', 9, UnderlyingAsset['sol:meta']),
   ofcsolToken('d3e4f5a6-7b8c-4d9e-81f2-3a4b5c6d7e8f', 'ofcsol:portals', 'Portals', 9, UnderlyingAsset['sol:portals']),
+  ofcsolToken('b26ae13f-cc3b-43d9-8c04-a0a2b1fa63bc', 'ofcsol:bmt', 'Bubblemaps', 6, UnderlyingAsset['sol:bmt']),
+  ofcsolToken('758f0872-89bf-4e11-a11f-155b408ca2bf', 'ofcsol:huma', 'Huma Finance', 6, UnderlyingAsset['sol:huma']),
   // New SUI OFC token
   ofcSuiToken('1e01eb3d-2573-4662-aa5e-4c390e4a9b38', 'ofcsui:dmc', 'DeLorean', 9, UnderlyingAsset['sui:dmc']),
   ofcSuiToken('e4f5a6b7-8c9d-4eaf-82a3-4b5c6d7e8f9a', 'ofcsui:mmt', 'Momentum', 9, UnderlyingAsset['sui:mmt']),
   ofcSuiToken('3feb51ae-9625-427a-badb-acd57d3d72f5', 'ofcsui:usdsui', 'Sui Dollar', 6, UnderlyingAsset['sui:usdsui']),
+  ofcSuiToken('d9b1069e-3de7-44f0-822c-9c3dd116d26b', 'ofcsui:haedal', 'Haedal Protocol', 9, UnderlyingAsset['sui:haedal']),
   // Tempo mainnet OFC tokens
   ofcTempoToken(
     '61cbeade-67a7-4f18-b60d-bca7bf66d97e',
