@@ -624,6 +624,15 @@ export const bscTokens = [
     BSC_TOKEN_FEATURES
   ),
   bscToken(
+    'b98a36bf-93fc-442e-bc0f-70750ba9fb7d',
+    'bsc:hyper',
+    'Hyperlane',
+    18,
+    '0xc9d23ed2adb0f551369946bd377f8644ce1ca5c4',
+    UnderlyingAsset['bsc:hyper'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
     'be1e64ad-189e-4885-b7f0-2c661ffba041',
     'bsc:inj',
     'Injective Protocol',

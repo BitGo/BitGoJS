@@ -3796,6 +3796,20 @@ export const ofcErc20Coins = [
     true,
     'baseeth'
   ),
+  ofcerc20(
+    '6ef4c304-dcdb-4c59-ab5b-b75b47663fde',
+    'ofcbaseeth:home',
+    'Home (Defi App)',
+    18,
+    UnderlyingAsset['baseeth:home'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 
   // Chiliz Network tokens
   ofcerc20(
@@ -6098,6 +6112,36 @@ export const tOfcErc20Coins = [
     underlyingAssetForSymbol('eth:apxusd')
   ),
   ofcerc20('a60515bf-4b68-42d4-94ca-b2f74449ac15', 'ofceth:q', 'Quack-ai', 18, underlyingAssetForSymbol('eth:q')),
+  ofcerc20('48ae1eeb-3154-484b-a3a0-d44a599943b3', 'ofceth:nom', 'Nomina', 18, underlyingAssetForSymbol('eth:nom')),
+  ofcerc20('3818ce74-6854-40d4-8007-ca726b5dfff0', 'ofceth:kite', 'Kite', 18, underlyingAssetForSymbol('eth:kite')),
+  ofcerc20(
+    '81cdf38c-f6d6-4e93-9dda-aae22104834d',
+    'ofceth:sahara',
+    'Sahara AI',
+    18,
+    underlyingAssetForSymbol('eth:sahara')
+  ),
+  ofcerc20(
+    '0030515b-8a8c-4048-b646-bae43097c51b',
+    'ofceth:epic',
+    'Epic Chain',
+    18,
+    underlyingAssetForSymbol('eth:epic')
+  ),
+  ofcerc20(
+    '22d66acc-976b-4dfb-be64-c6c963938424',
+    'ofcopeth:cyber',
+    'CyberConnect',
+    18,
+    UnderlyingAsset['opeth:cyber'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'opeth'
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

@@ -2599,6 +2599,7 @@ export enum UnderlyingAsset {
   'avaxc:benji' = 'avaxc:benji',
   'avaxc:emdx' = 'avaxc:emdx',
   'avaxc:eurc' = 'avaxc:eurc',
+  'avaxc:ausd' = 'avaxc:ausd',
   // End FTX missing AVAXC tokens
 
   // polygon Token ERC-20
@@ -2802,6 +2803,7 @@ export enum UnderlyingAsset {
   'bsc:front' = 'bsc:front',
   'bsc:hft' = 'bsc:hft',
   'bsc:high' = 'bsc:high',
+  'bsc:hyper' = 'bsc:hyper',
   'bsc:inj' = 'bsc:inj',
   'bsc:iotx' = 'bsc:iotx',
   'bsc:auto' = 'bsc:auto',
@@ -3028,6 +3030,7 @@ export enum UnderlyingAsset {
   'baseeth:kaito' = 'baseeth:kaito',
   'baseeth:xsgd' = 'baseeth:xsgd',
   'baseeth:xusd' = 'baseeth:xusd',
+  'baseeth:home' = 'baseeth:home',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -3157,6 +3160,7 @@ export enum UnderlyingAsset {
   'opeth:wtgxx' = 'opeth:wtgxx',
   'opeth:lngvx' = 'opeth:lngvx',
   'opeth:eqtyx' = 'opeth:eqtyx',
+  'opeth:cyber' = 'opeth:cyber',
   'opeth:velo' = 'opeth:velo',
 
   // Optimism testnet tokens
@@ -3432,6 +3436,8 @@ export enum UnderlyingAsset {
   'sol:prcl' = 'sol:prcl',
   'sol:asp' = 'sol:asp',
   'sol:skr' = 'sol:skr',
+  'sol:bmt' = 'sol:bmt',
+  'sol:huma' = 'sol:huma',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',
@@ -3480,6 +3486,7 @@ export enum UnderlyingAsset {
   'sui:sca' = 'sui:sca',
   'sui:times' = 'sui:times',
   'sui:fud' = 'sui:fud',
+  'sui:haedal' = 'sui:haedal',
   'sui:afsui' = 'sui:afsui',
   'sui:navx' = 'sui:navx',
   'sui:vsui' = 'sui:vsui',
@@ -3648,6 +3655,10 @@ export enum UnderlyingAsset {
   'eth:pt-cusdo-28may2026' = 'eth:pt-cusdo-28may2026',
   'eth:usd1cx' = 'eth:usd1cx',
   'eth:ctusd1cx' = 'eth:ctusd1cx',
+  'eth:nom' = 'eth:nom',
+  'eth:kite' = 'eth:kite',
+  'eth:sahara' = 'eth:sahara',
+  'eth:epic' = 'eth:epic',
 
   // ADA testnet tokens
   'tada:water' = 'tada:water',

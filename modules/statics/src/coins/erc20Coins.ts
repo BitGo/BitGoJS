@@ -14550,6 +14550,38 @@ export const erc20Coins = [
     '0xcc4d271c881d73cd38d09ae9c5e7264aef2f6d47',
     UnderlyingAsset['eth:ctusd1cx']
   ),
+  erc20(
+    'b528cf38-f49d-4b76-98d6-6aaf03794b90',
+    'eth:nom',
+    'Nomina',
+    18,
+    '0x6e6f6d696e61decd6605bd4a57836c5db6923340',
+    UnderlyingAsset['eth:nom']
+  ),
+  erc20(
+    'e8aebe08-1fd6-4609-b50a-ac3d7923d553',
+    'eth:kite',
+    'Kite',
+    18,
+    '0x904567252d8f48555b7447c67dca23f0372e16be',
+    UnderlyingAsset['eth:kite']
+  ),
+  erc20(
+    '8850c5c1-41da-4215-bcec-7dc0376fd7df',
+    'eth:sahara',
+    'Sahara AI',
+    18,
+    '0xfdfbb411c4a70aa7c95d5c981a6fb4da867e1111',
+    UnderlyingAsset['eth:sahara']
+  ),
+  erc20(
+    '2101f10f-3fc2-45f6-ba68-d92944398898',
+    'eth:epic',
+    'Epic Chain',
+    18,
+    '0x94314a14df63779c99c0764a30e0cd22fa78fc0e',
+    UnderlyingAsset['eth:epic']
+  ),
   terc20(
     '0c333619-e5a6-4f9d-8bbc-5b0e5dc64d03',
     'hteth:grtxp',

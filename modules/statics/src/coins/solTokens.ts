@@ -3674,4 +3674,24 @@ export const solTokens = [
     UnderlyingAsset['sol:skr'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '28b38725-0eae-4b4e-a8e6-8858313f86fb',
+    'sol:bmt',
+    'Bubblemaps',
+    9,
+    'FQgtfugBdpFN7PZ6NdPrZpVLDBrPGxXesi4gVu3vErhY',
+    'FQgtfugBdpFN7PZ6NdPrZpVLDBrPGxXesi4gVu3vErhY',
+    UnderlyingAsset['sol:bmt'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'f790b6ef-a59d-40e1-98b2-6d047c41d728',
+    'sol:huma',
+    'Huma Finance',
+    6,
+    'HUMA1821qVDKta3u2ovmfDQeW2fSQouSKE8fkF44wvGw',
+    'HUMA1821qVDKta3u2ovmfDQeW2fSQouSKE8fkF44wvGw',
+    UnderlyingAsset['sol:huma'],
+    SOL_TOKEN_FEATURES
+  ),
 ];
