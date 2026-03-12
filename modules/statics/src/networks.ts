@@ -2127,8 +2127,8 @@ class SoneiumTestnet extends Testnet implements EthereumNetwork {
 class SeiEvm extends Mainnet implements EthereumNetwork {
   name = 'Seievm';
   family = CoinFamily.SEIEVM;
-  explorerUrl = 'https://seitrace.com/tx/';
-  accountExplorerUrl = 'https://seitrace.com/address/';
+  explorerUrl = 'https://seiscan.io/tx/';
+  accountExplorerUrl = 'https://seiscan.io/address/';
   chainId = 1329;
   nativeCoinOperationHashPrefix = '1329';
 }
@@ -2136,8 +2136,8 @@ class SeiEvm extends Mainnet implements EthereumNetwork {
 class SeiEvmTestnet extends Testnet implements EthereumNetwork {
   name = 'SeiEvmTestnet';
   family = CoinFamily.SEIEVM;
-  explorerUrl = 'https://testnet.seistream.app/transactions/';
-  accountExplorerUrl = 'https://testnet.seistream.app/account/';
+  explorerUrl = 'https://testnet.seiscan.io/tx/';
+  accountExplorerUrl = 'https://testnet.seiscan.io/address/';
   chainId = 1328;
   nativeCoinOperationHashPrefix = '1328';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
