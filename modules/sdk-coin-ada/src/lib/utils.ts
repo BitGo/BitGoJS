@@ -22,6 +22,8 @@ import bs58 from 'bs58';
 import cbor from 'cbor';
 
 export const MIN_ADA_FOR_ONE_ASSET = '1500000';
+// Cardano protocol minimum for any ADA-only output (BabbageOutputTooSmallUTxO is thrown if violated)
+export const MIN_ADA_TRANSFER = '1000000';
 export const VOTE_ALWAYS_ABSTAIN = 'always-abstain';
 export const VOTE_ALWAYS_NO_CONFIDENCE = 'always-no-confidence';
 

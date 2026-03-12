@@ -1002,9 +1002,7 @@ describe('ADA', function () {
           walletPassphrase: wrwUser.walletPassphrase,
           recoveryDestination: destAddr,
         })
-        .should.rejectedWith(
-          'Insufficient funds to recover, minimum required is 1 ADA plus fees, got 834455 fees: 165545'
-        );
+        .should.rejectedWith(/Consolidation amount too small: after fees, only 834455 lovelace remains/);
       sandBox.assert.calledTwice(basecoin.getDataFromNode);
     });
   });

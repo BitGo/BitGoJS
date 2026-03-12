@@ -8,6 +8,78 @@ import { Transaction } from '../../src/lib/transaction';
 
 describe('ADA Transaction Builder', async () => {
   const factory = new TransactionBuilderFactory(coins.get('tada'));
+
+  describe('Minimum output amount validation (BabbageOutputTooSmallUTxO prevention)', () => {
+    // Shared test inputs — using the same transaction_id and addresses as the Shelley tests above
+    const txId = '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21';
+    const recipientAddress = testData.rawTx.outputAddress1.address;
+    const changeAddress = testData.rawTx.outputAddress2.address;
+    const totalInput = 21032023;
+
+    it('should reject a transfer output of 999999 lovelace (below 1 ADA minimum)', async () => {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({ transaction_id: txId, transaction_index: 1 });
+      txBuilder.output({ address: recipientAddress, amount: '999999' });
+      txBuilder.changeAddress(changeAddress, totalInput.toString());
+      txBuilder.ttl(800000000);
+      await txBuilder
+        .build()
+        .should.be.rejectedWith(
+          /Transfer amount too small: minimum is 1 ADA \(1000000 lovelace\), got 999999 lovelace/
+        );
+    });
+
+    it('should reject a transfer output of 0 lovelace', async () => {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({ transaction_id: txId, transaction_index: 1 });
+      txBuilder.output({ address: recipientAddress, amount: '0' });
+      txBuilder.changeAddress(changeAddress, totalInput.toString());
+      txBuilder.ttl(800000000);
+      await txBuilder
+        .build()
+        .should.be.rejectedWith(/Transfer amount too small: minimum is 1 ADA \(1000000 lovelace\), got 0 lovelace/);
+    });
+
+    it('should allow a transfer output of exactly 1 ADA (1000000 lovelace)', async () => {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({ transaction_id: txId, transaction_index: 1 });
+      txBuilder.output({ address: recipientAddress, amount: '1000000' });
+      txBuilder.changeAddress(changeAddress, totalInput.toString());
+      txBuilder.ttl(800000000);
+      const tx = (await txBuilder.build()) as Transaction;
+      tx.type.should.equal(TransactionType.Send);
+      const txData = tx.toJson();
+      txData.outputs[0].amount.should.equal('1000000');
+    });
+
+    it('should omit change output when change is below 1 ADA (dust absorbed into fee)', async () => {
+      // totalInput = 1000000 (recipient) + ~167000 (fee) + ~600 (dust) — change would be ~600 lovelace
+      // With our fix, no change output should appear; the dust becomes extra fee
+      const dustInput = 1167600;
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({ transaction_id: txId, transaction_index: 1 });
+      txBuilder.output({ address: recipientAddress, amount: '1000000' });
+      txBuilder.changeAddress(changeAddress, dustInput.toString());
+      txBuilder.ttl(800000000);
+      const tx = (await txBuilder.build()) as Transaction;
+      const txData = tx.toJson();
+      // Only 1 output (the recipient), the change dust was absorbed into the fee
+      txData.outputs.length.should.equal(1);
+      txData.outputs[0].address.should.equal(recipientAddress);
+    });
+
+    it('should reject ADA-only consolidation when amount after fees is below 1 ADA', async () => {
+      // totalInput so small that after fee estimation the remaining balance < 1 ADA
+      const tinyInput = 500000;
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({ transaction_id: txId, transaction_index: 1 });
+      // No output = consolidation mode
+      txBuilder.changeAddress(changeAddress, tinyInput.toString());
+      txBuilder.ttl(800000000);
+      await txBuilder.build().should.be.rejectedWith(/Consolidation amount too small/);
+    });
+  });
+
   it('start and build an unsigned transfer tx for byron address', async () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.input({

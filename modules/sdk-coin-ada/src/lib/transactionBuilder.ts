@@ -12,7 +12,7 @@ import {
 } from '@bitgo/sdk-core';
 import { Asset, Transaction, TransactionInput, TransactionOutput, Withdrawal, SponsorshipInfo } from './transaction';
 import { KeyPair } from './keyPair';
-import util, { MIN_ADA_FOR_ONE_ASSET } from './utils';
+import util, { MIN_ADA_FOR_ONE_ASSET, MIN_ADA_TRANSFER } from './utils';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { BigNum } from '@emurgo/cardano-serialization-lib-nodejs';
 
@@ -297,8 +297,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
           change = change.checked_sub(minAmountNeededForAssetOutput);
         } else {
-          // Native coin send
+          // Native coin send — reject if below Cardano's minimum output (BabbageOutputTooSmallUTxO)
           const amount = CardanoWasm.BigNum.from_str(receiverAmount);
+          if (amount.less_than(CardanoWasm.BigNum.from_str(MIN_ADA_TRANSFER))) {
+            throw new BuildTransactionError(
+              `Transfer amount too small: minimum is 1 ADA (${MIN_ADA_TRANSFER} lovelace), got ${receiverAmount} lovelace`
+            );
+          }
           outputs.add(
             CardanoWasm.TransactionOutput.new(util.getWalletAddress(receiverAddress), CardanoWasm.Value.new(amount))
           );
@@ -392,7 +397,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         change = change.checked_sub(minAmountNeededForAssetOutput);
       });
     }
-    if (!change.is_zero()) {
+    // Only create a change output if it meets the Cardano minimum output amount.
+    // If the change is positive but below 1 ADA, it is absorbed into the transaction fee
+    // (i.e. the miner receives the dust) rather than creating an unspendable UTXO.
+    if (!change.is_zero() && !change.less_than(CardanoWasm.BigNum.from_str(MIN_ADA_TRANSFER))) {
       const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
       outputs.add(changeOutput);
     }
@@ -524,6 +532,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         txOutputAmountBuilder = txOutputAmountBuilder.with_coin_and_asset(amount, multiAsset);
         outputs.add(txOutputAmountBuilder.build());
       } else {
+        if (amount.less_than(CardanoWasm.BigNum.from_str(MIN_ADA_TRANSFER))) {
+          throw new BuildTransactionError(
+            `Transfer amount too small: minimum is 1 ADA (${MIN_ADA_TRANSFER} lovelace), got ${output.amount} lovelace`
+          );
+        }
         outputs.add(
           CardanoWasm.TransactionOutput.new(util.getWalletAddress(output.address), CardanoWasm.Value.new(amount))
         );
@@ -553,7 +566,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         // If totalAmountToSend is 0, its consolidation
         if (totalAmountToSend.to_str() == '0') {
           // support for multi-asset consolidation
-          if (this._multiAssets !== undefined) {
+          if (this._multiAssets.length > 0) {
             const totalNumberOfAssets = CardanoWasm.BigNum.from_str(this._multiAssets.length.toString());
             const minAmountNeededForOneAssetOutput = CardanoWasm.BigNum.from_str(MIN_ADA_FOR_ONE_ASSET);
             const minAmountNeededForTotalAssetOutputs =
@@ -582,23 +595,36 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
                 outputs.add(txOutput);
               });
 
-              // finally send the remaining ADA in its own output
+              // Only add the remaining ADA output if it meets the protocol minimum.
+              // If below 1 ADA, the remainder is absorbed into the fee rather than
+              // creating an unspendable output (BabbageOutputTooSmallUTxO).
               const remainingOutputAmount = change.checked_sub(minAmountNeededForTotalAssetOutputs);
-              const changeOutput = CardanoWasm.TransactionOutput.new(
-                changeAddress,
-                CardanoWasm.Value.new(remainingOutputAmount)
-              );
-              outputs.add(changeOutput);
+              if (!remainingOutputAmount.less_than(CardanoWasm.BigNum.from_str(MIN_ADA_TRANSFER))) {
+                const changeOutput = CardanoWasm.TransactionOutput.new(
+                  changeAddress,
+                  CardanoWasm.Value.new(remainingOutputAmount)
+                );
+                outputs.add(changeOutput);
+              }
             }
           } else {
-            // If there are no tokens to consolidate, you only have 1 output which is ADA alone
+            // ADA-only consolidation — the entire balance (minus fee) becomes the single output.
+            // Reject if it would be below the Cardano minimum output to prevent BabbageOutputTooSmallUTxO.
+            if (change.less_than(CardanoWasm.BigNum.from_str(MIN_ADA_TRANSFER))) {
+              throw new BuildTransactionError(
+                `Consolidation amount too small: after fees, only ${change.to_str()} lovelace remains which is below the 1 ADA minimum output required by the Cardano protocol`
+              );
+            }
             const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
             outputs.add(changeOutput);
           }
         } else {
-          // If this isn't a consolidate request, whatever change that needs to be sent back to the rootaddress is added as a separate output here
-          const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
-          outputs.add(changeOutput);
+          // If this isn't a consolidate request, whatever change that needs to be sent back to the rootaddress is added as a separate output here.
+          // Skip the change output if it would be below the Cardano minimum (1 ADA); dust is absorbed into the fee.
+          if (!change.less_than(CardanoWasm.BigNum.from_str(MIN_ADA_TRANSFER))) {
+            const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
+            outputs.add(changeOutput);
+          }
         }
       }
 
@@ -720,7 +746,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       // If totalAmountToSend is 0, its consolidation
       if (totalAmountToSend.to_str() == '0') {
         // support for multi-asset consolidation
-        if (this._multiAssets !== undefined) {
+        if (this._multiAssets.length > 0) {
           const totalNumberOfAssets = CardanoWasm.BigNum.from_str(this._multiAssets.length.toString());
           const minAmountNeededForOneAssetOutput = CardanoWasm.BigNum.from_str('1500000');
           const minAmountNeededForTotalAssetOutputs = minAmountNeededForOneAssetOutput.checked_mul(totalNumberOfAssets);
@@ -748,27 +774,39 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
               outputs.add(txOutput);
             });
 
-            // finally send the remaining ADA in its own output
+            // Only add the remaining ADA output if it meets the Cardano protocol minimum.
+            // If below 1 ADA, the remainder is absorbed into the fee (BabbageOutputTooSmallUTxO prevention).
             const remainingOutputAmount = change.checked_sub(minAmountNeededForTotalAssetOutputs);
-            const changeOutput = CardanoWasm.TransactionOutput.new(
-              changeAddress,
-              CardanoWasm.Value.new(remainingOutputAmount)
-            );
-            outputs.add(changeOutput);
+            if (!remainingOutputAmount.less_than(CardanoWasm.BigNum.from_str(MIN_ADA_TRANSFER))) {
+              const changeOutput = CardanoWasm.TransactionOutput.new(
+                changeAddress,
+                CardanoWasm.Value.new(remainingOutputAmount)
+              );
+              outputs.add(changeOutput);
+            }
           } else {
             throw new BuildTransactionError(
               'Insufficient funds: need a minimum of 1.5 ADA per output to construct token consolidation'
             );
           }
         } else {
-          // If there are no tokens to consolidate, you only have 1 output which is ADA alone
+          // ADA-only consolidation — the entire balance (minus fee) becomes the single output.
+          // Reject if it would be below the Cardano minimum output to prevent BabbageOutputTooSmallUTxO.
+          if (change.less_than(CardanoWasm.BigNum.from_str(MIN_ADA_TRANSFER))) {
+            throw new BuildTransactionError(
+              `Consolidation amount too small: after fees, only ${change.to_str()} lovelace remains which is below the 1 ADA minimum output required by the Cardano protocol`
+            );
+          }
           const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
           outputs.add(changeOutput);
         }
       } else {
-        // If this isn't a consolidate request, whatever change that needs to be sent back to the rootaddress is added as a separate output here
-        const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
-        outputs.add(changeOutput);
+        // If this isn't a consolidate request, whatever change needs to be sent back is added as a separate output.
+        // Skip if below the Cardano minimum (1 ADA); dust is absorbed into the fee.
+        if (!change.less_than(CardanoWasm.BigNum.from_str(MIN_ADA_TRANSFER))) {
+          const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
+          outputs.add(changeOutput);
+        }
       }
     }
 

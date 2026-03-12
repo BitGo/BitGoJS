@@ -586,7 +586,8 @@ export class Ada extends BaseCoin {
       } catch (e) {
         if (
           e.message === 'Did not find address with funds to recover.' ||
-          e.message.startsWith('Insufficient funds to recover')
+          e.message.startsWith('Insufficient funds to recover') ||
+          e.message.startsWith('Consolidation amount too small')
         ) {
           lastScanIndex = i;
           continue;
