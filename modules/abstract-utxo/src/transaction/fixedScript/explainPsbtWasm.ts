@@ -1,7 +1,7 @@
 import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 import { Triple } from '@bitgo/sdk-core';
 
-import type { FixedScriptWalletOutput, Output } from '../types';
+import type { FixedScriptWalletOutput, Output, BitGoPsbt } from '../types';
 
 import type { TransactionExplanationWasm } from './explainTransaction';
 
@@ -20,71 +20,122 @@ function isParsedExternalOutput(output: ParsedWalletOutput | ParsedExternalOutpu
   return output.scriptId === null;
 }
 
-function toChangeOutput(output: ParsedWalletOutput): FixedScriptWalletOutput {
+function toChangeOutputBigInt(output: ParsedWalletOutput): FixedScriptWalletOutput<bigint> {
   return {
     address: output.address ?? scriptToAddress(output.script),
-    amount: output.value.toString(),
+    amount: output.value,
     chain: output.scriptId.chain,
     index: output.scriptId.index,
     external: false,
   };
 }
 
-function toExternalOutput(output: ParsedExternalOutput): Output {
+function toExternalOutputBigInt(output: ParsedExternalOutput): Output<bigint> {
   return {
     address: output.address ?? scriptToAddress(output.script),
-    amount: output.value.toString(),
+    amount: output.value,
     external: true,
   };
 }
 
-export function explainPsbtWasm(
-  psbt: fixedScriptWallet.BitGoPsbt,
+interface ExplainPsbtWasmParams {
+  replayProtection: {
+    checkSignature?: boolean;
+    publicKeys: Buffer[];
+  };
+  customChangeWalletXpubs?: Triple<string> | fixedScriptWallet.RootWalletKeys;
+}
+
+export interface ExplainedInput<TAmount = bigint> {
+  address: string;
+  value: TAmount;
+}
+
+export interface TransactionExplanationBigInt {
+  id: string;
+  inputs: ExplainedInput[];
+  inputAmount: bigint;
+  outputs: Output<bigint>[];
+  changeOutputs: FixedScriptWalletOutput<bigint>[];
+  customChangeOutputs: FixedScriptWalletOutput<bigint>[];
+  outputAmount: bigint;
+  changeAmount: bigint;
+  customChangeAmount: bigint;
+  fee: bigint;
+}
+
+export function explainPsbtWasmBigInt(
+  psbt: BitGoPsbt,
   walletXpubs: Triple<string> | fixedScriptWallet.RootWalletKeys,
-  params: {
-    replayProtection: {
-      checkSignature?: boolean;
-      publicKeys: Buffer[];
-    };
-    customChangeWalletXpubs?: Triple<string> | fixedScriptWallet.RootWalletKeys;
-  }
-): TransactionExplanationWasm {
+  params: ExplainPsbtWasmParams
+): TransactionExplanationBigInt {
   const parsed = psbt.parseTransactionWithWalletKeys(walletXpubs, { replayProtection: params.replayProtection });
 
-  const changeOutputs: FixedScriptWalletOutput[] = [];
-  const outputs: Output[] = [];
+  const changeOutputs: FixedScriptWalletOutput<bigint>[] = [];
+  const outputs: Output<bigint>[] = [];
   const parsedCustomChangeOutputs = params.customChangeWalletXpubs
     ? psbt.parseOutputsWithWalletKeys(params.customChangeWalletXpubs)
     : undefined;
 
-  const customChangeOutputs: FixedScriptWalletOutput[] = [];
+  const customChangeOutputs: FixedScriptWalletOutput<bigint>[] = [];
 
   parsed.outputs.forEach((output, i) => {
     const parseCustomChangeOutput = parsedCustomChangeOutputs?.[i];
     if (isParsedWalletOutput(output)) {
-      // This is a change output
-      changeOutputs.push(toChangeOutput(output));
+      changeOutputs.push(toChangeOutputBigInt(output));
     } else if (parseCustomChangeOutput && isParsedWalletOutput(parseCustomChangeOutput)) {
-      customChangeOutputs.push(toChangeOutput(parseCustomChangeOutput));
+      customChangeOutputs.push(toChangeOutputBigInt(parseCustomChangeOutput));
     } else if (isParsedExternalOutput(output)) {
-      outputs.push(toExternalOutput(output));
+      outputs.push(toExternalOutputBigInt(output));
     } else {
       throw new Error('Invalid output');
     }
   });
 
-  const outputAmount = outputs.reduce((sum, output) => sum + BigInt(output.amount), BigInt(0));
-  const changeAmount = changeOutputs.reduce((sum, output) => sum + BigInt(output.amount), BigInt(0));
-  const customChangeAmount = customChangeOutputs.reduce((sum, output) => sum + BigInt(output.amount), BigInt(0));
+  const inputs = parsed.inputs.map((input) => ({ address: input.address, value: input.value }));
+  const inputAmount = inputs.reduce((sum, input) => sum + input.value, 0n);
+  const outputAmount = outputs.reduce((sum, output) => sum + output.amount, 0n);
+  const changeAmount = changeOutputs.reduce((sum, output) => sum + output.amount, 0n);
+  const customChangeAmount = customChangeOutputs.reduce((sum, output) => sum + output.amount, 0n);
 
   return {
     id: psbt.unsignedTxId(),
-    outputAmount: outputAmount.toString(),
-    changeAmount: changeAmount.toString(),
-    customChangeAmount: customChangeAmount.toString(),
+    inputs,
+    inputAmount,
     outputs,
     changeOutputs,
     customChangeOutputs,
-    fee: parsed.minerFee.toString(),
+    outputAmount,
+    changeAmount,
+    customChangeAmount,
+    fee: parsed.minerFee,
+  };
+}
+
+function stringifyOutput(output: Output<bigint>): Output {
+  return { ...output, amount: output.amount.toString() };
+}
+
+function stringifyChangeOutput(output: FixedScriptWalletOutput<bigint>): FixedScriptWalletOutput {
+  return { ...output, amount: output.amount.toString() };
+}
+
+export function explainPsbtWasm(
+  psbt: BitGoPsbt,
+  walletXpubs: Triple<string> | fixedScriptWallet.RootWalletKeys,
+  params: ExplainPsbtWasmParams
+): TransactionExplanationWasm {
+  const result = explainPsbtWasmBigInt(psbt, walletXpubs, params);
+  return {
+    id: result.id,
+    inputs: result.inputs.map((i) => ({ address: i.address, value: i.value.toString() })),
+    inputAmount: result.inputAmount.toString(),
+    outputAmount: result.outputAmount.toString(),
+    changeAmount: result.changeAmount.toString(),
+    customChangeAmount: result.customChangeAmount.toString(),
+    outputs: result.outputs.map(stringifyOutput),
+    changeOutputs: result.changeOutputs.map(stringifyChangeOutput),
+    customChangeOutputs: result.customChangeOutputs.map(stringifyChangeOutput),
+    fee: result.fee.toString(),
   };
 }

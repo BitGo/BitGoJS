@@ -5,7 +5,7 @@ import { testutil } from '@bitgo/utxo-lib';
 import { fixedScriptWallet, Triple } from '@bitgo/wasm-utxo';
 
 import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction';
-import { explainPsbt, explainPsbtWasm } from '../../../../src/transaction/fixedScript';
+import { explainPsbt, explainPsbtWasm, explainPsbtWasmBigInt } from '../../../../src/transaction/fixedScript';
 import { getCoinName } from '../../../../src/names';
 
 function describeTransactionWith(acidTest: testutil.AcidTest) {
@@ -79,11 +79,41 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
             break;
         }
       }
+
+      // verify new fields are present and stringified
+      assert.strictEqual(typeof wasmExplanation.inputAmount, 'string');
+      assert.ok(Array.isArray(wasmExplanation.inputs));
+      assert.ok(wasmExplanation.inputs.length > 0);
+      for (const input of wasmExplanation.inputs) {
+        assert.strictEqual(typeof input.address, 'string');
+        assert.strictEqual(typeof input.value, 'string');
+      }
     });
 
     if (acidTest.network !== utxolib.networks.bitcoin) {
       return;
     }
+
+    it('explainPsbtWasmBigInt returns bigint amounts and inputs array', function () {
+      const result = explainPsbtWasmBigInt(wasmPsbt, walletXpubs, {
+        replayProtection: { publicKeys: [acidTest.getReplayProtectionPublicKey()] },
+      });
+      assert.strictEqual(typeof result.fee, 'bigint');
+      assert.strictEqual(typeof result.outputAmount, 'bigint');
+      assert.strictEqual(typeof result.changeAmount, 'bigint');
+      assert.strictEqual(typeof result.inputAmount, 'bigint');
+      assert.ok(result.inputs.length > 0);
+      for (const input of result.inputs) {
+        assert.strictEqual(typeof input.address, 'string');
+        assert.strictEqual(typeof input.value, 'bigint');
+      }
+      const sumInputs = result.inputs.reduce((s, i) => s + i.value, 0n);
+      assert.strictEqual(result.inputAmount, sumInputs);
+      assert.strictEqual(
+        result.fee,
+        result.inputAmount - result.outputAmount - result.changeAmount - result.customChangeAmount
+      );
+    });
 
     // extended test suite for bitcoin
 
