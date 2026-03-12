@@ -990,10 +990,10 @@
   resolved "https://registry.npmjs.org/@bitgo/wasm-solana/-/wasm-solana-2.6.0.tgz#c8b57ab010f22f1a1c90681cd180814c4ec2867b"
   integrity sha512-F9H4pXDMhfsZW5gNEcoaBzVoEMOQRP8wbQKmjsxbm5PXBq+0Aj54rOY3bswdrFZK377/aeB+tLjXu3h9i8gInQ==
 
-"@bitgo/wasm-utxo@^1.42.0":
-  version "1.42.0"
-  resolved "https://registry.npmjs.org/@bitgo/wasm-utxo/-/wasm-utxo-1.42.0.tgz#29754e9b947fd9d5c303cb5f5043a031cd04754b"
-  integrity sha512-VKhlaSVjD7dTjYw5yNbRVTQh84zuyiEcLSldhzbnkrWgZL+3+xYaOAWicVJaE5Bk37AYWRL+7aiwbCtosF7zug==
+"@bitgo/wasm-utxo@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.npmjs.org/@bitgo/wasm-utxo/-/wasm-utxo-2.1.0.tgz#a2087b795a3eb7bfca2cc25a88b3491a74d4da06"
+  integrity sha512-JukZ+g0lH1IzcwAVGp41a4XgWVZvL1hA+ym3KsU7NIqhOG57brc1nSVoqAhIe93gsfWQ7hyz3jsFueBXbwBQmQ==
 
 "@brandonblack/musig@^0.0.1-alpha.0":
   version "0.0.1-alpha.1"

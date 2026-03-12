@@ -78,7 +78,7 @@ export function explainPsbtWasm(
   const customChangeAmount = customChangeOutputs.reduce((sum, output) => sum + BigInt(output.amount), BigInt(0));
 
   return {
-    id: psbt.unsignedTxid(),
+    id: psbt.unsignedTxId(),
     outputAmount: outputAmount.toString(),
     changeAmount: changeAmount.toString(),
     customChangeAmount: customChangeAmount.toString(),

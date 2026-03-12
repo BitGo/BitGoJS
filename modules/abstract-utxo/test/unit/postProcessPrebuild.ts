@@ -31,7 +31,7 @@ describe('Post Build Validation', function () {
     // Parse result as PSBT
     const resultPsbt = BitGoPsbt.fromBytes(Buffer.from(postProcessBuilt.txHex as string, 'hex'), 'tbtc');
 
-    resultPsbt.lockTime.should.equal(0);
+    resultPsbt.lockTime().should.equal(0);
 
     // Check sequences via parseTransactionWithWalletKeys
     const parsed = resultPsbt.parseTransactionWithWalletKeys(walletKeys, { replayProtection: { publicKeys: [] } });

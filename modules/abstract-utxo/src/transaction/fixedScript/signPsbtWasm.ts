@@ -95,13 +95,13 @@ export async function signPsbtWithMusig2ParticipantWasm(
       case 'signerNonce':
         assert(wasmSigner);
         tx.generateMusig2Nonces(wasmSigner);
-        PSBT_CACHE_WASM.set(tx.unsignedTxid(), tx);
+        PSBT_CACHE_WASM.set(tx.unsignedTxId(), tx);
         return tx;
       case 'cosignerNonce':
         assert(params.walletId, 'walletId is required for MuSig2 bitgo nonce');
         return await coin.getMusig2Nonces(tx, params.walletId);
       case 'signerSignature': {
-        const txId = tx.unsignedTxid();
+        const txId = tx.unsignedTxId();
         const cachedPsbt = PSBT_CACHE_WASM.get(txId);
         assert(
           cachedPsbt,
