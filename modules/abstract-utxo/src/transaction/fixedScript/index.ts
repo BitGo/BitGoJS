@@ -7,3 +7,4 @@ export { signTransaction } from './signTransaction';
 export * from './signLegacyTransaction';
 export * from './SigningError';
 export * from './replayProtection';
+export { hasKeyPathSpendInput } from './musig2';

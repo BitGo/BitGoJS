@@ -6,5 +6,6 @@ export { verifyTransaction } from './verifyTransaction';
 export * from './fetchInputs';
 export * as bip322 from './bip322';
 export { isPsbt } from './isPsbt';
+export { hasKeyPathSpendInput } from './fixedScript/musig2';
 export { decodePsbtWith, stringToBufferTryFormats } from './decode';
 export { toBitGoPsbt, getVSize, type BitGoPsbt } from './toBitGoPsbt';
