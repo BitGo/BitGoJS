@@ -65,7 +65,7 @@ function buildHmacSubject(params: {
   const queryPath = extractQueryPath(params.urlPath);
 
   let prefixedText: string;
-  if (params.statusCode !== undefined && isFinite(params.statusCode) && Number.isInteger(params.statusCode)) {
+  if (params.statusCode !== undefined && Number.isFinite(params.statusCode) && Number.isInteger(params.statusCode)) {
     prefixedText =
       params.authVersion === 3
         ? [method.toUpperCase(), params.timestamp, queryPath, params.statusCode].join('|')
@@ -89,6 +89,21 @@ async function webCryptoHmacSign(key: CryptoKey, data: string): Promise<string> 
 async function webCryptoImportHmacKey(rawKey: string): Promise<CryptoKey> {
   const encoded = new TextEncoder().encode(rawKey);
   return crypto.subtle.importKey('raw', encoded, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+}
+
+/**
+ * Constant-time string comparison to prevent timing side-channel attacks.
+ * Browser-compatible polyfill for Node's `crypto.timingSafeEqual`.
+ */
+function timingSafeStringEqual(a: string, b: string): boolean {
+  const aBytes = new TextEncoder().encode(a);
+  const bBytes = new TextEncoder().encode(b);
+  if (aBytes.length !== bBytes.length) return false;
+  let result = 0;
+  for (let i = 0; i < aBytes.length; i++) {
+    result |= aBytes[i] ^ bBytes[i];
+  }
+  return result === 0;
 }
 
 async function webCryptoSha256Hex(data: string): Promise<string> {
@@ -302,7 +317,7 @@ export class WebCryptoHmacStrategy implements IHmacAuthStrategy {
       params.timestamp >= now - backwardValidityWindow && params.timestamp <= now + forwardValidityWindow;
 
     return {
-      isValid: expectedHmac === params.hmac,
+      isValid: timingSafeStringEqual(expectedHmac, params.hmac),
       expectedHmac,
       signatureSubject: subject as VerifyResponseInfo['signatureSubject'],
       isInResponseValidityWindow,

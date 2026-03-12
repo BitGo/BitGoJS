@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, BitGoAPIOptions } from '@bitgo/sdk-api';
+import type { EnvironmentName } from '@bitgo/sdk-core';
 import {
   WebCryptoHmacStrategy,
   IndexedDbTokenStore,
@@ -29,10 +30,12 @@ function ts(): string {
 }
 
 const DEFAULT_ENV = 'test';
+const DEFAULT_AUTH_VERSION = 3 as 2 | 3;
 
 const WebCryptoAuth = () => {
-  const [env, setEnv] = useState(DEFAULT_ENV);
+  const [env, setEnv] = useState<EnvironmentName>(DEFAULT_ENV);
   const [customUri, setCustomUri] = useState('');
+  const [authVersion, setAuthVersion] = useState<2 | 3>(DEFAULT_AUTH_VERSION);
 
   const [strategyReady, setStrategyReady] = useState(false);
   const [sdkReady, setSdkReady] = useState(false);
@@ -69,18 +72,21 @@ const WebCryptoAuth = () => {
 
   const createSdk = useCallback(
     async (
-      targetEnv: string,
+      targetEnv: EnvironmentName,
       targetCustomUri: string,
+      targetAuthVersion: 2 | 3,
       appendLog: (msg: string) => void,
     ): Promise<{
       sdk: BitGoAPI;
       strategy: WebCryptoHmacStrategy;
       restored: boolean;
     }> => {
-      appendLog('Creating WebCryptoHmacStrategy with IndexedDbTokenStore...');
+      appendLog(
+        `Creating WebCryptoHmacStrategy (auth v${targetAuthVersion}) with IndexedDbTokenStore...`,
+      );
       const strategy = new WebCryptoHmacStrategy({
         tokenStore: new IndexedDbTokenStore(),
-        authVersion: 2,
+        authVersion: targetAuthVersion,
       });
 
       appendLog('Checking IndexedDB for existing CryptoSigning...');
@@ -93,9 +99,10 @@ const WebCryptoAuth = () => {
         appendLog('No stored CryptoSigning found in IndexedDB.');
       }
 
-      const options: Record<string, unknown> = {
+      const options: BitGoAPIOptions = {
         hmacAuthStrategy: strategy,
         hmacVerification: true,
+        authVersion: targetAuthVersion,
       };
 
       if (targetEnv === 'custom' && targetCustomUri) {
@@ -125,6 +132,7 @@ const WebCryptoAuth = () => {
         const { sdk, strategy, restored } = await createSdk(
           DEFAULT_ENV,
           '',
+          authVersion,
           log,
         );
 
@@ -177,7 +185,12 @@ const WebCryptoAuth = () => {
   const handleCreateSdk = useCallback(async () => {
     clearStatus();
     try {
-      const { sdk, strategy, restored } = await createSdk(env, customUri, log);
+      const { sdk, strategy, restored } = await createSdk(
+        env,
+        customUri,
+        authVersion,
+        log,
+      );
 
       strategyRef.current = strategy;
       sdkRef.current = sdk;
@@ -199,7 +212,7 @@ const WebCryptoAuth = () => {
       setError(e.message || String(e));
       log(`Error: ${e.message || e}`);
     }
-  }, [env, customUri, log, createSdk]);
+  }, [env, customUri, authVersion, log, createSdk]);
 
   const handleLogin = useCallback(async () => {
     clearStatus();
@@ -340,7 +353,7 @@ const WebCryptoAuth = () => {
               <Label>Environment</Label>
               <select
                 value={env}
-                onChange={(e) => setEnv(e.target.value)}
+                onChange={(e) => setEnv(e.target.value as EnvironmentName)}
                 style={{
                   padding: '8px',
                   borderRadius: 4,
@@ -351,6 +364,24 @@ const WebCryptoAuth = () => {
                 <option value="test">test (test.bitgo.com)</option>
                 <option value="prod">prod (app.bitgo.com)</option>
                 <option value="custom">custom</option>
+              </select>
+            </FormGroup>
+            <FormGroup>
+              <Label>Auth Version</Label>
+              <select
+                value={authVersion}
+                onChange={(e) =>
+                  setAuthVersion(Number(e.target.value) as 2 | 3)
+                }
+                style={{
+                  padding: '8px',
+                  borderRadius: 4,
+                  border: '1px solid #ccc',
+                  width: '100%',
+                }}
+              >
+                <option value={2}>v2</option>
+                <option value={3}>v3</option>
               </select>
             </FormGroup>
             {env === 'custom' && (
