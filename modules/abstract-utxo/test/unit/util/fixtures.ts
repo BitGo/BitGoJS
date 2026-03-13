@@ -1,4 +1,4 @@
-import 'should';
+import assert from 'node:assert/strict';
 import * as mpath from 'path';
 import * as fs from 'fs/promises';
 
@@ -65,6 +65,6 @@ export async function getFixture<T>(coin: AbstractUtxoCoin, name: string, defaul
  * @param fixtureJSON
  * @throws Error if obj and fixtureJSON are different after normalizing obj under JSON:w
  */
-export function shouldEqualJSON<T>(obj: T, fixtureJSON: T): void {
-  JSON.parse(JSON.stringify(obj, serializeBigInt)).should.eql(fixtureJSON);
+export function assertEqualJSON<T>(obj: T, fixtureJSON: T): void {
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(obj, serializeBigInt)), fixtureJSON);
 }

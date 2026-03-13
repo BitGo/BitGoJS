@@ -1,6 +1,5 @@
 import assert from 'assert';
 
-import 'should';
 import nock = require('nock');
 import { Triple } from '@bitgo/sdk-core';
 import { BIP32, ECPair, fixedScriptWallet } from '@bitgo/wasm-utxo';
@@ -112,13 +111,13 @@ function run(
     });
 
     it('has expected input count', function () {
-      parsed.inputs.length.should.eql(recoverUnspents.length);
+      assert.strictEqual(parsed.inputs.length, recoverUnspents.length);
     });
 
     it('has recovery destination output', function () {
-      parsed.outputs.length.should.be.greaterThanOrEqual(1);
+      assert.ok(parsed.outputs.length >= 1);
       const outputAddresses = parsed.outputs.map((o) => o.address);
-      outputAddresses.includes(recoveryDestination).should.eql(true);
+      assert.ok(outputAddresses.includes(recoveryDestination));
     });
 
     it('has expected fee rate', function () {
@@ -136,7 +135,7 @@ function run(
       const signerKey = xprivs[signerIndex];
       for (let inputIndex = 0; inputIndex < recoverUnspents.length; inputIndex++) {
         const hasSig = psbt.verifySignature(inputIndex, signerKey);
-        hasSig.should.eql(expectSigned, `input ${inputIndex} signer ${signerIndex}`);
+        assert.strictEqual(hasSig, expectSigned, `input ${inputIndex} signer ${signerIndex}`);
       }
     }
 

@@ -26,7 +26,7 @@
     "build": "npm run build:cjs && npm run build:esm",
     "build:cjs": "yarn tsc --build --incremental --verbose .",
     "build:esm": "yarn tsc --project tsconfig.esm.json",
-    "fmt": "prettier --write .",
+    "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'",
     "check-fmt": "prettier --check '{src,test}/**/*.{ts,js,json}'",
     "clean": "rm -rf ./dist",
     "lint": "eslint --quiet .",

@@ -1,4 +1,4 @@
-import 'should';
+import assert from 'node:assert/strict';
 
 import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 import * as testutils from '@bitgo/wasm-utxo/testutils';
@@ -31,12 +31,12 @@ describe('Post Build Validation', function () {
     // Parse result as PSBT
     const resultPsbt = BitGoPsbt.fromBytes(Buffer.from(postProcessBuilt.txHex as string, 'hex'), 'tbtc');
 
-    resultPsbt.lockTime().should.equal(0);
+    assert.strictEqual(resultPsbt.lockTime(), 0);
 
     // Check sequences via parseTransactionWithWalletKeys
     const parsed = resultPsbt.parseTransactionWithWalletKeys(walletKeys, { replayProtection: { publicKeys: [] } });
     for (const input of parsed.inputs) {
-      input.sequence.should.equal(0xffffffff);
+      assert.strictEqual(input.sequence, 0xffffffff);
     }
   });
 });

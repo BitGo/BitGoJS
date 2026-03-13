@@ -1,3 +1,4 @@
+export * from './assert';
 export * from './utxoCoins';
 export * from './fixtures';
 export * from './keychains';

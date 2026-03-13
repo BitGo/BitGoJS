@@ -1,11 +1,9 @@
 import * as utxoLib from '@bitgo/utxo-lib';
-import 'should';
-import 'should-sinon';
 import nock = require('nock');
 import * as sinon from 'sinon';
 import { CustomSigningFunction, common } from '@bitgo/sdk-core';
 
-import { defaultBitGo, getDefaultWalletKeys, getUtxoCoin, getUtxoWallet } from './util';
+import { defaultBitGo, getDefaultWalletKeys, getUtxoCoin, getUtxoWallet, assertHasProperty } from './util';
 
 nock.disableNetConnect();
 
@@ -65,8 +63,8 @@ describe('UTXO Custom Signer Function', function () {
     const scope = nocks({ txHex: psbt.toHex() });
     const result = await wallet.sendMany({ recipients, customSigningFunction });
 
-    result.should.have.property('ok', true);
-    customSigningFunction.should.have.been.calledTwice();
+    assertHasProperty(result, 'ok', true);
+    sinon.assert.calledTwice(customSigningFunction as sinon.SinonStub);
     scope.done();
   });
 
@@ -81,8 +79,8 @@ describe('UTXO Custom Signer Function', function () {
     const scope = nocks({ txHex: psbt.toHex() });
     const result = await wallet.sendMany({ recipients, customSigningFunction });
 
-    result.should.have.property('ok', true);
-    customSigningFunction.should.have.been.calledOnce();
+    assertHasProperty(result, 'ok', true);
+    sinon.assert.calledOnce(customSigningFunction as sinon.SinonStub);
     scope.done();
   });
 
@@ -97,8 +95,8 @@ describe('UTXO Custom Signer Function', function () {
     const scope = nocks({ txHex: tx.buildIncomplete().toHex() });
     const result = await wallet.sendMany({ recipients, customSigningFunction });
 
-    result.should.have.property('ok', true);
-    customSigningFunction.should.have.been.calledOnce();
+    assertHasProperty(result, 'ok', true);
+    sinon.assert.calledOnce(customSigningFunction as sinon.SinonStub);
     scope.done();
   });
 });

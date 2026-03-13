@@ -1,4 +1,5 @@
-import 'should';
+import assert from 'node:assert/strict';
+
 import { Triple } from '@bitgo/sdk-core';
 import { BIP32, fixedScriptWallet, hasPsbtMagic } from '@bitgo/wasm-utxo';
 
@@ -10,11 +11,12 @@ import {
 } from '../../../src';
 import type { WalletUnspent } from '../../../src/unspent';
 import {
+  assertEqualJSON,
+  assertHasProperty,
   createWasmWalletKeys,
   getDefaultWasmWalletKeys,
   getFixture,
   getWalletAddress,
-  shouldEqualJSON,
   toUnspent,
   utxoCoins,
 } from '../util';
@@ -79,14 +81,14 @@ describe('formatBackupKeyRecoveryResult', function () {
         unspents,
       }) as FormattedOfflineVaultTxInfo;
 
-      result.should.have.property('txHex');
-      result.should.have.property('txInfo');
-      result.should.have.property('feeInfo');
-      result.should.have.property('coin');
-      result.coin!.should.equal(coin.getChain());
+      assertHasProperty(result, 'txHex');
+      assertHasProperty(result, 'txInfo');
+      assertHasProperty(result, 'feeInfo');
+      assertHasProperty(result, 'coin');
+      assert.strictEqual(result.coin!, coin.getChain());
 
       const txBuf = Buffer.from(result.txHex, 'hex');
-      hasPsbtMagic(txBuf).should.equal(true);
+      assert.strictEqual(hasPsbtMagic(txBuf), true);
     });
 
     it('matches fixture', async function () {
@@ -97,7 +99,7 @@ describe('formatBackupKeyRecoveryResult', function () {
         unspents,
       });
       const fixture = await getFixture(coin, 'recovery/formatBackupKeyRecovery-unsigned', result);
-      shouldEqualJSON(result, fixture);
+      assertEqualJSON(result, fixture);
     });
   });
 
@@ -126,15 +128,15 @@ describe('formatBackupKeyRecoveryResult', function () {
         unspents,
       }) as BackupKeyRecoveryTransansaction;
 
-      result.should.have.property('transactionHex');
-      result.should.have.property('coin');
-      result.should.have.property('backupKey');
-      result.should.have.property('recoveryAmount');
-      result.should.have.property('inputs');
-      result.backupKey!.should.equal('test-backup-key');
+      assertHasProperty(result, 'transactionHex');
+      assertHasProperty(result, 'coin');
+      assertHasProperty(result, 'backupKey');
+      assertHasProperty(result, 'recoveryAmount');
+      assertHasProperty(result, 'inputs');
+      assert.strictEqual(result.backupKey!, 'test-backup-key');
 
       const txBuf = Buffer.from(result.transactionHex!, 'hex');
-      hasPsbtMagic(txBuf).should.equal(false);
+      assert.strictEqual(hasPsbtMagic(txBuf), false);
     });
 
     it('matches fixture', async function () {
@@ -147,7 +149,7 @@ describe('formatBackupKeyRecoveryResult', function () {
         unspents,
       });
       const fixture = await getFixture(coin, 'recovery/formatBackupKeyRecovery-krs-keyternal', result);
-      shouldEqualJSON(result, fixture);
+      assertEqualJSON(result, fixture);
     });
   });
 
@@ -176,15 +178,15 @@ describe('formatBackupKeyRecoveryResult', function () {
         unspents,
       }) as BackupKeyRecoveryTransansaction;
 
-      result.should.have.property('transactionHex');
-      result.should.have.property('coin');
-      result.should.have.property('backupKey');
-      result.should.have.property('recoveryAmount');
-      result.backupKey!.should.equal('test-backup-key');
+      assertHasProperty(result, 'transactionHex');
+      assertHasProperty(result, 'coin');
+      assertHasProperty(result, 'backupKey');
+      assertHasProperty(result, 'recoveryAmount');
+      assert.strictEqual(result.backupKey!, 'test-backup-key');
 
       const txBuf = Buffer.from(result.transactionHex!, 'hex');
-      hasPsbtMagic(txBuf).should.equal(true);
-      (result.inputs === undefined).should.equal(true);
+      assert.strictEqual(hasPsbtMagic(txBuf), true);
+      assert.strictEqual(result.inputs, undefined);
     });
 
     it('matches fixture', async function () {
@@ -197,7 +199,7 @@ describe('formatBackupKeyRecoveryResult', function () {
         unspents,
       });
       const fixture = await getFixture(coin, 'recovery/formatBackupKeyRecovery-krs-dai', result);
-      shouldEqualJSON(result, fixture);
+      assertEqualJSON(result, fixture);
     });
   });
 
@@ -224,11 +226,11 @@ describe('formatBackupKeyRecoveryResult', function () {
         unspents,
       }) as BackupKeyRecoveryTransansaction;
 
-      result.should.have.property('transactionHex');
-      result.should.have.property('inputs');
+      assertHasProperty(result, 'transactionHex');
+      assertHasProperty(result, 'inputs');
 
       const txBuf = Buffer.from(result.transactionHex!, 'hex');
-      hasPsbtMagic(txBuf).should.equal(false);
+      assert.strictEqual(hasPsbtMagic(txBuf), false);
     });
 
     it('matches fixture', async function () {
@@ -239,7 +241,7 @@ describe('formatBackupKeyRecoveryResult', function () {
         unspents,
       });
       const fixture = await getFixture(coin, 'recovery/formatBackupKeyRecovery-fullySigned', result);
-      shouldEqualJSON(result, fixture);
+      assertEqualJSON(result, fixture);
     });
   });
 });

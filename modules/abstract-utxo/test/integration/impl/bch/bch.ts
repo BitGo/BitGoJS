@@ -1,5 +1,5 @@
-import * as should from 'should';
-import 'should-http';
+import assert from 'node:assert/strict';
+
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import * as nock from 'nock';
@@ -34,13 +34,13 @@ describe('BCH:', function () {
         otp: bitgo.testUserOTP(),
       });
 
-      should.exist(transaction);
-      transaction.should.have.property('transfer');
-      transaction.should.have.property('txid');
-      transaction.should.have.property('tx');
-      transaction.status.should.containEql('signed');
-      transaction.transfer.type.should.containEql('send');
-      transaction.transfer.wallet.should.containEql(wallet._wallet.id);
+      assert.ok(transaction != null);
+      assert.ok('transfer' in transaction);
+      assert.ok('txid' in transaction);
+      assert.ok('tx' in transaction);
+      assert.ok(transaction.status.includes('signed'));
+      assert.ok(transaction.transfer.type.includes('send'));
+      assert.ok(transaction.transfer.wallet.includes(wallet._wallet.id));
     });
   });
 });

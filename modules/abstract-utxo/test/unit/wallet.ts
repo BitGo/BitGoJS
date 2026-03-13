@@ -1,5 +1,6 @@
+import assert from 'node:assert/strict';
+
 import * as utxoLib from '@bitgo/utxo-lib';
-import 'should';
 import nock = require('nock');
 import * as _ from 'lodash';
 import { Wallet, ManageUnspentsOptions, common } from '@bitgo/sdk-core';
@@ -65,7 +66,7 @@ describe('manage unspents', function () {
     await wallet.consolidateUnspents({ bulk: true, walletPassphrase });
 
     nocks.forEach((n) => {
-      n.isDone().should.be.true();
+      assert.strictEqual(n.isDone(), true);
     });
   });
 
@@ -99,7 +100,7 @@ describe('manage unspents', function () {
     await wallet.consolidateUnspents({ walletPassphrase });
 
     nocks.forEach((n) => {
-      n.isDone().should.be.true();
+      assert.strictEqual(n.isDone(), true);
     });
   });
 });
@@ -142,7 +143,7 @@ describe('max recipient', function () {
       // we only care about /tx/build and whether maxFeeRate is an allowed parameter
     }
 
-    response.isDone().should.be.true();
+    assert.strictEqual(response.isDone(), true);
   });
 });
 
@@ -181,7 +182,7 @@ describe('maxFeeRate verification', function () {
       // we only care about /tx/build and whether maxFeeRate is an allowed parameter
     }
 
-    response.isDone().should.be.true();
+    assert.strictEqual(response.isDone(), true);
   });
 
   it('should pass maxFeeRate parameter when consolidating unspents', async function () {
@@ -199,7 +200,7 @@ describe('maxFeeRate verification', function () {
       // we only care about /consolidateUnspents and whether maxFeeRate is an allowed parameter
     }
 
-    response.isDone().should.be.true();
+    assert.strictEqual(response.isDone(), true);
   });
 
   it('should only build tx (not sign/send) while consolidating unspents', async function () {
@@ -212,8 +213,8 @@ describe('maxFeeRate verification', function () {
 
     await wallet.consolidateUnspents({ recipients }, ManageUnspentsOptions.BUILD_ONLY);
 
-    toBeUsedNock.isDone().should.be.true();
-    unusedNocks.pendingMocks().length.should.eql(2);
+    assert.strictEqual(toBeUsedNock.isDone(), true);
+    assert.strictEqual(unusedNocks.pendingMocks().length, 2);
     nock.cleanAll();
   });
 
@@ -230,7 +231,7 @@ describe('maxFeeRate verification', function () {
       // we only care about /sweepWallet and whether maxFeeRate is an allowed parameter
     }
 
-    response.isDone().should.be.true();
+    assert.strictEqual(response.isDone(), true);
   });
 
   it('should pass maxFeeRate parameter when calling fanout unspents', async function () {
@@ -246,7 +247,7 @@ describe('maxFeeRate verification', function () {
       // we only care about /fanoutUnspents and whether maxFeeRate is an allowed parameter
     }
 
-    response.isDone().should.be.true();
+    assert.strictEqual(response.isDone(), true);
   });
 });
 
@@ -279,6 +280,6 @@ describe('allowPartialSweep verification', function () {
       // we only care about /sweepWallet and whether allowPartialSweep is an allowed parameter
     }
 
-    response.isDone().should.be.true();
+    assert.strictEqual(response.isDone(), true);
   });
 });

@@ -256,12 +256,13 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
           nockOutputAddresses: txFormat !== 'psbt',
         });
 
-        await wallet
-          .prebuildAndSignTransaction({
+        await assert.rejects(
+          wallet.prebuildAndSignTransaction({
             recipients: [recipient],
             walletPassphrase: Math.random().toString(),
-          })
-          .should.be.rejectedWith('unable to decrypt keychain with the given wallet passphrase');
+          }),
+          { message: 'unable to decrypt keychain with the given wallet passphrase' }
+        );
       });
     });
 

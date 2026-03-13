@@ -1,3 +1,5 @@
+import assert from 'node:assert/strict';
+
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 
@@ -19,14 +21,14 @@ describe('Btg', function () {
 
   it('should instantiate the coin', function () {
     basecoin = bitgo.coin('btg');
-    basecoin.should.be.an.instanceof(Btg);
+    assert.ok(basecoin instanceof Btg);
   });
 
   it('should return btg', function () {
-    basecoin.getChain().should.equal('btg');
+    assert.strictEqual(basecoin.getChain(), 'btg');
   });
 
   it('should return full name', function () {
-    basecoin.getFullName().should.equal('Bitcoin Gold');
+    assert.strictEqual(basecoin.getFullName(), 'Bitcoin Gold');
   });
 });

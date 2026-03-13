@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 
-import 'should';
 import { type TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 
@@ -14,7 +13,7 @@ function run(coin: AbstractUtxoCoin) {
     it('validates pub', function () {
       const { pub } = coin.keychains().create();
       assert.ok(pub);
-      coin.isValidPub(pub).should.equal(true);
+      assert.strictEqual(coin.isValidPub(pub), true);
     });
   });
 }
