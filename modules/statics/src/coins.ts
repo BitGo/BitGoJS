@@ -30,10 +30,10 @@ import {
   erc721Token,
 } from './account';
 import { ofcToken } from './ofc';
-import { BaseCoin, CoinFeature } from './base';
+import { BaseCoin, CoinFeature, DynamicCoin } from './base';
 import { AmsTokenConfig, TrimmedAmsTokenConfig } from './tokenConfig';
 import { CoinMap } from './map';
-import { Networks, NetworkType } from './networks';
+import { DynamicNetwork, DynamicNetworkOptions, Networks, NetworkType } from './networks';
 import { networkFeatureMapForTokens } from './networkFeatureMapForTokens';
 import { ofcErc20Coins, tOfcErc20Coins } from './coins/ofcErc20Coins';
 import { ofcCoins } from './coins/ofcCoins';
@@ -133,6 +133,9 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
   const family = token.family;
   const initializer = initializerMap[family] as (...args: unknown[]) => Readonly<BaseCoin>;
   if (!initializer) {
+    if (!token.isToken) {
+      return buildDynamicCoin(token);
+    }
     return undefined;
   }
 
@@ -350,6 +353,33 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     default:
       return undefined;
   }
+}
+
+/**
+ * Build a real DynamicCoin + DynamicNetwork instance for AMS-discovered base chains
+ * whose family is not yet registered in the SDK's initializerMap.
+ * Called from createToken() as a fallback when no initializer exists and isToken is false.
+ */
+function buildDynamicCoin(token: AmsTokenConfig): Readonly<BaseCoin> {
+  const network = Object.freeze(new DynamicNetwork(token.network as DynamicNetworkOptions));
+  return Object.freeze(
+    new DynamicCoin({
+      id: token.id,
+      name: token.name,
+      fullName: token.fullName,
+      decimalPlaces: token.decimalPlaces,
+      asset: token.asset as string,
+      isToken: token.isToken,
+      features: token.features as string[],
+      network,
+      primaryKeyCurve: (token.primaryKeyCurve as string) ?? 'secp256k1',
+      prefix: token.prefix ?? '',
+      suffix: token.suffix ?? token.name.toUpperCase(),
+      baseUnit: (token.baseUnit as string) ?? 'wei',
+      kind: (token.kind as string) ?? 'crypto',
+      alias: token.alias,
+    })
+  );
 }
 
 function getAptTokenInitializer(token: AmsTokenConfig) {
