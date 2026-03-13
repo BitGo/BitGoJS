@@ -30,10 +30,10 @@ import {
   erc721Token,
 } from './account';
 import { ofcToken } from './ofc';
-import { BaseCoin, CoinFeature } from './base';
+import { BaseCoin, CoinFeature, DynamicCoin } from './base';
 import { AmsTokenConfig, TrimmedAmsTokenConfig } from './tokenConfig';
 import { CoinMap } from './map';
-import { Networks, NetworkType } from './networks';
+import { BaseNetwork, getNetwork, getNetworksMap, NetworkType } from './networks';
 import { networkFeatureMapForTokens } from './networkFeatureMapForTokens';
 import { ofcErc20Coins, tOfcErc20Coins } from './coins/ofcErc20Coins';
 import { ofcCoins } from './coins/ofcCoins';
@@ -74,6 +74,14 @@ allCoinsAndTokens.forEach((coin) => {
 });
 
 export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefined {
+  if (!token.isToken) {
+    try {
+      return buildDynamicCoin(token);
+    } catch (error) {
+      console.warn(`Failed to build dynamic coin for ${token.name} (${token.id}):`, error);
+      return undefined;
+    }
+  }
   const initializerMap: Record<string, unknown> = {
     algo: algoToken,
     apt: aptToken,
@@ -352,6 +360,34 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
   }
 }
 
+/**
+ * Build a real DynamicCoin + DynamicNetwork instance for AMS-discovered base chains
+ * whose family is not yet registered in the SDK's initializerMap.
+ * Called from createToken() as a fallback when no initializer exists and isToken is false.
+ */
+function buildDynamicCoin(token: AmsTokenConfig): Readonly<BaseCoin> {
+  const network = token.network instanceof BaseNetwork ? token.network : getNetwork(token.network as string);
+
+  return Object.freeze(
+    new DynamicCoin({
+      id: token.id,
+      name: token.name,
+      fullName: token.fullName,
+      decimalPlaces: token.decimalPlaces,
+      asset: token.asset as string,
+      isToken: token.isToken,
+      features: (token.features ?? []) as string[],
+      network,
+      primaryKeyCurve: (token.primaryKeyCurve as string) ?? 'secp256k1',
+      prefix: token.prefix ?? '',
+      suffix: token.suffix ?? token.name.toUpperCase(),
+      baseUnit: (token.baseUnit as string) ?? '',
+      kind: (token.kind as string) ?? 'crypto',
+      alias: token.alias,
+    })
+  );
+}
+
 function getAptTokenInitializer(token: AmsTokenConfig) {
   if (token.assetId) {
     // used for fungible-assets / legacy coins etc.
@@ -424,11 +460,7 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
   for (const tokenConfigs of Object.values(tokenConfigMap)) {
     const tokenConfig = tokenConfigs[0];
 
-    if (
-      !isCoinPresentInCoinMap({ ...tokenConfig }) &&
-      tokenConfig.isToken &&
-      !nftAndOtherTokens.has(tokenConfig.name)
-    ) {
+    if (!isCoinPresentInCoinMap({ ...tokenConfig }) && !nftAndOtherTokens.has(tokenConfig.name)) {
       const token = createToken(tokenConfig);
       if (token) {
         BaseCoins.set(token.name, token);
@@ -443,21 +475,22 @@ export function createTokenMapUsingTrimmedConfigDetails(
   reducedTokenConfigMap: Record<string, TrimmedAmsTokenConfig[]>
 ): CoinMap {
   const amsTokenConfigMap: Record<string, AmsTokenConfig[]> = {};
-  const networkNameMap = new Map(
-    Object.values(Networks).flatMap((networkType) =>
-      Object.values(networkType).map((network) => [network.name, network])
-    )
-  );
+  const networkNameMap = getNetworksMap();
 
   for (const tokenConfigs of Object.values(reducedTokenConfigMap)) {
     const tokenConfig = tokenConfigs[0];
     const network = networkNameMap.get(tokenConfig.network.name);
-    if (
-      !isCoinPresentInCoinMap({ ...tokenConfig }) &&
-      network &&
-      tokenConfig.isToken &&
-      networkFeatureMapForTokens[network.family]
-    ) {
+
+    if (isCoinPresentInCoinMap({ ...tokenConfig })) continue;
+
+    if (!tokenConfig.isToken) {
+      // Dynamic base chain — network must be pre-registered in networkByName map before calling this function.
+      if (network) {
+        amsTokenConfigMap[tokenConfig.name] = [
+          { ...tokenConfig, features: tokenConfig.additionalFeatures ?? [], network },
+        ];
+      }
+    } else if (network && networkFeatureMapForTokens[network.family]) {
       const features = new Set([
         ...(networkFeatureMapForTokens[network.family] || []),
         ...(tokenConfig.additionalFeatures || []),
@@ -474,18 +507,20 @@ export function createTokenUsingTrimmedConfigDetails(
   tokenConfig: TrimmedAmsTokenConfig
 ): Readonly<BaseCoin> | undefined {
   let fullTokenConfig: AmsTokenConfig | undefined;
-  const networkNameMap = new Map(
-    Object.values(Networks).flatMap((networkType) =>
-      Object.values(networkType).map((network) => [network.name, network])
-    )
-  );
+  const networkNameMap = getNetworksMap();
   const network = networkNameMap.get(tokenConfig.network.name);
-  if (
-    !isCoinPresentInCoinMap({ ...tokenConfig }) &&
-    network &&
-    tokenConfig.isToken &&
-    networkFeatureMapForTokens[network.family]
-  ) {
+
+  if (isCoinPresentInCoinMap({ ...tokenConfig })) return undefined;
+
+  if (!tokenConfig.isToken) {
+    // Dynamic base chain — network must be pre-registered in networkByName map before calling this function.
+    if (network) {
+      return createToken({ ...tokenConfig, features: tokenConfig.additionalFeatures ?? [], network } as AmsTokenConfig);
+    }
+    return undefined;
+  }
+
+  if (network && networkFeatureMapForTokens[network.family]) {
     const features = new Set([
       ...(networkFeatureMapForTokens[network.family] || []),
       ...(tokenConfig.additionalFeatures || []),

@@ -3942,3 +3942,49 @@ export abstract class BaseCoin {
     return baseFeatures.filter((feature) => !excludedFeatures.includes(feature));
   }
 }
+
+export interface DynamicCoinConstructorOptions {
+  id: string;
+  fullName: string;
+  name: string;
+  alias?: string;
+  prefix?: string;
+  suffix?: string;
+  denom?: string;
+  baseUnit: string;
+  kind: string;
+  isToken: boolean;
+  features: string[];
+  decimalPlaces: number;
+  asset: string;
+  network: BaseNetwork;
+  primaryKeyCurve: string;
+}
+
+/**
+ * Concrete coin class for AMS-discovered chains not yet registered in local statics.
+ *
+ * Extends {@link BaseCoin} directly with empty required/disallowed
+ * feature sets — AMS is the source of truth for features. Accepts string-typed enum
+ * fields and casts internally (safe since CoinKind, CoinFeature, UnderlyingAsset,
+ * KeyCurve are all string enums).
+ */
+export class DynamicCoin extends BaseCoin {
+  protected requiredFeatures(): Set<CoinFeature> {
+    return new Set();
+  }
+
+  protected disallowedFeatures(): Set<CoinFeature> {
+    return new Set();
+  }
+
+  constructor(options: DynamicCoinConstructorOptions) {
+    super({
+      ...options,
+      kind: options.kind as CoinKind,
+      features: options.features as CoinFeature[],
+      asset: options.asset as UnderlyingAsset,
+      primaryKeyCurve: options.primaryKeyCurve as KeyCurve,
+    });
+  }
+}
