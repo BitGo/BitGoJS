@@ -10,19 +10,25 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import * as utxolib from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 import { bip32 } from '@bitgo/utxo-lib';
 
 export abstract class AbstractLightningCoin extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   private readonly _network: utxolib.Network;
-  protected constructor(bitgo: BitGoBase, network: utxolib.Network) {
+  protected constructor(bitgo: BitGoBase, network: utxolib.Network, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
+    if (!staticsCoin) {
+      throw new Error('missing required constructor parameter staticsCoin');
+    }
+    this._staticsCoin = staticsCoin;
     this._network = network;
   }
 
   getBaseFactor(): number {
-    return 1e11;
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
   verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
