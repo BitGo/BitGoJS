@@ -276,10 +276,9 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
 
     let totalGasNeeded = gasPrice.mul(gasLimit);
 
-    // On optimism chain, L1 fees is to be paid as well apart from L2 fees
-    // So we are adding the amount that can be used up as l1 fees
-    if (this.staticsCoin?.family === 'opeth') {
-      totalGasNeeded = totalGasNeeded.add(new optionalDeps.ethUtil.BN(ethGasConfigs.opethGasL1Fees));
+    // On L2 chains with L1 data fees, add buffer for L1 fees
+    if (this.staticsCoin?.family !== undefined && this.coinFamiliesWithL1Fees.includes(this.staticsCoin.family)) {
+      totalGasNeeded = totalGasNeeded.add(new optionalDeps.ethUtil.BN(ethGasConfigs.l1GasFeeBuffer));
     }
 
     const weiToGwei = 10 ** 9;
