@@ -1,3 +1,4 @@
+export * from './constants';
 export * from './contractCall';
 export * from './iface';
 export * from './keyPair';
