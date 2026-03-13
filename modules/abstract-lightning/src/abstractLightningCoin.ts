@@ -22,7 +22,7 @@ export abstract class AbstractLightningCoin extends BaseCoin {
   }
 
   getBaseFactor(): number {
-    return 10e11;
+    return 1e11;
   }
 
   verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
