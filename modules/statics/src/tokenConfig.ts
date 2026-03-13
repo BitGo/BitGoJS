@@ -42,7 +42,7 @@ import {
 } from './account';
 import { CoinFamily, CoinKind, BaseCoin, CoinFeature } from './base';
 import { coins } from './coins';
-import { Networks, NetworkType } from './networks';
+import { EthereumNetwork, Networks, NetworkType } from './networks';
 import { OfcCoin } from './ofc';
 
 export interface BaseTokenConfig {
@@ -1148,9 +1148,11 @@ export enum TokenTypeEnum {
 }
 
 function getEthLikeTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
+  const network = coin.network as EthereumNetwork;
+  const baseCoin = coins.coinNameFromChainId(network.chainId) ?? coin.name.split(':')[0].toLowerCase();
   return {
     type: coin.name,
-    coin: coin.name.split(':')[0].toLowerCase(),
+    coin: baseCoin,
     network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
     name: coin.fullName,
     tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
@@ -1159,9 +1161,11 @@ function getEthLikeTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
 }
 
 function getEthLikeERC721TokenConfig(coin: EthLikeERC721Token): EthLikeERC721TokenConfig {
+  const network = coin.network as EthereumNetwork;
+  const baseCoin = coins.coinNameFromChainId(network.chainId) ?? coin.name.split(':')[0].toLowerCase();
   return {
     type: coin.name,
-    coin: coin.name.split(':')[0].toLowerCase(),
+    coin: baseCoin,
     network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
     name: coin.fullName,
     tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
