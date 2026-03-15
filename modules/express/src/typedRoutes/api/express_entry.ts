@@ -2,7 +2,8 @@ import * as t from 'io-ts';
 import { apiSpec } from '@api-ts/io-ts-http';
 import * as express from 'express';
 
-import { GetPing, GetPingV1 } from './common/ping';
+import { GetPing } from './common/ping';
+import { PostVerifyCoinAddress } from './v2/verifyAddress';
 // Batch 2+
 // import { GetPingExpress } from './common/pingExpress';
 // import { PostLogin } from './common/login';
@@ -58,12 +59,6 @@ import { PostSimpleCreate } from './v1/simpleCreate';
 // > error TS7056: The inferred type of this node exceeds the maximum length the compiler will serialize. An explicit type annotation is needed.
 //
 // As a workaround, only construct expressApi with a single key and add it to the type union at the end
-
-export const ExpressPingV1ApiSpec = apiSpec({
-  'express.ping.v1': {
-    get: GetPingV1,
-  },
-});
 
 export const ExpressPingApiSpec = apiSpec({
   'express.v2.ping': {
@@ -141,17 +136,23 @@ export const ExpressV1WalletSimpleCreateApiSpec = apiSpec({
 // export const ExpressV2WalletSweepApiSpec = ...
 // export const ExpressV2WalletAccelerateTxApiSpec = ...
 
-export type ExpressApi = typeof ExpressPingV1ApiSpec &
-  typeof ExpressPingApiSpec &
+export const ExpressVerifyCoinAddressApiSpec = apiSpec({
+  'express.verifycoinaddress': {
+    post: PostVerifyCoinAddress,
+  },
+});
+
+export type ExpressApi = typeof ExpressPingApiSpec &
   // Batch 2+ (see index.ts for full list)
   typeof ExpressV1WalletAcceptShareApiSpec &
-  typeof ExpressV1WalletSimpleCreateApiSpec;
+  typeof ExpressV1WalletSimpleCreateApiSpec &
+  typeof ExpressVerifyCoinAddressApiSpec;
 
 export const ExpressApi: ExpressApi = {
-  ...ExpressPingV1ApiSpec,
   ...ExpressPingApiSpec,
   ...ExpressV1WalletAcceptShareApiSpec,
   ...ExpressV1WalletSimpleCreateApiSpec,
+  ...ExpressVerifyCoinAddressApiSpec,
 };
 
 type ExtractDecoded<T> = T extends t.Type<any, infer O, any> ? O : never;

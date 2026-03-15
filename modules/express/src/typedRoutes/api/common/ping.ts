@@ -28,7 +28,6 @@ export const GetPingV1 = httpRoute({
  *
  * @operationId express.v2.ping
  * @tag Express
- * @private
  */
 export const GetPing = httpRoute({
   path: '/api/v2/ping',
