@@ -132,6 +132,68 @@ describe('Ton Single Nominator Withdraw Builder', () => {
     should.equal(txBounceable.toJson().withdrawAmount, singleNominatorWithdrawAmount);
   });
 
+  it('should build a full withdrawal tx using setFullWithdrawalMessage', async function () {
+    const txBuilder = factory.getSingleNominatorWithdrawBuilder();
+    txBuilder.sender(testData.sender.address);
+    txBuilder.sequenceNumber(0);
+    txBuilder.publicKey(testData.sender.publicKey);
+    txBuilder.expireTime(1234567890);
+    txBuilder.send(testData.recipients[0]);
+    txBuilder.setFullWithdrawalMessage();
+    const tx = await txBuilder.build();
+    should.equal(tx.type, TransactionType.SingleNominatorWithdraw);
+    should.equal(tx.toJson().bounceable, false);
+    should.equal(tx.toJson().isFullUnstake, true);
+    should.equal(tx.toJson().withdrawAmount, undefined);
+    tx.inputs.length.should.equal(1);
+    tx.inputs[0].should.deepEqual({
+      address: testData.sender.address,
+      value: testData.recipients[0].amount,
+      coin: 'tton',
+    });
+    tx.outputs.length.should.equal(1);
+    tx.outputs[0].should.deepEqual({
+      address: testData.recipients[0].address,
+      value: testData.recipients[0].amount,
+      coin: 'tton',
+    });
+    const rawTx = tx.toBroadcastFormat();
+    // Verify the raw transaction can be parsed back as a full withdrawal
+    const txBuilder2 = factory.from(rawTx);
+    const tx2 = await txBuilder2.build();
+    should.equal(tx2.type, TransactionType.SingleNominatorWithdraw);
+    should.equal(tx2.toJson().isFullUnstake, true);
+    should.equal(tx2.toBroadcastFormat(), rawTx);
+  });
+
+  it('should build a signed full withdrawal tx using add signature', async function () {
+    const keyPair = new KeyPair({ prv: testData.privateKeys.prvKey1 });
+    const publicKey = keyPair.getKeys().pub;
+    const address = await utils.default.getAddressFromPublicKey(publicKey);
+    const txBuilder = factory.getSingleNominatorWithdrawBuilder();
+    txBuilder.sender(address);
+    txBuilder.sequenceNumber(0);
+    txBuilder.publicKey(publicKey);
+    const expireAt = Math.floor(Date.now() / 1e3) + 60 * 60 * 24 * 7;
+    txBuilder.expireTime(expireAt);
+    txBuilder.send(testData.recipients[0]);
+    txBuilder.setFullWithdrawalMessage();
+    const tx = await txBuilder.build();
+    should.equal(tx.type, TransactionType.SingleNominatorWithdraw);
+    should.equal(tx.toJson().isFullUnstake, true);
+    const signable = tx.signablePayload;
+    const signature = keyPair.signMessageinUint8Array(signable);
+    txBuilder.addSignature(keyPair.getKeys(), Buffer.from(signature));
+    const signedTx = await txBuilder.build();
+    const builder2 = factory.from(signedTx.toBroadcastFormat());
+    const tx2 = await builder2.build();
+    const signature2 = keyPair.signMessageinUint8Array(tx2.signablePayload);
+    should.equal(Buffer.from(signature).toString('hex'), Buffer.from(signature2).toString('hex'));
+    should.equal(tx.toBroadcastFormat(), tx2.toBroadcastFormat());
+    should.equal(tx2.type, TransactionType.SingleNominatorWithdraw);
+    should.equal(tx2.toJson().isFullUnstake, true);
+  });
+
   xit('should build a signed withdraw tx and submit onchain', async function () {
     const tonweb = new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC'));
     const keyPair = new KeyPair({ prv: testData.privateKeys.prvKey1 });

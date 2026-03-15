@@ -12,6 +12,7 @@ import {
   VESTING_CONTRACT_WALLET_ID,
   TON_WHALES_DEPOSIT_OPCODE,
   TON_WHALES_WITHDRAW_OPCODE,
+  SINGLE_NOMINATOR_WITHDRAW_ALL_COMMENT,
 } from './constants';
 
 export class Transaction extends BaseTransaction {
@@ -21,6 +22,7 @@ export class Transaction extends BaseTransaction {
   public toAddressBounceable: boolean;
   public message: string;
   public withdrawAmount: string;
+  public isFullUnstake: boolean;
   seqno: number;
   expireTime: number;
   sender: string;
@@ -65,6 +67,7 @@ export class Transaction extends BaseTransaction {
       publicKey: this.publicKey,
       signature: this._signatures[0],
       bounceable: this.bounceable,
+      isFullUnstake: this.isFullUnstake,
     };
   }
 
@@ -225,6 +228,7 @@ export class Transaction extends BaseTransaction {
       this._signatures.push(parsed.signature);
       this.bounceable = parsed.bounce;
       this.sub_wallet_id = parsed.walletId;
+      this.isFullUnstake = parsed.isFullUnstake;
     } catch (e) {
       throw new Error('invalid raw transaction');
     }
@@ -315,6 +319,7 @@ export class Transaction extends BaseTransaction {
       this.isV3ContractMessage = true;
     }
 
+    let isFullUnstake = false;
     let order = slice.loadRef();
 
     if (order.loadBit()) throw Error('invalid internal header');
@@ -359,6 +364,9 @@ export class Transaction extends BaseTransaction {
             this.transactionType = TransactionType.TonWhalesVestingDeposit;
           } else if (payload === 'Withdraw') {
             this.transactionType = TransactionType.TonWhalesVestingWithdrawal;
+          } else if (payload === SINGLE_NOMINATOR_WITHDRAW_ALL_COMMENT) {
+            this.transactionType = TransactionType.SingleNominatorWithdraw;
+            isFullUnstake = true;
           }
         } else if (opcode === 4096) {
           const queryId = order.loadUint(64).toNumber();
@@ -434,6 +442,7 @@ export class Transaction extends BaseTransaction {
       payload,
       signature,
       walletId,
+      isFullUnstake,
     };
   }
 
