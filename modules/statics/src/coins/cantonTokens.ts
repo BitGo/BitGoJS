@@ -29,7 +29,7 @@ export const cantonTokens = [
     'USDXLR (Canton)',
     10,
     'https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/',
-    '4e667aab-9089-400b-9485-74d73732f068::1220dd489bd2242472a14015e9aebc12a48879a7e3aac60875506df30f7fce4e0f78:USDXLR',
+    'excellar-issuer::12203d1e36930ee0e3fbb898add7e222a47ae9d2a5f0f6187e3a446ea32f871ce2ca:USDXLR',
     UnderlyingAsset['canton:usdxlr'],
     CANTON_TOKEN_FEATURES
   ),
