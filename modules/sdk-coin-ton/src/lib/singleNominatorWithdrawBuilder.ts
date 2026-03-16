@@ -2,6 +2,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Recipient, TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
+import { SINGLE_NOMINATOR_WITHDRAW_ALL_COMMENT } from './constants';
 
 export class SingleNominatorWithdrawBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -20,6 +21,16 @@ export class SingleNominatorWithdrawBuilder extends TransactionBuilder {
 
   send(recipient: Recipient): SingleNominatorWithdrawBuilder {
     this.transaction.recipient = recipient;
+    return this;
+  }
+
+  /**
+   * Sets the message to withdraw everything from the single nominator contract.
+   * Uses a plain transfer with text comment "w" which instructs the contract to
+   * drain balance - gas - MIN_TON_FOR_STORAGE automatically.
+   */
+  setFullWithdrawalMessage(): SingleNominatorWithdrawBuilder {
+    this.transaction.message = SINGLE_NOMINATOR_WITHDRAW_ALL_COMMENT;
     return this;
   }
 
