@@ -42,6 +42,7 @@
   "dependencies": {
     "@bitgo/abstract-lightning": "^7.8.3",
     "@bitgo/sdk-core": "^36.34.0",
+    "@bitgo/statics": "^58.30.0",
     "@bitgo/utxo-lib": "^11.21.0"
   },
   "devDependencies": {
