@@ -5,6 +5,8 @@ import type { UtxoNamedKeychains } from '../keychains';
 
 import type { CustomChangeOptions } from './fixedScript';
 
+export type BitGoPsbt = fixedScriptWallet.BitGoPsbt;
+
 export type SdkBackend = 'utxolib' | 'wasm-utxo';
 
 export function isSdkBackend(backend: string): backend is SdkBackend {
