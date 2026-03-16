@@ -30,7 +30,6 @@ export class SingleNominatorWithdrawBuilder extends TransactionBuilder {
    * drain balance - gas - MIN_TON_FOR_STORAGE automatically.
    */
   setFullWithdrawalMessage(): SingleNominatorWithdrawBuilder {
-    this.transaction.isFullUnstake = true;
     this.transaction.message = SINGLE_NOMINATOR_WITHDRAW_ALL_COMMENT;
     return this;
   }

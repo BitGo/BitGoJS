@@ -17,7 +17,6 @@ export interface TxData {
   sub_wallet_id: number;
   signature: string;
   bounceable: boolean;
-  isFullUnstake?: boolean;
 }
 
 export type TransactionExplanation = ITransactionExplanation<TransactionFee>;

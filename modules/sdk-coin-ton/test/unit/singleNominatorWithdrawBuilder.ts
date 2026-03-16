@@ -143,7 +143,6 @@ describe('Ton Single Nominator Withdraw Builder', () => {
     const tx = await txBuilder.build();
     should.equal(tx.type, TransactionType.SingleNominatorWithdraw);
     should.equal(tx.toJson().bounceable, false);
-    should.equal(tx.toJson().isFullUnstake, true);
     should.equal(tx.toJson().withdrawAmount, undefined);
     tx.inputs.length.should.equal(1);
     tx.inputs[0].should.deepEqual({
@@ -159,10 +158,11 @@ describe('Ton Single Nominator Withdraw Builder', () => {
     });
     const rawTx = tx.toBroadcastFormat();
     // Verify the raw transaction can be parsed back as a full withdrawal
+    // Full withdrawal is inferred by: transactionType === SingleNominatorWithdraw && !withdrawAmount
     const txBuilder2 = factory.from(rawTx);
     const tx2 = await txBuilder2.build();
     should.equal(tx2.type, TransactionType.SingleNominatorWithdraw);
-    should.equal(tx2.toJson().isFullUnstake, true);
+    should.equal(tx2.toJson().withdrawAmount, undefined);
     should.equal(tx2.toBroadcastFormat(), rawTx);
   });
 
@@ -180,7 +180,7 @@ describe('Ton Single Nominator Withdraw Builder', () => {
     txBuilder.setFullWithdrawalMessage();
     const tx = await txBuilder.build();
     should.equal(tx.type, TransactionType.SingleNominatorWithdraw);
-    should.equal(tx.toJson().isFullUnstake, true);
+    should.equal(tx.toJson().withdrawAmount, undefined);
     const signable = tx.signablePayload;
     const signature = keyPair.signMessageinUint8Array(signable);
     txBuilder.addSignature(keyPair.getKeys(), Buffer.from(signature));
@@ -191,7 +191,7 @@ describe('Ton Single Nominator Withdraw Builder', () => {
     should.equal(Buffer.from(signature).toString('hex'), Buffer.from(signature2).toString('hex'));
     should.equal(tx.toBroadcastFormat(), tx2.toBroadcastFormat());
     should.equal(tx2.type, TransactionType.SingleNominatorWithdraw);
-    should.equal(tx2.toJson().isFullUnstake, true);
+    should.equal(tx2.toJson().withdrawAmount, undefined);
   });
 
   xit('should build a signed withdraw tx and submit onchain', async function () {
