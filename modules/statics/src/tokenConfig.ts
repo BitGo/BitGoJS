@@ -229,6 +229,7 @@ export interface TokenNetwork {
   bera: { tokens: EthLikeTokenConfig[] };
   mon: { tokens: EthLikeTokenConfig[] };
   xdc: { tokens: EthLikeTokenConfig[] };
+  hypeevm: { tokens: EthLikeTokenConfig[] };
   ip: { tokens: EthLikeTokenConfig[] };
   apt: {
     tokens: AptTokenConfig[];
