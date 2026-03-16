@@ -1535,6 +1535,15 @@ export const bscTokens = [
     BSC_TOKEN_FEATURES
   ),
   bscToken(
+    '4d7f8e9a-6c2b-4a3f-9d1e-5b8c7a6f4e2d',
+    'bsc:btr',
+    'Bitlayer',
+    18,
+    '0xfed13d0c40790220fbde712987079eda1ed75c51',
+    UnderlyingAsset['bsc:btr'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
     '5803d1f3-5950-4410-b0de-db7aa3f0f67c',
     'bsc:iost',
     'IOSToken',

@@ -2432,6 +2432,7 @@ export enum UnderlyingAsset {
   'eth:spec' = 'eth:spec',
   'eth:prompt' = 'eth:prompt',
   'eth:yb' = 'eth:yb',
+  'eth:btr' = 'eth:btr',
   'morph:usdc' = 'morph:usdc',
   'morpheth:usdc' = 'morpheth:usdc',
   'morph:usdt' = 'morph:usdt',
@@ -2535,6 +2536,7 @@ export enum UnderlyingAsset {
   'tavaxc:xsgd' = 'tavaxc:xsgd',
   'tavaxc:bitgo' = 'tavaxc:bitgo',
   'tavaxc:stavax' = 'tavaxc:stavax',
+  'tavaxc:rtest' = 'tavaxc:rtest',
   'avaxc:usdc-e' = 'avaxc:usdc-e',
   'avaxc:usdt-e' = 'avaxc:usdt-e',
   // Begin FTX missing AVAXC tokens
@@ -2899,6 +2901,7 @@ export enum UnderlyingAsset {
   'bsc:bard' = 'bsc:bard',
   'bsc:home' = 'bsc:home',
   'bsc:zbt' = 'bsc:zbt',
+  'bsc:btr' = 'bsc:btr',
   'bsc:iost' = 'bsc:iost',
   'bsc:sto' = 'bsc:sto',
   'bsc:pt-cusdo-29oct2026' = 'bsc:pt-cusdo-29oct2026',
@@ -2989,6 +2992,10 @@ export enum UnderlyingAsset {
   'arbeth:next' = 'arbeth:next',
   'arbeth:zro' = 'arbeth:zro',
   'arbeth:tt' = 'arbeth:tt',
+  'arbeth:testtsla' = 'arbeth:testtsla',
+  'arbeth:testamzn' = 'arbeth:testamzn',
+  'arbeth:testpltr' = 'arbeth:testpltr',
+  'arbeth:testnflx' = 'arbeth:testnflx',
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
@@ -3438,6 +3445,10 @@ export enum UnderlyingAsset {
   'sol:skr' = 'sol:skr',
   'sol:bmt' = 'sol:bmt',
   'sol:huma' = 'sol:huma',
+  'sol:prime' = 'sol:prime',
+  'sol:kwyld-usdc' = 'sol:kwyld-usdc',
+  'sol:kprme-cash' = 'sol:kprme-cash',
+  'sol:kwyld-cash' = 'sol:kwyld-cash',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',

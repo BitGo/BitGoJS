@@ -14582,6 +14582,14 @@ export const erc20Coins = [
     '0x94314a14df63779c99c0764a30e0cd22fa78fc0e',
     UnderlyingAsset['eth:epic']
   ),
+  erc20(
+    '7c8e6f41-9d3a-4b2e-8f5c-1a7b9c6d4e3f',
+    'eth:btr',
+    'Bitlayer',
+    18,
+    '0x6c76de483f1752ac8473e2b4983a873991e70da7',
+    UnderlyingAsset['eth:btr']
+  ),
   terc20(
     '0c333619-e5a6-4f9d-8bbc-5b0e5dc64d03',
     'hteth:grtxp',
