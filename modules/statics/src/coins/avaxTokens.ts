@@ -792,4 +792,12 @@ export const avaxTokens = [
     '0x3f964a0630b429ffb1797f2ce9fd8e5a45c5ad18',
     UnderlyingAsset['tavaxc:stavax']
   ),
+  tavaxErc20(
+    '3d7e2b1a-0f9e-4d7c-9d3a-2e1f0b9c8d7e',
+    'tavaxc:rtest',
+    'REtokens Test Security',
+    9,
+    '0xaeb95ae5888b9ba0636373da39d5ad85eef318e0',
+    UnderlyingAsset['tavaxc:rtest']
+  ),
 ];

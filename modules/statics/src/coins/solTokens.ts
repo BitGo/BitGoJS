@@ -3694,4 +3694,44 @@ export const solTokens = [
     UnderlyingAsset['sol:huma'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    'a5e3f7d8-9b2c-4f1e-8a6d-7c9b4e3f2a1d',
+    'sol:prime',
+    'HASTRA PRIME',
+    6,
+    '3b8X44fLF9ooXaUm3hhSgjpmVs6rZZ3pPoGnGahc3Uu7',
+    '3b8X44fLF9ooXaUm3hhSgjpmVs6rZZ3pPoGnGahc3Uu7',
+    UnderlyingAsset['sol:prime'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'b6f4e8c9-0d3a-4e2f-9b7c-8d0e5a6f4b2e',
+    'sol:kwyld-usdc',
+    'Kamino wYLD-USDC (Raydium)',
+    6,
+    '68Hn1fCCZAfZd63cCMvUzJ3dKx31cP6sKVm2RE2xF333',
+    '68Hn1fCCZAfZd63cCMvUzJ3dKx31cP6sKVm2RE2xF333',
+    UnderlyingAsset['sol:kwyld-usdc'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'c7f5e9d0-1e4b-4f3c-8c8d-9e1f6a7c5c3f',
+    'sol:kprme-cash',
+    'Kamino PRME-CASH (Raydium)',
+    6,
+    'CrLxQrrinWEZ7vypFqKMbL7bUKoxYhBhmzAdvGKtfso1',
+    'CrLxQrrinWEZ7vypFqKMbL7bUKoxYhBhmzAdvGKtfso1',
+    UnderlyingAsset['sol:kprme-cash'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'd8a6f0e1-2f5c-4a4b-9d9e-0f2a7b8b6d4a',
+    'sol:kwyld-cash',
+    'Kamino wYLD-CASH (Raydium)',
+    6,
+    '3YwBxuntXkdB1jjnYKfGx9WzA8oPzzLUjnN2DkondHQL',
+    '3YwBxuntXkdB1jjnYKfGx9WzA8oPzzLUjnN2DkondHQL',
+    UnderlyingAsset['sol:kwyld-cash'],
+    SOL_TOKEN_FEATURES
+  ),
 ];

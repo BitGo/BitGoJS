@@ -4112,6 +4112,34 @@ export const tOfcErc20Coins = [
   tofcerc20('055ebe86-72cc-4f0e-b46f-c517d8e3687a', 'ofcterc', 'Test ERC Token', 18, UnderlyingAsset.TERC),
   tofcerc20('ac822eb1-4aa0-40d2-836d-7a24db24d47a', 'ofctest', 'Test Mintable ERC20 Token', 18, UnderlyingAsset.TEST),
   tofcerc20(
+    'e0f5b3c8-2d9a-4e7b-9a1c-8d3f6b0e9a2d',
+    'ofctarbeth:testtsla',
+    'Tesla (Test)',
+    18,
+    UnderlyingAsset['arbeth:testtsla']
+  ),
+  tofcerc20(
+    'f1a6c4d9-3e0b-4f8c-9b2d-9e4a7c1f0b3e',
+    'ofctarbeth:testamzn',
+    'Amazon (Test)',
+    18,
+    UnderlyingAsset['arbeth:testamzn']
+  ),
+  tofcerc20(
+    'a2b7d5e0-4f1c-4a9d-9c3e-0f5b8d2a1c4f',
+    'ofctarbeth:testpltr',
+    'Palantir (Test)',
+    18,
+    UnderlyingAsset['arbeth:testpltr']
+  ),
+  tofcerc20(
+    'b3c8e6f1-5a2d-4b0e-8d4f-1a6c9e3b2d5a',
+    'ofctarbeth:testnflx',
+    'Netflix (Test)',
+    18,
+    UnderlyingAsset['arbeth:testnflx']
+  ),
+  tofcerc20(
     '67b3f68b-a0bd-4bd7-b67e-36e8220bf67e',
     'ofcterc18dp13',
     'Test ERC Token 18 decimals',
@@ -6142,6 +6170,7 @@ export const tOfcErc20Coins = [
     true,
     'opeth'
   ),
+  ofcerc20('e4f9a7b2-6c3d-4e8a-9f1b-5d7c8e2a4b6f', 'ofceth:btr', 'Bitlayer', 18, UnderlyingAsset['eth:btr']),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

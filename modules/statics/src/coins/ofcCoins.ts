@@ -817,6 +817,28 @@ export const ofcCoins = [
     UnderlyingAsset['sol:usdca'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  ofcsolToken('a6b1c9d4-8e5f-4a0c-9b3d-7f9e0a4c6b8d', 'ofcsol:prime', 'HASTRA PRIME', 6, UnderlyingAsset['sol:prime']),
+  ofcsolToken(
+    'b7c2d0e5-9f6a-4b1d-9c4e-8a0f1b5d7c9e',
+    'ofcsol:kwyld-usdc',
+    'Kamino kWYLD-USDC',
+    6,
+    UnderlyingAsset['sol:kwyld-usdc']
+  ),
+  ofcsolToken(
+    'c8d3e1f6-0a7b-4c2e-9d5f-9b1a2c6e8d0f',
+    'ofcsol:kprme-cash',
+    'Kamino kPRME-CASH',
+    6,
+    UnderlyingAsset['sol:kprme-cash']
+  ),
+  ofcsolToken(
+    'd9e4f2a7-1b8c-4d3f-9e6a-0c2b3d7f9e1a',
+    'ofcsol:kwyld-cash',
+    'Kamino kWYLD-CASH',
+    6,
+    UnderlyingAsset['sol:kwyld-cash']
+  ),
   ofcsolToken(
     'c382f3cc-c071-4ef5-89ac-bcb85d8d415f',
     'ofcsol:wec',
@@ -2277,6 +2299,7 @@ export const ofcCoins = [
     UnderlyingAsset['bsc:twt']
   ),
   ofcBscToken('822d85d7-f42d-40de-a14c-220a375eda3f', 'ofcbsc:sfp', 'SafePal Token', 18, UnderlyingAsset['bsc:sfp']),
+  ofcBscToken('f5a0b8c3-7d4e-4f9b-9a2c-6e8d9f3b5c7a', 'ofcbsc:btr', 'Bitlayer', 18, UnderlyingAsset['bsc:btr']),
   ofcBscToken('10226e82-2fac-49f4-8ee0-e0f7affeaeec', 'ofcbsc:mask', 'Mask Network', 18, UnderlyingAsset['bsc:mask']),
   ofcBscToken(
     'a1380903-6d91-4555-b8ef-74b1bcd993d0',
