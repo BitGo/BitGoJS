@@ -139,3 +139,45 @@ export function explainPsbtWasm(
     fee: result.fee.toString(),
   };
 }
+
+export interface AggregatedTransactionExplanation {
+  inputCount: number;
+  outputCount: number;
+  changeOutputCount: number;
+  inputAmount: bigint;
+  outputAmount: bigint;
+  changeAmount: bigint;
+  fee: bigint;
+}
+
+export function aggregateTransactionExplanations(
+  explanations: TransactionExplanationBigInt[]
+): AggregatedTransactionExplanation {
+  let inputCount = 0;
+  let outputCount = 0;
+  let changeOutputCount = 0;
+  let fee = 0n;
+  let inputAmount = 0n;
+  let outputAmount = 0n;
+  let changeAmount = 0n;
+
+  for (const e of explanations) {
+    inputCount += e.inputs.length;
+    outputCount += e.outputs.length;
+    changeOutputCount += e.changeOutputs.length;
+    fee += e.fee;
+    inputAmount += e.inputAmount;
+    outputAmount += e.outputAmount;
+    changeAmount += e.changeAmount;
+  }
+
+  return {
+    inputCount,
+    outputCount,
+    changeOutputCount,
+    inputAmount,
+    outputAmount,
+    changeAmount,
+    fee,
+  };
+}

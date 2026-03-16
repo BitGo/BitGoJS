@@ -5,7 +5,13 @@ import { testutil } from '@bitgo/utxo-lib';
 import { fixedScriptWallet, Triple } from '@bitgo/wasm-utxo';
 
 import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction';
-import { explainPsbt, explainPsbtWasm, explainPsbtWasmBigInt } from '../../../../src/transaction/fixedScript';
+import {
+  explainPsbt,
+  explainPsbtWasm,
+  explainPsbtWasmBigInt,
+  aggregateTransactionExplanations,
+  type TransactionExplanationBigInt,
+} from '../../../../src/transaction/fixedScript';
 import { getCoinName } from '../../../../src/names';
 
 function describeTransactionWith(acidTest: testutil.AcidTest) {
@@ -134,4 +140,47 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
 
 describe('explainPsbt(Wasm)', function () {
   testutil.AcidTest.suite().forEach((test) => describeTransactionWith(test));
+});
+
+describe('aggregateTransactionExplanations', function () {
+  testutil.AcidTest.suite()
+    .filter((t) => t.network === utxolib.networks.bitcoin)
+    .forEach((acidTest) => {
+      describe(acidTest.name, function () {
+        let exp: TransactionExplanationBigInt;
+
+        before('prepare', function () {
+          const psbtBytes = acidTest.createPsbt().toBuffer();
+          const networkName = utxolib.getNetworkName(acidTest.network);
+          assert(networkName);
+          const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(psbtBytes, networkName);
+          const walletXpubs = acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>;
+          exp = explainPsbtWasmBigInt(wasmPsbt, walletXpubs, {
+            replayProtection: { publicKeys: [acidTest.getReplayProtectionPublicKey()] },
+          });
+        });
+
+        it('aggregating a single explanation is identity', function () {
+          const agg = aggregateTransactionExplanations([exp]);
+          assert.strictEqual(agg.inputCount, exp.inputs.length);
+          assert.strictEqual(agg.outputCount, exp.outputs.length);
+          assert.strictEqual(agg.changeOutputCount, exp.changeOutputs.length);
+          assert.strictEqual(agg.inputAmount, exp.inputAmount);
+          assert.strictEqual(agg.outputAmount, exp.outputAmount);
+          assert.strictEqual(agg.changeAmount, exp.changeAmount);
+          assert.strictEqual(agg.fee, exp.fee);
+        });
+
+        it('aggregating two identical explanations doubles all counts and amounts', function () {
+          const agg = aggregateTransactionExplanations([exp, exp]);
+          assert.strictEqual(agg.inputCount, exp.inputs.length * 2);
+          assert.strictEqual(agg.outputCount, exp.outputs.length * 2);
+          assert.strictEqual(agg.changeOutputCount, exp.changeOutputs.length * 2);
+          assert.strictEqual(agg.inputAmount, exp.inputAmount * 2n);
+          assert.strictEqual(agg.outputAmount, exp.outputAmount * 2n);
+          assert.strictEqual(agg.changeAmount, exp.changeAmount * 2n);
+          assert.strictEqual(agg.fee, exp.fee * 2n);
+        });
+      });
+    });
 });
