@@ -710,7 +710,7 @@ export class Wallet implements IWallet {
     if (this._wallet.type === 'custodial' && routeName === 'consolidate') {
       return this.initiateTransaction({ ...params, type: 'consolidate' });
     } else if (this._wallet.type === 'custodial' && routeName === 'fanout') {
-      throw new Error('Fanout is not supported for custodial wallets');
+      return this.initiateTransaction({ ...params, type: 'fanout' });
     }
 
     common.validateParams(params, [], ['walletPassphrase', 'xprv']);

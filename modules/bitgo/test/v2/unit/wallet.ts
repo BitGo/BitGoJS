@@ -1549,6 +1549,26 @@ describe('V2 Wallet:', function () {
       unusedNocks.pendingMocks().length.should.eql(2);
       nock.cleanAll();
     });
+
+    it('should route custodial fanoutUnspents through tx/initiate', async function () {
+      const custodialBasecoin = bitgo.coin('tbtc');
+      const custodialWalletData = {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'tbtc',
+        type: 'custodial',
+        keys: ['5b3424f91bf349930e340175'],
+      };
+      const custodialWallet = new Wallet(bitgo, custodialBasecoin, custodialWalletData);
+
+      const initiatePath = `/api/v2/${custodialWallet.coin()}/wallet/${custodialWallet.id()}/tx/initiate`;
+      const response = nock(bgUrl)
+        .post(initiatePath, _.matches({ type: 'fanout' }))
+        .reply(200, { status: 'accepted', txRequestId: 'mock-tx-request-id' });
+
+      const result = await custodialWallet.fanoutUnspents({ numUnspentsToMake: 10 });
+      response.isDone().should.be.true();
+      (result as any).status.should.equal('accepted');
+    });
   });
 
   describe('Transaction prebuilds', function () {
