@@ -164,6 +164,14 @@ export interface StakeOptions {
   region?: string;
 }
 
+export interface XdcStakeOptions extends StakeOptions {
+  /**
+   * XDC masternode KYC document hash — IPFS CIDv0 (Qm...) returned by the
+   * staking-service KYC upload endpoint, injected before calling stake().
+   */
+  kycHash?: string;
+}
+
 export interface TronStakeOptions extends StakeOptions {
   /**
    * Tron staking resource type (Energy or Bandwidth)
@@ -311,7 +319,7 @@ export interface IStakingWallet {
   readonly walletId: string;
   readonly coin: string;
   stake(
-    options: StakeOptions | TronStakeOptions | TaoStakeOptions | VetStakeOptions | StoryStakeOptions
+    options: StakeOptions | TronStakeOptions | TaoStakeOptions | VetStakeOptions | StoryStakeOptions | XdcStakeOptions
   ): Promise<StakingRequest>;
   unstake(options: UnstakeOptions | EthUnstakeOptions): Promise<StakingRequest>;
   switchValidator(options: SwitchValidatorOptions | TaoSwitchValidatorOptions): Promise<StakingRequest>;

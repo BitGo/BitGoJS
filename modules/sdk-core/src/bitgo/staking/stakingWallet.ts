@@ -25,6 +25,7 @@ import {
   TaoSwitchValidatorOptions,
   VetStakeOptions,
   StoryStakeOptions,
+  XdcStakeOptions,
 } from './iStakingWallet';
 import { BitGoBase } from '../bitgoBase';
 import { IWallet, PrebuildTransactionResult } from '../wallet';
@@ -63,7 +64,7 @@ export class StakingWallet implements IStakingWallet {
    * @return StakingRequest
    */
   async stake(
-    options: StakeOptions | TronStakeOptions | TaoStakeOptions | VetStakeOptions | StoryStakeOptions
+    options: StakeOptions | TronStakeOptions | TaoStakeOptions | VetStakeOptions | StoryStakeOptions | XdcStakeOptions
   ): Promise<StakingRequest> {
     return await this.createStakingRequest(options, 'STAKE');
   }
@@ -325,7 +326,8 @@ export class StakingWallet implements IStakingWallet {
       | TaoStakeOptions
       | TaoSwitchValidatorOptions
       | VetStakeOptions
-      | StoryStakeOptions,
+      | StoryStakeOptions
+      | XdcStakeOptions,
     type: string
   ): Promise<StakingRequest> {
     return await this.bitgo
