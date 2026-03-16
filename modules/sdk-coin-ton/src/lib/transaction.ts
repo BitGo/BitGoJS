@@ -12,6 +12,7 @@ import {
   VESTING_CONTRACT_WALLET_ID,
   TON_WHALES_DEPOSIT_OPCODE,
   TON_WHALES_WITHDRAW_OPCODE,
+  SINGLE_NOMINATOR_WITHDRAW_ALL_COMMENT,
 } from './constants';
 
 export class Transaction extends BaseTransaction {
@@ -359,6 +360,8 @@ export class Transaction extends BaseTransaction {
             this.transactionType = TransactionType.TonWhalesVestingDeposit;
           } else if (payload === 'Withdraw') {
             this.transactionType = TransactionType.TonWhalesVestingWithdrawal;
+          } else if (payload === SINGLE_NOMINATOR_WITHDRAW_ALL_COMMENT) {
+            this.transactionType = TransactionType.SingleNominatorWithdraw;
           }
         } else if (opcode === 4096) {
           const queryId = order.loadUint(64).toNumber();
