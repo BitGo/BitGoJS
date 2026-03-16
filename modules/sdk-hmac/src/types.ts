@@ -28,6 +28,11 @@ export interface CalculateRequestHeadersOptions<T extends string | Buffer = stri
   authVersion: AuthVersion;
 }
 
+export type CalculateRequestHeadersWebCryptoOptions<T extends string | Buffer = string> = Omit<
+  CalculateRequestHeadersOptions<T>,
+  'token'
+>;
+
 export interface RequestHeaders {
   hmac: string;
   timestamp: number;

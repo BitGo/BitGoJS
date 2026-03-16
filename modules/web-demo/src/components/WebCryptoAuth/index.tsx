@@ -47,6 +47,14 @@ const WebCryptoAuth = () => {
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
 
+  const [apiPath, setApiPath] = useState('/user/me');
+  const [apiVersion, setApiVersion] = useState<1 | 2 | 3>(2);
+  const [apiMethod, setApiMethod] = useState<
+    'get' | 'post' | 'put' | 'del' | 'patch'
+  >('get');
+  const [apiBody, setApiBody] = useState('');
+  const [apiResult, setApiResult] = useState<string | null>(null);
+
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -288,6 +296,33 @@ const WebCryptoAuth = () => {
     }
   }, [log]);
 
+  const handleCustomRequest = useCallback(async () => {
+    clearStatus();
+    setApiResult(null);
+    const sdk = sdkRef.current;
+    if (!sdk) {
+      setError('SDK not initialized.');
+      return;
+    }
+    try {
+      const url = sdk.url(apiPath, apiVersion);
+      log(`${apiMethod.toUpperCase()} ${url} ...`);
+      const request = sdk[apiMethod](url);
+      if (apiBody.trim() && apiMethod !== 'get') {
+        request.send(JSON.parse(apiBody));
+      }
+      const result = await request.result();
+      const formatted = JSON.stringify(result, null, 2);
+      setApiResult(formatted);
+      log(`Response received (${formatted.length} chars).`);
+    } catch (e: any) {
+      const msg = e.message || String(e);
+      setError(msg);
+      log(`Request error: ${msg}`);
+      setApiResult(`Error: ${msg}`);
+    }
+  }, [apiPath, apiVersion, apiMethod, apiBody, log]);
+
   const handleTestFetch = useCallback(async () => {
     clearStatus();
     const strategy = strategyRef.current;
@@ -459,9 +494,96 @@ const WebCryptoAuth = () => {
             </Button>
           </Section>
 
+          {/* Custom API Request */}
+          <Section>
+            <SectionTitle>3. Custom API Request</SectionTitle>
+            <FormGroup>
+              <Label>Method</Label>
+              <select
+                value={apiMethod}
+                onChange={(e) =>
+                  setApiMethod(e.target.value as typeof apiMethod)
+                }
+                style={{
+                  padding: '8px',
+                  borderRadius: 4,
+                  border: '1px solid #ccc',
+                  width: '100%',
+                }}
+              >
+                <option value="get">GET</option>
+                <option value="post">POST</option>
+                <option value="put">PUT</option>
+                <option value="del">DELETE</option>
+                <option value="patch">PATCH</option>
+              </select>
+            </FormGroup>
+            <FormGroup>
+              <Label>API Version</Label>
+              <select
+                value={apiVersion}
+                onChange={(e) =>
+                  setApiVersion(Number(e.target.value) as 1 | 2 | 3)
+                }
+                style={{
+                  padding: '8px',
+                  borderRadius: 4,
+                  border: '1px solid #ccc',
+                  width: '100%',
+                }}
+              >
+                <option value={1}>v1</option>
+                <option value={2}>v2</option>
+                <option value={3}>v3</option>
+              </select>
+            </FormGroup>
+            <FormGroup>
+              <Label>Path</Label>
+              <Input
+                value={apiPath}
+                onChange={(e) => setApiPath(e.target.value)}
+                placeholder="/user/me"
+                disabled={!sdkReady}
+              />
+            </FormGroup>
+            {apiMethod !== 'get' && (
+              <FormGroup>
+                <Label>Body (JSON)</Label>
+                <textarea
+                  value={apiBody}
+                  onChange={(e) => setApiBody(e.target.value)}
+                  placeholder="{}"
+                  disabled={!sdkReady}
+                  style={{
+                    width: '100%',
+                    minHeight: 80,
+                    padding: '8px',
+                    borderRadius: 4,
+                    border: '1px solid #ccc',
+                    fontFamily: 'monospace',
+                    fontSize: 13,
+                    resize: 'vertical',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </FormGroup>
+            )}
+            <Button
+              onClick={handleCustomRequest}
+              disabled={!sdkReady || !apiPath}
+            >
+              Send Request
+            </Button>
+            {apiResult !== null && (
+              <LogArea ref={null} style={{ marginTop: 12, maxHeight: 300 }}>
+                {apiResult}
+              </LogArea>
+            )}
+          </Section>
+
           {/* Test Requests */}
           <Section>
-            <SectionTitle>3. Test Authenticated Requests</SectionTitle>
+            <SectionTitle>4. Test Authenticated Requests</SectionTitle>
             <Button onClick={handleTestRequest} disabled={!loggedIn}>
               GET /user/me (via BitGoAPI)
             </Button>

@@ -1,21 +1,21 @@
 /**
  * Browser-native HMAC auth strategy using the Web Crypto API.
  *
- * This file has ZERO Node.js imports (no `crypto`, `url`, or `Buffer`).
- * All browser API usage (crypto.subtle, indexedDB) is inside method bodies,
+ * All browser API usage (crypto.subtle) is inside method bodies,
  * so the module can be safely imported in any environment -- it only requires
  * browser globals when methods are actually called.
  */
 import type {
   AuthVersion,
-  CryptoSigning,
   IHmacAuthStrategy,
   ITokenStore,
-  CalculateRequestHeadersOptions,
+  CalculateRequestHeadersWebCryptoOptions,
   RequestHeaders,
   VerifyResponseOptions,
   VerifyResponseInfo,
 } from './types';
+import { calculateHMACSubject } from './hmac';
+import { IndexedDbTokenStore } from './indexedDbTokenStore';
 
 function arrayBufToHex(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
@@ -24,60 +24,6 @@ function arrayBufToHex(buffer: ArrayBuffer): string {
     hexParts[i] = bytes[i].toString(16).padStart(2, '0');
   }
   return hexParts.join('');
-}
-
-/**
- * Extract the pathname + search from a URL string, using the browser-native URL API.
- * Equivalent to what `url.parse(urlPath)` does in Node.js for HMAC subject construction.
- */
-function extractQueryPath(urlPath: string): string {
-  try {
-    const url = new URL(urlPath);
-    return url.search.length > 0 ? url.pathname + url.search : url.pathname;
-  } catch {
-    try {
-      const url = new URL(urlPath, 'http://localhost');
-      return url.search.length > 0 ? url.pathname + url.search : url.pathname;
-    } catch {
-      return urlPath;
-    }
-  }
-}
-
-/**
- * Build the HMAC subject string for v2/v3 request or response signing.
- * Browser-compatible equivalent of `calculateHMACSubject` from hmac.ts,
- * producing identical output for string inputs.
- */
-function buildHmacSubject(params: {
-  urlPath: string;
-  text: string;
-  timestamp: number;
-  method: string;
-  statusCode?: number;
-  authVersion: AuthVersion;
-}): string {
-  let method = params.method;
-  if (method === 'del') {
-    method = 'delete';
-  }
-
-  const queryPath = extractQueryPath(params.urlPath);
-
-  let prefixedText: string;
-  if (params.statusCode !== undefined && Number.isFinite(params.statusCode) && Number.isInteger(params.statusCode)) {
-    prefixedText =
-      params.authVersion === 3
-        ? [method.toUpperCase(), params.timestamp, queryPath, params.statusCode].join('|')
-        : [params.timestamp, queryPath, params.statusCode].join('|');
-  } else {
-    prefixedText =
-      params.authVersion === 3
-        ? [method.toUpperCase(), params.timestamp, '3.0', queryPath].join('|')
-        : [params.timestamp, queryPath].join('|');
-  }
-
-  return [prefixedText, params.text].join('|');
 }
 
 async function webCryptoHmacSign(key: CryptoKey, data: string): Promise<string> {
@@ -110,96 +56,6 @@ async function webCryptoSha256Hex(data: string): Promise<string> {
   const encoded = new TextEncoder().encode(data);
   const hash = await crypto.subtle.digest('SHA-256', encoded);
   return arrayBufToHex(hash);
-}
-
-// ---------------------------------------------------------------------------
-// IndexedDB Token Store
-// ---------------------------------------------------------------------------
-
-const CRYPTO_DB_NAME = 'bitgo-auth';
-const CRYPTO_STORE_NAME = 'crypto-signing';
-const CRYPTO_RECORD_KEY = 'current';
-
-function hasIndexedDB(): boolean {
-  return typeof indexedDB !== 'undefined';
-}
-
-function openCryptoDb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(CRYPTO_DB_NAME, 1);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(CRYPTO_STORE_NAME)) {
-        db.createObjectStore(CRYPTO_STORE_NAME);
-      }
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function persistCryptoSigning(signing: CryptoSigning): Promise<void> {
-  if (!hasIndexedDB()) return;
-  const db = await openCryptoDb();
-  try {
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction(CRYPTO_STORE_NAME, 'readwrite');
-      tx.objectStore(CRYPTO_STORE_NAME).put(signing, CRYPTO_RECORD_KEY);
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    });
-  } finally {
-    db.close();
-  }
-}
-
-async function loadCryptoSigning(): Promise<CryptoSigning | null> {
-  if (!hasIndexedDB()) return null;
-  const db = await openCryptoDb();
-  try {
-    return await new Promise<CryptoSigning | null>((resolve, reject) => {
-      const tx = db.transaction(CRYPTO_STORE_NAME, 'readonly');
-      const request = tx.objectStore(CRYPTO_STORE_NAME).get(CRYPTO_RECORD_KEY);
-      request.onsuccess = () => resolve(request.result ?? null);
-      request.onerror = () => reject(request.error);
-    });
-  } finally {
-    db.close();
-  }
-}
-
-async function removeCryptoSigning(): Promise<void> {
-  if (!hasIndexedDB()) return;
-  const db = await openCryptoDb();
-  try {
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction(CRYPTO_STORE_NAME, 'readwrite');
-      tx.objectStore(CRYPTO_STORE_NAME).delete(CRYPTO_RECORD_KEY);
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    });
-  } finally {
-    db.close();
-  }
-}
-
-/**
- * Persists {@link CryptoSigning} material in the browser's IndexedDB.
- * The raw bearer token is never stored — only the non-extractable CryptoKey
- * and the SHA-256 token hash are persisted via the structured clone algorithm.
- */
-export class IndexedDbTokenStore implements ITokenStore {
-  async save(signing: CryptoSigning): Promise<void> {
-    await persistCryptoSigning(signing);
-  }
-
-  async load(): Promise<CryptoSigning | null> {
-    return loadCryptoSigning();
-  }
-
-  async remove(): Promise<void> {
-    await removeCryptoSigning();
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -279,14 +135,14 @@ export class WebCryptoHmacStrategy implements IHmacAuthStrategy {
 
   // --- IHmacAuthStrategy implementation -----------------------------------
 
-  async calculateRequestHeaders(params: CalculateRequestHeadersOptions): Promise<RequestHeaders> {
+  async calculateRequestHeaders(params: CalculateRequestHeadersWebCryptoOptions): Promise<RequestHeaders> {
     if (!this.cryptoKey || !this.tokenHashHex) {
       throw new Error('No token available. Call setToken() or restoreToken() first.');
     }
     const timestamp = Date.now();
-    const subject = buildHmacSubject({
+    const subject = calculateHMACSubject({
       urlPath: params.url,
-      text: params.text as string,
+      text: params.text,
       timestamp,
       method: params.method,
       authVersion: params.authVersion,
@@ -299,9 +155,9 @@ export class WebCryptoHmacStrategy implements IHmacAuthStrategy {
     if (!this.cryptoKey) {
       throw new Error('No token available. Call setToken() or restoreToken() first.');
     }
-    const subject = buildHmacSubject({
+    const subject = calculateHMACSubject({
       urlPath: params.url,
-      text: params.text as string,
+      text: params.text,
       timestamp: params.timestamp,
       method: params.method,
       statusCode: params.statusCode,
@@ -344,8 +200,7 @@ export class WebCryptoHmacStrategy implements IHmacAuthStrategy {
   async getAuthHeaders(params: { url: string; method: string; body?: string }): Promise<Record<string, string>> {
     const requestHeaders = await this.calculateRequestHeaders({
       url: params.url,
-      token: '',
-      method: params.method as CalculateRequestHeadersOptions['method'],
+      method: params.method as CalculateRequestHeadersWebCryptoOptions['method'],
       text: params.body ?? '',
       authVersion: this.authVersion,
     });

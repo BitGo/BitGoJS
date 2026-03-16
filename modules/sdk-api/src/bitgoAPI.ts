@@ -378,6 +378,84 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
+   * Signs and sends a v2-authenticated request, then verifies the response HMAC.
+   * Extracted from the req.then override in requestPatch to keep that method readable.
+   */
+  private async _sendRequestWithHmac({
+    req,
+    method,
+    url,
+    data,
+    strategyAuthenticated,
+    onfulfilled,
+    originalThen,
+  }: {
+    req: superagent.SuperAgentRequest;
+    method: RequestMethods;
+    url: string;
+    data: string | undefined;
+    strategyAuthenticated: boolean;
+    onfulfilled: ((response: superagent.Response) => any) | null | undefined;
+    originalThen: (onfulfilled: any, onrejected?: any) => Promise<any>;
+  }): Promise<any> {
+    if (this._token || strategyAuthenticated) {
+      setRequestQueryString(req);
+
+      const requestProperties = await this._hmacAuthStrategy.calculateRequestHeaders({
+        url: req.url,
+        token: this._token ?? '',
+        method,
+        text: data || '',
+        authVersion: this._authVersion,
+      });
+      req.set('Auth-Timestamp', requestProperties.timestamp.toString());
+
+      req.set('Authorization', 'Bearer ' + requestProperties.tokenHash);
+      debug(
+        'sending v2 %s request to %s with token %s',
+        method,
+        url,
+        this._token?.substr(0, 8) ?? '(strategy-managed)'
+      );
+
+      req.set('HMAC', requestProperties.hmac);
+    }
+
+    if (this.getAdditionalHeadersCb) {
+      const additionalHeaders = this.getAdditionalHeadersCb(method, url, data);
+      for (const { key, value } of additionalHeaders) {
+        req.set(key, value);
+      }
+    }
+
+    /**
+     * Verify the response before calling the original onfulfilled handler,
+     * and make sure onrejected is called if a verification error is encountered
+     */
+    const newOnFulfilled = onfulfilled
+      ? async (response: superagent.Response) => {
+          // HMAC verification is only allowed to be skipped in certain environments.
+          // This is checked in the constructor, but checking it again at request time
+          // will help prevent against tampering of this property after the object is created
+          if (!this._hmacVerification && !common.Environments[this.getEnv()].hmacVerificationEnforced) {
+            return onfulfilled(response);
+          }
+
+          const verifiedResponse = await verifyResponseAsync(
+            this,
+            this._token,
+            method,
+            req,
+            response,
+            this._authVersion
+          );
+          return onfulfilled(verifiedResponse);
+        }
+      : null;
+    return originalThen(newOnFulfilled);
+  }
+
+  /**
    * This is a patching function which can apply our authorization
    * headers to any outbound request.
    * @param method
@@ -446,65 +524,15 @@ export class BitGoAPI implements BitGoBase {
 
       const data = serializeRequestData(req);
 
-      const sendWithHmac = (async () => {
-        if (this._token || strategyAuthenticated) {
-          setRequestQueryString(req);
-
-          const requestProperties = await this._hmacAuthStrategy.calculateRequestHeaders({
-            url: req.url,
-            token: this._token ?? '',
-            method,
-            text: data || '',
-            authVersion: this._authVersion,
-          });
-          req.set('Auth-Timestamp', requestProperties.timestamp.toString());
-
-          req.set('Authorization', 'Bearer ' + requestProperties.tokenHash);
-          debug(
-            'sending v2 %s request to %s with token %s',
-            method,
-            url,
-            this._token?.substr(0, 8) ?? '(strategy-managed)'
-          );
-
-          req.set('HMAC', requestProperties.hmac);
-        }
-
-        if (this.getAdditionalHeadersCb) {
-          const additionalHeaders = this.getAdditionalHeadersCb(method, url, data);
-          for (const { key, value } of additionalHeaders) {
-            req.set(key, value);
-          }
-        }
-
-        /**
-         * Verify the response before calling the original onfulfilled handler,
-         * and make sure onrejected is called if a verification error is encountered
-         */
-        const newOnFulfilled = onfulfilled
-          ? async (response: superagent.Response) => {
-              // HMAC verification is only allowed to be skipped in certain environments.
-              // This is checked in the constructor, but checking it again at request time
-              // will help prevent against tampering of this property after the object is created
-              if (!this._hmacVerification && !common.Environments[this.getEnv()].hmacVerificationEnforced) {
-                return onfulfilled(response);
-              }
-
-              const verifiedResponse = await verifyResponseAsync(
-                this,
-                this._token,
-                method,
-                req,
-                response,
-                this._authVersion
-              );
-              return onfulfilled(verifiedResponse);
-            }
-          : null;
-        return originalThen(newOnFulfilled);
-      })();
-
-      return sendWithHmac.catch(onrejected);
+      return this._sendRequestWithHmac({
+        req,
+        method,
+        url,
+        data,
+        strategyAuthenticated,
+        onfulfilled,
+        originalThen,
+      }).catch(onrejected);
     };
     return toBitgoRequest(req);
   }
