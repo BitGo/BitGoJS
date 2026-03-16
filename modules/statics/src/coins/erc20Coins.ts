@@ -14571,7 +14571,7 @@ export const erc20Coins = [
     'eth:sahara',
     'Sahara AI',
     18,
-    '0xfdfbb411c4a70aa7c95d5c981a6fb4da867e1111',
+    '0xfdffb411c4a70aa7c95d5c981a6fb4da867e1111',
     UnderlyingAsset['eth:sahara']
   ),
   erc20(
