@@ -11781,10 +11781,10 @@ flat@^5.0.2:
   resolved "https://registry.npmjs.org/flat/-/flat-5.0.2.tgz"
   integrity sha512-b6suED+5/3rTpUBdG1gupIl8MPFCAMA0QXwmljLhvCUKcUvdE4gWky9zpuGCcXHOsz4J9wPGNWq6OKpmIzz3hQ==
 
-flatted@^3.2.7, flatted@^3.2.9:
-  version "3.3.3"
-  resolved "https://registry.npmjs.org/flatted/-/flatted-3.3.3.tgz"
-  integrity sha512-GX+ysw4PBCz0PzosHDepZGANEuFCMLrnRTiEy9McGjmkCQYwRq4A/X786G/fjM/+OjsWSU1ZrY5qyARZmO/uwg==
+flatted@3.4.0, flatted@^3.2.7, flatted@^3.2.9:
+  version "3.4.0"
+  resolved "https://registry.npmjs.org/flatted/-/flatted-3.4.0.tgz#92ab2efec9b272eb85a3a25a106c3afbbc990d8b"
+  integrity sha512-kC6Bb+ooptOIvWj5B63EQWkF0FEnNjV2ZNkLMLZRDDduIiWeFF4iKnslwhiWxjAdbg4NzTNo6h0qLuvFrcx+Sw==
 
 flux@^4.0.1:
   version "4.0.4"
