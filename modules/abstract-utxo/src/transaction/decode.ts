@@ -3,7 +3,7 @@ import { fixedScriptWallet, utxolibCompat } from '@bitgo/wasm-utxo';
 
 import { getNetworkFromCoinName, UtxoCoinName } from '../names';
 
-import { SdkBackend } from './types';
+import { SdkBackend, BitGoPsbt } from './types';
 
 type BufferEncoding = 'hex' | 'base64';
 
@@ -60,6 +60,10 @@ export function decodePsbtWith(
   } else {
     return fixedScriptWallet.BitGoPsbt.fromBytes(psbt, toNetworkName(coinName));
   }
+}
+
+export function decodePsbt(psbt: string | Buffer, coinName: UtxoCoinName): BitGoPsbt {
+  return decodePsbtWith(psbt, coinName, 'wasm-utxo');
 }
 
 export function encodeTransaction(

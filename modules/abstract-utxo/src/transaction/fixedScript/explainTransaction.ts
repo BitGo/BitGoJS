@@ -51,7 +51,10 @@ interface TransactionExplanationWithSignatures<TFee = string, TChangeOutput exte
 }
 
 /** For our wasm backend, we do not return the deprecated fields. We set TFee to string for backwards compatibility. */
-export type TransactionExplanationWasm = AbstractUtxoTransactionExplanation<string, FixedScriptWalletOutput>;
+export type TransactionExplanationWasm = AbstractUtxoTransactionExplanation<string, FixedScriptWalletOutput> & {
+  inputs: Array<{ address: string; value: string }>;
+  inputAmount: string;
+};
 
 /** When parsing the legacy transaction format, we cannot always infer the fee so we set it to string | undefined */
 export type TransactionExplanationUtxolibLegacy = TransactionExplanationWithSignatures<string | undefined>;
