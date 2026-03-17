@@ -24,7 +24,7 @@ export {
 } from '@bitgo/sdk-hmac';
 export interface BitGoAPIOptions {
   accessToken?: string;
-  authVersion?: 2 | 3;
+  authVersion?: 2 | 3 | 4;
   clientConstants?:
     | Record<string, any>
     | {
@@ -137,6 +137,7 @@ export interface User {
 export interface BitGoJson {
   user?: User;
   token?: string;
+  tokenId?: string; // V4: separate token identifier
   extensionKey?: string;
   ecdhXprv?: string;
 }
