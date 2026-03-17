@@ -24,7 +24,7 @@ Notes for the Express API docs migration from platform.yaml to generated express
 ### Other pipeline failures
 
 - **TypeScript / clientRoutes errors:** If the audit fails with `Argument of type '"express.xxx"' is not assignable`, the route key in `clientRoutes.ts` does not match the key in `express_entry.ts` / `index.ts`. Fix the handler registration and type to use the same operation key.
-- **Missing description / summary punctuation:** Fix the route file JSDoc per the OpenAPI quality checks (no punctuation in summary, multi-line descriptions, request body JSDoc).
+- **Missing description / summary punctuation:** The api-docs CI (openapi-spec-quality) requires **both** a `summary` and a **non-empty `description`** for every operation. In JSDoc, the first line becomes `summary`; the next paragraph (after a blank line) becomes `description`. If you only have one line, the generated spec has no `description` and CI fails. Fix: add a second paragraph to the route JSDoc. Also remove all punctuation (. , : ; ! ?) from the **summary** (first line).
 - **Vacuum / ruleset errors:** Fix the reported OpenAPI or JSDoc issue in the route or schema.
 
 ## Express Docs workflow (build-system)

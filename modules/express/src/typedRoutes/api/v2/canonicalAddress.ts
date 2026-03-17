@@ -25,6 +25,8 @@ export const CanonicalAddressRequestBody = {
 /**
  * Canonicalize an LTC or BCH address
  *
+ * Converts an address to the requested format (base58 or cashaddr). Supported for LTC and BCH.
+ *
  * @operationId express.canonicaladdress
  * @tag Express
  */

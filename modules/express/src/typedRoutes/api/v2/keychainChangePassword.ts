@@ -37,7 +37,9 @@ export const KeychainChangePasswordResponse = {
 } as const;
 
 /**
- * Change a keychain's passphrase, re-encrypting the key to a new password
+ * Change a keychain passphrase and re-encrypt the key to a new password
+ *
+ * Re-encrypts the keychain with a new password. Requires the old password and optional OTP.
  *
  * @operationId express.v2.keychain.changePassword
  * @tag Express
