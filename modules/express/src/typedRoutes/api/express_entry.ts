@@ -20,8 +20,13 @@ import { PostSimpleCreate } from './v1/simpleCreate';
 // import { PostKeychainChangePassword } from './v2/keychainChangePassword';
 // import { PostLightningInitWallet } from './v2/lightningInitWallet';
 // import { PostUnlockLightningWallet } from './v2/unlockWallet';
-// import { PostVerifyCoinAddress } from './v2/verifyAddress';
 // import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
+import { PostCanonicalAddress } from './v2/canonicalAddress';
+import { PostKeychainLocal } from './v2/keychainLocal';
+import { PostKeychainChangePassword } from './v2/keychainChangePassword';
+// import { GetLightningState } from './v2/lightningState';
+import { PostOfcSignPayload } from './v2/ofcSignPayload';
+// import { PutV2PendingApproval } from './v2/pendingApproval';
 // import { PostCreateLocalKeyChain } from './v1/createLocalKeyChain';
 // import { PutConstructPendingApprovalTx } from './v1/constructPendingApprovalTx';
 // import { PutConsolidateUnspents } from './v1/consolidateUnspents';
@@ -89,6 +94,38 @@ export const ExpressPingApiSpec = apiSpec({
 //   'express.calculateminerfeeinfo': { post: PostCalculateMinerFeeInfo },
 // });
 
+export const ExpressV2CanonicalAddressApiSpec = apiSpec({
+  'express.canonicaladdress': {
+    post: PostCanonicalAddress,
+  },
+});
+
+export const ExpressKeychainLocalApiSpec = apiSpec({
+  'express.keychain.local': {
+    post: PostKeychainLocal,
+  },
+});
+
+export const ExpressKeychainChangePasswordApiSpec = apiSpec({
+  'express.v2.keychain.changePassword': {
+    post: PostKeychainChangePassword,
+  },
+});
+
+// export const ExpressLightningGetStateApiSpec = apiSpec({
+//   'express.lightning.getState': { get: GetLightningState },
+// });
+
+export const ExpressOfcSignPayloadApiSpec = apiSpec({
+  'express.ofc.signPayload': {
+    post: PostOfcSignPayload,
+  },
+});
+
+// export const ExpressV2PendingApprovalsApiSpec = apiSpec({
+//   'express.v2.pendingapprovals': { put: PutV2PendingApproval },
+// });
+
 export const ExpressV1WalletAcceptShareApiSpec = apiSpec({
   'express.v1.wallet.acceptShare': {
     post: PostAcceptShare,
@@ -143,16 +180,23 @@ export const ExpressVerifyCoinAddressApiSpec = apiSpec({
 });
 
 export type ExpressApi = typeof ExpressPingApiSpec &
-  // Batch 2+ (see index.ts for full list)
   typeof ExpressV1WalletAcceptShareApiSpec &
   typeof ExpressV1WalletSimpleCreateApiSpec &
-  typeof ExpressVerifyCoinAddressApiSpec;
+  typeof ExpressVerifyCoinAddressApiSpec &
+  typeof ExpressV2CanonicalAddressApiSpec &
+  typeof ExpressKeychainLocalApiSpec &
+  typeof ExpressKeychainChangePasswordApiSpec &
+  typeof ExpressOfcSignPayloadApiSpec;
 
 export const ExpressApi: ExpressApi = {
   ...ExpressPingApiSpec,
   ...ExpressV1WalletAcceptShareApiSpec,
   ...ExpressV1WalletSimpleCreateApiSpec,
   ...ExpressVerifyCoinAddressApiSpec,
+  ...ExpressV2CanonicalAddressApiSpec,
+  ...ExpressKeychainLocalApiSpec,
+  ...ExpressKeychainChangePasswordApiSpec,
+  ...ExpressOfcSignPayloadApiSpec,
 };
 
 type ExtractDecoded<T> = T extends t.Type<any, infer O, any> ? O : never;

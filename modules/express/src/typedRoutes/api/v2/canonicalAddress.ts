@@ -23,7 +23,7 @@ export const CanonicalAddressRequestBody = {
 } as const;
 
 /**
- * Canonicalize an LTC or BCH address.
+ * Canonicalize an LTC or BCH address
  *
  * @operationId express.canonicaladdress
  * @tag Express
