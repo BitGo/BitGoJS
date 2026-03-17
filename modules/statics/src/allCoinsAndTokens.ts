@@ -1073,7 +1073,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.KAVACOSMOS,
     BaseUnit.KAVACOSMOS,
-    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
+    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
   ),
   account(
     'f5a8c3d1-7b2e-4f9a-8c6d-1e3b5a7c9d2f',
