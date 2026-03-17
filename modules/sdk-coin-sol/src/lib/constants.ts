@@ -49,6 +49,7 @@ export enum ValidInstructionTypesEnum {
   Memo = 'Memo',
   InitializeAssociatedTokenAccount = 'InitializeAssociatedTokenAccount',
   CloseAssociatedTokenAccount = 'CloseAssociatedTokenAccount',
+  RecoverNestedAssociatedTokenAccount = 'RecoverNestedAssociatedTokenAccount',
   Allocate = 'Allocate',
   Assign = 'Assign',
   Split = 'Split',
@@ -74,6 +75,7 @@ export enum InstructionBuilderTypes {
   NonceAdvance = 'NonceAdvance',
   CreateAssociatedTokenAccount = 'CreateAssociatedTokenAccount',
   CloseAssociatedTokenAccount = 'CloseAssociatedTokenAccount',
+  RecoverNestedAssociatedTokenAccount = 'RecoverNestedAssociatedTokenAccount',
   TokenTransfer = 'TokenTransfer',
   StakingAuthorize = 'Authorize',
   StakingDelegate = 'Delegate',
@@ -99,6 +101,7 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
   ValidInstructionTypesEnum.Memo,
   ValidInstructionTypesEnum.InitializeAssociatedTokenAccount,
   ValidInstructionTypesEnum.CloseAssociatedTokenAccount,
+  ValidInstructionTypesEnum.RecoverNestedAssociatedTokenAccount,
   ValidInstructionTypesEnum.TokenTransfer,
   ValidInstructionTypesEnum.Allocate,
   ValidInstructionTypesEnum.Assign,
@@ -201,6 +204,11 @@ export const ataInitInstructionIndexes = {
 /** Const to check the order of the ATA init instructions when decode */
 export const ataCloseInstructionIndexes = {
   CloseAssociatedTokenAccount: 0,
+} as const;
+
+/** Const to check the order of the recover nested ATA instructions when decode */
+export const ataRecoverNestedInstructionIndexes = {
+  RecoverNestedAssociatedTokenAccount: 0,
 } as const;
 
 export const nonceAdvanceInstruction = 'AdvanceNonceAccount';

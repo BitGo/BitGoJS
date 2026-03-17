@@ -44,6 +44,7 @@ export type InstructionParams =
   | StakingWithdraw
   | AtaInit
   | AtaClose
+  | AtaRecoverNested
   | TokenTransfer
   | StakingAuthorize
   | StakingDelegate
@@ -220,6 +221,18 @@ export interface AtaClose {
   params: { accountAddress: string; destinationAddress: string; authorityAddress: string };
 }
 
+export interface AtaRecoverNested {
+  type: InstructionBuilderTypes.RecoverNestedAssociatedTokenAccount;
+  params: {
+    nestedAccountAddress: string;
+    nestedMintAddress: string;
+    destinationAccountAddress: string;
+    ownerAccountAddress: string;
+    ownerMintAddress: string;
+    walletAddress: string;
+  };
+}
+
 export type ValidInstructionTypes =
   | SystemInstructionType
   | StakeInstructionType
@@ -227,6 +240,7 @@ export type ValidInstructionTypes =
   | 'Memo'
   | 'InitializeAssociatedTokenAccount'
   | 'CloseAssociatedTokenAccount'
+  | 'RecoverNestedAssociatedTokenAccount'
   | DecodedCloseAccountInstruction
   | 'TokenTransfer'
   | 'SetComputeUnitLimit'

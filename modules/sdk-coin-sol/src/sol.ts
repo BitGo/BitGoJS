@@ -172,6 +172,12 @@ export interface SolRecoveryOptions extends MPCRecoveryOptions {
   closeAtaAddress?: string;
   // destination address where token should be sent before closing the ATA address
   recoveryDestinationAtaAddress?: string;
+  // nested ATA address (ATA whose owner is another ATA) to recover tokens from
+  nestedAtaAddress?: string;
+  // the ATA that owns the nested ATA (and where recovered tokens will be sent)
+  ownerAtaAddress?: string;
+  // the token mint address for both ATAs (required when recovering from nested ATA)
+  tokenMintAddress?: string;
   programId?: string; // programId of the token
   apiKey?: string; // API key for node requests
 }
@@ -1526,6 +1532,81 @@ export class Sol extends BaseCoin {
     recovertTxns.push(broadcastCloseATARecoveryTxn);
 
     return recovertTxns;
+  }
+
+  /**
+   * Recovers tokens from a nested ATA — an ATA whose owner is another ATA rather than a wallet address.
+   *
+   * This situation occurs when an external sender mistakenly calls createAssociatedTokenAccount with
+   * an ATA address as the owner instead of the root wallet address. The result is a "nested ATA"
+   * (ATA-2) owned by the wallet's normal ATA (ATA-1). Because ATA-1 is a PDA with no private key,
+   * the standard recoverCloseATA flow cannot sign for ATA-2.
+   *
+   * This method uses the Associated Token Account program's RecoverNested instruction, which allows
+   * the root wallet owner to sign and atomically move tokens from ATA-2 → ATA-1 and close ATA-2,
+   * returning the rent-exempt SOL to the wallet address.
+   *
+   * @param {SolRecoveryOptions} params - recovery params, requires nestedAtaAddress, ownerAtaAddress,
+   *   and tokenMintAddress in addition to the standard keychain fields
+   */
+  async recoverNestedAta(params: SolRecoveryOptions): Promise<BaseBroadcastTransactionResult> {
+    if (!params.bitgoKey) {
+      throw new Error('missing bitgoKey');
+    }
+
+    if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    if (!params.nestedAtaAddress || !this.isValidAddress(params.nestedAtaAddress)) {
+      throw new Error('invalid nestedAtaAddress');
+    }
+
+    if (!params.ownerAtaAddress || !this.isValidAddress(params.ownerAtaAddress)) {
+      throw new Error('invalid ownerAtaAddress');
+    }
+
+    if (!params.tokenMintAddress || !this.isValidAddress(params.tokenMintAddress)) {
+      throw new Error('invalid tokenMintAddress');
+    }
+
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+
+    const index = params.index || 0;
+    const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
+    const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+    const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
+
+    const blockhash = await this.getBlockhash(params.apiKey);
+    const rentExemptAmount = await this.getRentExemptAmount();
+
+    const factory = this.getBuilder();
+    const txBuilder = factory.getRecoverNestedAtaBuilder();
+    txBuilder.nonce(blockhash);
+    txBuilder.sender(bs58EncodedPublicKey);
+    txBuilder.feePayer(bs58EncodedPublicKey);
+    txBuilder.associatedTokenAccountRent(rentExemptAmount.toString());
+    txBuilder.nestedAccountAddress(params.nestedAtaAddress);
+    txBuilder.nestedMintAddress(params.tokenMintAddress);
+    txBuilder.destinationAccountAddress(params.ownerAtaAddress);
+    txBuilder.ownerAccountAddress(params.ownerAtaAddress);
+    txBuilder.ownerMintAddress(params.tokenMintAddress);
+    txBuilder.walletAddress(bs58EncodedPublicKey);
+
+    const recoverNestedTxn = await this.signAndGenerateBroadcastableTransaction(
+      params,
+      txBuilder,
+      bs58EncodedPublicKey
+    );
+
+    const serializedTxn = (await recoverNestedTxn).serializedTx;
+    const broadcastResult = await this.broadcastTransaction({
+      serializedSignedTransaction: serializedTxn,
+    });
+    logger.log(broadcastResult);
+
+    return broadcastResult;
   }
 
   async signAndGenerateBroadcastableTransaction(

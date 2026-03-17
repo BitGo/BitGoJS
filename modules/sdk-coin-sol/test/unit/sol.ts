@@ -2519,6 +2519,67 @@ describe('SOL:', function () {
         '5oUBgXX4enGmFEspG64goy3PRysjfrekZGg3rZNkBHUCQFd482vrVWbfDcRYMBEJt65JXymfEPm8M6d89X4xV79n'
       );
     });
+
+    it('should recover tokens from a nested ATA (ATA whose owner is another ATA)', async function () {
+      const result = await basecoin.recoverNestedAta({
+        userKey: testData.closeATAkeys.userKey,
+        backupKey: testData.closeATAkeys.backupKey,
+        bitgoKey: testData.closeATAkeys.bitgoKey,
+        recoveryDestination: testData.closeATAkeys.destinationPubKey,
+        walletPassphrase: testData.closeATAkeys.walletPassword,
+        nestedAtaAddress: 'FGuZSBhtreqSUsE86xokyjKz2i8VBtJzy6uMXXKyGHug',
+        ownerAtaAddress: 'Zfm98ZpVafydhFTYcsY6bHgubhB4cFgWFvbdEJxYhTA',
+        tokenMintAddress: 'ZBCNpuD7YMXzTHB2fhGkGi78MNsHGLRXUhRewNRm9RU',
+      });
+
+      result.should.not.be.empty();
+      should.equal(
+        result.txId,
+        '2id3YC2jK9G5Wo2phDx4gJVAew8DcY5NAojnVuao8rkxwPYPe8cSwE5GzhEgJA2y8fVjDEo6iR6ykBvDxrTQrtpb'
+      );
+    });
+
+    it('should throw when nestedAtaAddress is missing for recoverNestedAta', async function () {
+      await basecoin
+        .recoverNestedAta({
+          userKey: testData.closeATAkeys.userKey,
+          backupKey: testData.closeATAkeys.backupKey,
+          bitgoKey: testData.closeATAkeys.bitgoKey,
+          recoveryDestination: testData.closeATAkeys.destinationPubKey,
+          walletPassphrase: testData.closeATAkeys.walletPassword,
+          ownerAtaAddress: 'Zfm98ZpVafydhFTYcsY6bHgubhB4cFgWFvbdEJxYhTA',
+          tokenMintAddress: 'ZBCNpuD7YMXzTHB2fhGkGi78MNsHGLRXUhRewNRm9RU',
+        })
+        .should.be.rejectedWith('invalid nestedAtaAddress');
+    });
+
+    it('should throw when ownerAtaAddress is missing for recoverNestedAta', async function () {
+      await basecoin
+        .recoverNestedAta({
+          userKey: testData.closeATAkeys.userKey,
+          backupKey: testData.closeATAkeys.backupKey,
+          bitgoKey: testData.closeATAkeys.bitgoKey,
+          recoveryDestination: testData.closeATAkeys.destinationPubKey,
+          walletPassphrase: testData.closeATAkeys.walletPassword,
+          nestedAtaAddress: 'FGuZSBhtreqSUsE86xokyjKz2i8VBtJzy6uMXXKyGHug',
+          tokenMintAddress: 'ZBCNpuD7YMXzTHB2fhGkGi78MNsHGLRXUhRewNRm9RU',
+        })
+        .should.be.rejectedWith('invalid ownerAtaAddress');
+    });
+
+    it('should throw when tokenMintAddress is missing for recoverNestedAta', async function () {
+      await basecoin
+        .recoverNestedAta({
+          userKey: testData.closeATAkeys.userKey,
+          backupKey: testData.closeATAkeys.backupKey,
+          bitgoKey: testData.closeATAkeys.bitgoKey,
+          recoveryDestination: testData.closeATAkeys.destinationPubKey,
+          walletPassphrase: testData.closeATAkeys.walletPassword,
+          nestedAtaAddress: 'FGuZSBhtreqSUsE86xokyjKz2i8VBtJzy6uMXXKyGHug',
+          ownerAtaAddress: 'Zfm98ZpVafydhFTYcsY6bHgubhB4cFgWFvbdEJxYhTA',
+        })
+        .should.be.rejectedWith('invalid tokenMintAddress');
+    });
   });
 
   describe('Build Consolidation Recoveries:', () => {
