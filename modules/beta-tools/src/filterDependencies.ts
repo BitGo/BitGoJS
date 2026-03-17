@@ -1,4 +1,17 @@
-export const DEFAULT_UTXO_PATTERNS = ['utxo', 'unspents', 'abstract-lightning', 'babylonlabs-io-btc-staking-ts'];
+export const DEFAULT_UTXO_PATTERNS = [
+  'utxo',
+  'unspents',
+  'abstract-lightning',
+  'babylonlabs-io-btc-staking-ts',
+  'sdk-coin-btc',
+  'sdk-coin-bch',
+  'sdk-coin-bsv',
+  'sdk-coin-btg',
+  'sdk-coin-dash',
+  'sdk-coin-doge',
+  'sdk-coin-ltc',
+  'sdk-coin-zec',
+];
 
 export interface FilterOptions {
   ignore: string[];
