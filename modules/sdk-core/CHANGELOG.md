@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.35.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.34.0...@bitgo/sdk-core@36.35.0) (2026-03-18)
+
+
+### Features
+
+* **abstract-utxo:** filter input script types for legacy tx format ([2c9f8d2](https://github.com/BitGo/BitGoJS/commit/2c9f8d240c970b38de43f4db5e19b79323e31630))
+* **sdk-core:** add XdcStakeOptions with kycHash for XDC masternode ([c500ebc](https://github.com/BitGo/BitGoJS/commit/c500ebc5a4c11365090d71c70a8955b58ee298d1))
+* **sdk-core:** forward custodial fanouts to /tx/initiate ([b051f0f](https://github.com/BitGo/BitGoJS/commit/b051f0f112f42d21f5274aff3043c137190abba2))
+
+
+
+
+
 # [36.34.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.33.2...@bitgo/sdk-core@36.34.0) (2026-03-10)
 
 

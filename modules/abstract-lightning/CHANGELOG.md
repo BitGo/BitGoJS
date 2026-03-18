@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.8.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.8.3...@bitgo/abstract-lightning@7.8.4) (2026-03-18)
+
+
+### Bug Fixes
+
+* **abstract-lightning:** fix base factor to 1e11 ([199ba1b](https://github.com/BitGo/BitGoJS/commit/199ba1bc8f4ffc218bb66267ca0b0d6dd358fe64))
+
+
+
+
+
 ## [7.8.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.8.2...@bitgo/abstract-lightning@7.8.3) (2026-03-10)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning

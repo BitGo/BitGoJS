@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.31.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.30.0...@bitgo/statics@58.31.0) (2026-03-18)
+
+
+### Bug Fixes
+
+* change the explorer link for SEIEVM ([bbb0dcf](https://github.com/BitGo/BitGoJS/commit/bbb0dcf29b9bcbcc98d307bb46fcce3f921a4f5a))
+* fix canton usdxlr address ([0c73f30](https://github.com/BitGo/BitGoJS/commit/0c73f30f32f3ca9fec816be05122b46e5a438655))
+* **statics:** correct Sahara AI (eth:sahara) token contract address ([956dd2f](https://github.com/BitGo/BitGoJS/commit/956dd2f04680bed86b7d445782d936b6a7af5c58))
+* tokenName fix in config ([93e5ad2](https://github.com/BitGo/BitGoJS/commit/93e5ad2fb753e1b84d302f993320c8bcf1235e00))
+
+
+### Features
+
+* enable kava staking for testnet ([3833bf8](https://github.com/BitGo/BitGoJS/commit/3833bf80db2b3e3b345786a0a519b7d2ae4a309a))
+* onboard new tokens - Bitlayer, HASTRA PRIME, Kamino, and test tokens ([1264199](https://github.com/BitGo/BitGoJS/commit/126419936317f403f272f9bdaa36e18241fb6793))
+* **statics:** add 11 tokens across 7 chains ([61dff4c](https://github.com/BitGo/BitGoJS/commit/61dff4c375760d526fb13332252ded6718d03d08))
+* **statics:** add new tokens for ETH, SOL, XDC, BASE, SUI, ADA ([2403298](https://github.com/BitGo/BitGoJS/commit/2403298508a477550a9eb07f1c01e0fb21c5e5c7))
+* **statics:** add OFC token for ADA:USDCx (CECHO-375) ([cefd769](https://github.com/BitGo/BitGoJS/commit/cefd769646399adf1038f3c6daf9eec800510366))
+
+
+
+
+
 # [58.30.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.29.0...@bitgo/statics@58.30.0) (2026-03-10)
 
 
