@@ -31,6 +31,10 @@ import { IncreaseStakeTransaction } from './transaction/increaseStakeTransaction
 import { IncreaseStakeBuilder } from './transactionBuilder/increaseStakeBuilder';
 import { DecreaseStakeTransaction } from './transaction/decreaseStakeTransaction';
 import { DecreaseStakeBuilder } from './transactionBuilder/decreaseStakeBuilder';
+import { SignalExitTransaction } from './transaction/signalExitTransaction';
+import { SignalExitBuilder } from './transactionBuilder/signalExitBuilder';
+import { WithdrawStakeTransaction } from './transaction/withdrawStakeTransaction';
+import { WithdrawStakeBuilder } from './transactionBuilder/withdrawStakeBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -99,6 +103,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const decreaseStakeTx = new DecreaseStakeTransaction(this._coinConfig);
           decreaseStakeTx.fromDeserializedSignedTransaction(signedTx);
           return this.getDecreaseStakeBuilder(decreaseStakeTx);
+        case TransactionType.StakingUnvote:
+          const signalExitTx = new SignalExitTransaction(this._coinConfig);
+          signalExitTx.fromDeserializedSignedTransaction(signedTx);
+          return this.getSignalExitBuilder(signalExitTx);
+        case TransactionType.StakingPledge:
+          const withdrawStakeTx = new WithdrawStakeTransaction(this._coinConfig);
+          withdrawStakeTx.fromDeserializedSignedTransaction(signedTx);
+          return this.getWithdrawStakeBuilder(withdrawStakeTx);
         default:
           throw new InvalidTransactionError('Invalid transaction type');
       }
@@ -142,6 +154,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getDecreaseStakeBuilder(tx?: DecreaseStakeTransaction): DecreaseStakeBuilder {
     return this.initializeBuilder(tx, new DecreaseStakeBuilder(this._coinConfig));
+  }
+
+  getSignalExitBuilder(tx?: SignalExitTransaction): SignalExitBuilder {
+    return this.initializeBuilder(tx, new SignalExitBuilder(this._coinConfig));
+  }
+
+  getWithdrawStakeBuilder(tx?: WithdrawStakeTransaction): WithdrawStakeBuilder {
+    return this.initializeBuilder(tx, new WithdrawStakeBuilder(this._coinConfig));
   }
 
   getStakingActivateBuilder(tx?: StakeClauseTransaction): StakeClauseTxnBuilder {
