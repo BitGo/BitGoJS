@@ -1595,10 +1595,10 @@ class Pharos extends Mainnet implements EthereumNetwork {
 class PharosTestnet extends Testnet implements EthereumNetwork {
   name = 'PharosTestnet';
   family = CoinFamily.PHRS;
-  explorerUrl = 'https://testnet.pharosscan.xyz/tx/';
-  accountExplorerUrl = 'https://testnet.pharosscan.xyz/address/';
-  chainId = 688688;
-  nativeCoinOperationHashPrefix = '688688';
+  explorerUrl = 'https://atlantic.pharosscan.xyz/tx/';
+  accountExplorerUrl = 'https://atlantic.pharosscan.xyz/address/';
+  chainId = 688689;
+  nativeCoinOperationHashPrefix = '688689';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
