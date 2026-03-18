@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.19.4...@bitgo/abstract-utxo@10.20.0) (2026-03-18)
+
+
+### Features
+
+* **abstract-utxo:** add aggregateTransactionExplanations with tests ([e3b97e2](https://github.com/BitGo/BitGoJS/commit/e3b97e2d5bf0cc65c9b85302d3d87de1d28c99f3))
+* **abstract-utxo:** add decodePsbt helper function ([2a5ab1a](https://github.com/BitGo/BitGoJS/commit/2a5ab1a02740db6679fd51c83f8fed29e47d624a))
+* **abstract-utxo:** add explainPsbtWasmBigInt for bigint amounts ([781e2fe](https://github.com/BitGo/BitGoJS/commit/781e2fe04c46065192bbf56397f9d43719a79662))
+* **abstract-utxo:** align fmt script with check-fmt ([2b265a5](https://github.com/BitGo/BitGoJS/commit/2b265a58c8ff8454bb366761c5359fd89583bc7d))
+* **abstract-utxo:** disable legacy tx format for wallet-platform requests ([3afe6b1](https://github.com/BitGo/BitGoJS/commit/3afe6b16e5c34d4dab98cc733d24d77dd4faaeba))
+* **abstract-utxo:** export BitGoPsbt type from transaction module ([59cfc0a](https://github.com/BitGo/BitGoJS/commit/59cfc0aec7bd3ee32519e9b9f2971d7d1f7cb2ed))
+* **abstract-utxo:** export fixedScript namespace from transaction module ([3869161](https://github.com/BitGo/BitGoJS/commit/3869161fc1822200cd721770573289da98fc7d4b))
+* **abstract-utxo:** filter input script types for legacy tx format ([2c9f8d2](https://github.com/BitGo/BitGoJS/commit/2c9f8d240c970b38de43f4db5e19b79323e31630))
+* **abstract-utxo:** replace shouldjs with node:assert ([c6d44f2](https://github.com/BitGo/BitGoJS/commit/c6d44f2faf63535726d93dda28504b475fa29ee0))
+* **abstract-utxo:** upgrade @bitgo/wasm-utxo to v2.1.0 ([5c18257](https://github.com/BitGo/BitGoJS/commit/5c18257dc30d7ede592be2336ed4b40bc582dc37))
+
+
+
+
+
 ## [10.19.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.19.3...@bitgo/abstract-utxo@10.19.4) (2026-03-10)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

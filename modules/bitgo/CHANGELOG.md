@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.28.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.27.0...bitgo@50.28.0) (2026-03-18)
+
+
+### Features
+
+* **sdk-core:** forward custodial fanouts to /tx/initiate ([b051f0f](https://github.com/BitGo/BitGoJS/commit/b051f0f112f42d21f5274aff3043c137190abba2))
+
+
+
+
+
 # [50.27.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.26.2...bitgo@50.27.0) (2026-03-10)
 
 
