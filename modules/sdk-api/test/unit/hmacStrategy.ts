@@ -156,15 +156,10 @@ describe('BitGoAPI HMAC Strategy Injection', function () {
           }
         );
 
-      try {
-        await bitgo.authenticate({
-          username: 'test@test.com',
-          password: 'mypassword',
-        });
-      } catch {
-        // Authentication may fail for various reasons in this test context,
-        // but we only care that the strategy was called for password HMAC.
-      }
+      await bitgo.authenticate({
+        username: 'test@test.com',
+        password: 'mypassword',
+      });
 
       strategy.calculateHMACCalls.length.should.be.greaterThan(0);
       const hmacCall = strategy.calculateHMACCalls[0];

@@ -412,7 +412,8 @@ export class BitGoAPI implements BitGoBase {
 
       req.set('Authorization', 'Bearer ' + requestProperties.tokenHash);
       debug(
-        'sending v2 %s request to %s with token %s',
+        'sending v%d %s request to %s with token %s',
+        this._authVersion,
         method,
         url,
         this._token?.substr(0, 8) ?? '(strategy-managed)'
