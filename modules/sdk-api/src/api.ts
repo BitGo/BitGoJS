@@ -11,7 +11,7 @@ import querystring from 'querystring';
 
 import { ApiResponseError, BitGoRequest } from '@bitgo/sdk-core';
 
-import { AuthVersion, VerifyResponseOptions } from './types';
+import { AuthVersion, VerifyResponseInfo, VerifyResponseOptions } from './types';
 import { BitGoAPI } from './bitgoAPI';
 
 const debug = Debug('bitgo:api');
@@ -214,44 +214,23 @@ export function setRequestQueryString(req: superagent.SuperAgentRequest): void {
 }
 
 /**
- * Verify that the response received from the server is signed correctly.
- * Right now, it is very permissive with the timestamp variance.
+ * Validate a completed verification response and throw a descriptive `ApiResponseError` if it
+ * indicates the response is invalid or outside the acceptable time window.
  */
-export function verifyResponse(
+function assertVerificationResponse(
   bitgo: BitGoAPI,
   token: string | undefined,
-  method: VerifyResponseOptions['method'],
   req: superagent.SuperAgentRequest,
   response: superagent.Response,
-  authVersion: AuthVersion
-): superagent.Response {
-  // we can't verify the response if we're not authenticated
-  if (!req.isV2Authenticated || !req.authenticationToken) {
-    return response;
-  }
-
-  const verificationResponse = bitgo.verifyResponse({
-    url: req.url,
-    hmac: response.header.hmac,
-    statusCode: response.status,
-    text: response.text,
-    timestamp: response.header.timestamp,
-    token: req.authenticationToken,
-    method,
-    authVersion,
-  });
-
+  verificationResponse: VerifyResponseInfo
+): void {
   if (!verificationResponse.isValid) {
-    // calculate the HMAC
-    const receivedHmac = response.header.hmac;
-    const expectedHmac = verificationResponse.expectedHmac;
-    const signatureSubject = verificationResponse.signatureSubject;
     // Log only the first 10 characters of the token to ensure the full token isn't logged.
     const partialBitgoToken = token ? token.substring(0, 10) : '';
     const errorDetails = {
-      expectedHmac,
-      receivedHmac,
-      hmacInput: signatureSubject,
+      expectedHmac: verificationResponse.expectedHmac,
+      receivedHmac: response.header.hmac,
+      hmacInput: verificationResponse.signatureSubject,
       requestToken: req.authenticationToken,
       bitgoToken: partialBitgoToken,
     };
@@ -271,5 +250,62 @@ export function verifyResponse(
       errorDetails
     );
   }
+}
+
+/**
+ * Verify that the response received from the server is signed correctly.
+ * Right now, it is very permissive with the timestamp variance.
+ */
+export function verifyResponse(
+  bitgo: BitGoAPI,
+  token: string | undefined,
+  method: VerifyResponseOptions['method'],
+  req: superagent.SuperAgentRequest,
+  response: superagent.Response,
+  authVersion: AuthVersion
+): superagent.Response {
+  if (!req.isV2Authenticated || !req.authenticationToken) {
+    return response;
+  }
+
+  const verificationResponse = bitgo.verifyResponse({
+    url: req.url,
+    hmac: response.header.hmac,
+    statusCode: response.status,
+    text: response.text,
+    timestamp: response.header.timestamp,
+    token: req.authenticationToken,
+    method,
+    authVersion,
+  });
+
+  assertVerificationResponse(bitgo, token, req, response, verificationResponse);
+  return response;
+}
+
+export async function verifyResponseAsync(
+  bitgo: BitGoAPI,
+  token: string | undefined,
+  method: VerifyResponseOptions['method'],
+  req: superagent.SuperAgentRequest,
+  response: superagent.Response,
+  authVersion: AuthVersion
+): Promise<superagent.Response> {
+  if (!req.isV2Authenticated || !req.authenticationToken) {
+    return response;
+  }
+
+  const verificationResponse = await bitgo.verifyResponseAsync({
+    url: req.url,
+    hmac: response.header.hmac,
+    statusCode: response.status,
+    text: response.text,
+    timestamp: response.header.timestamp,
+    token: req.authenticationToken,
+    method,
+    authVersion,
+  });
+
+  assertVerificationResponse(bitgo, token, req, response, verificationResponse);
   return response;
 }

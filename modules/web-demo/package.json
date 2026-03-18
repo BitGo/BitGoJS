@@ -27,6 +27,7 @@
     "@bitgo/abstract-utxo": "^10.20.0",
     "@bitgo/key-card": "^0.28.33",
     "@bitgo/sdk-api": "^1.75.5",
+    "@bitgo/sdk-hmac": "^1.8.0",
     "@bitgo/sdk-coin-ada": "^4.22.8",
     "@bitgo/sdk-coin-algo": "^2.9.8",
     "@bitgo/sdk-coin-avaxc": "^6.5.8",

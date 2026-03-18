@@ -4,6 +4,23 @@
   "description": "HMAC module for the BitGo SDK",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./browser": {
+      "types": "./dist/src/browser.d.ts",
+      "default": "./dist/src/browser.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "browser": [
+        "./dist/src/browser.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",

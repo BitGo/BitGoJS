@@ -23,6 +23,7 @@ import {
   sanitizeLegacyPath,
 } from '@bitgo/sdk-core';
 import * as sdkHmac from '@bitgo/sdk-hmac';
+import { DefaultHmacAuthStrategy, type IHmacAuthStrategy } from '@bitgo/sdk-hmac';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, ECPairInterface } from '@bitgo/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
@@ -37,7 +38,7 @@ import {
   serializeRequestData,
   setRequestQueryString,
   toBitgoRequest,
-  verifyResponse,
+  verifyResponseAsync,
 } from './api';
 import { decrypt, encrypt } from './encrypt';
 import { verifyAddress } from './v1/verifyAddress';
@@ -134,6 +135,7 @@ export class BitGoAPI implements BitGoBase {
   private _customProxyAgent?: Agent;
   private _requestIdPrefix?: string;
   private getAdditionalHeadersCb?: AdditionalHeadersCallback;
+  protected _hmacAuthStrategy: IHmacAuthStrategy;
 
   constructor(params: BitGoAPIOptions = {}) {
     this.getAdditionalHeadersCb = params.getAdditionalHeadersCb;
@@ -309,6 +311,7 @@ export class BitGoAPI implements BitGoBase {
     }
 
     this._customProxyAgent = params.customProxyAgent;
+    this._hmacAuthStrategy = params.hmacAuthStrategy ?? new DefaultHmacAuthStrategy();
 
     // Only fetch constants from constructor if clientConstants was not provided
     if (!clientConstants) {
@@ -375,6 +378,85 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
+   * Signs and sends a v2-authenticated request, then verifies the response HMAC.
+   * Extracted from the req.then override in requestPatch to keep that method readable.
+   */
+  private async _sendRequestWithHmac({
+    req,
+    method,
+    url,
+    data,
+    strategyAuthenticated,
+    onfulfilled,
+    originalThen,
+  }: {
+    req: superagent.SuperAgentRequest;
+    method: RequestMethods;
+    url: string;
+    data: string | undefined;
+    strategyAuthenticated: boolean;
+    onfulfilled: ((response: superagent.Response) => any) | null | undefined;
+    originalThen: (onfulfilled: any, onrejected?: any) => Promise<any>;
+  }): Promise<any> {
+    if (this._token || strategyAuthenticated) {
+      setRequestQueryString(req);
+
+      const requestProperties = await this._hmacAuthStrategy.calculateRequestHeaders({
+        url: req.url,
+        token: this._token ?? '',
+        method,
+        text: data || '',
+        authVersion: this._authVersion,
+      });
+      req.set('Auth-Timestamp', requestProperties.timestamp.toString());
+
+      req.set('Authorization', 'Bearer ' + requestProperties.tokenHash);
+      debug(
+        'sending v%d %s request to %s with token %s',
+        this._authVersion,
+        method,
+        url,
+        this._token?.substr(0, 8) ?? '(strategy-managed)'
+      );
+
+      req.set('HMAC', requestProperties.hmac);
+    }
+
+    if (this.getAdditionalHeadersCb) {
+      const additionalHeaders = this.getAdditionalHeadersCb(method, url, data);
+      for (const { key, value } of additionalHeaders) {
+        req.set(key, value);
+      }
+    }
+
+    /**
+     * Verify the response before calling the original onfulfilled handler,
+     * and make sure onrejected is called if a verification error is encountered
+     */
+    const newOnFulfilled = onfulfilled
+      ? async (response: superagent.Response) => {
+          // HMAC verification is only allowed to be skipped in certain environments.
+          // This is checked in the constructor, but checking it again at request time
+          // will help prevent against tampering of this property after the object is created
+          if (!this._hmacVerification && !common.Environments[this.getEnv()].hmacVerificationEnforced) {
+            return onfulfilled(response);
+          }
+
+          const verifiedResponse = await verifyResponseAsync(
+            this,
+            this._token,
+            method,
+            req,
+            response,
+            this._authVersion
+          );
+          return onfulfilled(verifiedResponse);
+        }
+      : null;
+    return originalThen(newOnFulfilled);
+  }
+
+  /**
    * This is a patching function which can apply our authorization
    * headers to any outbound request.
    * @param method
@@ -423,9 +505,12 @@ export class BitGoAPI implements BitGoBase {
       // Set the request timeout to just above 5 minutes by default
       req.timeout((process.env.BITGO_TIMEOUT as any) * 1000 || 305 * 1000);
 
-      // if there is no token, and we're not logged in, the request cannot be v2 authenticated
+      // The strategy may have its own signing material (e.g. a CryptoKey
+      // restored from IndexedDB) independent of this._token.
+      const strategyAuthenticated = this._hmacAuthStrategy.isAuthenticated?.() ?? false;
+
       req.isV2Authenticated = true;
-      req.authenticationToken = this._token;
+      req.authenticationToken = this._token ?? (strategyAuthenticated ? 'strategy-authenticated' : undefined);
       // some of the older tokens appear to be only 40 characters long
       if ((this._token && this._token.length !== 67 && this._token.indexOf('v2x') !== 0) || req.forceV1Auth) {
         // use the old method
@@ -439,51 +524,16 @@ export class BitGoAPI implements BitGoBase {
       req.set('BitGo-Auth-Version', this._authVersion === 3 ? '3.0' : '2.0');
 
       const data = serializeRequestData(req);
-      if (this._token) {
-        setRequestQueryString(req);
 
-        const requestProperties = this.calculateRequestHeaders({
-          url: req.url,
-          token: this._token,
-          method,
-          text: data || '',
-          authVersion: this._authVersion,
-        });
-        req.set('Auth-Timestamp', requestProperties.timestamp.toString());
-
-        // we're not sending the actual token, but only its hash
-        req.set('Authorization', 'Bearer ' + requestProperties.tokenHash);
-        debug('sending v2 %s request to %s with token %s', method, url, this._token?.substr(0, 8));
-
-        // set the HMAC
-        req.set('HMAC', requestProperties.hmac);
-      }
-
-      if (this.getAdditionalHeadersCb) {
-        const additionalHeaders = this.getAdditionalHeadersCb(method, url, data);
-        for (const { key, value } of additionalHeaders) {
-          req.set(key, value);
-        }
-      }
-
-      /**
-       * Verify the response before calling the original onfulfilled handler,
-       * and make sure onrejected is called if a verification error is encountered
-       */
-      const newOnFulfilled = onfulfilled
-        ? (response: superagent.Response) => {
-            // HMAC verification is only allowed to be skipped in certain environments.
-            // This is checked in the constructor, but checking it again at request time
-            // will help prevent against tampering of this property after the object is created
-            if (!this._hmacVerification && !common.Environments[this.getEnv()].hmacVerificationEnforced) {
-              return onfulfilled(response);
-            }
-
-            const verifiedResponse = verifyResponse(this, this._token, method, req, response, this._authVersion);
-            return onfulfilled(verifiedResponse);
-          }
-        : null;
-      return originalThen(newOnFulfilled).catch(onrejected);
+      return this._sendRequestWithHmac({
+        req,
+        method,
+        url,
+        data,
+        strategyAuthenticated,
+        onfulfilled,
+        originalThen,
+      }).catch(onrejected);
     };
     return toBitgoRequest(req);
   }
@@ -545,10 +595,19 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
-   * Verify the HMAC for an HTTP response
+   * Verify the HMAC for an HTTP response (synchronous, uses sdk-hmac directly).
+   * Kept for backward compatibility with external callers.
    */
   verifyResponse(params: VerifyResponseOptions): VerifyResponseInfo {
     return sdkHmac.verifyResponse({ ...params, authVersion: this._authVersion });
+  }
+
+  /**
+   * Verify the HMAC for an HTTP response via the configured strategy (async).
+   * Used internally by the request pipeline.
+   */
+  verifyResponseAsync(params: VerifyResponseOptions): Promise<VerifyResponseInfo> {
+    return this._hmacAuthStrategy.verifyResponse({ ...params, authVersion: this._authVersion });
   }
 
   /**
@@ -772,7 +831,7 @@ export class BitGoAPI implements BitGoBase {
    * Process the username, password and otp into an object containing the username and hashed password, ready to
    * send to bitgo for authentication.
    */
-  preprocessAuthenticationParams({
+  async preprocessAuthenticationParams({
     username,
     password,
     otp,
@@ -782,7 +841,7 @@ export class BitGoAPI implements BitGoBase {
     forReset2FA,
     initialHash,
     fingerprintHash,
-  }: AuthenticateOptions): ProcessedAuthenticationOptions {
+  }: AuthenticateOptions): Promise<ProcessedAuthenticationOptions> {
     if (!_.isString(username)) {
       throw new Error('expected string username');
     }
@@ -793,7 +852,7 @@ export class BitGoAPI implements BitGoBase {
 
     const lowerName = username.toLowerCase();
     // Calculate the password HMAC so we don't send clear-text passwords
-    const hmacPassword = this.calculateHMAC(lowerName, password);
+    const hmacPassword = await this._hmacAuthStrategy.calculateHMAC(lowerName, password);
 
     const authParams: ProcessedAuthenticationOptions = {
       email: lowerName,
@@ -944,7 +1003,7 @@ export class BitGoAPI implements BitGoBase {
       }
 
       const forceV1Auth = !!params.forceV1Auth;
-      const authParams = this.preprocessAuthenticationParams(params);
+      const authParams = await this.preprocessAuthenticationParams(params);
       const password = params.password;
 
       if (this._token) {
@@ -981,7 +1040,7 @@ export class BitGoAPI implements BitGoBase {
         this._ecdhXprv = responseDetails.ecdhXprv;
 
         // verify the response's authenticity
-        verifyResponse(this, responseDetails.token, 'post', request, response, this._authVersion);
+        await verifyResponseAsync(this, responseDetails.token, 'post', request, response, this._authVersion);
 
         // add the remaining component for easier access
         response.body.access_token = this._token;
@@ -1111,7 +1170,7 @@ export class BitGoAPI implements BitGoBase {
 
   /**
    */
-  verifyPassword(params: VerifyPasswordOptions = {}): Promise<any> {
+  async verifyPassword(params: VerifyPasswordOptions = {}): Promise<any> {
     if (!_.isString(params.password)) {
       throw new Error('missing required string password');
     }
@@ -1119,7 +1178,7 @@ export class BitGoAPI implements BitGoBase {
     if (!this._user || !this._user.username) {
       throw new Error('no current user');
     }
-    const hmacPassword = this.calculateHMAC(this._user.username, params.password);
+    const hmacPassword = await this._hmacAuthStrategy.calculateHMAC(this._user.username, params.password);
 
     return this.post(this.url('/user/verifypassword')).send({ password: hmacPassword }).result('valid');
   }
@@ -1269,7 +1328,7 @@ export class BitGoAPI implements BitGoBase {
       }
 
       // verify the authenticity of the server's response before proceeding any further
-      verifyResponse(this, this._token, 'post', request, response, this._authVersion);
+      await verifyResponseAsync(this, this._token, 'post', request, response, this._authVersion);
 
       const responseDetails = this.handleTokenIssuance(response.body);
       response.body.token = responseDetails.token;
@@ -1924,12 +1983,17 @@ export class BitGoAPI implements BitGoBase {
     const v1KeychainUpdatePWResult = await this.keychains().updatePassword(updateKeychainPasswordParams);
     const v2Keychains = await this.coin(coin).keychains().updatePassword(updateKeychainPasswordParams);
 
+    const [hmacOldPassword, hmacNewPassword] = await Promise.all([
+      this._hmacAuthStrategy.calculateHMAC(user.username, oldPassword),
+      this._hmacAuthStrategy.calculateHMAC(user.username, newPassword),
+    ]);
+
     const updatePasswordParams = {
       keychains: v1KeychainUpdatePWResult.keychains,
       v2_keychains: v2Keychains,
       version: v1KeychainUpdatePWResult.version,
-      oldPassword: this.calculateHMAC(user.username, oldPassword),
-      password: this.calculateHMAC(user.username, newPassword),
+      oldPassword: hmacOldPassword,
+      password: hmacNewPassword,
     };
 
     // Calculate payload size in KB

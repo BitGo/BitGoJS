@@ -17,14 +17,19 @@ export {
   CalculateHmacSubjectOptions,
   CalculateRequestHeadersOptions,
   CalculateRequestHmacOptions,
+  IHmacAuthStrategy,
   RequestHeaders,
   supportedRequestMethods,
   VerifyResponseInfo,
   VerifyResponseOptions,
 } from '@bitgo/sdk-hmac';
+
+import type { IHmacAuthStrategy } from '@bitgo/sdk-hmac';
+
 export interface BitGoAPIOptions {
   accessToken?: string;
   authVersion?: 2 | 3;
+  hmacAuthStrategy?: IHmacAuthStrategy;
   clientConstants?:
     | Record<string, any>
     | {
