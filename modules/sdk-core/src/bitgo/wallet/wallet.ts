@@ -2783,6 +2783,13 @@ export class Wallet implements IWallet {
             amount: '1',
             tokenData: data,
           };
+        } else if (this.baseCoin.getFamily() === 'hbarevm') {
+          recipient = {
+            address: sendNftOptions.tokenContractAddress,
+            amount: '0',
+            data,
+            tokenName: nftBalance.metadata.name,
+          };
         } else {
           recipient = {
             address: sendNftOptions.tokenContractAddress,
