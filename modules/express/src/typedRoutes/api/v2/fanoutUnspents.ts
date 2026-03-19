@@ -116,7 +116,7 @@ export const FanoutUnspentsResponse = t.union([
  * transaction creation. Supports bulk mode to handle large fanouts across multiple transactions.
  *
  * @operationId express.wallet.fanoutunspents
- * @tag express
+ * @tag Express
  */
 export const PostFanoutUnspents = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/fanoutunspents',

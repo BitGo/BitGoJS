@@ -16,15 +16,15 @@ import { PostSimpleCreate } from './v1/simpleCreate';
 // import { PutPendingApproval } from './v1/pendingApproval';
 // import { PostSignTransaction } from './v1/signTransaction';
 // import { PostKeychainLocal } from './v2/keychainLocal';
-import { GetLightningState } from './v2/lightningState';
+// import { GetLightningState } from './v2/lightningState';
 // import { PostLightningInitWallet } from './v2/lightningInitWallet';
-import { PostUnlockLightningWallet } from './v2/unlockWallet';
+// import { PostUnlockLightningWallet } from './v2/unlockWallet';
 // import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
 import { PostCanonicalAddress } from './v2/canonicalAddress';
 import { PostKeychainLocal } from './v2/keychainLocal';
 import { PostKeychainChangePassword } from './v2/keychainChangePassword';
 import { PostOfcSignPayload } from './v2/ofcSignPayload';
-import { PostWalletRecoverToken } from './v2/walletRecoverToken';
+// import { PostWalletRecoverToken } from './v2/walletRecoverToken';
 // import { PutV2PendingApproval } from './v2/pendingApproval';
 // import { PostCreateLocalKeyChain } from './v1/createLocalKeyChain';
 // import { PutConstructPendingApprovalTx } from './v1/constructPendingApprovalTx';
@@ -111,27 +111,9 @@ export const ExpressKeychainChangePasswordApiSpec = apiSpec({
   },
 });
 
-export const ExpressLightningGetStateApiSpec = apiSpec({
-  'express.lightning.getState': {
-    get: GetLightningState,
-  },
-});
-
 export const ExpressOfcSignPayloadApiSpec = apiSpec({
   'express.ofc.signPayload': {
     post: PostOfcSignPayload,
-  },
-});
-
-export const ExpressWalletRecoverTokenApiSpec = apiSpec({
-  'express.v2.wallet.recovertoken': {
-    post: PostWalletRecoverToken,
-  },
-});
-
-export const ExpressLightningUnlockWalletApiSpec = apiSpec({
-  'express.lightning.unlockWallet': {
-    post: PostUnlockLightningWallet,
   },
 });
 
@@ -199,10 +181,7 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressV2CanonicalAddressApiSpec &
   typeof ExpressKeychainLocalApiSpec &
   typeof ExpressKeychainChangePasswordApiSpec &
-  typeof ExpressLightningGetStateApiSpec &
-  typeof ExpressOfcSignPayloadApiSpec &
-  typeof ExpressWalletRecoverTokenApiSpec &
-  typeof ExpressLightningUnlockWalletApiSpec;
+  typeof ExpressOfcSignPayloadApiSpec;
 
 export const ExpressApi: ExpressApi = {
   ...ExpressPingApiSpec,
@@ -212,10 +191,7 @@ export const ExpressApi: ExpressApi = {
   ...ExpressV2CanonicalAddressApiSpec,
   ...ExpressKeychainLocalApiSpec,
   ...ExpressKeychainChangePasswordApiSpec,
-  ...ExpressLightningGetStateApiSpec,
   ...ExpressOfcSignPayloadApiSpec,
-  ...ExpressWalletRecoverTokenApiSpec,
-  ...ExpressLightningUnlockWalletApiSpec,
 };
 
 type ExtractDecoded<T> = T extends t.Type<any, infer O, any> ? O : never;

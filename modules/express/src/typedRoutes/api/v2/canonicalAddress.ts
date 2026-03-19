@@ -25,11 +25,10 @@ export const CanonicalAddressRequestBody = {
 /**
  * Canonicalize an LTC or BCH address
  *
- * Converts an address to the requested format. Supported formats are base58 and cashaddr.
- * Supported for LTC and BCH only.
+ * Converts an address to the requested format (base58 or cashaddr). Supported for LTC and BCH.
  *
  * @operationId express.canonicaladdress
- * @tag express
+ * @tag Express
  */
 export const PostCanonicalAddress = httpRoute({
   path: '/api/v2/{coin}/canonicaladdress',

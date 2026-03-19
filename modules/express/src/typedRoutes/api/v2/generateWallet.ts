@@ -110,7 +110,7 @@ export const GenerateWalletV2Query = {
  * ⓘ Many account-based assets, including Ethereum, require you to [Fund Gas Tanks](https://developers.bitgo.com/docs/get-started-gas-tanks#/) to initialize a new wallets on chain. Ensure your gas tank has a sufficient balance to cover this cost before generating a new wallet.
  *
  * @operationId express.wallet.generate
- * @tag express
+ * @tag Express
  */
 export const PostGenerateWallet = httpRoute({
   path: '/api/v2/{coin}/wallet/generate',

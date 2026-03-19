@@ -37,12 +37,12 @@ export const KeychainChangePasswordResponse = {
 } as const;
 
 /**
- * Change keychain passphrase and reencrypt key with new password
+ * Change a keychain passphrase and re-encrypt the key to a new password
  *
- * Reencrypts the keychain with a new password. Requires the old password and optional OTP.
+ * Re-encrypts the keychain with a new password. Requires the old password and optional OTP.
  *
  * @operationId express.v2.keychain.changePassword
- * @tag express
+ * @tag Express
  */
 export const PostKeychainChangePassword = httpRoute({
   path: '/api/v2/{coin}/keychain/{id}/changepassword',

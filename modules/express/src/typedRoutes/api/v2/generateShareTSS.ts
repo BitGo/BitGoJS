@@ -525,7 +525,7 @@ export const GenerateShareTSSResponse = {
  * (EDDSA or ECDSA/MPCv2) and requested share type. Requires signerFileSystemPath configuration.
  *
  * @operationId express.v2.tssshare.generate
- * @tag express
+ * @tag Express
  */
 export const PostGenerateShareTSS = httpRoute({
   path: '/api/v2/{coin}/tssshare/{sharetype}',

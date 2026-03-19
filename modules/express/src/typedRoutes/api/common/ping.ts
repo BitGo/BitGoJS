@@ -8,7 +8,7 @@ import { BitgoExpressError } from '../../schemas/error';
  * Health check endpoint that returns 200 when the Express server is running.
  *
  * @operationId express.ping
- * @tag express
+ * @tag Express
  * @private
  */
 export const GetPingV1 = httpRoute({
@@ -27,7 +27,7 @@ export const GetPingV1 = httpRoute({
  * Health check endpoint that returns 200 when the Express server is running.
  *
  * @operationId express.v2.ping
- * @tag express
+ * @tag Express
  */
 export const GetPing = httpRoute({
   path: '/api/v2/ping',
