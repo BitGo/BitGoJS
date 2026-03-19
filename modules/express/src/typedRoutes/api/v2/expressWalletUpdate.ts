@@ -48,7 +48,7 @@ export const ExpressWalletUpdateResponse = {
  * For other coins, use the standard wallet update endpoint.
  *
  * @operationId express.wallet.update
- * @tag Express
+ * @tag express
  */
 export const PutExpressWalletUpdate = httpRoute({
   path: '/express/api/v2/{coin}/wallet/{id}',

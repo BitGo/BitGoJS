@@ -116,7 +116,7 @@ export const IsWalletAddressResponse = {
  * Verifying custodial wallet addresses is not supported.
  *
  * @operationId express.v2.wallet.isWalletAddress
- * @tag Express
+ * @tag express
  */
 export const PostIsWalletAddress = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/iswalletaddress',

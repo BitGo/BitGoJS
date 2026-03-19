@@ -73,7 +73,7 @@ export const SimpleCreateResponse = t.intersection([
  * you must securely back up). Otherwise, backup keychain only contains xpub.
  *
  * @operationId express.v1.wallet.simplecreate
- * @tag Express
+ * @tag express
  */
 export const PostSimpleCreate = httpRoute({
   path: '/api/v1/wallets/simplecreate',

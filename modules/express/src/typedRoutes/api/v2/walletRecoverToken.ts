@@ -76,7 +76,7 @@ export const RecoverTokenResponse = t.type({
  * Note: This endpoint is only supported for ETH family wallets.
  *
  * @operationId express.v2.wallet.recovertoken
- * @tag Express
+ * @tag express
  */
 export const PostWalletRecoverToken = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/recovertoken',

@@ -7,7 +7,7 @@ Notes for the Express API docs migration from platform.yaml to generated express
 When adding a route to `express_entry.ts` for doc generation, ensure each endpoint meets:
 
 - **One version per endpoint:** Prefer v2 when both v1 and v2 exist; no `v[12]` in path segments.
-- **Tag:** Use `@tag Express` (exactly) in the route JSDoc.
+- **Tag:** Use `@tag express` (lowercase; matches api-docs approved tag list).
 - **Summary (first line):** No punctuation — no periods, commas, colons, semicolons, question marks, exclamation marks, or hyphens. Use e.g. "reencrypt" not "re-encrypt" in the summary.
 - **Description:** Add a second paragraph after a blank line so the generated spec has a non-empty `description`. Use full sentences and punctuation in the description only.
 - **Request body:** Document body fields in JSDoc for POST/PUT where applicable.
@@ -38,6 +38,8 @@ When adding a route to `express_entry.ts` for doc generation, ensure each endpoi
 - **OpenAPI spec quality (missing description / summary punctuation):** The api-docs CI step **"compare OAS static analysis reports"** runs the rule `rules/openapi/openapi-spec-quality`. It fails with "Check OpenAPI specification quality (duplicates, missing descriptions, etc.)" at `content/services/express.yaml` when:
   - **Missing description:** An operation in the generated spec has no `description` field or it is empty. The generator derives this from the route JSDoc: the **first line** becomes `summary`, and the **next paragraph** (after a blank line) becomes `description`. You must have at least two paragraphs so the spec gets a non-empty description. Fix: add a second paragraph to the route JSDoc (e.g. what the endpoint does, supported coins, or behavior).
   - **Summary contains punctuation:** The **summary** (first line of the route JSDoc) must not contain any punctuation. That includes periods, commas, colons, semicolons, question marks, exclamation marks, **and hyphens** (e.g. use "reencrypt" not "re-encrypt" in the summary line). Keep the description paragraph for full sentences and punctuation.
+- **Missing x-internal:** Each operation in the generated spec must have an `x-internal` field (true or false). The generator only emitted `x-internal: true` for routes with `@private`. BitGoJS applies a patch to `@api-ts/openapi-generator` (see `patches/`) so the generator always emits `x-internal: true` for `@private` routes and `x-internal: false` otherwise. Ensure `patch-package` runs at postinstall so the patch is applied.
+- **Unapproved tag:** The quality check allows only approved tags. Use `@tag express` (lowercase), consistent with other BitGo Express routes and the dev-portal allowlist. Do not use `@tag Express` (capital E) unless that variant is explicitly approved in api-docs.
 - **Vacuum / ruleset errors:** Fix the reported OpenAPI or JSDoc issue in the route or schema.
 
 ## Express Docs workflow (build-system)

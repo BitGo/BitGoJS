@@ -29,7 +29,7 @@ export const CanonicalAddressRequestBody = {
  * Supported for LTC and BCH only.
  *
  * @operationId express.canonicaladdress
- * @tag Express
+ * @tag express
  */
 export const PostCanonicalAddress = httpRoute({
   path: '/api/v2/{coin}/canonicaladdress',

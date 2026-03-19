@@ -35,7 +35,7 @@ export const KeychainLocalResponse = {
  * For security reasons, it is highly recommended that you encrypt and destroy the original xprv immediately to prevent theft.
  *
  * @operationId express.keychain.local
- * @tag Express
+ * @tag express
  */
 export const PostKeychainLocal = httpRoute({
   path: '/api/v2/{coin}/keychain/local',

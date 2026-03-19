@@ -33,7 +33,7 @@ export const LightningStateResponse = {
  * This is only used for self-custody lightning. Get the current state of the lightning node.
  *
  * @operationId express.lightning.getState
- * @tag Express
+ * @tag express
  */
 export const GetLightningState = httpRoute({
   method: 'GET',

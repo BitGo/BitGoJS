@@ -135,7 +135,7 @@ export const PendingApprovalResponse = t.intersection([
  * Supports transaction approvals, policy rule changes, and user change requests.
  *
  * @operationId express.v2.pendingapprovals
- * @tag Express
+ * @tag express
  */
 export const PutV2PendingApproval = httpRoute({
   path: '/api/v2/{coin}/pendingapprovals/{id}',

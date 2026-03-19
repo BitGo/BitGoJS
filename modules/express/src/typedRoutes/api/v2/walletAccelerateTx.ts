@@ -403,7 +403,7 @@ export const AccelerateTxResponse = t.unknown;
  *
  *
  * @operationId express.wallet.acceleratetx
- * @tag Express
+ * @tag express
  */
 export const PostWalletAccelerateTx = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/acceleratetx',
