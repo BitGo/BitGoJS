@@ -39,6 +39,7 @@ import {
   Transaction,
   TransactionBuilderFactory,
   Utils,
+  explainDotTransaction,
 } from './lib';
 import '@polkadot/api-augment';
 import { ApiPromise, WsProvider } from '@polkadot/api';
@@ -664,22 +665,37 @@ export class Dot extends BaseCoin {
       throw new Error('missing txHex in txPrebuild');
     }
 
-    const factory = this.getBuilder();
-    const txBuilder = factory.from(txPrebuild.txHex) as unknown as NativeTransferBuilder;
+    const chain = this.getChain();
+    let txTo: string;
+    let txAmount: string;
+    let isSweep: boolean;
+
+    if (chain === 'tdot') {
+      const material = Utils.default.getMaterial(coins.get(chain));
+      const explained = explainDotTransaction({ txHex: txPrebuild.txHex, material });
+      txTo = explained.outputs[0]?.address ?? '';
+      txAmount = String(explained.outputs[0]?.amount ?? '0');
+      isSweep = explained.methodName === 'balances.transferAll';
+    } else {
+      const factory = this.getBuilder();
+      const txBuilder = factory.from(txPrebuild.txHex) as unknown as NativeTransferBuilder;
+      txTo = txBuilder['_to'];
+      txAmount = txBuilder['_amount'];
+      isSweep = txBuilder['_sweepFreeBalance'] === true;
+    }
 
     if (verification?.consolidationToBaseAddress) {
-      // Verify funds are sent to wallet's base address for consolidation
       const baseAddress = wallet?.coinSpecific()?.rootAddress || wallet?.coinSpecific()?.baseAddress;
       if (!baseAddress) {
         throw new Error('Unable to determine base address for consolidation');
       }
-      if (txBuilder['_to'] !== baseAddress) {
+      if (txTo !== baseAddress) {
         throw new TxIntentMismatchRecipientError(
-          `Transaction destination address ${txBuilder['_to']} does not match wallet base address ${baseAddress}`,
+          `Transaction destination address ${txTo} does not match wallet base address ${baseAddress}`,
           reqId,
           [txParams],
           txPrebuild.txHex,
-          [{ address: txBuilder['_to'], amount: txBuilder['_amount'] }]
+          [{ address: txTo, amount: txAmount }]
         );
       }
     }
@@ -695,25 +711,23 @@ export class Dot extends BaseCoin {
         );
       }
 
-      // validate recipient is same as txBuilder['_to']
-      if (txParams.recipients[0].address !== txBuilder['_to']) {
+      if (txParams.recipients[0].address !== txTo) {
         throw new TxIntentMismatchRecipientError(
-          `Recipient address ${txParams.recipients[0].address} does not match transaction destination address ${txBuilder['_to']}`,
+          `Recipient address ${txParams.recipients[0].address} does not match transaction destination address ${txTo}`,
           reqId,
           [txParams],
           txPrebuild.txHex,
-          [{ address: txBuilder['_to'], amount: txBuilder['_amount'] }]
+          [{ address: txTo, amount: txAmount }]
         );
       }
 
-      // validate amount is same as txBuilder['_amount']
-      if (!txBuilder['_sweepFreeBalance'] && txParams.recipients[0].amount !== txBuilder['_amount']) {
+      if (!isSweep && txParams.recipients[0].amount !== txAmount) {
         throw new TxIntentMismatchRecipientError(
-          `Recipient amount ${txParams.recipients[0].amount} does not match transaction amount ${txBuilder['_amount']}`,
+          `Recipient amount ${txParams.recipients[0].amount} does not match transaction amount ${txAmount}`,
           reqId,
           [txParams],
           txPrebuild.txHex,
-          [{ address: txBuilder['_to'], amount: txBuilder['_amount'] }]
+          [{ address: txTo, amount: txAmount }]
         );
       }
     }

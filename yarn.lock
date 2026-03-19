@@ -985,10 +985,10 @@
     monocle-ts "^2.3.13"
     newtype-ts "^0.3.5"
 
-"@bitgo/wasm-dot@^1.5.0":
-  version "1.6.0"
-  resolved "https://registry.npmjs.org/@bitgo/wasm-dot/-/wasm-dot-1.6.0.tgz#4a0a3e1447e1ee112d11f01399645c8e2b5d573c"
-  integrity sha512-YYvvmMz4OQRLq0OYdGIkNn9L32Uzi7cHaGBfuxtvVEf14w8VlA/gU/UdC6dat+oitVB4jHEyM54rltqNoBkKsA==
+"@bitgo/wasm-dot@^1.7.0":
+  version "1.7.0"
+  resolved "https://registry.npmjs.org/@bitgo/wasm-dot/-/wasm-dot-1.7.0.tgz#d22aafea9d38ebcb4b75d38538202237eadac685"
+  integrity sha512-KoXavJvyDHlEN+sWcigbgxYJtdFaU7gS0EkYQbNH4npVjNlzo6rL6gwjyWbyOy7oEs65DhpJ9vY5kRbE/bKiTQ==
 
 "@bitgo/wasm-solana@^2.6.0":
   version "2.6.0"
