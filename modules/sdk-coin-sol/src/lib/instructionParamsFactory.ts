@@ -32,6 +32,7 @@ import { InstructionBuilderTypes, ValidInstructionTypesEnum, walletInitInstructi
 import {
   AtaClose,
   AtaInit,
+  AtaRecoverNested,
   Burn,
   InstructionParams,
   Memo,
@@ -1071,14 +1072,23 @@ const ataCloseInstructionKeysIndexes = {
   AuthorityAddress: 2,
 };
 
+const ataRecoverNestedInstructionKeysIndexes = {
+  NestedAccountAddress: 0,
+  NestedMintAddress: 1,
+  DestinationAccountAddress: 2,
+  OwnerAccountAddress: 3,
+  OwnerMintAddress: 4,
+  WalletAddress: 5,
+};
+
 /**
  * Parses Solana instructions to close associated token account tx instructions params
  *
  * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
  * @returns {InstructionParams[]} An array containing instruction params for Send tx
  */
-function parseAtaCloseInstructions(instructions: TransactionInstruction[]): Array<AtaClose | Nonce> {
-  const instructionData: Array<AtaClose | Nonce> = [];
+function parseAtaCloseInstructions(instructions: TransactionInstruction[]): Array<AtaClose | AtaRecoverNested | Nonce> {
+  const instructionData: Array<AtaClose | AtaRecoverNested | Nonce> = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
     switch (type) {
@@ -1103,6 +1113,25 @@ function parseAtaCloseInstructions(instructions: TransactionInstruction[]): Arra
           },
         };
         instructionData.push(ataClose);
+        break;
+      case ValidInstructionTypesEnum.RecoverNestedAssociatedTokenAccount:
+        const ataRecoverNested: AtaRecoverNested = {
+          type: InstructionBuilderTypes.RecoverNestedAssociatedTokenAccount,
+          params: {
+            nestedAccountAddress:
+              instruction.keys[ataRecoverNestedInstructionKeysIndexes.NestedAccountAddress].pubkey.toString(),
+            nestedMintAddress:
+              instruction.keys[ataRecoverNestedInstructionKeysIndexes.NestedMintAddress].pubkey.toString(),
+            destinationAccountAddress:
+              instruction.keys[ataRecoverNestedInstructionKeysIndexes.DestinationAccountAddress].pubkey.toString(),
+            ownerAccountAddress:
+              instruction.keys[ataRecoverNestedInstructionKeysIndexes.OwnerAccountAddress].pubkey.toString(),
+            ownerMintAddress:
+              instruction.keys[ataRecoverNestedInstructionKeysIndexes.OwnerMintAddress].pubkey.toString(),
+            walletAddress: instruction.keys[ataRecoverNestedInstructionKeysIndexes.WalletAddress].pubkey.toString(),
+          },
+        };
+        instructionData.push(ataRecoverNested);
         break;
       default:
         throw new NotSupported(
