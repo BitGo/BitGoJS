@@ -9,6 +9,7 @@ export const STAKE_CLAUSE_METHOD_ID = '0x604f2177';
 export const DELEGATE_CLAUSE_METHOD_ID = '0x08bbb824';
 export const ADD_VALIDATION_METHOD_ID = '0xc3c4b138';
 export const INCREASE_STAKE_METHOD_ID = '0x43b0de9a';
+export const DECREASE_STAKE_METHOD_ID = '0x1a73ba01';
 export const EXIT_DELEGATION_METHOD_ID = '0x69e79b7d';
 export const BURN_NFT_METHOD_ID = '0x2e17de78';
 export const TRANSFER_NFT_METHOD_ID = '0x23b872dd';
