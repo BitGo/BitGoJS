@@ -197,6 +197,10 @@ export abstract class MpcUtils {
       isTestTransaction: params.isTestTransaction,
     };
 
+    if (['fillNonce', 'acceleration'].includes(params.intentType)) {
+      baseIntent.senderAddress = params.senderAddress;
+    }
+
     if (baseCoin.isEVM() && baseCoin.supportsTss()) {
       switch (params.intentType) {
         case 'payment':
