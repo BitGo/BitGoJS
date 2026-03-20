@@ -6786,7 +6786,7 @@ export const allCoinsAndTokens = [
     'XMN',
     '0x97c7571f4406cdd7a95f3027075ab80d3e9c937c2a567690d31e14ab1872ccee::xmn::XMN',
     UnderlyingAsset['sui:xmn'],
-    SUI_TOKEN_FEATURES
+    SUI_TOKEN_FEATURES_STAKING
   ),
   suiToken(
     '9b6a8372-5d8a-41d1-8074-d53e59b2e513',
@@ -6882,6 +6882,18 @@ export const allCoinsAndTokens = [
     'WAL',
     '0x8190b041122eb492bf63cb464476bd68c6b7e570a4079645a8b28732b6197a82::wal::WAL',
     UnderlyingAsset['tsui:wal'],
+    SUI_TOKEN_FEATURES_STAKING
+  ),
+  tsuiToken(
+    '8083c263-817c-41b0-aac4-3b9052e83331',
+    'tsui:xmn',
+    'xMoney',
+    6,
+    '0x49934c5c0866e0b62db2f43296994f28d09505f48005032d4285a5da53f35e2a',
+    'xmn',
+    'XMN',
+    '0x49934c5c0866e0b62db2f43296994f28d09505f48005032d4285a5da53f35e2a::xmn::XMN',
+    UnderlyingAsset['tsui:xmn'],
     SUI_TOKEN_FEATURES_STAKING
   ),
   ttaoToken(

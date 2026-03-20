@@ -14,6 +14,9 @@ import {
   TokenTransferProgrammableTransaction,
   WalrusStakingProgrammableTransaction,
   WalrusWithdrawStakeProgrammableTransaction,
+  XmnStakingProgrammableTransaction,
+  XmnUnstakeProgrammableTransaction,
+  XmnClaimRewardsProgrammableTransaction,
 } from './iface';
 import { StakingTransaction } from './stakingTransaction';
 import { TransferTransaction } from './transferTransaction';
@@ -29,6 +32,9 @@ import { WalrusStakingBuilder } from './walrusStakingBuilder';
 import { WalrusStakingTransaction } from './walrusStakingTransaction';
 import { WalrusWithdrawStakeBuilder } from './walrusWithdrawStakeBuilder';
 import { WalrusWithdrawStakeTransaction } from './walrusWithdrawStakeTransaction';
+import { XmnStakingBuilder } from './xmnStakingBuilder';
+import { XmnUnstakeBuilder } from './xmnUnstakeBuilder';
+import { XmnClaimRewardsBuilder } from './xmnClaimRewardsBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -70,6 +76,19 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const walrusRequestWithdrawStakeTransaction = new WalrusWithdrawStakeTransaction(this._coinConfig);
           walrusRequestWithdrawStakeTransaction.fromRawTransaction(raw);
           return this.getWalrusRequestWithdrawStakeBuilder(walrusRequestWithdrawStakeTransaction);
+        case SuiTransactionType.XmnStake:
+          const xmnStakeTx = new StakingTransaction(this._coinConfig);
+          xmnStakeTx.fromRawTransaction(raw);
+          return this.getXmnStakingBuilder(xmnStakeTx);
+        case SuiTransactionType.XmnRequestUnstake:
+        case SuiTransactionType.XmnUnbond:
+          const xmnUnstakeTx = new UnstakingTransaction(this._coinConfig);
+          xmnUnstakeTx.fromRawTransaction(raw);
+          return this.getXmnUnstakeBuilder(xmnUnstakeTx);
+        case SuiTransactionType.XmnClaimRewards:
+          const xmnClaimTx = new StakingTransaction(this._coinConfig);
+          xmnClaimTx.fromRawTransaction(raw);
+          return this.getXmnClaimRewardsBuilder(xmnClaimTx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -113,6 +132,21 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     tx?: Transaction<WalrusWithdrawStakeProgrammableTransaction>
   ): WalrusWithdrawStakeBuilder {
     return this.initializeBuilder(tx, new WalrusWithdrawStakeBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  getXmnStakingBuilder(tx?: Transaction<XmnStakingProgrammableTransaction>): XmnStakingBuilder {
+    return this.initializeBuilder(tx, new XmnStakingBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  getXmnUnstakeBuilder(tx?: Transaction<XmnUnstakeProgrammableTransaction>): XmnUnstakeBuilder {
+    return this.initializeBuilder(tx, new XmnUnstakeBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  getXmnClaimRewardsBuilder(tx?: Transaction<XmnClaimRewardsProgrammableTransaction>): XmnClaimRewardsBuilder {
+    return this.initializeBuilder(tx, new XmnClaimRewardsBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */
