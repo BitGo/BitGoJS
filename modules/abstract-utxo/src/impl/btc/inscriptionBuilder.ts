@@ -28,9 +28,9 @@ import {
 } from '@bitgo/utxo-ord';
 import { BIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
-import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
-import { fetchKeychains } from '../../keychains';
-import { toUtxolibBIP32 } from '../../wasmUtil';
+import { AbstractUtxoCoin } from '../../abstractUtxoCoin.js';
+import { fetchKeychains } from '../../keychains.js';
+import { toUtxolibBIP32 } from '../../wasmUtil.js';
 
 /** Key identifier for signing */
 type SignerKey = 'user' | 'backup' | 'bitgo';

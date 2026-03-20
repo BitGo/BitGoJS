@@ -1,4 +1,4 @@
-export { explainPsbt, explainLegacyTx, ChangeAddressInfo } from './explainTransaction';
+export { explainPsbt, explainLegacyTx, ChangeAddressInfo } from './explainTransaction.js';
 export {
   explainPsbtWasm,
   explainPsbtWasmBigInt,
@@ -6,11 +6,11 @@ export {
   type ExplainedInput,
   type TransactionExplanationBigInt,
   type AggregatedTransactionExplanation,
-} from './explainPsbtWasm';
-export { parseTransaction } from './parseTransaction';
-export { CustomChangeOptions } from './parseOutput';
-export { verifyTransaction } from './verifyTransaction';
-export { signTransaction } from './signTransaction';
-export * from './signLegacyTransaction';
-export * from './SigningError';
-export * from './replayProtection';
+} from './explainPsbtWasm.js';
+export { parseTransaction } from './parseTransaction.js';
+export { CustomChangeOptions } from './parseOutput.js';
+export { verifyTransaction } from './verifyTransaction.js';
+export { signTransaction } from './signTransaction.js';
+export * from './signLegacyTransaction.js';
+export * from './SigningError.js';
+export * from './replayProtection.js';

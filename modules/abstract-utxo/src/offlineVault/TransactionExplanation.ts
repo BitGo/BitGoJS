@@ -1,7 +1,7 @@
-import { UtxoCoinName } from '../names';
+import { UtxoCoinName } from '../names.js';
 
-import { OfflineVaultSignable } from './OfflineVaultSignable';
-import { DescriptorTransaction, getTransactionExplanationFromPsbt } from './descriptor';
+import { OfflineVaultSignable } from './OfflineVaultSignable.js';
+import { DescriptorTransaction, getTransactionExplanationFromPsbt } from './descriptor/index.js';
 
 export interface ExplanationOutput {
   address: string;

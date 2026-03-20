@@ -1,6 +1,6 @@
 import { CoinName, fixedScriptWallet, address as wasmAddress } from '@bitgo/wasm-utxo';
 
-import { parseOutputId, unspentSum, type WalletUnspent } from '../unspent';
+import { parseOutputId, unspentSum, type WalletUnspent } from '../unspent.js';
 
 /**
  * Check if a chain code is for a taproot script type

@@ -2,15 +2,15 @@ import { BIP32, CoinName, fixedScriptWallet, address as wasmAddress } from '@bit
 import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
 import { decrypt } from '@bitgo/sdk-api';
 
-import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin';
-import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction';
-import { UtxoCoinName } from '../names';
-import { encodeTransaction } from '../transaction/decode';
-import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection';
-import { toTNumber } from '../tnumber';
-import { unspentSum, type Unspent, type WalletUnspent } from '../unspent';
+import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin.js';
+import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction.js';
+import { UtxoCoinName } from '../names.js';
+import { encodeTransaction } from '../transaction/decode.js';
+import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection.js';
+import { toTNumber } from '../tnumber.js';
+import { unspentSum, type Unspent, type WalletUnspent } from '../unspent.js';
 
-import { createEmptyWasmPsbt, addWalletInputsToWasmPsbt, addOutputToWasmPsbt, getRecoveryAmount } from './psbt';
+import { createEmptyWasmPsbt, addWalletInputsToWasmPsbt, addOutputToWasmPsbt, getRecoveryAmount } from './psbt.js';
 
 export interface BuildRecoveryTransactionOptions {
   wallet: string;

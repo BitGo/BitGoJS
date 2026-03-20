@@ -6,15 +6,18 @@ import { bitgo } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32, bip32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
-import { UtxoCoinName } from '../../names';
-import type { Unspent } from '../../unspent';
-import { toUtxolibBIP32 } from '../../wasmUtil';
+import { UtxoCoinName } from '../../names.js';
+import type { Unspent } from '../../unspent.js';
+import { toUtxolibBIP32 } from '../../wasmUtil.js';
 
-import { Musig2Participant } from './musig2';
-import { signLegacyTransaction } from './signLegacyTransaction';
-import { signPsbtWithMusig2ParticipantUtxolib, signAndVerifyPsbt as signAndVerifyPsbtUtxolib } from './signPsbtUtxolib';
-import { signPsbtWithMusig2ParticipantWasm, signAndVerifyPsbtWasm, ReplayProtectionKeys } from './signPsbtWasm';
-import { getReplayProtectionPubkeys } from './replayProtection';
+import { Musig2Participant } from './musig2.js';
+import { signLegacyTransaction } from './signLegacyTransaction.js';
+import {
+  signPsbtWithMusig2ParticipantUtxolib,
+  signAndVerifyPsbt as signAndVerifyPsbtUtxolib,
+} from './signPsbtUtxolib.js';
+import { signPsbtWithMusig2ParticipantWasm, signAndVerifyPsbtWasm, ReplayProtectionKeys } from './signPsbtWasm.js';
+import { getReplayProtectionPubkeys } from './replayProtection.js';
 
 /**
  * Sign and verify a PSBT using either utxolib or wasm-utxo depending on the PSBT type.

@@ -1,18 +1,18 @@
 import * as t from 'io-ts';
 import { bip32, Psbt } from '@bitgo/wasm-utxo';
 
-import { DescriptorMap, NamedDescriptor } from '../../descriptor';
-import { OfflineVaultSignable, toKeyTriple } from '../OfflineVaultSignable';
+import { DescriptorMap, NamedDescriptor } from '../../descriptor/index.js';
+import { OfflineVaultSignable, toKeyTriple } from '../OfflineVaultSignable.js';
 import {
   getValidatorOneOfTemplates,
   getValidatorSignedByUserKey,
   getValidatorSome,
   toDescriptorMapValidate,
-} from '../../descriptor/validatePolicy';
-import { explainPsbt, signPsbt } from '../../transaction/descriptor';
-import { TransactionExplanation } from '../TransactionExplanation';
-import { UtxoCoinName } from '../../names';
-import { toWasmPsbt } from '../../wasmUtil';
+} from '../../descriptor/validatePolicy.js';
+import { explainPsbt, signPsbt } from '../../transaction/descriptor/index.js';
+import { TransactionExplanation } from '../TransactionExplanation.js';
+import { UtxoCoinName } from '../../names.js';
+import { toWasmPsbt } from '../../wasmUtil.js';
 
 export const DescriptorTransaction = t.intersection(
   [OfflineVaultSignable, t.type({ descriptors: t.array(NamedDescriptor) })],

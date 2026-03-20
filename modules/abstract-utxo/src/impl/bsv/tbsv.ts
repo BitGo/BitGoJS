@@ -3,9 +3,9 @@
  */
 import { BitGoBase } from '@bitgo/sdk-core';
 
-import { UtxoCoinName } from '../../names';
+import { UtxoCoinName } from '../../names.js';
 
-import { Bsv } from './bsv';
+import { Bsv } from './bsv.js';
 
 export class Tbsv extends Bsv {
   readonly name: UtxoCoinName = 'tbsv';

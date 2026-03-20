@@ -1,8 +1,8 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { BitGoBase, IRequestTracer } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin, TransactionPrebuild } from '../abstractUtxoCoin';
-import { getNetworkFromCoinName, UtxoCoinName } from '../names';
+import { AbstractUtxoCoin, TransactionPrebuild } from '../abstractUtxoCoin.js';
+import { getNetworkFromCoinName, UtxoCoinName } from '../names.js';
 
 /**
  * Get the inputs for a psbt from a prebuild.

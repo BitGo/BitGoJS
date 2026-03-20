@@ -1,8 +1,8 @@
 import { BitGoBase } from '@bitgo/sdk-core';
 
-import { UtxoCoinName } from '../../names';
+import { UtxoCoinName } from '../../names.js';
 
-import { Zec } from './zec';
+import { Zec } from './zec.js';
 
 export class Tzec extends Zec {
   readonly name: UtxoCoinName = 'tzec';

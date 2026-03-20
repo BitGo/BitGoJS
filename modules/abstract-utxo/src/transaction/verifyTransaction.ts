@@ -1,11 +1,11 @@
 import { BitGoBase } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin, VerifyTransactionOptions } from '../abstractUtxoCoin';
-import { getDescriptorMapFromWallet, isDescriptorWallet, getPolicyForEnv } from '../descriptor';
-import { fetchKeychains, toBip32Triple } from '../keychains';
+import { AbstractUtxoCoin, VerifyTransactionOptions } from '../abstractUtxoCoin.js';
+import { getDescriptorMapFromWallet, isDescriptorWallet, getPolicyForEnv } from '../descriptor/index.js';
+import { fetchKeychains, toBip32Triple } from '../keychains.js';
 
-import * as fixedScript from './fixedScript';
-import * as descriptor from './descriptor';
+import * as fixedScript from './fixedScript/index.js';
+import * as descriptor from './descriptor/index.js';
 
 export async function verifyTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,

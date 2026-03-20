@@ -1,2 +1,2 @@
-export * from './ltc';
-export * from './tltc';
+export * from './ltc.js';
+export * from './tltc.js';

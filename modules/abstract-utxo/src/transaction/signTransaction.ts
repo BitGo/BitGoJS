@@ -3,14 +3,14 @@ import { BitGoBase } from '@bitgo/sdk-core';
 import { BIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 import buildDebug from 'debug';
 
-import { AbstractUtxoCoin, SignTransactionOptions } from '../abstractUtxoCoin';
-import { getDescriptorMapFromWallet, getPolicyForEnv, isDescriptorWallet } from '../descriptor';
-import { fetchKeychains, toBip32Triple } from '../keychains';
-import { isUtxoLibPsbt, toWasmPsbt } from '../wasmUtil';
+import { AbstractUtxoCoin, SignTransactionOptions } from '../abstractUtxoCoin.js';
+import { getDescriptorMapFromWallet, getPolicyForEnv, isDescriptorWallet } from '../descriptor/index.js';
+import { fetchKeychains, toBip32Triple } from '../keychains.js';
+import { isUtxoLibPsbt, toWasmPsbt } from '../wasmUtil.js';
 
-import * as fixedScript from './fixedScript';
-import * as descriptor from './descriptor';
-import { decodePsbtWith, encodeTransaction } from './decode';
+import * as fixedScript from './fixedScript/index.js';
+import * as descriptor from './descriptor/index.js';
+import { decodePsbtWith, encodeTransaction } from './decode.js';
 
 const debug = buildDebug('bitgo:abstract-utxo:transaction:signTransaction');
 

@@ -10,18 +10,18 @@ import {
 } from '@bitgo/sdk-core';
 import { BIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
-import { AbstractUtxoCoin } from '../abstractUtxoCoin';
-import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction';
-import { generateAddressWithChainAndIndex } from '../address';
-import { encodeTransaction } from '../transaction/decode';
-import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection';
-import { getMainnetCoinName, UtxoCoinName } from '../names';
-import { parseOutputId, unspentSum, type WalletUnspent } from '../unspent';
+import { AbstractUtxoCoin } from '../abstractUtxoCoin.js';
+import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction.js';
+import { generateAddressWithChainAndIndex } from '../address/index.js';
+import { encodeTransaction } from '../transaction/decode.js';
+import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection.js';
+import { getMainnetCoinName, UtxoCoinName } from '../names.js';
+import { parseOutputId, unspentSum, type WalletUnspent } from '../unspent.js';
 
-import { forCoin, RecoveryProvider } from './RecoveryProvider';
-import { MempoolApi } from './mempoolApi';
-import { CoingeckoApi } from './coingeckoApi';
-import { createBackupKeyRecoveryPsbt, getRecoveryAmount } from './psbt';
+import { forCoin, RecoveryProvider } from './RecoveryProvider.js';
+import { MempoolApi } from './mempoolApi.js';
+import { CoingeckoApi } from './coingeckoApi.js';
+import { createBackupKeyRecoveryPsbt, getRecoveryAmount } from './psbt.js';
 
 type ScriptType2Of3 = fixedScriptWallet.OutputScriptType;
 type ChainCode = fixedScriptWallet.ChainCode;

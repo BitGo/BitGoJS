@@ -1,9 +1,9 @@
-import { AbstractUtxoCoin, ParseTransactionOptions } from '../abstractUtxoCoin';
-import { isDescriptorWallet } from '../descriptor';
+import { AbstractUtxoCoin, ParseTransactionOptions } from '../abstractUtxoCoin.js';
+import { isDescriptorWallet } from '../descriptor/index.js';
 
-import { ParsedTransaction } from './types';
-import * as descriptor from './descriptor';
-import * as fixedScript from './fixedScript';
+import { ParsedTransaction } from './types.js';
+import * as descriptor from './descriptor/index.js';
+import * as fixedScript from './fixedScript/index.js';
 
 export async function parseTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,

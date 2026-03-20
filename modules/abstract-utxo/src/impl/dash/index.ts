@@ -1,2 +1,2 @@
-export * from './dash';
-export * from './tdash';
+export * from './dash.js';
+export * from './tdash.js';
