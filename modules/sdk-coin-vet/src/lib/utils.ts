@@ -30,6 +30,8 @@ import {
   ADD_VALIDATION_METHOD_ID,
   INCREASE_STAKE_METHOD_ID,
   DECREASE_STAKE_METHOD_ID,
+  SIGNAL_EXIT_METHOD_ID,
+  WITHDRAW_STAKE_METHOD_ID,
 } from './constants';
 import { KeyPair } from './keyPair';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -110,6 +112,10 @@ export class Utils implements BaseUtils {
       return TransactionType.StakingAdd;
     } else if (clauses[0].data.startsWith(DECREASE_STAKE_METHOD_ID)) {
       return TransactionType.StakingDeactivate;
+    } else if (clauses[0].data.startsWith(SIGNAL_EXIT_METHOD_ID)) {
+      return TransactionType.StakingUnvote;
+    } else if (clauses[0].data.startsWith(WITHDRAW_STAKE_METHOD_ID)) {
+      return TransactionType.StakingPledge;
     } else if (clauses[0].data.startsWith(BURN_NFT_METHOD_ID)) {
       return TransactionType.StakingWithdraw;
     } else if (
@@ -329,6 +335,46 @@ export class Utils implements BaseUtils {
       };
     } catch (error) {
       throw new Error(`Failed to decode decrease stake data: ${error.message}`);
+    }
+  }
+
+  /**
+   * Decodes signalExit transaction data to extract validator address
+   *
+   * @param {string} data - The encoded transaction data
+   * @returns {object} - Object containing validator address
+   */
+  decodeSignalExitData(data: string): { validator: string } {
+    try {
+      const parameters = data.slice(10);
+
+      const decoded = EthereumAbi.rawDecode(['address'], Buffer.from(parameters, 'hex'));
+
+      return {
+        validator: addHexPrefix(decoded[0].toString()).toLowerCase(),
+      };
+    } catch (error) {
+      throw new Error(`Failed to decode signal exit data: ${error.message}`);
+    }
+  }
+
+  /**
+   * Decodes withdrawStake transaction data to extract validator address
+   *
+   * @param {string} data - The encoded transaction data
+   * @returns {object} - Object containing validator address
+   */
+  decodeWithdrawStakeData(data: string): { validator: string } {
+    try {
+      const parameters = data.slice(10);
+
+      const decoded = EthereumAbi.rawDecode(['address'], Buffer.from(parameters, 'hex'));
+
+      return {
+        validator: addHexPrefix(decoded[0].toString()).toLowerCase(),
+      };
+    } catch (error) {
+      throw new Error(`Failed to decode withdraw stake data: ${error.message}`);
     }
   }
 
