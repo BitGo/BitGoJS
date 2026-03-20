@@ -6421,11 +6421,6 @@
   resolved "https://registry.npmjs.org/@types/sizzle/-/sizzle-2.3.10.tgz"
   integrity sha512-TC0dmN0K8YcWEAEfiPi5gJP14eJe30TTGjkvek3iM/1NdHHsdCA/Td6GvNndMOo/iSnIsZ4HuuhrYPDAmbxzww==
 
-"@types/sjcl@1.0.34":
-  version "1.0.34"
-  resolved "https://registry.npmjs.org/@types/sjcl/-/sjcl-1.0.34.tgz"
-  integrity sha512-bQHEeK5DTQRunIfQeUMgtpPsNNCcZyQ9MJuAfW1I7iN0LDunTc78Fu17STbLMd7KiEY/g2zHVApippa70h6HoQ==
-
 "@types/sockjs@^0.3.36":
   version "0.3.36"
   resolved "https://registry.npmjs.org/@types/sockjs/-/sockjs-0.3.36.tgz"
@@ -11781,10 +11776,10 @@ flat@^5.0.2:
   resolved "https://registry.npmjs.org/flat/-/flat-5.0.2.tgz"
   integrity sha512-b6suED+5/3rTpUBdG1gupIl8MPFCAMA0QXwmljLhvCUKcUvdE4gWky9zpuGCcXHOsz4J9wPGNWq6OKpmIzz3hQ==
 
-flatted@3.4.0, flatted@^3.2.7, flatted@^3.2.9:
-  version "3.4.0"
-  resolved "https://registry.npmjs.org/flatted/-/flatted-3.4.0.tgz#92ab2efec9b272eb85a3a25a106c3afbbc990d8b"
-  integrity sha512-kC6Bb+ooptOIvWj5B63EQWkF0FEnNjV2ZNkLMLZRDDduIiWeFF4iKnslwhiWxjAdbg4NzTNo6h0qLuvFrcx+Sw==
+flatted@3.4.2, flatted@^3.2.7, flatted@^3.2.9:
+  version "3.4.2"
+  resolved "https://registry.npmjs.org/flatted/-/flatted-3.4.2.tgz#f5c23c107f0f37de8dbdf24f13722b3b98d52726"
+  integrity sha512-PjDse7RzhcPkIJwy5t7KPWQSZ9cAbzQXcafsetQoD7sOJRQlGikNbx7yZp2OotDnJyrDcbyRq3Ttb18iYOqkxA==
 
 flux@^4.0.1:
   version "4.0.4"
@@ -18885,10 +18880,10 @@ sisteransi@^1.0.5:
   resolved "https://registry.npmjs.org/sisteransi/-/sisteransi-1.0.5.tgz#134d681297756437cc05ca01370d3a7a571075ed"
   integrity sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==
 
-sjcl@1.0.8, sjcl@^1.0.6:
-  version "1.0.8"
-  resolved "https://registry.npmjs.org/sjcl/-/sjcl-1.0.8.tgz"
-  integrity sha512-LzIjEQ0S0DpIgnxMEayM1rq9aGwGRG4OnZhCdjx7glTaJtf4zRfpg87ImfjSJjoW9vKpagd82McDOwbRT5kQKQ==
+sjcl@^1.0.6, "sjcl@npm:@bitgo/sjcl@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/@bitgo/sjcl/-/sjcl-1.0.1.tgz#633fa84608c1cb7461b17ceb6131d96722921fd3"
+  integrity sha512-dBICMzShC8gXdpSj9cvl4wl9Jkt4h14wt4XQ+/6V6qcC2IObyKRJfaG5TYUU6RvVknhPBPyBx9v84vNKODM5fQ==
 
 slash@3.0.0, slash@^3.0.0:
   version "3.0.0"

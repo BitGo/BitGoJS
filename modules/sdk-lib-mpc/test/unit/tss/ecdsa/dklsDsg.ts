@@ -7,7 +7,7 @@ import assert from 'assert';
 import { Keyshare } from '@silencelaboratories/dkls-wasm-ll-node';
 import { decode } from 'cbor-x';
 import * as mpcv2KeyCardData from './fixtures/mpcv2keycarddata';
-import * as sjcl from 'sjcl';
+import * as sjcl from '@bitgo/sjcl';
 import {
   DeserializedBroadcastMessage,
   DeserializedDklsSignature,

@@ -63,6 +63,7 @@
     "@bitgo/sdk-core": "^36.35.0",
     "@bitgo/sdk-lib-mpc": "^10.9.0",
     "@bitgo/sdk-opensslbytes": "^2.1.0",
+    "@bitgo/sjcl": "^1.0.1",
     "@bitgo/statics": "^58.31.0",
     "bitgo": "^50.28.0",
     "lodash": "^4.17.15",
@@ -70,7 +71,6 @@
     "react-dom": "^18.0.0",
     "react-json-view": "^1.21.3",
     "react-router-dom": "6.3.0",
-    "sjcl": "1.0.8",
     "styled-components": "^5.3.5"
   },
   "devDependencies": {
