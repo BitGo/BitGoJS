@@ -75,6 +75,7 @@ export const EVM_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
   CoinFeature.EIP1559,
+  CoinFeature.ERC20_BULK_TRANSACTION,
 ];
 export const AVAXC_FEATURES = [
   ...ETH_FEATURES_WITH_MMI,
