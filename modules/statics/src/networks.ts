@@ -2539,6 +2539,95 @@ class TempoTestnet extends Testnet implements EthereumNetwork {
   tokenOperationHashPrefix = '42431';
 }
 
+/**
+ * Constructor options for {@link DynamicNetwork}.
+ * Accepts string-typed `type` and `family` so AMS JSON can be passed directly.
+ * Fields mirror BaseNetwork + AccountNetwork + EthereumNetwork.
+ */
+export interface DynamicNetworkOptions {
+  // BaseNetwork
+  name: string;
+  type: string;
+  family: string;
+  explorerUrl?: string;
+  // AccountNetwork
+  accountExplorerUrl?: string;
+  blockExplorerUrl?: string;
+  // EthereumNetwork
+  chainId?: number;
+  batcherContractAddress?: string;
+  forwarderFactoryAddress?: string;
+  forwarderImplementationAddress?: string;
+  walletFactoryAddress?: string;
+  walletImplementationAddress?: string;
+  walletV2FactoryAddress?: string;
+  walletV2ImplementationAddress?: string;
+  walletV4FactoryAddress?: string;
+  walletV4ImplementationAddress?: string;
+  walletV2ForwarderFactoryAddress?: string;
+  walletV2ForwarderImplementationAddress?: string;
+  walletV4ForwarderFactoryAddress?: string;
+  walletV4ForwarderImplementationAddress?: string;
+  nativeCoinOperationHashPrefix?: string;
+  tokenOperationHashPrefix?: string;
+}
+
+/**
+ * Concrete network class for AMS-discovered chains not yet registered in local statics.
+ * Accepts string-typed type/family and casts to enums internally (safe since both are string enums).
+ * Currently covers BaseNetwork + AccountNetwork + EthereumNetwork fields.
+ */
+export class DynamicNetwork extends BaseNetwork {
+  public readonly name: string;
+  public readonly type: NetworkType;
+  public readonly family: CoinFamily;
+  public readonly explorerUrl: string | undefined;
+  public readonly accountExplorerUrl?: string;
+  public readonly blockExplorerUrl?: string;
+  public readonly chainId?: number;
+  public readonly batcherContractAddress?: string;
+  public readonly forwarderFactoryAddress?: string;
+  public readonly forwarderImplementationAddress?: string;
+  public readonly walletFactoryAddress?: string;
+  public readonly walletImplementationAddress?: string;
+  public readonly walletV2FactoryAddress?: string;
+  public readonly walletV2ImplementationAddress?: string;
+  public readonly walletV4FactoryAddress?: string;
+  public readonly walletV4ImplementationAddress?: string;
+  public readonly walletV2ForwarderFactoryAddress?: string;
+  public readonly walletV2ForwarderImplementationAddress?: string;
+  public readonly walletV4ForwarderFactoryAddress?: string;
+  public readonly walletV4ForwarderImplementationAddress?: string;
+  public readonly nativeCoinOperationHashPrefix?: string;
+  public readonly tokenOperationHashPrefix?: string;
+
+  constructor(options: DynamicNetworkOptions) {
+    super();
+    this.name = options.name;
+    this.type = options.type as NetworkType;
+    this.family = options.family as CoinFamily;
+    this.explorerUrl = options.explorerUrl;
+    this.accountExplorerUrl = options.accountExplorerUrl;
+    this.blockExplorerUrl = options.blockExplorerUrl;
+    this.chainId = options.chainId;
+    this.batcherContractAddress = options.batcherContractAddress;
+    this.forwarderFactoryAddress = options.forwarderFactoryAddress;
+    this.forwarderImplementationAddress = options.forwarderImplementationAddress;
+    this.walletFactoryAddress = options.walletFactoryAddress;
+    this.walletImplementationAddress = options.walletImplementationAddress;
+    this.walletV2FactoryAddress = options.walletV2FactoryAddress;
+    this.walletV2ImplementationAddress = options.walletV2ImplementationAddress;
+    this.walletV4FactoryAddress = options.walletV4FactoryAddress;
+    this.walletV4ImplementationAddress = options.walletV4ImplementationAddress;
+    this.walletV2ForwarderFactoryAddress = options.walletV2ForwarderFactoryAddress;
+    this.walletV2ForwarderImplementationAddress = options.walletV2ForwarderImplementationAddress;
+    this.walletV4ForwarderFactoryAddress = options.walletV4ForwarderFactoryAddress;
+    this.walletV4ForwarderImplementationAddress = options.walletV4ForwarderImplementationAddress;
+    this.nativeCoinOperationHashPrefix = options.nativeCoinOperationHashPrefix;
+    this.tokenOperationHashPrefix = options.tokenOperationHashPrefix;
+  }
+}
+
 export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
