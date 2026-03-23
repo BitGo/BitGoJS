@@ -18,6 +18,7 @@ export class HypeEvm extends AccountCoin {
     CoinFeature.EVM_NON_BITGO_RECOVERY,
     CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     CoinFeature.SUPPORTS_ERC20,
+    CoinFeature.ERC20_BULK_TRANSACTION,
     CoinFeature.STAKING,
   ];
 
