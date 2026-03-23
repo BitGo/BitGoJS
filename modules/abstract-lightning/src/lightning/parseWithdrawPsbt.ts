@@ -17,7 +17,11 @@ function parseDerivationPath(derivationPath: string): {
   addressIndex: number;
 } {
   const pathSegments = derivationPath.split('/');
-  const purpose = Number(pathSegments[1].replace(/'/g, ''));
+  // Paths may or may not include the 'm/' prefix depending on how they were created:
+  // bip174 binary deserialization omits it (e.g. "84'/0'/0'/1/6"),
+  // while manually constructed paths typically include it (e.g. "m/84'/0'/0'/1/6").
+  const offset = pathSegments[0] === 'm' ? 1 : 0;
+  const purpose = Number(pathSegments[offset].replace(/'/g, ''));
   const change = Number(pathSegments[pathSegments.length - 2]);
   const addressIndex = Number(pathSegments[pathSegments.length - 1]);
   if (purpose !== PURPOSE_WRAPPED_P2WKH && purpose !== PURPOSE_P2WKH && purpose !== PURPOSE_P2TR) {
