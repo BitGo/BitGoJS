@@ -56,3 +56,18 @@ GHSA-qffp-2rhf-9h96
 # - We only use tar for packing; low risk in terms of exploitability
 # - Security exception approved
 GHSA-9ppj-qmqm-q256
+
+# Excluded temporarily to unblock release (CSHLD-511):
+# - Prototype Pollution via parse() in flatted <=3.4.1
+# - Transitive dev-only dependency: eslint > file-entry-cache > flat-cache > flatted
+# - Not in any production code path; only affects dev-time linting
+# - Patched version flatted@3.4.2 exists but is within 7-day npm cooldown (published 2026-03-17)
+# - TODO: Remove this exclusion and add "**/flatted": ">=3.4.2" resolution after 2026-03-24
+GHSA-rf6f-7fwh-wjgh
+
+# Excluded temporarily to unblock release (CSHLD-511):
+# - Missing point-on-curve validation in sjcl.ecc.basicKey.publicKey (CVSS 7.5)
+# - Affects sjcl <=1.0.8 used via macaroon in @bitgo/abstract-lightning and @bitgo/web-demo
+# - Patched version sjcl@1.0.9 exists but is within 7-day npm cooldown (published 2026-03-18)
+# - TODO: Remove this exclusion and add "**/sjcl": ">=1.0.9" resolution after 2026-03-25
+GHSA-2w8x-224x-785m
