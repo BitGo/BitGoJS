@@ -338,6 +338,11 @@ type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = 
    */
   returnLegacyFormat?: boolean;
   wallet?: UtxoWallet;
+  /**
+   * When true (default), extract finalized PSBT to legacy transaction format.
+   * When false, return finalized PSBT. Useful for testing to keep transactions in PSBT format.
+   */
+  extractTransaction?: boolean;
 };
 
 export type SignTransactionOptions<TNumber extends number | bigint = number> = UtxoBaseSignTransactionOptions<TNumber> &

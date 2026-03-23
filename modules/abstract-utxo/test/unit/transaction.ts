@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import nock = require('nock');
 import { BIP32Interface, bitgo, testutil } from '@bitgo/utxo-lib';
-import { address as wasmAddress } from '@bitgo/wasm-utxo';
+import { address as wasmAddress, fixedScriptWallet } from '@bitgo/wasm-utxo';
 import {
   common,
   FullySignedTransaction,
@@ -108,6 +108,7 @@ function run<TNumber extends number | bigint = number>(
         prv: signer.toBase58(),
         pubs: walletKeys.triple.map((k) => k.neutered().toBase58()),
         cosignerPub: cosigner.neutered().toBase58(),
+        extractTransaction: false,
       } as WalletSignTransactionOptions;
     }
 
@@ -223,7 +224,7 @@ function run<TNumber extends number | bigint = number>(
 
       function toTransactionStagesObj(stages: TransactionStages): TransactionObjStages {
         return _.mapValues(stages, (v) =>
-          v === undefined || v instanceof utxolib.bitgo.UtxoPsbt
+          v === undefined || v instanceof utxolib.bitgo.UtxoPsbt || v instanceof fixedScriptWallet.BitGoPsbt
             ? undefined
             : v instanceof utxolib.bitgo.UtxoTransaction
             ? transactionToObj<TNumber>(v)
@@ -266,7 +267,7 @@ function run<TNumber extends number | bigint = number>(
       signedBy: BIP32Interface[],
       sign: 'halfsigned' | 'fullsigned'
     ) {
-      if (txFormat === 'psbt' && sign === 'halfsigned') {
+      if (txFormat === 'psbt') {
         testPsbtValidSignatures(tx, signedBy);
         return;
       }
@@ -398,6 +399,8 @@ function run<TNumber extends number | bigint = number>(
         const txHex =
           stageTx instanceof utxolib.bitgo.UtxoPsbt || stageTx instanceof utxolib.bitgo.UtxoTransaction
             ? stageTx.toBuffer().toString('hex')
+            : stageTx instanceof fixedScriptWallet.BitGoPsbt
+            ? Buffer.from(stageTx.serialize()).toString('hex')
             : stageTx.txHex;
 
         const pubs = walletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>;
