@@ -2786,3 +2786,15 @@ export const Networks = {
     unieth: Object.freeze(new UniethTestnet()),
   },
 };
+
+const networkByName: Map<string, BaseNetwork> = new Map(
+  Object.values(Networks).flatMap((category) => Object.values(category).map((network) => [network.name, network]))
+);
+
+/**
+ * Look up a registered network by its display name (e.g. "Ethereum", "Bitcoin").
+ * Returns undefined for names not registered in local statics.
+ */
+export function getNetworkByName(name: string): BaseNetwork | undefined {
+  return networkByName.get(name);
+}
