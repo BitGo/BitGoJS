@@ -11,7 +11,7 @@ export const bscTokens = [
     '9cab6783-f652-4cd2-8af2-a2ccf15f31c9',
     'bsc:solv',
     'SOLV Protocol',
-    9,
+    18,
     '0xabe8e5cabe24cb36df9540088fd7ce1175b9bc52',
     UnderlyingAsset['bsc:solv'],
     BSC_TOKEN_FEATURES
