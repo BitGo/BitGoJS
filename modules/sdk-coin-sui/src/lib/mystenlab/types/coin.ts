@@ -25,6 +25,7 @@ export const CoinBalance = object({
   coinType: string(),
   coinObjectCount: number(),
   totalBalance: number(),
+  fundsInAddressBalance: optional(number()),
   lockedBalance: object({
     epochId: optional(number()),
     number: optional(number()),

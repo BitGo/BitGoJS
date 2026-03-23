@@ -42,7 +42,7 @@ import {
 } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
-import { SuiObjectInfo, SuiTransactionType } from './lib/iface';
+import { SuiBalanceInfo, SuiObjectInfo, SuiTransactionType } from './lib/iface';
 import {
   DEFAULT_GAS_OVERHEAD,
   DEFAULT_GAS_PRICE,
@@ -306,7 +306,7 @@ export class Sui extends BaseCoin {
     return Environments[this.bitgo.getEnv()].suiNodeUrl;
   }
 
-  protected async getBalance(owner: string, coinType?: string): Promise<string> {
+  protected async getBalance(owner: string, coinType?: string): Promise<SuiBalanceInfo> {
     const url = this.getPublicNodeUrl();
     return await utils.getBalance(url, owner, coinType);
   }
@@ -353,8 +353,11 @@ export class Sui extends BaseCoin {
       const derivedPublicKey = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
       const senderAddress = this.getAddressFromPublicKey(derivedPublicKey);
       let availableBalance = new BigNumber(0);
+      let fundsInAddressBalance = new BigNumber(0);
       try {
-        availableBalance = new BigNumber(await this.getBalance(senderAddress));
+        const balanceInfo = await this.getBalance(senderAddress);
+        availableBalance = new BigNumber(balanceInfo.totalBalance);
+        fundsInAddressBalance = new BigNumber(balanceInfo.fundsInAddressBalance);
       } catch (e) {
         continue;
       }
@@ -370,7 +373,8 @@ export class Sui extends BaseCoin {
         }
         const coinType = `${token.packageId}::${token.module}::${token.symbol}`;
         try {
-          const availableTokenBalance = new BigNumber(await this.getBalance(senderAddress, coinType));
+          const tokenBalanceInfo = await this.getBalance(senderAddress, coinType);
+          const availableTokenBalance = new BigNumber(tokenBalanceInfo.totalBalance);
           if (availableTokenBalance.toNumber() <= 0) {
             continue;
           }
@@ -387,8 +391,11 @@ export class Sui extends BaseCoin {
       if (inputCoins.length > MAX_OBJECT_LIMIT) {
         inputCoins = inputCoins.slice(0, MAX_OBJECT_LIMIT);
       }
-      let netAmount = inputCoins.reduce((acc, obj) => acc.plus(obj.balance), new BigNumber(0));
-      netAmount = netAmount.minus(MAX_GAS_BUDGET);
+      // Include funds held in the address balance system (not in coin objects).
+      // SplitCoins(GasCoin, [amount]) draws from both gasData.payment objects
+      // and address balance at execution time, so both are spendable.
+      const coinObjectsBalance = inputCoins.reduce((acc, obj) => acc.plus(obj.balance), new BigNumber(0));
+      let netAmount = coinObjectsBalance.plus(fundsInAddressBalance).minus(MAX_GAS_BUDGET);
 
       const recipients = [
         {
@@ -404,6 +411,7 @@ export class Sui extends BaseCoin {
         .type(SuiTransactionType.Transfer)
         .sender(senderAddress)
         .send(recipients)
+        .fundsInAddressBalance(fundsInAddressBalance.toString())
         .gasData({
           owner: senderAddress,
           price: DEFAULT_GAS_PRICE,
@@ -468,7 +476,10 @@ export class Sui extends BaseCoin {
     if (tokenObjects.length > TOKEN_OBJECT_LIMIT) {
       tokenObjects = tokenObjects.slice(0, TOKEN_OBJECT_LIMIT);
     }
-    const netAmount = tokenObjects.reduce((acc, obj) => acc.plus(obj.balance), new BigNumber(0));
+    const coinObjectsBalance = tokenObjects.reduce((acc, obj) => acc.plus(obj.balance), new BigNumber(0));
+    const tokenBalanceInfo = await this.getBalance(senderAddress, coinType);
+    const tokenFundsInAddressBalance = new BigNumber(tokenBalanceInfo.fundsInAddressBalance);
+    const netAmount = coinObjectsBalance.plus(tokenFundsInAddressBalance);
     const recipients = [
       {
         address: params.recoveryDestination,
@@ -490,13 +501,17 @@ export class Sui extends BaseCoin {
       .type(SuiTransactionType.TokenTransfer)
       .sender(senderAddress)
       .send(recipients)
-      .inputObjects(tokenObjects)
+      .fundsInAddressBalance(tokenFundsInAddressBalance.toString())
       .gasData({
         owner: senderAddress,
         price: DEFAULT_GAS_PRICE,
         budget: MAX_GAS_BUDGET,
         payment: gasObjects,
       });
+
+    if (tokenObjects.length > 0) {
+      txBuilder.inputObjects(tokenObjects);
+    }
 
     const tempTx = (await txBuilder.build()) as TokenTransferTransaction;
     const feeEstimate = await this.getFeeEstimate(tempTx.toBroadcastFormat());

@@ -172,9 +172,25 @@ export enum MethodNames {
    * @see https://github.com/MystenLabs/walrus-docs/blob/9307e66df0ea3f6555cdef78d46aefa62737e216/contracts/walrus/sources/staking/staked_wal.move#L143
    */
   WalrusSplitStakedWal = '::staked_wal::split',
+  /**
+   * Redeem funds from the address balance system into a Coin<T> object.
+   * Used with the BalanceWithdrawal CallArg to spend from address balance.
+   *
+   * @see https://docs.sui.io/concepts/sui-move-concepts/address-balance
+   */
+  RedeemFunds = '::coin::redeem_funds',
 }
 
 export interface SuiObjectInfo extends SuiObjectRef {
   /** balance */
   balance: BigNumber;
+}
+
+export interface SuiBalanceInfo {
+  /** Total balance combining coin object balance and address balance */
+  totalBalance: string;
+  /** Balance held in coin objects (UTXO-style Coin<T> objects) */
+  coinObjectBalance: string;
+  /** Balance held in the address balance system (not in coin objects) */
+  fundsInAddressBalance: string;
 }

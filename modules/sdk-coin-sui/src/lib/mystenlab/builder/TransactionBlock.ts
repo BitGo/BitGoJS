@@ -4,6 +4,7 @@ import { ObjectId, SuiObjectRef } from '../types';
 import { Transactions, TransactionArgument, TransactionType, TransactionBlockInput } from './Transactions';
 import { BuilderCallArg, getIdFromCallArg, Inputs, ObjectCallArg } from './Inputs';
 import { TransactionBlockDataBuilder, TransactionExpiration } from './TransactionDataBlock';
+import { TypeTagSerializer } from '../txn-data-serializers/type-tag-serializer';
 import { create } from './utils';
 
 type TransactionResult = TransactionArgument & TransactionArgument[];
@@ -238,6 +239,28 @@ export class TransactionBlock {
   }
 
   // Method shorthands:
+
+  /**
+   * Create a BalanceWithdrawal argument that withdraws `amount` from the sender's
+   * address balance at execution time. Pass this as an argument to
+   * `0x2::coin::redeem_funds` to receive a `Coin<T>` object:
+   *
+   * ```typescript
+   * const [coin] = tx.moveCall({
+   *   target: '0x2::coin::redeem_funds',
+   *   typeArguments: ['0x2::sui::SUI'],
+   *   arguments: [tx.withdrawal({ amount: 1_000_000n })],
+   * });
+   * tx.transferObjects([coin], recipientAddress);
+   * ```
+   *
+   * @param amount - amount in base units (e.g. MIST for SUI)
+   * @param type   - coin type string, defaults to `'0x2::sui::SUI'`
+   */
+  withdrawal({ amount, type: coinType = '0x2::sui::SUI' }: { amount: bigint | number; type?: string }): TransactionArgument {
+    const typeTag = TypeTagSerializer.parseFromStr(coinType, true);
+    return this.input('object', Inputs.BalanceWithdrawal(amount, typeTag));
+  }
 
   splitCoins(...args: Parameters<(typeof Transactions)['SplitCoins']>) {
     return this.add(Transactions.SplitCoins(...args));

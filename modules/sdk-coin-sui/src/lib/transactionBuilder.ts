@@ -149,7 +149,15 @@ export abstract class TransactionBuilder<T = SuiProgrammableTransaction> extends
   }
 
   validateGasPayment(payments: SuiObjectRef[]): void {
-    assert(payments && payments.length > 0, new BuildTransactionError('gas payment is required before building'));
+    assert(
+      payments !== undefined && payments !== null,
+      new BuildTransactionError('gas payment is required before building')
+    );
+    // Empty array is valid: Sui allows setGasPayment([]) when gas is paid from
+    // address balance (sender or fee payer has sufficient fundsInAddressBalance).
+    if (payments.length === 0) {
+      return;
+    }
     payments.forEach((payment) => {
       this.validateSuiObjectRef(payment, 'payment');
     });

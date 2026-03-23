@@ -66,7 +66,7 @@ export function isPureArg(arg: any): arg is PureArg {
  * For `Pure` arguments BCS is required. You must encode the values with BCS according
  * to the type required by the called function. Pure accepts only serialized values
  */
-export type CallArg = PureArg | { Object: ObjectArg };
+export type CallArg = PureArg | { Object: ObjectArg } | { BalanceWithdrawal: { amount: bigint | number; type_: TypeTag } };
 
 /**
  * Kind of a TypeTag which is represented by a Move type identifier.
@@ -144,6 +144,7 @@ const BCS_SPEC: TypeSchema = {
       Pure: [VECTOR, BCS.U8],
       Object: 'ObjectArg',
       ObjVec: [VECTOR, 'ObjectArg'],
+      BalanceWithdrawal: 'BalanceWithdrawal',
     },
     TypeTag: {
       bool: null,
@@ -175,6 +176,10 @@ const BCS_SPEC: TypeSchema = {
     },
   },
   structs: {
+    BalanceWithdrawal: {
+      amount: BCS.U64,
+      type_: 'TypeTag',
+    },
     SuiObjectRef: {
       objectId: BCS.ADDRESS,
       version: BCS.U64,

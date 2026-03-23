@@ -200,7 +200,15 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
           return Inputs.Pure(amount, BCS.U64);
         }
       }
-      if (input.kind === 'Input' && (input.value.hasOwnProperty('Object') || input.value.hasOwnProperty('Pure'))) {
+      if (input.hasOwnProperty('BalanceWithdrawal')) {
+        return input;
+      }
+      if (
+        input.kind === 'Input' &&
+        (input.value.hasOwnProperty('Object') ||
+          input.value.hasOwnProperty('Pure') ||
+          input.value.hasOwnProperty('BalanceWithdrawal'))
+      ) {
         return input.value;
       }
       return Inputs.Pure(input.value, input.type === 'pure' ? BCS.U64 : BCS.ADDRESS);
@@ -264,13 +272,17 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
    */
   private getInputObjectsFromTx(tx: TransferProgrammableTransaction): SuiObjectRef[] {
     const inputs = tx.inputs;
-    const transaction = tx.transactions[0] as SuiTransactionBlockType;
+    // In the sponsored path with BalanceWithdrawal, transactions[0] is MoveCall (redeem_funds)
+    // and MergeCoins/SplitCoins appears at index 1+. Search for the first relevant transaction.
+    const transaction = (tx.transactions as SuiTransactionBlockType[]).find(
+      (t) => t.kind === 'MergeCoins' || t.kind === 'SplitCoins'
+    );
 
     let args: TransactionArgument[] = [];
-    if (transaction.kind === 'MergeCoins') {
+    if (transaction?.kind === 'MergeCoins') {
       const { destination, sources } = transaction;
       args = [destination, ...sources];
-    } else if (transaction.kind === 'SplitCoins') {
+    } else if (transaction?.kind === 'SplitCoins') {
       args = [transaction.coin];
     }
 

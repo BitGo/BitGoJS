@@ -19,6 +19,7 @@ import {
   StakingProgrammableTransaction,
   WalrusStakingProgrammableTransaction,
   WalrusWithdrawStakeProgrammableTransaction,
+  SuiBalanceInfo,
   SuiObjectInfo,
   SuiProgrammableTransaction,
   SuiTransaction,
@@ -250,6 +251,10 @@ export class Utils implements BaseUtils {
           return SuiTransactionType.WalrusRequestWithdrawStake;
         } else if (command.target.endsWith(MethodNames.WalrusWithdrawStake)) {
           return SuiTransactionType.WalrusWithdrawStake;
+        } else if (command.target.endsWith(MethodNames.RedeemFunds)) {
+          // redeem_funds is a helper MoveCall used with BalanceWithdrawal to convert
+          // address balance into a Coin<T>; it co-exists with Transfer or TokenTransfer commands.
+          return SuiTransactionType.Transfer;
         } else {
           throw new InvalidTransactionError(`unsupported target method ${command.target}`);
         }
@@ -493,12 +498,19 @@ export class Utils implements BaseUtils {
     return netCost.comparedTo(computationCost) > 0 ? netCost : computationCost;
   }
 
-  async getBalance(url: string, owner: string, coinType?: string): Promise<string> {
+  async getBalance(url: string, owner: string, coinType?: string): Promise<SuiBalanceInfo> {
     if (coinType === undefined) {
       coinType = SUI_TYPE_ARG;
     }
     const result = await makeRPC(url, 'suix_getBalance', [owner, coinType]);
-    return result.totalBalance;
+    const totalBalance = (result.totalBalance ?? '0').toString();
+    const fundsInAddressBalance = (result.fundsInAddressBalance ?? '0').toString();
+    const coinObjectBalance = new BigNumber(totalBalance).minus(new BigNumber(fundsInAddressBalance)).toString();
+    return {
+      totalBalance,
+      coinObjectBalance,
+      fundsInAddressBalance,
+    };
   }
 
   async getInputCoins(url: string, owner: string, coinType?: string): Promise<SuiObjectInfo[]> {
