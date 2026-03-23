@@ -411,6 +411,11 @@ export abstract class AbstractUtxoCoin
 
   public readonly amountType: 'number' | 'bigint';
 
+  protected readonly supportedTxFormats: { readonly psbt: boolean; readonly legacy: boolean } = {
+    psbt: true,
+    legacy: false,
+  };
+
   protected constructor(bitgo: BitGoBase, amountType: 'number' | 'bigint' = 'number') {
     super(bitgo);
     this.amountType = amountType;
@@ -587,8 +592,15 @@ export abstract class AbstractUtxoCoin
     }
 
     if (utxolib.bitgo.isPsbt(input)) {
+      if (!this.supportedTxFormats.psbt) {
+        throw new ErrorDeprecatedTxFormat('psbt');
+      }
       return decodePsbtWith(input, this.name, decodeWith);
     } else {
+      // Legacy format transactions are deprecated. This will be an unconditional error in the future.
+      if (!this.supportedTxFormats.legacy) {
+        throw new ErrorDeprecatedTxFormat('legacy');
+      }
       if (decodeWith !== 'utxolib') {
         console.error('received decodeWith hint %s, ignoring for legacy transaction', decodeWith);
       }

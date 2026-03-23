@@ -83,20 +83,4 @@ describe('UTXO Custom Signer Function', function () {
     sinon.assert.calledOnce(customSigningFunction as sinon.SinonStub);
     scope.done();
   });
-
-  it('should use a custom signing function if provided for Tx without taprootKeyPathSpend input', async function () {
-    const tx = utxoLib.testutil.constructTxnBuilder(
-      [{ scriptType: 'p2wsh', value: BigInt(1000) }],
-      [{ scriptType: 'p2sh', value: BigInt(900) }],
-      basecoin.network,
-      rootWalletKey,
-      'unsigned'
-    );
-    const scope = nocks({ txHex: tx.buildIncomplete().toHex() });
-    const result = await wallet.sendMany({ recipients, customSigningFunction });
-
-    assertHasProperty(result, 'ok', true);
-    sinon.assert.calledOnce(customSigningFunction as sinon.SinonStub);
-    scope.done();
-  });
 });

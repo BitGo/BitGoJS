@@ -271,10 +271,7 @@ function run<TNumber extends number | bigint = number>(
         testPsbtValidSignatures(tx, signedBy);
         return;
       }
-      const unspents =
-        txFormat === 'psbt'
-          ? getUnspentsForPsbt().map((u) => ({ ...u, value: bitgo.toTNumber(u.value, amountType) as TNumber }))
-          : getUnspents();
+      const unspents = getUnspents();
       const prevOutputs = unspents.map(
         (u): utxolib.TxOutput<TNumber> => ({
           script: Buffer.from(wasmAddress.toOutputScriptWithCoin(u.address, coin.name)),
@@ -418,9 +415,7 @@ function run<TNumber extends number | bigint = number>(
 }
 
 function runTestForCoin(coin: AbstractUtxoCoin) {
-  (['legacy', 'psbt'] as const).forEach((txFormat) => {
-    run(coin, getScriptTypes(coin, txFormat), txFormat, { decodeWith: 'wasm-utxo' });
-  });
+  run(coin, getScriptTypes(coin, 'psbt'), 'psbt', { decodeWith: 'wasm-utxo' });
 }
 
 describe('Transaction Suite', function () {
