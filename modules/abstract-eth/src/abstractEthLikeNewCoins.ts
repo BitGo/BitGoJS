@@ -72,6 +72,7 @@ import { AbstractEthLikeCoin } from './abstractEthLikeCoin';
 import { EthLikeToken } from './ethLikeToken';
 import {
   calculateForwarderV1Address,
+  coinFamiliesWithL1Fees,
   decodeTransferData,
   ERC1155TransferBuilder,
   ERC721TransferBuilder,
@@ -1516,10 +1517,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress, params.apiKey);
     let totalGasNeeded = gasPrice.mul(gasLimit);
 
-    // On optimism chain, L1 fees is to be paid as well apart from L2 fees
-    // So we are adding the amount that can be used up as l1 fees
-    if (this.staticsCoin?.family === 'opeth') {
-      totalGasNeeded = totalGasNeeded.add(new optionalDeps.ethUtil.BN(ethGasConfigs.opethGasL1Fees));
+    // On L2 chains with L1 data fees, add buffer for L1 fees
+    if (this.staticsCoin?.family !== undefined && coinFamiliesWithL1Fees.includes(this.staticsCoin.family)) {
+      totalGasNeeded = totalGasNeeded.add(new optionalDeps.ethUtil.BN(ethGasConfigs.l1GasFeeBuffer));
     }
 
     const weiToGwei = 10 ** 9;
@@ -2515,7 +2515,11 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
   async validateBalanceAndGetTxAmount(baseAddress: string, gasPrice: BN, gasLimit: BN, apiKey?: string) {
     const baseAddressBalance = await this.queryAddressBalance(baseAddress, apiKey);
-    const totalGasNeeded = gasPrice.mul(gasLimit);
+    let totalGasNeeded = gasPrice.mul(gasLimit);
+    // On L2 chains with L1 data fees, add buffer for L1 fees
+    if (this.staticsCoin?.family !== undefined && coinFamiliesWithL1Fees.includes(this.staticsCoin.family)) {
+      totalGasNeeded = totalGasNeeded.add(new optionalDeps.ethUtil.BN(ethGasConfigs.l1GasFeeBuffer));
+    }
     const weiToGwei = new BN(10 ** 9);
     if (baseAddressBalance.lt(totalGasNeeded)) {
       throw new Error(

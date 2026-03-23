@@ -345,7 +345,7 @@ export const ethGasConfigs = {
   minimumGasLimit: 30000, // minimum gas limit a user can set for a send
   maximumGasLimit: 20000000, // Customers cannot set gas limits beyond this amount
   newEthLikeCoinsMinGasLimit: 400000, // minimum gas limit a user can set for a send for eth like coins like arbitrum, optimism, etc
-  opethGasL1Fees: 1000000000000000, // Buffer for opeth L1 gas fees
+  l1GasFeeBuffer: 1000000000000000, // Buffer for L1 data fees
 };
 
 function getStellarTokenConfig(coin: StellarCoin): StellarTokenConfig {
