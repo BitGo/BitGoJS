@@ -19,6 +19,7 @@ export const mainnetAddress = {
   address2: 'core1ssh2d2ft6hzrgn9z6k7mmsamy2hfpxl9y8re5x',
   address3: 'core35udp7m30va5njkdrguj27wvk9lnutfwkevk7n9',
   address4: 'core1v7n3mrjg58udt7cyhv9gs62t8wcf9sh8w604yy',
+  address32byte1: 'core1pnxmcuxqvumfe6ktv40v2vm3z0zckluupzxu3uuq0f7t07w6xuwsc7td3m',
   validatorAddress1: 'corevaloper1gsaxrwfu5glgw764mqhc4t8f3yxg2h07rmwt0k',
   validatorAddress2: 'corevaloper1x9hd9r7duv2gagztvvqlw94v5gy4zd9xwhqnlm',
   validatorAddress3: 'corevaloper2flaz3hzgg3tjszl372lu2zz5jsmxd8pvydl7gg',
