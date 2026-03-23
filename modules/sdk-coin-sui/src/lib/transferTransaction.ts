@@ -83,7 +83,7 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
         sender: tx.sender,
         kind: { ProgrammableTransaction: tx.tx },
         gasData: tx.gasData,
-        expiration: { None: null },
+        expiration: tx.expiration ?? { None: null },
         inputObjects: this.getInputObjectsFromTx(tx.tx),
       };
     }
@@ -95,7 +95,7 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
         ...tx.gasData,
         payment: [...tx.gasData.payment, ...this.getInputGasPaymentObjectsFromTx(tx.tx)],
       },
-      expiration: { None: null },
+      expiration: tx.expiration ?? { None: null },
     };
   }
 
@@ -200,7 +200,15 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
           return Inputs.Pure(amount, BCS.U64);
         }
       }
-      if (input.kind === 'Input' && (input.value.hasOwnProperty('Object') || input.value.hasOwnProperty('Pure'))) {
+      if (input.hasOwnProperty('BalanceWithdrawal')) {
+        return input;
+      }
+      if (
+        input.kind === 'Input' &&
+        (input.value.hasOwnProperty('Object') ||
+          input.value.hasOwnProperty('Pure') ||
+          input.value.hasOwnProperty('BalanceWithdrawal'))
+      ) {
         return input.value;
       }
       return Inputs.Pure(input.value, input.type === 'pure' ? BCS.U64 : BCS.ADDRESS);
@@ -214,7 +222,7 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
     if (this._suiTransaction.gasData.owner !== this._suiTransaction.sender) {
       return {
         sender: this._suiTransaction.sender,
-        expiration: { None: null },
+        expiration: this._suiTransaction.expiration ?? { None: null },
         gasData: this._suiTransaction.gasData,
         kind: {
           ProgrammableTransaction: programmableTx,
@@ -223,7 +231,7 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
     }
     return {
       sender: this._suiTransaction.sender,
-      expiration: { None: null },
+      expiration: this._suiTransaction.expiration ?? { None: null },
       gasData: {
         ...this._suiTransaction.gasData,
         payment: this._suiTransaction.gasData.payment.slice(0, MAX_GAS_OBJECTS - 1),
@@ -264,13 +272,17 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
    */
   private getInputObjectsFromTx(tx: TransferProgrammableTransaction): SuiObjectRef[] {
     const inputs = tx.inputs;
-    const transaction = tx.transactions[0] as SuiTransactionBlockType;
+    // In the sponsored path with BalanceWithdrawal, transactions[0] is MoveCall (redeem_funds)
+    // and MergeCoins/SplitCoins appears at index 1+. Search for the first relevant transaction.
+    const transaction = (tx.transactions as SuiTransactionBlockType[]).find(
+      (t) => t.kind === 'MergeCoins' || t.kind === 'SplitCoins'
+    );
 
     let args: TransactionArgument[] = [];
-    if (transaction.kind === 'MergeCoins') {
+    if (transaction?.kind === 'MergeCoins') {
       const { destination, sources } = transaction;
       args = [destination, ...sources];
-    } else if (transaction.kind === 'SplitCoins') {
+    } else if (transaction?.kind === 'SplitCoins') {
       args = [transaction.coin];
     }
 

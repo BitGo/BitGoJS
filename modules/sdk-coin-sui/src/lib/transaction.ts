@@ -6,10 +6,16 @@ import {
   Signature,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
-import { SuiProgrammableTransaction, SuiTransaction, SuiTransactionType, TxData } from './iface';
+import { MethodNames, SuiProgrammableTransaction, SuiTransaction, SuiTransactionType, TxData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils, { AppId, Intent, IntentScope, IntentVersion, isImmOrOwnedObj } from './utils';
-import { GasData, normalizeSuiAddress, normalizeSuiObjectId, SuiObjectRef } from './mystenlab/types';
+import {
+  GasData,
+  normalizeSuiAddress,
+  normalizeSuiObjectId,
+  SuiObjectRef,
+  TransactionExpiration,
+} from './mystenlab/types';
 import { SIGNATURE_SCHEME_BYTES } from './constants';
 import { Buffer } from 'buffer';
 import { fromB64, toB64 } from '@mysten/bcs';
@@ -222,6 +228,12 @@ export abstract class Transaction<T> extends BaseTransaction {
         price: Number(transactionBlock.gasConfig.price as string),
         budget: Number(transactionBlock.gasConfig.budget as string),
       },
+      // Normalize None expiration (the BCS default) to undefined so that pre-build
+      // and post-deserialization SuiTransaction objects compare equal.
+      expiration:
+        transactionBlock.expiration && !('None' in transactionBlock.expiration)
+          ? (transactionBlock.expiration as TransactionExpiration)
+          : undefined,
     };
   }
 
@@ -244,6 +256,23 @@ export abstract class Transaction<T> extends BaseTransaction {
     }
     if (transactions.some((tx) => utils.getSuiTransactionType(tx) === SuiTransactionType.WithdrawStake)) {
       return SuiTransactionType.WithdrawStake;
+    }
+    // Sponsored Transfer with fundsInAddressBalance uses a redeem_funds MoveCall alongside
+    // MergeCoins/SplitCoins on non-GasCoin objects, which would otherwise be misclassified
+    // as TokenTransfer. Distinguish from TokenTransfer+fundsInAddressBalance by checking
+    // that the redeem_funds typeArgument is the native SUI coin type (0x2::sui::SUI).
+    const suiNativeAddress = normalizeSuiAddress('0x2');
+    if (
+      transactions.some((tx) => {
+        if (tx.kind !== 'MoveCall') return false;
+        const moveCall = tx as any;
+        if (!moveCall.target?.endsWith(MethodNames.RedeemFunds)) return false;
+        const typeArg: string = moveCall.typeArguments?.[0] ?? '';
+        const [addr = '', mod = '', name = ''] = typeArg.split('::');
+        return normalizeSuiAddress(addr) === suiNativeAddress && mod === 'sui' && name === 'SUI';
+      })
+    ) {
+      return SuiTransactionType.Transfer;
     }
     if (transactions.some((tx) => utils.getSuiTransactionType(tx) === SuiTransactionType.TokenTransfer)) {
       return SuiTransactionType.TokenTransfer;

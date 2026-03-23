@@ -309,4 +309,166 @@ describe('Sui Transfer Builder', () => {
       Array.isArray(txData.inputObjects).should.equal(true);
     });
   });
+
+  describe('fundsInAddressBalance', () => {
+    const FUNDS_IN_ADDRESS_BALANCE = '5000000000'; // 5 SUI
+
+    it('should build a self-pay transfer using only address balance (empty payment)', async function () {
+      const gasDataNoPayment = {
+        ...testData.gasDataWithoutGasPayment,
+        payment: [],
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(gasDataNoPayment);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      suiTx.suiTransaction.gasData.payment.length.should.equal(0);
+
+      // Self-pay path: SplitCoins(GasCoin, [amount]) — no MoveCall needed
+      const programmableTx = suiTx.suiTransaction.tx;
+      (programmableTx.transactions[0] as any).kind.should.equal('SplitCoins');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // Round-trip: rebuild from raw
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build a self-pay transfer with coin objects + address balance', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+
+      // Self-pay path: SplitCoins(GasCoin) — protocol merges coin objects + address balance automatically
+      const programmableTx = suiTx.suiTransaction.tx;
+      (programmableTx.transactions[0] as any).kind.should.equal('SplitCoins');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+
+    it('should build a sponsored transfer with coin objects + address balance', async function () {
+      const inputObjects = testData.generateObjects(2);
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.inputObjects(inputObjects);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      suiTx.suiTransaction.gasData.owner.should.equal(testData.feePayer.address);
+
+      // Sponsored path: MoveCall(redeem_funds) + MergeCoins + SplitCoins
+      const programmableTx = suiTx.suiTransaction.tx;
+      (programmableTx.transactions[0] as any).kind.should.equal('MoveCall');
+      (programmableTx.transactions[0] as any).target.should.equal('0x2::coin::redeem_funds');
+      (programmableTx.transactions[1] as any).kind.should.equal('MergeCoins');
+      (programmableTx.transactions[2] as any).kind.should.equal('SplitCoins');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // Round-trip
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build a sponsored transfer with address balance only (no coin inputObjects)', async function () {
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      // Path 1b: withdrawal → redeem_funds → SplitCoins(addrCoin) → TransferObjects
+      // Sponsor's gas coins remain in gasData.payment; tx.gas is NOT used for the transfer amount.
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      suiTx.suiTransaction.gasData.owner.should.equal(testData.feePayer.address);
+      const programmableTx = suiTx.suiTransaction.tx;
+      (programmableTx.transactions[0] as any).kind.should.equal('MoveCall');
+      (programmableTx.transactions[0] as any).target.should.equal('0x2::coin::redeem_funds');
+      (programmableTx.transactions[1] as any).kind.should.equal('SplitCoins');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // Round-trip: rebuild from raw
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build a sponsored tx gas paid from sponsor address balance (empty payment)', async function () {
+      const inputObjects = testData.generateObjects(1);
+      const sponsoredGasDataNoPayment = {
+        payment: [],
+        owner: testData.feePayer.address,
+        price: testData.gasData.price,
+        budget: testData.gasData.budget,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(sponsoredGasDataNoPayment);
+      txBuilder.inputObjects(inputObjects);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      suiTx.suiTransaction.gasData.owner.should.equal(testData.feePayer.address);
+      suiTx.suiTransaction.gasData.payment.length.should.equal(0);
+
+      // Sponsored path with coin objects, no address balance withdrawal
+      const programmableTx = suiTx.suiTransaction.tx;
+      (programmableTx.transactions[0] as any).kind.should.equal('SplitCoins');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+  });
 });
