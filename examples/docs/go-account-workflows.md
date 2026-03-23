@@ -1,6 +1,6 @@
-# Creating Go Accounts without BitGo Express
+# Go Account Workflows
 
-This guide demonstrates how to create Go Accounts (trading wallets) using only the BitGo SDK, without requiring BitGo Express.
+This guide covers the full Go Account (trading wallet) lifecycle using the BitGo SDK directly, without requiring BitGo Express.
 
 ## Overview
 
@@ -11,6 +11,68 @@ This guide demonstrates how to create Go Accounts (trading wallets) using only t
 - Production-ready code with proper error handling
 
 ## Available Scripts
+
+### 1. SDK Approach (Recommended)
+**File:** `examples/ts/go-account/create-go-account.ts`
+
+Uses the high-level `generateWallet()` method which handles keychain creation, encryption, and wallet setup automatically.
+
+**Best for:**
+- Most production use cases
+- Quick integration
+- Users who don't need manual key management
+
+**Example:**
+```typescript
+const bitgo = new BitGoAPI({
+  accessToken: process.env.TESTNET_ACCESS_TOKEN,
+  env: 'test',
+});
+
+const coin = 'ofc';
+bitgo.register(coin, coins.Ofc.createInstance);
+
+const response = await bitgo.coin(coin).wallets().generateWallet({
+  label: 'My Go Account',
+  passphrase: 'wallet_passphrase',
+  passcodeEncryptionCode: 'encryption_code',
+  enterprise: 'your_enterprise_id',
+  type: 'trading', // Required for Go Accounts
+});
+
+const { wallet, userKeychain, encryptedWalletPassphrase } = response;
+```
+
+### 2. Advanced SDK Approach
+**File:** `examples/ts/go-account/create-go-account-advanced.ts`
+
+Provides manual control over keychain creation and wallet setup using SDK methods.
+
+**Best for:**
+- Advanced users needing custom key management
+- Integration with custom key storage systems
+- Understanding the internals of Go Account creation
+- Testing and debugging
+
+### 3. Creating Addresses for Existing Wallets
+**File:** `examples/ts/go-account/create-go-account-address.ts`
+
+Demonstrates how to create additional addresses for an existing Go Account wallet.
+
+**Best for:**
+- Adding new addresses to existing wallets
+- Creating addresses for different tokens
+- Managing multiple receiving addresses
+
+**Example:**
+```typescript
+const wallet = await bitgo.coin('ofc').wallets().get({ id: walletId });
+
+const address = await wallet.createAddress({
+  label: 'My New Address',
+  onToken: 'ofctsol:usdc' // Required for OFC wallets
+});
+```
 
 ### 4. Go Account Withdrawal — complete flow
 **File:** `examples/ts/go-account/go-account-withdrawal.ts`
@@ -77,68 +139,6 @@ const signature = await tradingAccount.signPayload({
 ```
 
 ---
-
-### 1. SDK Approach (Recommended)
-**File:** `examples/ts/go-account/create-go-account.ts`
-
-Uses the high-level `generateWallet()` method which handles keychain creation, encryption, and wallet setup automatically.
-
-**Best for:**
-- Most production use cases
-- Quick integration
-- Users who don't need manual key management
-
-**Example:**
-```typescript
-const bitgo = new BitGoAPI({
-  accessToken: process.env.TESTNET_ACCESS_TOKEN,
-  env: 'test',
-});
-
-const coin = 'ofc';
-bitgo.register(coin, coins.Ofc.createInstance);
-
-const response = await bitgo.coin(coin).wallets().generateWallet({
-  label: 'My Go Account',
-  passphrase: 'wallet_passphrase',
-  passcodeEncryptionCode: 'encryption_code',
-  enterprise: 'your_enterprise_id',
-  type: 'trading', // Required for Go Accounts
-});
-
-const { wallet, userKeychain, encryptedWalletPassphrase } = response;
-```
-
-### 2. Advanced SDK Approach
-**File:** `examples/ts/go-account/create-go-account-advanced.ts`
-
-Provides manual control over keychain creation and wallet setup using SDK methods.
-
-**Best for:**
-- Advanced users needing custom key management
-- Integration with custom key storage systems
-- Understanding the internals of Go Account creation
-- Testing and debugging
-
-### 3. Creating Addresses for Existing Wallets
-**File:** `examples/ts/go-account/create-go-account-address.ts`
-
-Demonstrates how to create additional addresses for an existing Go Account wallet.
-
-**Best for:**
-- Adding new addresses to existing wallets
-- Creating addresses for different tokens
-- Managing multiple receiving addresses
-
-**Example:**
-```typescript
-const wallet = await bitgo.coin('ofc').wallets().get({ id: walletId });
-
-const address = await wallet.createAddress({
-  label: 'My New Address',
-  onToken: 'ofctsol:usdc' // Required for OFC wallets
-});
-```
 
 ## Detailed Examples
 
