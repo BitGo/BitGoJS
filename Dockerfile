@@ -45,8 +45,8 @@ COPY --from=builder /tmp/bitgo/modules/abstract-lightning /var/modules/abstract-
 COPY --from=builder /tmp/bitgo/modules/sdk-core /var/modules/sdk-core/
 COPY --from=builder /tmp/bitgo/modules/sdk-lib-mpc /var/modules/sdk-lib-mpc/
 COPY --from=builder /tmp/bitgo/modules/sdk-opensslbytes /var/modules/sdk-opensslbytes/
-COPY --from=builder /tmp/bitgo/modules/secp256k1 /var/modules/secp256k1/
 COPY --from=builder /tmp/bitgo/modules/sjcl /var/modules/sjcl/
+COPY --from=builder /tmp/bitgo/modules/secp256k1 /var/modules/secp256k1/
 COPY --from=builder /tmp/bitgo/modules/statics /var/modules/statics/
 COPY --from=builder /tmp/bitgo/modules/utxo-lib /var/modules/utxo-lib/
 COPY --from=builder /tmp/bitgo/modules/blake2b /var/modules/blake2b/
@@ -145,8 +145,8 @@ RUN cd /var/modules/abstract-lightning && yarn link && \
 cd /var/modules/sdk-core && yarn link && \
 cd /var/modules/sdk-lib-mpc && yarn link && \
 cd /var/modules/sdk-opensslbytes && yarn link && \
-cd /var/modules/secp256k1 && yarn link && \
 cd /var/modules/sjcl && yarn link && \
+cd /var/modules/secp256k1 && yarn link && \
 cd /var/modules/statics && yarn link && \
 cd /var/modules/utxo-lib && yarn link && \
 cd /var/modules/blake2b && yarn link && \
@@ -248,8 +248,8 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-core && \
     yarn link @bitgo/sdk-lib-mpc && \
     yarn link @bitgo/sdk-opensslbytes && \
-    yarn link @bitgo/secp256k1 && \
     yarn link @bitgo/sjcl && \
+    yarn link @bitgo/secp256k1 && \
     yarn link @bitgo/statics && \
     yarn link @bitgo/utxo-lib && \
     yarn link @bitgo/blake2b && \
