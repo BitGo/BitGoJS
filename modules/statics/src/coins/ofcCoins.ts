@@ -2310,7 +2310,7 @@ export const ofcCoins = [
     undefined,
     [CoinFeature.STABLECOIN]
   ),
-  ofcBscToken('6a1e8b8c-4d7e-4f9a-9d8f-f6e72f8c7e65', 'ofcbsc:solv', 'SOLV Protocol', 9, UnderlyingAsset['bsc:solv']),
+  ofcBscToken('6a1e8b8c-4d7e-4f9a-9d8f-f6e72f8c7e65', 'ofcbsc:solv', 'SOLV Protocol', 18, UnderlyingAsset['bsc:solv']),
   ofcBscToken('6d96470a-3c8e-44de-a18e-9dd224d4bcc0', 'ofcbsc:stable', 'Stable', 18, UnderlyingAsset['bsc:stable']),
   ofcBscToken('f8c3d7b5-2d9e-4b3f-8a1e-7c6d9e3a2f4b', 'ofcbsc:brise', 'Bitrise Token', 9, UnderlyingAsset['bsc:brise']),
   ofcBscToken('2e9f4c6b-8a7d-4b2e-9d3f-7c6a5e8b1f2a', 'ofcbsc:bsw', 'Biswap', 18, UnderlyingAsset['bsc:bsw']),
