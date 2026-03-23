@@ -516,6 +516,7 @@ export const PrebuildAndSignTransactionApiResponse = {
  *
  * @tag express
  * @operationId express.v2.wallet.prebuildandsigntransaction
+ * @public
  */
 export const PostPrebuildAndSignTransaction = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/prebuildAndSignTransaction',

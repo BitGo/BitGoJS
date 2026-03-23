@@ -2,6 +2,9 @@ import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 
+/**
+ * Request body containing wallet configuration and key settings
+ */
 export const SimpleCreateRequestBody = {
   /** Wallet passphrase to encrypt user and backup keys with (required) */
   passphrase: t.string,
@@ -73,6 +76,7 @@ export const SimpleCreateResponse = t.intersection([
  *
  * @operationId express.v1.wallet.simplecreate
  * @tag express
+ * @public
  */
 export const PostSimpleCreate = httpRoute({
   path: '/api/v1/wallets/simplecreate',

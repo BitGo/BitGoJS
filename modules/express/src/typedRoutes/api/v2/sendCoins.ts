@@ -382,6 +382,7 @@ export const SendCoinsRequestBody = {
  *
  * @operationId express.v2.wallet.sendcoins
  * @tag express
+ * @public
  */
 export const PostSendCoins = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/sendcoins',

@@ -7,6 +7,11 @@ export const AcceptShareRequestParams = {
   shareId: t.string,
 };
 
+/**
+ * Request body for accepting a wallet share
+ *
+ * Contains authentication credentials and key configuration options for accepting wallet share invitations.
+ */
 export const AcceptShareRequestBody = {
   /**
    * User's password for authentication.
@@ -87,6 +92,7 @@ export const AcceptShareResponse = t.type({
  *
  * @operationId express.v1.wallet.acceptShare
  * @tag express
+ * @public
  */
 export const PostAcceptShare = httpRoute({
   path: '/api/v1/walletshare/{shareId}/acceptShare',
