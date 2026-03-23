@@ -421,8 +421,8 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   /* typeof ExpressLightningUnlockWalletApiSpec & */
   /* typeof ExpressLightningWalletWithdrawApiSpec & */
   /* typeof ExpressV2WalletSendManyApiSpec & */
-  typeof ExpressV2WalletSendCoinsApiSpec &
-  /* typeof ExpressOfcSignPayloadApiSpec & */
+  typeof ExpressV2WalletSendCoinsApiSpec
+  /* & typeof ExpressOfcSignPayloadApiSpec & */
   /* typeof ExpressWalletRecoverTokenApiSpec & */
   /* typeof ExpressWalletEnableTokensApiSpec & */
   /* typeof ExpressCoinSigningApiSpec & */
