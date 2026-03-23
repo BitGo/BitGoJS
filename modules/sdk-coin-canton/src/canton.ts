@@ -28,6 +28,7 @@ import * as querystring from 'querystring';
 import { TransactionBuilderFactory } from './lib';
 import { KeyPair as CantonKeyPair } from './lib/keyPair';
 import utils from './lib/utils';
+import { WalletInitBroadcastData, TransactionBroadcastData } from './lib/iface';
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
@@ -100,6 +101,108 @@ export class Canton extends BaseCoin {
 
   getMPCAlgorithm(): MPCAlgorithm {
     return 'eddsa';
+  }
+
+  /**
+   * Returns the extended payload that needs to be signed for Canton EdDSA operations.
+   * Canton requires signing a structured payload containing transaction metadata and signable hash,
+   * not just the serialized transaction.
+   *
+   * @param {string} serializedTx - the unsigned transaction in broadcast format (base64)
+   * @returns {Promise<Buffer>} - the extended payload (topology + hash, or prepared tx + hash)
+   */
+  async getSignablePayload(serializedTx: string): Promise<Buffer> {
+    try {
+      // Decode the serialized transaction
+      const decoded = JSON.parse(Buffer.from(serializedTx, 'base64').toString('utf8')) as
+        | WalletInitBroadcastData
+        | TransactionBroadcastData;
+
+      // Extract the signable payload (preparedTransactionHash in base64 format)
+      let signableHex = '';
+      if ('prepareCommandResponse' in decoded && decoded.prepareCommandResponse) {
+        signableHex = Buffer.from(decoded.prepareCommandResponse.preparedTransactionHash, 'base64').toString('hex');
+      } else {
+        // Fallback: if unable to extract, return empty buffer
+        signableHex = '';
+      }
+
+      // Build extended payload based on transaction type
+      if ('preparedParty' in decoded && decoded.preparedParty && decoded.preparedParty.topologyTransactions) {
+        // WalletInitBuilder format: [txnType] || itemCount || [lenOfTx || tx]... || signableHex
+        return this.buildWalletInitPayload(decoded as WalletInitBroadcastData, signableHex);
+      }
+
+      // TransactionBuilder format: itemCount || lenOfTx || preparedTransaction || signableHex
+      if ('prepareCommandResponse' in decoded && decoded.prepareCommandResponse?.preparedTransaction) {
+        return this.buildTransactionPayload(decoded as TransactionBroadcastData, signableHex);
+      }
+
+      // Fallback: return signableHex only if no extended format detected
+      return Buffer.from(signableHex, 'hex');
+    } catch (e) {
+      // If parsing fails, fall back to base implementation
+      return Buffer.from(serializedTx);
+    }
+  }
+
+  /**
+   * Build WalletInitBuilder extended payload format.
+   * Format: [txnType (optional)] || itemCount (4 bytes LE) || [lenOfTx (4 bytes LE) || tx]... || signableHex
+   */
+  private buildWalletInitPayload(decoded: WalletInitBroadcastData, signableHex: string): Buffer {
+    const shouldIncludeTxnType = decoded.preparedParty.shouldIncludeTxnType ?? false;
+    const topologyTransactions = decoded.preparedParty.topologyTransactions;
+    const itemCount = topologyTransactions.length + 1;
+
+    const parts: Buffer[] = [];
+
+    // Add txnType if required (version >0.5.x)
+    if (shouldIncludeTxnType) {
+      const txnTypeBuff = Buffer.alloc(4);
+      txnTypeBuff.writeUInt32LE(0, 0);
+      parts.push(txnTypeBuff);
+    }
+
+    // Add item count
+    const itemCountBuff = Buffer.alloc(4);
+    itemCountBuff.writeUInt32LE(itemCount, 0);
+    parts.push(itemCountBuff);
+
+    // Add topology transactions with length prefixes
+    for (const tx of topologyTransactions) {
+      const txBuffer = Buffer.from(tx, 'base64');
+      const lenBuff = Buffer.alloc(4);
+      lenBuff.writeUInt32LE(txBuffer.length, 0);
+      parts.push(lenBuff, txBuffer);
+    }
+
+    // Add signable hash
+    parts.push(Buffer.from(signableHex, 'hex'));
+
+    return Buffer.concat(parts);
+  }
+
+  /**
+   * Build TransactionBuilder extended payload format.
+   * Format: itemCount (4 bytes LE) || lenOfTx (4 bytes LE) || preparedTransaction || signableHex
+   */
+  private buildTransactionPayload(decoded: TransactionBroadcastData, signableHex: string): Buffer {
+    const preparedTx = decoded.prepareCommandResponse?.preparedTransaction;
+    if (!preparedTx) {
+      return Buffer.from(signableHex, 'hex');
+    }
+
+    const preparedTxBuffer = Buffer.from(preparedTx, 'base64');
+    const itemCount = 2; // prepared transaction & signable payload
+
+    const itemCountBuff = Buffer.alloc(4);
+    itemCountBuff.writeUInt32LE(itemCount, 0);
+
+    const lenBuff = Buffer.alloc(4);
+    lenBuff.writeUInt32LE(preparedTxBuffer.length, 0);
+
+    return Buffer.concat([itemCountBuff, lenBuff, preparedTxBuffer, Buffer.from(signableHex, 'hex')]);
   }
 
   /** @inheritDoc */
