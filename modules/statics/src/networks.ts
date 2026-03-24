@@ -1685,7 +1685,7 @@ class KavaEVM extends Mainnet implements EthereumNetwork {
 }
 
 class LineaETH extends Mainnet implements EthereumNetwork {
-  name = 'Linea Ethereum Testnet';
+  name = 'Linea Ethereum Mainnet';
   family = CoinFamily.LINEAETH;
   explorerUrl = 'https://lineascan.build/tx/';
   accountExplorerUrl = 'https://lineascan.build/address/';
