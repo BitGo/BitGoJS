@@ -3734,4 +3734,14 @@ export const solTokens = [
     UnderlyingAsset['sol:kwyld-cash'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '6dfa17b5-774f-4627-b91b-cae3e47c5c8b',
+    'sol:sonic',
+    'Sonic SVM',
+    9,
+    'SonicxvLud67EceaEzCLRnMTBqzYUUYNr93DBkBdDES',
+    'SonicxvLud67EceaEzCLRnMTBqzYUUYNr93DBkBdDES',
+    UnderlyingAsset['sol:sonic'],
+    SOL_TOKEN_FEATURES
+  ),
 ];

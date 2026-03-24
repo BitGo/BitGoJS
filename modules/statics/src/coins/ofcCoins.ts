@@ -817,6 +817,8 @@ export const ofcCoins = [
     UnderlyingAsset['sol:usdca'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  ofcsolToken('eac1b075-0c6e-4655-8b86-4ebe0f1f9552', 'ofcsol:sonic', 'Sonic SVM', 9, UnderlyingAsset['sol:sonic']),
+
   ofcsolToken('a6b1c9d4-8e5f-4a0c-9b3d-7f9e0a4c6b8d', 'ofcsol:prime', 'HASTRA PRIME', 6, UnderlyingAsset['sol:prime']),
   ofcsolToken(
     'b7c2d0e5-9f6a-4b1d-9c4e-8a0f1b5d7c9e',
@@ -4074,6 +4076,10 @@ export const ofcCoins = [
   ),
   // New BSC OFC token
   ofcBscToken('b4200c85-f550-44d6-a6cb-a590f19773b0', 'ofcbsc:sto', 'StakeStone', 18, UnderlyingAsset['bsc:sto']),
+  ofcBscToken('167c65f6-c097-462f-99ec-18ab234a935b', 'ofcbsc:mito', 'Mitosis', 18, UnderlyingAsset['bsc:mito']),
+  ofcBscToken('b1ac3a84-4fa7-4947-8e41-d31a15ee7d97', 'ofcbsc:shell', 'MyShell', 18, UnderlyingAsset['bsc:shell']),
+  ofcBscToken('5c0d0323-65eb-4924-b27f-2eece61564c6', 'ofcbsc:hemi', 'Hemi', 18, UnderlyingAsset['bsc:hemi']),
+  ofcBscToken('0b596f43-f29e-48a1-a3ac-ea91b2236038', 'ofcbsc:cookie', 'Cookie DAO', 18, UnderlyingAsset['bsc:cookie']),
   // New Arbitrum OFC token
   ofcArbethErc20(
     'd58490c0-07d2-4642-8af7-efa2453392e9',
@@ -4109,6 +4115,7 @@ export const ofcCoins = [
   ofcSuiToken('1e01eb3d-2573-4662-aa5e-4c390e4a9b38', 'ofcsui:dmc', 'DeLorean', 9, UnderlyingAsset['sui:dmc']),
   ofcSuiToken('e4f5a6b7-8c9d-4eaf-82a3-4b5c6d7e8f9a', 'ofcsui:mmt', 'Momentum', 9, UnderlyingAsset['sui:mmt']),
   ofcSuiToken('3feb51ae-9625-427a-badb-acd57d3d72f5', 'ofcsui:usdsui', 'Sui Dollar', 6, UnderlyingAsset['sui:usdsui']),
+  ofcSuiToken('1d6bb15c-6f71-47e2-a42c-1bc138c3c3b4', 'ofcsui:blue', 'Bluefin', 9, UnderlyingAsset['sui:blue']),
   ofcSuiToken(
     'd9b1069e-3de7-44f0-822c-9c3dd116d26b',
     'ofcsui:haedal',

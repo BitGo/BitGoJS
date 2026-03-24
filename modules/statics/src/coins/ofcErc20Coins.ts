@@ -5351,6 +5351,34 @@ export const tOfcErc20Coins = [
     'baseeth'
   ),
   ofcerc20(
+    'c935401a-aad4-4f71-a34a-e0b26f56c4cc',
+    'ofcbaseeth:c',
+    'Chainbase',
+    18,
+    UnderlyingAsset['baseeth:c'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    'f7d35708-7aee-4b15-8b6b-0cf3580a5044',
+    'ofcbaseeth:carv',
+    'Carv',
+    18,
+    UnderlyingAsset['baseeth:carv'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
     'e083e24a-292c-48e1-8edb-e15ebd6c601b',
     'ofcbaseeth:mey',
     'Mey Network',
@@ -6155,6 +6183,22 @@ export const tOfcErc20Coins = [
     'Epic Chain',
     18,
     underlyingAssetForSymbol('eth:epic')
+  ),
+  ofcerc20('88c8c5ca-9331-49a0-94da-83b208357fa8', 'ofceth:el', 'Elysia', 18, underlyingAssetForSymbol('eth:el')),
+  ofcerc20(
+    'a4b51a0a-fae2-49e7-bf50-356ee3dab410',
+    'ofceth:kernel',
+    'KernelDAO',
+    18,
+    underlyingAssetForSymbol('eth:kernel')
+  ),
+  ofcerc20('9d0606f4-72d3-4ebe-811b-680ca5e24203', 'ofceth:zkc', 'Boundless', 18, underlyingAssetForSymbol('eth:zkc')),
+  ofcerc20(
+    '2bde101e-6e6d-464e-902c-3ce3fb2d0d8e',
+    'ofceth:tree',
+    'Treehouse',
+    18,
+    underlyingAssetForSymbol('eth:tree')
   ),
   ofcerc20(
     '22d66acc-976b-4dfb-be64-c6c963938424',

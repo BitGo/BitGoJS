@@ -14590,6 +14590,38 @@ export const erc20Coins = [
     '0x6c76de483f1752ac8473e2b4983a873991e70da7',
     UnderlyingAsset['eth:btr']
   ),
+  erc20(
+    '2ebd4f80-ee3f-4792-8ab5-4c6f84dc30ed',
+    'eth:el',
+    'ELysia',
+    18,
+    '0x2781246fe707bb15cee3e5ea354e2154a2877b16',
+    UnderlyingAsset['eth:el']
+  ),
+  erc20(
+    '6ad92e47-26c4-4d1c-913f-3bc7c9f94570',
+    'eth:kernel',
+    'KernelDAO',
+    18,
+    '0x3f80b1c54ae920be41a77f8b902259d48cf24ccf',
+    UnderlyingAsset['eth:kernel']
+  ),
+  erc20(
+    '86fd483d-8fc0-4926-9b17-5ea8a5c095d6',
+    'eth:tree',
+    'Treehouse',
+    18,
+    '0x77146784315ba81904d654466968e3a7c196d1f3',
+    UnderlyingAsset['eth:tree']
+  ),
+  erc20(
+    '60ce23fb-c841-4bc2-8a92-4ce908998c9d',
+    'eth:zkc',
+    'Boundless',
+    18,
+    '0x000006c2a22ff4a44ff1f5d0f2ed65f781f55555',
+    UnderlyingAsset['eth:zkc']
+  ),
   terc20(
     '0c333619-e5a6-4f9d-8bbc-5b0e5dc64d03',
     'hteth:grtxp',
