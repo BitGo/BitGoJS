@@ -338,6 +338,11 @@ type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = 
    */
   returnLegacyFormat?: boolean;
   wallet?: UtxoWallet;
+  /**
+   * When true (default), extract finalized PSBT to legacy transaction format.
+   * When false, return finalized PSBT. Useful for testing to keep transactions in PSBT format.
+   */
+  extractTransaction?: boolean;
 };
 
 export type SignTransactionOptions<TNumber extends number | bigint = number> = UtxoBaseSignTransactionOptions<TNumber> &
@@ -405,6 +410,11 @@ export abstract class AbstractUtxoCoin
   abstract name: UtxoCoinName;
 
   public readonly amountType: 'number' | 'bigint';
+
+  protected readonly supportedTxFormats: { readonly psbt: boolean; readonly legacy: boolean } = {
+    psbt: true,
+    legacy: false,
+  };
 
   protected constructor(bitgo: BitGoBase, amountType: 'number' | 'bigint' = 'number') {
     super(bitgo);
@@ -582,8 +592,15 @@ export abstract class AbstractUtxoCoin
     }
 
     if (utxolib.bitgo.isPsbt(input)) {
+      if (!this.supportedTxFormats.psbt) {
+        throw new ErrorDeprecatedTxFormat('psbt');
+      }
       return decodePsbtWith(input, this.name, decodeWith);
     } else {
+      // Legacy format transactions are deprecated. This will be an unconditional error in the future.
+      if (!this.supportedTxFormats.legacy) {
+        throw new ErrorDeprecatedTxFormat('legacy');
+      }
       if (decodeWith !== 'utxolib') {
         console.error('received decodeWith hint %s, ignoring for legacy transaction', decodeWith);
       }
