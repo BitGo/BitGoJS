@@ -76,7 +76,7 @@ export const SimpleCreateResponse = t.intersection([
  *
  * @operationId express.v1.wallet.simplecreate
  * @tag Express
- * @public
+ * @private
  */
 export const PostSimpleCreate = httpRoute({
   path: '/api/v1/wallets/simplecreate',

@@ -2,7 +2,7 @@ import * as t from 'io-ts';
 import { apiSpec } from '@api-ts/io-ts-http';
 import * as express from 'express';
 
-import { GetPing } from './common/ping';
+import { GetPingV2 } from './v2/ping';
 import { GetPingExpress } from './common/pingExpress';
 import { PostLogin } from './common/login';
 import { PostDecrypt } from './common/decrypt';
@@ -61,7 +61,7 @@ import { PostIsWalletAddress } from './v2/isWalletAddress';
 // BATCH 1: Uncommented
 export const ExpressPingApiSpec = apiSpec({
   'express.v2.ping': {
-    get: GetPing,
+    get: GetPingV2,
   },
 });
 

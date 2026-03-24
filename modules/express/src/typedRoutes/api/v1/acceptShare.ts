@@ -92,7 +92,7 @@ export const AcceptShareResponse = t.type({
  *
  * @operationId express.v1.wallet.acceptShare
  * @tag Express
- * @public
+ * @private
  */
 export const PostAcceptShare = httpRoute({
   path: '/api/v1/walletshare/{shareId}/acceptShare',

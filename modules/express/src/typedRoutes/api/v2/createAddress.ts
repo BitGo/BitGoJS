@@ -69,7 +69,7 @@ export const CreateAddressResponse = {
  * deploy forwarder contracts with configurable gas parameters.
  *
  * @operationId express.v2.wallet.createAddress
- * @tag express
+ * @tag Express
  * @public
  */
 export const PostCreateAddress = httpRoute({
