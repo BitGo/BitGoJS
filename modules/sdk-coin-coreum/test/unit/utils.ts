@@ -1,7 +1,8 @@
 import { NetworkType } from '@bitgo/statics';
 import should from 'should';
 import { CoreumUtils } from '../../src/lib/utils';
-import { blockHash, mainnetCoinAmounts, txIds } from '../resources/coreum';
+import { mainnetAccountAddressRegex, testnetAccountAddressRegex } from '../../src/lib/constants';
+import { blockHash, mainnetAddress, mainnetCoinAmounts, txIds } from '../resources/coreum';
 import { testnetCoinAmounts } from '../resources/tcoreum';
 
 describe('utils', () => {
@@ -34,6 +35,32 @@ describe('utils', () => {
     should.equal(mainnetUtils.isValidTransactionId(txIds.hash1.slice(3)), false);
     should.equal(mainnetUtils.isValidTransactionId(txIds.hash3 + '00'), false);
     should.equal(mainnetUtils.isValidTransactionId('dalij43ta0ga2dadda02'), false);
+  });
+
+  it('should accept 32-byte (group module / smart contract) addresses', () => {
+    should.equal(mainnetUtils.isValidAddress(mainnetAddress.address32byte1), true);
+    should.equal(mainnetUtils.isValidAddress(`${mainnetAddress.address32byte1}?memoId=1`), true);
+  });
+
+  it('should reject 32-byte addresses with an invalid checksum', () => {
+    const corrupted = mainnetAddress.address32byte1.slice(0, -1) + 'q';
+    should.equal(mainnetUtils.isValidAddress(corrupted), false);
+  });
+
+  it('should reject addresses with intermediate data lengths (not 38 or 58 chars)', () => {
+    const bech32Chars = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+    const intermediateData = bech32Chars.repeat(2).slice(0, 48);
+    should.equal(mainnetAccountAddressRegex.test(`core1${intermediateData}`), false);
+    should.equal(testnetAccountAddressRegex.test(`testcore1${intermediateData}`), false);
+  });
+
+  it('testnet regex should accept both 20-byte and 32-byte address lengths', () => {
+    const data38 = 'qpzry9x8gf2tvdw0s3jn54khce6mua7lqpzry9';
+    should.equal(testnetAccountAddressRegex.test(`testcore1${data38}`), true);
+    const data58 = 'qpzry9x8gf2tvdw0s3jn54khce6mua7lqpzry9x8gf2tvdw0s3jn54khce';
+    should.equal(testnetAccountAddressRegex.test(`testcore1${data58}`), true);
+    const data39 = 'qpzry9x8gf2tvdw0s3jn54khce6mua7lqpzry9x';
+    should.equal(testnetAccountAddressRegex.test(`testcore1${data39}`), false);
   });
 
   it('validateAmount', function () {
