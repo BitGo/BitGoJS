@@ -1949,6 +1949,7 @@ export enum UnderlyingAsset {
   'sol:usdc' = 'sol:usdc',
   'sol:agri' = 'sol:agri',
   'sol:usdca' = 'sol:usdca',
+  'sol:sonic' = 'sol:sonic',
   USCC = 'uscc',
   USDC = 'usdc',
   'USDC-POS-WORMHOLE' = 'usdc-pos-wormhole',
@@ -2905,6 +2906,10 @@ export enum UnderlyingAsset {
   'bsc:iost' = 'bsc:iost',
   'bsc:sto' = 'bsc:sto',
   'bsc:pt-cusdo-29oct2026' = 'bsc:pt-cusdo-29oct2026',
+  'bsc:mito' = 'bsc:mito',
+  'bsc:shell' = 'bsc:shell',
+  'bsc:hemi' = 'bsc:hemi',
+  'bsc:cookie' = 'bsc:cookie',
 
   // BSC NFTs
   // generic NFTs
@@ -3038,6 +3043,8 @@ export enum UnderlyingAsset {
   'baseeth:xsgd' = 'baseeth:xsgd',
   'baseeth:xusd' = 'baseeth:xusd',
   'baseeth:home' = 'baseeth:home',
+  'baseeth:c' = 'baseeth:c',
+  'baseeth:carv' = 'baseeth:carv',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -3510,7 +3517,7 @@ export enum UnderlyingAsset {
   'sui:dmc' = 'sui:dmc',
   'sui:mmt' = 'sui:mmt',
   'sui:usdsui' = 'sui:usdsui',
-
+  'sui:blue' = 'sui:blue',
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',
   'tsui:wal' = 'tsui:wal',
@@ -3670,7 +3677,10 @@ export enum UnderlyingAsset {
   'eth:kite' = 'eth:kite',
   'eth:sahara' = 'eth:sahara',
   'eth:epic' = 'eth:epic',
-
+  'eth:el' = 'eth:el',
+  'eth:kernel' = 'eth:kernel',
+  'eth:tree' = 'eth:tree',
+  'eth:zkc' = 'eth:zkc',
   // ADA testnet tokens
   'tada:water' = 'tada:water',
   'tada:tusda' = 'tada:tusda',

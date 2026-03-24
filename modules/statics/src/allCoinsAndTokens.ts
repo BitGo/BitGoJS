@@ -3986,6 +3986,24 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:home'],
     Networks.main.basechain
   ),
+  erc20Token(
+    '0e7dc822-c2e2-430b-9357-42bc125744a5',
+    'baseeth:c',
+    'Chainbase',
+    18,
+    '0xba12bc7b210e61e5d3110b997a63ea216e0e18f7',
+    UnderlyingAsset['baseeth:c'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'd79ded43-b6f9-45ca-9e71-8284b315ee2d',
+    'baseeth:carv',
+    'Carv',
+    18,
+    '0xc08cd26474722ce93f4d0c34d16201461c10aa8c',
+    UnderlyingAsset['baseeth:carv'],
+    Networks.main.basechain
+  ),
 
   // XDC mainnet tokens
   xdcErc20(
@@ -6859,6 +6877,18 @@ export const allCoinsAndTokens = [
     '0x44f838219cf67b058f3b37907b655f226153c18e33dfcd0da559a844fea9b1c1::usdsui::USDSUI',
     UnderlyingAsset['sui:usdsui'],
     [...SUI_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  suiToken(
+    'c0f3db23-310b-4764-af0b-ede10f843db4',
+    'sui:blue',
+    'Bluefin',
+    9,
+    '0xe1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca',
+    'blue',
+    'BLUE',
+    '0xe1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca::blue::BLUE',
+    UnderlyingAsset['sui:blue'],
+    SUI_TOKEN_FEATURES
   ),
   tsuiToken(
     '0b8a7919-c37e-4be8-8338-7fc13c6c875e',
