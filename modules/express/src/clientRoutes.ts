@@ -1013,6 +1013,41 @@ async function handleV2SendMany(req: ExpressApiRouteRequest<'express.v2.wallet.s
 }
 
 /**
+ * handle get account resources
+ * @param req
+ */
+async function handleV2AccountResources(req: ExpressApiRouteRequest<'express.v2.wallet.accountresources', 'get'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  const addresses = Array.isArray(req.decoded.addresses) ? req.decoded.addresses : [req.decoded.addresses];
+  return wallet.getAccountResources({
+    addresses,
+    destinationAddress: req.decoded.destinationAddress,
+  });
+}
+
+/**
+ * handle get resource delegations
+ * @param req
+ */
+async function handleV2ResourceDelegations(
+  req: ExpressApiRouteRequest<'express.v2.wallet.resourcedelegations', 'get'>
+) {
+  const bitgo = req.bitgo;
+  const coin = req.decoded.coin;
+  const walletId = req.decoded.id;
+  const query: Record<string, string> = {};
+  if (req.decoded.type) query.type = req.decoded.type;
+  if (req.decoded.resource) query.resource = req.decoded.resource;
+  if (req.decoded.limit) query.limit = req.decoded.limit;
+  return bitgo
+    .get(bitgo.url(`/${coin}/wallet/${walletId}/resourcedelegations`, 2))
+    .query(query)
+    .result();
+}
+
+/**
  *  payload meant for prebuildAndSignTransaction() in sdk-core which
  * validates the payload and makes the appropriate request to WP to
  * build, sign, and send a tx.
@@ -1768,6 +1803,16 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.v2.wallet.consolidateaccount', [
     prepareBitGo(config),
     typedPromiseWrapper(handleV2ConsolidateAccount),
+  ]);
+
+  // TRX resource delegation
+  router.get('express.v2.wallet.accountresources', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2AccountResources),
+  ]);
+  router.get('express.v2.wallet.resourcedelegations', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2ResourceDelegations),
   ]);
 
   // Miscellaneous
