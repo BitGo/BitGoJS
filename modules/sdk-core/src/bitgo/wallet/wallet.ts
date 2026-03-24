@@ -1483,12 +1483,12 @@ export class Wallet implements IWallet {
       throw new Error('addresses array cannot be empty');
     }
 
-    const query: GetAccountResourcesOptions = { addresses };
+    const body: GetAccountResourcesOptions = { addresses };
     if (destinationAddress) {
-      query.destinationAddress = destinationAddress;
+      body.destinationAddress = destinationAddress;
     }
 
-    return this.bitgo.get(this.url('/getAccountResources')).query(query).result();
+    return this.bitgo.post(this.url('/getAccountResources')).send(body).result();
   }
 
   async updateWalletBuildDefaults(params: UpdateBuildDefaultOptions): Promise<unknown> {
