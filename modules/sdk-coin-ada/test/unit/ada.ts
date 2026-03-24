@@ -674,6 +674,85 @@ describe('ADA', function () {
       should.deepEqual(Number(txJson.outputs[0].amount) + fee, testnetUTXO.UTXO_1.value);
     });
 
+    it('should recover ADA plus token UTXOs - token and ADA both appear in outputs (unsigned sweep)', async function () {
+      callBack
+        .withArgs('address_info', { _addresses: [wrwUser.walletAddress0] })
+        .resolves(endpointResponses.addressInfoResponse.ADAAndTokenUTXOs);
+
+      const res = await basecoin.recover({
+        bitgoKey: wrwUser.bitgoKey,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      const unsignedTx = res.txRequests[0].transactions[0].unsignedTx;
+      unsignedTx.should.hasOwnProperty('serializedTx');
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(unsignedTx.serializedTx);
+      const txJson = tx.toJson();
+
+      txJson.inputs.length.should.equal(2);
+      should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson.inputs[1].transaction_id, testnetUTXO.UTXO_TOKEN.tx_hash);
+
+      txJson.outputs.length.should.equal(2);
+
+      const tokenPolicyId = '2533cca6eb42076e144e9f2772c390dece9fce173bc38c72294b3924';
+      const tokenEncodedAssetName = '5741544552';
+      const tokenQuantity = '111';
+      const minADAForToken = 1500000;
+
+      const tokenOutput = txJson.outputs.find((o) => o.multiAssets !== undefined);
+      should.exist(tokenOutput);
+      should.deepEqual(tokenOutput!.address, destAddr);
+      should.deepEqual(Number(tokenOutput!.amount), minADAForToken);
+      const expectedPolicyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(tokenPolicyId, 'hex'));
+      const expectedAssetName = CardanoWasm.AssetName.new(Buffer.from(tokenEncodedAssetName, 'hex'));
+      (tokenOutput!.multiAssets as CardanoWasm.MultiAsset)
+        .get_asset(expectedPolicyId, expectedAssetName)
+        .to_str()
+        .should.equal(tokenQuantity);
+
+      const adaOutput = txJson.outputs.find((o) => o.multiAssets === undefined);
+      should.exist(adaOutput);
+      should.deepEqual(adaOutput!.address, destAddr);
+      const fee = Number(tx.explainTransaction().fee.fee);
+      const totalBalance = testnetUTXO.UTXO_1.value + testnetUTXO.UTXO_TOKEN.value;
+      should.deepEqual(Number(adaOutput!.amount), totalBalance - minADAForToken - fee);
+
+      const explained = tx.explainTransaction();
+      const explainedTokenOutput = explained.outputs.find((o) => o.amount === minADAForToken.toString());
+      should.exist(explainedTokenOutput);
+
+      // inputs and outputs in parsedTx should carry multiAssets
+      const parsedTxInputs = res.txRequests[0].transactions[0].unsignedTx.parsedTx.inputs as {
+        address: string;
+        valueString: string;
+        multiAssets?: { policy_id: string; asset_name: string; quantity: string }[];
+      }[];
+      parsedTxInputs.length.should.equal(1);
+      should.exist(parsedTxInputs[0].multiAssets);
+      parsedTxInputs[0].multiAssets!.length.should.equal(1);
+      should.deepEqual(parsedTxInputs[0].multiAssets![0].policy_id, tokenPolicyId);
+      should.deepEqual(parsedTxInputs[0].multiAssets![0].asset_name, tokenEncodedAssetName);
+      should.deepEqual(parsedTxInputs[0].multiAssets![0].quantity, tokenQuantity);
+
+      const parsedTxOutputs = res.txRequests[0].transactions[0].unsignedTx.parsedTx.outputs as {
+        address: string;
+        valueString: string;
+        multiAssets?: { policy_id: string; asset_name: string; quantity: string }[];
+      }[];
+      const parsedTokenOutput = parsedTxOutputs.find((o) => o.multiAssets !== undefined);
+      should.exist(parsedTokenOutput);
+      parsedTokenOutput!.multiAssets!.length.should.equal(1);
+      should.deepEqual(parsedTokenOutput!.multiAssets![0].policy_id, tokenPolicyId);
+      should.deepEqual(parsedTokenOutput!.multiAssets![0].asset_name, tokenEncodedAssetName);
+      should.deepEqual(parsedTokenOutput!.multiAssets![0].quantity, tokenQuantity);
+      // pure ADA output should not have multiAssets
+      const parsedAdaOutput = parsedTxOutputs.find((o) => o.multiAssets === undefined);
+      should.exist(parsedAdaOutput);
+    });
+
     it('should recover ADA plus token UTXOs - token and ADA both appear in outputs (signed)', async function () {
       callBack
         .withArgs('address_info', { _addresses: [wrwUser.walletAddress0] })
