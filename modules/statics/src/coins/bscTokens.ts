@@ -1570,4 +1570,40 @@ export const bscTokens = [
     UnderlyingAsset['bsc:pt-cusdo-29oct2026'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    '54f999b6-1022-47e1-a3b3-f946c5c746ab',
+    'bsc:mito',
+    'Mistosis',
+    18,
+    '0x8e1e6bf7e13c400269987b65ab2b5724b016caef',
+    UnderlyingAsset['bsc:mito'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '3648531c-b448-498e-828a-5fb6147ca8c6',
+    'bsc:shell',
+    'MyShell',
+    18,
+    '0xf2c88757f8d03634671208935974b60a2a28bdb3',
+    UnderlyingAsset['bsc:shell'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'ff180e4c-40cb-4988-ad84-a5a90ec86df1',
+    'bsc:hemi',
+    'Hemi',
+    18,
+    '0x5ffd0eadc186af9512542d0d5e5eafc65d5afc5b',
+    UnderlyingAsset['bsc:hemi'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '8fe8434f-4060-46a8-9547-1cfd3af7b175',
+    'bsc:cookie',
+    'Cookie DAO',
+    18,
+    '0x000006c2a22ff4a44ff1f5d0f2ed65f781f55555',
+    UnderlyingAsset['bsc:cookie'],
+    BSC_TOKEN_FEATURES
+  ),
 ];
