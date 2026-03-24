@@ -381,7 +381,7 @@ export const SendCoinsRequestBody = {
  * - Advanced features like memo fields, hop transactions, EIP-1559 fees
  *
  * @operationId express.v2.wallet.sendcoins
- * @tag express
+ * @tag Express
  * @public
  */
 export const PostSendCoins = httpRoute({

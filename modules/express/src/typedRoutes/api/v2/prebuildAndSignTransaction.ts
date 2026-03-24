@@ -514,7 +514,7 @@ export const PrebuildAndSignTransactionApiResponse = {
  * - **Cold wallets**: Returns half-signed transaction (`halfSigned.txHex`)
  * - **TSS wallets**: Returns transaction request (`txRequestId`)
  *
- * @tag express
+ * @tag Express
  * @operationId express.v2.wallet.prebuildandsigntransaction
  * @public
  */

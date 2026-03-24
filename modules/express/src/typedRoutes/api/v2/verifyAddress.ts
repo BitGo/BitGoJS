@@ -31,7 +31,7 @@ export const VerifyAddressV2Body = {
  * For UTXO coins, an optional legacy script hash flag can be provided to allow previous script hash versions.
  *
  * @operationId express.verifycoinaddress
- * @tag express
+ * @tag Express
  * @public
  */
 export const PostVerifyCoinAddress = httpRoute({

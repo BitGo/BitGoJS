@@ -8,7 +8,7 @@ import { BitgoExpressError } from '../../schemas/error';
  * Health check endpoint that verifies the Express server is running
  *
  * @operationId express.ping
- * @tag express
+ * @tag Express
  * @public
  */
 export const GetPing = httpRoute({

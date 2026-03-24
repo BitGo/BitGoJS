@@ -91,7 +91,7 @@ export const AcceptShareResponse = t.type({
  * - `overrideEncryptedXprv` should only be used for keys received through a separate secure channel
  *
  * @operationId express.v1.wallet.acceptShare
- * @tag express
+ * @tag Express
  * @public
  */
 export const PostAcceptShare = httpRoute({
