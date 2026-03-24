@@ -1046,6 +1046,14 @@ export class BitGoAPI implements BitGoBase {
         response.body.access_token = this._token;
       }
 
+      // Sync the token into the strategy so that strategies which manage their
+      // own key material (e.g. WebCryptoHmacStrategy) can sign the subsequent
+      // ensureUserEcdhKeychainIsCreated requests.  Must be awaited — the call
+      // may perform async key derivation (crypto.subtle.importKey).
+      if (this._token) {
+        await this._hmacAuthStrategy.setToken?.(this._token);
+      }
+
       const userSettings = params.ensureEcdhKeychain ? await this.ensureUserEcdhKeychainIsCreated(password) : undefined;
       if (userSettings?.ecdhKeychain) {
         response.body.user.ecdhKeychain = userSettings.ecdhKeychain;
@@ -1089,6 +1097,7 @@ export class BitGoAPI implements BitGoBase {
       if (body.access_token) {
         this._token = body.access_token;
         response.body.access_token = body.access_token;
+        await this._hmacAuthStrategy.setToken?.(body.access_token);
       } else {
         throw new Error('Failed to login. Please contact support@bitgo.com');
       }
@@ -1194,6 +1203,11 @@ export class BitGoAPI implements BitGoBase {
     this._ecdhXprv = undefined;
   }
 
+  async clearAsync(): Promise<void> {
+    this.clear();
+    await this._hmacAuthStrategy.clearToken?.();
+  }
+
   /**
    * Use refresh token to get new access token.
    * If the refresh token is null/defined, then we use the stored token from auth
@@ -1221,6 +1235,7 @@ export class BitGoAPI implements BitGoBase {
       .result();
     this._token = body.access_token;
     this._refreshToken = body.refresh_token;
+    await this._hmacAuthStrategy?.setToken?.(body.access_token);
     return body;
   }
 
@@ -1945,6 +1960,9 @@ export class BitGoAPI implements BitGoBase {
 
     this._token = body.access_token;
     this._refreshToken = body.refresh_token;
+
+    await this._hmacAuthStrategy?.setToken?.(body.access_token);
+
     this._user = await this.me();
     return body;
   }
