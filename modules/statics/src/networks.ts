@@ -2798,3 +2798,14 @@ const networkByName: Map<string, BaseNetwork> = new Map(
 export function getNetworkByName(name: string): BaseNetwork | undefined {
   return networkByName.get(name);
 }
+
+/**
+ * Dynamically register a new network in the lookup map.
+ * Throws if a network with the same name is already registered.
+ */
+export function registerNetwork(network: BaseNetwork): void {
+  if (networkByName.has(network.name)) {
+    throw new Error(`Network '${network.name}' is already registered`);
+  }
+  networkByName.set(network.name, network);
+}
