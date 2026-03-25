@@ -1705,10 +1705,10 @@ class LineaETHTestnet extends Testnet implements EthereumNetwork {
 class FluentETH extends Mainnet implements EthereumNetwork {
   name = 'Fluent Ethereum';
   family = CoinFamily.FLUENTETH;
-  explorerUrl = 'https://devnet.fluentscan.xyz/tx/';
-  accountExplorerUrl = 'https://devnet.fluentscan.xyz/address/';
-  chainId = 20993;
-  nativeCoinOperationHashPrefix = '20993';
+  explorerUrl = 'https://fluentscan.xyz/tx/';
+  accountExplorerUrl = 'https://fluentscan.xyz/address/';
+  chainId = 25363;
+  nativeCoinOperationHashPrefix = '25363';
 }
 
 class FluentETHTestnet extends Testnet implements EthereumNetwork {
