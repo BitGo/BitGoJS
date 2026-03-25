@@ -173,7 +173,7 @@ export class CoinMap {
     42431: 'ttempo',
     5000: 'mantle',
     5003: 'tmantle',
-    20993: 'fluenteth',
+    25363: 'fluenteth',
     20994: 'tfluenteth',
   };
 
