@@ -237,6 +237,7 @@ const WebCryptoAuth = () => {
         username,
         password,
         otp,
+        ensureEcdhKeychain: true,
       });
       log('Authentication successful.');
 

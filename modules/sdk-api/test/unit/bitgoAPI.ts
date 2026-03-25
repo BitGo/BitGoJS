@@ -3,6 +3,7 @@ import { BitGoAPI } from '../../src/bitgoAPI';
 import { ProxyAgent } from 'proxy-agent';
 import * as sinon from 'sinon';
 import nock from 'nock';
+import type { IHmacAuthStrategy } from '@bitgo/sdk-hmac';
 
 describe('Constructor', function () {
   describe('cookiesPropagationEnabled argument', function () {
@@ -478,6 +479,221 @@ describe('Constructor', function () {
         // Clean up the global window mock
         delete (global as any).window;
       }
+    });
+  });
+
+  describe('hmacAuthStrategy token lifecycle', function () {
+    const ROOT = 'https://app.example.local';
+
+    // Builds a mock strategy whose setToken / clearToken are sinon stubs.
+    function makeStrategy(overrides: Partial<IHmacAuthStrategy> = {}): {
+      strategy: IHmacAuthStrategy;
+      setTokenStub: sinon.SinonStub;
+      clearTokenStub: sinon.SinonStub;
+    } {
+      const setTokenStub = sinon.stub().resolves();
+      const clearTokenStub = sinon.stub().resolves();
+      const strategy: IHmacAuthStrategy = {
+        calculateRequestHeaders: sinon.stub().resolves({ hmac: 'hmac', timestamp: 1, tokenHash: 'hash' }),
+        verifyResponse: sinon.stub().resolves({
+          isValid: true,
+          expectedHmac: 'hmac',
+          signatureSubject: '',
+          isInResponseValidityWindow: true,
+          verificationTime: Date.now(),
+        }),
+        calculateHMAC: sinon.stub().resolves('hashed-pw'),
+        setToken: setTokenStub,
+        clearToken: clearTokenStub,
+        ...overrides,
+      };
+      return { strategy, setTokenStub, clearTokenStub };
+    }
+
+    afterEach(function () {
+      nock.cleanAll();
+      sinon.restore();
+    });
+
+    describe('authenticate()', function () {
+      it('calls setToken with the access_token received from the server', async function () {
+        const { strategy, setTokenStub } = makeStrategy();
+        const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
+
+        nock(ROOT)
+          .post('/api/auth/v1/session')
+          .reply(200, {
+            user: { username: 'test@example.com' },
+            access_token: 'v2xmyaccesstoken',
+          });
+
+        await bitgo.authenticate({ username: 'test@example.com', password: 'hunter2' });
+
+        setTokenStub.calledOnce.should.be.true();
+        setTokenStub.firstCall.args[0].should.equal('v2xmyaccesstoken');
+      });
+
+      it('awaits setToken before making ensureEcdhKeychain requests', async function () {
+        // This is the core regression test: if setToken is not awaited, the
+        // strategy's key material won't be ready before calculateRequestHeaders
+        // is called for the GET /user/settings request, and it would throw.
+        let keyReady = false;
+        const { strategy } = makeStrategy({
+          setToken: sinon.stub().callsFake(async () => {
+            // Simulate non-trivial async key derivation (like crypto.subtle.importKey).
+            await new Promise<void>((resolve) => setImmediate(resolve));
+            keyReady = true;
+          }),
+          calculateRequestHeaders: sinon.stub().callsFake(async () => {
+            if (!keyReady) {
+              throw new Error('No token available. Call setToken() or restoreToken() first.');
+            }
+            return { hmac: 'hmac', timestamp: Date.now(), tokenHash: 'hash' };
+          }),
+        });
+        const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
+
+        nock(ROOT)
+          .post('/api/auth/v1/session')
+          .reply(200, {
+            user: { username: 'test@example.com' },
+            access_token: 'v2xmytoken',
+          });
+        // The GET /user/settings request made by ensureUserEcdhKeychainIsCreated
+        // must succeed — it would throw if setToken wasn't awaited first.
+        nock(ROOT)
+          .get('/api/v1/user/settings')
+          .reply(200, {
+            settings: { ecdhKeychain: 'xpub123' },
+          });
+
+        await bitgo.authenticate({
+          username: 'test@example.com',
+          password: 'hunter2',
+          ensureEcdhKeychain: true,
+        });
+
+        keyReady.should.be.true();
+      });
+    });
+
+    describe('authenticateWithPasskey()', function () {
+      const validPasskey = JSON.stringify({
+        id: 'credential-id',
+        rawId: 'raw-id',
+        type: 'public-key',
+        response: {
+          authenticatorData: 'auth-data',
+          clientDataJSON: 'client-data',
+          signature: 'sig',
+          userHandle: 'user-handle-123',
+        },
+      });
+
+      it('calls setToken with the access_token received from the server', async function () {
+        const { strategy, setTokenStub } = makeStrategy();
+        const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
+
+        nock(ROOT)
+          .post('/api/auth/v1/session')
+          .reply(200, {
+            user: { username: 'test@example.com' },
+            access_token: 'v2xpasskeytoken',
+          });
+
+        await bitgo.authenticateWithPasskey(validPasskey);
+
+        setTokenStub.calledOnce.should.be.true();
+        setTokenStub.firstCall.args[0].should.equal('v2xpasskeytoken');
+      });
+    });
+
+    describe('clearAsync()', function () {
+      it('clears _token and calls clearToken on the strategy', async function () {
+        const { strategy, clearTokenStub } = makeStrategy();
+        const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
+
+        bitgo.authenticateWithAccessToken({ accessToken: 'v2xsometoken' });
+        (bitgo as any)._token.should.equal('v2xsometoken');
+
+        await bitgo.clearAsync();
+
+        ((bitgo as any)._token === undefined).should.be.true();
+        clearTokenStub.calledOnce.should.be.true();
+      });
+    });
+
+    describe('refreshToken()', function () {
+      it('calls setToken with the new access_token from the OAuth response', async function () {
+        const { strategy, setTokenStub } = makeStrategy();
+        const bitgo = new BitGoAPI({
+          env: 'custom',
+          customRootURI: ROOT,
+          hmacAuthStrategy: strategy,
+          clientId: 'client-id',
+          clientSecret: 'client-secret',
+        });
+        (bitgo as any)._refreshToken = 'old-refresh-token';
+
+        nock(ROOT).post('/oauth/token').reply(200, {
+          access_token: 'v2xnewtoken',
+          refresh_token: 'new-refresh-token',
+        });
+
+        await bitgo.refreshToken();
+
+        setTokenStub.calledOnce.should.be.true();
+        setTokenStub.firstCall.args[0].should.equal('v2xnewtoken');
+      });
+    });
+
+    describe('authenticateWithAuthCode()', function () {
+      it('calls setToken with the access_token from the OAuth response', async function () {
+        const { strategy, setTokenStub } = makeStrategy();
+        const bitgo = new BitGoAPI({
+          env: 'custom',
+          customRootURI: ROOT,
+          hmacAuthStrategy: strategy,
+          clientId: 'client-id',
+          clientSecret: 'client-secret',
+        });
+
+        nock(ROOT).post('/oauth/token').reply(200, {
+          access_token: 'v2xauthcodetoken',
+          refresh_token: 'refresh-token',
+        });
+        // authenticateWithAuthCode calls this.me() after setting the token
+        nock(ROOT)
+          .get('/api/v1/user/me')
+          .reply(200, {
+            user: { username: 'test@example.com' },
+          });
+
+        await bitgo.authenticateWithAuthCode({ authCode: 'my-auth-code' });
+
+        setTokenStub.calledOnce.should.be.true();
+        setTokenStub.firstCall.args[0].should.equal('v2xauthcodetoken');
+      });
+    });
+
+    describe('sync token-setting methods', function () {
+      it('authenticateWithAccessToken does not call setToken (synchronous — caller must invoke setToken on the strategy manually)', function () {
+        const { strategy, setTokenStub } = makeStrategy();
+        const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
+
+        bitgo.authenticateWithAccessToken({ accessToken: 'v2xsynctoken' });
+
+        setTokenStub.called.should.be.false();
+      });
+
+      it('fromJSON does not call setToken (synchronous — caller must invoke setToken on the strategy manually)', function () {
+        const { strategy, setTokenStub } = makeStrategy();
+        const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
+
+        (bitgo as any).fromJSON({ user: { username: 'test@example.com' }, token: 'v2xjsontoken' });
+
+        setTokenStub.called.should.be.false();
+      });
     });
   });
 

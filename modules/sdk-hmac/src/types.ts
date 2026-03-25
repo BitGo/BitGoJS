@@ -140,6 +140,17 @@ export interface IHmacAuthStrategy {
    * to the strategy even if no raw token string is available.
    */
   isAuthenticated?(): boolean;
+
+  /**
+   * Optional token initialization & destruction methods.
+   *
+   * Strategies that read the token directly from request params
+   * (e.g. DefaultHmacAuthStrategy) may leave this unimplemented.
+   *
+   * Must be awaited — implementations may perform async key derivation.
+   */
+  setToken?(token: string): Promise<void>;
+  clearToken?(): Promise<void>;
 }
 
 /**
