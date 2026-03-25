@@ -600,6 +600,13 @@ export const COREDAO_FEATURES = [
   CoinFeature.ERC20_BULK_TRANSACTION,
 ];
 export const TEMPO_FEATURES = [...EVM_FEATURES];
+export const HYPE_FEATURES = [
+  ...ACCOUNT_COIN_DEFAULT_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
+  CoinFeature.SHA256_WITH_ECDSA_TSS,
+];
 export const APECHAIN_FEATURES = [
   ...ETH_FEATURES,
   CoinFeature.TSS,
