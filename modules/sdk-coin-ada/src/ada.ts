@@ -534,6 +534,8 @@ export class Ada extends BaseCoin {
         feeInfo: feeInfo,
         coinSpecific: coinSpecific,
       };
+      // Add serializedTxHex alias so OVC can read it natively (OVC Transaction type uses serializedTxHex)
+      (transaction as MPCTx & { serializedTxHex: string }).serializedTxHex = serializedTx;
       const unsignedTx: MPCUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
       const transactions: MPCUnsignedTx[] = [unsignedTx];
       const txRequest: RecoveryTxRequest = {
