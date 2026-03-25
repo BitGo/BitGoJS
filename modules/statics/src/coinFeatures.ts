@@ -437,6 +437,7 @@ export const TRX_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.MPCV2,
   CoinFeature.SHA256_WITH_ECDSA_TSS,
+  CoinFeature.TSS_SUPPORT_IN_PROGRESS, // TODO: remove this after TSS is fully onboarded
 ];
 export const COSMOS_SIDECHAIN_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,

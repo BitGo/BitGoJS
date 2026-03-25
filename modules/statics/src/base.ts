@@ -319,6 +319,11 @@ export enum CoinFeature {
   TSS_COLD = 'tss-cold',
 
   /**
+   * This coin is in progress for being onboarded to TSS signing protocol
+   */
+  TSS_SUPPORT_IN_PROGRESS = 'tss-support-in-progress',
+
+  /**
    * This coin uses sha256 hash function for ECDSA TSS signatures
    */
   SHA256_WITH_ECDSA_TSS = 'sha256-with-ecdsa-tss',
