@@ -1,17 +1,14 @@
 import TonWeb from 'tonweb';
 import { BN } from 'bn.js';
 import { BaseUtils, isValidEd25519PublicKey } from '@bitgo/sdk-core';
+import { encodeAddress, validateAddress } from '@bitgo/wasm-ton';
 import { VESTING_CONTRACT_CODE_B64 } from './constants';
 import { VestingContractParams } from './iface';
 export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
     try {
-      if (address.length != 48) {
-        return false;
-      }
-      Buffer.from(address, 'base64');
-      return true;
+      return validateAddress(address.split('?memoId=')[0]);
     } catch (e) {
       return false;
     }
@@ -51,6 +48,10 @@ export class Utils implements BaseUtils {
   }
 
   async getAddressFromPublicKey(publicKey: string, bounceable = true, isUserFriendly = true): Promise<string> {
+    if (isUserFriendly) {
+      return encodeAddress(Buffer.from(publicKey, 'hex'), bounceable);
+    }
+    // Fall back to TonWeb for non-user-friendly format (raw address)
     const tonweb = new TonWeb(new TonWeb.HttpProvider(''));
     const WalletClass = tonweb.wallet.all['v4R2'];
     const wallet = new WalletClass(tonweb.provider, {

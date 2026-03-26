@@ -43,6 +43,7 @@
     "@bitgo/sdk-core": "^36.35.0",
     "@bitgo/sdk-lib-mpc": "^10.9.0",
     "@bitgo/statics": "^58.31.0",
+    "@bitgo/wasm-ton": "*",
     "bignumber.js": "^9.0.0",
     "bn.js": "^5.2.1",
     "lodash": "^4.17.21",

@@ -32,8 +32,16 @@ import {
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { Transaction as WasmTonTransaction } from '@bitgo/wasm-ton';
 import { KeyPair as TonKeyPair } from './lib/keyPair';
-import { TransactionBuilderFactory, Utils, TransferBuilder, TokenTransferBuilder, TransactionBuilder } from './lib';
+import {
+  TransactionBuilderFactory,
+  Utils,
+  TransferBuilder,
+  TokenTransferBuilder,
+  TransactionBuilder,
+  explainTonTransaction,
+} from './lib';
 import { getFeeEstimate } from './lib/utils';
 
 export interface TonParseTransactionOptions extends ParseTransactionOptions {
@@ -220,13 +228,7 @@ export class Ton extends BaseCoin {
   }
 
   isValidAddress(address: string): boolean {
-    try {
-      const addressBase64 = address.replace(/\+/g, '-').replace(/\//g, '_');
-      const buf = Buffer.from(addressBase64.split('?memoId=')[0], 'base64');
-      return buf.length === 36;
-    } catch {
-      return false;
-    }
+    return Utils.default.isValidAddress(address);
   }
 
   signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
@@ -235,31 +237,43 @@ export class Ton extends BaseCoin {
 
   /** @inheritDoc */
   async getSignablePayload(serializedTx: string): Promise<Buffer> {
-    const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
-    const rebuiltTransaction = await factory.from(serializedTx).build();
-    return rebuiltTransaction.signablePayload;
+    try {
+      const tx = WasmTonTransaction.fromBase64(serializedTx);
+      return Buffer.from(tx.signablePayload());
+    } catch {
+      // Fall back to legacy builder-based signable payload
+      const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
+      const rebuiltTransaction = await factory.from(serializedTx).build();
+      return rebuiltTransaction.signablePayload;
+    }
   }
 
   /** @inheritDoc */
   async explainTransaction(params: Record<string, any>): Promise<TransactionExplanation> {
     try {
-      const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
-      const transactionBuilder = factory.from(Buffer.from(params.txHex, 'hex').toString('base64'));
-
-      const { toAddressBounceable, fromAddressBounceable } = params;
-
-      if (typeof toAddressBounceable === 'boolean') {
-        transactionBuilder.toAddressBounceable(toAddressBounceable);
-      }
-
-      if (typeof fromAddressBounceable === 'boolean') {
-        transactionBuilder.fromAddressBounceable(fromAddressBounceable);
-      }
-
-      const rebuiltTransaction = await transactionBuilder.build();
-      return rebuiltTransaction.explainTransaction();
+      const txBase64 = Buffer.from(params.txHex, 'hex').toString('base64');
+      return explainTonTransaction({ txBase64 });
     } catch {
-      throw new Error('Invalid transaction');
+      // Fall back to legacy builder-based explain
+      try {
+        const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
+        const transactionBuilder = factory.from(Buffer.from(params.txHex, 'hex').toString('base64'));
+
+        const { toAddressBounceable, fromAddressBounceable } = params;
+
+        if (typeof toAddressBounceable === 'boolean') {
+          transactionBuilder.toAddressBounceable(toAddressBounceable);
+        }
+
+        if (typeof fromAddressBounceable === 'boolean') {
+          transactionBuilder.fromAddressBounceable(fromAddressBounceable);
+        }
+
+        const rebuiltTransaction = await transactionBuilder.build();
+        return rebuiltTransaction.explainTransaction();
+      } catch {
+        throw new Error('Invalid transaction');
+      }
     }
   }
 
