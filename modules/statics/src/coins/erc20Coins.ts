@@ -12042,7 +12042,7 @@ export const erc20Coins = [
   erc20(
     'd4e5f6a7-8b9c-4d0e-9f2a-3b4c5d6e7f8a',
     'eth:cashplus',
-    'CASH+',
+    'CashPlus',
     18,
     '0x498d9329555471bf6073a5f2d047f746d522a373',
     UnderlyingAsset['eth:cashplus']
@@ -14621,6 +14621,22 @@ export const erc20Coins = [
     18,
     '0x000006c2a22ff4a44ff1f5d0f2ed65f781f55555',
     UnderlyingAsset['eth:zkc']
+  ),
+  erc20(
+    '73753e17-4ef2-4c08-8e18-4e8d3511dd17',
+    'eth:musd',
+    'Mezo USD',
+    18,
+    '0xdd468a1ddc392dcdbef6db6e34e89aa338f9f186',
+    UnderlyingAsset['eth:musd']
+  ),
+  erc20(
+    'e88997d9-bcea-4d1d-9ee0-4e83391a3b9c',
+    'eth:mezo',
+    'Mezo',
+    18,
+    '0x8e4cbbcc33db6c0a18561fde1f6ba35906d4848b',
+    UnderlyingAsset['eth:mezo']
   ),
   terc20(
     '0c333619-e5a6-4f9d-8bbc-5b0e5dc64d03',

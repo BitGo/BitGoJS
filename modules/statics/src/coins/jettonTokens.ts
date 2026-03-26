@@ -58,6 +58,15 @@ export const jettonTokens = [
     UnderlyingAsset['ton:ston'],
     TON_TOKEN_FEATURES
   ),
+  jettonToken(
+    '1986c770-1ba2-4a43-89c0-037afb1eb1de',
+    'ton:dropee',
+    'Dropee',
+    9,
+    'EQDPGjm4PU81Dez2rmQFQU2hw_i8hut5GTU91HOtzZbPEWf8',
+    UnderlyingAsset['ton:dropee'],
+    TON_TOKEN_FEATURES
+  ),
 
   // testnet tokens
   tjettonToken(

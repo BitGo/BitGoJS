@@ -2915,6 +2915,7 @@ export enum UnderlyingAsset {
   'bsc:shell' = 'bsc:shell',
   'bsc:hemi' = 'bsc:hemi',
   'bsc:cookie' = 'bsc:cookie',
+  'bsc:esports' = 'bsc:esports',
 
   // BSC NFTs
   // generic NFTs
@@ -3050,6 +3051,7 @@ export enum UnderlyingAsset {
   'baseeth:home' = 'baseeth:home',
   'baseeth:c' = 'baseeth:c',
   'baseeth:carv' = 'baseeth:carv',
+  'baseeth:usad' = 'baseeth:usad',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -3643,6 +3645,7 @@ export enum UnderlyingAsset {
   'ton:cati' = 'ton:cati',
   'ton:dogs' = 'ton:dogs',
   'ton:ston' = 'ton:ston',
+  'ton:dropee' = 'ton:dropee',
 
   // TON testnet tokens
   'tton:ukwny-us' = 'tton:ukwny-us',
@@ -3686,6 +3689,8 @@ export enum UnderlyingAsset {
   'eth:kernel' = 'eth:kernel',
   'eth:tree' = 'eth:tree',
   'eth:zkc' = 'eth:zkc',
+  'eth:musd' = 'eth:musd',
+  'eth:mezo' = 'eth:mezo',
   // ADA testnet tokens
   'tada:water' = 'tada:water',
   'tada:tusda' = 'tada:tusda',
@@ -3711,6 +3716,7 @@ export enum UnderlyingAsset {
   'canton:usdcx' = 'canton:usdcx',
   'canton:cbtc' = 'canton:cbtc',
   'canton:usdxlr' = 'canton:usdxlr',
+  'canton:cltc' = 'canton:cltc',
 
   // Tempo mainnet tokens
   'tempo:pathusd' = 'tempo:pathusd',

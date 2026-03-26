@@ -4004,6 +4004,15 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:carv'],
     Networks.main.basechain
   ),
+  erc20Token(
+    '2f79e3cb-b6a0-41c2-8308-473a98cfb05f',
+    'baseeth:usad',
+    'Lydia',
+    18,
+    '0x3d66e6fe9a3cf698db5af3d70830b299c9235151',
+    UnderlyingAsset['baseeth:usad'],
+    Networks.main.basechain
+  ),
 
   // XDC mainnet tokens
   xdcErc20(
