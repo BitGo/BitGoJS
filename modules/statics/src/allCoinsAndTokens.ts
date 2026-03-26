@@ -5820,32 +5820,32 @@ export const allCoinsAndTokens = [
     '0x0726773451af83203583b5d38b3a11f752b1a96b',
     UnderlyingAsset['arbeth:bull']
   ),
-  tarbethErc20(
-    '9e3f8d7c-6b5a-4e2d-9f9c-8a7b6d5e4f3c',
+  arbethErc20(
+    '0f847466-f4e3-4f33-aee3-8b99f6637547',
     'arbeth:testtsla',
     'Tesla (Test)',
     18,
     '0xb94263fa0a2a29ea32c1f90ccaeeaffd0bb73908',
     UnderlyingAsset['arbeth:testtsla']
   ),
-  tarbethErc20(
-    '0f4a9e8d-7c6b-5a4e-9a0d-9b8c7e6f5a4b',
+  arbethErc20(
+    '1a137f85-4f8f-4191-8760-2b161e240bf2',
     'arbeth:testamzn',
     'Amazon (Test)',
     18,
     '0x76fca8a5bc14fce9eb613d96674868d687498804',
     UnderlyingAsset['arbeth:testamzn']
   ),
-  tarbethErc20(
-    '1a5b0f9e-8d7c-4b5a-9b1e-0c9d8f7a6b5c',
+  arbethErc20(
+    'd33cf58a-5e21-418b-bcb0-103f15fe1965',
     'arbeth:testpltr',
     'Palantir Technologies Inc (Test)',
     18,
     '0x99cd69ef9221c7fe0ad5618a7527244ef79636c6',
     UnderlyingAsset['arbeth:testpltr']
   ),
-  tarbethErc20(
-    '2b6c1a0f-9e8d-4c6b-9c2f-1d0e9a8b7c6d',
+  arbethErc20(
+    'a52a4906-7a39-4d4d-9b63-d4845685ecfa',
     'arbeth:testnflx',
     'Netflix Inc (Test)',
     18,
