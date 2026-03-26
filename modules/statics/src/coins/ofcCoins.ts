@@ -4043,6 +4043,7 @@ export const ofcCoins = [
   ofcTonToken('874a497e-61a8-45b5-abe1-1d9637f49264', 'ofcton:cati', 'Catizen', 9, UnderlyingAsset['ton:cati']),
   ofcTonToken('e548896b-5867-491e-8a9c-5261f7e3ba69', 'ofcton:ston', 'STON.fi', 9, UnderlyingAsset['ton:ston']),
   ofcTonToken('41ee59d6-2484-429c-aad1-5e79ae766c4b', 'ofcton:dogs', 'Dogs', 9, UnderlyingAsset['ton:dogs']),
+  ofcTonToken('8f82214b-8425-4e1c-951f-75e0d977ddc5', 'ofcton:dropee', 'Dropee', 9, UnderlyingAsset['ton:dropee']),
   tofcTonToken(
     'e7d516c1-b975-4905-b5d0-8460f6ea7eb9',
     'ofctton:ukwny-us',
@@ -4080,6 +4081,13 @@ export const ofcCoins = [
   ofcBscToken('b1ac3a84-4fa7-4947-8e41-d31a15ee7d97', 'ofcbsc:shell', 'MyShell', 18, UnderlyingAsset['bsc:shell']),
   ofcBscToken('5c0d0323-65eb-4924-b27f-2eece61564c6', 'ofcbsc:hemi', 'Hemi', 18, UnderlyingAsset['bsc:hemi']),
   ofcBscToken('0b596f43-f29e-48a1-a3ac-ea91b2236038', 'ofcbsc:cookie', 'Cookie DAO', 18, UnderlyingAsset['bsc:cookie']),
+  ofcBscToken(
+    '8b4c66ba-1ebd-42f6-ab06-7dd62cd625c8',
+    'ofcbsc:esports',
+    'Yooldo Games',
+    18,
+    UnderlyingAsset['bsc:esports']
+  ),
   // New Arbitrum OFC token
   ofcArbethErc20(
     'd58490c0-07d2-4642-8af7-efa2453392e9',

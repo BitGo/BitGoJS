@@ -1606,4 +1606,13 @@ export const bscTokens = [
     UnderlyingAsset['bsc:cookie'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    '64f8c49c-1ab6-466f-865a-30ceefc75aac',
+    'bsc:esports',
+    'Yooldo Games',
+    18,
+    '0xf39e4b21c84e737df08e2c3b32541d856f508e48',
+    UnderlyingAsset['bsc:esports'],
+    BSC_TOKEN_FEATURES
+  ),
 ];

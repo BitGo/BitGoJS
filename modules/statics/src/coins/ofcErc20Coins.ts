@@ -6215,6 +6215,22 @@ export const tOfcErc20Coins = [
     'opeth'
   ),
   ofcerc20('e4f9a7b2-6c3d-4e8a-9f1b-5d7c8e2a4b6f', 'ofceth:btr', 'Bitlayer', 18, UnderlyingAsset['eth:btr']),
+  ofcerc20('289ee20a-5659-4b40-82fb-259a881c7c20', 'ofceth:musd', 'Mezo USD', 18, UnderlyingAsset['eth:musd']),
+  ofcerc20('403bd58f-cd53-4d2d-81ac-93055d0cf59e', 'ofceth:mezo', 'Mezo', 18, UnderlyingAsset['eth:mezo']),
+  ofcerc20(
+    '47d8cf79-ed67-4e9c-8e51-422d31290282',
+    'ofcbaseeth:usad',
+    'Lydia',
+    18,
+    UnderlyingAsset['baseeth:usad'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {
