@@ -122,7 +122,8 @@
     "@isaacs/brace-expansion": "5.0.1",
     "basic-ftp": ">=5.2.0",
     "flatted": "3.4.2",
-    "sjcl": "npm:@bitgo/sjcl@1.0.1"
+    "sjcl": "npm:@bitgo/sjcl@1.0.1",
+    "picomatch": ">=2.3.2"
   },
   "workspaces": [
     "modules/*"
