@@ -2041,6 +2041,34 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['arbeth:tt']
   ),
+  ofcArbethErc20(
+    '51d64734-29a7-4d95-ab81-4073d3071945',
+    'ofcarbeth:testtsla',
+    'Tesla (Test)',
+    18,
+    UnderlyingAsset['arbeth:testtsla']
+  ),
+  ofcArbethErc20(
+    '98d1b16b-be68-4ea4-bc41-b19ad8f0eceb',
+    'ofcarbeth:testamzn',
+    'Amazon (Test)',
+    18,
+    UnderlyingAsset['arbeth:testamzn']
+  ),
+  ofcArbethErc20(
+    '4eceb506-7e84-4108-9190-76cc4cfeb0e7',
+    'ofcarbeth:testpltr',
+    'Palantir (Test)',
+    18,
+    UnderlyingAsset['arbeth:testpltr']
+  ),
+  ofcArbethErc20(
+    'bdd471d7-6561-4d92-93aa-51254dea517e',
+    'ofcarbeth:testnflx',
+    'Netflix (Test)',
+    18,
+    UnderlyingAsset['arbeth:testnflx']
+  ),
 
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20(
