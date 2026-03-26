@@ -35,6 +35,8 @@ import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { KeyPair as TonKeyPair } from './lib/keyPair';
 import { TransactionBuilderFactory, Utils, TransferBuilder, TokenTransferBuilder, TransactionBuilder } from './lib';
 import { getFeeEstimate } from './lib/utils';
+import { explainTonTransaction } from './lib/explainTransactionWasm';
+import { getSignablePayload as wasmGetSignablePayload } from './lib/wasmSigner';
 
 export interface TonParseTransactionOptions extends ParseTransactionOptions {
   txHex: string;
@@ -235,29 +237,20 @@ export class Ton extends BaseCoin {
 
   /** @inheritDoc */
   async getSignablePayload(serializedTx: string): Promise<Buffer> {
-    const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
-    const rebuiltTransaction = await factory.from(serializedTx).build();
-    return rebuiltTransaction.signablePayload;
+    // serializedTx is base64-encoded BOC. Use WASM to extract the 32-byte
+    // cell hash (the Ed25519 signing payload) without rebuilding the tx.
+    const payload = wasmGetSignablePayload(serializedTx);
+    return Buffer.from(payload);
   }
 
   /** @inheritDoc */
   async explainTransaction(params: Record<string, any>): Promise<TransactionExplanation> {
     try {
-      const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
-      const transactionBuilder = factory.from(Buffer.from(params.txHex, 'hex').toString('base64'));
-
-      const { toAddressBounceable, fromAddressBounceable } = params;
-
-      if (typeof toAddressBounceable === 'boolean') {
-        transactionBuilder.toAddressBounceable(toAddressBounceable);
+      if (!params.txHex) {
+        throw new Error('missing txHex');
       }
-
-      if (typeof fromAddressBounceable === 'boolean') {
-        transactionBuilder.fromAddressBounceable(fromAddressBounceable);
-      }
-
-      const rebuiltTransaction = await transactionBuilder.build();
-      return rebuiltTransaction.explainTransaction();
+      const txBase64 = Buffer.from(params.txHex, 'hex').toString('base64');
+      return explainTonTransaction({ txBase64 });
     } catch {
       throw new Error('Invalid transaction');
     }

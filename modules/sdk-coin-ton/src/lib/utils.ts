@@ -3,6 +3,7 @@ import { BN } from 'bn.js';
 import { BaseUtils, isValidEd25519PublicKey } from '@bitgo/sdk-core';
 import { VESTING_CONTRACT_CODE_B64 } from './constants';
 import { VestingContractParams } from './iface';
+import { getAddressFromPublicKey as wasmGetAddressFromPublicKey } from './wasmAddress';
 export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
@@ -51,14 +52,9 @@ export class Utils implements BaseUtils {
   }
 
   async getAddressFromPublicKey(publicKey: string, bounceable = true, isUserFriendly = true): Promise<string> {
-    const tonweb = new TonWeb(new TonWeb.HttpProvider(''));
-    const WalletClass = tonweb.wallet.all['v4R2'];
-    const wallet = new WalletClass(tonweb.provider, {
-      publicKey: TonWeb.utils.hexToBytes(publicKey),
-      wc: 0,
-    });
-    const address = await wallet.getAddress();
-    return address.toString(isUserFriendly, true, bounceable);
+    // Delegate to the synchronous WASM implementation. The async signature is
+    // preserved for backward compatibility with callers that await this method.
+    return wasmGetAddressFromPublicKey(publicKey, bounceable);
   }
 
   getAddress(address: string, bounceable = true): string {
