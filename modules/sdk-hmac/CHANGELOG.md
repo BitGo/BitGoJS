@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-hmac@1.8.0...@bitgo/sdk-hmac@1.9.0) (2026-03-27)
+
+
+### Bug Fixes
+
+* sdk hmac strategy init & clear ([d7698ad](https://github.com/BitGo/BitGoJS/commit/d7698adbf5e40dc36f49239eab913f38f083effa))
+* web crypto strategy and demo ([e57bd5b](https://github.com/BitGo/BitGoJS/commit/e57bd5bf5cdabb034627a94263eaa4eefbce3b8b))
+* web crypto strategy uses same hmac subject calc ([76129fd](https://github.com/BitGo/BitGoJS/commit/76129fd6badc085960e25f04ef94bcdf66f1a224))
+
+
+### Features
+
+* hmac authentication strategy and response verification ([26308ce](https://github.com/BitGo/BitGoJS/commit/26308ced6a9feb020fc3f23cff11449e16ebcfe4))
+
+
+
+
+
 # [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-hmac@1.7.0...@bitgo/sdk-hmac@1.8.0) (2026-02-12)
 
 

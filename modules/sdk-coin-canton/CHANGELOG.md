@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.17.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.17.5...@bitgo/sdk-coin-canton@1.17.6) (2026-03-27)
+
+
+### Bug Fixes
+
+* add getAddressDetails method for canton ([46b529a](https://github.com/BitGo/BitGoJS/commit/46b529a0f81a795a6d1e6936c785e1239768e353))
+
+
+
+
+
 ## [1.17.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.17.4...@bitgo/sdk-coin-canton@1.17.5) (2026-03-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-canton

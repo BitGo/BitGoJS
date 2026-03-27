@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@6.5.8...@bitgo/sdk-coin-avaxc@6.6.0) (2026-03-27)
+
+
+### Features
+
+* **sdk-coin-avaxc:** enable token batch ([3c360d4](https://github.com/BitGo/BitGoJS/commit/3c360d433e33b61ad2e786c8b73496879458651a))
+
+
+
+
+
 ## [6.5.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@6.5.7...@bitgo/sdk-coin-avaxc@6.5.8) (2026-03-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxc
