@@ -1055,6 +1055,7 @@ export class Wallets implements IWallets {
       input: sharingKeychain.encryptedXprv,
     });
     const newWalletPassphrase = params.newWalletPassphrase || params.userLoginPassword;
+    const webauthnInfo = params.webauthnInfo;
     const keysForWalletShares = walletShares.flatMap((walletShare) => {
       // Handle userMultiKeyRotationRequired case - these shares don't have keychains
       if (walletShare.userMultiKeyRotationRequired) {
@@ -1066,13 +1067,22 @@ export class Wallets implements IWallets {
           password: newWalletPassphrase,
           input: walletKeychain.prv,
         });
-        return [
-          {
-            walletShareId: walletShare.id,
-            encryptedPrv: encryptedPrv,
-            pub: walletKeychain.pub,
-          },
-        ];
+        const entry: AcceptShareOptionsRequest = {
+          walletShareId: walletShare.id,
+          encryptedPrv: encryptedPrv,
+          pub: walletKeychain.pub,
+        };
+        if (webauthnInfo) {
+          entry.webauthnInfo = {
+            otpDeviceId: webauthnInfo.otpDeviceId,
+            prfSalt: webauthnInfo.prfSalt,
+            encryptedPrv: this.bitgo.encrypt({
+              password: webauthnInfo.passphrase,
+              input: walletKeychain.prv,
+            }),
+          };
+        }
+        return [entry];
       }
 
       // Standard case: shares with keychains
@@ -1092,12 +1102,21 @@ export class Wallets implements IWallets {
         password: newWalletPassphrase,
         input: decryptedSharedWalletPrv,
       });
-      return [
-        {
-          walletShareId: walletShare.id,
-          encryptedPrv: newEncryptedPrv,
-        },
-      ];
+      const entry: AcceptShareOptionsRequest = {
+        walletShareId: walletShare.id,
+        encryptedPrv: newEncryptedPrv,
+      };
+      if (webauthnInfo) {
+        entry.webauthnInfo = {
+          otpDeviceId: webauthnInfo.otpDeviceId,
+          prfSalt: webauthnInfo.prfSalt,
+          encryptedPrv: this.bitgo.encrypt({
+            password: webauthnInfo.passphrase,
+            input: decryptedSharedWalletPrv,
+          }),
+        };
+      }
+      return [entry];
     });
 
     return this.bulkAcceptShareRequest(keysForWalletShares);
