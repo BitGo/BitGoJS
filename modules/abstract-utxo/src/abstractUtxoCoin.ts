@@ -421,9 +421,9 @@ export abstract class AbstractUtxoCoin
 
   public readonly amountType: 'number' | 'bigint';
 
-  protected readonly supportedTxFormats: { readonly psbt: boolean; readonly legacy: boolean } = {
+  protected supportedTxFormats: { psbt: boolean; legacy: boolean } = {
     psbt: true,
-    legacy: false,
+    legacy: this.isMainnet(),
   };
 
   protected constructor(bitgo: BitGoBase, amountType: 'number' | 'bigint' = 'number') {
