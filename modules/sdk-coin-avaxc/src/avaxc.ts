@@ -215,14 +215,31 @@ export class AvaxC extends AbstractEthLikeNewCoins {
       await this.validateHopPrebuild(wallet, txPrebuild.hopTransaction, { recipients });
     } else if (txParams.recipients.length > 1) {
       // Check total amount for batch transaction
-      let expectedTotalAmount = new BigNumber(0);
-      for (let i = 0; i < txParams.recipients.length; i++) {
-        expectedTotalAmount = expectedTotalAmount.plus(txParams.recipients[i].amount);
+      if (txParams.tokenName) {
+        const expectedTotalAmount = new BigNumber(0);
+        if (!expectedTotalAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
+          throw new Error('batch token transaction amount in txPrebuild should be zero for token transfers');
+        }
+      } else {
+        let expectedTotalAmount = new BigNumber(0);
+        for (let i = 0; i < txParams.recipients.length; i++) {
+          expectedTotalAmount = expectedTotalAmount.plus(txParams.recipients[i].amount);
+        }
+        if (!expectedTotalAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
+          throw new Error(
+            'batch transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
+          );
+        }
       }
-      if (!expectedTotalAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
-        throw new Error(
-          'batch transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
-        );
+
+      // Check batch transaction is sent to the batcher contract address for the chain
+      const network = this.getNetwork();
+      const batcherContractAddress = network?.batcherContractAddress as string;
+      if (
+        !batcherContractAddress ||
+        batcherContractAddress.toLowerCase() !== txPrebuild.recipients[0].address.toLowerCase()
+      ) {
+        throw new Error('recipient address of txPrebuild does not match batcher address');
       }
     } else {
       // Check recipient address and amount for normal transaction
@@ -1045,6 +1062,9 @@ export class AvaxC extends AbstractEthLikeNewCoins {
       expireTime: params.txPrebuild.expireTime,
       hopTransaction: params.txPrebuild.hopTransaction,
       custodianTransactionId: params.custodianTransactionId,
+      contractSequenceId: params.txPrebuild.nextContractSequenceId as number,
+      sequenceId: params.sequenceId,
+      ...(params.txPrebuild.isBatch ? { isBatch: params.txPrebuild.isBatch } : {}),
     };
 
     return { halfSigned: txParams };

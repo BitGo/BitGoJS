@@ -33,6 +33,7 @@ export interface AvaxcTransactionParams extends TransactionParams {
   gasLimit?: number;
   hopParams?: HopParams;
   hop?: boolean;
+  tokenName?: string;
 }
 
 export interface VerifyAvaxcTransactionOptions extends VerifyTransactionOptions {
@@ -150,6 +151,7 @@ export interface TxPreBuild extends BaseTransactionPrebuild {
   expireTime?: number;
   hopTransaction?: string;
   eip1559?: EIP1559;
+  isBatch?: boolean;
   recipients?: Recipient[];
   txPrebuild?: {
     halfSigned: {
