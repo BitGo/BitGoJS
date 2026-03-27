@@ -79,6 +79,7 @@ import {
   getFullNameFromCoinName,
   getMainnetCoinName,
   getNetworkFromCoinName,
+  isMainnetCoin,
   isUtxoCoinNameMainnet,
   UtxoCoinName,
   UtxoCoinNameMainnet,
@@ -409,11 +410,20 @@ export abstract class AbstractUtxoCoin
 {
   abstract name: UtxoCoinName;
 
+  /**
+   * Returns whether this coin is a mainnet coin.
+   * Default implementation uses the name property.
+   * Can be overridden by subclasses.
+   */
+  protected isMainnet(): boolean {
+    return isMainnetCoin(this.name);
+  }
+
   public readonly amountType: 'number' | 'bigint';
 
-  protected readonly supportedTxFormats: { readonly psbt: boolean; readonly legacy: boolean } = {
+  protected supportedTxFormats: { psbt: boolean; legacy: boolean } = {
     psbt: true,
-    legacy: false,
+    legacy: this.isMainnet(),
   };
 
   protected constructor(bitgo: BitGoBase, amountType: 'number' | 'bigint' = 'number') {
