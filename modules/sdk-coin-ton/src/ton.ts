@@ -30,11 +30,13 @@ import {
   AuditDecryptedKeyParams,
   extractCommonKeychain,
 } from '@bitgo/sdk-core';
+import { Transaction as WasmTonTransaction } from '@bitgo/wasm-ton';
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { KeyPair as TonKeyPair } from './lib/keyPair';
 import { TransactionBuilderFactory, Utils, TransferBuilder, TokenTransferBuilder, TransactionBuilder } from './lib';
 import { getFeeEstimate } from './lib/utils';
+import { explainTonTransaction } from './lib/explainTransactionWasm';
 
 export interface TonParseTransactionOptions extends ParseTransactionOptions {
   txHex: string;
@@ -117,10 +119,8 @@ export class Ton extends BaseCoin {
       throw new Error('missing required tx prebuild property txHex');
     }
 
-    const txBuilder = this.getBuilder().from(Buffer.from(rawTx, 'hex').toString('base64'));
-    const transaction = await txBuilder.build();
-
-    const explainedTx = transaction.explainTransaction();
+    const txBase64 = Buffer.from(rawTx, 'hex').toString('base64');
+    const explainedTx = explainTonTransaction({ txBase64 });
     if (txParams.recipients !== undefined) {
       const filteredRecipients = txParams.recipients?.map((recipient) => {
         const destination = this.getAddressDetails(recipient.address);
@@ -168,7 +168,7 @@ export class Ton extends BaseCoin {
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
     const derivationPath = 'm/' + index;
     const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
-    const expectedAddress = await Utils.default.getAddressFromPublicKey(derivedPublicKey);
+    const expectedAddress = Utils.default.getAddressFromPublicKey(derivedPublicKey);
 
     return address === expectedAddress;
   }
@@ -235,29 +235,16 @@ export class Ton extends BaseCoin {
 
   /** @inheritDoc */
   async getSignablePayload(serializedTx: string): Promise<Buffer> {
-    const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
-    const rebuiltTransaction = await factory.from(serializedTx).build();
-    return rebuiltTransaction.signablePayload;
+    const txBytes = Buffer.from(serializedTx, 'base64');
+    const wasmTx = WasmTonTransaction.fromBytes(txBytes);
+    return Buffer.from(wasmTx.signablePayload());
   }
 
   /** @inheritDoc */
   async explainTransaction(params: Record<string, any>): Promise<TransactionExplanation> {
     try {
-      const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
-      const transactionBuilder = factory.from(Buffer.from(params.txHex, 'hex').toString('base64'));
-
-      const { toAddressBounceable, fromAddressBounceable } = params;
-
-      if (typeof toAddressBounceable === 'boolean') {
-        transactionBuilder.toAddressBounceable(toAddressBounceable);
-      }
-
-      if (typeof fromAddressBounceable === 'boolean') {
-        transactionBuilder.fromAddressBounceable(fromAddressBounceable);
-      }
-
-      const rebuiltTransaction = await transactionBuilder.build();
-      return rebuiltTransaction.explainTransaction();
+      const txBase64 = Buffer.from(params.txHex, 'hex').toString('base64');
+      return explainTonTransaction({ txBase64 });
     } catch {
       throw new Error('Invalid transaction');
     }
@@ -293,7 +280,7 @@ export class Ton extends BaseCoin {
     const index = params.index || 0;
     const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
     const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
-    const senderAddr = await Utils.default.getAddressFromPublicKey(accountId);
+    const senderAddr = Utils.default.getAddressFromPublicKey(accountId);
     const balance = await tonweb.getBalance(senderAddr);
 
     const jettonBalances: { minterAddress?: string; walletAddress: string; balance: string }[] = [];

@@ -1,6 +1,7 @@
 import TonWeb from 'tonweb';
 import { BN } from 'bn.js';
 import { BaseUtils, isValidEd25519PublicKey } from '@bitgo/sdk-core';
+import { encodeAddress as wasmEncodeAddress, toRaw as wasmToRaw } from '@bitgo/wasm-ton';
 import { VESTING_CONTRACT_CODE_B64 } from './constants';
 import { VestingContractParams } from './iface';
 export class Utils implements BaseUtils {
@@ -50,15 +51,13 @@ export class Utils implements BaseUtils {
     }
   }
 
-  async getAddressFromPublicKey(publicKey: string, bounceable = true, isUserFriendly = true): Promise<string> {
-    const tonweb = new TonWeb(new TonWeb.HttpProvider(''));
-    const WalletClass = tonweb.wallet.all['v4R2'];
-    const wallet = new WalletClass(tonweb.provider, {
-      publicKey: TonWeb.utils.hexToBytes(publicKey),
-      wc: 0,
-    });
-    const address = await wallet.getAddress();
-    return address.toString(isUserFriendly, true, bounceable);
+  getAddressFromPublicKey(publicKey: string, bounceable = true, isUserFriendly = true): string {
+    const pubKeyBytes = Buffer.from(publicKey, 'hex');
+    const userFriendlyAddr = wasmEncodeAddress(pubKeyBytes, bounceable);
+    if (!isUserFriendly) {
+      return wasmToRaw(userFriendlyAddr);
+    }
+    return userFriendlyAddr;
   }
 
   getAddress(address: string, bounceable = true): string {

@@ -10,4 +10,6 @@ export { TransferBuilder } from './transferBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { TonWhalesVestingDepositBuilder } from './tonWhalesVestingDepositBuilder';
 export { TonWhalesVestingWithdrawBuilder } from './tonWhalesVestingWithdrawBuilder';
+export { explainTonTransaction } from './explainTransactionWasm';
+export type { ExplainTonTransactionWasmOptions } from './explainTransactionWasm';
 export { Interface, Utils };

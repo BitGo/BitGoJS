@@ -1,4 +1,5 @@
 import { DefaultKeys, Ed25519KeyPair, KeyPairOptions, toUint8Array } from '@bitgo/sdk-core';
+import { encodeAddress } from '@bitgo/wasm-ton';
 import utils from './utils';
 import * as nacl from 'tweetnacl';
 
@@ -37,21 +38,8 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   getAddress(): string {
-    throw new Error('Method not implemented.');
-
-    // this is the async way to get the address using tonweb library
-    // but we cannot use it as it is aysnc, there is a getAddressfromPublicKey in utlis.ts
-    /*
-    const tonweb = new TonWeb(new TonWeb.HttpProvider(''));
-
-    const WalletClass = tonweb.wallet.all['v4R2'];
-    const wallet = new WalletClass(tonweb.provider, {
-      publicKey: Buffer.from(this.keyPair.pub),
-      wc: 0
-    });
-    const address = await wallet.getAddress();
-    return address.toString(true, true, true);
-    */
+    const pubKeyBytes = Buffer.from(this.keyPair.pub, 'hex');
+    return encodeAddress(pubKeyBytes, true);
   }
 
   /**
