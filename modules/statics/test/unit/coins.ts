@@ -10,6 +10,7 @@ import {
   createTokenMapUsingConfigDetails,
   createTokenMapUsingTrimmedConfigDetails,
   createTokenUsingTrimmedConfigDetails,
+  DynamicCoin,
   EosCoin,
   Erc20Coin,
   EthereumNetwork,
@@ -18,6 +19,7 @@ import {
   HederaToken,
   Networks,
   NetworkType,
+  registerNetwork,
   SolCoin,
   SuiCoin,
   tokens,
@@ -31,9 +33,12 @@ import {
   amsTokenConfig,
   amsTokenConfigWithCustomToken,
   amsTokenWithUnsupportedNetwork,
+  dynamicBaseChainFullConfig,
+  dynamicTestNetwork,
   incorrectAmsTokenConfig,
   reducedAmsTokenConfig,
   reducedTokenConfigForAllChains,
+  trimmedDynamicBaseChainConfig,
 } from './resources/amsTokenConfig';
 import { EthLikeErc20Token } from '../../../sdk-coin-evm/src';
 import { allCoinsAndTokens } from '../../src/allCoinsAndTokens';
@@ -1419,6 +1424,84 @@ describe('create token map using config details', () => {
       const coinName = coins.coinNameFromChainId(300);
       should(coinName).not.be.undefined();
       // Note: This may return 'tzketh' due to legacy mapping - verify expected behavior
+    });
+  });
+});
+
+describe('DynamicCoin and dynamic base chain support', function () {
+  describe('createToken with dynamic base chain', function () {
+    it('should return a DynamicCoin when isToken is false with a BaseNetwork instance', function () {
+      const config = dynamicBaseChainFullConfig['mydynchain'][0];
+      const coin = createToken(config);
+      coin.should.not.be.undefined();
+      coin.should.be.instanceOf(DynamicCoin);
+      coin.isToken.should.equal(false);
+      coin.name.should.equal('mydynchain');
+      coin.decimalPlaces.should.equal(18);
+      coin.network.should.be.instanceOf(BaseNetwork);
+      Object.isFrozen(coin).should.be.true();
+    });
+
+    it('should resolve network from a JSON string via getNetwork', function () {
+      const config = {
+        ...dynamicBaseChainFullConfig['mydynchain'][0],
+        network: JSON.stringify({ name: 'AmsJsonNet', type: 'testnet', family: 'mydynfamily' }),
+      };
+      const coin = createToken(config);
+      coin.should.not.be.undefined();
+      coin.should.be.instanceOf(DynamicCoin);
+      coin.network.name.should.equal('AmsJsonNet');
+    });
+
+    it('should return undefined when network cannot be resolved', function () {
+      const config = {
+        ...dynamicBaseChainFullConfig['mydynchain'][0],
+        network: 'NonExistentNetwork',
+      };
+      const coin = createToken(config);
+      should(coin).be.undefined();
+    });
+  });
+
+  describe('createTokenMapUsingTrimmedConfigDetails with base chains', function () {
+    before(function () {
+      try {
+        registerNetwork(dynamicTestNetwork);
+      } catch {
+        // already registered from a prior test run in the same process
+      }
+    });
+
+    it('should include a dynamic base chain when its network is pre-registered', function () {
+      const coinMap = createTokenMapUsingTrimmedConfigDetails(trimmedDynamicBaseChainConfig);
+      coinMap.has('mydynchain').should.be.true();
+      const coin = coinMap.get('mydynchain');
+      coin.features.should.containDeep(['account-model']);
+    });
+
+    it('should skip a base chain whose network is not pre-registered', function () {
+      const config = {
+        mydynchain2: [
+          {
+            ...trimmedDynamicBaseChainConfig['mydynchain'][0],
+            name: 'mydynchain2',
+            network: { name: 'UnregisteredXYZ' },
+          },
+        ],
+      };
+      const coinMap = createTokenMapUsingTrimmedConfigDetails(config);
+      coinMap.has('mydynchain2').should.be.false();
+    });
+
+    it('should return undefined when the coin already exists in the static coin map', function () {
+      const config = {
+        ...trimmedDynamicBaseChainConfig['mydynchain'][0],
+        name: 'btc',
+        id: 'btc',
+        isToken: false,
+      };
+      const coin = createTokenUsingTrimmedConfigDetails(config);
+      should(coin).be.undefined();
     });
   });
 });

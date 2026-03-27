@@ -1,5 +1,5 @@
 import 'should';
-import { Networks, NetworkType } from '../../src/networks';
+import { BaseNetwork, DynamicNetwork, getNetwork, Networks, NetworkType } from '../../src/networks';
 
 Object.entries(Networks).forEach(([category, networks]) => {
   Object.entries(networks).forEach(([networkName, network]) => {
@@ -61,5 +61,28 @@ Object.entries(Networks).forEach(([category, networks]) => {
         Networks.test.ada.accountExplorerUrl.should.equal('https://preprod.cardanoscan.io/address/');
       });
     });
+  });
+});
+
+describe('DynamicNetwork and getNetwork', function () {
+  it('DynamicNetwork should be an instance of BaseNetwork', function () {
+    const network = new DynamicNetwork({ name: 'TestDynNet', type: 'testnet', family: 'eth' });
+    network.should.be.instanceOf(BaseNetwork);
+    network.name.should.equal('TestDynNet');
+    network.type.should.equal(NetworkType.TESTNET);
+  });
+
+  it('getNetwork should resolve JSON string, static name, and throw for unknown', function () {
+    // JSON-encoded DynamicNetworkOptions
+    const jsonNetwork = getNetwork(JSON.stringify({ name: 'AmsNet', type: 'mainnet', family: 'sol' }));
+    jsonNetwork.should.be.instanceOf(BaseNetwork);
+    jsonNetwork.name.should.equal('AmsNet');
+
+    // Static network by name
+    const staticNetwork = getNetwork('Ethereum');
+    staticNetwork.should.deepEqual(Networks.main.ethereum);
+
+    // Unknown name throws
+    (() => getNetwork('NonExistentNetworkXYZ')).should.throw('Network NonExistentNetworkXYZ not found');
   });
 });

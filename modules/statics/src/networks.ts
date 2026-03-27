@@ -2539,6 +2539,95 @@ class TempoTestnet extends Testnet implements EthereumNetwork {
   tokenOperationHashPrefix = '42431';
 }
 
+/**
+ * Constructor options for {@link DynamicNetwork}.
+ * Accepts string-typed `type` and `family` so AMS JSON can be passed directly.
+ * Fields mirror BaseNetwork + AccountNetwork + EthereumNetwork.
+ */
+export interface DynamicNetworkOptions {
+  // BaseNetwork
+  name: string;
+  type: string;
+  family: string;
+  explorerUrl?: string;
+  // AccountNetwork
+  accountExplorerUrl?: string;
+  blockExplorerUrl?: string;
+  // EthereumNetwork
+  chainId?: number;
+  batcherContractAddress?: string;
+  forwarderFactoryAddress?: string;
+  forwarderImplementationAddress?: string;
+  walletFactoryAddress?: string;
+  walletImplementationAddress?: string;
+  walletV2FactoryAddress?: string;
+  walletV2ImplementationAddress?: string;
+  walletV4FactoryAddress?: string;
+  walletV4ImplementationAddress?: string;
+  walletV2ForwarderFactoryAddress?: string;
+  walletV2ForwarderImplementationAddress?: string;
+  walletV4ForwarderFactoryAddress?: string;
+  walletV4ForwarderImplementationAddress?: string;
+  nativeCoinOperationHashPrefix?: string;
+  tokenOperationHashPrefix?: string;
+}
+
+/**
+ * Concrete network class for AMS-discovered chains not yet registered in local statics.
+ * Accepts string-typed type/family and casts to enums internally (safe since both are string enums).
+ * Currently covers BaseNetwork + AccountNetwork + EthereumNetwork fields.
+ */
+export class DynamicNetwork extends BaseNetwork {
+  public readonly name: string;
+  public readonly type: NetworkType;
+  public readonly family: CoinFamily;
+  public readonly explorerUrl: string | undefined;
+  public readonly accountExplorerUrl?: string;
+  public readonly blockExplorerUrl?: string;
+  public readonly chainId?: number;
+  public readonly batcherContractAddress?: string;
+  public readonly forwarderFactoryAddress?: string;
+  public readonly forwarderImplementationAddress?: string;
+  public readonly walletFactoryAddress?: string;
+  public readonly walletImplementationAddress?: string;
+  public readonly walletV2FactoryAddress?: string;
+  public readonly walletV2ImplementationAddress?: string;
+  public readonly walletV4FactoryAddress?: string;
+  public readonly walletV4ImplementationAddress?: string;
+  public readonly walletV2ForwarderFactoryAddress?: string;
+  public readonly walletV2ForwarderImplementationAddress?: string;
+  public readonly walletV4ForwarderFactoryAddress?: string;
+  public readonly walletV4ForwarderImplementationAddress?: string;
+  public readonly nativeCoinOperationHashPrefix?: string;
+  public readonly tokenOperationHashPrefix?: string;
+
+  constructor(options: DynamicNetworkOptions) {
+    super();
+    this.name = options.name;
+    this.type = options.type as NetworkType;
+    this.family = options.family as CoinFamily;
+    this.explorerUrl = options.explorerUrl;
+    this.accountExplorerUrl = options.accountExplorerUrl;
+    this.blockExplorerUrl = options.blockExplorerUrl;
+    this.chainId = options.chainId;
+    this.batcherContractAddress = options.batcherContractAddress;
+    this.forwarderFactoryAddress = options.forwarderFactoryAddress;
+    this.forwarderImplementationAddress = options.forwarderImplementationAddress;
+    this.walletFactoryAddress = options.walletFactoryAddress;
+    this.walletImplementationAddress = options.walletImplementationAddress;
+    this.walletV2FactoryAddress = options.walletV2FactoryAddress;
+    this.walletV2ImplementationAddress = options.walletV2ImplementationAddress;
+    this.walletV4FactoryAddress = options.walletV4FactoryAddress;
+    this.walletV4ImplementationAddress = options.walletV4ImplementationAddress;
+    this.walletV2ForwarderFactoryAddress = options.walletV2ForwarderFactoryAddress;
+    this.walletV2ForwarderImplementationAddress = options.walletV2ForwarderImplementationAddress;
+    this.walletV4ForwarderFactoryAddress = options.walletV4ForwarderFactoryAddress;
+    this.walletV4ForwarderImplementationAddress = options.walletV4ForwarderImplementationAddress;
+    this.nativeCoinOperationHashPrefix = options.nativeCoinOperationHashPrefix;
+    this.tokenOperationHashPrefix = options.tokenOperationHashPrefix;
+  }
+}
+
 export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
@@ -2797,4 +2886,58 @@ const networkByName: Map<string, BaseNetwork> = new Map(
  */
 export function getNetworkByName(name: string): BaseNetwork | undefined {
   return networkByName.get(name);
+}
+
+export function getNetworksMap(): Map<string, BaseNetwork> {
+  return new Map(networkByName);
+}
+
+/**
+ * Dynamically register a new network in the lookup map.
+ * Throws if a network with the same name is already registered.
+ */
+export function registerNetwork(network: BaseNetwork): void {
+  if (networkByName.has(network.name)) {
+    throw new Error(`Network '${network.name}' is already registered`);
+  }
+  networkByName.set(network.name, network);
+}
+
+/**
+ * Look up a network by its display name or JSON representation.
+ *
+ * Resolution order:
+ *   1. If `network` is a JSON string representing a DynamicNetworkOptions object
+ *      (must have `name`, `type`, and `family` fields), construct and
+ *      return a new DynamicNetwork instance.
+ *   2. Local statics cache via getNetworkByName().
+ *
+ * @param network - A network display name (e.g. "bitcoin") or a JSON-encoded
+ *   DynamicNetworkOptions object.
+ * @returns The matching BaseNetwork (or DynamicNetwork) instance.
+ * @throws {Error} If the network is not found in local statics and the input
+ *   is not a valid DynamicNetworkOptions JSON string.
+ */
+export function getNetwork(network: string): BaseNetwork {
+  // Check if the input is a JSON-encoded DynamicNetworkOptions object.
+  try {
+    const parsed = JSON.parse(network);
+    if (
+      parsed !== null &&
+      typeof parsed === 'object' &&
+      typeof parsed.name === 'string' &&
+      typeof parsed.type === 'string' &&
+      typeof parsed.family === 'string'
+    ) {
+      return new DynamicNetwork(parsed as DynamicNetworkOptions);
+    }
+  } catch {
+    // Not valid JSON — fall through to local lookup by name.
+  }
+
+  const networkObj = getNetworkByName(network);
+  if (!networkObj) {
+    throw new Error(`Network ${network} not found`);
+  }
+  return networkObj;
 }

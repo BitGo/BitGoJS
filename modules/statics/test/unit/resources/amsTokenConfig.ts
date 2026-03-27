@@ -1,3 +1,39 @@
+import { DynamicNetwork } from '../../../src/networks';
+
+export const dynamicTestNetwork = new DynamicNetwork({
+  name: 'MyDynamicTestnet',
+  type: 'testnet',
+  family: 'mydynfamily',
+  explorerUrl: 'https://explorer.mydyn.io/tx/',
+  chainId: 99999,
+});
+
+const dynamicBaseChainEntry = {
+  id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  fullName: 'My Dynamic Chain',
+  name: 'mydynchain',
+  family: 'mydynfamily',
+  isToken: false,
+  decimalPlaces: 18,
+  asset: 'mydynchain',
+  primaryKeyCurve: 'secp256k1',
+  features: ['account-model'],
+  prefix: '',
+  suffix: 'MYDYN',
+  baseUnit: 'mydynwei',
+  kind: 'crypto',
+};
+
+export const dynamicBaseChainFullConfig = {
+  mydynchain: [{ ...dynamicBaseChainEntry, network: dynamicTestNetwork }],
+};
+
+export const trimmedDynamicBaseChainConfig = {
+  mydynchain: [
+    { ...dynamicBaseChainEntry, network: { name: 'MyDynamicTestnet' }, additionalFeatures: ['account-model'] },
+  ],
+};
+
 export const amsTokenConfig = {
   'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L': [
     {
