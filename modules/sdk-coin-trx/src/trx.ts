@@ -36,7 +36,7 @@ import {
   isTssVerifyAddressOptions,
 } from '@bitgo/sdk-core';
 import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
-import { Interface, Utils, WrappedBuilder, KeyPair as TronKeyPair } from './lib';
+import { Enum, Interface, Utils, WrappedBuilder, KeyPair as TronKeyPair } from './lib';
 import { ValueFields, TransactionReceipt } from './lib/iface';
 import { getBuilder } from './lib/builder';
 import { isInteger, isUndefined } from 'lodash';
@@ -364,7 +364,7 @@ export class Trx extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const { txParams, txPrebuild } = params;
+    const { txParams, txPrebuild, walletType } = params;
 
     if (!txParams) {
       throw new Error('missing txParams');
@@ -378,6 +378,28 @@ export class Trx extends BaseCoin {
       throw new Error('missing txHex in txPrebuild');
     }
 
+    if (walletType === 'tss') {
+      // For TSS wallets, txHex is the signableHex (raw_data_hex protobuf bytes),
+      // not a full transaction JSON. Decode it directly via protobuf.
+      // Note: decodeTransaction already validates exactly 1 contract exists.
+      const decodedTx = Utils.decodeTransaction(txPrebuild.txHex);
+
+      // decodedTx uses a numeric enum for contract type (from protobuf decoding),
+      // unlike the multisig path which checks the string 'TransferContract' from node JSON.
+      if (decodedTx.contractType === Enum.ContractType.Transfer) {
+        // For Transfer contracts, decoded contract is an array with one element.
+        // Addresses from decodeTransaction are already in base58 format (converted by decodeTransferContract).
+        if (!Array.isArray(decodedTx.contract) || decodedTx.contract.length !== 1) {
+          throw new Error('Invalid Transfer contract structure.');
+        }
+        return this.validateTransferContract(decodedTx.contract[0], txParams, true);
+      }
+
+      return true;
+    }
+
+    // On-chain multisig path: txHex is a full transaction JSON string (with txID, raw_data, raw_data_hex).
+    // The builder parses this JSON and addresses remain in hex format from the node response.
     const rawTx = txPrebuild.txHex;
     const txBuilder = getBuilder(this.getChain()).from(rawTx);
     const tx = await txBuilder.build();
@@ -397,9 +419,15 @@ export class Trx extends BaseCoin {
   }
 
   /**
-   * Validate Transfer contract (native TRX transfer)
+   * Validate Transfer contract (native TRX transfer).
+   * Shared by both on-chain multisig and TSS wallet verification paths.
+   *
+   * @param contract The contract object from the transaction
+   * @param txParams The original transaction parameters
+   * @param addressesInBase58 When true, addresses are already in base58 format (TSS path via protobuf decoding).
+   *   When false (default), addresses are in hex and need conversion (on-chain multisig path via builder JSON).
    */
-  private validateTransferContract(contract: any, txParams: any): boolean {
+  private validateTransferContract(contract: any, txParams: any, addressesInBase58 = false): boolean {
     if (!('parameter' in contract) || !contract.parameter?.value) {
       throw new Error('Invalid Transfer contract structure');
     }
@@ -417,7 +445,7 @@ export class Trx extends BaseCoin {
       const expectedAmount = recipient.amount.toString();
       const expectedDestination = recipient.address;
       const actualAmount = value.amount.toString();
-      const actualDestination = Utils.getBase58AddressFromHex(value.to_address);
+      const actualDestination = addressesInBase58 ? value.to_address : Utils.getBase58AddressFromHex(value.to_address);
 
       if (expectedAmount !== actualAmount) {
         throw new Error('transaction amount in txPrebuild does not match the value given by client');
