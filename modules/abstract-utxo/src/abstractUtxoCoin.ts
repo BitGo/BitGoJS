@@ -79,6 +79,7 @@ import {
   getFullNameFromCoinName,
   getMainnetCoinName,
   getNetworkFromCoinName,
+  isMainnetCoin,
   isUtxoCoinNameMainnet,
   UtxoCoinName,
   UtxoCoinNameMainnet,
@@ -408,6 +409,15 @@ export abstract class AbstractUtxoCoin
   implements Musig2Participant<utxolib.bitgo.UtxoPsbt>, Musig2Participant<fixedScriptWallet.BitGoPsbt>
 {
   abstract name: UtxoCoinName;
+
+  /**
+   * Returns whether this coin is a mainnet coin.
+   * Default implementation uses the name property.
+   * Can be overridden by subclasses.
+   */
+  protected isMainnet(): boolean {
+    return isMainnetCoin(this.name);
+  }
 
   public readonly amountType: 'number' | 'bigint';
 
