@@ -14,6 +14,7 @@ import { TavaxP } from '@bitgo/sdk-coin-avaxp';
 import { decodeTransaction, parseTransaction, walletSimpleABI } from './helpers';
 import * as sinon from 'sinon';
 import { BN } from 'ethereumjs-util';
+import { EthereumNetwork } from '@bitgo/statics';
 
 nock.enableNetConnect();
 
@@ -374,6 +375,35 @@ describe('Avalanche C-Chain', function () {
       halfSignedRawTx.halfSigned.recipients[0].address.should.equals(customRecipients[0].address);
       halfSignedRawTx.halfSigned.recipients[0].amount.should.equals(customRecipients[0].amount);
       halfSignedRawTx.halfSigned.recipients[0].data.should.equals(customRecipients[0].data);
+    });
+
+    it('should include isBatch, contractSequenceId, and sequenceId in half-signed txParams for batch transactions', async function () {
+      const builder = getBuilder('tavaxc') as TransactionBuilder;
+      builder.fee({
+        fee: '280000000000',
+        gasLimit: '7000000',
+      });
+      builder.counter(1);
+      builder.type(TransactionType.Send);
+      builder.contract(account_1.address);
+      builder.transfer().amount('1').to(account_2.address).expirationTime(10000).contractSequenceId(1);
+
+      const unsignedTx = await builder.build();
+      const unsignedTxForBroadcasting = unsignedTx.toBroadcastFormat();
+
+      const halfSignedRawTx = await tavaxCoin.signTransaction({
+        txPrebuild: {
+          txHex: unsignedTxForBroadcasting,
+          isBatch: true,
+          nextContractSequenceId: 42,
+        },
+        prv: account_1.owner_2,
+        sequenceId: '7',
+      });
+
+      halfSignedRawTx.halfSigned.isBatch.should.equal(true);
+      halfSignedRawTx.halfSigned.contractSequenceId.should.equal(42);
+      halfSignedRawTx.halfSigned.sequenceId.should.equal('7');
     });
   });
 
@@ -782,6 +812,176 @@ describe('Avalanche C-Chain', function () {
       await tavaxCoin
         .verifyTransaction({ txParams, txPrebuild, wallet, verification })
         .should.be.rejectedWith('coin in txPrebuild did not match that in txParams supplied by client');
+    });
+
+    describe('Batch transaction verification', () => {
+      let batcherContractAddress: string;
+
+      beforeEach(function () {
+        batcherContractAddress = (tavaxCoin.staticsCoin?.network as EthereumNetwork)?.batcherContractAddress as string;
+      });
+      it('should verify a native coin batch transaction with matching total amount', async function () {
+        const wallet = new Wallet(bitgo, tavaxCoin, {});
+
+        const txParams = {
+          recipients: [
+            { amount: '1000000000000', address: address1 },
+            { amount: '2500000000000', address: address2 },
+          ],
+          wallet: wallet,
+          walletPassphrase: 'fakeWalletPassphrase',
+        };
+
+        const txPrebuild = {
+          recipients: [{ amount: '3500000000000', address: batcherContractAddress }],
+          nextContractSequenceId: 0,
+          gasPrice: 20000000000,
+          gasLimit: 500000,
+          isBatch: true,
+          coin: 'tavaxc',
+          walletId: 'fakeWalletId',
+          walletContractAddress: 'fakeWalletContractAddress',
+        };
+
+        const verification = {};
+
+        const isTransactionVerified = await tavaxCoin.verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet,
+          verification,
+        });
+        isTransactionVerified.should.equal(true);
+      });
+
+      it('should verify a token batch transaction with zero native amount', async function () {
+        const wallet = new Wallet(bitgo, tavaxCoin, {});
+
+        const txParams = {
+          recipients: [
+            { amount: '1000000000000', address: address1 },
+            { amount: '2500000000000', address: address2 },
+          ],
+          wallet: wallet,
+          walletPassphrase: 'fakeWalletPassphrase',
+          tokenName: 'tavaxc:USDC',
+        };
+
+        const txPrebuild = {
+          recipients: [{ amount: '0', address: batcherContractAddress }],
+          nextContractSequenceId: 0,
+          gasPrice: 20000000000,
+          gasLimit: 500000,
+          isBatch: true,
+          coin: 'tavaxc',
+          walletId: 'fakeWalletId',
+          walletContractAddress: 'fakeWalletContractAddress',
+        };
+
+        const verification = {};
+
+        const isTransactionVerified = await tavaxCoin.verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet,
+          verification,
+        });
+        isTransactionVerified.should.equal(true);
+      });
+
+      it('should reject a token batch transaction with non-zero native amount', async function () {
+        const wallet = new Wallet(bitgo, tavaxCoin, {});
+
+        const txParams = {
+          recipients: [
+            { amount: '1000000000000', address: address1 },
+            { amount: '2500000000000', address: address2 },
+          ],
+          wallet: wallet,
+          walletPassphrase: 'fakeWalletPassphrase',
+          tokenName: 'tavaxc:USDC',
+        };
+
+        const txPrebuild = {
+          recipients: [{ amount: '1000000000000', address: batcherContractAddress }],
+          nextContractSequenceId: 0,
+          gasPrice: 20000000000,
+          gasLimit: 500000,
+          isBatch: true,
+          coin: 'tavaxc',
+          walletId: 'fakeWalletId',
+          walletContractAddress: 'fakeWalletContractAddress',
+        };
+
+        const verification = {};
+
+        await tavaxCoin
+          .verifyTransaction({ txParams, txPrebuild, wallet, verification })
+          .should.be.rejectedWith('batch token transaction amount in txPrebuild should be zero for token transfers');
+      });
+
+      it('should reject a native coin batch transaction with mismatched total amount', async function () {
+        const wallet = new Wallet(bitgo, tavaxCoin, {});
+
+        const txParams = {
+          recipients: [
+            { amount: '1000000000000', address: address1 },
+            { amount: '2500000000000', address: address2 },
+          ],
+          wallet: wallet,
+          walletPassphrase: 'fakeWalletPassphrase',
+        };
+
+        const txPrebuild = {
+          recipients: [{ amount: '9999999999999', address: batcherContractAddress }],
+          nextContractSequenceId: 0,
+          gasPrice: 20000000000,
+          gasLimit: 500000,
+          isBatch: true,
+          coin: 'tavaxc',
+          walletId: 'fakeWalletId',
+          walletContractAddress: 'fakeWalletContractAddress',
+        };
+
+        const verification = {};
+
+        await tavaxCoin
+          .verifyTransaction({ txParams, txPrebuild, wallet, verification })
+          .should.be.rejectedWith(
+            'batch transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
+          );
+      });
+
+      it('should reject a batch transaction sent to wrong batcher contract address', async function () {
+        const wallet = new Wallet(bitgo, tavaxCoin, {});
+        const wrongBatcherAddress = '0x0000000000000000000000000000000000000001';
+
+        const txParams = {
+          recipients: [
+            { amount: '1000000000000', address: address1 },
+            { amount: '2500000000000', address: address2 },
+          ],
+          wallet: wallet,
+          walletPassphrase: 'fakeWalletPassphrase',
+        };
+
+        const txPrebuild = {
+          recipients: [{ amount: '3500000000000', address: wrongBatcherAddress }],
+          nextContractSequenceId: 0,
+          gasPrice: 20000000000,
+          gasLimit: 500000,
+          isBatch: true,
+          coin: 'tavaxc',
+          walletId: 'fakeWalletId',
+          walletContractAddress: 'fakeWalletContractAddress',
+        };
+
+        const verification = {};
+
+        await tavaxCoin
+          .verifyTransaction({ txParams, txPrebuild, wallet, verification })
+          .should.be.rejectedWith('recipient address of txPrebuild does not match batcher address');
+      });
     });
   });
 
