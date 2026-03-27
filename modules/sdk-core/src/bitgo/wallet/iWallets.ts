@@ -134,10 +134,17 @@ export interface AcceptShareOptions {
   newWalletPassphrase?: string;
 }
 
+export interface AcceptShareWebauthnInfo {
+  otpDeviceId: string;
+  prfSalt: string;
+  passphrase: string;
+}
+
 export interface BulkAcceptShareOptions {
   walletShareIds: string[];
   userLoginPassword: string;
   newWalletPassphrase?: string;
+  webauthnInfo?: AcceptShareWebauthnInfo;
 }
 
 export interface AcceptShareOptionsRequest {
@@ -148,6 +155,11 @@ export interface AcceptShareOptionsRequest {
    * Required for userMultiKeyRotationRequired shares.
    */
   pub?: string;
+  webauthnInfo?: {
+    otpDeviceId: string;
+    prfSalt: string;
+    encryptedPrv: string;
+  };
 }
 
 export interface BulkUpdateWalletShareOptions {
