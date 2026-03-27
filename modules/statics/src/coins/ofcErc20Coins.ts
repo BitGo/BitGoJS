@@ -5113,7 +5113,7 @@ export const tOfcErc20Coins = [
     18,
     UnderlyingAsset['eth:arm-weth-eeth']
   ),
-  ofcerc20('d8f3b2c7-4e9a-4f6b-a5c0-9e2f3a4b5c6d', 'ofceth:cashplus', 'CASH+', 18, UnderlyingAsset['eth:cashplus']),
+  ofcerc20('d8f3b2c7-4e9a-4f6b-a5c0-9e2f3a4b5c6d', 'ofceth:cashplus', 'CashPlus', 18, UnderlyingAsset['eth:cashplus']),
   ofcerc20('e9a4c3d8-5f0b-4a7c-86d1-af3a4b5c6d7e', 'ofceth:island', 'ISLAND Token', 18, UnderlyingAsset['eth:island']),
   ofcerc20('63f1d5de-5729-4a71-ba6e-dcd7095c20da', 'ofceth:job', 'jobchain', 8, UnderlyingAsset['eth:job']),
   ofcerc20('90169666-a3ee-4ff6-b447-0553a1a4cbb8', 'ofceth:irys', 'irys', 18, UnderlyingAsset['eth:irys']),
