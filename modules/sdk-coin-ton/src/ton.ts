@@ -32,8 +32,10 @@ import {
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { Transaction as WasmTonTransaction, decode as wasmDecode, encode as wasmEncode } from '@bitgo/wasm-ton';
 import { KeyPair as TonKeyPair } from './lib/keyPair';
 import { TransactionBuilderFactory, Utils, TransferBuilder, TokenTransferBuilder, TransactionBuilder } from './lib';
+import { explainTonTransaction } from './lib/explainTransactionWasm';
 import { getFeeEstimate } from './lib/utils';
 
 export interface TonParseTransactionOptions extends ParseTransactionOptions {
@@ -115,6 +117,36 @@ export class Ton extends BaseCoin {
     const rawTx = txPrebuild.txHex;
     if (!rawTx) {
       throw new Error('missing required tx prebuild property txHex');
+    }
+
+    if (this.getChain() === 'tton') {
+      const toBounceable = (address: string) => {
+        const decoded = wasmDecode(this.getAddressDetails(address).address);
+        return wasmEncode(decoded.workchainId, decoded.addressHash, true);
+      };
+      const txBase64 = Buffer.from(rawTx, 'hex').toString('base64');
+      const explainedTx = explainTonTransaction({ txBase64 });
+      if (txParams.recipients !== undefined) {
+        const filteredRecipients = txParams.recipients.map((recipient) => ({
+          address: toBounceable(recipient.address),
+          amount: BigInt(recipient.amount),
+        }));
+        const filteredOutputs = explainedTx.outputs.map((output) => ({
+          address: toBounceable(output.address),
+          amount: BigInt(output.amount),
+        }));
+        if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+          throw new Error('Tx outputs does not match with expected txParams recipients');
+        }
+        let totalAmount = new BigNumber(0);
+        for (const recipient of txParams.recipients) {
+          totalAmount = totalAmount.plus(recipient.amount);
+        }
+        if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
+          throw new Error('Tx total amount does not match with expected total amount field');
+        }
+      }
+      return true;
     }
 
     const txBuilder = this.getBuilder().from(Buffer.from(rawTx, 'hex').toString('base64'));
@@ -235,6 +267,10 @@ export class Ton extends BaseCoin {
 
   /** @inheritDoc */
   async getSignablePayload(serializedTx: string): Promise<Buffer> {
+    if (this.getChain() === 'tton') {
+      const tx = WasmTonTransaction.fromBytes(Buffer.from(serializedTx, 'base64'));
+      return Buffer.from(tx.signablePayload());
+    }
     const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
     const rebuiltTransaction = await factory.from(serializedTx).build();
     return rebuiltTransaction.signablePayload;
@@ -242,6 +278,14 @@ export class Ton extends BaseCoin {
 
   /** @inheritDoc */
   async explainTransaction(params: Record<string, any>): Promise<TransactionExplanation> {
+    if (this.getChain() === 'tton') {
+      try {
+        const txBase64 = Buffer.from(params.txHex, 'hex').toString('base64');
+        return explainTonTransaction({ txBase64, toAddressBounceable: params.toAddressBounceable });
+      } catch {
+        throw new Error('Invalid transaction');
+      }
+    }
     try {
       const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
       const transactionBuilder = factory.from(Buffer.from(params.txHex, 'hex').toString('base64'));

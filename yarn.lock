@@ -995,6 +995,11 @@
   resolved "https://registry.npmjs.org/@bitgo/wasm-solana/-/wasm-solana-2.6.0.tgz#c8b57ab010f22f1a1c90681cd180814c4ec2867b"
   integrity sha512-F9H4pXDMhfsZW5gNEcoaBzVoEMOQRP8wbQKmjsxbm5PXBq+0Aj54rOY3bswdrFZK377/aeB+tLjXu3h9i8gInQ==
 
+"@bitgo/wasm-ton@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.npmjs.org/@bitgo/wasm-ton/-/wasm-ton-1.1.1.tgz#3361cbbe06e1fe40d13dbf384ef806b46a5e43df"
+  integrity sha512-Y4x2V2ZcYWlmx42v7dlrKDtT2DuUt8smk8E98mh7RhpiifJhLk2v5RmXDwBl0A3v9TzUOU6qMOnSS/iZ8Pq52w==
+
 "@bitgo/wasm-utxo@^2.1.0":
   version "2.1.0"
   resolved "https://registry.npmjs.org/@bitgo/wasm-utxo/-/wasm-utxo-2.1.0.tgz#a2087b795a3eb7bfca2cc25a88b3491a74d4da06"
