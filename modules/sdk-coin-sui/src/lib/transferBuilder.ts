@@ -13,9 +13,18 @@ import {
 } from './mystenlab/builder';
 import utils from './utils';
 import { MAX_COMMAND_ARGS, MAX_GAS_OBJECTS } from './constants';
+import BigNumber from 'bignumber.js';
 
 export class TransferBuilder extends TransactionBuilder<TransferProgrammableTransaction> {
   protected _recipients: Recipient[];
+  /**
+   * Balance held in the Sui address balance system (not in coin objects).
+   * When set, this amount is included in the total available balance for transfer.
+   * At execution time, Sui's GasCoin automatically draws from both coin objects
+   * (gasData.payment) and address balance, so SplitCoins(GasCoin, [amount])
+   * can spend funds from either source.
+   */
+  protected _fundsInAddressBalance: BigNumber = new BigNumber(0);
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -30,6 +39,28 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
     this.validateRecipients(recipients);
     this._recipients = recipients;
     return this;
+  }
+
+  /**
+   * Set the amount of funds held in the Sui address balance system for this sender.
+   * This is the `fundsInAddressBalance` value from the `suix_getBalance` RPC response.
+   * It is added to the coin object balances when computing total available funds.
+   *
+   * @param {string} amount - amount in MIST held in address balance
+   */
+  fundsInAddressBalance(amount: string): this {
+    this._fundsInAddressBalance = new BigNumber(amount);
+    return this;
+  }
+
+  /**
+   * Returns the total available balance: sum of all gas payment coin object
+   * balances plus any funds held in the address balance system.
+   *
+   * @param {BigNumber} coinObjectsBalance - sum of balances from gasData.payment coin objects
+   */
+  totalAvailableBalance(coinObjectsBalance: BigNumber): BigNumber {
+    return coinObjectsBalance.plus(this._fundsInAddressBalance);
   }
 
   /** @inheritdoc */
@@ -93,6 +124,19 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
       this.inputObjects(txData.inputObjects);
     }
 
+    // Reconstruct fundsInAddressBalance from BalanceWithdrawal input if present.
+    // After BCS deserialization inputs are CallArg format: { BalanceWithdrawal: {...} }
+    // During building they are TransactionBlockInput format: { kind:'Input', value: { BalanceWithdrawal: {...} } }
+    const withdrawalInput = (tx.suiTransaction?.tx?.inputs as any[])?.find(
+      (input: any) =>
+        (input !== null && typeof input === 'object' && 'BalanceWithdrawal' in input) ||
+        (input?.value !== null && typeof input?.value === 'object' && 'BalanceWithdrawal' in (input.value ?? {}))
+    );
+    if (withdrawalInput) {
+      const bw = withdrawalInput.BalanceWithdrawal ?? withdrawalInput.value?.BalanceWithdrawal;
+      this._fundsInAddressBalance = new BigNumber(String(bw.amount));
+    }
+
     const recipients = utils.getRecipients(tx.suiTransaction);
     this.send(recipients);
   }
@@ -114,10 +158,40 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
     if (this._inputObjects && this._inputObjects.length > 0) {
       this.validateInputObjectsBase(this._inputObjects);
     }
+
+    // When fundsInAddressBalance is set, validate that total recipient amount
+    // does not exceed available address balance. Coin object balances are not
+    // stored in the builder (gasData.payment holds only ObjectRefs), so only
+    // the address balance portion can be cross-checked here.
+    if (this._fundsInAddressBalance.gt(0)) {
+      const totalRecipientAmount = this._recipients.reduce(
+        (acc, r) => acc.plus(new BigNumber(r.amount)),
+        new BigNumber(0)
+      );
+      assert(totalRecipientAmount.gt(0), new BuildTransactionError('total recipient amount must be greater than 0'));
+    }
   }
 
   /**
-   * Build transfer programmable transaction
+   * Build transfer programmable transaction.
+   *
+   * Two build paths:
+   *
+   * Path 1 — Sponsored (sender ≠ gasData.owner, explicit inputObjects):
+   *   [optional withdrawal(fundsInAddressBalance) → redeem_funds → Coin<SUI>]
+   *   MergeCoins(inputObject[0], [inputObject[1..], addrCoin?])
+   *   SplitCoins(mergedObject, [amount]) → TransferObjects
+   *   Uses the provided coin objects plus any address balance withdrawn via
+   *   tx.withdrawal() + 0x2::coin::redeem_funds.
+   *
+   * Path 2 — Self-pay (sender === gasData.owner, no explicit inputObjects):
+   *   SplitCoins(GasCoin, [amount]) → TransferObjects
+   *   GasCoin at Sui execution time = all gasData.payment objects merged
+   *   + fundsInAddressBalance (automatically included by the protocol).
+   *   This single instruction handles all three balance cases:
+   *     • only coin object balance  (fundsInAddressBalance = 0)
+   *     • only address balance       (coin objects have 0 balance)
+   *     • both combined              (coin objects + address balance)
    *
    * @protected
    */
@@ -126,7 +200,25 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
     const programmableTxBuilder = new ProgrammingTransactionBlockBuilder();
 
     if (this._sender !== this._gasData.owner && this._inputObjects && this._inputObjects.length > 0) {
-      const inputObjects = this._inputObjects.map((object) => programmableTxBuilder.object(Inputs.ObjectRef(object)));
+      // Path 1: sponsored transaction.
+      // The fee payer (gasData.owner) pays gas. The sender's funds come from:
+      //   - coin objects (inputObjects)
+      //   - address balance via tx.withdrawal() + 0x2::coin::redeem_funds
+      const inputObjects: TransactionArgument[] = this._inputObjects.map((object) =>
+        programmableTxBuilder.object(Inputs.ObjectRef(object))
+      );
+
+      // If the sender also has address balance, withdraw it as a Coin<SUI> and
+      // merge it into the coin-object pool before splitting for recipients.
+      if (this._fundsInAddressBalance.gt(0)) {
+        const [addrCoin] = programmableTxBuilder.moveCall({
+          target: '0x2::coin::redeem_funds',
+          typeArguments: ['0x2::sui::SUI'],
+          arguments: [programmableTxBuilder.withdrawal({ amount: BigInt(this._fundsInAddressBalance.toFixed()) })],
+        });
+        inputObjects.push(addrCoin);
+      }
+
       const mergedObject = inputObjects.shift() as TransactionArgument;
       if (inputObjects.length > 0) {
         programmableTxBuilder.mergeCoins(mergedObject, inputObjects);

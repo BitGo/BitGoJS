@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { TransactionType, Recipient, BuildTransactionError, BaseKey } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, SuiCoin } from '@bitgo/statics';
 import { SuiTransaction, SuiTransactionType, TokenTransferProgrammableTransaction } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
@@ -12,10 +12,19 @@ import {
   TransactionBlock as ProgrammingTransactionBlockBuilder,
   TransactionArgument,
 } from './mystenlab/builder';
+import BigNumber from 'bignumber.js';
 
 export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgrammableTransaction> {
   protected _recipients: Recipient[];
   protected _inputObjects: SuiObjectRef[];
+  /**
+   * Balance held in the address balance system for the token being transferred.
+   * When set, this amount is included in the total available balance.
+   * At execution time, tx.withdrawal() + 0x2::coin::redeem_funds converts it
+   * to a Coin<T> that is merged with any coin objects before splitting.
+   */
+  protected _fundsInAddressBalance: BigNumber = new BigNumber(0);
+
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._transaction = new TokenTransferTransaction(_coinConfig);
@@ -23,6 +32,14 @@ export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgra
 
   protected get transactionType(): TransactionType {
     return TransactionType.Send;
+  }
+
+  /**
+   * The full coin type string derived from the coin config (e.g. `0xabc::my_token::MY_TOKEN`).
+   */
+  private get tokenCoinType(): string {
+    const config = this._coinConfig as SuiCoin;
+    return `${config.packageId}::${config.module}::${config.symbol}`;
   }
 
   /** @inheritdoc */
@@ -78,8 +95,23 @@ export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgra
     this.gasData(txData.gasData);
     const recipients = utils.getRecipients(tx.suiTransaction);
     this.send(recipients);
-    assert(txData.inputObjects);
-    this.inputObjects(txData.inputObjects);
+
+    // Reconstruct fundsInAddressBalance from BalanceWithdrawal input if present.
+    // After BCS deserialization inputs are CallArg format: { BalanceWithdrawal: {...} }
+    // During building they are TransactionBlockInput format: { kind:'Input', value: { BalanceWithdrawal: {...} } }
+    const withdrawalInput = (tx.suiTransaction?.tx?.inputs as any[])?.find(
+      (input: any) =>
+        (input !== null && typeof input === 'object' && 'BalanceWithdrawal' in input) ||
+        (input?.value !== null && typeof input?.value === 'object' && 'BalanceWithdrawal' in (input.value ?? {}))
+    );
+    if (withdrawalInput) {
+      const bw = withdrawalInput.BalanceWithdrawal ?? withdrawalInput.value?.BalanceWithdrawal;
+      this._fundsInAddressBalance = new BigNumber(String(bw.amount));
+    }
+
+    if (txData.inputObjects && txData.inputObjects.length > 0) {
+      this.inputObjects(txData.inputObjects);
+    }
   }
 
   send(recipients: Recipient[]): this {
@@ -89,8 +121,18 @@ export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgra
   }
 
   inputObjects(inputObject: SuiObjectRef[]): this {
-    this.validateInputObjects(inputObject);
+    this.validateInputObjectRefs(inputObject);
     this._inputObjects = inputObject;
+    return this;
+  }
+
+  /**
+   * Set the amount of token funds held in the Sui address balance system for this sender.
+   *
+   * @param {string} amount - amount in base units held in address balance
+   */
+  fundsInAddressBalance(amount: string): this {
+    this._fundsInAddressBalance = new BigNumber(amount);
     return this;
   }
 
@@ -106,21 +148,37 @@ export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgra
     );
     assert(this._gasData, new BuildTransactionError('gasData is required before building'));
     this.validateGasData(this._gasData);
-    this.validateInputObjects(this._inputObjects);
+
+    // Must have at least coin objects OR address balance
+    assert(
+      (this._inputObjects && this._inputObjects.length > 0) || this._fundsInAddressBalance.gt(0),
+      new BuildTransactionError('input objects or fundsInAddressBalance required before building')
+    );
+    if (this._inputObjects && this._inputObjects.length > 0) {
+      this.validateInputObjectRefs(this._inputObjects);
+    }
   }
 
-  private validateInputObjects(inputObjects: SuiObjectRef[]): void {
-    assert(
-      inputObjects && inputObjects.length > 0,
-      new BuildTransactionError('input objects required before building')
-    );
-    inputObjects.forEach((inputObject) => {
-      this.validateSuiObjectRef(inputObject, 'input object');
-    });
+  /** Validates the individual object refs (does not require non-empty array). */
+  private validateInputObjectRefs(inputObjects: SuiObjectRef[]): void {
+    if (inputObjects) {
+      inputObjects.forEach((inputObject) => {
+        this.validateSuiObjectRef(inputObject, 'input object');
+      });
+    }
   }
 
   /**
-   * Build SuiTransaction
+   * Build SuiTransaction.
+   *
+   * Two build paths:
+   *
+   * Path A — coin objects only (fundsInAddressBalance = 0):
+   *   MergeCoins(inputObject[0], [inputObject[1..]]) → SplitCoins → TransferObjects
+   *
+   * Path B — coin objects + address balance (or address balance only):
+   *   MoveCall(0x2::coin::redeem_funds, [withdrawal(amount, coinType)]) → Coin<T>
+   *   MergeCoins(inputObject[0] | addrCoin, [rest...]) → SplitCoins → TransferObjects
    *
    * @return {SuiTransaction<TokenTransferProgrammableTransaction>}
    * @protected
@@ -130,9 +188,27 @@ export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgra
 
     const programmableTxBuilder = new ProgrammingTransactionBlockBuilder();
 
-    const inputObjects = this._inputObjects.map((object) => programmableTxBuilder.object(Inputs.ObjectRef(object)));
-    const mergedObject = inputObjects.shift() as TransactionArgument;
+    const inputObjects: TransactionArgument[] = (this._inputObjects ?? []).map((object) =>
+      programmableTxBuilder.object(Inputs.ObjectRef(object))
+    );
 
+    // If address balance is available, withdraw it as Coin<T> and add to the pool
+    if (this._fundsInAddressBalance.gt(0)) {
+      const coinType = this.tokenCoinType;
+      const [addrCoin] = programmableTxBuilder.moveCall({
+        target: '0x2::coin::redeem_funds',
+        typeArguments: [coinType],
+        arguments: [
+          programmableTxBuilder.withdrawal({
+            amount: BigInt(this._fundsInAddressBalance.toFixed()),
+            type: coinType,
+          }),
+        ],
+      });
+      inputObjects.push(addrCoin);
+    }
+
+    const mergedObject = inputObjects.shift() as TransactionArgument;
     if (inputObjects.length > 0) {
       programmableTxBuilder.mergeCoins(mergedObject, inputObjects);
     }

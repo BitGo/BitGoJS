@@ -520,7 +520,9 @@ describe('SUI:', function () {
 
     beforeEach(() => {
       getBalanceStub = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
-      getBalanceStub.withArgs(senderAddress0).resolves('1900000000');
+      getBalanceStub
+        .withArgs(senderAddress0)
+        .resolves({ totalBalance: '1900000000', coinObjectBalance: '1900000000', fundsInAddressBalance: '0' });
 
       getInputCoinsStub = sandBox.stub(Sui.prototype, 'getInputCoins' as keyof Sui);
       getInputCoinsStub.withArgs(senderAddress0).resolves([
@@ -638,7 +640,9 @@ describe('SUI:', function () {
 
     it('should recover a txn for unsigned sweep recovery with multiple input coins', async function () {
       const senderAddress = '0x00e4eaa6a291fe02918452e645b5653cd260a5fc0fb35f6193d580916aa9e389';
-      getBalanceStub.withArgs(senderAddress).resolves('1798002120');
+      getBalanceStub
+        .withArgs(senderAddress)
+        .resolves({ totalBalance: '1798002120', coinObjectBalance: '1798002120', fundsInAddressBalance: '0' });
       getInputCoinsStub.withArgs(senderAddress).resolves([
         {
           coinType: '0x2::sui::SUI',
@@ -747,7 +751,11 @@ describe('SUI:', function () {
     });
 
     it('should recover a token txn for non-bitgo recovery', async function () {
-      getBalanceStub.withArgs(senderAddress0, coinType).resolves('1000');
+      getBalanceStub
+        .withArgs(senderAddress0)
+        .resolves({ totalBalance: '1900000000', coinObjectBalance: '1900000000', fundsInAddressBalance: '0' })
+        .withArgs(senderAddress0, coinType)
+        .resolves({ totalBalance: '1000', coinObjectBalance: '1000', fundsInAddressBalance: '0' });
       getInputCoinsStub.withArgs(senderAddress0, coinType).resolves([
         {
           coinType: '0x36dbef866a1d62bf7328989a10fb2f07d769f4ee587c0de4a0a256e57e0a58a8::deep::DEEP',
@@ -809,14 +817,18 @@ describe('SUI:', function () {
 
       should.equal(NonBitGoTxnJson.id, 'DYW9mA8AZGQntk7HGQUEoEdy8BaH8Hh9Ts294EnqGTEr');
       should.equal(NonBitGoTxnJson.sender, senderAddress0);
-      sandBox.assert.callCount(basecoin.getBalance, 2);
+      sandBox.assert.callCount(basecoin.getBalance, 3);
       sandBox.assert.callCount(basecoin.getInputCoins, 2);
       sandBox.assert.callCount(basecoin.getFeeEstimate, 1);
     });
 
     it('should recover a token txn for unsigned sweep recovery', async function () {
-      getBalanceStub.withArgs(senderAddressColdWallet).resolves('298980240');
-      getBalanceStub.withArgs(senderAddressColdWallet, coinType).resolves('1000');
+      getBalanceStub
+        .withArgs(senderAddressColdWallet)
+        .resolves({ totalBalance: '298980240', coinObjectBalance: '298980240', fundsInAddressBalance: '0' });
+      getBalanceStub
+        .withArgs(senderAddressColdWallet, coinType)
+        .resolves({ totalBalance: '1000', coinObjectBalance: '1000', fundsInAddressBalance: '0' });
 
       getInputCoinsStub.withArgs(senderAddressColdWallet, coinType).resolves([
         {
@@ -910,14 +922,18 @@ describe('SUI:', function () {
       should.equal(unsignedSweepTxnJson.id, 'F8wrUjZYf6xvDW2LzW9DohAKyJFcWgGEvjMoKLxCajmV');
       should.equal(unsignedSweepTxnJson.sender, senderAddressColdWallet);
 
-      sandBox.assert.callCount(basecoin.getBalance, 2);
+      sandBox.assert.callCount(basecoin.getBalance, 3);
       sandBox.assert.callCount(basecoin.getInputCoins, 2);
       sandBox.assert.callCount(basecoin.getFeeEstimate, 1);
     });
 
     it('should recover a token txn for unsigned sweep recovery with multiple input coins', async function () {
-      getBalanceStub.withArgs(senderAddressColdWallet).resolves('298980240');
-      getBalanceStub.withArgs(senderAddressColdWallet, coinType).resolves('11000');
+      getBalanceStub
+        .withArgs(senderAddressColdWallet)
+        .resolves({ totalBalance: '298980240', coinObjectBalance: '298980240', fundsInAddressBalance: '0' });
+      getBalanceStub
+        .withArgs(senderAddressColdWallet, coinType)
+        .resolves({ totalBalance: '11000', coinObjectBalance: '11000', fundsInAddressBalance: '0' });
       getInputCoinsStub.withArgs(senderAddressColdWallet, coinType).resolves([
         {
           coinType: '0x36dbef866a1d62bf7328989a10fb2f07d769f4ee587c0de4a0a256e57e0a58a8::deep::DEEP',
@@ -1016,7 +1032,7 @@ describe('SUI:', function () {
       should.equal(unsignedSweepTxnJson.id, '4qeXJP7pTa6pmyAKuJZG9AkGsKM53SDqHVcPjRMFHjc5');
       should.equal(unsignedSweepTxnJson.sender, senderAddressColdWallet);
 
-      sandBox.assert.callCount(basecoin.getBalance, 2);
+      sandBox.assert.callCount(basecoin.getBalance, 3);
       sandBox.assert.callCount(basecoin.getInputCoins, 2);
       sandBox.assert.callCount(basecoin.getFeeEstimate, 1);
     });
@@ -1031,7 +1047,11 @@ describe('SUI:', function () {
 
     beforeEach(function () {
       let callBack = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
-      callBack.withArgs(senderAddress0).resolves('0').withArgs(senderAddress1).resolves('1800000000');
+      callBack
+        .withArgs(senderAddress0)
+        .resolves({ totalBalance: '0', coinObjectBalance: '0', fundsInAddressBalance: '0' })
+        .withArgs(senderAddress1)
+        .resolves({ totalBalance: '1800000000', coinObjectBalance: '1800000000', fundsInAddressBalance: '0' });
 
       callBack = sandBox.stub(Sui.prototype, 'getInputCoins' as keyof Sui);
       callBack.withArgs(senderAddress1).resolves([
@@ -1130,13 +1150,13 @@ describe('SUI:', function () {
       getBalanceStub = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
       getBalanceStub
         .withArgs(senderAddress0)
-        .resolves('706875692')
+        .resolves({ totalBalance: '706875692', coinObjectBalance: '706875692', fundsInAddressBalance: '0' })
         .withArgs(senderAddress0, coinType)
-        .resolves('0')
+        .resolves({ totalBalance: '0', coinObjectBalance: '0', fundsInAddressBalance: '0' })
         .withArgs(senderAddress1)
-        .resolves('120101976')
+        .resolves({ totalBalance: '120101976', coinObjectBalance: '120101976', fundsInAddressBalance: '0' })
         .withArgs(senderAddress1, coinType)
-        .resolves('1000');
+        .resolves({ totalBalance: '1000', coinObjectBalance: '1000', fundsInAddressBalance: '0' });
 
       getInputCoinsStub = sandBox.stub(Sui.prototype, 'getInputCoins' as keyof Sui);
       getInputCoinsStub.withArgs(senderAddress1, coinType).resolves([
@@ -1201,7 +1221,7 @@ describe('SUI:', function () {
 
       should.equal(UnsignedSweepTxnJson.id, 'GFuk1VKy3wzTFeAUtrmUe6sxRhtezzrGDfKdpQTxv9so');
       should.equal(UnsignedSweepTxnJson.sender, senderAddress1);
-      sandBox.assert.callCount(basecoin.getBalance, 4);
+      sandBox.assert.callCount(basecoin.getBalance, 5);
       sandBox.assert.callCount(basecoin.getInputCoins, 2);
       sandBox.assert.callCount(basecoin.getFeeEstimate, 1);
     });
@@ -1231,7 +1251,7 @@ describe('SUI:', function () {
 
       should.equal(UnsignedSweepTxnJson.id, 'GFuk1VKy3wzTFeAUtrmUe6sxRhtezzrGDfKdpQTxv9so');
       should.equal(UnsignedSweepTxnJson.sender, senderAddress1);
-      sandBox.assert.callCount(basecoin.getBalance, 2);
+      sandBox.assert.callCount(basecoin.getBalance, 3);
       sandBox.assert.callCount(basecoin.getInputCoins, 2);
       sandBox.assert.callCount(basecoin.getFeeEstimate, 1);
     });
@@ -1250,13 +1270,13 @@ describe('SUI:', function () {
       let callBack = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
       callBack
         .withArgs(receiveAddress1)
-        .resolves('200101976')
+        .resolves({ totalBalance: '200101976', coinObjectBalance: '200101976', fundsInAddressBalance: '0' })
         .withArgs(receiveAddress2)
-        .resolves('200000000')
+        .resolves({ totalBalance: '200000000', coinObjectBalance: '200000000', fundsInAddressBalance: '0' })
         .withArgs(seedReceiveAddress1)
-        .resolves('500000000')
+        .resolves({ totalBalance: '500000000', coinObjectBalance: '500000000', fundsInAddressBalance: '0' })
         .withArgs(seedReceiveAddress2)
-        .resolves('200000000');
+        .resolves({ totalBalance: '200000000', coinObjectBalance: '200000000', fundsInAddressBalance: '0' });
 
       callBack = sandBox.stub(Sui.prototype, 'getInputCoins' as keyof Sui);
       callBack
@@ -1600,13 +1620,13 @@ describe('SUI:', function () {
     it('should build signed token consolidation transactions for hot wallet', async function () {
       getBalanceStub
         .withArgs(hotWalletReceiveAddress1)
-        .resolves('116720144')
+        .resolves({ totalBalance: '116720144', coinObjectBalance: '116720144', fundsInAddressBalance: '0' })
         .withArgs(hotWalletReceiveAddress1, coinType)
-        .resolves('1500')
+        .resolves({ totalBalance: '1500', coinObjectBalance: '1500', fundsInAddressBalance: '0' })
         .withArgs(hotWalletReceiveAddress2)
-        .resolves('120101976')
+        .resolves({ totalBalance: '120101976', coinObjectBalance: '120101976', fundsInAddressBalance: '0' })
         .withArgs(hotWalletReceiveAddress2, coinType)
-        .resolves('2000');
+        .resolves({ totalBalance: '2000', coinObjectBalance: '2000', fundsInAddressBalance: '0' });
       getInputCoinsStub
         .withArgs(hotWalletReceiveAddress1, coinType)
         .resolves([
@@ -1700,7 +1720,7 @@ describe('SUI:', function () {
 
       res.lastScanIndex.should.equal(2);
 
-      sandBox.assert.callCount(basecoin.getBalance, 4);
+      sandBox.assert.callCount(basecoin.getBalance, 6);
       sandBox.assert.callCount(basecoin.getInputCoins, 4);
       sandBox.assert.callCount(basecoin.getFeeEstimate, 2);
     });
@@ -1708,13 +1728,13 @@ describe('SUI:', function () {
     it('should build unsigned token consolidation transactions for cold wallet', async function () {
       getBalanceStub
         .withArgs(coldWalletReceiveAddress1)
-        .resolves('116720144')
+        .resolves({ totalBalance: '116720144', coinObjectBalance: '116720144', fundsInAddressBalance: '0' })
         .withArgs(coldWalletReceiveAddress1, coinType)
-        .resolves('4000')
+        .resolves({ totalBalance: '4000', coinObjectBalance: '4000', fundsInAddressBalance: '0' })
         .withArgs(coldWalletReceiveAddress2)
-        .resolves('120101976')
+        .resolves({ totalBalance: '120101976', coinObjectBalance: '120101976', fundsInAddressBalance: '0' })
         .withArgs(coldWalletReceiveAddress2, coinType)
-        .resolves('6000');
+        .resolves({ totalBalance: '6000', coinObjectBalance: '6000', fundsInAddressBalance: '0' });
       getInputCoinsStub
         .withArgs(coldWalletReceiveAddress1, coinType)
         .resolves([
@@ -1876,7 +1896,7 @@ describe('SUI:', function () {
         ],
       });
 
-      sandBox.assert.callCount(basecoin.getBalance, 4);
+      sandBox.assert.callCount(basecoin.getBalance, 6);
       sandBox.assert.callCount(basecoin.getInputCoins, 4);
       sandBox.assert.callCount(basecoin.getFeeEstimate, 2);
     });
@@ -1884,13 +1904,13 @@ describe('SUI:', function () {
     it('should build unsigned token consolidation transactions for cold wallet with seed', async function () {
       getBalanceStub
         .withArgs(seedReceiveAddress1)
-        .resolves('120199788')
+        .resolves({ totalBalance: '120199788', coinObjectBalance: '120199788', fundsInAddressBalance: '0' })
         .withArgs(seedReceiveAddress1, coinType)
-        .resolves('1500')
+        .resolves({ totalBalance: '1500', coinObjectBalance: '1500', fundsInAddressBalance: '0' })
         .withArgs(seedReceiveAddress2)
-        .resolves('120199788')
+        .resolves({ totalBalance: '120199788', coinObjectBalance: '120199788', fundsInAddressBalance: '0' })
         .withArgs(seedReceiveAddress2, coinType)
-        .resolves('2000');
+        .resolves({ totalBalance: '2000', coinObjectBalance: '2000', fundsInAddressBalance: '0' });
 
       getInputCoinsStub
         .withArgs(seedReceiveAddress1, coinType)
@@ -2055,7 +2075,7 @@ describe('SUI:', function () {
         ],
       });
 
-      sandBox.assert.callCount(basecoin.getBalance, 4);
+      sandBox.assert.callCount(basecoin.getBalance, 6);
       sandBox.assert.callCount(basecoin.getInputCoins, 4);
       sandBox.assert.callCount(basecoin.getFeeEstimate, 2);
     });
@@ -2575,7 +2595,9 @@ describe('SUI:', function () {
 
     it('should fail to recover due to non-zero fund but insufficient funds address', async function () {
       const callBack = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
-      callBack.withArgs(senderAddress0).resolves('9800212');
+      callBack
+        .withArgs(senderAddress0)
+        .resolves({ totalBalance: '9800212', coinObjectBalance: '9800212', fundsInAddressBalance: '0' });
 
       await basecoin
         .recover({
@@ -2596,7 +2618,7 @@ describe('SUI:', function () {
 
     it('should fail to recover due to not finding an address with funds', async function () {
       const callBack = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
-      callBack.resolves('0');
+      callBack.resolves({ totalBalance: '0', coinObjectBalance: '0', fundsInAddressBalance: '0' });
 
       await basecoin
         .recover({
@@ -2622,7 +2644,9 @@ describe('SUI:', function () {
       const walletPassphrase = 'p$Sw<RjvAgf{nYAYI2xM';
 
       const callBack = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
-      callBack.withArgs(receiveAddress1).resolves('1');
+      callBack
+        .withArgs(receiveAddress1)
+        .resolves({ totalBalance: '1', coinObjectBalance: '1', fundsInAddressBalance: '0' });
 
       await basecoin
         .recoverConsolidations({

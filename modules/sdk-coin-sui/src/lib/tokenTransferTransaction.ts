@@ -181,7 +181,15 @@ export class TokenTransferTransaction extends Transaction<TokenTransferProgramma
           return Inputs.Pure(amount, BCS.U64);
         }
       }
-      if (input.kind === 'Input' && (input.value.hasOwnProperty('Object') || input.value.hasOwnProperty('Pure'))) {
+      if (input.hasOwnProperty('BalanceWithdrawal')) {
+        return input;
+      }
+      if (
+        input.kind === 'Input' &&
+        (input.value.hasOwnProperty('Object') ||
+          input.value.hasOwnProperty('Pure') ||
+          input.value.hasOwnProperty('BalanceWithdrawal'))
+      ) {
         return input.value;
       }
       return Inputs.Pure(input.value, input.type === 'pure' ? BCS.U64 : BCS.ADDRESS);
@@ -221,20 +229,28 @@ export class TokenTransferTransaction extends Transaction<TokenTransferProgramma
   }
 
   /**
-   * Extracts the objects that were provided as inputs while building the transaction
+   * Extracts the objects that were provided as inputs while building the transaction.
+   * Handles both the simple case (MergeCoins/SplitCoins first) and the address-balance
+   * case where MoveCall(redeem_funds) may precede MergeCoins/SplitCoins.
    * @param tx
    * @returns {SuiObjectRef[]} Objects that are inputs for the transaction
    */
   private getInputObjectsFromTx(tx: TokenTransferProgrammableTransaction): SuiObjectRef[] {
     const inputs = tx.inputs;
-    const transaction = tx.transactions[0] as SuiTransactionBlockType;
 
+    // Scan all transactions to find the first MergeCoins or SplitCoins,
+    // which holds references to the coin object inputs.
     let args: TransactionArgument[] = [];
-    if (transaction.kind === 'MergeCoins') {
-      const { destination, sources } = transaction;
-      args = [destination, ...sources];
-    } else if (transaction.kind === 'SplitCoins') {
-      args = [transaction.coin];
+    for (const txn of tx.transactions) {
+      const transaction = txn as SuiTransactionBlockType;
+      if (transaction.kind === 'MergeCoins') {
+        const { destination, sources } = transaction;
+        args = [destination, ...sources];
+        break;
+      } else if (transaction.kind === 'SplitCoins') {
+        args = [transaction.coin];
+        break;
+      }
     }
 
     const inputObjects: SuiObjectRef[] = [];
