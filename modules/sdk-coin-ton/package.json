@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@bitgo/sdk-core": "^36.35.0",
+    "@bitgo/wasm-ton": "*",
     "@bitgo/sdk-lib-mpc": "^10.9.0",
     "@bitgo/statics": "^58.31.0",
     "bignumber.js": "^9.0.0",

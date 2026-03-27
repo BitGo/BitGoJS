@@ -32,9 +32,11 @@ import {
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { Transaction as WasmTonTransaction } from '@bitgo/wasm-ton';
 import { KeyPair as TonKeyPair } from './lib/keyPair';
 import { TransactionBuilderFactory, Utils, TransferBuilder, TokenTransferBuilder, TransactionBuilder } from './lib';
 import { getFeeEstimate } from './lib/utils';
+import { explainTonTransaction } from './lib/explainTransactionWasm';
 
 export interface TonParseTransactionOptions extends ParseTransactionOptions {
   txHex: string;
@@ -235,6 +237,14 @@ export class Ton extends BaseCoin {
 
   /** @inheritDoc */
   async getSignablePayload(serializedTx: string): Promise<Buffer> {
+    // WASM-based signable payload: Transaction.fromBytes -> signablePayload()
+    try {
+      const tx = WasmTonTransaction.fromBytes(Buffer.from(serializedTx, 'base64'));
+      return Buffer.from(tx.signablePayload());
+    } catch {
+      // Fallback to legacy path
+    }
+
     const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
     const rebuiltTransaction = await factory.from(serializedTx).build();
     return rebuiltTransaction.signablePayload;
@@ -242,6 +252,14 @@ export class Ton extends BaseCoin {
 
   /** @inheritDoc */
   async explainTransaction(params: Record<string, any>): Promise<TransactionExplanation> {
+    // WASM-based explain path: parse via @bitgo/wasm-ton
+    try {
+      const txBase64 = Buffer.from(params.txHex, 'hex').toString('base64');
+      return explainTonTransaction({ txBase64 });
+    } catch {
+      // Fallback to legacy path
+    }
+
     try {
       const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
       const transactionBuilder = factory.from(Buffer.from(params.txHex, 'hex').toString('base64'));
