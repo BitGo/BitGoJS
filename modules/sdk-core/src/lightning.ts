@@ -1,5 +1,3 @@
-export const LIGHTNING_INVOICE = 'invoice';
-
 export function isBolt11Invoice(value: unknown): value is string {
   if (typeof value !== 'string') {
     return false;
