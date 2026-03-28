@@ -104,6 +104,7 @@ import {
   FLR_FEATURES,
   GENERIC_TOKEN_FEATURES,
   HBAR_FEATURES,
+  HYPE_FEATURES,
   ICP_FEATURES,
   INJECTIVE_FEATURES,
   IOTA_FEATURES,
@@ -1748,6 +1749,28 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.STAKING,
     ]
+  ),
+  account(
+    '1d7327a1-80fc-4913-9b72-457087811262',
+    'hype',
+    'Hyperliquid',
+    Networks.main.hype,
+    8,
+    UnderlyingAsset.HYPE,
+    BaseUnit.HYPE,
+    HYPE_FEATURES,
+    KeyCurve.Secp256k1
+  ),
+  account(
+    'd0754b12-26fa-47c2-887f-f19099156ea2',
+    'thype',
+    'Hyperliquid Testnet',
+    Networks.test.hype,
+    8,
+    UnderlyingAsset.HYPE,
+    BaseUnit.HYPE,
+    HYPE_FEATURES,
+    KeyCurve.Secp256k1
   ),
   hypeEvm(
     'e907fdbd-2c5d-45d6-b622-9da38937da73',
