@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [21.8.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coreum@21.8.3...@bitgo/sdk-coin-coreum@21.8.4) (2026-03-27)
+
+
+### Bug Fixes
+
+* **sdk-coin-coreum:** accept 32-byte addresses in isValidAddress ([5699b47](https://github.com/BitGo/BitGoJS/commit/5699b47cdd0b229c1320098b2dcc67889b69d167))
+
+
+
+
+
 ## [21.8.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coreum@21.8.2...@bitgo/sdk-coin-coreum@21.8.3) (2026-03-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-coreum

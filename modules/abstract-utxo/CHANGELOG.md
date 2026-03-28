@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.20.0...@bitgo/abstract-utxo@10.21.0) (2026-03-27)
+
+
+### Features
+
+* **abstract-utxo:** add extractTransaction option for signing ([b2eed2b](https://github.com/BitGo/BitGoJS/commit/b2eed2b12ad61ea1549981c39cec6bbdbb30fe76))
+* **abstract-utxo:** enforce deprecated tx format restrictions ([eb91975](https://github.com/BitGo/BitGoJS/commit/eb9197553bb76c2de6b62dfded413870ff2840e9))
+
+
+
+
+
 # [10.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.19.4...@bitgo/abstract-utxo@10.20.0) (2026-03-18)
 
 

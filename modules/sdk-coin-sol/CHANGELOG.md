@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.16.3...@bitgo/sdk-coin-sol@7.17.0) (2026-03-27)
+
+
+### Features
+
+* add nested sol recovery ([44b46f0](https://github.com/BitGo/BitGoJS/commit/44b46f05e529ff3738456001c352af0aa1a60227))
+
+
+
+
+
 ## [7.16.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.16.2...@bitgo/sdk-coin-sol@7.16.3) (2026-03-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

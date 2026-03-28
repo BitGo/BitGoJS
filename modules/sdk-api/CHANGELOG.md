@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.76.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.75.5...@bitgo/sdk-api@1.76.0) (2026-03-27)
+
+
+### Bug Fixes
+
+* debug logger shows correct auth version ([fd4a300](https://github.com/BitGo/BitGoJS/commit/fd4a300c0dc334f95203823099610d198bafaab5))
+* sdk hmac strategy init & clear ([d7698ad](https://github.com/BitGo/BitGoJS/commit/d7698adbf5e40dc36f49239eab913f38f083effa))
+* web crypto strategy uses same hmac subject calc ([76129fd](https://github.com/BitGo/BitGoJS/commit/76129fd6badc085960e25f04ef94bcdf66f1a224))
+
+
+### Features
+
+* hmac authentication strategy and response verification ([26308ce](https://github.com/BitGo/BitGoJS/commit/26308ced6a9feb020fc3f23cff11449e16ebcfe4))
+
+
+
+
+
 ## [1.75.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.75.4...@bitgo/sdk-api@1.75.5) (2026-03-18)
 
 **Note:** Version bump only for package @bitgo/sdk-api

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.8.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.8.4...@bitgo/abstract-lightning@7.8.5) (2026-03-27)
+
+
+### Bug Fixes
+
+* **abstract-lightning:** gracefully handle no m prefix ([0987e49](https://github.com/BitGo/BitGoJS/commit/0987e493ca2c027d0938b9bb185d50929f42f3cf))
+
+
+
+
+
 ## [7.8.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.8.3...@bitgo/abstract-lightning@7.8.4) (2026-03-18)
 
 

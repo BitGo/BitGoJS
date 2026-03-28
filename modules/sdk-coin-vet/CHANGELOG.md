@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.13.3...@bitgo/sdk-coin-vet@2.14.0) (2026-03-27)
+
+
+### Features
+
+* **sdk-coin-vet:** add decreaseStake builder for validators ([ed88cd9](https://github.com/BitGo/BitGoJS/commit/ed88cd976f37bc9378150009f7c132fc7b32b989))
+* **sdk-coin-vet:** add unstake buidlers for validators ([41d53f9](https://github.com/BitGo/BitGoJS/commit/41d53f91160f854aab0d7a1194cb79567d3bfe10))
+
+
+
+
+
 ## [2.13.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.13.2...@bitgo/sdk-coin-vet@2.13.3) (2026-03-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-vet

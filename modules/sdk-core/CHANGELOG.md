@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.36.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.35.0...@bitgo/sdk-core@36.36.0) (2026-03-27)
+
+
+### Features
+
+* **statics:** update fluenteth mainnet config ([dd39afe](https://github.com/BitGo/BitGoJS/commit/dd39afe4d1a07c492f0d73192903989de91708a6))
+
+
+
+
+
 # [36.35.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.34.0...@bitgo/sdk-core@36.35.0) (2026-03-18)
 
 

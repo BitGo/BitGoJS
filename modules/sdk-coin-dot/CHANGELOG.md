@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.12.0...@bitgo/sdk-coin-dot@4.13.0) (2026-03-27)
+
+
+### Features
+
+* simplify verifyTransaction using signing payload format ([6060d22](https://github.com/BitGo/BitGoJS/commit/6060d22dae9854b773f93bf2cd62940071e9ec20))
+
+
+
+
+
 # [4.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.11.7...@bitgo/sdk-coin-dot@4.12.0) (2026-03-18)
 
 
