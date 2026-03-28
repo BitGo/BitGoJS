@@ -37,7 +37,7 @@ describe('Asset metadata service', () => {
 
   it('should be able to register a token in the coin factory', () => {
     const tokenName = 'hteth:faketoken';
-    bitgo.registerToken(tokenName);
+    bitgo.registerTokenByName(tokenName);
     const coin = bitgo.coin(tokenName);
     should.exist(coin);
     coin.type.should.equal(tokenName);
@@ -58,20 +58,20 @@ describe('Asset metadata service', () => {
     should.exist(coin);
   });
 
-  describe('registerToken', () => {
+  describe('registerTokenByName', () => {
     it('should throw an error when useAms is false', async () => {
       const bitgoNoAms = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: false } as BitGoOptions);
       bitgoNoAms.initializeTestVars();
 
       await bitgoNoAms
-        .registerToken('hteth:faketoken')
-        .should.be.rejectedWith('registerToken is only supported when useAms is set to true');
+        .registerTokenByName('hteth:faketoken')
+        .should.be.rejectedWith('registerTokenByName is only supported when useAms is set to true');
     });
 
     it('should register a token from statics library if available', async () => {
       const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
       bitgo.initializeTestVars();
-      await bitgo.registerToken('hteth:bgerchv2');
+      await bitgo.registerTokenByName('hteth:bgerchv2');
       const coin = bitgo.coin('hteth:bgerchv2');
       should.exist(coin);
     });
@@ -85,7 +85,7 @@ describe('Asset metadata service', () => {
       // Setup nocks
       nock(microservicesUri).get(`/api/v1/assets/name/${tokenName}`).reply(200, reducedAmsTokenConfig[tokenName][0]);
 
-      await bitgo.registerToken(tokenName);
+      await bitgo.registerTokenByName(tokenName);
       const coin = bitgo.coin(tokenName);
       should.exist(coin);
     });
@@ -96,7 +96,7 @@ describe('Asset metadata service', () => {
 
       const tokenName = 'ofc';
 
-      await bitgo.registerToken(tokenName);
+      await bitgo.registerTokenByName(tokenName);
       const coin = bitgo.coin(tokenName);
       should.exist(coin);
     });
@@ -104,7 +104,7 @@ describe('Asset metadata service', () => {
     it('should register a EVM coin token from statics library if available', async () => {
       const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
       bitgo.initializeTestVars();
-      await bitgo.registerToken('tip:usdc');
+      await bitgo.registerTokenByName('tip:usdc');
       const coin = bitgo.coin('tip:usdc');
       should.exist(coin);
     });
@@ -118,7 +118,7 @@ describe('Asset metadata service', () => {
       // Setup nocks for AMS API call
       nock(microservicesUri).get(`/api/v1/assets/name/${tokenName}`).reply(200, reducedAmsTokenConfig[tokenName][0]);
 
-      await bitgo.registerToken(tokenName);
+      await bitgo.registerTokenByName(tokenName);
       const coin = bitgo.coin(tokenName);
       should.exist(coin);
       coin.type.should.equal(tokenName);
@@ -141,7 +141,7 @@ describe('Asset metadata service', () => {
       // Setup nocks for AMS API call
       nock(microservicesUri).get(`/api/v1/assets/name/${tokenName}`).reply(200, reducedAmsTokenConfig[tokenName][0]);
 
-      await bitgo.registerToken(tokenName);
+      await bitgo.registerTokenByName(tokenName);
       const coin = bitgo.coin(tokenName);
       should.exist(coin);
       coin.type.should.equal(tokenName);

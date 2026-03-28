@@ -100,12 +100,12 @@ export class BitGo extends BitGoAPI {
   }
 
   /**
-   * Register a token in the coin factory
-   * @param tokenConfig - The token metadata from AMS
+   * Register a token in the coin factory by name, fetching metadata from AMS if needed.
+   * @param tokenName - The token name to register
    */
-  async registerToken(tokenName: string): Promise<void> {
+  async registerTokenByName(tokenName: string): Promise<void> {
     if (!this._useAms) {
-      throw new Error('registerToken is only supported when useAms is set to true');
+      throw new Error('registerTokenByName is only supported when useAms is set to true');
     }
     //do not register a coin/token if it's already registered
     if (this._coinFactory.hasCoin(tokenName)) {
