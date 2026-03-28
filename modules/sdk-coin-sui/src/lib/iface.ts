@@ -22,6 +22,10 @@ export enum SuiTransactionType {
   WalrusStakeWithPool = 'WalrusStakeWithPool',
   WalrusRequestWithdrawStake = 'WalrusRequestWithdrawStake',
   WalrusWithdrawStake = 'WalrusWithdrawStake',
+  XmnStake = 'XmnStake',
+  XmnRequestUnstake = 'XmnRequestUnstake',
+  XmnUnbond = 'XmnUnbond',
+  XmnClaimRewards = 'XmnClaimRewards',
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
@@ -35,7 +39,10 @@ export type SuiProgrammableTransaction =
   | CustomProgrammableTransaction
   | TokenTransferProgrammableTransaction
   | WalrusStakingProgrammableTransaction
-  | WalrusWithdrawStakeProgrammableTransaction;
+  | WalrusWithdrawStakeProgrammableTransaction
+  | XmnStakingProgrammableTransaction
+  | XmnUnstakeProgrammableTransaction
+  | XmnClaimRewardsProgrammableTransaction;
 
 export interface TxData {
   id?: string;
@@ -97,6 +104,27 @@ export type WalrusWithdrawStakeProgrammableTransaction =
       transactions: TransactionType[];
     };
 
+export type XmnStakingProgrammableTransaction =
+  | ProgrammableTransaction
+  | {
+      inputs: CallArg[] | TransactionBlockInput[];
+      transactions: TransactionType[];
+    };
+
+export type XmnUnstakeProgrammableTransaction =
+  | ProgrammableTransaction
+  | {
+      inputs: CallArg[] | TransactionBlockInput[];
+      transactions: TransactionType[];
+    };
+
+export type XmnClaimRewardsProgrammableTransaction =
+  | ProgrammableTransaction
+  | {
+      inputs: CallArg[] | TransactionBlockInput[];
+      transactions: TransactionType[];
+    };
+
 export interface SuiTransaction<T = SuiProgrammableTransaction> {
   id?: string;
   type: SuiTransactionType;
@@ -124,6 +152,30 @@ export interface RequestWalrusStakeWithPool {
 export interface RequestWalrusWithdrawStake {
   amount?: number;
   stakedWal: SuiObjectRef;
+}
+
+export interface RequestXmnStake {
+  /** Amount in base units (1 XMN = 1_000_000) */
+  amount: number;
+  /** XMN coin objects to spend */
+  inputObjects: SuiObjectRef[];
+}
+
+export interface RequestXmnRequestUnstake {
+  /** OpenPosition object owned by the staker */
+  openPosition: SuiObjectRef;
+  /** Amount to unstake in base units; if omitted, the full position amount is used */
+  amount?: number;
+}
+
+export interface RequestXmnUnbond {
+  /** UnbondingTicket object owned by the staker (created by request_unstake) */
+  unbondingTicket: SuiObjectRef;
+}
+
+export interface RequestXmnClaimRewards {
+  /** OpenPosition object owned by the staker */
+  openPosition: SuiObjectRef;
 }
 
 /**
@@ -172,6 +224,22 @@ export enum MethodNames {
    * @see https://github.com/MystenLabs/walrus-docs/blob/9307e66df0ea3f6555cdef78d46aefa62737e216/contracts/walrus/sources/staking/staked_wal.move#L143
    */
   WalrusSplitStakedWal = '::staked_wal::split',
+  /**
+   * XMN staking_factory::stake — stakes XMN tokens, mints OpenPosition (void return).
+   */
+  XmnStake = '::staking_factory::stake',
+  /**
+   * XMN staking_factory::request_unstake — initiates unbonding, mints UnbondingTicket (void return).
+   */
+  XmnRequestUnstake = '::staking_factory::request_unstake',
+  /**
+   * XMN staking_factory::unbond — redeems UnbondingTicket after cooldown, returns principal (void return).
+   */
+  XmnUnbond = '::staking_factory::unbond',
+  /**
+   * XMN staking_factory::claim_and_transfer — claims accrued rewards to liquid balance (void return).
+   */
+  XmnClaimRewards = '::staking_factory::claim_and_transfer',
 }
 
 export interface SuiObjectInfo extends SuiObjectRef {
