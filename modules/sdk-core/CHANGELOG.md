@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.37.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.36.0...@bitgo/sdk-core@36.37.0) (2026-03-29)
+
+
+### Features
+
+* remove usage of 'invoice' in amount field ([da48dac](https://github.com/BitGo/BitGoJS/commit/da48dac758fc9428550aad21fffa0bb28be307c7))
+
+
+
+
+
 # [36.36.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.35.0...@bitgo/sdk-core@36.36.0) (2026-03-27)
 
 

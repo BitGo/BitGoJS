@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zeta@3.6.9...@bitgo/sdk-coin-zeta@3.7.0) (2026-03-29)
+
+
+### Features
+
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
 ## [3.6.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zeta@3.6.8...@bitgo/sdk-coin-zeta@3.6.9) (2026-03-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-zeta

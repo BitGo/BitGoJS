@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@6.2.9...@bitgo/sdk-coin-celo@6.3.0) (2026-03-29)
+
+
+### Features
+
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
 ## [6.2.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@6.2.8...@bitgo/sdk-coin-celo@6.2.9) (2026-03-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-celo

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.10.0...@bitgo/secp256k1@1.11.0) (2026-03-29)
+
+
+### Features
+
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
 # [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.9.0...@bitgo/secp256k1@1.10.0) (2026-01-30)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.17.8...@bitgo/abstract-cosmos@11.18.0) (2026-03-29)
+
+
+### Features
+
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
 ## [11.17.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.17.7...@bitgo/abstract-cosmos@11.17.8) (2026-03-27)
 
 **Note:** Version bump only for package @bitgo/abstract-cosmos
