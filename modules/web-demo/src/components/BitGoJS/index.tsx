@@ -1,5 +1,6 @@
 import React from 'react';
-import ReactJson from 'react-json-view';
+import { JsonView } from 'react-json-view-lite';
+import 'react-json-view-lite/dist/index.css';
 
 import { BitGo } from 'bitgo';
 
@@ -10,7 +11,7 @@ const BitGoJS = () => {
     <React.Fragment>
       <h3>BitGoJS SDK</h3>
       <br />
-      <ReactJson src={sdk} />
+      <JsonView data={sdk} />
     </React.Fragment>
   );
 };

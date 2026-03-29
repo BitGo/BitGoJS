@@ -1,5 +1,6 @@
 import React from 'react';
-import ReactJson from 'react-json-view';
+import { JsonView } from 'react-json-view-lite';
+import 'react-json-view-lite/dist/index.css';
 import { BitGoAPI } from '@bitgo/sdk-api';
 
 const sdk = new BitGoAPI();
@@ -9,7 +10,7 @@ const BGApi = () => {
     <React.Fragment>
       <h3>BitGo SDK API</h3>
       <br />
-      <ReactJson src={sdk} />
+      <JsonView data={sdk} />
     </React.Fragment>
   );
 };
