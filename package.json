@@ -120,6 +120,7 @@
     "memfs": "4.46.0",
     "// html-webpack-plugin": "cooldown check fails for yarn alias html-webpack-plugin-5 on npm due to unpublished package format; pin to previous version",
     "html-webpack-plugin": "5.6.4",
+    "html-webpack-plugin-5": "npm:html-webpack-plugin@5.6.4",
     "// @iota/iota-sdk": "1.11.0 raised engines to >=24; pin to 1.10.1 until CI baseline moves to Node 24",
     "@iota/iota-sdk": "1.10.1",
     "**/iota-sdk/**/valibot": "1.2.0",
