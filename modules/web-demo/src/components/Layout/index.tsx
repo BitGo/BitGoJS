@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import Navbar from '../Navbar/index';
 import { AppContainer, RouteContainer } from './styles';
 
-const Layout: FunctionComponent = ({ children }) => {
+const Layout: FunctionComponent<React.PropsWithChildren> = ({ children }) => {
   return (
     <AppContainer>
       <Navbar />
