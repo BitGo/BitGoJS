@@ -97,6 +97,10 @@ const rules = [
 const devRules = [
   ...rules,
   {
+    test: /\.css$/,
+    use: ['style-loader', 'css-loader'],
+  },
+  {
     test: /\.scss$/,
     use: [
       // We're in dev and want HMR, SCSS is handled in JS
@@ -118,6 +122,10 @@ const devRules = [
 
 const prodRules = [
   ...rules,
+  {
+    test: /\.css$/,
+    use: [MiniCssExtractPlugin.loader, 'css-loader'],
+  },
   {
     test: /\.scss$/,
     use: [
