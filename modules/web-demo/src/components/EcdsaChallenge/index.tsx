@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { EcdsaTypes, EcdsaRangeProof } from '@bitgo/sdk-lib-mpc';
-import ReactJson from 'react-json-view';
+import { JsonView } from 'react-json-view-lite';
+import 'react-json-view-lite/dist/index.css';
 
 const EcdsaChallenge = () => {
   const [challenge, setChallenge] = useState<
@@ -28,11 +29,7 @@ const EcdsaChallenge = () => {
       <br />
       {challenge ? (
         <div>
-          <ReactJson
-            src={challenge}
-            displayDataTypes={true}
-            enableClipboard={true}
-          />
+          <JsonView data={challenge} />
           <h4>Time to generate (s)</h4>
           <h5>{totalTime}</h5>
         </div>
