@@ -3,54 +3,54 @@ import { apiSpec } from '@api-ts/io-ts-http';
 import * as express from 'express';
 
 import { GetPingV2 } from './v2/ping';
-import { GetPingExpress } from './common/pingExpress';
-import { PostLogin } from './common/login';
-import { PostDecrypt } from './common/decrypt';
-import { PostEncrypt } from './common/encrypt';
-import { PostVerifyAddress } from './common/verifyAddress';
-import { PostCalculateMinerFeeInfo } from './common/calculateMinerFeeInfo';
+// import { GetPingExpress } from './common/pingExpress';
+// import { PostLogin } from './common/login';
+import { PostDecryptV2 } from './v2/decrypt';
+import { PostEncryptV2 } from './v2/encrypt';
+// import { PostVerifyAddress } from './common/verifyAddress';
+// import { PostCalculateMinerFeeInfo } from './common/calculateMinerFeeInfo';
 import { PostAcceptShare } from './v1/acceptShare';
 import { PostSimpleCreate } from './v1/simpleCreate';
-import { PutPendingApproval } from './v1/pendingApproval';
-import { PostSignTransaction } from './v1/signTransaction';
-import { PostKeychainLocal } from './v2/keychainLocal';
-import { GetLightningState } from './v2/lightningState';
-import { PostKeychainChangePassword } from './v2/keychainChangePassword';
-import { PostLightningInitWallet } from './v2/lightningInitWallet';
-import { PostUnlockLightningWallet } from './v2/unlockWallet';
+// import { PutPendingApproval } from './v1/pendingApproval';
+// import { PostSignTransaction } from './v1/signTransaction';
+// import { PostKeychainLocal } from './v2/keychainLocal';
+// import { GetLightningState } from './v2/lightningState';
+// import { PostKeychainChangePassword } from './v2/keychainChangePassword';
+// import { PostLightningInitWallet } from './v2/lightningInitWallet';
+// import { PostUnlockLightningWallet } from './v2/unlockWallet';
 import { PostVerifyCoinAddress } from './v2/verifyAddress';
-import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
-import { PostCreateLocalKeyChain } from './v1/createLocalKeyChain';
-import { PutConstructPendingApprovalTx } from './v1/constructPendingApprovalTx';
-import { PutConsolidateUnspents } from './v1/consolidateUnspents';
-import { PostCreateAddress } from './v2/createAddress';
-import { PutFanoutUnspents } from './v1/fanoutUnspents';
-import { PostOfcSignPayload } from './v2/ofcSignPayload';
-import { PostWalletRecoverToken } from './v2/walletRecoverToken';
+// import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
+// import { PostCreateLocalKeyChain } from './v1/createLocalKeyChain';
+// import { PutConstructPendingApprovalTx } from './v1/constructPendingApprovalTx';
+// import { PutConsolidateUnspents } from './v1/consolidateUnspents';
+// import { PostCreateAddress } from './v2/createAddress';
+// import { PutFanoutUnspents } from './v1/fanoutUnspents';
+// import { PostOfcSignPayload } from './v2/ofcSignPayload';
+// import { PostWalletRecoverToken } from './v2/walletRecoverToken';
 import { PostGenerateWallet } from './v2/generateWallet';
-import { PostSignerMacaroon } from './v2/signerMacaroon';
-import { PostCoinSignTx } from './v2/coinSignTx';
-import { PostWalletSignTx } from './v2/walletSignTx';
-import { PostWalletTxSignTSS } from './v2/walletTxSignTSS';
-import { PostShareWallet } from './v2/shareWallet';
-import { PutExpressWalletUpdate } from './v2/expressWalletUpdate';
-import { PostFanoutUnspents } from './v2/fanoutUnspents';
-import { PostSendMany } from './v2/sendmany';
-import { PostConsolidateUnspents } from './v2/consolidateunspents';
-import { PostPrebuildAndSignTransaction } from './v2/prebuildAndSignTransaction';
-import { PostCoinSign } from './v2/coinSign';
+// import { PostSignerMacaroon } from './v2/signerMacaroon';
+// import { PostCoinSignTx } from './v2/coinSignTx';
+// import { PostWalletSignTx } from './v2/walletSignTx';
+// import { PostWalletTxSignTSS } from './v2/walletTxSignTSS';
+// import { PostShareWallet } from './v2/shareWallet';
+// import { PutExpressWalletUpdate } from './v2/expressWalletUpdate';
+// import { PostFanoutUnspents } from './v2/fanoutUnspents';
+// import { PostSendMany } from './v2/sendmany';
+// import { PostConsolidateUnspents } from './v2/consolidateunspents';
+// import { PostPrebuildAndSignTransaction } from './v2/prebuildAndSignTransaction';
+// import { PostCoinSign } from './v2/coinSign';
 import { PostSendCoins } from './v2/sendCoins';
-import { PostGenerateShareTSS } from './v2/generateShareTSS';
-import { PostOfcExtSignPayload } from './v2/ofcExtSignPayload';
-import { PostLightningWalletPayment } from './v2/lightningPayment';
-import { PostLightningWalletWithdraw } from './v2/lightningWithdraw';
-import { PutV2PendingApproval } from './v2/pendingApproval';
-import { PostConsolidateAccount } from './v2/consolidateAccount';
-import { PostCanonicalAddress } from './v2/canonicalAddress';
-import { PostWalletEnableTokens } from './v2/walletEnableTokens';
-import { PostWalletSweep } from './v2/walletSweep';
-import { PostWalletAccelerateTx } from './v2/walletAccelerateTx';
-import { PostIsWalletAddress } from './v2/isWalletAddress';
+// import { PostGenerateShareTSS } from './v2/generateShareTSS';
+// import { PostOfcExtSignPayload } from './v2/ofcExtSignPayload';
+// import { PostLightningWalletPayment } from './v2/lightningPayment';
+// import { PostLightningWalletWithdraw } from './v2/lightningWithdraw';
+// import { PutV2PendingApproval } from './v2/pendingApproval';
+// import { PostConsolidateAccount } from './v2/consolidateAccount';
+// import { PostCanonicalAddress } from './v2/canonicalAddress';
+// import { PostWalletEnableTokens } from './v2/walletEnableTokens';
+// import { PostWalletSweep } from './v2/walletSweep';
+// import { PostWalletAccelerateTx } from './v2/walletAccelerateTx';
+// import { PostIsWalletAddress } from './v2/isWalletAddress';
 
 // Too large types can cause the following error
 //
@@ -81,21 +81,19 @@ export const ExpressLoginApiSpec = apiSpec({
 });
 */
 
-/* Commented out
+// BATCH 2: Uncommented (v2)
 export const ExpressDecryptApiSpec = apiSpec({
-  'express.decrypt': {
-    post: PostDecrypt,
+  'express.v2.decrypt': {
+    post: PostDecryptV2,
   },
 });
-*/
 
-/* Commented out
+// BATCH 2: Uncommented (v2)
 export const ExpressEncryptApiSpec = apiSpec({
-  'express.encrypt': {
-    post: PostEncrypt,
+  'express.v2.encrypt': {
+    post: PostEncryptV2,
   },
 });
-*/
 
 /* Commented out
 export const ExpressVerifyAddressApiSpec = apiSpec({
@@ -145,15 +143,16 @@ export const ExpressPendingApprovalsApiSpec = apiSpec({
 });
 */
 
-// BATCH 2: Uncommented (v2 only, commented out v1)
+/* Commented out
 export const ExpressWalletSignTransactionApiSpec = apiSpec({
-  /* 'express.v1.wallet.signTransaction': {
+  'express.v1.wallet.signTransaction': {
     post: PostSignTransaction,
-  }, */
+  },
   'express.v2.wallet.prebuildandsigntransaction': {
     post: PostPrebuildAndSignTransaction,
   },
 });
+*/
 
 /* Commented out
 export const ExpressV1KeychainDeriveApiSpec = apiSpec({
@@ -209,12 +208,13 @@ export const ExpressWalletFanoutUnspentsApiSpec = apiSpec({
 });
 */
 
-// BATCH 2: Uncommented
+/* Commented out
 export const ExpressV2WalletCreateAddressApiSpec = apiSpec({
   'express.v2.wallet.createAddress': {
     post: PostCreateAddress,
   },
 });
+*/
 
 /* Commented out
 export const ExpressV2WalletIsWalletAddressApiSpec = apiSpec({
@@ -352,22 +352,21 @@ export const ExpressWalletSigningApiSpec = apiSpec({
 });
 */
 
-/* Commented out
+// BATCH 2: Uncommented (generateWallet only)
 export const ExpressWalletManagementApiSpec = apiSpec({
-  'express.v2.wallet.share': {
+  /* 'express.v2.wallet.share': {
     post: PostShareWallet,
   },
   'express.wallet.update': {
     put: PutExpressWalletUpdate,
-  },
+  }, */
   'express.wallet.generate': {
     post: PostGenerateWallet,
   },
-  'express.lightning.signerMacaroon': {
+  /* 'express.lightning.signerMacaroon': {
     post: PostSignerMacaroon,
-  },
+  }, */
 });
-*/
 
 /* Commented out
 export const ExpressV2CanonicalAddressApiSpec = apiSpec({
@@ -396,22 +395,22 @@ export const ExpressV2WalletAccelerateTxApiSpec = apiSpec({
 export type ExpressApi = typeof ExpressPingApiSpec &
   /* typeof ExpressPingExpressApiSpec & */
   /* typeof ExpressLoginApiSpec & */
-  /* typeof ExpressDecryptApiSpec & */
-  /* typeof ExpressEncryptApiSpec & */
+  typeof ExpressDecryptApiSpec &
+  typeof ExpressEncryptApiSpec &
   /* typeof ExpressVerifyAddressApiSpec & */
   typeof ExpressVerifyCoinAddressApiSpec &
   /* typeof ExpressCalculateMinerFeeInfoApiSpec & */
   typeof ExpressV1WalletAcceptShareApiSpec &
   typeof ExpressV1WalletSimpleCreateApiSpec &
   /* typeof ExpressPendingApprovalsApiSpec & */
-  typeof ExpressWalletSignTransactionApiSpec &
+  /* typeof ExpressWalletSignTransactionApiSpec & */
   /* typeof ExpressV1KeychainDeriveApiSpec & */
   /* typeof ExpressV1KeychainLocalApiSpec & */
   /* typeof ExpressV1PendingApprovalConstructTxApiSpec & */
   /* typeof ExpressWalletConsolidateUnspentsApiSpec & */
   /* typeof ExpressV2WalletConsolidateAccountApiSpec & */
   /* typeof ExpressWalletFanoutUnspentsApiSpec & */
-  typeof ExpressV2WalletCreateAddressApiSpec &
+  /* typeof ExpressV2WalletCreateAddressApiSpec & */
   /* typeof ExpressV2WalletIsWalletAddressApiSpec & */
   /* typeof ExpressKeychainLocalApiSpec & */
   /* typeof ExpressKeychainChangePasswordApiSpec & */
@@ -421,8 +420,8 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   /* typeof ExpressLightningUnlockWalletApiSpec & */
   /* typeof ExpressLightningWalletWithdrawApiSpec & */
   /* typeof ExpressV2WalletSendManyApiSpec & */
-  typeof ExpressV2WalletSendCoinsApiSpec
-  /* & typeof ExpressOfcSignPayloadApiSpec & */
+  typeof ExpressV2WalletSendCoinsApiSpec &
+  /* typeof ExpressOfcSignPayloadApiSpec & */
   /* typeof ExpressWalletRecoverTokenApiSpec & */
   /* typeof ExpressWalletEnableTokensApiSpec & */
   /* typeof ExpressCoinSigningApiSpec & */
@@ -431,27 +430,27 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   /* typeof ExpressV2CanonicalAddressApiSpec & */
   /* typeof ExpressV2WalletSweepApiSpec & */
   /* typeof ExpressV2WalletAccelerateTxApiSpec & */
-  /* typeof ExpressWalletManagementApiSpec */;
+  typeof ExpressWalletManagementApiSpec;
 
 export const ExpressApi: ExpressApi = {
   ...ExpressPingApiSpec,
   /* ...ExpressPingExpressApiSpec, */
   /* ...ExpressLoginApiSpec, */
-  /* ...ExpressDecryptApiSpec, */
-  /* ...ExpressEncryptApiSpec, */
+  ...ExpressDecryptApiSpec,
+  ...ExpressEncryptApiSpec,
   /* ...ExpressVerifyAddressApiSpec, */
   ...ExpressVerifyCoinAddressApiSpec,
   /* ...ExpressCalculateMinerFeeInfoApiSpec, */
   ...ExpressV1WalletAcceptShareApiSpec,
   ...ExpressV1WalletSimpleCreateApiSpec,
   /* ...ExpressPendingApprovalsApiSpec, */
-  ...ExpressWalletSignTransactionApiSpec,
+  /* ...ExpressWalletSignTransactionApiSpec, */
   /* ...ExpressV1KeychainDeriveApiSpec, */
   /* ...ExpressV1KeychainLocalApiSpec, */
   /* ...ExpressV1PendingApprovalConstructTxApiSpec, */
   /* ...ExpressWalletConsolidateUnspentsApiSpec, */
   /* ...ExpressWalletFanoutUnspentsApiSpec, */
-  ...ExpressV2WalletCreateAddressApiSpec,
+  /* ...ExpressV2WalletCreateAddressApiSpec, */
   /* ...ExpressV2WalletConsolidateAccountApiSpec, */
   /* ...ExpressV2WalletIsWalletAddressApiSpec, */
   /* ...ExpressKeychainLocalApiSpec, */
@@ -472,7 +471,7 @@ export const ExpressApi: ExpressApi = {
   /* ...ExpressV2CanonicalAddressApiSpec, */
   /* ...ExpressV2WalletSweepApiSpec, */
   /* ...ExpressV2WalletAccelerateTxApiSpec, */
-  /* ...ExpressWalletManagementApiSpec, */
+  ...ExpressWalletManagementApiSpec,
 };
 
 type ExtractDecoded<T> = T extends t.Type<any, infer O, any> ? O : never;
