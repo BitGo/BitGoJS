@@ -1668,14 +1668,14 @@ class HypeEVM extends Mainnet implements EthereumNetwork {
 
 class Hyperliquid extends Mainnet implements AccountNetwork {
   name = 'Hyperliquid';
-  family = CoinFamily.HYPE;
+  family = CoinFamily.HYPERLIQUID;
   explorerUrl = 'https://app.hyperliquid.xyz/explorer';
   accountExplorerUrl = 'https://app.hyperliquid.xyz/explorer';
 }
 
 class HyperliquidTestnet extends Testnet implements AccountNetwork {
   name = 'HyperliquidTestnet';
-  family = CoinFamily.HYPE;
+  family = CoinFamily.HYPERLIQUID;
   explorerUrl = 'https://app.hyperliquid-testnet.xyz/explorer';
   accountExplorerUrl = 'https://app.hyperliquid-testnet.xyz/explorer';
 }
@@ -2629,7 +2629,7 @@ export const Networks = {
     phrs: Object.freeze(new Pharos()),
     ctc: Object.freeze(new Creditcoin()),
     hypeevm: Object.freeze(new HypeEVM()),
-    hype: Object.freeze(new Hyperliquid()),
+    hyperliquid: Object.freeze(new Hyperliquid()),
     lineaeth: Object.freeze(new LineaETH()),
     oas: Object.freeze(new Oas()),
     og: Object.freeze(new Og()),
@@ -2753,7 +2753,7 @@ export const Networks = {
     phrs: Object.freeze(new PharosTestnet()),
     ctc: Object.freeze(new CreditcoinTestnet()),
     hypeevm: Object.freeze(new HypeEVMTestnet()),
-    hype: Object.freeze(new HyperliquidTestnet()),
+    hyperliquid: Object.freeze(new HyperliquidTestnet()),
     lineaeth: Object.freeze(new LineaETHTestnet()),
     oas: Object.freeze(new OasTestnet()),
     og: Object.freeze(new OgTestnet()),
