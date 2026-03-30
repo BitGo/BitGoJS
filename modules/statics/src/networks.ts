@@ -2532,8 +2532,8 @@ class Tempo extends Mainnet implements EthereumNetwork {
 class TempoTestnet extends Testnet implements EthereumNetwork {
   name = 'Tempo Testnet';
   family = CoinFamily.TEMPO;
-  explorerUrl = 'https://explore.tempo.xyz/tx/';
-  accountExplorerUrl = 'https://explore.tempo.xyz/address/';
+  explorerUrl = 'https://explore.testnet.tempo.xyz/tx/';
+  accountExplorerUrl = 'https://explore.testnet.tempo.xyz/address/';
   chainId = 42431;
   nativeCoinOperationHashPrefix = '42431';
   tokenOperationHashPrefix = '42431';
