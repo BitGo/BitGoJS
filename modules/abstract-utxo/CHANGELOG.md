@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.21.0...@bitgo/abstract-utxo@10.22.0) (2026-03-29)
+
+
+### Features
+
+* **abstract-utxo:** add protected isMainnet method ([5c97d43](https://github.com/BitGo/BitGoJS/commit/5c97d43d3e625a0b87dac3b8b0e84c441bd7055e))
+* **abstract-utxo:** enable legacy tx format for mainnet ([ed26128](https://github.com/BitGo/BitGoJS/commit/ed26128945bcc14c80b97776c1574375adad3569))
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
 # [10.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.20.0...@bitgo/abstract-utxo@10.21.0) (2026-03-27)
 
 
