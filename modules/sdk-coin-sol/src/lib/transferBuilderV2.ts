@@ -138,7 +138,7 @@ export class TransferBuilderV2 extends TransactionBuilder {
           let tokenName: string;
           let programId: string | undefined;
           let decimals: number | undefined;
-          if (sendParams.tokenAddress && sendParams.programId && sendParams.decimalPlaces) {
+          if (sendParams.tokenAddress && sendParams.programId && sendParams.decimalPlaces != null) {
             tokenName = sendParams.tokenName;
             tokenAddress = sendParams.tokenAddress;
             decimals = sendParams.decimalPlaces;

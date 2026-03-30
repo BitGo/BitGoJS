@@ -124,7 +124,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
         let tokenName: string;
         let programId: string | undefined;
         let decimals: number | undefined;
-        if (sendParams.tokenAddress && sendParams.programId && sendParams.decimalPlaces) {
+        if (sendParams.tokenAddress && sendParams.programId && sendParams.decimalPlaces != null) {
           tokenAddress = sendParams.tokenAddress;
           tokenName = sendParams.tokenName;
           programId = sendParams.programId;
