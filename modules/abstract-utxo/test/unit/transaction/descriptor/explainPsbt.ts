@@ -3,10 +3,10 @@ import assert from 'assert';
 import { descriptorWallet } from '@bitgo/wasm-utxo';
 import * as testutils from '@bitgo/wasm-utxo/testutils';
 
-import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction.js';
-import { explainPsbt } from '../../../../src/transaction/descriptor/index.js';
+import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction';
+import { explainPsbt } from '../../../../src/transaction/descriptor/index';
 
-import { getFixtureRoot } from './fixtures.utils.js';
+import { getFixtureRoot } from './fixtures.utils';
 
 const { getDescriptorMap, mockPsbtDefaultWithDescriptorTemplate } = testutils.descriptor;
 const { assertEqualFixture } = getFixtureRoot(__dirname + '/fixtures');

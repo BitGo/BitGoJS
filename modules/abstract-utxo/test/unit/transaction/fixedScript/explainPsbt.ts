@@ -4,15 +4,15 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { testutil } from '@bitgo/utxo-lib';
 import { fixedScriptWallet, Triple } from '@bitgo/wasm-utxo';
 
-import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction.js';
+import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction';
 import {
   explainPsbt,
   explainPsbtWasm,
   explainPsbtWasmBigInt,
   aggregateTransactionExplanations,
   type TransactionExplanationBigInt,
-} from '../../../../src/transaction/fixedScript/index.js';
-import { getCoinName } from '../../../../src/names.js';
+} from '../../../../src/transaction/fixedScript/index';
+import { getCoinName } from '../../../../src/names';
 
 function describeTransactionWith(acidTest: testutil.AcidTest) {
   describe(`${acidTest.name}`, function () {

@@ -13,9 +13,9 @@ import { explainLegacyTx, explainPsbt, explainPsbtWasm } from '../../../../src/t
 import type {
   TransactionExplanation,
   ChangeAddressInfo,
-} from '../../../../src/transaction/fixedScript/explainTransaction.js';
-import { getCoinName } from '../../../../src/names.js';
-import { TransactionPrebuild } from '../../../../src/abstractUtxoCoin.js';
+} from '../../../../src/transaction/fixedScript/explainTransaction';
+import { getCoinName } from '../../../../src/names';
+import { TransactionPrebuild } from '../../../../src/abstractUtxoCoin';
 
 function getTxParamsFromExplanation(
   explanation: TransactionExplanation,
