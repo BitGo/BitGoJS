@@ -4405,6 +4405,34 @@ export const tOfcErc20Coins = [
     undefined,
     'hteth'
   ),
+  tofcerc20(
+    '495184dd-bfb6-477e-8519-62bb9f0d5d0d',
+    'ofchteth:wbtc',
+    'Hoodi Testnet Wrapped Bitcoin',
+    8,
+    UnderlyingAsset['hteth:wbtc'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    '304cca0a-2400-47de-a538-3fd1d7b2373f',
+    'ofchteth:stgwbtc',
+    'Hoodi Testnet Wrapped Bitcoin',
+    8,
+    UnderlyingAsset['hteth:stgwbtc'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
 
   ofcerc20(
     'cc2a92cf-d799-463b-b08c-e9a4d5e87934',
