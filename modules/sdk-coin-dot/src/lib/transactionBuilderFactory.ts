@@ -57,7 +57,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   getUnnominateBuilder(): UnnominateBuilder {
-    return new UnnominateBuilder(this._coinConfig);
+    return new UnnominateBuilder(this._coinConfig).material(this._material);
   }
 
   from(rawTxn: string): TransactionBuilder {
