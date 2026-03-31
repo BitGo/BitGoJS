@@ -3,6 +3,56 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.32.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.31.0...@bitgo/statics@58.32.0) (2026-03-27)
+
+
+### Bug Fixes
+
+* fixed name of ofceth:cashplus ([ec419f0](https://github.com/BitGo/BitGoJS/commit/ec419f0c0dcdf517fbcce7c0b51635140de28779))
+* rename linea mainnet ([29bd8af](https://github.com/BitGo/BitGoJS/commit/29bd8af25ad386438596f7c90e1788e502da519a))
+* **statics:** correct decimal precision for bsc:solv and ofcbsc:solv ([ec8f509](https://github.com/BitGo/BitGoJS/commit/ec8f5098ce090119c8f0581c7b0168ca9cc7bb4e))
+
+
+### Features
+
+* add getNetworkByName function for network lookup ([102b1e3](https://github.com/BitGo/BitGoJS/commit/102b1e3dd0f7aaec6aa66e7f5d621c080abc5d00))
+* add support for L1 fee buffers in gas calculations for multiple coin families ([40a89e7](https://github.com/BitGo/BitGoJS/commit/40a89e758987112d9496f1f96d3a72cc1078d46b))
+* fix pharos chainId for new testnet ([f50a689](https://github.com/BitGo/BitGoJS/commit/f50a6898be27449a1a3e9327e80de13f9c32d15d))
+* onboard new tokens ([5d3f7c6](https://github.com/BitGo/BitGoJS/commit/5d3f7c6ea133e08792b4c5421e5ed91dc1da4455))
+* onboard Tesla, Amazon, Palantir, Netflix tokens to Arbitrum mainnet ([faa965d](https://github.com/BitGo/BitGoJS/commit/faa965d3a8feee54be41c66a3a10f90fb060492e))
+* **sdk-coin-cosmos:** enable kava cosmos staking on mainnet ([aa2f61b](https://github.com/BitGo/BitGoJS/commit/aa2f61b567900712c219170c03f3fda464445f04))
+* **statics:** add bitkub batch 4 ungated tokens ([fe01dd5](https://github.com/BitGo/BitGoJS/commit/fe01dd5b48d8b0fa6bac34c40a4ff359701b543f))
+* **statics:** add DynamicNetwork and DynamicCoin for AMS-discovered chains ([f834571](https://github.com/BitGo/BitGoJS/commit/f834571236fbd9886428dae5ffa43cc4c4b0077c))
+* **statics:** onboard ofcsui:suins (SuiNS) OFC token ([18c2138](https://github.com/BitGo/BitGoJS/commit/18c21388f0755cd2f83e5b5ae34b8bc8347f59e2))
+* **statics:** update fluenteth mainnet config ([dd39afe](https://github.com/BitGo/BitGoJS/commit/dd39afe4d1a07c492f0d73192903989de91708a6))
+
+
+
+
+
+# [58.31.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.30.0...@bitgo/statics@58.31.0) (2026-03-18)
+
+
+### Bug Fixes
+
+* change the explorer link for SEIEVM ([bbb0dcf](https://github.com/BitGo/BitGoJS/commit/bbb0dcf29b9bcbcc98d307bb46fcce3f921a4f5a))
+* fix canton usdxlr address ([0c73f30](https://github.com/BitGo/BitGoJS/commit/0c73f30f32f3ca9fec816be05122b46e5a438655))
+* **statics:** correct Sahara AI (eth:sahara) token contract address ([956dd2f](https://github.com/BitGo/BitGoJS/commit/956dd2f04680bed86b7d445782d936b6a7af5c58))
+* tokenName fix in config ([93e5ad2](https://github.com/BitGo/BitGoJS/commit/93e5ad2fb753e1b84d302f993320c8bcf1235e00))
+
+
+### Features
+
+* enable kava staking for testnet ([3833bf8](https://github.com/BitGo/BitGoJS/commit/3833bf80db2b3e3b345786a0a519b7d2ae4a309a))
+* onboard new tokens - Bitlayer, HASTRA PRIME, Kamino, and test tokens ([1264199](https://github.com/BitGo/BitGoJS/commit/126419936317f403f272f9bdaa36e18241fb6793))
+* **statics:** add 11 tokens across 7 chains ([61dff4c](https://github.com/BitGo/BitGoJS/commit/61dff4c375760d526fb13332252ded6718d03d08))
+* **statics:** add new tokens for ETH, SOL, XDC, BASE, SUI, ADA ([2403298](https://github.com/BitGo/BitGoJS/commit/2403298508a477550a9eb07f1c01e0fb21c5e5c7))
+* **statics:** add OFC token for ADA:USDCx (CECHO-375) ([cefd769](https://github.com/BitGo/BitGoJS/commit/cefd769646399adf1038f3c6daf9eec800510366))
+
+
+
+
+
 # [58.30.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.29.0...@bitgo/statics@58.30.0) (2026-03-10)
 
 

@@ -50,6 +50,12 @@ const Navbar = () => {
       >
         Generate Ecdsa Challenge
       </NavItem>
+      <NavItem
+        activeRoute={pathname === '/webcrypto-auth'}
+        onClick={() => navigate('/webcrypto-auth')}
+      >
+        WebCrypto Auth
+      </NavItem>
     </NavbarContainer>
   );
 };

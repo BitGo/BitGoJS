@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.17.0...@bitgo/sdk-coin-sol@7.18.0) (2026-03-29)
+
+
+### Features
+
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
+# [7.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.16.3...@bitgo/sdk-coin-sol@7.17.0) (2026-03-27)
+
+
+### Features
+
+* add nested sol recovery ([44b46f0](https://github.com/BitGo/BitGoJS/commit/44b46f05e529ff3738456001c352af0aa1a60227))
+
+
+
+
+
+## [7.16.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.16.2...@bitgo/sdk-coin-sol@7.16.3) (2026-03-18)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sol
+
+
+
+
+
 ## [7.16.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.16.1...@bitgo/sdk-coin-sol@7.16.2) (2026-03-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

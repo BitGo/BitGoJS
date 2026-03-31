@@ -11,7 +11,7 @@ export const bscTokens = [
     '9cab6783-f652-4cd2-8af2-a2ccf15f31c9',
     'bsc:solv',
     'SOLV Protocol',
-    9,
+    18,
     '0xabe8e5cabe24cb36df9540088fd7ce1175b9bc52',
     UnderlyingAsset['bsc:solv'],
     BSC_TOKEN_FEATURES
@@ -1568,6 +1568,51 @@ export const bscTokens = [
     18,
     '0xcd18d94fda553bb956d6130ad217b63ef65888d0',
     UnderlyingAsset['bsc:pt-cusdo-29oct2026'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '54f999b6-1022-47e1-a3b3-f946c5c746ab',
+    'bsc:mito',
+    'Mitosis',
+    18,
+    '0x8e1e6bf7e13c400269987b65ab2b5724b016caef',
+    UnderlyingAsset['bsc:mito'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '3648531c-b448-498e-828a-5fb6147ca8c6',
+    'bsc:shell',
+    'MyShell',
+    18,
+    '0xf2c88757f8d03634671208935974b60a2a28bdb3',
+    UnderlyingAsset['bsc:shell'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'ff180e4c-40cb-4988-ad84-a5a90ec86df1',
+    'bsc:hemi',
+    'Hemi',
+    18,
+    '0x5ffd0eadc186af9512542d0d5e5eafc65d5afc5b',
+    UnderlyingAsset['bsc:hemi'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '8fe8434f-4060-46a8-9547-1cfd3af7b175',
+    'bsc:cookie',
+    'Cookie DAO',
+    18,
+    '0xc0041ef357b183448b235a8ea73ce4e4ec8c265f',
+    UnderlyingAsset['bsc:cookie'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '64f8c49c-1ab6-466f-865a-30ceefc75aac',
+    'bsc:esports',
+    'Yooldo Games',
+    18,
+    '0xf39e4b21c84e737df08e2c3b32541d856f508e48',
+    UnderlyingAsset['bsc:esports'],
     BSC_TOKEN_FEATURES
   ),
 ];

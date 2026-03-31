@@ -12042,7 +12042,7 @@ export const erc20Coins = [
   erc20(
     'd4e5f6a7-8b9c-4d0e-9f2a-3b4c5d6e7f8a',
     'eth:cashplus',
-    'CASH+',
+    'CashPlus',
     18,
     '0x498d9329555471bf6073a5f2d047f746d522a373',
     UnderlyingAsset['eth:cashplus']
@@ -14589,6 +14589,54 @@ export const erc20Coins = [
     18,
     '0x6c76de483f1752ac8473e2b4983a873991e70da7',
     UnderlyingAsset['eth:btr']
+  ),
+  erc20(
+    '2ebd4f80-ee3f-4792-8ab5-4c6f84dc30ed',
+    'eth:el',
+    'Elysia',
+    18,
+    '0x2781246fe707bb15cee3e5ea354e2154a2877b16',
+    UnderlyingAsset['eth:el']
+  ),
+  erc20(
+    '6ad92e47-26c4-4d1c-913f-3bc7c9f94570',
+    'eth:kernel',
+    'KernelDAO',
+    18,
+    '0x3f80b1c54ae920be41a77f8b902259d48cf24ccf',
+    UnderlyingAsset['eth:kernel']
+  ),
+  erc20(
+    '86fd483d-8fc0-4926-9b17-5ea8a5c095d6',
+    'eth:tree',
+    'Treehouse',
+    18,
+    '0x77146784315ba81904d654466968e3a7c196d1f3',
+    UnderlyingAsset['eth:tree']
+  ),
+  erc20(
+    '60ce23fb-c841-4bc2-8a92-4ce908998c9d',
+    'eth:zkc',
+    'Boundless',
+    18,
+    '0x000006c2a22ff4a44ff1f5d0f2ed65f781f55555',
+    UnderlyingAsset['eth:zkc']
+  ),
+  erc20(
+    '73753e17-4ef2-4c08-8e18-4e8d3511dd17',
+    'eth:musd',
+    'Mezo USD',
+    18,
+    '0xdd468a1ddc392dcdbef6db6e34e89aa338f9f186',
+    UnderlyingAsset['eth:musd']
+  ),
+  erc20(
+    'e88997d9-bcea-4d1d-9ee0-4e83391a3b9c',
+    'eth:mezo',
+    'Mezo',
+    18,
+    '0x8e4cbbcc33db6c0a18561fde1f6ba35906d4848b',
+    UnderlyingAsset['eth:mezo']
   ),
   terc20(
     '0c333619-e5a6-4f9d-8bbc-5b0e5dc64d03',

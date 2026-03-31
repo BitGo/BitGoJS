@@ -319,6 +319,11 @@ export enum CoinFeature {
   TSS_COLD = 'tss-cold',
 
   /**
+   * This coin is in progress for being onboarded to TSS signing protocol
+   */
+  TSS_SUPPORT_IN_PROGRESS = 'tss-support-in-progress',
+
+  /**
    * This coin uses sha256 hash function for ECDSA TSS signatures
    */
   SHA256_WITH_ECDSA_TSS = 'sha256-with-ecdsa-tss',
@@ -1949,6 +1954,22 @@ export enum UnderlyingAsset {
   'sol:usdc' = 'sol:usdc',
   'sol:agri' = 'sol:agri',
   'sol:usdca' = 'sol:usdca',
+  'sol:sonic' = 'sol:sonic',
+  'sol:crdt' = 'sol:crdt',
+  'sol:epxc' = 'sol:epxc',
+  'sol:eqtyx' = 'sol:eqtyx',
+  'sol:flttx' = 'sol:flttx',
+  'sol:lngvx' = 'sol:lngvx',
+  'sol:modrx' = 'sol:modrx',
+  'sol:spxux' = 'sol:spxux',
+  'sol:techx' = 'sol:techx',
+  'sol:tipsx' = 'sol:tipsx',
+  'sol:wtgxx' = 'sol:wtgxx',
+  'sol:wtlgx' = 'sol:wtlgx',
+  'sol:wtstx' = 'sol:wtstx',
+  'sol:wttsx' = 'sol:wttsx',
+  'sol:wtsix' = 'sol:wtsix',
+  'sol:wtsyx' = 'sol:wtsyx',
   USCC = 'uscc',
   USDC = 'usdc',
   'USDC-POS-WORMHOLE' = 'usdc-pos-wormhole',
@@ -2905,6 +2926,11 @@ export enum UnderlyingAsset {
   'bsc:iost' = 'bsc:iost',
   'bsc:sto' = 'bsc:sto',
   'bsc:pt-cusdo-29oct2026' = 'bsc:pt-cusdo-29oct2026',
+  'bsc:mito' = 'bsc:mito',
+  'bsc:shell' = 'bsc:shell',
+  'bsc:hemi' = 'bsc:hemi',
+  'bsc:cookie' = 'bsc:cookie',
+  'bsc:esports' = 'bsc:esports',
 
   // BSC NFTs
   // generic NFTs
@@ -3038,6 +3064,9 @@ export enum UnderlyingAsset {
   'baseeth:xsgd' = 'baseeth:xsgd',
   'baseeth:xusd' = 'baseeth:xusd',
   'baseeth:home' = 'baseeth:home',
+  'baseeth:c' = 'baseeth:c',
+  'baseeth:carv' = 'baseeth:carv',
+  'baseeth:usad' = 'baseeth:usad',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -3510,7 +3539,7 @@ export enum UnderlyingAsset {
   'sui:dmc' = 'sui:dmc',
   'sui:mmt' = 'sui:mmt',
   'sui:usdsui' = 'sui:usdsui',
-
+  'sui:blue' = 'sui:blue',
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',
   'tsui:wal' = 'tsui:wal',
@@ -3631,6 +3660,7 @@ export enum UnderlyingAsset {
   'ton:cati' = 'ton:cati',
   'ton:dogs' = 'ton:dogs',
   'ton:ston' = 'ton:ston',
+  'ton:dropee' = 'ton:dropee',
 
   // TON testnet tokens
   'tton:ukwny-us' = 'tton:ukwny-us',
@@ -3670,7 +3700,12 @@ export enum UnderlyingAsset {
   'eth:kite' = 'eth:kite',
   'eth:sahara' = 'eth:sahara',
   'eth:epic' = 'eth:epic',
-
+  'eth:el' = 'eth:el',
+  'eth:kernel' = 'eth:kernel',
+  'eth:tree' = 'eth:tree',
+  'eth:zkc' = 'eth:zkc',
+  'eth:musd' = 'eth:musd',
+  'eth:mezo' = 'eth:mezo',
   // ADA testnet tokens
   'tada:water' = 'tada:water',
   'tada:tusda' = 'tada:tusda',
@@ -3696,6 +3731,7 @@ export enum UnderlyingAsset {
   'canton:usdcx' = 'canton:usdcx',
   'canton:cbtc' = 'canton:cbtc',
   'canton:usdxlr' = 'canton:usdxlr',
+  'canton:cltc' = 'canton:cltc',
 
   // Tempo mainnet tokens
   'tempo:pathusd' = 'tempo:pathusd',
@@ -3940,5 +3976,51 @@ export abstract class BaseCoin {
       return [];
     }
     return baseFeatures.filter((feature) => !excludedFeatures.includes(feature));
+  }
+}
+
+export interface DynamicCoinConstructorOptions {
+  id: string;
+  fullName: string;
+  name: string;
+  alias?: string;
+  prefix?: string;
+  suffix?: string;
+  denom?: string;
+  baseUnit: string;
+  kind: string;
+  isToken: boolean;
+  features: string[];
+  decimalPlaces: number;
+  asset: string;
+  network: BaseNetwork;
+  primaryKeyCurve: string;
+}
+
+/**
+ * Concrete coin class for AMS-discovered chains not yet registered in local statics.
+ *
+ * Extends {@link BaseCoin} directly with empty required/disallowed
+ * feature sets — AMS is the source of truth for features. Accepts string-typed enum
+ * fields and casts internally (safe since CoinKind, CoinFeature, UnderlyingAsset,
+ * KeyCurve are all string enums).
+ */
+export class DynamicCoin extends BaseCoin {
+  protected requiredFeatures(): Set<CoinFeature> {
+    return new Set();
+  }
+
+  protected disallowedFeatures(): Set<CoinFeature> {
+    return new Set();
+  }
+
+  constructor(options: DynamicCoinConstructorOptions) {
+    super({
+      ...options,
+      kind: options.kind as CoinKind,
+      features: options.features as CoinFeature[],
+      asset: options.asset as UnderlyingAsset,
+      primaryKeyCurve: options.primaryKeyCurve as KeyCurve,
+    });
   }
 }

@@ -36,6 +36,7 @@ import nacl from 'tweetnacl';
 import {
   ataCloseInstructionIndexes,
   ataInitInstructionIndexes,
+  ataRecoverNestedInstructionIndexes,
   MAX_MEMO_LENGTH,
   MEMO_PROGRAM_PK,
   nonceAdvanceInstruction,
@@ -370,6 +371,8 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
     return TransactionType.AssociatedTokenAccountInitialization;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, ataCloseInstructionIndexes)) {
     return TransactionType.CloseAssociatedTokenAccount;
+  } else if (matchTransactionTypeByInstructionsOrder(instructions, ataRecoverNestedInstructionIndexes)) {
+    return TransactionType.CloseAssociatedTokenAccount;
   } else {
     return TransactionType.CustomTx;
   }
@@ -418,6 +421,8 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
       // Both instruction types are treated as 'InitializeAssociatedTokenAccount' for compatibility
       if (instruction.data.length === 0 || isIdempotentAtaInstruction(instruction)) {
         return 'InitializeAssociatedTokenAccount';
+      } else if (instruction.data.length === 1 && instruction.data[0] === 2) {
+        return 'RecoverNestedAssociatedTokenAccount';
       } else {
         throw new NotSupported(
           'Invalid transaction, instruction program id not supported: ' + instruction.programId.toString()

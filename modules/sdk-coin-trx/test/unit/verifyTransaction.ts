@@ -5,7 +5,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
 import { Trx, Ttrx } from '../../src';
 import { Utils } from '../../src/lib';
-import { UnsignedBuildTransaction } from '../resources';
+import { UnsignedBuildTransaction, UnsignedAccountPermissionUpdateContractTx } from '../resources';
 
 describe('TRON Verify Transaction:', function () {
   const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
@@ -414,6 +414,164 @@ describe('TRON Verify Transaction:', function () {
         await assert.rejects(basecoin.verifyTransaction(params), {
           message: 'destination address does not match with the recipient address',
         });
+      });
+    });
+  });
+
+  describe('TSS Wallet Verification', () => {
+    /**
+     * Helper to build a raw_data_hex (protobuf) for a TransferContract.
+     * For TSS, txPrebuild.txHex is the raw_data_hex directly (not a JSON string).
+     */
+    function buildTssTransferTxHex(params: {
+      ownerAddress: string;
+      toAddress: string;
+      amount: number;
+      timestamp?: number;
+      expiration?: number;
+    }): string {
+      const timestamp = params.timestamp || Date.now();
+      const transferContract = {
+        parameter: {
+          value: {
+            amount: params.amount,
+            owner_address: params.ownerAddress,
+            to_address: params.toAddress,
+          },
+          type_url: 'type.googleapis.com/protocol.TransferContract',
+        },
+        type: 'TransferContract',
+      };
+
+      const transformedRawData = {
+        contract: [transferContract] as any,
+        refBlockBytes: 'c8cf',
+        refBlockHash: '89177fd84c5d9196',
+        expiration: params.expiration || timestamp + 3600000,
+        timestamp: timestamp,
+      };
+
+      return Utils.generateRawDataHex(transformedRawData);
+    }
+
+    describe('TransferContract', () => {
+      it('should validate a valid TSS TransferContract', async function () {
+        const ownerHex = '4173a5993cd182ae152adad8203163f780c65a8aa5';
+        const toHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+        const amount = 1000000;
+
+        const rawDataHex = buildTssTransferTxHex({ ownerAddress: ownerHex, toAddress: toHex, amount });
+
+        const params = {
+          txParams: {
+            recipients: [
+              {
+                // TSS path: recipients use base58 addresses
+                address: Utils.getBase58AddressFromHex(toHex),
+                amount: amount.toString(),
+              },
+            ],
+          },
+          txPrebuild: {
+            // TSS path: txHex is the raw protobuf hex, not a JSON string
+            txHex: rawDataHex,
+          },
+          wallet: {},
+          walletType: 'tss',
+        };
+
+        const result = await basecoin.verifyTransaction(params);
+        assert.strictEqual(result, true);
+      });
+
+      it('should fail TSS verification when amount does not match', async function () {
+        const ownerHex = '4173a5993cd182ae152adad8203163f780c65a8aa5';
+        const toHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+
+        const rawDataHex = buildTssTransferTxHex({ ownerAddress: ownerHex, toAddress: toHex, amount: 2000000 });
+
+        const params = {
+          txParams: {
+            recipients: [
+              {
+                address: Utils.getBase58AddressFromHex(toHex),
+                amount: '1000000', // mismatch: txHex has 2000000
+              },
+            ],
+          },
+          txPrebuild: {
+            txHex: rawDataHex,
+          },
+          wallet: {},
+          walletType: 'tss',
+        };
+
+        await assert.rejects(basecoin.verifyTransaction(params), {
+          message: 'transaction amount in txPrebuild does not match the value given by client',
+        });
+      });
+
+      it('should fail TSS verification when destination address does not match', async function () {
+        const ownerHex = '4173a5993cd182ae152adad8203163f780c65a8aa5';
+        const toHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+
+        const rawDataHex = buildTssTransferTxHex({ ownerAddress: ownerHex, toAddress: toHex, amount: 1000000 });
+
+        const params = {
+          txParams: {
+            recipients: [
+              {
+                // Different address than what's in the transaction
+                address: 'TTsGwnTLQ4eryFJpDvJSfuGQxPXRCjXvZz',
+                amount: '1000000',
+              },
+            ],
+          },
+          txPrebuild: {
+            txHex: rawDataHex,
+          },
+          wallet: {},
+          walletType: 'tss',
+        };
+
+        await assert.rejects(basecoin.verifyTransaction(params), {
+          message: 'destination address does not match with the recipient address',
+        });
+      });
+    });
+
+    it('should return true for non-Transfer contract types in TSS', async function () {
+      // For non-Transfer contracts (e.g., AccountPermissionUpdate), TSS path returns true
+      // without detailed validation.
+      const rawDataHex = UnsignedAccountPermissionUpdateContractTx.raw_data_hex;
+
+      const params = {
+        txParams: {
+          recipients: [],
+        },
+        txPrebuild: {
+          txHex: rawDataHex,
+        },
+        wallet: {},
+        walletType: 'tss',
+      };
+
+      const result = await basecoin.verifyTransaction(params);
+      assert.strictEqual(result, true);
+    });
+
+    it('should throw error when txHex is missing for TSS wallet', async function () {
+      const params = {
+        txParams: {
+          recipients: [{ address: 'TQFxDSoXy2yXRE5HtKwAwrNRXGxYxkeSGk', amount: '1000000' }],
+        },
+        txPrebuild: {},
+        wallet: {},
+        walletType: 'tss',
+      };
+
+      await assert.rejects(basecoin.verifyTransaction(params), {
+        message: 'missing txHex in txPrebuild',
       });
     });
   });

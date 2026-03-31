@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.21.0...@bitgo/abstract-eth@24.22.0) (2026-03-29)
+
+
+### Features
+
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
+# [24.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.20.8...@bitgo/abstract-eth@24.21.0) (2026-03-27)
+
+
+### Features
+
+* add support for L1 fee buffers in gas calculations for multiple coin families ([40a89e7](https://github.com/BitGo/BitGoJS/commit/40a89e758987112d9496f1f96d3a72cc1078d46b))
+
+
+
+
+
+## [24.20.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.20.7...@bitgo/abstract-eth@24.20.8) (2026-03-18)
+
+**Note:** Version bump only for package @bitgo/abstract-eth
+
+
+
+
+
 ## [24.20.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.20.6...@bitgo/abstract-eth@24.20.7) (2026-03-10)
 
 

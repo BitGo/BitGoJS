@@ -24,6 +24,7 @@ import {
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import * as querystring from 'querystring';
 import { TransactionBuilderFactory } from './lib';
 import { KeyPair as CantonKeyPair } from './lib/keyPair';
 import utils from './lib/utils';
@@ -34,6 +35,11 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
 
 export interface ExplainTransactionOptions {
   txHex: string;
+}
+
+interface AddressDetails {
+  address: string;
+  memoId?: string;
 }
 
 export class Canton extends BaseCoin {
@@ -119,10 +125,10 @@ export class Canton extends BaseCoin {
       case TransactionType.Send:
         if (txParams.recipients !== undefined) {
           const filteredRecipients = txParams.recipients?.map((recipient) => {
-            const { address, amount, tokenName } = recipient;
-            const [addressPart, memoId] = address.split('?memoId=');
+            const { amount, tokenName } = recipient;
+            const { address, memoId } = this.getAddressDetails(recipient.address);
             return {
-              address: addressPart,
+              address,
               amount,
               ...(memoId && { memo: memoId }),
               ...(tokenName && { tokenName }),
@@ -153,7 +159,7 @@ export class Canton extends BaseCoin {
     // TODO: refactor this and use the `verifyEddsaMemoBasedWalletAddress` once published from sdk-core
     // https://bitgoinc.atlassian.net/browse/COIN-6347
     const { keychains, address: newAddress, index } = params;
-    const [addressPart, memoId] = newAddress.split('?memoId=');
+    const { address: addressPart, memoId } = this.getAddressDetails(newAddress);
     if (!this.isValidAddress(addressPart)) {
       throw new InvalidAddressError(`invalid address: ${newAddress}`);
     }
@@ -212,6 +218,56 @@ export class Canton extends BaseCoin {
     // canton addresses are of the form, partyHint::fingerprint
     // where partyHint is of length 5 and fingerprint is 68 characters long
     return utils.isValidAddress(address);
+  }
+
+  /**
+   * Process address into address and optional memo id
+   *
+   * @param address the address
+   * @returns object containing base address and optional memo id
+   */
+  getAddressDetails(address: string): AddressDetails {
+    const queryIndex = address.indexOf('?');
+    const destinationAddress = queryIndex >= 0 ? address.slice(0, queryIndex) : address;
+    const query = queryIndex >= 0 ? address.slice(queryIndex + 1) : undefined;
+
+    // Address without memoId query parameter.
+    if (query === undefined) {
+      return {
+        address,
+        memoId: undefined,
+      };
+    }
+
+    if (!query || destinationAddress.length === 0) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    const queryDetails = querystring.parse(query);
+    if (!queryDetails.memoId) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    if (Array.isArray(queryDetails.memoId)) {
+      throw new InvalidAddressError(
+        `memoId may only be given at most once, but found ${queryDetails.memoId.length} instances in address ${address}`
+      );
+    }
+
+    const queryKeys = Object.keys(queryDetails);
+    if (queryKeys.length !== 1) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    const [memoId] = [queryDetails.memoId].filter((value): value is string => typeof value === 'string');
+    if (!memoId || memoId.trim().length === 0) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    return {
+      address: destinationAddress,
+      memoId,
+    };
   }
 
   /** @inheritDoc */

@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.37.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.36.0...@bitgo/utxo-staking@1.37.0) (2026-03-29)
+
+
+### Features
+
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
+# [1.36.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.35.0...@bitgo/utxo-staking@1.36.0) (2026-03-18)
+
+
+### Features
+
+* **abstract-utxo:** upgrade @bitgo/wasm-utxo to v2.1.0 ([5c18257](https://github.com/BitGo/BitGoJS/commit/5c18257dc30d7ede592be2336ed4b40bc582dc37))
+
+
+
+
+
 # [1.35.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.34.0...@bitgo/utxo-staking@1.35.0) (2026-02-24)
 
 

@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.37.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.36.0...@bitgo/sdk-core@36.37.0) (2026-03-29)
+
+
+### Features
+
+* remove usage of 'invoice' in amount field ([da48dac](https://github.com/BitGo/BitGoJS/commit/da48dac758fc9428550aad21fffa0bb28be307c7))
+
+
+
+
+
+# [36.36.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.35.0...@bitgo/sdk-core@36.36.0) (2026-03-27)
+
+
+### Features
+
+* **statics:** update fluenteth mainnet config ([dd39afe](https://github.com/BitGo/BitGoJS/commit/dd39afe4d1a07c492f0d73192903989de91708a6))
+
+
+
+
+
+# [36.35.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.34.0...@bitgo/sdk-core@36.35.0) (2026-03-18)
+
+
+### Features
+
+* **abstract-utxo:** filter input script types for legacy tx format ([2c9f8d2](https://github.com/BitGo/BitGoJS/commit/2c9f8d240c970b38de43f4db5e19b79323e31630))
+* **sdk-core:** add XdcStakeOptions with kycHash for XDC masternode ([c500ebc](https://github.com/BitGo/BitGoJS/commit/c500ebc5a4c11365090d71c70a8955b58ee298d1))
+* **sdk-core:** forward custodial fanouts to /tx/initiate ([b051f0f](https://github.com/BitGo/BitGoJS/commit/b051f0f112f42d21f5274aff3043c137190abba2))
+
+
+
+
+
 # [36.34.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.33.2...@bitgo/sdk-core@36.34.0) (2026-03-10)
 
 

@@ -33,6 +33,16 @@ export const cantonTokens = [
     UnderlyingAsset['canton:usdxlr'],
     CANTON_TOKEN_FEATURES
   ),
+  cantonToken(
+    '24912f87-9de5-481a-9960-a23b53f6247b',
+    'canton:cltc',
+    'Canton Litecoin',
+    10,
+    'https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/',
+    'NodeYield-validator-1::12208d2a12d51b745717ee4a4011ed6088749f4c458def8ac17609e65e17e8bd0976:CLTC',
+    UnderlyingAsset['canton:cltc'],
+    CANTON_TOKEN_FEATURES
+  ),
   // testnet tokens
   tcantonToken(
     '46356790-0ac4-4c3b-8b70-39094106d772',

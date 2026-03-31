@@ -4112,34 +4112,6 @@ export const tOfcErc20Coins = [
   tofcerc20('055ebe86-72cc-4f0e-b46f-c517d8e3687a', 'ofcterc', 'Test ERC Token', 18, UnderlyingAsset.TERC),
   tofcerc20('ac822eb1-4aa0-40d2-836d-7a24db24d47a', 'ofctest', 'Test Mintable ERC20 Token', 18, UnderlyingAsset.TEST),
   tofcerc20(
-    'e0f5b3c8-2d9a-4e7b-9a1c-8d3f6b0e9a2d',
-    'ofctarbeth:testtsla',
-    'Tesla (Test)',
-    18,
-    UnderlyingAsset['arbeth:testtsla']
-  ),
-  tofcerc20(
-    'f1a6c4d9-3e0b-4f8c-9b2d-9e4a7c1f0b3e',
-    'ofctarbeth:testamzn',
-    'Amazon (Test)',
-    18,
-    UnderlyingAsset['arbeth:testamzn']
-  ),
-  tofcerc20(
-    'a2b7d5e0-4f1c-4a9d-9c3e-0f5b8d2a1c4f',
-    'ofctarbeth:testpltr',
-    'Palantir (Test)',
-    18,
-    UnderlyingAsset['arbeth:testpltr']
-  ),
-  tofcerc20(
-    'b3c8e6f1-5a2d-4b0e-8d4f-1a6c9e3b2d5a',
-    'ofctarbeth:testnflx',
-    'Netflix (Test)',
-    18,
-    UnderlyingAsset['arbeth:testnflx']
-  ),
-  tofcerc20(
     '67b3f68b-a0bd-4bd7-b67e-36e8220bf67e',
     'ofcterc18dp13',
     'Test ERC Token 18 decimals',
@@ -5113,7 +5085,7 @@ export const tOfcErc20Coins = [
     18,
     UnderlyingAsset['eth:arm-weth-eeth']
   ),
-  ofcerc20('d8f3b2c7-4e9a-4f6b-a5c0-9e2f3a4b5c6d', 'ofceth:cashplus', 'CASH+', 18, UnderlyingAsset['eth:cashplus']),
+  ofcerc20('d8f3b2c7-4e9a-4f6b-a5c0-9e2f3a4b5c6d', 'ofceth:cashplus', 'CashPlus', 18, UnderlyingAsset['eth:cashplus']),
   ofcerc20('e9a4c3d8-5f0b-4a7c-86d1-af3a4b5c6d7e', 'ofceth:island', 'ISLAND Token', 18, UnderlyingAsset['eth:island']),
   ofcerc20('63f1d5de-5729-4a71-ba6e-dcd7095c20da', 'ofceth:job', 'jobchain', 8, UnderlyingAsset['eth:job']),
   ofcerc20('90169666-a3ee-4ff6-b447-0553a1a4cbb8', 'ofceth:irys', 'irys', 18, UnderlyingAsset['eth:irys']),
@@ -5342,6 +5314,34 @@ export const tOfcErc20Coins = [
     'ConsumerFI',
     18,
     UnderlyingAsset['baseeth:cfi'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    'c935401a-aad4-4f71-a34a-e0b26f56c4cc',
+    'ofcbaseeth:c',
+    'Chainbase',
+    18,
+    UnderlyingAsset['baseeth:c'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    'f7d35708-7aee-4b15-8b6b-0cf3580a5044',
+    'ofcbaseeth:carv',
+    'Carv',
+    18,
+    UnderlyingAsset['baseeth:carv'],
     undefined,
     undefined,
     '',
@@ -6156,6 +6156,22 @@ export const tOfcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:epic')
   ),
+  ofcerc20('88c8c5ca-9331-49a0-94da-83b208357fa8', 'ofceth:el', 'Elysia', 18, underlyingAssetForSymbol('eth:el')),
+  ofcerc20(
+    'a4b51a0a-fae2-49e7-bf50-356ee3dab410',
+    'ofceth:kernel',
+    'KernelDAO',
+    18,
+    underlyingAssetForSymbol('eth:kernel')
+  ),
+  ofcerc20('9d0606f4-72d3-4ebe-811b-680ca5e24203', 'ofceth:zkc', 'Boundless', 18, underlyingAssetForSymbol('eth:zkc')),
+  ofcerc20(
+    '2bde101e-6e6d-464e-902c-3ce3fb2d0d8e',
+    'ofceth:tree',
+    'Treehouse',
+    18,
+    underlyingAssetForSymbol('eth:tree')
+  ),
   ofcerc20(
     '22d66acc-976b-4dfb-be64-c6c963938424',
     'ofcopeth:cyber',
@@ -6171,6 +6187,22 @@ export const tOfcErc20Coins = [
     'opeth'
   ),
   ofcerc20('e4f9a7b2-6c3d-4e8a-9f1b-5d7c8e2a4b6f', 'ofceth:btr', 'Bitlayer', 18, UnderlyingAsset['eth:btr']),
+  ofcerc20('289ee20a-5659-4b40-82fb-259a881c7c20', 'ofceth:musd', 'Mezo USD', 18, UnderlyingAsset['eth:musd']),
+  ofcerc20('403bd58f-cd53-4d2d-81ac-93055d0cf59e', 'ofceth:mezo', 'Mezo', 18, UnderlyingAsset['eth:mezo']),
+  ofcerc20(
+    '47d8cf79-ed67-4e9c-8e51-422d31290282',
+    'ofcbaseeth:usad',
+    'Lydia',
+    18,
+    UnderlyingAsset['baseeth:usad'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

@@ -305,7 +305,7 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://explorer.hemi.xyz/api',
     },
     fluenteth: {
-      baseUrl: 'https://testnet.fluentscan.xyz/api/', //TODO: COIN-6478: add mainnet url when available
+      baseUrl: 'https://fluentscan.xyz/api/',
     },
     mantle: {
       baseUrl: 'https://api.mantlescan.xyz/api',

@@ -56,3 +56,13 @@ GHSA-qffp-2rhf-9h96
 # - We only use tar for packing; low risk in terms of exploitability
 # - Security exception approved
 GHSA-9ppj-qmqm-q256
+
+# Excluded because:
+# - CVE-2026-4258: missing point-on-curve validation in sjcl.ecc.basicKey.publicKey()
+# - Transitive dependency via @bitgo/abstract-lightning > macaroon > sjcl
+# - The vulnerability is in sjcl.ecc (ECDH invalid-curve attack); macaroon only uses
+#   sjcl.codec, sjcl.bitArray, sjcl.misc.hmac, and sjcl.hash.sha256 — no ECC operations
+# - Additionally, @bitgo/sjcl (our fork) does not include sjcl.ecc at all
+# - Resolved sjcl -> npm:@bitgo/sjcl@1.0.1 in root resolutions; sjcl.ecc is absent at runtime
+# - No patched version of sjcl exists upstream (first_patched_version: null)
+GHSA-2w8x-224x-785m

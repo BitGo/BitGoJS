@@ -79,6 +79,7 @@ import {
   getFullNameFromCoinName,
   getMainnetCoinName,
   getNetworkFromCoinName,
+  isMainnetCoin,
   isUtxoCoinNameMainnet,
   UtxoCoinName,
   UtxoCoinNameMainnet,
@@ -338,6 +339,11 @@ type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = 
    */
   returnLegacyFormat?: boolean;
   wallet?: UtxoWallet;
+  /**
+   * When true (default), extract finalized PSBT to legacy transaction format.
+   * When false, return finalized PSBT. Useful for testing to keep transactions in PSBT format.
+   */
+  extractTransaction?: boolean;
 };
 
 export type SignTransactionOptions<TNumber extends number | bigint = number> = UtxoBaseSignTransactionOptions<TNumber> &
@@ -404,7 +410,21 @@ export abstract class AbstractUtxoCoin
 {
   abstract name: UtxoCoinName;
 
+  /**
+   * Returns whether this coin is a mainnet coin.
+   * Default implementation uses the name property.
+   * Can be overridden by subclasses.
+   */
+  protected isMainnet(): boolean {
+    return isMainnetCoin(this.name);
+  }
+
   public readonly amountType: 'number' | 'bigint';
+
+  protected supportedTxFormats: { psbt: boolean; legacy: boolean } = {
+    psbt: true,
+    legacy: this.isMainnet(),
+  };
 
   protected constructor(bitgo: BitGoBase, amountType: 'number' | 'bigint' = 'number') {
     super(bitgo);
@@ -582,8 +602,15 @@ export abstract class AbstractUtxoCoin
     }
 
     if (utxolib.bitgo.isPsbt(input)) {
+      if (!this.supportedTxFormats.psbt) {
+        throw new ErrorDeprecatedTxFormat('psbt');
+      }
       return decodePsbtWith(input, this.name, decodeWith);
     } else {
+      // Legacy format transactions are deprecated. This will be an unconditional error in the future.
+      if (!this.supportedTxFormats.legacy) {
+        throw new ErrorDeprecatedTxFormat('legacy');
+      }
       if (decodeWith !== 'utxolib') {
         console.error('received decodeWith hint %s, ignoring for legacy transaction', decodeWith);
       }

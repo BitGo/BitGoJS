@@ -381,7 +381,7 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   explainTransaction(): {
-    outputs: { amount: string; address: string }[];
+    outputs: { amount: string; address: string; multiAssets?: Asset[] }[];
     certificates: Cert[];
     changeOutputs: string[];
     outputAmount: string;
@@ -414,7 +414,14 @@ export class Transaction extends BaseTransaction {
     return {
       displayOrder,
       id: txJson.id,
-      outputs: txJson.outputs.map((o) => ({ address: o.address, amount: o.amount })),
+      outputs: txJson.outputs.map((o) => {
+        const multiAssets = Transaction.parseMultiAssets(o.multiAssets as CardanoWasm.MultiAsset | undefined);
+        return {
+          address: o.address,
+          amount: o.amount,
+          ...(multiAssets && { multiAssets }),
+        };
+      }),
       outputAmount: outputAmount,
       changeOutputs: [],
       changeAmount: '0',
@@ -424,6 +431,29 @@ export class Transaction extends BaseTransaction {
       withdrawals: txJson.withdrawals,
       pledgeDetails: this._pledgeDetails,
     };
+  }
+
+  private static parseMultiAssets(multiAssets: CardanoWasm.MultiAsset | undefined): Asset[] | undefined {
+    if (!multiAssets) return undefined;
+    const list: Asset[] = [];
+    const scriptHashes = multiAssets.keys();
+    for (let i = 0; i < scriptHashes.len(); i++) {
+      const scriptHash = scriptHashes.get(i);
+      const assets = multiAssets.get(scriptHash);
+      if (!assets) continue;
+      const assetNames = assets.keys();
+      for (let j = 0; j < assetNames.len(); j++) {
+        const assetName = assetNames.get(j);
+        const quantity = assets.get(assetName);
+        if (!quantity) continue;
+        list.push({
+          policy_id: Buffer.from(scriptHash.to_bytes()).toString('hex'),
+          asset_name: Buffer.from(assetName.name()).toString('hex'),
+          quantity: quantity.to_str(),
+        });
+      }
+    }
+    return list.length > 0 ? list : undefined;
   }
 
   getPledgeDetails(): PledgeDetails | undefined {

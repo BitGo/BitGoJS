@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [21.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coreum@21.8.4...@bitgo/sdk-coin-coreum@21.9.0) (2026-03-29)
+
+
+### Features
+
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
+## [21.8.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coreum@21.8.3...@bitgo/sdk-coin-coreum@21.8.4) (2026-03-27)
+
+
+### Bug Fixes
+
+* **sdk-coin-coreum:** accept 32-byte addresses in isValidAddress ([5699b47](https://github.com/BitGo/BitGoJS/commit/5699b47cdd0b229c1320098b2dcc67889b69d167))
+
+
+
+
+
+## [21.8.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coreum@21.8.2...@bitgo/sdk-coin-coreum@21.8.3) (2026-03-18)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-coreum
+
+
+
+
+
 ## [21.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coreum@21.8.1...@bitgo/sdk-coin-coreum@21.8.2) (2026-03-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-coreum

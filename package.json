@@ -68,14 +68,15 @@
     "**/pacote/glob": "11.1.0",
     "**/sha.js": ">=2.4.12",
     "**/serialize-javascript": "7.0.3",
-    "jspdf": ">=4.2.0",
+    "jspdf": ">=4.2.1",
     "@ethereumjs/util": "8.0.3",
     "@types/keyv": "3.1.4",
     "@types/react": "17.0.24",
     "@types/react-dom": "17.0.16",
     "@solana/web3.js": "1.95.8",
-    "**/nise/**/path-to-regexp": "8.0.0",
-    "**/express/**/path-to-regexp": "0.1.12",
+    "**/nise/**/path-to-regexp": "8.4.0",
+    "**/express/**/path-to-regexp": "0.1.13",
+    "handlebars": "4.7.9",
     "@babel/runtime": "^7.28.2",
     "@babel/helpers": "^7.28.2",
     "buffer": "^6.0.3",
@@ -121,7 +122,9 @@
     "**/tronweb/**/validator": "13.15.23",
     "@isaacs/brace-expansion": "5.0.1",
     "basic-ftp": ">=5.2.0",
-    "flatted": "3.4.0"
+    "flatted": "3.4.2",
+    "sjcl": "npm:@bitgo/sjcl@1.0.1",
+    "picomatch": ">=2.3.2"
   },
   "workspaces": [
     "modules/*"

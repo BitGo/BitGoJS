@@ -2,6 +2,7 @@ import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { AtaInitializationBuilder } from './ataInitializationBuilder';
 import { CloseAtaBuilder } from './closeAtaBuilder';
+import { RecoverNestedAtaBuilder } from './recoverNestedAtaBuilder';
 import { CustomInstructionBuilder } from './customInstructionBuilder';
 import { StakingActivateBuilder } from './stakingActivateBuilder';
 import { StakingAuthorizeBuilder } from './stakingAuthorizeBuilder';
@@ -176,6 +177,13 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getCloseAtaInitializationBuilder(tx?: Transaction): CloseAtaBuilder {
     return this.initializeBuilder(tx, new CloseAtaBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns the builder to recover tokens from a nested ATA (an ATA owned by another ATA).
+   */
+  getRecoverNestedAtaBuilder(tx?: Transaction): RecoverNestedAtaBuilder {
+    return this.initializeBuilder(tx, new RecoverNestedAtaBuilder(this._coinConfig));
   }
 
   /**

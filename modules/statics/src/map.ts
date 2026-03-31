@@ -136,7 +136,7 @@ export class CoinMap {
     1946: 'tsoneium',
     33111: 'tapechain',
     33139: 'apechain',
-    688688: 'tphrs',
+    688689: 'tphrs',
     102030: 'ctc',
     102031: 'tctc',
     998: 'thypeevm',
@@ -173,7 +173,7 @@ export class CoinMap {
     42431: 'ttempo',
     5000: 'mantle',
     5003: 'tmantle',
-    20993: 'fluenteth',
+    25363: 'fluenteth',
     20994: 'tfluenteth',
   };
 

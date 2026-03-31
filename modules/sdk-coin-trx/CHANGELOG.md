@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.12.0...@bitgo/sdk-coin-trx@3.13.0) (2026-03-29)
+
+
+### Features
+
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
+# [3.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.11.1...@bitgo/sdk-coin-trx@3.12.0) (2026-03-27)
+
+
+### Features
+
+* added signing support for TRX MPC ([2225221](https://github.com/BitGo/BitGoJS/commit/2225221d03ff5353e6535c8ab6fb7365218c81e7))
+
+
+
+
+
+## [3.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.11.0...@bitgo/sdk-coin-trx@3.11.1) (2026-03-18)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-trx
+
+
+
+
+
 # [3.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.10.1...@bitgo/sdk-coin-trx@3.11.0) (2026-03-10)
 
 

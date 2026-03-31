@@ -1,6 +1,6 @@
-# Creating Go Accounts without BitGo Express
+# Go Account Workflows
 
-This guide demonstrates how to create Go Accounts (trading wallets) using only the BitGo SDK, without requiring BitGo Express.
+This guide covers the full Go Account (trading wallet) lifecycle using the BitGo SDK directly, without requiring BitGo Express.
 
 ## Overview
 
@@ -73,6 +73,72 @@ const address = await wallet.createAddress({
   onToken: 'ofctsol:usdc' // Required for OFC wallets
 });
 ```
+
+### 4. Go Account Withdrawal — complete flow
+**File:** `examples/ts/go-account/go-account-withdrawal.ts`
+
+Runs all three withdrawal steps in a single script: build → sign → submit.
+
+**Best for:**
+- End-to-end withdrawal from a Go Account (OFC) wallet in one command
+- Quick integration and testing
+
+**Flow:**
+```
+Step 1: wallet.prebuildTransaction({ recipients: [...] })                        → prebuild
+Step 2: tradingAccount.signPayload({ payload: prebuild.payload, walletPassphrase }) → signature
+Step 3: POST /tx/send { halfSigned: { payload, signature } }                     → txid/pendingApproval
+```
+
+> **Note:** If your enterprise has an approval policy configured, Step 3 returns a
+> pending approval instead of a txid. Run `go-account-approve.ts` from a second
+> admin account to approve it.
+
+### 5. Go Account Approval — approve a pending withdrawal
+**File:** `examples/ts/go-account/go-account-approve.ts`
+
+Approves a pending withdrawal that was held for review by an approval policy.
+
+**Best for:**
+- Enterprises that require a second admin to approve withdrawals
+- Auditing or reviewing pending transactions before they are broadcast
+
+**Important:** You cannot approve your own transaction — a **different** admin must run this script.
+
+**Flow:**
+```
+Step 1: coin.pendingApprovals().list({ walletId })     → find pending approval
+Step 2: pendingApproval.approve({ walletPassphrase })  → PUT /pendingapprovals/{id}
+```
+
+**Example:**
+```typescript
+const { pendingApprovals } = await coin.pendingApprovals().list({ walletId });
+const approval = pendingApprovals.find((pa) => pa.state() === 'pending');
+await approval.approve({ walletPassphrase, otp });
+```
+
+### 6. Sign Transaction — sign only (Step 2 of 3)
+**File:** `examples/ts/go-account/sign-transaction.ts`
+
+Signs a pre-built payload and outputs the hex signature. Use this when the build
+step (Step 1) happens in a separate process and you only need to sign offline.
+
+**Best for:**
+- Architectures where build and sign happen in different services/environments
+- Auditing or debugging the signing step in isolation
+
+**Example:**
+```typescript
+const tradingAccount = wallet.toTradingAccount();
+const signature = await tradingAccount.signPayload({
+  payload: prebuildPayload, // stringified JSON from Step 1
+  walletPassphrase: 'your_wallet_passphrase',
+});
+// → pass signature + payload to Step 3 (submitTransaction)
+```
+
+---
 
 ## Detailed Examples
 
@@ -213,6 +279,18 @@ const usdtAddress = await wallet.createAddress({
 
    # Create an address for an existing wallet
    npx tsx create-go-account-address.ts
+
+   # Full withdrawal: build + sign + submit in one command
+   OFC_WALLET_ID=your_wallet_id OFC_WALLET_PASSPHRASE=your_passphrase npx tsx go-account-withdrawal.ts
+
+   # Approve a pending withdrawal (run as a DIFFERENT admin)
+   TESTNET_ACCESS_TOKEN=approver_token OFC_WALLET_ID=your_wallet_id OFC_WALLET_PASSPHRASE=approver_passphrase npx tsx go-account-approve.ts
+
+   # Approve a specific pending approval by ID
+   TESTNET_ACCESS_TOKEN=approver_token PENDING_APPROVAL_ID=your_approval_id OFC_WALLET_PASSPHRASE=approver_passphrase npx tsx go-account-approve.ts
+
+   # Sign only: sign a pre-built payload (Step 2 of 3)
+   OFC_WALLET_ID=your_wallet_id OFC_WALLET_PASSPHRASE=your_passphrase OFC_PREBUILD_PAYLOAD='{"..."}' npx tsx sign-transaction.ts
    ```
 
 ## Supported Tokens

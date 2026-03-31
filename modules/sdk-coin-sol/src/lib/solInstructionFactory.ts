@@ -5,6 +5,7 @@ import {
   createCloseAccountInstruction,
   createMintToInstruction,
   createBurnInstruction,
+  createRecoverNestedInstruction,
   createTransferCheckedInstruction,
   TOKEN_2022_PROGRAM_ID,
   createApproveInstruction,
@@ -27,6 +28,7 @@ import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from './constants';
 import {
   AtaClose,
   AtaInit,
+  AtaRecoverNested,
   InstructionParams,
   Memo,
   MintTo,
@@ -79,6 +81,8 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return createATAInstruction(instructionToBuild);
     case InstructionBuilderTypes.CloseAssociatedTokenAccount:
       return closeATAInstruction(instructionToBuild);
+    case InstructionBuilderTypes.RecoverNestedAssociatedTokenAccount:
+      return recoverNestedATAInstruction(instructionToBuild);
     case InstructionBuilderTypes.StakingAuthorize:
       return stakingAuthorizeInstruction(instructionToBuild);
     case InstructionBuilderTypes.StakingDelegate:
@@ -549,6 +553,45 @@ function closeATAInstruction(data: AtaClose): TransactionInstruction[] {
     new PublicKey(authorityAddress)
   );
   return [closeAssociatedTokenAccountInstruction];
+}
+
+/**
+ * Construct RecoverNested ATA Solana instruction
+ *
+ * Recovers tokens from a nested ATA (an ATA whose owner is another ATA rather than a wallet address).
+ * This uses the Associated Token Account program's RecoverNested instruction, which allows the root
+ * wallet owner to sign and recover tokens without needing the intermediate ATA to sign.
+ *
+ * @param {AtaRecoverNested} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing the RecoverNested instruction
+ */
+function recoverNestedATAInstruction(data: AtaRecoverNested): TransactionInstruction[] {
+  const {
+    params: {
+      nestedAccountAddress,
+      nestedMintAddress,
+      destinationAccountAddress,
+      ownerAccountAddress,
+      ownerMintAddress,
+      walletAddress,
+    },
+  } = data;
+  assert(nestedAccountAddress, 'Missing nestedAccountAddress param');
+  assert(nestedMintAddress, 'Missing nestedMintAddress param');
+  assert(destinationAccountAddress, 'Missing destinationAccountAddress param');
+  assert(ownerAccountAddress, 'Missing ownerAccountAddress param');
+  assert(ownerMintAddress, 'Missing ownerMintAddress param');
+  assert(walletAddress, 'Missing walletAddress param');
+
+  const recoverNestedInstruction = createRecoverNestedInstruction(
+    new PublicKey(nestedAccountAddress),
+    new PublicKey(nestedMintAddress),
+    new PublicKey(destinationAccountAddress),
+    new PublicKey(ownerAccountAddress),
+    new PublicKey(ownerMintAddress),
+    new PublicKey(walletAddress)
+  );
+  return [recoverNestedInstruction];
 }
 
 /**

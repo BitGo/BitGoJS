@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.19.9...@bitgo/account-lib@27.20.0) (2026-03-29)
+
+
+### Features
+
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
+## [27.19.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.19.8...@bitgo/account-lib@27.19.9) (2026-03-27)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+
+
+
+
+## [27.19.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.19.7...@bitgo/account-lib@27.19.8) (2026-03-18)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+
+
+
+
 ## [27.19.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.19.6...@bitgo/account-lib@27.19.7) (2026-03-10)
 
 **Note:** Version bump only for package @bitgo/account-lib

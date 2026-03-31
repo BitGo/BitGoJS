@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hash@3.8.8...@bitgo/sdk-coin-hash@3.9.0) (2026-03-29)
+
+
+### Features
+
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
+## [3.8.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hash@3.8.7...@bitgo/sdk-coin-hash@3.8.8) (2026-03-27)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-hash
+
+
+
+
+
+## [3.8.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hash@3.8.6...@bitgo/sdk-coin-hash@3.8.7) (2026-03-18)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-hash
+
+
+
+
+
 ## [3.8.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hash@3.8.5...@bitgo/sdk-coin-hash@3.8.6) (2026-03-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-hash

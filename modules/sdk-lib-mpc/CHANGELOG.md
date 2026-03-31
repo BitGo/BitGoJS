@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.9.0...@bitgo/sdk-lib-mpc@10.10.0) (2026-03-27)
+
+
+### Features
+
+* define sjcl type definitions ([7d29830](https://github.com/BitGo/BitGoJS/commit/7d298307839be8c7c8ba3c29ae546a24009dce3f))
+
+
+
+
+
 # [10.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.8.1...@bitgo/sdk-lib-mpc@10.9.0) (2026-01-30)
 
 

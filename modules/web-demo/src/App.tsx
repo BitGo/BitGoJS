@@ -13,6 +13,7 @@ const WasmMiniscriptComponent = lazy(
 const EcdsaChallengeComponent = lazy(
   () => import('@components/EcdsaChallenge'),
 );
+const WebCryptoAuthComponent = lazy(() => import('@components/WebCryptoAuth'));
 
 const Loading = () => <div>Loading route...</div>;
 
@@ -34,6 +35,10 @@ const App = () => {
             <Route
               path="/ecdsachallenge"
               element={<EcdsaChallengeComponent />}
+            />
+            <Route
+              path="/webcrypto-auth"
+              element={<WebCryptoAuthComponent />}
             />
           </Routes>
         </Suspense>

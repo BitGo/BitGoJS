@@ -817,6 +817,8 @@ export const ofcCoins = [
     UnderlyingAsset['sol:usdca'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  ofcsolToken('eac1b075-0c6e-4655-8b86-4ebe0f1f9552', 'ofcsol:sonic', 'Sonic SVM', 9, UnderlyingAsset['sol:sonic']),
+
   ofcsolToken('a6b1c9d4-8e5f-4a0c-9b3d-7f9e0a4c6b8d', 'ofcsol:prime', 'HASTRA PRIME', 6, UnderlyingAsset['sol:prime']),
   ofcsolToken(
     'b7c2d0e5-9f6a-4b1d-9c4e-8a0f1b5d7c9e',
@@ -2039,6 +2041,34 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['arbeth:tt']
   ),
+  ofcArbethErc20(
+    '51d64734-29a7-4d95-ab81-4073d3071945',
+    'ofcarbeth:testtsla',
+    'Tesla (Test)',
+    18,
+    UnderlyingAsset['arbeth:testtsla']
+  ),
+  ofcArbethErc20(
+    '98d1b16b-be68-4ea4-bc41-b19ad8f0eceb',
+    'ofcarbeth:testamzn',
+    'Amazon (Test)',
+    18,
+    UnderlyingAsset['arbeth:testamzn']
+  ),
+  ofcArbethErc20(
+    '4eceb506-7e84-4108-9190-76cc4cfeb0e7',
+    'ofcarbeth:testpltr',
+    'Palantir (Test)',
+    18,
+    UnderlyingAsset['arbeth:testpltr']
+  ),
+  ofcArbethErc20(
+    'bdd471d7-6561-4d92-93aa-51254dea517e',
+    'ofcarbeth:testnflx',
+    'Netflix (Test)',
+    18,
+    UnderlyingAsset['arbeth:testnflx']
+  ),
 
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20(
@@ -2310,7 +2340,7 @@ export const ofcCoins = [
     undefined,
     [CoinFeature.STABLECOIN]
   ),
-  ofcBscToken('6a1e8b8c-4d7e-4f9a-9d8f-f6e72f8c7e65', 'ofcbsc:solv', 'SOLV Protocol', 9, UnderlyingAsset['bsc:solv']),
+  ofcBscToken('6a1e8b8c-4d7e-4f9a-9d8f-f6e72f8c7e65', 'ofcbsc:solv', 'SOLV Protocol', 18, UnderlyingAsset['bsc:solv']),
   ofcBscToken('6d96470a-3c8e-44de-a18e-9dd224d4bcc0', 'ofcbsc:stable', 'Stable', 18, UnderlyingAsset['bsc:stable']),
   ofcBscToken('f8c3d7b5-2d9e-4b3f-8a1e-7c6d9e3a2f4b', 'ofcbsc:brise', 'Bitrise Token', 9, UnderlyingAsset['bsc:brise']),
   ofcBscToken('2e9f4c6b-8a7d-4b2e-9d3f-7c6a5e8b1f2a', 'ofcbsc:bsw', 'Biswap', 18, UnderlyingAsset['bsc:bsw']),
@@ -4041,6 +4071,7 @@ export const ofcCoins = [
   ofcTonToken('874a497e-61a8-45b5-abe1-1d9637f49264', 'ofcton:cati', 'Catizen', 9, UnderlyingAsset['ton:cati']),
   ofcTonToken('e548896b-5867-491e-8a9c-5261f7e3ba69', 'ofcton:ston', 'STON.fi', 9, UnderlyingAsset['ton:ston']),
   ofcTonToken('41ee59d6-2484-429c-aad1-5e79ae766c4b', 'ofcton:dogs', 'Dogs', 9, UnderlyingAsset['ton:dogs']),
+  ofcTonToken('8f82214b-8425-4e1c-951f-75e0d977ddc5', 'ofcton:dropee', 'Dropee', 9, UnderlyingAsset['ton:dropee']),
   tofcTonToken(
     'e7d516c1-b975-4905-b5d0-8460f6ea7eb9',
     'ofctton:ukwny-us',
@@ -4074,6 +4105,17 @@ export const ofcCoins = [
   ),
   // New BSC OFC token
   ofcBscToken('b4200c85-f550-44d6-a6cb-a590f19773b0', 'ofcbsc:sto', 'StakeStone', 18, UnderlyingAsset['bsc:sto']),
+  ofcBscToken('167c65f6-c097-462f-99ec-18ab234a935b', 'ofcbsc:mito', 'Mitosis', 18, UnderlyingAsset['bsc:mito']),
+  ofcBscToken('b1ac3a84-4fa7-4947-8e41-d31a15ee7d97', 'ofcbsc:shell', 'MyShell', 18, UnderlyingAsset['bsc:shell']),
+  ofcBscToken('5c0d0323-65eb-4924-b27f-2eece61564c6', 'ofcbsc:hemi', 'Hemi', 18, UnderlyingAsset['bsc:hemi']),
+  ofcBscToken('0b596f43-f29e-48a1-a3ac-ea91b2236038', 'ofcbsc:cookie', 'Cookie DAO', 18, UnderlyingAsset['bsc:cookie']),
+  ofcBscToken(
+    '8b4c66ba-1ebd-42f6-ab06-7dd62cd625c8',
+    'ofcbsc:esports',
+    'Yooldo Games',
+    18,
+    UnderlyingAsset['bsc:esports']
+  ),
   // New Arbitrum OFC token
   ofcArbethErc20(
     'd58490c0-07d2-4642-8af7-efa2453392e9',
@@ -4109,6 +4151,7 @@ export const ofcCoins = [
   ofcSuiToken('1e01eb3d-2573-4662-aa5e-4c390e4a9b38', 'ofcsui:dmc', 'DeLorean', 9, UnderlyingAsset['sui:dmc']),
   ofcSuiToken('e4f5a6b7-8c9d-4eaf-82a3-4b5c6d7e8f9a', 'ofcsui:mmt', 'Momentum', 9, UnderlyingAsset['sui:mmt']),
   ofcSuiToken('3feb51ae-9625-427a-badb-acd57d3d72f5', 'ofcsui:usdsui', 'Sui Dollar', 6, UnderlyingAsset['sui:usdsui']),
+  ofcSuiToken('1d6bb15c-6f71-47e2-a42c-1bc138c3c3b4', 'ofcsui:blue', 'Bluefin', 9, UnderlyingAsset['sui:blue']),
   ofcSuiToken(
     'd9b1069e-3de7-44f0-822c-9c3dd116d26b',
     'ofcsui:haedal',
@@ -4116,6 +4159,7 @@ export const ofcCoins = [
     9,
     UnderlyingAsset['sui:haedal']
   ),
+  ofcSuiToken('b200b9c1-b8a6-4b91-adf6-14870e18bdca', 'ofcsui:suins', 'SuiNS', 6, UnderlyingAsset['sui:suins']),
   // Tempo mainnet OFC tokens
   ofcTempoToken(
     '61cbeade-67a7-4f18-b60d-bca7bf66d97e',

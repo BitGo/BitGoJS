@@ -6,7 +6,7 @@ import nock = require('nock');
 import { testutil } from '@bitgo/utxo-lib';
 import { common, Triple } from '@bitgo/sdk-core';
 
-import { getReplayProtectionPubkeys } from '../../src';
+import { getReplayProtectionPubkeys, ErrorDeprecatedTxFormat } from '../../src';
 import type { Unspent } from '../../src/unspent';
 
 import { getUtxoWallet, getDefaultWalletKeys, getUtxoCoin, keychainsBase58, defaultBitGo } from './util';
@@ -170,7 +170,7 @@ describe('signTransaction', function () {
     }
   });
 
-  it('customSigningFunction flow - Network Tx', async function () {
+  it('customSigningFunction flow - Network Tx should reject legacy format', async function () {
     const inputs: testutil.TxnInput<bigint>[] = testutil.txnInputScriptTypes
       .filter((v) => v !== 'p2shP2pk')
       .map((scriptType) => ({
@@ -182,9 +182,10 @@ describe('signTransaction', function () {
     const txBuilder = testutil.constructTxnBuilder(inputs, outputs, coin.network, rootWalletKeys, 'unsigned');
     const unspents = inputs.map((v, i) => testutil.toTxnUnspent(v, i, coin.network, rootWalletKeys));
 
-    for (const v of [false, true]) {
-      await signTransaction(txBuilder.buildIncomplete(), v, unspents);
-    }
+    // Legacy format transactions are now deprecated and should throw ErrorDeprecatedTxFormat
+    await assert.rejects(async () => {
+      await signTransaction(txBuilder.buildIncomplete(), false, unspents);
+    }, ErrorDeprecatedTxFormat);
   });
 
   it('fails on PSBT cache miss', async function () {

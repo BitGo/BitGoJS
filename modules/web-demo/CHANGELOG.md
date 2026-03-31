@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.4.0...@bitgo/web-demo@3.4.1) (2026-03-29)
+
+**Note:** Version bump only for package @bitgo/web-demo
+
+
+
+
+
+# [3.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.3.35...@bitgo/web-demo@3.4.0) (2026-03-27)
+
+
+### Bug Fixes
+
+* sdk hmac strategy init & clear ([d7698ad](https://github.com/BitGo/BitGoJS/commit/d7698adbf5e40dc36f49239eab913f38f083effa))
+* web crypto strategy and demo ([e57bd5b](https://github.com/BitGo/BitGoJS/commit/e57bd5bf5cdabb034627a94263eaa4eefbce3b8b))
+* web crypto strategy uses same hmac subject calc ([76129fd](https://github.com/BitGo/BitGoJS/commit/76129fd6badc085960e25f04ef94bcdf66f1a224))
+
+
+### Features
+
+* define sjcl type definitions ([7d29830](https://github.com/BitGo/BitGoJS/commit/7d298307839be8c7c8ba3c29ae546a24009dce3f))
+* hmac authentication strategy and response verification ([26308ce](https://github.com/BitGo/BitGoJS/commit/26308ced6a9feb020fc3f23cff11449e16ebcfe4))
+
+
+
+
+
+## [3.3.35](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.3.34...@bitgo/web-demo@3.3.35) (2026-03-18)
+
+**Note:** Version bump only for package @bitgo/web-demo
+
+
+
+
+
 ## [3.3.34](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.3.33...@bitgo/web-demo@3.3.34) (2026-03-10)
 
 **Note:** Version bump only for package @bitgo/web-demo

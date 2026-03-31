@@ -78,6 +78,7 @@ export async function signTransaction<TNumber extends number | bigint>(
       allowNonSegwitSigningWithoutPrevTx: params.allowNonSegwitSigningWithoutPrevTx ?? false,
       pubs: params.pubs,
       cosignerPub: params.cosignerPub,
+      extractTransaction: params.extractTransaction,
     });
 
     // Convert half-signed PSBT to legacy format when the caller explicitly requested txFormat: 'legacy'

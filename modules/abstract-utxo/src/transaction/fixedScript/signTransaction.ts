@@ -70,6 +70,8 @@ export async function signTransaction<
     allowNonSegwitSigningWithoutPrevTx: boolean;
     pubs: string[] | undefined;
     cosignerPub: string | undefined;
+    /** When true (default), extract finalized PSBT to legacy transaction format. When false, return finalized PSBT. */
+    extractTransaction?: boolean;
   }
 ): Promise<
   utxolib.bitgo.UtxoPsbt | utxolib.bitgo.UtxoTransaction<bigint | number> | fixedScriptWallet.BitGoPsbt | Buffer
@@ -79,6 +81,8 @@ export async function signTransaction<
     // if build is called instead of buildIncomplete, no signature placeholders are left in the sig script
     isLastSignature = params.isLastSignature;
   }
+
+  const { extractTransaction = true } = params;
 
   if (tx instanceof bitgo.UtxoPsbt) {
     const signedPsbt = await signPsbtWithMusig2ParticipantUtxolib(
@@ -91,8 +95,12 @@ export async function signTransaction<
       }
     );
     if (isLastSignature) {
-      signedPsbt.finalizeAllInputs();
-      return signedPsbt.extractTransaction();
+      if (extractTransaction) {
+        signedPsbt.finalizeAllInputs();
+        return signedPsbt.extractTransaction();
+      }
+      // Return signed PSBT without finalizing to preserve derivation info
+      return signedPsbt;
     }
     return signedPsbt;
   } else if (tx instanceof fixedScriptWallet.BitGoPsbt) {
@@ -113,8 +121,12 @@ export async function signTransaction<
       }
     );
     if (isLastSignature) {
-      signedPsbt.finalizeAllInputs();
-      return Buffer.from(signedPsbt.extractTransaction().toBytes());
+      if (extractTransaction) {
+        signedPsbt.finalizeAllInputs();
+        return Buffer.from(signedPsbt.extractTransaction().toBytes());
+      }
+      // Return finalized PSBT without extracting to legacy format
+      return signedPsbt;
     }
     return signedPsbt;
   }

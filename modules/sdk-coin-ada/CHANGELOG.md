@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.22.9...@bitgo/sdk-coin-ada@4.23.0) (2026-03-29)
+
+
+### Features
+
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
+## [4.22.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.22.8...@bitgo/sdk-coin-ada@4.22.9) (2026-03-27)
+
+
+### Bug Fixes
+
+* **sdk-coin-ada:** add serializedtxhash alias for ovc readability ([9fec8cc](https://github.com/BitGo/BitGoJS/commit/9fec8cc6b69bb1a9a07f18b92a498393a6022854))
+* **sdk-coin-ada:** unsigned sweep support for WRW with asset list ([70c8834](https://github.com/BitGo/BitGoJS/commit/70c8834a4a5176d746aadb35b6f7f62ce56df314))
+
+
+
+
+
+## [4.22.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.22.7...@bitgo/sdk-coin-ada@4.22.8) (2026-03-18)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ada
+
+
+
+
+
 ## [4.22.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.22.6...@bitgo/sdk-coin-ada@4.22.7) (2026-03-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

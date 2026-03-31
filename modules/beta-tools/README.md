@@ -46,7 +46,7 @@ bump-bitgo-beta --tag beta
 | `--ignore <pkg...>` | `[]` | Packages to skip |
 | `--only-utxo` | `false` | Only bump UTXO-related packages |
 | `--ignore-utxo` | `true` (when `--only-utxo` not set) | Skip UTXO-related packages |
-| `--utxo-patterns <patterns...>` | `utxo, unspents, abstract-lightning, babylonlabs-io-btc-staking-ts` | Patterns for UTXO package detection |
+| `--utxo-patterns <patterns...>` | `utxo, unspents, abstract-lightning, babylonlabs-io-btc-staking-ts, sdk-coin-btc, sdk-coin-bch, sdk-coin-bsv, sdk-coin-btg, sdk-coin-dash, sdk-coin-doge, sdk-coin-ltc, sdk-coin-zec` | Patterns for UTXO package detection |
 | `--check-duplicates` | `true` | Check lockfile for duplicate versions after install (npm only) |
 | `--check-duplicate-packages <pkg...>` | `@bitgo-beta/utxo-lib, @bitgo/wasm-utxo` | Packages to check for duplicates |
 | `--dry-run` | `false` | Show what would be installed without installing |

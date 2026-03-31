@@ -1063,7 +1063,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.KAVACOSMOS,
     BaseUnit.KAVACOSMOS,
-    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
+    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
   ),
   account(
     '62895d6b-6e99-4eba-82f1-9ce4e7658998',
@@ -1073,7 +1073,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.KAVACOSMOS,
     BaseUnit.KAVACOSMOS,
-    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
+    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
   ),
   account(
     'f5a8c3d1-7b2e-4f9a-8c6d-1e3b5a7c9d2f',
@@ -3986,6 +3986,33 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:home'],
     Networks.main.basechain
   ),
+  erc20Token(
+    '0e7dc822-c2e2-430b-9357-42bc125744a5',
+    'baseeth:c',
+    'Chainbase',
+    18,
+    '0xba12bc7b210e61e5d3110b997a63ea216e0e18f7',
+    UnderlyingAsset['baseeth:c'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'd79ded43-b6f9-45ca-9e71-8284b315ee2d',
+    'baseeth:carv',
+    'Carv',
+    18,
+    '0xc08cd26474722ce93f4d0c34d16201461c10aa8c',
+    UnderlyingAsset['baseeth:carv'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '2f79e3cb-b6a0-41c2-8308-473a98cfb05f',
+    'baseeth:usad',
+    'Lydia',
+    18,
+    '0x3d66e6fe9a3cf698db5af3d70830b299c9235151',
+    UnderlyingAsset['baseeth:usad'],
+    Networks.main.basechain
+  ),
 
   // XDC mainnet tokens
   xdcErc20(
@@ -5793,32 +5820,32 @@ export const allCoinsAndTokens = [
     '0x0726773451af83203583b5d38b3a11f752b1a96b',
     UnderlyingAsset['arbeth:bull']
   ),
-  tarbethErc20(
-    '9e3f8d7c-6b5a-4e2d-9f9c-8a7b6d5e4f3c',
+  arbethErc20(
+    '0f847466-f4e3-4f33-aee3-8b99f6637547',
     'arbeth:testtsla',
     'Tesla (Test)',
     18,
     '0xb94263fa0a2a29ea32c1f90ccaeeaffd0bb73908',
     UnderlyingAsset['arbeth:testtsla']
   ),
-  tarbethErc20(
-    '0f4a9e8d-7c6b-5a4e-9a0d-9b8c7e6f5a4b',
+  arbethErc20(
+    '1a137f85-4f8f-4191-8760-2b161e240bf2',
     'arbeth:testamzn',
     'Amazon (Test)',
     18,
     '0x76fca8a5bc14fce9eb613d96674868d687498804',
     UnderlyingAsset['arbeth:testamzn']
   ),
-  tarbethErc20(
-    '1a5b0f9e-8d7c-4b5a-9b1e-0c9d8f7a6b5c',
+  arbethErc20(
+    'd33cf58a-5e21-418b-bcb0-103f15fe1965',
     'arbeth:testpltr',
     'Palantir Technologies Inc (Test)',
     18,
     '0x99cd69ef9221c7fe0ad5618a7527244ef79636c6',
     UnderlyingAsset['arbeth:testpltr']
   ),
-  tarbethErc20(
-    '2b6c1a0f-9e8d-4c6b-9c2f-1d0e9a8b7c6d',
+  arbethErc20(
+    'a52a4906-7a39-4d4d-9b63-d4845685ecfa',
     'arbeth:testnflx',
     'Netflix Inc (Test)',
     18,
@@ -6859,6 +6886,18 @@ export const allCoinsAndTokens = [
     '0x44f838219cf67b058f3b37907b655f226153c18e33dfcd0da559a844fea9b1c1::usdsui::USDSUI',
     UnderlyingAsset['sui:usdsui'],
     [...SUI_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  suiToken(
+    'c0f3db23-310b-4764-af0b-ede10f843db4',
+    'sui:blue',
+    'Bluefin',
+    9,
+    '0xe1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca',
+    'blue',
+    'BLUE',
+    '0xe1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca::blue::BLUE',
+    UnderlyingAsset['sui:blue'],
+    SUI_TOKEN_FEATURES
   ),
   tsuiToken(
     '0b8a7919-c37e-4be8-8338-7fc13c6c875e',

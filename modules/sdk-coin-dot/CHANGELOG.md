@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.13.0...@bitgo/sdk-coin-dot@4.14.0) (2026-03-29)
+
+
+### Features
+
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
+# [4.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.12.0...@bitgo/sdk-coin-dot@4.13.0) (2026-03-27)
+
+
+### Features
+
+* simplify verifyTransaction using signing payload format ([6060d22](https://github.com/BitGo/BitGoJS/commit/6060d22dae9854b773f93bf2cd62940071e9ec20))
+
+
+
+
+
+# [4.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.11.7...@bitgo/sdk-coin-dot@4.12.0) (2026-03-18)
+
+
+### Features
+
+* add dual ESM/CJS build to sdk-coin-dot for browser WASM support ([f99683a](https://github.com/BitGo/BitGoJS/commit/f99683ad4eb31c733b331f183c062076695595b5))
+* add WASM-based DOT transaction parsing via @bitgo/wasm-dot ([ae7d4cf](https://github.com/BitGo/BitGoJS/commit/ae7d4cf4107e0190e0fc21e773f9e43fcd96171d))
+
+
+
+
+
 ## [4.11.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.11.6...@bitgo/sdk-coin-dot@4.11.7) (2026-03-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot

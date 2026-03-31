@@ -35,6 +35,7 @@ import {
   TssVerifyAddressOptions,
 } from '@bitgo/sdk-core';
 import { KeyPair as AdaKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
+import type { Asset } from './lib/transaction';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import adaUtils from './lib/utils';
 import * as request from 'superagent';
@@ -213,7 +214,7 @@ export class Ada extends BaseCoin {
       throw new Error('Invalid transaction');
     }
 
-    return rebuiltTransaction.explainTransaction();
+    return rebuiltTransaction.explainTransaction() as unknown as AdaTransactionExplanation;
   }
 
   async parseTransaction(params: AdaParseTransactionOptions): Promise<ParsedTransaction> {
@@ -499,21 +500,25 @@ export class Ada extends BaseCoin {
       const transactionPrebuild = { txHex: serializedTx };
       const parsedTx = await this.parseTransaction({ txPrebuild: transactionPrebuild });
       const walletCoin = this.getChain();
-      const output = (parsedTx.outputs as ITransactionRecipient)[0];
+      const parsedOutputs = parsedTx.outputs as (ITransactionRecipient & { multiAssets?: Asset[] })[];
+      const output = parsedOutputs[0];
+      // All tokens from the spent UTXOs — shown on the input so WRW can display what is being swept
+      const inputAssetList = Object.values(aggregatedAssetList);
       const inputs = [
         {
           address: senderAddr,
           valueString: output.amount,
-          value: new BigNumber(output.amount).toNumber(),
+          value: new BigNumber(output.amount as string).toNumber(),
+          ...(inputAssetList.length > 0 && { multiAssets: inputAssetList }),
         },
       ];
-      const outputs = [
-        {
-          address: output.address,
-          valueString: output.amount,
-          coinName: walletCoin,
-        },
-      ];
+      // assetList per output comes from explainTransaction which parses multiAssets
+      const outputs = parsedOutputs.map((o) => ({
+        address: o.address,
+        valueString: o.amount,
+        coinName: walletCoin,
+        ...(o.multiAssets && { multiAssets: o.multiAssets }),
+      }));
       const spendAmount = output.amount;
       const completedParsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
       const fee = new BigNumber((parsedTx.fee as { fee: string }).fee);
@@ -529,6 +534,8 @@ export class Ada extends BaseCoin {
         feeInfo: feeInfo,
         coinSpecific: coinSpecific,
       };
+      // Add serializedTxHex alias so OVC can read it natively (OVC Transaction type uses serializedTxHex)
+      (transaction as MPCTx & { serializedTxHex: string }).serializedTxHex = serializedTx;
       const unsignedTx: MPCUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
       const transactions: MPCUnsignedTx[] = [unsignedTx];
       const txRequest: RecoveryTxRequest = {
