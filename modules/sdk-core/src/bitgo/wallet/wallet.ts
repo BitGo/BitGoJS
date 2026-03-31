@@ -2560,6 +2560,10 @@ export class Wallet implements IWallet {
   async accelerateTransaction(params: AccelerateTransactionOptions = {}): Promise<any> {
     this.validateAccelerationParams(params);
 
+    if (params.rbfTxIds) {
+      await this.assertRbfTransactionNotConfirmed(params.rbfTxIds);
+    }
+
     params.recipients = [];
 
     return await this.submitTransaction({
@@ -2612,6 +2616,15 @@ export class Wallet implements IWallet {
     if (params.feeMultiplier <= 1) {
       const error: any = new Error('feeMultiplier must be a greater than 1');
       error.code = 'feemultiplier_greater_than_one';
+      throw error;
+    }
+  }
+
+  private async assertRbfTransactionNotConfirmed(rbfTxIds: string[]): Promise<void> {
+    const tx = await this.getTransaction({ txHash: rbfTxIds[0] });
+    if (tx.confirmations > 0) {
+      const error: any = new Error('Cannot create RBF replacement: original transaction is already confirmed');
+      error.code = 'rbf_original_tx_already_confirmed';
       throw error;
     }
   }
@@ -2905,6 +2918,11 @@ export class Wallet implements IWallet {
       params.recipients.forEach(function (recipient) {
         coin.checkRecipient(recipient);
       });
+    }
+
+    const rbfTxIds = params.rbfTxIds as string[] | undefined;
+    if (Array.isArray(rbfTxIds) && rbfTxIds.length > 0) {
+      await this.assertRbfTransactionNotConfirmed(rbfTxIds);
     }
 
     if (this._wallet.multisigType === 'tss') {

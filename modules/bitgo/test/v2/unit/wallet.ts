@@ -1457,6 +1457,31 @@ describe('V2 Wallet:', function () {
         .should.be.rejectedWith({ code: 'feemultiplier_greater_than_one' });
     });
 
+    it('fails if original RBF transaction is already confirmed', async function () {
+      const txPath = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/confirmed-txid`;
+      nock(bgUrl).get(txPath).reply(200, { confirmations: 3 });
+
+      await wallet
+        .accelerateTransaction({ rbfTxIds: ['confirmed-txid'], feeMultiplier: 2 })
+        .should.be.rejectedWith({ code: 'rbf_original_tx_already_confirmed' });
+    });
+
+    it('proceeds if original RBF transaction is unconfirmed', async function () {
+      const txPath = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/unconfirmed-txid`;
+      nock(bgUrl).get(txPath).reply(200, { confirmations: 0 });
+
+      const prebuildReturn = { txHex: '123', rbfTxIds: ['unconfirmed-txid'], feeMultiplier: 2 };
+      const prebuildStub = sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(prebuildReturn);
+
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`;
+      nock(bgUrl).post(path).reply(200);
+
+      await wallet.accelerateTransaction({ rbfTxIds: ['unconfirmed-txid'], feeMultiplier: 2 });
+
+      prebuildStub.should.have.been.called();
+      sinon.restore();
+    });
+
     it('submits a transaction with all cpfp specific parameters', async function () {
       const params = {
         cpfpTxIds: ['id'],
