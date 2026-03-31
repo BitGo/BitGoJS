@@ -1560,7 +1560,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.XDC,
     BaseUnit.ETH,
-    XDC_FEATURES
+    [...XDC_FEATURES, CoinFeature.STAKING]
   ),
   account(
     'e6ecb22e-0ae8-463a-b2fb-61502fd54240',
