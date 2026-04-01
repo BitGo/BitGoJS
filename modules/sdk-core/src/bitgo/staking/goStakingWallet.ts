@@ -52,9 +52,7 @@ export class GoStakingWallet implements IGoStakingWallet {
       amount: options.amount,
       clientId: options.clientId,
       frontTransferSendRequest: {
-        halfSigned: {
-          payload: halfSignedTransaction.halfSigned.payload,
-        },
+        halfSigned: halfSignedTransaction.halfSigned,
       },
     };
     return (await this.finalizeStake(finalOptions)) as GoStakingRequest;

@@ -104,6 +104,8 @@ describe('Go Staking Wallet Common', function () {
           frontTransferSendRequest: {
             halfSigned: {
               payload: preview.payload,
+              signature:
+                '1f4f7e789ef485363b33dca7273717a4a4413330f2badbcaf302758bc404ff8e930943db81aa2c77007738afa23166934c2a3136bae281bea037095be7183c0602',
             },
           },
           type: 'STAKE',
