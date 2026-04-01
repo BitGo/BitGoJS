@@ -134,10 +134,17 @@ export interface AcceptShareOptions {
   newWalletPassphrase?: string;
 }
 
+export interface AcceptShareWebauthnInfo {
+  otpDeviceId: string;
+  prfSalt: string;
+  passphrase: string;
+}
+
 export interface BulkAcceptShareOptions {
   walletShareIds: string[];
   userLoginPassword: string;
   newWalletPassphrase?: string;
+  webauthnInfo?: AcceptShareWebauthnInfo;
 }
 
 export interface AcceptShareOptionsRequest {
@@ -148,6 +155,17 @@ export interface AcceptShareOptionsRequest {
    * Required for userMultiKeyRotationRequired shares.
    */
   pub?: string;
+  /**
+   * Optional WebAuthn PRF-based encryption info.
+   * When provided, the wallet private key is additionally encrypted with the
+   * PRF-derived passphrase so the server can store a WebAuthn-protected copy.
+   * The passphrase itself is never sent to the server.
+   */
+  webauthnInfo?: {
+    otpDeviceId: string;
+    prfSalt: string;
+    encryptedPrv: string;
+  };
 }
 
 export interface BulkUpdateWalletShareOptions {

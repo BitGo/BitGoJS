@@ -2504,6 +2504,155 @@ describe('V2 Wallets:', function () {
         });
       });
 
+      it('should include webauthnInfo in request when provided (ECDH branch)', async () => {
+        const fromUserPrv = Math.random();
+        const walletPassphrase = 'bitgo1234';
+        const webauthnPassphrase = 'prf-derived-secret';
+        const shareId = '66a229dbdccdcfb95b44fc2745a60bd4';
+        const keychainTest: OptionalKeychainEncryptedKey = {
+          encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
+        };
+        const userPrv = decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
+        if (!userPrv) {
+          throw new Error('Unable to decrypt user keychain');
+        }
+
+        const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+        const path = 'm/999999/1/1';
+        const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+
+        const eckey = makeRandomKey();
+        const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
+        const newEncryptedPrv = bitgo.encrypt({ password: secret, input: userPrv });
+
+        let capturedBody: any;
+        nock(bgUrl)
+          .get('/api/v2/walletshares')
+          .reply(200, {
+            incoming: [
+              {
+                id: shareId,
+                isUMSInitiated: true,
+                keychain: {
+                  path: path,
+                  fromPubKey: eckey.publicKey.toString('hex'),
+                  encryptedPrv: newEncryptedPrv,
+                  toPubKey: pubkey,
+                  pub: pubkey,
+                },
+              },
+            ],
+          });
+        nock(bgUrl)
+          .put('/api/v2/walletshares/accept', (body) => {
+            capturedBody = body;
+            return true;
+          })
+          .reply(200, {
+            acceptedWalletShares: [{ walletShareId: shareId }],
+          });
+
+        const myEcdhKeychain = await bitgo.keychains().create();
+        sinon.stub(bitgo, 'getECDHKeychain').resolves({
+          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+        });
+
+        const prvKey = bitgo.decrypt({
+          password: walletPassphrase,
+          input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+        });
+        sinon.stub(bitgo, 'decrypt').returns(prvKey);
+        sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
+
+        await wallets.bulkAcceptShare({
+          walletShareIds: [shareId],
+          userLoginPassword: walletPassphrase,
+          webauthnInfo: {
+            otpDeviceId: 'device-001',
+            prfSalt: 'salt-abc',
+            passphrase: webauthnPassphrase,
+          },
+        });
+
+        const sentEntries = capturedBody.keysForWalletShares;
+        sentEntries.should.have.length(1);
+        sentEntries[0].should.have.property('encryptedPrv');
+        sentEntries[0].should.have.property('webauthnInfo');
+        sentEntries[0].webauthnInfo.should.have.property('otpDeviceId', 'device-001');
+        sentEntries[0].webauthnInfo.should.have.property('prfSalt', 'salt-abc');
+        sentEntries[0].webauthnInfo.should.have.property('encryptedPrv');
+        sentEntries[0].webauthnInfo.should.not.have.property('passphrase');
+      });
+
+      it('should NOT include webauthnInfo when not provided (backward compat)', async () => {
+        const fromUserPrv = Math.random();
+        const walletPassphrase = 'bitgo1234';
+        const shareId = '66a229dbdccdcfb95b44fc2745a60bd4';
+        const keychainTest: OptionalKeychainEncryptedKey = {
+          encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
+        };
+        const userPrv = decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
+        if (!userPrv) {
+          throw new Error('Unable to decrypt user keychain');
+        }
+
+        const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+        const path = 'm/999999/1/1';
+        const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+
+        const eckey = makeRandomKey();
+        const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
+        const newEncryptedPrv = bitgo.encrypt({ password: secret, input: userPrv });
+
+        let capturedBody: any;
+        nock(bgUrl)
+          .get('/api/v2/walletshares')
+          .reply(200, {
+            incoming: [
+              {
+                id: shareId,
+                isUMSInitiated: true,
+                keychain: {
+                  path: path,
+                  fromPubKey: eckey.publicKey.toString('hex'),
+                  encryptedPrv: newEncryptedPrv,
+                  toPubKey: pubkey,
+                  pub: pubkey,
+                },
+              },
+            ],
+          });
+        nock(bgUrl)
+          .put('/api/v2/walletshares/accept', (body) => {
+            capturedBody = body;
+            return true;
+          })
+          .reply(200, {
+            acceptedWalletShares: [{ walletShareId: shareId }],
+          });
+
+        const myEcdhKeychain = await bitgo.keychains().create();
+        sinon.stub(bitgo, 'getECDHKeychain').resolves({
+          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+        });
+        const prvKey = bitgo.decrypt({
+          password: walletPassphrase,
+          input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+        });
+        sinon.stub(bitgo, 'decrypt').returns(prvKey);
+        sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
+
+        await wallets.bulkAcceptShare({
+          walletShareIds: [shareId],
+          userLoginPassword: walletPassphrase,
+        });
+
+        const sentEntries = capturedBody.keysForWalletShares;
+        sentEntries.should.have.length(1);
+        sentEntries[0].should.have.property('encryptedPrv');
+        sentEntries[0].should.not.have.property('webauthnInfo');
+      });
+
       it('should handle 413 payload too large error with smart retry', async () => {
         const walletPassphrase = 'bitgo1234';
         const fromUserPrv = Math.random();
