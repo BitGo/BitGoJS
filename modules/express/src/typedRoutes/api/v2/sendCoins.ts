@@ -355,22 +355,21 @@ export const SendCoinsRequestBody = {
 } as const;
 
 /**
- * Send coins to a single recipient (v2)
+ * Send coins to a single recipient (Express)
  *
- * This endpoint is a convenience wrapper around the sendMany endpoint that accepts
- * a single address and amount instead of a recipients array.
+ * Express local-signing endpoint that builds, signs, and sends a transaction to a single
+ * recipient. Unlike the REST API equivalent, this endpoint handles key decryption and
+ * transaction signing locally on the Express server before forwarding to BitGo.
  *
- * Internally, wallet.send() converts the address and amount into a recipients array
- * with a single recipient and calls wallet.sendMany(). This means:
- * 1. All sendMany parameters are supported
- * 2. The response structure is identical to sendMany
+ * This is a convenience wrapper around the sendMany endpoint that accepts a single
+ * address and amount instead of a recipients array.
  *
  * The endpoint:
  * 1. Validates the address and amount parameters
- * 2. Builds a transaction to the specified address
- * 3. Signs the transaction with the user's key (decrypted with walletPassphrase or xprv)
- * 4. Requests a signature from BitGo's key
- * 5. Sends the fully-signed transaction to the blockchain network
+ * 2. Decrypts the user's private key locally using walletPassphrase or xprv
+ * 3. Builds and signs the transaction locally on the Express server
+ * 4. Sends the half-signed transaction to BitGo for co-signing
+ * 5. Returns the broadcast transaction result
  *
  * Supports:
  * - TSS wallets with txRequest flow

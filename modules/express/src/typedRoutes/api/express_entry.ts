@@ -39,7 +39,7 @@ import { PostGenerateWallet } from './v2/generateWallet';
 // import { PostConsolidateUnspents } from './v2/consolidateunspents';
 // import { PostPrebuildAndSignTransaction } from './v2/prebuildAndSignTransaction';
 // import { PostCoinSign } from './v2/coinSign';
-import { PostSendCoins } from './v2/sendCoins';
+// import { PostSendCoins } from './v2/sendCoins';
 // import { PostGenerateShareTSS } from './v2/generateShareTSS';
 // import { PostOfcExtSignPayload } from './v2/ofcExtSignPayload';
 // import { PostLightningWalletPayment } from './v2/lightningPayment';
@@ -232,12 +232,13 @@ export const ExpressV2WalletSendManyApiSpec = apiSpec({
 });
 */
 
-// BATCH 2: Uncommented
+/* Commented out
 export const ExpressV2WalletSendCoinsApiSpec = apiSpec({
   'express.v2.wallet.sendcoins': {
     post: PostSendCoins,
   },
 });
+*/
 
 /* Commented out
 export const ExpressKeychainLocalApiSpec = apiSpec({
@@ -420,7 +421,7 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   /* typeof ExpressLightningUnlockWalletApiSpec & */
   /* typeof ExpressLightningWalletWithdrawApiSpec & */
   /* typeof ExpressV2WalletSendManyApiSpec & */
-  typeof ExpressV2WalletSendCoinsApiSpec &
+  /* typeof ExpressV2WalletSendCoinsApiSpec & */
   /* typeof ExpressOfcSignPayloadApiSpec & */
   /* typeof ExpressWalletRecoverTokenApiSpec & */
   /* typeof ExpressWalletEnableTokensApiSpec & */
@@ -461,7 +462,7 @@ export const ExpressApi: ExpressApi = {
   /* ...ExpressLightningUnlockWalletApiSpec, */
   /* ...ExpressLightningWalletWithdrawApiSpec, */
   /* ...ExpressV2WalletSendManyApiSpec, */
-  ...ExpressV2WalletSendCoinsApiSpec,
+  /* ...ExpressV2WalletSendCoinsApiSpec, */
   /* ...ExpressOfcSignPayloadApiSpec, */
   /* ...ExpressWalletRecoverTokenApiSpec, */
   /* ...ExpressWalletEnableTokensApiSpec, */
