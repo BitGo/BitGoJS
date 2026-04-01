@@ -4374,6 +4374,16 @@ export const allCoinsAndTokens = [
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559, CoinFeature.STABLECOIN]
   ),
 
+  erc20Token(
+    '69dca33b-d5b6-4065-9d72-aceb875255f4',
+    'thbarevm:erc3643',
+    'Testnet HBAREVM ERC3643 Token',
+    8,
+    '0xb272b42b965caf9fe20ea57b5cb17c2f8fbc1bb5',
+    UnderlyingAsset['thbarevm:erc3643'],
+    Networks.test.hederaEVM
+  ),
+
   hederaCoin(
     '98aad956-27ee-45dd-aa43-6a23c9a1d1d0',
     'hbar',

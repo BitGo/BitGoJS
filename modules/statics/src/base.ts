@@ -3624,6 +3624,8 @@ export enum UnderlyingAsset {
   'thbarevm:tmt' = 'thbarevm:tmt',
   'thbarevm:tnt' = 'thbarevm:tnt',
 
+  'thbarevm:erc3643' = 'thbarevm:erc3643',
+
   // Nep141 tokens
   'near:usdc' = 'near:usdc',
   'near:usdt' = 'near:usdt',
