@@ -4304,6 +4304,8 @@ export const ofcCoins = [
     UnderlyingAsset['sui:haedal']
   ),
   ofcSuiToken('b200b9c1-b8a6-4b91-adf6-14870e18bdca', 'ofcsui:suins', 'SuiNS', 6, UnderlyingAsset['sui:suins']),
+  ofc('e54716f3-3df2-4e34-8094-9989a2843979', 'ofctempo', 'Tempo', 6, UnderlyingAsset.TEMPO, CoinKind.CRYPTO),
+  tofc('1e3bf3f1-0ab3-4cb8-b002-1557d871a7c0', 'ofcttempo', 'Testnet Tempo', 6, UnderlyingAsset.TEMPO, CoinKind.CRYPTO),
   // Tempo mainnet OFC tokens
   ofcTempoToken(
     '61cbeade-67a7-4f18-b60d-bca7bf66d97e',
