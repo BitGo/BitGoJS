@@ -1004,7 +1004,7 @@ class BldTestnet extends Testnet implements AccountNetwork {
 class Sei extends Mainnet implements AccountNetwork {
   name = 'Sei';
   family = CoinFamily.SEI;
-  explorerUrl = 'https://seitrace.com/tx/';
+  explorerUrl = 'https://mintscan.io/sei/tx/';
 }
 
 class SeiTestnet extends Testnet implements AccountNetwork {
