@@ -5,6 +5,7 @@ import {
   BitGoBase,
   BitGoRequest,
   CoinConstructor,
+  CoinFactory,
   common,
   DecryptKeysOptions,
   DecryptOptions,
@@ -1557,6 +1558,21 @@ export class BitGoAPI implements BitGoBase {
    */
   public register(name: string, coin: CoinConstructor): void {
     GlobalCoinFactory.register(name, coin);
+  }
+
+  /**
+   * Registers a token into GlobalCoinFactory's coin map and constructor map.
+   * Enables runtime registration of tokens sourced from AMS (not in statics).
+   * Idempotent: re-registering the same token does not throw.
+   *
+   * @param coinConfig - The static coin/token config object
+   * @param coinConstructor - The constructor function for the token class
+   */
+  public registerToken(
+    coinConfig: Parameters<CoinFactory['registerToken']>[0],
+    coinConstructor: CoinConstructor
+  ): void {
+    GlobalCoinFactory.registerToken(coinConfig, coinConstructor);
   }
 
   /**

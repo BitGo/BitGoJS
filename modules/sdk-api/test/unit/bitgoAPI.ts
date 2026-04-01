@@ -4,6 +4,7 @@ import { ProxyAgent } from 'proxy-agent';
 import * as sinon from 'sinon';
 import nock from 'nock';
 import type { IHmacAuthStrategy } from '@bitgo/sdk-hmac';
+import { GlobalCoinFactory, CoinConstructor } from '@bitgo/sdk-core';
 
 describe('Constructor', function () {
   describe('cookiesPropagationEnabled argument', function () {
@@ -792,6 +793,81 @@ describe('Constructor', function () {
       scope.isDone().should.be.false();
 
       nock.cleanAll();
+    });
+  });
+
+  describe('registerToken', function () {
+    let bitgo: BitGoAPI;
+    let sandbox: sinon.SinonSandbox;
+
+    beforeEach(function () {
+      bitgo = new BitGoAPI({ env: 'custom', customRootURI: 'https://app.example.local' });
+      sandbox = sinon.createSandbox();
+    });
+
+    afterEach(function () {
+      sandbox.restore();
+    });
+
+    it('should call GlobalCoinFactory.registerToken and allow sdk.coin() to resolve the registered token', function () {
+      const mockCoinInstance = { type: 'test-ams-dynamic-token' } as any;
+      const mockConstructor = sandbox.stub().returns(mockCoinInstance) as unknown as CoinConstructor;
+      const mockCoinConfig = { name: 'test-ams-dynamic-token', id: 'test-ams-dynamic-token-id' } as any;
+
+      sandbox.stub(GlobalCoinFactory, 'registerToken');
+      sandbox.stub(GlobalCoinFactory, 'getInstance').callsFake((_bitgo, name) => {
+        if (name === 'test-ams-dynamic-token') {
+          return mockConstructor(_bitgo, mockCoinConfig);
+        }
+        throw new Error(`Unsupported coin: ${name}`);
+      });
+
+      bitgo.registerToken(mockCoinConfig, mockConstructor);
+
+      const coin = bitgo.coin('test-ams-dynamic-token');
+      coin.should.equal(mockCoinInstance);
+      (GlobalCoinFactory.registerToken as sinon.SinonStub)
+        .calledOnceWith(mockCoinConfig, mockConstructor)
+        .should.be.true();
+    });
+
+    it('should be idempotent — calling registerToken twice for same token does not throw', function () {
+      const mockCoinConfig = { name: 'test-ams-idempotent-token', id: 'test-ams-idempotent-token-id' } as any;
+      const mockConstructor = sandbox.stub() as unknown as CoinConstructor;
+      sandbox.stub(GlobalCoinFactory, 'registerToken');
+
+      (() => {
+        bitgo.registerToken(mockCoinConfig, mockConstructor);
+        bitgo.registerToken(mockCoinConfig, mockConstructor);
+      }).should.not.throw();
+
+      (GlobalCoinFactory.registerToken as sinon.SinonStub).callCount.should.equal(2);
+    });
+
+    it('should not affect existing statics coins after registerToken calls', function () {
+      const newCoinConfig = { name: 'test-ams-new-token', id: 'test-ams-new-token-id' } as any;
+      const newConstructor = sandbox.stub() as unknown as CoinConstructor;
+      const existingCoinInstance = { type: 'eth' } as any;
+      const existingConstructor = sandbox.stub().returns(existingCoinInstance) as unknown as CoinConstructor;
+
+      const registerTokenStub = sandbox.stub(GlobalCoinFactory, 'registerToken');
+      sandbox.stub(GlobalCoinFactory, 'getInstance').callsFake((_bitgo, name) => {
+        if (name === 'eth') {
+          return existingConstructor(_bitgo, undefined);
+        }
+        throw new Error(`Unsupported coin: ${name}`);
+      });
+
+      // Register a new AMS token
+      bitgo.registerToken(newCoinConfig, newConstructor);
+
+      // Existing statics coin should still resolve correctly
+      const ethCoin = bitgo.coin('eth');
+      ethCoin.should.equal(existingCoinInstance);
+
+      // registerToken was called only once (for the new token, not for eth)
+      registerTokenStub.calledOnce.should.be.true();
+      registerTokenStub.calledWith(newCoinConfig, newConstructor).should.be.true();
     });
   });
 });
