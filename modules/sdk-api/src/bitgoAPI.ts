@@ -2028,7 +2028,7 @@ export class BitGoAPI implements BitGoBase {
         await this.processKeychainPasswordUpdatesInBatches(
           updatePasswordParams.keychains,
           updatePasswordParams.v2_keychains,
-          batchingFlowCheck.noOfBatches,
+          batchingFlowCheck.maxBatchSizeKB,
           3
         );
         // Call changepassword API without keychains for batching flow
@@ -2287,30 +2287,80 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
-   * Process keychain password updates in batches with retry logic
+   * Pack keychains into batches using First Fit Decreasing (FFD) algorithm.
+   *
+   * @param keychains - V1 keychains
+   * @param v2Keychains - V2 keychains
+   * @param maxBatchSizeBytes - Maximum byte size per batch
+   * @private
+   */
+  private packKeychainsFFD(
+    keychains: Record<string, string>,
+    v2Keychains: Record<string, string>,
+    maxBatchSizeBytes: number
+  ): Array<{ v1Batch: Record<string, string>; v2Batch: Record<string, string>; sizeBytes: number }> {
+    const entrySize = (id: string, value: string) => Buffer.byteLength(id, 'utf8') + Buffer.byteLength(value, 'utf8');
+
+    const items = [
+      ...Object.entries(keychains).map(([id, value]) => ({ id, value, sizeBytes: entrySize(id, value), isV2: false })),
+      ...Object.entries(v2Keychains).map(([id, value]) => ({ id, value, sizeBytes: entrySize(id, value), isV2: true })),
+    ].sort((a, b) => b.sizeBytes - a.sizeBytes);
+
+    const bins: Array<{ v1Batch: Record<string, string>; v2Batch: Record<string, string>; sizeBytes: number }> = [];
+
+    for (const item of items) {
+      if (item.sizeBytes > maxBatchSizeBytes) {
+        throw new Error(`Keychain with id ${item.id} exceeds the maximum batch size and cannot be processed`);
+      }
+
+      const target = bins.find((bin) => bin.sizeBytes + item.sizeBytes <= maxBatchSizeBytes);
+      if (target) {
+        if (item.isV2) {
+          target.v2Batch[item.id] = item.value;
+        } else {
+          target.v1Batch[item.id] = item.value;
+        }
+        target.sizeBytes += item.sizeBytes;
+      } else {
+        const newBin = {
+          v1Batch: {} as Record<string, string>,
+          v2Batch: {} as Record<string, string>,
+          sizeBytes: item.sizeBytes,
+        };
+        if (item.isV2) {
+          newBin.v2Batch[item.id] = item.value;
+        } else {
+          newBin.v1Batch[item.id] = item.value;
+        }
+        bins.push(newBin);
+      }
+    }
+
+    return bins;
+  }
+
+  /**
+   * Process keychain password updates in batches with retry logic.
+   * Uses First Fit Decreasing (FFD) bin packing to ensure no batch exceeds
+   * maxBatchSizeKB
+   *
    * @param keychains - The v1 keychains to update
    * @param v2Keychains - The v2 keychains to update
-   * @param noOfBatches - Number of batches to split the keychains into
+   * @param maxBatchSizeKB - Maximum payload size per batch in kilobytes
    * @param maxRetries - Maximum number of retries per batch
    * @private
    */
   private async processKeychainPasswordUpdatesInBatches(
     keychains: Record<string, string>,
     v2Keychains: Record<string, string>,
-    noOfBatches: number,
+    maxBatchSizeKB: number,
     maxRetries: number
   ): Promise<void> {
-    // Split keychains into batches
-    const v1KeychainEntries = Object.entries(keychains);
-    const v2KeychainEntries = Object.entries(v2Keychains);
+    const maxBatchSizeBytes = maxBatchSizeKB * 1024;
+    const bins = this.packKeychainsFFD(keychains, v2Keychains, maxBatchSizeBytes);
 
-    const v1BatchSize = Math.ceil(v1KeychainEntries.length / noOfBatches);
-    const v2BatchSize = Math.ceil(v2KeychainEntries.length / noOfBatches);
-
-    // Call batching API for each batch with retry logic
-    for (let i = 0; i < noOfBatches; i++) {
-      const v1Batch = Object.fromEntries(v1KeychainEntries.slice(i * v1BatchSize, (i + 1) * v1BatchSize));
-      const v2Batch = Object.fromEntries(v2KeychainEntries.slice(i * v2BatchSize, (i + 1) * v2BatchSize));
+    for (let i = 0; i < bins.length; i++) {
+      const { v1Batch, v2Batch } = bins[i];
 
       let retryCount = 0;
       let success = false;

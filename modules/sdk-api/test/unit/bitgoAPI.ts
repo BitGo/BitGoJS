@@ -794,4 +794,247 @@ describe('Constructor', function () {
       nock.cleanAll();
     });
   });
+
+  describe('packKeychainsFFD', function () {
+    let bitgo: BitGoAPI;
+
+    before(function () {
+      bitgo = new BitGoAPI({ env: 'custom', customRootURI: 'https://app.example.local' });
+    });
+
+    function ffd(
+      keychains: Record<string, string>,
+      v2Keychains: Record<string, string>,
+      maxBatchSizeBytes: number
+    ): Array<{ v1Batch: Record<string, string>; v2Batch: Record<string, string>; sizeBytes: number }> {
+      return (bitgo as any).packKeychainsFFD(keychains, v2Keychains, maxBatchSizeBytes);
+    }
+
+    it('returns an empty array when both inputs are empty', function () {
+      const bins = ffd({}, {}, 1024);
+      bins.should.be.an.Array();
+      bins.should.have.length(0);
+    });
+
+    it('packs all items into a single bin when they fit within the limit', function () {
+      // Each entry: 2-byte id + 10-byte value = 12 bytes; 5 entries = 60 bytes < 200 limit
+      const keychains = { k1: 'aaaaaaaaaa', k2: 'bbbbbbbbbb', k3: 'cccccccccc' };
+      const v2Keychains = { v1: 'dddddddddd', v2: 'eeeeeeeeee' };
+      const bins = ffd(keychains, v2Keychains, 200);
+      bins.should.have.length(1);
+      Object.keys(bins[0].v1Batch).should.have.length(3);
+      Object.keys(bins[0].v2Batch).should.have.length(2);
+    });
+
+    it('splits into multiple bins when a single bin cannot fit all items', function () {
+      // id='k1' (2 bytes) + 600-char value = 602 bytes; 2 entries exceed 700-byte limit
+      const keychains = { k1: 'x'.repeat(600), k2: 'y'.repeat(600) };
+      const bins = ffd(keychains, {}, 700);
+      bins.should.have.length(2);
+    });
+
+    it('throws when a single item exceeds maxBatchSizeBytes', function () {
+      // id='k1' (2 bytes) + 200-char value = 202 bytes > 100-byte limit
+      const keychains = { k1: 'x'.repeat(200) };
+      try {
+        ffd(keychains, {}, 100);
+        throw new Error('Expected error not thrown');
+      } catch (e) {
+        e.message.should.match(/exceeds the maximum batch size/);
+      }
+    });
+
+    it('places V1 keychains in v1Batch and V2 keychains in v2Batch', function () {
+      const keychains = { k1: 'v1value' };
+      const v2Keychains = { k2: 'v2value' };
+      const bins = ffd(keychains, v2Keychains, 10000);
+      bins.should.have.length(1);
+      bins[0].v1Batch.should.have.property('k1', 'v1value');
+      bins[0].v2Batch.should.have.property('k2', 'v2value');
+      bins[0].v1Batch.should.not.have.property('k2');
+      bins[0].v2Batch.should.not.have.property('k1');
+    });
+
+    it('uses FFD ordering so the largest item is packed first', function () {
+      // 'big': id(3) + 497 bytes = 500 bytes; 's1','s2': id(2) + 98 bytes = 100 bytes each
+      // maxBatchSizeBytes = 600
+      // FFD order (descending): big(500), s1(100), s2(100)
+      //   bin0: big(500). s1: 500+100=600 <=600, fits. s2: 600+100=700 > 600, new bin1.
+      //   Result: bin0={big,s1}, bin1={s2}
+      const keychains = { big: 'x'.repeat(497), s1: 'y'.repeat(98), s2: 'z'.repeat(98) };
+      const bins = ffd(keychains, {}, 600);
+      bins.should.have.length(2);
+      // 'big' should share its bin with one small item (FFD packs the largest first)
+      const binWithBig = bins.find((b) => 'big' in b.v1Batch)!;
+      Object.keys(binWithBig.v1Batch).should.have.length(2);
+    });
+  });
+
+  describe('processKeychainPasswordUpdatesInBatches', function () {
+    const ROOT = 'https://app.example.local';
+    let bitgo: BitGoAPI;
+
+    beforeEach(function () {
+      const strategy: IHmacAuthStrategy = {
+        calculateRequestHeaders: sinon.stub().resolves({ hmac: 'hmac', timestamp: Date.now(), tokenHash: 'hash' }),
+        verifyResponse: sinon.stub().resolves({
+          isValid: true,
+          expectedHmac: 'hmac',
+          signatureSubject: '',
+          isInResponseValidityWindow: true,
+          verificationTime: Date.now(),
+        }),
+        calculateHMAC: sinon.stub().resolves('hashed-pw'),
+        setToken: sinon.stub().resolves(),
+        clearToken: sinon.stub().resolves(),
+      };
+      bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
+    });
+
+    afterEach(function () {
+      nock.cleanAll();
+      sinon.restore();
+    });
+
+    async function runBatches(
+      keychains: Record<string, string>,
+      v2Keychains: Record<string, string>,
+      maxBatchSizeKB: number,
+      maxRetries = 3
+    ): Promise<void> {
+      return (bitgo as any).processKeychainPasswordUpdatesInBatches(keychains, v2Keychains, maxBatchSizeKB, maxRetries);
+    }
+
+    it('makes a single PUT request for a small payload', async function () {
+      const scope = nock(ROOT).put('/api/v2/user/keychains').reply(200, {});
+      await runBatches({ k1: 'small' }, {}, 1024);
+      scope.isDone().should.be.true();
+    });
+
+    it('makes two PUT requests when the payload spans two bins', async function () {
+      // id='k1'(2) + 600 = 602 bytes each; 2 entries exceed 1 KB limit => 2 bins
+      const keychains = { k1: 'x'.repeat(600), k2: 'y'.repeat(600) };
+      const scope = nock(ROOT).put('/api/v2/user/keychains').twice().reply(200, {});
+      await runBatches(keychains, {}, 1);
+      scope.isDone().should.be.true();
+    });
+
+    it('retries a failed batch and succeeds on the second attempt', async function () {
+      nock(ROOT).put('/api/v2/user/keychains').reply(500, { error: 'internal error' });
+      nock(ROOT).put('/api/v2/user/keychains').reply(200, {});
+      // Should not throw
+      await runBatches({ k1: 'value' }, {}, 1024, 3);
+    });
+
+    it('throws after exhausting all retries on persistent HTTP errors', async function () {
+      nock(ROOT).put('/api/v2/user/keychains').times(3).reply(500, { error: 'internal error' });
+      let thrownError: Error | undefined;
+      try {
+        await runBatches({ k1: 'value' }, {}, 1024, 3);
+      } catch (e) {
+        thrownError = e;
+      }
+      thrownError!.message.should.match(/failed after 3 retries/);
+    });
+
+    it('throws after exhausting all retries when the server reports failed keychains', async function () {
+      nock(ROOT)
+        .put('/api/v2/user/keychains')
+        .times(3)
+        .reply(200, { failed: { v1: { k1: 'encryption error' } } });
+      let thrownError: Error | undefined;
+      try {
+        await runBatches({ k1: 'value' }, {}, 1024, 3);
+      } catch (e) {
+        thrownError = e;
+      }
+      thrownError!.message.should.match(/had failed keychains/);
+    });
+  });
+
+  describe('changePassword batching flow', function () {
+    const ROOT = 'https://app.example.local';
+    let bitgo: BitGoAPI;
+    let sandbox: sinon.SinonSandbox;
+
+    beforeEach(function () {
+      sandbox = sinon.createSandbox();
+
+      const strategy: IHmacAuthStrategy = {
+        calculateRequestHeaders: sandbox.stub().resolves({ hmac: 'hmac', timestamp: Date.now(), tokenHash: 'hash' }),
+        verifyResponse: sandbox.stub().resolves({
+          isValid: true,
+          expectedHmac: 'hmac',
+          signatureSubject: '',
+          isInResponseValidityWindow: true,
+          verificationTime: Date.now(),
+        }),
+        calculateHMAC: sandbox.stub().resolves('hashed-pw'),
+        setToken: sandbox.stub().resolves(),
+        clearToken: sandbox.stub().resolves(),
+      };
+
+      bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
+      (bitgo as any)._user = { username: 'test@bitgo.com' };
+
+      sandbox.stub(bitgo, 'verifyPassword').resolves(true);
+
+      sandbox.stub(bitgo, 'keychains').returns({
+        updatePassword: sandbox.stub().resolves({ keychains: { k1: 'v1enc' }, version: 25 }),
+      } as any);
+
+      sandbox.stub(bitgo, 'coin').returns({
+        keychains: () => ({
+          updatePassword: sandbox.stub().resolves({ v2k1: 'v2enc' }),
+        }),
+      } as any);
+    });
+
+    afterEach(function () {
+      nock.cleanAll();
+      sandbox.restore();
+    });
+
+    it('calls PUT /user/keychains and POST /user/changepassword without keychains when batching is enabled', async function () {
+      nock(ROOT)
+        .get('/api/v2/user/checkBatchingPasswordFlow')
+        .query(true)
+        .reply(200, { isBatchingFlowEnabled: true, maxBatchSizeKB: 900 });
+
+      const batchPutScope = nock(ROOT).put('/api/v2/user/keychains').reply(200, {});
+
+      const changePassScope = nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !body.keychains && !body.v2_keychains)
+        .reply(200, {});
+
+      await bitgo.changePassword({ oldPassword: 'oldpw', newPassword: 'newpw' });
+
+      batchPutScope.isDone().should.be.true();
+      changePassScope.isDone().should.be.true();
+    });
+
+    it('sends keychains in the POST body (legacy flow) when the server disables batching', async function () {
+      nock(ROOT).get('/api/v2/user/checkBatchingPasswordFlow').query(true).reply(200, { isBatchingFlowEnabled: false });
+
+      const legacyScope = nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !!body.keychains && !!body.v2_keychains)
+        .reply(200, {});
+
+      await bitgo.changePassword({ oldPassword: 'oldpw', newPassword: 'newpw' });
+
+      legacyScope.isDone().should.be.true();
+    });
+
+    it('falls back to legacy flow when the batching check request fails', async function () {
+      nock(ROOT).get('/api/v2/user/checkBatchingPasswordFlow').query(true).reply(503, { error: 'service unavailable' });
+
+      const legacyScope = nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !!body.keychains && !!body.v2_keychains)
+        .reply(200, {});
+
+      await bitgo.changePassword({ oldPassword: 'oldpw', newPassword: 'newpw' });
+
+      legacyScope.isDone().should.be.true();
+    });
+  });
 });
