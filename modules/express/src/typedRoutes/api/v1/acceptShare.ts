@@ -53,7 +53,7 @@ export const AcceptShareResponse = t.type({
 });
 
 /**
- * Accept a Wallet Share
+ * Accept share
  *
  * Accepts a wallet share invitation from another user, granting access to the shared wallet
  * according to the permissions specified by the sharing user.

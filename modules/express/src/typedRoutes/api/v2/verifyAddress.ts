@@ -25,9 +25,9 @@ export const VerifyAddressV2Body = {
 };
 
 /**
- * Verify address for a given coin
+ * Verify address
  *
- * Returns whether the address is valid for the specified coin.
+ * Verifies whether an address is valid for the specified coin.
  * For UTXO coins, an optional legacy script hash flag can be provided to allow previous script hash versions.
  *
  * @operationId express.verifycoinaddress

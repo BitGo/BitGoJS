@@ -42,7 +42,7 @@ export const SimpleCreateResponse = t.intersection([
 ]);
 
 /**
- * Create Wallet with Keychains
+ * Create wallet
  *
  * Creates a new 2-of-3 multisignature wallet along with all three required keychains in a single
  * operation. This is a convenience method that handles the entire wallet setup process.

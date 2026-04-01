@@ -15,7 +15,7 @@ export const DecryptRequestBody = {
 };
 
 /**
- * Decrypt data using AES-256-GCM via the SJCL library
+ * Decrypt messages
  *
  * Decrypts a ciphertext string that was previously encrypted using the encrypt endpoint.
  * Requires the same password that was used during encryption.
