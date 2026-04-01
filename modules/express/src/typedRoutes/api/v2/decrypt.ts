@@ -2,6 +2,11 @@ import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 
+/**
+ * Request body for decrypting data
+ *
+ * Accepts an encrypted ciphertext string and optional password to decrypt using AES-256-GCM.
+ */
 export const DecryptRequestBody = {
   /** The encrypted ciphertext string to decrypt */
   input: t.string,
