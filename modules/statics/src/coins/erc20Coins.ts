@@ -14650,4 +14650,28 @@ export const erc20Coins = [
     undefined,
     Networks.test.hoodi
   ),
+  terc20(
+    'da73251f-33fa-4490-baab-7f925823fd3b',
+    'hteth:wbtc',
+    'Hoodi Testnet Wrapped Bitcoin',
+    8,
+    '0xbe19716adc7e0b8bb75f5ba12657ecff05c531cb',
+    UnderlyingAsset['hteth:wbtc'],
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
+    '28cef0a0-f912-4703-b64a-dcf4dd437f30',
+    'hteth:stgwbtc',
+    'Hoodi Testnet Wrapped Bitcoin',
+    8,
+    '0x29b0341048b2d83dc19821793f1dc93c1744ceb7',
+    UnderlyingAsset['hteth:stgwbtc'],
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
 ];
