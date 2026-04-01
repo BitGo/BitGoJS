@@ -2726,3 +2726,115 @@ export function tofcAdaToken(
     })
   );
 }
+
+/**
+ * Factory function for ofc canton token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the coin
+ * @param fullName Complete human-readable name of the coin
+ * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param kind Differentiates coins which represent fiat assets from those which represent crypto assets
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `OfcCoin`
+ * @param prefix Optional coin prefix. Defaults to empty string
+ * @param suffix Optional coin suffix. Defaults to coin name.
+ * @param network Network object for this coin
+ * @param isToken Whether or not this account coin is a token of another coin
+ * @param addressCoin
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function ofcCantonToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  kind: CoinKind = CoinKind.CRYPTO,
+  features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.replace(/^ofc/, '').toUpperCase(),
+  network: OfcNetwork = Networks.main.ofc,
+  isToken = true,
+  addressCoin = 'canton',
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
+  return Object.freeze(
+    new OfcCoin({
+      id,
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      isToken,
+      asset,
+      kind,
+      addressCoin,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.CANTON,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet ofc canton token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the coin
+ * @param fullName Complete human-readable name of the coin
+ * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param kind Differentiates coins which represent fiat assets from those which represent crypto assets
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `OfcCoin`
+ * @param prefix Optional coin prefix. Defaults to empty string
+ * @param suffix Optional coin suffix. Defaults to coin name.
+ * @param network Network object for this coin
+ * @param isToken Whether or not this account coin is a token of another coin
+ * @param addressCoin
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function tofcCantonToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  kind: CoinKind = CoinKind.CRYPTO,
+  features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.replace(/^ofc/, '').toUpperCase(),
+  network: OfcNetwork = Networks.test.ofc,
+  isToken = true,
+  addressCoin = 'tcanton',
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
+  return Object.freeze(
+    new OfcCoin({
+      id,
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      isToken,
+      asset,
+      kind,
+      addressCoin,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.CANTON,
+    })
+  );
+}
