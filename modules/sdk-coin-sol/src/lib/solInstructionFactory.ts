@@ -196,7 +196,7 @@ function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[]
   let tokenAddress: string;
   let programId: string | undefined;
   let decimalPlaces: number;
-  if (data.params.tokenAddress && data.params.decimalPlaces) {
+  if (data.params.tokenAddress && data.params.decimalPlaces != null) {
     tokenAddress = data.params.tokenAddress;
     decimalPlaces = data.params.decimalPlaces;
     programId = data.params.programId;
