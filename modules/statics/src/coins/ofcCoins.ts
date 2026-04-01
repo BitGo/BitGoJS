@@ -44,6 +44,8 @@ import {
   tofcTempoToken,
   ofcAdaToken,
   tofcAdaToken,
+  ofcCantonToken,
+  tofcCantonToken,
 } from '../ofc';
 import { UnderlyingAsset, CoinKind, CoinFeature } from '../base';
 
@@ -4147,6 +4149,148 @@ export const ofcCoins = [
   ofcsolToken('d3e4f5a6-7b8c-4d9e-81f2-3a4b5c6d7e8f', 'ofcsol:portals', 'Portals', 9, UnderlyingAsset['sol:portals']),
   ofcsolToken('b26ae13f-cc3b-43d9-8c04-a0a2b1fa63bc', 'ofcsol:bmt', 'Bubblemaps', 9, UnderlyingAsset['sol:bmt']),
   ofcsolToken('758f0872-89bf-4e11-a11f-155b408ca2bf', 'ofcsol:huma', 'Huma Finance', 6, UnderlyingAsset['sol:huma']),
+  // New WisdomTree SOL OFC tokens
+  ofcsolToken(
+    '6e7085c2-d21f-4033-a088-3cd786ce8e3f',
+    'ofcsol:crdt',
+    'WisdomTree Private Credit and Alternative Income Digital Fund',
+    9,
+    UnderlyingAsset['sol:crdt']
+  ),
+  ofcsolToken(
+    '9bc0a2e0-5b15-43d7-ae80-72e8827f4731',
+    'ofcsol:epxc',
+    'WisdomTree Equity Premium Income Digital Fund',
+    9,
+    UnderlyingAsset['sol:epxc']
+  ),
+  ofcsolToken(
+    '900978ce-2da0-41a4-9ed3-367ffede1804',
+    'ofcsol:eqtyx',
+    'WisdomTree Siegel Global Equity Digital Fund',
+    9,
+    UnderlyingAsset['sol:eqtyx']
+  ),
+  ofcsolToken(
+    '88613b29-129e-4976-8581-91298f0cf16d',
+    'ofcsol:flttx',
+    'WisdomTree Floating Rate Treasury Digital Fund',
+    9,
+    UnderlyingAsset['sol:flttx']
+  ),
+  ofcsolToken(
+    'c96e2ba6-1bb7-4ab1-aafb-b1bd81cb169c',
+    'ofcsol:lngvx',
+    'WisdomTree Siegel Longevity Digital Fund',
+    9,
+    UnderlyingAsset['sol:lngvx']
+  ),
+  ofcsolToken(
+    'f9704b9c-15b9-40a3-a60d-0c14457ed7f6',
+    'ofcsol:modrx',
+    'WisdomTree Siegel Moderate Digital Fund',
+    9,
+    UnderlyingAsset['sol:modrx']
+  ),
+  ofcsolToken(
+    'ac5247ac-b9ad-4996-bcf5-2f22543f2638',
+    'ofcsol:spxux',
+    'WisdomTree 500 Digital Fund',
+    9,
+    UnderlyingAsset['sol:spxux']
+  ),
+  ofcsolToken(
+    '01818239-50ac-4349-b7ff-ad010ee039cc',
+    'ofcsol:techx',
+    'WisdomTree Technology & Innovation 100 Digital Fund',
+    9,
+    UnderlyingAsset['sol:techx']
+  ),
+  ofcsolToken(
+    '640fadb2-e5e5-477a-b51d-cb551a2738de',
+    'ofcsol:tipsx',
+    'WisdomTree TIPS Digital Fund',
+    9,
+    UnderlyingAsset['sol:tipsx']
+  ),
+  ofcsolToken(
+    '0b4ae2c1-3ba6-47ce-92ee-bdfaa3c8d1ad',
+    'ofcsol:wtgxx',
+    'WisdomTree Government Money Market Digital Fund',
+    9,
+    UnderlyingAsset['sol:wtgxx']
+  ),
+  ofcsolToken(
+    'cf2cfda1-4ff0-441e-87c5-1d0fb1fdcb20',
+    'ofcsol:wtlgx',
+    'WisdomTree Long Term Treasury Digital Fund',
+    9,
+    UnderlyingAsset['sol:wtlgx']
+  ),
+  ofcsolToken(
+    'bc89ce03-0443-47b9-af9f-17b16ae1bfb3',
+    'ofcsol:wtstx',
+    'WisdomTree 7-10 Year Treasury Digital Fund',
+    9,
+    UnderlyingAsset['sol:wtstx']
+  ),
+  ofcsolToken(
+    '4cc36901-5152-4909-ac41-033a867e07b5',
+    'ofcsol:wttsx',
+    'WisdomTree 3-7 Year Treasury Digital Fund',
+    9,
+    UnderlyingAsset['sol:wttsx']
+  ),
+  ofcsolToken(
+    '01f235c4-e5ba-4936-83cc-067f1b21d490',
+    'ofcsol:wtsix',
+    'WisdomTree Short-Duration Income Digital Fund',
+    9,
+    UnderlyingAsset['sol:wtsix']
+  ),
+  ofcsolToken(
+    '4c4fe20e-7072-4804-8e33-096b1f54eff4',
+    'ofcsol:wtsyx',
+    'WisdomTree Short-Term Treasury Digital Fund',
+    9,
+    UnderlyingAsset['sol:wtsyx']
+  ),
+  // New Canton OFC tokens
+  ofcCantonToken(
+    '02ab6bd2-83e6-46fc-bfd7-93b8be125648',
+    'ofccanton:usdcx',
+    'USDCx (Canton)',
+    10,
+    UnderlyingAsset['canton:usdcx']
+  ),
+  ofcCantonToken(
+    '9321cbcd-4bcd-41bf-b03f-402152ca755a',
+    'ofccanton:cbtc',
+    'CBTC (Canton)',
+    10,
+    UnderlyingAsset['canton:cbtc']
+  ),
+  ofcCantonToken(
+    '6630d2c7-f691-4780-bc39-b6370143841b',
+    'ofccanton:usdxlr',
+    'USDXLR (Canton)',
+    10,
+    UnderlyingAsset['canton:usdxlr']
+  ),
+  tofcCantonToken(
+    'd7297535-c1d4-429d-b3c5-d36351b110e5',
+    'ofctcanton:testcoin1',
+    'Test Coin 1',
+    10,
+    UnderlyingAsset['tcanton:testcoin1']
+  ),
+  tofcCantonToken(
+    '991e1f7b-7efb-4d0c-83da-4ce3f5466a8b',
+    'ofctcanton:testtoken',
+    'Test Token',
+    10,
+    UnderlyingAsset['tcanton:testtoken']
+  ),
   // New SUI OFC token
   ofcSuiToken('1e01eb3d-2573-4662-aa5e-4c390e4a9b38', 'ofcsui:dmc', 'DeLorean', 9, UnderlyingAsset['sui:dmc']),
   ofcSuiToken('e4f5a6b7-8c9d-4eaf-82a3-4b5c6d7e8f9a', 'ofcsui:mmt', 'Momentum', 9, UnderlyingAsset['sui:mmt']),
