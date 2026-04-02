@@ -208,6 +208,13 @@ export class Utils implements BaseUtils {
         return TransactionType.StakingWithdraw;
       case SuiTransactionType.CustomTx:
         return TransactionType.CustomTx;
+      case SuiTransactionType.XmnStake:
+        return TransactionType.StakingAdd;
+      case SuiTransactionType.XmnRequestUnstake:
+      case SuiTransactionType.XmnUnbond:
+        return TransactionType.StakingDeactivate;
+      case SuiTransactionType.XmnClaimRewards:
+        return TransactionType.StakingClaim;
     }
   }
 
@@ -250,6 +257,14 @@ export class Utils implements BaseUtils {
           return SuiTransactionType.WalrusRequestWithdrawStake;
         } else if (command.target.endsWith(MethodNames.WalrusWithdrawStake)) {
           return SuiTransactionType.WalrusWithdrawStake;
+        } else if (command.target.endsWith(MethodNames.XmnStake)) {
+          return SuiTransactionType.XmnStake;
+        } else if (command.target.endsWith(MethodNames.XmnRequestUnstake)) {
+          return SuiTransactionType.XmnRequestUnstake;
+        } else if (command.target.endsWith(MethodNames.XmnUnbond)) {
+          return SuiTransactionType.XmnUnbond;
+        } else if (command.target.endsWith(MethodNames.XmnClaimRewards)) {
+          return SuiTransactionType.XmnClaimRewards;
         } else {
           throw new InvalidTransactionError(`unsupported target method ${command.target}`);
         }
