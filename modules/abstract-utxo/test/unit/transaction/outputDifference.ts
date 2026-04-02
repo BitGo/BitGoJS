@@ -4,6 +4,7 @@ import {
   ActualOutput,
   ExpectedOutput,
   getMissingOutputs,
+  isImplicitOutput,
   matchingOutput,
   outputDifference,
   outputDifferencesWithExpected,
@@ -93,6 +94,20 @@ describe('outputDifference', function () {
       // Present outputs are not returned regardless of optional flag
       assert.deepStrictEqual(getMissingOutputs([a], [a]), []);
       assert.deepStrictEqual(getMissingOutputs([a], [aOptional]), []);
+    });
+  });
+
+  describe('isImplicitOutput', function () {
+    it('returns true for outputs not in the expected list', function () {
+      assert.strictEqual(isImplicitOutput(a, []), true);
+      assert.strictEqual(isImplicitOutput(a, [b]), true);
+      assert.strictEqual(isImplicitOutput(a, [a2]), true);
+    });
+
+    it('returns false for outputs that match an expected output', function () {
+      assert.strictEqual(isImplicitOutput(a, [a]), false);
+      assert.strictEqual(isImplicitOutput(a, [b, a]), false);
+      assert.strictEqual(isImplicitOutput(a, [aMax]), false);
     });
   });
 

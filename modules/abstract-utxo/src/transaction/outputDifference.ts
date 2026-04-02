@@ -50,6 +50,21 @@ export function getMissingOutputs<A extends ActualOutput, B extends ExpectedOutp
   return outputDifference(expectedOutputs, actualOutputs).filter((o) => !o.optional);
 }
 
+/**
+ * Returns true if the given output was not explicitly requested by the user (i.e., it is not in
+ * the list of expected outputs). This handles both external and internal (change/self-payment)
+ * outputs — an output is implicit regardless of whether it is going to a wallet address or not.
+ *
+ * Used to identify surprise outputs such as PayGo fees that were added by the server without
+ * being part of the original send intent.
+ */
+export function isImplicitOutput<A extends ActualOutput>(
+  output: A,
+  expectedOutputs: ExpectedOutput[]
+): boolean {
+  return !expectedOutputs.some((expected) => matchingOutput(output, expected));
+}
+
 export type OutputDifferenceWithExpected<TActual extends ActualOutput, TExpected extends ExpectedOutput> = {
   /** These are the external outputs that were expected and found in the transaction. */
   explicitOutputs: TActual[];

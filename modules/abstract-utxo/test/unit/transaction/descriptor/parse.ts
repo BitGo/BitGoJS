@@ -160,5 +160,33 @@ describe('parse', function () {
         new AggregateValidationError([missingOutputError(recipient), implicitOutputError(psbtOutput0)])
       );
     });
+
+    describe('self-payment (recipient address is a wallet address)', function () {
+      it('should pass when both the external output and the self-payment are specified as recipients', function () {
+        // psbtOutput1 goes to descriptorSelf (own wallet) — this is a self-payment
+        // Both outputs are requested, so there are no missing or implicit external outputs
+        assert.doesNotThrow(() =>
+          assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [psbtOutput0, psbtOutput1]))
+        );
+      });
+
+      it('should not report the self-payment as missing even though it is classified as an internal (change) output', function () {
+        // psbtOutput1 goes to descriptorSelf (own wallet) and is marked as internal/change by the
+        // descriptor wallet parser. Specifying it as a recipient should still find it in the PSBT
+        // outputs (two-pass approach: all outputs are checked, not just external ones).
+        const result = getBaseParsedTransaction(psbt, [psbtOutput0, psbtOutput1]);
+        assert.strictEqual(result.missingOutputs.length, 0);
+        assert.strictEqual(result.implicitExternalOutputs.length, 0);
+      });
+
+      it('should not report an unspecified internal output as an implicit external output', function () {
+        // psbtOutput1 goes to descriptorSelf (own wallet). When NOT specified as a recipient,
+        // it should NOT appear in implicitExternalOutputs because it is an internal/change output.
+        // Only psbtOutput0 (external) is requested, so psbtOutput1 is just unreported change.
+        const result = getBaseParsedTransaction(psbt, [psbtOutput0]);
+        assert.strictEqual(result.missingOutputs.length, 0);
+        assert.strictEqual(result.implicitExternalOutputs.length, 0);
+      });
+    });
   });
 });

@@ -7,7 +7,12 @@ import { getKeySignatures, toBip32Triple, UtxoNamedKeychains } from '../../keych
 import { getDescriptorMapFromWallet, getPolicyForEnv } from '../../descriptor';
 import { IDescriptorWallet } from '../../descriptor/descriptorWallet';
 import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../recipient';
-import { outputDifferencesWithExpected, OutputDifferenceWithExpected } from '../outputDifference';
+import {
+  getMissingOutputs,
+  isImplicitOutput,
+  outputDifference,
+  OutputDifferenceWithExpected,
+} from '../outputDifference';
 import { UtxoCoinName } from '../../names';
 import { sumValues, toWasmPsbt, UtxoLibPsbt } from '../../wasmUtil';
 
@@ -44,11 +49,30 @@ function parseOutputsWithPsbt(
     script: Buffer.from(output.script),
   }));
   const changeOutputs = outputs.filter((o) => o.scriptId !== undefined);
-  const outputDiffs = outputDifferencesWithExpected(outputs, recipientOutputs);
+
+  /**
+   * Two-pass approach to handle self-payments (outputs going to the sender's own wallet address):
+   *
+   * Pass 1 — missing outputs: Check all PSBT outputs (including change/internal) against the
+   * expected recipients. This ensures self-payments that are classified as change outputs by the
+   * descriptor wallet (isChange = true) are still matched against the intent recipients and do not
+   * appear as missing. This mirrors the multisig (fixedScript) flow where allOutputs includes
+   * both explanation.outputs and explanation.changeOutputs.
+   *
+   * Pass 2 — implicit outputs: Of the outputs NOT in the recipient list, only flag those that go
+   * to external addresses (scriptId = undefined) as implicit. Internal outputs (scriptId set) that
+   * are not in recipients are legitimate change outputs and should not be flagged.
+   */
+  const missingOutputs = getMissingOutputs(outputs, recipientOutputs);
+  const implicitOutputs = outputs.filter((o) => isImplicitOutput(o, recipientOutputs));
+  const explicitOutputs = outputDifference(outputs, implicitOutputs);
+
   return {
     outputs,
     changeOutputs,
-    ...outputDiffs,
+    explicitOutputs,
+    implicitOutputs,
+    missingOutputs,
   };
 }
 
