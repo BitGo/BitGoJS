@@ -2313,6 +2313,284 @@ describe('V2 Wallets:', function () {
       });
     });
 
+    describe('acceptShare with webauthnInfo', () => {
+      const sandbox = sinon.createSandbox();
+
+      afterEach(function () {
+        sandbox.verifyAndRestore();
+      });
+
+      it('should include webauthnInfo in updateShare when provided (ECDH branch)', async function () {
+        const shareId = 'test_webauthn_ecdh_1';
+        const userPassword = 'test_password_123';
+        const webauthnPassphrase = 'prf-derived-secret';
+
+        const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+        const path = 'm/999999/1/1';
+        const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+
+        const eckey = makeRandomKey();
+        const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
+        const walletPrv = 'wallet-private-key-for-test';
+        const encryptedPrvFromShare = bitgo.encrypt({ password: secret, input: walletPrv });
+
+        const myEcdhKeychain = await bitgo.keychains().create();
+
+        const walletShareNock = nock(bgUrl)
+          .get(`/api/v2/tbtc/walletshare/${shareId}`)
+          .reply(200, {
+            id: shareId,
+            keychain: {
+              path: path,
+              fromPubKey: eckey.publicKey.toString('hex'),
+              encryptedPrv: encryptedPrvFromShare,
+              toPubKey: pubkey,
+              pub: pubkey,
+            },
+          });
+
+        sandbox.stub(bitgo, 'getECDHKeychain').resolves({
+          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: userPassword }),
+        });
+
+        const prvKey = bitgo.decrypt({
+          password: userPassword,
+          input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: userPassword }),
+        });
+        sandbox.stub(bitgo, 'decrypt').returns(prvKey);
+        sandbox.stub(moduleBitgo, 'getSharedSecret').returns(Buffer.from(secret, 'hex'));
+
+        let capturedBody: any;
+        const acceptShareNock = nock(bgUrl)
+          .post(`/api/v2/tbtc/walletshare/${shareId}`, (body: any) => {
+            capturedBody = body;
+            return true;
+          })
+          .reply(200, { changed: true, state: 'accepted' });
+
+        await wallets.acceptShare({
+          walletShareId: shareId,
+          userPassword,
+          webauthnInfo: {
+            otpDeviceId: 'device-001',
+            prfSalt: 'salt-abc',
+            passphrase: webauthnPassphrase,
+          },
+        });
+
+        should.exist(capturedBody.encryptedPrv);
+        should.exist(capturedBody.webauthnInfo);
+        should.equal(capturedBody.webauthnInfo.otpDeviceId, 'device-001');
+        should.equal(capturedBody.webauthnInfo.prfSalt, 'salt-abc');
+        should.exist(capturedBody.webauthnInfo.encryptedPrv);
+        should.not.exist(capturedBody.webauthnInfo.passphrase);
+
+        walletShareNock.done();
+        acceptShareNock.done();
+      });
+
+      it('should NOT include webauthnInfo when not provided (ECDH backward compat)', async function () {
+        const shareId = 'test_webauthn_ecdh_2';
+        const userPassword = 'test_password_123';
+
+        const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+        const path = 'm/999999/1/1';
+        const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+
+        const eckey = makeRandomKey();
+        const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
+        const walletPrv = 'wallet-private-key-for-test';
+        const encryptedPrvFromShare = bitgo.encrypt({ password: secret, input: walletPrv });
+
+        const myEcdhKeychain = await bitgo.keychains().create();
+
+        const walletShareNock = nock(bgUrl)
+          .get(`/api/v2/tbtc/walletshare/${shareId}`)
+          .reply(200, {
+            id: shareId,
+            keychain: {
+              path: path,
+              fromPubKey: eckey.publicKey.toString('hex'),
+              encryptedPrv: encryptedPrvFromShare,
+              toPubKey: pubkey,
+              pub: pubkey,
+            },
+          });
+
+        sandbox.stub(bitgo, 'getECDHKeychain').resolves({
+          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: userPassword }),
+        });
+
+        const prvKey = bitgo.decrypt({
+          password: userPassword,
+          input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: userPassword }),
+        });
+        sandbox.stub(bitgo, 'decrypt').returns(prvKey);
+        sandbox.stub(moduleBitgo, 'getSharedSecret').returns(Buffer.from(secret, 'hex'));
+
+        let capturedBody: any;
+        const acceptShareNock = nock(bgUrl)
+          .post(`/api/v2/tbtc/walletshare/${shareId}`, (body: any) => {
+            capturedBody = body;
+            return true;
+          })
+          .reply(200, { changed: true, state: 'accepted' });
+
+        await wallets.acceptShare({
+          walletShareId: shareId,
+          userPassword,
+        });
+
+        should.exist(capturedBody.encryptedPrv);
+        should.not.exist(capturedBody.webauthnInfo);
+
+        walletShareNock.done();
+        acceptShareNock.done();
+      });
+
+      it('should include webauthnInfo in updateShare when provided (userMultiKeyRotationRequired branch)', async function () {
+        const shareId = 'test_webauthn_multi_1';
+        const userPassword = 'test_password_123';
+        const webauthnPassphrase = 'prf-derived-secret';
+        const walletId = 'test_wallet_123';
+
+        const walletShareNock = nock(bgUrl)
+          .get(`/api/v2/ofc/walletshare/${shareId}`)
+          .reply(200, {
+            userMultiKeyRotationRequired: true,
+            permissions: ['admin', 'spend', 'view'],
+            wallet: walletId,
+          });
+
+        const testKeychain = bitgo.coin('ofc').keychains().create();
+        const keychain = {
+          prv: testKeychain.prv,
+          pub: testKeychain.pub,
+        };
+
+        const keychainsInstance = ofcWallets.baseCoin.keychains();
+        sandbox.stub(keychainsInstance, 'create').returns(keychain);
+
+        let capturedBody: any;
+        const acceptShareNock = nock(bgUrl)
+          .post(`/api/v2/ofc/walletshare/${shareId}`, (body: any) => {
+            capturedBody = body;
+            return true;
+          })
+          .reply(200, { changed: true, state: 'accepted' });
+
+        await ofcWallets.acceptShare({
+          walletShareId: shareId,
+          userPassword,
+          webauthnInfo: {
+            otpDeviceId: 'device-002',
+            prfSalt: 'salt-def',
+            passphrase: webauthnPassphrase,
+          },
+        });
+
+        should.exist(capturedBody.encryptedPrv);
+        should.exist(capturedBody.pub);
+        should.exist(capturedBody.webauthnInfo);
+        should.equal(capturedBody.webauthnInfo.otpDeviceId, 'device-002');
+        should.equal(capturedBody.webauthnInfo.prfSalt, 'salt-def');
+        should.exist(capturedBody.webauthnInfo.encryptedPrv);
+        should.not.exist(capturedBody.webauthnInfo.passphrase);
+
+        walletShareNock.done();
+        acceptShareNock.done();
+      });
+
+      it('should NOT include webauthnInfo when not provided (userMultiKeyRotationRequired backward compat)', async function () {
+        const shareId = 'test_webauthn_multi_2';
+        const userPassword = 'test_password_123';
+        const walletId = 'test_wallet_123';
+
+        const walletShareNock = nock(bgUrl)
+          .get(`/api/v2/ofc/walletshare/${shareId}`)
+          .reply(200, {
+            userMultiKeyRotationRequired: true,
+            permissions: ['admin', 'spend', 'view'],
+            wallet: walletId,
+          });
+
+        const testKeychain = bitgo.coin('ofc').keychains().create();
+        const keychain = {
+          prv: testKeychain.prv,
+          pub: testKeychain.pub,
+        };
+
+        const keychainsInstance = ofcWallets.baseCoin.keychains();
+        sandbox.stub(keychainsInstance, 'create').returns(keychain);
+
+        const encryptedPrv = bitgo.encrypt({ input: keychain.prv, password: userPassword });
+        sandbox.stub(bitgo, 'encrypt').returns(encryptedPrv);
+
+        let capturedBody: any;
+        const acceptShareNock = nock(bgUrl)
+          .post(`/api/v2/ofc/walletshare/${shareId}`, (body: any) => {
+            capturedBody = body;
+            return true;
+          })
+          .reply(200, { changed: true, state: 'accepted' });
+
+        await ofcWallets.acceptShare({
+          walletShareId: shareId,
+          userPassword,
+        });
+
+        should.exist(capturedBody.encryptedPrv);
+        should.exist(capturedBody.pub);
+        should.not.exist(capturedBody.webauthnInfo);
+
+        walletShareNock.done();
+        acceptShareNock.done();
+      });
+
+      it('should NOT include webauthnInfo for keychainOverrideRequired case even when provided', async function () {
+        const shareId = 'test_webauthn_override_1';
+        const userPassword = 'test_password_123';
+        const keychainId = 'test_keychain_id';
+
+        const keyChainNock = nock(bgUrl)
+          .post('/api/v2/ofc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
+          .reply(200, (uri, requestBody) => {
+            return { id: keychainId, encryptedPrv: requestBody['encryptedPrv'], pub: requestBody['pub'] };
+          });
+
+        const walletShareNock = nock(bgUrl)
+          .get(`/api/v2/ofc/walletshare/${shareId}`)
+          .reply(200, {
+            keychainOverrideRequired: true,
+            permissions: ['admin', 'spend', 'view'],
+          });
+
+        let capturedBody: any;
+        const acceptShareNock = nock(bgUrl)
+          .post(`/api/v2/ofc/walletshare/${shareId}`, (body: any) => {
+            capturedBody = body;
+            return true;
+          })
+          .reply(200, { changed: false });
+
+        await ofcWallets.acceptShare({
+          walletShareId: shareId,
+          userPassword,
+          webauthnInfo: {
+            otpDeviceId: 'device-003',
+            prfSalt: 'salt-ghi',
+            passphrase: 'prf-derived-secret',
+          },
+        });
+
+        should.not.exist(capturedBody.webauthnInfo);
+
+        walletShareNock.done();
+        keyChainNock.done();
+        acceptShareNock.done();
+      });
+    });
+
     it('should share a wallet to viewer', async function () {
       const shareId = '12311';
 
