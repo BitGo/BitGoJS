@@ -2293,7 +2293,8 @@ export class Wallet implements IWallet {
     if (!params.message || !params.message.messageStandardType) {
       throw new Error('message and type required to sign message');
     }
-    if (this._wallet.multisigType !== 'tss') {
+    const isGoAccount = this._wallet.type === 'trading';
+    if (!isGoAccount && this._wallet.multisigType !== 'tss') {
       throw new Error('Message signing only supported for TSS wallets');
     }
     if (_.isFunction((this.baseCoin as any).encodeMessage)) {
@@ -2325,7 +2326,8 @@ export class Wallet implements IWallet {
    * @returns Promise<TxRequest> - The created transaction request for signing a message
    */
   async buildSignMessageRequest(params: WalletSignMessageOptions): Promise<TxRequest> {
-    if (this._wallet.multisigType !== 'tss') {
+    const isGoAccount = this._wallet.type === 'trading';
+    if (!isGoAccount && this._wallet.multisigType !== 'tss') {
       throw new Error('Message signing only supported for TSS wallets');
     }
 

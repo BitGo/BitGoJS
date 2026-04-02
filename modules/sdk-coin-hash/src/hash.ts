@@ -70,4 +70,9 @@ export class Hash extends CosmosCoin {
   valuelessTransferAllowed(): boolean {
     return true;
   }
+
+  /** @inheritDoc **/
+  supportsMessageSigning(): boolean {
+    return true;
+  }
 }

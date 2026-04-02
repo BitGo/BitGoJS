@@ -337,6 +337,8 @@ const coinMessageBuilderFactoryMap = {
   tada: Ada.MessageBuilderFactory,
   sol: Sol.MessageBuilderFactory,
   tsol: Sol.MessageBuilderFactory,
+  hash: Hash.MessageBuilderFactory,
+  thash: Hash.MessageBuilderFactory,
 };
 
 coins

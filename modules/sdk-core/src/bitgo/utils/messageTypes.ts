@@ -10,6 +10,7 @@ export enum MessageStandardType {
   EIP191 = 'EIP191',
   EIP712 = 'EIP712',
   CIP8 = 'CIP8',
+  GROUP_POLICY = 'GROUP_POLICY',
 }
 
 export type MessagePayload = string;
