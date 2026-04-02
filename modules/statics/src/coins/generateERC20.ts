@@ -1,7 +1,7 @@
 import { erc20, erc20Token, terc20 } from '../account';
 import { BaseCoin, CoinFeature, UnderlyingAsset } from '../base';
 import { AccountNetwork, EthereumNetwork, Networks } from '../networks';
-import { ofcerc20, tofcerc20 } from '../ofc';
+import { getFilteredFeatures, ofcerc20, tofcerc20 } from '../ofc';
 
 // --- Shared config interfaces ---
 
@@ -20,6 +20,7 @@ interface BaseErc20Config {
 interface Erc20WithOfcConfig extends BaseErc20Config {
   ofcId: string;
   ofcName: string;
+  ofcFeatures: CoinFeature[];
   ofcAddressCoin?: string;
   skipOfc?: false;
 }
@@ -35,7 +36,7 @@ type Erc20TokenConfig = Erc20Config & { network: AccountNetwork };
 
 function createOfcCoin(
   config: Erc20WithOfcConfig,
-  onchainFeatures: CoinFeature[],
+  features: CoinFeature[],
   defaultAddressCoin: string,
   isTestnet: boolean
 ) {
@@ -48,7 +49,7 @@ function createOfcCoin(
     config.decimalPlaces,
     config.asset,
     undefined, // kind
-    undefined,
+    getFilteredFeatures(features),
     undefined, // prefix
     undefined, // suffix
     undefined, // network
@@ -75,7 +76,7 @@ export function generateErc20Coin(config: Erc20CoinConfig): Readonly<BaseCoin>[]
 
   if (config.skipOfc) return [onChain];
 
-  return [onChain, createOfcCoin(config, onChain.features, 'eth', false)];
+  return [onChain, createOfcCoin(config, config.ofcFeatures ?? onChain.features, 'eth', false)];
 }
 
 export function generateTestErc20Coin(config: Erc20CoinConfig): Readonly<BaseCoin>[] {
@@ -94,7 +95,7 @@ export function generateTestErc20Coin(config: Erc20CoinConfig): Readonly<BaseCoi
 
   if (config.skipOfc) return [onChain];
 
-  return [onChain, createOfcCoin(config, onChain.features, 'teth', true)];
+  return [onChain, createOfcCoin(config, config.ofcFeatures ?? onChain.features, 'teth', true)];
 }
 
 // --- ERC20 Token generators (erc20Token for non-Ethereum EVM chains) ---

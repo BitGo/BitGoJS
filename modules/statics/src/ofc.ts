@@ -41,16 +41,17 @@ const DISALLOWED_FEATURES = [
 ];
 
 const REQUIRED_FEATURES = [CoinFeature.ACCOUNT_MODEL, CoinFeature.REQUIRES_BIG_NUMBER];
-/**
- * Get filtered features for a coin based on its suffix
- * @param suffix The coin suffix to look up
- * @returns Filtered array of CoinFeatures excluding the ones in the exclude list
- */
-export function getFilteredFeatures(suffix: string): CoinFeature[] {
+export function getFilteredFeatures(suffix: string): CoinFeature[];
+export function getFilteredFeatures(features: CoinFeature[]): CoinFeature[];
+export function getFilteredFeatures(input: string | CoinFeature[]): CoinFeature[] {
+  if (Array.isArray(input)) {
+    const filteredFeatures = input.filter((feature) => !DISALLOWED_FEATURES.includes(feature));
+    return [...filteredFeatures, ...REQUIRED_FEATURES];
+  }
   const coinsMap = getAllCoinsAndTokensMap();
-  if (coinsMap.has(suffix.toLowerCase())) {
+  if (coinsMap.has(input.toLowerCase())) {
     const filteredFeatures = coinsMap
-      .get(suffix.toLowerCase())
+      .get(input.toLowerCase())
       .features.filter((feature) => !DISALLOWED_FEATURES.includes(feature));
     return [...filteredFeatures, ...REQUIRED_FEATURES];
   }
