@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { BIP32, bip32, ECPair, fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { BIP32, bip32, ECPair, fixedScriptWallet, getWasmUtxoVersion } from '@bitgo/wasm-utxo';
 
 import { toWasmBIP32 } from '../../wasmUtil';
 
@@ -37,7 +37,8 @@ export function signAndVerifyPsbtWasm(
   tx: fixedScriptWallet.BitGoPsbt,
   signerKeychain: bip32.BIP32Interface | BIP32,
   rootWalletKeys: fixedScriptWallet.RootWalletKeys,
-  replayProtection: ReplayProtectionKeys
+  replayProtection: ReplayProtectionKeys,
+  { writeSignedWith = false }: { writeSignedWith?: boolean } = {}
 ): fixedScriptWallet.BitGoPsbt {
   const wasmSigner = toWasmBIP32(signerKeychain);
 
@@ -74,6 +75,17 @@ export function signAndVerifyPsbtWasm(
     throw new TransactionSigningError([], verifyErrors);
   }
 
+  if (writeSignedWith) {
+    const versionInfo = getWasmUtxoVersion();
+    const versionPayload = new TextEncoder().encode(
+      JSON.stringify({
+        version: versionInfo.version,
+        gitHash: versionInfo.gitHash,
+      })
+    );
+    tx.setKV({ type: 'bitgo', subtype: fixedScriptWallet.BitGoKeySubtype.WasmUtxoSignedWith }, versionPayload);
+  }
+
   return tx;
 }
 
@@ -86,6 +98,7 @@ export async function signPsbtWithMusig2ParticipantWasm(
     replayProtection: ReplayProtectionKeys;
     signingStep: 'signerNonce' | 'cosignerNonce' | 'signerSignature' | undefined;
     walletId: string | undefined;
+    writeSignedWith?: boolean;
   }
 ): Promise<fixedScriptWallet.BitGoPsbt> {
   const wasmSigner = signerKeychain ? toWasmBIP32(signerKeychain) : undefined;
@@ -135,5 +148,7 @@ export async function signPsbtWithMusig2ParticipantWasm(
   }
 
   assert(signerKeychain);
-  return signAndVerifyPsbtWasm(tx, signerKeychain, rootWalletKeys, params.replayProtection);
+  return signAndVerifyPsbtWasm(tx, signerKeychain, rootWalletKeys, params.replayProtection, {
+    writeSignedWith: params.writeSignedWith,
+  });
 }

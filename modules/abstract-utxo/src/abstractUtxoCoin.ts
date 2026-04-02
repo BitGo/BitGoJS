@@ -344,6 +344,8 @@ type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = 
    * When false, return finalized PSBT. Useful for testing to keep transactions in PSBT format.
    */
   extractTransaction?: boolean;
+  /** When true, embeds WASM-UTXO version metadata into the signed PSBT. Defaults to false. */
+  writeSignedWith?: boolean;
 };
 
 export type SignTransactionOptions<TNumber extends number | bigint = number> = UtxoBaseSignTransactionOptions<TNumber> &
