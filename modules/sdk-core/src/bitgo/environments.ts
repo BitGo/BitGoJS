@@ -247,6 +247,14 @@ const mainnetBase: EnvironmentTemplate = {
     sonic: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
+    tempo: {
+      baseUrl: 'https://explore.mainnet.tempo.xyz/',
+      rpcUrl: 'https://rpc.mainnet.tempo.xyz',
+    },
+    ttempo: {
+      baseUrl: 'https://explore.testnet.tempo.xyz/',
+      rpcUrl: 'https://rpc.testnet.tempo.xyz',
+    },
     usdt0: {
       baseUrl: 'https://stablescan.xyz/api',
     },
@@ -459,6 +467,14 @@ const testnetBase: EnvironmentTemplate = {
     },
     sonic: {
       baseUrl: 'https://api.etherscan.io/v2',
+    },
+    tempo: {
+      baseUrl: 'https://explore.mainnet.tempo.xyz/',
+      rpcUrl: 'https://rpc.mainnet.tempo.xyz',
+    },
+    ttempo: {
+      baseUrl: 'https://explore.testnet.tempo.xyz/',
+      rpcUrl: 'https://rpc.testnet.tempo.xyz',
     },
     usdt0: {
       baseUrl: 'https://testnet.stablescan.xyz/api',

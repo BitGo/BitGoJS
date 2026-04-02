@@ -29,6 +29,33 @@ export const TESTNET_TOKENS = {
 export const TEST_RECIPIENT_ADDRESS = '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
 
 // ============================================================================
+// Recovery Test Data
+// ============================================================================
+
+export const RECOVERY_TEST_DATA = {
+  // TSS public keys (ECDSA secp256k1 compressed format)
+  userPublicKey: '0x03abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+  backupPublicKey: '0x02fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210',
+
+  // Wallet addresses
+  walletContractAddress: '0x2476602c78e9a5e0563320c78878faa3952b256f',
+  recoveryDestination: TEST_RECIPIENT_ADDRESS,
+  recoveryDestinationWithMemo: `${TEST_RECIPIENT_ADDRESS}?memoId=12345`,
+
+  // Sample balances (in TIP-20 units - 6 decimals)
+  tokenBalance: BigInt(1000000), // 1.0 tokens
+  feeTokenBalance: BigInt(2000000), // 2.0 tokens
+
+  // Gas parameters
+  gasLimit: 100000,
+  maxFeePerGas: 2000000000n, // 2 gwei
+  maxPriorityFeePerGas: 1000000000n, // 1 gwei
+
+  // Expected sweep amount (balance - fees)
+  expectedSweepAmount: BigInt(800000), // 0.8 tokens after fees
+};
+
+// ============================================================================
 // Transaction Parameters
 // ============================================================================
 

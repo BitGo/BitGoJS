@@ -27,3 +27,14 @@ export const TIP20_DECIMALS = 6;
  * Tempo uses EIP-7702 Account Abstraction with transaction type 0x76
  */
 export const AA_TRANSACTION_TYPE = '0x76' as const;
+
+/**
+ * Fallback JSON-RPC endpoints when `common.Environments[bitgo.getEnv()].evm.tempo|ttempo.rpcUrl`
+ * is missing (should not happen for normal envs). Primary RPC config lives in sdk-core
+ * `environments.ts` under `evm.tempo` / `evm.ttempo`; `@bitgo/statics` networks only define
+ * explorer URLs and chainId, not RPC.
+ */
+export const TEMPO_RPC_URLS = {
+  MAINNET: 'https://rpc.mainnet.tempo.xyz',
+  TESTNET: 'https://rpc.testnet.tempo.xyz',
+} as const;
