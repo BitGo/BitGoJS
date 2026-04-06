@@ -60,6 +60,16 @@ export type RetrofitData = {
   xiList?: number[][];
 };
 
+/**
+ * A CBOR-encoded subset of an MPCv2 (DKLS) key share stored on the key card.
+ *
+ * @property bigSList - Public commitments S_i = s_i * G for each party.
+ * @property xList - Evaluation points (x-coordinates for Lagrange interpolation).
+ * @property rootChainCode - Root chain code for HD derivation.
+ * @property prv - The party's private scalar s_i. This is private key material;
+ *   possession of this value allows the holder to act as this party in signing.
+ * @property pub - The party's public key.
+ */
 export const ReducedKeyShareType = t.type({
   bigSList: t.array(t.array(t.number)),
   xList: t.array(t.array(t.number)),

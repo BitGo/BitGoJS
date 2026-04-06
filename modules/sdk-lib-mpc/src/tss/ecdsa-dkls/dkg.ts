@@ -184,6 +184,11 @@ export class Dkg {
     return this.keyShareBuff;
   }
 
+  /**
+   * Returns a CBOR-encoded ReducedKeyShare buffer containing the party's private
+   * scalar (s_i) in the `prv` field. This buffer is private key material.
+   * The caller encrypts it and stores it as `reducedEncryptedPrv` on the key card QR code.
+   */
   getReducedKeyShare(): Buffer {
     if (!this.keyShareBuff) {
       throw Error('Can not get key share, DKG is not complete yet.');
