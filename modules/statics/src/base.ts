@@ -92,6 +92,7 @@ export enum CoinFamily {
   PHRS = 'phrs',
   CTC = 'ctc',
   HYPEEVM = 'hypeevm',
+  HYPERLIQUID = 'hyperliquid', // HyperCore L1
   NEAR = 'near',
   OAS = 'oas',
   OFC = 'ofc',
@@ -645,6 +646,7 @@ export enum UnderlyingAsset {
   PLUME = 'plume',
   CTC = 'ctc',
   HYPEEVM = 'hypeevm',
+  HYPERLIQUID = 'hyperliquid', // HyperCore L1
   RBTC = 'rbtc', // RSK main coin
   SEI = 'sei',
   SEIEVM = 'seievm',
@@ -3812,6 +3814,7 @@ export enum BaseUnit {
   RUNE = 'rune',
   TAO = 'rao',
   ICP = 'e8s',
+  HYPE = 'hype',
   MANTRA = 'uom',
   POLYX = 'micropolyx',
   CRONOS = 'basecro',

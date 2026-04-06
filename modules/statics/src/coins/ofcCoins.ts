@@ -240,6 +240,22 @@ export const ofcCoins = [
     UnderlyingAsset.HYPEEVM,
     CoinKind.CRYPTO
   ),
+  ofc(
+    '10ca4011-4409-42af-a275-bb531ae717b7',
+    'ofchyperliquid',
+    'Hyperliquid',
+    8,
+    UnderlyingAsset.HYPERLIQUID,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    'a76394f3-7c14-4d27-bfa8-8920a3ea30d0',
+    'ofcthyperliquid',
+    'Testnet Hyperliquid',
+    8,
+    UnderlyingAsset.HYPERLIQUID,
+    CoinKind.CRYPTO
+  ),
   ofc('c7350490-f1c0-4f76-8db4-832dc18a2efe', 'ofcseievm', 'Sei EVM', 18, UnderlyingAsset.SEIEVM, CoinKind.CRYPTO),
   tofc(
     '12d3f26a-dede-429b-8ba6-126293a8e02a',

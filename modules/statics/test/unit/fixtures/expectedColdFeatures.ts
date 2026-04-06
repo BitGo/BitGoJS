@@ -15,6 +15,8 @@ export const expectedColdFeatures = {
     'tflr',
     'trx',
     'ttrx',
+    'hyperliquid',
+    'thyperliquid',
   ],
   justMultiSig: [
     'algo',
