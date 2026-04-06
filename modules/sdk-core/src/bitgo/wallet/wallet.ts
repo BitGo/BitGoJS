@@ -3604,16 +3604,23 @@ export class Wallet implements IWallet {
     // TODO(BG-59685): deprecate one of these so that we have a single way to pass fees
     let feeOptions;
     if (params.feeOptions) {
-      feeOptions = params.feeOptions;
+      feeOptions = params.feeToken ? { ...params.feeOptions, feeToken: params.feeToken } : params.feeOptions;
     } else if (params.gasPrice !== undefined || params.eip1559 !== undefined) {
       feeOptions =
         params.gasPrice !== undefined
-          ? { gasPrice: params.gasPrice, gasLimit: params.gasLimit }
+          ? {
+              gasPrice: params.gasPrice,
+              gasLimit: params.gasLimit,
+              ...(params.feeToken !== undefined && { feeToken: params.feeToken }),
+            }
           : {
               maxFeePerGas: Number(params.eip1559?.maxFeePerGas),
               maxPriorityFeePerGas: Number(params.eip1559?.maxPriorityFeePerGas),
               gasLimit: params.gasLimit,
+              ...(params.feeToken !== undefined && { feeToken: params.feeToken }),
             };
+    } else if (params.feeToken !== undefined) {
+      feeOptions = { feeToken: params.feeToken };
     } else if (params.gasLimit !== undefined) {
       feeOptions = { gasLimit: params.gasLimit };
     } else {
@@ -3633,6 +3640,7 @@ export class Wallet implements IWallet {
             memo: params.memo,
             nonce: params.nonce,
             feeOptions,
+            feeToken: params.feeToken,
             custodianTransactionId: params.custodianTransactionId,
             unspents: params.unspents,
             senderAddress: params.senderAddress,
@@ -3651,6 +3659,7 @@ export class Wallet implements IWallet {
             recipients: params.recipients || [],
             nonce: params.nonce,
             feeOptions,
+            feeToken: params.feeToken,
             unspents: params.unspents,
             sequenceId: params.sequenceId,
           },
@@ -3680,6 +3689,7 @@ export class Wallet implements IWallet {
             lowFeeTxid: params.lowFeeTxid,
             receiveAddress: params.receiveAddress,
             feeOptions,
+            feeToken: params.feeToken,
           },
           apiVersion,
           params.preview
@@ -3694,6 +3704,7 @@ export class Wallet implements IWallet {
             nonce: params.nonce,
             receiveAddress: params.receiveAddress,
             feeOptions,
+            feeToken: params.feeToken,
           },
           apiVersion,
           params.preview
@@ -3705,6 +3716,7 @@ export class Wallet implements IWallet {
             reqId,
             intentType: 'tokenApproval',
             tokenName: params.tokenName,
+            feeToken: params.feeToken,
           },
           apiVersion,
           params.preview
@@ -3789,6 +3801,7 @@ export class Wallet implements IWallet {
             amount: params.intentAmount,
             nonce: params.nonce,
             feeOptions,
+            feeToken: params.feeToken,
           },
           apiVersion,
           params.preview
