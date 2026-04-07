@@ -1,0 +1,180 @@
+import * as sinon from 'sinon';
+import { decodeOrElse } from '@bitgo/sdk-core';
+
+import 'should';
+import 'should-sinon';
+import '../../lib/asserts';
+
+import * as express from 'express';
+
+import { handleV2AccountResources, handleV2ResourceDelegations } from '../../../src/clientRoutes';
+import { AccountResourcesResponse } from '../../../src/typedRoutes/api/v2/accountResources';
+import { ResourceDelegationsResponse } from '../../../src/typedRoutes/api/v2/resourceDelegations';
+
+import { BitGo } from 'bitgo';
+
+describe('TRX Resource Delegation handlers', () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.verifyAndRestore();
+  });
+
+  describe('handleV2AccountResources', () => {
+    const mockResources = {
+      resources: [
+        {
+          address: 'TAddr123',
+          free_bandwidth_available: 1500,
+          free_bandwidth_used: 0,
+          staked_bandwidth_available: 0,
+          staked_bandwidth_used: 0,
+          energy_available: 0,
+          energy_used: 0,
+        },
+      ],
+      failedAddresses: [],
+    };
+
+    function createMocks(result: unknown) {
+      const getAccountResourcesStub = sandbox.stub().resolves(result);
+      const walletStub = { getAccountResources: getAccountResourcesStub };
+      const coinStub = {
+        wallets: () => ({ get: () => Promise.resolve(walletStub) }),
+      };
+      const bitgoStub = sinon.createStubInstance(BitGo as any, { coin: coinStub });
+      return { bitgoStub, getAccountResourcesStub };
+    }
+
+    it('should call getAccountResources with addresses and return codec-valid result', async () => {
+      const { bitgoStub, getAccountResourcesStub } = createMocks(mockResources);
+
+      const mockRequest = {
+        bitgo: bitgoStub,
+        decoded: {
+          coin: 'ttrx',
+          id: 'walletId123',
+          addresses: ['TAddr123'],
+        },
+      };
+
+      const result = await handleV2AccountResources(mockRequest as express.Request & typeof mockRequest);
+      decodeOrElse('AccountResourcesResponse', AccountResourcesResponse[200], result, (_) => {
+        throw new Error('Response did not match expected codec');
+      });
+      getAccountResourcesStub.should.be.calledOnceWith({
+        addresses: ['TAddr123'],
+        destinationAddress: undefined,
+      });
+    });
+
+    it('should forward destinationAddress when provided', async () => {
+      const { bitgoStub, getAccountResourcesStub } = createMocks(mockResources);
+
+      const mockRequest = {
+        bitgo: bitgoStub,
+        decoded: {
+          coin: 'ttrx',
+          id: 'walletId123',
+          addresses: ['TAddr123'],
+          destinationAddress: 'TDest456',
+        },
+      };
+
+      await handleV2AccountResources(mockRequest as express.Request & typeof mockRequest);
+      getAccountResourcesStub.should.be.calledOnceWith({
+        addresses: ['TAddr123'],
+        destinationAddress: 'TDest456',
+      });
+    });
+  });
+
+  describe('handleV2ResourceDelegations', () => {
+    const mockDelegations = {
+      address: 'TAddr123',
+      coin: 'ttrx',
+      delegations: {
+        outgoing: [],
+        incoming: [],
+      },
+    };
+
+    function createBitgoStub(result: unknown) {
+      const resultStub = sandbox.stub().resolves(result);
+      const queryStub = sandbox.stub().returns({ result: resultStub });
+      const getStub = sandbox.stub().returns({ query: queryStub });
+      const urlStub = sandbox
+        .stub()
+        .returns('https://test.bitgo.com/api/v2/ttrx/wallet/walletId123/resourcedelegations');
+      const bitgoStub = sinon.createStubInstance(BitGo as any, { get: getStub, url: urlStub });
+      return { bitgoStub, getStub, queryStub, resultStub };
+    }
+
+    it('should forward type and resource query params', async () => {
+      const { bitgoStub, queryStub } = createBitgoStub(mockDelegations);
+
+      const mockRequest = {
+        bitgo: bitgoStub,
+        decoded: {
+          coin: 'ttrx',
+          id: 'walletId123',
+          type: 'outgoing' as const,
+          resource: 'ENERGY',
+        },
+      };
+
+      await handleV2ResourceDelegations(mockRequest as express.Request & typeof mockRequest);
+      queryStub.should.be.calledOnceWith({ type: 'outgoing', resource: 'ENERGY' });
+    });
+
+    it('should convert limit to string when forwarding', async () => {
+      const { bitgoStub, queryStub } = createBitgoStub(mockDelegations);
+
+      const mockRequest = {
+        bitgo: bitgoStub,
+        decoded: {
+          coin: 'ttrx',
+          id: 'walletId123',
+          limit: 10,
+        },
+      };
+
+      await handleV2ResourceDelegations(mockRequest as express.Request & typeof mockRequest);
+      queryStub.should.be.calledOnceWith({ limit: '10' });
+    });
+
+    it('should forward nextBatchPrevId for pagination', async () => {
+      const { bitgoStub, queryStub } = createBitgoStub(mockDelegations);
+
+      const mockRequest = {
+        bitgo: bitgoStub,
+        decoded: {
+          coin: 'ttrx',
+          id: 'walletId123',
+          type: 'incoming' as const,
+          nextBatchPrevId: 'cursor-abc123',
+        },
+      };
+
+      await handleV2ResourceDelegations(mockRequest as express.Request & typeof mockRequest);
+      queryStub.should.be.calledOnceWith({ type: 'incoming', nextBatchPrevId: 'cursor-abc123' });
+    });
+
+    it('should return codec-valid delegations result', async () => {
+      const { bitgoStub } = createBitgoStub(mockDelegations);
+
+      const mockRequest = {
+        bitgo: bitgoStub,
+        decoded: {
+          coin: 'ttrx',
+          id: 'walletId123',
+        },
+      };
+
+      const result = await handleV2ResourceDelegations(mockRequest as express.Request & typeof mockRequest);
+      decodeOrElse('ResourceDelegationsResponse', ResourceDelegationsResponse[200], result, (_) => {
+        throw new Error('Response did not match expected codec');
+      });
+    });
+  });
+});

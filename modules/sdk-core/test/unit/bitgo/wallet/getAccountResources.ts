@@ -11,7 +11,7 @@ describe('Wallet - getAccountResources', function () {
 
   beforeEach(function () {
     mockBitGo = {
-      get: sinon.stub(),
+      post: sinon.stub(),
     };
 
     mockBaseCoin = {
@@ -40,8 +40,8 @@ describe('Wallet - getAccountResources', function () {
         ],
       };
 
-      mockBitGo.get.returns({
-        query: sinon.stub().returns({
+      mockBitGo.post.returns({
+        send: sinon.stub().returns({
           result: sinon.stub().resolves(mockResponse),
         }),
       });
@@ -50,9 +50,9 @@ describe('Wallet - getAccountResources', function () {
       const result = await wallet.getAccountResources({ addresses });
 
       result.should.deepEqual(mockResponse);
-      sinon.assert.calledOnce(mockBitGo.get);
-      const queryStub = mockBitGo.get.returnValues[0].query;
-      sinon.assert.calledWith(queryStub, { addresses });
+      sinon.assert.calledOnce(mockBitGo.post);
+      const sendStub = mockBitGo.post.returnValues[0].send;
+      sinon.assert.calledWith(sendStub, { addresses });
     });
 
     it('should call WP API with addresses and destinationAddress parameters', async function () {
@@ -60,8 +60,8 @@ describe('Wallet - getAccountResources', function () {
         resources: [{ address: 'address1', balance: 100 }],
       };
 
-      mockBitGo.get.returns({
-        query: sinon.stub().returns({
+      mockBitGo.post.returns({
+        send: sinon.stub().returns({
           result: sinon.stub().resolves(mockResponse),
         }),
       });
@@ -71,9 +71,9 @@ describe('Wallet - getAccountResources', function () {
       const result = await wallet.getAccountResources({ addresses, destinationAddress });
 
       result.should.deepEqual(mockResponse);
-      sinon.assert.calledOnce(mockBitGo.get);
-      const queryStub = mockBitGo.get.returnValues[0].query;
-      sinon.assert.calledWith(queryStub, { addresses, destinationAddress });
+      sinon.assert.calledOnce(mockBitGo.post);
+      const sendStub = mockBitGo.post.returnValues[0].send;
+      sinon.assert.calledWith(sendStub, { addresses, destinationAddress });
     });
 
     it('should throw error if addresses is not an array', async function () {
@@ -94,11 +94,11 @@ describe('Wallet - getAccountResources', function () {
       }
     });
 
-    it('should not include destinationAddress in query if not provided', async function () {
+    it('should not include destinationAddress in body if not provided', async function () {
       const mockResponse = { resources: [] };
 
-      mockBitGo.get.returns({
-        query: sinon.stub().returns({
+      mockBitGo.post.returns({
+        send: sinon.stub().returns({
           result: sinon.stub().resolves(mockResponse),
         }),
       });
@@ -106,10 +106,10 @@ describe('Wallet - getAccountResources', function () {
       const addresses = ['address1'];
       await wallet.getAccountResources({ addresses });
 
-      const queryStub = mockBitGo.get.returnValues[0].query;
-      const queryArg = queryStub.firstCall.args[0];
-      queryArg.should.deepEqual({ addresses });
-      queryArg.should.not.have.property('destinationAddress');
+      const sendStub = mockBitGo.post.returnValues[0].send;
+      const bodyArg = sendStub.firstCall.args[0];
+      bodyArg.should.deepEqual({ addresses });
+      bodyArg.should.not.have.property('destinationAddress');
     });
   });
 });
