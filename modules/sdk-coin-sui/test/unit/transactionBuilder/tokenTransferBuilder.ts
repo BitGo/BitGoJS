@@ -5,7 +5,7 @@ import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import utils from '../../../src/lib/utils';
 import { Transaction as SuiTransaction } from '../../../src/lib/transaction';
-import { SuiTransactionType } from '../../../src/lib/iface';
+import { SuiTransactionType, TokenTransferProgrammableTransaction } from '../../../src/lib/iface';
 
 describe('Sui Token Transfer Builder', () => {
   const factory = getBuilderFactory('tsui:deep');
@@ -129,6 +129,137 @@ describe('Sui Token Transfer Builder', () => {
       ];
       // @ts-expect-error - testing invalid input
       should(() => builder.inputObjects(invalidInputObjects)).throwError('Invalid input object, missing digest');
+    });
+
+    it('should fail when neither inputObjects nor fundsInAddressBalance is provided', async function () {
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.type(SuiTransactionType.TokenTransfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: '1000' }]);
+      txBuilder.gasData(testData.gasData);
+      await txBuilder.build().should.be.rejectedWith('input objects or fundsInAddressBalance required before building');
+    });
+  });
+
+  describe('fundsInAddressBalance', () => {
+    const FUNDS_IN_ADDRESS_BALANCE = '450000000';
+    // tsui:deep coin type: 0x36dbef866a1d62bf7328989a10fb2f07d769f4ee587c0de4a0a256e57e0a58a8::deep::DEEP
+    const TOKEN_COIN_TYPE = '0x36dbef866a1d62bf7328989a10fb2f07d769f4ee587c0de4a0a256e57e0a58a8::deep::DEEP';
+
+    it('should build a token transfer using only address balance (no coin objects)', async function () {
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.type(SuiTransactionType.TokenTransfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: '1000' }]);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+      // No inputObjects
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TokenTransferProgrammableTransaction>;
+
+      // MoveCall(redeem_funds) must be first — it's the only coin source
+      const programmableTx = suiTx.suiTransaction.tx;
+      (programmableTx.transactions[0] as any).kind.should.equal('MoveCall');
+      (programmableTx.transactions[0] as any).target.should.equal('0x2::coin::redeem_funds');
+      // typeArguments should contain the token coin type
+      (programmableTx.transactions[0] as any).typeArguments[0].should.equal(TOKEN_COIN_TYPE);
+
+      // No MergeCoins since there's only one coin (the address-balance coin)
+      (programmableTx.transactions[1] as any).kind.should.equal('SplitCoins');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // Round-trip
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build a token transfer with coin objects + address balance', async function () {
+      const numberOfInputObjects = 3;
+      const inputObjects = testData.generateObjects(numberOfInputObjects);
+
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.type(SuiTransactionType.TokenTransfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: '1000' }]);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.inputObjects(inputObjects);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TokenTransferProgrammableTransaction>;
+      const programmableTx = suiTx.suiTransaction.tx;
+
+      // MoveCall(redeem_funds) first, then MergeCoins (coin objects + addrCoin), then SplitCoins
+      (programmableTx.transactions[0] as any).kind.should.equal('MoveCall');
+      (programmableTx.transactions[0] as any).target.should.equal('0x2::coin::redeem_funds');
+      (programmableTx.transactions[1] as any).kind.should.equal('MergeCoins');
+      // sources = remaining inputObjects (numberOfInputObjects - 1) + addrCoin (1)
+      (programmableTx.transactions[1] as any).sources.length.should.equal(numberOfInputObjects - 1 + 1);
+      (programmableTx.transactions[2] as any).kind.should.equal('SplitCoins');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // Round-trip: rebuilt tx should produce same serialized output and recover inputObjects
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+      rebuiltTx.toJson().inputObjects.length.should.equal(numberOfInputObjects);
+    });
+
+    it('should correctly reconstruct fundsInAddressBalance from raw transaction', async function () {
+      const inputObjects = testData.generateObjects(2);
+
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.type(SuiTransactionType.TokenTransfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: '500' }]);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.inputObjects(inputObjects);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+
+      // Rebuild from raw — initBuilder must reconstruct fundsInAddressBalance
+      const rebuilder = factory.from(rawTx) as any;
+      rebuilder._fundsInAddressBalance.toString().should.equal(FUNDS_IN_ADDRESS_BALANCE);
+    });
+
+    it('should build a token transfer with multiple recipients and address balance', async function () {
+      const inputObjects = testData.generateObjects(2);
+      const amount = 1000;
+      const recipients = testData.recipients.map((r) => ({ ...r, amount: amount.toString() }));
+
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.type(SuiTransactionType.TokenTransfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(recipients);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.inputObjects(inputObjects);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      tx.outputs.length.should.equal(recipients.length);
+      tx.outputs.forEach((output, i) => {
+        output.address.should.equal(recipients[i].address);
+        output.value.should.equal(amount.toString());
+      });
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
     });
   });
 });

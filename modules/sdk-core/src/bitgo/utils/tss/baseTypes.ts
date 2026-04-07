@@ -243,6 +243,11 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   receiveAddress?: string;
   unspents?: string[];
   /**
+   * MIST to redeem from the sender's address balance (SIP-58 / SUI address balances).
+   * When set, the PTB includes tx.withdrawal() + redeem_funds() before the transfer.
+   */
+  fundsInAddressBalance?: string;
+  /**
    * The receive address from which funds will be withdrawn.
    * This feature is supported only for specific coins, like ADA.
    */
@@ -315,6 +320,7 @@ export interface PopulatedIntent extends PopulatedIntentBase {
   token?: string;
   enableTokens?: TokenEnablement[];
   unspents?: string[];
+  fundsInAddressBalance?: string;
   /**
    * The receive address from which funds will be withdrawn.
    * This feature is supported only for specific coins, like ADA.

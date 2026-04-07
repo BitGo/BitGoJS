@@ -66,7 +66,7 @@ export function isPureArg(arg: any): arg is PureArg {
  * For `Pure` arguments BCS is required. You must encode the values with BCS according
  * to the type required by the called function. Pure accepts only serialized values
  */
-export type CallArg = PureArg | { Object: ObjectArg };
+export type CallArg = PureArg | { Object: ObjectArg } | { BalanceWithdrawal: { amount: bigint | number; type_: TypeTag } };
 
 /**
  * Kind of a TypeTag which is represented by a Move type identifier.
@@ -107,11 +107,23 @@ export type GasData = {
 };
 
 /**
+ * ValidDuring expiration — used when gasData.payment is empty (address-balance-funded gas).
+ * Both minEpoch and maxEpoch must be set; maxEpoch must equal minEpoch or minEpoch + 1.
+ * The nonce (u32) prevents duplicate transaction digests across same-epoch builds.
+ */
+export type ValidDuringExpiration = {
+  minEpoch: number;
+  maxEpoch: number;
+  chain: string;
+  nonce: number;
+};
+
+/**
  * TransactionExpiration
  *
  * Indications the expiration time for a transaction.
  */
-export type TransactionExpiration = { None: null } | { Epoch: number };
+export type TransactionExpiration = { None: null } | { Epoch: number } | { ValidDuring: ValidDuringExpiration };
 
 // Move name of the Vector type.
 const VECTOR = 'vector';
@@ -144,6 +156,7 @@ const BCS_SPEC: TypeSchema = {
       Pure: [VECTOR, BCS.U8],
       Object: 'ObjectArg',
       ObjVec: [VECTOR, 'ObjectArg'],
+      BalanceWithdrawal: 'BalanceWithdrawal',
     },
     TypeTag: {
       bool: null,
@@ -169,12 +182,23 @@ const BCS_SPEC: TypeSchema = {
     TransactionExpiration: {
       None: null,
       Epoch: BCS.U64,
+      ValidDuring: 'ValidDuringExpiration',
     },
     TransactionData: {
       V1: 'TransactionDataV1',
     },
   },
   structs: {
+    BalanceWithdrawal: {
+      amount: BCS.U64,
+      type_: 'TypeTag',
+    },
+    ValidDuringExpiration: {
+      minEpoch: BCS.U64,
+      maxEpoch: BCS.U64,
+      chain: BCS.STRING,
+      nonce: BCS.U32,
+    },
     SuiObjectRef: {
       objectId: BCS.ADDRESS,
       version: BCS.U64,

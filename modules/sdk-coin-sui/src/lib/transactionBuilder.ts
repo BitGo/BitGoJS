@@ -17,7 +17,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { SuiProgrammableTransaction, SuiTransactionType } from './iface';
 import { DUMMY_SUI_GAS_PRICE } from './constants';
 import { KeyPair } from './keyPair';
-import { GasData, SuiObjectRef } from './mystenlab/types';
+import { GasData, SuiObjectRef, TransactionExpiration } from './mystenlab/types';
 
 export abstract class TransactionBuilder<T = SuiProgrammableTransaction> extends BaseTransactionBuilder {
   protected _transaction: Transaction<T>;
@@ -28,6 +28,7 @@ export abstract class TransactionBuilder<T = SuiProgrammableTransaction> extends
   protected _sender: string;
   protected _gasData: GasData;
   protected _inputObjects: SuiObjectRef[];
+  protected _expiration?: TransactionExpiration;
 
   protected constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -101,6 +102,15 @@ export abstract class TransactionBuilder<T = SuiProgrammableTransaction> extends
   }
 
   /**
+   * Sets the transaction expiration. Use ValidDuring (with nonce) only for Case 2
+   * self-funded transactions where gasData.payment is empty.
+   */
+  expiration(expiration: TransactionExpiration): this {
+    this._expiration = expiration;
+    return this;
+  }
+
+  /**
    * Initialize the transaction builder fields using the decoded transaction data
    *
    * @param {Transaction} tx the transaction data
@@ -149,7 +159,15 @@ export abstract class TransactionBuilder<T = SuiProgrammableTransaction> extends
   }
 
   validateGasPayment(payments: SuiObjectRef[]): void {
-    assert(payments && payments.length > 0, new BuildTransactionError('gas payment is required before building'));
+    assert(
+      payments !== undefined && payments !== null,
+      new BuildTransactionError('gas payment is required before building')
+    );
+    // Empty array is valid: Sui allows setGasPayment([]) when gas is paid from
+    // address balance (sender or fee payer has sufficient fundsInAddressBalance).
+    if (payments.length === 0) {
+      return;
+    }
     payments.forEach((payment) => {
       this.validateSuiObjectRef(payment, 'payment');
     });

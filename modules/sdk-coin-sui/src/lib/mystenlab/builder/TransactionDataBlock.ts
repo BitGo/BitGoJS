@@ -21,7 +21,13 @@ import { BuilderCallArg, PureCallArg } from './Inputs';
 import { create } from './utils';
 
 export const TransactionExpiration = optional(
-  nullable(union([object({ Epoch: integer() }), object({ None: union([literal(true), literal(null)]) })]))
+  nullable(
+    union([
+      object({ Epoch: integer() }),
+      object({ None: union([literal(true), literal(null)]) }),
+      object({ ValidDuring: object({ minEpoch: integer(), maxEpoch: integer(), chain: string(), nonce: integer() }) }),
+    ])
+  )
 );
 export type TransactionExpiration = Infer<typeof TransactionExpiration>;
 
