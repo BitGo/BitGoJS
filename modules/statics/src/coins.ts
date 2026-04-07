@@ -31,7 +31,7 @@ import {
 } from './account';
 import { ofcToken } from './ofc';
 import { BaseCoin, CoinFeature, DynamicCoin } from './base';
-import { AmsTokenConfig, TrimmedAmsTokenConfig } from './tokenConfig';
+import { AmsNetworkConfigMap, AmsTokenConfig, TrimmedAmsTokenConfig } from './tokenConfig';
 import { CoinMap } from './map';
 import { BaseNetwork, getNetwork, getNetworksMap, NetworkType } from './networks';
 import { networkFeatureMapForTokens } from './networkFeatureMapForTokens';
@@ -469,6 +469,35 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
   }
 
   return CoinMap.fromCoins(Array.from(BaseCoins.values()));
+}
+
+/**
+ * Enrich base chain coins (isToken=false) with features from the AMS networks map.
+ *
+ * createTokenMapUsingTrimmedConfigDetails reads features for base chains from
+ * TrimmedAmsTokenConfig.additionalFeatures. The assetsList endpoint returns base chains with no features;
+ * features are in the networks endpoint (/api/v1/networks/:network), matched by coin.network.name === networksEntry.name.
+ *
+ * Coins that already have additionalFeatures defined are left unchanged.
+ * Coins whose network.name has no match in networksMap are left unchanged (empty features).
+ */
+export function enrichBaseChainFeatures(
+  coinTokenMap: Record<string, TrimmedAmsTokenConfig[]>,
+  networksMap: AmsNetworkConfigMap
+): Record<string, TrimmedAmsTokenConfig[]> {
+  const featuresByNetworkName = new Map<string, string[]>(
+    Object.values(networksMap).map((net): [string, string[]] => [net.name, net.features])
+  );
+  return Object.fromEntries(
+    Object.entries(coinTokenMap).map(([key, coins]) => [
+      key,
+      coins.map((coin) => {
+        if (coin.isToken || coin.additionalFeatures !== undefined) return coin;
+        const features = featuresByNetworkName.get(coin.network.name);
+        return features !== undefined ? { ...coin, additionalFeatures: features } : coin;
+      }),
+    ])
+  );
 }
 
 export function createTokenMapUsingTrimmedConfigDetails(
