@@ -77,7 +77,6 @@ import { cantonTokens } from './coins/cantonTokens';
 import { flrp } from './flrp';
 import { kas } from './kas';
 import { hypeEvm } from './hypeevm';
-import { kas } from './kas';
 import {
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
   ADA_FEATURES,

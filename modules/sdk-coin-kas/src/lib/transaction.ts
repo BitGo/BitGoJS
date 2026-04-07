@@ -60,7 +60,7 @@ export class Transaction extends BaseTransaction {
       return false;
     }
     const sigBytes = Buffer.from(input.signatureScript, 'hex');
-    if (sigBytes.length < 64) {
+    if (sigBytes.length < 65) {
       return false;
     }
     const sig = sigBytes.slice(0, 64);

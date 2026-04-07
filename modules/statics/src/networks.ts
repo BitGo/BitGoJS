@@ -201,14 +201,6 @@ export interface StacksNetwork extends AccountNetwork {
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface OfcNetwork extends BaseNetwork {}
 
-export interface KaspaNetwork extends BaseNetwork {
-  name: string;
-  family: CoinFamily;
-  explorerUrl: string;
-  accountExplorerUrl: string;
-  /** Human-readable part for bech32 address encoding (e.g., 'kaspa' for mainnet) */
-  hrp: string;
-}
 
 abstract class Mainnet extends BaseNetwork {
   type = NetworkType.MAINNET;
@@ -1722,6 +1714,7 @@ export class Kaspa extends Mainnet implements KaspaNetwork {
   explorerUrl = 'https://explorer.kaspa.org/txs/';
   accountExplorerUrl = 'https://explorer.kaspa.org/addresses/';
   hrp = 'kaspa';
+  txFee = '1000';
 }
 
 export class KaspaTestnet extends Testnet implements KaspaNetwork {
@@ -1730,6 +1723,7 @@ export class KaspaTestnet extends Testnet implements KaspaNetwork {
   explorerUrl = 'https://explorer-tn10.kaspa.org/txs/';
   accountExplorerUrl = 'https://explorer-tn10.kaspa.org/addresses/';
   hrp = 'kaspatest';
+  txFee = '1000';
 }
 
 class LineaETH extends Mainnet implements EthereumNetwork {
@@ -2008,23 +2002,6 @@ class KaiaTestnet extends Testnet implements EthereumNetwork {
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
-class Kaspa extends Mainnet implements KaspaNetwork {
-  name = 'Kaspa';
-  family = CoinFamily.KAS;
-  explorerUrl = 'https://explorer.kaspa.org/txs/';
-  accountExplorerUrl = 'https://explorer.kaspa.org/addresses/';
-  hrp = 'kaspa';
-  txFee = '1000'; // minimum fee in sompi
-}
-
-class KaspaTestnet extends Testnet implements KaspaNetwork {
-  name = 'KaspaTestnet';
-  family = CoinFamily.KAS;
-  explorerUrl = 'https://explorer-tn10.kaspa.org/txs/';
-  accountExplorerUrl = 'https://explorer-tn10.kaspa.org/addresses/';
-  hrp = 'kaspatest';
-  txFee = '1000'; // minimum fee in sompi
-}
 
 class Irys extends Mainnet implements EthereumNetwork {
   name = 'Irys';

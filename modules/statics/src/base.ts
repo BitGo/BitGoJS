@@ -81,7 +81,6 @@ export enum CoinFamily {
   KAS = 'kas',
   KAVACOSMOS = 'kavacosmos',
   KAVAEVM = 'kavaevm',
-  KAS = 'kas',
   LNBTC = 'lnbtc',
   LTC = 'ltc',
   MANTLE = 'mantle',
@@ -3829,7 +3828,6 @@ export enum BaseUnit {
   TASI = 'atestfet',
   CANTON = 'canton',
   USDC = 'usdc',
-  KAS = 'sompi',
 }
 
 export interface BaseCoinConstructorOptions {
