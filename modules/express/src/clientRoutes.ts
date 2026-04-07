@@ -1693,6 +1693,10 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.decrypt', [prepareBitGo(config), typedPromiseWrapper(handleDecrypt)]);
   router.post('express.encrypt', [prepareBitGo(config), typedPromiseWrapper(handleEncrypt)]);
   router.post('express.verifyaddress', [prepareBitGo(config), typedPromiseWrapper(handleVerifyAddress)]);
+  router.post('express.v1.calculateminerfeeinfo', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleCalculateMinerFeeInfo),
+  ]);
   router.post('express.calculateminerfeeinfo', [
     prepareBitGo(config),
     typedPromiseWrapper(handleCalculateMinerFeeInfo),
