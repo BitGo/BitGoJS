@@ -260,7 +260,7 @@ describe('TON:', function () {
       })) as TransactionExplanation;
       explainedTransaction.should.deepEqual({
         displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'withdrawAmount'],
-        id: testData.signedSingleNominatorWithdrawTransaction.txIdBounceable,
+        id: testData.signedSingleNominatorWithdrawTransaction.txId,
         outputs: [
           {
             address: testData.signedSingleNominatorWithdrawTransaction.recipientBounceable.address,

@@ -58,7 +58,8 @@ export class Utils implements BaseUtils {
       wc: 0,
     });
     const address = await wallet.getAddress();
-    return address.toString(isUserFriendly, true, bounceable);
+    const legacyAddress = address.toString(isUserFriendly, true, bounceable);
+    return legacyAddress;
   }
 
   getAddress(address: string, bounceable = true): string {
