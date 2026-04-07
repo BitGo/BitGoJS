@@ -1016,7 +1016,9 @@ async function handleV2SendMany(req: ExpressApiRouteRequest<'express.v2.wallet.s
  * handle get account resources
  * @param req
  */
-async function handleV2AccountResources(req: ExpressApiRouteRequest<'express.v2.wallet.getaccountresources', 'post'>) {
+export async function handleV2AccountResources(
+  req: ExpressApiRouteRequest<'express.v2.wallet.getaccountresources', 'post'>
+) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const wallet = await coin.wallets().get({ id: req.decoded.id });
@@ -1030,7 +1032,7 @@ async function handleV2AccountResources(req: ExpressApiRouteRequest<'express.v2.
  * handle get resource delegations
  * @param req
  */
-async function handleV2ResourceDelegations(
+export async function handleV2ResourceDelegations(
   req: ExpressApiRouteRequest<'express.v2.wallet.resourcedelegations', 'get'>
 ) {
   const bitgo = req.bitgo;
@@ -1039,7 +1041,8 @@ async function handleV2ResourceDelegations(
   const query: Record<string, string> = {};
   if (req.decoded.type) query.type = req.decoded.type;
   if (req.decoded.resource) query.resource = req.decoded.resource;
-  if (req.decoded.limit) query.limit = req.decoded.limit;
+  if (req.decoded.limit !== undefined) query.limit = String(req.decoded.limit);
+  if (req.decoded.nextBatchPrevId) query.nextBatchPrevId = req.decoded.nextBatchPrevId;
   return bitgo
     .get(bitgo.url(`/${coin}/wallet/${walletId}/resourcedelegations`, 2))
     .query(query)

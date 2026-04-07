@@ -34,6 +34,8 @@ export const AccountResourceInfo = t.intersection([
     staked_bandwidth_used: t.number,
     energy_available: t.number,
     energy_used: t.number,
+  }),
+  t.partial({
     resourceDeficitForAssetTransfer: t.intersection([
       t.type({
         bandwidthDeficit: t.number,
@@ -44,8 +46,6 @@ export const AccountResourceInfo = t.intersection([
         energySunRequired: t.string,
       }),
     ]),
-  }),
-  t.partial({
     maxResourcesDelegatable: t.type({
       bandwidthSun: t.string,
       energySun: t.string,
