@@ -574,5 +574,78 @@ describe('TRON Verify Transaction:', function () {
         message: 'missing txHex in txPrebuild',
       });
     });
+
+    describe('serializedTxHex (JSON string) path', () => {
+      // prebuildAndSignTransaction passes txHex as serializedTxHex — a full JSON string
+      // containing { txID, raw_data, raw_data_hex }. The TSS branch must handle this format
+      // by extracting raw_data_hex before protobuf decoding.
+
+      it('should validate TSS TransferContract when txHex is a JSON string (serializedTxHex)', async function () {
+        const ownerHex = '4173a5993cd182ae152adad8203163f780c65a8aa5';
+        const toHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+        const amount = 1000000;
+
+        const rawDataHex = buildTssTransferTxHex({ ownerAddress: ownerHex, toAddress: toHex, amount });
+        const txID = createHash('sha256').update(Buffer.from(rawDataHex, 'hex')).digest('hex');
+
+        // Simulate the serializedTxHex format from BitGo API (JSON string with txID + raw_data_hex)
+        const serializedTxHex = JSON.stringify({
+          txID,
+          raw_data_hex: rawDataHex,
+          raw_data: {},
+        });
+
+        const params = {
+          txParams: {
+            recipients: [
+              {
+                address: Utils.getBase58AddressFromHex(toHex),
+                amount: amount.toString(),
+              },
+            ],
+          },
+          txPrebuild: {
+            txHex: serializedTxHex,
+          },
+          wallet: {},
+          walletType: 'tss',
+        };
+
+        const result = await basecoin.verifyTransaction(params);
+        assert.strictEqual(result, true);
+      });
+
+      it('should fail when amount mismatches with JSON txHex', async function () {
+        const ownerHex = '4173a5993cd182ae152adad8203163f780c65a8aa5';
+        const toHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+
+        const rawDataHex = buildTssTransferTxHex({ ownerAddress: ownerHex, toAddress: toHex, amount: 2000000 });
+        const serializedTxHex = JSON.stringify({
+          txID: createHash('sha256').update(Buffer.from(rawDataHex, 'hex')).digest('hex'),
+          raw_data_hex: rawDataHex,
+          raw_data: {},
+        });
+
+        const params = {
+          txParams: {
+            recipients: [
+              {
+                address: Utils.getBase58AddressFromHex(toHex),
+                amount: '1000000', // mismatch
+              },
+            ],
+          },
+          txPrebuild: {
+            txHex: serializedTxHex,
+          },
+          wallet: {},
+          walletType: 'tss',
+        };
+
+        await assert.rejects(basecoin.verifyTransaction(params), {
+          message: 'transaction amount in txPrebuild does not match the value given by client',
+        });
+      });
+    });
   });
 });

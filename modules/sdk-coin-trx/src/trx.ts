@@ -379,10 +379,21 @@ export class Trx extends BaseCoin {
     }
 
     if (walletType === 'tss') {
-      // For TSS wallets, txHex is the signableHex (raw_data_hex protobuf bytes),
-      // not a full transaction JSON. Decode it directly via protobuf.
-      // Note: decodeTransaction already validates exactly 1 contract exists.
-      const decodedTx = Utils.decodeTransaction(txPrebuild.txHex);
+      // For TSS wallets, verifyTransaction is called from two places:
+      // 1. prebuildAndSignTransaction (wallet.ts) — txHex is serializedTxHex, a full JSON string
+      //    containing { txID, raw_data, raw_data_hex }.
+      // 2. ECDSA signing flow (ecdsa.ts) — txHex is signableHex, the raw protobuf bytes (raw_data_hex).
+      // We need to extract the raw_data_hex in case 1 before decoding.
+      let rawDataHex: string;
+      try {
+        // serializedTxHex: full JSON string — extract the raw_data_hex field
+        rawDataHex = JSON.parse(txPrebuild.txHex).raw_data_hex;
+      } catch {
+        // signableHex: already raw protobuf hex (raw_data_hex)
+        console.debug(`Could not parse txHex as JSON for coin ${this.getChain()}, using txHex directly`);
+        rawDataHex = txPrebuild.txHex;
+      }
+      const decodedTx = Utils.decodeTransaction(rawDataHex);
 
       // decodedTx uses a numeric enum for contract type (from protobuf decoding),
       // unlike the multisig path which checks the string 'TransferContract' from node JSON.
