@@ -9,7 +9,7 @@ import { BitgoExpressError } from '../../schemas/error';
 export const LightningWithdrawParams = {
   /** The coin identifier (e.g., 'lnbtc', 'tlnbtc') */
   coin: t.string,
-  /** The ID of the wallet */
+  /** The wallet ID. */
   id: t.string,
 } as const;
 
@@ -27,17 +27,17 @@ const LightningOnchainRecipient = t.type({
  * Request body for lightning onchain withdrawal
  */
 export const LightningWithdrawRequestBody = {
-  /** Array of recipients to pay */
+  /** A list of on-chain recipients with their withdrawal amounts. */
   recipients: t.array(LightningOnchainRecipient),
-  /** Wallet passphrase for signing */
+  /** The wallet passphrase. */
   passphrase: t.string,
-  /** Fee rate in satoshis per virtual byte (as string that will be converted to BigInt) */
+  /** Optional fee rate for the transaction in satoshis per virtual byte. Cannot be used with numBlocks. */
   satsPerVbyte: optional(BigIntFromString),
-  /** Target number of blocks for confirmation */
+  /** The number of blocks required to confirm a transaction. You can use numBlocks to estimate the fee rate by targeting confirmation within a given number of blocks. If both satsPerVbyte and numBlocks are absent, the transaction defaults to 2 blocks for confirmation. */
   numBlocks: optional(t.number),
-  /** Optional sequence ID for the withdraw transfer */
+  /** Optional sequence ID for the withdrawal transfer. */
   sequenceId: optional(t.string),
-  /** Optional comment for the withdraw transfer */
+  /** Optional comment for the withdrawal transfer. */
   comment: optional(t.string),
 } as const;
 
@@ -174,7 +174,7 @@ const PendingApproval = t.intersection([
  */
 const LightningWithdrawResponse = t.intersection([
   t.type({
-    /** Unique identifier for withdraw request submitted to BitGo */
+    /** Transaction request identifier. */
     txRequestId: t.string,
     /** Status of withdraw request submission to BitGo */
     txRequestState: TxRequestState,
@@ -199,12 +199,10 @@ export const LightningWithdrawResponseType = {
 } as const;
 
 /**
- * Lightning Onchain Withdrawal API
- *
- * Withdraws lightning balance to an onchain Bitcoin address
+ * Withdraw onchain balance from a lightning wallet to a regular onchain address.
  *
  * @operationId express.v2.wallet.lightningWithdraw
- * @tag express
+ * @tag Express
  */
 export const PostLightningWalletWithdraw = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/lightning/withdraw',
