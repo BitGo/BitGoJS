@@ -8,7 +8,9 @@ import { BitgoExpressError } from '../../schemas/error';
  * @property {string} walletId - The ID of the wallet.
  */
 export const LightningInitWalletParams = {
+  /** A lightning coin name. */
   coin: t.string,
+  /** The wallet ID. */
   walletId: t.string,
 } as const;
 
@@ -33,11 +35,10 @@ export const LightningInitWalletResponse = {
 } as const;
 
 /**
- * Lightning - This is only used for self-custody lightning. Initialize a newly created Lightning Network Daemon (LND) for the first time.
- * Returns the updated wallet with the encrypted admin macaroon in the `coinSpecific` response field.
+ * This is only used for self-custody lightning. Initialize a newly created Lightning Network Daemon (LND) for the first time. Returns the updated wallet with the encrypted admin macaroon in the coinSpecific response field.
  *
  * @operationId express.lightning.initWallet
- * @tag express
+ * @tag Express
  */
 export const PostLightningInitWallet = httpRoute({
   path: '/api/v2/{coin}/wallet/{walletId}/initwallet',
