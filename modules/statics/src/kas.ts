@@ -16,14 +16,15 @@ export interface KASConstructorOptions {
 export class KASCoin extends BaseCoin {
   public static readonly DEFAULT_FEATURES = [
     CoinFeature.UNSPENT_MODEL,
+    CoinFeature.TSS,
+    CoinFeature.TSS_COLD,
+    CoinFeature.CUSTODY,
     CoinFeature.CUSTODY_BITGO_TRUST,
     CoinFeature.CUSTODY_BITGO_INDIA,
     CoinFeature.CUSTODY_BITGO_MENA_FZE,
     CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
     CoinFeature.CUSTODY_BITGO_GERMANY,
     CoinFeature.CUSTODY_BITGO_FRANKFURT,
-    CoinFeature.MULTISIG_COLD,
-    CoinFeature.MULTISIG,
   ];
 
   public readonly network: KaspaNetwork;
