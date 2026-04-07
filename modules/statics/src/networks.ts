@@ -2553,6 +2553,26 @@ class TempoTestnet extends Testnet implements EthereumNetwork {
   tokenOperationHashPrefix = '42431';
 }
 
+class Boba extends Mainnet implements EthereumNetwork {
+  name = 'Boba';
+  family = CoinFamily.BOBAETH;
+  explorerUrl = 'https://bobascan.com/blockchain/transactions';
+  accountExplorerUrl = 'https://bobascan.com/blockchain/accounts';
+  chainId = 288;
+  nativeCoinOperationHashPrefix = '288';
+  tokenOperationHashPrefix = '288-ERC20';
+}
+
+class BobaTestnet extends Testnet implements EthereumNetwork {
+  name = 'Boba Testnet';
+  family = CoinFamily.BOBAETH;
+  explorerUrl = 'https://testnet.bobascan.com/blockchain/transactions';
+  accountExplorerUrl = 'https://testnet.bobascan.com/blockchain/accounts';
+  chainId = 28882;
+  nativeCoinOperationHashPrefix = '28882';
+  tokenOperationHashPrefix = '28882-ERC20';
+}
+
 /**
  * Constructor options for {@link DynamicNetwork}.
  * Accepts string-typed `type` and `family` so AMS JSON can be passed directly.
@@ -2763,6 +2783,7 @@ export const Networks = {
     zkSync: Object.freeze(new ZkSync()),
     zkSyncEra: Object.freeze(new ZkSyncEra()),
     unieth: Object.freeze(new Unieth()),
+    boba: Object.freeze(new Boba()),
   },
   test: {
     ada: Object.freeze(new AdaTestnet()),
@@ -2889,6 +2910,7 @@ export const Networks = {
     zkSync: Object.freeze(new ZkSyncTestnet()),
     zkSyncEra: Object.freeze(new ZkSyncEraTestnet()),
     unieth: Object.freeze(new UniethTestnet()),
+    boba: Object.freeze(new BobaTestnet()),
   },
 };
 
