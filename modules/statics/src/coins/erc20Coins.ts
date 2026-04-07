@@ -9363,8 +9363,8 @@ export const erc20Coins = [
   ),
   erc20(
     '9d42fc1c-27f9-4d20-bab9-6ffdc8087fd2',
-    'kas',
-    'Kaspa',
+    'ekas',
+    'Kaspa (ERC20)',
     8,
     '0x112b08621e27e10773ec95d250604a041f36c582',
     UnderlyingAsset.KAS

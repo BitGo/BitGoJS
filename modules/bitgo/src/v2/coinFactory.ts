@@ -106,6 +106,8 @@ import {
   Injective,
   Iota,
   Islm,
+  Kas,
+  Tkas,
   JettonToken,
   Lnbtc,
   Ltc,
@@ -290,6 +292,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('ltc', Ltc.createInstance);
   coinFactory.register('mon', Mon.createInstance);
   coinFactory.register('icp', Icp.createInstance);
+  coinFactory.register('kas', Kas.createInstance);
   coinFactory.register('initia', Initia.createInstance);
   coinFactory.register('injective', Injective.createInstance);
   coinFactory.register('iota', Iota.createInstance);
@@ -358,6 +361,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('thash', Thash.createInstance);
   coinFactory.register('thbar', Thbar.createInstance);
   coinFactory.register('ticp', Ticp.createInstance);
+  coinFactory.register('tkas', Tkas.createInstance);
   coinFactory.register('tinitia', Tinitia.createInstance);
   coinFactory.register('tinjective', Tinjective.createInstance);
   coinFactory.register('tiota', Iota.createInstance);
@@ -725,6 +729,10 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Mon.createInstance;
     case 'icp':
       return Icp.createInstance;
+    case 'kas':
+      return Kas.createInstance;
+    case 'tkas':
+      return Tkas.createInstance;
     case 'initia':
       return Initia.createInstance;
     case 'injective':

@@ -78,8 +78,10 @@ export enum CoinFamily {
   ISLM = 'islm',
   JOVAYETH = 'jovayeth',
   KAIA = 'kaia',
+  KAS = 'kas',
   KAVACOSMOS = 'kavacosmos',
   KAVAEVM = 'kavaevm',
+  KAS = 'kas',
   LNBTC = 'lnbtc',
   LTC = 'ltc',
   MANTLE = 'mantle',
@@ -3815,6 +3817,7 @@ export enum BaseUnit {
   TAO = 'rao',
   ICP = 'e8s',
   HYPE = 'hype',
+  KAS = 'sompi',
   MANTRA = 'uom',
   POLYX = 'micropolyx',
   CRONOS = 'basecro',
@@ -3826,6 +3829,7 @@ export enum BaseUnit {
   TASI = 'atestfet',
   CANTON = 'canton',
   USDC = 'usdc',
+  KAS = 'sompi',
 }
 
 export interface BaseCoinConstructorOptions {

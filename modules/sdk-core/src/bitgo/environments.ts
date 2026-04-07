@@ -78,6 +78,7 @@ interface EnvironmentTemplate {
   sgbExplorerApiToken?: string;
   icpNodeUrl: string;
   hyperLiquidNodeUrl: string;
+  kasNodeUrl?: string;
   wemixExplorerBaseUrl?: string;
   wemixExplorerApiToken?: string;
   monExplorerBaseUrl?: string;
@@ -350,6 +351,7 @@ const mainnetBase: EnvironmentTemplate = {
   },
   icpNodeUrl: 'https://ic0.app',
   hyperLiquidNodeUrl: 'https://api.hyperliquid.xyz',
+  kasNodeUrl: 'wss://mainnet.kaspa.green',
   worldExplorerBaseUrl: 'https://worldscan.org/',
   somniaExplorerBaseUrl: 'https://mainnet.somnia.w3us.site/',
   soneiumExplorerBaseUrl: 'https://soneium.blockscout.com',
@@ -428,6 +430,7 @@ const testnetBase: EnvironmentTemplate = {
   sgbExplorerBaseUrl: 'https://coston-explorer.flare.network',
   icpNodeUrl: 'https://ic0.app',
   hyperLiquidNodeUrl: 'https://api.hyperliquid-testnet.xyz',
+  kasNodeUrl: 'wss://testnet-10.kaspa.green',
   monExplorerBaseUrl: 'https://api.etherscan.io/v2',
   worldExplorerBaseUrl: 'https://sepolia.worldscan.org/',
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/',

@@ -124,6 +124,15 @@ export interface AccountNetwork extends BaseNetwork {
   readonly blockExplorerUrl?: string;
 }
 
+/**
+ * Kaspa network interface — UTXO-based BlockDAG (GHOSTDAG / Proof-of-Work).
+ */
+export interface KaspaNetwork extends BaseNetwork {
+  readonly hrp: string; // Bech32 human-readable part: 'kaspa' | 'kaspatest'
+  readonly accountExplorerUrl: string;
+  readonly txFee: string; // Minimum fee in sompi
+}
+
 export interface CosmosNetwork extends AccountNetwork {
   readonly addressPrefix: string;
   readonly validatorPrefix: string;
@@ -191,6 +200,15 @@ export interface StacksNetwork extends AccountNetwork {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface OfcNetwork extends BaseNetwork {}
+
+export interface KaspaNetwork extends BaseNetwork {
+  name: string;
+  family: CoinFamily;
+  explorerUrl: string;
+  accountExplorerUrl: string;
+  /** Human-readable part for bech32 address encoding (e.g., 'kaspa' for mainnet) */
+  hrp: string;
+}
 
 abstract class Mainnet extends BaseNetwork {
   type = NetworkType.MAINNET;
@@ -1698,6 +1716,22 @@ class KavaEVM extends Mainnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '2222';
 }
 
+export class Kaspa extends Mainnet implements KaspaNetwork {
+  name = 'Kaspa';
+  family = CoinFamily.KAS;
+  explorerUrl = 'https://explorer.kaspa.org/txs/';
+  accountExplorerUrl = 'https://explorer.kaspa.org/addresses/';
+  hrp = 'kaspa';
+}
+
+export class KaspaTestnet extends Testnet implements KaspaNetwork {
+  name = 'KaspaTestnet';
+  family = CoinFamily.KAS;
+  explorerUrl = 'https://explorer-tn10.kaspa.org/txs/';
+  accountExplorerUrl = 'https://explorer-tn10.kaspa.org/addresses/';
+  hrp = 'kaspatest';
+}
+
 class LineaETH extends Mainnet implements EthereumNetwork {
   name = 'Linea Ethereum Mainnet';
   family = CoinFamily.LINEAETH;
@@ -1972,6 +2006,24 @@ class KaiaTestnet extends Testnet implements EthereumNetwork {
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+}
+
+class Kaspa extends Mainnet implements KaspaNetwork {
+  name = 'Kaspa';
+  family = CoinFamily.KAS;
+  explorerUrl = 'https://explorer.kaspa.org/txs/';
+  accountExplorerUrl = 'https://explorer.kaspa.org/addresses/';
+  hrp = 'kaspa';
+  txFee = '1000'; // minimum fee in sompi
+}
+
+class KaspaTestnet extends Testnet implements KaspaNetwork {
+  name = 'KaspaTestnet';
+  family = CoinFamily.KAS;
+  explorerUrl = 'https://explorer-tn10.kaspa.org/txs/';
+  accountExplorerUrl = 'https://explorer-tn10.kaspa.org/addresses/';
+  hrp = 'kaspatest';
+  txFee = '1000'; // minimum fee in sompi
 }
 
 class Irys extends Mainnet implements EthereumNetwork {
@@ -2704,6 +2756,7 @@ export const Networks = {
     islm: Object.freeze(new Islm()),
     jovayeth: Object.freeze(new JovayETH()),
     kaia: Object.freeze(new Kaia()),
+    kaspa: Object.freeze(new Kaspa()),
     kavacosmos: Object.freeze(new KavaCosmos()),
     kavaevm: Object.freeze(new KavaEVM()),
     lnbtc: Object.freeze(new LightningBitcoin()),
@@ -2827,6 +2880,7 @@ export const Networks = {
     irys: Object.freeze(new IrysTestnet()),
     islm: Object.freeze(new IslmTestnet()),
     jovayeth: Object.freeze(new JovayETHTestnet()),
+    kaspa: Object.freeze(new KaspaTestnet()),
     kavacosmos: Object.freeze(new KavaCosmosTestnet()),
     kavaevm: Object.freeze(new KavaEVMTestnet()),
     kovan: Object.freeze(new Kovan()),
