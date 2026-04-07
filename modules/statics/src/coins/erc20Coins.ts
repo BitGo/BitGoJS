@@ -14508,7 +14508,8 @@ export const erc20Coins = [
     'apxUSD',
     18,
     '0x98a878b1cd98131b271883b390f68d2c90674665',
-    UnderlyingAsset['eth:apxusd']
+    UnderlyingAsset['eth:apxusd'],
+    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_SINGAPORE], ETH_FEATURES)
   ),
   erc20(
     '55ba6b0b-b0c4-4791-b152-7b9fe276bc46',
