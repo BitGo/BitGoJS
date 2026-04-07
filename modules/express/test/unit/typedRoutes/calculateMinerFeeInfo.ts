@@ -3,8 +3,9 @@ import * as t from 'io-ts';
 import {
   CalculateMinerFeeInfoRequestBody,
   CalculateMinerFeeInfoResponse,
-  PostCalculateMinerFeeInfo,
-} from '../../../src/typedRoutes/api/common/calculateMinerFeeInfo';
+  PostV1CalculateMinerFeeInfo,
+} from '../../../src/typedRoutes/api/v1/calculateMinerFeeInfo';
+import { PostV2CalculateMinerFeeInfo } from '../../../src/typedRoutes/api/v2/calculateMinerFeeInfo';
 import { assertDecode } from './common';
 import 'should';
 import 'should-http';
@@ -301,25 +302,43 @@ describe('CalculateMinerFeeInfo codec tests', function () {
     });
   });
 
-  describe('PostCalculateMinerFeeInfo route definition', function () {
-    it('should have the correct path', function () {
-      assert.strictEqual(PostCalculateMinerFeeInfo.path, '/api/v[12]/calculateminerfeeinfo');
+  describe('PostV1CalculateMinerFeeInfo route definition', function () {
+    it('should have the correct path for v1', function () {
+      assert.strictEqual(PostV1CalculateMinerFeeInfo.path, '/api/v1/calculateminerfeeinfo');
     });
 
     it('should have the correct HTTP method', function () {
-      assert.strictEqual(PostCalculateMinerFeeInfo.method, 'POST');
+      assert.strictEqual(PostV1CalculateMinerFeeInfo.method, 'POST');
     });
 
     it('should have the correct request configuration', function () {
-      // Verify the route is configured with a request property
-      assert.ok(PostCalculateMinerFeeInfo.request);
+      assert.ok(PostV1CalculateMinerFeeInfo.request);
     });
 
     it('should have the correct response types', function () {
-      // Check that the response object has the expected status codes
-      assert.ok(PostCalculateMinerFeeInfo.response[200]);
-      assert.ok(PostCalculateMinerFeeInfo.response[400]);
-      assert.ok(PostCalculateMinerFeeInfo.response[404]);
+      assert.ok(PostV1CalculateMinerFeeInfo.response[200]);
+      assert.ok(PostV1CalculateMinerFeeInfo.response[400]);
+      assert.ok(PostV1CalculateMinerFeeInfo.response[404]);
+    });
+  });
+
+  describe('PostV2CalculateMinerFeeInfo route definition', function () {
+    it('should have the correct path for v2', function () {
+      assert.strictEqual(PostV2CalculateMinerFeeInfo.path, '/api/v2/calculateminerfeeinfo');
+    });
+
+    it('should have the correct HTTP method', function () {
+      assert.strictEqual(PostV2CalculateMinerFeeInfo.method, 'POST');
+    });
+
+    it('should have the correct request configuration', function () {
+      assert.ok(PostV2CalculateMinerFeeInfo.request);
+    });
+
+    it('should have the correct response types', function () {
+      assert.ok(PostV2CalculateMinerFeeInfo.response[200]);
+      assert.ok(PostV2CalculateMinerFeeInfo.response[400]);
+      assert.ok(PostV2CalculateMinerFeeInfo.response[404]);
     });
   });
 
