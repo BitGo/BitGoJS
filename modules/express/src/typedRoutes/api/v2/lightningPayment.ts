@@ -7,9 +7,9 @@ import { BitgoExpressError } from '../../schemas/error';
  * Path parameters for lightning payment API
  */
 export const LightningPaymentParams = {
-  /** The coin identifier (e.g., 'tlnbtc', 'lnbtc') */
+  /** A lightning coin name. */
   coin: t.string,
-  /** The wallet ID */
+  /** The wallet ID. */
   id: t.string,
 } as const;
 
@@ -17,19 +17,19 @@ export const LightningPaymentParams = {
  * Request body for paying a lightning invoice
  */
 export const LightningPaymentRequestBody = {
-  /** The BOLT #11 encoded lightning invoice to pay */
+  /** The BOLT 11 invoice to pay */
   invoice: t.string,
-  /** The wallet passphrase to decrypt signing keys */
+  /** The wallet passphrase */
   passphrase: t.string,
-  /** Amount to pay in millisatoshis (required for zero-amount invoices) */
+  /** The amount to pay in millisatoshis. This is required if you're paying a zero value invoice. */
   amountMsat: optional(BigIntFromString),
-  /** Maximum fee limit in millisatoshis */
+  /** Optional maximum fee to pay in millisatoshis */
   feeLimitMsat: optional(BigIntFromString),
-  /** Fee limit as a ratio of payment amount (e.g., 0.01 for 1%) */
+  /** Optional maximum fee expressed as a ratio of the payment amount */
   feeLimitRatio: optional(t.number),
-  /** Custom sequence ID for tracking this payment */
+  /** Optional sequence ID for the payment transfer */
   sequenceId: optional(t.string),
-  /** Comment or memo for this payment (not sent to recipient) */
+  /** Optional comment for the payment transfer */
   comment: optional(t.string),
 } as const;
 
@@ -191,9 +191,9 @@ const PendingApproval = t.intersection([
  */
 export const LightningPaymentResponse = t.intersection([
   t.type({
-    /** Payment request ID for tracking */
+    /** Transaction request identifier */
     txRequestId: t.string,
-    /** Status of the payment request ('delivered', 'pendingApproval', etc.) */
+    /** Status of the txRequestState ('delivered', 'pendingApproval', etc.) */
     txRequestState: TxRequestState,
   }),
   t.partial({
@@ -215,20 +215,11 @@ export const LightningPaymentResponseObj = {
 } as const;
 
 /**
- * Pay a Lightning Invoice
+ * Pay a Lightning Network invoice from the given wallet.
  *
- * Submits a payment for a BOLT #11 lightning invoice. The payment is signed with the user's
- * authentication key and submitted to BitGo. If the payment requires additional approvals
- * (based on wallet policy), returns pending approval details. Otherwise, the payment is
- * immediately submitted to the Lightning Network.
- *
- * Fee limits can be controlled using either `feeLimitMsat` (absolute limit) or `feeLimitRatio`
- * (as a ratio of payment amount). If both are provided, the more restrictive limit applies.
- *
- * For zero-amount invoices (invoices without a specified amount), the `amountMsat` field is required.
  *
  * @operationId express.v2.wallet.lightningPayment
- * @tag express
+ * @tag Express
  */
 export const PostLightningWalletPayment = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/lightning/payment',
