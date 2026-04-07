@@ -3742,12 +3742,15 @@ export enum UnderlyingAsset {
   // Tempo mainnet tokens
   'tempo:pathusd' = 'tempo:pathusd',
   'tempo:usdc' = 'tempo:usdc',
+  'tempo:usd1' = 'tempo:usd1',
 
   // Tempo testnet tokens
   'ttempo:pathusd' = 'ttempo:pathusd',
   'ttempo:alphausd' = 'ttempo:alphausd',
   'ttempo:betausd' = 'ttempo:betausd',
   'ttempo:thetausd' = 'ttempo:thetausd',
+  'ttempo:usd1' = 'ttempo:usd1',
+  'ttempo:stgusd1' = 'ttempo:stgusd1',
 
   // fiats
   AED = 'aed',

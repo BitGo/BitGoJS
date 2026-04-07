@@ -4331,6 +4331,7 @@ export const ofcCoins = [
     UnderlyingAsset['tempo:pathusd']
   ),
   ofcTempoToken('c9a90ee0-6546-413c-9cbe-94fdc14985c5', 'ofctempo:usdc', 'USDC', 6, UnderlyingAsset['tempo:usdc']),
+  ofcTempoToken('05ac1283-5e72-4cba-8b0f-38cbd23a25c6', 'ofctempo:usd1', 'USD1', 18, UnderlyingAsset['tempo:usd1']),
   // Tempo testnet OFC tokens
   tofcTempoToken(
     '7912e76e-5a5c-4f1b-86e9-1fc2a51f5a98',
@@ -4359,6 +4360,20 @@ export const ofcCoins = [
     'Testnet ThetaUSD',
     6,
     UnderlyingAsset['ttempo:thetausd']
+  ),
+  tofcTempoToken(
+    '9540a6ee-9c93-473f-a00d-3c7f5e3c21c6',
+    'ofcttempo:usd1',
+    'Test USD1 Token',
+    18,
+    UnderlyingAsset['ttempo:usd1']
+  ),
+  tofcTempoToken(
+    'a0daa4de-04fa-4b7f-9572-5084754879c2',
+    'ofcttempo:stgusd1',
+    'Test USD1 Token',
+    18,
+    UnderlyingAsset['ttempo:stgusd1']
   ),
   ofc('6f0246cf-b792-483a-b720-9755b158c614', 'ofcunieth', 'Unichain', 18, UnderlyingAsset.UNIETH, CoinKind.CRYPTO),
   tofc(
