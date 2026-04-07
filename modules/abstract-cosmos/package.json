@@ -49,7 +49,7 @@
     "@cosmjs/stargate": "^0.29.5",
     "bignumber.js": "^9.1.1",
     "cosmjs-types": "^0.6.1",
-    "lodash": "^4.17.21",
+    "lodash": "^4.18.0",
     "protobufjs": "^7.4.0",
     "superagent": "^9.0.1"
   },

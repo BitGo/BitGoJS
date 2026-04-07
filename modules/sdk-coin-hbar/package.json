@@ -47,7 +47,7 @@
     "@hashgraph/sdk": "2.72.0",
     "@stablelib/sha384": "^1.0.0",
     "bignumber.js": "^9.0.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.18.0",
     "long": "^5.2.3",
     "protobufjs": "7.2.5",
     "stellar-sdk": "^10.0.1",
