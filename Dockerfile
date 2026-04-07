@@ -196,6 +196,7 @@ cd /var/modules/sdk-coin-icp && yarn link && \
 cd /var/modules/sdk-coin-initia && yarn link && \
 cd /var/modules/sdk-coin-injective && yarn link && \
 cd /var/modules/sdk-coin-islm && yarn link && \
+cd /var/modules/sdk-coin-kas && yarn link && \
 cd /var/modules/sdk-coin-mon && yarn link && \
 cd /var/modules/sdk-coin-near && yarn link && \
 cd /var/modules/sdk-coin-oas && yarn link && \
@@ -299,6 +300,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-initia && \
     yarn link @bitgo/sdk-coin-injective && \
     yarn link @bitgo/sdk-coin-islm && \
+    yarn link @bitgo/sdk-coin-kas && \
     yarn link @bitgo/sdk-coin-mon && \
     yarn link @bitgo/sdk-coin-near && \
     yarn link @bitgo/sdk-coin-oas && \
