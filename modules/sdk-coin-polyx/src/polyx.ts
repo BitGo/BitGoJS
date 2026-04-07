@@ -346,6 +346,14 @@ export class Polyx extends SubstrateCoin {
   }
 
   /**
+   * Polyx requires a wallet initialization transaction (RegisterDidWithCDD)
+   * to create an on-chain identity before the address can receive funds.
+   */
+  requiresWalletInitializationTransaction(): boolean {
+    return true;
+  }
+
+  /**
    * Gets config for how token enablements work for this coin
    * @returns
    *    requiresTokenEnablement: True if tokens need to be enabled for this coin
