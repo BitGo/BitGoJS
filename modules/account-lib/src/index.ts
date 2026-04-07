@@ -95,6 +95,9 @@ export { Injective };
 import * as Islm from '@bitgo/sdk-coin-islm';
 export { Islm };
 
+import * as Kas from '@bitgo/sdk-coin-kas';
+export { Kas };
+
 import * as Zeta from '@bitgo/sdk-coin-zeta';
 export { Zeta };
 
@@ -299,6 +302,8 @@ const coinBuilderMap = {
   ttempo: Tempo.Tip20TransactionBuilder,
   icp: Icp.TransactionBuilder,
   ticp: Icp.TransactionBuilder,
+  kas: Kas.TransactionBuilderFactory,
+  tkas: Kas.TransactionBuilderFactory,
   baby: Baby.TransactionBuilder,
   tbaby: Baby.TransactionBuilder,
   cronos: Cronos.TransactionBuilder,

@@ -59,6 +59,7 @@
     "@bitgo/sdk-coin-initia": "^2.6.0",
     "@bitgo/sdk-coin-injective": "^3.7.0",
     "@bitgo/sdk-coin-islm": "^2.6.0",
+    "@bitgo/sdk-coin-kas": "^1.0.0",
     "@bitgo/sdk-coin-mon": "^1.8.0",
     "@bitgo/sdk-coin-near": "^2.17.0",
     "@bitgo/sdk-coin-oas": "^2.7.0",

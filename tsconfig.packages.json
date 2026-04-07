@@ -167,6 +167,9 @@
       "path": "./modules/sdk-coin-islm"
     },
     {
+      "path": "./modules/sdk-coin-kas"
+    },
+    {
       "path": "./modules/sdk-coin-lnbtc"
     },
     {
