@@ -11,16 +11,10 @@
   "exclude": ["node_modules"],
   "references": [
     {
-      "path": "../sdk-api"
-    },
-    {
       "path": "../sdk-core"
     },
     {
       "path": "../statics"
-    },
-    {
-      "path": "../sdk-test"
     }
   ]
 }

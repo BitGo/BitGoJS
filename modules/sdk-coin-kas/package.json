@@ -39,10 +39,6 @@
       ".ts"
     ]
   },
-  "devDependencies": {
-    "@bitgo/sdk-api": "^1.76.1",
-    "@bitgo/sdk-test": "^9.1.35"
-  },
   "dependencies": {
     "@bitgo/sdk-core": "^36.37.0",
     "@bitgo/secp256k1": "^1.11.0",

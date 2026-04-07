@@ -201,7 +201,6 @@ export interface StacksNetwork extends AccountNetwork {
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface OfcNetwork extends BaseNetwork {}
 
-
 abstract class Mainnet extends BaseNetwork {
   type = NetworkType.MAINNET;
 }
@@ -2001,7 +2000,6 @@ class KaiaTestnet extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
-
 
 class Irys extends Mainnet implements EthereumNetwork {
   name = 'Irys';
