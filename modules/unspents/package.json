@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@bitgo/utxo-lib": "^11.22.0",
-    "lodash": "~4.17.21",
+    "lodash": "~4.18.1",
     "tcomb": "~3.2.29",
     "varuint-bitcoin": "^1.0.4"
   },
