@@ -625,7 +625,7 @@ export async function handleV2OFCSignPayload(
 
   const walletPassphrase = bodyWalletPassphrase || getWalletPwFromEnv(wallet.id());
   const tradingAccount = wallet.toTradingAccount();
-  const stringifiedPayload = JSON.stringify(payload);
+  const stringifiedPayload = typeof payload === 'string' ? payload : JSON.stringify(payload);
   const signature = await tradingAccount.signPayload({
     payload: stringifiedPayload,
     walletPassphrase,
