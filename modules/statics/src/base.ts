@@ -140,6 +140,7 @@ export enum CoinFamily {
   ARCUSDC = 'arcusdc', // ARC network
   TEMPO = 'tempo', // Tempo Network
   UNIETH = 'unieth', // Unichain
+  BOBAETH = 'bobaeth', // BOBA Network
 }
 
 /**
@@ -2137,6 +2138,7 @@ export enum UnderlyingAsset {
   ZMT = 'zmt',
   ZOOM = 'zoom',
   ZRO = 'zro',
+  BOBAETH = 'bobaeth',
   'ZRO-0x320' = 'zro-0x320',
   'ZRO-0xFCF' = 'zro-0xfcf',
   'ZRO-0xE5C' = 'zro-0xe5c',

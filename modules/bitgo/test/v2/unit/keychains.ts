@@ -115,6 +115,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.ARCUSDC &&
         n.asset !== UnderlyingAsset.ZKSYNCERA &&
         n.asset !== UnderlyingAsset.HYPERLIQUID &&
+        n.asset !== UnderlyingAsset.BOBAETH &&
         coinFamilyValues.includes(n.name)
     );
 
