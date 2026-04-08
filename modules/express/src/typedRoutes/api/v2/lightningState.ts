@@ -9,11 +9,12 @@ import { WalletState } from '../../../lightning/codecs';
 export const LightningStateParams = {
   /** A lightning coin name (e.g., lnbtc or tlnbtc) */
   coin: t.string,
-  /** The ID of the lightning self-custody wallet */
+  /** The wallet ID. */
   walletId: t.string,
 } as const;
 
 export const LightningStateResponse200 = t.type({
+  /** NON_EXISTING LOCKED UNLOCKED RPC_ACTIVE SERVER_ACTIVE WAITING_TO_START */
   state: WalletState,
 });
 
@@ -28,12 +29,10 @@ export const LightningStateResponse = {
 } as const;
 
 /**
- * Lightning - Get node state
- *
  * This is only used for self-custody lightning. Get the current state of the lightning node.
  *
  * @operationId express.lightning.getState
- * @tag express
+ * @tag Express
  */
 export const GetLightningState = httpRoute({
   method: 'GET',
