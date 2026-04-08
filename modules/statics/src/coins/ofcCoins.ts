@@ -346,6 +346,15 @@ export const ofcCoins = [
     UnderlyingAsset.HEMIETH,
     CoinKind.CRYPTO
   ),
+  ofc('ae33f818-4fd4-464b-ba1f-b9d0a4c4e1bb', 'ofcinketh', 'Ink Ethereum', 18, UnderlyingAsset.INKETH, CoinKind.CRYPTO),
+  tofc(
+    '3ff193a0-dca0-4d78-b694-21e33c796225',
+    'ofctinketh',
+    'Ink Ethereum Testnet',
+    18,
+    UnderlyingAsset.INKETH,
+    CoinKind.CRYPTO
+  ),
   ofc(
     'f43afacc-0db3-4a8a-a987-ff9d93e08cb4',
     'ofcjovayeth',

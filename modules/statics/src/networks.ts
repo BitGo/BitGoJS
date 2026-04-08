@@ -2506,6 +2506,24 @@ class Dogeos extends Mainnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '1234567'; //TODO: WIN-8082 => add when mainnet details available
 }
 
+class InkEth extends Mainnet implements EthereumNetwork {
+  name = 'Ink Ethereum';
+  family = CoinFamily.INKETH;
+  explorerUrl = 'https://explorer.inkonchain.com/tx/';
+  accountExplorerUrl = 'https://explorer.inkonchain.com/address/';
+  chainId = 57073;
+  nativeCoinOperationHashPrefix = '57073';
+}
+
+class InkEthTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Ink Ethereum';
+  family = CoinFamily.INKETH;
+  explorerUrl = 'https://explorer-sepolia.inkonchain.com/tx/';
+  accountExplorerUrl = 'https://explorer-sepolia.inkonchain.com/address/';
+  chainId = 763373;
+  nativeCoinOperationHashPrefix = '763373';
+}
+
 class DogeosTestnet extends Testnet implements EthereumNetwork {
   name = 'Doge OS Testnet';
   family = CoinFamily.DOGEOS;
@@ -2694,6 +2712,7 @@ export const Networks = {
     hedera: Object.freeze(new Hedera()),
     hederaEVM: Object.freeze(new HederaEVM()),
     hemieth: Object.freeze(new HemiEth()),
+    inketh: Object.freeze(new InkEth()),
     hppeth: Object.freeze(new Hppeth()),
     icp: Object.freeze(new Icp()),
     ip: Object.freeze(new IP()),
@@ -2819,6 +2838,7 @@ export const Networks = {
     hppeth: Object.freeze(new HppethTestnet()),
     hederaEVM: Object.freeze(new HederaEVMTestnet()),
     hemieth: Object.freeze(new HemiEthTestnet()),
+    inketh: Object.freeze(new InkEthTestnet()),
     icp: Object.freeze(new IcpTestnet()),
     ip: Object.freeze(new IPTestnet()),
     initia: Object.freeze(new InitiaTestnet()),

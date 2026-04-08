@@ -305,6 +305,9 @@ const mainnetBase: EnvironmentTemplate = {
     hemieth: {
       baseUrl: 'https://explorer.hemi.xyz/api',
     },
+    inketh: {
+      baseUrl: 'https://explorer.inkonchain.com/api',
+    },
     fluenteth: {
       baseUrl: 'https://fluentscan.xyz/api/',
     },
@@ -512,6 +515,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     hemieth: {
       baseUrl: 'https://testnet.explorer.hemi.xyz/api',
+    },
+    inketh: {
+      baseUrl: 'https://explorer-sepolia.inkonchain.com/api',
     },
     fluenteth: {
       baseUrl: 'https://testnet.fluentscan.xyz/api/',
