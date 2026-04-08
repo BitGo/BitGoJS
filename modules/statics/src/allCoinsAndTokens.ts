@@ -3207,7 +3207,7 @@ export const allCoinsAndTokens = [
     'Testnet Canton Coin',
     Networks.test.canton,
     UnderlyingAsset.CANTON,
-    CANTON_FEATURES,
+    [...CANTON_FEATURES, CoinFeature.UNSPENT_MODEL],
     KeyCurve.Ed25519
   ),
   gasTankAccount(
