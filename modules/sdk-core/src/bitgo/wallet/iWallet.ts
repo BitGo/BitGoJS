@@ -546,12 +546,12 @@ export interface GetAccountResourcesOptions {
 
 export interface AccountResourceInfo {
   address: string;
-  free_bandwidth_available: number;
-  free_bandwidth_used: number;
-  staked_bandwidth_available: number;
-  staked_bandwidth_used: number;
-  energy_available: number;
-  energy_used: number;
+  freeBandwidthAvailable: number;
+  freeBandwidthUsed: number;
+  stakedBandwidthAvailable: number;
+  stakedBandwidthUsed: number;
+  energyAvailable: number;
+  energyUsed: number;
   resourceDeficitForAssetTransfer?: {
     bandwidthDeficit: number;
     bandwidthSunRequired: string;
