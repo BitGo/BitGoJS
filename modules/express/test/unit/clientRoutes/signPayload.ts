@@ -87,6 +87,32 @@ describe('Sign an arbitrary payload with trading account key', function () {
       throw new Error(`Response did not match expected codec`);
     });
   });
+  it('should not double-stringify when decoded payload is already a string', async function () {
+    // When the io-ts Json codec matches a string input (left-to-right union resolution),
+    // decoded.payload is the original string. The handler must not JSON.stringify it again.
+    const expectedResponse = {
+      payload: stringifiedPayload,
+      signature,
+    };
+    const req = {
+      bitgo: bitGoStub,
+      body: {
+        payload: stringifiedPayload,
+        walletId,
+      },
+      decoded: {
+        walletId,
+        payload: stringifiedPayload,
+      },
+      query: {},
+    } as unknown as ExpressApiRouteRequest<'express.ofc.signPayload', 'post'>;
+    const result = await handleV2OFCSignPayload(req).should.be.resolvedWith(expectedResponse);
+    result.payload.should.equal(stringifiedPayload);
+    result.payload.should.not.startWith('"');
+    decodeOrElse('OfcSignPayloadResponse200', OfcSignPayloadResponse[200], result, (_) => {
+      throw new Error(`Response did not match expected codec`);
+    });
+  });
   it('should decode handler response with OfcSignPayloadResponse codec', async function () {
     const expected = {
       payload: JSON.stringify(payload),
