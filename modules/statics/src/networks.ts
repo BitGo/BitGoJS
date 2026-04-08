@@ -1124,13 +1124,13 @@ class RuneTestNet extends Testnet implements AccountNetwork {
 class Baby extends Mainnet implements AccountNetwork {
   name = 'Babylon';
   family = CoinFamily.BABY;
-  explorerUrl = 'https://babylon.explorers.guru/transaction/';
+  explorerUrl = 'https://www.mintscan.io/babylon/tx/';
 }
 
 class BabyTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Babylon';
   family = CoinFamily.BABY;
-  explorerUrl = 'https://testnet.babylon.explorers.guru/transaction/';
+  explorerUrl = 'https://www.mintscan.io/babylon-testnet/tx/';
 }
 
 class Mantra extends Mainnet implements CosmosNetwork {
