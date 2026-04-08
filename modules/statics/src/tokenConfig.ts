@@ -42,7 +42,7 @@ import {
 } from './account';
 import { CoinFamily, CoinKind, BaseCoin, CoinFeature } from './base';
 import { coins } from './coins';
-import { DynamicNetworkOptions, EthereumNetwork, Networks, NetworkType } from './networks';
+import { EthereumNetwork, Networks, NetworkType } from './networks';
 import { OfcCoin } from './ofc';
 
 export interface BaseTokenConfig {
@@ -288,12 +288,6 @@ export interface AmsTokenConfig {
   assetName?: string;
   policyId?: string;
 }
-
-export interface AmsNetworkConfig extends DynamicNetworkOptions {
-  features: CoinFeature[];
-}
-
-export type AmsNetworkConfigMap = Record<string, AmsNetworkConfig>;
 
 export interface TrimmedAmsNetworkConfig {
   name: string;

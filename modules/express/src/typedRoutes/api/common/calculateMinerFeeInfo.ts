@@ -27,16 +27,22 @@ export const CalculateMinerFeeInfoResponse = t.type({
 });
 
 /**
- * Calculate miner fee info (v1)
+ * Calculate miner fee info
  *
  * Calculates the estimated size and fee for a transaction based on the number and types of inputs and outputs.
  * This is useful for estimating the fee before creating a transaction.
  *
- * @operationId express.v1.calculateminerfeeinfo
+ * The calculation takes into account:
+ * 1. The number and types of inputs (P2SH, P2PKH, P2SH-P2WSH)
+ * 2. The number of outputs
+ * 3. Whether the transaction contains uncompressed public keys
+ * 4. The fee rate (in satoshis per kilobyte)
+ *
+ * @operationId express.calculateminerfeeinfo
  * @tag express
  */
-export const PostV1CalculateMinerFeeInfo = httpRoute({
-  path: '/api/v1/calculateminerfeeinfo',
+export const PostCalculateMinerFeeInfo = httpRoute({
+  path: '/api/v[12]/calculateminerfeeinfo',
   method: 'POST',
   request: httpRequest({
     body: CalculateMinerFeeInfoRequestBody,

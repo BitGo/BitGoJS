@@ -45,7 +45,7 @@
     "@bitgo/sdk-core": "^36.37.0",
     "@bitgo/statics": "^58.32.0",
     "bignumber.js": "^9.1.2",
-    "lodash": "^4.18.0"
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.76.1",

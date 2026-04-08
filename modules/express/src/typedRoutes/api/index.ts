@@ -8,8 +8,7 @@ import { PostLogin } from './common/login';
 import { PostDecrypt } from './common/decrypt';
 import { PostEncrypt } from './common/encrypt';
 import { PostVerifyAddress } from './common/verifyAddress';
-import { PostV1CalculateMinerFeeInfo } from './v1/calculateMinerFeeInfo';
-import { PostV2CalculateMinerFeeInfo } from './v2/calculateMinerFeeInfo';
+import { PostCalculateMinerFeeInfo } from './common/calculateMinerFeeInfo';
 import { PostAcceptShare } from './v1/acceptShare';
 import { PostSimpleCreate } from './v1/simpleCreate';
 import { PutPendingApproval } from './v1/pendingApproval';
@@ -104,11 +103,8 @@ export const ExpressVerifyCoinAddressApiSpec = apiSpec({
 });
 
 export const ExpressCalculateMinerFeeInfoApiSpec = apiSpec({
-  'express.v1.calculateminerfeeinfo': {
-    post: PostV1CalculateMinerFeeInfo,
-  },
   'express.calculateminerfeeinfo': {
-    post: PostV2CalculateMinerFeeInfo,
+    post: PostCalculateMinerFeeInfo,
   },
 });
 

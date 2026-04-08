@@ -46,7 +46,7 @@
     "@bitgo/wasm-ton": "^1.1.1",
     "bignumber.js": "^9.0.0",
     "bn.js": "^5.2.1",
-    "lodash": "^4.18.0",
+    "lodash": "^4.17.21",
     "tonweb": "^0.0.62",
     "tweetnacl": "^1.0.3"
   },

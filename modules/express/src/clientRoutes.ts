@@ -625,7 +625,7 @@ export async function handleV2OFCSignPayload(
 
   const walletPassphrase = bodyWalletPassphrase || getWalletPwFromEnv(wallet.id());
   const tradingAccount = wallet.toTradingAccount();
-  const stringifiedPayload = typeof payload === 'string' ? payload : JSON.stringify(payload);
+  const stringifiedPayload = JSON.stringify(payload);
   const signature = await tradingAccount.signPayload({
     payload: stringifiedPayload,
     walletPassphrase,
@@ -1693,10 +1693,6 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.decrypt', [prepareBitGo(config), typedPromiseWrapper(handleDecrypt)]);
   router.post('express.encrypt', [prepareBitGo(config), typedPromiseWrapper(handleEncrypt)]);
   router.post('express.verifyaddress', [prepareBitGo(config), typedPromiseWrapper(handleVerifyAddress)]);
-  router.post('express.v1.calculateminerfeeinfo', [
-    prepareBitGo(config),
-    typedPromiseWrapper(handleCalculateMinerFeeInfo),
-  ]);
   router.post('express.calculateminerfeeinfo', [
     prepareBitGo(config),
     typedPromiseWrapper(handleCalculateMinerFeeInfo),

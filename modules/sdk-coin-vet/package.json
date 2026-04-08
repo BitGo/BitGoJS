@@ -52,7 +52,7 @@
     "bignumber.js": "^9.1.1",
     "ethereumjs-abi": "^0.6.5",
     "ethereumjs-util": "7.1.5",
-    "lodash": "^4.18.0",
+    "lodash": "^4.17.21",
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {

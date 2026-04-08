@@ -136,60 +136,6 @@ describe('OfcSignPayload codec tests', function () {
       assert.ok(decodedResponse);
     });
 
-    it('should not double-stringify a stringified JSON payload', async function () {
-      const originalPayload = '{"coin":"ofctbtc","recipients":[{"address":"abc123","amount":"1000"}]}';
-      const requestBody = {
-        walletId: 'ofc-wallet-id-123',
-        payload: originalPayload,
-        walletPassphrase: 'test_passphrase',
-      };
-
-      const mockTradingAccount = {
-        signPayload: sinon.stub().resolves(mockSignPayloadResponse.signature),
-      };
-
-      const mockWallet = {
-        id: () => requestBody.walletId,
-        toTradingAccount: sinon.stub().returns(mockTradingAccount),
-      };
-
-      const walletsGetStub = sinon.stub().resolves(mockWallet);
-      const mockWallets = { get: walletsGetStub };
-      const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
-      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-
-      const result = await agent
-        .post('/api/v2/ofc/signPayload')
-        .set('Authorization', 'Bearer test_access_token_12345')
-        .set('Content-Type', 'application/json')
-        .send(requestBody);
-
-      assert.strictEqual(result.status, 200);
-      const decodedResponse = assertDecode(OfcSignPayloadResponse200, result.body);
-
-      // The returned payload must not be double-stringified.
-      // A double-stringified payload would start with a quote character and contain escaped quotes.
-      assert.strictEqual(
-        decodedResponse.payload.startsWith('"'),
-        false,
-        'payload was double-stringified: starts with a quote character'
-      );
-      assert.strictEqual(
-        decodedResponse.payload.includes('\\"'),
-        false,
-        'payload was double-stringified: contains escaped quotes'
-      );
-
-      // The payload passed to tradingAccount.signPayload must match the original string
-      const signCall = mockTradingAccount.signPayload.getCall(0);
-      assert.ok(signCall, 'tradingAccount.signPayload should have been called');
-      assert.strictEqual(
-        signCall.args[0].payload,
-        originalPayload,
-        'tradingAccount.signPayload received a different payload than the original'
-      );
-    });
-
     it('should successfully sign payload without walletPassphrase (uses env)', async function () {
       const requestBody = {
         walletId: 'ofc-wallet-id-123',

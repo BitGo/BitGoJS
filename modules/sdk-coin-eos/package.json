@@ -46,7 +46,7 @@
     "bignumber.js": "^9.0.2",
     "eosjs": "^21.0.2",
     "eosjs-ecc": "^4.0.4",
-    "lodash": "^4.18.0",
+    "lodash": "^4.17.14",
     "superagent": "^9.0.1"
   },
   "devDependencies": {

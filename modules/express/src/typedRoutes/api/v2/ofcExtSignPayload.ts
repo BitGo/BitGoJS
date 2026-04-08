@@ -17,9 +17,14 @@ import { OfcSignPayloadBody, OfcSignPayloadResponse } from './ofcSignPayload';
  * - Encrypted private keys must be available in the file system
  * - Wallet passphrase must be provided via request body or environment variable
  *
+ * **Flow**:
+ * 1. Reads encrypted private key from filesystem
+ * 2. Decrypts private key using wallet passphrase
+ * 3. Signs the payload with the decrypted key
+ * 4. Returns signed payload and hex-encoded signature
  *
  * @operationId express.v2.ofc.extSignPayload
- * @tag Express
+ * @tag express
  */
 export const PostOfcExtSignPayload = httpRoute({
   path: '/api/v2/ofc/signPayload',
