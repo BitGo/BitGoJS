@@ -338,12 +338,28 @@ export const ofcCoins = [
     UnderlyingAsset.HEMIETH,
     CoinKind.CRYPTO
   ),
+  ofc(
+    '7a3c5dee-ea51-4b1a-8871-b7283d1dc516',
+    'ofcprividium',
+    'Prividium',
+    18,
+    UnderlyingAsset.PRIVIDIUM,
+    CoinKind.CRYPTO
+  ),
   tofc(
     'bc005b8a-dfb5-42db-92ad-92db5cb5b7d2',
     'ofcthemieth',
     'Hemi Ethereum Testnet',
     18,
     UnderlyingAsset.HEMIETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    '7d18cdc5-a7da-4c76-8ce0-f80c391f80b3',
+    'ofctprividium',
+    'Prividium Testnet',
+    18,
+    UnderlyingAsset.PRIVIDIUM,
     CoinKind.CRYPTO
   ),
   ofc(
