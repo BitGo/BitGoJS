@@ -335,6 +335,7 @@ export interface WalletCoinSpecific {
   walletVersion?: number;
   hashAlgorithm?: string;
   pendingEcdsaTssInitialization?: boolean;
+  pendingChainInitialization?: boolean;
   features?: string[];
   freezeDepositsFromShielded?: boolean;
   /**

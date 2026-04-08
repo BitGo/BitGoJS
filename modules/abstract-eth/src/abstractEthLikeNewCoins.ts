@@ -2687,6 +2687,11 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @returns {Promise<BuildOptions>}
    */
   async getExtraPrebuildParams(buildParams: BuildOptions): Promise<BuildOptions> {
+    if (buildParams.wallet?.coinSpecific()?.pendingChainInitialization) {
+      throw new Error(
+        'Wallet contract is not yet deployed. Please wait for the wallet initialization transaction to be confirmed before sending transactions.'
+      );
+    }
     if (
       !_.isUndefined(buildParams.hop) &&
       buildParams.hop &&

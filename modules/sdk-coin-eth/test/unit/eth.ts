@@ -2424,6 +2424,62 @@ describe('ETH:', function () {
     });
   });
 
+  describe('getExtraPrebuildParams', function () {
+    let ethCoin: Teth;
+
+    before(function () {
+      ethCoin = bitgo.coin('teth') as Teth;
+    });
+
+    it('should throw if wallet pendingChainInitialization is true', async function () {
+      const walletData = {
+        id: '598f606cd8fc24710d2ebadb1d9459bb',
+        coin: 'teth',
+        coinSpecific: {
+          baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+          pendingChainInitialization: true,
+        },
+        keys: [],
+      };
+      const wallet = new Wallet(bitgo, ethCoin, walletData);
+      await assert.rejects(
+        ethCoin.getExtraPrebuildParams({ wallet }),
+        { message: 'Wallet contract is not yet deployed. Please wait for the wallet initialization transaction to be confirmed before sending transactions.' }
+      );
+    });
+
+    it('should not throw if wallet pendingChainInitialization is false', async function () {
+      const walletData = {
+        id: '598f606cd8fc24710d2ebadb1d9459bb',
+        coin: 'teth',
+        coinSpecific: {
+          baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+          pendingChainInitialization: false,
+        },
+        keys: [],
+      };
+      const wallet = new Wallet(bitgo, ethCoin, walletData);
+      const result = await ethCoin.getExtraPrebuildParams({ wallet });
+      result.should.deepEqual({});
+    });
+
+    it('should not throw if wallet coinSpecific is missing', async function () {
+      const walletData = {
+        id: '598f606cd8fc24710d2ebadb1d9459bb',
+        coin: 'teth',
+        keys: [],
+      };
+      const wallet = new Wallet(bitgo, ethCoin, walletData);
+      const result = await ethCoin.getExtraPrebuildParams({ wallet });
+      result.should.deepEqual({});
+    });
+
+    it('should not throw if wallet is not provided', async function () {
+      const result = await ethCoin.getExtraPrebuildParams({});
+      result.should.deepEqual({});
+    });
+  });
+
   describe('Audit Key', () => {
     let coin: Hteth;
     before(() => {
