@@ -2346,6 +2346,42 @@ export const allCoinsAndTokens = [
     ]
   ),
   account(
+    'fed6d895-61b1-4859-ae9b-2cec125796c2',
+    'inketh',
+    'Ink Ethereum',
+    Networks.main.inketh,
+    18,
+    UnderlyingAsset.INKETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    'c868af85-badf-4ac5-84f3-a6f11d6eb33a',
+    'tinketh',
+    'Testnet Ink Ethereum',
+    Networks.test.inketh,
+    18,
+    UnderlyingAsset.INKETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
     '68d22683-a8f2-47b3-8446-92e02a1963ae',
     'hemieth',
     'Hemi Ethereum',
