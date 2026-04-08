@@ -44,17 +44,20 @@ export class Dsg {
       throw Error('Session not intialized');
     }
     const round = decode(this.dsgSession.toBytes()).round;
-    switch (round) {
-      case 'WaitMsg1':
+    switch (true) {
+      case round === 'WaitMsg1':
         this.dsgState = DsgState.Round1;
         break;
-      case 'WaitMsg2':
+      case round === 'WaitMsg2':
         this.dsgState = DsgState.Round2;
         break;
-      case 'WaitMsg3':
+      case round === 'WaitMsg3':
         this.dsgState = DsgState.Round3;
         break;
-      case 'Ended':
+      case typeof round === 'object' && 'WaitMsg4' in round:
+        this.dsgState = DsgState.Round4;
+        break;
+      case round === 'Ended':
         this.dsgState = DsgState.Complete;
         break;
       default:
