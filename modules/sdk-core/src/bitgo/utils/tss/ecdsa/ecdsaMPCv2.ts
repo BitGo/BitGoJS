@@ -32,6 +32,7 @@ import {
   verifyBitGoMessagesAndSignaturesRoundOne,
   verifyBitGoMessagesAndSignaturesRoundTwo,
 } from '../../../tss/ecdsa/ecdsaMPCv2';
+import { InvalidTransactionError } from '../../../errors';
 import { KeyCombined } from '../../../tss/ecdsa/types';
 import { generateGPGKeyPair } from '../../opengpgUtils';
 import {
@@ -736,6 +737,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       const unsignedTx =
         txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
 
+      if (!params.txParams?.recipients?.length) {
+        throw new InvalidTransactionError(
+          'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
+        );
+      }
+
       // For ICP transactions, the HSM signs the serializedTxHex, while the user signs the signableHex separately.
       // Verification cannot be performed directly on the signableHex alone. However, we can parse the serializedTxHex
       // to regenerate the signableHex and compare it against the provided value for verification.
@@ -743,14 +750,14 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       if (this.baseCoin.getConfig().family === 'icp') {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
-          txParams: params.txParams || { recipients: [] },
+          txParams: params.txParams,
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
         });
       } else {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.signableHex },
-          txParams: params.txParams || { recipients: [] },
+          txParams: params.txParams,
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
         });

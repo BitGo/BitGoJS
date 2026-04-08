@@ -747,6 +747,7 @@ describe('TSS Ecdsa Utils:', async function () {
           backupNShare: backupKeyShare.nShares[1],
         }),
         reqId,
+        txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
       });
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
       const userGpgActual = sendShareSpy.getCalls()[0].args[10] as string;
@@ -764,10 +765,44 @@ describe('TSS Ecdsa Utils:', async function () {
           backupNShare: backupKeyShare.nShares[1],
         }),
         reqId,
+        txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
       });
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
       const userGpgActual = sendShareSpy.getCalls()[0].args[10] as string;
       userGpgActual.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
+    });
+
+    it('signTxRequest should fail when txParams is missing', async function () {
+      await tssUtils
+        .signTxRequest({
+          txRequest,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          reqId,
+        })
+        .should.be.rejectedWith(
+          'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
+        );
+    });
+
+    it('signTxRequest should fail when txParams has empty recipients', async function () {
+      await tssUtils
+        .signTxRequest({
+          txRequest,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          reqId,
+          txParams: { recipients: [] },
+        })
+        .should.be.rejectedWith(
+          'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
+        );
     });
 
     it('signTxRequest should fail with wrong recipient', async function () {
