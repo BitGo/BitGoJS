@@ -48,11 +48,7 @@ describe('Auth', () => {
 
       const scope = nock(url).get('/').reply(200);
 
-      await bitgo
-        .get(url)
-        .should.be.rejectedWith(
-          'server response outside response validity time window, possible man-in-the-middle-attack'
-        );
+      await bitgo.get(url).should.be.rejectedWith('server response outside response validity time window');
       verifyResponseStub.restore();
       scope.done();
     });

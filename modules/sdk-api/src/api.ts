@@ -235,7 +235,7 @@ function assertVerificationResponse(
       bitgoToken: partialBitgoToken,
     };
     debug('Invalid response HMAC: %O', errorDetails);
-    throw new ApiResponseError('invalid response HMAC, possible man-in-the-middle-attack', 511, errorDetails);
+    throw new ApiResponseError('invalid response HMAC', 511, errorDetails);
   }
 
   if (bitgo.getAuthVersion() === 3 && !verificationResponse.isInResponseValidityWindow) {
@@ -244,11 +244,7 @@ function assertVerificationResponse(
       verificationTime: verificationResponse.verificationTime,
     };
     debug('Server response outside response validity time window: %O', errorDetails);
-    throw new ApiResponseError(
-      'server response outside response validity time window, possible man-in-the-middle-attack',
-      511,
-      errorDetails
-    );
+    throw new ApiResponseError('server response outside response validity time window', 511, errorDetails);
   }
 }
 
