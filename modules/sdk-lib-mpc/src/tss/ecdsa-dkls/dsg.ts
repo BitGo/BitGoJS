@@ -88,8 +88,9 @@ export class Dsg {
   /**
    * Sets the DSG session from a base64 string.
    * @param {string} session - base64 string of the DSG session
+   * @param {DsgState} [expectedRound] - if provided, the session's round must match this value
    */
-  async setSession(session: string): Promise<void> {
+  async setSession(session: string, expectedRound?: DsgState): Promise<void> {
     this.dsgSession = undefined;
     if (!this.dklsWasm) {
       await this.loadDklsWasm();
@@ -111,6 +112,9 @@ export class Dsg {
         break;
       default:
         throw Error(`Invalid State: ${round}`);
+    }
+    if (expectedRound !== undefined && this.dsgState !== expectedRound) {
+      throw Error(`Session round mismatch: expected ${DsgState[expectedRound]}, got ${DsgState[this.dsgState]}`);
     }
     this.dsgSessionBytes = sessionBytes;
   }

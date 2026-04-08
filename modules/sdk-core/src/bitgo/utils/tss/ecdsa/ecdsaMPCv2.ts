@@ -1120,7 +1120,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const userSignerBroadcastMsg1 = await userSigner.init();
     const signatureShareRound1 = await getSignatureShareRoundOne(userSignerBroadcastMsg1, userGpgKey);
     const session = userSigner.getSession();
-    const encryptedRound1Session = this.bitgo.encrypt({ input: session, password: walletPassphrase, adata });
+    const sessionAdata = `${adata}:${DklsTypes.DsgState[DklsTypes.DsgState.Round1]}`;
+    const encryptedRound1Session = this.bitgo.encrypt({
+      input: session,
+      password: walletPassphrase,
+      adata: sessionAdata,
+    });
 
     const userGpgPubKey = userGpgKey.publicKey;
     const encryptedUserGpgPrvKey = this.bitgo.encrypt({
@@ -1170,10 +1175,11 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
 
     const round1Session = this.bitgo.decrypt({ input: encryptedRound1Session, password: walletPassphrase });
 
-    this.validateAdata(adata, encryptedRound1Session);
+    const round1SessionAdata = `${adata}:${DklsTypes.DsgState[DklsTypes.DsgState.Round1]}`;
+    this.validateAdata(round1SessionAdata, encryptedRound1Session);
     const userKeyShare = Buffer.from(prv, 'base64');
     const userSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
-    await userSigner.setSession(round1Session);
+    await userSigner.setSession(round1Session, DklsTypes.DsgState.Round1);
 
     const deserializedMessages = DklsTypes.deserializeMessages(serializedBitGoToUserMessagesRound1);
     const userToBitGoMessagesRound2 = userSigner.handleIncomingMessages({
@@ -1191,7 +1197,13 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       bitgoGpgKey
     );
     const session = userSigner.getSession();
-    const encryptedRound2Session = this.bitgo.encrypt({ input: session, password: walletPassphrase, adata });
+    // After two rounds of handleIncomingMessages, the session is in DsgState.Round3 (WaitMsg3).
+    const round3SessionAdata = `${adata}:${DklsTypes.DsgState[DklsTypes.DsgState.Round3]}`;
+    const encryptedRound2Session = this.bitgo.encrypt({
+      input: session,
+      password: walletPassphrase,
+      adata: round3SessionAdata,
+    });
 
     return {
       signatureShareRound2,
@@ -1242,10 +1254,11 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     });
 
     const round2Session = this.bitgo.decrypt({ input: encryptedRound2Session, password: walletPassphrase });
-    this.validateAdata(adata, encryptedRound2Session);
+    const round3SessionAdata = `${adata}:${DklsTypes.DsgState[DklsTypes.DsgState.Round3]}`;
+    this.validateAdata(round3SessionAdata, encryptedRound2Session);
     const userKeyShare = Buffer.from(prv, 'base64');
     const userSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
-    await userSigner.setSession(round2Session);
+    await userSigner.setSession(round2Session, DklsTypes.DsgState.Round3);
 
     const userToBitGoMessagesRound4 = userSigner.handleIncomingMessages({
       p2pMessages: deserializedBitGoToUserMessagesRound3.p2pMessages,

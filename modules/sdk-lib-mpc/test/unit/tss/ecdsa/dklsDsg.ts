@@ -12,6 +12,7 @@ import {
   DeserializedBroadcastMessage,
   DeserializedDklsSignature,
   DeserializedMessages,
+  DsgState,
   getDecodedReducedKeyShare,
   ReducedKeyShare,
   RetrofitData,
@@ -408,5 +409,47 @@ describe('DKLS Dsg 2x3', function () {
     );
     should.exist(convertedSignature);
     convertedSignature.split(':').length.should.equal(4);
+  });
+
+  it('should succeed when setSession is called with correct expectedRound', async function () {
+    const vector = vectors[0];
+    const party1 = new DklsDsg.Dsg(
+      fs.readFileSync(shareFiles[vector.party1]),
+      vector.party1,
+      vector.derivationPath,
+      crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
+    );
+    await party1.init();
+    const round1Session = party1.getSession();
+
+    const party1Restored = new DklsDsg.Dsg(
+      fs.readFileSync(shareFiles[vector.party1]),
+      vector.party1,
+      vector.derivationPath,
+      crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
+    );
+    await party1Restored.setSession(round1Session, DsgState.Round1);
+  });
+
+  it('should throw when setSession is called with wrong expectedRound', async function () {
+    const vector = vectors[0];
+    const party1 = new DklsDsg.Dsg(
+      fs.readFileSync(shareFiles[vector.party1]),
+      vector.party1,
+      vector.derivationPath,
+      crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
+    );
+    await party1.init();
+    const round1Session = party1.getSession();
+
+    const party1Restored = new DklsDsg.Dsg(
+      fs.readFileSync(shareFiles[vector.party1]),
+      vector.party1,
+      vector.derivationPath,
+      crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
+    );
+    await party1Restored
+      .setSession(round1Session, DsgState.Round2)
+      .should.be.rejectedWith('Session round mismatch: expected Round2, got Round1');
   });
 });
