@@ -3575,6 +3575,28 @@ export const solTokens = [
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   tsolToken(
+    '9949e389-41ac-4205-8018-ba5307492242',
+    'tsol:sofid',
+    'Test SoFiUSD',
+    6,
+    'F7kGWHZi8K7SDvQkX2ETBsCvgUcsMbAfhPUsaSgsHDQW',
+    'F7kGWHZi8K7SDvQkX2ETBsCvgUcsMbAfhPUsaSgsHDQW',
+    UnderlyingAsset['tsol:sofid'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    'b5951520-911a-4913-8373-97079e91b52a',
+    'tsol:stgsofid',
+    'Test SoFiUSD',
+    6,
+    'nPuuSvLC3yy97zNkYYzWtWrCSgdiuztaJfZfSVnBmZo',
+    'nPuuSvLC3yy97zNkYYzWtWrCSgdiuztaJfZfSVnBmZo',
+    UnderlyingAsset['tsol:stgsofid'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
     '6405b589-e0cf-4481-a48f-60f8416e21ca',
     'tsol:stgusd1',
     'Test USD1 Token',
