@@ -2,7 +2,17 @@ import nock = require('nock');
 import should = require('should');
 import fixtures from '../../fixtures/staking/stakingWallet';
 
-import { Enterprise, Environments, StakingRequest, StakingWallet, TssUtils, Wallet } from '@bitgo/sdk-core';
+import {
+  Enterprise,
+  Environments,
+  Keychain,
+  Keychains,
+  StakingRequest,
+  StakingWallet,
+  TssUtils,
+  Wallet,
+  P2pClaimSsvRewardsResponse,
+} from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src';
 import * as sinon from 'sinon';
@@ -187,6 +197,125 @@ describe('Staking Wallet Common', function () {
 
       stakingRequest.should.deepEqual(expected);
       msScope.isDone().should.be.True();
+    });
+  });
+
+  describe('claimSsvRewards', function () {
+    const withdrawalAddress = '0xDeadBeef0000000000000000000000000000cafe';
+    const p2pResponse: P2pClaimSsvRewardsResponse = {
+      netAmount: '900000000000000000',
+      fee: '100000000000000000',
+      claimedAmount: '1000000000000000000',
+      transaction: {
+        to: '0xSsvProxyContract0000000000000000000000ab',
+        data: '0xabcdef',
+        value: '0',
+      },
+    };
+
+    it('should call P2P API then create a CLAIM_SSV_REWARDS staking request', async function () {
+      const expectedStakingRequest = fixtures.stakingRequest([]);
+
+      // 1. P2P claim endpoint
+      const p2pScope = nock(microservicesUri)
+        .get(`/api/v1/eth/staking/ssv/p2p/claim`)
+        .query({ withdrawalAddress })
+        .reply(200, p2pResponse);
+
+      // 2. Create staking request
+      const stakeScope = nock(microservicesUri)
+        .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests`, {
+          clientId: 'clientId',
+          withdrawalAddress,
+          transaction: p2pResponse.transaction,
+          netAmount: p2pResponse.netAmount,
+          fee: p2pResponse.fee,
+          claimedAmount: p2pResponse.claimedAmount,
+          type: 'CLAIM_SSV_REWARDS',
+        })
+        .reply(201, expectedStakingRequest);
+
+      // 3. getTransactionsReadyToSign → GET staking request (no READY transactions)
+      const getScope = nock(microservicesUri)
+        .get(
+          `/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests/${expectedStakingRequest.id}`
+        )
+        .reply(200, expectedStakingRequest);
+
+      const stakingRequest = await stakingWallet.claimSsvRewards({
+        withdrawalAddress,
+        clientId: 'clientId',
+        walletPassphrase: 'passphrase',
+      });
+
+      should.exist(stakingRequest);
+      stakingRequest.should.deepEqual(expectedStakingRequest);
+      p2pScope.isDone().should.be.True();
+      stakeScope.isDone().should.be.True();
+      getScope.isDone().should.be.True();
+    });
+
+    it('should build, sign and send READY transactions after creating the staking request', async function () {
+      const readyTransaction = fixtures.transaction('READY', fixtures.buildParams, false);
+      const expectedStakingRequest = fixtures.stakingRequest([readyTransaction]);
+
+      // 1. P2P claim endpoint
+      nock(microservicesUri)
+        .get(`/api/v1/eth/staking/ssv/p2p/claim`)
+        .query({ withdrawalAddress })
+        .reply(200, p2pResponse);
+
+      // 2. Create staking request
+      nock(microservicesUri)
+        .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests`)
+        .reply(201, expectedStakingRequest);
+
+      // 3. getTransactionsReadyToSign → GET staking request (has one READY transaction)
+      nock(microservicesUri)
+        .get(
+          `/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests/${expectedStakingRequest.id}`
+        )
+        .reply(200, expectedStakingRequest);
+
+      // 4. buildSignAndSend → expand build params
+      const expandedTransaction = { ...readyTransaction, buildParams: fixtures.buildParams };
+      nock(microservicesUri)
+        .get(
+          `/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests/${readyTransaction.stakingRequestId}/transactions/${readyTransaction.id}`
+        )
+        .query({ expandBuildParams: true })
+        .reply(200, expandedTransaction);
+
+      // 5. Stub prebuildTransaction to avoid real ETH tx building
+      const txPrebuild = { txHex: 'hex', buildParams: fixtures.buildParams };
+      const prebuildStub = sandbox.stub(Wallet.prototype, 'prebuildTransaction').resolves(txPrebuild);
+
+      // 6. Skip transaction validation (mock data is not a valid transaction)
+      sandbox.stub(StakingWallet.prototype, 'validateBuiltStakingTransaction' as never).resolves();
+
+      // 7. Stub getKeysForSigning and signTransaction
+      const keyChain: Keychain = { id: 'id', pub: 'pub', type: 'independent' };
+      sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([keyChain]);
+      const signed = { halfSigned: { txHex: 'hex' } };
+      const signStub = sandbox.stub(Wallet.prototype, 'signTransaction').resolves(signed);
+
+      // 8. Send signed transaction
+      const sentTransaction = { ...readyTransaction, status: 'DELIVERED' };
+      nock(microservicesUri)
+        .post(
+          `/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests/${readyTransaction.stakingRequestId}/transactions/${readyTransaction.id}`
+        )
+        .reply(200, sentTransaction);
+
+      const stakingRequest = await stakingWallet.claimSsvRewards({
+        withdrawalAddress,
+        walletPassphrase: 'passphrase',
+      });
+
+      should.exist(stakingRequest);
+      stakingRequest.should.deepEqual(expectedStakingRequest);
+      prebuildStub.calledOnce.should.be.True();
+      signStub.calledOnce.should.be.True();
     });
   });
 

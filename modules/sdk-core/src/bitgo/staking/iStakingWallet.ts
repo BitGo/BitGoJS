@@ -233,6 +233,29 @@ export interface ClaimRewardsOptions {
   delegationId?: string;
 }
 
+/**
+ * Response from P2P API for SSV claim rewards.
+ * netAmount = what delegators get (to be claimed)
+ * fee = P2P operator's fee (already deducted)
+ * claimedAmount = total SSV earned before fees
+ */
+export interface P2pClaimSsvRewardsResponse {
+  netAmount: string;
+  fee: string;
+  claimedAmount: string;
+  transaction: {
+    to: string;
+    data: string;
+    value?: string;
+  };
+}
+
+export interface ClaimSsvRewardsOptions {
+  withdrawalAddress: string;
+  clientId?: string;
+  walletPassphrase: string;
+}
+
 export interface DelegationOptions {
   delegationStatus?: DelegationStatus;
   delegationIds?: Set<string>;
@@ -324,6 +347,7 @@ export interface IStakingWallet {
   unstake(options: UnstakeOptions | EthUnstakeOptions): Promise<StakingRequest>;
   switchValidator(options: SwitchValidatorOptions | TaoSwitchValidatorOptions): Promise<StakingRequest>;
   claimRewards(options: ClaimRewardsOptions): Promise<StakingRequest>;
+  claimSsvRewards(options: ClaimSsvRewardsOptions): Promise<StakingRequest>;
   getStakingRequest(stakingRequestId: string): Promise<StakingRequest>;
   getTransactionsReadyToSign(stakingRequestId: string): Promise<TransactionsReadyToSign>;
   build(transaction: StakingTransaction): Promise<StakingPrebuildTransactionResult>;

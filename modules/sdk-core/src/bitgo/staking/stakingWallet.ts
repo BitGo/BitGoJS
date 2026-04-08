@@ -5,9 +5,11 @@ import { CoinFamily } from '@bitgo/statics';
 import isEqual from 'lodash/isEqual';
 
 import {
+  ClaimSsvRewardsOptions,
   DelegationOptions,
   DelegationResults,
   IStakingWallet,
+  P2pClaimSsvRewardsResponse,
   StakeOptions,
   StakingPrebuildTransactionResult,
   StakingRequest,
@@ -95,6 +97,44 @@ export class StakingWallet implements IStakingWallet {
    */
   async claimRewards(options: ClaimRewardsOptions): Promise<StakingRequest> {
     return await this.createStakingRequest(options, 'CLAIM_REWARDS');
+  }
+
+  /**
+   * Claim SSV rewards via the P2P strategy.
+   *
+   * Flow:
+   *  1. Call P2P API to get the claim transaction for the given withdrawal address.
+   *  2. Create a CLAIM_SSV_REWARDS staking request carrying that transaction.
+   *  3. Sign and broadcast the transaction so SSV tokens are sent to the withdrawal address.
+   *
+   * @param options - SSV claim rewards options
+   * @return StakingRequest
+   */
+  async claimSsvRewards(options: ClaimSsvRewardsOptions): Promise<StakingRequest> {
+    const { withdrawalAddress, clientId, walletPassphrase } = options;
+
+    const p2pResponse: P2pClaimSsvRewardsResponse = await this.bitgo
+      .get(this.bitgo.microservicesUrl(this.p2pClaimSsvRewardsURL(withdrawalAddress)))
+      .result();
+
+    const stakingRequest = await this.createStakingRequest(
+      {
+        clientId,
+        withdrawalAddress,
+        transaction: p2pResponse.transaction,
+        netAmount: p2pResponse.netAmount,
+        fee: p2pResponse.fee,
+        claimedAmount: p2pResponse.claimedAmount,
+      },
+      'CLAIM_SSV_REWARDS'
+    );
+
+    const transactionsReadyToSign = await this.getTransactionsReadyToSign(stakingRequest.id);
+    for (const transaction of transactionsReadyToSign.transactions) {
+      await this.buildSignAndSend({ walletPassphrase }, transaction);
+    }
+
+    return stakingRequest;
   }
 
   /**
@@ -327,7 +367,8 @@ export class StakingWallet implements IStakingWallet {
       | TaoSwitchValidatorOptions
       | VetStakeOptions
       | StoryStakeOptions
-      | XdcStakeOptions,
+      | XdcStakeOptions
+      | Record<string, unknown>,
     type: string
   ): Promise<StakingRequest> {
     return await this.bitgo
@@ -341,6 +382,10 @@ export class StakingWallet implements IStakingWallet {
 
   private stakingRequestsURL() {
     return `/api/staking/v1/${this.coin}/wallets/${this.walletId}/requests`;
+  }
+
+  private p2pClaimSsvRewardsURL(withdrawalAddress: string): string {
+    return `/api/v1/eth/staking/ssv/p2p/claim?withdrawalAddress=${encodeURIComponent(withdrawalAddress)}`;
   }
 
   private async getDelegations(options: DelegationOptions): Promise<DelegationResults> {
