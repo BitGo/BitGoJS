@@ -180,6 +180,20 @@ describe('Polyx:', function () {
     });
   });
 
+  describe('Address Creation Flow:', function () {
+    it('should require wallet initialization transaction', function () {
+      const mainCoin = bitgo.coin('polyx') as Polyx;
+      mainCoin.requiresWalletInitializationTransaction().should.equal(true);
+      baseCoin.requiresWalletInitializationTransaction().should.equal(true);
+    });
+
+    it('should return a RegisterDidWithCDDBuilder from getWalletInitializationBuilder', function () {
+      const { RegisterDidWithCDDBuilder } = require('../../src/lib');
+      const builder = baseCoin.getBuilder().getWalletInitializationBuilder();
+      builder.should.be.instanceOf(RegisterDidWithCDDBuilder);
+    });
+  });
+
   describe('Token Enablement:', function () {
     it('should have correct token enablement config', function () {
       const config = baseCoin.getTokenEnablementConfig();
