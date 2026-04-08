@@ -1728,6 +1728,22 @@ export const ofcCoins = [
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   tofcsolToken(
+    '31e8b2fa-7867-4567-bb76-0a83a08854bf',
+    'ofctsol:sofid',
+    'Test SoFiUSD',
+    6,
+    UnderlyingAsset['tsol:sofid'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tofcsolToken(
+    '43b493f6-a3b6-4a0d-81f3-0d26d9c26508',
+    'ofctsol:stgsofid',
+    'Test SoFiUSD',
+    6,
+    UnderlyingAsset['tsol:stgsofid'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tofcsolToken(
     '750f0e40-c5b9-464f-874f-dc455cf1494b',
     'ofctsol:stgusd1',
     'Test USD1 Token',
