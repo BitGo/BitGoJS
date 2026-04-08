@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.30.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.29.0...bitgo@50.30.0) (2026-04-08)
+
+
+### Bug Fixes
+
+* added missing thyperliquid ([d9f8ff2](https://github.com/BitGo/BitGoJS/commit/d9f8ff2aeb4b5b2010a09bacdedf37741604f5ce))
+* fix go staking final options to include signature ([3990c2b](https://github.com/BitGo/BitGoJS/commit/3990c2b605019ef28d13c57069482115657f8946))
+
+
+### Features
+
+* added hyperliquid with default features ([bc0f59c](https://github.com/BitGo/BitGoJS/commit/bc0f59c3f19c19fc9546cb92ba12c681c23e6653))
+* **sdk-core:** add webauthnInfo support to bulkAcceptShare ([808a97e](https://github.com/BitGo/BitGoJS/commit/808a97ef3576fc596f85c54cea8d789da5e87605))
+
+
+
+
+
 # [50.29.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.28.1...bitgo@50.29.0) (2026-03-29)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.18.0...@bitgo/sdk-coin-ton@3.19.0) (2026-04-08)
+
+
+### Features
+
+* wire @bitgo/wasm-ton into sdk-coin-ton ([0387a23](https://github.com/BitGo/BitGoJS/commit/0387a236bea105244ecaaed670eb6f39491c8c90))
+
+
+
+
+
 # [3.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.17.1...@bitgo/sdk-coin-ton@3.18.0) (2026-03-29)
 
 

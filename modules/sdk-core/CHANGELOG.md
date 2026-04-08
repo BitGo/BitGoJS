@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.38.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.37.0...@bitgo/sdk-core@36.38.0) (2026-04-08)
+
+
+### Bug Fixes
+
+* added missing thyperliquid ([d9f8ff2](https://github.com/BitGo/BitGoJS/commit/d9f8ff2aeb4b5b2010a09bacdedf37741604f5ce))
+* fix go staking final options to include signature ([3990c2b](https://github.com/BitGo/BitGoJS/commit/3990c2b605019ef28d13c57069482115657f8946))
+
+
+### Features
+
+* added hyperliquid with default features ([bc0f59c](https://github.com/BitGo/BitGoJS/commit/bc0f59c3f19c19fc9546cb92ba12c681c23e6653))
+* **express:** add typed routes for TRX delegation APIs ([ebfd681](https://github.com/BitGo/BitGoJS/commit/ebfd6817a6f36e179e3729c781dad65d71b6b4e5))
+* **sdk-coin-sui:** update balance querying to handle fundsInAddressBalance field ([6ea2bc8](https://github.com/BitGo/BitGoJS/commit/6ea2bc8d69377140f9038c7b2975b243fdb5f9f6))
+* **sdk-core:** add webauthnInfo support to bulkAcceptShare ([808a97e](https://github.com/BitGo/BitGoJS/commit/808a97ef3576fc596f85c54cea8d789da5e87605))
+
+
+
+
+
 # [36.37.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.36.0...@bitgo/sdk-core@36.37.0) (2026-03-29)
 
 
