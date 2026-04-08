@@ -207,6 +207,16 @@ describe('DKLS Dsg 2x3', function () {
     should.exist(convertedSignature);
   });
 
+  it('should throw if messageHash is not 32 bytes', async function () {
+    const party = new DklsDsg.Dsg(fs.readFileSync(shareFiles[0]), 0, 'm', Buffer.alloc(31));
+    await party.init().should.be.rejectedWith(/Invalid messageHash length/);
+  });
+
+  it('should throw if messageHash is empty', async function () {
+    const party = new DklsDsg.Dsg(fs.readFileSync(shareFiles[0]), 0, 'm', Buffer.alloc(0));
+    await party.init().should.be.rejectedWith(/Invalid messageHash length/);
+  });
+
   it(`should fail when signing two different messages`, async function () {
     const party1 = new DklsDsg.Dsg(
       fs.readFileSync(`${__dirname}/fixtures/userShare`),
