@@ -1613,6 +1613,6 @@ export const bscTokens = [
     18,
     '0xf39e4b21c84e737df08e2c3b32541d856f508e48',
     UnderlyingAsset['bsc:esports'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
 ];

@@ -837,6 +837,21 @@ export const ofcCoins = [
   ),
   ofcsolToken('eac1b075-0c6e-4655-8b86-4ebe0f1f9552', 'ofcsol:sonic', 'Sonic SVM', 9, UnderlyingAsset['sol:sonic']),
 
+  ofcsolToken(
+    '43e8e014-dcab-413f-8de3-e083ace7cbaf',
+    'ofcsol:gobucks',
+    'GoBucks Token',
+    9,
+    UnderlyingAsset['sol:gobucks']
+  ),
+  ofcsolToken(
+    'f494ad39-de05-4296-a031-2fa24c530e62',
+    'ofcsol:cbbtc',
+    'Coinbase Wrapped BTC',
+    8,
+    UnderlyingAsset['sol:cbbtc']
+  ),
+  ofcsolToken('ed01ea0f-2640-4774-a527-665e7b525f97', 'ofcsol:tbtc', 'tBTC', 8, UnderlyingAsset['sol:tbtc']),
   ofcsolToken('a6b1c9d4-8e5f-4a0c-9b3d-7f9e0a4c6b8d', 'ofcsol:prime', 'HASTRA PRIME', 6, UnderlyingAsset['sol:prime']),
   ofcsolToken(
     'b7c2d0e5-9f6a-4b1d-9c4e-8a0f1b5d7c9e',
@@ -2013,6 +2028,13 @@ export const ofcCoins = [
     'Franklin OnChain U.S. Government Money Fund',
     18,
     UnderlyingAsset['arbeth:benji']
+  ),
+  ofcArbethErc20(
+    '9e70657b-5970-4aed-bcb9-a67daef39a91',
+    'ofcarbeth:chip',
+    'USD.AI',
+    18,
+    UnderlyingAsset['arbeth:chip']
   ),
   ofcArbethErc20(
     '2cca89a3-788d-499b-bb41-a35ce2428d9e',

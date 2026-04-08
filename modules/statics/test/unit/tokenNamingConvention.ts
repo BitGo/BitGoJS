@@ -57,6 +57,8 @@ describe('Token Naming Convention Tests', function () {
       'hteth:stgcusd',
       'hteth:stgfyusd',
       'hteth:tsteth',
+      'hteth:tusdc',
+      'hteth:tusdt',
       'hteth:gousd',
       'hteth:usd1',
       'hteth:amstest',

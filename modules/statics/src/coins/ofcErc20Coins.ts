@@ -3577,6 +3577,7 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:anime')
   ),
+  ofcerc20('24664572-ed05-4c0a-bafa-5d98ab17449d', 'ofceth:anvl', 'Anvil', 18, underlyingAssetForSymbol('eth:anvl')),
   ofcerc20('7b243fe0-983b-4c6c-a781-b1cc4ad410cc', 'ofceth:newt', 'Newton', 18, underlyingAssetForSymbol('eth:newt')),
   ofcerc20(
     '12bad7a8-28d4-4d5d-9481-eeb90d9b08a2',
@@ -4245,6 +4246,34 @@ export const tOfcErc20Coins = [
     UnderlyingAsset['hteth:tsteth'],
     undefined,
     undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    '94aaaa67-249d-4a88-a34f-f0a9a4da9ead',
+    'ofchteth:tusdc',
+    'Hoodi Testnet USDC',
+    6,
+    UnderlyingAsset['hteth:tusdc'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    'fdc61701-2542-4065-99f5-dddb035596c3',
+    'ofchteth:tusdt',
+    'Hoodi Testnet USDT',
+    6,
+    UnderlyingAsset['hteth:tusdt'],
+    undefined,
+    [CoinFeature.STABLECOIN],
     undefined,
     undefined,
     undefined,
@@ -5114,6 +5143,13 @@ export const tOfcErc20Coins = [
     UnderlyingAsset['eth:arm-weth-eeth']
   ),
   ofcerc20('d8f3b2c7-4e9a-4f6b-a5c0-9e2f3a4b5c6d', 'ofceth:cashplus', 'CashPlus', 18, UnderlyingAsset['eth:cashplus']),
+  ofcerc20(
+    '79be0838-92b8-470b-88c2-5363deef180b',
+    'ofceth:cbbtc',
+    'Coinbase Wrapped BTC',
+    8,
+    underlyingAssetForSymbol('eth:cbbtc')
+  ),
   ofcerc20('e9a4c3d8-5f0b-4a7c-86d1-af3a4b5c6d7e', 'ofceth:island', 'ISLAND Token', 18, UnderlyingAsset['eth:island']),
   ofcerc20('63f1d5de-5729-4a71-ba6e-dcd7095c20da', 'ofceth:job', 'jobchain', 8, UnderlyingAsset['eth:job']),
   ofcerc20('90169666-a3ee-4ff6-b447-0553a1a4cbb8', 'ofceth:irys', 'irys', 18, UnderlyingAsset['eth:irys']),
@@ -6217,6 +6253,14 @@ export const tOfcErc20Coins = [
   ofcerc20('e4f9a7b2-6c3d-4e8a-9f1b-5d7c8e2a4b6f', 'ofceth:btr', 'Bitlayer', 18, UnderlyingAsset['eth:btr']),
   ofcerc20('289ee20a-5659-4b40-82fb-259a881c7c20', 'ofceth:musd', 'Mezo USD', 18, UnderlyingAsset['eth:musd']),
   ofcerc20('403bd58f-cd53-4d2d-81ac-93055d0cf59e', 'ofceth:mezo', 'Mezo', 18, UnderlyingAsset['eth:mezo']),
+  ofcerc20('e7c36012-528b-46ef-8376-d137abaf8ad8', 'ofceth:drv', 'Derive', 18, underlyingAssetForSymbol('eth:drv')),
+  ofcerc20(
+    '5cf232e8-5711-4171-97c6-53c9c4005bfe',
+    'ofceth:prn',
+    'Peoples Reserve',
+    18,
+    underlyingAssetForSymbol('eth:prn')
+  ),
   ofcerc20(
     '47d8cf79-ed67-4e9c-8e51-422d31290282',
     'ofcbaseeth:usad',

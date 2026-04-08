@@ -11664,6 +11664,14 @@ export const erc20Coins = [
     UnderlyingAsset['eth:anime']
   ),
   erc20(
+    '73a0b641-124e-475b-ac4a-8ce4c58758e3',
+    'eth:anvl',
+    'Anvil',
+    18,
+    '0xaeeaa594e7dc112d67b8547fe9767a02c15b5597',
+    UnderlyingAsset['eth:anvl']
+  ),
+  erc20(
     '42a4bc3f-2853-49dd-975f-487dbf028774',
     'eth:newt',
     'Newton',
@@ -12046,6 +12054,14 @@ export const erc20Coins = [
     18,
     '0x498d9329555471bf6073a5f2d047f746d522a373',
     UnderlyingAsset['eth:cashplus']
+  ),
+  erc20(
+    '30236a6b-80af-42b8-a6ee-e4633aa57cfa',
+    'eth:cbbtc',
+    'Coinbase Wrapped BTC',
+    8,
+    '0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf',
+    UnderlyingAsset['eth:cbbtc']
   ),
   erc20(
     'e5f6a7b8-9c0d-4e1f-aa3b-4c5d6e7f8a9b',
@@ -12780,6 +12796,30 @@ export const erc20Coins = [
     '0x3508a952176b3c15387c97be809eaffb1982176a',
     UnderlyingAsset['hteth:tsteth'],
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
+    '0513704d-3cf8-4a95-8ff6-4b7e9322244d',
+    'hteth:tusdc',
+    'Hoodi Testnet USDC',
+    6,
+    '0x263898d2f6f8e153f1e4dd4caef86c93784fcf33',
+    UnderlyingAsset['hteth:tusdc'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
+    '6359427d-890d-4161-9c0f-272aaca2928c',
+    'hteth:tusdt',
+    'Hoodi Testnet USDT',
+    6,
+    '0x7728a33ebebcfa852cf7f7fc377bfc87c24a701a',
+    UnderlyingAsset['hteth:tusdt'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
     undefined,
     Networks.test.hoodi
@@ -14629,7 +14669,8 @@ export const erc20Coins = [
     'Mezo USD',
     18,
     '0xdd468a1ddc392dcdbef6db6e34e89aa338f9f186',
-    UnderlyingAsset['eth:musd']
+    UnderlyingAsset['eth:musd'],
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.BULK_TRANSACTION]
   ),
   erc20(
     'e88997d9-bcea-4d1d-9ee0-4e83391a3b9c',
@@ -14637,7 +14678,24 @@ export const erc20Coins = [
     'Mezo',
     18,
     '0x8e4cbbcc33db6c0a18561fde1f6ba35906d4848b',
-    UnderlyingAsset['eth:mezo']
+    UnderlyingAsset['eth:mezo'],
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.BULK_TRANSACTION]
+  ),
+  erc20(
+    '28287970-5b7e-454d-8871-647b66088d74',
+    'eth:drv',
+    'Derive',
+    18,
+    '0xb1d1eae60eea9525032a6dcb4c1ce336a1de71be',
+    UnderlyingAsset['eth:drv']
+  ),
+  erc20(
+    '0b31ef76-9c53-4c71-a502-35f6f8f548f2',
+    'eth:prn',
+    'Peoples Reserve',
+    18,
+    '0x0c5d9fae8670cfa0aa5f57b42ccd630c46bbe498',
+    UnderlyingAsset['eth:prn']
   ),
   terc20(
     '0c333619-e5a6-4f9d-8bbc-5b0e5dc64d03',

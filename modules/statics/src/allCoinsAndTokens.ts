@@ -5655,6 +5655,14 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['arbeth:cbl']
   ),
   arbethErc20(
+    'f9601039-4616-4ea3-afa4-7d9ae901b488',
+    'arbeth:chip',
+    'USD.AI',
+    18,
+    '0x0c1c1c109fe34733fca54b82d7b46b75cfb71f6e',
+    UnderlyingAsset['arbeth:chip']
+  ),
+  arbethErc20(
     '5a160655-9d96-4fdd-a362-224026b7c1e8',
     'arbeth:w',
     'Wormhole Token',
@@ -5886,7 +5894,8 @@ export const allCoinsAndTokens = [
     'Tesla (Test)',
     18,
     '0xb94263fa0a2a29ea32c1f90ccaeeaffd0bb73908',
-    UnderlyingAsset['arbeth:testtsla']
+    UnderlyingAsset['arbeth:testtsla'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     '1a137f85-4f8f-4191-8760-2b161e240bf2',
@@ -5894,7 +5903,8 @@ export const allCoinsAndTokens = [
     'Amazon (Test)',
     18,
     '0x76fca8a5bc14fce9eb613d96674868d687498804',
-    UnderlyingAsset['arbeth:testamzn']
+    UnderlyingAsset['arbeth:testamzn'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     'd33cf58a-5e21-418b-bcb0-103f15fe1965',
@@ -5902,7 +5912,8 @@ export const allCoinsAndTokens = [
     'Palantir Technologies Inc (Test)',
     18,
     '0x99cd69ef9221c7fe0ad5618a7527244ef79636c6',
-    UnderlyingAsset['arbeth:testpltr']
+    UnderlyingAsset['arbeth:testpltr'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     'a52a4906-7a39-4d4d-9b63-d4845685ecfa',
@@ -5910,7 +5921,8 @@ export const allCoinsAndTokens = [
     'Netflix Inc (Test)',
     18,
     '0xf10e5372335a33da22a78a6581fd7383b422875a',
-    UnderlyingAsset['arbeth:testnflx']
+    UnderlyingAsset['arbeth:testnflx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     '6a69ea1d-ce7d-4603-89df-cf2f6490d1f9',
