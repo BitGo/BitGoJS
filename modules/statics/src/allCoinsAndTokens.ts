@@ -75,7 +75,7 @@ import { jettonTokens } from './coins/jettonTokens';
 import { polyxTokens } from './coins/polyxTokens';
 import { cantonTokens } from './coins/cantonTokens';
 import { flrp } from './flrp';
-import { hypeEvm } from './hypeevm';
+import { HypeEvm, hypeEvm as hypeEvmFactory } from './hypeevm';
 import { kaspa } from './kaspa';
 import {
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
@@ -414,6 +414,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -451,6 +452,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -474,6 +476,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -886,6 +889,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
       CoinFeature.STAKING,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -929,6 +933,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
       CoinFeature.STAKING,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -970,6 +975,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -993,6 +999,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.STAKING,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -1592,6 +1599,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -1642,7 +1650,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.MON,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.ERC20_BULK_TRANSACTION]
   ),
   account(
     '5c5ebe50-fa27-4312-ae3d-7032520aedb5',
@@ -1668,7 +1676,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.WORLD,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.ERC20_BULK_TRANSACTION]
   ),
   account(
     '1cd29730-f70b-4c7d-a19c-eb3345f01acb',
@@ -1678,7 +1686,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.WORLD,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.ERC20_BULK_TRANSACTION]
   ),
   account(
     'bc2c6d82-69ee-4745-b213-6f83e90199db',
@@ -1732,6 +1740,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -1750,6 +1759,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -1770,6 +1780,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
       CoinFeature.STAKING,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -1813,7 +1824,7 @@ export const allCoinsAndTokens = [
     HYPERLIQUID_FEATURES,
     KeyCurve.Secp256k1
   ),
-  hypeEvm(
+  hypeEvmFactory(
     'e907fdbd-2c5d-45d6-b622-9da38937da73',
     'hypeevm',
     'Hyperliquid EVM',
@@ -1822,9 +1833,10 @@ export const allCoinsAndTokens = [
     UnderlyingAsset.HYPEEVM,
     BaseUnit.ETH,
     150,
-    '0x2222222222222222222222222222222222222222'
+    '0x2222222222222222222222222222222222222222',
+    [...HypeEvm.DEFAULT_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION]
   ),
-  hypeEvm(
+  hypeEvmFactory(
     'e0500947-1105-404c-af52-765b1cb2a7c1',
     'thypeevm',
     'Hyperliquid EVM Testnet',
@@ -1851,6 +1863,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -1869,6 +1882,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -1887,6 +1901,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -1922,6 +1937,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -1957,6 +1973,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -1994,6 +2011,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -2012,6 +2030,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -2028,6 +2047,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -2075,7 +2095,13 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.STT,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.STAKING, CoinFeature.EVM_COMPATIBLE_IMS]
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.STAKING,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.ERC20_BULK_TRANSACTION,
+    ]
   ),
   account(
     'aaa25f54-24f8-41d9-ba4e-83465d7cc2ec',
@@ -2092,6 +2118,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.STAKING,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -2244,6 +2271,7 @@ export const allCoinsAndTokens = [
       CoinFeature.SUPPORTS_ERC20,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -2263,6 +2291,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -2341,6 +2370,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -2435,6 +2465,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -2592,6 +2623,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -2615,6 +2647,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -2635,6 +2668,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   // Mantle mainnet tokens
@@ -2738,6 +2772,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -2784,6 +2819,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -3026,6 +3062,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -3115,6 +3152,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -3451,6 +3489,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
