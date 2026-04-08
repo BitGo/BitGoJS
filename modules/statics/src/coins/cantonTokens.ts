@@ -43,6 +43,26 @@ export const cantonTokens = [
     UnderlyingAsset['canton:cltc'],
     CANTON_TOKEN_FEATURES
   ),
+  cantonToken(
+    '34d29e90-a5cd-4ed5-b88e-567be17733ed',
+    'canton:sbc',
+    'Stable Coin',
+    10,
+    'https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/',
+    'ft::12200b5582a91686c5278999a988a8e6ae2ff7f870834fe2deccbafaefad73db4f2d:IBENJI',
+    UnderlyingAsset['canton:sbc'],
+    CANTON_TOKEN_FEATURES
+  ),
+  cantonToken(
+    '6369549f-c1d7-46a7-be26-592a6ac105ab',
+    'canton:ibenji',
+    'iBENJI',
+    10,
+    'https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/',
+    'party-28dc4516-b5ca-44ff-86c7-2107e90a6807::1220b8301e18aa8a401d6e34e6c20f8b0243183c514373bca8f1b6b9270246341a9e:SBC',
+    UnderlyingAsset['canton:ibenji'],
+    CANTON_TOKEN_FEATURES
+  ),
   // testnet tokens
   tcantonToken(
     '46356790-0ac4-4c3b-8b70-39094106d772',
