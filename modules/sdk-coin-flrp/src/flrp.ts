@@ -4,6 +4,7 @@ import {
   BaseCoin,
   BitGoBase,
   KeyPair,
+  MPCAlgorithm,
   MultisigType,
   multisigTypes,
   ParsedTransaction,
@@ -64,6 +65,16 @@ export class Flrp extends BaseCoin {
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.onchain;
+  }
+
+  /** @inheritdoc */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** @inheritdoc */
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
   }
 
   async verifyTransaction(params: FlrpVerifyTransactionOptions): Promise<boolean> {
@@ -232,12 +243,22 @@ export class Flrp extends BaseCoin {
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
-    if (!keychains || keychains.length !== 3) {
-      throw new Error('Invalid keychains');
-    }
 
     // multisig addresses are separated by ~
     const splitAddresses = address.split('~');
+
+    // MPC/TSS: single address derived from common keychain
+    if (splitAddresses.length === 1 && keychains?.length === 1) {
+      const expectedAddr = new FlrpLib.KeyPair({ pub: keychains[0].pub }).getAddress(this._staticsCoin.network.type);
+      if (expectedAddr !== address) {
+        throw new UnexpectedAddressError(`address validation failure: ${address} is not of this wallet`);
+      }
+      return true;
+    }
+
+    if (!keychains || keychains.length !== 3) {
+      throw new Error('Invalid keychains');
+    }
 
     // derive addresses from keychain
     const unlockAddresses = keychains.map((keychain) =>
@@ -327,6 +348,29 @@ export class Flrp extends BaseCoin {
     }
 
     return FlrpLib.Utils.isValidAddress(address);
+  }
+
+  /**
+   * Get the raw bytes that need to be signed by the MPC ceremony.
+   * MPC.sign() internally SHA-256 hashes, so return raw unsigned tx bytes.
+   */
+  async getSignablePayload(txHex: string): Promise<Buffer> {
+    const txBuilder = this.getBuilder().from(txHex);
+    const tx = (await txBuilder.build()) as FlrpLib.Transaction;
+    return Buffer.from(tx.signablePayload);
+  }
+
+  /**
+   * Inject an MPC-produced signature into an unsigned transaction.
+   * @param txHex - Unsigned transaction hex
+   * @param signature - 65-byte ECDSA signature (r || s || recovery)
+   * @returns Signed transaction hex
+   */
+  async addSignatureToTransaction(txHex: string, signature: Buffer): Promise<string> {
+    const txBuilder = this.getBuilder().from(txHex);
+    const tx = await txBuilder.build();
+    (tx as FlrpLib.Transaction).addExternalSignature(new Uint8Array(signature));
+    return tx.toBroadcastFormat();
   }
 
   /**
