@@ -71,6 +71,7 @@ export const expectedColdFeatures = {
     'zketh',
   ],
   justTSS: [
+    'abstracteth',
     'ada',
     'apechain',
     'apt',
@@ -146,6 +147,7 @@ export const expectedColdFeatures = {
     'kavaevm',
     'xdc',
     'zeta',
+    'tabstracteth',
     'tada',
     'tasi',
     'tatom',

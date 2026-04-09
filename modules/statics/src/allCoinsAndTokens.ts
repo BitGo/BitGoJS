@@ -1520,6 +1520,42 @@ export const allCoinsAndTokens = [
     COREDAO_FEATURES
   ),
   account(
+    'f3bc3fef-7370-453a-a651-01a0f4d54246',
+    'abstracteth',
+    'Abstract Ethereum',
+    Networks.main.abstracteth,
+    18,
+    UnderlyingAsset.ABSTRACTETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    'dd6c9539-90e1-4fb1-a428-c2dee96107f8',
+    'tabstracteth',
+    'Testnet Abstract Ethereum',
+    Networks.test.abstracteth,
+    18,
+    UnderlyingAsset.ABSTRACTETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
     'd308ba34-557a-43f2-84f3-5775f1f1a779',
     'apechain',
     'Ape Chain',
