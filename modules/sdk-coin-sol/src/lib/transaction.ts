@@ -1,6 +1,7 @@
 import {
   BaseTransaction,
   Entry,
+  IAtaClosure,
   InvalidTransactionError,
   ITokenEnablement,
   ParseTransactionError,
@@ -27,6 +28,7 @@ import {
   ValidInstructionTypesEnum,
 } from './constants';
 import {
+  AtaClose,
   AtaInit,
   DurableNonceParams,
   InstructionParams,
@@ -540,6 +542,8 @@ export class Transaction extends BaseTransaction {
     const outputs: TransactionRecipient[] = [];
     // Create a separate array for token enablements
     const tokenEnablements: ITokenEnablement[] = [];
+    // Create a separate array for ATA closures
+    const ataClosures: IAtaClosure[] = [];
 
     for (const instruction of decodedInstructions) {
       switch (instruction.type) {
@@ -598,6 +602,15 @@ export class Transaction extends BaseTransaction {
             tokenAddress: ataInit.params.mintAddress,
           });
           break;
+        case InstructionBuilderTypes.CloseAssociatedTokenAccount: {
+          const ataClose = instruction as AtaClose;
+          ataClosures.push({
+            accountAddress: ataClose.params.accountAddress,
+            destinationAddress: ataClose.params.destinationAddress,
+            authorityAddress: ataClose.params.authorityAddress,
+          });
+          break;
+        }
         case InstructionBuilderTypes.CustomInstruction:
           // Custom instructions are arbitrary and cannot be explained
           break;
@@ -617,7 +630,7 @@ export class Transaction extends BaseTransaction {
       }
     }
 
-    return this.getExplainedTransaction(outputAmount, outputs, memo, durableNonce, tokenEnablements);
+    return this.getExplainedTransaction(outputAmount, outputs, memo, durableNonce, tokenEnablements, ataClosures);
   }
 
   private calculateFee(): string {
@@ -638,7 +651,8 @@ export class Transaction extends BaseTransaction {
     outputs: TransactionRecipient[],
     memo: undefined | string = undefined,
     durableNonce: undefined | DurableNonceParams = undefined,
-    tokenEnablements: ITokenEnablement[] = []
+    tokenEnablements: ITokenEnablement[] = [],
+    ataClosures: IAtaClosure[] = []
   ): TransactionExplanation {
     const feeString = this.calculateFee();
 
@@ -653,6 +667,7 @@ export class Transaction extends BaseTransaction {
       'outputs',
       'changeOutputs',
       'tokenEnablements',
+      'ataClosures',
       'fee',
       'memo',
     ];
@@ -674,6 +689,7 @@ export class Transaction extends BaseTransaction {
       blockhash: this.getNonce(),
       durableNonce: durableNonce,
       tokenEnablements: tokenEnablements,
+      ataClosures: ataClosures,
     };
 
     return explanation;

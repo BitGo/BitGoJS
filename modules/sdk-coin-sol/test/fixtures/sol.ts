@@ -1503,3 +1503,70 @@ export const enableTokenFixtures = {
   wrongAddrTxHex:
     '02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007994e5cf423b5dfc2ca2f7de39edb2686a7e13db94943d9e5ee1437cf69152757080e7dbce942052ade6f7db9410d070c01b3a4914e73e53967050d8ce645a0c0201060a0a366f59bf131ce5d454af84bf3ca3d5c257804a66b2f917c325e2cb4f61b21e1c96172044f1217c3784e8f02f49e2c8fc3591e81294ab54394f9d22fd7b7a8f865224b8d48baa4ba878f53dcc7613219864bec9840b6cf013228edf4649fef8def50dc9c8fe8e5e4a23a534e8f75ee737eac6755904ad3c385fe5fbf7216632000000000000000000000000000000000000000000000000000000000000000081f74cefd3fb844f62ca7ed6f1418b3f86faf0886647d980259bf0aafbe77b6c8c97258f4e2489f1bb3d1029148e0d830b5a1399daff1084048e7bd8dbe9f85906a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9ebf212e4d5c93a21e2cff09e1b5a7fe0fdf2d5f573294d8411b302fc9d7c89d0020403020701040400000006070003000504090800',
 };
+
+/**
+ * Fixtures for testing closetoken intent verification (ATA closure via API).
+ *
+ * The tests generate transactions dynamically using CloseAtaBuilder and TransferBuilder.
+ * The ataAddress is the sol:usdc ATA owned by walletRootAddress.
+ */
+export const closeTokenFixtures = {
+  // Wallet root address is the destination and authority for closing the ATA
+  walletRootAddress: '12f6D3WubGVeQoH2m8kTvvcrasWdXWwtVzUCyRNDZxA2',
+  // ATA address being closed (sol:usdc ATA owned by walletRootAddress)
+  ataAddress: 'AmyMeEUm85YQRjcT4MQnD3KTQCsWES9shLmqyfgJfWtu',
+  // closetoken txParams: close the sol:usdc ATA back to the wallet root
+  txParams: {
+    type: 'closetoken',
+    closeTokens: [
+      {
+        name: 'sol:usdc',
+        address: '12f6D3WubGVeQoH2m8kTvvcrasWdXWwtVzUCyRNDZxA2',
+      },
+    ],
+  },
+  walletData: {
+    id: 'wallet-close-ata-test',
+    users: [{ user: 'user-id', permissions: ['admin', 'spend', 'view'] }],
+    coin: 'sol',
+    label: 'SOL Close ATA Test',
+    m: 2,
+    n: 3,
+    keys: ['key1', 'key2', 'key3'],
+    keySignatures: {},
+    enterprise: 'enterprise-id',
+    disableTransactionNotifications: false,
+    freeze: {},
+    deleted: false,
+    approvalsRequired: 1,
+    isCold: false,
+    coinSpecific: {
+      rootAddress: '12f6D3WubGVeQoH2m8kTvvcrasWdXWwtVzUCyRNDZxA2',
+      pendingChainInitialization: false,
+      minimumFunding: 2282880,
+      lastChainIndex: { 0: 0, 1: -1 },
+    },
+    multisigType: 'tss',
+    type: 'hot',
+    buildDefaults: {},
+    config: {},
+    balanceString: '10000000',
+    confirmedBalanceString: '10000000',
+    spendableBalanceString: '10000000',
+    reservedBalanceString: '0',
+    receiveAddress: {
+      id: 'receive-addr-id',
+      address: '12f6D3WubGVeQoH2m8kTvvcrasWdXWwtVzUCyRNDZxA2',
+      chain: 0,
+      index: 0,
+      coin: 'sol',
+      wallet: 'wallet-close-ata-test',
+      coinSpecific: {
+        rootAddress: '12f6D3WubGVeQoH2m8kTvvcrasWdXWwtVzUCyRNDZxA2',
+        type: 'native',
+        pendingChainInitialization: false,
+      },
+    },
+    pendingApprovals: [],
+  },
+};

@@ -1,4 +1,4 @@
-import { ITokenEnablement } from '@bitgo/sdk-core';
+import { IAtaClosure, ITokenEnablement } from '@bitgo/sdk-core';
 import { Transaction, parseTransaction, type ParsedTransaction, type InstructionParams } from '@bitgo/wasm-solana';
 import { UNAVAILABLE_TEXT } from './constants';
 import { StakingAuthorizeParams, TransactionExplanation as SolLibTransactionExplanation } from './iface';
@@ -24,6 +24,7 @@ enum TransactionType {
   StakingDelegate = 'StakingDelegate',
   WalletInitialization = 'WalletInitialization',
   AssociatedTokenAccountInitialization = 'AssociatedTokenAccountInitialization',
+  CloseAssociatedTokenAccount = 'CloseAssociatedTokenAccount',
   CustomTx = 'CustomTx',
 }
 
@@ -271,6 +272,18 @@ export function explainSolTransaction(params: ExplainTransactionWasmOptions): So
     }
   }
 
+  // --- ATA closures ---
+  const ataClosures: IAtaClosure[] = [];
+  for (const instr of parsed.instructionsData) {
+    if (instr.type === 'CloseAssociatedTokenAccount') {
+      ataClosures.push({
+        accountAddress: instr.accountAddress,
+        destinationAddress: instr.destinationAddress,
+        authorityAddress: instr.authorityAddress,
+      });
+    }
+  }
+
   // --- Staking authorize ---
   let stakingAuthorize: StakingAuthorizeParams | undefined;
   for (const instr of parsed.instructionsData) {
@@ -292,20 +305,25 @@ export function explainSolTransaction(params: ExplainTransactionWasmOptions): So
     value: String(i.value),
   }));
 
+  const baseDisplayOrder = [
+    'id',
+    'type',
+    'blockhash',
+    'durableNonce',
+    'outputAmount',
+    'changeAmount',
+    'outputs',
+    'changeOutputs',
+    'tokenEnablements',
+    'fee',
+    'memo',
+  ];
+  if (ataClosures.length > 0) {
+    baseDisplayOrder.splice(baseDisplayOrder.indexOf('fee'), 0, 'ataClosures');
+  }
+
   return {
-    displayOrder: [
-      'id',
-      'type',
-      'blockhash',
-      'durableNonce',
-      'outputAmount',
-      'changeAmount',
-      'outputs',
-      'changeOutputs',
-      'tokenEnablements',
-      'fee',
-      'memo',
-    ],
+    displayOrder: baseDisplayOrder,
     id: id ?? UNAVAILABLE_TEXT,
     // WASM returns "StakingAuthorize" but BitGoJS uses "StakingAuthorizeRaw"
     // when deserializing from bytes (the non-raw type only exists during building).
@@ -324,6 +342,7 @@ export function explainSolTransaction(params: ExplainTransactionWasmOptions): So
     blockhash: parsed.nonce,
     durableNonce: parsed.durableNonce,
     tokenEnablements,
+    ...(ataClosures.length > 0 ? { ataClosures } : {}),
     ataOwnerMap,
     ...(stakingAuthorize ? { stakingAuthorize } : {}),
   };

@@ -93,6 +93,12 @@ export interface ITokenEnablement {
   tokenAddress?: string; // Contract address of the token
 }
 
+export interface IAtaClosure {
+  accountAddress: string; // ATA address being closed
+  destinationAddress: string; // Address receiving the rent SOL and any token balance
+  authorityAddress: string; // Owner/authority of the ATA
+}
+
 export interface ITransactionFee<TAmount = string> {
   fee: TAmount;
   feeRate?: number;
@@ -131,6 +137,8 @@ export interface ITransactionExplanation<TFee = any, TAmount = any> {
   producers?: string[];
   /** NOTE: Tokens being enabled for the wallet */
   tokenEnablements?: ITokenEnablement[];
+  /** NOTE: ATAs being closed */
+  ataClosures?: IAtaClosure[];
 }
 
 export interface KeyPair {
@@ -206,6 +214,7 @@ export interface TransactionParams {
   type?: string;
   memo?: Memo;
   enableTokens?: TokenEnablement[];
+  closeTokens?: TokenEnablement[];
 }
 
 export interface AddressVerificationData {

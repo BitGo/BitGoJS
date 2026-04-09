@@ -3580,6 +3580,101 @@ describe('SOL:', function () {
     });
   });
 
+  describe('blind signing close token protection', () => {
+    const { txParams, walletData, walletRootAddress, ataAddress } = testData.closeTokenFixtures;
+    const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
+    let closeAtaTxBase64: string;
+    let sendTxBase64: string;
+
+    before(async function () {
+      // Build a valid close ATA tx using the BitGo builder (destination == walletRootAddress)
+      const factory = getBuilderFactory('sol');
+      const closeBuilder = factory.getCloseAtaInitializationBuilder();
+      closeBuilder.nonce(recentBlockHash);
+      closeBuilder.sender(walletRootAddress);
+      closeBuilder.accountAddress(ataAddress);
+      closeBuilder.destinationAddress(walletRootAddress);
+      closeBuilder.authorityAddress(walletRootAddress);
+      const closeTx = await closeBuilder.build();
+      closeAtaTxBase64 = closeTx.toBroadcastFormat();
+
+      // Build a send tx for tamper detection
+      const sendBuilder = factory.getTransferBuilder();
+      sendBuilder.nonce(recentBlockHash);
+      sendBuilder.sender(walletRootAddress);
+      sendBuilder.send({ address: resources.associatedTokenAccounts.accounts[1].pub, amount: '1000' });
+      const sendTx = await sendBuilder.build();
+      sendTxBase64 = sendTx.toBroadcastFormat();
+    });
+
+    it('should verify a valid closetoken intent when prebuild tx matches user intent', async function () {
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+
+      const result = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild: { txBase64: closeAtaTxBase64 },
+        wallet,
+        verification: { verifyTokenEnablement: true },
+      } as unknown as SolVerifyTransactionOptions);
+
+      result.should.equal(true);
+    });
+
+    it('should throw when prebuild is a send tx but closetoken type is expected', async function () {
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+
+      await assert.rejects(
+        async () =>
+          basecoin.verifyTransaction({
+            txParams,
+            txPrebuild: { txBase64: sendTxBase64 },
+            wallet,
+            verification: { verifyTokenEnablement: true },
+          } as unknown as SolVerifyTransactionOptions),
+        {
+          message:
+            'Invalid transaction type on token enablement: expected "CloseAssociatedTokenAccount", got "Send".',
+        }
+      );
+    });
+
+    it('should throw when closeTokens config is missing in txParams for closetoken type', async function () {
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      const missingConfigTxParams = { type: 'closetoken' };
+
+      await assert.rejects(
+        async () =>
+          basecoin.verifyTransaction({
+            txParams: missingConfigTxParams,
+            txPrebuild: { txBase64: closeAtaTxBase64 },
+            wallet,
+            verification: { verifyTokenEnablement: true },
+          } as unknown as SolVerifyTransactionOptions),
+        { message: 'Missing close token config' }
+      );
+    });
+
+    it('should throw when destination in prebuild does not match wallet root address', async function () {
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      // TRANSFER_UNSIGNED_TX_CLOSE_ATA has destination != walletRootAddress
+      const wrongDestPrebuild = { txBase64: resources.TRANSFER_UNSIGNED_TX_CLOSE_ATA };
+
+      await assert.rejects(
+        async () =>
+          basecoin.verifyTransaction({
+            txParams,
+            txPrebuild: wrongDestPrebuild,
+            wallet,
+            verification: { verifyTokenEnablement: true },
+          } as unknown as SolVerifyTransactionOptions),
+        (err: Error) => {
+          err.message.should.startWith('Invalid close token destination:');
+          return true;
+        }
+      );
+    });
+  });
+
   describe('isWalletAddress', () => {
     it('should verify valid wallet address with correct keychain and index', async function () {
       const address = '7YAesfwPk41VChUgr65bm8FEep7ymWqLSW5rpYB5zZPY';

@@ -236,6 +236,7 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   }[];
   tokenName?: string;
   enableTokens?: TokenEnablement[];
+  closeTokens?: TokenEnablement[];
   nonce?: string;
   selfSend?: boolean;
   feeOptions?: FeeOption | EIP1559FeeOptions;
@@ -325,6 +326,7 @@ export interface PopulatedIntent extends PopulatedIntentBase {
   nonce?: string;
   token?: string;
   enableTokens?: TokenEnablement[];
+  closeTokens?: TokenEnablement[];
   unspents?: string[];
   fundsInAddressBalance?: string;
   /**
