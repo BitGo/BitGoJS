@@ -352,6 +352,12 @@ export interface WalletCoinSpecific {
   /**
    * Lightning coin specific data ends
    */
+  /**
+   * For FLR P-derived wallets, the derivation path for the base address.
+   * When set to 'm', the base address is at the root (no child derivation).
+   * Defaults to 'm/0' if absent.
+   */
+  baseAddressDerivationPath?: string;
 }
 
 export interface PaginationOptions {

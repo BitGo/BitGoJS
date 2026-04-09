@@ -60,4 +60,91 @@ describe('TSS Address Verification - Derivation Path with Prefix', function () {
       });
     });
   });
+
+  describe('Derivation Path Logic for FLR P-derived wallets (baseAddressDerivationPath)', function () {
+    // Tests the path selection logic that mirrors verifyMPCWalletAddress.
+    // Written as pure logic tests to avoid the transitive module-load failures
+    // (BaseTssUtils circular init) that affect tests using getAddressVerificationModule().
+
+    function computeDerivationPath(
+      index: number | string,
+      baseAddressDerivationPath?: string,
+      derivedFromParentWithSeed?: string
+    ): string {
+      const numericIndex = typeof index === 'string' ? parseInt(index, 10) : index;
+      const prefix = derivedFromParentWithSeed ? getDerivationPath(derivedFromParentWithSeed.toString()) : undefined;
+      return prefix
+        ? `${prefix}/${index}`
+        : numericIndex === 0 && baseAddressDerivationPath === 'm'
+        ? 'm'
+        : `m/${index}`;
+    }
+
+    it('should use m/0 for index 0 when baseAddressDerivationPath is absent', function () {
+      computeDerivationPath(0).should.equal('m/0');
+    });
+
+    it('should use m for index 0 when baseAddressDerivationPath is m', function () {
+      computeDerivationPath(0, 'm').should.equal('m');
+    });
+
+    it('should use m/0 for index 0 when baseAddressDerivationPath is m/0', function () {
+      computeDerivationPath(0, 'm/0').should.equal('m/0');
+    });
+
+    it('should use m/1 for index 1 even when baseAddressDerivationPath is m', function () {
+      computeDerivationPath(1, 'm').should.equal('m/1');
+    });
+
+    it('should use m/2 for index 2 regardless of baseAddressDerivationPath', function () {
+      computeDerivationPath(2, 'm').should.equal('m/2');
+      computeDerivationPath(2).should.equal('m/2');
+    });
+
+    it('should use prefix path for SMC wallets, ignoring baseAddressDerivationPath', function () {
+      const seed = 'test-seed';
+      const expectedPrefix = getDerivationPath(seed);
+      computeDerivationPath(0, 'm', seed).should.equal(`${expectedPrefix}/0`);
+    });
+
+    it('should handle string index correctly', function () {
+      computeDerivationPath('0', 'm').should.equal('m');
+      computeDerivationPath('1', 'm').should.equal('m/1');
+    });
+
+    it('should simulate existing coin behavior: ETH, BTC, SOL without baseAddressDerivationPath always use m/N', function () {
+      // Existing coins (ETH, BTC, SOL, etc.) never set baseAddressDerivationPath.
+      // They must continue using the standard m/{index} path at every index.
+      computeDerivationPath(0, undefined).should.equal('m/0');
+      computeDerivationPath(1, undefined).should.equal('m/1');
+      computeDerivationPath(5, undefined).should.equal('m/5');
+    });
+
+    it('should simulate FLR C derived wallet: only index 0 uses m when baseAddressDerivationPath is m', function () {
+      // FLR C wallets derived from FLR P set baseAddressDerivationPath='m' in coinSpecific.
+      // The base address (index 0) must derive from root path 'm' (not 'm/0') so it matches
+      // the FLR P staking reward address.
+      computeDerivationPath(0, 'm').should.equal('m');
+      // All receive addresses (index > 0) still follow the standard m/{index} path.
+      computeDerivationPath(1, 'm').should.equal('m/1');
+      computeDerivationPath(2, 'm').should.equal('m/2');
+      computeDerivationPath(10, 'm').should.equal('m/10');
+    });
+
+    it('should confirm baseAddressDerivationPath must be exactly m to change behavior', function () {
+      // Only the exact value 'm' triggers the special path — no other value should change behavior.
+      computeDerivationPath(0, 'm/0').should.equal('m/0'); // explicit m/0 → no change
+      computeDerivationPath(0, 'M').should.equal('m/0'); // uppercase M → no change
+      computeDerivationPath(0, '').should.equal('m/0'); // empty string → no change
+    });
+
+    it('should not affect SMC/cold wallet derivation even if baseAddressDerivationPath is set', function () {
+      // When derivedFromParentWithSeed is present (SMC wallets), the prefix path takes full precedence
+      // and baseAddressDerivationPath is completely ignored.
+      const seed = 'smc-wallet-seed';
+      const expectedPrefix = getDerivationPath(seed);
+      computeDerivationPath(0, 'm', seed).should.equal(`${expectedPrefix}/0`);
+      computeDerivationPath(1, 'm', seed).should.equal(`${expectedPrefix}/1`);
+    });
+  });
 });

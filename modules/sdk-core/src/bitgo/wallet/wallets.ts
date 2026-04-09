@@ -437,6 +437,7 @@ export class Wallets implements IWallets {
         originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
         enterprise,
         walletVersion: params.walletVersion,
+        sourceFlrpWalletId: params.sourceFlrpWalletId,
       });
       if (params.passcodeEncryptionCode) {
         walletData.encryptedWalletPassphrase = this.bitgo.encrypt({
@@ -1485,6 +1486,7 @@ export class Wallets implements IWallets {
     enterprise,
     walletVersion,
     originalPasscodeEncryptionCode,
+    sourceFlrpWalletId,
   }: GenerateMpcWalletOptions): Promise<WalletWithKeychains> {
     if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
       const tssSettings: TssSettings = await this.bitgo
@@ -1517,6 +1519,7 @@ export class Wallets implements IWallets {
       multisigType,
       enterprise,
       walletVersion,
+      sourceFlrpWalletId,
     };
     const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams, keychains);
     const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(finalWalletParams).result();

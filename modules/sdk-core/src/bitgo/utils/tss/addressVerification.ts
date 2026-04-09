@@ -66,7 +66,7 @@ export async function verifyMPCWalletAddress(
   isValidAddress: (address: string) => boolean,
   getAddressFromPublicKey: (publicKey: string) => string
 ): Promise<boolean> {
-  const { keychains, address, index, derivedFromParentWithSeed } = params;
+  const { keychains, address, index, derivedFromParentWithSeed, baseAddressDerivationPath } = params;
 
   if (!isValidAddress(address)) {
     throw new InvalidAddressError(`invalid address: ${address}`);
@@ -77,9 +77,15 @@ export async function verifyMPCWalletAddress(
 
   // Compute derivation path:
   // - For SMC wallets with derivedFromParentWithSeed, compute prefix and use: {prefix}/{index}
+  // - For FLR P-derived wallets where baseAddressDerivationPath is 'm', use 'm' for index 0
   // - For other wallets, use simple path: m/{index}
   const prefix = derivedFromParentWithSeed ? getDerivationPath(derivedFromParentWithSeed.toString()) : undefined;
-  const derivationPath = prefix ? `${prefix}/${index}` : `m/${index}`;
+  const numericIndex = typeof index === 'string' ? parseInt(index, 10) : index;
+  const derivationPath = prefix
+    ? `${prefix}/${index}`
+    : numericIndex === 0 && baseAddressDerivationPath === 'm'
+    ? 'm'
+    : `m/${index}`;
   const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath);
 
   // secp256k1 expects 33 bytes; ed25519 expects 32 bytes

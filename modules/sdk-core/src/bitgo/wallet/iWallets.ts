@@ -40,6 +40,8 @@ export interface GenerateBaseMpcWalletOptions {
   label: string;
   enterprise: string;
   walletVersion?: number;
+  /** For FLR C wallet creation: the source FLR P wallet ID to derive from. */
+  sourceFlrpWalletId?: string;
 }
 
 export interface GenerateMpcWalletOptions extends GenerateBaseMpcWalletOptions {
@@ -80,6 +82,8 @@ export interface GenerateWalletOptions {
   type?: 'hot' | 'cold' | 'custodial' | 'trading';
   subType?: 'lightningCustody' | 'lightningSelfCustody';
   evmKeyRingReferenceWalletId?: string;
+  /** For FLR C wallet creation: the source FLR P wallet ID to derive from. */
+  sourceFlrpWalletId?: string;
 }
 
 export const GenerateLightningWalletOptionsCodec = t.intersection(
