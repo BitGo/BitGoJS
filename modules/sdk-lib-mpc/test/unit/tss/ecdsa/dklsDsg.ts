@@ -1,4 +1,4 @@
-import { DklsDsg, DklsUtils } from '../../../../src/tss/ecdsa-dkls';
+import { DklsDsg, DklsTypes, DklsUtils } from '../../../../src/tss/ecdsa-dkls';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
 import should from 'should';
@@ -408,5 +408,45 @@ describe('DKLS Dsg 2x3', function () {
     );
     should.exist(convertedSignature);
     convertedSignature.split(':').length.should.equal(4);
+  });
+
+  it('should handle WaitMsg4 round in _deserializeState without throwing', async function () {
+    const vector = vectors[0];
+    const party1 = new DklsDsg.Dsg(
+      fs.readFileSync(shareFiles[vector.party1]),
+      vector.party1,
+      vector.derivationPath,
+      crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
+    );
+    const party2 = new DklsDsg.Dsg(
+      fs.readFileSync(shareFiles[vector.party2]),
+      vector.party2,
+      vector.derivationPath,
+      crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
+    );
+
+    // Progress through round 3 so sessions are in WaitMsg4 state
+    await executeTillRound(4, party1, party2);
+
+    // Get the session at WaitMsg4 state and verify the round is an object
+    const session = party1.getSession();
+    const sessionBytes = new Uint8Array(Buffer.from(session, 'base64'));
+    const round = decode(sessionBytes).round;
+    (typeof round === 'object' && 'WaitMsg4' in round).should.equal(true);
+
+    // Create a new DSG and restore the WaitMsg4 session
+    const restoredParty = new DklsDsg.Dsg(
+      fs.readFileSync(shareFiles[vector.party1]),
+      vector.party1,
+      vector.derivationPath,
+      crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
+    );
+    await restoredParty.setSession(session);
+
+    // Restore the WASM session and call _deserializeState directly.
+    // Before the fix, this would throw "Invalid State: [object Object]".
+    (restoredParty as any)._restoreSession();
+    (restoredParty as any)._deserializeState();
+    (restoredParty as any).dsgState.should.equal(DklsTypes.DsgState.Round4);
   });
 });
