@@ -1880,6 +1880,9 @@ export enum UnderlyingAsset {
   'hteth:grtxp' = 'hteth:grtxp',
   'hteth:testeigen' = 'hteth:testeigen',
   'hteth:wbtc' = 'hteth:wbtc',
+  // Robinhood Chain testnet ERC-20 tokens
+  'thoodeth:amzn' = 'thoodeth:amzn',
+  'thoodeth:tsla' = 'thoodeth:tsla',
   THKD = 'thkd',
   THUNDER = 'thunder',
   TIO = 'tio',

@@ -4462,6 +4462,34 @@ export const tOfcErc20Coins = [
     undefined,
     'hteth'
   ),
+  tofcerc20(
+    'df59331f-b380-4fb7-ad9a-0e0c0c3ec730',
+    'ofcthoodeth:amzn',
+    'Amazon',
+    18,
+    UnderlyingAsset['thoodeth:amzn'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'thoodeth'
+  ),
+  tofcerc20(
+    '6abb714a-de88-4181-988e-86fbbfbc9c2e',
+    'ofcthoodeth:tsla',
+    'Tesla',
+    18,
+    UnderlyingAsset['thoodeth:tsla'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'thoodeth'
+  ),
 
   ofcerc20(
     'cc2a92cf-d799-463b-b08c-e9a4d5e87934',
