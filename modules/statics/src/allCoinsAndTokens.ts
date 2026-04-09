@@ -2728,10 +2728,29 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ],
     KeyCurve.Secp256k1,
     '',
     'THoodETH'
+  ),
+  erc20Token(
+    '3493d608-fd3e-45dc-926d-783d54a8fe4d',
+    'thoodeth:amzn',
+    'Amazon',
+    18,
+    '0x5884ad2f920c162cfbbacc88c9c51aa75ec09e02',
+    UnderlyingAsset['thoodeth:amzn'],
+    Networks.test.hoodeth
+  ),
+  erc20Token(
+    '8ede8dbd-1fa6-4669-be6d-6b19b3c98766',
+    'thoodeth:tsla',
+    'Tesla',
+    18,
+    '0xc9f9c86933092cbbfff3ccb4b105a4a94bf3bd4e',
+    UnderlyingAsset['thoodeth:tsla'],
+    Networks.test.hoodeth
   ),
   account(
     '1b17bbf4-02fc-492d-9071-6d7f47395f7a',
@@ -2750,6 +2769,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ],
     KeyCurve.Secp256k1,
     '',
