@@ -4,7 +4,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 
 import { getMainnetCoinName, utxoCoinsMainnet, utxoCoinsTestnet } from '../../src/names';
 
-import { getNetworkForCoinName, getUtxoCoinForNetwork, utxoCoins } from './util';
+import { getNetworkForCoinName, getUtxoCoinForNetwork, getUtxoCoin, utxoCoins } from './util';
 
 describe('utxoCoins', function () {
   it('has expected chain/network values for items', function () {
@@ -74,6 +74,74 @@ describe('utxoCoins', function () {
         ['zcashTest', 'tzec'],
       ]
     );
+  });
+
+  describe('isValidAddress with allowLightning', function () {
+    const btc = getUtxoCoin('btc');
+    const tbtc = getUtxoCoin('tbtc');
+    const bch = getUtxoCoin('bch');
+
+    it('should reject node pubkeys and invoices without allowLightning', function () {
+      assert.strictEqual(
+        btc.isValidAddress('02eec7245d6b7d2ccb30380bfbe2a3648cd7a942653f5aa340edcea1f283686619'),
+        false
+      );
+      assert.strictEqual(btc.isValidAddress('lnbc1500n1pj0ggavpp5example'), false);
+    });
+
+    it('should accept node pubkeys with allowLightning', function () {
+      assert.strictEqual(
+        btc.isValidAddress('02eec7245d6b7d2ccb30380bfbe2a3648cd7a942653f5aa340edcea1f283686619', {
+          allowLightning: true,
+        }),
+        true
+      );
+      assert.strictEqual(
+        tbtc.isValidAddress('03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad', {
+          allowLightning: true,
+        }),
+        true
+      );
+    });
+
+    it('should reject invalid node pubkeys even with allowLightning', function () {
+      // wrong prefix
+      assert.strictEqual(
+        btc.isValidAddress('04eec7245d6b7d2ccb30380bfbe2a3648cd7a942653f5aa340edcea1f283686619', {
+          allowLightning: true,
+        }),
+        false
+      );
+      // too short
+      assert.strictEqual(
+        btc.isValidAddress('02eec7245d6b7d2ccb30380bfbe2a3648cd7a942653f5aa340edcea1f28368', {
+          allowLightning: true,
+        }),
+        false
+      );
+    });
+
+    it('should accept bolt11 invoices with allowLightning', function () {
+      assert.strictEqual(btc.isValidAddress('lnbc1500n1pj0ggavpp5example', { allowLightning: true }), true);
+      assert.strictEqual(tbtc.isValidAddress('lntb1500n1pj0ggavpp5example', { allowLightning: true }), true);
+    });
+
+    it('should reject non-bolt11 strings with allowLightning', function () {
+      assert.strictEqual(btc.isValidAddress('lnxyz1500n1pj0ggavpp5example', { allowLightning: true }), false);
+      assert.strictEqual(btc.isValidAddress('not-an-address', { allowLightning: true }), false);
+    });
+
+    it('should still accept regular bitcoin addresses with allowLightning', function () {
+      assert.strictEqual(btc.isValidAddress('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', { allowLightning: true }), true);
+    });
+
+    it('should not accept lightning addresses for non-btc coins without allowLightning', function () {
+      assert.strictEqual(
+        bch.isValidAddress('02eec7245d6b7d2ccb30380bfbe2a3648cd7a942653f5aa340edcea1f283686619'),
+        false
+      );
+      assert.strictEqual(bch.isValidAddress('lnbc1500n1pj0ggavpp5example'), false);
+    });
   });
 
   it('getMainnetCoinName returns correct mainnet coin name', function () {
