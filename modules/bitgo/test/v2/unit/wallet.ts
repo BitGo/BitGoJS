@@ -3268,6 +3268,34 @@ describe('V2 Wallet:', function () {
         args[1]!.should.equal('full');
       });
 
+      it('should pass feeToken parameter to prebuildTxWithIntent', async function () {
+        const recipients = [
+          {
+            address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
+            amount: '1000',
+          },
+        ];
+
+        const feeToken = '0x20c0000000000000000000000000000000000002';
+
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'transfer',
+          feeToken,
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.recipients!.should.deepEqual(recipients);
+        args[0]!.feeToken!.should.equal(feeToken);
+        args[0]!.intentType.should.equal('payment');
+        args[1]!.should.equal('full');
+      });
+
       it('should call prebuildTxWithIntent with the correct params for eth transfertokens', async function () {
         const recipients = [
           {
@@ -3560,6 +3588,34 @@ describe('V2 Wallet:', function () {
         intent.feeOptions!.should.deepEqual(feeOptions);
         intent.txid!.should.equal(lowFeeTxid);
         intent.intentType.should.equal('acceleration');
+      });
+
+      it('populate intent should place feeToken at intent level, not in feeOptions', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
+
+        const feeToken = '0x20c0000000000000000000000000000000000002';
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('hteth'), {
+          reqId,
+          intentType: 'payment',
+          recipients: [
+            {
+              address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
+              amount: '1000',
+            },
+          ],
+          feeOptions,
+          feeToken,
+        });
+
+        intent.intentType.should.equal('payment');
+        intent.feeOptions!.should.deepEqual(feeOptions);
+        intent.feeToken!.should.equal(feeToken);
+        intent.feeOptions!.should.not.have.property('feeToken');
       });
 
       it('populate intent should return valid coredao acceleration intent', async function () {

@@ -224,6 +224,11 @@ export interface PrebuildTransactionOptions {
    * Named intentAmount to avoid collision with SendOptions.amount which is string | number.
    */
   intentAmount?: { value: string; symbol: string };
+  /**
+   * TIP-20 token address to use for paying transaction fees (Tempo only).
+   * When specified, fees will be deducted in this token instead of the native currency.
+   */
+  feeToken?: string;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {

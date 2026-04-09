@@ -22,6 +22,7 @@ export interface EIP1559FeeOptions {
   gasLimit?: number;
   maxFeePerGas: number;
   maxPriorityFeePerGas: number;
+  feeToken?: string;
 }
 
 export interface FeeOption {
@@ -30,6 +31,7 @@ export interface FeeOption {
   feeType?: 'base' | 'max' | 'tip';
   gasLimit?: number;
   gasPrice?: number;
+  feeToken?: string;
 }
 
 export interface TokenEnablement {
@@ -280,6 +282,10 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
    * Amount for intents that use a top-level amount instead of recipients (e.g. bridgeFunds).
    */
   amount?: { value: string; symbol: string };
+  /**
+   * TIP-20 token address to use for paying transaction fees (Tempo only).
+   */
+  feeToken?: string;
 }
 export interface IntentRecipient {
   address: {
@@ -329,6 +335,11 @@ export interface PopulatedIntent extends PopulatedIntentBase {
   // ETH & ETH-like params
   selfSend?: boolean;
   feeOptions?: FeeOption | EIP1559FeeOptions;
+  /**
+   * TIP-20 token address to use for paying transaction fees (Tempo only).
+   * This is placed at the intent level, not nested in feeOptions.
+   */
+  feeToken?: string;
   hopParams?: HopParams;
   txid?: string;
   receiveAddress?: string;
