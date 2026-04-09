@@ -67,6 +67,8 @@ module.exports = {
         'VL-',
         'WIN-',
         'WP-',
+        'WAL-',
+        'WCN-',
         'WCI-',
         'COIN-',
         'FIAT-',
