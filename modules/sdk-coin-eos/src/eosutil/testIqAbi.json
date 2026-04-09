@@ -1,0 +1,465 @@
+{
+  "account_name": "testtoken112",
+  "abi": {
+    "version": "eosio::abi/1.1",
+    "types": [
+      {
+        "new_type_name": "ipfshash_t",
+        "type": "string"
+      }
+    ],
+    "structs": [
+      {
+        "name": "account",
+        "base": "",
+        "fields": [
+          {
+            "name": "balance",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "burn",
+        "base": "",
+        "fields": [
+          {
+            "name": "from",
+            "type": "name"
+          },
+          {
+            "name": "quantity",
+            "type": "asset"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "close",
+        "base": "",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "name"
+          },
+          {
+            "name": "symbol",
+            "type": "symbol"
+          }
+        ]
+      },
+      {
+        "name": "create",
+        "base": "",
+        "fields": [
+          {
+            "name": "issuer",
+            "type": "name"
+          },
+          {
+            "name": "maximum_supply",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "currency_stats",
+        "base": "",
+        "fields": [
+          {
+            "name": "supply",
+            "type": "asset"
+          },
+          {
+            "name": "max_supply",
+            "type": "asset"
+          },
+          {
+            "name": "issuer",
+            "type": "name"
+          }
+        ]
+      },
+      {
+        "name": "epartpropose",
+        "base": "",
+        "fields": [
+          {
+            "name": "proposer",
+            "type": "name"
+          },
+          {
+            "name": "slug",
+            "type": "string"
+          },
+          {
+            "name": "ipfs_hash",
+            "type": "ipfshash_t"
+          },
+          {
+            "name": "lang_code",
+            "type": "string"
+          },
+          {
+            "name": "group_id",
+            "type": "int64"
+          },
+          {
+            "name": "comment",
+            "type": "string"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          },
+          {
+            "name": "permission",
+            "type": "name"
+          }
+        ]
+      },
+      {
+        "name": "epartpropsex",
+        "base": "",
+        "fields": [
+          {
+            "name": "proposer",
+            "type": "name"
+          },
+          {
+            "name": "slug",
+            "type": "string"
+          },
+          {
+            "name": "ipfs_hash",
+            "type": "ipfshash_t"
+          },
+          {
+            "name": "lang_code",
+            "type": "string"
+          },
+          {
+            "name": "group_id",
+            "type": "int64"
+          },
+          {
+            "name": "comment",
+            "type": "string"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          },
+          {
+            "name": "permission",
+            "type": "name"
+          },
+          {
+            "name": "proxied_for",
+            "type": "string"
+          },
+          {
+            "name": "extra_note",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "epartvote",
+        "base": "",
+        "fields": [
+          {
+            "name": "voter",
+            "type": "name"
+          },
+          {
+            "name": "proposal_id",
+            "type": "uint64"
+          },
+          {
+            "name": "approve",
+            "type": "bool"
+          },
+          {
+            "name": "amount",
+            "type": "uint64"
+          },
+          {
+            "name": "comment",
+            "type": "string"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          },
+          {
+            "name": "permission",
+            "type": "name"
+          }
+        ]
+      },
+      {
+        "name": "epartvotex",
+        "base": "",
+        "fields": [
+          {
+            "name": "voter",
+            "type": "name"
+          },
+          {
+            "name": "proposal_id",
+            "type": "uint64"
+          },
+          {
+            "name": "approve",
+            "type": "bool"
+          },
+          {
+            "name": "amount",
+            "type": "uint64"
+          },
+          {
+            "name": "comment",
+            "type": "string"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          },
+          {
+            "name": "permission",
+            "type": "name"
+          },
+          {
+            "name": "proxied_for",
+            "type": "string"
+          },
+          {
+            "name": "extra_note",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "issue",
+        "base": "",
+        "fields": [
+          {
+            "name": "to",
+            "type": "name"
+          },
+          {
+            "name": "quantity",
+            "type": "asset"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "issueextra",
+        "base": "",
+        "fields": [
+          {
+            "name": "to",
+            "type": "name"
+          },
+          {
+            "name": "quantity",
+            "type": "asset"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          },
+          {
+            "name": "proxied_for",
+            "type": "string"
+          },
+          {
+            "name": "extra_note",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "open",
+        "base": "",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "name"
+          },
+          {
+            "name": "symbol",
+            "type": "symbol"
+          },
+          {
+            "name": "ram_payer",
+            "type": "name"
+          }
+        ]
+      },
+      {
+        "name": "setmaxsupply",
+        "base": "",
+        "fields": [
+          {
+            "name": "maximum_supply",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "transfer",
+        "base": "",
+        "fields": [
+          {
+            "name": "from",
+            "type": "name"
+          },
+          {
+            "name": "to",
+            "type": "name"
+          },
+          {
+            "name": "quantity",
+            "type": "asset"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "transfrextra",
+        "base": "",
+        "fields": [
+          {
+            "name": "from",
+            "type": "name"
+          },
+          {
+            "name": "to",
+            "type": "name"
+          },
+          {
+            "name": "quantity",
+            "type": "asset"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          },
+          {
+            "name": "proxied_for",
+            "type": "string"
+          },
+          {
+            "name": "purpose",
+            "type": "string"
+          },
+          {
+            "name": "extra_note",
+            "type": "string"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "name": "burn",
+        "type": "burn",
+        "ricardian_contract": "Burn IQ tokens and take them out of circulation."
+      },
+      {
+        "name": "close",
+        "type": "close",
+        "ricardian_contract": "Close IQ balance."
+      },
+      {
+        "name": "create",
+        "type": "create",
+        "ricardian_contract": "Create a token."
+      },
+      {
+        "name": "epartpropose",
+        "type": "epartpropose",
+        "ricardian_contract": "User-facing action for creating a proposal."
+      },
+      {
+        "name": "epartpropsex",
+        "type": "epartpropsex",
+        "ricardian_contract": "User-facing action for creating a proposal. New version"
+      },
+      {
+        "name": "epartvote",
+        "type": "epartvote",
+        "ricardian_contract": "User-facing action for voting on a proposal"
+      },
+      {
+        "name": "epartvotex",
+        "type": "epartvotex",
+        "ricardian_contract": "User-facing action for voting on a proposal. New version"
+      },
+      {
+        "name": "issue",
+        "type": "issue",
+        "ricardian_contract": "Issue IQ tokens."
+      },
+      {
+        "name": "issueextra",
+        "type": "issueextra",
+        "ricardian_contract": "Issue IQ tokens. New version"
+      },
+      {
+        "name": "open",
+        "type": "open",
+        "ricardian_contract": "Open IQ balance."
+      },
+      {
+        "name": "setmaxsupply",
+        "type": "setmaxsupply",
+        "ricardian_contract": "Set maximum supply."
+      },
+      {
+        "name": "transfer",
+        "type": "transfer",
+        "ricardian_contract": "Transfer the IQ token."
+      },
+      {
+        "name": "transfrextra",
+        "type": "transfrextra",
+        "ricardian_contract": "Transfer the IQ token normally, with extra information recorded. The regular transfer function is unaffected."
+      }
+    ],
+    "tables": [
+      {
+        "name": "accounts",
+        "index_type": "i64",
+        "key_names": [],
+        "key_types": [],
+        "type": "account"
+      },
+      {
+        "name": "stat",
+        "index_type": "i64",
+        "key_names": [],
+        "key_types": [],
+        "type": "currency_stats"
+      }
+    ],
+    "ricardian_clauses": [],
+    "error_messages": [],
+    "abi_extensions": [],
+    "variants": [],
+    "action_results": [],
+    "kv_tables": {}
+  }
+}

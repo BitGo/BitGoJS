@@ -1,0 +1,99 @@
+transaction: 2fedaa3661f6251d1a4ca23e5d4bb03fab5b75e8e471281f554755c439cd9924
+├── format: network
+├── complete: true
+├── parsedAs: bitcoin testnet
+├── version: 1
+├── locktime: 0
+├── hasWitnesses: true
+├── status: unknown
+├── vsize: 262vbytes (1047wu)
+├── fee [btc]: 0.00001000
+├── feeRate [sat/vbyte]: 3.82
+├─┬ inputs: 2 sum=2.00000000
+│ ├─┬ 0: ba5c40fb1f9c00aee45cfc14f9049e6bf4773bae16c6f36e555dfcfa62fb3856:1
+│ │ ├── sequence: ffffffff (4 bytes)
+│ │ ├── scriptSig:  (0 bytes)
+│ │ ├─┬ witness: witnessscripthash
+│ │ │ ├── 0:  (0 bytes)
+│ │ │ ├── 1: 3045022100e665acb4a9237b32d00052b4419ed699db1cd01522cec80d4714d66452efb982022029a3272a95f61e6a7d85b4605f735ffc4062c155d78c0b4bb3e35191997a676201 (72 bytes)
+│ │ │ ├── 2: 3044022011f825047fcf6a13c7da282d27be5d5d4d82759b8c7f987f1dcaef88b4b104b102205c333b6ac321bf7150823833452e5d3073c77dbab053430a4de5c3398e9cb37001 (71 bytes)
+│ │ │ └─┬ 3: 5221028fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec972103316bc27d95b96418349afc6298c259bb999c6e8f39a7217787ad53602be7c1472102e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d0453ae (105 bytes)
+│ │ │   └── asm: 
+│ │ │       OP_2
+│ │ │       028fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97
+│ │ │       03316bc27d95b96418349afc6298c259bb999c6e8f39a7217787ad53602be7c147
+│ │ │       02e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04
+│ │ │       OP_3
+│ │ │       OP_CHECKMULTISIG
+│ │ └─┬ sigScript: p2wsh
+│ │   ├─┬ pubkeys: 3
+│ │   │ ├── 0: 028fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97 (33 bytes)
+│ │   │ ├── 1: 03316bc27d95b96418349afc6298c259bb999c6e8f39a7217787ad53602be7c147 (33 bytes)
+│ │   │ └── 2: 02e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04 (33 bytes)
+│ │   └─┬ signatures: [72byte] [71byte]
+│ │     ├── signed by: [0, 2]
+│ │     ├─┬ 0
+│ │     │ ├── bytes: 3045022100e665acb4a9237b32d00052b4419ed699db1cd01522cec80d4714d66452efb982022029a3272a95f61e6a7d85b4605f735ffc4062c155d78c0b4bb3e35191997a676201 (72 bytes)
+│ │     │ ├── valid: true
+│ │     │ ├── signedBy: user
+│ │     │ ├── isCanonical: true
+│ │     │ ├── hashType: 1
+│ │     │ ├── r: e665acb4a9237b32d00052b4419ed699db1cd01522cec80d4714d66452efb982 (32 bytes)
+│ │     │ ├── s: 29a3272a95f61e6a7d85b4605f735ffc4062c155d78c0b4bb3e35191997a6762 (32 bytes)
+│ │     │ └── highS: false
+│ │     └─┬ 1
+│ │       ├── bytes: 3044022011f825047fcf6a13c7da282d27be5d5d4d82759b8c7f987f1dcaef88b4b104b102205c333b6ac321bf7150823833452e5d3073c77dbab053430a4de5c3398e9cb37001 (71 bytes)
+│ │       ├── valid: true
+│ │       ├── signedBy: bitgo
+│ │       ├── isCanonical: true
+│ │       ├── hashType: 1
+│ │       ├── r: 11f825047fcf6a13c7da282d27be5d5d4d82759b8c7f987f1dcaef88b4b104b1 (32 bytes)
+│ │       ├── s: 5c333b6ac321bf7150823833452e5d3073c77dbab053430a4de5c3398e9cb370 (32 bytes)
+│ │       └── highS: false
+│ └─┬ 1: 85ed52eddf9ee786cee123208a6135a8c781741df66d2ab025e22a32ae97ace3:0
+│   ├── sequence: ffffffff (4 bytes)
+│   ├── scriptSig:  (0 bytes)
+│   ├─┬ witness: witnessscripthash
+│   │ ├── 0:  (0 bytes)
+│   │ ├── 1: 30440220021aff10c307d538600552a18b7a4187bffd43390d7944164c8054d15645673f022026a05412302b0c2c98b8805effc4e99e716e4f6f485dbce1a8c92a8440c498dc01 (71 bytes)
+│   │ ├── 2: 304402203436df8e3ce0c6e16d12a5f50f8c89a206e11cfd515c9e39f6f361f8f22a8b7a02202c180bd360669abab214687aa520cb6a0ca4973cc65e58f40f0b7a982489e2a101 (71 bytes)
+│   │ └─┬ 3: 5221028fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec972103316bc27d95b96418349afc6298c259bb999c6e8f39a7217787ad53602be7c1472102e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d0453ae (105 bytes)
+│   │   └── asm: 
+│   │       OP_2
+│   │       028fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97
+│   │       03316bc27d95b96418349afc6298c259bb999c6e8f39a7217787ad53602be7c147
+│   │       02e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04
+│   │       OP_3
+│   │       OP_CHECKMULTISIG
+│   └─┬ sigScript: p2wsh
+│     ├─┬ pubkeys: 3
+│     │ ├── 0: 028fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97 (33 bytes)
+│     │ ├── 1: 03316bc27d95b96418349afc6298c259bb999c6e8f39a7217787ad53602be7c147 (33 bytes)
+│     │ └── 2: 02e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04 (33 bytes)
+│     └─┬ signatures: [71byte] [71byte]
+│       ├── signed by: [0, 2]
+│       ├─┬ 0
+│       │ ├── bytes: 30440220021aff10c307d538600552a18b7a4187bffd43390d7944164c8054d15645673f022026a05412302b0c2c98b8805effc4e99e716e4f6f485dbce1a8c92a8440c498dc01 (71 bytes)
+│       │ ├── valid: true
+│       │ ├── signedBy: user
+│       │ ├── isCanonical: true
+│       │ ├── hashType: 1
+│       │ ├── r: 021aff10c307d538600552a18b7a4187bffd43390d7944164c8054d15645673f (32 bytes)
+│       │ ├── s: 26a05412302b0c2c98b8805effc4e99e716e4f6f485dbce1a8c92a8440c498dc (32 bytes)
+│       │ └── highS: false
+│       └─┬ 1
+│         ├── bytes: 304402203436df8e3ce0c6e16d12a5f50f8c89a206e11cfd515c9e39f6f361f8f22a8b7a02202c180bd360669abab214687aa520cb6a0ca4973cc65e58f40f0b7a982489e2a101 (71 bytes)
+│         ├── valid: true
+│         ├── signedBy: bitgo
+│         ├── isCanonical: true
+│         ├── hashType: 1
+│         ├── r: 3436df8e3ce0c6e16d12a5f50f8c89a206e11cfd515c9e39f6f361f8f22a8b7a (32 bytes)
+│         ├── s: 2c180bd360669abab214687aa520cb6a0ca4973cc65e58f40f0b7a982489e2a1 (32 bytes)
+│         └── highS: false
+└─┬ outputs: 1 sum=1.99999000
+  └─┬ 0: tb1qz4flxx37yhnhpdaus4ac9yy7sde5m0lyhnd45hn0csvmdysv8x9qw8zyk7
+    ├── value: 1.99999000
+    └─┬ scriptPubKey: [34byte]
+      ├── type: witnessscripthash
+      ├── hex: 00201553f31a3e25e770b7bc857b82909e83734dbfe4bcdb5a5e6fc419b6920c398a
+      └── asm: OP_0 1553f31a3e25e770b7bc857b82909e83734dbfe4bcdb5a5e6fc419b6920c398a

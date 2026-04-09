@@ -1,0 +1,44 @@
+{
+  "_id": "64e6fa7f86f5e70007a22b4bec31213a",
+  "id": "2N85TyC2JdbBpanfme6w8XNQaSr5wcc9Ry9",
+  "label": "v1-safe-wallet-uncompressed-keys",
+  "isActive": true,
+  "type": "safe",
+  "freeze": {},
+  "enterprise": "635a6935b1a3e600083265dd0dd584bc",
+  "adminCount": 1,
+  "disableTransactionNotifications": false,
+  "private": {
+    "userPrivKey": " {\"iv\":\"lp64eGp9aIr5vKFhVkDd2Q==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"X9IGug0eW7c=\",\"ct\":\"ISoh89i1pHzgkji89zyqrd7DS59GE9sKsfoB/hawun1lvYE/LN752DmDM53U2LGq57/25z8M5vfX4NA=\"}",
+    "redeemScript": "524104b9aea0bf6be18d3ed48d1cc3495e9af5e499ad90a84930990ba58b198ee81b5e83f6aa2f617c04401616e844f51802c0f1d827422efc1f3856dc222dd8beed16410435e9d7c48e3a5254d5881b60abf004cf6eedc6ab842393caa2fdd20d6d0ad170cc32c4664603de3e9b9d1fd01b070d192fad570fcbb3b185c034ec5a4a0b1fb44104f2b75fe586c89fbefbcbd0238824ccbde4a2d68fb9e2e2f7ed96840920d74a3250a259aa7cbb007d290fa083ab1800ca4f1cc70446c64f340c3d00d966478a6753ae"
+  },
+  "recoveryInfo": {
+    "userPrvKey": "[omitted]",
+    "addresses": [
+      "Array"
+    ],
+    "redeemScript": "524104b9aea0bf6be18d3ed48d1cc3495e9af5e499ad90a84930990ba58b198ee81b5e83f6aa2f617c04401616e844f51802c0f1d827422efc1f3856dc222dd8beed16410435e9d7c48e3a5254d5881b60abf004cf6eedc6ab842393caa2fdd20d6d0ad170cc32c4664603de3e9b9d1fd01b070d192fad570fcbb3b185c034ec5a4a0b1fb44104f2b75fe586c89fbefbcbd0238824ccbde4a2d68fb9e2e2f7ed96840920d74a3250a259aa7cbb007d290fa083ab1800ca4f1cc70446c64f340c3d00d966478a6753ae",
+    "m": 2,
+    "n": 3
+  },
+  "permissions": "admin,spend,view",
+  "admin": {
+    "users": [
+      "Array"
+    ]
+  },
+  "tags": [],
+  "approvalsRequired": 1,
+  "lastUsedByAPI": "2023-08-24T07:27:05.667Z",
+  "spendingAccount": true,
+  "pendingApprovals": [],
+  "balance": 200000,
+  "instantBalance": 0,
+  "spendableConfirmedBalance": 200000,
+  "confirmedBalance": 200000,
+  "spendableBalance": 200000,
+  "sent": 0,
+  "received": 200000,
+  "unconfirmedSends": 0,
+  "unconfirmedReceives": 0
+}

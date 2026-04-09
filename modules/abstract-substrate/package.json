@@ -1,0 +1,63 @@
+{
+  "name": "@bitgo/abstract-substrate",
+  "version": "1.14.0",
+  "description": "BitGo SDK coin library for Substrate base implementation",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "npm run prepare",
+    "build-ts": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build-ts"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/abstract-substrate"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/sdk-core": "^36.37.0",
+    "@bitgo/sdk-lib-mpc": "^10.10.0",
+    "@bitgo/statics": "^58.32.0",
+    "@polkadot/api": "14.1.1",
+    "@polkadot/keyring": "13.5.6",
+    "@polkadot/types": "14.1.1",
+    "@polkadot/util": "13.5.6",
+    "@polkadot/util-crypto": "13.5.6",
+    "@substrate/txwrapper-core": "7.5.2",
+    "@substrate/txwrapper-polkadot": "7.5.2",
+    "@substrate/txwrapper-registry": "7.5.3",
+    "bignumber.js": "^9.1.2",
+    "bs58": "^4.0.1",
+    "hi-base32": "^0.5.1",
+    "joi": "^17.4.0",
+    "lodash": "^4.18.0",
+    "tweetnacl": "^1.0.3"
+  },
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
+  "files": [
+    "dist"
+  ]
+}

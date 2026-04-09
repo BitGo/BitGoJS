@@ -1,0 +1,9 @@
+{
+  "inputs": {
+    "tapInternalKey": "6d767a69e03d4611485407d777711ee4d1321a84cf82f591db0cd3e179c49821",
+    "tapMerkleRoot": "63a3684763dca2d4bb5d412d01f5ce73214af3d7816b52d7ad549562cc4cd890"
+  },
+  "output": {
+    "tapTweak": "c990a77a31b07eea9d1a616bfe80bd33ba2a7e2a22db0e900a168d87a5e01a2c"
+  }
+}

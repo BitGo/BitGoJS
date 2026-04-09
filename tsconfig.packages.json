@@ -1,0 +1,308 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./modules/abstract-cosmos"
+    },
+    {
+      "path": "./modules/abstract-eth"
+    },
+    {
+      "path": "./modules/abstract-lightning"
+    },
+    {
+      "path": "./modules/abstract-substrate"
+    },
+    {
+      "path": "./modules/abstract-utxo"
+    },
+    {
+      "path": "./modules/account-lib"
+    },
+    {
+      "path": "./modules/beta-tools"
+    },
+    {
+      "path": "./modules/bitgo"
+    },
+    {
+      "path": "./modules/blockapis"
+    },
+    {
+      "path": "./modules/deser-lib"
+    },
+    {
+      "path": "./modules/express"
+    },
+    {
+      "path": "./modules/key-card"
+    },
+    {
+      "path": "./modules/sdk-api"
+    },
+    {
+      "path": "./modules/sdk-coin-ada"
+    },
+    {
+      "path": "./modules/sdk-coin-algo"
+    },
+    {
+      "path": "./modules/sdk-coin-apechain"
+    },
+    {
+      "path": "./modules/sdk-coin-apt"
+    },
+    {
+      "path": "./modules/sdk-coin-arbeth"
+    },
+    {
+      "path": "./modules/sdk-coin-asi"
+    },
+    {
+      "path": "./modules/sdk-coin-atom"
+    },
+    {
+      "path": "./modules/sdk-coin-avaxc"
+    },
+    {
+      "path": "./modules/sdk-coin-avaxp"
+    },
+    {
+      "path": "./modules/sdk-coin-baby"
+    },
+    {
+      "path": "./modules/sdk-coin-bch"
+    },
+    {
+      "path": "./modules/sdk-coin-bcha"
+    },
+    {
+      "path": "./modules/sdk-coin-bera"
+    },
+    {
+      "path": "./modules/sdk-coin-bld"
+    },
+    {
+      "path": "./modules/sdk-coin-bsc"
+    },
+    {
+      "path": "./modules/sdk-coin-bsv"
+    },
+    {
+      "path": "./modules/sdk-coin-btc"
+    },
+    {
+      "path": "./modules/sdk-coin-btg"
+    },
+    {
+      "path": "./modules/sdk-coin-canton"
+    },
+    {
+      "path": "./modules/sdk-coin-celo"
+    },
+    {
+      "path": "./modules/sdk-coin-coredao"
+    },
+    {
+      "path": "./modules/sdk-coin-coreum"
+    },
+    {
+      "path": "./modules/sdk-coin-cosmos"
+    },
+    {
+      "path": "./modules/sdk-coin-cronos"
+    },
+    {
+      "path": "./modules/sdk-coin-cspr"
+    },
+    {
+      "path": "./modules/sdk-coin-dash"
+    },
+    {
+      "path": "./modules/sdk-coin-doge"
+    },
+    {
+      "path": "./modules/sdk-coin-dot"
+    },
+    {
+      "path": "./modules/sdk-coin-eos"
+    },
+    {
+      "path": "./modules/sdk-coin-etc"
+    },
+    {
+      "path": "./modules/sdk-coin-eth"
+    },
+    {
+      "path": "./modules/sdk-coin-ethlike"
+    },
+    {
+      "path": "./modules/sdk-coin-ethw"
+    },
+    {
+      "path": "./modules/sdk-coin-evm"
+    },
+    {
+      "path": "./modules/sdk-coin-flr"
+    },
+    {
+      "path": "./modules/sdk-coin-hash"
+    },
+    {
+      "path": "./modules/sdk-coin-hbar"
+    },
+    {
+      "path": "./modules/sdk-coin-icp"
+    },
+    {
+      "path": "./modules/sdk-coin-initia"
+    },
+    {
+      "path": "./modules/sdk-coin-injective"
+    },
+    {
+      "path": "./modules/sdk-coin-iota"
+    },
+    {
+      "path": "./modules/sdk-coin-islm"
+    },
+    {
+      "path": "./modules/sdk-coin-lnbtc"
+    },
+    {
+      "path": "./modules/sdk-coin-ltc"
+    },
+    {
+      "path": "./modules/sdk-coin-mantra"
+    },
+    {
+      "path": "./modules/sdk-coin-mon"
+    },
+    {
+      "path": "./modules/sdk-coin-near"
+    },
+    {
+      "path": "./modules/sdk-coin-oas"
+    },
+    {
+      "path": "./modules/sdk-coin-opeth"
+    },
+    {
+      "path": "./modules/sdk-coin-osmo"
+    },
+    {
+      "path": "./modules/sdk-coin-polygon"
+    },
+    {
+      "path": "./modules/sdk-coin-polyx"
+    },
+    {
+      "path": "./modules/sdk-coin-rbtc"
+    },
+    {
+      "path": "./modules/sdk-coin-rune"
+    },
+    {
+      "path": "./modules/sdk-coin-sei"
+    },
+    {
+      "path": "./modules/sdk-coin-sgb"
+    },
+    {
+      "path": "./modules/sdk-coin-sol"
+    },
+    {
+      "path": "./modules/sdk-coin-soneium"
+    },
+    {
+      "path": "./modules/sdk-coin-stt"
+    },
+    {
+      "path": "./modules/sdk-coin-stx"
+    },
+    {
+      "path": "./modules/sdk-coin-sui"
+    },
+    {
+      "path": "./modules/sdk-coin-tao"
+    },
+    {
+      "path": "./modules/sdk-coin-tempo"
+    },
+    {
+      "path": "./modules/sdk-coin-tia"
+    },
+    {
+      "path": "./modules/sdk-coin-ton"
+    },
+    {
+      "path": "./modules/sdk-coin-trx"
+    },
+    {
+      "path": "./modules/sdk-coin-vet"
+    },
+    {
+      "path": "./modules/sdk-coin-wemix"
+    },
+    {
+      "path": "./modules/sdk-coin-world"
+    },
+    {
+      "path": "./modules/sdk-coin-xdc"
+    },
+    {
+      "path": "./modules/sdk-coin-xlm"
+    },
+    {
+      "path": "./modules/sdk-coin-xrp"
+    },
+    {
+      "path": "./modules/sdk-coin-xtz"
+    },
+    {
+      "path": "./modules/sdk-coin-zec"
+    },
+    {
+      "path": "./modules/sdk-coin-zeta"
+    },
+    {
+      "path": "./modules/sdk-coin-zketh"
+    },
+    {
+      "path": "./modules/sdk-core"
+    },
+    {
+      "path": "./modules/sdk-hmac"
+    },
+    {
+      "path": "./modules/sdk-lib-mpc"
+    },
+    {
+      "path": "./modules/sdk-opensslbytes"
+    },
+    {
+      "path": "./modules/sdk-rpc-wrapper"
+    },
+    {
+      "path": "./modules/sdk-test"
+    },
+    {
+      "path": "./modules/statics"
+    },
+    {
+      "path": "./modules/utxo-bin"
+    },
+    {
+      "path": "./modules/utxo-core"
+    },
+    {
+      "path": "./modules/utxo-lib"
+    },
+    {
+      "path": "./modules/utxo-ord"
+    },
+    {
+      "path": "./modules/web-demo"
+    }
+  ]
+}

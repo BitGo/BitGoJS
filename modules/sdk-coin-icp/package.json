@@ -1,0 +1,68 @@
+{
+  "name": "@bitgo/sdk-coin-icp",
+  "version": "1.22.0",
+  "description": "BitGo SDK coin library for Internet Computer",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "npm run prepare",
+    "build-ts": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build-ts && shx cp -r ./resources ./dist",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-icp"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/sdk-core": "^36.37.0",
+    "@bitgo/sdk-lib-mpc": "^10.10.0",
+    "@bitgo/secp256k1": "^1.11.0",
+    "@bitgo/statics": "^58.32.0",
+    "@dfinity/agent": "^2.2.0",
+    "@dfinity/candid": "^2.2.0",
+    "@dfinity/principal": "^2.2.0",
+    "@noble/curves": "1.8.1",
+    "bignumber.js": "^9.1.1",
+    "cbor-x": "^1.6.0",
+    "crc-32": "^1.2.0",
+    "ic0": "^0.3.2",
+    "js-sha256": "^0.9.0",
+    "long": "^5.3.2",
+    "protobufjs": "^7.5.0"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.76.1",
+    "@bitgo/sdk-test": "^9.1.35"
+  },
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
+  "files": [
+    "dist"
+  ]
+}

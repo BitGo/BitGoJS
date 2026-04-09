@@ -1,0 +1,404 @@
+name: BitGo SDK
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+      - rel/**
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  SOCKET_SECURITY_MODE: monitor  # Options: monitor (non-blocking) or block (fails on vulnerabilities)
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20.x, 22.x, 24.x]
+
+    steps:
+      - uses: socketdev/action@v1
+        with:
+          mode: firewall-free
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Setup node:${{ matrix.node-version }}
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Build Info
+        run: |
+          echo "node $(node --version)"
+          echo "npm $(npm --version)"
+          echo "yarn $(yarn --version)"
+          git --version
+          echo "base ref $GITHUB_BASE_REF"
+          echo "head ref $GITHUB_HEAD_REF"
+
+      - name: Fetch Base Ref
+        run: |
+          git fetch origin $GITHUB_BASE_REF
+
+      - name: restore lerna dependencies
+        id: lerna-cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 #v4.2.3
+        with:
+          path: |
+            node_modules
+            modules/*/node_modules
+          key: ${{ runner.os }}-node${{matrix.node-version}}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('**/package.json') }}
+
+      - name: Install Packages
+        if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
+        run: sfw yarn install --with-frozen-lockfile --ignore-scripts
+
+      - name: Check In-Repo Package Versions
+        run: yarn run check-versions
+
+      - name: build packages
+        env:
+          # Workaround for https://github.com/nodejs/node/issues/51555
+          DISABLE_V8_COMPILE_CACHE: '1'
+        run: yarn run postinstall
+
+      - name: Unit Test
+        run: yarn run unit-test-changed
+        env:
+          BITGOJS_TEST_PASSWORD: ${{ secrets.BITGOJS_TEST_PASSWORD }}
+
+      # - name: Upload Code Coverage
+      #   run: |
+      #     yarn run gen-coverage-changed
+      #     yarn run coverage
+      #   env:
+      #     CODECOV_FLAG: unit
+      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  code-quality:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check: ['lint', 'format', 'commit-lint', 'dependencies']
+
+    steps:
+      - uses: socketdev/action@v1
+        with:
+          mode: firewall-free
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup node 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+
+      - name: restore lerna dependencies
+        id: lerna-cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 #v4.2.3
+        with:
+          path: |
+            node_modules
+            modules/*/node_modules
+          key: ${{ runner.os }}-node20-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('**/package.json') }}
+
+      - name: Install Packages
+        if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
+        run: sfw yarn install --with-frozen-lockfile --ignore-scripts
+
+      - name: Lint Source Code
+        if: matrix.check == 'lint'
+        run: yarn run lint
+
+      - name: Check Source Code Formatting
+        if: matrix.check == 'format'
+        run: yarn run check-fmt
+
+      - name: Lint Commit Messages
+        if: matrix.check == 'commit-lint'
+        run: |
+          git fetch --unshallow origin $GITHUB_BASE_REF
+          GITHUB_REPO_BRANCH=$GITHUB_BASE_REF yarn run check-commits
+
+      - name: Check Package Dependencies
+        if: matrix.check == 'dependencies'
+        run: yarn run check-deps
+
+      # We conciously do not audit dependencies as a PR step since errors are typically
+      # unrelated to the PR changes. This check is performed in `publish.yml`.
+
+  license-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: socketdev/action@v1
+        with:
+          mode: firewall-free
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+
+      - name: restore lerna dependencies
+        id: lerna-cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 #v4.2.3
+        with:
+          path: |
+            node_modules
+            modules/*/node_modules
+          key: ${{ runner.os }}-node22-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('**/package.json') }}
+
+      - name: Install Packages
+        if: steps.lerna-cache.outputs.cache-hit != 'true'
+        run: sfw yarn install --with-frozen-lockfile --ignore-scripts
+
+      - name: build packages
+        env:
+          # Workaround for https://github.com/nodejs/node/issues/51555
+          DISABLE_V8_COMPILE_CACHE: '1'
+        run: yarn run postinstall
+
+      - name: Run Fossa Analysis
+        uses: fossas/fossa-action@3ebcea1862c6ffbd5cf1b4d0bd6b3fe7bd6f2cac # v1.7.0
+        with:
+          api-key: ${{ secrets.FOSSA_API_KEY }}
+          branch: ${{ github.head_ref || github.ref_name }}
+          project: BitGo/BitGoJS
+
+  browser-test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: socketdev/action@v1
+        with:
+          mode: firewall-free
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup node 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20 # this just needs to pass our lock file requirement for compilation
+
+      - name: Build Info
+        run: |
+          echo "node $(node --version)"
+          echo "npm $(npm --version)"
+          echo "yarn $(yarn --version)"
+          git --version
+          echo "base ref $GITHUB_BASE_REF"
+          echo "head ref $GITHUB_HEAD_REF"
+
+      - name: Install APT Packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gconf-service \
+            libasound2 \
+            libatk1.0-0 \
+            libatk-bridge2.0-0 \
+            libc6 \
+            libcairo2 \
+            libcups2 \
+            libdbus-1-3 \
+            libexpat1 \
+            libfontconfig1 \
+            libgcc1 \
+            libgconf-2-4 \
+            libgdk-pixbuf2.0-0 \
+            libglib2.0-0 \
+            libgtk-3-0 \
+            libnspr4 \
+            libpango-1.0-0 \
+            libpangocairo-1.0-0 \
+            libstdc++6 \
+            libx11-6 \
+            libx11-xcb1 \
+            libxcb1 \
+            libxcomposite1 \
+            libxcursor1 \
+            libxdamage1 \
+            libxext6 \
+            libxfixes3 \
+            libxi6 \
+            libxrandr2 \
+            libxrender1 \
+            libxss1 \
+            libxtst6 \
+            ca-certificates \
+            fonts-liberation \
+            libappindicator1 \
+            libnss3 \
+            lsb-release \
+            xdg-utils \
+            wget
+
+      - name: restore lerna dependencies
+        id: lerna-cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 #v4.2.3
+        with:
+          path: |
+            node_modules
+            modules/*/node_modules
+            /home/runner/.cache/Cypress
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json')}}-${{ hashFiles('**/package.json') }}
+
+      - name: Install Packages
+        if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
+        run: sfw yarn install --with-frozen-lockfile
+
+      - name: build packages
+        if: steps.lerna-cache.outputs.cache-hit == 'true'
+        env:
+          # Workaround for https://github.com/nodejs/node/issues/51555
+          DISABLE_V8_COMPILE_CACHE: '1'
+        run: yarn run postinstall
+
+      - name: Browser Tests
+        run: yarn run browser-tests
+        env:
+          BITGOJS_TEST_PASSWORD: ${{ secrets.BITGOJS_TEST_PASSWORD }}
+
+  docker-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Generate build info
+        id: build-info
+        run: |
+          VERSION=$(jq -r '.version' ./modules/express/package.json)
+          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - name: Build Express Docker image
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: |
+            bitgo/express:${{ github.sha }}
+          build-args: |
+            VERSION=${{ steps.build-info.outputs.version }}
+            BUILD_DATE=${{ steps.build-info.outputs.date }}
+            GIT_HASH=${{ github.sha }}
+            SOCKET_SECURITY_MODE=${{ env.SOCKET_SECURITY_MODE }}
+
+      - name: Test Express Docker image
+        id: docker-test
+        run: |
+          echo "Testing Docker image bitgo/express:${{ github.sha }}"
+
+          CONTAINER_ID=$(docker run -d -p 3080:3080 bitgo/express:${{ github.sha }})
+          echo "Started container: $CONTAINER_ID"
+
+          # Wait for the service to be ready with timeout
+          echo "Waiting for service to be ready..."
+
+          for i in {1..30}; do
+            if curl -f -s --max-time 5 http://localhost:3080/api/v2/ping > /dev/null 2>&1; then
+              echo "✅ API health check passed"
+              break
+            fi
+
+            if [ $i -eq 30 ]; then
+              echo "::error::API health check failed after 30 attempts"
+              docker logs "$CONTAINER_ID"
+              docker stop "$CONTAINER_ID"
+              docker rm "$CONTAINER_ID"
+              exit 1
+            fi
+
+            echo "Waiting for API... (attempt $i/30)"
+            sleep 2
+          done
+
+          # Check container logs for errors
+          docker logs "$CONTAINER_ID"
+
+          # Stop the container
+          docker stop "$CONTAINER_ID"
+          docker rm "$CONTAINER_ID"
+
+          echo "✅ Docker image tests passed"
+
+  verify-npm-packages:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Verify all packages exist on npm
+        uses: ./.github/actions/verify-npm-packages
+
+  dockerfile-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: socketdev/action@v1
+        with:
+          mode: firewall-free
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+
+      - name: restore lerna dependencies
+        id: lerna-cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 #v4.2.3
+        with:
+          path: |
+            node_modules
+            modules/*/node_modules
+          key: ${{ runner.os }}-node22-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json')}}-${{ hashFiles('**/package.json') }}
+
+      - name: Install Packages
+        if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
+        run: sfw yarn install --with-frozen-lockfile --ignore-scripts
+
+      - name: Check Dockerfile is up to date
+        run: |
+          yarn update-dockerfile
+          if ! git diff --quiet -- . ':!yarn.lock'; then
+            echo "Dockerfile is not up to date. Please run 'yarn update-dockerfile' and commit the changes."
+            git diff -- . ':!yarn.lock'
+            exit 1
+          fi

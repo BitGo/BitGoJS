@@ -1,0 +1,64 @@
+{
+  "name": "@bitgo/utxo-ord",
+  "description": "Utilities for building ordinals with BitGo utxo-lib",
+  "main": "./dist/cjs/src/index.js",
+  "module": "./dist/esm/index.js",
+  "browser": "./dist/esm/index.js",
+  "types": "./dist/cjs/src/index.d.ts",
+  "version": "1.28.1",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/index.d.ts",
+        "default": "./dist/cjs/src/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist/cjs",
+    "dist/esm"
+  ],
+  "keywords": [
+    "bitgo",
+    "utxo",
+    "bitcoinjs",
+    "bitcoin",
+    "ordinals"
+  ],
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "yarn tsc --build --incremental --verbose .",
+    "build:esm": "yarn tsc --project tsconfig.esm.json",
+    "lint": "eslint --quiet .",
+    "unit-test": "mocha --recursive test",
+    "fmt": "prettier --write '{src,test}/**/*.{ts,js}'",
+    "precommit": "yarn lint-staged"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/utxo-ord"
+  },
+  "dependencies": {
+    "@bitgo/wasm-utxo": "^2.1.0"
+  },
+  "devDependencies": {
+    "@bitgo/utxo-lib": "^11.22.0"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
+}

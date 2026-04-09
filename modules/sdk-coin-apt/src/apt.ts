@@ -1,0 +1,230 @@
+import {
+  AuditDecryptedKeyParams,
+  BaseCoin,
+  BaseTransaction,
+  BitGoBase,
+  KeyPair,
+  MPCAlgorithm,
+  MultisigType,
+  multisigTypes,
+  ParsedTransaction,
+  ParseTransactionOptions,
+  PopulatedIntent,
+  PrebuildTransactionWithIntentOptions,
+  SignedTransaction,
+  SignTransactionOptions,
+  TssVerifyAddressOptions,
+  UnexpectedAddressError,
+  verifyEddsaTssWalletAddress,
+  VerifyTransactionOptions,
+} from '@bitgo/sdk-core';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { KeyPair as AptKeyPair, TransactionBuilderFactory } from './lib';
+import utils from './lib/utils';
+import * as _ from 'lodash';
+import BigNumber from 'bignumber.js';
+import { ExplainTransactionOptions } from './lib/types';
+import { AptTransactionExplanation } from './lib/iface';
+import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
+
+export interface AptParseTransactionOptions extends ParseTransactionOptions {
+  txHex: string;
+}
+
+export class Apt extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+    super(bitgo);
+
+    if (!staticsCoin) {
+      throw new Error('missing required constructor parameter staticsCoin');
+    }
+
+    this._staticsCoin = staticsCoin;
+  }
+
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+    return new Apt(bitgo, staticsCoin);
+  }
+
+  /**
+   * Factor between the coin's base unit and its smallest subdivison
+   */
+  public getBaseFactor(): number {
+    return 1e8;
+  }
+
+  public getChain(): string {
+    return 'apt';
+  }
+
+  public getFamily(): string {
+    return 'apt';
+  }
+
+  public getFullName(): string {
+    return 'Aptos';
+  }
+
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
+  }
+
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'eddsa';
+  }
+
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
+
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    const { txPrebuild: txPrebuild, txParams: txParams } = params;
+    const txHex = txPrebuild.txHex;
+    if (!txHex) {
+      throw new Error('missing required tx prebuild property txHex');
+    }
+    const explainedTx = await this.explainTransaction({ txHex });
+    if (!explainedTx) {
+      throw new Error('failed to explain transaction');
+    }
+    if (txParams.recipients !== undefined) {
+      const filteredRecipients = txParams.recipients?.map((recipient) => {
+        return {
+          address: recipient.address,
+          amount: BigInt(recipient.amount),
+        };
+      });
+      const filteredOutputs = explainedTx.outputs.map((output) => {
+        return {
+          address: output.address,
+          amount: BigInt(output.amount),
+        };
+      });
+      if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+        throw new Error('Tx outputs does not match with expected txParams recipients');
+      }
+      let totalAmount = new BigNumber(0);
+      for (const recipients of txParams.recipients) {
+        totalAmount = totalAmount.plus(recipients.amount);
+      }
+      if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
+        throw new Error('Tx total amount does not match with expected total amount field');
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Verify that an address belongs to this wallet.
+   *
+   * @param params - Verification parameters including address, keychains, and index
+   * @returns True if address belongs to wallet
+   * @throws UnexpectedAddressError if address doesn't match derived address
+   */
+  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
+    const isValid = await verifyEddsaTssWalletAddress(params, this.isValidAddress.bind(this), (pubKey) =>
+      utils.getAddressFromPublicKey(pubKey)
+    );
+
+    if (!isValid) {
+      throw new UnexpectedAddressError();
+    }
+
+    return true;
+  }
+
+  async parseTransaction(params: AptParseTransactionOptions): Promise<ParsedTransaction> {
+    const transactionExplanation = await this.explainTransaction({ txHex: params.txHex });
+    if (!transactionExplanation) {
+      throw new Error('Invalid transaction');
+    }
+    return {
+      inputs: [
+        {
+          address: transactionExplanation.sender,
+          amount: transactionExplanation.outputAmount,
+        },
+      ],
+      outputs: [
+        {
+          address: transactionExplanation.outputs[0].address,
+          amount: transactionExplanation.outputs[0].amount,
+        },
+      ],
+    };
+  }
+
+  /**
+   * Explain a Apt transaction
+   * @param params
+   */
+  async explainTransaction(params: ExplainTransactionOptions): Promise<AptTransactionExplanation | undefined> {
+    let rebuiltTransaction: BaseTransaction;
+    try {
+      rebuiltTransaction = await this.rebuildTransaction(params.txHex);
+    } catch {
+      return undefined;
+    }
+    return rebuiltTransaction.explainTransaction();
+  }
+
+  generateKeyPair(seed?: Buffer): KeyPair {
+    const keyPair = seed ? new AptKeyPair({ seed }) : new AptKeyPair();
+    const keys = keyPair.getKeys();
+    if (!keys.prv) {
+      throw new Error('Missing prv in key generation.');
+    }
+    return {
+      pub: keys.pub,
+      prv: keys.prv,
+    };
+  }
+
+  isValidPub(pub: string): boolean {
+    return utils.isValidPublicKey(pub);
+  }
+
+  isValidAddress(address: string): boolean {
+    return utils.isValidAddress(address);
+  }
+
+  signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+    throw new Error('Method not implemented.');
+  }
+
+  protected getTxBuilderFactory(): TransactionBuilderFactory {
+    return new TransactionBuilderFactory(coins.get(this.getChain()));
+  }
+
+  protected async rebuildTransaction(txHex: string): Promise<BaseTransaction> {
+    const txBuilderFactory = this.getTxBuilderFactory();
+    try {
+      const txBuilder = txBuilderFactory.from(txHex);
+      return txBuilder.getRebuiltTransaction();
+    } catch {
+      throw new Error('Failed to rebuild transaction');
+    }
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey({ multiSigType, prv, publicKey }: AuditDecryptedKeyParams): void {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multiSigType');
+    }
+    auditEddsaPrivateKey(prv, publicKey ?? '');
+  }
+
+  setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
+    // Handle custom transaction parameters for Aptos
+    if (params.aptosCustomTransactionParams) {
+      intent.aptosCustomTransactionParams = params.aptosCustomTransactionParams;
+    }
+  }
+}

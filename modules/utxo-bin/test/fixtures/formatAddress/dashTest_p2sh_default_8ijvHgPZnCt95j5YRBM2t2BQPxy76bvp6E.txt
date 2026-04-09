@@ -1,0 +1,14 @@
+address: 8ijvHgPZnCt95j5YRBM2t2BQPxy76bvp6E
+├─┬ base58
+│ └── payload: 132f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b509ffdd3 (25 bytes)
+├─┬ base58Check
+│ ├── payload: 132f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b (21 bytes)
+│ ├── version: 13
+│ └── hash: 2f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b (20 bytes)
+├── format: default
+├─┬ outputScript: a9142f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b87 (23 bytes)
+│ └─┬ scriptPubKey: [23byte]
+│   ├── type: scripthash
+│   ├── hex: a9142f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b87
+│   └── asm: OP_HASH160 2f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b OP_EQUAL
+└── network: dashTest

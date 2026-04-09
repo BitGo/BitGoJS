@@ -1,0 +1,126 @@
+{
+  "name": "@bitgo/account-lib",
+  "version": "27.20.0",
+  "description": "BitGo's account library functions",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "npm run prepare",
+    "clean": "rm -rf dist/*",
+    "coverage": "npm run gen-coverage && npm run upload-coverage",
+    "lint": "eslint --quiet 'src/**/*.ts' 'test/**/*.ts'",
+    "lint-fix": "eslint --fix 'src/**/*.ts' 'test/**/*.ts'",
+    "prepare": "npm run build-ts && shx cp -r ./resources ./dist",
+    "build-ts": "tsc --build --incremental --verbose .",
+    "unit-test": "nyc -- mocha",
+    "test": "npm run unit-test",
+    "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/account-lib"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "ISC",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@bitgo/sdk-coin-ada": "^4.23.0",
+    "@bitgo/sdk-coin-algo": "^2.10.0",
+    "@bitgo/sdk-coin-apechain": "^1.5.0",
+    "@bitgo/sdk-coin-apt": "^2.12.0",
+    "@bitgo/sdk-coin-arbeth": "^21.12.0",
+    "@bitgo/sdk-coin-asi": "^1.7.0",
+    "@bitgo/sdk-coin-atom": "^13.12.0",
+    "@bitgo/sdk-coin-avaxc": "^6.7.0",
+    "@bitgo/sdk-coin-avaxp": "^5.7.0",
+    "@bitgo/sdk-coin-baby": "^1.10.0",
+    "@bitgo/sdk-coin-bera": "^2.8.0",
+    "@bitgo/sdk-coin-bld": "^3.7.0",
+    "@bitgo/sdk-coin-bsc": "^22.11.0",
+    "@bitgo/sdk-coin-canton": "^1.18.0",
+    "@bitgo/sdk-coin-celo": "^6.3.0",
+    "@bitgo/sdk-coin-coredao": "^2.8.0",
+    "@bitgo/sdk-coin-coreum": "^21.9.0",
+    "@bitgo/sdk-coin-cosmos": "^1.9.0",
+    "@bitgo/sdk-coin-cronos": "^1.8.0",
+    "@bitgo/sdk-coin-cspr": "^2.6.0",
+    "@bitgo/sdk-coin-dot": "^4.14.0",
+    "@bitgo/sdk-coin-etc": "^2.7.0",
+    "@bitgo/sdk-coin-eth": "^25.7.0",
+    "@bitgo/sdk-coin-evm": "^1.14.9",
+    "@bitgo/sdk-coin-flr": "^1.10.0",
+    "@bitgo/sdk-coin-flrp": "^1.11.0",
+    "@bitgo/sdk-coin-hash": "^3.9.0",
+    "@bitgo/sdk-coin-hbar": "^2.7.0",
+    "@bitgo/sdk-coin-icp": "^1.22.0",
+    "@bitgo/sdk-coin-initia": "^2.6.0",
+    "@bitgo/sdk-coin-injective": "^3.7.0",
+    "@bitgo/sdk-coin-islm": "^2.6.0",
+    "@bitgo/sdk-coin-mon": "^1.8.0",
+    "@bitgo/sdk-coin-near": "^2.17.0",
+    "@bitgo/sdk-coin-oas": "^2.7.0",
+    "@bitgo/sdk-coin-opeth": "^18.10.0",
+    "@bitgo/sdk-coin-osmo": "^3.7.0",
+    "@bitgo/sdk-coin-polygon": "^21.7.0",
+    "@bitgo/sdk-coin-polyx": "^1.14.0",
+    "@bitgo/sdk-coin-rbtc": "^2.5.0",
+    "@bitgo/sdk-coin-rune": "^1.8.0",
+    "@bitgo/sdk-coin-sei": "^3.7.0",
+    "@bitgo/sdk-coin-sgb": "^1.8.0",
+    "@bitgo/sdk-coin-sol": "^7.18.0",
+    "@bitgo/sdk-coin-soneium": "^1.10.0",
+    "@bitgo/sdk-coin-stt": "^1.6.0",
+    "@bitgo/sdk-coin-stx": "^3.12.0",
+    "@bitgo/sdk-coin-sui": "^5.22.0",
+    "@bitgo/sdk-coin-tao": "^1.15.0",
+    "@bitgo/sdk-coin-tempo": "^1.9.0",
+    "@bitgo/sdk-coin-tia": "^3.7.0",
+    "@bitgo/sdk-coin-ton": "^3.18.0",
+    "@bitgo/sdk-coin-trx": "^3.13.0",
+    "@bitgo/sdk-coin-vet": "^2.15.0",
+    "@bitgo/sdk-coin-wemix": "^1.7.0",
+    "@bitgo/sdk-coin-world": "^1.8.0",
+    "@bitgo/sdk-coin-xdc": "^1.9.0",
+    "@bitgo/sdk-coin-xrp": "^3.13.0",
+    "@bitgo/sdk-coin-xtz": "^2.10.0",
+    "@bitgo/sdk-coin-zeta": "^3.7.0",
+    "@bitgo/sdk-coin-zketh": "^2.7.0",
+    "@bitgo/sdk-core": "^36.37.0",
+    "@bitgo/sdk-lib-mpc": "^10.10.0",
+    "@bitgo/statics": "^58.32.0",
+    "bignumber.js": "^9.1.1",
+    "bs58": "^4.0.1"
+  },
+  "devDependencies": {
+    "@solana/web3.js": "1.92.1",
+    "@types/bs58": "^4.0.1",
+    "@types/keccak": "^3.0.5",
+    "keccak": "3.0.3",
+    "paillier-bigint": "3.3.0",
+    "shx": "^0.3.4"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ]
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
+  "files": [
+    "dist"
+  ]
+}

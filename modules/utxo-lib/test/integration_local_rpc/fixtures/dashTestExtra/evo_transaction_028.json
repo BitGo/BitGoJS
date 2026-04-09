@@ -1,0 +1,43 @@
+{
+    "txid": "31e47d17b26a6a6333135fa92cc85862915d1bd41030ebaacd6e6461b0535987",
+    "version": 3,
+    "type": 4,
+    "size": 356,
+    "locktime": 0,
+    "vin": [
+        {
+            "txid": "1da23fa0317268775ef78761c161f35bf1e1cd9c13dc82dff381a2f814adb0a7",
+            "vout": 0,
+            "scriptSig": {
+                "asm": "3044022017bfe2093e94e1f13c399449e23d625ca4e4e4e374db5ce58871fcefd9846bc1022041c84285b71c0356bfc1817cdd0aa3ac462f27dde2a81dcecd18f8fa262f7c17[ALL] 02f3ed101242f4a753836b3f587f5214eea9ff3738294637a0819304297bcc9cb2",
+                "hex": "473044022017bfe2093e94e1f13c399449e23d625ca4e4e4e374db5ce58871fcefd9846bc1022041c84285b71c0356bfc1817cdd0aa3ac462f27dde2a81dcecd18f8fa262f7c17012102f3ed101242f4a753836b3f587f5214eea9ff3738294637a0819304297bcc9cb2"
+            },
+            "sequence": 4294967295
+        }
+    ],
+    "vout": [
+        {
+            "value": 1.00000000,
+            "valueSat": 100000000,
+            "n": 0,
+            "scriptPubKey": {
+                "asm": "OP_DUP OP_HASH160 79913a3a35f717043a56aedc029756ce30eaa6be OP_EQUALVERIFY OP_CHECKSIG",
+                "hex": "76a91479913a3a35f717043a56aedc029756ce30eaa6be88ac",
+                "reqSigs": 1,
+                "type": "pubkeyhash",
+                "addresses": [
+                    "yXQEazeUBUvdv4bZgJyQkVPz5SmRak1ud6"
+                ]
+            }
+        }
+    ],
+    "extraPayloadSize": 164,
+    "extraPayload": "0100f7756621d7730898373c41f2f8d9953b795a15deba703cb8c322e6cc65b76f200000a2d88114c2c077aa507764052cb75fcc648ad7b0a99046c87a7822a9c96ef54501e6165b891e01eac59e32ca3e90f7135f04666c3791baa5a50ee4e0f1b29d14b9e15c42312007cdc3accc533af4a91c19d875b34fd15305d26545adfa2882ecbfe120c6f7a7dbb55751410e14648798ce77bdc16b083cba1ffbd9c88bb13993",
+    "proUpRevTx": {
+        "version": 1,
+        "proTxHash": "206fb765cce622c3b83c70bade155a793b95d9f8f2413c37980873d7216675f7",
+        "reason": 0,
+        "inputsHash": "45f56ec9a922787ac84690a9b0d78a64cc5fb72c05647750aa77c0c21481d8a2"
+    },
+    "hex": "0300040001a7b0ad14f8a281f3df82dc139ccde1f15bf361c16187f75e77687231a03fa21d000000006a473044022017bfe2093e94e1f13c399449e23d625ca4e4e4e374db5ce58871fcefd9846bc1022041c84285b71c0356bfc1817cdd0aa3ac462f27dde2a81dcecd18f8fa262f7c17012102f3ed101242f4a753836b3f587f5214eea9ff3738294637a0819304297bcc9cb2ffffffff0100e1f505000000001976a91479913a3a35f717043a56aedc029756ce30eaa6be88ac00000000a40100f7756621d7730898373c41f2f8d9953b795a15deba703cb8c322e6cc65b76f200000a2d88114c2c077aa507764052cb75fcc648ad7b0a99046c87a7822a9c96ef54501e6165b891e01eac59e32ca3e90f7135f04666c3791baa5a50ee4e0f1b29d14b9e15c42312007cdc3accc533af4a91c19d875b34fd15305d26545adfa2882ecbfe120c6f7a7dbb55751410e14648798ce77bdc16b083cba1ffbd9c88bb13993"
+}

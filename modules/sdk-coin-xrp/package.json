@@ -1,0 +1,60 @@
+{
+  "name": "@bitgo/sdk-coin-xrp",
+  "version": "3.13.0",
+  "description": "BitGo SDK coin library for Ripple",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-xrp"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/sdk-core": "^36.37.0",
+    "@bitgo/secp256k1": "^1.11.0",
+    "@bitgo/statics": "^58.32.0",
+    "bignumber.js": "^9.0.0",
+    "lodash": "^4.18.0",
+    "ripple-binary-codec": "2.1.0",
+    "ripple-keypairs": "2.0.0",
+    "xrpl": "4.0.0"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.76.1",
+    "@bitgo/sdk-test": "^9.1.35"
+  },
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
+  "files": [
+    "dist"
+  ]
+}

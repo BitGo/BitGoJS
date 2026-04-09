@@ -1,0 +1,62 @@
+{
+  "name": "@bitgo/utxo-bin",
+  "description": "Command-line utility for BitGo UTXO transactions",
+  "version": "3.21.2",
+  "files": [
+    "dist/**/*"
+  ],
+  "keywords": [
+    "bitgo",
+    "utxo",
+    "bitcoinjs",
+    "bitcoin"
+  ],
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "yarn tsc --build --incremental --verbose .",
+    "lint": "eslint --quiet .",
+    "unit-test": "mocha --recursive test/",
+    "fmt": "prettier --write '{bin,src,test}/**/*.{ts,js}'",
+    "precommit": "yarn lint-staged"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/utxo-bin"
+  },
+  "bin": "./dist/bin/index.js",
+  "dependencies": {
+    "@bitgo/blockapis": "^1.13.4",
+    "@bitgo/statics": "^58.32.0",
+    "@bitgo/unspents": "^0.51.2",
+    "@bitgo/utxo-core": "^1.35.1",
+    "@bitgo/utxo-lib": "^11.22.0",
+    "@bitgo/wasm-utxo": "^2.1.0",
+    "@noble/curves": "1.8.1",
+    "archy": "^1.0.0",
+    "bech32": "^2.0.0",
+    "bitcoinjs-lib": "npm:@bitgo-forks/bitcoinjs-lib@7.1.0-master.11",
+    "bs58": "^5.0.0",
+    "bs58check": "^2.1.2",
+    "cashaddress": "^1.1.0",
+    "chalk": "4",
+    "clipboardy": "^4.0.0",
+    "yargs": "^17.3.1"
+  },
+  "devDependencies": {
+    "@types/archy": "^0.0.32",
+    "@types/yargs": "17.0.19",
+    "bip32": "^3.1.0"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
+}

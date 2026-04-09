@@ -1,0 +1,160 @@
+/**
+ * Internal metadata. Defines the type of transaction.
+ */
+export enum TransactionType {
+  Send,
+  // Send ERC721 compliant tokens
+  SendERC721,
+  // Send ERC1155 compliant tokens
+  SendERC1155,
+  // Initialize a wallet on-chain (e.g. Multi-sig contract deployment)
+  WalletInitialization,
+  // Initialize an address on-chain(e.g. Forwarder contract deployment)
+  AddressInitialization,
+  // Initialized an associated token account
+  AssociatedTokenAccountInitialization,
+  // Flush tokens from a forwarder address to its base address
+  FlushTokens,
+  // Flush native coins (eg. ETH) from a forwarder address to base address
+  FlushCoins,
+  // Send a raw single-sig transaction
+  SingleSigSend,
+  // Update an account on-chain (e.g. Public key revelation operation for Tezos)
+  AccountUpdate,
+  // Lock
+  StakingLock,
+  // Vote
+  StakingVote,
+  // Unvote
+  StakingUnvote,
+  // Activate
+  StakingActivate,
+  // Unlock
+  StakingUnlock,
+  // Withdraw
+  StakingWithdraw,
+  // Handle smart contract calls
+  ContractCall,
+  // Deactivate
+  StakingDeactivate,
+  // Batch of multiple transactions broadcast as a single transaction
+  Batch,
+  // Claim the staking rewards
+  StakingClaim,
+  // Add delegator to p-chain
+  // @deprecated
+  AddDelegator,
+  // Add validator to p-chain
+  // @deprecated
+  AddValidator,
+  // Cross chain transfer at Avax and flare
+  Export,
+  Import,
+  // Cross chain Recovery for evm like chains
+  RecoveryWalletDeployment,
+  // Add staking
+  StakingAdd,
+  // Staking pledge (e.g. ADA)
+  StakingPledge,
+  // Delegating vote (e.g. ADA)
+  VoteDelegation,
+  // Staking Authorize (e.g. SOL)
+  StakingAuthorize,
+  // Staking Authorize from raw message (e.g. SOL)
+  StakingAuthorizeRaw,
+  // Delegate
+  StakingDelegate,
+  // Custom transaction (e.g. SUI)
+  CustomTx,
+  StakingRedelegate,
+  AddPermissionlessDelegator,
+  AddPermissionlessValidator,
+  // Closing an associated token account (e.g. SOL)
+  CloseAssociatedTokenAccount,
+  SingleNominatorWithdraw,
+  // Send Tokens (e.g XRPL tokens)
+  SendToken,
+  // Setup a trustline with issuer of a token (eg. XRPL tokens)
+  TrustLine,
+  // Send Non Fungible Token (e.g. APT NFTs)
+  SendNFT,
+  // Delegate resource (e.g. TRX)
+  DelegateResource,
+  // Un-delegate resource (e.g. TRX)
+  UnDelegateResource,
+  StorageDeposit,
+  // Flush ERC721 NFTs from a forwarder address to base address
+  FlushERC721,
+  // Flush ERC1155 tokens from a forwarder address to base address
+  FlushERC1155,
+  // Set up 1-step pre-approval for canton
+  OneStepPreApproval,
+  // canton transfer accept, 2-step
+  TransferAccept,
+  // canton transfer acknowledgement
+  TransferAcknowledge,
+  // canton transfer reject, 2-step
+  TransferReject,
+  // canton transfer offer withdrawn, 2-step
+  TransferOfferWithdrawn,
+
+  // trx
+  FREEZE,
+  VOTE,
+  UNFREEZE,
+  WITHDRAW_EXPIRE_UNFREEZE,
+  CLAIM_REWARDS,
+
+  // cspr and stx
+  stakingLock,
+  // stx
+  'self-stack',
+
+  // btc,
+  staking,
+
+  // cspr
+  stakingUnlock,
+
+  // polyx
+  RejectInstruction,
+
+  // flrp
+  ImportToC,
+
+  // ton whales
+  TonWhalesDeposit,
+  TonWhalesWithdrawal,
+  TonWhalesVestingDeposit,
+  TonWhalesVestingWithdrawal,
+}
+
+/**
+ * Generic list of encoding formats. Can be used as arguments for methods inputs.
+ */
+export enum AddressFormat {
+  hex = 'hex',
+  base58 = 'base58',
+  mainnet = 'mainnet',
+  testnet = 'testnet',
+}
+
+// TODO(): create union type of all address formats enums
+// list of ss58 format encoding types for Dot ecosystem
+export enum DotAddressFormat {
+  // format for westend (generic substrate) addresses
+  substrate = 42,
+  // format for polkadot mainnet addresses
+  polkadot = 0,
+}
+
+export type DotAssetTypes = 'dot' | 'tdot';
+
+export enum StakingOperationTypes {
+  LOCK,
+  VOTE,
+  UNVOTE,
+  ACTIVATE,
+  UNLOCK,
+  WITHDRAW,
+}

@@ -1,0 +1,362 @@
+{
+  "timestamp": "2025-12-26T06:44:40.505Z",
+  "solanaLegacyTxSizeLimit": 1232,
+  "withAtaCreation": {
+    "maxSafe": 9,
+    "conservative": 8,
+    "testResults": [
+      {
+        "recipientCount": 1,
+        "withAtaCreation": true,
+        "instructionCount": 3,
+        "payloadSize": 478,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 5,
+        "withAtaCreation": true,
+        "instructionCount": 11,
+        "payloadSize": 842,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 6,
+        "withAtaCreation": true,
+        "instructionCount": 13,
+        "payloadSize": 933,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 7,
+        "withAtaCreation": true,
+        "instructionCount": 15,
+        "payloadSize": 1024,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 8,
+        "withAtaCreation": true,
+        "instructionCount": 17,
+        "payloadSize": 1115,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 9,
+        "withAtaCreation": true,
+        "instructionCount": 19,
+        "payloadSize": 1206,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 10,
+        "withAtaCreation": true,
+        "instructionCount": 21,
+        "payloadSize": 1232,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 1297 > 1232",
+        "errorStack": "Error: Transaction too large: 1297 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:160:20)"
+      },
+      {
+        "recipientCount": 12,
+        "withAtaCreation": true,
+        "instructionCount": 25,
+        "payloadSize": 1414,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 1479 > 1232",
+        "errorStack": "Error: Transaction too large: 1479 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:160:20)"
+      },
+      {
+        "recipientCount": 13,
+        "withAtaCreation": true,
+        "instructionCount": 27,
+        "payloadSize": 1505,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 1570 > 1232",
+        "errorStack": "Error: Transaction too large: 1570 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:160:20)"
+      },
+      {
+        "recipientCount": 14,
+        "withAtaCreation": true,
+        "instructionCount": 29,
+        "payloadSize": 1596,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 1661 > 1232",
+        "errorStack": "Error: Transaction too large: 1661 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:160:20)"
+      },
+      {
+        "recipientCount": 15,
+        "withAtaCreation": true,
+        "instructionCount": 31,
+        "payloadSize": 1687,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 1752 > 1232",
+        "errorStack": "Error: Transaction too large: 1752 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:160:20)"
+      },
+      {
+        "recipientCount": 16,
+        "withAtaCreation": true,
+        "instructionCount": 33,
+        "payloadSize": 1778,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 1843 > 1232",
+        "errorStack": "Error: Transaction too large: 1843 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:160:20)"
+      },
+      {
+        "recipientCount": 17,
+        "withAtaCreation": true,
+        "instructionCount": 35,
+        "payloadSize": 1869,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 1934 > 1232",
+        "errorStack": "Error: Transaction too large: 1934 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:160:20)"
+      },
+      {
+        "recipientCount": 18,
+        "withAtaCreation": true,
+        "instructionCount": 37,
+        "payloadSize": 1960,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 2025 > 1232",
+        "errorStack": "Error: Transaction too large: 2025 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:160:20)"
+      },
+      {
+        "recipientCount": 20,
+        "withAtaCreation": true,
+        "instructionCount": 41,
+        "payloadSize": 2048,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 2113 > 1232",
+        "errorStack": "Error: Transaction too large: 2113 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:160:20)"
+      },
+      {
+        "recipientCount": 25,
+        "withAtaCreation": true,
+        "instructionCount": 51,
+        "payloadSize": 2048,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 2113 > 1232",
+        "errorStack": "Error: Transaction too large: 2113 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:160:20)"
+      },
+      {
+        "recipientCount": 30,
+        "withAtaCreation": true,
+        "instructionCount": 0,
+        "payloadSize": 0,
+        "isVersioned": false,
+        "success": false,
+        "error": "encoding overruns Uint8Array",
+        "errorStack": "RangeError: encoding overruns Uint8Array\n    at Blob.encode (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/buffer-layout/src/Layout.ts:2294:13)\n    at <anonymous> (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/buffer-layout/src/Layout.ts:1059:25)\n    at Array.reduce (<anonymous>)\n    at Sequence.encode (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/buffer-layout/src/Layout.ts:1058:30)\n    at Structure.encode (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/buffer-layout/src/Layout.ts:1205:26)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/message/legacy.ts:260:35)\n    at _partialSign (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:724:30)\n    at partialSign (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:717:10)\n    at TokenTransferBuilder.buildLegacyTransaction (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transactionBuilder.ts:199:10)\n    at TokenTransferBuilder.buildSolTransaction (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transactionBuilder.ts:155:19)"
+      }
+    ]
+  },
+  "withoutAtaCreation": {
+    "maxSafe": 19,
+    "conservative": 17,
+    "testResults": [
+      {
+        "recipientCount": 1,
+        "withAtaCreation": false,
+        "instructionCount": 2,
+        "payloadSize": 340,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 10,
+        "withAtaCreation": false,
+        "instructionCount": 11,
+        "payloadSize": 781,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 11,
+        "withAtaCreation": false,
+        "instructionCount": 12,
+        "payloadSize": 830,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 12,
+        "withAtaCreation": false,
+        "instructionCount": 13,
+        "payloadSize": 879,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 13,
+        "withAtaCreation": false,
+        "instructionCount": 14,
+        "payloadSize": 928,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 14,
+        "withAtaCreation": false,
+        "instructionCount": 15,
+        "payloadSize": 977,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 15,
+        "withAtaCreation": false,
+        "instructionCount": 16,
+        "payloadSize": 1026,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 16,
+        "withAtaCreation": false,
+        "instructionCount": 17,
+        "payloadSize": 1075,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 17,
+        "withAtaCreation": false,
+        "instructionCount": 18,
+        "payloadSize": 1124,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 18,
+        "withAtaCreation": false,
+        "instructionCount": 19,
+        "payloadSize": 1173,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 19,
+        "withAtaCreation": false,
+        "instructionCount": 20,
+        "payloadSize": 1222,
+        "isVersioned": false,
+        "success": true
+      },
+      {
+        "recipientCount": 20,
+        "withAtaCreation": false,
+        "instructionCount": 21,
+        "payloadSize": 1206,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 1271 > 1232",
+        "errorStack": "Error: Transaction too large: 1271 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:190:20)"
+      },
+      {
+        "recipientCount": 30,
+        "withAtaCreation": false,
+        "instructionCount": 31,
+        "payloadSize": 1696,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 1761 > 1232",
+        "errorStack": "Error: Transaction too large: 1761 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:190:20)"
+      },
+      {
+        "recipientCount": 35,
+        "withAtaCreation": false,
+        "instructionCount": 36,
+        "payloadSize": 1941,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 2006 > 1232",
+        "errorStack": "Error: Transaction too large: 2006 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:190:20)"
+      },
+      {
+        "recipientCount": 38,
+        "withAtaCreation": false,
+        "instructionCount": 39,
+        "payloadSize": 2048,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 2113 > 1232",
+        "errorStack": "Error: Transaction too large: 2113 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:190:20)"
+      },
+      {
+        "recipientCount": 39,
+        "withAtaCreation": false,
+        "instructionCount": 40,
+        "payloadSize": 2048,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 2113 > 1232",
+        "errorStack": "Error: Transaction too large: 2113 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:190:20)"
+      },
+      {
+        "recipientCount": 40,
+        "withAtaCreation": false,
+        "instructionCount": 41,
+        "payloadSize": 2048,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 2113 > 1232",
+        "errorStack": "Error: Transaction too large: 2113 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:190:20)"
+      },
+      {
+        "recipientCount": 41,
+        "withAtaCreation": false,
+        "instructionCount": 42,
+        "payloadSize": 2048,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 2113 > 1232",
+        "errorStack": "Error: Transaction too large: 2113 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:190:20)"
+      },
+      {
+        "recipientCount": 42,
+        "withAtaCreation": false,
+        "instructionCount": 43,
+        "payloadSize": 2048,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 2113 > 1232",
+        "errorStack": "Error: Transaction too large: 2113 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:190:20)"
+      },
+      {
+        "recipientCount": 45,
+        "withAtaCreation": false,
+        "instructionCount": 46,
+        "payloadSize": 2048,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 2113 > 1232",
+        "errorStack": "Error: Transaction too large: 2113 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:190:20)"
+      },
+      {
+        "recipientCount": 50,
+        "withAtaCreation": false,
+        "instructionCount": 51,
+        "payloadSize": 2048,
+        "isVersioned": false,
+        "success": false,
+        "error": "Transaction too large: 2113 > 1232",
+        "errorStack": "Error: Transaction too large: 2113 > 1232\n    at invariant (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/utils/assert.ts:6:11)\n    at _serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:860:5)\n    at serialize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/node_modules/@solana/web3.js/src/transaction/legacy.ts:832:17)\n    at Transaction.toBroadcastFormat (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/src/lib/transaction.ts:275:33)\n    at testTransactionSize (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:87:29)\n    at async runBenchmark (/Users/rakeshreddy/Documents/BitGo/BitGoJS/modules/sdk-coin-sol/scripts/transaction-size-benchmark.ts:190:20)"
+      }
+    ]
+  }
+}

@@ -1,0 +1,4036 @@
+import {
+  ConflictingCoinFeaturesError,
+  DisallowedCoinFeatureError,
+  InvalidIdError,
+  MissingRequiredCoinFeatureError,
+} from './errors';
+import { BaseNetwork } from './networks';
+
+export enum CoinKind {
+  CRYPTO = 'crypto',
+  FIAT = 'fiat',
+}
+
+/**
+ * The coin family links related variants of a single coin together.
+ *
+ * Typically, each coin will have a testnet and mainnet variant,
+ * and these will both have the same coin family.
+ *
+ * For example, the coins `btc` and `tbtc` both belong to the same family, `btc`.
+ */
+export enum CoinFamily {
+  ADA = 'ada',
+  APECHAIN = 'apechain',
+  ALGO = 'algo',
+  APT = 'apt',
+  ARBETH = 'arbeth',
+  ASI = 'asi',
+  ATOM = 'atom',
+  AVAXC = 'avaxc',
+  AVAXP = 'avaxp',
+  BASEETH = 'baseeth', // Base Ethereum
+  BABY = 'baby',
+  BCH = 'bch',
+  BCHA = 'bcha',
+  BERA = 'bera',
+  BLD = 'bld', // Agoric
+  BSC = 'bsc',
+  BSV = 'bsv',
+  BTC = 'btc',
+  BTG = 'btg',
+  CANTON = 'canton',
+  CELO = 'celo',
+  CHILIZ = 'chiliz', // Chiliz Chain
+  CODEXETH = 'codexeth', // Codex Ethereum L2
+  COREDAO = 'coredao',
+  COREUM = 'coreum',
+  CRONOS = 'cronos',
+  CSPR = 'cspr',
+  DASH = 'dash',
+  DOGE = 'doge',
+  DOGEOS = 'dogeos',
+  DOT = 'dot',
+  DYDX = 'dydx',
+  EOS = 'eos',
+  ETC = 'etc',
+  ETH = 'eth',
+  ETH2 = 'eth2',
+  ETHW = 'ethw',
+  FETCHAI = 'fetchai',
+  FIAT = 'fiat',
+  FLOW = 'flow',
+  FANTOM = 'fantom', // Fantom
+  FLR = 'flr',
+  FLRP = 'flrp',
+  H = 'h', // Humanity Protocol
+  HASH = 'hash', // Provenance
+  HBAR = 'hbar',
+  HBAREVM = 'hbarevm', // Hedera EVM coin
+  HEMIETH = 'hemieth', // Hemi Ethereum L2
+  HOODETH = 'hoodeth', // Robinhood Chain
+  HPPETH = 'hppeth', // House Party Protocol
+  ICP = 'icp',
+  INITIA = 'initia',
+  INJECTIVE = 'injective',
+  IOTA = 'iota',
+  IRYS = 'irys',
+  ISLM = 'islm',
+  JOVAYETH = 'jovayeth',
+  KAIA = 'kaia',
+  KAVACOSMOS = 'kavacosmos',
+  KAVAEVM = 'kavaevm',
+  LNBTC = 'lnbtc',
+  LTC = 'ltc',
+  MANTLE = 'mantle',
+  MANTRA = 'mantra',
+  MEGAETH = 'megaeth',
+  MON = 'mon',
+  XPL = 'xpl', // Plasma Network
+  POLYGON = 'polygon',
+  POLYX = 'polyx',
+  PHRS = 'phrs',
+  CTC = 'ctc',
+  HYPEEVM = 'hypeevm',
+  HYPERLIQUID = 'hyperliquid', // HyperCore L1
+  NEAR = 'near',
+  OAS = 'oas',
+  OFC = 'ofc',
+  OG = 'og',
+  OPBNB = 'opbnb', // opBNB Chain
+  OKBXLAYER = 'okbxlayer',
+  OPETH = 'opeth',
+  OSMO = 'osmo',
+  PLUME = 'plume',
+  RBTC = 'rbtc',
+  SGB = 'sgb',
+  SEI = 'sei',
+  SEIEVM = 'seievm',
+  SOL = 'sol',
+  SONIC = 'sonic',
+  SONEIUM = 'soneium',
+  STT = 'stt',
+  SUI = 'sui',
+  STX = 'stx',
+  SUSD = 'susd',
+  TAO = 'tao',
+  THOR = 'thor',
+  TIA = 'tia', // Celestia
+  TON = 'ton',
+  TRX = 'trx',
+  USDT0 = 'usdt0', // Stable EVM L1
+  VET = 'vet',
+  WORLD = 'world',
+  WEMIX = 'wemix',
+  XDC = 'xdc',
+  XLM = 'xlm',
+  XRP = 'xrp',
+  XTZ = 'xtz',
+  XTZEVM = 'xtzevm', // Etherlink (XTZ EVM L2)
+  ZEC = 'zec',
+  ZETA = 'zeta',
+  ZKETH = 'zketh',
+  ZKSYNCERA = 'zksyncera', // ZkSync Era
+  LINEAETH = 'lineaeth',
+  IP = 'ip', // Story Chain
+  SOMI = 'somi', // Somnia Chain
+  FLUENTETH = 'fluenteth',
+  MORPH = 'morph',
+  MORPHETH = 'morpheth',
+  ARCUSDC = 'arcusdc', // ARC network
+  TEMPO = 'tempo', // Tempo Network
+  UNIETH = 'unieth', // Unichain
+}
+
+/**
+ * Coin features are yes or no questions about what a coin requires or is capable of.
+ *
+ * This allows coin-agnostic handling of coin-specific features. This is designed
+ * to replace checking the coin name against a whitelist of supported coins
+ * before executing some coin-specific logic, and instead allows one to check if a
+ * coin supports the coin-specific feature that the logic implements.
+ */
+export enum CoinFeature {
+  /*
+   * This coin supports creating wallets on different networks with the same keys. Only works for TSS account-base coins
+   */
+  EVM_WALLET = 'evm-wallet',
+  /*
+   * This coin supports creating an EVM transaction using Metamask Institutional (MMI).
+   */
+  METAMASK_INSTITUTIONAL = 'metamask-institutional',
+  /*
+   * The valueless transfer feature indicates that it is valid to send a transaction which moves zero units of the coin.
+   *
+   * An example is Ethereum, which uses zero value transactions to trigger contract calls.
+   */
+  VALUELESS_TRANSFER = 'valueless-transfer',
+  /*
+   * Transaction data means there can be arbitrary data encoded in a transaction.
+   *
+   * Ethereum contract call data is an example.
+   */
+  TRANSACTION_DATA = 'transaction-data',
+  /*
+   * Some coins have a higher precision range than IEEE 754 doubles, which are used to represent numbers in javascript.
+   *
+   * For these coins, we must use an arbitrary precision arithmetic library, and this feature indicates this requirement.
+   */
+  REQUIRES_BIG_NUMBER = 'requires-big-number',
+  /*
+   * RMG requires all wallets to have a backup key held by a BitGo approved Key Recovery Service (KRS)
+   */
+  REQUIRES_KRS_BACKUP_KEY = 'requires-krs-backup-key',
+  /*
+   * For customers which are not on a postpaid contract, we add an extra output to transactions which pays BitGo a fee.
+   *
+   * This fee is known as the "pay-as-you-go fee", or just "paygo" for short.
+   *
+   * Some coins are unable to create transactions with more than one output, so paygo outputs are not possible for these coins.
+   */
+  PAYGO = 'paygo',
+  /*
+   * Does this coin align with the unspent model?
+   *
+   * These are typically Bitcoin and forks of it, such as Litecoin and Bitcoin Cash.
+   */
+  UNSPENT_MODEL = 'unspent-model',
+  /*
+   * Does this coin align with the Lightning Network model?
+   *
+   * These are typically Lightning Network on unspent model coins, such as BTC and LBTC.
+   */
+  LIGHTNING_MODEL = 'lightning-model',
+  /*
+   * Does this coin align with the account model?
+   *
+   * Examples of this coin type are Ethereum, XRP, and Stellar
+   */
+  ACCOUNT_MODEL = 'account-model',
+  /*
+   * Does this coin support child-pays-for-parent transactions?
+   *
+   * These are special types of transactions which can accelerate the confirmation time
+   * of another transaction which is stuck in the mempool due to low fees.
+   *
+   * This is only possible for coins which follow the unspent model (UTXO coins).
+   */
+  CHILD_PAYS_FOR_PARENT = 'cpfp',
+  /*
+   * Does this coin support tokens? These are distinct assets from the underlying coin, but run on the same network.
+   *
+   * For example, Ethereum's ERC 20 token standard means that it supports tokens, so it shall have this feature.
+   */
+  SUPPORTS_TOKENS = 'supports-tokens',
+  /*
+   * Are fees for transactions of this coin paid for by the Enterprise (eg, Enterprise gas tank)?
+   */
+  ENTERPRISE_PAYS_FEES = 'enterprise-pays-fees',
+  /*
+   * This coin requires that accounts keep a minimum balance as reserve
+   */
+  REQUIRES_RESERVE = 'requires-reserve',
+  /**
+   * @deprecated This property is no longer valid. Please select the following custody option based on the BitGo org:
+   * * CUSTODY_BITGO_TRUST
+   * * CUSTODY_BITGO_NEW_YORK
+   * * CUSTODY_BITGO_GERMANY
+   * * CUSTODY_BITGO_SWITZERLAND
+   */
+  CUSTODY = 'custody',
+  /*
+  This coin uses TSS for key creation and signing
+   */
+  TSS = 'tss',
+  /*
+   * This coin supports staking
+   */
+  STAKING = 'staking',
+  /*
+   * This coin supports liquid staking
+   */
+  LIQUID_STAKING = 'liquid-staking',
+  /**
+   * This coin is deprecated
+   */
+  DEPRECATED = 'deprecated',
+  /**
+   * This coin is a dummy object meant to be a placeholder for an unsupported token
+   */
+  GENERIC_TOKEN = 'genericToken',
+  /*
+   * This coin supports custody in BitGo Trust SD entities
+   */
+  CUSTODY_BITGO_TRUST = 'custody-bitgo-trust',
+  /*
+   * This coin supports custody in BitGo New York entities
+   */
+  CUSTODY_BITGO_NEW_YORK = 'custody-bitgo-new-york',
+  /*
+   * This coin supports custody in BitGo Germany entities
+   */
+  CUSTODY_BITGO_GERMANY = 'custody-bitgo-germany',
+  /*
+   * This coin supports custody in BitGo Switzerland entities
+   */
+  CUSTODY_BITGO_SWITZERLAND = 'custody-bitgo-switzerland',
+  /*
+   * This coin supports custody in BitGo Switzerland entities
+   */
+  CUSTODY_BITGO_FRANKFURT = 'custody-bitgo-frankfurt',
+  /*
+   * This coin supports custody in BitGo Singapore entities
+   */
+  CUSTODY_BITGO_SINGAPORE = 'custody-bitgo-singapore',
+  /*
+   * This coin supports custody in BitGo Sister Trust 1 entities
+   */
+  CUSTODY_BITGO_SISTER_TRUST_ONE = 'custody-bitgo-sister-trust-one',
+  /**
+   * This coin supports custody in BitGo Korea entities
+   */
+  CUSTODY_BITGO_KOREA = 'custody-bitgo-korea',
+  /**
+   * This coin supports custody in BitGo Europe ApS entities
+   */
+  CUSTODY_BITGO_EUROPE_APS = 'custody-bitgo-europe-aps',
+  /**
+   * This coin supports custody in BitGo MENA FZE entities
+   */
+  CUSTODY_BITGO_MENA_FZE = 'custody-bitgo-mena-fze',
+  /**
+   * This coin supports custody in BitGo Custody MENA FZE entities
+   */
+  CUSTODY_BITGO_CUSTODY_MENA_FZE = 'custody-bitgo-custody-mena-fze',
+  /**
+   * This coin supports custody in BitGo India entities
+   */
+  CUSTODY_BITGO_INDIA = 'custody-bitgo-india',
+  /*
+   * This coin has transactions that expire after a certain amount of time.
+   */
+  EXPIRING_TRANSACTIONS = 'expiring-transactions',
+  /**
+   * This coin supports cold wallets that use a multisig signing protocol
+   */
+  MULTISIG_COLD = 'multisig-cold',
+  /**
+   * This coin supports cold wallets that use a TSS signing protocol
+   */
+  TSS_COLD = 'tss-cold',
+
+  /**
+   * This coin is in progress for being onboarded to TSS signing protocol
+   */
+  TSS_SUPPORT_IN_PROGRESS = 'tss-support-in-progress',
+
+  /**
+   * This coin uses sha256 hash function for ECDSA TSS signatures
+   */
+  SHA256_WITH_ECDSA_TSS = 'sha256-with-ecdsa-tss',
+
+  /**
+   * This coin is cosmos like coin
+   */
+  COSMOS_LIKE_COINS = 'cosmos_like_coins',
+
+  /**
+   * This coin supports the ability to rebuild transactions on custody signing
+   */
+  REBUILD_ON_CUSTODY_SIGNING = 'rebuild-on-custody-signing',
+
+  /**
+   * This coin supports higher limit for tx request rebuild, which is 10 by default
+   */
+  INCREASED_TX_REQUEST_REBUILD_LIMIT = 'increased-tx-request-rebuild-limit',
+
+  /**
+   * This coin supports bulk transaction creation
+   */
+  BULK_TRANSACTION = 'bulk-transaction',
+
+  /**
+   * This coin supports bulk ERC20 token transactions (token batching)
+   */
+  ERC20_BULK_TRANSACTION = 'erc20-bulk-transaction',
+
+  /**
+   * This coin supports bulk custody transaction creation
+   */
+  CUSTODY_BULK_TRANSACTION = 'custody-bulk-transaction',
+
+  /**
+   * This coin supports distributed custody wallets
+   */
+  DISTRIBUTED_CUSTODY = 'distributed-custody',
+
+  /**
+   * This coin supports bulk staking transaction creation
+   */
+  BULK_STAKING_TRANSACTION = 'bulk-staking-transaction',
+
+  /**
+   * This coin uses non-packed encoding for transaction data
+   */
+  USES_NON_PACKED_ENCODING_FOR_TXDATA = 'uses-non-packed-encoding-for-txdata',
+
+  /**
+   * This coins supports MPCv2 for key creation and signing
+   */
+  MPCV2 = 'mpcv2',
+
+  /**
+   * This coin supports acceleration or nonce filling txn for stuck transactions for tss wallet
+   */
+  STUCK_TRANSACTION_MANAGEMENT_TSS = 'stuck-transaction-management-tss',
+
+  /**
+   * This coin supports acceleration or nonce filling txn for stuck transactions for onchain wallet
+   */
+  STUCK_TRANSACTION_MANAGEMENT_ONCHAIN = 'stuck-transaction-management-onchain',
+
+  /**
+   * This coin is onboarded on etheruem rollup chain
+   */
+  ETH_ROLLUP_CHAIN = 'eth-rollup-chain',
+
+  /**
+   * This coin supports EIP1559 proposal for transaction fee
+   */
+  EIP1559 = 'EIP1559',
+  /**
+   * Fees for transactions of TSS wallet of this coin would be paid by the Enterprise i.e. Gas Tank
+   */
+  TSS_ENTERPRISE_PAYS_FEES = 'tss-enterprise-pays-fees',
+
+  /**
+   * Indicates that fees for transactions on a wallet for this coin are paid with a token (not the native coin).
+   */
+  FEES_PAID_WITH_TOKEN = 'fees-paid-with-token',
+
+  /**
+   * This coin supports alphanumeric memo id
+   */
+  ALPHANUMERIC_MEMO_ID = 'alphanumeric-memo-id',
+
+  /**
+   * This coin supports WalletConnect
+   */
+  WALLET_CONNECT_DEFI = 'wallet-connect-defi',
+
+  /**
+   * This coin is gated for TSS Support
+   */
+  TSS_SUPPORT_GATED = 'tss-support-gated',
+
+  /**
+   * This coin is gated for Multisig Support
+   */
+  MULTISIG_SUPPORT_GATED = 'multisig-support-gated',
+
+  /**
+   * This coins is an EVM compatible coin and should use common EVM functionality
+   */
+  SHARED_EVM_SIGNING = 'shared-evm-signing',
+
+  /**
+   * This coin is an EVM compatible coin and should use common EVM SDK module
+   */
+  SHARED_EVM_SDK = 'shared-evm-sdk',
+
+  /**
+   * This coin supports erc20 tokens
+   */
+  SUPPORTS_ERC20 = 'supports-erc20-token',
+
+  /**
+   * This coin supports erc721 tokens
+   */
+  SUPPORTS_ERC721 = 'supports-erc721-token',
+
+  /**
+   * This coin is a Cosmos coin and should use shared Cosmos SDK module
+   */
+  SHARED_COSMOS_SDK = 'shared-cosmos-sdk',
+
+  /**
+   * This coin is a Cosmos coin and should use shared Cosmos Functionality in WP
+   */
+  SHARED_COSMOS_WP = 'shared-cosmos-wp',
+
+  /**
+   * This coin is a Cosmos coin and should use common Cosmos logic in BGA
+   */
+  COSMOS_COMMON_BGA = 'cosmos-common-bga',
+
+  /**
+   * This coin is EVM based coin
+   */
+  EVM_COIN = 'evm_coin',
+
+  /**
+   * This coin supports multisig wallets
+   */
+  MULTISIG = 'multisig',
+
+  /**
+   * This coin is an EVM compatible coin and should use common EVM model registration in IMS
+   */
+  EVM_COMPATIBLE_IMS = 'evm-compatible-ims',
+
+  /**
+   * This coin is an EVM compatible coin and should use common EVM logic in UI
+   */
+  EVM_COMPATIBLE_UI = 'evm-compatible-ui',
+
+  /**
+   * This coin is an EVM compatible coin which supports unsigned sweep recovery
+   */
+  EVM_UNSIGNED_SWEEP_RECOVERY = 'evm-unsigned-sweep-recovery',
+
+  /**
+   * This coin is an EVM compatible coin which supports non-bitgo recovery
+   */
+  EVM_NON_BITGO_RECOVERY = 'evm-non-bitgo-recovery',
+
+  /**
+   * This coin is a rebase token and should use the rebase token functionality
+   */
+  REBASE_TOKEN = 'rebase-token',
+
+  /**
+   * This coin is an EVM compatible coin and should use common EVM logic in WP
+   */
+  EVM_COMPATIBLE_WP = 'evm-compatible-wp',
+
+  /**
+   * This token is internal and shouldn't be exposed to users
+   */
+  RESTRICTED = 'restricted',
+
+  /**
+   * This coin is an EVM compatible coin and should use common EVM message signing functionality
+   */
+  SHARED_EVM_MESSAGE_SIGNING = 'shared-evm-message-signing',
+
+  /**
+   * This token is a stablecoin
+   */
+  STABLECOIN = 'stablecoin',
+
+  /**
+   * This coin supports alternative address identifier format
+   */
+  ALTERNATIVE_ADDRESS_IDENTIFIER = 'alternative-address-identifier',
+
+  /**
+   * This token standard uses alternative address identifiers (e.g., DIDs for Polymesh tokens)
+   */
+  TOKEN_STANDARD_USES_ALTERNATIVE_ADDRESS_IDENTIFIER = 'token-standard-uses-alternative-address-identifier',
+
+  /**
+   * This coin supports one-step deposit
+   */
+  SUPPORTS_ONE_STEP_DEPOSIT = 'supports-one-step-deposit',
+
+  /**
+   * This coin requires a wallet initialization transaction
+   */
+  REQUIRES_WALLET_INITIALIZATION_TRANSACTION = 'requires-wallet-initialization-transaction',
+
+  /**
+   * This coin requires a deposit acceptance transaction
+   */
+  REQUIRES_DEPOSIT_ACCEPTANCE_TRANSACTION = 'requires-deposit-acceptance-transaction',
+  /**
+   * This coin allows negative fees in transactions
+   */
+  ALLOWS_NEGATIVE_FEE = 'allows-negative-fee',
+}
+
+/**
+ * Some coins are representations of another underlying asset class. An example
+ * is Wrapped Bitcoin, which represents Bitcoin on the Ethereum blockchain.
+ *
+ * For these coins, the `UnderlyingAsset` provides a link to the actual
+ * asset for which the coin is a unit of account.
+ */
+export enum UnderlyingAsset {
+  INVALID_UNKNOWN = 'invalid_asset_type',
+  ADA = 'ada',
+  ALGO = 'algo',
+  APE = 'ape',
+  APECHAIN = 'apechain',
+  API3 = 'api3',
+  ARBETH = 'arbeth',
+  BASEETH = 'baseeth', // Base Ethereum
+  ASI = 'asi',
+  ATOM = 'atom',
+  AVAXC = 'avaxc',
+  AVAXP = 'avaxp',
+  AXL = 'AXL',
+  AXLV2 = 'axlv2',
+  BABY = 'baby',
+  BCH = 'bch',
+  BCHA = 'bcha',
+  BERA = 'bera',
+  BLD = 'bld', // Agoric
+  BSC = 'bsc',
+  BSV = 'bsv',
+  BTC = 'btc',
+  BTG = 'btg',
+  CANTON = 'canton',
+  DASH = 'dash',
+  DOT = 'dot',
+  CELO = 'celo', // Celo main coin
+  CHILIZ = 'chiliz', // Chiliz Chain native coin
+  CODEXETH = 'codexeth', // Codex Ethereum L2
+  COREDAO = 'coredao',
+  COREUM = 'coreum',
+  CRONOS = 'cronos',
+  CSPR = 'cspr',
+  EOS = 'eos',
+  ERD = 'erd',
+  ETC = 'etc',
+  ETH = 'eth',
+  ETH2 = 'eth2',
+  ETHW = 'ethw',
+  EURCVV0 = 'eurcvv0',
+  EURCV = 'eurcv',
+  EUROC = 'euroc',
+  EURR = 'eurr',
+  FETCHAI = 'fetchai',
+  FLOW = 'flow',
+  FLR = 'flr',
+  FLRP = 'flrp',
+  FLUENTETH = 'fluenteth',
+  FANTOM = 'fantom', // Fantom
+  GTC = 'gtc',
+  H = 'h', // Humanity Protocol
+  HASH = 'hash', // Provenance
+  HBAR = 'hbar', // Hedera main coin
+  HBAREVM = 'hbarevm', // Hedera EVM coin
+  HEMIETH = 'hemieth', // Hemi Ethereum L2
+  HOODETH = 'hoodeth', // Robinhood Chain
+  HPPETH = 'hppeth', // House Party Protocol
+  ICP = 'icp',
+  IP = 'ip', // Story Chain
+  INITIA = 'initia',
+  INJECTIVE = 'injective',
+  IOTA = 'iota',
+  IRYS = 'irys',
+  ISLM = 'islm',
+  JOVAYETH = 'jovayeth',
+  KAIA = 'kaia',
+  KAVACOSMOS = 'kavacosmos',
+  KAVAEVM = 'kavaevm',
+  LNBTC = 'lnbtc',
+  LTC = 'ltc',
+  LINEAETH = 'lineaeth',
+  MANTLE = 'mantle',
+  MANTRA = 'mantra',
+  MEGAETH = 'megaeth',
+  MON = 'mon',
+  MORPH = 'morph',
+  MORPHETH = 'morpheth',
+  NEAR = 'near',
+  OAS = 'oas',
+  OG = 'og',
+  OKBXLAYER = 'okbxlayer',
+  OPBNB = 'opbnb', // opBNB Chain
+  OPETH = 'opeth',
+  OSMO = 'osmo',
+  XPL = 'xpl', // Plasma Network
+  POLYGON = 'polygon',
+  PHRS = 'phrs',
+  PLUME = 'plume',
+  CTC = 'ctc',
+  HYPEEVM = 'hypeevm',
+  HYPERLIQUID = 'hyperliquid', // HyperCore L1
+  RBTC = 'rbtc', // RSK main coin
+  SEI = 'sei',
+  SEIEVM = 'seievm',
+  SGB = 'sgb',
+  SOL = 'sol',
+  SOMI = 'somi', // Somnia Chain
+  SONEIUM = 'soneium',
+  SONIC = 'sonic',
+  STT = 'stt',
+  STX = 'stx',
+  SUI = 'sui',
+  TIA = 'tia', // Celestia
+  TON = 'ton',
+  TRX = 'trx',
+  USDT0 = 'usdt0', // Stable EVM L1
+  VET = 'vet',
+  WEMIX = 'wemix',
+  WORLD = 'world',
+  XDC = 'xdc',
+  XLM = 'xlm',
+  XRP = 'xrp',
+  XTZ = 'xtz',
+  XTZEVM = 'xtzevm', // Etherlink (XTZ EVM L2)
+  ZEC = 'zec',
+  ZETA = 'zeta',
+  ZKETH = 'zketh',
+
+  ZKSYNCERA = 'zksyncera', // ZkSync Era
+  UNIETH = 'unieth', // Unichain
+  // ERC 20 tokens
+  '$Evmosia.com' = '$evmosia.com',
+  '0xREVIEW' = '0xreview',
+  '1INCH' = '1inch',
+  '1UP' = '1up',
+  '3CRV' = '3crv',
+  AAVE = 'aave',
+  ABT = 'abt',
+  ACE = 'ace',
+  ACEV2 = 'acev2',
+  ACX = 'acx',
+  ACXT = 'acxt',
+  ACH = 'ach',
+  ADABEAR = 'adabear',
+  ADABULL = 'adabull',
+  ADX = 'adx',
+  AE = 'ae',
+  AERGO = 'aergo',
+  AERGO1 = 'aergo1',
+  AGEUR = 'ageur',
+  AGI = 'agi',
+  AGIX = 'agix',
+  AGLD = 'agld',
+  AGWD = 'agwd',
+  AION = 'aion',
+  AJNA = 'ajna',
+  AKRO = 'akro',
+  ALCX = 'alcx',
+  ALD = 'ald',
+  ALDRIN = 'aldrin',
+  ALEPH = 'aleph',
+  ALGOBEAR = 'algobear',
+  ALGOBULL = 'algobull',
+  ALGODOOM = 'algodoom',
+  ALGOHEDGE = 'algohedge',
+  ALGOMOON = 'algomoon',
+  ALTDOOM = 'altdoom',
+  ALTMOON = 'altmoon',
+  ALI = 'ali',
+  ALICE = 'alice',
+  ALK = 'alk',
+  ALM = 'alm',
+  ALPHA = 'alpha',
+  ALTBEAR = 'altbear',
+  ALTBULL = 'altbull',
+  ALTHEDGE = 'althedge',
+  AMKT = 'amkt',
+  AMN = 'amn',
+  AMO = 'amo',
+  AMP = 'amp',
+  AMPL = 'ampl',
+  AMON = 'amon',
+  AMPX = 'ampx',
+  ANA = 'ana',
+  ANC = 'anc',
+  ANGLE = 'angle',
+  ANKR = 'ankr',
+  ANKRETH = 'ankreth',
+  ANML = 'anml',
+  ANT = 'ant',
+  ANTV2 = 'antv2',
+  AOA = 'aoa',
+  APPC = 'appc',
+  APT = 'apt',
+  AQT = 'aqt',
+  ARCUSDC = 'arcusdc',
+  ARCT = 'arct',
+  ARCX = 'arcx',
+  ARKM = 'arkm',
+  ARMOR = 'armor',
+  ARPA = 'arpa',
+  ARTEQ = 'arteq',
+  ASD = 'asd',
+  AST = 'ast',
+  ASTO = 'asto',
+  ATA = 'ata',
+  ATF = 'atf',
+  ATH = 'ath',
+  ATL = 'atl',
+  ATLAS = 'atlas',
+  ATOMBEAR = 'atombear',
+  ATOMBULL = 'atombull',
+  ATRI = 'atri',
+  AUCTION = 'auction',
+  AUDD = 'audd',
+  AUDF = 'audf',
+  AUDIO = 'audio',
+  AUDX = 'audx',
+  AUSD = 'ausd',
+  AUSDT = 'ausdt',
+  AUST = 'aust',
+  AVA = 'ava',
+  AVT = 'avt',
+  AWBTC = 'awbtc',
+  AXPR = 'axpr',
+  AXS = 'axs',
+  AXSV2 = 'axsv2',
+  AYFI = 'ayfi',
+  AZUKI = 'azuki',
+  AZUKI2 = 'azuki2',
+  AZUKIPEPE = 'azukipepe',
+  BADGER = 'badger',
+  BAI = 'bai',
+  BAL = 'bal',
+  BAND = 'band',
+  BANK = 'bank',
+  BAO = 'bao',
+  BASIC = 'basic',
+  BAT = 'bat',
+  BAX = 'bax',
+  BBANK = 'bbank',
+  BBSAMO = 'bbsamo',
+  BBTC = 'BBTC',
+  BBX = 'bbx',
+  BCAP = 'bcap',
+  BCC = 'bcc',
+  BCHBEAR = 'bchbear',
+  BCHBULL = 'bchbull',
+  BCHDOOM = 'bchdoom',
+  BCHHEDGE = 'bchhedge',
+  BCHMOON = 'bchmoon',
+  BCIO = 'bcio',
+  BCUT = 'bcut',
+  BCT = 'bct',
+  BDXN = 'bdxn',
+  BEAM = 'beam',
+  BEAR = 'bear',
+  BEARSHIT = 'bearshit',
+  BED = 'bed',
+  BEND = 'bend',
+  BEPRO = 'bepro',
+  BETA = 'beta',
+  BGB = 'bgb',
+  BGBG = 'bgbg',
+  BICO = 'bico',
+  BID = 'bid',
+  BIDL = 'bidl',
+  BIGTIME = 'bigtime',
+  BIRD = 'bird',
+  BIT = 'bit',
+  BKT = 'bkt',
+  BKX = 'bkx',
+  BLCT = 'blct',
+  BLT = 'blt',
+  BLUR = 'blur',
+  BLUR0x083 = 'blur0x083',
+  BLUR0xb93 = 'blur0xb93',
+  BLZ = 'blz',
+  BNB = 'bnb',
+  BNBBEAR = 'bnbbear',
+  BNBBULL = 'bnbbull',
+  BNBDOOM = 'bnbdoom',
+  BNBHEDGE = 'bnbhedge',
+  BNBMOON = 'bnbmoon',
+  BNK = 'bnk',
+  BNL = 'bnl',
+  BNT = 'bnt',
+  BNTY = 'bnty',
+  BNVDA = 'bnvda',
+  BOB = 'bob',
+  BOND = 'bond',
+  BONK = 'bonk',
+  BONE = 'bone',
+  BORG = 'borg',
+  BOTTO = 'botto',
+  BLOCKS = 'blocks',
+  BOX = 'box',
+  BOBA = 'boba',
+  BRD = 'brd',
+  BRIBE = 'bribe',
+  BRZ = 'brz',
+  BSGG = 'bsgg',
+  BST = 'bst',
+  BSVBEAR = 'bsvbear',
+  BSVBULL = 'bsvbull',
+  BSVDOOM = 'bsvdoom',
+  BSVHEDGE = 'bsvhedge',
+  BSVMOON = 'bsvmoon',
+  BSX = 'bsx',
+  BTC2XFLI = 'btc2xfli',
+  BTMXBEAR = 'btmxbear',
+  BTMXBULL = 'btmxbull',
+  BTRST = 'btrst',
+  BTSG = 'btsg',
+  BTT = 'btt',
+  BTU = 'btu',
+  BUIDL = 'buidl',
+  BULL = 'bull',
+  BULLSHIT = 'bullshit',
+  BURP = 'burp',
+  BUSD = 'busd',
+  BUY = 'buy',
+  BPT = 'bpt',
+  BVOL = 'bvol',
+  BXX = 'bxx',
+  BXXV1 = 'bxxv1',
+  BZZ = 'bzz',
+  C3 = 'c3',
+  C6P = 'c6p',
+  C8P = 'c8p',
+  C98 = 'c98',
+  CACXT = 'cacxt',
+  CADX = 'cadx',
+  CAG = 'cag',
+  CANTO = 'canto',
+  CAPS = 'caps',
+  CARV = 'carv',
+  CASH = 'cash',
+  CBAT = 'cbat',
+  CBC = 'cbc',
+  CBETH = 'cbeth',
+  CBRL = 'cbrl',
+  CCAI = 'ccai',
+  CCT = 'cct',
+  CDAG = 'cdag',
+  CDAI = 'cdai',
+  CDAIV2 = 'cdaiV2',
+  CDT = 'cdt',
+  CEL = 'cel',
+  CELLS = 'cells',
+  CELR = 'celr',
+  CERE = 'cere',
+  CETH = 'ceth',
+  CFX = 'cfx',
+  CHAINLINK = 'chainlink',
+  CHART = 'chart',
+  CHO = 'cho',
+  CHFX = 'chfx',
+  CHR = 'chr',
+  CHSB = 'chsb',
+  CHZ = 'chz',
+  CIBO = 'cibo',
+  CIX100 = 'cix100',
+  CLIQ = 'cliq',
+  CLN = 'cln',
+  CLT = 'clt',
+  CLXY = 'clxy',
+  CLV = 'clv',
+  CMFI = 'cmfi',
+  CNFI = 'cnfi',
+  CNG = 'cng',
+  CNYX = 'cnyx',
+  COLLAR = 'collar',
+  COMBO = 'combo',
+  COMP = 'comp',
+  CONV = 'conv',
+  COPE = 'cope',
+  CORE = 'core',
+  COS = 'cos',
+  COTI = 'coti',
+  COVAL = 'coval',
+  COVER = 'cover',
+  COVERPROTOCOL = 'coverprotocol',
+  COW = 'cow',
+  CPAY = 'cpay',
+  CPLT = 'cplt',
+  CPOOL = 'cpool',
+  CQT = 'cqt',
+  CQX = 'cqx',
+  CRA = 'cra',
+  CRDT = 'crdt',
+  CRE = 'cre',
+  CREAM = 'cream',
+  CREP = 'crep',
+  CRI = 'cri',
+  CRO = 'cro',
+  CRV = 'crv',
+  CRPT = 'crpt',
+  CRPT1 = 'crpt1',
+  CSLV = 'cslv',
+  CSOL = 'csol',
+  CSP = 'csp',
+  CTSI = 'ctsi',
+  CTX = 'ctx',
+  CUBE = 'cube',
+  CUSD = 'cusd',
+  CUSDC = 'cusdc',
+  CVXFXS = 'cvxfxs',
+  CWAR = 'cwar',
+  CWBTC = 'cwbtc',
+  CVC = 'cvc',
+  CVX = 'cvx',
+  CXT = 'cxt',
+  CYBER = 'cyber',
+  CZRX = 'czrx',
+  DACXI = 'dacxi',
+  DADI = 'dadi',
+  DAMM = 'damm',
+  DAI = 'dai',
+  DAO = 'dao',
+  DAOLANG = 'daolang',
+  DAR = 'dar',
+  DATA = 'data',
+  DATAV2 = 'datav2',
+  DATAECON = 'dataecon',
+  DAWN = 'dawn',
+  DEC = 'dec',
+  DEGO = 'dego',
+  DENT = 'dent',
+  DEP = 'dep',
+  DEPAY = 'depay',
+  DEXA = 'dexa',
+  DEXE = 'dexe',
+  DFD = 'dfd',
+  DFI = 'dfi',
+  DFL = 'dfl',
+  DFX = 'dfx',
+  DGCL = 'dgcl',
+  DGD = 'dgd',
+  DGLD = 'dgld',
+  DGX = 'dgx',
+  DHT = 'dht',
+  DIGG = 'digg',
+  DIA = 'dia',
+  DING = 'ding',
+  DIPE = 'dipe',
+  DMG = 'dmg',
+  DMT = 'dmt',
+  DNA = 'dna',
+  DNT = 'dnt',
+  DODO = 'dodo',
+  DOG = 'dog',
+  DOGE = 'doge',
+  DOGEOS = 'dogeos',
+  DOGEBEAR = 'dogebear',
+  DOGEBEAR2021 = 'dogebear2021',
+  DOGEBULL = 'dogebull',
+  DOMI = 'domi',
+  DOOM = 'doom',
+  DOOMSHIT = 'doomshit',
+  DOSE = 'dose',
+  DOTK = 'dotk',
+  DPAY = 'dpay',
+  DPI = 'dpi',
+  DPX = 'dpx',
+  DPY = 'dpy',
+  DRAM = 'dram',
+  DRGNBEAR = 'drgnbear',
+  DRGNBULL = 'drgnbull',
+  DRPU = 'drpu',
+  DRV = 'drv',
+  DUC = 'duc',
+  DUCK = 'duck',
+  DUSD = 'dusd',
+  DUSK = 'dusk',
+  DUST = 'dust',
+  DX1U = 'dx1u',
+  DXGT = 'dxgt',
+  DXO = 'dxo',
+  DXPT = 'dxpt',
+  DXST = 'dxst',
+  DYDX = 'dydx',
+  DYN = 'dyn',
+  EASY = 'easy',
+  EBTCQ = 'ebtcq',
+  ECHT = 'echt',
+  'eth:eco' = 'eth:eco',
+  ECOX = 'ecox',
+  'sol:eusx' = 'sol:eusx',
+  EDEN = 'eden',
+  EDISON = 'edison',
+  EDLC = 'edlc',
+  EDO = 'edo',
+  ELON = 'elon',
+  EMB = 'emb',
+  EDN = 'edn',
+  EDR = 'edr',
+  EFI = 'efi',
+  EGL = 'egl',
+  EGLD = 'egld',
+  EGOLD = 'egold',
+  EIGEN = 'eigen',
+  ELF = 'elf',
+  ELU = 'elu',
+  EMAID = 'emaid',
+  EMX = 'emx',
+  ENA = 'ena',
+  ENG = 'eng',
+  ENJ = 'enj',
+  ENS = 'ens',
+  EON = 'eon',
+  EOP = 'eop',
+  EOSBEAR = 'eosbear',
+  EOSBULL = 'eosbull',
+  EOSDOOM = 'eosdoom',
+  EOSHEDGE = 'eoshedge',
+  EOSMOON = 'eosmoon',
+  EQO = 'eqo',
+  ESE = 'ese',
+  ETA = 'eta',
+  ETHBULL = 'ethbull',
+  ETCBEAR = 'etcbear',
+  ETCBULL = 'etcbull',
+  ETCDOOM = 'etcdoom',
+  ETCHEDOOM = 'etchedoom',
+  ETCMOON = 'etcmoon',
+  ETHBEAR = 'ethbear',
+  ETHDOOM = 'ethdoom',
+  ETHFI = 'ethfi',
+  'eth:block' = 'eth:block',
+  'eth:bito' = 'eth:bito',
+  'ETH:ECASH' = 'eth:ecash',
+  'ETH:OORT' = 'eth:oort',
+  'eth:prism' = 'eth:prism',
+  'eth:ultra' = 'eth:ultra',
+  'eth:yprism' = 'eth:yprism',
+  'eth:nvylds' = 'eth:nvylds',
+  'eth:nvheloc' = 'eth:nvheloc',
+  'eth:nil' = 'eth:nil',
+  'eth:dragonx' = 'eth:dragonx',
+  ETHHEDGE = 'ethhedge',
+  ETHMOON = 'ethmoon',
+  ETHOPT = 'ethopt',
+  ETHOS = 'ethos',
+  ETHTON = 'ethton',
+  ETHX = 'ethx',
+  ETV = 'etv',
+  ETX = 'etx',
+  EUL = 'eul',
+  EURE = 'eure',
+  EURL = 'eurl',
+  EUROE = 'euroe',
+  EUROP = 'europ',
+  EURS = 'eurs',
+  EURST = 'eurst',
+  EURT = 'eurt',
+  EURX = 'eurx',
+  EUX = 'eux',
+  EVER = 'ever',
+  EVERY = 'every',
+  EVRY = 'evry',
+  EVX = 'evx',
+  EXCHBEAR = 'exchbear',
+  EXCHBULL = 'exchbull',
+  EXCHDOOM = 'exchdoom',
+  EXCHHEDGE = 'exchhedge',
+  EXCHMOON = 'exchmoon',
+  EXE = 'exe',
+  FANT = 'fant',
+  FARM = 'farm',
+  FEI = 'fei',
+  FET = 'fet',
+  FET1 = 'fet1',
+  FDT = 'fdt',
+  FDUSD = 'fdusd',
+  FF1 = 'ff1',
+  FF6000 = 'ff6000',
+  FFT = 'fft',
+  FIDA = 'fida',
+  FIDU = 'fidu',
+  FIN = 'fin',
+  FIRE = 'fire',
+  FIRSTBLOOD = 'firstblood',
+  FIS = 'fis',
+  FIXED = 'fixed',
+  FLIP = 'flip',
+  FLOKI = 'floki',
+  FLUX = 'flux',
+  FLY = 'fly',
+  FMF = 'fmf',
+  FOLD = 'fold',
+  FOR = 'for',
+  'sol:ford' = 'sol:ford',
+  FOREX = 'forex',
+  FORT = 'fort',
+  FORTH = 'forth',
+  FOX = 'fox',
+  FPIS = 'fpis',
+  FRAX = 'frax',
+  FRONT = 'front',
+  FT = 'ft',
+  FTM = 'ftm',
+  FTT = 'ftt',
+  FTT20 = 'ftt20',
+  FTX2 = 'ftx2',
+  FUCKFTX = 'fuckftx',
+  FUN = 'fun',
+  FWB = 'fwb',
+  FX = 'fx',
+  FXRT = 'fxrt',
+  FXS = 'fxs',
+  G = 'g',
+  GAL = 'gal',
+  GALA = 'gala',
+  GALAV2 = 'galav2',
+  'GAME.COM' = 'game.com',
+  GAMMA = 'gamma',
+  'sol:gari' = 'sol:gari',
+  'sol:usd1' = 'sol:usd1',
+  'sol:usdm1' = 'sol:usdm1',
+  'tsol:slnd' = 'tsol:slnd',
+  'tsol:orca' = 'tsol:orca',
+  'tsol:usdc' = 'tsol:usdc',
+  'tsol:ray' = 'tsol:ray',
+  'tsol:gmt' = 'tsol:gmt',
+  'tsol:usdt' = 'tsol:usdt',
+  'tsol:srm' = 'tsol:srm',
+  'tsol:wsol' = 'tsol:wsol',
+  'tsol:gari' = 'tsol:gari',
+  'tsol:t22mint' = 'tsol:t22mint',
+  'tsol:t1test' = 'tsol:t1test',
+  GAS = 'gas',
+  GATE = 'gate',
+  GBPT = 'gbpt',
+  GBPX = 'gbpx',
+  GDT = 'gdt',
+  GEAR = 'gear',
+  GEC = 'gec',
+  GEL = 'gel',
+  GEN = 'gen',
+  GENE = 'gene',
+  GENIE = 'genie',
+  GF = 'gf',
+  GFI = 'gfi',
+  GHST = 'ghst',
+  GHUB = 'ghub',
+  GIGDROP = 'gigdrop',
+  GIV = 'giv',
+  GLDX = 'gldx',
+  GLM = 'glm',
+  'sol:glxy' = 'sol:glxy',
+  GMT = 'gmt',
+  'sol:gmt' = 'sol:gmt',
+  GNO = 'gno',
+  GNT = 'gnt',
+  'sol:goat' = 'sol:goat',
+  GODS = 'gods',
+  GOHM = 'gohm',
+  GOG = 'gog',
+  GOLD = 'gold',
+  GOM = 'gom',
+  GOMINING = 'gomining',
+  GOT = 'got',
+  GRID = 'grid',
+  GRT = 'grt',
+  GST = 'gst',
+  GT = 'gt',
+  GTAAVE18DP = 'gtaave18dp',
+  GTBAT18DP = 'gtbat18dp',
+  GTCOMP18DP = 'gtcomp18dp',
+  GTGRT18DP = 'gtgrt18dp',
+  GTLINK18DP = 'gtlink18dp',
+  GTMKR18DP = 'gtmkr18dp',
+  GTSNX18DP = 'gtsnx18dp',
+  GTUNI18DP = 'gtuni18dp',
+  GTUSDT6DP = 'gtusdt6dp',
+  GTYFI18DP = 'gtyfi18dp',
+  GTWBTC8DP = 'gtwbtc8dp',
+  GTO = 'gto',
+  GTERC2DP = 'gterc2dp',
+  GTERC6DP = 'gterc6dp',
+  GTERC18DP = 'gterc18dp',
+  GUSD = 'gusd',
+  GUSDT = 'gusdt',
+  GXC = 'gxc',
+  GXT = 'gxt',
+  GYEN = 'gyen',
+  HBB = 'hbb',
+  HBTC = 'hbtc',
+  HCN = 'hcn',
+  HDO = 'hdo',
+  HEDG = 'hedg',
+  HEDGE = 'hedge',
+  HEDGESHIT = 'hedgeshit',
+  HEX = 'hex',
+  HFT = 'hft',
+  HGET = 'hget',
+  HIGH = 'high',
+  HIFI = 'hifi',
+  HIT = 'hit',
+  HKDX = 'hkdx',
+  HLC = 'hlc',
+  HMT = 'hmt',
+  'sol:hnt' = 'sol:hnt',
+  HOLD = 'hold',
+  HOLY = 'holy',
+  HOP = 'hop',
+  HOT = 'hot',
+  HPO = 'hpo',
+  HQG = 'hqg',
+  HQT = 'hqt',
+  HST = 'hst',
+  HT = 'ht',
+  HTBEAR = 'htbear',
+  HTBULL = 'htbull',
+  HTDOOM = 'htdoom',
+  'hteth:bgerchv2' = 'hteth:bgerchv2',
+  'hteth:aut' = 'hteth:aut',
+  HTHEDGE = 'hthedge',
+  HTMOON = 'htmoon',
+  HUM = 'hum',
+  HUMV2 = 'humv2',
+  HUSD = 'husd',
+  HXRO = 'hxro',
+  HYB = 'hyb',
+  HYDRO = 'hydro',
+  HYDROPROTOCOL = 'hydroprotocol',
+  I8 = 'i8',
+  IBEUR = 'ibeur',
+  IBOX = 'ibox',
+  IBVOL = 'ibvol',
+  ICETH = 'iceth',
+  ID = 'id',
+  IDEX = 'idex',
+  IDRC = 'idrc',
+  IDRT = 'idrt',
+  ILV = 'ilv',
+  IMX = 'imx',
+  IMXV2 = 'imxv2',
+  INCX = 'incx',
+  IND = 'ind',
+  INDEX = 'index',
+  INDI = 'indi',
+  INF = 'inf',
+  INJ = 'inj',
+  INJV2 = 'injv2',
+  INST = 'inst',
+  INSUR = 'insur',
+  INV = 'inv',
+  INX = 'inx',
+  IOST = 'iost',
+  IOTX = 'iotx',
+  IP3 = 'ip3',
+  ISF = 'isf',
+  ISR = 'isr',
+  IVO = 'ivo',
+  IVY = 'ivy',
+  JASMY = 'jasmy',
+  JBC = 'jbc',
+  JCR = 'jcr',
+  JCG = 'jcg',
+  'sol:jet' = 'sol:jet',
+  JFIN = 'jfin',
+  JPYX = 'jpyx',
+  JSOL = 'jsol',
+  KARATE = 'karate',
+  KARMA = 'karma',
+  KAS = 'kas',
+  KCASH = 'kcash',
+  KCS = 'kcs',
+  KEEP = 'keep',
+  KEY = 'key',
+  KILL0 = 'kill0',
+  KIN = 'kin',
+  'sol:kin' = 'sol:kin',
+  KINE = 'kine',
+  KING = 'king',
+  KINTO = 'kinto',
+  KIRO = 'kiro',
+  KISHUI = 'kishui',
+  KITTY = 'kitty',
+  KNC = 'knc',
+  KNC2 = 'knc2',
+  KOIN = 'koin',
+  KOL = 'kol',
+  KOZ = 'koz',
+  KP3R = 'kp3r',
+  KRO = 'kro',
+  KROM = 'krom',
+  KTRC = 'ktrc',
+  KZE = 'kze',
+  L3 = 'l3',
+  L3USD = 'l3usd',
+  LA = 'la',
+  LADYS = 'ladys',
+  LAYER = 'layer',
+  LAYERZERO = 'layerzero',
+  LBA = 'lba',
+  LCX = 'lcx',
+  LDO = 'ldo',
+  LEND = 'lend',
+  LEO = 'leo',
+  LEOBEAR = 'leobear',
+  LEOBULL = 'leobull',
+  LEODOOM = 'leodoom',
+  LEOHEDGE = 'leohedge',
+  LEOMOON = 'leomoon',
+  LEV = 'lev',
+  LEVER = 'lever',
+  LGO = 'lgo',
+  LIEN = 'lien',
+  LIF3 = 'lif3',
+  LIKE = 'like',
+  LINA = 'lina',
+  LINK = 'link',
+  LINKBEAR = 'linkbear',
+  LINKBULL = 'linkbull',
+  LION = 'lion',
+  LIT = 'lit',
+  LITH = 'lith',
+  LITv2 = 'litv2',
+  LKR = 'lkr',
+  LMWR = 'lmwr',
+  LNC = 'lnc',
+  LOKA = 'loka',
+  LOOKS = 'looks',
+  LOOM = 'loom',
+  LOOM1 = 'loom1',
+  LOVE = 'love',
+  LOVELY = 'lovely',
+  LOWB = 'lowb',
+  LPT = 'lpt',
+  LQID = 'lqid',
+  LQTY = 'lqty',
+  LRC = 'lrc',
+  LRCV2 = 'lrcv2',
+  LSETH = 'lseth',
+  LSK = 'lsk',
+  LTCBEAR = 'ltcbear',
+  LTCBULL = 'ltcbull',
+  LTCDOOM = 'ltcdoom',
+  LTCHEDGE = 'ltchedge',
+  LTCMOON = 'ltcmoon',
+  LTO = 'lto',
+  LUA = 'lua',
+  LUNA = 'luna',
+  LUNAWORMHOLE = 'lunawormhole',
+  LYN = 'lyn',
+  LYXE = 'lyxe',
+  MAGIC = 'magic',
+  MANA = 'mana',
+  MAPS = 'maps',
+  MASA = 'masa',
+  MASK = 'mask',
+  MATH = 'math',
+  MATIC = 'matic',
+  MATICBEAR = 'maticbear',
+  MATICBEAR2021 = 'maticbear2021',
+  MATICBULL = 'maticbull',
+  MATTER = 'matter',
+  MAV = 'mav',
+  MBS = 'mbs',
+  MCAU = 'mcau',
+  MCB = 'mcb',
+  MCDAI = 'mcdai',
+  MCO = 'mco',
+  MCO2 = 'mco2',
+  MCS = 'mcs',
+  MCX = 'mcx',
+  MDFC = 'mdfc',
+  MDT = 'mdt',
+  MDX = 'mdx',
+  MEAN = 'mean',
+  MEDIA = 'media',
+  MEDIAv2 = 'mediav2',
+  MEDX = 'medx',
+  MEME = 'meme',
+  MEOW = 'meow',
+  MER = 'mer',
+  MET = 'met',
+  META = 'meta',
+  METIS = 'metis',
+  MEW = 'mew',
+  MFG = 'mfg',
+  MFPH = 'mfph',
+  MFT = 'mft',
+  MIDBEAR = 'midbear',
+  MIDBULL = 'midbull',
+  MIDDOOM = 'middoom',
+  MIDHEDGE = 'midhedge',
+  MIDMOON = 'midmoon',
+  MILKV2 = 'milkv2',
+  MIM = 'mim',
+  MIR = 'mir',
+  MITH = 'mith',
+  MIX = 'mix',
+  MIZN = 'mizn',
+  MKR = 'mkr',
+  MLN = 'mln',
+  MNS = 'mns',
+  MNT = 'mnt',
+  MNDE = 'mnde',
+  'sol:mnde' = 'sol:mnde',
+  MOC = 'moc',
+  MOCA = 'moca',
+  MOCHI = 'mochi',
+  MOF = 'mof',
+  MOG = 'mog',
+  MOH = 'moh',
+  MOON = 'moon',
+  MOONSHIT = 'moonshit',
+  MOTHER = 'mother',
+  MNGO = 'mngo',
+  MPAY = 'mpay',
+  MPL = 'mpl',
+  'sol:mplx' = 'sol:mplx',
+  MRTWEET = 'mrtweet',
+  MSN = 'msn',
+  MSOL = 'msol',
+  MTA = 'mta',
+  MTCN = 'mtcn',
+  MTH = 'mth',
+  MTL = 'mtl',
+  MTV = 'mtv',
+  MUSD = 'musd',
+  MVL = 'mvl',
+  MVI = 'mvi',
+  MWT = 'mwt',
+  MYRC = 'myrc',
+  'sol:myrc' = 'sol:myrc',
+  MYTH = 'myth',
+  NAAI = 'naai',
+  NAS = 'nas',
+  NCT = 'nct',
+  NDX = 'ndx',
+  'NEAR-ERC20' = 'near-erc20',
+  NEU = 'neu',
+  NEWO = 'newo',
+  NEXO = 'nexo',
+  'NFCWIN-SB-2021' = 'nfcwin-sb-2021',
+  NFTFI = 'nftfi',
+  NFTX = 'nftx',
+  NGNT = 'ngnt',
+  NIAX = 'niax',
+  NKN = 'nkn',
+  NMR = 'nmr',
+  NOSANA = 'nosana',
+  NOTE = 'note',
+  NOVA = 'nova',
+  NPT = 'npt',
+  NPXS = 'npxs',
+  NS2DRP = 'ns2drp',
+  NU = 'nu',
+  NULS = 'nuls',
+  NUTS = 'nuts',
+  NXM = 'nxm',
+  NYM = 'nym',
+  NZDX = 'nzdx',
+  OAX = 'oax',
+  OCEAN = 'ocean',
+  OCEANV2 = 'oceanv2',
+  OCTAV = 'octav',
+  OGN = 'ogn',
+  OGV = 'ogv',
+  OKB = 'okb',
+  OKBBEAR = 'okbbear',
+  OKBBULL = 'okbbull',
+  OKBDOOM = 'okbdoom',
+  OKBHEDGE = 'okbhedge',
+  OKBMOON = 'okbmoon',
+  OM = 'om',
+  OMOLD = 'omold',
+  OMG = 'omg',
+  OMNI = 'omni',
+  OMNIA = 'omnia',
+  ONDO = 'ondo',
+  ONL = 'onl',
+  ONT = 'ont',
+  OOKI = 'ooki',
+  OP = 'op',
+  OPIUM = 'opium',
+  OPT = 'opt',
+  ORAI = 'orai',
+  ORBS = 'orbs',
+  ORC = 'orc',
+  ORN = 'orn',
+  'sol:orca' = 'sol:orca',
+  OS = 'os',
+  OSETH = 'oseth',
+  OUSD = 'ousd',
+  OUSG = 'ousg',
+  OWN = 'own',
+  OXT = 'oxt',
+  OXY = 'oxy',
+  OHM = 'ohm',
+  PACT = 'pact',
+  PAI = 'pai',
+  PAR = 'par',
+  PASS = 'pass',
+  PAU = 'pau',
+  PAX = 'pax',
+  PAXG = 'paxg',
+  PAXGBEAR = 'paxgbear',
+  PAXGBULL = 'paxgbull',
+  PAY = 'pay',
+  PBCH = 'pbch',
+  PBTC = 'pbtc',
+  PDA = 'PDA',
+  PDATA = 'pdata',
+  PDI = 'pdi',
+  PEAQ = 'peaq',
+  PEBBLE = 'pebble',
+  PEG = 'peg',
+  PENDLE = 'pendle',
+  PEOPLE = 'people',
+  PEPE = 'pepe',
+  PERL = 'perl',
+  PERP = 'perp',
+  PETH = 'peth',
+  PHA = 'pha',
+  PHNX = 'phnx',
+  PICK = 'pick',
+  PICKLE = 'pickle',
+  PIE = 'pie',
+  PINE = 'pine',
+  PIRATE = 'pirate',
+  PLAY = 'play',
+  PIXEL = 'pixel',
+  PLC = 'plc',
+  PFCT = 'pfct',
+  PLANET = 'planet',
+  PLNX = 'plnx',
+  PLX = 'plx',
+  PMA = 'pma',
+  PNT = 'pnt',
+  POL = 'pol',
+  POLIS = 'polis',
+  POLY = 'poly',
+  POLYX = 'polyx',
+  POLS = 'pols',
+  POND = 'pond',
+  PONYS = 'ponys',
+  PORT = 'port',
+  POWR = 'powr',
+  PPT = 'ppt',
+  PRDX = 'prdx',
+  PRINTS = 'prints',
+  PRISM = 'prism',
+  PRO = 'pro',
+  PROM = 'prom',
+  PROS = 'pros',
+  PRT = 'prt',
+  PRTS = 'prts',
+  PSOL = 'psol',
+  PSP = 'psp',
+  PSTAKE = 'pstake',
+  PSY = 'psy',
+  PTU = 'ptu',
+  PUNDIX = 'pundix',
+  'sol:pump' = 'sol:pump',
+  PUSD = 'pusd',
+  PUSH = 'push',
+  PV01 = 'pv01',
+  PXP = 'pxp',
+  PYR = 'pyr',
+  PYUSD = 'pyusd',
+  QASH = 'qash',
+  QCAD = 'qcad',
+  'sol:qcad' = 'sol:qcad',
+  QOM = 'qom',
+  QUICK = 'quick',
+  QDT = 'qdt',
+  QKC = 'qkc',
+  QLINDO = 'qlindo',
+  QNT = 'qnt',
+  QRDO = 'qrdo',
+  QRL = 'qrl',
+  QSP = 'qsp',
+  QVT = 'qvt',
+  RAD = 'rad',
+  RADAR = 'radar',
+  RAIN = 'rain',
+  RALPH = 'ralph',
+  RAMP = 'ramp',
+  RARE = 'rare',
+  RARI = 'rari',
+  RAY = 'ray',
+  'sol:ray' = 'sol:ray',
+  RAZOR = 'razor',
+  RBANK = 'rbank',
+  RBN = 'rbn',
+  RBX = 'rbx',
+  RBY = 'rby',
+  RCOIN = 'rcoin',
+  RCT = 'rct',
+  RDN = 'rdn',
+  RDNT = 'rdnt',
+  REAL = 'real',
+  REB = 'reb',
+  REBL = 'rebl',
+  REEF = 'reef',
+  REF = 'ref',
+  REKTTOKEN = 'rekttoken',
+  REKTGAME = 'rektgame',
+  REN = 'ren',
+  RENBTC = 'renbtc',
+  RENDOGE = 'rendoge',
+  REP = 'rep',
+  REPV2 = 'repv2',
+  REQ = 'REQ',
+  'RETH-ROCKET' = 'reth-rocket',
+  'RETH-STAFI' = 'reth-stafi',
+  'RETH-H' = 'reth-h',
+  RETH2 = 'reth2',
+  REVV = 'revv',
+  REZ = 'rez',
+  RFOX = 'rfox',
+  RFR = 'rfr',
+  RFUEL = 'rfuel',
+  RGT = 'rgt',
+  RIF = 'rif',
+  RINGX = 'ringx',
+  RIO = 'rio',
+  RLC = 'rlc',
+  RLUSD = 'rlusd',
+  RLY = 'rly',
+  RN = 'rn',
+  RND = 'rnd',
+  RNDR = 'rndr',
+  RNDT = 'rndt',
+  ROOK = 'rook',
+  RON = 'ron',
+  RONC = 'ronc',
+  ROOBEE = 'roobee',
+  RPK = 'rpk',
+  RPL = 'rpl',
+  RSR = 'rsr',
+  RSWETH = 'rsweth',
+  RUBX = 'rubx',
+  RUEDATK = 'ruedatk',
+  RUN = 'run',
+  RUNE = 'rune',
+  RVR = 'rvr',
+  RYOSHI = 'ryoshi',
+  SAFE = 'safe',
+  SAIL = 'sail',
+  SAITABIT = 'saitabit',
+  SALT = 'salt',
+  SAND = 'sand',
+  SASHIMI = 'sashimi',
+  SAMO = 'samo',
+  SBC = 'sbc',
+  'sol:sbc' = 'sol:sbc',
+  'sol:veur' = 'sol:veur',
+  'sol:vchf' = 'sol:vchf',
+  'sol:tbill' = 'sol:tbill',
+  'sol:usdg' = 'sol:usdg',
+  'sol:ausd' = 'sol:ausd',
+  SBF = 'sbf',
+  SBR = 'sbr',
+  // Saber IOU Token (Liquidity Mining Rewards)
+  SBRIOU = 'sbriou',
+  SCNSOL = 'scnsol',
+  SCOPE = 'scope',
+  SD = 'sd',
+  SDL = 'sdl',
+  SECO = 'seco',
+  SETH = 'seth',
+  'SETH-H' = 'seth-h',
+  SETH2 = 'seth2',
+  SEWERCOIN = 'sewercoin',
+  SFI = 'sfi',
+  SGA = 'sga',
+  SGDX = 'sgdx',
+  SGR = 'sgr',
+  SGT = 'sgt',
+  SHDW = 'shdw',
+  SHEESH = 'sheesh',
+  SHIDO = 'shido',
+  SHK = 'shk',
+  SHOPX = 'shopx',
+  SHOW = 'show',
+  SHIB = 'shib',
+  SHR = 'shr',
+  SIH = 'sih',
+  SILV = 'silv',
+  SIPHER = 'sipher',
+  SIS = 'sis',
+  SKALE = 'skale',
+  SLAB = 'slab',
+  SLC = 'slc',
+  SLCL = 'slcl',
+  'sol:slnd' = 'sol:slnd',
+  SLOT = 'slot',
+  SLP = 'slp',
+  SLRS = 'slrs',
+  SLVX = 'slvx',
+  SMT = 'smt',
+  SNC = 'snc',
+  SNM = 'snm',
+  SNOV = 'snov',
+  SNT = 'snt',
+  SNX = 'snx',
+  SNY = 'sny',
+  SOC = 'soc',
+  SOHM = 'sohm',
+  SOMM = 'somm',
+  SOS = 'sos',
+  SPA = 'spa',
+  SPELL = 'spell',
+  SPF = 'spf',
+  SPO = 'spo',
+  SOLVE = 'solve',
+  'SQUID2.0' = 'squid2.0',
+  SRNT = 'srnt',
+  SRM = 'srm',
+  'sol:srm' = 'sol:srm',
+  'sol:pipe' = 'sol:pipe',
+  SSV = 'ssv',
+  STARS = 'stars',
+  STATE = 'state',
+  STBU = 'stbu',
+  STC = 'stc',
+  STCV2 = 'stcv2',
+  STEP = 'step',
+  STETH = 'steth',
+  STG = 'stg',
+  STKAAVE = 'stkaave',
+  STMX = 'stmx',
+  STORE = 'store',
+  STORJ = 'storj',
+  STORM = 'storm',
+  STPT = 'stpt',
+  STRIKE = 'strike',
+  STRK = 'strk',
+  STRONG = 'strong',
+  STSOL = 'stsol',
+  STZEN = 'stzen',
+  'SUI-ERC20' = 'sui-erc20',
+  SUN = 'sun',
+  SUNNY = 'sunny',
+  SUPER = 'super',
+  SUPERPERIO = 'superperio',
+  SUSD = 'susd',
+  SUSDE = 'susde',
+  SUSHI = 'sushi',
+  SQUIG = 'squig',
+  SVT = 'svt',
+  SWAG = 'swag',
+  SWAP = 'SWAP',
+  SWEAT = 'sweat',
+  SWETH = 'sweth',
+  SWISE = 'swise',
+  SWITCH = 'switch',
+  SWRV = 'swrv',
+  SXP = 'sxp',
+  SYN = 'syn',
+  SYNCH = 'synch',
+  SYRUP = 'syrup',
+  'SYNTH-SUSD' = 'synth-susd',
+  TAO = 'tao',
+  THRESHOLD = 'threshold',
+  THEU = 'theu',
+  TAUD = 'taud',
+  TBILL = 'tbill',
+  TBTC1 = 'tbtc1',
+  TBTC2 = 'tbtc2',
+  TCAD = 'tcad',
+  TCO = 'tco',
+  TEIGEN = 'teigen',
+  TEINU = 'teinu',
+  TEL = 'tel',
+  TELEGRAMDAO = 'telegramdao',
+  TEMPO = 'tempo',
+  TEN = 'ten',
+  TENX = 'tenx',
+  TERC = 'terc',
+  TEUROC = 'teuroc',
+  TERC2DP = 'terc2dp',
+  TERC6DP = 'terc6dp',
+  TERC18DP = 'terc18DP',
+  TERC20 = 'terc20',
+  TERC2DP1 = 'terc2dp1',
+  TERC2DP2 = 'terc2dp2',
+  TERC2DP3 = 'terc2dp3',
+  TERC2DP4 = 'terc2dp4',
+  TERC2DP5 = 'terc2dp5',
+  TERC6DP1 = 'terc6dp1',
+  TERC6DP2 = 'terc6dp2',
+  TERC6DP3 = 'terc6dp3',
+  TERC6DP4 = 'terc6dp4',
+  TERC6DP5 = 'terc6dp5',
+  TERC18DP1 = 'terc18dp1',
+  TERC18DP2 = 'terc18dp2',
+  TERC18DP3 = 'terc18dp3',
+  TERC18DP4 = 'terc18dp4',
+  TERC18DP5 = 'terc18dp5',
+  TERC18DP6 = 'terc18dp6',
+  TERC18DP7 = 'terc18dp7',
+  TERC18DP8 = 'terc18dp8',
+  TERC18DP9 = 'terc18dp9',
+  TERC18DP10 = 'terc18dp10',
+  TERC18DP11 = 'terc18dp11',
+  TERC18DP12 = 'terc18dp12',
+  TERC18DP13 = 'terc18dp13',
+  TERC18DP14 = 'terc18dp14',
+  TERC18DP15 = 'terc18dp15',
+  BGERCH = 'bgerch',
+  AMSTEST = 'amstest',
+  TERM = 'term',
+  TGBP = 'tgbp',
+  TUSDS = 'tusds',
+  TGOUSD = 'tgousd',
+  'hteth:gousd' = 'hteth:gousd',
+  'hteth:grtx' = 'hteth:grtx',
+  'hteth:sofid' = 'hteth:sofid',
+  'hteth:stgsofid' = 'hteth:stgsofid',
+  'hteth:usd1' = 'hteth:usd1',
+  'hteth:stgusd1' = 'hteth:stgusd1',
+  'hteth:cusd' = 'hteth:cusd',
+  'hteth:fyusd' = 'hteth:fyusd',
+  'hteth:stgcusd' = 'hteth:stgcusd',
+  'hteth:stgfyusd' = 'hteth:stgfyusd',
+  'hteth:stgwbtc' = 'hteth:stgwbtc',
+  'hteth:tsteth' = 'hteth:tsteth',
+  'hteth:grtxp' = 'hteth:grtxp',
+  'hteth:testeigen' = 'hteth:testeigen',
+  'hteth:wbtc' = 'hteth:wbtc',
+  THKD = 'thkd',
+  THUNDER = 'thunder',
+  TIO = 'tio',
+  TIOX = 'tiox',
+  TKMK = 'tkmk',
+  TKNT = 'tknt',
+  TKO = 'tko',
+  TKX = 'tkx',
+  TLAB = 'tlab',
+  TLM = 'tlm',
+  TLOS = 'tlos',
+  TMATIC = 'tmatic',
+  TMSN = 'tmsn',
+  TNT = 'tnt',
+  TOKAMAK = 'tokamak',
+  TOKE = 'toke',
+  TOKEN = 'token',
+  TOMI = 'tomi',
+  TOMOBEAR = 'tomobear',
+  TOMOBEAR2 = 'tomobear2',
+  TOMOBULL = 'tomobull',
+  TOK = 'tok',
+  TONCOIN = 'toncoin',
+  TOPM = 'topm',
+  TRAC = 'trac',
+  TRAXX = 'traxx',
+  TRB = 'trb',
+  TRIBE = 'tribe',
+  TRIBL = 'tribl',
+  TRL = 'trl',
+  TROY = 'troy',
+  TRST = 'trst',
+  TRU = 'tru',
+  TRUF = 'truf',
+  TRUFV2 = 'trufv2',
+  TRUMPLOSE = 'trumplose',
+  TRUMPWIN = 'trumpwin',
+  TRXBEAR = 'trxbear',
+  TRXBULL = 'trxbull',
+  TRXDOOM = 'trxdoom',
+  'TRX-ERC20' = 'TRX-ERC20',
+  TRXHEDGE = 'trxhedge',
+  TRXMOON = 'trxmoon',
+  // Bilira
+  TRYB = 'tryb',
+  // TRYB on Solana - https://solscan.io/token/6ry4WBDvAwAnrYJVv6MCog4J8zx6S3cPgSqnTsDZ73AR
+  TRYB2 = 'tryb2',
+  TRYBBEAR = 'trybbear',
+  TRYBBULL = 'trybbull',
+  TRYX = 'tryx',
+  TST = 'tst',
+  TSUKA = 'tsuka',
+  TULIP = 'tulip',
+  TUPOLIS = 'tupolis',
+  TUSD = 'tusd',
+  TUSDC = 'tusdc',
+  TUSDT = 'tusdt',
+  TUSRM = 'tusrm',
+  TWDOGE = 'twdoge',
+  TWETH = 'tweth',
+  TXL = 'txl',
+  TXSGD = 'txsgd',
+  TXUSD = 'txusd',
+  UAIR = 'uair',
+  UBXT = 'ubxt',
+  UCO = 'uco',
+  UFT = 'uft',
+  UKG = 'ukg',
+  UMA = 'uma',
+  UMEE = 'umee',
+  UNB = 'unb',
+  UNI = 'uni',
+  UOS = 'uos',
+  UP = 'up',
+  UPBTC = 'upbtc',
+  UPP = 'upp',
+  UPT = 'upt',
+  UPUSD = 'upusd',
+  UQC = 'uqc',
+  URHD = 'urhd',
+  'sol:usdt' = 'sol:usdt',
+  'sol:usdc' = 'sol:usdc',
+  'sol:agri' = 'sol:agri',
+  'sol:usdca' = 'sol:usdca',
+  'sol:sonic' = 'sol:sonic',
+  'sol:crdt' = 'sol:crdt',
+  'sol:epxc' = 'sol:epxc',
+  'sol:eqtyx' = 'sol:eqtyx',
+  'sol:flttx' = 'sol:flttx',
+  'sol:lngvx' = 'sol:lngvx',
+  'sol:modrx' = 'sol:modrx',
+  'sol:spxux' = 'sol:spxux',
+  'sol:techx' = 'sol:techx',
+  'sol:tipsx' = 'sol:tipsx',
+  'sol:wtgxx' = 'sol:wtgxx',
+  'sol:wtlgx' = 'sol:wtlgx',
+  'sol:wtstx' = 'sol:wtstx',
+  'sol:wttsx' = 'sol:wttsx',
+  'sol:wtsix' = 'sol:wtsix',
+  'sol:wtsyx' = 'sol:wtsyx',
+  USCC = 'uscc',
+  USDC = 'usdc',
+  'USDC-POS-WORMHOLE' = 'usdc-pos-wormhole',
+  USDD = 'usdd',
+  USDE = 'usde',
+  USDGLO = 'usdglo',
+  USDH = 'usdh',
+  USDK = 'usdk',
+  // Also available on EOS
+  USDT = 'usdt',
+  USDTBEAR = 'usdtbear',
+  USDTBULL = 'usdtbull',
+  USDTDOOM = 'usdtdoom',
+  USDTHEDGE = 'usdthedge',
+  USDTMOON = 'usdtmoon',
+  USDX = 'usdx',
+  USDY = 'usdy',
+  USG = 'usg',
+  USPX = 'uspx',
+  UST = 'ust',
+  USTB = 'ustb',
+  'UST-WORMHOLE' = 'ust-wormhole',
+  USX = 'usx',
+  USYC = 'usyc',
+  UTK = 'utk',
+  UTK1 = 'utk1',
+  UXB = 'uxb',
+  UXP = 'uxp',
+  VALOR = 'valor',
+  VANRY = 'vanry',
+  VBNT = 'vbnt',
+  VCORE = 'vcore',
+  VDX = 'vdx',
+  VEC = 'vec',
+  VEE = 'vee',
+  VEGA = 'vega',
+  VEXT = 'vext',
+  VGX = 'vgx',
+  VI = 'vi',
+  VIB = 'vib',
+  VIC = 'vic',
+  VIDT = 'vidt',
+  VISR = 'visr',
+  VIU = 'viu',
+  VOLT = 'volt',
+  VRA = 'vra',
+  VRGX = 'vrgx',
+  VRTX = 'vrtx',
+  VSP = 'vsp',
+  VXC = 'vxc',
+  VXV = 'vxv',
+  W = 'w',
+  // Wrapped AAVE
+  WAAVE = 'waave',
+  WABI = 'wabi',
+  WAFL = 'wafl',
+  WAGMI = 'wagmi',
+  // Wrapped AAVAX
+  WAVAX = 'wavax',
+  WAVES = 'waves',
+  WAX = 'wax',
+  WAXP = 'waxp',
+  // Wrapped BNB
+  WBNB = 'wbnb',
+  WECAN = 'wecan',
+  WFEE = 'wfee',
+  WHAT = 'what',
+  WOO = 'woo',
+  WTK = 'wtk',
+  WBTC = 'wbtc',
+  WDAIV2 = 'wdaiv2',
+  WDOGE = 'wdoge',
+  WCFG = 'wcfg',
+  WEC = 'wec',
+  'sol:wec' = 'sol:wec',
+  WET = 'wet',
+  WETH = 'weth',
+  WEETH = 'weeth',
+  WFLOW = 'wflow',
+  WFFT = 'wfft',
+  WHALE = 'whale',
+  WHT = 'wht',
+  WILD = 'wild',
+  WING = 'wing',
+  WNXM = 'wnxm',
+  WLD = 'wld',
+  WLUNA = 'wluna',
+  WLXT = 'wlxt',
+  // Wrapped SOL
+  'sol:wsol' = 'sol:wsol',
+  // Wrapped Rose
+  WROSE = 'wrose',
+  WSTETH = 'wsteth',
+  WPX = 'wpx',
+  WTAO = 'wtao',
+  WTC = 'wtc',
+  WTGXX = 'wtgxx',
+  // USD Coin (Wormhole)
+  WUSDC = 'wusdc',
+  WUSDCV2 = 'wusdvcv2',
+  WUSDM = 'wusdm',
+  // Tether USD (Wormhole)
+  WUSDTV2 = 'wusdtv2',
+  WXRP = 'wxrp',
+  WXRPV0 = 'wxrpv0',
+  WXT = 'wxt',
+  XAUD = 'xaud',
+  XAURY = 'xaury',
+  XAUT = 'xaut',
+  XAUTBEAR = 'xautbear',
+  XAUTBULL = 'xautbull',
+  XBGOLD = 'xbgold',
+  XCD = 'xcd',
+  XCHNG = 'xchng',
+  XCN = 'xcn',
+  XDEFI = 'xdefi',
+  XDOGE = 'xdoge',
+  XEX = 'xex',
+  XLMBEAR = 'xlmbear',
+  XLMBULL = 'xlmbull',
+  'xpl:syzusd' = 'xpl:syzusd',
+  'xpl:usdto' = 'xpl:usdto',
+  XRL = 'xrl',
+  XRPBEAR = 'xrpbear',
+  XRPBULL = 'xrpbull',
+  XRPDOOM = 'xrpdoom',
+  XRPHEDGE = 'xrphedge',
+  XRPMOON = 'xrpmoon',
+  XSGD = 'xsgd',
+  XSUSHI = 'xsushi',
+  XTP = 'xtp',
+  XTZBEAR = 'xtzbear',
+  XTZBULL = 'xtzbull',
+  XUSD = 'xusd',
+  XVS = 'xvs',
+  XX = 'xx',
+  XZK = 'xzk',
+  YAMV2 = 'yamv2',
+  YFDAI = 'yfdai',
+  YFI = 'yfi',
+  YFII = 'yfii',
+  YFL = 'yfl',
+  YGG = 'ygg',
+  YLD = 'yld',
+  YNG = 'yng',
+  YSEY = 'ysey',
+  ZARX = 'zarx',
+  ZBC = 'zbc',
+  ZBU = 'zbu',
+  ZBUV2 = 'zbuv2',
+  ZCO = 'zco',
+  ZECBEAR = 'zecbear',
+  ZECBULL = 'zecbull',
+  ZETAEVM = 'zetaevm',
+  ZIL = 'zil',
+  ZIP = 'zip',
+  ZIX = 'zix',
+  ZKL = 'zkl',
+  ZKS = 'zks',
+  ZLW = 'zlw',
+  ZMT = 'zmt',
+  ZOOM = 'zoom',
+  ZRO = 'zro',
+  'ZRO-0x320' = 'zro-0x320',
+  'ZRO-0xFCF' = 'zro-0xfcf',
+  'ZRO-0xE5C' = 'zro-0xe5c',
+  ZRX = 'zrx',
+  ZUSD = 'zusd',
+  'eth:usdg' = 'eth:usdg',
+  'eth:spxux' = 'eth:spxux',
+  'eth:aleo' = 'eth:aleo',
+  'eth:dbusd' = 'eth:dbusd',
+  'eth:edu' = 'eth:edu',
+  'eth:telos' = 'eth:telos',
+  'eth:cusdo' = 'eth:cusdo',
+  'eth:aevo' = 'eth:aevo',
+  'eth:alt' = 'eth:alt',
+  'eth:rtbl' = 'eth:rtbl',
+  'eth:virtual' = 'eth:virtual',
+  'eth:vice' = 'eth:vice',
+  'eth:audu' = 'eth:audu',
+  'eth:wlfi' = 'eth:wlfi',
+  'eth:kava' = 'eth:kava',
+  'eth:gousd' = 'eth:gousd',
+  'eth:iq' = 'eth:iq',
+  'eth:iris' = 'eth:iris',
+  'eth:hard' = 'eth:hard',
+  'eth:hegic' = 'eth:hegic',
+  'eth:spx' = 'eth:spx',
+  'eth:exrd' = 'eth:exrd',
+  'eth:turbo' = 'eth:turbo',
+  'eth:icnt' = 'eth:icnt',
+  'eth:god' = 'eth:god',
+  'eth:sky' = 'eth:sky',
+  'eth:uco' = 'eth:uco',
+  'eth:fuel' = 'eth:fuel',
+  'eth:xprism' = 'eth:xprism',
+  'eth:xreth' = 'eth:xreth',
+  'eth:xy' = 'eth:xy',
+  'eth:yu' = 'eth:yu',
+  'eth:move' = 'eth:move',
+  'eth:mon' = 'eth:mon',
+  'eth:usual' = 'eth:usual',
+  'eth:usd1' = 'eth:usd1',
+  'eth:usdm1' = 'eth:usdm1',
+  'eth:sofid' = 'eth:sofid',
+  'eth:cusd' = 'eth:cusd',
+  'eth:fyusd' = 'eth:fyusd',
+  'eth:ibtc' = 'eth:ibtc',
+  'eth:pyr' = 'eth:pyr',
+  'eth:una' = 'eth:una',
+  'eth:ads' = 'eth:ads',
+  'eth:fuelv1' = 'eth:fuelv1',
+  'eth:cet' = 'eth:cet',
+  'eth:unio' = 'eth:unio',
+  'eth:flttx' = 'eth:flttx',
+  'eth:wtsix' = 'eth:wtsix',
+  'eth:modrx' = 'eth:modrx',
+  'eth:techx' = 'eth:techx',
+  'eth:wtsyx' = 'eth:wtsyx',
+  'eth:wtlgx' = 'eth:wtlgx',
+  'eth:wttsx' = 'eth:wttsx',
+  'eth:tipsx' = 'eth:tipsx',
+  'eth:wtstx' = 'eth:wtstx',
+  'eth:lngvx' = 'eth:lngvx',
+  'eth:eqtyx' = 'eth:eqtyx',
+  'eth:deuro' = 'eth:deuro',
+  'eth:usat' = 'eth:usat',
+  'eth:usdf' = 'eth:usdf',
+  'eth:ausd' = 'eth:ausd',
+  'eth:ags' = 'eth:ags',
+  'eth:aus' = 'eth:aus',
+  'eth:reya' = 'eth:reya',
+  'eth:usdp' = 'eth:usdp',
+  'eth:grtx' = 'eth:grtx',
+  'eth:gaia' = 'eth:gaia',
+  'eth:usds' = 'eth:usds',
+  'eth:perc' = 'eth:perc',
+  'eth:cfg' = 'eth:cfg',
+  'eth:plume' = 'eth:plume',
+  'eth:vbill' = 'eth:vbill',
+  'eth:la' = 'eth:la',
+  'eth:es' = 'eth:es',
+  'eth:ctrl' = 'eth:ctrl',
+  'eth:benji' = 'eth:benji',
+  'eth:ibenji' = 'eth:ibenji',
+  'eth:chex' = 'eth:chex',
+  'eth:gho' = 'eth:gho',
+  'eth:npc' = 'eth:npc',
+  'eth:towns' = 'eth:towns',
+  'eth:umint' = 'eth:umint',
+  'eth:arb' = 'eth:arb',
+  'eth:ez' = 'eth:ez',
+  'eth:ncash' = 'eth:ncash',
+  'eth:sub' = 'eth:sub',
+  'eth:poe' = 'eth:poe',
+  'eth:ocn' = 'eth:ocn',
+  'eth:banca' = 'eth:banca',
+  'eth:stq' = 'eth:stq',
+  'eth:route' = 'eth:route',
+  'eth:ryt' = 'eth:ryt',
+  'eth:guild' = 'eth:guild',
+  'eth:rdo' = 'eth:rdo',
+  'eth:h' = 'eth:h',
+  'eth:wbt' = 'eth:wbt',
+  'eth:ftn' = 'eth:ftn',
+  'eth:sc' = 'eth:sc',
+  'eth:lf' = 'eth:lf',
+  'eth:usdcv' = 'eth:usdcv',
+  'eth:cake' = 'eth:cake',
+  'eth:nft' = 'eth:nft',
+  'eth:morpho' = 'eth:morpho',
+  'eth:usdd' = 'eth:usdd',
+  'eth:mx' = 'eth:mx',
+  'eth:flz' = 'eth:flz',
+  'eth:usd0' = 'eth:usd0',
+  'eth:white' = 'eth:white',
+  'eth:upc' = 'eth:upc',
+  'eth:lgct' = 'eth:lgct',
+  'eth:usdtb' = 'eth:usdtb',
+  'eth:deusd' = 'eth:deusd',
+  'eth:neiro' = 'eth:neiro',
+  'eth:vana' = 'eth:vana',
+  'eth:eurau' = 'eth:eurau',
+  'eth:insur' = 'eth:insur',
+  'eth:xyo' = 'eth:xyo',
+  'eth:zig' = 'eth:zig',
+  'eth:swftc' = 'eth:swftc',
+  'eth:dsync' = 'eth:dsync',
+  'eth:orbr' = 'eth:orbr',
+  'eth:sxt' = 'eth:sxt',
+  'eth:paal' = 'eth:paal',
+  'eth:wmtx' = 'eth:wmtx',
+  'eth:anime' = 'eth:anime',
+  'eth:newt' = 'eth:newt',
+  'eth:hsk' = 'eth:hsk',
+  'eth:rog' = 'eth:rog',
+  'eth:xaum' = 'eth:xaum',
+  'eth:avail' = 'eth:avail',
+  'eth:dolo' = 'eth:dolo',
+  'eth:era' = 'eth:era',
+  'eth:ugold' = 'eth:ugold',
+  'eth:seda' = 'eth:seda',
+  'eth:enso' = 'eth:enso',
+  'eth:hpp' = 'eth:hpp',
+  'eth:lit' = 'eth:lit',
+  'eth:aedz' = 'eth:aedz',
+  'eth:arm-susde-usde' = 'eth:arm-susde-usde',
+  'eth:arm-weth-eeth' = 'eth:arm-weth-eeth',
+  'eth:cashplus' = 'eth:cashplus',
+  'eth:island' = 'eth:island',
+  'eth:six' = 'eth:six',
+  'eth:eden' = 'eth:eden',
+  'eth:xeden' = 'eth:xeden',
+  'eth:linea' = 'eth:linea',
+  'eth:ff' = 'eth:ff',
+  'eth:mavia' = 'eth:mavia',
+  'eth:lm' = 'eth:lm',
+  'eth:kub' = 'eth:kub',
+  'eth:fidd' = 'eth:fidd',
+  'eth:meme' = 'eth:meme',
+  'eth:bard' = 'eth:bard',
+  'eth:sfp' = 'eth:sfp',
+  'eth:aztec' = 'eth:aztec',
+
+  // Ondo Tokenized Assets
+  'eth:qqqon' = 'qqqon',
+  'eth:spyon' = 'spyon',
+  'eth:nvdaon' = 'nvdaon',
+  'eth:tslaon' = 'tslaon',
+  'eth:aaplon' = 'aaplon',
+  'eth:mstron' = 'mstron',
+  'eth:pltron' = 'pltron',
+  'eth:hoodon' = 'hoodon',
+  'eth:crclon' = 'crclon',
+  'eth:coinon' = 'coinon',
+  'eth:amznon' = 'amznon',
+  'eth:googlon' = 'googlon',
+  'eth:metaon' = 'metaon',
+  'eth:babaon' = 'babaon',
+  'eth:msfton' = 'msfton',
+  'eth:spgion' = 'spgion',
+  'eth:tsmon' = 'tsmon',
+  'eth:amdon' = 'amdon',
+  'eth:unhon' = 'unhon',
+  'eth:jpmon' = 'jpmon',
+  'eth:orclon' = 'orclon',
+  'eth:von' = 'von',
+  'eth:maon' = 'maon',
+  'eth:llyon' = 'llyon',
+  'eth:nflxon' = 'nflxon',
+  'eth:coston' = 'coston',
+  'eth:iauon' = 'iauon',
+  'eth:ivvon' = 'ivvon',
+  'eth:slvon' = 'slvon',
+  'eth:iwnon' = 'eth:iwnon',
+  'eth:qbtson' = 'eth:qbtson',
+  'eth:tipon' = 'eth:tipon',
+  'eth:ulon' = 'eth:ulon',
+  'eth:itoton' = 'eth:itoton',
+  'eth:hygon' = 'eth:hygon',
+  'eth:gmeon' = 'eth:gmeon',
+  'eth:pbron' = 'eth:pbron',
+  'eth:eqixon' = 'eth:eqixon',
+  'eth:rioton' = 'eth:rioton',
+  'eth:maraon' = 'eth:maraon',
+  'eth:pfeon' = 'eth:pfeon',
+  'eth:eemon' = 'eth:eemon',
+  'eth:cmcsaon' = 'eth:cmcsaon',
+  'eth:sonyon' = 'eth:sonyon',
+  'eth:pyplon' = 'eth:pyplon',
+  'eth:himson' = 'eth:himson',
+  'eth:abton' = 'eth:abton',
+  'eth:nvoon' = 'eth:nvoon',
+  'eth:efaon' = 'eth:efaon',
+  'eth:nkeon' = 'eth:nkeon',
+  'eth:intcon' = 'eth:intcon',
+  'eth:iefaon' = 'eth:iefaon',
+  'eth:smcion' = 'eth:smcion',
+  'eth:mrvlon' = 'eth:mrvlon',
+  'eth:aggon' = 'eth:aggon',
+  'eth:sbuxon' = 'eth:sbuxon',
+  'eth:uberon' = 'eth:uberon',
+  'eth:abnbon' = 'eth:abnbon',
+  'eth:qcomon' = 'eth:qcomon',
+  'eth:cscoon' = 'eth:cscoon',
+  'eth:futuon' = 'eth:futuon',
+  'eth:cmgon' = 'eth:cmgon',
+  'eth:iwfon' = 'eth:iwfon',
+  'eth:koon' = 'eth:koon',
+  'eth:linon' = 'eth:linon',
+  'eth:armon' = 'eth:armon',
+  'eth:jdon' = 'eth:jdon',
+  'eth:muon' = 'eth:muon',
+  'eth:wmton' = 'eth:wmton',
+  'eth:tmon' = 'eth:tmon',
+  'eth:shopon' = 'eth:shopon',
+  'eth:rddton' = 'eth:rddton',
+  'eth:dison' = 'eth:dison',
+  'eth:apoon' = 'eth:apoon',
+  'eth:pepon' = 'eth:pepon',
+  'eth:wfcon' = 'eth:wfcon',
+  'eth:biduon' = 'eth:biduon',
+  'eth:mson' = 'eth:mson',
+  'eth:pgon' = 'eth:pgon',
+  'eth:cvxon' = 'eth:cvxon',
+  'eth:panwon' = 'eth:panwon',
+  'eth:avgoon' = 'eth:avgoon',
+  'eth:crmon' = 'eth:crmon',
+  'eth:snowon' = 'eth:snowon',
+  'eth:axpon' = 'eth:axpon',
+  'eth:ibmon' = 'eth:ibmon',
+  'eth:dashon' = 'eth:dashon',
+  'eth:acnon' = 'eth:acnon',
+  'eth:ijhon' = 'eth:ijhon',
+  'eth:baon' = 'eth:baon',
+  'eth:geon' = 'eth:geon',
+  'eth:appon' = 'eth:appon',
+  'eth:lmton' = 'eth:lmton',
+  'eth:intuon' = 'eth:intuon',
+  'eth:mcdon' = 'eth:mcdon',
+  'eth:gson' = 'eth:gson',
+  'eth:adbeon' = 'eth:adbeon',
+  'eth:spoton' = 'eth:spoton',
+  'eth:blkon' = 'eth:blkon',
+  'eth:asmlon' = 'eth:asmlon',
+  'eth:nowon' = 'eth:nowon',
+  'eth:iwmon' = 'eth:iwmon',
+  'eth:melion' = 'eth:melion',
+  'eth:tlton' = 'eth:tlton',
+  'eth:grndon' = 'eth:grndon',
+  'eth:figon' = 'eth:figon',
+  'eth:iemgon' = 'eth:iemgon',
+  'eth:sbeton' = 'eth:sbeton',
+  'eth:usdo' = 'eth:usdo',
+  'eth:align' = 'eth:align',
+  'eth:xan' = 'eth:xan',
+  'eth:frxusd' = 'eth:frxusd',
+  'eth:red' = 'eth:red',
+  'eth:dka' = 'eth:dka',
+  'eth:cgpt' = 'eth:cgpt',
+  'eth:apu' = 'eth:apu',
+  'eth:shfl' = 'eth:shfl',
+  'eth:banana' = 'eth:banana',
+  'eth:zkj' = 'eth:zkj',
+  'eth:spk' = 'eth:spk',
+  'eth:merl' = 'eth:merl',
+  'eth:aeur' = 'eth:aeur',
+  'eth:soso' = 'eth:soso',
+  'eth:bfc' = 'eth:bfc',
+  'eth:osak' = 'eth:osak',
+  'eth:uds' = 'eth:uds',
+  'eth:zent' = 'eth:zent',
+  'eth:euri' = 'eth:euri',
+  'eth:al' = 'eth:al',
+  'eth:wct' = 'eth:wct',
+  'eth:pundiai' = 'eth:pundiai',
+  'eth:anon' = 'eth:anon',
+  'eth:omi' = 'eth:omi',
+  'eth:andy' = 'eth:andy',
+  'eth:aioz' = 'eth:aioz',
+  'eth:job' = 'eth:job',
+  'eth:irys' = 'eth:irys',
+  'eth:kpk' = 'eth:kpk',
+  'eth:devve' = 'eth:devve',
+  'eth:fbtc' = 'eth:fbtc',
+  'eth:byzusd' = 'eth:byzusd',
+  'eth:audm' = 'eth:audm',
+  'eth:usdi' = 'eth:usdi',
+  'eth:tea' = 'eth:tea',
+  'eth:ofc' = 'eth:ofc',
+  'eth:wxm' = 'eth:wxm',
+  'eth:jpyc' = 'eth:jpyc',
+  'eth:ten' = 'eth:ten',
+  'eth:camp' = 'eth:camp',
+  'eth:f' = 'eth:f',
+  'eth:turtle' = 'eth:turtle',
+  'eth:order' = 'eth:order',
+  'eth:puffer' = 'eth:puffer',
+  'eth:resolv' = 'eth:resolv',
+  'eth:spec' = 'eth:spec',
+  'eth:prompt' = 'eth:prompt',
+  'eth:yb' = 'eth:yb',
+  'eth:btr' = 'eth:btr',
+  'morph:usdc' = 'morph:usdc',
+  'morpheth:usdc' = 'morpheth:usdc',
+  'morph:usdt' = 'morph:usdt',
+  'morpheth:usdt' = 'morpheth:usdt',
+  'morph:usd1' = 'morph:usd1',
+  'morpheth:usd1' = 'morpheth:usd1',
+  'tmorph:tmt' = 'tmorph:tmt',
+  'tmorpheth:tmt' = 'tmorpheth:tmt',
+  'tmorpheth:usd1' = 'tmorpheth:usd1',
+  'tmorpheth:stgusd1' = 'tmorpheth:stgusd1',
+
+  'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
+  'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
+  'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
+  'xlm:USD-GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX' = 'xlm:USD-GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
+  'xlm:ETH-GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5' = 'xlm:ETH-GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
+  'xlm:WXT-GASBLVHS5FOABSDNW5SPPH3QRJYXY5JHA2AOA2QHH2FJLZBRXSG4SWXT' = 'xlm:WXT-GASBLVHS5FOABSDNW5SPPH3QRJYXY5JHA2AOA2QHH2FJLZBRXSG4SWXT',
+  'xlm:USDC-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN' = 'xlm:USDC-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
+  'xlm:USDM1-GDM5QWWXCMDTQMZAKMYTCI52LA7FWBHAZMU5NJLMIFHDJISJRP2ZWPKC' = 'xlm:USDM1-GDM5QWWXCMDTQMZAKMYTCI52LA7FWBHAZMU5NJLMIFHDJISJRP2ZWPKC',
+  'xlm:SIX-GDMS6EECOH6MBMCP3FYRYEVRBIV3TQGLOFQIPVAITBRJUMTI6V7A2X6Z' = 'xlm:SIX-GDMS6EECOH6MBMCP3FYRYEVRBIV3TQGLOFQIPVAITBRJUMTI6V7A2X6Z',
+  'xlm:BRLT-GCHQ3F2BF5P74DMDNOOGHT5DUCKC773AW5DTOFINC26W4KGYFPYDPRSO' = 'xlm:BRLT-GCHQ3F2BF5P74DMDNOOGHT5DUCKC773AW5DTOFINC26W4KGYFPYDPRSO',
+  'xlm:ARST-GCSAZVWXZKWS4XS223M5F54H2B6XPIIXZZGP7KEAIU6YSL5HDRGCI3DG' = 'xlm:ARST-GCSAZVWXZKWS4XS223M5F54H2B6XPIIXZZGP7KEAIU6YSL5HDRGCI3DG',
+  'xlm:AQUA-GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA' = 'xlm:AQUA-GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA',
+  'xlm:EURC-GDHU6WRG4IEQXM5NZ4BMPKOXHW76MZM4Y2IEMFDVXBSDP6SJY4ITNPP2' = 'xlm:EURC-GDHU6WRG4IEQXM5NZ4BMPKOXHW76MZM4Y2IEMFDVXBSDP6SJY4ITNPP2',
+  'xlm:GYEN-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB' = 'xlm:GYEN-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB',
+  'xlm:ZUSD-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB' = 'xlm:ZUSD-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB',
+  'xlm:EURS-GC5FGCDEOGOGSNWCCNKS3OMEVDHTE3Q5A5FEQWQKV3AXA7N6KDQ2CUZJ' = 'xlm:EURS-GC5FGCDEOGOGSNWCCNKS3OMEVDHTE3Q5A5FEQWQKV3AXA7N6KDQ2CUZJ',
+  'xlm:VEUR-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN' = 'xlm:VEUR-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN',
+  'xlm:VCHF-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN' = 'xlm:VCHF-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN',
+  'xlm:AUDD-GDC7X2MXTYSAKUUGAIQ7J7RPEIM7GXSAIWFYWWH4GLNFECQVJJLB2EEU' = 'xlm:AUDD-GDC7X2MXTYSAKUUGAIQ7J7RPEIM7GXSAIWFYWWH4GLNFECQVJJLB2EEU',
+  'xlm:BENJI-GBHNGLLIE3KWGKCHIKMHJ5HVZHYIK7WTBE4QF5PLAKL4CJGSEU7HZIW5' = 'xlm:BENJI-GBHNGLLIE3KWGKCHIKMHJ5HVZHYIK7WTBE4QF5PLAKL4CJGSEU7HZIW5',
+  'xlm:gBENJI-GD5J73EKK5IYL5XS3FBTHHX7CZIYRP7QXDL57XFWGC2WVYWT326OBXRP' = 'xlm:gBENJI-GD5J73EKK5IYL5XS3FBTHHX7CZIYRP7QXDL57XFWGC2WVYWT326OBXRP',
+  'xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH' = 'xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH',
+
+  // Eth NFTs
+  // generic NFTs
+  'erc721:token' = 'erc721:token',
+  'erc1155:token' = 'erc1155:token',
+  'nonstandard:token' = 'nonstandard:token',
+  // Test Eth NFTs
+  'terc721:token' = 'terc721:token',
+  'terc1155:token' = 'terc1155:token',
+  'tnonstandard:token' = 'tnonstandard:token',
+
+  // Algorand mainnet tokens
+  'algo:USDC-31566704' = 'algo:USDC-31566704',
+  'algo:USDt-312769' = 'algo:USDt-312769',
+  'algo:MCAU-6547014' = 'algo:MCAU-6547014',
+  'algo:QCAD-84507107' = 'algo:QCAD-84507107',
+  'algo:VCAD-438505559' = 'algo:VCAD-438505559',
+
+  // Kovan-only ERC20 tokens
+  TEST = 'test',
+  SCHZ = 'schz',
+  CAT = 'cat',
+
+  // Stellar testnet tokens
+  'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L' = 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+  'txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L' = 'txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+
+  // Algorand testnet tokens
+  'talgo:USON-16026728' = 'talgo:USON-16026728',
+  'talgo:SPRW-16026732' = 'talgo:SPRW-16026732',
+  'talgo:KAL-16026733' = 'talgo:KAL-16026733',
+  'talgo:USDC-10458941' = 'talgo:USDC-10458941',
+  'talgo:USDt-180447' = 'talgo:USDt-180447',
+  'talgo:JPT-162085446' = 'talgo:JPT-162085446',
+
+  // EOS tokens
+  CHEX = 'chex',
+  IQ = 'iq',
+  EOS_BOX = 'eos:box',
+  EOS_SBET = 'eos:sbet',
+  VAULTA = 'vaulta',
+
+  // Avax Token ERC-20
+  'avaxc:qi' = 'avaxc:qi',
+  'avaxc:xava' = 'avaxc:xava',
+  'avaxc:klo' = 'avaxc:klo',
+  'avaxc:joe' = 'avaxc:joe',
+  'avaxc:png' = 'avaxc:png',
+  'avaxc:usdt' = 'avaxc:usdt',
+  'avaxc:usdc' = 'avaxc:usdc',
+  'avaxc:link' = 'avaxc:link',
+  'avaxc:cai' = 'avaxc:cai',
+  'avaxc:aave' = 'avaxc:aave',
+  'avaxc:btc' = 'avaxc:btc',
+  'avaxc:dai' = 'avaxc:dai',
+  'avaxc:arena' = 'avaxc:arena',
+  'avaxc:tryb' = 'avaxc:tryb',
+  'avaxc:wbtc' = 'avaxc:wbtc',
+  'avaxc:weth' = 'avaxc:weth',
+  'avaxc:sbc' = 'avaxc:sbc',
+  'avaxc:xsgd' = 'avaxc:xsgd',
+  'avaxc:ticov2' = 'avaxc:ticov2',
+  'avaxc:nxpc' = 'avaxc:nxpc',
+  'avaxc:spxux' = 'avaxc:spxux',
+  'avaxc:stavax' = 'avaxc:stavax',
+  'tavaxc:opm' = 'tavaxc:opm',
+  'tavaxc:cop2peq' = 'tavaxc:cop2peq',
+  'tavaxc:xsgd' = 'tavaxc:xsgd',
+  'tavaxc:bitgo' = 'tavaxc:bitgo',
+  'tavaxc:stavax' = 'tavaxc:stavax',
+  'tavaxc:rtest' = 'tavaxc:rtest',
+  'avaxc:usdc-e' = 'avaxc:usdc-e',
+  'avaxc:usdt-e' = 'avaxc:usdt-e',
+  // Begin FTX missing AVAXC tokens
+  'avaxc:yeti' = 'avaxc:yeti',
+  'avaxc:spell' = 'avaxc:spell',
+  'avaxc:yusd' = 'avaxc:yusd',
+  'avaxc:yusdcrv-f' = 'avaxc:yusdcrv-f',
+  'avaxc:ecd' = 'avaxc:ecd',
+  'avaxc:blzz' = 'avaxc:blzz',
+  'avaxc:ptp' = 'avaxc:ptp',
+  'avaxc:stg' = 'avaxc:stg',
+  'avaxc:syn' = 'avaxc:syn',
+  'avaxc:aavausdc' = 'avaxc:aavausdc',
+  'avaxc:tusd' = 'avaxc:tusd',
+  'avaxc:crv' = 'avaxc:crv',
+  'avaxc:savax' = 'avaxc:savax',
+  'avaxc:ampl' = 'avaxc:ampl',
+  'avaxc:cnr' = 'avaxc:cnr',
+  'avaxc:roco' = 'avaxc:roco',
+  'avaxc:aavadai' = 'avaxc:aavadai',
+  'avaxc:vtx' = 'avaxc:vtx',
+  'avaxc:wavax' = 'avaxc:wavax',
+  'avaxc:bnb' = 'avaxc:bnb',
+  'avaxc:aavausdt' = 'avaxc:aavausdt',
+  'avaxc:acre' = 'avaxc:acre',
+  'avaxc:gmx' = 'avaxc:gmx',
+  'avaxc:gunz' = 'avaxc:gunz',
+  'avaxc:mim' = 'avaxc:mim',
+  'avaxc:axlusdc' = 'avaxc:axlusdc',
+  'avaxc:lot' = 'avaxc:lot',
+  'avaxc:av3crv' = 'avaxc:av3crv',
+  'avaxc:time' = 'avaxc:time',
+  'avaxc:uni.e' = 'avaxc:uni.e',
+  'avaxc:sb' = 'avaxc:sb',
+  'avaxc:dyp' = 'avaxc:dyp',
+  'avaxc:sing' = 'avaxc:sing',
+  'avaxc:gohm' = 'avaxc:gohm',
+  'avaxc:boofi' = 'avaxc:boofi',
+  'avaxc:eth' = 'avaxc:eth',
+  'avaxc:wmemo' = 'avaxc:wmemo',
+  'avaxc:fxs' = 'avaxc:fxs',
+  'avaxc:sifu' = 'avaxc:sifu',
+  'avaxc:sushi.e' = 'avaxc:sushi.e',
+  'avaxc:sushi' = 'avaxc:sushi',
+  'avaxc:mimatic' = 'avaxc:mimatic',
+  'avaxc:sspell' = 'avaxc:sspell',
+  'avaxc:grape' = 'avaxc:grape',
+  'avaxc:xjoe' = 'avaxc:xjoe',
+  'avaxc:bsgg' = 'avaxc:bsgg',
+  'avaxc:roy' = 'avaxc:roy',
+  'avaxc:wow' = 'avaxc:wow',
+  'avaxc:wine' = 'avaxc:wine',
+  'avaxc:mu' = 'avaxc:mu',
+  'avaxc:frax' = 'avaxc:frax',
+  'avaxc:movr' = 'avaxc:movr',
+  'avaxc:ice' = 'avaxc:ice',
+  'avaxc:note' = 'avaxc:note',
+  'avaxc:wrose' = 'avaxc:wrose',
+  'avaxc:swap' = 'avaxc:swap',
+  'avaxc:tico' = 'avaxc:tico',
+  'avaxc:shrap' = 'avaxc:shrap',
+  'avaxc:benji' = 'avaxc:benji',
+  'avaxc:emdx' = 'avaxc:emdx',
+  'avaxc:eurc' = 'avaxc:eurc',
+  'avaxc:ausd' = 'avaxc:ausd',
+  // End FTX missing AVAXC tokens
+
+  // polygon Token ERC-20
+  'polygon:usdc' = 'polygon:usdc',
+  'polygon:usdcv2' = 'polygon:usdcv2',
+  'polygon:usdt' = 'polygon:usdt',
+  'polygon:weth' = 'polygon:weth',
+  'polygon:cnkt' = 'polygon:cnkt',
+  'polygon:wbtc' = 'polygon:wbtc',
+  'polygon:sand' = 'polygon:sand',
+  'polygon:dai' = 'polygon:dai',
+  'polygon:woo' = 'polygon:woo',
+  'polygon:aave' = 'polygon:aave',
+  'polygon:link' = 'polygon:link',
+  'polygon:tusd' = 'polygon:tusd',
+  'polygon:cel' = 'polygon:cel',
+  'polygon:busd' = 'polygon:busd',
+  'polygon:frax' = 'polygon:frax',
+  'polygon:crv' = 'polygon:crv',
+  'polygon:uni' = 'polygon:uni',
+  'polygon:fcd' = 'polygon:fcd',
+  'polygon:ape' = 'polygon:ape',
+  'polygon:srm' = 'polygon:srm',
+  'polygon:fly' = 'polygon:fly',
+  'polygon:gfc' = 'polygon:gfc',
+  'polygon:rbw' = 'polygon:rbw',
+  'polygon:zed' = 'polygon:zed',
+  'polygon:vext' = 'polygon:vext',
+  'polygon:vcnt' = 'polygon:vcnt',
+  'polygon:sushi' = 'polygon:sushi',
+  'polygon:wmatic' = 'polygon:wmatic',
+  'polygon:1inch' = 'polygon:1inch',
+  'polygon:comp' = 'polygon:comp',
+  'polygon:sol' = 'polygon:sol',
+  'polygon:wavax' = 'polygon:wavax',
+  'polygon:wbnb' = 'polygon:wbnb',
+  'polygon:wftm' = 'polygon:wftm',
+  'polygon:yfi' = 'polygon:yfi',
+  'polygon:treta' = 'polygon:treta',
+  'polygon:orb' = 'polygon:orb',
+  'polygon:route' = 'polygon:route',
+  'polygon:sbc' = 'polygon:sbc',
+  'polygon:xsgd' = 'polygon:xsgd',
+  'polygon:dimo' = 'polygon:dimo',
+  'polygon:bcut' = 'polygon:bcut',
+  'polygon:pme' = 'polygon:pme',
+  'polygon:dipe' = 'polygon:dipe',
+  'polygon:lif3' = 'polygon:lif3',
+  'polygon:l3usd' = 'polygon:l3usd',
+  'polygon:moca' = 'polygon:moca',
+  'polygon:mask' = 'polygon:mask',
+  'polygon:nexo' = 'polygon:nexo',
+  'polygon:om' = 'polygon:om',
+  'polygon:pyr' = 'polygon:pyr',
+  'polygon:renbtc' = 'polygon:renbtc',
+  'polygon:req' = 'polygon:req',
+  'polygon:rndr' = 'polygon:rndr',
+  'polygon:snx' = 'polygon:snx',
+  'polygon:trb' = 'polygon:trb',
+  'polygon:ali' = 'polygon:ali',
+  'polygon:bal' = 'polygon:bal',
+  'polygon:elon' = 'polygon:elon',
+  'polygon:hex' = 'polygon:hex',
+  'polygon:iotx' = 'polygon:iotx',
+  'polygon:agix' = 'polygon:agix',
+  'polygon:avax' = 'polygon:avax',
+  'polygon:band' = 'polygon:band',
+  'polygon:blz' = 'polygon:blz',
+  'polygon:bnb' = 'polygon:bnb',
+  'polygon:bnt' = 'polygon:bnt',
+  'polygon:chz' = 'polygon:chz',
+  'polygon:enj' = 'polygon:enj',
+  'polygon:fet' = 'polygon:fet',
+  'polygon:forth' = 'polygon:forth',
+  'polygon:glm' = 'polygon:glm',
+  'polygon:gno' = 'polygon:gno',
+  'polygon:gohm' = 'polygon:gohm',
+  'polygon:gtc' = 'polygon:gtc',
+  'polygon:gusd' = 'polygon:gusd',
+  'polygon:hot' = 'polygon:hot',
+  'polygon:inj' = 'polygon:inj',
+  'polygon:lit' = 'polygon:lit',
+  'polygon:lrc' = 'polygon:lrc',
+  'polygon:mana' = 'polygon:mana',
+  'polygon:shib' = 'polygon:shib',
+  'polygon:sxp' = 'polygon:sxp',
+  'polygon:grt' = 'polygon:grt',
+  'polygon:mkr' = 'polygon:mkr',
+  'polygon:oxt' = 'polygon:oxt',
+  'polygon:pax' = 'polygon:pax',
+  'polygon:paxg' = 'polygon:paxg',
+  'polygon:powr' = 'polygon:powr',
+  'polygon:super' = 'polygon:super',
+  'polygon:uma' = 'polygon:uma',
+  'polygon:zrx' = 'polygon:zrx',
+  'polygon:ont' = 'polygon:ont',
+  'polygon:wrx' = 'polygon:wrx',
+  'polygon:voxel' = 'polygon:voxel',
+  'polygon:uft' = 'polygon:uft',
+  'polygon:ooki' = 'polygon:ooki',
+  'polygon:swap' = 'polygon:swap',
+  'polygon:vanry' = 'polygon:vanry',
+  'polygon:npt' = 'polygon:npt',
+  'polygon:volt' = 'polygon:volt',
+  'polygon:euroe' = 'polygon:euroe',
+  'polygon:geod' = 'polygon:geod',
+  'polygon:heth' = 'polygon:heth',
+  'polygon:copm' = 'polygon:copm',
+  'polygon:gmt' = 'polygon:gmt',
+  'polygon:uhu' = 'polygon:uhu',
+  'polygon:mv' = 'polygon:mv',
+  'polygon:bid' = 'polygon:bid',
+  'polygon:tcs' = 'polygon:tcs',
+  'polygon:buidl' = 'polygon:buidl',
+  'polygon:benji' = 'polygon:benji',
+  'polygon:naka' = 'polygon:naka',
+  'polygon:xusd' = 'polygon:xusd',
+  'polygon:txusd' = 'polygon:txusd',
+  'polygon:zig' = 'polygon:zig',
+  'polygon:brl1' = 'polygon:brl1',
+  'polygon:cnktplus' = 'polygon:cnktplus',
+  'polygon:land1' = 'polygon:land1',
+  'polygon:mmt54' = 'polygon:mmt54',
+  'polygon:jpyc' = 'polygon:jpyc',
+  'polygon:argt' = 'polygon:argt',
+  'polygon:brat' = 'polygon:brat',
+  'polygon:chlt' = 'polygon:chlt',
+  'polygon:stg' = 'polygon:stg',
+  // Polygon NFTs
+  // generic NFTs
+  'erc721:polygontoken' = 'erc721:polygontoken',
+  'erc1155:polygontoken' = 'erc1155:polygontoken',
+
+  // BSC Token BEP-20
+  'bsc:sol' = 'bsc:sol',
+  'bsc:solv' = 'bsc:solv',
+  'bsc:stable' = 'bsc:stable',
+  'bsc:brise' = 'bsc:brise',
+  'bsc:bsw' = 'bsc:bsw',
+  'bsc:burger' = 'bsc:burger',
+  'bsc:cfx' = 'bsc:cfx',
+  'bsc:bake' = 'bsc:bake',
+  'bsc:bnx' = 'bsc:bnx',
+  'bsc:busd' = 'bsc:busd',
+  'bsc:hook' = 'bsc:hook',
+  'bsc:ksm' = 'bsc:ksm',
+  'bsc:usdt' = 'bsc:usdt',
+  'bsc:vet' = 'bsc:vet',
+  'bsc:cake' = 'bsc:cake',
+  'bsc:litt' = 'bsc:litt',
+  'bsc:xvs' = 'bsc:xvs',
+  'bsc:epx' = 'bsc:epx',
+  'bsc:usdc' = 'bsc:usdc',
+  'bsc:eth' = 'bsc:eth',
+  'bsc:dd' = 'bsc:dd',
+  'bsc:parti' = 'bsc:parti',
+  'bsc:form' = 'bsc:form',
+  'bsc:ake' = 'bsc:ake',
+  'bsc:kgen' = 'bsc:kgen',
+  'bsc:myx' = 'bsc:myx',
+  'bsc:ltc' = 'bsc:ltc',
+  'bsc:mask' = 'bsc:mask',
+  'bsc:matic' = 'bsc:matic',
+  'bsc:mbox' = 'bsc:mbox',
+  'bsc:mdt' = 'bsc:mdt',
+  'bsc:nuls' = 'bsc:nuls',
+  'bsc:ont' = 'bsc:ont',
+  'bsc:orn' = 'bsc:orn',
+  'bsc:porto' = 'bsc:porto',
+  'bsc:reef' = 'bsc:reef',
+  'bsc:renbtc' = 'bsc:renbtc',
+  'bsc:snx' = 'bsc:snx',
+  'bsc:tking' = 'bsc:tking',
+  'bsc:tlm' = 'bsc:tlm',
+  'bsc:ton' = 'bsc:ton',
+  'bsc:trx' = 'bsc:trx',
+  'bsc:wbnb' = 'bsc:wbnb',
+  'bsc:win' = 'bsc:win',
+  'bsc:wrx' = 'bsc:wrx',
+  'bsc:yfii' = 'bsc:yfii',
+  'bsc:zil' = 'bsc:zil',
+  'bsc:1inch' = 'bsc:1inch',
+  'bsc:ada' = 'bsc:ada',
+  'bsc:alice' = 'bsc:alice',
+  'bsc:alpaca' = 'bsc:alpaca',
+  'bsc:alpine' = 'bsc:alpine',
+  'bsc:ankr' = 'bsc:ankr',
+  'bsc:avax' = 'bsc:avax',
+  'bsc:beta' = 'bsc:beta',
+  'bsc:btt' = 'bsc:btt',
+  'bsc:celr' = 'bsc:celr',
+  'bsc:chr' = 'bsc:chr',
+  'bsc:coti' = 'bsc:coti',
+  'bsc:cream' = 'bsc:cream',
+  'bsc:dar' = 'bsc:dar',
+  'bsc:degov2' = 'bsc:degov2',
+  'bsc:dodo' = 'bsc:dodo',
+  'bsc:elon' = 'bsc:elon',
+  'bsc:etc' = 'bsc:etc',
+  'bsc:firo' = 'bsc:firo',
+  'bsc:front' = 'bsc:front',
+  'bsc:hft' = 'bsc:hft',
+  'bsc:high' = 'bsc:high',
+  'bsc:hyper' = 'bsc:hyper',
+  'bsc:inj' = 'bsc:inj',
+  'bsc:iotx' = 'bsc:iotx',
+  'bsc:auto' = 'bsc:auto',
+  'bsc:fet' = 'bsc:fet',
+  'bsc:kas' = 'bsc:kas',
+  'bsc:lit' = 'bsc:lit',
+  'bsc:mana' = 'bsc:mana',
+  'bsc:shib' = 'bsc:shib',
+  'bsc:sxp' = 'bsc:sxp',
+  'bsc:nnn' = 'bsc:nnn',
+  'bsc:nvm' = 'bsc:nvm',
+  'bsc:jasmy' = 'bsc:jasmy',
+  'bsc:near' = 'bsc:near',
+  'bsc:ocean' = 'bsc:ocean',
+  'bsc:sand' = 'bsc:sand',
+  'bsc:tusd' = 'bsc:tusd',
+  'bsc:wrose' = 'bsc:wrose',
+  'bsc:twt' = 'bsc:twt',
+  'bsc:sfp' = 'bsc:sfp',
+  'bsc:edu' = 'bsc:edu',
+  'bsc:mrs' = 'bsc:mrs',
+  'bsc:ong' = 'bsc:ong',
+  'bsc:ctk' = 'bsc:ctk',
+  'bsc:rndt' = 'bsc:rndt',
+  'bsc:mbx' = 'bsc:mbx',
+  'bsc:mav' = 'bsc:mav',
+  'bsc:mct' = 'bsc:mct',
+  'bsc:thunder' = 'bsc:thunder',
+  'bsc:atlas' = 'bsc:atlas',
+  'bsc:vidt' = 'bsc:vidt',
+  'bsc:unfi' = 'bsc:unfi',
+  'bsc:chess' = 'bsc:chess',
+  'bsc:pols' = 'bsc:pols',
+  'bsc:uft' = 'bsc:uft',
+  'bsc:wing' = 'bsc:wing',
+  'bsc:santos' = 'bsc:santos',
+  'bsc:lazio' = 'bsc:lazio',
+  'bsc:swap' = 'bsc:swap',
+  'bsc:troy' = 'bsc:troy',
+  'bsc:rdnt' = 'bsc:rdnt',
+  'bsc:pax' = 'bsc:pax',
+  'bsc:volt' = 'bsc:volt',
+  'tbsc:busd' = 'tbsc:busd',
+  'tbsc:usd1' = 'tbsc:usd1',
+  'tbsc:stgusd1' = 'tbsc:stgusd1',
+  'bsc:city' = 'bsc:city',
+  'bsc:fdusd' = 'bsc:fdusd',
+  'bsc:floki' = 'bsc:floki',
+  'bsc:ldo' = 'bsc:ldo',
+  'bsc:om' = 'bsc:om',
+  'bsc:eos' = 'bsc:eos',
+  'bsc:usdd' = 'bsc:usdd',
+  'bsc:gft' = 'bsc:gft',
+  'bsc:glmr' = 'bsc:glmr',
+  'bsc:gmt' = 'bsc:gmt',
+  'bsc:tko' = 'bsc:tko',
+  'bsc:vite' = 'bsc:vite',
+  'bsc:mdx' = 'bsc:mdx',
+  'bsc:multi' = 'bsc:multi',
+  'bsc:psg' = 'bsc:psg',
+  'bsc:telos' = 'bsc:telos',
+  'bsc:flux' = 'bsc:flux',
+  'bsc:h2o' = 'bsc:h2o',
+  'bsc:lto' = 'bsc:lto',
+  'bsc:kmd' = 'bsc:kmd',
+  'bsc:farm' = 'bsc:farm',
+  'bsc:lina' = 'bsc:lina',
+  'bsc:usd1' = 'bsc:usd1',
+  'bsc:oort' = 'bsc:oort',
+  'bsc:aitech' = 'bsc:aitech',
+  'bsc:fil' = 'bsc:fil',
+  'bsc:ftm' = 'bsc:ftm',
+  'bsc:comp' = 'bsc:comp',
+  'bsc:uni' = 'bsc:uni',
+  'bsc:yfi' = 'bsc:yfi',
+  'bsc:link' = 'bsc:link',
+  'bsc:cusdo' = 'bsc:cusdo',
+  'bsc:unx' = 'bsc:unx',
+  'bsc:usdo' = 'bsc:usdo',
+  'bsc:slay' = 'bsc:slay',
+  'bsc:prove' = 'bsc:prove',
+  'bsc:rekt' = 'bsc:rekt',
+  'bsc:zig' = 'bsc:zig',
+  'bsc:eden' = 'bsc:eden',
+  'bsc:m' = 'bsc:m',
+  'bsc:cashplus' = 'bsc:cashplus',
+  'bsc:aster' = 'bsc:aster',
+  'bsc:pln' = 'bsc:pln',
+  'bsc:ff' = 'bsc:ff',
+  'bsc:c98' = 'bsc:c98',
+  'bsc:ln' = 'bsc:ln',
+  'bsc:soon' = 'bsc:soon',
+  'bsc:bard' = 'bsc:bard',
+  'bsc:home' = 'bsc:home',
+  'bsc:zbt' = 'bsc:zbt',
+  'bsc:btr' = 'bsc:btr',
+  'bsc:iost' = 'bsc:iost',
+  'bsc:sto' = 'bsc:sto',
+  'bsc:pt-cusdo-29oct2026' = 'bsc:pt-cusdo-29oct2026',
+  'bsc:mito' = 'bsc:mito',
+  'bsc:shell' = 'bsc:shell',
+  'bsc:hemi' = 'bsc:hemi',
+  'bsc:cookie' = 'bsc:cookie',
+  'bsc:esports' = 'bsc:esports',
+
+  // BSC NFTs
+  // generic NFTs
+  'erc721:bsctoken' = 'erc721:bsctoken',
+  'erc1155:bsctoken' = 'erc1155:bsctoken',
+  // Test BSC NFTs
+  'terc721:bsctoken' = 'terc721:bsctoken',
+  'terc1155:bsctoken' = 'terc1155:bsctoken',
+
+  // Polygon testnet tokens
+  'tpolygon:derc20' = 'tpolygon:derc20',
+  'tpolygon:link' = 'tpolygon:link',
+  'tpolygon:name' = 'tpolygon:name',
+  'tpolygon:opm' = 'tpolygon:opm',
+  'tpolygon:pme' = 'tpolygon:pme',
+  'tpolygon:xsgd' = 'tpolygon:xsgd',
+  'tpolygon:terc18dp' = 'tpolygon:terc18dp',
+  'tpolygon:terc10dp' = 'tpolygon:terc10dp',
+  'tpolygon:terc6dp' = 'tpolygon:terc6dp',
+  'tpolygon:usdt' = 'tpolygon:usdt',
+  'tpolygon:usdc' = 'tpolygon:usdc',
+  'tpolygon:testcopm' = 'tpolygon:testcopm',
+  'tpolygon:BitGoTest' = 'tpolygon:BitGoTest',
+  'tpolygon:copr3' = 'tpolygon:copr3',
+
+  // generic NFTs
+  'terc721:polygontoken' = 'terc721:polygontoken',
+  'terc1155:polygontoken' = 'terc1155:polygontoken',
+
+  // Arbitrum mainnet tokens
+  'arbeth:link' = 'arbeth:link',
+  'arbeth:spxux' = 'arbeth:spxux',
+  'arbeth:usdc' = 'arbeth:usdc',
+  'arbeth:xsgdv2' = 'arbeth:xsgdv2',
+  'arbeth:trn' = 'arbeth:trn',
+  'arbeth:usdcv2' = 'arbeth:usdcv2',
+  'arbeth:usdt' = 'arbeth:usdt',
+  'arbeth:arb' = 'arbeth:arb',
+  'arbeth:sqd' = 'arbeth:sqd',
+  'arbeth:cbl' = 'arbeth:cbl',
+  'arbeth:w' = 'arbeth:w',
+  'arbeth:comp' = 'arbeth:comp',
+  'arbeth:coti' = 'arbeth:coti',
+  'arbeth:gno' = 'arbeth:gno',
+  'arbeth:gohm' = 'arbeth:gohm',
+  'arbeth:grt' = 'arbeth:grt',
+  'arbeth:knc' = 'arbeth:knc',
+  'arbeth:trb' = 'arbeth:trb',
+  'arbeth:tusd' = 'arbeth:tusd',
+  'arbeth:uma' = 'arbeth:uma',
+  'arbeth:uni' = 'arbeth:uni',
+  'arbeth:weth' = 'arbeth:weth',
+  'arbeth:woo' = 'arbeth:woo',
+  'arbeth:yfi' = 'arbeth:yfi',
+  'arbeth:xsgd' = 'arbeth:xsgd',
+  'arbeth:ztx' = 'arbeth:ztx',
+  'arbeth:ldo' = 'arbeth:ldo',
+  'arbeth:egp' = 'arbeth:egp',
+  'arbeth:myrc' = 'arbeth:myrc',
+  'arbeth:gs' = 'arbeth:gs',
+  'arbeth:veur' = 'arbeth:veur',
+  'arbeth:vchf' = 'arbeth:vchf',
+  'arbeth:tbill' = 'arbeth:tbill',
+  'arbeth:xai' = 'arbeth:xai',
+  'arbeth:flttx' = 'arbeth:flttx',
+  'arbeth:wtsix' = 'arbeth:wtsix',
+  'arbeth:modrx' = 'arbeth:modrx',
+  'arbeth:techx' = 'arbeth:techx',
+  'arbeth:wtsyx' = 'arbeth:wtsyx',
+  'arbeth:wtlgx' = 'arbeth:wtlgx',
+  'arbeth:wttsx' = 'arbeth:wttsx',
+  'arbeth:tipsx' = 'arbeth:tipsx',
+  'arbeth:wtstx' = 'arbeth:wtstx',
+  'arbeth:wtgxx' = 'arbeth:wtgxx',
+  'arbeth:lngvx' = 'arbeth:lngvx',
+  'arbeth:eqtyx' = 'arbeth:eqtyx',
+  'arbeth:anime' = 'arbeth:anime',
+  'arbeth:benji' = 'arbeth:benji',
+  'arbeth:dolo' = 'arbeth:dolo',
+  'arbeth:bull' = 'arbeth:bull',
+  'arbeth:rdnt' = 'arbeth:rdnt',
+  'arbeth:pendle' = 'arbeth:pendle',
+  'arbeth:gmx' = 'arbeth:gmx',
+  'arbeth:uxlink' = 'arbeth:uxlink',
+  'arbeth:next' = 'arbeth:next',
+  'arbeth:zro' = 'arbeth:zro',
+  'arbeth:tt' = 'arbeth:tt',
+  'arbeth:testtsla' = 'arbeth:testtsla',
+  'arbeth:testamzn' = 'arbeth:testamzn',
+  'arbeth:testpltr' = 'arbeth:testpltr',
+  'arbeth:testnflx' = 'arbeth:testnflx',
+
+  // BaseETH mainnet tokens
+  'baseeth:aero' = 'baseeth:aero',
+  'baseeth:cfi' = 'baseeth:cfi',
+  'baseeth:icnt' = 'baseeth:icnt',
+  'baseeth:mey' = 'baseeth:mey',
+  'baseeth:morpho' = 'baseeth:morpho',
+  'baseeth:myrc' = 'baseeth:myrc',
+  'baseeth:weth' = 'baseeth:weth',
+  'baseeth:usdc' = 'baseeth:usdc',
+  'baseeth:wbtc' = 'baseeth:wbtc',
+  'baseeth:usde' = 'baseeth:usde',
+  'baseeth:trust' = 'baseeth:trust',
+  'baseeth:flk' = 'baseeth:flk',
+  'baseeth:soon' = 'baseeth:soon',
+  'baseeth:wave' = 'baseeth:wave',
+
+  'baseeth:spec' = 'baseeth:spec',
+  'baseeth:tig' = 'baseeth:tig',
+  'baseeth:virtual' = 'baseeth:virtual',
+  'baseeth:zora' = 'baseeth:zora',
+  'baseeth:toshi' = 'baseeth:toshi',
+  'baseeth:creator' = 'baseeth:creator',
+  'baseeth:avnt' = 'baseeth:avnt',
+  'baseeth:mira' = 'baseeth:mira',
+  'baseeth:towns' = 'baseeth:towns',
+  'baseeth:brlv' = 'baseeth:brlv',
+  'baseeth:wbrly' = 'baseeth:wbrly',
+  'baseeth:recall' = 'baseeth:recall',
+  'baseeth:sapien' = 'baseeth:sapien',
+  'baseeth:aixbt' = 'baseeth:aixbt',
+  'baseeth:brett' = 'baseeth:brett',
+  'baseeth:argt' = 'baseeth:argt',
+  'baseeth:brat' = 'baseeth:brat',
+  'baseeth:mext' = 'baseeth:mext',
+  'baseeth:common' = 'baseeth:common',
+  'baseeth:unite' = 'baseeth:unite',
+  'baseeth:b3' = 'baseeth:b3',
+  'baseeth:kaito' = 'baseeth:kaito',
+  'baseeth:xsgd' = 'baseeth:xsgd',
+  'baseeth:xusd' = 'baseeth:xusd',
+  'baseeth:home' = 'baseeth:home',
+  'baseeth:c' = 'baseeth:c',
+  'baseeth:carv' = 'baseeth:carv',
+  'baseeth:usad' = 'baseeth:usad',
+
+  // BaseETH testnet tokens
+  'tbaseeth:usdc' = 'tbaseeth:usdc',
+  'tbaseeth:xusd' = 'tbaseeth:xusd',
+  'tbaseeth:xsgd' = 'tbaseeth:xsgd',
+  'tbaseeth:usd1cx' = 'tbaseeth:usd1cx',
+  'tbaseeth:ctusd1cx' = 'tbaseeth:ctusd1cx',
+
+  // Og mainnet tokens
+  'og:wog' = 'og:wog',
+
+  // Seievm mainnet tokens
+  'seievm:usdc' = 'seievm:usdc',
+  'seievm:weth' = 'seievm:weth',
+  'seievm:wbtc' = 'seievm:wbtc',
+  'seievm:usd0' = 'seievm:usd0',
+  'seievm:wsei' = 'seievm:wsei',
+
+  //Linea mainnet tokens
+  'lineaeth:linea' = 'lineaeth:linea',
+  'lineaeth:usdt' = 'lineaeth:usdt',
+  'lineaeth:usdc' = 'lineaeth:usdc',
+
+  // Mantle mainnet tokens
+  'mantle:usdt' = 'mantle:usdt',
+  'mantle:usdc' = 'mantle:usdc',
+  'mantle:usde' = 'mantle:usde',
+  'mantle:usdt0' = 'mantle:usdt0',
+  'mantle:ausd' = 'mantle:ausd',
+  'mantle:usd1' = 'mantle:usd1',
+
+  // Mantle testnet tokens
+  'tmantle:bgerch' = 'tmantle:bgerch',
+  'tmantle:usd1' = 'tmantle:usd1',
+  'tmantle:stgusd1' = 'tmantle:stgusd1',
+
+  // Flow mainnet tokens
+  'flow:weth' = 'flow:weth',
+  'flow:usdf' = 'flow:usdf',
+  'flow:wflow' = 'flow:wflow',
+
+  // Monad mainnet tokens
+  'mon:usdc' = 'mon:usdc',
+  'mon:wmon' = 'mon:wmon',
+
+  // Monad testnet tokens
+  'tmon:tmt' = 'tmon:tmt',
+
+  // XDC mainnet tokens
+  'xdc:usdc' = 'xdc:usdc',
+  'xdc:lbt' = 'xdc:lbt',
+  'xdc:cre' = 'xdc:cre',
+  'xdc:gama' = 'xdc:gama',
+  'xdc:audd' = 'xdc:audd',
+  'xdc:srx' = 'xdc:srx',
+  'xdc:weth' = 'xdc:weth',
+
+  // XDC testnet tokens
+  'txdc:tmt' = 'txdc:tmt',
+
+  // hypeeevm testnet tokens
+  'thypeevm:usdc' = 'thypeevm:usdc',
+
+  // hypeevm mainnet tokens
+  'hypeevm:hwhype' = 'hypeevm:hwhype',
+  'hypeevm:usdc' = 'hypeevm:usdc',
+  'hypeevm:usdt0' = 'hypeevm:usdt0',
+
+  // Jovayeth mainnet tokens
+  'jovayeth:jft' = 'jovayeth:jft',
+  'jovayeth:usdce' = 'jovayeth:usdce',
+
+  // Jovayeth testnet tokens
+  'tjovayeth:tcmn' = 'tjovayeth:tcmn',
+  'tjovayeth:usdce' = 'tjovayeth:usdce',
+
+  // X Layer (OKB) mainnet tokens
+  'okbxlayer:usdg' = 'okbxlayer:usdg',
+  'okbxlayer:usdt0' = 'okbxlayer:usdt0',
+  'okbxlayer:usdt' = 'okbxlayer:usdt',
+  'okbxlayer:usdc' = 'okbxlayer:usdc',
+
+  // X Layer (OKB) testnet tokens
+  'tokbxlayer:tzeb' = 'tokbxlayer:tzeb',
+
+  // Story testnet tokens
+  'tip:usdc' = 'tip:usdc',
+  'tip:tmt' = 'tip:tmt',
+
+  // Story mainnet tokens
+  'ip:aria' = 'ip:aria',
+
+  // MegaEth mainnet tokens
+  'megaeth:mega' = 'megaeth:mega',
+  'megaeth:weth' = 'megaeth:weth',
+
+  // MegaEth testnet tokens
+  'tmegaeth:tmt' = 'tmegaeth:tmt',
+
+  // Plume testnet tokens
+  'tplume:usdc' = 'tplume:usdc',
+
+  // Arbitrum testnet tokens
+  'tarbeth:link' = 'tarbeth:link',
+  'tarbeth:xsgd' = 'tarbeth:xsgd',
+
+  // Optimism mainnet tokens
+  'opeth:link' = 'opeth:link',
+  'opeth:usdc' = 'opeth:usdc',
+  'opeth:usdcv2' = 'opeth:usdcv2',
+  'opeth:usdt' = 'opeth:usdt',
+  'opeth:op' = 'opeth:op',
+  'opeth:exa' = 'opeth:exa',
+  'opeth:wld' = 'opeth:wld',
+  'opeth:wct' = 'opeth:wct',
+  'opeth:spxux' = 'opeth:spxux',
+  'opeth:perp' = 'opeth:perp',
+  'opeth:flttx' = 'opeth:flttx',
+  'opeth:wtsix' = 'opeth:wtsix',
+  'opeth:modrx' = 'opeth:modrx',
+  'opeth:techx' = 'opeth:techx',
+  'opeth:wtsyx' = 'opeth:wtsyx',
+  'opeth:wtlgx' = 'opeth:wtlgx',
+  'opeth:wttsx' = 'opeth:wttsx',
+  'opeth:tipsx' = 'opeth:tipsx',
+  'opeth:wtstx' = 'opeth:wtstx',
+  'opeth:wtgxx' = 'opeth:wtgxx',
+  'opeth:lngvx' = 'opeth:lngvx',
+  'opeth:eqtyx' = 'opeth:eqtyx',
+  'opeth:cyber' = 'opeth:cyber',
+  'opeth:velo' = 'opeth:velo',
+
+  // Optimism testnet tokens
+  'topeth:terc18dp' = 'topeth:terc18dp',
+  'topeth:wct' = 'topeth:wct',
+
+  // zkSync mainnet tokens
+  'zketh:link' = 'zketh:link',
+
+  // zkSync testnet tokens
+  'tzketh:link' = 'tzketh:link',
+
+  // Celo mainnet tokens
+  'celo:pact' = 'celo:pact',
+
+  // bera mainnet tokens
+  'bera:bgt' = 'bera:bgt',
+  'bera:honey' = 'bera:honey',
+  'bera:usdc' = 'bera:usdc',
+  'bera:ibera' = 'bera:ibera',
+  'bera:dolo' = 'bera:dolo',
+  'bera:wgbera' = 'bera:wgbera',
+  'bera:ir' = 'bera:ir',
+
+  // bera testnet tokens
+  'tbera:bgt' = 'tbera:bgt',
+  'tbera:honey' = 'tbera:honey',
+  'tbera:usdc' = 'tbera:usdc',
+  'tbera:ibera' = 'tbera:ibera',
+
+  // Soneium NFTs
+  // generic NFTs
+  'erc721:soneiumtoken' = 'erc721:soneiumtoken',
+  'erc1155:soneiumtoken' = 'erc1155:soneiumtoken',
+  'tsoneium:test721' = 'tsoneium:test721',
+  'tsoneium:test1155' = 'tsoneium:test1155',
+
+  // coredao mainnet tokens
+  'coredao:stcore' = 'coredao:stcore',
+
+  // coredao testnet tokens
+  'tcoredao:stcore' = 'tcoredao:stcore',
+  'tcoredao:tlstbtc' = 'tcoredao:tlstbtc',
+
+  // Chiliz mainnet tokens
+  'chiliz:acm' = 'chiliz:acm',
+  'chiliz:afc' = 'chiliz:afc',
+  'chiliz:arg' = 'chiliz:arg',
+  'chiliz:asr' = 'chiliz:asr',
+  'chiliz:atm' = 'chiliz:atm',
+  'chiliz:avl' = 'chiliz:avl',
+  'chiliz:bar' = 'chiliz:bar',
+  'chiliz:benfica' = 'chiliz:benfica',
+  'chiliz:city' = 'chiliz:city',
+  'chiliz:gal' = 'chiliz:gal',
+  'chiliz:inter' = 'chiliz:inter',
+  'chiliz:ita' = 'chiliz:ita',
+  'chiliz:juv' = 'chiliz:juv',
+  'chiliz:mengo' = 'chiliz:mengo',
+  'chiliz:nap' = 'chiliz:nap',
+  'chiliz:og' = 'chiliz:og',
+  'chiliz:pepper' = 'chiliz:pepper',
+  'chiliz:por' = 'chiliz:por',
+  'chiliz:psg' = 'chiliz:psg',
+  'chiliz:spurs' = 'chiliz:spurs',
+  'chiliz:tra' = 'chiliz:tra',
+
+  //world chain mainnet tokens
+  'world:wld' = 'world:wld',
+  'world:usdc' = 'world:usdc',
+
+  //world chain testnet tokens
+  'tworld:wld' = 'tworld:wld',
+  'tworld:usdc' = 'tworld:usdc',
+
+  // Flr mainnet tokens
+  'flr:wflr' = 'flr:wflr',
+
+  // Flr testnet tokens
+  'tflr:wflr' = 'tflr:wflr',
+  'tflr:twc2flr' = 'tflr:twc2flr',
+
+  ERC721 = 'erc721',
+  ERC1155 = 'erc1155',
+  NONSTANDARD = 'nonstandard',
+
+  // Cardano Token
+  adaTestnetToken = 'temporary-placeholder',
+
+  // solana token
+  'sol:bome' = 'sol:bome',
+  '3uejh-usdc' = '3uejh-usdc',
+  'avax-usdc' = 'avax-usdc',
+  'bop-usdc' = 'bop-usdc',
+  'sol:crown' = 'sol:crown',
+  'elu-usdt' = 'elu-usdt',
+  'fida-usdc' = 'fida-usdc',
+  'fida-usdt' = 'fida-usdt',
+  'ftt-ftt' = 'ftt-ftt',
+  'link-usdc' = 'link-usdc',
+  'lqid-usdc' = 'lqid-usdc',
+  'maticpo-usdc' = 'maticpo-usdc',
+  'msol-sol' = 'msol-sol',
+  'msol-usdc' = 'msol-usdc',
+  'prism-usdc' = 'prism-usdc',
+  'sol:pyth' = 'sol:pyth',
+  'rendoge-usdc' = 'rendoge-usdc',
+  'shdw-usdc' = 'shdw-usdc',
+  'sol-wtust' = 'sol-wtust',
+  'srm-usdc' = 'srm-usdc',
+  'srmet-srm' = 'srmet-srm',
+  'sushi-usdc' = 'sushi-usdc',
+  'tuatlas' = 'tuatlas',
+  'tucope' = 'tucope',
+  'tulike' = 'tulike',
+  'tureal' = 'tureal',
+  'tusamo' = 'tusamo',
+  'usdt-usdc' = 'usdt-usdc',
+  'wbwbnb-usdc' = 'wbwbnb-usdc',
+  'wheth-usdc' = 'wheth-usdc',
+  'wtust-usdt' = 'wtust-usdt',
+  'xcope-usdc' = 'xcope-usdc',
+  'xrp-sollet' = 'xrp-sollet',
+  'aury' = 'aury',
+  'dio' = 'dio',
+  'sol-perp' = 'sol-perp',
+  'sol-woo' = 'sol-woo',
+  'sol-weth' = 'sol-weth',
+  'btc-sollet' = 'btc-sollet',
+  'eth-sollet' = 'eth-sollet',
+  'sol:bonk' = 'sol:bonk',
+  'jto' = 'jto',
+  'sol:jto' = 'sol:jto',
+  'jup' = 'jup',
+  'sol:jup' = 'sol:jup',
+  'sol:honey' = 'sol:honey',
+  'mobile' = 'mobile',
+  'sol:mobile' = 'sol:mobile',
+  'wif' = 'wif',
+  'sol:wif' = 'sol:wif',
+  'natix' = 'natix',
+  'sol:natix' = 'sol:natix',
+  'sol:ks' = 'sol:ks',
+  'sol:apusdt' = 'sol:apusdt',
+  'sol:acusd' = 'sol:acusd',
+  'sol:solink' = 'sol:solink',
+  'sol:soon' = 'sol:soon',
+  'sol:wylds' = 'sol:wylds',
+  'sol:block' = 'sol:block',
+  'sol:render' = 'sol:render',
+  'sol:wen' = 'sol:wen',
+  'sol:mew' = 'sol:mew',
+  'sol:pyusd' = 'sol:pyusd',
+  'sol:moveusd' = 'sol:moveusd',
+  'sol:dxl' = 'sol:dxl',
+  'sol:mother' = 'sol:mother',
+  'sol:wrose' = 'sol:wrose',
+  'sol:atlas' = 'sol:atlas',
+  'sol:mdt' = 'sol:mdt',
+  'sol:io' = 'sol:io',
+  'sol:aave' = 'sol:aave',
+  'sol:ldo' = 'sol:ldo',
+  'sol:gt' = 'sol:gt',
+  'sol:popcat' = 'sol:popcat',
+  'sol:axs' = 'sol:axs',
+  'sol:sand' = 'sol:sand',
+  'sol:ens' = 'sol:ens',
+  'sol:enron' = 'sol:enron',
+  'sol:jitosol' = 'sol:jitosol',
+  'sol:zeus' = 'sol:zeus',
+  'sol:kmno' = 'sol:kmno',
+  'sol:giga' = 'sol:giga',
+  'sol:tnsr' = 'sol:tnsr',
+  'sol:ssol' = 'sol:ssol',
+  'sol:drift' = 'sol:drift',
+  'sol:spx' = 'sol:spx',
+  'sol:turbo' = 'sol:turbo',
+  'sol:fartcoin' = 'sol:fartcoin',
+  'sol:swarms' = 'sol:swarms',
+  'sol:nc' = 'sol:nc',
+  'sol:tai' = 'sol:tai',
+  'sol:pengu' = 'sol:pengu',
+  'sol:corn' = 'sol:corn',
+  'sol:yes' = 'sol:yes',
+  'sol:ai16z' = 'sol:ai16z',
+  'sol:pnut' = 'sol:pnut',
+  'sol:nyan' = 'sol:nyan',
+  'sol:fight' = 'sol:fight',
+  'sol:wet' = 'sol:wet',
+  'sol:meta' = 'sol:meta',
+  'sol:portals' = 'sol:portals',
+  'sol:virtual' = 'sol:virtual',
+  'sol:zerebro' = 'sol:zerebro',
+  'sol:arc' = 'sol:arc',
+  'sol:nos' = 'sol:nos',
+  'sol:jlp' = 'sol:jlp',
+  'sol:grass' = 'sol:grass',
+  'sol:trump' = 'sol:trump',
+  'sol:melania' = 'sol:melania',
+  'sol:ustry' = 'sol:ustry',
+  'sol:eurob' = 'sol:eurob',
+  'sol:tesouro' = 'sol:tesouro',
+  'sol:cetes' = 'sol:cetes',
+  'sol:gilts' = 'sol:gilts',
+  'sol:muskit' = 'sol:muskit',
+  'sol:matrix' = 'sol:matrix',
+  'sol:eurcv' = 'sol:eurcv',
+  'sol:layer' = 'sol:layer',
+  'sol:rock' = 'sol:rock',
+  'sol:dood' = 'sol:dood',
+  'sol:sb' = 'sol:sb',
+  'sol:dfdvsol' = 'sol:dfdvsol',
+  'sol:chillguy' = 'sol:chillguy',
+  'sol:moodeng' = 'sol:moodeng',
+  'sol:hsol' = 'sol:hsol',
+  'sol:grph' = 'sol:grph',
+  'sol:superbonds' = 'sol:superbonds',
+  'sol:would' = 'sol:would',
+  'sol:dog' = 'sol:dog',
+  'sol:dont' = 'sol:dont',
+  'sol:saros' = 'sol:saros',
+  'sol:babydoge' = 'sol:babydoge',
+  'sol:useless' = 'sol:useless',
+  'sol:gohome' = 'sol:gohome',
+  'sol:aura' = 'sol:aura',
+  'sol:me' = 'sol:me',
+  'sol:alch' = 'sol:alch',
+  'sol:launchcoin' = 'sol:launchcoin',
+  'sol:stik' = 'sol:stik',
+  'sol:chill' = 'sol:chill',
+  'sol:zbcn' = 'sol:zbcn',
+  'sol:benji' = 'sol:benji',
+  'sol:dupe' = 'sol:dupe',
+  'sol:tank' = 'sol:tank',
+  'sol:grift' = 'sol:grift',
+  'sol:usdk' = 'sol:usdk',
+  'sol:usdky' = 'sol:usdky',
+  'sol:wave' = 'sol:wave',
+  'sol:usdcv' = 'sol:usdcv',
+  'sol:2z' = 'sol:2z',
+  'sol:cloud' = 'sol:cloud',
+  'sol:eliza' = 'sol:eliza',
+  'sol:eurc' = 'sol:eurc',
+  'sol:dynosol' = 'sol:dynosol',
+  'sol:cipher' = 'sol:cipher',
+  'sol:bio' = 'sol:bio',
+  'sol:rekt' = 'sol:rekt',
+  'sol:xyo' = 'sol:xyo',
+  'sol:zig' = 'sol:zig',
+  'sol:xsgd' = 'sol:xsgd',
+  'sol:straitxusd' = 'sol:straitxusd',
+  'sol:usx' = 'sol:usx',
+  'sol:rksol' = 'sol:rksol',
+  'sol:usda1' = 'sol:usda1',
+  'sol:ponke' = 'sol:ponke',
+  'sol:jellyjelly' = 'sol:jellyjelly',
+  'sol:yu' = 'sol:yu',
+  'sol:met' = 'sol:met',
+  'sol:white' = 'sol:white',
+  'sol:yzy' = 'sol:yzy',
+  'sol:wild' = 'sol:wild',
+  'sol:npc' = 'sol:npc',
+  'sol:aix' = 'sol:aix',
+  'sol:troll' = 'sol:troll',
+  'sol:ban' = 'sol:ban',
+  'sol:dbr' = 'sol:dbr',
+  'sol:bless' = 'sol:bless',
+  'sol:cpool' = 'sol:cpool',
+  'sol:home' = 'sol:home',
+  'sol:oob' = 'sol:oob',
+  'sol:xnet' = 'sol:xnet',
+  'sol:xnetv2' = 'sol:xnetv2',
+  'sol:prcl' = 'sol:prcl',
+  'sol:asp' = 'sol:asp',
+  'sol:skr' = 'sol:skr',
+  'sol:bmt' = 'sol:bmt',
+  'sol:huma' = 'sol:huma',
+  'sol:prime' = 'sol:prime',
+  'sol:kwyld-usdc' = 'sol:kwyld-usdc',
+  'sol:kprme-cash' = 'sol:kprme-cash',
+  'sol:kwyld-cash' = 'sol:kwyld-cash',
+
+  'tsol:txsgd' = 'sol:txsgd',
+  'tsol:txusd' = 'sol:txusd',
+  // TRX tokens
+  'trx:htx' = 'trx:htx',
+  'trx:jst' = 'trx:jst',
+  'trx:tusd' = 'trx:tusd',
+  'trx:win' = 'trx:win',
+  'trx:btt' = 'trx:btt',
+  'trx:usdd' = 'trx:usdd',
+  'trx:usdt' = 'trx:usdt',
+  'trx:usd1' = 'trx:usd1',
+  'trx:nft' = 'trx:nft',
+  'trx:trxs' = 'trx:trxs',
+
+  // TRX testnet tokens
+  'ttrx:usdt' = 'ttrx:usdt',
+  'ttrx:usd1' = 'ttrx:usd1',
+  'ttrx:stgusd1' = 'ttrx:stgusd1',
+
+  // XRP tokens
+  'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
+  'xrp:rlusd' = 'xrp:rlusd',
+  'txrp:rlusd' = 'txrp:rlusd',
+  'txrp:xat' = 'txrp:xat',
+  'xrp:tbill' = 'xrp:tbill',
+  'xrp:xsgd' = 'xrp:xsgd',
+  'xrp:veur' = 'xrp:veur',
+  'xrp:vchf' = 'xrp:vchf',
+  'xrp:vgbp' = 'xrp:vgbp',
+  'xrp:solo' = 'xrp:solo',
+  'xrp:usdc' = 'xrp:usdc',
+  'xrp:eurcv' = 'xrp:eurcv',
+  'xrp:aau' = 'xrp:aau',
+  'xrp:fiuaxrp' = 'xrp:fiuaxrp',
+  // XRP testnet tokens
+  'txrp:xsgd' = 'txrp:xsgd',
+
+  // Sui tokens
+  'sui:deep' = 'sui:deep',
+  'sui:suins' = 'sui:suins',
+  'sui:suiusde' = 'sui:suiusde',
+  'sui:fdusd' = 'sui:fdusd',
+  'sui:usdc' = 'sui:usdc',
+  'sui:wusdc' = 'sui:wusdc',
+  'sui:sca' = 'sui:sca',
+  'sui:times' = 'sui:times',
+  'sui:fud' = 'sui:fud',
+  'sui:haedal' = 'sui:haedal',
+  'sui:afsui' = 'sui:afsui',
+  'sui:navx' = 'sui:navx',
+  'sui:vsui' = 'sui:vsui',
+  'sui:send' = 'sui:send',
+  'sui:cetus' = 'sui:cetus',
+  'sui:wal' = 'sui:wal',
+  'sui:xmn' = 'sui:xmn',
+  'sui:xaum' = 'sui:xaum',
+  'sui:alkimi' = 'sui:alkimi',
+  'sui:dmc' = 'sui:dmc',
+  'sui:mmt' = 'sui:mmt',
+  'sui:usdsui' = 'sui:usdsui',
+  'sui:blue' = 'sui:blue',
+  // Sui testnet tokens
+  'tsui:deep' = 'tsui:deep',
+  'tsui:wal' = 'tsui:wal',
+
+  // Apt tokens
+  'apt:usd1' = 'apt:usd1',
+  'apt:usdt' = 'apt:usdt',
+  'apt:usdc' = 'apt:usdc',
+  'apt:pact' = 'apt:pact',
+  'apt:benji' = 'apt:benji',
+  'apt:lsd' = 'apt:lsd',
+  'apt:kgen' = 'apt:kgen',
+  'apt:scf1' = 'apt:scf1',
+  // Apt mainnet NFT collections
+  'apt:h00ts' = 'apt:h00ts',
+
+  // Apt testnet tokens
+  'tapt:stgusd1' = 'tapt:stgusd1',
+  'tapt:usd1' = 'tapt:usd1',
+  'tapt:usdt' = 'tapt:usdt',
+
+  // Apt testnet NFT collections
+  'tapt:nftcollection1' = 'tapt:nftcollection1',
+  'tapt:beta3loanbook' = 'tapt:beta3loanbook',
+
+  // Sip10 tokens
+  'stx:sbtc' = 'stx:sbtc',
+  'stx:ststx' = 'stx:ststx',
+  'stx:alex' = 'stx:alex',
+  'stx:aeusdc' = 'stx:aeusdc',
+  'stx:usdh' = 'stx:usdh',
+  'stx:susdh' = 'stx:susdh',
+  'stx:welsh' = 'stx:welsh',
+
+  // Sip10 testnet tokens
+  'tstx:tsbtc' = 'tstx:tsbtc',
+  'tstx:tsip6dp' = 'tstx:tsip6dp',
+  'tstx:tsip8dp' = 'tstx:tsip8dp',
+
+  // TAO testnet tokens
+  'ttao:apex' = 'ttao:apex',
+  'ttao:onion' = 'ttao:onion',
+  'ttao:templar' = 'ttao:templar',
+  'ttao:targon' = 'ttao:targon',
+
+  // Polymesh testnet tokens
+  'tpolyx:nvbitgot' = 'tpolyx:nvbitgot',
+  'tpolyx:RAND176TM' = 'tpolyx:RAND176TM',
+  'tpolyx:WEBINRASSET3' = 'tpolyx:WEBINRASSET3',
+  'tpolyx:WEBINRASSET4' = 'tpolyx:WEBINRASSET4',
+  'tpolyx:WEBINRASSET5' = 'tpolyx:WEBINRASSET5',
+  'tpolyx:WEBINRASSET6' = 'tpolyx:WEBINRASSET6',
+  'tpolyx:WEBINRASSET7' = 'tpolyx:WEBINRASSET7',
+  'tpolyx:BULLRWA' = 'tpolyx:BULLRWA',
+  'tpolyx:0x4a002922d38b8a7f87484b9c65a7ca0c' = 'tpolyx:0x4a002922d38b8a7f87484b9c65a7ca0c',
+  'tpolyx:0x753b5a2cb97c83e8b1bd66ed6643e4e9' = 'tpolyx:0x753b5a2cb97c83e8b1bd66ed6643e4e9',
+
+  // Polymesh mainnet tokens
+  'polyx:0xa0ce6bc4c60981e08eca6504656c99e6' = 'polyx:0xa0ce6bc4c60981e08eca6504656c99e6',
+  'polyx:TEST-TOKEN-1' = 'polyx:TEST-TOKEN-1',
+
+  // Hbar tokens
+  'hbar:karate' = 'hbar:karate',
+  'hbar:sauce' = 'hbar:sauce',
+  'hbar:dovu' = 'hbar:dovu',
+  'hbar:pack' = 'hbar:pack',
+  'hbar:jam' = 'hbar:jam',
+  'hbar:berry' = 'hbar:berry',
+  'hbar:bonzo' = 'hbar:bonzo',
+  'hbar:co2e' = 'hbar:co2e',
+  'hbar:hsuite' = 'hbar:hsuite',
+  'hbar:usdc' = 'hbar:usdc',
+
+  // Hbar Testnet tokens
+  'thbar:txsgd' = 'thbar:txsgd',
+
+  // Hbarevm TEstnet Tokens
+  'thbarevm:hbarnativetoken' = 'thbarevm:hbarnativetoken',
+
+  'thbarevm:tmt' = 'thbarevm:tmt',
+  'thbarevm:tnt' = 'thbarevm:tnt',
+
+  'thbarevm:erc3643' = 'thbarevm:erc3643',
+
+  // Nep141 tokens
+  'near:usdc' = 'near:usdc',
+  'near:usdt' = 'near:usdt',
+  'near:mpdao' = 'near:mpdao',
+  'near:stnear' = 'near:stnear',
+
+  // Nep141 testnet tokens
+  'tnear:tnep24dp' = 'tnear:tnep24dp',
+  'tnear:usdc' = 'tnear:usdc',
+  'tnear:stnear' = 'tnear:stnear',
+
+  // VET tokens
+  'vet:vtho' = 'vet:vtho',
+
+  // VET testnet tokens
+  'tvet:vtho' = 'tvet:vtho',
+
+  // Vet mainnet NFTs
+  'vet:sdt' = 'vet:sdt',
+
+  // Vet testnet NFTs
+  'tvet:sdt' = 'tvet:sdt',
+
+  // COSMOS tokens
+  'hash:ylds' = 'hash:ylds',
+  'hash:figr' = 'hash:figr',
+
+  // COSMOS testnet tokens
+  'thash:ylds' = 'thash:ylds',
+  'thash:tfigr' = 'thash:tfigr',
+
+  // TON mainnet tokens
+  'ton:usdt' = 'ton:usdt',
+  'ton:usde' = 'ton:usde',
+  'ton:not' = 'ton:not',
+  'ton:cati' = 'ton:cati',
+  'ton:dogs' = 'ton:dogs',
+  'ton:ston' = 'ton:ston',
+  'ton:dropee' = 'ton:dropee',
+
+  // TON testnet tokens
+  'tton:ukwny-us' = 'tton:ukwny-us',
+
+  'eth:0x0' = 'eth:0x0',
+  'eth:vvs' = 'eth:vvs',
+  'eth:bmx' = 'eth:bmx',
+  'eth:pro' = 'eth:pro',
+  'eth:prime' = 'eth:prime',
+  'eth:pokt' = 'eth:pokt',
+  'eth:lon' = 'eth:lon',
+  'eth:rlb' = 'eth:rlb',
+  'eth:neiro2' = 'eth:neiro2',
+  'eth:sign' = 'eth:sign',
+  'eth:vsn' = 'eth:vsn',
+  'eth:shx' = 'eth:shx',
+  'eth:slay' = 'eth:slay',
+  'eth:mxnb' = 'eth:mxnb',
+  'eth:hwhlp' = 'eth:hwhlp',
+  'eth:mxnd' = 'eth:mxnd',
+  'eth:bio' = 'eth:bio',
+  'eth:prove' = 'eth:prove',
+  'eth:zrc' = 'eth:zrc',
+  'eth:open' = 'eth:open',
+  'eth:mbg' = 'eth:mbg',
+  'eth:rekt' = 'eth:rekt',
+  'eth:audx' = 'eth:audx',
+  'eth:chfau' = 'eth:chfau',
+  'eth:dxi' = 'eth:dxi',
+  'eth:apxusd' = 'eth:apxusd',
+  'eth:q' = 'eth:q',
+  'eth:shvon' = 'eth:shvon',
+  'eth:pt-cusdo-28may2026' = 'eth:pt-cusdo-28may2026',
+  'eth:usd1cx' = 'eth:usd1cx',
+  'eth:ctusd1cx' = 'eth:ctusd1cx',
+  'eth:nom' = 'eth:nom',
+  'eth:kite' = 'eth:kite',
+  'eth:sahara' = 'eth:sahara',
+  'eth:epic' = 'eth:epic',
+  'eth:el' = 'eth:el',
+  'eth:kernel' = 'eth:kernel',
+  'eth:tree' = 'eth:tree',
+  'eth:zkc' = 'eth:zkc',
+  'eth:musd' = 'eth:musd',
+  'eth:mezo' = 'eth:mezo',
+  // ADA testnet tokens
+  'tada:water' = 'tada:water',
+  'tada:tusda' = 'tada:tusda',
+
+  // ADA mainnet tokens
+  'ada:min' = 'ada:min',
+  'ada:snek' = 'ada:snek',
+  'ada:wmtx' = 'ada:wmtx',
+  'ada:iag' = 'ada:iag',
+  'ada:djed' = 'ada:djed',
+  'ada:usda' = 'ada:usda',
+  'ada:night' = 'ada:night',
+  'ada:usdcx' = 'ada:usdcx',
+  'ada:lcc' = 'ada:lcc',
+  'ada:awlf' = 'ada:awlf',
+  'ada:asnek' = 'ada:asnek',
+
+  // Canton testnet tokens
+  'tcanton:testcoin1' = 'tcanton:testcoin1',
+  'tcanton:testtoken' = 'tcanton:testtoken',
+
+  // Canton mainnet tokens
+  'canton:usdcx' = 'canton:usdcx',
+  'canton:cbtc' = 'canton:cbtc',
+  'canton:usdxlr' = 'canton:usdxlr',
+  'canton:cltc' = 'canton:cltc',
+
+  // Tempo mainnet tokens
+  'tempo:pathusd' = 'tempo:pathusd',
+  'tempo:usdc' = 'tempo:usdc',
+  'tempo:usd1' = 'tempo:usd1',
+
+  // Tempo testnet tokens
+  'ttempo:pathusd' = 'ttempo:pathusd',
+  'ttempo:alphausd' = 'ttempo:alphausd',
+  'ttempo:betausd' = 'ttempo:betausd',
+  'ttempo:thetausd' = 'ttempo:thetausd',
+  'ttempo:usd1' = 'ttempo:usd1',
+  'ttempo:stgusd1' = 'ttempo:stgusd1',
+
+  // fiats
+  AED = 'aed',
+  EUR = 'eur',
+  GBP = 'gbp',
+  INR = 'inr',
+  SGD = 'sgd',
+  USD = 'usd',
+}
+
+/**
+ * This is the curve BitGo signs against with the user, backup and BitGo key.
+ */
+export enum KeyCurve {
+  Secp256k1 = 'secp256k1',
+  Ed25519 = 'ed25519',
+}
+
+/**
+ * This enum contains the base units for the coins that BitGo supports
+ */
+export enum BaseUnit {
+  ATOM = 'uatom',
+  APT = 'octa',
+  ETH = 'wei',
+  BABY = 'ubbn',
+  BTC = 'satoshi',
+  BSC = 'jager',
+  XLM = 'stroop',
+  TRX = 'sun',
+  HBAR = 'tinybar',
+  ALGO = 'microAlgo',
+  EOS = 'eos', // eos has no base unit. smallest amount in eos is 4 decimals
+  SOL = 'lamport',
+  ADA = 'lovelace',
+  USD = 'USD',
+  LNBTC = 'millisatoshi',
+  LTC = 'microlitecoins',
+  DASH = 'duff',
+  ZEC = 'zatoshi',
+  CSPR = 'mote',
+  DOT = 'planck',
+  XRP = 'drop',
+  XTZ = 'micro xtz',
+  STX = 'micro-STX',
+  SUI = 'MIST',
+  TON = 'nanoton',
+  NEAR = 'yocto',
+  OFC = 'ofcCoin',
+  OSMO = 'uosmo',
+  FIAT = 'fiatCoin',
+  TIA = 'utia',
+  HASH = 'nhash',
+  BLD = 'ubld',
+  SEI = 'usei',
+  INJECTIVE = 'inj',
+  IOTA = 'iota',
+  ZETA = 'azeta',
+  KAVACOSMOS = 'ukava',
+  DYDX = 'adydx',
+  COREUM = 'ucore',
+  TCOREUM = 'utestcore', // Coreum testnet uses different name for native coin
+  ISLM = 'aISLM',
+  RUNE = 'rune',
+  TAO = 'rao',
+  ICP = 'e8s',
+  HYPE = 'hype',
+  MANTRA = 'uom',
+  POLYX = 'micropolyx',
+  CRONOS = 'basecro',
+  FETCHAI = 'afet',
+  INITIA = 'uinit',
+  ASI = 'afet',
+  VET = 'wei',
+  TCRONOS = 'basetcro',
+  TASI = 'atestfet',
+  CANTON = 'canton',
+  USDC = 'usdc',
+}
+
+export interface BaseCoinConstructorOptions {
+  id: string; // uuid v4
+  fullName: string; // full, human-readable name of this coin. Eg, "Bitcoin Cash" for bch
+  name: string; // unique identifier for this coin, usually the lowercase ticker or symbol. Eg, "btc" for bitcoin
+  alias?: string; // alternative name usually used during name migrations
+  prefix?: string;
+  suffix?: string;
+  denom?: string; // the denomination of the coin
+  baseUnit: string; // the base unit for each coin. e.g. satoshi for BTC
+  kind: CoinKind;
+  isToken: boolean;
+  features: CoinFeature[];
+  decimalPlaces: number;
+  asset: UnderlyingAsset;
+  network: BaseNetwork;
+  primaryKeyCurve: KeyCurve;
+}
+
+export abstract class BaseCoin {
+  /*
+    Display properties
+   */
+  /**
+   * random uuid for a coin
+   */
+  public readonly id: string;
+  public readonly fullName: string;
+  public readonly name: string;
+  public readonly prefix?: string;
+  public readonly suffix?: string;
+  public readonly denom?: string;
+  public readonly baseUnit: string;
+  /*
+    Property to help during migration of token names.
+    Helps to find a coin/token with a different name than the current one
+   */
+  public readonly alias?: string;
+  /*
+    Classification properties
+   */
+  public readonly kind: CoinKind;
+  public readonly family: CoinFamily;
+  public readonly isToken: boolean;
+  /*
+    Coin Features. These are yes or no questions about what the coin supports and does not support.
+   */
+  public readonly features: CoinFeature[];
+  /*
+    Coin Network. This is a list of properties which are relevant to the underlying network on which this coin exists.
+   */
+  public readonly network: BaseNetwork;
+  /*
+    Conversion properties
+   */
+  public readonly decimalPlaces: number;
+  public readonly asset: UnderlyingAsset;
+
+  /**
+   * The primary elliptic curve BitGo signs and generates keys against.
+   */
+  public readonly primaryKeyCurve: KeyCurve;
+
+  /**
+   * Set of features which are required by a coin subclass
+   * @return {Set<CoinFeature>}
+   */
+  protected abstract requiredFeatures(): Set<CoinFeature>;
+
+  /**
+   * Set of features which are not valid and are disallowed by a coin subclass
+   * @return {Set<CoinFeature>}
+   */
+  protected abstract disallowedFeatures(): Set<CoinFeature>;
+
+  private static isValidUuidV4 = (uuid: string) => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
+  };
+
+  /**
+   * Ensures that the base coin constructor was passed a valid set of options.
+   *
+   * This includes checking that:
+   * - All coin features of the new instance are allowed by the coin class
+   * - No features required by the coin class are missing from the new instance
+   * @param {BaseCoinConstructorOptions} options
+   * @throws {DisallowedCoinFeatureError} if any of the coin features are not allowed for the coin class
+   * @throws {MissingRequiredCoinFeatureError} if any features required by the coin class are missing
+   */
+  private validateOptions(options: BaseCoinConstructorOptions) {
+    const requiredFeatures = this.requiredFeatures();
+    const disallowedFeatures = this.disallowedFeatures();
+
+    const intersectionFeatures = Array.from(requiredFeatures).filter((feat) => disallowedFeatures.has(feat));
+
+    if (intersectionFeatures.length > 0) {
+      throw new ConflictingCoinFeaturesError(options.name, intersectionFeatures);
+    }
+
+    for (const feature of options.features) {
+      if (disallowedFeatures.has(feature)) {
+        throw new DisallowedCoinFeatureError(options.name, feature);
+      }
+
+      if (requiredFeatures.has(feature)) {
+        requiredFeatures.delete(feature);
+      }
+    }
+
+    if (requiredFeatures.size > 0) {
+      // some required features were missing
+      throw new MissingRequiredCoinFeatureError(options.name, Array.from(requiredFeatures));
+    }
+
+    // assets require a valid uuid v4 id
+    if (!BaseCoin.isValidUuidV4(options.id)) {
+      throw new InvalidIdError(options.name, options.id);
+    }
+  }
+
+  protected constructor(options: BaseCoinConstructorOptions) {
+    this.validateOptions(options);
+
+    this.id = options.id;
+    this.fullName = options.fullName;
+    this.name = options.name;
+    this.alias = options.alias;
+    this.prefix = options.prefix;
+    this.suffix = options.suffix;
+    this.denom = options.denom;
+    this.baseUnit = options.baseUnit;
+    this.kind = options.kind;
+    this.family = options.network.family;
+    this.isToken = options.isToken;
+    this.features = options.features;
+    this.decimalPlaces = options.decimalPlaces;
+    this.asset = options.asset;
+    this.network = options.network;
+    this.primaryKeyCurve = options.primaryKeyCurve;
+  }
+
+  /**
+   * Returns features from a base feature set, excluding specified features
+   * @param excludedFeatures Array of features to exclude
+   * @param baseFeatures Base feature array to filter from (optional)
+   * @returns Filtered array of features
+   */
+  public static getFeaturesByTypeExcluding(
+    excludedFeatures: CoinFeature[],
+    baseFeatures?: CoinFeature[]
+  ): CoinFeature[] {
+    if (!baseFeatures) {
+      return [];
+    }
+    return baseFeatures.filter((feature) => !excludedFeatures.includes(feature));
+  }
+}
+
+export interface DynamicCoinConstructorOptions {
+  id: string;
+  fullName: string;
+  name: string;
+  alias?: string;
+  prefix?: string;
+  suffix?: string;
+  denom?: string;
+  baseUnit: string;
+  kind: string;
+  isToken: boolean;
+  features: string[];
+  decimalPlaces: number;
+  asset: string;
+  network: BaseNetwork;
+  primaryKeyCurve: string;
+}
+
+/**
+ * Concrete coin class for AMS-discovered chains not yet registered in local statics.
+ *
+ * Extends {@link BaseCoin} directly with empty required/disallowed
+ * feature sets — AMS is the source of truth for features. Accepts string-typed enum
+ * fields and casts internally (safe since CoinKind, CoinFeature, UnderlyingAsset,
+ * KeyCurve are all string enums).
+ */
+export class DynamicCoin extends BaseCoin {
+  protected requiredFeatures(): Set<CoinFeature> {
+    return new Set();
+  }
+
+  protected disallowedFeatures(): Set<CoinFeature> {
+    return new Set();
+  }
+
+  constructor(options: DynamicCoinConstructorOptions) {
+    super({
+      ...options,
+      kind: options.kind as CoinKind,
+      features: options.features as CoinFeature[],
+      asset: options.asset as UnderlyingAsset,
+      primaryKeyCurve: options.primaryKeyCurve as KeyCurve,
+    });
+  }
+}

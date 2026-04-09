@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "paths": {
+      "bitcoinjs-lib/src/*": ["node_modules/bitcoinjs-lib/types/*"]
+    },
+    "esModuleInterop": true,
+    "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"],
+    "allowJs": false,
+    "strict": true
+  },
+  "include": ["src/**/*", "test/**/*", "bin/**/*"]
+}

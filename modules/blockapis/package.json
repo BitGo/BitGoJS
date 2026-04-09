@@ -1,0 +1,40 @@
+{
+  "name": "@bitgo/blockapis",
+  "description": "Access public block explorer APIs for a variety of coins",
+  "version": "1.13.4",
+  "main": "dist/src/index.js",
+  "files": [
+    "dist/src/**/*"
+  ],
+  "keywords": [
+    "bitgo"
+  ],
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "yarn tsc --build --incremental --verbose .",
+    "lint": "eslint --quiet .",
+    "unit-test": "mocha --recursive test",
+    "fmt": "prettier --write '{bin,src,test}/**/*.{ts,js}'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/blockapis"
+  },
+  "dependencies": {
+    "@bitgo/logger": "^1.4.0",
+    "@bitgo/utxo-lib": "^11.22.0",
+    "@types/superagent": "4.1.16",
+    "superagent": "^9.0.1"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
+}

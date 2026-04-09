@@ -1,0 +1,80 @@
+{
+  "name": "@bitgo/utxo-lib",
+  "version": "11.22.0",
+  "description": "Client-side Bitcoin JavaScript library",
+  "main": "./dist/src/index.js",
+  "engines": {
+    "node": ">=20",
+    "npm": ">=3.10.10"
+  },
+  "keywords": [
+    "bitgo",
+    "utxo",
+    "bitcoinjs",
+    "bitcoin",
+    "zcash",
+    "dash",
+    "browserify",
+    "javascript"
+  ],
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "yarn tsc --build --incremental --verbose .",
+    "coverage-report": "nyc report --reporter=lcov",
+    "coverage-html": "nyc report --reporter=html",
+    "coverage": "npm run build && nyc --check-coverage mocha",
+    "test": "npm run unit-test",
+    "unit-test": "mocha --recursive test",
+    "lint": "eslint --quiet .",
+    "fmt": "prettier --write '{src,test}/**/*.{ts,js}'",
+    "precommit": "yarn lint-staged"
+  },
+  "nyc": {
+    "include": [
+      "src/**"
+    ],
+    "branches": 78,
+    "functions": 90,
+    "lines": 88
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/utxo-lib"
+  },
+  "files": [
+    "dist/src"
+  ],
+  "dependencies": {
+    "@bitgo/blake2b": "^3.2.4",
+    "@bitgo/secp256k1": "^1.11.0",
+    "@brandonblack/musig": "^0.0.1-alpha.0",
+    "bech32": "^2.0.0",
+    "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4",
+    "bitcoin-ops": "^1.3.0",
+    "bitcoinjs-lib": "npm:@bitgo-forks/bitcoinjs-lib@7.1.0-master.11",
+    "bs58check": "^2.1.2",
+    "cashaddress": "^1.1.0",
+    "fastpriorityqueue": "^0.7.1",
+    "typeforce": "^1.11.3",
+    "varuint-bitcoin": "^1.1.2"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.12",
+    "@types/node": "^24.10.9",
+    "axios": "^1.13.0",
+    "debug": "^3.1.0",
+    "fs-extra": "^9.1.0"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT"
+}

@@ -1,0 +1,73 @@
+transaction: c7e56de8579f09fd46fd4e7b6a802c8fdba0b342c71d4c736704f1b282ad6343
+├── format: network
+├── complete: true
+├── parsedAs: bitcoin testnet
+├── version: 1
+├── locktime: 0
+├── hasWitnesses: true
+├── status: unknown
+├── vsize: 269vbytes (1074wu)
+├── fee [btc]: 0.00001000
+├── feeRate [sat/vbyte]: 3.72
+├─┬ inputs: 2 sum=2.00000000
+│ ├─┬ 0: ba3924f81d5a9bc64a6d24a7bf66e7620aaf82544ccf51c99e7267cc5bd89dc2:0
+│ │ ├── sequence: ffffffff (4 bytes)
+│ │ ├── scriptSig:  (0 bytes)
+│ │ ├─┬ witness: taproot
+│ │ │ ├── 0: 62b903cb273c2464c2452ba474cca4fd952496cf4cb7fa45b0682c9dfd41c196fc0b8e7ab7f02ba47db981bb0d34dc8659f33f169855cec8afa59036526b1a70 (64 bytes)
+│ │ │ ├── 1: ea380e197107afebfa9640e64513d48ac5cda6f246d1444dea67b742b8e4a0a112ca8913bfd63c3703e56d381caf01d8e20aa33fa9bc1a1492a71abbee54b383 (64 bytes)
+│ │ │ ├─┬ 2: 20d7806bb82a59fa289efde0af46404298b2fa076d0c6aff1893cb2c7ad097d2a7ad20f97c2d3ff8be2d41ba97d0c59f7d4496a633c7fda5605948347b1ebd08aefd08ac (68 bytes)
+│ │ │ │ └── asm: 
+│ │ │ │     d7806bb82a59fa289efde0af46404298b2fa076d0c6aff1893cb2c7ad097d2a7
+│ │ │ │     OP_CHECKSIGVERIFY
+│ │ │ │     f97c2d3ff8be2d41ba97d0c59f7d4496a633c7fda5605948347b1ebd08aefd08
+│ │ │ │     OP_CHECKSIG
+│ │ │ └── 3: c0de210b31dcddb7a5bc9b412deb405e01eba0b48e63317d08dba82a6e43f35f3a9a22695e86973f847224b3809fffccfd60c84d41eb992b4d64c558b37cb1f38a (65 bytes)
+│ │ └─┬ sigScript: taprootScriptPathSpend
+│ │   ├─┬ pubkeys: 2
+│ │   │ ├── 0: d7806bb82a59fa289efde0af46404298b2fa076d0c6aff1893cb2c7ad097d2a7 (32 bytes)
+│ │   │ └── 1: f97c2d3ff8be2d41ba97d0c59f7d4496a633c7fda5605948347b1ebd08aefd08 (32 bytes)
+│ │   └─┬ signatures: [64byte] [64byte]
+│ │     ├── signed by: [0, 1]
+│ │     ├─┬ 0
+│ │     │ ├── bytes: 62b903cb273c2464c2452ba474cca4fd952496cf4cb7fa45b0682c9dfd41c196fc0b8e7ab7f02ba47db981bb0d34dc8659f33f169855cec8afa59036526b1a70 (64 bytes)
+│ │     │ ├── valid: true
+│ │     │ └── signedBy: backup
+│ │     └─┬ 1
+│ │       ├── bytes: ea380e197107afebfa9640e64513d48ac5cda6f246d1444dea67b742b8e4a0a112ca8913bfd63c3703e56d381caf01d8e20aa33fa9bc1a1492a71abbee54b383 (64 bytes)
+│ │       ├── valid: true
+│ │       └── signedBy: user
+│ └─┬ 1: 0521ec6e9797c108d2f4d509304e6ccf761ad69aa65718d0e88b4b1c1eb439a2:0
+│   ├── sequence: ffffffff (4 bytes)
+│   ├── scriptSig:  (0 bytes)
+│   ├─┬ witness: taproot
+│   │ ├── 0: cd715854ec2b9ebcf63e6591772b5010f4be008b0d8756e0398a358f99ef0435cf28a1c89b9917677999f47ac93648ed68f9f665824af3c7c5b244b54eb54ae2 (64 bytes)
+│   │ ├── 1: d803d42d1fbbc3f47dfe80431a082e7064e7db43a8fe0b3214c2e7e9200e83a0c4cf56e66eb5378635e5432541472d50675659dcf4103f4d88d25735bc48943b (64 bytes)
+│   │ ├─┬ 2: 20d7806bb82a59fa289efde0af46404298b2fa076d0c6aff1893cb2c7ad097d2a7ad20f97c2d3ff8be2d41ba97d0c59f7d4496a633c7fda5605948347b1ebd08aefd08ac (68 bytes)
+│   │ │ └── asm: 
+│   │ │     d7806bb82a59fa289efde0af46404298b2fa076d0c6aff1893cb2c7ad097d2a7
+│   │ │     OP_CHECKSIGVERIFY
+│   │ │     f97c2d3ff8be2d41ba97d0c59f7d4496a633c7fda5605948347b1ebd08aefd08
+│   │ │     OP_CHECKSIG
+│   │ └── 3: c0de210b31dcddb7a5bc9b412deb405e01eba0b48e63317d08dba82a6e43f35f3a9a22695e86973f847224b3809fffccfd60c84d41eb992b4d64c558b37cb1f38a (65 bytes)
+│   └─┬ sigScript: taprootScriptPathSpend
+│     ├─┬ pubkeys: 2
+│     │ ├── 0: d7806bb82a59fa289efde0af46404298b2fa076d0c6aff1893cb2c7ad097d2a7 (32 bytes)
+│     │ └── 1: f97c2d3ff8be2d41ba97d0c59f7d4496a633c7fda5605948347b1ebd08aefd08 (32 bytes)
+│     └─┬ signatures: [64byte] [64byte]
+│       ├── signed by: [0, 1]
+│       ├─┬ 0
+│       │ ├── bytes: cd715854ec2b9ebcf63e6591772b5010f4be008b0d8756e0398a358f99ef0435cf28a1c89b9917677999f47ac93648ed68f9f665824af3c7c5b244b54eb54ae2 (64 bytes)
+│       │ ├── valid: true
+│       │ └── signedBy: backup
+│       └─┬ 1
+│         ├── bytes: d803d42d1fbbc3f47dfe80431a082e7064e7db43a8fe0b3214c2e7e9200e83a0c4cf56e66eb5378635e5432541472d50675659dcf4103f4d88d25735bc48943b (64 bytes)
+│         ├── valid: true
+│         └── signedBy: user
+└─┬ outputs: 1 sum=1.99999000
+  └─┬ 0: tb1paejvldmj6xx3te36sve2j5wq54lvsd4q7qw6gfm5l36hk45ymgyqtqd8cv
+    ├── value: 1.99999000
+    └─┬ scriptPubKey: [34byte]
+      ├── type: taproot
+      ├── hex: 5120ee64cfb772d18d15e63a8332a951c0a57ec836a0f01da42774fc757b5684da08
+      └── asm: OP_1 ee64cfb772d18d15e63a8332a951c0a57ec836a0f01da42774fc757b5684da08

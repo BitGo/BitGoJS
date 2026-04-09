@@ -1,0 +1,237 @@
+import { IRequestTracer } from '../../api';
+import { KeychainsTriplet, KeyPair } from '../baseCoin';
+import { BitgoPubKeyType } from '../utils/tss/baseTypes';
+import { IWallet } from '../wallet';
+import { BitGoKeyFromOvcShares, OvcToBitGoJSON } from './ovcJsonCodec';
+
+export type KeyType = 'tss' | 'independent' | 'blsdkg';
+
+export type SourceType = 'bitgo' | 'backup' | 'user' | 'cold';
+
+export type WebauthnFmt = 'none' | 'packed' | 'fido-u2f';
+
+export interface WebauthnAuthenticatorInfo {
+  credID: string;
+  fmt: WebauthnFmt;
+  publicKey: string;
+}
+
+export interface KeychainWebauthnDevice {
+  otpDeviceId: string;
+  authenticatorInfo: WebauthnAuthenticatorInfo;
+  // salt for the webauthn prf extension
+  prfSalt: string;
+  // Wallet private key encrypted to webauthn derived password
+  encryptedPrv: string;
+}
+
+export interface Keychain {
+  id: string;
+  pub?: string;
+  prv?: string;
+  provider?: string;
+  encryptedPrv?: string;
+  // Required for MPCV2 keys where we reduce the amount of data needed for the keycard.
+  // This is only generated client side and is not sent to WP
+  reducedEncryptedPrv?: string;
+  derivationPath?: string;
+  derivedFromParentWithSeed?: string;
+  commonPub?: string;
+  commonKeychain?: string;
+  keyShares?: ApiKeyShare[];
+  walletHSMGPGPublicKeySigs?: string;
+  hsmType?: BitgoPubKeyType;
+  type: KeyType;
+  source?: SourceType;
+  coinSpecific?: { [coinName: string]: unknown };
+  // Alternative encryptedPrv using webauthn and the prf extension
+  webauthnDevices?: KeychainWebauthnDevice[];
+  // Ethereum address derived from xpub
+  ethAddress?: string;
+}
+
+export type OptionalKeychainEncryptedKey = Pick<Keychain, 'encryptedPrv' | 'webauthnDevices'>;
+
+export type KeychainWithEncryptedPrv = Omit<Keychain, 'encryptedPrv'> & {
+  encryptedPrv: string;
+};
+
+export interface ChangedKeychains {
+  [pubkey: string]: string;
+}
+
+export interface ListKeychainsResult {
+  keys: Keychain[];
+  nextBatchPrevId?: string;
+}
+
+export interface GetKeychainOptions {
+  id: string;
+  xpub?: string;
+  ethAddress?: string;
+  reqId?: IRequestTracer;
+}
+
+export interface ListKeychainOptions {
+  limit?: number;
+  prevId?: string;
+}
+
+export interface UpdatePasswordOptions {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export interface UpdateSingleKeychainPasswordOptions {
+  keychain?: Keychain;
+  oldPassword?: string;
+  newPassword?: string;
+}
+
+/**
+ * Parameters for the rotateKeychain method for ofc multi-user-key
+ * @property {string} id - the public id of the keychain
+ * @property {string} password - the user password use to encrypt/decrypt the private key
+ * @property {IRequestTracer} reqId - optional reqId
+ */
+export type RotateKeychainOptions =
+  | {
+      id: string;
+      password: string;
+      reqId?: IRequestTracer;
+    }
+  | {
+      id: string;
+      pub: string;
+      encryptedPrv: string;
+      reqId?: IRequestTracer;
+    };
+
+export interface AddKeychainOptions {
+  pub?: string;
+  commonPub?: string;
+  commonKeychain?: string;
+  encryptedPrv?: string;
+  type?: string;
+  keyType?: KeyType;
+  source?: string;
+  originalPasscodeEncryptionCode?: string;
+  enterprise?: string;
+  derivedFromParentWithSeed?: any;
+  disableKRSEmail?: boolean;
+  provider?: string;
+  reqId?: IRequestTracer;
+  krsSpecific?: any;
+  keyShares?: ApiKeyShare[];
+  userGPGPublicKey?: string;
+  backupGPGPublicKey?: string;
+  algoUsed?: string;
+  isDistributedCustody?: boolean;
+  // indicates if the key is MPCv2 or not
+  isMPCv2?: boolean;
+  coinSpecific?: { [coinName: string]: unknown };
+}
+
+export interface ApiKeyShare {
+  from: 'user' | 'backup' | 'bitgo';
+  to: 'user' | 'backup' | 'bitgo';
+  publicShare: string;
+  privateShare: string;
+  privateShareProof?: string;
+  paillierPublicKey?: string;
+  n?: string;
+  vssProof?: string;
+}
+
+export interface CreateBackupOptions {
+  provider?: string;
+  source?: string;
+  disableKRSEmail?: boolean;
+  krsSpecific?: any;
+  type?: string;
+  keyType?: KeyType;
+  reqId?: IRequestTracer;
+  commonPub?: string;
+  commonKeychain?: string;
+  prv?: string;
+  encryptedPrv?: string;
+  passphrase?: string;
+}
+
+export interface CreateBitGoOptions {
+  source?: 'bitgo';
+  enterprise?: string;
+  reqId?: IRequestTracer;
+  keyType?: KeyType;
+  isDistributedCustody?: boolean;
+}
+
+export type DecryptedRetrofitPayload = {
+  decryptedUserKey: string;
+  decryptedBackupKey: string;
+  walletId: string;
+};
+
+export interface CreateMpcOptions {
+  multisigType: 'onchain' | 'tss';
+  passphrase?: string;
+  originalPasscodeEncryptionCode?: string;
+  enterprise?: string;
+  retrofit?: DecryptedRetrofitPayload;
+}
+
+export interface RecreateMpcOptions extends Omit<CreateMpcOptions, 'retrofit' | 'multisigType'> {
+  coin: string;
+  walletId: string;
+  passphrase: string;
+  otp: string;
+  enterprise: string;
+  encryptedMaterial: {
+    encryptedUserKey: string;
+    encryptedBackupKey: string;
+    encryptedWalletPassphrase: string;
+  };
+}
+
+export interface GetKeysForSigningOptions {
+  reqId?: IRequestTracer;
+  wallet?: IWallet;
+}
+
+export interface GetSigningKeyApi {
+  userId: string;
+  userEmail: string;
+  derivedPubkey: string;
+  // These are present when user fetches their own ecdh keychain for signing.
+  derivationPath?: string;
+  ecdhKeychain?: string;
+}
+
+export interface EcdhDerivedKeypair {
+  derivedPubKey: string; // Hex string
+  derivationPath: string; // Derivation path of the keypair
+  xprv: string;
+}
+
+export enum KeyIndices {
+  USER = 0,
+  BACKUP = 1,
+  BITGO = 2,
+}
+
+export interface IKeychains {
+  get(params: GetKeychainOptions): Promise<Keychain>;
+  list(params?: ListKeychainOptions): Promise<ListKeychainsResult>;
+  updatePassword(params: UpdatePasswordOptions): Promise<ChangedKeychains>;
+  updateSingleKeychainPassword(params?: UpdateSingleKeychainPasswordOptions): Keychain;
+  create(params?: { seed?: Buffer; isRootKey?: boolean }): KeyPair;
+  add(params?: AddKeychainOptions): Promise<Keychain>;
+  createBitGo(params?: CreateBitGoOptions): Promise<Keychain>;
+  createBackup(params?: CreateBackupOptions): Promise<Keychain>;
+  getKeysForSigning(params?: GetKeysForSigningOptions): Promise<Keychain[]>;
+  createMpc(params: CreateMpcOptions): Promise<KeychainsTriplet>;
+  recreateMpc(params: RecreateMpcOptions): Promise<KeychainsTriplet>;
+  createTssBitGoKeyFromOvcShares(ovcOutput: OvcToBitGoJSON, enterprise?: string): Promise<BitGoKeyFromOvcShares>;
+  createUserKeychain(userPassword: string): Promise<Keychain>;
+  rotateKeychain(params: RotateKeychainOptions): Promise<Keychain>;
+}

@@ -1,0 +1,35 @@
+{
+  "name": "@bitgo/sdk-test",
+  "version": "9.1.35",
+  "private": "true",
+  "description": "coin test libary for BitGoJS",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-test"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/sdk-api": "^1.76.1",
+    "@bitgo/sdk-core": "^36.37.0",
+    "bignumber.js": "^9.1.1",
+    "should-http": "^0.1.1"
+  }
+}

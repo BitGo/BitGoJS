@@ -1,0 +1,159 @@
+import assert from 'assert';
+
+import * as utxolib from '@bitgo/utxo-lib';
+import { bitgo } from '@bitgo/utxo-lib';
+import debugLib from 'debug';
+
+import { InputSigningError, TransactionSigningError } from './SigningError';
+import { Musig2Participant } from './musig2';
+
+const debug = debugLib('bitgo:v2:utxo');
+
+export type PsbtParsedScriptType =
+  | 'p2sh'
+  | 'p2wsh'
+  | 'p2shP2wsh'
+  | 'p2shP2pk'
+  | 'taprootKeyPathSpend'
+  | 'taprootScriptPathSpend'
+  // wasm-utxo types
+  | 'p2trLegacy'
+  | 'p2trMusig2ScriptPath'
+  | 'p2trMusig2KeyPath';
+
+/**
+ * Sign all inputs of a psbt and verify signatures after signing.
+ * Collects and logs signing errors and verification errors, throws error in the end if any of them
+ * failed.
+ *
+ * This function mirrors signAndVerifyWalletTransaction, but is used for signing PSBTs instead of
+ * using TransactionBuilder
+ *
+ * @param psbt
+ * @param signerKeychain
+ */
+export function signAndVerifyPsbt(
+  psbt: utxolib.bitgo.UtxoPsbt,
+  signerKeychain: utxolib.BIP32Interface
+): utxolib.bitgo.UtxoPsbt {
+  const txInputs = psbt.txInputs;
+  const outputIds: string[] = [];
+  const scriptTypes: PsbtParsedScriptType[] = [];
+
+  const signErrors: InputSigningError<bigint>[] = psbt.data.inputs
+    .map((input, inputIndex: number) => {
+      const outputId = utxolib.bitgo.formatOutputId(utxolib.bitgo.getOutputIdForInput(txInputs[inputIndex]));
+      outputIds.push(outputId);
+
+      const { scriptType } = utxolib.bitgo.parsePsbtInput(input);
+      scriptTypes.push(scriptType);
+
+      if (scriptType === 'p2shP2pk') {
+        debug('Skipping signature for input %d of %d (RP input?)', inputIndex + 1, psbt.data.inputs.length);
+        return;
+      }
+
+      try {
+        psbt.signInputHD(inputIndex, signerKeychain);
+        debug('Successfully signed input %d of %d', inputIndex + 1, psbt.data.inputs.length);
+      } catch (e) {
+        return new InputSigningError<bigint>(inputIndex, scriptType, { id: outputId }, e);
+      }
+    })
+    .filter((e): e is InputSigningError<bigint> => e !== undefined);
+
+  const verifyErrors: InputSigningError<bigint>[] = psbt.data.inputs
+    .map((input, inputIndex) => {
+      const scriptType = scriptTypes[inputIndex];
+      if (scriptType === 'p2shP2pk') {
+        debug(
+          'Skipping input signature %d of %d (unspent from replay protection address which is platform signed only)',
+          inputIndex + 1,
+          psbt.data.inputs.length
+        );
+        return;
+      }
+
+      const outputId = outputIds[inputIndex];
+      try {
+        if (!psbt.validateSignaturesOfInputHD(inputIndex, signerKeychain)) {
+          return new InputSigningError(inputIndex, scriptType, { id: outputId }, new Error(`invalid signature`));
+        }
+      } catch (e) {
+        debug('Invalid signature');
+        return new InputSigningError<bigint>(inputIndex, scriptType, { id: outputId }, e);
+      }
+    })
+    .filter((e): e is InputSigningError<bigint> => e !== undefined);
+
+  if (signErrors.length || verifyErrors.length) {
+    throw new TransactionSigningError(signErrors, verifyErrors);
+  }
+
+  return psbt;
+}
+
+/**
+ * Key Value: Unsigned tx id => PSBT
+ * It is used to cache PSBTs with taproot key path (MuSig2) inputs during external express signer is activated.
+ * Reason: MuSig2 signer secure nonce is cached in the UtxoPsbt object. It will be required during the signing step.
+ * For more info, check SignTransactionOptions.signingStep
+ *
+ * TODO BTC-276: This cache may need to be done with LRU like memory safe caching if memory issues comes up.
+ */
+const PSBT_CACHE = new Map<string, utxolib.bitgo.UtxoPsbt>();
+
+export async function signPsbtWithMusig2ParticipantUtxolib(
+  coin: Musig2Participant<utxolib.bitgo.UtxoPsbt>,
+  tx: utxolib.bitgo.UtxoPsbt,
+  signerKeychain: utxolib.BIP32Interface | undefined,
+  params: {
+    signingStep: 'signerNonce' | 'cosignerNonce' | 'signerSignature' | undefined;
+    walletId: string | undefined;
+  }
+): Promise<utxolib.bitgo.UtxoPsbt> {
+  if (bitgo.isTransactionWithKeyPathSpendInput(tx)) {
+    switch (params.signingStep) {
+      case 'signerNonce':
+        assert(signerKeychain);
+        tx.setAllInputsMusig2NonceHD(signerKeychain);
+        PSBT_CACHE.set(tx.getUnsignedTx().getId(), tx);
+        return tx;
+      case 'cosignerNonce':
+        assert(params.walletId, 'walletId is required for MuSig2 bitgo nonce');
+        return await coin.getMusig2Nonces(tx, params.walletId);
+      case 'signerSignature':
+        const txId = tx.getUnsignedTx().getId();
+        const psbt = PSBT_CACHE.get(txId);
+        assert(
+          psbt,
+          `Psbt is missing from txCache (cache size ${PSBT_CACHE.size}).
+            This may be due to the request being routed to a different BitGo-Express instance that for signing step 'signerNonce'.`
+        );
+        PSBT_CACHE.delete(txId);
+        tx = psbt.combine(tx);
+        break;
+      default:
+        // this instance is not an external signer
+        assert(params.walletId, 'walletId is required for MuSig2 bitgo nonce');
+        assert(signerKeychain);
+        tx.setAllInputsMusig2NonceHD(signerKeychain);
+        const response = await coin.getMusig2Nonces(tx, params.walletId);
+        tx = tx.combine(response);
+        break;
+    }
+  } else {
+    switch (params.signingStep) {
+      case 'signerNonce':
+      case 'cosignerNonce':
+        /**
+         * In certain cases, the caller of this method may not know whether the txHex contains a psbt with taproot key path spend input(s).
+         * Instead of throwing error, no-op and return the txHex. So that the caller can call this method in the same sequence.
+         */
+        return tx;
+    }
+  }
+
+  assert(signerKeychain);
+  return signAndVerifyPsbt(tx, signerKeychain);
+}

@@ -1,0 +1,167 @@
+{
+  "transaction": {
+    "txid": "c7e56de8579f09fd46fd4e7b6a802c8fdba0b342c71d4c736704f1b282ad6343",
+    "hash": "0a8b47f550b03583fa04ead052c7d7c340dcfe6c2df984692374e5e5982aff82",
+    "version": 1,
+    "size": 669,
+    "vsize": 269,
+    "weight": 1074,
+    "locktime": 0,
+    "vin": [
+      {
+        "txid": "ba3924f81d5a9bc64a6d24a7bf66e7620aaf82544ccf51c99e7267cc5bd89dc2",
+        "vout": 0,
+        "scriptSig": {
+          "asm": "",
+          "hex": ""
+        },
+        "txinwitness": [
+          "62b903cb273c2464c2452ba474cca4fd952496cf4cb7fa45b0682c9dfd41c196fc0b8e7ab7f02ba47db981bb0d34dc8659f33f169855cec8afa59036526b1a70",
+          "ea380e197107afebfa9640e64513d48ac5cda6f246d1444dea67b742b8e4a0a112ca8913bfd63c3703e56d381caf01d8e20aa33fa9bc1a1492a71abbee54b383",
+          "20d7806bb82a59fa289efde0af46404298b2fa076d0c6aff1893cb2c7ad097d2a7ad20f97c2d3ff8be2d41ba97d0c59f7d4496a633c7fda5605948347b1ebd08aefd08ac",
+          "c0de210b31dcddb7a5bc9b412deb405e01eba0b48e63317d08dba82a6e43f35f3a9a22695e86973f847224b3809fffccfd60c84d41eb992b4d64c558b37cb1f38a"
+        ],
+        "sequence": 4294967295
+      },
+      {
+        "txid": "0521ec6e9797c108d2f4d509304e6ccf761ad69aa65718d0e88b4b1c1eb439a2",
+        "vout": 0,
+        "scriptSig": {
+          "asm": "",
+          "hex": ""
+        },
+        "txinwitness": [
+          "cd715854ec2b9ebcf63e6591772b5010f4be008b0d8756e0398a358f99ef0435cf28a1c89b9917677999f47ac93648ed68f9f665824af3c7c5b244b54eb54ae2",
+          "d803d42d1fbbc3f47dfe80431a082e7064e7db43a8fe0b3214c2e7e9200e83a0c4cf56e66eb5378635e5432541472d50675659dcf4103f4d88d25735bc48943b",
+          "20d7806bb82a59fa289efde0af46404298b2fa076d0c6aff1893cb2c7ad097d2a7ad20f97c2d3ff8be2d41ba97d0c59f7d4496a633c7fda5605948347b1ebd08aefd08ac",
+          "c0de210b31dcddb7a5bc9b412deb405e01eba0b48e63317d08dba82a6e43f35f3a9a22695e86973f847224b3809fffccfd60c84d41eb992b4d64c558b37cb1f38a"
+        ],
+        "sequence": 4294967295
+      }
+    ],
+    "vout": [
+      {
+        "value": 1.99999,
+        "n": 0,
+        "scriptPubKey": {
+          "asm": "1 ee64cfb772d18d15e63a8332a951c0a57ec836a0f01da42774fc757b5684da08",
+          "hex": "5120ee64cfb772d18d15e63a8332a951c0a57ec836a0f01da42774fc757b5684da08",
+          "reqSigs": 1,
+          "type": "witness_v1_taproot",
+          "addresses": [
+            "bcrt1paejvldmj6xx3te36sve2j5wq54lvsd4q7qw6gfm5l36hk45ymgyqxe8pdk"
+          ]
+        }
+      }
+    ],
+    "hex": "01000000000102c29dd85bcc67729ec951cf4c5482af0a62e766bfa7246d4ac69b5a1df82439ba0000000000ffffffffa239b41e1c4b8be8d01857a69ad61a76cf6c4e3009d5f4d208c197976eec21050000000000ffffffff0118beeb0b00000000225120ee64cfb772d18d15e63a8332a951c0a57ec836a0f01da42774fc757b5684da08044062b903cb273c2464c2452ba474cca4fd952496cf4cb7fa45b0682c9dfd41c196fc0b8e7ab7f02ba47db981bb0d34dc8659f33f169855cec8afa59036526b1a7040ea380e197107afebfa9640e64513d48ac5cda6f246d1444dea67b742b8e4a0a112ca8913bfd63c3703e56d381caf01d8e20aa33fa9bc1a1492a71abbee54b3834420d7806bb82a59fa289efde0af46404298b2fa076d0c6aff1893cb2c7ad097d2a7ad20f97c2d3ff8be2d41ba97d0c59f7d4496a633c7fda5605948347b1ebd08aefd08ac41c0de210b31dcddb7a5bc9b412deb405e01eba0b48e63317d08dba82a6e43f35f3a9a22695e86973f847224b3809fffccfd60c84d41eb992b4d64c558b37cb1f38a0440cd715854ec2b9ebcf63e6591772b5010f4be008b0d8756e0398a358f99ef0435cf28a1c89b9917677999f47ac93648ed68f9f665824af3c7c5b244b54eb54ae240d803d42d1fbbc3f47dfe80431a082e7064e7db43a8fe0b3214c2e7e9200e83a0c4cf56e66eb5378635e5432541472d50675659dcf4103f4d88d25735bc48943b4420d7806bb82a59fa289efde0af46404298b2fa076d0c6aff1893cb2c7ad097d2a7ad20f97c2d3ff8be2d41ba97d0c59f7d4496a633c7fda5605948347b1ebd08aefd08ac41c0de210b31dcddb7a5bc9b412deb405e01eba0b48e63317d08dba82a6e43f35f3a9a22695e86973f847224b3809fffccfd60c84d41eb992b4d64c558b37cb1f38a00000000"
+  },
+  "inputs": [
+    {
+      "txid": "ba3924f81d5a9bc64a6d24a7bf66e7620aaf82544ccf51c99e7267cc5bd89dc2",
+      "hash": "0203c2a8af54cb66b664e37f77a18707f7ec898f3a2902e4faaf8ad12add8bd2",
+      "version": 2,
+      "size": 234,
+      "vsize": 153,
+      "weight": 609,
+      "locktime": 300,
+      "vin": [
+        {
+          "txid": "add5db92852f6467d9dcc0a029861e96846732d07f6ac04eb880b465df6b94f7",
+          "vout": 0,
+          "scriptSig": {
+            "asm": "",
+            "hex": ""
+          },
+          "txinwitness": [
+            "3044022016891d44e58c907414527095829757f1673d5afb54647eac07dbb8d85f9adfe70220534c4e5b688e507cd5a6f2b37cd0127e964352df04cd8d8554a5b3ac5cfd47ed01",
+            "0352754ae8eb8945f676cb87cf013f1e393961bd8f77dfe0ea6f5418df4c271446"
+          ],
+          "sequence": 4294967294
+        }
+      ],
+      "vout": [
+        {
+          "value": 1,
+          "n": 0,
+          "scriptPubKey": {
+            "asm": "1 ee64cfb772d18d15e63a8332a951c0a57ec836a0f01da42774fc757b5684da08",
+            "hex": "5120ee64cfb772d18d15e63a8332a951c0a57ec836a0f01da42774fc757b5684da08",
+            "reqSigs": 1,
+            "type": "witness_v1_taproot",
+            "addresses": [
+              "bcrt1paejvldmj6xx3te36sve2j5wq54lvsd4q7qw6gfm5l36hk45ymgyqxe8pdk"
+            ]
+          }
+        },
+        {
+          "value": 23.9999847,
+          "n": 1,
+          "scriptPubKey": {
+            "asm": "0 f93d428e2e19785d2f1e668e263e0f120c71a592",
+            "hex": "0014f93d428e2e19785d2f1e668e263e0f120c71a592",
+            "reqSigs": 1,
+            "type": "witness_v0_keyhash",
+            "addresses": [
+              "bcrt1qly759r3wr9u96tc7v68zv0s0zgx8rfvjwxje5r"
+            ]
+          }
+        }
+      ],
+      "hex": "02000000000101f7946bdf65b480b84ec06a7fd0326784961e8629a0c0dcd967642f8592dbd5ad0000000000feffffff0200e1f50500000000225120ee64cfb772d18d15e63a8332a951c0a57ec836a0f01da42774fc757b5684da0806120d8f00000000160014f93d428e2e19785d2f1e668e263e0f120c71a59202473044022016891d44e58c907414527095829757f1673d5afb54647eac07dbb8d85f9adfe70220534c4e5b688e507cd5a6f2b37cd0127e964352df04cd8d8554a5b3ac5cfd47ed01210352754ae8eb8945f676cb87cf013f1e393961bd8f77dfe0ea6f5418df4c2714462c010000"
+    },
+    {
+      "txid": "0521ec6e9797c108d2f4d509304e6ccf761ad69aa65718d0e88b4b1c1eb439a2",
+      "hash": "5eeb30c0d8f20ee2996602e10ebfb827404c9ef670fd792419fb18e110ed83a9",
+      "version": 2,
+      "size": 234,
+      "vsize": 153,
+      "weight": 609,
+      "locktime": 300,
+      "vin": [
+        {
+          "txid": "65c64c03de65f4d8f52c1e757603927ed9e081adc0e6dd878fa62f801f69a262",
+          "vout": 0,
+          "scriptSig": {
+            "asm": "",
+            "hex": ""
+          },
+          "txinwitness": [
+            "304402207d18e22ef2ff6779978c112c09aa3ff7eea645323fd6b9e86ab884b01e9f908702203142b9b47d479453c7240e330d0b1a02a8c04df331a7a5ea5fc77ccf3442596b01",
+            "0352754ae8eb8945f676cb87cf013f1e393961bd8f77dfe0ea6f5418df4c271446"
+          ],
+          "sequence": 4294967294
+        }
+      ],
+      "vout": [
+        {
+          "value": 1,
+          "n": 0,
+          "scriptPubKey": {
+            "asm": "1 ee64cfb772d18d15e63a8332a951c0a57ec836a0f01da42774fc757b5684da08",
+            "hex": "5120ee64cfb772d18d15e63a8332a951c0a57ec836a0f01da42774fc757b5684da08",
+            "reqSigs": 1,
+            "type": "witness_v1_taproot",
+            "addresses": [
+              "bcrt1paejvldmj6xx3te36sve2j5wq54lvsd4q7qw6gfm5l36hk45ymgyqxe8pdk"
+            ]
+          }
+        },
+        {
+          "value": 23.9999847,
+          "n": 1,
+          "scriptPubKey": {
+            "asm": "0 9186c78ab51e28d39969aec22bb806c3c97ca2da",
+            "hex": "00149186c78ab51e28d39969aec22bb806c3c97ca2da",
+            "reqSigs": 1,
+            "type": "witness_v0_keyhash",
+            "addresses": [
+              "bcrt1qjxrv0z44rc5d8xtf4mpzhwqxc0yhegk6wyt4hy"
+            ]
+          }
+        }
+      ],
+      "hex": "0200000000010162a2691f802fa68f87dde6c0ad81e0d97e920376751e2cf5d8f465de034cc6650000000000feffffff0200e1f50500000000225120ee64cfb772d18d15e63a8332a951c0a57ec836a0f01da42774fc757b5684da0806120d8f000000001600149186c78ab51e28d39969aec22bb806c3c97ca2da0247304402207d18e22ef2ff6779978c112c09aa3ff7eea645323fd6b9e86ab884b01e9f908702203142b9b47d479453c7240e330d0b1a02a8c04df331a7a5ea5fc77ccf3442596b01210352754ae8eb8945f676cb87cf013f1e393961bd8f77dfe0ea6f5418df4c2714462c010000"
+    }
+  ]
+}

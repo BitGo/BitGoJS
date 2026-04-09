@@ -1,0 +1,69 @@
+{
+  "name": "@bitgo/sdk-api",
+  "version": "1.76.1",
+  "description": "REST wrapper for BitGoJS",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "browser": {
+    "proxy-agent": false
+  },
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha 'test/unit/**/*.ts'"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-api"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/sdk-core": "^36.37.0",
+    "@bitgo/sdk-hmac": "^1.9.0",
+    "@bitgo/sjcl": "^1.1.0",
+    "@bitgo/unspents": "^0.51.2",
+    "@bitgo/utxo-lib": "^11.22.0",
+    "@types/superagent": "4.1.15",
+    "bitcoinjs-message": "npm:@bitgo-forks/bitcoinjs-message@1.0.0-master.3",
+    "debug": "3.1.0",
+    "eol": "^0.5.0",
+    "lodash": "^4.18.0",
+    "proxy-agent": "6.4.0",
+    "sanitize-html": "^2.11",
+    "secp256k1": "5.0.1",
+    "secrets.js-grempe": "^1.1.0",
+    "superagent": "^9.0.1"
+  },
+  "overrides": {
+    "degenerator": "5.0.0"
+  },
+  "resolutions": {
+    "degenerator": "5.0.0"
+  },
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
+  "files": [
+    "dist"
+  ]
+}

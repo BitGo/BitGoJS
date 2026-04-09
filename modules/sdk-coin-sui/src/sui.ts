@@ -1,0 +1,861 @@
+import crypto from 'crypto';
+import {
+  BaseBroadcastTransactionOptions,
+  BaseBroadcastTransactionResult,
+  BaseCoin,
+  BaseTransaction,
+  BitGoBase,
+  EDDSAMethods,
+  EDDSAMethodTypes,
+  Environments,
+  KeyPair,
+  MPCAlgorithm,
+  MPCRecoveryOptions,
+  MPCConsolidationRecoveryOptions,
+  MPCSweepRecoveryOptions,
+  MPCSweepTxs,
+  MPCTx,
+  MPCTxs,
+  MPCUnsignedTx,
+  ParsedTransaction,
+  ParseTransactionOptions as BaseParseTransactionOptions,
+  RecoveryTxRequest,
+  SignedTransaction,
+  SignTransactionOptions,
+  TransactionExplanation,
+  TssVerifyAddressOptions,
+  VerifyTransactionOptions,
+  PopulatedIntent,
+  PrebuildTransactionWithIntentOptions,
+  MultisigType,
+  multisigTypes,
+  AuditDecryptedKeyParams,
+  verifyEddsaTssWalletAddress,
+} from '@bitgo/sdk-core';
+import { BaseCoin as StaticsBaseCoin, BaseNetwork, coins, SuiCoin } from '@bitgo/statics';
+import BigNumber from 'bignumber.js';
+import {
+  KeyPair as SuiKeyPair,
+  TokenTransferTransaction,
+  TransactionBuilder,
+  TransactionBuilderFactory,
+  TransferTransaction,
+} from './lib';
+import utils from './lib/utils';
+import * as _ from 'lodash';
+import { SuiBalanceInfo, SuiObjectInfo, SuiTransactionType } from './lib/iface';
+import {
+  DEFAULT_GAS_OVERHEAD,
+  DEFAULT_GAS_PRICE,
+  DEFAULT_SCAN_FACTOR,
+  MAX_GAS_BUDGET,
+  MAX_GAS_OBJECTS,
+  MAX_OBJECT_LIMIT,
+  TOKEN_OBJECT_LIMIT,
+} from './lib/constants';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
+
+export interface ExplainTransactionOptions {
+  txHex: string;
+}
+
+export interface SuiParseTransactionOptions extends BaseParseTransactionOptions {
+  txHex: string;
+}
+
+interface TransactionOutput {
+  address: string;
+  amount: string;
+}
+
+type TransactionInput = TransactionOutput;
+
+export interface SuiParsedTransaction extends ParsedTransaction {
+  // total assets being moved, including fees
+  inputs: TransactionInput[];
+
+  // where assets are moved to
+  outputs: TransactionOutput[];
+
+  fee: BigNumber;
+}
+
+export type SuiTransactionExplanation = TransactionExplanation;
+
+export class Sui extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+    super(bitgo);
+
+    if (!staticsCoin) {
+      throw new Error('missing required constructor parameter staticsCoin');
+    }
+
+    this._staticsCoin = staticsCoin;
+  }
+
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+    return new Sui(bitgo, staticsCoin);
+  }
+
+  /**
+   * Factor between the coin's base unit and its smallest subdivison
+   */
+  public getBaseFactor(): number {
+    return 1e9;
+  }
+
+  public getChain(): string {
+    return 'sui';
+  }
+
+  public getFamily(): string {
+    return 'sui';
+  }
+
+  public getFullName(): string {
+    return 'Sui';
+  }
+
+  getNetwork(): BaseNetwork {
+    return this._staticsCoin.network;
+  }
+
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
+  }
+
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'eddsa';
+  }
+
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
+
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    let totalAmount = new BigNumber(0);
+    const coinConfig = coins.get(this.getChain());
+    const { txPrebuild: txPrebuild, txParams: txParams, verification, wallet } = params;
+    const transaction = new TransferTransaction(coinConfig);
+    const rawTx = txPrebuild.txHex;
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txHex');
+    }
+
+    transaction.fromRawTransaction(Buffer.from(rawTx, 'hex').toString('base64'));
+    const explainedTx = transaction.explainTransaction();
+
+    if (txParams.recipients && txParams.recipients.length > 0) {
+      const filteredRecipients = txParams.recipients?.map((recipient) => {
+        const filteredRecipient = _.pick(recipient, ['address', 'amount']);
+        filteredRecipient.amount = new BigNumber(filteredRecipient.amount).toFixed();
+        return filteredRecipient;
+      });
+      const filteredOutputs = explainedTx.outputs.map((output) => {
+        const filteredOutput = _.pick(output, ['address', 'amount']);
+        filteredOutput.amount = new BigNumber(filteredOutput.amount).toFixed();
+        return filteredOutput;
+      });
+
+      if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+        throw new Error('Tx outputs does not match with expected txParams recipients');
+      }
+      for (const recipients of txParams.recipients) {
+        totalAmount = totalAmount.plus(recipients.amount);
+      }
+      if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
+        throw new Error('Tx total amount does not match with expected total amount field');
+      }
+    }
+
+    if (verification?.consolidationToBaseAddress) {
+      const baseAddress = wallet.coinSpecific()?.baseAddress || wallet.coinSpecific()?.rootAddress;
+
+      for (const output of explainedTx.outputs) {
+        if (output.address !== baseAddress) {
+          throw new Error('Consolidation transaction output address does not match wallet base address');
+        }
+      }
+    }
+
+    return true;
+  }
+
+  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
+    return verifyEddsaTssWalletAddress(
+      params,
+      (address) => this.isValidAddress(address),
+      (publicKey) => this.getAddressFromPublicKey(publicKey)
+    );
+  }
+
+  async parseTransaction(params: SuiParseTransactionOptions): Promise<SuiParsedTransaction> {
+    const transactionExplanation = await this.explainTransaction({ txHex: params.txHex });
+
+    if (!transactionExplanation) {
+      throw new Error('Invalid transaction');
+    }
+
+    let fee = new BigNumber(0);
+
+    const suiTransaction = transactionExplanation as SuiTransactionExplanation;
+    if (suiTransaction.outputs.length <= 0) {
+      return {
+        inputs: [],
+        outputs: [],
+        fee,
+      };
+    }
+
+    const senderAddress = suiTransaction.outputs[0].address;
+    if (suiTransaction.fee.fee !== '') {
+      fee = new BigNumber(suiTransaction.fee.fee);
+    }
+
+    // assume 1 sender, who is also the fee payer
+    const inputs = [
+      {
+        address: senderAddress,
+        amount: new BigNumber(suiTransaction.outputAmount).plus(fee).toFixed(),
+      },
+    ];
+
+    const outputs: TransactionOutput[] = suiTransaction.outputs.map((output) => {
+      return {
+        address: output.address,
+        amount: new BigNumber(output.amount).toFixed(),
+      };
+    });
+
+    return {
+      inputs,
+      outputs,
+      fee,
+    };
+  }
+
+  generateKeyPair(seed?: Buffer): KeyPair {
+    const keyPair = seed ? new SuiKeyPair({ seed }) : new SuiKeyPair();
+    const keys = keyPair.getKeys();
+    if (!keys.prv) {
+      throw new Error('Missing prv in key generation.');
+    }
+    return {
+      pub: keys.pub,
+      prv: keys.prv,
+    };
+  }
+
+  isValidPub(_: string): boolean {
+    throw new Error('Method not implemented.');
+  }
+
+  isValidPrv(_: string): boolean {
+    throw new Error('Method not implemented.');
+  }
+
+  isValidAddress(address: string): boolean {
+    return utils.isValidAddress(address);
+  }
+
+  signTransaction(_: SignTransactionOptions): Promise<SignedTransaction> {
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Explain a Sui transaction
+   * @param params
+   */
+  async explainTransaction(params: ExplainTransactionOptions): Promise<SuiTransactionExplanation> {
+    const factory = this.getBuilder();
+    let rebuiltTransaction: BaseTransaction;
+
+    try {
+      const transactionBuilder = factory.from(Buffer.from(params.txHex, 'hex').toString('base64'));
+      rebuiltTransaction = await transactionBuilder.build();
+    } catch {
+      throw new Error('Invalid transaction');
+    }
+
+    return rebuiltTransaction.explainTransaction();
+  }
+
+  private getBuilder(): TransactionBuilderFactory {
+    return new TransactionBuilderFactory(coins.get(this.getChain()));
+  }
+
+  private getAddressFromPublicKey(derivedPublicKey: string) {
+    // TODO(BG-59016) replace with account lib implementation
+    return utils.getAddressFromPublicKey(derivedPublicKey);
+  }
+
+  /** @inheritDoc */
+  async getSignablePayload(serializedTx: string): Promise<Buffer> {
+    const factory = this.getBuilder();
+    const rebuiltTransaction = await factory.from(serializedTx).build();
+    return rebuiltTransaction.signablePayload;
+  }
+
+  protected getPublicNodeUrl(): string {
+    return Environments[this.bitgo.getEnv()].suiNodeUrl;
+  }
+
+  protected async getBalance(owner: string, coinType?: string): Promise<SuiBalanceInfo> {
+    const url = this.getPublicNodeUrl();
+    return await utils.getBalance(url, owner, coinType);
+  }
+
+  protected async getInputCoins(owner: string, coinType?: string): Promise<SuiObjectInfo[]> {
+    const url = this.getPublicNodeUrl();
+    return await utils.getInputCoins(url, owner, coinType);
+  }
+
+  protected async getFeeEstimate(txHex: string): Promise<BigNumber> {
+    const url = this.getPublicNodeUrl();
+    return await utils.getFeeEstimate(url, txHex);
+  }
+
+  /**
+   * Builds funds recovery transaction(s) without BitGo
+   *
+   * @param {MPCRecoveryOptions} params parameters needed to construct and
+   * (maybe) sign the transaction
+   *
+   * @returns {MPCTx | MPCSweepTxs} array of the serialized transaction hex strings and indices
+   * of the addresses being swept
+   */
+  async recover(params: MPCRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
+    if (!params.bitgoKey) {
+      throw new Error('missing bitgoKey');
+    }
+    if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    const startIdx = utils.validateNonNegativeNumber(
+      0,
+      'Invalid starting index to scan for addresses',
+      params.startingScanIndex
+    );
+    const numIterations = utils.validateNonNegativeNumber(20, 'Invalid scanning factor', params.scan);
+    const endIdx = startIdx + numIterations;
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+
+    for (let idx = startIdx; idx < endIdx; idx++) {
+      const derivationPath = (params.seed ? getDerivationPath(params.seed) : 'm') + `/${idx}`;
+      const derivedPublicKey = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
+      const senderAddress = this.getAddressFromPublicKey(derivedPublicKey);
+      let availableBalance = new BigNumber(0);
+      let fundsInAddressBalance = new BigNumber(0);
+      try {
+        const balanceInfo = await this.getBalance(senderAddress);
+        availableBalance = new BigNumber(balanceInfo.totalBalance);
+        fundsInAddressBalance = new BigNumber(balanceInfo.fundsInAddressBalance);
+      } catch (e) {
+        continue;
+      }
+      if (availableBalance.minus(MAX_GAS_BUDGET).toNumber() <= 0) {
+        continue;
+      }
+
+      // check for possible token recovery, recover the token provide by user
+      if (params.tokenContractAddress) {
+        const token = utils.getSuiTokenFromAddress(params.tokenContractAddress!, this.getNetwork()) as SuiCoin;
+        if (!token) {
+          throw new Error(`Sui Token Package ID not supported.`);
+        }
+        const coinType = `${token.packageId}::${token.module}::${token.symbol}`;
+        try {
+          const tokenBalanceInfo = await this.getBalance(senderAddress, coinType);
+          const availableTokenBalance = new BigNumber(tokenBalanceInfo.totalBalance);
+          if (availableTokenBalance.toNumber() <= 0) {
+            continue;
+          }
+        } catch (e) {
+          continue;
+        }
+        return this.recoverSuiToken(params, token, senderAddress, derivationPath, derivedPublicKey, idx, bitgoKey);
+      }
+
+      let inputCoins = await this.getInputCoins(senderAddress);
+      inputCoins = inputCoins.sort((a, b) => {
+        return b.balance.minus(a.balance).toNumber();
+      });
+      if (inputCoins.length > MAX_OBJECT_LIMIT) {
+        inputCoins = inputCoins.slice(0, MAX_OBJECT_LIMIT);
+      }
+      // Include funds held in the address balance system (not in coin objects).
+      // SplitCoins(GasCoin, [amount]) draws from both gasData.payment objects
+      // and address balance at execution time, so both are spendable.
+      const coinObjectsBalance = inputCoins.reduce((acc, obj) => acc.plus(obj.balance), new BigNumber(0));
+      let netAmount = coinObjectsBalance.plus(fundsInAddressBalance).minus(MAX_GAS_BUDGET);
+
+      const recipients = [
+        {
+          address: params.recoveryDestination,
+          amount: netAmount.toString(),
+        },
+      ];
+
+      // Case 2 self-funded: all balance is in address balance, no coin objects.
+      // gasData.payment must be [] and a ValidDuring expiration is required to
+      // prevent replay attacks when there are no gas coin objects to anchor uniqueness.
+      let validDuringExpiration:
+        | { ValidDuring: { minEpoch: number; maxEpoch: number; chain: string; nonce: number } }
+        | undefined;
+      if (fundsInAddressBalance.gt(0) && coinObjectsBalance.eq(0)) {
+        const { epoch, chainId } = await utils.getChainContext(this.getPublicNodeUrl());
+        const nonce = crypto.randomBytes(4).readUInt32BE(0);
+        validDuringExpiration = { ValidDuring: { minEpoch: epoch, maxEpoch: epoch + 1, chain: chainId, nonce } };
+      }
+
+      // first build the unsigned txn
+      const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
+      const txBuilder = factory
+        .getTransferBuilder()
+        .type(SuiTransactionType.Transfer)
+        .sender(senderAddress)
+        .send(recipients)
+        .fundsInAddressBalance(fundsInAddressBalance.toString())
+        .gasData({
+          owner: senderAddress,
+          price: DEFAULT_GAS_PRICE,
+          budget: MAX_GAS_BUDGET,
+          payment: inputCoins,
+        });
+
+      if (validDuringExpiration) {
+        txBuilder.expiration(validDuringExpiration);
+      }
+
+      const tempTx = (await txBuilder.build()) as TransferTransaction;
+      const feeEstimate = await this.getFeeEstimate(tempTx.toBroadcastFormat());
+      const gasBudget = Math.trunc(feeEstimate.toNumber() * DEFAULT_GAS_OVERHEAD);
+
+      netAmount = netAmount.plus(MAX_GAS_BUDGET).minus(gasBudget);
+      recipients[0].amount = netAmount.toString();
+      txBuilder.send(recipients);
+      txBuilder.gasData({
+        owner: senderAddress,
+        price: DEFAULT_GAS_PRICE,
+        budget: gasBudget,
+        payment: inputCoins,
+      });
+
+      const isUnsignedSweep = !params.walletPassphrase;
+      if (isUnsignedSweep) {
+        return this.buildUnsignedSweepTransaction(txBuilder, senderAddress, bitgoKey, idx, derivationPath);
+      }
+
+      await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey, false);
+      const tx = (await txBuilder.build()) as TransferTransaction;
+      return {
+        transactions: [
+          {
+            scanIndex: idx,
+            recoveryAmount: netAmount.toString(),
+            serializedTx: tx.toBroadcastFormat(),
+            signature: Buffer.from(tx.serializedSig).toString('base64'),
+            coin: this.getChain(),
+          },
+        ],
+        lastScanIndex: idx,
+      };
+    }
+
+    throw new Error(
+      `Did not find an address with sufficient funds to recover. Please start the next scan at address index ${endIdx}. If it is token transaction, please keep sufficient Sui balance in the address for the transaction fee.`
+    );
+  }
+
+  private async recoverSuiToken(
+    params: MPCRecoveryOptions,
+    token: SuiCoin,
+    senderAddress: string,
+    derivationPath: string,
+    derivedPublicKey: string,
+    idx: number,
+    bitgoKey: string
+  ): Promise<MPCTxs | MPCSweepTxs> {
+    const coinType = `${token.packageId}::${token.module}::${token.symbol}`;
+    let tokenObjects = await this.getInputCoins(senderAddress, coinType);
+    tokenObjects = tokenObjects.sort((a, b) => {
+      return b.balance.minus(a.balance).toNumber();
+    });
+    if (tokenObjects.length > TOKEN_OBJECT_LIMIT) {
+      tokenObjects = tokenObjects.slice(0, TOKEN_OBJECT_LIMIT);
+    }
+    const coinObjectsBalance = tokenObjects.reduce((acc, obj) => acc.plus(obj.balance), new BigNumber(0));
+    const tokenBalanceInfo = await this.getBalance(senderAddress, coinType);
+    const tokenFundsInAddressBalance = new BigNumber(tokenBalanceInfo.fundsInAddressBalance);
+    const netAmount = coinObjectsBalance.plus(tokenFundsInAddressBalance);
+    const recipients = [
+      {
+        address: params.recoveryDestination,
+        amount: netAmount.toString(),
+      },
+    ];
+
+    const gasAmount = new BigNumber(MAX_GAS_BUDGET);
+    let gasObjects = await this.getInputCoins(senderAddress);
+    gasObjects = utils.selectObjectsInDescOrderOfBalance(gasObjects, gasAmount);
+    if (gasObjects.length >= MAX_GAS_OBJECTS) {
+      gasObjects = gasObjects.slice(0, MAX_GAS_OBJECTS - 1);
+    }
+
+    // first build the unsigned txn
+    const factory = new TransactionBuilderFactory(token);
+    const txBuilder = factory
+      .getTokenTransferBuilder()
+      .type(SuiTransactionType.TokenTransfer)
+      .sender(senderAddress)
+      .send(recipients)
+      .fundsInAddressBalance(tokenFundsInAddressBalance.toString())
+      .gasData({
+        owner: senderAddress,
+        price: DEFAULT_GAS_PRICE,
+        budget: MAX_GAS_BUDGET,
+        payment: gasObjects,
+      });
+
+    if (tokenObjects.length > 0) {
+      txBuilder.inputObjects(tokenObjects);
+    }
+
+    const tempTx = (await txBuilder.build()) as TokenTransferTransaction;
+    const feeEstimate = await this.getFeeEstimate(tempTx.toBroadcastFormat());
+    const gasBudget = Math.trunc(feeEstimate.toNumber() * DEFAULT_GAS_OVERHEAD);
+
+    txBuilder.gasData({
+      owner: senderAddress,
+      price: DEFAULT_GAS_PRICE,
+      budget: gasBudget,
+      payment: gasObjects,
+    });
+
+    const isUnsignedSweep = !params.walletPassphrase;
+    if (isUnsignedSweep) {
+      return this.buildUnsignedSweepTransaction(txBuilder, senderAddress, bitgoKey, idx, derivationPath, token);
+    }
+
+    await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey, true);
+    const tx = (await txBuilder.build()) as TokenTransferTransaction;
+    return {
+      transactions: [
+        {
+          scanIndex: idx,
+          recoveryAmount: netAmount.toString(),
+          serializedTx: tx.toBroadcastFormat(),
+          signature: Buffer.from(tx.serializedSig).toString('base64'),
+          coin: token.name,
+        },
+      ],
+      lastScanIndex: idx,
+    };
+  }
+
+  private async buildUnsignedSweepTransaction(
+    txBuilder: TransactionBuilder,
+    senderAddress: string,
+    bitgoKey: string,
+    index: number,
+    derivationPath: string,
+    token?: SuiCoin
+  ): Promise<MPCSweepTxs> {
+    const isTokenTransaction = !!token;
+    const unsignedTransaction = isTokenTransaction
+      ? ((await txBuilder.build()) as TokenTransferTransaction)
+      : ((await txBuilder.build()) as TransferTransaction);
+    const serializedTx = unsignedTransaction.toBroadcastFormat();
+    const serializedTxHex = Buffer.from(serializedTx, 'base64').toString('hex');
+    const parsedTx = await this.parseTransaction({ txHex: serializedTxHex });
+    const walletCoin = isTokenTransaction ? token.name : this.getChain();
+    const output = parsedTx.outputs[0];
+    const inputs = [
+      {
+        address: senderAddress,
+        valueString: output.amount,
+        value: new BigNumber(output.amount),
+      },
+    ];
+    const outputs = [
+      {
+        address: output.address,
+        valueString: output.amount,
+        coinName: walletCoin,
+      },
+    ];
+    const spendAmount = output.amount;
+    const completedParsedTx = {
+      inputs: inputs,
+      outputs: outputs,
+      spendAmount: spendAmount,
+      type: isTokenTransaction ? SuiTransactionType.TokenTransfer : SuiTransactionType.Transfer,
+    };
+    const fee = parsedTx.fee;
+    const feeInfo = { fee: fee.toNumber(), feeString: fee.toString() };
+    const coinSpecific = { commonKeychain: bitgoKey };
+    const transaction: MPCTx = {
+      serializedTx: serializedTxHex,
+      scanIndex: index,
+      coin: walletCoin,
+      signableHex: unsignedTransaction.signablePayload.toString('hex'),
+      derivationPath,
+      parsedTx: completedParsedTx,
+      feeInfo: feeInfo,
+      coinSpecific: coinSpecific,
+    };
+    const unsignedTx: MPCUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
+    const transactions: MPCUnsignedTx[] = [unsignedTx];
+    const txRequest: RecoveryTxRequest = {
+      transactions: transactions,
+      walletCoin: walletCoin,
+    };
+    return { txRequests: [txRequest] };
+  }
+
+  private async signRecoveryTransaction(
+    txBuilder: TransactionBuilder,
+    params: MPCRecoveryOptions,
+    derivationPath: string,
+    derivedPublicKey: string,
+    isTokenTransaction: boolean
+  ) {
+    // TODO(BG-51092): This looks like a common part which can be extracted out too
+    const unsignedTx = isTokenTransaction
+      ? ((await txBuilder.build()) as TokenTransferTransaction)
+      : ((await txBuilder.build()) as TransferTransaction);
+    if (!params.userKey) {
+      throw new Error('missing userKey');
+    }
+    if (!params.backupKey) {
+      throw new Error('missing backupKey');
+    }
+    if (!params.walletPassphrase) {
+      throw new Error('missing wallet passphrase');
+    }
+
+    // Clean up whitespace from entered values
+    const userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+
+    // Decrypt private keys from KeyCard values
+    let userPrv: string;
+    try {
+      userPrv = this.bitgo.decrypt({
+        input: userKey,
+        password: params.walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting user keychain: ${e.message}`);
+    }
+    /** TODO BG-52419 Implement Codec for parsing */
+    const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+
+    let backupPrv: string;
+    try {
+      backupPrv = this.bitgo.decrypt({
+        input: backupKey,
+        password: params.walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting backup keychain: ${e.message}`);
+    }
+    const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+    /* ********************** END ***********************************/
+
+    // add signature
+    const signatureHex = await EDDSAMethods.getTSSSignature(
+      userSigningMaterial,
+      backupSigningMaterial,
+      derivationPath,
+      unsignedTx
+    );
+    txBuilder.addSignature({ pub: derivedPublicKey }, signatureHex);
+  }
+
+  async broadcastTransaction({
+    transactions,
+  }: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
+    const txIds: string[] = [];
+    const url = this.getPublicNodeUrl();
+    let digest = '';
+    if (!!transactions) {
+      for (const txn of transactions) {
+        try {
+          digest = await utils.executeTransactionBlock(url, txn.serializedTx, [txn.signature!]);
+        } catch (e) {
+          throw new Error(`Failed to broadcast transaction, error: ${e.message}`);
+        }
+        txIds.push(digest);
+      }
+    }
+    return { txIds };
+  }
+
+  /** inherited doc */
+  async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
+    const req = params.signatureShares;
+    const broadcastableTransactions: MPCTx[] = [];
+    let lastScanIndex = 0;
+
+    for (let i = 0; i < req.length; i++) {
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const transaction = req[i].txRequest.transactions[0].unsignedTx;
+      if (!req[i].ovc || !req[i].ovc[0].eddsaSignature) {
+        throw new Error('Missing signature(s)');
+      }
+      const signature = req[i].ovc[0].eddsaSignature;
+      if (!transaction.signableHex) {
+        throw new Error('Missing signable hex');
+      }
+      const messageBuffer = Buffer.from(transaction.signableHex!, 'hex');
+      const result = MPC.verify(messageBuffer, signature);
+      if (!result) {
+        throw new Error('Invalid signature');
+      }
+      const signatureHex = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
+      const serializedTxBase64 = Buffer.from(transaction.serializedTx, 'hex').toString('base64');
+      const txBuilder = this.getBuilder().from(serializedTxBase64);
+      if (!transaction.coinSpecific?.commonKeychain) {
+        throw new Error('Missing common keychain');
+      }
+      const commonKeychain = transaction.coinSpecific!.commonKeychain! as string;
+      if (!transaction.derivationPath) {
+        throw new Error('Missing derivation path');
+      }
+      const derivationPath = transaction.derivationPath as string;
+      const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
+
+      // add combined signature from ovc
+      txBuilder.addSignature({ pub: derivedPublicKey }, signatureHex);
+      const signedTransaction = (await txBuilder.build()) as TransferTransaction;
+      const serializedTx = signedTransaction.toBroadcastFormat();
+      const outputAmount = signedTransaction.explainTransaction().outputAmount;
+
+      broadcastableTransactions.push({
+        serializedTx: serializedTx,
+        scanIndex: transaction.scanIndex,
+        signature: Buffer.from(signedTransaction.serializedSig).toString('base64'),
+        recoveryAmount: outputAmount.toString(),
+      });
+
+      if (i === req.length - 1 && transaction.coinSpecific!.lastScanIndex) {
+        lastScanIndex = transaction.coinSpecific!.lastScanIndex as number;
+      }
+    }
+
+    return { transactions: broadcastableTransactions, lastScanIndex };
+  }
+
+  /**
+   * Builds native SUI recoveries of receive addresses in batch without BitGo.
+   * Funds will be recovered to base address first. You need to initiate another sweep txn after that.
+   *
+   * @param {MPCConsolidationRecoveryOptions} params - options for consolidation recovery.
+   * @param {string} [params.startingScanIndex] - receive address index to start scanning from. default to 1 (inclusive).
+   * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
+   */
+  async recoverConsolidations(params: MPCConsolidationRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
+    const isUnsignedSweep = !params.walletPassphrase;
+    const startIdx = utils.validateNonNegativeNumber(
+      1,
+      'Invalid starting index to scan for addresses',
+      params.startingScanIndex
+    );
+    const endIdx = utils.validateNonNegativeNumber(
+      startIdx + DEFAULT_SCAN_FACTOR,
+      'Invalid ending index to scan for addresses',
+      params.endingScanIndex
+    );
+
+    if (startIdx < 1 || endIdx <= startIdx || endIdx - startIdx > 10 * DEFAULT_SCAN_FACTOR) {
+      throw new Error(
+        `Invalid starting or ending index to scan for addresses. startingScanIndex: ${startIdx}, endingScanIndex: ${endIdx}.`
+      );
+    }
+
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    const derivationPath = (params.seed ? getDerivationPath(params.seed) : 'm') + '/0';
+    const derivedPublicKey = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
+    const baseAddress = this.getAddressFromPublicKey(derivedPublicKey);
+
+    const consolidationTransactions: any[] = [];
+    let lastScanIndex = startIdx;
+    for (let idx = startIdx; idx < endIdx; idx++) {
+      const recoverParams = {
+        userKey: params.userKey,
+        backupKey: params.backupKey,
+        bitgoKey: params.bitgoKey,
+        walletPassphrase: params.walletPassphrase,
+        seed: params.seed,
+        tokenContractAddress: params.tokenContractAddress,
+        recoveryDestination: baseAddress,
+        startingScanIndex: idx,
+        scan: 1,
+      };
+
+      let recoveryTransaction: MPCTxs | MPCSweepTxs;
+      try {
+        recoveryTransaction = await this.recover(recoverParams);
+      } catch (e) {
+        if (e.message.startsWith('Did not find an address with sufficient funds to recover.')) {
+          lastScanIndex = idx;
+          continue;
+        }
+        throw e;
+      }
+
+      if (isUnsignedSweep) {
+        consolidationTransactions.push((recoveryTransaction as MPCSweepTxs).txRequests[0]);
+      } else {
+        consolidationTransactions.push((recoveryTransaction as MPCTxs).transactions[0]);
+      }
+      lastScanIndex = idx;
+    }
+
+    if (consolidationTransactions.length === 0) {
+      throw new Error(
+        `Did not find an address with sufficient funds to recover. Please start the next scan at address index ${
+          lastScanIndex + 1
+        }.`
+      );
+    }
+
+    if (isUnsignedSweep) {
+      // lastScanIndex will be used to inform user the last address index scanned for available funds (so they can
+      // appropriately adjust the scan range on the next iteration of consolidation recoveries). In the case of unsigned
+      // sweep consolidations, this lastScanIndex will be provided in the coinSpecific of the last txn made.
+      consolidationTransactions[
+        consolidationTransactions.length - 1
+      ].transactions[0].unsignedTx.coinSpecific.lastScanIndex = lastScanIndex;
+      return { txRequests: consolidationTransactions };
+    }
+
+    return { transactions: consolidationTransactions, lastScanIndex };
+  }
+
+  /** inherited doc */
+  setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
+    intent.unspents = params.unspents;
+    intent.fundsInAddressBalance = params.fundsInAddressBalance;
+  }
+
+  /** inherited doc */
+  auditDecryptedKey({ publicKey, prv, multiSigType }: AuditDecryptedKeyParams) {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multiSigType');
+    }
+
+    auditEddsaPrivateKey(prv, publicKey ?? '');
+  }
+}

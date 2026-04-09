@@ -1,0 +1,9 @@
+src
+test
+.eslintignore
+.gitignore
+.prettierignore
+.prettierrc.yml
+.mocharc.js
+tsconfig.json
+.nyc_output

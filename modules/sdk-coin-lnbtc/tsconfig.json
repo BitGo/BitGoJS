@@ -1,0 +1,29 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strictPropertyInitialization": false,
+    "esModuleInterop": true,
+    "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
+  },
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../abstract-lightning"
+    },
+    {
+      "path": "../sdk-api"
+    },
+    {
+      "path": "../sdk-core"
+    },
+    {
+      "path": "../sdk-test"
+    },
+    {
+      "path": "../utxo-lib"
+    }
+  ]
+}

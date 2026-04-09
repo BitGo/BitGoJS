@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "esModuleInterop": false,
+    "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"],
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*", "test/**/*", "test/**/*.json"],
+  "exclude": ["node_modules"]
+}

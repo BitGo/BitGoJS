@@ -1,0 +1,22 @@
+node_modules/
+.worktrees/
+.idea/
+*.iml
+lerna-debug.log
+npm-debug.log
+yarn-error.log
+*.tsbuildinfo
+.nyc_output
+coverage.lcov
+package-lock.json
+# Sandbox folder for testing
+lab/
+.vscode/
+.env
+.yarn
+modules/**/dist/
+modules/**/pack-scoped/
+coverage
+/.direnv/
+.claude/
+.cursor/

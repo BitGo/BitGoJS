@@ -1,0 +1,58 @@
+export const EXPORT_IN_C = {
+  txhash: 'p8XxV15HPbqchn1ENbmpBep3XBHtfHX4x4mmtgF3H1grFapcW',
+  unsignedHex:
+    '0x0000000000010000007278db5c30bed04c05ce209179812850bbb3fe6d46d7eef3744d814c0da555247900000000000000000000000000000000000000000000000000000000000000000000000128a05933dc76e4e6c25f35d5c9b2a58769700e760000048c273d9c9658734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd00000000000000090000000158734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd000000070000048c273950000000000000000000000000020000000312cb32eaf92553064db98d271b56cba079ec78f5a6e0c1abd0132f70efb77e2274637ff336a29a57c386d58d09a9ae77cf1cf07bf1c9de44ebb0c9f300000001000000090000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007a2e0ada',
+  signedHex:
+    '0x0000000000010000007278db5c30bed04c05ce209179812850bbb3fe6d46d7eef3744d814c0da555247900000000000000000000000000000000000000000000000000000000000000000000000128a05933dc76e4e6c25f35d5c9b2a58769700e760000048c273d9c9658734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd00000000000000090000000158734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd000000070000048c273950000000000000000000000000020000000312cb32eaf92553064db98d271b56cba079ec78f5a6e0c1abd0132f70efb77e2274637ff336a29a57c386d58d09a9ae77cf1cf07bf1c9de44ebb0c9f300000001000000090000000166e6280ff718c31c1912f08da43ff0a8985bbb48d3eda602da4921e36139aad14d7298d9ca67fd730596db53f9effa7fb40a3dc3e566215875b7d3e228fea9ef00f1791573',
+  xPrivateKey:
+    'xprv9s21ZrQH143K2DW9jvDoAkVpRKi5V9XhZaVdoUcqoYPPQ9wRrLNT6VGgWBbRoSYB39Lak6kXgdTM9T3QokEi5n2JJ8EdggHLkZPX8eDiBu1',
+  signature: [
+    '0x66e6280ff718c31c1912f08da43ff0a8985bbb48d3eda602da4921e36139aad14d7298d9ca67fd730596db53f9effa7fb40a3dc3e566215875b7d3e228fea9ef00',
+  ],
+
+  privateKey: '14977929a4e00e4af1c33545240a6a5a08ca3034214618f6b04b72b80883be3a',
+  publicKey: '033ca1801f51484063f3bce093413ca06f7d91c44c3883f642eb103eda5e0eaed3',
+  amount: '5000000000000',
+  cHexAddress: '0x28A05933dC76e4e6c25f35D5c9b2A58769700E76',
+  pAddresses: [
+    'P-costwo1zt9n96hey4fsvnde35n3k4kt5pu7c784dzewzd',
+    'P-costwo1cwrdtrgf4xh80ncu7palrjw7gn4mpj0n4dxghh',
+    'P-costwo15msvr27szvhhpmah0c38gcml7vm29xjh7tcek8',
+  ],
+  mainAddress: 'P-costwo1q0ssshmwz3k77k3v0wkfr0j64dvhzzaaf9wdhq',
+  corethAddress: [
+    'C-costwo1zt9n96hey4fsvnde35n3k4kt5pu7c784dzewzd',
+    'C-costwo1cwrdtrgf4xh80ncu7palrjw7gn4mpj0n4dxghh',
+    'C-costwo15msvr27szvhhpmah0c38gcml7vm29xjh7tcek8',
+  ],
+  targetChainId: '11111111111111111111111111111111LpoYY',
+  nonce: 9,
+  threshold: 2,
+  fee: '25', // 25 nFLR = 0.000025 FLR
+  locktime: 0,
+  context: {
+    xBlockchainID: 'FJuSwZuP85eyBpuBrKECnpPedGyXoDy2hP9q4JD8qBTZGxYbJ',
+    pBlockchainID: '11111111111111111111111111111111LpoYY',
+    cBlockchainID: 'vE8M98mEQH6wk56sStD1ML8HApTgSqfJZLk9gQ3Fsd4i6m3Bi',
+    avaxAssetID: 'fxMAKpBQQpFedrUhWMsDYfCUJxdUw4mneTczKBzNg3rc2JUub',
+    baseTxFee: 1000000n,
+    createAssetTxFee: 1000000n,
+    createSubnetTxFee: 100000000n,
+    transformSubnetTxFee: 100000000n,
+    createBlockchainTxFee: 100000000n,
+    addPrimaryNetworkValidatorFee: 0n,
+    addPrimaryNetworkDelegatorFee: 0n,
+    addSubnetValidatorFee: 1000000n,
+    addSubnetDelegatorFee: 1000000n,
+    networkID: 114,
+    hrp: 'costwo',
+    platformFeeConfig: {
+      weights: { 0: 1, 1: 1000, 2: 1000, 3: 4 },
+      maxCapacity: 1000000n,
+      maxPerSecond: 100000n,
+      targetPerSecond: 50000n,
+      minPrice: 250n,
+      excessConversionConstant: 2164043n,
+    },
+  },
+};

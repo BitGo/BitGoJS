@@ -1,0 +1,1607 @@
+/**
+ * @prettier
+ */
+
+import should = require('should');
+import { randomBytes } from 'crypto';
+import * as sinon from 'sinon';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
+import {
+  address,
+  consolidationWrwUser,
+  endpointResponses,
+  enterpriseAccounts as accounts,
+  ovcResponse,
+  ovcResponse2,
+  privateKeys,
+  publicKeys,
+  rawTx,
+  testnetUTXO,
+  wrwUser,
+} from '../resources';
+import * as _ from 'lodash';
+import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
+import { Ada, KeyPair, Tada } from '../../src';
+import { Transaction } from '../../src/lib';
+import { TransactionType } from '../../../sdk-core/src/account-lib/baseCoin/enum';
+import assert from 'assert';
+import { common, Wallet } from '@bitgo/sdk-core';
+import nock from 'nock';
+
+describe('ADA', function () {
+  const coinName = 'ada';
+  const tcoinName = 't' + coinName;
+  let bitgo: TestBitGoAPI;
+  let basecoin;
+  let newTxPrebuild;
+  let newTxParams;
+
+  const txPrebuild = {
+    txHex: rawTx.unsignedTx,
+    txInfo: {},
+  };
+
+  const txParams = {
+    recipients: [
+      {
+        address: rawTx.outputAddress1.address,
+        amount: '5000000',
+      },
+      {
+        address: rawTx.outputAddress2.address,
+        amount: '248329150',
+      },
+    ],
+  };
+
+  const transactionExplanation = {
+    displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'],
+    id: 'f48f6ea0f75f3f942855cc0edf29e81e1e0724e75f5db8a1575b166fb202176c',
+    outputs: [
+      {
+        address:
+          'addr_test1qqnnvptrc3rec64q2n9jh572ncu5wvdtt8uvg4g3aj96s5dwu9nj70mlahzglm9939uevupsmj8dcdqv25d5n5r8vw8sn7prey',
+        amount: '7823121',
+      },
+      {
+        address: 'addr_test1vr8rakm66rcfv4fcxqykg5lf0yv7lsyk9mvapx369jpvtcgfcuk7f',
+        amount: '13041729',
+      },
+    ],
+    outputAmount: '20864850',
+    changeOutputs: [],
+    changeAmount: '0',
+    fee: { fee: '167173' },
+    type: 'Transfer',
+    certificates: [],
+    withdrawals: [],
+    pledgeDetails: undefined,
+  };
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.initializeTestVars();
+    bitgo.safeRegister(coinName, Ada.createInstance);
+    bitgo.safeRegister(tcoinName, Tada.createInstance);
+    basecoin = bitgo.coin(tcoinName);
+    newTxPrebuild = () => {
+      return _.cloneDeep(txPrebuild);
+    };
+    newTxParams = () => {
+      return _.cloneDeep(txParams);
+    };
+  });
+
+  it('should instantiate the coin', function () {
+    let localBasecoin = bitgo.coin(tcoinName);
+    localBasecoin.should.be.an.instanceof(Tada);
+    localBasecoin.getChain().should.equal(tcoinName);
+    localBasecoin.getFullName().should.equal('Testnet Ada');
+
+    localBasecoin = bitgo.coin(coinName);
+    localBasecoin.should.be.an.instanceof(Ada);
+    localBasecoin.getChain().should.equal(coinName);
+    localBasecoin.getFullName().should.equal('Cardano ADA');
+  });
+
+  describe('Sign Message', () => {
+    it('should be performed', async () => {
+      const keyPair = new KeyPair();
+      const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
+      const signature = await basecoin.signMessage(keyPair.getKeys(), messageToSign);
+      keyPair.verifySignature(messageToSign, Uint8Array.from(signature)).should.equals(false);
+    });
+
+    it('should fail with missing private key', async () => {
+      const keyPair = new KeyPair({
+        pub: '7788327c695dca4b3e649a0db45bc3e703a2c67428fce360e61800cc4248f4f7',
+      }).getKeys();
+      const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
+      await basecoin.signMessage(keyPair, messageToSign).should.be.rejectedWith('Invalid key pair options');
+    });
+  });
+
+  describe('Sign transaction', () => {
+    it('should sign transaction', async function () {
+      const signed = await basecoin.signTransaction({
+        txPrebuild: {
+          txHex: rawTx.unsignedTx2,
+        },
+        pubs: [publicKeys.pubKey1],
+        prv: privateKeys.prvKey4,
+      });
+      signed.txHex.should.equal(rawTx.signedTx2);
+    });
+
+    it('should fail to sign transaction with an invalid key', async function () {
+      try {
+        await basecoin.signTransaction({
+          txPrebuild: {
+            txHex: rawTx.unsignedTx2,
+          },
+          pubs: [publicKeys.pubKey1],
+          prv: privateKeys.prvKey2,
+        });
+      } catch (e) {
+        should.equal(e.message, 'Private key cannot sign the transaction');
+      }
+    });
+
+    it('should fail to build transaction with missing params', async function () {
+      try {
+        await basecoin.signTransaction({
+          txPrebuild: {
+            txHex: rawTx.unsignedTx,
+            key: accounts.account1.publicKey,
+          },
+          prv: accounts.account1.secretKey,
+        });
+      } catch (e) {
+        should.notEqual(e, null);
+      }
+    });
+  });
+
+  describe('Generate wallet key pair: ', () => {
+    it('should generate key pair', () => {
+      const kp = basecoin.generateKeyPair();
+      basecoin.isValidPub(kp.pub).should.equal(true);
+      basecoin.isValidPrv(kp.prv).should.equal(true);
+    });
+
+    it('should generate key pair from seed', () => {
+      const seed = Buffer.from('9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60', 'hex');
+      const kp = basecoin.generateKeyPair(seed);
+      basecoin.isValidPub(kp.pub).should.equal(true);
+      basecoin.isValidPrv(kp.prv).should.equal(true);
+    });
+  });
+
+  describe('Verify transaction: ', () => {
+    it('should succeed to verify unsigned transaction in hex encoding', async () => {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      const verification = {};
+
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify signed transaction in hex encoding', async () => {
+      const txPrebuild = {
+        txHex: rawTx.signedTx,
+        txInfo: {},
+      };
+
+      const txParams = newTxParams();
+      const verification = {};
+
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should fail verify transactions when have different recipients', async () => {
+      const txPrebuild = newTxPrebuild();
+
+      const txParams = {
+        recipients: [
+          {
+            address: '9f7b0675db59d19b4bd9c8c72eaabba75a9863d02b30115b8b3c3ca5c20f0254',
+            amount: '1000000000000000000000000',
+          },
+          {
+            address: '9f7b0675db59d19b4bd9c8c72eaabba75a9863d02b30115b8b3c3ca5c20f0254',
+            amount: '2000000000000000000000000',
+          },
+        ],
+      };
+
+      const verification = {};
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification })
+        .should.be.rejectedWith('cannot find recipient in expected output');
+    });
+
+    it('should verify when input `recipients` is absent', async function () {
+      const txParams = newTxParams();
+      txParams.recipients = undefined;
+      const txPrebuild = newTxPrebuild();
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      validTransaction.should.equal(true);
+    });
+
+    it('should fail verify when txHex is invalid', async function () {
+      const txParams = newTxParams();
+      txParams.recipients = undefined;
+      const txPrebuild = {};
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.rejectedWith('missing required tx prebuild property txHex');
+    });
+
+    it('should succeed to verify transactions when recipients has extra data', async function () {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      txParams.data = 'data';
+
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      validTransaction.should.equal(true);
+    });
+
+    it('should verify a valid consolidation transaction', async () => {
+      const consolidationTx = {
+        txRequestId: '1b5c79c5-ab7c-4f47-912b-de6a95fb0779',
+        walletId: '64fa31a94db65a0007c9691b',
+        txHex:
+          '84a40081825820db46c7c76ea54fec2ca0a2f94b77a238931a8dce2387c99a12b08dd8aac21c4f000181825839004601fc016ac38580916d3520bc76b659298156008738d347aa93142f4601fc016ac38580916d3520bc76b659298156008738d347aa93142f1a3b984357021a000286a9031a060e37eea0f5f6',
+        feeInfo: {
+          fee: 165545,
+          feeString: '165545',
+        },
+        txInfo: {
+          minerFee: '165545',
+          spendAmount: '999834455',
+          spendAmounts: [
+            {
+              coinName: 'tada',
+              amountString: '999834455',
+            },
+          ],
+          payGoFee: '0',
+          outputs: [
+            {
+              address:
+                'addr_test1qprqrlqpdtpctqy3d56jp0rkkevjnq2kqzrn356842f3gt6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsjdmg2s',
+              value: 999834455,
+              wallet: '64fa31a94db65a0007c9691b',
+              wallets: ['64fa31a94db65a0007c9691b'],
+              enterprise: '62cc59b727443a0007089033',
+              enterprises: ['62cc59b727443a0007089033'],
+              valueString: '999834455',
+              coinName: 'tada',
+              walletType: 'hot',
+              walletTypes: ['hot'],
+            },
+          ],
+          inputs: [
+            {
+              value: 1000000000,
+              address:
+                'addr_test1qqlzxfl7tlgp999x4a7334pchycpkk72pykrsr3mryl3yj6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsvpgl8w',
+              valueString: '1000000000',
+            },
+          ],
+          type: '0',
+        },
+        consolidateId: '68b9fc18558006aab53785615fea7c28',
+        coin: 'tada',
+      };
+
+      const mockedWallet = {
+        coinSpecific: () => {
+          return {
+            rootAddress:
+              'addr_test1qprqrlqpdtpctqy3d56jp0rkkevjnq2kqzrn356842f3gt6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsjdmg2s',
+          };
+        },
+      };
+
+      try {
+        const isVerified = await basecoin.verifyTransaction({
+          txParams: {},
+          txPrebuild: consolidationTx,
+          wallet: mockedWallet,
+          verification: {
+            consolidationToBaseAddress: true,
+          },
+        });
+        isVerified.should.equal(true);
+      } catch (e) {
+        assert.fail('Transaction should pass verification');
+      }
+    });
+
+    it('should verify a valid sponsored consolidation transaction', async () => {
+      const consolidationTx = {
+        txRequestId: '1b5c79c5-ab7c-4f47-912b-de6a95fb0779',
+        walletId: '64fa31a94db65a0007c9691b',
+        txHex:
+          '84a40082825820227f65d20ac6e49602d79c623c51911ead824235e01eb2a1e7e33a72f0747cbb00825820227f65d20ac6e49602d79c623c51911ead824235e01eb2a1e7e33a72f0747cbb0201828258390022098270a5c19c9fb706dce0e7e4566b234ec5f0010623cd63f198ad22098270a5c19c9fb706dce0e7e4566b234ec5f0010623cd63f198ad1a0098968082581d60cf90f9fb02c88bad3c5294d90587458c4f160a2db26ba8af3da255b11a05d42fb8021a0002a491031a06d8c048a0f5f6',
+        feeInfo: {
+          fee: 165545,
+          feeString: '165545',
+        },
+        txInfo: {
+          minerFee: '165545',
+          spendAmount: '999834455',
+          spendAmounts: [
+            {
+              coinName: 'tada',
+              amountString: '999834455',
+            },
+          ],
+          payGoFee: '0',
+          outputs: [
+            {
+              address:
+                'addr_test1qprqrlqpdtpctqy3d56jp0rkkevjnq2kqzrn356842f3gt6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsjdmg2s',
+              value: 999834455,
+              wallet: '64fa31a94db65a0007c9691b',
+              wallets: ['64fa31a94db65a0007c9691b'],
+              enterprise: '62cc59b727443a0007089033',
+              enterprises: ['62cc59b727443a0007089033'],
+              valueString: '999834455',
+              coinName: 'tada',
+              walletType: 'hot',
+              walletTypes: ['hot'],
+            },
+          ],
+          inputs: [
+            {
+              value: 1000000000,
+              address:
+                'addr_test1qqlzxfl7tlgp999x4a7334pchycpkk72pykrsr3mryl3yj6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsvpgl8w',
+              valueString: '1000000000',
+            },
+          ],
+          type: '0',
+          feeAddress: 'addr_test1vr8ep70mqtyghtfu222djpv8gkxy79s29kexh2908k39tvge02d5j',
+        },
+        consolidateId: '68b9fc18558006aab53785615fea7c28',
+        coin: 'tada',
+      };
+
+      const mockedWallet = {
+        coinSpecific: () => {
+          return {
+            rootAddress:
+              'addr_test1qq3qnqns5hqee8ahqmwwpely2e4jxnk97qqsvg7dv0ce3tfzpxp8pfwpnj0mwpkuurn7g4ntyd8vtuqpqc3u6cl3nzksvggu82',
+          };
+        },
+      };
+
+      try {
+        const isVerified = await basecoin.verifyTransaction({
+          txParams: {},
+          txPrebuild: consolidationTx,
+          wallet: mockedWallet,
+          verification: {
+            consolidationToBaseAddress: true,
+          },
+        });
+        isVerified.should.equal(true);
+      } catch (e) {
+        assert.fail('Transaction should pass verification');
+      }
+    });
+
+    it('should fail to sign a spoofed consolidation transaction', async function () {
+      // Set up wallet data
+      const walletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tada',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress:
+            'addr_test1qprqrlqpdtpctqy3d56jp0rkkevjnq2kqzrn356842f3gt6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsjdmg2s',
+        },
+        multisigType: 'tss',
+      };
+      const fakePrv = encrypt('password', 'prv');
+
+      const walletObj = new Wallet(bitgo, basecoin, walletData);
+      const bgUrl = common.Environments['mock'].uri;
+
+      nock(bgUrl)
+        .get('/api/v2/tada/key/5b3424f91bf349930e34017500000000')
+        .reply(200, [
+          {
+            encryptedPrv: fakePrv,
+          },
+        ]);
+
+      // Mock the API response for buildAccountConsolidations
+      nock(bgUrl)
+        .post('/api/v2/tada/wallet/5b34252f1bf349930e34020a00000000/consolidateAccount/build')
+        .reply(200, [
+          {
+            txRequestId: '1b5c79c5-ab7c-4f47-912b-de6a95fb0779',
+            walletId: '64fa31a94db65a0007c9691b',
+            txHex:
+              '84a40081825820db46c7c76ea54fec2ca0a2f94b77a238931a8dce2387c99a12b08dd8aac21c4f01018282581d6033c378cee41b2e15ac848f7f6f1d2f78155ab12d93b713de898d855f1a00989680825839004601fc016ac38580916d3520bc76b659298156008738d347aa93142f4601fc016ac38580916d3520bc76b659298156008738d347aa93142f1b0000000217acebe9021a00028db5031a060e3b41a0f5f6',
+            feeInfo: {
+              fee: 165545,
+              feeString: '165545',
+            },
+            txInfo: {
+              minerFee: '165545',
+              spendAmount: '999834455',
+              spendAmounts: [
+                {
+                  coinName: 'tada',
+                  amountString: '999834455',
+                },
+              ],
+              payGoFee: '0',
+              outputs: [
+                {
+                  address:
+                    'addr_test1qprqrlqpdtpctqy3d56jp0rkkevjnq2kqzrn356842f3gt6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsjdmg2s',
+                  value: 999834455,
+                  wallet: '64fa31a94db65a0007c9691b',
+                  wallets: ['64fa31a94db65a0007c9691b'],
+                  enterprise: '62cc59b727443a0007089033',
+                  enterprises: ['62cc59b727443a0007089033'],
+                  valueString: '999834455',
+                  coinName: 'tada',
+                  walletType: 'hot',
+                  walletTypes: ['hot'],
+                },
+              ],
+              inputs: [
+                {
+                  value: 1000000000,
+                  address:
+                    'addr_test1qqlzxfl7tlgp999x4a7334pchycpkk72pykrsr3mryl3yj6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsvpgl8w',
+                  valueString: '1000000000',
+                },
+              ],
+              type: '0',
+            },
+            consolidateId: '68b9fc18558006aab53785615fea7c28',
+            coin: 'tada',
+          },
+        ]);
+
+      // Call the function to test
+      await assert.rejects(
+        async () => {
+          await walletObj.sendAccountConsolidations({
+            walletPassphrase: 'password',
+          });
+        },
+        {
+          message: 'tx outputs does not match with expected address',
+        }
+      );
+    });
+  });
+
+  describe('Explain Transactions:', () => {
+    it('should explain an unsigned transfer transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txPrebuild: {
+          txHex: rawTx.unsignedTx2,
+        },
+      });
+      console.log(explainedTransaction);
+      explainedTransaction.should.deepEqual(transactionExplanation);
+    });
+
+    it('should fail to explain transaction with missing params', async function () {
+      try {
+        await basecoin.explainTransaction({
+          txPrebuild: {},
+        });
+      } catch (error) {
+        should.equal(error.message, 'Invalid transaction');
+      }
+    });
+
+    it('should fail to explain transaction with wrong params', async function () {
+      try {
+        await basecoin.explainTransaction({
+          txPrebuild: {
+            txHex: 'invalidTxHex',
+          },
+        });
+      } catch (error) {
+        should.equal(error.message, 'Invalid transaction');
+      }
+    });
+  });
+
+  describe('Parse Raw Transactions', () => {
+    it('should parse staking pledge transaction', function () {
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(rawTx.unsignedNewPledgeTx);
+      should.equal(tx.type, TransactionType.StakingPledge);
+    });
+
+    it('should parse staking activation tx', function () {
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(rawTx.unsignedStakingActiveTx);
+      should.equal(tx.type, TransactionType.StakingActivate);
+    });
+
+    it('should parse staking deactivation tx', function () {
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(rawTx.unsignedStakingDeactiveTx);
+      should.equal(tx.type, TransactionType.StakingDeactivate);
+    });
+  });
+
+  describe('Parse Transactions:', () => {
+    it('should parse an unsigned transfer transaction', async function () {
+      const parsedTransaction = await basecoin.parseTransaction({
+        txPrebuild: {
+          txHex: rawTx.unsignedTx2,
+        },
+      });
+
+      parsedTransaction.should.deepEqual(transactionExplanation);
+    });
+
+    it('should parse a signed transfer transaction', async function () {
+      const parsedTransaction = await basecoin.parseTransaction({
+        txPrebuild: {
+          txHex: rawTx.signedTx2,
+        },
+      });
+
+      parsedTransaction.should.deepEqual(transactionExplanation);
+    });
+
+    it('should fail parse a signed transfer transaction when explainTransaction response is undefined', async function () {
+      const stub = sinon.stub(Ada.prototype, 'explainTransaction');
+      stub.resolves(undefined);
+      await basecoin
+        .parseTransaction({
+          txPrebuild: {
+            txHex: rawTx.signedTx,
+          },
+        })
+        .should.be.rejectedWith('Invalid transaction');
+      stub.restore();
+    });
+  });
+
+  describe('Recover Transactions:', () => {
+    const destAddr = address.address2;
+    const sandBox = sinon.createSandbox();
+    let callBack: sinon.SinonStub;
+
+    beforeEach(function () {
+      callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack
+        .withArgs('address_info', {
+          _addresses: [wrwUser.walletAddress0],
+        })
+        .resolves(endpointResponses.addressInfoResponse.OneUTXO);
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should take OVC output and generate a signed sweep transaction', async function () {
+      const params = ovcResponse;
+      const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
+      recoveryTxn.transactions[0].serializedTx.should.equal(
+        '84a400818258204bd0f991c1532cffe31d4a10db492b43175ec326765b6b29ceee598df2b61f470001818258390087379ebc5533ebe621963c915c3cbc5f08537fcdca4af8f8ae08ed4c87379ebc5533ebe621963c915c3cbc5f08537fcdca4af8f8ae08ed4c1a05f359ff021a00028701031a024972e1a10081825820bbacb13431b99208e6e8cdbf710147feaf06a39d71565e60b411ce9e4fa3f137584001a4ab8236563f69ff309e5786e8f39c629ed57676c692159cb2e0494c9e663355384c13c749d04c17a80ba2a45cc127df480fc64a43199a772f11acd5b14a0ff5f6'
+      );
+      recoveryTxn.transactions[0].scanIndex.should.equal(0);
+      recoveryTxn.lastScanIndex.should.equal(0);
+    });
+
+    it('should take consolidation OVC output and generate multiple signed sweep transactions', async function () {
+      const params = ovcResponse2;
+      const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
+      recoveryTxn.transactions[0].serializedTx.should.equal(
+        '84a400818258203e62e5ee8b12012c4b949f9777b72165239bb2146ae8b078b4d1c5ca8d3168e300018182583900baf55ebcf9ada1b8ecb1640880fba54d2817690f12b3a106afd08004baf55ebcf9ada1b8ecb1640880fba54d2817690f12b3a106afd080041a00960f7f021a00028701031a0250f7eaa10081825820500e0d725a5ba3a306da3503dfe57b8a14068a09b61b36ec068fcf8cf5c391de5840c836ce6d3262d5654706ea06721522d3b75f6d545245047a7be7463629d88b3f4264b995f591df52bdffcf09da1e6ab9e88de3714c6e2ec1961786cf1c586a07f5f6'
+      );
+      recoveryTxn.transactions[0].scanIndex.should.equal(1);
+      recoveryTxn.transactions[1].serializedTx.should.equal(
+        '84a4008182582029c10acf0e08f9523325c88243565af6b32274992189c1153903c410bed7c2c700018182583900baf55ebcf9ada1b8ecb1640880fba54d2817690f12b3a106afd08004baf55ebcf9ada1b8ecb1640880fba54d2817690f12b3a106afd080041a00960f7f021a00028701031a0250f7eaa1008182582062770b224bd314bc526fbd6a94e9082fb6458c425e6e09bad74004dd897e962358403842544f2ff28be054eb7c7997bc303b1e251eb13a41802c82318e592bb24eaa3197c450e797cc8559f0356cd5cdd1ab5eb80c5173e34e9e1d1737533a89520cf5f6'
+      );
+      recoveryTxn.transactions[1].scanIndex.should.equal(2);
+      recoveryTxn.transactions[2].serializedTx.should.equal(
+        '84a40081825820dd140f133d865e1bb5642e708fe685bf7601d71d0c99511e5d552da7f8bd10ff00018182583900baf55ebcf9ada1b8ecb1640880fba54d2817690f12b3a106afd08004baf55ebcf9ada1b8ecb1640880fba54d2817690f12b3a106afd080041a00960f7f021a00028701031a0250f7eaa1008182582053b4bb74aa38add458dafc8153f0aa8266acad59322b877ca9c23c5d3873779d5840e94ce7896957d094c6bafbf2ec10df5ebb0f1d2a27a7e31f2d45c531fb687edd6c4d33f8e9b99c7692b6fac6d8399bd8fd47641baae9bbb69f518d42ad11710af5f6'
+      );
+      recoveryTxn.transactions[2].scanIndex.should.equal(3);
+      recoveryTxn.transactions[3].serializedTx.should.equal(
+        '84a4008182582015a1d6db5d3f592aa1cda185b6359ca0e2921c3c51959f64222a6b7d95d3392300018182583900baf55ebcf9ada1b8ecb1640880fba54d2817690f12b3a106afd08004baf55ebcf9ada1b8ecb1640880fba54d2817690f12b3a106afd080041a00960f7f021a00028701031a0250f7eaa10081825820600f86ca22d670f0a990ade4e882c05e654343263494735a31517de0819676735840fe199f8e247a4cfabfeb4f9cb574aa35739a0aa98860ee0a85d720c4ab4fecfac7b4504df310b3e4bea04711f60652d4a8cf5eb41817293b8d29977fe695f704f5f6'
+      );
+      recoveryTxn.transactions[3].scanIndex.should.equal(4);
+      recoveryTxn.lastScanIndex.should.equal(20);
+    });
+
+    it('should recover a txn for non-bitgo recoveries', async function () {
+      const res = await basecoin.recover({
+        userKey: wrwUser.userKey,
+        backupKey: wrwUser.backupKey,
+        bitgoKey: wrwUser.bitgoKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledTwice(basecoin.getDataFromNode);
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(res.serializedTx);
+      const txJson = tx.toJson();
+      const fee = Number(tx.explainTransaction().fee.fee);
+      should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
+      should.deepEqual(txJson.outputs[0].address, destAddr);
+      should.deepEqual(Number(txJson.outputs[0].amount) + fee, testnetUTXO.UTXO_1.value);
+    });
+
+    it('should recover a txn for unsigned sweep recoveries', async function () {
+      const res = await basecoin.recover({
+        bitgoKey: wrwUser.bitgoKey,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      res.txRequests[0].transactions[0].unsignedTx.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledTwice(basecoin.getDataFromNode);
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(res.txRequests[0].transactions[0].unsignedTx.serializedTx);
+      const txJson = tx.toJson();
+      const fee = Number(tx.explainTransaction().fee.fee);
+      should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
+      should.deepEqual(txJson.outputs[0].address, destAddr);
+      should.deepEqual(Number(txJson.outputs[0].amount) + fee, testnetUTXO.UTXO_1.value);
+    });
+
+    it('should recover ADA plus token UTXOs - token and ADA both appear in outputs (unsigned sweep)', async function () {
+      callBack
+        .withArgs('address_info', { _addresses: [wrwUser.walletAddress0] })
+        .resolves(endpointResponses.addressInfoResponse.ADAAndTokenUTXOs);
+
+      const res = await basecoin.recover({
+        bitgoKey: wrwUser.bitgoKey,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      const unsignedTx = res.txRequests[0].transactions[0].unsignedTx;
+      unsignedTx.should.hasOwnProperty('serializedTx');
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(unsignedTx.serializedTx);
+      const txJson = tx.toJson();
+
+      txJson.inputs.length.should.equal(2);
+      should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson.inputs[1].transaction_id, testnetUTXO.UTXO_TOKEN.tx_hash);
+
+      txJson.outputs.length.should.equal(2);
+
+      const tokenPolicyId = '2533cca6eb42076e144e9f2772c390dece9fce173bc38c72294b3924';
+      const tokenEncodedAssetName = '5741544552';
+      const tokenQuantity = '111';
+      const minADAForToken = 1500000;
+
+      const tokenOutput = txJson.outputs.find((o) => o.multiAssets !== undefined);
+      should.exist(tokenOutput);
+      should.deepEqual(tokenOutput!.address, destAddr);
+      should.deepEqual(Number(tokenOutput!.amount), minADAForToken);
+      const expectedPolicyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(tokenPolicyId, 'hex'));
+      const expectedAssetName = CardanoWasm.AssetName.new(Buffer.from(tokenEncodedAssetName, 'hex'));
+      (tokenOutput!.multiAssets as CardanoWasm.MultiAsset)
+        .get_asset(expectedPolicyId, expectedAssetName)
+        .to_str()
+        .should.equal(tokenQuantity);
+
+      const adaOutput = txJson.outputs.find((o) => o.multiAssets === undefined);
+      should.exist(adaOutput);
+      should.deepEqual(adaOutput!.address, destAddr);
+      const fee = Number(tx.explainTransaction().fee.fee);
+      const totalBalance = testnetUTXO.UTXO_1.value + testnetUTXO.UTXO_TOKEN.value;
+      should.deepEqual(Number(adaOutput!.amount), totalBalance - minADAForToken - fee);
+
+      const explained = tx.explainTransaction();
+      const explainedTokenOutput = explained.outputs.find((o) => o.amount === minADAForToken.toString());
+      should.exist(explainedTokenOutput);
+
+      // inputs and outputs in parsedTx should carry multiAssets
+      const parsedTxInputs = res.txRequests[0].transactions[0].unsignedTx.parsedTx.inputs as {
+        address: string;
+        valueString: string;
+        multiAssets?: { policy_id: string; asset_name: string; quantity: string }[];
+      }[];
+      parsedTxInputs.length.should.equal(1);
+      should.exist(parsedTxInputs[0].multiAssets);
+      parsedTxInputs[0].multiAssets!.length.should.equal(1);
+      should.deepEqual(parsedTxInputs[0].multiAssets![0].policy_id, tokenPolicyId);
+      should.deepEqual(parsedTxInputs[0].multiAssets![0].asset_name, tokenEncodedAssetName);
+      should.deepEqual(parsedTxInputs[0].multiAssets![0].quantity, tokenQuantity);
+
+      const parsedTxOutputs = res.txRequests[0].transactions[0].unsignedTx.parsedTx.outputs as {
+        address: string;
+        valueString: string;
+        multiAssets?: { policy_id: string; asset_name: string; quantity: string }[];
+      }[];
+      const parsedTokenOutput = parsedTxOutputs.find((o) => o.multiAssets !== undefined);
+      should.exist(parsedTokenOutput);
+      parsedTokenOutput!.multiAssets!.length.should.equal(1);
+      should.deepEqual(parsedTokenOutput!.multiAssets![0].policy_id, tokenPolicyId);
+      should.deepEqual(parsedTokenOutput!.multiAssets![0].asset_name, tokenEncodedAssetName);
+      should.deepEqual(parsedTokenOutput!.multiAssets![0].quantity, tokenQuantity);
+      // pure ADA output should not have multiAssets
+      const parsedAdaOutput = parsedTxOutputs.find((o) => o.multiAssets === undefined);
+      should.exist(parsedAdaOutput);
+    });
+
+    it('should recover ADA plus token UTXOs - token and ADA both appear in outputs (signed)', async function () {
+      callBack
+        .withArgs('address_info', { _addresses: [wrwUser.walletAddress0] })
+        .resolves(endpointResponses.addressInfoResponse.ADAAndTokenUTXOs);
+
+      const res = await basecoin.recover({
+        userKey: wrwUser.userKey,
+        backupKey: wrwUser.backupKey,
+        bitgoKey: wrwUser.bitgoKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(res.serializedTx);
+      const txJson = tx.toJson();
+
+      txJson.inputs.length.should.equal(2);
+      should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson.inputs[1].transaction_id, testnetUTXO.UTXO_TOKEN.tx_hash);
+
+      // expect 2 outputs: one token output + one ADA change output, both at destAddr
+      txJson.outputs.length.should.equal(2);
+
+      const tokenPolicyId = '2533cca6eb42076e144e9f2772c390dece9fce173bc38c72294b3924';
+      const tokenEncodedAssetName = '5741544552';
+      const tokenQuantity = '111';
+      const minADAForToken = 1500000;
+
+      const tokenOutput = txJson.outputs.find((o) => o.multiAssets !== undefined);
+      should.exist(tokenOutput);
+      should.deepEqual(tokenOutput!.address, destAddr);
+      should.deepEqual(Number(tokenOutput!.amount), minADAForToken);
+      const expectedPolicyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(tokenPolicyId, 'hex'));
+      const expectedAssetName = CardanoWasm.AssetName.new(Buffer.from(tokenEncodedAssetName, 'hex'));
+      (tokenOutput!.multiAssets as CardanoWasm.MultiAsset)
+        .get_asset(expectedPolicyId, expectedAssetName)
+        .to_str()
+        .should.equal(tokenQuantity);
+
+      const adaOutput = txJson.outputs.find((o) => o.multiAssets === undefined);
+      should.exist(adaOutput);
+      should.deepEqual(adaOutput!.address, destAddr);
+      const fee = Number(tx.explainTransaction().fee.fee);
+      const totalBalance = testnetUTXO.UTXO_1.value + testnetUTXO.UTXO_TOKEN.value;
+      should.deepEqual(Number(adaOutput!.amount), totalBalance - minADAForToken - fee);
+    });
+  });
+
+  describe('Recover Transactions Multiple UTXO:', () => {
+    const destAddr = address.address2;
+    const sandBox = sinon.createSandbox();
+
+    beforeEach(function () {
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack
+        .withArgs('address_info', {
+          _addresses: [wrwUser.walletAddress0],
+        })
+        .resolves(endpointResponses.addressInfoResponse.TwoUTXO);
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should recover a txn for non-bitgo recoveries', async function () {
+      const res = await basecoin.recover({
+        userKey: wrwUser.userKey,
+        backupKey: wrwUser.backupKey,
+        bitgoKey: wrwUser.bitgoKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledTwice(basecoin.getDataFromNode);
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(res.serializedTx);
+      const txJson = tx.toJson();
+      const fee = Number(tx.explainTransaction().fee.fee);
+      should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
+      should.deepEqual(txJson.inputs[1].transaction_id, testnetUTXO.UTXO_2.tx_hash);
+      should.deepEqual(txJson.inputs[1].transaction_index, testnetUTXO.UTXO_2.tx_index);
+      should.deepEqual(txJson.outputs[0].address, destAddr);
+      should.deepEqual(Number(txJson.outputs[0].amount) + fee, testnetUTXO.UTXO_1.value + testnetUTXO.UTXO_2.value);
+    });
+
+    it('should recover a txn for unsigned sweep recoveries', async function () {
+      const res = await basecoin.recover({
+        bitgoKey: wrwUser.bitgoKey,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      res.txRequests[0].transactions[0].unsignedTx.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledTwice(basecoin.getDataFromNode);
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(res.txRequests[0].transactions[0].unsignedTx.serializedTx);
+      const txJson = tx.toJson();
+      const fee = Number(tx.explainTransaction().fee.fee);
+      should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
+      should.deepEqual(txJson.inputs[1].transaction_id, testnetUTXO.UTXO_2.tx_hash);
+      should.deepEqual(txJson.inputs[1].transaction_index, testnetUTXO.UTXO_2.tx_index);
+      should.deepEqual(txJson.outputs[0].address, destAddr);
+      should.deepEqual(Number(txJson.outputs[0].amount) + fee, testnetUTXO.UTXO_1.value + testnetUTXO.UTXO_2.value);
+    });
+  });
+
+  describe('Build Consolidation Recoveries:', () => {
+    const baseAddr = consolidationWrwUser.walletAddress0;
+    const sandBox = sinon.createSandbox();
+
+    beforeEach(function () {
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack
+        .withArgs('address_info', {
+          _addresses: [consolidationWrwUser.walletAddress1],
+        })
+        .resolves(endpointResponses.addressInfoResponse.ZeroUTXO);
+      callBack
+        .withArgs('address_info', {
+          _addresses: [consolidationWrwUser.walletAddress2],
+        })
+        .resolves(endpointResponses.addressInfoResponse.OneUTXO);
+      callBack
+        .withArgs('address_info', {
+          _addresses: [consolidationWrwUser.walletAddress3],
+        })
+        .resolves(endpointResponses.addressInfoResponse.OneUTXO2);
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should build signed consolidation recoveries', async function () {
+      const res = await basecoin.recoverConsolidations({
+        userKey: consolidationWrwUser.userKey,
+        backupKey: consolidationWrwUser.backupKey,
+        bitgoKey: consolidationWrwUser.bitgoKey,
+        walletPassphrase: consolidationWrwUser.walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(2);
+      res.lastScanIndex.should.equal(3);
+      const txn1 = res.transactions[0];
+      const tx1 = new Transaction(basecoin);
+      tx1.fromRawTransaction(txn1.serializedTx);
+      const txJson1 = tx1.toJson();
+      const fee1 = Number(tx1.explainTransaction().fee.fee);
+      should.deepEqual(txJson1.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson1.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
+      should.deepEqual(txJson1.outputs[0].address, baseAddr);
+      should.deepEqual(Number(txJson1.outputs[0].amount) + fee1, testnetUTXO.UTXO_1.value);
+
+      const txn2 = res.transactions[1];
+      const tx2 = new Transaction(basecoin);
+      tx2.fromRawTransaction(txn2.serializedTx);
+      const txJson2 = tx2.toJson();
+      const fee2 = Number(tx2.explainTransaction().fee.fee);
+      should.deepEqual(txJson2.inputs[0].transaction_id, testnetUTXO.UTXO_2.tx_hash);
+      should.deepEqual(txJson2.inputs[0].transaction_index, testnetUTXO.UTXO_2.tx_index);
+      should.deepEqual(txJson2.outputs[0].address, baseAddr);
+      should.deepEqual(Number(txJson2.outputs[0].amount) + fee2, testnetUTXO.UTXO_2.value);
+    });
+
+    it('should skip building consolidate transaction if balance is equal to zero', async function () {
+      await basecoin
+        .recoverConsolidations({
+          userKey: consolidationWrwUser.userKey,
+          backupKey: consolidationWrwUser.backupKey,
+          bitgoKey: consolidationWrwUser.bitgoKey,
+          walletPassphrase: consolidationWrwUser.walletPassphrase,
+          startingScanIndex: 1,
+          endingScanIndex: 2,
+        })
+        .should.rejectedWith('Did not find an address with funds to recover.');
+    });
+
+    it('should throw if startingScanIndex is not ge to 1', async () => {
+      await basecoin
+        .recoverConsolidations({
+          userKey: consolidationWrwUser.userKey,
+          backupKey: consolidationWrwUser.backupKey,
+          bitgoKey: consolidationWrwUser.bitgoKey,
+          startingScanIndex: -1,
+        })
+        .should.be.rejectedWith(
+          'Invalid starting or ending index to scan for addresses. startingScanIndex: -1, endingScanIndex: 19.'
+        );
+    });
+
+    it('should throw if scan factor is too high', async () => {
+      await basecoin
+        .recoverConsolidations({
+          userKey: consolidationWrwUser.userKey,
+          backupKey: consolidationWrwUser.backupKey,
+          bitgoKey: consolidationWrwUser.bitgoKey,
+          startingScanIndex: 1,
+          endingScanIndex: 300,
+        })
+        .should.be.rejectedWith(
+          'Invalid starting or ending index to scan for addresses. startingScanIndex: 1, endingScanIndex: 300.'
+        );
+    });
+
+    it('should build unsigned consolidation recoveries', async function () {
+      const res = await basecoin.recoverConsolidations({
+        userKey: consolidationWrwUser.userKey,
+        backupKey: consolidationWrwUser.backupKey,
+        bitgoKey: consolidationWrwUser.bitgoKey,
+        walletPassphrase: consolidationWrwUser.walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(2);
+    });
+
+    it('should build unsigned consolidation recoveries for WRW (ADA only) and assert build response', async function () {
+      const res = await basecoin.recoverConsolidations({
+        bitgoKey: consolidationWrwUser.bitgoKey,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+      res.should.not.be.empty();
+      res.txRequests.length.should.equal(2);
+
+      // Assert first consolidation txRequest structure
+      const txRequest1 = res.txRequests[0];
+      txRequest1.transactions.length.should.equal(1);
+      const unsignedTx1 = txRequest1.transactions[0].unsignedTx;
+      unsignedTx1.should.hasOwnProperty('serializedTx');
+      unsignedTx1.should.hasOwnProperty('parsedTx');
+      unsignedTx1.should.hasOwnProperty('coinSpecific');
+
+      // Deserialize and verify inputs/outputs
+      const tx1 = new Transaction(basecoin);
+      tx1.fromRawTransaction(unsignedTx1.serializedTx);
+      const txJson1 = tx1.toJson();
+      const fee1 = Number(tx1.explainTransaction().fee.fee);
+      should.deepEqual(txJson1.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson1.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
+      should.deepEqual(txJson1.outputs[0].address, baseAddr);
+      should.deepEqual(Number(txJson1.outputs[0].amount) + fee1, testnetUTXO.UTXO_1.value);
+
+      // parsedTx inputs/outputs must be present and carry correct address
+      const parsedTx1Inputs = unsignedTx1.parsedTx.inputs;
+      parsedTx1Inputs.length.should.equal(1);
+      should.deepEqual(parsedTx1Inputs[0].address, consolidationWrwUser.walletAddress2);
+      const parsedTx1Outputs = unsignedTx1.parsedTx.outputs;
+      parsedTx1Outputs.length.should.be.greaterThan(0);
+      should.deepEqual(parsedTx1Outputs[0].address, baseAddr);
+
+      // Assert second consolidation txRequest structure
+      const txRequest2 = res.txRequests[1];
+      const unsignedTx2 = txRequest2.transactions[0].unsignedTx;
+      unsignedTx2.should.hasOwnProperty('serializedTx');
+
+      const tx2 = new Transaction(basecoin);
+      tx2.fromRawTransaction(unsignedTx2.serializedTx);
+      const txJson2 = tx2.toJson();
+      const fee2 = Number(tx2.explainTransaction().fee.fee);
+      should.deepEqual(txJson2.inputs[0].transaction_id, testnetUTXO.UTXO_2.tx_hash);
+      should.deepEqual(txJson2.inputs[0].transaction_index, testnetUTXO.UTXO_2.tx_index);
+      should.deepEqual(txJson2.outputs[0].address, baseAddr);
+      should.deepEqual(Number(txJson2.outputs[0].amount) + fee2, testnetUTXO.UTXO_2.value);
+
+      // lastScanIndex must be set in coinSpecific of the last txRequest
+      const lastCoinSpecific = unsignedTx2.coinSpecific;
+      lastCoinSpecific.should.hasOwnProperty('lastScanIndex');
+      lastCoinSpecific.lastScanIndex.should.equal(3);
+    });
+
+    it('should build unsigned consolidation recoveries for WRW (ADA + Token) and assert build response', async function () {
+      // Override walletAddress2 to return ADA+Token UTXOs
+      sandBox.restore();
+      const callBack2 = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack2
+        .withArgs('address_info', { _addresses: [consolidationWrwUser.walletAddress1] })
+        .resolves(endpointResponses.addressInfoResponse.ZeroUTXO);
+      callBack2
+        .withArgs('address_info', { _addresses: [consolidationWrwUser.walletAddress2] })
+        .resolves(endpointResponses.addressInfoResponse.ADAAndTokenUTXOs);
+      callBack2
+        .withArgs('address_info', { _addresses: [consolidationWrwUser.walletAddress3] })
+        .resolves(endpointResponses.addressInfoResponse.ZeroUTXO);
+      callBack2.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+
+      const tokenPolicyId = '2533cca6eb42076e144e9f2772c390dece9fce173bc38c72294b3924';
+      const tokenEncodedAssetName = '5741544552';
+      const tokenQuantity = '111';
+      const minADAForToken = 1500000;
+
+      const res = await basecoin.recoverConsolidations({
+        bitgoKey: consolidationWrwUser.bitgoKey,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+      res.should.not.be.empty();
+      res.txRequests.length.should.equal(1);
+
+      const unsignedTx = res.txRequests[0].transactions[0].unsignedTx;
+      unsignedTx.should.hasOwnProperty('serializedTx');
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(unsignedTx.serializedTx);
+      const txJson = tx.toJson();
+
+      // Two inputs: ADA UTXO + Token UTXO
+      txJson.inputs.length.should.equal(2);
+      should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson.inputs[1].transaction_id, testnetUTXO.UTXO_TOKEN.tx_hash);
+
+      // Two outputs: token output (with multiAssets) + pure ADA change to base address
+      txJson.outputs.length.should.equal(2);
+      const tokenOutput = txJson.outputs.find((o) => o.multiAssets !== undefined);
+      should.exist(tokenOutput);
+      should.deepEqual(tokenOutput!.address, baseAddr);
+      should.deepEqual(Number(tokenOutput!.amount), minADAForToken);
+      const expectedPolicyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(tokenPolicyId, 'hex'));
+      const expectedAssetName = CardanoWasm.AssetName.new(Buffer.from(tokenEncodedAssetName, 'hex'));
+      (tokenOutput!.multiAssets as CardanoWasm.MultiAsset)
+        .get_asset(expectedPolicyId, expectedAssetName)
+        .to_str()
+        .should.equal(tokenQuantity);
+
+      const adaOutput = txJson.outputs.find((o) => o.multiAssets === undefined);
+      should.exist(adaOutput);
+      should.deepEqual(adaOutput!.address, baseAddr);
+      const fee = Number(tx.explainTransaction().fee.fee);
+      const totalBalance = testnetUTXO.UTXO_1.value + testnetUTXO.UTXO_TOKEN.value;
+      should.deepEqual(Number(adaOutput!.amount), totalBalance - minADAForToken - fee);
+
+      // parsedTx inputs must carry multiAssets for the token UTXO
+      const parsedTxInputs = unsignedTx.parsedTx.inputs as {
+        address: string;
+        valueString: string;
+        multiAssets?: { policy_id: string; asset_name: string; quantity: string }[];
+      }[];
+      parsedTxInputs.length.should.equal(1);
+      should.deepEqual(parsedTxInputs[0].address, consolidationWrwUser.walletAddress2);
+      should.exist(parsedTxInputs[0].multiAssets);
+      parsedTxInputs[0].multiAssets!.length.should.equal(1);
+      should.deepEqual(parsedTxInputs[0].multiAssets![0].policy_id, tokenPolicyId);
+      should.deepEqual(parsedTxInputs[0].multiAssets![0].asset_name, tokenEncodedAssetName);
+      should.deepEqual(parsedTxInputs[0].multiAssets![0].quantity, tokenQuantity);
+
+      // parsedTx outputs must carry multiAssets for the token output
+      const parsedTxOutputs = unsignedTx.parsedTx.outputs as {
+        address: string;
+        valueString: string;
+        multiAssets?: { policy_id: string; asset_name: string; quantity: string }[];
+      }[];
+      const parsedTokenOutput = parsedTxOutputs.find((o) => o.multiAssets !== undefined);
+      should.exist(parsedTokenOutput);
+      parsedTokenOutput!.multiAssets!.length.should.equal(1);
+      should.deepEqual(parsedTokenOutput!.multiAssets![0].policy_id, tokenPolicyId);
+      should.deepEqual(parsedTokenOutput!.multiAssets![0].asset_name, tokenEncodedAssetName);
+      should.deepEqual(parsedTokenOutput!.multiAssets![0].quantity, tokenQuantity);
+      // pure ADA output must not have multiAssets
+      const parsedAdaOutput = parsedTxOutputs.find((o) => o.multiAssets === undefined);
+      should.exist(parsedAdaOutput);
+
+      // lastScanIndex in coinSpecific of the last txRequest
+      unsignedTx.coinSpecific.should.hasOwnProperty('lastScanIndex');
+      unsignedTx.coinSpecific.lastScanIndex.should.equal(3);
+    });
+
+    it('should throw error if all addresses have balance less than 1 ADA', async function () {
+      sandBox.restore();
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack.withArgs('address_info', sinon.match.has('_addresses')).resolves({
+        status: 200,
+        body: [
+          {
+            balance: 500000,
+            utxo_set: [
+              {
+                tx_hash: '8df8d41207980f9e21de698bd5d6c395c39e420f7de27f8539052dd34e3a28d6',
+                tx_index: 0,
+                value: 500000,
+              },
+            ],
+          },
+        ],
+      });
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+
+      await basecoin
+        .recoverConsolidations({
+          userKey: consolidationWrwUser.userKey,
+          backupKey: consolidationWrwUser.backupKey,
+          bitgoKey: consolidationWrwUser.bitgoKey,
+          walletPassphrase: consolidationWrwUser.walletPassphrase,
+          startingScanIndex: 1,
+          endingScanIndex: 4,
+        })
+        .should.be.rejectedWith('Did not find an address with funds to recover.');
+    });
+
+    it('should build even if single address has no funds', async function () {
+      const res = await basecoin.recoverConsolidations({
+        userKey: consolidationWrwUser.userKey,
+        backupKey: consolidationWrwUser.backupKey,
+        bitgoKey: consolidationWrwUser.bitgoKey,
+        walletPassphrase: consolidationWrwUser.walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(2);
+    });
+
+    it('should build even if single address has insufficient funds', async function () {
+      const res = await basecoin.recoverConsolidations({
+        userKey: consolidationWrwUser.userKey,
+        backupKey: consolidationWrwUser.backupKey,
+        bitgoKey: consolidationWrwUser.bitgoKey,
+        walletPassphrase: consolidationWrwUser.walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(2);
+    });
+  });
+
+  describe('Recover Transactions Failure:', () => {
+    const destAddr = address.address2;
+    const sandBox = sinon.createSandbox();
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should fail to recover due to not finding an address with funds', async function () {
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack
+        .withArgs('address_info', sinon.match.has('_addresses'))
+        .resolves(endpointResponses.addressInfoResponse.ZeroUTXO);
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+      await basecoin
+        .recover({
+          userKey: wrwUser.userKey,
+          backupKey: wrwUser.backupKey,
+          bitgoKey: wrwUser.bitgoKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destAddr,
+        })
+        .should.rejectedWith('Did not find address with funds to recover.');
+      sandBox.assert.calledOnce(basecoin.getDataFromNode);
+    });
+
+    it('should fail to recover due to not having more than 1 ADA in funds', async function () {
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack
+        .withArgs('address_info', sinon.match.has('_addresses'))
+        .resolves(endpointResponses.addressInfoResponse.OneSmallUTXO);
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+      await basecoin
+        .recover({
+          userKey: wrwUser.userKey,
+          backupKey: wrwUser.backupKey,
+          bitgoKey: wrwUser.bitgoKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destAddr,
+        })
+        .should.rejectedWith(
+          'Insufficient funds to recover, minimum required is 1 ADA plus fees, got 834455 fees: 165545'
+        );
+      sandBox.assert.calledTwice(basecoin.getDataFromNode);
+    });
+  });
+
+  describe('Verify wallet address (isWalletAddress):', () => {
+    const commonKeychain =
+      'ed312d0db4615688219c43231eb4b98d5883c0b44bcfef1956290555995ad68ef7c22917b4a8b69183864b83cc7028655cd7a70ef76d6948d809a15050054840';
+
+    it('should verify a valid wallet address at index 0', async function () {
+      const keychains = [
+        {
+          id: '1',
+          commonKeychain: commonKeychain,
+          type: 'tss',
+          source: 'user',
+        },
+        {
+          id: '2',
+          commonKeychain: commonKeychain,
+          type: 'tss',
+          source: 'backup',
+        },
+        {
+          id: '3',
+          commonKeychain: commonKeychain,
+          type: 'tss',
+          source: 'bitgo',
+        },
+      ];
+
+      const address =
+        'addr_test1qzvmazmpgfhjyppwlsw29zjjwazcsfk62z9zv5vsv24p0wyeh69kzsn0ygzzalqu5299ya693qnd55y2yegeqc42z7uq0ge2pq';
+      const isValid = await basecoin.isWalletAddress({
+        address,
+        keychains,
+        index: 0,
+      });
+
+      isValid.should.equal(true);
+    });
+
+    it('should fail to verify an address with wrong index', async function () {
+      const keychains = [
+        {
+          id: '1',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'user' as const,
+        },
+        {
+          id: '2',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'backup' as const,
+        },
+        {
+          id: '3',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'bitgo' as const,
+        },
+      ];
+
+      const isValid = await basecoin.isWalletAddress({
+        address:
+          'addr_test1qzvmazmpgfhjyppwlsw29zjjwazcsfk62z9zv5vsv24p0wyeh69kzsn0ygzzalqu5299ya693qnd55y2yegeqc42z7uq0ge2pq',
+        keychains,
+        index: 2,
+      });
+
+      isValid.should.equal(false);
+    });
+
+    it('should fail to verify a random address not from wallet', async function () {
+      const keychains = [
+        {
+          id: '1',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'user' as const,
+        },
+        {
+          id: '2',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'backup' as const,
+        },
+        {
+          id: '3',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'bitgo' as const,
+        },
+      ];
+
+      // Use a random valid ADA address not from this wallet
+      const randomAddress = 'addr_test1vr8rakm66rcfv4fcxqykg5lf0yv7lsyk9mvapx369jpvtcgfcuk7f';
+
+      const isValid = await basecoin.isWalletAddress({
+        address: randomAddress,
+        keychains,
+        index: 0,
+      });
+
+      isValid.should.equal(false);
+    });
+
+    it('should throw error for invalid address format', async function () {
+      const keychains = [
+        {
+          id: '1',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'user' as const,
+        },
+        {
+          id: '2',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'backup' as const,
+        },
+        {
+          id: '3',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'bitgo' as const,
+        },
+      ];
+
+      const invalidAddress = 'not_a_valid_address';
+
+      await basecoin
+        .isWalletAddress({
+          address: invalidAddress,
+          keychains,
+          index: 0,
+        })
+        .should.be.rejectedWith('Invalid Cardano Address: not_a_valid_address');
+    });
+
+    it('should throw error when keychains are missing', async function () {
+      const address =
+        'addr_test1qzvmazmpgfhjyppwlsw29zjjwazcsfk62z9zv5vsv24p0wyeh69kzsn0ygzzalqu5299ya693qnd55y2yegeqc42z7uq0ge2pq';
+
+      await basecoin
+        .isWalletAddress({
+          address,
+          keychains: [],
+          index: 0,
+        })
+        .should.be.rejectedWith('missing required param keychains');
+    });
+
+    it('should throw error when commonKeychain is missing', async function () {
+      const keychains = [
+        {
+          id: '1',
+          type: 'tss' as const,
+          source: 'user' as const,
+          // commonKeychain is missing
+        },
+      ];
+
+      const address =
+        'addr_test1qzvmazmpgfhjyppwlsw29zjjwazcsfk62z9zv5vsv24p0wyeh69kzsn0ygzzalqu5299ya693qnd55y2yegeqc42z7uq0ge2pq';
+
+      await basecoin
+        .isWalletAddress({
+          address,
+          keychains,
+          index: 0,
+        })
+        .should.be.rejectedWith('missing required param commonKeychain');
+    });
+
+    it('should throw error when keychains have mismatched commonKeychains', async function () {
+      const keychains = [
+        {
+          id: '1',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'user' as const,
+        },
+        {
+          id: '2',
+          commonKeychain: 'differentKeychain1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+          type: 'tss' as const,
+          source: 'backup' as const,
+        },
+      ];
+
+      const address =
+        'addr_test1qzvmazmpgfhjyppwlsw29zjjwazcsfk62z9zv5vsv24p0wyeh69kzsn0ygzzalqu5299ya693qnd55y2yegeqc42z7uq0ge2pq';
+
+      await basecoin
+        .isWalletAddress({
+          address,
+          keychains,
+          index: 0,
+        })
+        .should.be.rejectedWith('all keychains must have the same commonKeychain for MPC coins');
+    });
+
+    it('should verify address when derivedFromParentWithSeed is present', async function () {
+      const derivedFromParentWithSeed = 'testDerivationSeed123';
+
+      const keychains = [
+        {
+          id: '1',
+          commonKeychain: commonKeychain,
+          derivedFromParentWithSeed: derivedFromParentWithSeed,
+          type: 'tss' as const,
+          source: 'user' as const,
+        },
+        {
+          id: '2',
+          commonKeychain: commonKeychain,
+          derivedFromParentWithSeed: derivedFromParentWithSeed,
+          type: 'tss' as const,
+          source: 'backup' as const,
+        },
+        {
+          id: '3',
+          commonKeychain: commonKeychain,
+          derivedFromParentWithSeed: derivedFromParentWithSeed,
+          type: 'tss' as const,
+          source: 'bitgo' as const,
+        },
+      ];
+
+      const { address: expectedAddress } = await (basecoin as any).getAdaAddressAndAccountId({
+        bitgoKey: commonKeychain,
+        index: 0,
+        seed: derivedFromParentWithSeed,
+      });
+
+      const isValid = await basecoin.isWalletAddress({
+        address: expectedAddress,
+        keychains,
+        index: 0,
+      });
+
+      isValid.should.equal(true);
+    });
+
+    it('should fail verification when derivedFromParentWithSeed is missing but address was created with seed', async function () {
+      const derivedFromParentWithSeed = 'testDerivationSeed123';
+      const { address: addressWithSeed } = await (basecoin as any).getAdaAddressAndAccountId({
+        bitgoKey: commonKeychain,
+        index: 0,
+        seed: derivedFromParentWithSeed,
+      });
+
+      const keychainsWithoutSeed = [
+        {
+          id: '1',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'user' as const,
+        },
+        {
+          id: '2',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'backup' as const,
+        },
+        {
+          id: '3',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'bitgo' as const,
+        },
+      ];
+
+      const isValid = await basecoin.isWalletAddress({
+        address: addressWithSeed,
+        keychains: keychainsWithoutSeed,
+        index: 0,
+      });
+
+      isValid.should.equal(false);
+    });
+  });
+
+  describe('Verify token consolidation transaction:', () => {
+    it('should fail to verify a spoofed token consolidation transaction with incorrect address', async () => {
+      const consolidationTx = {
+        txRequestId: '4fdd0cae-2563-43b1-b5cf-94865158ca10',
+        walletId: '63068ed4efa63a000877f02fd4b0fa6d',
+        txHex:
+          '84a400818258204bd0f991c1532cffe31d4a10db492b43175ec326765b6b29ceee598df2b61f470001818258390087379ebc5533ebe621963c915c3cbc5f08537fcdca4af8f8ae08ed4c87379ebc5533ebe621963c915c3cbc5f08537fcdca4af8f8ae08ed4c1a05f359ff021a00028701031a024972e1a10081825820bbacb13431b99208e6e8cdbf710147feaf06a39d71565e60b411ce9e4fa3f137584001a4ab8236563f69ff309e5786e8f39c629ed57676c692159cb2e0494c9e663355384c13c749d04c17a80ba2a45cc127df480fc64a43199a772f11acd5b14a0ff5f6',
+        feeInfo: {
+          fee: 10000,
+          feeString: '10000',
+        },
+        txInfo: {
+          inputs: [
+            {
+              address: '8iLa26KSbdpBUzNK7uYq8FvyuyA5h4k4erDHsDcPbHus',
+              value: 2.0173228e10,
+              valueString: '20173228000',
+            },
+            {
+              address: '8P2kX7Tyh9eS3RKdaBhqbEtQGAX58DXzL7mhDQABGX2d',
+              value: 10000,
+              valueString: '10000',
+            },
+          ],
+          minerFee: '10000',
+          outputs: [
+            {
+              address: 'addr_test1vr8rakm66rcfv4fcxqykg5lf0yv7lsyk9mvapx369jpvtcgfcuk7f',
+              coinName: 'tada:usdt',
+              enterprise: {
+                $oid: '5553ba8ae7a5c77006719661',
+              },
+              enterprises: [
+                {
+                  $oid: '5553ba8ae7a5c77006719661',
+                },
+              ],
+              value: 2.0173228e10,
+              valueString: '20173228000',
+              wallet: {
+                $oid: '62f4c3720d92c50008257eb5',
+              },
+              walletType: 'hot',
+              wallets: [
+                {
+                  $oid: '62f4c3720d92c50008257eb5',
+                },
+              ],
+            },
+          ],
+          payGoFee: '0',
+          spendAmount: '20173228000',
+          spendAmounts: [
+            {
+              amountString: '20173228000',
+              coinName: 'tada:usdt',
+            },
+          ],
+          type: 'Send',
+        },
+        consolidateId: '6712d7fda6de4906d658c04aebbf8f9b',
+        coin: 'tada',
+      };
+
+      // Mock the wallet with a different address than the transaction's output
+      const mockedWallet = {
+        coinSpecific: () => {
+          return {
+            rootAddress:
+              'addr_test1qqnnvptrc3rec64q2n9jh572ncu5wvdtt8uvg4g3aj96s5dwu9nj70mlahzglm9939uevupsmj8dcdqv25d5n5r8vw8sn7prey',
+          };
+        },
+      };
+
+      await basecoin
+        .verifyTransaction({
+          txParams: {},
+          txPrebuild: consolidationTx,
+          wallet: mockedWallet,
+          verification: {
+            consolidationToBaseAddress: true,
+          },
+        })
+        .should.be.rejectedWith('tx outputs does not match with expected address');
+    });
+  });
+});

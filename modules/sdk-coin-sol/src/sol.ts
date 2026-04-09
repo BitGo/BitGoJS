@@ -1,0 +1,1852 @@
+/**
+ * @prettier
+ */
+
+import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import BigNumber from 'bignumber.js';
+import * as base58 from 'bs58';
+import * as _ from 'lodash';
+import * as request from 'superagent';
+import { logger } from '@bitgo/logger';
+
+import {
+  AuditDecryptedKeyParams,
+  BaseBroadcastTransactionOptions,
+  BaseBroadcastTransactionResult,
+  BaseCoin,
+  ParseTransactionOptions as BaseParseTransactionOptions,
+  BaseTransaction,
+  TransactionPrebuild as BaseTransactionPrebuild,
+  BitGoBase,
+  EDDSAMethods,
+  EDDSAMethodTypes,
+  Environments,
+  ITokenEnablement,
+  KeyPair,
+  Memo,
+  MPCAlgorithm,
+  MPCConsolidationRecoveryOptions,
+  MPCRecoveryOptions,
+  MPCSweepRecoveryOptions,
+  MPCSweepTxs,
+  MPCTx,
+  MPCTxs,
+  MPCUnsignedTx,
+  MultisigType,
+  multisigTypes,
+  OvcInput,
+  OvcOutput,
+  ParsedTransaction,
+  PopulatedIntent,
+  PrebuildTransactionWithIntentOptions,
+  PresignTransactionOptions,
+  PublicKey,
+  RecoveryTxRequest,
+  SignedTransaction,
+  SignTransactionOptions,
+  SolVersionedTransactionData,
+  TokenEnablement,
+  TokenEnablementConfig,
+  TransactionExplanation,
+  TransactionParams,
+  TransactionRecipient,
+  VerifyTransactionOptions,
+  TssVerifyAddressOptions,
+  verifyEddsaTssWalletAddress,
+  UnexpectedAddressError,
+} from '@bitgo/sdk-core';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { BaseNetwork, CoinFamily, coins, SolCoin, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import {
+  KeyPair as SolKeyPair,
+  Transaction,
+  TransactionBuilder,
+  TransactionBuilderFactory,
+  explainSolTransaction,
+} from './lib';
+import { TransactionExplanation as SolLibTransactionExplanation } from './lib/iface';
+import {
+  getAssociatedTokenAccountAddress,
+  getSolTokenFromAddress,
+  getSolTokenFromTokenName,
+  isValidAddress,
+  isValidPrivateKey,
+  isValidPublicKey,
+  validateRawTransaction,
+} from './lib/utils';
+
+export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
+
+export interface TransactionFee {
+  fee: string;
+}
+
+export type SolTransactionExplanation = TransactionExplanation;
+
+export interface ExplainTransactionOptions {
+  txBase64: string;
+  feeInfo: TransactionFee;
+  tokenAccountRentExemptAmount?: string;
+  coinName?: string;
+}
+
+export interface TxInfo {
+  recipients: TransactionRecipient[];
+  from: string;
+  txid: string;
+}
+
+export interface SolSignTransactionOptions extends SignTransactionOptions {
+  txPrebuild: TransactionPrebuild;
+  prv: string | string[];
+  pubKeys?: string[];
+}
+
+export interface TransactionPrebuild extends BaseTransactionPrebuild {
+  txBase64: string;
+  txInfo: TxInfo;
+  source: string;
+}
+
+export interface SolVerifyTransactionOptions extends VerifyTransactionOptions {
+  memo?: Memo;
+  feePayer: string;
+  blockhash: string;
+  durableNonce?: { walletNonceAddress: string; authWalletAddress: number };
+}
+
+interface TransactionOutput {
+  address: string;
+  amount: number | string;
+  tokenName?: string;
+}
+
+type TransactionInput = TransactionOutput;
+
+export interface SolParsedTransaction extends ParsedTransaction {
+  // total assets being moved, including fees
+  inputs: TransactionInput[];
+
+  // where assets are moved to
+  outputs: TransactionOutput[];
+}
+
+export interface SolParseTransactionOptions extends BaseParseTransactionOptions {
+  txBase64: string;
+  feeInfo: TransactionFee;
+  tokenAccountRentExemptAmount?: string;
+}
+
+interface SolDurableNonceFromNode {
+  authority: string;
+  blockhash: string;
+}
+
+interface TokenAmount {
+  amount: string;
+  decimals: number;
+  uiAmount: number;
+  uiAmountString: string;
+}
+
+interface TokenAccountInfo {
+  isNative: boolean;
+  mint: string;
+  owner: string;
+  state: string;
+  tokenAmount: TokenAmount;
+}
+
+interface TokenAccount {
+  info: TokenAccountInfo;
+  pubKey: string;
+  tokenName?: string;
+}
+
+export interface SolRecoveryOptions extends MPCRecoveryOptions {
+  durableNonce?: {
+    publicKey: string;
+    secretKey: string;
+  };
+  tokenContractAddress?: string;
+  closeAtaAddress?: string;
+  // destination address where token should be sent before closing the ATA address
+  recoveryDestinationAtaAddress?: string;
+  // nested ATA address (ATA whose owner is another ATA) to recover tokens from
+  nestedAtaAddress?: string;
+  // the ATA that owns the nested ATA (and where recovered tokens will be sent)
+  ownerAtaAddress?: string;
+  // the token mint address for both ATAs (required when recovering from nested ATA)
+  tokenMintAddress?: string;
+  programId?: string; // programId of the token
+  apiKey?: string; // API key for node requests
+}
+
+export interface SolConsolidationRecoveryOptions extends MPCConsolidationRecoveryOptions {
+  durableNonces: {
+    publicKeys: string[];
+    secretKey: string;
+  };
+  tokenContractAddress?: string;
+  apiKey?: string; // API key for node requests
+  programId?: string; // programId of the token
+}
+
+const HEX_REGEX = /^[0-9a-fA-F]+$/;
+const BLIND_SIGNING_TX_TYPES_TO_CHECK = { enabletoken: 'AssociatedTokenAccountInitialization' };
+
+/**
+ * Get amount string corrected for architecture-specific endianness issues.
+ *
+ * On s390x (big-endian) architecture, the Solana transaction parser (via @solana/web3.js)
+ * incorrectly reads little-endian u64 amounts as big-endian, resulting in corrupted values.
+ *
+ * This function corrects all amounts on s390x by swapping byte order to undo
+ * the incorrect byte order that happened during transaction parsing.
+ *
+ * @param amount - The amount to check and potentially fix
+ * @returns The corrected amount as a string
+ */
+export function getAmountBasedOnEndianness(amount: string | number): string {
+  const amountStr = String(amount);
+
+  // Only s390x architecture has this endianness issue
+  const isS390x = process.arch === 's390x';
+  if (!isS390x) {
+    return amountStr;
+  }
+
+  try {
+    const amountBN = BigInt(amountStr);
+    // On s390x, the parser ALWAYS reads u64 as big-endian when it's actually little-endian
+    // So we ALWAYS need to swap bytes to get the correct value
+    const buf = Buffer.alloc(8);
+    buf.writeBigUInt64BE(amountBN, 0);
+    const fixed = buf.readBigUInt64LE(0);
+    return fixed.toString();
+  } catch (e) {
+    // If conversion fails, return original value
+    return amountStr;
+  }
+}
+
+export class Sol extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+
+  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+    super(bitgo);
+
+    if (!staticsCoin) {
+      throw new Error('missing required constructor parameter staticsCoin');
+    }
+
+    this._staticsCoin = staticsCoin;
+  }
+
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+    return new Sol(bitgo, staticsCoin);
+  }
+
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
+
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
+  supportsMessageSigning(): boolean {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
+  }
+
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'eddsa';
+  }
+
+  getChain(): string {
+    return this._staticsCoin.name;
+  }
+
+  getFamily(): CoinFamily {
+    return this._staticsCoin.family;
+  }
+
+  getFullName(): string {
+    return this._staticsCoin.fullName;
+  }
+
+  getNetwork(): BaseNetwork {
+    return this._staticsCoin.network;
+  }
+
+  getBaseFactor(): string | number {
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
+  }
+
+  verifyTxType(expectedTypeFromUserParams: string, actualTypeFromDecoded: string | undefined): void {
+    const matchFromUserToDecodedType = BLIND_SIGNING_TX_TYPES_TO_CHECK[expectedTypeFromUserParams];
+    if (matchFromUserToDecodedType !== actualTypeFromDecoded) {
+      throw new Error(
+        `Invalid transaction type on token enablement: expected "${matchFromUserToDecodedType}", got "${actualTypeFromDecoded}".`
+      );
+    }
+  }
+
+  throwIfMissingTokenEnablementsOrReturn(explanation: TransactionExplanation): ITokenEnablement[] {
+    if (!explanation.tokenEnablements || explanation.tokenEnablements.length === 0)
+      throw new Error('Missing tx token enablements data on token enablement tx prebuild');
+    return explanation.tokenEnablements;
+  }
+
+  throwIfMissingEnableTokenConfigOrReturn(txParams: TransactionParams): TokenEnablement[] {
+    if (!txParams.enableTokens || txParams.enableTokens.length === 0) throw new Error('Missing enable token config');
+    return txParams.enableTokens;
+  }
+
+  verifyTokenName(tokenEnablementsPrebuild: ITokenEnablement[], enableTokensConfig: TokenEnablement[]): void {
+    enableTokensConfig.forEach((enableTokenConfig) => {
+      const expectedTokenName = enableTokenConfig.name;
+      tokenEnablementsPrebuild.forEach((tokenEnablement) => {
+        if (!tokenEnablement.tokenName) throw new Error('Missing token name on token enablement tx');
+        if (tokenEnablement.tokenName !== expectedTokenName)
+          throw new Error(
+            `Invalid token name: expected ${expectedTokenName}, got ${tokenEnablement.tokenName} on token enablement tx`
+          );
+      });
+    });
+  }
+
+  async verifyTokenAddress(
+    tokenEnablementsPrebuild: ITokenEnablement[],
+    enableTokensConfig: TokenEnablement[]
+  ): Promise<void> {
+    for (const enableTokenConfig of enableTokensConfig) {
+      const expectedTokenAddress = enableTokenConfig.address;
+      const expectedTokenName = enableTokenConfig.name;
+
+      if (!expectedTokenAddress) throw new Error('Missing token address on token enablement tx');
+      if (!expectedTokenName) throw new Error('Missing token name on token enablement tx');
+
+      for (const tokenEnablement of tokenEnablementsPrebuild) {
+        let tokenMintAddress: Readonly<SolCoin> | undefined;
+        try {
+          tokenMintAddress = getSolTokenFromTokenName(expectedTokenName);
+        } catch {
+          throw new Error(`Unable to derive ATA for token address: ${expectedTokenAddress}`);
+        }
+        if (
+          !tokenMintAddress ||
+          tokenMintAddress.tokenAddress === undefined ||
+          tokenMintAddress.programId === undefined
+        ) {
+          throw new Error(`Unable to get token mint address for ${expectedTokenName}`);
+        }
+        let ata: string;
+        try {
+          ata = await getAssociatedTokenAccountAddress(
+            tokenMintAddress.tokenAddress,
+            expectedTokenAddress,
+            true,
+            tokenMintAddress.programId
+          );
+        } catch {
+          throw new Error(`Unable to derive ATA for token address: ${expectedTokenAddress}`);
+        }
+        if (ata !== tokenEnablement.address) {
+          throw new Error(
+            `Invalid token address: expected ${ata}, got ${tokenEnablement.address} on token enablement tx`
+          );
+        }
+      }
+    }
+  }
+
+  private hasSolVersionedTransactionData(
+    txParams: TransactionParams
+  ): txParams is TransactionParams & { solVersionedTransactionData: SolVersionedTransactionData } {
+    return 'solVersionedTransactionData' in txParams && txParams.solVersionedTransactionData !== undefined;
+  }
+
+  /**
+   * Verify a versioned Solana transaction with basic structural validation
+   * @param params - verification parameters
+   * @returns true if verification passes
+   */
+  private async verifyVersionedTransaction(params: SolVerifyTransactionOptions): Promise<boolean> {
+    const { txParams, txPrebuild } = params;
+    const rawTx = txPrebuild.txBase64 || txPrebuild.txHex;
+
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txBase64 or txHex');
+    }
+
+    // Validate that the versioned transaction data is well-formed
+    if (!this.hasSolVersionedTransactionData(txParams)) {
+      throw new Error('solVersionedTransactionData is required for versioned transaction verification');
+    }
+
+    const versionedData = txParams.solVersionedTransactionData;
+
+    if (!versionedData.versionedInstructions || versionedData.versionedInstructions.length === 0) {
+      throw new Error('versioned transaction must have at least one instruction');
+    }
+
+    if (!versionedData.staticAccountKeys || versionedData.staticAccountKeys.length === 0) {
+      throw new Error('versioned transaction must have at least one static account key');
+    }
+
+    if (!versionedData.messageHeader) {
+      throw new Error('versioned transaction must have a message header');
+    }
+
+    // Validate that we can deserialize the transaction
+    let rawTxBase64 = rawTx;
+    if (HEX_REGEX.test(rawTx)) {
+      rawTxBase64 = Buffer.from(rawTx, 'hex').toString('base64');
+    }
+
+    try {
+      const txBytes = Buffer.from(rawTxBase64, 'base64');
+      if (txBytes.length < 1) {
+        throw new Error('transaction bytes are empty');
+      }
+
+      // Check version byte (after signatures)
+      const numSignatures = txBytes[0];
+      const signatureSize = 64;
+      const versionByteOffset = 1 + numSignatures * signatureSize;
+
+      if (txBytes.length <= versionByteOffset) {
+        throw new Error('transaction bytes are too short to contain version byte');
+      }
+
+      const versionByte = txBytes[versionByteOffset];
+      const isVersioned = (versionByte & 0x80) !== 0;
+
+      if (!isVersioned) {
+        throw new Error('transaction does not have versioned format');
+      }
+    } catch (error) {
+      throw new Error(`failed to validate versioned transaction format: ${error.message}`);
+    }
+
+    return true;
+  }
+
+  async verifyTransaction(params: SolVerifyTransactionOptions): Promise<boolean> {
+    // asset name to transfer amount map
+    const totalAmount: Record<string, BigNumber> = {};
+    const coinConfig = coins.get(this.getChain());
+    const {
+      txParams: txParams,
+      txPrebuild: txPrebuild,
+      memo: memo,
+      durableNonce: durableNonce,
+      verification: verificationOptions,
+    } = params;
+
+    if (this.hasSolVersionedTransactionData(txParams)) {
+      return this.verifyVersionedTransaction(params);
+    }
+
+    const transaction = new Transaction(coinConfig);
+    const rawTx = txPrebuild.txBase64 || txPrebuild.txHex;
+    const consolidateId = txPrebuild.consolidateId;
+
+    const walletRootAddress = params.wallet.coinSpecific()?.rootAddress;
+
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txBase64 or txHex');
+    }
+
+    let rawTxBase64 = rawTx;
+    if (HEX_REGEX.test(rawTx)) {
+      rawTxBase64 = Buffer.from(rawTx, 'hex').toString('base64');
+    }
+    transaction.fromRawTransaction(rawTxBase64);
+    const explainedTx = transaction.explainTransaction();
+
+    if (txParams.type === 'enabletoken' && verificationOptions?.verifyTokenEnablement) {
+      this.verifyTxType(txParams.type, explainedTx.type);
+      const tokenEnablementsPrebuild = this.throwIfMissingTokenEnablementsOrReturn(explainedTx);
+      const enableTokensConfig = this.throwIfMissingEnableTokenConfigOrReturn(txParams);
+
+      this.verifyTokenName(tokenEnablementsPrebuild, enableTokensConfig);
+      await this.verifyTokenAddress(tokenEnablementsPrebuild, enableTokensConfig);
+    }
+
+    // users do not input recipients for consolidation requests as they are generated by the server
+    if (txParams.recipients !== undefined) {
+      const filteredRecipients = txParams.recipients?.map((recipient) =>
+        _.pick(recipient, ['address', 'amount', 'tokenName'])
+      );
+      const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount', 'tokenName']));
+
+      if (filteredRecipients.length !== filteredOutputs.length) {
+        throw new Error('Number of tx outputs does not match with number of txParams recipients');
+      }
+
+      // For each recipient, check if it's a token tx (tokenName will exist if so)
+      // If it is a token tx, verify that the recipient address equals the derived address from explainedTx
+      // Derive the ATA if it is a native address and confirm it is equal to the explained tx recipient
+      const recipientChecks = await Promise.all(
+        filteredRecipients.map(async (recipientFromUser, index) => {
+          const recipientFromTx = filteredOutputs[index]; // This address should be an ATA
+
+          // Compare the BigNumber values because amount is (string | number)
+          // Apply s390x endianness fix if needed
+          const userAmountStr = String(recipientFromUser.amount);
+          const txAmountStr = getAmountBasedOnEndianness(recipientFromTx.amount);
+
+          const userAmount = new BigNumber(userAmountStr);
+          const txAmount = new BigNumber(txAmountStr);
+          if (!userAmount.isEqualTo(txAmount)) {
+            return false;
+          }
+
+          // Compare the addresses and tokenNames
+          // Else if the addresses are not the same, check the derived ATA for parity
+          if (
+            recipientFromUser.address === recipientFromTx.address &&
+            recipientFromUser.tokenName === recipientFromTx.tokenName
+          ) {
+            return true;
+          } else if (recipientFromUser.address !== recipientFromTx.address && recipientFromUser.tokenName) {
+            // Try to check if the user's derived ATA is equal to the tx recipient address
+            // If getAssociatedTokenAccountAddress throws an error, then we are unable to derive the ATA for that address.
+            // Return false and throw an error if that is the case.
+            try {
+              const tokenMintAddress = getSolTokenFromTokenName(recipientFromUser.tokenName);
+              return getAssociatedTokenAccountAddress(
+                tokenMintAddress!.tokenAddress,
+                recipientFromUser.address,
+                true,
+                tokenMintAddress!.programId
+              ).then((ata: string) => {
+                return ata === recipientFromTx.address;
+              });
+            } catch {
+              // Unable to derive ATA
+              return false;
+            }
+          }
+          return false;
+        })
+      );
+
+      if (recipientChecks.includes(false)) {
+        throw new Error('Tx outputs does not match with expected txParams recipients');
+      }
+    } else if (verificationOptions?.consolidationToBaseAddress) {
+      //verify funds are sent to walletRootAddress for a consolidation
+      const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount', 'tokenName']));
+
+      // Cache to store already derived ATA addresses
+      const ataAddressCache: Record<string, string> = {};
+
+      for (const output of filteredOutputs) {
+        if (output.tokenName) {
+          // Check cache first before deriving ATA address
+          if (!ataAddressCache[output.tokenName]) {
+            const tokenMintAddress = getSolTokenFromTokenName(output.tokenName);
+            if (tokenMintAddress?.tokenAddress && tokenMintAddress?.programId) {
+              ataAddressCache[output.tokenName] = await getAssociatedTokenAccountAddress(
+                tokenMintAddress.tokenAddress,
+                walletRootAddress as string,
+                true,
+                tokenMintAddress.programId
+              );
+            } else {
+              throw new Error(`Unable to get token information for ${output.tokenName}`);
+            }
+          }
+
+          if (ataAddressCache[output.tokenName] !== output.address) {
+            throw new Error('tx outputs does not match with expected address');
+          }
+        } else if (output.address !== walletRootAddress) {
+          throw new Error('tx outputs does not match with expected address');
+        }
+      }
+    }
+
+    const transactionJson = transaction.toJson();
+    if (memo && memo.value !== explainedTx.memo) {
+      throw new Error('Tx memo does not match with expected txParams recipient memo');
+    }
+    if (txParams.recipients) {
+      for (const recipients of txParams.recipients) {
+        // totalAmount based on each token
+        const assetName = recipients.tokenName || this.getChain();
+        const amount = totalAmount[assetName] || new BigNumber(0);
+        totalAmount[assetName] = amount.plus(recipients.amount);
+      }
+
+      // total output amount from explainedTx
+      const explainedTxTotal: Record<string, BigNumber> = {};
+
+      for (const output of explainedTx.outputs) {
+        // Apply s390x endianness fix to output amounts before summing
+        const outputAmountStr = getAmountBasedOnEndianness(output.amount);
+
+        // total output amount based on each token
+        const assetName = output.tokenName || this.getChain();
+        const amount = explainedTxTotal[assetName] || new BigNumber(0);
+        explainedTxTotal[assetName] = amount.plus(outputAmountStr);
+      }
+
+      if (!_.isEqual(explainedTxTotal, totalAmount)) {
+        throw new Error('Tx total amount does not match with expected total amount field');
+      }
+    }
+
+    // For non-consolidate transactions, feePayer must be the wallet's root address
+    if (consolidateId === undefined && transactionJson.feePayer !== walletRootAddress) {
+      throw new Error('Tx fee payer is not the wallet root address');
+    }
+
+    if (durableNonce && !_.isEqual(explainedTx.durableNonce, durableNonce)) {
+      throw new Error('Tx durableNonce does not match with param durableNonce');
+    }
+
+    return true;
+  }
+
+  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
+    const result = await verifyEddsaTssWalletAddress(
+      params,
+      (address) => this.isValidAddress(address),
+      (publicKey) => this.getAddressFromPublicKey(publicKey)
+    );
+
+    if (!result) {
+      throw new UnexpectedAddressError(`address validation failure: ${params.address} is not a wallet address`);
+    }
+
+    return true;
+  }
+
+  /**
+   * Converts a Solana public key to an address
+   * @param publicKey Hex-encoded public key (64 hex characters = 32 bytes)
+   * @returns Base58-encoded Solana address
+   */
+  getAddressFromPublicKey(publicKey: string): string {
+    const publicKeyBuffer = Buffer.from(publicKey, 'hex');
+    return base58.encode(publicKeyBuffer);
+  }
+
+  /**
+   * Generate Solana key pair
+   *
+   * @param {Buffer} seed - Seed from which the new SolKeyPair should be generated, otherwise a random seed is used
+   * @returns {Object} object with generated pub and prv
+   */
+  generateKeyPair(seed?: Buffer | undefined): KeyPair {
+    const result = seed ? new SolKeyPair({ seed }).getKeys() : new SolKeyPair().getKeys();
+    return result as KeyPair;
+  }
+
+  /**
+   * Return boolean indicating whether input is valid public key for the coin
+   *
+   * @param {string} pub the prv to be checked
+   * @returns is it valid?
+   */
+  isValidPub(pub: string): boolean {
+    return isValidPublicKey(pub);
+  }
+
+  /**
+   * Return boolean indicating whether input is valid private key for the coin
+   *
+   * @param {string} prv the prv to be checked
+   * @returns is it valid?
+   */
+  isValidPrv(prv: string): boolean {
+    return isValidPrivateKey(prv);
+  }
+
+  isValidAddress(address: string): boolean {
+    return isValidAddress(address);
+  }
+
+  async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
+    const solKeypair = new SolKeyPair({ prv: key.prv });
+    if (Buffer.isBuffer(message)) {
+      message = base58.encode(message);
+    }
+
+    return Buffer.from(solKeypair.signMessage(message));
+  }
+
+  /**
+   * Signs Solana transaction
+   * @param params
+   * @param callback
+   */
+  async signTransaction(params: SolSignTransactionOptions): Promise<SignedTransaction> {
+    const factory = this.getBuilder();
+    const rawTx = params.txPrebuild.txHex || params.txPrebuild.txBase64;
+    const txBuilder = factory.from(rawTx);
+    txBuilder.sign({ key: params.prv });
+    const transaction: BaseTransaction = await txBuilder.build();
+
+    if (!transaction) {
+      throw new Error('Invalid transaction');
+    }
+
+    const serializedTx = (transaction as BaseTransaction).toBroadcastFormat();
+
+    return {
+      txHex: serializedTx,
+    } as any;
+  }
+
+  async parseTransaction(params: SolParseTransactionOptions): Promise<SolParsedTransaction> {
+    // explainTransaction now uses WASM for testnet automatically
+    const transactionExplanation = await this.explainTransaction({
+      txBase64: params.txBase64,
+      feeInfo: params.feeInfo,
+      tokenAccountRentExemptAmount: params.tokenAccountRentExemptAmount,
+    });
+
+    if (!transactionExplanation) {
+      throw new Error('Invalid transaction');
+    }
+
+    const solTransaction = transactionExplanation as SolTransactionExplanation;
+    if (solTransaction.outputs.length <= 0) {
+      return {
+        inputs: [],
+        outputs: [],
+      };
+    }
+
+    const senderAddress = solTransaction.outputs[0].address;
+    const feeAmount = new BigNumber(solTransaction.fee.fee);
+
+    // assume 1 sender, who is also the fee payer
+    const inputs = [
+      {
+        address: senderAddress,
+        amount: new BigNumber(solTransaction.outputAmount).plus(feeAmount).toNumber(),
+      },
+    ];
+
+    const outputs: TransactionOutput[] = solTransaction.outputs.map(({ address, amount, tokenName }) => {
+      const output: TransactionOutput = { address, amount };
+      if (tokenName) {
+        output.tokenName = tokenName;
+      }
+      return output;
+    });
+
+    return {
+      inputs,
+      outputs,
+    };
+  }
+
+  /**
+   * Explain a Solana transaction from txBase64
+   * Uses WASM-based parsing for testnet, with fallback to legacy builder approach.
+   * @param params
+   */
+  async explainTransaction(params: ExplainTransactionOptions): Promise<SolTransactionExplanation> {
+    // Use WASM-based parsing for testnet (simpler, faster, no @solana/web3.js rebuild)
+    if (this.getChain() === 'tsol') {
+      return this.explainTransactionWithWasm(params) as SolTransactionExplanation;
+    }
+
+    // Legacy approach for mainnet (until WASM is fully validated)
+    const factory = this.getBuilder();
+    let rebuiltTransaction;
+
+    try {
+      const transactionBuilder = factory.from(params.txBase64);
+      if (transactionBuilder instanceof TransactionBuilder) {
+        const txBuilder = transactionBuilder as TransactionBuilder;
+        txBuilder.fee({ amount: params.feeInfo.fee });
+        if (params.tokenAccountRentExemptAmount) {
+          txBuilder.associatedTokenAccountRent(params.tokenAccountRentExemptAmount);
+        }
+      }
+      rebuiltTransaction = await transactionBuilder.build();
+    } catch (e) {
+      logger.error(e);
+      throw new Error('Invalid transaction');
+    }
+
+    const explainedTransaction = (rebuiltTransaction as BaseTransaction).explainTransaction();
+
+    return explainedTransaction as SolTransactionExplanation;
+  }
+
+  /**
+   * Explain a Solana transaction using WASM parsing (bypasses @solana/web3.js rebuild).
+   * Delegates to standalone explainSolTransaction().
+   */
+  explainTransactionWithWasm(params: ExplainTransactionOptions): SolLibTransactionExplanation {
+    return explainSolTransaction({ ...params, coinName: params.coinName ?? this.getChain() });
+  }
+
+  /** @inheritDoc */
+  async getSignablePayload(serializedTx: string): Promise<Buffer> {
+    const factory = this.getBuilder();
+    const rebuiltTransaction = await factory.from(serializedTx).build();
+    return rebuiltTransaction.signablePayload;
+  }
+
+  /** @inheritDoc */
+  async presignTransaction(params: PresignTransactionOptions): Promise<PresignTransactionOptions> {
+    // Hot wallet txns are only valid for 1-2 minutes.
+    // To buy more time, we rebuild the transaction with a new blockhash right before we sign.
+    if (params.walletData.type !== 'hot') {
+      return Promise.resolve(params);
+    }
+
+    const txRequestId = params.txPrebuild?.txRequestId;
+    if (txRequestId === undefined) {
+      throw new Error('Missing txRequestId');
+    }
+
+    const { tssUtils } = params;
+
+    await tssUtils!.deleteSignatureShares(txRequestId);
+    const recreated = await tssUtils!.getTxRequest(txRequestId);
+    let txHex = '';
+    if (recreated.unsignedTxs) {
+      txHex = recreated.unsignedTxs[0]?.serializedTxHex;
+    } else {
+      txHex = recreated.transactions ? recreated.transactions[0]?.unsignedTx.serializedTxHex : '';
+    }
+
+    if (!txHex) {
+      throw new Error('Missing serialized tx hex');
+    }
+
+    return Promise.resolve({
+      ...params,
+      txPrebuild: recreated,
+      txHex,
+    });
+  }
+
+  protected getPublicNodeUrl(apiKey?: string): string {
+    if (apiKey) {
+      return Environments[this.bitgo.getEnv()].solAlchemyNodeUrl + `/${apiKey}`;
+    }
+    return Environments[this.bitgo.getEnv()].solNodeUrl;
+  }
+
+  /**
+   * Make a request to one of the public SOL nodes available
+   * @param params.payload
+   */
+  protected async getDataFromNode(
+    params: { payload?: Record<string, unknown> },
+    apiKey?: string
+  ): Promise<request.Response> {
+    const nodeUrl = this.getPublicNodeUrl(apiKey);
+    try {
+      return await request.post(nodeUrl).send(params.payload);
+    } catch (e) {
+      console.debug(e);
+    }
+    throw new Error(`Unable to call endpoint: '/' from node: ${nodeUrl}`);
+  }
+
+  protected async getBlockhash(apiKey?: string): Promise<string> {
+    const response = await this.getDataFromNode(
+      {
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getLatestBlockhash',
+          params: [
+            {
+              commitment: 'finalized',
+            },
+          ],
+        },
+      },
+      apiKey
+    );
+    if (response.status !== 200) {
+      throw new Error('Account not found');
+    }
+
+    return response.body.result.value.blockhash;
+  }
+
+  protected async getFeeForMessage(message: string, apiKey?: string): Promise<number> {
+    const response = await this.getDataFromNode(
+      {
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getFeeForMessage',
+          params: [
+            message,
+            {
+              commitment: 'finalized',
+            },
+          ],
+        },
+      },
+      apiKey
+    );
+    if (response.status !== 200) {
+      throw new Error('Account not found');
+    }
+
+    return response.body.result.value;
+  }
+
+  protected async getRentExemptAmount(apiKey?: string): Promise<number> {
+    const response = await this.getDataFromNode(
+      {
+        payload: {
+          jsonrpc: '2.0',
+          id: '1',
+          method: 'getMinimumBalanceForRentExemption',
+          params: [165],
+        },
+      },
+      apiKey
+    );
+    if (response.status !== 200 || response.error) {
+      throw new Error(JSON.stringify(response.error));
+    }
+
+    return response.body.result;
+  }
+
+  protected async getAccountBalance(pubKey: string, apiKey?: string): Promise<number> {
+    const response = await this.getDataFromNode(
+      {
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getBalance',
+          params: [pubKey],
+        },
+      },
+      apiKey
+    );
+    if (response.status !== 200) {
+      throw new Error('Account not found');
+    }
+    return response.body.result.value;
+  }
+
+  protected async getAccountInfo(pubKey: string, apiKey?: string): Promise<SolDurableNonceFromNode> {
+    const response = await this.getDataFromNode(
+      {
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getAccountInfo',
+          params: [
+            pubKey,
+            {
+              encoding: 'jsonParsed',
+            },
+          ],
+        },
+      },
+      apiKey
+    );
+    if (response.status !== 200) {
+      throw new Error('Account not found');
+    }
+    return {
+      authority: response.body.result.value.data.parsed.info.authority,
+      blockhash: response.body.result.value.data.parsed.info.blockhash,
+    };
+  }
+
+  protected async getTokenAccountsByOwner(pubKey = '', programId = '', apiKey?: string): Promise<[] | TokenAccount[]> {
+    const response = await this.getDataFromNode(
+      {
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getTokenAccountsByOwner',
+          params: [
+            pubKey,
+            {
+              programId:
+                programId.toString().toLowerCase() === TOKEN_2022_PROGRAM_ID.toString().toLowerCase()
+                  ? TOKEN_2022_PROGRAM_ID.toString()
+                  : TOKEN_PROGRAM_ID.toString(),
+            },
+            {
+              encoding: 'jsonParsed',
+            },
+          ],
+        },
+      },
+      apiKey
+    );
+    if (response.status !== 200) {
+      throw new Error('Account not found');
+    }
+
+    if (response.body.result.value.length !== 0) {
+      const tokenAccounts: TokenAccount[] = [];
+      for (const tokenAccount of response.body.result.value) {
+        tokenAccounts.push({ info: tokenAccount.account.data.parsed.info, pubKey: tokenAccount.pubKey });
+      }
+      return tokenAccounts;
+    }
+
+    return [];
+  }
+
+  protected async getTokenAccountInfo(pubKey: string, apiKey?: string): Promise<TokenAccount> {
+    const response = await this.getDataFromNode(
+      {
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getAccountInfo',
+          params: [
+            pubKey,
+            {
+              encoding: 'jsonParsed',
+            },
+          ],
+        },
+      },
+      apiKey
+    );
+    if (response.status !== 200) {
+      throw new Error('Account not found');
+    }
+    return {
+      pubKey: pubKey,
+      info: response.body.result.value.data.parsed.info,
+    };
+  }
+
+  /** inherited doc */
+  async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
+    if (!params.signatureShares) {
+      ('Missing transaction(s)');
+    }
+    const req = params.signatureShares;
+    const broadcastableTransactions: MPCTx[] = [];
+    let lastScanIndex = 0;
+
+    for (let i = 0; i < req.length; i++) {
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const transaction = req[i].txRequest.transactions[0].unsignedTx;
+      if (!req[i].ovc || !req[i].ovc[0].eddsaSignature) {
+        throw new Error('Missing signature(s)');
+      }
+      const signature = req[i].ovc[0].eddsaSignature;
+      if (!transaction.signableHex) {
+        throw new Error('Missing signable hex');
+      }
+      const messageBuffer = Buffer.from(transaction.signableHex!, 'hex');
+      const result = MPC.verify(messageBuffer, signature);
+      if (!result) {
+        throw new Error('Invalid signature');
+      }
+      const signatureHex = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
+      const txBuilder = this.getBuilder().from(transaction.serializedTx as string);
+      if (!transaction.coinSpecific?.commonKeychain) {
+        throw new Error('Missing common keychain');
+      }
+      const commonKeychain = transaction.coinSpecific!.commonKeychain! as string;
+      if (!transaction.derivationPath) {
+        throw new Error('Missing derivation path');
+      }
+      const derivationPath = transaction.derivationPath as string;
+      const accountId = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
+      const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
+
+      // add combined signature from ovc
+      const publicKeyObj = { pub: bs58EncodedPublicKey };
+      txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
+
+      const signedTransaction = await txBuilder.build();
+      const serializedTx = signedTransaction.toBroadcastFormat();
+
+      broadcastableTransactions.push({
+        serializedTx: serializedTx,
+        scanIndex: transaction.scanIndex,
+      });
+
+      if (i === req.length - 1 && transaction.coinSpecific!.lastScanIndex) {
+        lastScanIndex = transaction.coinSpecific!.lastScanIndex as number;
+      }
+    }
+
+    return { transactions: broadcastableTransactions, lastScanIndex };
+  }
+
+  /**
+   * Builds a funds recovery transaction without BitGo
+   * @param {SolRecoveryOptions} params parameters needed to construct and
+   * (maybe) sign the transaction
+   *
+   * @returns {MPCTx | MPCSweepTxs} the serialized transaction hex string and index
+   * of the address being swept
+   */
+  async recover(params: SolRecoveryOptions): Promise<MPCTx | MPCSweepTxs> {
+    if (!params.bitgoKey) {
+      throw new Error('missing bitgoKey');
+    }
+
+    if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const isUnsignedSweep = !params.walletPassphrase;
+
+    // Build the transaction
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    let balance = 0;
+
+    const index = params.index || 0;
+    const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
+    const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+    const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
+
+    balance = await this.getAccountBalance(bs58EncodedPublicKey, params.apiKey);
+
+    const factory = this.getBuilder();
+    const walletCoin = this.getChain();
+
+    let txBuilder;
+    let blockhash = await this.getBlockhash(params.apiKey);
+    let rentExemptAmount;
+    let authority = '';
+    let totalFee = new BigNumber(0);
+    let totalFeeForTokenRecovery = new BigNumber(0);
+
+    // check for possible token recovery, recover the token provide by user
+    if (params.tokenContractAddress) {
+      let isUnsupportedToken = false;
+      const tokenAccounts = await this.getTokenAccountsByOwner(bs58EncodedPublicKey, params.programId, params.apiKey);
+      if (tokenAccounts.length !== 0) {
+        // there exists token accounts on the given address, but need to check certain conditions:
+        // 1. if there is a recoverable balance
+        // 2. if the token is supported by bitgo
+        const recovereableTokenAccounts: TokenAccount[] = [];
+        for (const tokenAccount of tokenAccounts) {
+          if (params.tokenContractAddress === tokenAccount.info.mint) {
+            const tokenAmount = new BigNumber(tokenAccount.info.tokenAmount.amount);
+            const network = this.getNetwork();
+            const token = getSolTokenFromAddress(tokenAccount.info.mint, network); // todo(WIN-5894) fix for ams
+
+            if (!token) {
+              isUnsupportedToken = true;
+            }
+            if (tokenAmount.gt(new BigNumber(0))) {
+              tokenAccount.tokenName = token?.name || 'Unsupported Token';
+              recovereableTokenAccounts.push(tokenAccount);
+            }
+            break;
+          }
+        }
+
+        if (recovereableTokenAccounts.length !== 0) {
+          rentExemptAmount = await this.getRentExemptAmount(params.apiKey);
+
+          txBuilder = factory
+            .getTokenTransferBuilder()
+            .nonce(blockhash)
+            .sender(bs58EncodedPublicKey)
+            .associatedTokenAccountRent(rentExemptAmount.toString())
+            .feePayer(bs58EncodedPublicKey);
+
+          // need to get all token accounts of the recipient address and need to create them if they do not exist
+          const recipientTokenAccounts = await this.getTokenAccountsByOwner(
+            params.recoveryDestination,
+            params.programId,
+            params.apiKey
+          );
+
+          for (const tokenAccount of recovereableTokenAccounts) {
+            let recipientTokenAccountExists = false;
+            for (const recipientTokenAccount of recipientTokenAccounts as TokenAccount[]) {
+              if (recipientTokenAccount.info.mint === tokenAccount.info.mint) {
+                recipientTokenAccountExists = true;
+                break;
+              }
+            }
+
+            const recipientTokenAccount = await getAssociatedTokenAccountAddress(
+              tokenAccount.info.mint,
+              params.recoveryDestination,
+              false,
+              params.programId?.toString()
+            );
+            const tokenName = tokenAccount.tokenName as string;
+            const sendParams = {
+              address: recipientTokenAccount,
+              amount: tokenAccount.info.tokenAmount.amount,
+              tokenName,
+              ...(isUnsupportedToken
+                ? {
+                    tokenAddress: tokenAccount.info.mint,
+                    programId: params.programId?.toString(),
+                    decimalPlaces: tokenAccount.info.tokenAmount.decimals,
+                  }
+                : {}),
+            };
+            txBuilder.send(sendParams);
+
+            if (!recipientTokenAccountExists) {
+              // recipient token account does not exist for token and must be created
+              txBuilder.createAssociatedTokenAccount({
+                ownerAddress: params.recoveryDestination,
+                tokenName: tokenName,
+                ...(isUnsupportedToken ? { tokenAddress: tokenAccount.info.mint } : {}),
+                programId:
+                  params.programId?.toString().toLowerCase() === TOKEN_2022_PROGRAM_ID.toString().toLowerCase()
+                    ? TOKEN_2022_PROGRAM_ID.toString()
+                    : TOKEN_PROGRAM_ID.toString(),
+              });
+              // add rent exempt amount to total fee for each token account that has to be created
+              totalFeeForTokenRecovery = totalFeeForTokenRecovery.plus(rentExemptAmount);
+            }
+          }
+        } else {
+          throw Error('Not enough token funds to recover');
+        }
+      } else {
+        // there are no recoverable token accounts , need to check if there are tokens to recover
+        throw Error('Did not find token account to recover tokens, please check token account');
+      }
+    } else {
+      txBuilder = factory
+        .getTransferBuilder()
+        .nonce(blockhash)
+        .sender(bs58EncodedPublicKey)
+        .send({ address: params.recoveryDestination, amount: balance.toString() })
+        .feePayer(bs58EncodedPublicKey);
+    }
+
+    if (params.durableNonce) {
+      const durableNonceInfo = await this.getAccountInfo(params.durableNonce.publicKey, params.apiKey);
+      blockhash = durableNonceInfo.blockhash;
+      authority = durableNonceInfo.authority;
+
+      txBuilder.nonce(blockhash, {
+        walletNonceAddress: params.durableNonce.publicKey,
+        authWalletAddress: authority,
+      });
+    }
+
+    // build the transaction without fee
+    const unsignedTransactionWithoutFee = (await txBuilder.build()) as Transaction;
+    const serializedMessage = unsignedTransactionWithoutFee.solTransaction.serializeMessage().toString('base64');
+
+    const baseFee = await this.getFeeForMessage(serializedMessage, params.apiKey);
+    const feePerSignature = params.durableNonce ? baseFee / 2 : baseFee;
+    totalFee = totalFee.plus(new BigNumber(baseFee));
+    totalFeeForTokenRecovery = totalFeeForTokenRecovery.plus(new BigNumber(baseFee));
+    if (totalFee.gt(balance)) {
+      throw Error('Did not find address with funds to recover');
+    }
+
+    if (params.tokenContractAddress) {
+      // Check if there is sufficient native solana to recover tokens
+      if (new BigNumber(balance).lt(totalFeeForTokenRecovery)) {
+        throw Error(
+          'Not enough funds to pay for recover tokens fees, have: ' +
+            balance +
+            ' need: ' +
+            totalFeeForTokenRecovery.toString()
+        );
+      }
+      txBuilder.fee({ amount: feePerSignature });
+    } else {
+      const netAmount = new BigNumber(balance).minus(totalFee);
+      txBuilder = factory
+        .getTransferBuilder()
+        .nonce(blockhash)
+        .sender(bs58EncodedPublicKey)
+        .send({ address: params.recoveryDestination, amount: netAmount.toString() })
+        .feePayer(bs58EncodedPublicKey)
+        .fee({ amount: feePerSignature });
+
+      if (params.durableNonce) {
+        txBuilder.nonce(blockhash, {
+          walletNonceAddress: params.durableNonce.publicKey,
+          authWalletAddress: authority,
+        });
+      }
+    }
+
+    if (!isUnsignedSweep) {
+      // Sign the txn
+      if (!params.userKey) {
+        throw new Error('missing userKey');
+      }
+
+      if (!params.backupKey) {
+        throw new Error('missing backupKey');
+      }
+
+      if (!params.walletPassphrase) {
+        throw new Error('missing wallet passphrase');
+      }
+
+      // build the transaction with fee
+      const unsignedTransaction = (await txBuilder.build()) as Transaction;
+
+      const userKey = params.userKey.replace(/\s/g, '');
+      const backupKey = params.backupKey.replace(/\s/g, '');
+
+      // Decrypt private keys from KeyCard values
+      let userPrv;
+
+      try {
+        userPrv = this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${e.message}`);
+      }
+
+      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+
+      let backupPrv;
+      try {
+        backupPrv = this.bitgo.decrypt({
+          input: backupKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting backup keychain: ${e.message}`);
+      }
+      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+
+      const signatureHex = await EDDSAMethods.getTSSSignature(
+        userSigningMaterial,
+        backupSigningMaterial,
+        currPath,
+        unsignedTransaction
+      );
+
+      const publicKeyObj = { pub: bs58EncodedPublicKey };
+      txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
+    }
+
+    if (params.durableNonce) {
+      // add durable nonce account signature
+      txBuilder.sign({ key: params.durableNonce.secretKey });
+    }
+
+    const completedTransaction = await txBuilder.build();
+    const serializedTx = completedTransaction.toBroadcastFormat();
+    const derivationPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
+    const inputs: OvcInput[] = [];
+    for (const input of completedTransaction.inputs) {
+      inputs.push({
+        address: input.address,
+        valueString: input.value,
+        value: new BigNumber(input.value).toNumber(),
+      });
+    }
+    const outputs: OvcOutput[] = [];
+    for (const output of completedTransaction.outputs) {
+      outputs.push({
+        address: output.address,
+        valueString: output.value,
+        coinName: output.coin ? output.coin : walletCoin,
+      });
+    }
+    const spendAmount = completedTransaction.inputs.length === 1 ? completedTransaction.inputs[0].value : 0;
+    const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
+    const feeInfo = { fee: totalFeeForTokenRecovery.toNumber(), feeString: totalFee.toString() };
+    const coinSpecific = { commonKeychain: bitgoKey };
+    if (isUnsignedSweep) {
+      const transaction: MPCTx = {
+        serializedTx: serializedTx,
+        scanIndex: index,
+        coin: walletCoin,
+        signableHex: completedTransaction.signablePayload.toString('hex'),
+        derivationPath: derivationPath,
+        parsedTx: parsedTx,
+        feeInfo: feeInfo,
+        coinSpecific: coinSpecific,
+      };
+      const unsignedTx: MPCUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
+      const transactions: MPCUnsignedTx[] = [unsignedTx];
+      const txRequest: RecoveryTxRequest = {
+        transactions: transactions,
+        walletCoin: walletCoin,
+      };
+      const txRequests: MPCSweepTxs = { txRequests: [txRequest] };
+      return txRequests;
+    }
+    const transaction: MPCTx = {
+      serializedTx: serializedTx,
+      scanIndex: index,
+    };
+    return transaction;
+  }
+
+  /**
+   * Builds a funds recovery transaction without BitGo
+   * @param {SolRecoveryOptions} params parameters needed to construct and
+   * (maybe) sign the transaction
+   *
+   * @returns {BaseBroadcastTransactionResult[]} the serialized transaction hex string and index
+   * of the address being swept
+   */
+  async recoverCloseATA(params: SolRecoveryOptions): Promise<BaseBroadcastTransactionResult[]> {
+    if (!params.bitgoKey) {
+      throw new Error('missing bitgoKey');
+    }
+
+    if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    if (!params.closeAtaAddress || !this.isValidAddress(params.closeAtaAddress)) {
+      throw new Error('invalid closeAtaAddress');
+    }
+
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+
+    // Build the transaction
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    let balance = 0;
+
+    const index = params.index || 0;
+    const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
+    const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+    const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
+
+    const accountBalance = await this.getAccountBalance(bs58EncodedPublicKey);
+
+    balance = await this.getAccountBalance(params.closeAtaAddress);
+    if (balance <= 0) {
+      throw Error('Did not find closeAtaAddress with sol funds to recover');
+    }
+
+    const factory = this.getBuilder();
+
+    let txBuilder;
+    let blockhash;
+    const recovertTxns: BaseBroadcastTransactionResult[] = [];
+
+    const rentExemptAmount = await this.getRentExemptAmount();
+
+    // do token recovery before closing ATA address
+    // check if any token is present on the closeAtaAddress
+    const tokenInfo = await this.getTokenAccountInfo(params.closeAtaAddress);
+    const tokenBalance = Number(tokenInfo.info.tokenAmount.amount);
+
+    if (tokenBalance > 0) {
+      // closeATA address has some token balance, it needs to be withdrawn before closing ATA
+      console.log(
+        `closeATA address ${params.closeAtaAddress} has token balance ${tokenBalance}, it needs to be withdrawn before closing ATA address`
+      );
+
+      if (!params.recoveryDestinationAtaAddress || !this.isValidAddress(params.recoveryDestinationAtaAddress)) {
+        throw new Error('invalid recoveryDestinationAtaAddress');
+      }
+
+      blockhash = await this.getBlockhash(params.apiKey);
+
+      txBuilder = factory
+        .getTokenTransferBuilder()
+        .nonce(blockhash)
+        .sender(bs58EncodedPublicKey)
+        .associatedTokenAccountRent(rentExemptAmount.toString())
+        .feePayer(bs58EncodedPublicKey);
+      const unsignedTransaction = (await txBuilder.build()) as Transaction;
+      const serializedMessage = unsignedTransaction.solTransaction.serializeMessage().toString('base64');
+      const feePerSignature = await this.getFeeForMessage(serializedMessage, params.apiKey);
+      const baseFee = params.durableNonce ? feePerSignature * 2 : feePerSignature;
+      const totalFee = new BigNumber(baseFee);
+      if (totalFee.gt(accountBalance)) {
+        throw Error('Did not find address with funds to recover');
+      }
+      txBuilder.fee({ amount: feePerSignature });
+
+      const network = this.getNetwork();
+      const token = getSolTokenFromAddress(tokenInfo.info.mint, network); // todo(WIN-5894) fix for ams
+      txBuilder.send({
+        address: params.recoveryDestinationAtaAddress,
+        amount: tokenBalance,
+        tokenName: token?.name,
+      });
+
+      const tokenRecoveryTxn = await this.signAndGenerateBroadcastableTransaction(
+        params,
+        txBuilder,
+        bs58EncodedPublicKey
+      );
+      const serializedTokenRecoveryTxn = (await tokenRecoveryTxn).serializedTx;
+      const broadcastTokenRecoveryTxn = await this.broadcastTransaction({
+        serializedSignedTransaction: serializedTokenRecoveryTxn,
+      });
+      logger.log(broadcastTokenRecoveryTxn);
+      recovertTxns.push(broadcastTokenRecoveryTxn);
+    }
+
+    // after recovering the token amount, attempting to close the ATA address
+    if (params.closeAtaAddress) {
+      blockhash = await this.getBlockhash(params.apiKey);
+
+      const ataCloseBuilder = () => {
+        const txBuilder = factory.getCloseAtaInitializationBuilder();
+        txBuilder.nonce(blockhash);
+        txBuilder.sender(bs58EncodedPublicKey);
+        txBuilder.accountAddress(params.closeAtaAddress ?? '');
+        txBuilder.destinationAddress(params.recoveryDestination);
+        txBuilder.authorityAddress(bs58EncodedPublicKey);
+        txBuilder.associatedTokenAccountRent(rentExemptAmount.toString());
+        return txBuilder;
+      };
+      txBuilder = ataCloseBuilder();
+    }
+    const closeATARecoveryTxn = await this.signAndGenerateBroadcastableTransaction(
+      params,
+      txBuilder,
+      bs58EncodedPublicKey
+    );
+    const serializedCloseATARecoveryTxn = (await closeATARecoveryTxn).serializedTx;
+    const broadcastCloseATARecoveryTxn = await this.broadcastTransaction({
+      serializedSignedTransaction: serializedCloseATARecoveryTxn,
+    });
+    logger.log(broadcastCloseATARecoveryTxn);
+    recovertTxns.push(broadcastCloseATARecoveryTxn);
+
+    return recovertTxns;
+  }
+
+  /**
+   * Recovers tokens from a nested ATA — an ATA whose owner is another ATA rather than a wallet address.
+   *
+   * This situation occurs when an external sender mistakenly calls createAssociatedTokenAccount with
+   * an ATA address as the owner instead of the root wallet address. The result is a "nested ATA"
+   * (ATA-2) owned by the wallet's normal ATA (ATA-1). Because ATA-1 is a PDA with no private key,
+   * the standard recoverCloseATA flow cannot sign for ATA-2.
+   *
+   * This method uses the Associated Token Account program's RecoverNested instruction, which allows
+   * the root wallet owner to sign and atomically move tokens from ATA-2 → ATA-1 and close ATA-2,
+   * returning the rent-exempt SOL to the wallet address.
+   *
+   * @param {SolRecoveryOptions} params - recovery params, requires nestedAtaAddress, ownerAtaAddress,
+   *   and tokenMintAddress in addition to the standard keychain fields
+   */
+  async recoverNestedAta(params: SolRecoveryOptions): Promise<BaseBroadcastTransactionResult> {
+    if (!params.bitgoKey) {
+      throw new Error('missing bitgoKey');
+    }
+
+    if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    if (!params.nestedAtaAddress || !this.isValidAddress(params.nestedAtaAddress)) {
+      throw new Error('invalid nestedAtaAddress');
+    }
+
+    if (!params.ownerAtaAddress || !this.isValidAddress(params.ownerAtaAddress)) {
+      throw new Error('invalid ownerAtaAddress');
+    }
+
+    if (!params.tokenMintAddress || !this.isValidAddress(params.tokenMintAddress)) {
+      throw new Error('invalid tokenMintAddress');
+    }
+
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+
+    const index = params.index || 0;
+    const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
+    const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+    const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
+
+    const blockhash = await this.getBlockhash(params.apiKey);
+    const rentExemptAmount = await this.getRentExemptAmount();
+
+    const factory = this.getBuilder();
+    const txBuilder = factory.getRecoverNestedAtaBuilder();
+    txBuilder.nonce(blockhash);
+    txBuilder.sender(bs58EncodedPublicKey);
+    txBuilder.feePayer(bs58EncodedPublicKey);
+    txBuilder.associatedTokenAccountRent(rentExemptAmount.toString());
+    txBuilder.nestedAccountAddress(params.nestedAtaAddress);
+    txBuilder.nestedMintAddress(params.tokenMintAddress);
+    txBuilder.destinationAccountAddress(params.ownerAtaAddress);
+    txBuilder.ownerAccountAddress(params.ownerAtaAddress);
+    txBuilder.ownerMintAddress(params.tokenMintAddress);
+    txBuilder.walletAddress(bs58EncodedPublicKey);
+
+    const recoverNestedTxn = await this.signAndGenerateBroadcastableTransaction(
+      params,
+      txBuilder,
+      bs58EncodedPublicKey
+    );
+
+    const serializedTxn = (await recoverNestedTxn).serializedTx;
+    const broadcastResult = await this.broadcastTransaction({
+      serializedSignedTransaction: serializedTxn,
+    });
+    logger.log(broadcastResult);
+
+    return broadcastResult;
+  }
+
+  async signAndGenerateBroadcastableTransaction(
+    params: SolRecoveryOptions,
+    txBuilder: any,
+    bs58EncodedPublicKey: string
+  ): Promise<MPCTx> {
+    // Sign the txn
+    if (!params.userKey) {
+      throw new Error('missing userKey');
+    }
+
+    if (!params.backupKey) {
+      throw new Error('missing backupKey');
+    }
+
+    if (!params.walletPassphrase) {
+      throw new Error('missing wallet passphrase');
+    }
+
+    const unsignedTransaction = (await txBuilder.build()) as Transaction;
+
+    const userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+
+    // Decrypt private keys from KeyCard values
+    let userPrv;
+
+    try {
+      userPrv = this.bitgo.decrypt({
+        input: userKey,
+        password: params.walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting user keychain: ${e.message}`);
+    }
+
+    const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+
+    let backupPrv;
+    try {
+      backupPrv = this.bitgo.decrypt({
+        input: backupKey,
+        password: params.walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting backup keychain: ${e.message}`);
+    }
+    const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+
+    const index = params.index || 0;
+    const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
+
+    const signatureHex = await EDDSAMethods.getTSSSignature(
+      userSigningMaterial,
+      backupSigningMaterial,
+      currPath,
+      unsignedTransaction
+    );
+
+    const publicKeyObj = { pub: bs58EncodedPublicKey };
+    txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
+
+    const completedTransaction = await txBuilder.build();
+    const serializedTx = completedTransaction.toBroadcastFormat();
+    const transaction: MPCTx = {
+      serializedTx: serializedTx,
+      scanIndex: index,
+    };
+    return transaction;
+  }
+
+  /**
+   * Builds native SOL recoveries of receive addresses in batch without BitGo.
+   * Funds will be recovered to base address first. You need to initiate another sweep txn after that.
+   *
+   * @param {SolConsolidationRecoveryOptions} params - options for consolidation recovery.
+   * @param {string} [params.startingScanIndex] - receive address index to start scanning from. default to 1 (inclusive).
+   * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
+   */
+  async recoverConsolidations(params: SolConsolidationRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
+    const isUnsignedSweep = !params.walletPassphrase;
+    const startIdx = params.startingScanIndex || 1;
+    const endIdx = params.endingScanIndex || startIdx + DEFAULT_SCAN_FACTOR;
+
+    if (startIdx < 1 || endIdx <= startIdx || endIdx - startIdx > 10 * DEFAULT_SCAN_FACTOR) {
+      throw new Error(
+        `Invalid starting or ending index to scan for addresses. startingScanIndex: ${startIdx}, endingScanIndex: ${endIdx}.`
+      );
+    }
+
+    // validate durable nonces array
+    if (!params.durableNonces) {
+      throw new Error('Missing durable nonces');
+    }
+    if (!params.durableNonces.publicKeys) {
+      throw new Error('Invalid durable nonces: missing public keys');
+    }
+    if (!params.durableNonces.secretKey) {
+      throw new Error('Invalid durable nonces array: missing secret key');
+    }
+
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    const baseAddressIndex = 0;
+    const baseAddressPath = params.seed
+      ? getDerivationPath(params.seed) + `/${baseAddressIndex}`
+      : `m/${baseAddressIndex}`;
+    const accountId = MPC.deriveUnhardened(bitgoKey, baseAddressPath).slice(0, 64);
+    const baseAddress = new SolKeyPair({ pub: accountId }).getAddress();
+
+    let durableNoncePubKeysIndex = 0;
+    const durableNoncePubKeysLength = params.durableNonces.publicKeys.length;
+    const consolidationTransactions: any[] = [];
+    let lastScanIndex = startIdx;
+
+    for (let i = startIdx; i < endIdx; i++) {
+      const recoverParams = {
+        userKey: params.userKey,
+        backupKey: params.backupKey,
+        bitgoKey: params.bitgoKey,
+        walletPassphrase: params.walletPassphrase,
+        recoveryDestination: baseAddress,
+        seed: params.seed,
+        index: i,
+        durableNonce: {
+          publicKey: params.durableNonces.publicKeys[durableNoncePubKeysIndex],
+          secretKey: params.durableNonces.secretKey,
+        },
+        tokenContractAddress: params.tokenContractAddress,
+        apiKey: params.apiKey,
+        programId: params.programId,
+      };
+
+      let recoveryTransaction;
+      try {
+        recoveryTransaction = await this.recover(recoverParams);
+      } catch (e) {
+        if (
+          e.message === 'Did not find address with funds to recover' ||
+          e.message === 'Did not find token account to recover tokens, please check token account' ||
+          e.message === 'Not enough token funds to recover'
+        ) {
+          lastScanIndex = i;
+          continue;
+        }
+        throw e;
+      }
+
+      if (isUnsignedSweep) {
+        consolidationTransactions.push((recoveryTransaction as MPCSweepTxs).txRequests[0]);
+      } else {
+        consolidationTransactions.push(recoveryTransaction);
+      }
+
+      lastScanIndex = i;
+      durableNoncePubKeysIndex++;
+      if (durableNoncePubKeysIndex >= durableNoncePubKeysLength) {
+        // no more available nonce accounts to create transactions
+        break;
+      }
+    }
+
+    if (consolidationTransactions.length === 0) {
+      throw new Error('Did not find an address with funds to recover');
+    }
+
+    if (isUnsignedSweep) {
+      // lastScanIndex will be used to inform user the last address index scanned for available funds (so they can
+      // appropriately adjust the scan range on the next iteration of consolidation recoveries). In the case of unsigned
+      // sweep consolidations, this lastScanIndex will be provided in the coinSpecific of the last txn made.
+      const lastTransactionCoinSpecific = {
+        commonKeychain:
+          consolidationTransactions[consolidationTransactions.length - 1].transactions[0].unsignedTx.coinSpecific
+            .commonKeychain,
+        lastScanIndex: lastScanIndex,
+      };
+      consolidationTransactions[consolidationTransactions.length - 1].transactions[0].unsignedTx.coinSpecific =
+        lastTransactionCoinSpecific;
+      const consolidationSweepTransactions: MPCSweepTxs = { txRequests: consolidationTransactions };
+      return consolidationSweepTransactions;
+    }
+
+    return { transactions: consolidationTransactions, lastScanIndex };
+  }
+
+  getTokenEnablementConfig(): TokenEnablementConfig {
+    return {
+      requiresTokenEnablement: true,
+      supportsMultipleTokenEnablements: true,
+    };
+  }
+
+  private getBuilder(): TransactionBuilderFactory {
+    return new TransactionBuilderFactory(coins.get(this.getChain()));
+  }
+
+  async broadcastTransaction({
+    serializedSignedTransaction,
+  }: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
+    validateRawTransaction(serializedSignedTransaction, true, true);
+    const response = await this.getDataFromNode({
+      payload: {
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'sendTransaction',
+        params: [
+          serializedSignedTransaction,
+          {
+            encoding: 'base64',
+          },
+        ],
+      },
+    });
+
+    if (response.body.error) {
+      throw new Error('Error broadcasting transaction: ' + response.body.error.message);
+    }
+
+    return { txId: response.body.result };
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey({ prv, publicKey, multiSigType }: AuditDecryptedKeyParams) {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multiSigType');
+    }
+    auditEddsaPrivateKey(prv, publicKey ?? '');
+  }
+
+  /** @inheritDoc */
+  setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
+    // Handle custom instructions for Solana
+    if (params.solInstructions) {
+      intent.solInstructions = params.solInstructions;
+    }
+
+    // Handle versioned transaction data for Solana
+    if (params.solVersionedTransactionData) {
+      intent.solVersionedTransactionData = params.solVersionedTransactionData;
+    }
+  }
+}

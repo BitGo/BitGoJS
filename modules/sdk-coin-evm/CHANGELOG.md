@@ -1,0 +1,400 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## [1.14.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.14.8...@bitgo/sdk-coin-evm@1.14.9) (2026-03-29)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.14.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.14.7...@bitgo/sdk-coin-evm@1.14.8) (2026-03-27)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.14.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.14.6...@bitgo/sdk-coin-evm@1.14.7) (2026-03-18)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.14.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.14.5...@bitgo/sdk-coin-evm@1.14.6) (2026-03-10)
+
+
+### Bug Fixes
+
+* added missing txn type ([3f92310](https://github.com/BitGo/BitGoJS/commit/3f92310a6b33677427aa4813c5248db77772026a))
+
+
+
+
+
+## [1.14.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.14.4...@bitgo/sdk-coin-evm@1.14.5) (2026-03-05)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.14.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.14.3...@bitgo/sdk-coin-evm@1.14.4) (2026-03-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.14.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.14.2...@bitgo/sdk-coin-evm@1.14.3) (2026-02-27)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.14.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.14.1...@bitgo/sdk-coin-evm@1.14.2) (2026-02-24)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.14.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.14.0...@bitgo/sdk-coin-evm@1.14.1) (2026-02-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+# [1.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.13.2...@bitgo/sdk-coin-evm@1.14.0) (2026-02-12)
+
+
+### Features
+
+* override isValidAddress for hbarevm ([1c1cd6f](https://github.com/BitGo/BitGoJS/commit/1c1cd6fb2a809cd027ce9758980c734424601b93))
+
+
+
+
+
+## [1.13.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.13.1...@bitgo/sdk-coin-evm@1.13.2) (2026-01-30)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.13.0...@bitgo/sdk-coin-evm@1.13.1) (2026-01-22)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+# [1.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.12.0...@bitgo/sdk-coin-evm@1.13.0) (2026-01-19)
+
+
+### Features
+
+* statics configuration for zksyncera ([a0576a6](https://github.com/BitGo/BitGoJS/commit/a0576a6397c0e6ecd6c4d9cf2c500a43e88592e7))
+
+
+
+
+
+# [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.11.1...@bitgo/sdk-coin-evm@1.12.0) (2026-01-14)
+
+
+### Features
+
+* address resolution function for hbarevm ([8678f78](https://github.com/BitGo/BitGoJS/commit/8678f7895cd49ec4a1a6bb0b17470c5c6e159a99))
+* validateAccountId fn in evm utils ([efafdb9](https://github.com/BitGo/BitGoJS/commit/efafdb9d6a5cd01789c85401fb26858a3897a8b5))
+
+
+
+
+
+## [1.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.11.0...@bitgo/sdk-coin-evm@1.11.1) (2026-01-07)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+# [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.10.3...@bitgo/sdk-coin-evm@1.11.0) (2025-12-23)
+
+
+### Features
+
+* erc721 token support for evm coins ([823808b](https://github.com/BitGo/BitGoJS/commit/823808b98a363f101e3c3ab05425d643404dc3ae))
+
+
+
+
+
+## [1.10.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.10.2...@bitgo/sdk-coin-evm@1.10.3) (2025-12-17)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.10.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.10.1...@bitgo/sdk-coin-evm@1.10.2) (2025-12-11)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.10.0...@bitgo/sdk-coin-evm@1.10.1) (2025-12-05)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.9.1...@bitgo/sdk-coin-evm@1.10.0) (2025-12-04)
+
+
+### Features
+
+* add SUPPORTS_ERC20 feature in hbarevm ([585fc0f](https://github.com/BitGo/BitGoJS/commit/585fc0f9ead581a5dca3928e20f3c4334182ecd1))
+
+
+
+
+
+## [1.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.9.0...@bitgo/sdk-coin-evm@1.9.1) (2025-11-26)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.8.4...@bitgo/sdk-coin-evm@1.9.0) (2025-11-19)
+
+
+### Features
+
+* recovery support for Hedera EVM ([b832596](https://github.com/BitGo/BitGoJS/commit/b832596290b006a7403a4e5767b88c9929f74505))
+
+
+
+
+
+## [1.8.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.8.3...@bitgo/sdk-coin-evm@1.8.4) (2025-11-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.8.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.8.2...@bitgo/sdk-coin-evm@1.8.3) (2025-11-12)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.8.1...@bitgo/sdk-coin-evm@1.8.2) (2025-11-06)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.8.0...@bitgo/sdk-coin-evm@1.8.1) (2025-10-31)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.7.8...@bitgo/sdk-coin-evm@1.8.0) (2025-10-29)
+
+
+### Features
+
+* **sdk-coin-evm:** enable message signing for base ([59cd88b](https://github.com/BitGo/BitGoJS/commit/59cd88b0a89d4c69621ddc950847c93b338fa10d))
+
+
+
+
+
+## [1.7.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.7.7...@bitgo/sdk-coin-evm@1.7.8) (2025-10-24)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.7.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.7.6...@bitgo/sdk-coin-evm@1.7.7) (2025-10-21)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.7.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.7.5...@bitgo/sdk-coin-evm@1.7.6) (2025-10-16)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.7.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.7.4...@bitgo/sdk-coin-evm@1.7.5) (2025-10-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.7.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.7.3...@bitgo/sdk-coin-evm@1.7.4) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+
+
+
+## [1.7.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.7.2...@bitgo/sdk-coin-evm@1.7.3) (2025-10-08)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+## [1.7.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.7.1...@bitgo/sdk-coin-evm@1.7.2) (2025-10-02)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+## [1.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.7.0...@bitgo/sdk-coin-evm@1.7.1) (2025-09-29)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.6.4...@bitgo/sdk-coin-evm@1.7.0) (2025-09-25)
+
+### Features
+
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+
+## [1.6.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.6.3...@bitgo/sdk-coin-evm@1.6.4) (2025-09-03)
+
+### Bug Fixes
+
+- fixed gasPrice issue for base ([743effd](https://github.com/BitGo/BitGoJS/commit/743effd79faca6e89cd696e351844ed0c0bafe67))
+
+## [1.6.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.6.2...@bitgo/sdk-coin-evm@1.6.3) (2025-08-30)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+## [1.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.6.1...@bitgo/sdk-coin-evm@1.6.2) (2025-08-29)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+## [1.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.6.0...@bitgo/sdk-coin-evm@1.6.1) (2025-08-27)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.5.1...@bitgo/sdk-coin-evm@1.6.0) (2025-08-22)
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
+## [1.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.5.0...@bitgo/sdk-coin-evm@1.5.1) (2025-08-22)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.4.4...@bitgo/sdk-coin-evm@1.5.0) (2025-08-19)
+
+### Features
+
+- automate ERC20 automation ([4287e7a](https://github.com/BitGo/BitGoJS/commit/4287e7a9739e0f908011a8ab6419d6468a1188a2))
+
+## [1.4.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.4.3...@bitgo/sdk-coin-evm@1.4.4) (2025-08-14)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+## [1.4.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.4.2...@bitgo/sdk-coin-evm@1.4.3) (2025-08-07)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+## [1.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.4.1...@bitgo/sdk-coin-evm@1.4.2) (2025-07-31)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+## [1.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.4.0...@bitgo/sdk-coin-evm@1.4.1) (2025-07-30)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.2.4...@bitgo/sdk-coin-evm@1.4.0) (2025-07-25)
+
+### Features
+
+- **sdk-coin-evm:** implement coin specific register in EVM coin module ([84a36ae](https://github.com/BitGo/BitGoJS/commit/84a36ae5dd028f07a629734cb1f2dddb9f36124e))
+
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.2.4...@bitgo/sdk-coin-evm@1.3.0) (2025-07-23)
+
+### Features
+
+- **sdk-coin-evm:** implement coin specific register in EVM coin module ([84a36ae](https://github.com/BitGo/BitGoJS/commit/84a36ae5dd028f07a629734cb1f2dddb9f36124e))
+
+## [1.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.2.3...@bitgo/sdk-coin-evm@1.2.4) (2025-07-15)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+## [1.2.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.2.2...@bitgo/sdk-coin-evm@1.2.3) (2025-07-10)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+## [1.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.2.1...@bitgo/sdk-coin-evm@1.2.2) (2025-07-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+## [1.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.2.0...@bitgo/sdk-coin-evm@1.2.1) (2025-06-25)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.1.0...@bitgo/sdk-coin-evm@1.2.0) (2025-06-24)
+
+### Features
+
+- **sdk-coin-evm:** add EvmCoin & transaction builder ([0682aea](https://github.com/BitGo/BitGoJS/commit/0682aeadffded4847c8bf70aa52e9d0b9bbf113b))
+
+# 1.1.0 (2025-06-18)
+
+### Features
+
+- add sdk-coin-evm ([e3fff21](https://github.com/BitGo/BitGoJS/commit/e3fff21b6108646588a019551a61e9f6770d2ab5))

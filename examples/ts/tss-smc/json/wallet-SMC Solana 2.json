@@ -1,0 +1,63 @@
+{
+  "wallet": {
+    "id": "649b6aa8a0ce720007de5540131ade40",
+    "users": [{ "user": "63f785933472870007f5736540ff4553", "permissions": ["admin", "view", "spend"] }],
+    "coin": "tsol",
+    "label": "SMC Solana 2",
+    "m": 2,
+    "n": 3,
+    "keys": [
+      "649b6aa69e1ee30007fe3ee010a1e261",
+      "649b6aa77e6fe900078f4e2d9714df4b",
+      "649b69a0d2521600089f16044cd5e5cb"
+    ],
+    "keySignatures": {},
+    "enterprise": "641dde3decfa200008a6a38826b2793e",
+    "tags": ["649b6aa8a0ce720007de5540131ade40", "641dde3decfa200008a6a38826b2793e"],
+    "disableTransactionNotifications": false,
+    "freeze": {},
+    "deleted": false,
+    "approvalsRequired": 1,
+    "isCold": true,
+    "coinSpecific": {
+      "rootAddress": "8yadPKjkkeCJiDKVhyCvNTYsceMs2RLfdmN6KRSRtGGd",
+      "pendingChainInitialization": true,
+      "minimumFunding": 2447136,
+      "lastChainIndex": { "0": 0, "1": -1 },
+      "nonceExpiresAt": "2023-06-27T20:23:01.473Z",
+      "trustedTokens": []
+    },
+    "admin": {},
+    "clientFlags": [],
+    "walletFlags": [],
+    "allowBackupKeySigning": false,
+    "recoverable": false,
+    "startDate": "2023-06-27T23:03:04.000Z",
+    "type": "cold",
+    "buildDefaults": {},
+    "customChangeKeySignatures": {},
+    "hasLargeNumberOfAddresses": false,
+    "multisigType": "tss",
+    "config": {},
+    "pendingChainInitialization": true,
+    "balanceString": "0",
+    "confirmedBalanceString": "0",
+    "spendableBalanceString": "0",
+    "receiveAddress": {
+      "id": "649b6aa8a0ce720007de554e6e68c485",
+      "address": "8yadPKjkkeCJiDKVhyCvNTYsceMs2RLfdmN6KRSRtGGd",
+      "chain": 0,
+      "index": 0,
+      "coin": "tsol",
+      "wallet": "649b6aa8a0ce720007de5540131ade40",
+      "coinSpecific": {
+        "rootAddress": "8yadPKjkkeCJiDKVhyCvNTYsceMs2RLfdmN6KRSRtGGd",
+        "minimumFunding": 2447136,
+        "type": "native",
+        "pendingChainInitialization": false,
+        "trustedTokens": []
+      }
+    },
+    "pendingApprovals": []
+  }
+}

@@ -1,0 +1,59 @@
+transaction: 58603ea06d55bd9dd6fec9b0d1ea5662d622f923e0f10045507723a893388e7f
+├── format: network
+├── complete: true
+├── parsedAs: bitcoin testnet
+├── version: 1
+├── locktime: 0
+├── hasWitnesses: false
+├── status: unknown
+├── vsize: 631vbytes (2524wu)
+├─┬ inputs: 2
+│ ├─┬ 0: aa7f0eedadef9ce02b0d8df579d5204d4329c01acb30e25e6889859186b8aee2:1
+│ │ ├── sequence: ffffffff (4 bytes)
+│ │ ├─┬ scriptSig: scripthash
+│ │ │ ├── 0: 0
+│ │ │ ├── 1: 3044022048a059c22437630fdd5bc3c46bd1e30438a3623a59050d5e5f2fb1a36686fd9e02202ed8206b2f2472efd3ea145bc3c52703a7874fc747bdccc97cd5b862c8d62b7401 (71 bytes)
+│ │ │ ├── 2: 30440220138087371ab51032457bdca8ef134eb566a61b16631cf6bc296c8b243f938bf70220720ab74bfa5e39f2c764d1879dd6fea9b1f287611b1ea714fe5b0928bd13d46901 (71 bytes)
+│ │ │ └─┬ 3: 5221028fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec972103316bc27d95b96418349afc6298c259bb999c6e8f39a7217787ad53602be7c1472102e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d0453ae (105 bytes)
+│ │ │   └── asm: 
+│ │ │       OP_2
+│ │ │       028fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97
+│ │ │       03316bc27d95b96418349afc6298c259bb999c6e8f39a7217787ad53602be7c147
+│ │ │       02e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04
+│ │ │       OP_3
+│ │ │       OP_CHECKMULTISIG
+│ │ ├── witness: []
+│ │ └─┬ sigScript: p2sh
+│ │   ├─┬ pubkeys: 3
+│ │   │ ├── 0: 028fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97 (33 bytes)
+│ │   │ ├── 1: 03316bc27d95b96418349afc6298c259bb999c6e8f39a7217787ad53602be7c147 (33 bytes)
+│ │   │ └── 2: 02e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04 (33 bytes)
+│ │   └── signatures: [71byte] [71byte]
+│ └─┬ 1: 5e037c992642d1e55270fb90a4aab1a5b2fafac44779bfe0f573c5fd3ad9fb44:0
+│   ├── sequence: ffffffff (4 bytes)
+│   ├─┬ scriptSig: scripthash
+│   │ ├── 0: 0
+│   │ ├── 1: 3045022100afde55c0cfa9dc3a20fb8706c5a7f86c754efcbbaf866e09e84a18668c53148402203a7e0bb62cd5a951def97181f6a26d78b70c7ac22af79029f22b5b130785939f01 (72 bytes)
+│   │ ├── 2: 3044022033ae8e7c8ef2109b804bc338e884109e5ed9e534307761aa5695a0eea3ce0615022045b4af31359339b6c696ca0f956e844baa8dd642b0e74ad2475e8fe5b4c055e801 (71 bytes)
+│   │ └─┬ 3: 5221028fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec972103316bc27d95b96418349afc6298c259bb999c6e8f39a7217787ad53602be7c1472102e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d0453ae (105 bytes)
+│   │   └── asm: 
+│   │       OP_2
+│   │       028fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97
+│   │       03316bc27d95b96418349afc6298c259bb999c6e8f39a7217787ad53602be7c147
+│   │       02e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04
+│   │       OP_3
+│   │       OP_CHECKMULTISIG
+│   ├── witness: []
+│   └─┬ sigScript: p2sh
+│     ├─┬ pubkeys: 3
+│     │ ├── 0: 028fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97 (33 bytes)
+│     │ ├── 1: 03316bc27d95b96418349afc6298c259bb999c6e8f39a7217787ad53602be7c147 (33 bytes)
+│     │ └── 2: 02e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04 (33 bytes)
+│     └── signatures: [72byte] [71byte]
+└─┬ outputs: 1 sum=1.99999000
+  └─┬ 0: 2NGSAkyhiWMZPcrfiwmcRWf9HQgpsiRGKv4
+    ├── value: 1.99999000
+    └─┬ scriptPubKey: [23byte]
+      ├── type: scripthash
+      ├── hex: a914fe5cc5d87e3348a5f3eaa316898a0f05d520876e87
+      └── asm: OP_HASH160 fe5cc5d87e3348a5f3eaa316898a0f05d520876e OP_EQUAL

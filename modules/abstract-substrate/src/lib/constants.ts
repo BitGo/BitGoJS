@@ -1,0 +1,1 @@
+export const DEFAULT_SUBSTRATE_PREFIX = 42;

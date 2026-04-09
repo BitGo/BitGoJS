@@ -1,0 +1,41 @@
+export const VET_TRANSACTION_ID_LENGTH = 64;
+export const VET_ADDRESS_LENGTH = 40;
+export const VET_BLOCK_ID_LENGTH = 64;
+export const ZERO_VALUE_AMOUNT = '0';
+
+export const TRANSFER_TOKEN_METHOD_ID = '0xa9059cbb';
+export const STAKING_METHOD_ID = '0xd8da3bbf';
+export const STAKE_CLAUSE_METHOD_ID = '0x604f2177';
+export const DELEGATE_CLAUSE_METHOD_ID = '0x08bbb824';
+export const ADD_VALIDATION_METHOD_ID = '0xc3c4b138';
+export const INCREASE_STAKE_METHOD_ID = '0x43b0de9a';
+export const DECREASE_STAKE_METHOD_ID = '0x1a73ba01';
+export const SIGNAL_EXIT_METHOD_ID = '0xcb652cef';
+export const WITHDRAW_STAKE_METHOD_ID = '0xc23a5cea';
+export const EXIT_DELEGATION_METHOD_ID = '0x69e79b7d';
+export const BURN_NFT_METHOD_ID = '0x2e17de78';
+export const TRANSFER_NFT_METHOD_ID = '0x23b872dd';
+export const CLAIM_BASE_REWARDS_METHOD_ID = '0x858d50e8'; // claimVetGeneratedVtho(uint256)
+export const CLAIM_STAKING_REWARDS_METHOD_ID = '0x0962ef79'; // claimRewards(uint256)
+
+export const STARGATE_NFT_ADDRESS = '0x1856c533ac2d94340aaa8544d35a5c1d4a21dee7';
+export const STARGATE_NFT_ADDRESS_TESTNET = '0x887d9102f0003f1724d8fd5d4fe95a11572fcd77';
+
+export const STARGATE_CONTRACT_ADDRESS_TESTNET = '0x1e02b2953adefec225cf0ec49805b1146a4429c1';
+export const STARGATE_CONTRACT_ADDRESS = '0x03c557be98123fdb6fad325328ac6eb77de7248c';
+
+export const VALIDATOR_REGISTRATION_STAKER_CONTRACT_ADDRESS_TESTNET = '0x00000000000000000000000000005374616B6572';
+export const VALIDATOR_REGISTRATION_STAKER_CONTRACT_ADDRESS_MAINNET = '0x00000000000000000000000000005374616B6572';
+
+export const AVG_GAS_UNITS = '21000';
+export const EXPIRATION = 400;
+export const GAS_PRICE_COEF = '128';
+export const GAS_UNIT_PRICE = '10000000000000'; // vechain has fixed gas unit price of 10^13 wei
+export const COEF_DIVISOR = '255';
+
+export const feeEstimateData = {
+  gas: AVG_GAS_UNITS,
+  gasUnitPrice: GAS_UNIT_PRICE,
+  gasPriceCoef: GAS_PRICE_COEF,
+  coefDivisor: COEF_DIVISOR,
+};

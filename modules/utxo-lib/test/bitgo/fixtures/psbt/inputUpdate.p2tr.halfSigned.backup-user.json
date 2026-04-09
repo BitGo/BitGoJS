@@ -1,0 +1,16 @@
+{
+  "tapLeafScript": [
+    {
+      "controlBlock": "c1745d6f171307bb83433136c6c7dc6632dacec7cc2cdabd8dc1ecfc413d54a658edc563a63dae48f2dcbf3cc40d1d876366d6899dfc392b3359a6d2fb0f17808907cc72bb001efc6c8889217a37725bc5713e88fcedb76d94f7b0b8250d6fb928",
+      "script": "2036ef228ffe9b8efffba052c32d334660dd1f8366cf8fe44ae5aa672b6b629095ad2012148715f361dab685a669d42431e5d6d3f973404dab9c9fd1b950b279ad7634ac",
+      "leafVersion": 192
+    }
+  ],
+  "tapScriptSig": [
+    {
+      "pubkey": "12148715f361dab685a669d42431e5d6d3f973404dab9c9fd1b950b279ad7634",
+      "signature": "8d520d100375845931cace350fda54a5713823b3f1c98044a7ba69b99dda9934dfbe1ebb9477b03a713135d0c2691aeb416eecf41d91e5de2fb43921fed06253",
+      "leafHash": "d77aef50fca2eb79c4f4ce9a77b06eabce732697c0e49e4e68cffe5e5c1c8b78"
+    }
+  ]
+}

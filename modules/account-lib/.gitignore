@@ -1,0 +1,9 @@
+node_modules/
+npm-debug.log
+dist/
+.nyc_output/
+browser/
+.DS_STORE
+package/
+.idea/
+coverage.lcov

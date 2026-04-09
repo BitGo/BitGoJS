@@ -1,0 +1,29 @@
+{
+  "inputs": {
+    "privateKeys": [
+      "210169d3bfff26ee7e1f3a22ba61e3d37186b195a2445a66c36adcc987c80e1c",
+      "b88806edcd0d7446c8d12f8566874ec1ab38fc4a051a477275086800809245da"
+    ],
+    "pubNonces": [
+      "027389d7aa456cbe418467f42928601462d77000c3b260e5127f1111b57588b35e036f13a501e1708aa7288a313d71975324e0de1d129acff61e40e1c96ae5976c29",
+      "02949960a953f58a5bad40d8c6161bac10a52a971a37cfe858ba4a1452524b1691026dca4ba06a76389621d0d5a6965976120eb9dac6b861cf32d674c65e080a7c13"
+    ],
+    "pubKeys": [
+      "03e9fc8f605f59d6a4f5ceb0d27852151013f2bf1965f9adf44ce9ba9821c7f106",
+      "030710ec162d2199bb828e5d8760f16d65412bbb2c85ec13fe027f77d83a349c62"
+    ],
+    "txHash": "d11d3b06a83bb14c95fad947da2192ad9f6faee3c0fb36ad197a05f943aa7acd",
+    "internalPubKey": "6d767a69e03d4611485407d777711ee4d1321a84cf82f591db0cd3e179c49821",
+    "tapTreeRoot": "63a3684763dca2d4bb5d412d01f5ce73214af3d7816b52d7ad549562cc4cd890"
+  },
+  "output": {
+    "partialSigs": [
+      "218f2cb5d0b24927b11094d2c78da7a4e1d0de9ba29d59e49312c48f216570c4",
+      "53d90faeb634bc5f2f9c3bceb303b958b8f4cf5054b3fb55c8b35dc662bd15e4"
+    ],
+    "verificationResults": [
+      true,
+      true
+    ]
+  }
+}

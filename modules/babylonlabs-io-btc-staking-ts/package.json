@@ -1,0 +1,56 @@
+{
+  "name": "@bitgo/babylonlabs-io-btc-staking-ts",
+  "version": "3.5.0",
+  "description": "Library exposing methods for the creation and consumption of Bitcoin transactions pertaining to Babylon's Bitcoin Staking protocol.",
+  "module": "dist/index.js",
+  "main": "dist/index.cjs",
+  "typings": "dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/babylonlabs-io-btc-staking-ts"
+  },
+  "scripts": {
+    "generate-types:cjs": "dts-bundle-generator -o ./dist/index.d.cts ./src/index.ts --no-check",
+    "generate-types:esm": "dts-bundle-generator -o ./dist/index.d.ts ./src/index.ts --no-check",
+    "generate-types": "npm run generate-types:cjs && npm run generate-types:esm",
+    "build": "node build.js && npm run generate-types",
+    "prepare": "husky",
+    "prepublishOnly": "npm run build",
+    "version:canary": "npm version prerelease --preid=canary"
+  },
+  "files": [
+    "dist/*"
+  ],
+  "keywords": [
+    "bitcoin",
+    "staking",
+    "babylon",
+    "btc-staking"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "author": "Babylon Labs Ltd.",
+  "license": "SEE LICENSE IN LICENSE",
+  "devDependencies": {
+    "dts-bundle-generator": "^9.3.1",
+    "esbuild": "^0.26.0",
+    "nanoevents": "^9.1.0"
+  },
+  "dependencies": {
+    "@babylonlabs-io/babylon-proto-ts": "1.7.2",
+    "@bitcoin-js/tiny-secp256k1-asmjs": "2.2.3",
+    "@cosmjs/encoding": "^0.33.0",
+    "bip174": "=2.1.1",
+    "bitcoinjs-lib": "^6.1.7"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

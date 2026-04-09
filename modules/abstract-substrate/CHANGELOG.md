@@ -1,0 +1,536 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# [1.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.13.9...@bitgo/abstract-substrate@1.14.0) (2026-03-29)
+
+
+### Features
+
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
+## [1.13.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.13.8...@bitgo/abstract-substrate@1.13.9) (2026-03-27)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.13.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.13.7...@bitgo/abstract-substrate@1.13.8) (2026-03-18)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.13.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.13.6...@bitgo/abstract-substrate@1.13.7) (2026-03-10)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.13.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.13.5...@bitgo/abstract-substrate@1.13.6) (2026-03-05)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.13.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.13.4...@bitgo/abstract-substrate@1.13.5) (2026-03-03)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.13.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.13.3...@bitgo/abstract-substrate@1.13.4) (2026-02-27)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.13.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.13.2...@bitgo/abstract-substrate@1.13.3) (2026-02-24)
+
+
+### Bug Fixes
+
+* add version resolution for polkadot deps ([16271ad](https://github.com/BitGo/BitGoJS/commit/16271ad7e6ab1d953db2b221b514d72a8fa6c93a))
+
+
+
+
+
+## [1.13.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.13.1...@bitgo/abstract-substrate@1.13.2) (2026-02-13)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.13.0...@bitgo/abstract-substrate@1.13.1) (2026-02-12)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+# [1.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.12.4...@bitgo/abstract-substrate@1.13.0) (2026-01-30)
+
+
+### Features
+
+* support node 24 ([b998bd1](https://github.com/BitGo/BitGoJS/commit/b998bd1bdb7e267e8e2f33b3599643a5c85c21d2))
+
+
+
+
+
+## [1.12.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.12.3...@bitgo/abstract-substrate@1.12.4) (2026-01-22)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.12.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.12.2...@bitgo/abstract-substrate@1.12.3) (2026-01-19)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.12.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.12.1...@bitgo/abstract-substrate@1.12.2) (2026-01-14)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.12.0...@bitgo/abstract-substrate@1.12.1) (2026-01-07)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+# [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.19...@bitgo/abstract-substrate@1.12.0) (2025-12-23)
+
+
+### Features
+
+* address verification for substrate coins (tao, polyx) ([a298876](https://github.com/BitGo/BitGoJS/commit/a298876b30219b301bff1f5295d1c20a24f4a585))
+* **root:** make node v20 the minimum version ([f2bd9ee](https://github.com/BitGo/BitGoJS/commit/f2bd9ee8e1b0816473dc12d614883422a3a2aa10))
+
+
+
+
+
+## [1.11.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.18...@bitgo/abstract-substrate@1.11.19) (2025-12-17)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.11.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.17...@bitgo/abstract-substrate@1.11.18) (2025-12-11)
+
+
+### Bug Fixes
+
+* **sdk-coin-tao:** support all valid netuids for transferStake tx ([1ac6041](https://github.com/BitGo/BitGoJS/commit/1ac6041d4d4f8dc912037cf79f4c1f8934b1389c))
+
+
+
+
+
+## [1.11.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.16...@bitgo/abstract-substrate@1.11.17) (2025-12-05)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.11.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.15...@bitgo/abstract-substrate@1.11.16) (2025-12-04)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.11.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.14...@bitgo/abstract-substrate@1.11.15) (2025-11-26)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.11.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.13...@bitgo/abstract-substrate@1.11.14) (2025-11-19)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.11.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.12...@bitgo/abstract-substrate@1.11.13) (2025-11-13)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.11.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.11...@bitgo/abstract-substrate@1.11.12) (2025-11-12)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.11.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.10...@bitgo/abstract-substrate@1.11.11) (2025-11-06)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.11.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.9...@bitgo/abstract-substrate@1.11.10) (2025-10-31)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.11.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.8...@bitgo/abstract-substrate@1.11.9) (2025-10-29)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.11.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.7...@bitgo/abstract-substrate@1.11.8) (2025-10-24)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.11.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.6...@bitgo/abstract-substrate@1.11.7) (2025-10-21)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.11.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.5...@bitgo/abstract-substrate@1.11.6) (2025-10-16)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.11.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.4...@bitgo/abstract-substrate@1.11.5) (2025-10-13)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.11.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.3...@bitgo/abstract-substrate@1.11.4) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+
+
+
+## [1.11.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.2...@bitgo/abstract-substrate@1.11.3) (2025-10-08)
+
+
+### Bug Fixes
+
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+
+
+
+
+
+## [1.11.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.1...@bitgo/abstract-substrate@1.11.2) (2025-10-02)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.0...@bitgo/abstract-substrate@1.11.1) (2025-09-29)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+# [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.10.4...@bitgo/abstract-substrate@1.11.0) (2025-09-25)
+
+### Features
+
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+- **sdk-coin-polyx:** add decodeTransaction in utils ([4d6f451](https://github.com/BitGo/BitGoJS/commit/4d6f4510dd10bc4e92a29117de33d9ce1c6b521c))
+- **sdk-coin-tao:** add moveStakeBuilder ([03a7b36](https://github.com/BitGo/BitGoJS/commit/03a7b368414b61ccfc45f0df5e56378fcd32168c))
+
+## [1.10.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.10.3...@bitgo/abstract-substrate@1.10.4) (2025-09-03)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.10.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.10.2...@bitgo/abstract-substrate@1.10.3) (2025-08-30)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.10.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.10.1...@bitgo/abstract-substrate@1.10.2) (2025-08-29)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.10.0...@bitgo/abstract-substrate@1.10.1) (2025-08-27)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.9.2...@bitgo/abstract-substrate@1.10.0) (2025-08-22)
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
+## [1.9.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.9.1...@bitgo/abstract-substrate@1.9.2) (2025-08-22)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.9.0...@bitgo/abstract-substrate@1.9.1) (2025-08-19)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.8.10...@bitgo/abstract-substrate@1.9.0) (2025-08-14)
+
+### Features
+
+- **sdk-coin-polyx:** add token builders ([6860780](https://github.com/BitGo/BitGoJS/commit/68607804efc1191ff396e05f20466526246b7d87))
+- **sdk-coin-tao:** add tokenTransferBuilder ([43fc839](https://github.com/BitGo/BitGoJS/commit/43fc839f87e81d2592bcd249b14d7aef815a0927))
+
+## [1.8.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.8.9...@bitgo/abstract-substrate@1.8.10) (2025-08-07)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.8.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.8.8...@bitgo/abstract-substrate@1.8.9) (2025-07-31)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.8.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.8.7...@bitgo/abstract-substrate@1.8.8) (2025-07-30)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.8.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.8.5...@bitgo/abstract-substrate@1.8.7) (2025-07-25)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.8.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.8.5...@bitgo/abstract-substrate@1.8.6) (2025-07-23)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.8.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.8.4...@bitgo/abstract-substrate@1.8.5) (2025-07-15)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.8.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.8.3...@bitgo/abstract-substrate@1.8.4) (2025-07-10)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.8.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.8.2...@bitgo/abstract-substrate@1.8.3) (2025-07-03)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.8.1...@bitgo/abstract-substrate@1.8.2) (2025-06-25)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.8.0...@bitgo/abstract-substrate@1.8.1) (2025-06-24)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.7.1...@bitgo/abstract-substrate@1.8.0) (2025-06-18)
+
+### Features
+
+- add decoding support for polyx staking related txns ([f680b01](https://github.com/BitGo/BitGoJS/commit/f680b011c6c89b4c3c04ede21f089e8efc1c0ee8))
+
+## [1.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.7.0...@bitgo/abstract-substrate@1.7.1) (2025-06-10)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.6.0...@bitgo/abstract-substrate@1.7.0) (2025-06-05)
+
+### Features
+
+- **root:** support node 22 ([c4ad6af](https://github.com/BitGo/BitGoJS/commit/c4ad6af2e8896221417c303f0f6b84652b493216))
+
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.5.2...@bitgo/abstract-substrate@1.6.0) (2025-06-02)
+
+### Bug Fixes
+
+- **sdk-coin-polyx:** fix to toJson method in polyx transaction ([8f8ef0b](https://github.com/BitGo/BitGoJS/commit/8f8ef0b8fa420dadb41989465b2380af73466ae0))
+
+### Features
+
+- rename audit function naming and signature ([1a885ab](https://github.com/BitGo/BitGoJS/commit/1a885ab60d30ca8595e284a728f2ab9d3c09994e))
+- **root:** add new audit key baseCoin method ([57c1778](https://github.com/BitGo/BitGoJS/commit/57c17784a72ea364f18e3af9dbd83da877827e69))
+
+## [1.5.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.5.1...@bitgo/abstract-substrate@1.5.2) (2025-05-28)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.5.0...@bitgo/abstract-substrate@1.5.1) (2025-05-22)
+
+### Bug Fixes
+
+- **sdk-coin-polyx:** all fixed ([f9c23bc](https://github.com/BitGo/BitGoJS/commit/f9c23bc9a8bc609be5f41a4ffd980138ecb63148))
+- **sdk-coin-polyx:** fix cdd builder ([2461fbf](https://github.com/BitGo/BitGoJS/commit/2461fbfcc76f8f6e7f89302f5e3c4b99097cb97a))
+
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.4.9...@bitgo/abstract-substrate@1.5.0) (2025-05-20)
+
+### Features
+
+- **sdk-coin-polyx:** add transaction builders ([31c96bb](https://github.com/BitGo/BitGoJS/commit/31c96bbbce60b93e13208e3eab06bd144cfe57e4))
+
+## [1.4.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.4.8...@bitgo/abstract-substrate@1.4.9) (2025-05-07)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.4.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.4.7...@bitgo/abstract-substrate@1.4.8) (2025-04-29)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.4.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.4.6...@bitgo/abstract-substrate@1.4.7) (2025-04-25)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.4.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.4.5...@bitgo/abstract-substrate@1.4.6) (2025-04-15)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.4.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.4.4...@bitgo/abstract-substrate@1.4.5) (2025-04-04)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.4.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.4.3...@bitgo/abstract-substrate@1.4.4) (2025-04-02)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.4.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.4.2...@bitgo/abstract-substrate@1.4.3) (2025-03-28)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.4.1...@bitgo/abstract-substrate@1.4.2) (2025-03-20)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.4.0...@bitgo/abstract-substrate@1.4.1) (2025-03-18)
+
+### Bug Fixes
+
+- **sdk-core:** set default multisig if empty ([e2727df](https://github.com/BitGo/BitGoJS/commit/e2727dfc89dd314a607b737e761e5eff824606af))
+
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.3.0...@bitgo/abstract-substrate@1.4.0) (2025-03-06)
+
+### Features
+
+- **abstract-substrate:** add wrw for tao ([9f30890](https://github.com/BitGo/BitGoJS/commit/9f3089000330d47696ab057891cd8d1083004a2a))
+
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.1.5...@bitgo/abstract-substrate@1.3.0) (2025-03-04)
+
+### Bug Fixes
+
+- **sdk-coin-tao:** change amount and netuid type to string ([bbb92aa](https://github.com/BitGo/BitGoJS/commit/bbb92aa3e9def1e6260a074761cdf4a38888ebd6))
+
+### Features
+
+- **abstract-substrate:** add common types to abstract-substrate ([6298a42](https://github.com/BitGo/BitGoJS/commit/6298a42c0b476e87b3a5e0a3cd5e57cc5c262f50))
+- **abstract-substrate:** add missing methods for TAO stake/unstake ([635854c](https://github.com/BitGo/BitGoJS/commit/635854cbd04f473c20d20820d03d1b82f8d013e9))
+
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.1.5...@bitgo/abstract-substrate@1.2.0) (2025-02-26)
+
+### Features
+
+- **abstract-substrate:** add common types to abstract-substrate ([6298a42](https://github.com/BitGo/BitGoJS/commit/6298a42c0b476e87b3a5e0a3cd5e57cc5c262f50))
+- **abstract-substrate:** add missing methods for TAO stake/unstake ([635854c](https://github.com/BitGo/BitGoJS/commit/635854cbd04f473c20d20820d03d1b82f8d013e9))
+
+## [1.1.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.1.5...@bitgo/abstract-substrate@1.1.6) (2025-02-20)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.1.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.1.3...@bitgo/abstract-substrate@1.1.5) (2025-02-19)
+
+### Bug Fixes
+
+- **abstract-substrate:** fix abstract-substrate implementation ([1c986da](https://github.com/BitGo/BitGoJS/commit/1c986daa817353ca522c0e8e72e67a6dffa00fac))
+- **abstract-substrate:** fix Material specName type ([2971d82](https://github.com/BitGo/BitGoJS/commit/2971d82879879c04190b45454a21f48473d13181))
+- **abstract-substrate:** use correct error for isWalletAddress ([f50c557](https://github.com/BitGo/BitGoJS/commit/f50c557df66a331b30c1a790884ab1d69b635390))
+
+## [1.1.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.1.3...@bitgo/abstract-substrate@1.1.4) (2025-02-11)
+
+### Bug Fixes
+
+- **abstract-substrate:** fix abstract-substrate implementation ([1c986da](https://github.com/BitGo/BitGoJS/commit/1c986daa817353ca522c0e8e72e67a6dffa00fac))
+- **abstract-substrate:** fix Material specName type ([2971d82](https://github.com/BitGo/BitGoJS/commit/2971d82879879c04190b45454a21f48473d13181))
+
+## [1.1.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.1.2...@bitgo/abstract-substrate@1.1.3) (2025-02-05)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.1.1...@bitgo/abstract-substrate@1.1.2) (2025-01-28)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## [1.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.1.0...@bitgo/abstract-substrate@1.1.1) (2025-01-23)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+# [1.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.0.2...@bitgo/abstract-substrate@1.1.0) (2025-01-23)
+
+### Features
+
+- implement abstract substrate functions ([20d831b](https://github.com/BitGo/BitGoJS/commit/20d831b3be8a2cb987eda6e842b6f1db34067c17))
+
+## [1.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.0.1...@bitgo/abstract-substrate@1.0.2) (2025-01-20)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+## 1.0.1 (2025-01-15)
+
+### Bug Fixes
+
+- **abstract-substrate:** fix package.json bitgo libs version ([1ed939b](https://github.com/BitGo/BitGoJS/commit/1ed939b3bbb469b40d0e1759ea229891e765f933))

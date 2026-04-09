@@ -1,0 +1,57 @@
+{
+  "name": "@bitgo/abstract-lightning",
+  "version": "7.9.0",
+  "description": "BitGo SDK coin library for base Lightning Network coin implementation",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "test": "yarn unit-test",
+    "unit-test": "nyc -- mocha --recursive test",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/abstract-lightning"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/public-types": "5.76.1",
+    "@bitgo/sdk-core": "^36.37.0",
+    "@bitgo/statics": "^58.32.0",
+    "@bitgo/utxo-lib": "^11.22.0",
+    "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4",
+    "bs58check": "^2.1.2",
+    "fp-ts": "^2.12.2",
+    "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
+    "io-ts-types": "^0.5.16",
+    "macaroon": "^3.0.4"
+  },
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
+  "files": [
+    "dist"
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "name": "@bitgo/unspents",
+  "version": "0.51.2",
+  "description": "Defines the chain codes used for different unspent types and methods to calculate bitcoin transaction sizes",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "test": "mocha --recursive test",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "unit-test": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/unspents"
+  },
+  "keywords": [
+    "bitcoin",
+    "utxo"
+  ],
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/BitGo/BitGoJS/issues"
+  },
+  "homepage": "https://github.com/BitGo/BitGoJS/tree/master/modules/unspents#bitgounspents",
+  "devDependencies": {
+    "@types/lodash": "~4.14.123",
+    "@types/node": "^24.10.9",
+    "lodash.combinations": "~18.9.19",
+    "should": "~13.2.3"
+  },
+  "dependencies": {
+    "@bitgo/utxo-lib": "^11.22.0",
+    "lodash": "^4.18.0",
+    "tcomb": "~3.2.29",
+    "varuint-bitcoin": "^1.0.4"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ]
+}

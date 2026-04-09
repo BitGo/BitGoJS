@@ -1,0 +1,164 @@
+# BitGoJS code owners and first officers will automatically be requested for review whenever a pull request touches the files they own.
+# Each line is a file pattern followed by one or more owners.
+
+# These owners and first officers will be the default owners for everything in the repo.
+*   @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+
+# Order is important. The last matching pattern has the most precedence.
+
+# UTXO coin modules
+/modules/abstract-utxo/ @BitGo/btc-team
+/modules/bitgo/test/v2/unit/coins/utxo/ @BitGo/btc-team
+/modules/bitgo/test/v2/unit/lightning.ts @BitGo/btc-team
+/modules/blockapis/ @BitGo/btc-team
+/modules/sdk-coin-bch/ @BitGo/btc-team
+/modules/sdk-coin-bcha/ @BitGo/btc-team
+/modules/sdk-coin-bsv/ @BitGo/btc-team
+/modules/sdk-coin-btc/ @BitGo/btc-team
+/modules/sdk-coin-btg/ @BitGo/btc-team
+/modules/sdk-coin-dash/ @BitGo/btc-team
+/modules/sdk-coin-doge/ @BitGo/btc-team
+/modules/sdk-coin-ltc/ @BitGo/btc-team
+/modules/sdk-coin-zec/ @BitGo/btc-team
+/modules/sdk-core/src/bitgo/lightning/ @BitGo/btc-team
+/modules/unspents/ @BitGo/btc-team
+/modules/utxo-bin/ @BitGo/btc-team
+/modules/utxo-core/ @BitGo/btc-team
+/modules/utxo-lib/ @BitGo/btc-team
+/modules/utxo-ord/ @BitGo/btc-team
+/modules/utxo-staking/ @BitGo/btc-team
+/modules/babylonlabs-io-btc-staking-ts @BitGo/btc-team
+/modules/bitgo/test/v2/unit/coins/abstractUtxoCoin.ts @BitGo/btc-team
+/modules/bitgo/test/v2/unit/coins/payGoPSBTHexFixture/psbtHexProof.ts @BitGo/btc-team
+
+# Lightning coin modules
+/modules/abstract-lightning/ @BitGo/btc-team
+/modules/sdk-coin-lnbtc/ @BitGo/btc-team
+
+# Eth
+/modules/account-lib/ @BitGo/ethalt-team
+/modules/sdk-coin-celo/ @BitGo/ethalt-team
+/modules/sdk-coin-etc/ @BitGo/ethalt-team
+/modules/abstract-eth/ @BitGo/ethalt-team
+/modules/sdk-coin-eth/ @BitGo/ethalt-team
+/modules/sdk-coin-rbtc/ @BitGo/ethalt-team
+/modules/bitgo/test/v2/unit/coins/staking/ @BitGo/ethalt-team
+/modules/bitgo/test/v2/unit/coins/token.ts @BitGo/ethalt-team
+
+# All other coins
+/modules/abstract-cosmos/ @BitGo/ethalt-team
+/modules/abstract-substrate/ @BitGo/ethalt-team
+/modules/sdk-coin-ada/ @BitGo/ethalt-team
+/modules/sdk-coin-algo/ @BitGo/ethalt-team
+/modules/sdk-coin-apechain/ @BitGo/ethalt-team
+/modules/sdk-coin-apt/ @Bitgo/ethalt-team
+/modules/sdk-coin-arbeth/ @BitGo/ethalt-team
+/modules/sdk-coin-asi/ @BitGo/ethalt-team
+/modules/sdk-coin-atom/ @BitGo/ethalt-team
+/modules/sdk-coin-avaxc/ @BitGo/ethalt-team
+/modules/sdk-coin-avaxp/ @BitGo/ethalt-team
+/modules/sdk-coin-baby/ @BitGo/ethalt-team
+/modules/sdk-coin-bera/ @BitGo/ethalt-team
+/modules/sdk-coin-bsc/ @BitGo/ethalt-team
+/modules/sdk-coin-canton/ @BitGo/ethalt-team
+/modules/sdk-coin-coredao/ @BitGo/ethalt-team
+/modules/sdk-coin-coreum/ @BitGo/ethalt-team
+/modules/sdk-coin-cosmos/ @BitGo/ethalt-team
+/modules/sdk-coin-cronos/ @BitGo/ethalt-team
+/modules/sdk-coin-cspr/ @BitGo/ethalt-team
+/modules/sdk-coin-dot/ @BitGo/ethalt-team
+/modules/sdk-coin-eos/ @BitGo/ethalt-team
+/modules/sdk-coin-evm/ @BitGo/ethalt-team
+/modules/sdk-coin-flr/ @BitGo/ethalt-team
+/modules/sdk-coin-flrp/ @BitGo/ethalt-team
+/modules/sdk-coin-ethlike/ @BitGo/ethalt-team
+/modules/sdk-coin-hbar/ @BitGo/ethalt-team
+/modules/sdk-coin-icp/ @BitGo/ethalt-team
+/modules/sdk-coin-initia/ @BitGo/ethalt-team
+/modules/sdk-coin-iota/ @BitGo/ethalt-team
+/modules/sdk-coin-mon/ @BitGo/ethalt-team
+/modules/sdk-coin-mantra/ @BitGo/ethalt-team
+/modules/sdk-coin-near/ @BitGo/ethalt-team
+/modules/sdk-coin-oas/ @BitGo/ethalt-team
+/modules/sdk-coin-opeth/ @BitGo/ethalt-team
+/modules/sdk-coin-polygon/ @BitGo/ethalt-team
+/modules/sdk-coin-polyx/ @BitGo/ethalt-team
+/modules/sdk-coin-rune/ @BitGo/ethalt-team
+/modules/sdk-coin-sgb/ @BitGo/ethalt-team
+/modules/sdk-coin-sol/ @BitGo/ethalt-team
+/modules/sdk-coin-stx/ @BitGo/ethalt-team
+/modules/sdk-coin-stt/ @BitGo/ethalt-team
+/modules/sdk-coin-soneium/ @BitGo/ethalt-team
+/modules/sdk-coin-sui/ @BitGo/ethalt-team
+/modules/sdk-coin-tao/ @BitGo/ethalt-team
+/modules/sdk-coin-tempo/ @BitGo/ethalt-team
+/modules/sdk-coin-ton/ @BitGo/ethalt-team
+/modules/sdk-coin-trx/ @BitGo/ethalt-team
+/modules/sdk-coin-vet/ @Bitgo/ethalt-team
+/modules/sdk-coin-wemix/ @BitGo/ethalt-team
+/modules/sdk-coin-world/ @BitGo/ethalt-team
+/modules/sdk-coin-xdc/ @BitGo/ethalt-team
+/modules/sdk-coin-xlm/ @BitGo/ethalt-team
+/modules/sdk-coin-xrp/ @BitGo/ethalt-team
+/modules/sdk-coin-xtz/ @BitGo/ethalt-team
+/modules/sdk-coin-zketh/ @BitGo/ethalt-team
+/modules/sdk-coin-hash/ @BitGo/ethalt-team
+
+# Examples
+/examples/ @BitGo/ethalt-team
+/examples/ts/btc/ @BitGo/btc-team
+/examples/ts/stablecoin @Bitgo/stablecoins
+
+# Trade
+/modules/sdk-core/src/bitgo/address-book/ @BitGo/prime
+/modules/sdk-core/src/bitgo/trading/ @BitGo/prime
+
+# Core Modules
+/modules/bitgo/ @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/modules/bitgo/test/v2/unit/lightning/ @BitGo/btc-team
+/modules/blake2b-wasm/ @BitGo/wallet-core @BitGo/wallet-core-india
+/modules/blake2b/ @BitGo/wallet-core @BitGo/wallet-core-india
+/modules/express/ @BitGo/wallet-core @BitGo/wallet-core-india
+/modules/express/src/lightning/ @BitGo/btc-team
+/modules/express/test/unit/lightning/ @BitGo/btc-team
+/modules/express/test/unit/clientRoutes/lightning/ @BitGo/btc-team
+/modules/key-card/ @BitGo/wallet-core @BitGo/wallet-core-india
+/modules/sdk-api/ @BitGo/wallet-core @BitGo/wallet-core-india
+/modules/sdk-api/src/v1 @BitGo/btc-team
+/modules/sdk-api/test/unit/v1 @BitGo/btc-team
+/modules/sdk-core/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm @BitGo/coins
+/modules/sdk-core/src/bitgo/lightning/ @BitGo/btc-team
+/modules/sdk-core/test/unit/bitgo/lightning/ @BitGo/btc-team
+/modules/sdk-lib-mpc/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
+/modules/deser-lib/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
+/modules/sdk-rpc-wrapper @BitGo/ethalt-team
+/modules/sdk-test/ @BitGo/wallet-core @BitGo/wallet-core-india
+/modules/sjcl/ @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/modules/statics/ @BitGo/ethalt-team
+/modules/statics/src/utxo.ts @BitGo/btc-team
+/modules/web-demo/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
+/scripts/ @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/scripts/sdk-coin-generator-v2/ @BitGo/ethalt-team
+/types/ @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/webpack/ @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+
+# Asset Metadata Service
+/modules/statics/src/coins/botTokens.ts @BitGo/ams
+/modules/statics/src/coins/botOfcTokens.ts @BitGo/ams
+
+/.eslintrc.json @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/.prettierrc.yml @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/check-package-versions.js @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/CODEOWNERS @BitGo/git-admins
+/DEVELOPERS.md @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/commitlint.config.js @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/Dockerfile @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/lerna.json @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/devops
+/package.json @BitGo/sdk-reviewers
+**/package.json @BitGo/sdk-reviewers
+/tsconfig.json @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/devops
+/tsconfig.packages.json @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
+/yarn.lock @BitGo/sdk-reviewers
+/.iyarc @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm @BitGo/velocity
+flake.nix @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
+flake.lock @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm

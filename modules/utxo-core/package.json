@@ -1,0 +1,89 @@
+{
+  "name": "@bitgo/utxo-core",
+  "version": "1.35.1",
+  "description": "BitGo UTXO Core types",
+  "main": "./dist/cjs/src/index.js",
+  "module": "./dist/esm/index.js",
+  "browser": "./dist/esm/index.js",
+  "types": "./dist/cjs/src/index.d.ts",
+  "files": [
+    "dist/cjs",
+    "dist/esm"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/index.d.ts",
+        "default": "./dist/cjs/src/index.js"
+      }
+    },
+    "./descriptor": {
+      "import": {
+        "types": "./dist/esm/descriptor/index.d.ts",
+        "default": "./dist/esm/descriptor/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/descriptor/index.d.ts",
+        "default": "./dist/cjs/src/descriptor/index.js"
+      }
+    },
+    "./testutil": {
+      "require": {
+        "types": "./dist/cjs/src/testutil/index.d.ts",
+        "default": "./dist/cjs/src/testutil/index.js"
+      }
+    },
+    "./testutil/descriptor": {
+      "require": {
+        "types": "./dist/cjs/src/testutil/descriptor/index.d.ts",
+        "default": "./dist/cjs/src/testutil/descriptor/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "yarn tsc --build --incremental --verbose .",
+    "build:esm": "yarn tsc --project tsconfig.esm.json",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "test": "npm run unit-test",
+    "unit-test": "mocha --recursive \"test/**/*.ts\""
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/utxo-core"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/secp256k1": "^1.11.0",
+    "@bitgo/unspents": "^0.51.2",
+    "@bitgo/utxo-lib": "^11.22.0",
+    "@bitgo/wasm-utxo": "^2.1.0",
+    "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4",
+    "fast-sha256": "^1.3.0"
+  },
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
+}

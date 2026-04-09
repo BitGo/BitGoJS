@@ -1,0 +1,13 @@
+!dist/
+dist/test/
+dist/tsconfig.tsbuildinfo
+.idea/
+tsconfig.json
+src/
+test/
+.nyc_output
+CODEOWNERS
+CHANGELOG.md
+README.md
+node_modules/
+.mocharc.js

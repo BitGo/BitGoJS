@@ -1,0 +1,77 @@
+{
+  "name": "@bitgo/utxo-staking",
+  "version": "1.37.0",
+  "description": "BitGo SDK for build UTXO staking transactions",
+  "main": "./dist/cjs/src/index.js",
+  "module": "./dist/esm/index.js",
+  "browser": "./dist/esm/index.js",
+  "types": "./dist/cjs/src/index.d.ts",
+  "files": [
+    "dist/cjs",
+    "dist/esm"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/index.d.ts",
+        "default": "./dist/cjs/src/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "yarn tsc --build --incremental --verbose .",
+    "build:esm": "yarn tsc --project tsconfig.esm.json",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha --recursive \"test/**/*.ts\""
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/utxo-staking"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@babylonlabs-io/babylon-proto-ts": "1.7.2",
+    "@bitgo/babylonlabs-io-btc-staking-ts": "^3.5.0",
+    "@bitgo/utxo-core": "^1.35.1",
+    "@bitgo/utxo-lib": "^11.22.0",
+    "@bitgo/wasm-utxo": "^2.1.0",
+    "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4",
+    "bip322-js": "^2.0.0",
+    "bitcoinjs-lib": "^6.1.7",
+    "fp-ts": "^2.16.2",
+    "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
+    "io-ts-types": "^0.5.19"
+  },
+  "devDependencies": {
+    "yargs": "^17.7.2"
+  }
+}

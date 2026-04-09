@@ -1,0 +1,88 @@
+import 'should';
+import { BaseNetwork, DynamicNetwork, getNetwork, Networks, NetworkType } from '../../src/networks';
+
+Object.entries(Networks).forEach(([category, networks]) => {
+  Object.entries(networks).forEach(([networkName, network]) => {
+    describe(`Networks.${category}.${networkName}`, function () {
+      if (!['main', 'test'].includes(category)) {
+        throw new Error(`unexpected category ${category}`);
+      }
+      it(`has expected network type`, function () {
+        network.type.should.eql(category === 'main' ? NetworkType.MAINNET : NetworkType.TESTNET);
+      });
+    });
+
+    describe('ZkSyncEra Network', function () {
+      it('should have correct mainnet chainId', function () {
+        Networks.main.zkSyncEra.chainId.should.equal(324);
+      });
+
+      it('should have correct testnet chainId', function () {
+        Networks.test.zkSyncEra.chainId.should.equal(300);
+      });
+
+      it('should have correct explorer URLs', function () {
+        Networks.main.zkSyncEra.explorerUrl.should.equal('https://explorer.zksync.io/tx/');
+        Networks.main.zkSyncEra.accountExplorerUrl.should.equal('https://explorer.zksync.io/address/');
+        Networks.test.zkSyncEra.explorerUrl.should.equal('https://sepolia.explorer.zksync.io/tx/');
+        Networks.test.zkSyncEra.accountExplorerUrl.should.equal('https://sepolia.explorer.zksync.io/address/');
+      });
+
+      it('should have correct operation hash prefixes', function () {
+        Networks.main.zkSyncEra.nativeCoinOperationHashPrefix.should.equal('324');
+        Networks.main.zkSyncEra.tokenOperationHashPrefix.should.equal('324-ERC20');
+        Networks.test.zkSyncEra.nativeCoinOperationHashPrefix.should.equal('300');
+        Networks.test.zkSyncEra.tokenOperationHashPrefix.should.equal('300-ERC20');
+      });
+      it('should have testnet contract addresses configured', function () {
+        Networks.test.zkSyncEra.forwarderFactoryAddress.should.equal('0xdd498702f44c4da08eb9e08d3f015eefe5cb71fc');
+        Networks.test.zkSyncEra.forwarderImplementationAddress.should.equal(
+          '0xbe69cae311191fb45e648ed20847f06fad2dbab4'
+        );
+        Networks.test.zkSyncEra.walletFactoryAddress.should.equal('0x4550e1e7616d3364877fc6c9324938dab678621a');
+        Networks.test.zkSyncEra.walletImplementationAddress.should.equal('0x92db2759d1dca129a0d9d46877f361be819184c4');
+      });
+    });
+
+    describe('Sui Network', function () {
+      it('should have correct explorer URLs', function () {
+        Networks.main.sui.explorerUrl.should.equal('https://explorer.sui.io/txblock/?network=mainnet');
+        Networks.main.sui.accountExplorerUrl.should.equal('https://explorer.sui.io/address/?network=mainnet');
+        Networks.test.sui.explorerUrl.should.equal('https://explorer.sui.io/txblock/?network=testnet');
+        Networks.test.sui.accountExplorerUrl.should.equal('https://explorer.sui.io/address/?network=testnet');
+      });
+    });
+
+    describe('Ada Network', function () {
+      it('should have correct explorer URLs', function () {
+        Networks.main.ada.explorerUrl.should.equal('https://cardanoscan.io/transaction/');
+        Networks.main.ada.accountExplorerUrl.should.equal('https://cardanoscan.io/address/');
+        Networks.test.ada.explorerUrl.should.equal('https://preprod.cardanoscan.io/transaction/');
+        Networks.test.ada.accountExplorerUrl.should.equal('https://preprod.cardanoscan.io/address/');
+      });
+    });
+  });
+});
+
+describe('DynamicNetwork and getNetwork', function () {
+  it('DynamicNetwork should be an instance of BaseNetwork', function () {
+    const network = new DynamicNetwork({ name: 'TestDynNet', type: 'testnet', family: 'eth' });
+    network.should.be.instanceOf(BaseNetwork);
+    network.name.should.equal('TestDynNet');
+    network.type.should.equal(NetworkType.TESTNET);
+  });
+
+  it('getNetwork should resolve JSON string, static name, and throw for unknown', function () {
+    // JSON-encoded DynamicNetworkOptions
+    const jsonNetwork = getNetwork(JSON.stringify({ name: 'AmsNet', type: 'mainnet', family: 'sol' }));
+    jsonNetwork.should.be.instanceOf(BaseNetwork);
+    jsonNetwork.name.should.equal('AmsNet');
+
+    // Static network by name
+    const staticNetwork = getNetwork('Ethereum');
+    staticNetwork.should.deepEqual(Networks.main.ethereum);
+
+    // Unknown name throws
+    (() => getNetwork('NonExistentNetworkXYZ')).should.throw('Network NonExistentNetworkXYZ not found');
+  });
+});

@@ -1,0 +1,8 @@
+{
+  "extends": ["../../.eslintrc.json", "plugin:cypress/recommended"],
+  "ignorePatterns": ["dist/", "node_modules/"],
+  "rules": {
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "indent": "off"
+  }
+}

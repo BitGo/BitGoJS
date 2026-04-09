@@ -1,0 +1,1890 @@
+/**
+ * @prettier
+ */
+import { logger } from '@bitgo/logger';
+import {
+  CommitmentShareRecord,
+  CreateNetworkConnectionParams,
+  CustomCommitmentGeneratingFunction,
+  CustomGShareGeneratingFunction,
+  CustomKShareGeneratingFunction,
+  CustomMPCv2SigningRound1GeneratingFunction,
+  CustomMPCv2SigningRound2GeneratingFunction,
+  CustomMPCv2SigningRound3GeneratingFunction,
+  CustomMuDeltaShareGeneratingFunction,
+  CustomPaillierModulusGetterFunction,
+  CustomRShareGeneratingFunction,
+  CustomSShareGeneratingFunction,
+  EcdsaMPCv2Utils,
+  EcdsaUtils,
+  EddsaUtils,
+  EncryptedSignerShareRecord,
+  encryptRsaWithAesGcm,
+  GetNetworkPartnersResponse,
+  GShare,
+  MPCType,
+  ShareType,
+  SignShare,
+  SShare,
+  TssEcdsaStep1ReturnMessage,
+  TssEcdsaStep2ReturnMessage,
+  UnsupportedCoinError,
+  Wallet,
+} from '@bitgo/sdk-core';
+import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction, SignedTransactionRequest } from 'bitgo';
+import * as bodyParser from 'body-parser';
+import debugLib from 'debug';
+import express from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
+import * as _ from 'lodash';
+import * as url from 'url';
+import * as superagent from 'superagent';
+
+// RequestTracer should be extracted into a separate npm package (along with
+// the rest of the BitGoJS HTTP request machinery)
+import { RequestTracer } from 'bitgo/dist/src/v2/internal/util';
+
+import { Config } from './config';
+import { ApiResponseError, BitGoExpressError } from './errors';
+import { promises as fs } from 'fs';
+import { retryPromise } from './retryPromise';
+import {
+  handleCreateSignerMacaroon,
+  handleGetLightningWalletState,
+  handleInitLightningWallet,
+  handleUnlockLightningWallet,
+} from './lightning/lightningSignerRoutes';
+import { handlePayLightningInvoice } from './lightning/lightningInvoiceRoutes';
+import { handleUpdateLightningWalletCoinSpecific } from './lightning/lightningWalletRoutes';
+import { ProxyAgent } from 'proxy-agent';
+import { isLightningCoinName } from '@bitgo/abstract-lightning';
+import { handleLightningWithdraw } from './lightning/lightningWithdrawRoutes';
+import createExpressRouter from './typedRoutes';
+import { ExpressApiRouteRequest } from './typedRoutes/api';
+import { TypedRequestHandler, WrappedRequest, WrappedResponse } from '@api-ts/typed-express-router';
+
+const { version } = require('bitgo/package.json');
+const pjson = require('../package.json');
+const debug = debugLib('bitgo:express');
+
+const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version}`;
+
+function handlePing(
+  req: ExpressApiRouteRequest<'express.ping', 'get'>,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  return req.bitgo.ping();
+}
+
+function handlePingExpress(req: ExpressApiRouteRequest<'express.pingExpress', 'get'>) {
+  return {
+    status: 'express server is ok!',
+  };
+}
+
+function handleLogin(req: ExpressApiRouteRequest<'express.login', 'post'>) {
+  const username = req.decoded.username || req.decoded.email;
+  const body = req.body;
+  body.username = username;
+  return req.bitgo.authenticate(body);
+}
+
+function handleDecrypt(req: ExpressApiRouteRequest<'express.decrypt', 'post'>) {
+  return {
+    decrypted: req.bitgo.decrypt(req.body),
+  };
+}
+
+function handleEncrypt(req: ExpressApiRouteRequest<'express.encrypt', 'post'>) {
+  return {
+    encrypted: req.bitgo.encrypt(req.body),
+  };
+}
+
+/**
+ * @deprecated
+ * @param req
+ */
+function handleVerifyAddress(req: ExpressApiRouteRequest<'express.verifyaddress', 'post'>) {
+  return {
+    verified: req.bitgo.verifyAddress(req.body),
+  };
+}
+
+/**
+ * @deprecated
+ * @param req
+ */
+function handleCreateLocalKeyChain(req: ExpressApiRouteRequest<'express.v1.keychain.local', 'post'>) {
+  return req.bitgo.keychains().create(req.body);
+}
+
+/**
+ * @deprecated
+ * @param req
+ */
+function handleDeriveLocalKeyChain(req: ExpressApiRouteRequest<'express.v1.keychain.derive', 'post'>) {
+  return req.bitgo.keychains().deriveLocal(req.body);
+}
+
+/**
+ * @deprecated
+ * @param req
+ */
+function handleCreateWalletWithKeychains(req: ExpressApiRouteRequest<'express.v1.wallet.simplecreate', 'post'>) {
+  return req.bitgo.wallets().createWalletWithKeychains(req.body);
+}
+
+/**
+ * @deprecated
+ * @param req
+ */
+function handleSendCoins(req: express.Request) {
+  return req.bitgo
+    .wallets()
+    .get({ id: req.params.id })
+    .then(function (wallet) {
+      return wallet.sendCoins(req.body);
+    })
+    .catch(function (err) {
+      err.status = 400;
+      throw err;
+    })
+    .then(function (result) {
+      if (result.status === 'pendingApproval') {
+        throw apiResponse(202, result);
+      }
+      return result;
+    });
+}
+
+/**
+ * @deprecated
+ * @param req
+ */
+function handleSendMany(req: express.Request) {
+  return req.bitgo
+    .wallets()
+    .get({ id: req.params.id })
+    .then(function (wallet) {
+      return wallet.sendMany(req.body);
+    })
+    .catch(function (err) {
+      err.status = 400;
+      throw err;
+    })
+    .then(function (result) {
+      if (result.status === 'pendingApproval') {
+        throw apiResponse(202, result);
+      }
+      return result;
+    });
+}
+
+/**
+ * @deprecated
+ * @param req
+ */
+function handleCreateTransaction(req: express.Request) {
+  return req.bitgo
+    .wallets()
+    .get({ id: req.params.id })
+    .then(function (wallet) {
+      return wallet.createTransaction(req.body);
+    })
+    .catch(function (err) {
+      err.status = 400;
+      throw err;
+    });
+}
+
+/**
+ * @deprecated
+ * @param req
+ */
+function handleSignTransaction(req: ExpressApiRouteRequest<'express.v1.wallet.signTransaction', 'post'>) {
+  return req.bitgo
+    .wallets()
+    .get({ id: req.params.id })
+    .then(function (wallet) {
+      return wallet.signTransaction(req.body);
+    });
+}
+
+/**
+ * @deprecated
+ * @param req
+ */
+function handleShareWallet(req: express.Request) {
+  return req.bitgo
+    .wallets()
+    .get({ id: req.params.id })
+    .then(function (wallet) {
+      return wallet.shareWallet(req.body);
+    });
+}
+
+/**
+ * @deprecated
+ * @param req
+ */
+function handleAcceptShare(req: ExpressApiRouteRequest<'express.v1.wallet.acceptShare', 'post'>) {
+  const params = req.body || {};
+  params.walletShareId = req.decoded.shareId;
+  return req.bitgo.wallets().acceptShare(params);
+}
+
+/**
+ * @deprecated
+ * @param req
+ */
+function handleApproveTransaction(req: ExpressApiRouteRequest<'express.v1.pendingapprovals', 'put'>) {
+  const params = req.body || {};
+  return req.bitgo
+    .pendingApprovals()
+    .get({ id: req.params.id })
+    .then(function (pendingApproval) {
+      if (params.state === 'approved') {
+        return pendingApproval.approve(params);
+      }
+      return pendingApproval.reject(params);
+    });
+}
+
+/**
+ * @deprecated
+ * @param req
+ */
+function handleConstructApprovalTx(req: ExpressApiRouteRequest<'express.v1.pendingapproval.constructTx', 'put'>) {
+  const params = req.body || {};
+  return req.bitgo
+    .pendingApprovals()
+    .get({ id: req.params.id })
+    .then(function (pendingApproval) {
+      return pendingApproval.constructApprovalTx(params);
+    });
+}
+
+/**
+ * @deprecated
+ * @param req
+ */
+function handleConsolidateUnspents(req: ExpressApiRouteRequest<'express.v1.wallet.consolidateunspents', 'put'>) {
+  return req.bitgo
+    .wallets()
+    .get({ id: req.params.id })
+    .then(function (wallet) {
+      return wallet.consolidateUnspents(req.body);
+    });
+}
+
+/**
+ * @deprecated
+ * @param req
+ */
+function handleFanOutUnspents(req: ExpressApiRouteRequest<'express.v1.wallet.fanoutunspents', 'put'>) {
+  return req.bitgo
+    .wallets()
+    .get({ id: req.params.id })
+    .then(function (wallet) {
+      return wallet.fanOutUnspents(req.body);
+    });
+}
+
+/**
+ * @deprecated
+ * @param req
+ */
+function handleCalculateMinerFeeInfo(req: ExpressApiRouteRequest<'express.calculateminerfeeinfo', 'post'>) {
+  return req.bitgo.calculateMinerFeeInfo({
+    bitgo: req.bitgo,
+    feeRate: req.body.feeRate,
+    nP2shInputs: req.body.nP2shInputs,
+    nP2pkhInputs: req.body.nP2pkhInputs,
+    nP2shP2wshInputs: req.body.nP2shP2wshInputs,
+    nOutputs: req.body.nOutputs,
+  });
+}
+
+/**
+ * Builds the API's URL string, optionally building the querystring if parameters exist
+ * @param req
+ * @return {string}
+ */
+function createAPIPath(req: express.Request) {
+  let apiPath = '/' + req.params[0];
+  if (!_.isEmpty(req.query)) {
+    // req.params does not contain the querystring, so we manually add them here
+    const urlDetails = url.parse(req.url);
+    if (urlDetails.search) {
+      // "search" is the properly URL encoded query params, prefixed with "?"
+      apiPath += urlDetails.search;
+    }
+  }
+  return apiPath;
+}
+
+/**
+ * handle any other V1 API call
+ * @deprecated
+ * @param req
+ * @param res
+ * @param next
+ */
+function handleREST(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const method = req.method;
+  const bitgo = req.bitgo;
+  const bitgoURL = bitgo.url(createAPIPath(req));
+  return redirectRequest(bitgo, method, bitgoURL, req, next);
+}
+
+/**
+ * handle any other V2 API call
+ * @param req
+ * @param res
+ * @param next
+ */
+function handleV2UserREST(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const method = req.method;
+  const bitgo = req.bitgo;
+  const bitgoURL = bitgo.url('/user' + createAPIPath(req), 2);
+  return redirectRequest(bitgo, method, bitgoURL, req, next);
+}
+
+/**
+ * handle v2 address validation
+ * @param req
+ */
+function handleV2VerifyAddress(req: ExpressApiRouteRequest<'express.verifycoinaddress', 'post'>): { isValid: boolean } {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+
+  if (coin instanceof Coin.AbstractUtxoCoin) {
+    return {
+      isValid: coin.isValidAddress(req.decoded.address, req.decoded.supportOldScriptHashVersion),
+    };
+  }
+
+  return {
+    isValid: coin.isValidAddress(req.decoded.address),
+  };
+}
+
+/**
+ * handle address canonicalization
+ * @param req
+ */
+function handleCanonicalAddress(req: ExpressApiRouteRequest<'express.canonicaladdress', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  if (!['ltc', 'bch', 'bsv'].includes(coin.getFamily())) {
+    throw new Error('only Litecoin/Bitcoin Cash/Bitcoin SV address canonicalization is supported');
+  }
+
+  const address = req.body.address;
+  const fallbackVersion = req.body.scriptHashVersion; // deprecate
+  const version = req.body.version;
+  return (coin as Coin.Bch | Coin.Bsv | Coin.Ltc).canonicalAddress(address, version || fallbackVersion);
+}
+
+function getWalletPwFromEnv(walletId: string): string {
+  const name = `WALLET_${walletId}_PASSPHRASE`;
+  const walletPw = process.env[name];
+  if (walletPw === undefined) {
+    throw new Error(`Could not find wallet passphrase ${name} in environment`);
+  }
+  return walletPw;
+}
+
+async function getEncryptedPrivKey(path: string, walletId: string): Promise<string> {
+  const privKeyFile = await fs.readFile(path, { encoding: 'utf8' });
+  const encryptedPrivKey = JSON.parse(privKeyFile);
+  if (encryptedPrivKey[walletId] === undefined) {
+    throw new Error(`Could not find a field for walletId: ${walletId} in ${path}`);
+  }
+  return encryptedPrivKey[walletId];
+}
+
+function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: string): string {
+  try {
+    return bg.decrypt({ password: walletPw, input: encryptedPrivKey });
+  } catch (e) {
+    throw new Error(`Error when trying to decrypt private key: ${e}`);
+  }
+}
+
+export async function handleV2GenerateShareTSS(
+  req: ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>
+): Promise<any> {
+  const walletId = req.body.txRequest ? req.body.txRequest.walletId : req.body.tssParams.txRequest.walletId;
+  if (!walletId) {
+    throw new Error('Missing required field: walletId');
+  }
+
+  const walletPw = getWalletPwFromEnv(walletId);
+  const { signerFileSystemPath } = req.config;
+
+  if (!signerFileSystemPath) {
+    throw new Error('Missing required configuration: signerFileSystemPath');
+  }
+
+  const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
+  const bitgo = req.bitgo;
+  const privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
+  const coin = bitgo.coin(req.decoded.coin);
+  req.body.prv = privKey;
+  req.body.walletPassphrase = walletPw;
+  try {
+    if (coin.getMPCAlgorithm() === MPCType.EDDSA) {
+      const eddsaUtils = new EddsaUtils(bitgo, coin);
+      switch (req.decoded.sharetype) {
+        case ShareType.Commitment:
+          return await eddsaUtils.createCommitmentShareFromTxRequest(req.body);
+        case ShareType.R:
+          return await eddsaUtils.createRShareFromTxRequest(req.body);
+        case ShareType.G:
+          return await eddsaUtils.createGShareFromTxRequest(req.body);
+        default:
+          throw new Error(
+            `Share type ${req.decoded.sharetype} not supported, only commitment, G and R share generation is supported.`
+          );
+      }
+    } else if (coin.getMPCAlgorithm() === MPCType.ECDSA) {
+      const isMPCv2 = [
+        ShareType.MPCv2Round1.toString(),
+        ShareType.MPCv2Round2.toString(),
+        ShareType.MPCv2Round3.toString(),
+      ].includes(req.decoded.sharetype);
+
+      if (isMPCv2) {
+        const ecdsaMPCv2Utils = new EcdsaMPCv2Utils(bitgo, coin);
+        switch (req.decoded.sharetype) {
+          case ShareType.MPCv2Round1:
+            return await ecdsaMPCv2Utils.createOfflineRound1Share(req.body);
+          case ShareType.MPCv2Round2:
+            return await ecdsaMPCv2Utils.createOfflineRound2Share(req.body);
+          case ShareType.MPCv2Round3:
+            return await ecdsaMPCv2Utils.createOfflineRound3Share(req.body);
+          default:
+            throw new Error(
+              `Share type ${req.decoded.sharetype} not supported for MPCv2, only MPCv2Round1, MPCv2Round2 and MPCv2Round3 is supported.`
+            );
+        }
+      } else {
+        const ecdsaUtils = new EcdsaUtils(bitgo, coin);
+        switch (req.decoded.sharetype) {
+          case ShareType.PaillierModulus:
+            return ecdsaUtils.getOfflineSignerPaillierModulus(req.body);
+          case ShareType.K:
+            return await ecdsaUtils.createOfflineKShare(req.body);
+          case ShareType.MuDelta:
+            return await ecdsaUtils.createOfflineMuDeltaShare(req.body);
+          case ShareType.S:
+            return await ecdsaUtils.createOfflineSShare(req.body);
+          default:
+            throw new Error(
+              `Share type ${req.decoded.sharetype} not supported, only PaillierModulus, K, MUDelta, and S share generation is supported.`
+            );
+        }
+      }
+    } else {
+      throw new Error(`MPC Algorithm ${coin.getMPCAlgorithm()} is not supported.`);
+    }
+  } catch (error) {
+    logger.error('error while signing wallet transaction', error);
+    throw error;
+  }
+}
+
+export async function handleV2SignTSSWalletTx(req: ExpressApiRouteRequest<'express.v2.wallet.signtxtss', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+
+  try {
+    return await wallet.ensureCleanSigSharesAndSignTransaction(createTSSSendParams(req, wallet));
+  } catch (error) {
+    logger.error('error while signing wallet transaction', error);
+    throw error;
+  }
+}
+
+/**
+ * This route is used to sign while external express signer is enabled
+ */
+export async function handleV2Sign(req: ExpressApiRouteRequest<'express.v2.coin.sign', 'post'>) {
+  const walletId = req.body.txPrebuild?.walletId;
+
+  if (!walletId) {
+    throw new Error('Missing required field: walletId');
+  }
+
+  const walletPw = getWalletPwFromEnv(walletId);
+  const { signerFileSystemPath } = req.config;
+
+  if (!signerFileSystemPath) {
+    throw new Error('Missing required configuration: signerFileSystemPath');
+  }
+
+  const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
+  const bitgo = req.bitgo;
+  let privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
+  const coin = bitgo.coin(req.decoded.coin);
+  if (req.body.derivationSeed) {
+    privKey = coin.deriveKeyWithSeed({ key: privKey, seed: req.body.derivationSeed }).key;
+  }
+  try {
+    return await coin.signTransaction({ ...req.body, prv: privKey });
+  } catch (error) {
+    logger.error('error while signing wallet transaction', error);
+    throw error;
+  }
+}
+
+export async function handleV2OFCSignPayloadInExtSigningMode(
+  req: ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>
+): Promise<{ payload: string; signature: string }> {
+  const walletId = req.body.walletId;
+  const payload = req.body.payload;
+  const bodyWalletPassphrase = req.body.walletPassphrase;
+  const ofcCoinName = 'ofc';
+
+  if (!payload) {
+    throw new ApiResponseError('Missing required field: payload', 400);
+  }
+
+  if (!walletId) {
+    throw new ApiResponseError('Missing required field: walletId', 400);
+  }
+
+  // fetch the password for the given walletId from the body or the env. This is required for decrypting the private key that belongs to that wallet.
+  const walletPw = bodyWalletPassphrase || getWalletPwFromEnv(walletId);
+
+  const { signerFileSystemPath } = req.config;
+  if (!signerFileSystemPath) {
+    throw new ApiResponseError('Missing required configuration: signerFileSystemPath', 500);
+  }
+  // get the encrypted private key from the local JSON file (encryptedPrivKeys.json) (populated using fetchEncryptedPrivateKeys.ts)
+  const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
+
+  const bitgo = req.bitgo;
+
+  // decrypt the encrypted private key using the wallet pwd
+  const privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
+
+  // create a BaseCoin instance for 'ofc'
+  const coin = bitgo.coin(ofcCoinName);
+
+  // stringify the payload if not already a string
+  const stringifiedPayload = typeof payload === 'string' ? payload : JSON.stringify(payload);
+
+  try {
+    // sign the message using the decrypted private key
+    const signature = (await coin.signMessage({ prv: privKey }, stringifiedPayload)).toString('hex');
+    return {
+      payload: stringifiedPayload,
+      signature,
+    };
+  } catch (error) {
+    logger.error('Error while signing message', error);
+    throw error;
+  }
+}
+
+export async function handleV2OFCSignPayload(
+  req: ExpressApiRouteRequest<'express.ofc.signPayload', 'post'>
+): Promise<{ payload: string; signature: string }> {
+  const { walletId, payload, walletPassphrase: bodyWalletPassphrase } = req.decoded;
+  const ofcCoinName = 'ofc';
+
+  // If the externalSignerUrl is set, forward the request to the express server hosted on the externalSignerUrl
+  const externalSignerUrl = req.config?.externalSignerUrl;
+  if (externalSignerUrl) {
+    const { body: payloadWithSignature } = await retryPromise(
+      () =>
+        superagent
+          .post(`${externalSignerUrl}/api/v2/ofc/signPayload`)
+          .type('json')
+          .send({ walletId: walletId, payload: payload }),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return payloadWithSignature;
+  }
+
+  const bitgo = req.bitgo;
+
+  // This is to set us up for multiple trading accounts per enterprise
+  const wallet = await bitgo.coin(ofcCoinName).wallets().get({ id: walletId });
+
+  if (wallet === undefined) {
+    throw new ApiResponseError(`Could not find OFC wallet ${walletId}`, 404);
+  }
+
+  const walletPassphrase = bodyWalletPassphrase || getWalletPwFromEnv(wallet.id());
+  const tradingAccount = wallet.toTradingAccount();
+  const stringifiedPayload = typeof payload === 'string' ? payload : JSON.stringify(payload);
+  const signature = await tradingAccount.signPayload({
+    payload: stringifiedPayload,
+    walletPassphrase,
+  });
+  return {
+    payload: stringifiedPayload,
+    signature,
+  };
+}
+
+/**
+ * handle new wallet creation
+ * @param req
+ */
+export async function handleV2GenerateWallet(req: ExpressApiRouteRequest<'express.wallet.generate', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const result = await coin.wallets().generateWallet(req.decoded);
+  if ((req.decoded.includeKeychains as any) === false) {
+    return result.wallet.toJSON();
+  }
+  return { ...result, wallet: result.wallet.toJSON() };
+}
+
+/**
+ * handle new address creation
+ * @param req
+ */
+export async function handleV2CreateAddress(req: ExpressApiRouteRequest<'express.v2.wallet.createAddress', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  return wallet.createAddress(req.decoded);
+}
+
+/**
+ * handle v2 isWalletAddress - verify if an address belongs to a wallet
+ * @param req
+ */
+export async function handleV2IsWalletAddress(
+  req: ExpressApiRouteRequest<'express.v2.wallet.isWalletAddress', 'post'>
+) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  return await wallet.baseCoin.isWalletAddress(req.decoded as any);
+}
+
+/**
+ * handle v2 approve transaction
+ * @param req
+ */
+async function handleV2PendingApproval(req: ExpressApiRouteRequest<'express.v2.pendingapprovals', 'put'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const params = req.body || {};
+  const pendingApproval = await coin.pendingApprovals().get({ id: req.decoded.id });
+  if (params.state === 'approved') {
+    return pendingApproval.approve(params);
+  }
+  return pendingApproval.reject(params);
+}
+
+/**
+ * create a keychain
+ * @param req
+ */
+export function handleV2CreateLocalKeyChain(req: ExpressApiRouteRequest<'express.keychain.local', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  return coin.keychains().create(req.body);
+}
+
+/**
+ * handle wallet share
+ * @param req
+ */
+export async function handleV2ShareWallet(req: ExpressApiRouteRequest<'express.v2.wallet.share', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  return wallet.shareWallet(req.decoded);
+}
+
+/**
+ * handle accept wallet share
+ * @param req
+ */
+async function handleV2AcceptWalletShare(req: express.Request) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  const params = _.extend({}, req.body, { walletShareId: req.params.id });
+  return coin.wallets().acceptShare(params);
+}
+
+/**
+ * handle wallet sign transaction
+ */
+async function handleV2SignTxWallet(req: ExpressApiRouteRequest<'express.v2.wallet.signtx', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  try {
+    return await wallet.signTransaction(createSendParams(req));
+  } catch (error) {
+    logger.error('error while signing wallet transaction', error);
+    throw error;
+  }
+}
+
+/**
+ * handle sign transaction
+ * @param req
+ */
+async function handleV2SignTx(req: ExpressApiRouteRequest<'express.v2.coin.signtx', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  try {
+    return await coin.signTransaction(req.decoded);
+  } catch (error) {
+    logger.error('error while signing the transaction', error);
+    throw error;
+  }
+}
+
+/**
+ * handle wallet recover token
+ * @param req
+ */
+async function handleV2RecoverToken(req: ExpressApiRouteRequest<'express.v2.wallet.recovertoken', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+
+  const wallet = await coin.wallets().get({ id: req.params.id });
+  return wallet.recoverToken(req.body);
+}
+
+/**
+ * handle wallet fanout unspents
+ * @param req
+ */
+async function handleV2ConsolidateUnspents(
+  req: ExpressApiRouteRequest<'express.v2.wallet.consolidateunspents', 'post'>
+) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  return wallet.consolidateUnspents(createSendParams(req));
+}
+
+/**
+ * Handle Wallet Account Consolidation.
+ *
+ * @param req
+ */
+export async function handleV2ConsolidateAccount(
+  req: ExpressApiRouteRequest<'express.v2.wallet.consolidateaccount', 'post'>
+) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+
+  if (req.body.consolidateAddresses && !_.isArray(req.body.consolidateAddresses)) {
+    throw new Error('consolidate address must be an array of addresses');
+  }
+
+  if (!coin.allowsAccountConsolidations()) {
+    throw new Error('invalid coin selected');
+  }
+
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+
+  let result: any;
+  try {
+    if (coin.supportsTss()) {
+      result = await wallet.sendAccountConsolidations(createTSSSendParams(req, wallet));
+    } else {
+      result = await wallet.sendAccountConsolidations(createSendParams(req));
+    }
+  } catch (err) {
+    err.status = 400;
+    throw err;
+  }
+
+  // we had failures to handle
+  if (result.failure.length && result.failure.length > 0) {
+    let msg = '';
+    let status = 202;
+
+    if (result.success.length && result.success.length > 0) {
+      // but we also had successes
+      msg = `Transactions failed: ${result.failure.length} and succeeded: ${result.success.length}`;
+    } else {
+      // or in this case only failures
+      status = 400;
+      msg = `All transactions failed`;
+    }
+
+    throw apiResponse(status, result, msg);
+  }
+
+  return result;
+}
+
+/**
+ * handle wallet fanout unspents
+ * @param req
+ */
+async function handleV2FanOutUnspents(req: ExpressApiRouteRequest<'express.wallet.fanoutunspents', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  return wallet.fanoutUnspents(createSendParams(req));
+}
+
+/**
+ * handle wallet sweep
+ * @param req
+ */
+async function handleV2Sweep(req: ExpressApiRouteRequest<'express.v2.wallet.sweep', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  return wallet.sweep(createSendParams(req));
+}
+
+/**
+ * handle CPFP accelerate transaction creation
+ * @param req
+ */
+async function handleV2AccelerateTransaction(req: ExpressApiRouteRequest<'express.wallet.acceleratetx', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  return wallet.accelerateTransaction(createSendParams(req));
+}
+
+function createSendParams(req: express.Request) {
+  if (req.config?.externalSignerUrl !== undefined) {
+    return {
+      ...req.body,
+      customSigningFunction: createCustomSigningFunction(req.config.externalSignerUrl),
+    };
+  } else {
+    return req.body;
+  }
+}
+
+function createTSSSendParams(req: express.Request, wallet: Wallet) {
+  if (req.config?.externalSignerUrl !== undefined) {
+    const coin = req.bitgo.coin(req.params.coin);
+    if (coin.getMPCAlgorithm() === MPCType.EDDSA) {
+      return {
+        ...req.body,
+        customCommitmentGeneratingFunction: createCustomCommitmentGenerator(
+          req.config.externalSignerUrl,
+          req.params.coin
+        ),
+        customRShareGeneratingFunction: createCustomRShareGenerator(req.config.externalSignerUrl, req.params.coin),
+        customGShareGeneratingFunction: createCustomGShareGenerator(req.config.externalSignerUrl, req.params.coin),
+      };
+    } else if (coin.getMPCAlgorithm() === MPCType.ECDSA) {
+      if (wallet._wallet.multisigTypeVersion === 'MPCv2') {
+        return {
+          ...req.body,
+          customMPCv2SigningRound1GenerationFunction: createCustomMPCv2SigningRound1Generator(
+            req.config.externalSignerUrl,
+            req.params.coin
+          ),
+          customMPCv2SigningRound2GenerationFunction: createCustomMPCv2SigningRound2Generator(
+            req.config.externalSignerUrl,
+            req.params.coin
+          ),
+          customMPCv2SigningRound3GenerationFunction: createCustomMPCv2SigningRound3Generator(
+            req.config.externalSignerUrl,
+            req.params.coin
+          ),
+        };
+      } else {
+        return {
+          ...req.body,
+          customPaillierModulusGeneratingFunction: createCustomPaillierModulusGetter(
+            req.config.externalSignerUrl,
+            req.params.coin
+          ),
+          customKShareGeneratingFunction: createCustomKShareGenerator(req.config.externalSignerUrl, req.params.coin),
+          customMuDeltaShareGeneratingFunction: createCustomMuDeltaShareGenerator(
+            req.config.externalSignerUrl,
+            req.params.coin
+          ),
+          customSShareGeneratingFunction: createCustomSShareGenerator(req.config.externalSignerUrl, req.params.coin),
+        };
+      }
+    } else {
+      throw new Error(`MPC Algorithm ${coin.getMPCAlgorithm()} is not supported.`);
+    }
+  } else {
+    return req.body;
+  }
+}
+
+/**
+ * handle send one
+ * @param req
+ */
+async function handleV2SendOne(req: ExpressApiRouteRequest<'express.v2.wallet.sendcoins', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const reqId = new RequestTracer();
+  const wallet = await coin.wallets().get({ id: req.decoded.id, reqId });
+  req.body.reqId = reqId;
+
+  // Validate eip1559: reject partial objects, normalize empty objects to undefined
+  if (req.body.eip1559) {
+    const { maxFeePerGas, maxPriorityFeePerGas } = req.body.eip1559;
+    const hasMax = maxFeePerGas !== undefined;
+    const hasPriority = maxPriorityFeePerGas !== undefined;
+    if (hasMax && !hasPriority) {
+      throw new ApiResponseError('eip1559 missing maxPriorityFeePerGas', 400);
+    }
+    if (hasPriority && !hasMax) {
+      throw new ApiResponseError('eip1559 missing maxFeePerGas', 400);
+    }
+    // Normalize empty object to undefined for server-side auto-estimation
+    if (!hasMax && !hasPriority) {
+      req.body.eip1559 = undefined;
+    }
+  }
+
+  let result;
+  try {
+    result = await wallet.send(createSendParams(req));
+  } catch (err) {
+    err.status = 400;
+    throw err;
+  }
+  if (result.status === 'pendingApproval') {
+    throw apiResponse(202, result);
+  }
+  return result;
+}
+
+/**
+ * handle send many
+ * @param req
+ */
+async function handleV2SendMany(req: ExpressApiRouteRequest<'express.v2.wallet.sendmany', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const reqId = new RequestTracer();
+  const wallet = await coin.wallets().get({ id: req.decoded.id, reqId });
+  req.body.reqId = reqId;
+
+  // Validate eip1559: reject partial objects, normalize empty objects to undefined
+  if (req.body.eip1559) {
+    const { maxFeePerGas, maxPriorityFeePerGas } = req.body.eip1559;
+    const hasMax = maxFeePerGas !== undefined;
+    const hasPriority = maxPriorityFeePerGas !== undefined;
+    if (hasMax && !hasPriority) {
+      throw new ApiResponseError('eip1559 missing maxPriorityFeePerGas', 400);
+    }
+    if (hasPriority && !hasMax) {
+      throw new ApiResponseError('eip1559 missing maxFeePerGas', 400);
+    }
+    // Normalize empty object to undefined for server-side auto-estimation
+    if (!hasMax && !hasPriority) {
+      req.body.eip1559 = undefined;
+    }
+  }
+
+  let result;
+  try {
+    if (wallet._wallet.multisigType === 'tss') {
+      result = await wallet.sendMany(createTSSSendParams(req, wallet));
+    } else {
+      result = await wallet.sendMany(createSendParams(req));
+    }
+  } catch (err) {
+    err.status = 400;
+    throw err;
+  }
+  if (result.status === 'pendingApproval') {
+    throw apiResponse(202, result);
+  }
+  return result;
+}
+
+/**
+ * handle get account resources
+ * @param req
+ */
+export async function handleV2AccountResources(
+  req: ExpressApiRouteRequest<'express.v2.wallet.getaccountresources', 'post'>
+) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  return wallet.getAccountResources({
+    addresses: req.decoded.addresses,
+    destinationAddress: req.decoded.destinationAddress,
+  });
+}
+
+/**
+ * handle get resource delegations
+ * @param req
+ */
+export async function handleV2ResourceDelegations(
+  req: ExpressApiRouteRequest<'express.v2.wallet.resourcedelegations', 'get'>
+) {
+  const bitgo = req.bitgo;
+  const coin = req.decoded.coin;
+  const walletId = req.decoded.id;
+  const query: Record<string, string> = {};
+  if (req.decoded.type) query.type = req.decoded.type;
+  if (req.decoded.resource) query.resource = req.decoded.resource;
+  if (req.decoded.limit !== undefined) query.limit = String(req.decoded.limit);
+  if (req.decoded.nextBatchPrevId) query.nextBatchPrevId = req.decoded.nextBatchPrevId;
+  return bitgo
+    .get(bitgo.url(`/${coin}/wallet/${walletId}/resourcedelegations`, 2))
+    .query(query)
+    .result();
+}
+
+/**
+ *  payload meant for prebuildAndSignTransaction() in sdk-core which
+ * validates the payload and makes the appropriate request to WP to
+ * build, sign, and send a tx.
+ * - sends request to Platform to build the transaction
+ * - signs with user key
+ * - request signature from the second key (BitGo HSM)
+ * - send/broadcast transaction
+ * @param req where req.body is {@link PrebuildAndSignTransactionOptions}
+ */
+export async function handleV2PrebuildAndSignTransaction(
+  req: ExpressApiRouteRequest<'express.v2.wallet.prebuildandsigntransaction', 'post'>
+): Promise<SignedTransactionRequest> {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const reqId = new RequestTracer();
+  const wallet = await coin.wallets().get({ id: req.decoded.id, reqId });
+  req.body.reqId = reqId;
+  let result;
+  try {
+    result = await wallet.prebuildAndSignTransaction(createSendParams(req));
+  } catch (err) {
+    err.status = 400;
+    throw err;
+  }
+  return result;
+}
+
+/**
+ * Enables tokens on a wallet
+ * @param req
+ */
+export async function handleV2EnableTokens(req: ExpressApiRouteRequest<'express.v2.wallet.enableTokens', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const reqId = new RequestTracer();
+  const wallet = await coin.wallets().get({ id: req.decoded.id, reqId });
+  req.body.reqId = reqId;
+  try {
+    return wallet.sendTokenEnablements(createSendParams(req));
+  } catch (err) {
+    err.status = 400;
+    throw err;
+  }
+}
+
+/**
+ * Handle Update Wallet
+ * @param req
+ */
+export async function handleWalletUpdate(
+  req: ExpressApiRouteRequest<'express.wallet.update', 'put'>
+): Promise<unknown> {
+  // If it's a lightning coin, use the lightning-specific handler
+  if (isLightningCoinName(req.decoded.coin)) {
+    return handleUpdateLightningWalletCoinSpecific(req);
+  }
+
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  // For non-lightning coins, directly update the wallet
+  const wallet = await coin.wallets().get({ id: req.params.id });
+  return await bitgo.put(wallet.url()).send(req.body).result();
+}
+
+/**
+ * Changes a keychain's passphrase, re-encrypting the key to a new password
+ * @param req
+ */
+export async function handleKeychainChangePassword(
+  req: ExpressApiRouteRequest<'express.keychain.changePassword', 'post'>
+): Promise<unknown> {
+  const { oldPassword, newPassword, otp, coin: coinName, id } = req.decoded;
+  const reqId = new RequestTracer();
+
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(coinName);
+
+  if (otp) {
+    await bitgo.unlock({ otp });
+  }
+
+  const keychain = await coin.keychains().get({
+    id: id,
+    reqId,
+  });
+
+  if (!keychain) {
+    throw new ApiResponseError(`Keychain ${req.params.id} not found`, 404);
+  }
+
+  // OFC wallet supports multiple keys (one per spender) on a single keychain.
+  const isMultiUserKey = (keychain.coinSpecific?.[coinName]?.['features'] ?? []).includes('multi-user-key');
+  if (isMultiUserKey && !keychain.pub) {
+    throw new ApiResponseError(
+      `Unexpected missing field "keychain.pub". Please contact support@bitgo.com for more details`,
+      500
+    );
+  }
+
+  const updatedKeychain = coin.keychains().updateSingleKeychainPassword({
+    keychain,
+    oldPassword,
+    newPassword,
+  });
+
+  return bitgo.put(coin.url(`/key/${updatedKeychain.id}`)).send({
+    encryptedPrv: updatedKeychain.encryptedPrv,
+    pub: keychain.pub,
+  });
+}
+
+/**
+ * handle any other API call
+ * @param req
+ * @param res
+ * @param next
+ */
+function handleV2CoinSpecificREST(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const method = req.method;
+  const bitgo = req.bitgo;
+
+  debug('handling v2 coin specific rest req');
+
+  try {
+    const coin = bitgo.coin(req.params.coin);
+    const coinURL = coin.url(createAPIPath(req));
+    return redirectRequest(bitgo, method, coinURL, req, next);
+  } catch (e) {
+    if (e instanceof UnsupportedCoinError) {
+      const queryParams = _.transform(
+        req.query,
+        (acc: string[], value, key) => {
+          for (const val of _.castArray(value)) {
+            acc.push(`${key}=${val}`);
+          }
+        },
+        []
+      );
+      const baseUrl = bitgo.url(req.baseUrl.replace(/^\/api\/v2/, ''), 2);
+      const url = _.isEmpty(queryParams) ? baseUrl : `${baseUrl}?${queryParams.join('&')}`;
+
+      debug(`coin ${req.params.coin} not supported, attempting to handle as a coinless route with url ${url}`);
+      return redirectRequest(bitgo, method, url, req, next);
+    }
+
+    throw e;
+  }
+}
+
+/**
+ * Handle additional option to encrypt on the express route for partners requiring value encryption
+ * @param req.body.encrypt - boolean to determine if the request should handle encryption on behalf of the submission.
+ */
+async function handleNetworkV1EnterpriseClientConnections(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  debug('handling network v1 partner connection creation');
+
+  const bitgo = req.bitgo;
+  const params = req.params;
+  const body = req.body as CreateNetworkConnectionParams & {
+    encrypt?: boolean;
+  };
+
+  if (body.encrypt === true) {
+    if (!body.partnerId) {
+      throw new ApiResponseError('Missing required field: partnerId', 400);
+    }
+
+    const partnersUrl = bitgo.microservicesUrl(`/api/network/v1/enterprises/${params.enterpriseId}/partners`);
+
+    const response: GetNetworkPartnersResponse = await bitgo
+      .get(partnersUrl)
+      .set('enterprise-id', params.enterpriseId)
+      .send({ ids: [params.partnerId] })
+      .result();
+
+    const partners = response.partners;
+    const partner = partners.find((p) => p.id === body.partnerId);
+
+    if (!partner) {
+      throw new ApiResponseError(`Partner not found for partnerId: ${body.partnerId}`, 400);
+    }
+
+    if (!partner.publicKey) {
+      throw new ApiResponseError('Partner does not require encryption', 400);
+    }
+
+    switch (body.connectionKey.schema) {
+      case 'token':
+        req.body.connectionKey.connectionToken = await encryptRsaWithAesGcm(
+          partner.publicKey,
+          body.connectionKey.connectionToken
+        );
+        break;
+      case 'tokenAndSignature':
+        req.body.connectionKey.connectionToken = await encryptRsaWithAesGcm(
+          partner.publicKey,
+          body.connectionKey.connectionToken
+        );
+        req.body.connectionKey.signature = await encryptRsaWithAesGcm(partner.publicKey, body.connectionKey.signature);
+        break;
+      case 'apiKeyAndSecret':
+      case 'clearloop':
+        req.body.connectionKey.apiKey = await encryptRsaWithAesGcm(partner.publicKey, body.connectionKey.apiKey);
+        req.body.connectionKey.apiSecret = await encryptRsaWithAesGcm(partner.publicKey, body.connectionKey.apiSecret);
+        break;
+    }
+  }
+
+  return handleProxyReq(req, res, next);
+}
+
+/**
+ * Helper to send request body, using raw bytes when available.
+ *
+ * For v4 HMAC authentication, we need to send the exact bytes that were
+ * received from the client to ensure the HMAC signature matches.
+ * The rawBodyBuffer is captured by body-parser's verify callback before
+ * JSON parsing, preserving exact whitespace, key ordering, etc.
+ *
+ * For v2/v3, sending the raw string also works because serializeRequestData
+ * now properly returns strings as-is for HMAC calculation.
+ *
+ * @param request - The superagent request object
+ * @param req - The Express request containing body and rawBodyBuffer
+ * @returns The request with body attached
+ */
+function sendRequestBody(request: ReturnType<BitGo['post']>, req: express.Request) {
+  if (req.rawBodyBuffer) {
+    // Preserve original Content-Type header from client
+    const contentTypeHeader = req.headers['content-type'];
+    if (contentTypeHeader) {
+      request.set('Content-Type', Array.isArray(contentTypeHeader) ? contentTypeHeader[0] : contentTypeHeader);
+    }
+    // Send raw body as UTF-8 string to preserve exact bytes for HMAC.
+    // JSON is always UTF-8 (RFC 8259), so this is lossless for JSON bodies.
+    // serializeRequestData will return this string as-is for HMAC calculation.
+    return request.send(req.rawBodyBuffer.toString('utf8'));
+  }
+
+  // Fall back to parsed body for backward compatibility (e.g., non-JSON bodies)
+  return request.send(req.body);
+}
+
+/**
+ * Redirect a request using the bitgo request functions.
+ * @param bitgo
+ * @param method
+ * @param url
+ * @param req
+ * @param next
+ */
+export function redirectRequest(
+  bitgo: BitGo,
+  method: string,
+  url: string,
+  req: express.Request,
+  next: express.NextFunction
+) {
+  let request;
+
+  switch (method) {
+    case 'GET':
+      request = bitgo.get(url);
+      break;
+    case 'POST':
+      request = sendRequestBody(bitgo.post(url), req);
+      break;
+    case 'PUT':
+      request = sendRequestBody(bitgo.put(url), req);
+      break;
+    case 'PATCH':
+      request = sendRequestBody(bitgo.patch(url), req);
+      break;
+    case 'OPTIONS':
+      request = sendRequestBody(bitgo.options(url), req);
+      break;
+    case 'DELETE':
+      request = sendRequestBody(bitgo.del(url), req);
+      break;
+  }
+
+  if (request) {
+    if (req.params.enterpriseId) {
+      request.set('enterprise-id', req.params.enterpriseId);
+    }
+
+    return request.result().then((result) => {
+      const status = request.res?.statusCode || 200;
+      return { status, body: result };
+    });
+  }
+
+  // something has presumably gone wrong
+  next();
+}
+
+async function handleProxyReq(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const fullUrl = req.bitgo.microservicesUrl(req.originalUrl);
+  if (req.url && (/^\/api.*$/.test(req.originalUrl) || /^\/oauth\/token.*$/.test(req.url))) {
+    req.isProxy = true;
+    debug('proxying %s request to %s', req.method, fullUrl);
+    return await redirectRequest(req.bitgo, req.method, fullUrl, req, next);
+  }
+  // user tried to access a url which is not an api route, do not proxy
+  debug('unable to proxy %s request to %s', req.method, fullUrl);
+  throw new ApiResponseError('bitgo-express can only proxy BitGo API requests', 404);
+}
+
+/**
+ *
+ * @param status
+ * @param result
+ * @param message
+ */
+function apiResponse(status: number, result: any, message?: string): ApiResponseError {
+  return new ApiResponseError(message, status, result);
+}
+
+const expressJSONParser = bodyParser.json({
+  limit: '20mb',
+  verify: (req, res, buf) => {
+    (req as express.Request).rawBodyBuffer = buf;
+  },
+});
+
+/**
+ * Perform body parsing here only on routes we want
+ */
+function parseBody(req: express.Request, res: express.Response, next: express.NextFunction) {
+  // Set the default Content-Type, in case the client doesn't set it.  If
+  // Content-Type isn't specified, Express silently refuses to parse the
+  // request body.
+  req.headers['content-type'] = req.headers['content-type'] || 'application/json';
+  return expressJSONParser(req, res, next);
+}
+
+/**
+ * Create the bitgo object in the request
+ * @param config
+ */
+function prepareBitGo(config: Config) {
+  const { env, customRootUri, customBitcoinNetwork } = config;
+
+  return function prepBitGo(req: express.Request, res: express.Response, next: express.NextFunction) {
+    // Get access token
+    let accessToken;
+    if (req.headers.authorization) {
+      const authSplit = req.headers.authorization.split(' ');
+      if (authSplit.length === 2 && authSplit[0].toLowerCase() === 'bearer') {
+        accessToken = authSplit[1];
+      }
+    }
+    const userAgent = req.headers['user-agent']
+      ? BITGOEXPRESS_USER_AGENT + ' ' + req.headers['user-agent']
+      : BITGOEXPRESS_USER_AGENT;
+
+    const useProxyUrl = process.env.BITGO_USE_PROXY;
+    const bitgoConstructorParams: BitGoOptions = {
+      env,
+      customRootURI: customRootUri,
+      customBitcoinNetwork,
+      accessToken,
+      userAgent,
+      ...(useProxyUrl
+        ? {
+            customProxyAgent: new ProxyAgent({
+              getProxyForUrl: () => useProxyUrl,
+            }),
+          }
+        : {}),
+    };
+
+    req.bitgo = new BitGo(bitgoConstructorParams);
+    req.config = config;
+
+    next();
+  };
+}
+type RequestHandlerResponse = string | unknown | undefined | { status: number; body: unknown };
+interface RequestHandler extends express.RequestHandler<ParamsDictionary, any, RequestHandlerResponse> {
+  (req: express.Request, res: express.Response, next: express.NextFunction):
+    | RequestHandlerResponse
+    | Promise<RequestHandlerResponse>;
+}
+
+function handleRequestHandlerError(res: express.Response, error: unknown) {
+  let err;
+  if (error instanceof Error) {
+    err = error;
+  } else if (typeof error === 'string') {
+    err = new BitGoExpressError('(string_error) ' + error);
+  } else {
+    err = new BitGoExpressError('(object_error) ' + JSON.stringify(error));
+  }
+
+  const message = err.message || 'local error';
+  // use attached result, or make one
+  let result = err.result || { error: message };
+  result = _.extend({}, result, {
+    message: err.message,
+    name: err.name || 'BitGoExpressError',
+    bitgoJsVersion: version,
+    bitgoExpressVersion: pjson.version,
+  });
+  const status = err.status || 500;
+  if (!(status >= 200 && status < 300)) {
+    console.log('error %s: %s', status, err.message);
+  }
+  if (status >= 500 && status <= 599) {
+    if (err.response && err.response.request) {
+      console.log(`failed to make ${err.response.request.method} request to ${err.response.request.url}`);
+    }
+    console.log(err.stack);
+  }
+  res.status(status).send(result);
+}
+
+/**
+ * Promise handler wrapper to handle sending responses and error cases
+ * @param promiseRequestHandler
+ */
+export function promiseWrapper(promiseRequestHandler: RequestHandler) {
+  return async function promWrapper(req: express.Request, res: express.Response, next: express.NextFunction) {
+    debug(`handle: ${req.method} ${req.originalUrl}`);
+    try {
+      const result = await promiseRequestHandler(req, res, next);
+      if (typeof result === 'object' && result !== null && 'body' in result && 'status' in result) {
+        const { status, body } = result as { status: number; body: unknown };
+        res.status(status).send(body);
+      } else {
+        res.status(200).send(result);
+      }
+    } catch (e) {
+      handleRequestHandlerError(res, e);
+    }
+  };
+}
+
+export function typedPromiseWrapper(promiseRequestHandler: TypedRequestHandler) {
+  return async function (req: WrappedRequest, res: WrappedResponse, next: express.NextFunction) {
+    debug(`handle: ${req.method} ${req.originalUrl}`);
+    try {
+      const result = await promiseRequestHandler(req, res, next);
+      if (typeof result === 'object' && result !== null && 'body' in result && 'status' in result) {
+        const { status, body } = result as { status: number; body: unknown };
+        res.status(status).send(body);
+      } else {
+        res.status(200).send(result);
+      }
+    } catch (e) {
+      handleRequestHandlerError(res, e);
+    }
+  };
+}
+
+export function createCustomSigningFunction(externalSignerUrl: string): CustomSigningFunction {
+  return async function (params): Promise<SignedTransaction> {
+    const { body: signedTx } = await retryPromise(
+      () =>
+        superagent.post(`${externalSignerUrl}/api/v2/${params.coin.getChain()}/sign`).type('json').send({
+          txPrebuild: params.txPrebuild,
+          pubs: params.pubs,
+          derivationSeed: params.derivationSeed,
+          signingStep: params.signingStep,
+        }),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return signedTx;
+  };
+}
+export function createCustomPaillierModulusGetter(
+  externalSignerUrl: string,
+  coin: string
+): CustomPaillierModulusGetterFunction {
+  return async function (params): Promise<{
+    userPaillierModulus: string;
+  }> {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/PaillierModulus`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function createCustomKShareGenerator(externalSignerUrl: string, coin: string): CustomKShareGeneratingFunction {
+  return async function (params): Promise<TssEcdsaStep1ReturnMessage> {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/K`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function createCustomMuDeltaShareGenerator(
+  externalSignerUrl: string,
+  coin: string
+): CustomMuDeltaShareGeneratingFunction {
+  return async function (params): Promise<TssEcdsaStep2ReturnMessage> {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MuDelta`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function createCustomSShareGenerator(externalSignerUrl: string, coin: string): CustomSShareGeneratingFunction {
+  return async function (params): Promise<SShare> {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/S`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function createCustomCommitmentGenerator(
+  externalSignerUrl: string,
+  coin: string
+): CustomCommitmentGeneratingFunction {
+  return async function (params): Promise<{
+    userToBitgoCommitment: CommitmentShareRecord;
+    encryptedSignerShare: EncryptedSignerShareRecord;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
+  }> {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/commitment`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function createCustomRShareGenerator(externalSignerUrl: string, coin: string): CustomRShareGeneratingFunction {
+  return async function (params): Promise<{ rShare: SignShare }> {
+    const { body: rShare } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/R`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return rShare;
+  };
+}
+
+export function createCustomGShareGenerator(externalSignerUrl: string, coin: string): CustomGShareGeneratingFunction {
+  return async function (params): Promise<GShare> {
+    const { body: signedTx } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/G`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return signedTx;
+  };
+}
+
+export function createCustomMPCv2SigningRound1Generator(
+  externalSignerUrl: string,
+  coin: string
+): CustomMPCv2SigningRound1GeneratingFunction {
+  return async function (params) {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round1`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function createCustomMPCv2SigningRound2Generator(
+  externalSignerUrl: string,
+  coin: string
+): CustomMPCv2SigningRound2GeneratingFunction {
+  return async function (params) {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round2`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function createCustomMPCv2SigningRound3Generator(
+  externalSignerUrl: string,
+  coin: string
+): CustomMPCv2SigningRound3GeneratingFunction {
+  return async function (params) {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round3`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function setupAPIRoutes(app: express.Application, config: Config): void {
+  // When adding new routes to BitGo Express make sure that you also add the exact same routes to the server. Since
+  // some customers were confused when calling a BitGo Express route on the BitGo server, we now handle all BitGo
+  // Express routes on the BitGo server and return an error message that says that one should call BitGo Express
+  // instead.
+  // V1 routes should be added to www/config/routes.js
+  // V2 routes should be added to www/config/routesV2.js
+
+  // ping
+  // /api/v[12]/pingexpress is the only exception to the rule above, as it explicitly checks the health of the
+  // express server without running into rate limiting with the BitGo server.
+  const router = createExpressRouter();
+  app.use(router);
+
+  router.get('express.ping', [prepareBitGo(config), typedPromiseWrapper(handlePing)]);
+  router.get('express.pingExpress', [typedPromiseWrapper(handlePingExpress)]);
+
+  // auth
+  router.post('express.login', [prepareBitGo(config), typedPromiseWrapper(handleLogin)]);
+
+  router.post('express.decrypt', [prepareBitGo(config), typedPromiseWrapper(handleDecrypt)]);
+  router.post('express.encrypt', [prepareBitGo(config), typedPromiseWrapper(handleEncrypt)]);
+  router.post('express.verifyaddress', [prepareBitGo(config), typedPromiseWrapper(handleVerifyAddress)]);
+  router.post('express.v1.calculateminerfeeinfo', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleCalculateMinerFeeInfo),
+  ]);
+  router.post('express.calculateminerfeeinfo', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleCalculateMinerFeeInfo),
+  ]);
+
+  router.post('express.v1.keychain.local', [prepareBitGo(config), typedPromiseWrapper(handleCreateLocalKeyChain)]);
+  router.post('express.v1.keychain.derive', [prepareBitGo(config), typedPromiseWrapper(handleDeriveLocalKeyChain)]);
+  router.post('express.v1.wallet.simplecreate', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleCreateWalletWithKeychains),
+  ]);
+
+  app.post('/api/v1/wallet/:id/sendcoins', parseBody, prepareBitGo(config), promiseWrapper(handleSendCoins));
+  app.post('/api/v1/wallet/:id/sendmany', parseBody, prepareBitGo(config), promiseWrapper(handleSendMany));
+  app.post(
+    '/api/v1/wallet/:id/createtransaction',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleCreateTransaction)
+  );
+
+  router.post('express.v1.wallet.signTransaction', [prepareBitGo(config), typedPromiseWrapper(handleSignTransaction)]);
+
+  app.post('/api/v1/wallet/:id/simpleshare', parseBody, prepareBitGo(config), promiseWrapper(handleShareWallet));
+  router.post('express.v1.wallet.acceptShare', [prepareBitGo(config), typedPromiseWrapper(handleAcceptShare)]);
+
+  router.put('express.v1.pendingapprovals', [prepareBitGo(config), typedPromiseWrapper(handleApproveTransaction)]);
+
+  router.put('express.v1.pendingapproval.constructTx', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleConstructApprovalTx),
+  ]);
+
+  router.put('express.v1.wallet.consolidateunspents', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleConsolidateUnspents),
+  ]);
+
+  router.put('express.v1.wallet.fanoutunspents', [prepareBitGo(config), typedPromiseWrapper(handleFanOutUnspents)]);
+
+  // any other API call
+  app.use('/api/v[1]/*', parseBody, prepareBitGo(config), promiseWrapper(handleREST));
+
+  // API v2
+
+  // create keychain
+  router.post('express.keychain.local', [prepareBitGo(config), typedPromiseWrapper(handleV2CreateLocalKeyChain)]);
+
+  // generate wallet
+  router.post('express.wallet.generate', [prepareBitGo(config), typedPromiseWrapper(handleV2GenerateWallet)]);
+
+  router.put('express.wallet.update', [prepareBitGo(config), typedPromiseWrapper(handleWalletUpdate)]);
+
+  // change wallet passphrase
+  router.post('express.keychain.changePassword', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleKeychainChangePassword),
+  ]);
+
+  router.post('express.v2.wallet.createAddress', [prepareBitGo(config), typedPromiseWrapper(handleV2CreateAddress)]);
+  router.post('express.v2.wallet.isWalletAddress', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2IsWalletAddress),
+  ]);
+
+  router.post('express.v2.wallet.share', [prepareBitGo(config), typedPromiseWrapper(handleV2ShareWallet)]);
+  app.post(
+    '/api/v2/:coin/walletshare/:id/acceptshare',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleV2AcceptWalletShare)
+  );
+
+  // sign arbitrary payloads w/ trading account key
+  router.post('express.ofc.signPayload', [prepareBitGo(config), typedPromiseWrapper(handleV2OFCSignPayload)]);
+
+  // sign transaction
+  router.post('express.v2.coin.signtx', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTx)]);
+  router.post('express.v2.wallet.signtx', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTxWallet)]);
+  router.post('express.v2.wallet.signtxtss', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTSSWalletTx)]);
+  router.post('express.v2.wallet.recovertoken', [prepareBitGo(config), typedPromiseWrapper(handleV2RecoverToken)]);
+
+  // send transaction
+  router.post('express.v2.wallet.sendcoins', [prepareBitGo(config), typedPromiseWrapper(handleV2SendOne)]);
+  router.post('express.v2.wallet.sendmany', [prepareBitGo(config), typedPromiseWrapper(handleV2SendMany)]);
+  router.post('express.v2.wallet.prebuildandsigntransaction', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2PrebuildAndSignTransaction),
+  ]);
+
+  // token enablement
+  router.post('express.v2.wallet.enableTokens', [prepareBitGo(config), typedPromiseWrapper(handleV2EnableTokens)]);
+
+  // unspent changes
+  router.post('express.v2.wallet.consolidateunspents', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2ConsolidateUnspents),
+  ]);
+  router.post('express.wallet.fanoutunspents', [prepareBitGo(config), typedPromiseWrapper(handleV2FanOutUnspents)]);
+
+  router.post('express.v2.wallet.sweep', [prepareBitGo(config), typedPromiseWrapper(handleV2Sweep)]);
+
+  // CPFP
+  router.post('express.wallet.acceleratetx', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2AccelerateTransaction),
+  ]);
+
+  // account-based
+  router.post('express.v2.wallet.consolidateaccount', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2ConsolidateAccount),
+  ]);
+
+  // TRX resource delegation
+  router.post('express.v2.wallet.getaccountresources', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2AccountResources),
+  ]);
+  router.get('express.v2.wallet.resourcedelegations', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2ResourceDelegations),
+  ]);
+
+  // Miscellaneous
+  router.post('express.canonicaladdress', [prepareBitGo(config), typedPromiseWrapper(handleCanonicalAddress)]);
+  router.post('express.verifycoinaddress', [prepareBitGo(config), typedPromiseWrapper(handleV2VerifyAddress)]);
+  router.put('express.v2.pendingapprovals', [prepareBitGo(config), typedPromiseWrapper(handleV2PendingApproval)]);
+
+  // lightning - pay invoice
+  router.post('express.v2.wallet.lightningPayment', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handlePayLightningInvoice),
+  ]);
+
+  // lightning - onchain withdrawal
+  router.post('express.v2.wallet.lightningWithdraw', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleLightningWithdraw),
+  ]);
+
+  // any other API v2 call
+  app.use('/api/v2/user/*', parseBody, prepareBitGo(config), promiseWrapper(handleV2UserREST));
+  app.use('/api/v2/:coin/*', parseBody, prepareBitGo(config), promiseWrapper(handleV2CoinSpecificREST));
+
+  app.post(
+    '/api/network/v1/enterprises/:enterpriseId/clients/connections',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleNetworkV1EnterpriseClientConnections)
+  );
+
+  // everything else should use the proxy handler
+  if (config.disableProxy !== true) {
+    app.use(
+      '/api/:namespace/v[12]/enterprises/:enterpriseId/*',
+      parseBody,
+      prepareBitGo(config),
+      promiseWrapper(handleProxyReq)
+    );
+
+    app.use(parseBody, prepareBitGo(config), promiseWrapper(handleProxyReq));
+  }
+}
+
+export function setupSigningRoutes(app: express.Application, config: Config): void {
+  const router = createExpressRouter();
+  app.use(router);
+
+  router.post('express.v2.coin.sign', [prepareBitGo(config), typedPromiseWrapper(handleV2Sign)]);
+  router.post('express.v2.tssshare.generate', [prepareBitGo(config), typedPromiseWrapper(handleV2GenerateShareTSS)]);
+  router.post('express.v2.ofc.extSignPayload', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2OFCSignPayloadInExtSigningMode),
+  ]);
+}
+
+export function setupLightningSignerNodeRoutes(app: express.Application, config: Config): void {
+  const router = createExpressRouter();
+  app.use(router);
+  router.post('express.lightning.initWallet', [prepareBitGo(config), typedPromiseWrapper(handleInitLightningWallet)]);
+  router.post('express.lightning.signerMacaroon', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleCreateSignerMacaroon),
+  ]);
+  router.post('express.lightning.unlockWallet', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleUnlockLightningWallet),
+  ]);
+  router.get('express.lightning.getState', [prepareBitGo(config), typedPromiseWrapper(handleGetLightningWalletState)]);
+}

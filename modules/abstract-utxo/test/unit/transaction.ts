@@ -1,0 +1,427 @@
+import 'mocha';
+import * as assert from 'assert';
+
+import * as _ from 'lodash';
+import * as utxolib from '@bitgo/utxo-lib';
+import nock = require('nock');
+import { BIP32Interface, bitgo, testutil } from '@bitgo/utxo-lib';
+import { address as wasmAddress, fixedScriptWallet } from '@bitgo/wasm-utxo';
+import {
+  common,
+  FullySignedTransaction,
+  HalfSignedUtxoTransaction,
+  Triple,
+  WalletSignTransactionOptions,
+} from '@bitgo/sdk-core';
+
+import { AbstractUtxoCoin, generateAddress, getReplayProtectionPubkeys } from '../../src';
+import { SdkBackend } from '../../src/transaction/types';
+import type { Unspent, WalletUnspent } from '../../src/unspent';
+
+import {
+  assertEqualJSON,
+  getFixture,
+  getUtxoWallet,
+  mockUnspent,
+  InputScriptType,
+  TransactionObj,
+  transactionToObj,
+  transactionHexToObj,
+  createPrebuildTransaction,
+  getDefaultWalletKeys,
+  getWalletKeys,
+  defaultBitGo,
+  getMinUtxoCoins,
+  getScriptTypes,
+} from './util';
+
+function run<TNumber extends number | bigint = number>(
+  coin: AbstractUtxoCoin,
+  inputScripts: testutil.InputScriptType[],
+  txFormat: 'legacy' | 'psbt',
+  { decodeWith }: { decodeWith?: SdkBackend } = {}
+) {
+  const amountType = coin.amountType;
+  const title = [
+    inputScripts.join(','),
+    `txFormat=${txFormat}`,
+    `amountType=${amountType}`,
+    decodeWith ? `decodeWith=${decodeWith}` : '',
+  ];
+  describe(`${title.join(' ')}`, function () {
+    const bgUrl = common.Environments[defaultBitGo.getEnv()].uri;
+
+    const isTransactionWithKeyPathSpend = inputScripts.some((s) => s === 'taprootKeyPathSpend');
+    const isTransactionWithReplayProtection = inputScripts.some((s) => s === 'p2shP2pk');
+    const isTransactionWithP2tr = inputScripts.some((s) => s === 'p2tr');
+    const isTransactionWithP2trMusig2 = inputScripts.some((s) => s === 'p2trMusig2');
+
+    const value = (amountType === 'bigint' ? BigInt('10999999800000001') : 1e8) as TNumber;
+    const wallet = getUtxoWallet(coin, { id: '5b34252f1bf349930e34020a00000000', coin: coin.getChain() });
+    const walletKeys = getDefaultWalletKeys();
+
+    const fullSign = !(isTransactionWithReplayProtection || isTransactionWithKeyPathSpend);
+
+    function getUnspentsForPsbt(): Unspent<bigint>[] {
+      return inputScripts.map((t, index) => {
+        return testutil.toUnspent(
+          { scriptType: t, value: t === 'p2shP2pk' ? BigInt(1000) : BigInt(value) },
+          index,
+          coin.network,
+          walletKeys
+        );
+      });
+    }
+
+    function toTxnInputScriptType(type: testutil.InputScriptType): InputScriptType {
+      return type === 'p2shP2pk' ? 'replayProtection' : type === 'taprootKeyPathSpend' ? 'p2trMusig2' : type;
+    }
+
+    function getUnspents(): Unspent<TNumber>[] {
+      return inputScripts.map((type, i) =>
+        mockUnspent<TNumber>(coin.network, walletKeys, toTxnInputScriptType(type), i, value)
+      );
+    }
+
+    function getOutputAddress(rootWalletKeys: utxolib.bitgo.RootWalletKeys): string {
+      return generateAddress(coin.name, {
+        keychains: rootWalletKeys.triple.map((k) => ({ pub: k.neutered().toBase58() })),
+      });
+    }
+
+    function getSignParams(
+      prebuildHex: string,
+      signer: BIP32Interface,
+      cosigner: BIP32Interface,
+      decodeWith: SdkBackend | undefined
+    ): WalletSignTransactionOptions {
+      const txInfo = {
+        unspents: txFormat === 'psbt' ? undefined : getUnspents(),
+      };
+      return {
+        txPrebuild: {
+          walletId: isTransactionWithKeyPathSpend ? wallet.id() : undefined,
+          txHex: prebuildHex,
+          txInfo,
+          decodeWith,
+        },
+        prv: signer.toBase58(),
+        pubs: walletKeys.triple.map((k) => k.neutered().toBase58()),
+        cosignerPub: cosigner.neutered().toBase58(),
+        extractTransaction: false,
+      } as WalletSignTransactionOptions;
+    }
+
+    async function createHalfSignedTransaction(
+      prebuild: utxolib.bitgo.UtxoTransaction<TNumber> | utxolib.bitgo.UtxoPsbt,
+      signer: BIP32Interface,
+      cosigner: BIP32Interface
+    ): Promise<HalfSignedUtxoTransaction> {
+      let scope: nock.Scope | undefined;
+      if (prebuild instanceof utxolib.bitgo.UtxoPsbt && isTransactionWithKeyPathSpend) {
+        const psbt = prebuild.clone().setAllInputsMusig2NonceHD(cosigner);
+        scope = nock(bgUrl)
+          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/signpsbt`, (body) => body.psbt)
+          .reply(200, { psbt: psbt.toHex() });
+      }
+
+      // half-sign with the user key
+      const result = (await wallet.signTransaction(
+        getSignParams(prebuild.toBuffer().toString('hex'), signer, cosigner, decodeWith)
+      )) as Promise<HalfSignedUtxoTransaction>;
+
+      if (scope) {
+        assert.strictEqual(scope.isDone(), true);
+      }
+
+      return result;
+    }
+
+    async function createFullSignedTransaction(
+      halfSigned: HalfSignedUtxoTransaction,
+      signer: BIP32Interface,
+      cosigner: BIP32Interface
+    ): Promise<FullySignedTransaction> {
+      return (await wallet.signTransaction({
+        ...getSignParams(halfSigned.txHex, signer, cosigner, decodeWith),
+        isLastSignature: true,
+      })) as FullySignedTransaction;
+    }
+
+    type TransactionStages = {
+      prebuild: utxolib.bitgo.UtxoTransaction<TNumber> | utxolib.bitgo.UtxoPsbt;
+      halfSignedUserBackup?: HalfSignedUtxoTransaction;
+      halfSignedUserBitGo: HalfSignedUtxoTransaction;
+      fullSignedUserBackup?: FullySignedTransaction;
+      fullSignedUserBitGo?: FullySignedTransaction;
+    };
+
+    type TransactionObjStages = Record<keyof TransactionStages, TransactionObj>;
+
+    function createPrebuildPsbt() {
+      const inputs = inputScripts.map(
+        (t): testutil.Input => ({
+          scriptType: t,
+          value: t === 'p2shP2pk' ? BigInt(1000) : BigInt(value),
+        })
+      );
+      const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
+      const outputs: testutil.Output[] = [
+        { address: getOutputAddress(getWalletKeys('test')), value: unspentSum - BigInt(1000) },
+      ];
+      const psbt = testutil.constructPsbt(inputs, outputs, coin.network, walletKeys, 'unsigned', {
+        p2shP2pkKey: getReplayProtectionPubkeys(coin.name)[0],
+      });
+      utxolib.bitgo.addXpubsToPsbt(psbt, walletKeys);
+      return psbt;
+    }
+
+    async function getTransactionStages(): Promise<TransactionStages> {
+      const prebuild =
+        txFormat === 'psbt'
+          ? createPrebuildPsbt()
+          : createPrebuildTransaction<TNumber>(coin.network, getUnspents(), getOutputAddress(walletKeys));
+
+      const halfSignedUserBitGo = await createHalfSignedTransaction(prebuild, walletKeys.user, walletKeys.bitgo);
+      const fullSignedUserBitGo =
+        fullSign && !isTransactionWithP2trMusig2
+          ? await createFullSignedTransaction(halfSignedUserBitGo, walletKeys.bitgo, walletKeys.user)
+          : undefined;
+
+      const halfSignedUserBackup =
+        !isTransactionWithKeyPathSpend && !(txFormat === 'psbt' && isTransactionWithP2tr)
+          ? await createHalfSignedTransaction(prebuild, walletKeys.user, walletKeys.backup)
+          : undefined;
+      const fullSignedUserBackup =
+        fullSign && halfSignedUserBackup
+          ? await createFullSignedTransaction(halfSignedUserBackup, walletKeys.backup, walletKeys.user)
+          : undefined;
+
+      return {
+        prebuild,
+        halfSignedUserBackup,
+        halfSignedUserBitGo,
+        fullSignedUserBackup,
+        fullSignedUserBitGo,
+      };
+    }
+
+    let transactionStages: TransactionStages;
+
+    before('prepare', async function () {
+      transactionStages = await getTransactionStages();
+    });
+
+    afterEach(nock.cleanAll);
+
+    it('match fixtures', async function (this: Mocha.Context) {
+      if (txFormat === 'psbt') {
+        // TODO (maybe) - once full PSBT support is added to abstract-utxo module, custom JSON representation of PSBT can be created and tested here.
+        // signatures of taprootKeyPathSpends are random since random nature of MuSig2 nonce, so psbt hex comparison also wont work.
+
+        return this.skip();
+      }
+
+      function toTransactionStagesObj(stages: TransactionStages): TransactionObjStages {
+        return _.mapValues(stages, (v) =>
+          v === undefined || v instanceof utxolib.bitgo.UtxoPsbt || v instanceof fixedScriptWallet.BitGoPsbt
+            ? undefined
+            : v instanceof utxolib.bitgo.UtxoTransaction
+            ? transactionToObj<TNumber>(v)
+            : transactionHexToObj(v.txHex, coin.network, amountType)
+        ) as TransactionObjStages;
+      }
+
+      assertEqualJSON(
+        toTransactionStagesObj(transactionStages),
+        await getFixture(
+          coin,
+          `transactions-${inputScripts.map((t) => toTxnInputScriptType(t)).join('-')}`,
+          toTransactionStagesObj(transactionStages)
+        )
+      );
+    });
+
+    function testPsbtValidSignatures(tx: HalfSignedUtxoTransaction, signedBy: BIP32Interface[]) {
+      const psbt = utxolib.bitgo.createPsbtFromHex(tx.txHex, coin.network);
+      const unspents = getUnspentsForPsbt();
+      psbt.data.inputs.forEach((input, index) => {
+        const unspent = unspents[index];
+        if (!utxolib.bitgo.isWalletUnspent(unspent)) {
+          assert.ok(utxolib.bitgo.getPsbtInputScriptType(input), 'p2shP2pk');
+          return;
+        }
+        const walletUnspent = unspent as WalletUnspent<bigint>;
+        const pubkeys = walletKeys.deriveForChainAndIndex(walletUnspent.chain, walletUnspent.index).publicKeys;
+        pubkeys.forEach((pk, pkIndex) => {
+          assert.strictEqual(
+            psbt.validateSignaturesOfInputCommon(index, pk),
+            signedBy.includes(walletKeys.triple[pkIndex])
+          );
+        });
+      });
+    }
+
+    function testValidSignatures(
+      tx: HalfSignedUtxoTransaction | FullySignedTransaction,
+      signedBy: BIP32Interface[],
+      sign: 'halfsigned' | 'fullsigned'
+    ) {
+      if (txFormat === 'psbt') {
+        testPsbtValidSignatures(tx, signedBy);
+        return;
+      }
+      const unspents = getUnspents();
+      const prevOutputs = unspents.map(
+        (u): utxolib.TxOutput<TNumber> => ({
+          script: Buffer.from(wasmAddress.toOutputScriptWithCoin(u.address, coin.name)),
+          value: u.value,
+        })
+      );
+
+      const transaction = utxolib.bitgo.createTransactionFromBuffer<TNumber>(
+        Buffer.from(tx.txHex, 'hex'),
+        coin.network,
+        { amountType }
+      );
+      transaction.ins.forEach((input, index) => {
+        if (inputScripts[index] === 'p2shP2pk') {
+          assert.ok(coin.isBitGoTaintedUnspent(unspents[index]));
+          return;
+        }
+
+        const unspent = unspents[index] as WalletUnspent<TNumber>;
+        const pubkeys = walletKeys.deriveForChainAndIndex(unspent.chain, unspent.index).publicKeys;
+
+        pubkeys.forEach((pk, pkIndex) => {
+          assert.strictEqual(
+            utxolib.bitgo.verifySignature<TNumber>(
+              transaction,
+              index,
+              prevOutputs[index].value,
+              {
+                publicKey: pk,
+              },
+              prevOutputs
+            ),
+            signedBy.includes(walletKeys.triple[pkIndex])
+          );
+        });
+      });
+    }
+
+    async function testExplainTx(
+      stageName: string,
+      txHex: string,
+      unspents: Unspent<TNumber>[],
+      pubs: Triple<string> | undefined
+    ): Promise<void> {
+      const explanation = await coin.explainTransaction<TNumber>({
+        txHex,
+        txInfo: {
+          unspents,
+        },
+        pubs,
+        decodeWith,
+      });
+
+      const expectedProperties = ['id', 'outputs', 'changeOutputs', 'changeAmount', 'outputAmount'];
+
+      if (decodeWith !== 'wasm-utxo') {
+        expectedProperties.push('displayOrder', 'inputSignatures', 'signatures');
+      }
+
+      for (const prop of expectedProperties) {
+        assert.ok(prop in explanation, `expected explanation to have property '${prop}'`);
+      }
+
+      const expectedSignatureCount =
+        stageName === 'prebuild' || pubs === undefined
+          ? 0
+          : stageName.startsWith('halfSigned')
+          ? 1
+          : stageName.startsWith('fullSigned')
+          ? 2
+          : undefined;
+
+      if ('inputSignatures' in explanation) {
+        assert.deepStrictEqual(
+          explanation.inputSignatures,
+          // FIXME(BG-35154): implement signature verification for replay protection inputs
+          inputScripts.map((type) => (type === 'p2shP2pk' ? 0 : expectedSignatureCount))
+        );
+      }
+      if ('signatures' in explanation) {
+        assert.deepStrictEqual(explanation.signatures, expectedSignatureCount);
+        assert.deepStrictEqual(explanation.changeAmount, '0'); // no change addresses given
+      }
+      let expectedOutputAmount =
+        BigInt((txFormat === 'psbt' ? getUnspentsForPsbt() : getUnspents()).length) * BigInt(value);
+      inputScripts.forEach((type) => {
+        if (type === 'p2shP2pk') {
+          // replayProtection unspents have value 1000
+          expectedOutputAmount -= BigInt(value);
+          expectedOutputAmount += BigInt(1000);
+        }
+      });
+      expectedOutputAmount -= BigInt(1000); // fee of 1000
+      assert.deepStrictEqual(explanation.outputAmount, expectedOutputAmount.toString());
+    }
+
+    it('have valid signature for half-signed transaction', function () {
+      if (transactionStages.halfSignedUserBackup) {
+        testValidSignatures(transactionStages.halfSignedUserBackup, [walletKeys.user], 'halfsigned');
+      }
+      testValidSignatures(transactionStages.halfSignedUserBitGo, [walletKeys.user], 'halfsigned');
+    });
+
+    it('have valid signatures for full-signed transaction', function () {
+      if (!fullSign) {
+        return this.skip();
+      }
+      if (transactionStages.fullSignedUserBackup) {
+        testValidSignatures(transactionStages.fullSignedUserBackup, [walletKeys.user, walletKeys.backup], 'fullsigned');
+      }
+      if (transactionStages.fullSignedUserBitGo) {
+        testValidSignatures(transactionStages.fullSignedUserBitGo, [walletKeys.user, walletKeys.bitgo], 'fullsigned');
+      }
+    });
+
+    it('have correct results for explainTransaction', async function () {
+      for (const [stageName, stageTx] of Object.entries(transactionStages)) {
+        if (!stageTx) {
+          continue;
+        }
+
+        const txHex =
+          stageTx instanceof utxolib.bitgo.UtxoPsbt || stageTx instanceof utxolib.bitgo.UtxoTransaction
+            ? stageTx.toBuffer().toString('hex')
+            : stageTx instanceof fixedScriptWallet.BitGoPsbt
+            ? Buffer.from(stageTx.serialize()).toString('hex')
+            : stageTx.txHex;
+
+        const pubs = walletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>;
+        const unspents =
+          txFormat === 'psbt'
+            ? getUnspentsForPsbt().map((u) => ({ ...u, value: bitgo.toTNumber(u.value, amountType) as TNumber }))
+            : getUnspents();
+        await testExplainTx(stageName, txHex, unspents, pubs);
+        if (decodeWith !== 'wasm-utxo') {
+          await testExplainTx(stageName, txHex, unspents, undefined);
+        }
+      }
+    });
+  });
+}
+
+function runTestForCoin(coin: AbstractUtxoCoin) {
+  run(coin, getScriptTypes(coin, 'psbt'), 'psbt', { decodeWith: 'wasm-utxo' });
+}
+
+describe('Transaction Suite', function () {
+  getMinUtxoCoins().forEach((coin) => {
+    describe(`${coin.getChain()}`, function () {
+      runTestForCoin(coin);
+    });
+  });
+});

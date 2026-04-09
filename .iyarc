@@ -1,0 +1,68 @@
+# Excluded because:
+# - Lerna requires tar v6, but no patched v6 exists (fix only in v7.5.3)
+# - Forcing tar v7.5.3 breaks lerna's packDirectory API
+# - This CVE affects archive EXTRACTION (unpacking malicious symlinks/hardlinks)
+# - Lerna only uses tar for PACKING
+GHSA-8qq5-rm4j-mr97
+
+# Excluded because:
+# - Transitive dependency through lerna and yeoman-generator, which currently pin tar to a
+#   < 7.5.4 range; We only use their tar integration for
+#   archive PACKING, not extraction,
+GHSA-r6q2-hw4h-h46w
+
+# Excluded because:
+# - Transitive dependency through lerna and yeoman-generator requiring tar < 7.5.4
+# - This CVE affects tar's extraction process with specially crafted archives
+# - Our usage is limited to archive PACKING operations only, not extraction
+GHSA-34x7-hfp2-rc4v
+
+# Excluded because:
+# - Transitive dependency through lerna, depcheck, glob, mocha, yeoman-generator
+# - minimatch 10.x introduces breaking API changes incompatible with lerna v9.0.0
+# - This CVE (ReDoS in minimatch <10.2.1) affects glob pattern matching with repeated wildcards
+# - Our usage is dev-time tooling only (build, test, file search)
+# - Mitigated by controlled inputs (our own build scripts, not user-provided patterns)
+GHSA-3ppc-4f35-3m26
+
+# Excluded because:
+# - Transitive dependency through lerna and yeoman-generator requiring tar < 7.5.4
+# - This CVE affects tar's extraction process with specially crafted archives
+# - Our usage is limited to archive PACKING operations only, not extraction
+GHSA-83g3-92jg-28cx
+
+# Excluded because:
+# - Transitive dependency through lerna, depcheck, nyc, eslint, yeoman-generator, glob, shelljs
+# - minimatch ReDoS via crafted glob patterns (same class as GHSA-3ppc-4f35-3m26)
+# - Only affects dev-time tooling, not production code
+GHSA-7r86-cg39-jmmj
+
+# Excluded because:
+# - Transitive dependency through lerna, depcheck, nyc, eslint, yeoman-generator, glob, shelljs
+# - minimatch ReDoS via crafted glob patterns (same class as GHSA-3ppc-4f35-3m26)
+# - Only affects dev-time tooling, not production code
+# - Mitigated by controlled inputs (our own build scripts, not user-provided patterns)
+GHSA-23c5-xmqv-rm74
+
+# Excluded because:
+# - Transitive dependency through lerna and yeoman-generator requiring tar < 7.5.7
+# - This CVE affects tar's extraction process (hardlink path traversal in crafted archives)
+# - Our usage is limited to archive PACKING operations only, not extraction
+# - Forcing tar v7.5.7+ breaks lerna's packDirectory API (same constraint as GHSA-8qq5-rm4j-mr97)
+GHSA-qffp-2rhf-9h96
+
+# Excluded because:
+# - Same risk profile as existing tar exclusions: CVE affects archive extraction (unpacking malicious archives)
+# - We only use tar for packing; low risk in terms of exploitability
+# - Security exception approved
+GHSA-9ppj-qmqm-q256
+
+# Excluded because:
+# - CVE-2026-4258: missing point-on-curve validation in sjcl.ecc.basicKey.publicKey()
+# - Transitive dependency via @bitgo/abstract-lightning > macaroon > sjcl
+# - The vulnerability is in sjcl.ecc (ECDH invalid-curve attack); macaroon only uses
+#   sjcl.codec, sjcl.bitArray, sjcl.misc.hmac, and sjcl.hash.sha256 — no ECC operations
+# - Additionally, @bitgo/sjcl (our fork) does not include sjcl.ecc at all
+# - Resolved sjcl -> npm:@bitgo/sjcl@1.0.1 in root resolutions; sjcl.ecc is absent at runtime
+# - No patched version of sjcl exists upstream (first_patched_version: null)
+GHSA-2w8x-224x-785m

@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist/cjs",
+    "rootDir": "./",
+    "esModuleInterop": true,
+    "allowJs": false,
+    "strict": true,
+    "moduleResolution": "node16",
+    "module": "node16"
+  },
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../utxo-lib"
+    }
+  ]
+}
