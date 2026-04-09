@@ -3,12 +3,15 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { Flrp, TflrP } from '../../src/';
 import { randomBytes } from 'crypto';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { SEED_ACCOUNT, ACCOUNT_1, ACCOUNT_2 } from '../resources/account';
+import { coins } from '@bitgo/statics';
+import { SEED_ACCOUNT, ACCOUNT_1, ACCOUNT_2, ON_CHAIN_TEST_WALLET, CONTEXT } from '../resources/account';
 import { EXPORT_IN_C } from '../resources/transactionData/exportInC';
 import { EXPORT_IN_P } from '../resources/transactionData/exportInP';
 import { IMPORT_IN_P } from '../resources/transactionData/importInP';
 import { IMPORT_IN_C } from '../resources/transactionData/importInC';
 import { HalfSignedAccountTransaction, TransactionType, MPCAlgorithm } from '@bitgo/sdk-core';
+import { secp256k1 } from '@flarenetwork/flarejs';
+import { FlrpContext } from '@bitgo/public-types';
 import assert from 'assert';
 
 describe('Flrp test cases', function () {
@@ -684,6 +687,276 @@ describe('Flrp test cases', function () {
           () => basecoin.validateDelegationTx(txParams, mismatchedExplainedTx),
           /Delegation amount mismatch/
         );
+      });
+    });
+  });
+
+  describe('MPC/TSS Coin-Level Methods', () => {
+    const coinConfig = coins.get('tflrp');
+    const factory = new FlrpLib.TransactionBuilderFactory(coinConfig);
+
+    // Helper: build unsigned MPC ExportInC tx and return its hex
+    async function buildUnsignedExportInC(): Promise<string> {
+      const txBuilder = factory
+        .getExportInCBuilder()
+        .fromPubKey(EXPORT_IN_C.cHexAddress)
+        .nonce(EXPORT_IN_C.nonce)
+        .amount(EXPORT_IN_C.amount)
+        .threshold(1)
+        .locktime(0)
+        .to(ON_CHAIN_TEST_WALLET.user.pChainAddress)
+        .fee(EXPORT_IN_C.fee)
+        .context(CONTEXT as FlrpContext);
+
+      const tx = await txBuilder.build();
+      return tx.toBroadcastFormat();
+    }
+
+    // Helper: build unsigned MPC ImportInP tx and return its hex
+    async function buildUnsignedImportInP(): Promise<string> {
+      const mpcUtxo = {
+        outputID: 7,
+        amount: '50000000',
+        txid: 'aLwVQequmbhhjfhL6SvfM6MGWAB8wHwQfJ67eowEbAEUpkueN',
+        threshold: 1,
+        addresses: [ON_CHAIN_TEST_WALLET.user.pChainAddress],
+        outputidx: '0',
+        locktime: '0',
+      };
+      const txBuilder = factory
+        .getImportInPBuilder()
+        .threshold(1)
+        .locktime(0)
+        .fromPubKey([ON_CHAIN_TEST_WALLET.user.corethAddress])
+        .to([ON_CHAIN_TEST_WALLET.user.pChainAddress])
+        .externalChainId(IMPORT_IN_P.sourceChainId)
+        .decodedUtxos([mpcUtxo])
+        .context(IMPORT_IN_P.context as FlrpContext)
+        .feeState(IMPORT_IN_P.feeState as any);
+
+      const tx = await txBuilder.build();
+      return tx.toBroadcastFormat();
+    }
+
+    // Helper: build unsigned MPC ExportInP tx and return its hex
+    async function buildUnsignedExportInP(): Promise<string> {
+      const mpcUtxo = {
+        outputID: 7,
+        amount: '50000000',
+        txid: 'bgHnEJ64td8u31aZrGDaWcDqxZ8vDV5qGd7bmSifgvUnUW8v2',
+        threshold: 1,
+        addresses: [ON_CHAIN_TEST_WALLET.user.pChainAddress],
+        outputidx: '0',
+        locktime: '0',
+      };
+      const txBuilder = factory
+        .getExportInPBuilder()
+        .threshold(1)
+        .locktime(0)
+        .fromPubKey([ON_CHAIN_TEST_WALLET.user.pChainAddress])
+        .amount('30000000')
+        .externalChainId(EXPORT_IN_P.sourceChainId)
+        .decodedUtxos([mpcUtxo])
+        .context(EXPORT_IN_P.context as FlrpContext)
+        .feeState(EXPORT_IN_P.feeState as any);
+
+      const tx = await txBuilder.build();
+      return tx.toBroadcastFormat();
+    }
+
+    // Helper: build unsigned MPC ImportInC tx and return its hex
+    async function buildUnsignedImportInC(): Promise<string> {
+      const mpcUtxo = {
+        outputID: 7,
+        amount: '30000000',
+        txid: 'nSBwNcgfLbk5S425b1qaYaqTTCiMCV75KU4Fbnq8SPUUqLq2',
+        threshold: 1,
+        addresses: [ON_CHAIN_TEST_WALLET.user.pChainAddress],
+        outputidx: '1',
+        locktime: '0',
+      };
+      const txBuilder = factory
+        .getImportInCBuilder()
+        .threshold(1)
+        .locktime(0)
+        .fromPubKey([ON_CHAIN_TEST_WALLET.user.pChainAddress])
+        .to('0x96993BAEb6AaE2e06BF95F144e2775D4f8efbD35')
+        .fee('1000000')
+        .decodedUtxos([mpcUtxo])
+        .context(IMPORT_IN_C.context as FlrpContext);
+
+      const tx = await txBuilder.build();
+      return tx.toBroadcastFormat();
+    }
+
+    describe('getSignablePayload', () => {
+      it('should return signable payload for ExportInC', async () => {
+        const txHex = await buildUnsignedExportInC();
+        const payload = await basecoin.getSignablePayload(txHex);
+
+        payload.should.be.instanceOf(Buffer);
+        payload.length.should.be.greaterThan(0);
+      });
+
+      it('should return signable payload for ImportInP', async () => {
+        const txHex = await buildUnsignedImportInP();
+        const payload = await basecoin.getSignablePayload(txHex);
+
+        payload.should.be.instanceOf(Buffer);
+        payload.length.should.be.greaterThan(0);
+      });
+
+      it('should return signable payload for ExportInP', async () => {
+        const txHex = await buildUnsignedExportInP();
+        const payload = await basecoin.getSignablePayload(txHex);
+
+        payload.should.be.instanceOf(Buffer);
+        payload.length.should.be.greaterThan(0);
+      });
+
+      it('should return signable payload for ImportInC', async () => {
+        const txHex = await buildUnsignedImportInC();
+        const payload = await basecoin.getSignablePayload(txHex);
+
+        payload.should.be.instanceOf(Buffer);
+        payload.length.should.be.greaterThan(0);
+      });
+    });
+
+    describe('addSignatureToTransaction', () => {
+      it('should complete getSignablePayload → sign → addSignatureToTransaction round-trip for ExportInC', async () => {
+        const txHex = await buildUnsignedExportInC();
+
+        // Get signable payload (what MPC ceremony would receive)
+        const payload = await basecoin.getSignablePayload(txHex);
+
+        // Simulate MPC: sign externally
+        const signature = await secp256k1.sign(payload, Buffer.from(ON_CHAIN_TEST_WALLET.user.privateKey, 'hex'));
+
+        // Inject signature
+        const signedHex = await basecoin.addSignatureToTransaction(txHex, Buffer.from(signature));
+        signedHex.should.not.equal(txHex);
+
+        // Verify signed tx can be parsed
+        const txBuilder = factory.from(signedHex);
+        const tx = await txBuilder.build();
+        tx.signature.length.should.equal(1);
+        tx.toJson().type.should.equal(TransactionType.Export);
+      });
+
+      it('should complete round-trip for ImportInP', async () => {
+        const txHex = await buildUnsignedImportInP();
+        const payload = await basecoin.getSignablePayload(txHex);
+        const signature = await secp256k1.sign(payload, Buffer.from(ON_CHAIN_TEST_WALLET.user.privateKey, 'hex'));
+        const signedHex = await basecoin.addSignatureToTransaction(txHex, Buffer.from(signature));
+
+        signedHex.should.not.equal(txHex);
+        const tx = await factory.from(signedHex).build();
+        tx.signature.length.should.equal(1);
+        tx.toJson().type.should.equal(TransactionType.Import);
+      });
+
+      it('should complete round-trip for ExportInP', async () => {
+        const txHex = await buildUnsignedExportInP();
+        const payload = await basecoin.getSignablePayload(txHex);
+        const signature = await secp256k1.sign(payload, Buffer.from(ON_CHAIN_TEST_WALLET.user.privateKey, 'hex'));
+        const signedHex = await basecoin.addSignatureToTransaction(txHex, Buffer.from(signature));
+
+        signedHex.should.not.equal(txHex);
+        const tx = await factory.from(signedHex).build();
+        tx.signature.length.should.equal(1);
+        tx.toJson().type.should.equal(TransactionType.Export);
+      });
+
+      it('should complete round-trip for ImportInC', async () => {
+        const txHex = await buildUnsignedImportInC();
+        const payload = await basecoin.getSignablePayload(txHex);
+        const signature = await secp256k1.sign(payload, Buffer.from(ON_CHAIN_TEST_WALLET.user.privateKey, 'hex'));
+        const signedHex = await basecoin.addSignatureToTransaction(txHex, Buffer.from(signature));
+
+        signedHex.should.not.equal(txHex);
+        const tx = await factory.from(signedHex).build();
+        tx.signature.length.should.equal(1);
+        tx.toJson().type.should.equal(TransactionType.Import);
+      });
+
+      it('should produce valid signed tx via both sign() and addSignatureToTransaction() for ExportInC', async () => {
+        const privateKey = ON_CHAIN_TEST_WALLET.user.privateKey;
+
+        // Path 1: sign() via signTransaction
+        const signResult = await basecoin.signTransaction({
+          txPrebuild: { txHex: await buildUnsignedExportInC() },
+          prv: privateKey,
+        });
+        const signedHex1 = (signResult as HalfSignedAccountTransaction).halfSigned!.txHex!;
+
+        // Path 2: getSignablePayload → external sign → addSignatureToTransaction
+        const unsignedHex = await buildUnsignedExportInC();
+        const payload = await basecoin.getSignablePayload(unsignedHex);
+        const signature = await secp256k1.sign(payload, Buffer.from(privateKey, 'hex'));
+        const signedHex2 = await basecoin.addSignatureToTransaction(unsignedHex, Buffer.from(signature));
+
+        // Both paths should produce valid signed transactions with 1 signature
+        const tx1 = await factory.from(signedHex1).build();
+        const tx2 = await factory.from(signedHex2).build();
+        tx1.signature.length.should.equal(1);
+        tx2.signature.length.should.equal(1);
+        tx1.toJson().type.should.equal(TransactionType.Export);
+        tx2.toJson().type.should.equal(TransactionType.Export);
+      });
+    });
+
+    describe('verifyTransaction with MPC params', () => {
+      it('should verify MPC ExportInC transaction', async () => {
+        const txHex = await buildUnsignedExportInC();
+        const txPrebuild = { txHex, txInfo: {} };
+        const txParams = {
+          recipients: [{ address: ON_CHAIN_TEST_WALLET.user.pChainAddress, amount: EXPORT_IN_C.amount }],
+          type: 'Export',
+          locktime: 0,
+        };
+
+        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        isVerified.should.equal(true);
+      });
+
+      it('should verify MPC ImportInP transaction', async () => {
+        const txHex = await buildUnsignedImportInP();
+        const txPrebuild = { txHex, txInfo: {} };
+        const txParams = {
+          recipients: [],
+          type: 'Import',
+          locktime: 0,
+        };
+
+        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        isVerified.should.equal(true);
+      });
+
+      it('should verify MPC ExportInP transaction', async () => {
+        const txHex = await buildUnsignedExportInP();
+        const txPrebuild = { txHex, txInfo: {} };
+        const txParams = {
+          recipients: [{ address: ON_CHAIN_TEST_WALLET.user.pChainAddress, amount: '30000000' }],
+          type: 'Export',
+          locktime: 0,
+        };
+
+        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        isVerified.should.equal(true);
+      });
+
+      it('should verify MPC ImportInC transaction', async () => {
+        const txHex = await buildUnsignedImportInC();
+        const txPrebuild = { txHex, txInfo: {} };
+        const txParams = {
+          recipients: [{ address: '0x96993BAEb6AaE2e06BF95F144e2775D4f8efbD35', amount: '1' }],
+          type: 'ImportToC',
+          locktime: 0,
+        };
+
+        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        isVerified.should.equal(true);
       });
     });
   });
