@@ -1,10 +1,11 @@
 import assert from 'assert';
 import 'should';
-import { TransactionBuilderFactory } from '../../../src/lib';
+import { TransactionBuilderFactory, Transaction } from '../../../src/lib';
 import { coins } from '@bitgo/statics';
 import { IMPORT_IN_C as testData } from '../../resources/transactionData/importInC';
 import { ON_CHAIN_TEST_WALLET } from '../../resources/account';
 import signFlowTest from './signFlowTestSuit';
+import { secp256k1, UnsignedTx } from '@flarenetwork/flarejs';
 
 describe('Flrp Import In C Tx Builder', () => {
   const factory = new TransactionBuilderFactory(coins.get('tflrp'));
@@ -217,6 +218,133 @@ describe('Flrp Import In C Tx Builder', () => {
       const expectedOutput = parseInt(utxo.amount, 10) - parseInt(importFee, 10);
       const outputHex = expectedOutput.toString(16).padStart(16, '0');
       hex.should.containEql(outputHex);
+    });
+  });
+
+  describe('MPC signing (threshold=1)', () => {
+    const mpcUtxo = {
+      outputID: 7,
+      amount: '30000000',
+      txid: 'nSBwNcgfLbk5S425b1qaYaqTTCiMCV75KU4Fbnq8SPUUqLq2',
+      threshold: 1,
+      addresses: [ON_CHAIN_TEST_WALLET.user.pChainAddress],
+      outputidx: '1',
+      locktime: '0',
+    };
+
+    it('should build and sign import to C-chain with threshold=1 using sign()', async () => {
+      const txBuilder = factory
+        .getImportInCBuilder()
+        .threshold(1)
+        .locktime(0)
+        .fromPubKey([ON_CHAIN_TEST_WALLET.user.pChainAddress])
+        .to('0x96993BAEb6AaE2e06BF95F144e2775D4f8efbD35')
+        .fee('1000000')
+        .decodedUtxos([mpcUtxo])
+        .context(testData.context);
+
+      txBuilder.sign({ key: ON_CHAIN_TEST_WALLET.user.privateKey });
+      const tx = await txBuilder.build();
+
+      tx.signature.length.should.equal(1);
+
+      const json = tx.toJson();
+      json.threshold.should.equal(1);
+      json.sourceChain!.should.equal('P');
+      json.destinationChain!.should.equal('C');
+    });
+
+    it('should build and sign import to C-chain with threshold=1 using addExternalSignature()', async () => {
+      const txBuilder = factory
+        .getImportInCBuilder()
+        .threshold(1)
+        .locktime(0)
+        .fromPubKey([ON_CHAIN_TEST_WALLET.user.pChainAddress])
+        .to('0x96993BAEb6AaE2e06BF95F144e2775D4f8efbD35')
+        .fee('1000000')
+        .decodedUtxos([mpcUtxo])
+        .context(testData.context);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const unsignedHex = tx.toBroadcastFormat();
+
+      // Simulate MPC signing
+      const flareUnsignedTx = tx.getFlareTransaction() as UnsignedTx;
+      const signature = await secp256k1.sign(
+        flareUnsignedTx.toBytes(),
+        Buffer.from(ON_CHAIN_TEST_WALLET.user.privateKey, 'hex')
+      );
+
+      tx.addExternalSignature(signature);
+      const signedHex = tx.toBroadcastFormat();
+      signedHex.should.not.equal(unsignedHex);
+
+      // Verify roundtrip
+      const parsedBuilder = factory.from(signedHex);
+      const parsedTx = await parsedBuilder.build();
+      parsedTx.toBroadcastFormat().should.equal(signedHex);
+
+      tx.signature.length.should.equal(1);
+    });
+
+    it('should produce same signed tx via sign() and addExternalSignature()', async () => {
+      const buildArgs = () =>
+        factory
+          .getImportInCBuilder()
+          .threshold(1)
+          .locktime(0)
+          .fromPubKey([ON_CHAIN_TEST_WALLET.user.pChainAddress])
+          .to('0x96993BAEb6AaE2e06BF95F144e2775D4f8efbD35')
+          .fee('1000000')
+          .decodedUtxos([mpcUtxo])
+          .context(testData.context);
+
+      // sign()
+      const txBuilder1 = buildArgs();
+      txBuilder1.sign({ key: ON_CHAIN_TEST_WALLET.user.privateKey });
+      const tx1 = await txBuilder1.build();
+      const signedHex1 = tx1.toBroadcastFormat();
+
+      // addExternalSignature()
+      const txBuilder2 = buildArgs();
+      const tx2 = (await txBuilder2.build()) as Transaction;
+      const flareUnsignedTx = tx2.getFlareTransaction() as UnsignedTx;
+      const signature = await secp256k1.sign(
+        flareUnsignedTx.toBytes(),
+        Buffer.from(ON_CHAIN_TEST_WALLET.user.privateKey, 'hex')
+      );
+      tx2.addExternalSignature(signature);
+      const signedHex2 = tx2.toBroadcastFormat();
+
+      signedHex1.should.equal(signedHex2);
+      tx1.id.should.equal(tx2.id);
+    });
+
+    it('should deserialize unsigned MPC tx and sign it', async () => {
+      const txBuilder = factory
+        .getImportInCBuilder()
+        .threshold(1)
+        .locktime(0)
+        .fromPubKey([ON_CHAIN_TEST_WALLET.user.pChainAddress])
+        .to('0x96993BAEb6AaE2e06BF95F144e2775D4f8efbD35')
+        .fee('1000000')
+        .decodedUtxos([mpcUtxo])
+        .context(testData.context);
+
+      const unsignedTx = await txBuilder.build();
+      const unsignedHex = unsignedTx.toBroadcastFormat();
+
+      // Deserialize and sign
+      const txBuilder2 = factory.from(unsignedHex);
+      txBuilder2.sign({ key: ON_CHAIN_TEST_WALLET.user.privateKey });
+      const signedTx = await txBuilder2.build();
+
+      signedTx.signature.length.should.equal(1);
+
+      // Verify roundtrip
+      const parsedTx = await factory.from(signedTx.toBroadcastFormat()).build();
+      parsedTx.toBroadcastFormat().should.equal(signedTx.toBroadcastFormat());
+      parsedTx.id.should.equal(signedTx.id);
     });
   });
 });

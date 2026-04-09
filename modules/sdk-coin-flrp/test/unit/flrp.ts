@@ -8,7 +8,7 @@ import { EXPORT_IN_C } from '../resources/transactionData/exportInC';
 import { EXPORT_IN_P } from '../resources/transactionData/exportInP';
 import { IMPORT_IN_P } from '../resources/transactionData/importInP';
 import { IMPORT_IN_C } from '../resources/transactionData/importInC';
-import { HalfSignedAccountTransaction, TransactionType } from '@bitgo/sdk-core';
+import { HalfSignedAccountTransaction, TransactionType, MPCAlgorithm } from '@bitgo/sdk-core';
 import assert from 'assert';
 
 describe('Flrp test cases', function () {
@@ -55,6 +55,14 @@ describe('Flrp test cases', function () {
 
   it('should return default multisig type', function () {
     basecoin.getDefaultMultisigType().should.equal('onchain');
+  });
+
+  it('should support TSS', function () {
+    basecoin.supportsTss().should.equal(true);
+  });
+
+  it('should return ecdsa as MPC algorithm', function () {
+    (basecoin.getMPCAlgorithm() as MPCAlgorithm).should.equal('ecdsa');
   });
 
   describe('Keypairs:', () => {
@@ -499,14 +507,39 @@ describe('Flrp test cases', function () {
       isValid.should.be.true();
     });
 
-    it('should throw for address with wrong number of keychains', async () => {
+    it('should verify MPC wallet address with single keychain', async () => {
+      const address = SEED_ACCOUNT.addressTestnet;
+
+      const isValid = await basecoin.isWalletAddress({
+        address,
+        keychains: [{ pub: SEED_ACCOUNT.publicKey }],
+      });
+
+      isValid.should.be.true();
+    });
+
+    it('should reject MPC wallet address that does not match keychain', async () => {
       const address = SEED_ACCOUNT.addressTestnet;
 
       await assert.rejects(
         async () =>
           basecoin.isWalletAddress({
             address,
-            keychains: [{ pub: SEED_ACCOUNT.publicKey }],
+            keychains: [{ pub: ACCOUNT_1.publicKey }],
+          }),
+        /address validation failure/
+      );
+    });
+
+    it('should throw for multisig address with wrong number of keychains', async () => {
+      // Two tilde-separated addresses but only 2 keychains
+      const address = SEED_ACCOUNT.addressTestnet + '~' + ACCOUNT_1.addressTestnet;
+
+      await assert.rejects(
+        async () =>
+          basecoin.isWalletAddress({
+            address,
+            keychains: [{ pub: SEED_ACCOUNT.publicKey }, { pub: ACCOUNT_1.publicKey }],
           }),
         /Invalid keychains/
       );

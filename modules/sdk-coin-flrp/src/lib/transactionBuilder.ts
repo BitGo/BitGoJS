@@ -46,8 +46,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param threshold - Number of required signatures
    */
   validateThreshold(threshold: number): void {
-    if (!threshold || threshold !== 2) {
-      throw new BuildTransactionError('Invalid transaction: threshold must be set to 2');
+    if (!threshold || (threshold !== 1 && threshold !== 2)) {
+      throw new BuildTransactionError('Invalid transaction: threshold must be 1 or 2');
     }
   }
 

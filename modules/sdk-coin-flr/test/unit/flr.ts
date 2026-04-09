@@ -993,6 +993,19 @@ describe('flr', function () {
       const result = await tflrCoin.getExtraPrebuildParams(buildParams);
       result.should.have.property('hopParams');
     });
+
+    it('should return empty object for TSS wallets even when hop is true', async function () {
+      const tssWallet = new Wallet(bitgo, tflrCoin, { multisigType: 'tss' });
+      const buildParams = {
+        hop: true,
+        wallet: tssWallet,
+        recipients: [{ address: EXPORT_C_TEST_DATA.pMultisigAddress, amount: '100000000000000000' }],
+        type: 'Export' as const,
+      };
+
+      const result = await tflrCoin.getExtraPrebuildParams(buildParams);
+      result.should.deepEqual({});
+    });
   });
 
   describe('feeEstimate', function () {
