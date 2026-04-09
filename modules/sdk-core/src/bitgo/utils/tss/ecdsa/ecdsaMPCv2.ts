@@ -776,7 +776,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const hashBuffer = hash.update(bufferContent).digest();
     const otherSigner = new DklsDsg.Dsg(
       userKeyShare,
-      params.mpcv2PartyId ? params.mpcv2PartyId : 0,
+      params.mpcv2PartyId !== undefined ? params.mpcv2PartyId : 0,
       derivationPath,
       hashBuffer
     );
