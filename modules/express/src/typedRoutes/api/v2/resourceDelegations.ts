@@ -69,7 +69,7 @@ export const ResourceDelegationsResponse = {
  * for a TRX wallet.
  *
  * @operationId express.v2.wallet.resourcedelegations
- * @tag express
+ * @tag Express
  */
 export const GetResourceDelegations = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/resourcedelegations',
