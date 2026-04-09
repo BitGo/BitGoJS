@@ -19,10 +19,15 @@ export function combineRound4DklsDsgMessages(
   round4DsgMessages: DklsTypes.SerializedBroadcastMessage[]
 ): DklsTypes.SerializedDklsSignature {
   const round4DsgMessagesDeser = round4DsgMessages.map(DklsTypes.deserializeBroadcastMessage);
-  const signatureR = round4DsgMessagesDeser.find((m) => m.signatureR !== undefined)?.signatureR;
-  if (!signatureR) {
+  const messagesWithR = round4DsgMessagesDeser.filter((m) => m.signatureR !== undefined);
+  if (messagesWithR.length === 0) {
     throw Error('None of the round 4 Dkls messages contain a Signature.R value.');
   }
+  const rValues = messagesWithR.map((m) => Buffer.from(m.signatureR as Uint8Array).toString('hex'));
+  if (!rValues.every((r) => r === rValues[0])) {
+    throw new Error('signatureR mismatch across parties — possible protocol attack');
+  }
+  const signatureR = messagesWithR[0].signatureR as Uint8Array;
   const signatureDeser = DklsUtils.combinePartialSignatures(
     round4DsgMessagesDeser.map((m) => m.payload),
     Buffer.from(signatureR).toString('hex')
