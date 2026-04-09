@@ -75,6 +75,7 @@ module.exports = {
         'ME-',
         'ANT-',
         'CGARD-',
+        'CGD-',
         'CHALO-',
         'CECHO-',
         'CSHLD-',

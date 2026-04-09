@@ -129,3 +129,17 @@ export async function testRecoveryTransactionWithoutData(txBuilder: TransactionB
     await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract call data field');
   });
 }
+
+export function testEip1559PriorityFeeExceedsMaxFee(txBuilder: TransactionBuilder) {
+  it('fail when maxPriorityFeePerGas exceeds maxFeePerGas', () => {
+    (() =>
+      txBuilder.fee({
+        eip1559: {
+          maxFeePerGas: '1000000000',
+          maxPriorityFeePerGas: '9000000000',
+        },
+        fee: '1000000000',
+        gasLimit: '21000',
+      })).should.throw('maxPriorityFeePerGas cannot exceed maxFeePerGas');
+  });
+}

@@ -539,8 +539,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this.validateValue(new BigNumber(fee.gasLimit));
     }
     if (fee.eip1559) {
-      this.validateValue(new BigNumber(fee.eip1559.maxFeePerGas));
-      this.validateValue(new BigNumber(fee.eip1559.maxPriorityFeePerGas));
+      const maxFee = new BigNumber(fee.eip1559.maxFeePerGas);
+      const priorityFee = new BigNumber(fee.eip1559.maxPriorityFeePerGas);
+      this.validateValue(maxFee);
+      this.validateValue(priorityFee);
+      if (priorityFee.isGreaterThan(maxFee)) {
+        throw new BuildTransactionError('maxPriorityFeePerGas cannot exceed maxFeePerGas');
+      }
     }
     if (fee.gasPrice) {
       this.validateValue(new BigNumber(fee.gasPrice));
