@@ -13,6 +13,7 @@ import {
   ExtraPrebuildParamsOptions,
   HalfSignedUtxoTransaction,
   IBaseCoin,
+  isBolt11Invoice,
   InvalidAddressDerivationPropertyError,
   InvalidAddressError,
   IRequestTracer,
@@ -489,9 +490,22 @@ export abstract class AbstractUtxoCoin
    * @param address
    * @param param
    */
-  isValidAddress(address: string, param?: { anyFormat: boolean } | /* legacy parameter */ boolean): boolean {
+  isValidAddress(
+    address: string,
+    param?: { anyFormat?: boolean; allowLightning?: boolean } | /* legacy parameter */ boolean
+  ): boolean {
     if (typeof param === 'boolean' && param) {
       throw new Error('deprecated');
+    }
+
+    const allowLightning = (param as { allowLightning?: boolean } | undefined)?.allowLightning ?? false;
+    if (allowLightning) {
+      if (/^(02|03)[0-9a-fA-F]{64}$/.test(address)) {
+        return true;
+      }
+      if (isBolt11Invoice(address)) {
+        return true;
+      }
     }
 
     // By default, allow all address formats.

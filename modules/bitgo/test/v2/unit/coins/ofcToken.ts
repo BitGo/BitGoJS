@@ -58,6 +58,33 @@ describe('OFC:', function () {
     tbtc.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64nnn').should.be.false;
   });
 
+  it('should accept lightning node pubkeys as valid addresses for ofctbtc', function () {
+    const tbtc = bitgo.coin('ofctbtc');
+    // valid compressed public keys (node pubkeys)
+    tbtc.isValidAddress('02eec7245d6b7d2ccb30380bfbe2a3648cd7a942653f5aa340edcea1f283686619').should.be.true;
+    tbtc.isValidAddress('03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad').should.be.true;
+    // invalid: wrong prefix
+    tbtc.isValidAddress('04eec7245d6b7d2ccb30380bfbe2a3648cd7a942653f5aa340edcea1f283686619').should.be.false;
+    // invalid: too short
+    tbtc.isValidAddress('02eec7245d6b7d2ccb30380bfbe2a3648cd7a942653f5aa340edcea1f28368').should.be.false;
+  });
+
+  it('should accept lightning invoices as valid addresses for ofctbtc', function () {
+    const tbtc = bitgo.coin('ofctbtc');
+    // testnet bolt11 invoice
+    tbtc.isValidAddress('lntb1500n1pj0ggavpp5example').should.be.true;
+    // mainnet bolt11 invoice should not be valid (ofctbtc backing coin is tbtc, but allowLightning passes through to isValidAddress which just checks prefix)
+    tbtc.isValidAddress('lnbc1500n1pj0ggavpp5example').should.be.true;
+    // not a lightning invoice
+    tbtc.isValidAddress('lnxyz1500n1pj0ggavpp5example').should.be.false;
+  });
+
+  it('should not accept lightning addresses for non-btc ofc tokens', function () {
+    const teth = bitgo.coin('ofcteth');
+    teth.isValidAddress('02eec7245d6b7d2ccb30380bfbe2a3648cd7a942653f5aa340edcea1f283686619').should.be.false;
+    teth.isValidAddress('lntb1500n1pj0ggavpp5example').should.be.false;
+  });
+
   it('test crypto coins for ofcteth', function () {
     const teth = bitgo.coin('ofcteth');
     teth.getChain().should.equal('ofcteth');
