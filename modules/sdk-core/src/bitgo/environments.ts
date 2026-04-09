@@ -218,6 +218,9 @@ const mainnetBase: EnvironmentTemplate = {
   wemixExplorerBaseUrl: 'https://api.etherscan.io/v2',
   sgbExplorerBaseUrl: 'https://songbird-explorer.flare.network',
   evm: {
+    abstracteth: {
+      baseUrl: 'https://api.abscan.org/api',
+    },
     apechain: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
@@ -433,6 +436,9 @@ const testnetBase: EnvironmentTemplate = {
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/',
   soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
   evm: {
+    abstracteth: {
+      baseUrl: 'https://api.sepolia.abscan.org/api',
+    },
     apechain: {
       baseUrl: 'https://api.etherscan.io/v2',
     },

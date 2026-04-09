@@ -21,6 +21,7 @@ export enum CoinKind {
  */
 export enum CoinFamily {
   ADA = 'ada',
+  ABSTRACTETH = 'abstracteth', // Abstract L2 EVM
   APECHAIN = 'apechain',
   ALGO = 'algo',
   APT = 'apt',
@@ -557,6 +558,7 @@ export enum CoinFeature {
  */
 export enum UnderlyingAsset {
   INVALID_UNKNOWN = 'invalid_asset_type',
+  ABSTRACTETH = 'abstracteth', // Abstract L2 EVM
   ADA = 'ada',
   ALGO = 'algo',
   APE = 'ape',

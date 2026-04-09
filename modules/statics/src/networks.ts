@@ -1583,6 +1583,24 @@ class ApeChainTestnet extends Testnet implements EthereumNetwork {
   batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
+class AbstractEth extends Mainnet implements EthereumNetwork {
+  name = 'Abstract Ethereum';
+  family = CoinFamily.ABSTRACTETH;
+  explorerUrl = 'https://abscan.org/tx/';
+  accountExplorerUrl = 'https://abscan.org/address/';
+  chainId = 2741;
+  nativeCoinOperationHashPrefix = '2741';
+}
+
+class AbstractEthTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Abstract Ethereum';
+  family = CoinFamily.ABSTRACTETH;
+  explorerUrl = 'https://sepolia.abscan.org/tx/';
+  accountExplorerUrl = 'https://sepolia.abscan.org/address/';
+  chainId = 11124;
+  nativeCoinOperationHashPrefix = '11124';
+}
+
 class Pharos extends Mainnet implements EthereumNetwork {
   name = 'Pharos';
   family = CoinFamily.PHRS;
@@ -2644,6 +2662,7 @@ export class DynamicNetwork extends BaseNetwork {
 
 export const Networks = {
   main: {
+    abstracteth: Object.freeze(new AbstractEth()),
     ada: Object.freeze(new Ada()),
     algorand: Object.freeze(new Algorand()),
     apechain: Object.freeze(new ApeChain()),
@@ -2765,6 +2784,7 @@ export const Networks = {
     unieth: Object.freeze(new Unieth()),
   },
   test: {
+    abstracteth: Object.freeze(new AbstractEthTestnet()),
     ada: Object.freeze(new AdaTestnet()),
     algorand: Object.freeze(new AlgorandTestnet()),
     apechain: Object.freeze(new ApeChainTestnet()),

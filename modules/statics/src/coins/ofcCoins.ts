@@ -266,6 +266,22 @@ export const ofcCoins = [
     CoinKind.CRYPTO
   ),
   ofc(
+    '8daf44a2-1615-4938-8ce7-66b0e47c38a3',
+    'ofcabstracteth',
+    'Abstract Ethereum',
+    18,
+    UnderlyingAsset.ABSTRACTETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    '0220e727-49b9-402c-96b7-4b5c0fc055c0',
+    'ofctabstracteth',
+    'Abstract Ethereum Testnet',
+    18,
+    UnderlyingAsset.ABSTRACTETH,
+    CoinKind.CRYPTO
+  ),
+  ofc(
     '7e4fc86c-7caf-4cd3-b801-a650b0bfcf64',
     'ofcapechain',
     'Ape Chain',
