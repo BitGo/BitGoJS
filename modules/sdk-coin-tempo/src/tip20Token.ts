@@ -3,7 +3,7 @@
  */
 import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
 import { coins, tokens, Tip20TokenConfig } from '@bitgo/statics';
-import { GetSendMethodArgsOptions, SendMethodArgs } from '@bitgo/abstract-eth';
+import { GetSendMethodArgsOptions, RecoverOptions, SendMethodArgs } from '@bitgo/abstract-eth';
 import { Address } from './lib/types';
 import { Tempo } from './tempo';
 import { encodeTip20TransferWithMemo, amountToTip20Units, isValidAddress, isValidTip20Amount } from './lib/utils';
@@ -104,6 +104,15 @@ export class Tip20Token extends Tempo {
   /** @inheritDoc */
   getBaseFactor(): number {
     return Math.pow(10, this.tokenConfig.decimalPlaces);
+  }
+
+  /** @inheritdoc */
+  protected resolveTokenContractAddressForRecovery(params: RecoverOptions): string | undefined {
+    const fromParams = super.resolveTokenContractAddressForRecovery(params);
+    if (fromParams) {
+      return fromParams;
+    }
+    return this.tokenContractAddress.replace(/\s/g, '').toLowerCase();
   }
 
   /** @inheritDoc */

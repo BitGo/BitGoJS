@@ -6,8 +6,8 @@
 
 import { bip32 } from '@bitgo/secp256k1';
 import { ethers } from 'ethers';
-import { AA_TRANSACTION_TYPE, TIP20_DECIMALS } from './constants';
-import { TIP20_TRANSFER_WITH_MEMO_ABI } from './tip20Abi';
+import { AA_TRANSACTION_TYPE, TEMPO_RPC_URLS, TIP20_DECIMALS } from './constants';
+import { TIP20_ABI, TIP20_TRANSFER_WITH_MEMO_ABI } from './tip20Abi';
 
 const AA_TX_HEX_REGEX = new RegExp(`^${AA_TRANSACTION_TYPE}[0-9a-f]*$`, 'i');
 
@@ -149,6 +149,37 @@ export function isValidMemoId(memoId: string): boolean {
   return typeof memoId === 'string' && /^(0|[1-9]\d*)$/.test(memoId);
 }
 
+/**
+ * Resolve default Tempo JSON-RPC URL from base chain name.
+ */
+export function getTempoRpcUrlForBaseChain(baseChain: string): string {
+  return baseChain === 'ttempo' ? TEMPO_RPC_URLS.TESTNET : TEMPO_RPC_URLS.MAINNET;
+}
+
+/**
+ * Query TIP-20 balance via standard `balanceOf` eth_call.
+ */
+export async function queryTip20TokenBalance(
+  rpcUrl: string,
+  tokenContractAddress: string,
+  walletAddress: string
+): Promise<bigint> {
+  const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+  const iface = new ethers.utils.Interface(TIP20_ABI);
+  const data = iface.encodeFunctionData('balanceOf', [walletAddress]);
+  const result = await provider.call({ to: ethers.utils.getAddress(tokenContractAddress), data });
+  const [bal] = iface.decodeFunctionResult('balanceOf', result);
+  return BigInt(bal.toString());
+}
+
+/**
+ * Pending nonce for an address (for AA / account tx ordering).
+ */
+export async function getTempoAddressNonce(rpcUrl: string, address: string): Promise<number> {
+  const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+  return provider.getTransactionCount(ethers.utils.getAddress(address), 'pending');
+}
+
 const utils = {
   isValidAddress,
   isValidPublicKey,
@@ -160,6 +191,9 @@ const utils = {
   isValidTip20Amount,
   isTip20Transaction,
   isValidMemoId,
+  getTempoRpcUrlForBaseChain,
+  queryTip20TokenBalance,
+  getTempoAddressNonce,
 };
 
 export default utils;
