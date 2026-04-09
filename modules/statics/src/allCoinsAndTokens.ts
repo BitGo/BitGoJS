@@ -665,7 +665,8 @@ export const allCoinsAndTokens = [
     Networks.main.susd,
     2,
     UnderlyingAsset.USD,
-    BaseUnit.USD
+    BaseUnit.USD,
+    [CoinFeature.DEPRECATED]
   ),
   account(
     'e424034a-22e6-4bcf-bd04-c598507afe3d',
@@ -674,7 +675,8 @@ export const allCoinsAndTokens = [
     Networks.test.susd,
     2,
     UnderlyingAsset.USD,
-    BaseUnit.USD
+    BaseUnit.USD,
+    [CoinFeature.DEPRECATED]
   ),
   account(
     '4a903d2c-6487-41fc-bede-77947b80efbb',
