@@ -666,7 +666,7 @@ export const allCoinsAndTokens = [
     2,
     UnderlyingAsset.USD,
     BaseUnit.USD,
-    [CoinFeature.DEPRECATED]
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.DEPRECATED]
   ),
   account(
     'e424034a-22e6-4bcf-bd04-c598507afe3d',
@@ -676,7 +676,7 @@ export const allCoinsAndTokens = [
     2,
     UnderlyingAsset.USD,
     BaseUnit.USD,
-    [CoinFeature.DEPRECATED]
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.DEPRECATED]
   ),
   account(
     '4a903d2c-6487-41fc-bede-77947b80efbb',
