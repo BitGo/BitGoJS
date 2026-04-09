@@ -484,7 +484,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.OPBNB,
     BaseUnit.ETH,
-    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
+    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559, CoinFeature.DEPRECATED]
   ),
   account(
     '1588f6da-8e43-4535-8e1c-25e53788437b',
@@ -494,7 +494,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.OPBNB,
     BaseUnit.ETH,
-    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
+    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559, CoinFeature.DEPRECATED]
   ),
   account(
     'a97b6e81-33fb-4f63-83b6-7ca91e95f8b4',
@@ -665,7 +665,8 @@ export const allCoinsAndTokens = [
     Networks.main.susd,
     2,
     UnderlyingAsset.USD,
-    BaseUnit.USD
+    BaseUnit.USD,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.DEPRECATED]
   ),
   account(
     'e424034a-22e6-4bcf-bd04-c598507afe3d',
@@ -674,7 +675,8 @@ export const allCoinsAndTokens = [
     Networks.test.susd,
     2,
     UnderlyingAsset.USD,
-    BaseUnit.USD
+    BaseUnit.USD,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.DEPRECATED]
   ),
   account(
     '4a903d2c-6487-41fc-bede-77947b80efbb',
@@ -1221,7 +1223,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.FETCHAI,
     BaseUnit.FETCHAI,
-    COSMOS_SIDECHAIN_FEATURES
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.DEPRECATED]
   ),
   account(
     'e285caf3-e9b8-407a-aa72-ee4094d1cf9f',
@@ -1231,7 +1233,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.FETCHAI,
     BaseUnit.FETCHAI,
-    COSMOS_SIDECHAIN_FEATURES
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.DEPRECATED]
   ),
   account(
     '2ec91758-fd84-44d5-92d3-7158903de278',
@@ -1281,7 +1283,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.ISLM,
     BaseUnit.ISLM,
-    COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS)
+    [...COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS), CoinFeature.DEPRECATED]
   ),
   account(
     '02eced2c-cf1d-4660-832c-858685ae7107',
@@ -1291,7 +1293,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.ISLM,
     BaseUnit.ISLM,
-    COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS)
+    [...COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS), CoinFeature.DEPRECATED]
   ),
   account(
     'e48baabf-5cc9-4011-b67e-6f6425753df2',
