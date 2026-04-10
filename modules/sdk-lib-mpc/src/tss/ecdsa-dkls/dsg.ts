@@ -44,22 +44,19 @@ export class Dsg {
       throw Error('Session not intialized');
     }
     const round = decode(this.dsgSession.toBytes()).round;
-    switch (round) {
-      case 'WaitMsg1':
-        this.dsgState = DsgState.Round1;
-        break;
-      case 'WaitMsg2':
-        this.dsgState = DsgState.Round2;
-        break;
-      case 'WaitMsg3':
-        this.dsgState = DsgState.Round3;
-        break;
-      case 'Ended':
-        this.dsgState = DsgState.Complete;
-        break;
-      default:
-        this.dsgState = DsgState.InvalidState;
-        throw Error(`Invalid State: ${round}`);
+    if (round === 'WaitMsg1') {
+      this.dsgState = DsgState.Round1;
+    } else if (round === 'WaitMsg2') {
+      this.dsgState = DsgState.Round2;
+    } else if (round === 'WaitMsg3') {
+      this.dsgState = DsgState.Round3;
+    } else if (typeof round === 'object' && 'WaitMsg4' in round) {
+      this.dsgState = DsgState.Round4;
+    } else if (round === 'Ended') {
+      this.dsgState = DsgState.Complete;
+    } else {
+      this.dsgState = DsgState.InvalidState;
+      throw Error(`Invalid State: ${round}`);
     }
   }
 
