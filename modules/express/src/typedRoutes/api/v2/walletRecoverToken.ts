@@ -7,9 +7,9 @@ import { Recipient } from './coinSignTx';
  * Path parameters for recovering tokens from a wallet
  */
 export const RecoverTokenParams = {
-  /** Coin ticker / chain identifier */
+  /** A cryptocurrency or token ticker symbol. */
   coin: t.string,
-  /** The ID of the wallet */
+  /** The wallet ID. */
   id: t.string,
 } as const;
 
@@ -19,15 +19,15 @@ export const RecoverTokenParams = {
  * Note: When broadcast=false (default), either walletPassphrase or prv must be provided for signing.
  */
 export const RecoverTokenBody = {
-  /** The contract address of the unsupported token to recover (REQUIRED) */
+  /** Contract address of the unsupported token */
   tokenContractAddress: t.string,
-  /** The destination address where recovered tokens should be sent (REQUIRED) */
+  /** Destination address recovered tokens should be sent to */
   recipient: t.string,
-  /** Whether to automatically broadcast the half-signed transaction to BitGo for cosigning and broadcasting */
+  /** Whether to send to BitGo for cosigning and broadcast the transaction. If false, a half-siged transaction will be returned. */
   broadcast: optional(t.boolean),
-  /** The wallet passphrase used to decrypt the user key */
+  /** Wallet passphrase */
   walletPassphrase: optional(t.string),
-  /** The extended private key (alternative to walletPassphrase) */
+  /** User private key */
   prv: optional(t.string),
 } as const;
 
@@ -58,25 +58,10 @@ export const RecoverTokenResponse = t.type({
 });
 
 /**
- * Recover unsupported tokens from a BitGo multisig wallet
+ * Recover an unsupported Ethereum token from a BitGo multisig wallet
  *
- * This endpoint builds a half-signed transaction to recover unsupported tokens from an ETH wallet.
- * The transaction can be manually submitted to BitGo for cosigning, or automatically broadcast
- * by setting the 'broadcast' parameter to true.
- *
- * Requirements:
- * - tokenContractAddress (REQUIRED): The ERC-20 token contract address
- * - recipient (REQUIRED): The destination address for recovered tokens
- * - walletPassphrase or prv (REQUIRED when broadcast=false): For signing the transaction
- *
- * Behavior:
- * - When broadcast=false (default): Returns a half-signed transaction for manual submission
- * - When broadcast=true: Automatically sends the transaction to BitGo for cosigning and broadcasting
- *
- * Note: This endpoint is only supported for ETH family wallets.
- *
- * @tag express
  * @operationId express.v2.wallet.recovertoken
+ * @tag Express
  */
 export const PostWalletRecoverToken = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/recovertoken',
