@@ -353,6 +353,9 @@ const mainnetBase: EnvironmentTemplate = {
     h: {
       baseUrl: 'https://humanity-mainnet.explorer.alchemy.com/api',
     },
+    boba: {
+      baseUrl: 'https://api.routescan.io/v2/network/mainnet/evm/288/etherscan/api',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   hyperLiquidNodeUrl: 'https://api.hyperliquid.xyz',
@@ -566,6 +569,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     h: {
       baseUrl: 'https://humanity-testnet.explorer.alchemy.com/api',
+    },
+    boba: {
+      baseUrl: 'https://api.routescan.io/v2/network/testnet/evm/28882/etherscan/api',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',

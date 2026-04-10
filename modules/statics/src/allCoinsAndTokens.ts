@@ -2416,6 +2416,40 @@ export const allCoinsAndTokens = [
       CoinFeature.SUPPORTS_ERC20,
     ]
   ),
+  account(
+    'd055d442-03f1-4d24-b61c-5312e480e378',
+    'bobaeth',
+    'Boba Network',
+    Networks.main.boba,
+    18,
+    UnderlyingAsset.BOBAETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    '8fc7c710-e64e-4743-8ce7-03bcf71d7723',
+    'tbobaeth',
+    'Boba Network Testnet',
+    Networks.test.boba,
+    18,
+    UnderlyingAsset.BOBAETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
 
   account(
     '1cc2170d-c24d-4179-b0eb-155de0f46617',
