@@ -23,32 +23,36 @@ export function signAndVerifyPsbt(
   psbt: utxolib.bitgo.UtxoPsbt,
   signerKeychain: bip32.BIP32Interface | BIP32,
   rootWalletKeys: fixedScriptWallet.RootWalletKeys | undefined,
-  replayProtection: ReplayProtectionKeys | undefined
+  replayProtection: ReplayProtectionKeys | undefined,
+  options?: { writeSignedWith?: boolean }
 ): utxolib.bitgo.UtxoPsbt;
 export function signAndVerifyPsbt(
   psbt: fixedScriptWallet.BitGoPsbt,
   signerKeychain: bip32.BIP32Interface | BIP32,
   rootWalletKeys: fixedScriptWallet.RootWalletKeys,
-  replayProtection: ReplayProtectionKeys
+  replayProtection: ReplayProtectionKeys,
+  options?: { writeSignedWith?: boolean }
 ): fixedScriptWallet.BitGoPsbt;
 export function signAndVerifyPsbt(
   psbt: utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt,
   signerKeychain: bip32.BIP32Interface | BIP32,
   rootWalletKeys: fixedScriptWallet.RootWalletKeys,
-  replayProtection: ReplayProtectionKeys
+  replayProtection: ReplayProtectionKeys,
+  options?: { writeSignedWith?: boolean }
 ): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt;
 export function signAndVerifyPsbt(
   psbt: utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt,
   signerKeychain: bip32.BIP32Interface | BIP32,
   rootWalletKeys: fixedScriptWallet.RootWalletKeys | undefined,
-  replayProtection: ReplayProtectionKeys | undefined
+  replayProtection: ReplayProtectionKeys | undefined,
+  options: { writeSignedWith?: boolean } = {}
 ): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt {
   if (psbt instanceof bitgo.UtxoPsbt) {
     return signAndVerifyPsbtUtxolib(psbt, toUtxolibBIP32(signerKeychain));
   }
   assert(rootWalletKeys, 'rootWalletKeys required for wasm-utxo signing');
   assert(replayProtection, 'replayProtection required for wasm-utxo signing');
-  return signAndVerifyPsbtWasm(psbt, signerKeychain, rootWalletKeys, replayProtection);
+  return signAndVerifyPsbtWasm(psbt, signerKeychain, rootWalletKeys, replayProtection, options);
 }
 
 export async function signTransaction<
@@ -69,6 +73,7 @@ export async function signTransaction<
     cosignerPub: string | undefined;
     /** When true (default), extract finalized PSBT to legacy transaction format. When false, return finalized PSBT. */
     extractTransaction?: boolean;
+    writeSignedWith?: boolean;
   }
 ): Promise<
   utxolib.bitgo.UtxoPsbt | utxolib.bitgo.UtxoTransaction<bigint | number> | fixedScriptWallet.BitGoPsbt | Buffer
@@ -115,6 +120,7 @@ export async function signTransaction<
         },
         signingStep: params.signingStep,
         walletId: params.walletId,
+        writeSignedWith: params.writeSignedWith,
       }
     );
     if (isLastSignature) {

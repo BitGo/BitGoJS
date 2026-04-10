@@ -21,6 +21,7 @@ export enum CoinKind {
  */
 export enum CoinFamily {
   ADA = 'ada',
+  ABSTRACTETH = 'abstracteth', // Abstract L2 EVM
   APECHAIN = 'apechain',
   ALGO = 'algo',
   APT = 'apt',
@@ -90,6 +91,7 @@ export enum CoinFamily {
   POLYGON = 'polygon',
   POLYX = 'polyx',
   PHRS = 'phrs',
+  PRIVIDIUMETH = 'prividiumeth', // Prividium L2
   CTC = 'ctc',
   HYPEEVM = 'hypeevm',
   HYPERLIQUID = 'hyperliquid', // HyperCore L1
@@ -140,6 +142,7 @@ export enum CoinFamily {
   ARCUSDC = 'arcusdc', // ARC network
   TEMPO = 'tempo', // Tempo Network
   UNIETH = 'unieth', // Unichain
+  BOBAETH = 'bobaeth', // BOBA Network
 }
 
 /**
@@ -557,6 +560,7 @@ export enum CoinFeature {
  */
 export enum UnderlyingAsset {
   INVALID_UNKNOWN = 'invalid_asset_type',
+  ABSTRACTETH = 'abstracteth', // Abstract L2 EVM
   ADA = 'ada',
   ALGO = 'algo',
   APE = 'ape',
@@ -644,6 +648,7 @@ export enum UnderlyingAsset {
   POLYGON = 'polygon',
   PHRS = 'phrs',
   PLUME = 'plume',
+  PRIVIDIUMETH = 'prividiumeth', // Prividium L2
   CTC = 'ctc',
   HYPEEVM = 'hypeevm',
   HYPERLIQUID = 'hyperliquid', // HyperCore L1
@@ -1164,6 +1169,8 @@ export enum UnderlyingAsset {
   'GAME.COM' = 'game.com',
   GAMMA = 'gamma',
   'sol:gari' = 'sol:gari',
+  'tsol:sofid' = 'tsol:sofid',
+  'tsol:stgsofid' = 'tsol:stgsofid',
   'sol:usd1' = 'sol:usd1',
   'sol:usdm1' = 'sol:usdm1',
   'tsol:slnd' = 'tsol:slnd',
@@ -1871,9 +1878,14 @@ export enum UnderlyingAsset {
   'hteth:stgfyusd' = 'hteth:stgfyusd',
   'hteth:stgwbtc' = 'hteth:stgwbtc',
   'hteth:tsteth' = 'hteth:tsteth',
+  'hteth:tusdc' = 'hteth:tusdc',
+  'hteth:tusdt' = 'hteth:tusdt',
   'hteth:grtxp' = 'hteth:grtxp',
   'hteth:testeigen' = 'hteth:testeigen',
   'hteth:wbtc' = 'hteth:wbtc',
+  // Robinhood Chain testnet ERC-20 tokens
+  'thoodeth:amzn' = 'thoodeth:amzn',
+  'thoodeth:tsla' = 'thoodeth:tsla',
   THKD = 'thkd',
   THUNDER = 'thunder',
   TIO = 'tio',
@@ -2137,6 +2149,7 @@ export enum UnderlyingAsset {
   ZMT = 'zmt',
   ZOOM = 'zoom',
   ZRO = 'zro',
+  BOBAETH = 'bobaeth',
   'ZRO-0x320' = 'zro-0x320',
   'ZRO-0xFCF' = 'zro-0xfcf',
   'ZRO-0xE5C' = 'zro-0xe5c',
@@ -2268,6 +2281,7 @@ export enum UnderlyingAsset {
   'eth:paal' = 'eth:paal',
   'eth:wmtx' = 'eth:wmtx',
   'eth:anime' = 'eth:anime',
+  'eth:anvl' = 'eth:anvl',
   'eth:newt' = 'eth:newt',
   'eth:hsk' = 'eth:hsk',
   'eth:rog' = 'eth:rog',
@@ -2284,6 +2298,7 @@ export enum UnderlyingAsset {
   'eth:arm-susde-usde' = 'eth:arm-susde-usde',
   'eth:arm-weth-eeth' = 'eth:arm-weth-eeth',
   'eth:cashplus' = 'eth:cashplus',
+  'eth:cbbtc' = 'eth:cbbtc',
   'eth:island' = 'eth:island',
   'eth:six' = 'eth:six',
   'eth:eden' = 'eth:eden',
@@ -2975,6 +2990,7 @@ export enum UnderlyingAsset {
   'arbeth:arb' = 'arbeth:arb',
   'arbeth:sqd' = 'arbeth:sqd',
   'arbeth:cbl' = 'arbeth:cbl',
+  'arbeth:chip' = 'arbeth:chip',
   'arbeth:w' = 'arbeth:w',
   'arbeth:comp' = 'arbeth:comp',
   'arbeth:coti' = 'arbeth:coti',
@@ -3478,7 +3494,10 @@ export enum UnderlyingAsset {
   'sol:skr' = 'sol:skr',
   'sol:bmt' = 'sol:bmt',
   'sol:huma' = 'sol:huma',
+  'sol:cbbtc' = 'sol:cbbtc',
+  'sol:gobucks' = 'sol:gobucks',
   'sol:prime' = 'sol:prime',
+  'sol:tbtc' = 'sol:tbtc',
   'sol:kwyld-usdc' = 'sol:kwyld-usdc',
   'sol:kprme-cash' = 'sol:kprme-cash',
   'sol:kwyld-cash' = 'sol:kwyld-cash',
@@ -3712,6 +3731,8 @@ export enum UnderlyingAsset {
   'eth:zkc' = 'eth:zkc',
   'eth:musd' = 'eth:musd',
   'eth:mezo' = 'eth:mezo',
+  'eth:drv' = 'eth:drv',
+  'eth:prn' = 'eth:prn',
   // ADA testnet tokens
   'tada:water' = 'tada:water',
   'tada:tusda' = 'tada:tusda',
@@ -3738,6 +3759,8 @@ export enum UnderlyingAsset {
   'canton:cbtc' = 'canton:cbtc',
   'canton:usdxlr' = 'canton:usdxlr',
   'canton:cltc' = 'canton:cltc',
+  'canton:ibenji' = 'canton:ibenji',
+  'canton:sbc' = 'canton:sbc',
 
   // Tempo mainnet tokens
   'tempo:pathusd' = 'tempo:pathusd',

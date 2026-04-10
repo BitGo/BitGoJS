@@ -218,6 +218,9 @@ const mainnetBase: EnvironmentTemplate = {
   wemixExplorerBaseUrl: 'https://api.etherscan.io/v2',
   sgbExplorerBaseUrl: 'https://songbird-explorer.flare.network',
   evm: {
+    abstracteth: {
+      baseUrl: 'https://api.abscan.org/api',
+    },
     apechain: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
@@ -305,6 +308,9 @@ const mainnetBase: EnvironmentTemplate = {
     hemieth: {
       baseUrl: 'https://explorer.hemi.xyz/api',
     },
+    prividiumeth: {
+      baseUrl: 'https://explorer.prividium.zksync.dev/api', // TODO: update with mainnet URL when available
+    },
     fluenteth: {
       baseUrl: 'https://fluentscan.xyz/api/',
     },
@@ -346,6 +352,9 @@ const mainnetBase: EnvironmentTemplate = {
     },
     h: {
       baseUrl: 'https://humanity-mainnet.explorer.alchemy.com/api',
+    },
+    boba: {
+      baseUrl: 'https://api.routescan.io/v2/network/mainnet/evm/288/etherscan/api',
     },
   },
   icpNodeUrl: 'https://ic0.app',
@@ -433,6 +442,9 @@ const testnetBase: EnvironmentTemplate = {
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/',
   soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
   evm: {
+    abstracteth: {
+      baseUrl: 'https://api.sepolia.abscan.org/api',
+    },
     apechain: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
@@ -513,6 +525,9 @@ const testnetBase: EnvironmentTemplate = {
     hemieth: {
       baseUrl: 'https://testnet.explorer.hemi.xyz/api',
     },
+    prividiumeth: {
+      baseUrl: 'https://explorer.testnet-prividium.zksync.dev/api',
+    },
     fluenteth: {
       baseUrl: 'https://testnet.fluentscan.xyz/api/',
     },
@@ -554,6 +569,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     h: {
       baseUrl: 'https://humanity-testnet.explorer.alchemy.com/api',
+    },
+    boba: {
+      baseUrl: 'https://api.routescan.io/v2/network/testnet/evm/28882/etherscan/api',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',

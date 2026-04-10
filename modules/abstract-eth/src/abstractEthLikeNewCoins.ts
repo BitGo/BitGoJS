@@ -359,6 +359,7 @@ interface EthTransactionParams extends TransactionParams {
   hop?: boolean;
   prebuildTx?: PrebuildTransactionResult;
   tokenName?: string;
+  feeToken?: string;
 }
 
 export interface VerifyEthTransactionOptions extends VerifyTransactionOptions {

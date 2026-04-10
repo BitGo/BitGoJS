@@ -3575,6 +3575,28 @@ export const solTokens = [
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   tsolToken(
+    '9949e389-41ac-4205-8018-ba5307492242',
+    'tsol:sofid',
+    'Test SoFiUSD',
+    6,
+    '2G5gRJqDzXYQebYwzd37ZZa58VjM569jJN2fXx4CFyQU',
+    '2G5gRJqDzXYQebYwzd37ZZa58VjM569jJN2fXx4CFyQU',
+    UnderlyingAsset['tsol:sofid'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    'b5951520-911a-4913-8373-97079e91b52a',
+    'tsol:stgsofid',
+    'Test SoFiUSD',
+    6,
+    'HSgYwnvoc4JFWzoywF1hXzWUcPLekZGR4kCu6QwGSEbU',
+    'HSgYwnvoc4JFWzoywF1hXzWUcPLekZGR4kCu6QwGSEbU',
+    UnderlyingAsset['tsol:stgsofid'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
     '6405b589-e0cf-4481-a48f-60f8416e21ca',
     'tsol:stgusd1',
     'Test USD1 Token',
@@ -3695,6 +3717,27 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    '6a24d45f-ab46-4f53-a386-7b996e2523d5',
+    'sol:gobucks',
+    'GoBucks Token',
+    9,
+    '2ELq4S7AkesvVTuY7LQAi8WyYTiJTuQY6vHTwkgaUXdT',
+    '2ELq4S7AkesvVTuY7LQAi8WyYTiJTuQY6vHTwkgaUXdT',
+    UnderlyingAsset['sol:gobucks'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
+  solToken(
+    '123c6a2b-6e19-479c-a7ba-f78884e0ac75',
+    'sol:cbbtc',
+    'Coinbase Wrapped BTC',
+    8,
+    'cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij',
+    'cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij',
+    UnderlyingAsset['sol:cbbtc'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     'a5e3f7d8-9b2c-4f1e-8a6d-7c9b4e3f2a1d',
     'sol:prime',
     'HASTRA PRIME',
@@ -3702,7 +3745,7 @@ export const solTokens = [
     '3b8X44fLF9ooXaUm3hhSgjpmVs6rZZ3pPoGnGahc3Uu7',
     '3b8X44fLF9ooXaUm3hhSgjpmVs6rZZ3pPoGnGahc3Uu7',
     UnderlyingAsset['sol:prime'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   solToken(
     'b6f4e8c9-0d3a-4e2f-9b7c-8d0e5a6f4b2e',
@@ -3712,7 +3755,7 @@ export const solTokens = [
     '68Hn1fCCZAfZd63cCMvUzJ3dKx31cP6sKVm2RE2xF333',
     '68Hn1fCCZAfZd63cCMvUzJ3dKx31cP6sKVm2RE2xF333',
     UnderlyingAsset['sol:kwyld-usdc'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   solToken(
     'c7f5e9d0-1e4b-4f3c-8c8d-9e1f6a7c5c3f',
@@ -3722,7 +3765,7 @@ export const solTokens = [
     'CrLxQrrinWEZ7vypFqKMbL7bUKoxYhBhmzAdvGKtfso1',
     'CrLxQrrinWEZ7vypFqKMbL7bUKoxYhBhmzAdvGKtfso1',
     UnderlyingAsset['sol:kprme-cash'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   solToken(
     'd8a6f0e1-2f5c-4a4b-9d9e-0f2a7b8b6d4a',
@@ -3732,6 +3775,16 @@ export const solTokens = [
     '3YwBxuntXkdB1jjnYKfGx9WzA8oPzzLUjnN2DkondHQL',
     '3YwBxuntXkdB1jjnYKfGx9WzA8oPzzLUjnN2DkondHQL',
     UnderlyingAsset['sol:kwyld-cash'],
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  solToken(
+    '6473d27a-3dcd-4870-950b-cc2155f7d2b5',
+    'sol:tbtc',
+    'tBTC',
+    8,
+    '6DNSN2BJsaPFdFFc1zP37kkeNe4Usc1Sqkzr9C9vPWcU',
+    '6DNSN2BJsaPFdFFc1zP37kkeNe4Usc1Sqkzr9C9vPWcU',
+    UnderlyingAsset['sol:tbtc'],
     SOL_TOKEN_FEATURES
   ),
   solToken(

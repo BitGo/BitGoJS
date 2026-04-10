@@ -1,10 +1,11 @@
 import { coins } from '@bitgo/statics';
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import * as assert from 'assert';
-import { TransactionBuilderFactory } from '../../../src/lib/transactionBuilderFactory';
+import { TransactionBuilderFactory, Transaction } from '../../../src/lib';
 import { EXPORT_IN_C as testData } from '../../resources/transactionData/exportInC';
-import { CONTEXT } from '../../resources/account';
+import { CONTEXT, ON_CHAIN_TEST_WALLET } from '../../resources/account';
 import { FlrpContext } from '@bitgo/public-types';
+import { secp256k1, UnsignedTx } from '@flarenetwork/flarejs';
 
 describe('ExportInCTxBuilder', function () {
   const coinConfig = coins.get('tflrp');
@@ -186,6 +187,144 @@ describe('ExportInCTxBuilder', function () {
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(signedExportHex);
       tx.id.should.equal('3kXUsHix1bZRQ9hqUc24cp7sXFiy2LbPn6Eh2HQCAaMUi75s9');
+    });
+  });
+
+  describe('MPC signing (threshold=1)', () => {
+    it('should build and sign export from C-chain with threshold=1 using sign()', async () => {
+      const mpcAddress = ON_CHAIN_TEST_WALLET.user.pChainAddress;
+
+      const txBuilder = factory
+        .getExportInCBuilder()
+        .fromPubKey(testData.cHexAddress)
+        .nonce(testData.nonce)
+        .amount(testData.amount)
+        .threshold(1)
+        .locktime(0)
+        .to(mpcAddress)
+        .fee(testData.fee)
+        .context(CONTEXT as FlrpContext);
+
+      txBuilder.sign({ key: ON_CHAIN_TEST_WALLET.user.privateKey });
+      const tx = await txBuilder.build();
+
+      tx.signature.length.should.equal(1);
+      tx.signature[0].should.startWith('0x');
+
+      const json = tx.toJson();
+      json.type.should.equal(TransactionType.Export);
+      json.threshold.should.equal(1);
+      json.sourceChain!.should.equal('C');
+      json.destinationChain!.should.equal('P');
+    });
+
+    it('should build and sign export from C-chain with threshold=1 using addExternalSignature()', async () => {
+      const mpcAddress = ON_CHAIN_TEST_WALLET.user.pChainAddress;
+
+      const txBuilder = factory
+        .getExportInCBuilder()
+        .fromPubKey(testData.cHexAddress)
+        .nonce(testData.nonce)
+        .amount(testData.amount)
+        .threshold(1)
+        .locktime(0)
+        .to(mpcAddress)
+        .fee(testData.fee)
+        .context(CONTEXT as FlrpContext);
+
+      // Build unsigned
+      const tx = (await txBuilder.build()) as Transaction;
+      const unsignedHex = tx.toBroadcastFormat();
+
+      // Simulate MPC: sign the unsigned bytes externally
+      const unsignedTx = tx.getFlareTransaction() as UnsignedTx;
+      const unsignedBytes = unsignedTx.toBytes();
+      const signature = await secp256k1.sign(unsignedBytes, Buffer.from(ON_CHAIN_TEST_WALLET.user.privateKey, 'hex'));
+
+      tx.addExternalSignature(signature);
+      const signedHex = tx.toBroadcastFormat();
+      signedHex.should.not.equal(unsignedHex);
+
+      // Verify roundtrip
+      const parsedBuilder = factory.from(signedHex);
+      const parsedTx = await parsedBuilder.build();
+      parsedTx.toBroadcastFormat().should.equal(signedHex);
+
+      // Verify signature
+      tx.signature.length.should.equal(1);
+    });
+
+    it('should produce same signed tx via sign() and addExternalSignature()', async () => {
+      const mpcAddress = ON_CHAIN_TEST_WALLET.user.pChainAddress;
+      const mpcPrivateKey = ON_CHAIN_TEST_WALLET.user.privateKey;
+
+      // Build and sign via sign()
+      const txBuilder1 = factory
+        .getExportInCBuilder()
+        .fromPubKey(testData.cHexAddress)
+        .nonce(testData.nonce)
+        .amount(testData.amount)
+        .threshold(1)
+        .locktime(0)
+        .to(mpcAddress)
+        .fee(testData.fee)
+        .context(CONTEXT as FlrpContext);
+
+      txBuilder1.sign({ key: mpcPrivateKey });
+      const tx1 = await txBuilder1.build();
+      const signedHex1 = tx1.toBroadcastFormat();
+
+      // Build and sign via addExternalSignature()
+      const txBuilder2 = factory
+        .getExportInCBuilder()
+        .fromPubKey(testData.cHexAddress)
+        .nonce(testData.nonce)
+        .amount(testData.amount)
+        .threshold(1)
+        .locktime(0)
+        .to(mpcAddress)
+        .fee(testData.fee)
+        .context(CONTEXT as FlrpContext);
+
+      const tx2 = (await txBuilder2.build()) as Transaction;
+      const unsignedTx = tx2.getFlareTransaction() as UnsignedTx;
+      const signature = await secp256k1.sign(unsignedTx.toBytes(), Buffer.from(mpcPrivateKey, 'hex'));
+      tx2.addExternalSignature(signature);
+      const signedHex2 = tx2.toBroadcastFormat();
+
+      signedHex1.should.equal(signedHex2);
+      tx1.id.should.equal(tx2.id);
+    });
+
+    it('should deserialize unsigned MPC tx and sign it', async () => {
+      const mpcAddress = ON_CHAIN_TEST_WALLET.user.pChainAddress;
+
+      const txBuilder = factory
+        .getExportInCBuilder()
+        .fromPubKey(testData.cHexAddress)
+        .nonce(testData.nonce)
+        .amount(testData.amount)
+        .threshold(1)
+        .locktime(0)
+        .to(mpcAddress)
+        .fee(testData.fee)
+        .context(CONTEXT as FlrpContext);
+
+      const unsignedTx = await txBuilder.build();
+      const unsignedHex = unsignedTx.toBroadcastFormat();
+
+      // Deserialize and sign
+      const txBuilder2 = factory.from(unsignedHex);
+      txBuilder2.sign({ key: ON_CHAIN_TEST_WALLET.user.privateKey });
+      const signedTx = await txBuilder2.build();
+
+      signedTx.signature.length.should.equal(1);
+
+      // Verify roundtrip of signed tx
+      const txBuilder3 = factory.from(signedTx.toBroadcastFormat());
+      const parsedTx = await txBuilder3.build();
+      parsedTx.toBroadcastFormat().should.equal(signedTx.toBroadcastFormat());
+      parsedTx.id.should.equal(signedTx.id);
     });
   });
 });

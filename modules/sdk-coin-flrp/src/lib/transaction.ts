@@ -241,6 +241,38 @@ export class Transaction extends BaseTransaction {
     }
   }
 
+  /**
+   * Apply an externally-produced signature (from MPC/TSS) to this transaction.
+   * Fills the first empty signature slot in each credential.
+   * @param signature - 65-byte Uint8Array (r[32] + s[32] + recovery[1])
+   */
+  addExternalSignature(signature: Uint8Array): void {
+    if (!this._flareTransaction) {
+      throw new InvalidTransactionError('empty transaction to sign');
+    }
+    if (!this.hasCredentials) {
+      throw new InvalidTransactionError('empty credentials to sign');
+    }
+    const unsignedTx = this._flareTransaction as UnsignedTx;
+
+    let signatureSet = false;
+    for (const credential of unsignedTx.credentials) {
+      const signatures = credential.getSignatures();
+      for (let i = 0; i < signatures.length; i++) {
+        if (isEmptySignature(signatures[i])) {
+          credential.setSignature(i, signature);
+          signatureSet = true;
+          break;
+        }
+      }
+    }
+
+    if (!signatureSet) {
+      throw new SigningError('No empty signature slot found');
+    }
+    this._rawSignedBytes = undefined;
+  }
+
   toBroadcastFormat(): string {
     if (!this._flareTransaction) {
       throw new InvalidTransactionError('Empty transaction data');

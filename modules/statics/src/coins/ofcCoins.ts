@@ -266,6 +266,22 @@ export const ofcCoins = [
     CoinKind.CRYPTO
   ),
   ofc(
+    '8daf44a2-1615-4938-8ce7-66b0e47c38a3',
+    'ofcabstracteth',
+    'Abstract Ethereum',
+    18,
+    UnderlyingAsset.ABSTRACTETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    '0220e727-49b9-402c-96b7-4b5c0fc055c0',
+    'ofctabstracteth',
+    'Abstract Ethereum Testnet',
+    18,
+    UnderlyingAsset.ABSTRACTETH,
+    CoinKind.CRYPTO
+  ),
+  ofc(
     '7e4fc86c-7caf-4cd3-b801-a650b0bfcf64',
     'ofcapechain',
     'Ape Chain',
@@ -338,12 +354,28 @@ export const ofcCoins = [
     UnderlyingAsset.HEMIETH,
     CoinKind.CRYPTO
   ),
+  ofc(
+    '7a3c5dee-ea51-4b1a-8871-b7283d1dc516',
+    'ofcprividiumeth',
+    'Prividium Ethereum',
+    18,
+    UnderlyingAsset.PRIVIDIUMETH,
+    CoinKind.CRYPTO
+  ),
   tofc(
     'bc005b8a-dfb5-42db-92ad-92db5cb5b7d2',
     'ofcthemieth',
     'Hemi Ethereum Testnet',
     18,
     UnderlyingAsset.HEMIETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    '7d18cdc5-a7da-4c76-8ce0-f80c391f80b3',
+    'ofctprividiumeth',
+    'Prividium Ethereum Testnet',
+    18,
+    UnderlyingAsset.PRIVIDIUMETH,
     CoinKind.CRYPTO
   ),
   ofc(
@@ -455,6 +487,22 @@ export const ofcCoins = [
   ),
   ofc('aa7e956f-2d59-4bf6-aba6-2d51bd298150', 'ofcip', 'Story', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
   tofc('773b02f6-32ea-493a-bca5-13d93cb0afff', 'ofctip', 'Story Testnet', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
+  ofc(
+    '9fd3e1b0-2e67-46c6-ab3b-a9942533b9d6',
+    'ofcbobaeth',
+    'Boba Network',
+    18,
+    UnderlyingAsset.BOBAETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    '14c7407a-0daa-4c3d-b438-8a9d2e60cc29',
+    'ofctbobaeth',
+    'Boba Network Testnet',
+    18,
+    UnderlyingAsset.BOBAETH,
+    CoinKind.CRYPTO
+  ),
   ofc(
     '8b50bd47-54d4-456d-a141-09f8e90df850',
     'ofczksyncera',
@@ -837,6 +885,21 @@ export const ofcCoins = [
   ),
   ofcsolToken('eac1b075-0c6e-4655-8b86-4ebe0f1f9552', 'ofcsol:sonic', 'Sonic SVM', 9, UnderlyingAsset['sol:sonic']),
 
+  ofcsolToken(
+    '43e8e014-dcab-413f-8de3-e083ace7cbaf',
+    'ofcsol:gobucks',
+    'GoBucks Token',
+    9,
+    UnderlyingAsset['sol:gobucks']
+  ),
+  ofcsolToken(
+    'f494ad39-de05-4296-a031-2fa24c530e62',
+    'ofcsol:cbbtc',
+    'Coinbase Wrapped BTC',
+    8,
+    UnderlyingAsset['sol:cbbtc']
+  ),
+  ofcsolToken('ed01ea0f-2640-4774-a527-665e7b525f97', 'ofcsol:tbtc', 'tBTC', 8, UnderlyingAsset['sol:tbtc']),
   ofcsolToken('a6b1c9d4-8e5f-4a0c-9b3d-7f9e0a4c6b8d', 'ofcsol:prime', 'HASTRA PRIME', 6, UnderlyingAsset['sol:prime']),
   ofcsolToken(
     'b7c2d0e5-9f6a-4b1d-9c4e-8a0f1b5d7c9e',
@@ -1728,6 +1791,22 @@ export const ofcCoins = [
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   tofcsolToken(
+    '31e8b2fa-7867-4567-bb76-0a83a08854bf',
+    'ofctsol:sofid',
+    'Test SoFiUSD',
+    6,
+    UnderlyingAsset['tsol:sofid'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tofcsolToken(
+    '43b493f6-a3b6-4a0d-81f3-0d26d9c26508',
+    'ofctsol:stgsofid',
+    'Test SoFiUSD',
+    6,
+    UnderlyingAsset['tsol:stgsofid'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tofcsolToken(
     '750f0e40-c5b9-464f-874f-dc455cf1494b',
     'ofctsol:stgusd1',
     'Test USD1 Token',
@@ -2013,6 +2092,13 @@ export const ofcCoins = [
     'Franklin OnChain U.S. Government Money Fund',
     18,
     UnderlyingAsset['arbeth:benji']
+  ),
+  ofcArbethErc20(
+    '9e70657b-5970-4aed-bcb9-a67daef39a91',
+    'ofcarbeth:chip',
+    'USD.AI',
+    18,
+    UnderlyingAsset['arbeth:chip']
   ),
   ofcArbethErc20(
     '2cca89a3-788d-499b-bb41-a35ce2428d9e',

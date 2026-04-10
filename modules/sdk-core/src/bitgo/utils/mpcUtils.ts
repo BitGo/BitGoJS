@@ -206,6 +206,7 @@ export abstract class MpcUtils {
             ...baseIntent,
             selfSend: params.selfSend,
             feeOptions: params.feeOptions,
+            feeToken: params.feeToken,
             hopParams: params.hopParams,
             isTss: params.isTss,
             nonce: params.nonce,
@@ -218,18 +219,21 @@ export abstract class MpcUtils {
             txid: params.lowFeeTxid,
             receiveAddress: params.receiveAddress,
             feeOptions: params.feeOptions,
+            feeToken: params.feeToken,
           };
         case 'tokenApproval':
           return {
             ...baseIntent,
             tokenName: params.tokenName,
             feeOptions: params.feeOptions,
+            feeToken: params.feeToken,
           };
         case 'bridgeFunds':
           return {
             ...baseIntent,
             amount: params.amount,
             feeOptions: params.feeOptions,
+            feeToken: params.feeToken,
           };
         default:
           throw new Error(`Unsupported intent type ${params.intentType}`);
@@ -245,6 +249,7 @@ export abstract class MpcUtils {
         token: params.tokenName,
         enableTokens: params.enableTokens,
         feeOptions: params.feeOptions,
+        feeToken: params.feeToken,
       };
     }
 
@@ -253,6 +258,7 @@ export abstract class MpcUtils {
       memo: params.memo?.value,
       token: params.tokenName,
       enableTokens: params.enableTokens,
+      feeToken: params.feeToken,
     };
   }
 

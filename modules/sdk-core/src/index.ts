@@ -16,4 +16,5 @@ export { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage } from './bitgo/
 export { SShare } from './bitgo/tss/ecdsa/types';
 import * as common from './common';
 export * from './units';
+export * from './lightning';
 export { common };

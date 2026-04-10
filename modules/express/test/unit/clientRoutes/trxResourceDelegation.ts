@@ -25,12 +25,12 @@ describe('TRX Resource Delegation handlers', () => {
       resources: [
         {
           address: 'TAddr123',
-          free_bandwidth_available: 1500,
-          free_bandwidth_used: 0,
-          staked_bandwidth_available: 0,
-          staked_bandwidth_used: 0,
-          energy_available: 0,
-          energy_used: 0,
+          freeBandwidthAvailable: 1500,
+          freeBandwidthUsed: 0,
+          stakedBandwidthAvailable: 0,
+          stakedBandwidthUsed: 0,
+          energyAvailable: 0,
+          energyUsed: 0,
         },
       ],
       failedAddresses: [],

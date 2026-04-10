@@ -1000,10 +1000,10 @@
   resolved "https://registry.npmjs.org/@bitgo/wasm-ton/-/wasm-ton-1.1.1.tgz#3361cbbe06e1fe40d13dbf384ef806b46a5e43df"
   integrity sha512-Y4x2V2ZcYWlmx42v7dlrKDtT2DuUt8smk8E98mh7RhpiifJhLk2v5RmXDwBl0A3v9TzUOU6qMOnSS/iZ8Pq52w==
 
-"@bitgo/wasm-utxo@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.npmjs.org/@bitgo/wasm-utxo/-/wasm-utxo-2.1.0.tgz#a2087b795a3eb7bfca2cc25a88b3491a74d4da06"
-  integrity sha512-JukZ+g0lH1IzcwAVGp41a4XgWVZvL1hA+ym3KsU7NIqhOG57brc1nSVoqAhIe93gsfWQ7hyz3jsFueBXbwBQmQ==
+"@bitgo/wasm-utxo@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.npmjs.org/@bitgo/wasm-utxo/-/wasm-utxo-4.1.0.tgz#039ab84eb73bd0354bdf3e6f2a14fc043e139cdd"
+  integrity sha512-J6tKdfhJggt8LHKSh+KScz6/Q6VcX59D/1ycbUw/w+zWVOSKt+Z2+FFbYTJIVatxc4gA2bGqvHftC9dSbZBAwA==
 
 "@brandonblack/musig@^0.0.1-alpha.0":
   version "0.0.1-alpha.1"
@@ -7552,14 +7552,14 @@ aws4@^1.8.0:
   resolved "https://registry.npmjs.org/aws4/-/aws4-1.13.2.tgz"
   integrity sha512-lHe62zvbTB5eEABUVi/AwVh0ZKY9rMMDhmm+eeyuuUQbQ3+J+fONVQOZyj+DdrvD4BY33uYniyRJ4UJIaSKAfw==
 
-axios@0.25.0, axios@0.27.2, axios@1.7.4, axios@^0.21.2, axios@^0.26.1, axios@^1.13.0, axios@^1.6.0, axios@^1.8.3:
-  version "1.13.5"
-  resolved "https://registry.npmjs.org/axios/-/axios-1.13.5.tgz#5e464688fa127e11a660a2c49441c009f6567a43"
-  integrity sha512-cz4ur7Vb0xS4/KUN0tPWe44eqxrIu31me+fbang3ijiNscE129POzipJJA6zniq2C/Z6sJCjMimjS8Lc/GAs8Q==
+axios@0.25.0, axios@0.27.2, axios@1.15.0, axios@1.7.4, axios@^0.21.2, axios@^0.26.1, axios@^1.13.0, axios@^1.6.0, axios@^1.8.3:
+  version "1.15.0"
+  resolved "https://registry.npmjs.org/axios/-/axios-1.15.0.tgz#0fcee91ef03d386514474904b27863b2c683bf4f"
+  integrity sha512-wWyJDlAatxk30ZJer+GeCWS209sA42X+N5jU2jy6oHTp7ufw8uzUTVFBX9+wTfAlhiJXGS0Bq7X6efruWjuK9Q==
   dependencies:
     follow-redirects "^1.15.11"
     form-data "^4.0.5"
-    proxy-from-env "^1.1.0"
+    proxy-from-env "^2.1.0"
 
 b4a@^1.6.4:
   version "1.7.3"
@@ -7729,10 +7729,10 @@ basic-auth@~2.0.1:
   dependencies:
     safe-buffer "5.1.2"
 
-basic-ftp@>=5.2.0, basic-ftp@^5.0.2:
-  version "5.2.0"
-  resolved "https://registry.npmjs.org/basic-ftp/-/basic-ftp-5.2.0.tgz#7c2dff63c918bde60e6bad1f2ff93dcf5137a40a"
-  integrity sha512-VoMINM2rqJwJgfdHq6RiUudKt2BV+FY5ZFezP/ypmwayk68+NzzAQy4XXLlqsGD4MCzq3DrmNFD/uUmBJuGoXw==
+basic-ftp@5.2.1, basic-ftp@^5.0.2:
+  version "5.2.1"
+  resolved "https://registry.npmjs.org/basic-ftp/-/basic-ftp-5.2.1.tgz#818ba176e0e52a9e746e8576331f7e9474b94668"
+  integrity sha512-0yaL8JdxTknKDILitVpfYfV2Ob6yb3udX/hK97M7I3jOeznBNxQPtVvTUtnhUkyHlxFWyr5Lvknmgzoc7jf+1Q==
 
 batch@0.6.1:
   version "0.6.1"
@@ -12935,9 +12935,9 @@ ignore@^5.0.4, ignore@^5.1.8, ignore@^5.2.0, ignore@^5.2.4:
   integrity sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==
 
 immutable@^5.0.2:
-  version "5.1.3"
-  resolved "https://registry.npmjs.org/immutable/-/immutable-5.1.3.tgz"
-  integrity sha512-+chQdDfvscSF1SJqv2gn4SRO2ZyS3xL3r7IW/wWEEzrzLisnOlKiQu5ytC/BVNcS15C39WT2Hg/bjKjDMcu+zg==
+  version "5.1.5"
+  resolved "https://registry.npmjs.org/immutable/-/immutable-5.1.5.tgz#93ee4db5c2a9ab42a4a783069f3c5d8847d40165"
+  integrity sha512-t7xcm2siw+hlUM68I+UEOK+z84RzmN59as9DZ7P1l0994DKUWV7UXBMQZVxaoMSRQ+PBZbHCOoBt7a2wxOMt+A==
 
 import-fresh@^3.0.0, import-fresh@^3.2.1, import-fresh@^3.3.0:
   version "3.3.1"
@@ -17475,6 +17475,11 @@ proxy-from-env@^1.1.0:
   version "1.1.0"
   resolved "https://registry.npmjs.org/proxy-from-env/-/proxy-from-env-1.1.0.tgz"
   integrity sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==
+
+proxy-from-env@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.npmjs.org/proxy-from-env/-/proxy-from-env-2.1.0.tgz#a7487568adad577cfaaa7e88c49cab3ab3081aba"
+  integrity sha512-cJ+oHTW1VAEa8cJslgmUZrc+sjRKgAKl3Zyse6+PV38hZe/V6Z14TbCuXcan9F9ghlz4QrFr2c92TNF82UkYHA==
 
 proxyquire@^2.1.3:
   version "2.1.3"

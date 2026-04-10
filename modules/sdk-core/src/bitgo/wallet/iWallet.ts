@@ -224,6 +224,11 @@ export interface PrebuildTransactionOptions {
    * Named intentAmount to avoid collision with SendOptions.amount which is string | number.
    */
   intentAmount?: { value: string; symbol: string };
+  /**
+   * TIP-20 token address to use for paying transaction fees (Tempo only).
+   * When specified, fees will be deducted in this token instead of the native currency.
+   */
+  feeToken?: string;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
@@ -546,12 +551,12 @@ export interface GetAccountResourcesOptions {
 
 export interface AccountResourceInfo {
   address: string;
-  free_bandwidth_available: number;
-  free_bandwidth_used: number;
-  staked_bandwidth_available: number;
-  staked_bandwidth_used: number;
-  energy_available: number;
-  energy_used: number;
+  freeBandwidthAvailable: number;
+  freeBandwidthUsed: number;
+  stakedBandwidthAvailable: number;
+  stakedBandwidthUsed: number;
+  energyAvailable: number;
+  energyUsed: number;
   resourceDeficitForAssetTransfer?: {
     bandwidthDeficit: number;
     bandwidthSunRequired: string;

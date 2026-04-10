@@ -22,6 +22,8 @@ import {
   ParseTransactionOptions,
   ParsedTransaction,
   UnexpectedAddressError,
+  PopulatedIntent,
+  PrebuildTransactionWithIntentOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { Tip20Transaction, Tip20TransactionBuilder } from './lib';
@@ -278,7 +280,29 @@ export class Tempo extends AbstractEthLikeNewCoins {
       }
     }
 
+    // Verify fee token if specified
+    if (txParams?.feeToken) {
+      const txFeeToken = tx.getFeeToken();
+      if (txFeeToken?.toLowerCase() !== txParams.feeToken.toLowerCase()) {
+        throw new Error(`Fee token mismatch: expected ${txParams.feeToken}, got ${txFeeToken || 'none'}`);
+      }
+    }
+
     return true;
+  }
+
+  /**
+   * Set coin-specific fields in the intent for Tempo TSS transactions.
+   * Ensures feeToken is properly wired through the intent for Tempo transactions.
+   * @param intent - The populated intent to modify
+   * @param params - The parameters containing feeToken
+   */
+  setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
+    if (params.feeToken) {
+      intent.feeOptions = intent.feeOptions
+        ? { ...intent.feeOptions, feeToken: params.feeToken }
+        : { feeToken: params.feeToken };
+    }
   }
 
   /**

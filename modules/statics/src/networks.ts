@@ -1583,6 +1583,24 @@ class ApeChainTestnet extends Testnet implements EthereumNetwork {
   batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
+class AbstractEth extends Mainnet implements EthereumNetwork {
+  name = 'Abstract Ethereum';
+  family = CoinFamily.ABSTRACTETH;
+  explorerUrl = 'https://abscan.org/tx/';
+  accountExplorerUrl = 'https://abscan.org/address/';
+  chainId = 2741;
+  nativeCoinOperationHashPrefix = '2741';
+}
+
+class AbstractEthTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Abstract Ethereum';
+  family = CoinFamily.ABSTRACTETH;
+  explorerUrl = 'https://sepolia.abscan.org/tx/';
+  accountExplorerUrl = 'https://sepolia.abscan.org/address/';
+  chainId = 11124;
+  nativeCoinOperationHashPrefix = '11124';
+}
+
 class Pharos extends Mainnet implements EthereumNetwork {
   name = 'Pharos';
   family = CoinFamily.PHRS;
@@ -2476,6 +2494,24 @@ class HemiEthTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '743111';
 }
 
+class PrividiumETH extends Mainnet implements EthereumNetwork {
+  name = 'Prividium Ethereum Mainnet';
+  family = CoinFamily.PRIVIDIUMETH;
+  explorerUrl = 'https://explorer.prividium.zksync.dev/tx/'; // TODO: update with mainnet URL when available
+  accountExplorerUrl = 'https://explorer.prividium.zksync.dev/address/'; // TODO: update with mainnet URL when available
+  chainId = 9999999; // TODO: update with mainnet chain ID when available
+  nativeCoinOperationHashPrefix = '9999999';
+}
+
+class PrividiumETHTestnet extends Testnet implements EthereumNetwork {
+  name = 'Prividium Ethereum Testnet';
+  family = CoinFamily.PRIVIDIUMETH;
+  explorerUrl = 'https://explorer.testnet-prividium.zksync.dev/tx/';
+  accountExplorerUrl = 'https://explorer.testnet-prividium.zksync.dev/address/';
+  chainId = 8022834;
+  nativeCoinOperationHashPrefix = '8022834';
+}
+
 class PlumeTestnet extends Testnet implements EthereumNetwork {
   name = 'PlumeTestnet';
   family = CoinFamily.PLUME;
@@ -2551,6 +2587,26 @@ class TempoTestnet extends Testnet implements EthereumNetwork {
   chainId = 42431;
   nativeCoinOperationHashPrefix = '42431';
   tokenOperationHashPrefix = '42431';
+}
+
+class Boba extends Mainnet implements EthereumNetwork {
+  name = 'Boba';
+  family = CoinFamily.BOBAETH;
+  explorerUrl = 'https://bobascan.com/blockchain/transactions';
+  accountExplorerUrl = 'https://bobascan.com/blockchain/accounts';
+  chainId = 288;
+  nativeCoinOperationHashPrefix = '288';
+  tokenOperationHashPrefix = '288-ERC20';
+}
+
+class BobaTestnet extends Testnet implements EthereumNetwork {
+  name = 'Boba Testnet';
+  family = CoinFamily.BOBAETH;
+  explorerUrl = 'https://testnet.bobascan.com/blockchain/transactions';
+  accountExplorerUrl = 'https://testnet.bobascan.com/blockchain/accounts';
+  chainId = 28882;
+  nativeCoinOperationHashPrefix = '28882';
+  tokenOperationHashPrefix = '28882-ERC20';
 }
 
 /**
@@ -2644,6 +2700,7 @@ export class DynamicNetwork extends BaseNetwork {
 
 export const Networks = {
   main: {
+    abstracteth: Object.freeze(new AbstractEth()),
     ada: Object.freeze(new Ada()),
     algorand: Object.freeze(new Algorand()),
     apechain: Object.freeze(new ApeChain()),
@@ -2695,6 +2752,7 @@ export const Networks = {
     hederaEVM: Object.freeze(new HederaEVM()),
     hemieth: Object.freeze(new HemiEth()),
     hppeth: Object.freeze(new Hppeth()),
+    prividiumeth: Object.freeze(new PrividiumETH()),
     icp: Object.freeze(new Icp()),
     ip: Object.freeze(new IP()),
     initia: Object.freeze(new Initia()),
@@ -2763,8 +2821,10 @@ export const Networks = {
     zkSync: Object.freeze(new ZkSync()),
     zkSyncEra: Object.freeze(new ZkSyncEra()),
     unieth: Object.freeze(new Unieth()),
+    boba: Object.freeze(new Boba()),
   },
   test: {
+    abstracteth: Object.freeze(new AbstractEthTestnet()),
     ada: Object.freeze(new AdaTestnet()),
     algorand: Object.freeze(new AlgorandTestnet()),
     apechain: Object.freeze(new ApeChainTestnet()),
@@ -2817,6 +2877,7 @@ export const Networks = {
     hedera: Object.freeze(new HederaTestnet()),
     hoodeth: Object.freeze(new HoodethTestnet()),
     hppeth: Object.freeze(new HppethTestnet()),
+    prividiumeth: Object.freeze(new PrividiumETHTestnet()),
     hederaEVM: Object.freeze(new HederaEVMTestnet()),
     hemieth: Object.freeze(new HemiEthTestnet()),
     icp: Object.freeze(new IcpTestnet()),
@@ -2889,6 +2950,7 @@ export const Networks = {
     zkSync: Object.freeze(new ZkSyncTestnet()),
     zkSyncEra: Object.freeze(new ZkSyncEraTestnet()),
     unieth: Object.freeze(new UniethTestnet()),
+    boba: Object.freeze(new BobaTestnet()),
   },
 };
 

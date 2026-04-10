@@ -136,6 +136,11 @@ export class OfcToken extends Ofc {
       return parts.length === 2 && publicIdRegex.test(accountId);
     } else {
       const backingCoin = this.bitgo.coin(this.backingCoin);
+      if (this.backingCoin === 'btc' || this.backingCoin === 'tbtc') {
+        return (
+          backingCoin as unknown as { isValidAddress(address: string, params: { allowLightning: boolean }): boolean }
+        ).isValidAddress(address, { allowLightning: true });
+      }
       return backingCoin.isValidAddress(address);
     }
   }

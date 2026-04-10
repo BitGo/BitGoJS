@@ -484,7 +484,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.OPBNB,
     BaseUnit.ETH,
-    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
+    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559, CoinFeature.DEPRECATED]
   ),
   account(
     '1588f6da-8e43-4535-8e1c-25e53788437b',
@@ -494,7 +494,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.OPBNB,
     BaseUnit.ETH,
-    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
+    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559, CoinFeature.DEPRECATED]
   ),
   account(
     'a97b6e81-33fb-4f63-83b6-7ca91e95f8b4',
@@ -665,7 +665,8 @@ export const allCoinsAndTokens = [
     Networks.main.susd,
     2,
     UnderlyingAsset.USD,
-    BaseUnit.USD
+    BaseUnit.USD,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.DEPRECATED]
   ),
   account(
     'e424034a-22e6-4bcf-bd04-c598507afe3d',
@@ -674,7 +675,8 @@ export const allCoinsAndTokens = [
     Networks.test.susd,
     2,
     UnderlyingAsset.USD,
-    BaseUnit.USD
+    BaseUnit.USD,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.DEPRECATED]
   ),
   account(
     '4a903d2c-6487-41fc-bede-77947b80efbb',
@@ -1221,7 +1223,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.FETCHAI,
     BaseUnit.FETCHAI,
-    COSMOS_SIDECHAIN_FEATURES
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.DEPRECATED]
   ),
   account(
     'e285caf3-e9b8-407a-aa72-ee4094d1cf9f',
@@ -1231,7 +1233,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.FETCHAI,
     BaseUnit.FETCHAI,
-    COSMOS_SIDECHAIN_FEATURES
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.DEPRECATED]
   ),
   account(
     '2ec91758-fd84-44d5-92d3-7158903de278',
@@ -1281,7 +1283,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.ISLM,
     BaseUnit.ISLM,
-    COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS)
+    [...COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS), CoinFeature.DEPRECATED]
   ),
   account(
     '02eced2c-cf1d-4660-832c-858685ae7107',
@@ -1291,7 +1293,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.ISLM,
     BaseUnit.ISLM,
-    COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS)
+    [...COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS), CoinFeature.DEPRECATED]
   ),
   account(
     'e48baabf-5cc9-4011-b67e-6f6425753df2',
@@ -1516,6 +1518,42 @@ export const allCoinsAndTokens = [
     UnderlyingAsset.COREDAO,
     BaseUnit.ETH,
     COREDAO_FEATURES
+  ),
+  account(
+    'f3bc3fef-7370-453a-a651-01a0f4d54246',
+    'abstracteth',
+    'Abstract Ethereum',
+    Networks.main.abstracteth,
+    18,
+    UnderlyingAsset.ABSTRACTETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    'dd6c9539-90e1-4fb1-a428-c2dee96107f8',
+    'tabstracteth',
+    'Testnet Abstract Ethereum',
+    Networks.test.abstracteth,
+    18,
+    UnderlyingAsset.ABSTRACTETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
   ),
   account(
     'd308ba34-557a-43f2-84f3-5775f1f1a779',
@@ -2378,6 +2416,76 @@ export const allCoinsAndTokens = [
       CoinFeature.SUPPORTS_ERC20,
     ]
   ),
+  account(
+    'd055d442-03f1-4d24-b61c-5312e480e378',
+    'bobaeth',
+    'Boba Network',
+    Networks.main.boba,
+    18,
+    UnderlyingAsset.BOBAETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    '8fc7c710-e64e-4743-8ce7-03bcf71d7723',
+    'tbobaeth',
+    'Boba Network Testnet',
+    Networks.test.boba,
+    18,
+    UnderlyingAsset.BOBAETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+
+  account(
+    '1cc2170d-c24d-4179-b0eb-155de0f46617',
+    'prividiumeth',
+    'Prividium',
+    Networks.main.prividiumeth,
+    18,
+    UnderlyingAsset.PRIVIDIUMETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    'b0067fb1-d00d-4959-981c-6f6009862418',
+    'tprividiumeth',
+    'Testnet Prividium',
+    Networks.test.prividiumeth,
+    18,
+    UnderlyingAsset.PRIVIDIUMETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ]
+  ),
 
   erc721Token(
     'a7604e03-7f40-41f0-8efa-2e7673ac2a9f',
@@ -2728,10 +2836,29 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ],
     KeyCurve.Secp256k1,
     '',
     'THoodETH'
+  ),
+  erc20Token(
+    '3493d608-fd3e-45dc-926d-783d54a8fe4d',
+    'thoodeth:amzn',
+    'Amazon',
+    18,
+    '0x5884ad2f920c162cfbbacc88c9c51aa75ec09e02',
+    UnderlyingAsset['thoodeth:amzn'],
+    Networks.test.hoodeth
+  ),
+  erc20Token(
+    '8ede8dbd-1fa6-4669-be6d-6b19b3c98766',
+    'thoodeth:tsla',
+    'Tesla',
+    18,
+    '0xc9f9c86933092cbbfff3ccb4b105a4a94bf3bd4e',
+    UnderlyingAsset['thoodeth:tsla'],
+    Networks.test.hoodeth
   ),
   account(
     '1b17bbf4-02fc-492d-9071-6d7f47395f7a',
@@ -2750,6 +2877,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -3207,7 +3335,7 @@ export const allCoinsAndTokens = [
     'Testnet Canton Coin',
     Networks.test.canton,
     UnderlyingAsset.CANTON,
-    CANTON_FEATURES,
+    [...CANTON_FEATURES, CoinFeature.UNSPENT_MODEL],
     KeyCurve.Ed25519
   ),
   gasTankAccount(
@@ -5655,6 +5783,14 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['arbeth:cbl']
   ),
   arbethErc20(
+    'f9601039-4616-4ea3-afa4-7d9ae901b488',
+    'arbeth:chip',
+    'USD.AI',
+    18,
+    '0x0c1c1c109fe34733fca54b82d7b46b75cfb71f6e',
+    UnderlyingAsset['arbeth:chip']
+  ),
+  arbethErc20(
     '5a160655-9d96-4fdd-a362-224026b7c1e8',
     'arbeth:w',
     'Wormhole Token',
@@ -5886,7 +6022,8 @@ export const allCoinsAndTokens = [
     'Tesla (Test)',
     18,
     '0xb94263fa0a2a29ea32c1f90ccaeeaffd0bb73908',
-    UnderlyingAsset['arbeth:testtsla']
+    UnderlyingAsset['arbeth:testtsla'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     '1a137f85-4f8f-4191-8760-2b161e240bf2',
@@ -5894,7 +6031,8 @@ export const allCoinsAndTokens = [
     'Amazon (Test)',
     18,
     '0x76fca8a5bc14fce9eb613d96674868d687498804',
-    UnderlyingAsset['arbeth:testamzn']
+    UnderlyingAsset['arbeth:testamzn'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     'd33cf58a-5e21-418b-bcb0-103f15fe1965',
@@ -5902,7 +6040,8 @@ export const allCoinsAndTokens = [
     'Palantir Technologies Inc (Test)',
     18,
     '0x99cd69ef9221c7fe0ad5618a7527244ef79636c6',
-    UnderlyingAsset['arbeth:testpltr']
+    UnderlyingAsset['arbeth:testpltr'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     'a52a4906-7a39-4d4d-9b63-d4845685ecfa',
@@ -5910,7 +6049,8 @@ export const allCoinsAndTokens = [
     'Netflix Inc (Test)',
     18,
     '0xf10e5372335a33da22a78a6581fd7383b422875a',
-    UnderlyingAsset['arbeth:testnflx']
+    UnderlyingAsset['arbeth:testnflx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     '6a69ea1d-ce7d-4603-89df-cf2f6490d1f9',

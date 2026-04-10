@@ -686,4 +686,93 @@ describe('Tempo coin - parseTransaction / verifyTransaction', () => {
       assert.strictEqual(result, true);
     });
   });
+
+  describe('verifyTransaction with feeToken', () => {
+    it('should verify transaction with matching fee token', async () => {
+      const feeToken = ethers.utils.getAddress(TESTNET_TOKENS.betaUSD.address);
+      const builder = new Tip20TransactionBuilder(coins.get('ttempo'));
+      builder
+        .addOperation({ token: mockToken, to: mockRecipient, amount: '100' })
+        .feeToken(feeToken)
+        .nonce(0)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+      const tx = (await builder.build()) as Tip20Transaction;
+      const txHex = await tx.serialize();
+
+      const result = await coin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: { feeToken: feeToken },
+      });
+      assert.strictEqual(result, true);
+    });
+
+    it('should throw when fee token does not match', async () => {
+      const feeToken = ethers.utils.getAddress(TESTNET_TOKENS.betaUSD.address);
+      const wrongFeeToken = ethers.utils.getAddress(TESTNET_TOKENS.alphaUSD.address);
+      const builder = new Tip20TransactionBuilder(coins.get('ttempo'));
+      builder
+        .addOperation({ token: mockToken, to: mockRecipient, amount: '100' })
+        .feeToken(feeToken)
+        .nonce(0)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+      const tx = (await builder.build()) as Tip20Transaction;
+      const txHex = await tx.serialize();
+
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: { feeToken: wrongFeeToken },
+          }),
+        /Fee token mismatch/
+      );
+    });
+
+    it('should throw when fee token is expected but transaction has none', async () => {
+      const expectedFeeToken = ethers.utils.getAddress(TESTNET_TOKENS.betaUSD.address);
+      const builder = new Tip20TransactionBuilder(coins.get('ttempo'));
+      builder
+        .addOperation({ token: mockToken, to: mockRecipient, amount: '100' })
+        .nonce(0)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+      const tx = (await builder.build()) as Tip20Transaction;
+      const txHex = await tx.serialize();
+
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: { feeToken: expectedFeeToken },
+          }),
+        /Fee token mismatch/
+      );
+    });
+
+    it('should pass verification when no fee token is specified in params', async () => {
+      const feeToken = ethers.utils.getAddress(TESTNET_TOKENS.betaUSD.address);
+      const builder = new Tip20TransactionBuilder(coins.get('ttempo'));
+      builder
+        .addOperation({ token: mockToken, to: mockRecipient, amount: '100' })
+        .feeToken(feeToken)
+        .nonce(0)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+      const tx = (await builder.build()) as Tip20Transaction;
+      const txHex = await tx.serialize();
+
+      // No feeToken in txParams - should not verify, just pass
+      const result = await coin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: {},
+      });
+      assert.strictEqual(result, true);
+    });
+  });
 });

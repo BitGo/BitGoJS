@@ -136,6 +136,18 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
     const firstIndex = this.recoverSigner ? 2 : 0;
     const bitgoIndex = 1;
 
+    // MPC (threshold=1): single signing address
+    if (this.transaction._threshold === 1) {
+      if (this.transaction._fromAddresses.length < 1) {
+        throw new BuildTransactionError('Insufficient fromAddresses for MPC signing');
+      }
+      const addr = Buffer.from(this.transaction._fromAddresses[0]);
+      if (addr.length !== 20) {
+        throw new BuildTransactionError(`Invalid signing address length: expected 20 bytes, got ${addr.length}`);
+      }
+      return [addr];
+    }
+
     if (this.transaction._fromAddresses.length < Math.max(firstIndex, bitgoIndex) + 1) {
       throw new BuildTransactionError(
         `Insufficient fromAddresses: need at least ${Math.max(firstIndex, bitgoIndex) + 1} addresses`

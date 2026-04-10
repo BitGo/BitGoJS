@@ -2,6 +2,7 @@ import {
   AuditDecryptedKeyParams,
   BaseCoin,
   BitGoBase,
+  InvalidAddressError,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -15,16 +16,20 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 import { bip32 } from '@bitgo/utxo-lib';
 
+export interface LightningVerifyAddressOptions extends VerifyAddressOptions {
+  walletId: string;
+}
+
 export abstract class AbstractLightningCoin extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
-  private readonly _network: utxolib.Network;
+  protected readonly network: utxolib.Network;
   protected constructor(bitgo: BitGoBase, network: utxolib.Network, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
     if (!staticsCoin) {
       throw new Error('missing required constructor parameter staticsCoin');
     }
     this._staticsCoin = staticsCoin;
-    this._network = network;
+    this.network = network;
   }
 
   getBaseFactor(): number {
@@ -35,8 +40,24 @@ export abstract class AbstractLightningCoin extends BaseCoin {
     throw new Error('Method not implemented.');
   }
 
-  isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async isWalletAddress(params: LightningVerifyAddressOptions): Promise<boolean> {
+    const { address, walletId } = params;
+
+    if (!this.isValidAddress(address)) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    // Node pubkeys are valid addresses but not wallet addresses
+    if (/^(02|03)[0-9a-fA-F]{64}$/.test(address)) {
+      return false;
+    }
+
+    try {
+      await this.bitgo.get(this.url(`/wallet/${walletId}/address/${encodeURIComponent(address)}`)).result();
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
@@ -58,11 +79,23 @@ export abstract class AbstractLightningCoin extends BaseCoin {
   }
 
   isValidPub(pub: string): boolean {
-    throw new Error('Method not implemented.');
+    try {
+      return bip32.fromBase58(pub).isNeutered();
+    } catch (e) {
+      return false;
+    }
   }
 
   isValidAddress(address: string): boolean {
-    throw new Error('Method not implemented.');
+    if (/^(02|03)[0-9a-fA-F]{64}$/.test(address)) {
+      return true;
+    }
+    try {
+      const script = utxolib.address.toOutputScript(address, this.network);
+      return address === utxolib.address.fromOutputScript(script, this.network);
+    } catch (e) {
+      return false;
+    }
   }
 
   signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {

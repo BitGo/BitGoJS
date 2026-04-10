@@ -32,7 +32,9 @@ export interface Keychain {
   provider?: string;
   encryptedPrv?: string;
   // Required for MPCV2 keys where we reduce the amount of data needed for the keycard.
-  // This is only generated client side and is not sent to WP
+  // Contains the party's private scalar (s_i) as private key material, CBOR-encoded
+  // and encrypted with the wallet passphrase. This is only generated client side and
+  // is not sent to WP.
   reducedEncryptedPrv?: string;
   derivationPath?: string;
   derivedFromParentWithSeed?: string;

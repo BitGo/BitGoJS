@@ -79,6 +79,7 @@ export async function signTransaction<TNumber extends number | bigint>(
       pubs: params.pubs,
       cosignerPub: params.cosignerPub,
       extractTransaction: params.extractTransaction,
+      writeSignedWith: params.writeSignedWith,
     });
 
     // Convert half-signed PSBT to legacy format when the caller explicitly requested txFormat: 'legacy'

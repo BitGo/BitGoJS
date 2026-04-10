@@ -440,6 +440,11 @@ export class Flr extends AbstractEthLikeNewCoins {
    * @returns {Promise<BuildOptions>}
    */
   async getExtraPrebuildParams(buildParams: BuildOptions): Promise<BuildOptions> {
+    // MPC/TSS wallets don't use hop transactions — atomic tx is signed directly
+    if (buildParams.wallet?.multisigType() === 'tss') {
+      return {};
+    }
+
     if (
       !_.isUndefined(buildParams.hop) &&
       buildParams.hop &&

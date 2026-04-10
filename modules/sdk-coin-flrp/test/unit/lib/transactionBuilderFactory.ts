@@ -1,4 +1,5 @@
 import 'should';
+import assert from 'assert';
 import { coins } from '@bitgo/statics';
 import { TransactionBuilderFactory, TxData } from '../../../src/lib';
 import { EXPORT_IN_P } from '../../resources/transactionData/exportInP';
@@ -8,6 +9,42 @@ import { EXPORT_IN_C } from '../../resources/transactionData/exportInC';
 
 describe('Flrp Transaction Builder Factory', () => {
   const factory = new TransactionBuilderFactory(coins.get('tflrp'));
+
+  describe('Threshold validation for MPC (threshold=1)', () => {
+    it('should accept threshold=1 for MPC wallets', () => {
+      const txBuilder = factory.getExportInCBuilder();
+      assert.doesNotThrow(() => {
+        txBuilder.threshold(1);
+      });
+    });
+
+    it('should accept threshold=2 for multisig wallets', () => {
+      const txBuilder = factory.getExportInCBuilder();
+      assert.doesNotThrow(() => {
+        txBuilder.threshold(2);
+      });
+    });
+
+    it('should reject threshold=0', () => {
+      const txBuilder = factory.getExportInCBuilder();
+      assert.throws(
+        () => {
+          txBuilder.threshold(0);
+        },
+        (e: any) => e.message === 'Invalid transaction: threshold must be 1 or 2'
+      );
+    });
+
+    it('should reject threshold=3', () => {
+      const txBuilder = factory.getExportInCBuilder();
+      assert.throws(
+        () => {
+          txBuilder.threshold(3);
+        },
+        (e: any) => e.message === 'Invalid transaction: threshold must be 1 or 2'
+      );
+    });
+  });
 
   describe('Cross chain transfer has source and destination chains', () => {
     // P-chain Export to C-chain: source is P, destination is C

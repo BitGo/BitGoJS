@@ -514,8 +514,8 @@ export const PrebuildAndSignTransactionApiResponse = {
  * - **Cold wallets**: Returns half-signed transaction (`halfSigned.txHex`)
  * - **TSS wallets**: Returns transaction request (`txRequestId`)
  *
- * @tag express
  * @operationId express.v2.wallet.prebuildandsigntransaction
+ * @tag Express
  */
 export const PostPrebuildAndSignTransaction = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/prebuildAndSignTransaction',

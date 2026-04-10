@@ -365,6 +365,10 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
           input: privateMaterial.toString('base64'),
           password: passphrase,
         });
+        // Encrypts the CBOR-encoded ReducedKeyShare (which contains the party's private
+        // scalar s_i) with the wallet passphrase. The result is stored as reducedEncryptedPrv
+        // on the key card QR code and represents a second copy of private key material
+        // beyond the server-stored encryptedPrv.
         reducedEncryptedPrv = this.bitgo.encrypt({
           // Buffer.toString('base64') can not be used here as it does not work on the browser.
           // The browser deals with a Buffer as Uint8Array, therefore in the browser .toString('base64') just creates a comma seperated string of the array values.
@@ -772,7 +776,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const hashBuffer = hash.update(bufferContent).digest();
     const otherSigner = new DklsDsg.Dsg(
       userKeyShare,
-      params.mpcv2PartyId ? params.mpcv2PartyId : 0,
+      params.mpcv2PartyId !== undefined ? params.mpcv2PartyId : 0,
       derivationPath,
       hashBuffer
     );

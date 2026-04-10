@@ -6,7 +6,7 @@ import { BitgoExpressError } from '../../schemas/error';
  * Path parameters for pending approval endpoint
  */
 export const PendingApprovalParams = {
-  /** Coin identifier (e.g., 'btc', 'eth', 'tbtc') */
+  /** A cryptocurrency or token ticker symbol. (e.g., 'btc', 'eth', 'tbtc') */
   coin: t.string,
   /** Pending approval ID */
   id: t.string,
@@ -16,15 +16,15 @@ export const PendingApprovalParams = {
  * Request body for approving or rejecting a pending approval
  */
 export const PendingApprovalRequestBody = {
-  /** State of the approval: 'approved' to approve, omit or 'rejected' to reject */
+  /** New state for the pending approval: 'approved' to approve, omit or 'rejected' to reject */
   state: optional(t.string),
-  /** Wallet passphrase for decrypting user keys during transaction signing */
+  /** Passphrase to decrypt the user key on the wallet */
   walletPassphrase: optional(t.string),
-  /** One-time password for 2FA verification */
+  /** Second factor authentication token */
   otp: optional(t.string),
   /** Transaction hex to use instead of the original transaction */
   tx: optional(t.string),
-  /** Private key in string form as an alternative to wallet passphrase */
+  /** Private key in string form, if walletPassphrase is not available */
   xprv: optional(t.string),
   /** If true, returns information about pending transactions without approving */
   previewPendingTxs: optional(t.boolean),
@@ -130,12 +130,10 @@ export const PendingApprovalResponse = t.intersection([
 ]);
 
 /**
- * Update Pending Approval
- * Approve or reject a pending approval by its ID.
- * Supports transaction approvals, policy rule changes, and user change requests.
+ * Accept or reject a pending approval
  *
  * @operationId express.v2.pendingapprovals
- * @tag express
+ * @tag Express
  */
 export const PutV2PendingApproval = httpRoute({
   path: '/api/v2/{coin}/pendingapprovals/{id}',

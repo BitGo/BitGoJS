@@ -28,12 +28,12 @@ export const AccountResourcesBody = {
 export const AccountResourceInfo = t.intersection([
   t.type({
     address: t.string,
-    free_bandwidth_available: t.number,
-    free_bandwidth_used: t.number,
-    staked_bandwidth_available: t.number,
-    staked_bandwidth_used: t.number,
-    energy_available: t.number,
-    energy_used: t.number,
+    freeBandwidthAvailable: t.number,
+    freeBandwidthUsed: t.number,
+    stakedBandwidthAvailable: t.number,
+    stakedBandwidthUsed: t.number,
+    energyAvailable: t.number,
+    energyUsed: t.number,
   }),
   t.partial({
     resourceDeficitForAssetTransfer: t.intersection([
