@@ -82,6 +82,7 @@ import {
   getProxyInitcode,
   getRawDecoded,
   getToken,
+  isHtsEvmAddress,
   KeyPair as KeyPairLib,
   TransactionBuilder,
   TransferBuilder,
@@ -3415,12 +3416,15 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     switch (params.type) {
       case 'ERC721': {
         const tokenId = params.tokenId;
-        const contractData = new ERC721TransferBuilder()
+        const builder = new ERC721TransferBuilder()
           .tokenContractAddress(tokenContractAddress)
           .to(recipientAddress)
           .from(fromAddress)
-          .tokenId(tokenId)
-          .build();
+          .tokenId(tokenId);
+        // HTS native NFTs on Hedera EVM only support transferFrom(address,address,uint256).
+        // Standard Solidity ERC721 contracts on hbarevm still use safeTransferFrom.
+        const isHtsNft = this.getFamily() === 'hbarevm' && isHtsEvmAddress(tokenContractAddress);
+        const contractData = isHtsNft ? builder.buildTransferFrom() : builder.build();
         return contractData;
       }
 

@@ -51,6 +51,8 @@ import {
   ERC1155SafeTransferTypes,
   ERC721SafeTransferTypeMethodId,
   ERC721SafeTransferTypes,
+  ERC721TransferFromMethodId,
+  ERC721TransferFromTypes,
   flushCoinsMethodId,
   flushCoinsTypes,
   flushForwarderTokensMethodId,
@@ -83,6 +85,18 @@ import {
   sendMultiSigTypesFirstSigner,
 } from './walletUtil';
 import { EthTransactionData } from './types';
+
+/**
+ * Check if an EVM address is an HTS (Hedera Token Service) native address.
+ * HTS entities on Hedera EVM use "long-zero" addresses where the first 12 bytes are all zeros
+ * and the entity number occupies the last 8 bytes (e.g. 0x00000000000000000000000000000000007ac203).
+ * Standard Solidity contracts have normal EVM addresses derived from public key hashes.
+ */
+export function isHtsEvmAddress(address: string): boolean {
+  const normalized = address.toLowerCase();
+  // First 12 bytes (24 hex chars) after '0x' prefix are all zeros
+  return /^0x0{24}[0-9a-f]{16}$/.test(normalized);
+}
 
 /**
  * @param network
@@ -509,26 +523,46 @@ export function decodeERC721TransferData(data: string): ERC721TransferData {
   );
 
   const internalDataHex = bufferToHex(internalData as Buffer);
-  if (!internalDataHex.startsWith(ERC721SafeTransferTypeMethodId)) {
-    throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
+
+  if (internalDataHex.startsWith(ERC721SafeTransferTypeMethodId)) {
+    const [from, receiver, tokenId, userSentData] = getRawDecoded(
+      ERC721SafeTransferTypes,
+      getBufferedByteCode(ERC721SafeTransferTypeMethodId, internalDataHex)
+    );
+
+    return {
+      to: addHexPrefix(receiver as string),
+      from: addHexPrefix(from as string),
+      expireTime: bufferToInt(expireTime as Buffer),
+      amount: new BigNumber(bufferToHex(amount as Buffer)).toFixed(),
+      tokenId: new BigNumber(bufferToHex(tokenId as Buffer)).toFixed(),
+      sequenceId: bufferToInt(sequenceId as Buffer),
+      signature: bufferToHex(signature as Buffer),
+      tokenContractAddress: addHexPrefix(to as string),
+      userData: bufferToHex(userSentData as Buffer),
+    };
   }
 
-  const [from, receiver, tokenId, userSentData] = getRawDecoded(
-    ERC721SafeTransferTypes,
-    getBufferedByteCode(ERC721SafeTransferTypeMethodId, internalDataHex)
-  );
+  if (internalDataHex.startsWith(ERC721TransferFromMethodId)) {
+    const [from, receiver, tokenId] = getRawDecoded(
+      ERC721TransferFromTypes,
+      getBufferedByteCode(ERC721TransferFromMethodId, internalDataHex)
+    );
 
-  return {
-    to: addHexPrefix(receiver as string),
-    from: addHexPrefix(from as string),
-    expireTime: bufferToInt(expireTime as Buffer),
-    amount: new BigNumber(bufferToHex(amount as Buffer)).toFixed(),
-    tokenId: new BigNumber(bufferToHex(tokenId as Buffer)).toFixed(),
-    sequenceId: bufferToInt(sequenceId as Buffer),
-    signature: bufferToHex(signature as Buffer),
-    tokenContractAddress: addHexPrefix(to as string),
-    userData: bufferToHex(userSentData as Buffer),
-  };
+    return {
+      to: addHexPrefix(receiver as string),
+      from: addHexPrefix(from as string),
+      expireTime: bufferToInt(expireTime as Buffer),
+      amount: new BigNumber(bufferToHex(amount as Buffer)).toFixed(),
+      tokenId: new BigNumber(bufferToHex(tokenId as Buffer)).toFixed(),
+      sequenceId: bufferToInt(sequenceId as Buffer),
+      signature: bufferToHex(signature as Buffer),
+      tokenContractAddress: addHexPrefix(to as string),
+      userData: '',
+    };
+  }
+
+  throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
 }
 
 export function decodeERC1155TransferData(data: string): ERC1155TransferData {

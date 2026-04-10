@@ -4,7 +4,10 @@ import {
   flushERC1155TokensData,
   decodeFlushERC721TokensData,
   decodeFlushERC1155TokensData,
+  isHtsEvmAddress,
 } from '../../src/lib/utils';
+import { ERC721TransferBuilder } from '../../src/lib/transferBuilders/transferBuilderERC721';
+import { ERC721TransferFromMethodId, ERC721SafeTransferTypeMethodId } from '../../src/lib/walletUtil';
 
 describe('Abstract ETH Utils', () => {
   describe('ERC721 Flush Functions', () => {
@@ -206,6 +209,75 @@ describe('Abstract ETH Utils', () => {
       should.throws(() => {
         decodeFlushERC1155TokensData(encoded); // Missing 'to' parameter
       }, /Missing to address/);
+    });
+  });
+
+  describe('isHtsEvmAddress', () => {
+    it('should return true for HTS native token addresses (long-zero format)', () => {
+      // Real HTS NFT addresses from statics
+      isHtsEvmAddress('0x00000000000000000000000000000000007ac203').should.be.true();
+      isHtsEvmAddress('0x00000000000000000000000000000000007103a5').should.be.true();
+      isHtsEvmAddress('0x0000000000000000000000000000000000728a62').should.be.true();
+      isHtsEvmAddress('0x00000000000000000000000000000000007ac19c').should.be.true();
+    });
+
+    it('should return false for standard Solidity contract addresses', () => {
+      isHtsEvmAddress('0x5df4076613e714a4cc4284abac87caa927b918a8').should.be.false();
+      isHtsEvmAddress('0xcee79325714727016c125f80ef1a5d1f47b3d8d2').should.be.false();
+      isHtsEvmAddress('0xc795c4faae7f16a69bec13c5dfd9e8a156a68625').should.be.false();
+      isHtsEvmAddress('0x8f977e912ef500548a0c3be6ddde9899f1199b81').should.be.false();
+    });
+
+    it('should handle uppercase hex characters', () => {
+      isHtsEvmAddress('0x00000000000000000000000000000000007AC203').should.be.true();
+      isHtsEvmAddress('0x5DF4076613E714A4CC4284ABAC87CAA927B918A8').should.be.false();
+    });
+
+    it('should return false for zero address', () => {
+      isHtsEvmAddress('0x0000000000000000000000000000000000000000').should.be.true();
+    });
+
+    it('should return false for invalid format', () => {
+      isHtsEvmAddress('0x1234').should.be.false();
+      isHtsEvmAddress('not-an-address').should.be.false();
+    });
+  });
+
+  describe('ERC721TransferBuilder.buildTransferFrom', () => {
+    const owner = '0x19645032c7f1533395d44a629462e751084d3e4d';
+    const recipient = '0x19645032c7f1533395d44a629462e751084d3e4c';
+    const htsNftAddress = '0x00000000000000000000000000000000007ac203';
+
+    it('should encode transferFrom with selector 0x23b872dd', () => {
+      const builder = new ERC721TransferBuilder();
+      builder.tokenContractAddress(htsNftAddress).to(recipient).from(owner).tokenId('12');
+
+      const data = builder.buildTransferFrom();
+
+      should.exist(data);
+      data.should.startWith(ERC721TransferFromMethodId); // 0x23b872dd
+    });
+
+    it('should encode safeTransferFrom with selector 0xb88d4fde via build()', () => {
+      const builder = new ERC721TransferBuilder();
+      builder.tokenContractAddress(htsNftAddress).to(recipient).from(owner).tokenId('12');
+
+      const data = builder.build();
+
+      should.exist(data);
+      data.should.startWith(ERC721SafeTransferTypeMethodId); // 0xb88d4fde
+    });
+
+    it('should produce different encodings for build() vs buildTransferFrom()', () => {
+      const builder = new ERC721TransferBuilder();
+      builder.tokenContractAddress(htsNftAddress).to(recipient).from(owner).tokenId('12');
+
+      const safeTransferData = builder.build();
+      const transferFromData = builder.buildTransferFrom();
+
+      safeTransferData.should.not.equal(transferFromData);
+      // transferFrom encoding should be shorter (no bytes param)
+      transferFromData.length.should.be.lessThan(safeTransferData.length);
     });
   });
 
