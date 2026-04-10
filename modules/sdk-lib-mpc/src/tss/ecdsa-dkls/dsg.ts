@@ -116,6 +116,9 @@ export class Dsg {
     if (this.dsgState !== DsgState.Uninitialized) {
       throw Error('DSG session already initialized');
     }
+    if (this.messageHash.length !== 32) {
+      throw Error(`Invalid messageHash length: expected 32 bytes (SHA-256), got ${this.messageHash.length}`);
+    }
     if (!this.dklsWasm) {
       await this.loadDklsWasm();
     }
