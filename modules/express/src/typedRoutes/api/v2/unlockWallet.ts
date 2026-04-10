@@ -8,7 +8,7 @@ import { BitgoExpressError } from '../../schemas/error';
  * @property {string} id - The ID of the wallet.
  */
 export const UnlockLightningWalletParams = {
-  /** A lightning coin name (e.g, lnbtc, tlnbtc). */
+  /** A lightning coin name. (e.g, lnbtc, tlnbtc). */
   coin: t.string,
   /** The ID of the wallet. */
   id: t.string,
@@ -38,12 +38,10 @@ export const UnlockLightningWalletResponse = {
 } as const;
 
 /**
- * Lightning - Unlock node
- *
  * This is only used for self-custody lightning. Unlock the Lightning Network Daemon (LND) node with the given wallet password.
  *
  * @operationId express.lightning.unlockWallet
- * @tag express
+ * @tag Express
  */
 export const PostUnlockLightningWallet = httpRoute({
   method: 'POST',
