@@ -580,6 +580,21 @@ export class Wallets implements IWallets {
             encryptedPrv: userKeychain.encryptedPrv,
             originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
           };
+
+          // If WebAuthn info is provided, store an additional copy of the private key encrypted
+          // with the PRF-derived passphrase so the authenticator can later decrypt it.
+          if (params.webauthnInfo && userKeychain.prv) {
+            userKeychainParams.webauthnDevices = [
+              {
+                otpDeviceId: params.webauthnInfo.otpDeviceId,
+                prfSalt: params.webauthnInfo.prfSalt,
+                encryptedPrv: this.bitgo.encrypt({
+                  password: params.webauthnInfo.passphrase,
+                  input: userKeychain.prv,
+                }),
+              },
+            ];
+          }
         }
 
         userKeychainParams.reqId = reqId;

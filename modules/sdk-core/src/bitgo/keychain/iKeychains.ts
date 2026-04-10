@@ -6,6 +6,12 @@ import { BitGoKeyFromOvcShares, OvcToBitGoJSON } from './ovcJsonCodec';
 
 export type KeyType = 'tss' | 'independent' | 'blsdkg';
 
+export interface WebauthnInfo {
+  prfSalt: string;
+  otpDeviceId: string;
+  encryptedPrv: string;
+}
+
 export type SourceType = 'bitgo' | 'backup' | 'user' | 'cold';
 
 export type WebauthnFmt = 'none' | 'packed' | 'fido-u2f';
@@ -132,6 +138,8 @@ export interface AddKeychainOptions {
   // indicates if the key is MPCv2 or not
   isMPCv2?: boolean;
   coinSpecific?: { [coinName: string]: unknown };
+  /** WebAuthn devices that have an additional encrypted copy of the private key, keyed by PRF-derived passphrases. */
+  webauthnDevices?: WebauthnInfo[];
 }
 
 export interface ApiKeyShare {

@@ -2,7 +2,7 @@ import * as t from 'io-ts';
 
 import { IRequestTracer } from '../../api';
 import { KeychainsTriplet, LightningKeychainsTriplet } from '../baseCoin';
-import { Keychain } from '../keychain';
+import { Keychain, WebauthnInfo } from '../keychain';
 import { IWallet, PaginationOptions, WalletShare } from './iWallet';
 import { Wallet } from './wallet';
 
@@ -52,6 +52,16 @@ export interface GenerateSMCMpcWalletOptions extends GenerateBaseMpcWalletOption
   coldDerivationSeed?: string;
 }
 
+/** WebAuthn PRF-based encryption info for protecting the user private key with a hardware authenticator. */
+export interface GenerateWalletWebauthnInfo {
+  /** The OTP device ID of the WebAuthn authenticator. */
+  otpDeviceId: string;
+  /** The PRF salt used to derive the passphrase from the authenticator. */
+  prfSalt: string;
+  /** PRF-derived passphrase used to encrypt the user private key. Never sent to the server. */
+  passphrase: string;
+}
+
 export interface GenerateWalletOptions {
   label?: string;
   passphrase?: string;
@@ -80,6 +90,8 @@ export interface GenerateWalletOptions {
   type?: 'hot' | 'cold' | 'custodial' | 'trading';
   subType?: 'lightningCustody' | 'lightningSelfCustody';
   evmKeyRingReferenceWalletId?: string;
+  /** Optional WebAuthn PRF-based encryption info. When provided, the user private key is additionally encrypted with the PRF-derived passphrase so the server can store a WebAuthn-protected copy. */
+  webauthnInfo?: GenerateWalletWebauthnInfo;
 }
 
 export const GenerateLightningWalletOptionsCodec = t.intersection(
@@ -161,11 +173,7 @@ export interface AcceptShareOptionsRequest {
    * PRF-derived passphrase so the server can store a WebAuthn-protected copy.
    * The passphrase itself is never sent to the server.
    */
-  webauthnInfo?: {
-    otpDeviceId: string;
-    prfSalt: string;
-    encryptedPrv: string;
-  };
+  webauthnInfo?: WebauthnInfo;
 }
 
 export interface BulkUpdateWalletShareOptions {

@@ -244,6 +244,7 @@ export class Keychains implements IKeychains {
         isDistributedCustody: params.isDistributedCustody,
         isMPCv2: params.isMPCv2,
         coinSpecific: params.coinSpecific,
+        webauthnDevices: params.webauthnDevices,
       })
       .result();
   }
