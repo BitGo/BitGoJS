@@ -8,9 +8,9 @@ import { BitgoExpressError } from '../../schemas/error';
  * @property {string} walletId - The ID of the wallet.
  */
 export const SignerMacaroonParams = {
-  /** A lightning coin name (e.g, lnbtc). */
+  /** A lightning coin name. */
   coin: t.string,
-  /** The ID of the wallet. */
+  /** The wallet ID. */
   walletId: t.string,
 } as const;
 
@@ -41,15 +41,10 @@ export const SignerMacaroonResponse = {
 } as const;
 
 /**
- * Lightning - Create signer macaroon
- *
- * This is only used for self-custody lightning.
- * Create the signer macaroon for the watch-only Lightning Network Daemon (LND) node.
- * This macaroon derives from the signer node admin macaroon and is used by the watch-only node to request signatures from the signer node for operational tasks.
- * Returns the updated wallet with the encrypted signer macaroon in the `coinSpecific` response field.
+ * This is only used for self-custody lightning. Create the signer macaroon for the watch-only Lightning Network Daemon (LND) node. This macaroon derives from the signer node admin macaroon and is used by the watch-only node to request signatures from the signer node for operational tasks. Returns the updated wallet with the encrypted signer macaroon in the coinSpecific response field.
  *
  * @operationId express.lightning.signerMacaroon
- * @tag express
+ * @tag Express
  */
 export const PostSignerMacaroon = httpRoute({
   method: 'POST',
