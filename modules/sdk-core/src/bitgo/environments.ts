@@ -308,7 +308,7 @@ const mainnetBase: EnvironmentTemplate = {
     hemieth: {
       baseUrl: 'https://explorer.hemi.xyz/api',
     },
-    prividium: {
+    prividiumeth: {
       baseUrl: 'https://explorer.prividium.zksync.dev/api', // TODO: update with mainnet URL when available
     },
     fluenteth: {
@@ -525,7 +525,7 @@ const testnetBase: EnvironmentTemplate = {
     hemieth: {
       baseUrl: 'https://testnet.explorer.hemi.xyz/api',
     },
-    prividium: {
+    prividiumeth: {
       baseUrl: 'https://explorer.testnet-prividium.zksync.dev/api',
     },
     fluenteth: {
