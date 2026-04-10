@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.11.1...@bitgo/sdk-coin-flrp@1.12.0) (2026-04-10)
+
+
+### Features
+
+* **sdk-coin-flrp:** add MPC/TSS coin-level methods and transaction verification tests ([08ebe9c](https://github.com/BitGo/BitGoJS/commit/08ebe9cf3319f038db9de0c7eda63d009de0072d))
+* **sdk-coin-flrp:** implement MPC support and enhance transaction signing methods ([d51ecb3](https://github.com/BitGo/BitGoJS/commit/d51ecb38566f54a0b0064ab80f09a41f83c33588))
+
+
+
+
+
 ## [1.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.11.0...@bitgo/sdk-coin-flrp@1.11.1) (2026-04-08)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp

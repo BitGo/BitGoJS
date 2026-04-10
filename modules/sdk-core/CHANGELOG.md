@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.39.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.38.0...@bitgo/sdk-core@36.39.0) (2026-04-10)
+
+
+### Bug Fixes
+
+* **sdk-core:** use explicit undefined check for mpcv2PartyId ([4a880ba](https://github.com/BitGo/BitGoJS/commit/4a880bae8855cee015ae81d65e56db03a53f83e6))
+* **sdk-core:** verify signatureR consistency across parties in DKLS round 4 ([0be6a60](https://github.com/BitGo/BitGoJS/commit/0be6a600828aa07951b2f4f1b0df5aeb75ff09d0))
+
+
+### Features
+
+* onboard prividium evm ([a11c683](https://github.com/BitGo/BitGoJS/commit/a11c6835a6ee8f77c207d37723d905f49600a86d))
+* prividiumEth onboarding ([1f7acf1](https://github.com/BitGo/BitGoJS/commit/1f7acf1594ed864e0f9f6422947f8a71433dfe34))
+* **sdk-core:** add lightning address validation to SDK ([133d63a](https://github.com/BitGo/BitGoJS/commit/133d63a2a48be6b2a8081db309dc46fb0de9bb8a))
+* **sdk-core:** add optional feeToken for Tempo TSS prebuild ([6ce1839](https://github.com/BitGo/BitGoJS/commit/6ce1839e4bd3e8c8080df99ab7a733cbac1cf2c1))
+* **sdk-core:** use camelCase fields in getAccountResources response ([59990d7](https://github.com/BitGo/BitGoJS/commit/59990d7359f1aabc1d7642867d25ef272a897d7b))
+* **statics:** add abstracteth EVM chain ([9914e05](https://github.com/BitGo/BitGoJS/commit/9914e0553e95397aaef5b379cf134635b2348f9f))
+* **statics:** add Boba Network (EVM) with ERC20 token support ([6fcf5a9](https://github.com/BitGo/BitGoJS/commit/6fcf5a99a38d24d455d987f056e7e86cc8245aad))
+
+
+
+
+
 # [36.38.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.37.0...@bitgo/sdk-core@36.38.0) (2026-04-08)
 
 

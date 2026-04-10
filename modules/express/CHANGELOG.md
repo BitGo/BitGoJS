@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.23.0...@bitgo/express@15.24.0) (2026-04-10)
+
+
+### Features
+
+* **sdk-core:** use camelCase fields in getAccountResources response ([59990d7](https://github.com/BitGo/BitGoJS/commit/59990d7359f1aabc1d7642867d25ef272a897d7b))
+
+
+
+
+
 # [15.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.22.6...@bitgo/express@15.23.0) (2026-04-08)
 
 

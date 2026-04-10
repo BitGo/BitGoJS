@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.34.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.33.0...@bitgo/statics@58.34.0) (2026-04-10)
+
+
+### Bug Fixes
+
+* **statics:** spread default features for susd/tsusd deprecation ([d75e972](https://github.com/BitGo/BitGoJS/commit/d75e972941bc7234033d7154e5f8cc57aa911878))
+
+
+### Features
+
+* add UNSPENT_MODEL feature for canton testnet ([cdecd37](https://github.com/BitGo/BitGoJS/commit/cdecd370844b1a3960fc847df6f6401684dc8e08))
+* onboard prividium evm ([a11c683](https://github.com/BitGo/BitGoJS/commit/a11c6835a6ee8f77c207d37723d905f49600a86d))
+* onboard Robinhood testnet tokens ([f49bd19](https://github.com/BitGo/BitGoJS/commit/f49bd194d34470d04f69cacb91c91c84eb462802))
+* prividiumEth onboarding ([1f7acf1](https://github.com/BitGo/BitGoJS/commit/1f7acf1594ed864e0f9f6422947f8a71433dfe34))
+* **statics:** add abstracteth EVM chain ([9914e05](https://github.com/BitGo/BitGoJS/commit/9914e0553e95397aaef5b379cf134635b2348f9f))
+* **statics:** add Boba Network (EVM) with ERC20 token support ([6fcf5a9](https://github.com/BitGo/BitGoJS/commit/6fcf5a99a38d24d455d987f056e7e86cc8245aad))
+* **statics:** add mainnet and Hoodi testnet token configs ([5f98183](https://github.com/BitGo/BitGoJS/commit/5f98183bac2fa421e435e742438658bae0138ee8))
+* **statics:** add sofiusd token on solana ([65738c4](https://github.com/BitGo/BitGoJS/commit/65738c4686934004dfb65e71448c54036b6f36a0))
+* **statics:** deprecate fetchai, islm, and opbnb coins ([f8f7473](https://github.com/BitGo/BitGoJS/commit/f8f74730efb1a89a0b9bed1e016ad56bf01ed233))
+* **statics:** deprecate silvergate usd (susd/tsusd) ([abf4d63](https://github.com/BitGo/BitGoJS/commit/abf4d63ac7be41f647a0f02969c613b0ddfc606a))
+* updates sofid solant mint address ([9464ec8](https://github.com/BitGo/BitGoJS/commit/9464ec851974a64f8d2cce25358a9d2fec9231d3))
+
+
+
+
+
 # [58.33.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.32.0...@bitgo/statics@58.33.0) (2026-04-08)
 
 

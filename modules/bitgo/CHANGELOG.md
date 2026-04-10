@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.31.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.30.0...bitgo@50.31.0) (2026-04-10)
+
+
+### Features
+
+* **sdk-core:** add lightning address validation to SDK ([133d63a](https://github.com/BitGo/BitGoJS/commit/133d63a2a48be6b2a8081db309dc46fb0de9bb8a))
+* **sdk-core:** add optional feeToken for Tempo TSS prebuild ([6ce1839](https://github.com/BitGo/BitGoJS/commit/6ce1839e4bd3e8c8080df99ab7a733cbac1cf2c1))
+* **statics:** add Boba Network (EVM) with ERC20 token support ([6fcf5a9](https://github.com/BitGo/BitGoJS/commit/6fcf5a99a38d24d455d987f056e7e86cc8245aad))
+
+
+
+
+
 # [50.30.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.29.0...bitgo@50.30.0) (2026-04-08)
 
 

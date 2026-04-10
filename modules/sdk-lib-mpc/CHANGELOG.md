@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [10.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.10.0...@bitgo/sdk-lib-mpc@10.10.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* **sdk-lib-mpc:** handle WaitMsg4 round in _deserializeState ([0559e3b](https://github.com/BitGo/BitGoJS/commit/0559e3bf75c66fc52b494379855a044194cf97bd))
+* **sdk-lib-mpc:** validate messageHash length in Dsg.init() ([5cc66a0](https://github.com/BitGo/BitGoJS/commit/5cc66a03c954288f75bad9091817e367741a4c65))
+
+
+
+
+
 # [10.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.9.0...@bitgo/sdk-lib-mpc@10.10.0) (2026-03-27)
 
 
