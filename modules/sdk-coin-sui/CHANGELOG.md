@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.23.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.23.0...@bitgo/sdk-coin-sui@5.23.1) (2026-04-10)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sui
+
+
+
+
+
+# [5.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.22.0...@bitgo/sdk-coin-sui@5.23.0) (2026-04-08)
+
+
+### Features
+
+* **sdk-coin-sui:** update balance querying to handle fundsInAddressBalance field ([6ea2bc8](https://github.com/BitGo/BitGoJS/commit/6ea2bc8d69377140f9038c7b2975b243fdb5f9f6))
+
+
+
+
+
 # [5.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.21.8...@bitgo/sdk-coin-sui@5.22.0) (2026-03-29)
 
 

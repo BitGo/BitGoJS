@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.14.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.14.1...@bitgo/sdk-coin-dot@4.14.2) (2026-04-10)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-dot
+
+
+
+
+
+## [4.14.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.14.0...@bitgo/sdk-coin-dot@4.14.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* **sdk-coin-dot:** pass material to UnnominateBuilder ([8cbbf37](https://github.com/BitGo/BitGoJS/commit/8cbbf374454785cf2ae2ceff19b04fa77cdd91c8))
+
+
+
+
+
 # [4.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.13.0...@bitgo/sdk-coin-dot@4.14.0) (2026-03-29)
 
 

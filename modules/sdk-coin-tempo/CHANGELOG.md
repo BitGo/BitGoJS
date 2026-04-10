@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.10.0...@bitgo/sdk-coin-tempo@1.11.0) (2026-04-10)
+
+
+### Features
+
+* **sdk-core:** add optional feeToken for Tempo TSS prebuild ([6ce1839](https://github.com/BitGo/BitGoJS/commit/6ce1839e4bd3e8c8080df99ab7a733cbac1cf2c1))
+
+
+
+
+
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.9.0...@bitgo/sdk-coin-tempo@1.10.0) (2026-04-08)
+
+
+### Features
+
+* add new tokens usd1 and stgusd1 to tempo ([60656a0](https://github.com/BitGo/BitGoJS/commit/60656a0599b3de886c64716a88777ab5ed2bb708))
+
+
+
+
+
 # [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.8.2...@bitgo/sdk-coin-tempo@1.9.0) (2026-03-29)
 
 

@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.18.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.18.1...@bitgo/sdk-coin-sol@7.18.2) (2026-04-10)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sol
+
+
+
+
+
+## [7.18.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.18.0...@bitgo/sdk-coin-sol@7.18.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** handle zero decimalPlaces in token transfer builders ([d638c12](https://github.com/BitGo/BitGoJS/commit/d638c124879cdbe3b17c6449d1fad5cbecaed9b5))
+* **sdk-coin-sol:** use null check for decimalPlaces in token transfer builders ([78ae27b](https://github.com/BitGo/BitGoJS/commit/78ae27bad7000809ee0bfe0bd7e341a753c37622))
+
+
+
+
+
 # [7.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.17.0...@bitgo/sdk-coin-sol@7.18.0) (2026-03-29)
 
 

@@ -3,6 +3,65 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.34.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.33.0...@bitgo/statics@58.34.0) (2026-04-10)
+
+
+### Bug Fixes
+
+* **statics:** spread default features for susd/tsusd deprecation ([d75e972](https://github.com/BitGo/BitGoJS/commit/d75e972941bc7234033d7154e5f8cc57aa911878))
+
+
+### Features
+
+* add UNSPENT_MODEL feature for canton testnet ([cdecd37](https://github.com/BitGo/BitGoJS/commit/cdecd370844b1a3960fc847df6f6401684dc8e08))
+* onboard prividium evm ([a11c683](https://github.com/BitGo/BitGoJS/commit/a11c6835a6ee8f77c207d37723d905f49600a86d))
+* onboard Robinhood testnet tokens ([f49bd19](https://github.com/BitGo/BitGoJS/commit/f49bd194d34470d04f69cacb91c91c84eb462802))
+* prividiumEth onboarding ([1f7acf1](https://github.com/BitGo/BitGoJS/commit/1f7acf1594ed864e0f9f6422947f8a71433dfe34))
+* **statics:** add abstracteth EVM chain ([9914e05](https://github.com/BitGo/BitGoJS/commit/9914e0553e95397aaef5b379cf134635b2348f9f))
+* **statics:** add Boba Network (EVM) with ERC20 token support ([6fcf5a9](https://github.com/BitGo/BitGoJS/commit/6fcf5a99a38d24d455d987f056e7e86cc8245aad))
+* **statics:** add mainnet and Hoodi testnet token configs ([5f98183](https://github.com/BitGo/BitGoJS/commit/5f98183bac2fa421e435e742438658bae0138ee8))
+* **statics:** add sofiusd token on solana ([65738c4](https://github.com/BitGo/BitGoJS/commit/65738c4686934004dfb65e71448c54036b6f36a0))
+* **statics:** deprecate fetchai, islm, and opbnb coins ([f8f7473](https://github.com/BitGo/BitGoJS/commit/f8f74730efb1a89a0b9bed1e016ad56bf01ed233))
+* **statics:** deprecate silvergate usd (susd/tsusd) ([abf4d63](https://github.com/BitGo/BitGoJS/commit/abf4d63ac7be41f647a0f02969c613b0ddfc606a))
+* updates sofid solant mint address ([9464ec8](https://github.com/BitGo/BitGoJS/commit/9464ec851974a64f8d2cce25358a9d2fec9231d3))
+
+
+
+
+
+# [58.33.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.32.0...@bitgo/statics@58.33.0) (2026-04-08)
+
+
+### Bug Fixes
+
+* added missing thyperliquid ([d9f8ff2](https://github.com/BitGo/BitGoJS/commit/d9f8ff2aeb4b5b2010a09bacdedf37741604f5ce))
+* **statics:** update tempo testnet explorer url ([a120a7f](https://github.com/BitGo/BitGoJS/commit/a120a7f68584812cf3fdd60d8e9a454ac382b973))
+* update sei explorer url ([3cd0b69](https://github.com/BitGo/BitGoJS/commit/3cd0b69673945f92e9527510bff685a46f63098f))
+* update TEMPO_FEATURES to exclude ENTERPRISE_PAYS_FEES ([bb9d721](https://github.com/BitGo/BitGoJS/commit/bb9d7215b274fee2e938bd855e2446dcd8ce3e02))
+
+
+### Features
+
+* add AmsNetworkConfig and enrich base chain coins with features from AMS networks map ([0e1dd90](https://github.com/BitGo/BitGoJS/commit/0e1dd90d6b077b83c71709d44a0b0528aa7dd6a0))
+* add new tokens for CSHLD-541 ([3bbcbaf](https://github.com/BitGo/BitGoJS/commit/3bbcbaf8f6ef3a57089583a677f5f9b88a2a1d79))
+* add new tokens for WIN-7420 ([c49a773](https://github.com/BitGo/BitGoJS/commit/c49a7733a126d13c0b1120c883e418b274c0759d))
+* add new tokens for WIN-7690 ([b4e1376](https://github.com/BitGo/BitGoJS/commit/b4e1376c224bd54bf963b3a8a8344ea9267db500))
+* add new tokens usd1 and stgusd1 to tempo ([60656a0](https://github.com/BitGo/BitGoJS/commit/60656a0599b3de886c64716a88777ab5ed2bb708))
+* added hyperliquid with default features ([bc0f59c](https://github.com/BitGo/BitGoJS/commit/bc0f59c3f19c19fc9546cb92ba12c681c23e6653))
+* bulk withdrawal support for sol ([d9579ec](https://github.com/BitGo/BitGoJS/commit/d9579ecee0aca1dd296cf427e1d3c3e6e59ea669))
+* onboard Hoodi wbtc contracts for staging and test ([f5a1777](https://github.com/BitGo/BitGoJS/commit/f5a17776bbc10d170fb3aae2aef71cfdfa9d2bb3))
+* onboard thbarevm:erc3643 testnet token ([2413e73](https://github.com/BitGo/BitGoJS/commit/2413e731bd9741a2fa8b64a6ef4b4f0c1ea49d5e))
+* **statics:** add CoinFeature[] overload to getFilteredFeatures ([83830c2](https://github.com/BitGo/BitGoJS/commit/83830c22a8596647614d9d57b07a4be4ecb74001))
+* **statics:** add OFC assets for WisdomTree SOL tokens and Canton tokens ([f95f1a3](https://github.com/BitGo/BitGoJS/commit/f95f1a348ac544121a6c1273fb64c2b3943a28ee))
+* **statics:** add Tempo and Testnet Tempo tokens to the OFC list ([7461f37](https://github.com/BitGo/BitGoJS/commit/7461f3725c44b378bc511057bf03d30f29126d47))
+* **statics:** enable CoinFeature.STAKING for mainnet xdc coin ([4b938b0](https://github.com/BitGo/BitGoJS/commit/4b938b0ee5a459965dadc631e87aca85585a94c8)), closes [#8247](https://github.com/BitGo/BitGoJS/issues/8247)
+* **statics:** exclude BitGo Singapore from eth:apxusd and ofceth:apxusd ([55ad299](https://github.com/BitGo/BitGoJS/commit/55ad299d9e69345898669d4986bf5d8e92ce0490))
+* **statics:** onboard WisdomTree SOL Token2022 tokens ([81bc9a5](https://github.com/BitGo/BitGoJS/commit/81bc9a5a649608d64bc90f4c83dbbd51f711958a))
+
+
+
+
+
 # [58.32.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.31.0...@bitgo/statics@58.32.0) (2026-03-27)
 
 

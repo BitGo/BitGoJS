@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.23.0...@bitgo/express@15.24.0) (2026-04-10)
+
+
+### Features
+
+* **sdk-core:** use camelCase fields in getAccountResources response ([59990d7](https://github.com/BitGo/BitGoJS/commit/59990d7359f1aabc1d7642867d25ef272a897d7b))
+
+
+
+
+
+# [15.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.22.6...@bitgo/express@15.23.0) (2026-04-08)
+
+
+### Bug Fixes
+
+* **express:** convert limit to string and forward nextBatchPrevId in resource delegations handler ([784adf4](https://github.com/BitGo/BitGoJS/commit/784adf4316dd56a730db15fe52cb0c7c00e2373d))
+* **express:** prevent double-stringify of string payloads in handleV2OFCSignPayload ([e00bc1e](https://github.com/BitGo/BitGoJS/commit/e00bc1e53abdb68d01f7bb2fa6d8645305af05be))
+
+
+### Features
+
+* **express:** add typed routes for TRX delegation APIs ([ebfd681](https://github.com/BitGo/BitGoJS/commit/ebfd6817a6f36e179e3729c781dad65d71b6b4e5))
+
+
+
+
+
 ## [15.22.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.22.5...@bitgo/express@15.22.6) (2026-03-29)
 
 **Note:** Version bump only for package @bitgo/express

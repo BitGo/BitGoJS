@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-lnbtc@1.7.1...@bitgo/sdk-coin-lnbtc@1.8.0) (2026-04-10)
+
+
+### Features
+
+* **sdk-core:** add lightning address validation to SDK ([133d63a](https://github.com/BitGo/BitGoJS/commit/133d63a2a48be6b2a8081db309dc46fb0de9bb8a))
+
+
+
+
+
+## [1.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-lnbtc@1.7.0...@bitgo/sdk-coin-lnbtc@1.7.1) (2026-04-08)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-lnbtc
+
+
+
+
+
 # [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-lnbtc@1.6.9...@bitgo/sdk-coin-lnbtc@1.7.0) (2026-03-29)
 
 

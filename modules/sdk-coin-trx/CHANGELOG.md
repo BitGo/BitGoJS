@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.13.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.13.1...@bitgo/sdk-coin-trx@3.13.2) (2026-04-10)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-trx
+
+
+
+
+
+## [3.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.13.0...@bitgo/sdk-coin-trx@3.13.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* handle serializedTxHex format in TSS verifyTransaction ([4a4f747](https://github.com/BitGo/BitGoJS/commit/4a4f74798f430ebe15b1bde1eb930642be17e276))
+
+
+
+
+
 # [3.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.12.0...@bitgo/sdk-coin-trx@3.13.0) (2026-03-29)
 
 

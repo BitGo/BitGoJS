@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.22.1...@bitgo/abstract-utxo@10.23.0) (2026-04-10)
+
+
+### Features
+
+* **abstract-utxo:** add writeSignedWith option to control WASM metadata ([e0e262f](https://github.com/BitGo/BitGoJS/commit/e0e262f99a7c38c01fb19b80515d5cdc5521b36d))
+* **abstract-utxo:** bump @bitgo/wasm-utxo to ^4.1.0 ([efe7d60](https://github.com/BitGo/BitGoJS/commit/efe7d608f4c91da0a8bf4c5fe2ac778cc1a18186))
+* **sdk-core:** add lightning address validation to SDK ([133d63a](https://github.com/BitGo/BitGoJS/commit/133d63a2a48be6b2a8081db309dc46fb0de9bb8a))
+
+
+
+
+
+## [10.22.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.22.0...@bitgo/abstract-utxo@10.22.1) (2026-04-08)
+
+**Note:** Version bump only for package @bitgo/abstract-utxo
+
+
+
+
+
 # [10.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.21.0...@bitgo/abstract-utxo@10.22.0) (2026-03-29)
 
 

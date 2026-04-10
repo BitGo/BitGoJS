@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.22.1...@bitgo/abstract-eth@24.23.0) (2026-04-10)
+
+
+### Features
+
+* **sdk-core:** add optional feeToken for Tempo TSS prebuild ([6ce1839](https://github.com/BitGo/BitGoJS/commit/6ce1839e4bd3e8c8080df99ab7a733cbac1cf2c1))
+
+
+
+
+
+## [24.22.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.22.0...@bitgo/abstract-eth@24.22.1) (2026-04-08)
+
+**Note:** Version bump only for package @bitgo/abstract-eth
+
+
+
+
+
 # [24.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.21.0...@bitgo/abstract-eth@24.22.0) (2026-03-29)
 
 

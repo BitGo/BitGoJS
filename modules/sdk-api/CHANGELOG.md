@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.76.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.76.2...@bitgo/sdk-api@1.76.3) (2026-04-10)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
+
+
+
+
+## [1.76.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.76.1...@bitgo/sdk-api@1.76.2) (2026-04-08)
+
+
+### Bug Fixes
+
+* **sdk-api:** replace naive keychain batching with FFD bin packing ([7b5eaf0](https://github.com/BitGo/BitGoJS/commit/7b5eaf0c11f7a226cd897a12af210ead5cad9de5))
+
+
+
+
+
 ## [1.76.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.76.0...@bitgo/sdk-api@1.76.1) (2026-03-29)
 
 **Note:** Version bump only for package @bitgo/sdk-api
