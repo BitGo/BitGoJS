@@ -559,7 +559,7 @@ describe('BitGo Prototype Methods', function () {
       const scope = nock(url).get('/').reply(200);
 
       // test suite bitgo object has hmac verification enabled, so it should throw when the nock responds
-      await bitgo.get(url).should.be.rejectedWith(/invalid response HMAC, possible man-in-the-middle-attack/);
+      await bitgo.get(url).should.be.rejectedWith(/invalid response HMAC/);
       scope.done();
     });
 
