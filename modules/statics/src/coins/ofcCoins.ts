@@ -356,10 +356,10 @@ export const ofcCoins = [
   ),
   ofc(
     '7a3c5dee-ea51-4b1a-8871-b7283d1dc516',
-    'ofcprividium',
-    'Prividium',
+    'ofcprividiumeth',
+    'Prividium Ethereum',
     18,
-    UnderlyingAsset.PRIVIDIUM,
+    UnderlyingAsset.PRIVIDIUMETH,
     CoinKind.CRYPTO
   ),
   tofc(
@@ -372,10 +372,10 @@ export const ofcCoins = [
   ),
   tofc(
     '7d18cdc5-a7da-4c76-8ce0-f80c391f80b3',
-    'ofctprividium',
-    'Prividium Testnet',
+    'ofctprividiumeth',
+    'Prividium Ethereum Testnet',
     18,
-    UnderlyingAsset.PRIVIDIUM,
+    UnderlyingAsset.PRIVIDIUMETH,
     CoinKind.CRYPTO
   ),
   ofc(

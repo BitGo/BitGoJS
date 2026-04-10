@@ -91,7 +91,7 @@ export enum CoinFamily {
   POLYGON = 'polygon',
   POLYX = 'polyx',
   PHRS = 'phrs',
-  PRIVIDIUM = 'prividium', // Prividium L2
+  PRIVIDIUMETH = 'prividiumeth', // Prividium L2
   CTC = 'ctc',
   HYPEEVM = 'hypeevm',
   HYPERLIQUID = 'hyperliquid', // HyperCore L1
@@ -648,7 +648,7 @@ export enum UnderlyingAsset {
   POLYGON = 'polygon',
   PHRS = 'phrs',
   PLUME = 'plume',
-  PRIVIDIUM = 'prividium', // Prividium L2
+  PRIVIDIUMETH = 'prividiumeth', // Prividium L2
   CTC = 'ctc',
   HYPEEVM = 'hypeevm',
   HYPERLIQUID = 'hyperliquid', // HyperCore L1

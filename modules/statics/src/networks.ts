@@ -2494,18 +2494,18 @@ class HemiEthTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '743111';
 }
 
-class Prividium extends Mainnet implements EthereumNetwork {
-  name = 'Prividium';
-  family = CoinFamily.PRIVIDIUM;
+class PrividiumETH extends Mainnet implements EthereumNetwork {
+  name = 'Prividium Ethereum Mainnet';
+  family = CoinFamily.PRIVIDIUMETH;
   explorerUrl = 'https://explorer.prividium.zksync.dev/tx/'; // TODO: update with mainnet URL when available
   accountExplorerUrl = 'https://explorer.prividium.zksync.dev/address/'; // TODO: update with mainnet URL when available
   chainId = 9999999; // TODO: update with mainnet chain ID when available
   nativeCoinOperationHashPrefix = '9999999';
 }
 
-class PrividiumTestnet extends Testnet implements EthereumNetwork {
-  name = 'Prividium Testnet';
-  family = CoinFamily.PRIVIDIUM;
+class PrividiumETHTestnet extends Testnet implements EthereumNetwork {
+  name = 'Prividium Ethereum Testnet';
+  family = CoinFamily.PRIVIDIUMETH;
   explorerUrl = 'https://explorer.testnet-prividium.zksync.dev/tx/';
   accountExplorerUrl = 'https://explorer.testnet-prividium.zksync.dev/address/';
   chainId = 8022834;
@@ -2752,7 +2752,7 @@ export const Networks = {
     hederaEVM: Object.freeze(new HederaEVM()),
     hemieth: Object.freeze(new HemiEth()),
     hppeth: Object.freeze(new Hppeth()),
-    prividium: Object.freeze(new Prividium()),
+    prividiumeth: Object.freeze(new PrividiumETH()),
     icp: Object.freeze(new Icp()),
     ip: Object.freeze(new IP()),
     initia: Object.freeze(new Initia()),
@@ -2877,7 +2877,7 @@ export const Networks = {
     hedera: Object.freeze(new HederaTestnet()),
     hoodeth: Object.freeze(new HoodethTestnet()),
     hppeth: Object.freeze(new HppethTestnet()),
-    prividium: Object.freeze(new PrividiumTestnet()),
+    prividiumeth: Object.freeze(new PrividiumETHTestnet()),
     hederaEVM: Object.freeze(new HederaEVMTestnet()),
     hemieth: Object.freeze(new HemiEthTestnet()),
     icp: Object.freeze(new IcpTestnet()),

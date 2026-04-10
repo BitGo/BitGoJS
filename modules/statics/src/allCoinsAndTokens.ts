@@ -2453,11 +2453,11 @@ export const allCoinsAndTokens = [
 
   account(
     '1cc2170d-c24d-4179-b0eb-155de0f46617',
-    'prividium',
+    'prividiumeth',
     'Prividium',
-    Networks.main.prividium,
+    Networks.main.prividiumeth,
     18,
-    UnderlyingAsset.PRIVIDIUM,
+    UnderlyingAsset.PRIVIDIUMETH,
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,
@@ -2471,11 +2471,11 @@ export const allCoinsAndTokens = [
   ),
   account(
     'b0067fb1-d00d-4959-981c-6f6009862418',
-    'tprividium',
+    'tprividiumeth',
     'Testnet Prividium',
-    Networks.test.prividium,
+    Networks.test.prividiumeth,
     18,
-    UnderlyingAsset.PRIVIDIUM,
+    UnderlyingAsset.PRIVIDIUMETH,
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,
