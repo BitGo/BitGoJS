@@ -2417,6 +2417,42 @@ export const allCoinsAndTokens = [
     ]
   ),
 
+  account(
+    '1cc2170d-c24d-4179-b0eb-155de0f46617',
+    'prividium',
+    'Prividium',
+    Networks.main.prividium,
+    18,
+    UnderlyingAsset.PRIVIDIUM,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    'b0067fb1-d00d-4959-981c-6f6009862418',
+    'tprividium',
+    'Testnet Prividium',
+    Networks.test.prividium,
+    18,
+    UnderlyingAsset.PRIVIDIUM,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ]
+  ),
+
   erc721Token(
     'a7604e03-7f40-41f0-8efa-2e7673ac2a9f',
     'terc721:hbarevmtoken',
