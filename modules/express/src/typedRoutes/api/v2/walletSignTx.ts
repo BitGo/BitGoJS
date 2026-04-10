@@ -8,7 +8,7 @@ import { Recipient } from './coinSignTx';
  * Request path parameters for signing a wallet transaction
  */
 export const WalletSignTxParams = {
-  /** The coin type */
+  /** A cryptocurrency or token ticker symbol. */
   coin: t.string,
   /** The wallet ID */
   id: t.string,
@@ -46,9 +46,12 @@ export const WalletTransactionPrebuild = t.partial({
  * Request body for signing a wallet transaction
  */
 export const WalletSignTxBody = {
-  /** Private key for signing */
+  /** User private key
+   *
+   * Note: The request must include either prv or keychain.
+   */
   prv: optional(t.string),
-  /** Transaction prebuild data */
+  /** The transaction description object as created by 'Build Transaction' */
   txPrebuild: optional(WalletTransactionPrebuild),
   /** Public keys for multi-signature transactions */
   pubs: optional(t.array(t.string)),
@@ -58,7 +61,7 @@ export const WalletSignTxBody = {
   cosignerPub: optional(t.string),
   /** Whether this is the last signature in a multi-sig tx */
   isLastSignature: optional(t.boolean),
-  /** Wallet passphrase for TSS wallets */
+  /** Passphrase to decrypt the user keychain. walletPassphrase is a required parameter when the parameter keychain is provided. */
   walletPassphrase: optional(t.string),
   /** API version: 'lite' or 'full' */
   apiVersion: optional(TransactionRequestApiVersion),
@@ -72,7 +75,7 @@ export const WalletSignTxBody = {
   expireTime: optional(t.number),
   /** Sequence ID for transactions */
   sequenceId: optional(t.union([t.string, t.number])),
-  /** Recipients of the transaction */
+  /** Array of objects describing the recipients. See buildTransaction for more detail. Required on ETH. */
   recipients: optional(t.array(Recipient)),
   /** Custodian transaction ID */
   custodianTransactionId: optional(t.string),
@@ -139,27 +142,10 @@ export const WalletSignTxResponse = {
 };
 
 /**
- * Sign a transaction for a specific wallet
+ * Sign transactions for multisignature wallets using external-signing mode. You must maintain your keys, in the clear, on a separate Express server. BitGo doesn't decrypt your private keys.
  *
- * This endpoint signs a transaction for a specific wallet identified by coin type and wallet ID.
- * The request body is passed to wallet.signTransaction() and varies by coin and wallet type.
- *
- * Common fields include:
- * - txPrebuild: Contains transaction data like txHex or txBase64
- * - prv: Private key for signing (for non-TSS wallets)
- * - walletPassphrase: Passphrase for TSS wallets
- * - txRequestId: Transaction request ID for TSS wallets
- * - isLastSignature: Whether this is the last signature in a multi-sig tx
- * - pubs: Public keys for multi-signature transactions
- * - apiVersion: 'lite' or 'full' for TSS transaction requests
- * - gasLimit: Gas limit for ETH transactions
- * - gasPrice: Gas price for ETH transactions
- * - expireTime: Transaction expiration time
- * - sequenceId: Sequence ID for transactions
- * - isEvmBasedCrossChainRecovery: For EVM cross-chain recovery
- *
- * @tag express
  * @operationId express.v2.wallet.signtx
+ * @tag Express
  */
 export const PostWalletSignTx = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/signtx',
