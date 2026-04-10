@@ -378,7 +378,7 @@ export const EnableTokensResponse = t.type({
  * but others fail. Check both success and failure arrays in the response.
  *
  * @operationId express.v2.wallet.enableTokens
- * @tag express
+ * @tag Express
  */
 export const PostWalletEnableTokens = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/enableTokens',
