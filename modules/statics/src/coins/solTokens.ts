@@ -3579,8 +3579,8 @@ export const solTokens = [
     'tsol:sofid',
     'Test SoFiUSD',
     6,
-    '2G5gRJqDzXYQebYwzd37ZZa58VjM569jJN2fXx4CFyQU',
-    '2G5gRJqDzXYQebYwzd37ZZa58VjM569jJN2fXx4CFyQU',
+    '4movnppxTuvNFidGGS8s1vixKmckHyjMZcJeimE3MKyh',
+    '4movnppxTuvNFidGGS8s1vixKmckHyjMZcJeimE3MKyh',
     UnderlyingAsset['tsol:sofid'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
     ProgramID.Token2022ProgramId
@@ -3590,8 +3590,8 @@ export const solTokens = [
     'tsol:stgsofid',
     'Test SoFiUSD',
     6,
-    'HSgYwnvoc4JFWzoywF1hXzWUcPLekZGR4kCu6QwGSEbU',
-    'HSgYwnvoc4JFWzoywF1hXzWUcPLekZGR4kCu6QwGSEbU',
+    'C45X1qKmsZ2byn7668nup6fyc4rRj6TDrwRo3dJY4DpF',
+    'C45X1qKmsZ2byn7668nup6fyc4rRj6TDrwRo3dJY4DpF',
     UnderlyingAsset['tsol:stgsofid'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
     ProgramID.Token2022ProgramId
