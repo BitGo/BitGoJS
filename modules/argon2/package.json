@@ -4,10 +4,15 @@
   "description": "Vendored argon2 (hash-wasm v4.12.0) for BitGo SDK",
   "main": "argon2.umd.min.js",
   "types": "index.d.ts",
+  "scripts": {
+    "test": "mocha test/**/*.ts",
+    "verify": "./scripts/verify-vendor.sh"
+  },
   "files": [
     "argon2.umd.min.js",
     "index.d.ts",
-    "LICENSE"
+    "LICENSE",
+    "PROVENANCE.md"
   ],
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",

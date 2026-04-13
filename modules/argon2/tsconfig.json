@@ -2,11 +2,9 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "allowJs": true,
-    "declaration": false,
-    "declarationMap": false,
     "outDir": "./dist",
     "rootDir": "./"
   },
-  "include": [],
+  "include": ["test/type-check.ts"],
   "exclude": ["node_modules"]
 }

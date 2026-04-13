@@ -5,7 +5,7 @@
  */
 
 export type ITypedArray = Uint8Array | Uint16Array | Uint32Array;
-export type IDataType = string | Buffer | ITypedArray;
+export type IDataType = string | ITypedArray;
 
 export interface IArgon2Options {
   /** Password (or message) to be hashed */

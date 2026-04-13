@@ -10,6 +10,51 @@ const FAST_PARAMS = {
 };
 
 describe('@bitgo/argon2', function () {
+  // Known-answer tests (KAT) pin exact outputs to detect WASM binary drift
+  // or corruption. Uses RFC 9106 password/salt/params but without secret and
+  // associatedData (hash-wasm does not support associatedData), so outputs
+  // differ from the RFC 9106 appendix vectors.
+  describe('known-answer tests', function () {
+    // RFC 9106 params: password=32x0x01, salt=16x0x02, t=3, p=4, m=32 KiB
+    const rfcPassword = new Uint8Array(32).fill(0x01);
+    const rfcSalt = new Uint8Array(16).fill(0x02);
+    const rfcParams = {
+      password: rfcPassword,
+      salt: rfcSalt,
+      iterations: 3,
+      parallelism: 4,
+      memorySize: 32,
+      hashLength: 32,
+    };
+
+    it('argon2id produces expected output', async function () {
+      const hash = await argon2id(rfcParams);
+      assert.strictEqual(hash, '03aab965c12001c9d7d0d2de33192c0494b684bb148196d73c1df1acaf6d0c2e');
+    });
+
+    it('argon2i produces expected output', async function () {
+      const hash = await argon2i(rfcParams);
+      assert.strictEqual(hash, 'a9a7510e6db4d588ba3414cd0e094d480d683f97b9ccb612a544fe8ef65ba8e0');
+    });
+
+    it('argon2d produces expected output', async function () {
+      const hash = await argon2d(rfcParams);
+      assert.strictEqual(hash, '9e34c31a47866ce0c30a90c69dd21022d5329a3b75f9c513722dd2541fe93a1a');
+    });
+
+    it('argon2id with string inputs produces expected output', async function () {
+      const hash = await argon2id({
+        password: 'password',
+        salt: 'somesalt12345678',
+        iterations: 1,
+        parallelism: 1,
+        memorySize: 256,
+        hashLength: 32,
+      });
+      assert.strictEqual(hash, '29cd44c3290116f122b8f90511a1c3a1e6b88396160a4c296afdcce06cb224c1');
+    });
+  });
+
   describe('argon2id', function () {
     it('should produce a hex hash by default', async function () {
       const hash = await argon2id({
