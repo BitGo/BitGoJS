@@ -301,6 +301,26 @@ describe('Eth Transaction builder wallet initialization', function () {
       should.doesNotThrow(() => txBuilder.fee({ fee: '10' }));
     });
 
+    it('eip1559 maxPriorityFeePerGas must not exceed maxFeePerGas', () => {
+      const txBuilder: any = getBuilder('eth');
+      assert.throws(
+        () =>
+          txBuilder.fee({
+            fee: '1000000000',
+            gasLimit: '21000',
+            eip1559: { maxFeePerGas: '1000000000', maxPriorityFeePerGas: '9000000000' },
+          }),
+        /maxPriorityFeePerGas cannot exceed maxFeePerGas/
+      );
+      should.doesNotThrow(() =>
+        txBuilder.fee({
+          fee: '1000000000',
+          gasLimit: '21000',
+          eip1559: { maxFeePerGas: '1000000000', maxPriorityFeePerGas: '1000000000' },
+        })
+      );
+    });
+
     it('a private key', () => {
       const txBuilder: any = getBuilder('eth');
       assert.throws(() => txBuilder.validateKey({ key: 'abc' }), /Invalid key/);
