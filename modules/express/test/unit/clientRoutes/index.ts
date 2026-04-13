@@ -16,6 +16,7 @@ describe('common methods', () => {
       req = {
         body: {},
         params: {},
+        headers: {},
         bitgo,
       } as express.Request;
       next = () => undefined;
@@ -50,6 +51,36 @@ describe('common methods', () => {
       const result = await redirectRequest(bitgo, 'POST', url, req, next);
       result.status.should.equal(201);
       result.body.should.deepEqual({ success: true });
+    });
+
+    it('should forward X-BitGo-OTP header when present', async () => {
+      const url = 'https://example.com/api';
+      const setStub = sandbox.stub();
+      const response = { res: { statusCode: 200 }, result: async () => ({ success: true }), set: setStub };
+      sandbox
+        .stub(bitgo, 'get')
+        .withArgs(url)
+        .returns(response as any);
+
+      req.headers = { 'x-bitgo-otp': '123456' } as any;
+      const result = await redirectRequest(bitgo, 'GET', url, req, next);
+      result.status.should.equal(200);
+      setStub.calledWith('x-bitgo-otp', '123456').should.be.true();
+    });
+
+    it('should not forward X-BitGo-OTP header when not present', async () => {
+      const url = 'https://example.com/api';
+      const setStub = sandbox.stub();
+      const response = { res: { statusCode: 200 }, result: async () => ({ success: true }), set: setStub };
+      sandbox
+        .stub(bitgo, 'get')
+        .withArgs(url)
+        .returns(response as any);
+
+      req.headers = {} as any;
+      const result = await redirectRequest(bitgo, 'GET', url, req, next);
+      result.status.should.equal(200);
+      setStub.calledWith('x-bitgo-otp').should.be.false();
     });
 
     it('should handle error response and return status and body', async () => {
