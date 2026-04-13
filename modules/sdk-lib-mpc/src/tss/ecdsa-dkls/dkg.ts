@@ -119,7 +119,8 @@ export class Dkg {
         this.dkgState = DkgState.Round3;
         break;
       case 'WaitMsg4':
-        this.dkgState = DkgState.Round4;
+        // keyShareBuff present means keyshare() already ran and freed the session; bytes are frozen at WaitMsg4.
+        this.dkgState = this.keyShareBuff ? DkgState.Complete : DkgState.Round4;
         break;
       case 'Ended':
         this.dkgState = DkgState.Complete;
@@ -339,7 +340,6 @@ export class Dkg {
     }
 
     dkg.dkgSessionBytes = sessionData.dkgSessionBytes;
-    dkg.dkgState = sessionData.dkgState;
 
     if (sessionData.chainCodeCommitment) {
       dkg.chainCodeCommitment = sessionData.chainCodeCommitment;
@@ -350,6 +350,10 @@ export class Dkg {
     }
 
     dkg._restoreSession();
+    // Re-derive state from WASM bytes rather than trusting the caller-supplied dkgState.
+    // This prevents a tampered or corrupted dkgState from causing handleIncomingMessages()
+    // to take the wrong branch (e.g. skipping chain code commitment or calling keyshare() prematurely).
+    dkg._deserializeState();
     return dkg;
   }
 }

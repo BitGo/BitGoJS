@@ -283,6 +283,47 @@ describe('DKLS Dkg 2x3', function () {
     assert.deepEqual(DklsTypes.getCommonKeychain(backupKeyShare), DklsTypes.getCommonKeychain(bitgoKeyShare));
   });
 
+  it('restoreSession() should ignore tampered dkgState and re-derive from WASM bytes', async function () {
+    const user = new DklsDkg.Dkg(3, 2, 0);
+
+    // After initDkg() the WASM session encodes WaitMsg1 → DkgState.Round1
+    await user.initDkg();
+
+    const legitimateSessionData = user.getSessionData();
+
+    // Tamper: claim the session is at Round4 when WASM bytes still say Round1
+    const tamperedSessionData = {
+      ...legitimateSessionData,
+      dkgState: DklsTypes.DkgState.Round4,
+    };
+
+    const restoredUser = await DklsDkg.Dkg.restoreSession(3, 2, 0, tamperedSessionData);
+
+    // Must reflect the actual WASM state (Round1), not the tampered Round4
+    assert.strictEqual(
+      restoredUser['dkgState'],
+      DklsTypes.DkgState.Round1,
+      'restoreSession() must re-derive dkgState from WASM bytes and ignore caller-supplied value'
+    );
+  });
+
+  it('restoreSession() should restore a completed DKG session as DkgState.Complete', async function () {
+    const [user] = await generateDKGKeyShares();
+    const completedSessionData = user.getSessionData();
+
+    // dkgSessionBytes holds { round: 'Ended' }; restoreSession() must decode it as Complete
+    // without reconstructing the (already freed) WASM session
+    const restoredUser = await DklsDkg.Dkg.restoreSession(3, 2, 0, completedSessionData);
+
+    assert.strictEqual(
+      restoredUser['dkgState'],
+      DklsTypes.DkgState.Complete,
+      'restoreSession() must decode "Ended" round marker as DkgState.Complete'
+    );
+    // Key share must still be accessible on the restored instance
+    assert.ok(restoredUser.getKeyShare(), 'Key share should be accessible after restoring completed session');
+  });
+
   it('should successfully finish DKG using restored sessions', async function () {
     const user = new DklsDkg.Dkg(3, 2, 0);
     const backup = new DklsDkg.Dkg(3, 2, 1);
