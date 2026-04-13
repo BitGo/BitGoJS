@@ -320,7 +320,7 @@ describe('Eth Transaction builder wallet initialization', function () {
 
     it('a transaction to build', async () => {
       const txBuilder: any = getBuilder('eth');
-      txBuilder.counter(undefined);
+      assert.throws(() => txBuilder.counter(undefined), /Invalid counter: counter must be a number/);
       txBuilder.type(TransactionType.WalletInitialization);
       assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing fee/);
       txBuilder.fee({

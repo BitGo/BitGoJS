@@ -60,7 +60,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _common: EthereumCommon;
   protected _sourceKeyPair: KeyPair;
   private _transaction: Transaction;
-  private _counter: number;
+  private _counter: number | undefined;
   private _fee: Fee;
   protected _value: string;
 
@@ -104,7 +104,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     super(_coinConfig);
     this._common = getCommon(this._coinConfig.network as EthereumNetwork);
     this._type = TransactionType.Send;
-    this._counter = 0;
     this._value = '0';
     this._walletOwnerAddresses = [];
     this._forwarderVersion = 0;
@@ -554,6 +553,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {number} counter The counter to use
    */
   counter(counter: number): void {
+    if (counter === undefined || counter === null || typeof counter !== 'number' || isNaN(counter)) {
+      throw new BuildTransactionError('Invalid counter: counter must be a number');
+    }
     if (counter < 0) {
       throw new BuildTransactionError(`Invalid counter: ${counter}`);
     }
@@ -574,7 +576,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected buildBase(data: string): TxData {
     const baseParams = {
       gasLimit: this._fee.gasLimit,
-      nonce: this._counter,
+      nonce: this._counter!,
       data: data,
       chainId: this._common.chainIdBN().toString(),
       value: this._value,
