@@ -256,26 +256,49 @@ export class Tempo extends AbstractEthLikeNewCoins {
     txBuilder.from(txHex);
     const tx = (await txBuilder.build()) as Tip20Transaction;
     const operations = tx.getOperations();
+    const rawCalls = tx.getRawCalls();
 
-    // If the caller specified explicit recipients, verify they match the operations 1-to-1
+    // If the caller specified explicit recipients, verify they match operations and raw calls 1-to-1
     const recipients = txParams?.recipients;
     if (recipients && recipients.length > 0) {
-      if (operations.length !== recipients.length) {
+      const totalCallCount = operations.length + rawCalls.length;
+      if (totalCallCount !== recipients.length) {
         throw new Error(
-          `Transaction has ${operations.length} operation(s) but ${recipients.length} recipient(s) were requested`
+          `Transaction has ${totalCallCount} call(s) but ${recipients.length} recipient(s) were requested`
         );
       }
-      for (let i = 0; i < operations.length; i++) {
-        const op = operations[i];
+
+      let opIndex = 0;
+      let rawIndex = 0;
+      for (let i = 0; i < recipients.length; i++) {
         const recipient = recipients[i];
-        const recipientBaseAddress = recipient.address.split('?')[0];
-        if (op.to.toLowerCase() !== recipientBaseAddress.toLowerCase()) {
-          throw new Error(`Operation ${i} recipient mismatch: expected ${recipient.address}, got ${op.to}`);
-        }
-        // Compare amounts in base units (smallest denomination)
-        const opAmountBaseUnits = amountToTip20Units(op.amount).toString();
-        if (opAmountBaseUnits !== recipient.amount.toString()) {
-          throw new Error(`Operation ${i} amount mismatch: expected ${recipient.amount}, got ${opAmountBaseUnits}`);
+        if (recipient.data) {
+          // Contract call recipient — verify against rawCalls
+          const rawCall = rawCalls[rawIndex++];
+          if (!rawCall) {
+            throw new Error(`Missing raw call for recipient ${i}`);
+          }
+          if (rawCall.to.toLowerCase() !== recipient.address.split('?')[0].toLowerCase()) {
+            throw new Error(`Raw call ${i} address mismatch: expected ${recipient.address}, got ${rawCall.to}`);
+          }
+          if (rawCall.data !== recipient.data) {
+            throw new Error(`Raw call ${i} calldata mismatch`);
+          }
+        } else {
+          // Token transfer recipient — verify against operations
+          const op = operations[opIndex++];
+          if (!op) {
+            throw new Error(`Missing operation for recipient ${i}`);
+          }
+          const recipientBaseAddress = recipient.address.split('?')[0];
+          if (op.to.toLowerCase() !== recipientBaseAddress.toLowerCase()) {
+            throw new Error(`Operation ${i} recipient mismatch: expected ${recipient.address}, got ${op.to}`);
+          }
+          // Compare amounts in base units (smallest denomination)
+          const opAmountBaseUnits = amountToTip20Units(op.amount).toString();
+          if (opAmountBaseUnits !== recipient.amount.toString()) {
+            throw new Error(`Operation ${i} amount mismatch: expected ${recipient.amount}, got ${opAmountBaseUnits}`);
+          }
         }
       }
     }

@@ -238,7 +238,7 @@ describe('TIP-20 Transaction Build', () => {
     it('should throw error when no operations added', async () => {
       const builder = new Tip20TransactionBuilder(mockCoinConfig);
       builder.nonce(0).gas(100000n).maxFeePerGas(1000000000n).maxPriorityFeePerGas(500000000n);
-      await assert.rejects(async () => await builder.build(), ERROR_MESSAGES.noOperations);
+      await assert.rejects(async () => await builder.build(), /At least one operation or raw call is required/);
     });
 
     it('should throw error when nonce not set', async () => {
@@ -677,7 +677,7 @@ describe('Tempo coin - parseTransaction / verifyTransaction', () => {
               ],
             },
           }),
-        /operation\(s\)/
+        /call\(s\)/
       );
     });
 
@@ -774,5 +774,309 @@ describe('Tempo coin - parseTransaction / verifyTransaction', () => {
       });
       assert.strictEqual(result, true);
     });
+  });
+});
+
+describe('Raw Contract Call Builder', () => {
+  const mockContract = ethers.utils.getAddress('0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef');
+  const mockCalldata =
+    '0xa9059cbb000000000000000000000000742d35cc6634c0532925a3b844bc454e4438f44e0000000000000000000000000000000000000000000000000000000000989680';
+
+  describe('addRawCall', () => {
+    it('should add a raw call and return it via getRawCalls()', () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      builder.addRawCall({ to: mockContract, data: mockCalldata });
+
+      const rawCalls = builder.getRawCalls();
+      assert.strictEqual(rawCalls.length, 1);
+      assert.strictEqual(rawCalls[0].to, mockContract);
+      assert.strictEqual(rawCalls[0].data, mockCalldata);
+    });
+
+    it('should support chaining addRawCall', () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      const result = builder.addRawCall({ to: mockContract, data: mockCalldata });
+      assert.strictEqual(result, builder);
+    });
+
+    it('should throw for invalid contract address', () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      assert.throws(() => builder.addRawCall({ to: '0xinvalid', data: mockCalldata }), /Invalid contract address/);
+    });
+
+    it('should throw for empty calldata', () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      assert.throws(() => builder.addRawCall({ to: mockContract, data: '0x' }), /Invalid calldata/);
+    });
+
+    it('should throw for non-hex calldata', () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      assert.throws(() => builder.addRawCall({ to: mockContract, data: 'not-hex-data' }), /Invalid calldata/);
+    });
+
+    it('should throw for calldata missing 0x prefix', () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      assert.throws(() => builder.addRawCall({ to: mockContract, data: 'a9059cbb' }), /Invalid calldata/);
+    });
+
+    it('should allow raw-call-only transaction (no operations)', async () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      builder
+        .addRawCall({ to: mockContract, data: mockCalldata })
+        .nonce(0)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+
+      const tx = (await builder.build()) as Tip20Transaction;
+      assert.ok(tx instanceof Tip20Transaction);
+      assert.strictEqual(tx.getOperations().length, 0);
+      assert.strictEqual(tx.getRawCalls().length, 1);
+      assert.strictEqual(tx.getOperationCount(), 1);
+    });
+  });
+
+  describe('Round-Trip: Build -> Serialize -> From (raw call deserialization)', () => {
+    it('should preserve raw call calldata through a round-trip', async () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      builder
+        .addRawCall({ to: mockContract, data: mockCalldata })
+        .nonce(5)
+        .gas(150000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+
+      const originalTx = (await builder.build()) as Tip20Transaction;
+      const serialized = await originalTx.serialize();
+
+      const builder2 = new Tip20TransactionBuilder(mockCoinConfig);
+      builder2.from(serialized);
+      const restoredTx = (await builder2.build()) as Tip20Transaction;
+
+      assert.strictEqual(restoredTx.getOperations().length, 0);
+      const rawCalls = restoredTx.getRawCalls();
+      assert.strictEqual(rawCalls.length, 1);
+      assert.strictEqual(rawCalls[0].to.toLowerCase(), mockContract.toLowerCase());
+      assert.strictEqual(rawCalls[0].data.toLowerCase(), mockCalldata.toLowerCase());
+    });
+
+    it('should preserve calldata through a signed round-trip', async () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      builder
+        .addRawCall({ to: mockContract, data: mockCalldata })
+        .nonce(7)
+        .gas(120000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+
+      const tx = (await builder.build()) as Tip20Transaction;
+      tx.setSignature(SIGNATURE_TEST_DATA.validSignature);
+      const signedHex = await tx.toBroadcastFormat();
+
+      const builder2 = new Tip20TransactionBuilder(mockCoinConfig);
+      builder2.from(signedHex);
+      const restoredTx = (await builder2.build()) as Tip20Transaction;
+
+      const rawCalls = restoredTx.getRawCalls();
+      assert.strictEqual(rawCalls.length, 1);
+      assert.strictEqual(rawCalls[0].data.toLowerCase(), mockCalldata.toLowerCase());
+      const sig = restoredTx.getSignature();
+      assert.ok(sig !== undefined);
+      assert.strictEqual(sig!.yParity, SIGNATURE_TEST_DATA.validSignature.yParity);
+    });
+
+    it('should preserve raw call tx id through a round-trip', async () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      builder
+        .addRawCall({ to: mockContract, data: mockCalldata })
+        .nonce(3)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+
+      const originalTx = (await builder.build()) as Tip20Transaction;
+      const serialized = await originalTx.serialize();
+      const originalId = originalTx.id;
+
+      const builder2 = new Tip20TransactionBuilder(mockCoinConfig);
+      builder2.from(serialized);
+      const restoredTx = (await builder2.build()) as Tip20Transaction;
+
+      assert.strictEqual(restoredTx.id, originalId);
+    });
+  });
+
+  describe('Mixed: operations + raw calls', () => {
+    it('should build and round-trip a transaction with both operations and raw calls', async () => {
+      const tokenAddress = ethers.utils.getAddress(TESTNET_TOKENS.alphaUSD.address);
+      const recipientAddress = ethers.utils.getAddress(TEST_RECIPIENT_ADDRESS);
+
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      builder
+        .addOperation({ token: tokenAddress, to: recipientAddress, amount: '10.0', memo: '1' })
+        .addRawCall({ to: mockContract, data: mockCalldata })
+        .nonce(1)
+        .gas(200000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+
+      const originalTx = (await builder.build()) as Tip20Transaction;
+      assert.strictEqual(originalTx.getOperations().length, 1);
+      assert.strictEqual(originalTx.getRawCalls().length, 1);
+      assert.strictEqual(originalTx.getOperationCount(), 2);
+
+      const serialized = await originalTx.serialize();
+
+      const builder2 = new Tip20TransactionBuilder(mockCoinConfig);
+      builder2.from(serialized);
+      const restoredTx = (await builder2.build()) as Tip20Transaction;
+
+      assert.strictEqual(restoredTx.getOperations().length, 1);
+      assert.strictEqual(restoredTx.getRawCalls().length, 1);
+      assert.strictEqual(restoredTx.getOperationCount(), 2);
+
+      const ops = restoredTx.getOperations();
+      assert.strictEqual(ops[0].to.toLowerCase(), recipientAddress.toLowerCase());
+      assert.strictEqual(ops[0].amount, '10.0');
+
+      const rawCalls = restoredTx.getRawCalls();
+      assert.strictEqual(rawCalls[0].to.toLowerCase(), mockContract.toLowerCase());
+      assert.strictEqual(rawCalls[0].data.toLowerCase(), mockCalldata.toLowerCase());
+    });
+
+    it('should expose outputs for both operations and raw calls', async () => {
+      const tokenAddress = ethers.utils.getAddress(TESTNET_TOKENS.alphaUSD.address);
+      const recipientAddress = ethers.utils.getAddress(TEST_RECIPIENT_ADDRESS);
+
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      builder
+        .addOperation({ token: tokenAddress, to: recipientAddress, amount: '5.0' })
+        .addRawCall({ to: mockContract, data: mockCalldata, value: '0' })
+        .nonce(2)
+        .gas(200000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+
+      const tx = (await builder.build()) as Tip20Transaction;
+      assert.strictEqual(tx.outputs.length, 2);
+      assert.strictEqual(tx.outputs[0].address.toLowerCase(), recipientAddress.toLowerCase());
+      assert.strictEqual(tx.outputs[1].address.toLowerCase(), mockContract.toLowerCase());
+    });
+
+    it('should include rawCalls in toJson() output', async () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      builder
+        .addRawCall({ to: mockContract, data: mockCalldata })
+        .nonce(0)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+
+      const tx = (await builder.build()) as Tip20Transaction;
+      const json = tx.toJson();
+
+      assert.ok(Array.isArray(json.rawCalls));
+      assert.strictEqual(json.rawCalls.length, 1);
+      assert.strictEqual(json.rawCalls[0].to, mockContract);
+      assert.strictEqual(json.rawCalls[0].data, mockCalldata);
+    });
+  });
+});
+
+describe('Tempo coin - verifyTransaction with raw calls', () => {
+  let bitgo: TestBitGoAPI;
+  let coin: any;
+
+  const mockContract = ethers.utils.getAddress('0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef');
+  const mockCalldata =
+    '0xa9059cbb000000000000000000000000742d35cc6634c0532925a3b844bc454e4438f44e0000000000000000000000000000000000000000000000000000000000989680';
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.safeRegister('ttempo', (bg: BitGoBase) => {
+      const mockStaticsCoin = {
+        name: 'ttempo',
+        fullName: 'Testnet Tempo',
+        network: { type: 'testnet' },
+        features: [],
+      } as any;
+      return Ttempo.createInstance(bg, mockStaticsCoin);
+    });
+    bitgo.initializeTestVars();
+    coin = bitgo.coin('ttempo');
+  });
+
+  async function buildRawCallTx(contract: string, calldata: string, nonce = 0): Promise<string> {
+    const builder = new Tip20TransactionBuilder(coins.get('ttempo'));
+    builder
+      .addRawCall({ to: contract, data: calldata })
+      .nonce(nonce)
+      .gas(150000n)
+      .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+      .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+    const tx = (await builder.build()) as Tip20Transaction;
+    return tx.serialize();
+  }
+
+  it('should verify a raw call transaction when recipient data matches', async () => {
+    const txHex = await buildRawCallTx(mockContract, mockCalldata);
+    const result = await coin.verifyTransaction({
+      txPrebuild: { txHex },
+      txParams: {
+        recipients: [{ address: mockContract, amount: '0', data: mockCalldata }],
+      },
+    });
+    assert.strictEqual(result, true);
+  });
+
+  it('should throw when raw call address does not match recipient', async () => {
+    const txHex = await buildRawCallTx(mockContract, mockCalldata);
+    const wrongAddress = ethers.utils.getAddress('0x1111111111111111111111111111111111111111');
+    await assert.rejects(
+      () =>
+        coin.verifyTransaction({
+          txPrebuild: { txHex },
+          txParams: { recipients: [{ address: wrongAddress, amount: '0', data: mockCalldata }] },
+        }),
+      /address mismatch/
+    );
+  });
+
+  it('should throw when raw call calldata does not match', async () => {
+    const txHex = await buildRawCallTx(mockContract, mockCalldata);
+    const wrongCalldata = '0xdeadbeef01020304';
+    await assert.rejects(
+      () =>
+        coin.verifyTransaction({
+          txPrebuild: { txHex },
+          txParams: { recipients: [{ address: mockContract, amount: '0', data: wrongCalldata }] },
+        }),
+      /calldata mismatch/
+    );
+  });
+
+  it('should throw when recipient count does not match call count', async () => {
+    const txHex = await buildRawCallTx(mockContract, mockCalldata);
+    await assert.rejects(
+      () =>
+        coin.verifyTransaction({
+          txPrebuild: { txHex },
+          txParams: {
+            recipients: [
+              { address: mockContract, amount: '0', data: mockCalldata },
+              { address: mockContract, amount: '0', data: mockCalldata },
+            ],
+          },
+        }),
+      /call\(s\)/
+    );
+  });
+
+  it('should parse a raw call transaction and expose the contract as an output', async () => {
+    const txHex = await buildRawCallTx(mockContract, mockCalldata);
+    const parsed = await coin.parseTransaction({ txHex });
+    assert.ok(Array.isArray(parsed.outputs));
+    assert.strictEqual(parsed.outputs.length, 1);
+    assert.strictEqual(parsed.outputs[0].address.toLowerCase(), mockContract.toLowerCase());
   });
 });

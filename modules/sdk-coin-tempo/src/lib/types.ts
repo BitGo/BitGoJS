@@ -15,3 +15,14 @@ export interface Tip20Operation {
   amount: string;
   memo?: string;
 }
+
+/**
+ * Raw smart contract call with pre-encoded calldata
+ * Used for arbitrary contract interactions (e.g., mint(), approve())
+ * where the caller provides the full ABI-encoded calldata
+ */
+export interface RawContractCall {
+  to: Address;
+  data: Hex;
+  value?: string;
+}
