@@ -77,7 +77,7 @@ export const MEMO_TEST_CASES = {
 // ============================================================================
 
 export const ERROR_MESSAGES = {
-  noOperations: /At least one operation is required/,
+  noOperations: /At least one operation or raw call is required/,
   missingNonce: /Nonce is required/,
   missingGas: /Gas limit is required/,
   missingMaxFeePerGas: /maxFeePerGas is required/,

@@ -322,7 +322,15 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
       throw new BuildTransactionError(`Invalid contract address: ${call.to}`);
     }
     if (!isValidHexData(call.data)) {
-      throw new BuildTransactionError(`Invalid calldata: must be a non-empty 0x-prefixed hex string`);
+      throw new BuildTransactionError(`Invalid calldata: must be a non-empty 0x-prefixed hex string with even length`);
+    }
+    if (call.value !== undefined) {
+      try {
+        const v = BigInt(call.value);
+        if (v < 0n) throw new Error();
+      } catch {
+        throw new BuildTransactionError(`Invalid value: must be a non-negative integer string`);
+      }
     }
     this.rawCalls.push(call);
     return this;

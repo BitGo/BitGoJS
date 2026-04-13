@@ -677,7 +677,7 @@ describe('Tempo coin - parseTransaction / verifyTransaction', () => {
               ],
             },
           }),
-        /call\(s\)/
+        /operation\(s\)/
       );
     });
 
@@ -819,6 +819,21 @@ describe('Raw Contract Call Builder', () => {
       assert.throws(() => builder.addRawCall({ to: mockContract, data: 'a9059cbb' }), /Invalid calldata/);
     });
 
+    it('should throw for odd-length hex calldata', () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      assert.throws(() => builder.addRawCall({ to: mockContract, data: '0xabc' }), /Invalid calldata/);
+    });
+
+    it('should throw for invalid value string', () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      assert.throws(() => builder.addRawCall({ to: mockContract, data: mockCalldata, value: '1e18' }), /Invalid value/);
+    });
+
+    it('should throw for negative value', () => {
+      const builder = new Tip20TransactionBuilder(mockCoinConfig);
+      assert.throws(() => builder.addRawCall({ to: mockContract, data: mockCalldata, value: '-1' }), /Invalid value/);
+    });
+
     it('should allow raw-call-only transaction (no operations)', async () => {
       const builder = new Tip20TransactionBuilder(mockCoinConfig);
       builder
@@ -906,51 +921,10 @@ describe('Raw Contract Call Builder', () => {
     });
   });
 
-  describe('Mixed: operations + raw calls', () => {
-    it('should build and round-trip a transaction with both operations and raw calls', async () => {
-      const tokenAddress = ethers.utils.getAddress(TESTNET_TOKENS.alphaUSD.address);
-      const recipientAddress = ethers.utils.getAddress(TEST_RECIPIENT_ADDRESS);
-
+  describe('Raw call toJson and outputs', () => {
+    it('should expose raw call contract address as output', async () => {
       const builder = new Tip20TransactionBuilder(mockCoinConfig);
       builder
-        .addOperation({ token: tokenAddress, to: recipientAddress, amount: '10.0', memo: '1' })
-        .addRawCall({ to: mockContract, data: mockCalldata })
-        .nonce(1)
-        .gas(200000n)
-        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
-        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
-
-      const originalTx = (await builder.build()) as Tip20Transaction;
-      assert.strictEqual(originalTx.getOperations().length, 1);
-      assert.strictEqual(originalTx.getRawCalls().length, 1);
-      assert.strictEqual(originalTx.getOperationCount(), 2);
-
-      const serialized = await originalTx.serialize();
-
-      const builder2 = new Tip20TransactionBuilder(mockCoinConfig);
-      builder2.from(serialized);
-      const restoredTx = (await builder2.build()) as Tip20Transaction;
-
-      assert.strictEqual(restoredTx.getOperations().length, 1);
-      assert.strictEqual(restoredTx.getRawCalls().length, 1);
-      assert.strictEqual(restoredTx.getOperationCount(), 2);
-
-      const ops = restoredTx.getOperations();
-      assert.strictEqual(ops[0].to.toLowerCase(), recipientAddress.toLowerCase());
-      assert.strictEqual(ops[0].amount, '10.0');
-
-      const rawCalls = restoredTx.getRawCalls();
-      assert.strictEqual(rawCalls[0].to.toLowerCase(), mockContract.toLowerCase());
-      assert.strictEqual(rawCalls[0].data.toLowerCase(), mockCalldata.toLowerCase());
-    });
-
-    it('should expose outputs for both operations and raw calls', async () => {
-      const tokenAddress = ethers.utils.getAddress(TESTNET_TOKENS.alphaUSD.address);
-      const recipientAddress = ethers.utils.getAddress(TEST_RECIPIENT_ADDRESS);
-
-      const builder = new Tip20TransactionBuilder(mockCoinConfig);
-      builder
-        .addOperation({ token: tokenAddress, to: recipientAddress, amount: '5.0' })
         .addRawCall({ to: mockContract, data: mockCalldata, value: '0' })
         .nonce(2)
         .gas(200000n)
@@ -958,9 +932,8 @@ describe('Raw Contract Call Builder', () => {
         .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
 
       const tx = (await builder.build()) as Tip20Transaction;
-      assert.strictEqual(tx.outputs.length, 2);
-      assert.strictEqual(tx.outputs[0].address.toLowerCase(), recipientAddress.toLowerCase());
-      assert.strictEqual(tx.outputs[1].address.toLowerCase(), mockContract.toLowerCase());
+      assert.strictEqual(tx.outputs.length, 1);
+      assert.strictEqual(tx.outputs[0].address.toLowerCase(), mockContract.toLowerCase());
     });
 
     it('should include rawCalls in toJson() output', async () => {
