@@ -21,13 +21,14 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { ethers } from 'ethers';
-import { Address, Hex, Tip20Operation } from './types';
+import { Address, Hex, RawContractCall, Tip20Operation } from './types';
 import { Tip20Transaction, Tip20TransactionRequest } from './transaction';
 import {
   amountToTip20Units,
   encodeTip20TransferWithMemo,
   isTip20Transaction,
   isValidAddress,
+  isValidHexData,
   isValidMemoId,
   isValidTip20Amount,
   tip20UnitsToAmount,
@@ -41,6 +42,7 @@ import { AA_TRANSACTION_TYPE } from './constants';
  */
 export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
   private operations: Tip20Operation[] = [];
+  private rawCalls: RawContractCall[] = [];
   private _feeToken?: Address;
   private _nonce?: number;
   private _gas?: bigint;
@@ -73,8 +75,8 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
    * @throws BuildTransactionError if validation fails
    */
   validateTransaction(): void {
-    if (this.operations.length === 0) {
-      throw new BuildTransactionError('At least one operation is required to build a transaction');
+    if (this.operations.length === 0 && this.rawCalls.length === 0) {
+      throw new BuildTransactionError('At least one operation or raw call is required to build a transaction');
     }
 
     if (this._nonce === undefined) {
@@ -148,7 +150,16 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
         data: tuple[2] as Hex,
       }));
 
-      const operations: Tip20Operation[] = calls.map((call) => this.decodeCallToOperation(call));
+      const operations: Tip20Operation[] = [];
+      const decodedRawCalls: RawContractCall[] = [];
+      for (const call of calls) {
+        const op = this.decodeCallToOperation(call);
+        if (op !== null) {
+          operations.push(op);
+        } else {
+          decodedRawCalls.push({ to: call.to, data: call.data, value: call.value.toString() });
+        }
+      }
 
       let signature: { r: Hex; s: Hex; yParity: number } | undefined;
       if (decoded.length >= 14 && decoded[13] && (decoded[13] as string).length > 2) {
@@ -182,9 +193,10 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
       this._maxPriorityFeePerGas = maxPriorityFeePerGas;
       this._feeToken = feeToken;
       this.operations = operations;
+      this.rawCalls = decodedRawCalls;
       this._restoredSignature = signature;
 
-      const tx = new Tip20Transaction(this._coinConfig, txRequest, operations);
+      const tx = new Tip20Transaction(this._coinConfig, txRequest, operations, decodedRawCalls);
       if (signature) {
         tx.setSignature(signature);
       }
@@ -197,9 +209,10 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
 
   /**
    * Decode a single AA call's data back into a Tip20Operation.
-   * Expects the call data to encode transferWithMemo(address, uint256, bytes32).
+   * Returns null if the call is not a transferWithMemo — it will be stored as a RawContractCall instead.
+   * This preserves calldata fidelity for arbitrary smart contract interactions.
    */
-  private decodeCallToOperation(call: { to: Address; data: Hex; value: bigint }): Tip20Operation {
+  private decodeCallToOperation(call: { to: Address; data: Hex; value: bigint }): Tip20Operation | null {
     const iface = new ethers.utils.Interface(TIP20_TRANSFER_WITH_MEMO_ABI);
     try {
       const decoded = iface.decodeFunctionData('transferWithMemo', call.data);
@@ -214,7 +227,8 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
 
       return { token: call.to, to: toAddress, amount, memo };
     } catch {
-      return { token: call.to, to: call.to, amount: tip20UnitsToAmount(call.value) };
+      // Not a transferWithMemo call — caller will store as RawContractCall
+      return null;
     }
   }
 
@@ -243,6 +257,14 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
 
     const calls = this.operations.map((op) => this.operationToCall(op));
 
+    for (const rawCall of this.rawCalls) {
+      calls.push({
+        to: rawCall.to as Address,
+        data: rawCall.data as Hex,
+        value: rawCall.value ? BigInt(rawCall.value) : 0n,
+      });
+    }
+
     const txRequest: Tip20TransactionRequest = {
       type: AA_TRANSACTION_TYPE,
       chainId: this._common.chainIdBN().toNumber(),
@@ -255,7 +277,7 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
       feeToken: this._feeToken,
     };
 
-    const tx = new Tip20Transaction(this._coinConfig, txRequest, this.operations);
+    const tx = new Tip20Transaction(this._coinConfig, txRequest, this.operations, this.rawCalls);
 
     if (this._sourceKeyPair && this._sourceKeyPair.getKeys().prv) {
       const prv = this._sourceKeyPair.getKeys().prv!;
@@ -286,6 +308,32 @@ export class Tip20TransactionBuilder extends AbstractTransactionBuilder {
     this.validateOperation(operation);
     this.operations.push(operation);
     return this;
+  }
+
+  /**
+   * Add a raw smart contract call with pre-encoded calldata
+   * Use this for arbitrary contract interactions where the UI provides ABI-encoded calldata
+   *
+   * @param call - Raw contract call with target address and pre-encoded calldata
+   * @returns this builder instance for chaining
+   */
+  addRawCall(call: RawContractCall): this {
+    if (!isValidAddress(call.to)) {
+      throw new BuildTransactionError(`Invalid contract address: ${call.to}`);
+    }
+    if (!isValidHexData(call.data)) {
+      throw new BuildTransactionError(`Invalid calldata: must be a non-empty 0x-prefixed hex string`);
+    }
+    this.rawCalls.push(call);
+    return this;
+  }
+
+  /**
+   * Get all raw contract calls in this transaction
+   * @returns Array of raw contract calls
+   */
+  getRawCalls(): RawContractCall[] {
+    return [...this.rawCalls];
   }
 
   /**

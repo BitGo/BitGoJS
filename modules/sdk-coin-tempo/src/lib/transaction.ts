@@ -8,7 +8,7 @@
 import { BaseTransaction, ParseTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { ethers } from 'ethers';
-import { Address, Hex, Tip20Operation } from './types';
+import { Address, Hex, RawContractCall, Tip20Operation } from './types';
 import { amountToTip20Units } from './utils';
 
 /**
@@ -46,23 +46,38 @@ export interface TxData {
   callCount: number;
   feeToken?: string;
   operations: Tip20Operation[];
+  rawCalls: RawContractCall[];
   signature?: { r: Hex; s: Hex; yParity: number };
 }
 
 export class Tip20Transaction extends BaseTransaction {
   private txRequest: Tip20TransactionRequest;
   private _operations: Tip20Operation[];
+  private _rawCalls: RawContractCall[];
   private _signature?: { r: Hex; s: Hex; yParity: number };
 
-  constructor(_coinConfig: Readonly<CoinConfig>, request: Tip20TransactionRequest, operations: Tip20Operation[] = []) {
+  constructor(
+    _coinConfig: Readonly<CoinConfig>,
+    request: Tip20TransactionRequest,
+    operations: Tip20Operation[] = [],
+    rawCalls: RawContractCall[] = []
+  ) {
     super(_coinConfig);
     this.txRequest = request;
     this._operations = operations;
-    this._outputs = operations.map((op) => ({
-      address: op.to,
-      value: amountToTip20Units(op.amount).toString(),
-      coin: op.token,
-    }));
+    this._rawCalls = rawCalls;
+    this._outputs = [
+      ...operations.map((op) => ({
+        address: op.to,
+        value: amountToTip20Units(op.amount).toString(),
+        coin: op.token,
+      })),
+      ...rawCalls.map((call) => ({
+        address: call.to,
+        value: call.value || '0',
+        coin: _coinConfig.name,
+      })),
+    ];
     const totalUnits = operations.reduce((sum, op) => sum + amountToTip20Units(op.amount), 0n);
     this._inputs = [{ address: '', value: totalUnits.toString(), coin: _coinConfig.name }];
   }
@@ -191,12 +206,16 @@ export class Tip20Transaction extends BaseTransaction {
     return [...this._operations];
   }
 
+  getRawCalls(): RawContractCall[] {
+    return [...this._rawCalls];
+  }
+
   getFeeToken(): Address | undefined {
     return this.txRequest.feeToken;
   }
 
   getOperationCount(): number {
-    return this.txRequest.calls.length;
+    return this._operations.length + this._rawCalls.length;
   }
 
   isBatch(): boolean {
@@ -240,6 +259,7 @@ export class Tip20Transaction extends BaseTransaction {
       callCount: this.txRequest.calls.length,
       feeToken: this.txRequest.feeToken,
       operations: this._operations,
+      rawCalls: this._rawCalls,
       signature: this._signature,
     };
   }

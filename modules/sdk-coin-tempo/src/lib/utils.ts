@@ -149,6 +149,14 @@ export function isValidMemoId(memoId: string): boolean {
   return typeof memoId === 'string' && /^(0|[1-9]\d*)$/.test(memoId);
 }
 
+/**
+ * Validate that a string is a non-empty 0x-prefixed hex string
+ * Used to validate pre-encoded calldata for raw contract calls
+ */
+export function isValidHexData(data: string): boolean {
+  return typeof data === 'string' && /^0x[0-9a-fA-F]+$/.test(data) && data.length > 2;
+}
+
 const utils = {
   isValidAddress,
   isValidPublicKey,
@@ -160,6 +168,7 @@ const utils = {
   isValidTip20Amount,
   isTip20Transaction,
   isValidMemoId,
+  isValidHexData,
 };
 
 export default utils;
