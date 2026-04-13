@@ -353,6 +353,17 @@ jobs:
 
           echo "✅ Docker image tests passed"
 
+  verify-vendor-integrity:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Verify argon2 vendor integrity
+        run: modules/argon2/scripts/verify-vendor.sh
+
   verify-npm-packages:
     runs-on: ubuntu-latest
 
