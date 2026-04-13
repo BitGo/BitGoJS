@@ -258,43 +258,41 @@ export class Tempo extends AbstractEthLikeNewCoins {
     const operations = tx.getOperations();
     const rawCalls = tx.getRawCalls();
 
-    // If the caller specified explicit recipients, verify they match operations and raw calls 1-to-1
+    // If the caller specified explicit recipients, verify they match the transaction.
+    // A transaction is either all token transfer operations OR a single raw contract call — never mixed.
     const recipients = txParams?.recipients;
     if (recipients && recipients.length > 0) {
-      const totalCallCount = operations.length + rawCalls.length;
-      if (totalCallCount !== recipients.length) {
-        throw new Error(
-          `Transaction has ${totalCallCount} call(s) but ${recipients.length} recipient(s) were requested`
-        );
-      }
-
-      let opIndex = 0;
-      let rawIndex = 0;
-      for (let i = 0; i < recipients.length; i++) {
-        const recipient = recipients[i];
-        if (recipient.data) {
-          // Contract call recipient — verify against rawCalls
-          const rawCall = rawCalls[rawIndex++];
-          if (!rawCall) {
-            throw new Error(`Missing raw call for recipient ${i}`);
-          }
+      if (rawCalls.length > 0) {
+        // Contract call transaction — single raw call, single recipient with data
+        if (rawCalls.length !== recipients.length) {
+          throw new Error(
+            `Transaction has ${rawCalls.length} call(s) but ${recipients.length} recipient(s) were requested`
+          );
+        }
+        for (let i = 0; i < rawCalls.length; i++) {
+          const rawCall = rawCalls[i];
+          const recipient = recipients[i];
           if (rawCall.to.toLowerCase() !== recipient.address.split('?')[0].toLowerCase()) {
             throw new Error(`Raw call ${i} address mismatch: expected ${recipient.address}, got ${rawCall.to}`);
           }
-          if (rawCall.data !== recipient.data) {
+          if (!recipient.data || rawCall.data.toLowerCase() !== recipient.data.toLowerCase()) {
             throw new Error(`Raw call ${i} calldata mismatch`);
           }
-        } else {
-          // Token transfer recipient — verify against operations
-          const op = operations[opIndex++];
-          if (!op) {
-            throw new Error(`Missing operation for recipient ${i}`);
-          }
+        }
+      } else {
+        // Token transfer transaction — operations matched 1-to-1 against recipients
+        if (operations.length !== recipients.length) {
+          throw new Error(
+            `Transaction has ${operations.length} operation(s) but ${recipients.length} recipient(s) were requested`
+          );
+        }
+        for (let i = 0; i < operations.length; i++) {
+          const op = operations[i];
+          const recipient = recipients[i];
           const recipientBaseAddress = recipient.address.split('?')[0];
           if (op.to.toLowerCase() !== recipientBaseAddress.toLowerCase()) {
             throw new Error(`Operation ${i} recipient mismatch: expected ${recipient.address}, got ${op.to}`);
           }
-          // Compare amounts in base units (smallest denomination)
           const opAmountBaseUnits = amountToTip20Units(op.amount).toString();
           if (opAmountBaseUnits !== recipient.amount.toString()) {
             throw new Error(`Operation ${i} amount mismatch: expected ${recipient.amount}, got ${opAmountBaseUnits}`);
