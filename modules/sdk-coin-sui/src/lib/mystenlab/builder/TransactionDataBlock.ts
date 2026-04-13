@@ -20,17 +20,6 @@ import { TransactionType, TransactionBlockInput } from './Transactions';
 import { BuilderCallArg, PureCallArg } from './Inputs';
 import { create } from './utils';
 
-export const TransactionExpiration = optional(
-  nullable(
-    union([
-      object({ Epoch: integer() }),
-      object({ None: union([literal(true), literal(null)]) }),
-      object({ ValidDuring: object({ minEpoch: integer(), maxEpoch: integer(), chain: string(), nonce: integer() }) }),
-    ])
-  )
-);
-export type TransactionExpiration = Infer<typeof TransactionExpiration>;
-
 const SuiAddress = string();
 
 const StringEncodedBigint = define<string>('StringEncodedBigint', (val) => {
@@ -43,6 +32,17 @@ const StringEncodedBigint = define<string>('StringEncodedBigint', (val) => {
     return false;
   }
 });
+
+export const TransactionExpiration = optional(
+  nullable(
+    union([
+      object({ Epoch: StringEncodedBigint }),
+      object({ None: union([literal(true), literal(null)]) }),
+      object({ ValidDuring: object({ minEpoch: integer(), maxEpoch: integer(), chain: string(), nonce: integer() }) }),
+    ])
+  )
+);
+export type TransactionExpiration = Infer<typeof TransactionExpiration>;
 
 const GasConfig = object({
   budget: optional(StringEncodedBigint),
