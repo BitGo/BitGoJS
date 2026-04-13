@@ -461,6 +461,14 @@ export class Utils implements BaseUtils {
   validateStakingContractAddress(address: string, coinConfig: Readonly<CoinConfig>): void {
     const expectedAddress = this.getDefaultStakingAddress(coinConfig);
     if (address.toLowerCase() !== expectedAddress.toLowerCase()) {
+      const validatorRegistrationAddress = this.getContractAddressForValidatorRegistration(coinConfig);
+      if (address.toLowerCase() === validatorRegistrationAddress.toLowerCase()) {
+        throw new Error(
+          'Delegation is not supported for wallets with an active validator registration. ' +
+            'A wallet can either delegate or register as a validator, but not both. ' +
+            'Please use a wallet without an existing validator registration to perform delegation.'
+        );
+      }
       throw new Error(
         `Invalid staking contract address. Expected ${expectedAddress} for ${coinConfig.network.type}, got ${address}`
       );
@@ -476,6 +484,14 @@ export class Utils implements BaseUtils {
   validateContractAddressForValidatorRegistration(address: string, coinConfig: Readonly<CoinConfig>): void {
     const expectedAddress = this.getContractAddressForValidatorRegistration(coinConfig);
     if (address.toLowerCase() !== expectedAddress.toLowerCase()) {
+      const stakingContractAddress = this.getDefaultStakingAddress(coinConfig);
+      if (address.toLowerCase() === stakingContractAddress.toLowerCase()) {
+        throw new Error(
+          'Validator registration is not supported for wallets with an active delegation. ' +
+            'A wallet can either register as a validator or delegate, but not both. ' +
+            'Please use a wallet without an existing delegation to perform validator registration.'
+        );
+      }
       throw new Error(
         `Invalid contract address for validator registration. Expected ${expectedAddress} for ${coinConfig.network.type}, got ${address}`
       );

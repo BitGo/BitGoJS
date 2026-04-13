@@ -1,7 +1,11 @@
 import { coins } from '@bitgo/statics';
 import { TransactionBuilderFactory, Transaction, DelegateClauseTransaction } from '../../src/lib';
 import should from 'should';
-import { DELEGATE_CLAUSE_METHOD_ID, STARGATE_CONTRACT_ADDRESS_TESTNET } from '../../src/lib/constants';
+import {
+  DELEGATE_CLAUSE_METHOD_ID,
+  STARGATE_CONTRACT_ADDRESS_TESTNET,
+  VALIDATOR_REGISTRATION_STAKER_CONTRACT_ADDRESS_TESTNET,
+} from '../../src/lib/constants';
 import EthereumAbi from 'ethereumjs-abi';
 import * as testData from '../resources/vet';
 import { BN } from 'ethereumjs-util';
@@ -105,6 +109,21 @@ describe('VET Delegation Transaction', function () {
       should(() => {
         txBuilder.stakingContractAddress('invalid-address');
       }).throw(/Invalid address/);
+    });
+
+    it('should throw descriptive error when validator registration contract is used for delegation', async function () {
+      const txBuilder = createBasicTxBuilder();
+      txBuilder.stakingContractAddress(VALIDATOR_REGISTRATION_STAKER_CONTRACT_ADDRESS_TESTNET);
+      txBuilder.tokenId(tokenId);
+      txBuilder.validator(validatorAddress);
+
+      await txBuilder
+        .build()
+        .should.be.rejectedWith(
+          'Delegation is not supported for wallets with an active validator registration. ' +
+            'A wallet can either delegate or register as a validator, but not both. ' +
+            'Please use a wallet without an existing validator registration to perform delegation.'
+        );
     });
 
     it('should build transaction with undefined sender but include it in inputs', async function () {

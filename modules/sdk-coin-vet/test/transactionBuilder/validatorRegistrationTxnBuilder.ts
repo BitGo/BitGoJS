@@ -3,6 +3,7 @@ import { TransactionBuilderFactory, Transaction, ValidatorRegistrationTransactio
 import should from 'should';
 import {
   ADD_VALIDATION_METHOD_ID,
+  STARGATE_CONTRACT_ADDRESS_TESTNET,
   VALIDATOR_REGISTRATION_STAKER_CONTRACT_ADDRESS_TESTNET,
 } from '../../src/lib/constants';
 import EthereumAbi from 'ethereumjs-abi';
@@ -154,6 +155,22 @@ describe('VET Validator Registration Transaction', function () {
       should(() => {
         txBuilder.stakingContractAddress('invalid-address');
       }).throw(/Invalid address/);
+    });
+
+    it('should throw descriptive error when delegation contract is used for validator registration', async function () {
+      const txBuilder = createBasicTxBuilder();
+      txBuilder.stakingContractAddress(STARGATE_CONTRACT_ADDRESS_TESTNET);
+      txBuilder.stakingPeriod(stakingPeriod);
+      txBuilder.validator(validatorAddress);
+      txBuilder.amountToStake(amountToStake);
+
+      await txBuilder
+        .build()
+        .should.be.rejectedWith(
+          'Validator registration is not supported for wallets with an active delegation. ' +
+            'A wallet can either register as a validator or delegate, but not both. ' +
+            'Please use a wallet without an existing delegation to perform validator registration.'
+        );
     });
 
     it('should build transaction with undefined sender but include it in inputs', async function () {
