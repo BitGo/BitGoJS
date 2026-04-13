@@ -257,7 +257,7 @@ export const ExpressOfcSignPayloadApiSpec = apiSpec({
 });
 
 export const ExpressWalletRecoverTokenApiSpec = apiSpec({
-  'express.v2.wallet.recovertoken': {
+  'express.wallet.recovertoken': {
     post: PostWalletRecoverToken,
   },
 });
