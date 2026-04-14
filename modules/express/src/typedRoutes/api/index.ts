@@ -203,7 +203,7 @@ export const ExpressV2WalletSendManyApiSpec = apiSpec({
 });
 
 export const ExpressV2WalletSendCoinsApiSpec = apiSpec({
-  'express.v2.wallet.sendcoins': {
+  'express.wallet.sendcoins': {
     post: PostSendCoins,
   },
 });
