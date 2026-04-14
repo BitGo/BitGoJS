@@ -22,7 +22,7 @@ async function main() {
   const addresses = await wallet.addressesByBalance({
     token: 'tapt:usdt',
   });
-  console.log(JSON.stringify(addresses.addresses));
+  console.log(JSON.stringify(addresses.addresses, null, 2));
 }
 
 main().catch((e) => console.error(e));

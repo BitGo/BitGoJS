@@ -127,6 +127,8 @@ import {
   WalletInitResult,
   GetAccountResourcesOptions,
   GetAccountResourcesResponse,
+  GetResourceDelegationsOptions,
+  GetResourceDelegationsResponse,
 } from './iWallet';
 
 const debug = require('debug')('bitgo:v2:wallet');
@@ -1489,6 +1491,21 @@ export class Wallet implements IWallet {
     }
 
     return this.bitgo.post(this.url('/getAccountResources')).send(body).result();
+  }
+
+  /**
+   * Get resource delegations for this wallet
+   * @param params - optional filters: type, resource, limit, nextBatchPrevId
+   * @returns {Promise<GetResourceDelegationsResponse>} - response from WP API
+   */
+  async getResourceDelegations(params?: GetResourceDelegationsOptions): Promise<GetResourceDelegationsResponse> {
+    const queryParams: Record<string, string | number> = {};
+    if (params?.type !== undefined) queryParams.type = params.type;
+    if (params?.resource !== undefined) queryParams.resource = params.resource;
+    if (params?.limit !== undefined) queryParams.limit = params.limit;
+    if (params?.nextBatchPrevId !== undefined) queryParams.nextBatchPrevId = params.nextBatchPrevId;
+
+    return this.bitgo.get(this.url('/resourcedelegations')).query(queryParams).result();
   }
 
   async updateWalletBuildDefaults(params: UpdateBuildDefaultOptions): Promise<unknown> {
