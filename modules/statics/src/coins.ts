@@ -365,9 +365,12 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
  * whose family is not yet registered in the SDK's initializerMap.
  * Called from createToken() as a fallback when no initializer exists and isToken is false.
  */
-function buildDynamicCoin(token: AmsTokenConfig): Readonly<BaseCoin> {
+function buildDynamicCoin(token: AmsTokenConfig): Readonly<BaseCoin> | undefined {
   const network = token.network instanceof BaseNetwork ? token.network : getNetwork(token.network as string);
-
+  if (!network) {
+    console.log(`Network not found for coin ${token.name} (${token.id}) with network identifier ${token.network}`);
+    return undefined;
+  }
   return Object.freeze(
     new DynamicCoin({
       id: token.id,

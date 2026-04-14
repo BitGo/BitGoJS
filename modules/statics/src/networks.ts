@@ -2996,7 +2996,7 @@ export function registerNetwork(network: BaseNetwork): void {
  * @throws {Error} If the network is not found in local statics and the input
  *   is not a valid DynamicNetworkOptions JSON string.
  */
-export function getNetwork(network: string): BaseNetwork {
+export function getNetwork(network: string): BaseNetwork | undefined {
   // Check if the input is a JSON-encoded DynamicNetworkOptions object.
   try {
     const parsed = JSON.parse(network);
@@ -3015,7 +3015,7 @@ export function getNetwork(network: string): BaseNetwork {
 
   const networkObj = getNetworkByName(network);
   if (!networkObj) {
-    throw new Error(`Network ${network} not found`);
+    return undefined;
   }
   return networkObj;
 }
