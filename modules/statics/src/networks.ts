@@ -1992,6 +1992,29 @@ class KaiaTestnet extends Testnet implements EthereumNetwork {
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
+/**
+ * Kaspa network interface.
+ * Kaspa is a UTXO-based BlockDAG using GHOSTDAG/Proof-of-Work with cashaddr-style addresses.
+ */
+export interface KaspaNetwork extends BaseNetwork {
+  /** Cashaddr Human-Readable Part ('kaspa' for mainnet, 'kaspatest' for testnet) */
+  readonly hrp: string;
+}
+
+export class KaspaMainnet extends Mainnet implements KaspaNetwork {
+  name = 'Kaspa';
+  family = CoinFamily.KAS;
+  explorerUrl = 'https://explorer.kaspa.org/txs/';
+  hrp = 'kaspa';
+}
+
+export class KaspaTestnet extends Testnet implements KaspaNetwork {
+  name = 'KaspaTestnet';
+  family = CoinFamily.KAS;
+  explorerUrl = 'https://explorer-tn10.kaspa.org/txs/';
+  hrp = 'kaspatest';
+}
+
 class Irys extends Mainnet implements EthereumNetwork {
   name = 'Irys';
   family = CoinFamily.IRYS;
@@ -2762,6 +2785,7 @@ export const Networks = {
     islm: Object.freeze(new Islm()),
     jovayeth: Object.freeze(new JovayETH()),
     kaia: Object.freeze(new Kaia()),
+    kas: Object.freeze(new KaspaMainnet()),
     kavacosmos: Object.freeze(new KavaCosmos()),
     kavaevm: Object.freeze(new KavaEVM()),
     lnbtc: Object.freeze(new LightningBitcoin()),
@@ -2888,6 +2912,7 @@ export const Networks = {
     irys: Object.freeze(new IrysTestnet()),
     islm: Object.freeze(new IslmTestnet()),
     jovayeth: Object.freeze(new JovayETHTestnet()),
+    kas: Object.freeze(new KaspaTestnet()),
     kavacosmos: Object.freeze(new KavaCosmosTestnet()),
     kavaevm: Object.freeze(new KavaEVMTestnet()),
     kovan: Object.freeze(new Kovan()),

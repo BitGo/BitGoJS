@@ -212,6 +212,9 @@ export { Canton };
 import { FlrPLib as FlrP } from '@bitgo/sdk-coin-flrp';
 export { FlrP };
 
+import * as Kas from '@bitgo/sdk-coin-kas';
+export { Kas };
+
 import { MIDNIGHT_TNC_HASH } from './utils';
 export { MIDNIGHT_TNC_HASH };
 
@@ -330,6 +333,8 @@ const coinBuilderMap = {
   tcanton: Canton.TransactionBuilderFactory,
   flrp: FlrP.TransactionBuilderFactory,
   tflrp: FlrP.TransactionBuilderFactory,
+  kaspa: Kas.TransactionBuilderFactory,
+  tkaspa: Kas.TransactionBuilderFactory,
 };
 
 const coinMessageBuilderFactoryMap = {

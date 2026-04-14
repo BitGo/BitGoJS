@@ -161,6 +161,9 @@
       "path": "./modules/sdk-coin-injective"
     },
     {
+      "path": "./modules/sdk-coin-kas"
+    },
+    {
       "path": "./modules/sdk-coin-iota"
     },
     {
