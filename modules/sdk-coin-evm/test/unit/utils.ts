@@ -1,9 +1,35 @@
 import nock from 'nock';
 import 'should';
 
-import { recovery_HBAREVM_BlockchainExplorerQuery } from '../../src/lib/utils';
+import { isHtsEvmAddress, recovery_HBAREVM_BlockchainExplorerQuery } from '../../src/lib/utils';
 
 describe('EVM Coin Utils', function () {
+  describe('isHtsEvmAddress', () => {
+    it('should return true for HTS native token addresses (long-zero format)', () => {
+      isHtsEvmAddress('0x00000000000000000000000000000000007ac203').should.be.true();
+      isHtsEvmAddress('0x00000000000000000000000000000000007103a5').should.be.true();
+      isHtsEvmAddress('0x0000000000000000000000000000000000728a62').should.be.true();
+      isHtsEvmAddress('0x00000000000000000000000000000000007ac19c').should.be.true();
+    });
+
+    it('should return false for standard Solidity contract addresses', () => {
+      isHtsEvmAddress('0x5df4076613e714a4cc4284abac87caa927b918a8').should.be.false();
+      isHtsEvmAddress('0xcee79325714727016c125f80ef1a5d1f47b3d8d2').should.be.false();
+      isHtsEvmAddress('0xc795c4faae7f16a69bec13c5dfd9e8a156a68625').should.be.false();
+      isHtsEvmAddress('0x8f977e912ef500548a0c3be6ddde9899f1199b81').should.be.false();
+    });
+
+    it('should handle uppercase hex characters', () => {
+      isHtsEvmAddress('0x00000000000000000000000000000000007AC203').should.be.true();
+      isHtsEvmAddress('0x5DF4076613E714A4CC4284ABAC87CAA927B918A8').should.be.false();
+    });
+
+    it('should return false for invalid format', () => {
+      isHtsEvmAddress('0x1234').should.be.false();
+      isHtsEvmAddress('not-an-address').should.be.false();
+    });
+  });
+
   describe('recovery_HBAREVM_BlockchainExplorerQuery', function () {
     const mockRpcUrl = 'https://testnet.hashio.io/api';
     const mockExplorerUrl = 'https://testnet.mirrornode.hedera.com/api/v1';

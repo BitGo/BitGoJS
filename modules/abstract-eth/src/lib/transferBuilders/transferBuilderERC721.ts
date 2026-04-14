@@ -4,7 +4,12 @@ import { hexlify, hexZeroPad } from 'ethers/lib/utils';
 import { ContractCall } from '../contractCall';
 import { decodeERC721TransferData, isValidEthAddress, sendMultiSigData } from '../utils';
 import { BaseNFTTransferBuilder } from './baseNFTTransferBuilder';
-import { ERC721SafeTransferTypeMethodId, ERC721SafeTransferTypes } from '../walletUtil';
+import {
+  ERC721SafeTransferTypeMethodId,
+  ERC721SafeTransferTypes,
+  ERC721TransferFromMethodId,
+  ERC721TransferFromTypes,
+} from '../walletUtil';
 import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
 
 export class ERC721TransferBuilder extends BaseNFTTransferBuilder {
@@ -51,6 +56,17 @@ export class ERC721TransferBuilder extends BaseNFTTransferBuilder {
     const types = ERC721SafeTransferTypes;
     const values = [this._fromAddress, this._toAddress, this._tokenId, this._bytes];
     const contractCall = new ContractCall(ERC721SafeTransferTypeMethodId, types, values);
+    return contractCall.serialize();
+  }
+
+  /**
+   * Build using transferFrom(address,address,uint256) without the bytes data parameter.
+   * Required for HTS NFT transfers on Hedera EVM, which only supports transferFrom.
+   */
+  buildTransferFrom(): string {
+    const types = ERC721TransferFromTypes;
+    const values = [this._fromAddress, this._toAddress, this._tokenId];
+    const contractCall = new ContractCall(ERC721TransferFromMethodId, types, values);
     return contractCall.serialize();
   }
 

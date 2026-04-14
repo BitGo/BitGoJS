@@ -16,6 +16,7 @@ export const flushERC1155ForwarderTokensMethodId = '0xe6bd0aa4';
 export const flushERC1155ForwarderTokensMethodIdV4 = '0x8972c17c';
 
 export const ERC721SafeTransferTypeMethodId = '0xb88d4fde';
+export const ERC721TransferFromMethodId = '0x23b872dd';
 export const ERC1155SafeTransferTypeMethodId = '0xf242432a';
 export const ERC1155BatchTransferTypeMethodId = '0x2eb2c2d6';
 export const defaultForwarderVersion = 0;
@@ -38,6 +39,7 @@ export const sendMultiSigTokenTypes = ['address', 'uint', 'address', 'uint', 'ui
 export const sendMultiSigTokenTypesFirstSigner = ['string', 'address', 'uint', 'address', 'uint', 'uint'];
 
 export const ERC721SafeTransferTypes = ['address', 'address', 'uint256', 'bytes'];
+export const ERC721TransferFromTypes = ['address', 'address', 'uint256'];
 
 export const ERC1155SafeTransferTypes = ['address', 'address', 'uint256', 'uint256', 'bytes'];
 export const ERC1155BatchTransferTypes = ['address', 'address', 'uint256[]', 'uint256[]', 'bytes'];
