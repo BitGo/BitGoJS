@@ -69,6 +69,12 @@ const debug = debugLib('bitgo:express');
 
 const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version}`;
 
+/**
+ * Headers from the incoming request that should be forwarded to the BitGo API.
+ * Header names must be lowercase (Express normalizes incoming headers to lowercase).
+ */
+const FORWARDED_HEADERS = ['x-bitgo-otp'];
+
 function handlePing(
   req: ExpressApiRouteRequest<'express.ping', 'get'>,
   res: express.Response,
@@ -1335,6 +1341,13 @@ export function redirectRequest(
   if (request) {
     if (req.params.enterpriseId) {
       request.set('enterprise-id', req.params.enterpriseId);
+    }
+
+    for (const header of FORWARDED_HEADERS) {
+      const value = req.headers[header];
+      if (value) {
+        request.set(header, Array.isArray(value) ? value[0] : value);
+      }
     }
 
     return request.result().then((result) => {
