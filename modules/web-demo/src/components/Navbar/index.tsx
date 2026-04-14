@@ -56,6 +56,12 @@ const Navbar = () => {
       >
         WebCrypto Auth
       </NavItem>
+      <NavItem
+        activeRoute={pathname === '/parse-keycard'}
+        onClick={() => navigate('/parse-keycard')}
+      >
+        Parse Keycard PDF
+      </NavItem>
     </NavbarContainer>
   );
 };
