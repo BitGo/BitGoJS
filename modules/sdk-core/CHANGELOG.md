@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.40.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.39.0...@bitgo/sdk-core@36.40.0) (2026-04-14)
+
+
+### Features
+
+* **examples:** add TRX DelegateResource examples ([7074a0e](https://github.com/BitGo/BitGoJS/commit/7074a0ea14d89bc5100a35a23573330282ad909d))
+
+
+
+
+
 # [36.39.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.38.0...@bitgo/sdk-core@36.39.0) (2026-04-10)
 
 

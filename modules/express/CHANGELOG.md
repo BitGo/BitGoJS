@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.24.0...@bitgo/express@15.25.0) (2026-04-14)
+
+
+### Features
+
+* **examples:** add TRX DelegateResource examples ([7074a0e](https://github.com/BitGo/BitGoJS/commit/7074a0ea14d89bc5100a35a23573330282ad909d))
+* **express:** forward X-BitGo-OTP header to downstream BitGo API ([7b1ab98](https://github.com/BitGo/BitGoJS/commit/7b1ab9853a01df08c4974ce02593b1b3a185d84c))
+
+
+
+
+
 # [15.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.23.0...@bitgo/express@15.24.0) (2026-04-10)
 
 

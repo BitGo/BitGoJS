@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.77.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.76.3...@bitgo/sdk-api@1.77.0) (2026-04-14)
+
+
+### Features
+
+* **sdk-core:** removing mention of mitm attack from hmac error ([8940333](https://github.com/BitGo/BitGoJS/commit/894033382560e22cd79bb9765b4ede3fc4dcb95f))
+
+
+
+
+
 ## [1.76.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.76.2...@bitgo/sdk-api@1.76.3) (2026-04-10)
 
 **Note:** Version bump only for package @bitgo/sdk-api
