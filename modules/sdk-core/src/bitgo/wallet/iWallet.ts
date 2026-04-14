@@ -564,8 +564,8 @@ export interface AccountResourceInfo {
     energySunRequired?: string;
   };
   maxResourcesDelegatable?: {
-    bandwidthWeight: string;
-    energyWeight: string;
+    bandwidthSun: string;
+    energySun: string;
   };
 }
 
