@@ -40,7 +40,7 @@ import {
   toBitgoRequest,
   verifyResponseAsync,
 } from './api';
-import { decrypt, encrypt } from './encrypt';
+import { decrypt, decryptAsync, encrypt } from './encrypt';
 import { verifyAddress } from './v1/verifyAddress';
 import {
   AccessTokenOptions,
@@ -729,6 +729,29 @@ export class BitGoAPI implements BitGoBase {
     } catch (error) {
       if (error.message.includes("ccm: tag doesn't match")) {
         error.message = 'password error - ' + error.message;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Async decrypt that auto-detects v1 (SJCL) or v2 (Argon2id).
+   * Migration path from sync decrypt() -- use this before the breaking release.
+   */
+  async decryptAsync(params: DecryptOptions): Promise<string> {
+    params = params || {};
+    common.validateParams(params, ['input', 'password'], []);
+    if (!params.password) {
+      throw new Error(`cannot decrypt without password`);
+    }
+    try {
+      return await decryptAsync(params.password, params.input);
+    } catch (error) {
+      if (
+        error.message.includes("ccm: tag doesn't match") ||
+        error.message.includes('The operation failed for an operation-specific reason')
+      ) {
+        throw new Error('incorrect password');
       }
       throw error;
     }

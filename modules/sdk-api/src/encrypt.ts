@@ -1,8 +1,9 @@
-import { argon2id } from '@bitgo/argon2';
 import * as sjcl from '@bitgo/sjcl';
 import { randomBytes } from 'crypto';
 
-/** Default Argon2id parameters per RFC 9106 second recommendation */
+/** Default Argon2id parameters per RFC 9106 second recommendation
+ * @see https://www.rfc-editor.org/rfc/rfc9106#section-4
+ */
 const ARGON2_DEFAULTS = {
   memorySize: 65536, // 64 MiB in KiB
   iterations: 3,
@@ -96,6 +97,30 @@ export function decrypt(password: string, ciphertext: string): string {
 }
 
 /**
+ * Async decrypt that auto-detects v1 (SJCL) or v2 (Argon2id + AES-256-GCM)
+ * from the JSON envelope's `v` field.
+ *
+ * This is the migration path from sync `decrypt()`. Clients should move to
+ * `await decryptAsync()` before the breaking release that makes `decrypt()` async.
+ */
+export async function decryptAsync(password: string, ciphertext: string): Promise<string> {
+  let isV2 = false;
+  try {
+    // Only peeking at the v field to route; this is an internal format we produce, not external input.
+    const envelope = JSON.parse(ciphertext);
+    isV2 = envelope.v === 2;
+  } catch {
+    // Not valid JSON -- fall through to v1
+  }
+  if (isV2) {
+    // Do not catch errors here: a wrong password or corrupt envelope on v2 data
+    // should propagate, not silently fall through to a v1 decrypt attempt.
+    return decryptV2(password, ciphertext);
+  }
+  return sjcl.decrypt(password, ciphertext);
+}
+
+/**
  * Derive a 256-bit key from a password using Argon2id.
  */
 async function deriveKeyV2(
@@ -103,6 +128,7 @@ async function deriveKeyV2(
   salt: Uint8Array,
   params: { memorySize: number; iterations: number; parallelism: number }
 ): Promise<CryptoKey> {
+  const { argon2id } = await import('@bitgo/argon2');
   const keyBytes = await argon2id({
     password,
     salt,

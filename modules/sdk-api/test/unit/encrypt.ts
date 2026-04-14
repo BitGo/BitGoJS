@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { randomBytes } from 'crypto';
 
-import { decrypt, decryptV2, encrypt, encryptV2, V2Envelope } from '../../src';
+import { decrypt, decryptAsync, decryptV2, encrypt, encryptV2, V2Envelope } from '../../src';
 
 describe('encryption methods tests', () => {
   describe('encrypt', () => {
@@ -136,6 +136,45 @@ describe('encryption methods tests', () => {
     it('v1 and v2 are independent (v1 data does not decrypt with v2)', async () => {
       const v1ct = encrypt(password, plaintext);
       await assert.rejects(() => decryptV2(password, v1ct), /unsupported envelope version/);
+    });
+  });
+
+  describe('decryptAsync (auto-detect v1/v2)', () => {
+    const password = 'myPassword';
+    const plaintext = 'Hello, World!';
+
+    it('decrypts v1 data', async () => {
+      const v1ct = encrypt(password, plaintext);
+      const result = await decryptAsync(password, v1ct);
+      assert.strictEqual(result, plaintext);
+    });
+
+    it('decrypts v2 data', async () => {
+      const v2ct = await encryptV2(password, plaintext);
+      const result = await decryptAsync(password, v2ct);
+      assert.strictEqual(result, plaintext);
+    });
+
+    it('throws on wrong password for v1', async () => {
+      const v1ct = encrypt(password, plaintext);
+      await assert.rejects(() => decryptAsync('wrong', v1ct));
+    });
+
+    it('throws on wrong password for v2', async () => {
+      const v2ct = await encryptV2(password, plaintext);
+      await assert.rejects(() => decryptAsync('wrong', v2ct));
+    });
+
+    it('wrong password on v2 data does not fall through to v1 decrypt', async () => {
+      const v2ct = await encryptV2(password, plaintext, { memorySize: 1024, iterations: 1, parallelism: 1 });
+      let caughtError: Error | undefined;
+      try {
+        await decryptAsync('wrong', v2ct);
+      } catch (e) {
+        caughtError = e as Error;
+      }
+      assert.ok(caughtError, 'should have thrown');
+      assert.ok(!caughtError.message?.includes('sjcl'), 'error must not be from SJCL');
     });
   });
 });
