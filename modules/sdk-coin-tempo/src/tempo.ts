@@ -64,10 +64,10 @@ export class Tempo extends AbstractEthLikeNewCoins {
 
   /**
    * Check if value-less transfers are allowed
-   * TODO: Update based on Tempo requirements
+   * EVM-based chains allow zero-value transfers for smart contract interactions
    */
   valuelessTransferAllowed(): boolean {
-    return false;
+    return true;
   }
 
   /**
