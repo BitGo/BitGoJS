@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [10.10.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.10.1...@bitgo/sdk-lib-mpc@10.10.2) (2026-04-14)
+
+
+### Bug Fixes
+
+* **sdk-lib-mpc:** re-derive dkgState from WASM bytes in restoreSession ([8d03ef9](https://github.com/BitGo/BitGoJS/commit/8d03ef98745e8ba8bb2031915452d9de0f8265f0))
+* **sdk-lib-mpc:** replace date:null with tolerance window in OpenPGP calls ([884d91e](https://github.com/BitGo/BitGoJS/commit/884d91ef03c6a4bf49a1c68db2c1f4bab3101ff7))
+
+
+
+
+
 ## [10.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.10.0...@bitgo/sdk-lib-mpc@10.10.1) (2026-04-10)
 
 

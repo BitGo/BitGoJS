@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [25.7.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.7.2...@bitgo/sdk-coin-eth@25.7.3) (2026-04-14)
+
+
+### Bug Fixes
+
+* **abstract-eth:** validate maxPriorityFeePerGas <= maxFeePerGas ([0b1de3b](https://github.com/BitGo/BitGoJS/commit/0b1de3befd9d1bc3714cea4cbd0104c631082c18))
+
+
+
+
+
 ## [25.7.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.7.1...@bitgo/sdk-coin-eth@25.7.2) (2026-04-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

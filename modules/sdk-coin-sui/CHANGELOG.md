@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.23.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.23.1...@bitgo/sdk-coin-sui@5.23.2) (2026-04-14)
+
+
+### Bug Fixes
+
+* **sdk-coin-sui:** handle epoch round trip ([4247d7e](https://github.com/BitGo/BitGoJS/commit/4247d7e5c97ce064d08a9170aa43be3cf5f35ae7))
+
+
+
+
+
 ## [5.23.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.23.0...@bitgo/sdk-coin-sui@5.23.1) (2026-04-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

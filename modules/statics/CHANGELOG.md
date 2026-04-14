@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.35.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.34.0...@bitgo/statics@58.35.0) (2026-04-14)
+
+
+### Bug Fixes
+
+* **statics:** update BABY explorer links to Mintscan ([003d7be](https://github.com/BitGo/BitGoJS/commit/003d7be28a7592ef1b892ee37ffb961398f47f71))
+
+
+### Features
+
+* **statics:** add CUSTODY_BITGO_INDIA to CANTON_FEATURES default trust ([329cb92](https://github.com/BitGo/BitGoJS/commit/329cb92ef9759fee40e368bec3672528f020ac53))
+* **statics:** add dydxcosmos coin family to distinguish from erc20 dydx ([df86e42](https://github.com/BitGo/BitGoJS/commit/df86e42a7776c2069703de9074115b8af9401920))
+* updates sofid solana mint address ([4810887](https://github.com/BitGo/BitGoJS/commit/4810887ca9bac00c050605f3a2ae0536e95a4266))
+
+
+
+
+
 # [58.34.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.33.0...@bitgo/statics@58.34.0) (2026-04-10)
 
 
