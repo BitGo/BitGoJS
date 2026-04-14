@@ -971,7 +971,7 @@ async function handleV2SendOne(req: ExpressApiRouteRequest<'express.wallet.sendc
  * handle send many
  * @param req
  */
-async function handleV2SendMany(req: ExpressApiRouteRequest<'express.v2.wallet.sendmany', 'post'>) {
+async function handleV2SendMany(req: ExpressApiRouteRequest<'express.wallet.sendmany', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const reqId = new RequestTracer();
@@ -1781,7 +1781,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
   // send transaction
   router.post('express.wallet.sendcoins', [prepareBitGo(config), typedPromiseWrapper(handleV2SendOne)]);
-  router.post('express.v2.wallet.sendmany', [prepareBitGo(config), typedPromiseWrapper(handleV2SendMany)]);
+  router.post('express.wallet.sendmany', [prepareBitGo(config), typedPromiseWrapper(handleV2SendMany)]);
   router.post('express.v2.wallet.prebuildandsigntransaction', [
     prepareBitGo(config),
     typedPromiseWrapper(handleV2PrebuildAndSignTransaction),
