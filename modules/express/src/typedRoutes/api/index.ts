@@ -296,7 +296,7 @@ export const ExpressWalletSigningApiSpec = apiSpec({
 });
 
 export const ExpressWalletManagementApiSpec = apiSpec({
-  'express.v2.wallet.share': {
+  'express.wallet.share': {
     post: PostShareWallet,
   },
   'express.wallet.update': {
