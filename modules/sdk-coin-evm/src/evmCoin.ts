@@ -1,10 +1,19 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
+import {
+  BaseCoin,
+  BitGoBase,
+  BuildNftTransferDataOptions,
+  common,
+  MPCAlgorithm,
+  MultisigType,
+  multisigTypes,
+} from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFeature, coins, CoinFamily } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
+  ERC721TransferBuilder,
   OfflineVaultTxInfo,
   RecoverOptions,
   recoveryBlockchainExplorerQuery,
@@ -13,7 +22,7 @@ import {
   VerifyEthTransactionOptions,
 } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
-import { recovery_HBAREVM_BlockchainExplorerQuery, validateHederaAccountId } from './lib/utils';
+import { isHtsEvmAddress, recovery_HBAREVM_BlockchainExplorerQuery, validateHederaAccountId } from './lib/utils';
 import assert from 'assert';
 
 export class EvmCoin extends AbstractEthLikeNewCoins {
@@ -134,5 +143,18 @@ export class EvmCoin extends AbstractEthLikeNewCoins {
       return valid;
     }
     return super.isValidAddress(address);
+  }
+
+  /** @inheritDoc */
+  buildNftTransferData(params: BuildNftTransferDataOptions): string {
+    if (params.type === 'ERC721' && isHtsEvmAddress(params.tokenContractAddress)) {
+      return new ERC721TransferBuilder()
+        .tokenContractAddress(params.tokenContractAddress)
+        .to(params.recipientAddress)
+        .from(params.fromAddress)
+        .tokenId(params.tokenId)
+        .buildTransferFrom();
+    }
+    return super.buildNftTransferData(params);
   }
 }
