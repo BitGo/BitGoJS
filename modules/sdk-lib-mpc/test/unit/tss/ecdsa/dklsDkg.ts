@@ -16,6 +16,7 @@ import * as fixtures from './fixtures/mpcv1shares';
 import * as openpgp from 'openpgp';
 import { decode } from 'cbor-x';
 import { generate2of2KeyShares, generateDKGKeyShares } from '../../../../src/tss/ecdsa-dkls/util';
+import { createHash } from 'crypto';
 
 describe('DKLS Dkg 2x3', function () {
   it(`should create key shares`, async function () {
@@ -110,6 +111,153 @@ describe('DKLS Dkg 2x3', function () {
     const backupKeyShare = backup.getKeyShare();
     assert.deepEqual(aKeyCombine.xShare.y, Buffer.from(decode(userKeyShare).public_key).toString('hex'));
     assert.deepEqual(bKeyCombine.xShare.y, Buffer.from(decode(backupKeyShare).public_key).toString('hex'));
+  });
+
+  it(`should create retrofit key shares with non-zero final_session_id`, async function () {
+    const aKeyCombine = {
+      xShare: fixtures.mockDKeyShare.xShare,
+    };
+    const bKeyCombine = {
+      xShare: fixtures.mockEKeyShare.xShare,
+    };
+    const cKeyCombine = {
+      xShare: fixtures.mockFKeyShare.xShare,
+    };
+    const retrofitDataA: RetrofitData = {
+      xShare: aKeyCombine.xShare,
+    };
+    const retrofitDataB: RetrofitData = {
+      xShare: bKeyCombine.xShare,
+    };
+    const retrofitDataC: RetrofitData = {
+      xShare: cKeyCombine.xShare,
+    };
+    const [user] = await generateDKGKeyShares(retrofitDataA, retrofitDataB, retrofitDataC);
+
+    const userKeyShare = user.getKeyShare();
+    const decodedKeyShare = decode(userKeyShare);
+    const finalSessionId = decodedKeyShare.final_session_id;
+
+    // Assert final_session_id is NOT all zeros
+    assert(!finalSessionId.every((byte: number) => byte === 0), 'final_session_id should not be all zeros');
+  });
+
+  it(`should create retrofit key shares with 32-byte final_session_id`, async function () {
+    const aKeyCombine = {
+      xShare: fixtures.mockDKeyShare.xShare,
+    };
+    const bKeyCombine = {
+      xShare: fixtures.mockEKeyShare.xShare,
+    };
+    const cKeyCombine = {
+      xShare: fixtures.mockFKeyShare.xShare,
+    };
+    const retrofitDataA: RetrofitData = {
+      xShare: aKeyCombine.xShare,
+    };
+    const retrofitDataB: RetrofitData = {
+      xShare: bKeyCombine.xShare,
+    };
+    const retrofitDataC: RetrofitData = {
+      xShare: cKeyCombine.xShare,
+    };
+    const [user] = await generateDKGKeyShares(retrofitDataA, retrofitDataB, retrofitDataC);
+
+    const userKeyShare = user.getKeyShare();
+    const decodedKeyShare = decode(userKeyShare);
+    const finalSessionId = decodedKeyShare.final_session_id;
+
+    // Assert final_session_id is exactly 32 bytes
+    assert.strictEqual(finalSessionId.length, 32, 'final_session_id must be 32 bytes');
+  });
+
+  it(`should produce deterministic final_session_id for same retrofit inputs`, async function () {
+    const aKeyCombine = {
+      xShare: fixtures.mockDKeyShare.xShare,
+    };
+    const retrofitDataA: RetrofitData = {
+      xShare: aKeyCombine.xShare,
+    };
+
+    // Test the INPUT keyshare (before WASM protocol), not the output
+    // Create first Dkg instance and call _createDKLsRetrofitKeyShare
+    const dkg1 = new DklsDkg.Dkg(3, 2, 0, undefined, retrofitDataA);
+    await (dkg1 as any).loadDklsWasm();
+    (dkg1 as any)._createDKLsRetrofitKeyShare();
+    const keyshareObj1 = (dkg1 as any).dklsKeyShareRetrofitObject;
+    const decoded1 = decode(keyshareObj1.toBytes());
+    const finalSessionId1 = decoded1.final_session_id;
+
+    // Create second Dkg instance with same retrofit data
+    const dkg2 = new DklsDkg.Dkg(3, 2, 0, undefined, retrofitDataA);
+    await (dkg2 as any).loadDklsWasm();
+    (dkg2 as any)._createDKLsRetrofitKeyShare();
+    const keyshareObj2 = (dkg2 as any).dklsKeyShareRetrofitObject;
+    const decoded2 = decode(keyshareObj2.toBytes());
+    const finalSessionId2 = decoded2.final_session_id;
+
+    // Assert both runs produce identical final_session_id
+    assert.deepEqual(finalSessionId1, finalSessionId2, 'final_session_id should be deterministic for same inputs');
+  });
+
+  it(`should derive final_session_id as sha256(public_key || chaincode)`, async function () {
+    const aKeyCombine = {
+      xShare: fixtures.mockDKeyShare.xShare,
+    };
+    const retrofitDataA: RetrofitData = {
+      xShare: aKeyCombine.xShare,
+    };
+
+    // Test the INPUT keyshare (before WASM protocol), not the output
+    const dkg = new DklsDkg.Dkg(3, 2, 0, undefined, retrofitDataA);
+    await (dkg as any).loadDklsWasm();
+    (dkg as any)._createDKLsRetrofitKeyShare();
+    const keyshareObj = (dkg as any).dklsKeyShareRetrofitObject;
+    const decoded = decode(keyshareObj.toBytes());
+    const finalSessionId = decoded.final_session_id;
+
+    // Compute expected final_session_id: sha256(public_key_bytes || chaincode_bytes)
+    const publicKeyBuffer = Buffer.from(aKeyCombine.xShare.y, 'hex');
+    const chaincodeBuffer = Buffer.from(aKeyCombine.xShare.chaincode, 'hex');
+    const expectedHash = Array.from(createHash('sha256').update(publicKeyBuffer).update(chaincodeBuffer).digest());
+
+    // Assert actual final_session_id matches the computed hash
+    assert.deepEqual(finalSessionId, expectedHash, 'final_session_id should be sha256(public_key || chaincode)');
+  });
+
+  it(`should produce the same final_session_id for all parties in a retrofit`, async function () {
+    const aKeyCombine = {
+      xShare: fixtures.mockDKeyShare.xShare,
+    };
+    const bKeyCombine = {
+      xShare: fixtures.mockEKeyShare.xShare,
+    };
+    const cKeyCombine = {
+      xShare: fixtures.mockFKeyShare.xShare,
+    };
+    const retrofitDataA: RetrofitData = {
+      xShare: aKeyCombine.xShare,
+    };
+    const retrofitDataB: RetrofitData = {
+      xShare: bKeyCombine.xShare,
+    };
+    const retrofitDataC: RetrofitData = {
+      xShare: cKeyCombine.xShare,
+    };
+    const [user, backup, bitgo] = await generateDKGKeyShares(retrofitDataA, retrofitDataB, retrofitDataC);
+
+    const userKeyShare = user.getKeyShare();
+    const backupKeyShare = backup.getKeyShare();
+    const bitgoKeyShare = bitgo.getKeyShare();
+
+    const userFinalSessionId = decode(userKeyShare).final_session_id;
+    const backupFinalSessionId = decode(backupKeyShare).final_session_id;
+    const bitgoFinalSessionId = decode(bitgoKeyShare).final_session_id;
+
+    // Assert all parties have the same final_session_id
+    assert.deepEqual(userFinalSessionId, backupFinalSessionId, 'user and backup final_session_id should match');
+    assert.deepEqual(backupFinalSessionId, bitgoFinalSessionId, 'backup and bitgo final_session_id should match');
+    assert.deepEqual(userFinalSessionId, bitgoFinalSessionId, 'user and bitgo final_session_id should match');
   });
 
   it(`should create key shares with authenticated encryption`, async function () {

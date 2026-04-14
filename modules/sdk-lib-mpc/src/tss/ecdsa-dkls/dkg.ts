@@ -1,5 +1,6 @@
 import type { KeygenSession, Keyshare, Message } from '@silencelaboratories/dkls-wasm-ll-node';
 import { decode, encode } from 'cbor-x';
+import { createHash } from 'crypto';
 import { Secp256k1Curve } from '../../curves';
 import { bigIntToBufferBE } from '../../util';
 import { DeserializedBroadcastMessage, DeserializedMessages, DkgState, ReducedKeyShare, RetrofitData } from './types';
@@ -86,7 +87,12 @@ export class Dkg {
         party_id: this.partyIdx,
         public_key: Array.from(Buffer.from(this.retrofitData.xShare.y, 'hex')),
         root_chain_code: Array.from(Buffer.from(this.retrofitData.xShare.chaincode, 'hex')),
-        final_session_id: Array(32).fill(0),
+        final_session_id: Array.from(
+          createHash('sha256')
+            .update(Buffer.from(this.retrofitData.xShare.y, 'hex'))
+            .update(Buffer.from(this.retrofitData.xShare.chaincode, 'hex'))
+            .digest()
+        ),
         seed_ot_receivers: new Array(this.n - 1).fill(Array(32832).fill(0)),
         seed_ot_senders: new Array(this.n - 1).fill(Array(32768).fill(0)),
         sent_seed_list: [Array(32).fill(0)],
