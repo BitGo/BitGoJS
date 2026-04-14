@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "outDir": "./dist",
+    "rootDir": "./"
+  },
+  "include": ["test/type-check.ts"],
+  "exclude": ["node_modules"]
+}
