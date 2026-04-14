@@ -108,7 +108,7 @@ export class Tip20Token extends Tempo {
 
   /** @inheritDoc */
   valuelessTransferAllowed(): boolean {
-    return false;
+    return true;
   }
 
   /** @inheritDoc */
