@@ -1,6 +1,6 @@
 import * as t from 'io-ts';
 import { DateFromISOString } from 'io-ts-types';
-import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
+import { httpRoute, httpRequest, optional, type HttpRoute } from '@api-ts/io-ts-http';
 import { TransactionRequest as TxRequestResponse } from '@bitgo/public-types';
 import { BitgoExpressError } from '../../schemas/error';
 
@@ -790,7 +790,7 @@ export const SendManyResponse = t.intersection([
  * @operationId express.wallet.sendmany
  * @tag Express
  */
-export const PostSendMany = httpRoute({
+export const PostSendMany: HttpRoute<'post'> = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/sendmany',
   method: 'POST',
   request: httpRequest({

@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
+import { httpRoute, httpRequest, optional, type HttpRoute } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 import { SendManyResponse, EIP1559Params, MemoParams, TokenEnablement } from './sendmany';
 
@@ -412,7 +412,7 @@ export const SendCoinsRequestBody = {
  * @operationId express.wallet.sendcoins
  * @tag express
  */
-export const PostSendCoins = httpRoute({
+export const PostSendCoins: HttpRoute<'post'> = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/sendcoins',
   method: 'POST',
   request: httpRequest({
