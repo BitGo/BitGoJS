@@ -73,6 +73,7 @@ export enum CoinFamily {
   HOODETH = 'hoodeth', // Robinhood Chain
   HPPETH = 'hppeth', // House Party Protocol
   ICP = 'icp',
+  INKETH = 'inketh', // INK L2
   INITIA = 'initia',
   INJECTIVE = 'injective',
   IOTA = 'iota',
@@ -619,6 +620,7 @@ export enum UnderlyingAsset {
   HOODETH = 'hoodeth', // Robinhood Chain
   HPPETH = 'hppeth', // House Party Protocol
   ICP = 'icp',
+  INKETH = 'inketh', // INK L2
   IP = 'ip', // Story Chain
   INITIA = 'initia',
   INJECTIVE = 'injective',
