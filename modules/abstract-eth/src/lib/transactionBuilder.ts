@@ -386,9 +386,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (this._common === undefined) {
       throw new BuildTransactionError('Invalid transaction: network common');
     }
-    if (this._counter === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing address counter');
-    }
   }
 
   /** @inheritdoc */

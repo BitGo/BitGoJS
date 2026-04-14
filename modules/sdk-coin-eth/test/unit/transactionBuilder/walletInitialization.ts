@@ -340,20 +340,16 @@ describe('Eth Transaction builder wallet initialization', function () {
 
     it('a transaction to build', async () => {
       const txBuilder: any = getBuilder('eth');
-      txBuilder.counter(undefined);
       txBuilder.type(TransactionType.WalletInitialization);
       assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing fee/);
       txBuilder.fee({
         fee: '10',
         gasLimit: '1000',
       });
-      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing address counter/);
-      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing address counter/);
       const source = {
         prv: sourcePrv,
       };
       const sourceKeyPair = new KeyPair(source);
-      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing address counter/);
       txBuilder.counter(1);
       assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 0/);
       txBuilder.owner(sourceKeyPair.getAddress());
