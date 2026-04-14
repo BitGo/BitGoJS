@@ -1,6 +1,8 @@
 import {
   decryptAndVerifySignedData,
   encryptAndDetachSignData,
+  decryptAndVerifyIncomingMessages,
+  encryptAndAuthOutgoingMessages,
   verifySignedData,
   SIGNATURE_DATE_TOLERANCE_MS,
 } from '../../../../src/tss/ecdsa-dkls/commsLayer';
@@ -163,5 +165,186 @@ describe('DKLS Communication Layer', function () {
       );
       result.should.equal(false);
     });
+  });
+});
+
+describe('DKLS encryptAndAuthOutgoingMessages / decryptAndVerifyIncomingMessages', function () {
+  let partyAKey: { publicKey: string; privateKey: string };
+  let partyBKey: { publicKey: string; privateKey: string };
+  let tampererKey: { publicKey: string; privateKey: string };
+
+  before(async function () {
+    openpgp.config.rejectCurves = new Set();
+    partyAKey = await openpgp.generateKey({
+      userIDs: [{ name: 'partyA', email: 'a@test.com' }],
+      curve: 'secp256k1',
+    });
+    partyBKey = await openpgp.generateKey({
+      userIDs: [{ name: 'partyB', email: 'b@test.com' }],
+      curve: 'secp256k1',
+    });
+    tampererKey = await openpgp.generateKey({
+      userIDs: [{ name: 'tamperer', email: 'evil@test.com' }],
+      curve: 'secp256k1',
+    });
+  });
+
+  const partyAId = 0;
+  const partyBId = 2;
+
+  it('should sign signatureR and verify it on receive', async function () {
+    const payload = Buffer.from('deadbeef', 'hex').toString('base64');
+    const signatureRBytes = Buffer.from('cafebabe', 'hex').toString('base64');
+
+    const encrypted = await encryptAndAuthOutgoingMessages(
+      {
+        p2pMessages: [],
+        broadcastMessages: [{ from: partyAId, payload, signatureR: signatureRBytes }],
+      },
+      [{ partyId: partyBId, gpgKey: partyBKey.publicKey }],
+      [{ partyId: partyAId, gpgKey: partyAKey.privateKey }]
+    );
+
+    const broadcastMsg = encrypted.broadcastMessages[0];
+    broadcastMsg.signatureR!.message.should.equal(signatureRBytes);
+    broadcastMsg.signatureR!.signature.should.not.equal('');
+
+    const decrypted = await decryptAndVerifyIncomingMessages(
+      {
+        p2pMessages: [],
+        broadcastMessages: [broadcastMsg],
+      },
+      [{ partyId: partyAId, gpgKey: partyAKey.publicKey }],
+      [{ partyId: partyBId, gpgKey: partyBKey.privateKey }]
+    );
+
+    decrypted.broadcastMessages[0].signatureR!.should.equal(signatureRBytes);
+  });
+
+  it('should reject a tampered signatureR on receive', async function () {
+    const payload = Buffer.from('deadbeef', 'hex').toString('base64');
+    const signatureRBytes = Buffer.from('cafebabe', 'hex').toString('base64');
+
+    const encrypted = await encryptAndAuthOutgoingMessages(
+      {
+        p2pMessages: [],
+        broadcastMessages: [{ from: partyAId, payload, signatureR: signatureRBytes }],
+      },
+      [{ partyId: partyBId, gpgKey: partyBKey.publicKey }],
+      [{ partyId: partyAId, gpgKey: partyAKey.privateKey }]
+    );
+
+    const tampered = {
+      ...encrypted.broadcastMessages[0],
+      signatureR: {
+        message: Buffer.from('00000000', 'hex').toString('base64'),
+        signature: encrypted.broadcastMessages[0].signatureR!.signature,
+      },
+    };
+
+    await decryptAndVerifyIncomingMessages(
+      { p2pMessages: [], broadcastMessages: [tampered] },
+      [{ partyId: partyAId, gpgKey: partyAKey.publicKey }],
+      [{ partyId: partyBId, gpgKey: partyBKey.privateKey }]
+    ).should.be.rejectedWith(`Failed to authenticate signatureR in broadcast message from party: ${partyAId}`);
+  });
+
+  it('should reject a signatureR signed by a different key', async function () {
+    const payload = Buffer.from('deadbeef', 'hex').toString('base64');
+    const signatureRBytes = Buffer.from('cafebabe', 'hex').toString('base64');
+
+    const encrypted = await encryptAndAuthOutgoingMessages(
+      {
+        p2pMessages: [],
+        broadcastMessages: [{ from: partyAId, payload, signatureR: signatureRBytes }],
+      },
+      [{ partyId: partyBId, gpgKey: partyBKey.publicKey }],
+      [{ partyId: partyAId, gpgKey: tampererKey.privateKey }]
+    );
+
+    await decryptAndVerifyIncomingMessages(
+      { p2pMessages: [], broadcastMessages: [encrypted.broadcastMessages[0]] },
+      [{ partyId: partyAId, gpgKey: partyAKey.publicKey }],
+      [{ partyId: partyBId, gpgKey: partyBKey.privateKey }]
+    ).should.be.rejectedWith(`Failed to authenticate broadcast message from party: ${partyAId}`);
+  });
+
+  it('should handle broadcast messages without signatureR unchanged', async function () {
+    const payload = Buffer.from('deadbeef', 'hex').toString('base64');
+
+    const encrypted = await encryptAndAuthOutgoingMessages(
+      {
+        p2pMessages: [],
+        broadcastMessages: [{ from: partyAId, payload }],
+      },
+      [{ partyId: partyBId, gpgKey: partyBKey.publicKey }],
+      [{ partyId: partyAId, gpgKey: partyAKey.privateKey }]
+    );
+
+    (encrypted.broadcastMessages[0].signatureR === undefined).should.equal(true);
+
+    const decrypted = await decryptAndVerifyIncomingMessages(
+      { p2pMessages: [], broadcastMessages: [encrypted.broadcastMessages[0]] },
+      [{ partyId: partyAId, gpgKey: partyAKey.publicKey }],
+      [{ partyId: partyBId, gpgKey: partyBKey.privateKey }]
+    );
+
+    (decrypted.broadcastMessages[0].signatureR === undefined).should.equal(true);
+  });
+
+  it('should skip signatureR verification when signatureR field is omitted (soft downgrade)', async function () {
+    const payload = Buffer.from('deadbeef', 'hex').toString('base64');
+    const signatureRBytes = Buffer.from('cafebabe', 'hex').toString('base64');
+
+    const encrypted = await encryptAndAuthOutgoingMessages(
+      {
+        p2pMessages: [],
+        broadcastMessages: [{ from: partyAId, payload, signatureR: signatureRBytes }],
+      },
+      [{ partyId: partyBId, gpgKey: partyBKey.publicKey }],
+      [{ partyId: partyAId, gpgKey: partyAKey.privateKey }]
+    );
+
+    const broadcastWithoutAuthR = {
+      from: encrypted.broadcastMessages[0].from,
+      payload: encrypted.broadcastMessages[0].payload,
+    };
+
+    const decrypted = await decryptAndVerifyIncomingMessages(
+      { p2pMessages: [], broadcastMessages: [broadcastWithoutAuthR] },
+      [{ partyId: partyAId, gpgKey: partyAKey.publicKey }],
+      [{ partyId: partyBId, gpgKey: partyBKey.privateKey }]
+    );
+
+    (decrypted.broadcastMessages[0].signatureR === undefined).should.equal(true);
+  });
+
+  it('should reject when signatureR message is present but signature is empty string', async function () {
+    const payload = Buffer.from('deadbeef', 'hex').toString('base64');
+    const signatureRBytes = Buffer.from('cafebabe', 'hex').toString('base64');
+
+    const encrypted = await encryptAndAuthOutgoingMessages(
+      {
+        p2pMessages: [],
+        broadcastMessages: [{ from: partyAId, payload, signatureR: signatureRBytes }],
+      },
+      [{ partyId: partyBId, gpgKey: partyBKey.publicKey }],
+      [{ partyId: partyAId, gpgKey: partyAKey.privateKey }]
+    );
+
+    const strippedSig = {
+      ...encrypted.broadcastMessages[0],
+      signatureR: {
+        message: encrypted.broadcastMessages[0].signatureR!.message,
+        signature: '',
+      },
+    };
+
+    // Empty armor: OpenPGP fails parsing before verifySignedData returns false.
+    await decryptAndVerifyIncomingMessages(
+      { p2pMessages: [], broadcastMessages: [strippedSig] },
+      [{ partyId: partyAId, gpgKey: partyAKey.publicKey }],
+      [{ partyId: partyBId, gpgKey: partyBKey.privateKey }]
+    ).should.be.rejected();
   });
 });
