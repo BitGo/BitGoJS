@@ -15,6 +15,7 @@ const EcdsaChallengeComponent = lazy(
 );
 const WebCryptoAuthComponent = lazy(() => import('@components/WebCryptoAuth'));
 const PasskeyDemo = lazy(() => import('@components/PasskeyDemo'));
+const ParseKeycardComponent = lazy(() => import('@components/ParseKeycard'));
 
 const Loading = () => <div>Loading route...</div>;
 
@@ -42,6 +43,7 @@ const App = () => {
               element={<WebCryptoAuthComponent />}
             />
             <Route path="/passkey-demo" element={<PasskeyDemo />} />
+            <Route path="/parse-keycard" element={<ParseKeycardComponent />} />
           </Routes>
         </Suspense>
       </Layout>
