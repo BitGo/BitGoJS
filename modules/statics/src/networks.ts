@@ -1063,7 +1063,7 @@ class KavaCosmosTestnet extends Testnet implements CosmosNetwork {
 
 class Dydx extends Mainnet implements CosmosNetwork {
   name = 'Dydx';
-  family = CoinFamily.DYDX;
+  family = CoinFamily.DYDXCOSMOS;
   explorerUrl = 'https://www.mintscan.io/dydx/tx/';
   addressPrefix = 'dydx';
   validatorPrefix = 'dydxvaloper';
@@ -1075,7 +1075,7 @@ class Dydx extends Mainnet implements CosmosNetwork {
 
 class DydxTestnet extends Testnet implements CosmosNetwork {
   name = 'DydxTestnet';
-  family = CoinFamily.DYDX;
+  family = CoinFamily.DYDXCOSMOS;
   explorerUrl = 'https://www.mintscan.io/dydx-testnet/tx/';
   addressPrefix = 'dydx';
   validatorPrefix = 'dydxvaloper';

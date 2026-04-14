@@ -1084,7 +1084,7 @@ export const allCoinsAndTokens = [
     'dYdX Cosmos',
     Networks.main.dydx,
     18,
-    UnderlyingAsset.DYDX,
+    UnderlyingAsset.DYDXCOSMOS,
     BaseUnit.DYDX,
     [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
   ),
@@ -1094,7 +1094,7 @@ export const allCoinsAndTokens = [
     'Testnet dYdX Cosmos',
     Networks.test.dydx,
     18,
-    UnderlyingAsset.DYDX,
+    UnderlyingAsset.DYDXCOSMOS,
     BaseUnit.DYDX,
     [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
   ),
