@@ -511,5 +511,55 @@ describe('Sui Transfer Builder', () => {
       should.exist(epochVal);
       Number(epochVal).should.equal(324);
     });
+
+    it('should round-trip a self-pay transfer with ValidDuring expiration via fromBytes', async function () {
+      // Verifies the full 6-field ValidDuringExpiration BCS schema:
+      //   minEpoch/maxEpoch as Option<u64>, minTimestamp/maxTimestamp as Option<u64> (None),
+      //   chain as 32-byte Base58 ObjectDigest, nonce as u32.
+      // Uses a real mainnet genesis checkpoint digest (32 bytes, Base58).
+      const GENESIS_CHAIN_ID = 'GAFpCCcRCxTdFfUEMbQbkLBaZy2RNiGAfvFBhMNpq2kT';
+      const FUNDS_IN_ADDRESS_BALANCE = '5000000000';
+      const gasDataNoPayment = {
+        ...testData.gasDataWithoutGasPayment,
+        payment: [],
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(gasDataNoPayment);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+      txBuilder.expiration({
+        ValidDuring: {
+          minEpoch: { Some: 500 },
+          maxEpoch: { Some: 501 },
+          minTimestamp: { None: null },
+          maxTimestamp: { None: null },
+          chain: GENESIS_CHAIN_ID,
+          nonce: 0xdeadbeef,
+        },
+      });
+
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // fromBytes must not throw — ValidDuring fields must survive deserialization
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+
+      // BCS round-trip: serialized bytes must be identical
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+
+      // All ValidDuring fields must survive the round-trip
+      const expiration = (rebuiltTx.toJson().expiration as any)?.ValidDuring;
+      should.exist(expiration);
+      Number(expiration.minEpoch?.Some ?? expiration.minEpoch).should.equal(500);
+      Number(expiration.maxEpoch?.Some ?? expiration.maxEpoch).should.equal(501);
+      expiration.chain.should.equal(GENESIS_CHAIN_ID);
+      Number(expiration.nonce).should.equal(0xdeadbeef);
+    });
   });
 });

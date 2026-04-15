@@ -504,11 +504,11 @@ export class Utils implements BaseUtils {
    * @returns {Promise<{ epoch: number; chainId: string }>} - The current epoch and chain identifier.
    */
   async getChainContext(url: string): Promise<{ epoch: number; chainId: string }> {
-    const [systemState, chainId] = await Promise.all([
+    const [systemState, genesisCheckpoint] = await Promise.all([
       makeRPC(url, 'suix_getLatestSuiSystemState', []),
-      makeRPC(url, 'sui_getChainIdentifier', []),
+      makeRPC(url, 'sui_getCheckpoint', ['0']),
     ]);
-    return { epoch: Number(systemState.epoch), chainId: String(chainId) };
+    return { epoch: Number(systemState.epoch), chainId: String(genesisCheckpoint.digest) };
   }
 
   async getBalance(url: string, owner: string, coinType?: string): Promise<SuiBalanceInfo> {

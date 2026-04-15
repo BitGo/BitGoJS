@@ -38,7 +38,16 @@ export const TransactionExpiration = optional(
     union([
       object({ Epoch: StringEncodedBigint }),
       object({ None: union([literal(true), literal(null)]) }),
-      object({ ValidDuring: object({ minEpoch: integer(), maxEpoch: integer(), chain: string(), nonce: integer() }) }),
+      object({
+        ValidDuring: object({
+          minEpoch: union([object({ Some: StringEncodedBigint }), object({ None: union([literal(null), literal(true)]) })]),
+          maxEpoch: union([object({ Some: StringEncodedBigint }), object({ None: union([literal(null), literal(true)]) })]),
+          minTimestamp: union([object({ Some: StringEncodedBigint }), object({ None: union([literal(null), literal(true)]) })]),
+          maxTimestamp: union([object({ Some: StringEncodedBigint }), object({ None: union([literal(null), literal(true)]) })]),
+          chain: string(),
+          nonce: integer(),
+        }),
+      }),
     ])
   )
 );
