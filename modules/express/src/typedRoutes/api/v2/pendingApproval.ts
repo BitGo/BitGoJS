@@ -132,7 +132,7 @@ export const PendingApprovalResponse = t.intersection([
 /**
  * Accept or reject a pending approval
  *
- * @operationId express.v2.pendingapprovals
+ * @operationId express.pendingapprovals
  * @tag Express
  */
 export const PutV2PendingApproval = httpRoute({
