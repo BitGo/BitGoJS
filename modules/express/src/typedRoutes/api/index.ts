@@ -128,7 +128,7 @@ export const ExpressPendingApprovalsApiSpec = apiSpec({
   'express.v1.pendingapprovals': {
     put: PutPendingApproval,
   },
-  'express.v2.pendingapprovals': {
+  'express.pendingapprovals': {
     put: PutV2PendingApproval,
   },
 });
