@@ -188,9 +188,15 @@ export async function decryptAndVerifyIncomingMessages(
         if (!(await verifySignedData(m.payload, pubGpgKey.gpgKey))) {
           throw Error(`Failed to authenticate broadcast message from party: ${m.from}`);
         }
+        if (m.signatureR !== undefined) {
+          if (!(await verifySignedData(m.signatureR, pubGpgKey.gpgKey))) {
+            throw Error(`Failed to authenticate signatureR in broadcast message from party: ${m.from}`);
+          }
+        }
         return {
           from: m.from,
           payload: m.payload.message,
+          signatureR: m.signatureR?.message,
         };
       })
     ),
@@ -233,15 +239,16 @@ export async function encryptAndAuthOutgoingMessages(
         if (!prvGpgKey) {
           throw Error(`No private key provided for sender with ID: ${m.from}`);
         }
+        const [signedPayload, signedSignatureR] = await Promise.all([
+          detachSignData(Buffer.from(m.payload, 'base64'), prvGpgKey.gpgKey),
+          m.signatureR
+            ? detachSignData(Buffer.from(m.signatureR, 'base64'), prvGpgKey.gpgKey)
+            : Promise.resolve(undefined),
+        ]);
         return {
           from: m.from,
-          payload: await detachSignData(Buffer.from(m.payload, 'base64'), prvGpgKey.gpgKey),
-          signatureR: m.signatureR
-            ? {
-                message: m.signatureR,
-                signature: '',
-              }
-            : undefined,
+          payload: signedPayload,
+          signatureR: signedSignatureR,
         };
       })
     ),

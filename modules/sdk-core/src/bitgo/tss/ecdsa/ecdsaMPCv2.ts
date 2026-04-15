@@ -126,8 +126,12 @@ export async function getSignatureShareRoundThree(
     [getUserPartyGpgKey(userGpgKey, partyId)]
   );
   assert(MPCv2PartyFromStringOrNumber.is(userToBitGoEncryptedMsg4.broadcastMessages[0].from));
-  if (!userToBitGoEncryptedMsg4.broadcastMessages[0].signatureR?.message) {
+  const signatureR = userToBitGoEncryptedMsg4.broadcastMessages[0].signatureR;
+  if (!signatureR?.message) {
     throw Error('signatureR should be defined');
+  }
+  if (!signatureR.signature) {
+    throw Error('signatureR signature should be defined');
   }
   const share: MPCv2SignatureShareRound3Input = {
     type: 'round3Input',
@@ -136,7 +140,8 @@ export async function getSignatureShareRoundThree(
         from: userToBitGoEncryptedMsg4.broadcastMessages[0].from,
         message: userToBitGoEncryptedMsg4.broadcastMessages[0].payload.message,
         signature: userToBitGoEncryptedMsg4.broadcastMessages[0].payload.signature,
-        signatureR: userToBitGoEncryptedMsg4.broadcastMessages[0].signatureR.message,
+        signatureR: signatureR.message,
+        signatureRSignature: signatureR.signature,
       },
     },
   };

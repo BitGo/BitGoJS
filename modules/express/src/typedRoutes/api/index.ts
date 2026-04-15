@@ -59,7 +59,8 @@ import { GetResourceDelegations } from './v2/resourceDelegations';
 //
 // > error TS7056: The inferred type of this node exceeds the maximum length the compiler will serialize. An explicit type annotation is needed.
 //
-// As a workaround, only construct expressApi with a single key and add it to the type union at the end
+// Workarounds: (1) export heavy httpRoute handlers as `HttpRoute<'post'>` (etc.) in their modules so apiSpec
+// inference stays small; (2) only construct expressApi with a single key and add it to the type union at the end.
 
 export const ExpressPingApiSpec = apiSpec({
   'express.ping': {

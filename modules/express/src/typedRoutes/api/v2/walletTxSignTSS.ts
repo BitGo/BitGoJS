@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
+import { httpRoute, httpRequest, optional, type HttpRoute } from '@api-ts/io-ts-http';
 import { TransactionRequest as TxRequestResponse, TransactionRequestApiVersion } from '@bitgo/public-types';
 import { BitgoExpressError } from '../../schemas/error';
 import { Recipient } from './coinSignTx';
@@ -161,7 +161,7 @@ export const WalletTxSignTSSResponse = {
  * @tag express
  * @operationId express.v2.wallet.signtxtss
  */
-export const PostWalletTxSignTSS = httpRoute({
+export const PostWalletTxSignTSS: HttpRoute<'post'> = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/signtxtss',
   method: 'POST',
   request: httpRequest({

@@ -1046,16 +1046,22 @@ async function signBitgoMPCv2Round3(
   userGPGPubKey: string
 ): Promise<{ userMsg4: MPCv2SignatureShareRound3Input }> {
   const parsedSignatureShare = JSON.parse(userShare.share) as MPCv2SignatureShareRound3Input;
+  const msg4 = parsedSignatureShare.data.msg4;
+  const signatureRAuthMessage =
+    msg4.signatureR && msg4.signatureRSignature
+      ? { message: msg4.signatureR, signature: msg4.signatureRSignature }
+      : undefined;
   const serializedMessages = await DklsComms.decryptAndVerifyIncomingMessages(
     {
       p2pMessages: [],
       broadcastMessages: [
         {
-          from: parsedSignatureShare.data.msg4.from,
+          from: msg4.from,
           payload: {
-            message: parsedSignatureShare.data.msg4.message,
-            signature: parsedSignatureShare.data.msg4.signature,
+            message: msg4.message,
+            signature: msg4.signature,
           },
+          signatureR: signatureRAuthMessage,
         },
       ],
     },
