@@ -903,6 +903,17 @@ export class Wallets implements IWallets {
         pub: walletKeychain.pub,
       };
 
+      if (params.webauthnInfo) {
+        updateParams.webauthnInfo = {
+          otpDeviceId: params.webauthnInfo.otpDeviceId,
+          prfSalt: params.webauthnInfo.prfSalt,
+          encryptedPrv: this.bitgo.encrypt({
+            password: params.webauthnInfo.passphrase,
+            input: walletKeychain.prv,
+          }),
+        };
+      }
+
       // Note: Unlike keychainOverrideRequired, we do NOT reshare the wallet with spenders
       // This is a key difference - multi-key-user-key wallets don't require reshare
       return this.updateShare(updateParams);
@@ -1004,6 +1015,18 @@ export class Wallets implements IWallets {
     if (encryptedPrv) {
       updateParams.encryptedPrv = encryptedPrv;
     }
+
+    if (params.webauthnInfo) {
+      updateParams.webauthnInfo = {
+        otpDeviceId: params.webauthnInfo.otpDeviceId,
+        prfSalt: params.webauthnInfo.prfSalt,
+        encryptedPrv: this.bitgo.encrypt({
+          password: params.webauthnInfo.passphrase,
+          input: decryptedSharedWalletPrv,
+        }),
+      };
+    }
+
     return this.updateShare(updateParams);
   }
 

@@ -66,3 +66,10 @@ GHSA-9ppj-qmqm-q256
 # - Resolved sjcl -> npm:@bitgo/sjcl@1.0.1 in root resolutions; sjcl.ecc is absent at runtime
 # - No patched version of sjcl exists upstream (first_patched_version: null)
 GHSA-2w8x-224x-785m
+
+# Excluded because:
+# - Transitive dependency through depcheck, html-webpack-plugin, sinon, and various @bitgo/sdk-coin-* packages
+# - Lodash prototype pollution vulnerability
+# - lodash is deeply nested in transitive dependencies with no patched path available
+# - Dev-time and build tooling only
+GHSA-r5fr-rjxr-66jc
