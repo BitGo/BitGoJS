@@ -767,7 +767,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       bufferContent = Buffer.from(txOrMessageToSign, 'hex');
     } else if (requestType === RequestType.message) {
       txOrMessageToSign = txRequest.messages![0].messageEncoded;
-      derivationPath = txRequest.messages![0].derivationPath || 'm/0';
+      derivationPath =
+        txRequest.messages![0].derivationPath || this.wallet.coinSpecific()?.baseAddressDerivationPath || 'm/0';
       bufferContent = Buffer.from(txOrMessageToSign, 'hex');
     } else {
       throw new Error('Invalid request type');
@@ -1328,21 +1329,22 @@ export async function signRecoveryMpcV2(
   messageHash: Buffer,
   userKeyShare: Buffer,
   backupKeyShare: Buffer,
-  commonKeyChain: string
+  commonKeyChain: string,
+  derivationPath = 'm/0'
 ): Promise<{
   recid: number;
   r: string;
   s: string;
   y: string;
 }> {
-  const userDsg = new DklsDsg.Dsg(userKeyShare, 0, 'm/0', messageHash);
-  const backupDsg = new DklsDsg.Dsg(backupKeyShare, 1, 'm/0', messageHash);
+  const userDsg = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, messageHash);
+  const backupDsg = new DklsDsg.Dsg(backupKeyShare, 1, derivationPath, messageHash);
 
   const signatureString = DklsUtils.verifyAndConvertDklsSignature(
     messageHash,
     (await DklsUtils.executeTillRound(5, userDsg, backupDsg)) as DklsTypes.DeserializedDklsSignature,
     commonKeyChain,
-    'm/0',
+    derivationPath,
     undefined,
     false
   );

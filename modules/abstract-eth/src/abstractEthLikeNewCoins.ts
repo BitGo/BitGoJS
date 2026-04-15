@@ -271,6 +271,8 @@ export type RecoverOptions = {
   derivationSeed?: string;
   apiKey?: string; // optional API key to use instead of the one from the environment
   isUnsignedSweep?: boolean; // specify if this is an unsigned recovery
+  /** For FLR P-derived wallets: the derivation path for the base address (e.g. 'm'). Defaults to 'm/0'. */
+  baseAddressDerivationPath?: string;
 } & TSSRecoverOptions;
 
 export type GetBatchExecutionInfoRT = {
@@ -2256,12 +2258,19 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       const { gasLimit, gasPrice } = await this.getGasValues(params);
 
       const MPC = new Ecdsa();
-      const derivedCommonKeyChain = MPC.deriveUnhardened(commonKeyChain, 'm/0');
+      const derivationPath = params.baseAddressDerivationPath ?? 'm/0';
+      const derivedCommonKeyChain = MPC.deriveUnhardened(commonKeyChain, derivationPath);
       const backupKeyPair = new KeyPairLib({ pub: derivedCommonKeyChain.slice(0, 66) });
       const baseAddress = backupKeyPair.getAddress();
       const unsignedTx = (await this.buildTssRecoveryTxn(baseAddress, gasPrice, gasLimit, params)).tx;
       const messageHash = unsignedTx.getMessageToSign(true);
-      const signature = await ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);
+      const signature = await ECDSAUtils.signRecoveryMpcV2(
+        messageHash,
+        userKeyShare,
+        backupKeyShare,
+        commonKeyChain,
+        derivationPath
+      );
       const ethCommmon = AbstractEthLikeNewCoins.getEthLikeCommon(params.eip1559, params.replayProtectionOptions);
       const signedTx = this.getSignedTxFromSignature(ethCommmon, unsignedTx, signature);
 

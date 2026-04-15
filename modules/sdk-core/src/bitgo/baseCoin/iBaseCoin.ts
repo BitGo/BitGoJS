@@ -187,6 +187,12 @@ export interface TssVerifyAddressOptions {
    * The derivation path becomes {computedPrefix}/{index} instead of m/{index}.
    */
   derivedFromParentWithSeed?: string;
+  /**
+   * Optional derivation path for the base address, from wallet.coinSpecific.baseAddressDerivationPath.
+   * When set to 'm', the base address is at the root (index 0 maps to path 'm' instead of 'm/0').
+   * Used for FLR P-derived wallets.
+   */
+  baseAddressDerivationPath?: string;
 }
 
 export function isTssVerifyAddressOptions<T extends VerifyAddressOptions | TssVerifyAddressOptions>(
@@ -262,6 +268,8 @@ export interface SupplementGenerateWalletOptions {
   subType?: 'lightningCustody' | 'lightningSelfCustody' | 'onPrem';
   coinSpecific?: { [coinName: string]: unknown };
   evmKeyRingReferenceWalletId?: string;
+  /** For FLR C wallet creation: the source FLR P wallet ID to derive from. */
+  sourceFlrpWalletId?: string;
   lightningProvider?: 'voltage' | 'amboss';
 }
 

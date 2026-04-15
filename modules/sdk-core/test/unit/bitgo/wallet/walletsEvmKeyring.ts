@@ -172,6 +172,71 @@ describe('Wallets', function () {
     });
   });
 
+  describe('FLR C wallet creation - sourceFlrpWalletId', function () {
+    let generateMpcWalletStub: sinon.SinonStub;
+    const mockWalletResult = {
+      wallet: { id: 'new-flrc-wallet-id' },
+      userKeychain: { id: 'user-key-id' },
+      backupKeychain: { id: 'backup-key-id' },
+      bitgoKeychain: { id: 'bitgo-key-id' },
+    };
+
+    beforeEach(function () {
+      mockBaseCoin.isEVM.returns(true);
+      mockBaseCoin.supportsTss.returns(true);
+      mockBaseCoin.getDefaultMultisigType.returns('tss');
+      // Stub the private generateMpcWallet to avoid needing full TSS key-generation mocks
+      generateMpcWalletStub = sinon.stub(wallets as any, 'generateMpcWallet').resolves(mockWalletResult);
+    });
+
+    it('should pass sourceFlrpWalletId to generateMpcWallet when provided (FLR C derived wallet)', async function () {
+      await wallets.generateWallet({
+        label: 'FLR C Wallet',
+        passphrase: 'test-passphrase',
+        multisigType: 'tss',
+        walletVersion: 3,
+        enterprise: 'test-enterprise-id',
+        sourceFlrpWalletId: 'flrp-wallet-id-123',
+      });
+
+      generateMpcWalletStub.calledOnce.should.be.true();
+      const callArgs = generateMpcWalletStub.getCall(0).args[0];
+      callArgs.should.have.property('sourceFlrpWalletId', 'flrp-wallet-id-123');
+    });
+
+    it('should NOT pass sourceFlrpWalletId for existing coins (ETH, SOL, etc.) that omit it', async function () {
+      // Existing coins like ETH and SOL never pass sourceFlrpWalletId, so it should remain
+      // undefined in the params sent to generateMpcWallet — confirming no behaviour change.
+      await wallets.generateWallet({
+        label: 'ETH TSS Wallet',
+        passphrase: 'test-passphrase',
+        multisigType: 'tss',
+        walletVersion: 3,
+        enterprise: 'test-enterprise-id',
+        // no sourceFlrpWalletId
+      });
+
+      generateMpcWalletStub.calledOnce.should.be.true();
+      const callArgs = generateMpcWalletStub.getCall(0).args[0];
+      assert.strictEqual(callArgs.sourceFlrpWalletId, undefined);
+    });
+
+    it('should pass sourceFlrpWalletId as undefined when not provided (no accidental injection)', async function () {
+      // Belt-and-suspenders: even if called with an explicit undefined, the field must stay absent
+      await wallets.generateWallet({
+        label: 'ETH TSS Wallet 2',
+        passphrase: 'test-passphrase',
+        multisigType: 'tss',
+        walletVersion: 3,
+        enterprise: 'test-enterprise-id',
+        sourceFlrpWalletId: undefined,
+      });
+
+      const callArgs = generateMpcWalletStub.getCall(0).args[0];
+      assert.strictEqual(callArgs.sourceFlrpWalletId, undefined);
+    });
+  });
+
   describe('Non-EVM chains', function () {
     beforeEach(function () {
       mockBaseCoin.isEVM.returns(false);
