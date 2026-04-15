@@ -3,6 +3,7 @@ export * from './coins';
 export * from './networks';
 export * from './errors';
 export * from './tokenConfig';
+export { KaspaCoin } from './kaspa';
 export { OfcCoin } from './ofc';
 export { UtxoCoin } from './utxo';
 export { LightningCoin } from './lightning';
