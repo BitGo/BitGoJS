@@ -56,6 +56,7 @@ COPY --from=builder /tmp/bitgo/modules/bitgo /var/modules/bitgo/
 COPY --from=builder /tmp/bitgo/modules/abstract-utxo /var/modules/abstract-utxo/
 COPY --from=builder /tmp/bitgo/modules/blockapis /var/modules/blockapis/
 COPY --from=builder /tmp/bitgo/modules/sdk-api /var/modules/sdk-api/
+COPY --from=builder /tmp/bitgo/modules/argon2 /var/modules/argon2/
 COPY --from=builder /tmp/bitgo/modules/sdk-hmac /var/modules/sdk-hmac/
 COPY --from=builder /tmp/bitgo/modules/unspents /var/modules/unspents/
 COPY --from=builder /tmp/bitgo/modules/utxo-core /var/modules/utxo-core/
@@ -156,6 +157,7 @@ cd /var/modules/bitgo && yarn link && \
 cd /var/modules/abstract-utxo && yarn link && \
 cd /var/modules/blockapis && yarn link && \
 cd /var/modules/sdk-api && yarn link && \
+cd /var/modules/argon2 && yarn link && \
 cd /var/modules/sdk-hmac && yarn link && \
 cd /var/modules/unspents && yarn link && \
 cd /var/modules/utxo-core && yarn link && \
@@ -259,6 +261,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/abstract-utxo && \
     yarn link @bitgo/blockapis && \
     yarn link @bitgo/sdk-api && \
+    yarn link @bitgo/argon2 && \
     yarn link @bitgo/sdk-hmac && \
     yarn link @bitgo/unspents && \
     yarn link @bitgo/utxo-core && \
