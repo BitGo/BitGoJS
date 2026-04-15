@@ -44,6 +44,7 @@ import {
 import utils from './lib/utils';
 import * as _ from 'lodash';
 import { SuiBalanceInfo, SuiObjectInfo, SuiTransactionType } from './lib/iface';
+import { ValidDuringExpiration } from './lib/mystenlab/types/sui-bcs';
 import {
   DEFAULT_GAS_OVERHEAD,
   DEFAULT_GAS_PRICE,
@@ -408,13 +409,20 @@ export class Sui extends BaseCoin {
       // Case 2 self-funded: all balance is in address balance, no coin objects.
       // gasData.payment must be [] and a ValidDuring expiration is required to
       // prevent replay attacks when there are no gas coin objects to anchor uniqueness.
-      let validDuringExpiration:
-        | { ValidDuring: { minEpoch: number; maxEpoch: number; chain: string; nonce: number } }
-        | undefined;
+      let validDuringExpiration: { ValidDuring: ValidDuringExpiration } | undefined;
       if (fundsInAddressBalance.gt(0) && coinObjectsBalance.eq(0)) {
         const { epoch, chainId } = await utils.getChainContext(this.getPublicNodeUrl());
         const nonce = crypto.randomBytes(4).readUInt32BE(0);
-        validDuringExpiration = { ValidDuring: { minEpoch: epoch, maxEpoch: epoch + 1, chain: chainId, nonce } };
+        validDuringExpiration = {
+          ValidDuring: {
+            minEpoch: { Some: epoch },
+            maxEpoch: { Some: epoch + 1 },
+            minTimestamp: { None: null },
+            maxTimestamp: { None: null },
+            chain: chainId,
+            nonce,
+          },
+        };
       }
 
       // first build the unsigned txn

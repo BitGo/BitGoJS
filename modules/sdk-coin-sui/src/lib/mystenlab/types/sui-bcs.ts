@@ -106,14 +106,20 @@ export type GasData = {
   budget: number;
 };
 
+type OptionU64 = { Some: number } | { None: null };
+
 /**
  * ValidDuring expiration — used when gasData.payment is empty (address-balance-funded gas).
- * Both minEpoch and maxEpoch must be set; maxEpoch must equal minEpoch or minEpoch + 1.
- * The nonce (u32) prevents duplicate transaction digests across same-epoch builds.
+ * Both minEpoch and maxEpoch are Option<u64> matching the Sui protocol BCS layout.
+ * minTimestamp/maxTimestamp are not yet used by the protocol and must be None.
+ * chain is the Base58-encoded genesis checkpoint digest (32 bytes).
+ * nonce (u32) prevents duplicate transaction digests across same-epoch builds.
  */
 export type ValidDuringExpiration = {
-  minEpoch: number;
-  maxEpoch: number;
+  minEpoch: OptionU64;
+  maxEpoch: OptionU64;
+  minTimestamp: OptionU64;
+  maxTimestamp: OptionU64;
   chain: string;
   nonce: number;
 };
@@ -193,9 +199,11 @@ const BCS_SPEC: TypeSchema = {
       type_: 'TypeTag',
     },
     ValidDuringExpiration: {
-      minEpoch: BCS.U64,
-      maxEpoch: BCS.U64,
-      chain: BCS.STRING,
+      minEpoch: 'Option<u64>',
+      maxEpoch: 'Option<u64>',
+      minTimestamp: 'Option<u64>',
+      maxTimestamp: 'Option<u64>',
+      chain: 'ObjectDigest',
       nonce: BCS.U32,
     },
     SuiObjectRef: {
