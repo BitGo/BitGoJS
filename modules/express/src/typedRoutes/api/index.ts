@@ -197,13 +197,13 @@ export const ExpressV2WalletIsWalletAddressApiSpec = apiSpec({
 });
 
 export const ExpressV2WalletSendManyApiSpec = apiSpec({
-  'express.v2.wallet.sendmany': {
+  'express.wallet.sendmany': {
     post: PostSendMany,
   },
 });
 
 export const ExpressV2WalletSendCoinsApiSpec = apiSpec({
-  'express.v2.wallet.sendcoins': {
+  'express.wallet.sendcoins': {
     post: PostSendCoins,
   },
 });
@@ -257,7 +257,7 @@ export const ExpressOfcSignPayloadApiSpec = apiSpec({
 });
 
 export const ExpressWalletRecoverTokenApiSpec = apiSpec({
-  'express.v2.wallet.recovertoken': {
+  'express.wallet.recovertoken': {
     post: PostWalletRecoverToken,
   },
 });
@@ -296,7 +296,7 @@ export const ExpressWalletSigningApiSpec = apiSpec({
 });
 
 export const ExpressWalletManagementApiSpec = apiSpec({
-  'express.v2.wallet.share': {
+  'express.wallet.share': {
     post: PostShareWallet,
   },
   'express.wallet.update': {

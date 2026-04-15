@@ -69,6 +69,12 @@ const debug = debugLib('bitgo:express');
 
 const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version}`;
 
+/**
+ * Headers from the incoming request that should be forwarded to the BitGo API.
+ * Header names must be lowercase (Express normalizes incoming headers to lowercase).
+ */
+const FORWARDED_HEADERS = ['x-bitgo-otp'];
+
 function handlePing(
   req: ExpressApiRouteRequest<'express.ping', 'get'>,
   res: express.Response,
@@ -703,7 +709,7 @@ export function handleV2CreateLocalKeyChain(req: ExpressApiRouteRequest<'express
  * handle wallet share
  * @param req
  */
-export async function handleV2ShareWallet(req: ExpressApiRouteRequest<'express.v2.wallet.share', 'post'>) {
+export async function handleV2ShareWallet(req: ExpressApiRouteRequest<'express.wallet.share', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const wallet = await coin.wallets().get({ id: req.decoded.id });
@@ -755,7 +761,7 @@ async function handleV2SignTx(req: ExpressApiRouteRequest<'express.v2.coin.signt
  * handle wallet recover token
  * @param req
  */
-async function handleV2RecoverToken(req: ExpressApiRouteRequest<'express.v2.wallet.recovertoken', 'post'>) {
+async function handleV2RecoverToken(req: ExpressApiRouteRequest<'express.wallet.recovertoken', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
 
@@ -930,7 +936,7 @@ function createTSSSendParams(req: express.Request, wallet: Wallet) {
  * handle send one
  * @param req
  */
-async function handleV2SendOne(req: ExpressApiRouteRequest<'express.v2.wallet.sendcoins', 'post'>) {
+async function handleV2SendOne(req: ExpressApiRouteRequest<'express.wallet.sendcoins', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const reqId = new RequestTracer();
@@ -971,7 +977,7 @@ async function handleV2SendOne(req: ExpressApiRouteRequest<'express.v2.wallet.se
  * handle send many
  * @param req
  */
-async function handleV2SendMany(req: ExpressApiRouteRequest<'express.v2.wallet.sendmany', 'post'>) {
+async function handleV2SendMany(req: ExpressApiRouteRequest<'express.wallet.sendmany', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const reqId = new RequestTracer();
@@ -1036,17 +1042,14 @@ export async function handleV2ResourceDelegations(
   req: ExpressApiRouteRequest<'express.v2.wallet.resourcedelegations', 'get'>
 ) {
   const bitgo = req.bitgo;
-  const coin = req.decoded.coin;
-  const walletId = req.decoded.id;
-  const query: Record<string, string> = {};
-  if (req.decoded.type) query.type = req.decoded.type;
-  if (req.decoded.resource) query.resource = req.decoded.resource;
-  if (req.decoded.limit !== undefined) query.limit = String(req.decoded.limit);
-  if (req.decoded.nextBatchPrevId) query.nextBatchPrevId = req.decoded.nextBatchPrevId;
-  return bitgo
-    .get(bitgo.url(`/${coin}/wallet/${walletId}/resourcedelegations`, 2))
-    .query(query)
-    .result();
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  return wallet.getResourceDelegations({
+    type: req.decoded.type,
+    resource: req.decoded.resource,
+    limit: req.decoded.limit,
+    nextBatchPrevId: req.decoded.nextBatchPrevId,
+  });
 }
 
 /**
@@ -1338,6 +1341,13 @@ export function redirectRequest(
   if (request) {
     if (req.params.enterpriseId) {
       request.set('enterprise-id', req.params.enterpriseId);
+    }
+
+    for (const header of FORWARDED_HEADERS) {
+      const value = req.headers[header];
+      if (value) {
+        request.set(header, Array.isArray(value) ? value[0] : value);
+      }
     }
 
     return request.result().then((result) => {
@@ -1762,7 +1772,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     typedPromiseWrapper(handleV2IsWalletAddress),
   ]);
 
-  router.post('express.v2.wallet.share', [prepareBitGo(config), typedPromiseWrapper(handleV2ShareWallet)]);
+  router.post('express.wallet.share', [prepareBitGo(config), typedPromiseWrapper(handleV2ShareWallet)]);
   app.post(
     '/api/v2/:coin/walletshare/:id/acceptshare',
     parseBody,
@@ -1777,11 +1787,11 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.v2.coin.signtx', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTx)]);
   router.post('express.v2.wallet.signtx', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTxWallet)]);
   router.post('express.v2.wallet.signtxtss', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTSSWalletTx)]);
-  router.post('express.v2.wallet.recovertoken', [prepareBitGo(config), typedPromiseWrapper(handleV2RecoverToken)]);
+  router.post('express.wallet.recovertoken', [prepareBitGo(config), typedPromiseWrapper(handleV2RecoverToken)]);
 
   // send transaction
-  router.post('express.v2.wallet.sendcoins', [prepareBitGo(config), typedPromiseWrapper(handleV2SendOne)]);
-  router.post('express.v2.wallet.sendmany', [prepareBitGo(config), typedPromiseWrapper(handleV2SendMany)]);
+  router.post('express.wallet.sendcoins', [prepareBitGo(config), typedPromiseWrapper(handleV2SendOne)]);
+  router.post('express.wallet.sendmany', [prepareBitGo(config), typedPromiseWrapper(handleV2SendMany)]);
   router.post('express.v2.wallet.prebuildandsigntransaction', [
     prepareBitGo(config),
     typedPromiseWrapper(handleV2PrebuildAndSignTransaction),

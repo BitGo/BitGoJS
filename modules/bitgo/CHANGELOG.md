@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.32.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.31.0...bitgo@50.32.0) (2026-04-14)
+
+
+### Features
+
+* **sdk-core:** removing mention of mitm attack from hmac error ([8940333](https://github.com/BitGo/BitGoJS/commit/894033382560e22cd79bb9765b4ede3fc4dcb95f))
+
+
+
+
+
 # [50.31.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.30.0...bitgo@50.31.0) (2026-04-10)
 
 

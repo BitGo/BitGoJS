@@ -59,17 +59,17 @@ function kaspaConvertBits(data: number[], fromBits: number, toBits: number, pad:
   let acc = BigInt(0);
   let bits = 0;
   const result: number[] = [];
-  const maxv = (1 << toBits) - 1;
+  const maxv = BigInt((1 << toBits) - 1);
   for (const value of data) {
     acc = (acc << BigInt(fromBits)) | BigInt(value);
     bits += fromBits;
     while (bits >= toBits) {
       bits -= toBits;
-      result.push(Number((acc >> BigInt(bits)) & BigInt(maxv)));
+      result.push(Number((acc >> BigInt(bits)) & maxv));
     }
   }
   if (pad && bits > 0) {
-    result.push(Number((acc << BigInt(toBits - bits)) & BigInt(maxv)));
+    result.push(Number((acc << BigInt(toBits - bits)) & maxv));
   }
   return result;
 }

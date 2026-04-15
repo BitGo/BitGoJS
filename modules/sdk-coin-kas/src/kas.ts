@@ -20,12 +20,15 @@ import {
   SignedTransaction,
   SignTransactionOptions,
   VerifyAddressOptions,
+  TssVerifyAddressOptions,
+  isTssVerifyAddressOptions,
   VerifyTransactionOptions,
   InvalidAddressError,
   UnexpectedAddressError,
   InvalidTransactionError,
   SigningError,
 } from '@bitgo/sdk-core';
+import { verifyMPCWalletAddress } from '@bitgo/sdk-core';
 import { KeyPair } from './lib/keyPair';
 import { Transaction } from './lib/transaction';
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
@@ -120,18 +123,31 @@ export class Kaspa extends BaseCoin {
 
   /**
    * Verify that an address matches the wallet's public keys.
+   * Supports both standard (pub-key) and TSS (commonKeychain) keychains.
    */
-  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    const { address, keychains } = params;
+  async isWalletAddress(params: VerifyAddressOptions | TssVerifyAddressOptions): Promise<boolean> {
+    const { address } = params;
 
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`Invalid address: ${address}`);
     }
+
+    if (isTssVerifyAddressOptions(params)) {
+      // TSS MPC wallet: derive address from commonKeychain using ECDSA secp256k1
+      const networkType = utils.isMainnetAddress(address) ? 'mainnet' : 'testnet';
+      return verifyMPCWalletAddress(
+        { ...params, keyCurve: 'secp256k1' },
+        (addr) => this.isValidAddress(addr),
+        (pubKey) => new KeyPair({ pub: pubKey }).getAddress(networkType)
+      );
+    }
+
+    // Standard single-sig: check address matches one of the keychains
+    const { keychains } = params;
     if (!keychains || keychains.length === 0) {
       throw new Error('No keychains provided');
     }
 
-    // For single-sig: check that the address matches one of the keychains
     const networkType = utils.isMainnetAddress(address) ? 'mainnet' : 'testnet';
     const derivedAddresses = keychains.map((kc) => {
       const kp = new KeyPair({ pub: kc.pub });
@@ -217,7 +233,7 @@ export class Kaspa extends BaseCoin {
    * Sign a message with a key pair.
    */
   async signMessage(_key: BaseKeyPair, _message: string | Buffer): Promise<Buffer> {
-    return Buffer.alloc(0);
+    throw new SigningError('Kaspa message signing is not supported');
   }
 
   /** @inheritdoc */

@@ -85,7 +85,7 @@ describe('Share Wallet (typed handler)', () => {
         permissions,
         message,
       },
-    } as unknown as ExpressApiRouteRequest<'express.v2.wallet.share', 'post'>;
+    } as unknown as ExpressApiRouteRequest<'express.wallet.share', 'post'>;
 
     const res = await handleV2ShareWallet(req);
     decodeOrElse('ShareWalletResponse200', ShareWalletResponse[200], res, (errors) => {

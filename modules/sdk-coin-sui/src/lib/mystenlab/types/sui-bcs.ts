@@ -123,7 +123,7 @@ export type ValidDuringExpiration = {
  *
  * Indications the expiration time for a transaction.
  */
-export type TransactionExpiration = { None: null } | { Epoch: number } | { ValidDuring: ValidDuringExpiration };
+export type TransactionExpiration = { None: null } | { Epoch: number | bigint | string } | { ValidDuring: ValidDuringExpiration };
 
 // Move name of the Vector type.
 const VECTOR = 'vector';
@@ -155,7 +155,6 @@ const BCS_SPEC: TypeSchema = {
     CallArg: {
       Pure: [VECTOR, BCS.U8],
       Object: 'ObjectArg',
-      ObjVec: [VECTOR, 'ObjectArg'],
       BalanceWithdrawal: 'BalanceWithdrawal',
     },
     TypeTag: {

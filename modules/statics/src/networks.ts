@@ -1063,7 +1063,7 @@ class KavaCosmosTestnet extends Testnet implements CosmosNetwork {
 
 class Dydx extends Mainnet implements CosmosNetwork {
   name = 'Dydx';
-  family = CoinFamily.DYDX;
+  family = CoinFamily.DYDXCOSMOS;
   explorerUrl = 'https://www.mintscan.io/dydx/tx/';
   addressPrefix = 'dydx';
   validatorPrefix = 'dydxvaloper';
@@ -1075,7 +1075,7 @@ class Dydx extends Mainnet implements CosmosNetwork {
 
 class DydxTestnet extends Testnet implements CosmosNetwork {
   name = 'DydxTestnet';
-  family = CoinFamily.DYDX;
+  family = CoinFamily.DYDXCOSMOS;
   explorerUrl = 'https://www.mintscan.io/dydx-testnet/tx/';
   addressPrefix = 'dydx';
   validatorPrefix = 'dydxvaloper';
@@ -1124,13 +1124,13 @@ class RuneTestNet extends Testnet implements AccountNetwork {
 class Baby extends Mainnet implements AccountNetwork {
   name = 'Babylon';
   family = CoinFamily.BABY;
-  explorerUrl = 'https://babylon.explorers.guru/transaction/';
+  explorerUrl = 'https://www.mintscan.io/babylon/tx/';
 }
 
 class BabyTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Babylon';
   family = CoinFamily.BABY;
-  explorerUrl = 'https://testnet.babylon.explorers.guru/transaction/';
+  explorerUrl = 'https://www.mintscan.io/babylon-testnet/tx/';
 }
 
 class Mantra extends Mainnet implements CosmosNetwork {

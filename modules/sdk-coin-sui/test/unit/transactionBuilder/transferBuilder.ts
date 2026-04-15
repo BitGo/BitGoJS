@@ -470,5 +470,46 @@ describe('Sui Transfer Builder', () => {
       const rawTx = tx.toBroadcastFormat();
       should.equal(utils.isValidRawTransaction(rawTx), true);
     });
+
+    it('should round-trip a self-pay transfer with Epoch expiration via fromBytes', async function () {
+      // Regression test for the BigInt round-trip bug:
+      // BCS.U64 deserializes u64 as BigInt, but the previous superstruct schema used integer()
+      // which rejected BigInt, causing fromBytes() to throw a StructError at "expiration".
+      // StringEncodedBigint now accepts string | number | bigint, fixing the round-trip.
+      const gasDataNoPayment = {
+        ...testData.gasDataWithoutGasPayment,
+        payment: [],
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(gasDataNoPayment);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+      txBuilder.expiration({ Epoch: 324 }); // number input
+
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // fromBytes must not throw StructError — this was the failing case before the fix
+      should.doesNotThrow(() => {
+        const rebuilder = factory.from(rawTx);
+        should.exist(rebuilder);
+      });
+
+      // Full round-trip: rebuilt tx must serialize identically
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+
+      // Epoch value must survive the round-trip regardless of BigInt/number representation
+      const rebuiltJson = rebuiltTx.toJson();
+      const epochVal = (rebuiltJson.expiration as any)?.Epoch;
+      should.exist(epochVal);
+      Number(epochVal).should.equal(324);
+    });
   });
 });

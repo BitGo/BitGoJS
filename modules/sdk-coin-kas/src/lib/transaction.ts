@@ -29,11 +29,10 @@ import { uint64ToLE, uint32ToLE, uint16ToLE, writeVarInt, serializeTxId } from '
 
 /**
  * Compute a BLAKE2B hash with a Kaspa domain tag prefix.
- * Kaspa prepends each hash with: BLAKE2B(domain_tag) || data
+ * Hashes BLAKE2B(tag_bytes || data) — the raw tag string is prepended to
+ * the data before hashing (no separate tag pre-hash step).
  */
 function blake2bWithTag(tag: string, data: Buffer): Buffer {
-  // Kaspa uses a tagged hash: H(tag_length || tag || data)
-  // The tag is hashed separately and prepended as a "personalization"
   const tagBuf = Buffer.from(tag, 'utf8');
   const hasher = blake2b.create({ dkLen: HASH_SIZE });
   hasher.update(tagBuf);
@@ -432,9 +431,15 @@ export class Transaction extends BaseTransaction {
     };
   }
 
-  /** Signatures on this transaction (as hex strings) */
+  /**
+   * Signatures on this transaction.
+   * Returns at most one entry representing whether a signer set has been applied,
+   * regardless of input count — so `signature.length` correctly reflects signer
+   * progress (0 = unsigned, 1 = one signer applied) for the halfSigned logic.
+   */
   get signature(): string[] {
-    return this._txData.inputs.map((i) => i.signatureScript).filter(Boolean);
+    const signedInput = this._txData.inputs.find((i) => !!i.signatureScript);
+    return signedInput?.signatureScript ? [signedInput.signatureScript] : [];
   }
 }
 

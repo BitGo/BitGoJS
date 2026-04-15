@@ -40,6 +40,7 @@ module.exports = {
         'DOS-',
         'DX-',
         'EA-',
+        'ECO-',
         'ERC20-',
         'FAC-',
         'GNA-',

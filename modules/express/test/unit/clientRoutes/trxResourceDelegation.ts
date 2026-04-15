@@ -99,19 +99,18 @@ describe('TRX Resource Delegation handlers', () => {
       },
     };
 
-    function createBitgoStub(result: unknown) {
-      const resultStub = sandbox.stub().resolves(result);
-      const queryStub = sandbox.stub().returns({ result: resultStub });
-      const getStub = sandbox.stub().returns({ query: queryStub });
-      const urlStub = sandbox
-        .stub()
-        .returns('https://test.bitgo.com/api/v2/ttrx/wallet/walletId123/resourcedelegations');
-      const bitgoStub = sinon.createStubInstance(BitGo as any, { get: getStub, url: urlStub });
-      return { bitgoStub, getStub, queryStub, resultStub };
+    function createMocks(result: unknown) {
+      const getResourceDelegationsStub = sandbox.stub().resolves(result);
+      const walletStub = { getResourceDelegations: getResourceDelegationsStub };
+      const coinStub = {
+        wallets: () => ({ get: () => Promise.resolve(walletStub) }),
+      };
+      const bitgoStub = sinon.createStubInstance(BitGo as any, { coin: coinStub });
+      return { bitgoStub, getResourceDelegationsStub };
     }
 
     it('should forward type and resource query params', async () => {
-      const { bitgoStub, queryStub } = createBitgoStub(mockDelegations);
+      const { bitgoStub, getResourceDelegationsStub } = createMocks(mockDelegations);
 
       const mockRequest = {
         bitgo: bitgoStub,
@@ -124,11 +123,16 @@ describe('TRX Resource Delegation handlers', () => {
       };
 
       await handleV2ResourceDelegations(mockRequest as express.Request & typeof mockRequest);
-      queryStub.should.be.calledOnceWith({ type: 'outgoing', resource: 'ENERGY' });
+      getResourceDelegationsStub.should.be.calledOnceWith({
+        type: 'outgoing',
+        resource: 'ENERGY',
+        limit: undefined,
+        nextBatchPrevId: undefined,
+      });
     });
 
-    it('should convert limit to string when forwarding', async () => {
-      const { bitgoStub, queryStub } = createBitgoStub(mockDelegations);
+    it('should forward limit param', async () => {
+      const { bitgoStub, getResourceDelegationsStub } = createMocks(mockDelegations);
 
       const mockRequest = {
         bitgo: bitgoStub,
@@ -140,11 +144,16 @@ describe('TRX Resource Delegation handlers', () => {
       };
 
       await handleV2ResourceDelegations(mockRequest as express.Request & typeof mockRequest);
-      queryStub.should.be.calledOnceWith({ limit: '10' });
+      getResourceDelegationsStub.should.be.calledOnceWith({
+        type: undefined,
+        resource: undefined,
+        limit: 10,
+        nextBatchPrevId: undefined,
+      });
     });
 
     it('should forward nextBatchPrevId for pagination', async () => {
-      const { bitgoStub, queryStub } = createBitgoStub(mockDelegations);
+      const { bitgoStub, getResourceDelegationsStub } = createMocks(mockDelegations);
 
       const mockRequest = {
         bitgo: bitgoStub,
@@ -157,11 +166,16 @@ describe('TRX Resource Delegation handlers', () => {
       };
 
       await handleV2ResourceDelegations(mockRequest as express.Request & typeof mockRequest);
-      queryStub.should.be.calledOnceWith({ type: 'incoming', nextBatchPrevId: 'cursor-abc123' });
+      getResourceDelegationsStub.should.be.calledOnceWith({
+        type: 'incoming',
+        resource: undefined,
+        limit: undefined,
+        nextBatchPrevId: 'cursor-abc123',
+      });
     });
 
     it('should return codec-valid delegations result', async () => {
-      const { bitgoStub } = createBitgoStub(mockDelegations);
+      const { bitgoStub } = createMocks(mockDelegations);
 
       const mockRequest = {
         bitgo: bitgoStub,

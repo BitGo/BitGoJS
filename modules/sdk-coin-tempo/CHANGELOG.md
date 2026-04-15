@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.11.0...@bitgo/sdk-coin-tempo@1.12.0) (2026-04-14)
+
+
+### Features
+
+* **sdk-coin-tempo:** add smart contract call support ([8ccd687](https://github.com/BitGo/BitGoJS/commit/8ccd687dbfc035d02f07e2215faf0fbcb999f803))
+* **sdk-coin-tempo:** allow valueless transfers for TIP20 tokens ([7b938fb](https://github.com/BitGo/BitGoJS/commit/7b938fb5019b795cd2374efef9fdb6c58361befa))
+* **sdk-coin-tempo:** enhance transaction validation and error handling ([b5414e6](https://github.com/BitGo/BitGoJS/commit/b5414e69c509814788e47ab0c927fae83d34dd60))
+
+
+
+
+
 # [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.10.0...@bitgo/sdk-coin-tempo@1.11.0) (2026-04-10)
 
 

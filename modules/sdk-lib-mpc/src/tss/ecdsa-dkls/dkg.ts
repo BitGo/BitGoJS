@@ -1,5 +1,6 @@
 import type { KeygenSession, Keyshare, Message } from '@silencelaboratories/dkls-wasm-ll-node';
 import { decode, encode } from 'cbor-x';
+import { createHash } from 'crypto';
 import { Secp256k1Curve } from '../../curves';
 import { bigIntToBufferBE } from '../../util';
 import { DeserializedBroadcastMessage, DeserializedMessages, DkgState, ReducedKeyShare, RetrofitData } from './types';
@@ -86,7 +87,12 @@ export class Dkg {
         party_id: this.partyIdx,
         public_key: Array.from(Buffer.from(this.retrofitData.xShare.y, 'hex')),
         root_chain_code: Array.from(Buffer.from(this.retrofitData.xShare.chaincode, 'hex')),
-        final_session_id: Array(32).fill(0),
+        final_session_id: Array.from(
+          createHash('sha256')
+            .update(Buffer.from(this.retrofitData.xShare.y, 'hex'))
+            .update(Buffer.from(this.retrofitData.xShare.chaincode, 'hex'))
+            .digest()
+        ),
         seed_ot_receivers: new Array(this.n - 1).fill(Array(32832).fill(0)),
         seed_ot_senders: new Array(this.n - 1).fill(Array(32768).fill(0)),
         sent_seed_list: [Array(32).fill(0)],
@@ -119,7 +125,8 @@ export class Dkg {
         this.dkgState = DkgState.Round3;
         break;
       case 'WaitMsg4':
-        this.dkgState = DkgState.Round4;
+        // keyShareBuff present means keyshare() already ran and freed the session; bytes are frozen at WaitMsg4.
+        this.dkgState = this.keyShareBuff ? DkgState.Complete : DkgState.Round4;
         break;
       case 'Ended':
         this.dkgState = DkgState.Complete;
@@ -339,7 +346,6 @@ export class Dkg {
     }
 
     dkg.dkgSessionBytes = sessionData.dkgSessionBytes;
-    dkg.dkgState = sessionData.dkgState;
 
     if (sessionData.chainCodeCommitment) {
       dkg.chainCodeCommitment = sessionData.chainCodeCommitment;
@@ -350,6 +356,10 @@ export class Dkg {
     }
 
     dkg._restoreSession();
+    // Re-derive state from WASM bytes rather than trusting the caller-supplied dkgState.
+    // This prevents a tampered or corrupted dkgState from causing handleIncomingMessages()
+    // to take the wrong branch (e.g. skipping chain code commitment or calling keyshare() prematurely).
+    dkg._deserializeState();
     return dkg;
   }
 }

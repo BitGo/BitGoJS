@@ -17,6 +17,9 @@
       "path": "./modules/abstract-utxo"
     },
     {
+      "path": "./modules/argon2"
+    },
+    {
       "path": "./modules/account-lib"
     },
     {

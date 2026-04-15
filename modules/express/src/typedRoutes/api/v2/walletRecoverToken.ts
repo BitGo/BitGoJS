@@ -60,7 +60,7 @@ export const RecoverTokenResponse = t.type({
 /**
  * Recover an unsupported Ethereum token from a BitGo multisig wallet
  *
- * @operationId express.v2.wallet.recovertoken
+ * @operationId express.wallet.recovertoken
  * @tag Express
  */
 export const PostWalletRecoverToken = httpRoute({

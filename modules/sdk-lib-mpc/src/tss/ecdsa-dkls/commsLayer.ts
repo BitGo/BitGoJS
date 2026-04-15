@@ -2,6 +2,34 @@ import { SerializedMessages, AuthEncMessage, AuthEncMessages, PartyGpgKey, AuthM
 import * as pgp from 'openpgp';
 
 /**
+ * Tolerance window for OpenPGP date-based key validity checks (24 hours).
+ *
+ * Background: OpenPGP.js uses the `date` parameter to check key expiry at a
+ * given point in time. We previously passed `date: null` to disable this check
+ * entirely (see HSM-706) because OVC cold-signing flows for trust and SMC
+ * clients can involve significant clock skew between the signing device and the
+ * server — the device may be air-gapped and its clock can drift by hours.
+ *
+ * Note: this GPG expiry check is not strictly required for replay protection.
+ * The DKLS protocol has its own mechanism for preventing replay attacks
+ * (session-bound commitments and round-specific message validation), so the
+ * OpenPGP date check is a defense-in-depth measure rather than the primary
+ * replay mitigation.
+ *
+ * OpenPGP's `date` parameter shifts the reference time for ALL temporal
+ * checks simultaneously (key expiry, self-signature validity, signature
+ * freshness). This means a single shifted date cannot independently relax
+ * key-expiry checks without breaking self-signature validation on fresh keys.
+ *
+ * Therefore:
+ * - encrypt/decrypt omit `date` (use default = current time) for normal key
+ *   expiry checking and self-signature validation.
+ * - verify uses `now + tolerance` so that signatures from OVC devices whose
+ *   clocks are up to 24 hours ahead are not rejected as "from the future".
+ */
+export const SIGNATURE_DATE_TOLERANCE_MS = 24 * 60 * 60 * 1000;
+
+/**
  * Detach signs a binary and encodes it in base64
  * @param data binary to encode in base64 and sign
  * @param privateArmor private key to sign with
@@ -49,7 +77,6 @@ export async function encryptAndDetachSignData(
       showVersion: false,
       showComment: false,
     },
-    date: null as unknown as undefined,
   });
   const signature = await pgp.sign({
     message,
@@ -90,13 +117,12 @@ export async function decryptAndVerifySignedData(
       showComment: false,
     },
     format: 'binary',
-    date: null as unknown as undefined,
   });
   const verificationResult = await pgp.verify({
     message: await pgp.createMessage({ binary: decryptedMessage.data }),
     signature: await pgp.readSignature({ armoredSignature: encryptedAndSignedMessage.signature }),
     verificationKeys: publicKey,
-    date: null as unknown as undefined,
+    date: new Date(Date.now() + SIGNATURE_DATE_TOLERANCE_MS),
   });
   await verificationResult.signatures[0].verified;
   return Buffer.from(decryptedMessage.data).toString('base64');
@@ -113,7 +139,7 @@ export async function verifySignedData(signedMessage: AuthMessage, publicArmor: 
     message: await pgp.createMessage({ binary: Buffer.from(signedMessage.message, 'base64') }),
     signature: await pgp.readSignature({ armoredSignature: signedMessage.signature }),
     verificationKeys: publicKey,
-    date: null as unknown as undefined,
+    date: new Date(Date.now() + SIGNATURE_DATE_TOLERANCE_MS),
   });
   try {
     await verificationResult.signatures[0].verified;

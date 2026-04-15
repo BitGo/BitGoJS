@@ -787,7 +787,7 @@ export const SendManyResponse = t.intersection([
  *
  * Works with most BitGo-supported assets, but currently unavailable for: ALGO, ARBETH, AVAXC, CELO, CELO:CUSD, CSPR, DOT, EOS, HTETH:BGERCH, NEAR, OPETH, STX, TON, TRX, TRX:USDC, XLM, XRP, XTZ
  *
- * @operationId express.v2.wallet.sendmany
+ * @operationId express.wallet.sendmany
  * @tag Express
  */
 export const PostSendMany = httpRoute({
