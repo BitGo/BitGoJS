@@ -345,6 +345,53 @@ describe('Generate Wallet Typed Routes Tests', function () {
       generateWalletStub.firstCall.args[0].should.have.property('commonKeychain', commonKeychain);
     });
 
+    it('should successfully generate wallet with webauthnInfo', async function () {
+      const coin = 'tbtc';
+      const label = 'Test Wallet';
+      const passphrase = 'mySecurePassphrase123';
+      const webauthnInfo = {
+        otpDeviceId: 'device-abc123',
+        prfSalt: 'saltXYZ789',
+        passphrase: 'prf-derived-passphrase',
+      };
+
+      const mockWallet = {
+        id: 'walletWebauthn',
+        coin,
+        label,
+        toJSON: sinon.stub().returns({ id: 'walletWebauthn', coin, label }),
+      };
+
+      const walletResponse = {
+        wallet: mockWallet,
+        userKeychain: { id: 'userKeyWebauthn', pub: 'xpub...', encryptedPrv: 'encrypted_prv' },
+        backupKeychain: { id: 'backupKeyWebauthn', pub: 'xpub...' },
+        bitgoKeychain: { id: 'bitgoKeyWebauthn', pub: 'xpub...' },
+      };
+
+      const generateWalletStub = sinon.stub().resolves(walletResponse);
+      const walletsStub = { generateWallet: generateWalletStub } as any;
+      const coinStub = { wallets: sinon.stub().returns(walletsStub) } as any;
+
+      sinon.stub(BitGo.prototype, 'coin').returns(coinStub);
+
+      const res = await agent.post(`/api/v2/${coin}/wallet/generate`).send({
+        label,
+        passphrase,
+        webauthnInfo,
+      });
+
+      res.status.should.equal(200);
+      res.body.should.have.property('wallet');
+
+      generateWalletStub.should.have.been.calledOnce();
+      const calledWith = generateWalletStub.firstCall.args[0];
+      calledWith.should.have.property('webauthnInfo');
+      calledWith.webauthnInfo.should.have.property('otpDeviceId', webauthnInfo.otpDeviceId);
+      calledWith.webauthnInfo.should.have.property('prfSalt', webauthnInfo.prfSalt);
+      calledWith.webauthnInfo.should.have.property('passphrase', webauthnInfo.passphrase);
+    });
+
     it('should successfully generate EVM keyring wallet with evmKeyRingReferenceWalletId', async function () {
       const coin = 'tpolygon';
       const label = 'EVM Keyring Child Wallet';
@@ -462,6 +509,57 @@ describe('Generate Wallet Typed Routes Tests', function () {
       res.status.should.equal(400);
       res.body.should.have.property('error');
       res.body.error.should.match(/backupXpubProvider/);
+    });
+
+    it('should return 400 when webauthnInfo is missing otpDeviceId', async function () {
+      const coin = 'tbtc';
+
+      const res = await agent.post(`/api/v2/${coin}/wallet/generate`).send({
+        label: 'Test Wallet',
+        passphrase: 'password',
+        webauthnInfo: {
+          prfSalt: 'salt-abc',
+          passphrase: 'prf-passphrase',
+          // missing otpDeviceId
+        },
+      });
+
+      res.status.should.equal(400);
+      res.body.should.have.property('error');
+    });
+
+    it('should return 400 when webauthnInfo is missing prfSalt', async function () {
+      const coin = 'tbtc';
+
+      const res = await agent.post(`/api/v2/${coin}/wallet/generate`).send({
+        label: 'Test Wallet',
+        passphrase: 'password',
+        webauthnInfo: {
+          otpDeviceId: 'device-123',
+          passphrase: 'prf-passphrase',
+          // missing prfSalt
+        },
+      });
+
+      res.status.should.equal(400);
+      res.body.should.have.property('error');
+    });
+
+    it('should return 400 when webauthnInfo is missing passphrase', async function () {
+      const coin = 'tbtc';
+
+      const res = await agent.post(`/api/v2/${coin}/wallet/generate`).send({
+        label: 'Test Wallet',
+        passphrase: 'password',
+        webauthnInfo: {
+          otpDeviceId: 'device-123',
+          prfSalt: 'salt-abc',
+          // missing passphrase
+        },
+      });
+
+      res.status.should.equal(400);
+      res.body.should.have.property('error');
     });
 
     it('should return 400 when disableTransactionNotifications is not boolean', async function () {
