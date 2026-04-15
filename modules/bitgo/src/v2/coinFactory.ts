@@ -107,6 +107,8 @@ import {
   Iota,
   Islm,
   JettonToken,
+  Kaspa,
+  Tkaspa,
   Lnbtc,
   Ltc,
   Mon,
@@ -294,6 +296,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('injective', Injective.createInstance);
   coinFactory.register('iota', Iota.createInstance);
   coinFactory.register('islm', Islm.createInstance);
+  coinFactory.register('kaspa', Kaspa.createInstance);
   coinFactory.register('near', Near.createInstance);
   coinFactory.register('oas', Oas.createInstance);
   coinFactory.register('ofc', Ofc.createInstance);
@@ -362,6 +365,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tinjective', Tinjective.createInstance);
   coinFactory.register('tiota', Iota.createInstance);
   coinFactory.register('tislm', Tislm.createInstance);
+  coinFactory.register('tkaspa', Tkaspa.createInstance);
   coinFactory.register('tlnbtc', Tlnbtc.createInstance);
   coinFactory.register('tltc', Tltc.createInstance);
   coinFactory.register('tnear', TNear.createInstance);
@@ -733,6 +737,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Iota.createInstance;
     case 'islm':
       return Islm.createInstance;
+    case 'kaspa':
+      return Kaspa.createInstance;
     case 'near':
       return Near.createInstance;
     case 'oas':
@@ -869,6 +875,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Iota.createInstance;
     case 'tislm':
       return Tislm.createInstance;
+    case 'tkaspa':
+      return Tkaspa.createInstance;
     case 'tlnbtc':
       return Tlnbtc.createInstance;
     case 'tltc':
