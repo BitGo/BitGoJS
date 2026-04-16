@@ -2895,7 +2895,7 @@ export const allCoinsAndTokens = [
     'thoodeth:tsla',
     'Tesla',
     18,
-    '0xc9f9c86933092cbbfff3ccb4b105a4a94bf3bd4e',
+    '0xc9f9c86933092bbbfff3ccb4b105a4a94bf3bd4e',
     UnderlyingAsset['thoodeth:tsla'],
     Networks.test.hoodeth
   ),
