@@ -4613,7 +4613,7 @@ export const allCoinsAndTokens = [
 
   erc20Token(
     '5c917d9c-83ca-4801-a1be-268c3c3740dd',
-    'trpividiumeth:tMMF',
+    'tprividiumeth:tMMF',
     'Mock tMMF',
     2,
     '0xde1c06e0aabf9c224c36e80cc13259f13237d0df',
