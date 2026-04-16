@@ -2499,7 +2499,7 @@ export const allCoinsAndTokens = [
     UnderlyingAsset.PRIVIDIUMETH,
     BaseUnit.ETH,
     [
-      ...EVM_FEATURES,
+      ...EVM_NON_EIP1559_FEATURES,
       CoinFeature.SHARED_EVM_SIGNING,
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
@@ -2517,7 +2517,7 @@ export const allCoinsAndTokens = [
     UnderlyingAsset.PRIVIDIUMETH,
     BaseUnit.ETH,
     [
-      ...EVM_FEATURES,
+      ...EVM_NON_EIP1559_FEATURES,
       CoinFeature.SHARED_EVM_SIGNING,
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
