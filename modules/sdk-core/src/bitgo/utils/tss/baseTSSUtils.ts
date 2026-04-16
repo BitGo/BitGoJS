@@ -39,7 +39,6 @@ import {
   TxRequest,
   TxRequestVersion,
 } from './baseTypes';
-import { TransactionParams } from '../../baseCoin/iBaseCoin';
 import { GShare, SignShare } from '../../../account-lib/mpc/tss';
 import { RequestTracer } from '../util';
 import { envRequiresBitgoPubGpgKeyConfig, getBitgoMpcGpgPubKey } from '../../tss/bitgoPubKeys';
@@ -534,16 +533,11 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * @param {RequestTracer} reqId id tracer.
    * @returns {Promise<any>}
    */
-  async recreateTxRequest(
-    txRequestId: string,
-    decryptedPrv: string,
-    reqId: IRequestTracer,
-    txParams?: TransactionParams
-  ): Promise<TxRequest> {
+  async recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: IRequestTracer): Promise<TxRequest> {
     await this.deleteSignatureShares(txRequestId, reqId);
     // after delete signatures shares get the tx without them
     const txRequest = await getTxRequest(this.bitgo, this.wallet.id(), txRequestId, reqId);
-    return await this.signTxRequest({ txRequest, prv: decryptedPrv, reqId, txParams });
+    return await this.signTxRequest({ txRequest, prv: decryptedPrv, reqId });
   }
 
   /**
