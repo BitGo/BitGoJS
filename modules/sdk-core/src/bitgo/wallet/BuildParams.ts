@@ -75,8 +75,14 @@ export const BuildParams = t.exact(
       ledgerSequenceDelta: t.unknown,
       maxFee: t.unknown,
       maxFeeRate: t.unknown,
+      // For Algorand (ALGO/TALGO): use `memo` to set the transaction note field.
+      // `message` is also accepted as an alias and will be normalized to `memo`
+      // by the Algo coin's preprocessBuildParams before the API call is made.
       memo: t.unknown,
       transferId: t.unknown,
+      // Generic field used by several coins. For Algorand use `memo` (preferred)
+      // or this field as an alias. For Bitcoin BIP-322 message signing use the
+      // `messages` array in BuildParamsUTXO instead.
       message: t.unknown,
       numBlocks: t.unknown,
       nonce: t.unknown,

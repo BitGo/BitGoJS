@@ -240,6 +240,27 @@ export class Algo extends BaseCoin {
     return true;
   }
 
+  /**
+   * Normalize build parameters before sending to the API.
+   *
+   * For Algorand transactions the on-chain note field is exposed through the
+   * SDK as `memo`.  Historically some clients supplied the same value via a
+   * top-level `message` field (following the pattern shown in the BitGo API
+   * docs for other coins).  To avoid client friction both names are accepted;
+   * when only `message` is present it is promoted to `memo` so the backend
+   * `/tx/build` endpoint always receives the canonical field name.
+   *
+   * Precedence: if both `memo` and `message` are provided, `memo` wins.
+   */
+  preprocessBuildParams(buildParams: Record<string, unknown>): Record<string, unknown> {
+    const params = { ...buildParams };
+    if (params.message !== undefined && params.memo === undefined) {
+      params.memo = params.message;
+    }
+    delete params.message;
+    return params;
+  }
+
   /** inheritdoc */
   deriveKeyWithSeed(): { derivationPath: string; key: string } {
     throw new NotSupported('method deriveKeyWithSeed not supported for eddsa curve');

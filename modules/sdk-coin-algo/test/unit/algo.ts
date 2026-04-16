@@ -1318,4 +1318,42 @@ describe('ALGO:', function () {
       );
     });
   });
+
+  describe('preprocessBuildParams', function () {
+    it('should promote message to memo when memo is absent', function () {
+      const result = basecoin.preprocessBuildParams({
+        message: '7B90A2969BA536821F19',
+        recipients: [{ address: AlgoResources.accounts.account2.address, amount: '1000' }],
+      });
+      result.should.have.property('memo', '7B90A2969BA536821F19');
+      result.should.not.have.property('message');
+    });
+
+    it('should prefer memo over message when both are present', function () {
+      const result = basecoin.preprocessBuildParams({
+        memo: 'canonical_memo',
+        message: 'ignored_message',
+        recipients: [{ address: AlgoResources.accounts.account2.address, amount: '1000' }],
+      });
+      result.should.have.property('memo', 'canonical_memo');
+      result.should.not.have.property('message');
+    });
+
+    it('should pass through memo unchanged when message is not set', function () {
+      const result = basecoin.preprocessBuildParams({
+        memo: 'only_memo',
+        recipients: [{ address: AlgoResources.accounts.account2.address, amount: '1000' }],
+      });
+      result.should.have.property('memo', 'only_memo');
+      result.should.not.have.property('message');
+    });
+
+    it('should pass through params untouched when neither memo nor message is set', function () {
+      const result = basecoin.preprocessBuildParams({
+        recipients: [{ address: AlgoResources.accounts.account2.address, amount: '1000' }],
+      });
+      result.should.not.have.property('memo');
+      result.should.not.have.property('message');
+    });
+  });
 });
