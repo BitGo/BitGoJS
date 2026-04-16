@@ -193,7 +193,6 @@ describe('signTxRequest:', function () {
       txRequest,
       prv: userPrvBase64,
       reqId,
-      txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
     });
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.true();
@@ -216,7 +215,6 @@ describe('signTxRequest:', function () {
       prv: backupPrvBase64,
       mpcv2PartyId: 1,
       reqId,
-      txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
     });
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.true();
@@ -238,7 +236,6 @@ describe('signTxRequest:', function () {
       txRequest,
       prv: userPrvBase64,
       reqId,
-      txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
     });
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.true();
@@ -260,7 +257,6 @@ describe('signTxRequest:', function () {
       txRequest,
       prv: userPrvBase64,
       reqId,
-      txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
     });
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.true();
@@ -281,40 +277,10 @@ describe('signTxRequest:', function () {
         txRequest,
         prv: userPrvBase64,
         reqId,
-        txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
       })
       .should.be.rejectedWith('Too many requests, slow down!');
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.false();
-  });
-
-  it('rejects signTxRequest when txParams is missing', async function () {
-    const userShare = fs.readFileSync(shareFiles[vector.party1]);
-    const userPrvBase64 = Buffer.from(userShare).toString('base64');
-    await tssUtils
-      .signTxRequest({
-        txRequest,
-        prv: userPrvBase64,
-        reqId,
-      })
-      .should.be.rejectedWith(
-        'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
-      );
-  });
-
-  it('rejects signTxRequest when txParams has empty recipients', async function () {
-    const userShare = fs.readFileSync(shareFiles[vector.party1]);
-    const userPrvBase64 = Buffer.from(userShare).toString('base64');
-    await tssUtils
-      .signTxRequest({
-        txRequest,
-        prv: userPrvBase64,
-        reqId,
-        txParams: { recipients: [] },
-      })
-      .should.be.rejectedWith(
-        'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
-      );
   });
 });
 

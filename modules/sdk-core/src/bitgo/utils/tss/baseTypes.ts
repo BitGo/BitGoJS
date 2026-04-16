@@ -759,12 +759,7 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
   deleteSignatureShares(txRequestId: string): Promise<SignatureShareRecord[]>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendTxRequest(txRequestId: string): Promise<any>;
-  recreateTxRequest(
-    txRequestId: string,
-    decryptedPrv: string,
-    reqId: IRequestTracer,
-    txParams?: TransactionParams
-  ): Promise<TxRequest>;
+  recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: IRequestTracer): Promise<TxRequest>;
   getTxRequest(txRequestId: string): Promise<TxRequest>;
   supportedTxRequestVersions(): TxRequestVersion[];
 }
