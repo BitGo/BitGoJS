@@ -4207,6 +4207,7 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['tsui:deep']
   ),
+  tofcSuiToken('ece96015-0a66-4f59-a8a9-36317304a936', 'ofctsui:wal', 'Testnet Walrus', 9, UnderlyingAsset['tsui:wal']),
   ofc('d45636f8-f120-4374-b717-70fe999baa43', 'ofcarcusdc', 'USDC (ARC)', 18, UnderlyingAsset.ARCUSDC, CoinKind.CRYPTO),
   tofc(
     'bc57e64d-045e-4421-aa92-64db0c51e1d7',
@@ -4415,6 +4416,26 @@ export const ofcCoins = [
     UnderlyingAsset['sui:haedal']
   ),
   ofcSuiToken('b200b9c1-b8a6-4b91-adf6-14870e18bdca', 'ofcsui:suins', 'SuiNS', 6, UnderlyingAsset['sui:suins']),
+  ofcSuiToken(
+    'a60bdef5-3137-4e1e-9c15-573449984afb',
+    'ofcsui:fdusd',
+    'First Digital USD',
+    6,
+    UnderlyingAsset['sui:fdusd']
+  ),
+  ofcSuiToken('8095c9b6-d0d0-4817-9ec8-0592ee3417c7', 'ofcsui:usdc', 'USDC', 6, UnderlyingAsset['sui:usdc']),
+  ofcSuiToken('924f76d4-783f-4dbe-9471-863ff3de45e2', 'ofcsui:wusdc', 'Wormhole USDC', 6, UnderlyingAsset['sui:wusdc']),
+  ofcSuiToken('102bc501-37a0-4cd8-8e50-2ffc321a7ffd', 'ofcsui:afsui', 'afSUI', 9, UnderlyingAsset['sui:afsui']),
+  ofcSuiToken('7937e0da-1ffc-4cf2-92d2-7a56c3426911', 'ofcsui:sca', 'Scallop', 9, UnderlyingAsset['sui:sca']),
+  ofcSuiToken('93a35364-cbf2-4384-9043-1174a9d07086', 'ofcsui:times', 'Darktimes', 5, UnderlyingAsset['sui:times']),
+  ofcSuiToken('f9713028-9098-4ae2-ba43-d446affe07ac', 'ofcsui:fud', 'Fud', 5, UnderlyingAsset['sui:fud']),
+  ofcSuiToken('6eafdfb4-c04c-400c-9f40-2cb82ef07a2b', 'ofcsui:navx', 'navx', 9, UnderlyingAsset['sui:navx']),
+  ofcSuiToken('386196e1-96e5-4a78-aa41-4527a4666141', 'ofcsui:send', 'Suilend', 6, UnderlyingAsset['sui:send']),
+  ofcSuiToken('bde67316-0598-43ed-9cdd-09b9228878fd', 'ofcsui:cetus', 'Cetus', 9, UnderlyingAsset['sui:cetus']),
+  ofcSuiToken('251e867d-e498-4df0-9593-287f2f1c4d7f', 'ofcsui:wal', 'Walrus', 9, UnderlyingAsset['sui:wal']),
+  ofcSuiToken('e3682f3a-8ca6-4aad-b39b-908b2ad715f2', 'ofcsui:xmn', 'xMoney', 6, UnderlyingAsset['sui:xmn']),
+  ofcSuiToken('20ccfd7a-00e6-4652-9f2c-2e2a1012db0b', 'ofcsui:xaum', 'Matrixdock Gold', 9, UnderlyingAsset['sui:xaum']),
+  ofcSuiToken('046f2d3e-2863-4d7b-8d57-ef26c1dedd32', 'ofcsui:alkimi', 'Alkimi', 9, UnderlyingAsset['sui:alkimi']),
   ofc('e54716f3-3df2-4e34-8094-9989a2843979', 'ofctempo', 'Tempo', 6, UnderlyingAsset.TEMPO, CoinKind.CRYPTO),
   tofc('1e3bf3f1-0ab3-4cb8-b002-1557d871a7c0', 'ofcttempo', 'Testnet Tempo', 6, UnderlyingAsset.TEMPO, CoinKind.CRYPTO),
   // Tempo mainnet OFC tokens
@@ -4521,6 +4542,9 @@ export const ofcCoins = [
     CoinKind.CRYPTO
   ),
   // ADA OFC tokens
+  ofcAdaToken('cd978b6f-6e77-403a-a8bd-a00a1f65bcce', 'ofcada:lcc', 'Lazy Cat Coin', 0, UnderlyingAsset['ada:lcc']),
+  ofcAdaToken('bc4b5f94-83e2-4ba0-86c4-7ee83344992f', 'ofcada:awlf', 'AWLF', 6, UnderlyingAsset['ada:awlf']),
+  ofcAdaToken('61034ec9-2f09-44a2-80d1-81c21235ea99', 'ofcada:asnek', 'ASNEK', 6, UnderlyingAsset['ada:asnek']),
   ofcAdaToken('227d98e7-6397-45a9-acbe-c3d48fca1a7b', 'ofcada:night', 'NIGHT Token', 6, UnderlyingAsset['ada:night']),
   ofcAdaToken('b002bfaa-43e8-41c8-9a3d-3d3fc64af866', 'ofcada:min', 'Minswap', 6, UnderlyingAsset['ada:min']),
   ofcAdaToken('145f9663-990c-4e07-9229-820155e12db7', 'ofcada:snek', 'Snek', 0, UnderlyingAsset['ada:snek']),
@@ -4547,5 +4571,12 @@ export const ofcCoins = [
     'Test ADA Water Token',
     0,
     UnderlyingAsset['tada:water']
+  ),
+  tofcAdaToken(
+    '85249839-d15d-4306-bf6b-89e9503fadfa',
+    'ofctada:tusda',
+    'Testnet USDA',
+    6,
+    UnderlyingAsset['tada:tusda']
   ),
 ];
