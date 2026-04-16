@@ -55,6 +55,15 @@ export function deserializeMessages(msgs: SerializedMessages): DeserializedMessa
   return msgs.map(deserializeMessage);
 }
 
+/** A PGP detached-signed message by a party.
+ * `message` is the raw payload encoded as base64.
+ * `signature` is an armored PGP detached signature over those bytes.
+ */
+export interface MPSSignedMessage {
+  message: string;
+  signature: string;
+}
+
 export function getDecodedReducedKeyShare(reducedKeyShare: Buffer | Uint8Array): EddsaReducedKeyShare {
   const decoded = ReducedKeyShareType.decode(decode(reducedKeyShare));
   if (isLeft(decoded)) {

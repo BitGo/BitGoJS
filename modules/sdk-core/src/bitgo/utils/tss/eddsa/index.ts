@@ -13,3 +13,5 @@ export {
   SignatureShareType,
   TxRequest,
 } from '../baseTypes';
+
+export { EddsaMPCv2Utils } from './eddsaMPCv2';
