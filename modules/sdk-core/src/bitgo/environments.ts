@@ -308,6 +308,9 @@ const mainnetBase: EnvironmentTemplate = {
     hemieth: {
       baseUrl: 'https://explorer.hemi.xyz/api',
     },
+    inketh: {
+      baseUrl: 'https://explorer.inkonchain.com/api',
+    },
     prividiumeth: {
       baseUrl: 'https://explorer.prividium.zksync.dev/api', // TODO: update with mainnet URL when available
     },
@@ -524,6 +527,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     hemieth: {
       baseUrl: 'https://testnet.explorer.hemi.xyz/api',
+    },
+    tinketh: {
+      baseUrl: 'https://explorer-sepolia.inkonchain.com/api',
     },
     prividiumeth: {
       baseUrl: 'https://explorer.testnet-prividium.zksync.dev/api',

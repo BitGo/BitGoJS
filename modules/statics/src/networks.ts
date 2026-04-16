@@ -2512,6 +2512,24 @@ class PrividiumETHTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '8022834';
 }
 
+class InkEth extends Mainnet implements EthereumNetwork {
+  name = 'INK Mainnet';
+  family = CoinFamily.INKETH;
+  explorerUrl = 'https://explorer.inkonchain.com/tx/';
+  accountExplorerUrl = 'https://explorer.inkonchain.com/address/';
+  chainId = 57073;
+  nativeCoinOperationHashPrefix = '57073';
+}
+
+class InkEthTestnet extends Testnet implements EthereumNetwork {
+  name = 'INK Testnet';
+  family = CoinFamily.INKETH;
+  explorerUrl = 'https://explorer-sepolia.inkonchain.com/tx/';
+  accountExplorerUrl = 'https://explorer-sepolia.inkonchain.com/address/';
+  chainId = 763373;
+  nativeCoinOperationHashPrefix = '763373';
+}
+
 class PlumeTestnet extends Testnet implements EthereumNetwork {
   name = 'PlumeTestnet';
   family = CoinFamily.PLUME;
@@ -2751,6 +2769,7 @@ export const Networks = {
     hedera: Object.freeze(new Hedera()),
     hederaEVM: Object.freeze(new HederaEVM()),
     hemieth: Object.freeze(new HemiEth()),
+    inketh: Object.freeze(new InkEth()),
     hppeth: Object.freeze(new Hppeth()),
     prividiumeth: Object.freeze(new PrividiumETH()),
     icp: Object.freeze(new Icp()),
@@ -2880,6 +2899,7 @@ export const Networks = {
     prividiumeth: Object.freeze(new PrividiumETHTestnet()),
     hederaEVM: Object.freeze(new HederaEVMTestnet()),
     hemieth: Object.freeze(new HemiEthTestnet()),
+    inketh: Object.freeze(new InkEthTestnet()),
     icp: Object.freeze(new IcpTestnet()),
     ip: Object.freeze(new IPTestnet()),
     initia: Object.freeze(new InitiaTestnet()),
