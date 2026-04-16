@@ -56,7 +56,7 @@ jobs:
         run: yq -P < openapi.json > openapi-head.yaml
 
       - name: Upload API spec to artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: openapi-head.yaml
           path: openapi-head.yaml
@@ -116,7 +116,7 @@ jobs:
         run: yq -P < openapi.json > openapi-merge-base.yaml
 
       - name: Upload API spec to artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: openapi-merge-base.yaml
           path: openapi-merge-base.yaml
@@ -129,12 +129,12 @@ jobs:
       specs-identical: ${{ steps.check-specs-identical.outputs.identical }}
     steps:
       - name: Download head API spec artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: openapi-head.yaml
 
       - name: Download merge base API spec artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: openapi-merge-base.yaml
 
@@ -161,7 +161,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Download head API spec artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: openapi-head.yaml
 
@@ -210,12 +210,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download head API spec artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: openapi-head.yaml
 
       - name: Download merge base API spec artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: openapi-merge-base.yaml
 
