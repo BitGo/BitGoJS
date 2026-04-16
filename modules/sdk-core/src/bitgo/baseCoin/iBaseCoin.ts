@@ -7,7 +7,7 @@ import { IMarkets } from '../market';
 import { IPendingApprovals } from '../pendingApproval';
 import { InitiateRecoveryOptions } from '../recovery';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
-import EddsaUtils, { PrebuildTransactionWithIntentOptions, TxRequest } from '../utils/tss/eddsa';
+import EddsaUtils, { EddsaMPCv2Utils, PrebuildTransactionWithIntentOptions, TxRequest } from '../utils/tss/eddsa';
 import { CreateAddressFormat, CustomSigningFunction, IWallet, IWallets, Memo, Wallet, WalletData } from '../wallet';
 
 import { TokenEnablement } from '@bitgo/public-types';
@@ -283,7 +283,7 @@ export interface ExtraPrebuildParamsOptions {
 export interface PresignTransactionOptions {
   txPrebuild?: TransactionPrebuild;
   walletData: WalletData;
-  tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | undefined;
+  tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | EddsaMPCv2Utils | undefined;
   [index: string]: unknown;
 }
 
