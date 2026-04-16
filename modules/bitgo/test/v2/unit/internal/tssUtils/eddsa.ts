@@ -1214,5 +1214,31 @@ describe('TSS Utils:', async function () {
     return backupKeychain;
   }
 
+  describe('getPublicKeyFromCommonKeychain', function () {
+    // 32-byte ed25519 public key as hex (64 chars) — the format produced by DKG getSharePublicKey().toString('hex')
+    const mpcv2CommonKeychain = 'a304733c16cc821fe171d5c7dbd7276fd90deae808b7553d17a1e55e4a76b270';
+    // MPCv1 appends a 32-byte chaincode after the public key
+    const chaincode = '9d91c2e6353202cf61f8f275158b3468e9a00f7872fc2fd310b72cd026e2e2f9';
+    const mpcv1CommonKeychain = mpcv2CommonKeychain + chaincode;
+
+    it('should decode to the same 32-byte public key for both MPCv1 (128 chars) and MPCv2 (64 chars)', function () {
+      mpcv1CommonKeychain.length.should.equal(128);
+      mpcv2CommonKeychain.length.should.equal(64);
+
+      const v1Result = TssUtils.getPublicKeyFromCommonKeychain(mpcv1CommonKeychain);
+      const v2Result = TssUtils.getPublicKeyFromCommonKeychain(mpcv2CommonKeychain);
+
+      v1Result.should.equal(v2Result);
+      v1Result.should.equal('ByMPeVxs7e8zGecu8n1M43Mq9qkxBSypNNwHeEu2N6vb');
+    });
+
+    it('should throw for an invalid commonKeychain length', function () {
+      should.throws(
+        () => TssUtils.getPublicKeyFromCommonKeychain('abcd'),
+        /Invalid commonKeychain length, expected 64 \(MPCv2\) or 128 \(MPCv1\), got 4/
+      );
+    });
+  });
+
   // #endregion Nock helpers
 });

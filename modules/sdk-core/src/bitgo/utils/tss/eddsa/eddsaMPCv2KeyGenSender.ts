@@ -14,7 +14,7 @@ export function KeyGenSenderForEnterprise<T extends GenerateEddsaMPCv2KeyRequest
   return (round, payload) => {
     return bitgo
       .post(bitgo.url('/mpc/generatekey', 2))
-      .send({ enterprise, type: KeyGenTypeEnum.MPCv2, keyCurve: KeyCurveEnum.EdDSA, round, payload })
+      .send({ enterprise, type: KeyGenTypeEnum.MPCv2, curveType: KeyCurveEnum.EdDSA, round, payload })
       .result();
   };
 }
