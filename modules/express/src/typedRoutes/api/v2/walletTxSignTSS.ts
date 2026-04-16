@@ -8,7 +8,7 @@ import { Recipient } from './coinSignTx';
  * Request path parameters for signing a TSS wallet transaction
  */
 export const WalletTxSignTSSParams = {
-  /** The coin type */
+  /** A cryptocurrency or token ticker symbol */
   coin: t.string,
   /** The wallet ID */
   id: t.string,
@@ -48,7 +48,7 @@ export const WalletTxSignTSSTransactionPrebuild = t.partial({
 export const WalletTxSignTSSBody = {
   /** Transaction prebuild data */
   txPrebuild: optional(WalletTxSignTSSTransactionPrebuild),
-  /** Transaction request ID for TSS wallets */
+  /** A unique ID for the TxRequest document across all wallets. The combination of the txRequestId and version will always be unique */
   txRequestId: optional(t.string),
   /** Wallet passphrase for TSS wallets */
   walletPassphrase: optional(t.string),
@@ -139,27 +139,10 @@ export const WalletTxSignTSSResponse = {
 };
 
 /**
- * Sign a transaction for a specific TSS wallet
+ * Sign transactions for MPC wallets. If using external-signer mode, you must maintain your keys, in the clear, on a separate Express server - BitGo doesn't decrypt your private MPC key shares.
  *
- * This endpoint signs a transaction for a specific TSS wallet identified by coin type and wallet ID.
- * The request body is passed to wallet.signTransaction() and varies by coin and wallet type.
- *
- * Common fields for TSS wallets include:
- * - txPrebuild: Contains transaction data like txHex, txBase64, or txRequestId
- * - walletPassphrase: Passphrase for TSS wallets (required for TSS signing)
- * - txRequestId: Transaction request ID for TSS wallets (can be in body or txPrebuild)
- * - apiVersion: 'lite' or 'full' for TSS transaction requests
- * - multisigTypeVersion: 'MPCv2' for MPCv2 wallets
- * - isLastSignature: Whether this is the last signature in a multi-sig tx
- * - pubs: Public keys for multi-signature transactions
- * - gasLimit: Gas limit for ETH transactions
- * - gasPrice: Gas price for ETH transactions
- * - expireTime: Transaction expiration time
- * - sequenceId: Sequence ID for transactions
- * - isEvmBasedCrossChainRecovery: For EVM cross-chain recovery
- *
- * @tag express
  * @operationId express.v2.wallet.signtxtss
+ * @tag Express
  */
 export const PostWalletTxSignTSS: HttpRoute<'post'> = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/signtxtss',
