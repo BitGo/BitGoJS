@@ -95,7 +95,7 @@ export const ConstructPendingApprovalTxResponse = t.type({
  * 6. Transaction is NOT broadcast to the network
  *
  * @operationId express.v1.pendingapproval.constructTx
- * @tag express
+ * @tag Express
  */
 export const PutConstructPendingApprovalTx = httpRoute({
   path: '/api/v1/pendingapprovals/{id}/constructTx',
