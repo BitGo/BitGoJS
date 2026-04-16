@@ -167,13 +167,56 @@ export class Transaction extends BaseTransaction {
   }
 
   get signablePayload(): Buffer {
+    // TransferAcknowledge uses a dummy hash since it doesn't have a real prepared transaction
+    // This is intentional and required by Canton's signing model
     if (this._type === TransactionType.TransferAcknowledge) {
       return Buffer.from(DUMMY_HASH, 'base64');
     }
+
     if (!this._prepareCommand) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return Buffer.from(this._prepareCommand.preparedTransactionHash, 'base64');
+
+    // Validate required fields for signing payload construction
+    if (!this._prepareCommand.preparedTransactionHash) {
+      throw new InvalidTransactionError('Missing preparedTransactionHash from IMS.');
+    }
+
+    const hash = Buffer.from(this._prepareCommand.preparedTransactionHash, 'base64');
+    const preparedTx = this._prepareCommand.preparedTransaction;
+
+    // CRITICAL: preparedTransaction is required for Canton signing
+    // Canton's signing contract requires: itemCount || lenOfTx || preparedTx || hash
+    // Returning hash-only breaks the signing payload structure
+    if (!preparedTx) {
+      throw new InvalidTransactionError(
+        `Missing preparedTransaction from IMS for ${this._type}. ` +
+          'Canton requires extended payload (itemCount || length || preparedTx || hash)'
+      );
+    }
+
+    try {
+      // Extended payload: itemCount(4 LE) || txLen(4 LE) || preparedTx || hash
+      // itemCount=2: first item is preparedTransaction, second is the hash
+      const preparedTxBuf = Buffer.from(preparedTx, 'base64');
+
+      // Validate base64 was decoded successfully (round-trip check)
+      if (preparedTxBuf.toString('base64') !== preparedTx) {
+        throw new Error('Invalid base64 encoding');
+      }
+
+      const itemCountBuf = Buffer.alloc(4);
+      itemCountBuf.writeUInt32LE(2, 0); // 2 items: preparedTx + hash
+
+      const lenBuf = Buffer.alloc(4);
+      lenBuf.writeUInt32LE(preparedTxBuf.length, 0);
+
+      return Buffer.concat([itemCountBuf, lenBuf, preparedTxBuf, hash]);
+    } catch (e) {
+      throw new InvalidTransactionError(
+        `Failed to construct signing payload: ${e instanceof Error ? e.message : String(e)}`
+      );
+    }
   }
 
   fromRawTransaction(rawTx: string): void {
