@@ -76,6 +76,7 @@ import { polyxTokens } from './coins/polyxTokens';
 import { cantonTokens } from './coins/cantonTokens';
 import { flrp } from './flrp';
 import { hypeEvm } from './hypeevm';
+import { kas } from './kas';
 import {
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
   ADA_FEATURES,
@@ -187,6 +188,8 @@ export const allCoinsAndTokens = [
     Networks.test.flrP,
     UnderlyingAsset.FLRP
   ),
+  kas('4d600e2d-03b6-41f4-b3df-bfd4b4246f9c', 'kaspa', 'Kaspa', Networks.main.kas, UnderlyingAsset.KAS),
+  kas('a6e7156f-39fb-4d51-8373-a0d223f8f2a5', 'tkaspa', 'Kaspa Testnet', Networks.test.kas, UnderlyingAsset.KAS),
   ada(
     'fd4d125e-f14f-414b-bd17-6cb1393265f0',
     'ada',

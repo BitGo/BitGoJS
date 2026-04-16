@@ -1,0 +1,58 @@
+{
+  "name": "@bitgo/sdk-coin-kas",
+  "version": "1.0.0",
+  "description": "BitGo's SDK coin library for Kaspa (KAS)",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-kas"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.77.0",
+    "@bitgo/sdk-test": "^9.1.38"
+  },
+  "dependencies": {
+    "@bitgo/sdk-core": "^36.40.0",
+    "@bitgo/secp256k1": "^1.11.0",
+    "@bitgo/statics": "^58.35.0",
+    "@noble/curves": "1.8.1",
+    "@noble/hashes": "^1.7.1",
+    "bignumber.js": "^9.1.2"
+  },
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
+  "files": [
+    "dist"
+  ]
+}

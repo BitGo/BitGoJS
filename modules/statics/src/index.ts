@@ -43,3 +43,4 @@ export {
   generateErc20Token,
   generateTestErc20Token,
 } from './coins/generateERC20';
+export { KASCoin } from './kas';

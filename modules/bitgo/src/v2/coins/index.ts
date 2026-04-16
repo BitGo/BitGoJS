@@ -34,6 +34,7 @@ import { Erc20Token, Erc721Token, Eth, Gteth, Hteth, Teth } from '@bitgo/sdk-coi
 import { EvmCoin, EthLikeErc20Token, EthLikeErc721Token } from '@bitgo/sdk-coin-evm';
 import { Flr, Tflr, FlrToken } from '@bitgo/sdk-coin-flr';
 import { Flrp } from '@bitgo/sdk-coin-flrp';
+import { Kaspa, Tkaspa } from '@bitgo/sdk-coin-kas';
 import { Ethw } from '@bitgo/sdk-coin-ethw';
 import { EthLikeCoin, TethLikeCoin } from '@bitgo/sdk-coin-ethlike';
 import { Hash, Thash, HashToken } from '@bitgo/sdk-coin-hash';
@@ -113,6 +114,7 @@ export { Etc, Tetc };
 export { EvmCoin, EthLikeErc20Token, EthLikeErc721Token };
 export { Flr, Tflr, FlrToken };
 export { Flrp };
+export { Kaspa, Tkaspa };
 export { Hash, Thash, HashToken };
 export { Hbar, Thbar };
 export { Icp, Ticp };

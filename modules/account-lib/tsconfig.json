@@ -77,6 +77,9 @@
       "path": "../sdk-coin-injective"
     },
     {
+      "path": "../sdk-coin-kas"
+    },
+    {
       "path": "../sdk-coin-islm"
     },
     {
