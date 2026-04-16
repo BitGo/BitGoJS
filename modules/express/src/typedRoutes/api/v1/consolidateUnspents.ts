@@ -123,7 +123,7 @@ export const ConsolidateUnspentsResponse = t.union([
  * - Use maxIterationCount to limit execution time for very large wallets
  *
  * @operationId express.v1.wallet.consolidateunspents
- * @tag express
+ * @tag Express
  */
 export const PutConsolidateUnspents = httpRoute({
   path: '/api/v1/wallet/{id}/consolidateunspents',
