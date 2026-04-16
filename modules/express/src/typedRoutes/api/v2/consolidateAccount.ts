@@ -6,9 +6,9 @@ import { BitgoExpressError } from '../../schemas/error';
  * Path parameters for consolidate account endpoint
  */
 export const ConsolidateAccountParams = {
-  /** Coin identifier (e.g., 'algo', 'sol', 'xtz') */
+  /** A cryptocurrency or token ticker symbol */
   coin: t.string,
-  /** Wallet ID */
+  /** The wallet ID */
   id: t.string,
 } as const;
 
@@ -19,10 +19,10 @@ export const ConsolidateAccountParams = {
  * - WalletSignTransactionOptions (iWallet.ts lines 265-289)
  */
 export const ConsolidateAccountRequestBody = {
-  /** On-chain receive addresses to consolidate from (BuildConsolidationTransactionOptions) */
+  /** Optional: restrict the consolidation to the specified receive addresses. If not provided, will consolidate the funds from all receive addresses up to 500 addresses */
   consolidateAddresses: optional(t.array(t.string)),
 
-  /** Wallet passphrase to decrypt the user key */
+  /** Passphrase to decrypt the user key on the wallet. Required if External Signer is not used to sign the transactions */
   walletPassphrase: optional(t.string),
   /** Extended private key (alternative to walletPassphrase) */
   xprv: optional(t.string),
@@ -149,7 +149,7 @@ export const ConsolidateAccountRequestBody = {
   isTss: optional(t.boolean),
   /** Custodian transaction ID */
   custodianTransactionId: optional(t.string),
-  /** API version ('lite' or 'full') */
+  /** The Trasaction Request API version to use for MPC EdDSA Hot Wallets. Defaults based on the wallet type and asset curve */
   apiVersion: optional(t.union([t.literal('lite'), t.literal('full')])),
   /** If false, sweep all funds including minimums */
   keepAlive: optional(t.boolean),
@@ -216,7 +216,7 @@ export const ConsolidateAccountRequestBody = {
   /** If true, marks as test transaction */
   isTestTransaction: optional(t.boolean),
 
-  /** Private key for signing (from WalletSignBaseOptions) */
+  /** The un-encrypted user private key in string form. If the key is a JSON object it must be stringified. Required if `walletPassphrase` is not available or encrypted private key is not stored by BitGo */
   prv: optional(t.string),
   /** Array of public keys */
   pubs: optional(t.array(t.string)),
@@ -251,18 +251,10 @@ export const ConsolidateAccountResponse = t.type({
 export const ConsolidateAccountErrorResponse = t.intersection([ConsolidateAccountResponse, BitgoExpressError]);
 
 /**
- * Consolidate Account Balances
- *
- * This endpoint consolidates account balances by moving funds from receive addresses
- * to the root wallet address. This is useful for account-based coins where balances
- * are spread across multiple addresses and need to be consolidated for spending.
- *
- * Supported coins: Algorand (algo), Solana (sol), Tezos (xtz), Tron (trx), Stellar (xlm), etc.
- *
- * The API may return partial success (status 202) if some consolidations succeed but others fail.
+ * Build, sign, and send a consolidation transaction for an account-based asset all in 1 call. For account-based assets, consolidating the balances in the receive addresses to the base address maximizes the spendable balance of a wallet.
  *
  * @operationId express.v2.wallet.consolidateaccount
- * @tag express
+ * @tag Express
  */
 export const PostConsolidateAccount = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/consolidateAccount',
