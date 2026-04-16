@@ -13,6 +13,7 @@ import {
   TssUtils,
   Wallets,
   ECDSAUtils,
+  EDDSAUtils,
   KeychainsTriplet,
   GenerateWalletOptions,
   Wallet,
@@ -1369,6 +1370,131 @@ describe('V2 Wallets:', function () {
         bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
         params.passphrase
       );
+    });
+  });
+
+  describe('Generate TSS EdDSA MPCv2 wallet:', async function () {
+    const sandbox = sinon.createSandbox();
+
+    beforeEach(function () {
+      const tssSettings: TssSettings = {
+        coinSettings: {
+          sol: {
+            walletCreationSettings: {
+              multiSigTypeVersion: 'MPCv2',
+            },
+          },
+        },
+      };
+      nock('https://bitgo.fakeurl').get(`/api/v2/tss/settings`).times(2).reply(200, tssSettings);
+    });
+
+    afterEach(function () {
+      nock.cleanAll();
+      sandbox.verifyAndRestore();
+    });
+
+    it('should create a new tsol TSS EdDSA MPCv2 hot wallet', async function () {
+      const testCoin = bitgo.coin('tsol');
+      const stubbedKeychainsTriplet: KeychainsTriplet = {
+        userKeychain: {
+          id: '1',
+          commonKeychain: 'userPub',
+          type: 'tss',
+          source: 'user',
+        },
+        backupKeychain: {
+          id: '2',
+          commonKeychain: 'userPub',
+          type: 'tss',
+          source: 'backup',
+        },
+        bitgoKeychain: {
+          id: '3',
+          commonKeychain: 'userPub',
+          type: 'tss',
+          source: 'bitgo',
+        },
+      };
+      const stubCreateKeychains = sandbox
+        .stub(EDDSAUtils.EddsaMPCv2Utils.prototype, 'createKeychains')
+        .resolves(stubbedKeychainsTriplet);
+
+      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/tsol/wallet/add').reply(200);
+
+      const wallets = new Wallets(bitgo, testCoin);
+
+      const params = {
+        label: 'tss eddsa mpcv2 wallet',
+        passphrase: 'tss password',
+        multisigType: 'tss' as const,
+        enterprise: 'enterprise',
+        passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+      };
+
+      const response = await wallets.generateWallet(params);
+
+      walletNock.isDone().should.be.true();
+      stubCreateKeychains.calledOnce.should.be.true();
+
+      assert.ok(response.encryptedWalletPassphrase);
+      assert.ok(response.wallet);
+      assert.equal(
+        bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+        params.passphrase
+      );
+    });
+
+    it('should fall back to EddsaUtils when tss/settings does not return MPCv2 for tsol', async function () {
+      nock.cleanAll();
+      nock('https://bitgo.fakeurl')
+        .get('/api/v2/tss/settings')
+        .reply(200, { coinSettings: { sol: { walletCreationSettings: {} } } });
+
+      const testCoin = bitgo.coin('tsol');
+      const stubbedKeychainsTriplet: KeychainsTriplet = {
+        userKeychain: {
+          id: '1',
+          commonKeychain: 'userPub',
+          type: 'tss',
+          source: 'user',
+        },
+        backupKeychain: {
+          id: '2',
+          commonKeychain: 'userPub',
+          type: 'tss',
+          source: 'backup',
+        },
+        bitgoKeychain: {
+          id: '3',
+          commonKeychain: 'userPub',
+          type: 'tss',
+          source: 'bitgo',
+        },
+      };
+      const stubEddsaUtils = sandbox
+        .stub(EDDSAUtils.default.prototype, 'createKeychains')
+        .resolves(stubbedKeychainsTriplet);
+
+      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/tsol/wallet/add').reply(200);
+
+      const wallets = new Wallets(bitgo, testCoin);
+
+      const params = {
+        label: 'tss eddsa wallet',
+        passphrase: 'tss password',
+        multisigType: 'tss' as const,
+        enterprise: 'enterprise',
+        passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+      };
+
+      const response = await wallets.generateWallet(params);
+
+      walletNock.isDone().should.be.true();
+      stubEddsaUtils.calledOnce.should.be.true();
+
+      assert.ok(response.encryptedWalletPassphrase);
+      assert.ok(response.wallet);
     });
   });
 
