@@ -268,6 +268,20 @@ class IcpTestnet extends Testnet implements AccountNetwork {
   accountExplorerUrl = 'https://dashboard.internetcomputer.org/account/';
 }
 
+export class KaspaMainnet extends Mainnet implements AccountNetwork {
+  name = 'Kaspa';
+  family = CoinFamily.KASPA;
+  explorerUrl = 'https://explorer.kaspa.org/txs/';
+  accountExplorerUrl = 'https://explorer.kaspa.org/addresses/';
+}
+
+export class KaspaTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Kaspa';
+  family = CoinFamily.KASPA;
+  explorerUrl = 'https://explorer-tn10.kaspa.org/txs/';
+  accountExplorerUrl = 'https://explorer-tn10.kaspa.org/addresses/';
+}
+
 class Arbitrum extends Mainnet implements EthereumNetwork {
   name = 'Arbitrum';
   family = CoinFamily.ARBETH;
@@ -2781,6 +2795,7 @@ export const Networks = {
     islm: Object.freeze(new Islm()),
     jovayeth: Object.freeze(new JovayETH()),
     kaia: Object.freeze(new Kaia()),
+    kaspa: Object.freeze(new KaspaMainnet()),
     kavacosmos: Object.freeze(new KavaCosmos()),
     kavaevm: Object.freeze(new KavaEVM()),
     lnbtc: Object.freeze(new LightningBitcoin()),
@@ -2908,6 +2923,7 @@ export const Networks = {
     irys: Object.freeze(new IrysTestnet()),
     islm: Object.freeze(new IslmTestnet()),
     jovayeth: Object.freeze(new JovayETHTestnet()),
+    kaspa: Object.freeze(new KaspaTestnet()),
     kavacosmos: Object.freeze(new KavaCosmosTestnet()),
     kavaevm: Object.freeze(new KavaEVMTestnet()),
     kovan: Object.freeze(new Kovan()),

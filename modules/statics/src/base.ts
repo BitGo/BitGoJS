@@ -81,6 +81,7 @@ export enum CoinFamily {
   ISLM = 'islm',
   JOVAYETH = 'jovayeth',
   KAIA = 'kaia',
+  KASPA = 'kaspa',
   KAVACOSMOS = 'kavacosmos',
   KAVAEVM = 'kavaevm',
   LNBTC = 'lnbtc',
@@ -1325,6 +1326,7 @@ export enum UnderlyingAsset {
   KARATE = 'karate',
   KARMA = 'karma',
   KAS = 'kas',
+  KASPA = 'kaspa',
   KCASH = 'kcash',
   KCS = 'kcs',
   KEEP = 'keep',
@@ -3855,6 +3857,7 @@ export enum BaseUnit {
   TCRONOS = 'basetcro',
   TASI = 'atestfet',
   CANTON = 'canton',
+  KASPA = 'sompi',
   USDC = 'usdc',
 }
 
