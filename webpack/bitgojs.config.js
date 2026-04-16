@@ -22,6 +22,7 @@ module.exports = {
       '@bitgo/wasm-ton': path.resolve('../../node_modules/@bitgo/wasm-ton/dist/esm/js/index.js'),
       '@bitgo/wasm-utxo': path.resolve('../../node_modules/@bitgo/wasm-utxo/dist/esm/js/index.js'),
       '@bitgo/wasm-solana': path.resolve('../../node_modules/@bitgo/wasm-solana/dist/esm/js/index.js'),
+      '@bitgo/wasm-mps': path.resolve('../../node_modules/@bitgo/wasm-mps/dist/esm/js/wasm/wasm_mps.js'),
       '@bitgo/utxo-ord': path.resolve('../utxo-ord/dist/esm/index.js'),
     },
     fallback: {
