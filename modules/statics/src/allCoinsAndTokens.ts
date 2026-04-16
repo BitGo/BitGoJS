@@ -4601,6 +4601,26 @@ export const allCoinsAndTokens = [
     Networks.test.hederaEVM
   ),
 
+  erc20Token(
+    '68596b5b-089c-4cf2-b4c8-4d84b799a74b',
+    'tprividiumeth:USB-ESCROW-D',
+    'USB Escrow Token',
+    2,
+    '0x2e392eee4da541dc8aab48d4a4c5eb3a8d8f468b',
+    UnderlyingAsset['tprividiumeth:USB-ESCROW-D'],
+    Networks.test.prividiumeth
+  ),
+
+  erc20Token(
+    '5c917d9c-83ca-4801-a1be-268c3c3740dd',
+    'trpividiumeth:tMMF',
+    'Mock tMMF',
+    2,
+    '0xde1c06e0aabf9c224c36e80cc13259f13237d0df',
+    UnderlyingAsset['tprividiumeth:tMMF'],
+    Networks.test.prividiumeth
+  ),
+
   hederaCoin(
     '98aad956-27ee-45dd-aa43-6a23c9a1d1d0',
     'hbar',

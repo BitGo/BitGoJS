@@ -3781,6 +3781,10 @@ export enum UnderlyingAsset {
   'ttempo:usd1' = 'ttempo:usd1',
   'ttempo:stgusd1' = 'ttempo:stgusd1',
 
+  // Prividium Ethereum testnet tokens
+  'tprividiumeth:USB-ESCROW-D' = 'tprividiumeth:USB-ESCROW-D',
+  'tprividiumeth:tMMF' = 'tprividiumeth:tMMF',
+
   // fiats
   AED = 'aed',
   EUR = 'eur',
