@@ -3167,6 +3167,7 @@ export const ofcErc20Coins = [
     underlyingAssetForSymbol('eth:cake')
   ),
   ofcerc20('82276898-2553-4cc7-b656-63d65ce72276', 'ofceth:nft', 'APENFT', 6, underlyingAssetForSymbol('eth:nft')),
+  ofcerc20('65580287-8b0c-4c45-ba6d-74e4e909e960', 'ofceth:mon', 'MON', 18, underlyingAssetForSymbol('eth:mon')),
   ofcerc20(
     '6ee6e08d-4bf3-4f6e-9505-9fd1a7931858',
     'ofceth:morpho',
