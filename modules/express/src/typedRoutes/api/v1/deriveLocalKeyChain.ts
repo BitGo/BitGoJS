@@ -59,7 +59,7 @@ export const DeriveLocalKeyChainResponse = t.type({
  * - Consider encrypting xprv values before storage or transmission
  *
  * @operationId express.v1.keychain.derive
- * @tag express
+ * @tag Express
  */
 export const PostDeriveLocalKeyChain = httpRoute({
   path: '/api/v1/keychain/derive',
