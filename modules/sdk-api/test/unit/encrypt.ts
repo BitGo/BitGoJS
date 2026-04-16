@@ -122,7 +122,7 @@ describe('encryption methods tests', () => {
     });
 
     it('throws on wrong envelope version', async () => {
-      await assert.rejects(() => decryptV2(password, JSON.stringify({ v: 99 })), /unsupported envelope version/);
+      await assert.rejects(() => decryptV2(password, JSON.stringify({ v: 99 })), /invalid envelope/);
     });
 
     it('throws on invalid salt length', async () => {
@@ -135,7 +135,37 @@ describe('encryption methods tests', () => {
 
     it('v1 and v2 are independent (v1 data does not decrypt with v2)', async () => {
       const v1ct = encrypt(password, plaintext);
-      await assert.rejects(() => decryptV2(password, v1ct), /unsupported envelope version/);
+      await assert.rejects(() => decryptV2(password, v1ct), /invalid envelope/);
+    });
+
+    it('rejects envelope with memorySize exceeding max', async () => {
+      const envelope = { v: 2, m: 999999999, t: 3, p: 4, salt: 'AAAA', iv: 'AAAA', ct: 'AAAA' };
+      await assert.rejects(() => decryptV2(password, JSON.stringify(envelope)), /invalid envelope/);
+    });
+
+    it('rejects envelope with iterations exceeding max', async () => {
+      const envelope = { v: 2, m: 65536, t: 100, p: 4, salt: 'AAAA', iv: 'AAAA', ct: 'AAAA' };
+      await assert.rejects(() => decryptV2(password, JSON.stringify(envelope)), /invalid envelope/);
+    });
+
+    it('rejects envelope with parallelism exceeding max', async () => {
+      const envelope = { v: 2, m: 65536, t: 3, p: 100, salt: 'AAAA', iv: 'AAAA', ct: 'AAAA' };
+      await assert.rejects(() => decryptV2(password, JSON.stringify(envelope)), /invalid envelope/);
+    });
+
+    it('rejects envelope with zero-valued parameters', async () => {
+      const envelope = { v: 2, m: 0, t: 3, p: 4, salt: 'AAAA', iv: 'AAAA', ct: 'AAAA' };
+      await assert.rejects(() => decryptV2(password, JSON.stringify(envelope)), /invalid envelope/);
+    });
+
+    it('rejects envelope with non-numeric parameter types', async () => {
+      const envelope = { v: 2, m: '65536', t: 3, p: 4, salt: 'AAAA', iv: 'AAAA', ct: 'AAAA' };
+      await assert.rejects(() => decryptV2(password, JSON.stringify(envelope)), /invalid envelope/);
+    });
+
+    it('rejects envelope with empty salt', async () => {
+      const envelope = { v: 2, m: 65536, t: 3, p: 4, salt: '', iv: 'AAAA', ct: 'AAAA' };
+      await assert.rejects(() => decryptV2(password, JSON.stringify(envelope)), /invalid envelope/);
     });
   });
 

@@ -1,5 +1,7 @@
+import { base64String, boundedInt, decodeWithCodec } from '@bitgo/sdk-core';
 import * as sjcl from '@bitgo/sjcl';
 import { randomBytes } from 'crypto';
+import * as t from 'io-ts';
 
 /** Default Argon2id parameters per RFC 9106 second recommendation
  * @see https://www.rfc-editor.org/rfc/rfc9106#section-4
@@ -26,15 +28,17 @@ const ARGON2_MAX = {
 /** AES-256-GCM IV length in bytes */
 const GCM_IV_LENGTH = 12;
 
-export interface V2Envelope {
-  v: 2;
-  m: number;
-  t: number;
-  p: number;
-  salt: string;
-  iv: string;
-  ct: string;
-}
+const V2EnvelopeCodec = t.type({
+  v: t.literal(2),
+  m: boundedInt(1, ARGON2_MAX.memorySize, 'memorySize'),
+  t: boundedInt(1, ARGON2_MAX.iterations, 'iterations'),
+  p: boundedInt(1, ARGON2_MAX.parallelism, 'parallelism'),
+  salt: base64String,
+  iv: base64String,
+  ct: base64String,
+});
+
+export type V2Envelope = t.TypeOf<typeof V2EnvelopeCodec>;
 
 /**
  * convert a 4 element Uint8Array to a 4 byte Number
@@ -197,25 +201,14 @@ export async function encryptV2(
  * The envelope must contain: v, m, t, p, salt, iv, ct.
  */
 export async function decryptV2(password: string, ciphertext: string): Promise<string> {
-  let envelope: V2Envelope;
+  let parsed: unknown;
   try {
-    envelope = JSON.parse(ciphertext);
+    parsed = JSON.parse(ciphertext);
   } catch {
     throw new Error('v2 decrypt: invalid JSON envelope');
   }
 
-  if (envelope.v !== 2) {
-    throw new Error(`v2 decrypt: unsupported envelope version ${envelope.v}`);
-  }
-  if (envelope.m > ARGON2_MAX.memorySize || envelope.m < 1) {
-    throw new Error(`v2 decrypt: memorySize ${envelope.m} exceeds allowed range [1, ${ARGON2_MAX.memorySize}]`);
-  }
-  if (envelope.t > ARGON2_MAX.iterations || envelope.t < 1) {
-    throw new Error(`v2 decrypt: iterations ${envelope.t} exceeds allowed range [1, ${ARGON2_MAX.iterations}]`);
-  }
-  if (envelope.p > ARGON2_MAX.parallelism || envelope.p < 1) {
-    throw new Error(`v2 decrypt: parallelism ${envelope.p} exceeds allowed range [1, ${ARGON2_MAX.parallelism}]`);
-  }
+  const envelope = decodeWithCodec(V2EnvelopeCodec, parsed, 'v2 decrypt: invalid envelope');
 
   const salt = new Uint8Array(Buffer.from(envelope.salt, 'base64'));
   const iv = new Uint8Array(Buffer.from(envelope.iv, 'base64'));

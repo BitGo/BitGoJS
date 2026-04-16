@@ -7,6 +7,7 @@ export * from './promise-utils';
 export * from './triple';
 export * from './tss';
 export * from './util';
+export * from './codecs';
 export * from './decode';
 export * from './notEmpty';
 export * from './wallet';
