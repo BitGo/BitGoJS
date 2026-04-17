@@ -1,8 +1,8 @@
 import { BlockchairApi, AddressInfo, TransactionIO } from '@bitgo/blockapis';
 
-import type { Unspent } from '../unspent';
+import type { Unspent } from '../unspent.js';
 
-import { ApiNotImplementedError } from './baseApi';
+import { ApiNotImplementedError } from './baseApi.js';
 
 /**
  * An account with bear minimum information required for recoveries.

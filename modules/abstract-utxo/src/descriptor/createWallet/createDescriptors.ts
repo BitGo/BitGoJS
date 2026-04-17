@@ -1,7 +1,7 @@
 import { bip32 } from '@bitgo/wasm-utxo';
 
-import { createNamedDescriptorWithSignature, NamedDescriptor } from '../NamedDescriptor';
-import { getDescriptorFromBuilder, DescriptorBuilder } from '../builder';
+import { createNamedDescriptorWithSignature, NamedDescriptor } from '../NamedDescriptor.js';
+import { getDescriptorFromBuilder, DescriptorBuilder } from '../builder/index.js';
 
 export type DescriptorFromKeys = (
   userKey: bip32.BIP32Interface,

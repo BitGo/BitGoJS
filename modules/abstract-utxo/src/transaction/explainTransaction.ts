@@ -2,21 +2,21 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 import { isTriple, IWallet, Triple } from '@bitgo/sdk-core';
 
-import { getDescriptorMapFromWallet, isDescriptorWallet } from '../descriptor';
-import { toBip32Triple } from '../keychains';
-import { getPolicyForEnv } from '../descriptor/validatePolicy';
-import { UtxoCoinName } from '../names';
-import type { Unspent } from '../unspent';
-import { toWasmPsbt } from '../wasmUtil';
+import { getDescriptorMapFromWallet, isDescriptorWallet } from '../descriptor/index.js';
+import { toBip32Triple } from '../keychains.js';
+import { getPolicyForEnv } from '../descriptor/validatePolicy.js';
+import { UtxoCoinName } from '../names.js';
+import type { Unspent } from '../unspent.js';
+import { toWasmPsbt } from '../wasmUtil.js';
 
-import { getReplayProtectionPubkeys } from './fixedScript/replayProtection';
+import { getReplayProtectionPubkeys } from './fixedScript/replayProtection.js';
 import type {
   TransactionExplanationUtxolibLegacy,
   TransactionExplanationUtxolibPsbt,
   TransactionExplanationWasm,
-} from './fixedScript/explainTransaction';
-import * as fixedScript from './fixedScript';
-import * as descriptor from './descriptor';
+} from './fixedScript/explainTransaction.js';
+import * as fixedScript from './fixedScript/index.js';
+import * as descriptor from './descriptor/index.js';
 
 /**
  * Decompose a raw transaction into useful information, such as the total amounts,

@@ -4,7 +4,7 @@ import { descriptorWallet } from '@bitgo/wasm-utxo';
 import * as testutils from '@bitgo/wasm-utxo/testutils';
 
 import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction';
-import { explainPsbt } from '../../../../src/transaction/descriptor';
+import { explainPsbt } from '../../../../src/transaction/descriptor/index';
 
 import { getFixtureRoot } from './fixtures.utils';
 

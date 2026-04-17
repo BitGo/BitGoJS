@@ -1,6 +1,6 @@
 import { BIP32, bip32, Descriptor } from '@bitgo/wasm-utxo';
 
-import { DescriptorBuilder, getDescriptorFromBuilder } from './builder';
+import { DescriptorBuilder, getDescriptorFromBuilder } from './builder.js';
 
 type NodeUnary<Key extends string> = { [k in Key]: unknown };
 

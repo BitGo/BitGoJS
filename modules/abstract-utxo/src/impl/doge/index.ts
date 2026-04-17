@@ -1,2 +1,2 @@
-export * from './doge';
-export * from './tdoge';
+export * from './doge.js';
+export * from './tdoge.js';

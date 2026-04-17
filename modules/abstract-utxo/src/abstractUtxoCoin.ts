@@ -56,9 +56,9 @@ import {
   V1RecoverParams,
   v1Sweep,
   V1SweepParams,
-} from './recovery';
-import { getReplayProtectionPubkeys, isReplayProtectionUnspent } from './transaction/fixedScript/replayProtection';
-import { supportedCrossChainRecoveries } from './config';
+} from './recovery/index.js';
+import { getReplayProtectionPubkeys, isReplayProtectionUnspent } from './transaction/fixedScript/replayProtection.js';
+import { supportedCrossChainRecoveries } from './config.js';
 import {
   assertValidTransactionRecipient,
   DecodedTransaction,
@@ -67,15 +67,15 @@ import {
   isScriptRecipient,
   parseTransaction,
   verifyTransaction,
-} from './transaction';
-import type { TransactionExplanation } from './transaction/fixedScript/explainTransaction';
-import { Musig2Participant } from './transaction/fixedScript/musig2';
+} from './transaction/index.js';
+import type { TransactionExplanation } from './transaction/fixedScript/explainTransaction.js';
+import { Musig2Participant } from './transaction/fixedScript/musig2.js';
 import {
   AggregateValidationError,
   ErrorMissingOutputs,
   ErrorImplicitExternalOutputs,
-} from './transaction/descriptor/verifyTransaction';
-import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
+} from './transaction/descriptor/verifyTransaction.js';
+import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor/index.js';
 import {
   getFullNameFromCoinName,
   getMainnetCoinName,
@@ -84,17 +84,17 @@ import {
   isUtxoCoinNameMainnet,
   UtxoCoinName,
   UtxoCoinNameMainnet,
-} from './names';
-import { assertFixedScriptWalletAddress } from './address/fixedScript';
-import { isSdkBackend, ParsedTransaction, SdkBackend } from './transaction/types';
-import { decodePsbtWith, encodeTransaction, stringToBufferTryFormats } from './transaction/decode';
+} from './names.js';
+import { assertFixedScriptWalletAddress } from './address/fixedScript.js';
+import { isSdkBackend, ParsedTransaction, SdkBackend } from './transaction/types.js';
+import { decodePsbtWith, encodeTransaction, stringToBufferTryFormats } from './transaction/decode.js';
 import { fetchKeychains, toBip32Triple, UtxoKeychain } from './keychains';
-import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
-import { getPolicyForEnv } from './descriptor/validatePolicy';
-import { signTransaction } from './transaction/signTransaction';
-import { isUtxoWalletData, UtxoWallet } from './wallet';
-import { isDescriptorWalletData } from './descriptor/descriptorWallet';
-import type { Unspent } from './unspent';
+import { verifyKeySignature, verifyUserPublicKey } from './verifyKey.js';
+import { getPolicyForEnv } from './descriptor/validatePolicy.js';
+import { signTransaction } from './transaction/signTransaction.js';
+import { isUtxoWalletData, UtxoWallet } from './wallet.js';
+import { isDescriptorWalletData } from './descriptor/descriptorWallet.js';
+import type { Unspent } from './unspent.js';
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 

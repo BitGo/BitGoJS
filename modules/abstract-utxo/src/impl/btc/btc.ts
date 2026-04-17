@@ -4,11 +4,10 @@ import {
   Wallet,
 } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
-import { UtxoCoinName } from '../../names';
+import { AbstractUtxoCoin } from '../../abstractUtxoCoin.js';
+import { UtxoCoinName } from '../../names.js';
 
-import { InscriptionBuilder } from './inscriptionBuilder';
-
+import { InscriptionBuilder } from './inscriptionBuilder.js';
 export interface VerifyRecoveryTransactionOptions extends BaseVerifyRecoveryTransactionOptions {
   transactionHex: string;
 }

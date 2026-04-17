@@ -1,4 +1,4 @@
-import { isTestnetCoin, UtxoCoinName } from '../names';
+import { isTestnetCoin, UtxoCoinName } from '../names.js';
 
 const BITGOPAYGOATTESTATIONPUBKEY =
   'xpub6BKRgmCPX5oQiJgJ6Vq6BF8tDvZhwQki5dVVQohckK2ZJXtxj8K6M9pavLwt9piW33hZz17SWmG8QWsjJ1tHdde2Fs5UA3DFbApCtbdaGKn';

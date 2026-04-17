@@ -1,6 +1,6 @@
 import { address } from '@bitgo/wasm-utxo';
 
-import { UtxoCoinName } from '../names';
+import { UtxoCoinName } from '../names.js';
 
 const ScriptRecipientPrefix = 'scriptPubKey:';
 

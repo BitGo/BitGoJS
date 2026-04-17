@@ -11,7 +11,7 @@ import {
   explainPsbtWasmBigInt,
   aggregateTransactionExplanations,
   type TransactionExplanationBigInt,
-} from '../../../../src/transaction/fixedScript';
+} from '../../../../src/transaction/fixedScript/index';
 import { getCoinName } from '../../../../src/names';
 
 function describeTransactionWith(acidTest: testutil.AcidTest) {

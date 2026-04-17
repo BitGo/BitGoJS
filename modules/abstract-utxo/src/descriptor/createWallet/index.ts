@@ -1,2 +1,2 @@
-export * from './createDescriptors';
-export * from './createDescriptorWallet';
+export * from './createDescriptors.js';
+export * from './createDescriptorWallet.js';

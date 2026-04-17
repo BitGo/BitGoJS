@@ -1,6 +1,6 @@
 import { Wallet, WalletData } from '@bitgo/sdk-core';
 
-import { isUtxoCoinName, UtxoCoinName } from './names';
+import { isUtxoCoinName, UtxoCoinName } from './names.js';
 
 // parseTransactions' return type makes use of WalletData's type but with customChangeKeySignatures as required.
 export interface UtxoWalletData extends WalletData {
