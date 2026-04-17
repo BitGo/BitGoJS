@@ -66,3 +66,13 @@ GHSA-9ppj-qmqm-q256
 # - Resolved sjcl -> npm:@bitgo/sjcl@1.0.1 in root resolutions; sjcl.ecc is absent at runtime
 # - No patched version of sjcl exists upstream (first_patched_version: null)
 GHSA-2w8x-224x-785m
+
+# Excluded because:
+# - Arbitrary code execution in protobufjs via malicious protobuf definition files (severity: critical)
+# - Affects protobufjs < 7.5.5; installed versions: 6.11.4 (@cosmjs/stargate), 7.2.5 (@hashgraph/sdk,
+#   sdk-coin-islm, sdk-coin-trx, sdk-coin-hbar), 7.5.4 (abstract-cosmos, sdk-coin-icp)
+# - Exploitation requires attacker-controlled .proto definition files; all protobuf definitions in this
+#   repo are static files bundled within trusted upstream dependencies — not user-supplied
+# - Versions 6.11.4 and 7.2.5 are pinned by upstream deps (@cosmjs ~6.11.x, @hashgraph/sdk 7.2.5)
+#   that do not yet support 7.5.5
+GHSA-xq3m-2v4x-88gg
