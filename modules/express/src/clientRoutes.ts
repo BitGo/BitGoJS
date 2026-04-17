@@ -1698,6 +1698,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   // auth
   router.post('express.login', [prepareBitGo(config), typedPromiseWrapper(handleLogin)]);
 
+  router.post('express.v1.decrypt', [prepareBitGo(config), typedPromiseWrapper(handleDecrypt)]);
   router.post('express.decrypt', [prepareBitGo(config), typedPromiseWrapper(handleDecrypt)]);
   router.post('express.v1.encrypt', [prepareBitGo(config), typedPromiseWrapper(handleEncrypt)]);
   router.post('express.encrypt', [prepareBitGo(config), typedPromiseWrapper(handleEncrypt)]);
