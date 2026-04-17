@@ -43,7 +43,7 @@ export const CreateLocalKeyChainResponse = t.type({
  * immediately upon receipt and securely destroy the unencrypted copy to prevent theft.
  *
  * @operationId express.v1.keychain.local
- * @tag express
+ * @tag Express
  */
 export const PostCreateLocalKeyChain = httpRoute({
   path: '/api/v1/keychain/local',
