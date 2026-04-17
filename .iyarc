@@ -76,3 +76,14 @@ GHSA-2w8x-224x-785m
 # - Versions 6.11.4 and 7.2.5 are pinned by upstream deps (@cosmjs ~6.11.x, @hashgraph/sdk 7.2.5)
 #   that do not yet support 7.5.5
 GHSA-xq3m-2v4x-88gg
+
+# Excluded because:
+# - DoS via memory exhaustion in basic-ftp <= 5.2.2 (severity: high, CVSS 7.5)
+# - Client.list() buffers entire directory listings without size limits; a malicious FTP server
+#   can send unbounded data to exhaust client memory
+# - Transitive dependency through pac-proxy-agent > get-uri > basic-ftp; used for PAC-based
+#   proxy resolution, not direct FTP operations
+# - Exploitation requires connecting to a malicious FTP server; all proxy targets in this
+#   project are controlled internal endpoints, not user-supplied FTP URLs
+# - Pinned at 5.2.2 in root resolutions; upstream get-uri has not yet updated to require 5.3.0
+GHSA-rp42-5vxx-qpwr
