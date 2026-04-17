@@ -7,7 +7,7 @@ import { BitgoExpressError } from '../../schemas/error';
  * Request parameters for signing a transaction
  */
 export const CoinSignTxParams = {
-  /** The coin type */
+  /** A cryptocurrency or token ticker symbol */
   coin: t.string,
 } as const;
 
@@ -254,11 +254,11 @@ export const TransactionPrebuild = t.partial({
  * Reference: modules/abstract-eth/src/abstractEthLikeNewCoins.ts:168-177 (EVM fields)
  */
 export const CoinSignTxBody = {
-  /** Private key for signing (universal field) */
+  /** User private key */
   prv: optional(t.string),
   /** Transaction prebuild data (universal field) */
   txPrebuild: optional(TransactionPrebuild),
-  /** Whether this is the last signature in a multi-sig tx */
+  /** Should be set to true if you are signing the second time, attaching the final signature. Default to false */
   isLastSignature: optional(t.boolean),
 
   // EVM-specific fields
@@ -284,7 +284,7 @@ export const CoinSignTxBody = {
   walletContractAddress: optional(t.string),
 
   // UTXO-specific fields
-  /** Public keys for multi-signature transactions (xpub triple: user, backup, bitgo) */
+  /** Public Keys (user, backup, bitgo) for the wallet (UTXO coins only) */
   pubs: optional(t.array(t.string)),
   /** Cosigner public key (defaults to bitgo) */
   cosignerPub: optional(t.string),
@@ -394,34 +394,10 @@ export const CoinSignTxResponse = {
 };
 
 /**
- * Sign a transaction for a specific coin
+ * This route is for users who would like to maintain their own keys, or otherwise would not like BitGo to decrypt their key, and instead provide it in the clear themselves
  *
- * This endpoint signs a transaction for a specific coin type.
- * The request body is passed directly to coin.signTransaction() and varies by coin.
- *
- * Universal fields:
- * - txPrebuild: Contains transaction data like txHex or txBase64
- * - prv: Private key for signing
- * - isLastSignature: Whether this is the last signature in a multi-sig tx
- *
- * EVM-specific fields (Ethereum, Polygon, etc.):
- * - gasLimit: Gas limit for transactions
- * - gasPrice: Gas price for transactions
- * - expireTime: Transaction expiration time
- * - sequenceId: Sequence ID for replay protection
- * - recipients: Transaction recipients
- * - custodianTransactionId: Custodian transaction ID
- * - walletVersion: Wallet version
- * - isEvmBasedCrossChainRecovery: For cross-chain recovery
- *
- * UTXO-specific fields (Bitcoin, Litecoin, etc.):
- * - pubs: Public keys array (xpub triple: user, backup, bitgo)
- * - cosignerPub: Cosigner's public key (defaults to bitgo)
- * - signingStep: MuSig2 signing step
- * - allowNonSegwitSigningWithoutPrevTx: Legacy parameter
- *
- * @tag express
  * @operationId express.v2.coin.signtx
+ * @tag Express
  */
 export const PostCoinSignTx = httpRoute({
   path: '/api/v2/{coin}/signtx',
