@@ -746,7 +746,7 @@ async function handleV2SignTxWallet(req: ExpressApiRouteRequest<'express.v2.wall
  * handle sign transaction
  * @param req
  */
-async function handleV2SignTx(req: ExpressApiRouteRequest<'express.v2.coin.signtx', 'post'>) {
+async function handleV2SignTx(req: ExpressApiRouteRequest<'express.signtx', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   try {
@@ -1784,7 +1784,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.ofc.signPayload', [prepareBitGo(config), typedPromiseWrapper(handleV2OFCSignPayload)]);
 
   // sign transaction
-  router.post('express.v2.coin.signtx', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTx)]);
+  router.post('express.signtx', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTx)]);
   router.post('express.v2.wallet.signtx', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTxWallet)]);
   router.post('express.v2.wallet.signtxtss', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTSSWalletTx)]);
   router.post('express.wallet.recovertoken', [prepareBitGo(config), typedPromiseWrapper(handleV2RecoverToken)]);
