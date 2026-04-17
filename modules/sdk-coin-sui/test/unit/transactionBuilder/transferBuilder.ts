@@ -562,4 +562,248 @@ describe('Sui Transfer Builder', () => {
       Number(expiration.nonce).should.equal(0xdeadbeef);
     });
   });
+
+  describe('BalanceWithdrawal BCS encoding (FundsWithdrawal format)', () => {
+    const AMOUNT = '100000000'; // 0.1 SUI in MIST
+    const sponsoredGasData = {
+      ...testData.gasData,
+      owner: testData.feePayer.address,
+    };
+
+    async function buildSponsoredTxWithAddressBalance() {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: AMOUNT }]);
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.fundsInAddressBalance(AMOUNT);
+      return txBuilder.build();
+    }
+
+    it('should encode BalanceWithdrawal input with FundsWithdrawal structure (reservation/typeArg/withdrawFrom)', async function () {
+      const tx = await buildSponsoredTxWithAddressBalance();
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      const inputs = suiTx.suiTransaction.tx.inputs as any[];
+
+      const bwInput = inputs.find(
+        (inp) => inp?.BalanceWithdrawal !== undefined || inp?.value?.BalanceWithdrawal !== undefined
+      );
+      should.exist(bwInput, 'BalanceWithdrawal input must be present');
+
+      const bw = bwInput.BalanceWithdrawal ?? bwInput.value?.BalanceWithdrawal;
+
+      should.exist(bw.reservation, 'reservation field must exist');
+      should.exist(bw.reservation.MaxAmountU64, 'reservation.MaxAmountU64 must exist');
+      bw.reservation.MaxAmountU64.toString().should.equal(AMOUNT);
+
+      should.exist(bw.typeArg, 'typeArg field must exist');
+      should.exist(bw.typeArg.Balance, 'typeArg.Balance must exist');
+
+      should.exist(bw.withdrawFrom, 'withdrawFrom field must exist');
+      should.exist(
+        bw.withdrawFrom.Sender !== undefined || bw.withdrawFrom.Sponsor !== undefined,
+        'withdrawFrom must be Sender or Sponsor'
+      );
+
+      // Old format fields must NOT exist directly on bw
+      should.not.exist(bw.amount, 'old "amount" field must not exist on BalanceWithdrawal');
+      should.not.exist(bw.type_, 'old "type_" field must not exist on BalanceWithdrawal');
+    });
+
+    it('should produce BCS bytes that decode back to FundsWithdrawal with correct amount', async function () {
+      const tx = await buildSponsoredTxWithAddressBalance();
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const deserialized = SuiTransaction.deserializeSuiTransaction(rawTx);
+      const inputs = deserialized.tx.inputs as any[];
+
+      const bwInput = inputs.find(
+        (inp) => inp?.BalanceWithdrawal !== undefined || inp?.value?.BalanceWithdrawal !== undefined
+      );
+      should.exist(bwInput, 'BalanceWithdrawal must be present in deserialized inputs');
+
+      const bw = bwInput.BalanceWithdrawal ?? bwInput.value?.BalanceWithdrawal;
+
+      // FundsWithdrawal structure (not old {amount, type_})
+      should.exist(bw.reservation, 'reservation must survive BCS round-trip');
+      should.exist(bw.reservation.MaxAmountU64, 'MaxAmountU64 must survive BCS round-trip');
+      bw.reservation.MaxAmountU64.toString().should.equal(AMOUNT);
+
+      should.exist(bw.typeArg, 'typeArg must survive BCS round-trip');
+      should.exist(bw.typeArg.Balance, 'typeArg.Balance must survive BCS round-trip');
+
+      should.exist(bw.withdrawFrom, 'withdrawFrom must survive BCS round-trip');
+    });
+
+    it('should serialize toJson() without a BigInt replacer (no TypeError)', async function () {
+      const tx = await buildSponsoredTxWithAddressBalance();
+      should.doesNotThrow(
+        () => JSON.stringify(tx.toJson()),
+        'JSON.stringify(tx.toJson()) must not throw — BalanceWithdrawal amount must not be stored as BigInt'
+      );
+    });
+
+    it('should preserve fundsInAddressBalance amount through full round-trip', async function () {
+      const tx = await buildSponsoredTxWithAddressBalance();
+      const rawTx = tx.toBroadcastFormat();
+
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+
+      const suiTx = rebuiltTx as SuiTransaction<TransferProgrammableTransaction>;
+      const inputs = suiTx.suiTransaction.tx.inputs as any[];
+      const bwInput = inputs.find(
+        (inp) => inp?.BalanceWithdrawal !== undefined || inp?.value?.BalanceWithdrawal !== undefined
+      );
+      should.exist(bwInput);
+      const bw = bwInput.BalanceWithdrawal ?? bwInput.value?.BalanceWithdrawal;
+      bw.reservation.MaxAmountU64.toString().should.equal(AMOUNT);
+    });
+
+    it('should encode gas-from-address-balance (self-pay, empty payment) with no FundsWithdrawal input', async function () {
+      // When gasData.payment=[] and sender===gasData.owner, the Sui runtime automatically
+      // uses address balance to fund both gas and the transfer via GasCoin.
+      // No BalanceWithdrawal CallArg is needed — the runtime handles it implicitly.
+      const selfPayNoPayment = { ...testData.gasDataWithoutGasPayment, payment: [] };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: AMOUNT }]);
+      txBuilder.gasData(selfPayNoPayment);
+      txBuilder.fundsInAddressBalance(AMOUNT);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+
+      // Gas owner must equal sender (self-pay)
+      suiTx.suiTransaction.gasData.owner.should.equal(testData.sender.address);
+      // Payment must be empty — gas funded from address balance by the runtime
+      suiTx.suiTransaction.gasData.payment.length.should.equal(0);
+
+      // No BalanceWithdrawal input — runtime handles address balance automatically
+      const inputs = suiTx.suiTransaction.tx.inputs as any[];
+      const bwInput = inputs.find(
+        (inp) => inp?.BalanceWithdrawal !== undefined || inp?.value?.BalanceWithdrawal !== undefined
+      );
+      should.not.exist(bwInput, 'self-pay must NOT have a BalanceWithdrawal input — runtime handles it');
+
+      // First command must be SplitCoins(GasCoin) — no redeem_funds needed
+      const commands = suiTx.suiTransaction.tx.transactions as any[];
+      commands[0].kind.should.equal('SplitCoins');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const deserialized = SuiTransaction.deserializeSuiTransaction(rawTx);
+      deserialized.sender.should.equal(testData.sender.address);
+      deserialized.gasData.owner.should.equal(testData.sender.address);
+      deserialized.gasData.payment.length.should.equal(0);
+
+      // No FundsWithdrawal in decoded inputs — only Pure args
+      const decodedInputs = deserialized.tx.inputs as any[];
+      decodedInputs
+        .every((inp: any) => inp?.BalanceWithdrawal === undefined && inp?.value?.BalanceWithdrawal === undefined)
+        .should.be.true('decoded inputs must contain no FundsWithdrawal for self-pay path');
+
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should encode gas-from-address-balance with ValidDuring expiration (self-pay, empty payment)', async function () {
+      // When gasData.payment=[] the Sui node requires a ValidDuring expiration to prevent
+      // replay attacks. Gas and transfer are both funded from address balance via GasCoin.
+      const GENESIS_CHAIN_ID = 'GAFpCCcRCxTdFfUEMbQbkLBaZy2RNiGAfvFBhMNpq2kT';
+      const selfPayNoPayment = { ...testData.gasDataWithoutGasPayment, payment: [] };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: AMOUNT }]);
+      txBuilder.gasData(selfPayNoPayment);
+      txBuilder.fundsInAddressBalance(AMOUNT);
+      txBuilder.expiration({
+        ValidDuring: {
+          minEpoch: { Some: 500 },
+          maxEpoch: { Some: 501 },
+          minTimestamp: { None: null },
+          maxTimestamp: { None: null },
+          chain: GENESIS_CHAIN_ID,
+          nonce: 0xdeadbeef,
+        },
+      });
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+
+      // Self-pay: owner === sender, payment empty
+      suiTx.suiTransaction.gasData.owner.should.equal(testData.sender.address);
+      suiTx.suiTransaction.gasData.payment.length.should.equal(0);
+
+      // No BalanceWithdrawal input — runtime handles GasCoin from address balance
+      const inputs = suiTx.suiTransaction.tx.inputs as any[];
+      const bwInput = inputs.find(
+        (inp) => inp?.BalanceWithdrawal !== undefined || inp?.value?.BalanceWithdrawal !== undefined
+      );
+      should.not.exist(bwInput, 'self-pay must NOT have a BalanceWithdrawal input');
+
+      // First command: SplitCoins(GasCoin) — no redeem_funds for self-pay
+      const commands = suiTx.suiTransaction.tx.transactions as any[];
+      commands[0].kind.should.equal('SplitCoins');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const deserialized = SuiTransaction.deserializeSuiTransaction(rawTx);
+      deserialized.sender.should.equal(testData.sender.address);
+      deserialized.gasData.payment.length.should.equal(0);
+
+      const expiration = (deserialized.expiration as any)?.ValidDuring;
+      should.exist(expiration, 'ValidDuring expiration must survive BCS round-trip');
+      Number(expiration.minEpoch?.Some ?? expiration.minEpoch).should.equal(500);
+      Number(expiration.maxEpoch?.Some ?? expiration.maxEpoch).should.equal(501);
+      expiration.chain.should.equal(GENESIS_CHAIN_ID);
+      Number(expiration.nonce).should.equal(0xdeadbeef);
+
+      // Inputs must contain no FundsWithdrawal — only Pure args
+      const decodedInputs = deserialized.tx.inputs as any[];
+      decodedInputs
+        .every((inp: any) => inp?.BalanceWithdrawal === undefined && inp?.value?.BalanceWithdrawal === undefined)
+        .should.be.true('decoded inputs must contain no FundsWithdrawal for self-pay path');
+
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build and correctly decode a MoveCall to 0x2::coin::redeem_funds with BalanceWithdrawal arg', async function () {
+      const tx = await buildSponsoredTxWithAddressBalance();
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      const commands = suiTx.suiTransaction.tx.transactions as any[];
+
+      commands[0].kind.should.equal('MoveCall');
+      commands[0].target.should.equal('0x2::coin::redeem_funds');
+      commands[0].typeArguments[0].should.equal('0x2::sui::SUI');
+
+      // The argument to redeem_funds must reference the BalanceWithdrawal input (index 0)
+      const arg = commands[0].arguments[0];
+      arg.kind.should.equal('Input');
+      arg.index.should.equal(0);
+      arg.type.should.equal('object');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+  });
 });

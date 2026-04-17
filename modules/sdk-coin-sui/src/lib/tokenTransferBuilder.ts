@@ -112,7 +112,7 @@ export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgra
     );
     if (withdrawalInput) {
       const bw = withdrawalInput.BalanceWithdrawal ?? withdrawalInput.value?.BalanceWithdrawal;
-      this._fundsInAddressBalance = new BigNumber(String(bw.amount));
+      this._fundsInAddressBalance = new BigNumber(String(bw.reservation?.MaxAmountU64 ?? bw.amount));
     }
 
     if (txData.inputObjects && txData.inputObjects.length > 0) {
