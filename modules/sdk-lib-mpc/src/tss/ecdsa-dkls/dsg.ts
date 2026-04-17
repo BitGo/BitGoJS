@@ -164,7 +164,7 @@ export class Dsg {
    */
   endSession(): void {
     if (this._signature) {
-      new Error('Session already ended because combined signature was produced.');
+      throw new Error('Session already ended because combined signature was produced.');
     }
     if (this.dsgSession) {
       this.dsgSession.free();

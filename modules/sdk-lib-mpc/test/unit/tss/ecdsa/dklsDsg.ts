@@ -217,6 +217,29 @@ describe('DKLS Dsg 2x3', function () {
     await party.init().should.be.rejectedWith(/Invalid messageHash length/);
   });
 
+  it('should throw in endSession() when signature has already been produced', async function () {
+    const vector = vectors[0];
+    const party1 = new DklsDsg.Dsg(
+      fs.readFileSync(shareFiles[vector.party1]),
+      vector.party1,
+      vector.derivationPath,
+      crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
+    );
+    const party2 = new DklsDsg.Dsg(
+      fs.readFileSync(shareFiles[vector.party2]),
+      vector.party2,
+      vector.derivationPath,
+      crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
+    );
+    const round4Messages = await executeTillRound(4, party1, party2);
+    party1.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: round4Messages[1].broadcastMessages,
+    });
+    should.exist(party1.signature);
+    (() => party1.endSession()).should.throw('Session already ended because combined signature was produced.');
+  });
+
   it(`should fail when signing two different messages`, async function () {
     const party1 = new DklsDsg.Dsg(
       fs.readFileSync(`${__dirname}/fixtures/userShare`),
