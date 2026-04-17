@@ -109,7 +109,7 @@ export const FanoutUnspentsResponse = t.type({
  * (minus fees) across the target number of new outputs. All original addresses will be emptied.
  *
  * @operationId express.v1.wallet.fanoutunspents
- * @tag express
+ * @tag Express
  */
 export const PutFanoutUnspents = httpRoute({
   path: '/api/v1/wallet/{id}/fanoutunspents',
