@@ -547,6 +547,7 @@ export const ZKETH_FEATURES = [
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.ETH_ROLLUP_CHAIN,
   CoinFeature.EIP1559,
+  CoinFeature.ERC20_BULK_TRANSACTION,
 ];
 
 export const ZKSYNCERA_FEATURES = [
@@ -561,6 +562,7 @@ export const ZKSYNCERA_FEATURES = [
   CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.ETH_ROLLUP_CHAIN,
+  CoinFeature.ERC20_BULK_TRANSACTION,
 ];
 
 export const BERA_FEATURES = [
@@ -577,6 +579,7 @@ export const BERA_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BULK_TRANSACTION,
+  CoinFeature.ERC20_BULK_TRANSACTION,
 ];
 export const OAS_FEATURES = [
   ...ETH_FEATURES,
@@ -587,6 +590,7 @@ export const OAS_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
   CoinFeature.EIP1559,
+  CoinFeature.ERC20_BULK_TRANSACTION,
 ];
 export const COREDAO_FEATURES = [
   ...ETH_FEATURES,
@@ -601,7 +605,10 @@ export const COREDAO_FEATURES = [
   CoinFeature.EIP1559,
   CoinFeature.ERC20_BULK_TRANSACTION,
 ];
-export const TEMPO_FEATURES = EVM_FEATURES.filter((feature) => feature !== CoinFeature.ENTERPRISE_PAYS_FEES);
+export const TEMPO_FEATURES = [
+  ...EVM_FEATURES.filter((feature) => feature !== CoinFeature.ENTERPRISE_PAYS_FEES),
+  CoinFeature.ERC20_BULK_TRANSACTION,
+];
 export const HYPERLIQUID_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.MULTISIG_COLD,
@@ -666,6 +673,7 @@ export const SONEIUM_FEATURES = [
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG_SUPPORT_GATED,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
+  CoinFeature.ERC20_BULK_TRANSACTION,
 ];
 
 export const POLYX_FEATURES = [
