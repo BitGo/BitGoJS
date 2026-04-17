@@ -43,30 +43,24 @@ export function isPureArg(arg: any): arg is PureArg {
   return (arg as PureArg).Pure !== undefined;
 }
 
+/** Inner types for the FundsWithdrawal (BalanceWithdrawal) CallArg variant. */
+export type BalanceWithdrawalReservation = { MaxAmountU64: string };
+export type BalanceWithdrawalTypeArg = { Balance: TypeTag };
+export type BalanceWithdrawalFrom = { Sender: null } | { Sponsor: null };
+
 /**
- * An argument for the transaction. It is a 'meant' enum which expects to have
- * one of the optional properties. If not, the BCS error will be thrown while
- * attempting to form a transaction.
+ * An argument for a programmable transaction. Exactly one property must be set.
  *
- * Example:
- * ```js
- * let arg1: CallArg = { Object: { Shared: {
- *   objectId: '5460cf92b5e3e7067aaace60d88324095fd22944',
- *   initialSharedVersion: 1,
- *   mutable: true,
- * } } };
- * let arg2: CallArg = { Pure: bcs.ser(BCS.STRING, 100000).toBytes() };
- * let arg3: CallArg = { Object: { ImmOrOwned: {
- *   objectId: '4047d2e25211d87922b6650233bd0503a6734279',
- *   version: 1,
- *   digest: 'bCiANCht4O9MEUhuYjdRCqRPZjr2rJ8MfqNiwyhmRgA='
- * } } };
- * ```
- *
- * For `Pure` arguments BCS is required. You must encode the values with BCS according
- * to the type required by the called function. Pure accepts only serialized values
+ * - `Pure` — BCS-serialized bytes for a primitive value
+ * - `Object` — a reference to an owned or shared object
+ * - `BalanceWithdrawal` — a FundsWithdrawal (SIP-58) that draws from the sender's
+ *   address balance at execution time; use with `0x2::coin::redeem_funds` to obtain
+ *   a `Coin<T>` object
  */
-export type CallArg = PureArg | { Object: ObjectArg } | { BalanceWithdrawal: { amount: bigint | number; type_: TypeTag } };
+export type CallArg =
+  | PureArg
+  | { Object: ObjectArg }
+  | { BalanceWithdrawal: { reservation: BalanceWithdrawalReservation; typeArg: BalanceWithdrawalTypeArg; withdrawFrom: BalanceWithdrawalFrom } };
 
 /**
  * Kind of a TypeTag which is represented by a Move type identifier.
@@ -161,7 +155,17 @@ const BCS_SPEC: TypeSchema = {
     CallArg: {
       Pure: [VECTOR, BCS.U8],
       Object: 'ObjectArg',
-      BalanceWithdrawal: 'BalanceWithdrawal',
+      BalanceWithdrawal: 'FundsWithdrawal',
+    },
+    Reservation: {
+      MaxAmountU64: BCS.U64,
+    },
+    WithdrawalType: {
+      Balance: 'TypeTag',
+    },
+    WithdrawFrom: {
+      Sender: null,
+      Sponsor: null,
     },
     TypeTag: {
       bool: null,
@@ -194,9 +198,10 @@ const BCS_SPEC: TypeSchema = {
     },
   },
   structs: {
-    BalanceWithdrawal: {
-      amount: BCS.U64,
-      type_: 'TypeTag',
+    FundsWithdrawal: {
+      reservation: 'Reservation',
+      typeArg: 'WithdrawalType',
+      withdrawFrom: 'WithdrawFrom',
     },
     ValidDuringExpiration: {
       minEpoch: 'Option<u64>',

@@ -32,10 +32,9 @@ export const PureCallArg = object({ Pure: array(integer()) });
 export const ObjectCallArg = object({ Object: ObjectArg });
 export const BalanceWithdrawalCallArg = object({
   BalanceWithdrawal: object({
-    amount: bigintOrInteger,
-    // TypeTag is a recursive union; object() ensures the value is a non-null object
-    // matching all TypeTag variants ({ bool: null }, { struct: StructTag }, etc.)
-    type_: object(),
+    reservation: object({ MaxAmountU64: bigintOrInteger }),
+    typeArg: object({ Balance: object() }),
+    withdrawFrom: object(),
   }),
 });
 export type PureCallArg = Infer<typeof PureCallArg>;
@@ -66,7 +65,13 @@ export const Inputs = {
    * @param type_ - the TypeTag of the coin (defaults to SUI)
    */
   BalanceWithdrawal(amount: bigint | number, type_: TypeTag): BalanceWithdrawalCallArg {
-    return { BalanceWithdrawal: { amount, type_ } };
+    return {
+      BalanceWithdrawal: {
+        reservation: { MaxAmountU64: amount.toString() },
+        typeArg: { Balance: type_ },
+        withdrawFrom: { Sender: null },
+      },
+    };
   },
 };
 

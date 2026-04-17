@@ -138,7 +138,7 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
     );
     if (withdrawalInput) {
       const bw = withdrawalInput.BalanceWithdrawal ?? withdrawalInput.value?.BalanceWithdrawal;
-      this._fundsInAddressBalance = new BigNumber(String(bw.amount));
+      this._fundsInAddressBalance = new BigNumber(String(bw.reservation?.MaxAmountU64 ?? bw.amount));
     }
 
     const recipients = utils.getRecipients(tx.suiTransaction);
