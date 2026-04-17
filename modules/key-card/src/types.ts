@@ -82,3 +82,29 @@ export interface QrData {
   user: QrDataEntry;
   userMasterPublicKey?: MasterPublicKeyQrDataEntry;
 }
+
+/**
+ * @internal
+ * A single text node extracted from a PDF page via pdfjs-dist's getTextContent().
+ * Not part of the public API — used only within parseKeycard.ts.
+ */
+export interface PDFTextNode {
+  text: string;
+  x: number;
+  y: number;
+  page: number;
+  width: number;
+}
+
+/**
+ * A label/value pair extracted from a BitGo KeyCard section.
+ *
+ * `label` is the full section header line (e.g. "A: User Key").
+ * `value` is the content of the `data:` field for that section.
+ * For JSON sections (e.g. encrypted key objects), `value` is the
+ * concatenated multi-line JSON string.
+ */
+export interface KeycardEntry {
+  label: string;
+  value: string;
+}
