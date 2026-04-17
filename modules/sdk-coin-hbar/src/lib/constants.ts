@@ -5,4 +5,5 @@ export enum HederaTransactionTypes {
   CreateAccount = 'cryptoCreateAccount',
   TokenAssociateToAccount = 'tokenAssociate',
   TokenDissociateFromAccount = 'tokenAssociate',
+  AccountUpdate = 'cryptoUpdateAccount',
 }

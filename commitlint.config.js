@@ -58,6 +58,7 @@ module.exports = {
         'PX-',
         'QA-',
         'RA-',
+        'SI-',
         'SO-',
         'SC-',
         'ST-',

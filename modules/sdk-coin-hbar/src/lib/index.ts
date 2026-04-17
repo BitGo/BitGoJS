@@ -7,5 +7,6 @@ export { TransferBuilder } from './transferBuilder';
 export { CoinTransferBuilder } from './coinTransferBuilder';
 export { TokenTransferBuilder } from './tokenTransferBuilder';
 export { TokenAssociateBuilder } from './tokenAssociateBuilder';
+export { AccountUpdateBuilder } from './accountUpdateBuilder';
 export { Recipient } from './iface';
 export { Utils };
