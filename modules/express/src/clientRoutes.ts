@@ -788,7 +788,7 @@ async function handleV2ConsolidateUnspents(
  * @param req
  */
 export async function handleV2ConsolidateAccount(
-  req: ExpressApiRouteRequest<'express.v2.wallet.consolidateaccount', 'post'>
+  req: ExpressApiRouteRequest<'express.wallet.consolidateaccount', 'post'>
 ) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
@@ -1816,7 +1816,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   ]);
 
   // account-based
-  router.post('express.v2.wallet.consolidateaccount', [
+  router.post('express.wallet.consolidateaccount', [
     prepareBitGo(config),
     typedPromiseWrapper(handleV2ConsolidateAccount),
   ]);
