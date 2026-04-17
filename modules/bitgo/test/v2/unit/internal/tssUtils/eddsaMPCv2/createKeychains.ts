@@ -159,11 +159,26 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
       ({ ...userKeychain, reducedEncryptedPrv: '' }).should.deepEqual(nockedUserKeychain);
       ({ ...backupKeychain, reducedEncryptedPrv: '' }).should.deepEqual(nockedBackupKeychain);
       ({ ...bitgoKeychain, reducedEncryptedPrv: '' }).should.deepEqual(nockedBitGoKeychain);
+
+      // reducedEncryptedPrv must round-trip: decrypting with the passphrase should recover
+      // the browser-safe btoa encoding of the original reduced private material.
+      const encodeReduced = (buf: Buffer) => btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(buf))));
+
+      assert.ok(userKeychain.reducedEncryptedPrv);
+      assert.equal(
+        bitgo.decrypt({ input: userKeychain.reducedEncryptedPrv, password: 'passphrase' }),
+        encodeReduced(Buffer.from('userReduced'))
+      );
+      assert.ok(backupKeychain.reducedEncryptedPrv);
+      assert.equal(
+        bitgo.decrypt({ input: backupKeychain.reducedEncryptedPrv, password: 'passphrase' }),
+        encodeReduced(Buffer.from('backupReduced'))
+      );
     });
 
     it('should reject when BitGo PGP signature on round 1 response is invalid', async function () {
       nock(bgUrl)
-        .post('/api/v2/mpc/generatekey', (body) => body.round === 'MPS-R1')
+        .post('/api/v2/mpc/generatekey', (body) => body.round === 'MPCv2-R1')
         .once()
         .reply(200, {
           sessionId: 'bad-session',
@@ -174,6 +189,111 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
         });
 
       await assert.rejects(tssUtils.createKeychains({ passphrase: 'test', enterprise: enterpriseId }));
+    });
+
+    it('should reject when BitGo PGP signature on round 2 response is invalid', async function () {
+      const bitgoSession = new EddsaMPSDkg.DKG(3, 2, 2);
+      const bitgoState: { msg2?: MPSTypes.DeserializedMessage } = {};
+      await nockMPSKeyGenRound1(bitgoSession, bitgoState, 1);
+
+      nock(bgUrl)
+        .post('/api/v2/mpc/generatekey', (body) => body.round === 'MPCv2-R2')
+        .once()
+        .reply(200, {
+          sessionId: 'test-session-id',
+          commonPublicKey: 'a'.repeat(64),
+          bitgoMsg2: {
+            message: Buffer.from('garbage').toString('base64'),
+            signature: '-----BEGIN PGP SIGNATURE-----\nFAKE\n-----END PGP SIGNATURE-----',
+          },
+        });
+
+      await assert.rejects(tssUtils.createKeychains({ passphrase: 'test', enterprise: enterpriseId }));
+    });
+
+    it('should reject when session IDs from round 1 and round 2 do not match', async function () {
+      const bitgoSession = new EddsaMPSDkg.DKG(3, 2, 2);
+      const bitgoState: { msg2?: MPSTypes.DeserializedMessage } = {};
+      await nockMPSKeyGenRound1(bitgoSession, bitgoState, 1);
+
+      nock(bgUrl)
+        .post('/api/v2/mpc/generatekey', (body) => body.round === 'MPCv2-R2')
+        .once()
+        .reply(200, {
+          sessionId: 'different-session-id',
+          commonPublicKey: 'a'.repeat(64),
+          bitgoMsg2: { message: '', signature: '' },
+        });
+
+      await assert.rejects(
+        tssUtils.createKeychains({ passphrase: 'test', enterprise: enterpriseId }),
+        /Round 1 and round 2 session IDs do not match/
+      );
+    });
+
+    it('should reject when commonPublicKey from BitGo does not match the locally computed key', async function () {
+      const bitgoSession = new EddsaMPSDkg.DKG(3, 2, 2);
+      const bitgoState: { msg2?: MPSTypes.DeserializedMessage } = {};
+      await nockMPSKeyGenRound1(bitgoSession, bitgoState, 1);
+
+      nock(bgUrl)
+        .post('/api/v2/mpc/generatekey', (body) => body.round === 'MPCv2-R2')
+        .once()
+        .reply(200, async (_uri, { payload }: { payload: EddsaMPCv2KeyGenRound2Request }) => {
+          const { userMsg2, backupMsg2 } = payload;
+          assert.ok(bitgoState.msg2, 'BitGo round-2 message missing — round-1 nock must run first');
+
+          const userDeserMsg2: MPSTypes.DeserializedMessage = {
+            from: 0,
+            payload: new Uint8Array(Buffer.from(userMsg2.message, 'base64')),
+          };
+          const backupDeserMsg2: MPSTypes.DeserializedMessage = {
+            from: 1,
+            payload: new Uint8Array(Buffer.from(backupMsg2.message, 'base64')),
+          };
+          bitgoSession.handleIncomingMessages([userDeserMsg2, backupDeserMsg2, bitgoState.msg2]);
+
+          return {
+            sessionId: 'test-session-id',
+            commonPublicKey: 'fakefakeee'.repeat(8), // mutated — will not match user/backup computed key
+            bitgoMsg2: await MPSComms.detachSignMpsMessage(Buffer.from(bitgoState.msg2.payload), bitgoPrvKeyObj),
+          };
+        });
+
+      await assert.rejects(
+        tssUtils.createKeychains({ passphrase: 'test', enterprise: enterpriseId }),
+        /does not match BitGo common public key/
+      );
+    });
+
+    it('should reject when BitGo GPG public key does not match known keys in prod/test envs', async function () {
+      // Use a staging env so envRequiresBitgoPubGpgKeyConfig returns true
+      const stagingBitgo = TestBitGo.decorate(BitGo, { env: 'staging' });
+      stagingBitgo.initializeTestVars();
+      const stagingBaseCoin = stagingBitgo.coin(coinName);
+      const stagingBgUrl = common.Environments[stagingBitgo.getEnv()].uri;
+      const stagingWallet = new Wallet(stagingBitgo, stagingBaseCoin, {
+        id: walletId,
+        enterprise: enterpriseId,
+        coin: coinName,
+        coinSpecific: {},
+        multisigType: 'tss',
+      });
+      const stagingTssUtils = new EDDSAUtils.EddsaMPCv2Utils(stagingBitgo, stagingBaseCoin, stagingWallet);
+
+      // Return a key that is NOT in the hardcoded BitGo MPC v2 key list
+      nock(stagingBgUrl).get(`/api/v2/${coinName}/tss/pubkey`).query({ enterpriseId }).reply(200, {
+        name: 'irrelevant',
+        publicKey: bitgoGpgKeyPair.publicKey,
+        mpcv2PublicKey: bitgoGpgKeyPair.publicKey,
+        enterpriseId,
+      });
+      nock(stagingBgUrl).get('/api/v1/client/constants').reply(200, { ttl: 3600, constants });
+
+      await assert.rejects(
+        stagingTssUtils.createKeychains({ passphrase: 'test', enterprise: enterpriseId }),
+        /Invalid BitGo GPG public key/
+      );
     });
   });
 
@@ -202,7 +322,7 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
     times = 1
   ) {
     return nock(bgUrl)
-      .post('/api/v2/mpc/generatekey', (body) => body.round === 'MPS-R1')
+      .post('/api/v2/mpc/generatekey', (body) => body.round === 'MPCv2-R1')
       .times(times)
       .reply(200, async (_uri, { payload }: { payload: EddsaMPCv2KeyGenRound1Request }) => {
         const { userGpgPublicKey, backupGpgPublicKey, userMsg1, backupMsg1 } = payload;
@@ -211,15 +331,9 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
         const userPubKeyObj = await openpgp.readKey({ armoredKey: userGpgPublicKey });
         const backupPubKeyObj = await openpgp.readKey({ armoredKey: backupGpgPublicKey });
 
-        const userPk = Buffer.from(
-          ((await userPubKeyObj.getEncryptionKey()).keyPacket.publicParams as { Q: Uint8Array }).Q
-        ).subarray(1);
-        const backupPk = Buffer.from(
-          ((await backupPubKeyObj.getEncryptionKey()).keyPacket.publicParams as { Q: Uint8Array }).Q
-        ).subarray(1);
-        const bitgoSk = Buffer.from(
-          ((await bitgoPrvKeyObj.getDecryptionKeys())[0].keyPacket.privateParams as { d: Uint8Array }).d
-        ).reverse();
+        const userPk = await MPSComms.extractEd25519PublicKey(userPubKeyObj);
+        const backupPk = await MPSComms.extractEd25519PublicKey(backupPubKeyObj);
+        const [, bitgoSk] = await MPSComms.extractEd25519KeyPair(bitgoPrvKeyObj);
 
         bitgoSession.initDkg(bitgoSk, [userPk, backupPk]);
         const bitgoRawMsg1 = bitgoSession.getFirstMessage();
@@ -252,7 +366,7 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
     times = 1
   ) {
     return nock(bgUrl)
-      .post('/api/v2/mpc/generatekey', (body) => body.round === 'MPS-R2')
+      .post('/api/v2/mpc/generatekey', (body) => body.round === 'MPCv2-R2')
       .times(times)
       .reply(200, async (_uri, { payload }: { payload: EddsaMPCv2KeyGenRound2Request }) => {
         const { sessionId, userMsg2, backupMsg2 } = payload;

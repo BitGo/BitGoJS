@@ -14,4 +14,6 @@ export {
   TxRequest,
 } from '../baseTypes';
 
-export { EddsaMPCv2Utils } from './eddsaMPCv2';
+export * from './eddsaMPCv2';
+export * from './eddsaMPCv2KeyGenSender';
+export * from './typesEddsaMPCv2';

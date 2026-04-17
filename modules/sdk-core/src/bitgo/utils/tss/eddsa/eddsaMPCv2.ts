@@ -6,18 +6,17 @@ import {
   EddsaMPCv2KeyGenRound1Response,
   EddsaMPCv2KeyGenRound2Request,
   EddsaMPCv2KeyGenRound2Response,
+  MPCv2KeyGenStateEnum,
+  MPCv2PartyFromStringOrNumber,
 } from '@bitgo/public-types';
 import { EddsaMPSDkg, MPSComms, MPSTypes } from '@bitgo/sdk-lib-mpc';
 import { KeychainsTriplet } from '../../../baseCoin';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
-import { envRequiresBitgoPubGpgKeyConfig } from '../../../tss/bitgoPubKeys';
+import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
+import { generateGPGKeyPair } from '../../opengpgUtils';
 import { MPCv2PartiesEnum } from '../ecdsa/typesMPCv2';
 import { BaseEddsaUtils } from './base';
-import { MPSKeyGenSenderForEnterprise } from './eddsaMPCv2KeyGenSender';
-
-/** Round identifiers sent in the `round` field of each API request */
-const MPS_ROUND_1 = 'MPS-R1';
-const MPS_ROUND_2 = 'MPS-R2';
+import { EddsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './eddsaMPCv2KeyGenSender';
 
 export class EddsaMPCv2Utils extends BaseEddsaUtils {
   /** @inheritdoc */
@@ -26,52 +25,28 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     enterprise: string;
     originalPasscodeEncryptionCode?: string;
   }): Promise<KeychainsTriplet> {
-    const userKey = await pgp.generateKey({
-      curve: 'ed25519',
-      userIDs: [{ name: 'user <user@localhost>' }],
-      subkeys: [{ sign: true }, { sign: false }],
-      format: 'object',
-    });
-    const userGpgKey = userKey.privateKey;
-    const userGpgPublicKey = await userKey.publicKey.armor();
-    const userPk = Buffer.from(
-      ((await userGpgKey.getEncryptionKey()).keyPacket.publicParams as { Q: Uint8Array }).Q
-    ).subarray(1);
-    const userSk = Buffer.from(
-      ((await userGpgKey.getEncryptionKey()).keyPacket as unknown as { privateParams: { d: Uint8Array } }).privateParams
-        .d
-    ).reverse();
+    const userKeyPair = await generateGPGKeyPair('ed25519');
+    const userGpgKey = await pgp.readPrivateKey({ armoredKey: userKeyPair.privateKey });
+    const userGpgPublicKey = userKeyPair.publicKey;
+    const [userPk, userSk] = await MPSComms.extractEd25519KeyPair(userGpgKey);
 
-    const backupKey = await pgp.generateKey({
-      curve: 'ed25519',
-      userIDs: [{ name: 'backup <backup@localhost>' }],
-      subkeys: [{ sign: true }, { sign: false }],
-      format: 'object',
-    });
-    const backupGpgKey = backupKey.privateKey;
-    const backupGpgPublicKey = await backupKey.publicKey.armor();
-    const backupPk = Buffer.from(
-      ((await backupGpgKey.getEncryptionKey()).keyPacket.publicParams as { Q: Uint8Array }).Q
-    ).subarray(1);
-    const backupSk = Buffer.from(
-      ((await backupGpgKey.getEncryptionKey()).keyPacket as unknown as { privateParams: { d: Uint8Array } })
-        .privateParams.d
-    ).reverse();
+    const backupKeyPair = await generateGPGKeyPair('ed25519');
+    const backupGpgKey = await pgp.readPrivateKey({ armoredKey: backupKeyPair.privateKey });
+    const backupGpgPublicKey = backupKeyPair.publicKey;
+    const [backupPk, backupSk] = await MPSComms.extractEd25519KeyPair(backupGpgKey);
 
-    // Get the BitGo public key based on user/enterprise feature flags
-    // If it doesn't work, use the default public key from the constants
-    const bitgoPublicGpgKeyArmored = (
-      (await this.getBitgoGpgPubkeyBasedOnFeatureFlags(params.enterprise, true)) ?? this.bitgoMPCv2PublicGpgKey
-    ).armor();
+    // Get the BitGo public key based on user/enterprise feature flags;
+    // fall back to the hardcoded MPCv2 public key from constants.
+    const bitgoPublicGpgKey =
+      (await this.getBitgoGpgPubkeyBasedOnFeatureFlags(params.enterprise, true)) ?? this.bitgoMPCv2PublicGpgKey;
+    const bitgoPublicGpgKeyArmored = bitgoPublicGpgKey.armor();
 
     if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
-      assert(bitgoPublicGpgKeyArmored, 'BitGo GPG public key is required');
+      assert(isBitgoMpcPubKey(bitgoPublicGpgKeyArmored, 'mpcv2'), 'Invalid BitGo GPG public key');
     }
 
     const bitgoKeyObj = await pgp.readKey({ armoredKey: bitgoPublicGpgKeyArmored });
-    const bitgoPk = Buffer.from(
-      ((await bitgoKeyObj.getEncryptionKey()).keyPacket.publicParams as { Q: Uint8Array }).Q
-    ).subarray(1);
+    const bitgoPk = await MPSComms.extractEd25519PublicKey(bitgoKeyObj);
 
     // Create DKG sessions for user (party 0) and backup (party 1)
     const userDkg = new EddsaMPSDkg.DKG(3, 2, MPCv2PartiesEnum.USER);
@@ -190,7 +165,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 
   // #region keychain utils
   async createParticipantKeychain(
-    participantIndex: MPCv2PartiesEnum,
+    participantIndex: MPCv2PartyFromStringOrNumber,
     commonKeychain: string,
     privateMaterial?: Buffer,
     reducedPrivateMaterial?: Buffer,
@@ -286,13 +261,27 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     enterprise: string,
     payload: EddsaMPCv2KeyGenRound1Request
   ): Promise<EddsaMPCv2KeyGenRound1Response> {
-    return MPSKeyGenSenderForEnterprise(this.bitgo, enterprise).round1(MPS_ROUND_1, payload);
+    return this.sendKeyGenerationRound1BySender(KeyGenSenderForEnterprise(this.bitgo, enterprise), payload);
+  }
+
+  async sendKeyGenerationRound1BySender(
+    senderFn: EddsaMPCv2KeyGenSendFn<EddsaMPCv2KeyGenRound1Response>,
+    payload: EddsaMPCv2KeyGenRound1Request
+  ): Promise<EddsaMPCv2KeyGenRound1Response> {
+    return senderFn(MPCv2KeyGenStateEnum['MPCv2-R1'], payload);
   }
 
   async sendKeyGenerationRound2(
     enterprise: string,
     payload: EddsaMPCv2KeyGenRound2Request
   ): Promise<EddsaMPCv2KeyGenRound2Response> {
-    return MPSKeyGenSenderForEnterprise(this.bitgo, enterprise).round2(MPS_ROUND_2, payload);
+    return this.sendKeyGenerationRound2BySender(KeyGenSenderForEnterprise(this.bitgo, enterprise), payload);
+  }
+
+  async sendKeyGenerationRound2BySender(
+    senderFn: EddsaMPCv2KeyGenSendFn<EddsaMPCv2KeyGenRound2Response>,
+    payload: EddsaMPCv2KeyGenRound2Request
+  ): Promise<EddsaMPCv2KeyGenRound2Response> {
+    return senderFn(MPCv2KeyGenStateEnum['MPCv2-R2'], payload);
   }
 }

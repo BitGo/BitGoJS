@@ -35,3 +35,32 @@ export async function verifyMpsMessage(msg: MPSSignedMessage, verificationKey: p
   await result.signatures[0].verified;
   return rawBytes;
 }
+
+/**
+ * Extracts the X25519 public key bytes from a GPG key's encryption subkey.
+ * Works for both public-only and private keys — use this for third-party keys (e.g. BitGo's).
+ *
+ * @param key - A GPG key with an X25519 encryption subkey.
+ * @returns 32-byte X25519 public key.
+ */
+export async function extractEd25519PublicKey(key: pgp.Key): Promise<Buffer> {
+  const { keyPacket } = await key.getEncryptionKey();
+  return Buffer.from((keyPacket.publicParams as { Q: Uint8Array }).Q).subarray(1);
+}
+
+/**
+ * Extracts the X25519 public and private key bytes from a GPG ed25519 private key's
+ * encryption subkey. Encapsulates the keyPacket internals and the little-endian scalar
+ * reversal in one place so sdk-core only deals with plain Buffers.
+ *
+ * @param privateKey - An ed25519 GPG private key with an X25519 encryption subkey.
+ * @returns  [pk, sk] — 32-byte X25519 public key and private scalar.
+ */
+export async function extractEd25519KeyPair(privateKey: pgp.PrivateKey): Promise<[Buffer, Buffer]> {
+  const encKey = await privateKey.getEncryptionKey();
+  const pk = Buffer.from((encKey.keyPacket.publicParams as { Q: Uint8Array }).Q).subarray(1);
+  const sk = Buffer.from(
+    (encKey.keyPacket as unknown as { privateParams: { d: Uint8Array } }).privateParams.d
+  ).reverse();
+  return [pk, sk];
+}

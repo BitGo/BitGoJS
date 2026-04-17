@@ -1,30 +1,25 @@
-import {
-  EddsaMPCv2KeyGenRound1Request,
-  EddsaMPCv2KeyGenRound1Response,
-  EddsaMPCv2KeyGenRound2Request,
-  EddsaMPCv2KeyGenRound2Response,
-  KeyGenTypeEnum,
-} from '@bitgo/public-types';
+import { KeyGenTypeEnum, MPCv2KeyGenState } from '@bitgo/public-types';
 import { BitGoBase } from '../../../bitgoBase';
+import { GenerateEddsaMPCv2KeyRequestBody, GenerateEddsaMPCv2KeyRequestResponse } from './typesEddsaMPCv2';
 
-export type EddsaMPCv2KeyGenSendFn<Req, Res> = (round: string, payload: Req) => Promise<Res>;
+// TODO: move to @bitgo/public-types
+export enum KeyCurveEnum {
+  EdDSA = 'EdDSA',
+}
 
-export function MPSKeyGenSenderForEnterprise(
+export type EddsaMPCv2KeyGenSendFn<T extends GenerateEddsaMPCv2KeyRequestResponse> = (
+  round: MPCv2KeyGenState,
+  payload: GenerateEddsaMPCv2KeyRequestBody
+) => Promise<T>;
+
+export function KeyGenSenderForEnterprise<T extends GenerateEddsaMPCv2KeyRequestResponse>(
   bitgo: BitGoBase,
   enterprise: string
-): {
-  round1: EddsaMPCv2KeyGenSendFn<EddsaMPCv2KeyGenRound1Request, EddsaMPCv2KeyGenRound1Response>;
-  round2: EddsaMPCv2KeyGenSendFn<EddsaMPCv2KeyGenRound2Request, EddsaMPCv2KeyGenRound2Response>;
-} {
-  function send<Req, Res>(round: string, payload: Req): Promise<Res> {
+): EddsaMPCv2KeyGenSendFn<T> {
+  return (round, payload) => {
     return bitgo
       .post(bitgo.url('/mpc/generatekey', 2))
-      .send({ enterprise, type: KeyGenTypeEnum.MPCv2, keyCurve: 'EdDSA', round, payload })
+      .send({ enterprise, type: KeyGenTypeEnum.MPCv2, keyCurve: KeyCurveEnum.EdDSA, round, payload })
       .result();
-  }
-
-  return {
-    round1: (round, payload) => send<EddsaMPCv2KeyGenRound1Request, EddsaMPCv2KeyGenRound1Response>(round, payload),
-    round2: (round, payload) => send<EddsaMPCv2KeyGenRound2Request, EddsaMPCv2KeyGenRound2Response>(round, payload),
   };
 }
