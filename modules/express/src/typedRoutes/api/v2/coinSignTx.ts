@@ -396,7 +396,7 @@ export const CoinSignTxResponse = {
 /**
  * This route is for users who would like to maintain their own keys, or otherwise would not like BitGo to decrypt their key, and instead provide it in the clear themselves
  *
- * @operationId express.v2.coin.signtx
+ * @operationId express.signtx
  * @tag Express
  */
 export const PostCoinSignTx = httpRoute({
