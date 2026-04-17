@@ -50,7 +50,7 @@ import {
 } from '../utils';
 import { postWithCodec } from '../utils/postWithCodec';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
-import EddsaUtils from '../utils/tss/eddsa';
+import EddsaUtils, { EddsaMPCv2Utils } from '../utils/tss/eddsa';
 import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
 import { buildParamKeys, BuildParams } from './BuildParams';
 import {
@@ -155,7 +155,7 @@ export class Wallet implements IWallet {
   public readonly bitgo: BitGoBase;
   public readonly baseCoin: IBaseCoin;
   public _wallet: WalletData;
-  private readonly tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | undefined;
+  private readonly tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | EddsaMPCv2Utils | undefined;
   private readonly _permissions?: string[];
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, walletData: any) {
@@ -177,7 +177,11 @@ export class Wallet implements IWallet {
           }
           break;
         case 'eddsa':
-          this.tssUtils = new EddsaUtils(bitgo, baseCoin, this);
+          if (walletData.multisigTypeVersion === 'MPCv2') {
+            this.tssUtils = new EddsaMPCv2Utils(bitgo, baseCoin, this);
+          } else {
+            this.tssUtils = new EddsaUtils(bitgo, baseCoin, this);
+          }
           break;
         default:
           this.tssUtils = undefined;
