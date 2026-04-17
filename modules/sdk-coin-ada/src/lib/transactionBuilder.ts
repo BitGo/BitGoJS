@@ -10,7 +10,15 @@ import {
   TransactionType,
   UtilsError,
 } from '@bitgo/sdk-core';
-import { Asset, Transaction, TransactionInput, TransactionOutput, Withdrawal, SponsorshipInfo } from './transaction';
+import {
+  Asset,
+  ExplicitOutput,
+  SponsorshipInfo,
+  Transaction,
+  TransactionInput,
+  TransactionOutput,
+  Withdrawal,
+} from './transaction';
 import { KeyPair } from './keyPair';
 import util, { MIN_ADA_FOR_ONE_ASSET } from './utils';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
@@ -50,6 +58,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _fee: BigNum;
   /** Flag indicating if this is a token transaction */
   private _isTokenTransaction = false;
+  /**
+   * Pre-computed outputs for single-asset consolidation / explicit-output builds.
+   * When non-empty, build() uses processExplicitOutputsBuild: the SDK only
+   * calculates fee and appends the fee-address change output (requires sponsorshipInfo).
+   */
+  private _explicitOutputs: ExplicitOutput[] = [];
   /** Deep clone of _senderAssetList - for manipulating during two iterations
    *   - one for calculating the fee
    *   - one for the actual transaction build with the calculated fee
@@ -116,6 +130,17 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   sponsorshipInfo(info: SponsorshipInfo): this {
     this._sponsorshipInfo = info;
+    return this;
+  }
+
+  /**
+   * Adds a pre-computed output for single-asset consolidation / explicit-output builds.
+   * When at least one explicit output is present, build() uses the explicit-output path
+   * (fee + fee-address change only); requires sponsorshipInfo.
+   * Uses plain Asset objects so callers do not need to import CardanoWasm.
+   */
+  explicitOutput(o: ExplicitOutput): this {
+    this._explicitOutputs.push(o);
     return this;
   }
 
@@ -474,8 +499,88 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return txDraft;
   }
 
+  /**
+   * Converts a plain ExplicitOutput into a Cardano TransactionOutput and
+   * adds it to `outputs`.  Supports multiple policy IDs / asset names.
+   */
+  private addExplicitOutput(output: ExplicitOutput, outputs: CardanoWasm.TransactionOutputs): void {
+    const amount = CardanoWasm.BigNum.from_str(output.amount);
+    const addr = util.getWalletAddress(output.address);
+    if (output.assets && output.assets.length > 0) {
+      const multiAsset = CardanoWasm.MultiAsset.new();
+      for (const asset of output.assets) {
+        const policyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(asset.policy_id, 'hex'));
+        const assetName = CardanoWasm.AssetName.new(Buffer.from(asset.asset_name, 'hex'));
+        const qty = CardanoWasm.BigNum.from_str(asset.quantity);
+        let existingAssets = multiAsset.get(policyId);
+        if (!existingAssets) {
+          existingAssets = CardanoWasm.Assets.new();
+        }
+        existingAssets.insert(assetName, qty);
+        multiAsset.insert(policyId, existingAssets);
+      }
+      const txOutputBuilder = CardanoWasm.TransactionOutputBuilder.new().with_address(addr);
+      let txOutputAmountBuilder = txOutputBuilder.next();
+      txOutputAmountBuilder = txOutputAmountBuilder.with_coin_and_asset(amount, multiAsset);
+      outputs.add(txOutputAmountBuilder.build());
+    } else {
+      outputs.add(CardanoWasm.TransactionOutput.new(addr, CardanoWasm.Value.new(amount)));
+    }
+  }
+
+  /**
+   * Builds a Cardano outputs collection from _explicitOutputs and appends
+   * the fee-address change output based on the supplied fee amount.
+   * Used exclusively by processExplicitOutputsBuild.
+   */
+  private buildExplicitOutputsCollection(fee: BigNum): CardanoWasm.TransactionOutputs {
+    if (!this._sponsorshipInfo) {
+      throw new BuildTransactionError('explicit outputs build requires sponsorshipInfo to be set');
+    }
+    const outputs = CardanoWasm.TransactionOutputs.new();
+    for (const output of this._explicitOutputs) {
+      this.addExplicitOutput(output, outputs);
+    }
+    const feeBalance = CardanoWasm.BigNum.from_str(this._sponsorshipInfo.feeAddressInputBalance);
+    const feeAddressChange = feeBalance.checked_sub(fee);
+    if (!feeAddressChange.is_zero()) {
+      const feeAddr = util.getWalletAddress(this._sponsorshipInfo.feeAddress);
+      outputs.add(CardanoWasm.TransactionOutput.new(feeAddr, CardanoWasm.Value.new(feeAddressChange)));
+    }
+    return outputs;
+  }
+
+  /**
+   * Build path for single-asset consolidation and token withdrawal builds
+   *
+   * Two-pass approach mirrors processTokenBuild:
+   *  1. Draft with zero fee → calculate actual fee.
+   *  2. Rebuild outputs with actual fee deducted from fee-address balance.
+   */
+  private processExplicitOutputsBuild(): Transaction {
+    if (this._explicitOutputs.length === 0) {
+      throw new BuildTransactionError('explicit outputs build requires at least one explicitOutput');
+    }
+    const inputs = CardanoWasm.TransactionInputs.new();
+    this.addInputs(inputs);
+
+    if (this._fee.is_zero()) {
+      const draftOutputs = this.buildExplicitOutputsCollection(BigNum.zero());
+      const txDraft = this.prepareAdaTransactionDraft(inputs, draftOutputs, false);
+      this.calculateFee(txDraft);
+      this.setFeeInTransaction();
+    }
+
+    const finalOutputs = this.buildExplicitOutputsCollection(this._fee);
+    this._transaction.transaction = this.prepareAdaTransactionDraft(inputs, finalOutputs, true);
+    return this.transaction;
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    if (this._explicitOutputs.length > 0) {
+      return this.processExplicitOutputsBuild();
+    }
     /**
      * Fee address utxo reservation builds a new transaction that goes through legacy build
      * rebuild flag is just a hack to redirect the flow to the legacy build
