@@ -15,6 +15,7 @@ export interface BitGoBase {
   wallets(): any; // TODO - define v1 wallets type
   coin(coinName: string): IBaseCoin; // need to change it to BaseCoin once it's moved to @bitgo/sdk-core
   decrypt(params: DecryptOptions): string;
+  decryptAsync(params: DecryptOptions): Promise<string>;
   decryptKeys(params: DecryptKeysOptions): string[];
   del(url: string): BitGoRequest;
   encrypt(params: EncryptOptions): string;

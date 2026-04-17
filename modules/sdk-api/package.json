@@ -40,7 +40,9 @@
     ]
   },
   "dependencies": {
+    "@bitgo/argon2": "^1.0.0",
     "@bitgo/sdk-core": "^36.40.0",
+    "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
     "@bitgo/sdk-hmac": "^1.9.0",
     "@bitgo/sjcl": "^1.1.0",
     "@bitgo/unspents": "^0.51.3",
