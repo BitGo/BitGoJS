@@ -92,11 +92,25 @@ import {
   MonToken,
   TethLikeCoin,
   FiatAED,
+  FiatARS,
+  FiatAUD,
+  FiatCAD,
+  FiatCLP,
+  FiatCNY,
+  FiatCOP,
+  FiatDKK,
   FiatEur,
   FiatGBP,
   FiatINR,
+  FiatJPY,
+  FiatKRW,
+  FiatNOK,
+  FiatSEK,
   FiatSGD,
+  FiatTRY,
   FiatUsd,
+  FiatUYU,
+  FiatZAR,
   Gteth,
   Hash,
   Hbar,
@@ -172,11 +186,25 @@ import {
   Tflr,
   Tmon,
   TfiatAED,
+  TfiatARS,
+  TfiatAUD,
+  TfiatCAD,
+  TfiatCLP,
+  TfiatCNY,
+  TfiatCOP,
+  TfiatDKK,
   TfiatEur,
   TfiatGBP,
   TfiatINR,
+  TfiatJPY,
+  TfiatKRW,
+  TfiatNOK,
+  TfiatSEK,
   TfiatSGD,
+  TfiatTRY,
   TfiatUsd,
+  TfiatUYU,
+  TfiatZAR,
   Thash,
   Thbar,
   Tia,
@@ -275,11 +303,25 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tfantom', TethLikeCoin.createInstance);
   coinFactory.register('tbaseeth', TethLikeCoin.createInstance);
   coinFactory.register('fiataed', FiatAED.createInstance);
+  coinFactory.register('fiatars', FiatARS.createInstance);
+  coinFactory.register('fiataud', FiatAUD.createInstance);
+  coinFactory.register('fiatcad', FiatCAD.createInstance);
+  coinFactory.register('fiatclp', FiatCLP.createInstance);
+  coinFactory.register('fiatcny', FiatCNY.createInstance);
+  coinFactory.register('fiatcop', FiatCOP.createInstance);
+  coinFactory.register('fiatdkk', FiatDKK.createInstance);
   coinFactory.register('fiateur', FiatEur.createInstance);
   coinFactory.register('fiatgbp', FiatGBP.createInstance);
   coinFactory.register('fiatinr', FiatINR.createInstance);
+  coinFactory.register('fiatjpy', FiatJPY.createInstance);
+  coinFactory.register('fiatkrw', FiatKRW.createInstance);
+  coinFactory.register('fiatnok', FiatNOK.createInstance);
+  coinFactory.register('fiatsek', FiatSEK.createInstance);
   coinFactory.register('fiatsgd', FiatSGD.createInstance);
+  coinFactory.register('fiattry', FiatTRY.createInstance);
   coinFactory.register('fiatusd', FiatUsd.createInstance);
+  coinFactory.register('fiatuyu', FiatUYU.createInstance);
+  coinFactory.register('fiatzar', FiatZAR.createInstance);
   coinFactory.register('flr', Flr.createInstance);
   coinFactory.register('flrp', Flrp.createInstance);
   coinFactory.register('gteth', Gteth.createInstance);
@@ -347,11 +389,25 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tetc', Tetc.createInstance);
   coinFactory.register('teth', Teth.createInstance);
   coinFactory.register('tfiataed', TfiatAED.createInstance);
+  coinFactory.register('tfiatars', TfiatARS.createInstance);
+  coinFactory.register('tfiataud', TfiatAUD.createInstance);
+  coinFactory.register('tfiatcad', TfiatCAD.createInstance);
+  coinFactory.register('tfiatclp', TfiatCLP.createInstance);
+  coinFactory.register('tfiatcny', TfiatCNY.createInstance);
+  coinFactory.register('tfiatcop', TfiatCOP.createInstance);
+  coinFactory.register('tfiatdkk', TfiatDKK.createInstance);
   coinFactory.register('tfiateur', TfiatEur.createInstance);
   coinFactory.register('tfiatgbp', TfiatGBP.createInstance);
   coinFactory.register('tfiatinr', TfiatINR.createInstance);
+  coinFactory.register('tfiatjpy', TfiatJPY.createInstance);
+  coinFactory.register('tfiatkrw', TfiatKRW.createInstance);
+  coinFactory.register('tfiatnok', TfiatNOK.createInstance);
+  coinFactory.register('tfiatsek', TfiatSEK.createInstance);
   coinFactory.register('tfiatsgd', TfiatSGD.createInstance);
+  coinFactory.register('tfiattry', TfiatTRY.createInstance);
   coinFactory.register('tfiatusd', TfiatUsd.createInstance);
+  coinFactory.register('tfiatuyu', TfiatUYU.createInstance);
+  coinFactory.register('tfiatzar', TfiatZAR.createInstance);
   coinFactory.register('tflr', Tflr.createInstance);
   coinFactory.register('tflrp', Flrp.createInstance);
   coinFactory.register('tmon', Tmon.createInstance);
@@ -695,16 +751,44 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return TethLikeCoin.createInstance;
     case 'fiataed':
       return FiatAED.createInstance;
+    case 'fiatars':
+      return FiatARS.createInstance;
+    case 'fiataud':
+      return FiatAUD.createInstance;
+    case 'fiatcad':
+      return FiatCAD.createInstance;
+    case 'fiatclp':
+      return FiatCLP.createInstance;
+    case 'fiatcny':
+      return FiatCNY.createInstance;
+    case 'fiatcop':
+      return FiatCOP.createInstance;
+    case 'fiatdkk':
+      return FiatDKK.createInstance;
     case 'fiateur':
       return FiatEur.createInstance;
     case 'fiatgbp':
       return FiatGBP.createInstance;
     case 'fiatinr':
       return FiatINR.createInstance;
+    case 'fiatjpy':
+      return FiatJPY.createInstance;
+    case 'fiatkrw':
+      return FiatKRW.createInstance;
+    case 'fiatnok':
+      return FiatNOK.createInstance;
+    case 'fiatsek':
+      return FiatSEK.createInstance;
     case 'fiatsgd':
       return FiatSGD.createInstance;
+    case 'fiattry':
+      return FiatTRY.createInstance;
     case 'fiatusd':
       return FiatUsd.createInstance;
+    case 'fiatuyu':
+      return FiatUYU.createInstance;
+    case 'fiatzar':
+      return FiatZAR.createInstance;
     case 'flr':
       return Flr.createInstance;
     case 'flrp':
@@ -839,16 +923,44 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Teth.createInstance;
     case 'tfiataed':
       return TfiatAED.createInstance;
+    case 'tfiatars':
+      return TfiatARS.createInstance;
+    case 'tfiataud':
+      return TfiatAUD.createInstance;
+    case 'tfiatcad':
+      return TfiatCAD.createInstance;
+    case 'tfiatclp':
+      return TfiatCLP.createInstance;
+    case 'tfiatcny':
+      return TfiatCNY.createInstance;
+    case 'tfiatcop':
+      return TfiatCOP.createInstance;
+    case 'tfiatdkk':
+      return TfiatDKK.createInstance;
     case 'tfiateur':
       return TfiatEur.createInstance;
     case 'tfiatgbp':
       return TfiatGBP.createInstance;
     case 'tfiatinr':
       return TfiatINR.createInstance;
+    case 'tfiatjpy':
+      return TfiatJPY.createInstance;
+    case 'tfiatkrw':
+      return TfiatKRW.createInstance;
+    case 'tfiatnok':
+      return TfiatNOK.createInstance;
+    case 'tfiatsek':
+      return TfiatSEK.createInstance;
     case 'tfiatsgd':
       return TfiatSGD.createInstance;
+    case 'tfiattry':
+      return TfiatTRY.createInstance;
     case 'tfiatusd':
       return TfiatUsd.createInstance;
+    case 'tfiatuyu':
+      return TfiatUYU.createInstance;
+    case 'tfiatzar':
+      return TfiatZAR.createInstance;
     case 'tflr':
       return Tflr.createInstance;
     case 'tflrp':
