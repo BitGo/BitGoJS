@@ -57,7 +57,7 @@ export const pendingApprovalRequestBody = {
  * - approvalsRequired: Number of approvals needed (for multi-approval wallets)
  *
  * @operationId express.v1.pendingapprovals
- * @tag express
+ * @tag Express
  */
 
 export const PutPendingApproval = httpRoute({
