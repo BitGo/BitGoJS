@@ -503,7 +503,7 @@ export async function handleV2GenerateShareTSS(
   }
 }
 
-export async function handleV2SignTSSWalletTx(req: ExpressApiRouteRequest<'express.v2.wallet.signtxtss', 'post'>) {
+export async function handleV2SignTSSWalletTx(req: ExpressApiRouteRequest<'express.wallet.signtxtss', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const wallet = await coin.wallets().get({ id: req.decoded.id });
@@ -1786,7 +1786,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   // sign transaction
   router.post('express.signtx', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTx)]);
   router.post('express.v2.wallet.signtx', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTxWallet)]);
-  router.post('express.v2.wallet.signtxtss', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTSSWalletTx)]);
+  router.post('express.wallet.signtxtss', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTSSWalletTx)]);
   router.post('express.wallet.recovertoken', [prepareBitGo(config), typedPromiseWrapper(handleV2RecoverToken)]);
 
   // send transaction

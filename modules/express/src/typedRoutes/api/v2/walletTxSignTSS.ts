@@ -141,7 +141,7 @@ export const WalletTxSignTSSResponse = {
 /**
  * Sign transactions for MPC wallets. If using external-signer mode, you must maintain your keys, in the clear, on a separate Express server - BitGo doesn't decrypt your private MPC key shares.
  *
- * @operationId express.v2.wallet.signtxtss
+ * @operationId express.wallet.signtxtss
  * @tag Express
  */
 export const PostWalletTxSignTSS: HttpRoute<'post'> = httpRoute({
