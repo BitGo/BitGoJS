@@ -171,7 +171,7 @@ export const ExpressWalletConsolidateUnspentsApiSpec = apiSpec({
 });
 
 export const ExpressV2WalletConsolidateAccountApiSpec = apiSpec({
-  'express.v2.wallet.consolidateaccount': {
+  'express.wallet.consolidateaccount': {
     post: PostConsolidateAccount,
   },
 });

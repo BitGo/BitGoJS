@@ -253,7 +253,7 @@ export const ConsolidateAccountErrorResponse = t.intersection([ConsolidateAccoun
 /**
  * Build, sign, and send a consolidation transaction for an account-based asset all in 1 call. For account-based assets, consolidating the balances in the receive addresses to the base address maximizes the spendable balance of a wallet.
  *
- * @operationId express.v2.wallet.consolidateaccount
+ * @operationId express.wallet.consolidateaccount
  * @tag Express
  */
 export const PostConsolidateAccount = httpRoute({
