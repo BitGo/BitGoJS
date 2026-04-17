@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import * as t from 'io-ts';
-import { DecryptRequestBody, PostDecrypt } from '../../../src/typedRoutes/api/common/decrypt';
+import { DecryptRequestBody, PostV1Decrypt } from '../../../src/typedRoutes/api/v1/decrypt';
+import { PostV2Decrypt } from '../../../src/typedRoutes/api/v2/decrypt';
 import { assertDecode } from './common';
 import 'should';
 import 'should-http';
@@ -65,7 +66,7 @@ describe('Decrypt codec tests', function () {
   });
 
   describe('DecryptResponse', function () {
-    const DecryptResponse = PostDecrypt.response[200];
+    const DecryptResponse = PostV1Decrypt.response[200];
 
     it('should validate response with required field', function () {
       const validResponse = {
@@ -112,24 +113,41 @@ describe('Decrypt codec tests', function () {
     });
   });
 
-  describe('PostDecrypt route definition', function () {
+  describe('PostV1Decrypt route definition', function () {
     it('should have the correct path', function () {
-      assert.strictEqual(PostDecrypt.path, '/api/v[12]/decrypt');
+      assert.strictEqual(PostV1Decrypt.path, '/api/v1/decrypt');
     });
 
     it('should have the correct HTTP method', function () {
-      assert.strictEqual(PostDecrypt.method, 'POST');
+      assert.strictEqual(PostV1Decrypt.method, 'POST');
     });
 
     it('should have the correct request configuration', function () {
-      // Verify the route is configured with a request property
-      assert.ok(PostDecrypt.request);
+      assert.ok(PostV1Decrypt.request);
     });
 
     it('should have the correct response types', function () {
-      // Check that the response object has the expected status codes
-      assert.ok(PostDecrypt.response[200]);
-      assert.ok(PostDecrypt.response[404]);
+      assert.ok(PostV1Decrypt.response[200]);
+      assert.ok(PostV1Decrypt.response[404]);
+    });
+  });
+
+  describe('PostV2Decrypt route definition', function () {
+    it('should have the correct path', function () {
+      assert.strictEqual(PostV2Decrypt.path, '/api/v2/decrypt');
+    });
+
+    it('should have the correct HTTP method', function () {
+      assert.strictEqual(PostV2Decrypt.method, 'POST');
+    });
+
+    it('should have the correct request configuration', function () {
+      assert.ok(PostV2Decrypt.request);
+    });
+
+    it('should have the correct response types', function () {
+      assert.ok(PostV2Decrypt.response[200]);
+      assert.ok(PostV2Decrypt.response[404]);
     });
   });
 
@@ -164,7 +182,7 @@ describe('Decrypt codec tests', function () {
       result.body.should.have.property('decrypted');
       assert.strictEqual(result.body.decrypted, mockDecryptResponse);
 
-      const decodedResponse = assertDecode(PostDecrypt.response[200], result.body);
+      const decodedResponse = assertDecode(PostV1Decrypt.response[200], result.body);
       assert.strictEqual(decodedResponse.decrypted, mockDecryptResponse);
     });
 
@@ -186,7 +204,7 @@ describe('Decrypt codec tests', function () {
       result.body.should.have.property('decrypted');
       assert.strictEqual(result.body.decrypted, mockDecryptResponse);
 
-      const decodedResponse = assertDecode(PostDecrypt.response[200], result.body);
+      const decodedResponse = assertDecode(PostV2Decrypt.response[200], result.body);
       assert.strictEqual(decodedResponse.decrypted, mockDecryptResponse);
     });
 
@@ -208,7 +226,7 @@ describe('Decrypt codec tests', function () {
       assert.strictEqual(result.status, 200);
       assert.strictEqual(result.body.decrypted, mockLongDecrypted);
 
-      const decodedResponse = assertDecode(PostDecrypt.response[200], result.body);
+      const decodedResponse = assertDecode(PostV1Decrypt.response[200], result.body);
       assert.strictEqual(decodedResponse.decrypted, mockLongDecrypted);
     });
 
@@ -229,7 +247,7 @@ describe('Decrypt codec tests', function () {
       assert.strictEqual(result.status, 200);
       assert.strictEqual(result.body.decrypted, mockDecryptResponse);
 
-      const decodedResponse = assertDecode(PostDecrypt.response[200], result.body);
+      const decodedResponse = assertDecode(PostV2Decrypt.response[200], result.body);
       assert.ok(decodedResponse);
     });
   });
