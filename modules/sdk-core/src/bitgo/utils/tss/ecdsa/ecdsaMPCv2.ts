@@ -46,7 +46,7 @@ import {
   TSSParamsWithPrv,
   TxRequest,
 } from '../baseTypes';
-import { BaseEcdsaUtils } from './base';
+import { BaseEcdsaUtils, resolveEffectiveTxParams } from './base';
 import { EcdsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './ecdsaMPCv2KeyGenSender';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
 
@@ -737,6 +737,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       const unsignedTx =
         txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
 
+      const effectiveTxParams = resolveEffectiveTxParams(txRequest, params.txParams);
+
       // For ICP transactions, the HSM signs the serializedTxHex, while the user signs the signableHex separately.
       // Verification cannot be performed directly on the signableHex alone. However, we can parse the serializedTxHex
       // to regenerate the signableHex and compare it against the provided value for verification.
@@ -744,14 +746,14 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       if (this.baseCoin.getConfig().family === 'icp') {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
-          txParams: params.txParams || { recipients: [] },
+          txParams: effectiveTxParams,
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
         });
       } else {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.signableHex },
-          txParams: params.txParams || { recipients: [] },
+          txParams: effectiveTxParams,
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
         });

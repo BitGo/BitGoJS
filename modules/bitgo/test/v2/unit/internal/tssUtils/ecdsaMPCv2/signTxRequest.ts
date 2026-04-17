@@ -193,6 +193,7 @@ describe('signTxRequest:', function () {
       txRequest,
       prv: userPrvBase64,
       reqId,
+      txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
     });
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.true();
@@ -215,6 +216,7 @@ describe('signTxRequest:', function () {
       prv: backupPrvBase64,
       mpcv2PartyId: 1,
       reqId,
+      txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
     });
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.true();
@@ -236,6 +238,7 @@ describe('signTxRequest:', function () {
       txRequest,
       prv: userPrvBase64,
       reqId,
+      txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
     });
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.true();
@@ -257,6 +260,7 @@ describe('signTxRequest:', function () {
       txRequest,
       prv: userPrvBase64,
       reqId,
+      txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
     });
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.true();
@@ -277,10 +281,121 @@ describe('signTxRequest:', function () {
         txRequest,
         prv: userPrvBase64,
         reqId,
+        txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
       })
       .should.be.rejectedWith('Too many requests, slow down!');
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.false();
+  });
+
+  it('rejects signTxRequest when txParams is missing', async function () {
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    await tssUtils
+      .signTxRequest({
+        txRequest,
+        prv: userPrvBase64,
+        reqId,
+      })
+      .should.be.rejectedWith(
+        'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
+      );
+  });
+
+  it('rejects signTxRequest when txParams has empty recipients', async function () {
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    await tssUtils
+      .signTxRequest({
+        txRequest,
+        prv: userPrvBase64,
+        reqId,
+        txParams: { recipients: [] },
+      })
+      .should.be.rejectedWith(
+        'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
+      );
+  });
+
+  it('accepts signTxRequest when recipients are only in intent (smart contract interaction)', async function () {
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    const txRequestWithIntentRecipients = {
+      ...txRequest,
+      intent: {
+        intentType: 'contractCall',
+        recipients: [
+          {
+            address: { address: '0xrecipient' },
+            amount: { value: '1000', symbol: 'hteth' },
+          },
+        ],
+      },
+    };
+    // Should not throw the recipients guard error — falls back to intent.recipients
+    await tssUtils
+      .signTxRequest({
+        txRequest: txRequestWithIntentRecipients,
+        prv: userPrvBase64,
+        reqId,
+        // no txParams.recipients
+      })
+      .should.not.be.rejectedWith(
+        'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
+      );
+  });
+
+  it('accepts signTxRequest for no-recipient tx types (tokenApproval)', async function () {
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    // Should not throw the recipients guard error — type exemption applies
+    await tssUtils
+      .signTxRequest({
+        txRequest,
+        prv: userPrvBase64,
+        reqId,
+        txParams: { type: 'tokenApproval' },
+      })
+      .should.not.be.rejectedWith(
+        'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
+      );
+  });
+
+  it('accepts signTxRequest for no-recipient tx types (acceleration)', async function () {
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    await tssUtils
+      .signTxRequest({
+        txRequest,
+        prv: userPrvBase64,
+        reqId,
+        txParams: { type: 'acceleration' },
+      })
+      .should.not.be.rejectedWith(
+        'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
+      );
+  });
+
+  it('accepts signTxRequest when txParams.recipients takes priority over intent.recipients', async function () {
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    const txRequestWithBothRecipients = {
+      ...txRequest,
+      intent: {
+        intentType: 'contractCall',
+        recipients: [{ address: { address: '0xintentRecipient' }, amount: { value: '9999', symbol: 'hteth' } }],
+      },
+    };
+    await tssUtils
+      .signTxRequest({
+        txRequest: txRequestWithBothRecipients,
+        prv: userPrvBase64,
+        reqId,
+        txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
+      })
+      .should.not.be.rejectedWith(
+        'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
+      );
   });
 });
 
