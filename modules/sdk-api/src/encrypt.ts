@@ -56,11 +56,10 @@ export function decrypt(password: string, ciphertext: string): string {
 export async function decryptAsync(password: string, ciphertext: string): Promise<string> {
   let isV2 = false;
   try {
-    // Peek at v field only to route -- internal format we produce, not external input.
     const envelope = JSON.parse(ciphertext);
     isV2 = envelope.v === 2;
   } catch {
-    // Not valid JSON -- fall through to v1.
+    throw new Error('decrypt: ciphertext is not valid JSON');
   }
   if (isV2) {
     // Do not catch: wrong password on v2 must not silently fall through to v1.

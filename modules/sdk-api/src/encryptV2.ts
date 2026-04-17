@@ -1,3 +1,4 @@
+import { argon2id } from '@bitgo/argon2';
 import { base64String, boundedInt, decodeWithCodec } from '@bitgo/sdk-core';
 import { randomBytes } from 'crypto';
 import * as t from 'io-ts';
@@ -60,7 +61,6 @@ async function argon2Hash(
   salt: Uint8Array,
   params: { memorySize: number; iterations: number; parallelism: number }
 ): Promise<Uint8Array> {
-  const { argon2id } = await import('@bitgo/argon2');
   return argon2id({
     password,
     salt,

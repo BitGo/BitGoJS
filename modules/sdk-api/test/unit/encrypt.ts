@@ -195,6 +195,10 @@ describe('encryption methods tests', () => {
       await assert.rejects(() => decryptAsync('wrong', v2ct));
     });
 
+    it('throws on invalid JSON input', async () => {
+      await assert.rejects(() => decryptAsync(password, 'not-json'), /ciphertext is not valid JSON/);
+    });
+
     it('wrong password on v2 data does not fall through to v1 decrypt', async () => {
       const v2ct = await encryptV2(password, plaintext, { memorySize: 1024, iterations: 1, parallelism: 1 });
       let caughtError: Error | undefined;

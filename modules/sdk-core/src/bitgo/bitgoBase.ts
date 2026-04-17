@@ -14,7 +14,6 @@ import { EcdhDerivedKeypair, GetSigningKeyApi } from './keychain';
 export interface BitGoBase {
   wallets(): any; // TODO - define v1 wallets type
   coin(coinName: string): IBaseCoin; // need to change it to BaseCoin once it's moved to @bitgo/sdk-core
-  /** @deprecated Use decryptAsync instead */
   decrypt(params: DecryptOptions): string;
   decryptAsync(params: DecryptOptions): Promise<string>;
   decryptKeys(params: DecryptKeysOptions): string[];
