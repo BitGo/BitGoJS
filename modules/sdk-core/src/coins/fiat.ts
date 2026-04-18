@@ -94,11 +94,23 @@ export class Fiat extends BaseCoin {
  */
 export const fiatCoins: FiatCoinConfig[] = [
   { chain: 'fiataed', fullName: 'United Arab Emirates Dirham', baseFactor: 1e2 },
+  { chain: 'fiataud', fullName: 'Australian Dollar', baseFactor: 1e2 },
+  { chain: 'fiatcad', fullName: 'Canadian Dollar', baseFactor: 1e2 },
+  { chain: 'fiatchf', fullName: 'Swiss Franc', baseFactor: 1e2 },
+  { chain: 'fiatcny', fullName: 'Chinese Yuan', baseFactor: 1e2 },
   { chain: 'fiateur', fullName: 'European Union Euro', baseFactor: 1e2 },
   { chain: 'fiatgbp', fullName: 'British Pound Sterling', baseFactor: 1e2 },
+  { chain: 'fiathkd', fullName: 'Hong Kong Dollar', baseFactor: 1e2 },
+  { chain: 'fiatidr', fullName: 'Indonesian Rupiah', baseFactor: 1e2 },
   { chain: 'fiatinr', fullName: 'Indian Rupee', baseFactor: 1e2 },
+  { chain: 'fiatjpy', fullName: 'Japanese Yen', baseFactor: 1 },
+  { chain: 'fiatkrw', fullName: 'South Korean Won', baseFactor: 1 },
+  { chain: 'fiatnok', fullName: 'Norwegian Krone', baseFactor: 1e2 },
+  { chain: 'fiatnzd', fullName: 'New Zealand Dollar', baseFactor: 1e2 },
+  { chain: 'fiatsek', fullName: 'Swedish Krona', baseFactor: 1e2 },
   { chain: 'fiatsgd', fullName: 'Singapore Dollar', baseFactor: 1e2 },
   { chain: 'fiatusd', fullName: 'USD Dollar', baseFactor: 1e2 },
+  { chain: 'fiatzar', fullName: 'South African Rand', baseFactor: 1e2 },
 ];
 
 /**

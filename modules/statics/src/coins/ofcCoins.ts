@@ -70,6 +70,18 @@ export const ofcCoins = [
     UnderlyingAsset.AED,
     CoinKind.FIAT
   ),
+  ofc('9b4735da-870e-4e44-b7fa-3cc497fadd54', 'ofccad', 'Canadian Dollar', 2, UnderlyingAsset.CAD, CoinKind.FIAT),
+  ofc('29a4cd8c-c494-4e9b-888e-9e931222b77a', 'ofcaud', 'Australian Dollar', 2, UnderlyingAsset.AUD, CoinKind.FIAT),
+  ofc('f9d13abf-dc53-4f02-852e-a5b443795378', 'ofchkd', 'Hong Kong Dollar', 2, UnderlyingAsset.HKD, CoinKind.FIAT),
+  ofc('afae9933-921b-4461-8d79-146f69def709', 'ofcchf', 'Swiss Franc', 2, UnderlyingAsset.CHF, CoinKind.FIAT),
+  ofc('a25d6967-75d8-4e28-8e9c-fcb58a145aea', 'ofcsek', 'Swedish Krona', 2, UnderlyingAsset.SEK, CoinKind.FIAT),
+  ofc('6968423c-befb-42a1-9dbb-629be705fad4', 'ofcnok', 'Norwegian Krone', 2, UnderlyingAsset.NOK, CoinKind.FIAT),
+  ofc('f4f2c3b2-f9b3-4f4b-9e34-dd4a31e66d36', 'ofcjpy', 'Japanese Yen', 0, UnderlyingAsset.JPY, CoinKind.FIAT),
+  ofc('f6cbeb79-9483-4d29-b1b1-98e4d09f3e70', 'ofccny', 'Chinese Yuan', 2, UnderlyingAsset.CNY, CoinKind.FIAT),
+  ofc('7eff0f3d-417c-458a-aba4-71df7bf1bee1', 'ofcnzd', 'New Zealand Dollar', 2, UnderlyingAsset.NZD, CoinKind.FIAT),
+  ofc('9aa35674-3576-4e4e-ae17-34c656c66306', 'ofcidr', 'Indonesian Rupiah', 2, UnderlyingAsset.IDR, CoinKind.FIAT),
+  ofc('e3d9cbfc-ec00-4b92-8566-85b9cd3a5194', 'ofckrw', 'South Korean Won', 0, UnderlyingAsset.KRW, CoinKind.FIAT),
+  ofc('0bdf4c58-dd2e-4f6a-8808-0e38c117eabc', 'ofczar', 'South African Rand', 2, UnderlyingAsset.ZAR, CoinKind.FIAT),
   ofc(
     '71c2203c-59ba-45ba-9280-ec94b9c4e44f',
     'ofcavaxc',
@@ -675,6 +687,76 @@ export const ofcCoins = [
     CoinKind.FIAT
   ),
   tofc('874e72f2-dab0-4d99-825c-f94c94cece65', 'ofctinr', 'Test Indian Rupee', 2, UnderlyingAsset.INR, CoinKind.FIAT),
+  // CAD, AUD, HKD use ofct:{code} naming because ofctcad/ofctaud/ofcthkd
+  // collide with existing ERC20 tokens (TrueCAD, TrueAUD, TrueHKD)
+  tofc(
+    '803bc9a5-02e0-4ab1-9fc8-2d392de06c33',
+    'ofct:cad',
+    'Test Canadian Dollar',
+    2,
+    UnderlyingAsset.CAD,
+    CoinKind.FIAT
+  ),
+  tofc(
+    '76e0d3ab-3584-4a80-a531-9f54c49a11e8',
+    'ofct:aud',
+    'Test Australian Dollar',
+    2,
+    UnderlyingAsset.AUD,
+    CoinKind.FIAT
+  ),
+  tofc(
+    '99e784a5-375b-44c2-be8f-7005be74b6d7',
+    'ofct:hkd',
+    'Test Hong Kong Dollar',
+    2,
+    UnderlyingAsset.HKD,
+    CoinKind.FIAT
+  ),
+  tofc('9fa02b74-f030-4bc4-bc4b-6ebd491ff09a', 'ofctchf', 'Test Swiss Franc', 2, UnderlyingAsset.CHF, CoinKind.FIAT),
+  tofc('3a2e71c3-c9fa-4562-b865-e7c9d6cc2358', 'ofctsek', 'Test Swedish Krona', 2, UnderlyingAsset.SEK, CoinKind.FIAT),
+  tofc(
+    '21ec70e5-94a3-4d39-9d6f-793a340ae238',
+    'ofctnok',
+    'Test Norwegian Krone',
+    2,
+    UnderlyingAsset.NOK,
+    CoinKind.FIAT
+  ),
+  tofc('a2bc64e2-6e4d-49da-88a1-762437c43aaa', 'ofctjpy', 'Test Japanese Yen', 0, UnderlyingAsset.JPY, CoinKind.FIAT),
+  tofc('d6b890a1-8ca6-409a-8c17-0ebef0a20487', 'ofctcny', 'Test Chinese Yuan', 2, UnderlyingAsset.CNY, CoinKind.FIAT),
+  tofc(
+    'c530a695-5815-44d6-8614-c3810fc91a83',
+    'ofctnzd',
+    'Test New Zealand Dollar',
+    2,
+    UnderlyingAsset.NZD,
+    CoinKind.FIAT
+  ),
+  tofc(
+    '45080307-fd0d-43ac-bb74-5453c304e37c',
+    'ofctidr',
+    'Test Indonesian Rupiah',
+    2,
+    UnderlyingAsset.IDR,
+    CoinKind.FIAT
+  ),
+  tofc(
+    '6c63c80a-889d-4b6b-b6ca-d1e87d18978d',
+    'ofctkrw',
+    'Test South Korean Won',
+    0,
+    UnderlyingAsset.KRW,
+    CoinKind.FIAT
+  ),
+  tofc(
+    '53b7e168-01b9-4439-8c46-c82267efd494',
+    'ofctzar',
+    'Test South African Rand',
+    2,
+    UnderlyingAsset.ZAR,
+    CoinKind.FIAT
+  ),
   tofc('e5e9dedb-4d72-4a44-a84c-32f46d275bdc', 'ofctcspr', 'Test Casper', 9, UnderlyingAsset.CSPR, CoinKind.CRYPTO),
   tofc('b84e3f27-e521-4093-9616-fc92ba352cd9', 'ofctnear', 'Test Near', 24, UnderlyingAsset.NEAR, CoinKind.CRYPTO),
   tofc('457d1c4e-5bf7-442a-90c9-dfd590f30925', 'ofctbtc', 'Test Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),

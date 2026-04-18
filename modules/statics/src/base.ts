@@ -3787,11 +3787,23 @@ export enum UnderlyingAsset {
 
   // fiats
   AED = 'aed',
+  AUD = 'aud',
+  CAD = 'cad',
+  CHF = 'chf',
+  CNY = 'cny',
   EUR = 'eur',
   GBP = 'gbp',
+  HKD = 'hkd',
+  IDR = 'idr',
   INR = 'inr',
+  JPY = 'jpy',
+  KRW = 'krw',
+  NOK = 'nok',
+  NZD = 'nzd',
+  SEK = 'sek',
   SGD = 'sgd',
   USD = 'usd',
+  ZAR = 'zar',
 }
 
 /**
