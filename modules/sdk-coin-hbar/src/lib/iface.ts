@@ -38,7 +38,7 @@ export interface AddressDetails {
   memoId?: string;
 }
 
-export type InstructionParams = Transfer | AssociateAccount;
+export type InstructionParams = Transfer | AssociateAccount | AccountUpdateInstruction;
 
 export interface Transfer {
   type: HederaTransactionTypes.Transfer;
@@ -53,5 +53,14 @@ export interface AssociateAccount {
   params: {
     accountId: string;
     tokenNames: string[];
+  };
+}
+
+export interface AccountUpdateInstruction {
+  type: HederaTransactionTypes.AccountUpdate;
+  params: {
+    accountId: string;
+    stakedNodeId?: string;
+    declineReward?: boolean;
   };
 }
