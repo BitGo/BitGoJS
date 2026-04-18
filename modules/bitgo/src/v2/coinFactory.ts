@@ -91,12 +91,8 @@ import {
   HashToken,
   MonToken,
   TethLikeCoin,
-  FiatAED,
-  FiatEur,
-  FiatGBP,
-  FiatINR,
-  FiatSGD,
-  FiatUsd,
+  Fiat,
+  allFiatCoins,
   Gteth,
   Hash,
   Hbar,
@@ -171,12 +167,6 @@ import {
   Teth,
   Tflr,
   Tmon,
-  TfiatAED,
-  TfiatEur,
-  TfiatGBP,
-  TfiatINR,
-  TfiatSGD,
-  TfiatUsd,
   Thash,
   Thbar,
   Tia,
@@ -274,12 +264,9 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('topbnb', TethLikeCoin.createInstance);
   coinFactory.register('tfantom', TethLikeCoin.createInstance);
   coinFactory.register('tbaseeth', TethLikeCoin.createInstance);
-  coinFactory.register('fiataed', FiatAED.createInstance);
-  coinFactory.register('fiateur', FiatEur.createInstance);
-  coinFactory.register('fiatgbp', FiatGBP.createInstance);
-  coinFactory.register('fiatinr', FiatINR.createInstance);
-  coinFactory.register('fiatsgd', FiatSGD.createInstance);
-  coinFactory.register('fiatusd', FiatUsd.createInstance);
+  for (const fiatCoin of allFiatCoins) {
+    coinFactory.register(fiatCoin.chain, Fiat.createConstructor(fiatCoin));
+  }
   coinFactory.register('flr', Flr.createInstance);
   coinFactory.register('flrp', Flrp.createInstance);
   coinFactory.register('gteth', Gteth.createInstance);
@@ -346,12 +333,6 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('teos', Teos.createInstance);
   coinFactory.register('tetc', Tetc.createInstance);
   coinFactory.register('teth', Teth.createInstance);
-  coinFactory.register('tfiataed', TfiatAED.createInstance);
-  coinFactory.register('tfiateur', TfiatEur.createInstance);
-  coinFactory.register('tfiatgbp', TfiatGBP.createInstance);
-  coinFactory.register('tfiatinr', TfiatINR.createInstance);
-  coinFactory.register('tfiatsgd', TfiatSGD.createInstance);
-  coinFactory.register('tfiatusd', TfiatUsd.createInstance);
   coinFactory.register('tflr', Tflr.createInstance);
   coinFactory.register('tflrp', Flrp.createInstance);
   coinFactory.register('tmon', Tmon.createInstance);
@@ -693,18 +674,6 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return TethLikeCoin.createInstance;
     case 'tfantom':
       return TethLikeCoin.createInstance;
-    case 'fiataed':
-      return FiatAED.createInstance;
-    case 'fiateur':
-      return FiatEur.createInstance;
-    case 'fiatgbp':
-      return FiatGBP.createInstance;
-    case 'fiatinr':
-      return FiatINR.createInstance;
-    case 'fiatsgd':
-      return FiatSGD.createInstance;
-    case 'fiatusd':
-      return FiatUsd.createInstance;
     case 'flr':
       return Flr.createInstance;
     case 'flrp':
@@ -837,18 +806,6 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Tetc.createInstance;
     case 'teth':
       return Teth.createInstance;
-    case 'tfiataed':
-      return TfiatAED.createInstance;
-    case 'tfiateur':
-      return TfiatEur.createInstance;
-    case 'tfiatgbp':
-      return TfiatGBP.createInstance;
-    case 'tfiatinr':
-      return TfiatINR.createInstance;
-    case 'tfiatsgd':
-      return TfiatSGD.createInstance;
-    case 'tfiatusd':
-      return TfiatUsd.createInstance;
     case 'tflr':
       return Tflr.createInstance;
     case 'tflrp':
@@ -957,8 +914,13 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Zeta.createInstance;
     case 'zketh':
       return Zketh.createInstance;
-    default:
+    default: {
+      const fiatConfig = allFiatCoins.find((c) => c.chain === coinName);
+      if (fiatConfig) {
+        return Fiat.createConstructor(fiatConfig);
+      }
       return undefined;
+    }
   }
 }
 
