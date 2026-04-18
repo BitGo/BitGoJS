@@ -80,7 +80,80 @@ export class WalletInitTransaction extends BaseTransaction {
     if (!this._preparedParty) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return Buffer.from(this._preparedParty.multiHash, 'base64');
+
+    // Validate critical fields
+    if (!this._preparedParty.multiHash) {
+      throw new InvalidTransactionError('Missing multiHash from IMS preparedParty.');
+    }
+
+    const multiHash = Buffer.from(this._preparedParty.multiHash, 'base64');
+    const topologyTxs = this._preparedParty.topologyTransactions;
+
+    // CRITICAL: Topology transactions are REQUIRED for wallet initialization signing
+    // Canton's signing contract for WalletInit requires:
+    // [txnType (4 bytes, if version >0.5.x)] || itemCount || [lenOfTx || tx]... || multiHash
+    // Returning multiHash-only breaks the signing payload structure
+    if (!topologyTxs || topologyTxs.length === 0) {
+      throw new InvalidTransactionError('Missing or empty topologyTransactions from IMS.');
+    }
+
+    const shouldIncludeTxnType = this._preparedParty.shouldIncludeTxnType ?? false;
+    const itemCount = topologyTxs.length + 1; // topology txs + multiHash
+    const parts: Buffer[] = [];
+
+    try {
+      // Optional txnType prefix for Splice version >0.5.x
+      // shouldIncludeTxnType is set by IMS based on the Splice version during buildCantonTopologyAndTransaction
+      if (shouldIncludeTxnType) {
+        const txnTypeBuf = Buffer.alloc(4);
+        txnTypeBuf.writeUInt32LE(0, 0); // txnType value for wallet initialization
+        parts.push(txnTypeBuf);
+      }
+
+      // Item count (UInt32LE)
+      // Count includes: all topology transactions + 1 for the multiHash
+      const itemCountBuf = Buffer.alloc(4);
+      itemCountBuf.writeUInt32LE(itemCount, 0);
+      parts.push(itemCountBuf);
+
+      // Topology transactions with length prefixes
+      // Each transaction is prefixed with its length (UInt32LE) for parsing
+      for (let i = 0; i < topologyTxs.length; i++) {
+        const tx = topologyTxs[i];
+        if (!tx) {
+          throw new InvalidTransactionError(`Topology transaction at index ${i} is null.`);
+        }
+
+        try {
+          const txBuf = Buffer.from(tx, 'base64');
+
+          // Validate base64 was decoded successfully (round-trip check)
+          if (txBuf.toString('base64') !== tx) {
+            throw new Error('Invalid base64 encoding');
+          }
+
+          const lenBuf = Buffer.alloc(4);
+          lenBuf.writeUInt32LE(txBuf.length, 0);
+          parts.push(lenBuf, txBuf);
+        } catch (e) {
+          throw new InvalidTransactionError(
+            `Failed to decode topology transaction at index ${i}: ` + `${e instanceof Error ? e.message : String(e)}`
+          );
+        }
+      }
+
+      // Append multiHash (Canton's hash of party configuration)
+      parts.push(multiHash);
+
+      return Buffer.concat(parts);
+    } catch (e) {
+      if (e instanceof InvalidTransactionError) {
+        throw e;
+      }
+      throw new InvalidTransactionError(
+        `Failed to construct wallet init payload: ${e instanceof Error ? e.message : String(e)}`
+      );
+    }
   }
 
   fromRawTransaction(rawTx: string): void {
