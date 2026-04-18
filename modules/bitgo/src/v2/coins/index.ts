@@ -155,39 +155,5 @@ export { World, Tworld, WorldToken };
 export { Zketh, Tzketh, ZkethToken };
 
 import { coins } from '@bitgo/sdk-core';
-const {
-  Ofc,
-  OfcToken,
-  Susd,
-  FiatUsd,
-  FiatEur,
-  FiatGBP,
-  FiatINR,
-  FiatAED,
-  FiatSGD,
-  Tsusd,
-  TfiatUsd,
-  TfiatEur,
-  TfiatGBP,
-  TfiatINR,
-  TfiatAED,
-  TfiatSGD,
-} = coins;
-export {
-  FiatAED,
-  FiatEur,
-  FiatGBP,
-  FiatINR,
-  FiatSGD,
-  FiatUsd,
-  Ofc,
-  OfcToken,
-  Susd,
-  TfiatAED,
-  TfiatEur,
-  TfiatGBP,
-  TfiatINR,
-  TfiatSGD,
-  TfiatUsd,
-  Tsusd,
-};
+const { Ofc, OfcToken, Susd, Tsusd, Fiat, allFiatCoins, fiatCoins, testnetFiatCoins } = coins;
+export { Fiat, allFiatCoins, fiatCoins, testnetFiatCoins, Ofc, OfcToken, Susd, Tsusd };
