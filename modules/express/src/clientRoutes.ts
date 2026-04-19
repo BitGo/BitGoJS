@@ -1692,6 +1692,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   const router = createExpressRouter();
   app.use(router);
 
+  router.get('express.v1.ping', [prepareBitGo(config), typedPromiseWrapper(handlePing)]);
   router.get('express.ping', [prepareBitGo(config), typedPromiseWrapper(handlePing)]);
   router.get('express.pingExpress', [typedPromiseWrapper(handlePingExpress)]);
 
