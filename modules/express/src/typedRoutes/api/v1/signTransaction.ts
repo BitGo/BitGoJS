@@ -61,7 +61,7 @@ export const signTransactionRequestBody = {
  * global BitGo validation setting. Signature verification is always performed server-side.
  *
  * @operationId express.v1.wallet.signTransaction
- * @tag express
+ * @tag Express
  */
 export const PostSignTransaction = httpRoute({
   path: '/api/v1/wallet/{id}/signtransaction',
