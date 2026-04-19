@@ -1,21 +1,19 @@
 import * as t from 'io-ts';
-import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
+import { httpRoute, httpRequest } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
-
-export const EncryptRequestBody = {
-  input: t.string,
-  password: optional(t.string),
-  adata: optional(t.string),
-};
+import { EncryptRequestBody } from '../v1/encrypt';
 
 /**
- * Encrypt
+ * Encrypt message
+ *
+ * Symmetrically encrypt an arbitrary message with provided password
  *
  * @operationId express.encrypt
- * @tag express
+ * @tag Express
+ * @public
  */
-export const PostEncrypt = httpRoute({
-  path: '/api/v[12]/encrypt',
+export const PostV2Encrypt = httpRoute({
+  path: '/api/v2/encrypt',
   method: 'POST',
   request: httpRequest({
     body: EncryptRequestBody,

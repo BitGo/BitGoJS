@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import * as t from 'io-ts';
-import { EncryptRequestBody, PostEncrypt } from '../../../src/typedRoutes/api/common/encrypt';
+import { EncryptRequestBody, PostV1Encrypt } from '../../../src/typedRoutes/api/v1/encrypt';
+import { PostV2Encrypt } from '../../../src/typedRoutes/api/v2/encrypt';
 import { assertDecode } from './common';
 import 'should';
 import 'should-http';
@@ -92,7 +93,7 @@ describe('Encrypt codec tests', function () {
   });
 
   describe('EncryptResponse', function () {
-    const EncryptResponse = PostEncrypt.response[200];
+    const EncryptResponse = PostV1Encrypt.response[200];
 
     it('should validate response with required field', function () {
       const validResponse = {
@@ -139,24 +140,41 @@ describe('Encrypt codec tests', function () {
     });
   });
 
-  describe('PostEncrypt route definition', function () {
+  describe('PostV1Encrypt route definition', function () {
     it('should have the correct path', function () {
-      assert.strictEqual(PostEncrypt.path, '/api/v[12]/encrypt');
+      assert.strictEqual(PostV1Encrypt.path, '/api/v1/encrypt');
     });
 
     it('should have the correct HTTP method', function () {
-      assert.strictEqual(PostEncrypt.method, 'POST');
+      assert.strictEqual(PostV1Encrypt.method, 'POST');
     });
 
     it('should have the correct request configuration', function () {
-      // Verify the route is configured with a request property
-      assert.ok(PostEncrypt.request);
+      assert.ok(PostV1Encrypt.request);
     });
 
     it('should have the correct response types', function () {
-      // Check that the response object has the expected status codes
-      assert.ok(PostEncrypt.response[200]);
-      assert.ok(PostEncrypt.response[404]);
+      assert.ok(PostV1Encrypt.response[200]);
+      assert.ok(PostV1Encrypt.response[404]);
+    });
+  });
+
+  describe('PostV2Encrypt route definition', function () {
+    it('should have the correct path', function () {
+      assert.strictEqual(PostV2Encrypt.path, '/api/v2/encrypt');
+    });
+
+    it('should have the correct HTTP method', function () {
+      assert.strictEqual(PostV2Encrypt.method, 'POST');
+    });
+
+    it('should have the correct request configuration', function () {
+      assert.ok(PostV2Encrypt.request);
+    });
+
+    it('should have the correct response types', function () {
+      assert.ok(PostV2Encrypt.response[200]);
+      assert.ok(PostV2Encrypt.response[404]);
     });
   });
 
@@ -191,7 +209,7 @@ describe('Encrypt codec tests', function () {
       result.body.should.have.property('encrypted');
       assert.strictEqual(result.body.encrypted, mockEncryptResponse);
 
-      const decodedResponse = assertDecode(PostEncrypt.response[200], result.body);
+      const decodedResponse = assertDecode(PostV1Encrypt.response[200], result.body);
       assert.strictEqual(decodedResponse.encrypted, mockEncryptResponse);
     });
 
@@ -213,7 +231,7 @@ describe('Encrypt codec tests', function () {
       result.body.should.have.property('encrypted');
       assert.strictEqual(result.body.encrypted, mockEncryptResponse);
 
-      const decodedResponse = assertDecode(PostEncrypt.response[200], result.body);
+      const decodedResponse = assertDecode(PostV2Encrypt.response[200], result.body);
       assert.strictEqual(decodedResponse.encrypted, mockEncryptResponse);
     });
 
@@ -235,7 +253,7 @@ describe('Encrypt codec tests', function () {
       assert.strictEqual(result.status, 200);
       assert.strictEqual(result.body.encrypted, mockEncryptResponse);
 
-      const decodedResponse = assertDecode(PostEncrypt.response[200], result.body);
+      const decodedResponse = assertDecode(PostV1Encrypt.response[200], result.body);
       assert.strictEqual(decodedResponse.encrypted, mockEncryptResponse);
     });
 
@@ -257,7 +275,7 @@ describe('Encrypt codec tests', function () {
       assert.strictEqual(result.status, 200);
       assert.strictEqual(result.body.encrypted, mockEncryptResponse);
 
-      const decodedResponse = assertDecode(PostEncrypt.response[200], result.body);
+      const decodedResponse = assertDecode(PostV2Encrypt.response[200], result.body);
       assert.strictEqual(decodedResponse.encrypted, mockEncryptResponse);
     });
 
@@ -279,7 +297,7 @@ describe('Encrypt codec tests', function () {
       assert.strictEqual(result.status, 200);
       assert.strictEqual(result.body.encrypted, mockLongEncrypted);
 
-      const decodedResponse = assertDecode(PostEncrypt.response[200], result.body);
+      const decodedResponse = assertDecode(PostV1Encrypt.response[200], result.body);
       assert.strictEqual(decodedResponse.encrypted, mockLongEncrypted);
     });
 
@@ -300,7 +318,7 @@ describe('Encrypt codec tests', function () {
       assert.strictEqual(result.status, 200);
       assert.strictEqual(result.body.encrypted, mockEncryptResponse);
 
-      const decodedResponse = assertDecode(PostEncrypt.response[200], result.body);
+      const decodedResponse = assertDecode(PostV2Encrypt.response[200], result.body);
       assert.ok(decodedResponse);
     });
 
@@ -321,7 +339,7 @@ describe('Encrypt codec tests', function () {
       assert.strictEqual(result.status, 200);
       assert.strictEqual(result.body.encrypted, mockEncryptResponse);
 
-      const decodedResponse = assertDecode(PostEncrypt.response[200], result.body);
+      const decodedResponse = assertDecode(PostV1Encrypt.response[200], result.body);
       assert.ok(decodedResponse);
     });
   });

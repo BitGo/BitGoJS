@@ -1701,6 +1701,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.login', [prepareBitGo(config), typedPromiseWrapper(handleLogin)]);
 
   router.post('express.decrypt', [prepareBitGo(config), typedPromiseWrapper(handleDecrypt)]);
+  router.post('express.v1.encrypt', [prepareBitGo(config), typedPromiseWrapper(handleEncrypt)]);
   router.post('express.encrypt', [prepareBitGo(config), typedPromiseWrapper(handleEncrypt)]);
   router.post('express.verifyaddress', [prepareBitGo(config), typedPromiseWrapper(handleVerifyAddress)]);
   router.post('express.v1.calculateminerfeeinfo', [
