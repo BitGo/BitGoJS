@@ -1568,7 +1568,7 @@ class IP extends Mainnet implements EthereumNetwork {
 class IPTestnet extends Testnet implements EthereumNetwork {
   name = 'StoryTestnet';
   family = CoinFamily.IP;
-  explorerUrl = 'https://aeneid.explorer.story.foundation/tx/';
+  explorerUrl = 'https://aeneid.storyscan.io/tx/';
   accountExplorerUrl = 'https://aeneid.storyscan.io/address/';
   chainId = 1315;
   nativeCoinOperationHashPrefix = '1315';
