@@ -24,11 +24,11 @@ export const TESTNET_TOKENS = {
     name: 'ttempo:thetausd',
   },
   usd1: {
-    address: '0xc4d0ee0f2b5416b22fdfdcca5f4a02488ea35602',
+    address: '0x20c00000000000000000000008bb598f4db17f78',
     name: 'ttempo:usd1',
   },
   stgUSD1: {
-    address: '0x7d29701e426e5c2fe991338c09c5d5be39522d9e',
+    address: '0x20c000000000000000000000e4662b69291ab60a',
     name: 'ttempo:stgusd1',
   },
 };
