@@ -410,7 +410,7 @@ export const SendCoinsRequestBody = {
  * This call allows you to create and send cryptocurrency to a destination address.
  *
  * @operationId express.wallet.sendcoins
- * @tag express
+ * @tag Express
  */
 export const PostSendCoins: HttpRoute<'post'> = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/sendcoins',
