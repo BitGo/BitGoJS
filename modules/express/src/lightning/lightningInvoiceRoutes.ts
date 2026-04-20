@@ -19,7 +19,7 @@ export async function handleCreateLightningInvoice(req: express.Request): Promis
 }
 
 export async function handlePayLightningInvoice(
-  req: ExpressApiRouteRequest<'express.v2.wallet.lightningPayment', 'post'>
+  req: ExpressApiRouteRequest<'express.lightningpayinvoice', 'post'>
 ): Promise<any> {
   const bitgo = req.bitgo;
   const params = decodeOrElse(SubmitPaymentParams.name, SubmitPaymentParams, req.body, (error) => {

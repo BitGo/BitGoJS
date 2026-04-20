@@ -222,7 +222,7 @@ export const ExpressKeychainChangePasswordApiSpec = apiSpec({
 });
 
 export const ExpressLightningWalletPaymentApiSpec = apiSpec({
-  'express.v2.wallet.lightningPayment': {
+  'express.lightningpayinvoice': {
     post: PostLightningWalletPayment,
   },
 });

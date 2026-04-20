@@ -218,7 +218,7 @@ export const LightningPaymentResponseObj = {
  * Pay a Lightning Network invoice from the given wallet.
  *
  *
- * @operationId express.v2.wallet.lightningPayment
+ * @operationId express.lightningpayinvoice
  * @tag Express
  */
 export const PostLightningWalletPayment = httpRoute({
