@@ -288,7 +288,7 @@ export const ExpressExternalSigningApiSpec = apiSpec({
 });
 
 export const ExpressWalletSigningApiSpec = apiSpec({
-  'express.v2.wallet.signtx': {
+  'express.wallet.signtx': {
     post: PostWalletSignTx,
   },
   'express.wallet.signtxtss': {

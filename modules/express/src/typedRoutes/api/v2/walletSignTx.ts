@@ -144,7 +144,7 @@ export const WalletSignTxResponse = {
 /**
  * Sign transactions for multisignature wallets using external-signing mode. You must maintain your keys, in the clear, on a separate Express server. BitGo doesn't decrypt your private keys.
  *
- * @operationId express.v2.wallet.signtx
+ * @operationId express.wallet.signtx
  * @tag Express
  */
 export const PostWalletSignTx: HttpRoute<'post'> = httpRoute({
