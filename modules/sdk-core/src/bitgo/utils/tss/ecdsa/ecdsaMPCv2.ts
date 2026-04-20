@@ -51,6 +51,14 @@ import { BaseEcdsaUtils } from './base';
 import { EcdsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './ecdsaMPCv2KeyGenSender';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
 
+function isV2Envelope(ciphertext: string): boolean {
+  try {
+    return JSON.parse(ciphertext).v === 2;
+  } catch {
+    return false;
+  }
+}
+
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   /** @inheritdoc */
   async createKeychains(params: {
@@ -58,6 +66,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     enterprise: string;
     originalPasscodeEncryptionCode?: string;
     retrofit?: DecryptedRetrofitPayload;
+    encryptionVersion?: 2;
   }): Promise<KeychainsTriplet> {
     const { userSession, backupSession } = this.getUserAndBackupSession(2, 3, params.retrofit);
     const userGpgKey = await generateGPGKeyPair('secp256k1');
@@ -313,34 +322,42 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     assert.equal(bitgoCommonKeychain, userCommonKeychain, 'User and Bitgo Common keychains do not match');
     assert.equal(bitgoCommonKeychain, backupCommonKeychain, 'Backup and Bitgo Common keychains do not match');
 
-    const userKeychainPromise = this.addUserKeychain(
-      bitgoCommonKeychain,
-      userPrivateMaterial,
-      userReducedPrivateMaterial,
-      params.passphrase,
-      params.originalPasscodeEncryptionCode
-    );
-    const backupKeychainPromise = this.addBackupKeychain(
-      bitgoCommonKeychain,
-      backupPrivateMaterial,
-      backupReducedPrivateMaterial,
-      params.passphrase,
-      params.originalPasscodeEncryptionCode
-    );
-    const bitgoKeychainPromise = this.addBitgoKeychain(bitgoCommonKeychain);
+    const encryptionSession =
+      params.encryptionVersion === 2 ? await this.bitgo.createEncryptionSession(params.passphrase) : undefined;
+    try {
+      const userKeychainPromise = this.addUserKeychain(
+        bitgoCommonKeychain,
+        userPrivateMaterial,
+        userReducedPrivateMaterial,
+        params.passphrase,
+        params.originalPasscodeEncryptionCode,
+        encryptionSession
+      );
+      const backupKeychainPromise = this.addBackupKeychain(
+        bitgoCommonKeychain,
+        backupPrivateMaterial,
+        backupReducedPrivateMaterial,
+        params.passphrase,
+        params.originalPasscodeEncryptionCode,
+        encryptionSession
+      );
+      const bitgoKeychainPromise = this.addBitgoKeychain(bitgoCommonKeychain);
 
-    const [userKeychain, backupKeychain, bitgoKeychain] = await Promise.all([
-      userKeychainPromise,
-      backupKeychainPromise,
-      bitgoKeychainPromise,
-    ]);
-    // #endregion
+      const [userKeychain, backupKeychain, bitgoKeychain] = await Promise.all([
+        userKeychainPromise,
+        backupKeychainPromise,
+        bitgoKeychainPromise,
+      ]);
+      // #endregion
 
-    return {
-      userKeychain,
-      backupKeychain,
-      bitgoKeychain,
-    };
+      return {
+        userKeychain,
+        backupKeychain,
+        bitgoKeychain,
+      };
+    } finally {
+      encryptionSession?.destroy();
+    }
   }
 
   // #region keychain utils
@@ -350,7 +367,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     privateMaterial?: Buffer,
     reducedPrivateMaterial?: Buffer,
     passphrase?: string,
-    originalPasscodeEncryptionCode?: string
+    originalPasscodeEncryptionCode?: string,
+    encryptionSession?: {
+      encrypt(plaintext: string): Promise<string>;
+      decrypt(ciphertext: string): Promise<string>;
+      destroy(): void;
+    }
   ): Promise<Keychain> {
     let source: string;
     let encryptedPrv: string | undefined = undefined;
@@ -362,20 +384,27 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         assert(privateMaterial, `Private material is required for ${source} keychain`);
         assert(reducedPrivateMaterial, `Reduced private material is required for ${source} keychain`);
         assert(passphrase, `Passphrase is required for ${source} keychain`);
-        encryptedPrv = this.bitgo.encrypt({
-          input: privateMaterial.toString('base64'),
-          password: passphrase,
-        });
-        // Encrypts the CBOR-encoded ReducedKeyShare (which contains the party's private
-        // scalar s_i) with the wallet passphrase. The result is stored as reducedEncryptedPrv
-        // on the key card QR code and represents a second copy of private key material
-        // beyond the server-stored encryptedPrv.
-        reducedEncryptedPrv = this.bitgo.encrypt({
-          // Buffer.toString('base64') can not be used here as it does not work on the browser.
-          // The browser deals with a Buffer as Uint8Array, therefore in the browser .toString('base64') just creates a comma seperated string of the array values.
-          input: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(reducedPrivateMaterial)))),
-          password: passphrase,
-        });
+        if (encryptionSession) {
+          encryptedPrv = await encryptionSession.encrypt(privateMaterial.toString('base64'));
+          reducedEncryptedPrv = await encryptionSession.encrypt(
+            btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(reducedPrivateMaterial))))
+          );
+        } else {
+          encryptedPrv = this.bitgo.encrypt({
+            input: privateMaterial.toString('base64'),
+            password: passphrase,
+          });
+          // Encrypts the CBOR-encoded ReducedKeyShare (which contains the party's private
+          // scalar s_i) with the wallet passphrase. The result is stored as reducedEncryptedPrv
+          // on the key card QR code and represents a second copy of private key material
+          // beyond the server-stored encryptedPrv.
+          reducedEncryptedPrv = this.bitgo.encrypt({
+            // Buffer.toString('base64') can not be used here as it does not work on the browser.
+            // The browser deals with a Buffer as Uint8Array, therefore in the browser .toString('base64') just creates a comma seperated string of the array values.
+            input: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(reducedPrivateMaterial)))),
+            password: passphrase,
+          });
+        }
         break;
       case MPCv2PartiesEnum.BITGO:
         source = 'bitgo';
@@ -512,7 +541,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     privateMaterial: Buffer,
     reducedPrivateMaterial: Buffer,
     passphrase: string,
-    originalPasscodeEncryptionCode?: string
+    originalPasscodeEncryptionCode?: string,
+    encryptionSession?: {
+      encrypt(plaintext: string): Promise<string>;
+      decrypt(ciphertext: string): Promise<string>;
+      destroy(): void;
+    }
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.USER,
@@ -520,7 +554,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       privateMaterial,
       reducedPrivateMaterial,
       passphrase,
-      originalPasscodeEncryptionCode
+      originalPasscodeEncryptionCode,
+      encryptionSession
     );
   }
 
@@ -529,7 +564,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     privateMaterial: Buffer,
     reducedPrivateMaterial: Buffer,
     passphrase: string,
-    originalPasscodeEncryptionCode?: string
+    originalPasscodeEncryptionCode?: string,
+    encryptionSession?: {
+      encrypt(plaintext: string): Promise<string>;
+      decrypt(ciphertext: string): Promise<string>;
+      destroy(): void;
+    }
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.BACKUP,
@@ -537,7 +577,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       privateMaterial,
       reducedPrivateMaterial,
       passphrase,
-      originalPasscodeEncryptionCode
+      originalPasscodeEncryptionCode,
+      encryptionSession
     );
   }
 
@@ -982,9 +1023,13 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     userGpgKey: pgp.SerializedKeyPair<string>;
   }> {
     const bitgoGpgKey = await pgp.readKey({ armoredKey: bitgoPublicGpgKey });
-    const userDecryptedKey = await pgp.readKey({
-      armoredKey: this.bitgo.decrypt({ input: encryptedUserGpgPrvKey, password: walletPassphrase }),
-    });
+    let decryptedGpgPrvKey: string;
+    if (isV2Envelope(encryptedUserGpgPrvKey)) {
+      decryptedGpgPrvKey = await this.bitgo.decryptAsync({ input: encryptedUserGpgPrvKey, password: walletPassphrase });
+    } else {
+      decryptedGpgPrvKey = this.bitgo.decrypt({ input: encryptedUserGpgPrvKey, password: walletPassphrase });
+    }
+    const userDecryptedKey = await pgp.readKey({ armoredKey: decryptedGpgPrvKey });
     const userGpgKey: pgp.SerializedKeyPair<string> = {
       privateKey: userDecryptedKey.armor(),
       publicKey: userDecryptedKey.toPublic().armor(),
@@ -1114,13 +1159,18 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     return sendTxRequest(this.bitgo, txRequestResolved.walletId, txRequestResolved.txRequestId, requestType, reqId);
   }
 
-  async createOfflineRound1Share(params: { txRequest: TxRequest; prv: string; walletPassphrase: string }): Promise<{
+  async createOfflineRound1Share(params: {
+    txRequest: TxRequest;
+    prv: string;
+    walletPassphrase: string;
+    encryptedPrv?: string;
+  }): Promise<{
     signatureShareRound1: SignatureShareRecord;
     userGpgPubKey: string;
     encryptedRound1Session: string;
     encryptedUserGpgPrvKey: string;
   }> {
-    const { prv, walletPassphrase, txRequest } = params;
+    const { prv, walletPassphrase, txRequest, encryptedPrv } = params;
     const { hashBuffer, derivationPath } = this.getHashStringAndDerivationPath(txRequest);
     const adata = `${hashBuffer.toString('hex')}:${derivationPath}`;
 
@@ -1130,10 +1180,22 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const userSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
     const userSignerBroadcastMsg1 = await userSigner.init();
     const signatureShareRound1 = await getSignatureShareRoundOne(userSignerBroadcastMsg1, userGpgKey);
-    const session = userSigner.getSession();
-    const encryptedRound1Session = this.bitgo.encrypt({ input: session, password: walletPassphrase, adata });
-
+    const sessionData = userSigner.getSession();
     const userGpgPubKey = userGpgKey.publicKey;
+
+    const useV2 = encryptedPrv !== undefined && isV2Envelope(encryptedPrv);
+    if (useV2) {
+      const session = await this.bitgo.createEncryptionSession(walletPassphrase);
+      try {
+        const encryptedRound1Session = await session.encrypt(sessionData);
+        const encryptedUserGpgPrvKey = await session.encrypt(userGpgKey.privateKey);
+        return { signatureShareRound1, userGpgPubKey, encryptedRound1Session, encryptedUserGpgPrvKey };
+      } finally {
+        session.destroy();
+      }
+    }
+
+    const encryptedRound1Session = this.bitgo.encrypt({ input: sessionData, password: walletPassphrase, adata });
     const encryptedUserGpgPrvKey = this.bitgo.encrypt({
       input: userGpgKey.privateKey,
       password: walletPassphrase,
@@ -1159,6 +1221,9 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
 
     const { hashBuffer, derivationPath } = this.getHashStringAndDerivationPath(txRequest);
     const adata = `${hashBuffer.toString('hex')}:${derivationPath}`;
+
+    const useV2 = isV2Envelope(encryptedRound1Session);
+
     const { bitgoGpgKey, userGpgKey } = await this.getBitgoAndUserGpgKeys(
       bitgoPublicGpgKey,
       encryptedUserGpgPrvKey,
@@ -1179,9 +1244,14 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       bitgoGpgKey
     );
 
-    const round1Session = this.bitgo.decrypt({ input: encryptedRound1Session, password: walletPassphrase });
+    let round1Session: string;
+    if (useV2) {
+      round1Session = await this.bitgo.decryptAsync({ input: encryptedRound1Session, password: walletPassphrase });
+    } else {
+      round1Session = this.bitgo.decrypt({ input: encryptedRound1Session, password: walletPassphrase });
+      this.validateAdata(adata, encryptedRound1Session);
+    }
 
-    this.validateAdata(adata, encryptedRound1Session);
     const userKeyShare = Buffer.from(prv, 'base64');
     const userSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
     await userSigner.setSession(round1Session);
@@ -1201,8 +1271,19 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       userGpgKey,
       bitgoGpgKey
     );
-    const session = userSigner.getSession();
-    const encryptedRound2Session = this.bitgo.encrypt({ input: session, password: walletPassphrase, adata });
+    const sessionData = userSigner.getSession();
+
+    if (useV2) {
+      const encSession = await this.bitgo.createEncryptionSession(walletPassphrase);
+      try {
+        const encryptedRound2Session = await encSession.encrypt(sessionData);
+        return { signatureShareRound2, encryptedRound2Session };
+      } finally {
+        encSession.destroy();
+      }
+    }
+
+    const encryptedRound2Session = this.bitgo.encrypt({ input: sessionData, password: walletPassphrase, adata });
 
     return {
       signatureShareRound2,
@@ -1226,6 +1307,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     assert(txRequest.transactions && txRequest.transactions.length === 1, 'Unable to find transactions in txRequest');
     const { hashBuffer, derivationPath } = this.getHashStringAndDerivationPath(txRequest);
     const adata = `${hashBuffer.toString('hex')}:${derivationPath}`;
+
+    const useV2 = isV2Envelope(encryptedRound2Session);
 
     const { bitgoGpgKey, userGpgKey } = await this.getBitgoAndUserGpgKeys(
       bitgoPublicGpgKey,
@@ -1252,8 +1335,14 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       broadcastMessages: [],
     });
 
-    const round2Session = this.bitgo.decrypt({ input: encryptedRound2Session, password: walletPassphrase });
-    this.validateAdata(adata, encryptedRound2Session);
+    let round2Session: string;
+    if (useV2) {
+      round2Session = await this.bitgo.decryptAsync({ input: encryptedRound2Session, password: walletPassphrase });
+    } else {
+      round2Session = this.bitgo.decrypt({ input: encryptedRound2Session, password: walletPassphrase });
+      this.validateAdata(adata, encryptedRound2Session);
+    }
+
     const userKeyShare = Buffer.from(prv, 'base64');
     const userSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
     await userSigner.setSession(round2Session);
