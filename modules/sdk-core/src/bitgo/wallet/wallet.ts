@@ -64,6 +64,10 @@ import {
   AddressesByBalanceOptions,
   AddressesOptions,
   BuildConsolidationTransactionOptions,
+  BuildResourceDelegationTransactionOptions,
+  BuildResourceManagementTransactionResult,
+  BuildResourceUndelegationTransactionOptions,
+  ResourceManagementSendResult,
   BuildTokenEnablementOptions,
   BulkCreateShareOption,
   BulkWalletShareKeychain,
@@ -3456,6 +3460,255 @@ export class Wallet implements IWallet {
         failure: failedTxs,
       };
     }
+  }
+
+  /**
+   * Shared build logic for resource delegation and undelegation.
+   * POSTs to the given endpoint and post-processes each prebuild.
+   */
+  private async buildResourceManagementTransactions(
+    type: 'delegateResource' | 'undelegateResource',
+    params: BuildResourceDelegationTransactionOptions | BuildResourceUndelegationTransactionOptions
+  ): Promise<BuildResourceManagementTransactionResult> {
+    if (!this.baseCoin.supportsResourceDelegation()) {
+      throw new Error(`${this.baseCoin.getFullName()} does not support resource delegation.`);
+    }
+
+    if (type === 'delegateResource') {
+      const delegationParams = params as BuildResourceDelegationTransactionOptions;
+      if (!delegationParams.delegations || delegationParams.delegations.length === 0) {
+        throw new Error('delegations must be a non-empty array.');
+      }
+    } else {
+      const undelegationParams = params as BuildResourceUndelegationTransactionOptions;
+      if (!undelegationParams.undelegations || undelegationParams.undelegations.length === 0) {
+        throw new Error('undelegations must be a non-empty array.');
+      }
+    }
+
+    const endpoint = type === 'delegateResource' ? '/delegateResources/build' : '/undelegateResources/build';
+    const whitelistedParams =
+      type === 'delegateResource'
+        ? _.pick(params as BuildResourceDelegationTransactionOptions, ['delegations', 'apiVersion'])
+        : _.pick(params as BuildResourceUndelegationTransactionOptions, ['undelegations', 'apiVersion']);
+    debug('prebuilding resource management transactions (%s): %O', endpoint, whitelistedParams);
+
+    if (params.reqId) {
+      this.bitgo.setRequestTracer(params.reqId);
+    }
+
+    const buildResponse = (await this.bitgo
+      .post(this.baseCoin.url('/wallet/' + this.id() + endpoint))
+      .send(whitelistedParams)
+      .result()) as { transactions: any[]; errors: any[] };
+
+    if (!Array.isArray(buildResponse.transactions)) {
+      throw new Error(`Unexpected response from ${endpoint}: missing transactions array`);
+    }
+
+    const buildFailures: { message: string; receiverAddress?: string }[] = [];
+    if (buildResponse.errors?.length > 0) {
+      debug('build errors from %s: %O', endpoint, buildResponse.errors);
+      for (const err of buildResponse.errors) {
+        buildFailures.push({
+          message: err.error ?? err.message ?? String(err),
+          receiverAddress: err.receiverAddress,
+        });
+      }
+    }
+
+    const prebuilds: PrebuildTransactionResult[] = [];
+    for (const rawTx of buildResponse.transactions) {
+      let prebuild: PrebuildTransactionResult = (await this.baseCoin.postProcessPrebuild(
+        Object.assign(rawTx, { wallet: this, buildParams: params })
+      )) as PrebuildTransactionResult;
+
+      delete prebuild.wallet;
+      delete prebuild.buildParams;
+
+      prebuild = _.extend({}, prebuild, { walletId: this.id() });
+      debug('final resource management transaction prebuild: %O', prebuild);
+      prebuilds.push(prebuild);
+    }
+    return { prebuilds, buildFailures };
+  }
+
+  /**
+   * Shared signing logic for a single resource management transaction (delegation or undelegation).
+   * Signing flow by wallet type (mirrors sendAccountConsolidation):
+   *   - TSS (hot or custodial)    → sendManyTxRequests  (requires txRequestId on prebuildTx)
+   *   - Custodial non-TSS         → initiateTransaction (BitGo auto-signs with its key)
+   *   - Hot non-TSS               → prebuildAndSignTransaction + submitTransaction
+   */
+  private async sendResourceManagementTransaction(
+    type: 'delegateResource' | 'undelegateResource',
+    params: PrebuildAndSignTransactionOptions
+  ): Promise<ResourceManagementSendResult> {
+    // Custodial non-TSS: BitGo holds the key, send for BitGo approval and signing.
+    // The /tx/initiate API builds and signs server-side. Promote stakingParams and
+    // recipients from the prebuild to the top level so they survive the TxSendBody
+    // whitelist applied inside initiateTransaction.
+    if (this._wallet.type === 'custodial' && this._wallet.multisigType !== 'tss') {
+      params.type = type;
+      if (typeof params.prebuildTx === 'object' && params.prebuildTx) {
+        if (params.prebuildTx.stakingParams) {
+          params.stakingParams = params.prebuildTx.stakingParams;
+        }
+        if (params.prebuildTx.recipients) {
+          params.recipients = params.prebuildTx.recipients;
+        }
+      }
+      return this.initiateTransaction(params as TxSendBody, params.reqId);
+    }
+
+    if (typeof params.prebuildTx === 'string' || params.prebuildTx === undefined) {
+      throw new Error('Invalid prebuild for resource management transaction.');
+    }
+
+    // TSS path (hot or custodial): signing service holds the key shares
+    if (this._wallet.multisigType === 'tss') {
+      if (!params.prebuildTx.txRequestId) {
+        throw new Error('Resource management request missing txRequestId for TSS wallet.');
+      }
+      return await this.sendManyTxRequests(params);
+    }
+
+    // Hot non-TSS: user holds the key, sign locally and submit
+    const signedPrebuild = (await this.prebuildAndSignTransaction(params)) as any;
+    delete signedPrebuild.wallet;
+    // Relay stakingParams from the prebuild so send.ts can populate it on the transfer document
+    if (typeof params.prebuildTx === 'object' && params.prebuildTx.stakingParams) {
+      signedPrebuild.stakingParams = params.prebuildTx.stakingParams;
+    }
+    return await this.submitTransaction(signedPrebuild, params.reqId);
+  }
+
+  /**
+   * Shared build → sign → send loop for resource delegation and undelegation.
+   * Validates the wallet passphrase upfront, then sends each transaction individually.
+   * Returns { success, failure } so partial success is handled gracefully.
+   */
+  private async sendResourceManagementTransactions(
+    type: 'delegateResource' | 'undelegateResource',
+    params: BuildResourceDelegationTransactionOptions | BuildResourceUndelegationTransactionOptions
+  ): Promise<{ success: ResourceManagementSendResult[]; failure: { message: string; receiverAddress?: string }[] }> {
+    if (!this.baseCoin.supportsResourceDelegation()) {
+      throw new Error(`${this.baseCoin.getFullName()} does not support resource delegation.`);
+    }
+
+    const apiVersion =
+      params.apiVersion ??
+      (this.tssUtils && this.tssUtils.supportedTxRequestVersions().includes('full') ? 'full' : undefined);
+
+    // Validate passphrase upfront to fail fast before building N transactions
+    await this.getKeychainsAndValidatePassphrase({
+      reqId: params.reqId,
+      walletPassphrase: params.walletPassphrase,
+      customSigningFunction: params.customSigningFunction,
+    });
+
+    const { prebuilds: unsignedBuilds, buildFailures } = await this.buildResourceManagementTransactions(type, {
+      ...params,
+      apiVersion,
+    });
+    const successfulTxs: ResourceManagementSendResult[] = [];
+    const failedTxs: { message: string; receiverAddress?: string }[] = [...buildFailures];
+
+    const entries =
+      type === 'delegateResource'
+        ? (params as BuildResourceDelegationTransactionOptions).delegations
+        : (params as BuildResourceUndelegationTransactionOptions).undelegations;
+
+    for (let i = 0; i < unsignedBuilds.length; i++) {
+      const unsignedBuild = unsignedBuilds[i];
+      const receiverAddress = entries[i]?.receiverAddress;
+      const unsignedBuildWithOptions: PrebuildAndSignTransactionOptions = {
+        ...params,
+        apiVersion,
+        prebuildTx: unsignedBuild,
+      };
+      try {
+        const sendTx = await this.sendResourceManagementTransaction(type, unsignedBuildWithOptions);
+        successfulTxs.push(sendTx);
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        failedTxs.push({ message, receiverAddress });
+      }
+    }
+
+    return { success: successfulTxs, failure: failedTxs };
+  }
+
+  /**
+   * Builds a set of resource delegation transactions for the given delegation entries.
+   * Each entry delegates resources (e.g. ENERGY, BANDWIDTH) from this wallet's root address
+   * to a receiver address. Modelled after buildAccountConsolidations.
+   *
+   * @param params.delegations - Array of { receiverAddress, amount, resource } entries
+   * @returns Unsigned prebuild transaction results, one per delegation entry
+   */
+  async buildResourceDelegations(
+    params: BuildResourceDelegationTransactionOptions
+  ): Promise<BuildResourceManagementTransactionResult> {
+    return this.buildResourceManagementTransactions('delegateResource', params);
+  }
+
+  /**
+   * Signs and sends a single resource delegation transaction.
+   * @param params.prebuildTx - A single prebuild result from buildResourceDelegations
+   */
+  async sendResourceDelegation(params: PrebuildAndSignTransactionOptions = {}): Promise<ResourceManagementSendResult> {
+    if (!this.baseCoin.supportsResourceDelegation()) {
+      throw new Error(`${this.baseCoin.getFullName()} does not support resource delegation.`);
+    }
+    return this.sendResourceManagementTransaction('delegateResource', params);
+  }
+
+  /**
+   * Builds, signs, and sends all resource delegation transactions in a single call.
+   * @param params.delegations - Array of { receiverAddress, amount, resource } entries
+   */
+  async sendResourceDelegations(
+    params: BuildResourceDelegationTransactionOptions
+  ): Promise<{ success: ResourceManagementSendResult[]; failure: { message: string; receiverAddress?: string }[] }> {
+    return this.sendResourceManagementTransactions('delegateResource', params);
+  }
+
+  /**
+   * Builds a set of resource undelegation transactions for the given entries.
+   * Each entry reclaims delegated resources from this wallet's root address back from
+   * a receiver address. Modelled after buildResourceDelegations.
+   *
+   * @param params.undelegations - Array of { receiverAddress, amount, resource } entries
+   * @returns Unsigned prebuild transaction results, one per undelegation entry
+   */
+  async buildResourceUndelegations(
+    params: BuildResourceUndelegationTransactionOptions
+  ): Promise<BuildResourceManagementTransactionResult> {
+    return this.buildResourceManagementTransactions('undelegateResource', params);
+  }
+
+  /**
+   * Signs and sends a single resource undelegation transaction.
+   * @param params.prebuildTx - A single prebuild result from buildResourceUndelegations
+   */
+  async sendResourceUndelegation(
+    params: PrebuildAndSignTransactionOptions = {}
+  ): Promise<ResourceManagementSendResult> {
+    if (!this.baseCoin.supportsResourceDelegation()) {
+      throw new Error(`${this.baseCoin.getFullName()} does not support resource delegation.`);
+    }
+    return this.sendResourceManagementTransaction('undelegateResource', params);
+  }
+
+  /**
+   * Builds, signs, and sends all resource undelegation transactions in a single call.
+   * @param params.undelegations - Array of { receiverAddress, amount, resource } entries
+   */
+  async sendResourceUndelegations(
+    params: BuildResourceUndelegationTransactionOptions
+  ): Promise<{ success: ResourceManagementSendResult[]; failure: { message: string; receiverAddress?: string }[] }> {
+    return this.sendResourceManagementTransactions('undelegateResource', params);
   }
 
   /**

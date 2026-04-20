@@ -1,6 +1,7 @@
 import { IRequestTracer } from '../../api';
 import {
   IBaseCoin,
+  ITransactionRecipient,
   Message,
   SignedMessage,
   SignedTransaction,
@@ -61,6 +62,39 @@ export interface Memo {
 
 export interface BuildConsolidationTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
   consolidateAddresses?: string[];
+}
+
+export interface ResourceDelegationEntry {
+  receiverAddress: string;
+  amount: string;
+  /** Resource type to delegate (e.g. 'ENERGY', 'BANDWIDTH'). */
+  resource: string;
+}
+
+export interface BuildResourceDelegationTransactionOptions
+  extends PrebuildTransactionOptions,
+    WalletSignTransactionOptions {
+  delegations: ResourceDelegationEntry[];
+}
+
+export interface BuildResourceUndelegationTransactionOptions
+  extends PrebuildTransactionOptions,
+    WalletSignTransactionOptions {
+  // receiverAddress denotes the account to undelegate FROM
+  undelegations: ResourceDelegationEntry[];
+}
+
+export interface ResourceManagementSendResult {
+  txid?: string;
+  status?: string;
+  tx?: string;
+  txRequestId?: string;
+  pendingApprovalId?: string;
+}
+
+export interface BuildResourceManagementTransactionResult {
+  prebuilds: PrebuildTransactionResult[];
+  buildFailures: { message: string; receiverAddress?: string }[];
 }
 
 export interface BuildTokenEnablementOptions extends PrebuildTransactionOptions {
@@ -160,6 +194,7 @@ export interface PrebuildTransactionOptions {
   isTss?: boolean;
   custodianTransactionId?: string;
   apiVersion?: ApiVersion;
+  stakingParams?: unknown;
   /**
    * If set to false, sweep all funds including the required minimums for address(es). E.g. Polkadot (DOT) requires 1 DOT minimum.
    */
@@ -251,6 +286,8 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
   pendingApprovalId?: string;
   reqId?: IRequestTracer;
   payload?: string;
+  stakingParams?: unknown;
+  recipients?: ITransactionRecipient[];
 }
 
 export interface CustomSigningFunction {
@@ -1097,6 +1134,22 @@ export interface IWallet {
   buildAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<PrebuildTransactionResult[]>;
   sendAccountConsolidation(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<any>;
+  buildResourceDelegations(
+    params: BuildResourceDelegationTransactionOptions
+  ): Promise<BuildResourceManagementTransactionResult>;
+  sendResourceDelegation(params: PrebuildAndSignTransactionOptions): Promise<ResourceManagementSendResult>;
+  sendResourceDelegations(params: BuildResourceDelegationTransactionOptions): Promise<{
+    success: ResourceManagementSendResult[];
+    failure: { message: string; receiverAddress?: string }[];
+  }>;
+  buildResourceUndelegations(
+    params: BuildResourceUndelegationTransactionOptions
+  ): Promise<BuildResourceManagementTransactionResult>;
+  sendResourceUndelegation(params: PrebuildAndSignTransactionOptions): Promise<ResourceManagementSendResult>;
+  sendResourceUndelegations(params: BuildResourceUndelegationTransactionOptions): Promise<{
+    success: ResourceManagementSendResult[];
+    failure: { message: string; receiverAddress?: string }[];
+  }>;
   buildTokenEnablements(params?: BuildTokenEnablementOptions): Promise<PrebuildTransactionResult[]>;
   sendTokenEnablement(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendTokenEnablements(params?: BuildTokenEnablementOptions): Promise<any>;
