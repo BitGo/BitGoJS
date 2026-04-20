@@ -3299,8 +3299,8 @@ export const allCoinsAndTokens = [
     'fa9e874b-e1c0-4c40-ab4c-3cfba7b2ca8b',
     'tempo:usd1',
     'USD1',
-    18,
-    '0x111111d2bf19e43c34263401e0cad979ed1cdb61',
+    6,
+    '0x20c000000000000000000000111111111e910f0f',
     UnderlyingAsset['tempo:usd1'],
     [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
   ),
@@ -3345,8 +3345,8 @@ export const allCoinsAndTokens = [
     '1b9cb8c9-6eec-4f0a-acd4-3d1881efc85b',
     'ttempo:usd1',
     'Test USD1 Token',
-    18,
-    '0xc4d0ee0f2b5416b22fdfdcca5f4a02488ea35602',
+    6,
+    '0x20c00000000000000000000008bb598f4db17f78',
     UnderlyingAsset['ttempo:usd1'],
     [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
   ),
@@ -3354,8 +3354,8 @@ export const allCoinsAndTokens = [
     'b6455ffa-8732-4c61-bb2b-d72e72cb1e63',
     'ttempo:stgusd1',
     'Test USD1 Token',
-    18,
-    '0x7d29701e426e5c2fe991338c09c5d5be39522d9e',
+    6,
+    '0x20c000000000000000000000e4662b69291ab60a',
     UnderlyingAsset['ttempo:stgusd1'],
     [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
   ),
