@@ -245,6 +245,7 @@ export const HBAR_FEATURES = [
   CoinFeature.MULTISIG,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.ALPHANUMERIC_MEMO_ID,
+  CoinFeature.STAKING,
 ];
 export const POLYGON_FEATURES = [
   ...ETH_FEATURES_WITH_MMI,

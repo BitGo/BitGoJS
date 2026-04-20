@@ -12,6 +12,7 @@ import { Transaction } from './transaction';
 import { isTokenTransfer, isValidRawTransactionFormat } from './utils';
 import { TokenAssociateBuilder } from './tokenAssociateBuilder';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
+import { AccountUpdateBuilder } from './accountUpdateBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -42,6 +43,13 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return this.initializeBuilder(tx, new TokenAssociateBuilder(this._coinConfig));
   }
 
+  /**
+   * Returns a builder to create an account update transaction (staking operations)
+   */
+  getAccountUpdateBuilder(tx?: Transaction): AccountUpdateBuilder {
+    return this.initializeBuilder(tx, new AccountUpdateBuilder(this._coinConfig));
+  }
+
   /** @inheritDoc */
   from(raw: Uint8Array | string): TransactionBuilder {
     this.validateRawTransaction(raw);
@@ -55,6 +63,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         return this.getWalletInitializationBuilder(tx);
       case TransactionType.AssociatedTokenAccountInitialization:
         return this.getTokenAssociateBuilder(tx);
+      case TransactionType.AccountUpdate:
+        return this.getAccountUpdateBuilder(tx);
       default:
         throw new InvalidTransactionError('Invalid transaction ' + tx.txBody.data);
     }
