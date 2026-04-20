@@ -1,7 +1,8 @@
 import should from 'should';
+import * as sinon from 'sinon';
 import { TransactionType } from '@bitgo/sdk-core';
 import * as testData from '../resources';
-import { KeyPair, TransactionBuilderFactory } from '../../src';
+import { KeyPair, TransactionBuilder, TransactionBuilderFactory } from '../../src';
 import { coins } from '@bitgo/statics';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { Transaction } from '../../src/lib/transaction';
@@ -358,6 +359,105 @@ describe('ADA Transaction Builder', async () => {
 
     const sig2 = Buffer.from(keyPair.signMessage(txRaw)).toString('hex');
     should.equal(sig1, sig2);
+  });
+
+  describe('explicit outputs build (processExplicitOutputsBuild)', () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it('builds a sponsored tx with explicit token output, inputs, fee change, and correct asset data', async () => {
+      const policyId = 'e16c2dc8ae937e8d3790c7fd7168d7b994621ba14ca11415f39fed72';
+      const assetNameHex = '4d494e';
+      const tokenQty = '2000000';
+      const explicitAda = '2000000';
+      const feeAddress = testData.rawTx.outputAddress2.address;
+      const recipient = testData.rawTx.outputAddress1.address;
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+      txBuilder.sponsorshipInfo({
+        feeAddress,
+        feeAddressInputBalance: '10000000',
+      });
+      txBuilder.explicitOutput({
+        address: recipient,
+        amount: explicitAda,
+        assets: [
+          {
+            policy_id: policyId,
+            asset_name: assetNameHex,
+            quantity: tokenQty,
+          },
+        ],
+      });
+      txBuilder.ttl(800000000);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      should.equal(tx.type, TransactionType.Send);
+      const txData = tx.toJson();
+
+      txData.inputs.length.should.equal(1);
+      txData.inputs[0].transaction_id.should.equal('3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21');
+      txData.inputs[0].transaction_index.should.equal(1);
+
+      txData.outputs.length.should.equal(2);
+      txData.outputs[0].address.should.equal(recipient);
+      txData.outputs[0].amount.should.equal(explicitAda);
+      txData.outputs[0].should.have.property('multiAssets');
+      const expectedPolicyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(policyId, 'hex'));
+      const expectedAssetName = CardanoWasm.AssetName.new(Buffer.from(assetNameHex, 'hex'));
+      (txData.outputs[0].multiAssets as CardanoWasm.MultiAsset)
+        .get_asset(expectedPolicyId, expectedAssetName)
+        .to_str()
+        .should.equal(tokenQty);
+
+      txData.outputs[1].address.should.equal(feeAddress);
+      const fee = Number(tx.getFee);
+      (Number(txData.outputs[1].amount) + fee).should.equal(10000000);
+      should(fee).be.above(0);
+    });
+
+    it('does not call processExplicitOutputsBuild when _explicitOutputs is empty', async () => {
+      const spy = sinon.spy(TransactionBuilder.prototype as any, 'processExplicitOutputsBuild');
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+      txBuilder.output({
+        address: testData.rawTx.outputAddress1.address,
+        amount: '7823121',
+      });
+      txBuilder.changeAddress(testData.rawTx.outputAddress2.address, '21032023');
+      txBuilder.ttl(800000000);
+      await txBuilder.build();
+      spy.called.should.be.false();
+    });
+
+    it('throws when explicitOutput is set but sponsorshipInfo is missing', async () => {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+      txBuilder.explicitOutput({
+        address: testData.rawTx.outputAddress1.address,
+        amount: '2000000',
+        assets: [
+          {
+            policy_id: 'e16c2dc8ae937e8d3790c7fd7168d7b994621ba14ca11415f39fed72',
+            asset_name: '4d494e',
+            quantity: '2000000',
+          },
+        ],
+      });
+      txBuilder.ttl(800000000);
+      await txBuilder.build().should.rejectedWith('explicit outputs build requires sponsorshipInfo to be set');
+    });
   });
 
   // NOTE: The tests below have been commented out as they are for testing during development changes. We don't

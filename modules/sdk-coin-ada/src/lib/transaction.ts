@@ -29,6 +29,16 @@ export interface TransactionOutput {
   multiAssets?: CardanoWasm.MultiAsset | Asset;
 }
 
+/**
+ * A plain-object output descriptor used in single-asset consolidation mode.
+ */
+export interface ExplicitOutput {
+  address: string;
+  amount: string;
+  /** Native tokens carried by this output (optional). */
+  assets?: Asset[];
+}
+
 export interface Witness {
   publicKey: string;
   signature: string;
