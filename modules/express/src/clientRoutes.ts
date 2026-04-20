@@ -773,9 +773,7 @@ async function handleV2RecoverToken(req: ExpressApiRouteRequest<'express.wallet.
  * handle wallet fanout unspents
  * @param req
  */
-async function handleV2ConsolidateUnspents(
-  req: ExpressApiRouteRequest<'express.v2.wallet.consolidateunspents', 'post'>
-) {
+async function handleV2ConsolidateUnspents(req: ExpressApiRouteRequest<'express.wallet.consolidateunspents', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const wallet = await coin.wallets().get({ id: req.decoded.id });
@@ -1801,7 +1799,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.v2.wallet.enableTokens', [prepareBitGo(config), typedPromiseWrapper(handleV2EnableTokens)]);
 
   // unspent changes
-  router.post('express.v2.wallet.consolidateunspents', [
+  router.post('express.wallet.consolidateunspents', [
     prepareBitGo(config),
     typedPromiseWrapper(handleV2ConsolidateUnspents),
   ]);

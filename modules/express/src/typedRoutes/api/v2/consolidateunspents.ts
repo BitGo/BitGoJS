@@ -100,7 +100,7 @@ export const ConsolidateUnspentsResponse = t.union([
 /**
  * Builds, signs, and sends a transaction to consolidate unspents all in 1 call. Consolidating unspents is only for UTXO-based assets.
  *
- * @operationId express.v2.wallet.consolidateunspents
+ * @operationId express.wallet.consolidateunspents
  * @tag Express
  */
 export const PostConsolidateUnspents = httpRoute({
