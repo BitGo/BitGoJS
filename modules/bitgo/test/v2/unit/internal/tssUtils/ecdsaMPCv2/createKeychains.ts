@@ -176,6 +176,55 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       assert.equal(bitgoKeychain.source, 'bitgo');
     });
 
+    it('should generate TSS MPCv2 keys with v2 encryption envelopes', async function () {
+      const bitgoSession = new DklsDkg.Dkg(3, 2, 2);
+
+      const round1Nock = await nockKeyGenRound1(bitgoSession, 1);
+      const round2Nock = await nockKeyGenRound2(bitgoSession, 1);
+      const round3Nock = await nockKeyGenRound3(bitgoSession, 1);
+      const addKeyNock = await nockAddKeyChain(coinName, 3);
+      const params = {
+        passphrase: 'test',
+        enterprise: enterpriseId,
+        originalPasscodeEncryptionCode: '123456',
+        encryptionVersion: 2 as const,
+      };
+      const { userKeychain, backupKeychain, bitgoKeychain } = await tssUtils.createKeychains(params);
+      assert.ok(round1Nock.isDone());
+      assert.ok(round2Nock.isDone());
+      assert.ok(round3Nock.isDone());
+      assert.ok(addKeyNock.isDone());
+
+      assert.ok(userKeychain);
+      assert.equal(userKeychain.source, 'user');
+      assert.ok(userKeychain.commonKeychain);
+      assert.ok(ECDSAUtils.EcdsaMPCv2Utils.validateCommonKeychainPublicKey(userKeychain.commonKeychain));
+
+      // Verify v2 envelopes for encryptedPrv
+      assert.ok(userKeychain.encryptedPrv);
+      const encryptedPrvParsed: { v: number } = JSON.parse(userKeychain.encryptedPrv);
+      assert.equal(encryptedPrvParsed.v, 2, 'encryptedPrv should be a v2 envelope');
+
+      // Verify v2 envelopes for reducedEncryptedPrv
+      assert.ok(userKeychain.reducedEncryptedPrv);
+      const reducedEncryptedPrvParsed: { v: number } = JSON.parse(userKeychain.reducedEncryptedPrv);
+      assert.equal(reducedEncryptedPrvParsed.v, 2, 'reducedEncryptedPrv should be a v2 envelope');
+
+      // Verify v2 envelope is decryptable via decryptAsync
+      const decrypted = await bitgo.decryptAsync({ input: userKeychain.encryptedPrv, password: params.passphrase });
+      assert.ok(decrypted, 'decryptAsync should successfully decrypt v2 envelope');
+
+      // Verify backup keychain also uses v2 envelopes
+      assert.ok(backupKeychain);
+      assert.equal(backupKeychain.source, 'backup');
+      assert.ok(backupKeychain.encryptedPrv);
+      const backupEncryptedPrvParsed: { v: number } = JSON.parse(backupKeychain.encryptedPrv);
+      assert.equal(backupEncryptedPrvParsed.v, 2, 'backup encryptedPrv should be a v2 envelope');
+
+      assert.ok(bitgoKeychain);
+      assert.equal(bitgoKeychain.source, 'bitgo');
+    });
+
     it('should generate TSS MPCv2 keys for retrofit', async function () {
       const xiList = [
         Array.from(bigIntToBufferBE(BigInt(1), 32)),
