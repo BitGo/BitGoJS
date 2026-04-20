@@ -176,3 +176,34 @@ export interface ExportEVMOptions {
   threshold: number;
   locktime: bigint;
 }
+
+/**
+ * Parameters for creating a paired FLR C-chain wallet from an FLR P-chain wallet.
+ */
+export interface CreatePairedWalletParams {
+  /** The ID of the source FLRP (FLR P-chain) MPC wallet. */
+  walletId: string;
+  /** Optional label for the new FLR C-chain wallet. */
+  label?: string;
+}
+
+/**
+ * Response from the create-paired-wallet endpoint.
+ */
+export interface CreatePairedWalletResponse {
+  id: string;
+  coin: string;
+  label: string;
+  keys: string[];
+  keySignatures: Record<string, string>;
+  m: number;
+  n: number;
+  type: string;
+  multisigType: string;
+  coinSpecific: {
+    pairedWalletId?: string;
+    baseAddress?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}

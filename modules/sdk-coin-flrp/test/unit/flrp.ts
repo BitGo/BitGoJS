@@ -9,10 +9,12 @@ import { EXPORT_IN_C } from '../resources/transactionData/exportInC';
 import { EXPORT_IN_P } from '../resources/transactionData/exportInP';
 import { IMPORT_IN_P } from '../resources/transactionData/importInP';
 import { IMPORT_IN_C } from '../resources/transactionData/importInC';
-import { HalfSignedAccountTransaction, TransactionType, MPCAlgorithm } from '@bitgo/sdk-core';
+import { HalfSignedAccountTransaction, TransactionType, MPCAlgorithm, common } from '@bitgo/sdk-core';
 import { secp256k1 } from '@flarenetwork/flarejs';
 import { FlrpContext } from '@bitgo/public-types';
 import assert from 'assert';
+import nock from 'nock';
+import { CreatePairedWalletResponse } from '../../src/lib/iface';
 
 describe('Flrp test cases', function () {
   const coinName = 'flrp';
@@ -958,6 +960,75 @@ describe('Flrp test cases', function () {
         const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
         isVerified.should.equal(true);
       });
+    });
+  });
+
+  describe('createPairedWallet', function () {
+    const walletId = 'abc123def456abc123def456abc123de';
+
+    afterEach(function () {
+      nock.cleanAll();
+    });
+
+    it('should POST to create-paired-wallet and return new wallet', async function () {
+      const bgUrl = common.Environments[bitgo.getEnv()].uri;
+      const expectedResponse: CreatePairedWalletResponse = {
+        id: 'newwalletid000000000000000000001',
+        coin: 'tflr',
+        label: 'My FLR C Wallet',
+        keys: ['key1', 'key2', 'key3'],
+        keySignatures: { backupPub: 'sig1', bitgoPub: 'sig2' },
+        m: 2,
+        n: 3,
+        type: 'hot',
+        multisigType: 'tss',
+        coinSpecific: {
+          pairedWalletId: walletId,
+          baseAddress: '0x627306090abaB3A6e1400e9345bC60c78a8BEf57',
+        },
+      };
+
+      nock(bgUrl)
+        .post(`/api/v2/tflrp/wallet/${walletId}/create-paired-wallet`, { label: 'My FLR C Wallet' })
+        .reply(200, expectedResponse);
+
+      const result = await basecoin.createPairedWallet({ walletId, label: 'My FLR C Wallet' });
+      result.should.deepEqual(expectedResponse);
+      result.coin.should.equal('tflr');
+      result.coinSpecific.pairedWalletId.should.equal(walletId);
+    });
+
+    it('should POST without body when label is not provided', async function () {
+      const bgUrl = common.Environments[bitgo.getEnv()].uri;
+      const expectedResponse: CreatePairedWalletResponse = {
+        id: 'newwalletid000000000000000000002',
+        coin: 'tflr',
+        label: 'FLR C wallet (from tflrp wallet abc123def456abc123def456abc123de)',
+        keys: ['key1', 'key2', 'key3'],
+        keySignatures: {},
+        m: 2,
+        n: 3,
+        type: 'hot',
+        multisigType: 'tss',
+        coinSpecific: { pairedWalletId: walletId },
+      };
+
+      nock(bgUrl).post(`/api/v2/tflrp/wallet/${walletId}/create-paired-wallet`, {}).reply(200, expectedResponse);
+
+      const result = await basecoin.createPairedWallet({ walletId });
+      result.should.deepEqual(expectedResponse);
+    });
+
+    it('should propagate HTTP errors from the server', async function () {
+      const bgUrl = common.Environments[bitgo.getEnv()].uri;
+
+      nock(bgUrl)
+        .post(`/api/v2/tflrp/wallet/${walletId}/create-paired-wallet`)
+        .reply(400, { error: 'Source FLR P wallet is not MPC (multisigType: onchain)' });
+
+      await basecoin
+        .createPairedWallet({ walletId })
+        .should.be.rejectedWith('Source FLR P wallet is not MPC (multisigType: onchain)');
     });
   });
 });
