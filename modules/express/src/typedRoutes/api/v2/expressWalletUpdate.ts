@@ -7,9 +7,9 @@ import { WalletResponse } from '../../schemas/wallet';
  *  Parameters for Express Wallet Update
  */
 export const ExpressWalletUpdateParams = {
-  /** Coin ticker / chain identifier */
+  /** A cryptocurrency or token ticker symbol */
   coin: t.string,
-  /** Wallet ID */
+  /** The wallet ID */
   id: t.string,
 } as const;
 
@@ -17,13 +17,13 @@ export const ExpressWalletUpdateParams = {
  *  Request body for Express Wallet Update
  */
 export const ExpressWalletUpdateBody = {
-  /** The host address of the lightning signer node. */
+  /** The host address of the lightning signer node */
   signerHost: t.string,
-  /** The TLS certificate for the lighting signer node encoded to base64. */
+  /** The TLS certificate for the lighting signer node encoded to base64 */
   signerTlsCert: t.string,
-  /** (Optional) The signer macaroon for the lighting signer node. */
+  /** (Optional) The signer macaroon for the lighting signer node */
   signerMacaroon: optional(t.string),
-  /** The wallet passphrase. This is not uploaded to BitGo, but used to decrypt userAuthKey used to sign the request before sending to BitGo. */
+  /** The wallet passphrase. This is not uploaded to BitGo, but used to decrypt userAuthKey used to sign the request before sending to BitGo */
   passphrase: t.string,
 } as const;
 
@@ -42,10 +42,7 @@ export const ExpressWalletUpdateResponse = {
 } as const;
 
 /**
- * Express - Update Wallet
- * The express update wallet route is meant to be used for lightning (lnbtc/tlnbtc).
- * It will produced a signed wallet update request that can be used to update the wallet.
- * For other coins, use the standard wallet update endpoint.
+ * The express update wallet route is meant to be used for lightning (lnbtc/tlnbtc). It will produced a signed wallet update request that can be used to update the wallet. For other coins, use the standard wallet update endpoint.
  *
  * @operationId express.wallet.update
  * @tag Express
