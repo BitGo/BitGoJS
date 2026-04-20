@@ -21,6 +21,7 @@ export interface EncryptOptions {
   input: string;
   password?: string;
   adata?: string;
+  encryptionVersion?: 2;
 }
 
 export interface GetSharingKeyOptions {
