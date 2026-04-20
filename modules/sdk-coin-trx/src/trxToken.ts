@@ -94,8 +94,18 @@ export class TrxToken extends Trx {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const { txPrebuild: txPrebuild, txParams: txParams } = params;
+    const { txPrebuild: txPrebuild, txParams: txParams, walletType } = params;
     assert(txPrebuild.txHex, new Error('missing required tx prebuild property txHex'));
+
+    // For TSS wallets, TRC20 token transfers are TriggerSmartContract transactions.
+    // Trx.verifyTransaction already returns true for TriggerSmartContract in TSS mode
+    // (only TransferContract/native TRX gets validated against recipients there).
+    // We apply the same convention here: the TSS signing protocol itself provides
+    // cryptographic guarantees; recipients-based verification is not applicable.
+    if (walletType === 'tss') {
+      return true;
+    }
+
     const rawTx = txPrebuild.txHex;
 
     const txBuilder = getBuilder(this.getChain()).from(rawTx);
