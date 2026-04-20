@@ -165,7 +165,7 @@ export const ExpressWalletConsolidateUnspentsApiSpec = apiSpec({
   'express.v1.wallet.consolidateunspents': {
     put: PutConsolidateUnspents,
   },
-  'express.v2.wallet.consolidateunspents': {
+  'express.wallet.consolidateunspents': {
     post: PostConsolidateUnspents,
   },
 });
