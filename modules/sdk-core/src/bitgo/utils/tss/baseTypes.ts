@@ -482,6 +482,7 @@ export type CreateKeychainParamsBase = {
   passphrase?: string;
   enterprise?: string;
   originalPasscodeEncryptionCode?: string;
+  encryptionVersion?: 2;
 };
 
 export type CreateBitGoKeychainParamsBase = Omit<CreateKeychainParamsBase, 'bitgoKeychain'>;
