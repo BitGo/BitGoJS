@@ -712,6 +712,7 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
     isThirdPartyBackup?: boolean;
+    encryptionVersion?: 2;
   }): Promise<KeychainsTriplet>;
   signTxRequest(params: { txRequest: string | TxRequest; prv: string; reqId: IRequestTracer }): Promise<TxRequest>;
   signTxRequestForMessage(params: TSSParams): Promise<TxRequest>;

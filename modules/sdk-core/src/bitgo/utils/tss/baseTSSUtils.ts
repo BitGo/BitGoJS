@@ -190,6 +190,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     enterprise?: string | undefined;
     originalPasscodeEncryptionCode?: string | undefined;
     isThirdPartyBackup?: boolean;
+    encryptionVersion?: 2;
   }): Promise<KeychainsTriplet> {
     throw new Error('Method not implemented.');
   }

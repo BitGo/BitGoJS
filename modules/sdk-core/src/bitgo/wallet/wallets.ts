@@ -169,7 +169,8 @@ export class Wallets implements IWallets {
     const reqId = new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
 
-    const { label, passphrase, enterprise, passcodeEncryptionCode, subType, lightningProvider } = params;
+    const { label, passphrase, enterprise, passcodeEncryptionCode, subType, lightningProvider, encryptionVersion } =
+      params;
 
     // TODO BTC-1899: only userAuth key is required for custodial lightning wallet. all 3 keys are required for self custodial lightning.
     // to avoid changing the platform for custodial flow, let us all 3 keys both wallet types.
@@ -178,7 +179,11 @@ export class Wallets implements IWallets {
         const keychain = this.baseCoin.keychains().create();
         const keychainParams: AddKeychainOptions = {
           pub: keychain.pub,
-          encryptedPrv: this.bitgo.encrypt({ password: passphrase, input: keychain.prv }),
+          encryptedPrv: await this.bitgo.encryptAsync({
+            password: passphrase,
+            input: keychain.prv,
+            encryptionVersion,
+          }),
           originalPasscodeEncryptionCode: purpose === undefined ? passcodeEncryptionCode : undefined,
           coinSpecific: purpose === undefined ? undefined : { [this.baseCoin.getChain()]: { purpose } },
           keyType: 'independent',
@@ -228,13 +233,17 @@ export class Wallets implements IWallets {
     const reqId = new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
 
-    const { label, passphrase, enterprise, passcodeEncryptionCode } = params;
+    const { label, passphrase, enterprise, passcodeEncryptionCode, encryptionVersion } = params;
 
     const keychain = this.baseCoin.keychains().create();
 
     const keychainParams: AddKeychainOptions = {
       pub: keychain.pub,
-      encryptedPrv: this.bitgo.encrypt({ password: passphrase, input: keychain.prv }),
+      encryptedPrv: await this.bitgo.encryptAsync({
+        password: passphrase,
+        input: keychain.prv,
+        encryptionVersion,
+      }),
       originalPasscodeEncryptionCode: passcodeEncryptionCode,
       keyType: 'independent',
       source: 'user',
@@ -318,9 +327,10 @@ export class Wallets implements IWallets {
       );
 
       const walletData = await this.generateLightningWallet(options);
-      walletData.encryptedWalletPassphrase = this.bitgo.encrypt({
+      walletData.encryptedWalletPassphrase = await this.bitgo.encryptAsync({
         input: options.passphrase,
         password: options.passcodeEncryptionCode,
+        encryptionVersion: options.encryptionVersion,
       });
       return walletData;
     }
@@ -337,9 +347,10 @@ export class Wallets implements IWallets {
       );
 
       const walletData = await this.generateGoAccountWallet(options);
-      walletData.encryptedWalletPassphrase = this.bitgo.encrypt({
+      walletData.encryptedWalletPassphrase = await this.bitgo.encryptAsync({
         input: options.passphrase,
         password: options.passcodeEncryptionCode,
+        encryptionVersion: options.encryptionVersion,
       });
       return walletData;
     }
@@ -437,11 +448,13 @@ export class Wallets implements IWallets {
         originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
         enterprise,
         walletVersion: params.walletVersion,
+        encryptionVersion: params.encryptionVersion,
       });
       if (params.passcodeEncryptionCode) {
-        walletData.encryptedWalletPassphrase = this.bitgo.encrypt({
+        walletData.encryptedWalletPassphrase = await this.bitgo.encryptAsync({
           input: passphrase,
           password: params.passcodeEncryptionCode,
+          encryptionVersion: params.encryptionVersion,
         });
       }
       return walletData;
@@ -574,7 +587,11 @@ export class Wallets implements IWallets {
           }
           // Create the user key.
           userKeychain = this.baseCoin.keychains().create();
-          userKeychain.encryptedPrv = this.bitgo.encrypt({ password: passphrase, input: userKeychain.prv });
+          userKeychain.encryptedPrv = await this.bitgo.encryptAsync({
+            password: passphrase,
+            input: userKeychain.prv,
+            encryptionVersion: params.encryptionVersion,
+          });
           userKeychainParams = {
             pub: userKeychain.pub,
             encryptedPrv: userKeychain.encryptedPrv,
@@ -588,9 +605,10 @@ export class Wallets implements IWallets {
               {
                 otpDeviceId: params.webauthnInfo.otpDeviceId,
                 prfSalt: params.webauthnInfo.prfSalt,
-                encryptedPrv: this.bitgo.encrypt({
+                encryptedPrv: await this.bitgo.encryptAsync({
                   password: params.webauthnInfo.passphrase,
                   input: userKeychain.prv,
+                  encryptionVersion: params.encryptionVersion,
                 }),
               },
             ];
@@ -611,6 +629,7 @@ export class Wallets implements IWallets {
             krsSpecific: params.krsSpecific,
             type: this.baseCoin.getChain(),
             passphrase: params.passphrase,
+            encryptionVersion: params.encryptionVersion,
             reqId,
           });
         }
@@ -628,7 +647,11 @@ export class Wallets implements IWallets {
             throw new Error('cannot generate backup keypair without passphrase');
           }
           // No provided backup xpub or address, so default to creating one here
-          return this.baseCoin.keychains().createBackup({ reqId, passphrase: params.passphrase });
+          return this.baseCoin.keychains().createBackup({
+            reqId,
+            passphrase: params.passphrase,
+            encryptionVersion: params.encryptionVersion,
+          });
         }
       };
       const { userKeychain, backupKeychain, bitgoKeychain }: KeychainsTriplet = await promiseProps({
@@ -683,9 +706,10 @@ export class Wallets implements IWallets {
       }
 
       if (canEncrypt && params.passcodeEncryptionCode) {
-        result.encryptedWalletPassphrase = this.bitgo.encrypt({
+        result.encryptedWalletPassphrase = await this.bitgo.encryptAsync({
           input: passphrase,
           password: params.passcodeEncryptionCode,
+          encryptionVersion: params.encryptionVersion,
         });
       }
 
@@ -1500,6 +1524,7 @@ export class Wallets implements IWallets {
     enterprise,
     walletVersion,
     originalPasscodeEncryptionCode,
+    encryptionVersion,
   }: GenerateMpcWalletOptions): Promise<WalletWithKeychains> {
     if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
       const tssSettings: TssSettings = await this.bitgo
@@ -1519,6 +1544,7 @@ export class Wallets implements IWallets {
       passphrase,
       enterprise,
       originalPasscodeEncryptionCode,
+      encryptionVersion,
     });
 
     // Create Wallet

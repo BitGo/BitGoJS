@@ -275,7 +275,13 @@ export class Keychains implements IKeychains {
       const key = this.create();
       _.extend(params, key);
       if (params.passphrase !== undefined) {
-        _.extend(params, { encryptedPrv: this.bitgo.encrypt({ input: key.prv, password: params.passphrase }) });
+        _.extend(params, {
+          encryptedPrv: await this.bitgo.encryptAsync({
+            input: key.prv,
+            password: params.passphrase,
+            encryptionVersion: params.encryptionVersion,
+          }),
+        });
       }
     }
 
@@ -333,6 +339,7 @@ export class Keychains implements IKeychains {
       enterprise: params.enterprise,
       originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
       retrofit: params.retrofit,
+      encryptionVersion: params.encryptionVersion,
     });
   }
 
