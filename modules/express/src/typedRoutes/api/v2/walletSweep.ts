@@ -52,7 +52,7 @@ export const WalletSweepBody = {
 /**
  * The sweep call spends the full balance of the wallet to the provided address. On UTXO coins, the sweep call will fail if the wallet has any unconfirmed funds, or if there are more unspents than can be sent with a single transaction.
  *
- * @operationId express.v2.wallet.sweep
+ * @operationId express.wallet.sweep
  * @tag Express
  */
 export const PostWalletSweep = httpRoute({

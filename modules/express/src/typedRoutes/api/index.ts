@@ -318,7 +318,7 @@ export const ExpressV2CanonicalAddressApiSpec = apiSpec({
 });
 
 export const ExpressV2WalletSweepApiSpec = apiSpec({
-  'express.v2.wallet.sweep': {
+  'express.wallet.sweep': {
     post: PostWalletSweep,
   },
 });
