@@ -2,7 +2,6 @@
  * @prettier
  */
 import assert from 'assert';
-import * as bs58 from 'bs58';
 import * as openpgp from 'openpgp';
 import Eddsa, { GShare, SignShare } from '../../../../account-lib/mpc/tss';
 import { AddKeychainOptions, CreateBackupOptions, Keychain } from '../../../keychain';
@@ -36,6 +35,7 @@ import {
 } from '../baseTypes';
 import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
+import { BaseEddsaUtils } from './base';
 import { KeychainsTriplet } from '../../../baseCoin';
 import { exchangeEddsaCommitments } from '../../../tss/common';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
@@ -713,11 +713,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
    * @returns {string}
    */
   static getPublicKeyFromCommonKeychain(commonKeychain: string): string {
-    if (commonKeychain.length !== 128) {
-      throw new Error(`Invalid commonKeychain length, expected 128, got ${commonKeychain.length}`);
-    }
-    const commonPubHexStr = commonKeychain.slice(0, 64);
-    return bs58.encode(Buffer.from(commonPubHexStr, 'hex'));
+    return BaseEddsaUtils.getPublicKeyFromCommonKeychain(commonKeychain);
   }
 
   createUserToBitgoCommitmentShare(commitment: string): CommitmentShareRecord {

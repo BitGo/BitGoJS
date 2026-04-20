@@ -305,28 +305,21 @@ export class Keychains implements IKeychains {
    * @return {Promise<KeychainsTriplet>} newly created User, Backup, and BitGo keys
    */
   async createMpc(params: CreateMpcOptions): Promise<KeychainsTriplet> {
-    let MpcUtils;
-    let multisigTypeVersion: 'MPCv2' | undefined = undefined;
-    if (params.multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
-      const tssSettings: TssSettings = await this.bitgo
-        .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
-        .result();
-      multisigTypeVersion =
-        tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
+    if (params.multisigType !== 'tss') {
+      throw new Error('Unsupported multi-sig type');
     }
 
-    switch (params.multisigType) {
-      case 'tss':
-        MpcUtils =
-          this.baseCoin.getMPCAlgorithm() === 'eddsa'
-            ? EDDSAUtils.default
-            : multisigTypeVersion === 'MPCv2'
-            ? ECDSAUtils.EcdsaMPCv2Utils
-            : ECDSAUtils.EcdsaUtils;
-        break;
-      default:
-        throw new Error('Unsupported multi-sig type');
+    const tssSettings: TssSettings = await this.bitgo.get(this.bitgo.microservicesUrl('/api/v2/tss/settings')).result();
+    const multisigTypeVersion =
+      tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
+
+    let MpcUtils;
+    if (this.baseCoin.getMPCAlgorithm() === 'eddsa') {
+      MpcUtils = multisigTypeVersion === 'MPCv2' ? EDDSAUtils.EddsaMPCv2Utils : EDDSAUtils.default;
+    } else {
+      MpcUtils = multisigTypeVersion === 'MPCv2' ? ECDSAUtils.EcdsaMPCv2Utils : ECDSAUtils.EcdsaUtils;
     }
+
     const mpcUtils = new MpcUtils(this.bitgo, this.baseCoin);
     return await mpcUtils.createKeychains({
       passphrase: params.passphrase,
