@@ -246,7 +246,7 @@ export const ExpressLightningUnlockWalletApiSpec = apiSpec({
 });
 
 export const ExpressLightningWalletWithdrawApiSpec = apiSpec({
-  'express.v2.wallet.lightningWithdraw': {
+  'express.lightningwithdrawonchain': {
     post: PostLightningWalletWithdraw,
   },
 });
