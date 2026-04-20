@@ -45,6 +45,7 @@ export interface GenerateBaseMpcWalletOptions {
 export interface GenerateMpcWalletOptions extends GenerateBaseMpcWalletOptions {
   passphrase: string;
   originalPasscodeEncryptionCode?: string;
+  encryptionVersion?: 2;
 }
 export interface GenerateSMCMpcWalletOptions extends GenerateBaseMpcWalletOptions {
   bitgoKeyId: string;
@@ -92,6 +93,7 @@ export interface GenerateWalletOptions {
   evmKeyRingReferenceWalletId?: string;
   /** Optional WebAuthn PRF-based encryption info. When provided, the user private key is additionally encrypted with the PRF-derived passphrase so the server can store a WebAuthn-protected copy. */
   webauthnInfo?: GenerateWalletWebauthnInfo;
+  encryptionVersion?: 2;
 }
 
 export const GenerateLightningWalletOptionsCodec = t.intersection(
@@ -105,20 +107,26 @@ export const GenerateLightningWalletOptionsCodec = t.intersection(
     }),
     t.partial({
       lightningProvider: t.union([t.literal('amboss'), t.literal('voltage')]),
+      encryptionVersion: t.literal(2),
     }),
   ],
   'GenerateLightningWalletOptions'
 );
 export type GenerateLightningWalletOptions = t.TypeOf<typeof GenerateLightningWalletOptionsCodec>;
 
-export const GenerateGoAccountWalletOptionsCodec = t.strict(
-  {
-    label: t.string,
-    passphrase: t.string,
-    enterprise: t.string,
-    passcodeEncryptionCode: t.string,
-    type: t.literal('trading'),
-  },
+export const GenerateGoAccountWalletOptionsCodec = t.intersection(
+  [
+    t.strict({
+      label: t.string,
+      passphrase: t.string,
+      enterprise: t.string,
+      passcodeEncryptionCode: t.string,
+      type: t.literal('trading'),
+    }),
+    t.partial({
+      encryptionVersion: t.literal(2),
+    }),
+  ],
   'GenerateGoAccountWalletOptions'
 );
 
