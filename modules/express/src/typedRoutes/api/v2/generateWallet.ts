@@ -97,7 +97,7 @@ export const GenerateWalletV2Query = {
 };
 
 /**
- * Generate Wallet
+ * Generate wallet
  *
  * Generate a new wallet for a coin. If you want a wallet to hold tokens, generate a wallet for the native coin of the blockchain (e.g. generate an ETH wallet to hold ERC20 tokens).
  *
