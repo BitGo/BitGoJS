@@ -61,6 +61,8 @@ import { isLightningCoinName } from '@bitgo/abstract-lightning';
 import { handleLightningWithdraw } from './lightning/lightningWithdrawRoutes';
 import createExpressRouter from './typedRoutes';
 import { ExpressApiRouteRequest } from './typedRoutes/api';
+import { CreateTSSSendParamsBody } from './typedRoutes/api/common/createTSSSendParams';
+import { createValidationError } from './typedRoutes/utils';
 import { TypedRequestHandler, WrappedRequest, WrappedResponse } from '@api-ts/typed-express-router';
 
 const { version } = require('bitgo/package.json');
@@ -877,12 +879,24 @@ function createSendParams(req: express.Request) {
   }
 }
 
-function createTSSSendParams(req: express.Request, wallet: Wallet) {
+// Return type is intentionally `any` to preserve the pre-existing behaviour of
+// the three call sites (wallet.sendMany / sendAccountConsolidations /
+// ensureCleanSigSharesAndSignTransaction each take slightly different option
+// shapes). This ticket only narrows the *input* via the io-ts codec; return
+// type strengthening is tracked separately.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createTSSSendParams(req: express.Request, wallet: Wallet): any {
+  const decoded = CreateTSSSendParamsBody.decode(req.body);
+  if (decoded._tag === 'Left') {
+    throw createValidationError(decoded.left);
+  }
+  const body = decoded.right;
+
   if (req.config?.externalSignerUrl !== undefined) {
     const coin = req.bitgo.coin(req.params.coin);
     if (coin.getMPCAlgorithm() === MPCType.EDDSA) {
       return {
-        ...req.body,
+        ...body,
         customCommitmentGeneratingFunction: createCustomCommitmentGenerator(
           req.config.externalSignerUrl,
           req.params.coin
@@ -893,7 +907,7 @@ function createTSSSendParams(req: express.Request, wallet: Wallet) {
     } else if (coin.getMPCAlgorithm() === MPCType.ECDSA) {
       if (wallet._wallet.multisigTypeVersion === 'MPCv2') {
         return {
-          ...req.body,
+          ...body,
           customMPCv2SigningRound1GenerationFunction: createCustomMPCv2SigningRound1Generator(
             req.config.externalSignerUrl,
             req.params.coin
@@ -909,7 +923,7 @@ function createTSSSendParams(req: express.Request, wallet: Wallet) {
         };
       } else {
         return {
-          ...req.body,
+          ...body,
           customPaillierModulusGeneratingFunction: createCustomPaillierModulusGetter(
             req.config.externalSignerUrl,
             req.params.coin
@@ -926,7 +940,7 @@ function createTSSSendParams(req: express.Request, wallet: Wallet) {
       throw new Error(`MPC Algorithm ${coin.getMPCAlgorithm()} is not supported.`);
     }
   } else {
-    return req.body;
+    return body;
   }
 }
 
