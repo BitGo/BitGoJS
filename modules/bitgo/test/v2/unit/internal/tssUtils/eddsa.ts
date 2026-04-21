@@ -9,6 +9,7 @@ import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../../src';
 import {
   BaseCoin,
+  BitgoGPGPublicKey,
   CommitmentShareRecord,
   CommitmentType,
   common,
@@ -1237,6 +1238,41 @@ describe('TSS Utils:', async function () {
         () => TssUtils.getPublicKeyFromCommonKeychain('abcd'),
         /Invalid commonKeychain length, expected 64 \(MPCv2\) or 128 \(MPCv1\), got 4/
       );
+    });
+  });
+
+  describe('getBitgoGpgPubkeyBasedOnFeatureFlags', function () {
+    it('should return eddsaMpcv2PublicKey when present in feature flags response', async function () {
+      const ed25519KeyPair = await openpgp.generateKey({
+        userIDs: [{ name: 'bitgo eddsa', email: 'bitgo@test.com' }],
+        curve: 'ed25519',
+      });
+      const response: BitgoGPGPublicKey = {
+        name: 'irrelevant',
+        publicKey: ed25519KeyPair.publicKey,
+        mpcv2PublicKey: ed25519KeyPair.publicKey,
+        eddsaMpcv2PublicKey: ed25519KeyPair.publicKey,
+        enterpriseId: 'enterprise_id',
+      };
+      nock(bgUrl).get(`/api/v2/${coinName}/tss/pubkey`).query({ enterpriseId: 'enterprise_id' }).reply(200, response);
+      const { eddsaMpcv2PublicKey } = await tssUtils.getBitgoGpgPubkeyBasedOnFeatureFlags('enterprise_id');
+      should.exist(eddsaMpcv2PublicKey);
+      should.equal(ed25519KeyPair.publicKey, eddsaMpcv2PublicKey!.armor());
+    });
+
+    it('should return undefined eddsaMpcv2PublicKey when absent from feature flags response', async function () {
+      const keyPair = await openpgp.generateKey({
+        userIDs: [{ name: 'bitgo', email: 'bitgo@test.com' }],
+      });
+      const response: BitgoGPGPublicKey = {
+        name: 'irrelevant',
+        publicKey: keyPair.publicKey,
+        mpcv2PublicKey: keyPair.publicKey,
+        enterpriseId: 'enterprise_id',
+      };
+      nock(bgUrl).get(`/api/v2/${coinName}/tss/pubkey`).query({ enterpriseId: 'enterprise_id' }).reply(200, response);
+      const { eddsaMpcv2PublicKey } = await tssUtils.getBitgoGpgPubkeyBasedOnFeatureFlags('enterprise_id');
+      should.not.exist(eddsaMpcv2PublicKey);
     });
   });
 

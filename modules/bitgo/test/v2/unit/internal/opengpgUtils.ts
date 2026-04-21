@@ -285,12 +285,23 @@ describe('OpenGPG Utils Tests', function () {
       should.exist(gpgKey.publicKey);
     });
 
-    it('should generate a a GPG key for  with random name and email', async function () {
+    it('should generate a a GPG key for ed25519 with random name and email', async function () {
       const gpgKey = await openpgpUtils.generateGPGKeyPair('ed25519');
 
       should.exist(gpgKey);
       should.exist(gpgKey.privateKey);
       should.exist(gpgKey.publicKey);
+    });
+
+    it('should generate an ed25519 GPG key with a dedicated signing subkey', async function () {
+      const gpgKey = await openpgpUtils.generateGPGKeyPair('ed25519');
+      const parsedKey = await openpgp.readKey({ armoredKey: gpgKey.publicKey });
+
+      const signingKey = await parsedKey.getSigningKey();
+      // The signing key must be a subkey (has bindingSignatures), not the primary key.
+      // The HSM verifies the binding signature during MPS keygen round 1.
+      assert.ok('bindingSignatures' in signingKey, 'signing key should be a subkey with bindingSignatures');
+      assert.ok(signingKey.bindingSignatures.length > 0, 'signing subkey should have at least one binding signature');
     });
 
     it('should generate a a GPG key with provided name and email', async function () {

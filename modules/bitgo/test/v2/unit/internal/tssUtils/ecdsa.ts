@@ -239,7 +239,9 @@ describe('TSS Ecdsa Utils:', async function () {
         ],
       });
       const nockGPGKey = await nockGetBitgoPublicKeyBasedOnFeatureFlags(coinName, 'enterprise_id', nitroGPGKeypair);
-      const bitgoGpgPublicKey = await tssUtils.getBitgoGpgPubkeyBasedOnFeatureFlags('enterprise_id');
+      const { mpcv2PublicKey: bitgoGpgPublicKey } = await tssUtils.getBitgoGpgPubkeyBasedOnFeatureFlags(
+        'enterprise_id'
+      );
       should.equal(nockGPGKey.publicKey, bitgoGpgPublicKey.armor());
     });
 
@@ -1691,6 +1693,7 @@ describe('TSS Ecdsa Utils:', async function () {
     const bitgoGPGPublicKeyResponse: BitgoGPGPublicKey = {
       name: 'irrelevant',
       publicKey: bitgoGpgKeyPair.publicKey,
+      mpcv2PublicKey: bitgoGpgKeyPair.publicKey,
       enterpriseId,
     };
     nock(bgUrl).get(`/api/v2/${coin}/tss/pubkey`).query({ enterpriseId }).reply(200, bitgoGPGPublicKeyResponse);

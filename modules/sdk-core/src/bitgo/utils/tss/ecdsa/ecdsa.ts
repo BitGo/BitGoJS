@@ -118,8 +118,8 @@ export class EcdsaUtils extends BaseEcdsaUtils {
 
     // Get the BitGo public key based on user/enterprise feature flags
     // If it doesn't work, use the default public key from the constants
-    const bitgoPublicGpgKey =
-      (await this.getBitgoGpgPubkeyBasedOnFeatureFlags(params.enterprise)) ?? this.bitgoPublicGpgKey;
+    const { mpcv2PublicKey: primaryGpgKey } = await this.getBitgoGpgPubkeyBasedOnFeatureFlags(params.enterprise);
+    const bitgoPublicGpgKey = primaryGpgKey ?? this.bitgoPublicGpgKey;
 
     const bitgoKeychain = await this.createBitgoKeychain({
       userGpgKey,

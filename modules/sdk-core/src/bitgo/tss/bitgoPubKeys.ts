@@ -22,6 +22,16 @@ export const bitgoMpcGpgPubKeys = {
       prod: '-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nxk8EZmHyKBMFK4EEAAoCAwS+tBY/2P47G0mgYRhq90jK475f02f3f3W4VbKA\nSwd9s6aI5spk7GeYsjRvP6rBf4vFIjLj7Ty7K2V03rZPQc8bzQVCaXRHb8KE\nBBMTCAA2BQJmYfIpAgsJCRAKMB4ATA5V7QIVCAIWAAIbAwIeARYhBAIdflLB\nK4deHok+gQowHgBMDlXtAACRpAD/UUbTsFEkjt+CCJmVq2v5l6oocR9hXXkT\nzhRQKQIwSigA/RVvS2RsoZLkaL68GUHLy63XVHtG149pN3BYPwb63EcQwoQE\nEBMIADYFAmZh8ioCCwkJEFlh2DLM6IVNAhUIAhYAAhsDAh4BFiEEsb9f1VA0\n9rOLgFM+WWHYMszohU0AAFC8AP4wH0ndmzCSg2O/a+ZfqW2yA465BFvDM1ij\nvMtCJYSxzAD/RjcfDfkN4Ipjaa2LRuHxfHZbvgCgoOChsJLv4KQLTafOUwRm\nYfIoEgUrgQQACgIDBM+W01KEUaAm8a3hMBWG9EShyNrZxbtv9ryd8JIIxeEb\nEckLTVQvIer3YvDUyjeY/v83VCRdm6H5cahV92sydrIDAQgHwoQEGBMIADYF\nAmZh8ikCCwkJEAowHgBMDlXtAhUIAhYAAhsMAh4BFiEEAh1+UsErh14eiT6B\nCjAeAEwOVe0AAEcSAP9H96t/z9uKe9lAoq2d9Dt3Hrq9eM6sLQ2+cVblngP+\nDQD/dCqHYQzDdsuc9Y3HmWbhCK1Um6ewppkct1v5lmbaJ1bOTwRmYfIoEwUr\ngQQACgIDBJDIofWOLj/JkBFkZDh3a++LNEH8TBNlDZvU7tNfURXWApxV2VAb\nFBKYddN03Q1SBpMR0GkPl42rH7whYdeaEBHCwEoEGBMIALwFAmZh8ioCCwkJ\nEAowHgBMDlXtAhUIAhYAAhsCAh4BhSAEGBMIADYFAmZh8ioCCwkJEGAfBsMT\nFzVjAhUIAhYAAhsCAh4BFiEE2zAGHSaLnswqIvBrYB8GwxMXNWMAANroAP0f\ntFPumKFwQrCf7OMHQWsesrQYpKT6Z65VbewBoGaGigD/UkeeygTtlyzTV2YF\nNAjWAzaQtXWmmzRgnOj0IKub39MWIQQCHX5SwSuHXh6JPoEKMB4ATA5V7QAA\nTjMA/jDSVXJNblr/kSLNFTordgDjKP0nN1aElvFUFh/QEVT0AP9lmf2Fc/o7\nyYOGPPg4OvvU6odrTsuNgljvPqBlaCc2EA==\n=ZLkt\n-----END PGP PUBLIC KEY BLOCK-----\n',
     },
   },
+  eddsaMpcv2: {
+    nitro: {
+      test: '', // TODO WCI-205: add eddsaMpcv2 key for nitro
+      prod: '',
+    },
+    onprem: {
+      test: '-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nxjMEad+QCxYJKwYBBAHaRw8BAQdAG0FBM/1JRvo7KlLvhp1Mwi6IWmV3V9xy\nZZcByg0fDQ3NGGhzbSA8aHNtQHRlc3QuYml0Z28uY29tPsKEBBMWCgA2BYJp\n35AMAgsJCZCuV6d9sal31QIVCgIWAAKbAwIeARYhBKSiXcKo4xMT5wwfh65X\np32xqXfVAAA2sAEAgmk543UetoUoOoOvEAhOrRBbF4h6VwcH9cyR9UGSwygA\n/2KJJadiAvaepqFZxyE77rFM7ZfqhRMsoAc2MfslvuQMwoQEEBMIADYFgmnf\nkA0CCwkJkN2vJwOOuE03AhUKAhYAApsDAh4BFiEEjMSQwTRbUtG1fSvR3a8n\nA464TTcAANNVAQD1RTu/bJmPBRvWbvuIiuT1WUxYsSuoXWwki1YImN1gMAD+\nOPU+v056hkdoD8Rcd8D+HhoNlJAbRbZWg/qjxr+S6lLOOARp35AMEgorBgEE\nAZdVAQUBAQdAgqwA9UhQGuseztLr2ZM189pBjrW6sAJ5m6icDYOWMHEDAQgH\nwoUEGBYKADcFgmnfkAwCCwkJkK5Xp32xqXfVAhUKAhYAA5sECAIeARYhBKSi\nXcKo4xMT5wwfh65Xp32xqXfVAAC4uwEAlkVzGDPJYETIV4pXYpCdaeGLBjm9\ny1sRb2nx9ET7m+4BANpb0vKKBrKZTAx/+rINgWoxKPnKPsycOE8bYHY3zKAN\nzjMEad+QDBYJKwYBBAHaRw8BAQdAanwKEY5QEAPafbhM5/BIJZRyLmyNpBTo\ntntTIq0nOt/CwEoEGBYKALwFgmnfkA0CCwkJkK5Xp32xqXfVAhUKAhYAApsC\nAh4BhaAEGBYKADYFgmnfkA0CCwkJkAuXAU6A6KYvAhUKAhYAApsCAh4BFiEE\neaGtxZYsjWFFYrD6C5cBToDopi8AAEp3AQCP4bCSYbhjNJfGnCCOq24DaozR\nUFg0hNlpfSA9NYZ3bwD/fdtV5m5a1QyvcyGEnv37l1H7UGbQlG1Zp8roqZh3\nqwMWIQSkol3CqOMTE+cMH4euV6d9sal31QAAMegA/i3sBuAwvrBsp8ozp7O2\nzQlIbjuvDBMomIXj1rRmgoOkAQDRqsQpAvITd0LMFN2dCqCBIGAeIqznFX0C\nyqvU0m8sCQ==\n=/R3k\n-----END PGP PUBLIC KEY BLOCK-----\n',
+      prod: '', // TODO WCI-142: add prod eddsaMpcv2 key
+    },
+  },
 };
 
 export function getBitgoMpcGpgPubKey(
@@ -59,6 +69,10 @@ export function getBitgoMpcGpgPubKey(
 
 export function isBitgoMpcPubKey(key: string, mpcvVersion: 'mpcv1' | 'mpcv2'): boolean {
   return Object.values(bitgoMpcGpgPubKeys[mpcvVersion]).some((envKeys) => Object.values(envKeys).includes(key));
+}
+
+export function isBitgoEddsaMpcv2PubKey(key: string): boolean {
+  return Object.values(bitgoMpcGpgPubKeys.eddsaMpcv2).some((envKeys) => Object.values(envKeys).includes(key));
 }
 
 export function envRequiresBitgoPubGpgKeyConfig(env: EnvironmentName): boolean {
