@@ -157,26 +157,35 @@ export class WrappedBuilder extends TransactionBuilder {
       case ContractType.Transfer:
       case ContractType.AccountPermissionUpdate:
         this._builder = this.getTransactionBuilder(raw);
-        return this._builder;
+        break;
       case ContractType.TriggerSmartContract:
-        return this.getContractCallBuilder(raw);
+        this._builder = this.getContractCallBuilder(raw);
+        break;
       case ContractType.FreezeBalanceV2:
-        return this.getFreezeBalanceV2TxBuilder(raw);
+        this._builder = this.getFreezeBalanceV2TxBuilder(raw);
+        break;
       case ContractType.VoteWitness:
-        return this.getVoteWitnessTxBuilder(raw);
+        this._builder = this.getVoteWitnessTxBuilder(raw);
+        break;
       case ContractType.UnfreezeBalanceV2:
-        return this.getUnfreezeBalanceV2TxBuilder(raw);
+        this._builder = this.getUnfreezeBalanceV2TxBuilder(raw);
+        break;
       case ContractType.WithdrawExpireUnfreeze:
-        return this.getWithdrawExpireUnfreezeTxBuilder(raw);
+        this._builder = this.getWithdrawExpireUnfreezeTxBuilder(raw);
+        break;
       case ContractType.WithdrawBalance:
-        return this.getWithdrawBalanceTxBuilder(raw);
+        this._builder = this.getWithdrawBalanceTxBuilder(raw);
+        break;
       case ContractType.DelegateResourceContract:
-        return this.getDelegateResourceTxBuilder(raw);
+        this._builder = this.getDelegateResourceTxBuilder(raw);
+        break;
       case ContractType.UnDelegateResourceContract:
-        return this.getUnDelegateResourceTxBuilder(raw);
+        this._builder = this.getUnDelegateResourceTxBuilder(raw);
+        break;
       default:
         throw new InvalidTransactionError('Invalid transaction type: ' + contractType);
     }
+    return this._builder;
   }
 
   /**
