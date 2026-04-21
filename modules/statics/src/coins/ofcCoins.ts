@@ -1523,6 +1523,10 @@ export const ofcCoins = [
     ...SOL_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
   ]),
+  ofcsolToken('d398e9e1-1a3e-4307-9e31-e1dbc03aa0f0', 'ofcsol:sofid', 'SOFID', 6, UnderlyingAsset['sol:sofid'], [
+    ...SOL_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+  ]),
   ofcsolToken(
     'e343b3c2-dcbb-4a9f-a60e-3dd79825c5fb',
     'ofcsol:rksol',
