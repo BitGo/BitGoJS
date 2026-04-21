@@ -201,7 +201,7 @@ export const LightningWithdrawResponseType = {
 /**
  * Withdraw onchain balance from a lightning wallet to a regular onchain address.
  *
- * @operationId express.v2.wallet.lightningWithdraw
+ * @operationId express.lightningwithdrawonchain
  * @tag Express
  */
 export const PostLightningWalletWithdraw = httpRoute({

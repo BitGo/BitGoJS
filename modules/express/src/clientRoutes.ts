@@ -1841,10 +1841,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   ]);
 
   // lightning - onchain withdrawal
-  router.post('express.v2.wallet.lightningWithdraw', [
-    prepareBitGo(config),
-    typedPromiseWrapper(handleLightningWithdraw),
-  ]);
+  router.post('express.lightningwithdrawonchain', [prepareBitGo(config), typedPromiseWrapper(handleLightningWithdraw)]);
 
   // any other API v2 call
   app.use('/api/v2/user/*', parseBody, prepareBitGo(config), promiseWrapper(handleV2UserREST));

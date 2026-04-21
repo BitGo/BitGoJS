@@ -4,7 +4,7 @@ import { ApiResponseError } from '../errors';
 import { ExpressApiRouteRequest } from '../typedRoutes/api';
 
 export async function handleLightningWithdraw(
-  req: ExpressApiRouteRequest<'express.v2.wallet.lightningWithdraw', 'post'>
+  req: ExpressApiRouteRequest<'express.lightningwithdrawonchain', 'post'>
 ): Promise<any> {
   const bitgo = req.bitgo;
   const params = decodeOrElse(
