@@ -1835,10 +1835,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.put('express.pendingapprovals', [prepareBitGo(config), typedPromiseWrapper(handleV2PendingApproval)]);
 
   // lightning - pay invoice
-  router.post('express.v2.wallet.lightningPayment', [
-    prepareBitGo(config),
-    typedPromiseWrapper(handlePayLightningInvoice),
-  ]);
+  router.post('express.lightningpayinvoice', [prepareBitGo(config), typedPromiseWrapper(handlePayLightningInvoice)]);
 
   // lightning - onchain withdrawal
   router.post('express.lightningwithdrawonchain', [prepareBitGo(config), typedPromiseWrapper(handleLightningWithdraw)]);
