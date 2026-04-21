@@ -677,7 +677,7 @@ export abstract class AbstractUtxoCoin
   /**
    * @deprecated - use function verifyUserPublicKey instead
    */
-  protected verifyUserPublicKey(params: VerifyUserPublicKeyOptions): boolean {
+  protected async verifyUserPublicKey(params: VerifyUserPublicKeyOptions): Promise<boolean> {
     return verifyUserPublicKey(this.bitgo, params);
   }
 

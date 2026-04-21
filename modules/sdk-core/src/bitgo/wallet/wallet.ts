@@ -1669,7 +1669,7 @@ export class Wallet implements IWallet {
     if (!params.walletPassphrase) {
       throw new Error('wallet passphrase was not provided');
     }
-    const userPrv = decryptKeychainPrivateKey(this.bitgo, userKeychain, params.walletPassphrase);
+    const userPrv = await decryptKeychainPrivateKey(this.bitgo, userKeychain, params.walletPassphrase);
     if (!userPrv) {
       throw new Error('error decrypting wallet private key');
     }
@@ -1849,7 +1849,7 @@ export class Wallet implements IWallet {
       throw new Error('Missing walletPassphrase argument');
     }
 
-    const prv = decryptKeychainPrivateKey(this.bitgo, keychain, walletPassphrase);
+    const prv = await decryptKeychainPrivateKey(this.bitgo, keychain, walletPassphrase);
     if (!prv) {
       throw new IncorrectPasswordError('Password shared is incorrect for this wallet');
     }
@@ -2214,7 +2214,7 @@ export class Wallet implements IWallet {
     if (this.multisigType() === 'tss') {
       return this.signTransactionTss({
         ...presign,
-        prv: this.getUserPrv(presign as GetUserPrvOptions),
+        prv: await this.getUserPrv(presign as GetUserPrvOptions),
         apiVersion,
       });
     }
@@ -2252,7 +2252,7 @@ export class Wallet implements IWallet {
     }
     return this.baseCoin.signTransaction({
       ...signTransactionParams,
-      prv: this.getUserPrv(presign as GetUserPrvOptions),
+      prv: await this.getUserPrv(presign as GetUserPrvOptions),
       wallet: this,
     });
   }
@@ -2287,7 +2287,7 @@ export class Wallet implements IWallet {
       ...params,
       walletData: this._wallet,
       tssUtils: this.tssUtils,
-      prv: this.getUserPrv(userPrvOptions),
+      prv: await this.getUserPrv(userPrvOptions),
       keychain: keychains[0],
       backupKeychain: keychains.length > 1 ? keychains[1] : null,
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
@@ -2326,7 +2326,7 @@ export class Wallet implements IWallet {
       ...params,
       walletData: this._wallet,
       tssUtils: this.tssUtils,
-      prv: this.getUserPrv(userPrvOptions),
+      prv: await this.getUserPrv(userPrvOptions),
       keychain: keychains[0],
       backupKeychain: keychains.length > 1 ? keychains[1] : null,
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
@@ -2383,7 +2383,7 @@ export class Wallet implements IWallet {
    * @param [params.keychain / params.key] (object) or params.prv (string)
    * @param params.walletPassphrase (string)
    */
-  getUserPrv(params: GetUserPrvOptions = {}): string {
+  async getUserPrv(params: GetUserPrvOptions = {}): Promise<string> {
     const userKeychain = params.keychain || params.key;
     let userPrv = params.prv;
     if (userPrv && typeof userPrv !== 'string') {
@@ -2420,7 +2420,7 @@ export class Wallet implements IWallet {
       if (!params.walletPassphrase) {
         throw new Error('walletPassphrase property missing');
       }
-      userPrv = decryptKeychainPrivateKey(this.bitgo, userKeychain, params.walletPassphrase);
+      userPrv = await decryptKeychainPrivateKey(this.bitgo, userKeychain, params.walletPassphrase);
       if (!userPrv) {
         throw new Error('failed to decrypt user keychain');
       }
@@ -4393,7 +4393,7 @@ export class Wallet implements IWallet {
     // we ignore this check with if customSigningFunction is provided
     //  which means that the user is handling the signing in external signing mode
     if (!customSigningFunction && keychains?.[0]?.encryptedPrv && walletPassphrase) {
-      if (!decryptKeychainPrivateKey(this.bitgo, keychains[0], walletPassphrase)) {
+      if (!(await decryptKeychainPrivateKey(this.bitgo, keychains[0], walletPassphrase))) {
         const error: Error & { code?: string } = new Error(
           `unable to decrypt keychain with the given wallet passphrase`
         );
