@@ -302,7 +302,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     txPrebuild: PrebuildTransactionResult
   ): Promise<SubmitTransactionResponse> {
     const userKeychain = await this.wallet.baseCoin.keychains().get({ id: this.wallet.keyIds()[KeyIndices.USER] });
-    const prv = this.wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
+    const prv = await this.wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
 
     const halfSigned = (await this.wallet.signTransaction({ prv, txPrebuild })) as HalfSignedUtxoTransaction;
     return this.wallet.submitTransaction({ halfSigned });

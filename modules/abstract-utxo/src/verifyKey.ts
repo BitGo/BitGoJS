@@ -84,7 +84,7 @@ export function verifyCustomChangeKeySignatures<TNumber extends number | bigint>
 /**
  * Decrypt the wallet's user private key and verify that the claimed public key matches
  */
-export function verifyUserPublicKey(bitgo: BitGoBase, params: VerifyUserPublicKeyOptions): boolean {
+export async function verifyUserPublicKey(bitgo: BitGoBase, params: VerifyUserPublicKeyOptions): Promise<boolean> {
   const { userKeychain, txParams, disableNetworking } = params;
   if (!userKeychain) {
     throw new Error('user keychain is required');
@@ -94,7 +94,7 @@ export function verifyUserPublicKey(bitgo: BitGoBase, params: VerifyUserPublicKe
 
   let userPrv = userKeychain.prv;
   if (!userPrv && txParams.walletPassphrase) {
-    userPrv = decryptKeychainPrivateKey(bitgo, userKeychain, txParams.walletPassphrase);
+    userPrv = await decryptKeychainPrivateKey(bitgo, userKeychain, txParams.walletPassphrase);
   }
 
   if (!userPrv) {
