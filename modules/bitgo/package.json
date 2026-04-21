@@ -91,6 +91,7 @@
     "@bitgo/sdk-coin-injective": "^3.7.4",
     "@bitgo/sdk-coin-iota": "^1.10.4",
     "@bitgo/sdk-coin-islm": "^2.6.4",
+    "@bitgo/sdk-coin-kaspa": "^1.0.0",
     "@bitgo/sdk-coin-lnbtc": "^1.8.2",
     "@bitgo/sdk-coin-ltc": "^3.8.4",
     "@bitgo/sdk-coin-mon": "^1.8.4",
