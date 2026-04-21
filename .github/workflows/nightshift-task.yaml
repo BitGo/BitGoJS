@@ -1,0 +1,21 @@
+name: nightshift-task
+run-name: "nightshift: ${{ inputs.task_type }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      task_type:
+        description: "Task type to run"
+        required: true
+        type: string
+
+jobs:
+  run:
+    uses: BitGo/nightshift-actions/.github/workflows/nightshift-task.yaml@v1
+    with:
+      task_type: ${{ inputs.task_type }}
+      provider: bedrock
+      aws_oidc_role: arn:aws:iam::199765120567:role/${{ github.event.repository.name }}-iam-protected
+      aws_inference_role: arn:aws:iam::168000258654:role/BedrockInferenceRole
+      aws_region: us-west-2
+      bedrock_model: arn:aws:bedrock:us-west-2:168000258654:inference-profile/us.anthropic.claude-opus-4-6-v1:0

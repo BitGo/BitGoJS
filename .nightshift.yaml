@@ -1,0 +1,164 @@
+max_tasks_per_run: 3
+
+tasks:
+  enabled:
+    - lint-fix
+    - test-gap
+    - dead-code
+    - dependency-risk
+    - security-footgun
+    - doc-drift
+    - adr-draft
+    - pr-feedback-loop
+
+  priorities:
+    security-footgun: 9
+    pr-feedback-loop: 8
+    lint-fix: 7
+    test-gap: 6
+    adr-draft: 5
+
+  cooldowns:
+    lint-fix: "24h"
+    test-gap: "72h"
+    dead-code: "7d"
+    doc-drift: "7d"
+    adr-draft: "14d"
+    pr-feedback-loop: "48h"
+
+  custom:
+    - type: "pr-feedback-loop"
+      name: "PR Feedback Loop — Doc Updater"
+      category: pr
+      cooldown: "48h"
+      priority: 8
+      prompt: |
+        You are running a nightshift maintenance task: PR Feedback Loop — Doc Updater.
+
+        You are an automated agent running inside a GitHub Actions workflow via
+        Claude Code. Your job is to review recent merged pull requests, extract
+        recurring patterns and learnings, and open a pull request that updates
+        the project's living documentation — including anti-patterns, ADRs, and
+        the CLAUDE.md harness — to reflect those learnings.
+
+        ## Objective
+
+        Analyze merged PRs from the last 14 days for recurring themes, new
+        coding patterns, anti-patterns, and architectural decisions. Produce a
+        pull request that updates `docs/anti-patterns/` and/or `docs/adr/` to
+        capture these learnings before they are lost.
+
+        ## Instructions
+
+        1. Check for an existing open PR with branch name matching
+           `nightshift/pr-feedback-loop-*`. If one is open, stop and report.
+
+        2. Gather context:
+           - Run `git log --oneline --since="14 days ago" --merges origin/master`
+             to list merged PRs from the last 14 days.
+           - For each merge commit, read the diff with
+             `git show --stat <sha>` to understand what changed.
+           - Run `gh pr list --state merged --limit 30 --json number,title,body,reviews`
+             to get PR metadata including titles, descriptions, and review comments.
+           - Run `gh pr view <number> --comments` for the top 10 PRs by change
+             volume to gather reviewer feedback and discussion context.
+
+        3. Identify learnings. Look for:
+           - Code patterns reviewers asked to change (>1 PR): candidate
+             anti-patterns.
+           - Architectural choices made consistently across PRs: candidate ADR.
+           - Patterns in CLAUDE.md instructions that were violated and caught
+             in review: reinforcement of existing rules.
+           - New patterns introduced that should be documented for agents and
+             developers.
+
+        4. Cross-reference existing docs:
+           - Read all files in `docs/anti-patterns/` (if the directory exists).
+           - Read all files in `docs/adr/` (if the directory exists).
+           - Read `CLAUDE.md` at the repo root.
+           - Skip learnings that are already documented.
+
+        5. Create a branch named `nightshift/pr-feedback-loop-YYYY-MM-DD`.
+
+        6. For each new anti-pattern identified (minimum 2 PRs showing the
+           pattern):
+           - Create or update a file in `docs/anti-patterns/` using the
+             filename format `AP-NNN-short-name.md` (increment from existing).
+           - Use this structure:
+             ```markdown
+             # AP-NNN: <Title>
+
+             **Status:** Draft — pending expert review
+             **Detected:** YYYY-MM-DD
+             **Source PRs:** #<n>, #<n>
+
+             ## Description
+
+             <What the anti-pattern is and why it is harmful.>
+
+             ## Example
+
+             ```<language>
+             // Bad
+             <bad code example from the PRs if available>
+
+             // Good
+             <preferred alternative>
+             ```
+
+             ## Detection
+
+             <How to spot this in code review or static analysis.>
+             ```
+
+        7. For each new architectural decision identified (clear, non-trivial,
+           affects the whole codebase):
+           - Create a file in `docs/adr/` using filename format
+             `ADR-NNN-short-name.md`.
+           - Use MADR template: Title, Status (Proposed), Context, Decision,
+             Consequences.
+
+        8. If CLAUDE.md should be updated to mention a new pattern or constraint
+           learned from PRs, add a minimal note under a `## Patterns` section.
+           Only add, never remove.
+
+        9. Commit changes using conventional commit format:
+           `docs(anti-patterns): add AP-NNN detected from recent PRs`
+
+        10. Open a draft pull request. Apply labels `nightshift` and
+            `feedback-loop`. Request review from `CODEOWNERS` if the file
+            exists.
+
+        ## Pull Request Format
+
+        Title: `nightshift: PR feedback loop YYYY-MM-DD`
+
+        Body:
+        - Summary of PRs analyzed (count and date range)
+        - Anti-patterns added or updated (list with source PR numbers)
+        - ADRs added (list)
+        - CLAUDE.md changes (if any)
+        - Note: "All changes are drafts — expert review required before merge"
+
+        ## Rules
+
+        - NEVER auto-merge. All output requires human expert review.
+        - Only create anti-pattern docs for patterns seen in 2+ PRs.
+        - Only create ADR docs for decisions that are non-trivial and
+          not already captured.
+        - Do not modify code, only documentation.
+        - Do not delete or overwrite existing ADRs or anti-patterns;
+          only add or append.
+        - Mark all new documents with `Status: Draft — pending expert review`.
+        - Use conventional commit format for all commits.
+
+labels:
+  - nightshift
+  - automated
+
+pull_requests:
+  draft: true
+  branch_prefix: "nightshift/"
+  labels:
+    - nightshift
+    - automated

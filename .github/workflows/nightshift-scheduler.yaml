@@ -1,0 +1,11 @@
+name: nightshift-scheduler
+run-name: "nightshift scheduler"
+
+on:
+  schedule:
+    - cron: "0 6 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  schedule:
+    uses: BitGo/nightshift-actions/.github/workflows/nightshift-scheduler.yaml@v1
