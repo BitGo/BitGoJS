@@ -15,7 +15,7 @@ import {
  * Request parameters for signing a transaction (external signer mode)
  */
 export const CoinSignParams = {
-  /** The coin type */
+  /** A cryptocurrency or token ticker symbol */
   coin: t.string,
 } as const;
 
@@ -164,8 +164,8 @@ export const CoinSignResponse = {
  * - Half-signed transaction (if more signatures needed)
  * - Transaction request ID (for TSS wallets)
  *
- * @tag express
  * @operationId express.v2.coin.sign
+ * @tag Express
  */
 export const PostCoinSign = httpRoute({
   path: '/api/v2/{coin}/sign',
