@@ -7439,4 +7439,168 @@ export const allCoinsAndTokens = [
     2,
     UnderlyingAsset.SGD
   ),
+  fiat(
+    '41c0f86b-f4ea-4061-895f-feb1bfc93f3c',
+    'fiatcad',
+    'Canadian Dollar',
+    Networks.main.fiat,
+    2,
+    UnderlyingAsset.CAD
+  ),
+  fiat(
+    '5cfd5822-10a5-4bb2-9956-358312bc9331',
+    'tfiatcad',
+    'Testnet Canadian Dollar',
+    Networks.test.fiat,
+    2,
+    UnderlyingAsset.CAD
+  ),
+  fiat(
+    'f8b6cd66-0712-4eb2-aa51-7d5bdd1d580b',
+    'fiataud',
+    'Australian Dollar',
+    Networks.main.fiat,
+    2,
+    UnderlyingAsset.AUD
+  ),
+  fiat(
+    '950d1c1b-867c-4e2a-84ad-18c6f16ec7b9',
+    'tfiataud',
+    'Testnet Australian Dollar',
+    Networks.test.fiat,
+    2,
+    UnderlyingAsset.AUD
+  ),
+  fiat(
+    '2b1be174-96a6-4b28-b575-83c5c1b8adb6',
+    'fiathkd',
+    'Hong Kong Dollar',
+    Networks.main.fiat,
+    2,
+    UnderlyingAsset.HKD
+  ),
+  fiat(
+    'e25c3d93-9ba4-451e-99f2-fc4d1a33b41d',
+    'tfiathkd',
+    'Testnet Hong Kong Dollar',
+    Networks.test.fiat,
+    2,
+    UnderlyingAsset.HKD
+  ),
+  fiat('772d6bed-3387-4c12-9d91-6df48c3bcdca', 'fiatchf', 'Swiss Franc', Networks.main.fiat, 2, UnderlyingAsset.CHF),
+  fiat(
+    '49c021e5-02bf-4055-a927-a36f215c4d7d',
+    'tfiatchf',
+    'Testnet Swiss Franc',
+    Networks.test.fiat,
+    2,
+    UnderlyingAsset.CHF
+  ),
+  fiat('593225d6-5451-493d-95ac-86aca26e219b', 'fiatsek', 'Swedish Krona', Networks.main.fiat, 2, UnderlyingAsset.SEK),
+  fiat(
+    '57152223-6f41-458f-857d-0550f93ecfea',
+    'tfiatsek',
+    'Testnet Swedish Krona',
+    Networks.test.fiat,
+    2,
+    UnderlyingAsset.SEK
+  ),
+  fiat(
+    'e6f0b44c-ae01-4fd5-bd0b-2533d0567515',
+    'fiatnok',
+    'Norwegian Krone',
+    Networks.main.fiat,
+    2,
+    UnderlyingAsset.NOK
+  ),
+  fiat(
+    '94313f1c-aa50-48de-a837-33489f57cfbe',
+    'tfiatnok',
+    'Testnet Norwegian Krone',
+    Networks.test.fiat,
+    2,
+    UnderlyingAsset.NOK
+  ),
+  fiat('475f2d64-ed05-46ac-a4b2-0864868cc94a', 'fiatjpy', 'Japanese Yen', Networks.main.fiat, 0, UnderlyingAsset.JPY),
+  fiat(
+    '323662dd-3e78-4c95-8df1-f65a822cedc0',
+    'tfiatjpy',
+    'Testnet Japanese Yen',
+    Networks.test.fiat,
+    0,
+    UnderlyingAsset.JPY
+  ),
+  fiat('fd1f1f35-476d-4545-bbb5-e9284bb5081f', 'fiatcny', 'Chinese Yuan', Networks.main.fiat, 2, UnderlyingAsset.CNY),
+  fiat(
+    '594749b7-753a-4c02-a61c-c8af8b85cd90',
+    'tfiatcny',
+    'Testnet Chinese Yuan',
+    Networks.test.fiat,
+    2,
+    UnderlyingAsset.CNY
+  ),
+  fiat(
+    '5fd4db7f-76b4-4132-a487-f3754a24cc2d',
+    'fiatnzd',
+    'New Zealand Dollar',
+    Networks.main.fiat,
+    2,
+    UnderlyingAsset.NZD
+  ),
+  fiat(
+    '14260efb-d3a9-4f99-969a-132bcedd57ee',
+    'tfiatnzd',
+    'Testnet New Zealand Dollar',
+    Networks.test.fiat,
+    2,
+    UnderlyingAsset.NZD
+  ),
+  fiat(
+    '37a0d713-3b34-431e-9828-bb52e9080cca',
+    'fiatidr',
+    'Indonesian Rupiah',
+    Networks.main.fiat,
+    2,
+    UnderlyingAsset.IDR
+  ),
+  fiat(
+    '88476628-3ca3-4272-9f58-f212379de00d',
+    'tfiatidr',
+    'Testnet Indonesian Rupiah',
+    Networks.test.fiat,
+    2,
+    UnderlyingAsset.IDR
+  ),
+  fiat(
+    '0ca680e0-0a70-4da0-92f4-fab61630b646',
+    'fiatkrw',
+    'South Korean Won',
+    Networks.main.fiat,
+    0,
+    UnderlyingAsset.KRW
+  ),
+  fiat(
+    '41d3b521-59f6-4124-a5d9-959a568eb7f3',
+    'tfiatkrw',
+    'Testnet South Korean Won',
+    Networks.test.fiat,
+    0,
+    UnderlyingAsset.KRW
+  ),
+  fiat(
+    'fc46fdc3-7783-4ebc-a28e-284731972d87',
+    'fiatzar',
+    'South African Rand',
+    Networks.main.fiat,
+    2,
+    UnderlyingAsset.ZAR
+  ),
+  fiat(
+    'ce11127c-e698-41de-b66a-9639fb015f0c',
+    'tfiatzar',
+    'Testnet South African Rand',
+    Networks.test.fiat,
+    2,
+    UnderlyingAsset.ZAR
+  ),
 ];
