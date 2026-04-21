@@ -26,7 +26,7 @@ export const EncryptRequestBody = {
  * @public
  */
 export const PostEncrypt = httpRoute({
-  path: '/api/v[12]/encrypt',
+  path: '/api/v2/encrypt',
   method: 'POST',
   request: httpRequest({
     body: EncryptRequestBody,

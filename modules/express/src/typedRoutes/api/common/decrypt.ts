@@ -24,7 +24,7 @@ export const DecryptRequestBody = {
  * @public
  */
 export const PostDecrypt = httpRoute({
-  path: '/api/v[12]/decrypt',
+  path: '/api/v2/decrypt',
   method: 'POST',
   request: httpRequest({
     body: DecryptRequestBody,
