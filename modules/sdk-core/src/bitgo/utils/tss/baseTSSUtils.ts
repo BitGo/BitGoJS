@@ -53,6 +53,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   private _wallet?: IWallet;
   protected bitgoPublicGpgKey: openpgp.Key;
   protected bitgoMPCv2PublicGpgKey: openpgp.Key | undefined;
+  protected bitgoEddsaMpcv2PublicGpgKey: openpgp.Key | undefined;
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, wallet?: IWallet) {
     super(bitgo, baseCoin);
@@ -67,7 +68,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   }
 
   protected async setBitgoGpgPubKey(bitgo) {
-    const { mpcV1, mpcV2 } = await getBitgoGpgPubKey(bitgo);
+    const { mpcV1, mpcV2, eddsaMpcV2 } = await getBitgoGpgPubKey(bitgo);
     // Do not unset the MPCv1 key if it is already set. This is to avoid unsetting if extra constants api calls fail.
     if (mpcV1 !== undefined) {
       this.bitgoPublicGpgKey = mpcV1;
@@ -75,6 +76,10 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     // Do not unset the MPCv2 key if it is already set
     if (mpcV2 !== undefined) {
       this.bitgoMPCv2PublicGpgKey = mpcV2;
+    }
+    // Do not unset the EdDSA MPCv2 key if it is already set
+    if (eddsaMpcV2 !== undefined) {
+      this.bitgoEddsaMpcv2PublicGpgKey = eddsaMpcV2;
     }
   }
 
@@ -104,8 +109,8 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
         // First try to get the key based on feature flags, if that fails, fallback to the default key from constants api.
         bitgoGpgPubKey = await this.getBitgoGpgPubkeyBasedOnFeatureFlags(enterpriseId, isMpcv2, reqId)
           .then(
-            async (pubKey) =>
-              pubKey ?? (isMpcv2 ? await this.getBitgoMpcv2PublicGpgKey() : await this.getBitgoPublicGpgKey())
+            async ({ mpcv2PublicKey }) =>
+              mpcv2PublicKey ?? (isMpcv2 ? await this.getBitgoMpcv2PublicGpgKey() : await this.getBitgoPublicGpgKey())
           )
           .catch(async (e) => (isMpcv2 ? await this.getBitgoMpcv2PublicGpgKey() : await this.getBitgoPublicGpgKey()));
       } else {
@@ -139,6 +144,17 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     }
 
     return this.bitgoMPCv2PublicGpgKey;
+  }
+
+  async getBitgoEddsaMpcv2PublicGpgKey(): Promise<openpgp.Key> {
+    if (!this.bitgoEddsaMpcv2PublicGpgKey) {
+      // retry getting bitgo's EdDSA MPCv2 gpg key
+      await this.setBitgoGpgPubKey(this.bitgo);
+      if (!this.bitgoEddsaMpcv2PublicGpgKey) {
+        throw new Error("Failed to get Bitgo's EdDSA MPCv2 gpg key");
+      }
+    }
+    return this.bitgoEddsaMpcv2PublicGpgKey;
   }
 
   async createBitgoHeldBackupKeyShare(
@@ -552,8 +568,9 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   }
 
   /**
-   * It gets the appropriate BitGo GPG public key for key creation based on a
+   * It gets the appropriate BitGo GPG public keys for key creation based on a
    * combination of coin and the feature flags on the user and their enterprise if set.
+   * Returns both the default MPCv2 key and the EdDSA-specific MPCv2 key (if present).
    * @param enterpriseId - enterprise under which user wants to create the wallet
    * @param isMPCv2 - true to get the MPCv2 GPG public key, defaults to false
    * @param reqId - request tracer request id
@@ -562,7 +579,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     enterpriseId: string | undefined,
     isMPCv2 = false,
     reqId?: IRequestTracer
-  ): Promise<Key> {
+  ): Promise<{ mpcv2PublicKey: Key; eddsaMpcv2PublicKey: Key }> {
     const reqTracer = reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqTracer);
     const response: BitgoGPGPublicKey = await this.bitgo
@@ -570,8 +587,11 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       .query({ enterpriseId })
       .retry(3)
       .result();
-    const bitgoPublicKeyStr = isMPCv2 ? response.mpcv2PublicKey : response.publicKey;
-    return readKey({ armoredKey: bitgoPublicKeyStr as string });
+    const mpcv2PublicKey = await readKey({
+      armoredKey: (isMPCv2 ? response.mpcv2PublicKey : response.publicKey) as string,
+    });
+    const eddsaMpcv2PublicKey = await readKey({ armoredKey: response.eddsaMpcv2PublicKey as string });
+    return { mpcv2PublicKey, eddsaMpcv2PublicKey };
   }
 
   /**

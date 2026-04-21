@@ -64,9 +64,10 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
 
     // Get the BitGo public key based on user/enterprise feature flags
     // If it doesn't work, use the default public key from the constants
-    const bitgoPublicGpgKey = (
-      (await this.getBitgoGpgPubkeyBasedOnFeatureFlags(params.enterprise, true)) ?? this.bitgoMPCv2PublicGpgKey
-    ).armor();
+    const { mpcv2PublicKey } = await this.getBitgoGpgPubkeyBasedOnFeatureFlags(params.enterprise, true);
+    const mpcv2Key = mpcv2PublicKey ?? this.bitgoMPCv2PublicGpgKey;
+    assert(mpcv2Key, 'Failed to get BitGo MPCv2 GPG public key');
+    const bitgoPublicGpgKey = mpcv2Key.armor();
 
     if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
       // Ensure the public key is one of the expected BitGo public keys when in test or prod.

@@ -572,6 +572,7 @@ export interface BitgoGPGPublicKey {
   name: string;
   publicKey: string;
   mpcv2PublicKey?: string;
+  eddsaMpcv2PublicKey?: string;
   enterpriseId: string;
 }
 

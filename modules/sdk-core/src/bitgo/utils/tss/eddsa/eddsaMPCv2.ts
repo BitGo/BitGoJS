@@ -12,7 +12,7 @@ import {
 import { EddsaMPSDkg, MPSComms, MPSTypes } from '@bitgo/sdk-lib-mpc';
 import { KeychainsTriplet } from '../../../baseCoin';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
-import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
+import { envRequiresBitgoPubGpgKeyConfig, isBitgoEddsaMpcv2PubKey } from '../../../tss/bitgoPubKeys';
 import { generateGPGKeyPair } from '../../opengpgUtils';
 import { MPCv2PartiesEnum } from '../ecdsa/typesMPCv2';
 import { BaseEddsaUtils } from './base';
@@ -35,14 +35,15 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     const backupGpgPublicKey = backupKeyPair.publicKey;
     const [backupPk, backupSk] = await MPSComms.extractEd25519KeyPair(backupGpgKey);
 
-    // Get the BitGo public key based on user/enterprise feature flags;
-    // fall back to the hardcoded MPCv2 public key from constants.
-    const bitgoPublicGpgKey =
-      (await this.getBitgoGpgPubkeyBasedOnFeatureFlags(params.enterprise, true)) ?? this.bitgoMPCv2PublicGpgKey;
+    // Get the BitGo EdDSA MPCv2 public key (ed25519). Using the default mpcv2PublicKey (secp256k1)
+    // here would cause a WASM "Invalid Input" error, so we require the dedicated eddsaMpcv2PublicKey.
+    const { eddsaMpcv2PublicKey } = await this.getBitgoGpgPubkeyBasedOnFeatureFlags(params.enterprise, true);
+    const bitgoPublicGpgKey = eddsaMpcv2PublicKey ?? this.bitgoEddsaMpcv2PublicGpgKey;
+    assert(bitgoPublicGpgKey, 'Failed to get BitGo EdDSA MPCv2 GPG public key');
     const bitgoPublicGpgKeyArmored = bitgoPublicGpgKey.armor();
 
     if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
-      assert(isBitgoMpcPubKey(bitgoPublicGpgKeyArmored, 'mpcv2'), 'Invalid BitGo GPG public key');
+      assert(isBitgoEddsaMpcv2PubKey(bitgoPublicGpgKeyArmored), 'Invalid BitGo GPG public key');
     }
 
     const bitgoKeyObj = await pgp.readKey({ armoredKey: bitgoPublicGpgKeyArmored });
