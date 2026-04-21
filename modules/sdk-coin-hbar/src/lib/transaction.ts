@@ -76,6 +76,9 @@ export class Transaction extends BaseTransaction {
       case HederaTransactionTypes.TokenAssociateToAccount:
         this.setTransactionType(TransactionType.AssociatedTokenAccountInitialization);
         break;
+      case HederaTransactionTypes.AccountUpdate:
+        this.setTransactionType(TransactionType.AccountUpdate);
+        break;
     }
   }
 
@@ -107,6 +110,12 @@ export class Transaction extends BaseTransaction {
         result.instructionsData = {
           type: HederaTransactionTypes.TokenAssociateToAccount,
           params: this.getAccountAssociateData(),
+        };
+        break;
+      case HederaTransactionTypes.AccountUpdate:
+        result.instructionsData = {
+          type: HederaTransactionTypes.AccountUpdate,
+          params: this.getAccountUpdateData(),
         };
         break;
     }
@@ -149,6 +158,27 @@ export class Transaction extends BaseTransaction {
         tokenName: tokenName,
       }),
       recipients: transferData,
+    };
+  }
+
+  /**
+   * Get the account update staking data from this transaction
+   *
+   * @returns {object} The account update parameters including stakedNodeId and declineReward
+   */
+  private getAccountUpdateData(): { accountId: string; stakedNodeId?: string; declineReward?: boolean } {
+    const updateBody = this._txBody.cryptoUpdateAccount!;
+    return {
+      accountId: stringifyAccountId(updateBody.accountIDToUpdate!),
+      ...(updateBody.stakedNodeId != null && {
+        stakedNodeId: Long.fromValue(updateBody.stakedNodeId).toString(),
+      }),
+      ...(updateBody.declineReward != null && {
+        declineReward:
+          typeof updateBody.declineReward === 'boolean'
+            ? updateBody.declineReward
+            : (updateBody.declineReward as { value: boolean }).value,
+      }),
     };
   }
 
@@ -250,6 +280,19 @@ export class Transaction extends BaseTransaction {
           };
           inputs.push(tokenEntry);
           outputs.push(tokenEntry);
+        });
+        break;
+
+      case HederaTransactionTypes.AccountUpdate:
+        inputs.push({
+          address: txJson.from,
+          value: '0',
+          coin: this._coinConfig.name,
+        });
+        outputs.push({
+          address: instruction.params.accountId,
+          value: '0',
+          coin: this._coinConfig.name,
         });
         break;
     }
