@@ -119,6 +119,7 @@ export const GenerateWalletV2Query = {
  *
  * @operationId express.wallet.generate
  * @tag Express
+ * @public
  */
 export const PostGenerateWallet = httpRoute({
   path: '/api/v2/{coin}/wallet/generate',
