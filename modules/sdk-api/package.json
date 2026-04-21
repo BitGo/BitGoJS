@@ -42,6 +42,7 @@
   "dependencies": {
     "@bitgo/argon2": "^1.1.0",
     "@bitgo/sdk-core": "^36.41.0",
+    "@bitgo/statics": "^58.36.0",
     "@bitgo/sdk-hmac": "^1.9.0",
     "@bitgo/sjcl": "^1.1.0",
     "@bitgo/unspents": "^0.51.3",

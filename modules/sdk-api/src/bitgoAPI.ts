@@ -22,6 +22,7 @@ import {
   makeRandomKey,
   sanitizeLegacyPath,
 } from '@bitgo/sdk-core';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import * as sdkHmac from '@bitgo/sdk-hmac';
 import { DefaultHmacAuthStrategy, type IHmacAuthStrategy } from '@bitgo/sdk-hmac';
 import * as utxolib from '@bitgo/utxo-lib';
@@ -1580,6 +1581,10 @@ export class BitGoAPI implements BitGoBase {
    */
   public register(name: string, coin: CoinConstructor): void {
     GlobalCoinFactory.register(name, coin);
+  }
+
+  public registerWithBaseCoin(coin: CoinConstructor, baseCoin: Readonly<StaticsBaseCoin>): void {
+    GlobalCoinFactory.registerToken(baseCoin, coin);
   }
 
   /**
