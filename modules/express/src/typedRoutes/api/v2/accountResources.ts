@@ -82,7 +82,7 @@ export const AccountResourcesResponse = {
  * for token transfers.
  *
  * @operationId express.v2.wallet.getaccountresources
- * @tag express
+ * @tag Express
  */
 export const GetAccountResources = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/getaccountresources',
