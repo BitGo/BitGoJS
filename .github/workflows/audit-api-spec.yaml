@@ -165,6 +165,11 @@ jobs:
         with:
           name: openapi-head.yaml
 
+      - name: Download merge base API spec artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: openapi-merge-base.yaml
+
       - name: Download and install vacuum v0.18.1
         run: |
           curl -L \
@@ -173,34 +178,129 @@ jobs:
             --show-error \
             --fail \
             https://github.com/daveshanley/vacuum/releases/download/v0.18.1/vacuum_0.18.1_linux_x86_64.tar.gz
+          echo '5948e477541f83f32c418fa90d079a4b80b80d8a362ae7c98b7bcaadcbaf3d03  vacuum.tar.gz' | sha256sum -c
           tar -xzf vacuum.tar.gz
           chmod u+x vacuum
           sudo mv vacuum /usr/local/bin/
           vacuum version
 
-      - name: Audit head API spec with Vacuum
+      - name: Generate vacuum report for head spec
         run: |
           vacuum report \
             --no-style \
             --stdout \
             --ruleset modules/express/ruleset.yaml \
-            openapi-head.yaml > vacuum-report.json
+            openapi-head.yaml > vacuum-report-head.json
+          jq '[(.resultSet.results // []) | .[] | {message, path: (.path | join(".")), ruleId}] | sort_by(.path)' \
+            vacuum-report-head.json > vacuum-results-head.json
 
-          jq '.resultSet.results // []' vacuum-report.json > vacuum-results.json
+      - name: Generate vacuum report for merge base spec
+        run: |
+          vacuum report \
+            --no-style \
+            --stdout \
+            --ruleset modules/express/ruleset.yaml \
+            openapi-merge-base.yaml > vacuum-report-merge-base.json
+          jq '[(.resultSet.results // []) | .[] | {message, path: (.path | join(".")), ruleId}] | sort_by(.path)' \
+            vacuum-report-merge-base.json > vacuum-results-merge-base.json
 
-          ERROR_COUNT=$(jq '[.[] | select(.ruleSeverity == "error")] | length' vacuum-results.json)
-          WARNING_COUNT=$(jq '[.[] | select(.ruleSeverity == "warn")] | length' vacuum-results.json)
+      - name: Fail on new vacuum errors introduced by this PR
+        run: |
+          jq --slurp '.[0] - .[1]' vacuum-results-head.json vacuum-results-merge-base.json \
+            > vacuum-new-errors.json
 
-          echo "Found $ERROR_COUNT error(s) and $WARNING_COUNT warning(s)"
+          NEW_ERROR_COUNT=$(jq 'length' vacuum-new-errors.json)
+          echo "Found $NEW_ERROR_COUNT new error(s) introduced by this PR"
 
-          if [ "$ERROR_COUNT" -gt 0 ]; then
-            echo "API specification audit failed with $ERROR_COUNT error(s)"
+          if [ "$NEW_ERROR_COUNT" -gt 0 ]; then
+            echo "API specification audit failed — new vacuum error(s) introduced:"
             echo ""
-            echo "Errors:"
-            jq -r '.[] | select(.ruleSeverity == "error") | "  - [\(.ruleId)] \(.message) at \(.path)"' vacuum-results.json
+            jq -r '.[] | "  - [\(.ruleId)] \(.message) at \(.path)"' vacuum-new-errors.json
             exit 1
           else
-            echo "API specification audit passed!"
+            echo "API specification audit passed — no new vacuum errors introduced!"
+          fi
+
+  audit-spec-quality:
+    name: Audit OAS spec quality
+    runs-on: ubuntu-latest
+    needs: [check-specs-identical]
+    if: needs.check-specs-identical.outputs.specs-identical != 'true'
+    steps:
+      - name: Download head API spec artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: openapi-head.yaml
+
+      - name: Download merge base API spec artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: openapi-merge-base.yaml
+
+      - name: Generate GitHub App Token
+        id: generate-github-app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ env.STATIC_ANALYSIS_BOT_APP_ID }}
+          private-key: ${{ secrets.STATIC_ANALYSIS_BOT_PRIVATE_KEY }}
+          owner: bitgo
+          repositories: |
+            static-analysis
+
+      - name: Install BitGo/static-analysis/static-analysis@v1
+        uses: BitGo/install-github-release-binary@v2
+        with:
+          targets: BitGo/static-analysis/static-analysis@v1
+          token: ${{ steps.generate-github-app-token.outputs.token }}
+
+      - name: Generate OAS quality report for merge base spec
+        run: |
+          cat <<'EOF' > .static-analysis.yaml
+          ---
+          api_version: static-analysis.bitgo/v1alpha1
+
+          rules:
+            - path: rules/openapi/openapi-spec-quality
+              severity: notice
+              options:
+                handwritten_spec_path: ./openapi-merge-base.yaml
+          EOF
+          static-analysis || true
+          mv static-analysis-results.sarif oas-quality-old.sarif
+
+      - name: Generate OAS quality report for head spec
+        run: |
+          cat <<'EOF' > .static-analysis.yaml
+          ---
+          api_version: static-analysis.bitgo/v1alpha1
+
+          rules:
+            - path: rules/openapi/openapi-spec-quality
+              severity: notice
+              options:
+                handwritten_spec_path: ./openapi-head.yaml
+          EOF
+          static-analysis || true
+          mv static-analysis-results.sarif oas-quality-new.sarif
+
+      - name: Fail on new OAS quality issues introduced by this PR
+        run: |
+          OLD_RESULTS=$(jq '[.runs[].results[] | {ruleId, message: .message.text, location: (.locations[0].physicalLocation.region // {})}]' oas-quality-old.sarif 2>/dev/null || echo '[]')
+          NEW_RESULTS=$(jq '[.runs[].results[] | {ruleId, message: .message.text, location: (.locations[0].physicalLocation.region // {})}]' oas-quality-new.sarif 2>/dev/null || echo '[]')
+
+          NEW_ISSUES=$(jq --argjson old "$OLD_RESULTS" --argjson new "$NEW_RESULTS" \
+            -n '$new - $old')
+
+          ISSUE_COUNT=$(echo "$NEW_ISSUES" | jq 'length')
+          echo "Found $ISSUE_COUNT new OAS quality issue(s) introduced by this PR"
+
+          if [ "$ISSUE_COUNT" -gt 0 ]; then
+            echo ""
+            echo "New OAS quality issues:"
+            echo "$NEW_ISSUES" | jq -r '.[] | "  - [\(.ruleId)] \(.message)"'
+            exit 1
+          else
+            echo "OAS quality check passed — no new issues introduced!"
           fi
 
   check-breaking-changes:
@@ -285,6 +385,7 @@ jobs:
         generate-merge-base-api-spec,
         check-specs-identical,
         generate-vacuum-reports,
+        audit-spec-quality,
         check-breaking-changes,
         manual-linter-override,
       ]
@@ -316,6 +417,17 @@ jobs:
             echo "⏭️  generate-vacuum-reports: skipped (specs are identical)"
           elif [ "$GENERATE_VACUUM_REPORTS_RESULT" != "success" ]; then
             echo "❌ generate-vacuum-reports: ${{ needs.generate-vacuum-reports.result }}"
+            exit 1
+          fi
+      - name: Check audit-spec-quality
+        env:
+          AUDIT_SPEC_QUALITY_RESULT: ${{ needs.audit-spec-quality.result }}
+          SPECS_IDENTICAL: ${{ needs.check-specs-identical.outputs.specs-identical }}
+        run: |
+          if [ "$AUDIT_SPEC_QUALITY_RESULT" = "skipped" ] && [ "$SPECS_IDENTICAL" = "true" ]; then
+            echo "⏭️  audit-spec-quality: skipped (specs are identical)"
+          elif [ "$AUDIT_SPEC_QUALITY_RESULT" != "success" ]; then
+            echo "❌ audit-spec-quality: ${{ needs.audit-spec-quality.result }}"
             exit 1
           fi
       - name: Check check-breaking-changes
