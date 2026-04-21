@@ -280,6 +280,204 @@ describe('SOL:', function () {
       validTransaction.should.equal(true);
     });
 
+    it('should verify bulk close-ATA tx when txParams.recipients is present (outputs not populated)', async function () {
+      const accountKeys = new KeyPair(resources.authAccount).getKeys();
+      const nonceAccountKeys = new KeyPair(resources.nonceAccount).getKeys();
+      const account2Keys = new KeyPair(resources.authAccount2).getKeys();
+      const ataAddress1 = nonceAccountKeys.pub;
+      const ataAddress2 = account2Keys.pub;
+
+      const txBuilder = factory.getCloseAtaInitializationBuilder();
+      txBuilder.nonce(blockHash);
+      txBuilder.sender(accountKeys.pub);
+      txBuilder.addCloseAtaInstruction(ataAddress1, accountKeys.pub, accountKeys.pub);
+      txBuilder.addCloseAtaInstruction(ataAddress2, accountKeys.pub, accountKeys.pub);
+      const built = await txBuilder.build();
+      const txPrebuild = {
+        txBase64: built.toBroadcastFormat(),
+        txInfo: {
+          feePayer: accountKeys.pub,
+          nonce: blockHash,
+        },
+        coin: 'tsol',
+      };
+
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams: {
+          recipients: [
+            { address: ataAddress1, amount: '0' },
+            { address: ataAddress2, amount: '0' },
+          ],
+        },
+        txPrebuild,
+        wallet: walletObj,
+      } as any);
+      validTransaction.should.equal(true);
+    });
+
+    it('should fail verify bulk close-ATA when txParams.recipients do not match close instructions', async function () {
+      const accountKeys = new KeyPair(resources.authAccount).getKeys();
+      const nonceAccountKeys = new KeyPair(resources.nonceAccount).getKeys();
+      const account2Keys = new KeyPair(resources.authAccount2).getKeys();
+      const wrongAta = new KeyPair(resources.stakeAccount).getKeys().pub;
+      const ataAddress1 = nonceAccountKeys.pub;
+      const ataAddress2 = account2Keys.pub;
+
+      const txBuilder = factory.getCloseAtaInitializationBuilder();
+      txBuilder.nonce(blockHash);
+      txBuilder.sender(accountKeys.pub);
+      txBuilder.addCloseAtaInstruction(ataAddress1, accountKeys.pub, accountKeys.pub);
+      txBuilder.addCloseAtaInstruction(ataAddress2, accountKeys.pub, accountKeys.pub);
+      const built = await txBuilder.build();
+      const txPrebuild = {
+        txBase64: built.toBroadcastFormat(),
+        txInfo: {
+          feePayer: accountKeys.pub,
+          nonce: blockHash,
+        },
+        coin: 'tsol',
+      };
+
+      await basecoin
+        .verifyTransaction({
+          txParams: {
+            recipients: [
+              { address: ataAddress1, amount: '0' },
+              { address: wrongAta, amount: '0' },
+            ],
+          },
+          txPrebuild,
+          wallet: walletObj,
+        } as any)
+        .should.rejectedWith(
+          'Close ATA txParams.recipients addresses must match the ATA account addresses in the transaction instructions'
+        );
+    });
+
+    it('should fail verify bulk close-ATA when a recipient amount is non-zero', async function () {
+      const accountKeys = new KeyPair(resources.authAccount).getKeys();
+      const nonceAccountKeys = new KeyPair(resources.nonceAccount).getKeys();
+      const account2Keys = new KeyPair(resources.authAccount2).getKeys();
+      const ataAddress1 = nonceAccountKeys.pub;
+      const ataAddress2 = account2Keys.pub;
+
+      const txBuilder = factory.getCloseAtaInitializationBuilder();
+      txBuilder.nonce(blockHash);
+      txBuilder.sender(accountKeys.pub);
+      txBuilder.addCloseAtaInstruction(ataAddress1, accountKeys.pub, accountKeys.pub);
+      txBuilder.addCloseAtaInstruction(ataAddress2, accountKeys.pub, accountKeys.pub);
+      const built = await txBuilder.build();
+      const txPrebuild = {
+        txBase64: built.toBroadcastFormat(),
+        txInfo: {
+          feePayer: accountKeys.pub,
+          nonce: blockHash,
+        },
+        coin: 'tsol',
+      };
+
+      await basecoin
+        .verifyTransaction({
+          txParams: {
+            recipients: [
+              { address: ataAddress1, amount: '1' },
+              { address: ataAddress2, amount: '0' },
+            ],
+          },
+          txPrebuild,
+          wallet: walletObj,
+        } as any)
+        .should.rejectedWith('Close ATA recipients must have zero amount');
+    });
+
+    it('should verify recover-nested tx when walletAddress matches root', async function () {
+      const accountKeys = new KeyPair(resources.authAccount).getKeys();
+      const nonceAccountKeys = new KeyPair(resources.nonceAccount).getKeys();
+      const account2Keys = new KeyPair(resources.authAccount2).getKeys();
+      const mint = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+
+      const txBuilder = factory.getRecoverNestedAtaBuilder();
+      txBuilder.nonce(blockHash);
+      txBuilder.sender(accountKeys.pub);
+      txBuilder.feePayer(accountKeys.pub);
+      txBuilder.associatedTokenAccountRent('2039280');
+      txBuilder.nestedAccountAddress(nonceAccountKeys.pub);
+      txBuilder.nestedMintAddress(mint);
+      txBuilder.destinationAccountAddress(account2Keys.pub);
+      txBuilder.ownerAccountAddress(account2Keys.pub);
+      txBuilder.ownerMintAddress(mint);
+      txBuilder.walletAddress(accountKeys.pub);
+
+      const built = await txBuilder.build();
+      const txPrebuild = {
+        txBase64: built.toBroadcastFormat(),
+        txInfo: {
+          feePayer: accountKeys.pub,
+          nonce: blockHash,
+        },
+        coin: 'tsol',
+      };
+
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams: {},
+        txPrebuild,
+        wallet: walletObj,
+      } as any);
+      validTransaction.should.equal(true);
+    });
+
+    it('should fail verify recover-nested tx when wallet root does not match instruction walletAddress', async function () {
+      const accountKeys = new KeyPair(resources.authAccount).getKeys();
+      const nonceAccountKeys = new KeyPair(resources.nonceAccount).getKeys();
+      const account2Keys = new KeyPair(resources.authAccount2).getKeys();
+      const mint = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+
+      const txBuilder = factory.getRecoverNestedAtaBuilder();
+      txBuilder.nonce(blockHash);
+      txBuilder.sender(accountKeys.pub);
+      txBuilder.feePayer(accountKeys.pub);
+      txBuilder.associatedTokenAccountRent('2039280');
+      txBuilder.nestedAccountAddress(nonceAccountKeys.pub);
+      txBuilder.nestedMintAddress(mint);
+      txBuilder.destinationAccountAddress(account2Keys.pub);
+      txBuilder.ownerAccountAddress(account2Keys.pub);
+      txBuilder.ownerMintAddress(mint);
+      txBuilder.walletAddress(accountKeys.pub);
+
+      const built = await txBuilder.build();
+      const txPrebuild = {
+        txBase64: built.toBroadcastFormat(),
+        txInfo: {
+          feePayer: accountKeys.pub,
+          nonce: blockHash,
+        },
+        coin: 'tsol',
+      };
+
+      const walletDataWrongRoot = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tsol',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: stakeAccount.pub,
+        },
+        multisigType: 'tss',
+      };
+      const wrongRootWallet = new Wallet(bitgo, basecoin, walletDataWrongRoot);
+
+      await basecoin
+        .verifyTransaction({
+          txParams: {},
+          txPrebuild,
+          wallet: wrongRootWallet,
+        } as any)
+        .should.rejectedWith(/Recover nested wallet address must be wallet root address/);
+    });
+
     it('should fail verify transactions when have different memo', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
