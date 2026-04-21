@@ -310,6 +310,7 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
       name: 'irrelevant',
       publicKey: bitgoKeyPair.publicKey,
       mpcv2PublicKey: bitgoKeyPair.publicKey,
+      eddsaMpcv2PublicKey: bitgoKeyPair.publicKey,
       enterpriseId: enterprise,
     };
     nock(bgUrl).get(`/api/v2/${coin}/tss/pubkey`).query({ enterpriseId: enterprise }).reply(200, response);

@@ -224,4 +224,20 @@ describe('TSS MPC Pick BitGo GPG Pub Key Utils:', function () {
     // Also verify it's the same as what's returned by testPickBitgoPubGpgKeyForSigning
     gpgKey.armor().should.equal(capturedKey);
   });
+
+  describe('BitgoMpcGpgPubKeys.isBitgoEddsaMpcv2PubKey', function () {
+    it('should return true for the hardcoded on-prem test EdDSA MPCv2 key', function () {
+      const key = BitgoMpcGpgPubKeys.bitgoMpcGpgPubKeys['eddsaMpcv2']['onprem']['test'];
+      assert.ok(BitgoMpcGpgPubKeys.isBitgoEddsaMpcv2PubKey(key));
+    });
+
+    it('should return false for the ECDSA MPCv2 on-prem test key', function () {
+      const key = BitgoMpcGpgPubKeys.bitgoMpcGpgPubKeys['mpcv2']['onprem']['test'];
+      assert.ok(!BitgoMpcGpgPubKeys.isBitgoEddsaMpcv2PubKey(key));
+    });
+
+    it('should return false for an arbitrary string', function () {
+      assert.ok(!BitgoMpcGpgPubKeys.isBitgoEddsaMpcv2PubKey('not-a-known-key'));
+    });
+  });
 });
