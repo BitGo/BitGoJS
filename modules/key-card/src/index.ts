@@ -9,6 +9,7 @@ export * from './faq';
 export * from './generateQrData';
 export * from './utils';
 export * from './types';
+export * from './parseKeycard';
 
 export async function generateKeycard(params: GenerateKeycardParams): Promise<void> {
   if ('coin' in params) {
