@@ -793,4 +793,28 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.ofcerc20(
+    'c673dd10-076e-47b7-a53f-3a622c7cf38c',
+    'ofceth:krwq',
+    'KRWQ',
+    18,
+    'eth:krwq' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcerc20(
+    'cb98a20f-f22a-494a-b8e6-53212aa96f5a',
+    'ofceth:hybond',
+    'HYBOND',
+    18,
+    'eth:hybond' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
