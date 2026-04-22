@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.7.3...@bitgo/sdk-coin-eth@25.8.0) (2026-04-22)
+
+
+### Features
+
+* hts nft transfer support ([2c21e3e](https://github.com/BitGo/BitGoJS/commit/2c21e3e27149c469fb73e6e40cecf1992e665b71))
+
+
+
+
+
 ## [25.7.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.7.2...@bitgo/sdk-coin-eth@25.7.3) (2026-04-14)
 
 

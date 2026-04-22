@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.13.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.13.3...@bitgo/sdk-coin-trx@3.13.4) (2026-04-22)
+
+
+### Bug Fixes
+
+* **sdk-coin-trx:** support mpc for staking ([12ed2da](https://github.com/BitGo/BitGoJS/commit/12ed2da72a31a6002aafa4e8eecc195242117e07))
+* token consolidation fix for TRX TSS wallets ([dfe6739](https://github.com/BitGo/BitGoJS/commit/dfe673965fea15f51ddd67147d08d6c487536887))
+
+
+
+
+
 ## [3.13.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.13.2...@bitgo/sdk-coin-trx@3.13.3) (2026-04-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx

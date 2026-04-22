@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.12.0...@bitgo/sdk-coin-tempo@1.12.1) (2026-04-22)
+
+
+### Bug Fixes
+
+* changing the contract address for usd1 on tempo ([58af803](https://github.com/BitGo/BitGoJS/commit/58af80379e8254eda8e90a6dfdb719757ce31d01))
+
+
+
+
+
 # [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.11.0...@bitgo/sdk-coin-tempo@1.12.0) (2026-04-14)
 
 

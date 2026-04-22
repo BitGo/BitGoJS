@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.12.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.12.1...@bitgo/sdk-coin-flrp@1.12.2) (2026-04-22)
+
+
+### Bug Fixes
+
+* **sdk-lib-mpc:** authenticate signatureR in DKLS DSG round 4 messages ([16392ca](https://github.com/BitGo/BitGoJS/commit/16392ca9e5d1fe73b927fba96a21e885a3abeff3))
+
+
+
+
+
 ## [1.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.12.0...@bitgo/sdk-coin-flrp@1.12.1) (2026-04-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp

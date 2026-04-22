@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.78.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.77.0...@bitgo/sdk-api@1.78.0) (2026-04-22)
+
+
+### Features
+
+* **sdk-api:** add decryptAsync with v1/v2 auto-detection ([eb01c19](https://github.com/BitGo/BitGoJS/commit/eb01c198373ff2bb112de91be5a9d75cb0409156))
+* **sdk-api:** add v2 encrypt/decrypt using Argon2id + AES-256-GCM ([0c0c1f2](https://github.com/BitGo/BitGoJS/commit/0c0c1f25fe1f9159cc52d00d3580769086cc89db))
+* **sdk-api:** replace manual v2 envelope validation with io-ts codec ([f4ae573](https://github.com/BitGo/BitGoJS/commit/f4ae5730e6ea0479ecd2996c7529356449889ba3))
+
+
+
+
+
 # [1.77.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.76.3...@bitgo/sdk-api@1.77.0) (2026-04-14)
 
 

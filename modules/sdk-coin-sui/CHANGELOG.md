@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.23.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.23.2...@bitgo/sdk-coin-sui@5.23.3) (2026-04-22)
+
+
+### Bug Fixes
+
+* **sdk-coin-sui:** address balance transaction expiration handling ([821b7a7](https://github.com/BitGo/BitGoJS/commit/821b7a709139c9cae4eb11e30528c00b90e3d047))
+* **sdk-coin-sui:** balance withdrawal bcs encoding for Sui funds withdrawal ([e3b0da9](https://github.com/BitGo/BitGoJS/commit/e3b0da92db7025799180d97f0444fac7ee637ca4))
+
+
+
+
+
 ## [5.23.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.23.1...@bitgo/sdk-coin-sui@5.23.2) (2026-04-14)
 
 

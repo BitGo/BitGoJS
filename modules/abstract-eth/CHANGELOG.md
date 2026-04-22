@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.23.1...@bitgo/abstract-eth@24.24.0) (2026-04-22)
+
+
+### Features
+
+* hts nft transfer support ([2c21e3e](https://github.com/BitGo/BitGoJS/commit/2c21e3e27149c469fb73e6e40cecf1992e665b71))
+
+
+
+
+
 ## [24.23.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.23.0...@bitgo/abstract-eth@24.23.1) (2026-04-14)
 
 

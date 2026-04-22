@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.25.0...@bitgo/express@15.26.0) (2026-04-22)
+
+
+### Bug Fixes
+
+* **express:** annotate HttpRoute for TS7056 declaration emit ([905a4ae](https://github.com/BitGo/BitGoJS/commit/905a4aed1d86d613a28fbd1e405ff0dba27592d3))
+* **sdk-lib-mpc:** authenticate signatureR in DKLS DSG round 4 messages ([16392ca](https://github.com/BitGo/BitGoJS/commit/16392ca9e5d1fe73b927fba96a21e885a3abeff3))
+
+
+### Features
+
+* allow webauthn info to be passed in wallet creation ([6283604](https://github.com/BitGo/BitGoJS/commit/6283604e2766a3f27d79d8cf5550e5f9b9f014f0))
+
+
+
+
+
 # [15.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.24.0...@bitgo/express@15.25.0) (2026-04-14)
 
 

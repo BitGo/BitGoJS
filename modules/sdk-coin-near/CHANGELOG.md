@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.17.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.17.3...@bitgo/sdk-coin-near@2.17.4) (2026-04-22)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-near
+
+
+
+
+
 ## [2.17.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.17.2...@bitgo/sdk-coin-near@2.17.3) (2026-04-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-near

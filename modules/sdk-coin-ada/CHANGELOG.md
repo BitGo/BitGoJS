@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.23.3...@bitgo/sdk-coin-ada@4.24.0) (2026-04-22)
+
+
+### Features
+
+* **sdk-coin-ada:** add explicit-output build for consolidation ([b0fb0d3](https://github.com/BitGo/BitGoJS/commit/b0fb0d3daf6720ab1ef8117f226b06bec55bfec0))
+
+
+
+
+
 ## [4.23.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.23.2...@bitgo/sdk-coin-ada@4.23.3) (2026-04-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

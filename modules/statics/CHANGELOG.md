@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.36.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.35.0...@bitgo/statics@58.36.0) (2026-04-22)
+
+
+### Bug Fixes
+
+* changing the contract address for usd1 on tempo ([58af803](https://github.com/BitGo/BitGoJS/commit/58af80379e8254eda8e90a6dfdb719757ce31d01))
+* correct canton SBC, iBENJI and thoodeth:tsla address ([de7fcda](https://github.com/BitGo/BitGoJS/commit/de7fcdad5c549d9136cca97e4a83146f3b16e507))
+* **statics:** correct IPTestnet tx explorer URL to aeneid storyscan ([99efd18](https://github.com/BitGo/BitGoJS/commit/99efd183379fdc7e748dbe04414a2fd944b153cf))
+
+
+### Features
+
+* add new tokens for CSHLD-620 ([f789106](https://github.com/BitGo/BitGoJS/commit/f789106b2871ab6f6876727b0e7a348fadd1e2f1))
+* legacy transfer support for prividium ([1a02a66](https://github.com/BitGo/BitGoJS/commit/1a02a666ff524acd877594246eac7d22afe3b1f5))
+* onboard prividium testnet tokens ([8b8d305](https://github.com/BitGo/BitGoJS/commit/8b8d30503468d7ed2d78000e65dddb7ab7db703f))
+* **sdk-coin-hbar:** add staking support via AccountUpdateBuilder ([d5e02e9](https://github.com/BitGo/BitGoJS/commit/d5e02e9d26055b030f6b502160e11d2f248642e9))
+* sofid solana prod onboarding ([bbacd66](https://github.com/BitGo/BitGoJS/commit/bbacd661d88343bf15bad1b672f7b9c2f7241c97))
+* **statics,sdk-core:** index 12 new fiat currencies ([a10c635](https://github.com/BitGo/BitGoJS/commit/a10c6359a5464e1ebdd67c0e15ee00fb17b70773))
+* **statics:** add INK L2 EVM chain ([b0713aa](https://github.com/BitGo/BitGoJS/commit/b0713aa963f0535660dc8a4d52b399349faadb6d))
+* **statics:** add Kaspa to statics and environments ([612ae7d](https://github.com/BitGo/BitGoJS/commit/612ae7dc07c3f865a109ee51980bb0fadb72184e))
+* **statics:** add OFC SUI, ADA, Cardano tokens ([d6c4d67](https://github.com/BitGo/BitGoJS/commit/d6c4d677d908163ea0e0404617acc8ed1106509b))
+* **statics:** add OFC support for Canton tokens sbc and ibenji ([b013068](https://github.com/BitGo/BitGoJS/commit/b013068a9f0e8b8f904712492c5554ff0c3bb782))
+* **statics:** add ofceth:mon to support Go acc ([9275297](https://github.com/BitGo/BitGoJS/commit/92752970aa8c5e1286fe217a8c1ba3898fddc33b))
+* updates sofid solana mint address ([4e8c289](https://github.com/BitGo/BitGoJS/commit/4e8c2890e6a4a49cfba0275160b499ed95cb7143))
+
+
+
+
+
 # [58.35.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.34.0...@bitgo/statics@58.35.0) (2026-04-14)
 
 
