@@ -362,7 +362,9 @@ function handleV2UserREST(req: express.Request, res: express.Response, next: exp
  * handle v2 address validation
  * @param req
  */
-function handleV2VerifyAddress(req: ExpressApiRouteRequest<'express.verifycoinaddress', 'post'>): { isValid: boolean } {
+function handleV2VerifyAddress(req: ExpressApiRouteRequest<'express.verifycoinaddress1', 'post'>): {
+  isValid: boolean;
+} {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
 
@@ -1832,7 +1834,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
   // Miscellaneous
   router.post('express.canonicaladdress', [prepareBitGo(config), typedPromiseWrapper(handleCanonicalAddress)]);
-  router.post('express.verifycoinaddress', [prepareBitGo(config), typedPromiseWrapper(handleV2VerifyAddress)]);
+  router.post('express.verifycoinaddress1', [prepareBitGo(config), typedPromiseWrapper(handleV2VerifyAddress)]);
   router.put('express.pendingapprovals', [prepareBitGo(config), typedPromiseWrapper(handleV2PendingApproval)]);
 
   // lightning - pay invoice

@@ -28,7 +28,7 @@ export const VerifyAddressV2Body = {
  * Verify address for a given coin.
  *
  *
- * @operationId express.verifycoinaddress
+ * @operationId express.verifycoinaddress1
  * @tag Express
  */
 export const PostVerifyCoinAddress = httpRoute({
