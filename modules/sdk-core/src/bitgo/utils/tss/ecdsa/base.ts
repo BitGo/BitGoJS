@@ -1,61 +1,12 @@
 import { secp256k1 } from '@noble/curves/secp256k1';
 
-import { IBaseCoin, TransactionParams } from '../../../baseCoin';
+import { IBaseCoin } from '../../../baseCoin';
 import baseTSSUtils from '../baseTSSUtils';
 import { KeyShare } from './types';
-import { BackupGpgKey, PopulatedIntent, TxRequest } from '../baseTypes';
+import { BackupGpgKey } from '../baseTypes';
 import { generateGPGKeyPair } from '../../opengpgUtils';
 import { BitGoBase } from '../../../bitgoBase';
 import { IWallet } from '../../../wallet';
-import { InvalidTransactionError } from '../../../errors';
-
-/**
- * Transaction types that legitimately carry no explicit recipients.
- * verifyTransaction handles no-recipient validation for these internally.
- * Mirrors the bypass list in abstractEthLikeNewCoins.ts verifyTssTransaction.
- */
-export const NO_RECIPIENT_TX_TYPES = new Set([
-  'acceleration',
-  'fillNonce',
-  'transferToken',
-  'tokenApproval',
-  'consolidate',
-  'bridgeFunds',
-]);
-
-/**
- * Resolves the effective txParams for TSS signing recipient verification.
- *
- * For smart contract interactions, recipients live in txRequest.intent.recipients
- * (native amount = 0, so buildParams is empty). Falls back to intent recipients
- * mapped to ITransactionRecipient shape when txParams.recipients is absent.
- *
- * Throws InvalidTransactionError if no recipients can be resolved and the
- * transaction type is not a known no-recipient type.
- */
-export function resolveEffectiveTxParams(
-  txRequest: TxRequest,
-  txParams: TransactionParams | undefined
-): TransactionParams {
-  const intentRecipients = (txRequest.intent as PopulatedIntent)?.recipients?.map((intentRecipient) => ({
-    address: intentRecipient.address.address,
-    amount: intentRecipient.amount.value,
-    data: intentRecipient.data,
-  }));
-
-  const effectiveTxParams: TransactionParams = {
-    ...txParams,
-    recipients: txParams?.recipients?.length ? txParams.recipients : intentRecipients,
-  };
-
-  if (!effectiveTxParams.recipients?.length && !NO_RECIPIENT_TX_TYPES.has(effectiveTxParams.type ?? '')) {
-    throw new InvalidTransactionError(
-      'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
-    );
-  }
-
-  return effectiveTxParams;
-}
 
 /** @inheritdoc */
 export class BaseEcdsaUtils extends baseTSSUtils<KeyShare> {

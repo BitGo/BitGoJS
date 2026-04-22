@@ -45,7 +45,8 @@ import {
   TssEcdsaStep2ReturnMessage,
   TxRequestChallengeResponse,
 } from '../../../tss/types';
-import { BaseEcdsaUtils, resolveEffectiveTxParams } from './base';
+import { BaseEcdsaUtils } from './base';
+import { resolveEffectiveTxParams } from '../recipientUtils';
 import { IRequestTracer } from '../../../../api';
 
 const encryptNShare = ECDSAMethods.encryptNShare;

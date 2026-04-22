@@ -46,7 +46,8 @@ import {
   TSSParamsWithPrv,
   TxRequest,
 } from '../baseTypes';
-import { BaseEcdsaUtils, resolveEffectiveTxParams } from './base';
+import { BaseEcdsaUtils } from './base';
+import { resolveEffectiveTxParams } from '../recipientUtils';
 import { EcdsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './ecdsaMPCv2KeyGenSender';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
 
