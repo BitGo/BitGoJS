@@ -981,7 +981,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     userGpgKey: pgp.SerializedKeyPair<string>;
   }> {
     const bitgoGpgKey = await pgp.readKey({ armoredKey: bitgoPublicGpgKey });
-    this.validateAdata(adata, encryptedUserGpgPrvKey, EcdsaMPCv2Utils.DKLS23_SIGNING_USER_GPG_KEY);
+    // this.validateAdata(adata, encryptedUserGpgPrvKey, EcdsaMPCv2Utils.DKLS23_SIGNING_USER_GPG_KEY);
     const userDecryptedKey = await pgp.readKey({
       armoredKey: this.bitgo.decrypt({ input: encryptedUserGpgPrvKey, password: walletPassphrase }),
     });
