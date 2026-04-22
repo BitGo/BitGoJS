@@ -3,7 +3,7 @@ import * as openpgp from 'openpgp';
 import { Key, readKey, SerializedKeyPair } from 'openpgp';
 import { IBaseCoin, KeychainsTriplet } from '../../baseCoin';
 import { BitGoBase } from '../../bitgoBase';
-import { Keychain, KeyIndices } from '../../keychain';
+import { Keychain, KeyIndices, MpcWebauthnInfo } from '../../keychain';
 import { getTxRequest } from '../../tss';
 import { IWallet } from '../../wallet';
 import { MpcUtils } from '../mpcUtils';
@@ -194,6 +194,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     enterprise?: string | undefined;
     originalPasscodeEncryptionCode?: string | undefined;
     isThirdPartyBackup?: boolean;
+    webauthnInfo?: MpcWebauthnInfo;
   }): Promise<KeychainsTriplet> {
     throw new Error('Method not implemented.');
   }

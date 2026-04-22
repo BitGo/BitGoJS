@@ -45,6 +45,7 @@ export interface GenerateBaseMpcWalletOptions {
 export interface GenerateMpcWalletOptions extends GenerateBaseMpcWalletOptions {
   passphrase: string;
   originalPasscodeEncryptionCode?: string;
+  webauthnInfo?: GenerateWalletWebauthnInfo;
 }
 export interface GenerateSMCMpcWalletOptions extends GenerateBaseMpcWalletOptions {
   bitgoKeyId: string;
