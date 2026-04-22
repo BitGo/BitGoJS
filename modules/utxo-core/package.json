@@ -47,7 +47,7 @@
   "scripts": {
     "build": "npm run build:cjs && npm run build:esm",
     "build:cjs": "yarn tsc --build --incremental --verbose .",
-    "build:esm": "yarn tsc --project tsconfig.esm.json",
+    "build:esm": "yarn tsc --project tsconfig.esm.json && node ../../scripts/fix-esm.js dist/esm",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
