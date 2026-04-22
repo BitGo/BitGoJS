@@ -21,7 +21,7 @@ import {
  */
 export class EncryptionSession {
   private hkdfKey: CryptoKey | null;
-  private readonly argon2SaltB64: string;
+  private argon2SaltB64: string | null;
   private readonly memorySize: number;
   private readonly iterations: number;
   private readonly parallelism: number;
@@ -53,7 +53,7 @@ export class EncryptionSession {
     if (!envelope.hkdfSalt) {
       throw new Error('envelope was not encrypted with a session; use decryptV2 instead');
     }
-    if (envelope.salt !== this.argon2SaltB64) {
+    if (envelope.salt !== this.getSaltOrThrow()) {
       throw new Error('envelope was not encrypted with this session');
     }
     const iv = new Uint8Array(Buffer.from(envelope.iv, 'base64'));
@@ -65,13 +65,21 @@ export class EncryptionSession {
 
   destroy(): void {
     this.hkdfKey = null;
+    this.argon2SaltB64 = null;
   }
 
   private getKeyOrThrow(): CryptoKey {
-    if (this.hkdfKey === null) {
+    if (this.hkdfKey === null || this.argon2SaltB64 === null) {
       throw new Error('EncryptionSession has been destroyed');
     }
     return this.hkdfKey;
+  }
+
+  private getSaltOrThrow(): string {
+    if (this.argon2SaltB64 === null) {
+      throw new Error('EncryptionSession has been destroyed');
+    }
+    return this.argon2SaltB64;
   }
 
   private buildEnvelope(hkdfSalt: Uint8Array, iv: Uint8Array, ct: Uint8Array): V2Envelope {
@@ -80,7 +88,7 @@ export class EncryptionSession {
       m: this.memorySize,
       t: this.iterations,
       p: this.parallelism,
-      salt: this.argon2SaltB64,
+      salt: this.getSaltOrThrow(),
       hkdfSalt: Buffer.from(hkdfSalt).toString('base64'),
       iv: Buffer.from(iv).toString('base64'),
       ct: Buffer.from(ct).toString('base64'),
