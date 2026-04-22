@@ -926,5 +926,138 @@ describe('ADA Token Operations', async () => {
         })
         .should.be.rejectedWith('tx outputs does not match with expected address');
     });
+
+    it('should verify sponsored token consolidation when fee address output is present', async () => {
+      const feeAddress =
+        'addr_test1qz2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3jcu5d8ps7zex2k2xt3uqxgjqnnj83ws8lhrn648jjxtwq2ytjqp';
+      const quantity = '100';
+      const senderInputBalance = 5000000;
+      const feeAddressInputBalance = 20000000;
+      const totalAssetList = {
+        [fingerprint]: {
+          quantity: '100',
+          policy_id: policyId,
+          asset_name: asciiEncodedName,
+        },
+      };
+
+      // Build a sponsored token consolidation: tokens go back to senderAddress, fee sponsor gets ADA change
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba22',
+        transaction_index: 0,
+      });
+
+      // Consolidation output: tokens go back to the sender's base address
+      txBuilder.output({
+        address: senderAddress,
+        amount: '0',
+        multiAssets: {
+          asset_name: asciiEncodedName,
+          policy_id: policyId,
+          quantity,
+          fingerprint,
+        },
+      });
+
+      txBuilder.changeAddress(senderAddress, senderInputBalance.toString(), totalAssetList);
+      txBuilder.sponsorshipInfo({
+        feeAddress: feeAddress,
+        feeAddressInputBalance: feeAddressInputBalance.toString(),
+      });
+      txBuilder.ttl(800000000);
+      txBuilder.isTokenTransaction();
+      const tx = (await txBuilder.build()) as Transaction;
+      const txHex = tx.toBroadcastFormat();
+
+      const mockWallet = {
+        coinSpecific: () => ({
+          baseAddress: senderAddress,
+        }),
+      };
+
+      const txParams = { recipients: undefined };
+      const txPrebuild = { txHex, txInfo: { feeAddress } };
+      const verification = { consolidationToBaseAddress: true };
+
+      const isVerified = await adaToken.verifyTransaction({
+        txParams,
+        txPrebuild,
+        verification,
+        wallet: mockWallet as any,
+      });
+      isVerified.should.equal(true);
+    });
+
+    it('should fail sponsored token consolidation when output goes to unexpected third-party address', async () => {
+      const feeAddress =
+        'addr_test1qz2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3jcu5d8ps7zex2k2xt3uqxgjqnnj83ws8lhrn648jjxtwq2ytjqp';
+      const quantity = '100';
+      const senderInputBalance = 5000000;
+      const feeAddressInputBalance = 20000000;
+      const totalAssetList = {
+        [fingerprint]: {
+          quantity: '100',
+          policy_id: policyId,
+          asset_name: asciiEncodedName,
+        },
+      };
+
+      // Build transaction where token output goes to an unexpected third-party address
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba22',
+        transaction_index: 0,
+      });
+
+      // Output goes to receiverAddress (third party), not the base address
+      txBuilder.output({
+        address: receiverAddress,
+        amount: '0',
+        multiAssets: {
+          asset_name: asciiEncodedName,
+          policy_id: policyId,
+          quantity,
+          fingerprint,
+        },
+      });
+
+      txBuilder.changeAddress(senderAddress, senderInputBalance.toString(), totalAssetList);
+      txBuilder.sponsorshipInfo({
+        feeAddress: feeAddress,
+        feeAddressInputBalance: feeAddressInputBalance.toString(),
+      });
+      txBuilder.ttl(800000000);
+      txBuilder.isTokenTransaction();
+      const tx = (await txBuilder.build()) as Transaction;
+      const txHex = tx.toBroadcastFormat();
+
+      const mockWallet = {
+        coinSpecific: () => ({
+          baseAddress: senderAddress,
+        }),
+      };
+
+      const txParams = { recipients: undefined };
+      const txPrebuild = { txHex, txInfo: { feeAddress } };
+      const verification = { consolidationToBaseAddress: true };
+
+      await adaToken
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          verification,
+          wallet: mockWallet as any,
+        })
+        .should.be.rejectedWith('tx outputs does not match with expected address');
+    });
   });
 });
