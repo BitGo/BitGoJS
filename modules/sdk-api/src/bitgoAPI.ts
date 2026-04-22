@@ -41,6 +41,8 @@ import {
   verifyResponseAsync,
 } from './api';
 import { decrypt, decryptAsync, encrypt } from './encrypt';
+import { createEncryptionSession } from './encryptionSession';
+import { encryptV2 } from './encryptV2';
 import { verifyAddress } from './v1/verifyAddress';
 import {
   AccessTokenOptions,
@@ -713,6 +715,29 @@ export class BitGoAPI implements BitGoBase {
       throw new Error(`cannot encrypt without password`);
     }
     return encrypt(params.password, params.input, { adata: params.adata });
+  }
+
+  /**
+   * Async encrypt that dispatches to v1 (SJCL) or v2 (Argon2id + AES-256-GCM)
+   * based on `encryptionVersion`.
+   */
+  async encryptAsync(params: EncryptOptions): Promise<string> {
+    common.validateParams(params, ['input', 'password'], []);
+    if (!params.password) {
+      throw new Error('cannot encrypt without password');
+    }
+    if (params.encryptionVersion === 2) {
+      return encryptV2(params.password, params.input);
+    }
+    return encrypt(params.password, params.input, { adata: params.adata });
+  }
+
+  /**
+   * Create an encryption session for multi-call operations.
+   * Runs Argon2id once; all subsequent calls derive keys via HKDF.
+   */
+  async createEncryptionSession(password: string) {
+    return createEncryptionSession(password);
   }
 
   /**

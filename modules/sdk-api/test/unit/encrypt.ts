@@ -2,6 +2,7 @@ import assert from 'assert';
 import { randomBytes } from 'crypto';
 
 import { decrypt, decryptAsync, decryptV2, encrypt, encryptV2, V2Envelope, createEncryptionSession } from '../../src';
+import { BitGoAPI } from '../../src/bitgoAPI';
 
 describe('encryption methods tests', () => {
   describe('encrypt', () => {
@@ -318,6 +319,50 @@ describe('encryption methods tests', () => {
       assert.strictEqual(envelope.m, 2048);
       assert.strictEqual(envelope.t, 2);
       assert.strictEqual(envelope.p, 2);
+    });
+  });
+
+  describe('BitGoAPI.encryptAsync', () => {
+    let bitgo: BitGoAPI;
+    const password = 'test-password';
+    const plaintext = 'hello encryptAsync';
+
+    before(() => {
+      bitgo = new BitGoAPI({ env: 'test' });
+    });
+
+    it('dispatches to v1 by default and output is decryptable via decrypt', async () => {
+      const ct = await bitgo.encryptAsync({ input: plaintext, password });
+      const envelope = JSON.parse(ct);
+      assert.notStrictEqual(envelope.v, 2, 'default should not produce v2 envelope');
+      assert.strictEqual(decrypt(password, ct), plaintext);
+    });
+
+    it('dispatches to v2 when encryptionVersion: 2 and output is decryptable via decryptAsync', async () => {
+      const ct = await bitgo.encryptAsync({ input: plaintext, password, encryptionVersion: 2 });
+      const envelope: V2Envelope = JSON.parse(ct);
+      assert.strictEqual(envelope.v, 2);
+      const result = await decryptAsync(password, ct);
+      assert.strictEqual(result, plaintext);
+    });
+  });
+
+  describe('BitGoAPI.createEncryptionSession', () => {
+    let bitgo: BitGoAPI;
+    const password = 'test-password';
+    const plaintext = 'hello session';
+
+    before(() => {
+      bitgo = new BitGoAPI({ env: 'test' });
+    });
+
+    it('returns working session (encrypt/decrypt/destroy)', async () => {
+      const session = await bitgo.createEncryptionSession(password);
+      const ct = await session.encrypt(plaintext);
+      const result = await session.decrypt(ct);
+      assert.strictEqual(result, plaintext);
+      session.destroy();
+      await assert.rejects(() => session.encrypt(plaintext), /destroyed/);
     });
   });
 });

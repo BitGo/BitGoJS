@@ -166,6 +166,7 @@ export interface CreateBackupOptions {
   prv?: string;
   encryptedPrv?: string;
   passphrase?: string;
+  encryptionVersion?: 2;
 }
 
 export interface CreateBitGoOptions {
@@ -188,6 +189,7 @@ export interface CreateMpcOptions {
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
   retrofit?: DecryptedRetrofitPayload;
+  encryptionVersion?: 2;
 }
 
 export interface RecreateMpcOptions extends Omit<CreateMpcOptions, 'retrofit' | 'multisigType'> {

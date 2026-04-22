@@ -79,7 +79,11 @@ export async function verifyTransaction<TNumber extends bigint | number>(
   let userPublicKeyVerified = false;
   try {
     // verify the user public key matches the private key - this will throw if there is no match
-    userPublicKeyVerified = verifyUserPublicKey(bitgo, { userKeychain: keychains.user, disableNetworking, txParams });
+    userPublicKeyVerified = await verifyUserPublicKey(bitgo, {
+      userKeychain: keychains.user,
+      disableNetworking,
+      txParams,
+    });
   } catch (e) {
     debug('failed to verify user public key!', e);
   }

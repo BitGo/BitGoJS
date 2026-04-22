@@ -482,6 +482,7 @@ export type CreateKeychainParamsBase = {
   passphrase?: string;
   enterprise?: string;
   originalPasscodeEncryptionCode?: string;
+  encryptionVersion?: 2;
 };
 
 export type CreateBitGoKeychainParamsBase = Omit<CreateKeychainParamsBase, 'bitgoKeychain'>;
@@ -712,6 +713,7 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
     isThirdPartyBackup?: boolean;
+    encryptionVersion?: 2;
   }): Promise<KeychainsTriplet>;
   signTxRequest(params: { txRequest: string | TxRequest; prv: string; reqId: IRequestTracer }): Promise<TxRequest>;
   signTxRequestForMessage(params: TSSParams): Promise<TxRequest>;

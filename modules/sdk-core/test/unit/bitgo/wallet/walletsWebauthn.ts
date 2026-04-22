@@ -36,6 +36,11 @@ describe('Wallets - WebAuthn wallet creation', function () {
       encrypt: sinon
         .stub()
         .callsFake(({ password, input }: { password: string; input: string }) => `encrypted:${password}:${input}`),
+      encryptAsync: sinon
+        .stub()
+        .callsFake(
+          async ({ password, input }: { password: string; input: string }) => `encrypted:${password}:${input}`
+        ),
       setRequestTracer: sinon.stub(),
     };
 
@@ -132,7 +137,7 @@ describe('Wallets - WebAuthn wallet creation', function () {
         },
       });
 
-      const encryptCalls = mockBitGo.encrypt.getCalls();
+      const encryptCalls = mockBitGo.encryptAsync.getCalls();
       const passwordsUsed = encryptCalls.map((call: sinon.SinonSpyCall) => call.args[0].password);
       passwordsUsed.should.containEql(walletPassphrase);
       passwordsUsed.should.containEql(webauthnPassphrase);

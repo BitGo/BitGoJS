@@ -546,6 +546,49 @@ describe('TSS Utils:', async function () {
         })
         .should.be.rejectedWith('Failed to create backup keychain - commonKeychains do not match.');
     });
+
+    it('should generate TSS key chains with v2 encryption envelopes', async function () {
+      const passphrase = 'passphrase';
+      const userKeyShare = MPC.keyShare(1, 2, 3);
+      const backupKeyShare = MPC.keyShare(2, 2, 3);
+
+      await nockBitgoKeychain({
+        coin: coinName,
+        userKeyShare,
+        backupKeyShare,
+        bitgoKeyShare,
+        userGpgKey,
+        backupGpgKey,
+        bitgoGpgKey,
+      });
+      await nockUserKeychain({ coin: coinName });
+      await nockBackupKeychain({ coin: coinName });
+
+      const bitgoKeychain = await tssUtils.createBitgoKeychain({
+        userGpgKey,
+        backupGpgKey,
+        userKeyShare,
+        backupKeyShare,
+      });
+      const userKeychain = await tssUtils.createUserKeychain({
+        userGpgKey,
+        backupGpgKey,
+        userKeyShare,
+        backupKeyShare,
+        bitgoKeychain,
+        passphrase,
+        encryptionVersion: 2,
+      });
+
+      should.exist(userKeychain.encryptedPrv);
+      const envelope = JSON.parse(userKeychain.encryptedPrv!);
+      envelope.v.should.equal(2);
+
+      const decrypted = await bitgo.decryptAsync({ input: userKeychain.encryptedPrv!, password: passphrase });
+      should.exist(decrypted);
+      const parsed: Record<string, unknown> = JSON.parse(decrypted);
+      should.exist(parsed.uShare);
+    });
   });
 
   describe('signTxRequest:', function () {

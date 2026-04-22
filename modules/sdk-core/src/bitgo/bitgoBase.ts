@@ -19,6 +19,12 @@ export interface BitGoBase {
   decryptKeys(params: DecryptKeysOptions): string[];
   del(url: string): BitGoRequest;
   encrypt(params: EncryptOptions): string;
+  encryptAsync(params: EncryptOptions): Promise<string>;
+  createEncryptionSession(password: string): Promise<{
+    encrypt(plaintext: string): Promise<string>;
+    decrypt(ciphertext: string): Promise<string>;
+    destroy(): void;
+  }>;
   readonly env: EnvironmentName;
   fetchConstants(): Promise<any>;
   get(url: string): BitGoRequest;

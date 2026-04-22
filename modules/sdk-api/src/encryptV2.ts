@@ -101,12 +101,16 @@ export function hkdfDeriveAesKey(hkdfKey: CryptoKey, hkdfSalt: Uint8Array, usage
 }
 
 export async function aesGcmEncrypt(key: CryptoKey, iv: Uint8Array, plaintext: string): Promise<Uint8Array> {
-  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(plaintext));
+  const ct = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv, tagLength: 128 },
+    key,
+    new TextEncoder().encode(plaintext)
+  );
   return new Uint8Array(ct);
 }
 
 export async function aesGcmDecrypt(key: CryptoKey, iv: Uint8Array, ct: Uint8Array): Promise<string> {
-  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv, tagLength: 128 }, key, ct);
   return new TextDecoder().decode(plaintext);
 }
 
