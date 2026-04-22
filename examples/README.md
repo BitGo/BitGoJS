@@ -14,6 +14,7 @@ Go Accounts are trading wallets that don't require BitGo Express. See the [detai
 ### Wallet
 
 - [Backup Key Creation](./ts/backup-key-creation.ts)
+- [Create Bulk Hot Wallets](./ts/create-bulk-hot-wallets.ts) - Create multiple (up to 500) hot wallets in bulk
 - [Create Policy](./ts/create-policy.ts)
 - [Create Wallet Address](./ts/create-wallet-address.ts)
 - [Create Wallet Addresses](./ts/create-wallet-addresses.ts)
