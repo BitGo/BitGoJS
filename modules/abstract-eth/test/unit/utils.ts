@@ -5,6 +5,8 @@ import {
   decodeFlushERC721TokensData,
   decodeFlushERC1155TokensData,
 } from '../../src/lib/utils';
+import { ERC721TransferBuilder } from '../../src/lib/transferBuilders/transferBuilderERC721';
+import { ERC721TransferFromMethodId, ERC721SafeTransferTypeMethodId } from '../../src/lib/walletUtil';
 
 describe('Abstract ETH Utils', () => {
   describe('ERC721 Flush Functions', () => {
@@ -206,6 +208,44 @@ describe('Abstract ETH Utils', () => {
       should.throws(() => {
         decodeFlushERC1155TokensData(encoded); // Missing 'to' parameter
       }, /Missing to address/);
+    });
+  });
+
+  describe('ERC721TransferBuilder.buildTransferFrom', () => {
+    const owner = '0x19645032c7f1533395d44a629462e751084d3e4d';
+    const recipient = '0x19645032c7f1533395d44a629462e751084d3e4c';
+    const htsNftAddress = '0x00000000000000000000000000000000007ac203';
+
+    it('should encode transferFrom with selector 0x23b872dd', () => {
+      const builder = new ERC721TransferBuilder();
+      builder.tokenContractAddress(htsNftAddress).to(recipient).from(owner).tokenId('12');
+
+      const data = builder.buildTransferFrom();
+
+      should.exist(data);
+      data.should.startWith(ERC721TransferFromMethodId); // 0x23b872dd
+    });
+
+    it('should encode safeTransferFrom with selector 0xb88d4fde via build()', () => {
+      const builder = new ERC721TransferBuilder();
+      builder.tokenContractAddress(htsNftAddress).to(recipient).from(owner).tokenId('12');
+
+      const data = builder.build();
+
+      should.exist(data);
+      data.should.startWith(ERC721SafeTransferTypeMethodId); // 0xb88d4fde
+    });
+
+    it('should produce different encodings for build() vs buildTransferFrom()', () => {
+      const builder = new ERC721TransferBuilder();
+      builder.tokenContractAddress(htsNftAddress).to(recipient).from(owner).tokenId('12');
+
+      const safeTransferData = builder.build();
+      const transferFromData = builder.buildTransferFrom();
+
+      safeTransferData.should.not.equal(transferFromData);
+      // transferFrom encoding should be shorter (no bytes param)
+      transferFromData.length.should.be.lessThan(safeTransferData.length);
     });
   });
 

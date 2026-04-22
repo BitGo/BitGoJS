@@ -224,6 +224,18 @@ async function getGasLimitFromRPC(query: Record<string, string>, rpcUrl: string)
   return response.body;
 }
 
+/**
+ * Check if an EVM address is an HTS (Hedera Token Service) native address.
+ * HTS entities on Hedera EVM use "long-zero" addresses where the first 12 bytes are all zeros
+ * and the entity number occupies the last 8 bytes (e.g. 0x00000000000000000000000000000000007ac203).
+ * Standard Solidity contracts have normal EVM addresses derived from public key hashes.
+ */
+export function isHtsEvmAddress(address: string): boolean {
+  const normalized = address.toLowerCase();
+  // First 12 bytes (24 hex chars) after '0x' prefix are all zeros
+  return /^0x0{24}[0-9a-f]{16}$/.test(normalized);
+}
+
 export function validateHederaAccountId(address: string): { valid: boolean; error: string | null } {
   const parts = address.split('.');
   if (parts.length !== 3) {
