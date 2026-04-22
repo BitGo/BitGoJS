@@ -4475,6 +4475,20 @@ export const ofcCoins = [
     10,
     UnderlyingAsset['canton:usdxlr']
   ),
+  ofcCantonToken(
+    '8e27bc41-cf30-442a-94ab-bf8b626b9ac9',
+    'ofccanton:sbc',
+    'Stable Coin',
+    10,
+    UnderlyingAsset['canton:sbc']
+  ),
+  ofcCantonToken(
+    '8259e506-32fe-4a72-b2c6-14a7ef47d7fa',
+    'ofccanton:ibenji',
+    'iBENJI',
+    10,
+    UnderlyingAsset['canton:ibenji']
+  ),
   tofcCantonToken(
     'd7297535-c1d4-429d-b3c5-d36351b110e5',
     'ofctcanton:testcoin1',

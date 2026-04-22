@@ -266,6 +266,60 @@ describe('Eth transaction builder sendNFT', () => {
   });
 });
 
+// ABI for transferFrom(address,address,uint256) used by HTS native NFTs on Hedera EVM
+const transferFromABI = [
+  {
+    inputs: [
+      { internalType: 'address', name: 'from', type: 'address' },
+      { internalType: 'address', name: 'to', type: 'address' },
+      { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+    ],
+    name: 'transferFrom',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+];
+
+describe('ERC721 HTS native NFT transferFrom', () => {
+  const owner = '0x19645032c7f1533395d44a629462e751084d3e4d';
+  const recipient = '0x19645032c7f1533395d44a629462e751084d3e4c';
+  // HTS native NFT address (long-zero format)
+  const htsNftContractAddress = '0x00000000000000000000000000000000007ac203';
+  const tokenId = '12';
+
+  it('should build ERC721 transferFrom calldata with correct selector and params', () => {
+    const builder = new ERC721TransferBuilder();
+    builder.tokenContractAddress(htsNftContractAddress).to(recipient).from(owner).tokenId(tokenId);
+
+    const calldata = builder.buildTransferFrom();
+
+    // Should use transferFrom selector 0x23b872dd
+    calldata.should.startWith('0x23b872dd');
+
+    // Decode and verify parameters
+    const decoded = decodeTransaction(JSON.stringify(transferFromABI), calldata);
+    should.equal(decoded.args[0].toLowerCase(), owner.toLowerCase());
+    should.equal(decoded.args[1].toLowerCase(), recipient.toLowerCase());
+    should.equal(decoded.args[2].toString(), tokenId);
+  });
+
+  it('should not include bytes data parameter in transferFrom calldata', () => {
+    const builder = new ERC721TransferBuilder();
+    builder.tokenContractAddress(htsNftContractAddress).to(recipient).from(owner).tokenId(tokenId);
+
+    const transferFromData = builder.buildTransferFrom();
+    const safeTransferData = builder.build();
+
+    // transferFrom has 3 params (from, to, tokenId), safeTransferFrom has 4 (+ bytes data)
+    // So transferFrom encoding should be shorter
+    transferFromData.length.should.be.lessThan(safeTransferData.length);
+
+    // Verify safeTransferFrom uses 0xb88d4fde
+    safeTransferData.should.startWith('0xb88d4fde');
+  });
+});
+
 function decodeTransaction(abi: string, calldata: string) {
   const contractInterface = new ethers.utils.Interface(abi);
   return contractInterface.parseTransaction({ data: calldata });

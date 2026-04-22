@@ -6,7 +6,8 @@ import { GetPing } from './common/ping';
 import { GetPingExpress } from './common/pingExpress';
 import { PostLogin } from './common/login';
 import { PostDecrypt } from './common/decrypt';
-import { PostEncrypt } from './common/encrypt';
+import { PostV1Encrypt } from './v1/encrypt';
+import { PostV2Encrypt } from './v2/encrypt';
 import { PostVerifyAddress } from './common/verifyAddress';
 import { PostV1CalculateMinerFeeInfo } from './v1/calculateMinerFeeInfo';
 import { PostV2CalculateMinerFeeInfo } from './v2/calculateMinerFeeInfo';
@@ -87,8 +88,11 @@ export const ExpressDecryptApiSpec = apiSpec({
 });
 
 export const ExpressEncryptApiSpec = apiSpec({
+  'express.v1.encrypt': {
+    post: PostV1Encrypt,
+  },
   'express.encrypt': {
-    post: PostEncrypt,
+    post: PostV2Encrypt,
   },
 });
 
