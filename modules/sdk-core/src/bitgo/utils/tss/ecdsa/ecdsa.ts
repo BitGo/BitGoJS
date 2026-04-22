@@ -394,7 +394,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     );
 
     const prv = JSON.stringify(recipientCombinedKey.signingMaterial);
-    const recipientKeychainParams: AddKeychainOptions = {
+    const recipientKeychainParams = {
       source: recipient,
       keyType: 'tss' as KeyType,
       commonKeychain: bitgoKeychain.commonKeychain,
@@ -404,20 +404,20 @@ export class EcdsaUtils extends BaseEcdsaUtils {
         password: passphrase,
       }),
       originalPasscodeEncryptionCode,
+      webauthnDevices:
+        webauthnInfo && recipientIndex === 1
+          ? [
+              {
+                otpDeviceId: webauthnInfo.otpDeviceId,
+                prfSalt: webauthnInfo.prfSalt,
+                encryptedPrv: this.bitgo.encrypt({
+                  input: prv,
+                  password: webauthnInfo.passphrase,
+                }),
+              },
+            ]
+          : undefined,
     };
-
-    if (webauthnInfo && recipientIndex === 1) {
-      recipientKeychainParams.webauthnDevices = [
-        {
-          otpDeviceId: webauthnInfo.otpDeviceId,
-          prfSalt: webauthnInfo.prfSalt,
-          encryptedPrv: this.bitgo.encrypt({
-            input: prv,
-            password: webauthnInfo.passphrase,
-          }),
-        },
-      ];
-    }
 
     const keychains = this.baseCoin.keychains();
     return recipientIndex === 1
