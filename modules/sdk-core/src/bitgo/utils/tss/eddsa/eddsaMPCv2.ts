@@ -11,7 +11,7 @@ import {
 } from '@bitgo/public-types';
 import { EddsaMPSDkg, MPSComms, MPSTypes } from '@bitgo/sdk-lib-mpc';
 import { KeychainsTriplet } from '../../../baseCoin';
-import { AddKeychainOptions, Keychain, KeyType, MpcWebauthnInfo } from '../../../keychain';
+import { AddKeychainOptions, Keychain, KeyType, GenerateWalletWebauthnInfo } from '../../../keychain';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoEddsaMpcv2PubKey } from '../../../tss/bitgoPubKeys';
 import { generateGPGKeyPair } from '../../opengpgUtils';
 import { MPCv2PartiesEnum } from '../ecdsa/typesMPCv2';
@@ -24,7 +24,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     passphrase: string;
     enterprise: string;
     originalPasscodeEncryptionCode?: string;
-    webauthnInfo?: MpcWebauthnInfo;
+    webauthnInfo?: GenerateWalletWebauthnInfo;
   }): Promise<KeychainsTriplet> {
     const userKeyPair = await generateGPGKeyPair('ed25519');
     const userGpgKey = await pgp.readPrivateKey({ armoredKey: userKeyPair.privateKey });
@@ -174,7 +174,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     reducedPrivateMaterial?: Buffer,
     passphrase?: string,
     originalPasscodeEncryptionCode?: string,
-    webauthnInfo?: MpcWebauthnInfo
+    webauthnInfo?: GenerateWalletWebauthnInfo
   ): Promise<Keychain> {
     let source: string;
     let encryptedPrv: string | undefined = undefined;
@@ -243,7 +243,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     reducedPrivateMaterial: Buffer,
     passphrase: string,
     originalPasscodeEncryptionCode?: string,
-    webauthnInfo?: MpcWebauthnInfo
+    webauthnInfo?: GenerateWalletWebauthnInfo
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.USER,

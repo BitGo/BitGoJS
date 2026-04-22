@@ -20,7 +20,7 @@ import {
 } from '@bitgo/public-types';
 
 import { Ecdsa } from '../../../../account-lib';
-import { AddKeychainOptions, Keychain, KeyType, MpcWebauthnInfo } from '../../../keychain';
+import { AddKeychainOptions, Keychain, KeyType, GenerateWalletWebauthnInfo } from '../../../keychain';
 import { DecryptedRetrofitPayload } from '../../../keychain/iKeychains';
 import { ECDSAMethodTypes, getTxRequest } from '../../../tss';
 import { sendSignatureShareV2, sendTxRequest } from '../../../tss/common';
@@ -57,7 +57,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     enterprise: string;
     originalPasscodeEncryptionCode?: string;
     retrofit?: DecryptedRetrofitPayload;
-    webauthnInfo?: MpcWebauthnInfo;
+    webauthnInfo?: GenerateWalletWebauthnInfo;
   }): Promise<KeychainsTriplet> {
     const { userSession, backupSession } = this.getUserAndBackupSession(2, 3, params.retrofit);
     const userGpgKey = await generateGPGKeyPair('secp256k1');
@@ -353,7 +353,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     reducedPrivateMaterial?: Buffer,
     passphrase?: string,
     originalPasscodeEncryptionCode?: string,
-    webauthnInfo?: MpcWebauthnInfo
+    webauthnInfo?: GenerateWalletWebauthnInfo
   ): Promise<Keychain> {
     let source: string;
     let encryptedPrv: string | undefined = undefined;
@@ -531,7 +531,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     reducedPrivateMaterial: Buffer,
     passphrase: string,
     originalPasscodeEncryptionCode?: string,
-    webauthnInfo?: MpcWebauthnInfo
+    webauthnInfo?: GenerateWalletWebauthnInfo
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.USER,

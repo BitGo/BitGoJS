@@ -1,7 +1,7 @@
 import { Key, SerializedKeyPair } from 'openpgp';
 import { IRequestTracer } from '../../../api';
 import { KeychainsTriplet, ParsedTransaction, TransactionParams } from '../../baseCoin';
-import { ApiKeyShare, Keychain, MpcWebauthnInfo } from '../../keychain';
+import { ApiKeyShare, Keychain, GenerateWalletWebauthnInfo } from '../../keychain';
 import { ApiVersion, Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, Signature, SignShare } from '../../../account-lib/mpc/tss';
 import { Signature as EcdsaSignature } from '../../../account-lib/mpc/tss/ecdsa/types';
@@ -482,7 +482,7 @@ export type CreateKeychainParamsBase = {
   passphrase?: string;
   enterprise?: string;
   originalPasscodeEncryptionCode?: string;
-  webauthnInfo?: MpcWebauthnInfo;
+  webauthnInfo?: GenerateWalletWebauthnInfo;
 };
 
 export type CreateBitGoKeychainParamsBase = Omit<CreateKeychainParamsBase, 'bitgoKeychain'>;

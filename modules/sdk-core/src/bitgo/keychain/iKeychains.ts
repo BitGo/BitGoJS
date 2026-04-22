@@ -12,9 +12,10 @@ export interface WebauthnInfo {
   encryptedPrv: string;
 }
 
-/** WebAuthn PRF-based encryption info passed to MPC key creation. The passphrase is the
- * PRF-derived key used to encrypt the user private share before it is persisted. */
-export interface MpcWebauthnInfo {
+/** WebAuthn PRF-based encryption info for protecting the user private key with a hardware
+ * authenticator. The passphrase is the PRF-derived key used to encrypt the user private
+ * key/share before it is persisted. Never sent to the server. */
+export interface GenerateWalletWebauthnInfo {
   otpDeviceId: string;
   prfSalt: string;
   passphrase: string;
@@ -196,7 +197,7 @@ export interface CreateMpcOptions {
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
   retrofit?: DecryptedRetrofitPayload;
-  webauthnInfo?: MpcWebauthnInfo;
+  webauthnInfo?: GenerateWalletWebauthnInfo;
 }
 
 export interface RecreateMpcOptions extends Omit<CreateMpcOptions, 'retrofit' | 'multisigType'> {

@@ -7,7 +7,7 @@ import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt, minModulu
 import { bip32 } from '@bitgo/utxo-lib';
 
 import { ECDSA, Ecdsa } from '../../../../account-lib/mpc/tss';
-import { AddKeychainOptions, Keychain, KeyType, MpcWebauthnInfo } from '../../../keychain';
+import { AddKeychainOptions, Keychain, KeyType, GenerateWalletWebauthnInfo } from '../../../keychain';
 import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { KeychainsTriplet } from '../../../baseCoin';
 import {
@@ -106,7 +106,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     passphrase: string;
     enterprise?: string | undefined;
     originalPasscodeEncryptionCode?: string | undefined;
-    webauthnInfo?: MpcWebauthnInfo;
+    webauthnInfo?: GenerateWalletWebauthnInfo;
   }): Promise<KeychainsTriplet> {
     const MPC = new Ecdsa();
     const m = 2;
@@ -309,7 +309,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     bitgoKeychain: Keychain,
     passphrase: string,
     originalPasscodeEncryptionCode?: string,
-    webauthnInfo?: MpcWebauthnInfo
+    webauthnInfo?: GenerateWalletWebauthnInfo
   ): Promise<Keychain> {
     const bitgoKeyShares = bitgoKeychain.keyShares;
     if (!bitgoKeyShares) {

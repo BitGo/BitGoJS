@@ -4,7 +4,7 @@
 import assert from 'assert';
 import * as openpgp from 'openpgp';
 import Eddsa, { GShare, SignShare } from '../../../../account-lib/mpc/tss';
-import { AddKeychainOptions, CreateBackupOptions, Keychain, MpcWebauthnInfo } from '../../../keychain';
+import { AddKeychainOptions, CreateBackupOptions, Keychain, GenerateWalletWebauthnInfo } from '../../../keychain';
 import { verifyWalletSignature } from '../../../tss/eddsa/eddsa';
 import { createShareProof, encryptText, generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';
 import {
@@ -357,7 +357,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     passphrase?: string;
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
-    webauthnInfo?: MpcWebauthnInfo;
+    webauthnInfo?: GenerateWalletWebauthnInfo;
   }): Promise<KeychainsTriplet> {
     const MPC = await Eddsa.initialize();
     const m = 2;
