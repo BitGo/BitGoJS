@@ -1,0 +1,1 @@
+export { WebAuthnProvider } from './types';
