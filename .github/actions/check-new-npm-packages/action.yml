@@ -1,0 +1,14 @@
+name: Check new npm packages are registered
+description: >
+  Detects newly added non-private packages in modules/ and verifies
+  each one is already registered on the npm registry. Fails with an
+  actionable message if any are missing.
+
+runs:
+  using: composite
+  steps:
+    - name: Check new packages are registered on npm
+      shell: bash
+      run: node ${{ github.action_path }}/index.js
+      env:
+        BASE_REF: ${{ github.event.pull_request.base.sha }}

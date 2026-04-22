@@ -1,0 +1,20 @@
+name: Check new npm packages
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'modules/**/package.json'
+
+jobs:
+  check-new-npm-packages:
+    name: Verify new packages exist on npm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check new packages are registered on npm
+        uses: ./.github/actions/check-new-npm-packages
