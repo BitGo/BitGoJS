@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.7.3...@bitgo/sdk-coin-hbar@2.8.0) (2026-04-22)
+
+
+### Features
+
+* **sdk-coin-hbar:** add staking support via AccountUpdateBuilder ([d5e02e9](https://github.com/BitGo/BitGoJS/commit/d5e02e9d26055b030f6b502160e11d2f248642e9))
+
+
+
+
+
 ## [2.7.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.7.2...@bitgo/sdk-coin-hbar@2.7.3) (2026-04-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-hbar

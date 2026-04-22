@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.10.2...@bitgo/sdk-lib-mpc@10.11.0) (2026-04-22)
+
+
+### Bug Fixes
+
+* **sdk-lib-mpc:** authenticate signatureR in DKLS DSG round 4 messages ([16392ca](https://github.com/BitGo/BitGoJS/commit/16392ca9e5d1fe73b927fba96a21e885a3abeff3))
+* **sdk-lib-mpc:** derive final_session_id deterministically in DKG retrofit ([d614055](https://github.com/BitGo/BitGoJS/commit/d6140550eb037f55fb73a8bead48f41871bd06c6))
+* **sdk-lib-mpc:** throw in Dsg.endSession() when signature exists ([2cdae61](https://github.com/BitGo/BitGoJS/commit/2cdae61da398dd40c357e8af7a3450c00a8a25a6))
+
+
+### Features
+
+* implement EdDSA MPS DKG key gen orchestration ([eaaa472](https://github.com/BitGo/BitGoJS/commit/eaaa472969330e491832a7637eabc9d19b136875))
+* **sdk-lib-mpc:** implement EdDSA DKG MPS functionality ([350f745](https://github.com/BitGo/BitGoJS/commit/350f74564d8d6d90d007550f6f0ffbb12acc8007))
+
+
+
+
+
 ## [10.10.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.10.1...@bitgo/sdk-lib-mpc@10.10.2) (2026-04-14)
 
 

@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.33.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.32.0...bitgo@50.33.0) (2026-04-22)
+
+
+### Bug Fixes
+
+* require txParams with recipients for TSS tx signing ([2be89f5](https://github.com/BitGo/BitGoJS/commit/2be89f5e62684b6e80570ba2308744fab7ac3c46))
+* **sdk-lib-mpc:** authenticate signatureR in DKLS DSG round 4 messages ([16392ca](https://github.com/BitGo/BitGoJS/commit/16392ca9e5d1fe73b927fba96a21e885a3abeff3))
+
+
+### Features
+
+* implement EdDSA MPS DKG key gen orchestration ([eaaa472](https://github.com/BitGo/BitGoJS/commit/eaaa472969330e491832a7637eabc9d19b136875))
+* integrate EdDSA MPCv2 wallet creation via tss/settings to gate ([1b0a24b](https://github.com/BitGo/BitGoJS/commit/1b0a24b8d2522f3e70f614fb1bac49e824ab4e2e))
+* **sdk-core:** add dedicated EdDSA MPCv2 BitGo GPG public key support ([4d9f626](https://github.com/BitGo/BitGoJS/commit/4d9f6269f61b04b6a4190197736f4a11e6800733))
+
+
+
+
+
 # [50.32.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.31.0...bitgo@50.32.0) (2026-04-14)
 
 

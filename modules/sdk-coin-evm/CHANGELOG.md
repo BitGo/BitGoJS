@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.14.12...@bitgo/sdk-coin-evm@1.15.0) (2026-04-22)
+
+
+### Features
+
+* hts nft transfer support ([2c21e3e](https://github.com/BitGo/BitGoJS/commit/2c21e3e27149c469fb73e6e40cecf1992e665b71))
+
+
+
+
+
 ## [1.14.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.14.11...@bitgo/sdk-coin-evm@1.14.12) (2026-04-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-evm

@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.41.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.40.0...@bitgo/sdk-core@36.41.0) (2026-04-22)
+
+
+### Bug Fixes
+
+* require txParams with recipients for TSS tx signing ([2be89f5](https://github.com/BitGo/BitGoJS/commit/2be89f5e62684b6e80570ba2308744fab7ac3c46))
+* **sdk-core:** rename bandwidthWeight/energyWeight to bandwidthSun/energySun ([e59c513](https://github.com/BitGo/BitGoJS/commit/e59c5138e2635411246dedcd3588816da21126ce))
+* **sdk-lib-mpc:** authenticate signatureR in DKLS DSG round 4 messages ([16392ca](https://github.com/BitGo/BitGoJS/commit/16392ca9e5d1fe73b927fba96a21e885a3abeff3))
+
+
+### Features
+
+* allow webauthn info to be passed in wallet creation ([6283604](https://github.com/BitGo/BitGoJS/commit/6283604e2766a3f27d79d8cf5550e5f9b9f014f0))
+* implement EdDSA MPS DKG key gen orchestration ([eaaa472](https://github.com/BitGo/BitGoJS/commit/eaaa472969330e491832a7637eabc9d19b136875))
+* integrate EdDSA MPCv2 wallet creation via tss/settings to gate ([1b0a24b](https://github.com/BitGo/BitGoJS/commit/1b0a24b8d2522f3e70f614fb1bac49e824ab4e2e))
+* **sdk-api:** add decryptAsync with v1/v2 auto-detection ([eb01c19](https://github.com/BitGo/BitGoJS/commit/eb01c198373ff2bb112de91be5a9d75cb0409156))
+* **sdk-api:** replace manual v2 envelope validation with io-ts codec ([f4ae573](https://github.com/BitGo/BitGoJS/commit/f4ae5730e6ea0479ecd2996c7529356449889ba3))
+* **sdk-core:** add dedicated EdDSA MPCv2 BitGo GPG public key support ([4d9f626](https://github.com/BitGo/BitGoJS/commit/4d9f6269f61b04b6a4190197736f4a11e6800733))
+* **statics,sdk-core:** index 12 new fiat currencies ([a10c635](https://github.com/BitGo/BitGoJS/commit/a10c6359a5464e1ebdd67c0e15ee00fb17b70773))
+* **statics:** add INK L2 EVM chain ([b0713aa](https://github.com/BitGo/BitGoJS/commit/b0713aa963f0535660dc8a4d52b399349faadb6d))
+* **statics:** add Kaspa to statics and environments ([612ae7d](https://github.com/BitGo/BitGoJS/commit/612ae7dc07c3f865a109ee51980bb0fadb72184e))
+
+
+
+
+
 # [36.40.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.39.0...@bitgo/sdk-core@36.40.0) (2026-04-14)
 
 
