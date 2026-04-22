@@ -796,4 +796,28 @@ export const botTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.erc20(
+    'ffb0d91e-c6d9-4cef-b5ea-f3781a757197',
+    'eth:krwq',
+    'KRWQ',
+    18,
+    '0xc00db6b41473d065027f5ed6fada20fde75f142e',
+    'eth:krwq' as unknown as UnderlyingAsset,
+    networkFeatureMapForTokens['eth'],
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    'f940b8f1-4911-4632-94ce-f4c0d950defb',
+    'eth:hybond',
+    'HYBOND',
+    18,
+    '0x67c312a26695ea9842bbcf1e1d0ee64694e42db6',
+    'eth:hybond' as unknown as UnderlyingAsset,
+    networkFeatureMapForTokens['eth'],
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
