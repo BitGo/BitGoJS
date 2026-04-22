@@ -1011,7 +1011,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     }
     // using decodeURIComponent to handle special characters
     if (
-      decodeURIComponent(cypherJson.adata) !== decodeURIComponent(`${roundDomainSeparator}:${adata}`) &&
+      // decodeURIComponent(cypherJson.adata) !== decodeURIComponent(`${roundDomainSeparator}:${adata}`) &&
       decodeURIComponent(cypherJson.adata) !== decodeURIComponent(adata)
     ) {
       throw new Error('Adata does not match cyphertext adata');
