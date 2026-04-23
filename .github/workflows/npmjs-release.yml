@@ -31,10 +31,6 @@ jobs:
       last-release-sha: ${{ steps.get-release-info.outputs.last-release-sha }}
       current-master-sha: ${{ steps.get-release-info.outputs.current-master-sha }}
       commits-since-release: ${{ steps.get-release-info.outputs.commits-since-release }}
-      express-version: ${{ steps.compute-express-git-tag.outputs.version }}
-      express-git-tag: ${{ steps.compute-express-git-tag.outputs.git-tag }}
-      express-git-sha: ${{ steps.compute-express-git-sha.outputs.git-sha }}
-      express-docker-exists: ${{ steps.check-docker-image.outputs.express-docker-exists }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -112,95 +108,6 @@ jobs:
           done
 
           echo "" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Checkout rel/latest branch
-        if: inputs.dry-run == false
-        uses: actions/checkout@v6
-        with:
-          ref: rel/latest
-
-      - name: Compute express target version and tag
-        if: inputs.dry-run == false
-        id: compute-express-git-tag
-        run: |
-          VERSION=$(jq -r '.version' ./modules/express/package.json)
-          TAG="@bitgo/express@$VERSION"
-          echo "Current latest express version: $VERSION"
-          echo "Expected latest express git tag: $TAG"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "git-tag=$TAG" >> "$GITHUB_OUTPUT"
-
-      - name: Checkout express target git tag
-        if: inputs.dry-run == false
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ steps.compute-express-git-tag.outputs.git-tag }}
-          fetch-depth: 2
-
-      - name: Parse express release information
-        if: inputs.dry-run == false
-        id: compute-express-git-sha
-        run: |
-          GIT_SHA=$(git rev-parse HEAD)
-          echo "Git SHA: $GIT_SHA"
-          echo "git-sha=$GIT_SHA" >> "$GITHUB_OUTPUT"
-
-      - name: Sanity Check Express Git Tag
-        if: inputs.dry-run == false
-        run: |
-          # Since git tags can be moved, we need to ensure the tag we're releasing
-          # actually corresponds to a version bump in package.json
-          CURRENT_VERSION="${{ steps.compute-express-git-tag.outputs.version }}"
-          PREVIOUS_VERSION=$(git show HEAD~1:./modules/express/package.json | jq -r '.version')
-
-          echo "Current version: $CURRENT_VERSION"
-          echo "Previous version: $PREVIOUS_VERSION"
-
-          if [ "$CURRENT_VERSION" == "$PREVIOUS_VERSION" ]; then
-            echo "::error::Express version bump does not line up with git tag location."
-            echo "::error::This suggests the git tag may have been moved."
-            exit 1
-          fi
-
-          echo "✅ Express version bump lines up with git tag"
-
-      - name: Check if Docker image already exists in Docker Hub
-        if: inputs.dry-run == false
-        id: check-docker-image
-        run: |
-          VERSION="${{ steps.compute-express-git-tag.outputs.version }}"
-          if curl -s -f "https://hub.docker.com/v2/repositories/bitgo/express/tags/$VERSION" > /dev/null; then
-            echo "⚠️ Docker image bitgo/express:$VERSION already exists in Docker Hub — Docker publish will be skipped"
-            echo "express-docker-exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "✅ Docker image bitgo/express:$VERSION does not exist in Docker Hub"
-            echo "express-docker-exists=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Summarise Docker image status
-        if: inputs.dry-run == false
-        run: |
-          if [ "${{ steps.check-docker-image.outputs.express-docker-exists }}" == "true" ]; then
-            echo "### ⚠️ Docker publish skipped" >> "$GITHUB_STEP_SUMMARY"
-            echo "Image \`bitgo/express:${{ steps.compute-express-git-tag.outputs.version }}\` already exists in Docker Hub." >> "$GITHUB_STEP_SUMMARY"
-            echo "The npm release will proceed normally." >> "$GITHUB_STEP_SUMMARY"
-          fi
-
-      - name: Update Express GitHub summary
-        if: inputs.dry-run == false
-        run: |
-          {
-            echo "## BitGo Express Release Information"
-            echo ""
-            echo "Express Version: ${{ steps.compute-express-git-tag.outputs.version }}"
-            echo "Git Tag: ${{ steps.compute-express-git-tag.outputs.git-tag }}"
-            echo "Commit SHA: ${{ steps.compute-express-git-sha.outputs.git-sha }}"
-            echo ""
-            echo "### Docker Images to be deployed:"
-            echo "- \`bitgo/express:latest\`"
-            echo "- \`bitgo/express:${{ steps.compute-express-git-tag.outputs.version }}\`"
-            echo ""
-          } >> "$GITHUB_STEP_SUMMARY"
 
   release-bitgojs:
     name: Release BitGoJS
@@ -295,12 +202,104 @@ jobs:
             --title "v${{ steps.extract-version.outputs.new-version }}" \
             --notes-file "${{ steps.version-bump-summary.outputs.text-file }}"
 
+  get-express-release-context:
+    name: Get Express release context
+    if: inputs.dry-run == false
+    needs:
+      - release-bitgojs
+    runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    outputs:
+      version: ${{ steps.compute-express-git-tag.outputs.version }}
+      git-tag: ${{ steps.compute-express-git-tag.outputs.git-tag }}
+      git-sha: ${{ steps.compute-express-git-sha.outputs.git-sha }}
+      docker-exists: ${{ steps.check-docker-image.outputs.docker-exists }}
+    steps:
+      - name: Checkout rel/latest branch
+        uses: actions/checkout@v6
+        with:
+          ref: rel/latest
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Compute express target version and tag
+        id: compute-express-git-tag
+        run: |
+          VERSION=$(jq -r '.version' ./modules/express/package.json)
+          TAG="@bitgo/express@$VERSION"
+          echo "Current latest express version: $VERSION"
+          echo "Expected latest express git tag: $TAG"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "git-tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout express target git tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.compute-express-git-tag.outputs.git-tag }}
+          fetch-depth: 2
+
+      - name: Parse express git SHA
+        id: compute-express-git-sha
+        run: |
+          GIT_SHA=$(git rev-parse HEAD)
+          echo "Git SHA: $GIT_SHA"
+          echo "git-sha=$GIT_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Sanity Check Express Git Tag
+        run: |
+          CURRENT_VERSION="${{ steps.compute-express-git-tag.outputs.version }}"
+          PREVIOUS_VERSION=$(git show HEAD~1:./modules/express/package.json | jq -r '.version')
+
+          echo "Current version: $CURRENT_VERSION"
+          echo "Previous version: $PREVIOUS_VERSION"
+
+          if [ "$CURRENT_VERSION" == "$PREVIOUS_VERSION" ]; then
+            echo "::error::Express version bump does not line up with git tag location."
+            echo "::error::This suggests the git tag may have been moved."
+            exit 1
+          fi
+
+          echo "✅ Express version bump lines up with git tag"
+
+      - name: Check if Docker image already exists in Docker Hub
+        id: check-docker-image
+        run: |
+          VERSION="${{ steps.compute-express-git-tag.outputs.version }}"
+          if curl -s -f "https://hub.docker.com/v2/repositories/bitgo/express/tags/$VERSION" > /dev/null; then
+            echo "⚠️ Docker image bitgo/express:$VERSION already exists — skipping publish"
+            echo "docker-exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "✅ Docker image bitgo/express:$VERSION does not exist — will publish"
+            echo "docker-exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update Express GitHub summary
+        run: |
+          if [ "${{ steps.check-docker-image.outputs.docker-exists }}" == "true" ]; then
+            {
+              echo "### ⚠️ Docker publish skipped"
+              echo "Image \`bitgo/express:${{ steps.compute-express-git-tag.outputs.version }}\` already exists in Docker Hub."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "## BitGo Express Release Information"
+              echo ""
+              echo "Express Version: ${{ steps.compute-express-git-tag.outputs.version }}"
+              echo "Git Tag: ${{ steps.compute-express-git-tag.outputs.git-tag }}"
+              echo "Commit SHA: ${{ steps.compute-express-git-sha.outputs.git-sha }}"
+              echo ""
+              echo "### Docker Images to be deployed:"
+              echo "- \`bitgo/express:latest\`"
+              echo "- \`bitgo/express:${{ steps.compute-express-git-tag.outputs.version }}\`"
+              echo ""
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   publish-express-to-docker-hub:
     name: Publish Express To Docker Hub
-    if: inputs.dry-run == false && needs.get-release-context.outputs.express-docker-exists != 'true'
+    if: needs.get-express-release-context.outputs.docker-exists != 'true'
     needs:
-      - get-release-context
-      - release-bitgojs
+      - get-express-release-context
     runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
     timeout-minutes: 40
     environment: bitgo-express
@@ -308,7 +307,7 @@ jobs:
       - name: Checkout BitGoJS repository
         uses: actions/checkout@v6
         with:
-          ref: ${{ needs.get-release-context.outputs.express-git-sha }}
+          ref: ${{ needs.get-express-release-context.outputs.git-sha }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
@@ -334,8 +333,8 @@ jobs:
           push: true
           tags: |
             bitgo/express:latest
-            bitgo/express:${{ needs.get-release-context.outputs.express-version }}
+            bitgo/express:${{ needs.get-express-release-context.outputs.version }}
           build-args: |
-            VERSION=${{ needs.get-release-context.outputs.express-version }}
+            VERSION=${{ needs.get-express-release-context.outputs.version }}
             BUILD_DATE=${{ steps.build-date.outputs.build-date }}
-            GIT_HASH=${{ needs.get-release-context.outputs.express-git-sha }}
+            GIT_HASH=${{ needs.get-express-release-context.outputs.git-sha }}
