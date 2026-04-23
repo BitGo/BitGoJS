@@ -21,7 +21,7 @@ import { GetLightningState } from './v2/lightningState';
 import { PostKeychainChangePassword } from './v2/keychainChangePassword';
 import { PostLightningInitWallet } from './v2/lightningInitWallet';
 import { PostUnlockLightningWallet } from './v2/unlockWallet';
-import { PostVerifyCoinAddress } from './v2/verifyAddress';
+import { PostVerifyCoinAddress } from './v2/verifyCoinAddress';
 import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
 import { PostCreateLocalKeyChain } from './v1/createLocalKeyChain';
 import { PutConstructPendingApprovalTx } from './v1/constructPendingApprovalTx';
