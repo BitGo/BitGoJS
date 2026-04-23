@@ -36,6 +36,8 @@ export class DKG {
   private keyShare: Buffer | null = null;
   /** 32-byte Ed25519 public key from round2 */
   private sharePk: Buffer | null = null;
+  /** 32-byte chain code from round2 */
+  private shareChaincode: Buffer | null = null;
 
   protected dkgState: DkgState = DkgState.Uninitialized;
 
@@ -153,6 +155,7 @@ export class DKG {
       }
       this.keyShare = Buffer.from(share.share);
       this.sharePk = Buffer.from(share.pk);
+      this.shareChaincode = Buffer.from(share.chaincode);
       this.dkgStateBytes = null;
       this.dkgState = DkgState.Complete;
       return [];
@@ -183,9 +186,18 @@ export class DKG {
   }
 
   /**
+   * Returns the 128-char hex common keychain: 64-char public key + 64-char chain code.
+   * This matches the format expected by address derivation (Eddsa.deriveUnhardened).
+   */
+  getCommonKeychain(): string {
+    if (!this.sharePk || !this.shareChaincode) {
+      throw Error('DKG session not initialized');
+    }
+    return this.sharePk.toString('hex') + this.shareChaincode.toString('hex');
+  }
+
+  /**
    * Returns a CBOR-encoded reduced representation containing the public key.
-   * Note: private key material and chain code are not separately accessible
-   * from @bitgo/wasm-mps; the full keyshare is available via getKeyShare().
    */
   getReducedKeyShare(): Buffer {
     if (!this.sharePk) {
