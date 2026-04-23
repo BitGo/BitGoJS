@@ -87,7 +87,7 @@ describe('TradingAccount', function () {
         await tradingAccount
           .signPayload({ payload })
           .should.be.rejectedWith(
-            'Wallet must use user key to sign ofc transaction, please provide the wallet passphrase'
+            'Wallet must use user key to sign ofc transaction, please provide the wallet passphrase or visit your wallet settings page to configure one.'
           );
       });
 
@@ -98,7 +98,11 @@ describe('TradingAccount', function () {
           userKeySigningRequired: undefined,
         });
 
-        await tradingAccount.signPayload({ payload }).should.be.rejectedWith('Wallet does not support BitGo signing');
+        await tradingAccount
+          .signPayload({ payload })
+          .should.be.rejectedWith(
+            'Wallet does not support BitGo signing. Please reach out to support@bitgo.com to resolve this issue.'
+          );
       });
     });
 

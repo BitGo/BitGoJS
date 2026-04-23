@@ -39,17 +39,21 @@ export class TradingAccount implements ITradingAccount {
   }
 
   /**
-   * Signs the payload of a trading account via the trading account BitGo key stored in a remote KMS
+   * Signs the payload of a trading account via the trading account BitGo key
    * @param params
    * @private
    */
   private async signPayloadByBitGoKey(params: Omit<SignPayloadParameters, 'walletPassphrase'>): Promise<string> {
     const walletData = this.wallet.toJSON();
     if (walletData.userKeySigningRequired) {
-      throw new Error('Wallet must use user key to sign ofc transaction, please provide the wallet passphrase');
+      throw new Error(
+        'Wallet must use user key to sign ofc transaction, please provide the wallet passphrase or visit your wallet settings page to configure one.'
+      );
     }
     if (walletData.keys.length < 2) {
-      throw new Error('Wallet does not support BitGo signing');
+      throw new Error(
+        'Wallet does not support BitGo signing. Please reach out to support@bitgo.com to resolve this issue.'
+      );
     }
 
     const url = this.wallet.url('/tx/sign');
