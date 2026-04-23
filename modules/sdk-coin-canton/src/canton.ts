@@ -26,6 +26,7 @@ import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { TransactionBuilderFactory } from './lib';
 import { KeyPair as CantonKeyPair } from './lib/keyPair';
+import { TxData } from './lib/iface';
 import utils from './lib/utils';
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
@@ -112,9 +113,42 @@ export class Canton extends BaseCoin {
       case TransactionType.TransferAccept:
       case TransactionType.TransferReject:
       case TransactionType.TransferAcknowledge:
-      case TransactionType.OneStepPreApproval:
       case TransactionType.TransferOfferWithdrawn:
         // There is no input for these type of transactions, so always return true.
+        return true;
+      case TransactionType.OneStepPreApproval:
+        // Canton is always a TSS wallet. The SDK's buildTokenEnablements passes enableTokens
+        // through unchanged for TSS wallets (no conversion to recipients), so txParams.enableTokens
+        // is the only source of user intent here.
+        //
+        // Receiver validation: the receiver of a OneStepPreApproval is always the wallet's root address.
+        // We use enableToken.address if explicitly provided, otherwise fall back to
+        // wallet.coinSpecific().rootAddress (the Canton party ID stored at wallet creation time).
+        // Token name validation: checked when the token is resolvable from statics.
+        if (
+          txParams.type === 'enabletoken' &&
+          txParams.enableTokens !== undefined &&
+          txParams.enableTokens.length > 0
+        ) {
+          const txData = transaction.toJson() as TxData;
+          const enableToken = txParams.enableTokens[0];
+          const walletRootAddress = params.wallet?.coinSpecific?.()?.rootAddress;
+          const expectedReceiver = enableToken.address ?? walletRootAddress;
+          if (expectedReceiver) {
+            // Strip ?memoId suffix if present in the stored address
+            const [expectedReceiverBase] = expectedReceiver.split('?memoId=');
+            if (txData.receiver !== expectedReceiverBase) {
+              throw new Error(
+                `OneStepPreApproval receiver mismatch: expected '${expectedReceiverBase}', got '${txData.receiver}'`
+              );
+            }
+          }
+          if (txData.token !== undefined && txData.token !== enableToken.name) {
+            throw new Error(
+              `OneStepPreApproval token name mismatch: expected '${enableToken.name}', got '${txData.token}'`
+            );
+          }
+        }
         return true;
       case TransactionType.Send:
         if (txParams.recipients !== undefined) {
