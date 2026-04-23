@@ -97,7 +97,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 
     const {
       sessionId: sessionIdRound2,
-      commonPublicKey,
+      commonPublicKeychain: commonPublicKey,
       bitgoMsg2,
     } = await this.sendKeyGenerationRound2(params.enterprise, {
       sessionId,

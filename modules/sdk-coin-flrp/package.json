@@ -47,7 +47,7 @@
     "@bitgo/sdk-test": "^9.1.39"
   },
   "dependencies": {
-    "@bitgo/public-types": "5.96.0",
+    "@bitgo/public-types": "5.96.2",
     "@bitgo/sdk-core": "^36.41.0",
     "@bitgo/secp256k1": "^1.11.0",
     "@bitgo/statics": "^58.36.0",
