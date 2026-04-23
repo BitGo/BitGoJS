@@ -9,7 +9,8 @@ import { PostV1Decrypt } from './v1/decrypt';
 import { PostV2Decrypt } from './v2/decrypt';
 import { PostV1Encrypt } from './v1/encrypt';
 import { PostV2Encrypt } from './v2/encrypt';
-import { PostVerifyAddress } from './common/verifyAddress';
+import { PostV1VerifyAddress } from './v1/verifyAddress';
+import { PostV2VerifyAddress } from './v2/verifyAddress';
 import { PostV1CalculateMinerFeeInfo } from './v1/calculateMinerFeeInfo';
 import { PostV2CalculateMinerFeeInfo } from './v2/calculateMinerFeeInfo';
 import { PostAcceptShare } from './v1/acceptShare';
@@ -101,8 +102,11 @@ export const ExpressEncryptApiSpec = apiSpec({
 });
 
 export const ExpressVerifyAddressApiSpec = apiSpec({
+  'express.v1.verifyaddress': {
+    post: PostV1VerifyAddress,
+  },
   'express.verifyaddress': {
-    post: PostVerifyAddress,
+    post: PostV2VerifyAddress,
   },
 });
 

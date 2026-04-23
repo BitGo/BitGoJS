@@ -3,17 +3,21 @@ import { httpRoute, httpRequest } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 
 export const VerifyAddressBody = {
+  /** Address which should be verified for correct format */
   address: t.string,
 };
 
 /**
- * Verify Address
+ * Verify Address (v1)
  *
- * @operationId express.verifyaddress
- * @tag express
+ * Verify that a given address string is valid for any supported coin.
+ *
+ * @operationId express.v1.verifyaddress
+ * @tag Express
+ * @private
  */
-export const PostVerifyAddress = httpRoute({
-  path: '/api/v[12]/verifyaddress',
+export const PostV1VerifyAddress = httpRoute({
+  path: '/api/v1/verifyaddress',
   method: 'POST',
   request: httpRequest({
     body: VerifyAddressBody,
