@@ -3,6 +3,8 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { Canton, Tcanton } from '../../src';
 
+import './canton';
+
 describe('Canton:', function () {
   let bitgo: TestBitGoAPI;
 
