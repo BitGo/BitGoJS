@@ -263,7 +263,8 @@ describe('DOT:', function () {
       const accountInfoCB = sandBox.stub(Dot.prototype, 'getAccountInfo' as keyof Dot);
       accountInfoCB.withArgs(testData.wrwUser.walletAddress0).resolves({
         nonce: nonce,
-        freeBalance: 8888,
+        // Must exceed stubbed getFee so recover() does not throw (matches getFee withArgs amount).
+        freeBalance: 1510000000000,
       });
       const headerInfoCB = sandBox.stub(Dot.prototype, 'getHeaderInfo' as keyof Dot);
       headerInfoCB.resolves({
@@ -275,7 +276,11 @@ describe('DOT:', function () {
         freeBalance: 1510000000000,
       });
       const getFeeCB = sandBox.stub(Dot.prototype, 'getFee' as keyof Dot);
+      // Default avoids RPC when tests use a recoveryDestination other than destAddr (e.g. unsigned sweep fixture).
+      getFeeCB.resolves(15783812856);
       getFeeCB.withArgs(destAddr, testData.wrwUser.walletAddress0, 1510000000000).resolves(15783812856);
+      const getMaterialCB = sandBox.stub(Dot.prototype, 'getMaterial' as keyof Dot);
+      getMaterialCB.resolves(utils.getMaterial(coins.get('tdot')));
     });
 
     afterEach(function () {
@@ -461,6 +466,8 @@ describe('DOT:', function () {
       getFeeCB.withArgs(baseAddr, testData.consolidationWrwUser.walletAddress1, 10000000000).resolves(15783812856);
       getFeeCB.withArgs(baseAddr, testData.consolidationWrwUser.walletAddress2, 1510000000000).resolves(15783812856);
       getFeeCB.withArgs(baseAddr, testData.consolidationWrwUser.walletAddress3, 1510000000000).resolves(15783812856);
+      const getMaterialCB = sandBox.stub(Dot.prototype, 'getMaterial' as keyof Dot);
+      getMaterialCB.resolves(utils.getMaterial(coins.get('tdot')));
     });
 
     afterEach(function () {
@@ -699,6 +706,8 @@ describe('DOT:', function () {
         nonce: nonce,
         freeBalance: 0,
       });
+      const getFeeCB = sandBox.stub(Dot.prototype, 'getFee' as keyof Dot);
+      getFeeCB.resolves(15783812856);
     });
 
     afterEach(function () {

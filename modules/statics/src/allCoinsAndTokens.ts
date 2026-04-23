@@ -3365,7 +3365,7 @@ export const allCoinsAndTokens = [
     'Canton Coin',
     Networks.main.canton,
     UnderlyingAsset.CANTON,
-    CANTON_FEATURES,
+    [...CANTON_FEATURES, CoinFeature.UNSPENT_MODEL],
     KeyCurve.Ed25519
   ),
   canton(
