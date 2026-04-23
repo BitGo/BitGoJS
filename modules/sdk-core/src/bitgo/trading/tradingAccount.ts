@@ -11,11 +11,16 @@ export class TradingAccount implements ITradingAccount {
   private readonly enterpriseId: string;
 
   public wallet: IWallet;
+  public readonly userKeySigningRequired: boolean;
 
   constructor(enterpriseId: string, wallet: IWallet, bitgo: BitGoBase) {
     this.enterpriseId = enterpriseId;
     this.wallet = wallet;
     this.bitgo = bitgo;
+
+    const walletData = this.wallet.toJSON();
+    this.userKeySigningRequired =
+      walletData.coinSpecific?.userKeySigningRequired ?? walletData.userKeySigningRequired ?? true;
   }
 
   get id(): string {
@@ -48,10 +53,9 @@ export class TradingAccount implements ITradingAccount {
     params: Omit<SignPayloadParameters, 'walletPassphrase' | 'prv'>
   ): Promise<string> {
     const walletData = this.wallet.toJSON();
-    const userKeySigningRequired = walletData.coinSpecific?.userKeySigningRequired ?? walletData.userKeySigningRequired;
-    if (userKeySigningRequired) {
+    if (this.userKeySigningRequired) {
       throw new Error(
-        'Wallet must use user key to sign ofc transaction, please provide the wallet passphrase or visit your wallet settings page to configure one.'
+        'Wallet must use user key to sign ofc transaction, please provide the wallet passphrase, the private key, or visit your wallet settings page to configure one.'
       );
     }
     if (walletData.keys.length < 2) {
