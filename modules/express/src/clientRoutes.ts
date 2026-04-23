@@ -403,6 +403,15 @@ function getWalletPwFromEnv(walletId: string): string {
   return walletPw;
 }
 
+/**
+ * Returns the wallet passphrase from the environment, or undefined if not set.
+ * Unlike getWalletPwFromEnv, this does not throw when the env variable is absent.
+ * Use this when the passphrase is optional (e.g. KMS-backed wallets).
+ */
+function findWalletPwFromEnv(walletId: string): string | undefined {
+  return process.env[`WALLET_${walletId}_PASSPHRASE`];
+}
+
 async function getEncryptedPrivKey(path: string, walletId: string): Promise<string> {
   const privKeyFile = await fs.readFile(path, { encoding: 'utf8' });
   const encryptedPrivKey = JSON.parse(privKeyFile);
@@ -629,7 +638,9 @@ export async function handleV2OFCSignPayload(
     throw new ApiResponseError(`Could not find OFC wallet ${walletId}`, 404);
   }
 
-  const walletPassphrase = bodyWalletPassphrase || getWalletPwFromEnv(wallet.id());
+  // Prefer the passphrase from the request body; fall back to the env var.
+  // If neither is present, pass undefined — signPayload() routes to KMS internally.
+  const walletPassphrase = bodyWalletPassphrase ?? findWalletPwFromEnv(wallet.id());
   const tradingAccount = wallet.toTradingAccount();
   const stringifiedPayload = typeof payload === 'string' ? payload : JSON.stringify(payload);
   const signature = await tradingAccount.signPayload({
