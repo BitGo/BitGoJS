@@ -61,6 +61,15 @@ Object.entries(Networks).forEach(([category, networks]) => {
         Networks.test.ada.accountExplorerUrl.should.equal('https://preprod.cardanoscan.io/address/');
       });
     });
+
+    describe('Near Network', function () {
+      it('should have correct explorer URLs', function () {
+        Networks.main.near.explorerUrl.should.equal('https://nearblocks.io/txns/');
+        Networks.main.near.accountExplorerUrl.should.equal('https://nearblocks.io/address/');
+        Networks.test.near.explorerUrl.should.equal('https://testnet.nearblocks.io/txns/');
+        Networks.test.near.accountExplorerUrl.should.equal('https://testnet.nearblocks.io/address/');
+      });
+    });
   });
 });
 
