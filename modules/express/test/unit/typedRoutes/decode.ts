@@ -107,7 +107,7 @@ describe('io-ts decode tests', function () {
       address: 'some-address',
     });
   });
-  it('express.verifycoinaddress', function () {
+  it('express.verifycoinaddress1', function () {
     // invalid coin param type
     assert.throws(() =>
       assertDecode(t.type(VerifyAddressV2Params), {

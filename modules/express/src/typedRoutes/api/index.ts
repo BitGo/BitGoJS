@@ -107,7 +107,7 @@ export const ExpressVerifyAddressApiSpec = apiSpec({
 });
 
 export const ExpressVerifyCoinAddressApiSpec = apiSpec({
-  'express.verifycoinaddress': {
+  'express.verifycoinaddress1': {
     post: PostVerifyCoinAddress,
   },
 });
