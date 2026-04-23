@@ -1125,6 +1125,65 @@ describe('ERC20 Bulk Transaction Feature', () => {
       'bsc',
       'tbsc',
       'tavaxc',
+      // Bera (batcherContractAddress confirmed deployed on both mainnet and testnet)
+      'bera',
+      'tbera',
+      // Oasys (batcherContractAddress confirmed deployed on both mainnet and testnet)
+      'oas',
+      'toas',
+      // Soneium (batcherContractAddress confirmed deployed on both mainnet and testnet)
+      'soneium',
+      'tsoneium',
+      // HypeEVM mainnet only (testnet not deployed)
+      'hypeevm',
+      // ApeChain testnet only (mainnet not deployed)
+      'tapechain',
+      // Sonic (mainnet confirmed deployed, testnet confirmed deployed)
+      'sonic',
+      'tsonic',
+      // Kaia (mainnet confirmed deployed, testnet confirmed deployed)
+      'kaia',
+      'tkaia',
+      // Sei EVM (mainnet confirmed deployed, testnet confirmed deployed)
+      'seievm',
+      'tseievm',
+      // Base Ethereum (mainnet and testnet confirmed deployed)
+      'baseeth',
+      'tbaseeth',
+      // Mantle (mainnet and testnet confirmed deployed)
+      'mantle',
+      'tmantle',
+      // Worldchain (mainnet and testnet confirmed deployed)
+      'world',
+      'tworld',
+      // Monad mainnet only (testnet not deployed)
+      'mon',
+      // Creditcoin (mainnet and testnet confirmed deployed)
+      'ctc',
+      'tctc',
+      // Somnia (mainnet and testnet confirmed deployed)
+      'tstt',
+      'somi',
+      // Linea testnet only (mainnet not deployed)
+      'tlineaeth',
+      // Morph Ethereum mainnet (confirmed deployed)
+      'morpheth',
+      // zkSync Era (mainnet and testnet, batcherContractAddress confirmed deployed)
+      'zksyncera',
+      'tzksyncera',
+      // Additional mainnet chains with batcher contract deployed (verified via eth_getCode)
+      'chiliz',
+      'flow',
+      'hemieth',
+      'ip',
+      'kavaevm',
+      'morph',
+      'og',
+      'okbxlayer',
+      'plume',
+      'unieth',
+      'zketh',
+      'tzketh',
     ];
     erc20BulkTransactionCoins.forEach((coinName) => {
       const coin = coins.get(coinName);

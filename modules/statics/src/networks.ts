@@ -639,6 +639,7 @@ class Chiliz extends Mainnet implements EthereumNetwork {
   chainId = 88888;
   nativeCoinOperationHashPrefix = '88888';
   tokenOperationHashPrefix = '88888-ERC20';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class ChilizTestnet extends Testnet implements EthereumNetwork {
@@ -736,6 +737,7 @@ class XtzEvm extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://explorer.etherlink.com/address/';
   chainId = 42793;
   nativeCoinOperationHashPrefix = '42793';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class XtzEvmTestnet extends Testnet implements EthereumNetwork {
@@ -1438,6 +1440,7 @@ class ZkSync extends Mainnet implements EthereumNetwork {
   chainId = 324;
   nativeCoinOperationHashPrefix = '324';
   tokenOperationHashPrefix = '324-ERC20';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class ZkSyncTestnet extends Testnet implements EthereumNetwork {
@@ -1464,6 +1467,7 @@ class ZkSyncEra extends Mainnet implements EthereumNetwork {
   chainId = 324;
   nativeCoinOperationHashPrefix = '324';
   tokenOperationHashPrefix = '324-ERC20';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class ZkSyncEraTestnet extends Testnet implements EthereumNetwork {
@@ -1563,6 +1567,7 @@ class IP extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://www.storyscan.io/address/';
   chainId = 1514;
   nativeCoinOperationHashPrefix = '1514';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class IPTestnet extends Testnet implements EthereumNetwork {
@@ -1659,6 +1664,7 @@ class Plasma extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://plasmascan.to/address/';
   chainId = 9745;
   nativeCoinOperationHashPrefix = '9745';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class PlasmaTestnet extends Testnet implements EthereumNetwork {
@@ -1728,6 +1734,7 @@ class KavaEVM extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://kavascan.com/address/';
   chainId = 2222;
   nativeCoinOperationHashPrefix = '2222';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class LineaETH extends Mainnet implements EthereumNetwork {
@@ -1746,6 +1753,7 @@ class LineaETHTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://sepolia.lineascan.build/address/';
   chainId = 59141;
   nativeCoinOperationHashPrefix = '59141';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class FluentETH extends Mainnet implements EthereumNetwork {
@@ -1755,6 +1763,7 @@ class FluentETH extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://fluentscan.xyz/address/';
   chainId = 25363;
   nativeCoinOperationHashPrefix = '25363';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class FluentETHTestnet extends Testnet implements EthereumNetwork {
@@ -1773,6 +1782,7 @@ class Mantle extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://mantlescan.xyz/address/';
   chainId = 5000;
   nativeCoinOperationHashPrefix = '5000';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class MantleTestnet extends Testnet implements EthereumNetwork {
@@ -1782,6 +1792,7 @@ class MantleTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://sepolia.mantlescan.xyz/address/';
   chainId = 5003;
   nativeCoinOperationHashPrefix = '5003';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class JovayETH extends Mainnet implements EthereumNetwork {
@@ -1791,6 +1802,7 @@ class JovayETH extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://explorer.jovay.io/address/';
   chainId = 5734951;
   nativeCoinOperationHashPrefix = '5734951';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class JovayETHTestnet extends Testnet implements EthereumNetwork {
@@ -1809,6 +1821,7 @@ class Unieth extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://uniscan.xyz/address/';
   chainId = 130;
   nativeCoinOperationHashPrefix = '130';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class UniethTestnet extends Testnet implements EthereumNetwork {
@@ -1881,6 +1894,7 @@ class Xlayer extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://www.oklink.com/x-layer/address/';
   chainId = 196;
   nativeCoinOperationHashPrefix = '196';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class XlayerTestnet extends Testnet implements EthereumNetwork {
@@ -1899,6 +1913,7 @@ class Morph extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://explorer-api-hoodi.morphl2.io/address/'; // TODO: WIN-8134 add mainnet account explorer url when available
   chainId = 2818;
   nativeCoinOperationHashPrefix = '2818';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class MorphTestnet extends Testnet implements EthereumNetwork {
@@ -1917,6 +1932,7 @@ class MorphETH extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://explorer.morph.network/address/';
   chainId = 2818;
   nativeCoinOperationHashPrefix = '2818';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class MorphETHTestnet extends Testnet implements EthereumNetwork {
@@ -1949,6 +1965,7 @@ class Sonic extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://sonicscan.org/address/';
   chainId = 146;
   nativeCoinOperationHashPrefix = '146';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class SonicTestnet extends Testnet implements EthereumNetwork {
@@ -1972,6 +1989,7 @@ class Usdt0 extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://stablescan.xyz/address/';
   chainId = 988;
   nativeCoinOperationHashPrefix = '988';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class Usdt0Testnet extends Testnet implements EthereumNetwork {
@@ -1990,6 +2008,7 @@ class Kaia extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://kaiascan.io/address/';
   chainId = 8217;
   nativeCoinOperationHashPrefix = '8217';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class KaiaTestnet extends Testnet implements EthereumNetwork {
@@ -2013,6 +2032,7 @@ class Irys extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://evm-explorer.irys.xyz/address/';
   chainId = 3282;
   nativeCoinOperationHashPrefix = '3282';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class IrysTestnet extends Testnet implements EthereumNetwork {
@@ -2036,6 +2056,7 @@ class Og extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://chainscan.0g.ai/address/';
   chainId = 16661;
   nativeCoinOperationHashPrefix = '16661';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class OgTestnet extends Testnet implements EthereumNetwork {
@@ -2177,6 +2198,7 @@ class SeiEvm extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://seiscan.io/address/';
   chainId = 1329;
   nativeCoinOperationHashPrefix = '1329';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class SeiEvmTestnet extends Testnet implements EthereumNetwork {
@@ -2354,6 +2376,7 @@ class BaseChainTestnet extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xbe69cae311191fb45e648ed20847f06fad2dbab4';
   walletFactoryAddress = '0x4550e1e7616d3364877fc6c9324938dab678621a';
   walletImplementationAddress = '0x92db2759d1dca129a0d9d46877f361be819184c4';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class BaseChain extends Mainnet implements EthereumNetwork {
@@ -2369,6 +2392,7 @@ class BaseChain extends Mainnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xbe69cae311191fb45e648ed20847f06fad2dbab4';
   walletFactoryAddress = '0x4550e1e7616d3364877fc6c9324938dab678621a';
   walletImplementationAddress = '0x92db2759d1dca129a0d9d46877f361be819184c4';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class Polymesh extends Mainnet implements AccountNetwork {
@@ -2434,6 +2458,7 @@ class Flow extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://evm.flowscan.io/address/';
   chainId = 747;
   nativeCoinOperationHashPrefix = '747';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class FlowTestnet extends Testnet implements EthereumNetwork {
@@ -2452,6 +2477,7 @@ class MegaETH extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://megaeth.blockscout.com/address/';
   chainId = 4326;
   nativeCoinOperationHashPrefix = '4326';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class MegaETHTestnet extends Testnet implements EthereumNetwork {
@@ -2470,6 +2496,7 @@ class Plume extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://explorer.plume.org/address/';
   chainId = 98866;
   nativeCoinOperationHashPrefix = '98866';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class HederaEVMTestnet extends Testnet implements EthereumNetwork {
@@ -2497,6 +2524,7 @@ class HemiEth extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://explorer.hemi.xyz/address/';
   chainId = 43111;
   nativeCoinOperationHashPrefix = '43111';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class HemiEthTestnet extends Testnet implements EthereumNetwork {
