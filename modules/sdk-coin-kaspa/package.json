@@ -40,9 +40,9 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^36.40.0",
+    "@bitgo/sdk-core": "^36.41.0",
     "@bitgo/secp256k1": "^1.11.0",
-    "@bitgo/statics": "^58.35.0",
+    "@bitgo/statics": "^58.36.0",
     "bignumber.js": "9.0.0",
     "blakejs": "^1.2.1"
   },
