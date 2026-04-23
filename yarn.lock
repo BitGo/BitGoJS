@@ -999,10 +999,10 @@
     "@scure/base" "1.1.5"
     micro-eth-signer "0.7.2"
 
-"@bitgo/public-types@5.96.0":
-  version "5.96.0"
-  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-5.96.0.tgz#d28dc201f4df3c5de287c5c076b3d6648b5f8ae4"
-  integrity sha512-BAlLe2ygy/c3rMIwjPp1SYGHDqNWqjJ1fSU39G5I9FBXmzcRwvmtErXevsWztvYRW+ZTsqD0OcxLriNZdsJPSQ==
+"@bitgo/public-types@5.96.2":
+  version "5.96.2"
+  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-5.96.2.tgz#ae5ffe68a94742e72def3cec15bf236adaed50f5"
+  integrity sha512-fUwUXP0MLitOyg2blaAxCC04aplrj7XqsTEMFENxJg21ovHyO2mB4vz3IGOnwNipgx6jaCgplZAnPxcKu7N/nw==
   dependencies:
     fp-ts "^2.0.0"
     io-ts "npm:@bitgo-forks/io-ts@2.1.4"
