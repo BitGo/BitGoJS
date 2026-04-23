@@ -7,6 +7,7 @@ import { CalculateMinerFeeInfoRequestBody, CalculateMinerFeeInfoResponse } from 
  *
  * @operationId express.calculateminerfeeinfo
  * @tag Express
+ * @public
  */
 export const PostV2CalculateMinerFeeInfo = httpRoute({
   path: '/api/v2/calculateminerfeeinfo',

@@ -31,6 +31,7 @@ export const CalculateMinerFeeInfoResponse = t.type({
  *
  * @operationId express.v1.calculateminerfeeinfo
  * @tag Express
+ * @private
  */
 export const PostV1CalculateMinerFeeInfo = httpRoute({
   path: '/api/v1/calculateminerfeeinfo',
