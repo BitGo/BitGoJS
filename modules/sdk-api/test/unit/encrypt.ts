@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { randomBytes } from 'crypto';
 
-import { decrypt, decryptAsync, decryptV2, encrypt, encryptV2, V2Envelope } from '../../src';
+import { decrypt, decryptAsync, decryptV2, encrypt, encryptV2, V2Envelope, createEncryptionSession } from '../../src';
 
 describe('encryption methods tests', () => {
   describe('encrypt', () => {
@@ -195,6 +195,10 @@ describe('encryption methods tests', () => {
       await assert.rejects(() => decryptAsync('wrong', v2ct));
     });
 
+    it('throws on invalid JSON input', async () => {
+      await assert.rejects(() => decryptAsync(password, 'not-json'), /ciphertext is not valid JSON/);
+    });
+
     it('wrong password on v2 data does not fall through to v1 decrypt', async () => {
       const v2ct = await encryptV2(password, plaintext, { memorySize: 1024, iterations: 1, parallelism: 1 });
       let caughtError: Error | undefined;
@@ -205,6 +209,115 @@ describe('encryption methods tests', () => {
       }
       assert.ok(caughtError, 'should have thrown');
       assert.ok(!caughtError.message?.includes('sjcl'), 'error must not be from SJCL');
+    });
+  });
+
+  describe('EncryptionSession (HKDF caching)', () => {
+    const opts = { memorySize: 1024, iterations: 1, parallelism: 1 };
+    const password = 'test-password';
+    const plaintext = 'hello session';
+
+    it('session-produced envelope contains salt and hkdfSalt', async () => {
+      const session = await createEncryptionSession(password, opts);
+      const ct = await session.encrypt(plaintext);
+      session.destroy();
+
+      const envelope: V2Envelope = JSON.parse(ct);
+      assert.strictEqual(envelope.v, 2);
+      assert.ok(envelope.salt, 'must have argon2 salt');
+      assert.ok(envelope.hkdfSalt, 'must have hkdf salt');
+      assert.ok(envelope.iv, 'must have iv');
+      assert.ok(envelope.ct, 'must have ciphertext');
+    });
+
+    it('session round-trip via session.decrypt', async () => {
+      const session = await createEncryptionSession(password, opts);
+      const ct = await session.encrypt(plaintext);
+      const result = await session.decrypt(ct);
+      session.destroy();
+      assert.strictEqual(result, plaintext);
+    });
+
+    it('session envelope can be decrypted standalone via decryptV2', async () => {
+      const session = await createEncryptionSession(password, opts);
+      const ct = await session.encrypt(plaintext);
+      session.destroy();
+      const result = await decryptV2(password, ct);
+      assert.strictEqual(result, plaintext);
+    });
+
+    it('session envelope can be decrypted via decryptAsync', async () => {
+      const session = await createEncryptionSession(password, opts);
+      const ct = await session.encrypt(plaintext);
+      session.destroy();
+      const result = await decryptAsync(password, ct);
+      assert.strictEqual(result, plaintext);
+    });
+
+    it('multiple encrypts produce different hkdfSalt values', async () => {
+      const session = await createEncryptionSession(password, opts);
+      const ct1 = await session.encrypt(plaintext);
+      const ct2 = await session.encrypt(plaintext);
+      session.destroy();
+      const e1: V2Envelope = JSON.parse(ct1);
+      const e2: V2Envelope = JSON.parse(ct2);
+      assert.notStrictEqual(e1.hkdfSalt, e2.hkdfSalt);
+    });
+
+    it('all session encrypts share the same argon2 salt', async () => {
+      const session = await createEncryptionSession(password, opts);
+      const ct1 = await session.encrypt(plaintext);
+      const ct2 = await session.encrypt(plaintext);
+      session.destroy();
+      const e1: V2Envelope = JSON.parse(ct1);
+      const e2: V2Envelope = JSON.parse(ct2);
+      assert.strictEqual(e1.salt, e2.salt);
+    });
+
+    it('wrong password rejected by decryptV2', async () => {
+      const session = await createEncryptionSession(password, opts);
+      const ct = await session.encrypt(plaintext);
+      session.destroy();
+      await assert.rejects(() => decryptV2('wrong-password', ct));
+    });
+
+    it('destroy prevents further encrypt calls', async () => {
+      const session = await createEncryptionSession(password, opts);
+      session.destroy();
+      await assert.rejects(() => session.encrypt(plaintext), /destroyed/);
+    });
+
+    it('destroy prevents further decrypt calls', async () => {
+      const session = await createEncryptionSession(password, opts);
+      const ct = await session.encrypt(plaintext);
+      session.destroy();
+      await assert.rejects(() => session.decrypt(ct), /destroyed/);
+    });
+
+    it('session rejects envelopes from a different session', async () => {
+      const session1 = await createEncryptionSession(password, opts);
+      const session2 = await createEncryptionSession(password, opts);
+      const ct = await session1.encrypt(plaintext);
+      await assert.rejects(() => session2.decrypt(ct), /not encrypted with this session/);
+      session1.destroy();
+      session2.destroy();
+    });
+
+    it('session rejects standard v2 envelopes (no hkdfSalt)', async () => {
+      const v2ct = await encryptV2(password, plaintext, opts);
+      const session = await createEncryptionSession(password, opts);
+      await assert.rejects(() => session.decrypt(v2ct), /use decryptV2/);
+      session.destroy();
+    });
+
+    it('Argon2id params are stored in envelope', async () => {
+      const session = await createEncryptionSession(password, { memorySize: 2048, iterations: 2, parallelism: 2 });
+      const ct = await session.encrypt(plaintext);
+      session.destroy();
+      const envelope: V2Envelope = JSON.parse(ct);
+      assert.strictEqual(envelope.m, 2048);
+      assert.strictEqual(envelope.t, 2);
+      assert.strictEqual(envelope.p, 2);
     });
   });
 });
