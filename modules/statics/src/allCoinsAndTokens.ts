@@ -4230,6 +4230,24 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:usad'],
     Networks.main.basechain
   ),
+  erc20Token(
+    '3d5d7b88-75e0-4947-a620-c4a6f643c73f',
+    'baseeth:opg',
+    'OpenGradient',
+    18,
+    '0xfbc2051ae2265686a469421b2c5a2d5462fbf5eb',
+    UnderlyingAsset['baseeth:opg'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '317cbbeb-4a9d-4a0a-ac6f-952e3e9c2e88',
+    'baseeth:vvv',
+    'Venice Token',
+    18,
+    '0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf',
+    UnderlyingAsset['baseeth:vvv'],
+    Networks.main.basechain
+  ),
 
   // XDC mainnet tokens
   xdcErc20(
@@ -4366,6 +4384,15 @@ export const allCoinsAndTokens = [
     6,
     '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb',
     UnderlyingAsset['hypeevm:usdt0'],
+    Networks.main.hypeevm
+  ),
+  erc20Token(
+    'ec72ab27-9ecb-4f63-8c79-eec103742131',
+    'hypeevm:khype',
+    'Kinetiq Staked HYPE',
+    18,
+    '0xfd739d4e423301ce9385c1fb8850539d657c296d',
+    UnderlyingAsset['hypeevm:khype'],
     Networks.main.hypeevm
   ),
 

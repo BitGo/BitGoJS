@@ -5297,6 +5297,21 @@ export const tOfcErc20Coins = [
   ),
 
   ofcerc20(
+    'eee4d3b7-8c6f-4639-8a0a-14ecf6dc5693',
+    'ofchypeevm:khype',
+    'Kinetiq Staked HYPE',
+    18,
+    UnderlyingAsset['hypeevm:khype'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'hypeevm'
+  ),
+
+  ofcerc20(
     'e3c6f4e5-4d5e-4f2e-8f1a-2c3d4e5f6a7b',
     'ofcbaseeth:tig',
     'The Innovation Game',
@@ -6290,12 +6305,41 @@ export const tOfcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:prn')
   ),
+  ofcerc20('66f600c7-5858-482f-9e5f-823930b1f4f4', 'ofceth:zama', 'Zama', 18, UnderlyingAsset['eth:zama']),
   ofcerc20(
     '47d8cf79-ed67-4e9c-8e51-422d31290282',
     'ofcbaseeth:usad',
     'Lydia',
     18,
     UnderlyingAsset['baseeth:usad'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    '641dc3f7-a3d0-4495-a520-a1479c6fb34d',
+    'ofcbaseeth:opg',
+    'OpenGradient',
+    18,
+    UnderlyingAsset['baseeth:opg'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    '6f98dc7e-2e87-4ce2-a18e-51c6d60f735d',
+    'ofcbaseeth:vvv',
+    'Venice Token',
+    18,
+    UnderlyingAsset['baseeth:vvv'],
     undefined,
     undefined,
     '',

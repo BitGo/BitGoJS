@@ -14697,6 +14697,14 @@ export const erc20Coins = [
     '0x0c5d9fae8670cfa0aa5f57b42ccd630c46bbe498',
     UnderlyingAsset['eth:prn']
   ),
+  erc20(
+    'e9ed4f70-36ff-4e0d-9705-781be1293c2b',
+    'eth:zama',
+    'Zama',
+    18,
+    '0xa12cc123ba206d4031d1c7f6223d1c2ec249f4f3',
+    UnderlyingAsset['eth:zama']
+  ),
   terc20(
     '0c333619-e5a6-4f9d-8bbc-5b0e5dc64d03',
     'hteth:grtxp',

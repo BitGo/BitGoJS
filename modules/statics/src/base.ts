@@ -2957,6 +2957,8 @@ export enum UnderlyingAsset {
   'bsc:hemi' = 'bsc:hemi',
   'bsc:cookie' = 'bsc:cookie',
   'bsc:esports' = 'bsc:esports',
+  'bsc:xter' = 'bsc:xter',
+  'bsc:usdau' = 'bsc:usdau',
 
   // BSC NFTs
   // generic NFTs
@@ -3094,6 +3096,8 @@ export enum UnderlyingAsset {
   'baseeth:c' = 'baseeth:c',
   'baseeth:carv' = 'baseeth:carv',
   'baseeth:usad' = 'baseeth:usad',
+  'baseeth:opg' = 'baseeth:opg',
+  'baseeth:vvv' = 'baseeth:vvv',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -3161,6 +3165,7 @@ export enum UnderlyingAsset {
   'hypeevm:hwhype' = 'hypeevm:hwhype',
   'hypeevm:usdc' = 'hypeevm:usdc',
   'hypeevm:usdt0' = 'hypeevm:usdt0',
+  'hypeevm:khype' = 'hypeevm:khype',
 
   // Jovayeth mainnet tokens
   'jovayeth:jft' = 'jovayeth:jft',
@@ -3508,6 +3513,7 @@ export enum UnderlyingAsset {
   'sol:kwyld-usdc' = 'sol:kwyld-usdc',
   'sol:kprme-cash' = 'sol:kprme-cash',
   'sol:kwyld-cash' = 'sol:kwyld-cash',
+  'sol:tusdc' = 'sol:tusdc',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',
@@ -3740,6 +3746,7 @@ export enum UnderlyingAsset {
   'eth:mezo' = 'eth:mezo',
   'eth:drv' = 'eth:drv',
   'eth:prn' = 'eth:prn',
+  'eth:zama' = 'eth:zama',
   // ADA testnet tokens
   'tada:water' = 'tada:water',
   'tada:tusda' = 'tada:tusda',
