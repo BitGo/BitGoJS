@@ -22,6 +22,8 @@ import {
 } from '@bitgo/sdk-core';
 import * as FlrpLib from './lib';
 import {
+  CreatePairedWalletParams,
+  CreatePairedWalletResponse,
   FlrpEntry,
   FlrpExplainTransactionOptions,
   FlrpSignTransactionOptions,
@@ -435,5 +437,13 @@ export class Flrp extends BaseCoin {
   /** @inheritDoc */
   auditDecryptedKey(params: AuditDecryptedKeyParams): void {
     throw new MethodNotImplementedError();
+  }
+
+  async createPairedWallet(params: CreatePairedWalletParams): Promise<CreatePairedWalletResponse> {
+    const { walletId, label } = params;
+    return this.bitgo
+      .post(this.url(`/wallet/${walletId}/create-paired-wallet`))
+      .send(label ? { label } : {})
+      .result();
   }
 }
