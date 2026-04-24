@@ -186,6 +186,9 @@
       "path": "../sdk-coin-islm"
     },
     {
+      "path": "../sdk-coin-kaspa"
+    },
+    {
       "path": "../sdk-coin-lnbtc"
     },
     {
