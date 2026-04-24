@@ -228,9 +228,22 @@ export interface TaoSwitchValidatorOptions extends SwitchValidatorOptions {
 }
 
 export interface ClaimRewardsOptions {
+  /**
+   * amount of rewards to claim
+   */
   amount: string;
+  /**
+   * clientId
+   */
   clientId?: string;
+  /**
+   * delegationId
+   */
   delegationId?: string;
+  /**
+   * coin specific staking subtype
+   */
+  subType?: string;
 }
 
 export interface DelegationOptions {
