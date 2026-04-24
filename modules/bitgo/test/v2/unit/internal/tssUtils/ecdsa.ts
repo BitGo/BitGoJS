@@ -749,6 +749,7 @@ describe('TSS Ecdsa Utils:', async function () {
           backupNShare: backupKeyShare.nShares[1],
         }),
         reqId,
+        txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
       });
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
       const userGpgActual = sendShareSpy.getCalls()[0].args[10] as string;
@@ -766,10 +767,123 @@ describe('TSS Ecdsa Utils:', async function () {
           backupNShare: backupKeyShare.nShares[1],
         }),
         reqId,
+        txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
       });
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
       const userGpgActual = sendShareSpy.getCalls()[0].args[10] as string;
       userGpgActual.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
+    });
+
+    it('signTxRequest should fail when txParams is missing', async function () {
+      await tssUtils
+        .signTxRequest({
+          txRequest,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          reqId,
+        })
+        .should.be.rejectedWith(
+          'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
+        );
+    });
+
+    it('signTxRequest should fail when txParams has empty recipients', async function () {
+      await tssUtils
+        .signTxRequest({
+          txRequest,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          reqId,
+          txParams: { recipients: [] },
+        })
+        .should.be.rejectedWith(
+          'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
+        );
+    });
+
+    it('signTxRequest should succeed when recipients are only in intent (smart contract interaction)', async function () {
+      await setupSignTxRequestNocks(false, userSignShare, aShare, dShare, enterpriseData);
+      const txRequestWithIntentRecipients = {
+        ...txRequest,
+        intent: {
+          intentType: 'contractCall',
+          recipients: [
+            {
+              address: { address: '0xrecipient' },
+              amount: { value: '1000', symbol: 'hteth' },
+            },
+          ],
+        },
+      };
+      const signedTxRequest = await tssUtils.signTxRequest({
+        txRequest: txRequestWithIntentRecipients,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+        reqId,
+        // no txParams.recipients — should fall back to intent.recipients
+      });
+      signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
+    });
+
+    it('signTxRequest should succeed for no-recipient tx types (tokenApproval)', async function () {
+      await setupSignTxRequestNocks(false, userSignShare, aShare, dShare, enterpriseData);
+      const signedTxRequest = await tssUtils.signTxRequest({
+        txRequest,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+        reqId,
+        txParams: { type: 'tokenApproval' },
+      });
+      signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
+    });
+
+    it('signTxRequest should succeed for no-recipient tx types (acceleration)', async function () {
+      await setupSignTxRequestNocks(false, userSignShare, aShare, dShare, enterpriseData);
+      const signedTxRequest = await tssUtils.signTxRequest({
+        txRequest,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+        reqId,
+        txParams: { type: 'acceleration' },
+      });
+      signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
+    });
+
+    it('signTxRequest should prefer txParams.recipients over intent.recipients when both are present', async function () {
+      await setupSignTxRequestNocks(false, userSignShare, aShare, dShare, enterpriseData);
+      const txRequestWithBothRecipients = {
+        ...txRequest,
+        intent: {
+          intentType: 'contractCall',
+          recipients: [{ address: { address: '0xintentRecipient' }, amount: { value: '9999', symbol: 'hteth' } }],
+        },
+      };
+      const signedTxRequest = await tssUtils.signTxRequest({
+        txRequest: txRequestWithBothRecipients,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+        reqId,
+        txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
+      });
+      signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
     });
 
     it('signTxRequest should fail with wrong recipient', async function () {
