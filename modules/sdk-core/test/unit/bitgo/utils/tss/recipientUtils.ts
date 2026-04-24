@@ -23,9 +23,9 @@ function makeTxRequest(
 
 describe('recipientUtils', function () {
   describe('NO_RECIPIENT_TX_TYPES', function () {
-    it('contains exactly the 8 expected exempted types', function () {
+    it('contains all ECDSA exempted types', function () {
       const { NO_RECIPIENT_TX_TYPES } = getModule();
-      const expected = [
+      const ecdsaTypes = [
         'acceleration',
         'fillNonce',
         'transferToken',
@@ -35,8 +35,32 @@ describe('recipientUtils', function () {
         'enableToken',
         'customTx',
       ];
-      expected.forEach((t) => assert.ok(NO_RECIPIENT_TX_TYPES.has(t), `${t} should be in NO_RECIPIENT_TX_TYPES`));
-      assert.strictEqual(NO_RECIPIENT_TX_TYPES.size, expected.length);
+      ecdsaTypes.forEach((t) => assert.ok(NO_RECIPIENT_TX_TYPES.has(t), `${t} should be in NO_RECIPIENT_TX_TYPES`));
+    });
+
+    it('contains EdDSA staking types', function () {
+      const { NO_RECIPIENT_TX_TYPES } = getModule();
+      const stakingTypes = [
+        'stakingActivate',
+        'stakingDeactivate',
+        'stakingWithdraw',
+        'stakingClaim',
+        'stakingDelegate',
+        'walletInitialization',
+      ];
+      stakingTypes.forEach((t) => assert.ok(NO_RECIPIENT_TX_TYPES.has(t), `${t} should be in NO_RECIPIENT_TX_TYPES`));
+    });
+
+    it('contains CANTON transfer flow types', function () {
+      const { NO_RECIPIENT_TX_TYPES } = getModule();
+      const cantonTypes = [
+        'transferAccept',
+        'transferReject',
+        'transferAcknowledge',
+        'transferOfferWithdrawn',
+        'oneStepPreApproval',
+      ];
+      cantonTypes.forEach((t) => assert.ok(NO_RECIPIENT_TX_TYPES.has(t), `${t} should be in NO_RECIPIENT_TX_TYPES`));
     });
   });
 
@@ -98,7 +122,22 @@ describe('recipientUtils', function () {
       );
     });
 
-    const NO_RECIPIENT_TYPES = [
+    it('allows empty recipients when txParams.type is a no-recipient type', function () {
+      const { resolveEffectiveTxParams } = getModule();
+      const txRequest = makeTxRequest();
+      const result = resolveEffectiveTxParams(txRequest, { type: 'stakingActivate' });
+      result.type.should.equal('stakingActivate');
+    });
+
+    it('allows empty recipients when intent.intentType is a no-recipient type (EdDSA fallback)', function () {
+      const { resolveEffectiveTxParams } = getModule();
+      const txRequest = { ...makeTxRequest(), intent: { intentType: 'walletInitialization' } };
+      // No txParams.type — guard must fall back to intent.intentType
+      const result = resolveEffectiveTxParams(txRequest, undefined);
+      assert.ok(!result.recipients?.length, 'No recipients expected');
+    });
+
+    const ECDSA_NO_RECIPIENT_TYPES = [
       'acceleration',
       'fillNonce',
       'transferToken',
@@ -109,7 +148,7 @@ describe('recipientUtils', function () {
       'customTx', // DeFi/WalletConnect smart contract interactions have no traditional recipients
     ];
 
-    NO_RECIPIENT_TYPES.forEach((type) => {
+    ECDSA_NO_RECIPIENT_TYPES.forEach((type) => {
       it(`allows empty recipients for no-recipient tx type: ${type}`, function () {
         const { resolveEffectiveTxParams } = getModule();
         const txRequest = makeTxRequest();

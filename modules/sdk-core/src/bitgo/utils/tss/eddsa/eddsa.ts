@@ -43,6 +43,7 @@ import { IRequestTracer } from '../../../../api';
 import { getBitgoMpcGpgPubKey } from '../../../tss/bitgoPubKeys';
 import { EnvironmentName } from '../../../environments';
 import { readKey } from 'openpgp';
+import { resolveEffectiveTxParams } from '../recipientUtils';
 
 /**
  * Utility functions for TSS work flows.
@@ -610,6 +611,14 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       );
       unsignedTx =
         apiVersion === 'full' ? txRequestResolved.transactions![0].unsignedTx : txRequestResolved.unsignedTxs[0];
+
+      const effectiveTxParams = resolveEffectiveTxParams(txRequestResolved, params.txParams);
+      await this.baseCoin.verifyTransaction({
+        txPrebuild: { txHex: unsignedTx.signableHex },
+        txParams: effectiveTxParams,
+        wallet: this.wallet,
+        walletType: this.wallet.multisigType(),
+      });
     } else if (requestType === RequestType.message) {
       assert(txRequestResolved.messages?.length, 'Unable to find messages in txRequest for message signing');
       const message = txRequestResolved.messages[0];
