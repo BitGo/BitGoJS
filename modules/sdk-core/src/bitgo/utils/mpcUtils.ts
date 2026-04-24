@@ -5,7 +5,7 @@ import assert from 'assert';
 import { decrypt, readMessage, readPrivateKey, SerializedKeyPair } from 'openpgp';
 import { IBaseCoin, KeychainsTriplet } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { AddKeychainOptions, Keychain, KeyType } from '../keychain';
+import { AddKeychainOptions, Keychain, KeyType, GenerateWalletWebauthnInfo } from '../keychain';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 import {
   IntentRecipient,
@@ -105,6 +105,7 @@ export abstract class MpcUtils {
     passphrase: string;
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
+    webauthnInfo?: GenerateWalletWebauthnInfo;
   }): Promise<KeychainsTriplet>;
 
   /**

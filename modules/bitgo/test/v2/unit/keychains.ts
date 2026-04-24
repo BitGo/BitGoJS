@@ -434,6 +434,51 @@ describe('V2 Keychains', function () {
           keychains.should.deepEqual(stubbedKeychainsTriplet);
         });
       });
+
+      ['tsol'].forEach((coin) => {
+        it('should pass webauthnInfo to createKeychains for EDDSA TSS', async function () {
+          const webauthnInfo = {
+            otpDeviceId: 'device-1',
+            prfSalt: 'salt-1',
+            passphrase: 'prf-derived-passphrase',
+          };
+          const createKeychains = sandbox
+            .stub(EDDSAUtils.default.prototype, 'createKeychains')
+            .resolves(stubbedKeychainsTriplet);
+          await bitgo.coin(coin).keychains().createMpc({
+            multisigType: 'tss',
+            passphrase: 'password',
+            enterprise: 'enterprise',
+            webauthnInfo,
+          });
+          createKeychains.calledOnce.should.be.true();
+          createKeychains.firstCall.args[0].should.have.property('webauthnInfo', webauthnInfo);
+        });
+      });
+
+      ['tbsc'].forEach((coin) => {
+        it('should pass webauthnInfo to createKeychains for ECDSA TSS', async function () {
+          nock(bgUrl).get('/api/v2/tss/settings').reply(200, {
+            coinSettings: {},
+          });
+          const webauthnInfo = {
+            otpDeviceId: 'device-1',
+            prfSalt: 'salt-1',
+            passphrase: 'prf-derived-passphrase',
+          };
+          const createKeychains = sandbox
+            .stub(ECDSAUtils.EcdsaUtils.prototype, 'createKeychains')
+            .resolves(stubbedKeychainsTriplet);
+          await bitgo.coin(coin).keychains().createMpc({
+            multisigType: 'tss',
+            passphrase: 'password',
+            enterprise: 'enterprise',
+            webauthnInfo,
+          });
+          createKeychains.calledOnce.should.be.true();
+          createKeychains.firstCall.args[0].should.have.property('webauthnInfo', webauthnInfo);
+        });
+      });
     });
 
     describe('Recreate Keychains from MPCV1 to MPCV2', async function () {

@@ -4,7 +4,7 @@
 import assert from 'assert';
 import * as openpgp from 'openpgp';
 import Eddsa, { GShare, SignShare } from '../../../../account-lib/mpc/tss';
-import { AddKeychainOptions, CreateBackupOptions, Keychain } from '../../../keychain';
+import { AddKeychainOptions, CreateBackupOptions, Keychain, GenerateWalletWebauthnInfo } from '../../../keychain';
 import { verifyWalletSignature } from '../../../tss/eddsa/eddsa';
 import { createShareProof, encryptText, generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';
 import {
@@ -128,6 +128,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     bitgoKeychain,
     passphrase,
     originalPasscodeEncryptionCode,
+    webauthnInfo,
   }: CreateEddsaKeychainParams): Promise<Keychain> {
     const MPC = await Eddsa.initialize();
     const bitgoKeyShares = bitgoKeychain.keyShares;
@@ -188,6 +189,18 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
         input: JSON.stringify(userSigningMaterial),
         password: passphrase,
       });
+    }
+    if (webauthnInfo && userKeychainParams.encryptedPrv) {
+      userKeychainParams.webauthnDevices = [
+        {
+          otpDeviceId: webauthnInfo.otpDeviceId,
+          prfSalt: webauthnInfo.prfSalt,
+          encryptedPrv: this.bitgo.encrypt({
+            input: JSON.stringify(userSigningMaterial),
+            password: webauthnInfo.passphrase,
+          }),
+        },
+      ];
     }
 
     return await this.baseCoin.keychains().add(userKeychainParams);
@@ -344,6 +357,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     passphrase?: string;
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
+    webauthnInfo?: GenerateWalletWebauthnInfo;
   }): Promise<KeychainsTriplet> {
     const MPC = await Eddsa.initialize();
     const m = 2;
@@ -370,6 +384,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       bitgoKeychain,
       passphrase: params.passphrase,
       originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
+      webauthnInfo: params.webauthnInfo,
     });
     const backupKeychainPromise = this.createBackupKeychain({
       userGpgKey,

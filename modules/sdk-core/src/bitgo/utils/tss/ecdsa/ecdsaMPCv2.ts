@@ -20,7 +20,7 @@ import {
 } from '@bitgo/public-types';
 
 import { Ecdsa } from '../../../../account-lib';
-import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
+import { AddKeychainOptions, Keychain, KeyType, GenerateWalletWebauthnInfo } from '../../../keychain';
 import { DecryptedRetrofitPayload } from '../../../keychain/iKeychains';
 import { ECDSAMethodTypes, getTxRequest } from '../../../tss';
 import { sendSignatureShareV2, sendTxRequest } from '../../../tss/common';
@@ -57,6 +57,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     enterprise: string;
     originalPasscodeEncryptionCode?: string;
     retrofit?: DecryptedRetrofitPayload;
+    webauthnInfo?: GenerateWalletWebauthnInfo;
   }): Promise<KeychainsTriplet> {
     const { userSession, backupSession } = this.getUserAndBackupSession(2, 3, params.retrofit);
     const userGpgKey = await generateGPGKeyPair('secp256k1');
@@ -318,7 +319,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       userPrivateMaterial,
       userReducedPrivateMaterial,
       params.passphrase,
-      params.originalPasscodeEncryptionCode
+      params.originalPasscodeEncryptionCode,
+      params.webauthnInfo
     );
     const backupKeychainPromise = this.addBackupKeychain(
       bitgoCommonKeychain,
@@ -350,11 +352,13 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     privateMaterial?: Buffer,
     reducedPrivateMaterial?: Buffer,
     passphrase?: string,
-    originalPasscodeEncryptionCode?: string
+    originalPasscodeEncryptionCode?: string,
+    webauthnInfo?: GenerateWalletWebauthnInfo
   ): Promise<Keychain> {
     let source: string;
     let encryptedPrv: string | undefined = undefined;
     let reducedEncryptedPrv: string | undefined = undefined;
+    let privateMaterialBase64: string | undefined = undefined;
     switch (participantIndex) {
       case MPCv2PartiesEnum.USER:
       case MPCv2PartiesEnum.BACKUP:
@@ -362,8 +366,9 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         assert(privateMaterial, `Private material is required for ${source} keychain`);
         assert(reducedPrivateMaterial, `Reduced private material is required for ${source} keychain`);
         assert(passphrase, `Passphrase is required for ${source} keychain`);
+        privateMaterialBase64 = privateMaterial.toString('base64');
         encryptedPrv = this.bitgo.encrypt({
-          input: privateMaterial.toString('base64'),
+          input: privateMaterialBase64,
           password: passphrase,
         });
         // Encrypts the CBOR-encoded ReducedKeyShare (which contains the party's private
@@ -392,6 +397,19 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       originalPasscodeEncryptionCode,
       isMPCv2: true,
     };
+
+    if (webauthnInfo && participantIndex === MPCv2PartiesEnum.USER && privateMaterialBase64) {
+      recipientKeychainParams.webauthnDevices = [
+        {
+          otpDeviceId: webauthnInfo.otpDeviceId,
+          prfSalt: webauthnInfo.prfSalt,
+          encryptedPrv: this.bitgo.encrypt({
+            input: privateMaterialBase64,
+            password: webauthnInfo.passphrase,
+          }),
+        },
+      ];
+    }
 
     const keychains = this.baseCoin.keychains();
     return { ...(await keychains.add(recipientKeychainParams)), reducedEncryptedPrv: reducedEncryptedPrv };
@@ -512,7 +530,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     privateMaterial: Buffer,
     reducedPrivateMaterial: Buffer,
     passphrase: string,
-    originalPasscodeEncryptionCode?: string
+    originalPasscodeEncryptionCode?: string,
+    webauthnInfo?: GenerateWalletWebauthnInfo
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.USER,
@@ -520,7 +539,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       privateMaterial,
       reducedPrivateMaterial,
       passphrase,
-      originalPasscodeEncryptionCode
+      originalPasscodeEncryptionCode,
+      webauthnInfo
     );
   }
 

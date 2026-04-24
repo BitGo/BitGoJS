@@ -2,7 +2,7 @@ import * as t from 'io-ts';
 
 import { IRequestTracer } from '../../api';
 import { KeychainsTriplet, LightningKeychainsTriplet } from '../baseCoin';
-import { Keychain, WebauthnInfo } from '../keychain';
+import { GenerateWalletWebauthnInfo, Keychain, WebauthnInfo } from '../keychain';
 import { IWallet, PaginationOptions, WalletShare } from './iWallet';
 import { Wallet } from './wallet';
 
@@ -42,24 +42,17 @@ export interface GenerateBaseMpcWalletOptions {
   walletVersion?: number;
 }
 
+export { GenerateWalletWebauthnInfo } from '../keychain';
+
 export interface GenerateMpcWalletOptions extends GenerateBaseMpcWalletOptions {
   passphrase: string;
   originalPasscodeEncryptionCode?: string;
+  webauthnInfo?: GenerateWalletWebauthnInfo;
 }
 export interface GenerateSMCMpcWalletOptions extends GenerateBaseMpcWalletOptions {
   bitgoKeyId: string;
   commonKeychain: string;
   coldDerivationSeed?: string;
-}
-
-/** WebAuthn PRF-based encryption info for protecting the user private key with a hardware authenticator. */
-export interface GenerateWalletWebauthnInfo {
-  /** The OTP device ID of the WebAuthn authenticator. */
-  otpDeviceId: string;
-  /** The PRF salt used to derive the passphrase from the authenticator. */
-  prfSalt: string;
-  /** PRF-derived passphrase used to encrypt the user private key. Never sent to the server. */
-  passphrase: string;
 }
 
 export interface GenerateWalletOptions {
