@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import * as t from 'io-ts';
-import { VerifyAddressBody, PostVerifyAddress } from '../../../src/typedRoutes/api/common/verifyAddress';
+import { VerifyAddressBody, PostV1VerifyAddress } from '../../../src/typedRoutes/api/v1/verifyAddress';
+import { PostV2VerifyAddress } from '../../../src/typedRoutes/api/v2/verifyAddress';
 import { assertDecode } from './common';
 import 'should';
 import 'should-http';
@@ -40,7 +41,7 @@ describe('VerifyAddress codec tests', function () {
   });
 
   describe('VerifyAddressResponse', function () {
-    const VerifyAddressResponse = PostVerifyAddress.response[200];
+    const VerifyAddressResponse = PostV1VerifyAddress.response[200];
 
     it('should validate response with verified=true', function () {
       const validResponse = {
@@ -79,18 +80,33 @@ describe('VerifyAddress codec tests', function () {
     });
   });
 
-  describe('PostVerifyAddress route definition', function () {
+  describe('PostV1VerifyAddress route definition', function () {
     it('should have the correct path', function () {
-      assert.strictEqual(PostVerifyAddress.path, '/api/v[12]/verifyaddress');
+      assert.strictEqual(PostV1VerifyAddress.path, '/api/v1/verifyaddress');
     });
 
     it('should have the correct HTTP method', function () {
-      assert.strictEqual(PostVerifyAddress.method, 'POST');
+      assert.strictEqual(PostV1VerifyAddress.method, 'POST');
     });
 
     it('should have the correct response types', function () {
-      assert.ok(PostVerifyAddress.response[200]);
-      assert.ok(PostVerifyAddress.response[404]);
+      assert.ok(PostV1VerifyAddress.response[200]);
+      assert.ok(PostV1VerifyAddress.response[404]);
+    });
+  });
+
+  describe('PostV2VerifyAddress route definition', function () {
+    it('should have the correct path', function () {
+      assert.strictEqual(PostV2VerifyAddress.path, '/api/v2/verifyaddress');
+    });
+
+    it('should have the correct HTTP method', function () {
+      assert.strictEqual(PostV2VerifyAddress.method, 'POST');
+    });
+
+    it('should have the correct response types', function () {
+      assert.ok(PostV2VerifyAddress.response[200]);
+      assert.ok(PostV2VerifyAddress.response[404]);
     });
   });
 
@@ -122,7 +138,7 @@ describe('VerifyAddress codec tests', function () {
       result.body.should.have.property('verified');
       assert.strictEqual(result.body.verified, true);
 
-      const decodedResponse = assertDecode(PostVerifyAddress.response[200], result.body);
+      const decodedResponse = assertDecode(PostV1VerifyAddress.response[200], result.body);
       assert.strictEqual(decodedResponse.verified, true);
     });
 
@@ -142,7 +158,7 @@ describe('VerifyAddress codec tests', function () {
       assert.strictEqual(result.status, 200);
       assert.strictEqual(result.body.verified, true);
 
-      const decodedResponse = assertDecode(PostVerifyAddress.response[200], result.body);
+      const decodedResponse = assertDecode(PostV2VerifyAddress.response[200], result.body);
       assert.strictEqual(decodedResponse.verified, true);
     });
 
@@ -163,7 +179,7 @@ describe('VerifyAddress codec tests', function () {
       result.body.should.have.property('verified');
       assert.strictEqual(result.body.verified, false);
 
-      const decodedResponse = assertDecode(PostVerifyAddress.response[200], result.body);
+      const decodedResponse = assertDecode(PostV1VerifyAddress.response[200], result.body);
       assert.strictEqual(decodedResponse.verified, false);
     });
 
