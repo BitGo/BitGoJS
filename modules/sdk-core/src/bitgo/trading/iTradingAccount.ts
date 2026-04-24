@@ -2,7 +2,7 @@ import { ITradingNetwork } from './network';
 
 export interface SignPayloadParameters {
   payload: string | Record<string, unknown>;
-  walletPassphrase: string;
+  walletPassphrase?: string;
 }
 
 export interface ITradingAccount {

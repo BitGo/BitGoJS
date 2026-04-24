@@ -223,7 +223,100 @@ describe('OfcSignPayload codec tests', function () {
       const decodedResponse = assertDecode(OfcSignPayloadResponse200, result.body);
       assert.strictEqual(decodedResponse.signature, mockSignPayloadResponse.signature);
 
+      // Verify env passphrase was forwarded to signPayload
+      const signCall = mockTradingAccount.signPayload.getCall(0);
+      assert.ok(signCall, 'tradingAccount.signPayload should have been called');
+      assert.strictEqual(signCall.args[0].walletPassphrase, 'env_passphrase', 'env passphrase should be forwarded');
+
       // Cleanup environment variable
+      delete process.env['WALLET_ofc-wallet-id-123_PASSPHRASE'];
+    });
+
+    it('should pass undefined walletPassphrase to signPayload when no passphrase in body or env (KMS path)', async function () {
+      const requestBody = {
+        walletId: 'ofc-wallet-id-no-passphrase',
+        payload: { amount: '1000000', currency: 'USD' },
+        // no walletPassphrase
+      };
+
+      // Ensure no env var is set for this wallet
+      delete process.env['WALLET_ofc-wallet-id-no-passphrase_PASSPHRASE'];
+
+      const mockTradingAccount = {
+        signPayload: sinon.stub().resolves(mockSignPayloadResponse.signature),
+      };
+
+      const mockWallet = {
+        id: () => requestBody.walletId,
+        toTradingAccount: sinon.stub().returns(mockTradingAccount),
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockWallets = { get: walletsGetStub };
+      const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      const result = await agent
+        .post('/api/v2/ofc/signPayload')
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      const decodedResponse = assertDecode(OfcSignPayloadResponse200, result.body);
+      assert.strictEqual(decodedResponse.signature, mockSignPayloadResponse.signature);
+
+      // signPayload must be called with walletPassphrase=undefined so the SDK routes to KMS
+      const signCall = mockTradingAccount.signPayload.getCall(0);
+      assert.ok(signCall, 'tradingAccount.signPayload should have been called');
+      assert.strictEqual(
+        signCall.args[0].walletPassphrase,
+        undefined,
+        'walletPassphrase should be undefined to trigger KMS signing'
+      );
+    });
+
+    it('should prefer body walletPassphrase over env passphrase', async function () {
+      const requestBody = {
+        walletId: 'ofc-wallet-id-123',
+        payload: { amount: '500' },
+        walletPassphrase: 'body_passphrase',
+      };
+
+      // Set a different env passphrase — body should win
+      process.env['WALLET_ofc-wallet-id-123_PASSPHRASE'] = 'env_passphrase';
+
+      const mockTradingAccount = {
+        signPayload: sinon.stub().resolves(mockSignPayloadResponse.signature),
+      };
+
+      const mockWallet = {
+        id: () => requestBody.walletId,
+        toTradingAccount: sinon.stub().returns(mockTradingAccount),
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockWallets = { get: walletsGetStub };
+      const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      const result = await agent
+        .post('/api/v2/ofc/signPayload')
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+
+      // body passphrase should take precedence
+      const signCall = mockTradingAccount.signPayload.getCall(0);
+      assert.ok(signCall, 'tradingAccount.signPayload should have been called');
+      assert.strictEqual(
+        signCall.args[0].walletPassphrase,
+        'body_passphrase',
+        'body passphrase should take precedence over env'
+      );
+
       delete process.env['WALLET_ofc-wallet-id-123_PASSPHRASE'];
     });
 

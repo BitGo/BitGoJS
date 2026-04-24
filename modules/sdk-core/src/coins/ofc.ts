@@ -15,6 +15,7 @@ import {
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  Wallet,
 } from '../';
 
 export class Ofc extends BaseCoin {
@@ -102,6 +103,26 @@ export class Ofc extends BaseCoin {
 
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
     throw new MethodNotImplementedError();
+  }
+
+  /**
+   * Signs a message using a trading wallet's BitGo Key
+   * @param wallet - uses the BitGo key of this trading wallet to sign the message remotely in a KMS
+   * @param message
+   */
+  async signMessage(wallet: Wallet, message: string): Promise<Buffer>;
+  /**
+   * Signs a message using the private key
+   * @param key - uses the private key to sign the message
+   * @param message
+   */
+  async signMessage(key: { prv: string }, message: string): Promise<Buffer>;
+  async signMessage(keyOrWallet: { prv: string } | Wallet, message: string): Promise<Buffer> {
+    if (!(keyOrWallet instanceof Wallet)) {
+      return super.signMessage(keyOrWallet as { prv: string }, message);
+    }
+    const signatureHexString = await (keyOrWallet as Wallet).toTradingAccount().signPayload({ payload: message });
+    return Buffer.from(signatureHexString, 'hex');
   }
 
   /** @inheritDoc */
