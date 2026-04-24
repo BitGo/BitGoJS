@@ -4316,6 +4316,8 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['bsc:esports']
   ),
+  ofcBscToken('d08948fa-0378-4736-a5ab-0b4ec9182b8a', 'ofcbsc:xter', 'Xterio', 18, UnderlyingAsset['bsc:xter']),
+  ofcBscToken('b73d634a-a60d-4e2d-835b-3d8a527979b1', 'ofcbsc:usdau', 'USD GOLD', 18, UnderlyingAsset['bsc:usdau']),
   // New Arbitrum OFC token
   ofcArbethErc20(
     'd58490c0-07d2-4642-8af7-efa2453392e9',
@@ -4452,6 +4454,14 @@ export const ofcCoins = [
     'WisdomTree Short-Term Treasury Digital Fund',
     9,
     UnderlyingAsset['sol:wtsyx']
+  ),
+  ofcsolToken('01ab937c-6b7e-49f3-b2c5-d261955cd561', 'ofcsol:msol', 'Marinade Staked SOL', 9, UnderlyingAsset.MSOL),
+  ofcsolToken(
+    '981118ae-c81a-4582-8f19-b0998bb1eec1',
+    'ofcsol:tusdc',
+    'Testing Ondo USDC',
+    6,
+    UnderlyingAsset['sol:tusdc']
   ),
   // New Canton OFC tokens
   ofcCantonToken(

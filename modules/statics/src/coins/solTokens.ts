@@ -3973,4 +3973,14 @@ export const solTokens = [
     SOL_TOKEN_FEATURES,
     ProgramID.Token2022ProgramId
   ),
+  solToken(
+    '2efb9206-d2e0-4b30-a577-563fa626ac0d',
+    'sol:tusdc',
+    'Testing Ondo USDC',
+    6,
+    '3Kyt2oSUoz3gKZNDpCptnW2URTX3ddp9nT1ytAwmUEaF',
+    '3Kyt2oSUoz3gKZNDpCptnW2URTX3ddp9nT1ytAwmUEaF',
+    UnderlyingAsset['sol:tusdc'],
+    SOL_TOKEN_FEATURES
+  ),
 ];

@@ -1615,4 +1615,22 @@ export const bscTokens = [
     UnderlyingAsset['bsc:esports'],
     BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
+  bscToken(
+    '165d39a7-126a-4561-ad6b-6840259daa4a',
+    'bsc:xter',
+    'Xterio',
+    18,
+    '0x103071da56e7cd95b415320760d6a0ddc4da1ca5',
+    UnderlyingAsset['bsc:xter'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'a130b29c-9e50-4ee3-b5ee-10a089d9458a',
+    'bsc:usdau',
+    'USD GOLD',
+    18,
+    '0x166a75bd1eba55d4723c84c62127123e7a73f95b',
+    UnderlyingAsset['bsc:usdau'],
+    BSC_TOKEN_FEATURES
+  ),
 ];
