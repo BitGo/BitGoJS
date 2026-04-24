@@ -1305,4 +1305,22 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:stg'],
     POLYGON_TOKEN_FEATURES
   ),
+  tpolygonErc20(
+    '13dd4ab7-2d94-493c-9a61-323f6300f7e5',
+    'tpolygon:tusdl',
+    'USDL',
+    6,
+    '0x934874830d4dd13b7ae00ae69a0b5b32e5b3cd3e',
+    UnderlyingAsset['tpolygon:tusdl'],
+    [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tpolygonErc20(
+    'd2cb89da-a7d0-4200-b228-ddf5e68b633d',
+    'tpolygon:tusdlt',
+    'USDLT',
+    6,
+    '0x4d70b96e2fb36f8cd4edfcde011ae4e151fcf10d',
+    UnderlyingAsset['tpolygon:tusdlt'],
+    [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
 ];
