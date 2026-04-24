@@ -201,7 +201,7 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
         .once()
         .reply(200, {
           sessionId: 'test-session-id',
-          commonPublicKey: 'a'.repeat(64),
+          commonPublicKeychain: 'a'.repeat(128),
           bitgoMsg2: {
             message: Buffer.from('garbage').toString('base64'),
             signature: '-----BEGIN PGP SIGNATURE-----\nFAKE\n-----END PGP SIGNATURE-----',
@@ -221,7 +221,7 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
         .once()
         .reply(200, {
           sessionId: 'different-session-id',
-          commonPublicKey: 'a'.repeat(64),
+          commonPublicKeychain: 'a'.repeat(128),
           bitgoMsg2: { message: '', signature: '' },
         });
 
@@ -231,7 +231,7 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
       );
     });
 
-    it('should reject when commonPublicKey from BitGo does not match the locally computed key', async function () {
+    it('should reject when commonPublicKeychain from BitGo does not match the locally computed keychain', async function () {
       const bitgoSession = new EddsaMPSDkg.DKG(3, 2, 2);
       const bitgoState: { msg2?: MPSTypes.DeserializedMessage } = {};
       await nockMPSKeyGenRound1(bitgoSession, bitgoState, 1);
@@ -255,14 +255,14 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
 
           return {
             sessionId: 'test-session-id',
-            commonPublicKey: 'fakefakeee'.repeat(8), // mutated — will not match user/backup computed key
+            commonPublicKeychain: 'fakefakeee'.repeat(16), // mutated — will not match user/backup computed keychain
             bitgoMsg2: await MPSComms.detachSignMpsMessage(Buffer.from(bitgoState.msg2.payload), bitgoPrvKeyObj),
           };
         });
 
       await assert.rejects(
         tssUtils.createKeychains({ passphrase: 'test', enterprise: enterpriseId }),
-        /does not match BitGo common public key/
+        /does not match BitGo common keychain/
       );
     });
 
@@ -286,6 +286,7 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
         name: 'irrelevant',
         publicKey: bitgoGpgKeyPair.publicKey,
         mpcv2PublicKey: bitgoGpgKeyPair.publicKey,
+        eddsaMpcv2PublicKey: bitgoGpgKeyPair.publicKey,
         enterpriseId,
       });
       nock(stagingBgUrl).get('/api/v1/client/constants').reply(200, { ttl: 3600, constants });
@@ -390,7 +391,7 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
 
         return {
           sessionId,
-          commonPublicKey: bitgoSession.getSharePublicKey().toString('hex'),
+          commonPublicKeychain: bitgoSession.getCommonKeychain(),
           bitgoMsg2: await MPSComms.detachSignMpsMessage(Buffer.from(bitgoState.msg2.payload), bitgoPrvKeyObj),
         };
       });

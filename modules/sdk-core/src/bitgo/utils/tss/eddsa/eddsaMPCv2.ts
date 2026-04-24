@@ -97,7 +97,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 
     const {
       sessionId: sessionIdRound2,
-      commonPublicKeychain: commonPublicKey,
+      commonPublicKeychain,
       bitgoMsg2,
     } = await this.sendKeyGenerationRound2(params.enterprise, {
       sessionId,
@@ -123,11 +123,19 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     assert(userFinalMsgs.length === 0, 'WASM round 2 should produce no output messages for user');
     assert(backupFinalMsgs.length === 0, 'WASM round 2 should produce no output messages for backup');
 
-    const userCommonKey = userDkg.getSharePublicKey().toString('hex');
-    const backupCommonKey = backupDkg.getSharePublicKey().toString('hex');
+    const userCommonKeychain = userDkg.getCommonKeychain();
+    const backupCommonKeychain = backupDkg.getCommonKeychain();
 
-    assert.equal(userCommonKey, commonPublicKey, 'User computed public key does not match BitGo common public key');
-    assert.equal(backupCommonKey, commonPublicKey, 'Backup computed public key does not match BitGo common public key');
+    assert.equal(
+      userCommonKeychain,
+      commonPublicKeychain,
+      'User computed keychain does not match BitGo common keychain'
+    );
+    assert.equal(
+      backupCommonKeychain,
+      commonPublicKeychain,
+      'Backup computed keychain does not match BitGo common keychain'
+    );
 
     const userPrivateMaterial = userDkg.getKeyShare();
     const backupPrivateMaterial = backupDkg.getKeyShare();
@@ -135,20 +143,20 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     const backupReducedPrivateMaterial = backupDkg.getReducedKeyShare();
 
     const userKeychainPromise = this.addUserKeychain(
-      commonPublicKey,
+      userCommonKeychain,
       userPrivateMaterial,
       userReducedPrivateMaterial,
       params.passphrase,
       params.originalPasscodeEncryptionCode
     );
     const backupKeychainPromise = this.addBackupKeychain(
-      commonPublicKey,
+      backupCommonKeychain,
       backupPrivateMaterial,
       backupReducedPrivateMaterial,
       params.passphrase,
       params.originalPasscodeEncryptionCode
     );
-    const bitgoKeychainPromise = this.addBitgoKeychain(commonPublicKey);
+    const bitgoKeychainPromise = this.addBitgoKeychain(userCommonKeychain);
 
     const [userKeychain, backupKeychain, bitgoKeychain] = await Promise.all([
       userKeychainPromise,
