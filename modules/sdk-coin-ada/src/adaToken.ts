@@ -1,4 +1,4 @@
-import { Ada } from './ada';
+import { Ada, AdaTxInfo } from './ada';
 import {
   BitGoBase,
   CoinConstructor,
@@ -145,11 +145,12 @@ export class AdaToken extends Ada {
           }
         }
       } else if (verification?.consolidationToBaseAddress) {
-        // For token consolidation, verify all outputs go to the base address
+        // For token consolidation, verify all outputs go to the base address or fee address (sponsored consolidations)
         const baseAddress = wallet?.coinSpecific()?.baseAddress || wallet?.coinSpecific()?.rootAddress;
+        const feeAddress = (txPrebuild.txInfo as AdaTxInfo)?.feeAddress;
 
         for (const output of txJson.outputs) {
-          if (output.address !== baseAddress) {
+          if (output.address !== baseAddress && output.address !== feeAddress) {
             throw new Error('tx outputs does not match with expected address');
           }
         }
