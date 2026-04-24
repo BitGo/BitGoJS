@@ -333,6 +333,18 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
   if (memoData?.includes('WalletConnectDefiCustomTx')) {
     return TransactionType.CustomTx;
   }
+  // Check for close ATA instructions before classifying as Send.
+  // A bulk close-ATA tx contains only closeAccount instructions (zero-balance ATAs).
+  // Note: This assumes close-ATA transactions never contain TokenTransfer instructions.
+  // This holds for Phase 1 where non-zero balance ATAs are rejected (user must consolidate first).
+  // If atomic transfer+close is added in the future, this detection needs refinement.
+  const hasCloseAta = instructions.some(
+    (instruction) => getInstructionType(instruction) === ValidInstructionTypesEnum.CloseAssociatedTokenAccount
+  );
+  if (hasCloseAta) {
+    return TransactionType.CloseAssociatedTokenAccount;
+  }
+
   if (instructions.filter((instruction) => getInstructionType(instruction) === 'Deactivate').length === 0) {
     for (const instruction of instructions) {
       const instructionType = getInstructionType(instruction);
