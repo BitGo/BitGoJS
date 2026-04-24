@@ -440,6 +440,115 @@ describe('Sui Transfer Builder', () => {
       rebuiltTx.toBroadcastFormat().should.equal(rawTx);
     });
 
+    it('should build Path 1b send-all: sponsored addr-balance-only, no change (MergeCoins consumes addrCoin)', async function () {
+      // Reproduces the real on-chain failure: UnusedValueWithoutDrop { result_idx: 0 }
+      // Occurs when redeem_funds returns addrCoin, SplitCoins drains it completely, and the
+      // 0-balance source coin is never consumed.  Fix: MergeCoins(gas, [addrCoin]) at the end.
+      const SEND_AMOUNT = '1000000'; // 0.001 SUI — same as the failing tx
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: SEND_AMOUNT }]);
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.fundsInAddressBalance(SEND_AMOUNT); // send-all: balance == recipient amount
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      const cmds = suiTx.suiTransaction.tx.transactions as any[];
+
+      // Expected command sequence for Path 1b send-all:
+      //   0: MoveCall (redeem_funds)     — withdraw addrCoin
+      //   1: SplitCoins(addrCoin)        — split recipient amount off addrCoin
+      //   2: TransferObjects([split])    — send to recipient
+      //   3: MergeCoins(gas, [addrCoin]) — consume the now-zero-balance addrCoin
+      cmds[0].kind.should.equal('MoveCall');
+      cmds[0].target.should.equal('0x2::coin::redeem_funds');
+      cmds[1].kind.should.equal('SplitCoins');
+      cmds[2].kind.should.equal('TransferObjects');
+      cmds[3].kind.should.equal('MergeCoins', 'expected MergeCoins to consume 0-balance addrCoin after send-all');
+
+      // Recipient parsing must not be affected by the trailing MergeCoins
+      const recipients = utils.getRecipients(suiTx.suiTransaction);
+      recipients.length.should.equal(1);
+      recipients[0].address.should.equal(testData.recipients[0].address);
+      recipients[0].amount.should.equal(SEND_AMOUNT);
+
+      // Round-trip
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build Path 1b with change: sponsored addr-balance-only, excess returned to sender', async function () {
+      // fundsInAddressBalance exceeds the total recipient amount → change must be returned to
+      // the sender as an extra TransferObjects([addrCoin], sender).  The transaction parser must
+      // skip this change transfer and only report actual recipients.
+      const SEND_AMOUNT = '100'; // each of the two testData.recipients gets 100
+      const EXCESS = '9999900'; // fundsInAddressBalance = 10_000_000, total send = 200
+      const FUNDS_BALANCE = (Number(SEND_AMOUNT) * testData.recipients.length + Number(EXCESS)).toString();
+
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients); // 2 recipients × 100 MIST = 200 MIST total
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.fundsInAddressBalance(FUNDS_BALANCE); // 10_000_000 > 200 → has change
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      const cmds = suiTx.suiTransaction.tx.transactions as any[];
+
+      // Expected sequence for Path 1b with change (2 recipients):
+      //   0: MoveCall (redeem_funds)
+      //   1: SplitCoins  —  recipient 0
+      //   2: TransferObjects  —  recipient 0
+      //   3: SplitCoins  —  recipient 1
+      //   4: TransferObjects  —  recipient 1
+      //   5: TransferObjects([addrCoin], sender)  —  change back to sender
+      cmds[0].kind.should.equal('MoveCall');
+      cmds[0].target.should.equal('0x2::coin::redeem_funds');
+      const lastCmd = cmds[cmds.length - 1];
+      lastCmd.kind.should.equal('TransferObjects', 'last command must be the change transfer');
+
+      // The last TransferObjects returns change to the *sender*, not a recipient
+      const changeAddrInput = suiTx.suiTransaction.tx.inputs[lastCmd.address.index] as any;
+      const changeAddr = utils.getAddress(changeAddrInput);
+      changeAddr.should.equal(testData.sender.address, 'change must go back to sender');
+
+      // Parser must return only the actual recipients, not the change transfer
+      const recipients = utils.getRecipients(suiTx.suiTransaction);
+      recipients.length.should.equal(testData.recipients.length);
+      recipients[0].address.should.equal(testData.recipients[0].address);
+      recipients[0].amount.should.equal(SEND_AMOUNT);
+      recipients[1].address.should.equal(testData.recipients[1].address);
+      recipients[1].amount.should.equal(SEND_AMOUNT);
+
+      // Round-trip
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
     it('should build a sponsored tx gas paid from sponsor address balance (empty payment)', async function () {
       const inputObjects = testData.generateObjects(1);
       const sponsoredGasDataNoPayment = {

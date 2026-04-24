@@ -257,12 +257,31 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
         typeArguments: ['0x2::sui::SUI'],
         arguments: [programmableTxBuilder.withdrawal({ amount: BigInt(this._fundsInAddressBalance.toFixed()) })],
       });
+      // addrCoin is a command result (from redeem_funds) and must be explicitly consumed.
+      // Split for every recipient — keeps a 1:1 SplitCoins↔TransferObjects structure for the
+      // transaction parser.  After all splits, consume the source coin explicitly:
+      //   - If there is change (fundsInAddressBalance > total recipient amount): return addrCoin
+      //     to sender via TransferObjects.
+      //   - If send-all (no change): addrCoin has 0 balance; destroy it by merging into the
+      //     sponsor's gas coin (a 0-value merge is valid in Sui and deletes the source object).
+      const totalRecipientAmount = this._recipients.reduce((sum, r) => sum.plus(r.amount), new BigNumber(0));
+      const hasChange = this._fundsInAddressBalance.gt(totalRecipientAmount);
+
       this._recipients.forEach((recipient) => {
         const splitObject = programmableTxBuilder.splitCoins(addrCoin, [
           programmableTxBuilder.pure(Number(recipient.amount)),
         ]);
         programmableTxBuilder.transferObjects([splitObject], programmableTxBuilder.object(recipient.address));
       });
+
+      if (hasChange) {
+        // Return the remaining balance (change) to the sender.
+        programmableTxBuilder.transferObjects([addrCoin], programmableTxBuilder.object(this._sender));
+      } else {
+        // Send-all: addrCoin has 0 balance after all splits.  Merge it into the sponsor's gas
+        // coin to destroy the zero-balance object (coin::join accepts a 0-value source).
+        programmableTxBuilder.mergeCoins(programmableTxBuilder.gas, [addrCoin]);
+      }
       const txData1b = programmableTxBuilder.blockData;
       return {
         type: this._type,
