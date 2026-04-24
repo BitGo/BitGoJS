@@ -20,6 +20,7 @@ export * from './market';
 export * from './pendingApproval';
 export { WalletProofs } from './proofs';
 export * from './recovery';
+export * from './passkey';
 export * from './staking';
 export * from './trading';
 export * from './tss';
