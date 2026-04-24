@@ -288,7 +288,11 @@ export class Utils implements BaseUtils {
         destinations.push(this.getAddress(input));
       }
     });
-    destinations.map((address, i) => {
+    // In Path 1b (sponsored, address-balance-only), after all recipient SplitCoins/TransferObjects
+    // there may be one extra TransferObjects that returns change to the sender.  That transfer
+    // has no corresponding SplitCoins entry, so destinations.length may be splitResults.length+1.
+    // Limit the zip to splitResults.length so the change transfer is not counted as a recipient.
+    destinations.slice(0, splitResults.length).map((address, i) => {
       receipts.push({
         address: address,
         amount: splitResults[i].toString(),
