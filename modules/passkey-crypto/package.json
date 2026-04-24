@@ -1,0 +1,42 @@
+{
+  "name": "@bitgo/passkey-crypto",
+  "version": "0.1.0",
+  "description": "Pure cryptographic primitives for BitGo passkey (WebAuthn PRF) key derivation",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "test": "npm run unit-test",
+    "unit-test": "mocha 'test/unit/**/*.ts'"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/passkey-crypto"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@bitgo/sjcl": "^1.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0"
+  }
+}
