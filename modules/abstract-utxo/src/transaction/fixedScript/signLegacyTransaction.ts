@@ -6,12 +6,12 @@ import { isTriple, Triple } from '@bitgo/sdk-core';
 import { BIP32, bip32 } from '@bitgo/wasm-utxo';
 import debugLib from 'debug';
 
-import { UtxoCoinName } from '../../names';
-import type { Unspent, WalletUnspent } from '../../unspent';
-import { toUtxolibBIP32 } from '../../wasmUtil';
+import { UtxoCoinName } from '../../names.js';
+import type { Unspent, WalletUnspent } from '../../unspent.js';
+import { toUtxolibBIP32 } from '../../wasmUtil.js';
 
-import { getReplayProtectionAddresses } from './replayProtection';
-import { InputSigningError, TransactionSigningError } from './SigningError';
+import { getReplayProtectionAddresses } from './replayProtection.js';
+import { InputSigningError, TransactionSigningError } from './SigningError.js';
 
 const debug = debugLib('bitgo:v2:utxo');
 

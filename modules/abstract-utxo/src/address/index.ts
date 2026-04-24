@@ -3,4 +3,4 @@ export {
   generateAddressWithChainAndIndex,
   assertFixedScriptWalletAddress,
   FixedScriptAddressCoinSpecific,
-} from './fixedScript';
+} from './fixedScript.js';

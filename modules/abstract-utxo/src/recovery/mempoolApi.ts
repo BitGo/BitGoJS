@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { ApiNotImplementedError, BaseApi } from './baseApi';
+import { ApiNotImplementedError, BaseApi } from './baseApi.js';
 
 export class MempoolApi extends BaseApi {
   static forCoin(coinName: string): MempoolApi {

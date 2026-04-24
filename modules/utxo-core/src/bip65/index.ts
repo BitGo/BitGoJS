@@ -1,1 +1,1 @@
-export * from './locktime';
+export * from './locktime.js';

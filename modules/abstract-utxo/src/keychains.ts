@@ -5,8 +5,8 @@ import { bitgo } from '@bitgo/utxo-lib';
 import { IRequestTracer, IWallet, KeyIndices, promiseProps, Triple } from '@bitgo/sdk-core';
 import { BIP32, bip32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
-import { AbstractUtxoCoin } from './abstractUtxoCoin';
-import { UtxoWallet } from './wallet';
+import { AbstractUtxoCoin } from './abstractUtxoCoin.js';
+import { UtxoWallet } from './wallet.js';
 
 /*
 

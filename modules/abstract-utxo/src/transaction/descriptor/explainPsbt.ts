@@ -1,9 +1,9 @@
 import { ITransactionRecipient } from '@bitgo/sdk-core';
 import { Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
 
-import type { TransactionExplanationDescriptor } from '../fixedScript/explainTransaction';
-import { UtxoCoinName } from '../../names';
-import { sumValues } from '../../wasmUtil';
+import type { TransactionExplanationDescriptor } from '../fixedScript/explainTransaction.js';
+import { UtxoCoinName } from '../../names.js';
+import { sumValues } from '../../wasmUtil.js';
 
 function toRecipient(output: descriptorWallet.ParsedOutput, coinName: UtxoCoinName): ITransactionRecipient {
   const address = output.address ?? `scriptPubKey:${Buffer.from(output.script).toString('hex')}`;

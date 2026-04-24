@@ -2,8 +2,8 @@ import assert from 'assert';
 
 import { Descriptor, address, descriptorWallet } from '@bitgo/wasm-utxo';
 
-import { UtxoCoinSpecific, VerifyAddressOptions } from '../abstractUtxoCoin';
-import { UtxoCoinName } from '../names';
+import { UtxoCoinSpecific, VerifyAddressOptions } from '../abstractUtxoCoin.js';
+import { UtxoCoinName } from '../names.js';
 
 class DescriptorAddressMismatchError extends Error {
   constructor(descriptor: Descriptor, index: number, derivedAddress: string, expectedAddress: string) {

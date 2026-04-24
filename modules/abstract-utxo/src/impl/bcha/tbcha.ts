@@ -3,9 +3,9 @@
  */
 import { BitGoBase } from '@bitgo/sdk-core';
 
-import { UtxoCoinName } from '../../names';
+import { UtxoCoinName } from '../../names.js';
 
-import { Bcha } from './bcha';
+import { Bcha } from './bcha.js';
 
 export class Tbcha extends Bcha {
   readonly name: UtxoCoinName = 'tbcha';

@@ -1,6 +1,6 @@
-export type { DescriptorMap } from '../../wasmUtil';
-export { explainPsbt } from './explainPsbt';
-export { parse } from './parse';
-export { parseToAmountType } from './parseToAmountType';
-export { verifyTransaction } from './verifyTransaction';
-export { signPsbt } from './signPsbt';
+export type { DescriptorMap } from '../../wasmUtil.js';
+export { explainPsbt } from './explainPsbt.js';
+export { parse } from './parse.js';
+export { parseToAmountType } from './parseToAmountType.js';
+export { verifyTransaction } from './verifyTransaction.js';
+export { signPsbt } from './signPsbt.js';

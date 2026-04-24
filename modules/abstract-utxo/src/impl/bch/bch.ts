@@ -1,9 +1,9 @@
 import { BitGoBase } from '@bitgo/sdk-core';
 import { address as wasmAddress } from '@bitgo/wasm-utxo';
 
-import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
-import { UtxoCoinName } from '../../names';
-import { isScriptRecipient } from '../../transaction';
+import { AbstractUtxoCoin } from '../../abstractUtxoCoin.js';
+import { UtxoCoinName } from '../../names.js';
+import { isScriptRecipient } from '../../transaction/index.js';
 
 export class Bch extends AbstractUtxoCoin {
   readonly name: UtxoCoinName = 'bch';

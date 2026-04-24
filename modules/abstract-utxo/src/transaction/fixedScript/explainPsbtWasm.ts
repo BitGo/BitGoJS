@@ -1,9 +1,9 @@
 import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 import { Triple } from '@bitgo/sdk-core';
 
-import type { FixedScriptWalletOutput, Output, BitGoPsbt } from '../types';
+import type { FixedScriptWalletOutput, Output, BitGoPsbt } from '../types.js';
 
-import type { TransactionExplanationWasm } from './explainTransaction';
+import type { TransactionExplanationWasm } from './explainTransaction.js';
 
 function scriptToAddress(script: Uint8Array): string {
   return `scriptPubKey:${Buffer.from(script).toString('hex')}`;

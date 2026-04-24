@@ -10,12 +10,12 @@ import {
   RecoverFromWrongChainOptions,
   TransactionInfo,
   TransactionPrebuild,
-} from '../../abstractUtxoCoin';
-import { UtxoCoinName } from '../../names';
-import { ParsedTransaction } from '../../transaction/types';
-import type { TransactionExplanation } from '../../transaction/fixedScript/explainTransaction';
-import type { CrossChainRecoverySigned, CrossChainRecoveryUnsigned } from '../../recovery/crossChainRecovery';
-import type { Unspent } from '../../unspent';
+} from '../../abstractUtxoCoin.js';
+import { UtxoCoinName } from '../../names.js';
+import { ParsedTransaction } from '../../transaction/types.js';
+import type { TransactionExplanation } from '../../transaction/fixedScript/explainTransaction.js';
+import type { CrossChainRecoverySigned, CrossChainRecoveryUnsigned } from '../../recovery/crossChainRecovery.js';
+import type { Unspent } from '../../unspent.js';
 
 type UnspentJSON = Unspent<number> & { valueString: string };
 type TransactionInfoJSON = TransactionInfo<number> & { unspents: UnspentJSON[] };

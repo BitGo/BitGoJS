@@ -1,9 +1,9 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { fixedScriptWallet, utxolibCompat } from '@bitgo/wasm-utxo';
 
-import { getNetworkFromCoinName, UtxoCoinName } from '../names';
+import { getNetworkFromCoinName, UtxoCoinName } from '../names.js';
 
-import { SdkBackend, BitGoPsbt } from './types';
+import { SdkBackend, BitGoPsbt } from './types.js';
 
 type BufferEncoding = 'hex' | 'base64';
 

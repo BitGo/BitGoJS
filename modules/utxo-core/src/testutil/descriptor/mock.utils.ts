@@ -6,9 +6,9 @@ import {
   createPsbt,
   createScriptPubKeyFromDescriptor,
   DerivedDescriptorTransactionInput,
-} from '../../descriptor';
+} from '../../descriptor/index.js';
 
-import { DescriptorTemplate, getDefaultXPubs, getDescriptor } from './descriptors';
+import { DescriptorTemplate, getDefaultXPubs, getDescriptor } from './descriptors.js';
 
 type MockOutputIdParams = { hash?: string; vout?: number };
 

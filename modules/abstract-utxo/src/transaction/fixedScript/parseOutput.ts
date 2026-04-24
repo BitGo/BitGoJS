@@ -12,9 +12,9 @@ import {
   Triple,
 } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
-import { Output, FixedScriptWalletOutput } from '../types';
-import { fromExtendedAddressFormatToScript } from '../recipient';
+import { AbstractUtxoCoin } from '../../abstractUtxoCoin.js';
+import { Output, FixedScriptWalletOutput } from '../types.js';
+import { fromExtendedAddressFormatToScript } from '../recipient.js';
 
 const debug = debugLib('bitgo:v2:parseoutput');
 

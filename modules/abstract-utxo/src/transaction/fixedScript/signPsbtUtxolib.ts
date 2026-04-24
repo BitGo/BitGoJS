@@ -4,8 +4,8 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { bitgo } from '@bitgo/utxo-lib';
 import debugLib from 'debug';
 
-import { InputSigningError, TransactionSigningError } from './SigningError';
-import { Musig2Participant } from './musig2';
+import { InputSigningError, TransactionSigningError } from './SigningError.js';
+import { Musig2Participant } from './musig2.js';
 
 const debug = debugLib('bitgo:v2:utxo');
 

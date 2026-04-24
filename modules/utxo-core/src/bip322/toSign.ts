@@ -1,8 +1,8 @@
 import { Psbt, bitgo, networks, Transaction } from '@bitgo/utxo-lib';
 import { toXOnlyPublicKey } from '@bitgo/utxo-lib/dist/src/bitgo/outputScripts';
 
-import { addBip322ProofMessage } from './utils';
-import { BIP322_TAG, buildToSpendTransaction } from './toSpend';
+import { addBip322ProofMessage } from './utils.js';
+import { BIP322_TAG, buildToSpendTransaction } from './toSpend.js';
 
 export type AddressDetails = {
   redeemScript?: Buffer;

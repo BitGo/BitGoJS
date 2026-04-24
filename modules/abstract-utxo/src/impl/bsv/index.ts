@@ -1,2 +1,2 @@
-export * from './bsv';
-export * from './tbsv';
+export * from './bsv.js';
+export * from './tbsv.js';

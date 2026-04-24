@@ -2,11 +2,11 @@ import { TapLeafScript } from 'bip174/src/lib/interfaces';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Descriptor, Miniscript } from '@bitgo/wasm-utxo';
 
-import { DerivedDescriptorWalletOutput, WithOptDescriptor } from '../Output';
-import { Output } from '../../Output';
+import { DerivedDescriptorWalletOutput, WithOptDescriptor } from '../Output.js';
+import { Output } from '../../Output.js';
 
-import { toUtxoPsbt, toWrappedPsbt } from './wrap';
-import { assertSatisfiable } from './assertSatisfiable';
+import { toUtxoPsbt, toWrappedPsbt } from './wrap.js';
+import { assertSatisfiable } from './assertSatisfiable.js';
 
 /**
  * Non-Final (Replaceable)

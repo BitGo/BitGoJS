@@ -2,7 +2,7 @@ import * as assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { buildToSpendTransaction } from './toSpend';
+import { buildToSpendTransaction } from './toSpend.js';
 
 export type MessageInfo = {
   address: string;

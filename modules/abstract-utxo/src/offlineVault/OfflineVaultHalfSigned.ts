@@ -1,11 +1,11 @@
 import { BIP32, bip32, Psbt } from '@bitgo/wasm-utxo';
 import { BaseCoin } from '@bitgo/sdk-core';
 
-import { UtxoCoinName } from '../names';
-import { toUtxolibBIP32 } from '../wasmUtil';
+import { UtxoCoinName } from '../names.js';
+import { toUtxolibBIP32 } from '../wasmUtil.js';
 
-import { OfflineVaultSignable } from './OfflineVaultSignable';
-import { DescriptorTransaction, getHalfSignedPsbt } from './descriptor';
+import { OfflineVaultSignable } from './OfflineVaultSignable.js';
+import { DescriptorTransaction, getHalfSignedPsbt } from './descriptor/index.js';
 
 export type OfflineVaultHalfSigned = {
   halfSigned: { txHex: string };

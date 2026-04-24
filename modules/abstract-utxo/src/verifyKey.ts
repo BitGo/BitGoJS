@@ -9,9 +9,9 @@ import buildDebug from 'debug';
 import { BIP32, message } from '@bitgo/wasm-utxo';
 import { BitGoBase, decryptKeychainPrivateKey, KeyIndices } from '@bitgo/sdk-core';
 
-import { VerifyKeySignaturesOptions, VerifyUserPublicKeyOptions } from './abstractUtxoCoin';
-import { ParsedTransaction } from './transaction/types';
-import { UtxoKeychain } from './keychains';
+import { VerifyKeySignaturesOptions, VerifyUserPublicKeyOptions } from './abstractUtxoCoin.js';
+import { ParsedTransaction } from './transaction/types.js';
+import { UtxoKeychain } from './keychains.js';
 
 const debug = buildDebug('bitgo:abstract-utxo:verifyKey');
 

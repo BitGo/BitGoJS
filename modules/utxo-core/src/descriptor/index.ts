@@ -1,11 +1,11 @@
-export * from './psbt';
-export * from './address';
-export * from './DescriptorMap';
-export * from './derive';
-export * from './Output';
-export * from './VirtualSize';
-export * from './fromFixedScriptWallet';
-export * from './parse/PatternMatcher';
+export * from './psbt/index.js';
+export * from './address.js';
+export * from './DescriptorMap.js';
+export * from './derive.js';
+export * from './Output.js';
+export * from './VirtualSize.js';
+export * from './fromFixedScriptWallet.js';
+export * from './parse/PatternMatcher.js';
 
 /** @deprecated - import from @bitgo/utxo-core directly instead */
-export * from '../Output';
+export * from '../Output.js';

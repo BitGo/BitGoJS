@@ -2,11 +2,11 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { BIP32 } from '@bitgo/wasm-utxo';
 import { Wallet } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
-import { IDescriptorWallet } from '../descriptorWallet';
-import { NamedDescriptor } from '../NamedDescriptor';
+import { AbstractUtxoCoin } from '../../abstractUtxoCoin.js';
+import { IDescriptorWallet } from '../descriptorWallet.js';
+import { NamedDescriptor } from '../NamedDescriptor.js';
 
-import { DescriptorFromKeys } from './createDescriptors';
+import { DescriptorFromKeys } from './createDescriptors.js';
 
 export async function createDescriptorWallet(
   bitgo: BitGoAPI,

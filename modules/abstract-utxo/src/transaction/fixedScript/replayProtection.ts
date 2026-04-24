@@ -1,6 +1,6 @@
 import { address, type AddressFormat } from '@bitgo/wasm-utxo';
 
-import { UtxoCoinName } from '../../names';
+import { UtxoCoinName } from '../../names.js';
 
 export const pubkeyProd = Buffer.from('0255b9f71ac2c78fffd83e3e37b9e17ae70d5437b7f56d0ed2e93b7de08015aa59', 'hex');
 

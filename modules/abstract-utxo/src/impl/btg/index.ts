@@ -1,1 +1,1 @@
-export * from './btg';
+export * from './btg.js';

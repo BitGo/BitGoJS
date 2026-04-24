@@ -1,2 +1,2 @@
-export * from './bch';
-export * from './tbch';
+export * from './bch.js';
+export * from './tbch.js';

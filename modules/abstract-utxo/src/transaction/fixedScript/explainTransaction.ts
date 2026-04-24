@@ -5,14 +5,14 @@ import { ITransactionExplanation as BaseTransactionExplanation, Triple } from '@
 import { BIP32 } from '@bitgo/wasm-utxo';
 import * as utxocore from '@bitgo/utxo-core';
 
-import type { Bip322Message } from '../../abstractUtxoCoin';
-import type { Output, FixedScriptWalletOutput } from '../types';
-import type { Unspent } from '../../unspent';
-import { toExtendedAddressFormat } from '../recipient';
-import { getPayGoVerificationPubkey } from '../getPayGoVerificationPubkey';
-import { toBip32Triple } from '../../keychains';
-import { toUtxolibBIP32 } from '../../wasmUtil';
-import { getNetworkFromCoinName, UtxoCoinName } from '../../names';
+import type { Bip322Message } from '../../abstractUtxoCoin.js';
+import type { Output, FixedScriptWalletOutput } from '../types.js';
+import type { Unspent } from '../../unspent.js';
+import { toExtendedAddressFormat } from '../recipient.js';
+import { getPayGoVerificationPubkey } from '../getPayGoVerificationPubkey.js';
+import { toBip32Triple } from '../../keychains.js';
+import { toUtxolibBIP32 } from '../../wasmUtil.js';
+import { getNetworkFromCoinName, UtxoCoinName } from '../../names.js';
 
 // ===== Transaction Explanation Type Definitions =====
 

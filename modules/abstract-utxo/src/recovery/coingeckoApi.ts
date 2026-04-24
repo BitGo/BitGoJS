@@ -1,4 +1,4 @@
-import { BaseApi } from './baseApi';
+import { BaseApi } from './baseApi.js';
 
 const familyNamesToCoinGeckoIds = new Map()
   .set('BTC', 'bitcoin')

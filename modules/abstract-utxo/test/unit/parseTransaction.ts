@@ -3,11 +3,11 @@ import assert from 'assert';
 import * as sinon from 'sinon';
 import { Wallet, UnexpectedAddressError, VerificationOptions } from '@bitgo/sdk-core';
 
-import { UtxoWallet, TransactionParams } from '../../src';
+import { UtxoWallet, TransactionParams } from '../../src/index';
 import { Output } from '../../src/transaction/types';
 import type { TransactionExplanation } from '../../src/transaction/fixedScript/explainTransaction';
 
-import { getUtxoCoin } from './util';
+import { getUtxoCoin } from './util/index';
 
 describe('Parse Transaction', function () {
   const coin = getUtxoCoin('tbtc');

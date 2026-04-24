@@ -1,9 +1,9 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
-import type { UtxoNamedKeychains } from '../keychains';
+import type { UtxoNamedKeychains } from '../keychains.js';
 
-import type { CustomChangeOptions } from './fixedScript';
+import type { CustomChangeOptions } from './fixedScript/index.js';
 
 export type BitGoPsbt = fixedScriptWallet.BitGoPsbt;
 

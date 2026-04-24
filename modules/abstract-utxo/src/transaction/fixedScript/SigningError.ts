@@ -1,4 +1,4 @@
-import type { Unspent } from '../../unspent';
+import type { Unspent } from '../../unspent.js';
 
 export type PsbtParsedScriptType =
   | 'p2sh'

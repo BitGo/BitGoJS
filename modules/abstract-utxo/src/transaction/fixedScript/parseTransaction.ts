@@ -3,8 +3,8 @@ import assert from 'assert';
 import _ from 'lodash';
 import { ITransactionRecipient, KeyIndices, Triple, VerificationOptions, Wallet } from '@bitgo/sdk-core';
 
-import type { AbstractUtxoCoin, ParseTransactionOptions } from '../../abstractUtxoCoin';
-import type { FixedScriptWalletOutput, Output, ParsedTransaction } from '../types';
+import type { AbstractUtxoCoin, ParseTransactionOptions } from '../../abstractUtxoCoin.js';
+import type { FixedScriptWalletOutput, Output, ParsedTransaction } from '../types.js';
 import {
   fetchKeychains,
   getKeySignatures,
@@ -12,20 +12,20 @@ import {
   toXpubTriple,
   UtxoKeychain,
   UtxoNamedKeychains,
-} from '../../keychains';
-import { verifyKeySignature } from '../../verifyKey';
+} from '../../keychains.js';
+import { verifyKeySignature } from '../../verifyKey.js';
 import {
   assertValidTransactionRecipient,
   fromExtendedAddressFormatToScript,
   isScriptRecipient,
   toExtendedAddressFormat,
   toOutputScript,
-} from '../recipient';
-import { ComparableOutput, ExpectedOutput, outputDifference } from '../outputDifference';
-import { toTNumber } from '../../tnumber';
+} from '../recipient.js';
+import { ComparableOutput, ExpectedOutput, outputDifference } from '../outputDifference.js';
+import { toTNumber } from '../../tnumber.js';
 
-import type { TransactionExplanation } from './explainTransaction';
-import { CustomChangeOptions, parseOutput } from './parseOutput';
+import type { TransactionExplanation } from './explainTransaction.js';
+import { CustomChangeOptions, parseOutput } from './parseOutput.js';
 
 export type ComparableOutputWithExternal<TValue> = (ComparableOutput<TValue> | ExpectedOutput) & {
   external: boolean | undefined;

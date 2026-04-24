@@ -1,0 +1,1 @@
+find src -name "*.ts" | xargs grep -l "from '\.\.\|from \"\." | wc -l

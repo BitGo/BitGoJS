@@ -1,2 +1,2 @@
-export { getDescriptorFromBuilder, DescriptorBuilder } from './builder';
-export { parseDescriptor } from './parse';
+export { getDescriptorFromBuilder, DescriptorBuilder } from './builder.js';
+export { parseDescriptor } from './parse.js';

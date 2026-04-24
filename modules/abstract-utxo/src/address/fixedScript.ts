@@ -14,7 +14,7 @@ import {
 } from '@bitgo/sdk-core';
 import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
-import { UtxoCoinName } from '../names';
+import { UtxoCoinName } from '../names.js';
 
 type ScriptType2Of3 = fixedScriptWallet.OutputScriptType;
 type ChainCode = fixedScriptWallet.ChainCode;

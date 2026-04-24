@@ -1,13 +1,13 @@
 export { Miniscript, Descriptor } from '@bitgo/wasm-utxo';
-export type { DescriptorMap } from '../wasmUtil';
-export { assertDescriptorWalletAddress } from './assertDescriptorWalletAddress';
+export type { DescriptorMap } from '../wasmUtil.js';
+export { assertDescriptorWalletAddress } from './assertDescriptorWalletAddress.js';
 export {
   NamedDescriptor,
   createNamedDescriptorWithSignature,
   hasValidSignature,
   NamedDescriptorNative,
   toNamedDescriptorNative,
-} from './NamedDescriptor';
-export { isDescriptorWallet, getDescriptorMapFromWallet } from './descriptorWallet';
-export { getPolicyForEnv } from './validatePolicy';
-export * as createWallet from './createWallet';
+} from './NamedDescriptor.js';
+export { isDescriptorWallet, getDescriptorMapFromWallet } from './descriptorWallet.js';
+export { getPolicyForEnv } from './validatePolicy.js';
+export * as createWallet from './createWallet/index.js';

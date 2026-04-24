@@ -1,8 +1,8 @@
-import { AbstractUtxoCoin, ParseTransactionOptions } from '../../abstractUtxoCoin';
-import { BaseOutput, BaseParsedTransaction } from '../types';
-import { IDescriptorWallet } from '../../descriptor/descriptorWallet';
+import { AbstractUtxoCoin, ParseTransactionOptions } from '../../abstractUtxoCoin.js';
+import { BaseOutput, BaseParsedTransaction } from '../types.js';
+import { IDescriptorWallet } from '../../descriptor/descriptorWallet.js';
 
-import { parse, ParsedDescriptorTransaction } from './parse';
+import { parse, ParsedDescriptorTransaction } from './parse.js';
 
 type AmountType = 'number' | 'bigint' | 'string';
 

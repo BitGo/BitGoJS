@@ -1,12 +1,12 @@
 import { ITransactionRecipient, TxIntentMismatchError, IBaseCoin } from '@bitgo/sdk-core';
 import type { Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
 
-import { AbstractUtxoCoin, VerifyTransactionOptions } from '../../abstractUtxoCoin';
-import { BaseOutput, BaseParsedTransactionOutputs } from '../types';
-import { UtxoCoinName } from '../../names';
-import { toWasmPsbt, UtxoLibPsbt } from '../../wasmUtil';
+import { AbstractUtxoCoin, VerifyTransactionOptions } from '../../abstractUtxoCoin.js';
+import { BaseOutput, BaseParsedTransactionOutputs } from '../types.js';
+import { UtxoCoinName } from '../../names.js';
+import { toWasmPsbt, UtxoLibPsbt } from '../../wasmUtil.js';
 
-import { toBaseParsedTransactionOutputsFromPsbt } from './parse';
+import { toBaseParsedTransactionOutputsFromPsbt } from './parse.js';
 
 export class ValidationError extends Error {
   constructor(message: string) {
