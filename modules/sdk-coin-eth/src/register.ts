@@ -21,7 +21,16 @@ export const register = (sdk: BitGoBase): void => {
 };
 
 export const registerWithCoinMap = (sdk: BitGoBase, coinMap: CoinMap): void => {
-  Erc20Token.createTokenConstructors(getFormattedErc20Tokens(coinMap)).forEach(({ name, coinConstructor }) => {
+  register(sdk);
+
+  // Registration for dynamic ERC20 tokens that are not hardcoded in the SDK, but are present in the coin map generated using AMS.
+  const formattedTokens = getFormattedErc20Tokens(coinMap);
+  Erc20Token.createTokenConstructors(formattedTokens).forEach(({ name, coinConstructor }) => {
+    // Register constructor for both type names and contract addresses
     sdk.register(name, coinConstructor);
+  });
+  // Add new tokens to the global coin map so they're available for lookup
+  formattedTokens.forEach((token) => {
+    sdk.registerWithBaseCoin(Erc20Token.createTokenConstructor(token), coinMap.get(token.type));
   });
 };

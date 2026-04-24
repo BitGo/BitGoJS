@@ -6,6 +6,7 @@ import {
   GetSharingKeyOptions,
   IRequestTracer,
 } from '../api';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { IBaseCoin } from './baseCoin';
 import { CoinConstructor } from './coinFactory';
 import { EnvironmentName } from './environments';
@@ -35,4 +36,5 @@ export interface BitGoBase {
   setRequestTracer(reqTracer: IRequestTracer): void;
   url(path: string, version?: number): string;
   register(name: string, coin: CoinConstructor): void;
+  registerWithBaseCoin(coin: CoinConstructor, baseCoin: Readonly<StaticsBaseCoin>): void;
 }
