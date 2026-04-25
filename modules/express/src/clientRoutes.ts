@@ -1696,6 +1696,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.get('express.pingExpress', [typedPromiseWrapper(handlePingExpress)]);
 
   // auth
+  router.post('express.v1.login', [prepareBitGo(config), typedPromiseWrapper(handleLogin)]);
   router.post('express.login', [prepareBitGo(config), typedPromiseWrapper(handleLogin)]);
 
   router.post('express.v1.decrypt', [prepareBitGo(config), typedPromiseWrapper(handleDecrypt)]);

@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import * as t from 'io-ts';
-import { LoginRequest, PostLogin } from '../../../src/typedRoutes/api/common/login';
+import { LoginRequest, PostV1Login } from '../../../src/typedRoutes/api/v1/login';
+import { PostV2Login } from '../../../src/typedRoutes/api/v2/login';
 import { assertDecode } from './common';
 import 'should';
 import 'should-http';
@@ -130,7 +131,7 @@ describe('Login codec tests', function () {
   });
 
   describe('LoginResponse', function () {
-    const LoginResponse = PostLogin.response[200];
+    const LoginResponse = PostV1Login.response[200];
 
     it('should validate response with all required fields', function () {
       const validResponse = {
@@ -245,24 +246,41 @@ describe('Login codec tests', function () {
     });
   });
 
-  describe('PostLogin route definition', function () {
+  describe('PostV1Login route definition', function () {
     it('should have the correct path', function () {
-      assert.strictEqual(PostLogin.path, '/api/v[12]/user/login');
+      assert.strictEqual(PostV1Login.path, '/api/v1/user/login');
     });
 
     it('should have the correct HTTP method', function () {
-      assert.strictEqual(PostLogin.method, 'POST');
+      assert.strictEqual(PostV1Login.method, 'POST');
     });
 
     it('should have the correct request configuration', function () {
-      // Verify the route is configured with a request property
-      assert.ok(PostLogin.request);
+      assert.ok(PostV1Login.request);
     });
 
     it('should have the correct response types', function () {
-      // Check that the response object has the expected status codes
-      assert.ok(PostLogin.response[200]);
-      assert.ok(PostLogin.response[404]);
+      assert.ok(PostV1Login.response[200]);
+      assert.ok(PostV1Login.response[404]);
+    });
+  });
+
+  describe('PostV2Login route definition', function () {
+    it('should have the correct path', function () {
+      assert.strictEqual(PostV2Login.path, '/api/v2/user/login');
+    });
+
+    it('should have the correct HTTP method', function () {
+      assert.strictEqual(PostV2Login.method, 'POST');
+    });
+
+    it('should have the correct request configuration', function () {
+      assert.ok(PostV2Login.request);
+    });
+
+    it('should have the correct response types', function () {
+      assert.ok(PostV2Login.response[200]);
+      assert.ok(PostV2Login.response[404]);
     });
   });
 
@@ -304,7 +322,7 @@ describe('Login codec tests', function () {
       assert.strictEqual(result.body.email, mockLoginResponse.email);
       assert.strictEqual(result.body.forceSMS, mockLoginResponse.forceSMS);
 
-      const decodedResponse = assertDecode(PostLogin.response[200], result.body);
+      const decodedResponse = assertDecode(PostV1Login.response[200], result.body);
       assert.strictEqual(decodedResponse.email, mockLoginResponse.email);
     });
 
@@ -329,7 +347,7 @@ describe('Login codec tests', function () {
       assert.strictEqual(result.body.email, mockLoginResponse.email);
       assert.strictEqual(result.body.forceSMS, mockLoginResponse.forceSMS);
 
-      const decodedResponse = assertDecode(PostLogin.response[200], result.body);
+      const decodedResponse = assertDecode(PostV2Login.response[200], result.body);
       assert.strictEqual(decodedResponse.email, mockLoginResponse.email);
     });
 
@@ -375,7 +393,7 @@ describe('Login codec tests', function () {
       result.body.should.have.property('forceSMS');
       result.body.should.have.property('extensible');
 
-      const decodedResponse = assertDecode(PostLogin.response[200], result.body);
+      const decodedResponse = assertDecode(PostV1Login.response[200], result.body);
       assert.strictEqual(decodedResponse.email, mockFullResponse.email);
       assert.strictEqual(decodedResponse.extensible, mockFullResponse.extensible);
       assert.strictEqual(decodedResponse.initialHash, mockFullResponse.initialHash);
@@ -423,7 +441,7 @@ describe('Login codec tests', function () {
       result.body.should.have.property('forceSMS');
       result.body.should.have.property('extensible');
 
-      const decodedResponse = assertDecode(PostLogin.response[200], result.body);
+      const decodedResponse = assertDecode(PostV2Login.response[200], result.body);
       assert.strictEqual(decodedResponse.email, mockFullResponse.email);
       assert.strictEqual(decodedResponse.extensible, mockFullResponse.extensible);
       assert.strictEqual(decodedResponse.initialHash, mockFullResponse.initialHash);
@@ -447,7 +465,7 @@ describe('Login codec tests', function () {
       result.body.should.have.property('email');
       result.body.should.have.property('forceSMS');
 
-      const decodedResponse = assertDecode(PostLogin.response[200], result.body);
+      const decodedResponse = assertDecode(PostV2Login.response[200], result.body);
       assert.ok(decodedResponse);
     });
   });

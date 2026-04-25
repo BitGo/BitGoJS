@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as t from 'io-ts';
 import { DecryptRequestBody } from '../../../src/typedRoutes/api/v1/decrypt';
 import { EncryptRequestBody } from '../../../src/typedRoutes/api/v1/encrypt';
-import { LoginRequest } from '../../../src/typedRoutes/api/common/login';
+import { LoginRequest } from '../../../src/typedRoutes/api/v1/login';
 import { VerifyAddressBody } from '../../../src/typedRoutes/api/common/verifyAddress';
 import { VerifyAddressV2Body, VerifyAddressV2Params } from '../../../src/typedRoutes/api/v2/verifyCoinAddress';
 import { SimpleCreateRequestBody } from '../../../src/typedRoutes/api/v1/simpleCreate';

@@ -39,13 +39,16 @@ export const LoginRequest = {
 };
 
 /**
- * Login
+ * Login (v1)
  *
- * @operationId express.login
- * @tag express
+ * Authenticate a user and retrieve their session details.
+ *
+ * @operationId express.v1.login
+ * @tag Express
+ * @private
  */
-export const PostLogin = httpRoute({
-  path: '/api/v[12]/user/login',
+export const PostV1Login = httpRoute({
+  path: '/api/v1/user/login',
   method: 'POST',
   request: httpRequest({
     body: LoginRequest,
