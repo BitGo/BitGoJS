@@ -3744,6 +3744,15 @@ export const allCoinsAndTokens = [
     Networks.test.basechain
   ),
   erc20Token(
+    'fb6a9d40-4029-479f-af25-d2ac98742d83',
+    'tbaseeth:tusdl',
+    'USDL',
+    6,
+    '0xb38809a63bc35fbb8b7ed9c66a24ff56412705a6',
+    UnderlyingAsset['tbaseeth:tusdl'],
+    Networks.test.basechain
+  ),
+  erc20Token(
     '439fb12d-fddf-4749-8a33-b7c79fefc1b4',
     'baseeth:wave',
     'Waveform',
@@ -4393,6 +4402,15 @@ export const allCoinsAndTokens = [
     18,
     '0xfd739d4e423301ce9385c1fb8850539d657c296d',
     UnderlyingAsset['hypeevm:khype'],
+    Networks.main.hypeevm
+  ),
+  erc20Token(
+    'fa292113-57f0-425a-841b-0e3111c8fd52',
+    'hypeevm:kntq',
+    'Kinetiq',
+    18,
+    '0x000000000000780555bd0bca3791f89f9542c2d6',
+    UnderlyingAsset['hypeevm:kntq'],
     Networks.main.hypeevm
   ),
 
@@ -5450,6 +5468,15 @@ export const allCoinsAndTokens = [
     18,
     'TPEwuCefwvzBcr9BHvg2xhJCaf499uGMZx',
     UnderlyingAsset['ttrx:stgusd1'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  ttronToken(
+    'cbfd50f4-c8bd-4228-9a7a-5385430d4f70',
+    'ttrx:tusdlt',
+    'USDLT',
+    6,
+    'TFDrx3FjBnxLegrfHN9F7SQdcyxWYHzEVa',
+    UnderlyingAsset['ttrx:tusdlt'],
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   talgoToken(

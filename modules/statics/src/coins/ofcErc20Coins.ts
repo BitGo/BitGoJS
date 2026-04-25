@@ -4464,6 +4464,34 @@ export const tOfcErc20Coins = [
     'hteth'
   ),
   tofcerc20(
+    'ce0c0929-d652-4c5c-ab83-26c82098fe05',
+    'ofchteth:htusdl',
+    'USDL',
+    6,
+    UnderlyingAsset['hteth:htusdl'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    'dc4ff058-771e-4dcd-9679-65a5ea2bcc29',
+    'ofchteth:htusdlt',
+    'USDLT',
+    6,
+    UnderlyingAsset['hteth:htusdlt'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
     'df59331f-b380-4fb7-ad9a-0e0c0c3ec730',
     'ofcthoodeth:amzn',
     'Amazon',
@@ -5302,6 +5330,20 @@ export const tOfcErc20Coins = [
     'Kinetiq Staked HYPE',
     18,
     UnderlyingAsset['hypeevm:khype'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'hypeevm'
+  ),
+  ofcerc20(
+    '3663e41e-b3fb-4dba-ba53-dad256771ebd',
+    'ofchypeevm:kntq',
+    'Kinetiq',
+    18,
+    UnderlyingAsset['hypeevm:kntq'],
     undefined,
     undefined,
     '',
@@ -6307,6 +6349,21 @@ export const tOfcErc20Coins = [
   ),
   ofcerc20('66f600c7-5858-482f-9e5f-823930b1f4f4', 'ofceth:zama', 'Zama', 18, UnderlyingAsset['eth:zama']),
   ofcerc20(
+    'b2efa51c-3628-419b-ae40-249c27c677ab',
+    'ofceth:mony',
+    'My OnChain Net Yield Fund',
+    4,
+    UnderlyingAsset['eth:mony']
+  ),
+  ofcerc20(
+    'bbc481c3-5ff2-42b2-9bde-32ddf78b4108',
+    'ofceth:architectgvi',
+    'ARCHITECT Global Value',
+    18,
+    UnderlyingAsset['eth:architectgvi']
+  ),
+  ofcerc20('3c49d36b-3f11-4da6-a2df-e031507d596d', 'ofceth:zk', 'ZKsync', 18, UnderlyingAsset['eth:zk']),
+  ofcerc20(
     '47d8cf79-ed67-4e9c-8e51-422d31290282',
     'ofcbaseeth:usad',
     'Lydia',
@@ -6347,6 +6404,20 @@ export const tOfcErc20Coins = [
     undefined,
     true,
     'baseeth'
+  ),
+  tofcerc20(
+    'b5277412-46b8-4da3-8fd2-5bf4557fcbd8',
+    'ofctbaseeth:tusdl',
+    'Test USDL',
+    6,
+    UnderlyingAsset['tbaseeth:tusdl'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'tbaseeth'
   ),
 ];
 

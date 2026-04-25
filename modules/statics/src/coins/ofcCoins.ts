@@ -1945,6 +1945,15 @@ export const ofcCoins = [
     undefined,
     [CoinFeature.STABLECOIN]
   ),
+  tofcTronToken(
+    '3d2cbf78-560a-40a2-af64-470cc865dafb',
+    'ofcttrx:tusdlt',
+    'Test USDLT',
+    6,
+    UnderlyingAsset['ttrx:tusdlt'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcTronToken(
     '94b00b66-68a4-45ed-b772-77e5bca1e34c',
     'ofctrx:usdt',
@@ -3906,6 +3915,24 @@ export const ofcCoins = [
     'Test COPR3',
     18,
     UnderlyingAsset['tpolygon:copr3']
+  ),
+  tofcPolygonErc20(
+    '4db553e6-934a-471e-b99c-56637e38d27b',
+    'ofctpolygon:tusdl',
+    'Test USDL',
+    6,
+    UnderlyingAsset['tpolygon:tusdl'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  tofcPolygonErc20(
+    '59a13935-a373-4218-aff2-a10633371539',
+    'ofctpolygon:tusdlt',
+    'Test USDLT',
+    6,
+    UnderlyingAsset['tpolygon:tusdlt'],
+    undefined,
+    [CoinFeature.STABLECOIN]
   ),
 
   ofcAlgoToken(

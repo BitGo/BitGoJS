@@ -1890,6 +1890,8 @@ export enum UnderlyingAsset {
   'hteth:grtxp' = 'hteth:grtxp',
   'hteth:testeigen' = 'hteth:testeigen',
   'hteth:wbtc' = 'hteth:wbtc',
+  'hteth:htusdl' = 'hteth:htusdl',
+  'hteth:htusdlt' = 'hteth:htusdlt',
   // Robinhood Chain testnet ERC-20 tokens
   'thoodeth:amzn' = 'thoodeth:amzn',
   'thoodeth:tsla' = 'thoodeth:tsla',
@@ -2983,6 +2985,8 @@ export enum UnderlyingAsset {
   'tpolygon:testcopm' = 'tpolygon:testcopm',
   'tpolygon:BitGoTest' = 'tpolygon:BitGoTest',
   'tpolygon:copr3' = 'tpolygon:copr3',
+  'tpolygon:tusdl' = 'tpolygon:tusdl',
+  'tpolygon:tusdlt' = 'tpolygon:tusdlt',
 
   // generic NFTs
   'terc721:polygontoken' = 'terc721:polygontoken',
@@ -3105,6 +3109,7 @@ export enum UnderlyingAsset {
   'tbaseeth:xsgd' = 'tbaseeth:xsgd',
   'tbaseeth:usd1cx' = 'tbaseeth:usd1cx',
   'tbaseeth:ctusd1cx' = 'tbaseeth:ctusd1cx',
+  'tbaseeth:tusdl' = 'tbaseeth:tusdl',
 
   // Og mainnet tokens
   'og:wog' = 'og:wog',
@@ -3166,6 +3171,7 @@ export enum UnderlyingAsset {
   'hypeevm:usdc' = 'hypeevm:usdc',
   'hypeevm:usdt0' = 'hypeevm:usdt0',
   'hypeevm:khype' = 'hypeevm:khype',
+  'hypeevm:kntq' = 'hypeevm:kntq',
 
   // Jovayeth mainnet tokens
   'jovayeth:jft' = 'jovayeth:jft',
@@ -3533,6 +3539,7 @@ export enum UnderlyingAsset {
   'ttrx:usdt' = 'ttrx:usdt',
   'ttrx:usd1' = 'ttrx:usd1',
   'ttrx:stgusd1' = 'ttrx:stgusd1',
+  'ttrx:tusdlt' = 'ttrx:tusdlt',
 
   // XRP tokens
   'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
@@ -3747,6 +3754,9 @@ export enum UnderlyingAsset {
   'eth:drv' = 'eth:drv',
   'eth:prn' = 'eth:prn',
   'eth:zama' = 'eth:zama',
+  'eth:mony' = 'eth:mony',
+  'eth:architectgvi' = 'eth:architectgvi',
+  'eth:zk' = 'eth:zk',
   // ADA testnet tokens
   'tada:water' = 'tada:water',
   'tada:tusda' = 'tada:tusda',
