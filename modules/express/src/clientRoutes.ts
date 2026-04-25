@@ -1051,6 +1051,90 @@ export async function handleV2ResourceDelegations(
 }
 
 /**
+ * Shared handler for bulk resource management (delegation / undelegation).
+ * Builds, signs, and sends one on-chain transaction per entry.
+ */
+async function handleV2ResourceManagement(
+  type: 'delegateResource' | 'undelegateResource',
+  req:
+    | ExpressApiRouteRequest<'express.v2.wallet.delegateresources', 'post'>
+    | ExpressApiRouteRequest<'express.v2.wallet.undelegateresources', 'post'>
+) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+
+  if (type === 'delegateResource') {
+    const decoded = (req as ExpressApiRouteRequest<'express.v2.wallet.delegateresources', 'post'>).decoded;
+    if (!Array.isArray(decoded.delegations) || decoded.delegations.length === 0) {
+      throw new Error('delegations must be a non-empty array');
+    }
+  } else {
+    const decoded = (req as ExpressApiRouteRequest<'express.v2.wallet.undelegateresources', 'post'>).decoded;
+    if (!Array.isArray(decoded.undelegations) || decoded.undelegations.length === 0) {
+      throw new Error('undelegations must be a non-empty array');
+    }
+  }
+
+  if (!coin.supportsResourceDelegation()) {
+    throw new Error(`${coin.getFamily()} does not support resource delegation`);
+  }
+
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+
+  let result: any;
+  try {
+    const params = coin.supportsTss() ? createTSSSendParams(req, wallet) : createSendParams(req);
+    result =
+      type === 'delegateResource'
+        ? await wallet.sendResourceDelegations(params)
+        : await wallet.sendResourceUndelegations(params);
+  } catch (err) {
+    // Surface unexpected errors as 400 rather than 500
+    (err as any).status = 400;
+    throw err;
+  }
+
+  // Handle partial success / failure
+  if (result.failure.length > 0) {
+    let msg = '';
+    let status = 202;
+
+    if (result.success.length > 0) {
+      msg = `Transactions failed: ${result.failure.length} and succeeded: ${result.success.length}`;
+    } else {
+      status = 400;
+      msg = `All transactions failed`;
+    }
+
+    throw apiResponse(status, result, msg);
+  }
+
+  return result;
+}
+
+/**
+ * Handle bulk resource delegation (e.g. TRX ENERGY/BANDWIDTH delegation).
+ * Builds, signs, and sends one on-chain delegation transaction per entry in req.body.delegations.
+ * @param req
+ */
+export async function handleV2DelegateResources(
+  req: ExpressApiRouteRequest<'express.v2.wallet.delegateresources', 'post'>
+) {
+  return handleV2ResourceManagement('delegateResource', req);
+}
+
+/**
+ * Handle bulk resource undelegation (e.g. TRX ENERGY/BANDWIDTH undelegation).
+ * Builds, signs, and sends one on-chain undelegation transaction per entry in req.body.undelegations.
+ * @param req
+ */
+export async function handleV2UndelegateResources(
+  req: ExpressApiRouteRequest<'express.v2.wallet.undelegateresources', 'post'>
+) {
+  return handleV2ResourceManagement('undelegateResource', req);
+}
+
+/**
  *  payload meant for prebuildAndSignTransaction() in sdk-core which
  * validates the payload and makes the appropriate request to WP to
  * build, sign, and send a tx.
@@ -1829,6 +1913,14 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.get('express.v2.wallet.resourcedelegations', [
     prepareBitGo(config),
     typedPromiseWrapper(handleV2ResourceDelegations),
+  ]);
+  router.post('express.v2.wallet.delegateresources', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2DelegateResources),
+  ]);
+  router.post('express.v2.wallet.undelegateresources', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2UndelegateResources),
   ]);
 
   // Miscellaneous

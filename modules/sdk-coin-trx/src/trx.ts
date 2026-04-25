@@ -225,6 +225,11 @@ export class Trx extends BaseCoin {
     return true;
   }
 
+  /** @inheritDoc */
+  supportsResourceDelegation(): boolean {
+    return true;
+  }
+
   /**
    * Checks if this is a valid base58
    * @param address

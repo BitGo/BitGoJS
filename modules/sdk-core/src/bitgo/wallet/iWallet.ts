@@ -63,6 +63,26 @@ export interface BuildConsolidationTransactionOptions extends PrebuildTransactio
   consolidateAddresses?: string[];
 }
 
+export interface ResourceDelegationEntry {
+  receiverAddress: string;
+  amount: string;
+  /** Resource type to delegate (e.g. 'ENERGY', 'BANDWIDTH'). */
+  resource: string;
+}
+
+export interface BuildResourceDelegationTransactionOptions
+  extends PrebuildTransactionOptions,
+    WalletSignTransactionOptions {
+  delegations: ResourceDelegationEntry[];
+}
+
+export interface BuildResourceUndelegationTransactionOptions
+  extends PrebuildTransactionOptions,
+    WalletSignTransactionOptions {
+  // receiverAddress denotes the account to undelegate FROM
+  undelegations: ResourceDelegationEntry[];
+}
+
 export interface BuildTokenEnablementOptions extends PrebuildTransactionOptions {
   enableTokens: TokenEnablement[];
 }
@@ -251,6 +271,7 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
   pendingApprovalId?: string;
   reqId?: IRequestTracer;
   payload?: string;
+  stakingParams?: unknown;
 }
 
 export interface CustomSigningFunction {
@@ -1096,6 +1117,18 @@ export interface IWallet {
   buildAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<PrebuildTransactionResult[]>;
   sendAccountConsolidation(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<any>;
+  buildResourceDelegations(params: BuildResourceDelegationTransactionOptions): Promise<PrebuildTransactionResult[]>;
+  sendResourceDelegation(params: PrebuildAndSignTransactionOptions): Promise<any>;
+  sendResourceDelegations(params: BuildResourceDelegationTransactionOptions): Promise<{
+    success: any[];
+    failure: { message: string; receiverAddress?: string }[];
+  }>;
+  buildResourceUndelegations(params: BuildResourceUndelegationTransactionOptions): Promise<PrebuildTransactionResult[]>;
+  sendResourceUndelegation(params: PrebuildAndSignTransactionOptions): Promise<any>;
+  sendResourceUndelegations(params: BuildResourceUndelegationTransactionOptions): Promise<{
+    success: any[];
+    failure: { message: string; receiverAddress?: string }[];
+  }>;
   buildTokenEnablements(params?: BuildTokenEnablementOptions): Promise<PrebuildTransactionResult[]>;
   sendTokenEnablement(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendTokenEnablements(params?: BuildTokenEnablementOptions): Promise<any>;
