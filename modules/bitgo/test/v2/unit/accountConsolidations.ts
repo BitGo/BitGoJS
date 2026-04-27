@@ -266,9 +266,44 @@ describe('Account Consolidations:', function () {
 
           consolidations.success.length.should.equal(1);
           consolidations.failure.length.should.equal(1);
+          consolidations.failure[0].should.have.property('message');
+          consolidations.failure[0].should.have.property('name');
 
           scopeWithSuccess.isDone().should.be.True();
           scopeWithError.isDone().should.be.True();
+          scopeBuild.isDone().should.be.True();
+        });
+
+        it('should return serializable error objects in the failure array', async function () {
+          const scopeBuild = nock(bgUrl)
+            .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`)
+            .query({})
+            .reply(200, fixtures.buildAccountConsolidation);
+
+          sinon.stub(wallet, 'getKeychainsAndValidatePassphrase').resolves([]);
+
+          const firstError = new Error('unable to decrypt keychain with the given wallet passphrase');
+          firstError.name = 'KeyDecryptionError';
+          const secondError = new Error('insufficient funds');
+          secondError.name = 'InsufficientFundsError';
+
+          sinon.stub(wallet, 'sendAccountConsolidation').onCall(0).rejects(firstError).onCall(1).rejects(secondError);
+
+          const consolidations = await wallet.sendAccountConsolidations();
+
+          consolidations.failure.length.should.equal(2);
+
+          // failure entries must be plain serializable objects, not Error instances
+          (consolidations.failure[0] instanceof Error).should.be.False();
+          consolidations.failure[0].message.should.equal('unable to decrypt keychain with the given wallet passphrase');
+          consolidations.failure[0].name.should.equal('KeyDecryptionError');
+          JSON.stringify(consolidations.failure[0]).should.not.equal('{}');
+
+          (consolidations.failure[1] instanceof Error).should.be.False();
+          consolidations.failure[1].message.should.equal('insufficient funds');
+          consolidations.failure[1].name.should.equal('InsufficientFundsError');
+          JSON.stringify(consolidations.failure[1]).should.not.equal('{}');
+
           scopeBuild.isDone().should.be.True();
         });
       });
