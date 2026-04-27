@@ -250,7 +250,9 @@ export class PendingApproval implements IPendingApproval {
     }
 
     const decryptedPrv = await this.wallet.getPrv({ walletPassphrase });
-    const txRequest = await this.tssUtils!.recreateTxRequest(txRequestId, decryptedPrv, reqId);
+    const pendingApprovalRecipients = this._pendingApproval.info?.transactionRequest?.recipients;
+    const txParams = pendingApprovalRecipients?.length ? { recipients: pendingApprovalRecipients } : undefined;
+    const txRequest = await this.tssUtils!.recreateTxRequest(txRequestId, decryptedPrv, reqId, txParams);
     if (txRequest.apiVersion === 'lite') {
       if (!txRequest.unsignedTxs || txRequest.unsignedTxs.length === 0) {
         throw new Error('Unexpected error, no transactions found in txRequest.');

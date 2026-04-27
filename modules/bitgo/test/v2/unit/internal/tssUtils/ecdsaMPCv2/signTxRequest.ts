@@ -193,6 +193,7 @@ describe('signTxRequest:', function () {
       txRequest,
       prv: userPrvBase64,
       reqId,
+      txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
     });
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.true();
@@ -215,6 +216,7 @@ describe('signTxRequest:', function () {
       prv: backupPrvBase64,
       mpcv2PartyId: 1,
       reqId,
+      txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
     });
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.true();
@@ -236,6 +238,7 @@ describe('signTxRequest:', function () {
       txRequest,
       prv: userPrvBase64,
       reqId,
+      txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
     });
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.true();
@@ -257,6 +260,7 @@ describe('signTxRequest:', function () {
       txRequest,
       prv: userPrvBase64,
       reqId,
+      txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
     });
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.true();
@@ -277,10 +281,196 @@ describe('signTxRequest:', function () {
         txRequest,
         prv: userPrvBase64,
         reqId,
+        txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
       })
       .should.be.rejectedWith('Too many requests, slow down!');
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.false();
+  });
+
+  it('rejects signTxRequest when txParams is missing', async function () {
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    await tssUtils
+      .signTxRequest({
+        txRequest,
+        prv: userPrvBase64,
+        reqId,
+      })
+      .should.be.rejectedWith(
+        'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
+      );
+  });
+
+  it('rejects signTxRequest when txParams has empty recipients', async function () {
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    await tssUtils
+      .signTxRequest({
+        txRequest,
+        prv: userPrvBase64,
+        reqId,
+        txParams: { recipients: [] },
+      })
+      .should.be.rejectedWith(
+        'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
+      );
+  });
+
+  it('accepts signTxRequest when recipients are only in intent (smart contract interaction)', async function () {
+    const txRequestWithIntentRecipients = {
+      ...txRequest,
+      intent: {
+        intentType: 'contractCall',
+        recipients: [
+          {
+            address: { address: '0xrecipient' },
+            amount: { value: '1000', symbol: 'hteth' },
+          },
+        ],
+      },
+    };
+    const nockPromises = [
+      await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequestWithIntentRecipients, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequestWithIntentRecipients, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundThree(txRequestWithIntentRecipients),
+      await nockSendTxRequest(txRequestWithIntentRecipients),
+    ];
+    await Promise.all(nockPromises);
+
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    // Falls back to intent.recipients — guard should pass and signing should complete
+    await tssUtils.signTxRequest({
+      txRequest: txRequestWithIntentRecipients,
+      prv: userPrvBase64,
+      reqId,
+      // no txParams.recipients
+    });
+    nockPromises[0].isDone().should.be.true();
+    nockPromises[1].isDone().should.be.true();
+    nockPromises[2].isDone().should.be.true();
+  });
+
+  it('accepts signTxRequest for no-recipient tx types (tokenApproval)', async function () {
+    const nockPromises = [
+      await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequest, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequest, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundThree(txRequest),
+      await nockSendTxRequest(txRequest),
+    ];
+    await Promise.all(nockPromises);
+
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    // Type exemption applies — guard passes without recipients
+    await tssUtils.signTxRequest({
+      txRequest,
+      prv: userPrvBase64,
+      reqId,
+      txParams: { type: 'tokenApproval' },
+    });
+    nockPromises[0].isDone().should.be.true();
+    nockPromises[1].isDone().should.be.true();
+    nockPromises[2].isDone().should.be.true();
+  });
+
+  it('accepts signTxRequest for no-recipient tx types (acceleration)', async function () {
+    const nockPromises = [
+      await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequest, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequest, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundThree(txRequest),
+      await nockSendTxRequest(txRequest),
+    ];
+    await Promise.all(nockPromises);
+
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    await tssUtils.signTxRequest({
+      txRequest,
+      prv: userPrvBase64,
+      reqId,
+      txParams: { type: 'acceleration' },
+    });
+    nockPromises[0].isDone().should.be.true();
+    nockPromises[1].isDone().should.be.true();
+    nockPromises[2].isDone().should.be.true();
+  });
+
+  it('accepts signTxRequest for no-recipient tx types (customTx)', async function () {
+    const nockPromises = [
+      await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequest, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequest, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundThree(txRequest),
+      await nockSendTxRequest(txRequest),
+    ];
+    await Promise.all(nockPromises);
+
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    // DeFi/WalletConnect smart contract interactions have no traditional recipients
+    await tssUtils.signTxRequest({
+      txRequest,
+      prv: userPrvBase64,
+      reqId,
+      txParams: { type: 'customTx' },
+    });
+    nockPromises[0].isDone().should.be.true();
+    nockPromises[1].isDone().should.be.true();
+    nockPromises[2].isDone().should.be.true();
+  });
+
+  it('accepts signTxRequest for no-recipient tx types (enableToken)', async function () {
+    const nockPromises = [
+      await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequest, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequest, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundThree(txRequest),
+      await nockSendTxRequest(txRequest),
+    ];
+    await Promise.all(nockPromises);
+
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    // TSS wallets do not populate recipients for token enablement — exemption must apply
+    await tssUtils.signTxRequest({
+      txRequest,
+      prv: userPrvBase64,
+      reqId,
+      txParams: { type: 'enableToken' },
+    });
+    nockPromises[0].isDone().should.be.true();
+    nockPromises[1].isDone().should.be.true();
+    nockPromises[2].isDone().should.be.true();
+  });
+
+  it('accepts signTxRequest when txParams.recipients takes priority over intent.recipients', async function () {
+    const txRequestWithBothRecipients = {
+      ...txRequest,
+      intent: {
+        intentType: 'contractCall',
+        recipients: [{ address: { address: '0xintentRecipient' }, amount: { value: '9999', symbol: 'hteth' } }],
+      },
+    };
+    const nockPromises = [
+      await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequestWithBothRecipients, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequestWithBothRecipients, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundThree(txRequestWithBothRecipients),
+      await nockSendTxRequest(txRequestWithBothRecipients),
+    ];
+    await Promise.all(nockPromises);
+
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    // txParams.recipients takes priority — guard passes and signing completes
+    await tssUtils.signTxRequest({
+      txRequest: txRequestWithBothRecipients,
+      prv: userPrvBase64,
+      reqId,
+      txParams: { recipients: [{ address: '0xrecipient', amount: '1000' }] },
+    });
+    nockPromises[0].isDone().should.be.true();
+    nockPromises[1].isDone().should.be.true();
+    nockPromises[2].isDone().should.be.true();
   });
 });
 
