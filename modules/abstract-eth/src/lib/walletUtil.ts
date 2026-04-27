@@ -45,3 +45,7 @@ export const ERC1155SafeTransferTypes = ['address', 'address', 'uint256', 'uint2
 export const ERC1155BatchTransferTypes = ['address', 'address', 'uint256[]', 'uint256[]', 'bytes'];
 export const createV1ForwarderTypes = ['address', 'bytes32'];
 export const createV4ForwarderTypes = ['address', 'address', 'bytes32'];
+
+// ERC20Votes delegateBySig: keccak256("delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32)")
+export const delegateBySigMethodId = '0x5c19a95c';
+export const delegateBySigTypes = ['address', 'uint256', 'uint256', 'uint8', 'bytes32', 'bytes32'];
