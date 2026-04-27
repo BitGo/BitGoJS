@@ -14705,6 +14705,30 @@ export const erc20Coins = [
     '0xa12cc123ba206d4031d1c7f6223d1c2ec249f4f3',
     UnderlyingAsset['eth:zama']
   ),
+  erc20(
+    '9c99940d-fa25-48cd-bcf5-ef794db4a532',
+    'eth:mony',
+    'My OnChain Net Yield Fund',
+    4,
+    '0x6a7c6aa2b8b8a6a891de552bdeffa87c3f53bd46',
+    UnderlyingAsset['eth:mony']
+  ),
+  erc20(
+    '1a26299e-dbf2-46e4-a258-d6ebfef32fd9',
+    'eth:architectgvi',
+    'ARCHITECT Global Value',
+    18,
+    '0x6624c638780816228a25a15a4f30287d30c459c2',
+    UnderlyingAsset['eth:architectgvi']
+  ),
+  erc20(
+    '1bec62df-bf62-4e45-9613-ce56112a4fd0',
+    'eth:zk',
+    'ZKsync',
+    18,
+    '0x66a5cfb2e9c529f14fe6364ad1075df3a649c0a5',
+    UnderlyingAsset['eth:zk']
+  ),
   terc20(
     '0c333619-e5a6-4f9d-8bbc-5b0e5dc64d03',
     'hteth:grtxp',
@@ -14737,6 +14761,30 @@ export const erc20Coins = [
     '0x29b0341048b2d83dc19821793f1dc93c1744ceb7',
     UnderlyingAsset['hteth:stgwbtc'],
     undefined,
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
+    '750941de-e42b-45d9-9f14-33b464f60fdc',
+    'hteth:htusdl',
+    'USDL',
+    6,
+    '0xda38de6dba36918e716ade6a3ac7944d6a5d5683',
+    UnderlyingAsset['hteth:htusdl'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
+    '8a0bbe7b-a10a-4aa7-b6f6-96f0f0b056cf',
+    'hteth:htusdlt',
+    'USDLT',
+    6,
+    '0xd73e58e2ebbb6015348361319766e5eef21e3e8c',
+    UnderlyingAsset['hteth:htusdlt'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
     undefined,
     Networks.test.hoodi
