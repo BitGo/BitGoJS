@@ -7,7 +7,7 @@ import { BIP32, bip32 } from '@bitgo/wasm-utxo';
 import debugLib from 'debug';
 
 import { UtxoCoinName } from '../../names';
-import type { Unspent, WalletUnspent } from '../../unspent';
+import { isWalletUnspent, type Unspent } from '../../unspent';
 import { toUtxolibBIP32 } from '../../wasmUtil';
 
 import { getReplayProtectionAddresses } from './replayProtection';
@@ -15,9 +15,11 @@ import { InputSigningError, TransactionSigningError } from './SigningError';
 
 const debug = debugLib('bitgo:v2:utxo');
 
-const { isWalletUnspent, signInputWithUnspent, toOutput } = utxolib.bitgo;
+const { signInputWithUnspent, toOutput } = utxolib.bitgo;
 
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+
+const UTXOLIB_VALID_CHAIN_CODES = new Set([0, 1, 10, 11, 20, 21, 30, 31, 40, 41] as const);
 
 /**
  * Sign all inputs of a wallet transaction and verify signatures after signing.
@@ -71,8 +73,21 @@ export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
       if (!isWalletUnspent<TNumber>(unspent)) {
         return InputSigningError.expectedWalletUnspent<TNumber>(inputIndex, null, unspent);
       }
+      if (!UTXOLIB_VALID_CHAIN_CODES.has(unspent.chain as utxolib.bitgo.ChainCode)) {
+        return new InputSigningError<TNumber>(
+          inputIndex,
+          null,
+          unspent,
+          new Error(`Chain code ${unspent.chain} is not supported for legacy signing`)
+        );
+      }
       try {
-        signInputWithUnspent<TNumber>(txBuilder, inputIndex, unspent as WalletUnspent<TNumber>, walletSigner);
+        signInputWithUnspent<TNumber>(
+          txBuilder,
+          inputIndex,
+          unspent as unknown as utxolib.bitgo.WalletUnspent<TNumber>,
+          walletSigner
+        );
         debug('Successfully signed input %d of %d', inputIndex + 1, unspents.length);
       } catch (e) {
         return new InputSigningError<TNumber>(inputIndex, null, unspent, e);
@@ -96,10 +111,20 @@ export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
       if (!isWalletUnspent<TNumber>(unspent)) {
         return InputSigningError.expectedWalletUnspent<TNumber>(inputIndex, null, unspent);
       }
-      const walletUnspent = unspent as WalletUnspent<TNumber>;
+      if (!UTXOLIB_VALID_CHAIN_CODES.has(unspent.chain as utxolib.bitgo.ChainCode)) {
+        return new InputSigningError<TNumber>(
+          inputIndex,
+          null,
+          unspent,
+          new Error(`Chain code ${unspent.chain} is not supported for legacy verification`)
+        );
+      }
+      const walletUnspent = unspent;
       try {
-        const publicKey = walletSigner.deriveForChainAndIndex(walletUnspent.chain, walletUnspent.index).signer
-          .publicKey;
+        const publicKey = walletSigner.deriveForChainAndIndex(
+          walletUnspent.chain as utxolib.bitgo.ChainCode,
+          walletUnspent.index
+        ).signer.publicKey;
         if (
           !utxolib.bitgo.verifySignatureWithPublicKey<TNumber>(signedTransaction, inputIndex, prevOutputs, publicKey)
         ) {
