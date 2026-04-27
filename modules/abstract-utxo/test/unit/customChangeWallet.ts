@@ -237,5 +237,4 @@ function describeWithBackend(sdkBackend: SdkBackend) {
   });
 }
 
-describeWithBackend('utxolib');
 describeWithBackend('wasm-utxo');
