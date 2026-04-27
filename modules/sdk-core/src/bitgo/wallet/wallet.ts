@@ -3389,7 +3389,7 @@ export class Wallet implements IWallet {
         }
       }
       const successfulTxs: any[] = [];
-      const failedTxs = new Array<Error>();
+      const failedTxs: { message: string; name: string }[] = [];
       for (const unsignedBuild of unsignedBuilds) {
         // fold any of the parameters we used to build this transaction into the unsignedBuild
         const unsignedBuildWithOptions: PrebuildAndSignTransactionOptions = Object.assign({}, params);
@@ -3399,7 +3399,7 @@ export class Wallet implements IWallet {
           const sendTx = await this.sendAccountConsolidation(unsignedBuildWithOptions);
           successfulTxs.push(sendTx);
         } catch (e) {
-          failedTxs.push(e);
+          failedTxs.push({ message: e.message, name: e.name });
         }
       }
 
