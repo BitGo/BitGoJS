@@ -96,13 +96,13 @@ function handleLogin(req: ExpressApiRouteRequest<'express.login', 'post'>) {
   return req.bitgo.authenticate(body);
 }
 
-function handleDecrypt(req: ExpressApiRouteRequest<'express.decrypt', 'post'>) {
+function handleDecrypt(req: ExpressApiRouteRequest<'express.v1.decrypt' | 'express.decrypt', 'post'>) {
   return {
     decrypted: req.bitgo.decrypt(req.body),
   };
 }
 
-function handleEncrypt(req: ExpressApiRouteRequest<'express.encrypt', 'post'>) {
+function handleEncrypt(req: ExpressApiRouteRequest<'express.v1.encrypt' | 'express.encrypt', 'post'>) {
   return {
     encrypted: req.bitgo.encrypt(req.body),
   };
