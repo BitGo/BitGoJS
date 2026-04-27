@@ -34,7 +34,7 @@ describe('btc-staking-ts bug #71', function () {
     const psbt = wasmMiniscript.Psbt.deserialize(buf);
     assert.throws(() => {
       psbt.finalize();
-    }, /CouldNotSatisfyTr/);
+    }, /Could not satisfy Tr descriptor/);
   });
 
   it('cannot finalize with bitcoind', async function (this: Mocha.Context) {
