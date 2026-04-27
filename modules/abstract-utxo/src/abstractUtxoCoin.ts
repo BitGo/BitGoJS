@@ -81,7 +81,6 @@ import {
   getMainnetCoinName,
   getNetworkFromCoinName,
   isMainnetCoin,
-  isUtxoCoinNameMainnet,
   UtxoCoinName,
   UtxoCoinNameMainnet,
 } from './names';
@@ -434,9 +433,7 @@ export abstract class AbstractUtxoCoin
     this.amountType = amountType;
   }
 
-  get defaultSdkBackend(): SdkBackend {
-    return isUtxoCoinNameMainnet(this.name) ? 'utxolib' : 'wasm-utxo';
-  }
+  defaultSdkBackend: SdkBackend = 'wasm-utxo';
 
   /**
    * @deprecated - will be removed when we drop support for utxolib
