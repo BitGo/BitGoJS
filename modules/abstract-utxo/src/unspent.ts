@@ -1,6 +1,13 @@
 import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 /**
+ * Type guard to check if an Unspent is a WalletUnspent
+ */
+export function isWalletUnspent<T extends number | bigint>(u: Unspent<T>): u is WalletUnspent<T> {
+  return 'chain' in u && 'index' in u && fixedScriptWallet.ChainCode.is((u as WalletUnspent<T>).chain);
+}
+
+/**
  * Unspent transaction output (UTXO) type definition
  *
  * This type represents an unspent transaction output, independent from utxo-lib.

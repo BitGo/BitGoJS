@@ -4,7 +4,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { ECPair, fixedScriptWallet, hasPsbtMagic, address as wasmAddress } from '@bitgo/wasm-utxo';
 
 import type { UtxoCoinName } from '../../../src/names';
-import type { Unspent, WalletUnspent } from '../../../src/unspent';
+import type { Unspent } from '../../../src/unspent';
 
 import { getCoinNameForNetwork } from './utxoCoins';
 const { isWalletUnspent, signInputWithUnspent } = utxolib.bitgo;
@@ -123,7 +123,7 @@ function createTransactionBuilderWithSignedInputs<TNumber extends number | bigin
   );
   unspents.forEach((u, inputIndex) => {
     if (isWalletUnspent<TNumber>(u)) {
-      signInputWithUnspent<TNumber>(txBuilder, inputIndex, u as WalletUnspent<TNumber>, signer);
+      signInputWithUnspent<TNumber>(txBuilder, inputIndex, u, signer);
     }
   });
   return txBuilder;
