@@ -29,10 +29,10 @@ describe('EdDSA MPS DKG', function () {
   });
 
   describe('DKG Initialization', function () {
-    it('should initialize DKG sessions for all parties', function () {
-      user.initDkg(userKP.privKey, [backupKP.pubKey, bitgoKP.pubKey]);
-      backup.initDkg(backupKP.privKey, [userKP.pubKey, bitgoKP.pubKey]);
-      bitgo.initDkg(bitgoKP.privKey, [userKP.pubKey, backupKP.pubKey]);
+    it('should initialize DKG sessions for all parties', async function () {
+      await user.initDkg(userKP.privKey, [backupKP.pubKey, bitgoKP.pubKey]);
+      await backup.initDkg(backupKP.privKey, [userKP.pubKey, bitgoKP.pubKey]);
+      await bitgo.initDkg(bitgoKP.privKey, [userKP.pubKey, backupKP.pubKey]);
 
       const userMessage = user.getFirstMessage();
       const backupMessage = backup.getFirstMessage();
@@ -63,13 +63,13 @@ describe('EdDSA MPS DKG', function () {
   });
 
   describe('DKG Protocol Execution', function () {
-    beforeEach(function () {
-      user.initDkg(userKP.privKey, [backupKP.pubKey, bitgoKP.pubKey]);
-      backup.initDkg(backupKP.privKey, [userKP.pubKey, bitgoKP.pubKey]);
-      bitgo.initDkg(bitgoKP.privKey, [userKP.pubKey, backupKP.pubKey]);
+    beforeEach(async function () {
+      await user.initDkg(userKP.privKey, [backupKP.pubKey, bitgoKP.pubKey]);
+      await backup.initDkg(backupKP.privKey, [userKP.pubKey, bitgoKP.pubKey]);
+      await bitgo.initDkg(bitgoKP.privKey, [userKP.pubKey, backupKP.pubKey]);
     });
 
-    it('should complete full DKG protocol and generate key shares', function () {
+    it('should complete full DKG protocol and generate key shares', async function () {
       const r1Messages = [user.getFirstMessage(), backup.getFirstMessage(), bitgo.getFirstMessage()];
 
       assert.strictEqual(r1Messages.length, 3, 'Should have 3 round 1 messages');
@@ -109,7 +109,7 @@ describe('EdDSA MPS DKG', function () {
       assert(Buffer.isBuffer(bitgoKeyShare) && bitgoKeyShare.length > 0, 'BitGo key share should be non-empty Buffer');
     });
 
-    it('should generate consistent public keys across all parties', function () {
+    it('should generate consistent public keys across all parties', async function () {
       const r1Messages = [user.getFirstMessage(), backup.getFirstMessage(), bitgo.getFirstMessage()];
       const r2Messages = [
         ...user.handleIncomingMessages(r1Messages),
@@ -205,13 +205,13 @@ describe('EdDSA MPS DKG', function () {
   });
 
   describe('Message Serialization', function () {
-    it('should serialize and deserialize messages round-trip', function () {
+    it('should serialize and deserialize messages round-trip', async function () {
       userKP = makeKeypair();
       backupKP = makeKeypair();
       bitgoKP = makeKeypair();
-      user.initDkg(userKP.privKey, [backupKP.pubKey, bitgoKP.pubKey]);
-      backup.initDkg(backupKP.privKey, [userKP.pubKey, bitgoKP.pubKey]);
-      bitgo.initDkg(bitgoKP.privKey, [userKP.pubKey, backupKP.pubKey]);
+      await user.initDkg(userKP.privKey, [backupKP.pubKey, bitgoKP.pubKey]);
+      await backup.initDkg(backupKP.privKey, [userKP.pubKey, bitgoKP.pubKey]);
+      await bitgo.initDkg(bitgoKP.privKey, [userKP.pubKey, backupKP.pubKey]);
 
       const r1Messages = [user.getFirstMessage(), backup.getFirstMessage(), bitgo.getFirstMessage()];
 
@@ -231,10 +231,10 @@ describe('EdDSA MPS DKG', function () {
   });
 
   describe('Session Management', function () {
-    it('should export and restore DKG session and continue protocol correctly', function () {
-      user.initDkg(userKP.privKey, [backupKP.pubKey, bitgoKP.pubKey]);
-      backup.initDkg(backupKP.privKey, [userKP.pubKey, bitgoKP.pubKey]);
-      bitgo.initDkg(bitgoKP.privKey, [userKP.pubKey, backupKP.pubKey]);
+    it('should export and restore DKG session and continue protocol correctly', async function () {
+      await user.initDkg(userKP.privKey, [backupKP.pubKey, bitgoKP.pubKey]);
+      await backup.initDkg(backupKP.privKey, [userKP.pubKey, bitgoKP.pubKey]);
+      await bitgo.initDkg(bitgoKP.privKey, [userKP.pubKey, backupKP.pubKey]);
 
       user.getFirstMessage();
       backup.getFirstMessage();

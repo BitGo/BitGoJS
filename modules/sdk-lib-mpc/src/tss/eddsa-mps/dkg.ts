@@ -1,7 +1,9 @@
-import { ed25519_dkg_round0_process, ed25519_dkg_round1_process, ed25519_dkg_round2_process } from '@bitgo/wasm-mps';
+import type { MsgState, Share } from '@bitgo/wasm-mps';
 import { encode } from 'cbor-x';
 import crypto from 'crypto';
 import { DeserializedMessage, DeserializedMessages, DkgState, EddsaReducedKeyShare } from './types';
+
+type WasmMps = typeof import('@bitgo/wasm-mps');
 
 /**
  * EdDSA Distributed Key Generation (DKG) implementation using @bitgo/wasm-mps.
@@ -14,7 +16,7 @@ import { DeserializedMessage, DeserializedMessages, DkgState, EddsaReducedKeySha
  * ```typescript
  * const dkg = new DKG(3, 2, 0);
  * // X25519 keys come from GPG encryption subkeys (extracted by the orchestrator)
- * dkg.initDkg(myX25519PrivKey, [otherParty1X25519PubKey, otherParty2X25519PubKey]);
+ * await dkg.initDkg(myX25519PrivKey, [otherParty1X25519PubKey, otherParty2X25519PubKey]);
  * const msg1 = dkg.getFirstMessage();
  * const msg2s = dkg.handleIncomingMessages(allThreeMsg1s);
  * dkg.handleIncomingMessages(allThreeMsg2s);  // completes DKG
@@ -38,6 +40,8 @@ export class DKG {
   private sharePk: Buffer | null = null;
   /** 32-byte chain code from round2 */
   private shareChaincode: Buffer | null = null;
+  /** Lazily loaded WASM module */
+  private wasmMps: WasmMps | null = null;
 
   protected dkgState: DkgState = DkgState.Uninitialized;
 
@@ -45,6 +49,19 @@ export class DKG {
     this.n = n;
     this.t = t;
     this.partyIdx = partyIdx;
+  }
+
+  private async loadWasmMps(): Promise<void> {
+    if (!this.wasmMps) {
+      this.wasmMps = await import('@bitgo/wasm-mps');
+    }
+  }
+
+  private getWasmMps(): WasmMps {
+    if (!this.wasmMps) {
+      throw Error('WASM module not loaded');
+    }
+    return this.wasmMps;
   }
 
   getState(): DkgState {
@@ -59,7 +76,8 @@ export class DKG {
    * @param otherEncPublicKeys - Other parties' 32-byte X25519 public keys, sorted by ascending
    *   party index (excluding own). For a 3-party setup, this is [party_A_pub, party_B_pub].
    */
-  initDkg(decryptionKey: Buffer, otherEncPublicKeys: Buffer[]): void {
+  async initDkg(decryptionKey: Buffer, otherEncPublicKeys: Buffer[]): Promise<void> {
+    await this.loadWasmMps();
     if (!decryptionKey || decryptionKey.length !== 32) {
       throw Error('Missing or invalid decryption key: must be 32 bytes');
     }
@@ -87,9 +105,10 @@ export class DKG {
     }
 
     const seed = dkgSeed ?? crypto.randomBytes(32);
-    let result;
+    const wasm = this.getWasmMps();
+    let result: MsgState;
     try {
-      result = ed25519_dkg_round0_process(this.partyIdx, this.decryptionKey!, this.otherPubKeys!, seed);
+      result = wasm.ed25519_dkg_round0_process(this.partyIdx, this.decryptionKey!, this.otherPubKeys!, seed);
     } catch (err) {
       throw new Error(`Error while creating the first message from party ${this.partyIdx}: ${err}`);
     }
@@ -133,10 +152,12 @@ export class DKG {
       .sort((a, b) => a.from - b.from)
       .map((m) => m.payload);
 
+    const wasm = this.getWasmMps();
+
     if (this.dkgState === DkgState.WaitMsg1) {
-      let result;
+      let result: MsgState;
       try {
-        result = ed25519_dkg_round1_process(otherMsgs, this.dkgStateBytes!);
+        result = wasm.ed25519_dkg_round1_process(otherMsgs, this.dkgStateBytes!);
       } catch (err) {
         throw new Error(`Error while creating messages from party ${this.partyIdx}, round ${this.dkgState}: ${err}`);
       }
@@ -147,9 +168,9 @@ export class DKG {
     }
 
     if (this.dkgState === DkgState.WaitMsg2) {
-      let share;
+      let share: Share;
       try {
-        share = ed25519_dkg_round2_process(otherMsgs, this.dkgStateBytes!);
+        share = wasm.ed25519_dkg_round2_process(otherMsgs, this.dkgStateBytes!);
       } catch (err) {
         throw new Error(`Error while creating messages from party ${this.partyIdx}, round ${this.dkgState}: ${err}`);
       }
