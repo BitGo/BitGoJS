@@ -38,13 +38,16 @@ export class EncryptionSession {
     this.parallelism = params.parallelism;
   }
 
-  async encrypt(plaintext: string): Promise<string> {
+  async encrypt(plaintext: string, adata?: string): Promise<string> {
     const key = this.getKeyOrThrow();
     const hkdfSalt = new Uint8Array(randomBytes(HKDF_SALT_LENGTH));
     const iv = new Uint8Array(randomBytes(GCM_IV_LENGTH));
+    const adataBytes = adata ? new TextEncoder().encode(adata) : undefined;
     const aesKey = await hkdfDeriveAesKey(key, hkdfSalt, 'encrypt');
-    const ct = await aesGcmEncrypt(aesKey, iv, plaintext);
-    return JSON.stringify(this.buildEnvelope(hkdfSalt, iv, ct));
+    const ct = await aesGcmEncrypt(aesKey, iv, plaintext, adataBytes);
+    const envelope = this.buildEnvelope(hkdfSalt, iv, ct);
+    if (adata) envelope.adata = adata;
+    return JSON.stringify(envelope);
   }
 
   async decrypt(ciphertext: string): Promise<string> {
@@ -59,8 +62,9 @@ export class EncryptionSession {
     const iv = new Uint8Array(Buffer.from(envelope.iv, 'base64'));
     const ct = new Uint8Array(Buffer.from(envelope.ct, 'base64'));
     const hkdfSalt = new Uint8Array(Buffer.from(envelope.hkdfSalt, 'base64'));
+    const adataBytes = envelope.adata ? new TextEncoder().encode(envelope.adata) : undefined;
     const aesKey = await hkdfDeriveAesKey(key, hkdfSalt, 'decrypt');
-    return aesGcmDecrypt(aesKey, iv, ct);
+    return aesGcmDecrypt(aesKey, iv, ct, adataBytes);
   }
 
   destroy(): void {

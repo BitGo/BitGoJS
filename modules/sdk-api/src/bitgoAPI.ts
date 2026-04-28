@@ -727,7 +727,7 @@ export class BitGoAPI implements BitGoBase {
       throw new Error('cannot encrypt without password');
     }
     if (params.encryptionVersion === 2) {
-      return encryptV2(params.password, params.input);
+      return encryptV2(params.password, params.input, { adata: params.adata });
     }
     return encrypt(params.password, params.input, { adata: params.adata });
   }
