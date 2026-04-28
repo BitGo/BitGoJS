@@ -1558,6 +1558,18 @@ export const allCoinsAndTokens = [
       CoinFeature.SUPPORTS_ERC20,
     ]
   ),
+
+  // Abstract testnet tokens
+  erc20Token(
+    '3531e4da-5c4c-4b34-b936-aed409e21dde',
+    'tabstracteth:tmt',
+    'Test Mintable Token',
+    6,
+    '0x23d6e0dd3a066daf6cfdff6344e6e271945b7d8f',
+    UnderlyingAsset['tabstracteth:tmt'],
+    Networks.test.abstracteth
+  ),
+
   account(
     'd308ba34-557a-43f2-84f3-5775f1f1a779',
     'apechain',
