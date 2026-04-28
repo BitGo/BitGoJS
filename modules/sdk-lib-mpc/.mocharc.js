@@ -8,4 +8,5 @@ module.exports = {
   exit: true,
   spec: ['test/unit/**/*.ts'],
   extension: ['.js', '.ts'],
+  'node-option': ['experimental-wasm-modules'],
 };

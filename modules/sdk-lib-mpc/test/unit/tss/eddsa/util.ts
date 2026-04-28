@@ -31,9 +31,9 @@ export async function generateEdDsaDKGKeyShares(
   const bitgoKP = generateX25519Keypair(seedBitgo);
 
   // Each party gets own privKey + other parties' pubKeys sorted by ascending party index
-  user.initDkg(userKP.privKey, [backupKP.pubKey, bitgoKP.pubKey]);
-  backup.initDkg(backupKP.privKey, [userKP.pubKey, bitgoKP.pubKey]);
-  bitgo.initDkg(bitgoKP.privKey, [userKP.pubKey, backupKP.pubKey]);
+  await user.initDkg(userKP.privKey, [backupKP.pubKey, bitgoKP.pubKey]);
+  await backup.initDkg(backupKP.privKey, [userKP.pubKey, bitgoKP.pubKey]);
+  await bitgo.initDkg(bitgoKP.privKey, [userKP.pubKey, backupKP.pubKey]);
 
   // Use seed as DKG round0 seed for determinism when seed is provided
   const r1Messages = [

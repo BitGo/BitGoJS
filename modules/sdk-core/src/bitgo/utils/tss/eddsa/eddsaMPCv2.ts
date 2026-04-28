@@ -54,8 +54,8 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     const backupDkg = new EddsaMPSDkg.DKG(3, 2, MPCv2PartiesEnum.BACKUP);
 
     // #region round 1
-    userDkg.initDkg(userSk, [backupPk, bitgoPk]);
-    backupDkg.initDkg(backupSk, [userPk, bitgoPk]);
+    await userDkg.initDkg(userSk, [backupPk, bitgoPk]);
+    await backupDkg.initDkg(backupSk, [userPk, bitgoPk]);
 
     const userMsg1 = userDkg.getFirstMessage();
     const backupMsg1 = backupDkg.getFirstMessage();
