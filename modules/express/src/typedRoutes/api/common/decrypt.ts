@@ -3,7 +3,9 @@ import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 
 export const DecryptRequestBody = {
+  /** Ciphertext to decrypt */
   input: t.string,
+  /** Key which is used for decryption */
   password: optional(t.string),
 };
 
@@ -27,5 +29,6 @@ export const PostDecrypt = httpRoute({
       decrypted: t.string,
     }),
     404: BitgoExpressError,
+    500: BitgoExpressError,
   },
 });

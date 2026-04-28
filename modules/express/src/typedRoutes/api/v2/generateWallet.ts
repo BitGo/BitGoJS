@@ -11,7 +11,7 @@ import { multisigType, walletType } from '../../schemas/wallet';
 export const GenerateWalletBody = {
   /** Wallet label */
   label: t.string,
-  /** Enterprise id. Required for Ethereum wallets since they can only be created as part of an enterprise. Optional for other coins. */
+  /** Enterprise id. This is required for Ethereum wallets since they can only be created as part of an enterprise. Optional for other coins. */
   enterprise: optional(t.string),
   /** If absent, BitGo uses the default wallet type for the asset. This is relevant only for assets that support both multisignature (`onchain`) and MPC (`tss`) on the BitGo platform. These assets are: `arbeth`, `eth`, `opeth`, `polygon`, and `soneium`. These assets all default to `tss`. */
   multisigType: optional(multisigType),
@@ -23,7 +23,7 @@ export const GenerateWalletBody = {
   userKey: optional(t.string),
   /** Backup extended public key */
   backupXpub: optional(t.string),
-  /** Optional key recovery service to provide and store the backup key */
+  /** Key Recovery Service provider (e.g., 'dai') for backup key management. Creates instant-capable wallets with professional key management. Cannot be combined with backupXpub. */
   backupXpubProvider: optional(t.literal('dai')),
   /** Flag for disabling wallet transaction notifications */
   disableTransactionNotifications: optional(t.boolean),

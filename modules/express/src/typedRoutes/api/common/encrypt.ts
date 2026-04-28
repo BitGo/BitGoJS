@@ -3,8 +3,11 @@ import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 
 export const EncryptRequestBody = {
+  /** Plaintext message which should be encrypted */
   input: t.string,
+  /** Password which should be used to encrypt message */
   password: optional(t.string),
+  /** Additional authenticated data for AES-GCM encryption (optional) */
   adata: optional(t.string),
 };
 
