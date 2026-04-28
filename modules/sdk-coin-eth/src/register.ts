@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase, GlobalCoinFactory } from '@bitgo/sdk-core';
 import { Erc20Token } from './erc20Token';
 import { Eth } from './eth';
 import { Gteth } from './gteth';
@@ -21,7 +21,19 @@ export const register = (sdk: BitGoBase): void => {
 };
 
 export const registerWithCoinMap = (sdk: BitGoBase, coinMap: CoinMap): void => {
+  sdk.register('eth', Eth.createInstance);
+  sdk.register('gteth', Gteth.createInstance);
+  sdk.register('teth', Teth.createInstance);
+  sdk.register('hteth', Hteth.createInstance);
+  Erc721Token.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    sdk.register(name, coinConstructor);
+  });
+
+  // Registration for ERC20 tokens from the coin map (includes both hardcoded and dynamic tokens from AMS).
   Erc20Token.createTokenConstructors(getFormattedErc20Tokens(coinMap)).forEach(({ name, coinConstructor }) => {
     sdk.register(name, coinConstructor);
+    if (coinMap.has(name)) {
+      GlobalCoinFactory.registerToken(coinMap.get(name), coinConstructor);
+    }
   });
 };
