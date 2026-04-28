@@ -3201,6 +3201,9 @@ export enum UnderlyingAsset {
   'megaeth:mega' = 'megaeth:mega',
   'megaeth:weth' = 'megaeth:weth',
 
+  // Abstract testnet tokens
+  'tabstracteth:tmt' = 'tabstracteth:tmt',
+
   // MegaEth testnet tokens
   'tmegaeth:tmt' = 'tmegaeth:tmt',
 
