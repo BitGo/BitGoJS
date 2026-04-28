@@ -3,7 +3,7 @@ import { BooleanFromString } from 'io-ts-types';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 import { UserKeychainCodec, BackupKeychainCodec, BitgoKeychainCodec } from '../../schemas/keychain';
-import { multisigType, walletSubType, walletType } from '../../schemas/wallet';
+import { multisigType, walletType } from '../../schemas/wallet';
 
 /**
  * Request body for wallet generation.
@@ -17,8 +17,6 @@ export const GenerateWalletBody = {
   multisigType: optional(multisigType),
   /** The type of wallet, defined by key management and signing protocols. 'hot' and 'cold' are both self-managed wallets. If absent, defaults to 'hot' */
   type: optional(walletType),
-  /** The subType of the wallet */
-  subType: optional(walletSubType),
   /** Passphrase to be used to encrypt the user key on the wallet */
   passphrase: optional(t.string),
   /** User provided public key */
@@ -45,16 +43,6 @@ export const GenerateWalletBody = {
   bitgoKeyId: optional(t.string),
   /** Common keychain for self-managed cold MPC wallets */
   commonKeychain: optional(t.string),
-  /** Reference wallet ID for creating EVM keyring child wallets. When provided, the new wallet inherits keys and properties from the reference wallet, enabling unified addresses across EVM chains. */
-  evmKeyRingReferenceWalletId: optional(t.string),
-  /** Optional WebAuthn PRF-based encryption info. When provided, the user private key is additionally encrypted with the PRF-derived passphrase so the server can store a WebAuthn-protected copy. The passphrase itself is never sent to the server. */
-  webauthnInfo: optional(
-    t.type({
-      otpDeviceId: t.string,
-      prfSalt: t.string,
-      passphrase: t.string,
-    })
-  ),
 } as const;
 
 export const GenerateWalletResponse200 = t.union([
