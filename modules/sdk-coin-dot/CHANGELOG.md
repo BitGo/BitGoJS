@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.14.4...@bitgo/sdk-coin-dot@4.15.0) (2026-04-28)
+
+
+### Features
+
+* **sdk-coin-canton:** enabling unspents tab for cc ([c1764a6](https://github.com/BitGo/BitGoJS/commit/c1764a6d48bd2bf83e9381396e9add136fdad63b))
+
+
+
+
+
 ## [4.14.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.14.3...@bitgo/sdk-coin-dot@4.14.4) (2026-04-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.23.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.23.3...@bitgo/sdk-coin-sui@5.23.4) (2026-04-28)
+
+
+### Bug Fixes
+
+* **sdk-coin-sui:** sponsored balanceWithdrawal transactions fail with transaction expired ([154a7ab](https://github.com/BitGo/BitGoJS/commit/154a7abbd1b55123cb7a261b49ce7e37f7d6b5ff))
+
+
+
+
+
 ## [5.23.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.23.2...@bitgo/sdk-coin-sui@5.23.3) (2026-04-22)
 
 

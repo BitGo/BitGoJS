@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.23.2...@bitgo/abstract-utxo@10.24.0) (2026-04-28)
+
+
+### Features
+
+* **abstract-utxo:** add chain code validation for legacy signing ([d09ec7a](https://github.com/BitGo/BitGoJS/commit/d09ec7a1471f8dd271bf1b7b147323fb9b28bade))
+
+
+
+
+
 ## [10.23.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.23.1...@bitgo/abstract-utxo@10.23.2) (2026-04-22)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

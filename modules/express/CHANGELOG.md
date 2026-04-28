@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.26.0...@bitgo/express@15.27.0) (2026-04-28)
+
+
+### Features
+
+* **express:** add private and public to calculateMinerFeeInfo ([d1de046](https://github.com/BitGo/BitGoJS/commit/d1de0464e0ec8062c45779b1ba5bd2c385c71430))
+* **express:** support optional passphrase in handleV2OFCSignPayload ([7c16a2b](https://github.com/BitGo/BitGoJS/commit/7c16a2b2a452f8486a4096d3b6f9989c871a8f71))
+
+
+
+
+
 # [15.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.25.0...@bitgo/express@15.26.0) (2026-04-22)
 
 

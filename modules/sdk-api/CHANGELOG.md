@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.79.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.78.0...@bitgo/sdk-api@1.79.0) (2026-04-28)
+
+
+### Bug Fixes
+
+* **sdk-api:** add explicit AES-GCM tagLength and clear salt on session destroy ([ac63494](https://github.com/BitGo/BitGoJS/commit/ac63494c0d94e93145c0b904ccc66c4b5c6ba957))
+* **sdk-api:** address PR review nits for v2 encrypt ([49267e8](https://github.com/BitGo/BitGoJS/commit/49267e83b3560f82d4561e0d8aa6e14c2995a658))
+
+
+### Features
+
+* **sdk-api:** add HKDF session caching layer for multi-call operations ([933e2f8](https://github.com/BitGo/BitGoJS/commit/933e2f8b204c3b24b627c736871669860934144d))
+
+
+
+
+
 # [1.78.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.77.0...@bitgo/sdk-api@1.78.0) (2026-04-22)
 
 

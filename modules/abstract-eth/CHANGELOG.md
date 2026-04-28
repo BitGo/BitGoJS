@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [24.24.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.24.0...@bitgo/abstract-eth@24.24.1) (2026-04-28)
+
+
+### Bug Fixes
+
+* **sdk-core:** verify recipients before signing (ECDSA) ([1f55399](https://github.com/BitGo/BitGoJS/commit/1f553991806987d0c2a568dcd046b40e3536df93))
+
+
+
+
+
 # [24.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.23.1...@bitgo/abstract-eth@24.24.0) (2026-04-22)
 
 
