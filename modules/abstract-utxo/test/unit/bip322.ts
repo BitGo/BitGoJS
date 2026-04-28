@@ -4,6 +4,9 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { bip322 as coreBip322 } from '@bitgo/utxo-core';
 import { bip322 as wasmBip322, fixedScriptWallet, BIP32, type Triple } from '@bitgo/wasm-utxo';
 
+import { bip322Fixtures } from './fixtures/bip322/fixtures';
+import { getUtxoCoin } from './util';
+
 import {
   BIP322MessageBroadcastable,
   BIP322MessageInfo,
@@ -400,6 +403,65 @@ describe('BIP322', function () {
         () => generateBIP322MessageListAndVerifyFromMessageBroadcastable(broadcastables, 'btc'),
         /did not have a successful validation/
       );
+    });
+  });
+
+  describe('BIP322 Proof', function () {
+    const coin = getUtxoCoin('btc');
+    const pubs = bip322Fixtures.valid.rootWalletKeys.triple.map((b) => b.neutered().toBase58()) as Triple<string>;
+
+    it('should successfully run with a user nonce', async function () {
+      const psbtHex = bip322Fixtures.valid.userNonce;
+      const result = await coin.explainTransaction({ txHex: psbtHex, pubs });
+      assert.strictEqual(result.outputAmount, '0');
+      assert.strictEqual(result.changeAmount, '0');
+      assert.strictEqual(result.outputs.length, 1);
+      assert.strictEqual(result.outputs[0].address, 'scriptPubKey:6a');
+      assert.strictEqual(result.fee, '0');
+      assert.ok('signatures' in result);
+      assert.strictEqual(result.signatures, 0);
+      assert.ok(result.messages);
+      result.messages?.forEach((obj) => {
+        assert.ok(obj.address);
+        assert.ok(obj.message);
+        assert.strictEqual(obj.message, bip322Fixtures.valid.message);
+      });
+    });
+
+    it('should successfully run with a user signature', async function () {
+      const psbtHex = bip322Fixtures.valid.userSignature;
+      const result = await coin.explainTransaction({ txHex: psbtHex, pubs });
+      assert.strictEqual(result.outputAmount, '0');
+      assert.strictEqual(result.changeAmount, '0');
+      assert.strictEqual(result.outputs.length, 1);
+      assert.strictEqual(result.outputs[0].address, 'scriptPubKey:6a');
+      assert.strictEqual(result.fee, '0');
+      assert.ok('signatures' in result);
+      assert.strictEqual(result.signatures, 1);
+      assert.ok(result.messages);
+      result.messages?.forEach((obj) => {
+        assert.ok(obj.address);
+        assert.ok(obj.message);
+        assert.strictEqual(obj.message, bip322Fixtures.valid.message);
+      });
+    });
+
+    it('should successfully run with a hsm signature', async function () {
+      const psbtHex = bip322Fixtures.valid.hsmSignature;
+      const result = await coin.explainTransaction({ txHex: psbtHex, pubs });
+      assert.strictEqual(result.outputAmount, '0');
+      assert.strictEqual(result.changeAmount, '0');
+      assert.strictEqual(result.outputs.length, 1);
+      assert.strictEqual(result.outputs[0].address, 'scriptPubKey:6a');
+      assert.strictEqual(result.fee, '0');
+      assert.ok('signatures' in result);
+      assert.strictEqual(result.signatures, 2);
+      assert.ok(result.messages);
+      result.messages?.forEach((obj) => {
+        assert.ok(obj.address);
+        assert.ok(obj.message);
+        assert.strictEqual(obj.message, bip322Fixtures.valid.message);
+      });
     });
   });
 
