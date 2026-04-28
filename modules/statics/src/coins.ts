@@ -492,7 +492,7 @@ export function enrichBaseChainFeatures(
     Object.entries(coinTokenMap).map(([key, coins]) => [
       key,
       coins.map((coin) => {
-        if (coin.isToken || coin.additionalFeatures !== undefined) return coin;
+        if (coin.isToken || coin.additionalFeatures !== undefined || coin.network === undefined) return coin;
         const features = featuresByNetworkName.get(coin.network.name);
         return features !== undefined ? { ...coin, additionalFeatures: features } : coin;
       }),
