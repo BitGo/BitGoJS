@@ -23,7 +23,7 @@ export const GenerateWalletBody = {
   passphrase: optional(t.string),
   /** User provided public key */
   userKey: optional(t.string),
-  /** Backup extended public key */
+  /** Backup extended public key - public part of a key pair */
   backupXpub: optional(t.string),
   /** Optional key recovery service to provide and store the backup key */
   backupXpubProvider: optional(t.literal('dai')),

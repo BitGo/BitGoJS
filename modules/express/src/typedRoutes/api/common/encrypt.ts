@@ -5,6 +5,7 @@ import { BitgoExpressError } from '../../schemas/error';
 export const EncryptRequestBody = {
   input: t.string,
   password: optional(t.string),
+  // Note: adata is not in platform.yaml but is tested and used
   adata: optional(t.string),
 };
 
