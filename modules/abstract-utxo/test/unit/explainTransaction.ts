@@ -40,5 +40,4 @@ describe('Explain Transaction', function () {
       await coin.explainTransaction(psbtTxHex, wallet);
     });
   });
-
 });
