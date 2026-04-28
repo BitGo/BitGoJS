@@ -794,7 +794,7 @@ export const botOfcTokens = [
     undefined
   ),
   AccountCtors.ofcerc20(
-    'c673dd10-076e-47b7-a53f-3a622c7cf38c',
+    '02af63f1-21b9-41a6-836a-a273f0faa276',
     'ofceth:krwq',
     'KRWQ',
     18,
@@ -806,7 +806,7 @@ export const botOfcTokens = [
     undefined
   ),
   AccountCtors.ofcerc20(
-    'cb98a20f-f22a-494a-b8e6-53212aa96f5a',
+    'adf94a02-974e-4fec-8132-d066ac52e49d',
     'ofceth:hybond',
     'HYBOND',
     18,
