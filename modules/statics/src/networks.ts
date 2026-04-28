@@ -187,6 +187,7 @@ export interface TronNetwork extends AccountNetwork {
 export interface StacksNetwork extends AccountNetwork {
   readonly sendmanymemoContractAddress: string;
   readonly stakingContractAddress: string;
+  readonly sbtcWithdrawalContractAddress: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -1237,6 +1238,7 @@ class Stx extends Mainnet implements StacksNetwork {
   explorerUrl = 'https://explorer.hiro.so/txid/';
   sendmanymemoContractAddress = 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE';
   stakingContractAddress = 'SP000000000000000000002Q6VF78';
+  sbtcWithdrawalContractAddress = 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4';
 }
 
 class StxTestnet extends Testnet implements StacksNetwork {
@@ -1245,6 +1247,7 @@ class StxTestnet extends Testnet implements StacksNetwork {
   explorerUrl = 'https://explorer.hiro.so/txid/?chain=testnet';
   sendmanymemoContractAddress = 'ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B';
   stakingContractAddress = 'ST000000000000000000002AMW42H';
+  sbtcWithdrawalContractAddress = 'SN69P7RZRKK8ERQCCABHT2JWKB2S4DHH9H74231T';
 }
 
 class SUSD extends Mainnet implements AccountNetwork {

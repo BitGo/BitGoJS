@@ -119,3 +119,9 @@ export interface RecoveryInfo extends BaseTransactionExplanation {
 export interface RecoveryTransaction {
   txHex: string;
 }
+
+export interface SbtcWithdrawParams {
+  amount: string;
+  btcAddress: string;
+  maxFee: string;
+}
