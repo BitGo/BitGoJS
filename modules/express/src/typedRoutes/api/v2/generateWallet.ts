@@ -45,6 +45,22 @@ export const GenerateWalletBody = {
   commonKeychain: optional(t.string),
 } as const;
 
+/**
+ * Generate wallet response (200 OK)
+ *
+ * Can be either:
+ * 1. Simple wallet object (without includeKeychains query param)
+ * 2. Wallet with keychains (when includeKeychains=true)
+ *
+ * When keychains are included:
+ * - encryptedWalletPassphrase: Encrypted wallet passphrase. Used with passcodeEncryptionCode.
+ *   Example: "{\"iv\":\"IpwAFi0+TDsLJCV4pg8T6w==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"3lkIc47rjzo=\",\"ct\":\"/m6JL/ttTJWXNmHm+dzI\"}"
+ * - userKeychain: User keychain with encrypted private key and xpub
+ * - backupKeychain: Backup keychain with private key (if created locally, includes xprv)
+ * - bitgoKeychain: BitGo-managed keychain with only xpub
+ * - warning: Warning message if backup keychain was created locally (user must backup xprv)
+ *   Example: "Be sure to backup the backup keychain -- it is not stored anywhere else!"
+ */
 export const GenerateWalletResponse200 = t.union([
   t.UnknownRecord,
   t.type({
