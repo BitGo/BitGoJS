@@ -10,11 +10,32 @@ on:
         type: boolean
         required: false
         default: false
+      recovery-mode:
+        description: |
+          Recover from a partial-publish failure. Skips version bumping,
+          master→rel/latest merge, and GPG signing. Runs `lerna publish
+          from-package` against rel/latest, publishing only versions
+          missing from npm. Release notes, GitHub release, and Express
+          Docker publish still run.
+
+          IMPORTANT: from-package publishes whatever versions are in the
+          rel/latest package.json files at trigger time. Verify rel/latest
+          HEAD matches the failed release before triggering — the workflow
+          logs the resolved SHA and the planned publish list.
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
   id-token: write
   pull-requests: read
+
+# Prevent overlapping releases. workflow_dispatch runs are serialized;
+# a normal release and a recovery run cannot race against rel/latest.
+concurrency:
+  group: npmjs-release
+  cancel-in-progress: false
 
 env:
   NX_NO_CLOUD: true
@@ -24,6 +45,7 @@ env:
 jobs:
   get-release-context:
     name: Get release context
+    if: ${{ !inputs.recovery-mode }}
     runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
     timeout-minutes: 10
     outputs:
@@ -109,10 +131,58 @@ jobs:
 
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
+  get-recovery-context:
+    name: Get recovery context
+    if: inputs.recovery-mode
+    runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    outputs:
+      # Pinned SHA. release-bitgojs checks out this exact commit, not the
+      # rel/latest branch tip, so the publish cannot drift from what the
+      # env reviewer approved.
+      sha: ${{ steps.resolve.outputs.sha }}
+    steps:
+      - name: Checkout rel/latest
+        uses: actions/checkout@v6
+        with:
+          ref: rel/latest
+          fetch-depth: 1
+
+      - name: Resolve SHA and show recovery target
+        id: resolve
+        run: |
+          # Pin the SHA at preview time and surface it (plus the planned
+          # publish list) BEFORE the env-gated publish job runs, so
+          # reviewers approving the `npmjs-release` environment can
+          # sanity-check what will be published.
+          sha="$(git rev-parse HEAD)"
+          if [ -z "$sha" ]; then
+            echo "::error::Failed to resolve rel/latest SHA. Refusing to proceed."
+            exit 1
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Recovery target"
+            echo ""
+            echo "Branch: \`rel/latest\`"
+            echo "Resolved SHA: \`$sha\`"
+            echo "Subject: $(git log -1 --pretty=format:'%s')"
+            echo ""
+            echo "### Versions in rel/latest package.jsons"
+            echo ""
+            echo '```'
+            for f in modules/*/package.json; do
+              jq -r '"\(.name)@\(.version)\(if .private then " (private)" else "" end)"' "$f"
+            done | sort
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
   release-bitgojs:
     name: Release BitGoJS
     needs:
       - get-release-context
+      - get-recovery-context
+    if: ${{ always() && needs.get-release-context.result != 'failure' && needs.get-recovery-context.result != 'failure' }}
     runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
     timeout-minutes: 60
     environment: npmjs-release
@@ -120,12 +190,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          ref: ${{ needs.get-release-context.outputs.current-master-sha }}
+          # Recovery mode pins to the SHA resolved by get-recovery-context so
+          # the publish cannot drift from the commit the env reviewer approved
+          # (rel/latest could otherwise advance during the approval wait).
+          # Normal mode uses the master SHA captured by get-release-context.
+          ref: ${{ inputs.recovery-mode && needs.get-recovery-context.outputs.sha || needs.get-release-context.outputs.current-master-sha }}
           token: ${{ secrets.BITGOBOT_PAT_TOKEN || github.token }}
           fetch-depth: 0
+          # version-bump-summary uses `git tag --points-at HEAD`. In recovery
+          # mode the bump tags were created by a prior failed run and live
+          # only on origin, so we must fetch them.
+          fetch-tags: true
 
       - name: Configure GPG
-        if: inputs.dry-run == false
+        if: ${{ inputs.dry-run == false && !inputs.recovery-mode }}
         run: |
           echo "${{ secrets.BITGOBOT_GPG_PRIVATE_KEY }}" | gpg --batch --import
           git config --global user.signingkey 67A9A0B77F0BD445E45CC8B719828A304678A92F
@@ -143,11 +221,13 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Switch to rel/latest branch
+        if: ${{ !inputs.recovery-mode }}
         run: |
           git checkout rel/latest
           git pull origin rel/latest
 
       - name: Merge master into rel/latest
+        if: ${{ !inputs.recovery-mode }}
         run: |
           echo "Merging master commit ${{ needs.get-release-context.outputs.current-master-sha }} into rel/latest"
           git merge ${{ needs.get-release-context.outputs.current-master-sha }} --no-edit
@@ -171,11 +251,45 @@ jobs:
         uses: ./.github/actions/verify-npm-packages
 
       - name: Publish new version
-        if: inputs.dry-run == false
+        if: ${{ inputs.dry-run == false && !inputs.recovery-mode }}
         run: |
           yarn lerna publish --sign-git-tag --sign-git-commit --include-merged-tags --conventional-commits --conventional-graduate --yes
         env:
           NPM_CONFIG_PROVENANCE: true
+
+      - name: Publish missing versions (recovery)
+        if: ${{ inputs.dry-run == false && inputs.recovery-mode }}
+        run: |
+          # `from-package` reads each package.json's `version`, queries npm,
+          # and publishes only versions missing from the registry. No bump,
+          # no tag, no git push.
+          yarn lerna publish from-package --yes
+        env:
+          NPM_CONFIG_PROVENANCE: true
+
+      - name: Verify recovery published the missing versions
+        if: ${{ inputs.dry-run == false && inputs.recovery-mode }}
+        run: |
+          # Walk every non-private package and confirm the version on
+          # rel/latest is now reachable on the npm registry. Catches the
+          # case where lerna reports success but a package didn't land
+          # (e.g., another transient registry error).
+          missing=()
+          for f in modules/*/package.json; do
+            if [ "$(jq -r '.private // false' "$f")" = "true" ]; then continue; fi
+            name=$(jq -r '.name' "$f")
+            version=$(jq -r '.version' "$f")
+            code=$(curl -sL -o /dev/null -w "%{http_code}" -- "https://registry.npmjs.org/${name}/${version}")
+            if [ "$code" != "200" ]; then
+              missing+=("${name}@${version} (HTTP ${code})")
+            fi
+          done
+          if [ "${#missing[@]}" -ne 0 ]; then
+            echo "::error::Recovery left versions still missing from npm:"
+            printf '  - %s\n' "${missing[@]}"
+            exit 1
+          fi
+          echo "✅ All public package versions on rel/latest are present on npm."
 
       - name: Generate version bump summary
         id: version-bump-summary
