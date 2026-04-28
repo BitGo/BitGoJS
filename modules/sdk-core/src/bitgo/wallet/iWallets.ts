@@ -1,6 +1,6 @@
 import * as t from 'io-ts';
 
-import { IRequestTracer } from '../../api';
+import { EncryptionVersion, IRequestTracer } from '../../api';
 import { KeychainsTriplet, LightningKeychainsTriplet } from '../baseCoin';
 import { Keychain, WebauthnInfo } from '../keychain';
 import { IWallet, PaginationOptions, WalletShare } from './iWallet';
@@ -45,7 +45,7 @@ export interface GenerateBaseMpcWalletOptions {
 export interface GenerateMpcWalletOptions extends GenerateBaseMpcWalletOptions {
   passphrase: string;
   originalPasscodeEncryptionCode?: string;
-  encryptionVersion?: 2;
+  encryptionVersion?: EncryptionVersion;
 }
 export interface GenerateSMCMpcWalletOptions extends GenerateBaseMpcWalletOptions {
   bitgoKeyId: string;
@@ -93,7 +93,7 @@ export interface GenerateWalletOptions {
   evmKeyRingReferenceWalletId?: string;
   /** Optional WebAuthn PRF-based encryption info. When provided, the user private key is additionally encrypted with the PRF-derived passphrase so the server can store a WebAuthn-protected copy. */
   webauthnInfo?: GenerateWalletWebauthnInfo;
-  encryptionVersion?: 2;
+  encryptionVersion?: EncryptionVersion;
 }
 
 export const GenerateLightningWalletOptionsCodec = t.intersection(

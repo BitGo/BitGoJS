@@ -1,3 +1,4 @@
+import { EncryptionVersion } from '../../../../api';
 import { bigIntToBufferBE, DklsComms, DklsDkg, DklsDsg, DklsTypes, DklsUtils } from '@bitgo/sdk-lib-mpc';
 import * as sjcl from '@bitgo/sjcl';
 import assert from 'assert';
@@ -45,18 +46,11 @@ import {
   TSSParamsForMessageWithPrv,
   TSSParamsWithPrv,
   TxRequest,
+  isV2Envelope,
 } from '../baseTypes';
 import { BaseEcdsaUtils } from './base';
 import { EcdsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './ecdsaMPCv2KeyGenSender';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
-
-function isV2Envelope(ciphertext: string): boolean {
-  try {
-    return JSON.parse(ciphertext).v === 2;
-  } catch {
-    return false;
-  }
-}
 
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   private static readonly DKLS23_SIGNING_USER_GPG_KEY = 'DKLS23_SIGNING_USER_GPG_KEY';
@@ -69,7 +63,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     enterprise: string;
     originalPasscodeEncryptionCode?: string;
     retrofit?: DecryptedRetrofitPayload;
-    encryptionVersion?: 2;
+    encryptionVersion?: EncryptionVersion;
   }): Promise<KeychainsTriplet> {
     const { userSession, backupSession } = this.getUserAndBackupSession(2, 3, params.retrofit);
     const userGpgKey = await generateGPGKeyPair('secp256k1');

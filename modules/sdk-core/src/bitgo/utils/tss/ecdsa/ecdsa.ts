@@ -106,7 +106,6 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     passphrase: string;
     enterprise?: string | undefined;
     originalPasscodeEncryptionCode?: string | undefined;
-    encryptionVersion?: 2;
   }): Promise<KeychainsTriplet> {
     const MPC = new Ecdsa();
     const m = 2;

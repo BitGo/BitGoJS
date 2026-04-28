@@ -54,16 +54,19 @@ export function decrypt(password: string, ciphertext: string): string {
  * the breaking release that flips the default to v2.
  */
 export async function decryptAsync(password: string, ciphertext: string): Promise<string> {
-  let isV2 = false;
+  let envelopeVersion: number | undefined;
   try {
     const envelope = JSON.parse(ciphertext);
-    isV2 = envelope.v === 2;
+    envelopeVersion = envelope.v;
   } catch {
     throw new Error('decrypt: ciphertext is not valid JSON');
   }
-  if (isV2) {
+  if (envelopeVersion === 2) {
     // Do not catch: wrong password on v2 must not silently fall through to v1.
     return decryptV2(password, ciphertext);
+  }
+  if (envelopeVersion !== undefined && envelopeVersion !== 1) {
+    throw new Error(`decrypt: unknown envelope version ${envelopeVersion}`);
   }
   return sjcl.decrypt(password, ciphertext);
 }

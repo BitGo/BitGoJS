@@ -1070,7 +1070,8 @@ export interface IWallet {
   removeUser(params?: RemoveUserOptions): Promise<any>;
   prebuildTransaction(params?: PrebuildTransactionOptions): Promise<PrebuildTransactionResult>;
   signTransaction(params?: WalletSignTransactionOptions): Promise<SignedTransaction>;
-  getUserPrv(params?: GetUserPrvOptions): Promise<string>;
+  getUserPrv(params?: GetUserPrvOptions): string;
+  getUserPrvAsync(params?: GetUserPrvOptions): Promise<string>;
   prebuildAndSignTransaction(params?: PrebuildAndSignTransactionOptions): Promise<SignedTransaction>;
   signAndSendTxRequest(params?: SignAndSendTxRequestOptions): Promise<SignedTransaction>;
   accelerateTransaction(params?: AccelerateTransactionOptions): Promise<any>;

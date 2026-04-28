@@ -1,5 +1,5 @@
 import { Key, SerializedKeyPair } from 'openpgp';
-import { IRequestTracer } from '../../../api';
+import { EncryptionVersion, IEncryptionSession, IRequestTracer } from '../../../api';
 import { KeychainsTriplet, ParsedTransaction, TransactionParams } from '../../baseCoin';
 import { ApiKeyShare, Keychain } from '../../keychain';
 import { ApiVersion, Memo, WalletType } from '../../wallet';
@@ -482,10 +482,22 @@ export type CreateKeychainParamsBase = {
   passphrase?: string;
   enterprise?: string;
   originalPasscodeEncryptionCode?: string;
-  encryptionVersion?: 2;
+  encryptionVersion?: EncryptionVersion;
+  encryptionSession?: IEncryptionSession;
 };
 
 export type CreateBitGoKeychainParamsBase = Omit<CreateKeychainParamsBase, 'bitgoKeychain'>;
+
+/**
+ * Checks whether a ciphertext string is a v2 encryption envelope.
+ */
+export function isV2Envelope(ciphertext: string): boolean {
+  try {
+    return JSON.parse(ciphertext).v === 2;
+  } catch {
+    return false;
+  }
+}
 
 export const SignatureShareType = {
   USER: 'user',
@@ -714,7 +726,7 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
     isThirdPartyBackup?: boolean;
-    encryptionVersion?: 2;
+    encryptionVersion?: EncryptionVersion;
   }): Promise<KeychainsTriplet>;
   signTxRequest(params: { txRequest: string | TxRequest; prv: string; reqId: IRequestTracer }): Promise<TxRequest>;
   signTxRequestForMessage(params: TSSParams): Promise<TxRequest>;

@@ -32,6 +32,7 @@ import {
   TSSParamsWithPrv,
   TxRequest,
   UnsignedTransactionTss,
+  isV2Envelope,
 } from '../baseTypes';
 import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
@@ -39,21 +40,10 @@ import { BaseEddsaUtils } from './base';
 import { KeychainsTriplet } from '../../../baseCoin';
 import { exchangeEddsaCommitments } from '../../../tss/common';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
-import { IRequestTracer } from '../../../../api';
+import { EncryptionVersion, IRequestTracer } from '../../../../api';
 import { getBitgoMpcGpgPubKey } from '../../../tss/bitgoPubKeys';
 import { EnvironmentName } from '../../../environments';
 import { readKey } from 'openpgp';
-
-/**
- * Checks whether a ciphertext string is a v2 encryption envelope.
- */
-function isV2Envelope(ciphertext: string): boolean {
-  try {
-    return JSON.parse(ciphertext).v === 2;
-  } catch {
-    return false;
-  }
-}
 
 /**
  * Utility functions for TSS work flows.
@@ -139,7 +129,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     bitgoKeychain,
     passphrase,
     originalPasscodeEncryptionCode,
-    encryptionVersion,
+    encryptionSession,
   }: CreateEddsaKeychainParams): Promise<Keychain> {
     const MPC = await Eddsa.initialize();
     const bitgoKeyShares = bitgoKeychain.keyShares;
@@ -196,13 +186,8 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       originalPasscodeEncryptionCode,
     };
     if (passphrase !== undefined) {
-      if (encryptionVersion === 2) {
-        const session = await this.bitgo.createEncryptionSession(passphrase);
-        try {
-          userKeychainParams.encryptedPrv = await session.encrypt(JSON.stringify(userSigningMaterial));
-        } finally {
-          session.destroy();
-        }
+      if (encryptionSession) {
+        userKeychainParams.encryptedPrv = await encryptionSession.encrypt(JSON.stringify(userSigningMaterial));
       } else {
         userKeychainParams.encryptedPrv = this.bitgo.encrypt({
           input: JSON.stringify(userSigningMaterial),
@@ -232,7 +217,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     backupKeyShare,
     bitgoKeychain,
     passphrase,
-    encryptionVersion,
+    encryptionSession,
   }: CreateEddsaKeychainParams): Promise<Keychain> {
     const MPC = await Eddsa.initialize();
     const bitgoKeyShares = bitgoKeychain.keyShares;
@@ -291,13 +276,8 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     };
 
     if (passphrase !== undefined) {
-      if (encryptionVersion === 2) {
-        const session = await this.bitgo.createEncryptionSession(passphrase);
-        try {
-          params.encryptedPrv = await session.encrypt(prv);
-        } finally {
-          session.destroy();
-        }
+      if (encryptionSession) {
+        params.encryptedPrv = await encryptionSession.encrypt(prv);
       } else {
         params.encryptedPrv = this.bitgo.encrypt({ input: prv, password: passphrase });
       }
@@ -375,7 +355,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     passphrase?: string;
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
-    encryptionVersion?: 2;
+    encryptionVersion?: EncryptionVersion;
   }): Promise<KeychainsTriplet> {
     const MPC = await Eddsa.initialize();
     const m = 2;
@@ -394,35 +374,41 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       backupKeyShare,
       enterprise: params.enterprise,
     });
-    const userKeychainPromise = this.createUserKeychain({
-      userGpgKey,
-      userKeyShare,
-      backupGpgKey,
-      backupKeyShare,
-      bitgoKeychain,
-      passphrase: params.passphrase,
-      originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
-      encryptionVersion: params.encryptionVersion,
-    });
-    const backupKeychainPromise = this.createBackupKeychain({
-      userGpgKey,
-      userKeyShare,
-      backupGpgKey,
-      backupKeyShare,
-      bitgoKeychain,
-      passphrase: params.passphrase,
-      encryptionVersion: params.encryptionVersion,
-    });
-    const [userKeychain, backupKeychain] = await Promise.all([userKeychainPromise, backupKeychainPromise]);
 
-    // create wallet
-    const keychains = {
-      userKeychain,
-      backupKeychain,
-      bitgoKeychain,
-    };
+    const encryptionSession =
+      params.encryptionVersion === 2 && params.passphrase
+        ? await this.bitgo.createEncryptionSession(params.passphrase)
+        : undefined;
+    try {
+      const userKeychainPromise = this.createUserKeychain({
+        userGpgKey,
+        userKeyShare,
+        backupGpgKey,
+        backupKeyShare,
+        bitgoKeychain,
+        passphrase: params.passphrase,
+        originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
+        encryptionSession,
+      });
+      const backupKeychainPromise = this.createBackupKeychain({
+        userGpgKey,
+        userKeyShare,
+        backupGpgKey,
+        backupKeyShare,
+        bitgoKeychain,
+        passphrase: params.passphrase,
+        encryptionSession,
+      });
+      const [userKeychain, backupKeychain] = await Promise.all([userKeychainPromise, backupKeychainPromise]);
 
-    return keychains;
+      return {
+        userKeychain,
+        backupKeychain,
+        bitgoKeychain,
+      };
+    } finally {
+      encryptionSession?.destroy();
+    }
   }
 
   async createCommitmentShareFromTxRequest(params: {
