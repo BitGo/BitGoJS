@@ -10,6 +10,15 @@ on:
         type: boolean
         required: false
         default: false
+      express-only:
+        description: |
+          If true, skips the npm publish jobs and runs only the
+          express release (Docker image build and push). Use this
+          during release recovery when the npm packages were already
+          published but the express release did not complete.
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -24,6 +33,7 @@ env:
 jobs:
   get-release-context:
     name: Get release context
+    if: inputs.express-only == false
     runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
     timeout-minutes: 10
     outputs:
@@ -111,6 +121,7 @@ jobs:
 
   release-bitgojs:
     name: Release BitGoJS
+    if: inputs.express-only == false
     needs:
       - get-release-context
     runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
@@ -204,7 +215,9 @@ jobs:
 
   get-express-release-context:
     name: Get Express release context
-    if: inputs.dry-run == false
+    if: |
+      inputs.dry-run == false &&
+      (inputs.express-only == true || needs.release-bitgojs.result == 'success')
     needs:
       - release-bitgojs
     runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
