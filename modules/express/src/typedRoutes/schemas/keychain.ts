@@ -7,7 +7,13 @@ const BaseKeychainCodec = t.type({
   source: t.string,
 });
 
-// User keychain: can have encryptedPrv and prv
+/**
+ * User keychain: can have encryptedPrv and prv
+ * - ethAddress: Ethereum address corresponding to this keychain
+ * - coinSpecific: Coin specific key data
+ * - encryptedPrv: User private key encrypted with the user passphrase
+ * - prv: User private key
+ */
 export const UserKeychainCodec = t.intersection([
   BaseKeychainCodec,
   t.partial({
@@ -18,7 +24,12 @@ export const UserKeychainCodec = t.intersection([
   }),
 ]);
 
-// Backup keychain: can have prv
+/**
+ * Backup keychain: can have prv
+ * - ethAddress: Ethereum address corresponding to this keychain
+ * - coinSpecific: Coin specific key data
+ * - prv: User private key
+ */
 export const BackupKeychainCodec = t.intersection([
   BaseKeychainCodec,
   t.partial({
@@ -28,7 +39,11 @@ export const BackupKeychainCodec = t.intersection([
   }),
 ]);
 
-// BitGo keychain: must have isBitGo
+/**
+ * BitGo keychain: must have isBitGo
+ * - ethAddress: Ethereum address corresponding to this keychain
+ * - coinSpecific: Coin specific key data
+ */
 export const BitgoKeychainCodec = t.intersection([
   BaseKeychainCodec,
   t.type({

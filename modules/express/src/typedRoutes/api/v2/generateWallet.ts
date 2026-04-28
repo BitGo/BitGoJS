@@ -31,11 +31,11 @@ export const GenerateWalletBody = {
   passcodeEncryptionCode: optional(t.string),
   /** Seed that derives an extended user key or common keychain for a cold wallet */
   coldDerivationSeed: optional(t.string),
-  /** Gas price to use when deploying an Ethereum wallet */
+  /** Gas price (in wei) to use when deploying an Ethereum wallet */
   gasPrice: optional(t.number),
   /** Flag for preventing KRS from sending email after creating backup key */
   disableKRSEmail: optional(t.boolean),
-  /** (ETH only) Specify the wallet creation contract version used when creating a wallet contract */
+  /** Specify the wallet creation contract version (0-6). 0: old wallet creation, 1: new wallet creation (default), 2: v1 with NFT support, 3: MPC wallets, 4: EVM-compatible chains, 5: MPC MPCv2, 6: EVM MPCv2 with receive addresses */
   walletVersion: optional(t.number),
   /** True, if the wallet type is a distributed-custodial. If passed, you must also pass the 'enterprise' parameter */
   isDistributedCustody: optional(t.boolean),
@@ -97,13 +97,11 @@ export const GenerateWalletV2Query = {
  * 4. Creates the BitGo key (and the backup key if you pass `backupXpubProvider`) on the service.
  * 5. Creates the wallet on BitGo with the 3 public keys above.
  *
- * ⓘ Ethereum wallets can only be created under an enterprise. Pass in the id of the enterprise to associate the wallet with. Your enterprise id can be seen by clicking on the “Manage Organization” link on the enterprise dropdown. Each enterprise has a fee address which will be used to pay for transaction fees on all Ethereum wallets in that enterprise. The fee address is displayed in the dashboard of the website, please fund it before creating a wallet.
+ * ⓘ For Ethereum wallets, the `enterprise` parameter is required. Each enterprise has a fee address that will be used to pay for transaction fees. Ensure the fee address is funded before creating a wallet.
  *
- * ⓘ You cannot generate a wallet by passing in a subtoken as the coin. Subtokens share wallets with their parent coin and it is not possible to create a wallet specific to one token.
+ * ⓘ Subtokens share wallets with their parent coin. Use the parent coin (e.g., `eth` for ERC20 tokens) to create a wallet that can hold tokens.
  *
- * ⓘ This endpoint should be called through BitGo Express if used without the SDK, such as when using cURL.
- *
- * ⓘ Many account-based assets, including Ethereum, require you to [Fund Gas Tanks](https://developers.bitgo.com/docs/get-started-gas-tanks#/) to initialize a new wallets on chain. Ensure your gas tank has a sufficient balance to cover this cost before generating a new wallet.
+ * ⓘ Many account-based assets, including Ethereum, require you to [Fund Gas Tanks](https://developers.bitgo.com/docs/get-started-gas-tanks#/) to initialize new wallets on chain. Ensure your gas tank has a sufficient balance before generating a wallet.
  *
  * @operationId express.wallet.generate
  * @tag Express

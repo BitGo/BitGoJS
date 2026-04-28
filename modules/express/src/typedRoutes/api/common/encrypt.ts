@@ -5,6 +5,7 @@ import { BitgoExpressError } from '../../schemas/error';
 export const EncryptRequestBody = {
   input: t.string,
   password: optional(t.string),
+  adata: optional(t.string),
 };
 
 /**
