@@ -572,10 +572,10 @@ export abstract class AbstractUtxoCoin
     return (chainhead as any).height;
   }
 
-  checkRecipient(recipient: { address: string; amount: number | string }): void {
+  checkRecipient(recipient: { address?: string; amount: number | string }): void {
     assertValidTransactionRecipient(recipient);
-    if (!isScriptRecipient(recipient.address)) {
-      super.checkRecipient(recipient);
+    if (recipient.address && !isScriptRecipient(recipient.address)) {
+      super.checkRecipient({ address: recipient.address, amount: recipient.amount });
     }
   }
 
