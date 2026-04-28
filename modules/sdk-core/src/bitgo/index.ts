@@ -15,7 +15,6 @@ export * from './errors';
 export * from './inscriptionBuilder';
 export * from './internal';
 export * from './keychain';
-export * from './passkey';
 export * as bitcoin from './legacyBitcoin';
 export * from './market';
 export * from './pendingApproval';
