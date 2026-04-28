@@ -1565,7 +1565,7 @@ export const allCoinsAndTokens = [
     'tabstracteth:tmt',
     'Test Mintable Token',
     6,
-    '0x23d6e0DD3a066daF6cFDfF6344e6E271945b7d8f',
+    '0x23d6e0dd3a066daf6cfdff6344e6e271945b7d8f',
     UnderlyingAsset['tabstracteth:tmt'],
     Networks.test.abstracteth
   ),
