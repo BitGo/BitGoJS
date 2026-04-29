@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.43.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.42.0...@bitgo/sdk-core@36.43.0) (2026-04-29)
+
+
+### Features
+
+* add round domain separator to adata ([e7dfa8e](https://github.com/BitGo/BitGoJS/commit/e7dfa8e8650e7825944bf4a29927e9e3a10b75fe))
+
+
+
+
+
 # [36.42.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.41.0...@bitgo/sdk-core@36.42.0) (2026-04-28)
 
 

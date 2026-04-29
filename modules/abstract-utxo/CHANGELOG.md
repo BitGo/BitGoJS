@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.24.0...@bitgo/abstract-utxo@10.25.0) (2026-04-29)
+
+
+### Bug Fixes
+
+* **abstract-utxo:** enhance BIP-322 with signature verification ([b6b6166](https://github.com/BitGo/BitGoJS/commit/b6b61662372e701a2858744d258472c06b6169f4))
+* **abstract-utxo:** guard address in checkRecipient for OP_RETURN outputs ([5f0d1ed](https://github.com/BitGo/BitGoJS/commit/5f0d1edcfa2021ff4580d41730b955f96a530921))
+
+
+### Features
+
+* **abstract-utxo:** bump wasm-utxo to 4.8.0 ([5ae22c0](https://github.com/BitGo/BitGoJS/commit/5ae22c0e725282d9e2be7aa541ec4aa6d008fcb6))
+
+
+
+
+
 # [10.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.23.2...@bitgo/abstract-utxo@10.24.0) (2026-04-28)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.39.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.38.1...@bitgo/utxo-staking@1.39.0) (2026-04-29)
+
+
+### Features
+
+* **abstract-utxo:** bump wasm-utxo to 4.8.0 ([5ae22c0](https://github.com/BitGo/BitGoJS/commit/5ae22c0e725282d9e2be7aa541ec4aa6d008fcb6))
+
+
+
+
+
 ## [1.38.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.38.0...@bitgo/utxo-staking@1.38.1) (2026-04-28)
 
 
