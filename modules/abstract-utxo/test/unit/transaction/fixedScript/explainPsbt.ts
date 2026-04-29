@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 import * as utxolib from '@bitgo/utxo-lib';
 import { testutil } from '@bitgo/utxo-lib';
-import { fixedScriptWallet, Triple } from '@bitgo/wasm-utxo';
+import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction';
 import {
@@ -18,8 +18,8 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
   describe(`${acidTest.name}`, function () {
     let psbt: utxolib.bitgo.UtxoPsbt;
     let psbtBytes: Buffer;
-    let walletXpubs: Triple<string>;
-    let customChangeWalletXpubs: Triple<string> | undefined;
+    let walletXpubs: fixedScriptWallet.RootWalletKeys;
+    let customChangeWalletXpubs: fixedScriptWallet.RootWalletKeys | undefined;
     let wasmPsbt: fixedScriptWallet.BitGoPsbt;
     let refExplanation: TransactionExplanation;
     before('prepare', function () {
@@ -31,8 +31,8 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
       psbtBytes = psbt.toBuffer();
       const networkName = utxolib.getNetworkName(acidTest.network);
       assert(networkName);
-      walletXpubs = acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>;
-      customChangeWalletXpubs = acidTest.otherWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>;
+      walletXpubs = fixedScriptWallet.RootWalletKeys.from(acidTest.rootWalletKeys);
+      customChangeWalletXpubs = fixedScriptWallet.RootWalletKeys.from(acidTest.otherWalletKeys);
       wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(psbtBytes, networkName);
     });
 
@@ -154,7 +154,7 @@ describe('aggregateTransactionExplanations', function () {
           const networkName = utxolib.getNetworkName(acidTest.network);
           assert(networkName);
           const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(psbtBytes, networkName);
-          const walletXpubs = acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>;
+          const walletXpubs = fixedScriptWallet.RootWalletKeys.from(acidTest.rootWalletKeys);
           exp = explainPsbtWasmBigInt(wasmPsbt, walletXpubs, {
             replayProtection: { publicKeys: [acidTest.getReplayProtectionPublicKey()] },
           });
