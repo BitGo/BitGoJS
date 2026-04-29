@@ -3,7 +3,9 @@ import { encode } from 'cbor-x';
 import crypto from 'crypto';
 import { DeserializedMessage, DeserializedMessages, DkgState, EddsaReducedKeyShare } from './types';
 
-type WasmMps = typeof import('@bitgo/wasm-mps');
+type NodeWasmer = typeof import('@bitgo/wasm-mps');
+type WebWasmer = typeof import('@bitgo/wasm-mps/web');
+type WasmMps = NodeWasmer | WebWasmer;
 
 /**
  * EdDSA Distributed Key Generation (DKG) implementation using @bitgo/wasm-mps.
@@ -53,7 +55,21 @@ export class DKG {
 
   private async loadWasmMps(): Promise<void> {
     if (!this.wasmMps) {
-      this.wasmMps = await import('@bitgo/wasm-mps');
+      if (
+        typeof window !== 'undefined' &&
+        /* checks for electron processes */
+        !window.process &&
+        !window.process?.['type']
+      ) {
+        // Browser: web build has explicit init() — guaranteed ready after await
+        // eslint-disable-next-line import/no-internal-modules -- @bitgo/wasm-mps exposes environment-specific subpath exports.
+        const webWasm = await import('@bitgo/wasm-mps/web');
+        await webWasm.default();
+        this.wasmMps = webWasm;
+      } else {
+        // Node.js: dynamic import() rewritten to require() by tsc → CJS build → readFileSync
+        this.wasmMps = await import('@bitgo/wasm-mps');
+      }
     }
   }
 
