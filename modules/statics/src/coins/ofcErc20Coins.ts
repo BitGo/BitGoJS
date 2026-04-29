@@ -6642,98 +6642,12 @@ export const tOfcErc20Coins = [
     true,
     'tmorph'
   ),
-
-  // MorphETH tokens
-  ofcerc20(
-    '9c28b89b-1069-4bad-bf7b-8ecea440cee2',
-    'ofcmorpheth:usdc',
-    'USD Coin',
-    6,
-    UnderlyingAsset['morpheth:usdc'],
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'morpheth'
-  ),
-  ofcerc20(
-    '07010f84-5bc7-4715-9d19-09d694f558fb',
-    'ofcmorpheth:usdt',
-    'Tether USD',
-    6,
-    UnderlyingAsset['morpheth:usdt'],
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'morpheth'
-  ),
-  ofcerc20(
-    '883727b5-49e3-4fb3-99f7-fefb803710e5',
-    'ofcmorpheth:usd1',
-    'USD1',
-    18,
-    UnderlyingAsset['morpheth:usd1'],
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'morpheth'
-  ),
-  tofcerc20(
-    '34e77cee-2885-4a77-911c-b5f2bdd28cd7',
-    'ofctmorpheth:tmt',
-    'Test Mintable Token',
-    6,
-    underlyingAssetForSymbol('tmorpheth:tmt'),
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'tmorpheth'
-  ),
   ofcerc20(
     '3ea8b443-c2a7-4a3c-8b58-1a8a36aa4da8',
     'ofcseievm:wsei',
     'Wrapped SEI',
     18,
     underlyingAssetForSymbol('seievm:wsei')
-  ),
-  tofcerc20(
-    '8c64311b-e288-4dd4-8f9f-25dad3418837',
-    'ofctmorpheth:usd1',
-    'Test USD1 Token',
-    18,
-    underlyingAssetForSymbol('tmorpheth:usd1'),
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'tmorpheth'
-  ),
-  tofcerc20(
-    '15ca2074-d5bc-450c-886e-1338ffb114f8',
-    'ofctmorpheth:stgusd1',
-    'Test USD1 Token',
-    18,
-    underlyingAssetForSymbol('tmorpheth:stgusd1'),
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'tmorpheth'
   ),
   ofcerc20(
     'f82110b2-22a1-4a27-b640-9a5c05f60957',

@@ -3411,48 +3411,6 @@ export const allCoinsAndTokens = [
       CoinFeature.SUPPORTS_ERC20,
     ]
   ),
-
-  account(
-    '51de29b1-dd97-4b05-9239-a177522b469f',
-    'morpheth',
-    'Morph Ethereum Mainnet',
-    Networks.main.morpheth,
-    18,
-    UnderlyingAsset.MORPHETH,
-    BaseUnit.ETH,
-    [
-      ...EVM_FEATURES,
-      CoinFeature.SHARED_EVM_SIGNING,
-      CoinFeature.SHARED_EVM_SDK,
-      CoinFeature.EVM_COMPATIBLE_IMS,
-      CoinFeature.EVM_COMPATIBLE_UI,
-      CoinFeature.EVM_COMPATIBLE_WP,
-      CoinFeature.EVM_NON_BITGO_RECOVERY,
-      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
-      CoinFeature.SUPPORTS_ERC20,
-      CoinFeature.ERC20_BULK_TRANSACTION,
-    ]
-  ),
-  account(
-    'f99419da-0ee8-46c3-af81-3bd43af29642',
-    'tmorpheth',
-    'Morph Ethereum Testnet',
-    Networks.test.morpheth,
-    18,
-    UnderlyingAsset.MORPHETH,
-    BaseUnit.ETH,
-    [
-      ...EVM_FEATURES,
-      CoinFeature.SHARED_EVM_SIGNING,
-      CoinFeature.SHARED_EVM_SDK,
-      CoinFeature.EVM_COMPATIBLE_IMS,
-      CoinFeature.EVM_COMPATIBLE_UI,
-      CoinFeature.EVM_COMPATIBLE_WP,
-      CoinFeature.EVM_NON_BITGO_RECOVERY,
-      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
-      CoinFeature.SUPPORTS_ERC20,
-    ]
-  ),
   account(
     '887eebff-5d50-47f7-aea5-905e25c2e846',
     'tdogeos',
@@ -5089,65 +5047,6 @@ export const allCoinsAndTokens = [
     '0x5257950b5277dac30536eae4742ffef4e5af5256',
     UnderlyingAsset['tmorph:tmt'],
     Networks.test.morph
-  ),
-
-  // MorphEth mainnet tokens
-  erc20Token(
-    '088dcce6-6259-4012-a1e2-857534ea88fc',
-    'morpheth:usdc',
-    'USD Coin',
-    6,
-    '0xe34c91815d7fc18a9e2148bcd4241d0a5848b693',
-    UnderlyingAsset['morpheth:usdc'],
-    Networks.main.morpheth
-  ),
-  erc20Token(
-    '03257b8a-67cc-4a84-9226-b757852fff63',
-    'morpheth:usdt',
-    'Tether USD',
-    6,
-    '0xc7d67a9cbb121b3b0b9c053dd9f469523243379a',
-    UnderlyingAsset['morpheth:usdt'],
-    Networks.main.morpheth
-  ),
-  erc20Token(
-    'f0dad043-371d-48a4-a3cb-d798b4fc0fee',
-    'morpheth:usd1',
-    'USD1',
-    18,
-    '0x111111d2bf19e43c34263401e0cad979ed1cdb61',
-    UnderlyingAsset['morpheth:usd1'],
-    Networks.main.morpheth,
-    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE, CoinFeature.EIP1559]
-  ),
-
-  // MorphEth testnet tokens
-  erc20Token(
-    '3383765b-37f9-4609-baf3-37c42f0ffee7',
-    'tmorpheth:tmt',
-    'Test Mintable Token',
-    6,
-    '0x5257950b5277dac30536eae4742ffef4e5af5256',
-    UnderlyingAsset['tmorpheth:tmt'],
-    Networks.test.morpheth
-  ),
-  erc20Token(
-    '15286c32-210b-402d-84a2-5e406e584981',
-    'tmorpheth:usd1',
-    'Test USD1 Token',
-    18,
-    '0x8bdaad0ebc24fb63af6c5f29e2a2898500c87886',
-    UnderlyingAsset['tmorpheth:usd1'],
-    Networks.test.morpheth
-  ),
-  erc20Token(
-    'e6a1553d-0dd0-4f77-b6a8-5f265243c7d0',
-    'tmorpheth:stgusd1',
-    'Test USD1 Token',
-    18,
-    '0x055fd4bbad96a076c15187b60fe7ea07ea789b94',
-    UnderlyingAsset['tmorpheth:stgusd1'],
-    Networks.test.morpheth
   ),
 
   // Plume testnet tokens
