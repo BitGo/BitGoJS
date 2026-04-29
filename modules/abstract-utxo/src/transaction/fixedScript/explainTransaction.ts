@@ -52,7 +52,7 @@ interface TransactionExplanationWithSignatures<TFee = string, TChangeOutput exte
 
 /** For our wasm backend, we do not return the deprecated fields. We set TFee to string for backwards compatibility. */
 export type TransactionExplanationWasm = AbstractUtxoTransactionExplanation<string, FixedScriptWalletOutput> & {
-  inputs: Array<{ address: string; value: string }>;
+  inputs: Array<{ address: string; value: string; signedBy: { [key: string]: boolean } }>;
   inputAmount: string;
 };
 

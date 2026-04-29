@@ -3,7 +3,9 @@ import assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip322 as coreBip322 } from '@bitgo/utxo-core';
 import { bip322 as wasmBip322, fixedScriptWallet, BIP32, type Triple } from '@bitgo/wasm-utxo';
+import { getKeyTriple } from '@bitgo/wasm-utxo/testutils';
 
+import { explainPsbtWasm } from '../../src/transaction/fixedScript';
 import {
   BIP322MessageBroadcastable,
   BIP322MessageInfo,
@@ -17,7 +19,7 @@ function createTestWalletKeys(seed: string): {
   xpubs: Triple<string>;
   xprivs: Triple<string>;
 } {
-  const keys = utxolib.testutil.getKeyTriple(seed);
+  const keys = getKeyTriple(seed);
   return {
     xpubs: keys.map((k) => k.neutered().toBase58()) as Triple<string>,
     xprivs: keys.map((k) => k.toBase58()) as Triple<string>,
@@ -25,12 +27,14 @@ function createTestWalletKeys(seed: string): {
 }
 
 function getDerivedPubkeys(seed: string, chain: number, index: number): Triple<string> {
-  const keys = utxolib.testutil.getKeyTriple(seed);
-  return keys.map((k) => k.derivePath(`m/0/0/${chain}/${index}`).publicKey.toString('hex')) as Triple<string>;
+  const keys = getKeyTriple(seed);
+  return keys.map((k) =>
+    Buffer.from(k.derivePath(`m/0/0/${chain}/${index}`).publicKey).toString('hex')
+  ) as Triple<string>;
 }
 
 function getAddress(walletKeys: fixedScriptWallet.RootWalletKeys, chain: number, index: number): string {
-  return fixedScriptWallet.address(walletKeys, chain, index, utxolib.networks.bitcoin);
+  return fixedScriptWallet.address(walletKeys, chain, index, 'btc');
 }
 
 describe('BIP322', function () {
@@ -376,8 +380,8 @@ describe('BIP322', function () {
         scriptId: { chain, index },
         rootWalletKeys: walletKeys,
       });
-      psbt.sign(0, BIP32.fromBase58(xprivs[0]));
-      psbt.sign(0, BIP32.fromBase58(xprivs[2]));
+      psbt.sign(BIP32.fromBase58(xprivs[0]));
+      psbt.sign(BIP32.fromBase58(xprivs[2]));
 
       const pubkeys = getDerivedPubkeys(seed, chain, index);
       const address = getAddress(walletKeys, chain, index);
@@ -403,18 +407,100 @@ describe('BIP322', function () {
     });
   });
 
-  describe('utxolib verification stack - wasm-utxo respects input.sighashType', function () {
-    // This test verifies that wasm-utxo correctly respects the input.sighashType field
-    // when creating musig2 partial signatures.
-    //
-    // Previously (before fix), wasm-utxo would always create signatures with SIGHASH_DEFAULT (0)
-    // regardless of the input.sighashType field, causing validation to fail.
-    //
-    // Now (after fix), wasm-utxo reads input.sighashType and creates signatures with the
-    // correct sighash type, allowing validation to succeed.
+  describe('BIP322 Proof', function () {
+    const message = 'I can believe it is not butter';
+    const chain = 10;
+    const index = 0;
+    const { xpubs, xprivs } = createTestWalletKeys('bip322-proof');
+    const walletKeys = fixedScriptWallet.RootWalletKeys.from(xpubs);
 
-    it('should validate signatures when wasm-utxo respects input.sighashType', function () {
+    function createUnsignedPsbt(): fixedScriptWallet.BitGoPsbt {
+      const psbt = fixedScriptWallet.BitGoPsbt.createEmpty('btc', walletKeys, { version: 0 });
+      wasmBip322.addBip322Input(psbt, { message, scriptId: { chain, index }, rootWalletKeys: walletKeys });
+      return psbt;
+    }
+
+    function assertCommon(result: ReturnType<typeof explainPsbtWasm>, expectedSignerCount: number): void {
+      assert.strictEqual(result.outputAmount, '0');
+      assert.strictEqual(result.changeAmount, '0');
+      assert.strictEqual(result.outputs.length, 1);
+      assert.strictEqual(result.outputs[0].address, 'scriptPubKey:6a');
+      assert.strictEqual(result.fee, '0');
+      for (const input of result.inputs) {
+        const signerCount = Object.values(input.signedBy).filter(Boolean).length;
+        assert.strictEqual(signerCount, expectedSignerCount);
+      }
+      assert.ok(result.messages);
+      for (const obj of result.messages ?? []) {
+        assert.ok(obj.address);
+        assert.strictEqual(obj.message, message);
+      }
+    }
+
+    it('should successfully run with a user nonce', function () {
+      const psbt = createUnsignedPsbt();
+      assertCommon(explainPsbtWasm(psbt, walletKeys, { replayProtection: { publicKeys: [] } }), 0);
+    });
+
+    it('should successfully run with a user signature', function () {
+      const psbt = createUnsignedPsbt();
+      psbt.sign(BIP32.fromBase58(xprivs[0]));
+      assertCommon(explainPsbtWasm(psbt, walletKeys, { replayProtection: { publicKeys: [] } }), 1);
+    });
+
+    it('should successfully run with a hsm signature', function () {
+      const psbt = createUnsignedPsbt();
+      psbt.sign(BIP32.fromBase58(xprivs[0]));
+      psbt.sign(BIP32.fromBase58(xprivs[2]));
+      assertCommon(explainPsbtWasm(psbt, walletKeys, { replayProtection: { publicKeys: [] } }), 2);
+    });
+  });
+
+  describe('p2trMusig2 BIP322 signing', function () {
+    it('should produce verifiable musig2 signatures', function () {
       const seed = 'p2trMusig2_sighash_test';
+      const { xpubs, xprivs } = createTestWalletKeys(seed);
+      const walletKeys = fixedScriptWallet.RootWalletKeys.from(xpubs);
+
+      const chain = 40; // p2trMusig2 external
+      const index = 0;
+      const messageText = 'BIP322 sighash test';
+
+      const psbt = fixedScriptWallet.BitGoPsbt.createEmpty('btc', walletKeys, { version: 0 });
+      wasmBip322.addBip322Input(psbt, {
+        message: messageText,
+        scriptId: { chain, index },
+        rootWalletKeys: walletKeys,
+        signPath: { signer: 'user', cosigner: 'bitgo' },
+      });
+
+      const userKey = BIP32.fromBase58(xprivs[0]);
+      const bitgoKey = BIP32.fromBase58(xprivs[2]);
+      psbt.generateMusig2Nonces(userKey);
+      psbt.generateMusig2Nonces(bitgoKey);
+      psbt.sign(userKey);
+      psbt.sign(bitgoKey);
+
+      const signers = wasmBip322.verifyBip322PsbtInput(psbt, 0, {
+        message: messageText,
+        scriptId: { chain, index },
+        rootWalletKeys: walletKeys,
+      });
+      assert.ok(signers.includes('user'));
+      assert.ok(signers.includes('bitgo'));
+    });
+  });
+
+  describe('utxolib interoperability - wasm-utxo can verify utxolib-generated BIP322 proofs', function () {
+    // This test verifies cross-library compatibility:
+    // 1. utxo-core (utxolib) creates a BIP322 PSBT
+    // 2. wasm-utxo signs it with musig2
+    // 3. utxo-core validates the wasm-utxo signatures
+    //
+    // This ensures that wasm-utxo and utxolib generate compatible BIP322 proofs.
+
+    it('should sign utxolib-created BIP322 PSBT and validate with utxolib', function () {
+      const seed = 'p2trMusig2_utxolib_compat_test';
       const { xprivs } = createTestWalletKeys(seed);
 
       // Create utxolib RootWalletKeys for utxo-core PSBT construction
@@ -423,28 +509,26 @@ describe('BIP322', function () {
       // p2trMusig2 external chain code
       const chain = utxolib.bitgo.getExternalChainCode('p2trMusig2');
       const index = 0;
-      const messageText = 'BIP322 sighash test';
+      const messageText = 'BIP322 utxolib interop test';
 
       // Create BIP322 PSBT using utxo-core
       const psbt = coreBip322.createBaseToSignPsbt(utxolibRootWalletKeys, utxolib.networks.bitcoin);
-      coreBip322.addBip322InputWithChainAndIndex(psbt, messageText, utxolibRootWalletKeys, { chain, index });
+      coreBip322.addBip322InputWithChainAndIndex(psbt, messageText, utxolibRootWalletKeys, {
+        chain,
+        index,
+      });
 
-      // Note: utxo-core sets sighashType: Transaction.SIGHASH_ALL (1) for BIP322 inputs
-      const SIGHASH_ALL = 1;
-      assert.strictEqual(psbt.data.inputs[0].sighashType, SIGHASH_ALL);
-
-      // Convert to wasm-utxo PSBT for cosigning
+      // Convert to wasm-utxo PSBT for signing
       const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(psbt.toBuffer(), 'btc');
 
       // Generate musig2 nonces and sign with wasm-utxo
-      // wasm-utxo now respects input.sighashType and creates signatures with SIGHASH_ALL
       const userKey = BIP32.fromBase58(xprivs[0]);
       const bitgoKey = BIP32.fromBase58(xprivs[2]);
 
       wasmPsbt.generateMusig2Nonces(userKey);
       wasmPsbt.generateMusig2Nonces(bitgoKey);
-      wasmPsbt.sign(0, userKey);
-      wasmPsbt.sign(0, bitgoKey);
+      wasmPsbt.sign(userKey);
+      wasmPsbt.sign(bitgoKey);
 
       // Convert back to utxolib PSBT for validation
       const signedPsbt = utxolib.bitgo.createPsbtFromBuffer(
@@ -452,8 +536,7 @@ describe('BIP322', function () {
         utxolib.networks.bitcoin
       );
 
-      // Validation should succeed because wasm-utxo now creates signatures
-      // with the correct sighash type (SIGHASH_ALL) matching input.sighashType
+      // Validation should succeed - wasm-utxo signatures are compatible with utxolib
       const validationResult = utxolib.bitgo.getSignatureValidationArrayPsbt(signedPsbt, utxolibRootWalletKeys);
 
       // Verify that both user (index 0) and bitgo (index 2) signatures are valid

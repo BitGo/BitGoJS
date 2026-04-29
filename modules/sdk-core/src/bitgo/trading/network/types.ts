@@ -125,7 +125,7 @@ export type GetNetworkAllocationByIdResponse = {
 };
 
 export type PrepareNetworkAllocationParams = Omit<CreateNetworkAllocationParams, 'payload' | 'signature'> & {
-  walletPassphrase?: string;
+  walletPassphrase: string;
   clientExternalId?: string;
   nonce?: string;
 };
