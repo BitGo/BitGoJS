@@ -2080,6 +2080,42 @@ export const allCoinsAndTokens = [
     [...SONEIUM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
+    '7596838b-e1c5-4072-a173-b91a7b5cb7de',
+    'scrolleth',
+    'Scroll',
+    Networks.main.scrolleth,
+    18,
+    UnderlyingAsset.SCROLLETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    '406827a0-9bf8-4f83-ae94-bcf22d8ecf6a',
+    'tscrolleth',
+    'Scroll Sepolia Testnet',
+    Networks.test.scrolleth,
+    18,
+    UnderlyingAsset.SCROLLETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
     '1bf486a9-47ed-4bea-8e9a-a23a074cdc9a',
     'tstt',
     'Somnia Testnet',

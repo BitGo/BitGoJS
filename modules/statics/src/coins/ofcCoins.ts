@@ -367,6 +367,15 @@ export const ofcCoins = [
     UnderlyingAsset.INKETH,
     CoinKind.CRYPTO
   ),
+  ofc('f58a94a1-9f67-423a-bfd0-298f1b2411d8', 'ofcscrolleth', 'Scroll', 18, UnderlyingAsset.SCROLLETH, CoinKind.CRYPTO),
+  tofc(
+    '2995fd87-c9b8-4541-a112-17b0f9f74bfc',
+    'ofctscrolleth',
+    'Scroll Sepolia Testnet',
+    18,
+    UnderlyingAsset.SCROLLETH,
+    CoinKind.CRYPTO
+  ),
   ofc(
     'bdab1ab0-215d-4d59-b698-7cc624e5027a',
     'ofchemieth',

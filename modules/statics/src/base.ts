@@ -108,6 +108,7 @@ export enum CoinFamily {
   OSMO = 'osmo',
   PLUME = 'plume',
   RBTC = 'rbtc',
+  SCROLLETH = 'scrolleth', // Scroll L2
   SGB = 'sgb',
   SEI = 'sei',
   SEIEVM = 'seievm',
@@ -657,6 +658,7 @@ export enum UnderlyingAsset {
   HYPEEVM = 'hypeevm',
   HYPERLIQUID = 'hyperliquid', // HyperCore L1
   RBTC = 'rbtc', // RSK main coin
+  SCROLLETH = 'scrolleth', // Scroll L2
   SEI = 'sei',
   SEIEVM = 'seievm',
   SGB = 'sgb',
