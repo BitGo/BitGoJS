@@ -126,6 +126,22 @@ export const ofcCoins = [
     CoinKind.CRYPTO
   ),
   ofc('3977b3bd-abf2-476b-9d2a-4666d3b0aa10', 'ofcosmo', 'Osmosis', 6, UnderlyingAsset.OSMO, CoinKind.CRYPTO),
+  ofc(
+    'd99c0388-f72c-4673-b2ec-e063df412a0b',
+    'ofckavacosmos',
+    'Kava Cosmos',
+    6,
+    UnderlyingAsset.KAVACOSMOS,
+    CoinKind.CRYPTO
+  ),
+  ofc(
+    '67d3bade-7a8d-486d-8148-4d03ce7d72fa',
+    'ofcdydxcosmos',
+    'dYdX Cosmos',
+    18,
+    UnderlyingAsset.DYDXCOSMOS,
+    CoinKind.CRYPTO
+  ),
   ofc('5958e6e9-c6d7-4372-8d1d-c681f595c481', 'ofchash', 'Provenance', 9, UnderlyingAsset.HASH, CoinKind.CRYPTO),
   ofc('4616eb4e-9244-449c-a503-02cb2d715b2c', 'ofcsei', 'Sei', 6, UnderlyingAsset.SEI, CoinKind.CRYPTO),
   ofc('50a00889-47d2-44b5-8dc8-1fb3b4f47b86', 'ofczeta', 'Zeta', 18, UnderlyingAsset.ZETA, CoinKind.CRYPTO),
@@ -874,6 +890,22 @@ export const ofcCoins = [
     CoinKind.CRYPTO
   ),
   tofc('1573da4d-15a8-4dae-9368-84ec0507e251', 'ofctosmo', 'Testnet Osmosis', 6, UnderlyingAsset.OSMO, CoinKind.CRYPTO),
+  tofc(
+    '0bf91684-4e28-4472-84d2-309973e3a2e8',
+    'ofctkavacosmos',
+    'Testnet Kava Cosmos',
+    6,
+    UnderlyingAsset.KAVACOSMOS,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    'a08b329b-65b6-47d8-9c65-877850f784b8',
+    'ofctdydxcosmos',
+    'Testnet dYdX Cosmos',
+    18,
+    UnderlyingAsset.DYDXCOSMOS,
+    CoinKind.CRYPTO
+  ),
   tofc(
     '4bbb64d1-6bd2-4c53-8be0-f99229362c3d',
     'ofcthash',
