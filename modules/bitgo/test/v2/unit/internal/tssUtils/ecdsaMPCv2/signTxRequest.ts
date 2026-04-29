@@ -263,6 +263,122 @@ describe('signTxRequest:', function () {
     nockPromises[2].isDone().should.be.true();
   });
 
+  describe('v2 encryption (offline rounds with adata)', function () {
+    it('e2e: 3-round offline signing with v2 encrypted keys preserves adata context binding', async function () {
+      const walletPassphrase = 'testpassphrase';
+      const userShare = fs.readFileSync(shareFiles[vector.party1]);
+      const userPrvBase64 = Buffer.from(userShare).toString('base64');
+
+      // Encrypt the prv with v2 to trigger the v2 path
+      const encryptedPrv = await bitgo.encryptAsync({
+        input: userPrvBase64,
+        password: walletPassphrase,
+        encryptionVersion: 2,
+      });
+      JSON.parse(encryptedPrv).v.should.equal(2);
+
+      // Round 1: encrypt session + GPG key with v2 + adata (purely local, no server call)
+      const round1Result = await tssUtils.createOfflineRound1Share({
+        txRequest,
+        prv: userPrvBase64,
+        walletPassphrase,
+        encryptedPrv,
+      });
+
+      // Verify round 1 output has v2 envelopes with adata
+      const r1SessionEnvelope = JSON.parse(round1Result.encryptedRound1Session);
+      r1SessionEnvelope.v.should.equal(2);
+      r1SessionEnvelope.should.have.property('adata');
+      r1SessionEnvelope.should.have.property('hkdfSalt');
+
+      const r1GpgEnvelope = JSON.parse(round1Result.encryptedUserGpgPrvKey);
+      r1GpgEnvelope.v.should.equal(2);
+      r1GpgEnvelope.should.have.property('adata');
+      r1SessionEnvelope.adata.should.equal(r1GpgEnvelope.adata);
+
+      // Nock BitGo round 1 response and submit
+      await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequest, bitgoGpgKey);
+      const transactions = getRoute('ecdsa');
+      const round1TxRequestResponse = await bitgo
+        .post(bitgo.url(`/wallet/${txRequest.walletId}/txrequests/${txRequest.txRequestId + transactions}/sign`, 2))
+        .send({
+          signatureShares: [round1Result.signatureShareRound1],
+          signerGpgPublicKey: round1Result.userGpgPubKey,
+        })
+        .result();
+
+      // Merge server response with original txRequest (server only returns signatureShares)
+      const round1TxReq: TxRequest = {
+        ...txRequest,
+        transactions: [
+          {
+            ...txRequest.transactions![0],
+            signatureShares: round1TxRequestResponse.transactions[0].signatureShares,
+          },
+        ],
+      };
+
+      // Round 2: decrypt v2 round 1 session (validates adata), encrypt round 2 session
+      const round2Result = await tssUtils.createOfflineRound2Share({
+        txRequest: round1TxReq,
+        prv: userPrvBase64,
+        walletPassphrase,
+        bitgoPublicGpgKey: bitgoGpgKey.publicKey,
+        encryptedUserGpgPrvKey: round1Result.encryptedUserGpgPrvKey,
+        encryptedRound1Session: round1Result.encryptedRound1Session,
+      });
+
+      // Verify round 2 output has v2 envelope with adata
+      const r2Envelope = JSON.parse(round2Result.encryptedRound2Session);
+      r2Envelope.v.should.equal(2);
+      r2Envelope.should.have.property('adata');
+      r2Envelope.adata.should.equal(r1SessionEnvelope.adata);
+
+      // Nock BitGo round 2 response and submit
+      await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequest, bitgoGpgKey);
+      const round2TxRequestResponse = await bitgo
+        .post(bitgo.url(`/wallet/${txRequest.walletId}/txrequests/${txRequest.txRequestId + transactions}/sign`, 2))
+        .send({
+          signatureShares: [round2Result.signatureShareRound2],
+          signerGpgPublicKey: round1Result.userGpgPubKey,
+        })
+        .result();
+
+      const round2TxReq: TxRequest = {
+        ...txRequest,
+        transactions: [
+          {
+            ...txRequest.transactions![0],
+            signatureShares: round2TxRequestResponse.transactions[0].signatureShares,
+          },
+        ],
+      };
+
+      // Round 3: decrypt v2 round 2 session (validates adata), produce final signature share
+      const round3Result = await tssUtils.createOfflineRound3Share({
+        txRequest: round2TxReq,
+        prv: userPrvBase64,
+        walletPassphrase,
+        bitgoPublicGpgKey: bitgoGpgKey.publicKey,
+        encryptedUserGpgPrvKey: round1Result.encryptedUserGpgPrvKey,
+        encryptedRound2Session: round2Result.encryptedRound2Session,
+      });
+
+      round3Result.should.have.property('signatureShareRound3');
+    });
+
+    it('validateAdata rejects v2 envelopes with mismatched adata', async function () {
+      const ct = await bitgo.encryptAsync({
+        input: 'test-data',
+        password: 'testpass',
+        encryptionVersion: 2,
+        adata: 'context-A',
+      });
+
+      (() => (tssUtils as any).validateAdata('context-B', ct)).should.throw(/Adata does not match/);
+    });
+  });
+
   it('fails to signs a txRequest for a dkls hot wallet after receiving over 3 429 errors', async function () {
     const nockPromises = [
       await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequest, bitgoGpgKey),

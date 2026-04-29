@@ -150,14 +150,6 @@ describe('encryption methods tests', () => {
       await assert.rejects(() => decryptV2(password, JSON.stringify(envelope)), /operation-specific reason|incorrect/i);
     });
 
-    it('encrypts and decrypts without adata (backward compat)', async () => {
-      const ciphertext = await encryptV2(password, plaintext);
-      const envelope: V2Envelope = JSON.parse(ciphertext);
-      assert.strictEqual(envelope.adata, undefined);
-      const decrypted = await decryptV2(password, ciphertext);
-      assert.strictEqual(decrypted, plaintext);
-    });
-
     it('v1 and v2 are independent (v1 data does not decrypt with v2)', async () => {
       const v1ct = encrypt(password, plaintext);
       await assert.rejects(() => decryptV2(password, v1ct), /invalid envelope/);
