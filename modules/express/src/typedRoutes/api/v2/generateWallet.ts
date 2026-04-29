@@ -9,39 +9,39 @@ import { multisigType, walletType } from '../../schemas/wallet';
  * Request body for wallet generation.
  */
 export const GenerateWalletBody = {
-  /** Wallet label */
+  /** Wallet label (example: "My Wallet") */
   label: t.string,
-  /** Enterprise id. This is required for Ethereum wallets since they can only be created as part of an enterprise. Optional for other coins. */
+  /** Enterprise id. This is required for Ethereum wallets since they can only be created as part of an enterprise */
   enterprise: optional(t.string),
   /** If absent, BitGo uses the default wallet type for the asset. This is relevant only for assets that support both multisignature (`onchain`) and MPC (`tss`) on the BitGo platform. These assets are: `arbeth`, `eth`, `opeth`, `polygon`, and `soneium`. These assets all default to `tss`. */
   multisigType: optional(multisigType),
-  /** The type of wallet, defined by key management and signing protocols. 'hot' and 'cold' are both self-managed wallets. If absent, defaults to 'hot' */
+  /** The type of wallet, defined by key management and signing protocols. 'hot' and 'cold' are both self-managed wallets. If absent, defaults to 'hot'. 'trading' for Go Account wallets. */
   type: optional(walletType),
   /** Passphrase to be used to encrypt the user key on the wallet */
   passphrase: optional(t.string),
   /** User provided public key */
   userKey: optional(t.string),
-  /** Backup extended public key */
+  /** Public part of a key pair (example: xpub661MyMwAqRbcGMVhmc7wqQRYMtcX9LAvSj1pjB213y5TsrkV2uuzJjWnjBrT1FUeNWGPjaVm5p7o6jdNcQJrV1cy3a1R8NQ9m7LuYKA8RpH) */
   backupXpub: optional(t.string),
-  /** Key Recovery Service provider (e.g., 'dai') for backup key management. Creates instant-capable wallets with professional key management. Cannot be combined with backupXpub. */
+  /** Optional key recovery service to provide and store the backup key */
   backupXpubProvider: optional(t.literal('dai')),
   /** Flag for disabling wallet transaction notifications */
   disableTransactionNotifications: optional(t.boolean),
   /** The passphrase used for decrypting the encrypted wallet passphrase during wallet recovery */
   passcodeEncryptionCode: optional(t.string),
-  /** Seed that derives an extended user key or common keychain for a cold wallet */
+  /** Seed that derives an extended user key or common keychain for a cold wallet. */
   coldDerivationSeed: optional(t.string),
-  /** Gas price (in wei) to use when deploying an Ethereum wallet */
+  /** Gas price to use when deploying an Ethereum wallet */
   gasPrice: optional(t.number),
   /** Flag for preventing KRS from sending email after creating backup key */
   disableKRSEmail: optional(t.boolean),
-  /** Specify the wallet creation contract version (0-6). 0: old wallet creation, 1: new wallet creation (default), 2: v1 with NFT support, 3: MPC wallets, 4: EVM-compatible chains, 5: MPC MPCv2, 6: EVM MPCv2 with receive addresses */
+  /** (ETH only) Specify the wallet creation contract version used when creating a wallet contract. Use 0 for the old wallet creation, 1 for the new wallet creation, where it is only deployed upon receiving funds. 2 for wallets with the same functionality as v1 but with NFT support. 3 for MPC wallets. 4 is same as v2 but with some changes related to network identifier and encoding of tx data. v4 is applicable for Arbitrum, Optimism, ZkSync, and other EVM-compatible chains that we will onboard in the future. 5 for MPC MPCv2 wallets. 6 for EVM MPCv2 wallets with receive addresses. */
   walletVersion: optional(t.number),
-  /** True, if the wallet type is a distributed-custodial. If passed, you must also pass the 'enterprise' parameter */
+  /** True, if the wallet type is a distributed-custodial. If passed, you must also pass the 'enterprise' parameter. */
   isDistributedCustody: optional(t.boolean),
-  /** BitGo key ID for self-managed cold MPC wallets */
+  /** BitGo key ID for self-managed cold MPC wallets. */
   bitgoKeyId: optional(t.string),
-  /** Common keychain for self-managed cold MPC wallets */
+  /** Common keychain for self-managed cold MPC wallets. */
   commonKeychain: optional(t.string),
 } as const;
 
