@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.42.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.41.0...@bitgo/sdk-core@36.42.0) (2026-04-28)
+
+
+### Bug Fixes
+
+* add EdDSA MPCv2 chain code support for address derivation ([8f41533](https://github.com/BitGo/BitGoJS/commit/8f415331d664b0afc692fb2abefac2a95ceaa751))
+* lazy-load wasm-mps to fix browser wasn initialisation ([b2ca8df](https://github.com/BitGo/BitGoJS/commit/b2ca8dfb7f88d297ddc07a73e30844da491a5f94))
+* **sdk-core:** verify recipients before signing (ECDSA) ([1f55399](https://github.com/BitGo/BitGoJS/commit/1f553991806987d0c2a568dcd046b40e3536df93))
+* **sdk-core:** verify recipients before signing to prevent signableHex substitution ([31cbea7](https://github.com/BitGo/BitGoJS/commit/31cbea7fe2aa0a12279147b410dc748d322aa4a9))
+* surface error details in sendAccountConsolidations failure array ([6c9caf3](https://github.com/BitGo/BitGoJS/commit/6c9caf3d2a675212441f8ceb3ccbd166343d3c2d))
+
+
+### Features
+
+* **sdk-coin-sol:** add ATA closure support for Solana wallets ([89150c9](https://github.com/BitGo/BitGoJS/commit/89150c986ab06966cc1fea84242a7b1b07ccc903))
+* **sdk-core:** added OFC BitGo signing on trading accounts object ([ded3b89](https://github.com/BitGo/BitGoJS/commit/ded3b89b2212ab2518135e9967f0a1a110a71f70))
+* **sdk-core:** added OFC BitGo signing on wallet and coins object ([c5a372d](https://github.com/BitGo/BitGoJS/commit/c5a372d14a72406a94188ff0a3b55f3db08527a7))
+* **sdk-core:** make wallet passphrase optioanl for prepareAllocation ([5045e63](https://github.com/BitGo/BitGoJS/commit/5045e637d855e36790d57b48100bce46017fad94))
+
+
+
+
+
 # [36.41.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.40.0...@bitgo/sdk-core@36.41.0) (2026-04-22)
 
 

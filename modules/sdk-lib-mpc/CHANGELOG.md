@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [10.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.11.0...@bitgo/sdk-lib-mpc@10.11.1) (2026-04-28)
+
+
+### Bug Fixes
+
+* add EdDSA MPCv2 chain code support for address derivation ([8f41533](https://github.com/BitGo/BitGoJS/commit/8f415331d664b0afc692fb2abefac2a95ceaa751))
+* lazy-load wasm-mps to fix browser wasn initialisation ([b2ca8df](https://github.com/BitGo/BitGoJS/commit/b2ca8dfb7f88d297ddc07a73e30844da491a5f94))
+
+
+
+
+
 # [10.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.10.2...@bitgo/sdk-lib-mpc@10.11.0) (2026-04-22)
 
 

@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.34.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.33.0...bitgo@50.34.0) (2026-04-28)
+
+
+### Bug Fixes
+
+* add EdDSA MPCv2 chain code support for address derivation ([8f41533](https://github.com/BitGo/BitGoJS/commit/8f415331d664b0afc692fb2abefac2a95ceaa751))
+* **sdk-core:** verify recipients before signing (ECDSA) ([1f55399](https://github.com/BitGo/BitGoJS/commit/1f553991806987d0c2a568dcd046b40e3536df93))
+* **sdk-core:** verify recipients before signing to prevent signableHex substitution ([31cbea7](https://github.com/BitGo/BitGoJS/commit/31cbea7fe2aa0a12279147b410dc748d322aa4a9))
+* surface error details in sendAccountConsolidations failure array ([6c9caf3](https://github.com/BitGo/BitGoJS/commit/6c9caf3d2a675212441f8ceb3ccbd166343d3c2d))
+
+
+### Features
+
+* **sdk-coin-kaspa:** wire Kaspa into coin factory and account-lib ([43d7ecd](https://github.com/BitGo/BitGoJS/commit/43d7ecdd5820a16758f43f02a1f96033f46d06c3))
+
+
+
+
+
 # [50.33.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.32.0...bitgo@50.33.0) (2026-04-22)
 
 

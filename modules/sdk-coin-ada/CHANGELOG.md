@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.24.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.24.0...@bitgo/sdk-coin-ada@4.24.1) (2026-04-28)
+
+
+### Bug Fixes
+
+* **sdk-coin-ada:** allowing fee address for sponsored tokens ([d22bc1c](https://github.com/BitGo/BitGoJS/commit/d22bc1ce22b36fb047c33e7dd36a02c42e569d51))
+
+
+
+
+
 # [4.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.23.3...@bitgo/sdk-coin-ada@4.24.0) (2026-04-22)
 
 

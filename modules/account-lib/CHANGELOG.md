@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.20.4...@bitgo/account-lib@27.21.0) (2026-04-28)
+
+
+### Features
+
+* **sdk-coin-kaspa:** wire Kaspa into coin factory and account-lib ([43d7ecd](https://github.com/BitGo/BitGoJS/commit/43d7ecdd5820a16758f43f02a1f96033f46d06c3))
+
+
+
+
+
 ## [27.20.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.20.3...@bitgo/account-lib@27.20.4) (2026-04-22)
 
 **Note:** Version bump only for package @bitgo/account-lib

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.18.4...@bitgo/sdk-coin-canton@1.19.0) (2026-04-28)
+
+
+### Features
+
+* **sdk-coin-canton:** added 1-step txn in verifyTransaction method ([8b5c8ef](https://github.com/BitGo/BitGoJS/commit/8b5c8ef5fab2a014a00146cb3ce8d81fe88a5d4a))
+
+
+
+
+
 ## [1.18.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.18.3...@bitgo/sdk-coin-canton@1.18.4) (2026-04-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-canton

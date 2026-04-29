@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.38.0...@bitgo/utxo-staking@1.38.1) (2026-04-28)
+
+
+### Bug Fixes
+
+* **utxo-staking:** update error message expectation for wasm-utxo 4.7.0 ([64e8238](https://github.com/BitGo/BitGoJS/commit/64e82386af37c07a9f83fb59d7d8cb25eb798d89))
+
+
+
+
+
 # [1.38.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.37.1...@bitgo/utxo-staking@1.38.0) (2026-04-10)
 
 

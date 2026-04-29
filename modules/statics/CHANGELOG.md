@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.37.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.36.0...@bitgo/statics@58.37.0) (2026-04-28)
+
+
+### Bug Fixes
+
+* **statics:** add account explorer url for near ([761f39c](https://github.com/BitGo/BitGoJS/commit/761f39ccaee36e555e8fdbe2fa7e644608ef001b))
+* **statics:** handle undefined coin.network ([8a2e932](https://github.com/BitGo/BitGoJS/commit/8a2e9323aa037ff35622cfc745a4ae636c8ba7d4))
+
+
+### Features
+
+* **sdk-coin-canton:** enabling unspents tab for cc ([c1764a6](https://github.com/BitGo/BitGoJS/commit/c1764a6d48bd2bf83e9381396e9add136fdad63b))
+* **statics:** onboard COIN-7835 batch tokens ([d226ed3](https://github.com/BitGo/BitGoJS/commit/d226ed375e17d3b0cec3d82c2eeb72f615523379))
+* **statics:** onboard COIN-7835 batch tokens (v2 additions) ([b9d20ea](https://github.com/BitGo/BitGoJS/commit/b9d20eaf2360f63c96e105891c2115a7383a9cf1))
+* **statics:** onboard tabstracteth:tmt ERC20 token ([f61e2c4](https://github.com/BitGo/BitGoJS/commit/f61e2c47d3adff28b00bfad9aa019a6702eafd96))
+
+
+
+
+
 # [58.36.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.35.0...@bitgo/statics@58.36.0) (2026-04-22)
 
 

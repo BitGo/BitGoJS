@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.18.4...@bitgo/sdk-coin-sol@7.19.0) (2026-04-28)
+
+
+### Features
+
+* **sdk-coin-sol:** add ATA closure support for Solana wallets ([89150c9](https://github.com/BitGo/BitGoJS/commit/89150c986ab06966cc1fea84242a7b1b07ccc903))
+
+
+
+
+
 ## [7.18.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.18.3...@bitgo/sdk-coin-sol@7.18.4) (2026-04-22)
 
 
