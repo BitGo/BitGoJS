@@ -1,7 +1,8 @@
-import { fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { fixedScriptWallet, bip322 } from '@bitgo/wasm-utxo';
 import { Triple } from '@bitgo/sdk-core';
 
 import type { FixedScriptWalletOutput, Output, BitGoPsbt } from '../types';
+import type { Bip322Message } from '../../abstractUtxoCoin';
 
 import type { TransactionExplanationWasm } from './explainTransaction';
 
@@ -49,6 +50,8 @@ interface ExplainPsbtWasmParams {
 export interface ExplainedInput<TAmount = bigint> {
   address: string;
   value: TAmount;
+  scriptId: fixedScriptWallet.ScriptId | null;
+  signedBy: { [key: string]: boolean };
 }
 
 export interface TransactionExplanationBigInt {
@@ -64,9 +67,28 @@ export interface TransactionExplanationBigInt {
   fee: bigint;
 }
 
+function getSignedByForInput(
+  psbt: BitGoPsbt,
+  inputIndex: number,
+  walletXpubs: fixedScriptWallet.RootWalletKeys,
+  replayProtectionPublicKeys: Buffer[],
+  scriptId: fixedScriptWallet.ScriptId | null
+): { [key: string]: boolean } {
+  if (scriptId !== null) {
+    return {
+      user: psbt.verifySignature(inputIndex, walletXpubs.userKey()),
+      backup: psbt.verifySignature(inputIndex, walletXpubs.backupKey()),
+      bitgo: psbt.verifySignature(inputIndex, walletXpubs.bitgoKey()),
+    };
+  }
+  return Object.fromEntries(
+    replayProtectionPublicKeys.map((key, j) => [`replayProtection${j}`, psbt.verifySignature(inputIndex, key)])
+  );
+}
+
 export function explainPsbtWasmBigInt(
   psbt: BitGoPsbt,
-  walletXpubs: Triple<string> | fixedScriptWallet.RootWalletKeys,
+  walletXpubs: fixedScriptWallet.RootWalletKeys,
   params: ExplainPsbtWasmParams
 ): TransactionExplanationBigInt {
   const parsed = psbt.parseTransactionWithWalletKeys(walletXpubs, { replayProtection: params.replayProtection });
@@ -92,7 +114,12 @@ export function explainPsbtWasmBigInt(
     }
   });
 
-  const inputs = parsed.inputs.map((input) => ({ address: input.address, value: input.value }));
+  const inputs = parsed.inputs.map((input, i) => ({
+    address: input.address,
+    value: input.value,
+    scriptId: input.scriptId,
+    signedBy: getSignedByForInput(psbt, i, walletXpubs, params.replayProtection.publicKeys, input.scriptId),
+  }));
   const inputAmount = inputs.reduce((sum, input) => sum + input.value, 0n);
   const outputAmount = outputs.reduce((sum, output) => sum + output.amount, 0n);
   const changeAmount = changeOutputs.reduce((sum, output) => sum + output.amount, 0n);
@@ -120,15 +147,32 @@ function stringifyChangeOutput(output: FixedScriptWalletOutput<bigint>): FixedSc
   return { ...output, amount: output.amount.toString() };
 }
 
+function extractBip322Messages(psbt: BitGoPsbt, inputs: ExplainedInput[]): { messages: Bip322Message[] | undefined } {
+  const messages: Bip322Message[] = inputs.flatMap((input, i) => {
+    const message = bip322.getBip322Message(psbt, i);
+    return message ? [{ message, address: input.address }] : [];
+  });
+
+  if (messages.length === 0) {
+    return { messages: undefined };
+  }
+
+  return { messages };
+}
+
 export function explainPsbtWasm(
   psbt: BitGoPsbt,
   walletXpubs: Triple<string> | fixedScriptWallet.RootWalletKeys,
   params: ExplainPsbtWasmParams
 ): TransactionExplanationWasm {
-  const result = explainPsbtWasmBigInt(psbt, walletXpubs, params);
+  const result = explainPsbtWasmBigInt(psbt, fixedScriptWallet.RootWalletKeys.from(walletXpubs), params);
+  const inputs = result.inputs.map((i) => ({ address: i.address, value: i.value.toString(), signedBy: i.signedBy }));
+
+  const { messages } = extractBip322Messages(psbt, result.inputs);
+
   return {
     id: result.id,
-    inputs: result.inputs.map((i) => ({ address: i.address, value: i.value.toString() })),
+    inputs,
     inputAmount: result.inputAmount.toString(),
     outputAmount: result.outputAmount.toString(),
     changeAmount: result.changeAmount.toString(),
@@ -137,6 +181,7 @@ export function explainPsbtWasm(
     changeOutputs: result.changeOutputs.map(stringifyChangeOutput),
     customChangeOutputs: result.customChangeOutputs.map(stringifyChangeOutput),
     fee: result.fee.toString(),
+    messages,
   };
 }
 

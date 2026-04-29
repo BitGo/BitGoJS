@@ -109,7 +109,7 @@ export class TradingNetwork implements ITradingNetwork {
 
   /**
    * Prepare an allocation for submission
-   * @param {string} walletPassphrase ofc wallet passphrase - required only when signing via user key
+   * @param {string} walletPassphrase ofc wallet passphrase
    * @param {string} connectionId connection to whom to make the allocation or deallocation
    * @param {string=} clientExternalId one time generated uuid v4
    * @param {string} currency currency for which the allocation should be made. e.g. btc / tbtc
@@ -130,7 +130,10 @@ export class TradingNetwork implements ITradingNetwork {
     }
 
     const payload = JSON.stringify(body);
-    const signature = await this.wallet.toTradingAccount().signPayload({ payload, walletPassphrase });
+
+    const prv = await this.wallet.getPrv({ walletPassphrase });
+    const signedBuffer: Buffer = await this.wallet.baseCoin.signMessage({ prv }, payload);
+    const signature = signedBuffer.toString('hex');
 
     return {
       ...body,

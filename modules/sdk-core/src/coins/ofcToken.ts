@@ -9,7 +9,6 @@ import {
   SignTransactionOptions as BaseSignTransactionOptions,
   SignedTransaction,
   ITransactionRecipient,
-  Wallet,
 } from '../';
 import { isBolt11Invoice } from '../lightning';
 
@@ -19,8 +18,7 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: {
     payload: string;
   };
-  prv?: string;
-  wallet?: Wallet;
+  prv: string;
 }
 
 export { OfcTokenConfig };
@@ -109,25 +107,15 @@ export class OfcToken extends Ofc {
   }
 
   /**
-   * Signs a half-signed OFC transaction.
-   * Signs the transaction remotely using the BitGo key if prv is not provided.
+   * Assemble keychain and half-sign prebuilt transaction
    * @param params
    * @returns {Promise<SignedTransaction>}
    */
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
     const txPrebuild = params.txPrebuild;
     const payload = txPrebuild.payload;
-
-    let signature: string;
-    if (params.wallet) {
-      signature = await params.wallet.toTradingAccount().signPayload({ payload, walletPassphrase: params.prv });
-    } else if (params.prv) {
-      const signatureBuffer = (await this.signMessage({ prv: params.prv }, payload)) as any;
-      signature = signatureBuffer.toString('hex');
-    } else {
-      throw new Error('You must pass in either one of wallet or prv');
-    }
-
+    const signatureBuffer = (await this.signMessage(params, payload)) as any;
+    const signature: string = signatureBuffer.toString('hex');
     return { halfSigned: { payload, signature } } as any;
   }
 

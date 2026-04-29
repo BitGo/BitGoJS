@@ -797,7 +797,7 @@ export const botTokens = [
     undefined
   ),
   AccountCtors.erc20(
-    'ffb0d91e-c6d9-4cef-b5ea-f3781a757197',
+    '4bbcfef1-dde0-4931-a5d2-e7da10c8a1c6',
     'eth:krwq',
     'KRWQ',
     18,
@@ -809,7 +809,7 @@ export const botTokens = [
     undefined
   ),
   AccountCtors.erc20(
-    'f940b8f1-4911-4632-94ce-f4c0d950defb',
+    '910c83a4-7a4e-4892-8be6-89a0c3e99394',
     'eth:hybond',
     'HYBOND',
     18,
