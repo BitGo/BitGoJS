@@ -26,6 +26,24 @@ export enum DkgState {
   Complete = 'Complete',
 }
 
+/**
+ * Represents the state of a DSG (Distributed Sign Generation) session.
+ */
+export enum DsgState {
+  /** DSG session has not been initialized */
+  Uninitialized = 'Uninitialized',
+  /** initDsg() has been called; ready for getFirstMessage() */
+  Init = 'Init',
+  /** R0 broadcast emitted; waiting for counterpart's R0 broadcast (SignMsg1) */
+  WaitMsg1 = 'WaitMsg1',
+  /** R1 broadcast emitted; waiting for counterpart's R1 broadcast (SignMsg2) */
+  WaitMsg2 = 'WaitMsg2',
+  /** R2 broadcast emitted; waiting for counterpart's R2 broadcast (SignMsg3, the partial sig) */
+  WaitMsg3 = 'WaitMsg3',
+  /** Final 64-byte Ed25519 signature is available via getSignature() */
+  Complete = 'Complete',
+}
+
 export interface Message<T> {
   payload: T;
   from: number;
