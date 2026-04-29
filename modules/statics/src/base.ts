@@ -142,7 +142,6 @@ export enum CoinFamily {
   SOMI = 'somi', // Somnia Chain
   FLUENTETH = 'fluenteth',
   MORPH = 'morph',
-  MORPHETH = 'morpheth',
   ARCUSDC = 'arcusdc', // ARC network
   TEMPO = 'tempo', // Tempo Network
   UNIETH = 'unieth', // Unichain
@@ -647,7 +646,6 @@ export enum UnderlyingAsset {
   MEGAETH = 'megaeth',
   MON = 'mon',
   MORPH = 'morph',
-  MORPHETH = 'morpheth',
   NEAR = 'near',
   OAS = 'oas',
   OG = 'og',
@@ -2494,15 +2492,9 @@ export enum UnderlyingAsset {
   'eth:yb' = 'eth:yb',
   'eth:btr' = 'eth:btr',
   'morph:usdc' = 'morph:usdc',
-  'morpheth:usdc' = 'morpheth:usdc',
   'morph:usdt' = 'morph:usdt',
-  'morpheth:usdt' = 'morpheth:usdt',
   'morph:usd1' = 'morph:usd1',
-  'morpheth:usd1' = 'morpheth:usd1',
   'tmorph:tmt' = 'tmorph:tmt',
-  'tmorpheth:tmt' = 'tmorpheth:tmt',
-  'tmorpheth:usd1' = 'tmorpheth:usd1',
-  'tmorpheth:stgusd1' = 'tmorpheth:stgusd1',
 
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
