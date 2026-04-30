@@ -73,6 +73,7 @@ module.exports = {
         'WCN-',
         'WCI-',
         'COIN-',
+        'COINFLP-',
         'FIAT-',
         'ME-',
         'ANT-',
