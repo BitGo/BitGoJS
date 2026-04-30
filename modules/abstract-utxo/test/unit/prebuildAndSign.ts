@@ -15,7 +15,6 @@ import {
   getUtxoWallet,
   keychainsBase58,
   getScriptTypes,
-  TxFormat,
 } from './util';
 
 type ScriptType = testutil.InputScriptType;
@@ -58,7 +57,7 @@ const keyDocumentObjects = rootWalletKeys.triple.map((bip32, keyIdx) => {
   };
 });
 
-function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFormat): void {
+function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[]): void {
   function createPrebuildPsbt(inputs: Input[], outputs: { scriptType: 'p2sh'; value: bigint }[]) {
     const psbt = utxolib.testutil.constructPsbt(
       inputs as utxolib.testutil.Input[],
@@ -200,7 +199,6 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
     afterEach(nock.cleanAll);
 
     it('should succeed', async function () {
-      // Check if this wallet/coin combination defaults to psbt
       const defaultTxFormat = coin.getDefaultTxFormat(wallet);
       const nocks = createNocks({
         bgUrl,
@@ -209,7 +207,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
         prebuild,
         recipient,
         addressInfo,
-        nockOutputAddresses: txFormat !== 'psbt',
+        nockOutputAddresses: false,
         txFormat: defaultTxFormat,
       });
 
@@ -228,7 +226,6 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
       it(`should be able to build, sign, & verify a replacement transaction with selfSend: ${selfSend}`, async function () {
         const rbfTxIds = ['tx-to-be-replaced'],
           feeMultiplier = 1.5;
-        // Check if this wallet/coin combination defaults to psbt
         const defaultTxFormat = coin.getDefaultTxFormat(wallet);
         const nocks = createNocks({
           bgUrl,
@@ -240,7 +237,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
           rbfTxIds,
           feeMultiplier,
           selfSend,
-          nockOutputAddresses: txFormat !== 'psbt',
+          nockOutputAddresses: false,
           txFormat: defaultTxFormat,
         });
 
@@ -261,5 +258,5 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
 }
 
 getMinUtxoCoins().forEach((coin) => {
-  run(coin, getScriptTypes(coin, 'psbt'), 'psbt');
+  run(coin, getScriptTypes(coin, 'psbt'));
 });
