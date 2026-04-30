@@ -165,7 +165,8 @@ export async function parseTransaction<TNumber extends bigint | number>(
 
   const keychainArray: Triple<UtxoKeychain> = toKeychainTriple(keychains);
 
-  if (_.isUndefined(txPrebuild.txHex)) {
+  const effectiveTxHex = txPrebuild.txHexPsbt ?? txPrebuild.txHex;
+  if (_.isUndefined(effectiveTxHex)) {
     throw new Error('missing required txPrebuild property txHex');
   }
 
@@ -207,7 +208,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
 
   // obtain all outputs
   const explanation: TransactionExplanation = await coin.explainTransaction<TNumber>({
-    txHex: txPrebuild.txHex,
+    txHex: effectiveTxHex,
     txInfo: txPrebuild.txInfo,
     decodeWith: txPrebuild.decodeWith,
     pubs: keychainArray.map((k) => k.pub) as Triple<string>,

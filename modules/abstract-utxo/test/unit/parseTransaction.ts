@@ -58,7 +58,7 @@ describe('Parse Transaction', function () {
           amount: outputAmount,
         },
       ],
-    } as TransactionExplanation);
+    } as unknown as TransactionExplanation);
 
     if (!txParams.changeAddress) {
       stubVerifyAddress = sinon.stub(coin, 'verifyAddress').throws(new UnexpectedAddressError('test error'));
@@ -122,6 +122,42 @@ describe('Parse Transaction', function () {
     const externalAddress = '2NAuziD75WnPPHJVwnd4ckgY4SuJaDVVbMD';
     return runClassifyOutputsTest(externalAddress, verification, true, {
       recipients: [{ address: externalAddress, amount: outputAmount }],
+    });
+  });
+
+  describe('txHexPsbt (pending approval flow)', function () {
+    it('should pass txHexPsbt to explainTransaction when both txHex and txHexPsbt are present', async function () {
+      stubExplainTransaction = sinon.stub(coin, 'explainTransaction').resolves({
+        outputs: [],
+        changeOutputs: [],
+      } as unknown as TransactionExplanation);
+
+      await coin.parseTransaction({
+        txParams: {},
+        txPrebuild: { txHex: 'legacy-hex', txHexPsbt: 'psbt-hex' },
+        wallet: wallet as unknown as UtxoWallet,
+        verification,
+      });
+
+      assert.strictEqual(stubExplainTransaction.callCount, 1);
+      assert.strictEqual(stubExplainTransaction.getCall(0).args[0].txHex, 'psbt-hex');
+    });
+
+    it('should fall back to txHex when txHexPsbt is absent', async function () {
+      stubExplainTransaction = sinon.stub(coin, 'explainTransaction').resolves({
+        outputs: [],
+        changeOutputs: [],
+      } as unknown as TransactionExplanation);
+
+      await coin.parseTransaction({
+        txParams: {},
+        txPrebuild: { txHex: 'legacy-hex' },
+        wallet: wallet as unknown as UtxoWallet,
+        verification,
+      });
+
+      assert.strictEqual(stubExplainTransaction.callCount, 1);
+      assert.strictEqual(stubExplainTransaction.getCall(0).args[0].txHex, 'legacy-hex');
     });
   });
 });

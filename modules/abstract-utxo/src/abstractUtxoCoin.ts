@@ -259,6 +259,12 @@ export interface TransactionPrebuild<TNumber extends number | bigint = number> e
   txInfo?: TransactionInfo<TNumber>;
   blockHeight?: number;
   decodeWith?: SdkBackend;
+  /**
+   * PSBT-lite hex present only in pending approval flows, where another user's send fixed the format.
+   * Not set in regular /tx/build responses (where the caller controls the build parameters).
+   * Preferred over txHex when present, as it carries richer data (nonWitnessUtxo, redeemScript, BIP-32 paths).
+   */
+  txHexPsbt?: string;
 }
 
 export interface TransactionParams extends BaseTransactionParams {
@@ -647,9 +653,11 @@ export abstract class AbstractUtxoCoin
   decodeTransactionFromPrebuild<TNumber extends number | bigint>(prebuild: {
     txHex?: string;
     txBase64?: string;
+    /** See TransactionPrebuild.txHexPsbt — only present in pending approval flows. */
+    txHexPsbt?: string;
     decodeWith?: string;
   }): DecodedTransaction<TNumber> {
-    const string = prebuild.txHex ?? prebuild.txBase64;
+    const string = prebuild.txHexPsbt ?? prebuild.txHex ?? prebuild.txBase64;
     if (!string) {
       throw new Error('missing required txHex or txBase64 property');
     }
