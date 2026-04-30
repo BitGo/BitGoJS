@@ -558,6 +558,9 @@ export abstract class AbstractUtxoCoin
         params.recipients instanceof Array
           ? params?.recipients?.map((recipient) => {
               const { address, ...rest } = recipient;
+              if (address === undefined) {
+                return recipient; // Already { script, amount } — pass through unchanged
+              }
               return { ...rest, ...fromExtendedAddressFormat(address) };
             })
           : params.recipients;
