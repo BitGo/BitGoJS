@@ -1,4 +1,12 @@
-import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
+import {
+  BaseCoin,
+  BitGoBase,
+  common,
+  MPCAlgorithm,
+  MultisigType,
+  multisigTypes,
+  NO_RECIPIENT_TX_TYPES,
+} from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
@@ -47,6 +55,7 @@ export class Xdc extends AbstractEthLikeNewCoins {
     const explorerUrl = common.Environments[this.bitgo.getEnv()].xdcExplorerBaseUrl;
     return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken);
   }
+
   /**
    * Verify if a tss transaction is valid
    *
@@ -60,10 +69,7 @@ export class Xdc extends AbstractEthLikeNewCoins {
     const { txParams, txPrebuild, wallet } = params;
     if (
       !txParams?.recipients &&
-      !(
-        txParams.prebuildTx?.consolidateId ||
-        (txParams.type && ['acceleration', 'fillNonce', 'transferToken'].includes(txParams.type))
-      )
+      !(txParams.prebuildTx?.consolidateId || (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type)))
     ) {
       throw new Error(`missing txParams`);
     }
