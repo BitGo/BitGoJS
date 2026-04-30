@@ -30,10 +30,13 @@ import {
   SignatureShareType,
   TSSParamsForMessageWithPrv,
   TSSParamsWithPrv,
+  TssSignTxRequestParamsWithPrv,
+  TssTxRecipientSource,
   TxRequest,
   UnsignedTransactionTss,
   isV2Envelope,
 } from '../baseTypes';
+import { InvalidTransactionError } from '../../../errors';
 import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
 import { BaseEddsaUtils } from './base';
@@ -610,7 +613,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
    @param params - parameters for signing the transaction request
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
-  async signTxRequest(params: TSSParamsWithPrv): Promise<TxRequest> {
+  async signTxRequest(params: TssSignTxRequestParamsWithPrv): Promise<TxRequest> {
     return this.signRequestBase(params, RequestType.tx);
   }
 
@@ -623,6 +626,16 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     let txRequestId: string;
 
     const { txRequest, prv } = params;
+
+    if (
+      'recipientSource' in params &&
+      params.recipientSource === TssTxRecipientSource.Explicit &&
+      !params.txParams?.recipients?.length
+    ) {
+      throw new InvalidTransactionError(
+        'recipientSource "explicit" requires txParams.recipients with at least one recipient.'
+      );
+    }
 
     if (typeof txRequest === 'string') {
       txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest, params.reqId);

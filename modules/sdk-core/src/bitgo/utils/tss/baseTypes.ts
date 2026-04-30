@@ -1,6 +1,6 @@
 import { Key, SerializedKeyPair } from 'openpgp';
 import { EncryptionVersion, IEncryptionSession, IRequestTracer } from '../../../api';
-import { KeychainsTriplet, ParsedTransaction, TransactionParams } from '../../baseCoin';
+import { type ITransactionRecipient, KeychainsTriplet, ParsedTransaction, TransactionParams } from '../../baseCoin';
 import { ApiKeyShare, Keychain } from '../../keychain';
 import { ApiVersion, Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, Signature, SignShare } from '../../../account-lib/mpc/tss';
@@ -545,16 +545,6 @@ export interface EncryptedSignerShareRecord extends ShareBaseRecord {
   type: EncryptedSignerShareType;
 }
 
-export type TSSParamsWithPrv = TSSParams & {
-  prv: string;
-  mpcv2PartyId?: 0 | 1;
-};
-
-export type TSSParamsForMessageWithPrv = TSSParamsForMessage & {
-  prv: string;
-  mpcv2PartyId?: 0 | 1;
-};
-
 export type BitgoPubKeyType = 'nitro' | 'onprem';
 
 export type TSSParams = {
@@ -568,6 +558,64 @@ export type TSSParamsForMessage = TSSParams & {
   messageRaw: string;
   messageEncoded?: string;
   bufferToSign: Buffer;
+};
+
+/** At least one recipient (when using `recipientSource: TssTxRecipientSource.Explicit`). */
+export type NonEmptyRecipientList = [ITransactionRecipient, ...ITransactionRecipient[]];
+
+/** txParams including a non-empty recipients list for strict signing verification typing. */
+export type TransactionParamsWithMandatoryRecipients = TransactionParams & {
+  recipients: NonEmptyRecipientList;
+};
+
+export const TssTxRecipientSource = {
+  /** Require txParams.recipients with at least one entry (enforced by TypeScript for this branch). */
+  Explicit: 'explicit',
+  /**
+   * Default: txParams may be omitted or partial; verification uses coin-specific rules
+   * (for example recipients from txRequest context).
+   */
+  Resolved: 'resolved',
+} as const;
+
+export type TssTxRecipientSource = (typeof TssTxRecipientSource)[keyof typeof TssTxRecipientSource];
+
+export type TssSignTxExplicitRecipientParams = {
+  txRequest: string | TxRequest;
+  reqId: IRequestTracer;
+  apiVersion?: ApiVersion;
+  recipientSource: typeof TssTxRecipientSource.Explicit;
+  txParams: TransactionParamsWithMandatoryRecipients;
+};
+
+export type TssSignTxResolvedRecipientParams = {
+  txRequest: string | TxRequest;
+  reqId: IRequestTracer;
+  apiVersion?: ApiVersion;
+  recipientSource?: typeof TssTxRecipientSource.Resolved;
+  txParams?: TransactionParams;
+};
+
+/**
+ * Parameters for TSS transaction signing ({@link ITssUtils.signTxRequest}).
+ * Set {@link TssTxRecipientSource.Explicit} to require a non-empty txParams.recipients array at compile time.
+ */
+export type TssSignTxRequestParams = TssSignTxExplicitRecipientParams | TssSignTxResolvedRecipientParams;
+
+export type TssSignTxRequestParamsWithPrv = TssSignTxRequestParams & {
+  prv: string;
+  mpcv2PartyId?: 0 | 1;
+};
+
+/**
+ * @deprecated Use {@link TssSignTxRequestParamsWithPrv} instead. This alias exists for
+ * backwards compatibility and will be removed in a future major release.
+ */
+export type TSSParamsWithPrv = TssSignTxRequestParamsWithPrv;
+
+export type TSSParamsForMessageWithPrv = TSSParamsForMessage & {
+  prv: string;
+  mpcv2PartyId?: 0 | 1;
 };
 
 export interface BitgoHeldBackupKeyShare {
@@ -728,7 +776,7 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
     isThirdPartyBackup?: boolean;
     encryptionVersion?: EncryptionVersion;
   }): Promise<KeychainsTriplet>;
-  signTxRequest(params: { txRequest: string | TxRequest; prv: string; reqId: IRequestTracer }): Promise<TxRequest>;
+  signTxRequest(params: TssSignTxRequestParamsWithPrv): Promise<TxRequest>;
   signTxRequestForMessage(params: TSSParams): Promise<TxRequest>;
   signEddsaTssUsingExternalSigner(
     txRequest: string | TxRequest,

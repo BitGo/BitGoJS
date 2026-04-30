@@ -30,12 +30,15 @@ import {
   TSSParamsForMessage,
   TSSParamsForMessageWithPrv,
   TSSParamsWithPrv,
+  TssSignTxRequestParamsWithPrv,
+  TssTxRecipientSource,
   TxRequest,
 } from '../baseTypes';
 import { getTxRequest } from '../../../tss';
 import { AShare, DShare, EncryptedNShare, SendShareType, SShare, WShare, OShare } from '../../../tss/ecdsa/types';
 import { createShareProof, generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';
 import { BitGoBase } from '../../../bitgoBase';
+import { InvalidTransactionError } from '../../../errors';
 import { verifyWalletSignature } from '../../../tss/ecdsa/ecdsa';
 import { signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '../../../ecdh';
 import { getTxRequestChallenge } from '../../../tss/common';
@@ -745,6 +748,16 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       const unsignedTx =
         txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
 
+      if (
+        'recipientSource' in params &&
+        params.recipientSource === TssTxRecipientSource.Explicit &&
+        !params.txParams?.recipients?.length
+      ) {
+        throw new InvalidTransactionError(
+          'recipientSource "explicit" requires txParams.recipients with at least one recipient.'
+        );
+      }
+
       // For ICP transactions, the HSM signs the serializedTxHex, while the user signs the signableHex separately.
       // Verification cannot be performed directly on the signableHex alone. However, we can parse the serializedTxHex
       // to regenerate the signableHex and compare it against the provided value for verification.
@@ -862,9 +875,11 @@ export class EcdsaUtils extends BaseEcdsaUtils {
    * @param {string | TxRequest} params.txRequest - transaction request object or id
    * @param {string} params.prv - decrypted private key
    * @param {string} params.reqId - request id
+   * @param params.recipientSource - optional; use TssTxRecipientSource.Explicit with a non-empty
+   *   txParams.recipients list when you want TypeScript to enforce passing recipient details at compile time.
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
-  async signTxRequest(params: TSSParamsWithPrv): Promise<TxRequest> {
+  async signTxRequest(params: TssSignTxRequestParamsWithPrv): Promise<TxRequest> {
     this.bitgo.setRequestTracer(params.reqId);
     return this.signRequestBase(params, RequestType.tx);
   }
