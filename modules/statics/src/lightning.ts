@@ -92,7 +92,7 @@ export const lightningCoins: Readonly<BaseCoin>[] = [
     'lnbtc',
     'Lightning Bitcoin',
     Networks.main.lnbtc,
-    UnderlyingAsset.LNBTC,
+    UnderlyingAsset.BTC,
     BaseUnit.LNBTC,
     LNBTC_FEATURES
   ),
@@ -101,7 +101,7 @@ export const lightningCoins: Readonly<BaseCoin>[] = [
     'tlnbtc',
     'Testnet Lightning Bitcoin',
     Networks.test.lnbtc,
-    UnderlyingAsset.LNBTC,
+    UnderlyingAsset.BTC,
     BaseUnit.LNBTC,
     LNBTC_FEATURES
   ),
