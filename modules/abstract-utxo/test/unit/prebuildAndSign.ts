@@ -6,7 +6,7 @@ import nock = require('nock');
 import { common, HalfSignedUtxoTransaction, Wallet } from '@bitgo/sdk-core';
 import { getSeed } from '@bitgo/sdk-test';
 
-import { AbstractUtxoCoin } from '../../src';
+import { AbstractUtxoCoin, getReplayProtectionPubkeys } from '../../src';
 
 import {
   defaultBitGo,
@@ -64,7 +64,10 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[]): void {
       outputs,
       coin.network,
       rootWalletKeys,
-      'unsigned'
+      'unsigned',
+      {
+        p2shP2pkKey: getReplayProtectionPubkeys(coin.name)[0],
+      }
     );
     utxolib.bitgo.addXpubsToPsbt(psbt, rootWalletKeys);
     return psbt;
