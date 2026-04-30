@@ -5,11 +5,15 @@ import * as assert from 'assert';
 const getModule = () => require('../../../../../src/bitgo/utils/tss/recipientUtils');
 
 function makeTxRequest(
-  intentRecipients?: { address: { address: string }; amount: { value: string }; data?: string }[]
+  intentRecipients?: { address: { address: string }; amount: { value: string }; data?: string }[],
+  intentType = 'payment',
+  stakingRequestId?: string
 ): any {
   return {
     txRequestId: 'test-req-id',
-    intent: intentRecipients ? { intentType: 'contractCall', recipients: intentRecipients } : { intentType: 'payment' },
+    intent: intentRecipients
+      ? { intentType: 'contractCall', recipients: intentRecipients }
+      : { intentType, ...(stakingRequestId ? { stakingRequestId } : {}) },
     transactions: [],
     unsignedTxs: [],
     state: 'pendingUserSignature',
@@ -23,7 +27,7 @@ function makeTxRequest(
 
 describe('recipientUtils', function () {
   describe('NO_RECIPIENT_TX_TYPES', function () {
-    it('contains exactly the 8 expected exempted types', function () {
+    it('contains all expected exempted types', function () {
       const { NO_RECIPIENT_TX_TYPES } = getModule();
       const expected = [
         'acceleration',
@@ -105,8 +109,8 @@ describe('recipientUtils', function () {
       'tokenApproval',
       'consolidate',
       'bridgeFunds',
-      'enableToken', // TSS wallets do not populate recipients for token enablement
-      'customTx', // DeFi/WalletConnect smart contract interactions have no traditional recipients
+      'enableToken',
+      'customTx',
     ];
 
     NO_RECIPIENT_TYPES.forEach((type) => {
@@ -116,6 +120,45 @@ describe('recipientUtils', function () {
         const result = resolveEffectiveTxParams(txRequest, { type });
         result.type.should.equal(type);
       });
+    });
+
+    it('allows staking intent with no recipients when stakingRequestId is present (BSC delegate)', function () {
+      const { resolveEffectiveTxParams } = getModule();
+      // Simulate BSC staking wallet: no txParams, intent has stakingRequestId
+      const txRequest = makeTxRequest(undefined, 'delegate', 'staking-req-123');
+      const result = resolveEffectiveTxParams(txRequest, undefined);
+      result.type.should.equal('delegate');
+    });
+
+    it('allows staking intent with no recipients when stakingRequestId is present (CELO stake)', function () {
+      const { resolveEffectiveTxParams } = getModule();
+      const txRequest = makeTxRequest(undefined, 'stake', 'staking-req-456');
+      const result = resolveEffectiveTxParams(txRequest, undefined);
+      result.type.should.equal('stake');
+    });
+
+    it('throws for unknown staking-like type without stakingRequestId', function () {
+      const { resolveEffectiveTxParams } = getModule();
+      // No stakingRequestId, no recipients, unknown type — should throw
+      const txRequest = makeTxRequest(undefined, 'delegate');
+      assert.throws(
+        () => resolveEffectiveTxParams(txRequest, undefined),
+        /Recipient details are required to verify this transaction before signing/
+      );
+    });
+
+    it('propagates intent.intentType into effectiveTxParams.type when txParams.type is absent', function () {
+      const { resolveEffectiveTxParams } = getModule();
+      const txRequest = makeTxRequest(undefined, 'stake', 'staking-req-789');
+      const result = resolveEffectiveTxParams(txRequest, {});
+      result.type.should.equal('stake');
+    });
+
+    it('does not override txParams.type when already set', function () {
+      const { resolveEffectiveTxParams } = getModule();
+      const txRequest = makeTxRequest(undefined, 'delegate', 'staking-req-000');
+      const result = resolveEffectiveTxParams(txRequest, { type: 'acceleration' });
+      result.type.should.equal('acceleration');
     });
   });
 });
