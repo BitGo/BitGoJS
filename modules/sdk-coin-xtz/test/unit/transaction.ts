@@ -9,6 +9,14 @@ import {
 import { OperationContents } from '@taquito/rpc';
 import { XtzLib } from '../../src';
 
+// Signing the fixture origination with this seed produces a 64-byte signature
+// whose bytes are coincidentally valid Michelson contents.
+function signerSeedProducingMichelsonShapedSignature(): Buffer {
+  const seed = Buffer.alloc(16);
+  seed.writeUInt32BE(174, 0);
+  return seed;
+}
+
 describe('Tezos transaction', function () {
   describe('should parse', () => {
     it('unsigned transaction', async () => {
@@ -41,6 +49,26 @@ describe('Tezos transaction', function () {
       should.not.exist(tx.delegate);
       JSON.stringify(tx.toJson()).should.equal(JSON.stringify(parsedTransaction));
       tx.toBroadcastFormat().should.equal(signedSerializedOriginationTransaction);
+    });
+
+    it('signed transaction whose signature suffix forges as valid Michelson', async () => {
+      const signerWithMichelsonShapedSignature = new XtzLib.KeyPair({
+        seed: signerSeedProducingMichelsonShapedSignature(),
+      });
+
+      const signedTx = new XtzLib.Transaction(coins.get('txtz'));
+      await signedTx.initFromSerializedTransaction(unsignedSerializedOriginationTransaction);
+      await signedTx.sign(signerWithMichelsonShapedSignature);
+      const signedBytes = signedTx.toBroadcastFormat();
+      const expectedTxId = signedTx.id;
+      expectedTxId.should.match(/^o[a-zA-Z0-9]+$/);
+
+      const reparsed = new XtzLib.Transaction(coins.get('txtz'));
+      await reparsed.initFromSerializedTransaction(signedBytes);
+
+      reparsed.id.should.equal(expectedTxId);
+      reparsed.outputs.length.should.equal(1);
+      reparsed.outputs[0].address.should.startWith('KT1');
     });
   });
 
