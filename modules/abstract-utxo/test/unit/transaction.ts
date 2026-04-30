@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import nock = require('nock');
 import { BIP32Interface, bitgo, testutil } from '@bitgo/utxo-lib';
-import { address as wasmAddress, fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { address as wasmAddress, fixedScriptWallet, BIP32 } from '@bitgo/wasm-utxo';
 import {
   common,
   FullySignedTransaction,
@@ -118,11 +118,17 @@ function run<TNumber extends number | bigint = number>(
       cosigner: BIP32Interface
     ): Promise<HalfSignedUtxoTransaction> {
       let scope: nock.Scope | undefined;
-      if (prebuild instanceof utxolib.bitgo.UtxoPsbt && isTransactionWithKeyPathSpend) {
-        const psbt = prebuild.clone().setAllInputsMusig2NonceHD(cosigner);
+      if (isTransactionWithKeyPathSpend) {
         scope = nock(bgUrl)
           .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/signpsbt`, (body) => body.psbt)
-          .reply(200, { psbt: psbt.toHex() });
+          .reply(200, (_uri: string, requestBody: unknown) => {
+            const networkName = utxolib.getNetworkName(coin.network) as fixedScriptWallet.NetworkName;
+            const reqBytes = Buffer.from((requestBody as { psbt: string }).psbt, 'hex');
+            const reqPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(reqBytes, networkName);
+            const cosignerWasm = BIP32.fromBase58(cosigner.toBase58());
+            reqPsbt.generateMusig2Nonces(cosignerWasm);
+            return { psbt: Buffer.from(reqPsbt.serialize()).toString('hex') };
+          });
       }
 
       // half-sign with the user key
