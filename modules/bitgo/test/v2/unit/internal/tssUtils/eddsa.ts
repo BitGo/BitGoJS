@@ -612,9 +612,11 @@ describe('TSS Utils:', async function () {
     });
 
     it('signTxRequest should succeed with txRequest object as input', async function () {
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves();
       const signedTxRequest = await tssUtils.signTxRequest({
         txRequest,
         prv: JSON.stringify(validUserSigningMaterial),
+        txParams: { recipients: [{ address: '5f8f5a1d7f', amount: '10000' }] },
         reqId,
       });
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
@@ -623,17 +625,55 @@ describe('TSS Utils:', async function () {
     });
 
     it('signTxRequest should succeed with txRequest id as input', async function () {
-      const getTxRequest = sandbox.stub(tssUtils, 'getTxRequest');
-      getTxRequest.resolves(txRequest);
-      getTxRequest.calledWith(txRequestId);
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves();
+      const getTxRequestStub = sandbox.stub(tssUtils, 'getTxRequest');
+      getTxRequestStub.resolves(txRequest);
+      getTxRequestStub.calledWith(txRequestId);
 
       const signedTxRequest = await tssUtils.signTxRequest({
         txRequest: txRequestId,
         prv: JSON.stringify(validUserSigningMaterial),
+        txParams: { recipients: [{ address: '5f8f5a1d7f', amount: '10000' }] },
         reqId,
       });
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
 
+      sandbox.verifyAndRestore();
+    });
+
+    it('signTxRequest should reject when txParams.recipients is missing for payment', async function () {
+      await tssUtils
+        .signTxRequest({
+          txRequest,
+          prv: JSON.stringify(validUserSigningMaterial),
+          reqId,
+        })
+        .should.be.rejectedWith(
+          'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
+        );
+    });
+
+    it('signTxRequest should succeed for stakingActivate without recipients', async function () {
+      const stakingTxRequest = { ...txRequest, intent: { intentType: 'stakingActivate' } };
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves();
+      const signedTxRequest = await tssUtils.signTxRequest({
+        txRequest: stakingTxRequest,
+        prv: JSON.stringify(validUserSigningMaterial),
+        reqId,
+      });
+      signedTxRequest.unsignedTxs.should.deepEqual(stakingTxRequest.unsignedTxs);
+      sandbox.verifyAndRestore();
+    });
+
+    it('signTxRequest should succeed for walletInitialization without recipients', async function () {
+      const walletInitTxRequest = { ...txRequest, intent: { intentType: 'walletInitialization' } };
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves();
+      const signedTxRequest = await tssUtils.signTxRequest({
+        txRequest: walletInitTxRequest,
+        prv: JSON.stringify(validUserSigningMaterial),
+        reqId,
+      });
+      signedTxRequest.unsignedTxs.should.deepEqual(walletInitTxRequest.unsignedTxs);
       sandbox.verifyAndRestore();
     });
   });
@@ -700,9 +740,11 @@ describe('TSS Utils:', async function () {
     });
 
     it('signTxRequest should succeed with txRequest object as input', async function () {
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves();
       const signedTxRequest = await tssUtils.signTxRequest({
         txRequest,
         prv: JSON.stringify(validUserSigningMaterial),
+        txParams: { recipients: [{ address: '5f8f5a1d7f', amount: '10000' }] },
         reqId,
       });
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
@@ -711,13 +753,15 @@ describe('TSS Utils:', async function () {
     });
 
     it('signTxRequest should succeed with txRequest id as input', async function () {
-      const getTxRequest = sandbox.stub(tssUtils, 'getTxRequest');
-      getTxRequest.resolves(txRequest);
-      getTxRequest.calledWith(txRequestId);
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves();
+      const getTxRequestStub = sandbox.stub(tssUtils, 'getTxRequest');
+      getTxRequestStub.resolves(txRequest);
+      getTxRequestStub.calledWith(txRequestId);
 
       const signedTxRequest = await tssUtils.signTxRequest({
         txRequest: txRequestId,
         prv: JSON.stringify(validUserSigningMaterial),
+        txParams: { recipients: [{ address: '5f8f5a1d7f', amount: '10000' }] },
         reqId,
       });
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
