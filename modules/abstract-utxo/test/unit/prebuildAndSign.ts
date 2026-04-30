@@ -6,17 +6,15 @@ import nock = require('nock');
 import { common, HalfSignedUtxoTransaction, Wallet } from '@bitgo/sdk-core';
 import { getSeed } from '@bitgo/sdk-test';
 
-import { AbstractUtxoCoin } from '../../src';
+import { AbstractUtxoCoin, getReplayProtectionPubkeys } from '../../src';
 
 import {
   defaultBitGo,
-  encryptKeychain,
   getDefaultWalletKeys,
   getMinUtxoCoins,
   getUtxoWallet,
   keychainsBase58,
   getScriptTypes,
-  TxFormat,
 } from './util';
 
 type ScriptType = testutil.InputScriptType;
@@ -25,12 +23,8 @@ type KeyDoc = {
   id: string;
   pub: string;
   source: string;
-  encryptedPrv: string;
   coinSpecific: any;
 };
-
-const walletPassphrase = 'gabagool';
-const webauthnWalletPassPhrase = 'just the gabagool';
 
 type Input = {
   scriptType: ScriptType;
@@ -59,31 +53,21 @@ const keyDocumentObjects = rootWalletKeys.triple.map((bip32, keyIdx) => {
     id: getSeed(keychainsBase58[keyIdx].pub).toString('hex'),
     pub: bip32.neutered().toBase58(),
     source: ['user', 'backup', 'bitgo'][keyIdx],
-    encryptedPrv: encryptKeychain(walletPassphrase, keychainsBase58[keyIdx]),
-    webauthnDevices: [
-      {
-        otpDeviceId: '123',
-        authenticatorInfo: {
-          credID: 'credID',
-          fmt: 'packed',
-          publicKey: 'some value',
-        },
-        prfSalt: '456',
-        encryptedPrv: encryptKeychain(webauthnWalletPassPhrase, keychainsBase58[keyIdx]),
-      },
-    ],
     coinSpecific: {},
   };
 });
 
-function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFormat): void {
+function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[]): void {
   function createPrebuildPsbt(inputs: Input[], outputs: { scriptType: 'p2sh'; value: bigint }[]) {
     const psbt = utxolib.testutil.constructPsbt(
       inputs as utxolib.testutil.Input[],
       outputs,
       coin.network,
       rootWalletKeys,
-      'unsigned'
+      'unsigned',
+      {
+        p2shP2pkKey: getReplayProtectionPubkeys(coin.name)[0],
+      }
     );
     utxolib.bitgo.addXpubsToPsbt(psbt, rootWalletKeys);
     return psbt;
@@ -176,9 +160,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
     return nocks;
   }
 
-  describe(`${coin.getFullName()}-prebuildAndSign-txFormat=${txFormat}-inputScripts=${inputScripts.join(
-    ','
-  )}`, function () {
+  describe(`${coin.name} prebuildAndSign inputScripts=${inputScripts.join(',')}`, function () {
     const wallet = getUtxoWallet(coin, {
       coinSpecific: { addressVersion: 'base58' },
       keys: keyDocumentObjects.map((k) => k.id),
@@ -219,58 +201,34 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
 
     afterEach(nock.cleanAll);
 
-    [true, false].forEach((useWebauthn) => {
-      it(`should succeed with ${useWebauthn ? 'webauthn encryptedPrv' : 'encryptedPrv'}`, async function () {
-        // Check if this wallet/coin combination defaults to psbt
-        const defaultTxFormat = coin.getDefaultTxFormat(wallet);
-        const nocks = createNocks({
-          bgUrl,
-          wallet,
-          keyDocuments: keyDocumentObjects,
-          prebuild,
-          recipient,
-          addressInfo,
-          nockOutputAddresses: txFormat !== 'psbt',
-          txFormat: defaultTxFormat,
-        });
-
-        // call prebuild and sign, nocks should be consumed
-        const res = (await wallet.prebuildAndSignTransaction({
-          recipients: [recipient],
-          walletPassphrase: useWebauthn ? webauthnWalletPassPhrase : walletPassphrase,
-        })) as HalfSignedUtxoTransaction;
-
-        nocks.forEach((nock) => assert.ok(nock.isDone()));
-
-        assertSignable(res.txHex, inputScripts, coin.network);
+    it('should succeed', async function () {
+      const defaultTxFormat = coin.getDefaultTxFormat(wallet);
+      const nocks = createNocks({
+        bgUrl,
+        wallet,
+        keyDocuments: keyDocumentObjects,
+        prebuild,
+        recipient,
+        addressInfo,
+        nockOutputAddresses: false,
+        txFormat: defaultTxFormat,
       });
 
-      it('should fail if the wallet passphrase is incorrect', async function () {
-        createNocks({
-          bgUrl,
-          wallet,
-          keyDocuments: keyDocumentObjects,
-          prebuild,
-          recipient,
-          addressInfo,
-          nockOutputAddresses: txFormat !== 'psbt',
-        });
+      // call prebuild and sign, nocks should be consumed
+      const res = (await wallet.prebuildAndSignTransaction({
+        recipients: [recipient],
+        prv: keychainsBase58[0].prv,
+      })) as HalfSignedUtxoTransaction;
 
-        await assert.rejects(
-          wallet.prebuildAndSignTransaction({
-            recipients: [recipient],
-            walletPassphrase: Math.random().toString(),
-          }),
-          { message: 'unable to decrypt keychain with the given wallet passphrase' }
-        );
-      });
+      nocks.forEach((nock) => assert.ok(nock.isDone()));
+
+      assertSignable(res.txHex, inputScripts, coin.network);
     });
 
     [true, false].forEach((selfSend) => {
       it(`should be able to build, sign, & verify a replacement transaction with selfSend: ${selfSend}`, async function () {
         const rbfTxIds = ['tx-to-be-replaced'],
           feeMultiplier = 1.5;
-        // Check if this wallet/coin combination defaults to psbt
         const defaultTxFormat = coin.getDefaultTxFormat(wallet);
         const nocks = createNocks({
           bgUrl,
@@ -282,14 +240,14 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
           rbfTxIds,
           feeMultiplier,
           selfSend,
-          nockOutputAddresses: txFormat !== 'psbt',
+          nockOutputAddresses: false,
           txFormat: defaultTxFormat,
         });
 
         // call prebuild and sign, nocks should be consumed
         const res = (await wallet.prebuildAndSignTransaction({
           recipients: [recipient],
-          walletPassphrase,
+          prv: keychainsBase58[0].prv,
           rbfTxIds,
           feeMultiplier,
         })) as HalfSignedUtxoTransaction;
@@ -303,5 +261,5 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
 }
 
 getMinUtxoCoins().forEach((coin) => {
-  run(coin, getScriptTypes(coin, 'psbt'), 'psbt');
+  run(coin, getScriptTypes(coin, 'psbt'));
 });
