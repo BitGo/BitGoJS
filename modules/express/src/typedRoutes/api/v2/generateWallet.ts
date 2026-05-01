@@ -32,7 +32,7 @@ export const GenerateWalletBody = {
   /** Seed that derives an extended user key or common keychain for a cold wallet. */
   coldDerivationSeed: optional(t.string),
   /** Gas price to use when deploying an Ethereum wallet */
-  gasPrice: optional(t.number),
+  gasPrice: optional(t.Int),
   /** Flag for preventing KRS from sending email after creating backup key */
   disableKRSEmail: optional(t.boolean),
   /** (ETH only) Specify the wallet creation contract version used when creating a wallet contract. Use 0 for the old wallet creation, 1 for the new wallet creation, where it is only deployed upon receiving funds. 2 for wallets with the same functionality as v1 but with NFT support. 3 for MPC wallets. 4 is same as v2 but with some changes related to network identifier and encoding of tx data. v4 is applicable for Arbitrum, Optimism, ZkSync, and other EVM-compatible chains that we will onboard in the future. 5 for MPC MPCv2 wallets. 6 for EVM MPCv2 wallets with receive addresses. */
@@ -87,7 +87,7 @@ export const GenerateWalletResponse = {
  * Path parameters for wallet generation.
  */
 export const GenerateWalletV2Params = {
-  /** Coin ticker / chain identifier */
+  /** A cryptocurrency or token ticker symbol. (example: btc) */
   coin: t.string,
 };
 
