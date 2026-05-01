@@ -269,7 +269,6 @@ describe('signTxRequest:', function () {
       const userShare = fs.readFileSync(shareFiles[vector.party1]);
       const userPrvBase64 = Buffer.from(userShare).toString('base64');
 
-      // Encrypt the prv with v2 to trigger the v2 path
       const encryptedPrv = await bitgo.encryptAsync({
         input: userPrvBase64,
         password: walletPassphrase,
@@ -277,7 +276,6 @@ describe('signTxRequest:', function () {
       });
       JSON.parse(encryptedPrv).v.should.equal(2);
 
-      // Round 1: encrypt session + GPG key with v2 + adata (purely local, no server call)
       const round1Result = await tssUtils.createOfflineRound1Share({
         txRequest,
         prv: userPrvBase64,
@@ -285,18 +283,17 @@ describe('signTxRequest:', function () {
         encryptedPrv,
       });
 
-      // Verify round 1 output has v2 envelopes with adata
       const r1SessionEnvelope = JSON.parse(round1Result.encryptedRound1Session);
       r1SessionEnvelope.v.should.equal(2);
       r1SessionEnvelope.should.have.property('adata');
       r1SessionEnvelope.should.have.property('hkdfSalt');
+      r1SessionEnvelope.adata.should.containEql('DKLS23_SIGNING_ROUND1_STATE');
 
       const r1GpgEnvelope = JSON.parse(round1Result.encryptedUserGpgPrvKey);
       r1GpgEnvelope.v.should.equal(2);
       r1GpgEnvelope.should.have.property('adata');
-      r1SessionEnvelope.adata.should.equal(r1GpgEnvelope.adata);
+      r1GpgEnvelope.adata.should.containEql('DKLS23_SIGNING_USER_GPG_KEY');
 
-      // Nock BitGo round 1 response and submit
       await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequest, bitgoGpgKey);
       const transactions = getRoute('ecdsa');
       const round1TxRequestResponse = await bitgo
@@ -307,7 +304,6 @@ describe('signTxRequest:', function () {
         })
         .result();
 
-      // Merge server response with original txRequest (server only returns signatureShares)
       const round1TxReq: TxRequest = {
         ...txRequest,
         transactions: [
@@ -318,7 +314,6 @@ describe('signTxRequest:', function () {
         ],
       };
 
-      // Round 2: decrypt v2 round 1 session (validates adata), encrypt round 2 session
       const round2Result = await tssUtils.createOfflineRound2Share({
         txRequest: round1TxReq,
         prv: userPrvBase64,
@@ -328,13 +323,11 @@ describe('signTxRequest:', function () {
         encryptedRound1Session: round1Result.encryptedRound1Session,
       });
 
-      // Verify round 2 output has v2 envelope with adata
       const r2Envelope = JSON.parse(round2Result.encryptedRound2Session);
       r2Envelope.v.should.equal(2);
       r2Envelope.should.have.property('adata');
-      r2Envelope.adata.should.equal(r1SessionEnvelope.adata);
+      r2Envelope.adata.should.containEql('DKLS23_SIGNING_ROUND2_STATE');
 
-      // Nock BitGo round 2 response and submit
       await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequest, bitgoGpgKey);
       const round2TxRequestResponse = await bitgo
         .post(bitgo.url(`/wallet/${txRequest.walletId}/txrequests/${txRequest.txRequestId + transactions}/sign`, 2))
@@ -354,7 +347,6 @@ describe('signTxRequest:', function () {
         ],
       };
 
-      // Round 3: decrypt v2 round 2 session (validates adata), produce final signature share
       const round3Result = await tssUtils.createOfflineRound3Share({
         txRequest: round2TxReq,
         prv: userPrvBase64,
@@ -367,15 +359,29 @@ describe('signTxRequest:', function () {
       round3Result.should.have.property('signatureShareRound3');
     });
 
-    it('validateAdata rejects v2 envelopes with mismatched adata', async function () {
+    it('validateAdata accepts v2 envelopes with matching adata and domain separator', async function () {
+      const adata = 'txhash:m/0/1';
+      const domainSep = 'DKLS23_SIGNING_ROUND1_STATE';
       const ct = await bitgo.encryptAsync({
         input: 'test-data',
         password: 'testpass',
         encryptionVersion: 2,
-        adata: 'context-A',
+        adata: `${domainSep}:${adata}`,
       });
 
-      (() => (tssUtils as any).validateAdata('context-B', ct)).should.throw(/Adata does not match/);
+      (tssUtils as any).validateAdata(adata, ct, domainSep);
+    });
+
+    it('validateAdata rejects v2 envelopes with mismatched adata', async function () {
+      const domainSep = 'DKLS23_SIGNING_ROUND1_STATE';
+      const ct = await bitgo.encryptAsync({
+        input: 'test-data',
+        password: 'testpass',
+        encryptionVersion: 2,
+        adata: `${domainSep}:context-A`,
+      });
+
+      (() => (tssUtils as any).validateAdata('context-B', ct, domainSep)).should.throw(/Adata does not match/);
     });
   });
 

@@ -19,7 +19,7 @@ import {
   Wallet,
   isWalletWithKeychains,
   OptionalKeychainEncryptedKey,
-  decryptKeychainPrivateKey,
+  decryptKeychainPrivateKeyAsync,
   makeRandomKey,
   getSharedSecret,
   BulkWalletShareOptions,
@@ -2566,7 +2566,7 @@ describe('V2 Wallets:', function () {
         const keychainTest: OptionalKeychainEncryptedKey = {
           encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
         };
-        const userPrv = await decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
+        const userPrv = await decryptKeychainPrivateKeyAsync(bitgo, keychainTest, walletPassphrase);
         if (!userPrv) {
           throw new Error('Unable to decrypt user keychain');
         }
@@ -2638,7 +2638,7 @@ describe('V2 Wallets:', function () {
         const keychainTest: OptionalKeychainEncryptedKey = {
           encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
         };
-        const userPrv = await decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
+        const userPrv = await decryptKeychainPrivateKeyAsync(bitgo, keychainTest, walletPassphrase);
         if (!userPrv) {
           throw new Error('Unable to decrypt user keychain');
         }
@@ -2717,7 +2717,7 @@ describe('V2 Wallets:', function () {
         const keychainTest: OptionalKeychainEncryptedKey = {
           encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
         };
-        const userPrv = await decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
+        const userPrv = await decryptKeychainPrivateKeyAsync(bitgo, keychainTest, walletPassphrase);
         if (!userPrv) {
           throw new Error('Unable to decrypt user keychain');
         }
@@ -2785,7 +2785,7 @@ describe('V2 Wallets:', function () {
         const keychainTest: OptionalKeychainEncryptedKey = {
           encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
         };
-        const userPrv = await decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
+        const userPrv = await decryptKeychainPrivateKeyAsync(bitgo, keychainTest, walletPassphrase);
         if (!userPrv) {
           throw new Error('Unable to decrypt user keychain');
         }
@@ -2886,7 +2886,7 @@ describe('V2 Wallets:', function () {
         const keychainTest: OptionalKeychainEncryptedKey = {
           encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
         };
-        const userPrv = await decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
+        const userPrv = await decryptKeychainPrivateKeyAsync(bitgo, keychainTest, walletPassphrase);
         if (!userPrv) {
           throw new Error('Unable to decrypt user keychain');
         }
@@ -2988,7 +2988,7 @@ describe('V2 Wallets:', function () {
         const keychainTest: OptionalKeychainEncryptedKey = {
           encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
         };
-        const userPrv = await decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
+        const userPrv = await decryptKeychainPrivateKeyAsync(bitgo, keychainTest, walletPassphrase);
         if (!userPrv) {
           throw new Error('Unable to decrypt user keychain');
         }

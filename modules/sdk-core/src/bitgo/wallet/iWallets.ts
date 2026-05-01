@@ -107,6 +107,7 @@ export const GenerateLightningWalletOptionsCodec = t.intersection(
     }),
     t.partial({
       lightningProvider: t.union([t.literal('amboss'), t.literal('voltage')]),
+      // Codec intentionally accepts only 2: v1 is the implicit default and never sent on the wire.
       encryptionVersion: t.literal(2),
     }),
   ],
@@ -124,6 +125,7 @@ export const GenerateGoAccountWalletOptionsCodec = t.intersection(
       type: t.literal('trading'),
     }),
     t.partial({
+      // Codec intentionally accepts only 2: v1 is the implicit default and never sent on the wire.
       encryptionVersion: t.literal(2),
     }),
   ],

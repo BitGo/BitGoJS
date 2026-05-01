@@ -592,6 +592,64 @@ describe('TSS Utils:', async function () {
     });
   });
 
+  describe('v2 encryption (EdDSA signing dispatch)', function () {
+    const signingTxRequest: TxRequest = {
+      txRequestId: 'v2-signing-test',
+      unsignedTxs: [
+        {
+          serializedTxHex: 'test-payload',
+          signableHex: 'deadbeef',
+          derivationPath: 'm/0',
+        },
+      ],
+      date: new Date().toISOString(),
+      intent: { intentType: 'payment' },
+      latest: true,
+      state: 'pendingUserSignature',
+      walletType: 'hot',
+      walletId: 'walletId',
+      policiesChecked: true,
+      version: 1,
+      userId: 'userId',
+    };
+
+    it('v2 R-share round-trip: encrypt via commitment, verify envelope, decrypt via createRShare', async function () {
+      const passphrase = 'test-passphrase';
+      const prv = JSON.stringify(validUserSigningMaterial);
+
+      // 1. Encrypt prv with v2
+      const encryptedPrv = await bitgo.encryptAsync({
+        input: prv,
+        password: passphrase,
+        encryptionVersion: 2,
+      });
+      JSON.parse(encryptedPrv).v.should.equal(2);
+
+      // 2. Create commitment -- R-share should be a v2 envelope
+      const commitResult = await tssUtils.createCommitmentShareFromTxRequest({
+        txRequest: signingTxRequest,
+        prv,
+        walletPassphrase: passphrase,
+        bitgoGpgPubKey: bitgoGpgKey.publicKey,
+        encryptedPrv,
+      });
+
+      const rShareEnvelope = JSON.parse(commitResult.encryptedUserToBitgoRShare.share);
+      rShareEnvelope.v.should.equal(2);
+      rShareEnvelope.should.have.property('hkdfSalt');
+
+      // 3. Round-trip: decrypt the v2 R-share
+      const { rShare } = await tssUtils.createRShareFromTxRequest({
+        txRequest: signingTxRequest,
+        walletPassphrase: passphrase,
+        encryptedUserToBitgoRShare: commitResult.encryptedUserToBitgoRShare,
+      });
+
+      should.exist(rShare.xShare);
+      should.exist(rShare.rShares);
+    });
+  });
+
   describe('signTxRequest:', function () {
     const txRequestId = 'randomid';
     const txRequest: TxRequest = {
