@@ -26,6 +26,7 @@ export const PostDecrypt = httpRoute({
   }),
   response: {
     200: t.type({
+      /** Decrypted plaintext */
       decrypted: t.string,
     }),
     404: BitgoExpressError,

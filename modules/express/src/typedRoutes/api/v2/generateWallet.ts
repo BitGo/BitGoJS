@@ -35,8 +35,8 @@ export const GenerateWalletBody = {
   gasPrice: optional(t.Int),
   /** Flag for preventing KRS from sending email after creating backup key */
   disableKRSEmail: optional(t.boolean),
-  /** (ETH only) Specify the wallet creation contract version used when creating a wallet contract. Use 0 for the old wallet creation, 1 for the new wallet creation, where it is only deployed upon receiving funds. 2 for wallets with the same functionality as v1 but with NFT support. 3 for MPC wallets. 4 is same as v2 but with some changes related to network identifier and encoding of tx data. v4 is applicable for Arbitrum, Optimism, ZkSync, and other EVM-compatible chains that we will onboard in the future. 5 for MPC MPCv2 wallets. 6 for EVM MPCv2 wallets with receive addresses. */
-  walletVersion: optional(t.number),
+  /** (ETH only) Specify the wallet creation contract version used when creating a wallet contract. Use 0 for the old wallet creation, 1 for the new wallet creation, where it is only deployed upon receiving funds. 2 for wallets with the same functionality as v1 but with NFT support. 3 for MPC wallets. 4 is same as v2 but with some changes related to network identifier and encoding of tx data. v4 is applicable for Arbitrum, Optimism, ZkSync, and other EVM-compatible chains that we will onboard in the future. 5 for MPC MPCv2 wallets. 6 for EVM MPCv2 wallets with receive addresses. default: 1, minimum: 0, maximum: 6 */
+  walletVersion: optional(t.Int),
   /** True, if the wallet type is a distributed-custodial. If passed, you must also pass the 'enterprise' parameter. */
   isDistributedCustody: optional(t.boolean),
   /** BitGo key ID for self-managed cold MPC wallets. */
@@ -45,30 +45,20 @@ export const GenerateWalletBody = {
   commonKeychain: optional(t.string),
 } as const;
 
-/**
- * Generate wallet response (200 OK)
- *
- * Can be either:
- * 1. Simple wallet object (without includeKeychains query param)
- * 2. Wallet with keychains (when includeKeychains=true)
- *
- * When keychains are included:
- * - encryptedWalletPassphrase: Encrypted wallet passphrase. Used with passcodeEncryptionCode.
- *   Example: "{\"iv\":\"IpwAFi0+TDsLJCV4pg8T6w==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"3lkIc47rjzo=\",\"ct\":\"/m6JL/ttTJWXNmHm+dzI\"}"
- * - userKeychain: User keychain with encrypted private key and xpub
- * - backupKeychain: Backup keychain with private key (if created locally, includes xprv)
- * - bitgoKeychain: BitGo-managed keychain with only xpub
- * - warning: Warning message if backup keychain was created locally (user must backup xprv)
- *   Example: "Be sure to backup the backup keychain -- it is not stored anywhere else!"
- */
 export const GenerateWalletResponse200 = t.union([
   t.UnknownRecord,
   t.type({
+    /** The newly created wallet */
     wallet: t.UnknownRecord,
+    /** Encrypted wallet passphrase. Used only with `passcodeEncryptionCode`. You can use the encrypted wallet passphrase in the BitGo web app during password recovery for the wallet. (example: "{\"iv\":\"IpwAFi0+TDsLJCV4pg8T6w==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"3lkIc47rjzo=\",\"ct\":\"/m6JL/ttTJWXNmHm+dzI\"}") */
     encryptedWalletPassphrase: optional(t.string),
+    /** User keychain */
     userKeychain: optional(UserKeychainCodec),
+    /** Backup keychain */
     backupKeychain: optional(BackupKeychainCodec),
+    /** BitGo keychain */
     bitgoKeychain: optional(BitgoKeychainCodec),
+    /** If the backup key is held by the user, this is a message warning the user to securely backup their backup keychain. (example: "Be sure to backup the backup keychain -- it is not stored anywhere else!") */
     warning: optional(t.string),
   }),
 ]);

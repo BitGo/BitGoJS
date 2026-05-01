@@ -28,6 +28,7 @@ export const PostEncrypt = httpRoute({
   }),
   response: {
     200: t.type({
+      /** Encrypted ciphertext */
       encrypted: t.string,
     }),
     404: BitgoExpressError,
