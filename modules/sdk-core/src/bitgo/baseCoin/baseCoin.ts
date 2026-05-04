@@ -409,6 +409,22 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   /**
+   * Compute the maximum spendable amount for a wallet address, coin-side.
+   *
+   * Coins that need to deduct chain-specific fees (e.g. Solana, where the fee
+   * payer pays on top of the transfer amount) should override this method.
+   * Return `undefined` to signal that the server-side /maximumSpendable API
+   * result should be used instead.
+   *
+   * @param _walletAddress - the address whose balance to inspect
+   * @returns maximum spendable amount in base units, or undefined
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getMaximumSpendable(_walletAddress: string): Promise<number | undefined> {
+    return Promise.resolve(undefined);
+  }
+
+  /**
    * Get extra parameters for prebuilding a tx. Add things like hop transaction params
    */
   getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions): Promise<Record<string, unknown>> {

@@ -3851,4 +3851,46 @@ describe('SOL:', function () {
       address.should.equal(expectedAddress);
     });
   });
+
+  describe('getMaximumSpendable', () => {
+    const sandBox = sinon.createSandbox();
+    const walletAddress = testData.accountInfo.bs58EncodedPublicKey;
+    // balance: 1_000_000_000 lamports (1 SOL)
+    const balance = testData.SolResponses.getAccountBalanceResponse.body.result.value;
+    // fee: 5_000 lamports (one signature)
+    const fee = testData.SolResponses.getFeesForMessageResponse.body.result.value;
+
+    beforeEach(() => {
+      sandBox.stub(Sol.prototype as any, 'getAccountBalance').callsFake(async (...args: unknown[]) => {
+        const pubKey = args[0] as string;
+        if (pubKey === testData.accountInfo.bs58EncodedPublicKeyNoFunds) return 0;
+        return balance;
+      });
+
+      sandBox.stub(Sol.prototype as any, 'getBlockhash').resolves('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
+
+      sandBox.stub(Sol.prototype as any, 'getFeeForMessage').resolves(fee);
+    });
+
+    afterEach(() => {
+      sandBox.restore();
+    });
+
+    it('should return balance minus transaction fee', async () => {
+      const result = await basecoin.getMaximumSpendable(walletAddress);
+      result.should.equal(balance - fee);
+    });
+
+    it('should return 0 when wallet has no funds', async () => {
+      const result = await basecoin.getMaximumSpendable(testData.accountInfo.bs58EncodedPublicKeyNoFunds);
+      result.should.equal(0);
+    });
+
+    it('should return 0 when balance is less than fee', async () => {
+      (Sol.prototype as any).getAccountBalance.restore();
+      sandBox.stub(Sol.prototype as any, 'getAccountBalance').resolves(fee - 1);
+      const result = await basecoin.getMaximumSpendable(walletAddress);
+      result.should.equal(0);
+    });
+  });
 });

@@ -1029,6 +1029,47 @@ export class Sol extends BaseCoin {
     return response.body.result.value;
   }
 
+  /**
+   * Compute the maximum spendable balance for a SOL wallet address.
+   *
+   * The Solana fee payer pays fees on top of the transfer amount, so the true
+   * maximum sendable amount is: balance - transactionFee.
+   *
+   * We build a representative transfer transaction, ask the Solana node for its
+   * fee, then subtract that fee from the on-chain balance.  This is the same
+   * approach used in the self-custody `recover()` flow.
+   *
+   * @param walletAddress - the base58-encoded Solana account public key
+   * @param apiKey        - optional Alchemy API key for node requests
+   * @returns maximum spendable amount in lamports
+   */
+  async getMaximumSpendable(walletAddress: string, apiKey?: string): Promise<number> {
+    const balance = await this.getAccountBalance(walletAddress, apiKey);
+    if (balance === 0) {
+      return 0;
+    }
+
+    const blockhash = await this.getBlockhash(apiKey);
+    const factory = this.getBuilder();
+
+    // Build a representative transfer so we can ask the node for its fee.
+    // The exact destination and amount do not affect the fee for a simple
+    // SOL transfer, so we use the sender as a placeholder destination.
+    const txBuilder = factory
+      .getTransferBuilder()
+      .nonce(blockhash)
+      .sender(walletAddress)
+      .send({ address: walletAddress, amount: balance.toString() })
+      .feePayer(walletAddress);
+
+    const unsignedTx = (await txBuilder.build()) as Transaction;
+    const serializedMessage = unsignedTx.solTransaction.serializeMessage().toString('base64');
+    const fee = await this.getFeeForMessage(serializedMessage, apiKey);
+
+    const maximumSpendable = balance - fee;
+    return maximumSpendable > 0 ? maximumSpendable : 0;
+  }
+
   protected async getAccountInfo(pubKey: string, apiKey?: string): Promise<SolDurableNonceFromNode> {
     const response = await this.getDataFromNode(
       {

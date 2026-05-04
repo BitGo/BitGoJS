@@ -613,6 +613,7 @@ export interface IBaseCoin {
   supportsMessageSigning(): boolean;
   supportsSigningTypedData(): boolean;
   supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions, keychains: KeychainsTriplet): Promise<any>;
+  getMaximumSpendable(walletAddress: string): Promise<number | undefined>;
   getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions): Promise<Record<string, unknown>>;
   postProcessPrebuild(prebuildResponse: TransactionPrebuild): Promise<TransactionPrebuild>;
   presignTransaction(params: PresignTransactionOptions): Promise<PresignTransactionOptions>;

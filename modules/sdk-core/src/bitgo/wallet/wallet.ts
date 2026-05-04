@@ -1007,9 +1007,30 @@ export class Wallet implements IWallet {
           'cannot sweep when unconfirmed funds exist on the wallet, please wait until all inbound transactions confirm'
         );
       }
-      const value = await this.bitgo.get(this.url('/maximumSpendable')).result();
-      const maximumSpendable = new BigNumber(value.maximumSpendable);
-      if (value === undefined || maximumSpendable.isZero()) {
+
+      // Some coins (e.g. Solana) need to compute the maximum spendable amount
+      // locally because the transaction fee is charged on top of the transfer
+      // amount, so the server-side /maximumSpendable value is too large by
+      // exactly one transaction fee.  If the coin provides its own calculation
+      // we use that; otherwise we fall back to the BitGo API.
+      const walletAddress = this.coinSpecific()?.rootAddress || this.receiveAddress();
+      const coinMaximumSpendable =
+        walletAddress !== undefined
+          ? await this.baseCoin.getMaximumSpendable(walletAddress)
+          : undefined;
+
+      let maximumSpendable: BigNumber;
+      if (coinMaximumSpendable !== undefined) {
+        maximumSpendable = new BigNumber(coinMaximumSpendable);
+      } else {
+        const value = await this.bitgo.get(this.url('/maximumSpendable')).result();
+        maximumSpendable = new BigNumber(value.maximumSpendable);
+        if (value === undefined || maximumSpendable.isZero()) {
+          throw new Error('no funds to sweep');
+        }
+      }
+
+      if (maximumSpendable.isZero()) {
         throw new Error('no funds to sweep');
       }
 
