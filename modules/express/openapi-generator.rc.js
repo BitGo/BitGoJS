@@ -8,6 +8,7 @@ module.exports = (E) => {
     '.': {
       JsonFromStringifiedJson: () => E.right({ type: 'string' }),
       Optional: (args) => E.right({ ...args[0], nullable: true }),
+      Int: () => E.right({ type: 'integer' }),
     },
     'io-ts-types': {
       Json: () => E.right({ type: 'object', properties: {}, required: [] }),
