@@ -14772,7 +14772,7 @@ export const erc20Coins = [
     6,
     '0xda38de6dba36918e716ade6a3ac7944d6a5d5683',
     UnderlyingAsset['hteth:htusdl'],
-    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.STABLECOIN],
     undefined,
     undefined,
     Networks.test.hoodi
@@ -14784,7 +14784,7 @@ export const erc20Coins = [
     6,
     '0xd73e58e2ebbb6015348361319766e5eef21e3e8c',
     UnderlyingAsset['hteth:htusdlt'],
-    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.STABLECOIN],
     undefined,
     undefined,
     Networks.test.hoodi

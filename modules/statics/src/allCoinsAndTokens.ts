@@ -3762,7 +3762,8 @@ export const allCoinsAndTokens = [
     6,
     '0xb38809a63bc35fbb8b7ed9c66a24ff56412705a6',
     UnderlyingAsset['tbaseeth:tusdl'],
-    Networks.test.basechain
+    Networks.test.basechain,
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
   ),
   erc20Token(
     '439fb12d-fddf-4749-8a33-b7c79fefc1b4',
@@ -5492,7 +5493,7 @@ export const allCoinsAndTokens = [
     6,
     'TFDrx3FjBnxLegrfHN9F7SQdcyxWYHzEVa',
     UnderlyingAsset['ttrx:tusdlt'],
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.STABLECOIN]
   ),
   talgoToken(
     '0e20b757-3e62-4400-887d-caff117481c8',
