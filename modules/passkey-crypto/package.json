@@ -34,6 +34,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@bitgo/public-types": "6.1.0",
     "@bitgo/sjcl": "^1.1.0"
   },
   "devDependencies": {
