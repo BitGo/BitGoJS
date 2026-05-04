@@ -138,7 +138,7 @@ export const CustomChangeKeySignatures = t.partial({
   bitgo: t.string,
 });
 
-export const multisigType = t.union([t.literal('onchain'), t.literal('tss')]);
+export const multisigType = t.union([t.literal('onchain'), t.literal('tss'), t.literal('blsdkg')]);
 
 export const walletType = t.union([t.literal('cold'), t.literal('custodial'), t.literal('hot'), t.literal('trading')]);
 
