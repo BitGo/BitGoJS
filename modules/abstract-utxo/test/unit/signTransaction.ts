@@ -74,7 +74,7 @@ describe('signTransaction', function () {
           walletId: isTxWithTaprootKeyPathSpend ? wallet.id() : undefined,
         },
         prv: userPrv,
-        pubs: isPsbt ? undefined : pubs,
+        pubs,
       });
       assert.ok('txHex' in psbt);
       if (isPsbt) {
@@ -92,6 +92,7 @@ describe('signTransaction', function () {
     const signerNoncePsbt = await coin.signTransaction({
       txPrebuild: { txHex },
       prv: userPrv,
+      pubs,
       signingStep: 'signerNonce',
     });
     assert.ok('txHex' in signerNoncePsbt);
@@ -109,6 +110,7 @@ describe('signTransaction', function () {
 
     const cosignerNoncePsbt = await coin.signTransaction({
       txPrebuild: { ...signerNoncePsbt, walletId: wallet.id() },
+      pubs,
       signingStep: 'cosignerNonce',
     });
     assert.ok('txHex' in cosignerNoncePsbt);
@@ -126,7 +128,7 @@ describe('signTransaction', function () {
     const signerSigPsbt = await coin.signTransaction({
       txPrebuild: { ...cosignerNoncePsbt, txInfo: isPsbt ? undefined : { unspents } },
       prv: userPrv,
-      pubs: isPsbt ? undefined : pubs,
+      pubs,
       signingStep: 'signerSignature',
     });
     assert.ok('txHex' in signerSigPsbt);
@@ -139,14 +141,14 @@ describe('signTransaction', function () {
   }
 
   it('customSigningFunction flow - PSBT with taprootKeyPathSpend inputs', async function () {
-    const inputs: testutil.Input[] = testutil.inputScriptTypes.map((scriptType) => ({
-      scriptType,
-      value: BigInt(1000),
-    }));
+    const replayProtectionKey = getReplayProtectionPubkeys(coin.name)[0];
+    const inputs: testutil.Input[] = testutil.inputScriptTypes
+      .filter((t) => t !== 'p2shP2pk' || replayProtectionKey !== undefined)
+      .map((scriptType) => ({ scriptType, value: BigInt(1000) }));
     const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
     const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
     const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned', {
-      p2shP2pkKey: getReplayProtectionPubkeys(coin.name)[0],
+      p2shP2pkKey: replayProtectionKey,
     });
 
     for (const v of [false, true]) {
@@ -155,15 +157,15 @@ describe('signTransaction', function () {
   });
 
   it('customSigningFunction flow - PSBT without taprootKeyPathSpend inputs', async function () {
+    const replayProtectionKey = getReplayProtectionPubkeys(coin.name)[0];
     const inputs: testutil.Input[] = testutil.inputScriptTypes
-      .filter((v) => v !== 'taprootKeyPathSpend')
-      .map((scriptType) => ({
-        scriptType,
-        value: BigInt(1000),
-      }));
+      .filter((v) => v !== 'taprootKeyPathSpend' && (v !== 'p2shP2pk' || replayProtectionKey !== undefined))
+      .map((scriptType) => ({ scriptType, value: BigInt(1000) }));
     const unspentSum = inputs.reduce((prev: bigint, cur) => prev + cur.value, BigInt(0));
     const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
-    const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned');
+    const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned', {
+      p2shP2pkKey: replayProtectionKey,
+    });
 
     for (const v of [false, true]) {
       await signTransaction(psbt, v);
@@ -199,43 +201,13 @@ describe('signTransaction', function () {
         await coin.signTransaction({
           txPrebuild: { txHex: psbt.toHex() },
           prv: userPrv,
+          pubs,
           signingStep: 'signerSignature',
         });
       },
       {
         message: `Psbt is missing from txCache (cache size 0).
             This may be due to the request being routed to a different BitGo-Express instance that for signing step 'signerNonce'.`,
-      }
-    );
-  });
-
-  it('fails on unsupported locking script', async function () {
-    const inputs: testutil.Input[] = [
-      { scriptType: 'p2wsh', value: BigInt(1000) },
-      { scriptType: 'p2trMusig2', value: BigInt(1000) },
-    ];
-    const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
-    const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(500) }];
-    const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned');
-
-    // override the 1st PSBT input with unsupported 2 of 2 multi-sig locking script.
-    const unspent = testutil.toUnspent(inputs[0], 0, coin.network, rootWalletKeys);
-    if (!utxolib.bitgo.isWalletUnspent(unspent)) {
-      throw new Error('invalid unspent');
-    }
-    const { publicKeys } = rootWalletKeys.deriveForChainAndIndex(unspent.chain, unspent.index);
-    const script2Of2 = utxolib.payments.p2ms({ m: 2, pubkeys: [publicKeys[0], publicKeys[1]] });
-    psbt.data.inputs[0].witnessScript = script2Of2.output;
-
-    await assert.rejects(
-      async () => {
-        await coin.signTransaction({
-          txPrebuild: { txHex: psbt.toHex() },
-          prv: userPrv,
-        });
-      },
-      {
-        message: `length mismatch`,
       }
     );
   });

@@ -81,7 +81,6 @@ import {
   getMainnetCoinName,
   getNetworkFromCoinName,
   isMainnetCoin,
-  isUtxoCoinNameMainnet,
   UtxoCoinName,
   UtxoCoinNameMainnet,
 } from './names';
@@ -435,14 +434,17 @@ export abstract class AbstractUtxoCoin
     legacy: this.isMainnet(),
   };
 
+  protected supportedSdkBackends: { utxolib: boolean; 'wasm-utxo': boolean } = {
+    utxolib: this.isMainnet(),
+    'wasm-utxo': true,
+  };
+
   protected constructor(bitgo: BitGoBase, amountType: 'number' | 'bigint' = 'number') {
     super(bitgo);
     this.amountType = amountType;
   }
 
-  get defaultSdkBackend(): SdkBackend {
-    return isUtxoCoinNameMainnet(this.name) ? 'utxolib' : 'wasm-utxo';
-  }
+  defaultSdkBackend: SdkBackend = 'wasm-utxo';
 
   /**
    * @deprecated - will be removed when we drop support for utxolib
@@ -627,6 +629,10 @@ export abstract class AbstractUtxoCoin
     }
 
     if (utxolib.bitgo.isPsbt(input)) {
+      if (this.supportedSdkBackends[decodeWith] !== true) {
+        throw new Error(`SDK support for decodeWith=${decodeWith} is not available on this environment.`);
+      }
+
       if (!this.supportedTxFormats.psbt) {
         throw new ErrorDeprecatedTxFormat('psbt');
       }
