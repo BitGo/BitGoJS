@@ -743,8 +743,8 @@ class XtzEvmTestnet extends Testnet implements EthereumNetwork {
   family = CoinFamily.XTZEVM;
   explorerUrl = 'https://shadownet.explorer.etherlink.com/tx/';
   accountExplorerUrl = 'https://shadownet.explorer.etherlink.com/address/';
-  chainId = 128123;
-  nativeCoinOperationHashPrefix = '128123';
+  chainId = 127823;
+  nativeCoinOperationHashPrefix = '127823';
 }
 
 class Pyrmont extends Testnet implements AccountNetwork {
