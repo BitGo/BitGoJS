@@ -9,6 +9,7 @@ import { CantonTransferAcceptRejectRequest } from '../../../../src/lib/iface';
 import {
   CantonTokenAcceptPrepareResponse,
   CBTCTokenAcceptancePrepareResponse,
+  USDCxTokenAcceptancePrepareResponse,
   TransferAcceptance,
   TransferAcceptancePrepareResponse,
 } from '../../../resources';
@@ -70,6 +71,30 @@ describe('Transfer Acceptance Builder', () => {
     assert.equal(txData.receiver, partyId);
     assert.equal(txData.amount, '1000000');
     assert.equal(txData.token, 'canton:cbtc');
+  });
+
+  it('should get the transfer acceptance request object for usdcx token', function () {
+    const txBuilder = new TransferAcceptanceBuilder(coins.get('tcanton'));
+    const transferAcceptanceTx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(transferAcceptanceTx);
+    txBuilder.setTransaction(USDCxTokenAcceptancePrepareResponse);
+    const commandId = '3935a06d-3b03-41be-99a5-95b2ecaabf7d';
+    const partyId = '1220d::1220dc555fb89a30ab098ffb28b8cf1532053076a736bf6ed3b3c7da6fb4d710b4aa';
+    const { contractId } = TransferAcceptance;
+    txBuilder.commandId(commandId).contractId(contractId).actAs(partyId);
+    const requestObj: CantonTransferAcceptRejectRequest = txBuilder.toRequestObject();
+    const txData = txBuilder.transaction.toJson();
+    should.exist(requestObj);
+    assert.equal(requestObj.commandId, commandId);
+    assert.equal(requestObj.contractId, contractId);
+    assert.equal(requestObj.actAs.length, 1);
+    const actAs = requestObj.actAs[0];
+    assert.equal(actAs, partyId);
+    should.exist(txData);
+    assert.equal(txData.sender, '12201::1220175583b704cbb493393c1dbe17b9909ee4cf55ef345e8147cd6900c5768f861d');
+    assert.equal(txData.receiver, partyId);
+    assert.equal(txData.amount, '10000000000');
+    assert.equal(txData.token, 'canton:usdcx');
   });
 
   it('should validate raw transaction', function () {
