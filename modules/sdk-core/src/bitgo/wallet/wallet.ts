@@ -1015,9 +1015,7 @@ export class Wallet implements IWallet {
       // we use that; otherwise we fall back to the BitGo API.
       const walletAddress = this.coinSpecific()?.rootAddress || this.receiveAddress();
       const coinMaximumSpendable =
-        walletAddress !== undefined
-          ? await this.baseCoin.getMaximumSpendable(walletAddress)
-          : undefined;
+        walletAddress !== undefined ? await this.baseCoin.getMaximumSpendable(walletAddress) : undefined;
 
       let maximumSpendable: BigNumber;
       if (coinMaximumSpendable !== undefined) {
