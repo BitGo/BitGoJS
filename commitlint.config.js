@@ -27,6 +27,7 @@ module.exports = {
         'BTC-',
         'CAAS-',
         'CE-',
+        'CGD-',
         'CEN-',
         'CLEX-',
         'COPS-',
