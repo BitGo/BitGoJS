@@ -15,7 +15,6 @@ import {
 } from '@bitgo/sdk-core';
 
 import { AbstractUtxoCoin, generateAddress, getReplayProtectionPubkeys } from '../../src';
-import { SdkBackend } from '../../src/transaction/types';
 import type { Unspent, WalletUnspent } from '../../src/unspent';
 
 import {
@@ -38,16 +37,10 @@ import {
 function run<TNumber extends number | bigint = number>(
   coin: AbstractUtxoCoin,
   inputScripts: testutil.InputScriptType[],
-  txFormat: 'legacy' | 'psbt',
-  { decodeWith }: { decodeWith?: SdkBackend } = {}
+  txFormat: 'legacy' | 'psbt'
 ) {
   const amountType = coin.amountType;
-  const title = [
-    inputScripts.join(','),
-    `txFormat=${txFormat}`,
-    `amountType=${amountType}`,
-    decodeWith ? `decodeWith=${decodeWith}` : '',
-  ];
+  const title = [inputScripts.join(','), `txFormat=${txFormat}`, `amountType=${amountType}`];
   describe(`${title.join(' ')}`, function () {
     const bgUrl = common.Environments[defaultBitGo.getEnv()].uri;
 
@@ -92,8 +85,7 @@ function run<TNumber extends number | bigint = number>(
     function getSignParams(
       prebuildHex: string,
       signer: BIP32Interface,
-      cosigner: BIP32Interface,
-      decodeWith: SdkBackend | undefined
+      cosigner: BIP32Interface
     ): WalletSignTransactionOptions {
       const txInfo = {
         unspents: txFormat === 'psbt' ? undefined : getUnspents(),
@@ -103,7 +95,6 @@ function run<TNumber extends number | bigint = number>(
           walletId: isTransactionWithKeyPathSpend ? wallet.id() : undefined,
           txHex: prebuildHex,
           txInfo,
-          decodeWith,
         },
         prv: signer.toBase58(),
         pubs: walletKeys.triple.map((k) => k.neutered().toBase58()),
@@ -133,7 +124,7 @@ function run<TNumber extends number | bigint = number>(
 
       // half-sign with the user key
       const result = (await wallet.signTransaction(
-        getSignParams(prebuild.toBuffer().toString('hex'), signer, cosigner, decodeWith)
+        getSignParams(prebuild.toBuffer().toString('hex'), signer, cosigner)
       )) as Promise<HalfSignedUtxoTransaction>;
 
       if (scope) {
@@ -149,7 +140,7 @@ function run<TNumber extends number | bigint = number>(
       cosigner: BIP32Interface
     ): Promise<FullySignedTransaction> {
       return (await wallet.signTransaction({
-        ...getSignParams(halfSigned.txHex, signer, cosigner, decodeWith),
+        ...getSignParams(halfSigned.txHex, signer, cosigner),
         isLastSignature: true,
       })) as FullySignedTransaction;
     }
@@ -328,14 +319,9 @@ function run<TNumber extends number | bigint = number>(
           unspents,
         },
         pubs,
-        decodeWith,
       });
 
       const expectedProperties = ['id', 'outputs', 'changeOutputs', 'changeAmount', 'outputAmount'];
-
-      if (decodeWith !== 'wasm-utxo') {
-        expectedProperties.push('displayOrder', 'inputSignatures', 'signatures');
-      }
 
       for (const prop of expectedProperties) {
         assert.ok(prop in explanation, `expected explanation to have property '${prop}'`);
@@ -412,16 +398,13 @@ function run<TNumber extends number | bigint = number>(
             ? getUnspentsForPsbt().map((u) => ({ ...u, value: bitgo.toTNumber(u.value, amountType) as TNumber }))
             : getUnspents();
         await testExplainTx(stageName, txHex, unspents, pubs);
-        if (decodeWith !== 'wasm-utxo') {
-          await testExplainTx(stageName, txHex, unspents, undefined);
-        }
       }
     });
   });
 }
 
 function runTestForCoin(coin: AbstractUtxoCoin) {
-  run(coin, getScriptTypes(coin, 'psbt'), 'psbt', { decodeWith: 'wasm-utxo' });
+  run(coin, getScriptTypes(coin, 'psbt'), 'psbt');
 }
 
 describe('Transaction Suite', function () {
