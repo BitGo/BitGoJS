@@ -247,6 +247,17 @@ export class Utils implements BaseUtils {
             extractFromTransferRecord(transferSum.record?.fields ?? [], 'instrumentId', 'admin');
           }
         }
+        // USDCx/two-step token fallback: TransferRule_TwoStepTransfer exercise node
+        // → transfer.{sender, receiver, amount, instrumentId.{admin, id}}
+        if (!sender) {
+          const twoStepTransferFields = findExerciseNodeFields('TransferRule_TwoStepTransfer');
+          if (twoStepTransferFields) {
+            const transferSum = getField(twoStepTransferFields, 'transfer');
+            if (transferSum?.oneofKind === 'record') {
+              extractFromTransferRecord(transferSum.record?.fields ?? [], 'instrumentId', 'admin');
+            }
+          }
+        }
         break;
       }
 
