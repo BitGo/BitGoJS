@@ -1,4 +1,4 @@
-import { createHmac } from 'crypto';
+import * as sjcl from '@bitgo/sjcl';
 
 /**
  * Derives an enterprise-scoped PRF salt to prevent cross-enterprise key reuse.
@@ -8,9 +8,11 @@ import { createHmac } from 'crypto';
  *
  * @param baseSalt - Server-provided base64url-encoded PRF salt
  * @param enterpriseId - Enterprise identifier
- * @returns Hex-encoded HMAC-SHA256 digest
+ * @returns Base64url-encoded HMAC-SHA256 digest
  */
 export function deriveEnterpriseSalt(baseSalt: string, enterpriseId: string): string {
-  const keyBytes = Buffer.from(baseSalt.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
-  return createHmac('sha256', keyBytes).update(enterpriseId).digest('hex');
+  const keyBits = sjcl.codec.base64url.toBits(baseSalt);
+  const dataBits = sjcl.codec.utf8String.toBits(enterpriseId);
+  const resultBits = new sjcl.misc.hmac(keyBits, sjcl.hash.sha256).mac(dataBits);
+  return sjcl.codec.base64url.fromBits(resultBits);
 }

@@ -37,8 +37,8 @@ export async function attachPasskeyToWallet(params: {
   const keychain = await wallet.getEncryptedUserKeychain();
   const keychainId = keychain.id;
 
-  // Derive enterprise-scoped salt
-  const enterpriseSalt = deriveEnterpriseSalt(device.prfSalt, enterpriseId);
+  // Derive enterprise-scoped salt (already base64url-encoded)
+  const prfSalt = deriveEnterpriseSalt(device.prfSalt, enterpriseId);
 
   // Decrypt private key with existing passphrase
   const privateKey = bitgo.decrypt({ password: existingPassphrase, input: keychain.encryptedPrv });
@@ -53,7 +53,7 @@ export async function attachPasskeyToWallet(params: {
     publicKey: {
       allowCredentials: [{ type: 'public-key', id: credentialIdBuffer }],
     } as PublicKeyCredentialRequestOptions,
-    evalByCredential: { [device.credentialId]: enterpriseSalt },
+    evalByCredential: { [device.credentialId]: prfSalt },
   });
 
   if (!authResult.prfResult) {
@@ -64,20 +64,12 @@ export async function attachPasskeyToWallet(params: {
   const prfPassword = derivePassword(authResult.prfResult);
   const encryptedPrv = bitgo.encrypt({ password: prfPassword, input: privateKey });
 
-  // Convert enterpriseSalt from hex to base64url (URL-safe, no padding)
-  // as required by the server's prfSalt validation.
-  const prfSaltBase64url = Buffer.from(enterpriseSalt, 'hex')
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-
   // PUT webauthnInfo to keychain endpoint
   const updatedKeychain = await bitgo
     .put(bitgo.url(`/${coin}/key/${keychainId}`, 2))
     .send({
       webauthnInfo: {
-        prfSalt: prfSaltBase64url,
+        prfSalt,
         otpDeviceId: device.id,
         encryptedPrv,
       },
