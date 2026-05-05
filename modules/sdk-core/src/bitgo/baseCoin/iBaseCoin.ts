@@ -434,6 +434,11 @@ export interface FullySignedTransaction {
 
 export interface HalfSignedUtxoTransaction {
   txHex: string;
+  /**
+   * PSBT-lite hex preserved from a pending approval's coinSpecific.
+   * Only present in the PA approval flow — not in regular sign/send flows.
+   */
+  txHexPsbt?: string;
 }
 
 export interface HalfSignedAccountTransaction {

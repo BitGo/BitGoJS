@@ -122,6 +122,7 @@ export class CoinMap {
     181228: 'thppeth',
     6985385: 'h',
     7080969: 'th',
+    4663: 'hoodeth',
     46630: 'thoodeth',
     324: 'zketh',
     8453: 'baseeth',

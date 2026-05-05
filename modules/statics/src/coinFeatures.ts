@@ -602,7 +602,10 @@ export const COREDAO_FEATURES = [
   CoinFeature.EIP1559,
   CoinFeature.ERC20_BULK_TRANSACTION,
 ];
-export const TEMPO_FEATURES = EVM_FEATURES.filter((feature) => feature !== CoinFeature.ENTERPRISE_PAYS_FEES);
+export const TEMPO_FEATURES = [
+  ...EVM_FEATURES.filter((feature) => feature !== CoinFeature.ENTERPRISE_PAYS_FEES),
+  CoinFeature.EVM_KEYRING_UNSUPPORTED,
+];
 export const HYPERLIQUID_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.MULTISIG_COLD,
@@ -626,7 +629,6 @@ export const APT_FEATURES = [
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
   CoinFeature.BULK_TRANSACTION,
-  CoinFeature.BULK_STAKING_TRANSACTION,
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.ENTERPRISE_PAYS_FEES,
   CoinFeature.TSS_ENTERPRISE_PAYS_FEES,

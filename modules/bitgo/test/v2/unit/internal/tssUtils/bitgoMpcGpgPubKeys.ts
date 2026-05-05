@@ -2,6 +2,7 @@ import {
   BitgoMpcGpgPubKeys,
   common,
   ECDSAUtils,
+  EDDSAUtils,
   EddsaUtils,
   EnvironmentName,
   IRequestTracer,
@@ -28,9 +29,21 @@ class TestEddsaMpcv1Utils extends EddsaUtils {
   public async testPickBitgoPubGpgKeyForSigning(
     isMpcv2: boolean,
     reqId?: IRequestTracer,
-    enterpriseId?: string
+    enterpriseId?: string,
+    isEddsaMpcv2?: boolean
   ): Promise<openpgp.Key> {
-    return this.pickBitgoPubGpgKeyForSigning(isMpcv2, reqId, enterpriseId);
+    return this.pickBitgoPubGpgKeyForSigning(isMpcv2, reqId, enterpriseId, isEddsaMpcv2);
+  }
+}
+
+class TestEddsaMpcv2Utils extends EDDSAUtils.EddsaMPCv2Utils {
+  public async testPickBitgoPubGpgKeyForSigning(
+    isMpcv2: boolean,
+    reqId?: IRequestTracer,
+    enterpriseId?: string,
+    isEddsaMpcv2?: boolean
+  ): Promise<openpgp.Key> {
+    return this.pickBitgoPubGpgKeyForSigning(isMpcv2, reqId, enterpriseId, isEddsaMpcv2);
   }
 }
 
@@ -58,6 +71,7 @@ describe('TSS MPC Pick BitGo GPG Pub Key Utils:', function () {
   const envs: EnvironmentName[] = ['test', 'staging', 'prod'];
   const ecdsaMpcv2Utils: TestEcdsaMpcv2Utils[] = [];
   const eddsaMpcv1Utils: TestEddsaMpcv1Utils[] = [];
+  const eddsaMpcv2Utils: TestEddsaMpcv2Utils[] = [];
 
   before(async function () {
     nock.cleanAll();
@@ -71,6 +85,9 @@ describe('TSS MPC Pick BitGo GPG Pub Key Utils:', function () {
       coinInstance = bitgoInstance.coin(eddsaCoinName);
       eddsaMpcv1Utils.push(
         new TestEddsaMpcv1Utils(bitgoInstance, coinInstance, new Wallet(bitgoInstance, coinInstance, eddsaWalletData))
+      );
+      eddsaMpcv2Utils.push(
+        new TestEddsaMpcv2Utils(bitgoInstance, coinInstance, new Wallet(bitgoInstance, coinInstance, eddsaWalletData))
       );
     }
   });
@@ -223,6 +240,49 @@ describe('TSS MPC Pick BitGo GPG Pub Key Utils:', function () {
     capturedKey.should.equal(BitgoMpcGpgPubKeys.bitgoMpcGpgPubKeys['mpcv1']['nitro']['test']);
     // Also verify it's the same as what's returned by testPickBitgoPubGpgKeyForSigning
     gpgKey.armor().should.equal(capturedKey);
+  });
+
+  describe('EdDSA MPCv2 pickBitgoPubGpgKeyForSigning', function () {
+    it('should pick correct EdDSA MPCv2 BitGo GPG Pub Key when keychain returns hsmType onprem', async function () {
+      nock.cleanAll();
+      // Mock hsmType as 'onprem' for the EdDSA coin so the onprem eddsaMpcv2 key is selected
+      const bgUrl = common.Environments['test'].uri;
+      nock(bgUrl).get(`/api/v2/${eddsaCoinName}/key/key3`).reply(200, { hsmType: 'onprem' });
+      const bitgoGpgPubKey = await eddsaMpcv2Utils[0].testPickBitgoPubGpgKeyForSigning(
+        true,
+        undefined,
+        undefined,
+        true
+      );
+      bitgoGpgPubKey.armor().should.equal(BitgoMpcGpgPubKeys.bitgoMpcGpgPubKeys['eddsaMpcv2']['onprem']['test']);
+    });
+
+    it('should pick EdDSA MPCv2 BitGo GPG Pub Key based on feature flags for mock env', async function () {
+      const bgUrl = common.Environments['mock'].uri;
+      const testBitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      const testCoin = testBitgo.coin(eddsaCoinName);
+      const bitgoGPGKey = await openpgp.generateKey({
+        userIDs: [
+          {
+            name: 'bitgo',
+            email: 'bitgo@test.com',
+          },
+        ],
+        type: 'ecc',
+        curve: 'ed25519',
+      });
+      nock(bgUrl)
+        .get(`/api/v2/${eddsaCoinName}/tss/pubkey`)
+        .query({ enterpriseId })
+        .reply(200, { mpcv2PublicKey: bitgoGPGKey.publicKey, eddsaMpcv2PublicKey: bitgoGPGKey.publicKey });
+      const eddsaMpcv2Util = new TestEddsaMpcv2Utils(
+        testBitgo,
+        testCoin,
+        new Wallet(testBitgo, testCoin, eddsaWalletData)
+      );
+      const bitgoGpgPubKey = await eddsaMpcv2Util.testPickBitgoPubGpgKeyForSigning(true, undefined, enterpriseId, true);
+      bitgoGpgPubKey.armor().should.equal(bitgoGPGKey.publicKey);
+    });
   });
 
   describe('BitgoMpcGpgPubKeys.isBitgoEddsaMpcv2PubKey', function () {

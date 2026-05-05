@@ -60,7 +60,7 @@
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/public-types": "5.96.2",
+    "@bitgo/public-types": "5.97.0",
     "@bitgo/sdk-lib-mpc": "^10.12.0",
     "@bitgo/sdk-test": "^9.1.41",
     "@types/argparse": "^1.0.36",

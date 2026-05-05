@@ -1,6 +1,10 @@
 import { AccountCoin, polygonErc20, tpolygonErc20 } from '../account';
 import { UnderlyingAsset, CoinFeature } from '../base';
-import { POLYGON_TOKEN_FEATURES, POLYGON_TOKEN_FEATURES_WITH_FRANKFURT } from '../coinFeatures';
+import {
+  POLYGON_TOKEN_FEATURES,
+  POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE,
+  POLYGON_TOKEN_FEATURES_WITH_FRANKFURT,
+} from '../coinFeatures';
 
 export const polygonTokens = [
   polygonErc20(
@@ -1312,7 +1316,7 @@ export const polygonTokens = [
     6,
     '0x934874830d4dd13b7ae00ae69a0b5b32e5b3cd3e',
     UnderlyingAsset['tpolygon:tusdl'],
-    [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+    [...POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.STABLECOIN]
   ),
   tpolygonErc20(
     'd2cb89da-a7d0-4200-b228-ddf5e68b633d',
@@ -1321,6 +1325,6 @@ export const polygonTokens = [
     6,
     '0x4d70b96e2fb36f8cd4edfcde011ae4e151fcf10d',
     UnderlyingAsset['tpolygon:tusdlt'],
-    [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+    [...POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.STABLECOIN]
   ),
 ];

@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as should from 'should';
-import { generateQrData } from '../../src/generateQrData';
+import { generateLightningQrData, generateQrData } from '../../src/generateQrData';
 import { decrypt } from '@bitgo/sdk-api';
 import { ApiKeyShare, Keychain, KeyType } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
@@ -135,6 +135,53 @@ describe('generateQrData', function () {
         should.not.exist(qrData.passcode);
       });
     }
+  });
+
+  describe('generateLightningQrData', function () {
+    it('lightning wallet with encrypted key and passcode', function () {
+      const userAuthEncryptedPrv = 'userAuthPrv123encrypted';
+      const passphrase = 'testingIsFun';
+      const passcodeEncryptionCode = '123456';
+
+      const qrData = generateLightningQrData({
+        userAuthKeychain: createKeychain({ encryptedPrv: userAuthEncryptedPrv }),
+        coin: coins.get('lnbtc'),
+        passcodeEncryptionCode,
+        passphrase,
+      });
+
+      qrData.user.title.should.equal('A: User Auth Key');
+      qrData.user.description.should.match(/user authentication private key/);
+      qrData.user.data.should.equal(userAuthEncryptedPrv);
+
+      should.not.exist(qrData.backup);
+      should.not.exist(qrData.bitgo);
+
+      assert.ok(qrData.passcode);
+      qrData.passcode.title.should.equal('D: Encrypted wallet Password');
+      const decryptedData = decrypt(passcodeEncryptionCode, qrData.passcode.data);
+      decryptedData.should.equal(passphrase);
+    });
+
+    it('lightning wallet without passcode', function () {
+      const qrData = generateLightningQrData({
+        userAuthKeychain: createKeychain({ encryptedPrv: 'userAuthPrv' }),
+        coin: coins.get('lnbtc'),
+      });
+
+      should.not.exist(qrData.passcode);
+    });
+
+    it('throws when userAuthKeychain is missing encryptedPrv', function () {
+      assert.throws(
+        () =>
+          generateLightningQrData({
+            userAuthKeychain: createKeychain({ pub: 'pub123' }),
+            coin: coins.get('lnbtc'),
+          }),
+        /userAuthKeychain must have an encryptedPrv/
+      );
+    });
   });
 
   it('backup key from provider', function () {

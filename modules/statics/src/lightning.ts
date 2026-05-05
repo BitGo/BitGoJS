@@ -15,7 +15,12 @@ interface LightningConstructorOptions {
 }
 
 export class LightningCoin extends BaseCoin {
-  public static readonly DEFAULT_FEATURES = [CoinFeature.LIGHTNING_MODEL];
+  public static readonly DEFAULT_FEATURES = [
+    CoinFeature.LIGHTNING_MODEL,
+    CoinFeature.STAKING,
+    CoinFeature.CUSTODY,
+    CoinFeature.CUSTODY_BITGO_TRUST,
+  ];
 
   /**
    * Additional fields for lightning coins
@@ -92,7 +97,7 @@ export const lightningCoins: Readonly<BaseCoin>[] = [
     'lnbtc',
     'Lightning Bitcoin',
     Networks.main.lnbtc,
-    UnderlyingAsset.LNBTC,
+    UnderlyingAsset.BTC,
     BaseUnit.LNBTC,
     LNBTC_FEATURES
   ),
@@ -101,7 +106,7 @@ export const lightningCoins: Readonly<BaseCoin>[] = [
     'tlnbtc',
     'Testnet Lightning Bitcoin',
     Networks.test.lnbtc,
-    UnderlyingAsset.LNBTC,
+    UnderlyingAsset.BTC,
     BaseUnit.LNBTC,
     LNBTC_FEATURES
   ),

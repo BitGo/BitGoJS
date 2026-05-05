@@ -2080,6 +2080,42 @@ export const allCoinsAndTokens = [
     [...SONEIUM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
+    '7596838b-e1c5-4072-a173-b91a7b5cb7de',
+    'scrolleth',
+    'Scroll',
+    Networks.main.scrolleth,
+    18,
+    UnderlyingAsset.SCROLLETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    '406827a0-9bf8-4f83-ae94-bcf22d8ecf6a',
+    'tscrolleth',
+    'Scroll Sepolia Testnet',
+    Networks.test.scrolleth,
+    18,
+    UnderlyingAsset.SCROLLETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
     '1bf486a9-47ed-4bea-8e9a-a23a074cdc9a',
     'tstt',
     'Somnia Testnet',
@@ -3762,7 +3798,8 @@ export const allCoinsAndTokens = [
     6,
     '0xb38809a63bc35fbb8b7ed9c66a24ff56412705a6',
     UnderlyingAsset['tbaseeth:tusdl'],
-    Networks.test.basechain
+    Networks.test.basechain,
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
   ),
   erc20Token(
     '439fb12d-fddf-4749-8a33-b7c79fefc1b4',
@@ -4267,7 +4304,8 @@ export const allCoinsAndTokens = [
     18,
     '0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf',
     UnderlyingAsset['baseeth:vvv'],
-    Networks.main.basechain
+    Networks.main.basechain,
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
   ),
 
   // XDC mainnet tokens
@@ -4414,7 +4452,8 @@ export const allCoinsAndTokens = [
     18,
     '0xfd739d4e423301ce9385c1fb8850539d657c296d',
     UnderlyingAsset['hypeevm:khype'],
-    Networks.main.hypeevm
+    Networks.main.hypeevm,
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
   ),
   erc20Token(
     'fa292113-57f0-425a-841b-0e3111c8fd52',
@@ -4423,7 +4462,8 @@ export const allCoinsAndTokens = [
     18,
     '0x000000000000780555bd0bca3791f89f9542c2d6',
     UnderlyingAsset['hypeevm:kntq'],
-    Networks.main.hypeevm
+    Networks.main.hypeevm,
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
   ),
 
   // Story testnet tokens
@@ -5489,7 +5529,7 @@ export const allCoinsAndTokens = [
     6,
     'TFDrx3FjBnxLegrfHN9F7SQdcyxWYHzEVa',
     UnderlyingAsset['ttrx:tusdlt'],
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.STABLECOIN]
   ),
   talgoToken(
     '0e20b757-3e62-4400-887d-caff117481c8',

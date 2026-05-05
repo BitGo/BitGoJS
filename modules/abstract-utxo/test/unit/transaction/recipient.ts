@@ -2,6 +2,22 @@ import assert from 'assert';
 
 import { getUtxoCoin } from '../util/utxoCoins';
 
+describe('AbstractUtxoCoin.preprocessBuildParams', function () {
+  const coin = getUtxoCoin('btc');
+
+  it('does not crash when recipients includes an OP_RETURN output with no address field', function () {
+    const params = {
+      recipients: [
+        { address: '3L3jdUJ9YCpGFjYB2Tuu7iBJes6ZHJFmnS', amount: '999612' },
+        { amount: '0', script: '6a0c3230323651312d6175646974' }, // OP_RETURN, no address
+      ],
+    };
+    assert.doesNotThrow(() => coin.preprocessBuildParams(params));
+    // The OP_RETURN recipient should be passed through unchanged
+    assert.deepStrictEqual(params.recipients[1], { amount: '0', script: '6a0c3230323651312d6175646974' });
+  });
+});
+
 describe('AbstractUtxoCoin.checkRecipient', function () {
   const coin = getUtxoCoin('btc');
 

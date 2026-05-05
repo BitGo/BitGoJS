@@ -1,10 +1,4 @@
-import {
-  BaseKey,
-  BaseTransaction,
-  InvalidTransactionError,
-  ParseTransactionError,
-  TransactionType,
-} from '@bitgo/sdk-core';
+import { BaseKey, BaseTransaction, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { localForger } from '@taquito/local-forging';
 import { OpKind } from '@taquito/rpc';
@@ -19,6 +13,32 @@ import {
   updateMultisigTransferSignatures,
 } from './multisigUtils';
 import * as Utils from './utils';
+
+const SIGNATURE_HEX_LENGTH = 128;
+
+async function tryParseSigned(
+  serialized: string
+): Promise<{ parsed: ParsedTransaction; transactionId: string } | undefined> {
+  if (serialized.length <= SIGNATURE_HEX_LENGTH) {
+    return undefined;
+  }
+  // If `serialized` really is `forge(ops) || signature`, stripping the trailing 64
+  // bytes gives the exact forge bytes and forge(parse(...)) reproduces them. If
+  // `serialized` was unsigned, stripping cuts into the operation contents: parse
+  // either throws or recovers a truncated parse whose forge does not match. So a
+  // clean round-trip is what proves the trailing bytes were a signature.
+  const operationBytes = serialized.slice(0, -SIGNATURE_HEX_LENGTH);
+  try {
+    const parsed = await localForger.parse(operationBytes);
+    const roundTrip = await localForger.forge(parsed);
+    if (roundTrip !== operationBytes) {
+      return undefined;
+    }
+    return { parsed, transactionId: await Utils.calculateTransactionId(serialized) };
+  } catch (_) {
+    return undefined;
+  }
+}
 
 /**
  * Tezos transaction model.
@@ -49,22 +69,16 @@ export class Transaction extends BaseTransaction {
    */
   async initFromSerializedTransaction(serializedTransaction: string): Promise<void> {
     this._encodedTransaction = serializedTransaction;
-    try {
-      const parsedTransaction = await localForger.parse(serializedTransaction);
-      await this.initFromParsedTransaction(parsedTransaction);
-    } catch (e) {
-      // If it throws, it is possible the serialized transaction is signed, which is not supported
-      // by local-forging. Try extracting the last 64 bytes and parse it again.
-      const unsignedSerializedTransaction = serializedTransaction.slice(0, -128);
-      const signature = serializedTransaction.slice(-128);
-      if (Utils.isValidSignature(signature)) {
-        throw new ParseTransactionError('Invalid transaction');
-      }
+    // Only signed inputs have a transaction id (it is the hash of the signed bytes);
+    // unsigned inputs leave it unset and let the caller populate it after signing.
+    const signed = await tryParseSigned(serializedTransaction);
+    if (signed) {
       // TODO: encode the signature and save it in _signature
-      const parsedTransaction = await localForger.parse(unsignedSerializedTransaction);
-      const transactionId = await Utils.calculateTransactionId(serializedTransaction);
-      await this.initFromParsedTransaction(parsedTransaction, transactionId);
+      await this.initFromParsedTransaction(signed.parsed, signed.transactionId);
+      return;
     }
+    const parsed = await localForger.parse(serializedTransaction);
+    await this.initFromParsedTransaction(parsed);
   }
 
   /**

@@ -999,10 +999,21 @@
     "@scure/base" "1.1.5"
     micro-eth-signer "0.7.2"
 
-"@bitgo/public-types@5.96.2":
-  version "5.96.2"
-  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-5.96.2.tgz#ae5ffe68a94742e72def3cec15bf236adaed50f5"
-  integrity sha512-fUwUXP0MLitOyg2blaAxCC04aplrj7XqsTEMFENxJg21ovHyO2mB4vz3IGOnwNipgx6jaCgplZAnPxcKu7N/nw==
+"@bitgo/public-types@5.97.0":
+  version "5.97.0"
+  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-5.97.0.tgz#d75f19e92863cdeed297da9e6fd52b6883207624"
+  integrity sha512-jQiBXMAcc1hSzTtScDaqQGtFIC6hyyQ5ZWhs1IoOHrg8XLQe6BbgZb/t997kXp1i0KIp2EapJFhpmVlVURh62A==
+  dependencies:
+    fp-ts "^2.0.0"
+    io-ts "npm:@bitgo-forks/io-ts@2.1.4"
+    io-ts-types "^0.5.16"
+    monocle-ts "^2.3.13"
+    newtype-ts "^0.3.5"
+
+"@bitgo/public-types@6.1.0":
+  version "6.1.0"
+  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-6.1.0.tgz#7c3949a0ae4de706b3d6a748ab07669a330e3fad"
+  integrity sha512-k+3cYvcSzpaqBcBO3saZkwfsazE3JY9WC321WX76fAYFTt6v6Q71pyUSCH41dTEZz9KGi79DwicCnpKsREw8eg==
   dependencies:
     fp-ts "^2.0.0"
     io-ts "npm:@bitgo-forks/io-ts@2.1.4"
@@ -6290,6 +6301,13 @@
   resolved "https://registry.npmjs.org/@types/node/-/node-14.18.63.tgz"
   integrity sha512-fAtCfv4jJg+ExtXhvCkCqUKZ+4ok/JQk01qDKhL5BDDoS3AxKXhV5/MAVUZyQnSEd2GT92fkgZl0pz0Q0AzcIQ==
 
+"@types/node@^18.0.0":
+  version "18.19.130"
+  resolved "https://registry.npmjs.org/@types/node/-/node-18.19.130.tgz#da4c6324793a79defb7a62cba3947ec5add00d59"
+  integrity sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==
+  dependencies:
+    undici-types "~5.26.4"
+
 "@types/node@^18.0.4":
   version "18.19.123"
   resolved "https://registry.npmjs.org/@types/node/-/node-18.19.123.tgz"
@@ -7587,10 +7605,10 @@ aws4@^1.8.0:
   resolved "https://registry.npmjs.org/aws4/-/aws4-1.13.2.tgz"
   integrity sha512-lHe62zvbTB5eEABUVi/AwVh0ZKY9rMMDhmm+eeyuuUQbQ3+J+fONVQOZyj+DdrvD4BY33uYniyRJ4UJIaSKAfw==
 
-axios@0.25.0, axios@0.27.2, axios@1.15.0, axios@1.7.4, axios@^0.21.2, axios@^0.26.1, axios@^1.13.0, axios@^1.6.0, axios@^1.8.3:
-  version "1.15.0"
-  resolved "https://registry.npmjs.org/axios/-/axios-1.15.0.tgz"
-  integrity sha512-wWyJDlAatxk30ZJer+GeCWS209sA42X+N5jU2jy6oHTp7ufw8uzUTVFBX9+wTfAlhiJXGS0Bq7X6efruWjuK9Q==
+axios@0.25.0, axios@0.27.2, axios@1.15.2, axios@1.7.4, axios@^0.21.2, axios@^0.26.1, axios@^1.15.2, axios@^1.6.0, axios@^1.8.3:
+  version "1.15.2"
+  resolved "https://registry.npmjs.org/axios/-/axios-1.15.2.tgz#eb8fb6d30349abace6ade5b4cb4d9e8a0dc23e5b"
+  integrity sha512-wLrXxPtcrPTsNlJmKjkPnNPK2Ihe0hn0wGSaTEiHRPxwjvJwT3hKmXF4dpqxmPO9SoNb2FsYXj/xEo0gHN+D5A==
   dependencies:
     follow-redirects "^1.15.11"
     form-data "^4.0.5"

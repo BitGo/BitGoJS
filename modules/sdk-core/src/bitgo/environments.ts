@@ -306,6 +306,9 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://mainnet.mirrornode.hedera.com/api/v1',
       rpcUrl: 'https://mainnet.hashio.io/api',
     },
+    scrolleth: {
+      baseUrl: 'https://api.scrollscan.com/api',
+    },
     hemieth: {
       baseUrl: 'https://explorer.hemi.xyz/api',
     },
@@ -349,7 +352,7 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://unichain.blockscout.com/api',
     },
     hoodeth: {
-      baseUrl: 'https://explorer.testnet.chain.robinhood.com/api', // TODO: update to mainnet explorer API when available
+      baseUrl: 'https://8crv4vmq6tiu1yqr.blockscout.com/api',
     },
     hppeth: {
       baseUrl: 'https://explorer.hpp.io/api',
@@ -527,6 +530,9 @@ const testnetBase: EnvironmentTemplate = {
     hbarevm: {
       baseUrl: 'https://testnet.mirrornode.hedera.com/api/v1',
       rpcUrl: 'https://testnet.hashio.io/api',
+    },
+    tscrolleth: {
+      baseUrl: 'https://api-sepolia.scrollscan.com/api',
     },
     hemieth: {
       baseUrl: 'https://testnet.explorer.hemi.xyz/api',

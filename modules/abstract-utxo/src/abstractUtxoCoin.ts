@@ -81,7 +81,6 @@ import {
   getMainnetCoinName,
   getNetworkFromCoinName,
   isMainnetCoin,
-  isUtxoCoinNameMainnet,
   UtxoCoinName,
   UtxoCoinNameMainnet,
 } from './names';
@@ -259,6 +258,12 @@ export interface TransactionPrebuild<TNumber extends number | bigint = number> e
   txInfo?: TransactionInfo<TNumber>;
   blockHeight?: number;
   decodeWith?: SdkBackend;
+  /**
+   * PSBT-lite hex present only in pending approval flows, where another user's send fixed the format.
+   * Not set in regular /tx/build responses (where the caller controls the build parameters).
+   * Preferred over txHex when present, as it carries richer data (nonWitnessUtxo, redeemScript, BIP-32 paths).
+   */
+  txHexPsbt?: string;
 }
 
 export interface TransactionParams extends BaseTransactionParams {
@@ -429,14 +434,17 @@ export abstract class AbstractUtxoCoin
     legacy: this.isMainnet(),
   };
 
+  protected supportedSdkBackends: { utxolib: boolean; 'wasm-utxo': boolean } = {
+    utxolib: this.isMainnet(),
+    'wasm-utxo': true,
+  };
+
   protected constructor(bitgo: BitGoBase, amountType: 'number' | 'bigint' = 'number') {
     super(bitgo);
     this.amountType = amountType;
   }
 
-  get defaultSdkBackend(): SdkBackend {
-    return isUtxoCoinNameMainnet(this.name) ? 'utxolib' : 'wasm-utxo';
-  }
+  defaultSdkBackend: SdkBackend = 'wasm-utxo';
 
   /**
    * @deprecated - will be removed when we drop support for utxolib
@@ -552,6 +560,9 @@ export abstract class AbstractUtxoCoin
         params.recipients instanceof Array
           ? params?.recipients?.map((recipient) => {
               const { address, ...rest } = recipient;
+              if (address === undefined) {
+                return recipient; // Already { script, amount } — pass through unchanged
+              }
               return { ...rest, ...fromExtendedAddressFormat(address) };
             })
           : params.recipients;
@@ -618,6 +629,10 @@ export abstract class AbstractUtxoCoin
     }
 
     if (utxolib.bitgo.isPsbt(input)) {
+      if (this.supportedSdkBackends[decodeWith] !== true) {
+        throw new Error(`SDK support for decodeWith=${decodeWith} is not available on this environment.`);
+      }
+
       if (!this.supportedTxFormats.psbt) {
         throw new ErrorDeprecatedTxFormat('psbt');
       }
@@ -647,9 +662,11 @@ export abstract class AbstractUtxoCoin
   decodeTransactionFromPrebuild<TNumber extends number | bigint>(prebuild: {
     txHex?: string;
     txBase64?: string;
+    /** See TransactionPrebuild.txHexPsbt — only present in pending approval flows. */
+    txHexPsbt?: string;
     decodeWith?: string;
   }): DecodedTransaction<TNumber> {
-    const string = prebuild.txHex ?? prebuild.txBase64;
+    const string = prebuild.txHexPsbt ?? prebuild.txHex ?? prebuild.txBase64;
     if (!string) {
       throw new Error('missing required txHex or txBase64 property');
     }

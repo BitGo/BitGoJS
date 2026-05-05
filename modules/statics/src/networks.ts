@@ -743,8 +743,8 @@ class XtzEvmTestnet extends Testnet implements EthereumNetwork {
   family = CoinFamily.XTZEVM;
   explorerUrl = 'https://shadownet.explorer.etherlink.com/tx/';
   accountExplorerUrl = 'https://shadownet.explorer.etherlink.com/address/';
-  chainId = 128123;
-  nativeCoinOperationHashPrefix = '128123';
+  chainId = 127823;
+  nativeCoinOperationHashPrefix = '127823';
 }
 
 class Pyrmont extends Testnet implements AccountNetwork {
@@ -1852,10 +1852,10 @@ class HoodethTestnet extends Testnet implements EthereumNetwork {
 class Hoodeth extends Mainnet implements EthereumNetwork {
   name = 'Robinhood Chain';
   family = CoinFamily.HOODETH;
-  explorerUrl = 'https://explorer.testnet.chain.robinhood.com/tx/'; // TODO: update to mainnet explorer when available
-  accountExplorerUrl = 'https://explorer.testnet.chain.robinhood.com/address/'; // TODO: update to mainnet explorer when available
-  chainId = 46630; // TODO: update to mainnet chain id when available
-  nativeCoinOperationHashPrefix = '46630'; // TODO: update to mainnet chain id when available
+  explorerUrl = 'https://8crv4vmq6tiu1yqr.blockscout.com/tx/';
+  accountExplorerUrl = 'https://8crv4vmq6tiu1yqr.blockscout.com/address/';
+  chainId = 4663;
+  nativeCoinOperationHashPrefix = '4663';
 }
 
 class HumanityProtocol extends Mainnet implements EthereumNetwork {
@@ -2170,6 +2170,24 @@ class SoneiumTestnet extends Testnet implements EthereumNetwork {
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+}
+
+class ScrollEth extends Mainnet implements EthereumNetwork {
+  name = 'Scroll';
+  family = CoinFamily.SCROLLETH;
+  explorerUrl = 'https://scrollscan.com/tx/';
+  accountExplorerUrl = 'https://scrollscan.com/address/';
+  chainId = 534352;
+  nativeCoinOperationHashPrefix = '534352';
+}
+
+class ScrollEthTestnet extends Testnet implements EthereumNetwork {
+  name = 'Scroll Sepolia';
+  family = CoinFamily.SCROLLETH;
+  explorerUrl = 'https://sepolia.scrollscan.com/tx/';
+  accountExplorerUrl = 'https://sepolia.scrollscan.com/address/';
+  chainId = 534351;
+  nativeCoinOperationHashPrefix = '534351';
 }
 
 class SeiEvm extends Mainnet implements EthereumNetwork {
@@ -2827,6 +2845,7 @@ export const Networks = {
     rbtc: Object.freeze(new Rbtc()),
     rune: Object.freeze(new Rune()),
     stellar: Object.freeze(new Stellar()),
+    scrolleth: Object.freeze(new ScrollEth()),
     sei: Object.freeze(new Sei()),
     seievm: Object.freeze(new SeiEvm()),
     sgb: Object.freeze(new Songbird()),
@@ -2964,6 +2983,7 @@ export const Networks = {
     near: Object.freeze(new NearTestnet()),
     stx: Object.freeze(new StxTestnet()),
     stt: Object.freeze(new SomniaTestnet()),
+    scrolleth: Object.freeze(new ScrollEthTestnet()),
     soneium: Object.freeze(new SoneiumTestnet()),
     sonic: Object.freeze(new SonicTestnet()),
     kaia: Object.freeze(new KaiaTestnet()),

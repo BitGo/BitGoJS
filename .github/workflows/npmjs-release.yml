@@ -318,7 +318,7 @@ jobs:
 
   get-express-release-context:
     name: Get Express release context
-    if: inputs.dry-run == false
+    if: ${{ always() && inputs.dry-run == false && needs.release-bitgojs.result == 'success' }}
     needs:
       - release-bitgojs
     runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
@@ -411,7 +411,7 @@ jobs:
 
   publish-express-to-docker-hub:
     name: Publish Express To Docker Hub
-    if: needs.get-express-release-context.outputs.docker-exists != 'true'
+    if: ${{ always() && needs.get-express-release-context.result == 'success' && needs.get-express-release-context.outputs.docker-exists != 'true' }}
     needs:
       - get-express-release-context
     runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}

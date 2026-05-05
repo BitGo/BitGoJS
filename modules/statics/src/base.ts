@@ -108,6 +108,7 @@ export enum CoinFamily {
   OSMO = 'osmo',
   PLUME = 'plume',
   RBTC = 'rbtc',
+  SCROLLETH = 'scrolleth', // Scroll L2
   SGB = 'sgb',
   SEI = 'sei',
   SEIEVM = 'seievm',
@@ -510,6 +511,12 @@ export enum CoinFeature {
   EVM_COMPATIBLE_WP = 'evm-compatible-wp',
 
   /**
+   * This coin does not support EVM Keyring.
+   * Add this feature to any EVM-family coin that should be excluded from EVM Keyring
+   */
+  EVM_KEYRING_UNSUPPORTED = 'evm-keyring-unsupported',
+
+  /**
    * This token is internal and shouldn't be exposed to users
    */
   RESTRICTED = 'restricted',
@@ -657,6 +664,7 @@ export enum UnderlyingAsset {
   HYPEEVM = 'hypeevm',
   HYPERLIQUID = 'hyperliquid', // HyperCore L1
   RBTC = 'rbtc', // RSK main coin
+  SCROLLETH = 'scrolleth', // Scroll L2
   SEI = 'sei',
   SEIEVM = 'seievm',
   SGB = 'sgb',
@@ -1883,6 +1891,8 @@ export enum UnderlyingAsset {
   'hteth:fyusd' = 'hteth:fyusd',
   'hteth:stgcusd' = 'hteth:stgcusd',
   'hteth:stgfyusd' = 'hteth:stgfyusd',
+  'hteth:goqxmp' = 'hteth:goqxmp',
+  'hteth:stggoqxmp' = 'hteth:stggoqxmp',
   'hteth:stgwbtc' = 'hteth:stgwbtc',
   'hteth:tsteth' = 'hteth:tsteth',
   'hteth:tusdc' = 'hteth:tusdc',
@@ -2204,6 +2214,7 @@ export enum UnderlyingAsset {
   'eth:sofid' = 'eth:sofid',
   'eth:cusd' = 'eth:cusd',
   'eth:fyusd' = 'eth:fyusd',
+  'eth:goqxmp' = 'eth:goqxmp',
   'eth:ibtc' = 'eth:ibtc',
   'eth:pyr' = 'eth:pyr',
   'eth:una' = 'eth:una',

@@ -10998,6 +10998,15 @@ export const erc20Coins = [
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
+    '71fd8aa4-87d0-492e-a7f5-a425a80077d9',
+    'eth:goqxmp',
+    'GoQXMP',
+    6,
+    '0xb51323fa696a5fd29ae37772261e2d9e798bbf00',
+    UnderlyingAsset['eth:goqxmp'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  erc20(
     'e811d594-de4f-48b0-9b6b-47e8b4ba7dda',
     'eth:ibtc',
     'Token iBTC',
@@ -12909,6 +12918,30 @@ export const erc20Coins = [
     Networks.test.hoodi
   ),
   terc20(
+    'fa107b6d-6159-44ef-8a64-ab27b8e8511b',
+    'hteth:goqxmp',
+    'Test GoQXMP',
+    6,
+    '0x0ce272b926077fc2f856bb33ff1a9e36a89b0ffc',
+    UnderlyingAsset['hteth:goqxmp'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
+    '63c04332-8cf0-4a90-85bd-c884edd803bc',
+    'hteth:stggoqxmp',
+    'Test GoQXMP',
+    6,
+    '0xedecb3f92e9aa1883b0c1b0cd1cb89c42652fb11',
+    UnderlyingAsset['hteth:stggoqxmp'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
     '30179af0-ca75-4cb1-99d9-028bc56bf10e',
     'tmsn',
     'meson.network-testnet',
@@ -14772,7 +14805,7 @@ export const erc20Coins = [
     6,
     '0xda38de6dba36918e716ade6a3ac7944d6a5d5683',
     UnderlyingAsset['hteth:htusdl'],
-    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.STABLECOIN],
     undefined,
     undefined,
     Networks.test.hoodi
@@ -14784,7 +14817,7 @@ export const erc20Coins = [
     6,
     '0xd73e58e2ebbb6015348361319766e5eef21e3e8c',
     UnderlyingAsset['hteth:htusdlt'],
-    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.STABLECOIN],
     undefined,
     undefined,
     Networks.test.hoodi
