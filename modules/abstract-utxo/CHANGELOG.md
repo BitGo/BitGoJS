@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.25.0...@bitgo/abstract-utxo@11.0.0) (2026-05-05)
+
+
+### Bug Fixes
+
+* **abstract-utxo:** add replay protection to prebuildAndSign test ([2b08714](https://github.com/BitGo/BitGoJS/commit/2b087149da7575036fa0acc6932982818b1f179a))
+* **abstract-utxo:** guard undefined address in preprocessBuildParams [WAL-375] ([9651f36](https://github.com/BitGo/BitGoJS/commit/9651f36b7c003cc98be7b0c43ee819a89d10c9f9))
+
+
+### Features
+
+* **abstract-utxo:** add supportedSdkBackends with validation ([79849ce](https://github.com/BitGo/BitGoJS/commit/79849ce8e5de8292dc220467b3c0e1dea1e8740c))
+* **abstract-utxo:** default to wasm-utxo for all coins ([1702a08](https://github.com/BitGo/BitGoJS/commit/1702a08009eff32b12b466bf9cda31e97f31de13))
+* **abstract-utxo:** prefer txHexPsbt over txHex in pending approvals ([f009cfb](https://github.com/BitGo/BitGoJS/commit/f009cfb729a9543a3d3d88102b4a10db541898c6))
+
+
+### BREAKING CHANGES
+
+* **abstract-utxo:** mainnet coins now default to wasm-utxo instead of
+utxolib
+
+Co-authored-by: llm-git <llm-git@ttll.de>
+
+Issue: BTC-2650
+
+
+
+
+
 # [10.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.24.0...@bitgo/abstract-utxo@10.25.0) (2026-04-29)
 
 

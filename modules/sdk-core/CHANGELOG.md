@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.44.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.43.0...@bitgo/sdk-core@36.44.0) (2026-05-05)
+
+
+### Features
+
+* **abstract-utxo:** prefer txHexPsbt over txHex in pending approvals ([f009cfb](https://github.com/BitGo/BitGoJS/commit/f009cfb729a9543a3d3d88102b4a10db541898c6))
+* add eddsa mpcv2 gpg key support to tss signing ([0a53cbd](https://github.com/BitGo/BitGoJS/commit/0a53cbd0c28e6ab4ea913f91699cf04da0e9dca3))
+* **sdk-core:** add ECDSA prod nitro key for mpcv2 ([d404260](https://github.com/BitGo/BitGoJS/commit/d4042609271edaf09000628f444060f955cb04a5))
+* **statics:** add Scroll L2 EVM chain ([7db5352](https://github.com/BitGo/BitGoJS/commit/7db53520c072598ac1b0230452bc0b48a846387e))
+* **statics:** update hoodeth mainnet configuration ([1b6ef1e](https://github.com/BitGo/BitGoJS/commit/1b6ef1e8e3edccfdfbe513ba5087b51c61e498ae))
+
+
+
+
+
 # [36.43.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.42.0...@bitgo/sdk-core@36.43.0) (2026-04-29)
 
 
