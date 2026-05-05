@@ -3151,6 +3151,15 @@ export const ofcErc20Coins = [
     [CoinFeature.STABLECOIN]
   ),
   ofcerc20(
+    '8202c24a-3521-4a7f-9fcc-fb754c568644',
+    'ofceth:goqxmp',
+    'GoQXMP',
+    6,
+    underlyingAssetForSymbol('eth:goqxmp'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcerc20(
     '80bfa43e-f01c-42bd-bd14-269b88948bbf',
     'ofceth:usdg',
     'Global Dollar',
@@ -4399,6 +4408,34 @@ export const tOfcErc20Coins = [
     'Test FYUSD',
     6,
     UnderlyingAsset['hteth:stgfyusd'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    'edd7e667-7be4-49f1-9209-d9596a71581b',
+    'ofchteth:goqxmp',
+    'Test GoQXMP',
+    6,
+    UnderlyingAsset['hteth:goqxmp'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    '7863a0f5-75ff-4d89-a791-25dea435813d',
+    'ofchteth:stggoqxmp',
+    'Test GoQXMP',
+    6,
+    UnderlyingAsset['hteth:stggoqxmp'],
     undefined,
     [CoinFeature.STABLECOIN],
     undefined,
