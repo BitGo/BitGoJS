@@ -72,3 +72,17 @@ export function generateFaq(coinName: string): FAQ[] {
     },
   ];
 }
+
+export function generateLightningFaq(coinName: string): FAQ[] {
+  return [
+    ...generateFaq(coinName),
+    {
+      question: 'What is the User Auth Key?',
+      answer: [
+        'The User Auth Key is the private key used to authenticate you for signing lightning payment ',
+        'requests and wallet configuration updates. It is encrypted with your wallet password. Without it, ',
+        `you will not be able to authorize transactions on your ${coinName} lightning wallet.`,
+      ],
+    },
+  ];
+}
