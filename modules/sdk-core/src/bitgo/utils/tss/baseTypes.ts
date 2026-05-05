@@ -224,6 +224,8 @@ export interface IntentOptionsForMessage extends IntentOptionsBase {
 export interface IntentOptionsForTypedData extends IntentOptionsBase {
   typedDataRaw: string;
   typedDataEncoded?: string;
+  /** Required for OVC / `verifyOffchainMessages` on custodial exports (e.g. TAT); defaults to EIP712 in `createTxRequestWithIntentForTypedDataSigning`. */
+  messageStandardType?: MessageStandardType;
 }
 
 export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase {
@@ -318,6 +320,7 @@ export interface PopulatedIntentForTypedDataSigning extends PopulatedIntentBase 
   messageRaw: string;
   messageEncoded: string;
   custodianMessageId?: string;
+  messageStandardType?: MessageStandardType;
 }
 
 export interface PopulatedIntent extends PopulatedIntentBase {
