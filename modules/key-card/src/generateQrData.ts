@@ -2,7 +2,13 @@ import { BaseCoin } from '@bitgo/statics';
 import { Keychain } from '@bitgo/sdk-core';
 import { encrypt } from '@bitgo/sdk-api';
 import * as assert from 'assert';
-import { GenerateQrDataParams, MasterPublicKeyQrDataEntry, QrData, QrDataEntry } from './types';
+import {
+  GenerateLightningQrDataParams,
+  GenerateQrDataParams,
+  MasterPublicKeyQrDataEntry,
+  QrData,
+  QrDataEntry,
+} from './types';
 
 function getPubFromKey(key: Keychain): string | undefined {
   switch (key.type) {
@@ -123,6 +129,15 @@ function generateUserMasterPublicKeyQRData(publicKey: string): MasterPublicKeyQr
   };
 }
 
+function generatePasscodeQrData(passphrase: string, passcodeEncryptionCode: string): QrDataEntry {
+  const encryptedWalletPasscode = encrypt(passcodeEncryptionCode, passphrase);
+  return {
+    title: 'D: Encrypted wallet Password',
+    description: 'This is the wallet password, encrypted client-side with a key held by BitGo.',
+    data: encryptedWalletPasscode,
+  };
+}
+
 function generateBackupMasterPublicKeyQRData(publicKey: string): MasterPublicKeyQrDataEntry {
   return {
     title: 'F: Master Backup Public Key',
@@ -159,13 +174,30 @@ export function generateQrData({
   };
 
   if (passphrase && passcodeEncryptionCode) {
-    const encryptedWalletPasscode = encrypt(passcodeEncryptionCode, passphrase);
+    qrData.passcode = generatePasscodeQrData(passphrase, passcodeEncryptionCode);
+  }
 
-    qrData.passcode = {
-      title: 'D: Encrypted wallet Password',
-      description: 'This is the wallet password, encrypted client-side with a key held by BitGo.',
-      data: encryptedWalletPasscode,
-    };
+  return qrData;
+}
+
+export function generateLightningQrData({
+  userAuthKeychain,
+  passcodeEncryptionCode,
+  passphrase,
+}: GenerateLightningQrDataParams): QrData {
+  assert.ok(userAuthKeychain.encryptedPrv, 'userAuthKeychain must have an encryptedPrv');
+
+  const qrData: QrData = {
+    user: {
+      title: 'A: User Auth Key',
+      description:
+        'This is your user authentication private key, encrypted with your wallet password.\r\nIt is used to authenticate payment and wallet operations.',
+      data: userAuthKeychain.encryptedPrv,
+    },
+  };
+
+  if (passphrase && passcodeEncryptionCode) {
+    qrData.passcode = generatePasscodeQrData(passphrase, passcodeEncryptionCode);
   }
 
   return qrData;

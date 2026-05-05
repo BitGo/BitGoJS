@@ -14,7 +14,20 @@ export interface GenerateQrDataForKeychainParams {
   curve: KeyCurve;
 }
 
-export interface GenerateQrDataParams {
+export interface GenerateQrDataCoinParams {
+  // The coin of the wallet that was/ is about to be created
+  coin: Readonly<BaseCoin>;
+  // A code that can be used to encrypt the wallet password to.
+  // If both the passphrase and passcodeEncryptionCode are passed, then this code encrypts the passphrase with the
+  // passcodeEncryptionCode and puts the result into Box D. Allows recoveries of the wallet password.
+  passcodeEncryptionCode?: string;
+  // The wallet password
+  // If both the passphrase and passcodeEncryptionCode are passed, then this code encrypts the passphrase with the
+  // passcodeEncryptionCode and puts the result into Box D. Allows recoveries of the wallet password.
+  passphrase?: string;
+}
+
+export interface GenerateQrDataParams extends GenerateQrDataCoinParams {
   // The backup keychain as it is returned from the BitGo API upon creation
   backupKeychain: Keychain;
   // The name of the 3rd party provider of the backup key if neither the user nor BitGo stores it
@@ -27,16 +40,6 @@ export interface GenerateQrDataParams {
   backupMasterPublicKey?: string;
   // The BitGo keychain as it is returned from the BitGo API upon creation
   bitgoKeychain: Keychain;
-  // The coin of the wallet that was/ is about to be created
-  coin: Readonly<BaseCoin>;
-  // A code that can be used to encrypt the wallet password to.
-  // If both the passphrase and passcodeEncryptionCode are passed, then this code encrypts the passphrase with the
-  // passcodeEncryptionCode and puts the result into Box D. Allows recoveries of the wallet password.
-  passcodeEncryptionCode?: string;
-  // The wallet password
-  // If both the passphrase and passcodeEncryptionCode are passed, then this code encrypts the passphrase with the
-  // passcodeEncryptionCode and puts the result into Box D. Allows recoveries of the wallet password.
-  passphrase?: string;
   // The user keychain as it is returned from the BitGo API upon creation
   userKeychain: Keychain;
   // The key id of the user key, only used for cold keys
@@ -47,7 +50,13 @@ export interface GenerateQrDataParams {
   userMasterPublicKey?: string;
 }
 
-export type GenerateKeycardParams = GenerateQrDataBaseParams & (GenerateQrDataForKeychainParams | GenerateQrDataParams);
+export interface GenerateLightningQrDataParams extends GenerateQrDataCoinParams {
+  // The user authentication keychain, used to sign payment requests and wallet configuration updates
+  userAuthKeychain: Keychain;
+}
+
+export type GenerateKeycardParams = GenerateQrDataBaseParams &
+  (GenerateQrDataForKeychainParams | GenerateQrDataParams | GenerateLightningQrDataParams);
 
 export interface IDrawKeyCard {
   activationCode?: string;
