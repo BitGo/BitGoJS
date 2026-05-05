@@ -511,6 +511,12 @@ export enum CoinFeature {
   EVM_COMPATIBLE_WP = 'evm-compatible-wp',
 
   /**
+   * This coin does not support EVM Keyring.
+   * Add this feature to any EVM-family coin that should be excluded from EVM Keyring
+   */
+  EVM_KEYRING_UNSUPPORTED = 'evm-keyring-unsupported',
+
+  /**
    * This token is internal and shouldn't be exposed to users
    */
   RESTRICTED = 'restricted',
