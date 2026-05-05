@@ -1852,10 +1852,10 @@ class HoodethTestnet extends Testnet implements EthereumNetwork {
 class Hoodeth extends Mainnet implements EthereumNetwork {
   name = 'Robinhood Chain';
   family = CoinFamily.HOODETH;
-  explorerUrl = 'https://explorer.testnet.chain.robinhood.com/tx/'; // TODO: update to mainnet explorer when available
-  accountExplorerUrl = 'https://explorer.testnet.chain.robinhood.com/address/'; // TODO: update to mainnet explorer when available
-  chainId = 46630; // TODO: update to mainnet chain id when available
-  nativeCoinOperationHashPrefix = '46630'; // TODO: update to mainnet chain id when available
+  explorerUrl = 'https://8crv4vmq6tiu1yqr.blockscout.com/tx/';
+  accountExplorerUrl = 'https://8crv4vmq6tiu1yqr.blockscout.com/address/';
+  chainId = 4663;
+  nativeCoinOperationHashPrefix = '4663';
 }
 
 class HumanityProtocol extends Mainnet implements EthereumNetwork {
