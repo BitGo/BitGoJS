@@ -86,7 +86,8 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   public async pickBitgoPubGpgKeyForSigning(
     isMpcv2: boolean,
     reqId?: IRequestTracer,
-    enterpriseId?: string
+    enterpriseId?: string,
+    isEddsaMpcv2?: boolean
   ): Promise<openpgp.Key> {
     let bitgoGpgPubKey;
     try {
@@ -98,7 +99,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
         armoredKey: getBitgoMpcGpgPubKey(
           this.bitgo.getEnv(),
           bitgoKeyChain.hsmType === 'nitro' ? 'nitro' : 'onprem',
-          isMpcv2 ? 'mpcv2' : 'mpcv1'
+          isEddsaMpcv2 ? 'eddsaMpcv2' : isMpcv2 ? 'mpcv2' : 'mpcv1'
         ),
       });
     } catch (e) {
@@ -108,11 +109,20 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
         );
         // First try to get the key based on feature flags, if that fails, fallback to the default key from constants api.
         bitgoGpgPubKey = await this.getBitgoGpgPubkeyBasedOnFeatureFlags(enterpriseId, isMpcv2, reqId)
-          .then(
-            async ({ mpcv2PublicKey }) =>
+          .then(async ({ mpcv2PublicKey, eddsaMpcv2PublicKey }) => {
+            if (isEddsaMpcv2) {
+              return eddsaMpcv2PublicKey ?? (await this.getBitgoEddsaMpcv2PublicGpgKey());
+            }
+            return (
               mpcv2PublicKey ?? (isMpcv2 ? await this.getBitgoMpcv2PublicGpgKey() : await this.getBitgoPublicGpgKey())
-          )
-          .catch(async (e) => (isMpcv2 ? await this.getBitgoMpcv2PublicGpgKey() : await this.getBitgoPublicGpgKey()));
+            );
+          })
+          .catch(async () => {
+            if (isEddsaMpcv2) {
+              return this.getBitgoEddsaMpcv2PublicGpgKey();
+            }
+            return isMpcv2 ? await this.getBitgoMpcv2PublicGpgKey() : await this.getBitgoPublicGpgKey();
+          });
       } else {
         throw new Error(
           `Environment "${this.bitgo.getEnv()}" requires a BitGo GPG Pub Key Config in BitGoJS for TSS. Error thrown while getting the key from config: ${e}`
@@ -144,6 +154,18 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     }
 
     return this.bitgoMPCv2PublicGpgKey;
+  }
+
+  async getBitgoEddsaMpcv2PublicGpgKey(): Promise<openpgp.Key> {
+    if (!this.bitgoEddsaMpcv2PublicGpgKey) {
+      // retry getting bitgo's gpg key
+      await this.setBitgoGpgPubKey(this.bitgo);
+      if (!this.bitgoEddsaMpcv2PublicGpgKey) {
+        throw new Error("Failed to get Bitgo's EdDSA MPCv2 gpg key");
+      }
+    }
+
+    return this.bitgoEddsaMpcv2PublicGpgKey;
   }
 
   async createBitgoHeldBackupKeyShare(
