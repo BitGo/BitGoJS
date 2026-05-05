@@ -349,7 +349,7 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://unichain.blockscout.com/api',
     },
     hoodeth: {
-      baseUrl: 'https://explorer.testnet.chain.robinhood.com/api', // TODO: update to mainnet explorer API when available
+      baseUrl: 'https://8crv4vmq6tiu1yqr.blockscout.com/api',
     },
     hppeth: {
       baseUrl: 'https://explorer.hpp.io/api',
