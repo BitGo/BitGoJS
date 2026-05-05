@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.11.1...@bitgo/sdk-lib-mpc@10.12.0) (2026-04-29)
+
+
+### Bug Fixes
+
+* **sdk-lib-mpc:** use @bitgo/wasm-mps/web in browser for EdDSA DKG ([c474524](https://github.com/BitGo/BitGoJS/commit/c474524fc4cc5f2903ccd84a4249bca4e3a4a45d))
+
+
+### Features
+
+* **sdk-lib-mpc:** add EdDSA DSG MPS class ([8fcf1da](https://github.com/BitGo/BitGoJS/commit/8fcf1da04bb4bc0ca67537c7d5af1437d0fdefe2))
+
+
+
+
+
 ## [10.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.11.0...@bitgo/sdk-lib-mpc@10.11.1) (2026-04-28)
 
 

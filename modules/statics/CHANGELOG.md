@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.38.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.37.0...@bitgo/statics@58.38.0) (2026-04-29)
+
+
+### Features
+
+* add new tokens for CSHLD-701 ([428b258](https://github.com/BitGo/BitGoJS/commit/428b2587ac2b62f1a327b2124a469cf318c676dc))
+* **statics:** add OFC coins for kavacosmos and dydxcosmos Go Accounts ([5c30948](https://github.com/BitGo/BitGoJS/commit/5c30948522ee6ddcc2f55dba89dbf8b3bf987bb3))
+
+
+
+
+
 # [58.37.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.36.0...@bitgo/statics@58.37.0) (2026-04-28)
 
 

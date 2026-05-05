@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.8.1...@bitgo/sdk-coin-eth@25.9.0) (2026-04-29)
+
+
+### Features
+
+* **sdk-coin-eth:** add registerWithCoinMap for dynamic token registration ([ac15c77](https://github.com/BitGo/BitGoJS/commit/ac15c77327487a54ea1207c192e22c2dfd75c9ac))
+
+
+
+
+
 ## [25.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.8.0...@bitgo/sdk-coin-eth@25.8.1) (2026-04-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth
