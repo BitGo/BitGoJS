@@ -549,7 +549,7 @@ export const solTokens = [
     'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So',
     'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So',
     UnderlyingAsset.MSOL,
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   solToken(
     'f33ad79e-31b4-4a6f-b85e-5c2a3669b5a5',
