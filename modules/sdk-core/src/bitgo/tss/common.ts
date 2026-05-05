@@ -8,6 +8,7 @@ import {
   TxRequest,
   verifyPrimaryUserWrapper,
   SignatureShareRecord,
+  SignatureShareType,
   CommitmentShareRecord,
   EncryptedSignerShareRecord,
   ExchangeCommitmentResponse,
@@ -16,6 +17,17 @@ import {
 import { IRequestTracer } from '../../api';
 
 const debug = require('debug')('bitgo:tss:common');
+
+export function getBitgoSignatureShare(
+  signatureShares: SignatureShareRecord[],
+  signerShareType: SignatureShareType
+): SignatureShareRecord {
+  const bitgoShare = signatureShares.find(
+    (share) => share.from === SignatureShareType.BITGO && share.to === signerShareType
+  );
+  assert(bitgoShare, 'Missing BitGo signature share');
+  return bitgoShare;
+}
 
 /**
  * Gets the latest Tx Request by id
