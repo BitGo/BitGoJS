@@ -32,7 +32,13 @@ import {
 import { SubmitTransactionResponse } from '../inscriptionBuilder';
 import { drawKeycard } from '../internal';
 import * as internal from '../internal/internal';
-import { decryptKeychainPrivateKey, Keychain, KeychainWithEncryptedPrv, KeyIndices } from '../keychain';
+import {
+  decryptKeychainPrivateKey,
+  decryptKeychainPrivateKeyAsync,
+  Keychain,
+  KeychainWithEncryptedPrv,
+  KeyIndices,
+} from '../keychain';
 import { getLightningAuthKey } from '../lightning/lightningWalletUtil';
 import { IPendingApproval, PendingApproval, PendingApprovals } from '../pendingApproval';
 import { GoStakingWallet, StakingWallet } from '../staking';
@@ -1673,7 +1679,7 @@ export class Wallet implements IWallet {
     if (!params.walletPassphrase) {
       throw new Error('wallet passphrase was not provided');
     }
-    const userPrv = decryptKeychainPrivateKey(this.bitgo, userKeychain, params.walletPassphrase);
+    const userPrv = await decryptKeychainPrivateKeyAsync(this.bitgo, userKeychain, params.walletPassphrase);
     if (!userPrv) {
       throw new Error('error decrypting wallet private key');
     }
@@ -1853,7 +1859,7 @@ export class Wallet implements IWallet {
       throw new Error('Missing walletPassphrase argument');
     }
 
-    const prv = decryptKeychainPrivateKey(this.bitgo, keychain, walletPassphrase);
+    const prv = await decryptKeychainPrivateKeyAsync(this.bitgo, keychain, walletPassphrase);
     if (!prv) {
       throw new IncorrectPasswordError('Password shared is incorrect for this wallet');
     }
@@ -2218,7 +2224,7 @@ export class Wallet implements IWallet {
     if (this.multisigType() === 'tss') {
       return this.signTransactionTss({
         ...presign,
-        prv: this.getUserPrv(presign as GetUserPrvOptions),
+        prv: await this.getUserPrvAsync(presign as GetUserPrvOptions),
         apiVersion,
       });
     }
@@ -2256,7 +2262,7 @@ export class Wallet implements IWallet {
     }
     return this.baseCoin.signTransaction({
       ...signTransactionParams,
-      prv: this.getUserPrv(presign as GetUserPrvOptions),
+      prv: await this.getUserPrvAsync(presign as GetUserPrvOptions),
       wallet: this,
     });
   }
@@ -2291,7 +2297,7 @@ export class Wallet implements IWallet {
       ...params,
       walletData: this._wallet,
       tssUtils: this.tssUtils,
-      prv: this.getUserPrv(userPrvOptions),
+      prv: await this.getUserPrvAsync(userPrvOptions),
       keychain: keychains[0],
       backupKeychain: keychains.length > 1 ? keychains[1] : null,
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
@@ -2330,7 +2336,7 @@ export class Wallet implements IWallet {
       ...params,
       walletData: this._wallet,
       tssUtils: this.tssUtils,
-      prv: this.getUserPrv(userPrvOptions),
+      prv: await this.getUserPrvAsync(userPrvOptions),
       keychain: keychains[0],
       backupKeychain: keychains.length > 1 ? keychains[1] : null,
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
@@ -2383,7 +2389,7 @@ export class Wallet implements IWallet {
   }
 
   /**
-   * Get the user private key from either a derivation or an encrypted keychain
+   * Get the user private key from either a derivation or an encrypted keychain (sync, v1 only).
    * @param [params.keychain / params.key] (object) or params.prv (string)
    * @param params.walletPassphrase (string)
    */
@@ -2394,9 +2400,6 @@ export class Wallet implements IWallet {
       throw new Error('prv must be a string');
     }
 
-    // use the `derivedFromParentWithSeed` property from the user keychain as the `coldDerivationSeed`
-    // if no other `coldDerivationSeed` was explicitly provided
-    // Only for onchain multisig wallets, TSS key derivation happens during the signing process
     if (
       params.coldDerivationSeed === undefined &&
       params.keychain !== undefined &&
@@ -2407,7 +2410,6 @@ export class Wallet implements IWallet {
     }
 
     if (userPrv && params.coldDerivationSeed) {
-      // the derivation only makes sense when a key already exists
       const derivation = this.baseCoin.deriveKeyWithSeed({
         key: userPrv,
         seed: params.coldDerivationSeed,
@@ -2425,6 +2427,52 @@ export class Wallet implements IWallet {
         throw new Error('walletPassphrase property missing');
       }
       userPrv = decryptKeychainPrivateKey(this.bitgo, userKeychain, params.walletPassphrase);
+      if (!userPrv) {
+        throw new Error('failed to decrypt user keychain');
+      }
+    }
+    return userPrv;
+  }
+
+  /**
+   * Async version of getUserPrv that supports both v1 (SJCL) and v2 (Argon2id) envelopes.
+   * @param [params.keychain / params.key] (object) or params.prv (string)
+   * @param params.walletPassphrase (string)
+   */
+  async getUserPrvAsync(params: GetUserPrvOptions = {}): Promise<string> {
+    const userKeychain = params.keychain || params.key;
+    let userPrv = params.prv;
+    if (userPrv && typeof userPrv !== 'string') {
+      throw new Error('prv must be a string');
+    }
+
+    if (
+      params.coldDerivationSeed === undefined &&
+      params.keychain !== undefined &&
+      params.keychain.derivedFromParentWithSeed !== undefined &&
+      this.multisigType() === 'onchain'
+    ) {
+      params.coldDerivationSeed = params.keychain.derivedFromParentWithSeed;
+    }
+
+    if (userPrv && params.coldDerivationSeed) {
+      const derivation = this.baseCoin.deriveKeyWithSeed({
+        key: userPrv,
+        seed: params.coldDerivationSeed,
+      });
+      userPrv = derivation.key;
+    } else if (!userPrv) {
+      if (!userKeychain || typeof userKeychain !== 'object') {
+        throw new Error('keychain must be an object');
+      }
+      const userEncryptedPrv = userKeychain.encryptedPrv;
+      if (!userEncryptedPrv) {
+        throw new Error('keychain does not have property encryptedPrv');
+      }
+      if (!params.walletPassphrase) {
+        throw new Error('walletPassphrase property missing');
+      }
+      userPrv = await decryptKeychainPrivateKeyAsync(this.bitgo, userKeychain, params.walletPassphrase);
       if (!userPrv) {
         throw new Error('failed to decrypt user keychain');
       }
@@ -4409,7 +4457,7 @@ export class Wallet implements IWallet {
     // we ignore this check with if customSigningFunction is provided
     //  which means that the user is handling the signing in external signing mode
     if (!customSigningFunction && keychains?.[0]?.encryptedPrv && walletPassphrase) {
-      if (!decryptKeychainPrivateKey(this.bitgo, keychains[0], walletPassphrase)) {
+      if (!(await decryptKeychainPrivateKeyAsync(this.bitgo, keychains[0], walletPassphrase))) {
         const error: Error & { code?: string } = new Error(
           `unable to decrypt keychain with the given wallet passphrase`
         );

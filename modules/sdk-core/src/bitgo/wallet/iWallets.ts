@@ -1,6 +1,6 @@
 import * as t from 'io-ts';
 
-import { IRequestTracer } from '../../api';
+import { EncryptionVersion, IRequestTracer } from '../../api';
 import { KeychainsTriplet, LightningKeychainsTriplet } from '../baseCoin';
 import { Keychain, WebauthnInfo } from '../keychain';
 import { IWallet, PaginationOptions, WalletShare } from './iWallet';
@@ -45,6 +45,7 @@ export interface GenerateBaseMpcWalletOptions {
 export interface GenerateMpcWalletOptions extends GenerateBaseMpcWalletOptions {
   passphrase: string;
   originalPasscodeEncryptionCode?: string;
+  encryptionVersion?: EncryptionVersion;
 }
 export interface GenerateSMCMpcWalletOptions extends GenerateBaseMpcWalletOptions {
   bitgoKeyId: string;
@@ -92,6 +93,7 @@ export interface GenerateWalletOptions {
   evmKeyRingReferenceWalletId?: string;
   /** Optional WebAuthn PRF-based encryption info. When provided, the user private key is additionally encrypted with the PRF-derived passphrase so the server can store a WebAuthn-protected copy. */
   webauthnInfo?: GenerateWalletWebauthnInfo;
+  encryptionVersion?: EncryptionVersion;
 }
 
 export const GenerateLightningWalletOptionsCodec = t.intersection(
@@ -105,20 +107,28 @@ export const GenerateLightningWalletOptionsCodec = t.intersection(
     }),
     t.partial({
       lightningProvider: t.union([t.literal('amboss'), t.literal('voltage')]),
+      // Codec intentionally accepts only 2: v1 is the implicit default and never sent on the wire.
+      encryptionVersion: t.literal(2),
     }),
   ],
   'GenerateLightningWalletOptions'
 );
 export type GenerateLightningWalletOptions = t.TypeOf<typeof GenerateLightningWalletOptionsCodec>;
 
-export const GenerateGoAccountWalletOptionsCodec = t.strict(
-  {
-    label: t.string,
-    passphrase: t.string,
-    enterprise: t.string,
-    passcodeEncryptionCode: t.string,
-    type: t.literal('trading'),
-  },
+export const GenerateGoAccountWalletOptionsCodec = t.intersection(
+  [
+    t.strict({
+      label: t.string,
+      passphrase: t.string,
+      enterprise: t.string,
+      passcodeEncryptionCode: t.string,
+      type: t.literal('trading'),
+    }),
+    t.partial({
+      // Codec intentionally accepts only 2: v1 is the implicit default and never sent on the wire.
+      encryptionVersion: t.literal(2),
+    }),
+  ],
   'GenerateGoAccountWalletOptions'
 );
 

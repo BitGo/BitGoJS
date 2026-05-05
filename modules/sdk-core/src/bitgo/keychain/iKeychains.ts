@@ -1,4 +1,4 @@
-import { IRequestTracer } from '../../api';
+import { EncryptionVersion, IRequestTracer } from '../../api';
 import { KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitgoPubKeyType } from '../utils/tss/baseTypes';
 import { IWallet } from '../wallet';
@@ -166,6 +166,7 @@ export interface CreateBackupOptions {
   prv?: string;
   encryptedPrv?: string;
   passphrase?: string;
+  encryptionVersion?: EncryptionVersion;
 }
 
 export interface CreateBitGoOptions {
@@ -188,6 +189,7 @@ export interface CreateMpcOptions {
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
   retrofit?: DecryptedRetrofitPayload;
+  encryptionVersion?: EncryptionVersion;
 }
 
 export interface RecreateMpcOptions extends Omit<CreateMpcOptions, 'retrofit' | 'multisigType'> {

@@ -49,6 +49,8 @@ const V2EnvelopeCodec = t.intersection([
   t.partial({
     /** Base64-encoded per-call HKDF salt -- present only in session-produced envelopes */
     hkdfSalt: base64String,
+    /** Additional authenticated data for context binding (e.g. transaction hash + derivation path) */
+    adata: t.string,
   }),
 ]);
 
@@ -100,17 +102,27 @@ export function hkdfDeriveAesKey(hkdfKey: CryptoKey, hkdfSalt: Uint8Array, usage
   );
 }
 
-export async function aesGcmEncrypt(key: CryptoKey, iv: Uint8Array, plaintext: string): Promise<Uint8Array> {
-  const ct = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv, tagLength: 128 },
-    key,
-    new TextEncoder().encode(plaintext)
-  );
+export async function aesGcmEncrypt(
+  key: CryptoKey,
+  iv: Uint8Array,
+  plaintext: string,
+  additionalData?: Uint8Array
+): Promise<Uint8Array> {
+  const params: AesGcmParams = { name: 'AES-GCM', iv, tagLength: 128 };
+  if (additionalData) params.additionalData = additionalData;
+  const ct = await crypto.subtle.encrypt(params, key, new TextEncoder().encode(plaintext));
   return new Uint8Array(ct);
 }
 
-export async function aesGcmDecrypt(key: CryptoKey, iv: Uint8Array, ct: Uint8Array): Promise<string> {
-  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv, tagLength: 128 }, key, ct);
+export async function aesGcmDecrypt(
+  key: CryptoKey,
+  iv: Uint8Array,
+  ct: Uint8Array,
+  additionalData?: Uint8Array
+): Promise<string> {
+  const params: AesGcmParams = { name: 'AES-GCM', iv, tagLength: 128 };
+  if (additionalData) params.additionalData = additionalData;
+  const plaintext = await crypto.subtle.decrypt(params, key, ct);
   return new TextDecoder().decode(plaintext);
 }
 
@@ -138,7 +150,14 @@ export function parseV2Envelope(ciphertext: string): V2Envelope {
 export async function encryptV2(
   password: string,
   plaintext: string,
-  options?: { salt?: Uint8Array; iv?: Uint8Array; memorySize?: number; iterations?: number; parallelism?: number }
+  options?: {
+    salt?: Uint8Array;
+    iv?: Uint8Array;
+    memorySize?: number;
+    iterations?: number;
+    parallelism?: number;
+    adata?: string;
+  }
 ): Promise<string> {
   const memorySize = options?.memorySize ?? ARGON2_DEFAULTS.memorySize;
   const iterations = options?.iterations ?? ARGON2_DEFAULTS.iterations;
@@ -150,10 +169,11 @@ export async function encryptV2(
   const iv = options?.iv ?? new Uint8Array(randomBytes(GCM_IV_LENGTH));
   if (iv.length !== GCM_IV_LENGTH) throw new Error(`iv must be ${GCM_IV_LENGTH} bytes`);
 
+  const adataBytes = options?.adata ? new TextEncoder().encode(options.adata) : undefined;
   const key = await argon2ToAesKey(password, salt, { memorySize, iterations, parallelism });
-  const ct = await aesGcmEncrypt(key, iv, plaintext);
+  const ct = await aesGcmEncrypt(key, iv, plaintext, adataBytes);
 
-  return JSON.stringify({
+  const envelope: V2Envelope = {
     v: 2,
     m: memorySize,
     t: iterations,
@@ -161,7 +181,9 @@ export async function encryptV2(
     salt: Buffer.from(salt).toString('base64'),
     iv: Buffer.from(iv).toString('base64'),
     ct: Buffer.from(ct).toString('base64'),
-  } satisfies V2Envelope);
+  };
+  if (options?.adata) envelope.adata = options.adata;
+  return JSON.stringify(envelope);
 }
 
 /**
@@ -179,14 +201,15 @@ export async function decryptV2(password: string, ciphertext: string): Promise<s
   const iv = new Uint8Array(Buffer.from(envelope.iv, 'base64'));
   const ct = new Uint8Array(Buffer.from(envelope.ct, 'base64'));
   const params = { memorySize: envelope.m, iterations: envelope.t, parallelism: envelope.p };
+  const adataBytes = envelope.adata ? new TextEncoder().encode(envelope.adata) : undefined;
 
   if (envelope.hkdfSalt) {
     const hkdfKey = await argon2ToHkdfKey(password, salt, params);
     const hkdfSalt = new Uint8Array(Buffer.from(envelope.hkdfSalt, 'base64'));
     const aesKey = await hkdfDeriveAesKey(hkdfKey, hkdfSalt, 'decrypt');
-    return aesGcmDecrypt(aesKey, iv, ct);
+    return aesGcmDecrypt(aesKey, iv, ct, adataBytes);
   }
 
   const key = await argon2ToAesKey(password, salt, params);
-  return aesGcmDecrypt(key, iv, ct);
+  return aesGcmDecrypt(key, iv, ct, adataBytes);
 }

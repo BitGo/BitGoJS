@@ -2,6 +2,7 @@ import assert from 'assert';
 import { randomBytes } from 'crypto';
 
 import { decrypt, decryptAsync, decryptV2, encrypt, encryptV2, V2Envelope, createEncryptionSession } from '../../src';
+import { BitGoAPI } from '../../src/bitgoAPI';
 
 describe('encryption methods tests', () => {
   describe('encrypt', () => {
@@ -131,6 +132,22 @@ describe('encryption methods tests', () => {
 
     it('throws on invalid iv length', async () => {
       await assert.rejects(() => encryptV2(password, plaintext, { iv: new Uint8Array(8) }), /iv must be 12 bytes/);
+    });
+
+    it('encrypts and decrypts with adata (AAD)', async () => {
+      const adata = 'txhash:m/0/1';
+      const ciphertext = await encryptV2(password, plaintext, { adata });
+      const envelope: V2Envelope = JSON.parse(ciphertext);
+      assert.strictEqual(envelope.adata, adata);
+      const decrypted = await decryptV2(password, ciphertext);
+      assert.strictEqual(decrypted, plaintext);
+    });
+
+    it('adata mismatch causes GCM decryption failure', async () => {
+      const ciphertext = await encryptV2(password, plaintext, { adata: 'context-A' });
+      const envelope = JSON.parse(ciphertext);
+      envelope.adata = 'context-B';
+      await assert.rejects(() => decryptV2(password, JSON.stringify(envelope)), /operation-specific reason|incorrect/i);
     });
 
     it('v1 and v2 are independent (v1 data does not decrypt with v2)', async () => {
@@ -303,6 +320,34 @@ describe('encryption methods tests', () => {
       session2.destroy();
     });
 
+    it('session encrypt with adata round-trip', async () => {
+      const session = await createEncryptionSession(password, opts);
+      const adata = 'txhash:m/0/1:round1';
+      const ct = await session.encrypt(plaintext, adata);
+      const envelope: V2Envelope = JSON.parse(ct);
+      assert.strictEqual(envelope.adata, adata);
+      const result = await session.decrypt(ct);
+      assert.strictEqual(result, plaintext);
+      session.destroy();
+    });
+
+    it('session encrypt with adata is decryptable via decryptV2', async () => {
+      const session = await createEncryptionSession(password, opts);
+      const ct = await session.encrypt(plaintext, 'context-binding');
+      session.destroy();
+      const result = await decryptV2(password, ct);
+      assert.strictEqual(result, plaintext);
+    });
+
+    it('session adata mismatch causes GCM failure', async () => {
+      const session = await createEncryptionSession(password, opts);
+      const ct = await session.encrypt(plaintext, 'original-context');
+      const envelope = JSON.parse(ct);
+      envelope.adata = 'tampered-context';
+      await assert.rejects(() => session.decrypt(JSON.stringify(envelope)), /operation-specific reason|incorrect/i);
+      session.destroy();
+    });
+
     it('session rejects standard v2 envelopes (no hkdfSalt)', async () => {
       const v2ct = await encryptV2(password, plaintext, opts);
       const session = await createEncryptionSession(password, opts);
@@ -318,6 +363,59 @@ describe('encryption methods tests', () => {
       assert.strictEqual(envelope.m, 2048);
       assert.strictEqual(envelope.t, 2);
       assert.strictEqual(envelope.p, 2);
+    });
+  });
+
+  describe('BitGoAPI.encryptAsync', () => {
+    let bitgo: BitGoAPI;
+    const password = 'test-password';
+    const plaintext = 'hello encryptAsync';
+
+    before(() => {
+      bitgo = new BitGoAPI({ env: 'test' });
+    });
+
+    it('dispatches to v1 by default and output is decryptable via decrypt', async () => {
+      const ct = await bitgo.encryptAsync({ input: plaintext, password });
+      const envelope = JSON.parse(ct);
+      assert.notStrictEqual(envelope.v, 2, 'default should not produce v2 envelope');
+      assert.strictEqual(decrypt(password, ct), plaintext);
+    });
+
+    it('dispatches to v2 when encryptionVersion: 2 and output is decryptable via decryptAsync', async () => {
+      const ct = await bitgo.encryptAsync({ input: plaintext, password, encryptionVersion: 2 });
+      const envelope: V2Envelope = JSON.parse(ct);
+      assert.strictEqual(envelope.v, 2);
+      const result = await decryptAsync(password, ct);
+      assert.strictEqual(result, plaintext);
+    });
+
+    it('forwards adata to v2 envelope', async () => {
+      const adata = 'txhash:m/0/1';
+      const ct = await bitgo.encryptAsync({ input: plaintext, password, encryptionVersion: 2, adata });
+      const envelope: V2Envelope = JSON.parse(ct);
+      assert.strictEqual(envelope.adata, adata);
+      const result = await decryptAsync(password, ct);
+      assert.strictEqual(result, plaintext);
+    });
+  });
+
+  describe('BitGoAPI.createEncryptionSession', () => {
+    let bitgo: BitGoAPI;
+    const password = 'test-password';
+    const plaintext = 'hello session';
+
+    before(() => {
+      bitgo = new BitGoAPI({ env: 'test' });
+    });
+
+    it('returns working session (encrypt/decrypt/destroy)', async () => {
+      const session = await bitgo.createEncryptionSession(password);
+      const ct = await session.encrypt(plaintext);
+      const result = await session.decrypt(ct);
+      assert.strictEqual(result, plaintext);
+      session.destroy();
+      await assert.rejects(() => session.encrypt(plaintext), /destroyed/);
     });
   });
 });

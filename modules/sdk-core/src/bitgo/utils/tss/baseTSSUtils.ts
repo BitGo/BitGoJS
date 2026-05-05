@@ -1,4 +1,4 @@
-import { IRequestTracer } from '../../../api';
+import { EncryptionVersion, IRequestTracer } from '../../../api';
 import * as openpgp from 'openpgp';
 import { Key, readKey, SerializedKeyPair } from 'openpgp';
 import { IBaseCoin, KeychainsTriplet } from '../../baseCoin';
@@ -216,6 +216,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     enterprise?: string | undefined;
     originalPasscodeEncryptionCode?: string | undefined;
     isThirdPartyBackup?: boolean;
+    encryptionVersion?: EncryptionVersion;
   }): Promise<KeychainsTriplet> {
     throw new Error('Method not implemented.');
   }

@@ -4,6 +4,7 @@ import {
   DecryptOptions,
   EncryptOptions,
   GetSharingKeyOptions,
+  IEncryptionSession,
   IRequestTracer,
 } from '../api';
 import { IBaseCoin } from './baseCoin';
@@ -19,6 +20,8 @@ export interface BitGoBase {
   decryptKeys(params: DecryptKeysOptions): string[];
   del(url: string): BitGoRequest;
   encrypt(params: EncryptOptions): string;
+  encryptAsync(params: EncryptOptions): Promise<string>;
+  createEncryptionSession(password: string): Promise<IEncryptionSession>;
   readonly env: EnvironmentName;
   fetchConstants(): Promise<any>;
   get(url: string): BitGoRequest;
