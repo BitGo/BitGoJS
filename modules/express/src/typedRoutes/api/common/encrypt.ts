@@ -2,6 +2,9 @@ import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 
+/**
+ * Symmetrically encrypt an arbitrary message with provided password
+ */
 export const EncryptRequestBody = {
   /** Plaintext message which should be encrypted */
   input: t.string,
