@@ -2172,6 +2172,24 @@ class SoneiumTestnet extends Testnet implements EthereumNetwork {
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
+class ScrollEth extends Mainnet implements EthereumNetwork {
+  name = 'Scroll';
+  family = CoinFamily.SCROLLETH;
+  explorerUrl = 'https://scrollscan.com/tx/';
+  accountExplorerUrl = 'https://scrollscan.com/address/';
+  chainId = 534352;
+  nativeCoinOperationHashPrefix = '534352';
+}
+
+class ScrollEthTestnet extends Testnet implements EthereumNetwork {
+  name = 'Scroll Sepolia';
+  family = CoinFamily.SCROLLETH;
+  explorerUrl = 'https://sepolia.scrollscan.com/tx/';
+  accountExplorerUrl = 'https://sepolia.scrollscan.com/address/';
+  chainId = 534351;
+  nativeCoinOperationHashPrefix = '534351';
+}
+
 class SeiEvm extends Mainnet implements EthereumNetwork {
   name = 'Seievm';
   family = CoinFamily.SEIEVM;
@@ -2827,6 +2845,7 @@ export const Networks = {
     rbtc: Object.freeze(new Rbtc()),
     rune: Object.freeze(new Rune()),
     stellar: Object.freeze(new Stellar()),
+    scrolleth: Object.freeze(new ScrollEth()),
     sei: Object.freeze(new Sei()),
     seievm: Object.freeze(new SeiEvm()),
     sgb: Object.freeze(new Songbird()),
@@ -2964,6 +2983,7 @@ export const Networks = {
     near: Object.freeze(new NearTestnet()),
     stx: Object.freeze(new StxTestnet()),
     stt: Object.freeze(new SomniaTestnet()),
+    scrolleth: Object.freeze(new ScrollEthTestnet()),
     soneium: Object.freeze(new SoneiumTestnet()),
     sonic: Object.freeze(new SonicTestnet()),
     kaia: Object.freeze(new KaiaTestnet()),

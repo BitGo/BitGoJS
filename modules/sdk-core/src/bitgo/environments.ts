@@ -306,6 +306,9 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://mainnet.mirrornode.hedera.com/api/v1',
       rpcUrl: 'https://mainnet.hashio.io/api',
     },
+    scrolleth: {
+      baseUrl: 'https://api.scrollscan.com/api',
+    },
     hemieth: {
       baseUrl: 'https://explorer.hemi.xyz/api',
     },
@@ -527,6 +530,9 @@ const testnetBase: EnvironmentTemplate = {
     hbarevm: {
       baseUrl: 'https://testnet.mirrornode.hedera.com/api/v1',
       rpcUrl: 'https://testnet.hashio.io/api',
+    },
+    tscrolleth: {
+      baseUrl: 'https://api-sepolia.scrollscan.com/api',
     },
     hemieth: {
       baseUrl: 'https://testnet.explorer.hemi.xyz/api',
