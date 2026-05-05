@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.22.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.22.0...@bitgo/utxo-lib@11.22.1) (2026-05-05)
+
+
+### Bug Fixes
+
+* **deps:** upgrade axios to 1.15.2 to patch security vulnerabilities ([1dc5e2e](https://github.com/BitGo/BitGoJS/commit/1dc5e2e8e2dfebcf8e78bc398b0dd9e2b658ce2b))
+
+
+
+
+
 # [11.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.21.0...@bitgo/utxo-lib@11.22.0) (2026-03-29)
 
 

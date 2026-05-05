@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.39.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.38.0...@bitgo/statics@58.39.0) (2026-05-05)
+
+
+### Bug Fixes
+
+* **statics:** disallow BULK_STAKING_TRANSACTION feature for OFC coins ([0c9ba32](https://github.com/BitGo/BitGoJS/commit/0c9ba325a2e0ecca080f29f48f2443d7491ca654))
+* **statics:** update xtzevm testnet chain ID to shadownet (127823) ([f4d2297](https://github.com/BitGo/BitGoJS/commit/f4d229741fc9e3eabdce7f65a4a7bb992789a25c))
+
+
+### Features
+
+* add EVM_KEYRING_UNSUPPORTED coin feature flag ([2fbd6c5](https://github.com/BitGo/BitGoJS/commit/2fbd6c52f2cb2ab23686b04f375063788bfbb106))
+* onboard GoQXMP stablecoin token ([6cfb857](https://github.com/BitGo/BitGoJS/commit/6cfb857fe9fc462e98283634ec4844ae364b7a15))
+* **statics:** add Scroll L2 EVM chain ([7db5352](https://github.com/BitGo/BitGoJS/commit/7db53520c072598ac1b0230452bc0b48a846387e))
+* **statics:** exclude Singapore custody for COIN-7835 staked-yield tokens ([b59b199](https://github.com/BitGo/BitGoJS/commit/b59b199d6ee43e52e9b4c7bae0e7a58e33128811))
+* **statics:** exclude Singapore custody for COIN-7835 testnet tokens ([7ba9511](https://github.com/BitGo/BitGoJS/commit/7ba95116a644df1aad72368a77082456e5178f20))
+* **statics:** update BULK_STAKING_TRANSACTION for eth and apt ([e2a38b4](https://github.com/BitGo/BitGoJS/commit/e2a38b42f868824994253e78680e23c6016900a0))
+* **statics:** update hoodeth mainnet configuration ([1b6ef1e](https://github.com/BitGo/BitGoJS/commit/1b6ef1e8e3edccfdfbe513ba5087b51c61e498ae))
+
+
+
+
+
 # [58.38.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.37.0...@bitgo/statics@58.38.0) (2026-04-29)
 
 

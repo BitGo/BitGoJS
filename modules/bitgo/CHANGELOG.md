@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.35.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.34.1...bitgo@50.35.0) (2026-05-05)
+
+
+### Features
+
+* add eddsa mpcv2 gpg key support to tss signing ([0a53cbd](https://github.com/BitGo/BitGoJS/commit/0a53cbd0c28e6ab4ea913f91699cf04da0e9dca3))
+
+
+
+
+
 ## [50.34.1](https://github.com/BitGo/BitGoJS/compare/bitgo@50.34.0...bitgo@50.34.1) (2026-04-29)
 
 **Note:** Version bump only for package bitgo

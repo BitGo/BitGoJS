@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.10.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.10.6...@bitgo/sdk-coin-xtz@2.10.7) (2026-05-05)
+
+
+### Bug Fixes
+
+* **sdk-coin-xtz:** preserve txid when re-parsing signed origination ([0bcfc61](https://github.com/BitGo/BitGoJS/commit/0bcfc61b510939a4033769d28c2afb8b39026bab))
+
+
+
+
+
 ## [2.10.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.10.5...@bitgo/sdk-coin-xtz@2.10.6) (2026-04-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xtz

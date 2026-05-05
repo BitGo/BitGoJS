@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.29.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.28.41...@bitgo/key-card@0.29.0) (2026-05-05)
+
+
+### Features
+
+* add lightning keycard generation to @bitgo/key-card ([0fb61eb](https://github.com/BitGo/BitGoJS/commit/0fb61ebbea832c529f0b7b074b5a2b3df8d5273f))
+
+
+
+
+
 ## [0.28.41](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.28.40...@bitgo/key-card@0.28.41) (2026-04-29)
 
 **Note:** Version bump only for package @bitgo/key-card
