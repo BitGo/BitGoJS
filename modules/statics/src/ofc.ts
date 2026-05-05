@@ -38,6 +38,7 @@ const DISALLOWED_FEATURES = [
   // OFC inherits features from the base asset but the features are not always applicable to OFC
   CoinFeature.SHARED_EVM_SIGNING,
   CoinFeature.EVM_COMPATIBLE_WP,
+  CoinFeature.BULK_STAKING_TRANSACTION,
 ];
 
 const REQUIRED_FEATURES = [CoinFeature.ACCOUNT_MODEL, CoinFeature.REQUIRES_BIG_NUMBER];
