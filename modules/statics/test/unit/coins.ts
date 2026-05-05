@@ -119,6 +119,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.CUSTODY_BITGO_KOREA,
+      CoinFeature.BULK_STAKING_TRANSACTION,
     ],
   },
   etc: {
@@ -516,6 +517,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.BULK_TRANSACTION,
+      CoinFeature.BULK_STAKING_TRANSACTION,
     ],
   },
   tetc: {
