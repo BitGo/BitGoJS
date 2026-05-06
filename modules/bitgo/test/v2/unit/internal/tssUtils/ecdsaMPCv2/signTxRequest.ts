@@ -237,9 +237,7 @@ describe('signTxRequest:', function () {
         recipientSource: TssTxRecipientSource.Explicit,
         txParams: { recipients: [] },
       } as any)
-      .should.be.rejectedWith(
-        'recipientSource "explicit" requires txParams.recipients with at least one recipient.'
-      );
+      .should.be.rejectedWith('recipientSource "explicit" requires txParams.recipients with at least one recipient.');
   });
 
   it('successfully signs a txRequest with backup key for a dkls hot wallet with WP', async function () {
