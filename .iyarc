@@ -87,3 +87,15 @@ GHSA-xq3m-2v4x-88gg
 #   project are controlled internal endpoints, not user-supplied FTP URLs
 # - Pinned at 5.2.2 in root resolutions; upstream get-uri has not yet updated to require 5.3.0
 GHSA-rp42-5vxx-qpwr
+
+# Excluded because:
+# - DoS via unbounded multiline control response buffering in basic-ftp (severity: high, CVSS 7.5)
+# - A malicious FTP server can send an unterminated multiline response during the banner phase
+#   (before auth), causing the client to buffer unbounded data into FtpContext._partialResponse
+# - Same transitive chain as GHSA-rp42-5vxx-qpwr: pac-proxy-agent > get-uri > basic-ftp
+# - Used only for PAC-based proxy URL resolution, not for any direct FTP operations
+# - Exploitation requires connecting to a malicious FTP server; all proxy targets in this
+#   project are controlled internal endpoints, not user-supplied FTP URLs
+# - No compatible patched version available in the current get-uri dependency chain
+# - Ticket: SI-512
+GHSA-rpmf-866q-6p89
