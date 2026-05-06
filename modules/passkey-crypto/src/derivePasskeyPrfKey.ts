@@ -23,7 +23,7 @@ export async function derivePasskeyPrfKey(params: {
 
   // Fetch the wallet's user keychain to get webauthnDevices
   const keychain = await wallet.getEncryptedUserKeychain();
-  const devices = keychain.webauthnDevices;
+  const devices = (keychain as any).webauthnDevices ?? (keychain as any).webAuthnDevices;
 
   if (!devices || devices.length === 0) {
     throw new Error('No passkey devices available');
@@ -41,10 +41,18 @@ export async function derivePasskeyPrfKey(params: {
     .get(bitgo.url('/user/otp/webauthn/assertion', 2))
     .result()) as AssertionChallengeResponse;
 
+  // Build allowCredentials from the evalByCredential map so the browser
+  // knows which credentials are valid for the PRF extension.
+  const allowCredentials = Object.keys(evalByCredential).map((credId) => ({
+    type: 'public-key' as const,
+    id: Buffer.from(credId.replace(/-/g, '+').replace(/_/g, '/'), 'base64').buffer,
+  }));
+
   // Trigger WebAuthn assertion with PRF evaluation via the provider (navigator layer)
   const result = await provider.get({
     publicKey: {
       challenge: Buffer.from(challenge, 'base64'),
+      allowCredentials,
     } as PublicKeyCredentialRequestOptions,
     evalByCredential,
   });
