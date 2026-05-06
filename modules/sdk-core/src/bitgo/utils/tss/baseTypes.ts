@@ -1,7 +1,7 @@
 import { Key, SerializedKeyPair } from 'openpgp';
 import { EncryptionVersion, IEncryptionSession, IRequestTracer } from '../../../api';
 import { type ITransactionRecipient, KeychainsTriplet, ParsedTransaction, TransactionParams } from '../../baseCoin';
-import { ApiKeyShare, Keychain } from '../../keychain';
+import { ApiKeyShare, Keychain, WebauthnKeyEncryptionInfo } from '../../keychain';
 import { ApiVersion, Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, Signature, SignShare } from '../../../account-lib/mpc/tss';
 import { Signature as EcdsaSignature } from '../../../account-lib/mpc/tss/ecdsa/types';
@@ -482,6 +482,7 @@ export type CreateKeychainParamsBase = {
   passphrase?: string;
   enterprise?: string;
   originalPasscodeEncryptionCode?: string;
+  webauthnInfo?: WebauthnKeyEncryptionInfo;
   encryptionVersion?: EncryptionVersion;
   encryptionSession?: IEncryptionSession;
 };

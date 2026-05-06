@@ -7,7 +7,7 @@ import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt, minModulu
 import { bip32 } from '@bitgo/utxo-lib';
 
 import { ECDSA, Ecdsa } from '../../../../account-lib/mpc/tss';
-import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
+import { AddKeychainOptions, Keychain, KeyType, WebauthnKeyEncryptionInfo } from '../../../keychain';
 import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { KeychainsTriplet } from '../../../baseCoin';
 import {
@@ -109,6 +109,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     passphrase: string;
     enterprise?: string | undefined;
     originalPasscodeEncryptionCode?: string | undefined;
+    webauthnInfo?: WebauthnKeyEncryptionInfo;
   }): Promise<KeychainsTriplet> {
     const MPC = new Ecdsa();
     const m = 2;
@@ -141,6 +142,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       bitgoKeychain,
       passphrase: params.passphrase,
       originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
+      webauthnInfo: params.webauthnInfo,
     });
     const backupKeychainPromise = this.createBackupKeychain({
       userGpgKey,
@@ -180,6 +182,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     bitgoKeychain,
     passphrase,
     originalPasscodeEncryptionCode,
+    webauthnInfo,
   }: CreateEcdsaKeychainParams): Promise<Keychain> {
     if (!passphrase) {
       throw new Error('Please provide a wallet passphrase');
@@ -194,7 +197,8 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       backupKeyShare.userHeldKeyShare,
       bitgoKeychain,
       passphrase,
-      originalPasscodeEncryptionCode
+      originalPasscodeEncryptionCode,
+      webauthnInfo
     );
   }
 
@@ -307,7 +311,8 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     backupKeyShare: KeyShare,
     bitgoKeychain: Keychain,
     passphrase: string,
-    originalPasscodeEncryptionCode?: string
+    originalPasscodeEncryptionCode?: string,
+    webauthnInfo?: WebauthnKeyEncryptionInfo
   ): Promise<Keychain> {
     const bitgoKeyShares = bitgoKeychain.keyShares;
     if (!bitgoKeyShares) {
@@ -402,6 +407,19 @@ export class EcdsaUtils extends BaseEcdsaUtils {
         password: passphrase,
       }),
       originalPasscodeEncryptionCode,
+      webauthnDevices:
+        webauthnInfo && recipientIndex === ShareKeyPosition.USER
+          ? [
+              {
+                otpDeviceId: webauthnInfo.otpDeviceId,
+                prfSalt: webauthnInfo.prfSalt,
+                encryptedPrv: await this.bitgo.encryptAsync({
+                  input: prv,
+                  password: webauthnInfo.passphrase,
+                }),
+              },
+            ]
+          : undefined,
     };
 
     const keychains = this.baseCoin.keychains();

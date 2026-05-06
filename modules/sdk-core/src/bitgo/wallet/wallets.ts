@@ -448,6 +448,7 @@ export class Wallets implements IWallets {
         originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
         enterprise,
         walletVersion: params.walletVersion,
+        webauthnInfo: params.webauthnInfo,
         encryptionVersion: params.encryptionVersion,
       });
       if (params.passcodeEncryptionCode) {
@@ -1524,6 +1525,7 @@ export class Wallets implements IWallets {
     enterprise,
     walletVersion,
     originalPasscodeEncryptionCode,
+    webauthnInfo,
     encryptionVersion,
   }: GenerateMpcWalletOptions): Promise<WalletWithKeychains> {
     if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
@@ -1544,6 +1546,7 @@ export class Wallets implements IWallets {
       passphrase,
       enterprise,
       originalPasscodeEncryptionCode,
+      webauthnInfo,
       encryptionVersion,
     });
 
