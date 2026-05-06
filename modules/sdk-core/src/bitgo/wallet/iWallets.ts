@@ -91,6 +91,7 @@ export interface GenerateWalletOptions {
   type?: 'hot' | 'cold' | 'custodial' | 'trading';
   subType?: 'lightningCustody' | 'lightningSelfCustody';
   evmKeyRingReferenceWalletId?: string;
+  lightningProvider?: 'amboss' | 'voltage';
   /** Optional WebAuthn PRF-based encryption info. When provided, the user private key is additionally encrypted with the PRF-derived passphrase so the server can store a WebAuthn-protected copy. */
   webauthnInfo?: GenerateWalletWebauthnInfo;
   encryptionVersion?: EncryptionVersion;
