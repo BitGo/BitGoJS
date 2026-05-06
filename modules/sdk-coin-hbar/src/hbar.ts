@@ -751,6 +751,15 @@ export class Hbar extends BaseCoin {
         });
         break;
 
+      case 'cryptoUpdateAccount':
+        const updateParams = txJson.instructionsData.params;
+        outputs.push({
+          address: updateParams.accountId,
+          amount: '0',
+          memo,
+        });
+        break;
+
       default:
         throw new Error('Transaction format outside of cryptoTransfer not supported for explanation.');
     }
