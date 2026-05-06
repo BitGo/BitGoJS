@@ -179,6 +179,71 @@ describe('Hedera Hashgraph:', function () {
     explain.changeAmount.should.equal('0');
   });
 
+  it('should explain an account update (staking) transaction', async function () {
+    const sourceAccountId = '0.0.81320';
+    const factory = getBuilderFactory('thbar');
+    const txBuilder = factory.getAccountUpdateBuilder();
+    txBuilder.fee({ fee: '1000000000' });
+    txBuilder.source({ address: sourceAccountId });
+    txBuilder.stakedNodeId(3);
+    txBuilder.declineStakingReward(false);
+    txBuilder.node({ nodeId: '0.0.2345' });
+    txBuilder.startTime('1596110493.372646570');
+    const tx = await txBuilder.build();
+    const txHex = tx.toBroadcastFormat();
+
+    const explain = await basecoin.explainTransaction({
+      txHex,
+      feeInfo: {
+        size: 1000,
+        fee: 1160407,
+        feeRate: 1160407,
+      },
+    });
+
+    explain.id.should.equal(sourceAccountId + '@1596110493.372646570');
+    explain.outputAmount.should.equal('0');
+    explain.timestamp.should.equal('1596110493.372646570');
+    explain.outputs.length.should.equal(1);
+    explain.outputs[0].amount.should.equal('0');
+    explain.outputs[0].address.should.equal(sourceAccountId);
+    explain.outputs[0].memo.should.equal('');
+    explain.fee.should.equal(1160407);
+    explain.changeAmount.should.equal('0');
+  });
+
+  it('should explain an unstake (account update with nodeId -1) transaction', async function () {
+    const sourceAccountId = '0.0.81320';
+    const factory = getBuilderFactory('thbar');
+    const txBuilder = factory.getAccountUpdateBuilder();
+    txBuilder.fee({ fee: '1000000000' });
+    txBuilder.source({ address: sourceAccountId });
+    txBuilder.stakedNodeId(-1);
+    txBuilder.node({ nodeId: '0.0.2345' });
+    txBuilder.startTime('1596110493.372646570');
+    const tx = await txBuilder.build();
+    const txHex = tx.toBroadcastFormat();
+
+    const explain = await basecoin.explainTransaction({
+      txHex,
+      feeInfo: {
+        size: 1000,
+        fee: 1160407,
+        feeRate: 1160407,
+      },
+    });
+
+    explain.id.should.equal(sourceAccountId + '@1596110493.372646570');
+    explain.outputAmount.should.equal('0');
+    explain.timestamp.should.equal('1596110493.372646570');
+    explain.outputs.length.should.equal(1);
+    explain.outputs[0].amount.should.equal('0');
+    explain.outputs[0].address.should.equal(sourceAccountId);
+    explain.outputs[0].memo.should.equal('');
+    explain.fee.should.equal(1160407);
+    explain.changeAmount.should.equal('0');
+  });
+
   it('should verify isWalletAddress', async function () {
     const baseAddress = '0.0.41098';
     const validAddress1 = '0.0.41098?memoId=1';
