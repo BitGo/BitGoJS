@@ -35,8 +35,7 @@
   },
   "dependencies": {
     "@bitgo/public-types": "6.1.0",
-    "@bitgo/sdk-core": "^36.42.0",
-    "@bitgo/sjcl": "^1.1.0"
+    "@bitgo/sdk-core": "^36.44.0"
   },
   "devDependencies": {
     "@types/node": "^18.0.0"
