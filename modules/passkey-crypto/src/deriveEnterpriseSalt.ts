@@ -1,11 +1,4 @@
-import * as sjcl from '@bitgo/sjcl';
-import type { SjclCodecs, SjclHashes, SjclMisc } from '@bitgo/sjcl';
-
-type SjclType = {
-  hash: SjclHashes;
-  codec: SjclCodecs;
-  misc: SjclMisc;
-};
+import { createHmac } from 'crypto';
 
 /**
  * Derives an enterprise-scoped PRF salt to prevent cross-enterprise key reuse.
@@ -15,16 +8,9 @@ type SjclType = {
  *
  * @param baseSalt - Server-provided base64url-encoded PRF salt
  * @param enterpriseId - Enterprise identifier
- * @returns Base64-encoded HMAC-SHA256 digest
+ * @returns Hex-encoded HMAC-SHA256 digest
  */
 export function deriveEnterpriseSalt(baseSalt: string, enterpriseId: string): string {
-  const { misc, codec, hash } = sjcl as unknown as SjclType;
-
-  const keyBits = codec.base64url.toBits(baseSalt);
-  const dataBits = codec.utf8String.toBits(enterpriseId);
-
-  const hmacInstance = new misc.hmac(keyBits, hash.sha256);
-  const resultBits = hmacInstance.mac(dataBits);
-
-  return codec.base64.fromBits(resultBits);
+  const keyBytes = Buffer.from(baseSalt.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
+  return createHmac('sha256', keyBytes).update(enterpriseId).digest('hex');
 }
