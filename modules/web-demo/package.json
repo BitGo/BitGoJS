@@ -60,6 +60,7 @@
     "@bitgo/sdk-coin-xtz": "^2.10.7",
     "@bitgo/sdk-coin-zec": "^2.8.7",
     "@bitgo/sdk-core": "^36.44.0",
+    "@bitgo/passkey-crypto": "*",
     "@bitgo/sdk-hmac": "^1.9.0",
     "@bitgo/sdk-lib-mpc": "^10.12.0",
     "@bitgo/sdk-opensslbytes": "^2.1.0",
