@@ -15,7 +15,8 @@
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
     "test": "npm run unit-test",
-    "unit-test": "mocha 'test/unit/**/*.ts'"
+    "unit-test": "mocha 'test/unit/**/*.ts'",
+    "integration-test": "mocha 'test/integration/**/*.ts'"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
@@ -38,6 +39,7 @@
     "@bitgo/sdk-core": "^36.44.0"
   },
   "devDependencies": {
-    "@types/node": "^18.0.0"
+    "@types/node": "^18.0.0",
+    "sjcl": "1.0.1"
   }
 }
