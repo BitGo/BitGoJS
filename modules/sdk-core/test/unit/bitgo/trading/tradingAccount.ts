@@ -52,7 +52,7 @@ describe('TradingAccount', function () {
       toJSON: sinon.stub().returns({
         id: 'test-wallet-id',
         keys: ['user-key-id', 'backup-key-id', 'bitgo-key-id'],
-        userKeySigningRequired: undefined, // default is undefined
+        coinSpecific: {},
       }),
       baseCoin: mockBaseCoin,
       bitgo: mockBitGo,
@@ -90,10 +90,25 @@ describe('TradingAccount', function () {
         result.should.equal(signature);
       });
 
-      it('should throw if userKeySigningRequired is set and no passphrase and prv are provided', async function () {
+      it('should throw if coinSpecific.userKeySigningRequired is true and no passphrase and prv are provided', async function () {
         mockWallet.toJSON.onCall(mockWallet.toJSON.callCount).returns({
           id: 'test-wallet-id',
           keys: ['user-key-id', 'backup-key-id', 'bitgo-key-id'],
+          coinSpecific: { userKeySigningRequired: true },
+        });
+
+        await tradingAccount
+          .signPayload({ payload })
+          .should.be.rejectedWith(
+            'Wallet must use user key to sign ofc transaction, please provide the wallet passphrase or visit your wallet settings page to configure one.'
+          );
+      });
+
+      it('should fall back to top-level userKeySigningRequired when coinSpecific does not carry it', async function () {
+        mockWallet.toJSON.onCall(mockWallet.toJSON.callCount).returns({
+          id: 'test-wallet-id',
+          keys: ['user-key-id', 'backup-key-id', 'bitgo-key-id'],
+          coinSpecific: {},
           userKeySigningRequired: true,
         });
 
@@ -104,11 +119,23 @@ describe('TradingAccount', function () {
           );
       });
 
+      it('should prefer coinSpecific.userKeySigningRequired over top-level when both are present', async function () {
+        mockWallet.toJSON.onCall(mockWallet.toJSON.callCount).returns({
+          id: 'test-wallet-id',
+          keys: ['user-key-id', 'backup-key-id', 'bitgo-key-id'],
+          coinSpecific: { userKeySigningRequired: false },
+          userKeySigningRequired: true,
+        });
+
+        const result = await tradingAccount.signPayload({ payload });
+        result.should.equal(signature);
+      });
+
       it('should throw if wallet has fewer than 2 keys and no passphrase and prv are provided', async function () {
         mockWallet.toJSON.onCall(mockWallet.toJSON.callCount).returns({
           id: 'test-wallet-id',
           keys: ['user-key-id'],
-          userKeySigningRequired: undefined,
+          coinSpecific: {},
         });
 
         await tradingAccount

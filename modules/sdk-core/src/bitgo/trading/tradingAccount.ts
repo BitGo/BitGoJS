@@ -48,7 +48,8 @@ export class TradingAccount implements ITradingAccount {
     params: Omit<SignPayloadParameters, 'walletPassphrase' | 'prv'>
   ): Promise<string> {
     const walletData = this.wallet.toJSON();
-    if (walletData.userKeySigningRequired) {
+    const userKeySigningRequired = walletData.coinSpecific?.userKeySigningRequired ?? walletData.userKeySigningRequired;
+    if (userKeySigningRequired) {
       throw new Error(
         'Wallet must use user key to sign ofc transaction, please provide the wallet passphrase or visit your wallet settings page to configure one.'
       );

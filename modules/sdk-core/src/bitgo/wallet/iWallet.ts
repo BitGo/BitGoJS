@@ -379,6 +379,7 @@ export interface WalletCoinSpecific {
   pendingEcdsaTssInitialization?: boolean;
   features?: string[];
   freezeDepositsFromShielded?: boolean;
+  userKeySigningRequired?: boolean;
   /**
    * Lightning coin specific data starts
    */
@@ -946,6 +947,11 @@ export interface WalletData {
   evmKeyRingReferenceWalletId?: string;
   isParent?: boolean;
   enabledChildChains?: string[];
+  /**
+   * @deprecated Read from `coinSpecific.userKeySigningRequired` instead. Retained
+   * temporarily as a fallback while the field migrates from the top level to the OFC
+   * coinSpecific subdocument; will be removed in a follow-up major release.
+   */
   userKeySigningRequired?: boolean;
 }
 

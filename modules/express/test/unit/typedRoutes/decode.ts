@@ -20,6 +20,7 @@ import {
   ExpressWalletUpdateParams,
 } from '../../../src/typedRoutes/api/v2/expressWalletUpdate';
 import { SignerMacaroonBody, SignerMacaroonParams } from '../../../src/typedRoutes/api/v2/signerMacaroon';
+import { WalletResponse } from '../../../src/typedRoutes/schemas/wallet';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -305,5 +306,34 @@ describe('io-ts decode tests', function () {
   });
   it('express.lightning.signerMacaroon params invalid', function () {
     assert.throws(() => assertDecode(t.type(SignerMacaroonParams), { coin: 'lnbtc' }));
+  });
+  describe('WalletResponse coinSpecific', function () {
+    it('decodes wallets with arbitrary coinSpecific fields and no userKeySigningRequired', function () {
+      // OFC subdocument toJSON in WP flattens fields directly into coinSpecific; non-OFC
+      // wallets carry unrelated keys. Both shapes must decode through the permissive intersection.
+      const decoded = assertDecode(WalletResponse, {
+        id: 'wallet123',
+        coinSpecific: { baseAddress: '0xabc', someEthField: 1 },
+      });
+      assert.deepStrictEqual(decoded.coinSpecific, { baseAddress: '0xabc', someEthField: 1 });
+    });
+    it('decodes wallets with coinSpecific.userKeySigningRequired', function () {
+      const decoded = assertDecode(WalletResponse, {
+        id: 'wallet123',
+        coinSpecific: { userKeySigningRequired: true, needsKeyReshareAfterPasswordReset: false },
+      });
+      assert.strictEqual(decoded.coinSpecific?.userKeySigningRequired, true);
+    });
+    it('decodes wallets with empty coinSpecific', function () {
+      assertDecode(WalletResponse, { id: 'wallet123', coinSpecific: {} });
+    });
+    it('rejects coinSpecific.userKeySigningRequired of wrong type', function () {
+      assert.throws(() =>
+        assertDecode(WalletResponse, {
+          id: 'wallet123',
+          coinSpecific: { userKeySigningRequired: 'yes' },
+        })
+      );
+    });
   });
 });
