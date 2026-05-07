@@ -173,6 +173,10 @@ export abstract class BaseCoin implements IBaseCoin {
     return false;
   }
 
+  supportsResourceDelegation(): boolean {
+    return false;
+  }
+
   /**
    * Gets config for how token enablements work for this coin
    * @returns
