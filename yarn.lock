@@ -18953,7 +18953,7 @@ sisteransi@^1.0.5:
   resolved "https://registry.npmjs.org/sisteransi/-/sisteransi-1.0.5.tgz"
   integrity sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==
 
-sjcl@^1.0.6, "sjcl@npm:@bitgo/sjcl@1.0.1":
+sjcl@1.0.1, sjcl@^1.0.6, "sjcl@npm:@bitgo/sjcl@1.0.1":
   version "1.0.1"
   resolved "https://registry.npmjs.org/@bitgo/sjcl/-/sjcl-1.0.1.tgz#633fa84608c1cb7461b17ceb6131d96722921fd3"
   integrity sha512-dBICMzShC8gXdpSj9cvl4wl9Jkt4h14wt4XQ+/6V6qcC2IObyKRJfaG5TYUU6RvVknhPBPyBx9v84vNKODM5fQ==

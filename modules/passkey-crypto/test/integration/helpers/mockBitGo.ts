@@ -1,4 +1,5 @@
 import * as sinon from 'sinon';
+import { decryptV2, encryptV2 } from '@bitgo/sdk-api';
 import {
   ASSERTION_CHALLENGE,
   BASE_SALT,
@@ -18,6 +19,33 @@ function realEncrypt({ password, input }: { password: string; input: string }): 
 
 function realDecrypt({ password, input }: { password: string; input: string }): string {
   return sjcl.decrypt(password, typeof input === 'string' ? JSON.parse(input) : input);
+}
+
+async function mockEncryptAsync(params: {
+  password: string;
+  input: string;
+  encryptionVersion?: number;
+}): Promise<string> {
+  if (params.encryptionVersion === 2) {
+    return encryptV2(params.password, params.input);
+  }
+  return realEncrypt(params);
+}
+
+async function mockDecryptAsync(params: { password: string; input: string }): Promise<string> {
+  let envelopeVersion: number | undefined;
+  try {
+    envelopeVersion = JSON.parse(params.input).v;
+  } catch {
+    throw new Error('decrypt: ciphertext is not valid JSON');
+  }
+  if (envelopeVersion === 2) {
+    return decryptV2(params.password, params.input);
+  }
+  if (envelopeVersion !== undefined && envelopeVersion !== 1) {
+    throw new Error(`decrypt: unknown envelope version ${envelopeVersion}`);
+  }
+  return realDecrypt(params);
 }
 
 export interface KeychainState {
@@ -81,6 +109,8 @@ export function makeMockBitGo(initialEncryptedPrv: string): MockBitGo {
 
     encrypt: (params: { password: string; input: string }) => realEncrypt(params),
     decrypt: (params: { password: string; input: string }) => realDecrypt(params),
+    encryptAsync: mockEncryptAsync,
+    decryptAsync: mockDecryptAsync,
 
     get: sinon.stub().callsFake((url: string) => {
       if (url.includes('/user/otp/webauthn/register')) {
