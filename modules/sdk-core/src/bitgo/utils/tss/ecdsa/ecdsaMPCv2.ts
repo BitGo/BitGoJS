@@ -45,12 +45,15 @@ import {
   TSSParamsForMessage,
   TSSParamsForMessageWithPrv,
   TSSParamsWithPrv,
+  TssSignTxRequestParamsWithPrv,
+  TssTxRecipientSource,
   TxRequest,
   isV2Envelope,
 } from '../baseTypes';
 import { BaseEcdsaUtils } from './base';
 import { EcdsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './ecdsaMPCv2KeyGenSender';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
+import { InvalidTransactionError } from '../../../errors';
 
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   private static readonly DKLS23_SIGNING_USER_GPG_KEY = 'DKLS23_SIGNING_USER_GPG_KEY';
@@ -732,10 +735,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
    * @param {string} params.prv - decrypted private key
    * @param {string} params.reqId - request id
    * @param {string} params.mpcv2PartyId - party id for the signer involved in this mpcv2 request (either 0 for user or 1 for backup)
+   * @param params.recipientSource - optional; use TssTxRecipientSource.Explicit with a non-empty txParams.recipients
+   *   list when you want TypeScript to enforce passing recipient details at compile time.
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
 
-  async signTxRequest(params: TSSParamsWithPrv): Promise<TxRequest> {
+  async signTxRequest(params: TssSignTxRequestParamsWithPrv): Promise<TxRequest> {
     this.bitgo.setRequestTracer(params.reqId);
     return this.signRequestBase(params, RequestType.tx);
   }
@@ -775,6 +780,16 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
       const unsignedTx =
         txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
+
+      if (
+        'recipientSource' in params &&
+        params.recipientSource === TssTxRecipientSource.Explicit &&
+        !params.txParams?.recipients?.length
+      ) {
+        throw new InvalidTransactionError(
+          'recipientSource "explicit" requires txParams.recipients with at least one recipient.'
+        );
+      }
 
       // For ICP transactions, the HSM signs the serializedTxHex, while the user signs the signableHex separately.
       // Verification cannot be performed directly on the signableHex alone. However, we can parse the serializedTxHex

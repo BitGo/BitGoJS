@@ -35,7 +35,7 @@ import {
   SignatureShareRecord,
   TSSParams,
   TSSParamsForMessage,
-  TSSParamsWithPrv,
+  TssSignTxRequestParamsWithPrv,
   TxRequest,
   TxRequestVersion,
 } from './baseTypes';
@@ -221,7 +221,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     throw new Error('Method not implemented.');
   }
 
-  signTxRequest(params: TSSParamsWithPrv): Promise<TxRequest> {
+  signTxRequest(params: TssSignTxRequestParamsWithPrv): Promise<TxRequest> {
     throw new Error('Method not implemented.');
   }
 

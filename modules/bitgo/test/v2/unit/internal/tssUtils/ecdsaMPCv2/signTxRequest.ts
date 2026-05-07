@@ -7,6 +7,7 @@ import {
   RequestTracer,
   SignatureShareRecord,
   SignatureShareType,
+  TssTxRecipientSource,
   TxRequest,
   Wallet,
 } from '@bitgo/sdk-core';
@@ -197,6 +198,46 @@ describe('signTxRequest:', function () {
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.true();
     nockPromises[2].isDone().should.be.true();
+  });
+
+  it('successfully signs when recipientSource is explicit and txParams.recipients is non-empty', async function () {
+    const nockPromises = [
+      await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequest, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequest, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundThree(txRequest),
+      await nockSendTxRequest(txRequest),
+    ];
+    await Promise.all(nockPromises);
+
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    await tssUtils.signTxRequest({
+      txRequest,
+      prv: userPrvBase64,
+      reqId,
+      recipientSource: TssTxRecipientSource.Explicit,
+      txParams: {
+        recipients: [{ address: '0x0000000000000000000000000000000000000001', amount: '1' }],
+      },
+    });
+    nockPromises[0].isDone().should.be.true();
+    nockPromises[1].isDone().should.be.true();
+    nockPromises[2].isDone().should.be.true();
+  });
+
+  it('rejects when recipientSource is explicit and txParams.recipients is empty', async function () {
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    // Cast bypasses the compile-time non-empty recipients constraint to exercise the runtime guard.
+    await tssUtils
+      .signTxRequest({
+        txRequest,
+        prv: userPrvBase64,
+        reqId,
+        recipientSource: TssTxRecipientSource.Explicit,
+        txParams: { recipients: [] },
+      } as any)
+      .should.be.rejectedWith('recipientSource "explicit" requires txParams.recipients with at least one recipient.');
   });
 
   it('successfully signs a txRequest with backup key for a dkls hot wallet with WP', async function () {
