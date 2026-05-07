@@ -189,7 +189,7 @@ export const WalletResponse = t.partial({
   /** Multisig type version (e.g., 'MPCv2') */
   multisigTypeVersion: t.string,
   /** Coin-specific wallet data */
-  coinSpecific: t.UnknownRecord,
+  coinSpecific: t.intersection([t.partial({ userKeySigningRequired: t.boolean }), t.UnknownRecord]),
   /** Admin settings including policy */
   admin: WalletAdmin,
   /** Users with access to this wallet */
