@@ -5,3 +5,5 @@ export { buildEvalByCredential, matchDeviceByCredentialId } from './prfHelpers';
 export { removePasskeyFromAccount } from './removePasskeyFromAccount';
 export type { WebAuthnOtpDevice, PasskeyAuthResult, PasskeyGetOptions, WebAuthnProvider } from './webAuthnTypes';
 export { removePasskeyFromWallet } from './removePasskeyFromWallet';
+export { attachPasskeyToWallet } from './attachPasskeyToWallet';
+export { derivePasskeyPrfKey } from './derivePasskeyPrfKey';
