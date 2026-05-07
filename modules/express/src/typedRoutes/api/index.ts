@@ -6,7 +6,8 @@ import { GetV1Ping } from './v1/ping';
 import { GetV2Ping } from './v2/ping';
 import { GetV1PingExpress } from './v1/pingExpress';
 import { GetV2PingExpress } from './v2/pingExpress';
-import { PostLogin } from './common/login';
+import { PostV1Login } from './v1/login';
+import { PostV2Login } from './v2/login';
 import { PostV1Decrypt } from './v1/decrypt';
 import { PostV2Decrypt } from './v2/decrypt';
 import { PostV1Encrypt } from './v1/encrypt';
@@ -86,8 +87,11 @@ export const ExpressPingExpressApiSpec = apiSpec({
 });
 
 export const ExpressLoginApiSpec = apiSpec({
+  'express.v1.login': {
+    post: PostV1Login,
+  },
   'express.login': {
-    post: PostLogin,
+    post: PostV2Login,
   },
 });
 
