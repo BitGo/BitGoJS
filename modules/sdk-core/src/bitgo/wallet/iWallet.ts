@@ -946,6 +946,7 @@ export interface WalletData {
   evmKeyRingReferenceWalletId?: string;
   isParent?: boolean;
   enabledChildChains?: string[];
+  userKeySigningRequired?: boolean;
 }
 
 export interface RecoverTokenOptions {
