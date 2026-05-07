@@ -12,6 +12,7 @@ import { Transaction } from './transaction';
 import { ContractBuilder } from './contractBuilder';
 import { Utils } from '.';
 import { SendmanyBuilder } from './sendmanyBuilder';
+import { SbtcWithdrawBuilder } from './sbtcWithdrawBuilder';
 import { FungibleTokenTransferBuilder } from './fungibleTokenTransferBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
@@ -30,6 +31,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         case PayloadType.ContractCall:
           if (SendmanyBuilder.isValidContractCall(this._coinConfig, tx.stxTransaction.payload)) {
             return this.getSendmanyBuilder(tx);
+          }
+          if (SbtcWithdrawBuilder.isValidContractCall(this._coinConfig, tx.stxTransaction.payload)) {
+            return this.getSbtcWithdrawBuilder(tx);
           }
           if (FungibleTokenTransferBuilder.isFungibleTokenTransferContractCall(tx.stxTransaction.payload)) {
             return this.getFungibleTokenTransferBuilder(tx);
@@ -69,6 +73,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getSendmanyBuilder(tx?: Transaction): SendmanyBuilder {
     return TransactionBuilderFactory.initializeBuilder(new SendmanyBuilder(this._coinConfig), tx);
+  }
+
+  getSbtcWithdrawBuilder(tx?: Transaction): SbtcWithdrawBuilder {
+    return TransactionBuilderFactory.initializeBuilder(new SbtcWithdrawBuilder(this._coinConfig), tx);
   }
 
   getFungibleTokenTransferBuilder(tx?: Transaction): FungibleTokenTransferBuilder {

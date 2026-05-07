@@ -46,6 +46,17 @@ export const BuildParamsStacks = t.partial({
   functionArgs: t.unknown,
 });
 
+export const SbtcWithdrawParams = t.partial({
+  amount: t.string,
+  btcAddress: t.string,
+  maxFee: t.string,
+});
+
+export const BuildParamsSbtc = t.partial({
+  sbtcWithdrawParams: SbtcWithdrawParams,
+  sbtcDepositParams: t.unknown,
+});
+
 export const BuildParamsOffchain = t.partial({
   idfSignedTimestamp: t.unknown,
   idfVersion: t.unknown,
@@ -56,6 +67,7 @@ export const BuildParams = t.exact(
   t.intersection([
     BuildParamsUTXO,
     BuildParamsStacks,
+    BuildParamsSbtc,
     BuildParamsOffchain,
     t.partial({
       apiVersion: t.unknown,

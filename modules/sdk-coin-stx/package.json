@@ -46,8 +46,10 @@
     "@noble/curves": "1.8.1",
     "@stacks/network": "^4.3.0",
     "@stacks/transactions": "2.0.1",
+    "bech32": "^2.0.0",
     "bignumber.js": "^9.0.0",
     "bn.js": "^5.2.1",
+    "bs58check": "^2.1.2",
     "ethereumjs-util": "7.1.5",
     "lodash": "^4.18.0"
   },

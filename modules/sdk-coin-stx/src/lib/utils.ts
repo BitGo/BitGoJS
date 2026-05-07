@@ -240,7 +240,11 @@ export function isValidMemo(memo: string): boolean {
  * @returns {boolean} - the validation result
  */
 export function isValidContractAddress(addr: string, network: BitgoStacksNetwork): boolean {
-  return addr === network.stakingContractAddress || addr === network.sendmanymemoContractAddress;
+  return (
+    addr === network.stakingContractAddress ||
+    addr === network.sendmanymemoContractAddress ||
+    addr === network.sbtcWithdrawalContractAddress
+  );
 }
 
 /**

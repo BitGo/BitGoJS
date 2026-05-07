@@ -2,6 +2,8 @@ export const FUNCTION_NAME_SENDMANY = 'send-many';
 export const CONTRACT_NAME_SENDMANY = 'send-many-memo';
 export const CONTRACT_NAME_STAKING = 'pox-4';
 export const FUNCTION_NAME_TRANSFER = 'transfer';
+export const CONTRACT_NAME_SBTC_WITHDRAWAL = 'sbtc-withdrawal';
+export const FUNCTION_NAME_INITIATE_WITHDRAWAL = 'initiate-withdrawal-request';
 
 export const VALID_CONTRACT_FUNCTION_NAMES = [
   'stack-stx',
@@ -11,6 +13,7 @@ export const VALID_CONTRACT_FUNCTION_NAMES = [
   'revoke-delegate-stx',
   'send-many',
   'transfer',
+  'initiate-withdrawal-request',
 ];
 
 export const DEFAULT_SEED_SIZE_BYTES = 64;
