@@ -160,6 +160,40 @@ describe('XDC Token:', function () {
       result.should.equal(true);
     });
 
+    it('should return true for tokenApproval type without recipients', async function () {
+      const token = bitgo.coin('txdc:tmt') as XdcToken;
+      const mockWallet = {} as unknown as IWallet;
+
+      const result = await token.verifyTssTransaction({
+        txParams: {
+          type: 'tokenApproval',
+        },
+        txPrebuild: mockTokenTransferData.txPrebuild as unknown as Parameters<
+          typeof token.verifyTssTransaction
+        >[0]['txPrebuild'],
+        wallet: mockWallet,
+      });
+
+      result.should.equal(true);
+    });
+
+    it('should return true for consolidate type without recipients', async function () {
+      const token = bitgo.coin('txdc:tmt') as XdcToken;
+      const mockWallet = {} as unknown as IWallet;
+
+      const result = await token.verifyTssTransaction({
+        txParams: {
+          type: 'consolidate',
+        },
+        txPrebuild: mockTokenTransferData.txPrebuild as unknown as Parameters<
+          typeof token.verifyTssTransaction
+        >[0]['txPrebuild'],
+        wallet: mockWallet,
+      });
+
+      result.should.equal(true);
+    });
+
     it('should throw error when txParams.recipients is missing and no valid type', async function () {
       const token = bitgo.coin('txdc:tmt') as XdcToken;
       const mockWallet = {} as unknown as IWallet;
