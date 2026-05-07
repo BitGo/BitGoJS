@@ -17,7 +17,6 @@ interface LightningConstructorOptions {
 export class LightningCoin extends BaseCoin {
   public static readonly DEFAULT_FEATURES = [
     CoinFeature.LIGHTNING_MODEL,
-    CoinFeature.STAKING,
     CoinFeature.CUSTODY,
     CoinFeature.CUSTODY_BITGO_TRUST,
   ];
