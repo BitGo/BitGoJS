@@ -7605,7 +7605,7 @@ aws4@^1.8.0:
   resolved "https://registry.npmjs.org/aws4/-/aws4-1.13.2.tgz"
   integrity sha512-lHe62zvbTB5eEABUVi/AwVh0ZKY9rMMDhmm+eeyuuUQbQ3+J+fONVQOZyj+DdrvD4BY33uYniyRJ4UJIaSKAfw==
 
-axios@0.25.0, axios@0.27.2, axios@1.15.2, axios@1.7.4, axios@^0.21.2, axios@^0.26.1, axios@^1.15.2, axios@^1.6.0, axios@^1.8.3:
+axios@0.25.0, axios@0.27.2, axios@1.15.2, axios@1.7.4, axios@^0.21.2, axios@^0.26.1, axios@^1.6.0, axios@^1.8.3:
   version "1.15.2"
   resolved "https://registry.npmjs.org/axios/-/axios-1.15.2.tgz#eb8fb6d30349abace6ade5b4cb4d9e8a0dc23e5b"
   integrity sha512-wLrXxPtcrPTsNlJmKjkPnNPK2Ihe0hn0wGSaTEiHRPxwjvJwT3hKmXF4dpqxmPO9SoNb2FsYXj/xEo0gHN+D5A==
@@ -7782,10 +7782,10 @@ basic-auth@~2.0.1:
   dependencies:
     safe-buffer "5.1.2"
 
-basic-ftp@5.2.2, basic-ftp@^5.0.2:
-  version "5.2.2"
-  resolved "https://registry.npmjs.org/basic-ftp/-/basic-ftp-5.2.2.tgz#4cb2422deddf432896bdb3c9b8f13b944ad4842c"
-  integrity sha512-1tDrzKsdCg70WGvbFss/ulVAxupNauGnOlgpyjKzeQxzyllBLS0CGLV7tjIXTK3ZQA9/FBEm9qyFFN1bciA6pw==
+basic-ftp@5.3.1, basic-ftp@^5.0.2:
+  version "5.3.1"
+  resolved "https://registry.npmjs.org/basic-ftp/-/basic-ftp-5.3.1.tgz#3148ee9af43c0522514a4f973fecb1d3cbb6d71e"
+  integrity sha512-bopVNp6ugyA150DDuZfPFdt1KZ5a94ZDiwX4hMgZDzF+GttD80lEy8kj98kbyhLXnPvhtIo93mdnLIjpCAeeOw==
 
 batch@0.6.1:
   version "0.6.1"
