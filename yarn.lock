@@ -1041,6 +1041,11 @@
   resolved "https://registry.npmjs.org/@bitgo/wasm-ton/-/wasm-ton-1.1.1.tgz"
   integrity sha512-Y4x2V2ZcYWlmx42v7dlrKDtT2DuUt8smk8E98mh7RhpiifJhLk2v5RmXDwBl0A3v9TzUOU6qMOnSS/iZ8Pq52w==
 
+"@bitgo/wasm-utxo@^4.11.0":
+  version "4.11.0"
+  resolved "https://registry.npmjs.org/@bitgo/wasm-utxo/-/wasm-utxo-4.11.0.tgz#52869d01637f34b8d3c1f6fb14a970050a51e6cb"
+  integrity sha512-U7OC42t+lm72kByRRjaZBYvIy3wsqbIxUga5Jo63ubxXNhzXe4ZyMUI+wzGnPo3IWyFPIkK96ABNKkzFIBrH3A==
+
 "@bitgo/wasm-utxo@^4.8.0":
   version "4.8.0"
   resolved "https://registry.npmjs.org/@bitgo/wasm-utxo/-/wasm-utxo-4.8.0.tgz#744b20d239e5430402d61bd4ba7b1fbd77cc9ff3"
