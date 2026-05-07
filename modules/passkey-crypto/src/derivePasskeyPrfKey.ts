@@ -3,8 +3,10 @@ import { buildEvalByCredential, matchDeviceByCredentialId } from './prfHelpers';
 import { derivePassword } from './derivePassword';
 import type { WebAuthnProvider } from './webAuthnTypes';
 
-interface AssertionChallengeResponse {
+interface AuthChallengeResponse {
   challenge: string;
+  allowCredentials?: Array<{ id: string; type: string; transports?: string[] }>;
+  origin?: string;
 }
 
 /**
@@ -36,16 +38,15 @@ export async function derivePasskeyPrfKey(params: {
     throw new Error('No passkey devices available with a valid PRF salt');
   }
 
-  // Fetch a server-issued assertion challenge
-  const { challenge } = (await bitgo
-    .get(bitgo.url('/user/otp/webauthn/assertion', 2))
-    .result()) as AssertionChallengeResponse;
+  // Fetch a server-issued assertion challenge via the auth endpoint
+  const { challenge } = (await bitgo.get(bitgo.url('/user/otp/webauthn/auth', 2)).result()) as AuthChallengeResponse;
 
-  // Build allowCredentials from the evalByCredential map so the browser
-  // knows which credentials are valid for the PRF extension.
+  // Build allowCredentials so the browser knows which credentials to use.
+  // Pass the Buffer (Uint8Array) directly — not .buffer — so the provider
+  // layer can correctly slice it via ArrayBuffer.isView.
   const allowCredentials = Object.keys(evalByCredential).map((credId) => ({
     type: 'public-key' as const,
-    id: Buffer.from(credId.replace(/-/g, '+').replace(/_/g, '/'), 'base64').buffer,
+    id: Buffer.from(credId.replace(/-/g, '+').replace(/_/g, '/'), 'base64') as unknown as ArrayBuffer,
   }));
 
   // Trigger WebAuthn assertion with PRF evaluation via the provider (navigator layer)

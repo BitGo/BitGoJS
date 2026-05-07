@@ -73,7 +73,7 @@ describe('derivePasskeyPrfKey', function () {
     assert.strictEqual(getCallArgs.evalByCredential['cred-bbb'], 'salt-bbb');
     // Verify bitgo was used to fetch the assertion challenge
     assert.ok(mockBitGo.get.calledOnce);
-    assert.ok(mockBitGo.url.calledWith('/user/otp/webauthn/assertion', 2));
+    assert.ok(mockBitGo.url.calledWith('/user/otp/webauthn/auth', 2));
   });
 
   it("should throw 'No passkey devices available' when no devices", async function () {
