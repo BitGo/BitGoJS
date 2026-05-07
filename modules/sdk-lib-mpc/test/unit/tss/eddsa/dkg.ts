@@ -134,8 +134,11 @@ describe('EdDSA MPS DKG', function () {
       const seedUser = Buffer.from('a304733c16cc821fe171d5c7dbd7276fd90deae808b7553d17a1e55e4a76b270', 'hex');
       const seedBackup = Buffer.from('9d91c2e6353202cf61f8f275158b3468e9a00f7872fc2fd310b72cd026e2e2f9', 'hex');
       const seedBitgo = Buffer.from('33c749b635cdba7f9fbf51ad0387431cde47e20d8dc13acd1f51a9a0ad06ebfe', 'hex');
+      const userParty = { encKey: seedUser, dkgSeed: seedUser };
+      const backupParty = { encKey: seedBackup, dkgSeed: seedBackup };
+      const bitgoParty = { encKey: seedBitgo, dkgSeed: seedBitgo };
 
-      const [user1, backup1, bitgo1] = await generateEdDsaDKGKeyShares(seedUser, seedBackup, seedBitgo);
+      const [user1, backup1, bitgo1] = await generateEdDsaDKGKeyShares(userParty, backupParty, bitgoParty);
 
       const pk0 = user1.getSharePublicKey().toString('hex');
       const pk1 = backup1.getSharePublicKey().toString('hex');
@@ -143,7 +146,7 @@ describe('EdDSA MPS DKG', function () {
       assert.strictEqual(pk0, pk1, 'User and backup should have same public key');
       assert.strictEqual(pk1, pk2, 'Backup and BitGo should have same public key');
 
-      const [user2] = await generateEdDsaDKGKeyShares(seedUser, seedBackup, seedBitgo);
+      const [user2] = await generateEdDsaDKGKeyShares(userParty, backupParty, bitgoParty);
       assert.strictEqual(
         user1.getSharePublicKey().toString('hex'),
         user2.getSharePublicKey().toString('hex'),
@@ -152,15 +155,22 @@ describe('EdDSA MPS DKG', function () {
     });
 
     it('should create different key shares with different seeds', async function () {
+      const seedAUser = Buffer.from('a304733c16cc821fe171d5c7dbd7276fd90deae808b7553d17a1e55e4a76b270', 'hex');
+      const seedABackup = Buffer.from('9d91c2e6353202cf61f8f275158b3468e9a00f7872fc2fd310b72cd026e2e2f9', 'hex');
+      const seedABitgo = Buffer.from('33c749b635cdba7f9fbf51ad0387431cde47e20d8dc13acd1f51a9a0ad06ebfe', 'hex');
+      const seedBUser = Buffer.from('b415844d27dd9320f282d6d8ecd8387f0e9fbf9198664e28a2f66e6f5b87c381', 'hex');
+      const seedBBackup = Buffer.from('ae02d3f7464313d0f72f9f3862694579fa11f8983fc3fe42183cd137e3f3f30a', 'hex');
+      const seedBBitgo = Buffer.from('44d85ab746decb8f0f0c62be0498542ddf58f31d9ed24bd1f62b1b1be17fce0f', 'hex');
+
       const [user1] = await generateEdDsaDKGKeyShares(
-        Buffer.from('a304733c16cc821fe171d5c7dbd7276fd90deae808b7553d17a1e55e4a76b270', 'hex'),
-        Buffer.from('9d91c2e6353202cf61f8f275158b3468e9a00f7872fc2fd310b72cd026e2e2f9', 'hex'),
-        Buffer.from('33c749b635cdba7f9fbf51ad0387431cde47e20d8dc13acd1f51a9a0ad06ebfe', 'hex')
+        { encKey: seedAUser, dkgSeed: seedAUser },
+        { encKey: seedABackup, dkgSeed: seedABackup },
+        { encKey: seedABitgo, dkgSeed: seedABitgo }
       );
       const [user2] = await generateEdDsaDKGKeyShares(
-        Buffer.from('b415844d27dd9320f282d6d8ecd8387f0e9fbf9198664e28a2f66e6f5b87c381', 'hex'),
-        Buffer.from('ae02d3f7464313d0f72f9f3862694579fa11f8983fc3fe42183cd137e3f3f30a', 'hex'),
-        Buffer.from('44d85ab746decb8f0f0c62be0498542ddf58f31d9ed24bd1f62b1b1be17fce0f', 'hex')
+        { encKey: seedBUser, dkgSeed: seedBUser },
+        { encKey: seedBBackup, dkgSeed: seedBBackup },
+        { encKey: seedBBitgo, dkgSeed: seedBBitgo }
       );
 
       assert.notStrictEqual(
