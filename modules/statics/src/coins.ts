@@ -34,7 +34,7 @@ import { BaseCoin, CoinFeature, DynamicCoin } from './base';
 import { AmsNetworkConfigMap, AmsTokenConfig, TrimmedAmsTokenConfig } from './tokenConfig';
 import { CoinMap } from './map';
 import { BaseNetwork, getNetwork, getNetworksMap, NetworkType } from './networks';
-import { networkFeatureMapForTokens } from './networkFeatureMapForTokens';
+import { getNetworkFeatures } from './networkFeatureMapForTokens';
 import { ofcErc20Coins, tOfcErc20Coins } from './coins/ofcErc20Coins';
 import { ofcCoins } from './coins/ofcCoins';
 import { allCoinsAndTokens } from './allCoinsAndTokens';
@@ -116,6 +116,18 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     ada: adaToken,
     ton: jettonToken,
   };
+
+  // EVM-compatible chains are identified by a numeric chainId on their network object.
+  const tokenNetwork = token.network instanceof BaseNetwork ? token.network : undefined;
+  if (
+    tokenNetwork &&
+    'chainId' in tokenNetwork &&
+    typeof (tokenNetwork as { chainId?: unknown }).chainId === 'number'
+  ) {
+    if (!erc20ChainToNameMap[token.family]) {
+      erc20ChainToNameMap[token.family] = token.family;
+    }
+  }
 
   // dynamically add erc20 token initializers for eth like chains to the initializer map
   Object.keys(erc20ChainToNameMap).forEach((key) => {
@@ -519,9 +531,9 @@ export function createTokenMapUsingTrimmedConfigDetails(
           { ...tokenConfig, features: tokenConfig.additionalFeatures ?? [], network },
         ];
       }
-    } else if (network && networkFeatureMapForTokens[network.family]) {
+    } else if (network && getNetworkFeatures(network.family as string)) {
       const features = new Set([
-        ...(networkFeatureMapForTokens[network.family] || []),
+        ...(getNetworkFeatures(network.family as string) || []),
         ...(tokenConfig.additionalFeatures || []),
       ]);
       tokenConfig.excludedFeatures?.forEach((feature) => features.delete(feature));
@@ -549,9 +561,9 @@ export function createTokenUsingTrimmedConfigDetails(
     return undefined;
   }
 
-  if (network && networkFeatureMapForTokens[network.family]) {
+  if (network && getNetworkFeatures(network.family as string)) {
     const features = new Set([
-      ...(networkFeatureMapForTokens[network.family] || []),
+      ...(getNetworkFeatures(network.family as string) || []),
       ...(tokenConfig.additionalFeatures || []),
     ]);
     tokenConfig.excludedFeatures?.forEach((feature) => features.delete(feature));
