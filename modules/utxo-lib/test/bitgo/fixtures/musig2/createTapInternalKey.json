@@ -1,0 +1,11 @@
+{
+  "inputs": {
+    "pubKeys": [
+      "03e9fc8f605f59d6a4f5ceb0d27852151013f2bf1965f9adf44ce9ba9821c7f106",
+      "030710ec162d2199bb828e5d8760f16d65412bbb2c85ec13fe027f77d83a349c62"
+    ]
+  },
+  "output": {
+    "tapInternalKey": "6d767a69e03d4611485407d777711ee4d1321a84cf82f591db0cd3e179c49821"
+  }
+}

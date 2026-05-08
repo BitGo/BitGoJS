@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "chainId": "045b",
+  "delegator": "2dda5d5d3bec673033b5f21ca07c77695404f491",
+  "validator": "2953559db5cc88ab20b1960faa9793803d070337",
+  "fee": 0,
+  "timelock": 1725503428
+}

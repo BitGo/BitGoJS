@@ -1,0 +1,11 @@
+.nyc_output/
+dist/
+scripts/sdk-coin-generator/template/
+protobuf/
+*.json
+*.min.js
+CHANGELOG.md
+flake.lock
+
+modules/babylonlabs-io-btc-staking-ts/
+/.nx/workspace-data
