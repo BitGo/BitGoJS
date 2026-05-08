@@ -1,4 +1,5 @@
 import { BitGoBase, Keychain } from '@bitgo/sdk-core';
+import { base64UrlToBuffer } from './base64url';
 import { deriveEnterpriseSalt } from './deriveEnterpriseSalt';
 import { derivePassword } from './derivePassword';
 import { WebAuthnOtpDevice, WebAuthnProvider } from './webAuthnTypes';
@@ -48,7 +49,7 @@ export async function attachPasskeyToWallet(params: {
   // Decode credentialId from base64url to ArrayBuffer for allowCredentials.
   // The WebAuthn spec requires allowCredentials to be non-empty when using evalByCredential,
   // and each entry must correspond to a key in the evalByCredential map.
-  const credentialIdBuffer = Buffer.from(device.credentialId.replace(/-/g, '+').replace(/_/g, '/'), 'base64').buffer;
+  const credentialIdBuffer = base64UrlToBuffer(device.credentialId).buffer;
 
   // PRF assertion — evalByCredential maps this device's credentialId to the
   // base64url enterprise salt. The provider layer is responsible for decoding

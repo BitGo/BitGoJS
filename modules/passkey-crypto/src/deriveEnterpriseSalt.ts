@@ -1,4 +1,5 @@
 import { createHmac } from 'crypto';
+import { base64UrlToBuffer, toBase64Url } from './base64url';
 
 /**
  * Derives an enterprise-scoped PRF salt to prevent cross-enterprise key reuse.
@@ -17,11 +18,6 @@ import { createHmac } from 'crypto';
  * @returns Base64url-encoded HMAC-SHA256 digest (no padding)
  */
 export function deriveEnterpriseSalt(baseSalt: string, enterpriseId: string): string {
-  const keyBytes = Buffer.from(baseSalt.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
-  return createHmac('sha256', keyBytes)
-    .update(enterpriseId)
-    .digest('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+  const keyBytes = base64UrlToBuffer(baseSalt);
+  return toBase64Url(createHmac('sha256', keyBytes).update(enterpriseId).digest('base64'));
 }

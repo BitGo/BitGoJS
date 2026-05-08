@@ -1,4 +1,5 @@
 import type { WebauthnDevice } from '@bitgo/public-types';
+import { toBase64Url } from './base64url';
 
 /**
  * Builds the PRF eval map and credential-to-device lookup from a wallet
@@ -21,7 +22,7 @@ export function buildEvalByCredential(devices: WebauthnDevice[]): {
     // the selected credential's ID against evalByCredential keys — if the encoding
     // differs (e.g. standard base64 with padding/+/), the lookup silently fails and
     // PRF evaluates with no salt, producing a different output.
-    const credIdBase64url = credID.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const credIdBase64url = toBase64Url(credID);
 
     // Pass prfSalt through as-is (base64url). attachPasskeyToWallet writes the
     // server-stored salt in the same encoding and feeds the same string to
@@ -41,9 +42,8 @@ export function buildEvalByCredential(devices: WebauthnDevice[]): {
  */
 export function matchDeviceByCredentialId(devices: WebauthnDevice[], credentialId: string): WebauthnDevice {
   // Normalise both sides to base64url so padding/char differences don't break matching.
-  const normalise = (s: string) => s.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  const needle = normalise(credentialId);
-  const device = devices.find((d) => normalise(d.authenticatorInfo.credID) === needle);
+  const needle = toBase64Url(credentialId);
+  const device = devices.find((d) => toBase64Url(d.authenticatorInfo.credID) === needle);
   if (!device) {
     throw new Error('Could not identify which passkey device was used');
   }
