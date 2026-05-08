@@ -5,7 +5,10 @@ import { deriveEnterpriseSalt } from '../../src';
 const REAL_FIXTURE = {
   basePrfSalt: 'ZqJ64M2dL65zn2-Jxd58SMN2ILc9QjbCFxUTGHd_LC8',
   enterpriseId: '69c2aea1a3d7bc07f7f775c0ca86b0ec',
-  expectedDerivedSalt: 'a226ac3aace4bb2b84cfff34e37fb7217620852bb72d5e0dfdad4c2c8473994f',
+  // base64url encoding of the HMAC-SHA256(baseSalt_decoded, enterpriseId) digest.
+  // Same encoding the server stores and the WebAuthn PRF extension consumes — keeping
+  // one encoding everywhere avoids the hex/base64url mismatch that broke browser PRF.
+  expectedDerivedSalt: 'oiasOqzkuyuEz_8043-3IXYghSu3LV4N_a1MLIRzmU8',
 };
 
 describe('deriveEnterpriseSalt', function () {
@@ -37,10 +40,11 @@ describe('deriveEnterpriseSalt', function () {
     assert.notStrictEqual(saltA, saltB);
   });
 
-  it('returns a non-empty hex string', function () {
+  it('returns a non-empty unpadded base64url string', function () {
     const result = deriveEnterpriseSalt(REAL_FIXTURE.basePrfSalt, REAL_FIXTURE.enterpriseId);
     assert.strictEqual(typeof result, 'string');
     assert.ok(result.length > 0);
-    assert.match(result, /^[0-9a-f]{64}$/);
+    // Base64url alphabet, no padding. SHA-256 = 32 bytes → 43 base64url chars.
+    assert.match(result, /^[A-Za-z0-9_-]{43}$/);
   });
 });

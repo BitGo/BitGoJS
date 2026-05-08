@@ -1,4 +1,5 @@
 import { BitGoBase, Keychain } from '@bitgo/sdk-core';
+import { base64UrlToBuffer } from './base64url';
 import { deriveEnterpriseSalt } from './deriveEnterpriseSalt';
 import { derivePassword } from './derivePassword';
 import { WebAuthnOtpDevice, WebAuthnProvider } from './webAuthnTypes';
@@ -37,8 +38,10 @@ export async function attachPasskeyToWallet(params: {
   const keychain = await wallet.getEncryptedUserKeychain();
   const keychainId = keychain.id;
 
-  // Derive enterprise-scoped salt
-  const enterpriseSalt = deriveEnterpriseSalt(device.prfSalt, enterpriseId);
+  // Derive enterprise-scoped salt (base64url; same encoding is used as the
+  // PRF eval input and as the server-stored prfSalt so the bytes fed to the
+  // authenticator match between attach and derive).
+  const prfSalt = deriveEnterpriseSalt(device.prfSalt, enterpriseId);
 
   // Decrypt private key with existing passphrase
   const privateKey = bitgo.decrypt({ password: existingPassphrase, input: keychain.encryptedPrv });
@@ -46,38 +49,30 @@ export async function attachPasskeyToWallet(params: {
   // Decode credentialId from base64url to ArrayBuffer for allowCredentials.
   // The WebAuthn spec requires allowCredentials to be non-empty when using evalByCredential,
   // and each entry must correspond to a key in the evalByCredential map.
-  const credentialIdBuffer = Buffer.from(device.credentialId.replace(/-/g, '+').replace(/_/g, '/'), 'base64').buffer;
+  const credentialIdBuffer = base64UrlToBuffer(device.credentialId).buffer;
 
-  // PRF assertion — evalByCredential maps this device's credentialId to its enterprise salt
+  // PRF assertion — evalByCredential maps this device's credentialId to the
+  // base64url enterprise salt. The provider layer is responsible for decoding
+  // base64url to raw bytes before handing it to the WebAuthn PRF extension.
   const authResult = await provider.get({
     publicKey: {
       allowCredentials: [{ type: 'public-key', id: credentialIdBuffer }],
     } as PublicKeyCredentialRequestOptions,
-    evalByCredential: { [device.credentialId]: enterpriseSalt },
+    evalByCredential: { [device.credentialId]: prfSalt },
   });
 
   if (!authResult.prfResult) {
     throw new Error('PRF assertion did not return a result.');
   }
 
-  // Derive password from PRF output and re-encrypt
   const prfPassword = derivePassword(authResult.prfResult);
   const encryptedPrv = bitgo.encrypt({ password: prfPassword, input: privateKey });
 
-  // Convert enterpriseSalt from hex to base64url (URL-safe, no padding)
-  // as required by the server's prfSalt validation.
-  const prfSaltBase64url = Buffer.from(enterpriseSalt, 'hex')
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-
-  // PUT webauthnInfo to keychain endpoint
   const updatedKeychain = await bitgo
     .put(bitgo.url(`/${coin}/key/${keychainId}`, 2))
     .send({
       webauthnInfo: {
-        prfSalt: prfSaltBase64url,
+        prfSalt,
         otpDeviceId: device.id,
         encryptedPrv,
       },

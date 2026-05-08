@@ -1,4 +1,5 @@
 import { BitGoBase } from '@bitgo/sdk-core';
+import { bufferToBase64Url } from './base64url';
 import { WebAuthnOtpDevice, WebAuthnProvider } from './webAuthnTypes';
 
 interface RegisterChallengeResponse {
@@ -28,11 +29,6 @@ interface RegisterOtpResponse {
   };
 }
 
-/** Encodes an ArrayBuffer as a base64url string (no padding). */
-function encodeBase64Url(buffer: ArrayBuffer): string {
-  return Buffer.from(buffer).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-}
-
 /**
  * Recursively converts a PublicKeyCredential (or any value it contains) to a
  * JSON-serialisable representation, encoding ArrayBuffers as base64url strings.
@@ -42,10 +38,10 @@ function publicKeyCredentialToJSON(value: unknown): unknown {
     return value.map(publicKeyCredentialToJSON);
   }
   if (value instanceof ArrayBuffer) {
-    return encodeBase64Url(value);
+    return bufferToBase64Url(value);
   }
   if (ArrayBuffer.isView(value)) {
-    return encodeBase64Url(value.buffer as ArrayBuffer);
+    return bufferToBase64Url(value.buffer as ArrayBuffer);
   }
   if (value instanceof Object) {
     const result: Record<string, unknown> = {};
