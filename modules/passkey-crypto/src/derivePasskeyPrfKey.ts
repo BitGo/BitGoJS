@@ -1,10 +1,34 @@
-import type { BitGoBase, IWallet } from '@bitgo/sdk-core';
+import type { BitGoBase, IWallet, KeychainWebauthnDevice, KeychainWithEncryptedPrv } from '@bitgo/sdk-core';
 import { buildEvalByCredential, matchDeviceByCredentialId } from './prfHelpers';
 import { derivePassword } from './derivePassword';
 import type { WebAuthnProvider } from './webAuthnTypes';
 
-interface AssertionChallengeResponse {
-  challenge: string;
+/** API payloads may use either spelling for the webauthn device list. */
+type UserKeychainResponse = KeychainWithEncryptedPrv & {
+  webAuthnDevices?: KeychainWebauthnDevice[];
+};
+
+function webauthnDevicesFromKeychain(keychain: UserKeychainResponse): KeychainWebauthnDevice[] | undefined {
+  const lower = keychain.webauthnDevices;
+  if (lower !== undefined && lower.length > 0) {
+    return lower;
+  }
+  const upper = keychain.webAuthnDevices;
+  if (upper !== undefined && upper.length > 0) {
+    return upper;
+  }
+  return undefined;
+}
+
+function challengeFromAuthResponse(body: unknown): string {
+  if (typeof body !== 'object' || body === null) {
+    throw new Error('Invalid assertion challenge response');
+  }
+  const rec = body as Record<string, unknown>;
+  if (typeof rec.challenge !== 'string') {
+    throw new Error('Invalid assertion challenge response');
+  }
+  return rec.challenge;
 }
 
 /**
@@ -21,38 +45,42 @@ export async function derivePasskeyPrfKey(params: {
 }): Promise<string> {
   const { bitgo, wallet, provider } = params;
 
-  // Fetch the wallet's user keychain to get webauthnDevices
-  const keychain = await wallet.getEncryptedUserKeychain();
-  const devices = keychain.webauthnDevices;
+  const keychain: UserKeychainResponse = await wallet.getEncryptedUserKeychain();
+  const devices = webauthnDevicesFromKeychain(keychain);
 
   if (!devices || devices.length === 0) {
     throw new Error('No passkey devices available');
   }
 
-  // Build PRF eval map from devices
-  const { evalByCredential } = buildEvalByCredential(devices as Parameters<typeof buildEvalByCredential>[0]);
+  const { evalByCredential } = buildEvalByCredential(devices);
 
   if (Object.keys(evalByCredential).length === 0) {
     throw new Error('No passkey devices available with a valid PRF salt');
   }
 
-  // Fetch a server-issued assertion challenge
-  const { challenge } = (await bitgo
-    .get(bitgo.url('/user/otp/webauthn/assertion', 2))
-    .result()) as AssertionChallengeResponse;
+  const challenge = challengeFromAuthResponse(await bitgo.get(bitgo.url('/user/otp/webauthn/auth', 2)).result());
 
-  // Trigger WebAuthn assertion with PRF evaluation via the provider (navigator layer)
+  const allowCredentials = Object.keys(evalByCredential).map((credId) => {
+    const nodeBuf = Buffer.from(credId.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
+    const id = nodeBuf.buffer.slice(nodeBuf.byteOffset, nodeBuf.byteOffset + nodeBuf.byteLength);
+    return {
+      type: 'public-key' as const,
+      id,
+    };
+  });
+
+  const publicKey: PublicKeyCredentialRequestOptions = {
+    challenge: new Uint8Array(Buffer.from(challenge, 'base64')),
+    allowCredentials,
+  };
+
   const result = await provider.get({
-    publicKey: {
-      challenge: Buffer.from(challenge, 'base64'),
-    } as PublicKeyCredentialRequestOptions,
+    publicKey,
     evalByCredential,
   });
 
-  // Verify the credential matches a known device
-  matchDeviceByCredentialId(devices as Parameters<typeof matchDeviceByCredentialId>[0], result.credentialId);
+  matchDeviceByCredentialId(devices, result.credentialId);
 
-  // Derive and return hex-encoded wallet passphrase
   if (!result.prfResult) {
     throw new Error('PRF output was not returned by the authenticator');
   }

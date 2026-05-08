@@ -56,6 +56,12 @@ const Navbar = () => {
       >
         WebCrypto Auth
       </NavItem>
+      <NavItem
+        activeRoute={pathname === '/passkey-demo'}
+        onClick={() => navigate('/passkey-demo')}
+      >
+        Passkey Demo
+      </NavItem>
     </NavbarContainer>
   );
 };
