@@ -618,6 +618,9 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     } else if (this._wallet.baseCoin.getMPCAlgorithm() === 'ecdsa') {
       return ['full'];
     } else if (this._wallet.baseCoin.getMPCAlgorithm() === 'eddsa' && this._wallet.type() === 'hot') {
+      if (this._wallet.multisigTypeVersion() === 'MPCv2') {
+        return ['full'];
+      }
       return ['lite', 'full'];
     } else {
       return ['full'];
