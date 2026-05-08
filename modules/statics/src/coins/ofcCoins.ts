@@ -3903,6 +3903,188 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['polygon:stg']
   ),
+  ofcPolygonErc20(
+    '03b85283-d5df-4e19-80cf-b030768d7a12',
+    'ofcpolygon:cvt0',
+    'ClearValue Tax CRT',
+    18,
+    UnderlyingAsset['polygon:cvt0']
+  ),
+  ofcPolygonErc20(
+    'b6fd7c9c-4628-4343-a1bf-0eca1a8bac03',
+    'ofcpolygon:dbh0',
+    'Davidsbeenhere CRT',
+    18,
+    UnderlyingAsset['polygon:dbh0']
+  ),
+  ofcPolygonErc20(
+    '4a38f028-f227-410a-8057-59fb8f3696fc',
+    'ofcpolygon:dst0',
+    'Daru Strong CRT',
+    18,
+    UnderlyingAsset['polygon:dst0']
+  ),
+  ofcPolygonErc20(
+    '5c13fbba-1a8d-4016-9c19-eb996398ae34',
+    'ofcpolygon:dto0',
+    'Double Toasted CRT',
+    18,
+    UnderlyingAsset['polygon:dto0']
+  ),
+  ofcPolygonErc20(
+    'ae03416d-b2e9-46dc-b592-f5f2e2f5f27a',
+    'ofcpolygon:hle0',
+    'Hubert Lee CRT',
+    18,
+    UnderlyingAsset['polygon:hle0']
+  ),
+  ofcPolygonErc20(
+    '4a0d591b-f124-4176-b54e-ad20e030b1d9',
+    'ofcpolygon:jmr0',
+    "Jelle's Marble Runs CRT",
+    18,
+    UnderlyingAsset['polygon:jmr0']
+  ),
+  ofcPolygonErc20(
+    '90466959-8a09-4c72-a741-9b0f13ad6a78',
+    'ofcpolygon:jpe0',
+    'James Pelton CRT',
+    18,
+    UnderlyingAsset['polygon:jpe0']
+  ),
+  ofcPolygonErc20(
+    '558ab8b0-827b-4bfd-9f7b-2f7730a62cb9',
+    'ofcpolygon:ltm0',
+    "Let's Talk Money CRT",
+    18,
+    UnderlyingAsset['polygon:ltm0']
+  ),
+  ofcPolygonErc20(
+    '21ae4266-dca5-4a14-92d6-293962b087ca',
+    'ofcpolygon:mox0',
+    'Moxy Approved CRT',
+    18,
+    UnderlyingAsset['polygon:mox0']
+  ),
+  ofcPolygonErc20(
+    '5ac08770-c84d-4272-9c94-8bff37f2eb6b',
+    'ofcpolygon:mrhp0',
+    'Mr. Hand Pay CRT',
+    18,
+    UnderlyingAsset['polygon:mrhp0']
+  ),
+  ofcPolygonErc20(
+    '3c0e03b3-9fb7-45a3-abd4-db1c8a4cad64',
+    'ofcpolygon:ofrn0',
+    'Officially Ronny CRT',
+    18,
+    UnderlyingAsset['polygon:ofrn0']
+  ),
+  ofcPolygonErc20(
+    '443e33ce-748c-43b2-a694-d012f2ab2d82',
+    'ofcpolygon:qcv20',
+    'Quick Cuts V2 CRT',
+    18,
+    UnderlyingAsset['polygon:qcv20']
+  ),
+  ofcPolygonErc20(
+    'e7117153-346f-4dbb-a93b-27c87195d0f6',
+    'ofcpolygon:rcdt0',
+    'RCDriftTok CRT',
+    18,
+    UnderlyingAsset['polygon:rcdt0']
+  ),
+  ofcPolygonErc20(
+    'c13bcb45-93cd-4e4f-beeb-b59b7ca99b18',
+    'ofcpolygon:rky0',
+    'Rickey CRT',
+    18,
+    UnderlyingAsset['polygon:rky0']
+  ),
+  ofcPolygonErc20(
+    '8535805b-df73-4cb4-b182-89a65f7d2393',
+    'ofcpolygon:ros0',
+    'Rossinni & Co CRT',
+    18,
+    UnderlyingAsset['polygon:ros0']
+  ),
+  ofcPolygonErc20(
+    '183923a7-6d77-4b5e-9972-a49ff43eb4de',
+    'ofcpolygon:sav0',
+    'Savvy Finance CRT',
+    18,
+    UnderlyingAsset['polygon:sav0']
+  ),
+  ofcPolygonErc20(
+    'da9a2597-9432-4fc8-9f0a-33a8c25499eb',
+    'ofcpolygon:sho0',
+    'Steve Hofstetter CRT',
+    18,
+    UnderlyingAsset['polygon:sho0']
+  ),
+  ofcPolygonErc20(
+    '0e587214-a92d-4f60-8054-21b3b8dd36cb',
+    'ofcpolygon:stm0',
+    'Stock Moe CRT',
+    18,
+    UnderlyingAsset['polygon:stm0']
+  ),
+  ofcPolygonErc20(
+    '21adc484-afd2-479d-b7e6-8e78f29d1475',
+    'ofcpolygon:tbp0',
+    'TheBigPayback CRT',
+    18,
+    UnderlyingAsset['polygon:tbp0']
+  ),
+  ofcPolygonErc20(
+    '0a8d44b3-edd4-459d-a65a-05f595ee8eda',
+    'ofcpolygon:tga0',
+    'Tony Gaskins CRT',
+    18,
+    UnderlyingAsset['polygon:tga0']
+  ),
+  ofcPolygonErc20(
+    '2e913d00-81f8-4646-b1b4-7b37c37cc90a',
+    'ofcpolygon:tgbs0',
+    'The Gabriels CRT',
+    18,
+    UnderlyingAsset['polygon:tgbs0']
+  ),
+  ofcPolygonErc20(
+    '8e4243f0-f48f-4c6d-8938-61c8351f286d',
+    'ofcpolygon:tmdm0',
+    'Thee Mademoiselle CRT',
+    18,
+    UnderlyingAsset['polygon:tmdm0']
+  ),
+  ofcPolygonErc20(
+    'c09a43b2-7d72-47fa-9f24-dd4884877f0b',
+    'ofcpolygon:tos0',
+    'The Other Side NDE CRT',
+    18,
+    UnderlyingAsset['polygon:tos0']
+  ),
+  ofcPolygonErc20(
+    'd2b0abe3-f978-487b-8dab-4c3737767845',
+    'ofcpolygon:tsf0',
+    'The Shluv Family CRT',
+    18,
+    UnderlyingAsset['polygon:tsf0']
+  ),
+  ofcPolygonErc20(
+    'ebe109a5-8e0a-4047-b9d0-9a08d89fb5c8',
+    'ofcpolygon:vio0',
+    'Violetta Alexis CRT',
+    18,
+    UnderlyingAsset['polygon:vio0']
+  ),
+  ofcPolygonErc20(
+    'f15166da-6410-45cd-adb3-f02b2db33ead',
+    'ofcpolygon:wots0',
+    'Word On The Street CRT',
+    18,
+    UnderlyingAsset['polygon:wots0']
+  ),
 
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
