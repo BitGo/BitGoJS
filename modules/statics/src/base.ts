@@ -2790,6 +2790,7 @@ export enum UnderlyingAsset {
   'polygon:brat' = 'polygon:brat',
   'polygon:chlt' = 'polygon:chlt',
   'polygon:stg' = 'polygon:stg',
+  'polygon:19xx0' = 'polygon:19xx0',
   'polygon:cvt0' = 'polygon:cvt0',
   'polygon:dbh0' = 'polygon:dbh0',
   'polygon:dst0' = 'polygon:dst0',
