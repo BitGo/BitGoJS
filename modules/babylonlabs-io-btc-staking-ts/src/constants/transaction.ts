@@ -1,0 +1,1 @@
+export const REDEEM_VERSION = 192;

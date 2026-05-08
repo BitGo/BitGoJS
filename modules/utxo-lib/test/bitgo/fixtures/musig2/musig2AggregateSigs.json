@@ -1,0 +1,20 @@
+{
+  "inputs": {
+    "partialSigs": [
+      "218f2cb5d0b24927b11094d2c78da7a4e1d0de9ba29d59e49312c48f216570c4",
+      "53d90faeb634bc5f2f9c3bceb303b958b8f4cf5054b3fb55c8b35dc662bd15e4"
+    ],
+    "pubKeys": [
+      "03e9fc8f605f59d6a4f5ceb0d27852151013f2bf1965f9adf44ce9ba9821c7f106",
+      "030710ec162d2199bb828e5d8760f16d65412bbb2c85ec13fe027f77d83a349c62"
+    ],
+    "txHash": "d11d3b06a83bb14c95fad947da2192ad9f6faee3c0fb36ad197a05f943aa7acd",
+    "internalPubKey": "6d767a69e03d4611485407d777711ee4d1321a84cf82f591db0cd3e179c49821",
+    "tapTreeRoot": "63a3684763dca2d4bb5d412d01f5ce73214af3d7816b52d7ad549562cc4cd890"
+  },
+  "output": {
+    "aggregatedSig": "1d6242dc3116fbb280482a2ad57f4167c3843d397df5da02fc6235030e0bbe24758f2be5356e937c5f4ecee1b0dd632f0a1615974065e4a89bdc385006f41b9b",
+    "tapOutputKey": "e5406bdcc45b02e86b30c446fd57375e8bfc8144238d61033d353c8a3641a43d",
+    "isValidAggregated": true
+  }
+}
