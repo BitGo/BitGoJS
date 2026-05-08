@@ -37,7 +37,7 @@ export {
   CantonToken,
 } from './account';
 export { CoinMap } from './map';
-export { networkFeatureMapForTokens } from './networkFeatureMapForTokens';
+export { networkFeatureMapForTokens, registerNetworkFeatures, getNetworkFeatures } from './networkFeatureMapForTokens';
 export {
   generateErc20Coin,
   generateTestErc20Coin,

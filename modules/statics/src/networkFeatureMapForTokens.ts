@@ -13,6 +13,22 @@ import {
   TAO_TOKEN_FEATURES,
 } from './coinFeatures';
 
+const dynamicNetworkFeaturesMap = new Map<string, CoinFeature[]>();
+
+/** Register default token features for a dynamically onboarded chain family. */
+export function registerNetworkFeatures(family: string, features: CoinFeature[]): void {
+  dynamicNetworkFeaturesMap.set(family, features);
+}
+
+/**
+ * Look up token features for a family.
+ * Checks static map first, then falls back to dynamic map.
+ * Returns undefined if the family is not registered in either map.
+ */
+export function getNetworkFeatures(family: string): CoinFeature[] | undefined {
+  return networkFeatureMapForTokens[family as CoinFamily] ?? dynamicNetworkFeaturesMap.get(family);
+}
+
 export const networkFeatureMapForTokens: Partial<Record<CoinFamily, CoinFeature[]>> = {
   algo: AccountCoin.DEFAULT_FEATURES,
   apt: APT_FEATURES,
