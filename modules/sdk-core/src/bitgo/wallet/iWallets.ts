@@ -42,25 +42,25 @@ export interface GenerateBaseMpcWalletOptions {
   walletVersion?: number;
 }
 
+/** WebAuthn PRF-based encryption info for attaching a hardware authenticator to a key.
+ * The passphrase is the PRF-derived key used to encrypt the user private key/share
+ * before it is persisted. Never sent to the server. */
+export interface WebauthnKeyEncryptionInfo {
+  otpDeviceId: string;
+  prfSalt: string;
+  passphrase: string;
+}
+
 export interface GenerateMpcWalletOptions extends GenerateBaseMpcWalletOptions {
   passphrase: string;
   originalPasscodeEncryptionCode?: string;
+  webauthnInfo?: WebauthnKeyEncryptionInfo;
   encryptionVersion?: EncryptionVersion;
 }
 export interface GenerateSMCMpcWalletOptions extends GenerateBaseMpcWalletOptions {
   bitgoKeyId: string;
   commonKeychain: string;
   coldDerivationSeed?: string;
-}
-
-/** WebAuthn PRF-based encryption info for protecting the user private key with a hardware authenticator. */
-export interface GenerateWalletWebauthnInfo {
-  /** The OTP device ID of the WebAuthn authenticator. */
-  otpDeviceId: string;
-  /** The PRF salt used to derive the passphrase from the authenticator. */
-  prfSalt: string;
-  /** PRF-derived passphrase used to encrypt the user private key. Never sent to the server. */
-  passphrase: string;
 }
 
 export interface GenerateWalletOptions {
@@ -93,7 +93,7 @@ export interface GenerateWalletOptions {
   evmKeyRingReferenceWalletId?: string;
   lightningProvider?: 'amboss' | 'voltage';
   /** Optional WebAuthn PRF-based encryption info. When provided, the user private key is additionally encrypted with the PRF-derived passphrase so the server can store a WebAuthn-protected copy. */
-  webauthnInfo?: GenerateWalletWebauthnInfo;
+  webauthnInfo?: WebauthnKeyEncryptionInfo;
   encryptionVersion?: EncryptionVersion;
 }
 
@@ -157,17 +157,11 @@ export interface AcceptShareOptions {
   newWalletPassphrase?: string;
 }
 
-export interface AcceptShareWebauthnInfo {
-  otpDeviceId: string;
-  prfSalt: string;
-  passphrase: string;
-}
-
 export interface BulkAcceptShareOptions {
   walletShareIds: string[];
   userLoginPassword: string;
   newWalletPassphrase?: string;
-  webauthnInfo?: AcceptShareWebauthnInfo;
+  webauthnInfo?: WebauthnKeyEncryptionInfo;
 }
 
 export interface AcceptShareOptionsRequest {

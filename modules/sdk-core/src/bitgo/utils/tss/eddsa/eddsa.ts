@@ -4,7 +4,7 @@
 import assert from 'assert';
 import * as openpgp from 'openpgp';
 import Eddsa, { GShare, SignShare } from '../../../../account-lib/mpc/tss';
-import { AddKeychainOptions, CreateBackupOptions, Keychain } from '../../../keychain';
+import { AddKeychainOptions, CreateBackupOptions, Keychain, WebauthnKeyEncryptionInfo } from '../../../keychain';
 import { verifyWalletSignature } from '../../../tss/eddsa/eddsa';
 import { createShareProof, encryptText, generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';
 import {
@@ -132,6 +132,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     bitgoKeychain,
     passphrase,
     originalPasscodeEncryptionCode,
+    webauthnInfo,
     encryptionSession,
   }: CreateEddsaKeychainParams): Promise<Keychain> {
     const MPC = await Eddsa.initialize();
@@ -197,6 +198,18 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
           password: passphrase,
         });
       }
+    }
+    if (webauthnInfo && userKeychainParams.encryptedPrv) {
+      userKeychainParams.webauthnDevices = [
+        {
+          otpDeviceId: webauthnInfo.otpDeviceId,
+          prfSalt: webauthnInfo.prfSalt,
+          encryptedPrv: await this.bitgo.encryptAsync({
+            input: JSON.stringify(userSigningMaterial),
+            password: webauthnInfo.passphrase,
+          }),
+        },
+      ];
     }
 
     return await this.baseCoin.keychains().add(userKeychainParams);
@@ -358,6 +371,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     passphrase?: string;
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
+    webauthnInfo?: WebauthnKeyEncryptionInfo;
     encryptionVersion?: EncryptionVersion;
   }): Promise<KeychainsTriplet> {
     const MPC = await Eddsa.initialize();
@@ -391,6 +405,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
         bitgoKeychain,
         passphrase: params.passphrase,
         originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
+        webauthnInfo: params.webauthnInfo,
         encryptionSession,
       });
       const backupKeychainPromise = this.createBackupKeychain({

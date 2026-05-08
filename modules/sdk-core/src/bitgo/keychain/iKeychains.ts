@@ -12,6 +12,9 @@ export interface WebauthnInfo {
   encryptedPrv: string;
 }
 
+import type { WebauthnKeyEncryptionInfo } from '../wallet/iWallets';
+export type { WebauthnKeyEncryptionInfo };
+
 export type SourceType = 'bitgo' | 'backup' | 'user' | 'cold';
 
 export type WebauthnFmt = 'none' | 'packed' | 'fido-u2f';
@@ -189,6 +192,7 @@ export interface CreateMpcOptions {
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
   retrofit?: DecryptedRetrofitPayload;
+  webauthnInfo?: WebauthnKeyEncryptionInfo;
   encryptionVersion?: EncryptionVersion;
 }
 
