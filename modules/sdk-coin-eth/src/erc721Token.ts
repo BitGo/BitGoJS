@@ -1,0 +1,382 @@
+/**
+ * @prettier
+ */
+import {
+  BitGoBase,
+  CoinConstructor,
+  Util,
+  checkKrsProvider,
+  getIsKrsRecovery,
+  getIsUnsignedSweep,
+  MPCAlgorithm,
+  NamedCoinConstructor,
+} from '@bitgo/sdk-core';
+import { BigNumber } from 'bignumber.js';
+
+import { coins, EthLikeTokenConfig, tokens } from '@bitgo/statics';
+import { CoinNames } from '@bitgo/abstract-eth';
+import { bip32 } from '@bitgo/secp256k1';
+import * as _ from 'lodash';
+
+import { Eth, RecoverOptions, RecoveryInfo, optionalDeps, TransactionPrebuild } from './eth';
+import { TransactionBuilder } from './lib';
+
+export { EthLikeTokenConfig };
+export class Erc721Token extends Eth {
+  public readonly tokenConfig: EthLikeTokenConfig;
+  protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
+  static coinNames: CoinNames = {
+    Mainnet: 'eth',
+    Testnet: 'hteth',
+  };
+
+  constructor(bitgo: BitGoBase, tokenConfig: EthLikeTokenConfig) {
+    const staticsCoin = coins.get(Erc721Token.coinNames[tokenConfig.network]);
+    super(bitgo, staticsCoin);
+    this.tokenConfig = tokenConfig;
+    this.sendMethodName = 'sendMultiSigToken';
+  }
+
+  static createTokenConstructor(config: EthLikeTokenConfig): CoinConstructor {
+    return (bitgo: BitGoBase) => new Erc721Token(bitgo, config);
+  }
+
+  static createTokenConstructors(
+    tokenConfigs: EthLikeTokenConfig[] = [...tokens.bitcoin.eth.nfts, ...tokens.testnet.eth.nfts]
+  ): NamedCoinConstructor[] {
+    const tokensCtors: NamedCoinConstructor[] = [];
+    for (const token of tokenConfigs) {
+      const tokenConstructor = Erc721Token.createTokenConstructor(token);
+      tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
+      tokensCtors.push({ name: token.tokenContractAddress, coinConstructor: tokenConstructor });
+    }
+    return tokensCtors;
+  }
+
+  get type() {
+    return this.tokenConfig.type;
+  }
+
+  get name() {
+    return this.tokenConfig.name;
+  }
+
+  get coin() {
+    return this.tokenConfig.coin;
+  }
+
+  get network() {
+    return this.tokenConfig.network;
+  }
+
+  get tokenContractAddress() {
+    return this.tokenConfig.tokenContractAddress;
+  }
+
+  get decimalPlaces() {
+    return this.tokenConfig.decimalPlaces;
+  }
+
+  getChain() {
+    return this.tokenConfig.type;
+  }
+
+  getFullName() {
+    return 'ERC721 Token';
+  }
+
+  getBaseFactor() {
+    return Math.pow(10, this.tokenConfig.decimalPlaces);
+  }
+
+  /**
+   * Flag for sending value of 0
+   * @returns {boolean} True if okay to send 0 value, false otherwise
+   */
+  valuelessTransferAllowed() {
+    return false;
+  }
+
+  /**
+   * Flag for sending data along with transactions
+   * @returns {boolean} True if okay to send tx data (ETH), false otherwise
+   */
+  transactionDataAllowed() {
+    return false;
+  }
+
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
+  }
+
+  protected getTransactionBuilder(): TransactionBuilder {
+    return new TransactionBuilder(coins.get(this.getBaseChain()));
+  }
+
+  /**
+   * Builds a token recovery transaction without BitGo
+   * @param params
+   * @param params.userKey {String} [encrypted] xprv
+   * @param params.backupKey {String} [encrypted] xprv or xpub if the xprv is held by a KRS providers
+   * @param params.walletPassphrase {String} used to decrypt userKey and backupKey
+   * @param params.walletContractAddress {String} the ETH address of the wallet contract
+   * @param params.recoveryDestination {String} target address to send recovered funds to
+   * @param params.krsProvider {String} necessary if backup key is held by KRS
+   */
+  async recover(params: RecoverOptions): Promise<RecoveryInfo> {
+    if (_.isUndefined(params.userKey)) {
+      throw new Error('missing userKey');
+    }
+
+    if (_.isUndefined(params.backupKey)) {
+      throw new Error('missing backupKey');
+    }
+
+    if (_.isUndefined(params.walletPassphrase) && !params.userKey.startsWith('xpub')) {
+      throw new Error('missing wallet passphrase');
+    }
+
+    if (_.isUndefined(params.walletContractAddress) || !this.isValidAddress(params.walletContractAddress)) {
+      throw new Error('invalid walletContractAddress');
+    }
+
+    if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    const isKrsRecovery = getIsKrsRecovery(params);
+    const isUnsignedSweep = getIsUnsignedSweep(params);
+
+    if (isKrsRecovery) {
+      checkKrsProvider(this, params.krsProvider, { checkCoinFamilySupport: false });
+    }
+
+    // Clean up whitespace from entered values
+    const userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+
+    // Set new eth tx fees (default to using platform values if none are provided)
+    const gasPrice = params.eip1559
+      ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
+      : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
+    const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
+
+    // Decrypt private keys from KeyCard values
+    let userPrv;
+    if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
+      try {
+        userPrv = this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${e.message}`);
+      }
+    }
+
+    let backupKeyAddress;
+    let backupSigningKey;
+
+    if (isKrsRecovery || isUnsignedSweep) {
+      const backupHDNode = bip32.fromBase58(backupKey);
+      backupSigningKey = backupHDNode.publicKey;
+      backupKeyAddress = `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
+    } else {
+      let backupPrv;
+
+      try {
+        backupPrv = this.bitgo.decrypt({
+          input: backupKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting backup keychain: ${e.message}`);
+      }
+
+      const backupHDNode = bip32.fromBase58(backupPrv);
+      backupSigningKey = backupHDNode.privateKey;
+      backupKeyAddress = `0x${optionalDeps.ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
+    }
+
+    // Get nonce for backup key (should be 0)
+    let backupKeyNonce = 0;
+
+    const result = await this.recoveryBlockchainExplorerQuery(
+      {
+        chainid: this.getChainId().toString(),
+        module: 'account',
+        action: 'txlist',
+        address: backupKeyAddress,
+      },
+      params.apiKey
+    );
+    const backupKeyTxList = result.result;
+    if (backupKeyTxList.length > 0) {
+      // Calculate last nonce used
+      const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === backupKeyAddress);
+      backupKeyNonce = outgoingTxs.length;
+    }
+
+    // get balance of backup key and make sure we can afford gas
+    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress, params.apiKey);
+
+    if (backupKeyBalance.lt(gasPrice.mul(gasLimit))) {
+      throw new Error(
+        `Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(
+          10
+        )}. This address must have a balance of at least 0.01 ETH to perform recoveries`
+      );
+    }
+
+    // get token balance of wallet
+    const txAmount = await this.queryAddressTokenBalance(
+      this.tokenContractAddress,
+      params.walletContractAddress,
+      params.apiKey
+    );
+    if (new BigNumber(txAmount).isLessThanOrEqualTo(0)) {
+      throw new Error('Wallet does not have enough funds to recover');
+    }
+
+    // build recipients object
+    const recipients = [
+      {
+        address: params.recoveryDestination,
+        amount: txAmount.toString(10),
+      },
+    ];
+
+    // Get sequence ID using contract call
+    const sequenceId = await this.querySequenceId(params.walletContractAddress, params.apiKey);
+
+    let operationHash, signature;
+    if (!isUnsignedSweep) {
+      // Get operation hash and sign it
+      operationHash = this.getOperationSha3ForExecuteAndConfirm(recipients, this.getDefaultExpireTime(), sequenceId);
+      signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
+
+      try {
+        Util.ecRecoverEthAddress(operationHash, signature);
+      } catch (e) {
+        throw new Error('Invalid signature');
+      }
+    }
+
+    const txInfo = {
+      recipient: recipients[0],
+      expireTime: this.getDefaultExpireTime(),
+      contractSequenceId: sequenceId,
+      signature: signature,
+      gasLimit: gasLimit.toString(10),
+      tokenContractAddress: this.tokenContractAddress,
+    };
+
+    // calculate send data
+    const sendMethodArgs = this.getSendMethodArgs(txInfo);
+    const methodSignature = optionalDeps.ethAbi.methodID(this.sendMethodName, _.map(sendMethodArgs, 'type'));
+    const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+    const sendData = Buffer.concat([methodSignature, encodedArgs]);
+
+    let tx = Eth.buildTransaction({
+      to: params.walletContractAddress,
+      nonce: backupKeyNonce,
+      value: 0,
+      gasPrice: gasPrice,
+      gasLimit: gasLimit,
+      data: sendData,
+      eip1559: params.eip1559,
+      replayProtectionOptions: params.replayProtectionOptions,
+    });
+
+    if (isUnsignedSweep) {
+      return this.formatForOfflineVault(
+        txInfo,
+        tx,
+        userKey,
+        backupKey,
+        gasPrice,
+        gasLimit,
+        params.eip1559,
+        params.replayProtectionOptions,
+        params.apiKey
+      ) as any;
+    }
+
+    if (!isKrsRecovery) {
+      tx = tx.sign(backupSigningKey);
+    }
+
+    const signedTx: RecoveryInfo = {
+      id: optionalDeps.ethUtil.bufferToHex(tx.hash()),
+      tx: tx.serialize().toString('hex'),
+    };
+
+    if (isKrsRecovery) {
+      signedTx.backupKey = backupKey;
+      signedTx.coin = 'erc721';
+    }
+
+    return signedTx;
+  }
+
+  getOperation(recipient, expireTime, contractSequenceId) {
+    return [
+      ['string', 'address', 'uint', 'address', 'uint', 'uint'],
+      [
+        'ERC721',
+        new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
+        recipient.amount,
+        new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(this.tokenContractAddress), 16),
+        expireTime,
+        contractSequenceId,
+      ],
+    ];
+  }
+
+  getSendMethodArgs(txInfo) {
+    // Method signature is
+    // sendMultiSigToken(address toAddress, uint value, address tokenContractAddress, uint expireTime, uint sequenceId, bytes signature)
+    return [
+      {
+        name: 'toAddress',
+        type: 'address',
+        value: txInfo.recipient.address,
+      },
+      {
+        name: 'value',
+        type: 'uint',
+        value: txInfo.recipient.amount,
+      },
+      {
+        name: 'tokenContractAddress',
+        type: 'address',
+        value: this.tokenContractAddress,
+      },
+      {
+        name: 'expireTime',
+        type: 'uint',
+        value: txInfo.expireTime,
+      },
+      {
+        name: 'sequenceId',
+        type: 'uint',
+        value: txInfo.contractSequenceId,
+      },
+      {
+        name: 'signature',
+        type: 'bytes',
+        value: optionalDeps.ethUtil.toBuffer(optionalDeps.ethUtil.addHexPrefix(txInfo.signature)),
+      },
+    ];
+  }
+
+  verifyCoin(txPrebuild: TransactionPrebuild): boolean {
+    return txPrebuild.coin === this.tokenConfig.coin && txPrebuild.token === this.tokenConfig.type;
+  }
+}

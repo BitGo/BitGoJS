@@ -1,0 +1,33 @@
+{
+  "name": "@bitgo/blake2b-wasm",
+  "version": "3.2.3",
+  "description": "Blake2b implemented in WASM",
+  "main": "index.js",
+  "dependencies": {
+    "nanoassert": "^1.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "browserify": "^14.4.0",
+    "tape": "^4.6.3",
+    "wat2js": "^1.1.1"
+  },
+  "scripts": {
+    "compile": "wat2js blake2b.wat -o blake2b.js",
+    "demo": "browserify example.js > bundle.js",
+    "unit-test": "tape test.js || true"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/blake2b-wasm"
+  },
+  "author": "Mathias Buus (@mafintosh)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mafintosh/blake2b-wasm/issues"
+  },
+  "homepage": "https://github.com/mafintosh/blake2b-wasm"
+}

@@ -1,0 +1,107 @@
+{
+  "transaction": {
+    "hex": "050000800a27a726b4d0d6c2ea0100001d02000001ecb32098fb4360dc1f3e831f8f111a3a60f6ac9470eeff8bf3d9ba24b765b2fd000000006b483045022100e8df998e6b8932e6e8acefb7f21d0f6a9b4de0445fc622350bec2ac1462728e102205cbff11dc0a9d12d44dafc607cf608019bc882b24fc16798900533a6c87231ff01210253e0370fe31e0a04a676920934c9ab1376bd459921d2358aece3f2cd7c2b7e6afeffffff0200e1f505000000001976a914d2eb140d8b7006e7b862827043f9cddd50da981188ac2f7daa0c000000001976a914457146dbe00a29304f24960ada7cba8b9518ab1c88ac000000",
+    "txid": "b3be7f0306cc30bb62626018abcaddea3f9e969b1ca649118dc857571fd8cd24",
+    "authdigest": "a5e6d394153a7f56ef941da1113ec2601688839a6a3eeffa493e878a8ef8f4bd",
+    "size": 241,
+    "overwintered": true,
+    "version": 5,
+    "versiongroupid": "26a7270a",
+    "locktime": 490,
+    "expiryheight": 541,
+    "vin": [
+      {
+        "txid": "fdb265b724bad9f38bffee7094acf6603a1a118f1f833e1fdc6043fb9820b3ec",
+        "vout": 0,
+        "scriptSig": {
+          "asm": "3045022100e8df998e6b8932e6e8acefb7f21d0f6a9b4de0445fc622350bec2ac1462728e102205cbff11dc0a9d12d44dafc607cf608019bc882b24fc16798900533a6c87231ff[ALL] 0253e0370fe31e0a04a676920934c9ab1376bd459921d2358aece3f2cd7c2b7e6a",
+          "hex": "483045022100e8df998e6b8932e6e8acefb7f21d0f6a9b4de0445fc622350bec2ac1462728e102205cbff11dc0a9d12d44dafc607cf608019bc882b24fc16798900533a6c87231ff01210253e0370fe31e0a04a676920934c9ab1376bd459921d2358aece3f2cd7c2b7e6a"
+        },
+        "sequence": 4294967294
+      }
+    ],
+    "vout": [
+      {
+        "value": 1,
+        "valueZat": 100000000,
+        "valueSat": 100000000,
+        "n": 0,
+        "scriptPubKey": {
+          "asm": "OP_DUP OP_HASH160 d2eb140d8b7006e7b862827043f9cddd50da9811 OP_EQUALVERIFY OP_CHECKSIG",
+          "hex": "76a914d2eb140d8b7006e7b862827043f9cddd50da981188ac",
+          "reqSigs": 1,
+          "type": "pubkeyhash",
+          "addresses": [
+            "tmUwaqz5D8hQvHjJXxSXrKhKvqSzfepZAHV"
+          ]
+        }
+      },
+      {
+        "value": 2.12499759,
+        "valueZat": 212499759,
+        "valueSat": 212499759,
+        "n": 1,
+        "scriptPubKey": {
+          "asm": "OP_DUP OP_HASH160 457146dbe00a29304f24960ada7cba8b9518ab1c OP_EQUALVERIFY OP_CHECKSIG",
+          "hex": "76a914457146dbe00a29304f24960ada7cba8b9518ab1c88ac",
+          "reqSigs": 1,
+          "type": "pubkeyhash",
+          "addresses": [
+            "tmG3Xf1xtx3dNTx2MvTKvJhN5PbpmLU28aw"
+          ]
+        }
+      }
+    ],
+    "vjoinsplit": [],
+    "valueBalance": 0,
+    "valueBalanceZat": 0,
+    "vShieldedSpend": [],
+    "vShieldedOutput": []
+  },
+  "inputs": [
+    {
+      "hex": "0400008085202f89010000000000000000000000000000000000000000000000000000000000000000ffffffff050235010101ffffffff01205fa012000000001976a9149757e1e788993cce6270cc80a1063b13a15ce2cf88ac00000000000000000000000000000000000000",
+      "txid": "fdb265b724bad9f38bffee7094acf6603a1a118f1f833e1fdc6043fb9820b3ec",
+      "authdigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "size": 109,
+      "overwintered": true,
+      "version": 4,
+      "versiongroupid": "892f2085",
+      "locktime": 0,
+      "expiryheight": 0,
+      "vin": [
+        {
+          "coinbase": "0235010101",
+          "sequence": 4294967295
+        }
+      ],
+      "vout": [
+        {
+          "value": 3.125,
+          "valueZat": 312500000,
+          "valueSat": 312500000,
+          "n": 0,
+          "scriptPubKey": {
+            "asm": "OP_DUP OP_HASH160 9757e1e788993cce6270cc80a1063b13a15ce2cf OP_EQUALVERIFY OP_CHECKSIG",
+            "hex": "76a9149757e1e788993cce6270cc80a1063b13a15ce2cf88ac",
+            "reqSigs": 1,
+            "type": "pubkeyhash",
+            "addresses": [
+              "tmPWaeKLPAtknGsM3GMULuFrVfDscSJrSY2"
+            ]
+          }
+        }
+      ],
+      "vjoinsplit": [],
+      "valueBalance": 0,
+      "valueBalanceZat": 0,
+      "vShieldedSpend": [],
+      "vShieldedOutput": [],
+      "blockhash": "099f26e6f26bddf0705ef3aa73567302088f8afc583324796cdbb46fbe1f6d80",
+      "height": 309,
+      "confirmations": 192,
+      "time": 1651835747,
+      "blocktime": 1651835747
+    }
+  ]
+}
