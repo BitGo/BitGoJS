@@ -166,7 +166,12 @@ function toArrayBuffer(val: any): ArrayBuffer {
     ) as ArrayBuffer;
   }
   if (typeof val === 'string') {
-    const b64 = val.replace(/-/g, '+').replace(/_/g, '/');
+    // Treat strings as base64url. Pad to a multiple of 4 before atob so
+    // unpadded base64url (the canonical form used by passkey-crypto) decodes
+    // correctly — without padding atob silently drops the trailing byte and
+    // the PRF receives the wrong salt.
+    let b64 = val.replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4 !== 0) b64 += '=';
     const binary = atob(b64);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
