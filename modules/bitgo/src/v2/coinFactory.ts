@@ -3,6 +3,7 @@
  */
 import { AdaToken } from '@bitgo/sdk-coin-ada';
 import { AlgoToken } from '@bitgo/sdk-coin-algo';
+import { CantonToken } from '@bitgo/sdk-coin-canton';
 import { Bcha, Tbcha } from '@bitgo/sdk-coin-bcha';
 import { HbarToken } from '@bitgo/sdk-coin-hbar';
 import { Near, TNear, Nep141Token } from '@bitgo/sdk-coin-near';
@@ -40,6 +41,7 @@ import {
   Tip20TokenConfig,
   PolyxTokenConfig,
   JettonTokenConfig,
+  CantonTokenConfig,
 } from '@bitgo/statics';
 import {
   Ada,
@@ -1085,6 +1087,9 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'xdc':
     case 'txdc':
       return XdcToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
+    case 'canton':
+    case 'tcanton':
+      return CantonToken.createTokenConstructor(tokenConfig as CantonTokenConfig);
     default:
       return undefined;
   }
