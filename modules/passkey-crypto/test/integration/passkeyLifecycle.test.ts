@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import { decryptV2, encryptV2 } from '@bitgo/sdk-api';
 import { derivePassword } from '../../src/derivePassword';
 import { deriveEnterpriseSalt } from '../../src/deriveEnterpriseSalt';
 import { registerPasskey } from '../../src/registerPasskey';
@@ -23,7 +24,6 @@ import {
 // Use sjcl directly for round-trip encryption tests — same crypto as mockBitGo
 const sjcl = require('sjcl');
 const sjclEncrypt = (password: string, input: string) => JSON.stringify(sjcl.encrypt(password, input));
-const sjclDecrypt = (password: string, input: string) => sjcl.decrypt(password, JSON.parse(input));
 
 describe('passkey-crypto integration', function () {
   let initialEncryptedPrv: string;
@@ -52,8 +52,10 @@ describe('passkey-crypto integration', function () {
         provider,
       });
 
-      // Verify encryptedPrv round-trips with the PRF-derived password
-      const decrypted = sjclDecrypt(derivePassword(PRF_OUTPUT), keychainState.encryptedPrv);
+      assert.strictEqual(JSON.parse(keychainState.encryptedPrv).v, 2);
+
+      // Verify encryptedPrv round-trips with the PRF-derived password (Argon2id v2 envelope)
+      const decrypted = await decryptV2(derivePassword(PRF_OUTPUT), keychainState.encryptedPrv);
       assert.strictEqual(decrypted, PRIVATE_KEY);
 
       // prfSalt stored in webauthnInfo must be valid base64url
@@ -81,7 +83,7 @@ describe('passkey-crypto integration', function () {
 
       // Same passphrase as what attach used — decrypts the stored key
       assert.strictEqual(derivedPassphrase, derivePassword(PRF_OUTPUT));
-      assert.strictEqual(sjclDecrypt(derivedPassphrase, keychainState.encryptedPrv), PRIVATE_KEY);
+      assert.strictEqual(await decryptV2(derivedPassphrase, keychainState.encryptedPrv), PRIVATE_KEY);
     });
   });
 
@@ -137,7 +139,7 @@ describe('passkey-crypto integration', function () {
       const { bitgo } = makeMockBitGo(initialEncryptedPrv);
       const device = { id: DEVICE_MONGO_ID, credentialId: CREDENTIAL_ID, prfSalt: BASE_SALT, isPasskey: true };
 
-      // Uses real sjcl decrypt — wrong passphrase genuinely fails decryptKeychainPrivateKey
+      // Uses real sjcl decrypt — wrong passphrase genuinely fails decryptKeychainPrivateKeyAsync
       await assert.rejects(
         () =>
           removePasskeyFromWallet({
@@ -151,6 +153,36 @@ describe('passkey-crypto integration', function () {
       );
 
       assert.strictEqual(bitgo.del.callCount, 0);
+    });
+
+    it('removePasskeyFromWallet accepts correct passphrase and rejects wrong when encryptedPrv is v2', async function () {
+      const v2Passphrase = 'v2-removal-passphrase';
+      const v2EncryptedPrv = await encryptV2(v2Passphrase, PRIVATE_KEY);
+      const { bitgo } = makeMockBitGo(v2EncryptedPrv);
+      const device = { id: DEVICE_MONGO_ID, credentialId: CREDENTIAL_ID, prfSalt: BASE_SALT, isPasskey: true };
+
+      await removePasskeyFromWallet({
+        bitgo,
+        coin: COIN,
+        walletId: WALLET_ID,
+        device,
+        walletPassphrase: v2Passphrase,
+      });
+      assert.strictEqual(bitgo.del.callCount, 1);
+
+      const { bitgo: bitgoWrong } = makeMockBitGo(v2EncryptedPrv);
+      await assert.rejects(
+        () =>
+          removePasskeyFromWallet({
+            bitgo: bitgoWrong,
+            coin: COIN,
+            walletId: WALLET_ID,
+            device,
+            walletPassphrase: 'wrong-passphrase',
+          }),
+        /Incorrect wallet passphrase/
+      );
+      assert.strictEqual(bitgoWrong.del.callCount, 0);
     });
   });
 });

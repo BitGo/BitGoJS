@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
+import { decryptV2, encryptV2 } from '@bitgo/sdk-api';
 import { attachPasskeyToWallet } from '../../src/attachPasskeyToWallet';
 import { WebAuthnOtpDevice, PasskeyAuthResult, WebAuthnProvider } from '../../src/webAuthnTypes';
 
@@ -53,8 +54,8 @@ describe('attachPasskeyToWallet', function () {
     url: sinon.SinonStub;
     coin: sinon.SinonStub;
     put: sinon.SinonStub;
-    decrypt: sinon.SinonStub;
-    encrypt: sinon.SinonStub;
+    decryptAsync: sinon.SinonStub;
+    encryptAsync: sinon.SinonStub;
   };
 
   let mockProvider: {
@@ -83,8 +84,8 @@ describe('attachPasskeyToWallet', function () {
         .callsFake((path, version) => `/api/v${version ?? 1}${path}`),
       coin: sinon.stub().returns(mockBaseCoin),
       put: sinon.stub(),
-      decrypt: sinon.stub(),
-      encrypt: sinon.stub(),
+      decryptAsync: sinon.stub(),
+      encryptAsync: sinon.stub(),
     };
 
     mockProvider = {
@@ -92,8 +93,8 @@ describe('attachPasskeyToWallet', function () {
       get: sinon.stub(),
     };
 
-    mockBitGo.decrypt.returns(decryptedPrv);
-    mockBitGo.encrypt.returns(reEncryptedPrv);
+    mockBitGo.decryptAsync.resolves(decryptedPrv);
+    mockBitGo.encryptAsync.resolves(reEncryptedPrv);
 
     const putSendStub = sinon.stub().returns({ result: sinon.stub().resolves(updatedKeychain) });
     mockBitGo.put.returns({ send: putSendStub });
@@ -124,8 +125,8 @@ describe('attachPasskeyToWallet', function () {
     sinon.assert.calledWith(mockWallets.get, { id: walletId });
     sinon.assert.calledOnce(mockWallet.type);
     sinon.assert.calledOnce(mockWallet.getEncryptedUserKeychain);
-    sinon.assert.calledOnce(mockBitGo.decrypt);
-    sinon.assert.calledWithExactly(mockBitGo.decrypt, { password: existingPassphrase, input: encryptedPrv });
+    sinon.assert.calledOnce(mockBitGo.decryptAsync);
+    sinon.assert.calledWithExactly(mockBitGo.decryptAsync, { password: existingPassphrase, input: encryptedPrv });
 
     // provider.get called with evalByCredential keyed on device.credentialId
     sinon.assert.calledOnce(mockProvider.get);
@@ -138,6 +139,13 @@ describe('attachPasskeyToWallet', function () {
     assert.strictEqual(getArgs.publicKey.allowCredentials.length, 1);
     assert.strictEqual(getArgs.publicKey.allowCredentials[0].type, 'public-key');
     assert.ok(getArgs.publicKey.allowCredentials[0].id instanceof ArrayBuffer);
+
+    sinon.assert.calledOnce(mockBitGo.encryptAsync);
+    sinon.assert.calledWithExactly(mockBitGo.encryptAsync, {
+      password: '1e5cb478',
+      input: decryptedPrv,
+      encryptionVersion: 2,
+    });
 
     // PUT called with correct shape
     sinon.assert.calledOnce(mockBitGo.put);
@@ -223,7 +231,7 @@ describe('attachPasskeyToWallet', function () {
   });
 
   it('should propagate decrypt errors', async function () {
-    mockBitGo.decrypt.throws(new Error('decryption failed'));
+    mockBitGo.decryptAsync.rejects(new Error('decryption failed'));
 
     await assert.rejects(
       () => callAttach(),
@@ -234,6 +242,18 @@ describe('attachPasskeyToWallet', function () {
     );
 
     sinon.assert.notCalled(mockBitGo.put);
+  });
+
+  it('should succeed when keychain encryptedPrv is already a v2 envelope', async function () {
+    const v2Input = await encryptV2(existingPassphrase, decryptedPrv);
+    mockWallet.getEncryptedUserKeychain.resolves({ id: keychainId, encryptedPrv: v2Input });
+    mockBitGo.decryptAsync.callsFake(async (p: { password: string; input: string }) => decryptV2(p.password, p.input));
+
+    const result = await callAttach();
+
+    sinon.assert.calledOnce(mockBitGo.decryptAsync);
+    sinon.assert.calledWithExactly(mockBitGo.decryptAsync, { password: existingPassphrase, input: v2Input });
+    assert.strictEqual(result.id, keychainId);
   });
 
   it('should use device.credentialId as the key in evalByCredential', async function () {

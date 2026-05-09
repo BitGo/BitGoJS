@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
+import { decryptV2, encryptV2 } from '@bitgo/sdk-api';
 import { removePasskeyFromWallet } from '../../src';
 
 describe('removePasskeyFromWallet', function () {
@@ -39,7 +40,7 @@ describe('removePasskeyFromWallet', function () {
         wallets: sinon.stub().returns(mockWallets),
         keychains: sinon.stub().returns(mockKeychains),
       }),
-      decrypt: sinon.stub().returns('xprv-decrypted'),
+      decryptAsync: sinon.stub().resolves('xprv-decrypted'),
       del: sinon.stub().returns({
         result: sinon.stub().resolves({}),
       }),
@@ -75,7 +76,51 @@ describe('removePasskeyFromWallet', function () {
   });
 
   it('should throw and not call DELETE if passphrase is wrong', async function () {
-    mockBitGo.decrypt = sinon.stub().throws(new Error('decryption failed'));
+    mockBitGo.decryptAsync = sinon.stub().rejects(new Error('decryption failed'));
+
+    await assert.rejects(
+      () =>
+        removePasskeyFromWallet({
+          bitgo: mockBitGo,
+          coin: coinName,
+          walletId,
+          device,
+          walletPassphrase: 'wrong-passphrase',
+        }),
+      (err: Error) => {
+        assert.ok(err.message.includes('Incorrect wallet passphrase'));
+        return true;
+      }
+    );
+
+    sinon.assert.notCalled(mockBitGo.del);
+  });
+
+  it('should verify v2 encryptedPrv then remove device', async function () {
+    const v2Passphrase = 'unit-v2-wallet-pass';
+    const v2Blob = await encryptV2(v2Passphrase, 'xprv-decrypted');
+    mockKeychains.get = sinon.stub().resolves({ id: keychainId, encryptedPrv: v2Blob });
+    mockBitGo.decryptAsync = sinon
+      .stub()
+      .callsFake(async (p: { password: string; input: string }) => decryptV2(p.password, p.input));
+
+    await removePasskeyFromWallet({
+      bitgo: mockBitGo,
+      coin: coinName,
+      walletId,
+      device,
+      walletPassphrase: v2Passphrase,
+    });
+
+    sinon.assert.calledOnce(mockBitGo.del);
+  });
+
+  it('should throw and not call DELETE when v2 encryptedPrv and passphrase is wrong', async function () {
+    const v2Blob = await encryptV2('correct-v2-pass', 'xprv-decrypted');
+    mockKeychains.get = sinon.stub().resolves({ id: keychainId, encryptedPrv: v2Blob });
+    mockBitGo.decryptAsync = sinon
+      .stub()
+      .callsFake(async (p: { password: string; input: string }) => decryptV2(p.password, p.input));
 
     await assert.rejects(
       () =>
