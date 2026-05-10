@@ -1631,6 +1631,6 @@ export const bscTokens = [
     18,
     '0x166a75bd1eba55d4723c84c62127123e7a73f95b',
     UnderlyingAsset['bsc:usdau'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
 ];
