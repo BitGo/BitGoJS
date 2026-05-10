@@ -14752,7 +14752,8 @@ export const erc20Coins = [
     'ARCHITECT Global Value',
     18,
     '0x6624c638780816228a25a15a4f30287d30c459c2',
-    UnderlyingAsset['eth:architectgvi']
+    UnderlyingAsset['eth:architectgvi'],
+    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '1bec62df-bf62-4e45-9613-ce56112a4fd0',
