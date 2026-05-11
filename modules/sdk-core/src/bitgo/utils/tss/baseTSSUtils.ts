@@ -15,6 +15,9 @@ import {
   CreateBitGoKeychainParamsBase,
   CreateKeychainParamsBase,
   CustomCommitmentGeneratingFunction,
+  CustomEddsaMPCv2SigningRound1GeneratingFunction,
+  CustomEddsaMPCv2SigningRound2GeneratingFunction,
+  CustomEddsaMPCv2SigningRound3GeneratingFunction,
   CustomGShareGeneratingFunction,
   CustomKShareGeneratingFunction,
   CustomMPCv2SigningRound1GeneratingFunction,
@@ -283,6 +286,16 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     externalSignerMPCv2SigningRound1Generator: CustomMPCv2SigningRound1GeneratingFunction,
     externalSignerMPCv2SigningRound2Generator: CustomMPCv2SigningRound2GeneratingFunction,
     externalSignerMPCv2SigningRound3Generator: CustomMPCv2SigningRound3GeneratingFunction,
+    requestType?: RequestType
+  ): Promise<TxRequest> {
+    throw new Error('Method not implemented.');
+  }
+
+  signEddsaMPCv2TssUsingExternalSigner(
+    params: TSSParams | TSSParamsForMessage,
+    externalSignerEddsaMPCv2SigningRound1Generator: CustomEddsaMPCv2SigningRound1GeneratingFunction,
+    externalSignerEddsaMPCv2SigningRound2Generator: CustomEddsaMPCv2SigningRound2GeneratingFunction,
+    externalSignerEddsaMPCv2SigningRound3Generator: CustomEddsaMPCv2SigningRound3GeneratingFunction,
     requestType?: RequestType
   ): Promise<TxRequest> {
     throw new Error('Method not implemented.');
