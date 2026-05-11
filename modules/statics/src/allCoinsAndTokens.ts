@@ -2970,6 +2970,24 @@ export const allCoinsAndTokens = [
     '',
     'HoodETH'
   ),
+  erc20Token(
+    '71bfcfbb-0e1d-4712-9836-8e7c481b9d87',
+    'hoodeth:tsla',
+    'Tesla',
+    18,
+    '0x322f0929c4625ed5bad873c95208d54e1c003b2d',
+    UnderlyingAsset['hoodeth:tsla'],
+    Networks.main.hoodeth
+  ),
+  erc20Token(
+    'ca3ac76e-e88f-4f39-8571-006cd9b97389',
+    'hoodeth:usdg',
+    'USDG',
+    18,
+    '0x5fc5360d0400a0fd4f2af552add042d716f1d168',
+    UnderlyingAsset['hoodeth:usdg'],
+    Networks.main.hoodeth
+  ),
   account(
     'ddf32007-d3a5-4cad-9a20-b7793e96fdd2',
     'h',
