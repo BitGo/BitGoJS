@@ -13,6 +13,7 @@ import {
   Erc1155Coin,
   Erc20Coin,
   Erc721Coin,
+  Erc7984Coin,
   EthLikeERC20Token,
   EthLikeERC721Token,
   FlrERC20Token,
@@ -68,6 +69,7 @@ export type EosTokenConfig = BaseContractAddressConfig & {
   contractAddress: string;
 };
 export type Erc20TokenConfig = BaseContractAddressConfig;
+export type Erc7984TokenConfig = BaseContractAddressConfig;
 export type TrxTokenConfig = BaseContractAddressConfig;
 export type StellarTokenConfig = BaseNetworkConfig;
 
@@ -191,12 +193,14 @@ export type TokenConfig =
   | PolyxTokenConfig
   | JettonTokenConfig
   | EthLikeERC721TokenConfig
-  | Tip20TokenConfig;
+  | Tip20TokenConfig
+  | Erc7984TokenConfig;
 
 export interface TokenNetwork {
   eth: {
     tokens: Erc20TokenConfig[];
     nfts: EthLikeTokenConfig[];
+    confidentialTokens: Erc7984TokenConfig[];
   };
   xlm: { tokens: StellarTokenConfig[] };
   algo: { tokens: AlgoTokenConfig[] };
@@ -338,6 +342,44 @@ export const getFormattedErc20Tokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: Erc20TokenConfig[], coin) => {
     if (coin instanceof Erc20Coin) {
       acc.push(getErc20TokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
+function getErc7984TokenConfig(coin: Erc7984Coin): Erc7984TokenConfig {
+  let baseCoin: string;
+  switch (coin.network.name) {
+    case Networks.main.ethereum.name:
+      baseCoin = 'eth';
+      break;
+    case Networks.test.kovan.name:
+      baseCoin = 'teth';
+      break;
+    case Networks.test.goerli.name:
+      baseCoin = 'gteth';
+      break;
+    case Networks.test.holesky.name:
+    case Networks.test.hoodi.name:
+      baseCoin = 'hteth';
+      break;
+    default:
+      throw new Error(`ERC-7984 token ${coin.name} has an unsupported network`);
+  }
+  return {
+    type: coin.name,
+    coin: baseCoin,
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+
+// Get the list of ERC-7984 confidential tokens from statics and format it properly
+export const getFormattedErc7984Tokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: Erc7984TokenConfig[], coin) => {
+    if (coin instanceof Erc7984Coin) {
+      acc.push(getErc7984TokenConfig(coin));
     }
     return acc;
   }, []);
@@ -1152,6 +1194,7 @@ type EthLikeTokenMap = {
 export enum TokenTypeEnum {
   ERC20 = 'erc20',
   ERC721 = 'erc721',
+  ERC7984 = 'erc7984',
 }
 
 function getEthLikeTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
@@ -1257,6 +1300,7 @@ export const getFormattedTokensByNetwork = (network: 'Mainnet' | 'Testnet', coin
     eth: {
       tokens: getFormattedErc20Tokens(coinMap).filter((token) => token.network === network),
       nfts: getFormattedErc721Tokens(coinMap).filter((token) => token.network === network),
+      confidentialTokens: getFormattedErc7984Tokens(coinMap).filter((token) => token.network === network),
     },
     xlm: {
       tokens: getFormattedStellarTokens(coinMap).filter((token) => token.network === network),
@@ -1443,13 +1487,25 @@ export const formattedAlgoTokens = getFormattedAlgoTokens();
 
 const mainnetErc20Tokens = verifyTokens(tokens.bitcoin.eth.tokens);
 const mainnetErc721Tokens = verifyTokens(tokens.bitcoin.eth.nfts);
+const mainnetErc7984Tokens = verifyTokens(tokens.bitcoin.eth.confidentialTokens);
 const mainnetStellarTokens = verifyTokens(tokens.bitcoin.xlm.tokens);
-export const mainnetTokens = { ...mainnetErc20Tokens, ...mainnetErc721Tokens, ...mainnetStellarTokens };
+export const mainnetTokens = {
+  ...mainnetErc20Tokens,
+  ...mainnetErc721Tokens,
+  ...mainnetErc7984Tokens,
+  ...mainnetStellarTokens,
+};
 
 const testnetErc20Tokens = verifyTokens(tokens.testnet.eth.tokens);
 const testnetErc721Tokens = verifyTokens(tokens.testnet.eth.nfts);
+const testnetErc7984Tokens = verifyTokens(tokens.testnet.eth.confidentialTokens);
 const testnetStellarTokens = verifyTokens(tokens.testnet.xlm.tokens);
-export const testnetTokens = { ...testnetErc20Tokens, ...testnetErc721Tokens, ...testnetStellarTokens };
+export const testnetTokens = {
+  ...testnetErc20Tokens,
+  ...testnetErc721Tokens,
+  ...testnetErc7984Tokens,
+  ...testnetStellarTokens,
+};
 
 /**
  * Get formatted token configuration for a single coin
@@ -1459,6 +1515,8 @@ export const testnetTokens = { ...testnetErc20Tokens, ...testnetErc721Tokens, ..
 export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenConfig | undefined {
   if (coin instanceof Erc20Coin) {
     return getErc20TokenConfig(coin);
+  } else if (coin instanceof Erc7984Coin) {
+    return getErc7984TokenConfig(coin);
   } else if (coin instanceof StellarCoin) {
     return getStellarTokenConfig(coin);
   } else if (coin instanceof OfcCoin) {

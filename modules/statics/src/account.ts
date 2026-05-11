@@ -8,6 +8,7 @@ import {
   CANTON_TOKEN_FEATURES,
   CELO_TOKEN_FEATURES,
   COSMOS_SIDECHAIN_FEATURES,
+  ERC7984_TOKEN_FEATURES,
   TEMPO_FEATURES,
 } from './coinFeatures';
 
@@ -93,6 +94,10 @@ export interface Erc20ConstructorOptions extends AccountConstructorOptions {
 }
 
 export interface Erc721ConstructorOptions extends AccountConstructorOptions {
+  contractAddress: string;
+}
+
+export interface Erc7984ConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
 }
 
@@ -293,6 +298,19 @@ export class Erc721Coin extends ContractAddressDefinedToken {}
  * {@link https://eips.ethereum.org/EIPS/eip-1155 EIP1155}
  */
 export class Erc1155Coin extends ContractAddressDefinedToken {}
+
+/**
+ * ERC-7984 is the confidential token standard for fhEVM-enabled blockchains (Zama).
+ * Token balances are stored as FHE-encrypted ciphertexts; transfers use confidentialTransfer()
+ * instead of the standard ERC-20 transfer(). Balance reads require delegated decryption via ACL.
+ *
+ * {@link https://eips.ethereum.org/EIPS/eip-7984 EIP-7984}
+ */
+export class Erc7984Coin extends ContractAddressDefinedToken {
+  constructor(options: Erc7984ConstructorOptions) {
+    super(options);
+  }
+}
 
 /**
  * The TRON blockchain supports tokens of the ERC20 standard similar to ETH ERC20 tokens.
@@ -1085,6 +1103,99 @@ export function terc20(
   network: EthereumNetwork = Networks.test.kovan
 ) {
   return erc20(id, name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+}
+
+/**
+ * Factory function for ERC-7984 confidential token instances (Zama fhEVM).
+ *
+ * ERC-7984 tokens store balances as FHE-encrypted ciphertexts. Transfers use
+ * confidentialTransfer() and balance reads require ACL delegation to BitGo.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token (e.g. 'eth:ctkn')
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features? Features of this coin. Defaults to ERC7984_TOKEN_FEATURES
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Ethereum main network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function erc7984(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = ERC7984_TOKEN_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: EthereumNetwork = Networks.main.ethereum,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new Erc7984Coin({
+      id,
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.ETH,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet ERC-7984 confidential token instances (Zama fhEVM).
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token (e.g. 'hteth:ctkn')
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features? Features of this coin. Defaults to ERC7984_TOKEN_FEATURES
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Hoodi test network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function terc7984(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = ERC7984_TOKEN_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: EthereumNetwork = Networks.test.hoodi,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return erc7984(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    contractAddress,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    primaryKeyCurve
+  );
 }
 
 /**
