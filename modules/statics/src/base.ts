@@ -1905,6 +1905,9 @@ export enum UnderlyingAsset {
   // Robinhood Chain testnet ERC-20 tokens
   'thoodeth:amzn' = 'thoodeth:amzn',
   'thoodeth:tsla' = 'thoodeth:tsla',
+  // Robinhood Chain mainnet ERC-20 tokens
+  'hoodeth:tsla' = 'hoodeth:tsla',
+  'hoodeth:usdg' = 'hoodeth:usdg',
   THKD = 'thkd',
   THUNDER = 'thunder',
   TIO = 'tio',
