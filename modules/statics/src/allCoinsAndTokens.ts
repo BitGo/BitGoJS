@@ -4692,7 +4692,8 @@ export const allCoinsAndTokens = [
     18,
     '0xc8a8df9b210243c55d31c73090f06787ad0a1bf6',
     UnderlyingAsset['xpl:syzusd'],
-    Networks.main.xpl
+    Networks.main.xpl,
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
   ),
 
   erc20Token(
