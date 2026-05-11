@@ -46,7 +46,7 @@ export const ofcErc20Coins = [
     undefined,
     undefined,
     undefined,
-    undefined,
+    true,
     'hoodeth'
   ),
   ofcerc20(
@@ -60,7 +60,7 @@ export const ofcErc20Coins = [
     undefined,
     undefined,
     undefined,
-    undefined,
+    true,
     'hoodeth'
   ),
   ofcerc20(
@@ -74,7 +74,7 @@ export const ofcErc20Coins = [
     undefined,
     undefined,
     undefined,
-    undefined,
+    true,
     'hemieth'
   ),
   ofcerc20(
@@ -88,7 +88,7 @@ export const ofcErc20Coins = [
     undefined,
     undefined,
     undefined,
-    undefined,
+    true,
     'hemieth'
   ),
   ofcerc20(
@@ -102,7 +102,7 @@ export const ofcErc20Coins = [
     undefined,
     undefined,
     undefined,
-    undefined,
+    true,
     'usdt0'
   ),
   ofcerc20(
@@ -116,7 +116,7 @@ export const ofcErc20Coins = [
     undefined,
     undefined,
     undefined,
-    undefined,
+    true,
     'hppeth'
   ),
   ofcerc20(
@@ -130,7 +130,7 @@ export const ofcErc20Coins = [
     undefined,
     undefined,
     undefined,
-    undefined,
+    true,
     'unieth'
   ),
   ofcerc20(
@@ -144,7 +144,7 @@ export const ofcErc20Coins = [
     undefined,
     undefined,
     undefined,
-    undefined,
+    true,
     'unieth'
   ),
 
