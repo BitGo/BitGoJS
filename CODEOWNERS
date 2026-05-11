@@ -27,6 +27,7 @@
 /modules/utxo-lib/ @BitGo/btc-team
 /modules/utxo-ord/ @BitGo/btc-team
 /modules/utxo-staking/ @BitGo/btc-team
+/modules/utxo-descriptors/ @BitGo/btc-team @BitGo/ethalt-team
 /modules/babylonlabs-io-btc-staking-ts @BitGo/btc-team
 /modules/bitgo/test/v2/unit/coins/abstractUtxoCoin.ts @BitGo/btc-team
 /modules/bitgo/test/v2/unit/coins/payGoPSBTHexFixture/psbtHexProof.ts @BitGo/btc-team
