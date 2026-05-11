@@ -72,6 +72,7 @@ import { nep141Tokens } from './coins/nep141Tokens';
 import { vetTokens } from './coins/vetTokens';
 import { cosmosTokens } from './coins/cosmosTokens';
 import { jettonTokens } from './coins/jettonTokens';
+import { erc7984Tokens } from './coins/erc7984Tokens';
 import { polyxTokens } from './coins/polyxTokens';
 import { cantonTokens } from './coins/cantonTokens';
 import { flrp } from './flrp';
@@ -164,6 +165,7 @@ export const allCoinsAndTokens = [
   ...botTokens,
   ...adaTokens,
   ...jettonTokens,
+  ...erc7984Tokens,
   ...polyxTokens,
   ...cantonTokens,
   avaxp(

@@ -559,6 +559,18 @@ export enum CoinFeature {
    * This coin allows negative fees in transactions
    */
   ALLOWS_NEGATIVE_FEE = 'allows-negative-fee',
+
+  /**
+   * This token uses fully homomorphic encryption (FHE) for confidential transfers (ERC-7984).
+   * Balances are stored as encrypted ciphertexts; transfers use confidentialTransfer() instead of transfer().
+   */
+  CONFIDENTIAL_TRANSFER = 'confidential-transfer',
+
+  /**
+   * Reading the balance of this token requires the wallet owner to delegate decryption access
+   * to BitGo via ACL.delegateForUserDecryption() before balances can be displayed.
+   */
+  REQUIRES_DECRYPTION_DELEGATION = 'requires-decryption-delegation',
 }
 
 /**
@@ -3804,6 +3816,12 @@ export enum UnderlyingAsset {
   'eth:drv' = 'eth:drv',
   'eth:prn' = 'eth:prn',
   'eth:zama' = 'eth:zama',
+  // ERC-7984 confidential tokens (Zama fhEVM - mainnet, contract addresses TBD pending Zama mainnet launch)
+  'eth:ctkn' = 'eth:ctkn',
+  'eth:cusdt' = 'eth:cusdt',
+  // ERC-7984 confidential tokens (Zama fhEVM - testnet / hteth)
+  'hteth:ctkn' = 'hteth:ctkn',
+  'hteth:cusdt' = 'hteth:cusdt',
   'eth:mony' = 'eth:mony',
   'eth:architectgvi' = 'eth:architectgvi',
   'eth:zk' = 'eth:zk',

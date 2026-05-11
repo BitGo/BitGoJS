@@ -35,6 +35,7 @@ export {
   AdaToken,
   JettonToken,
   CantonToken,
+  Erc7984Coin,
 } from './account';
 export { CoinMap } from './map';
 export { networkFeatureMapForTokens, registerNetworkFeatures, getNetworkFeatures } from './networkFeatureMapForTokens';
