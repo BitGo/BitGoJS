@@ -3904,6 +3904,13 @@ export const ofcCoins = [
     UnderlyingAsset['polygon:stg']
   ),
   ofcPolygonErc20(
+    '1f601ba4-9458-4379-8e9c-791cec47fe5b',
+    'ofcpolygon:19xx0',
+    '19XX CRT',
+    18,
+    UnderlyingAsset['polygon:19xx0']
+  ),
+  ofcPolygonErc20(
     '03b85283-d5df-4e19-80cf-b030768d7a12',
     'ofcpolygon:cvt0',
     'ClearValue Tax CRT',

@@ -1310,6 +1310,15 @@ export const polygonTokens = [
     POLYGON_TOKEN_FEATURES
   ),
   polygonErc20(
+    'da0131e2-a72f-4c12-9a2f-c15fdc668751',
+    'polygon:19xx0',
+    '19XX CRT',
+    18,
+    '0x93b25c5dd0b1a995f7a5d7bd144f06fabe96ce38',
+    UnderlyingAsset['polygon:19xx0'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  polygonErc20(
     'cc193bee-0b8f-4cef-b61e-0dc92631d106',
     'polygon:cvt0',
     'ClearValue Tax CRT',
