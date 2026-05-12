@@ -234,14 +234,18 @@ export class DKG {
   }
 
   /**
-   * Returns a CBOR-encoded reduced representation containing the public key.
+   * Returns a CBOR-encoded ReducedKeyShare buffer containing the party's opaque
+   * signing key share in the `keyShare` field. This buffer is private key material.
+   * The caller encrypts it and stores it as `reducedEncryptedPrv` on the key card QR code.
    */
   getReducedKeyShare(): Buffer {
-    if (!this.sharePk) {
+    if (!this.keyShare || !this.sharePk || !this.shareChaincode) {
       throw Error('DKG session not initialized');
     }
     const reducedKeyShare: EddsaReducedKeyShare = {
+      keyShare: Array.from(this.keyShare),
       pub: Array.from(this.sharePk),
+      rootChainCode: Array.from(this.shareChaincode),
     };
     return Buffer.from(encode(reducedKeyShare));
   }

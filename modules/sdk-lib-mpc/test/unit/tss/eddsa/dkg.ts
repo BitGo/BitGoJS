@@ -205,12 +205,38 @@ describe('EdDSA MPS DKG', function () {
       );
       assert(Buffer.isBuffer(bitgoReduced) && bitgoReduced.length > 0, 'BitGo reduced key share should be non-empty');
 
-      const userPub = Buffer.from(MPSTypes.getDecodedReducedKeyShare(userReduced).pub).toString('hex');
-      const backupPub = Buffer.from(MPSTypes.getDecodedReducedKeyShare(backupReduced).pub).toString('hex');
-      const bitgoPub = Buffer.from(MPSTypes.getDecodedReducedKeyShare(bitgoReduced).pub).toString('hex');
+      const userDecoded = MPSTypes.getDecodedReducedKeyShare(userReduced);
+      const backupDecoded = MPSTypes.getDecodedReducedKeyShare(backupReduced);
+      const bitgoDecoded = MPSTypes.getDecodedReducedKeyShare(bitgoReduced);
+
+      const userPub = Buffer.from(userDecoded.pub).toString('hex');
+      const backupPub = Buffer.from(backupDecoded.pub).toString('hex');
+      const bitgoPub = Buffer.from(bitgoDecoded.pub).toString('hex');
 
       assert.strictEqual(userPub, backupPub, 'User and backup should have same public key in reduced share');
       assert.strictEqual(backupPub, bitgoPub, 'Backup and BitGo should have same public key in reduced share');
+
+      // keyShare must be present and non-empty (opaque WASM bincode needed for DSG)
+      assert(userDecoded.keyShare.length > 0, 'User reduced share must include keyShare');
+      assert(backupDecoded.keyShare.length > 0, 'Backup reduced share must include keyShare');
+      assert(bitgoDecoded.keyShare.length > 0, 'BitGo reduced share must include keyShare');
+
+      // rootChainCode must be 32 bytes
+      assert.strictEqual(userDecoded.rootChainCode.length, 32, 'User rootChainCode must be 32 bytes');
+      assert.strictEqual(backupDecoded.rootChainCode.length, 32, 'Backup rootChainCode must be 32 bytes');
+      assert.strictEqual(bitgoDecoded.rootChainCode.length, 32, 'BitGo rootChainCode must be 32 bytes');
+
+      // All parties derive the same chaincode
+      assert.strictEqual(
+        Buffer.from(userDecoded.rootChainCode).toString('hex'),
+        Buffer.from(backupDecoded.rootChainCode).toString('hex'),
+        'User and backup should have same rootChainCode'
+      );
+      assert.strictEqual(
+        Buffer.from(backupDecoded.rootChainCode).toString('hex'),
+        Buffer.from(bitgoDecoded.rootChainCode).toString('hex'),
+        'Backup and BitGo should have same rootChainCode'
+      );
     });
   });
 
