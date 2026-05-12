@@ -156,6 +156,7 @@ export interface TransferAcknowledge {
 export interface CosignDelegationProposal {
   contractId: string;
   operatorId: string;
+  updateId: string;
   packageName?: string;
 }
 

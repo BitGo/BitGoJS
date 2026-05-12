@@ -7,6 +7,7 @@ import { Transaction } from './transaction/transaction';
 export class CosignDelegationProposalBuilder extends TransactionBuilder {
   private _contractId: string;
   private _operatorId: string;
+  private _updateId: string;
   private _packageName?: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -64,6 +65,22 @@ export class CosignDelegationProposalBuilder extends TransactionBuilder {
   }
 
   /**
+   * Sets the incoming txn id (updateId of the ledger update)
+   * @param id - ledger update id
+   * @returns The current builder instance for chaining.
+   * @throws Error if id is empty.
+   */
+  updateId(id: string): this {
+    if (!id || !id.trim()) {
+      throw new Error('updateId must be a non-empty string');
+    }
+    this._updateId = id.trim();
+    // also set the transaction id
+    this.transaction.id = id.trim();
+    return this;
+  }
+
+  /**
    * Sets the optional package name
    * @param name - package name
    * @returns The current builder instance for chaining.
@@ -85,6 +102,7 @@ export class CosignDelegationProposalBuilder extends TransactionBuilder {
     const result: CosignDelegationProposal = {
       contractId: this._contractId,
       operatorId: this._operatorId,
+      updateId: this._updateId,
     };
     if (this._packageName !== undefined) {
       result.packageName = this._packageName;
@@ -101,5 +119,6 @@ export class CosignDelegationProposalBuilder extends TransactionBuilder {
   private validate(): void {
     if (!this._contractId) throw new Error('contractId is missing');
     if (!this._operatorId) throw new Error('operatorId is missing');
+    if (!this._updateId) throw new Error('updateId is missing');
   }
 }
