@@ -87,3 +87,21 @@ GHSA-xq3m-2v4x-88gg
 #   project are controlled internal endpoints, not user-supplied FTP URLs
 # - Pinned at 5.2.2 in root resolutions; upstream get-uri has not yet updated to require 5.3.0
 GHSA-rp42-5vxx-qpwr
+
+# Excluded because:
+# - Code injection through bytes field defaults in generated toObject code (severity: high)
+# - Affects protobufjs <= 7.5.5; no patched version available yet (first_patched_version: null)
+# - Transitive dependency through @cosmjs/proto-signing, @cosmjs/stargate, @confio/ics23
+# - Exploitation requires attacker-controlled protobuf definitions; all definitions in this
+#   repo are static files bundled within trusted upstream dependencies — not user-supplied
+# - Published 2026-05-12; will bump once a patched version is released
+GHSA-66ff-xgx4-vchm
+
+# Excluded because:
+# - Code generation gadget after prototype pollution (severity: high)
+# - Affects protobufjs <= 7.5.5; no patched version available yet (first_patched_version: null)
+# - Same transitive dependency chain as GHSA-66ff-xgx4-vchm (@cosmjs, @confio/ics23)
+# - Requires prototype pollution as a prerequisite; no known prototype pollution vectors exist
+#   in this repo's dependency tree
+# - Published 2026-05-12; will bump once a patched version is released
+GHSA-75px-5xx7-5xc7
