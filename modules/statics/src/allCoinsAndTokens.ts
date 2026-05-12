@@ -403,7 +403,7 @@ export const allCoinsAndTokens = [
     'xtzevm',
     'XTZ EVM',
     Networks.main.xtzevm,
-    6,
+    18,
     UnderlyingAsset.XTZEVM,
     BaseUnit.ETH,
     [
@@ -421,7 +421,7 @@ export const allCoinsAndTokens = [
     'txtzevm',
     'Testnet XTZ EVM',
     Networks.test.xtzevm,
-    6,
+    18,
     UnderlyingAsset.XTZEVM,
     BaseUnit.ETH,
     [
