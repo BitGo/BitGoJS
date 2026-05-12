@@ -97,6 +97,8 @@ export enum TransactionType {
   TransferReject,
   // canton transfer offer withdrawn, 2-step
   TransferOfferWithdrawn,
+  // canton cosign delegation proposal
+  CosignDelegationProposal,
 
   // trx
   FREEZE,
