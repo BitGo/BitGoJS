@@ -2166,6 +2166,15 @@ export class Wallet implements IWallet {
     }
 
     if (
+      _.isFunction(params.customEddsaMPCv2SigningRound1GenerationFunction) &&
+      _.isFunction(params.customEddsaMPCv2SigningRound2GenerationFunction) &&
+      _.isFunction(params.customEddsaMPCv2SigningRound3GenerationFunction)
+    ) {
+      // invoke external signer TSS for EdDSA MPCv2 workflow
+      return this.signTransactionTssExternalSignerEdDSAMPCv2(this.baseCoin, params);
+    }
+
+    if (
       _.isFunction(params.customMPCv2SigningRound1GenerationFunction) &&
       _.isFunction(params.customMPCv2SigningRound2GenerationFunction) &&
       _.isFunction(params.customMPCv2SigningRound3GenerationFunction)
@@ -4397,6 +4406,59 @@ export class Wallet implements IWallet {
         params.customKShareGeneratingFunction,
         params.customMuDeltaShareGeneratingFunction,
         params.customSShareGeneratingFunction
+      );
+      return signedTxRequest;
+    } catch (e) {
+      throw new Error('failed to sign transaction ' + e);
+    }
+  }
+
+  /**
+   * Signs a transaction from a TSS EdDSA MPCv2 wallet using external signer.
+   *
+   * @param params signing options
+   */
+  private async signTransactionTssExternalSignerEdDSAMPCv2(
+    coin: IBaseCoin,
+    params: WalletSignTransactionOptions = {}
+  ): Promise<TxRequest> {
+    let txRequestId = '';
+    if (params.txRequestId) {
+      txRequestId = params.txRequestId;
+    } else if (params.txPrebuild && params.txPrebuild.txRequestId) {
+      txRequestId = params.txPrebuild.txRequestId;
+    } else {
+      throw new Error('TxRequestId required to sign TSS transactions with External Signer.');
+    }
+
+    if (!params.customEddsaMPCv2SigningRound1GenerationFunction) {
+      throw new Error(
+        'Generator function for EdDSA MPCv2 Round 1 share required to sign transactions with External Signer.'
+      );
+    }
+
+    if (!params.customEddsaMPCv2SigningRound2GenerationFunction) {
+      throw new Error(
+        'Generator function for EdDSA MPCv2 Round 2 share required to sign transactions with External Signer.'
+      );
+    }
+
+    if (!params.customEddsaMPCv2SigningRound3GenerationFunction) {
+      throw new Error(
+        'Generator function for EdDSA MPCv2 Round 3 share required to sign transactions with External Signer.'
+      );
+    }
+
+    try {
+      assert(this.tssUtils, 'tssUtils must be defined');
+      const signedTxRequest = await this.tssUtils.signEddsaMPCv2TssUsingExternalSigner(
+        {
+          txRequest: txRequestId,
+          reqId: params.reqId || new RequestTracer(),
+        },
+        params.customEddsaMPCv2SigningRound1GenerationFunction,
+        params.customEddsaMPCv2SigningRound2GenerationFunction,
+        params.customEddsaMPCv2SigningRound3GenerationFunction
       );
       return signedTxRequest;
     } catch (e) {
