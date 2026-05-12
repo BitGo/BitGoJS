@@ -18,6 +18,9 @@ import { IGoStakingWallet, IStakingWallet } from '../staking';
 import { ITradingAccount } from '../trading';
 import {
   CustomCommitmentGeneratingFunction,
+  CustomEddsaMPCv2SigningRound1GeneratingFunction,
+  CustomEddsaMPCv2SigningRound2GeneratingFunction,
+  CustomEddsaMPCv2SigningRound3GeneratingFunction,
   CustomGShareGeneratingFunction,
   CustomKShareGeneratingFunction,
   CustomMPCv2SigningRound1GeneratingFunction,
@@ -323,6 +326,9 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
   customMPCv2SigningRound1GenerationFunction?: CustomMPCv2SigningRound1GeneratingFunction;
   customMPCv2SigningRound2GenerationFunction?: CustomMPCv2SigningRound2GeneratingFunction;
   customMPCv2SigningRound3GenerationFunction?: CustomMPCv2SigningRound3GeneratingFunction;
+  customEddsaMPCv2SigningRound1GenerationFunction?: CustomEddsaMPCv2SigningRound1GeneratingFunction;
+  customEddsaMPCv2SigningRound2GenerationFunction?: CustomEddsaMPCv2SigningRound2GeneratingFunction;
+  customEddsaMPCv2SigningRound3GenerationFunction?: CustomEddsaMPCv2SigningRound3GeneratingFunction;
   apiVersion?: ApiVersion;
   multisigTypeVersion?: 'MPCv2';
   walletPassphrase?: string;
