@@ -645,6 +645,15 @@ export const ICP_FEATURES = [
   CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
 ];
 
+export const STARKNET_FEATURES = [
+  ...ACCOUNT_COIN_DEFAULT_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
+  CoinFeature.SUPPORTS_TOKENS,
+  CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
+];
+
 export const TAO_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.TSS,

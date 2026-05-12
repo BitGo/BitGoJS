@@ -127,6 +127,7 @@ import {
   Sol,
   Soneium,
   SoneiumToken,
+  Starknet,
   StellarToken,
   Stx,
   Sui,
@@ -298,6 +299,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('sgb', Sgb.createInstance);
   coinFactory.register('sol', Sol.createInstance);
   coinFactory.register('soneium', Soneium.createInstance);
+  coinFactory.register('starknet', Starknet.createInstance);
   coinFactory.register('stx', Stx.createInstance);
   coinFactory.register('sui', Sui.createInstance);
   coinFactory.register('susd', Susd.createInstance);
@@ -363,6 +365,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tsei', Tsei.createInstance);
   coinFactory.register('tsol', Tsol.createInstance);
   coinFactory.register('tsoneium', Tsoneium.createInstance);
+  coinFactory.register('tstarknet', Starknet.createInstance);
   coinFactory.register('tstx', Tstx.createInstance);
   coinFactory.register('tstt', Tstt.createInstance);
   coinFactory.register('tsui', Tsui.createInstance);
@@ -735,6 +738,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Sol.createInstance;
     case 'soneium':
       return Soneium.createInstance;
+    case 'starknet':
+      return Starknet.createInstance;
     case 'stx':
       return Stx.createInstance;
     case 'sui':
@@ -865,6 +870,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Tsol.createInstance;
     case 'tsoneium':
       return Tsoneium.createInstance;
+    case 'tstarknet':
+      return Starknet.createInstance;
     case 'tstx':
       return Tstx.createInstance;
     case 'tstt':

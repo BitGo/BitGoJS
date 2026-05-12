@@ -120,6 +120,7 @@ import {
   SGB_FEATURES,
   SOL_FEATURES,
   SONEIUM_FEATURES,
+  STARKNET_FEATURES,
   STX_FEATURES,
   SUI_FEATURES,
   SUI_TOKEN_FEATURES,
@@ -2273,6 +2274,28 @@ export const allCoinsAndTokens = [
     BaseUnit.POLYX,
     POLYX_FEATURES,
     KeyCurve.Ed25519
+  ),
+  account(
+    'ccd6eb4a-4a05-44f0-8b44-290804ee72d3',
+    'starknet',
+    'Starknet',
+    Networks.main.starknet,
+    18,
+    UnderlyingAsset.STARKNET,
+    BaseUnit.STARKNET,
+    STARKNET_FEATURES,
+    KeyCurve.Secp256k1
+  ),
+  account(
+    'f1fca130-a151-4663-b675-ce413ae519cd',
+    'tstarknet',
+    'Testnet Starknet',
+    Networks.test.starknet,
+    18,
+    UnderlyingAsset.STARKNET,
+    BaseUnit.STARKNET,
+    STARKNET_FEATURES,
+    KeyCurve.Secp256k1
   ),
   account(
     'cf601b71-5ed5-4524-b545-d6d19051781f',

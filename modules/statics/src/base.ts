@@ -115,6 +115,7 @@ export enum CoinFamily {
   SOL = 'sol',
   SONIC = 'sonic',
   SONEIUM = 'soneium',
+  STARKNET = 'starknet',
   STT = 'stt',
   SUI = 'sui',
   STX = 'stx',
@@ -672,6 +673,7 @@ export enum UnderlyingAsset {
   SOMI = 'somi', // Somnia Chain
   SONEIUM = 'soneium',
   SONIC = 'sonic',
+  STARKNET = 'starknet', // Starknet L2 native asset (distinct from STRK, the L1 ERC-20)
   STT = 'stt',
   STX = 'stx',
   SUI = 'sui',
@@ -3902,6 +3904,7 @@ export enum BaseUnit {
   DOT = 'planck',
   XRP = 'drop',
   XTZ = 'micro xtz',
+  STARKNET = 'fri',
   STX = 'micro-STX',
   SUI = 'MIST',
   TON = 'nanoton',
