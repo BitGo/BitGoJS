@@ -2,10 +2,11 @@ import sinon from 'sinon';
 import assert from 'assert';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { GlobalCoinFactory } from '@bitgo/sdk-core';
-import { coins, Erc20Coin } from '@bitgo/statics';
+import { coins, Erc20Coin, Erc7984Coin } from '@bitgo/statics';
 import { register, registerWithCoinMap } from '../../src/register';
 import { Erc20Token } from '../../src/erc20Token';
 import { Erc721Token } from '../../src/erc721Token';
+import { Erc7984Token } from '../../src/erc7984Token';
 
 describe('ETH Register', function () {
   let bitgo: BitGoAPI;
@@ -35,10 +36,11 @@ describe('ETH Register', function () {
       assert.ok(registeredNames.includes('teth'));
       assert.ok(registeredNames.includes('hteth'));
 
-      // ERC20 and ERC721 tokens should be registered
+      // ERC20, ERC721 and ERC7984 tokens should be registered
       const erc20Count = Erc20Token.createTokenConstructors().length;
       const erc721Count = Erc721Token.createTokenConstructors().length;
-      assert.strictEqual(registerSpy.callCount, 4 + erc20Count + erc721Count);
+      const erc7984Count = Erc7984Token.createTokenConstructors().length;
+      assert.strictEqual(registerSpy.callCount, 4 + erc20Count + erc721Count + erc7984Count);
     });
   });
 
@@ -69,12 +71,12 @@ describe('ETH Register', function () {
       }
     });
 
-    it('should not add tokens to the global coin map when coin map has no ERC20 tokens', function () {
-      const limitedCoinMap = coins.filter((coin) => !(coin instanceof Erc20Coin));
+    it('should not add tokens to the global coin map when coin map has no contract-address tokens', function () {
+      const limitedCoinMap = coins.filter((coin) => !(coin instanceof Erc20Coin) && !(coin instanceof Erc7984Coin));
 
       registerWithCoinMap(bitgo, limitedCoinMap);
 
-      // registerToken should not be called since no ERC20 tokens are in the map
+      // registerToken should not be called since no ERC20 or ERC7984 tokens are in the map
       assert.strictEqual(registerTokenSpy.callCount, 0);
     });
   });

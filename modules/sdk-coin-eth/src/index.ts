@@ -1,5 +1,6 @@
 export * from './erc20Token';
 export * from './erc721Token';
+export * from './erc7984Token';
 export * from './eth';
 export * from './gteth';
 export * from './hteth';
