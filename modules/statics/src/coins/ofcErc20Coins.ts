@@ -4229,6 +4229,42 @@ export const ofcErc20Coins = [
     true,
     'chiliz'
   ),
+  // Ondo Test Tokens OFC
+  ofcerc20(
+    'f0ab07ba-319e-453b-9fb1-b1a4d1a4612b',
+    'ofceth:t-bincon',
+    't-BINCon',
+    18,
+    underlyingAssetForSymbol('eth:t-bincon')
+  ),
+  ofcerc20(
+    'b6824fb1-c363-4c7f-81aa-0822824338d0',
+    'ofceth:t-iauon',
+    't-IAUon',
+    18,
+    underlyingAssetForSymbol('eth:t-iauon')
+  ),
+  ofcerc20(
+    'bed582a6-e707-482c-b4bc-6111342b4e04',
+    'ofceth:t-iemgon',
+    't-IEMGon',
+    18,
+    underlyingAssetForSymbol('eth:t-iemgon')
+  ),
+  ofcerc20(
+    'd50e00a6-5f4f-42b2-9445-2cf2b1681abd',
+    'ofceth:t-ibiton',
+    't-IBITon',
+    18,
+    underlyingAssetForSymbol('eth:t-ibiton')
+  ),
+  ofcerc20(
+    '4beeecb7-a658-4463-be7c-d4797b499d9c',
+    'ofceth:t-ivvon',
+    't-IVVon',
+    18,
+    underlyingAssetForSymbol('eth:t-ivvon')
+  ),
 ];
 
 export const tOfcErc20Coins = [
@@ -6562,6 +6598,20 @@ export const tOfcErc20Coins = [
     UnderlyingAsset['tbaseeth:tusdl'],
     undefined,
     [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'tbaseeth'
+  ),
+  tofcerc20(
+    'db419053-4226-4dd3-8fce-f0f2c28fafaa',
+    'ofctbaseeth:ttbills',
+    'Test TBILLS',
+    6,
+    UnderlyingAsset['tbaseeth:ttbills'],
+    undefined,
+    undefined,
     undefined,
     undefined,
     undefined,

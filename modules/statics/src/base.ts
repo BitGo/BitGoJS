@@ -2518,6 +2518,12 @@ export enum UnderlyingAsset {
   'eth:prompt' = 'eth:prompt',
   'eth:yb' = 'eth:yb',
   'eth:btr' = 'eth:btr',
+  // Ondo Test Tokens (Mainnet Gated)
+  'eth:t-bincon' = 'eth:t-bincon',
+  'eth:t-iauon' = 'eth:t-iauon',
+  'eth:t-iemgon' = 'eth:t-iemgon',
+  'eth:t-ibiton' = 'eth:t-ibiton',
+  'eth:t-ivvon' = 'eth:t-ivvon',
   'morph:usdc' = 'morph:usdc',
   'morpheth:usdc' = 'morpheth:usdc',
   'morph:usdt' = 'morph:usdt',
@@ -2622,6 +2628,7 @@ export enum UnderlyingAsset {
   'tavaxc:bitgo' = 'tavaxc:bitgo',
   'tavaxc:stavax' = 'tavaxc:stavax',
   'tavaxc:rtest' = 'tavaxc:rtest',
+  'tavaxc:tkula' = 'tavaxc:tkula',
   'avaxc:usdc-e' = 'avaxc:usdc-e',
   'avaxc:usdt-e' = 'avaxc:usdt-e',
   // Begin FTX missing AVAXC tokens
@@ -3024,6 +3031,12 @@ export enum UnderlyingAsset {
   'bsc:esports' = 'bsc:esports',
   'bsc:xter' = 'bsc:xter',
   'bsc:usdau' = 'bsc:usdau',
+  // Ondo Test Tokens (Mainnet Gated)
+  'bsc:t-bincon' = 'bsc:t-bincon',
+  'bsc:t-iauon' = 'bsc:t-iauon',
+  'bsc:t-iemgon' = 'bsc:t-iemgon',
+  'bsc:t-ibiton' = 'bsc:t-ibiton',
+  'bsc:t-ivvon' = 'bsc:t-ivvon',
 
   // BSC NFTs
   // generic NFTs
@@ -3118,6 +3131,7 @@ export enum UnderlyingAsset {
   'arbeth:testamzn' = 'arbeth:testamzn',
   'arbeth:testpltr' = 'arbeth:testpltr',
   'arbeth:testnflx' = 'arbeth:testnflx',
+  'arbeth:week' = 'arbeth:week',
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
@@ -3173,6 +3187,7 @@ export enum UnderlyingAsset {
   'tbaseeth:usd1cx' = 'tbaseeth:usd1cx',
   'tbaseeth:ctusd1cx' = 'tbaseeth:ctusd1cx',
   'tbaseeth:tusdl' = 'tbaseeth:tusdl',
+  'tbaseeth:ttbills' = 'tbaseeth:ttbills',
 
   // Og mainnet tokens
   'og:wog' = 'og:wog',

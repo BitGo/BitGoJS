@@ -3876,6 +3876,15 @@ export const allCoinsAndTokens = [
     [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
   ),
   erc20Token(
+    '941e3bbc-aaa4-4e06-837d-3511c9c09e5c',
+    'tbaseeth:ttbills',
+    'Test TBILLS',
+    6,
+    '0x52ae479d8b7ef0f3c27a3eb0072fb3995bdb77ca',
+    UnderlyingAsset['tbaseeth:ttbills'],
+    Networks.test.basechain
+  ),
+  erc20Token(
     '439fb12d-fddf-4749-8a33-b7c79fefc1b4',
     'baseeth:wave',
     'Waveform',
@@ -6473,6 +6482,14 @@ export const allCoinsAndTokens = [
     18,
     '0x58b9cb810a68a7f3e1e4f8cb45d1b9b3c79705e8',
     UnderlyingAsset['arbeth:next']
+  ),
+  arbethErc20(
+    '15d3b597-f001-41f7-8fa3-2b6754d7878a',
+    'arbeth:week',
+    'WEEK_DEFI',
+    18,
+    '0x5ae39d492e06bedf5a261687af18c653e920a8a3',
+    UnderlyingAsset['arbeth:week']
   ),
 
   opethErc20(
