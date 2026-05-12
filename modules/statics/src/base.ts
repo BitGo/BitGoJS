@@ -203,6 +203,10 @@ export enum CoinFeature {
    */
   UNSPENT_MODEL = 'unspent-model',
   /*
+   * This coin supports merging multiple UTXO-like holdings into fewer outputs.
+   */
+  MERGE_UTXOS = 'merge-utxos',
+  /*
    * Does this coin align with the Lightning Network model?
    *
    * These are typically Lightning Network on unspent model coins, such as BTC and LBTC.
