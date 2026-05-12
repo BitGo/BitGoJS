@@ -27,3 +27,9 @@ export const TIP20_DECIMALS = 6;
  * Tempo uses EIP-7702 Account Abstraction with transaction type 0x76
  */
 export const AA_TRANSACTION_TYPE = '0x76' as const;
+
+/**
+ * pathUSD — primary TIP-20 stablecoin on Tempo (6 decimals)
+ * Used as the default feeToken for all transactions.
+ */
+export const PATH_USD_ADDRESS = '0x20c0000000000000000000000000000000000000';
