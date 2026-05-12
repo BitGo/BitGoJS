@@ -323,6 +323,32 @@ describe('Stx util library', function () {
     });
   });
 
+  describe('getEncodedPrincipal', function () {
+    it('should encode a testnet standard principal as the 22-byte Clarity blob', function () {
+      Utils.getEncodedPrincipal('ST390D0WBF60T25P36KMCP6WN1BXQ7TTMMQKNV15C').should.equal(
+        '051ad206838b7981a116c334e8cb1b950afb73eb54a5'
+      );
+    });
+
+    it('should reject contract principals', function () {
+      should.throws(
+        () => Utils.getEncodedPrincipal('ST390D0WBF60T25P36KMCP6WN1BXQ7TTMMQKNV15C.my-contract'),
+        /contract principals are not supported/
+      );
+    });
+
+    it('should reject addresses with a memoId suffix', function () {
+      should.throws(
+        () => Utils.getEncodedPrincipal('ST390D0WBF60T25P36KMCP6WN1BXQ7TTMMQKNV15C?memoId=0'),
+        /must not include a query string/
+      );
+    });
+
+    it('should reject invalid addresses', function () {
+      should.throws(() => Utils.getEncodedPrincipal('not-a-stacks-address'), /invalid Stacks address/);
+    });
+  });
+
   describe('xpubToSTXPubkey', function () {
     it('should succeed to convert for valid xpubs', function () {
       Utils.xpubToSTXPubkey(

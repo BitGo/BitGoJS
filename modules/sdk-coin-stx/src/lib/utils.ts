@@ -21,8 +21,10 @@ import {
   deserializeTransaction,
   PubKeyEncoding,
   publicKeyFromSignature,
+  serializeCV,
   signWithKey,
   StacksTransaction,
+  standardPrincipalCV,
   TransactionVersion,
   validateStacksAddress,
 } from '@stacks/transactions';
@@ -503,6 +505,33 @@ export function functionArgsToTokenTransferParams(args: ClarityValue[]): TokenTr
 export function getAddressVersion(address: string): AddressVersion {
   const baseAddress = getAddressDetails(address).address;
   return createAddress(baseAddress).version;
+}
+
+/**
+ * Encode a Stacks *standard* principal as the Clarity SIP-005 hex wire format
+ * — a 22-byte blob:
+ *
+ *     `0x05` || version (1 byte) || hash160 (20 bytes)
+ *
+ * Contract principals (`<address>.<contract-name>`) and addresses with a
+ * `?memoId=…` suffix are rejected. The Clarity type byte (`0x05`) is set
+ * by `serializeCV` from `@stacks/transactions`, so this helper does not
+ * hand-roll any byte concatenation.
+ *
+ * @param {string} principal a Stacks standard principal (e.g. `SP…` / `ST…`)
+ * @returns {string} hex-encoded 22-byte Clarity standard principal
+ */
+export function getEncodedPrincipal(principal: string): string {
+  if (principal.includes('?')) {
+    throw new UtilsError(`principal must not include a query string: ${principal}`);
+  }
+  if (principal.includes('.')) {
+    throw new UtilsError(`contract principals are not supported, expected a standard principal: ${principal}`);
+  }
+  if (!isValidAddress(principal)) {
+    throw new UtilsError(`invalid Stacks address in principal: ${principal}`);
+  }
+  return serializeCV(standardPrincipalCV(principal)).toString('hex');
 }
 
 /**
