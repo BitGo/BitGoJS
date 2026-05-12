@@ -970,7 +970,7 @@ export class Wallets implements IWallets {
       };
       const payloadString = JSON.stringify(payload);
 
-      const privateKey = this.bitgo.decrypt({
+      const privateKey = await this.bitgo.decryptAsync({
         password: params.userPassword,
         input: walletKeychain.encryptedPrv,
       });
@@ -1014,7 +1014,7 @@ export class Wallets implements IWallets {
     }
 
     // Now we have the sharing keychain, we can work out the secret used for sharing the wallet with us
-    sharingKeychain.prv = this.bitgo.decrypt({
+    sharingKeychain.prv = await this.bitgo.decryptAsync({
       password: params.userPassword,
       input: sharingKeychain.encryptedXprv,
     });
@@ -1025,7 +1025,7 @@ export class Wallets implements IWallets {
     ).toString('hex');
 
     // Yes! We got the secret successfully here, now decrypt the shared wallet prv
-    const decryptedSharedWalletPrv = this.bitgo.decrypt({
+    const decryptedSharedWalletPrv = await this.bitgo.decryptAsync({
       password: secret,
       input: walletShare.keychain.encryptedPrv,
     });
@@ -1090,65 +1090,69 @@ export class Wallets implements IWallets {
       throw new Error('encryptedXprv was not found on sharing keychain');
     }
 
-    sharingKeychain.prv = this.bitgo.decrypt({
+    sharingKeychain.prv = await this.bitgo.decryptAsync({
       password: params.userLoginPassword,
       input: sharingKeychain.encryptedXprv,
     });
     const newWalletPassphrase = params.newWalletPassphrase || params.userLoginPassword;
     const webauthnInfo = params.webauthnInfo;
-    const keysForWalletShares = walletShares.flatMap((walletShare) => {
-      // Handle userMultiKeyRotationRequired case - these shares don't have keychains
-      if (walletShare.userMultiKeyRotationRequired) {
-        if (!params.userLoginPassword) {
-          throw new Error('userLoginPassword param must be provided to generate user keychain');
-        }
-        const walletKeychain = this.baseCoin.keychains().create();
-        const encryptedPrv = this.bitgo.encrypt({
-          password: newWalletPassphrase,
-          input: walletKeychain.prv,
-        });
-        return [
-          {
-            walletShareId: walletShare.id,
-            encryptedPrv: encryptedPrv,
-            pub: walletKeychain.pub,
-          },
-        ];
-      }
+    const keysForWalletShares = (
+      await Promise.all(
+        walletShares.map(async (walletShare) => {
+          // Handle userMultiKeyRotationRequired case - these shares don't have keychains
+          if (walletShare.userMultiKeyRotationRequired) {
+            if (!params.userLoginPassword) {
+              throw new Error('userLoginPassword param must be provided to generate user keychain');
+            }
+            const walletKeychain = this.baseCoin.keychains().create();
+            const encryptedPrv = this.bitgo.encrypt({
+              password: newWalletPassphrase,
+              input: walletKeychain.prv,
+            });
+            return [
+              {
+                walletShareId: walletShare.id,
+                encryptedPrv: encryptedPrv,
+                pub: walletKeychain.pub,
+              },
+            ];
+          }
 
-      // Standard case: shares with keychains
-      if (!walletShare.keychain) {
-        return [];
-      }
-      const secret = getSharedSecret(
-        bip32.fromBase58(sharingKeychain.prv).derivePath(sanitizeLegacyPath(walletShare.keychain.path)),
-        Buffer.from(walletShare.keychain.fromPubKey, 'hex')
-      ).toString('hex');
+          // Standard case: shares with keychains
+          if (!walletShare.keychain) {
+            return [];
+          }
+          const secret = getSharedSecret(
+            bip32.fromBase58(sharingKeychain.prv).derivePath(sanitizeLegacyPath(walletShare.keychain.path)),
+            Buffer.from(walletShare.keychain.fromPubKey, 'hex')
+          ).toString('hex');
 
-      const decryptedSharedWalletPrv = this.bitgo.decrypt({
-        password: secret,
-        input: walletShare.keychain.encryptedPrv,
-      });
-      const newEncryptedPrv = this.bitgo.encrypt({
-        password: newWalletPassphrase,
-        input: decryptedSharedWalletPrv,
-      });
-      const entry: AcceptShareOptionsRequest = {
-        walletShareId: walletShare.id,
-        encryptedPrv: newEncryptedPrv,
-      };
-      if (webauthnInfo) {
-        entry.webauthnInfo = {
-          otpDeviceId: webauthnInfo.otpDeviceId,
-          prfSalt: webauthnInfo.prfSalt,
-          encryptedPrv: this.bitgo.encrypt({
-            password: webauthnInfo.passphrase,
+          const decryptedSharedWalletPrv = await this.bitgo.decryptAsync({
+            password: secret,
+            input: walletShare.keychain.encryptedPrv,
+          });
+          const newEncryptedPrv = this.bitgo.encrypt({
+            password: newWalletPassphrase,
             input: decryptedSharedWalletPrv,
-          }),
-        };
-      }
-      return [entry];
-    });
+          });
+          const entry: AcceptShareOptionsRequest = {
+            walletShareId: walletShare.id,
+            encryptedPrv: newEncryptedPrv,
+          };
+          if (webauthnInfo) {
+            entry.webauthnInfo = {
+              otpDeviceId: webauthnInfo.otpDeviceId,
+              prfSalt: webauthnInfo.prfSalt,
+              encryptedPrv: this.bitgo.encrypt({
+                password: webauthnInfo.passphrase,
+                input: decryptedSharedWalletPrv,
+              }),
+            };
+          }
+          return [entry];
+        })
+      )
+    ).flat();
 
     return this.bulkAcceptShareRequest(keysForWalletShares);
   }
@@ -1254,7 +1258,7 @@ export class Wallets implements IWallets {
       if (!sharingKeychain.encryptedXprv) {
         throw new Error('encryptedXprv was not found on sharing keychain');
       }
-      sharingKeychainPrv = this.bitgo.decrypt({
+      sharingKeychainPrv = await this.bitgo.decryptAsync({
         password: userLoginPassword,
         input: sharingKeychain.encryptedXprv,
       });
@@ -1374,7 +1378,7 @@ export class Wallets implements IWallets {
         timestamp: new Date().toISOString(),
       });
 
-      const prv = this.bitgo.decrypt({
+      const prv = await this.bitgo.decryptAsync({
         password: userLoginPassword,
         input: walletKeychain.encryptedPrv,
       });
@@ -1438,7 +1442,7 @@ export class Wallets implements IWallets {
       'hex'
     );
 
-    const decryptedPrv = this.bitgo.decrypt({
+    const decryptedPrv = await this.bitgo.decryptAsync({
       password: sharedSecret,
       input: walletShare.keychain.encryptedPrv,
     });
