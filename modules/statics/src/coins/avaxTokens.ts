@@ -800,4 +800,12 @@ export const avaxTokens = [
     '0xaeb95ae5888b9ba0636373da39d5ad85eef318e0',
     UnderlyingAsset['tavaxc:rtest']
   ),
+  tavaxErc20(
+    'adac9ba2-37a8-466a-9069-e2b2d0b05684',
+    'tavaxc:tkula',
+    'Test KULA',
+    18,
+    '0xf9d118f8835b3a4261c3d3b2de89034022153e53',
+    UnderlyingAsset['tavaxc:tkula']
+  ),
 ];

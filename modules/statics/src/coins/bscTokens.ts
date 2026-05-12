@@ -1633,4 +1633,50 @@ export const bscTokens = [
     UnderlyingAsset['bsc:usdau'],
     BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
+  // Ondo Test Tokens (Mainnet Gated)
+  bscToken(
+    '70f45912-f817-454c-ae1d-05f60f10ccee',
+    'bsc:t-bincon',
+    't-BINCon',
+    18,
+    '0x904d33dc5e5afef460efcfdde273b7bb9077261f',
+    UnderlyingAsset['bsc:t-bincon'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '1284e04c-8922-4f79-9fc6-b4828ec865ee',
+    'bsc:t-iauon',
+    't-IAUon',
+    18,
+    '0xf51c954bf744da45530b1ad68d1b8ad8e1733a3f',
+    UnderlyingAsset['bsc:t-iauon'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '00819077-3203-4adf-a88d-6396c3f1c573',
+    'bsc:t-iemgon',
+    't-IEMGon',
+    18,
+    '0xae6b1f80343bcab207e441d002f9f466dc116270',
+    UnderlyingAsset['bsc:t-iemgon'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '5e818d05-3504-4320-b94e-a6d5d42c8884',
+    'bsc:t-ibiton',
+    't-IBITon',
+    18,
+    '0x5bd0885b43acd57d3a023cc6eb8c24bc54785aac',
+    UnderlyingAsset['bsc:t-ibiton'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'c9fcf59a-be49-4f88-a960-b9d088684b13',
+    'bsc:t-ivvon',
+    't-IVVon',
+    18,
+    '0xee0297fb06ac2bb60b5f49e541050361bfe91e1b',
+    UnderlyingAsset['bsc:t-ivvon'],
+    BSC_TOKEN_FEATURES
+  ),
 ];
