@@ -42,6 +42,8 @@ import {
   PolyxTokenConfig,
   JettonTokenConfig,
   CantonTokenConfig,
+  Erc7984TokenConfig,
+  Erc7984Coin,
 } from '@bitgo/statics';
 import {
   Ada,
@@ -82,6 +84,7 @@ import {
   EosToken,
   Erc20Token,
   Erc721Token,
+  Erc7984Token,
   Etc,
   Eth,
   Ethw,
@@ -418,6 +421,13 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
       coinFactory.register(name, coinConstructor);
     }
   );
+
+  Erc7984Token.createTokenConstructors([
+    ...tokens.bitcoin.eth.confidentialTokens,
+    ...tokens.testnet.eth.confidentialTokens,
+  ]).forEach(({ name, coinConstructor }) => {
+    coinFactory.register(name, coinConstructor);
+  });
 
   StellarToken.createTokenConstructors([...tokens.bitcoin.xlm.tokens, ...tokens.testnet.xlm.tokens]).forEach(
     ({ name, coinConstructor }) => {
@@ -960,12 +970,16 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
 
   switch (tokenConfig.coin) {
     case 'eth':
-    case 'hteth':
-      if (tokenConfig.type.includes('erc721')) {
+    case 'hteth': {
+      const staticCoin = coins.get(tokenConfig.type);
+      if (staticCoin instanceof Erc7984Coin) {
+        return Erc7984Token.createTokenConstructor(tokenConfig as Erc7984TokenConfig);
+      } else if (tokenConfig.type.includes('erc721')) {
         return Erc721Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
       } else {
         return Erc20Token.createTokenConstructor(tokenConfig as Erc20TokenConfig);
       }
+    }
     case 'xlm':
     case 'txlm':
       return StellarToken.createTokenConstructor(tokenConfig as StellarTokenConfig);
