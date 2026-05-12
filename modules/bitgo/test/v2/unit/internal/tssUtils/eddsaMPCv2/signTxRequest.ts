@@ -239,6 +239,90 @@ describe('signTxRequest:', function () {
       .should.be.rejectedWith(/Unexpected signature share response/);
   });
 
+  it('should throw if round 2 response has wrong type', async function () {
+    const messageBuffer = Buffer.from(signableHex, 'hex');
+    const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
+    bitgoDsg.initDsg(
+      bitgoKeyShare,
+      messageBuffer,
+      txRequest.transactions![0].unsignedTx.derivationPath,
+      MPCv2PartiesEnum.USER
+    );
+    const bitgoMsg1 = bitgoDsg.getFirstMessage();
+
+    // Round 1: return a valid round1Output so the orchestration can proceed
+    nock('https://bitgo.fakeurl')
+      .post(
+        `/api/v2/wallet/${txRequest.walletId}/txrequests/${txRequest.txRequestId}/transactions/0/sign`,
+        (body) =>
+          (JSON.parse(body.signatureShares[0].share) as EddsaMPCv2SignatureShareRound1Input).type === 'round1Input'
+      )
+      .reply(
+        200,
+        async (_uri: string, body: { signatureShares: SignatureShareRecord[]; signerGpgPublicKey: string }) => {
+          const parsedShare = JSON.parse(body.signatureShares[0].share) as EddsaMPCv2SignatureShareRound1Input;
+          const userMsg1Bytes = Buffer.from(parsedShare.data.msg1.message, 'base64');
+          const userDeserializedMsg1: MPSTypes.DeserializedMessage = {
+            from: MPCv2PartiesEnum.USER,
+            payload: new Uint8Array(userMsg1Bytes),
+          };
+          // Advance bitgo session (we don't need bitgoMsg2 for this test)
+          bitgoDsg.handleIncomingMessages([bitgoMsg1, userDeserializedMsg1]);
+          const bitgoSignedMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg1.payload), bitgoPrvKeyObj);
+          const round1Output: EddsaMPCv2SignatureShareRound1Output = {
+            type: 'round1Output',
+            data: { msg1: bitgoSignedMsg1 },
+          };
+          return {
+            txRequestId,
+            transactions: [
+              {
+                signatureShares: [
+                  {
+                    from: SignatureShareType.BITGO,
+                    to: SignatureShareType.USER,
+                    share: JSON.stringify(round1Output),
+                  },
+                ],
+              },
+            ],
+          };
+        }
+      );
+
+    // Round 2: return a share with wrong type (round3Output instead of round2Output)
+    nock('https://bitgo.fakeurl')
+      .post(
+        `/api/v2/wallet/${txRequest.walletId}/txrequests/${txRequest.txRequestId}/transactions/0/sign`,
+        (body) =>
+          (JSON.parse(body.signatureShares[0].share) as EddsaMPCv2SignatureShareRound2Input).type === 'round2Input'
+      )
+      .reply(200, {
+        txRequestId,
+        transactions: [
+          {
+            signatureShares: [
+              {
+                from: SignatureShareType.USER,
+                to: SignatureShareType.BITGO,
+                share: 'placeholder',
+              },
+              {
+                from: SignatureShareType.BITGO,
+                to: SignatureShareType.USER,
+                share: JSON.stringify({ type: 'round3Output', data: {} }),
+              },
+            ],
+          },
+        ],
+      });
+
+    const userPrvBase64 = Buffer.from(userKeyShare).toString('base64');
+    await tssUtils
+      .signTxRequest({ txRequest, prv: userPrvBase64, reqId, txParams })
+      .should.be.rejectedWith(/Unexpected signature share response. Unable to parse data./);
+  });
+
   it('successfully signs a txRequest after receiving multiple 429 errors in round 2', async function () {
     const nockPromises = await getNockPromisesForEddsaSigning(txRequest, RequestType.tx, 3);
     await Promise.all(nockPromises);
