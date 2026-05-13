@@ -5,10 +5,12 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { Tempo } from '../../src/tempo';
-import { PATH_USD_ADDRESS } from '../../src/lib/constants';
+const PATH_USD_ADDRESS = '0x20c0000000000000000000000000000000000000';
 
-// secp256k1 generator point G — a well-known valid compressed public key
-const TEST_BACKUP_KEY = '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798';
+// secp256k1 generator point G (33 bytes) + 32-byte chaincode — valid commonKeyChain for deriveUnhardened
+const TEST_BACKUP_KEY =
+  '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798' +
+  '0000000000000000000000000000000000000000000000000000000000000001';
 const TEST_RECOVERY_DESTINATION = '0x80151ebf635e6ec8a5455258f617be6cda1fbd7e';
 
 describe('Tempo Recovery', function () {
@@ -132,12 +134,13 @@ describe('Tempo Recovery', function () {
     }
 
     it('deducts gasLimit × maxFeePerGas / 10^12 from pathUSD balance', async function () {
-      // gasMargin = 1_000_000 * 20_000_000_000 / 10^12 = 20_000
-      // sweepAmount = 1_000_000 - 20_000 = 980_000
+      // gasMargin = 1_000_000 * 20_000_000_000 * 1.75 / 10^12 = 35_000
+      // sweepAmount = 1_000_000 - 35_000 = 965_000
       stubBalanceAndNonce('1000000');
       const result = (await (basecoin as any).buildUnsignedSweepTxnTSS({
         backupKey: TEST_BACKUP_KEY,
         recoveryDestination: TEST_RECOVERY_DESTINATION,
+        tokenContractAddress: PATH_USD_ADDRESS,
         gasLimit: 1_000_000,
         eip1559: { maxFeePerGas: 20_000_000_000, maxPriorityFeePerGas: 10_000_000_000 },
       })) as any;
@@ -146,12 +149,13 @@ describe('Tempo Recovery', function () {
     });
 
     it('uses smaller margin when gasLimit is halved', async function () {
-      // gasMargin = 500_000 * 20_000_000_000 / 10^12 = 10_000
-      // sweepAmount = 15_000 - 10_000 = 5_000
-      stubBalanceAndNonce('15000');
+      // gasMargin = 500_000 * 20_000_000_000 * 1.75 / 10^12 = 17_500
+      // sweepAmount = 50_000 - 17_500 = 32_500
+      stubBalanceAndNonce('50000');
       const result = (await (basecoin as any).buildUnsignedSweepTxnTSS({
         backupKey: TEST_BACKUP_KEY,
         recoveryDestination: TEST_RECOVERY_DESTINATION,
+        tokenContractAddress: PATH_USD_ADDRESS,
         gasLimit: 500_000,
         eip1559: { maxFeePerGas: 20_000_000_000, maxPriorityFeePerGas: 10_000_000_000 },
       })) as any;
@@ -165,6 +169,7 @@ describe('Tempo Recovery', function () {
         .buildUnsignedSweepTxnTSS({
           backupKey: TEST_BACKUP_KEY,
           recoveryDestination: TEST_RECOVERY_DESTINATION,
+          tokenContractAddress: PATH_USD_ADDRESS,
           gasLimit: 1_000_000,
           eip1559: { maxFeePerGas: 20_000_000_000, maxPriorityFeePerGas: 10_000_000_000 },
         })
@@ -190,6 +195,7 @@ describe('Tempo Recovery', function () {
       const result = (await (basecoin as any).buildUnsignedSweepTxnTSS({
         backupKey: TEST_BACKUP_KEY,
         recoveryDestination: TEST_RECOVERY_DESTINATION,
+        tokenContractAddress: PATH_USD_ADDRESS,
         gasLimit: 1_000_000,
         eip1559: { maxFeePerGas: 20_000_000_000, maxPriorityFeePerGas: 10_000_000_000 },
       })) as any;

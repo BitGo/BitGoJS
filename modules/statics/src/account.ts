@@ -825,13 +825,11 @@ export class CantonToken extends AccountCoinToken {
  * The Tempo network supports TIP20 tokens
  * TIP20 tokens are ERC20-compatible tokens on the Tempo network
  */
-export class Tip20Token extends AccountCoinToken {
-  public contractAddress: string;
+export class Tip20Token extends ContractAddressDefinedToken {
   constructor(options: Tip20TokenConstructorOptions) {
     super({
       ...options,
     });
-    this.contractAddress = options.contractAddress;
   }
 }
 

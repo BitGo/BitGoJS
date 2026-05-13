@@ -41,7 +41,7 @@ import {
   isTip20Transaction,
   isValidMemoId as isValidMemoIdUtil,
 } from './lib/utils';
-import { PATH_USD_ADDRESS } from './lib/constants';
+import { MAINNET_COIN, PATH_USD_TOKEN_MAINNET, PATH_USD_TOKEN_TESTNET } from './lib/constants';
 import * as url from 'url';
 import * as querystring from 'querystring';
 
@@ -428,12 +428,18 @@ export class Tempo extends AbstractEthLikeNewCoins {
     walletAddress: string,
     params: RecoverOptions
   ): Promise<{ tx: Tip20Transaction; nonce: number; sweepAmount: bigint; gasMarginUnits: bigint }> {
-    const tokenAddress = params.tokenContractAddress ?? PATH_USD_ADDRESS;
+    if (!params.tokenContractAddress) {
+      throw new Error('tokenContractAddress is required for sweep');
+    }
+    const tokenAddress = params.tokenContractAddress;
+
+    const pathUsdTokenName = this.getChain() === MAINNET_COIN ? PATH_USD_TOKEN_MAINNET : PATH_USD_TOKEN_TESTNET;
+    const pathUsdAddress = (coins.get(pathUsdTokenName) as unknown as { contractAddress: string }).contractAddress;
 
     const rawBalance = await this.queryAddressTokenBalance(tokenAddress, walletAddress, params.apiKey);
     const balance = BigInt(rawBalance.toString());
 
-    const isPathUsd = tokenAddress.toLowerCase() === PATH_USD_ADDRESS.toLowerCase();
+    const isPathUsd = tokenAddress.toLowerCase() === pathUsdAddress.toLowerCase();
     const gasLimitBig = BigInt(params.gasLimit ?? 700_000);
     const maxFeePerGasBig = BigInt(params.eip1559?.maxFeePerGas ?? 20_000_000_000);
     // 75% buffer on top of gasLimit × maxFeePerGas to cover actual on-chain gas variance
@@ -454,7 +460,7 @@ export class Tempo extends AbstractEthLikeNewCoins {
     const txBuilder = this.getTransactionBuilder() as unknown as Tip20TransactionBuilder;
     txBuilder
       .addOperation({ token: tokenAddress, to: params.recoveryDestination, amount: sweepAmountHuman })
-      .feeToken(PATH_USD_ADDRESS)
+      .feeToken(pathUsdAddress)
       .nonce(nonce)
       .gas(gasLimitBig)
       .maxFeePerGas(maxFeePerGasBig)
