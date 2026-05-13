@@ -78,11 +78,6 @@ export class Transaction extends BaseTransaction {
     }
 
     switch (this._xrpTransaction.TransactionType) {
-      case XrpTransactionType.AccountDelete:
-        txData.destination = this._xrpTransaction.Destination;
-        txData.destinationTag = this._xrpTransaction.DestinationTag;
-        return txData;
-
       case XrpTransactionType.Payment:
         txData.destination = this._xrpTransaction.Destination;
         txData.destinationTag = this._xrpTransaction.DestinationTag;
@@ -184,8 +179,6 @@ export class Transaction extends BaseTransaction {
 
   explainTransaction(): TransactionExplanation {
     switch (this._xrpTransaction.TransactionType) {
-      case XrpTransactionType.AccountDelete:
-        return this.explainAccountDeleteTransaction();
       case XrpTransactionType.Payment:
         return this.explainPaymentTransaction();
       case XrpTransactionType.AccountSet:
@@ -195,29 +188,6 @@ export class Transaction extends BaseTransaction {
       default:
         throw new Error('Unsupported transaction type');
     }
-  }
-
-  private explainAccountDeleteTransaction(): BaseTransactionExplanation {
-    const tx = this._xrpTransaction as xrpl.AccountDelete;
-    const address = utils.normalizeAddress({ address: tx.Destination, destinationTag: tx.DestinationTag });
-
-    return {
-      displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
-      id: this._id as string,
-      changeOutputs: [],
-      outputAmount: '0', // full balance is swept; exact amount unknown at build time
-      changeAmount: 0,
-      outputs: [
-        {
-          address,
-          amount: '0',
-        },
-      ],
-      fee: {
-        fee: tx.Fee as string,
-        feeRate: undefined,
-      },
-    };
   }
 
   private explainPaymentTransaction(): BaseTransactionExplanation {
@@ -342,9 +312,6 @@ export class Transaction extends BaseTransaction {
     this._id = this.calculateIdFromRawTx(txHex);
 
     switch (this._xrpTransaction.TransactionType) {
-      case XrpTransactionType.AccountDelete:
-        this.setTransactionType(TransactionType.AccountDelete);
-        break;
       case XrpTransactionType.SignerListSet:
         this.setTransactionType(TransactionType.WalletInitialization);
         break;
@@ -372,21 +339,6 @@ export class Transaction extends BaseTransaction {
     if (!this._xrpTransaction) {
       return;
     }
-    const coin = this._coinConfig.name;
-
-    if (this._xrpTransaction.TransactionType === XrpTransactionType.AccountDelete) {
-      const { Account, Destination, DestinationTag } = this._xrpTransaction;
-      // For AccountDelete the exact amount swept is unknown at build time (full balance minus fee).
-      // We record '0' as a placeholder; the actual amount is determined on-chain.
-      this.inputs.push({ address: Account, value: '0', coin });
-      this.outputs.push({
-        address: utils.normalizeAddress({ address: Destination, destinationTag: DestinationTag }),
-        value: '0',
-        coin,
-      });
-      return;
-    }
-
     if (this._xrpTransaction.TransactionType === XrpTransactionType.Payment) {
       let value: string;
       const { Account, Destination, Amount, DestinationTag } = this._xrpTransaction;
@@ -395,6 +347,7 @@ export class Transaction extends BaseTransaction {
       } else {
         value = Amount.value;
       }
+      const coin = this._coinConfig.name;
       this.inputs.push({
         address: Account,
         value,
