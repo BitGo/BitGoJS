@@ -1564,7 +1564,7 @@ export const ofcCoins = [
     ...SOL_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
   ]),
-  ofcsolToken('d398e9e1-1a3e-4307-9e31-e1dbc03aa0f0', 'ofcsol:sofid', 'SOFID', 6, UnderlyingAsset['sol:sofid'], [
+  ofcsolToken('d398e9e1-1a3e-4307-9e31-e1dbc03aa0f0', 'ofcsol:sofid', 'SoFiUSD', 6, UnderlyingAsset['sol:sofid'], [
     ...SOL_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
   ]),
