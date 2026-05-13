@@ -7,8 +7,9 @@ export function validateTxRequestApiVersion(wallet: IWallet, requestedApiVersion
     return;
   }
   if (wallet.baseCoin.getMPCAlgorithm() === 'ecdsa') {
-    // ecdsa wallets can only use full, even if they are hot wallets
     assert(requestedApiVersion === 'full', 'For ECDSA tss wallets, parameter `apiVersion` must be `full`.');
+  } else if (wallet.multisigTypeVersion() === 'MPCv2') {
+    assert(requestedApiVersion === 'full', 'For EdDSA MPCv2 tss wallets, parameter `apiVersion` must be `full`.');
   } else if (wallet.type() !== 'hot') {
     // all other cases should use full!
     assert(
@@ -30,10 +31,10 @@ export function getTxRequestApiVersion(wallet: IWallet, requestedApiVersion?: Ap
     validateTxRequestApiVersion(wallet, requestedApiVersion);
     return requestedApiVersion;
   }
-  if (wallet.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+  if (wallet.baseCoin.getMPCAlgorithm() === 'ecdsa' || wallet.multisigTypeVersion() === 'MPCv2') {
     return 'full';
   } else if (wallet.type() === 'hot') {
-    // default to lite for hot eddsa tss wallets
+    // default to lite for hot eddsa tss wallets (v1 only)
     return 'lite';
   } else {
     // default to full for all other wallet types

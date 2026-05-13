@@ -251,12 +251,12 @@ export const ofcCoins = [
     UnderlyingAsset.HYPEEVM,
     CoinKind.CRYPTO
   ),
-  ofc('dc825481-0a15-44ab-84e6-6f182b13eb87', 'ofcxtzevm', 'XTZ EVM', 6, UnderlyingAsset.XTZEVM, CoinKind.CRYPTO),
+  ofc('dc825481-0a15-44ab-84e6-6f182b13eb87', 'ofcxtzevm', 'XTZ EVM', 18, UnderlyingAsset.XTZEVM, CoinKind.CRYPTO),
   tofc(
     '0e42884b-c01e-461b-b108-1ed0d0fbbd7b',
     'ofctxtzevm',
     'XTZ EVM Testnet',
-    6,
+    18,
     UnderlyingAsset.XTZEVM,
     CoinKind.CRYPTO
   ),
@@ -2412,6 +2412,13 @@ export const ofcCoins = [
     'Test Chainlink',
     18,
     UnderlyingAsset['avaxc:link']
+  ),
+  tofcAvaxErc20(
+    '75c2f266-e1a1-4ba0-b7b5-ca6d701d8b70',
+    'ofctavaxc:tkula',
+    'Test KULA',
+    18,
+    UnderlyingAsset['tavaxc:tkula']
   ),
   ofcAvaxErc20(
     '49608052-e4ea-4623-9732-595368ff053b',
@@ -4575,6 +4582,30 @@ export const ofcCoins = [
   ),
   ofcBscToken('d08948fa-0378-4736-a5ab-0b4ec9182b8a', 'ofcbsc:xter', 'Xterio', 18, UnderlyingAsset['bsc:xter']),
   ofcBscToken('b73d634a-a60d-4e2d-835b-3d8a527979b1', 'ofcbsc:usdau', 'USD GOLD', 18, UnderlyingAsset['bsc:usdau']),
+  // Ondo Test Tokens OFC (BSC)
+  ofcBscToken(
+    '389e7bc3-fb66-4660-a2e9-ae2082ed42df',
+    'ofcbsc:t-bincon',
+    't-BINCon',
+    18,
+    UnderlyingAsset['bsc:t-bincon']
+  ),
+  ofcBscToken('02f28844-b269-41c7-a9b6-af4a50287f2a', 'ofcbsc:t-iauon', 't-IAUon', 18, UnderlyingAsset['bsc:t-iauon']),
+  ofcBscToken(
+    'dc4e019d-d836-47b9-ab1a-3d189da9dfca',
+    'ofcbsc:t-iemgon',
+    't-IEMGon',
+    18,
+    UnderlyingAsset['bsc:t-iemgon']
+  ),
+  ofcBscToken(
+    'ee2e49ce-8655-46bd-857d-e2dc4922f368',
+    'ofcbsc:t-ibiton',
+    't-IBITon',
+    18,
+    UnderlyingAsset['bsc:t-ibiton']
+  ),
+  ofcBscToken('414e67d8-5449-477d-b3d4-df50ca543bf3', 'ofcbsc:t-ivvon', 't-IVVon', 18, UnderlyingAsset['bsc:t-ivvon']),
   // New Arbitrum OFC token
   ofcArbethErc20(
     'd58490c0-07d2-4642-8af7-efa2453392e9',
@@ -4582,6 +4613,13 @@ export const ofcCoins = [
     'Everclear',
     18,
     UnderlyingAsset['arbeth:next']
+  ),
+  ofcArbethErc20(
+    'db174d8d-b074-4682-ad77-bb42d0a1f768',
+    'ofcarbeth:week',
+    'WEEK_DEFI',
+    18,
+    UnderlyingAsset['arbeth:week']
   ),
   // New SOL OFC tokens
   ofcsolToken(

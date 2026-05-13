@@ -15,6 +15,7 @@ import {
   common,
   createSharedDataProof,
   Ed25519BIP32,
+  EDDSAUtils,
   Eddsa,
   EncryptedSignerShareType,
   ExchangeCommitmentResponse,
@@ -1130,10 +1131,23 @@ describe('TSS Utils:', async function () {
       coldWalletTssUtils.supportedTxRequestVersions().should.deepEqual(['full']);
     });
     it('should return full and lite for hot wallets', async function () {
-      const hotWallet = new Wallet(bitgo, baseCoin, { multisigType: 'tss', type: 'hot' });
+      const hotWallet = new Wallet(bitgo, baseCoin, {
+        multisigType: 'tss',
+        multisigTypeVersion: undefined,
+        type: 'hot',
+      });
       const hotTssUtils = new TssUtils(bitgo, baseCoin, hotWallet);
       const supportedTxRequestVersions = hotTssUtils.supportedTxRequestVersions();
       supportedTxRequestVersions.should.deepEqual(['lite', 'full']);
+    });
+    it('should return only full for hot MPCv2 wallets', function () {
+      const hotMPCv2Wallet = new Wallet(bitgo, baseCoin, {
+        multisigType: 'tss',
+        multisigTypeVersion: 'MPCv2',
+        type: 'hot',
+      });
+      const mpcv2TssUtils = new EDDSAUtils.EddsaMPCv2Utils(bitgo, baseCoin, hotMPCv2Wallet);
+      mpcv2TssUtils.supportedTxRequestVersions().should.deepEqual(['full']);
     });
     it('should return empty for trading wallets', function () {
       const tradingWallets = new Wallet(bitgo, baseCoin, { multisigType: 'tss', type: 'trading' });

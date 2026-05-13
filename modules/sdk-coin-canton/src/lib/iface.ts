@@ -21,6 +21,7 @@ export interface TxData {
   receiver: string;
   amount: string;
   acknowledgeData?: TransferAcknowledge;
+  cosignDelegationProposalData?: CosignDelegationProposal;
   memoId?: string;
   token?: string;
 }
@@ -112,6 +113,7 @@ export interface PartySignature {
 
 export interface TransactionBroadcastData {
   acknowledgeData?: TransferAcknowledge;
+  cosignDelegationProposalData?: CosignDelegationProposal;
   prepareCommandResponse?: CantonPrepareCommandResponse;
   txType: string;
   preparedTransaction?: string;
@@ -149,6 +151,13 @@ export interface TransferAcknowledge {
   amount: number;
   expiryEpoch: number;
   updateId: string;
+}
+
+export interface CosignDelegationProposal {
+  contractId: string;
+  operatorId: string;
+  updateId: string;
+  packageName?: string;
 }
 
 export interface CantonTransferRequest {

@@ -203,6 +203,10 @@ export enum CoinFeature {
    */
   UNSPENT_MODEL = 'unspent-model',
   /*
+   * This coin supports merging multiple UTXO-like holdings into fewer outputs.
+   */
+  MERGE_UTXOS = 'merge-utxos',
+  /*
    * Does this coin align with the Lightning Network model?
    *
    * These are typically Lightning Network on unspent model coins, such as BTC and LBTC.
@@ -559,6 +563,18 @@ export enum CoinFeature {
    * This coin allows negative fees in transactions
    */
   ALLOWS_NEGATIVE_FEE = 'allows-negative-fee',
+
+  /**
+   * This token uses fully homomorphic encryption (FHE) for confidential transfers (ERC-7984).
+   * Balances are stored as encrypted ciphertexts; transfers use confidentialTransfer() instead of transfer().
+   */
+  CONFIDENTIAL_TRANSFER = 'confidential-transfer',
+
+  /**
+   * Reading the balance of this token requires the wallet owner to delegate decryption access
+   * to BitGo via ACL.delegateForUserDecryption() before balances can be displayed.
+   */
+  REQUIRES_DECRYPTION_DELEGATION = 'requires-decryption-delegation',
 }
 
 /**
@@ -1908,6 +1924,12 @@ export enum UnderlyingAsset {
   // Robinhood Chain mainnet ERC-20 tokens
   'hoodeth:tsla' = 'hoodeth:tsla',
   'hoodeth:usdg' = 'hoodeth:usdg',
+  'hemieth:hemi' = 'hemieth:hemi',
+  'hemieth:hemibtc' = 'hemieth:hemibtc',
+  'usdt0:stable' = 'usdt0:stable',
+  'hppeth:hpp' = 'hppeth:hpp',
+  'unieth:usdc' = 'unieth:usdc',
+  'unieth:uni' = 'unieth:uni',
   THKD = 'thkd',
   THUNDER = 'thunder',
   TIO = 'tio',
@@ -2496,6 +2518,12 @@ export enum UnderlyingAsset {
   'eth:prompt' = 'eth:prompt',
   'eth:yb' = 'eth:yb',
   'eth:btr' = 'eth:btr',
+  // Ondo Test Tokens (Mainnet Gated)
+  'eth:t-bincon' = 'eth:t-bincon',
+  'eth:t-iauon' = 'eth:t-iauon',
+  'eth:t-iemgon' = 'eth:t-iemgon',
+  'eth:t-ibiton' = 'eth:t-ibiton',
+  'eth:t-ivvon' = 'eth:t-ivvon',
   'morph:usdc' = 'morph:usdc',
   'morpheth:usdc' = 'morpheth:usdc',
   'morph:usdt' = 'morph:usdt',
@@ -2600,6 +2628,7 @@ export enum UnderlyingAsset {
   'tavaxc:bitgo' = 'tavaxc:bitgo',
   'tavaxc:stavax' = 'tavaxc:stavax',
   'tavaxc:rtest' = 'tavaxc:rtest',
+  'tavaxc:tkula' = 'tavaxc:tkula',
   'avaxc:usdc-e' = 'avaxc:usdc-e',
   'avaxc:usdt-e' = 'avaxc:usdt-e',
   // Begin FTX missing AVAXC tokens
@@ -3002,6 +3031,12 @@ export enum UnderlyingAsset {
   'bsc:esports' = 'bsc:esports',
   'bsc:xter' = 'bsc:xter',
   'bsc:usdau' = 'bsc:usdau',
+  // Ondo Test Tokens (Mainnet Gated)
+  'bsc:t-bincon' = 'bsc:t-bincon',
+  'bsc:t-iauon' = 'bsc:t-iauon',
+  'bsc:t-iemgon' = 'bsc:t-iemgon',
+  'bsc:t-ibiton' = 'bsc:t-ibiton',
+  'bsc:t-ivvon' = 'bsc:t-ivvon',
 
   // BSC NFTs
   // generic NFTs
@@ -3096,6 +3131,7 @@ export enum UnderlyingAsset {
   'arbeth:testamzn' = 'arbeth:testamzn',
   'arbeth:testpltr' = 'arbeth:testpltr',
   'arbeth:testnflx' = 'arbeth:testnflx',
+  'arbeth:week' = 'arbeth:week',
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
@@ -3151,6 +3187,7 @@ export enum UnderlyingAsset {
   'tbaseeth:usd1cx' = 'tbaseeth:usd1cx',
   'tbaseeth:ctusd1cx' = 'tbaseeth:ctusd1cx',
   'tbaseeth:tusdl' = 'tbaseeth:tusdl',
+  'tbaseeth:ttbills' = 'tbaseeth:ttbills',
 
   // Og mainnet tokens
   'og:wog' = 'og:wog',
@@ -3798,6 +3835,12 @@ export enum UnderlyingAsset {
   'eth:drv' = 'eth:drv',
   'eth:prn' = 'eth:prn',
   'eth:zama' = 'eth:zama',
+  // ERC-7984 confidential tokens (Zama fhEVM - mainnet, contract addresses TBD pending Zama mainnet launch)
+  'eth:ctkn' = 'eth:ctkn',
+  'eth:cusdt' = 'eth:cusdt',
+  // ERC-7984 confidential tokens (Zama fhEVM - testnet / hteth)
+  'hteth:ctkn' = 'hteth:ctkn',
+  'hteth:cusdt' = 'hteth:cusdt',
   'eth:mony' = 'eth:mony',
   'eth:architectgvi' = 'eth:architectgvi',
   'eth:zk' = 'eth:zk',

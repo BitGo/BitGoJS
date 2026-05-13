@@ -3,7 +3,9 @@ import { isLeft } from 'fp-ts/Either';
 import * as t from 'io-ts';
 
 export const ReducedKeyShareType = t.type({
+  keyShare: t.array(t.number),
   pub: t.array(t.number),
+  rootChainCode: t.array(t.number),
 });
 
 export type EddsaReducedKeyShare = t.TypeOf<typeof ReducedKeyShareType>;

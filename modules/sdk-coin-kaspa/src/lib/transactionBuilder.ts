@@ -1,4 +1,10 @@
-import { BaseTransactionBuilder, BaseTransaction, BaseKey, SigningError } from '@bitgo/sdk-core';
+import {
+  BaseTransactionBuilder,
+  BaseTransaction,
+  BaseKey,
+  PublicKey as BasePublicKey,
+  SigningError,
+} from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { Transaction } from './transaction';
@@ -7,12 +13,18 @@ import { isValidKaspaAddress } from './utils';
 import { KeyPair } from './keyPair';
 import { DEFAULT_FEE, TX_VERSION } from './constants';
 
+interface KaspaSignature {
+  publicKey: BasePublicKey;
+  signature: Buffer;
+}
+
 export class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   protected _inputs: KaspaUtxoInput[] = [];
   protected _outputs: KaspaTransactionOutput[] = [];
   protected _fee: string = DEFAULT_FEE;
   protected _fromAddress = '';
+  protected _signatures: KaspaSignature[] = [];
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -78,6 +90,19 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  /**
+   * Add an externally-produced signature (from TSS/MPC signing) to the transaction.
+   * The signature will be applied to all inputs during build().
+   *
+   * This follows the same pattern as ADA's TransactionBuilder.addSignature().
+   *
+   * @param publicKey The compressed secp256k1 public key that produced the signature
+   * @param signature The 64-byte Schnorr signature buffer
+   */
+  addSignature(publicKey: BasePublicKey, signature: Buffer): void {
+    this._signatures.push({ publicKey, signature });
+  }
+
   /** @inheritDoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = Transaction.fromHex((this as any)._coinConfig?.name || 'kaspa', rawTransaction);
@@ -101,6 +126,12 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     };
 
     this._transaction = new Transaction((this as any)._coinConfig?.name || 'kaspa', txData);
+
+    // Apply any externally-produced signatures (from TSS/MPC)
+    for (const sig of this._signatures) {
+      this._transaction.addSignature(sig.publicKey.pub, sig.signature);
+    }
+
     return this._transaction;
   }
 

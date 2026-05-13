@@ -10,6 +10,7 @@ describe('txRequest utils', () => {
           baseCoin: { getMPCAlgorithm: () => 'ecdsa' },
           type: () => 'hot',
           multisigType: () => 'tss',
+          multisigTypeVersion: () => undefined,
         } as any as IWallet,
         requestedApiVersion: 'lite',
         expectedApiVersion: '',
@@ -20,6 +21,7 @@ describe('txRequest utils', () => {
           baseCoin: { getMPCAlgorithm: () => 'eddsa' },
           type: () => 'cold',
           multisigType: () => 'tss',
+          multisigTypeVersion: () => undefined,
         } as any as IWallet,
         requestedApiVersion: 'lite',
         expectedApiVersion: '',
@@ -30,9 +32,32 @@ describe('txRequest utils', () => {
           baseCoin: { getMPCAlgorithm: () => 'eddsa' },
           type: () => 'hot',
           multisigType: () => 'tss',
+          multisigTypeVersion: () => undefined,
         } as any as IWallet,
         requestedApiVersion: undefined,
         expectedApiVersion: 'lite',
+        expectedErrorMessage: '',
+      },
+      {
+        wallet: {
+          baseCoin: { getMPCAlgorithm: () => 'eddsa' },
+          type: () => 'hot',
+          multisigType: () => 'tss',
+          multisigTypeVersion: () => 'MPCv2',
+        } as any as IWallet,
+        requestedApiVersion: 'lite' as ApiVersion,
+        expectedApiVersion: '',
+        expectedErrorMessage: 'For EdDSA MPCv2 tss wallets, parameter `apiVersion` must be `full`.',
+      },
+      {
+        wallet: {
+          baseCoin: { getMPCAlgorithm: () => 'eddsa' },
+          type: () => 'hot',
+          multisigType: () => 'tss',
+          multisigTypeVersion: () => 'MPCv2',
+        } as any as IWallet,
+        requestedApiVersion: undefined,
+        expectedApiVersion: 'full',
         expectedErrorMessage: '',
       },
       ...['hot', 'cold', 'custodial', 'backing'].map((walletType) => {
@@ -41,6 +66,7 @@ describe('txRequest utils', () => {
             baseCoin: { getMPCAlgorithm: () => 'ecdsa' },
             type: () => walletType,
             multisigType: () => 'tss',
+            multisigTypeVersion: () => undefined,
           } as any as IWallet,
           requestedApiVersion: 'full',
           expectedApiVersion: 'full',
@@ -54,6 +80,7 @@ describe('txRequest utils', () => {
             baseCoin: { getMPCAlgorithm: () => 'ecdsa' },
             type: () => walletType,
             multisigType: () => 'tss',
+            multisigTypeVersion: () => undefined,
           } as any as IWallet,
           requestedApiVersion: undefined,
           expectedApiVersion: 'full',
@@ -67,6 +94,7 @@ describe('txRequest utils', () => {
             baseCoin: { getMPCAlgorithm: () => 'eddsa' },
             type: () => walletType,
             multisigType: () => 'tss',
+            multisigTypeVersion: () => undefined,
           } as any as IWallet,
           requestedApiVersion: 'full',
           expectedApiVersion: 'full',
@@ -80,11 +108,57 @@ describe('txRequest utils', () => {
             baseCoin: { getMPCAlgorithm: () => 'eddsa' },
             type: () => walletType,
             multisigType: () => 'tss',
+            multisigTypeVersion: () => undefined,
           } as any as IWallet,
           requestedApiVersion: undefined,
           expectedApiVersion: 'full',
           expectedErrorMessage: '',
           shouldThrow: false,
+        };
+      }),
+      // EdDSA MPCv2: all wallet types + 'full' explicitly → returns 'full'
+      ...['hot', 'cold', 'custodial', 'backing'].map((walletType) => {
+        return {
+          wallet: {
+            baseCoin: { getMPCAlgorithm: () => 'eddsa' },
+            type: () => walletType,
+            multisigType: () => 'tss',
+            multisigTypeVersion: () => 'MPCv2',
+          } as any as IWallet,
+          requestedApiVersion: 'full' as ApiVersion,
+          expectedApiVersion: 'full',
+          expectedErrorMessage: '',
+          shouldThrow: false,
+        };
+      }),
+      // EdDSA MPCv2: non-hot wallet types + undefined → defaults to 'full'
+      ...['cold', 'custodial', 'backing'].map((walletType) => {
+        return {
+          wallet: {
+            baseCoin: { getMPCAlgorithm: () => 'eddsa' },
+            type: () => walletType,
+            multisigType: () => 'tss',
+            multisigTypeVersion: () => 'MPCv2',
+          } as any as IWallet,
+          requestedApiVersion: undefined,
+          expectedApiVersion: 'full',
+          expectedErrorMessage: '',
+          shouldThrow: false,
+        };
+      }),
+      // EdDSA MPCv2: non-hot wallet types + 'lite' → throws EdDSA MPCv2 error
+      ...['cold', 'custodial', 'backing'].map((walletType) => {
+        return {
+          wallet: {
+            baseCoin: { getMPCAlgorithm: () => 'eddsa' },
+            type: () => walletType,
+            multisigType: () => 'tss',
+            multisigTypeVersion: () => 'MPCv2',
+          } as any as IWallet,
+          requestedApiVersion: 'lite' as ApiVersion,
+          expectedApiVersion: '',
+          expectedErrorMessage: 'For EdDSA MPCv2 tss wallets, parameter `apiVersion` must be `full`.',
+          shouldThrow: true,
         };
       }),
     ];

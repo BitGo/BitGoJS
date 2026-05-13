@@ -46,7 +46,7 @@ export const ofcErc20Coins = [
     undefined,
     undefined,
     undefined,
-    undefined,
+    true,
     'hoodeth'
   ),
   ofcerc20(
@@ -60,8 +60,92 @@ export const ofcErc20Coins = [
     undefined,
     undefined,
     undefined,
-    undefined,
+    true,
     'hoodeth'
+  ),
+  ofcerc20(
+    '66c849fa-ee81-4932-8ab7-d6b5d1f5b8da',
+    'ofchemieth:hemi',
+    'Hemi',
+    18,
+    UnderlyingAsset['hemieth:hemi'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    true,
+    'hemieth'
+  ),
+  ofcerc20(
+    '171cbe30-d8e7-445e-bb92-9d7377e471d6',
+    'ofchemieth:hemibtc',
+    'Hemi Bitcoin',
+    8,
+    UnderlyingAsset['hemieth:hemibtc'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    true,
+    'hemieth'
+  ),
+  ofcerc20(
+    '4abab5cd-b20a-4752-86f6-ec9d89c833c5',
+    'ofcusdt0:stable',
+    'STABLE',
+    18,
+    UnderlyingAsset['usdt0:stable'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    true,
+    'usdt0'
+  ),
+  ofcerc20(
+    'e9fd4c3c-d395-4441-bde0-374a47fe61cd',
+    'ofchppeth:hpp',
+    'HousePartyProtocol',
+    18,
+    UnderlyingAsset['hppeth:hpp'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    true,
+    'hppeth'
+  ),
+  ofcerc20(
+    '47255440-fcad-4e34-93a5-531d55688423',
+    'ofcunieth:usdc',
+    'USDC',
+    6,
+    UnderlyingAsset['unieth:usdc'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    true,
+    'unieth'
+  ),
+  ofcerc20(
+    '46fe479e-a4eb-47dc-a0a2-3753310859f3',
+    'ofcunieth:uni',
+    'Uniswap',
+    18,
+    UnderlyingAsset['unieth:uni'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    true,
+    'unieth'
   ),
 
   ofcerc20('8a73d170-28c1-48c9-8d3c-c7ea374f4414', 'ofcband', 'Band Protocol', 18, UnderlyingAsset.BAND),
@@ -4145,6 +4229,42 @@ export const ofcErc20Coins = [
     true,
     'chiliz'
   ),
+  // Ondo Test Tokens OFC
+  ofcerc20(
+    'f0ab07ba-319e-453b-9fb1-b1a4d1a4612b',
+    'ofceth:t-bincon',
+    't-BINCon',
+    18,
+    underlyingAssetForSymbol('eth:t-bincon')
+  ),
+  ofcerc20(
+    'b6824fb1-c363-4c7f-81aa-0822824338d0',
+    'ofceth:t-iauon',
+    't-IAUon',
+    18,
+    underlyingAssetForSymbol('eth:t-iauon')
+  ),
+  ofcerc20(
+    'bed582a6-e707-482c-b4bc-6111342b4e04',
+    'ofceth:t-iemgon',
+    't-IEMGon',
+    18,
+    underlyingAssetForSymbol('eth:t-iemgon')
+  ),
+  ofcerc20(
+    'd50e00a6-5f4f-42b2-9445-2cf2b1681abd',
+    'ofceth:t-ibiton',
+    't-IBITon',
+    18,
+    underlyingAssetForSymbol('eth:t-ibiton')
+  ),
+  ofcerc20(
+    '4beeecb7-a658-4463-be7c-d4797b499d9c',
+    'ofceth:t-ivvon',
+    't-IVVon',
+    18,
+    underlyingAssetForSymbol('eth:t-ivvon')
+  ),
 ];
 
 export const tOfcErc20Coins = [
@@ -6478,6 +6598,20 @@ export const tOfcErc20Coins = [
     UnderlyingAsset['tbaseeth:tusdl'],
     undefined,
     [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'tbaseeth'
+  ),
+  tofcerc20(
+    'db419053-4226-4dd3-8fce-f0f2c28fafaa',
+    'ofctbaseeth:ttbills',
+    'Test TBILLS',
+    6,
+    UnderlyingAsset['tbaseeth:ttbills'],
+    undefined,
+    undefined,
     undefined,
     undefined,
     undefined,

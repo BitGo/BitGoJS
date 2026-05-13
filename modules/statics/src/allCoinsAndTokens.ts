@@ -72,6 +72,7 @@ import { nep141Tokens } from './coins/nep141Tokens';
 import { vetTokens } from './coins/vetTokens';
 import { cosmosTokens } from './coins/cosmosTokens';
 import { jettonTokens } from './coins/jettonTokens';
+import { erc7984Tokens } from './coins/erc7984Tokens';
 import { polyxTokens } from './coins/polyxTokens';
 import { cantonTokens } from './coins/cantonTokens';
 import { flrp } from './flrp';
@@ -164,6 +165,7 @@ export const allCoinsAndTokens = [
   ...botTokens,
   ...adaTokens,
   ...jettonTokens,
+  ...erc7984Tokens,
   ...polyxTokens,
   ...cantonTokens,
   avaxp(
@@ -403,7 +405,7 @@ export const allCoinsAndTokens = [
     'xtzevm',
     'XTZ EVM',
     Networks.main.xtzevm,
-    6,
+    18,
     UnderlyingAsset.XTZEVM,
     BaseUnit.ETH,
     [
@@ -421,7 +423,7 @@ export const allCoinsAndTokens = [
     'txtzevm',
     'Testnet XTZ EVM',
     Networks.test.xtzevm,
-    6,
+    18,
     UnderlyingAsset.XTZEVM,
     BaseUnit.ETH,
     [
@@ -1919,6 +1921,15 @@ export const allCoinsAndTokens = [
       CoinFeature.SUPPORTS_ERC20,
     ]
   ),
+  erc20Token(
+    '0b7ba3b6-1652-4c9c-9642-5f612e2d43b6',
+    'usdt0:stable',
+    'STABLE',
+    18,
+    '0x0000000000000000000000000000000000001003',
+    UnderlyingAsset['usdt0:stable'],
+    Networks.main.usdt0
+  ),
   account(
     'df01a650-3c8b-4182-a7cb-8ee7ad115c21',
     'xpl',
@@ -2503,6 +2514,24 @@ export const allCoinsAndTokens = [
       CoinFeature.SUPPORTS_ERC20,
     ]
   ),
+  erc20Token(
+    'dd54812d-c062-499d-bf19-d5914b3921e6',
+    'hemieth:hemi',
+    'Hemi',
+    18,
+    '0x99e3de3817f6081b2568208337ef83295b7f591d',
+    UnderlyingAsset['hemieth:hemi'],
+    Networks.main.hemieth
+  ),
+  erc20Token(
+    'b3b89e74-b441-4e90-a68f-ef6b5ffa7200',
+    'hemieth:hemibtc',
+    'Hemi Bitcoin',
+    8,
+    '0xaa40c0c7644e0b2b224509571e10ad20d9c4ef28',
+    UnderlyingAsset['hemieth:hemibtc'],
+    Networks.main.hemieth
+  ),
   account(
     'd055d442-03f1-4d24-b61c-5312e480e378',
     'bobaeth',
@@ -2860,6 +2889,24 @@ export const allCoinsAndTokens = [
     '',
     'TUniETH'
   ),
+  erc20Token(
+    'd81ae32a-fa25-4a8b-94cc-cb05c90e59f1',
+    'unieth:usdc',
+    'USDC',
+    6,
+    '0x078d782b760474a361dda0af3839290b0ef57ad6',
+    UnderlyingAsset['unieth:usdc'],
+    Networks.main.unieth
+  ),
+  erc20Token(
+    '28ce84a6-05cd-4b2b-a691-f505411c129c',
+    'unieth:uni',
+    'Uniswap',
+    18,
+    '0x8f187aa05619a017077f5308904739877ce9ea21',
+    UnderlyingAsset['unieth:uni'],
+    Networks.main.unieth
+  ),
   account(
     'd68be88e-9d17-404c-ba7f-08aba1844437',
     'hppeth',
@@ -2905,6 +2952,15 @@ export const allCoinsAndTokens = [
     KeyCurve.Secp256k1,
     '',
     'THppETH'
+  ),
+  erc20Token(
+    '7dadee35-7971-4d0e-bb25-cc57ae795c9d',
+    'hppeth:hpp',
+    'HousePartyProtocol',
+    18,
+    '0xb48334e7938367bc24fe1f19000d6f06c622e6c7',
+    UnderlyingAsset['hppeth:hpp'],
+    Networks.main.hppeth
   ),
   account(
     'f0e3aa10-8e76-483c-ad4d-35aefb74b77b',
@@ -3485,7 +3541,7 @@ export const allCoinsAndTokens = [
     'Testnet Canton Coin',
     Networks.test.canton,
     UnderlyingAsset.CANTON,
-    [...CANTON_FEATURES, CoinFeature.UNSPENT_MODEL],
+    [...CANTON_FEATURES, CoinFeature.UNSPENT_MODEL, CoinFeature.MERGE_UTXOS],
     KeyCurve.Ed25519
   ),
   gasTankAccount(
@@ -3863,6 +3919,15 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['tbaseeth:tusdl'],
     Networks.test.basechain,
     [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
+  ),
+  erc20Token(
+    '941e3bbc-aaa4-4e06-837d-3511c9c09e5c',
+    'tbaseeth:ttbills',
+    'Test TBILLS',
+    6,
+    '0x52ae479d8b7ef0f3c27a3eb0072fb3995bdb77ca',
+    UnderlyingAsset['tbaseeth:ttbills'],
+    Networks.test.basechain
   ),
   erc20Token(
     '439fb12d-fddf-4749-8a33-b7c79fefc1b4',
@@ -6462,6 +6527,14 @@ export const allCoinsAndTokens = [
     18,
     '0x58b9cb810a68a7f3e1e4f8cb45d1b9b3c79705e8',
     UnderlyingAsset['arbeth:next']
+  ),
+  arbethErc20(
+    '15d3b597-f001-41f7-8fa3-2b6754d7878a',
+    'arbeth:week',
+    'WEEK_DEFI',
+    18,
+    '0x5ae39d492e06bedf5a261687af18c653e920a8a3',
+    UnderlyingAsset['arbeth:week']
   ),
 
   opethErc20(

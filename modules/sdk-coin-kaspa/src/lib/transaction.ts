@@ -25,6 +25,65 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
+   * Get the transaction fee in sompi.
+   * If fee was explicitly set, returns that. Otherwise computes from inputs - outputs.
+   */
+  get getFee(): string {
+    if (this._txData.fee) {
+      return this._txData.fee;
+    }
+    let totalIn = BigInt(0);
+    let totalOut = BigInt(0);
+    for (const input of this._txData.inputs) {
+      totalIn += BigInt(input.amount);
+    }
+    for (const output of this._txData.outputs) {
+      totalOut += BigInt(output.amount);
+    }
+    return (totalIn - totalOut).toString();
+  }
+
+  /**
+   * Returns the signable payload for TSS/MPC signing.
+   *
+   * For Kaspa, each input has its own sighash (BIP-143-like scheme with Blake2b).
+   * This returns the sighash for the first input, which is what TSS signs.
+   * For multi-input transactions, all inputs share the same key so the same
+   * Schnorr signature is applied to each input's individual sighash in addSignature().
+   *
+   * @see ADA's Transaction.signablePayload for the equivalent pattern
+   */
+  get signablePayload(): Buffer {
+    if (this._txData.inputs.length === 0) {
+      throw new Error('Cannot compute signablePayload: no inputs');
+    }
+    return computeKaspaSigningHash(this._txData, 0, SIGHASH_ALL);
+  }
+
+  /**
+   * Apply a Schnorr signature produced by TSS/MPC signing to all inputs.
+   *
+   * In TSS flow, the keyserver signs the first input's sighash. Since each input
+   * has a different sighash, we re-sign each input individually using the
+   * x-only public key derived from the compressed public key.
+   *
+   * @param publicKey compressed secp256k1 public key (33 bytes hex)
+   * @param signature 64-byte Schnorr signature buffer (from TSS)
+   * @param sigHashType SigHash type (default: SIGHASH_ALL)
+   */
+  addSignature(publicKey: string, signature: Buffer, sigHashType: number = SIGHASH_ALL): void {
+    if (signature.length !== 64) {
+      throw new Error(`Expected 64-byte Schnorr signature, got ${signature.length}`);
+    }
+
+    for (let i = 0; i < this._txData.inputs.length; i++) {
+      // Each input gets the same signature format: 64-byte sig + sighash type byte
+      const sigWithType = Buffer.concat([signature, Buffer.from([sigHashType])]);
+      this._txData.inputs[i].signatureScript = sigWithType.toString('hex');
+    }
+  }
+
+  /**
    * Sign all inputs with the given private key using Schnorr signatures.
    *
    * @param privateKey 32-byte private key buffer

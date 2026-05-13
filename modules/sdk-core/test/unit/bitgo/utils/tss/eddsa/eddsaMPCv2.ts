@@ -13,8 +13,8 @@ import {
   getSignatureShareRoundOne,
   getSignatureShareRoundTwo,
   getSignatureShareRoundThree,
-  verifyBitGoMessageRoundOne,
-  verifyBitGoMessageRoundTwo,
+  verifyPeerMessageRoundOne,
+  verifyPeerMessageRoundTwo,
 } from '../../../../../../src/bitgo/tss/eddsa/eddsaMPCv2';
 import { decodeWithCodec } from '../../../../../../src/bitgo/utils/codecs';
 import { generateGPGKeyPair } from '../../../../../../src/bitgo/utils/opengpgUtils';
@@ -96,7 +96,7 @@ describe('EdDSA MPS DSG helper functions', async () => {
     assert.ok(parsed.data.msg1.signature, 'msg1.signature should be set');
   });
 
-  it('verifyBitGoMessageRoundOne should verify a valid BitGo round-1 message', async () => {
+  it('verifyPeerMessageRoundOne should verify a valid BitGo round-1 message', async () => {
     const messageBuffer = Buffer.from(signableHex, 'hex');
     const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
     bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
@@ -108,13 +108,13 @@ describe('EdDSA MPS DSG helper functions', async () => {
       data: { msg1: bitgoSignedMsg1 },
     };
 
-    const result = await verifyBitGoMessageRoundOne(round1Output, bitgoGpgPubKey);
+    const result = await verifyPeerMessageRoundOne(round1Output, bitgoGpgPubKey);
 
     assert.strictEqual(result.from, MPCv2PartiesEnum.BITGO);
     assert.ok(result.payload.length > 0, 'payload should be non-empty');
   });
 
-  it('verifyBitGoMessageRoundOne should throw on a tampered message', async () => {
+  it('verifyPeerMessageRoundOne should throw on a tampered message', async () => {
     const round1Output: EddsaMPCv2SignatureShareRound1Output = {
       type: 'round1Output',
       data: {
@@ -125,7 +125,7 @@ describe('EdDSA MPS DSG helper functions', async () => {
       },
     };
 
-    await assert.rejects(verifyBitGoMessageRoundOne(round1Output, bitgoGpgPubKey), 'should throw on invalid signature');
+    await assert.rejects(verifyPeerMessageRoundOne(round1Output, bitgoGpgPubKey), 'should throw on invalid signature');
   });
 
   // ── Round 2 ─────────────────────────────────────────────────────────────────
@@ -141,7 +141,7 @@ describe('EdDSA MPS DSG helper functions', async () => {
     const bitgoMsg1 = bitgoDsg.getFirstMessage();
 
     const bitgoSignedMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg1.payload), bitgoGpgPrivKey);
-    const bitgoDeserializedMsg1 = await verifyBitGoMessageRoundOne(
+    const bitgoDeserializedMsg1 = await verifyPeerMessageRoundOne(
       { type: 'round1Output', data: { msg1: bitgoSignedMsg1 } },
       bitgoGpgPubKey
     );
@@ -173,7 +173,7 @@ describe('EdDSA MPS DSG helper functions', async () => {
     const bitgoMsg1 = bitgoDsg.getFirstMessage();
 
     const bitgoSignedMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg1.payload), bitgoGpgPrivKey);
-    const bitgoDeserializedMsg1 = await verifyBitGoMessageRoundOne(
+    const bitgoDeserializedMsg1 = await verifyPeerMessageRoundOne(
       { type: 'round1Output', data: { msg1: bitgoSignedMsg1 } },
       bitgoGpgPubKey
     );
@@ -198,7 +198,7 @@ describe('EdDSA MPS DSG helper functions', async () => {
     assert.ok(parsed.data.msg2.signature, 'msg2.signature should be set');
   });
 
-  it('verifyBitGoMessageRoundTwo should verify a valid BitGo round-2 message', async () => {
+  it('verifyPeerMessageRoundTwo should verify a valid BitGo round-2 message', async () => {
     const messageBuffer = Buffer.from(signableHex, 'hex');
     const userDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER);
     userDsg.initDsg(userKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
@@ -216,13 +216,13 @@ describe('EdDSA MPS DSG helper functions', async () => {
       data: { msg2: bitgoSignedMsg2 },
     };
 
-    const result = await verifyBitGoMessageRoundTwo(round2Output, bitgoGpgPubKey);
+    const result = await verifyPeerMessageRoundTwo(round2Output, bitgoGpgPubKey);
 
     assert.strictEqual(result.from, MPCv2PartiesEnum.BITGO);
     assert.ok(result.payload.length > 0, 'payload should be non-empty');
   });
 
-  it('verifyBitGoMessageRoundTwo should throw on a tampered message', async () => {
+  it('verifyPeerMessageRoundTwo should throw on a tampered message', async () => {
     const round2Output: EddsaMPCv2SignatureShareRound2Output = {
       type: 'round2Output',
       data: {
@@ -233,7 +233,7 @@ describe('EdDSA MPS DSG helper functions', async () => {
       },
     };
 
-    await assert.rejects(verifyBitGoMessageRoundTwo(round2Output, bitgoGpgPubKey), 'should throw on invalid signature');
+    await assert.rejects(verifyPeerMessageRoundTwo(round2Output, bitgoGpgPubKey), 'should throw on invalid signature');
   });
 
   // ── Round 3 ─────────────────────────────────────────────────────────────────
@@ -250,7 +250,7 @@ describe('EdDSA MPS DSG helper functions', async () => {
 
     // Advance to round 2
     const bitgoSignedMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg1.payload), bitgoGpgPrivKey);
-    const bitgoDeserializedMsg1 = await verifyBitGoMessageRoundOne(
+    const bitgoDeserializedMsg1 = await verifyPeerMessageRoundOne(
       { type: 'round1Output', data: { msg1: bitgoSignedMsg1 } },
       bitgoGpgPubKey
     );
@@ -258,7 +258,7 @@ describe('EdDSA MPS DSG helper functions', async () => {
 
     const [bitgoMsg2] = bitgoDsg.handleIncomingMessages([bitgoMsg1, userMsg1]);
     const bitgoSignedMsg2 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg2.payload), bitgoGpgPrivKey);
-    const bitgoDeserializedMsg2 = await verifyBitGoMessageRoundTwo(
+    const bitgoDeserializedMsg2 = await verifyPeerMessageRoundTwo(
       { type: 'round2Output', data: { msg2: bitgoSignedMsg2 } },
       bitgoGpgPubKey
     );
@@ -290,7 +290,7 @@ describe('EdDSA MPS DSG helper functions', async () => {
     const bitgoMsg1 = bitgoDsg.getFirstMessage();
 
     const bitgoSignedMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg1.payload), bitgoGpgPrivKey);
-    const bitgoDeserializedMsg1 = await verifyBitGoMessageRoundOne(
+    const bitgoDeserializedMsg1 = await verifyPeerMessageRoundOne(
       { type: 'round1Output', data: { msg1: bitgoSignedMsg1 } },
       bitgoGpgPubKey
     );
@@ -298,7 +298,7 @@ describe('EdDSA MPS DSG helper functions', async () => {
 
     const [bitgoMsg2] = bitgoDsg.handleIncomingMessages([bitgoMsg1, backupMsg1]);
     const bitgoSignedMsg2 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg2.payload), bitgoGpgPrivKey);
-    const bitgoDeserializedMsg2 = await verifyBitGoMessageRoundTwo(
+    const bitgoDeserializedMsg2 = await verifyPeerMessageRoundTwo(
       { type: 'round2Output', data: { msg2: bitgoSignedMsg2 } },
       bitgoGpgPubKey
     );

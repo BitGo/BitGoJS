@@ -9,6 +9,7 @@ import {
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   CantonPrepareCommandResponse,
+  CosignDelegationProposal,
   MultiHashSignature,
   PartySignature,
   PreparedTxnParsedInfo,
@@ -24,6 +25,7 @@ export class Transaction extends BaseTransaction {
   private _prepareCommand: CantonPrepareCommandResponse;
   private _signerFingerprint: string;
   private _acknowledgeData: TransferAcknowledge;
+  private _cosignDelegationProposalData: CosignDelegationProposal;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -43,6 +45,10 @@ export class Transaction extends BaseTransaction {
 
   set acknowledgeData(data: TransferAcknowledge) {
     this._acknowledgeData = data;
+  }
+
+  set cosignDelegationProposalData(data: CosignDelegationProposal) {
+    this._cosignDelegationProposalData = data;
   }
 
   get id(): string {
@@ -80,6 +86,17 @@ export class Transaction extends BaseTransaction {
         txType: TransactionType[this._type],
         submissionId: this.id,
         acknowledgeData: this._acknowledgeData,
+      };
+      return Buffer.from(JSON.stringify(minData)).toString('base64');
+    }
+    if (this._type === TransactionType.CosignDelegationProposal) {
+      if (!this._cosignDelegationProposalData) {
+        throw new InvalidTransactionError('CosignDelegationProposalData is not set');
+      }
+      const minData: TransactionBroadcastData = {
+        txType: TransactionType[this._type],
+        submissionId: this.id,
+        cosignDelegationProposalData: this._cosignDelegationProposalData,
       };
       return Buffer.from(JSON.stringify(minData)).toString('base64');
     }
@@ -144,6 +161,13 @@ export class Transaction extends BaseTransaction {
       result.acknowledgeData = this._acknowledgeData;
       return result;
     }
+    if (this._type === TransactionType.CosignDelegationProposal) {
+      if (!this._cosignDelegationProposalData) {
+        throw new InvalidTransactionError('CosignDelegationProposalData is not set');
+      }
+      result.cosignDelegationProposalData = this._cosignDelegationProposalData;
+      return result;
+    }
     if (!this._prepareCommand || !this._prepareCommand.preparedTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
@@ -167,7 +191,7 @@ export class Transaction extends BaseTransaction {
   }
 
   get signablePayload(): Buffer {
-    if (this._type === TransactionType.TransferAcknowledge) {
+    if (this._type === TransactionType.TransferAcknowledge || this._type === TransactionType.CosignDelegationProposal) {
       return Buffer.from(DUMMY_HASH, 'base64');
     }
     if (!this._prepareCommand) {
@@ -181,7 +205,15 @@ export class Transaction extends BaseTransaction {
       const decoded: TransactionBroadcastData = JSON.parse(Buffer.from(rawTx, 'base64').toString('utf8'));
       this.id = decoded.submissionId;
       this.transactionType = TransactionType[decoded.txType];
-      if (this.type !== TransactionType.TransferAcknowledge) {
+      if (this.type === TransactionType.TransferAcknowledge) {
+        if (decoded.acknowledgeData) {
+          this.acknowledgeData = decoded.acknowledgeData;
+        }
+      } else if (this.type === TransactionType.CosignDelegationProposal) {
+        if (decoded.cosignDelegationProposalData) {
+          this.cosignDelegationProposalData = decoded.cosignDelegationProposalData;
+        }
+      } else {
         if (decoded.prepareCommandResponse) {
           this.prepareCommand = decoded.prepareCommandResponse;
           this.loadInputsAndOutputs();
@@ -189,10 +221,6 @@ export class Transaction extends BaseTransaction {
         if (decoded.partySignatures && decoded.partySignatures.signatures.length > 0) {
           this.signerFingerprint = decoded.partySignatures.signatures[0].party.split('::')[1];
           this.signatures = decoded.partySignatures.signatures[0].signatures[0].signature;
-        }
-      } else {
-        if (decoded.acknowledgeData) {
-          this.acknowledgeData = decoded.acknowledgeData;
         }
       }
     } catch (e) {
@@ -241,6 +269,7 @@ export class Transaction extends BaseTransaction {
     let inputAmount = '0';
     let outputAmount = '0';
     switch (this.type) {
+      case TransactionType.CosignDelegationAccept:
       case TransactionType.TransferAccept:
       case TransactionType.TransferReject: {
         const txData = this.toJson();

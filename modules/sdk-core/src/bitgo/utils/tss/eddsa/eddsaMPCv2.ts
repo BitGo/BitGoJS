@@ -21,8 +21,8 @@ import {
   getSignatureShareRoundOne,
   getSignatureShareRoundTwo,
   getSignatureShareRoundThree,
-  verifyBitGoMessageRoundOne,
-  verifyBitGoMessageRoundTwo,
+  verifyPeerMessageRoundOne,
+  verifyPeerMessageRoundTwo,
 } from '../../../tss/eddsa/eddsaMPCv2';
 import { generateGPGKeyPair } from '../../opengpgUtils';
 import { MPCv2PartiesEnum } from '../ecdsa/typesMPCv2';
@@ -383,10 +383,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     const userGpgKey = await generateGPGKeyPair('ed25519');
     const userGpgPrvKey = await pgp.readPrivateKey({ armoredKey: userGpgKey.privateKey });
     const bitgoGpgPubKey = await this.pickBitgoPubGpgKeyForSigning(true, params.reqId, txRequest.enterpriseId, true);
-
-    if (!bitgoGpgPubKey) {
-      throw new Error('Missing BitGo GPG key for MPCv2');
-    }
+    assert(bitgoGpgPubKey, 'Missing BitGo GPG key for MPCv2');
 
     if (requestType === RequestType.tx) {
       assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
@@ -452,7 +449,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       throw new Error('Unexpected signature share response. Unable to parse data.');
     }
 
-    const bitgoDeserializedMsg1 = await verifyBitGoMessageRoundOne(parsedBitGoToUserSigShareRoundOne, bitgoGpgPubKey);
+    const bitgoDeserializedMsg1 = await verifyPeerMessageRoundOne(parsedBitGoToUserSigShareRoundOne, bitgoGpgPubKey);
 
     // ── WASM Round 1 ──────────────────────────────────────────────────────────
     const [userMsg2] = userDsg.handleIncomingMessages([userMsg1, bitgoDeserializedMsg1]);
@@ -491,7 +488,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       throw new Error('Unexpected signature share response. Unable to parse data.');
     }
 
-    const bitgoDeserializedMsg2 = await verifyBitGoMessageRoundTwo(parsedBitGoToUserSigShareRoundTwo, bitgoGpgPubKey);
+    const bitgoDeserializedMsg2 = await verifyPeerMessageRoundTwo(parsedBitGoToUserSigShareRoundTwo, bitgoGpgPubKey);
 
     // ── WASM Round 2 ──────────────────────────────────────────────────────────
     const [userMsg3] = userDsg.handleIncomingMessages([userMsg2, bitgoDeserializedMsg2]);

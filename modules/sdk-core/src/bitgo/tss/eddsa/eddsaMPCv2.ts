@@ -1,4 +1,3 @@
-import assert from 'assert';
 import * as openpgp from 'openpgp';
 import { MPSComms, MPSTypes } from '@bitgo/sdk-lib-mpc';
 import {
@@ -11,14 +10,15 @@ import {
 import { SignatureShareRecord, SignatureShareType } from '../../utils/tss/baseTypes';
 import { MPCv2PartiesEnum } from '../../utils/tss/ecdsa/typesMPCv2';
 
-function partyIdToSignatureShareType(partyId: 0 | 1 | 2): SignatureShareType {
-  assert(partyId === 0 || partyId === 1 || partyId === 2, 'Invalid partyId for EdDSA MPCv2 signing');
+type SignerPartyId = MPCv2PartiesEnum.USER | MPCv2PartiesEnum.BACKUP;
+
+function partyIdToSignatureShareType(partyId: MPCv2PartiesEnum): SignatureShareType {
   switch (partyId) {
-    case 0:
+    case MPCv2PartiesEnum.USER:
       return SignatureShareType.USER;
-    case 1:
+    case MPCv2PartiesEnum.BACKUP:
       return SignatureShareType.BACKUP;
-    case 2:
+    case MPCv2PartiesEnum.BITGO:
       return SignatureShareType.BITGO;
   }
 }
@@ -32,8 +32,8 @@ function partyIdToSignatureShareType(partyId: 0 | 1 | 2): SignatureShareType {
 export async function getSignatureShareRoundOne(
   userMsg1: MPSTypes.DeserializedMessage,
   userGpgPrivKey: openpgp.PrivateKey,
-  partyId: 0 | 1 = 0,
-  otherSignerPartyId: 0 | 1 | 2 = 2
+  partyId: SignerPartyId = MPCv2PartiesEnum.USER,
+  otherSignerPartyId: MPCv2PartiesEnum = MPCv2PartiesEnum.BITGO
 ): Promise<SignatureShareRecord> {
   const signedMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(userMsg1.payload), userGpgPrivKey);
   const share: EddsaMPCv2SignatureShareRound1Input = {
@@ -51,7 +51,7 @@ export async function getSignatureShareRoundOne(
  * Verifies the peer's round-1 PGP signature and returns the raw deserialized
  * message ready for `DSG.handleIncomingMessages`.
  */
-export async function verifyBitGoMessageRoundOne(
+export async function verifyPeerMessageRoundOne(
   parsedRound1Output: EddsaMPCv2SignatureShareRound1Output,
   peerGpgKey: openpgp.Key,
   peerPartyId: MPCv2PartiesEnum = MPCv2PartiesEnum.BITGO
@@ -69,8 +69,8 @@ export async function verifyBitGoMessageRoundOne(
 export async function getSignatureShareRoundTwo(
   userMsg2: MPSTypes.DeserializedMessage,
   userGpgPrivKey: openpgp.PrivateKey,
-  partyId: 0 | 1 = 0,
-  otherSignerPartyId: 0 | 1 | 2 = 2
+  partyId: SignerPartyId = MPCv2PartiesEnum.USER,
+  otherSignerPartyId: MPCv2PartiesEnum = MPCv2PartiesEnum.BITGO
 ): Promise<SignatureShareRecord> {
   const signedMsg2 = await MPSComms.detachSignMpsMessage(Buffer.from(userMsg2.payload), userGpgPrivKey);
   const share: EddsaMPCv2SignatureShareRound2Input = {
@@ -88,7 +88,7 @@ export async function getSignatureShareRoundTwo(
  * Verifies the peer's round-2 PGP signature and returns the raw deserialized
  * message ready for `DSG.handleIncomingMessages`.
  */
-export async function verifyBitGoMessageRoundTwo(
+export async function verifyPeerMessageRoundTwo(
   parsedRound2Output: EddsaMPCv2SignatureShareRound2Output,
   peerGpgKey: openpgp.Key,
   peerPartyId: MPCv2PartiesEnum = MPCv2PartiesEnum.BITGO
@@ -110,8 +110,8 @@ export async function verifyBitGoMessageRoundTwo(
 export async function getSignatureShareRoundThree(
   userMsg3: MPSTypes.DeserializedMessage,
   userGpgPrivKey: openpgp.PrivateKey,
-  partyId: 0 | 1 = 0,
-  otherSignerPartyId: 0 | 1 | 2 = 2
+  partyId: SignerPartyId = MPCv2PartiesEnum.USER,
+  otherSignerPartyId: MPCv2PartiesEnum = MPCv2PartiesEnum.BITGO
 ): Promise<SignatureShareRecord> {
   const signedMsg3 = await MPSComms.detachSignMpsMessage(Buffer.from(userMsg3.payload), userGpgPrivKey);
   const share: EddsaMPCv2SignatureShareRound3Input = {

@@ -17,6 +17,7 @@ describe('Coins', () => {
       AdaToken: 1,
       Erc20Token: 1,
       Erc721Token: 1,
+      Erc7984Token: 1,
       EthLikeCoin: 1,
       TethLikeCoin: 1,
       OfcToken: 1,

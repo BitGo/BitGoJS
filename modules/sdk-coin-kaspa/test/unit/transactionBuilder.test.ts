@@ -209,6 +209,41 @@ describe('Kaspa TransactionBuilder', function () {
     });
   });
 
+  describe('addSignature (TSS/MPC flow)', function () {
+    it('should store the signature and apply it during build', async function () {
+      builder.addInput(UTXOS.simple).to(ADDRESSES.recipient, '99998000').fee('2000');
+
+      // Simulate TSS: build unsigned, get signablePayload, produce signature externally
+      const unsignedTx = (await builder.build()) as Transaction;
+      const signablePayload = unsignedTx.signablePayload;
+      assert.ok(signablePayload.length === 32);
+
+      // Now add signature via builder addSignature (like wallet-platform does)
+      const fakeSig = Buffer.alloc(64, 0xab);
+      builder.addSignature({ pub: KEYS.pub }, fakeSig);
+
+      // Rebuild — signatures should be applied
+      const signedTx = (await builder.build()) as Transaction;
+      assert.ok(signedTx.txData.inputs[0].signatureScript);
+      assert.equal(signedTx.txData.inputs[0].signatureScript!.length, 130);
+    });
+
+    it('should apply signature to multi-input transactions', async function () {
+      builder.addInputs([UTXOS.simple, UTXOS.second]).to(ADDRESSES.recipient, '299998000').fee('2000');
+      await builder.build();
+
+      const fakeSig = Buffer.alloc(64, 0xcd);
+      builder.addSignature({ pub: KEYS.pub }, fakeSig);
+
+      const signedTx = (await builder.build()) as Transaction;
+      assert.equal(signedTx.txData.inputs.length, 2);
+      for (const input of signedTx.txData.inputs) {
+        assert.ok(input.signatureScript);
+        assert.equal(input.signatureScript!.length, 130);
+      }
+    });
+  });
+
   describe('from (rebuild from hex)', function () {
     it('should reconstruct a builder from a serialized transaction', async function () {
       builder.addInput(UTXOS.simple).to(ADDRESSES.recipient, '99998000').fee('2000');
@@ -235,6 +270,21 @@ describe('Kaspa TransactionBuilderFactory', function () {
     it('should return a new TransactionBuilder', function () {
       const builder = factory.getBuilder();
       assert.ok(builder instanceof TransactionBuilder);
+    });
+  });
+
+  describe('getTransferBuilder', function () {
+    it('should return a new TransactionBuilder (same as getBuilder)', function () {
+      const builder = factory.getTransferBuilder();
+      assert.ok(builder instanceof TransactionBuilder);
+    });
+
+    it('should build a valid transaction', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.addInput(UTXOS.simple).to(ADDRESSES.recipient, '99998000').fee('2000');
+      const tx = (await builder.build()) as Transaction;
+      assert.equal(tx.txData.inputs.length, 1);
+      assert.equal(tx.txData.outputs.length, 1);
     });
   });
 

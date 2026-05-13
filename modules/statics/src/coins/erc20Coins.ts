@@ -14286,6 +14286,47 @@ export const erc20Coins = [
     '0x2816169a49953c548bfeb3948dcf05c4a0e4657d',
     UnderlyingAsset['eth:melion']
   ),
+  // Ondo Test Tokens (Mainnet Gated)
+  erc20(
+    '98b175fc-55fc-4f5a-ab5d-f264917bf19c',
+    'eth:t-bincon',
+    't-BINCon',
+    18,
+    '0xd9ad9e6eb77f2b3739348f077128a1c24c60fbf4',
+    UnderlyingAsset['eth:t-bincon']
+  ),
+  erc20(
+    '93a70b9c-2566-4e2c-9cf2-c5286d611700',
+    'eth:t-iauon',
+    't-IAUon',
+    18,
+    '0x7c9da75d1432af7b9a1efb60eabeb157730776aa',
+    UnderlyingAsset['eth:t-iauon']
+  ),
+  erc20(
+    '7b06c2d3-e914-4591-bac5-e5a592e3ff41',
+    'eth:t-iemgon',
+    't-IEMGon',
+    18,
+    '0x6b9947b9f56041e27d787b578b91cc0e96d9ed53',
+    UnderlyingAsset['eth:t-iemgon']
+  ),
+  erc20(
+    '2eb866a7-540f-4b57-ba52-e55dab073a7a',
+    'eth:t-ibiton',
+    't-IBITon',
+    18,
+    '0x98874a1e7d9d9f5d5cec117124c44671495ab950',
+    UnderlyingAsset['eth:t-ibiton']
+  ),
+  erc20(
+    'bd2a287f-4bb9-48c7-b269-04d4da0f7a34',
+    'eth:t-ivvon',
+    't-IVVon',
+    18,
+    '0xdc5c90371aa7f044e79be6623d0b32cd1a0e105b',
+    UnderlyingAsset['eth:t-ivvon']
+  ),
   erc20(
     '6e7f1a86-e938-42ed-afe8-b58364a7f498',
     'eth:six',

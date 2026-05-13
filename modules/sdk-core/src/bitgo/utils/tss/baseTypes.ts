@@ -92,6 +92,9 @@ export enum ShareType {
   MPCv2Round1 = 'MPCv2Round1',
   MPCv2Round2 = 'MPCv2Round2',
   MPCv2Round3 = 'MPCv2Round3',
+  EddsaMPCv2Round1 = 'EddsaMPCv2Round1',
+  EddsaMPCv2Round2 = 'EddsaMPCv2Round2',
+  EddsaMPCv2Round3 = 'EddsaMPCv2Round3',
 }
 
 export enum MPCType {
@@ -187,6 +190,36 @@ export interface CustomMPCv2SigningRound3GeneratingFunction {
   }): Promise<{
     signatureShareRound3: SignatureShareRecord;
   }>;
+}
+
+export interface CustomEddsaMPCv2SigningRound1GeneratingFunction {
+  (params: { txRequest: TxRequest }): Promise<{
+    signatureShareRound1: SignatureShareRecord;
+    encryptedRound1Session: string;
+    userGpgPubKey: string;
+    encryptedUserGpgPrvKey: string;
+  }>;
+}
+
+export interface CustomEddsaMPCv2SigningRound2GeneratingFunction {
+  (params: {
+    txRequest: TxRequest;
+    bitgoPublicGpgKey: string;
+    encryptedUserGpgPrvKey: string;
+    encryptedRound1Session: string;
+  }): Promise<{
+    signatureShareRound2: SignatureShareRecord;
+    encryptedRound2Session: string;
+  }>;
+}
+
+export interface CustomEddsaMPCv2SigningRound3GeneratingFunction {
+  (params: {
+    txRequest: TxRequest;
+    bitgoPublicGpgKey: string;
+    encryptedUserGpgPrvKey: string;
+    encryptedRound2Session: string;
+  }): Promise<{ signatureShareRound3: SignatureShareRecord }>;
 }
 
 export enum TokenType {
