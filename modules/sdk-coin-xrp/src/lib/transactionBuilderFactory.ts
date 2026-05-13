@@ -1,6 +1,7 @@
 import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import xrpl from 'xrpl';
+import { AccountDeleteBuilder } from './accountDeleteBuilder';
 import { AccountSetBuilder } from './accountSetBuilder';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
 import { Transaction } from './transaction';
@@ -28,6 +29,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     const tx = this.parseTransaction(txHex);
     try {
       switch (tx.type) {
+        case TransactionType.AccountDelete:
+          return this.getAccountDeleteBuilder(tx);
         case TransactionType.AccountUpdate:
           return this.getAccountUpdateBuilder(tx);
         case TransactionType.Send:
@@ -49,6 +52,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getWalletInitializationBuilder(tx?: Transaction): WalletInitializationBuilder {
     return this.initializeBuilder(tx, new WalletInitializationBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  public getAccountDeleteBuilder(tx?: Transaction): AccountDeleteBuilder {
+    return this.initializeBuilder(tx, new AccountDeleteBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */

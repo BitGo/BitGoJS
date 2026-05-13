@@ -30,7 +30,7 @@ import * as rippleBinaryCodec from 'ripple-binary-codec';
 import * as rippleKeypairs from 'ripple-keypairs';
 import * as xrpl from 'xrpl';
 
-import { TokenTransferBuilder, TransactionBuilderFactory, TransferBuilder } from './lib';
+import { AccountDeleteBuilder, TokenTransferBuilder, TransactionBuilderFactory, TransferBuilder } from './lib';
 import {
   ExplainTransactionOptions,
   FeeInfo,
@@ -510,11 +510,17 @@ export class Xrp extends BaseCoin {
     const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
     const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
+    // Strip any ?dt=<tag> query string from the root address before sending to the XRPL RPC.
+    // BitGo encodes destination tags as `rXXXX?dt=N` in its UI/API, but the rippled JSON-RPC
+    // only accepts the bare r-address.
+    const rootAddressDetails = url.parse(params.rootAddress);
+    const rootAccount = rootAddressDetails.pathname as string;
+
     const accountInfoParams = {
       method: 'account_info',
       params: [
         {
-          account: params.rootAddress,
+          account: rootAccount,
           ledger_index: 'current',
           queue: true,
           strict: true,
@@ -527,13 +533,17 @@ export class Xrp extends BaseCoin {
       method: 'account_lines',
       params: [
         {
-          account: params.rootAddress,
+          account: rootAccount,
           ledger_index: 'validated',
         },
       ],
     };
 
-    if (isKrsRecovery) {
+    // For AccountDelete (reserveWithdrawal) the KRS provider coin-family check is skipped because:
+    // 1. AccountDelete is an emergency recovery; KRS coin-family lists are irrelevant here.
+    // 2. The signing path inside the reserveWithdrawal block already handles isKrsRecovery correctly
+    //    (user signs, backup signature comes from KRS or is omitted for an unsigned sweep).
+    if (isKrsRecovery && !params.reserveWithdrawal) {
       checkKrsProvider(this, params.krsProvider);
     }
 
@@ -666,11 +676,113 @@ export class Xrp extends BaseCoin {
     }
 
     const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
+
+    // --- AccountDelete path: withdraw full balance including the base reserve ---
+    if (params.reserveWithdrawal) {
+      // 1. No trustlines with non-zero balances may exist.
+      const lines: Array<{ currency: string; account: string; balance: string }> = accountLines.body.result.lines ?? [];
+      const nonZeroLines = lines.filter((l) => parseFloat(l.balance) !== 0);
+      if (nonZeroLines.length > 0) {
+        throw new Error(
+          `Account has ${nonZeroLines.length} trustline(s) with non-zero balances. ` +
+            'Clear all token trustlines before using reserve withdrawal.'
+        );
+      }
+
+      // 2. No owned objects other than SignerList entries.
+      const accountObjectsParams = {
+        method: 'account_objects',
+        params: [{ account: rootAccount, ledger_index: 'validated' }],
+      };
+      const accountObjectsResponse = await this.bitgo.post(rippledUrl).send(accountObjectsParams);
+      const ownedObjects: Array<{ LedgerEntryType: string }> = accountObjectsResponse.body.result.account_objects ?? [];
+      const blockingObjects = ownedObjects.filter((o) => o.LedgerEntryType !== 'SignerList');
+      if (blockingObjects.length > 0) {
+        const types = [...new Set(blockingObjects.map((o) => o.LedgerEntryType))].join(', ');
+        throw new Error(
+          `Account owns objects that must be removed before account deletion: ${types}. ` +
+            'Please resolve these objects using the standard recovery flow first.'
+        );
+      }
+
+      // 3. Sequence + 256 must be <= current validated ledger.
+      if (sequenceId + 256 > currentLedger) {
+        throw new Error(
+          `Account is too new for AccountDelete: Sequence(${sequenceId}) + 256 > currentLedger(${currentLedger}). ` +
+            `Wait at least ${sequenceId + 256 - currentLedger} more ledger(s).`
+        );
+      }
+
+      // 4. Destination must be a funded, existing XRPL account.
+      // Strip any ?dt=<tag> suffix — the XRPL RPC only accepts the bare r-address.
+      const destAccount = url.parse(params.recoveryDestination).pathname as string;
+      const destInfoParams = {
+        method: 'account_info',
+        params: [{ account: destAccount, ledger_index: 'validated', strict: true }],
+      };
+      const destInfo = await this.bitgo.post(rippledUrl).send(destInfoParams);
+      if (destInfo.body.result.error) {
+        throw new Error(
+          `Recovery destination "${destAccount}" does not exist on the ledger. ` +
+            'AccountDelete requires a funded destination account.'
+        );
+      }
+
+      // AccountDelete fee must be >= owner-reserve increment (reserveDelta, currently 2 XRP).
+      // We use reserveDelta directly (not openLedgerFee × 3) per XRPL protocol.
+      const accountDeleteFee = reserveDelta;
+
+      const txBuilder = factory.getAccountDeleteBuilder() as AccountDeleteBuilder;
+      txBuilder
+        .to(params.recoveryDestination as string)
+        .sender(rootAccount)
+        .flags(2147483648)
+        .lastLedgerSequence(currentLedger + 1000000)
+        .fee(accountDeleteFee.toFixed(0))
+        .sequence(sequenceId);
+
+      const tx = await txBuilder.build();
+      const serializedTx = tx.toBroadcastFormat();
+
+      if (isUnsignedSweep) {
+        return { txHex: serializedTx, coin: this.getChain() };
+      }
+
+      if (!keys[0].privateKey) {
+        throw new Error('userKey is not a private key');
+      }
+      const userKey = keys[0].privateKey.toString('hex');
+      const userSignature = ripple.signWithPrivateKey(serializedTx, userKey, { signAs: userAddress });
+
+      let signedTransaction: string;
+      if (isKrsRecovery) {
+        signedTransaction = userSignature.signedTransaction;
+      } else {
+        if (!keys[1].privateKey) {
+          throw new Error('backupKey is not a private key');
+        }
+        const backupKey = keys[1].privateKey.toString('hex');
+        const backupSignature = ripple.signWithPrivateKey(serializedTx, backupKey, { signAs: backupAddress });
+        signedTransaction = ripple.multisign([userSignature.signedTransaction, backupSignature.signedTransaction]);
+      }
+
+      const accountDeleteExplanation: RecoveryInfo = (await this.explainTransaction({
+        txHex: signedTransaction,
+      })) as RecoveryInfo;
+      accountDeleteExplanation.txHex = signedTransaction;
+      if (isKrsRecovery) {
+        accountDeleteExplanation.backupKey = params.backupKey;
+        accountDeleteExplanation.coin = this.getChain();
+      }
+      return accountDeleteExplanation;
+    }
+    // --- End AccountDelete path ---
+
     const txBuilder = factory.getTransferBuilder() as TransferBuilder;
     txBuilder
       .to(params.recoveryDestination as string)
       .amount(recoverableBalance.toFixed(0))
-      .sender(params.rootAddress)
+      .sender(rootAccount)
       .flags(2147483648)
       .lastLedgerSequence(currentLedger + 1000000) // give it 1 million ledgers' time (~1 month, suitable for KRS)
       .fee(openLedgerFee.times(3).toFixed(0)) // the factor three is for the multisigning

@@ -442,6 +442,201 @@ describe('XRP:', function () {
     });
   });
 
+  describe('Recover with reserveWithdrawal (AccountDelete)', () => {
+    const sandBox = sinon.createSandbox();
+    const destination = 'raBSn6ipeWXYe7rNbNafZSx9dV2fU3zRyP?dt=12345';
+    const destBare = 'raBSn6ipeWXYe7rNbNafZSx9dV2fU3zRyP';
+    const passPhrase = '#Bondiola1234';
+    let xrplStub;
+
+    afterEach(() => {
+      sandBox.restore();
+    });
+
+    function setupAccountDeleteStubs(
+      overrides: {
+        accountLinesResponse?: any;
+        accountObjectsResponse?: any;
+        destInfoResponse?: any;
+      } = {}
+    ) {
+      xrplStub = sandBox.stub(basecoin.bitgo, 'post');
+
+      const {
+        accountLinesResponse = testData.accountlinesResponseEmpty,
+        accountObjectsResponse = testData.accountObjectsResponse,
+        destInfoResponse = testData.destAccountInfoResponse,
+      } = overrides;
+
+      const accountInfoParams = {
+        method: 'account_info',
+        params: [
+          {
+            account: testData.keys.rootAddress,
+            strict: true,
+            ledger_index: 'current',
+            queue: true,
+            signer_lists: true,
+          },
+        ],
+      };
+      const accountLinesParams = {
+        method: 'account_lines',
+        params: [{ account: testData.keys.rootAddress, ledger_index: 'validated' }],
+      };
+      const accountObjectsParams = {
+        method: 'account_objects',
+        params: [{ account: testData.keys.rootAddress, ledger_index: 'validated' }],
+      };
+      const destInfoParams = {
+        method: 'account_info',
+        params: [{ account: destBare, ledger_index: 'validated', strict: true }],
+      };
+
+      const sendStub = sinon.stub();
+      sendStub.withArgs(accountInfoParams).resolves(testData.accountInfoResponse);
+      sendStub.withArgs({ method: 'fee' }).resolves(testData.feeResponse);
+      sendStub.withArgs({ method: 'server_info' }).resolves(testData.serverInfoResponse);
+      sendStub.withArgs(accountLinesParams).resolves(accountLinesResponse);
+      sendStub.withArgs(accountObjectsParams).resolves(accountObjectsResponse);
+      sendStub.withArgs(destInfoParams).resolves(destInfoResponse);
+
+      xrplStub.withArgs(basecoin.getRippledUrl()).returns({ send: sendStub });
+    }
+
+    it('should build a fully signed AccountDelete transaction (non-KRS recovery)', async function () {
+      setupAccountDeleteStubs();
+
+      const res = await basecoin.recover({
+        userKey: testData.keys.userKey,
+        backupKey: testData.keys.backupKey,
+        rootAddress: testData.keys.rootAddress,
+        recoveryDestination: destination,
+        walletPassphrase: passPhrase,
+        reserveWithdrawal: true,
+      });
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('txHex');
+
+      const decoded: any = rippleBinaryCodec.decode(res.txHex);
+      decoded.TransactionType.should.equal('AccountDelete');
+      decoded.Account.should.equal(testData.keys.rootAddress);
+      decoded.Destination.should.equal(destBare);
+      (decoded.DestinationTag as number).should.equal(12345);
+      // Fully signed multi-sig: two signers in the Signers array
+      (decoded.Signers as Array<any>).length.should.equal(2);
+    });
+
+    it('should build an unsigned sweep AccountDelete transaction when xpub keys are provided', async function () {
+      // Use the xpub keys and root address from the existing unsigned-sweep token test, which are
+      // already matched to accountInfoResponseUnsigned's signer list.
+      xrplStub = sandBox.stub(basecoin.bitgo, 'post');
+
+      const unsignedRootAddress = 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA';
+      const accountInfoParamsUnsigned = {
+        method: 'account_info',
+        params: [
+          {
+            account: unsignedRootAddress,
+            strict: true,
+            ledger_index: 'current',
+            queue: true,
+            signer_lists: true,
+          },
+        ],
+      };
+      const accountLinesParamsUnsigned = {
+        method: 'account_lines',
+        params: [{ account: unsignedRootAddress, ledger_index: 'validated' }],
+      };
+      const accountObjectsParamsUnsigned = {
+        method: 'account_objects',
+        params: [{ account: unsignedRootAddress, ledger_index: 'validated' }],
+      };
+      const destInfoParamsUnsigned = {
+        method: 'account_info',
+        params: [{ account: destBare, ledger_index: 'validated', strict: true }],
+      };
+
+      const sendStub = sinon.stub();
+      sendStub.withArgs(accountInfoParamsUnsigned).resolves(testData.accountInfoResponseUnsigned);
+      sendStub.withArgs({ method: 'fee' }).resolves(testData.feeResponse);
+      sendStub.withArgs({ method: 'server_info' }).resolves(testData.serverInfoResponse);
+      sendStub.withArgs(accountLinesParamsUnsigned).resolves(testData.accountlinesResponseEmpty);
+      sendStub.withArgs(accountObjectsParamsUnsigned).resolves(testData.accountObjectsResponse);
+      sendStub.withArgs(destInfoParamsUnsigned).resolves(testData.destAccountInfoResponse);
+      xrplStub.withArgs(basecoin.getRippledUrl()).returns({ send: sendStub });
+
+      const res = await basecoin.recover({
+        userKey:
+          'xpub661MyMwAqRbcF9Ya4zDHGzDtJz3NaaeEGbQ6rnqnNxL9RXDJNHcfzAyPUBXuKXjytvJNzQxqbjBwmPveiYX323Zp8Zx2RYQN9gGM7ntiXxr',
+        backupKey:
+          'xpub661MyMwAqRbcFtWdmWHKZEh9pYiJrAGTu1NNSwxY2S63tU9nGcfCAbNUKQuFqXRTRk8KkuBabxo6YjeBri8Q7dkMsmths6MVxSd6MTaeCmd',
+        rootAddress: unsignedRootAddress,
+        recoveryDestination: destination,
+        walletPassphrase: passPhrase,
+        reserveWithdrawal: true,
+      });
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('txHex');
+      res.should.hasOwnProperty('coin');
+
+      const decoded: any = xrpl.decode(res.txHex);
+      decoded.TransactionType.should.equal('AccountDelete');
+      decoded.Account.should.equal(unsignedRootAddress);
+      decoded.Destination.should.equal(destBare);
+      (decoded.DestinationTag as number).should.equal(12345);
+    });
+
+    it('should throw when account has non-zero trustline balances', async function () {
+      // accountlinesResponse has a non-zero balance line (balance: '4')
+      setupAccountDeleteStubs({ accountLinesResponse: testData.accountlinesResponse });
+
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          rootAddress: testData.keys.rootAddress,
+          recoveryDestination: destination,
+          walletPassphrase: passPhrase,
+          reserveWithdrawal: true,
+        })
+        .should.be.rejectedWith(/trustline/);
+    });
+
+    it('should throw when account owns blocking objects other than SignerList', async function () {
+      setupAccountDeleteStubs({ accountObjectsResponse: testData.accountObjectsResponseBlocking });
+
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          rootAddress: testData.keys.rootAddress,
+          recoveryDestination: destination,
+          walletPassphrase: passPhrase,
+          reserveWithdrawal: true,
+        })
+        .should.be.rejectedWith(/Offer/);
+    });
+
+    it('should throw when the recovery destination does not exist on the ledger', async function () {
+      setupAccountDeleteStubs({ destInfoResponse: testData.destAccountInfoNotFound });
+
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          rootAddress: testData.keys.rootAddress,
+          recoveryDestination: destination,
+          walletPassphrase: passPhrase,
+          reserveWithdrawal: true,
+        })
+        .should.be.rejectedWith(/does not exist on the ledger/);
+    });
+  });
+
   describe('Verify Transaction', () => {
     let newTxPrebuild;
 
