@@ -25,6 +25,9 @@ export class FLRPCoin extends BaseCoin {
     CoinFeature.MULTISIG_COLD,
     CoinFeature.MULTISIG,
     CoinFeature.STAKING,
+    CoinFeature.TSS,
+    CoinFeature.TSS_COLD,
+    CoinFeature.MPCV2,
   ];
 
   /**
