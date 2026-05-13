@@ -308,6 +308,20 @@ export class Utils implements BaseUtils {
         break;
       }
 
+      case TransactionType.CosignDelegationAccept: {
+        // exercise CosignDelegationProposal_Accept → actingParties[0] = signer (sender)
+        const signerParty = findExerciseActingParty('CosignDelegationProposal_Accept');
+        if (signerParty) sender = signerParty;
+        // CosignDelegationProposal create node → admin = receiver
+        const proposalFields = findCreateNodeFields('CosignDelegationProposal');
+        if (proposalFields) {
+          const adminData = getField(proposalFields, 'admin');
+          if (adminData?.oneofKind === 'party') receiver = adminData.party ?? '';
+        }
+        amount = '0';
+        break;
+      }
+
       case TransactionType.TransferOfferWithdrawn: {
         // Canton coin: Amulet create node → owner=sender=receiver, amount.initialAmount
         const amuletFields = findCreateNodeFields('Amulet');

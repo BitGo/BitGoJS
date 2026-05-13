@@ -5,6 +5,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { CosignDelegationAcceptBuilder } from './cosignDelegationAcceptBuilder';
 import { CosignDelegationProposalBuilder } from './cosignDelegationProposalBuilder';
 import { OneStepPreApprovalBuilder } from './oneStepPreApprovalBuilder';
 import { TransferAcceptanceBuilder } from './transferAcceptanceBuilder';
@@ -46,6 +47,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         case TransactionType.CosignDelegationProposal: {
           return this.getCosignDelegationProposalBuilder(tx);
         }
+        case TransactionType.CosignDelegationAccept: {
+          return this.getCosignDelegationAcceptBuilder(tx);
+        }
         case TransactionType.TransferOfferWithdrawn: {
           return this.getTransferOfferWithdrawnBuilder(tx);
         }
@@ -73,6 +77,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getCosignDelegationProposalBuilder(tx?: Transaction): CosignDelegationProposalBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new CosignDelegationProposalBuilder(this._coinConfig));
+  }
+
+  getCosignDelegationAcceptBuilder(tx?: Transaction): CosignDelegationAcceptBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new CosignDelegationAcceptBuilder(this._coinConfig));
   }
 
   getTransferOfferWithdrawnBuilder(tx?: Transaction): TransferOfferWithdrawnBuilder {
