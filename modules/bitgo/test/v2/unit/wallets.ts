@@ -2451,6 +2451,86 @@ describe('V2 Wallets:', function () {
       acceptShareNock.done();
     });
 
+    describe('v2 envelope support in acceptShare', () => {
+      const sandbox = sinon.createSandbox();
+      afterEach(() => sandbox.verifyAndRestore());
+
+      it('should accept share when ECDH sharing keychain encryptedXprv is v2-encrypted', async function () {
+        const shareId = 'v2-ecdh-xprv-1';
+        const userPassword = 'test_password';
+
+        // Simulate a v2 envelope for the ECDH root key
+        const v2EncryptedXprv = JSON.stringify({ v: 2, iv: 'aabbcc', ct: 'ddeeff', adata: '00' });
+        const fakeXprv = 'xprvSomeBase58Value';
+        const fakeSecret = 'fakeEcdhSharedSecret';
+        const decryptedWalletPrv = 'walletPrivKeyPlaintext';
+
+        const eckey = makeRandomKey();
+        const v2EncryptedPrv = bitgo.encrypt({ password: fakeSecret, input: decryptedWalletPrv });
+
+        nock(bgUrl)
+          .get(`/api/v2/tbtc/walletshare/${shareId}`)
+          .reply(200, {
+            keychain: {
+              path: 'm/0/0/1',
+              fromPubKey: eckey.publicKey.toString('hex'),
+              toPubKey: eckey.publicKey.toString('hex'),
+              encryptedPrv: v2EncryptedPrv,
+              pub: eckey.publicKey.toString('hex'),
+            },
+          });
+        nock(bgUrl).post(`/api/v2/tbtc/walletshare/${shareId}`).reply(200, { changed: true, state: 'accepted' });
+
+        sandbox.stub(bitgo, 'getECDHKeychain').resolves({ encryptedXprv: v2EncryptedXprv });
+        const decryptAsyncStub = sandbox.stub(bitgo, 'decryptAsync');
+        // First call decrypts the ECDH keychain (v2), second decrypts the shared wallet prv
+        decryptAsyncStub.onFirstCall().resolves(fakeXprv);
+        decryptAsyncStub.onSecondCall().resolves(decryptedWalletPrv);
+        sandbox.stub(moduleBitgo, 'getSharedSecret').returns(Buffer.from(fakeSecret));
+
+        const res = await wallets.acceptShare({ walletShareId: shareId, userPassword });
+        should.equal(res.changed, true);
+        should.equal(res.state, 'accepted');
+        // Must have called decryptAsync (not the sync decrypt) for both the ECDH key and the wallet prv
+        assert.equal(decryptAsyncStub.callCount, 2);
+      });
+
+      it('should accept share when wallet keychain encryptedPrv is v2-encrypted', async function () {
+        const shareId = 'v2-wallet-prv-1';
+        const userPassword = 'test_password';
+
+        const v2EncryptedXprv = JSON.stringify({ v: 2, iv: 'aabbcc', ct: 'ddeeff', adata: '00' });
+        const fakeXprv = 'xprvAnotherKey';
+        const fakeSecret = 'ecdhSharedSecret2';
+        const decryptedWalletPrv = 'walletPrivKey2';
+        const v2EncryptedPrv = JSON.stringify({ v: 2, iv: '112233', ct: '445566', adata: '77' });
+        const eckey = makeRandomKey();
+
+        nock(bgUrl)
+          .get(`/api/v2/tbtc/walletshare/${shareId}`)
+          .reply(200, {
+            keychain: {
+              path: 'm/0/0/2',
+              fromPubKey: eckey.publicKey.toString('hex'),
+              toPubKey: eckey.publicKey.toString('hex'),
+              encryptedPrv: v2EncryptedPrv,
+              pub: eckey.publicKey.toString('hex'),
+            },
+          });
+        nock(bgUrl).post(`/api/v2/tbtc/walletshare/${shareId}`).reply(200, { changed: true, state: 'accepted' });
+
+        sandbox.stub(bitgo, 'getECDHKeychain').resolves({ encryptedXprv: v2EncryptedXprv });
+        const decryptAsyncStub = sandbox.stub(bitgo, 'decryptAsync');
+        decryptAsyncStub.onFirstCall().resolves(fakeXprv);
+        decryptAsyncStub.onSecondCall().resolves(decryptedWalletPrv);
+        sandbox.stub(moduleBitgo, 'getSharedSecret').returns(Buffer.from(fakeSecret));
+
+        const res = await wallets.acceptShare({ walletShareId: shareId, userPassword });
+        should.equal(res.changed, true);
+        should.equal(res.state, 'accepted');
+      });
+    });
+
     describe('bulkAcceptShare', function () {
       afterEach(function () {
         nock.cleanAll();
@@ -2614,7 +2694,7 @@ describe('V2 Wallets:', function () {
           password: walletPassphrase,
           input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
-        sinon.stub(bitgo, 'decrypt').returns(prvKey);
+        sinon.stub(bitgo, 'decryptAsync').resolves(prvKey);
         sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
 
         const share = await wallets.bulkAcceptShare({
@@ -2628,6 +2708,107 @@ describe('V2 Wallets:', function () {
             },
           ],
         });
+      });
+
+      it('should accept share when ECDH sharing keychain is v2-encrypted', async () => {
+        const walletPassphrase = 'bitgo1234';
+        const shareId = '66a229dbdccdcfb95b44fc2745a60bd4';
+
+        const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+        const path = 'm/999999/1/1';
+        const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+        const eckey = makeRandomKey();
+        const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
+        const decryptedPrv = 'someWalletPrivateKey';
+        const newEncryptedPrv = bitgo.encrypt({ password: secret, input: decryptedPrv });
+
+        // Simulate v2-encrypted ECDH keychain xprv (envelope with v:2 marker)
+        const v2EncryptedXprv = JSON.stringify({ v: 2, iv: 'aaa', ct: 'bbb', adata: 'ccc' });
+        const myEcdhXprv = 'xprvSomeBase58Key';
+
+        nock(bgUrl)
+          .get('/api/v2/walletshares')
+          .reply(200, {
+            incoming: [
+              {
+                id: shareId,
+                isUMSInitiated: true,
+                keychain: {
+                  path,
+                  fromPubKey: eckey.publicKey.toString('hex'),
+                  encryptedPrv: newEncryptedPrv,
+                  toPubKey: pubkey,
+                  pub: pubkey,
+                },
+              },
+            ],
+          });
+        nock(bgUrl)
+          .put('/api/v2/walletshares/accept')
+          .reply(200, { acceptedWalletShares: [{ walletShareId: shareId }] });
+
+        sinon.stub(bitgo, 'getECDHKeychain').resolves({ encryptedXprv: v2EncryptedXprv });
+        // decryptAsync resolves with the xprv regardless of whether the envelope is v1 or v2
+        sinon.stub(bitgo, 'decryptAsync').resolves(myEcdhXprv);
+        sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
+
+        const share = await wallets.bulkAcceptShare({
+          walletShareIds: [shareId],
+          userLoginPassword: walletPassphrase,
+        });
+        assert.deepEqual(share, { acceptedWalletShares: [{ walletShareId: shareId }] });
+      });
+
+      it('should accept share when wallet keychain encryptedPrv is v2-encrypted', async () => {
+        const walletPassphrase = 'bitgo1234';
+        const shareId = 'v2-prv-share-1';
+
+        const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+        const path = 'm/999999/1/1';
+        const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+        const eckey = makeRandomKey();
+
+        // Simulate v2-encrypted encryptedPrv in the wallet share keychain
+        const v2EncryptedPrv = JSON.stringify({ v: 2, iv: 'xxx', ct: 'yyy', adata: 'zzz' });
+        const v2EncryptedXprv = JSON.stringify({ v: 2, iv: 'aaa', ct: 'bbb', adata: 'ccc' });
+        const myEcdhXprv = 'xprvSomeBase58Key';
+        const decryptedWalletPrv = 'decryptedWalletPrivKey';
+
+        nock(bgUrl)
+          .get('/api/v2/walletshares')
+          .reply(200, {
+            incoming: [
+              {
+                id: shareId,
+                isUMSInitiated: true,
+                keychain: {
+                  path,
+                  fromPubKey: eckey.publicKey.toString('hex'),
+                  encryptedPrv: v2EncryptedPrv,
+                  toPubKey: pubkey,
+                  pub: pubkey,
+                },
+              },
+            ],
+          });
+        nock(bgUrl)
+          .put('/api/v2/walletshares/accept')
+          .reply(200, { acceptedWalletShares: [{ walletShareId: shareId }] });
+
+        sinon.stub(bitgo, 'getECDHKeychain').resolves({ encryptedXprv: v2EncryptedXprv });
+        // First call: decrypt ECDH keychain xprv; second call: decrypt v2 wallet share prv
+        const decryptAsyncStub = sinon.stub(bitgo, 'decryptAsync');
+        decryptAsyncStub.onFirstCall().resolves(myEcdhXprv);
+        decryptAsyncStub.onSecondCall().resolves(decryptedWalletPrv);
+        sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
+
+        const share = await wallets.bulkAcceptShare({
+          walletShareIds: [shareId],
+          userLoginPassword: walletPassphrase,
+        });
+        assert.deepEqual(share, { acceptedWalletShares: [{ walletShareId: shareId }] });
+        // Both decrypt calls must use decryptAsync (not the sync decrypt)
+        assert.equal(decryptAsyncStub.callCount, 2);
       });
 
       it('should include webauthnInfo in request when provided (ECDH branch)', async () => {
@@ -2687,7 +2868,7 @@ describe('V2 Wallets:', function () {
           password: walletPassphrase,
           input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
-        sinon.stub(bitgo, 'decrypt').returns(prvKey);
+        sinon.stub(bitgo, 'decryptAsync').resolves(prvKey);
         sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
 
         await wallets.bulkAcceptShare({
@@ -2765,7 +2946,7 @@ describe('V2 Wallets:', function () {
           password: walletPassphrase,
           input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
-        sinon.stub(bitgo, 'decrypt').returns(prvKey);
+        sinon.stub(bitgo, 'decryptAsync').resolves(prvKey);
         sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
 
         await wallets.bulkAcceptShare({
@@ -2834,7 +3015,7 @@ describe('V2 Wallets:', function () {
           password: walletPassphrase,
           input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
-        sinon.stub(bitgo, 'decrypt').returns(prvKey);
+        sinon.stub(bitgo, 'decryptAsync').resolves(prvKey);
         sinon.stub(bitgo, 'encrypt').returns(userPrv + 'X'.repeat(100000));
         sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
 
@@ -2934,7 +3115,7 @@ describe('V2 Wallets:', function () {
           password: walletPassphrase,
           input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
-        sinon.stub(bitgo, 'decrypt').returns(prvKey);
+        sinon.stub(bitgo, 'decryptAsync').resolves(prvKey);
         sinon.stub(bitgo, 'encrypt').returns(userPrv + 'X'.repeat(100000));
         sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
 
@@ -3036,7 +3217,7 @@ describe('V2 Wallets:', function () {
           password: walletPassphrase,
           input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
-        sinon.stub(bitgo, 'decrypt').returns(prvKey);
+        sinon.stub(bitgo, 'decryptAsync').resolves(prvKey);
         sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
 
         // Always throw 413 error, even for batch size 1
@@ -3284,7 +3465,7 @@ describe('V2 Wallets:', function () {
           .resolves(userKeychain);
 
         // Mock decrypt and signMessage
-        sinon.stub(bitgo, 'decrypt').returns('decryptedPrivateKey');
+        sinon.stub(bitgo, 'decryptAsync').resolves('decryptedPrivateKey');
         sinon.stub(wallets.baseCoin, 'signMessage').resolves(Buffer.from('signature'));
 
         // Mock bulkUpdateWalletShareRequest
@@ -3348,7 +3529,7 @@ describe('V2 Wallets:', function () {
         sinon.stub(ofcWallets.baseCoin.keychains(), 'createUserKeychain').resolves(userKeychain);
 
         // Mock decrypt and signMessage
-        sinon.stub(bitgo, 'decrypt').returns('decryptedPrivateKey');
+        sinon.stub(bitgo, 'decryptAsync').resolves('decryptedPrivateKey');
         sinon.stub(ofcWallets.baseCoin, 'signMessage').resolves(Buffer.from('signature'));
 
         // Mock getECDHKeychain
@@ -3491,9 +3672,9 @@ describe('V2 Wallets:', function () {
         });
 
         // Setup decrypt and encrypt stubs
-        const decryptStub = sinon.stub(bitgo, 'decrypt');
-        decryptStub.onFirstCall().returns(myEcdhKeychain.xprv); // For sharing keychain
-        decryptStub.onSecondCall().returns(originalPrivKey); // For wallet keychain
+        const decryptStub = sinon.stub(bitgo, 'decryptAsync');
+        decryptStub.onFirstCall().resolves(myEcdhKeychain.xprv); // For sharing keychain
+        decryptStub.onSecondCall().resolves(originalPrivKey); // For wallet keychain
 
         const encryptStub = sinon.stub(bitgo, 'encrypt').returns('newEncryptedPrv');
 
@@ -3624,6 +3805,75 @@ describe('V2 Wallets:', function () {
         result.walletShareUpdateErrors.should.have.lengthOf(1);
         result.walletShareUpdateErrors[0].should.have.property('walletShareId', 'share2');
         result.walletShareUpdateErrors[0].should.have.property('reason', 'Failed to process share2');
+      });
+
+      it('should accept share with v2-encrypted ECDH keychain and wallet prv', async () => {
+        const walletPassphrase = 'bitgo1234';
+        const path = 'm/999999/1/1';
+
+        const fromKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef01deadbeef01deadbeef01deadbeef01', 'hex'));
+        const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+        const toPubKey = toKeychain.derivePath(path).publicKey.toString('hex');
+        const fromPubKey = fromKeychain.publicKey.toString('hex');
+
+        const originalPrivKey = 'originalPrivateKey';
+        const sharedSecret = getSharedSecret(fromKeychain, Buffer.from(toPubKey, 'hex')).toString('hex');
+        const encryptedPrv = bitgo.encrypt({ password: sharedSecret, input: originalPrivKey });
+
+        // Both the ECDH keychain and share prv are v2-encrypted in this scenario
+        const v2EncryptedXprv = JSON.stringify({ v: 2, iv: 'aabbcc', ct: 'ddeeff', adata: '00' });
+
+        sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: [
+            {
+              id: 'share1',
+              coin: 'tsol',
+              walletLabel: 'testing',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'wallet1',
+              permissions: ['spend'],
+              state: 'active',
+              keychain: { pub: toPubKey, toPubKey, fromPubKey, encryptedPrv, path },
+            },
+          ],
+          outgoing: [],
+        });
+
+        const myEcdhKeychain = await bitgo.keychains().create();
+        sinon.stub(bitgo, 'getECDHKeychain').resolves({ encryptedXprv: v2EncryptedXprv });
+
+        // decryptAsync handles v2 transparently; stub to return expected values
+        const decryptAsyncStub = sinon.stub(bitgo, 'decryptAsync');
+        decryptAsyncStub.onFirstCall().resolves(myEcdhKeychain.xprv); // ECDH keychain
+        decryptAsyncStub.onSecondCall().resolves(originalPrivKey); // wallet share prv
+
+        const encryptStub = sinon.stub(bitgo, 'encrypt').returns('newEncryptedPrv');
+        sinon.stub(moduleBitgo, 'getSharedSecret').returns(Buffer.from(sharedSecret));
+
+        const bulkUpdateStub = sinon.stub(Wallets.prototype, 'bulkUpdateWalletShareRequest').resolves({
+          acceptedWalletShares: ['share1'],
+          rejectedWalletShares: [],
+          walletShareUpdateErrors: [],
+        });
+
+        const result = await wallets.bulkUpdateWalletShare({
+          shares: [{ walletShareId: 'share1', status: 'accept' }],
+          userLoginPassword: walletPassphrase,
+          newWalletPassphrase: 'newPassphrase',
+        });
+
+        assert.deepEqual(result, {
+          acceptedWalletShares: ['share1'],
+          rejectedWalletShares: [],
+          walletShareUpdateErrors: [],
+        });
+
+        // Both decrypt calls must have gone through decryptAsync
+        assert.equal(decryptAsyncStub.callCount, 2);
+        bulkUpdateStub.calledOnce.should.be.true();
+        encryptStub.calledOnce.should.be.true();
+        encryptStub.firstCall.args[0].should.have.property('input', originalPrivKey);
       });
     });
   });
