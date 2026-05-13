@@ -1,5 +1,6 @@
 import Utils from './utils';
 
+export { AccountDeleteBuilder } from './accountDeleteBuilder';
 export { AccountSetBuilder } from './accountSetBuilder';
 export * from './constants';
 export * from './iface';

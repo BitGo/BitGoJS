@@ -127,6 +127,9 @@ export enum TransactionType {
   TonWhalesWithdrawal,
   TonWhalesVestingDeposit,
   TonWhalesVestingWithdrawal,
+
+  // xrp — delete an account and recover the full balance including reserve
+  AccountDelete,
 }
 
 /**
