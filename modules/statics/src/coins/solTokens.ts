@@ -3599,7 +3599,7 @@ export const solTokens = [
   solToken(
     '6b82ab6c-41c0-4a0e-aad6-1c1c24d569da',
     'sol:sofid',
-    'SOFID',
+    'SoFiUSD',
     6,
     'APhcqtzE73es3KAGiVksZFMLGwJDiAey5qZKUrQHEHfS',
     'APhcqtzE73es3KAGiVksZFMLGwJDiAey5qZKUrQHEHfS',
