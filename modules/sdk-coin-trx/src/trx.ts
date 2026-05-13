@@ -389,15 +389,7 @@ export class Trx extends BaseCoin {
       //    containing { txID, raw_data, raw_data_hex }.
       // 2. ECDSA signing flow (ecdsa.ts) — txHex is signableHex, the raw protobuf bytes (raw_data_hex).
       // We need to extract the raw_data_hex in case 1 before decoding.
-      let rawDataHex: string;
-      try {
-        // serializedTxHex: full JSON string — extract the raw_data_hex field
-        rawDataHex = JSON.parse(txPrebuild.txHex).raw_data_hex;
-      } catch {
-        // signableHex: already raw protobuf hex (raw_data_hex)
-        console.debug(`Could not parse txHex as JSON for coin ${this.getChain()}, using txHex directly`);
-        rawDataHex = txPrebuild.txHex;
-      }
+      const rawDataHex = this.extractRawDataHex(txPrebuild.txHex);
       const decodedTx = Utils.decodeTransaction(rawDataHex);
 
       // decodedTx uses a numeric enum for contract type (from protobuf decoding),
@@ -409,6 +401,15 @@ export class Trx extends BaseCoin {
           throw new Error('Invalid Transfer contract structure.');
         }
         return this.validateTransferContract(decodedTx.contract[0], txParams, true);
+      }
+
+      if (decodedTx.contractType === Enum.ContractType.TriggerSmartContract) {
+        // TRC20 token transfers (TriggerSmartContract) must be verified via TrxToken.verifyTransaction,
+        // not here. Fail closed to prevent unvalidated token transfers from being silently signed.
+        throw new Error(
+          'TriggerSmartContract verification is not supported by native TRX. ' +
+            'TRC20 token transfers must be verified via TrxToken.verifyTransaction.'
+        );
       }
 
       return true;
@@ -431,6 +432,24 @@ export class Trx extends BaseCoin {
       return this.validateTransferContract(contract, txParams);
     } else {
       return true;
+    }
+  }
+
+  /**
+   * Extract the raw protobuf hex (raw_data_hex) from a TSS txHex.
+   *
+   * TSS verifyTransaction is called from two places:
+   *   1. prebuildAndSignTransaction — txHex is a full JSON string containing raw_data_hex.
+   *   2. ECDSA signing flow — txHex is already the raw protobuf hex (raw_data_hex).
+   *
+   * This helper handles both formats so callers don't duplicate the try/catch.
+   */
+  protected extractRawDataHex(txHex: string): string {
+    try {
+      return JSON.parse(txHex).raw_data_hex;
+    } catch {
+      console.debug(`Could not parse txHex as JSON for coin ${this.getChain()}, using txHex directly`);
+      return txHex;
     }
   }
 
