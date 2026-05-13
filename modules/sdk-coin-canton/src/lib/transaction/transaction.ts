@@ -269,6 +269,7 @@ export class Transaction extends BaseTransaction {
     let inputAmount = '0';
     let outputAmount = '0';
     switch (this.type) {
+      case TransactionType.CosignDelegationAccept:
       case TransactionType.TransferAccept:
       case TransactionType.TransferReject: {
         const txData = this.toJson();
