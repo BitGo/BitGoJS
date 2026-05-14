@@ -70,7 +70,7 @@ export abstract class ResourceManagementTxBuilder extends TransactionBuilder {
     }
 
     if (extensionMs > TRANSACTION_MAX_EXPIRATION) {
-      throw new ExtendTransactionError('The expiration cannot be extended more than one year');
+      throw new ExtendTransactionError('The expiration cannot be extended more than one day');
     }
 
     if (this._expiration) {

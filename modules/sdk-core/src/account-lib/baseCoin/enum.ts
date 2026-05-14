@@ -108,6 +108,8 @@ export enum TransactionType {
   UNFREEZE,
   WITHDRAW_EXPIRE_UNFREEZE,
   CLAIM_REWARDS,
+  // Create an account on-chain (e.g. TRX AccountCreateContract)
+  AccountCreate,
 
   // cspr and stx
   stakingLock,

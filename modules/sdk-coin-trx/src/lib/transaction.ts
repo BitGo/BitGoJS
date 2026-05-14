@@ -29,6 +29,7 @@ import {
   WithdrawExpireUnfreezeContract,
   ResourceManagementContract,
   WithdrawBalanceContract,
+  AccountCreateContract,
 } from './iface';
 
 /**
@@ -226,6 +227,13 @@ export class Transaction extends BaseTransaction {
           value: undelegateValue.balance.toString(),
         };
         break;
+      case ContractType.AccountCreate: {
+        this._type = TransactionType.AccountCreate;
+        const createValue = (rawData.contract[0] as AccountCreateContract).parameter.value;
+        output = { address: createValue.account_address, value: '0' };
+        input = { address: createValue.owner_address, value: '0' };
+        break;
+      }
       default:
         throw new ParseTransactionError('Unsupported contract type');
     }
