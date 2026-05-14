@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@11.0.0...@bitgo/abstract-utxo@11.1.0) (2026-05-14)
+
+
+### Bug Fixes
+
+* **sdk-core:** use async decrypt and getUserPrv at v2 call sites ([7680291](https://github.com/BitGo/BitGoJS/commit/76802916fe7d034cb8f961bee4b05c35c6bd0ab5))
+
+
+### Features
+
+* **sdk-core:** make decryptKeychainPrivateKey async for v1/v2 auto-detection ([9679bea](https://github.com/BitGo/BitGoJS/commit/9679bea81027e24b7d6bb485b0896a6d5b7b08ae))
+
+
+
+
+
 # [11.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.25.0...@bitgo/abstract-utxo@11.0.0) (2026-05-05)
 
 

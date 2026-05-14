@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.35.0...bitgo@51.0.0) (2026-05-14)
+
+
+### Bug Fixes
+
+* **bitgo:** format mpcv2 signTxRequest recipientSource test ([8447142](https://github.com/BitGo/BitGoJS/commit/844714211a53262013222a93f4943b2ad9053fe6))
+* **sdk-core:** route EdDSA MPCv2 hot wallets to full apiVersion ([7bf0b12](https://github.com/BitGo/BitGoJS/commit/7bf0b12993085eb1dd1ea322f87c8d4b27e7b885))
+* **sdk-core:** use async decrypt and getUserPrv at v2 call sites ([7680291](https://github.com/BitGo/BitGoJS/commit/76802916fe7d034cb8f961bee4b05c35c6bd0ab5))
+
+
+### Features
+
+* add zama to coinFactory ([6c61664](https://github.com/BitGo/BitGoJS/commit/6c616641cd2f8ac217fff00e978a87338738a9e8))
+* **bitgo:** add support for Export txn type in prebuildTransaction ([c20a0aa](https://github.com/BitGo/BitGoJS/commit/c20a0aa8cce8f77a41fefddef2ed98c100ba6b5b))
+* **sdk-coin-canton:** added canton in coinFactory tokenConstuctor ([ba4647d](https://github.com/BitGo/BitGoJS/commit/ba4647d430a811ca30aa13d784c5befaa9bfb5bd))
+* **sdk-core:** add EdDSA MPCv2 full 3-round signing orchestration ([1ef502a](https://github.com/BitGo/BitGoJS/commit/1ef502aaa932967640c1326652cd59b21b726e0a))
+* **sdk-core:** add explicit recipient mode typing for TSS signTxRequest ([045afe6](https://github.com/BitGo/BitGoJS/commit/045afe60ba9b70ccc4cf50fe8ce0b5172b9c597a)), closes [#8462](https://github.com/BitGo/BitGoJS/issues/8462)
+* **sdk-core:** add webauthnInfo support to createMpc [WAL-761] ([b52c7ae](https://github.com/BitGo/BitGoJS/commit/b52c7ae27ff7ae453fcd063289fa3f6704352428))
+* **sdk-core:** make decryptKeychainPrivateKey async for v1/v2 auto-detection ([9679bea](https://github.com/BitGo/BitGoJS/commit/9679bea81027e24b7d6bb485b0896a6d5b7b08ae))
+* **sdk-core:** update decrypt calls to use decryptAsync ([b5f1ca1](https://github.com/BitGo/BitGoJS/commit/b5f1ca1e718e4910eaf9823c69ca398990205f05))
+
+
+### BREAKING CHANGES
+
+* **sdk-core:** ITssUtils.signTxRequest is now typed as TssSignTxRequestParamsWithPrv instead of a minimal inline shape. TypeScript consumers that implement or narrow this interface may need signature updates; runtime behavior for existing callers is unchanged.
+
+
+
+
+
 # [50.35.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.34.1...bitgo@50.35.0) (2026-05-05)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-kaspa@1.1.2...@bitgo/sdk-coin-kaspa@1.2.0) (2026-05-14)
+
+
+### Features
+
+* **sdk-coin-kaspa:** transaction util funtions ([9467fea](https://github.com/BitGo/BitGoJS/commit/9467fea98adddf886da16e151791c41b7eb9e98f))
+
+
+
+
+
 ## [1.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-kaspa@1.1.1...@bitgo/sdk-coin-kaspa@1.1.2) (2026-05-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-kaspa

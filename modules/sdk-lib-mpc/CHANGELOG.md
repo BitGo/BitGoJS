@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.12.0...@bitgo/sdk-lib-mpc@10.13.0) (2026-05-14)
+
+
+### Bug Fixes
+
+* **sdk-lib-mpc:** add keyShare to EdDSA MPCv2 getReducedKeyShare ([92be23f](https://github.com/BitGo/BitGoJS/commit/92be23fc7641053b41ee36f2b68f8af5d2f98eb5))
+
+
+### Features
+
+* **sdk-core:** add EdDSA MPCv2 DSG helpers and DKG key-share util ([3d581de](https://github.com/BitGo/BitGoJS/commit/3d581dec3fbb99a082e09d5d84be066172f9c81b))
+* **sdk-lib-mpc:** add executeTillRound handler util ([02a232a](https://github.com/BitGo/BitGoJS/commit/02a232a8431ea8e633bc62190ffa5fa9b192d528))
+
+
+
+
+
 # [10.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.11.1...@bitgo/sdk-lib-mpc@10.12.0) (2026-04-29)
 
 

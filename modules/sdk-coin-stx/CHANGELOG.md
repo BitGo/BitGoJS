@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.12.7...@bitgo/sdk-coin-stx@3.13.0) (2026-05-14)
+
+
+### Features
+
+* **sdk-coin-stx:** add getEncodedPrincipal util for Clarity standard principals ([c531a39](https://github.com/BitGo/BitGoJS/commit/c531a39cda9865351bffc4289bd8e90d5b6033d0))
+* **sdk-coin-stx:** add sBTC withdrawal transaction builder ([02193be](https://github.com/BitGo/BitGoJS/commit/02193be6e686dfcccb92df2200e5d85e180e4816))
+
+
+
+
+
 ## [3.12.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.12.6...@bitgo/sdk-coin-stx@3.12.7) (2026-05-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.8.3...@bitgo/sdk-coin-hbar@2.9.0) (2026-05-14)
+
+
+### Bug Fixes
+
+* **sdk-coin-hbar:** support self-transfer for claim rewards ([fcf0884](https://github.com/BitGo/BitGoJS/commit/fcf0884cf720d98da5d0bd35df6c6c4a68a3eee2))
+
+
+### Features
+
+* **sdk-coin-hbar:** add AccountUpdate support to explainTransaction in BitGoJS ([a721e11](https://github.com/BitGo/BitGoJS/commit/a721e11edee52d26bdf475f782fff1db091d59dc))
+
+
+
+
+
 ## [2.8.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.8.2...@bitgo/sdk-coin-hbar@2.8.3) (2026-05-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-hbar

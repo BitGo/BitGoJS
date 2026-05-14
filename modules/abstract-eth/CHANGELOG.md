@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.24.3...@bitgo/abstract-eth@24.25.0) (2026-05-14)
+
+
+### Bug Fixes
+
+* **sdk-core:** use async decrypt and getUserPrv at v2 call sites ([7680291](https://github.com/BitGo/BitGoJS/commit/76802916fe7d034cb8f961bee4b05c35c6bd0ab5))
+
+
+### Features
+
+* add decryption delegation support for zama ([ac54106](https://github.com/BitGo/BitGoJS/commit/ac5410606336e95063a0221784ce8bb8241b5d48))
+* **sdk-core:** make decryptKeychainPrivateKey async for v1/v2 auto-detection ([9679bea](https://github.com/BitGo/BitGoJS/commit/9679bea81027e24b7d6bb485b0896a6d5b7b08ae))
+
+
+
+
+
 ## [24.24.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.24.2...@bitgo/abstract-eth@24.24.3) (2026-05-05)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

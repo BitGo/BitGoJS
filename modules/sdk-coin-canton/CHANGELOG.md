@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.19.2...@bitgo/sdk-coin-canton@1.20.0) (2026-05-14)
+
+
+### Features
+
+* **sdk-coin-canton:** add cosign delegation accept builder' ([ab838bf](https://github.com/BitGo/BitGoJS/commit/ab838bfee62e4d6f5d636dee40c6af2abe1ef343))
+* **sdk-coin-canton:** added cosignDelegationProposal builder ([fdb1754](https://github.com/BitGo/BitGoJS/commit/fdb1754d8d3703aecb503036d0fd67323b196208))
+* **sdk-coin-canton:** setting the update id in cosign delegation builder ([e4f24f1](https://github.com/BitGo/BitGoJS/commit/e4f24f118376b7f7218727cb90977fcf1d661dac))
+
+
+
+
+
 ## [1.19.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.19.1...@bitgo/sdk-coin-canton@1.19.2) (2026-05-05)
 
 

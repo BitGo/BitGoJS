@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.80.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.79.2...@bitgo/sdk-api@1.80.0) (2026-05-14)
+
+
+### Features
+
+* **sdk-api, sdk-core:** thread AAD through v2 encryption for DKLS context binding ([f9b7a24](https://github.com/BitGo/BitGoJS/commit/f9b7a24f34d04aa33f2451115b90fc94d9da53f2))
+* **sdk-api:** add encryptAsync and createEncryptionSession on BitGoBase/BitGoAPI ([8879071](https://github.com/BitGo/BitGoJS/commit/887907110bbe4f5eb06a2f728a7ae4b1abb1f787))
+
+
+
+
+
 ## [1.79.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.79.1...@bitgo/sdk-api@1.79.2) (2026-05-05)
 
 **Note:** Version bump only for package @bitgo/sdk-api

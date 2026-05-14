@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.4.8...@bitgo/web-demo@3.5.0) (2026-05-14)
+
+
+### Bug Fixes
+
+* **web-demo:** pad base64url before atob in toArrayBuffer ([ba653a8](https://github.com/BitGo/BitGoJS/commit/ba653a854c34a29bf7c9be1367368f1a5d6084e2))
+
+
+### Features
+
+* **web-demo:** add login flow and rework PasskeyDemo UI ([ac763a8](https://github.com/BitGo/BitGoJS/commit/ac763a89d6e6693027845bc7230358a185181f32))
+* **web-demo:** add PasskeyDemo component with passkey lifecycle UI ([70da36d](https://github.com/BitGo/BitGoJS/commit/70da36db7da1b59c0de8cfbe5eaa24e5cc7c3311))
+
+
+
+
+
 ## [3.4.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.4.7...@bitgo/web-demo@3.4.8) (2026-05-05)
 
 **Note:** Version bump only for package @bitgo/web-demo
