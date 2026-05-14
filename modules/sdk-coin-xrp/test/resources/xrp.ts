@@ -397,6 +397,113 @@ export const serverInfoResponse = {
   },
 };
 
+// ─── AccountDelete test fixtures ─────────────────────────────────────────────
+
+/** account_lines response with no trustlines – satisfies the reserveWithdrawal pre-check */
+export const accountlinesResponseEmpty = {
+  body: {
+    result: {
+      account: 'rNTfZB1h4TDdF9QXw37nbWk9euZmRby4qn',
+      ledger_hash: 'E6F38D1D7B94153BF7FFC8D8CC1DF57D57151D26FC2EB7647B5631786B955EFF',
+      ledger_index: 1848964,
+      lines: [],
+      validated: true,
+    },
+    status: 'success',
+    type: 'response',
+  },
+};
+
+/** account_objects response containing only a SignerList – passes the "no blocking objects" check */
+export const accountObjectsResponse = {
+  body: {
+    result: {
+      account: 'rNTfZB1h4TDdF9QXw37nbWk9euZmRby4qn',
+      account_objects: [
+        {
+          Flags: 65536,
+          LedgerEntryType: 'SignerList',
+          OwnerNode: '0',
+          SignerEntries: [
+            { SignerEntry: { Account: 'rwFcXstMseu91iejAdoYWCPaVR4GgdiV5i', SignerWeight: 1 } },
+            { SignerEntry: { Account: 'r45kBeT5cmtaW6DHGAXzfjYHQzsVFhPX3M', SignerWeight: 1 } },
+            { SignerEntry: { Account: 'r3mykfPQZt4eJZKLUGMNVB49eDSJiE9zh3', SignerWeight: 1 } },
+          ],
+          SignerListID: 0,
+          SignerQuorum: 2,
+          index: '00B47042E37B5F11E6325D7BECAA08D165C6681DB4F6528AF7D1CA6ED50075B7',
+        },
+      ],
+      ledger_current_index: 1851200,
+      validated: false,
+    },
+    status: 'success',
+    type: 'response',
+  },
+};
+
+/** account_objects response with a blocking Offer object – triggers the "blocking objects" error */
+export const accountObjectsResponseBlocking = {
+  body: {
+    result: {
+      account: 'rNTfZB1h4TDdF9QXw37nbWk9euZmRby4qn',
+      account_objects: [
+        {
+          Flags: 0,
+          LedgerEntryType: 'Offer',
+          OwnerNode: '0',
+          index: 'AABBCCDD',
+        },
+      ],
+      ledger_current_index: 1851200,
+      validated: false,
+    },
+    status: 'success',
+    type: 'response',
+  },
+};
+
+/** account_info for the destination address – funded account, no error */
+export const destAccountInfoResponse = {
+  body: {
+    result: {
+      account_data: {
+        Account: 'raBSn6ipeWXYe7rNbNafZSx9dV2fU3zRyP',
+        Balance: '20000000',
+        Flags: 0,
+        LedgerEntryType: 'AccountRoot',
+        Sequence: 1,
+        index: '000000000000000000000000000000000000000000000000000000000000000A',
+      },
+      ledger_current_index: 1851200,
+      validated: true,
+    },
+    status: 'success',
+    type: 'response',
+  },
+};
+
+/** account_info for a destination that does not exist on the ledger */
+export const destAccountInfoNotFound = {
+  body: {
+    result: {
+      error: 'actNotFound',
+      error_code: 19,
+      error_message: 'Account not found.',
+      request: {
+        account: 'raBSn6ipeWXYe7rNbNafZSx9dV2fU3zRyP',
+        command: 'account_info',
+        ledger_index: 'validated',
+        strict: true,
+      },
+    },
+    status: 'error',
+    type: 'response',
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const enableTokenFixtures = {
   txParams: {
     type: 'enabletoken',

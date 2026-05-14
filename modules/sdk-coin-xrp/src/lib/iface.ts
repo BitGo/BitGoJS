@@ -5,16 +5,17 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   TransactionPrebuild,
 } from '@bitgo/sdk-core';
-import { AccountSet, Amount, Payment, Signer, SignerEntry, SignerListSet, TrustSet } from 'xrpl';
+import { AccountDelete, AccountSet, Amount, Payment, Signer, SignerEntry, SignerListSet, TrustSet } from 'xrpl';
 
 export enum XrpTransactionType {
+  AccountDelete = 'AccountDelete',
   AccountSet = 'AccountSet',
   Payment = 'Payment',
   SignerListSet = 'SignerListSet',
   TrustSet = 'TrustSet',
 }
 
-export type XrpTransaction = Payment | AccountSet | SignerListSet | TrustSet;
+export type XrpTransaction = AccountDelete | Payment | AccountSet | SignerListSet | TrustSet;
 
 export interface Address {
   address: string;
@@ -69,6 +70,9 @@ export interface RecoveryOptions {
   krsProvider?: string;
   issuerAddress?: string;
   currencyCode?: string;
+  /** When true, builds an AccountDelete transaction to withdraw the full balance
+   *  including the base reserve (currently 10 XRP) instead of a normal Payment. */
+  reserveWithdrawal?: boolean;
 }
 
 export interface HalfSignedTransaction {
@@ -124,7 +128,7 @@ export interface TxData {
   signingPubKey?: string; // if '' then it is a multi sig
   txnSignature?: string; // only for single sig
   signers?: Signer[]; // only for multi sig
-  // transfer xrp fields
+  // transfer xrp / account-delete fields
   destination?: string;
   destinationTag?: number;
   amount?: Amount;
