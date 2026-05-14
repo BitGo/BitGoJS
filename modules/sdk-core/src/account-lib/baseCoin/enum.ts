@@ -134,6 +134,8 @@ export enum TransactionType {
 
   // xrp — delete an account and recover the full balance including reserve
   AccountDelete,
+  // Delegate decryption access for Zama ERC-7984 confidential tokens via ACL contract
+  DecryptionDelegation,
 }
 
 /**

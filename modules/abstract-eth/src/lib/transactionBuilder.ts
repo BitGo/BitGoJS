@@ -157,6 +157,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.SingleSigSend:
         return this.buildBase('0x');
       case TransactionType.ContractCall:
+      case TransactionType.DecryptionDelegation:
         return this.buildGenericContractCallTransaction();
       default:
         throw new BuildTransactionError('Unsupported transaction type');
@@ -295,6 +296,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         this.setContract(transactionJson.to);
         break;
       case TransactionType.ContractCall:
+      case TransactionType.DecryptionDelegation:
         this.setContract(transactionJson.to);
         this.data(transactionJson.data);
         break;
@@ -444,6 +446,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.StakingWithdraw:
         break;
       case TransactionType.ContractCall:
+      case TransactionType.DecryptionDelegation:
         this.validateContractAddress();
         this.validateDataField();
         break;
@@ -863,7 +866,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   // region generic contract call
   data(encodedCall: string): void {
-    const supportedTransactionTypes = [TransactionType.ContractCall, TransactionType.RecoveryWalletDeployment];
+    const supportedTransactionTypes = [
+      TransactionType.ContractCall,
+      TransactionType.RecoveryWalletDeployment,
+      TransactionType.DecryptionDelegation,
+    ];
     if (!supportedTransactionTypes.includes(this._type)) {
       throw new BuildTransactionError('data can only be set for contract call transaction types');
     }

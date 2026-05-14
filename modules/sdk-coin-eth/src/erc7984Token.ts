@@ -4,7 +4,7 @@
 import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
 
 import { coins, Erc7984TokenConfig, tokens } from '@bitgo/statics';
-import { CoinNames } from '@bitgo/abstract-eth';
+import { CoinNames, DecryptionDelegationBuilder } from '@bitgo/abstract-eth';
 
 import { Eth } from './eth';
 import { TransactionBuilder } from './lib';
@@ -45,39 +45,39 @@ export class Erc7984Token extends Eth {
     return tokensCtors;
   }
 
-  get type() {
+  get type(): string {
     return this.tokenConfig.type;
   }
 
-  get name() {
+  get name(): string {
     return this.tokenConfig.name;
   }
 
-  get coin() {
+  get coin(): string {
     return this.tokenConfig.coin;
   }
 
-  get network() {
+  get network(): string {
     return this.tokenConfig.network;
   }
 
-  get tokenContractAddress() {
+  get tokenContractAddress(): string {
     return this.tokenConfig.tokenContractAddress;
   }
 
-  get decimalPlaces() {
+  get decimalPlaces(): number {
     return this.tokenConfig.decimalPlaces;
   }
 
-  getChain() {
+  getChain(): string {
     return this.tokenConfig.type;
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'ERC7984 Confidential Token';
   }
 
-  getBaseFactor() {
+  getBaseFactor(): number {
     return Math.pow(10, this.tokenConfig.decimalPlaces);
   }
 
@@ -85,14 +85,18 @@ export class Erc7984Token extends Eth {
    * Flag for sending value of 0.
    * ERC-7984 confidential transfers always carry an encrypted amount; zero-value sends are not meaningful.
    */
-  valuelessTransferAllowed() {
+  valuelessTransferAllowed(): boolean {
     return false;
   }
 
   /**
-   * Flag for sending data along with transactions.
+   * Flag for sending data along with transactions via the standard token-send API.
+   * Returns false because ERC-7984 sends use confidentialTransfer() calldata built
+   * by WP, not an arbitrary data field on the send params.
+   * Note: this does not prevent calldata-based flows like getDelegationBuilder(),
+   * which bypass the token-send path entirely.
    */
-  transactionDataAllowed() {
+  transactionDataAllowed(): boolean {
     return false;
   }
 
@@ -108,5 +112,26 @@ export class Erc7984Token extends Eth {
 
   protected getTransactionBuilder(): TransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
+  }
+
+  /**
+   * Returns a DecryptionDelegationBuilder for constructing Zama ACL decryption
+   * delegation transactions.
+   *
+   * The builder produces a DecryptionDelegationTxRequest {to, data, value} that is
+   * wallet-type-agnostic — WP routes it to the correct signing path:
+   * - MPC: submit as a raw TSS transaction
+   * - Multisig: wrap in sendMultiSig(walletContract, to, 0, data, ...)
+   *
+   * Example:
+   *   const req = coin.getDecryptionDelegationBuilder().build({
+   *     aclContractAddress: '0xf0Ff...',
+   *     delegateAddress:    enterpriseViewingKey,
+   *     tokenContractAddresses: [tokenAddress],
+   *     expiryTimestamp:    Math.floor(Date.now() / 1000) + 365 * 86400,
+   *   });
+   */
+  getDecryptionDelegationBuilder(): DecryptionDelegationBuilder {
+    return new DecryptionDelegationBuilder();
   }
 }

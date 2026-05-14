@@ -85,6 +85,7 @@ import {
   sendMultiSigTypesFirstSigner,
 } from './walletUtil';
 import { EthTransactionData } from './types';
+import { delegateForUserDecryptionMethodId } from './zamaUtils';
 
 /**
  * @param network
@@ -727,6 +728,13 @@ const transactionTypesMap = {
   [UnvoteMethodId]: TransactionType.StakingUnvote,
   [UnlockMethodId]: TransactionType.StakingUnlock,
   [WithdrawMethodId]: TransactionType.StakingWithdraw,
+  // aclMulticallMethodId (multicall(bytes[])) is intentionally NOT mapped here.
+  // classifyTransaction() only sees calldata, not `to`, so 0xac9650d8 would mislabel
+  // any OpenZeppelin MulticallUpgradeable call (routers, aggregators, unrelated contracts)
+  // as DecryptionDelegation. Builder output (which always uses multicall) therefore
+  // classifies as ContractCall; callers should set TransactionType.DecryptionDelegation
+  // explicitly when building from a known delegation template.
+  [delegateForUserDecryptionMethodId]: TransactionType.DecryptionDelegation,
 };
 
 /**

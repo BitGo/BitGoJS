@@ -1,4 +1,6 @@
 export * from './constants';
+export * from './zamaUtils';
+export * from './decryptionDelegationBuilder';
 export * from './contractCall';
 export * from './iface';
 export * from './keyPair';
