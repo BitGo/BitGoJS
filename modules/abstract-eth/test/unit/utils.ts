@@ -1,12 +1,20 @@
 import should from 'should';
+import EthereumAbi from 'ethereumjs-abi';
 import {
   flushERC721TokensData,
   flushERC1155TokensData,
   decodeFlushERC721TokensData,
   decodeFlushERC1155TokensData,
+  decodeBatchTransferData,
 } from '../../src/lib/utils';
 import { ERC721TransferBuilder } from '../../src/lib/transferBuilders/transferBuilderERC721';
-import { ERC721TransferFromMethodId, ERC721SafeTransferTypeMethodId } from '../../src/lib/walletUtil';
+import {
+  ERC721TransferFromMethodId,
+  ERC721SafeTransferTypeMethodId,
+  batchMethodId,
+  batchMethodName,
+  batchMethodTypes,
+} from '../../src/lib/walletUtil';
 
 describe('Abstract ETH Utils', () => {
   describe('ERC721 Flush Functions', () => {
@@ -266,6 +274,44 @@ describe('Abstract ETH Utils', () => {
       const decoded1155 = decodeFlushERC1155TokensData(encoded1155);
 
       decoded1155.tokenAddress.toLowerCase().should.equal(tokenAddressChecksum.toLowerCase());
+    });
+  });
+
+  describe('decodeBatchTransferData', () => {
+    const address1 = '0x1111111111111111111111111111111111111111';
+    const address2 = '0x2222222222222222222222222222222222222222';
+    const encodeBatch = (addresses: string[], amounts: string[]): string => {
+      const selector = EthereumAbi.methodID(batchMethodName, batchMethodTypes);
+      const args = EthereumAbi.rawEncode(batchMethodTypes, [addresses, amounts]);
+      return '0x' + Buffer.concat([selector, args]).toString('hex');
+    };
+
+    it('hardcoded batchMethodId matches the runtime-computed selector', () => {
+      const computed = '0x' + EthereumAbi.methodID(batchMethodName, batchMethodTypes).toString('hex');
+      computed.should.equal(batchMethodId);
+    });
+
+    it('round-trips encode/decode for multiple recipients', () => {
+      const data = encodeBatch([address1, address2], ['1000', '2500']);
+      const decoded = decodeBatchTransferData(data);
+
+      decoded.recipients.length.should.equal(2);
+      decoded.recipients[0].address.toLowerCase().should.equal(address1);
+      decoded.recipients[0].amount.should.equal('1000');
+      decoded.recipients[1].address.toLowerCase().should.equal(address2);
+      decoded.recipients[1].amount.should.equal('2500');
+    });
+
+    it('throws on wrong method selector', () => {
+      should.throws(() => decodeBatchTransferData('0xdeadbeef00000000'), /Invalid batch transfer bytecode/);
+    });
+
+    it('throws when the encoded address[] and uint256[] arrays have different lengths', () => {
+      // Encode the batch payload directly with mismatched array lengths.
+      const payload = EthereumAbi.rawEncode(batchMethodTypes, [[address1, address2], ['1000']]);
+      const tampered =
+        '0x' + Buffer.concat([EthereumAbi.methodID(batchMethodName, batchMethodTypes), payload]).toString('hex');
+      should.throws(() => decodeBatchTransferData(tampered), /Mismatched batch address\/amount array lengths/);
     });
   });
 });

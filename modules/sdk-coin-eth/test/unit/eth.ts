@@ -5,6 +5,10 @@ import sinon from 'sinon';
 import { bip32 } from '@bitgo/secp256k1';
 import * as secp256k1 from 'secp256k1';
 import request from 'superagent';
+import { Transaction as LegacyTransaction } from '@ethereumjs/tx';
+import EthereumAbi from 'ethereumjs-abi';
+import { addHexPrefix } from 'ethereumjs-util';
+import BigNumber from 'bignumber.js';
 import {
   common,
   generateRandomPassword,
@@ -38,6 +42,88 @@ import { ethMultiSigBackupKey } from './fixtures/ethMultiSigBackupKey';
 import { ethTssBackupKey } from './fixtures/ethTssBackupKey';
 
 nock.enableNetConnect();
+
+/**
+ * Build a valid serialized batch transaction hex. Outer call is sendMultiSig to the wallet contract;
+ * its inner data is the batch(address[],uint256[]) calldata that goes to the batcher contract.
+ */
+function buildBatchTxHex(
+  recipients: { address: string; amount: string }[],
+  batcherAddress: string,
+  opts: {
+    walletContractAddress?: string;
+    sequenceId?: number;
+    expireTime?: number;
+    innerMethodSignature?: { name: string; types: string[] };
+    overrideInnerAddresses?: string[];
+    overrideInnerAmounts?: string[];
+  } = {}
+): string {
+  const walletContractAddress = opts.walletContractAddress || '0x' + '11'.repeat(20);
+  const sequenceId = opts.sequenceId ?? 1;
+  const expireTime = opts.expireTime ?? 1700000000;
+  const innerSig = opts.innerMethodSignature || { name: 'batch', types: ['address[]', 'uint256[]'] };
+  const innerAddresses = opts.overrideInnerAddresses ?? recipients.map((r) => r.address);
+  const innerAmounts = opts.overrideInnerAmounts ?? recipients.map((r) => r.amount);
+
+  const innerData = Buffer.concat([
+    EthereumAbi.methodID(innerSig.name, innerSig.types),
+    EthereumAbi.rawEncode(innerSig.types, [innerAddresses, innerAmounts]),
+  ]);
+  const total = recipients.reduce((s, r) => s.plus(r.amount), new BigNumber(0)).toFixed();
+  const sendMultisigData = Buffer.concat([
+    EthereumAbi.methodID('sendMultiSig', ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes']),
+    EthereumAbi.rawEncode(
+      ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'],
+      [batcherAddress, total, innerData, expireTime, sequenceId, Buffer.alloc(0)]
+    ),
+  ]);
+  const tx = LegacyTransaction.fromTxData({
+    to: walletContractAddress,
+    data: addHexPrefix(sendMultisigData.toString('hex')),
+    nonce: 0,
+    gasPrice: 20000000000,
+    gasLimit: 500000,
+    value: 0,
+  });
+  return addHexPrefix(tx.serialize().toString('hex'));
+}
+
+/**
+ * Build a TSS batch transaction hex. TSS wallets are EOAs, so the outer transaction calls the
+ * batcher contract directly: tx.to = batcher, tx.value = total, tx.data = batch(addr[],amt[]).
+ */
+function buildTssBatchTxHex(
+  recipients: { address: string; amount: string }[],
+  batcherAddress: string,
+  opts: {
+    overrideInnerAddresses?: string[];
+    overrideInnerAmounts?: string[];
+    innerMethodSignature?: { name: string; types: string[] };
+    overrideTo?: string;
+    overrideValue?: string;
+  } = {}
+): string {
+  const innerSig = opts.innerMethodSignature || { name: 'batch', types: ['address[]', 'uint256[]'] };
+  const innerAddresses = opts.overrideInnerAddresses ?? recipients.map((r) => r.address);
+  const innerAmounts = opts.overrideInnerAmounts ?? recipients.map((r) => r.amount);
+
+  const innerData = Buffer.concat([
+    EthereumAbi.methodID(innerSig.name, innerSig.types),
+    EthereumAbi.rawEncode(innerSig.types, [innerAddresses, innerAmounts]),
+  ]);
+  const total = recipients.reduce((s, r) => s.plus(r.amount), new BigNumber(0));
+  const rawValue = opts.overrideValue ?? total.toFixed();
+  const tx = LegacyTransaction.fromTxData({
+    to: opts.overrideTo ?? batcherAddress,
+    data: addHexPrefix(innerData.toString('hex')),
+    nonce: 0,
+    gasPrice: 20000000000,
+    gasLimit: 500000,
+    value: addHexPrefix(new BigNumber(rawValue).toString(16)),
+  });
+  return addHexPrefix(tx.serialize().toString('hex'));
+}
 
 describe('ETH:', function () {
   let bitgo: TestBitGoAPI;
@@ -216,20 +302,21 @@ describe('ETH:', function () {
     it('should verify a batch txPrebuild from the bitgo server that matches the client txParams', async function () {
       const coin = bitgo.coin('teth') as Teth;
       const wallet = new Wallet(bitgo, coin, {});
+      const batcherAddress = (coin?.staticsCoin?.network as EthereumNetwork).batcherContractAddress as string;
 
+      const batchRecipients = [
+        { amount: '1000000000000', address: address1 },
+        { amount: '2500000000000', address: address2 },
+      ];
       const txParams = {
-        recipients: [
-          { amount: '1000000000000', address: address1 },
-          { amount: '2500000000000', address: address2 },
-        ],
+        recipients: batchRecipients,
         wallet: wallet,
         walletPassphrase: 'fakeWalletPassphrase',
       };
 
       const txPrebuild = {
-        recipients: [
-          { amount: '3500000000000', address: (coin?.staticsCoin?.network as EthereumNetwork).batcherContractAddress },
-        ],
+        recipients: [{ amount: '3500000000000', address: batcherAddress }],
+        txHex: buildBatchTxHex(batchRecipients, batcherAddress),
         nextContractSequenceId: 0,
         gasPrice: 20000000000,
         gasLimit: 500000,
@@ -539,6 +626,182 @@ describe('ETH:', function () {
       await coin
         .verifyTransaction({ txParams, txPrebuild: txPrebuild as any, wallet, verification })
         .should.be.rejectedWith('recipient address of txPrebuild does not match batcher address');
+    });
+
+    it('should reject a batch txPrebuild that omits txHex', async function () {
+      const coin = bitgo.coin('teth') as Teth;
+      const wallet = new Wallet(bitgo, coin, {});
+      const batcherAddress = (coin?.staticsCoin?.network as EthereumNetwork).batcherContractAddress as string;
+
+      const txParams = {
+        recipients: [
+          { amount: '1000000000000', address: address1 },
+          { amount: '2500000000000', address: address2 },
+        ],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        recipients: [{ amount: '3500000000000', address: batcherAddress }],
+        // no txHex
+        nextContractSequenceId: 0,
+        gasPrice: 20000000000,
+        gasLimit: 500000,
+        isBatch: true,
+        coin: 'teth',
+        walletId: 'fakeWalletId',
+        walletContractAddress: 'fakeWalletContractAddress',
+      };
+
+      await coin
+        .verifyTransaction({ txParams, txPrebuild: txPrebuild as any, wallet, verification: {} })
+        .should.be.rejectedWith(/missing txHex required for inner calldata verification/);
+    });
+
+    it('should reject a batch txPrebuild whose inner recipient address differs from txParams', async function () {
+      const coin = bitgo.coin('teth') as Teth;
+      const wallet = new Wallet(bitgo, coin, {});
+      const batcherAddress = (coin?.staticsCoin?.network as EthereumNetwork).batcherContractAddress as string;
+
+      const userRecipients = [
+        { amount: '1000000000000', address: address1 },
+        { amount: '2500000000000', address: address2 },
+      ];
+      // Server-supplied txHex routes the second payment to an attacker address instead of address2.
+      const attackerAddress = '0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead';
+
+      const txParams = {
+        recipients: userRecipients,
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        recipients: [{ amount: '3500000000000', address: batcherAddress }],
+        txHex: buildBatchTxHex(userRecipients, batcherAddress, {
+          overrideInnerAddresses: [address1, attackerAddress],
+        }),
+        nextContractSequenceId: 0,
+        gasPrice: 20000000000,
+        gasLimit: 500000,
+        isBatch: true,
+        coin: 'teth',
+        walletId: 'fakeWalletId',
+        walletContractAddress: 'fakeWalletContractAddress',
+      };
+
+      await coin
+        .verifyTransaction({ txParams, txPrebuild: txPrebuild as any, wallet, verification: {} })
+        .should.be.rejectedWith('batch txPrebuild inner recipient address does not match txParams');
+    });
+
+    it('should reject a batch txPrebuild whose inner recipient amount differs from txParams', async function () {
+      const coin = bitgo.coin('teth') as Teth;
+      const wallet = new Wallet(bitgo, coin, {});
+      const batcherAddress = (coin?.staticsCoin?.network as EthereumNetwork).batcherContractAddress as string;
+
+      const userRecipients = [
+        { amount: '1000000000000', address: address1 },
+        { amount: '2500000000000', address: address2 },
+      ];
+
+      const txParams = {
+        recipients: userRecipients,
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      // Total is unchanged (so outer check passes) but the per-recipient split is tampered.
+      const txPrebuild = {
+        recipients: [{ amount: '3500000000000', address: batcherAddress }],
+        txHex: buildBatchTxHex(userRecipients, batcherAddress, {
+          overrideInnerAmounts: ['500000000000', '3000000000000'],
+        }),
+        nextContractSequenceId: 0,
+        gasPrice: 20000000000,
+        gasLimit: 500000,
+        isBatch: true,
+        coin: 'teth',
+        walletId: 'fakeWalletId',
+        walletContractAddress: 'fakeWalletContractAddress',
+      };
+
+      await coin
+        .verifyTransaction({ txParams, txPrebuild: txPrebuild as any, wallet, verification: {} })
+        .should.be.rejectedWith('batch txPrebuild inner recipient amount does not match txParams');
+    });
+
+    it('should reject a batch txPrebuild whose inner method selector is not batch(address[],uint256[])', async function () {
+      const coin = bitgo.coin('teth') as Teth;
+      const wallet = new Wallet(bitgo, coin, {});
+      const batcherAddress = (coin?.staticsCoin?.network as EthereumNetwork).batcherContractAddress as string;
+
+      const userRecipients = [
+        { amount: '1000000000000', address: address1 },
+        { amount: '2500000000000', address: address2 },
+      ];
+
+      const txParams = {
+        recipients: userRecipients,
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        recipients: [{ amount: '3500000000000', address: batcherAddress }],
+        txHex: buildBatchTxHex(userRecipients, batcherAddress, {
+          innerMethodSignature: { name: 'notBatch', types: ['address[]', 'uint256[]'] },
+        }),
+        nextContractSequenceId: 0,
+        gasPrice: 20000000000,
+        gasLimit: 500000,
+        isBatch: true,
+        coin: 'teth',
+        walletId: 'fakeWalletId',
+        walletContractAddress: 'fakeWalletContractAddress',
+      };
+
+      await coin
+        .verifyTransaction({ txParams, txPrebuild: txPrebuild as any, wallet, verification: {} })
+        .should.be.rejectedWith(/inner method selector is not batch/);
+    });
+
+    it('should reject a batch txPrebuild whose inner recipient count differs from txParams', async function () {
+      const coin = bitgo.coin('teth') as Teth;
+      const wallet = new Wallet(bitgo, coin, {});
+      const batcherAddress = (coin?.staticsCoin?.network as EthereumNetwork).batcherContractAddress as string;
+
+      const userRecipients = [
+        { amount: '1000000000000', address: address1 },
+        { amount: '2500000000000', address: address2 },
+      ];
+
+      const txParams = {
+        recipients: userRecipients,
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        recipients: [{ amount: '3500000000000', address: batcherAddress }],
+        // Inner calldata sweeps the full total to a single attacker recipient.
+        txHex: buildBatchTxHex(userRecipients, batcherAddress, {
+          overrideInnerAddresses: ['0xabababababababababababababababababababab'],
+          overrideInnerAmounts: ['3500000000000'],
+        }),
+        nextContractSequenceId: 0,
+        gasPrice: 20000000000,
+        gasLimit: 500000,
+        isBatch: true,
+        coin: 'teth',
+        walletId: 'fakeWalletId',
+        walletContractAddress: 'fakeWalletContractAddress',
+      };
+
+      await coin
+        .verifyTransaction({ txParams, txPrebuild: txPrebuild as any, wallet, verification: {} })
+        .should.be.rejectedWith(/inner recipient count \(1\) does not match txParams \(2\)/);
     });
 
     it('should reject a normal txPrebuild from the bitgo server with the wrong amount', async function () {
@@ -1055,6 +1318,191 @@ describe('ETH:', function () {
             walletType: 'tss',
           })
           .should.be.rejectedWith('Unable to determine base address for consolidation');
+      });
+    });
+
+    describe('TSS batch transactions', function () {
+      const tssBatcherAddress = () => {
+        const coin = bitgo.coin('hteth') as Hteth;
+        return (coin?.staticsCoin?.network as EthereumNetwork).batcherContractAddress as string;
+      };
+
+      it('should verify a TSS batch txPrebuild whose inner calldata matches txParams.recipients', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, {});
+        const batcherAddress = tssBatcherAddress();
+        const recipients = [
+          { amount: '1000000000000', address: address1 },
+          { amount: '2500000000000', address: address2 },
+        ];
+
+        const txParams = { recipients, wallet, walletPassphrase: 'fakeWalletPassphrase' };
+        const txPrebuild = {
+          recipients: [{ amount: '3500000000000', address: batcherAddress }],
+          txHex: buildTssBatchTxHex(recipients, batcherAddress),
+          coin: 'hteth',
+          walletId: 'fakeWalletId',
+          gasPrice: 20000000000,
+        };
+
+        const isTransactionVerified = await coin.verifyTransaction({
+          txParams: txParams as any,
+          txPrebuild: txPrebuild as any,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        });
+        isTransactionVerified.should.equal(true);
+      });
+
+      it('should reject a TSS batch txPrebuild when txHex is missing', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, {});
+        const recipients = [
+          { amount: '1000000000000', address: address1 },
+          { amount: '2500000000000', address: address2 },
+        ];
+
+        const txParams = { recipients, wallet, walletPassphrase: 'fakeWalletPassphrase' };
+        const txPrebuild = {
+          recipients: [{ amount: '3500000000000', address: tssBatcherAddress() }],
+          coin: 'hteth',
+          walletId: 'fakeWalletId',
+          gasPrice: 20000000000,
+        };
+
+        await coin
+          .verifyTransaction({
+            txParams: txParams as any,
+            txPrebuild: txPrebuild as any,
+            wallet,
+            verification: {},
+            walletType: 'tss',
+          })
+          .should.be.rejectedWith(/missing txHex required for inner calldata verification/);
+      });
+
+      it('should reject a TSS batch txPrebuild whose outer to is not the batcher contract', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, {});
+        const batcherAddress = tssBatcherAddress();
+        const recipients = [
+          { amount: '1000000000000', address: address1 },
+          { amount: '2500000000000', address: address2 },
+        ];
+
+        const txParams = { recipients, wallet, walletPassphrase: 'fakeWalletPassphrase' };
+        const txPrebuild = {
+          recipients: [{ amount: '3500000000000', address: batcherAddress }],
+          // Outer tx target is swapped to an attacker address.
+          txHex: buildTssBatchTxHex(recipients, batcherAddress, {
+            overrideTo: '0xabababababababababababababababababababab',
+          }),
+          coin: 'hteth',
+          walletId: 'fakeWalletId',
+          gasPrice: 20000000000,
+        };
+
+        await coin
+          .verifyTransaction({
+            txParams: txParams as any,
+            txPrebuild: txPrebuild as any,
+            wallet,
+            verification: {},
+            walletType: 'tss',
+          })
+          .should.be.rejectedWith(/outer to does not match batcher contract address/);
+      });
+
+      it('should reject a TSS batch txPrebuild whose outer value does not match the total', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, {});
+        const batcherAddress = tssBatcherAddress();
+        const recipients = [
+          { amount: '1000000000000', address: address1 },
+          { amount: '2500000000000', address: address2 },
+        ];
+
+        const txParams = { recipients, wallet, walletPassphrase: 'fakeWalletPassphrase' };
+        const txPrebuild = {
+          recipients: [{ amount: '3500000000000', address: batcherAddress }],
+          txHex: buildTssBatchTxHex(recipients, batcherAddress, { overrideValue: '4000000000000' }),
+          coin: 'hteth',
+          walletId: 'fakeWalletId',
+          gasPrice: 20000000000,
+        };
+
+        await coin
+          .verifyTransaction({
+            txParams: txParams as any,
+            txPrebuild: txPrebuild as any,
+            wallet,
+            verification: {},
+            walletType: 'tss',
+          })
+          .should.be.rejectedWith(/outer value .* does not match sum of txParams recipients/);
+      });
+
+      it('should reject a TSS batch txPrebuild whose inner recipient address differs from txParams', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, {});
+        const batcherAddress = tssBatcherAddress();
+        const recipients = [
+          { amount: '1000000000000', address: address1 },
+          { amount: '2500000000000', address: address2 },
+        ];
+
+        const txParams = { recipients, wallet, walletPassphrase: 'fakeWalletPassphrase' };
+        const txPrebuild = {
+          recipients: [{ amount: '3500000000000', address: batcherAddress }],
+          txHex: buildTssBatchTxHex(recipients, batcherAddress, {
+            overrideInnerAddresses: [address1, '0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead'],
+          }),
+          coin: 'hteth',
+          walletId: 'fakeWalletId',
+          gasPrice: 20000000000,
+        };
+
+        await coin
+          .verifyTransaction({
+            txParams: txParams as any,
+            txPrebuild: txPrebuild as any,
+            wallet,
+            verification: {},
+            walletType: 'tss',
+          })
+          .should.be.rejectedWith('batch txPrebuild inner recipient address does not match txParams');
+      });
+
+      it('should reject a TSS batch txPrebuild whose inner selector is not batch(address[],uint256[])', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, {});
+        const batcherAddress = tssBatcherAddress();
+        const recipients = [
+          { amount: '1000000000000', address: address1 },
+          { amount: '2500000000000', address: address2 },
+        ];
+
+        const txParams = { recipients, wallet, walletPassphrase: 'fakeWalletPassphrase' };
+        const txPrebuild = {
+          recipients: [{ amount: '3500000000000', address: batcherAddress }],
+          txHex: buildTssBatchTxHex(recipients, batcherAddress, {
+            innerMethodSignature: { name: 'notBatch', types: ['address[]', 'uint256[]'] },
+          }),
+          coin: 'hteth',
+          walletId: 'fakeWalletId',
+          gasPrice: 20000000000,
+        };
+
+        await coin
+          .verifyTransaction({
+            txParams: txParams as any,
+            txPrebuild: txPrebuild as any,
+            wallet,
+            verification: {},
+            walletType: 'tss',
+          })
+          .should.be.rejectedWith(/inner method selector is not batch/);
       });
     });
   });
