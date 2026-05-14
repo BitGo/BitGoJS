@@ -797,4 +797,5 @@ export const ERC7984_TOKEN_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.CONFIDENTIAL_TRANSFER,
   CoinFeature.REQUIRES_DECRYPTION_DELEGATION,
+  CoinFeature.STAKING,
 ];

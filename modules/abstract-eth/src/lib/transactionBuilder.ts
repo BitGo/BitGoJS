@@ -20,7 +20,7 @@ import {
 } from '@bitgo/sdk-core';
 
 import { KeyPair } from './keyPair';
-import { ETHTransactionType, Fee, SignatureParts, TxData } from './iface';
+import { ETHTransactionType, Fee, SignatureParts, StakingBuildResult, TxData } from './iface';
 import {
   calculateForwarderAddress,
   calculateForwarderV1Address,
@@ -88,6 +88,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // generic contract call builder
   // encoded contract call hex
   private _data: string;
+
+  // Generic staking builder — any builder whose build() returns StakingBuildResult
+  private _stakingBuilder?: { build(): StakingBuildResult };
 
   // Common parameter for wallet initialization and address initialization transaction
   private _salt: string;
@@ -158,6 +161,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         return this.buildBase('0x');
       case TransactionType.ContractCall:
       case TransactionType.DecryptionDelegation:
+        if (this._stakingBuilder) {
+          return this.buildStakingTransaction();
+        }
         return this.buildGenericContractCallTransaction();
       default:
         throw new BuildTransactionError('Unsupported transaction type');
@@ -447,6 +453,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         break;
       case TransactionType.ContractCall:
       case TransactionType.DecryptionDelegation:
+        if (this._stakingBuilder) {
+          break; // validated by _stakingBuilder.build()
+        }
         this.validateContractAddress();
         this.validateDataField();
         break;
@@ -529,6 +538,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   type(type: TransactionType): void {
     this._type = type;
+    this._stakingBuilder = undefined;
   }
 
   /**
@@ -880,6 +890,36 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private buildGenericContractCallTransaction(): TxData {
     return this.buildBase(this._data);
   }
+  // endregion
+
+  // region staking
+
+  /**
+   * Set a staking builder for this transaction.
+   *
+   * Accepts any object whose `build()` method returns a `StakingBuildResult`
+   * (`{ address, data, value }`). The TransactionBuilder will call `build()` at
+   * transaction build time to get the target contract address and encoded calldata.
+   *
+   * This is generic — new staking protocols just need a builder that produces
+   * `StakingBuildResult`, without any changes to the TransactionBuilder.
+   *
+   * @param builder A staking builder (e.g. ZamaStakingBuilder)
+   */
+  staking(builder: { build(): StakingBuildResult }): void {
+    if (this._type !== TransactionType.ContractCall) {
+      throw new BuildTransactionError('Staking can only be set for ContractCall transactions');
+    }
+    this._stakingBuilder = builder;
+  }
+
+  private buildStakingTransaction(): TxData {
+    const stakingResult = this._stakingBuilder!.build();
+    const txData = this.buildBase(stakingResult.data);
+    txData.to = stakingResult.address;
+    return txData;
+  }
+
   // endregion
 
   /** @inheritdoc */

@@ -4,4 +4,6 @@ export * from './transaction';
 export * from './coin';
 export * from './messages';
 export * from './zamaUtils';
+export * from './zamaStakingUtils';
+export * from './zamaStakingBuilder';
 export * from './decryptionDelegationBuilder';

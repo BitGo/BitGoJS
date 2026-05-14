@@ -154,3 +154,20 @@ export interface ForwarderInitializationData {
   addressCreationSalt?: string;
   feeAddress?: string;
 }
+
+/**
+ * Generic result from a staking builder's build() method.
+ *
+ * Any staking builder (ZAMA, future tokens) can implement a build() method
+ * returning this interface. The TransactionBuilder uses it to populate the
+ * transaction's target address and calldata without knowing the specifics
+ * of the staking protocol.
+ */
+export interface StakingBuildResult {
+  /** Target contract address for the staking transaction. */
+  address: string;
+  /** ABI-encoded calldata for the staking operation. */
+  data: string;
+  /** ETH value to send with the transaction (typically '0'). */
+  value: string;
+}
