@@ -6,8 +6,47 @@ import nock from 'nock';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { OfflineVaultTxInfo, optionalDeps, SignTransactionOptions } from '@bitgo/abstract-eth';
+import { EthereumNetwork } from '@bitgo/statics';
+import { Transaction as LegacyTransaction } from '@ethereumjs/tx';
+import EthereumAbi from 'ethereumjs-abi';
+import { addHexPrefix } from 'ethereumjs-util';
+import BigNumber from 'bignumber.js';
 
 import { Arbeth, Tarbeth, TransactionBuilder, TransferBuilder } from '../../src';
+
+/**
+ * Build a valid serialized batch transaction hex. Outer call is sendMultiSig to the wallet contract;
+ * its inner data is the batch(address[],uint256[]) calldata that goes to the batcher contract.
+ */
+function buildBatchTxHex(
+  recipients: { address: string; amount: string }[],
+  batcherAddress: string,
+  opts: { overrideInnerAddresses?: string[]; overrideInnerAmounts?: string[] } = {}
+): string {
+  const innerAddresses = opts.overrideInnerAddresses ?? recipients.map((r) => r.address);
+  const innerAmounts = opts.overrideInnerAmounts ?? recipients.map((r) => r.amount);
+  const innerData = Buffer.concat([
+    EthereumAbi.methodID('batch', ['address[]', 'uint256[]']),
+    EthereumAbi.rawEncode(['address[]', 'uint256[]'], [innerAddresses, innerAmounts]),
+  ]);
+  const total = recipients.reduce((s, r) => s.plus(r.amount), new BigNumber(0)).toFixed();
+  const sendMultisigData = Buffer.concat([
+    EthereumAbi.methodID('sendMultiSig', ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes']),
+    EthereumAbi.rawEncode(
+      ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'],
+      [batcherAddress, total, innerData, 1700000000, 1, Buffer.alloc(0)]
+    ),
+  ]);
+  const tx = LegacyTransaction.fromTxData({
+    to: '0x' + '11'.repeat(20),
+    data: addHexPrefix(sendMultisigData.toString('hex')),
+    nonce: 0,
+    gasPrice: 20000000000,
+    gasLimit: 500000,
+    value: 0,
+  });
+  return addHexPrefix(tx.serialize().toString('hex'));
+}
 import * as mockData from '../fixtures/arbeth';
 import { getBuilder } from '../getBuilder';
 
@@ -405,6 +444,64 @@ describe('Arbitrum', function () {
         .should.be.rejectedWith(
           `tarbeth doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
         );
+    });
+
+    it('should verify a batch txPrebuild whose inner calldata matches txParams.recipients', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+      const batcherAddress = (basecoin?.staticsCoin?.network as EthereumNetwork).batcherContractAddress as string;
+      const batchRecipients = [
+        { amount: '1000000000000', address: address1 },
+        { amount: '2500000000000', address: address2 },
+      ];
+
+      const txParams = { recipients: batchRecipients, wallet, walletPassphrase: 'fakeWalletPassphrase' };
+      const txPrebuild = {
+        recipients: [{ amount: '3500000000000', address: batcherAddress }],
+        txHex: buildBatchTxHex(batchRecipients, batcherAddress),
+        nextContractSequenceId: 0,
+        gasPrice: 20000000000,
+        gasLimit: 500000,
+        isBatch: true,
+        coin: 'tarbeth',
+        walletId: 'fakeWalletId',
+        walletContractAddress: 'fakeWalletContractAddress',
+      };
+
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild: txPrebuild as any,
+        wallet,
+        verification: {},
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should reject a batch txPrebuild whose inner recipient address differs from txParams', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+      const batcherAddress = (basecoin?.staticsCoin?.network as EthereumNetwork).batcherContractAddress as string;
+      const batchRecipients = [
+        { amount: '1000000000000', address: address1 },
+        { amount: '2500000000000', address: address2 },
+      ];
+
+      const txParams = { recipients: batchRecipients, wallet, walletPassphrase: 'fakeWalletPassphrase' };
+      const txPrebuild = {
+        recipients: [{ amount: '3500000000000', address: batcherAddress }],
+        txHex: buildBatchTxHex(batchRecipients, batcherAddress, {
+          overrideInnerAddresses: [address1, '0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead'],
+        }),
+        nextContractSequenceId: 0,
+        gasPrice: 20000000000,
+        gasLimit: 500000,
+        isBatch: true,
+        coin: 'tarbeth',
+        walletId: 'fakeWalletId',
+        walletContractAddress: 'fakeWalletContractAddress',
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild: txPrebuild as any, wallet, verification: {} })
+        .should.be.rejectedWith('batch txPrebuild inner recipient address does not match txParams');
     });
 
     it('should reject a hop txPrebuild that does not send to its hop address', async function () {

@@ -149,6 +149,15 @@ export interface NativeTransferData extends TransferData {
   data: string;
 }
 
+export interface BatchTransferRecipient {
+  address: string;
+  amount: string;
+}
+
+export interface BatchTransferData {
+  recipients: BatchTransferRecipient[];
+}
+
 export interface WalletInitializationData {
   salt?: string;
   owners: string[];

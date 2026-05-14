@@ -1,5 +1,7 @@
 export const sendMultisigMethodId = '0x39125215';
 export const sendMultisigTokenMethodId = '0x0dcd7a6c';
+// Selector for batch(address[],uint256[]) used by batcher contract sends.
+export const batchMethodId = '0xc00c4e9e';
 export const v1CreateForwarderMethodId = '0xfb90b320';
 export const v4CreateForwarderMethodId = '0x13b2f75c';
 export const v1WalletInitializationFirstBytes = '0x60806040';
@@ -37,6 +39,9 @@ export const sendMultiSigTypesFirstSigner = ['string', 'address', 'uint', 'bytes
 
 export const sendMultiSigTokenTypes = ['address', 'uint', 'address', 'uint', 'uint', 'bytes'];
 export const sendMultiSigTokenTypesFirstSigner = ['string', 'address', 'uint', 'address', 'uint', 'uint'];
+
+export const batchMethodName = 'batch';
+export const batchMethodTypes = ['address[]', 'uint256[]'];
 
 export const ERC721SafeTransferTypes = ['address', 'address', 'uint256', 'bytes'];
 export const ERC721TransferFromTypes = ['address', 'address', 'uint256'];
