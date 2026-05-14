@@ -3536,6 +3536,76 @@ describe('V2 Wallet:', function () {
         args[1]!.should.equal('full');
       });
 
+      it('should call prebuildTxWithIntent with the correct params for Export', async function () {
+        const recipients = [
+          {
+            address: 'P-costwo1xxt27rgnrjyaw2wmuswxumlmme2tapj62s7uy0',
+            amount: '50000000000000000',
+          },
+        ];
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          type: 'Export',
+          recipients,
+          nonce: '5',
+          feeOptions,
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.intentType.should.equal('export');
+        args[0]!.recipients!.should.deepEqual(recipients);
+        args[0]!.nonce!.should.equal('5');
+        args[0]!.feeOptions!.should.deepEqual(feeOptions);
+        args[1]!.should.equal('full');
+      });
+
+      it('should call prebuildTxWithIntent with the correct params for Import', async function () {
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          type: 'Import',
+          recipients: [],
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.intentType.should.equal('import');
+        args[0]!.recipients!.should.deepEqual([]);
+        args[0]!.should.not.have.property('nonce');
+        args[0]!.should.not.have.property('feeOptions');
+        args[1]!.should.equal('full');
+      });
+
+      it('should call prebuildTxWithIntent with the correct params for ImportToC', async function () {
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          type: 'ImportToC',
+          recipients: [],
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.intentType.should.equal('importtoc');
+        args[0]!.recipients!.should.deepEqual([]);
+        args[0]!.should.not.have.property('nonce');
+        args[0]!.should.not.have.property('feeOptions');
+        args[1]!.should.equal('full');
+      });
+
       it('should call prebuildTxWithIntent with the correct feeOptions when passing using the legacy format', async function () {
         const recipients = [
           {
@@ -3843,6 +3913,34 @@ describe('V2 Wallet:', function () {
         intent.amount!.should.deepEqual(amount);
         intent.feeOptions!.should.deepEqual(feeOptions);
         intent.should.have.property('recipients', undefined);
+      });
+
+      it('populate intent should return valid export intent for EVM cross-chain', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+        const recipients = [
+          {
+            address: 'P-costwo1xxt27rgnrjyaw2wmuswxumlmme2tapj62s7uy0',
+            amount: '50000000000000000',
+          },
+        ];
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('hteth'), {
+          reqId,
+          intentType: 'export',
+          recipients,
+          feeOptions,
+          nonce: '5',
+        });
+
+        intent.intentType.should.equal('export');
+        intent.feeOptions!.should.deepEqual(feeOptions);
+        intent.nonce!.should.equal('5');
+        intent.recipients!.should.be.an.Array().with.lengthOf(1);
+        intent.recipients![0].address.address.should.equal(recipients[0].address);
       });
 
       it('should build a single recipient transfer transaction providing apiVersion parameter as "full" ', async function () {

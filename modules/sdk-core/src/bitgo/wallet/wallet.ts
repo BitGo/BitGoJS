@@ -4141,6 +4141,48 @@ export class Wallet implements IWallet {
           params.preview
         );
         break;
+      case 'Export':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'export',
+            sequenceId: params.sequenceId,
+            comment: params.comment,
+            recipients: params.recipients || [],
+            nonce: params.nonce,
+            feeOptions,
+            feeToken: params.feeToken,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      case 'Import':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'import',
+            sequenceId: params.sequenceId,
+            comment: params.comment,
+            recipients: params.recipients || [],
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      case 'ImportToC':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'importtoc',
+            sequenceId: params.sequenceId,
+            comment: params.comment,
+            recipients: params.recipients || [],
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
       default:
         throw new Error(`transaction type not supported: ${params.type}`);
     }
