@@ -23,6 +23,7 @@ import {
   MPCTx,
   MPCTxs,
   ParsedTransaction,
+  ITransactionRecipient,
   ParseTransactionOptions,
   PrebuildTransactionResult,
   PresignTransactionOptions as BasePresignTransactionOptions,
@@ -71,8 +72,11 @@ import secp256k1 from 'secp256k1';
 import { AbstractEthLikeCoin } from './abstractEthLikeCoin';
 import { EthLikeToken } from './ethLikeToken';
 import {
+  batchMethodId,
   calculateForwarderV1Address,
   coinFamiliesWithL1Fees,
+  decodeBatchTransferData,
+  decodeNativeTransferData,
   decodeTransferData,
   ERC1155TransferBuilder,
   ERC721TransferBuilder,
@@ -83,6 +87,7 @@ import {
   getRawDecoded,
   getToken,
   KeyPair as KeyPairLib,
+  sendMultisigMethodId,
   TransactionBuilder,
   TransferBuilder,
 } from './lib';
@@ -1631,6 +1636,87 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       id: signedTx.toJson().id,
       tx: signedTx.toBroadcastFormat(),
     };
+  }
+
+  /**
+   * Verify that the inner batch(address[],uint256[]) calldata embedded in txPrebuild.txHex matches
+   * the user-supplied recipients. Throws via throwRecipientMismatch if any pair differs or if the
+   * calldata cannot be decoded. The verifier fails closed: missing txHex, an unexpected outer
+   * selector, or an unexpected inner selector all reject.
+   */
+  private async verifyBatchInnerRecipients(
+    txPrebuild: TransactionPrebuild,
+    recipients: ITransactionRecipient[],
+    throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
+  ): Promise<void> {
+    if (!txPrebuild.txHex) {
+      await throwRecipientMismatch('batch txPrebuild missing txHex required for inner calldata verification', []);
+      return;
+    }
+
+    let outerCalldata: string;
+    try {
+      const txBuffer = optionalDeps.ethUtil.toBuffer(txPrebuild.txHex);
+      const decodedTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(txBuffer);
+      outerCalldata = optionalDeps.ethUtil.bufferToHex(decodedTx.data);
+    } catch (e) {
+      await throwRecipientMismatch(`failed to parse batch txHex: ${e instanceof Error ? e.message : String(e)}`, []);
+      return;
+    }
+
+    if (!outerCalldata.toLowerCase().startsWith(sendMultisigMethodId)) {
+      await throwRecipientMismatch('batch txPrebuild outer call is not sendMultiSig', []);
+      return;
+    }
+
+    let innerBatchData: string;
+    try {
+      innerBatchData = decodeNativeTransferData(outerCalldata).data;
+    } catch (e) {
+      await throwRecipientMismatch(
+        `failed to decode outer sendMultiSig wrapper: ${e instanceof Error ? e.message : String(e)}`,
+        []
+      );
+      return;
+    }
+
+    if (!innerBatchData || !innerBatchData.toLowerCase().startsWith(batchMethodId)) {
+      await throwRecipientMismatch('batch txPrebuild inner method selector is not batch(address[],uint256[])', []);
+      return;
+    }
+
+    let decoded;
+    try {
+      decoded = decodeBatchTransferData(innerBatchData);
+    } catch (e) {
+      await throwRecipientMismatch(
+        `failed to decode inner batch calldata: ${e instanceof Error ? e.message : String(e)}`,
+        []
+      );
+      return;
+    }
+
+    if (decoded.recipients.length !== recipients.length) {
+      await throwRecipientMismatch(
+        `batch txPrebuild inner recipient count (${decoded.recipients.length}) does not match txParams (${recipients.length})`,
+        decoded.recipients
+      );
+      return;
+    }
+
+    for (let i = 0; i < recipients.length; i++) {
+      const expected = recipients[i];
+      const actual = decoded.recipients[i];
+      // Skip address comparison for non-hex inputs (e.g. unresolved ENS); mirrors normal-tx path.
+      if (this.isETHAddress(expected.address) && expected.address.toLowerCase() !== actual.address.toLowerCase()) {
+        await throwRecipientMismatch('batch txPrebuild inner recipient address does not match txParams', [actual]);
+        return;
+      }
+      if (!new BigNumber(expected.amount).isEqualTo(actual.amount)) {
+        await throwRecipientMismatch('batch txPrebuild inner recipient amount does not match txParams', [actual]);
+        return;
+      }
+    }
   }
 
   /**
@@ -3324,6 +3410,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         await throwRecipientMismatch('recipient address of txPrebuild does not match batcher address', [
           { address: txPrebuild.recipients[0].address, amount: txPrebuild.recipients[0].amount.toString() },
         ]);
+      }
+
+      // Decode the inner batch(address[],uint256[]) calldata and verify each (address, amount) pair
+      // matches user intent. Without this, a compromised platform could swap inner recipients while
+      // preserving the outer total amount and batcher-address checks.
+      if (!txParams.tokenName) {
+        await this.verifyBatchInnerRecipients(txPrebuild, recipients, throwRecipientMismatch);
       }
     } else {
       // Check recipient address and amount for normal transaction
