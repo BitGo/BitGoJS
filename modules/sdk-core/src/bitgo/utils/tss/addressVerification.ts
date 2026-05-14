@@ -1,4 +1,4 @@
-import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { getDerivationPath, deriveUnhardenedMps } from '@bitgo/sdk-lib-mpc';
 import { Ecdsa } from '../../../account-lib/mpc';
 import { TssVerifyAddressOptions } from '../../baseCoin/iBaseCoin';
 import { InvalidAddressError } from '../../errors';
@@ -72,7 +72,6 @@ export async function verifyMPCWalletAddress(
     throw new InvalidAddressError(`invalid address: ${address}`);
   }
 
-  const MPC = params.keyCurve === 'secp256k1' ? new Ecdsa() : await EDDSAMethods.getInitializedMpcInstance();
   const commonKeychain = extractCommonKeychain(keychains);
 
   // Compute derivation path:
@@ -80,7 +79,15 @@ export async function verifyMPCWalletAddress(
   // - For other wallets, use simple path: m/{index}
   const prefix = derivedFromParentWithSeed ? getDerivationPath(derivedFromParentWithSeed.toString()) : undefined;
   const derivationPath = prefix ? `${prefix}/${index}` : `m/${index}`;
-  const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath);
+
+  // MPCv2 EdDSA wallets use a different BIP32-Ed25519 derivation formula than MPCv1 wallets.
+  let derivedPublicKey: string;
+  if (params.keyCurve === 'ed25519' && params.multisigTypeVersion === 'MPCv2') {
+    derivedPublicKey = deriveUnhardenedMps(commonKeychain, derivationPath);
+  } else {
+    const MPC = params.keyCurve === 'secp256k1' ? new Ecdsa() : await EDDSAMethods.getInitializedMpcInstance();
+    derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath);
+  }
 
   // secp256k1 expects 33 bytes; ed25519 expects 32 bytes
   const publicKeySize = params.keyCurve === 'secp256k1' ? 33 : 32;

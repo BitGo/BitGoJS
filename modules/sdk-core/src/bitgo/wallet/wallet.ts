@@ -1413,6 +1413,7 @@ export class Wallet implements IWallet {
       const verificationData: VerifyAddressOptions = _.merge({}, newAddress, {
         rootAddress,
         walletVersion: _.get(this._wallet, 'coinSpecific.walletVersion'),
+        multisigTypeVersion: this.multisigTypeVersion(),
       });
 
       if (verificationData.error) {
