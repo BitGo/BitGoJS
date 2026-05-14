@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { ed25519 } from '@noble/curves/ed25519';
-import { EddsaMPSDkg, EddsaMPSDsg, MPSTypes } from '../../../../src/tss/eddsa-mps';
-import { generateEdDsaDKGKeyShares, runEdDsaDSG } from './util';
+import { EddsaMPSDkg, EddsaMPSDsg, MPSTypes, MPSUtil } from '../../../../src/tss/eddsa-mps';
+import { generateEdDsaDKGKeyShares } from './util';
 
 const MESSAGE = Buffer.from('The Times 03/Jan/2009 Chancellor on brink of second bailout for banks');
 
@@ -84,7 +84,9 @@ describe('EdDSA MPS DSG', function () {
 
   describe('DSG Protocol Execution (2-of-3)', function () {
     it('should complete full DSG between user (0) and bitgo (2) and produce identical signatures', function () {
-      const { dsgA, dsgB } = runEdDsaDSG(userKeyShare, bitgoKeyShare, 0, 2, MESSAGE);
+      const dsgA = new EddsaMPSDsg.DSG(0);
+      const dsgB = new EddsaMPSDsg.DSG(2);
+      MPSUtil.executeTillRound(3, dsgA, dsgB, userKeyShare, bitgoKeyShare, MESSAGE, 'm');
 
       assert.strictEqual(dsgA.getState(), 'Complete');
       assert.strictEqual(dsgB.getState(), 'Complete');
@@ -97,17 +99,48 @@ describe('EdDSA MPS DSG', function () {
     });
 
     it('should produce a signature that verifies under the DKG public key', function () {
-      const { dsgA } = runEdDsaDSG(userKeyShare, bitgoKeyShare, 0, 2, MESSAGE);
-      const sig = dsgA.getSignature();
+      const sig = MPSUtil.executeTillRound(
+        3,
+        new EddsaMPSDsg.DSG(0),
+        new EddsaMPSDsg.DSG(2),
+        userKeyShare,
+        bitgoKeyShare,
+        MESSAGE,
+        'm'
+      ) as Buffer;
 
       const isValid = ed25519.verify(sig, MESSAGE, dkgPubKey);
       assert(isValid, 'Signature should verify under DKG public key');
     });
 
     it('should sign the same message identically across all 2-of-3 party combinations', function () {
-      const userBackupSig = runEdDsaDSG(userKeyShare, backupKeyShare, 0, 1, MESSAGE).dsgA.getSignature();
-      const backupBitgoSig = runEdDsaDSG(backupKeyShare, bitgoKeyShare, 1, 2, MESSAGE).dsgA.getSignature();
-      const userBitgoSig = runEdDsaDSG(userKeyShare, bitgoKeyShare, 0, 2, MESSAGE).dsgA.getSignature();
+      const userBackupSig = MPSUtil.executeTillRound(
+        3,
+        new EddsaMPSDsg.DSG(0),
+        new EddsaMPSDsg.DSG(1),
+        userKeyShare,
+        backupKeyShare,
+        MESSAGE,
+        'm'
+      ) as Buffer;
+      const backupBitgoSig = MPSUtil.executeTillRound(
+        3,
+        new EddsaMPSDsg.DSG(1),
+        new EddsaMPSDsg.DSG(2),
+        backupKeyShare,
+        bitgoKeyShare,
+        MESSAGE,
+        'm'
+      ) as Buffer;
+      const userBitgoSig = MPSUtil.executeTillRound(
+        3,
+        new EddsaMPSDsg.DSG(0),
+        new EddsaMPSDsg.DSG(2),
+        userKeyShare,
+        bitgoKeyShare,
+        MESSAGE,
+        'm'
+      ) as Buffer;
 
       // Per-session nonce randomisation means signatures across DIFFERENT signing
       // sessions WILL differ. The invariant we test is that every 2-of-3 subset
@@ -121,27 +154,78 @@ describe('EdDSA MPS DSG', function () {
       const shortMsg = Buffer.from([0x01]);
       const longMsg = Buffer.alloc(4096, 0xab);
 
-      const { dsgA: short } = runEdDsaDSG(userKeyShare, bitgoKeyShare, 0, 2, shortMsg);
-      const { dsgA: long } = runEdDsaDSG(userKeyShare, bitgoKeyShare, 0, 2, longMsg);
+      const shortSig = MPSUtil.executeTillRound(
+        3,
+        new EddsaMPSDsg.DSG(0),
+        new EddsaMPSDsg.DSG(2),
+        userKeyShare,
+        bitgoKeyShare,
+        shortMsg,
+        'm'
+      ) as Buffer;
+      const longSig = MPSUtil.executeTillRound(
+        3,
+        new EddsaMPSDsg.DSG(0),
+        new EddsaMPSDsg.DSG(2),
+        userKeyShare,
+        bitgoKeyShare,
+        longMsg,
+        'm'
+      ) as Buffer;
 
-      assert(ed25519.verify(short.getSignature(), shortMsg, dkgPubKey), '1-byte message signature should verify');
-      assert(ed25519.verify(long.getSignature(), longMsg, dkgPubKey), '4096-byte message signature should verify');
+      assert(ed25519.verify(shortSig, shortMsg, dkgPubKey), '1-byte message signature should verify');
+      assert(ed25519.verify(longSig, longMsg, dkgPubKey), '4096-byte message signature should verify');
     });
 
     it('should throw when handleIncomingMessages is called after completion', function () {
-      const { dsgA } = runEdDsaDSG(userKeyShare, bitgoKeyShare, 0, 2, MESSAGE);
+      const dsgA = new EddsaMPSDsg.DSG(0);
+      MPSUtil.executeTillRound(3, dsgA, new EddsaMPSDsg.DSG(2), userKeyShare, bitgoKeyShare, MESSAGE, 'm');
       assert.throws(() => dsgA.handleIncomingMessages([]), /already completed/);
+    });
+
+    it('should fail when parties sign different messages', function () {
+      const dsg1 = new EddsaMPSDsg.DSG(0);
+      const dsg2 = new EddsaMPSDsg.DSG(2);
+      dsg1.initDsg(userKeyShare, Buffer.from('MESSAGE'), 'm', 2);
+      dsg2.initDsg(bitgoKeyShare, Buffer.from('DIFFERENT_MESSAGE'), 'm', 0);
+
+      const r0_1 = dsg1.getFirstMessage();
+      const r0_2 = dsg2.getFirstMessage();
+
+      const [r1_1] = dsg1.handleIncomingMessages([r0_1, r0_2]);
+      const [r1_2] = dsg2.handleIncomingMessages([r0_1, r0_2]);
+
+      assert.throws(
+        () => dsg1.handleIncomingMessages([r1_1, r1_2]),
+        /Error while creating messages from party 0, round WaitMsg2: Protocol Error/
+      );
     });
   });
 
   describe('Derivation Paths', function () {
     it('should produce different signatures for different derivation paths', function () {
-      const { dsgA: rootSig } = runEdDsaDSG(userKeyShare, bitgoKeyShare, 0, 2, MESSAGE, 'm');
-      const { dsgA: derivedSig } = runEdDsaDSG(userKeyShare, bitgoKeyShare, 0, 2, MESSAGE, 'm/0/1');
+      const rootSig = MPSUtil.executeTillRound(
+        3,
+        new EddsaMPSDsg.DSG(0),
+        new EddsaMPSDsg.DSG(2),
+        userKeyShare,
+        bitgoKeyShare,
+        MESSAGE,
+        'm'
+      ) as Buffer;
+      const derivedSig = MPSUtil.executeTillRound(
+        3,
+        new EddsaMPSDsg.DSG(0),
+        new EddsaMPSDsg.DSG(2),
+        userKeyShare,
+        bitgoKeyShare,
+        MESSAGE,
+        'm/0/1'
+      ) as Buffer;
 
       assert.notStrictEqual(
-        rootSig.getSignature().toString('hex'),
-        derivedSig.getSignature().toString('hex'),
+        rootSig.toString('hex'),
+        derivedSig.toString('hex'),
         'Different derivation paths should produce different signatures'
       );
     });
@@ -238,7 +322,9 @@ describe('EdDSA MPS DSG', function () {
     });
 
     it('should throw when exporting session after completion', function () {
-      const { dsgA, dsgB } = runEdDsaDSG(userKeyShare, bitgoKeyShare, 0, 2, MESSAGE);
+      const dsgA = new EddsaMPSDsg.DSG(0);
+      const dsgB = new EddsaMPSDsg.DSG(2);
+      MPSUtil.executeTillRound(3, dsgA, dsgB, userKeyShare, bitgoKeyShare, MESSAGE, 'm');
       assert.throws(() => dsgA.getSession(), /DSG session is complete\. Exporting the session is not allowed\./);
       assert.throws(() => dsgB.getSession(), /DSG session is complete\. Exporting the session is not allowed\./);
     });

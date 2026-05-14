@@ -2,6 +2,8 @@ import crypto from 'crypto';
 import assert from 'assert';
 import { x25519 } from '@noble/curves/ed25519';
 import { DKG } from './dkg';
+import { DSG } from './dsg';
+import { DeserializedMessages } from './types';
 
 /**
  * Concatenates multiple Uint8Array instances into a single Uint8Array
@@ -73,4 +75,48 @@ export async function generateEdDsaDKGKeyShares(
   bitgo.handleIncomingMessages(r2Messages);
 
   return [user, backup, bitgo];
+}
+
+/**
+ * Initializes two DSG parties and drives them through the protocol until the specified round.
+ *
+ * @param round - Round to execute until (1–3). Returns intermediate message arrays for 1–2,
+ *   or the 64-byte Ed25519 signature Buffer for 3.
+ * @param party1Dsg - First DSG party (`new DSG(partyIdx)`), not yet initialized.
+ * @param party2Dsg - Second DSG party (`new DSG(partyIdx)`), not yet initialized.
+ * @param keyShare1 - Key share for the first party.
+ * @param keyShare2 - Key share for the second party.
+ * @param message - Raw message bytes to sign.
+ * @param derivationPath - BIP-32-style derivation path, e.g. `"m"` or `"m/0/0"`.
+ */
+export function executeTillRound(
+  round: number,
+  party1Dsg: DSG,
+  party2Dsg: DSG,
+  keyShare1: Buffer,
+  keyShare2: Buffer,
+  message: Buffer,
+  derivationPath: string
+): DeserializedMessages[] | Buffer {
+  if (round < 1 || round > 3) {
+    throw Error('Invalid round number');
+  }
+  party1Dsg.initDsg(keyShare1, message, derivationPath, party2Dsg.getPartyIdx());
+  party2Dsg.initDsg(keyShare2, message, derivationPath, party1Dsg.getPartyIdx());
+  const party1Round0Message = party1Dsg.getFirstMessage();
+  const party2Round0Message = party2Dsg.getFirstMessage();
+
+  const [party2Round1Messages] = party2Dsg.handleIncomingMessages([party1Round0Message, party2Round0Message]);
+  const [party1Round1Messages] = party1Dsg.handleIncomingMessages([party1Round0Message, party2Round0Message]);
+  if (round === 1) return [[party1Round1Messages], [party2Round1Messages]];
+
+  const [party1Round2Messages] = party1Dsg.handleIncomingMessages([party1Round1Messages, party2Round1Messages]);
+  const [party2Round2Messages] = party2Dsg.handleIncomingMessages([party1Round1Messages, party2Round1Messages]);
+  if (round === 2) return [[party1Round2Messages], [party2Round2Messages]];
+
+  party1Dsg.handleIncomingMessages([party1Round2Messages, party2Round2Messages]);
+  party2Dsg.handleIncomingMessages([party1Round2Messages, party2Round2Messages]);
+
+  assert(party1Dsg.getSignature().toString('hex') === party2Dsg.getSignature().toString('hex'));
+  return party1Dsg.getSignature();
 }

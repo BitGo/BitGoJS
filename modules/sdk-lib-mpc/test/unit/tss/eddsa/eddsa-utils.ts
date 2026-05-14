@@ -1,4 +1,6 @@
 import assert from 'assert';
+import { ed25519 } from '@noble/curves/ed25519';
+import { EddsaMPSDkg, EddsaMPSDsg, MPSUtil } from '../../../../src/tss/eddsa-mps';
 import { concatBytes, generateEdDsaDKGKeyShares } from '../../../../src/tss/eddsa-mps/util';
 
 describe('EdDSA Utility Functions', function () {
@@ -48,6 +50,117 @@ describe('EdDSA Utility Functions', function () {
       await assert.rejects(
         generateEdDsaDKGKeyShares({ encKey: seedUser, dkgSeed: Buffer.alloc(31) }, okBackup, okBitgo),
         /dkgSeed must be at least 32 bytes/
+      );
+    });
+  });
+
+  describe('executeTillRound', function () {
+    const MESSAGE = Buffer.from('The Times 03/Jan/2009 Chancellor on brink of second bailout for banks');
+
+    let userDkg: EddsaMPSDkg.DKG;
+    let keySharesByIdx: [Buffer, Buffer, Buffer];
+    let dkgPubKey: Buffer;
+
+    before(async function () {
+      const [user, backup, bitgo] = await generateEdDsaDKGKeyShares();
+      userDkg = user;
+      keySharesByIdx = [user.getKeyShare(), backup.getKeyShare(), bitgo.getKeyShare()];
+      dkgPubKey = user.getSharePublicKey();
+    });
+
+    // All three 2-of-3 signing combinations: user+backup, user+BitGo, backup+BitGo.
+    const PARTY_PAIRS: Array<[number, number]> = [
+      [0, 1],
+      [0, 2],
+      [1, 2],
+    ];
+
+    PARTY_PAIRS.forEach(([p1, p2]) => {
+      it(`should produce a valid signature verifying under the DKG public key for parties ${p1}+${p2}`, function () {
+        const sig = MPSUtil.executeTillRound(
+          3,
+          new EddsaMPSDsg.DSG(p1),
+          new EddsaMPSDsg.DSG(p2),
+          keySharesByIdx[p1],
+          keySharesByIdx[p2],
+          MESSAGE,
+          'm'
+        ) as Buffer;
+        assert.strictEqual(sig.length, 64);
+        assert(ed25519.verify(sig, MESSAGE, dkgPubKey));
+      });
+    });
+
+    it('should verify round-3 signature against root public key from getCommonKeychain()', function () {
+      const sig = MPSUtil.executeTillRound(
+        3,
+        new EddsaMPSDsg.DSG(0),
+        new EddsaMPSDsg.DSG(2),
+        keySharesByIdx[0],
+        keySharesByIdx[2],
+        MESSAGE,
+        'm'
+      ) as Buffer;
+      const rootPubKey = Buffer.from(userDkg.getCommonKeychain().slice(0, 64), 'hex');
+      assert(ed25519.verify(sig, MESSAGE, rootPubKey), 'should verify under root public key from getCommonKeychain()');
+    });
+
+    it('should not verify under the root public key when signing at a derived path (m/0/0)', function () {
+      const sig = MPSUtil.executeTillRound(
+        3,
+        new EddsaMPSDsg.DSG(0),
+        new EddsaMPSDsg.DSG(2),
+        keySharesByIdx[0],
+        keySharesByIdx[2],
+        MESSAGE,
+        'm/0/0'
+      ) as Buffer;
+      assert.strictEqual(sig.length, 64, 'Derived path signature must be 64 bytes');
+      const rootPubKey = Buffer.from(userDkg.getCommonKeychain().slice(0, 64), 'hex');
+      assert(
+        !ed25519.verify(sig, MESSAGE, rootPubKey),
+        'derived-path signature should not verify under root public key'
+      );
+    });
+
+    it('should return message arrays (not a Buffer) for intermediate round 1', function () {
+      const result = MPSUtil.executeTillRound(
+        1,
+        new EddsaMPSDsg.DSG(0),
+        new EddsaMPSDsg.DSG(2),
+        keySharesByIdx[0],
+        keySharesByIdx[2],
+        MESSAGE,
+        'm'
+      );
+      assert(!Buffer.isBuffer(result), 'round 1 should return message arrays, not a Buffer');
+      assert.strictEqual(result.length, 2, 'should contain message arrays for both parties');
+    });
+
+    it('should return message arrays (not a Buffer) for intermediate round 2', function () {
+      const result = MPSUtil.executeTillRound(
+        2,
+        new EddsaMPSDsg.DSG(0),
+        new EddsaMPSDsg.DSG(2),
+        keySharesByIdx[0],
+        keySharesByIdx[2],
+        MESSAGE,
+        'm'
+      );
+      assert(!Buffer.isBuffer(result), 'round 2 should return message arrays, not a Buffer');
+      assert.strictEqual(result.length, 2, 'should contain message arrays for both parties');
+    });
+
+    it('should throw for round out of range', function () {
+      const dsg1 = new EddsaMPSDsg.DSG(0);
+      const dsg2 = new EddsaMPSDsg.DSG(2);
+      assert.throws(
+        () => MPSUtil.executeTillRound(0, dsg1, dsg2, keySharesByIdx[0], keySharesByIdx[2], MESSAGE, 'm'),
+        /Invalid round number/
+      );
+      assert.throws(
+        () => MPSUtil.executeTillRound(4, dsg1, dsg2, keySharesByIdx[0], keySharesByIdx[2], MESSAGE, 'm'),
+        /Invalid round number/
       );
     });
   });

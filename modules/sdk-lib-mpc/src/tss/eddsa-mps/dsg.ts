@@ -56,6 +56,14 @@ export class DSG {
     return this.dsgState;
   }
 
+  getPartyIdx(): number {
+    return this.partyIdx;
+  }
+
+  getOtherPartyIdx(): number | null {
+    return this.otherPartyIdx;
+  }
+
   /**
    * Initialises the DSG session. The keyshare must come from a prior DKG run, and
    * `otherPartyIdx` must be the single counterpart who will co-sign with this party.
