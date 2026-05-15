@@ -61,7 +61,7 @@ export class TradingAccount implements ITradingAccount {
     }
 
     // we do not parse the payload here, we instead sends the payload as a stringified JSON to be signed, just like how we process it locally
-    const url = this.wallet.url('/tx/sign');
+    const url = this.bitgo.coin('ofc').url('/wallet/' + this.wallet.id() + '/tx/sign');
     const payload = typeof params.payload !== 'string' ? JSON.stringify(params.payload) : params.payload;
     const { signature } = await this.wallet.bitgo.post(url).send({ payload }).result();
 
