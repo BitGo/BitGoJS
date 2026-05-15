@@ -459,6 +459,136 @@ describe('non-TSS Staking Wallet', function () {
     });
   });
 
+  describe('HBAR Claim Rewards Validation', function () {
+    let thbarBaseCoin;
+    let thbarStakingWallet: StakingWallet;
+    let thbarStakingWalletData: WalletData;
+
+    before(function () {
+      thbarBaseCoin = bitgo.coin('thbar');
+      thbarStakingWalletData = {
+        approvalsRequired: 0,
+        balance: 0,
+        balanceString: '',
+        coinSpecific: {} as WalletCoinSpecific,
+        confirmedBalance: 0,
+        confirmedBalanceString: '',
+        keys: [],
+        label: '',
+        multisigType: 'onchain',
+        pendingApprovals: [],
+        spendableBalance: 0,
+        spendableBalanceString: '',
+        id: 'thbarStakingWalletId',
+        coin: 'thbar',
+        enterprise: enterprise.id,
+      };
+      thbarStakingWallet = new Wallet(bitgo, thbarBaseCoin, thbarStakingWalletData).toStakingWallet();
+    });
+
+    it('should not throw amount mismatch for hbar claim rewards self-transfer', async function () {
+      const stakingTransaction: StakingTransaction = {
+        id: 'tx-1',
+        stakingRequestId: 'req-1',
+        delegationId: 'del-1',
+        transactionType: 'claim_rewards',
+        createdDate: '2026-05-15T00:00:00Z',
+        status: 'READY',
+        statusModifiedDate: '2026-05-15T00:00:00Z',
+        amount: '1',
+        buildParams: {
+          recipients: [
+            {
+              amount: '1',
+              address: '0.0.8933725',
+            },
+          ],
+          type: 'stakeClaimRewards',
+        },
+      };
+
+      // Stub explainTransaction to return outputs with amount "0" (merged self-transfer)
+      sinon.stub(thbarBaseCoin, 'explainTransaction').resolves({
+        id: 'tx-hash',
+        outputs: [
+          {
+            address: '0.0.8933725',
+            amount: '0',
+            coin: 'thbar',
+          },
+        ],
+        outputAmount: '0',
+        changeAmount: '0',
+        fee: { fee: '500000' },
+        changeOutputs: [],
+      });
+
+      // Stub sign to prevent actual signing
+      sinon.stub(thbarStakingWallet, 'sign').resolves();
+
+      // Stub build to return a prebuild with txHex
+      sinon.stub(thbarStakingWallet, 'build' as any).resolves({
+        transaction: stakingTransaction,
+        result: {
+          txHex: 'fake-hbar-tx-hex',
+          walletId: thbarStakingWalletData.id,
+        },
+      });
+
+      // Should NOT throw -- the amount mismatch (1 vs 0) is expected for hbar claim rewards
+      await thbarStakingWallet.buildAndSign({ walletPassphrase: 'passphrase' }, stakingTransaction);
+    });
+
+    it('should still throw amount mismatch for non-claim-rewards hbar transactions', async function () {
+      const stakingTransaction: StakingTransaction = {
+        id: 'tx-2',
+        stakingRequestId: 'req-2',
+        delegationId: 'del-2',
+        transactionType: 'delegate',
+        createdDate: '2026-05-15T00:00:00Z',
+        status: 'READY',
+        statusModifiedDate: '2026-05-15T00:00:00Z',
+        amount: '100',
+        buildParams: {
+          recipients: [
+            {
+              amount: '100',
+              address: '0.0.8933725',
+            },
+          ],
+          type: 'stakeAccountUpdate',
+        },
+      };
+
+      sinon.stub(thbarBaseCoin, 'explainTransaction').resolves({
+        id: 'tx-hash',
+        outputs: [
+          {
+            address: '0.0.8933725',
+            amount: '50',
+            coin: 'thbar',
+          },
+        ],
+        outputAmount: '50',
+        changeAmount: '0',
+        fee: { fee: '500000' },
+        changeOutputs: [],
+      });
+
+      sinon.stub(thbarStakingWallet, 'build' as any).resolves({
+        transaction: stakingTransaction,
+        result: {
+          txHex: 'fake-hbar-tx-hex',
+          walletId: thbarStakingWalletData.id,
+        },
+      });
+
+      await thbarStakingWallet
+        .buildAndSign({ walletPassphrase: 'passphrase' }, stakingTransaction)
+        .should.be.rejectedWith(/amount mismatch.*Expected: 100.*Got: 50/);
+    });
+  });
+
   describe('TAVAXP Staking', function () {
     it('should build and validate transaction', async function () {
       const unsignedTransaction: PrebuildTransactionResult = {

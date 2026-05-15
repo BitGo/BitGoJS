@@ -198,6 +198,10 @@ export class StakingWallet implements IStakingWallet {
     return this.wallet.baseCoin.getFamily() === 'trx';
   }
 
+  private isHbarClaimRewards(transaction: StakingTransaction) {
+    return this.wallet.baseCoin.getFamily() === 'hbar' && transaction.transactionType.toLowerCase() === 'claim_rewards';
+  }
+
   /**
    * Sign the staking transaction
    * @param signOptions
@@ -433,9 +437,18 @@ export class StakingWallet implements IStakingWallet {
         const matchResult = transactionRecipientsMatch(userRecipient, platformRecipient);
 
         if (!matchResult.amountMatch) {
-          mismatchErrors.push(
-            `Recipient ${address} amount mismatch. Expected: ${userRecipient.amount}, Got: ${platformRecipient.amount}`
-          );
+          // HBAR claim rewards uses a self-transfer (sender == recipient) of 1 tinybar.
+          // The wire format merges [{acct, -1}, {acct, +1}] into [{acct, 0}], so the
+          // explained amount is "0" while buildParams amount is "1". This mismatch is
+          // expected and safe -- skip the amount error for this specific case.
+          const isHbarSelfTransferClaim =
+            this.isHbarClaimRewards(transaction) &&
+            userRecipient.address.toLowerCase() === platformRecipient.address.toLowerCase();
+          if (!isHbarSelfTransferClaim) {
+            mismatchErrors.push(
+              `Recipient ${address} amount mismatch. Expected: ${userRecipient.amount}, Got: ${platformRecipient.amount}`
+            );
+          }
         }
         if (!matchResult.tokenMatch) {
           mismatchErrors.push(
