@@ -3406,7 +3406,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c0000000000000000000000000000000000000',
     UnderlyingAsset['tempo:pathusd'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   tip20Token(
     '39a57b34-0ce5-40d6-a231-c53a287491a6',
@@ -3415,7 +3420,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c000000000000000000000b9537d11c60e8b50',
     UnderlyingAsset['tempo:usdc'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   tip20Token(
     'fa9e874b-e1c0-4c40-ab4c-3cfba7b2ca8b',
@@ -3424,7 +3434,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c000000000000000000000111111111e910f0f',
     UnderlyingAsset['tempo:usd1'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   // Tempo TIP20 testnet tokens
   ttip20Token(
@@ -3434,7 +3449,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c0000000000000000000000000000000000000',
     UnderlyingAsset['ttempo:pathusd'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   ttip20Token(
     '3c67eaa8-f073-4e1a-9d3a-c6756a31bef0',
@@ -3443,7 +3463,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c0000000000000000000000000000000000001',
     UnderlyingAsset['ttempo:alphausd'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   ttip20Token(
     'da6d27bd-ed3b-4b59-b574-6e013e5eb55d',
@@ -3452,7 +3477,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c0000000000000000000000000000000000002',
     UnderlyingAsset['ttempo:betausd'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   ttip20Token(
     '58cbb592-446e-4753-8c2a-c89f662135ba',
@@ -3461,7 +3491,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c0000000000000000000000000000000000003',
     UnderlyingAsset['ttempo:thetausd'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   ttip20Token(
     '1b9cb8c9-6eec-4f0a-acd4-3d1881efc85b',
@@ -3470,7 +3505,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c00000000000000000000008bb598f4db17f78',
     UnderlyingAsset['ttempo:usd1'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   ttip20Token(
     'b6455ffa-8732-4c61-bb2b-d72e72cb1e63',
@@ -3479,7 +3519,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c000000000000000000000e4662b69291ab60a',
     UnderlyingAsset['ttempo:stgusd1'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   canton(
     '07385320-5a4f-48e9-97a5-86d4be9f24b0',

@@ -363,6 +363,9 @@ const mainnetBase: EnvironmentTemplate = {
     boba: {
       baseUrl: 'https://api.routescan.io/v2/network/mainnet/evm/288/etherscan/api',
     },
+    tempo: {
+      baseUrl: 'https://tempo-mainnet.g.alchemy.com/v2/',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   kaspaNodeUrl: 'https://api.kaspa.org',
@@ -587,6 +590,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     boba: {
       baseUrl: 'https://api.routescan.io/v2/network/testnet/evm/28882/etherscan/api',
+    },
+    tempo: {
+      baseUrl: 'https://tempo-moderato.g.alchemy.com/v2/',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',

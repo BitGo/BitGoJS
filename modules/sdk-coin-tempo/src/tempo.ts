@@ -6,11 +6,13 @@ import {
   RecoverOptions,
   OfflineVaultTxInfo,
   UnsignedSweepTxMPCv2,
+  RecoveryInfo,
   TransactionBuilder,
   VerifyEthTransactionOptions,
   VerifyEthAddressOptions,
   TssVerifyEthAddressOptions,
   optionalDeps,
+  KeyPair,
 } from '@bitgo/abstract-eth';
 import type * as EthLikeCommon from '@ethereumjs/common';
 import {
@@ -24,10 +26,22 @@ import {
   UnexpectedAddressError,
   PopulatedIntent,
   PrebuildTransactionWithIntentOptions,
+  common,
+  Ecdsa,
+  ECDSAUtils,
+  getIsUnsignedSweep,
 } from '@bitgo/sdk-core';
+import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { ethers } from 'ethers';
 import { Tip20Transaction, Tip20TransactionBuilder } from './lib';
-import { amountToTip20Units, isTip20Transaction, isValidMemoId as isValidMemoIdUtil } from './lib/utils';
+import {
+  amountToTip20Units,
+  tip20UnitsToAmount,
+  isTip20Transaction,
+  isValidMemoId as isValidMemoIdUtil,
+} from './lib/utils';
+import { MAINNET_COIN, PATH_USD_TOKEN_MAINNET, PATH_USD_TOKEN_TESTNET } from './lib/constants';
 import * as url from 'url';
 import * as querystring from 'querystring';
 
@@ -327,33 +341,242 @@ export class Tempo extends AbstractEthLikeNewCoins {
   }
 
   /**
-   * Build unsigned sweep transaction for TSS
-   * TODO: Implement sweep transaction logic
-   */
-  protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
-    // TODO: Implement when recovery logic is needed
-    // Return dummy value to prevent downstream services from breaking
-    return {} as OfflineVaultTxInfo;
-  }
-
-  /**
-   * Query block explorer for recovery information
-   * TODO: Implement when Tempo block explorer is available
+   * Query the Tempo Alchemy RPC for recovery balance/nonce information.
+   * Routes through queryTempoRpc using the URL from environments.ts.
    */
   async recoveryBlockchainExplorerQuery(
     query: Record<string, string>,
     apiKey?: string
   ): Promise<Record<string, unknown>> {
-    // TODO: Implement with Tempo block explorer API
-    // Return empty object to prevent downstream services from breaking
-    return {};
+    const evmConfig = common.Environments[this.bitgo.getEnv()].evm;
+    const coinFamily = this.getFamily();
+    if (!evmConfig || !(coinFamily in evmConfig)) {
+      throw new Error(`env config missing for ${coinFamily} in ${this.bitgo.getEnv()}`);
+    }
+    const token = apiKey || evmConfig[coinFamily].apiToken;
+    const rpcUrl = evmConfig[coinFamily].baseUrl;
+    return this.queryTempoRpc(query, rpcUrl, token);
   }
 
   /**
-   * Get transaction builder for Tempo
-   * Returns a TIP-20 transaction builder for Tempo-specific operations
-   * @param common - Optional common chain configuration
-   * @protected
+   * Translates Etherscan-style recovery queries into Tempo Alchemy JSON-RPC calls.
+   *
+   * Supported:
+   *   account/balance      → returns { result: '0' } (no native coin on Tempo)
+   *   account/tokenbalance → eth_call (balanceOf selector 0x70a08231) → { result: decimalString }
+   *   account/txlist       → eth_getTransactionCount → { nonce: number }
+   */
+  private async queryTempoRpc(
+    query: Record<string, string>,
+    rpcUrl: string,
+    apiKey?: string
+  ): Promise<Record<string, unknown>> {
+    const endpoint = apiKey ? `${rpcUrl}${apiKey}` : rpcUrl;
+    const { module, action, address, contractaddress, tag } = query;
+
+    let method: string;
+    let params: unknown[];
+
+    if (module === 'account' && action === 'balance') {
+      return { result: '0' };
+    } else if (module === 'account' && action === 'tokenbalance') {
+      const paddedAddr = (address ?? '').replace(/^0x/, '').padStart(64, '0');
+      method = 'eth_call';
+      params = [{ to: contractaddress, data: '0x70a08231' + paddedAddr }, tag ?? 'latest'];
+    } else if (module === 'account' && action === 'txlist') {
+      method = 'eth_getTransactionCount';
+      params = [address, 'latest'];
+    } else {
+      throw new Error(`queryTempoRpc: unsupported module=${module} action=${action}`);
+    }
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', method, params, id: 1 }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Could not reach Tempo RPC endpoint (HTTP ${res.status})`);
+    }
+
+    const body = (await res.json()) as { result?: unknown; error?: { message: string } };
+    if (body.error) {
+      throw new Error(`Tempo RPC error: ${body.error.message}`);
+    }
+
+    if (module === 'account' && action === 'txlist') {
+      return { nonce: parseInt(body.result as string, 16) };
+    }
+
+    try {
+      return { result: BigInt(body.result as string).toString() };
+    } catch {
+      return { result: '0' };
+    }
+  }
+
+  /**
+   * Shared helper: queries the token balance, computes sweep amount, and builds
+   * an unsigned TIP-20 transfer transaction. Used by both recovery paths.
+   *
+   * - tokenContractAddress: the token to sweep (defaults to pathUSD)
+   * - feeToken: always pathUSD
+   * - If sweeping pathUSD itself, reserves gasLimit × maxFeePerGas / 10^12 pathUSD units for fees.
+   */
+  private async buildTempoSweepTx(
+    walletAddress: string,
+    params: RecoverOptions
+  ): Promise<{ tx: Tip20Transaction; nonce: number; sweepAmount: bigint; gasMarginUnits: bigint }> {
+    if (!params.tokenContractAddress) {
+      throw new Error('tokenContractAddress is required for sweep');
+    }
+    const tokenAddress = params.tokenContractAddress;
+
+    const pathUsdTokenName = this.getChain() === MAINNET_COIN ? PATH_USD_TOKEN_MAINNET : PATH_USD_TOKEN_TESTNET;
+    const pathUsdAddress = (coins.get(pathUsdTokenName) as unknown as { contractAddress: string }).contractAddress;
+
+    const rawBalance = await this.queryAddressTokenBalance(tokenAddress, walletAddress, params.apiKey);
+    const balance = BigInt(rawBalance.toString());
+
+    const isPathUsd = tokenAddress.toLowerCase() === pathUsdAddress.toLowerCase();
+    const gasLimitBig = BigInt(params.gasLimit ?? 700_000);
+    const maxFeePerGasBig = BigInt(params.eip1559?.maxFeePerGas ?? 20_000_000_000);
+    // 75% buffer on top of gasLimit × maxFeePerGas to cover actual on-chain gas variance
+    const gasMarginUnits = (gasLimitBig * maxFeePerGasBig * 175n) / (10n ** 12n * 100n);
+    const sweepAmount = isPathUsd ? balance - gasMarginUnits : balance;
+
+    if (sweepAmount <= 0n) {
+      throw new Error(
+        `Insufficient balance in ${tokenAddress}: ${balance} units (minimum required: ${
+          isPathUsd ? gasMarginUnits + 1n : 1n
+        })`
+      );
+    }
+
+    const sweepAmountHuman = tip20UnitsToAmount(sweepAmount);
+    const nonce = await this.getAddressNonce(walletAddress, params.apiKey);
+
+    const txBuilder = this.getTransactionBuilder() as unknown as Tip20TransactionBuilder;
+    txBuilder
+      .addOperation({ token: tokenAddress, to: params.recoveryDestination, amount: sweepAmountHuman })
+      .feeToken(pathUsdAddress)
+      .nonce(nonce)
+      .gas(gasLimitBig)
+      .maxFeePerGas(maxFeePerGasBig)
+      .maxPriorityFeePerGas(BigInt(params.eip1559?.maxPriorityFeePerGas ?? 10_000_000_000));
+
+    const tx = (await txBuilder.build()) as Tip20Transaction;
+    return { tx, nonce, sweepAmount, gasMarginUnits };
+  }
+
+  /**
+   * Overrides the base-class recoverTSS to use TIP-20 transactions instead of standard ETH.
+   *
+   * Two paths:
+   *   - Unsigned sweep (plain public key shares): delegates to buildUnsignedSweepTxnTSS
+   *   - Signed sweep (encrypted keys + passphrase): builds and signs a TIP-20 tx via MPC
+   */
+  protected async recoverTSS(
+    params: RecoverOptions
+  ): Promise<RecoveryInfo | OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
+    this.validateRecoveryParams(params);
+    const userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+
+    if (getIsUnsignedSweep({ userKey, backupKey, isTss: params.isTss })) {
+      return this.buildUnsignedSweepTxnTSS(params);
+    }
+
+    // Signed sweep: decrypt MPC v2 key shares
+    const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
+      userKey,
+      backupKey,
+      params.walletPassphrase
+    );
+
+    const MPC = new Ecdsa();
+    const derivedCommonKeyChain = MPC.deriveUnhardened(commonKeyChain, 'm/0');
+    const backupKeyPair = new KeyPair({ pub: derivedCommonKeyChain.slice(0, 66) });
+    const baseAddress = backupKeyPair.getAddress();
+
+    const { tx: unsignedTx } = await this.buildTempoSweepTx(baseAddress, params);
+    const serializedHex = await unsignedTx.serialize();
+
+    // Hash the unsigned 0x76 tx — matches Tip20TransactionBuilder's own signing logic
+    const msgHashHex = ethers.utils.keccak256(ethers.utils.arrayify(serializedHex));
+    const messageHash = Buffer.from(msgHashHex.replace('0x', ''), 'hex');
+
+    const signature = await ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);
+
+    // ECDSAMethodTypes.Signature.r/s are 64-char hex WITHOUT 0x prefix
+    unsignedTx.setSignature({
+      r: `0x${signature.r}`,
+      s: `0x${signature.s}`,
+      yParity: signature.recid,
+    });
+
+    const signedHex = await unsignedTx.serialize();
+    const txId = ethers.utils.keccak256(ethers.utils.arrayify(signedHex));
+    return { id: txId, tx: signedHex };
+  }
+
+  /**
+   * Builds an unsigned TIP-20 sweep transaction for the offline vault (unsigned sweep path).
+   * Called by recoverTSS when plain public key shares are provided.
+   */
+  protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
+    const backupKey = params.backupKey.replace(/\s/g, '');
+    const derivationPath = params.derivationSeed ? getDerivationPath(params.derivationSeed) : 'm/0';
+    const MPC = new Ecdsa();
+    const derivedCommonKeyChain = MPC.deriveUnhardened(backupKey, derivationPath);
+    const backupKeyPair = new KeyPair({ pub: derivedCommonKeyChain.slice(0, 66) });
+    const baseAddress = backupKeyPair.getAddress();
+
+    const { tx, nonce, sweepAmount, gasMarginUnits } = await this.buildTempoSweepTx(baseAddress, params);
+    const serializedHex = await tx.serialize();
+    const serializedTxHex = serializedHex.replace('0x', '');
+    const signableHex = ethers.utils.keccak256(ethers.utils.arrayify(serializedHex)).replace('0x', '');
+
+    return {
+      txRequests: [
+        {
+          walletCoin: this.getChain(),
+          transactions: [
+            {
+              unsignedTx: {
+                serializedTxHex,
+                signableHex,
+                derivationPath,
+                feeInfo: {
+                  fee: Number(gasMarginUnits),
+                  feeString: tip20UnitsToAmount(gasMarginUnits),
+                },
+                parsedTx: {
+                  spendAmount: tip20UnitsToAmount(sweepAmount),
+                  outputs: [
+                    {
+                      coinName: this.getChain(),
+                      address: params.recoveryDestination,
+                      valueString: tip20UnitsToAmount(sweepAmount),
+                    },
+                  ],
+                },
+                coinSpecific: { commonKeyChain: backupKey },
+                eip1559: params.eip1559,
+                replayProtectionOptions: params.replayProtectionOptions,
+              },
+              nonce,
+              signatureShares: [],
+            },
+          ],
+        },
+      ],
+    };
+  }
+
+  /**
+   * Get transaction builder for Tempo.
    */
   protected getTransactionBuilder(common?: EthLikeCommon.default): TransactionBuilder {
     return new Tip20TransactionBuilder(coins.get(this.getBaseChain())) as unknown as TransactionBuilder;
