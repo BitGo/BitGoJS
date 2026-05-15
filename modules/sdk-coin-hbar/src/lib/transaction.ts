@@ -155,8 +155,10 @@ export class Transaction extends BaseTransaction {
 
     // Handle self-transfer: when sender == recipient, the positive entry is filtered out above
     // because its accountID matches the sender. Fall back to including it as the recipient.
+    // Use !isNegative() instead of isPositive() to also match zero-amount entries produced by
+    // merged self-transfers (e.g., [{accountID, amount: 0}] from buildTransferData merge).
     if (transferData.length === 0 && transfers.length > 0) {
-      const selfTransferEntry = transfers.find((t) => Long.fromValue(t.amount!).isPositive());
+      const selfTransferEntry = transfers.find((t) => !Long.fromValue(t.amount!).isNegative());
       if (selfTransferEntry) {
         transferData.push({
           address: stringifyAccountId(selfTransferEntry.accountID!),
