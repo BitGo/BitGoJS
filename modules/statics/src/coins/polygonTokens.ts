@@ -1145,6 +1145,42 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:jpyc'],
     POLYGON_TOKEN_FEATURES
   ),
+  polygonErc20(
+    '1f30d7c9-b8f0-4c84-b3b9-e44b9cb3a55d',
+    'polygon:mext',
+    'Mexican Peso Token',
+    18,
+    '0xb9a848a8e1aff1a16a27f1ad3b66d873d5c38d62',
+    UnderlyingAsset['polygon:mext'],
+    POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  polygonErc20(
+    'cb393313-9ce5-44aa-aec0-f07c0ab13d76',
+    'polygon:pert',
+    'Peruvian Sol Token',
+    18,
+    '0x53bd6e8af3da05781afc98729378424f66c9da52',
+    UnderlyingAsset['polygon:pert'],
+    POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  polygonErc20(
+    'f6d27c26-e3c2-488b-959e-70b04e99e8f8',
+    'polygon:colt',
+    'Colombian Peso Token',
+    18,
+    '0x1ea02ba45fc146f534b371c49fbb2a4c86dce93d',
+    UnderlyingAsset['polygon:colt'],
+    POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  polygonErc20(
+    '2358e3b9-7de2-40e8-a9ee-fd4bc251b827',
+    'polygon:bolt',
+    'Bolivian Boliviano Token',
+    18,
+    '0x20eca820d3cd00ed9c9f2861cdf6429bacd8ed55',
+    UnderlyingAsset['polygon:bolt'],
+    POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
 
   // testnet polygon tokens
   tpolygonErc20(
