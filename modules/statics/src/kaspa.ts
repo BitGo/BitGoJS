@@ -1,18 +1,6 @@
 import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { KaspaMainnet, KaspaTestnet } from './networks';
 
-export interface KaspaConstructorOptions {
-  id: string;
-  fullName: string;
-  name: string;
-  network: KaspaMainnet | KaspaTestnet;
-  features: CoinFeature[];
-  asset: UnderlyingAsset;
-  prefix?: string;
-  suffix?: string;
-  primaryKeyCurve: KeyCurve;
-}
-
 export class KaspaCoin extends BaseCoin {
   public static readonly DEFAULT_FEATURES = [
     CoinFeature.UNSPENT_MODEL,
@@ -29,7 +17,17 @@ export class KaspaCoin extends BaseCoin {
 
   public readonly network: KaspaMainnet | KaspaTestnet;
 
-  constructor(options: KaspaConstructorOptions) {
+  constructor(options: {
+    id: string;
+    fullName: string;
+    name: string;
+    network: KaspaMainnet | KaspaTestnet;
+    features: CoinFeature[];
+    asset: UnderlyingAsset;
+    prefix?: string;
+    suffix?: string;
+    primaryKeyCurve: KeyCurve;
+  }) {
     super({
       ...options,
       kind: CoinKind.CRYPTO,

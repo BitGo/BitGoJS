@@ -189,7 +189,11 @@ describe('Kaspa TransactionBuilder', function () {
       const tx = (await builder.build()) as Transaction;
       builder.sign({ key: KEYS.prv });
       assert.ok(tx.signature[0].length > 0, 'input should be signed');
-      assert.equal(tx.signature[0].length, 130, 'Schnorr sig should be 65 bytes / 130 hex chars');
+      assert.equal(
+        tx.signature[0].length,
+        132,
+        'signatureScript should be 66 bytes / 132 hex chars (push opcode + sig + sighash)'
+      );
     });
 
     it('should sign all inputs of a multi-input transaction', async function () {
@@ -197,7 +201,7 @@ describe('Kaspa TransactionBuilder', function () {
       const tx = (await builder.build()) as Transaction;
       builder.sign({ key: KEYS.prv });
       assert.equal(tx.signature.length, 2);
-      assert.ok(tx.signature.every((s) => s.length === 130));
+      assert.ok(tx.signature.every((s) => s.length === 132));
     });
 
     it('should throw SigningError when private key is missing', async function () {
@@ -206,41 +210,6 @@ describe('Kaspa TransactionBuilder', function () {
       assert.throws(() => {
         builder.sign({ key: '' });
       });
-    });
-  });
-
-  describe('addSignature (TSS/MPC flow)', function () {
-    it('should store the signature and apply it during build', async function () {
-      builder.addInput(UTXOS.simple).to(ADDRESSES.recipient, '99998000').fee('2000');
-
-      // Simulate TSS: build unsigned, get signablePayload, produce signature externally
-      const unsignedTx = (await builder.build()) as Transaction;
-      const signablePayload = unsignedTx.signablePayload;
-      assert.ok(signablePayload.length === 32);
-
-      // Now add signature via builder addSignature (like wallet-platform does)
-      const fakeSig = Buffer.alloc(64, 0xab);
-      builder.addSignature({ pub: KEYS.pub }, fakeSig);
-
-      // Rebuild — signatures should be applied
-      const signedTx = (await builder.build()) as Transaction;
-      assert.ok(signedTx.txData.inputs[0].signatureScript);
-      assert.equal(signedTx.txData.inputs[0].signatureScript!.length, 130);
-    });
-
-    it('should apply signature to multi-input transactions', async function () {
-      builder.addInputs([UTXOS.simple, UTXOS.second]).to(ADDRESSES.recipient, '299998000').fee('2000');
-      await builder.build();
-
-      const fakeSig = Buffer.alloc(64, 0xcd);
-      builder.addSignature({ pub: KEYS.pub }, fakeSig);
-
-      const signedTx = (await builder.build()) as Transaction;
-      assert.equal(signedTx.txData.inputs.length, 2);
-      for (const input of signedTx.txData.inputs) {
-        assert.ok(input.signatureScript);
-        assert.equal(input.signatureScript!.length, 130);
-      }
     });
   });
 

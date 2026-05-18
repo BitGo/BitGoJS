@@ -1,22 +1,12 @@
-import {
-  BaseTransactionBuilder,
-  BaseTransaction,
-  BaseKey,
-  PublicKey as BasePublicKey,
-  SigningError,
-} from '@bitgo/sdk-core';
+import { BaseTransactionBuilder, BaseTransaction, BaseKey, SigningError } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { Transaction } from './transaction';
 import { KaspaTransactionData, KaspaUtxoInput, KaspaTransactionOutput } from './iface';
-import { isValidKaspaAddress } from './utils';
+import { isValidKaspaAddress, addressToScriptPublicKey } from './utils';
 import { KeyPair } from './keyPair';
 import { DEFAULT_FEE, TX_VERSION } from './constants';
-
-interface KaspaSignature {
-  publicKey: BasePublicKey;
-  signature: Buffer;
-}
+import { Pskt, PsktInput, PsktOutput } from './pskt';
 
 export class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -24,7 +14,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   protected _outputs: KaspaTransactionOutput[] = [];
   protected _fee: string = DEFAULT_FEE;
   protected _fromAddress = '';
-  protected _signatures: KaspaSignature[] = [];
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -59,7 +48,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (!isValidKaspaAddress(address)) {
       throw new Error(`Invalid Kaspa recipient address: ${address}`);
     }
-    this._outputs.push({ address, amount });
+    this._outputs.push({ address, amount, scriptPublicKey: addressToScriptPublicKey(address) });
     return this;
   }
 
@@ -90,22 +79,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  /**
-   * Add an externally-produced signature (from TSS/MPC signing) to the transaction.
-   * The signature will be applied to all inputs during build().
-   *
-   * This follows the same pattern as ADA's TransactionBuilder.addSignature().
-   *
-   * @param publicKey The compressed secp256k1 public key that produced the signature
-   * @param signature The 64-byte Schnorr signature buffer
-   */
-  addSignature(publicKey: BasePublicKey, signature: Buffer): void {
-    this._signatures.push({ publicKey, signature });
-  }
-
   /** @inheritDoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    const tx = Transaction.fromHex((this as any)._coinConfig?.name || 'kaspa', rawTransaction);
+    const tx = Transaction.fromHex(this._coinConfig.name, rawTransaction);
     this._transaction = tx;
     this._inputs = tx.txData.inputs || [];
     this._outputs = tx.txData.outputs || [];
@@ -125,12 +101,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       payload: '',
     };
 
-    this._transaction = new Transaction((this as any)._coinConfig?.name || 'kaspa', txData);
-
-    // Apply any externally-produced signatures (from TSS/MPC)
-    for (const sig of this._signatures) {
-      this._transaction.addSignature(sig.publicKey.pub, sig.signature);
-    }
+    this._transaction = new Transaction(this._coinConfig.name, txData);
 
     return this._transaction;
   }
@@ -171,7 +142,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritDoc */
   validateRawTransaction(rawTransaction: string): void {
     try {
-      Transaction.fromHex((this as any)._coinConfig?.name || 'kaspa', rawTransaction);
+      Transaction.fromHex(this._coinConfig.name, rawTransaction);
     } catch {
       throw new Error('Invalid raw Kaspa transaction');
     }
@@ -182,5 +153,56 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (value.isLessThan(0)) {
       throw new Error('Transaction value cannot be negative');
     }
+  }
+
+  /**
+   * Build the transaction and return it as an unsigned PSKT in UPDATER role.
+   *
+   * The PSKT has all inputs and outputs populated with UTXO data but no
+   * signatures. It is ready to be handed to a signer (HSM, hardware wallet,
+   * or MPCv2 session) via `pskt.toSigner().sign(key)` or
+   * `pskt.toSigner().addSignature(...)`.
+   *
+   * Example:
+   * ```ts
+   * const pskt = await builder.toPskt();
+   * const broadcastJson = pskt
+   *   .toSigner()
+   *   .sign(privateKey)
+   *   .toFinalizer()
+   *   .finalize()
+   *   .toExtractor()
+   *   .extract();
+   * ```
+   */
+  async toPskt(): Promise<Pskt> {
+    this.validateTransaction();
+
+    const psktInputs: PsktInput[] = this._inputs.map((inp) => ({
+      previousOutpoint: { transactionId: inp.transactionId, index: inp.transactionIndex },
+      utxoEntry: { amount: inp.amount, scriptPublicKey: inp.scriptPublicKey },
+      sequence: inp.sequence,
+      sigOpCount: inp.sigOpCount ?? 1,
+      partialSigs: {},
+      sighashType: 0x01, // SIGHASH_ALL
+      bip32Derivations: {},
+      proprietaries: {},
+    }));
+
+    const psktOutputs: PsktOutput[] = this._outputs.map((out) => ({
+      amount: out.amount,
+      scriptPublicKey: { version: 0, scriptPublicKey: out.scriptPublicKey || addressToScriptPublicKey(out.address) },
+      bip32Derivations: {},
+      proprietaries: {},
+    }));
+
+    const pskt = Pskt.creator(TX_VERSION);
+    for (const inp of psktInputs) {
+      pskt.input(inp);
+    }
+    for (const out of psktOutputs) {
+      pskt.output(out);
+    }
+    return pskt.toUpdater();
   }
 }

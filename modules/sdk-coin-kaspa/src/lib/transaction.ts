@@ -2,11 +2,14 @@ import { BaseKey, BaseTransaction, TransactionType } from '@bitgo/sdk-core';
 import { ecc } from '@bitgo/secp256k1';
 import { KaspaTransactionData, TransactionExplanation } from './iface';
 import { computeKaspaSigningHash, SIGHASH_ALL } from './sighash';
+import { Pskt } from './pskt';
 
 export class Transaction extends BaseTransaction {
   protected _txData: KaspaTransactionData;
 
   constructor(coin: string, txData?: KaspaTransactionData) {
+    // BaseTransaction expects a full statics CoinConfig; we only have the coin name string here.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     super({ coin } as any);
     this._txData = txData || {
       version: 0,
@@ -28,7 +31,7 @@ export class Transaction extends BaseTransaction {
    * Get the transaction fee in sompi.
    * If fee was explicitly set, returns that. Otherwise computes from inputs - outputs.
    */
-  get getFee(): string {
+  get fee(): string {
     if (this._txData.fee) {
       return this._txData.fee;
     }
@@ -44,43 +47,45 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
-   * Returns the signable payload for TSS/MPC signing.
+   * Returns one sighash Buffer per input — the set of messages that must be
+   * signed for a multi-input MPCv2 ceremony.
    *
-   * For Kaspa, each input has its own sighash (BIP-143-like scheme with Blake2b).
-   * This returns the sighash for the first input, which is what TSS signs.
-   * For multi-input transactions, all inputs share the same key so the same
-   * Schnorr signature is applied to each input's individual sighash in addSignature().
-   *
-   * @see ADA's Transaction.signablePayload for the equivalent pattern
+   * Kaspa uses a BIP-143-like sighash scheme (Blake2b) where each input commits
+   * to its own index, so input[i] has a distinct hash that cannot be re-used for
+   * input[j]. A correct multi-input MPCv2 flow runs one DKLS session per input
+   * in parallel and applies each resulting signature via addSignatureForInput().
    */
-  get signablePayload(): Buffer {
+  get signablePayloads(): Buffer[] {
     if (this._txData.inputs.length === 0) {
-      throw new Error('Cannot compute signablePayload: no inputs');
+      throw new Error('Cannot compute signablePayloads: no inputs');
     }
-    return computeKaspaSigningHash(this._txData, 0, SIGHASH_ALL);
+    return this._txData.inputs.map((_, i) => computeKaspaSigningHash(this._txData, i, SIGHASH_ALL));
   }
 
   /**
-   * Apply a Schnorr signature produced by TSS/MPC signing to all inputs.
+   * Apply a Schnorr signature to a single specific input.
    *
-   * In TSS flow, the keyserver signs the first input's sighash. Since each input
-   * has a different sighash, we re-sign each input individually using the
-   * x-only public key derived from the compressed public key.
+   * Used in the multi-input MPCv2 flow where each input is signed by an
+   * independent DKLS session that commits to that input's sighash. Call this
+   * once per input with the signature produced for that input's signablePayloads[i].
    *
-   * @param publicKey compressed secp256k1 public key (33 bytes hex)
-   * @param signature 64-byte Schnorr signature buffer (from TSS)
+   * @param index      0-based index of the input to sign
+   * @param publicKey  compressed secp256k1 public key (33 bytes hex) — not used in
+   *                   the scriptSig bytes but kept for symmetry with addSignature
+   * @param signature  64-byte Schnorr signature buffer for input[index]
    * @param sigHashType SigHash type (default: SIGHASH_ALL)
    */
-  addSignature(publicKey: string, signature: Buffer, sigHashType: number = SIGHASH_ALL): void {
+  addSignatureForInput(index: number, publicKey: string, signature: Buffer, sigHashType: number = SIGHASH_ALL): void {
+    if (index < 0 || index >= this._txData.inputs.length) {
+      throw new Error(`Input index ${index} is out of range (tx has ${this._txData.inputs.length} inputs)`);
+    }
     if (signature.length !== 64) {
       throw new Error(`Expected 64-byte Schnorr signature, got ${signature.length}`);
     }
-
-    for (let i = 0; i < this._txData.inputs.length; i++) {
-      // Each input gets the same signature format: 64-byte sig + sighash type byte
-      const sigWithType = Buffer.concat([signature, Buffer.from([sigHashType])]);
-      this._txData.inputs[i].signatureScript = sigWithType.toString('hex');
-    }
+    // Kaspa script engine requires push-only signatureScripts.
+    // 0x41 = OP_DATA_65: push the next 65 bytes (64-byte sig + 1-byte sighash type) onto the stack.
+    const sigWithType = Buffer.concat([Buffer.from([0x41]), signature, Buffer.from([sigHashType])]);
+    this._txData.inputs[index].signatureScript = sigWithType.toString('hex');
   }
 
   /**
@@ -96,8 +101,8 @@ export class Transaction extends BaseTransaction {
     for (let i = 0; i < this._txData.inputs.length; i++) {
       const sigHash = computeKaspaSigningHash(this._txData, i, sigHashType);
       const sig = ecc.signSchnorr(sigHash, privateKey);
-      // 65-byte signature: 64-byte Schnorr sig + 1-byte sighash type
-      const sigWithType = Buffer.concat([Buffer.from(sig), Buffer.from([sigHashType])]);
+      // Kaspa requires push-only signatureScripts: 0x41 (OP_DATA_65) + 64-byte sig + 1-byte sighash type
+      const sigWithType = Buffer.concat([Buffer.from([0x41]), Buffer.from(sig), Buffer.from([sigHashType])]);
       this._txData.inputs[i].signatureScript = sigWithType.toString('hex');
     }
   }
@@ -115,10 +120,11 @@ export class Transaction extends BaseTransaction {
       return false;
     }
     const sigBytes = Buffer.from(input.signatureScript, 'hex');
-    if (sigBytes.length < 65) {
+    // signatureScript layout: 0x41 (OP_DATA_65) + 64-byte sig + 1-byte sighash type = 66 bytes
+    if (sigBytes.length < 66) {
       return false;
     }
-    const sig = sigBytes.slice(0, 64);
+    const sig = sigBytes.slice(1, 65); // skip the 0x41 push opcode
     const sigHash = computeKaspaSigningHash(this._txData, inputIndex, sigHashType);
     // Accept 33-byte compressed or 32-byte x-only
     const xOnlyPub = publicKey.length === 33 ? publicKey.slice(1) : publicKey;
@@ -159,17 +165,54 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
-   * Serialize the transaction to a JSON string (broadcast format).
+   * Serialize the transaction to the Kaspa REST API JSON string.
+   *
+   * This is the wire format accepted by the Kaspa node REST API for broadcasting.
+   * Unsigned transactions (signatureScript = "") use this same structure; once
+   * all inputs are signed the same format is submitted to the node.
+   *
+   * Note: inputs in this format carry only `previousOutpoint`, `signatureScript`,
+   * `sequence`, and `sigOpCount`. The `amount` and `scriptPublicKey` fields needed
+   * for sighash computation are NOT present here — they live in `toJson()`.
    */
   toBroadcastFormat(): string {
-    return JSON.stringify(this._txData);
+    return JSON.stringify({
+      version: this._txData.version,
+      inputs: this._txData.inputs.map((input) => ({
+        previousOutpoint: {
+          transactionId: input.transactionId,
+          index: input.transactionIndex,
+        },
+        signatureScript: input.signatureScript || '',
+        sequence: Number(input.sequence ?? 0),
+        sigOpCount: input.sigOpCount ?? 1,
+      })),
+      outputs: this._txData.outputs.map((output) => ({
+        amount: Number(output.amount),
+        scriptPublicKey: {
+          version: 0,
+          scriptPublicKey: output.scriptPublicKey || '',
+        },
+      })),
+      lockTime: Number(this._txData.lockTime ?? 0),
+      subnetworkId: this._txData.subnetworkId ?? '0000000000000000000000000000000000000000',
+      gas: 0,
+      payload: this._txData.payload ?? '',
+    });
   }
 
   /**
-   * Serialize transaction to hex (JSON-encoded then hex-encoded).
+   * Serialize transaction to hex using the internal `KaspaTransactionData` format.
+   *
+   * This hex is used for SDK-internal round-trips (builder serialisation / deserialisation)
+   * because the internal format preserves `amount` and `scriptPublicKey` on inputs,
+   * which are required for sighash computation but are not present in the REST API format.
+   *
+   * Use `Buffer.from(tx.toBroadcastFormat()).toString('hex')` when you need the hex
+   * representation of the broadcast / HSM wire format.
    */
   toHex(): string {
-    return Buffer.from(this.toBroadcastFormat()).toString('hex');
+    return Buffer.from(JSON.stringify(this._txData)).toString('hex');
   }
 
   /**
@@ -203,5 +246,39 @@ export class Transaction extends BaseTransaction {
   /** @inheritDoc */
   canSign(_key: BaseKey): boolean {
     return true;
+  }
+
+  /**
+   * Convert this transaction to a PSKT in SIGNER role.
+   *
+   * The PSKT is populated with UTXO data from each input so that sighash
+   * computation is possible immediately. Any existing `signatureScript` on an
+   * input is carried into the PSKT as `finalScriptSig`.
+   *
+   * Typical use:
+   * ```ts
+   * const pskt = tx.toPskt()
+   *   .sign(privateKey)
+   *   .toFinalizer()
+   *   .finalize()
+   *   .toExtractor();
+   * const broadcastJson = pskt.extract();
+   * ```
+   */
+  toPskt(): Pskt {
+    return Pskt.fromTxData(this._txData);
+  }
+
+  /**
+   * Reconstruct a Transaction from a PSKT (any role).
+   *
+   * `finalScriptSig` from each PSKT input is mapped to `signatureScript` so
+   * that the resulting transaction is signed if the PSKT has been finalised.
+   *
+   * @param coin  Coin name string (e.g. 'kaspa', 'tkaspa')
+   * @param pskt  A Pskt instance (typically at FINALIZER or EXTRACTOR role)
+   */
+  static fromPskt(coin: string, pskt: Pskt): Transaction {
+    return new Transaction(coin, pskt.toTxData());
   }
 }

@@ -87,11 +87,38 @@ export interface KaspaTxInfo {
 }
 
 /**
- * Kaspa sign transaction options
+ * A single per-input Schnorr signature produced by an external TSS session.
+ * Each entry corresponds to one entry in `tx.signablePayloads`.
+ */
+export interface KaspaInputSignature {
+  /** 0-based index of the input this signature covers */
+  inputIndex: number;
+  /** Hex-encoded compressed secp256k1 public key (33 bytes) */
+  pubKey: string;
+  /** Hex-encoded 64-byte raw Schnorr signature */
+  signature: string;
+}
+
+/**
+ * Kaspa sign transaction options.
+ *
+ * Two mutually exclusive signing modes:
+ *
+ * 1. `prv`        — direct private-key signing (test / non-TSS).
+ *                   `tx.sign(prv)` is called, which loops all inputs.
+ *
+ * 2. `signatures` — TSS multi-input mode.
+ *                   The caller ran one independent DKLS session per input
+ *                   (over `tx.signablePayloads[i]`) and collected the
+ *                   resulting Schnorr signatures. Each signature is applied
+ *                   via `tx.addSignatureForInput(inputIndex, pubKey, sig)`.
  */
 export interface KaspaSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
-  prv: string;
+  /** Direct private key — signs every input in one call */
+  prv?: string;
+  /** Per-input TSS signatures — one entry per input that was signed */
+  signatures?: KaspaInputSignature[];
 }
 
 /**
@@ -103,25 +130,8 @@ export interface KaspaTransactionParams extends TransactionParams {
 }
 
 /**
- * Kaspa explain transaction options
- */
-export interface KaspaExplainTransactionOptions {
-  txHex?: string;
-  halfSigned?: {
-    txHex: string;
-  };
-}
-
-/**
  * Kaspa verify transaction options
  */
 export interface KaspaVerifyTransactionOptions extends VerifyTransactionOptions {
   txParams: KaspaTransactionParams;
-}
-
-/**
- * Kaspa transaction fee info
- */
-export interface KaspaTransactionFee {
-  fee: string;
 }
