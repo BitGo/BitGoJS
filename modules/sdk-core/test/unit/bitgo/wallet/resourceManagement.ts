@@ -113,6 +113,145 @@ describe('Wallet - resource management', function () {
       bodyArg.should.have.property('delegations');
       bodyArg.should.not.have.property('walletPassphrase');
     });
+
+    describe('TSS wallet — txHex population from full txRequest', function () {
+      function stubTxRequestFetch(txRequest: any) {
+        const resultStub = sinon.stub().resolves({ txRequests: [txRequest] });
+        const retryStub = sinon.stub().returns({ result: resultStub });
+        const queryStub = sinon.stub().returns({ retry: retryStub });
+        mockBitGo.get = sinon.stub().returns({ query: queryStub });
+        mockBitGo.url = sinon.stub().returns('/mock-api/v2/wallet/test-wallet-id/txrequests');
+        return { resultStub };
+      }
+
+      beforeEach(function () {
+        mockWalletData = {
+          id: 'test-wallet-id',
+          keys: ['user-key', 'backup-key', 'bitgo-key'],
+          type: 'hot',
+          multisigType: 'tss',
+        };
+        wallet = new Wallet(mockBitGo, mockBaseCoin, mockWalletData);
+      });
+
+      it('should fetch full txRequest and map serializedTxHex to txHex when apiVersion is full', async function () {
+        stubPost({ transactions: [{ txRequestId: 'req-1', stakingParams: {} }], errors: [] });
+        stubTxRequestFetch({
+          txRequestId: 'req-1',
+          apiVersion: 'full',
+          transactions: [{ unsignedTx: { serializedTxHex: 'serialized-hex-aaa' } }],
+        });
+
+        const result = await wallet.buildResourceDelegations({ delegations: [delegations[0]] });
+
+        result.prebuilds.should.have.length(1);
+        result.prebuilds[0]!.txHex!.should.equal('serialized-hex-aaa');
+        sinon.assert.calledOnce(mockBitGo.get);
+      });
+
+      it('should fetch full txRequest and map serializedTxHex to txHex when apiVersion is lite', async function () {
+        stubPost({ transactions: [{ txRequestId: 'req-2', stakingParams: {} }], errors: [] });
+        stubTxRequestFetch({
+          txRequestId: 'req-2',
+          apiVersion: 'lite',
+          unsignedTxs: [{ serializedTxHex: 'serialized-hex-bbb' }],
+        });
+
+        const result = await wallet.buildResourceDelegations({ delegations: [delegations[0]] });
+
+        result.prebuilds.should.have.length(1);
+        result.prebuilds[0]!.txHex!.should.equal('serialized-hex-bbb');
+      });
+
+      it('should throw when txRequest has no serializedTxHex', async function () {
+        stubPost({ transactions: [{ txRequestId: 'req-3', stakingParams: {} }], errors: [] });
+        stubTxRequestFetch({
+          txRequestId: 'req-3',
+          apiVersion: 'full',
+          transactions: [{ unsignedTx: {} }],
+        });
+
+        await (wallet.buildResourceDelegations({ delegations: [delegations[0]] }) as any).should.be.rejectedWith(
+          /Expected serializedTxHex/
+        );
+      });
+
+      it('should NOT fetch txRequest when txHex is already present in the build response', async function () {
+        stubPost({ transactions: [{ txRequestId: 'req-4', txHex: 'already-present' }], errors: [] });
+        mockBitGo.get = sinon.stub();
+
+        const result = await wallet.buildResourceDelegations({ delegations: [delegations[0]] });
+
+        result.prebuilds[0]!.txHex!.should.equal('already-present');
+        sinon.assert.notCalled(mockBitGo.get);
+      });
+
+      it('should NOT fetch txRequest when build response has no txRequestId', async function () {
+        stubPost({ transactions: [{ stakingParams: {} }], errors: [] });
+        mockBitGo.get = sinon.stub();
+
+        await wallet.buildResourceDelegations({ delegations: [delegations[0]] });
+
+        sinon.assert.notCalled(mockBitGo.get);
+      });
+
+      it('should fetch txRequest once per delegation for bulk delegations', async function () {
+        stubPost({
+          transactions: [
+            { txRequestId: 'req-bulk-1', stakingParams: {} },
+            { txRequestId: 'req-bulk-2', stakingParams: {} },
+          ],
+          errors: [],
+        });
+        const resultStub = sinon
+          .stub()
+          .onFirstCall()
+          .resolves({
+            txRequests: [
+              {
+                txRequestId: 'req-bulk-1',
+                apiVersion: 'full',
+                transactions: [{ unsignedTx: { serializedTxHex: 'hex-bulk-1' } }],
+              },
+            ],
+          })
+          .onSecondCall()
+          .resolves({
+            txRequests: [
+              {
+                txRequestId: 'req-bulk-2',
+                apiVersion: 'full',
+                transactions: [{ unsignedTx: { serializedTxHex: 'hex-bulk-2' } }],
+              },
+            ],
+          });
+        const retryStub = sinon.stub().returns({ result: resultStub });
+        const queryStub = sinon.stub().returns({ retry: retryStub });
+        mockBitGo.get = sinon.stub().returns({ query: queryStub });
+        mockBitGo.url = sinon.stub().returns('/mock-api/v2/wallet/test-wallet-id/txrequests');
+
+        const result = await wallet.buildResourceDelegations({ delegations });
+
+        result.prebuilds.should.have.length(2);
+        result.prebuilds[0]!.txHex!.should.equal('hex-bulk-1');
+        result.prebuilds[1]!.txHex!.should.equal('hex-bulk-2');
+        sinon.assert.calledTwice(mockBitGo.get);
+      });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // buildResourceDelegations — non-TSS wallet, no txRequest fetch
+  // ---------------------------------------------------------------------------
+  describe('buildResourceDelegations non-TSS wallet — no txRequest fetch', function () {
+    it('should NOT call getTxRequest for non-TSS wallet even when txRequestId is present', async function () {
+      stubPost({ transactions: [{ txRequestId: 'req-hot', stakingParams: {} }], errors: [] });
+      mockBitGo.get = sinon.stub();
+
+      await wallet.buildResourceDelegations({ delegations: [delegations[0]] });
+
+      sinon.assert.notCalled(mockBitGo.get);
+    });
   });
 
   // ---------------------------------------------------------------------------

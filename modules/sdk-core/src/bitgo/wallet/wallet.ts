@@ -3526,6 +3526,22 @@ export class Wallet implements IWallet {
       delete prebuild.wallet;
       delete prebuild.buildParams;
 
+      // For TSS wallets the build endpoint returns only { txRequestId, stakingParams } — no txHex.
+      // Fetch the full txRequest to obtain serializedTxHex and populate txHex so that
+      // verifyTransaction (called inside prebuildAndSignTransaction) has the transaction bytes
+      // it needs. This mirrors what prebuildTransactionTxRequests does for other tx types.
+      if (this._wallet.multisigType === 'tss' && !prebuild.txHex && prebuild.txRequestId) {
+        const txRequest = await getTxRequest(this.bitgo, this.id(), prebuild.txRequestId, params.reqId);
+        const unsignedTx =
+          txRequest.apiVersion === 'full' ? txRequest.transactions?.[0]?.unsignedTx : txRequest.unsignedTxs?.[0];
+        if (!unsignedTx?.serializedTxHex) {
+          throw new Error(
+            `Expected serializedTxHex on TSS resource management prebuild for txRequestId ${prebuild.txRequestId}`
+          );
+        }
+        prebuild = _.extend({}, prebuild, { txHex: unsignedTx.serializedTxHex });
+      }
+
       prebuild = _.extend({}, prebuild, { walletId: this.id() });
       debug('final resource management transaction prebuild: %O', prebuild);
       prebuilds.push(prebuild);
