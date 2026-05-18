@@ -61,4 +61,20 @@ describe('ETH Transaction', () => {
       });
     });
   });
+
+  describe('signablePayload', () => {
+    it('should throw on an empty transaction', () => {
+      const tx = getTransaction();
+      assert.throws(() => tx.signablePayload);
+    });
+
+    testParams.map(([txnType, txData]) => {
+      it(`should return a 32-byte keccak256 hash for a ${txnType} transaction`, () => {
+        const tx = getTransaction(txData);
+        const payload = tx.signablePayload;
+        assert.ok(Buffer.isBuffer(payload));
+        assert.strictEqual(payload.length, 32);
+      });
+    });
+  });
 });

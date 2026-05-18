@@ -2522,4 +2522,58 @@ describe('ETH:', function () {
       });
     });
   });
+
+  describe('getSignablePayload', function () {
+    let coin: Teth;
+
+    before(function () {
+      coin = bitgo.coin('teth') as Teth;
+    });
+
+    it('should return a 32-byte keccak256 hash for a Legacy transaction', async function () {
+      const txBuilder = getBuilder('teth') as TransactionBuilder;
+      txBuilder.type(TransactionType.Send);
+      txBuilder.fee({ fee: '10000000000', gasLimit: '7000000' });
+      txBuilder.counter(1);
+      txBuilder.contract('0x8Ce59c2d1702844F8EdED451AA103961bC37B4e8');
+      const transferBuilder = txBuilder.transfer() as TransferBuilder;
+      transferBuilder
+        .coin('teth')
+        .expirationTime(Math.floor(Date.now() / 1000) + 3600)
+        .amount('100000')
+        .to('0xeeaf0F05f37891ab4a21208B105A0687d12c5aF7')
+        .contractSequenceId(1);
+      const tx = await txBuilder.build();
+      const serializedTx = tx.toBroadcastFormat();
+
+      const payload = await coin.getSignablePayload(serializedTx);
+      assert.ok(Buffer.isBuffer(payload));
+      assert.strictEqual(payload.length, 32);
+    });
+
+    it('should return a 32-byte keccak256 hash for an EIP1559 transaction', async function () {
+      const txBuilder = getBuilder('teth') as TransactionBuilder;
+      txBuilder.type(TransactionType.Send);
+      txBuilder.fee({
+        fee: '280000000000',
+        gasLimit: '7000000',
+        eip1559: { maxFeePerGas: '7593123', maxPriorityFeePerGas: '150' },
+      });
+      txBuilder.counter(1);
+      txBuilder.contract('0x8Ce59c2d1702844F8EdED451AA103961bC37B4e8');
+      const transferBuilder = txBuilder.transfer() as TransferBuilder;
+      transferBuilder
+        .coin('teth')
+        .expirationTime(Math.floor(Date.now() / 1000) + 3600)
+        .amount('100000')
+        .to('0xeeaf0F05f37891ab4a21208B105A0687d12c5aF7')
+        .contractSequenceId(1);
+      const tx = await txBuilder.build();
+      const serializedTx = tx.toBroadcastFormat();
+
+      const payload = await coin.getSignablePayload(serializedTx);
+      assert.ok(Buffer.isBuffer(payload));
+      assert.strictEqual(payload.length, 32);
+    });
+  });
 });
