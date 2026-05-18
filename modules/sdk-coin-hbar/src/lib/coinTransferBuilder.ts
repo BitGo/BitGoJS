@@ -41,22 +41,8 @@ export class CoinTransferBuilder extends TransferBuilder {
     });
     accountAmounts[0].amount = Long.fromString(totalSend.toString()).negate(); // update sender send amount
 
-    // Merge entries with the same accountID to prevent ACCOUNT_REPEATED_IN_ACCOUNT_AMOUNTS.
-    // This handles self-transfer (sender == recipient) by collapsing [{acct, -N}, {acct, +N}]
-    // into a single [{acct, 0}] entry that Hedera accepts.
-    const merged = new Map<string, proto.IAccountAmount>();
-    for (const entry of accountAmounts) {
-      const key = stringifyAccountId(entry.accountID!);
-      const existing = merged.get(key);
-      if (existing) {
-        existing.amount = Long.fromValue(existing.amount!).add(Long.fromValue(entry.amount!));
-      } else {
-        merged.set(key, { accountID: entry.accountID, amount: entry.amount });
-      }
-    }
-
     return {
-      accountAmounts: Array.from(merged.values()),
+      accountAmounts: accountAmounts,
     };
   }
 
