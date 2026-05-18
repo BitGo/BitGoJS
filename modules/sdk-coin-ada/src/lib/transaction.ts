@@ -390,7 +390,7 @@ export class Transaction extends BaseTransaction {
   }
 
   /** @inheritdoc */
-  explainTransaction(): {
+  explainTransaction(params?: { changeAddresses?: string[] }): {
     outputs: { amount: string; address: string; multiAssets?: Asset[] }[];
     certificates: Cert[];
     changeOutputs: string[];
@@ -421,20 +421,36 @@ export class Transaction extends BaseTransaction {
         : this._type === TransactionType.VoteDelegation
         ? 'VoteDelegation'
         : 'undefined';
+
+    // Identify change outputs by comparing addresses
+    const changeAddresses = params?.changeAddresses || [];
+    const changeOutputAddresses: string[] = [];
+    let changeAmount = BigInt(0);
+
+    const outputs = txJson.outputs.map((o) => {
+      const multiAssets = Transaction.parseMultiAssets(o.multiAssets as CardanoWasm.MultiAsset | undefined);
+      const outputData = {
+        address: o.address,
+        amount: o.amount,
+        ...(multiAssets && { multiAssets }),
+      };
+
+      // Check if this output is a change output
+      if (changeAddresses.includes(o.address)) {
+        changeOutputAddresses.push(o.address);
+        changeAmount = changeAmount + BigInt(o.amount);
+      }
+
+      return outputData;
+    });
+
     return {
       displayOrder,
       id: txJson.id,
-      outputs: txJson.outputs.map((o) => {
-        const multiAssets = Transaction.parseMultiAssets(o.multiAssets as CardanoWasm.MultiAsset | undefined);
-        return {
-          address: o.address,
-          amount: o.amount,
-          ...(multiAssets && { multiAssets }),
-        };
-      }),
+      outputs,
       outputAmount: outputAmount,
-      changeOutputs: [],
-      changeAmount: '0',
+      changeOutputs: changeOutputAddresses,
+      changeAmount: changeAmount.toString(),
       fee: { fee: this._fee },
       type,
       certificates: txJson.certs,

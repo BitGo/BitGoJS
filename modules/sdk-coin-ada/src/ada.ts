@@ -4,6 +4,7 @@ import {
   BaseTransaction,
   BitGoBase,
   InvalidAddressError,
+  IWallet,
   KeyPair,
   MPCAlgorithm,
   NodeEnvironmentError,
@@ -54,10 +55,16 @@ export interface AdaTxInfo {
 
 export interface ExplainTransactionOptions {
   txPrebuild: TransactionPrebuild;
+  wallet?: IWallet;
+  txInfo?: AdaTxInfo;
+  changeAddresses?: string[];
 }
 
 export interface AdaParseTransactionOptions extends BaseParseTransactionOptions {
   txPrebuild: TransactionPrebuild;
+  wallet?: IWallet;
+  txInfo?: AdaTxInfo;
+  changeAddresses?: string[];
 }
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
@@ -214,12 +221,37 @@ export class Ada extends BaseCoin {
       throw new Error('Invalid transaction');
     }
 
-    return rebuiltTransaction.explainTransaction() as unknown as AdaTransactionExplanation;
+    // Derive with override strategy: explicit changeAddresses take precedence
+    let changeAddresses = params.changeAddresses;
+
+    // Auto-derive if not explicitly provided
+    if (!changeAddresses && params.wallet) {
+      const derived: string[] = [];
+      const baseAddress = params.wallet.coinSpecific()?.baseAddress || params.wallet.coinSpecific()?.rootAddress;
+      if (baseAddress) {
+        derived.push(baseAddress);
+      }
+
+      const txInfo = params.txInfo || (params.txPrebuild as any).txInfo;
+      const feeAddress = txInfo?.feeAddress;
+      if (feeAddress) {
+        derived.push(feeAddress);
+      }
+
+      changeAddresses = derived.length > 0 ? derived : undefined;
+    }
+
+    return rebuiltTransaction.explainTransaction({
+      changeAddresses,
+    }) as unknown as AdaTransactionExplanation;
   }
 
   async parseTransaction(params: AdaParseTransactionOptions): Promise<ParsedTransaction> {
     const transactionExplanation = await this.explainTransaction({
       txPrebuild: params.txPrebuild,
+      wallet: params.wallet,
+      txInfo: params.txInfo,
+      changeAddresses: params.changeAddresses,
     });
 
     if (!transactionExplanation) {
