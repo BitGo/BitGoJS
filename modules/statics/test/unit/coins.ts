@@ -884,10 +884,8 @@ describe('CoinMap', function () {
       ];
       for (const chainId of legacyChainIds) {
         const coinName = coins.coinNameFromChainId(chainId);
-        should(coinName).not.be.undefined(`chainId ${chainId} should resolve to a coin name`);
-        should(() => coins.get(coinName!)).not.throw(
-          `chainId ${chainId} maps to '${coinName}' which is not defined in CoinMap`
-        );
+        should(coinName).not.be.undefined();
+        should(() => coins.get(coinName!)).not.throw();
       }
     });
   });
