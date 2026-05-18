@@ -1193,6 +1193,24 @@ describe('Eip1559 coins', () => {
   });
 });
 
+describe('Liquid staking tokens', () => {
+  it('should have LIQUID_STAKING feature for hypeevm liquid staking tokens', () => {
+    const liquidStakingTokens = ['hypeevm:hwhype', 'hypeevm:khype'];
+    liquidStakingTokens.forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.LIQUID_STAKING).should.eql(true);
+    });
+  });
+
+  it('should have LIQUID_STAKING feature for ofc hypeevm liquid staking tokens', () => {
+    const liquidStakingTokens = ['ofchypeevm:hwhype', 'ofchypeevm:khype'];
+    liquidStakingTokens.forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.LIQUID_STAKING).should.eql(true);
+    });
+  });
+});
+
 describe('create token map using config details', () => {
   it('should create a valid token map from AmsTokenConfig', () => {
     const tokenMap = createTokenMapUsingConfigDetails(amsTokenConfig);

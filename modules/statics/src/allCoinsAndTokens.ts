@@ -4551,7 +4551,8 @@ export const allCoinsAndTokens = [
     18,
     '0x4de03ca1f02591b717495cfa19913ad56a2f5858',
     UnderlyingAsset['hypeevm:hwhype'],
-    Networks.main.hypeevm
+    Networks.main.hypeevm,
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559, CoinFeature.LIQUID_STAKING]
   ),
 
   erc20Token(
@@ -4581,7 +4582,7 @@ export const allCoinsAndTokens = [
     '0xfd739d4e423301ce9385c1fb8850539d657c296d',
     UnderlyingAsset['hypeevm:khype'],
     Networks.main.hypeevm,
-    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559, CoinFeature.LIQUID_STAKING]
   ),
   erc20Token(
     'fa292113-57f0-425a-841b-0e3111c8fd52',
