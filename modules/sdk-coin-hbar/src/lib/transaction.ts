@@ -153,21 +153,6 @@ export class Transaction extends BaseTransaction {
       }
     });
 
-    // Handle self-transfer: when sender == recipient, the positive entry is filtered out above
-    // because its accountID matches the sender. Fall back to including it as the recipient.
-    if (transferData.length === 0 && transfers.length > 0) {
-      const selfTransferEntry = transfers.find((t) => Long.fromValue(t.amount!).isPositive());
-      if (selfTransferEntry) {
-        transferData.push({
-          address: stringifyAccountId(selfTransferEntry.accountID!),
-          amount: Long.fromValue(selfTransferEntry.amount!).toString(),
-          ...(tokenTransfers.length && {
-            tokenName: tokenName,
-          }),
-        });
-      }
-    }
-
     return {
       ...(tokenTransfers.length && {
         tokenName: tokenName,
