@@ -4795,6 +4795,7 @@ export const ofcCoins = [
     UnderlyingAsset['sol:tusdc']
   ),
   ofcsolToken('4c928099-4b07-457a-944e-58ed464418de', 'ofcsol:slx', 'Solstice', 9, UnderlyingAsset['sol:slx']),
+  ofcsolToken('8ff32b48-1bab-4769-b239-d34afbb74a89', 'ofcsol:ab1', 'Animoca', 0, UnderlyingAsset['sol:ab1']),
   // New Canton OFC tokens
   ofcCantonToken(
     '02ab6bd2-83e6-46fc-bfd7-93b8be125648',
