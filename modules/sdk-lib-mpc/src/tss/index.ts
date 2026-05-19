@@ -1,3 +1,4 @@
 export * from './ecdsa';
 export * from './ecdsa-dkls';
 export * from './eddsa-mps';
+export * from './schnorr-dkls';
