@@ -49,7 +49,7 @@ import {
   TxRequestChallengeResponse,
 } from '../../../tss/types';
 import { BaseEcdsaUtils } from './base';
-import { IRequestTracer } from '../../../../api';
+import { EncryptionVersion, IRequestTracer } from '../../../../api';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -183,6 +183,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     passphrase,
     originalPasscodeEncryptionCode,
     webauthnInfo,
+    encryptionVersion,
   }: CreateEcdsaKeychainParams): Promise<Keychain> {
     if (!passphrase) {
       throw new Error('Please provide a wallet passphrase');
@@ -198,7 +199,8 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       bitgoKeychain,
       passphrase,
       originalPasscodeEncryptionCode,
-      webauthnInfo
+      webauthnInfo,
+      encryptionVersion
     );
   }
 
@@ -210,6 +212,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     bitgoKeychain,
     bitgoPublicGpgKey,
     passphrase,
+    encryptionVersion,
   }: CreateEcdsaKeychainParams): Promise<Keychain> {
     assert(backupKeyShare.userHeldKeyShare);
     assert(passphrase);
@@ -221,7 +224,10 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       userKeyShare,
       backupKeyShare.userHeldKeyShare,
       bitgoKeychain,
-      passphrase
+      passphrase,
+      undefined,
+      undefined,
+      encryptionVersion
     );
   }
 
@@ -312,7 +318,8 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     bitgoKeychain: Keychain,
     passphrase: string,
     originalPasscodeEncryptionCode?: string,
-    webauthnInfo?: WebauthnKeyEncryptionInfo
+    webauthnInfo?: WebauthnKeyEncryptionInfo,
+    encryptionVersion?: EncryptionVersion
   ): Promise<Keychain> {
     const bitgoKeyShares = bitgoKeychain.keyShares;
     if (!bitgoKeyShares) {
@@ -402,9 +409,10 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       keyType: 'tss' as KeyType,
       commonKeychain: bitgoKeychain.commonKeychain,
       prv: prv,
-      encryptedPrv: this.bitgo.encrypt({
+      encryptedPrv: await this.bitgo.encryptAsync({
         input: prv,
         password: passphrase,
+        encryptionVersion,
       }),
       originalPasscodeEncryptionCode,
       webauthnDevices:
@@ -499,7 +507,10 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       userPublicGpgKey: userPublicGpgKey,
       kShare: userSignShare.kShare,
       wShare: params.walletPassphrase
-        ? this.bitgo.encrypt({ input: JSON.stringify(userSignShare.wShare), password: params.walletPassphrase })
+        ? await this.bitgo.encryptAsync({
+            input: JSON.stringify(userSignShare.wShare),
+            password: params.walletPassphrase,
+          })
         : userSignShare.wShare,
     };
   }
@@ -529,7 +540,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
         i: userGammaAndMuShares.muShare.i,
       },
       oShare: params.walletPassphrase
-        ? this.bitgo.encrypt({
+        ? await this.bitgo.encryptAsync({
             input: JSON.stringify(userOmicronAndDeltaShare.oShare),
             password: params.walletPassphrase,
           })
@@ -584,7 +595,10 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     encryptedWShare: string;
     walletPassphrase: string;
   }): Promise<TssEcdsaStep2ReturnMessage> {
-    const decryptedWShare = this.bitgo.decrypt({ input: params.encryptedWShare, password: params.walletPassphrase });
+    const decryptedWShare = await this.bitgo.decryptAsync({
+      input: params.encryptedWShare,
+      password: params.walletPassphrase,
+    });
     return await this.createTssEcdsaStep2SigningMaterial({
       aShareFromBitgo: params.aShareFromBitgo,
       bitgoChallenge: params.bitgoChallenge,
@@ -618,7 +632,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     } catch (err) {
       hash = undefined;
     }
-    const decryptedOShare = this.bitgo.decrypt({ input: encryptedOShare, password: walletPassphrase });
+    const decryptedOShare = await this.bitgo.decryptAsync({ input: encryptedOShare, password: walletPassphrase });
     const { i, R, s, y } = await ECDSAMethods.createUserSignatureShare(
       JSON.parse(decryptedOShare),
       dShareFromBitgo,

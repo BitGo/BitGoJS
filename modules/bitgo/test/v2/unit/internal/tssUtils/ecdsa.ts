@@ -426,6 +426,34 @@ describe('TSS Ecdsa Utils:', async function () {
       await Promise.all(testCasesPromises);
     });
 
+    it('createParticipantKeychain should produce a v2-encrypted encryptedPrv when encryptionVersion: 2', async function () {
+      const passphrase = 'test-passphrase';
+      // Stub keychains.add to capture the params sent to the API so we can inspect encryptedPrv
+      const addStub = sinon.stub(baseCoin.keychains(), 'add').resolves({ id: '1', pub: '', type: 'tss' } as Keychain);
+      try {
+        await tssUtils.createParticipantKeychain(
+          userGpgKey,
+          userLocalBackupGpgKey,
+          bitgoPublicKey,
+          1,
+          userKeyShare,
+          backupKeyShare,
+          nockedBitGoKeychain,
+          passphrase,
+          undefined,
+          undefined,
+          2 // encryptionVersion
+        );
+        sinon.assert.calledOnce(addStub);
+        const addParams = addStub.firstCall.args[0] as { encryptedPrv?: string };
+        assert.ok(addParams.encryptedPrv, 'encryptedPrv must be passed to keychains.add');
+        const envelope = JSON.parse(addParams.encryptedPrv!);
+        assert.strictEqual(envelope.v, 2, 'encryptedPrv must use v2 (Argon2id) envelope');
+      } finally {
+        addStub.restore();
+      }
+    });
+
     it('should fail to generate TSS keychains when received invalid number of wallet signatures', async function () {
       const bitgoKeychain = await generateBitgoKeychain({
         coin: coinName,
@@ -983,7 +1011,28 @@ describe('TSS Ecdsa Utils:', async function () {
           encryptedWShare: bitgo.encrypt({ input: JSON.stringify(wShare), password: mockPassword }),
           walletPassphrase: 'password1',
         })
-        .should.be.rejectedWith("password error - ccm: tag doesn't match");
+        .should.be.rejectedWith('incorrect password');
+    });
+
+    it('createOfflineMuDeltaShare should succeed with v2-encrypted wShare', async function () {
+      const mockPassword = 'password';
+      const alphaLength = 1536;
+      const deltaLength = 64;
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      const encryptedWShare = await bitgo.encryptAsync({
+        input: JSON.stringify(wShare),
+        password: mockPassword,
+        encryptionVersion: 2,
+      });
+      assert.strictEqual(JSON.parse(encryptedWShare).v, 2, 'pre-condition: wShare must be v2-encrypted');
+      const step2SigningMaterial = await tssUtils.createOfflineMuDeltaShare({
+        aShareFromBitgo: aShare,
+        bitgoChallenge: bitgoChallenges,
+        encryptedWShare,
+        walletPassphrase: mockPassword,
+      });
+      step2SigningMaterial.muDShare.muShare.alpha.length.should.equal(alphaLength);
+      step2SigningMaterial.muDShare.dShare.delta.length.should.equal(deltaLength);
     });
 
     it('createOfflineSShare should succeed', async function () {
@@ -998,6 +1047,32 @@ describe('TSS Ecdsa Utils:', async function () {
         },
         dShareFromBitgo: dShare,
         encryptedOShare: bitgo.encrypt({ input: JSON.stringify(oShare), password: mockPassword }),
+        walletPassphrase: mockPassword,
+        requestType: RequestType.tx,
+      });
+      step3SigningMaterial.R.length.should.equal(pubKeyLength);
+      step3SigningMaterial.y.length.should.equal(pubKeyLength);
+      step3SigningMaterial.s.length.should.equal(privKeyLength);
+    });
+
+    it('createOfflineSShare should succeed with v2-encrypted oShare', async function () {
+      const mockPassword = 'password';
+      const pubKeyLength = 66;
+      const privKeyLength = 64;
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      const encryptedOShare = await bitgo.encryptAsync({
+        input: JSON.stringify(oShare),
+        password: mockPassword,
+        encryptionVersion: 2,
+      });
+      assert.strictEqual(JSON.parse(encryptedOShare).v, 2, 'pre-condition: oShare must be v2-encrypted');
+      const step3SigningMaterial = await tssUtils.createOfflineSShare({
+        tssParams: {
+          txRequest: txRequest,
+          reqId: reqId,
+        },
+        dShareFromBitgo: dShare,
+        encryptedOShare,
         walletPassphrase: mockPassword,
         requestType: RequestType.tx,
       });
