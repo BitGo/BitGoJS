@@ -1728,6 +1728,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * half-signed (for hot wallet) evm cross chain recovery transaction with
    * same expected arguments as recover method.
    * This helps recover funds from evm based wrong chain.
+   *
+   * Signing responsibility for backing wallets:
+   * - SD (South Dakota) Trust is responsible for signing the unsigned JSON
+   *   produced by this method and returning the half-signed JSON to support.
+   * - SD Trust must use the Singapore key shards when signing.
+   * - SG (Singapore) Custody Trust does not sign directly; its role is
+   *   only to hold the relevant key shards used by SD Trust.
    * @param {RecoverOptions} params
    * @returns {Promise<RecoveryInfo | OfflineVaultTxInfo>}
    */
