@@ -170,3 +170,18 @@ export interface CantonTransferRequest {
   memoId?: string;
   tokenName?: string;
 }
+
+export interface CantonAllocationAllocateRequest {
+  commandId: string;
+  amount: number;
+  token: string;
+  operatorId: string;
+  contractId: string;
+  tradeId: string;
+  transferLegId: string;
+  allocateBefore: string;
+  settleBefore: string;
+  receiverPartyId: string;
+  senderPartyId: string;
+  comment?: string;
+}
