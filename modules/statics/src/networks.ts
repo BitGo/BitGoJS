@@ -177,6 +177,8 @@ export interface EthereumNetwork extends AccountNetwork {
   readonly walletV4ImplementationAddress?: string;
   readonly nativeCoinOperationHashPrefix?: string;
   readonly tokenOperationHashPrefix?: string;
+  // Zama fhEVM ACL contract address — required for ERC-7984 confidential token delegation
+  readonly zamaAclContractAddress?: string;
 }
 
 export interface TronNetwork extends AccountNetwork {
@@ -824,6 +826,8 @@ class Hoodi extends Testnet implements EthereumNetwork {
   walletV4ImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
   nativeCoinOperationHashPrefix = 'ETHER';
   tokenOperationHashPrefix = 'ERC20';
+  // https://github.com/zama-ai/sdk/blob/prerelease/packages/sdk/src/chains/configs.ts#L52
+  zamaAclContractAddress = '0x6d3faf6f86e1ff9f3b0831dda920aba1cbd5bd68';
 }
 
 class EthereumClassic extends Mainnet implements EthereumNetwork {
