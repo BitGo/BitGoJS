@@ -2600,6 +2600,7 @@ export const ofcCoins = [
   ofcBscToken('6d96470a-3c8e-44de-a18e-9dd224d4bcc0', 'ofcbsc:stable', 'Stable', 18, UnderlyingAsset['bsc:stable']),
   ofcBscToken('f8c3d7b5-2d9e-4b3f-8a1e-7c6d9e3a2f4b', 'ofcbsc:brise', 'Bitrise Token', 9, UnderlyingAsset['bsc:brise']),
   ofcBscToken('2e9f4c6b-8a7d-4b2e-9d3f-7c6a5e8b1f2a', 'ofcbsc:bsw', 'Biswap', 18, UnderlyingAsset['bsc:bsw']),
+  ofcBscToken('654fcfa2-fe12-4f53-ab42-60e303b9f6ac', 'ofcbsc:sqd', 'Subsquid', 18, UnderlyingAsset['bsc:sqd']),
   ofcBscToken(
     '89dfd19c-d241-45e2-94b1-8a9bcdb9c09b',
     'ofcbsc:parti',
@@ -4099,6 +4100,34 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['polygon:wots0']
   ),
+  ofcPolygonErc20(
+    '48b62c18-3063-4068-b994-1b7758359f3b',
+    'ofcpolygon:mext',
+    'Mexican Peso Token',
+    18,
+    UnderlyingAsset['polygon:mext']
+  ),
+  ofcPolygonErc20(
+    '5a503436-2d91-41ea-af87-64c30b66d270',
+    'ofcpolygon:pert',
+    'Peruvian Sol Token',
+    18,
+    UnderlyingAsset['polygon:pert']
+  ),
+  ofcPolygonErc20(
+    '8dae2723-1853-4454-9922-183b4a77a84e',
+    'ofcpolygon:colt',
+    'Colombian Peso Token',
+    18,
+    UnderlyingAsset['polygon:colt']
+  ),
+  ofcPolygonErc20(
+    'a4b43107-8736-40a1-ad30-21d9f9b65505',
+    'ofcpolygon:bolt',
+    'Bolivian Boliviano Token',
+    18,
+    UnderlyingAsset['polygon:bolt']
+  ),
 
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
@@ -4292,6 +4321,13 @@ export const ofcCoins = [
     'Stronghold SHx',
     7,
     UnderlyingAsset['xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH']
+  ),
+  ofcStellarToken(
+    '8445ecc7-e28a-4523-90cc-07a30059ce90',
+    'ofcxlm:ylds',
+    'YLDS',
+    7,
+    UnderlyingAsset['xlm:YLDS-GAC7MOPTQLQUM3KC24AW4GHS3RLF72LPEZO54AH7EZ6TSMGRB5SOAVH3']
   ),
 
   tofcStellarToken(
@@ -4758,6 +4794,7 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['sol:tusdc']
   ),
+  ofcsolToken('4c928099-4b07-457a-944e-58ed464418de', 'ofcsol:slx', 'Solstice', 9, UnderlyingAsset['sol:slx']),
   // New Canton OFC tokens
   ofcCantonToken(
     '02ab6bd2-83e6-46fc-bfd7-93b8be125648',
@@ -4794,6 +4831,7 @@ export const ofcCoins = [
     10,
     UnderlyingAsset['canton:ibenji']
   ),
+  ofcCantonToken('784c76fb-59c6-4826-b72e-20e996a35739', 'ofccanton:ceth', 'cETH', 10, UnderlyingAsset['canton:ceth']),
   tofcCantonToken(
     'd7297535-c1d4-429d-b3c5-d36351b110e5',
     'ofctcanton:testcoin1',
