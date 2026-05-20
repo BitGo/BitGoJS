@@ -2501,6 +2501,33 @@ export const allCoinsAndTokens = [
       CoinFeature.SUPPORTS_ERC20,
     ]
   ),
+  erc20Token(
+    '682de8f9-ffd2-478d-b106-8d8212043608',
+    'inketh:kbtc',
+    'KBTC',
+    8,
+    '0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98',
+    UnderlyingAsset['inketh:kbtc'],
+    Networks.main.inketh
+  ),
+  erc20Token(
+    '49e611fe-158d-4903-9e15-d6edd902fa30',
+    'inketh:usdc',
+    'USDC',
+    6,
+    '0x2d270e6886d130d724215a266106e6832161eaed',
+    UnderlyingAsset['inketh:usdc'],
+    Networks.main.inketh
+  ),
+  erc20Token(
+    'a9fb0064-51c0-48ad-bc01-603872cbb3cb',
+    'inketh:usdt0',
+    'USDT0',
+    6,
+    '0x0200c29006150606b650577bbe7b6248f58470c1',
+    UnderlyingAsset['inketh:usdt0'],
+    Networks.main.inketh
+  ),
   account(
     '68d22683-a8f2-47b3-8446-92e02a1963ae',
     'hemieth',

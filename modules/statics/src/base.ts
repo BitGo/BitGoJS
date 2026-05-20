@@ -3401,6 +3401,11 @@ export enum UnderlyingAsset {
   'chiliz:spurs' = 'chiliz:spurs',
   'chiliz:tra' = 'chiliz:tra',
 
+  // Ink mainnet tokens
+  'inketh:kbtc' = 'inketh:kbtc',
+  'inketh:usdc' = 'inketh:usdc',
+  'inketh:usdt0' = 'inketh:usdt0',
+
   //world chain mainnet tokens
   'world:wld' = 'world:wld',
   'world:usdc' = 'world:usdc',
