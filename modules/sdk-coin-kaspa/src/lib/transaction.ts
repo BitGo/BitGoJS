@@ -1,8 +1,19 @@
 import { BaseKey, BaseTransaction, TransactionType } from '@bitgo/sdk-core';
 import { ecc } from '@bitgo/secp256k1';
-import { KaspaTransactionData, TransactionExplanation } from './iface';
-import { computeKaspaSigningHash, SIGHASH_ALL } from './sighash';
+import { KaspaTransactionData, KaspaUtxoInput, TransactionExplanation } from './iface';
+import { computeKaspaSigningHash, computeKaspaEcdsaSigningHash } from './sighash';
+import { OP_CHECKSIG_ECDSA, SIGHASH_ALL } from './constants';
 import { Pskt } from './pskt';
+
+/**
+ * Returns true when `input`'s scriptPublicKey belongs to a Kaspa ECDSA (v1)
+ * address — last opcode is OpCheckSigECDSA (0xAB).
+ * Schnorr (v0) scripts end with OpCheckSig (0xAC).
+ */
+function isEcdsaInput(input: KaspaUtxoInput): boolean {
+  if (!input.scriptPublicKey || input.scriptPublicKey.length < 2) return false;
+  return parseInt(input.scriptPublicKey.slice(-2), 16) === OP_CHECKSIG_ECDSA;
+}
 
 export class Transaction extends BaseTransaction {
   protected _txData: KaspaTransactionData;
@@ -54,16 +65,24 @@ export class Transaction extends BaseTransaction {
    * to its own index, so input[i] has a distinct hash that cannot be re-used for
    * input[j]. A correct multi-input MPCv2 flow runs one DKLS session per input
    * in parallel and applies each resulting signature via addSignatureForInput().
+   *
+   * The hash type is automatically selected per input:
+   *   - Schnorr (scriptPublicKey ends 0xAC): keyed Blake2b-256
+   *   - ECDSA   (scriptPublicKey ends 0xAB): keyed Blake2b-256 + SHA256 double-hash
    */
   get signablePayloads(): Buffer[] {
     if (this._txData.inputs.length === 0) {
       throw new Error('Cannot compute signablePayloads: no inputs');
     }
-    return this._txData.inputs.map((_, i) => computeKaspaSigningHash(this._txData, i, SIGHASH_ALL));
+    return this._txData.inputs.map((input, i) =>
+      isEcdsaInput(input)
+        ? computeKaspaEcdsaSigningHash(this._txData, i, SIGHASH_ALL)
+        : computeKaspaSigningHash(this._txData, i, SIGHASH_ALL)
+    );
   }
 
   /**
-   * Apply a Schnorr signature to a single specific input.
+   * Apply a signature to a single specific input.
    *
    * Used in the multi-input MPCv2 flow where each input is signed by an
    * independent DKLS session that commits to that input's sighash. Call this
@@ -72,7 +91,7 @@ export class Transaction extends BaseTransaction {
    * @param index      0-based index of the input to sign
    * @param publicKey  compressed secp256k1 public key (33 bytes hex) — not used in
    *                   the scriptSig bytes but kept for symmetry with addSignature
-   * @param signature  64-byte Schnorr signature buffer for input[index]
+   * @param signature  64-byte signature buffer for input[index]
    * @param sigHashType SigHash type (default: SIGHASH_ALL)
    */
   addSignatureForInput(index: number, publicKey: string, signature: Buffer, sigHashType: number = SIGHASH_ALL): void {
@@ -80,7 +99,7 @@ export class Transaction extends BaseTransaction {
       throw new Error(`Input index ${index} is out of range (tx has ${this._txData.inputs.length} inputs)`);
     }
     if (signature.length !== 64) {
-      throw new Error(`Expected 64-byte Schnorr signature, got ${signature.length}`);
+      throw new Error(`Expected 64-byte signature, got ${signature.length}`);
     }
     // Kaspa script engine requires push-only signatureScripts.
     // 0x41 = OP_DATA_65: push the next 65 bytes (64-byte sig + 1-byte sighash type) onto the stack.
@@ -89,9 +108,17 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
-   * Sign all inputs with the given private key using Schnorr signatures.
+   * Sign all inputs with the given private key.
    *
-   * @param privateKey 32-byte private key buffer
+   * Automatically selects the signature algorithm per input by inspecting each
+   * input's scriptPublicKey:
+   *   - Schnorr (last opcode 0xAC, v0 address): BIP-340 Schnorr + Blake2b sighash
+   *   - ECDSA   (last opcode 0xAB, v1 address): secp256k1 ECDSA + Blake2b+SHA256 sighash
+   *
+   * A single transaction may mix both address types and each input will be
+   * signed correctly without any extra parameters.
+   *
+   * @param privateKey  32-byte private key buffer
    * @param sigHashType SigHash type (default: SIGHASH_ALL = 0x01)
    */
   sign(privateKey: Buffer, sigHashType: number = SIGHASH_ALL): void {
@@ -99,8 +126,19 @@ export class Transaction extends BaseTransaction {
       throw new Error(`Expected 32-byte private key, got ${privateKey.length}`);
     }
     for (let i = 0; i < this._txData.inputs.length; i++) {
-      const sigHash = computeKaspaSigningHash(this._txData, i, sigHashType);
-      const sig = ecc.signSchnorr(sigHash, privateKey);
+      const input = this._txData.inputs[i];
+      let sig: Uint8Array;
+      let sigHash: Buffer;
+
+      if (isEcdsaInput(input)) {
+        // v1 ECDSA address: double-hash + compact secp256k1 ECDSA signature
+        sigHash = computeKaspaEcdsaSigningHash(this._txData, i, sigHashType);
+        sig = ecc.sign(sigHash, privateKey);
+      } else {
+        // v0 Schnorr address (default): Blake2b sighash + BIP-340 Schnorr signature
+        sigHash = computeKaspaSigningHash(this._txData, i, sigHashType);
+        sig = ecc.signSchnorr(sigHash, privateKey);
+      }
       // Kaspa requires push-only signatureScripts: 0x41 (OP_DATA_65) + 64-byte sig + 1-byte sighash type
       const sigWithType = Buffer.concat([Buffer.from([0x41]), Buffer.from(sig), Buffer.from([sigHashType])]);
       this._txData.inputs[i].signatureScript = sigWithType.toString('hex');
@@ -108,9 +146,12 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
-   * Verify that a Schnorr signature on a specific input is valid.
+   * Verify that the signature on a specific input is valid.
    *
-   * @param publicKey 33-byte compressed public key (or 32-byte x-only)
+   * Automatically selects the verification algorithm based on the input's
+   * scriptPublicKey (ECDSA for 0xAB, Schnorr for 0xAC), matching `sign()`.
+   *
+   * @param publicKey  33-byte compressed public key (or 32-byte x-only for Schnorr)
    * @param inputIndex Index of the input to verify
    * @param sigHashType SigHash type used when signing
    */
@@ -125,10 +166,18 @@ export class Transaction extends BaseTransaction {
       return false;
     }
     const sig = sigBytes.slice(1, 65); // skip the 0x41 push opcode
-    const sigHash = computeKaspaSigningHash(this._txData, inputIndex, sigHashType);
-    // Accept 33-byte compressed or 32-byte x-only
-    const xOnlyPub = publicKey.length === 33 ? publicKey.slice(1) : publicKey;
-    return ecc.verifySchnorr(sigHash, xOnlyPub, sig);
+
+    if (isEcdsaInput(input)) {
+      const sigHash = computeKaspaEcdsaSigningHash(this._txData, inputIndex, sigHashType);
+      // ECDSA verification requires 33-byte compressed public key
+      const compressedPub = publicKey.length === 33 ? publicKey : Buffer.concat([Buffer.from([0x02]), publicKey]);
+      return ecc.verify(sigHash, compressedPub, sig);
+    } else {
+      const sigHash = computeKaspaSigningHash(this._txData, inputIndex, sigHashType);
+      // Schnorr verification uses x-only (32-byte) public key
+      const xOnlyPub = publicKey.length === 33 ? publicKey.slice(1) : publicKey;
+      return ecc.verifySchnorr(sigHash, xOnlyPub, sig);
+    }
   }
 
   /**

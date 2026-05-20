@@ -18,7 +18,8 @@ import { ecc } from '@bitgo/secp256k1';
 import { Pskt, PsktInput, PsktOutput } from '../../src/lib/pskt';
 import { Transaction } from '../../src/lib/transaction';
 import { TransactionBuilder } from '../../src/lib/transactionBuilder';
-import { computeKaspaSigningHash, SIGHASH_ALL } from '../../src/lib/sighash';
+import { computeKaspaSigningHash } from '../../src/lib/sighash';
+import { SIGHASH_ALL } from '../../src/lib/constants';
 import { KEYS, ADDRESSES, UTXOS, TRANSACTIONS, SCRIPT_PUBLIC_KEY } from '../fixtures/kaspa.fixtures';
 
 const PRV_KEY_BUF = Buffer.from(KEYS.prv, 'hex');

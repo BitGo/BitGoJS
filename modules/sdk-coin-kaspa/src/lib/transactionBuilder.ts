@@ -5,7 +5,7 @@ import { Transaction } from './transaction';
 import { KaspaTransactionData, KaspaUtxoInput, KaspaTransactionOutput } from './iface';
 import { isValidKaspaAddress, addressToScriptPublicKey } from './utils';
 import { KeyPair } from './keyPair';
-import { DEFAULT_FEE, TX_VERSION } from './constants';
+import { DEFAULT_FEE, TX_VERSION, SIGHASH_ALL } from './constants';
 import { Pskt, PsktInput, PsktOutput } from './pskt';
 
 export class TransactionBuilder extends BaseTransactionBuilder {
@@ -184,7 +184,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       sequence: inp.sequence,
       sigOpCount: inp.sigOpCount ?? 1,
       partialSigs: {},
-      sighashType: 0x01, // SIGHASH_ALL
+      sighashType: SIGHASH_ALL,
       bip32Derivations: {},
       proprietaries: {},
     }));

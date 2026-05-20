@@ -20,7 +20,8 @@
 
 import { ecc } from '@bitgo/secp256k1';
 import { KaspaTransactionData, KaspaUtxoInput, KaspaTransactionOutput } from './iface';
-import { computeKaspaSigningHash, SIGHASH_ALL } from './sighash';
+import { computeKaspaSigningHash } from './sighash';
+import { SIGHASH_ALL } from './constants';
 import { KeyPair } from './keyPair';
 
 // ─── Role types ───────────────────────────────────────────────────────────────
@@ -480,8 +481,10 @@ export class Pskt {
   /**
    * Finalise all inputs: promote the first `partialSig` on each input into
    * `finalScriptSig` using Kaspa's push-only script layout:
-   *   `0x41` (OP_DATA_65) + 64-byte Schnorr sig + 1-byte sighash type = 66 bytes
+   *   `0x41` (OP_DATA_65) + 64-byte sig + 1-byte sighash type = 66 bytes
    *
+   * Works for both Schnorr (v0) and ECDSA (v1) inputs since both produce a
+   * 64-byte compact signature stored in `partialSigs`.
    * Inputs that already have a `finalScriptSig` are left unchanged.
    */
   finalize(): this {
