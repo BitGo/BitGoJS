@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
-import { Hash, randomBytes } from 'crypto';
+import { Hash, createHash, randomBytes } from 'crypto';
 import createKeccakHash from 'keccak';
 import {
   MPCv2PartyFromStringOrNumber,
@@ -400,6 +400,325 @@ describe('ECDSA MPC v2', async () => {
     await ecdsaMPCv2Utils
       .createOfflineRound2Share(reqMPCv2SigningMsg2Round2WithMsg1Session as any)
       .should.be.rejectedWith('Error while creating messages from party 0, round 2: Error: Invalid final_session_id');
+  });
+
+  it('should sign a pre-hashed Avalanche atomic export tx without applying keccak256', async () => {
+    // Real Avalanche ExportInC transaction from sdk-coin-flr test resources.
+    // Mirrors the sandbox flow: c2pMpcToMpcTss.ts → signWithMpc() where
+    // FlareJS builds an ExportInC tx, SHA-256 hashes the unsigned bytes,
+    // and MPC signs the raw SHA-256 hash (NOT keccak256 of it).
+    //
+    // serializedTxHex = full unsigned Avalanche atomic tx (codec type ID 0x0000)
+    // signableHex     = SHA-256(txBody) — 32 bytes, already the final signing hash
+    //
+    // Reference sandbox output (c2p-tss):
+    //   Message hash (SHA-256): 9b3e1c8fc9322b667ec61619487b3993e91dcfc5...
+    //   Signature r: d5bc2e2cad314023...  s: 47af9d7109135f7a...  Recovery: 1
+    //   Export TX ID: 2Z5ELShnmmMgvTeupzLQzEKtAgbvZkDvq6KRYqbzVgcyBGVGpb
+    const serializedTxHex =
+      '0000000000010000007278db5c30bed04c05ce209179812850bbb3fe6d46d7eef3744d814c0da5552479' +
+      '00000000000000000000000000000000000000000000000000000000000000000000000128a05933dc76' +
+      'e4e6c25f35d5c9b2a58769700e760000000002ff3d1658734f94af871c3d131b56131b6fb7a0291eac' +
+      'add261e69dfb42a9cdf6f7fddd00000000000000090000000158734f94af871c3d131b56131b6fb7a029' +
+      '1eacadd261e69dfb42a9cdf6f7fddd000000070000000002faf08000000000000000000000000200000003' +
+      '12cb32eaf92553064db98d271b56cba079ec78f5a6e0c1abd0132f70efb77e2274637ff336a29a57c386' +
+      'd58d09a9ae77cf1cf07bf1c9de44ebb0c9f3';
+    // SHA-256(serializedTxHex bytes) — same as FlareJS unsignedTx.toBytes() → sha256
+    const signableHex = createHash('sha256').update(Buffer.from(serializedTxHex, 'hex')).digest('hex');
+    const derivationPath = 'm/0';
+
+    // Validate fixture properties match sandbox expectations:
+    // - serializedTxHex starts with Avalanche codec type ID (0x0000)
+    // - signableHex is exactly 64 hex chars (32-byte SHA-256 digest)
+    assert.ok(serializedTxHex.startsWith('0000'), 'Fixture must start with Avalanche codec prefix');
+    assert.strictEqual(signableHex.length, 64, 'signableHex must be 32-byte SHA-256 (64 hex chars)');
+    // Verify keccak256(signableHex) differs — proves skipping hash matters
+    const keccakHash = createKeccakHash('keccak256').update(Buffer.from(signableHex, 'hex')).digest('hex');
+    assert.notStrictEqual(signableHex, keccakHash, 'SHA-256 and keccak256 hashes must differ');
+
+    // round 1
+    const reqMPCv2SigningRound1 = {
+      txRequest: {
+        txRequestId: 'flr-export-c2p',
+        apiVersion: 'full',
+        walletId: walletID,
+        transactions: [
+          {
+            unsignedTx: {
+              derivationPath,
+              signableHex,
+              serializedTxHex,
+            },
+            signatureShares: [],
+          },
+        ],
+      },
+      prv: userShare.toString('base64'),
+      walletPassphrase,
+    };
+
+    const resMPCv2SigningRound1 = await ecdsaMPCv2Utils.createOfflineRound1Share(reqMPCv2SigningRound1 as any);
+    resMPCv2SigningRound1.should.have.property('signatureShareRound1');
+    resMPCv2SigningRound1.should.have.property('encryptedRound1Session');
+    resMPCv2SigningRound1.should.have.property('encryptedUserGpgPrvKey');
+
+    const encryptedRound1Session = resMPCv2SigningRound1.encryptedRound1Session;
+    const encryptedUserGpgPrvKey = resMPCv2SigningRound1.encryptedUserGpgPrvKey;
+
+    // BitGo/HSM party uses the raw SHA-256 hash directly (no keccak256).
+    // This matches WP's MPCv2Signer isPreHashed=true path where
+    // txHash = signableMaterial (raw signableHex bytes).
+    // If the SDK incorrectly applied keccak256, user party would use
+    // keccak256(SHA-256(txBody)) while HSM uses SHA-256(txBody) — the
+    // two DKLS parties would disagree, producing an invalid combined sig.
+    const hashBuffer = Buffer.from(signableHex, 'hex');
+    assert.strictEqual(hashBuffer.length, 32, 'DKLS message hash must be 32 bytes');
+    const bitgoSession = new DklsDsg.Dsg(bitgoShare, 2, derivationPath, hashBuffer);
+
+    const txRequestRound1 = await signBitgoMPCv2Round1(
+      bitgoSession,
+      reqMPCv2SigningRound1.txRequest as any,
+      resMPCv2SigningRound1.signatureShareRound1,
+      resMPCv2SigningRound1.userGpgPubKey
+    );
+    assert.ok(
+      txRequestRound1.transactions &&
+        txRequestRound1.transactions.length === 1 &&
+        txRequestRound1.transactions[0].signatureShares.length === 2
+    );
+
+    // round 2
+    const reqMPCv2SigningRound2 = {
+      ...reqMPCv2SigningRound1,
+      txRequest: txRequestRound1,
+      encryptedRound1Session,
+      encryptedUserGpgPrvKey,
+      bitgoPublicGpgKey: bitgoGpgKey.public,
+    };
+
+    const resMPCv2SigningRound2 = await ecdsaMPCv2Utils.createOfflineRound2Share(reqMPCv2SigningRound2 as any);
+    resMPCv2SigningRound2.should.have.property('signatureShareRound2');
+    resMPCv2SigningRound2.should.have.property('encryptedRound2Session');
+
+    const encryptedRound2Session = resMPCv2SigningRound2.encryptedRound2Session;
+
+    const { txRequest: txRequestRound2, bitgoMsg4 } = await signBitgoMPCv2Round2(
+      bitgoSession,
+      reqMPCv2SigningRound2.txRequest,
+      resMPCv2SigningRound2.signatureShareRound2,
+      resMPCv2SigningRound1.userGpgPubKey
+    );
+    assert.ok(
+      txRequestRound2.transactions &&
+        txRequestRound2.transactions.length === 1 &&
+        txRequestRound2.transactions[0].signatureShares.length === 4
+    );
+    bitgoMsg4.should.have.property('signatureR');
+
+    // round 3
+    const reqMPCv2SigningRound3 = {
+      ...reqMPCv2SigningRound2,
+      txRequest: txRequestRound2,
+      encryptedRound1Session: null,
+      encryptedRound2Session,
+    };
+
+    const resMPCv2SigningRound3 = await ecdsaMPCv2Utils.createOfflineRound3Share(reqMPCv2SigningRound3 as any);
+    resMPCv2SigningRound3.should.have.property('signatureShareRound3');
+
+    const { userMsg4 } = await signBitgoMPCv2Round3(
+      bitgoSession,
+      resMPCv2SigningRound3.signatureShareRound3,
+      resMPCv2SigningRound1.userGpgPubKey
+    );
+
+    // Both parties must produce matching R values for a valid combined signature
+    assert.ok(userMsg4.data.msg4.signatureR === bitgoMsg4.signatureR, 'User and BitGo signaturesR do not match');
+
+    const deserializedBitgoMsg4 = DklsTypes.deserializeMessages({
+      p2pMessages: [],
+      broadcastMessages: [bitgoMsg4],
+    });
+
+    const deserializedUserMsg4 = DklsTypes.deserializeMessages({
+      p2pMessages: [],
+      broadcastMessages: [
+        {
+          from: userMsg4.data.msg4.from,
+          payload: userMsg4.data.msg4.message,
+        },
+      ],
+    });
+
+    const combinedSigUsingUtil = DklsUtils.combinePartialSignatures(
+      [deserializedUserMsg4.broadcastMessages[0].payload, deserializedBitgoMsg4.broadcastMessages[0].payload],
+      Buffer.from(userMsg4.data.msg4.signatureR, 'base64').toString('hex')
+    );
+
+    // Combined signature must have valid R and S components (32 bytes each)
+    assert.strictEqual(combinedSigUsingUtil.R.length, 32, 'Signature R must be 32 bytes');
+    assert.strictEqual(combinedSigUsingUtil.S.length, 32, 'Signature S must be 32 bytes');
+
+    // Verify with shouldHash=false — signableHex is already SHA-256(txBody).
+    // This mirrors WP's combineSigSharesMPCv2 where shouldHash=false for
+    // pre-hashed Avalanche atomic transactions (isSignablePreHashed=true).
+    // On-chain, Avalanche verifies: ecdsaRecover(SHA-256(txBody)) == signerPubKey
+    const convertedSignature = DklsUtils.verifyAndConvertDklsSignature(
+      Buffer.from(signableHex, 'hex'),
+      combinedSigUsingUtil,
+      DklsTypes.getCommonKeychain(userShare),
+      derivationPath,
+      createHash('sha256') as Hash,
+      false // shouldHash=false: message is already SHA-256(txBody)
+    );
+    assert.ok(convertedSignature, 'Pre-hashed Avalanche atomic signature is not valid');
+    // Format: recid:R_hex:S_hex:publicKey_hex (same as sandbox 65-byte r+s+recovery)
+    const sigParts = convertedSignature.split(':');
+    assert.strictEqual(sigParts.length, 4, 'Signature must be recid:R:S:pubkey format');
+    assert.ok(['0', '1'].includes(sigParts[0]), 'Recovery ID must be 0 or 1');
+    assert.strictEqual(sigParts[1].length, 64, 'Signature R must be 32 bytes hex');
+    assert.strictEqual(sigParts[2].length, 64, 'Signature S must be 32 bytes hex');
+  });
+
+  it('should still apply keccak256 for regular FLR EVM transactions', async () => {
+    // Regular EVM transaction on FLR (e.g. token transfer, not cross-chain).
+    // serializedTxHex starts with 'f8' (RLP prefix), NOT '0000'.
+    // The SDK must apply keccak256 as the hash function — standard EVM path.
+    // Use valid hex for signableHex (unlike the pre-existing 'testMessage' pattern
+    // in earlier tests) so keccak256 operates on a realistic byte buffer.
+    const serializedTxHex = 'f86c808504a817c80082520894' + '00'.repeat(20) + '80808080';
+    const signableHex = serializedTxHex; // In EVM, signableHex is the RLP-encoded unsigned tx
+    const derivationPath = 'm/0';
+
+    // Verify fixture does NOT trigger the Avalanche detection
+    assert.ok(!serializedTxHex.startsWith('0000'), 'EVM tx must not start with Avalanche prefix');
+
+    // round 1
+    const reqMPCv2SigningRound1 = {
+      txRequest: {
+        txRequestId: 'flr-evm-transfer',
+        apiVersion: 'full',
+        walletId: walletID,
+        transactions: [
+          {
+            unsignedTx: {
+              derivationPath,
+              signableHex,
+              serializedTxHex,
+            },
+            signatureShares: [],
+          },
+        ],
+      },
+      prv: userShare.toString('base64'),
+      walletPassphrase,
+    };
+
+    const resMPCv2SigningRound1 = await ecdsaMPCv2Utils.createOfflineRound1Share(reqMPCv2SigningRound1 as any);
+    resMPCv2SigningRound1.should.have.property('signatureShareRound1');
+    resMPCv2SigningRound1.should.have.property('encryptedRound1Session');
+    resMPCv2SigningRound1.should.have.property('encryptedUserGpgPrvKey');
+
+    const encryptedRound1Session = resMPCv2SigningRound1.encryptedRound1Session;
+    const encryptedUserGpgPrvKey = resMPCv2SigningRound1.encryptedUserGpgPrvKey;
+
+    // BitGo party uses keccak256(signableHex) — standard EVM path.
+    // Both SDK and WP/HSM apply keccak256 for regular EVM transactions.
+    const hashBuffer = createKeccakHash('keccak256').update(Buffer.from(signableHex, 'hex')).digest();
+    const bitgoSession = new DklsDsg.Dsg(bitgoShare, 2, derivationPath, hashBuffer);
+
+    const txRequestRound1 = await signBitgoMPCv2Round1(
+      bitgoSession,
+      reqMPCv2SigningRound1.txRequest as any,
+      resMPCv2SigningRound1.signatureShareRound1,
+      resMPCv2SigningRound1.userGpgPubKey
+    );
+    assert.ok(
+      txRequestRound1.transactions &&
+        txRequestRound1.transactions.length === 1 &&
+        txRequestRound1.transactions[0].signatureShares.length === 2
+    );
+
+    // round 2
+    const reqMPCv2SigningRound2 = {
+      ...reqMPCv2SigningRound1,
+      txRequest: txRequestRound1,
+      encryptedRound1Session,
+      encryptedUserGpgPrvKey,
+      bitgoPublicGpgKey: bitgoGpgKey.public,
+    };
+
+    const resMPCv2SigningRound2 = await ecdsaMPCv2Utils.createOfflineRound2Share(reqMPCv2SigningRound2 as any);
+    resMPCv2SigningRound2.should.have.property('signatureShareRound2');
+    resMPCv2SigningRound2.should.have.property('encryptedRound2Session');
+
+    const encryptedRound2Session = resMPCv2SigningRound2.encryptedRound2Session;
+
+    const { txRequest: txRequestRound2, bitgoMsg4 } = await signBitgoMPCv2Round2(
+      bitgoSession,
+      reqMPCv2SigningRound2.txRequest,
+      resMPCv2SigningRound2.signatureShareRound2,
+      resMPCv2SigningRound1.userGpgPubKey
+    );
+    assert.ok(
+      txRequestRound2.transactions &&
+        txRequestRound2.transactions.length === 1 &&
+        txRequestRound2.transactions[0].signatureShares.length === 4
+    );
+    bitgoMsg4.should.have.property('signatureR');
+
+    // round 3
+    const reqMPCv2SigningRound3 = {
+      ...reqMPCv2SigningRound2,
+      txRequest: txRequestRound2,
+      encryptedRound1Session: null,
+      encryptedRound2Session,
+    };
+
+    const resMPCv2SigningRound3 = await ecdsaMPCv2Utils.createOfflineRound3Share(reqMPCv2SigningRound3 as any);
+    resMPCv2SigningRound3.should.have.property('signatureShareRound3');
+
+    const { userMsg4 } = await signBitgoMPCv2Round3(
+      bitgoSession,
+      resMPCv2SigningRound3.signatureShareRound3,
+      resMPCv2SigningRound1.userGpgPubKey
+    );
+
+    assert.ok(userMsg4.data.msg4.signatureR === bitgoMsg4.signatureR, 'User and BitGo signaturesR do not match');
+
+    const deserializedBitgoMsg4 = DklsTypes.deserializeMessages({
+      p2pMessages: [],
+      broadcastMessages: [bitgoMsg4],
+    });
+
+    const deserializedUserMsg4 = DklsTypes.deserializeMessages({
+      p2pMessages: [],
+      broadcastMessages: [
+        {
+          from: userMsg4.data.msg4.from,
+          payload: userMsg4.data.msg4.message,
+        },
+      ],
+    });
+
+    const combinedSigUsingUtil = DklsUtils.combinePartialSignatures(
+      [deserializedUserMsg4.broadcastMessages[0].payload, deserializedBitgoMsg4.broadcastMessages[0].payload],
+      Buffer.from(userMsg4.data.msg4.signatureR, 'base64').toString('hex')
+    );
+
+    // Verify with shouldHash=true and keccak256 — standard EVM verification
+    const convertedSignature = DklsUtils.verifyAndConvertDklsSignature(
+      Buffer.from(signableHex, 'hex'),
+      combinedSigUsingUtil,
+      DklsTypes.getCommonKeychain(userShare),
+      derivationPath,
+      createKeccakHash('keccak256') as Hash
+    );
+    assert.ok(convertedSignature, 'EVM signature with serializedTxHex is not valid');
+    const sigParts = convertedSignature.split(':');
+    assert.strictEqual(sigParts.length, 4, 'Signature must be recid:R:S:pubkey format');
+    assert.strictEqual(sigParts[1].length, 64, 'Signature R must be 32 bytes hex');
+    assert.strictEqual(sigParts[2].length, 64, 'Signature S must be 32 bytes hex');
   });
 });
 
