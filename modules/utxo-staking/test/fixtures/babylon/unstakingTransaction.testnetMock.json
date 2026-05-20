@@ -1,0 +1,233 @@
+{
+  "psbt": {
+    "data": {
+      "inputs": [
+        {
+          "witnessUtxo": {
+            "script": "51207c6aabd6ba6cebf2971a4f1d33f91fccd4aabf34da6c42a35fd4461cbfeaf4af",
+            "value": "55555"
+          },
+          "tapLeafScript": [
+            {
+              "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac005cf5c174a40149977408dcf449356dde7532d2491b976e9c8ef3ffc34747f34926c333ffc04475ec29781b22e77d678cf906fe6bf67df0d8c93e2eb2711bfd6",
+              "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad021027b2",
+              "leafVersion": 192
+            }
+          ],
+          "tapBip32Derivation": [
+            {
+              "masterFingerprint": "06b34ce1",
+              "pubkey": "04e2b2468fe224659eb9dc5bd0a9cc1b4878b64f40c67c951610320bce78dfd1",
+              "path": "m",
+              "leafHashes": [
+                "05cf5c174a40149977408dcf449356dde7532d2491b976e9c8ef3ffc34747f34",
+                "926c333ffc04475ec29781b22e77d678cf906fe6bf67df0d8c93e2eb2711bfd6"
+              ]
+            },
+            {
+              "masterFingerprint": "6a4e29f3",
+              "pubkey": "2f3432bf9054e482041b890e084bc1a34cfbc0b63aded113bfa36b6f2402832b",
+              "path": "m",
+              "leafHashes": [
+                "05cf5c174a40149977408dcf449356dde7532d2491b976e9c8ef3ffc34747f34",
+                "926c333ffc04475ec29781b22e77d678cf906fe6bf67df0d8c93e2eb2711bfd6"
+              ]
+            },
+            {
+              "masterFingerprint": "18287433",
+              "pubkey": "4d7e91e4a0ab0526a387684db1628b535e6b66046aaa7d1b583b93c5a16e1ac7",
+              "path": "m",
+              "leafHashes": [
+                "05cf5c174a40149977408dcf449356dde7532d2491b976e9c8ef3ffc34747f34",
+                "926c333ffc04475ec29781b22e77d678cf906fe6bf67df0d8c93e2eb2711bfd6"
+              ]
+            },
+            {
+              "masterFingerprint": "f4ac30dd",
+              "pubkey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
+              "path": "m",
+              "leafHashes": []
+            },
+            {
+              "masterFingerprint": "632b4059",
+              "pubkey": "5e14742c0943fa66799f699a0ef98cf2b7cd223ddbb61f6878999182bbcc4700",
+              "path": "m",
+              "leafHashes": [
+                "05cf5c174a40149977408dcf449356dde7532d2491b976e9c8ef3ffc34747f34",
+                "926c333ffc04475ec29781b22e77d678cf906fe6bf67df0d8c93e2eb2711bfd6"
+              ]
+            },
+            {
+              "masterFingerprint": "38d08eee",
+              "pubkey": "64d55d591c5d416f713df9e15afd32e9ff2441cf276b2f90e5b3085163ca7a6b",
+              "path": "m",
+              "leafHashes": [
+                "05cf5c174a40149977408dcf449356dde7532d2491b976e9c8ef3ffc34747f34",
+                "926c333ffc04475ec29781b22e77d678cf906fe6bf67df0d8c93e2eb2711bfd6"
+              ]
+            },
+            {
+              "masterFingerprint": "f3dc3674",
+              "pubkey": "6672282496e17eccaae560aac4d9fe85d8c166a4aa43f51fa8963c80a165831f",
+              "path": "m",
+              "leafHashes": [
+                "05cf5c174a40149977408dcf449356dde7532d2491b976e9c8ef3ffc34747f34",
+                "926c333ffc04475ec29781b22e77d678cf906fe6bf67df0d8c93e2eb2711bfd6"
+              ]
+            },
+            {
+              "masterFingerprint": "3ed659bf",
+              "pubkey": "7939bcf0084cff0fe5c88a1748c1d97d63ff9ae6423a98dca65d974bb9123ce0",
+              "path": "m",
+              "leafHashes": [
+                "05cf5c174a40149977408dcf449356dde7532d2491b976e9c8ef3ffc34747f34",
+                "926c333ffc04475ec29781b22e77d678cf906fe6bf67df0d8c93e2eb2711bfd6"
+              ]
+            },
+            {
+              "masterFingerprint": "b91e1e67",
+              "pubkey": "7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9",
+              "path": "m",
+              "leafHashes": [
+                "05cf5c174a40149977408dcf449356dde7532d2491b976e9c8ef3ffc34747f34",
+                "3c94ea257732e1d9a5bd5506675d0f8922399c029ae30b092c89b4ddd0509c72",
+                "926c333ffc04475ec29781b22e77d678cf906fe6bf67df0d8c93e2eb2711bfd6"
+              ]
+            },
+            {
+              "masterFingerprint": "ea820a03",
+              "pubkey": "850854d26df93570748d94e3da361f134c522f7970bd7f8701a164547308a900",
+              "path": "m",
+              "leafHashes": [
+                "926c333ffc04475ec29781b22e77d678cf906fe6bf67df0d8c93e2eb2711bfd6"
+              ]
+            },
+            {
+              "masterFingerprint": "dbd26c3b",
+              "pubkey": "9f66599cde7f3c3fefb6b96509e472f8a9e2caf8793b9b673fcb4067ef888f50",
+              "path": "m",
+              "leafHashes": [
+                "05cf5c174a40149977408dcf449356dde7532d2491b976e9c8ef3ffc34747f34",
+                "926c333ffc04475ec29781b22e77d678cf906fe6bf67df0d8c93e2eb2711bfd6"
+              ]
+            },
+            {
+              "masterFingerprint": "f9c60867",
+              "pubkey": "f0638e4817559347e67a07b56a6cb824d455fba42a8c8c95171c397540c51789",
+              "path": "m",
+              "leafHashes": [
+                "05cf5c174a40149977408dcf449356dde7532d2491b976e9c8ef3ffc34747f34",
+                "926c333ffc04475ec29781b22e77d678cf906fe6bf67df0d8c93e2eb2711bfd6"
+              ]
+            }
+          ],
+          "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
+          "tapMerkleRoot": "689e2b83c05eff51fa81297eb5f7763b1fbcc18106aebbc0ac8be9f7fe655d18"
+        }
+      ],
+      "outputs": [
+        {}
+      ],
+      "globalMap": {
+        "unsignedTx": {
+          "tx": {
+            "version": 2,
+            "locktime": 0,
+            "ins": [
+              {
+                "hash": "457966c7197681c0d9c61e885d8dd39e37bf60e691012f0d4d49b7c19cf29507",
+                "index": 0,
+                "script": "",
+                "sequence": 10000,
+                "witness": []
+              }
+            ],
+            "outs": [
+              {
+                "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48",
+                "value": "54555"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "nonceStore": {
+      "nonces": []
+    },
+    "opts": {
+      "maximumFeeRate": 5000
+    },
+    "tx": {
+      "version": 2,
+      "locktime": 0,
+      "ins": [
+        {
+          "hash": "457966c7197681c0d9c61e885d8dd39e37bf60e691012f0d4d49b7c19cf29507",
+          "index": 0,
+          "script": "",
+          "sequence": 10000,
+          "witness": []
+        }
+      ],
+      "outs": [
+        {
+          "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48",
+          "value": "54555"
+        }
+      ]
+    },
+    "inputCount": 1,
+    "version": 2,
+    "locktime": 0,
+    "txInputs": [
+      {
+        "hash": "457966c7197681c0d9c61e885d8dd39e37bf60e691012f0d4d49b7c19cf29507",
+        "index": 0,
+        "sequence": 10000
+      }
+    ],
+    "txOutputs": [
+      {
+        "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48",
+        "value": "54555",
+        "address": "bc1q39h3hfjaat4sgkanzg0zpet5fenv5rjg0lhnvy"
+      }
+    ]
+  },
+  "transaction": {
+    "version": 2,
+    "locktime": 0,
+    "ins": [
+      {
+        "hash": "457966c7197681c0d9c61e885d8dd39e37bf60e691012f0d4d49b7c19cf29507",
+        "index": 0,
+        "script": "",
+        "sequence": 10000,
+        "witness": [
+          "0b28d159134aad1d9d7c9d57e2f2267f8eb4a112439f02405fbefc8e3183fd8def682a11fb602115a2d4790913c90572e1f3948ae8826395904eb96763c725a1",
+          "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad021027b2",
+          "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac005cf5c174a40149977408dcf449356dde7532d2491b976e9c8ef3ffc34747f34926c333ffc04475ec29781b22e77d678cf906fe6bf67df0d8c93e2eb2711bfd6"
+        ]
+      }
+    ],
+    "outs": [
+      {
+        "value": "54555",
+        "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48"
+      }
+    ],
+    "network": {
+      "messagePrefix": "\u0018Bitcoin Signed Message:\n",
+      "bech32": "bc",
+      "bip32": {
+        "public": 76067358,
+        "private": 76066276
+      },
+      "pubKeyHash": 0,
+      "scriptHash": 5,
+      "wif": 128,
+      "coin": "btc"
+    }
+  }
+}

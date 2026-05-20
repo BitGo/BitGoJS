@@ -1,0 +1,28 @@
+{
+  "Sh": {
+    "Wsh": {
+      "Ms": {
+        "AndV": [
+          {
+            "Drop": {
+              "After": {
+                "absLockTime": 2048
+              }
+            }
+          },
+          {
+            "Multi": [
+              2,
+              {
+                "XPub": "xpub661MyMwAqRbcGZfgedgcQiBJpkHoZ37k6uotUVLoC6Px4Y46Yrdmy1CUogcJMoAsosY381gPjhGe9jFx1uYAcxy2gTHh9YFP32tUWycqHnV/*"
+              },
+              {
+                "XPub": "xpub661MyMwAqRbcF8FoYWukS8eTn2gVEojzwf5DYETpB8uqC8t5sqDCEFnuJ39DaPjLRerBDK9QqSMvSYpT4WSugCVbUK5HEevSKAu1wUkVWsS/*"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
