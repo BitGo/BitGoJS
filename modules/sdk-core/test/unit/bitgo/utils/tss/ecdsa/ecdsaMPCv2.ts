@@ -411,10 +411,21 @@ describe('ECDSA MPC v2', async () => {
     // serializedTxHex = full unsigned Avalanche atomic tx (codec type ID 0x0000)
     // signableHex     = SHA-256(txBody) — 32 bytes, already the final signing hash
     //
-    // Reference sandbox output (c2p-tss):
+    // Sandbox reference (coins-sandbox/flareCP/flrC_MPC_to_flrP_MPC):
+    //
+    // C→P direction (c2pMpcToMpcTss.ts — export from C-chain):
     //   Message hash (SHA-256): 9b3e1c8fc9322b667ec61619487b3993e91dcfc5...
     //   Signature r: d5bc2e2cad314023...  s: 47af9d7109135f7a...  Recovery: 1
     //   Export TX ID: 2Z5ELShnmmMgvTeupzLQzEKtAgbvZkDvq6KRYqbzVgcyBGVGpb
+    //
+    // P→C direction (p2cMpcToMpcTss.ts — export from P-chain):
+    //   Threshold: 1 (MPC single-sig on-chain, NO hop transaction)
+    //   Message hash (SHA-256): f1afd7bb3df2019ee61b41334abf95172d469d18...
+    //   Signature r: fae44ca89e7a0d3effd0912c16d69735aabbc73ad2d140ffa2c3b46af48d159c
+    //   Signature s: 1dec05d0d477a5b245a0a2e5f3a67e75489ff9b98b29780fc757b12d9f687db3
+    //   Recovery: 0
+    //   Export TX ID: 2tDQmQUtDMyVWe8Bo36yHXykV2RMvh8rft3to5QsgoNhATMDXz
+    //   Network: Coston2 Testnet (ID: 114)
     const serializedTxHex =
       '0000000000010000007278db5c30bed04c05ce209179812850bbb3fe6d46d7eef3744d814c0da5552479' +
       '00000000000000000000000000000000000000000000000000000000000000000000000128a05933dc76' +
@@ -572,12 +583,153 @@ describe('ECDSA MPC v2', async () => {
       false // shouldHash=false: message is already SHA-256(txBody)
     );
     assert.ok(convertedSignature, 'Pre-hashed Avalanche atomic signature is not valid');
-    // Format: recid:R_hex:S_hex:publicKey_hex (same as sandbox 65-byte r+s+recovery)
+    // Format: recid:R_hex:S_hex:publicKey_hex
+    // Sandbox produces the same structure — e.g. P→C export:
+    //   r: fae44ca89e7a0d3effd0912c16d69735aabbc73ad2d140ffa2c3b46af48d159c (32 bytes)
+    //   s: 1dec05d0d477a5b245a0a2e5f3a67e75489ff9b98b29780fc757b12d9f687db3 (32 bytes)
+    //   Recovery: 0
     const sigParts = convertedSignature.split(':');
     assert.strictEqual(sigParts.length, 4, 'Signature must be recid:R:S:pubkey format');
     assert.ok(['0', '1'].includes(sigParts[0]), 'Recovery ID must be 0 or 1');
     assert.strictEqual(sigParts[1].length, 64, 'Signature R must be 32 bytes hex');
     assert.strictEqual(sigParts[2].length, 64, 'Signature S must be 32 bytes hex');
+  });
+
+  it('signRequestBase (hot wallet path) should skip keccak256 for Avalanche atomic tx', async () => {
+    const serializedTxHex =
+      '0000000000010000007278db5c30bed04c05ce209179812850bbb3fe6d46d7eef3744d814c0da5552479' +
+      '00000000000000000000000000000000000000000000000000000000000000000000000128a05933dc76' +
+      'e4e6c25f35d5c9b2a58769700e760000000002ff3d1658734f94af871c3d131b56131b6fb7a0291eac' +
+      'add261e69dfb42a9cdf6f7fddd00000000000000090000000158734f94af871c3d131b56131b6fb7a029' +
+      '1eacadd261e69dfb42a9cdf6f7fddd000000070000000002faf08000000000000000000000000200000003' +
+      '12cb32eaf92553064db98d271b56cba079ec78f5a6e0c1abd0132f70efb77e2274637ff336a29a57c386' +
+      'd58d09a9ae77cf1cf07bf1c9de44ebb0c9f3';
+    const signableHex = createHash('sha256').update(Buffer.from(serializedTxHex, 'hex')).digest('hex');
+    const derivationPath = 'm/0';
+
+    const mockBgWithPost = {} as BitGoBase;
+    mockBgWithPost.getEnv = sinon.stub().returns('test');
+    mockBgWithPost.setRequestTracer = sinon.stub();
+    mockBgWithPost.encrypt = sinon.stub().returns('encrypted');
+    mockBgWithPost.decrypt = sinon.stub().returns('decrypted');
+    mockBgWithPost.post = sinon.stub().returns({
+      send: sinon.stub().returnsThis(),
+      set: sinon.stub().returnsThis(),
+      result: sinon.stub().rejects(new Error('mock: HTTP not available')),
+    });
+
+    const hashFunctionSpy = sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash);
+    const mockCoinForHotWallet = {
+      getHashFunction: hashFunctionSpy,
+      verifyTransaction: sinon.stub().resolves(true),
+      getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+      getConfig: sinon.stub().returns({ family: 'flrp' }),
+    } as unknown as IBaseCoin;
+
+    const mockWallet = {
+      id: sinon.stub().returns(walletID),
+      multisigType: sinon.stub().returns('tss'),
+      multisigTypeVersion: sinon.stub().returns('MPCv2'),
+    };
+
+    const hotWalletUtils = new EcdsaMPCv2Utils(mockBgWithPost, mockCoinForHotWallet, mockWallet as any);
+    sinon.stub(hotWalletUtils as any, 'pickBitgoPubGpgKeyForSigning').resolves(bitgoGpgKey.public);
+
+    const txRequest = {
+      txRequestId: 'flrp-export-test',
+      apiVersion: 'full',
+      walletId: walletID,
+      transactions: [
+        {
+          unsignedTx: {
+            derivationPath,
+            signableHex,
+            serializedTxHex,
+          },
+          signatureShares: [],
+        },
+      ],
+    } as unknown as TxRequest;
+
+    try {
+      await hotWalletUtils.signTxRequest({
+        txRequest,
+        prv: userShare.toString('base64'),
+        reqId: { inc: sinon.stub(), toString: sinon.stub().returns('test-req') } as any,
+      });
+    } catch (e) {}
+
+    assert.strictEqual(
+      hashFunctionSpy.callCount,
+      0,
+      'getHashFunction must NOT be called for Avalanche atomic tx (serializedTxHex starts with 0000)'
+    );
+  });
+
+  it('signRequestBase (hot wallet path) should apply keccak256 for regular EVM tx', async () => {
+    const serializedTxHex = 'f86c808504a817c80082520894' + '00'.repeat(20) + '80808080';
+    const signableHex = serializedTxHex;
+    const derivationPath = 'm/0';
+
+    assert.ok(!serializedTxHex.startsWith('0000'), 'EVM tx must not start with Avalanche prefix');
+
+    const mockBgWithPost = {} as BitGoBase;
+    mockBgWithPost.getEnv = sinon.stub().returns('test');
+    mockBgWithPost.setRequestTracer = sinon.stub();
+    mockBgWithPost.encrypt = sinon.stub().returns('encrypted');
+    mockBgWithPost.decrypt = sinon.stub().returns('decrypted');
+    mockBgWithPost.post = sinon.stub().returns({
+      send: sinon.stub().returnsThis(),
+      set: sinon.stub().returnsThis(),
+      result: sinon.stub().rejects(new Error('mock: HTTP not available')),
+    });
+
+    const hashFunctionSpy = sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash);
+    const mockCoinForEvmWallet = {
+      getHashFunction: hashFunctionSpy,
+      verifyTransaction: sinon.stub().resolves(true),
+      getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+      getConfig: sinon.stub().returns({ family: 'flr' }),
+    } as unknown as IBaseCoin;
+
+    const mockWallet = {
+      id: sinon.stub().returns(walletID),
+      multisigType: sinon.stub().returns('tss'),
+      multisigTypeVersion: sinon.stub().returns('MPCv2'),
+    };
+
+    const evmUtils = new EcdsaMPCv2Utils(mockBgWithPost, mockCoinForEvmWallet, mockWallet as any);
+    sinon.stub(evmUtils as any, 'pickBitgoPubGpgKeyForSigning').resolves(bitgoGpgKey.public);
+
+    const txRequest = {
+      txRequestId: 'flr-evm-test',
+      apiVersion: 'full',
+      walletId: walletID,
+      transactions: [
+        {
+          unsignedTx: {
+            derivationPath,
+            signableHex,
+            serializedTxHex,
+          },
+          signatureShares: [],
+        },
+      ],
+    } as unknown as TxRequest;
+
+    try {
+      await evmUtils.signTxRequest({
+        txRequest,
+        prv: userShare.toString('base64'),
+        reqId: { inc: sinon.stub(), toString: sinon.stub().returns('test-req') } as any,
+      });
+    } catch (e) {}
+
+    assert.strictEqual(
+      hashFunctionSpy.callCount,
+      1,
+      'getHashFunction must be called for regular EVM tx (serializedTxHex does not start with 0000)'
+    );
   });
 
   it('should still apply keccak256 for regular FLR EVM transactions', async () => {
