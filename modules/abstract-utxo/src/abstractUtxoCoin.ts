@@ -435,7 +435,7 @@ export abstract class AbstractUtxoCoin
   };
 
   protected supportedSdkBackends: { utxolib: boolean; 'wasm-utxo': boolean } = {
-    utxolib: this.isMainnet(),
+    utxolib: this.getChain() === 'btc' || this.getChain() === 'ltc',
     'wasm-utxo': true,
   };
 
