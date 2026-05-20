@@ -34,6 +34,7 @@ import { getBuilder } from './getBuilder';
 import * as testData from '../resources/eth';
 import * as mockData from '../fixtures/eth';
 import should from 'should';
+import EthereumAbi from 'ethereumjs-abi';
 import { ethMultiSigBackupKey } from './fixtures/ethMultiSigBackupKey';
 import { ethTssBackupKey } from './fixtures/ethTssBackupKey';
 
@@ -1005,6 +1006,76 @@ describe('ETH:', function () {
             walletType: 'tss',
           })
           .should.be.rejectedWith('missing txHex in txPrebuild');
+      });
+
+      it('should verify ERC20 token consolidation when calldata recipient matches base address', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+        const tokenContractAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+
+        // Build an ERC20 transfer(address, uint256) tx — mimics what the server returns
+        // for a v6 TSS wallet token consolidation: txJson.to = token contract,
+        // actual recipient is encoded in the 0xa9059cbb calldata
+        const methodId = EthereumAbi.methodID('transfer', ['address', 'uint256']);
+        const encodedParams = EthereumAbi.rawEncode(['address', 'uint256'], [baseAddress, '10000000']);
+        const erc20TransferData = '0x' + Buffer.concat([methodId, encodedParams]).toString('hex');
+
+        const txBuilder = getBuilder('hteth') as TransactionBuilder;
+        txBuilder.type(TransactionType.ContractCall);
+        txBuilder.fee({ fee: '10', gasLimit: '60000' });
+        txBuilder.counter(1);
+        txBuilder.contract(tokenContractAddress);
+        txBuilder.data(erc20TransferData);
+        const tx = await txBuilder.build();
+        const txHex = tx.toBroadcastFormat();
+
+        const wallet = new Wallet(bitgo, coin, {
+          coinSpecific: { baseAddress },
+        });
+
+        const isTransactionVerified = await coin.verifyTransaction({
+          txParams: { type: 'consolidate', wallet, walletPassphrase: 'fake' } as any,
+          txPrebuild: { consolidateId: 'abc123', txHex, coin: 'hteth', walletId: 'fakeWalletId' } as any,
+          wallet,
+          verification: { consolidationToBaseAddress: true },
+          walletType: 'tss',
+        });
+        isTransactionVerified.should.equal(true);
+      });
+
+      it('should reject ERC20 token consolidation when calldata recipient does not match base address', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+        const wrongRecipient = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
+        const tokenContractAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+
+        // Build an ERC20 transfer where calldata recipient is a WRONG address
+        const methodId = EthereumAbi.methodID('transfer', ['address', 'uint256']);
+        const encodedParams = EthereumAbi.rawEncode(['address', 'uint256'], [wrongRecipient, '10000000']);
+        const erc20TransferData = '0x' + Buffer.concat([methodId, encodedParams]).toString('hex');
+
+        const txBuilder = getBuilder('hteth') as TransactionBuilder;
+        txBuilder.type(TransactionType.ContractCall);
+        txBuilder.fee({ fee: '10', gasLimit: '60000' });
+        txBuilder.counter(1);
+        txBuilder.contract(tokenContractAddress);
+        txBuilder.data(erc20TransferData);
+        const tx = await txBuilder.build();
+        const txHex = tx.toBroadcastFormat();
+
+        const wallet = new Wallet(bitgo, coin, {
+          coinSpecific: { baseAddress },
+        });
+
+        await coin
+          .verifyTransaction({
+            txParams: { type: 'consolidate', wallet, walletPassphrase: 'fake' } as any,
+            txPrebuild: { consolidateId: 'abc123', txHex, coin: 'hteth', walletId: 'fakeWalletId' } as any,
+            wallet,
+            verification: { consolidationToBaseAddress: true },
+            walletType: 'tss',
+          })
+          .should.be.rejectedWith('Consolidation transaction recipient does not match wallet base address');
       });
 
       it('should throw error when wallet is missing baseAddress for consolidation verification', async function () {
