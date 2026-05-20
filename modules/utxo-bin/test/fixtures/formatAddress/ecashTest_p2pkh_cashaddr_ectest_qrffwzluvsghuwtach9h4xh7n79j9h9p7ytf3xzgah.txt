@@ -1,0 +1,12 @@
+address: ectest:qrffwzluvsghuwtach9h4xh7n79j9h9p7ytf3xzgah
+├─┬ cashaddr
+│ ├── prefix: ectest
+│ ├── version: pubkeyhash
+│ └── hash: d2970bfc64117e397dc5cb7a9afe9f8b22dca1f1 (20 bytes)
+├── format: cashaddr
+├─┬ outputScript: 76a914d2970bfc64117e397dc5cb7a9afe9f8b22dca1f188ac (25 bytes)
+│ └─┬ scriptPubKey: [25byte]
+│   ├── type: pubkeyhash
+│   ├── hex: 76a914d2970bfc64117e397dc5cb7a9afe9f8b22dca1f188ac
+│   └── asm: OP_DUP OP_HASH160 d2970bfc64117e397dc5cb7a9afe9f8b22dca1f1 OP_EQUALVERIFY OP_CHECKSIG
+└── network: ecashTest

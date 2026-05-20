@@ -1,0 +1,498 @@
+import assert from 'assert';
+import {
+  AuditDecryptedKeyParams,
+  BaseBroadcastTransactionOptions,
+  BaseBroadcastTransactionResult,
+  BaseCoin,
+  BitGoBase,
+  Ecdsa,
+  ECDSAUtils,
+  Environments,
+  InvalidAddressError,
+  KeyPair,
+  MPCAlgorithm,
+  MultisigType,
+  multisigTypes,
+  ParsedTransaction,
+  ParseTransactionOptions,
+  SignedTransaction,
+  SigningError,
+  SignTransactionOptions,
+  VerifyTransactionOptions,
+  verifyMPCWalletAddress,
+  UnexpectedAddressError,
+} from '@bitgo/sdk-core';
+import { coins, NetworkType, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { Principal } from '@dfinity/principal';
+import axios from 'axios';
+import BigNumber from 'bignumber.js';
+import { createHash, Hash } from 'crypto';
+import * as mpc from '@bitgo/sdk-lib-mpc';
+
+import {
+  CurveType,
+  LEDGER_CANISTER_ID,
+  TESTNET_LEDGER_CANISTER_ID,
+  PayloadsData,
+  PUBLIC_NODE_REQUEST_ENDPOINT,
+  PublicNodeSubmitResponse,
+  RecoveryOptions,
+  RecoveryTransaction,
+  ROOT_PATH,
+  Signatures,
+  SigningPayload,
+  IcpTransactionExplanation,
+  TransactionHexParams,
+  TssVerifyIcpAddressOptions,
+  UnsignedSweepRecoveryTransaction,
+} from './lib/iface';
+import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
+import utils from './lib/utils';
+import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
+import { IcpAgent } from './lib/icpAgent';
+
+/**
+ * Class representing the Internet Computer (ICP) coin.
+ * Extends the BaseCoin class and provides specific implementations for ICP.
+ *
+ * @see {@link https://internetcomputer.org/}
+ * @see {@link https://internetcomputer.org/docs/current/developer-docs/defi/rosetta/icp_rosetta/data_api/}
+ */
+export class Icp extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+    super(bitgo);
+
+    if (!staticsCoin) {
+      throw new Error('missing required constructor parameter staticsCoin');
+    }
+
+    this._staticsCoin = staticsCoin;
+  }
+
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+    return new Icp(bitgo, staticsCoin);
+  }
+
+  getChain(): string {
+    return 'icp';
+  }
+
+  getBaseChain(): string {
+    return 'icp';
+  }
+
+  getFamily(): string {
+    return this._staticsCoin.family;
+  }
+
+  getFullName(): string {
+    return 'Internet Computer';
+  }
+
+  getBaseFactor(): number {
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
+  }
+
+  async explainTransaction(params: TransactionHexParams): Promise<IcpTransactionExplanation> {
+    const factory = this.getBuilderFactory();
+    const txBuilder = await factory.from(params.transactionHex);
+    const transaction = await txBuilder.build();
+    if (params.signableHex !== undefined) {
+      const generatedSignableHex = txBuilder.transaction.payloadsData.payloads[0].hex_bytes;
+      if (generatedSignableHex !== params.signableHex) {
+        throw new Error('generated signableHex is not equal to params.signableHex');
+      }
+    }
+    return transaction.explainTransaction();
+  }
+
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    const { txParams, txPrebuild } = params;
+    const txHex = txPrebuild?.txHex;
+    if (!txHex) {
+      throw new Error('txHex is required');
+    }
+    const txHexParams: TransactionHexParams = {
+      transactionHex: txHex,
+    };
+
+    if (txPrebuild.txInfo && txPrebuild.txInfo !== undefined && typeof txPrebuild.txInfo === 'string') {
+      txHexParams.signableHex = txPrebuild.txInfo;
+    }
+
+    const explainedTx = await this.explainTransaction(txHexParams);
+
+    if (Array.isArray(txParams.recipients) && txParams.recipients.length > 0) {
+      if (txParams.recipients.length > 1) {
+        throw new Error(
+          `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
+        );
+      }
+      assert(explainedTx.outputs.length === 1, 'Tx outputs does not match with expected txParams recipients');
+
+      const output = explainedTx.outputs[0];
+      const recipient = txParams.recipients[0];
+      assert(
+        typeof recipient.address === 'string' &&
+          typeof output.address === 'string' &&
+          output.address === recipient.address &&
+          BigNumber(output.amount).eq(BigNumber(recipient.amount)),
+        'Tx outputs does not match with expected txParams recipients'
+      );
+    }
+    return true;
+  }
+
+  /**
+   * Verify that an address belongs to this wallet.
+   *
+   * @param {TssVerifyIcpAddressOptions} params - Verification parameters
+   * @returns {Promise<boolean>} True if address belongs to wallet
+   * @throws {InvalidAddressError} If address format is invalid or doesn't match derived address
+   * @throws {Error} If invalid wallet version or missing parameters
+   */
+  async isWalletAddress(params: TssVerifyIcpAddressOptions): Promise<boolean> {
+    const { address, rootAddress, walletVersion } = params;
+
+    if (!this.isValidAddress(address)) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    let addressToVerify = address;
+    if (walletVersion === 1) {
+      if (!rootAddress) {
+        throw new Error('rootAddress is required for wallet version 1');
+      }
+      const extractedRootAddress = utils.validateMemoAndReturnRootAddress(address);
+      if (!extractedRootAddress || extractedRootAddress === address) {
+        throw new Error('memoId is required for wallet version 1 addresses');
+      }
+      if (extractedRootAddress.toLowerCase() !== rootAddress.toLowerCase()) {
+        throw new UnexpectedAddressError(
+          `address validation failure: expected ${rootAddress} but got ${extractedRootAddress}`
+        );
+      }
+      addressToVerify = rootAddress;
+    }
+
+    const indexToVerify = walletVersion === 1 ? 0 : params.index;
+    const result = await verifyMPCWalletAddress(
+      { ...params, address: addressToVerify, index: indexToVerify, keyCurve: 'secp256k1' },
+      this.isValidAddress.bind(this),
+      (pubKey) => utils.getAddressFromPublicKey(pubKey)
+    );
+
+    if (!result) {
+      throw new UnexpectedAddressError(
+        `address validation failure: address ${addressToVerify} is not a wallet address`
+      );
+    }
+
+    return true;
+  }
+
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    return {};
+  }
+
+  /**
+   * Generate a new keypair for this coin.
+   * @param seed Seed from which the new keypair should be generated, otherwise a random seed is used
+   */
+  public generateKeyPair(seed?: Buffer): KeyPair {
+    return utils.generateKeyPair(seed);
+  }
+
+  isValidAddress(address: string): boolean {
+    return utils.isValidAddress(address);
+  }
+
+  async signTransaction(
+    params: SignTransactionOptions & { txPrebuild: { txHex: string }; prv: string }
+  ): Promise<SignedTransaction> {
+    const txHex = params?.txPrebuild?.txHex;
+    const privateKey = params?.prv;
+    if (!txHex) {
+      throw new SigningError('missing required txPrebuild parameter: params.txPrebuild.txHex');
+    }
+    if (!privateKey) {
+      throw new SigningError('missing required prv parameter: params.prv');
+    }
+    const factory = this.getBuilderFactory();
+    const txBuilder = await factory.from(params.txPrebuild.txHex);
+    txBuilder.sign({ key: params.prv });
+    txBuilder.combine();
+    const serializedTx = txBuilder.transaction.toBroadcastFormat();
+    return {
+      txHex: serializedTx,
+    };
+  }
+
+  isValidPub(key: string): boolean {
+    return utils.isValidPublicKey(key);
+  }
+
+  isValidPrv(key: string): boolean {
+    return utils.isValidPrivateKey(key);
+  }
+
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
+  }
+
+  /** @inheritDoc */
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
+  }
+
+  /** @inheritDoc **/
+  getHashFunction(): Hash {
+    return createHash('sha256');
+  }
+
+  private getAddressFromPublicKey(hexEncodedPublicKey: string): string {
+    return utils.getAddressFromPublicKey(hexEncodedPublicKey);
+  }
+
+  /** @inheritDoc **/
+  protected getPublicNodeUrl(): string {
+    return Environments[this.bitgo.getEnv()].icpNodeUrl;
+  }
+
+  /** @inheritDoc **/
+  // this method calls the public node to broadcast the transaction and not the rosetta node
+  public async broadcastTransaction(payload: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
+    const endpoint = this.getPublicNodeBroadcastEndpoint();
+
+    try {
+      const bodyBytes = utils.blobFromHex(payload.serializedSignedTransaction);
+      const response = await axios.post(endpoint, bodyBytes, {
+        headers: { 'Content-Type': 'application/cbor' },
+        responseType: 'arraybuffer', // This ensures you get a Buffer, not a string
+      });
+
+      if (response.status !== 200) {
+        throw new Error(`Transaction broadcast failed with status: ${response.status} - ${response.statusText}`);
+      }
+
+      const decodedResponse = utils.cborDecode(response.data) as PublicNodeSubmitResponse;
+
+      if (decodedResponse.status === 'replied') {
+        // it is considered a success because ICP returns response in a CBOR map with a status of 'replied'
+        return {}; // returned empty object as ICP does not return a txid
+      } else {
+        throw new Error(`Unexpected response status from node: ${decodedResponse.status}`);
+      }
+    } catch (error) {
+      throw new Error(`Transaction broadcast error: ${error?.message || JSON.stringify(error)}`);
+    }
+  }
+
+  private getPublicNodeBroadcastEndpoint(): string {
+    const nodeUrl = this.getPublicNodeUrl();
+    const ledgerCanisterId =
+      this._staticsCoin.network.type === NetworkType.TESTNET ? TESTNET_LEDGER_CANISTER_ID : LEDGER_CANISTER_ID;
+    const principal = Principal.fromUint8Array(ledgerCanisterId);
+    const canisterIdHex = principal.toText();
+    const endpoint = `${nodeUrl}${PUBLIC_NODE_REQUEST_ENDPOINT}${canisterIdHex}/call`;
+    return endpoint;
+  }
+
+  /**
+   * Fetches the account balance for a given public key.
+   * @param publicKeyHex - Hex-encoded public key of the account.
+   * @returns Promise resolving to the account balance as a string.
+   * @throws Error if the balance could not be fetched.
+   */
+  protected async getAccountBalance(publicKeyHex: string): Promise<BigNumber> {
+    const principalId = utils.getPrincipalIdFromPublicKey(publicKeyHex).toText();
+    const agent = new IcpAgent(this.getPublicNodeUrl(), this._staticsCoin);
+    return agent.getBalance(principalId);
+  }
+
+  /**
+   * Retrieves the current transaction fee data from the ICP public node.
+   *
+   * This method creates an instance of `IcpAgent` using the public node URL,
+   * then queries the node for the current fee information.
+   *
+   * @returns A promise that resolves to a `BigNumber` representing the current transaction fee.
+   * @throws Will propagate any errors encountered while communicating with the ICP node.
+   */
+  protected async getFeeData(): Promise<BigNumber> {
+    const agent = new IcpAgent(this.getPublicNodeUrl(), this._staticsCoin);
+    return await agent.getFee();
+  }
+
+  private getBuilderFactory(): TransactionBuilderFactory {
+    return new TransactionBuilderFactory(coins.get(this.getBaseChain()));
+  }
+
+  /**
+   * Generates an array of signatures for the provided payloads using MPC
+   *
+   * @param payloadsData - The data containing the payloads to be signed.
+   * @param senderPublicKey - The public key of the sender in hexadecimal format.
+   * @param userKeyShare - The user's key share as a Buffer.
+   * @param backupKeyShare - The backup key share as a Buffer.
+   * @param commonKeyChain - The common key chain identifier used for MPC signing.
+   * @returns A promise that resolves to an array of `Signatures` objects, each containing the signing payload,
+   *          signature type, public key, and the generated signature in hexadecimal format.
+   */
+  async signatures(
+    payloadsData: PayloadsData,
+    senderPublicKey: string,
+    userKeyShare: Buffer<ArrayBufferLike>,
+    backupKeyShare: Buffer<ArrayBufferLike>,
+    commonKeyChain: string
+  ): Promise<Signatures[]> {
+    try {
+      const payload = payloadsData.payloads[0] as SigningPayload;
+      const message = Buffer.from(payload.hex_bytes, 'hex');
+      const messageHash = createHash('sha256').update(message).digest();
+      const signature = await ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);
+      const signaturePayload: Signatures = {
+        signing_payload: payload,
+        signature_type: payload.signature_type,
+        public_key: {
+          hex_bytes: senderPublicKey,
+          curve_type: CurveType.SECP256K1,
+        },
+        hex_bytes: signature.r + signature.s,
+      };
+
+      return [signaturePayload];
+    } catch (error) {
+      throw new Error(`Error generating signatures: ${error.message || error}`);
+    }
+  }
+
+  /**
+   * Builds a funds recovery transaction without BitGo
+   * @param params
+   */
+  async recover(params: RecoveryOptions): Promise<RecoveryTransaction | UnsignedSweepRecoveryTransaction> {
+    try {
+      if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
+        throw new Error('invalid recoveryDestination');
+      }
+
+      const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+
+      let publicKey: string | undefined;
+      let userKeyShare, backupKeyShare, commonKeyChain;
+      const MPC = new Ecdsa();
+
+      if (!isUnsignedSweep) {
+        if (!params.userKey) {
+          throw new Error('missing userKey');
+        }
+
+        if (!params.backupKey) {
+          throw new Error('missing backupKey');
+        }
+
+        if (!params.walletPassphrase) {
+          throw new Error('missing wallet passphrase');
+        }
+
+        const userKey = params.userKey.replace(/\s/g, '');
+        const backupKey = params.backupKey.replace(/\s/g, '');
+
+        ({ userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
+          userKey,
+          backupKey,
+          params.walletPassphrase
+        ));
+        publicKey = MPC.deriveUnhardened(commonKeyChain, ROOT_PATH).slice(0, 66);
+      } else {
+        const bitgoKey = params.bitgoKey;
+        if (!bitgoKey) {
+          throw new Error('missing bitgoKey');
+        }
+
+        const hdTree = new mpc.Secp256k1Bip32HdTree();
+        const derivationPath = 'm/0';
+        const derivedPub = hdTree.publicDerive(
+          {
+            pk: mpc.bigIntFromBufferBE(Buffer.from(bitgoKey.slice(0, 66), 'hex')),
+            chaincode: mpc.bigIntFromBufferBE(Buffer.from(bitgoKey.slice(66), 'hex')),
+          },
+          derivationPath
+        );
+
+        publicKey = mpc.bigIntToBufferBE(derivedPub.pk).toString('hex');
+      }
+
+      if (!publicKey) {
+        throw new Error('failed to derive public key');
+      }
+
+      const senderAddress = this.getAddressFromPublicKey(publicKey);
+      const balance = await this.getAccountBalance(publicKey);
+      const feeData = await this.getFeeData();
+      const actualBalance = balance.minus(feeData);
+      if (actualBalance.isLessThanOrEqualTo(0)) {
+        throw new Error('Did not have enough funds to recover');
+      }
+
+      const factory = this.getBuilderFactory();
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(senderAddress, publicKey as string);
+      txBuilder.receiverId(params.recoveryDestination);
+      txBuilder.amount(actualBalance.toString());
+      if (params.memo !== undefined && utils.validateMemo(params.memo)) {
+        txBuilder.memo(Number(params.memo));
+      }
+      await txBuilder.build();
+      if (txBuilder.transaction.payloadsData.payloads.length === 0) {
+        throw new Error('Missing payloads to generate signatures');
+      }
+
+      if (isUnsignedSweep) {
+        return {
+          txHex: txBuilder.transaction.unsignedTransaction,
+          coin: this.getChain(),
+        };
+      }
+
+      const signatures = await this.signatures(
+        txBuilder.transaction.payloadsData,
+        publicKey,
+        userKeyShare,
+        backupKeyShare,
+        commonKeyChain
+      );
+      if (!signatures || signatures.length === 0) {
+        throw new Error('Failed to generate signatures');
+      }
+      txBuilder.transaction.addSignature(signatures);
+      txBuilder.combine();
+      const broadcastableTxn = txBuilder.transaction.toBroadcastFormat();
+      await this.broadcastTransaction({ serializedSignedTransaction: broadcastableTxn });
+      const txId = txBuilder.transaction.id;
+      const recoveredTransaction: RecoveryTransaction = {
+        id: txId,
+        tx: broadcastableTxn,
+      };
+      return recoveredTransaction;
+    } catch (error) {
+      throw new Error(`Error during ICP recovery: ${error.message || error}`);
+    }
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey({ multiSigType, prv, publicKey }: AuditDecryptedKeyParams) {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multisigtype ');
+    }
+    auditEcdsaPrivateKey(prv as string, publicKey as string);
+  }
+}

@@ -1,0 +1,454 @@
+---
+name: BitGoJS Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: |
+          If true, only runs checks without performing the actual release
+        type: boolean
+        required: false
+        default: false
+      recovery-mode:
+        description: |
+          Recover from a partial-publish failure. Skips version bumping,
+          master→rel/latest merge, and GPG signing. Runs `lerna publish
+          from-package` against rel/latest, publishing only versions
+          missing from npm. Release notes, GitHub release, and Express
+          Docker publish still run.
+
+          IMPORTANT: from-package publishes whatever versions are in the
+          rel/latest package.json files at trigger time. Verify rel/latest
+          HEAD matches the failed release before triggering — the workflow
+          logs the resolved SHA and the planned publish list.
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: read
+
+# Prevent overlapping releases. workflow_dispatch runs are serialized;
+# a normal release and a recovery run cannot race against rel/latest.
+concurrency:
+  group: npmjs-release
+  cancel-in-progress: false
+
+env:
+  NX_NO_CLOUD: true
+  NX_SKIP_NX_CACHE: true
+  DOCKER_HUB_USERNAME: "bgdeploybot"
+
+jobs:
+  get-release-context:
+    name: Get release context
+    if: ${{ !inputs.recovery-mode }}
+    runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    outputs:
+      last-release-tag: ${{ steps.get-release-info.outputs.last-release-tag }}
+      last-release-sha: ${{ steps.get-release-info.outputs.last-release-sha }}
+      current-master-sha: ${{ steps.get-release-info.outputs.current-master-sha }}
+      commits-since-release: ${{ steps.get-release-info.outputs.commits-since-release }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: master
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Get release information
+        id: get-release-info
+        run: |
+          # Get the latest stable release tag
+          LAST_RELEASE_TAG=$(git tag --sort=-version:refname | grep -E 'bitgo@[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+
+          # Get the commit SHA for that release
+          LAST_RELEASE_SHA=$(git rev-parse "$LAST_RELEASE_TAG^{}")
+
+          # Get the current master HEAD commit
+          CURRENT_MASTER_SHA=$(git rev-parse HEAD)
+
+          # Count commits since last release
+          COMMITS_SINCE_RELEASE=$(git log --oneline "${LAST_RELEASE_TAG}..HEAD" | wc -l)
+
+          # Verify we have commits to process
+          if [ "$COMMITS_SINCE_RELEASE" -eq 0 ]; then
+            echo "::error::No commits found since last release $LAST_RELEASE_TAG. Nothing to process."
+            exit 1
+          fi
+
+          # Output the information
+          echo "Last release tag: $LAST_RELEASE_TAG"
+          echo "Last release SHA: $LAST_RELEASE_SHA"
+          echo "Current master SHA: $CURRENT_MASTER_SHA"
+          echo "Commits since release: $COMMITS_SINCE_RELEASE"
+
+          # Set outputs
+          {
+            echo "last-release-tag=$LAST_RELEASE_TAG"
+            echo "last-release-sha=$LAST_RELEASE_SHA"
+            echo "current-master-sha=$CURRENT_MASTER_SHA"
+            echo "commits-since-release=$COMMITS_SINCE_RELEASE"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Commits to process:"
+          git log --oneline "${LAST_RELEASE_TAG}..HEAD"
+
+      - name: Generate release commit summary
+        run: |
+          {
+            echo "## Commits to be Released"
+            echo ""
+            echo "From ${{ steps.get-release-info.outputs.last-release-sha }} to ${{ steps.get-release-info.outputs.current-master-sha }}"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Get commits excluding merge commits
+          git log --oneline --no-merges "${{ steps.get-release-info.outputs.last-release-sha }}..${{ steps.get-release-info.outputs.current-master-sha }}" | while read -r line; do
+            commit_hash=$(echo "$line" | cut -d' ' -f1)
+            commit_msg=$(echo "$line" | cut -d' ' -f2-)
+
+            # Get full commit message to check for TICKET: pattern
+            full_commit_msg=$(git log -1 --pretty=format:"%B" "$commit_hash")
+
+            # Extract Jira ticket from commit message (handles multiple patterns, case insensitive)
+            # 1. Direct pattern in subject: VL-1234, CORE-567, etc.
+            # 2. TICKET: VL-1234 pattern in body
+            jira_ticket=$(echo "$full_commit_msg" | grep -oiE '(ticket:\s*)?[A-Z]+-[0-9]+' | sed 's/[Tt][Ii][Cc][Kk][Ee][Tt]:\s*//' | head -1)
+
+            if [[ -n "$jira_ticket" ]]; then
+              jira_link="[$jira_ticket](https://bitgoinc.atlassian.net/browse/${jira_ticket})"
+              echo "- \`$commit_hash\` $commit_msg - $jira_link" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "- \`$commit_hash\` $commit_msg" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+  get-recovery-context:
+    name: Get recovery context
+    if: inputs.recovery-mode
+    runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    outputs:
+      # Pinned SHA. release-bitgojs checks out this exact commit, not the
+      # rel/latest branch tip, so the publish cannot drift from what the
+      # env reviewer approved.
+      sha: ${{ steps.resolve.outputs.sha }}
+    steps:
+      - name: Checkout rel/latest
+        uses: actions/checkout@v6
+        with:
+          ref: rel/latest
+          fetch-depth: 1
+
+      - name: Resolve SHA and show recovery target
+        id: resolve
+        run: |
+          # Pin the SHA at preview time and surface it (plus the planned
+          # publish list) BEFORE the env-gated publish job runs, so
+          # reviewers approving the `npmjs-release` environment can
+          # sanity-check what will be published.
+          sha="$(git rev-parse HEAD)"
+          if [ -z "$sha" ]; then
+            echo "::error::Failed to resolve rel/latest SHA. Refusing to proceed."
+            exit 1
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Recovery target"
+            echo ""
+            echo "Branch: \`rel/latest\`"
+            echo "Resolved SHA: \`$sha\`"
+            echo "Subject: $(git log -1 --pretty=format:'%s')"
+            echo ""
+            echo "### Versions in rel/latest package.jsons"
+            echo ""
+            echo '```'
+            for f in modules/*/package.json; do
+              jq -r '"\(.name)@\(.version)\(if .private then " (private)" else "" end)"' "$f"
+            done | sort
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  release-bitgojs:
+    name: Release BitGoJS
+    needs:
+      - get-release-context
+      - get-recovery-context
+    if: ${{ always() && needs.get-release-context.result != 'failure' && needs.get-recovery-context.result != 'failure' }}
+    runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
+    timeout-minutes: 60
+    environment: npmjs-release
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          # Recovery mode pins to the SHA resolved by get-recovery-context so
+          # the publish cannot drift from the commit the env reviewer approved
+          # (rel/latest could otherwise advance during the approval wait).
+          # Normal mode uses the master SHA captured by get-release-context.
+          ref: ${{ inputs.recovery-mode && needs.get-recovery-context.outputs.sha || needs.get-release-context.outputs.current-master-sha }}
+          token: ${{ secrets.BITGOBOT_PAT_TOKEN || github.token }}
+          fetch-depth: 0
+          # version-bump-summary uses `git tag --points-at HEAD`. In recovery
+          # mode the bump tags were created by a prior failed run and live
+          # only on origin, so we must fetch them.
+          fetch-tags: true
+
+      - name: Configure GPG
+        if: ${{ inputs.dry-run == false && !inputs.recovery-mode }}
+        run: |
+          echo "${{ secrets.BITGOBOT_GPG_PRIVATE_KEY }}" | gpg --batch --import
+          git config --global user.signingkey 67A9A0B77F0BD445E45CC8B719828A304678A92F
+          git config --global commit.gpgsign true
+          git config --global user.email "bitgobot@bitgo.com"
+          git config --global user.name "bitgobot"
+
+      - name: Configure npmrc
+        run: |
+          echo "engine-strict=true" > ~/.npmrc
+
+      - name: Setup Node.js with nvm
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Switch to rel/latest branch
+        if: ${{ !inputs.recovery-mode }}
+        run: |
+          git checkout rel/latest
+          git pull origin rel/latest
+
+      - name: Merge master into rel/latest
+        if: ${{ !inputs.recovery-mode }}
+        run: |
+          echo "Merging master commit ${{ needs.get-release-context.outputs.current-master-sha }} into rel/latest"
+          git merge ${{ needs.get-release-context.outputs.current-master-sha }} --no-edit
+
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+
+      - name: Run yarn audit
+        run: |
+          yarn run audit-high
+
+      - name: Run dependency check
+        run: |
+          yarn check-deps
+
+      # Trusted publishing (OIDC) cannot publish a package that doesn't already
+      # exist on npm. Catch missing packages before the publish step so the
+      # release doesn't partially fail midway through.
+      - name: Verify all packages exist on npm
+        uses: ./.github/actions/verify-npm-packages
+
+      - name: Publish new version
+        if: ${{ inputs.dry-run == false && !inputs.recovery-mode }}
+        run: |
+          yarn lerna publish --sign-git-tag --sign-git-commit --include-merged-tags --conventional-commits --conventional-graduate --yes
+        env:
+          NPM_CONFIG_PROVENANCE: true
+
+      - name: Publish missing versions (recovery)
+        if: ${{ inputs.dry-run == false && inputs.recovery-mode }}
+        run: |
+          # `from-package` reads each package.json's `version`, queries npm,
+          # and publishes only versions missing from the registry. No bump,
+          # no tag, no git push.
+          yarn lerna publish from-package --yes
+        env:
+          NPM_CONFIG_PROVENANCE: true
+
+      - name: Verify recovery published the missing versions
+        if: ${{ inputs.dry-run == false && inputs.recovery-mode }}
+        run: |
+          # Walk every non-private package and confirm the version on
+          # rel/latest is now reachable on the npm registry. Catches the
+          # case where lerna reports success but a package didn't land
+          # (e.g., another transient registry error).
+          missing=()
+          for f in modules/*/package.json; do
+            if [ "$(jq -r '.private // false' "$f")" = "true" ]; then continue; fi
+            name=$(jq -r '.name' "$f")
+            version=$(jq -r '.version' "$f")
+            code=$(curl -sL -o /dev/null -w "%{http_code}" -- "https://registry.npmjs.org/${name}/${version}")
+            if [ "$code" != "200" ]; then
+              missing+=("${name}@${version} (HTTP ${code})")
+            fi
+          done
+          if [ "${#missing[@]}" -ne 0 ]; then
+            echo "::error::Recovery left versions still missing from npm:"
+            printf '  - %s\n' "${missing[@]}"
+            exit 1
+          fi
+          echo "✅ All public package versions on rel/latest are present on npm."
+
+      - name: Generate version bump summary
+        id: version-bump-summary
+        if: inputs.dry-run == false
+        continue-on-error: true
+        uses: ./.github/actions/version-bump-summary
+
+      - name: Extract published version
+        if: inputs.dry-run == false
+        id: extract-version
+        run: |
+          NEW_VERSION=$(jq -r '.version' ./modules/bitgo/package.json)
+          echo "New version: $NEW_VERSION"
+          echo "new-version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        if: inputs.dry-run == false && steps.version-bump-summary.outcome == 'success'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.BITGOBOT_PAT_TOKEN || github.token }}
+        run: |
+          gh release create "v${{ steps.extract-version.outputs.new-version }}" \
+            --latest \
+            --title "v${{ steps.extract-version.outputs.new-version }}" \
+            --notes-file "${{ steps.version-bump-summary.outputs.text-file }}"
+
+  get-express-release-context:
+    name: Get Express release context
+    if: ${{ always() && inputs.dry-run == false && needs.release-bitgojs.result == 'success' }}
+    needs:
+      - release-bitgojs
+    runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    outputs:
+      version: ${{ steps.compute-express-git-tag.outputs.version }}
+      git-tag: ${{ steps.compute-express-git-tag.outputs.git-tag }}
+      git-sha: ${{ steps.compute-express-git-sha.outputs.git-sha }}
+      docker-exists: ${{ steps.check-docker-image.outputs.docker-exists }}
+    steps:
+      - name: Checkout rel/latest branch
+        uses: actions/checkout@v6
+        with:
+          ref: rel/latest
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Compute express target version and tag
+        id: compute-express-git-tag
+        run: |
+          VERSION=$(jq -r '.version' ./modules/express/package.json)
+          TAG="@bitgo/express@$VERSION"
+          echo "Current latest express version: $VERSION"
+          echo "Expected latest express git tag: $TAG"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "git-tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout express target git tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.compute-express-git-tag.outputs.git-tag }}
+          fetch-depth: 2
+
+      - name: Parse express git SHA
+        id: compute-express-git-sha
+        run: |
+          GIT_SHA=$(git rev-parse HEAD)
+          echo "Git SHA: $GIT_SHA"
+          echo "git-sha=$GIT_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Sanity Check Express Git Tag
+        run: |
+          CURRENT_VERSION="${{ steps.compute-express-git-tag.outputs.version }}"
+          PREVIOUS_VERSION=$(git show HEAD~1:./modules/express/package.json | jq -r '.version')
+
+          echo "Current version: $CURRENT_VERSION"
+          echo "Previous version: $PREVIOUS_VERSION"
+
+          if [ "$CURRENT_VERSION" == "$PREVIOUS_VERSION" ]; then
+            echo "::error::Express version bump does not line up with git tag location."
+            echo "::error::This suggests the git tag may have been moved."
+            exit 1
+          fi
+
+          echo "✅ Express version bump lines up with git tag"
+
+      - name: Check if Docker image already exists in Docker Hub
+        id: check-docker-image
+        run: |
+          VERSION="${{ steps.compute-express-git-tag.outputs.version }}"
+          if curl -s -f "https://hub.docker.com/v2/repositories/bitgo/express/tags/$VERSION" > /dev/null; then
+            echo "⚠️ Docker image bitgo/express:$VERSION already exists — skipping publish"
+            echo "docker-exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "✅ Docker image bitgo/express:$VERSION does not exist — will publish"
+            echo "docker-exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update Express GitHub summary
+        run: |
+          if [ "${{ steps.check-docker-image.outputs.docker-exists }}" == "true" ]; then
+            {
+              echo "### ⚠️ Docker publish skipped"
+              echo "Image \`bitgo/express:${{ steps.compute-express-git-tag.outputs.version }}\` already exists in Docker Hub."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "## BitGo Express Release Information"
+              echo ""
+              echo "Express Version: ${{ steps.compute-express-git-tag.outputs.version }}"
+              echo "Git Tag: ${{ steps.compute-express-git-tag.outputs.git-tag }}"
+              echo "Commit SHA: ${{ steps.compute-express-git-sha.outputs.git-sha }}"
+              echo ""
+              echo "### Docker Images to be deployed:"
+              echo "- \`bitgo/express:latest\`"
+              echo "- \`bitgo/express:${{ steps.compute-express-git-tag.outputs.version }}\`"
+              echo ""
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  publish-express-to-docker-hub:
+    name: Publish Express To Docker Hub
+    if: ${{ always() && needs.get-express-release-context.result == 'success' && needs.get-express-release-context.outputs.docker-exists != 'true' }}
+    needs:
+      - get-express-release-context
+    runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
+    timeout-minutes: 40
+    environment: bitgo-express
+    steps:
+      - name: Checkout BitGoJS repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.get-express-release-context.outputs.git-sha }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ env.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_API_KEY }}
+
+      - name: Generate build date
+        id: build-date
+        run: |
+          BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "build-date=$BUILD_DATE" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push Express Docker image
+        id: docker-build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            bitgo/express:latest
+            bitgo/express:${{ needs.get-express-release-context.outputs.version }}
+          build-args: |
+            VERSION=${{ needs.get-express-release-context.outputs.version }}
+            BUILD_DATE=${{ steps.build-date.outputs.build-date }}
+            GIT_HASH=${{ needs.get-express-release-context.outputs.git-sha }}

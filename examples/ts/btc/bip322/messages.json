@@ -1,0 +1,10 @@
+[
+  {
+    "address": "YOUR_WALLET_ADDRESS_HERE",
+    "message": "I own this address"
+  },
+  {
+    "address": "YOUR_OTHER_WALLET_ADDRESS_HERE",
+    "message": "I also own this address"
+  }
+]
