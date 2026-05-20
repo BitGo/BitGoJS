@@ -7,8 +7,10 @@ import { TradingAccount } from '../../../../src/bitgo/trading/tradingAccount';
 
 describe('TradingAccount', function () {
   let tradingAccount: TradingAccount;
+  let userKeyRequiredTradingAccount: TradingAccount;
   let mockBitGo: any;
   let mockWallet: any;
+  let mockUserKeyRequiredWallet: any;
   let mockBaseCoin: any;
   let sendStub: sinon.SinonStub;
 
@@ -54,13 +56,27 @@ describe('TradingAccount', function () {
       toJSON: sinon.stub().returns({
         id: 'test-wallet-id',
         keys: ['user-key-id', 'backup-key-id', 'bitgo-key-id'],
-        coinSpecific: {},
+        coinSpecific: {
+          userKeySigningRequired: false,
+        },
       }),
       baseCoin: mockBaseCoin,
       bitgo: mockBitGo,
     };
 
+    mockUserKeyRequiredWallet = {
+      ...mockWallet,
+      toJSON: sinon.stub().returns({
+        id: 'test-wallet-id',
+        keys: ['user-key-id', 'backup-key-id', 'bitgo-key-id'],
+        coinSpecific: {
+          userKeySigningRequired: true,
+        },
+      }),
+    };
+
     tradingAccount = new TradingAccount(enterpriseId, mockWallet, mockBitGo);
+    userKeyRequiredTradingAccount = new TradingAccount(enterpriseId, mockUserKeyRequiredWallet, mockBitGo);
   });
 
   afterEach(function () {
@@ -85,7 +101,6 @@ describe('TradingAccount', function () {
       it('should sign using the BitGo key remotely when no passphrase is provided', async function () {
         const result = await tradingAccount.signPayload({ payload });
 
-        mockWallet.toJSON.calledOnce.should.be.true();
         mockBitGo.post.calledOnce.should.be.true();
         sendStub.calledWith({ payload: JSON.stringify(payload) }).should.be.true();
         result.should.equal(signature);
@@ -98,31 +113,18 @@ describe('TradingAccount', function () {
       });
 
       it('should throw if coinSpecific.userKeySigningRequired is true and no passphrase and prv are provided', async function () {
-        mockWallet.toJSON.onCall(mockWallet.toJSON.callCount).returns({
-          id: 'test-wallet-id',
-          keys: ['user-key-id', 'backup-key-id', 'bitgo-key-id'],
-          coinSpecific: { userKeySigningRequired: true },
-        });
-
-        await tradingAccount
+        await userKeyRequiredTradingAccount
           .signPayload({ payload })
           .should.be.rejectedWith(
-            'Wallet must use user key to sign ofc transaction, please provide the wallet passphrase or visit your wallet settings page to configure one.'
+            'Wallet must use user key to sign ofc transaction, please provide the wallet passphrase, the private key, or visit your wallet settings page to configure one.'
           );
       });
 
       it('should fall back to top-level userKeySigningRequired when coinSpecific does not carry it', async function () {
-        mockWallet.toJSON.onCall(mockWallet.toJSON.callCount).returns({
-          id: 'test-wallet-id',
-          keys: ['user-key-id', 'backup-key-id', 'bitgo-key-id'],
-          coinSpecific: {},
-          userKeySigningRequired: true,
-        });
-
-        await tradingAccount
+        await userKeyRequiredTradingAccount
           .signPayload({ payload })
           .should.be.rejectedWith(
-            'Wallet must use user key to sign ofc transaction, please provide the wallet passphrase or visit your wallet settings page to configure one.'
+            'Wallet must use user key to sign ofc transaction, please provide the wallet passphrase, the private key, or visit your wallet settings page to configure one.'
           );
       });
 

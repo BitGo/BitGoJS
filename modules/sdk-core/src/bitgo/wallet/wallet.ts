@@ -2137,7 +2137,7 @@ export class Wallet implements IWallet {
    * @param params
    * - txPrebuild
    * - [keychain / key] (object) or prv (string)
-   * - walletPassphrase
+   * - walletPassphrase (optional ONLY for OFC wallets with userKeySigningRequired = false)
    * - verifyTxParams (optional) - when provided, the transaction will be verified before signing
    *   - txParams: transaction parameters used for verification
    *   - verification: optional verification options
@@ -2264,6 +2264,17 @@ export class Wallet implements IWallet {
       };
       return params.customSigningFunction(signTransactionParamsWithSeed);
     }
+
+    if (this.baseCoin.getFamily() === 'ofc') {
+      const userKeySigningRequired = this.toTradingAccount().userKeySigningRequired;
+      const prv = userKeySigningRequired ? await this.getUserPrvAsync(presign as GetUserPrvOptions) : undefined;
+      return this.baseCoin.signTransaction({
+        ...signTransactionParams,
+        prv,
+        wallet: this,
+      });
+    }
+
     return this.baseCoin.signTransaction({
       ...signTransactionParams,
       prv: await this.getUserPrvAsync(presign as GetUserPrvOptions),
