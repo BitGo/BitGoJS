@@ -181,6 +181,7 @@ describe('Consolidate Account API Tests', function () {
 
         const mockWallet = {
           sendAccountConsolidations: sinon.stub().resolves(mockSuccessResponse),
+          _wallet: { multisigType: 'onchain' },
         };
 
         const mockCoin = {
@@ -217,6 +218,7 @@ describe('Consolidate Account API Tests', function () {
 
         const mockWallet = {
           sendAccountConsolidations: sinon.stub().resolves(mockSuccessResponse),
+          _wallet: { multisigType: 'onchain' },
         };
 
         const mockCoin = {
@@ -250,6 +252,7 @@ describe('Consolidate Account API Tests', function () {
 
         const mockWallet = {
           sendAccountConsolidations: sinon.stub().resolves(mockSuccessResponse),
+          _wallet: { multisigType: 'onchain' },
         };
 
         const mockCoin = {
@@ -286,6 +289,7 @@ describe('Consolidate Account API Tests', function () {
 
         const mockWallet = {
           sendAccountConsolidations: sinon.stub().resolves(mockSuccessResponse),
+          _wallet: { multisigType: 'onchain' },
         };
 
         const mockCoin = {
@@ -329,6 +333,7 @@ describe('Consolidate Account API Tests', function () {
 
         const mockWallet = {
           sendAccountConsolidations: sinon.stub().resolves(mockMultipleSuccess),
+          _wallet: { multisigType: 'onchain' },
         };
 
         const mockCoin = {
@@ -367,6 +372,7 @@ describe('Consolidate Account API Tests', function () {
 
         const mockWallet = {
           sendAccountConsolidations: sinon.stub().resolves(mockPartialSuccess),
+          _wallet: { multisigType: 'onchain' },
         };
 
         const mockCoin = {
@@ -410,6 +416,7 @@ describe('Consolidate Account API Tests', function () {
 
         const mockWallet = {
           sendAccountConsolidations: sinon.stub().resolves(mockAllFailed),
+          _wallet: { multisigType: 'onchain' },
         };
 
         const mockCoin = {
@@ -494,6 +501,7 @@ describe('Consolidate Account API Tests', function () {
 
         const mockWallet = {
           sendAccountConsolidations: sinon.stub().rejects(new Error('Invalid passphrase')),
+          _wallet: { multisigType: 'onchain' },
         };
 
         const mockCoin = {
@@ -523,6 +531,7 @@ describe('Consolidate Account API Tests', function () {
 
         const mockWallet = {
           sendAccountConsolidations: sinon.stub().rejects(new Error('Insufficient funds')),
+          _wallet: { multisigType: 'onchain' },
         };
 
         const mockCoin = {
@@ -621,6 +630,7 @@ describe('Consolidate Account API Tests', function () {
 
         const mockWallet = {
           sendAccountConsolidations: sinon.stub().resolves(mockSuccessResponse),
+          _wallet: { multisigType: 'onchain' },
         };
 
         const mockCoin = {
@@ -655,6 +665,7 @@ describe('Consolidate Account API Tests', function () {
 
         const mockWallet = {
           sendAccountConsolidations: sinon.stub().resolves(mockSuccessResponse),
+          _wallet: { multisigType: 'onchain' },
         };
 
         const mockCoin = {
@@ -691,6 +702,7 @@ describe('Consolidate Account API Tests', function () {
 
         const mockWallet = {
           sendAccountConsolidations: sinon.stub().resolves(mockSuccessResponse),
+          _wallet: { multisigType: 'onchain' },
         };
 
         const mockCoin = {
@@ -726,6 +738,7 @@ describe('Consolidate Account API Tests', function () {
 
         const mockWallet = {
           sendAccountConsolidations: sinon.stub().resolves(mockSuccessResponse),
+          _wallet: { multisigType: 'onchain' },
         };
 
         const mockCoin = {
@@ -756,6 +769,7 @@ describe('Consolidate Account API Tests', function () {
 
         const mockWallet = {
           sendAccountConsolidations: sinon.stub().resolves(mockSuccessResponse),
+          _wallet: { multisigType: 'onchain' },
         };
 
         const mockCoin = {
@@ -789,6 +803,7 @@ describe('Consolidate Account API Tests', function () {
 
         const mockWallet = {
           sendAccountConsolidations: sinon.stub().resolves(mockSuccessResponse),
+          _wallet: { multisigType: 'onchain' },
         };
 
         const mockCoin = {
