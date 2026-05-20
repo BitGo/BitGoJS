@@ -91,6 +91,7 @@
 /modules/sdk-coin-stx/ @BitGo/ethalt-team
 /modules/sdk-coin-stt/ @BitGo/ethalt-team
 /modules/sdk-coin-soneium/ @BitGo/ethalt-team
+/modules/sdk-coin-starknet/ @BitGo/ethalt-team
 /modules/sdk-coin-sui/ @BitGo/ethalt-team
 /modules/sdk-coin-tao/ @BitGo/ethalt-team
 /modules/sdk-coin-tempo/ @BitGo/ethalt-team
