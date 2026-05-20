@@ -3990,6 +3990,50 @@ export const ofcErc20Coins = [
     'baseeth'
   ),
 
+  // Ink Network tokens
+  ofcerc20(
+    'f6ccdf51-e2c8-4ad3-95b4-8c779096d30f',
+    'ofcinketh:kbtc',
+    'KBTC',
+    8,
+    underlyingAssetForSymbol('inketh:kbtc'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'inketh'
+  ),
+  ofcerc20(
+    '200f34d6-521a-4ff9-a4c2-60c6fe3edaf4',
+    'ofcinketh:usdc',
+    'USDC',
+    6,
+    underlyingAssetForSymbol('inketh:usdc'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'inketh'
+  ),
+  ofcerc20(
+    'e115bc45-6771-4088-82f3-aa3cdcaba416',
+    'ofcinketh:usdt0',
+    'USDT0',
+    6,
+    underlyingAssetForSymbol('inketh:usdt0'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'inketh'
+  ),
+
   // Chiliz Network tokens
   ofcerc20(
     'e870395c-a5e0-41b2-b900-6bd1a1a38088',
