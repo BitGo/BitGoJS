@@ -182,6 +182,31 @@ export function pubKeyToKaspaAddress(compressedPubKey: string | Buffer, hrp: str
 }
 
 /**
+ * Derive the P2PK scriptPublicKey hex from a Kaspa address.
+ *
+ * Kaspa P2PK (Schnorr) script layout:
+ *   OP_DATA_32 (0x20) + <32-byte x-only pubkey> + OP_CHECKSIG (0xac)
+ *
+ * The 32-byte x-only pubkey is embedded in the bech32 address payload
+ * after stripping the 1-byte version nibble.
+ */
+export function addressToScriptPublicKey(address: string): string {
+  const colonIdx = address.lastIndexOf(':');
+  if (colonIdx < 1) {
+    throw new Error('Invalid Kaspa address: missing prefix');
+  }
+  const decoded = kaspacDecode(address);
+  // convert 5-bit words back to bytes, no padding
+  const bytes = convertBits(Buffer.from(decoded.data), 5, 8, false);
+  // bytes[0] is the version nibble (0 = P2PK Schnorr), bytes[1..32] is the x-only pubkey
+  if (bytes.length < 33) {
+    throw new Error('Invalid Kaspa address: too short after decoding');
+  }
+  const xOnlyPubKey = Buffer.from(bytes.slice(1, 33));
+  return '20' + xOnlyPubKey.toString('hex') + 'ac';
+}
+
+/**
  * Validates a secp256k1 public key (compressed or uncompressed)
  */
 export function isValidPublicKey(pub: string): boolean {

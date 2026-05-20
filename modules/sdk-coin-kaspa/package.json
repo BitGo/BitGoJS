@@ -40,6 +40,7 @@
     ]
   },
   "dependencies": {
+    "@bitgo/abstract-utxo": "^11.0.0",
     "@bitgo/sdk-core": "^36.44.0",
     "@bitgo/secp256k1": "^1.11.0",
     "@bitgo/statics": "^58.39.0",
