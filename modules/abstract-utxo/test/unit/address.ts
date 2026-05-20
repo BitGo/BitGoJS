@@ -1,12 +1,17 @@
 import * as assert from 'assert';
 
 import { InvalidAddressDerivationPropertyError, UnexpectedAddressError } from '@bitgo/sdk-core';
+import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { assertFixedScriptWalletAddress, generateAddress } from '../../src';
 
 import { keychainsBase58 } from './util';
 
 const keychains = keychainsBase58.map((k) => ({ pub: k.pub }));
+
+// A chain code that no released SDK version has ever defined — simulates a future
+// server-side address type unknown to an older client.
+const unknownChainCode = 99;
 
 describe('assertFixedScriptWalletAddress', function () {
   describe('input validation', function () {
@@ -119,6 +124,58 @@ describe('assertFixedScriptWalletAddress', function () {
           address,
         })
       );
+    });
+
+    // Regression: an unknown chain code must never silently fall back to P2SH.
+    // If the server returns a new chain code that this SDK version does not
+    // recognise, the validation should fail loudly rather than derive a P2SH
+    // address and produce a confusing mismatch error.
+    //
+    // Historical instance: bitgo@18.0.1 did not know chain=40 (p2trMusig2).
+    // When the server returned { chain: 40, address: "tb1p..." }, the client
+    // fell back to chain=0, derived a P2SH address, and threw
+    // UnexpectedAddressError("expected 2NEU8... but got tb1p...") — hiding the
+    // real cause entirely.
+    it('throws UnexpectedAddressError for an unknown chain code, revealing the P2SH fallback', function () {
+      assert.ok(!fixedScriptWallet.ChainCode.is(unknownChainCode), 'test prerequisite: chain must be unknown');
+
+      // The server-side address for chain=40 (p2trMusig2) — what a newer server
+      // would return when this older client does not know about chain=40 yet.
+      const serverAddress = generateAddress('btc', { keychains, chain: 40 });
+      const p2shFallbackAddress = generateAddress('btc', { keychains, chain: 0 });
+
+      let err: unknown;
+      try {
+        assertFixedScriptWalletAddress('btc', {
+          chain: unknownChainCode,
+          index: 0,
+          keychains,
+          format: 'base58',
+          address: serverAddress,
+        });
+      } catch (e) {
+        err = e;
+      }
+
+      assert.ok(err instanceof UnexpectedAddressError);
+
+      // The error message reveals the fallback: it mentions the P2SH address
+      // rather than anything about the unrecognised chain code.
+      assert.ok(
+        err.message.includes(p2shFallbackAddress),
+        `expected error to mention the P2SH fallback address (${p2shFallbackAddress}), got: ${err.message}`
+      );
+      assert.ok(
+        err.message.includes(serverAddress),
+        `expected error to mention the server address (${serverAddress}), got: ${err.message}`
+      );
+    });
+
+    it('generateAddress silently produces a P2SH address for an unknown chain code', function () {
+      assert.ok(!fixedScriptWallet.ChainCode.is(unknownChainCode), 'test prerequisite: chain must be unknown');
+      const fallback = generateAddress('btc', { keychains, chain: unknownChainCode });
+      const p2sh = generateAddress('btc', { keychains, chain: 0 });
+      assert.strictEqual(fallback, p2sh);
     });
 
     it('succeeds for bch cashaddr (chain 0)', function () {
