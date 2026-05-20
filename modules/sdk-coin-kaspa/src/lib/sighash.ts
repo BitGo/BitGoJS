@@ -12,17 +12,17 @@
  * https://github.com/kaspanet/rusty-kaspa/blob/master/consensus/core/src/hashing/sighash.rs
  */
 import { blake2b } from 'blakejs';
+import { createHash } from 'crypto';
 import { KaspaTransactionData, KaspaUtxoInput, KaspaTransactionOutput } from './iface';
-
-// SigHash type flags
-export const SIGHASH_ALL = 0x01;
-export const SIGHASH_NONE = 0x02;
-export const SIGHASH_SINGLE = 0x04;
-export const SIGHASH_ANYONECANPAY = 0x80;
-
-// Script constants
-export const OP_CHECKSIG_SCHNORR = 0xab; // Kaspa Schnorr checksig opcode
-export const SCRIPT_PUBLIC_KEY_VERSION = 0; // Standard P2PK version
+import {
+  SIGHASH_ALL,
+  SIGHASH_NONE,
+  SIGHASH_SINGLE,
+  SIGHASH_ANYONECANPAY,
+  OP_CHECKSIG_SCHNORR,
+  OP_CHECKSIG_ECDSA,
+  KaspaScriptType,
+} from './constants';
 
 /**
  * The Blake2b key used for ALL sighash operations in Kaspa.
@@ -33,15 +33,46 @@ export const SCRIPT_PUBLIC_KEY_VERSION = 0; // Standard P2PK version
  */
 const SIGNING_HASH_KEY = Buffer.from('TransactionSigningHash', 'ascii');
 
-/**
- * Keyed Blake2b-256: blake2b(data, key="TransactionSigningHash", outlen=32).
- * Used for every intermediate hash and the final sighash.
- */
 function kblake2b(data: Buffer): Buffer {
   return Buffer.from(blake2b(data, SIGNING_HASH_KEY, 32));
 }
 
-// ─── Intermediate hash helpers ────────────────────────────────────────────────
+/**
+ * Build a Kaspa P2PK scriptPublicKey.
+ *
+ * @param pubKey - For SCHNORR: 32-byte x-only key.
+ *                 For ECDSA:   33-byte compressed key.
+ * @param type   - Address type (default: SCHNORR / v0).
+ *
+ * Resulting script formats (per rusty-kaspa crypto/txscript/src/standard.rs):
+ *   SCHNORR (v0): OP_DATA_32(0x20) || xOnlyPubKey(32B)      || OpCheckSig(0xAC)
+ *   ECDSA   (v1): OP_DATA_33(0x21) || compressedPubKey(33B) || OpCheckSigECDSA(0xAB)
+ */
+export function buildP2PKScriptPublicKey(pubKey: Buffer, type: KaspaScriptType = KaspaScriptType.SCHNORR): Buffer {
+  if (type === KaspaScriptType.SCHNORR) {
+    if (pubKey.length !== 32) {
+      throw new Error(`SCHNORR script expects 32-byte x-only pubkey, got ${pubKey.length}`);
+    }
+    return Buffer.concat([Buffer.from([0x20]), pubKey, Buffer.from([OP_CHECKSIG_SCHNORR])]);
+  } else {
+    if (pubKey.length !== 33) {
+      throw new Error(`ECDSA script expects 33-byte compressed pubkey, got ${pubKey.length}`);
+    }
+    return Buffer.concat([Buffer.from([0x21]), pubKey, Buffer.from([OP_CHECKSIG_ECDSA])]);
+  }
+}
+
+/**
+ * Derive x-only public key from 33-byte compressed public key.
+ */
+export function compressedToXOnly(compressedPubKey: Buffer): Buffer {
+  if (compressedPubKey.length !== 33) {
+    throw new Error(`Expected 33-byte compressed pubkey, got ${compressedPubKey.length}`);
+  }
+  return compressedPubKey.slice(1); // drop the 02/03 prefix byte
+}
+
+// --- Intermediate hash helpers ---
 
 function hashPreviousOutputs(inputs: KaspaUtxoInput[]): Buffer {
   const parts = inputs.map((inp) => {
@@ -113,29 +144,6 @@ function hashPayload(tx: KaspaTransactionData): Buffer {
   const lenBuf = Buffer.alloc(8);
   lenBuf.writeBigUInt64LE(BigInt(payloadBytes.length));
   return kblake2b(Buffer.concat([lenBuf, payloadBytes]));
-}
-
-// ─── Public API ───────────────────────────────────────────────────────────────
-
-/**
- * Build P2PK Schnorr scriptPublicKey from a 32-byte x-only public key.
- * Format: OP_DATA_32(0x20) + xOnlyPubKey(32 bytes) + OP_CHECKSIG_SCHNORR(0xAB)
- */
-export function buildP2PKScriptPublicKey(xOnlyPubKey: Buffer): Buffer {
-  if (xOnlyPubKey.length !== 32) {
-    throw new Error(`Expected 32-byte x-only pubkey, got ${xOnlyPubKey.length}`);
-  }
-  return Buffer.concat([Buffer.from([0x20]), xOnlyPubKey, Buffer.from([OP_CHECKSIG_SCHNORR])]);
-}
-
-/**
- * Derive x-only public key from 33-byte compressed public key.
- */
-export function compressedToXOnly(compressedPubKey: Buffer): Buffer {
-  if (compressedPubKey.length !== 33) {
-    throw new Error(`Expected 33-byte compressed pubkey, got ${compressedPubKey.length}`);
-  }
-  return compressedPubKey.slice(1);
 }
 
 /**
@@ -238,4 +246,35 @@ export function computeKaspaSigningHash(
   offset += 1;
 
   return kblake2b(preimage.slice(0, offset));
+}
+
+/**
+ * SHA-256 domain separator for ECDSA signing.
+ * Matches TransactionSigningHashECDSA in rusty-kaspa/crypto/hashes/src/hashers.rs:
+ *   sha256_hasher! { struct TransactionSigningHashECDSA => "TransactionSigningHashECDSA" }
+ * The hasher is seeded with SHA256("TransactionSigningHashECDSA") before any data.
+ */
+const ECDSA_DOMAIN_SEP: Buffer = Buffer.from(createHash('sha256').update('TransactionSigningHashECDSA').digest());
+
+/**
+ * Compute the Kaspa ECDSA sighash for a specific input.
+ *
+ * ECDSA signing uses a two-step hash defined in rusty-kaspa sighash.rs:
+ *   1. schnorr_hash  = blake2b256_keyed("TransactionSigningHash", preimage)
+ *   2. ecdsa_hash    = SHA256( SHA256("TransactionSigningHashECDSA") || schnorr_hash )
+ *
+ * This differs from the Schnorr hash — using the Schnorr hash for ECDSA signing
+ * will produce a locally-valid signature that the network always rejects.
+ *
+ * @param tx         Full transaction data with UTXO amount + scriptPublicKey on inputs
+ * @param inputIndex 0-based index of the input being signed
+ * @param sigHashType SigHash type flags (SIGHASH_ALL = 0x01)
+ */
+export function computeKaspaEcdsaSigningHash(
+  tx: KaspaTransactionData,
+  inputIndex: number,
+  sigHashType: number = SIGHASH_ALL
+): Buffer {
+  const schnorrHash = computeKaspaSigningHash(tx, inputIndex, sigHashType);
+  return Buffer.from(createHash('sha256').update(ECDSA_DOMAIN_SEP).update(schnorrHash).digest());
 }

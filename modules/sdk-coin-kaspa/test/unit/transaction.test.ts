@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { Transaction } from '../../src/lib/transaction';
 import { TransactionType } from '@bitgo/sdk-core';
-import { SIGHASH_ALL } from '../../src/lib/sighash';
+import { SIGHASH_ALL } from '../../src/lib/constants';
 import { KEYS, TRANSACTIONS } from '../fixtures/kaspa.fixtures';
 
 const COIN = 'kaspa';
@@ -139,6 +139,124 @@ describe('Kaspa Transaction', function () {
       tx.sign(privKey);
       const pubKey = Buffer.from(KEYS.pub, 'hex');
       assert.equal(tx.verifySignature(pubKey, 99), false);
+    });
+  });
+
+  // ── ECDSA (v1 address) signing ────────────────────────────────────────────
+  //
+  // These tests cover the auto-detection path in sign() / verifySignature() /
+  // signablePayloads when the input's scriptPublicKey ends with 0xAB (ECDSA).
+
+  describe('sign (ECDSA inputs)', function () {
+    it('should sign a single ECDSA input', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simpleEcdsa);
+      const privKey = Buffer.from(KEYS.prv, 'hex');
+      tx.sign(privKey);
+      const sigScript = tx.txData.inputs[0].signatureScript ?? '';
+      assert.ok(sigScript.length > 0, 'ECDSA input should have a signatureScript');
+      // 66 bytes = 132 hex chars: 0x41 + 64-byte sig + 1-byte sighash type
+      assert.equal(sigScript.length, 132);
+      assert.equal(parseInt(sigScript.slice(-2), 16), SIGHASH_ALL);
+    });
+
+    it('should sign multiple ECDSA inputs', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.multiInputEcdsa);
+      const privKey = Buffer.from(KEYS.prv, 'hex');
+      tx.sign(privKey);
+      assert.equal(tx.txData.inputs.length, 2);
+      for (const input of tx.txData.inputs) {
+        assert.ok(input.signatureScript && input.signatureScript.length > 0);
+      }
+    });
+
+    it('should produce distinct sighashes for ECDSA vs Schnorr inputs on the same key', function () {
+      const schnorrTx = new Transaction(COIN, TRANSACTIONS.simple);
+      const ecdsaTx = new Transaction(COIN, TRANSACTIONS.simpleEcdsa);
+      const [schnorrHash] = schnorrTx.signablePayloads;
+      const [ecdsaHash] = ecdsaTx.signablePayloads;
+      assert.ok(!schnorrHash.equals(ecdsaHash), 'ECDSA and Schnorr hashes must differ');
+    });
+  });
+
+  describe('verifySignature (ECDSA inputs)', function () {
+    it('should verify a valid ECDSA signature with compressed pubkey', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simpleEcdsa);
+      tx.sign(Buffer.from(KEYS.prv, 'hex'));
+      const pubKey = Buffer.from(KEYS.pub, 'hex');
+      assert.ok(tx.verifySignature(pubKey, 0), 'ECDSA signature should verify');
+    });
+
+    it('should return false for wrong public key on ECDSA input', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simpleEcdsa);
+      tx.sign(Buffer.from(KEYS.prv, 'hex'));
+      const wrongPub = Buffer.from('02' + 'ab'.repeat(32), 'hex');
+      assert.equal(tx.verifySignature(wrongPub, 0), false);
+    });
+
+    it('should verify all inputs in a multi-input ECDSA transaction', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.multiInputEcdsa);
+      tx.sign(Buffer.from(KEYS.prv, 'hex'));
+      const pubKey = Buffer.from(KEYS.pub, 'hex');
+      assert.ok(tx.verifySignature(pubKey, 0));
+      assert.ok(tx.verifySignature(pubKey, 1));
+    });
+  });
+
+  describe('sign + verifySignature (mixed Schnorr + ECDSA inputs)', function () {
+    it('should sign and verify each input with the correct algorithm', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.mixedSchnorrEcdsa);
+      const privKey = Buffer.from(KEYS.prv, 'hex');
+      tx.sign(privKey);
+
+      assert.equal(tx.txData.inputs.length, 2, 'should have 2 inputs');
+
+      const pubKey = Buffer.from(KEYS.pub, 'hex');
+      // input[0] is Schnorr (scriptPublicKey ends 0xAC)
+      assert.ok(tx.verifySignature(pubKey, 0), 'Schnorr input[0] should verify');
+      // input[1] is ECDSA (scriptPublicKey ends 0xAB)
+      assert.ok(tx.verifySignature(pubKey, 1), 'ECDSA input[1] should verify');
+    });
+
+    it('should produce different script types for Schnorr and ECDSA inputs', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.mixedSchnorrEcdsa);
+      tx.sign(Buffer.from(KEYS.prv, 'hex'));
+      // Both produce 66-byte (132 hex char) scriptSigs but via different algorithms —
+      // the last opcode of their scriptPublicKey is the differentiator.
+      assert.equal((tx.txData.inputs[0].signatureScript ?? '').length, 132);
+      assert.equal((tx.txData.inputs[1].signatureScript ?? '').length, 132);
+      // The signatures themselves should differ (different sighash algorithm)
+      assert.notEqual(tx.txData.inputs[0].signatureScript, tx.txData.inputs[1].signatureScript);
+    });
+  });
+
+  describe('signablePayloads (ECDSA inputs)', function () {
+    it('should return a 32-byte hash for a single ECDSA input', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simpleEcdsa);
+      const [hash] = tx.signablePayloads;
+      assert.ok(Buffer.isBuffer(hash));
+      assert.equal(hash.length, 32);
+    });
+
+    it('should return distinct hashes for each ECDSA input', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.multiInputEcdsa);
+      const [h0, h1] = tx.signablePayloads;
+      assert.ok(!h0.equals(h1));
+    });
+
+    it('should return different hashes for Schnorr and ECDSA inputs on the same index', function () {
+      const schnorrTx = new Transaction(COIN, TRANSACTIONS.simple);
+      const ecdsaTx = new Transaction(COIN, TRANSACTIONS.simpleEcdsa);
+      // Both transactions have the same structure except scriptPublicKey type.
+      // The ECDSA hash applies an additional SHA256 step so the result must differ.
+      assert.ok(!schnorrTx.signablePayloads[0].equals(ecdsaTx.signablePayloads[0]));
+    });
+
+    it('mixed tx: Schnorr hash at index 0, ECDSA hash at index 1 — both 32 bytes', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.mixedSchnorrEcdsa);
+      const [h0, h1] = tx.signablePayloads;
+      assert.equal(h0.length, 32);
+      assert.equal(h1.length, 32);
+      assert.ok(!h0.equals(h1));
     });
   });
 
