@@ -5,6 +5,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { AllocationAllocateBuilder } from './allocationAllocateBuilder';
 import { CosignDelegationAcceptBuilder } from './cosignDelegationAcceptBuilder';
 import { CosignDelegationProposalBuilder } from './cosignDelegationProposalBuilder';
 import { OneStepPreApprovalBuilder } from './oneStepPreApprovalBuilder';
@@ -56,11 +57,18 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         case TransactionType.TransferReject: {
           return this.getTransferRejectBuilder(tx);
         }
+        case TransactionType.AllocationAllocate: {
+          return this.getAllocationAllocateBuilder(tx);
+        }
         default: {
           throw new InvalidTransactionError('unsupported transaction');
         }
       }
     }
+  }
+
+  getAllocationAllocateBuilder(tx?: Transaction): AllocationAllocateBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new AllocationAllocateBuilder(this._coinConfig));
   }
 
   getOneStepPreapprovalBuilder(tx?: Transaction): OneStepPreApprovalBuilder {

@@ -101,6 +101,8 @@ export enum TransactionType {
   CosignDelegationProposal,
   // canton cosign delegation accept
   CosignDelegationAccept,
+  // canton allocation allocate
+  AllocationAllocate,
 
   // trx
   FREEZE,
