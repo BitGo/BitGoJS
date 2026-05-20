@@ -1013,15 +1013,31 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   ): { hashBuffer: Buffer; derivationPath: string } {
     let txToSign: string;
     let derivationPath: string;
+    let serializedTxHex: string | undefined;
     if (requestType === RequestType.tx) {
       assert(txRequest.transactions && txRequest.transactions.length === 1, 'Unable to find transactions in txRequest');
       txToSign = txRequest.transactions[0].unsignedTx.signableHex;
       derivationPath = txRequest.transactions[0].unsignedTx.derivationPath;
+      serializedTxHex = txRequest.transactions[0].unsignedTx.serializedTxHex;
     } else if (requestType === RequestType.message) {
       // TODO(WP-2176): Add support for message signing
       throw new Error('MPCv2 message signing not supported yet.');
     } else {
       throw new Error('Invalid request type, got: ' + requestType);
+    }
+
+    // For Avalanche atomic transactions (cross-chain export/import between
+    // C-chain and P-chain), signableHex is already SHA-256(txBody) — a 32-byte
+    // pre-hashed digest.  Use it directly as the DKLS message hash instead of
+    // applying the coin's hash function (keccak256 for EVM coins).
+    // This matches the WP/HSM BitGo-party behaviour (MPCv2Signer.isPreHashed)
+    // so both DKLS parties agree on the same message hash.
+    // Detection: Avalanche codec type ID prefix is 0x0000; standard EVM RLP
+    // starts with 0xf8xx, so there is no collision.
+    if (serializedTxHex && serializedTxHex.startsWith('0000')) {
+      const hashBuffer = Buffer.from(txToSign, 'hex');
+      assert(hashBuffer.length === 32, `Avalanche pre-hashed signableHex must be 32 bytes, got ${hashBuffer.length}`);
+      return { hashBuffer, derivationPath };
     }
 
     let hash: Hash;
