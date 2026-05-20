@@ -1,14 +1,17 @@
 import assert from 'assert';
 import { TransactionType } from '@bitgo/sdk-core';
 import { describe, it } from 'node:test';
-import { PARTICIPANTS, BLOCK_HASH, BLOCK_NUMBER, EXPIRATION, WITHDRAW_BALANCE_CONTRACT } from '../../resources';
+import { PARTICIPANTS, BLOCK_HASH, BLOCK_NUMBER, EXPIRATION, ACCOUNT_CREATE_CONTRACT } from '../../resources';
 import { getBuilder } from '../../../src/lib/builder';
 import { Transaction, WrappedBuilder } from '../../../src';
 
-describe('Tron WithdrawBalance builder', function () {
+describe('Tron AccountCreate builder', function () {
   const initTxBuilder = () => {
-    const builder = (getBuilder('ttrx') as WrappedBuilder).getWithdrawBalanceTxBuilder();
-    builder.source({ address: PARTICIPANTS.custodian.address }).block({ number: BLOCK_NUMBER, hash: BLOCK_HASH });
+    const builder = (getBuilder('ttrx') as WrappedBuilder).getAccountCreateTxBuilder();
+    builder
+      .source({ address: PARTICIPANTS.custodian.address })
+      .setAccountAddress({ address: PARTICIPANTS.to.address })
+      .block({ number: BLOCK_NUMBER, hash: BLOCK_HASH });
 
     return builder;
   };
@@ -21,13 +24,12 @@ describe('Tron WithdrawBalance builder', function () {
       txBuilder.expiration(timestamp + 40000);
       const tx = (await txBuilder.build()) as Transaction;
       const txJson = tx.toJson();
-      assert.equal(tx.type, TransactionType.StakingClaim);
+      assert.equal(tx.type, TransactionType.AccountCreate);
       assert.equal(tx.inputs.length, 1);
       assert.equal(tx.inputs[0].address, PARTICIPANTS.custodian.address);
       assert.equal(tx.inputs[0].value, '0');
       assert.equal(tx.outputs[0].value, '0');
-      assert.equal(tx.outputs[0].address, PARTICIPANTS.custodian.address);
-      assert.deepStrictEqual(txJson.raw_data.contract, WITHDRAW_BALANCE_CONTRACT);
+      assert.deepStrictEqual(txJson.raw_data.contract, ACCOUNT_CREATE_CONTRACT);
     });
 
     it('an unsigned transaction from a string and from a JSON', async () => {
@@ -66,7 +68,6 @@ describe('Tron WithdrawBalance builder', function () {
       assert.equal(tx2.inputs[0].address, PARTICIPANTS.custodian.address);
       assert.equal(tx2.inputs[0].value, '0');
       assert.equal(tx2.outputs[0].value, '0');
-      assert.equal(tx2.outputs[0].address, PARTICIPANTS.custodian.address);
       const txJson = tx2.toJson();
       assert.equal(txJson.raw_data.expiration, expiration + extension);
     });
@@ -79,7 +80,7 @@ describe('Tron WithdrawBalance builder', function () {
       const tx = await txBuilder.build();
       let txJson = tx.toJson();
       let rawData = txJson.raw_data;
-      assert.deepStrictEqual(rawData.contract, WITHDRAW_BALANCE_CONTRACT);
+      assert.deepStrictEqual(rawData.contract, ACCOUNT_CREATE_CONTRACT);
       assert.equal(txJson.signature.length, 0);
 
       const txBuilder2 = getBuilder('ttrx').from(tx.toJson());
@@ -87,7 +88,7 @@ describe('Tron WithdrawBalance builder', function () {
       const tx2 = await txBuilder2.build();
       txJson = tx2.toJson();
       rawData = txJson.raw_data;
-      assert.deepStrictEqual(rawData.contract, WITHDRAW_BALANCE_CONTRACT);
+      assert.deepStrictEqual(rawData.contract, ACCOUNT_CREATE_CONTRACT);
       assert.equal(txJson.signature.length, 1);
 
       const txBuilder3 = getBuilder('ttrx').from(tx2.toJson());
@@ -95,23 +96,24 @@ describe('Tron WithdrawBalance builder', function () {
       const tx3 = await txBuilder3.build();
       txJson = tx3.toJson();
       rawData = txJson.raw_data;
-      assert.deepStrictEqual(rawData.contract, WITHDRAW_BALANCE_CONTRACT);
+      assert.deepStrictEqual(rawData.contract, ACCOUNT_CREATE_CONTRACT);
       assert.equal(txJson.signature.length, 2);
-
-      const txBuilder4 = getBuilder('ttrx').from(tx3.toJson());
-      txBuilder4.sign({ key: PARTICIPANTS.multisig.pk });
-      const tx4 = await txBuilder4.build();
-      assert.equal(tx4.inputs.length, 1);
-      assert.equal(tx4.inputs[0].address, PARTICIPANTS.custodian.address);
-      assert.equal(tx4.inputs[0].value, '0');
-      assert.equal(tx4.outputs[0].value, '0');
-      assert.equal(tx4.outputs[0].address, PARTICIPANTS.custodian.address);
-      txJson = tx4.toJson();
-      rawData = txJson.raw_data;
-      assert.deepStrictEqual(rawData.contract, WITHDRAW_BALANCE_CONTRACT);
-      assert.equal(txJson.signature.length, 3);
       assert.equal(rawData.expiration, timestamp + EXPIRATION);
       assert.equal(rawData.timestamp, timestamp);
+    });
+
+    it('preserves consistent transaction ID across round-trips', async () => {
+      const timestamp = Date.now();
+      const txBuilder = initTxBuilder();
+      txBuilder.timestamp(timestamp);
+      txBuilder.expiration(timestamp + EXPIRATION);
+      const tx = await txBuilder.build();
+      const originalTxId = tx.toJson().txID;
+
+      const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
+      const tx2 = await txBuilder2.build();
+
+      assert.equal(tx2.toJson().txID, originalTxId);
     });
   });
 
@@ -216,7 +218,7 @@ describe('Tron WithdrawBalance builder', function () {
       );
     });
 
-    it('an extension grater than one year', async () => {
+    it('an extension greater than one year', async () => {
       const txBuilder = initTxBuilder();
       const expiration = Date.now() + EXPIRATION;
       txBuilder.expiration(expiration);
@@ -246,13 +248,18 @@ describe('Tron WithdrawBalance builder', function () {
     });
 
     it('transaction mandatory fields', async () => {
-      const txBuilder = (getBuilder('ttrx') as WrappedBuilder).getWithdrawBalanceTxBuilder();
+      const txBuilder = (getBuilder('ttrx') as WrappedBuilder).getAccountCreateTxBuilder();
 
       await assert.rejects(txBuilder.build(), {
         message: 'Missing parameter: source',
       });
 
       txBuilder.source({ address: PARTICIPANTS.custodian.address });
+      await assert.rejects(txBuilder.build(), {
+        message: 'Missing parameter: account address',
+      });
+
+      txBuilder.setAccountAddress({ address: PARTICIPANTS.to.address });
       await assert.rejects(txBuilder.build(), {
         message: 'Missing block reference information',
       });
@@ -261,6 +268,16 @@ describe('Tron WithdrawBalance builder', function () {
       assert.doesNotReject(() => {
         return txBuilder.build();
       });
+    });
+
+    it('rejects an invalid account address', async () => {
+      const txBuilder = (getBuilder('ttrx') as WrappedBuilder).getAccountCreateTxBuilder();
+      assert.throws(
+        () => {
+          txBuilder.setAccountAddress({ address: '4173a5993cd182ae152adad8203163f780c65a8aa5' });
+        },
+        (e: any) => e.message.includes('is not a valid base58 address')
+      );
     });
   });
 });

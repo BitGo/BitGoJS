@@ -42,6 +42,10 @@ export enum ContractType {
    * This is the contract for un-delegating resource
    */
   UnDelegateResourceContract,
+  /**
+   * This is the contract for creating/activating a new account
+   */
+  AccountCreate,
 }
 
 export enum PermissionType {

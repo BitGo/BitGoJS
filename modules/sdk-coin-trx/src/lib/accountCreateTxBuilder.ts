@@ -3,22 +3,24 @@ import { TransactionType, BaseKey, ExtendTransactionError, BuildTransactionError
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { TransactionReceipt, FreezeBalanceV2Contract } from './iface';
+import { TransactionReceipt, AccountCreateContract } from './iface';
+import { protocol } from '../../resources/protobuf/tron';
 import {
   decodeTransaction,
   getByteArrayFromHexAddress,
   getBase58AddressFromHex,
+  getHexAddressFromBase58Address,
   TRANSACTION_MAX_EXPIRATION,
   TRANSACTION_DEFAULT_EXPIRATION,
 } from './utils';
-import { protocol } from '../../resources/protobuf/tron';
+import { ACCOUNT_CREATE_TYPE_URL } from './constants';
 
 import ContractType = protocol.Transaction.Contract.ContractType;
 
-export class FreezeBalanceTxBuilder extends TransactionBuilder {
+export class AccountCreateTxBuilder extends TransactionBuilder {
   protected _signingKeys: BaseKey[];
-  private _frozenBalance: string;
-  private _resource: string;
+  // Stored as hex address, consistent with _ownerAddress
+  protected _accountAddress: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -28,29 +30,19 @@ export class FreezeBalanceTxBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected get transactionType(): TransactionType {
-    return TransactionType.StakingActivate;
+    return TransactionType.AccountCreate;
   }
 
   /**
-   * Set the frozen balance amount
+   * Sets the account address (Base58) to be created/activated on-chain.
+   * Stored internally as hex for protobuf encoding.
    *
-   * @param amount amount in TRX to freeze
-   * @returns the builder with the new parameter set
+   * @param {object} address - object containing the Base58 address of the new account
+   * @returns {this}
    */
-  setFrozenBalance(amount: string): this {
-    this._frozenBalance = amount;
-    return this;
-  }
-
-  /**
-   * Set the resource type
-   *
-   * @param resource resource type to freeze
-   * @returns the builder with the new parameter set
-   */
-  setResource(resource: string): this {
-    this.validateResource(resource);
-    this._resource = resource;
+  setAccountAddress(address: { address: string }): this {
+    this.validateAddress(address);
+    this._accountAddress = getHexAddressFromBase58Address(address.address);
     return this;
   }
 
@@ -75,15 +67,7 @@ export class FreezeBalanceTxBuilder extends TransactionBuilder {
     }
   }
 
-  /**
-   * Initialize the transaction builder fields using the transaction data
-   *
-   * @param {TransactionReceipt | string} rawTransaction the transaction data in a string or JSON format
-   * @returns {FreezeBalanceTxBuilder} the builder with the transaction data set
-   */
   initBuilder(rawTransaction: TransactionReceipt | string): this {
-    this.transaction = this.fromImplementation(rawTransaction);
-    this.transaction.setTransactionType(this.transactionType);
     this.validateRawTransaction(rawTransaction);
     const tx = this.fromImplementation(rawTransaction);
     this.transaction = tx;
@@ -93,36 +77,32 @@ export class FreezeBalanceTxBuilder extends TransactionBuilder {
     this._refBlockHash = rawData.ref_block_hash;
     this._expiration = rawData.expiration;
     this._timestamp = rawData.timestamp;
-    this.transaction.setTransactionType(TransactionType.StakingActivate);
-    const contractCall = rawData.contract[0] as FreezeBalanceV2Contract;
-    this.initFreezeContractCall(contractCall);
+    this.transaction.setTransactionType(this.transactionType);
+    const contractCall = rawData.contract[0] as AccountCreateContract;
+    this.initAccountCreateContractCall(contractCall);
     return this;
   }
 
   /**
-   * Initialize the freeze contract call specific data
+   * Initialize the account create contract call specific data.
+   * Addresses stored in the receipt are hex (set by createAccountCreateTransaction).
    *
-   * @param {FreezeBalanceV2Contract} freezeContractCall object with freeze txn data
+   * @param {AccountCreateContract} accountCreateContractCall object with account create contract data
    */
-  protected initFreezeContractCall(freezeContractCall: FreezeBalanceV2Contract): void {
-    const { resource, owner_address, frozen_balance } = freezeContractCall.parameter.value;
+  protected initAccountCreateContractCall(accountCreateContractCall: AccountCreateContract): void {
+    const { owner_address, account_address } = accountCreateContractCall.parameter.value;
     if (owner_address) {
+      // owner_address stored in receipt is hex; source() expects Base58
       this.source({ address: getBase58AddressFromHex(owner_address) });
     }
-
-    if (resource) {
-      this.setResource(resource);
-    }
-
-    if (frozen_balance) {
-      this.setFrozenBalance(frozen_balance.toString());
+    if (account_address) {
+      // account_address stored in receipt is hex; store directly
+      this._accountAddress = account_address;
     }
   }
 
   protected async buildImplementation(): Promise<Transaction> {
-    this.createFreezeBalanceTransaction();
-    /** @inheritdoccreateTransaction */
-    // This method must be extended on child classes
+    this.createAccountCreateTransaction();
     if (this._signingKeys.length > 0) {
       this.applySignatures();
     }
@@ -134,59 +114,45 @@ export class FreezeBalanceTxBuilder extends TransactionBuilder {
   }
 
   /**
-   * Helper method to create the freeze balance transaction
+   * Helper method to create the account create transaction
    */
-  private createFreezeBalanceTransaction(): void {
-    const rawDataHex = this.getFreezeRawDataHex();
+  private createAccountCreateTransaction(): void {
+    const rawDataHex = this.getAccountCreateTxRawDataHex();
     const rawData = decodeTransaction(rawDataHex);
-    const contract = rawData.contract[0] as FreezeBalanceV2Contract;
+    const contract = rawData.contract[0] as AccountCreateContract;
     const contractParameter = contract.parameter;
     contractParameter.value.owner_address = this._ownerAddress.toLocaleLowerCase();
-    contractParameter.value.frozen_balance = Number(this._frozenBalance);
-    contractParameter.value.resource = this._resource;
-    contractParameter.type_url = 'type.googleapis.com/protocol.FreezeBalanceV2Contract';
-    contract.type = 'FreezeBalanceV2Contract';
+    contractParameter.value.account_address = this._accountAddress.toLocaleLowerCase();
+    contractParameter.type_url = ACCOUNT_CREATE_TYPE_URL;
+    contract.type = 'AccountCreateContract';
     const hexBuffer = Buffer.from(rawDataHex, 'hex');
     const id = createHash('sha256').update(hexBuffer).digest('hex');
-    const txRecip: TransactionReceipt = {
+    const txReceipt: TransactionReceipt = {
       raw_data: rawData,
       raw_data_hex: rawDataHex,
       txID: id,
       signature: this.transaction.signature,
     };
-    this.transaction = new Transaction(this._coinConfig, txRecip);
+    this.transaction = new Transaction(this._coinConfig, txReceipt);
   }
 
   /**
-   * Helper method to get the freeze balance transaction raw data hex
+   * Helper method to get the account create transaction raw data hex
    *
-   * @returns {string} the freeze balance transaction raw data hex
+   * @returns {string} the account create transaction raw data hex
    */
-  private getFreezeRawDataHex(): string {
-    const rawContract: {
-      ownerAddress: number[];
-      frozenBalance: string;
-      resource?: string;
-    } = {
+  private getAccountCreateTxRawDataHex(): string {
+    const rawContract = {
       ownerAddress: getByteArrayFromHexAddress(this._ownerAddress),
-      frozenBalance: this._frozenBalance,
+      accountAddress: getByteArrayFromHexAddress(this._accountAddress),
     };
-
-    // Only include resource if it's not BANDWIDTH (the default value = 0)
-    // In protobuf3, default values are typically not encoded in the wire format.
-    // TRON's node re-serializes transactions and omits default values,
-    // so we must match that behavior to ensure consistent transaction hashes.
-    if (this._resource !== 'BANDWIDTH') {
-      rawContract.resource = this._resource;
-    }
-
-    const freezeContract = protocol.FreezeBalanceV2Contract.fromObject(rawContract);
-    const freezeContractBytes = protocol.FreezeBalanceV2Contract.encode(freezeContract).finish();
+    const accountCreateContract = protocol.AccountCreateContract.fromObject(rawContract);
+    const accountCreateContractBytes = protocol.AccountCreateContract.encode(accountCreateContract).finish();
     const txContract = {
-      type: ContractType.FreezeBalanceV2Contract,
+      type: ContractType.AccountCreateContract,
       parameter: {
-        value: freezeContractBytes,
-        type_url: 'type.googleapis.com/protocol.FreezeBalanceV2Contract',
+        value: accountCreateContractBytes,
+        type_url: ACCOUNT_CREATE_TYPE_URL,
       },
     };
     const raw = {
@@ -223,29 +189,24 @@ export class FreezeBalanceTxBuilder extends TransactionBuilder {
    * Validates the transaction
    *
    * @param {Transaction} transaction - The transaction to validate
-   * @throws {InvalidTransactionError} when the transaction is invalid
+   * @throws {BuildTransactionError} when the transaction is invalid
    */
   validateTransaction(transaction: Transaction): void {
-    this.validateFreezeTransactionFields();
+    this.validateAccountCreateTransactionFields();
   }
 
   /**
-   * Validates if the transaction is a valid freeze transaction
+   * Validates if the transaction is a valid account create transaction
    *
-   * @param {TransactionReceipt} transaction - The transaction to validate
    * @throws {BuildTransactionError} when the transaction is invalid
    */
-  private validateFreezeTransactionFields(): void {
-    if (!this._frozenBalance) {
-      throw new BuildTransactionError('Missing parameter: frozenBalance');
-    }
-
+  private validateAccountCreateTransactionFields(): void {
     if (!this._ownerAddress) {
       throw new BuildTransactionError('Missing parameter: source');
     }
 
-    if (!this._resource) {
-      throw new BuildTransactionError('Missing parameter: resource');
+    if (!this._accountAddress) {
+      throw new BuildTransactionError('Missing parameter: account address');
     }
 
     if (!this._refBlockBytes || !this._refBlockHash) {

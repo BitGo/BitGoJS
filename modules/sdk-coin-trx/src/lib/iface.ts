@@ -51,7 +51,8 @@ export interface RawData {
     | UnfreezeBalanceV2Contract[]
     | WithdrawExpireUnfreezeContract[]
     | WithdrawBalanceContract[]
-    | ResourceManagementContract[];
+    | ResourceManagementContract[]
+    | AccountCreateContract[];
 }
 
 export interface Value {
@@ -361,6 +362,38 @@ export interface ResourceManagementContractParameter {
       receiver_address: string;
     };
   };
+}
+
+/**
+ * AccountCreate contract value fields
+ */
+export interface AccountCreateValueFields {
+  owner_address: string;
+  account_address: string;
+}
+
+/**
+ * AccountCreate contract value interface
+ */
+export interface AccountCreateValue {
+  type_url?: string;
+  value: AccountCreateValueFields;
+}
+
+/**
+ * AccountCreate contract interface
+ */
+export interface AccountCreateContract {
+  parameter: AccountCreateValue;
+  type?: string;
+}
+
+/**
+ * AccountCreate contract decoded interface
+ */
+export interface AccountCreateContractDecoded {
+  ownerAddress?: string;
+  accountAddress?: string;
 }
 
 /**
