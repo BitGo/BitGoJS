@@ -1247,7 +1247,7 @@ export async function handleKeychainChangePassword(
     );
   }
 
-  const updatedKeychain = coin.keychains().updateSingleKeychainPassword({
+  const updatedKeychain = await coin.keychains().updateSingleKeychainPasswordAsync({
     keychain,
     oldPassword,
     newPassword,
