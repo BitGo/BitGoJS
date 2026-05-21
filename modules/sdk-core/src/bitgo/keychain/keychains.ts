@@ -24,6 +24,7 @@ import {
   UpdateSingleKeychainPasswordOptions,
 } from './iKeychains';
 import { BitGoKeyFromOvcShares, BitGoToOvcJSON, OvcToBitGoJSON } from './ovcJsonCodec';
+import { EncryptionVersion } from '../../api';
 
 export class Keychains implements IKeychains {
   private readonly bitgo: BitGoBase;
@@ -113,7 +114,7 @@ export class Keychains implements IKeychains {
           continue;
         }
         try {
-          const updatedKeychain = this.updateSingleKeychainPassword({
+          const updatedKeychain = await this.updateSingleKeychainPasswordAsync({
             keychain: key,
             oldPassword: params.oldPassword,
             newPassword: params.newPassword,
@@ -145,12 +146,14 @@ export class Keychains implements IKeychains {
   }
 
   /**
-   * Update the password used to decrypt a single keychain
+   * TODO: Deprecate this function in favor of updateSingleKeychainPasswordAsync once v2 encryption is default
+   * Update the password used to decrypt a single keychain.
+   * Handles v1 (SJCL) envelopes only. For v2 (Argon2id) support use {@link updateSingleKeychainPasswordAsync}.
    * @param params
    * @param params.keychain - The keychain whose password should be updated
    * @param params.oldPassword - The old password used for encrypting the key
    * @param params.newPassword - The new password to be used for encrypting the key
-   * @returns {object}
+   * @returns {Keychain}
    */
   updateSingleKeychainPassword(params: UpdateSingleKeychainPasswordOptions = {}): Keychain {
     if (!_.isString(params.oldPassword)) {
@@ -173,6 +176,65 @@ export class Keychains implements IKeychains {
     } catch (e) {
       // catching an error here means that the password was incorrect or, less likely, the input to decrypt is corrupted
       throw new Error('password used to decrypt keychain private key is incorrect');
+    }
+  }
+
+  /**
+   * Helper function to determine the encryption version of a ciphertext by parsing it as JSON and checking the "v" field.
+   * Return undefined if the ciphertext is not a valid JSON or does not contain a supported "v" field.
+   */
+  private getEncryptionVersion(ciphertext: string): EncryptionVersion | undefined {
+    try {
+      const envelope = JSON.parse(ciphertext);
+      switch (envelope.v) {
+        case 1:
+          return 1;
+        case 2:
+          return 2;
+        default:
+          return undefined;
+      }
+    } catch (_) {
+      return undefined;
+    }
+  }
+
+  /**
+   * Update the password used to decrypt a single keychain, with support for v2 (Argon2id) envelopes.
+   * Automatically detects and preserves the envelope version — a v2-encrypted key stays v2 after the password change.
+   * @param params
+   * @param params.keychain - The keychain whose password should be updated
+   * @param params.oldPassword - The old password used for encrypting the key
+   * @param params.newPassword - The new password to be used for encrypting the key
+   * @returns {Promise<Keychain>}
+   */
+  async updateSingleKeychainPasswordAsync(params: UpdateSingleKeychainPasswordOptions = {}): Promise<Keychain> {
+    if (!_.isString(params.oldPassword)) {
+      throw new Error('expected old password to be a string');
+    }
+
+    if (!_.isString(params.newPassword)) {
+      throw new Error('expected new password to be a string');
+    }
+
+    if (!_.isObject(params.keychain) || !_.isString(params.keychain.encryptedPrv)) {
+      throw new Error('expected keychain to be an object with an encryptedPrv property');
+    }
+
+    const oldEncryptedPrv = params.keychain.encryptedPrv;
+    try {
+      const decryptedPrv = await this.bitgo.decryptAsync({ input: oldEncryptedPrv, password: params.oldPassword });
+      const encryptionVersion = this.getEncryptionVersion(oldEncryptedPrv);
+      const newEncryptedPrv = await this.bitgo.encryptAsync({
+        input: decryptedPrv,
+        password: params.newPassword,
+        encryptionVersion,
+      });
+      return _.assign({}, params.keychain, { encryptedPrv: newEncryptedPrv });
+    } catch (e) {
+      // catching an error here means that the password was incorrect or, less likely, the input to decrypt is corrupted
+      const errorDetail = e instanceof Error ? e.message : String(e);
+      throw new Error(`failed to update keychain password: ${errorDetail}`);
     }
   }
 
@@ -359,17 +421,17 @@ export class Keychains implements IKeychains {
       throw new Error('failed to get recovery info');
     }
 
-    const decryptedWalletPassphrase = this.bitgo.decrypt({
+    const decryptedWalletPassphrase = await this.bitgo.decryptAsync({
       input: params.encryptedMaterial.encryptedWalletPassphrase,
       password: recoveryInfo.passcodeEncryptionCode,
     });
 
-    const decryptedUserKey = this.bitgo.decrypt({
+    const decryptedUserKey = await this.bitgo.decryptAsync({
       input: params.encryptedMaterial.encryptedUserKey,
       password: decryptedWalletPassphrase,
     });
 
-    const decryptedBackupKey = this.bitgo.decrypt({
+    const decryptedBackupKey = await this.bitgo.decryptAsync({
       input: params.encryptedMaterial.encryptedBackupKey,
       password: decryptedWalletPassphrase,
     });
