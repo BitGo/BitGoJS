@@ -9,6 +9,10 @@ import { EXPORT_IN_C } from '../resources/transactionData/exportInC';
 import { EXPORT_IN_P } from '../resources/transactionData/exportInP';
 import { IMPORT_IN_P } from '../resources/transactionData/importInP';
 import { IMPORT_IN_C } from '../resources/transactionData/importInC';
+import {
+  MULTISIG_DELEGATION_FULLY_SIGNED_TX_HEX,
+  MULTISIG_DELEGATION_PARAMS,
+} from '../resources/transactionData/multisigDelegationTx';
 import { HalfSignedAccountTransaction, TransactionType, MPCAlgorithm } from '@bitgo/sdk-core';
 import { secp256k1 } from '@flarenetwork/flarejs';
 import { FlrpContext } from '@bitgo/public-types';
@@ -953,6 +957,22 @@ describe('Flrp test cases', function () {
           recipients: [{ address: '0x96993BAEb6AaE2e06BF95F144e2775D4f8efbD35', amount: '1' }],
           type: 'ImportToC',
           locktime: 0,
+        };
+
+        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        isVerified.should.equal(true);
+      });
+
+      it('should verify delegation transaction when txParams.type is the "stake" intent alias', async () => {
+        const txPrebuild = { txHex: MULTISIG_DELEGATION_FULLY_SIGNED_TX_HEX, txInfo: {} };
+        const txParams = {
+          type: 'stake', // intent-type alias used by wallet-platform; must normalise to AddPermissionlessDelegator
+          stakingOptions: {
+            nodeID: MULTISIG_DELEGATION_PARAMS.nodeID,
+            amount: MULTISIG_DELEGATION_PARAMS.stakeAmount,
+            durationSeconds: MULTISIG_DELEGATION_PARAMS.duration * 24 * 60 * 60,
+            rewardAddress: MULTISIG_DELEGATION_PARAMS.rewardAddress,
+          },
         };
 
         const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
