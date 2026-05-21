@@ -200,6 +200,9 @@ export { Stt };
 import * as Soneium from '@bitgo/sdk-coin-soneium';
 export { Soneium };
 
+import * as Starknet from '@bitgo/sdk-coin-starknet';
+export { Starknet };
+
 import * as Vet from '@bitgo/sdk-coin-vet';
 export { Vet };
 
@@ -302,6 +305,8 @@ const coinBuilderMap = {
   ttempo: Tempo.Tip20TransactionBuilder,
   icp: Icp.TransactionBuilder,
   ticp: Icp.TransactionBuilder,
+  starknet: Starknet.TransactionBuilder,
+  tstarknet: Starknet.TransactionBuilder,
   baby: Baby.TransactionBuilder,
   tbaby: Baby.TransactionBuilder,
   cronos: Cronos.TransactionBuilder,

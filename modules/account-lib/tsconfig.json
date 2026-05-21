@@ -116,6 +116,9 @@
       "path": "../sdk-coin-soneium"
     },
     {
+      "path": "../sdk-coin-starknet"
+    },
+    {
       "path": "../sdk-coin-stx"
     },
     {
