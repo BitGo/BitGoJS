@@ -197,6 +197,62 @@ describe('Wallet - TSS Address Verification with Derivation Prefix', function ()
     });
   });
 
+  describe('MPCv2 Wallet - multisigTypeVersion threading', function () {
+    beforeEach(function () {
+      mockWalletData.multisigTypeVersion = 'MPCv2';
+      wallet = new Wallet(mockBitGo, mockBaseCoin, mockWalletData);
+    });
+
+    it('should thread multisigTypeVersion MPCv2 into verificationData', async function () {
+      const mockAddressResponse = {
+        id: 'address-id',
+        address: '6FjshVqwmDH74wfxkZrJaRGEjTeJQL4ViL6X18VXUNAY',
+        index: 0,
+        coinSpecific: {},
+      };
+
+      mockBitGo.post.returns({
+        send: sinon.stub().returns({
+          result: sinon.stub().resolves(mockAddressResponse),
+        }),
+      });
+
+      mockBaseCoin.isWalletAddress.resolves(true);
+
+      await wallet.createAddress({ chain: 0 });
+
+      const verificationCall = mockBaseCoin.isWalletAddress.getCall(0);
+      const verificationData = verificationCall.args[0];
+      assert.strictEqual(verificationData.multisigTypeVersion, 'MPCv2');
+    });
+
+    it('should not set multisigTypeVersion when wallet does not have it', async function () {
+      mockWalletData.multisigTypeVersion = undefined;
+      wallet = new Wallet(mockBitGo, mockBaseCoin, mockWalletData);
+
+      const mockAddressResponse = {
+        id: 'address-id',
+        address: '6FjshVqwmDH74wfxkZrJaRGEjTeJQL4ViL6X18VXUNAY',
+        index: 0,
+        coinSpecific: {},
+      };
+
+      mockBitGo.post.returns({
+        send: sinon.stub().returns({
+          result: sinon.stub().resolves(mockAddressResponse),
+        }),
+      });
+
+      mockBaseCoin.isWalletAddress.resolves(true);
+
+      await wallet.createAddress({ chain: 0 });
+
+      const verificationCall = mockBaseCoin.isWalletAddress.getCall(0);
+      const verificationData = verificationCall.args[0];
+      assert.strictEqual(verificationData.multisigTypeVersion, undefined);
+    });
+  });
+
   describe('Edge Cases', function () {
     it('should handle wallet without USER keychain', async function () {
       // Set keys array to only have backup keychain (no USER keychain at index 0)
