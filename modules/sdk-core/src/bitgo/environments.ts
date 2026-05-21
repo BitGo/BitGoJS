@@ -312,6 +312,9 @@ const mainnetBase: EnvironmentTemplate = {
     hemieth: {
       baseUrl: 'https://explorer.hemi.xyz/api',
     },
+    katanaeth: {
+      baseUrl: 'https://katanascan.com/api',
+    },
     inketh: {
       baseUrl: 'https://explorer.inkonchain.com/api',
     },
@@ -539,6 +542,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     hemieth: {
       baseUrl: 'https://testnet.explorer.hemi.xyz/api',
+    },
+    tkatanaeth: {
+      baseUrl: 'https://explorer-bokuto.katanarpc.com/api',
     },
     tinketh: {
       baseUrl: 'https://explorer-sepolia.inkonchain.com/api',
