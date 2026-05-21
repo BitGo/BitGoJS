@@ -790,6 +790,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     let txOrMessageToSign;
     let derivationPath;
     let bufferContent;
+    let serializedTxHex: string | undefined;
     const userGpgKey = await generateGPGKeyPair('secp256k1');
     const bitgoGpgPubKey = await this.pickBitgoPubGpgKeyForSigning(true, params.reqId, txRequest.enterpriseId);
 
@@ -812,11 +813,16 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         );
       }
 
-      // For ICP transactions, the HSM signs the serializedTxHex, while the user signs the signableHex separately.
-      // Verification cannot be performed directly on the signableHex alone. However, we can parse the serializedTxHex
-      // to regenerate the signableHex and compare it against the provided value for verification.
-      // In contrast, for other coin families, verification is typically done using just the signableHex.
-      if (this.baseCoin.getConfig().family === 'icp') {
+      // For ICP and Avalanche atomic transactions, signableHex is a digest (not
+      // a parseable transaction).  Pass serializedTxHex so verifyTransaction can
+      // parse the full transaction bytes.
+      // - ICP: signableHex is a hash; serializedTxHex is the CBOR-encoded tx.
+      // - Avalanche atomic (FLRP/FLR cross-chain): signableHex is SHA-256(txBody);
+      //   serializedTxHex is the PVM/EVM atomic tx (codec prefix 0x0000).
+      // For all other coins, signableHex IS the unsigned transaction (e.g. RLP bytes).
+      const isIcp = this.baseCoin.getConfig().family === 'icp';
+      const isAvalancheAtomic = unsignedTx.serializedTxHex && unsignedTx.serializedTxHex.startsWith('0000');
+      if (isIcp || isAvalancheAtomic) {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
           txParams: params.txParams || { recipients: [] },
@@ -833,6 +839,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       }
       txOrMessageToSign = unsignedTx.signableHex;
       derivationPath = unsignedTx.derivationPath;
+      serializedTxHex = unsignedTx.serializedTxHex;
       bufferContent = Buffer.from(txOrMessageToSign, 'hex');
     } else if (requestType === RequestType.message) {
       txOrMessageToSign = txRequest.messages![0].messageEncoded;
@@ -842,14 +849,24 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       throw new Error('Invalid request type');
     }
 
-    let hash: Hash;
-    try {
-      hash = this.baseCoin.getHashFunction();
-    } catch (err) {
-      hash = createKeccakHash('keccak256') as Hash;
+    // For Avalanche atomic transactions (cross-chain export/import between
+    // C-chain and P-chain), signableHex is already SHA-256(txBody) — a 32-byte
+    // pre-hashed digest.  Use it directly as the DKLS message hash instead of
+    // applying the coin's hash function (keccak256 for EVM coins).
+    // Same logic as getHashStringAndDerivationPath (external signer path).
+    let hashBuffer: Buffer;
+    if (serializedTxHex && serializedTxHex.startsWith('0000')) {
+      hashBuffer = bufferContent;
+      assert(hashBuffer.length === 32, `Avalanche pre-hashed signableHex must be 32 bytes, got ${hashBuffer.length}`);
+    } else {
+      let hash: Hash;
+      try {
+        hash = this.baseCoin.getHashFunction();
+      } catch (err) {
+        hash = createKeccakHash('keccak256') as Hash;
+      }
+      hashBuffer = hash.update(bufferContent).digest();
     }
-    // check what the encoding is supposed to be for message
-    const hashBuffer = hash.update(bufferContent).digest();
     const otherSigner = new DklsDsg.Dsg(
       userKeyShare,
       params.mpcv2PartyId !== undefined ? params.mpcv2PartyId : 0,

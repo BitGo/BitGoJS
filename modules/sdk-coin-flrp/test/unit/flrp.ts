@@ -959,5 +959,94 @@ describe('Flrp test cases', function () {
         isVerified.should.equal(true);
       });
     });
+
+    describe('verifyTransaction with TSS wallet (Avalanche atomic)', () => {
+      it('should verify TSS ExportInP when passed serializedTxHex (not signableHex)', async () => {
+        // The SDK's signRequestBase now passes serializedTxHex (the full
+        // PVM transaction bytes) to verifyTransaction for Avalanche atomic txs,
+        // instead of signableHex (a 32-byte SHA-256 hash that can't be parsed).
+        // This test confirms verifyTransaction succeeds with the actual tx bytes.
+        const txHex = await buildUnsignedExportInP();
+        const txPrebuild = { txHex, txInfo: {} };
+        const txParams = {
+          recipients: [{ address: ON_CHAIN_TEST_WALLET.user.pChainAddress, amount: '30000000' }],
+          type: 'Export',
+          locktime: 0,
+        };
+
+        const isVerified = await basecoin.verifyTransaction({
+          txParams,
+          txPrebuild,
+          walletType: 'tss',
+        });
+        isVerified.should.equal(true);
+      });
+
+      it('should verify TSS ImportInP when passed serializedTxHex', async () => {
+        const txHex = await buildUnsignedImportInP();
+        const txPrebuild = { txHex, txInfo: {} };
+        const txParams = {
+          recipients: [{ address: ON_CHAIN_TEST_WALLET.user.pChainAddress, amount: '1' }],
+          type: 'Import',
+          locktime: 0,
+        };
+
+        const isVerified = await basecoin.verifyTransaction({
+          txParams,
+          txPrebuild,
+          walletType: 'tss',
+        });
+        isVerified.should.equal(true);
+      });
+
+      it('should verify TSS ImportInC when passed serializedTxHex', async () => {
+        const txHex = await buildUnsignedImportInC();
+        const txPrebuild = { txHex, txInfo: {} };
+        const txParams = {
+          recipients: [{ address: '0x96993BAEb6AaE2e06BF95F144e2775D4f8efbD35', amount: '1' }],
+          type: 'ImportToC',
+          locktime: 0,
+        };
+
+        const isVerified = await basecoin.verifyTransaction({
+          txParams,
+          txPrebuild,
+          walletType: 'tss',
+        });
+        isVerified.should.equal(true);
+      });
+
+      it('should verify signablePayload is SHA-256 of serialized tx (sandbox-verified)', async () => {
+        // unsignedTx.toBytes() → sha256 → MPC.sign()
+        // The signablePayload must be exactly 32 bytes (SHA-256 digest).
+        // This is what the WP stores as signableHex and what ecdsaMPCv2.ts
+        // must use directly (no keccak256 re-hashing).
+        const txHex = await buildUnsignedExportInP();
+        const payload = await basecoin.getSignablePayload(txHex);
+
+        // signablePayload is SHA-256(txBody) — always 32 bytes
+        assert.strictEqual(payload.length, 32, 'signablePayload must be 32 bytes (SHA-256)');
+
+        // The serializedTxHex (after stripping 0x) starts with Avalanche codec '0000'
+        // This is how ecdsaMPCv2.ts detects atomic transactions
+        const rawHex = txHex.startsWith('0x') ? txHex.substring(2) : txHex;
+        assert.ok(rawHex.startsWith('0000'), 'Avalanche atomic tx must start with codec prefix 0000');
+      });
+
+      it('should reject a SHA-256 hash as txHex (proves the fix is needed)', async () => {
+        const sha256Hash = 'a'.repeat(64);
+        const txPrebuild = { txHex: sha256Hash, txInfo: {} };
+        const txParams = { recipients: [], type: 'Export', locktime: 0 };
+
+        let threw = false;
+        try {
+          await basecoin.verifyTransaction({ txParams, txPrebuild, walletType: 'tss' });
+        } catch (e) {
+          threw = true;
+          assert(e.message.includes('Invalid transaction'), `Expected 'Invalid transaction', got: ${e.message}`);
+        }
+        assert(threw, 'Expected verifyTransaction to throw for SHA-256 hash as txHex');
+      });
+    });
   });
 });
