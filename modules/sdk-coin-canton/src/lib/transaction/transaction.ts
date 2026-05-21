@@ -8,6 +8,7 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
+  AllocationRequest,
   CantonPrepareCommandResponse,
   CosignDelegationProposal,
   MultiHashSignature,
@@ -26,6 +27,7 @@ export class Transaction extends BaseTransaction {
   private _signerFingerprint: string;
   private _acknowledgeData: TransferAcknowledge;
   private _cosignDelegationProposalData: CosignDelegationProposal;
+  private _allocationRequestData: AllocationRequest;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -49,6 +51,10 @@ export class Transaction extends BaseTransaction {
 
   set cosignDelegationProposalData(data: CosignDelegationProposal) {
     this._cosignDelegationProposalData = data;
+  }
+
+  set allocationRequestData(data: AllocationRequest) {
+    this._allocationRequestData = data;
   }
 
   get id(): string {
@@ -97,6 +103,17 @@ export class Transaction extends BaseTransaction {
         txType: TransactionType[this._type],
         submissionId: this.id,
         cosignDelegationProposalData: this._cosignDelegationProposalData,
+      };
+      return Buffer.from(JSON.stringify(minData)).toString('base64');
+    }
+    if (this._type === TransactionType.AllocationRequest) {
+      if (!this._allocationRequestData) {
+        throw new InvalidTransactionError('AllocationRequestData is not set');
+      }
+      const minData: TransactionBroadcastData = {
+        txType: TransactionType[this._type],
+        submissionId: this.id,
+        allocationRequestData: this._allocationRequestData,
       };
       return Buffer.from(JSON.stringify(minData)).toString('base64');
     }
@@ -168,6 +185,13 @@ export class Transaction extends BaseTransaction {
       result.cosignDelegationProposalData = this._cosignDelegationProposalData;
       return result;
     }
+    if (this._type === TransactionType.AllocationRequest) {
+      if (!this._allocationRequestData) {
+        throw new InvalidTransactionError('AllocationRequestData is not set');
+      }
+      result.allocationRequestData = this._allocationRequestData;
+      return result;
+    }
     if (!this._prepareCommand || !this._prepareCommand.preparedTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
@@ -191,7 +215,11 @@ export class Transaction extends BaseTransaction {
   }
 
   get signablePayload(): Buffer {
-    if (this._type === TransactionType.TransferAcknowledge || this._type === TransactionType.CosignDelegationProposal) {
+    if (
+      this._type === TransactionType.TransferAcknowledge ||
+      this._type === TransactionType.CosignDelegationProposal ||
+      this._type === TransactionType.AllocationRequest
+    ) {
       return Buffer.from(DUMMY_HASH, 'base64');
     }
     if (!this._prepareCommand) {
@@ -212,6 +240,10 @@ export class Transaction extends BaseTransaction {
       } else if (this.type === TransactionType.CosignDelegationProposal) {
         if (decoded.cosignDelegationProposalData) {
           this.cosignDelegationProposalData = decoded.cosignDelegationProposalData;
+        }
+      } else if (this.type === TransactionType.AllocationRequest) {
+        if (decoded.allocationRequestData) {
+          this.allocationRequestData = decoded.allocationRequestData;
         }
       } else {
         if (decoded.prepareCommandResponse) {
