@@ -22,6 +22,7 @@ export interface TxData {
   amount: string;
   acknowledgeData?: TransferAcknowledge;
   cosignDelegationProposalData?: CosignDelegationProposal;
+  allocationRequestData?: AllocationRequest;
   memoId?: string;
   token?: string;
 }
@@ -114,6 +115,7 @@ export interface PartySignature {
 export interface TransactionBroadcastData {
   acknowledgeData?: TransferAcknowledge;
   cosignDelegationProposalData?: CosignDelegationProposal;
+  allocationRequestData?: AllocationRequest;
   prepareCommandResponse?: CantonPrepareCommandResponse;
   txType: string;
   preparedTransaction?: string;
@@ -183,5 +185,27 @@ export interface CantonAllocationAllocateRequest {
   settleBefore: string;
   receiverPartyId: string;
   senderPartyId: string;
+  comment?: string;
+}
+
+/**
+ * Internal (non-signable) data for an AllocationRequest txRequest.
+ * Surfaces the full DvP trade leg to the allocating party so they can
+ * review and then submit an AllocationAllocate.
+ */
+export interface AllocationRequest {
+  updateId: string;
+  operatorId: string;
+  contractId: string;
+  tradeId: string;
+  transferLegId: string;
+  senderPartyId: string;
+  receiverPartyId: string;
+  amount: number;
+  token: string;
+  receiveToken: string;
+  receiveAmount: number;
+  allocateBefore: string;
+  settleBefore: string;
   comment?: string;
 }
