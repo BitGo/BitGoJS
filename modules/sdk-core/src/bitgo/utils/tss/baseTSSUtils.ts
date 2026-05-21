@@ -41,6 +41,7 @@ import {
   TssSignTxRequestParamsWithPrv,
   TxRequest,
   TxRequestVersion,
+  isV2Envelope,
 } from './baseTypes';
 import { GShare, SignShare } from '../../../account-lib/mpc/tss';
 import { RequestTracer } from '../util';
@@ -649,5 +650,85 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   isPendingApprovalTxRequestFull(txRequest: TxRequest): boolean {
     const { apiVersion, state } = txRequest;
     return apiVersion === 'full' && 'pendingApproval' === state;
+  }
+
+  /**
+   * Get the signable hex, derivation path, and serialized tx hex from a full single-transaction request.
+   * @param {TxRequest} txRequest - the transaction request object
+   * @returns {{ signableHex: string; derivationPath: string; serializedTxHex: string | undefined }} - the signable hex, derivation path, and serialized tx hex
+   */
+  protected getSignableHexAndDerivationPath(
+    txRequest: TxRequest,
+    missingTransactionsMessage = 'createOfflineShare requires exactly one transaction in txRequest'
+  ): {
+    signableHex: string;
+    derivationPath: string;
+    serializedTxHex: string | undefined;
+  } {
+    assert(txRequest.transactions && txRequest.transactions.length === 1, missingTransactionsMessage);
+    const unsignedTx = txRequest.transactions[0].unsignedTx;
+    assert(unsignedTx, 'Missing unsignedTx in transactions');
+    assert(unsignedTx.signableHex, 'Missing signableHex in unsignedTx');
+    assert(unsignedTx.derivationPath, 'Missing derivationPath in unsignedTx');
+    return {
+      signableHex: unsignedTx.signableHex,
+      derivationPath: unsignedTx.derivationPath,
+      serializedTxHex: unsignedTx.serializedTxHex,
+    };
+  }
+
+  /**
+   * Gets the BitGo and user GPG keys from the BitGo public GPG key and the encrypted user GPG private key.
+   * @param {string} bitgoPublicGpgKey - the BitGo public GPG key
+   * @param {string} encryptedUserGpgPrvKey - the encrypted user GPG private key
+   * @param {string} walletPassphrase - the wallet passphrase
+   * @param {string} adata - the additional data to validate the GPG keys
+   * @param {string} userGpgKeyDomainSeparator - the domain separator expected in the encrypted GPG key adata
+   * @returns {Promise<{ bitgoGpgKey: openpgp.Key; userGpgPrvKey: openpgp.PrivateKey }>} - the BitGo and user GPG keys
+   */
+  protected async getBitgoAndUserGpgKeys(
+    bitgoPublicGpgKey: string,
+    encryptedUserGpgPrvKey: string,
+    walletPassphrase: string,
+    adata: string,
+    userGpgKeyDomainSeparator: string
+  ): Promise<{
+    bitgoGpgKey: openpgp.Key;
+    userGpgPrvKey: openpgp.PrivateKey;
+  }> {
+    const bitgoGpgKey = await openpgp.readKey({ armoredKey: bitgoPublicGpgKey });
+
+    const decryptedGpgPrvKey = isV2Envelope(encryptedUserGpgPrvKey)
+      ? await this.bitgo.decryptAsync({ input: encryptedUserGpgPrvKey, password: walletPassphrase })
+      : this.bitgo.decrypt({ input: encryptedUserGpgPrvKey, password: walletPassphrase });
+
+    if (adata) {
+      this.validateAdata(adata, encryptedUserGpgPrvKey, userGpgKeyDomainSeparator);
+    }
+    const userGpgPrvKey = await openpgp.readPrivateKey({ armoredKey: decryptedGpgPrvKey });
+    return { bitgoGpgKey, userGpgPrvKey };
+  }
+
+  /**
+   * Validates encryption additional authenticated data against the ciphertext envelope.
+   * @param adata string
+   * @param cyphertext string
+   * @param roundDomainSeparator string
+   * @throws {Error} if the adata or cyphertext is invalid
+   */
+  protected validateAdata(adata: string, cyphertext: string, roundDomainSeparator: string): void {
+    let cypherJson;
+    try {
+      cypherJson = JSON.parse(cyphertext);
+    } catch (e) {
+      throw new Error('Failed to parse cyphertext to JSON, got: ' + cyphertext);
+    }
+    // using decodeURIComponent to handle special characters
+    if (
+      decodeURIComponent(cypherJson.adata) !== decodeURIComponent(`${roundDomainSeparator}:${adata}`) &&
+      decodeURIComponent(cypherJson.adata) !== decodeURIComponent(adata)
+    ) {
+      throw new Error('Adata does not match cyphertext adata');
+    }
   }
 }

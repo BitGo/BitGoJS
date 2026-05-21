@@ -42,6 +42,10 @@ import { BaseEddsaUtils } from './base';
 import { EddsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './eddsaMPCv2KeyGenSender';
 
 export class EddsaMPCv2Utils extends BaseEddsaUtils {
+  // TODO(WCI-378): call the MPS_DSG_SIGNING_ROUND1/2_STATE in createOfflineRoundShare handlers
+  // private static readonly MPS_DSG_SIGNING_ROUND1_STATE = 'MPS_DSG_SIGNING_ROUND1_STATE';
+  // private static readonly MPS_DSG_SIGNING_ROUND2_STATE = 'MPS_DSG_SIGNING_ROUND2_STATE';
+
   /** @inheritdoc */
   async createKeychains(params: {
     passphrase: string;
