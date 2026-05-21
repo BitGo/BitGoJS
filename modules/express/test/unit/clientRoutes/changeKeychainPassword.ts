@@ -16,7 +16,7 @@ describe('Change Wallet Password', function () {
   const newPassword = 'newPasswordString';
 
   const keychainBaseCoinStub = {
-    keychains: () => ({ updateSingleKeychainPassword: () => Promise.resolve({ result: 'stubbed' }) }),
+    keychains: () => ({ updateSingleKeychainPasswordAsync: () => Promise.resolve({ result: 'stubbed' }) }),
   };
 
   it('should change wallet password', async function () {
@@ -27,7 +27,7 @@ describe('Change Wallet Password', function () {
     const coinStub = {
       keychains: () => ({
         get: () => Promise.resolve(keychainStub),
-        updateSingleKeychainPassword: () => ({ result: 'stubbed' }),
+        updateSingleKeychainPasswordAsync: () => Promise.resolve({ result: 'stubbed' }),
       }),
       url: () => 'url',
     };
@@ -82,7 +82,7 @@ describe('Change Wallet Password', function () {
       const coinStub = {
         keychains: () => ({
           get: () => Promise.resolve(keychainStub),
-          updateSingleKeychainPassword: () => ({ result: 'stubbed' }),
+          updateSingleKeychainPasswordAsync: () => Promise.resolve({ result: 'stubbed' }),
         }),
         url: () => 'url',
       };
@@ -136,7 +136,7 @@ describe('Change Wallet Password', function () {
       const coinStub = {
         keychains: () => ({
           get: () => Promise.resolve(keychainStub),
-          updateSingleKeychainPassword: () => ({ result: 'stubbed' }),
+          updateSingleKeychainPasswordAsync: () => Promise.resolve({ result: 'stubbed' }),
         }),
         url: () => 'url',
       };
@@ -189,7 +189,7 @@ describe('Change Wallet Password', function () {
       const coinStub = {
         keychains: () => ({
           get: () => Promise.resolve(keychainStub),
-          updateSingleKeychainPassword: () => ({ result: 'stubbed' }),
+          updateSingleKeychainPasswordAsync: () => Promise.resolve({ result: 'stubbed' }),
         }),
         url: () => 'url',
       };

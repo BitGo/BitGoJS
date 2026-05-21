@@ -23,6 +23,7 @@ import {
   GetNetworkPartnersResponse,
   GShare,
   MPCType,
+  multisigTypes,
   ShareType,
   SignShare,
   SShare,
@@ -816,7 +817,7 @@ export async function handleV2ConsolidateAccount(
 
   let result: any;
   try {
-    if (coin.supportsTss()) {
+    if (wallet._wallet.multisigType === multisigTypes.tss) {
       result = await wallet.sendAccountConsolidations(createTSSSendParams(req, wallet));
     } else {
       result = await wallet.sendAccountConsolidations(createSendParams(req));
@@ -1247,7 +1248,7 @@ export async function handleKeychainChangePassword(
     );
   }
 
-  const updatedKeychain = coin.keychains().updateSingleKeychainPassword({
+  const updatedKeychain = await coin.keychains().updateSingleKeychainPasswordAsync({
     keychain,
     oldPassword,
     newPassword,

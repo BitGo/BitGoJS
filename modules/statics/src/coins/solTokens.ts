@@ -3983,4 +3983,14 @@ export const solTokens = [
     UnderlyingAsset['sol:tusdc'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '777c1935-c7dd-4652-85cd-4fbc188934aa',
+    'sol:slx',
+    'Solstice',
+    9,
+    'SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfqq',
+    'SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfqq',
+    UnderlyingAsset['sol:slx'],
+    SOL_TOKEN_FEATURES
+  ),
 ];

@@ -111,6 +111,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-sei /var/modules/sdk-coin-sei/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-sgb /var/modules/sdk-coin-sgb/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-sol /var/modules/sdk-coin-sol/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-soneium /var/modules/sdk-coin-soneium/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-starknet /var/modules/sdk-coin-starknet/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-stt /var/modules/sdk-coin-stt/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-stx /var/modules/sdk-coin-stx/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-sui /var/modules/sdk-coin-sui/
@@ -213,6 +214,7 @@ cd /var/modules/sdk-coin-sei && yarn link && \
 cd /var/modules/sdk-coin-sgb && yarn link && \
 cd /var/modules/sdk-coin-sol && yarn link && \
 cd /var/modules/sdk-coin-soneium && yarn link && \
+cd /var/modules/sdk-coin-starknet && yarn link && \
 cd /var/modules/sdk-coin-stt && yarn link && \
 cd /var/modules/sdk-coin-stx && yarn link && \
 cd /var/modules/sdk-coin-sui && yarn link && \
@@ -318,6 +320,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-sgb && \
     yarn link @bitgo/sdk-coin-sol && \
     yarn link @bitgo/sdk-coin-soneium && \
+    yarn link @bitgo/sdk-coin-starknet && \
     yarn link @bitgo/sdk-coin-stt && \
     yarn link @bitgo/sdk-coin-stx && \
     yarn link @bitgo/sdk-coin-sui && \

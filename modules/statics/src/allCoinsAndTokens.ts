@@ -121,6 +121,7 @@ import {
   SGB_FEATURES,
   SOL_FEATURES,
   SONEIUM_FEATURES,
+  STARKNET_FEATURES,
   STX_FEATURES,
   SUI_FEATURES,
   SUI_TOKEN_FEATURES,
@@ -2264,6 +2265,28 @@ export const allCoinsAndTokens = [
     KeyCurve.Secp256k1
   ),
   account(
+    '56e92a2e-523c-4d48-8375-bff7e35eec11',
+    'starknet',
+    'Starknet',
+    Networks.main.starknet,
+    18,
+    UnderlyingAsset.STARKNET,
+    BaseUnit.STARKNET,
+    STARKNET_FEATURES,
+    KeyCurve.Secp256k1
+  ),
+  account(
+    '2a359f78-0cfa-4c15-8026-be508b05a37b',
+    'tstarknet',
+    'Testnet Starknet',
+    Networks.test.starknet,
+    18,
+    UnderlyingAsset.STARKNET,
+    BaseUnit.STARKNET,
+    STARKNET_FEATURES,
+    KeyCurve.Secp256k1
+  ),
+  account(
     'd348f38d-bff6-4936-842a-c9721e5027c1',
     'polyx',
     'Polymesh',
@@ -2477,6 +2500,33 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.SUPPORTS_ERC20,
     ]
+  ),
+  erc20Token(
+    '682de8f9-ffd2-478d-b106-8d8212043608',
+    'inketh:kbtc',
+    'KBTC',
+    8,
+    '0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98',
+    UnderlyingAsset['inketh:kbtc'],
+    Networks.main.inketh
+  ),
+  erc20Token(
+    '49e611fe-158d-4903-9e15-d6edd902fa30',
+    'inketh:usdc',
+    'USDC',
+    6,
+    '0x2d270e6886d130d724215a266106e6832161eaed',
+    UnderlyingAsset['inketh:usdc'],
+    Networks.main.inketh
+  ),
+  erc20Token(
+    'a9fb0064-51c0-48ad-bc01-603872cbb3cb',
+    'inketh:usdt0',
+    'USDT0',
+    6,
+    '0x0200c29006150606b650577bbe7b6248f58470c1',
+    UnderlyingAsset['inketh:usdt0'],
+    Networks.main.inketh
   ),
   account(
     '68d22683-a8f2-47b3-8446-92e02a1963ae',
@@ -3406,7 +3456,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c0000000000000000000000000000000000000',
     UnderlyingAsset['tempo:pathusd'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   tip20Token(
     '39a57b34-0ce5-40d6-a231-c53a287491a6',
@@ -3415,7 +3470,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c000000000000000000000b9537d11c60e8b50',
     UnderlyingAsset['tempo:usdc'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   tip20Token(
     'fa9e874b-e1c0-4c40-ab4c-3cfba7b2ca8b',
@@ -3424,7 +3484,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c000000000000000000000111111111e910f0f',
     UnderlyingAsset['tempo:usd1'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   // Tempo TIP20 testnet tokens
   ttip20Token(
@@ -3434,7 +3499,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c0000000000000000000000000000000000000',
     UnderlyingAsset['ttempo:pathusd'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   ttip20Token(
     '3c67eaa8-f073-4e1a-9d3a-c6756a31bef0',
@@ -3443,7 +3513,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c0000000000000000000000000000000000001',
     UnderlyingAsset['ttempo:alphausd'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   ttip20Token(
     'da6d27bd-ed3b-4b59-b574-6e013e5eb55d',
@@ -3452,7 +3527,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c0000000000000000000000000000000000002',
     UnderlyingAsset['ttempo:betausd'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   ttip20Token(
     '58cbb592-446e-4753-8c2a-c89f662135ba',
@@ -3461,7 +3541,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c0000000000000000000000000000000000003',
     UnderlyingAsset['ttempo:thetausd'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   ttip20Token(
     '1b9cb8c9-6eec-4f0a-acd4-3d1881efc85b',
@@ -3470,7 +3555,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c00000000000000000000008bb598f4db17f78',
     UnderlyingAsset['ttempo:usd1'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   ttip20Token(
     'b6455ffa-8732-4c61-bb2b-d72e72cb1e63',
@@ -3479,7 +3569,12 @@ export const allCoinsAndTokens = [
     6,
     '0x20c000000000000000000000e4662b69291ab60a',
     UnderlyingAsset['ttempo:stgusd1'],
-    [...TEMPO_FEATURES, CoinFeature.STABLECOIN]
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   canton(
     '07385320-5a4f-48e9-97a5-86d4be9f24b0',
@@ -4390,6 +4485,46 @@ export const allCoinsAndTokens = [
     Networks.main.basechain,
     [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
   ),
+  erc20Token(
+    '457d2309-aeb5-4c3f-906b-cd585f54081e',
+    'baseeth:pert',
+    'Peruvian Sol Token',
+    18,
+    '0xd09aba2969b822d66dc4bc3bb58ee520bcf9f0c3',
+    UnderlyingAsset['baseeth:pert'],
+    Networks.main.basechain,
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
+  ),
+  erc20Token(
+    '0062bb58-2af5-4b8d-aa2e-48c84e6ee035',
+    'baseeth:chlt',
+    'Chilean Peso Token',
+    18,
+    '0x95ef2370166b250e7ce3b8f236c7e7e9fed12c2e',
+    UnderlyingAsset['baseeth:chlt'],
+    Networks.main.basechain,
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
+  ),
+  erc20Token(
+    '9f9b43b3-ba52-46db-abef-4b24b855fb22',
+    'baseeth:colt',
+    'Colombian Peso Token',
+    18,
+    '0xd70ad085684b2a9f4b5d54d7bdb2eca37a273216',
+    UnderlyingAsset['baseeth:colt'],
+    Networks.main.basechain,
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
+  ),
+  erc20Token(
+    '676a2e63-beda-45b9-856f-56feded53fb8',
+    'baseeth:bolt',
+    'Bolivian Boliviano Token',
+    18,
+    '0x1d2e8c1fe82ab2ad8dc43ed98a2f507dfb5b4995',
+    UnderlyingAsset['baseeth:bolt'],
+    Networks.main.basechain,
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
+  ),
 
   // XDC mainnet tokens
   xdcErc20(
@@ -5251,6 +5386,17 @@ export const allCoinsAndTokens = [
     AccountCoin.DEFAULT_FEATURES,
     '',
     'SHX'
+  ),
+  stellarToken(
+    'd11c66e6-b519-4dbb-9050-f35304129571',
+    'xlm:YLDS-GAC7MOPTQLQUM3KC24AW4GHS3RLF72LPEZO54AH7EZ6TSMGRB5SOAVH3',
+    'YLDS',
+    7,
+    UnderlyingAsset['xlm:YLDS-GAC7MOPTQLQUM3KC24AW4GHS3RLF72LPEZO54AH7EZ6TSMGRB5SOAVH3'],
+    '',
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE,
+    '',
+    'YLDS'
   ),
   tronToken(
     '5f3266f8-252c-492a-90d7-bb6d3bf550fb',

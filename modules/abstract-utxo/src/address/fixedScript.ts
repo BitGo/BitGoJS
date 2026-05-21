@@ -78,6 +78,10 @@ export function generateAddress(coinName: UtxoCoinName, params: GenerateFixedScr
 
   const { keychains, chain, segwit = false, bech32 = false } = params as GenerateFixedScriptAddressOptions;
 
+  if (_.isNumber(chain) && _.isInteger(chain) && !fixedScriptWallet.ChainCode.is(chain)) {
+    throw new InvalidAddressDerivationPropertyError(`address validation failure: unrecognised chain code (${chain})`);
+  }
+
   let derivationChain: ChainCode = fixedScriptWallet.ChainCode.value('p2sh', 'external');
   if (_.isNumber(chain) && _.isInteger(chain) && fixedScriptWallet.ChainCode.is(chain)) {
     derivationChain = chain;

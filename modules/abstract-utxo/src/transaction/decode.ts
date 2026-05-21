@@ -1,5 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { fixedScriptWallet, utxolibCompat } from '@bitgo/wasm-utxo';
+import { fixedScriptWallet, hasPsbtMagic, Psbt as WasmPsbt, utxolibCompat } from '@bitgo/wasm-utxo';
 
 import { getNetworkFromCoinName, UtxoCoinName } from '../names';
 
@@ -64,6 +64,30 @@ export function decodePsbtWith(
 
 export function decodePsbt(psbt: string | Buffer, coinName: UtxoCoinName): BitGoPsbt {
   return decodePsbtWith(psbt, coinName, 'wasm-utxo');
+}
+
+export type PrebuildLike = {
+  txHex?: string;
+  txBase64?: string;
+  txHexPsbt?: string;
+};
+
+/**
+ * Decode a prebuild's PSBT bytes directly into a wasm-utxo descriptor `Psbt`.
+ *
+ * Skips the `fixedScriptWallet.BitGoPsbt` intermediate that `decodeTransactionFromPrebuild`
+ * + `toWasmPsbt` would otherwise round-trip through for descriptor flows.
+ */
+export function decodeDescriptorPsbt(prebuild: PrebuildLike): WasmPsbt {
+  const s = prebuild.txHexPsbt ?? prebuild.txHex ?? prebuild.txBase64;
+  if (!s) {
+    throw new Error('missing required txHex or txBase64 property');
+  }
+  const bytes = stringToBufferTryFormats(s, ['hex', 'base64']);
+  if (!hasPsbtMagic(bytes)) {
+    throw new Error('descriptor wallets require PSBT format transactions');
+  }
+  return WasmPsbt.deserialize(bytes);
 }
 
 export function encodeTransaction(

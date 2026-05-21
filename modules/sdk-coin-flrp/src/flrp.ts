@@ -92,8 +92,11 @@ export class Flrp extends BaseCoin {
     const explainedTx = tx.explainTransaction();
 
     const type = params.txParams.type;
+    // 'stake' is the intent-type alias for AddPermissionlessDelegator; normalize it
+    // so the TransactionType enum lookup succeeds.
+    const normalizedType = type === 'stake' ? 'AddPermissionlessDelegator' : type;
 
-    if (!type || (type !== 'ImportToC' && explainedTx.type !== TransactionType[type])) {
+    if (!normalizedType || (normalizedType !== 'ImportToC' && explainedTx.type !== TransactionType[normalizedType])) {
       throw new Error('Tx type does not match with expected txParams type');
     }
 

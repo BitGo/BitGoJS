@@ -236,7 +236,7 @@ describe('Tron UnDelegateResource builder', function () {
         () => {
           txBuilder2.extendValidTo(31536000001);
         },
-        (e: any) => e.message === 'The expiration cannot be extended more than one year'
+        (e: any) => e.message === 'The expiration cannot be extended more than one day'
       );
     });
 

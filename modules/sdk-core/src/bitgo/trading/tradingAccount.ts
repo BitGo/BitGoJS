@@ -11,11 +11,16 @@ export class TradingAccount implements ITradingAccount {
   private readonly enterpriseId: string;
 
   public wallet: IWallet;
+  public readonly userKeySigningRequired: boolean;
 
   constructor(enterpriseId: string, wallet: IWallet, bitgo: BitGoBase) {
     this.enterpriseId = enterpriseId;
     this.wallet = wallet;
     this.bitgo = bitgo;
+
+    const walletData = this.wallet.toJSON();
+    this.userKeySigningRequired =
+      walletData.coinSpecific?.userKeySigningRequired ?? walletData.userKeySigningRequired ?? true;
   }
 
   get id(): string {
@@ -48,10 +53,9 @@ export class TradingAccount implements ITradingAccount {
     params: Omit<SignPayloadParameters, 'walletPassphrase' | 'prv'>
   ): Promise<string> {
     const walletData = this.wallet.toJSON();
-    const userKeySigningRequired = walletData.coinSpecific?.userKeySigningRequired ?? walletData.userKeySigningRequired;
-    if (userKeySigningRequired) {
+    if (this.userKeySigningRequired) {
       throw new Error(
-        'Wallet must use user key to sign ofc transaction, please provide the wallet passphrase or visit your wallet settings page to configure one.'
+        'Wallet must use user key to sign ofc transaction, please provide the wallet passphrase, the private key, or visit your wallet settings page to configure one.'
       );
     }
     if (walletData.keys.length < 2) {
@@ -61,7 +65,7 @@ export class TradingAccount implements ITradingAccount {
     }
 
     // we do not parse the payload here, we instead sends the payload as a stringified JSON to be signed, just like how we process it locally
-    const url = this.wallet.url('/tx/sign');
+    const url = this.bitgo.coin('ofc').url('/wallet/' + this.wallet.id() + '/tx/sign');
     const payload = typeof params.payload !== 'string' ? JSON.stringify(params.payload) : params.payload;
     const { signature } = await this.wallet.bitgo.post(url).send({ payload }).result();
 

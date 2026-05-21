@@ -4,6 +4,7 @@ import { TrxTokenConfig, coins, tokens } from '@bitgo/statics';
 import { getBuilder } from './lib/builder';
 import { Recipient } from '../../sdk-core/src/bitgo/baseCoin/iBaseCoin';
 import assert from 'assert';
+import { Enum, Utils, Interface } from './lib';
 
 export { TrxTokenConfig };
 
@@ -94,15 +95,60 @@ export class TrxToken extends Trx {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const { txPrebuild: txPrebuild, txParams: txParams, walletType } = params;
+    const { txPrebuild, txParams, walletType } = params;
     assert(txPrebuild.txHex, new Error('missing required tx prebuild property txHex'));
 
-    // For TSS wallets, TRC20 token transfers are TriggerSmartContract transactions.
-    // Trx.verifyTransaction already returns true for TriggerSmartContract in TSS mode
-    // (only TransferContract/native TRX gets validated against recipients there).
-    // We apply the same convention here: the TSS signing protocol itself provides
-    // cryptographic guarantees; recipients-based verification is not applicable.
     if (walletType === 'tss') {
+      // For TSS wallets, TRC20 token transfers are TriggerSmartContract transactions.
+      // Decode the transaction and validate destination address and amount against
+      // txParams.recipients before signing to ensure intent matches the prebuild.
+      const rawDataHex = this.extractRawDataHex(txPrebuild.txHex);
+      const decodedTx = Utils.decodeTransaction(rawDataHex);
+
+      if (decodedTx.contractType !== Enum.ContractType.TriggerSmartContract) {
+        throw new Error(
+          `Expected TriggerSmartContract for TRC20 token transfer, got contract type: ${decodedTx.contractType}`
+        );
+      }
+
+      if (!Array.isArray(decodedTx.contract) || decodedTx.contract.length !== 1) {
+        throw new Error('Invalid TriggerSmartContract structure');
+      }
+
+      const triggerContract = decodedTx.contract[0] as Interface.TriggerSmartContract;
+      // data is base64-encoded from protobuf decoding; convert to hex for decodeDataParams
+      const contractData = Buffer.from(triggerContract.parameter.value.data, 'base64').toString('hex');
+
+      const recipients = txParams.recipients || (txPrebuild.txInfo as TronTxInfo).recipients;
+      if (!recipients || recipients.length !== 1) {
+        throw new Error('missing or invalid required property recipients');
+      }
+
+      let recipientHex: string;
+      let transferAmount: { toString(): string };
+      try {
+        [recipientHex, transferAmount] = Utils.decodeDataParams(['address', 'uint256'], contractData) as [
+          string,
+          { toString(): string }
+        ];
+      } catch (e) {
+        throw new Error(`Failed to decode TRC20 transfer ABI data: ${e instanceof Error ? e.message : String(e)}`);
+      }
+
+      // recipientHex has '41' hex prefix; convert to base58 for comparison
+      const actualDestination = Utils.getBase58AddressFromHex(recipientHex);
+      const actualAmount = transferAmount.toString();
+      const expectedDestination = recipients[0].address;
+      const expectedAmount = recipients[0].amount.toString();
+
+      if (actualAmount !== expectedAmount) {
+        throw new Error('transaction amount in txPrebuild does not match the value given by client');
+      }
+
+      if (expectedDestination.toLowerCase() !== actualDestination.toLowerCase()) {
+        throw new Error('destination address does not match with the recipient address');
+      }
+
       return true;
     }
 

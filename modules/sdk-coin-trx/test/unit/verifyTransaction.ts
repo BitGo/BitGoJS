@@ -540,9 +540,9 @@ describe('TRON Verify Transaction:', function () {
       });
     });
 
-    it('should return true for non-Transfer contract types in TSS', async function () {
-      // For non-Transfer contracts (e.g., AccountPermissionUpdate), TSS path returns true
-      // without detailed validation.
+    it('should return true for non-Transfer, non-TriggerSmartContract types in TSS', async function () {
+      // AccountPermissionUpdate and other native TRX contracts (freeze, vote, etc.) pass through
+      // without recipient validation in the TSS path.
       const rawDataHex = UnsignedAccountPermissionUpdateContractTx.raw_data_hex;
 
       const params = {
@@ -558,6 +558,31 @@ describe('TRON Verify Transaction:', function () {
 
       const result = await basecoin.verifyTransaction(params);
       assert.strictEqual(result, true);
+    });
+
+    it('should throw when TSS native TRX verifyTransaction encounters a TriggerSmartContract', async function () {
+      // Defense-in-depth: native TRX (Trx) should never verify TriggerSmartContract.
+      // TRC20 token transfers must go through TrxToken.verifyTransaction.
+      // The raw_data_hex below is a real TRC20 TriggerSmartContract protobuf.
+      const trc20RawDataHex =
+        '0a02578b22086113bb9ac351432b4088eae7a6de305aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541c51fbeea78910b15b1d3e8a9b62914ca94d1a4ac12154142a1e39aefa49290f2b3f9ed688d7cecf86cd6e02244a9059cbb0000000000000000000000008483618ca85c35a9b923d98bebca718f5a1db2790000000000000000000000000000000000000000000000000000000005f5e10070888d8ca5de309001c0c39307';
+
+      const params = {
+        txParams: {
+          recipients: [{ address: 'TLWh67P93KgtnZNCtGnEHM1H33Nhq2uvvN', amount: '100000000' }],
+        },
+        txPrebuild: {
+          txHex: trc20RawDataHex,
+        },
+        wallet: {},
+        walletType: 'tss',
+      };
+
+      await assert.rejects(basecoin.verifyTransaction(params), {
+        message:
+          'TriggerSmartContract verification is not supported by native TRX. ' +
+          'TRC20 token transfers must be verified via TrxToken.verifyTransaction.',
+      });
     });
 
     it('should throw error when txHex is missing for TSS wallet', async function () {

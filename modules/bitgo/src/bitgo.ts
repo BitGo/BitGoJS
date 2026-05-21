@@ -85,7 +85,11 @@ export class BitGo extends BitGoAPI {
     const assetEnvironment = ['prod', 'adminProd'].includes(this.getEnv()) ? 'mainnet' : 'testnet';
     const url = this.url(`/assets/list/${assetEnvironment}`);
     const tokenConfigMap = (await this.executeAssetRequest(url)) as Record<string, TrimmedAmsTokenConfig[]>;
-    this.initCoinFactory(tokenConfigMap);
+    try {
+      this.initCoinFactory(tokenConfigMap);
+    } catch (e) {
+      throw new Error(`Failed to initialize coin factory from AMS token metadata: ${(e as Error).message}`);
+    }
   }
 
   /**

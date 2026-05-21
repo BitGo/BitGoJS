@@ -1,6 +1,8 @@
 import * as Utils from './utils';
 import * as Interface from './iface';
 
+export { AllocationAllocateBuilder } from './allocationAllocateBuilder';
+export { AllocationRequestBuilder } from './allocationRequestBuilder';
 export { CosignDelegationAcceptBuilder } from './cosignDelegationAcceptBuilder';
 export { CosignDelegationProposalBuilder } from './cosignDelegationProposalBuilder';
 export { KeyPair } from './keyPair';

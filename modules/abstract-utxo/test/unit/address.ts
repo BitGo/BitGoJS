@@ -1,12 +1,17 @@
 import * as assert from 'assert';
 
 import { InvalidAddressDerivationPropertyError, UnexpectedAddressError } from '@bitgo/sdk-core';
+import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { assertFixedScriptWalletAddress, generateAddress } from '../../src';
 
 import { keychainsBase58 } from './util';
 
 const keychains = keychainsBase58.map((k) => ({ pub: k.pub }));
+
+// A chain code that no released SDK version has ever defined — simulates a future
+// server-side address type unknown to an older client.
+const unknownChainCode = 99;
 
 describe('assertFixedScriptWalletAddress', function () {
   describe('input validation', function () {
@@ -118,6 +123,40 @@ describe('assertFixedScriptWalletAddress', function () {
           format: 'base58',
           address,
         })
+      );
+    });
+
+    // Regression guard for T1-3386 / T1-3385: an unknown chain code must throw
+    // immediately with a clear message rather than silently falling back to P2SH
+    // and producing a confusing "expected <P2SH> but got <P2TR>" error.
+    it('throws InvalidAddressDerivationPropertyError for an unknown chain code', function () {
+      assert.ok(!fixedScriptWallet.ChainCode.is(unknownChainCode), 'test prerequisite: chain must be unknown');
+      const serverAddress = generateAddress('btc', { keychains, chain: 40 });
+      assert.throws(
+        () =>
+          assertFixedScriptWalletAddress('btc', {
+            chain: unknownChainCode,
+            index: 0,
+            keychains,
+            format: 'base58',
+            address: serverAddress,
+          }),
+        (err: unknown) => {
+          assert.ok(err instanceof InvalidAddressDerivationPropertyError);
+          assert.ok(
+            err.message.includes(String(unknownChainCode)),
+            `expected error to name the unrecognised chain code, got: ${err.message}`
+          );
+          return true;
+        }
+      );
+    });
+
+    it('generateAddress throws InvalidAddressDerivationPropertyError for an unknown chain code', function () {
+      assert.ok(!fixedScriptWallet.ChainCode.is(unknownChainCode), 'test prerequisite: chain must be unknown');
+      assert.throws(
+        () => generateAddress('btc', { keychains, chain: unknownChainCode }),
+        InvalidAddressDerivationPropertyError
       );
     });
 

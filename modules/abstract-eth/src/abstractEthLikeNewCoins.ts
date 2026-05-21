@@ -3208,7 +3208,26 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         throw new Error('Consolidation transaction is missing recipient address');
       }
 
-      if (txJson.to.toLowerCase() !== baseAddress.toLowerCase()) {
+      const erc20TransferSelector = addHexPrefix(
+        optionalDeps.ethAbi.methodID('transfer', ['address', 'uint256']).toString('hex')
+      );
+
+      if (txJson.data && txJson.data.startsWith(erc20TransferSelector)) {
+        // For ERC20 token consolidations, txJson.to is the token contract address,
+        // not the actual transfer recipient. The real recipient is encoded in the
+        // transfer(address,uint256) calldata. Decode it and verify against baseAddress.
+        const [recipientAddress] = getRawDecoded(
+          ['address', 'uint256'],
+          getBufferedByteCode(erc20TransferSelector, txJson.data)
+        );
+        const decodedRecipient = addHexPrefix(recipientAddress.toString()).toLowerCase();
+        if (decodedRecipient !== baseAddress.toLowerCase()) {
+          await throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
+            { address: decodedRecipient, amount: txJson.value },
+          ]);
+        }
+      } else if (txJson.to.toLowerCase() !== baseAddress.toLowerCase()) {
+        // Native coin consolidation: txJson.to is the actual recipient
         await throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
           { address: txJson.to, amount: txJson.value },
         ]);

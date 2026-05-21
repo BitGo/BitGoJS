@@ -63,6 +63,16 @@ export const cantonTokens = [
     UnderlyingAsset['canton:ibenji'],
     CANTON_TOKEN_FEATURES
   ),
+  cantonToken(
+    '204a82d0-3043-41a5-a029-81fd6cfdcc68',
+    'canton:ceth',
+    'cETH',
+    10,
+    'https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/',
+    'rails-cethMain-1::12200350ba6e96e3b701c3048b5aa013a8c1c08833e8ebf54339cff581055c29003a:cETH',
+    UnderlyingAsset['canton:ceth'],
+    CANTON_TOKEN_FEATURES
+  ),
   // testnet tokens
   tcantonToken(
     '46356790-0ac4-4c3b-8b70-39094106d772',

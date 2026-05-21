@@ -3264,10 +3264,10 @@ export const ofcErc20Coins = [
   ),
   ofcerc20(
     '8202c24a-3521-4a7f-9fcc-fb754c568644',
-    'ofceth:goqxmp',
-    'GoQXMP',
+    'ofceth:qxmp',
+    'QXMP',
     6,
-    underlyingAssetForSymbol('eth:goqxmp'),
+    underlyingAssetForSymbol('eth:qxmp'),
     undefined,
     [CoinFeature.STABLECOIN]
   ),
@@ -3933,6 +3933,106 @@ export const ofcErc20Coins = [
     true,
     'baseeth'
   ),
+  ofcerc20(
+    '5a0c8b45-5866-40e3-89ae-3d4932d46b59',
+    'ofcbaseeth:pert',
+    'Peruvian Sol Token',
+    18,
+    UnderlyingAsset['baseeth:pert'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    'e5bfabe9-b50f-4c92-930f-0b3910b3bb04',
+    'ofcbaseeth:chlt',
+    'Chilean Peso Token',
+    18,
+    UnderlyingAsset['baseeth:chlt'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    '313e4398-89c0-4e36-b026-89cec9d1d21d',
+    'ofcbaseeth:colt',
+    'Colombian Peso Token',
+    18,
+    UnderlyingAsset['baseeth:colt'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    '7be5b044-c17b-402b-b637-5e3e41771a1e',
+    'ofcbaseeth:bolt',
+    'Bolivian Boliviano Token',
+    18,
+    UnderlyingAsset['baseeth:bolt'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+
+  // Ink Network tokens
+  ofcerc20(
+    'f6ccdf51-e2c8-4ad3-95b4-8c779096d30f',
+    'ofcinketh:kbtc',
+    'KBTC',
+    8,
+    underlyingAssetForSymbol('inketh:kbtc'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'inketh'
+  ),
+  ofcerc20(
+    '200f34d6-521a-4ff9-a4c2-60c6fe3edaf4',
+    'ofcinketh:usdc',
+    'USDC',
+    6,
+    underlyingAssetForSymbol('inketh:usdc'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'inketh'
+  ),
+  ofcerc20(
+    'e115bc45-6771-4088-82f3-aa3cdcaba416',
+    'ofcinketh:usdt0',
+    'USDT0',
+    6,
+    underlyingAssetForSymbol('inketh:usdt0'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'inketh'
+  ),
 
   // Chiliz Network tokens
   ofcerc20(
@@ -4566,10 +4666,10 @@ export const tOfcErc20Coins = [
   ),
   tofcerc20(
     'edd7e667-7be4-49f1-9209-d9596a71581b',
-    'ofchteth:goqxmp',
-    'Test GoQXMP',
+    'ofchteth:qxmp',
+    'Test QXMP',
     6,
-    UnderlyingAsset['hteth:goqxmp'],
+    UnderlyingAsset['hteth:qxmp'],
     undefined,
     [CoinFeature.STABLECOIN],
     undefined,
@@ -4580,10 +4680,10 @@ export const tOfcErc20Coins = [
   ),
   tofcerc20(
     '7863a0f5-75ff-4d89-a791-25dea435813d',
-    'ofchteth:stggoqxmp',
-    'Test GoQXMP',
+    'ofchteth:stgqxmp',
+    'Test QXMP',
     6,
-    UnderlyingAsset['hteth:stggoqxmp'],
+    UnderlyingAsset['hteth:stgqxmp'],
     undefined,
     [CoinFeature.STABLECOIN],
     undefined,
@@ -5930,6 +6030,24 @@ export const tOfcErc20Coins = [
   ofcerc20('f8e6404b-2adc-4f74-b957-d9cbd7228d7e', 'ofceth:turtle', 'Turtle', 18, UnderlyingAsset['eth:turtle']),
   ofcerc20('a6e121e6-6563-4d2c-818d-91e9bd4af7ed', 'ofceth:order', 'Orderly Network', 18, UnderlyingAsset['eth:order']),
   ofcerc20('7192609e-c255-4da8-b1a5-e40cabbf4f2e', 'ofceth:puffer', 'Puffer', 18, UnderlyingAsset['eth:puffer']),
+  ofcerc20('7a2f9b7b-69ab-4371-a458-42e7ffc1a203', 'ofceth:krl', 'Kryll', 18, UnderlyingAsset['eth:krl']),
+  ofcerc20('1e6f5ab4-4240-456c-9a75-3978d0950948', 'ofceth:cadd', 'CAD Digital Inc', 18, UnderlyingAsset['eth:cadd']),
+  ofcerc20('39d109e1-bcf2-4864-9710-26105022c3aa', 'ofceth:kau', 'Kinesis Gold', 18, UnderlyingAsset['eth:kau']),
+  ofcerc20('ba43c0e1-1961-4301-acac-3acd223ee591', 'ofceth:kag', 'Kinesis Silver', 18, UnderlyingAsset['eth:kag']),
+  ofcerc20(
+    '491210e9-688e-457e-825e-a42140b52ec5',
+    'ofceth:upprism',
+    'Clearstar Prism Enhanced Yield Vault token',
+    18,
+    UnderlyingAsset['eth:upprism']
+  ),
+  ofcerc20(
+    '579d1671-befb-42dc-a345-5b7b2d015f29',
+    'ofceth:qncxt',
+    'QNCX Webull Tokenized',
+    18,
+    UnderlyingAsset['eth:qncxt']
+  ),
 
   // MON Network tokens
   ofcerc20(

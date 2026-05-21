@@ -115,6 +115,7 @@ export enum CoinFamily {
   SOL = 'sol',
   SONIC = 'sonic',
   SONEIUM = 'soneium',
+  STARKNET = 'starknet',
   STT = 'stt',
   SUI = 'sui',
   STX = 'stx',
@@ -688,6 +689,7 @@ export enum UnderlyingAsset {
   SOMI = 'somi', // Somnia Chain
   SONEIUM = 'soneium',
   SONIC = 'sonic',
+  STARKNET = 'starknet',
   STT = 'stt',
   STX = 'stx',
   SUI = 'sui',
@@ -1907,8 +1909,8 @@ export enum UnderlyingAsset {
   'hteth:fyusd' = 'hteth:fyusd',
   'hteth:stgcusd' = 'hteth:stgcusd',
   'hteth:stgfyusd' = 'hteth:stgfyusd',
-  'hteth:goqxmp' = 'hteth:goqxmp',
-  'hteth:stggoqxmp' = 'hteth:stggoqxmp',
+  'hteth:qxmp' = 'hteth:qxmp',
+  'hteth:stgqxmp' = 'hteth:stgqxmp',
   'hteth:stgwbtc' = 'hteth:stgwbtc',
   'hteth:tsteth' = 'hteth:tsteth',
   'hteth:tusdc' = 'hteth:tusdc',
@@ -2239,7 +2241,7 @@ export enum UnderlyingAsset {
   'eth:sofid' = 'eth:sofid',
   'eth:cusd' = 'eth:cusd',
   'eth:fyusd' = 'eth:fyusd',
-  'eth:goqxmp' = 'eth:goqxmp',
+  'eth:qxmp' = 'eth:qxmp',
   'eth:ibtc' = 'eth:ibtc',
   'eth:pyr' = 'eth:pyr',
   'eth:una' = 'eth:una',
@@ -2518,6 +2520,12 @@ export enum UnderlyingAsset {
   'eth:prompt' = 'eth:prompt',
   'eth:yb' = 'eth:yb',
   'eth:btr' = 'eth:btr',
+  'eth:krl' = 'eth:krl',
+  'eth:cadd' = 'eth:cadd',
+  'eth:kau' = 'eth:kau',
+  'eth:kag' = 'eth:kag',
+  'eth:upprism' = 'eth:upprism',
+  'eth:qncxt' = 'eth:qncxt',
   // Ondo Test Tokens (Mainnet Gated)
   'eth:t-bincon' = 'eth:t-bincon',
   'eth:t-iauon' = 'eth:t-iauon',
@@ -2557,6 +2565,7 @@ export enum UnderlyingAsset {
   'xlm:BENJI-GBHNGLLIE3KWGKCHIKMHJ5HVZHYIK7WTBE4QF5PLAKL4CJGSEU7HZIW5' = 'xlm:BENJI-GBHNGLLIE3KWGKCHIKMHJ5HVZHYIK7WTBE4QF5PLAKL4CJGSEU7HZIW5',
   'xlm:gBENJI-GD5J73EKK5IYL5XS3FBTHHX7CZIYRP7QXDL57XFWGC2WVYWT326OBXRP' = 'xlm:gBENJI-GD5J73EKK5IYL5XS3FBTHHX7CZIYRP7QXDL57XFWGC2WVYWT326OBXRP',
   'xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH' = 'xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH',
+  'xlm:YLDS-GAC7MOPTQLQUM3KC24AW4GHS3RLF72LPEZO54AH7EZ6TSMGRB5SOAVH3' = 'xlm:YLDS-GAC7MOPTQLQUM3KC24AW4GHS3RLF72LPEZO54AH7EZ6TSMGRB5SOAVH3',
 
   // Eth NFTs
   // generic NFTs
@@ -2849,6 +2858,10 @@ export enum UnderlyingAsset {
   'polygon:tsf0' = 'polygon:tsf0',
   'polygon:vio0' = 'polygon:vio0',
   'polygon:wots0' = 'polygon:wots0',
+  'polygon:mext' = 'polygon:mext',
+  'polygon:pert' = 'polygon:pert',
+  'polygon:colt' = 'polygon:colt',
+  'polygon:bolt' = 'polygon:bolt',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -3037,6 +3050,7 @@ export enum UnderlyingAsset {
   'bsc:t-iemgon' = 'bsc:t-iemgon',
   'bsc:t-ibiton' = 'bsc:t-ibiton',
   'bsc:t-ivvon' = 'bsc:t-ivvon',
+  'bsc:sqd' = 'bsc:sqd',
 
   // BSC NFTs
   // generic NFTs
@@ -3179,6 +3193,10 @@ export enum UnderlyingAsset {
   'baseeth:usad' = 'baseeth:usad',
   'baseeth:opg' = 'baseeth:opg',
   'baseeth:vvv' = 'baseeth:vvv',
+  'baseeth:pert' = 'baseeth:pert',
+  'baseeth:chlt' = 'baseeth:chlt',
+  'baseeth:colt' = 'baseeth:colt',
+  'baseeth:bolt' = 'baseeth:bolt',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -3382,6 +3400,11 @@ export enum UnderlyingAsset {
   'chiliz:psg' = 'chiliz:psg',
   'chiliz:spurs' = 'chiliz:spurs',
   'chiliz:tra' = 'chiliz:tra',
+
+  // Ink mainnet tokens
+  'inketh:kbtc' = 'inketh:kbtc',
+  'inketh:usdc' = 'inketh:usdc',
+  'inketh:usdt0' = 'inketh:usdt0',
 
   //world chain mainnet tokens
   'world:wld' = 'world:wld',
@@ -3601,6 +3624,7 @@ export enum UnderlyingAsset {
   'sol:kprme-cash' = 'sol:kprme-cash',
   'sol:kwyld-cash' = 'sol:kwyld-cash',
   'sol:tusdc' = 'sol:tusdc',
+  'sol:slx' = 'sol:slx',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',
@@ -3839,7 +3863,7 @@ export enum UnderlyingAsset {
   'eth:ctkn' = 'eth:ctkn',
   'eth:cusdt' = 'eth:cusdt',
   // ERC-7984 confidential tokens (Zama fhEVM - testnet / hteth)
-  'hteth:ctkn' = 'hteth:ctkn',
+  'hteth:ctest1' = 'hteth:ctest1',
   'hteth:cusdt' = 'hteth:cusdt',
   'eth:mony' = 'eth:mony',
   'eth:architectgvi' = 'eth:architectgvi',
@@ -3872,6 +3896,7 @@ export enum UnderlyingAsset {
   'canton:cltc' = 'canton:cltc',
   'canton:ibenji' = 'canton:ibenji',
   'canton:sbc' = 'canton:sbc',
+  'canton:ceth' = 'canton:ceth',
 
   // Tempo mainnet tokens
   'tempo:pathusd' = 'tempo:pathusd',
@@ -3979,6 +4004,7 @@ export enum BaseUnit {
   TASI = 'atestfet',
   CANTON = 'canton',
   KASPA = 'sompi',
+  STARKNET = 'fri',
   USDC = 'usdc',
 }
 

@@ -86,7 +86,12 @@ import {
 } from './names';
 import { assertFixedScriptWalletAddress } from './address/fixedScript';
 import { isSdkBackend, ParsedTransaction, SdkBackend } from './transaction/types';
-import { decodePsbtWith, encodeTransaction, stringToBufferTryFormats } from './transaction/decode';
+import {
+  decodeDescriptorPsbt,
+  decodePsbtWith,
+  encodeTransaction,
+  stringToBufferTryFormats,
+} from './transaction/decode';
 import { fetchKeychains, toBip32Triple, UtxoKeychain } from './keychains';
 import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
 import { getPolicyForEnv } from './descriptor/validatePolicy';
@@ -431,11 +436,11 @@ export abstract class AbstractUtxoCoin
 
   protected supportedTxFormats: { psbt: boolean; legacy: boolean } = {
     psbt: true,
-    legacy: this.isMainnet(),
+    legacy: this.getChain() === 'btc' || this.getChain() === 'ltc',
   };
 
   protected supportedSdkBackends: { utxolib: boolean; 'wasm-utxo': boolean } = {
-    utxolib: this.isMainnet(),
+    utxolib: this.getChain() === 'btc' || this.getChain() === 'ltc',
     'wasm-utxo': true,
   };
 
@@ -963,7 +968,12 @@ export abstract class AbstractUtxoCoin
         params.pubs = toBip32Triple(keychains).map((k) => k.neutered().toBase58()) as Triple<string>;
       }
     }
-    return explainTx(this.decodeTransactionFromPrebuild(params), params, this.name);
+    if (wallet && isDescriptorWallet(wallet)) {
+      // Descriptor wallets decode prebuild bytes straight into the wasm-utxo
+      // descriptor Psbt, skipping the fixedScriptWallet.BitGoPsbt intermediate.
+      return explainTx(decodeDescriptorPsbt(params), { ...params, wallet }, this.name);
+    }
+    return explainTx(this.decodeTransactionFromPrebuild(params), { ...params, wallet }, this.name);
   }
 
   /**

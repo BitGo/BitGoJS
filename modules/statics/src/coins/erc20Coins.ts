@@ -10999,11 +10999,11 @@ export const erc20Coins = [
   ),
   erc20(
     '71fd8aa4-87d0-492e-a7f5-a425a80077d9',
-    'eth:goqxmp',
-    'GoQXMP',
+    'eth:qxmp',
+    'QXMP',
     6,
-    '0xb51323fa696a5fd29ae37772261e2d9e798bbf00',
-    UnderlyingAsset['eth:goqxmp'],
+    '0x2d3a4ae64eef5ad1972d37601a09004de62e8c9b',
+    UnderlyingAsset['eth:qxmp'],
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
@@ -12919,11 +12919,11 @@ export const erc20Coins = [
   ),
   terc20(
     'fa107b6d-6159-44ef-8a64-ab27b8e8511b',
-    'hteth:goqxmp',
-    'Test GoQXMP',
+    'hteth:qxmp',
+    'Test QXMP',
     6,
-    '0x0ce272b926077fc2f856bb33ff1a9e36a89b0ffc',
-    UnderlyingAsset['hteth:goqxmp'],
+    '0x05bd728fe7446941449b4bdffe1472cd47345472',
+    UnderlyingAsset['hteth:qxmp'],
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
     undefined,
@@ -12931,11 +12931,11 @@ export const erc20Coins = [
   ),
   terc20(
     '63c04332-8cf0-4a90-85bd-c884edd803bc',
-    'hteth:stggoqxmp',
-    'Test GoQXMP',
+    'hteth:stgqxmp',
+    'Test QXMP',
     6,
-    '0xedecb3f92e9aa1883b0c1b0cd1cb89c42652fb11',
-    UnderlyingAsset['hteth:stggoqxmp'],
+    '0x089561bb7fabf271143b63068a4b6818fbe63caf',
+    UnderlyingAsset['hteth:stgqxmp'],
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
     undefined,
@@ -14520,6 +14520,14 @@ export const erc20Coins = [
     UnderlyingAsset['eth:puffer']
   ),
   erc20(
+    '4d8d14c0-96b2-430e-ac35-4cd36300a3d3',
+    'eth:krl',
+    'Kryll',
+    18,
+    '0x464ebe77c293e473b48cfe96ddcf88fcf7bfdac0',
+    UnderlyingAsset['eth:krl']
+  ),
+  erc20(
     'ad3c4a14-1a13-4c27-bdbf-214de70e25b8',
     'eth:resolv',
     'Resolv',
@@ -14803,6 +14811,50 @@ export const erc20Coins = [
     18,
     '0x66a5cfb2e9c529f14fe6364ad1075df3a649c0a5',
     UnderlyingAsset['eth:zk']
+  ),
+  erc20(
+    '0b4cfeb0-9b8b-458f-a934-06270bba6747',
+    'eth:cadd',
+    'CAD Digital Inc',
+    18,
+    '0x16f93ebc5320c89efc8701577efe49d14a276a06',
+    UnderlyingAsset['eth:cadd']
+  ),
+  erc20(
+    '3e4c758c-e00a-4bba-b257-e0b56b786228',
+    'eth:kau',
+    'Kinesis Gold',
+    18,
+    '0x14dab79fd7b7b3f748d434812fd6a9aac460ea52',
+    UnderlyingAsset['eth:kau'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20(
+    '3b7baf0a-61fe-477c-9fef-2faeed3d3397',
+    'eth:kag',
+    'Kinesis Silver',
+    18,
+    '0x56ba8b58b7d1f6d384a1c4dd553f39ebc8741b8e',
+    UnderlyingAsset['eth:kag'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20(
+    '8543e9de-f7bc-48c4-8abf-eed49d2d4bd2',
+    'eth:upprism',
+    'Clearstar Prism Enhanced Yield Vault token',
+    18,
+    '0xf6bfe570e7277df55c971dfb524afb18c16918e0',
+    UnderlyingAsset['eth:upprism'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20(
+    'e8921802-79ff-46bd-9291-9c28e43a88fa',
+    'eth:qncxt',
+    'QNCX Webull Tokenized',
+    18,
+    '0x637a527ae7b1523488244c05ad87c182d2f5452a',
+    UnderlyingAsset['eth:qncxt'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   terc20(
     '0c333619-e5a6-4f9d-8bbc-5b0e5dc64d03',

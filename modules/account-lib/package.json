@@ -73,6 +73,7 @@
     "@bitgo/sdk-coin-sgb": "^1.8.8",
     "@bitgo/sdk-coin-sol": "^7.19.3",
     "@bitgo/sdk-coin-soneium": "^1.10.8",
+    "@bitgo/sdk-coin-starknet": "^1.0.0",
     "@bitgo/sdk-coin-stt": "^1.6.8",
     "@bitgo/sdk-coin-stx": "^3.13.0",
     "@bitgo/sdk-coin-sui": "^5.23.7",

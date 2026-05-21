@@ -22,10 +22,12 @@ import {
   WithdrawContractDecoded,
   ResourceManagementContractParameter,
   ResourceManagementContractDecoded,
+  AccountCreateContract,
+  AccountCreateContractDecoded,
 } from './iface';
 import { ContractType, PermissionType, TronResource } from './enum';
 import { AbiCoder, hexConcat } from 'ethers/lib/utils';
-import { DELEGATION_TYPE_URL } from './constants';
+import { DELEGATION_TYPE_URL, ACCOUNT_CREATE_TYPE_URL } from './constants';
 
 export const TRANSACTION_MAX_EXPIRATION = 86400000; // one day
 export const TRANSACTION_DEFAULT_EXPIRATION = 10800000; // three hours
@@ -232,6 +234,10 @@ export function decodeTransaction(hexString: string): RawData {
     case 'type.googleapis.com/protocol.UnDelegateResourceContract':
       contractType = ContractType.UnDelegateResourceContract;
       contract = decodeUnDelegateResourceContract(rawTransaction.contracts[0].parameter.value);
+      break;
+    case ACCOUNT_CREATE_TYPE_URL:
+      contractType = ContractType.AccountCreate;
+      contract = decodeAccountCreateContract(rawTransaction.contracts[0].parameter.value);
       break;
     default:
       throw new UtilsError('Unsupported contract type');
@@ -747,6 +753,47 @@ export function decodeUnDelegateResourceContract(base64: string): ResourceManage
           balance: Number(undelegateResourceContract.balance),
           owner_address,
           receiver_address,
+        },
+      },
+    },
+  ];
+}
+
+/**
+ * Deserialize the segment of the txHex corresponding with the account create contract
+ *
+ * @param {Uint8Array} value - The raw protobuf bytes from the contract parameter
+ * @returns {AccountCreateContract[]} - Array containing the decoded account create contract
+ */
+export function decodeAccountCreateContract(base64: string): AccountCreateContract[] {
+  let decoded: AccountCreateContractDecoded;
+  try {
+    decoded = protocol.AccountCreateContract.decode(Buffer.from(base64, 'base64')).toJSON();
+  } catch (e) {
+    throw new UtilsError('There was an error decoding the account create contract in the transaction.');
+  }
+
+  if (!decoded.ownerAddress) {
+    throw new UtilsError('Owner address does not exist in this account create contract.');
+  }
+
+  if (!decoded.accountAddress) {
+    throw new UtilsError('Account address does not exist in this account create contract.');
+  }
+
+  const owner_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(decoded.ownerAddress, 'base64').toString('hex'))
+  );
+  const account_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(decoded.accountAddress, 'base64').toString('hex'))
+  );
+
+  return [
+    {
+      parameter: {
+        value: {
+          owner_address,
+          account_address,
         },
       },
     },
