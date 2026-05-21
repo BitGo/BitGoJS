@@ -61,4 +61,28 @@ describe('ETH Transaction', () => {
       });
     });
   });
+
+  describe('signablePayload', () => {
+    it('should throw on an empty transaction', () => {
+      const tx = getTransaction();
+      assert.throws(() => tx.signablePayload);
+    });
+
+    testParams.map(([txnType, txData]) => {
+      it(`should return the keccak256 signing hash for a ${txnType} transaction`, () => {
+        const tx = getTransaction(txData);
+        const payload = tx.signablePayload;
+        assert.ok(Buffer.isBuffer(payload));
+        assert.strictEqual(payload.length, 32);
+        // txData.id is set from getMessageToSign() in toJson() — must match the signing payload
+        assert.strictEqual('0x' + payload.toString('hex'), txData.id);
+      });
+    });
+
+    it('should produce distinct payloads for Legacy and EIP1559 transactions', () => {
+      const legacy = getTransaction(testData.LEGACY_TXDATA).signablePayload;
+      const eip1559 = getTransaction(testData.EIP1559_TXDATA).signablePayload;
+      assert.notStrictEqual(legacy.toString('hex'), eip1559.toString('hex'));
+    });
+  });
 });

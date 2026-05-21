@@ -27,7 +27,7 @@ import {
 } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
 
-import { isValidEthAddress, KeyPair as EthKeyPair, TransactionBuilder } from './lib';
+import { isValidEthAddress, KeyPair as EthKeyPair, Transaction as EthTransaction, TransactionBuilder } from './lib';
 import { VerifyEthAddressOptions } from './abstractEthLikeNewCoins';
 import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 
@@ -228,6 +228,14 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
       changeAmount: '0', // account base does not make change
       fee: params.feeInfo,
     };
+  }
+
+  /** @inheritDoc */
+  async getSignablePayload(serializedTx: string): Promise<Buffer> {
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(serializedTx);
+    const tx = (await txBuilder.build()) as EthTransaction;
+    return tx.signablePayload;
   }
 
   /**

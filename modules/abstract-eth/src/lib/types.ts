@@ -91,6 +91,10 @@ export class EthTransactionData implements EthLikeTransactionData {
     this.tx = this.tx.sign(privateKey);
   }
 
+  getSignablePayload(): Buffer {
+    return Buffer.from(this.tx.getMessageToSign(true));
+  }
+
   /** @inheritdoc */
   toJson(): TxData {
     const result: BaseTxData = {
