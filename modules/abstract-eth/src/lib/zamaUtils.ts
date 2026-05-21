@@ -1,5 +1,6 @@
 import { addHexPrefix, toBuffer } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
+import { ethers } from 'ethers';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -96,8 +97,14 @@ export function buildMulticallDelegationCalldata(
   });
 
   // Encode outer multicall(bytes[])
+  // ethereumjs-abi v0.6.x has a bug where it omits the per-element offset table
+  // for bytes[], producing malformed calldata that on-chain ABI decoders reject.
+  // Use ethers AbiCoder which correctly emits the head offset words.
   const outerMethod = EthereumAbi.methodID('multicall', [...aclMulticallTypes]);
-  const outerArgs = EthereumAbi.rawEncode([...aclMulticallTypes], [innerCalls]);
+  const outerArgs = Buffer.from(
+    new ethers.utils.AbiCoder().encode([...aclMulticallTypes], [innerCalls]).slice(2),
+    'hex'
+  );
   return addHexPrefix(Buffer.concat([outerMethod, outerArgs]).toString('hex'));
 }
 
