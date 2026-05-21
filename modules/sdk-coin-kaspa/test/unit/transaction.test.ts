@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { Transaction } from '../../src/lib/transaction';
 import { TransactionType } from '@bitgo/sdk-core';
-import { SIGHASH_ALL } from '../../src/lib/sighash';
+import { SIGHASH_ALL } from '../../src/lib/constants';
 import { KEYS, TRANSACTIONS } from '../fixtures/kaspa.fixtures';
 
 const COIN = 'kaspa';
@@ -75,7 +75,7 @@ describe('Kaspa Transaction', function () {
       tx.sign(privKey);
       for (const input of tx.txData.inputs) {
         assert.ok(input.signatureScript, 'Each input should have a signatureScript');
-        assert.ok(input.signatureScript!.length > 0);
+        assert.ok((input.signatureScript as string).length > 0);
       }
     });
 
@@ -93,9 +93,9 @@ describe('Kaspa Transaction', function () {
       const tx = new Transaction(COIN, TRANSACTIONS.simple);
       const privKey = Buffer.from(KEYS.prv, 'hex');
       tx.sign(privKey);
-      const sigHex = tx.txData.inputs[0].signatureScript!;
-      // 65 bytes = 130 hex chars
-      assert.equal(sigHex.length, 130);
+      const sigHex = tx.txData.inputs[0].signatureScript ?? '';
+      // 66 bytes = 132 hex chars: 0x41 push opcode (1) + 64-byte sig + 1-byte sighash type
+      assert.equal(sigHex.length, 132);
       // Last byte is sighash type (0x01 = SIGHASH_ALL)
       const lastByte = parseInt(sigHex.slice(-2), 16);
       assert.equal(lastByte, SIGHASH_ALL);
@@ -142,6 +142,124 @@ describe('Kaspa Transaction', function () {
     });
   });
 
+  // ── ECDSA (v1 address) signing ────────────────────────────────────────────
+  //
+  // These tests cover the auto-detection path in sign() / verifySignature() /
+  // signablePayloads when the input's scriptPublicKey ends with 0xAB (ECDSA).
+
+  describe('sign (ECDSA inputs)', function () {
+    it('should sign a single ECDSA input', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simpleEcdsa);
+      const privKey = Buffer.from(KEYS.prv, 'hex');
+      tx.sign(privKey);
+      const sigScript = tx.txData.inputs[0].signatureScript ?? '';
+      assert.ok(sigScript.length > 0, 'ECDSA input should have a signatureScript');
+      // 66 bytes = 132 hex chars: 0x41 + 64-byte sig + 1-byte sighash type
+      assert.equal(sigScript.length, 132);
+      assert.equal(parseInt(sigScript.slice(-2), 16), SIGHASH_ALL);
+    });
+
+    it('should sign multiple ECDSA inputs', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.multiInputEcdsa);
+      const privKey = Buffer.from(KEYS.prv, 'hex');
+      tx.sign(privKey);
+      assert.equal(tx.txData.inputs.length, 2);
+      for (const input of tx.txData.inputs) {
+        assert.ok(input.signatureScript && input.signatureScript.length > 0);
+      }
+    });
+
+    it('should produce distinct sighashes for ECDSA vs Schnorr inputs on the same key', function () {
+      const schnorrTx = new Transaction(COIN, TRANSACTIONS.simple);
+      const ecdsaTx = new Transaction(COIN, TRANSACTIONS.simpleEcdsa);
+      const [schnorrHash] = schnorrTx.signablePayloads;
+      const [ecdsaHash] = ecdsaTx.signablePayloads;
+      assert.ok(!schnorrHash.equals(ecdsaHash), 'ECDSA and Schnorr hashes must differ');
+    });
+  });
+
+  describe('verifySignature (ECDSA inputs)', function () {
+    it('should verify a valid ECDSA signature with compressed pubkey', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simpleEcdsa);
+      tx.sign(Buffer.from(KEYS.prv, 'hex'));
+      const pubKey = Buffer.from(KEYS.pub, 'hex');
+      assert.ok(tx.verifySignature(pubKey, 0), 'ECDSA signature should verify');
+    });
+
+    it('should return false for wrong public key on ECDSA input', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simpleEcdsa);
+      tx.sign(Buffer.from(KEYS.prv, 'hex'));
+      const wrongPub = Buffer.from('02' + 'ab'.repeat(32), 'hex');
+      assert.equal(tx.verifySignature(wrongPub, 0), false);
+    });
+
+    it('should verify all inputs in a multi-input ECDSA transaction', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.multiInputEcdsa);
+      tx.sign(Buffer.from(KEYS.prv, 'hex'));
+      const pubKey = Buffer.from(KEYS.pub, 'hex');
+      assert.ok(tx.verifySignature(pubKey, 0));
+      assert.ok(tx.verifySignature(pubKey, 1));
+    });
+  });
+
+  describe('sign + verifySignature (mixed Schnorr + ECDSA inputs)', function () {
+    it('should sign and verify each input with the correct algorithm', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.mixedSchnorrEcdsa);
+      const privKey = Buffer.from(KEYS.prv, 'hex');
+      tx.sign(privKey);
+
+      assert.equal(tx.txData.inputs.length, 2, 'should have 2 inputs');
+
+      const pubKey = Buffer.from(KEYS.pub, 'hex');
+      // input[0] is Schnorr (scriptPublicKey ends 0xAC)
+      assert.ok(tx.verifySignature(pubKey, 0), 'Schnorr input[0] should verify');
+      // input[1] is ECDSA (scriptPublicKey ends 0xAB)
+      assert.ok(tx.verifySignature(pubKey, 1), 'ECDSA input[1] should verify');
+    });
+
+    it('should produce different script types for Schnorr and ECDSA inputs', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.mixedSchnorrEcdsa);
+      tx.sign(Buffer.from(KEYS.prv, 'hex'));
+      // Both produce 66-byte (132 hex char) scriptSigs but via different algorithms —
+      // the last opcode of their scriptPublicKey is the differentiator.
+      assert.equal((tx.txData.inputs[0].signatureScript ?? '').length, 132);
+      assert.equal((tx.txData.inputs[1].signatureScript ?? '').length, 132);
+      // The signatures themselves should differ (different sighash algorithm)
+      assert.notEqual(tx.txData.inputs[0].signatureScript, tx.txData.inputs[1].signatureScript);
+    });
+  });
+
+  describe('signablePayloads (ECDSA inputs)', function () {
+    it('should return a 32-byte hash for a single ECDSA input', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simpleEcdsa);
+      const [hash] = tx.signablePayloads;
+      assert.ok(Buffer.isBuffer(hash));
+      assert.equal(hash.length, 32);
+    });
+
+    it('should return distinct hashes for each ECDSA input', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.multiInputEcdsa);
+      const [h0, h1] = tx.signablePayloads;
+      assert.ok(!h0.equals(h1));
+    });
+
+    it('should return different hashes for Schnorr and ECDSA inputs on the same index', function () {
+      const schnorrTx = new Transaction(COIN, TRANSACTIONS.simple);
+      const ecdsaTx = new Transaction(COIN, TRANSACTIONS.simpleEcdsa);
+      // Both transactions have the same structure except scriptPublicKey type.
+      // The ECDSA hash applies an additional SHA256 step so the result must differ.
+      assert.ok(!schnorrTx.signablePayloads[0].equals(ecdsaTx.signablePayloads[0]));
+    });
+
+    it('mixed tx: Schnorr hash at index 0, ECDSA hash at index 1 — both 32 bytes', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.mixedSchnorrEcdsa);
+      const [h0, h1] = tx.signablePayloads;
+      assert.equal(h0.length, 32);
+      assert.equal(h1.length, 32);
+      assert.ok(!h0.equals(h1));
+    });
+  });
+
   describe('explainTransaction', function () {
     it('should return a TransactionExplanation with correct fields', function () {
       const tx = new Transaction(COIN, TRANSACTIONS.simple);
@@ -169,10 +287,10 @@ describe('Kaspa Transaction', function () {
     });
   });
 
-  describe('getFee', function () {
+  describe('fee', function () {
     it('should return explicit fee when set in txData', function () {
       const tx = new Transaction(COIN, TRANSACTIONS.simple);
-      assert.equal(tx.getFee, '2000');
+      assert.equal(tx.fee, '2000');
     });
 
     it('should compute fee from inputs - outputs when fee is not set', function () {
@@ -180,92 +298,130 @@ describe('Kaspa Transaction', function () {
       delete txData.fee;
       const tx = new Transaction(COIN, txData);
       // input: 100000000, output: 99998000, fee = 2000
-      assert.equal(tx.getFee, '2000');
+      assert.equal(tx.fee, '2000');
     });
   });
 
-  describe('signablePayload', function () {
-    it('should return a 32-byte Buffer (Blake2b hash)', function () {
+  describe('signablePayloads', function () {
+    it('should return one Buffer per input', function () {
       const tx = new Transaction(COIN, TRANSACTIONS.simple);
-      const payload = tx.signablePayload;
-      assert.ok(Buffer.isBuffer(payload));
-      assert.equal(payload.length, 32);
+      const payloads = tx.signablePayloads;
+      assert.equal(payloads.length, 1);
+      assert.ok(Buffer.isBuffer(payloads[0]));
+      assert.equal(payloads[0].length, 32);
+    });
+
+    it('should return two Buffers for a two-input transaction', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.multiInput);
+      const payloads = tx.signablePayloads;
+      assert.equal(payloads.length, 2);
+      for (const p of payloads) {
+        assert.ok(Buffer.isBuffer(p));
+        assert.equal(p.length, 32);
+      }
+    });
+
+    it('should return distinct hashes for each input in a multi-input tx', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.multiInput);
+      const [p0, p1] = tx.signablePayloads;
+      assert.ok(!p0.equals(p1), 'per-input sighashes must differ (each commits to its own index)');
     });
 
     it('should throw when transaction has no inputs', function () {
       const tx = new Transaction(COIN);
       assert.throws(() => {
-        tx.signablePayload;
+        tx.signablePayloads;
       }, /no inputs/);
     });
 
-    it('should return deterministic hash for same transaction data', function () {
-      const tx1 = new Transaction(COIN, TRANSACTIONS.simple);
-      const tx2 = new Transaction(COIN, TRANSACTIONS.simple);
-      assert.ok(tx1.signablePayload.equals(tx2.signablePayload));
-    });
-
-    it('should return different hashes for different transactions', function () {
-      const tx1 = new Transaction(COIN, TRANSACTIONS.simple);
+    it('should be deterministic for the same transaction data', function () {
+      const tx1 = new Transaction(COIN, TRANSACTIONS.multiInput);
       const tx2 = new Transaction(COIN, TRANSACTIONS.multiInput);
-      assert.ok(!tx1.signablePayload.equals(tx2.signablePayload));
+      const [a0, a1] = tx1.signablePayloads;
+      const [b0, b1] = tx2.signablePayloads;
+      assert.ok(a0.equals(b0));
+      assert.ok(a1.equals(b1));
     });
   });
 
-  describe('addSignature', function () {
-    it('should apply a 64-byte Schnorr signature to all inputs', function () {
-      const tx = new Transaction(COIN, TRANSACTIONS.simple);
-      const fakeSig = Buffer.alloc(64, 0xab);
-      tx.addSignature(KEYS.pub, fakeSig);
-
-      assert.equal(tx.txData.inputs.length, 1);
-      assert.ok(tx.txData.inputs[0].signatureScript);
-      // 65 bytes = 130 hex chars (64 sig + 1 sighash type)
-      assert.equal(tx.txData.inputs[0].signatureScript!.length, 130);
-    });
-
-    it('should apply signature to all inputs of a multi-input tx', function () {
+  describe('addSignatureForInput', function () {
+    it('should write the signature only to the specified input', function () {
       const tx = new Transaction(COIN, TRANSACTIONS.multiInput);
-      const fakeSig = Buffer.alloc(64, 0xcd);
-      tx.addSignature(KEYS.pub, fakeSig);
+      const fakeSig = Buffer.alloc(64, 0xaa);
+      tx.addSignatureForInput(0, KEYS.pub, fakeSig);
 
-      assert.equal(tx.txData.inputs.length, 2);
-      for (const input of tx.txData.inputs) {
-        assert.ok(input.signatureScript);
-        assert.equal(input.signatureScript!.length, 130);
-      }
+      assert.ok(tx.txData.inputs[0].signatureScript, 'input[0] should be signed');
+      assert.equal(tx.txData.inputs[1].signatureScript, undefined, 'input[1] should remain unsigned');
     });
 
-    it('should throw for non-64-byte signature', function () {
-      const tx = new Transaction(COIN, TRANSACTIONS.simple);
-      assert.throws(() => {
-        tx.addSignature(KEYS.pub, Buffer.alloc(32));
-      }, /64-byte/);
+    it('should write different signatures to different inputs independently', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.multiInput);
+      const sig0 = Buffer.alloc(64, 0xaa);
+      const sig1 = Buffer.alloc(64, 0xbb);
+
+      tx.addSignatureForInput(0, KEYS.pub, sig0);
+      tx.addSignatureForInput(1, KEYS.pub, sig1);
+
+      assert.notEqual(
+        tx.txData.inputs[0].signatureScript,
+        tx.txData.inputs[1].signatureScript,
+        'each input should carry its own signature script'
+      );
     });
 
-    it('should append SIGHASH_ALL byte at the end', function () {
+    it('should produce a 66-byte script (push opcode + 64 sig + 1 sighash type) for the target input', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.multiInput);
+      tx.addSignatureForInput(1, KEYS.pub, Buffer.alloc(64, 0xcc));
+      // 66 bytes = 132 hex chars: 0x41 push opcode + 64-byte sig + 1-byte sighash type
+      assert.equal((tx.txData.inputs[1].signatureScript ?? '').length, 132);
+    });
+
+    it('should append SIGHASH_ALL byte by default', function () {
       const tx = new Transaction(COIN, TRANSACTIONS.simple);
-      const fakeSig = Buffer.alloc(64, 0xab);
-      tx.addSignature(KEYS.pub, fakeSig);
-      const sigHex = tx.txData.inputs[0].signatureScript!;
-      const lastByte = parseInt(sigHex.slice(-2), 16);
+      tx.addSignatureForInput(0, KEYS.pub, Buffer.alloc(64, 0xdd));
+      const lastByte = parseInt((tx.txData.inputs[0].signatureScript ?? '').slice(-2), 16);
       assert.equal(lastByte, SIGHASH_ALL);
     });
 
-    it('should produce a signature that verifies when signed with the correct private key', function () {
-      const tx = new Transaction(COIN, TRANSACTIONS.simple);
-      // Sign properly with private key to get a real signature
+    it('should produce a verifiable signature when given the correct Schnorr sig for that input', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.multiInput);
       const privKey = Buffer.from(KEYS.prv, 'hex');
+
+      // sign() computes the correct per-input sighash internally
       tx.sign(privKey);
-      const realSigHex = tx.txData.inputs[0].signatureScript!;
-      const realSig = Buffer.from(realSigHex.slice(0, 128), 'hex'); // 64-byte Schnorr sig
+      // Skip the leading 0x41 push opcode (2 hex chars), read the next 64 bytes (128 hex chars)
+      const sig0 = Buffer.from((tx.txData.inputs[0].signatureScript ?? '').slice(2, 130), 'hex');
+      const sig1 = Buffer.from((tx.txData.inputs[1].signatureScript ?? '').slice(2, 130), 'hex');
 
-      // Now create a fresh tx and use addSignature instead
-      const tx2 = new Transaction(COIN, TRANSACTIONS.simple);
-      tx2.addSignature(KEYS.pub, realSig);
+      // Rebuild unsigned and apply via addSignatureForInput
+      const tx2 = new Transaction(COIN, TRANSACTIONS.multiInput);
+      tx2.addSignatureForInput(0, KEYS.pub, sig0);
+      tx2.addSignatureForInput(1, KEYS.pub, sig1);
 
-      // The signature scripts should match (same sig bytes + same sighash type)
-      assert.equal(tx2.txData.inputs[0].signatureScript, tx.txData.inputs[0].signatureScript);
+      const pubKey = Buffer.from(KEYS.pub, 'hex');
+      assert.ok(tx2.verifySignature(pubKey, 0), 'input[0] signature should verify');
+      assert.ok(tx2.verifySignature(pubKey, 1), 'input[1] signature should verify');
+    });
+
+    it('should throw for an out-of-range index', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simple);
+      assert.throws(() => {
+        tx.addSignatureForInput(5, KEYS.pub, Buffer.alloc(64));
+      }, /out of range/);
+    });
+
+    it('should throw for a negative index', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simple);
+      assert.throws(() => {
+        tx.addSignatureForInput(-1, KEYS.pub, Buffer.alloc(64));
+      }, /out of range/);
+    });
+
+    it('should throw for a non-64-byte signature', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simple);
+      assert.throws(() => {
+        tx.addSignatureForInput(0, KEYS.pub, Buffer.alloc(32));
+      }, /64-byte/);
     });
   });
 
@@ -277,22 +433,52 @@ describe('Kaspa Transaction', function () {
       assert.notEqual(json, tx.txData);
     });
 
-    it('toBroadcastFormat should return a JSON string', function () {
+    it('toBroadcastFormat should return a REST API JSON string', function () {
       const tx = new Transaction(COIN, TRANSACTIONS.simple);
       const broadcast = tx.toBroadcastFormat();
       assert.equal(typeof broadcast, 'string');
       const parsed = JSON.parse(broadcast);
       assert.equal(parsed.version, 0);
       assert.equal(parsed.inputs.length, 1);
+      // REST API shape: inputs use previousOutpoint
+      assert.ok(parsed.inputs[0].previousOutpoint, 'inputs should use previousOutpoint');
+      assert.equal(parsed.inputs[0].transactionId, undefined, 'transactionId should not be at root of input');
+      // REST API shape: outputs use scriptPublicKey object
+      assert.equal(typeof parsed.outputs[0].scriptPublicKey, 'object');
+      assert.equal(parsed.outputs[0].scriptPublicKey.version, 0);
     });
 
-    it('toHex should return hex-encoded JSON', function () {
+    it('toBroadcastFormat should include required wire fields', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simple);
+      const parsed = JSON.parse(tx.toBroadcastFormat());
+      assert.equal(parsed.lockTime, 0);
+      assert.equal(parsed.subnetworkId, '0000000000000000000000000000000000000000');
+      assert.equal(parsed.gas, 0);
+      assert.equal(parsed.payload, '');
+    });
+
+    it('toBroadcastFormat should include signatureScript after signing', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simple);
+      tx.sign(Buffer.from(KEYS.prv, 'hex'));
+      const parsed = JSON.parse(tx.toBroadcastFormat());
+      assert.ok(parsed.inputs[0].signatureScript.length > 0);
+    });
+
+    it('toHex should return hex-encoded internal JSON (for round-trips)', function () {
       const tx = new Transaction(COIN, TRANSACTIONS.simple);
       const hex = tx.toHex();
       assert.ok(/^[0-9a-fA-F]+$/.test(hex));
-      const decoded = Buffer.from(hex, 'hex').toString();
-      const parsed = JSON.parse(decoded);
-      assert.equal(parsed.version, 0);
+      const decoded = JSON.parse(Buffer.from(hex, 'hex').toString());
+      // Internal format: transactionId at root of input (not previousOutpoint)
+      assert.equal(decoded.inputs[0].transactionId, TRANSACTIONS.simple.inputs[0].transactionId);
+      assert.equal(decoded.inputs[0].amount, TRANSACTIONS.simple.inputs[0].amount);
+    });
+
+    it('toHex and toBroadcastFormat produce different formats', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simple);
+      const internalHex = tx.toHex();
+      const broadcastHex = Buffer.from(tx.toBroadcastFormat()).toString('hex');
+      assert.notEqual(internalHex, broadcastHex);
     });
 
     it('fromHex should reconstruct the transaction', function () {
@@ -325,6 +511,53 @@ describe('Kaspa Transaction', function () {
       const restored = Transaction.fromHex(COIN, hex);
 
       assert.deepEqual(restored.signature, tx.signature);
+    });
+  });
+
+  describe('toBroadcastFormat (REST API shape)', function () {
+    it('should map inputs to previousOutpoint shape', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simple);
+      const api = JSON.parse(tx.toBroadcastFormat());
+
+      assert.equal(api.inputs.length, 1);
+      assert.ok(api.inputs[0].previousOutpoint, 'input should have previousOutpoint');
+      assert.equal(api.inputs[0].previousOutpoint.transactionId, TRANSACTIONS.simple.inputs[0].transactionId);
+      assert.equal(api.inputs[0].previousOutpoint.index, TRANSACTIONS.simple.inputs[0].transactionIndex);
+    });
+
+    it('should not include amount or scriptPublicKey on inputs', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simple);
+      const api = JSON.parse(tx.toBroadcastFormat());
+
+      assert.equal(api.inputs[0].amount, undefined);
+      assert.equal(api.inputs[0].scriptPublicKey, undefined);
+    });
+
+    it('should map outputs to scriptPublicKey object shape', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simple);
+      const api = JSON.parse(tx.toBroadcastFormat());
+
+      assert.equal(api.outputs.length, 1);
+      assert.equal(typeof api.outputs[0].scriptPublicKey, 'object');
+      assert.equal(api.outputs[0].scriptPublicKey.version, 0);
+      assert.ok(typeof api.outputs[0].scriptPublicKey.scriptPublicKey === 'string');
+      assert.equal(api.outputs[0].amount, Number(TRANSACTIONS.simple.outputs[0].amount));
+    });
+
+    it('should include signatureScript as empty string for unsigned inputs', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.simple);
+      const api = JSON.parse(tx.toBroadcastFormat());
+
+      assert.equal(api.inputs[0].signatureScript, '');
+    });
+
+    it('should handle multi-input transactions', function () {
+      const tx = new Transaction(COIN, TRANSACTIONS.multiInput);
+      const api = JSON.parse(tx.toBroadcastFormat());
+
+      assert.equal(api.inputs.length, 2);
+      assert.equal(api.inputs[0].previousOutpoint.transactionId, TRANSACTIONS.multiInput.inputs[0].transactionId);
+      assert.equal(api.inputs[1].previousOutpoint.transactionId, TRANSACTIONS.multiInput.inputs[1].transactionId);
     });
   });
 });

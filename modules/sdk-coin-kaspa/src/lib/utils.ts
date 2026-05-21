@@ -1,5 +1,5 @@
 import { BaseUtils, isValidXprv, isValidXpub } from '@bitgo/sdk-core';
-import { MAINNET_PREFIX, TESTNET_PREFIX } from './constants';
+import { MAINNET_PREFIX, TESTNET_PREFIX, KaspaAddressType } from './constants';
 
 // Kaspa address encoding uses a bech32-like scheme with ':' as separator
 // and a custom checksum polynomial (same as Bitcoin Cash cashaddr).
@@ -154,12 +154,53 @@ export function isValidTestnetAddress(address: string): boolean {
 }
 
 /**
- * Derive a Kaspa P2PK (Schnorr) address from a compressed secp256k1 public key.
+ * Decode a Kaspa address to its P2PK scriptPublicKey hex string.
+ *
+ * Reverses pubKeyToKaspaAddress: decodes the bech32 payload, reads the version
+ * byte to determine the script type, and builds the locking script.
+ *
+ *   v0 (Schnorr): 0x20 || xOnlyPubKey(32B)      || 0xAC (OpCheckSig)
+ *   v1 (ECDSA):   0x21 || compressedPubKey(33B)  || 0xAB (OpCheckSigECDSA)
+ *
+ * Used by TransactionBuilder to populate output scriptPublicKeys from addresses.
+ */
+export function addressToScriptPublicKey(address: string): string {
+  const { data: words } = kaspacDecode(address);
+  const payload = Buffer.from(convertBits(Buffer.from(words), 5, 8, false));
+
+  // First byte is the version / address type.
+  const version = payload[0];
+  const keyBytes = payload.slice(1);
+
+  if (version === KaspaAddressType.SCHNORR) {
+    // v0: keyBytes is 32-byte x-only pubkey
+    if (keyBytes.length !== 32) {
+      throw new Error(`Invalid Schnorr address payload length: ${keyBytes.length}`);
+    }
+    return Buffer.concat([Buffer.from([0x20]), keyBytes, Buffer.from([0xac])]).toString('hex');
+  } else if (version === KaspaAddressType.ECDSA) {
+    // v1: keyBytes is 33-byte compressed pubkey
+    if (keyBytes.length !== 33) {
+      throw new Error(`Invalid ECDSA address payload length: ${keyBytes.length}`);
+    }
+    return Buffer.concat([Buffer.from([0x21]), keyBytes, Buffer.from([0xab])]).toString('hex');
+  } else {
+    throw new Error(`Unknown Kaspa address version: ${version}`);
+  }
+}
+
+/**
+ * Derive a Kaspa P2PK address from a compressed secp256k1 public key.
  *
  * @param compressedPubKey - 33-byte compressed secp256k1 public key (hex string or Buffer)
- * @param hrp - human-readable part ('kaspa' or 'kaspatest')
+ * @param hrp              - human-readable part ('kaspa' or 'kaspatest')
+ * @param type             - address type (default: SCHNORR / v0)
  */
-export function pubKeyToKaspaAddress(compressedPubKey: string | Buffer, hrp: string): string {
+export function pubKeyToKaspaAddress(
+  compressedPubKey: string | Buffer,
+  hrp: string,
+  type: KaspaAddressType = KaspaAddressType.SCHNORR
+): string {
   const pubKeyBytes = Buffer.isBuffer(compressedPubKey)
     ? compressedPubKey
     : Buffer.from(compressedPubKey as string, 'hex');
@@ -168,14 +209,10 @@ export function pubKeyToKaspaAddress(compressedPubKey: string | Buffer, hrp: str
     throw new Error(`Expected 33-byte compressed public key, got ${pubKeyBytes.length}`);
   }
 
-  // X-only public key: drop the prefix byte (02 or 03), keep 32-byte x-coordinate
-  const xOnlyPubKey = pubKeyBytes.slice(1);
-
-  // Kaspa P2PK address:
-  // - version nibble: 0 (Schnorr secp256k1 P2PK)
-  // - payload: x-only public key (32 bytes)
-  const versionByte = 0;
-  const payload = Buffer.concat([Buffer.from([versionByte]), xOnlyPubKey]);
+  // Schnorr (v0): payload uses the 32-byte x-only key (drop the 02/03 prefix).
+  // ECDSA  (v1): payload uses the full 33-byte compressed key (prefix byte kept).
+  const keyPayload = type === KaspaAddressType.SCHNORR ? pubKeyBytes.slice(1) : pubKeyBytes;
+  const payload = Buffer.concat([Buffer.from([type]), keyPayload]);
   const words = convertBits(payload, 8, 5, true);
 
   return kaspaEncode(hrp, words);

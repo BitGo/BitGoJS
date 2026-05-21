@@ -790,6 +790,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     let txOrMessageToSign;
     let derivationPath;
     let bufferContent;
+    let serializedTxHex: string | undefined;
     const userGpgKey = await generateGPGKeyPair('secp256k1');
     const bitgoGpgPubKey = await this.pickBitgoPubGpgKeyForSigning(true, params.reqId, txRequest.enterpriseId);
 
@@ -812,11 +813,16 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         );
       }
 
-      // For ICP transactions, the HSM signs the serializedTxHex, while the user signs the signableHex separately.
-      // Verification cannot be performed directly on the signableHex alone. However, we can parse the serializedTxHex
-      // to regenerate the signableHex and compare it against the provided value for verification.
-      // In contrast, for other coin families, verification is typically done using just the signableHex.
-      if (this.baseCoin.getConfig().family === 'icp') {
+      // For ICP and Avalanche atomic transactions, signableHex is a digest (not
+      // a parseable transaction).  Pass serializedTxHex so verifyTransaction can
+      // parse the full transaction bytes.
+      // - ICP: signableHex is a hash; serializedTxHex is the CBOR-encoded tx.
+      // - Avalanche atomic (FLRP/FLR cross-chain): signableHex is SHA-256(txBody);
+      //   serializedTxHex is the PVM/EVM atomic tx (codec prefix 0x0000).
+      // For all other coins, signableHex IS the unsigned transaction (e.g. RLP bytes).
+      const isIcp = this.baseCoin.getConfig().family === 'icp';
+      const isAvalancheAtomic = unsignedTx.serializedTxHex && unsignedTx.serializedTxHex.startsWith('0000');
+      if (isIcp || isAvalancheAtomic) {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
           txParams: params.txParams || { recipients: [] },
@@ -833,6 +839,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       }
       txOrMessageToSign = unsignedTx.signableHex;
       derivationPath = unsignedTx.derivationPath;
+      serializedTxHex = unsignedTx.serializedTxHex;
       bufferContent = Buffer.from(txOrMessageToSign, 'hex');
     } else if (requestType === RequestType.message) {
       txOrMessageToSign = txRequest.messages![0].messageEncoded;
@@ -842,14 +849,24 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       throw new Error('Invalid request type');
     }
 
-    let hash: Hash;
-    try {
-      hash = this.baseCoin.getHashFunction();
-    } catch (err) {
-      hash = createKeccakHash('keccak256') as Hash;
+    // For Avalanche atomic transactions (cross-chain export/import between
+    // C-chain and P-chain), signableHex is already SHA-256(txBody) — a 32-byte
+    // pre-hashed digest.  Use it directly as the DKLS message hash instead of
+    // applying the coin's hash function (keccak256 for EVM coins).
+    // Same logic as getHashStringAndDerivationPath (external signer path).
+    let hashBuffer: Buffer;
+    if (serializedTxHex && serializedTxHex.startsWith('0000')) {
+      hashBuffer = bufferContent;
+      assert(hashBuffer.length === 32, `Avalanche pre-hashed signableHex must be 32 bytes, got ${hashBuffer.length}`);
+    } else {
+      let hash: Hash;
+      try {
+        hash = this.baseCoin.getHashFunction();
+      } catch (err) {
+        hash = createKeccakHash('keccak256') as Hash;
+      }
+      hashBuffer = hash.update(bufferContent).digest();
     }
-    // check what the encoding is supposed to be for message
-    const hashBuffer = hash.update(bufferContent).digest();
     const otherSigner = new DklsDsg.Dsg(
       userKeyShare,
       params.mpcv2PartyId !== undefined ? params.mpcv2PartyId : 0,
@@ -1013,15 +1030,31 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   ): { hashBuffer: Buffer; derivationPath: string } {
     let txToSign: string;
     let derivationPath: string;
+    let serializedTxHex: string | undefined;
     if (requestType === RequestType.tx) {
-      assert(txRequest.transactions && txRequest.transactions.length === 1, 'Unable to find transactions in txRequest');
-      txToSign = txRequest.transactions[0].unsignedTx.signableHex;
-      derivationPath = txRequest.transactions[0].unsignedTx.derivationPath;
+      const signableTx = this.getSignableHexAndDerivationPath(txRequest, 'Unable to find transactions in txRequest');
+      txToSign = signableTx.signableHex;
+      derivationPath = signableTx.derivationPath;
+      serializedTxHex = signableTx.serializedTxHex;
     } else if (requestType === RequestType.message) {
       // TODO(WP-2176): Add support for message signing
       throw new Error('MPCv2 message signing not supported yet.');
     } else {
       throw new Error('Invalid request type, got: ' + requestType);
+    }
+
+    // For Avalanche atomic transactions (cross-chain export/import between
+    // C-chain and P-chain), signableHex is already SHA-256(txBody) — a 32-byte
+    // pre-hashed digest.  Use it directly as the DKLS message hash instead of
+    // applying the coin's hash function (keccak256 for EVM coins).
+    // This matches the WP/HSM BitGo-party behaviour (MPCv2Signer.isPreHashed)
+    // so both DKLS parties agree on the same message hash.
+    // Detection: Avalanche codec type ID prefix is 0x0000; standard EVM RLP
+    // starts with 0xf8xx, so there is no collision.
+    if (serializedTxHex && serializedTxHex.startsWith('0000')) {
+      const hashBuffer = Buffer.from(txToSign, 'hex');
+      assert(hashBuffer.length === 32, `Avalanche pre-hashed signableHex must be 32 bytes, got ${hashBuffer.length}`);
+      return { hashBuffer, derivationPath };
     }
 
     let hash: Hash;
@@ -1033,67 +1066,6 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const hashBuffer = hash.update(Buffer.from(txToSign, 'hex')).digest();
 
     return { hashBuffer, derivationPath };
-  }
-
-  /**
-   * Gets the BitGo and user GPG keys from the BitGo public GPG key and the encrypted user GPG private key.
-   * @param {string} bitgoPublicGpgKey  - the BitGo public GPG key
-   * @param {string} encryptedUserGpgPrvKey  - the encrypted user GPG private key
-   * @param {string} walletPassphrase  - the wallet passphrase
-   * @param {string} adata - the additional data to validate the GPG keys
-   * @returns {Promise<{ bitgoGpgKey: pgp.Key; userGpgKey: pgp.SerializedKeyPair<string> }>} - the BitGo and user GPG keys
-   */
-  private async getBitgoAndUserGpgKeys(
-    bitgoPublicGpgKey: string,
-    encryptedUserGpgPrvKey: string,
-    walletPassphrase: string,
-    adata: string
-  ): Promise<{
-    bitgoGpgKey: pgp.Key;
-    userGpgKey: pgp.SerializedKeyPair<string>;
-  }> {
-    const bitgoGpgKey = await pgp.readKey({ armoredKey: bitgoPublicGpgKey });
-    let decryptedGpgPrvKey: string;
-    if (isV2Envelope(encryptedUserGpgPrvKey)) {
-      decryptedGpgPrvKey = await this.bitgo.decryptAsync({ input: encryptedUserGpgPrvKey, password: walletPassphrase });
-    } else {
-      decryptedGpgPrvKey = this.bitgo.decrypt({ input: encryptedUserGpgPrvKey, password: walletPassphrase });
-    }
-    if (adata) {
-      this.validateAdata(adata, encryptedUserGpgPrvKey, EcdsaMPCv2Utils.DKLS23_SIGNING_USER_GPG_KEY);
-    }
-    const userDecryptedKey = await pgp.readKey({ armoredKey: decryptedGpgPrvKey });
-    const userGpgKey: pgp.SerializedKeyPair<string> = {
-      privateKey: userDecryptedKey.armor(),
-      publicKey: userDecryptedKey.toPublic().armor(),
-    };
-    return {
-      bitgoGpgKey,
-      userGpgKey,
-    };
-  }
-
-  /**
-   * Validates the adata and cyphertext.
-   * @param adata string
-   * @param cyphertext string
-   * @returns void
-   * @throws {Error} if the adata or cyphertext is invalid
-   */
-  private validateAdata(adata: string, cyphertext: string, roundDomainSeparator: string): void {
-    let cypherJson;
-    try {
-      cypherJson = JSON.parse(cyphertext);
-    } catch (e) {
-      throw new Error('Failed to parse cyphertext to JSON, got: ' + cyphertext);
-    }
-    // using decodeURIComponent to handle special characters
-    if (
-      decodeURIComponent(cypherJson.adata) !== decodeURIComponent(`${roundDomainSeparator}:${adata}`) &&
-      decodeURIComponent(cypherJson.adata) !== decodeURIComponent(adata)
-    ) {
-      throw new Error('Adata does not match cyphertext adata');
-    }
   }
 
   // #endregion
@@ -1270,12 +1242,17 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
 
     const useV2 = isV2Envelope(encryptedRound1Session);
 
-    const { bitgoGpgKey, userGpgKey } = await this.getBitgoAndUserGpgKeys(
+    const { bitgoGpgKey, userGpgPrvKey } = await this.getBitgoAndUserGpgKeys(
       bitgoPublicGpgKey,
       encryptedUserGpgPrvKey,
       walletPassphrase,
-      adata
+      adata,
+      EcdsaMPCv2Utils.DKLS23_SIGNING_USER_GPG_KEY
     );
+    const userGpgKey: pgp.SerializedKeyPair<string> = {
+      privateKey: userGpgPrvKey.armor(),
+      publicKey: userGpgPrvKey.toPublic().armor(),
+    };
 
     const signatureShares = txRequest.transactions?.[0].signatureShares;
     assert(signatureShares, 'Missing signature shares in round 1 txRequest');
@@ -1364,12 +1341,17 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
 
     const useV2 = isV2Envelope(encryptedRound2Session);
 
-    const { bitgoGpgKey, userGpgKey } = await this.getBitgoAndUserGpgKeys(
+    const { bitgoGpgKey, userGpgPrvKey } = await this.getBitgoAndUserGpgKeys(
       bitgoPublicGpgKey,
       encryptedUserGpgPrvKey,
       walletPassphrase,
-      adata
+      adata,
+      EcdsaMPCv2Utils.DKLS23_SIGNING_USER_GPG_KEY
     );
+    const userGpgKey: pgp.SerializedKeyPair<string> = {
+      privateKey: userGpgPrvKey.armor(),
+      publicKey: userGpgPrvKey.toPublic().armor(),
+    };
 
     const signatureShares = txRequest.transactions?.[0].signatureShares;
     assert(signatureShares, 'Missing signature shares in round 2 txRequest');

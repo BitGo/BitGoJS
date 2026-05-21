@@ -9,6 +9,7 @@ import * as express from 'express';
 import { handleV2ConsolidateAccount } from '../../../src/clientRoutes';
 
 import { BitGo } from 'bitgo';
+import { MultisigType } from '@bitgo/sdk-core';
 
 describe('Consolidate account', () => {
   it('should fail if coin does not allow consolidation', async () => {
@@ -71,11 +72,13 @@ describe('Consolidate account', () => {
     );
   });
 
-  function createConsolidateMocks(res, allowsAccountConsolidations = false, supportsTss = false) {
+  function createConsolidateMocks(res, allowsAccountConsolidations = false, multisigType: MultisigType = 'onchain') {
     const consolidationStub = sinon.stub().returns(res);
-    const walletStub = { sendAccountConsolidations: consolidationStub };
+    const walletStub = {
+      sendAccountConsolidations: consolidationStub,
+      _wallet: { multisigType },
+    };
     const coinStub = {
-      supportsTss: () => supportsTss,
       allowsAccountConsolidations: () => allowsAccountConsolidations,
       wallets: () => ({ get: () => Promise.resolve(walletStub) }),
     };
@@ -108,13 +111,45 @@ describe('Consolidate account', () => {
   it('should pass the apiVersion param to bitgo api consolidate/build', async () => {
     const result = { success: [], failure: [] };
     const body = { apiVersion: 'full' };
-    const { bitgoStub, consolidationStub } = createConsolidateMocks(result, true, true);
+    const { bitgoStub, consolidationStub } = createConsolidateMocks(result, true, 'tss');
     const mockRequest = {
       bitgo: bitgoStub,
       decoded: {
         coin: 'tsol',
         id: '23423423423423',
       },
+      body,
+    };
+
+    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest).should.be.resolvedWith(
+      result
+    );
+    consolidationStub.should.be.calledOnceWith(body);
+  });
+
+  it('should use on-chain signing params for a TRX on-chain wallet even though TRX supportsTss', async () => {
+    const result = { failure: [] };
+    const body = { consolidateAddresses: ['addr1'] };
+    const { bitgoStub, consolidationStub } = createConsolidateMocks(result, true, 'onchain');
+    const mockRequest = {
+      bitgo: bitgoStub,
+      decoded: { coin: 'ttrx', id: '23423423423423' },
+      body,
+    };
+
+    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest).should.be.resolvedWith(
+      result
+    );
+    consolidationStub.should.be.calledOnceWith(body);
+  });
+
+  it('should use TSS signing params for a TRX TSS wallet', async () => {
+    const result = { failure: [] };
+    const body = { consolidateAddresses: ['addr1'] };
+    const { bitgoStub, consolidationStub } = createConsolidateMocks(result, true, 'tss');
+    const mockRequest = {
+      bitgo: bitgoStub,
+      decoded: { coin: 'ttrx', id: '23423423423423' },
       body,
     };
 

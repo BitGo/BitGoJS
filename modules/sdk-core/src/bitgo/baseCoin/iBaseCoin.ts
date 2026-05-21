@@ -159,6 +159,11 @@ export interface VerifyAddressOptions {
    * For SMC (Self-Managed Custodial) TSS wallets, this is used to compute the derivation prefix.
    */
   derivedFromParentWithSeed?: string;
+  /**
+   * Identifies the MPC signing protocol version of the wallet (e.g. 'MPCv2').
+   * Used to distinguish between MPCv1 and MPCv2 wallets.
+   */
+  multisigTypeVersion?: 'MPCv2';
 }
 
 /**
@@ -187,6 +192,11 @@ export interface TssVerifyAddressOptions {
    * The derivation path becomes {computedPrefix}/{index} instead of m/{index}.
    */
   derivedFromParentWithSeed?: string;
+  /**
+   * Identifies the MPC signing protocol version of the wallet (e.g. 'MPCv2').
+   * Used to distinguish between MPCv1 and MPCv2 wallets.
+   */
+  multisigTypeVersion?: 'MPCv2';
 }
 
 export function isTssVerifyAddressOptions<T extends VerifyAddressOptions | TssVerifyAddressOptions>(

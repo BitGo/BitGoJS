@@ -470,12 +470,21 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
 
   // add the tokens not present in the static coin map
   for (const tokenConfigs of Object.values(tokenConfigMap)) {
+    if (!tokenConfigs.length) continue;
     const tokenConfig = tokenConfigs[0];
 
     if (!isCoinPresentInCoinMap({ ...tokenConfig }) && !nftAndOtherTokens.has(tokenConfig.name)) {
-      const token = createToken(tokenConfig);
-      if (token) {
-        BaseCoins.set(token.name, token);
+      try {
+        const token = createToken(tokenConfig);
+        if (token) {
+          BaseCoins.set(token.name, token);
+        }
+      } catch (e) {
+        console.warn(
+          `Skipping malformed token: name="${tokenConfig.name}" id="${tokenConfig.id}" family="${
+            tokenConfig.family
+          }" error=${(e as Error).message}`
+        );
       }
     }
   }
@@ -519,6 +528,7 @@ export function createTokenMapUsingTrimmedConfigDetails(
   const networkNameMap = getNetworksMap();
 
   for (const tokenConfigs of Object.values(reducedTokenConfigMap)) {
+    if (!tokenConfigs.length) continue;
     const tokenConfig = tokenConfigs[0];
     const network = networkNameMap.get(tokenConfig.network.name);
 

@@ -199,6 +199,20 @@ export const UNDELEGATE_RESOURCE_CONTRACT = [
   },
 ];
 
+// owner = TLWh67P93KgtnZNCtGnEHM1H33Nhq2uvvN (custodian), account = TLBPLGBuYhQmdzQAEQvBhw7LKzcw1TSSG9 (to)
+export const ACCOUNT_CREATE_CONTRACT = [
+  {
+    parameter: {
+      value: {
+        owner_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
+        account_address: '416ffedf93921506c3efdb510f7c4f256036c48a6a',
+      },
+      type_url: 'type.googleapis.com/protocol.AccountCreateContract',
+    },
+    type: 'AccountCreateContract',
+  },
+];
+
 // DO NOT RE-USE THIS PRV FOR REAL MONEY
 export const FirstPrivateKey = '2DBEAC1C22849F47514445A56AEF2EF164528A502DE4BD289E23EA1E2D4C4B06';
 export const SecondPrivateKey = 'FB3AA887E0BE3FAC9D75E661DAFF4A7FE0E91AAB13DA9775CD8586D7CB9B7640';

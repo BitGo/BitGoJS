@@ -221,6 +221,9 @@
       "path": "./modules/sdk-coin-soneium"
     },
     {
+      "path": "./modules/sdk-coin-starknet"
+    },
+    {
       "path": "./modules/sdk-coin-stt"
     },
     {

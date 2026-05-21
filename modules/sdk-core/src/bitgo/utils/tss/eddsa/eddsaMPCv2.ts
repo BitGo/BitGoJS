@@ -26,11 +26,26 @@ import {
 } from '../../../tss/eddsa/eddsaMPCv2';
 import { generateGPGKeyPair } from '../../opengpgUtils';
 import { MPCv2PartiesEnum } from '../ecdsa/typesMPCv2';
-import { RequestType, SignatureShareType, TSSParamsForMessageWithPrv, TSSParamsWithPrv, TxRequest } from '../baseTypes';
+import {
+  CustomEddsaMPCv2SigningRound1GeneratingFunction,
+  CustomEddsaMPCv2SigningRound2GeneratingFunction,
+  CustomEddsaMPCv2SigningRound3GeneratingFunction,
+  RequestType,
+  SignatureShareType,
+  TSSParams,
+  TSSParamsForMessage,
+  TSSParamsForMessageWithPrv,
+  TSSParamsWithPrv,
+  TxRequest,
+} from '../baseTypes';
 import { BaseEddsaUtils } from './base';
 import { EddsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './eddsaMPCv2KeyGenSender';
 
 export class EddsaMPCv2Utils extends BaseEddsaUtils {
+  // TODO(WCI-378): call the MPS_DSG_SIGNING_ROUND1/2_STATE in createOfflineRoundShare handlers
+  // private static readonly MPS_DSG_SIGNING_ROUND1_STATE = 'MPS_DSG_SIGNING_ROUND1_STATE';
+  // private static readonly MPS_DSG_SIGNING_ROUND2_STATE = 'MPS_DSG_SIGNING_ROUND2_STATE';
+
   /** @inheritdoc */
   async createKeychains(params: {
     passphrase: string;
@@ -514,5 +529,104 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     return sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, requestType, params.reqId);
   }
 
+  // #endregion
+
+  // #region external signer
+  /** @inheritdoc */
+  async signEddsaMPCv2TssUsingExternalSigner(
+    params: TSSParams | TSSParamsForMessage,
+    externalSignerEddsaMPCv2SigningRound1Generator: CustomEddsaMPCv2SigningRound1GeneratingFunction,
+    externalSignerEddsaMPCv2SigningRound2Generator: CustomEddsaMPCv2SigningRound2GeneratingFunction,
+    externalSignerEddsaMPCv2SigningRound3Generator: CustomEddsaMPCv2SigningRound3GeneratingFunction,
+    requestType: RequestType = RequestType.tx
+  ): Promise<TxRequest> {
+    const { txRequest, reqId } = params;
+
+    // TODO(WP-2176): Add support for message signing
+    assert(
+      requestType === RequestType.tx,
+      'Only transaction signing is supported for external signer, got: ' + requestType
+    );
+
+    let txRequestResolved: TxRequest;
+    if (typeof txRequest === 'string') {
+      txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest, reqId);
+    } else {
+      txRequestResolved = txRequest;
+    }
+
+    const bitgoPublicGpgKey = await this.pickBitgoPubGpgKeyForSigning(
+      true,
+      reqId,
+      txRequestResolved.enterpriseId,
+      true
+    );
+
+    if (!bitgoPublicGpgKey) {
+      throw new Error('Missing BitGo GPG key for MPCv2');
+    }
+
+    // round 1
+    const { signatureShareRound1, userGpgPubKey, encryptedRound1Session, encryptedUserGpgPrvKey } =
+      await externalSignerEddsaMPCv2SigningRound1Generator({ txRequest: txRequestResolved });
+    const round1TxRequest = await sendSignatureShareV2(
+      this.bitgo,
+      txRequestResolved.walletId,
+      txRequestResolved.txRequestId,
+      [signatureShareRound1],
+      requestType,
+      this.baseCoin.getMPCAlgorithm(),
+      userGpgPubKey,
+      undefined,
+      this.wallet.multisigTypeVersion(),
+      reqId
+    );
+
+    // round 2
+    const { signatureShareRound2, encryptedRound2Session } = await externalSignerEddsaMPCv2SigningRound2Generator({
+      txRequest: round1TxRequest,
+      encryptedRound1Session,
+      encryptedUserGpgPrvKey,
+      bitgoPublicGpgKey: bitgoPublicGpgKey.armor(),
+    });
+    const round2TxRequest = await sendSignatureShareV2(
+      this.bitgo,
+      txRequestResolved.walletId,
+      txRequestResolved.txRequestId,
+      [signatureShareRound2],
+      requestType,
+      this.baseCoin.getMPCAlgorithm(),
+      userGpgPubKey,
+      undefined,
+      this.wallet.multisigTypeVersion(),
+      reqId
+    );
+    assert(
+      round2TxRequest.transactions && round2TxRequest.transactions[0].signatureShares,
+      'Missing signature shares in round 2 txRequest'
+    );
+
+    // round 3
+    const { signatureShareRound3 } = await externalSignerEddsaMPCv2SigningRound3Generator({
+      txRequest: round2TxRequest,
+      encryptedRound2Session,
+      encryptedUserGpgPrvKey,
+      bitgoPublicGpgKey: bitgoPublicGpgKey.armor(),
+    });
+    await sendSignatureShareV2(
+      this.bitgo,
+      txRequestResolved.walletId,
+      txRequestResolved.txRequestId,
+      [signatureShareRound3],
+      requestType,
+      this.baseCoin.getMPCAlgorithm(),
+      userGpgPubKey,
+      undefined,
+      this.wallet.multisigTypeVersion(),
+      reqId
+    );
+
+    return sendTxRequest(this.bitgo, txRequestResolved.walletId, txRequestResolved.txRequestId, requestType, reqId);
+  }
   // #endregion
 }

@@ -18,6 +18,7 @@ export interface SignPayloadParameters {
 
 export interface ITradingAccount {
   readonly id: string;
+  readonly userKeySigningRequired: boolean;
   signPayload(params: SignPayloadParameters): Promise<string>;
   toNetwork(): ITradingNetwork;
 }

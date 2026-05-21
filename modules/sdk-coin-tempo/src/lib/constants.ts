@@ -27,3 +27,7 @@ export const TIP20_DECIMALS = 6;
  * Tempo uses EIP-7702 Account Abstraction with transaction type 0x76
  */
 export const AA_TRANSACTION_TYPE = '0x76' as const;
+
+/** TIP-20 token names for pathUSD — used to look up contract address from statics */
+export const PATH_USD_TOKEN_MAINNET = 'tempo:pathusd';
+export const PATH_USD_TOKEN_TESTNET = 'ttempo:pathusd';

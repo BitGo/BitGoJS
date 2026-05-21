@@ -1,6 +1,7 @@
 import * as should from 'should';
 import { KeyPair } from '../../src/lib/keyPair';
-import { KEYS } from '../fixtures/kaspa.fixtures';
+import { KaspaAddressType } from '../../src/lib/constants';
+import { KEYS, ADDRESSES } from '../fixtures/kaspa.fixtures';
 
 describe('Kaspa KeyPair', function () {
   describe('Key Generation', function () {
@@ -57,6 +58,45 @@ describe('Kaspa KeyPair', function () {
       const kp1 = new KeyPair({ prv: KEYS.prv });
       const kp2 = new KeyPair();
       kp1.getAddress('mainnet').should.not.equal(kp2.getAddress('mainnet'));
+    });
+  });
+
+  describe('ECDSA Address Derivation (v1)', function () {
+    it('should derive a mainnet ECDSA address', function () {
+      const kp = new KeyPair({ prv: KEYS.prv });
+      const address = kp.getAddress('mainnet', KaspaAddressType.ECDSA);
+      address.should.startWith('kaspa');
+      address.should.containEql(':');
+    });
+
+    it('should derive a testnet ECDSA address', function () {
+      const kp = new KeyPair({ prv: KEYS.prv });
+      const address = kp.getAddress('testnet', KaspaAddressType.ECDSA);
+      address.should.startWith('kaspatest');
+      address.should.containEql(':');
+    });
+
+    it('Schnorr and ECDSA addresses for the same key should differ', function () {
+      const kp = new KeyPair({ prv: KEYS.prv });
+      const schnorrAddr = kp.getAddress('mainnet');
+      const ecdsaAddr = kp.getAddress('mainnet', KaspaAddressType.ECDSA);
+      schnorrAddr.should.not.equal(ecdsaAddr);
+    });
+
+    it('Schnorr address matches fixture ADDRESSES.valid', function () {
+      const kp = new KeyPair({ prv: KEYS.prv });
+      kp.getAddress('mainnet').should.equal(ADDRESSES.valid);
+    });
+
+    it('ECDSA address matches fixture ADDRESSES.validEcdsa', function () {
+      const kp = new KeyPair({ prv: KEYS.prv });
+      kp.getAddress('mainnet', KaspaAddressType.ECDSA).should.equal(ADDRESSES.validEcdsa);
+    });
+
+    it('should be consistent across two KeyPair instances for ECDSA', function () {
+      const kp1 = new KeyPair({ prv: KEYS.prv });
+      const kp2 = new KeyPair({ prv: KEYS.prv });
+      kp1.getAddress('mainnet', KaspaAddressType.ECDSA).should.equal(kp2.getAddress('mainnet', KaspaAddressType.ECDSA));
     });
   });
 });

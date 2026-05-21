@@ -1413,6 +1413,7 @@ export class Wallet implements IWallet {
       const verificationData: VerifyAddressOptions = _.merge({}, newAddress, {
         rootAddress,
         walletVersion: _.get(this._wallet, 'coinSpecific.walletVersion'),
+        multisigTypeVersion: this.multisigTypeVersion(),
       });
 
       if (verificationData.error) {
@@ -2137,7 +2138,7 @@ export class Wallet implements IWallet {
    * @param params
    * - txPrebuild
    * - [keychain / key] (object) or prv (string)
-   * - walletPassphrase
+   * - walletPassphrase (optional ONLY for OFC wallets with userKeySigningRequired = false)
    * - verifyTxParams (optional) - when provided, the transaction will be verified before signing
    *   - txParams: transaction parameters used for verification
    *   - verification: optional verification options
@@ -2163,6 +2164,15 @@ export class Wallet implements IWallet {
     ) {
       // invoke external signer TSS for ECDSA workflow
       return this.signTransactionTssExternalSignerECDSA(this.baseCoin, params);
+    }
+
+    if (
+      _.isFunction(params.customEddsaMPCv2SigningRound1GenerationFunction) &&
+      _.isFunction(params.customEddsaMPCv2SigningRound2GenerationFunction) &&
+      _.isFunction(params.customEddsaMPCv2SigningRound3GenerationFunction)
+    ) {
+      // invoke external signer TSS for EdDSA MPCv2 workflow
+      return this.signTransactionTssExternalSignerEdDSAMPCv2(this.baseCoin, params);
     }
 
     if (
@@ -2264,6 +2274,17 @@ export class Wallet implements IWallet {
       };
       return params.customSigningFunction(signTransactionParamsWithSeed);
     }
+
+    if (this.baseCoin.getFamily() === 'ofc') {
+      const userKeySigningRequired = this.toTradingAccount().userKeySigningRequired;
+      const prv = userKeySigningRequired ? await this.getUserPrvAsync(presign as GetUserPrvOptions) : undefined;
+      return this.baseCoin.signTransaction({
+        ...signTransactionParams,
+        prv,
+        wallet: this,
+      });
+    }
+
     return this.baseCoin.signTransaction({
       ...signTransactionParams,
       prv: await this.getUserPrvAsync(presign as GetUserPrvOptions),
@@ -3526,6 +3547,22 @@ export class Wallet implements IWallet {
       delete prebuild.wallet;
       delete prebuild.buildParams;
 
+      // For TSS wallets the build endpoint returns only { txRequestId, stakingParams } — no txHex.
+      // Fetch the full txRequest to obtain serializedTxHex and populate txHex so that
+      // verifyTransaction (called inside prebuildAndSignTransaction) has the transaction bytes
+      // it needs. This mirrors what prebuildTransactionTxRequests does for other tx types.
+      if (this._wallet.multisigType === 'tss' && !prebuild.txHex && prebuild.txRequestId) {
+        const txRequest = await getTxRequest(this.bitgo, this.id(), prebuild.txRequestId, params.reqId);
+        const unsignedTx =
+          txRequest.apiVersion === 'full' ? txRequest.transactions?.[0]?.unsignedTx : txRequest.unsignedTxs?.[0];
+        if (!unsignedTx?.serializedTxHex) {
+          throw new Error(
+            `Expected serializedTxHex on TSS resource management prebuild for txRequestId ${prebuild.txRequestId}`
+          );
+        }
+        prebuild = _.extend({}, prebuild, { txHex: unsignedTx.serializedTxHex });
+      }
+
       prebuild = _.extend({}, prebuild, { walletId: this.id() });
       debug('final resource management transaction prebuild: %O', prebuild);
       prebuilds.push(prebuild);
@@ -4370,6 +4407,59 @@ export class Wallet implements IWallet {
         params.customKShareGeneratingFunction,
         params.customMuDeltaShareGeneratingFunction,
         params.customSShareGeneratingFunction
+      );
+      return signedTxRequest;
+    } catch (e) {
+      throw new Error('failed to sign transaction ' + e);
+    }
+  }
+
+  /**
+   * Signs a transaction from a TSS EdDSA MPCv2 wallet using external signer.
+   *
+   * @param params signing options
+   */
+  private async signTransactionTssExternalSignerEdDSAMPCv2(
+    coin: IBaseCoin,
+    params: WalletSignTransactionOptions = {}
+  ): Promise<TxRequest> {
+    let txRequestId = '';
+    if (params.txRequestId) {
+      txRequestId = params.txRequestId;
+    } else if (params.txPrebuild && params.txPrebuild.txRequestId) {
+      txRequestId = params.txPrebuild.txRequestId;
+    } else {
+      throw new Error('TxRequestId required to sign TSS transactions with External Signer.');
+    }
+
+    if (!params.customEddsaMPCv2SigningRound1GenerationFunction) {
+      throw new Error(
+        'Generator function for EdDSA MPCv2 Round 1 share required to sign transactions with External Signer.'
+      );
+    }
+
+    if (!params.customEddsaMPCv2SigningRound2GenerationFunction) {
+      throw new Error(
+        'Generator function for EdDSA MPCv2 Round 2 share required to sign transactions with External Signer.'
+      );
+    }
+
+    if (!params.customEddsaMPCv2SigningRound3GenerationFunction) {
+      throw new Error(
+        'Generator function for EdDSA MPCv2 Round 3 share required to sign transactions with External Signer.'
+      );
+    }
+
+    try {
+      assert(this.tssUtils, 'tssUtils must be defined');
+      const signedTxRequest = await this.tssUtils.signEddsaMPCv2TssUsingExternalSigner(
+        {
+          txRequest: txRequestId,
+          reqId: params.reqId || new RequestTracer(),
+        },
+        params.customEddsaMPCv2SigningRound1GenerationFunction,
+        params.customEddsaMPCv2SigningRound2GenerationFunction,
+        params.customEddsaMPCv2SigningRound3GenerationFunction
       );
       return signedTxRequest;
     } catch (e) {

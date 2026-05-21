@@ -9,7 +9,7 @@ import {
 import { bip32 } from '@bitgo/secp256k1';
 import { randomBytes } from 'crypto';
 import { pubKeyToKaspaAddress } from './utils';
-import { MAINNET_PREFIX, TESTNET_PREFIX } from './constants';
+import { MAINNET_PREFIX, TESTNET_PREFIX, KaspaAddressType } from './constants';
 
 const DEFAULT_SEED_SIZE_BYTES = 16;
 
@@ -54,11 +54,14 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   /**
    * Get a Kaspa address from this key pair.
    *
-   * @returns {string} The bech32-encoded Kaspa address
+   * @param network - 'mainnet' or 'testnet' (default: 'mainnet')
+   * @param type    - address type (default: SCHNORR / v0 for hot-wallet;
+   *                  use KaspaAddressType.ECDSA / v1 for MPC/DKLS wallets)
+   * @returns bech32-encoded Kaspa address
    */
-  getAddress(network = 'mainnet'): string {
+  getAddress(network = 'mainnet', type: KaspaAddressType = KaspaAddressType.SCHNORR): string {
     const hrp = network === 'testnet' ? TESTNET_PREFIX : MAINNET_PREFIX;
     const compressedPub = this.getPublicKey({ compressed: true });
-    return pubKeyToKaspaAddress(compressedPub, hrp);
+    return pubKeyToKaspaAddress(compressedPub, hrp, type);
   }
 }

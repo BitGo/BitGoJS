@@ -1679,4 +1679,13 @@ export const bscTokens = [
     UnderlyingAsset['bsc:t-ivvon'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    '27fe5698-f752-49c8-ab7f-1943eafa9639',
+    'bsc:sqd',
+    'Subsquid',
+    18,
+    '0xe50e3d1a46070444f44df911359033f2937fcc13',
+    UnderlyingAsset['bsc:sqd'],
+    BSC_TOKEN_FEATURES
+  ),
 ];

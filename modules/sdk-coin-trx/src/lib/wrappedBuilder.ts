@@ -17,6 +17,7 @@ import { WithdrawExpireUnfreezeTxBuilder } from './withdrawExpireUnfreezeTxBuild
 import { WithdrawBalanceTxBuilder } from './withdrawBuilder';
 import { DelegateResourceTxBuilder } from './delegateResourceTxBuilder';
 import { UndelegateResourceTxBuilder } from './undelegateResourceTxBuilder';
+import { AccountCreateTxBuilder } from './accountCreateTxBuilder';
 
 /**
  * Wrapped Builder class
@@ -120,6 +121,16 @@ export class WrappedBuilder extends TransactionBuilder {
     return this.initializeBuilder(tx, new UndelegateResourceTxBuilder(this._coinConfig));
   }
 
+  /**
+   * Returns a specific builder to create an account create transaction
+   *
+   * @param {TransactionReceipt | string} [tx] The transaction to initialize builder
+   * @returns {AccountCreateTxBuilder} The specific account create builder
+   */
+  getAccountCreateTxBuilder(tx?: TransactionReceipt | string): AccountCreateTxBuilder {
+    return this.initializeBuilder(tx, new AccountCreateTxBuilder(this._coinConfig));
+  }
+
   private initializeBuilder<T extends TransactionBuilder>(tx: TransactionReceipt | string | undefined, builder: T): T {
     if (tx) {
       builder.initBuilder(tx);
@@ -181,6 +192,9 @@ export class WrappedBuilder extends TransactionBuilder {
         break;
       case ContractType.UnDelegateResourceContract:
         this._builder = this.getUnDelegateResourceTxBuilder(raw);
+        break;
+      case ContractType.AccountCreate:
+        this._builder = this.getAccountCreateTxBuilder(raw);
         break;
       default:
         throw new InvalidTransactionError('Invalid transaction type: ' + contractType);

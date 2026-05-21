@@ -7,10 +7,12 @@ import {
   isValidPrivateKey,
   isValidTransactionId,
   pubKeyToKaspaAddress,
+  addressToScriptPublicKey,
   Utils,
 } from '../../src/lib/utils';
+import { KaspaAddressType } from '../../src/lib/constants';
 import { KeyPair } from '../../src/lib/keyPair';
-import { KEYS, ADDRESSES, UTXOS } from '../fixtures/kaspa.fixtures';
+import { KEYS, ADDRESSES, UTXOS, SCRIPT_PUBLIC_KEY, ECDSA_SCRIPT_PUBLIC_KEY } from '../fixtures/kaspa.fixtures';
 
 describe('Kaspa Utils', function () {
   describe('isValidKaspaAddress', function () {
@@ -68,14 +70,14 @@ describe('Kaspa Utils', function () {
   });
 
   describe('pubKeyToKaspaAddress', function () {
-    it('should derive a valid mainnet address from compressed public key', function () {
+    it('should derive a valid mainnet Schnorr address from compressed public key', function () {
       const pubKeyBuffer = Buffer.from(KEYS.pub, 'hex');
       const address = pubKeyToKaspaAddress(pubKeyBuffer, 'kaspa');
       assert.ok(address.startsWith('kaspa:'));
       assert.ok(isValidKaspaAddress(address));
     });
 
-    it('should derive a valid testnet address from compressed public key', function () {
+    it('should derive a valid testnet Schnorr address from compressed public key', function () {
       const pubKeyBuffer = Buffer.from(KEYS.pub, 'hex');
       const address = pubKeyToKaspaAddress(pubKeyBuffer, 'kaspatest');
       assert.ok(address.startsWith('kaspatest:'));
@@ -93,11 +95,80 @@ describe('Kaspa Utils', function () {
       });
     });
 
-    it('should produce same address as KeyPair.getAddress', function () {
+    it('should produce same Schnorr address as KeyPair.getAddress', function () {
       const kp = new KeyPair({ pub: KEYS.pub });
       const fromKp = kp.getAddress('mainnet');
       const fromUtil = pubKeyToKaspaAddress(Buffer.from(KEYS.pub, 'hex'), 'kaspa');
       assert.equal(fromUtil, fromKp);
+    });
+
+    it('should derive a valid mainnet ECDSA address', function () {
+      const pubKeyBuffer = Buffer.from(KEYS.pub, 'hex');
+      const address = pubKeyToKaspaAddress(pubKeyBuffer, 'kaspa', KaspaAddressType.ECDSA);
+      assert.ok(address.startsWith('kaspa:'));
+      assert.ok(isValidKaspaAddress(address));
+    });
+
+    it('should derive a valid testnet ECDSA address', function () {
+      const pubKeyBuffer = Buffer.from(KEYS.pub, 'hex');
+      const address = pubKeyToKaspaAddress(pubKeyBuffer, 'kaspatest', KaspaAddressType.ECDSA);
+      assert.ok(address.startsWith('kaspatest:'));
+      assert.ok(isValidKaspaAddress(address));
+    });
+
+    it('Schnorr and ECDSA addresses from the same key should differ', function () {
+      const pubKeyBuffer = Buffer.from(KEYS.pub, 'hex');
+      const schnorrAddr = pubKeyToKaspaAddress(pubKeyBuffer, 'kaspa');
+      const ecdsaAddr = pubKeyToKaspaAddress(pubKeyBuffer, 'kaspa', KaspaAddressType.ECDSA);
+      assert.notEqual(schnorrAddr, ecdsaAddr);
+    });
+
+    it('ECDSA address matches KeyPair.getAddress(ECDSA)', function () {
+      const kp = new KeyPair({ pub: KEYS.pub });
+      const fromKp = kp.getAddress('mainnet', KaspaAddressType.ECDSA);
+      const fromUtil = pubKeyToKaspaAddress(Buffer.from(KEYS.pub, 'hex'), 'kaspa', KaspaAddressType.ECDSA);
+      assert.equal(fromUtil, fromKp);
+    });
+
+    it('ECDSA address matches fixture ADDRESSES.validEcdsa', function () {
+      const address = pubKeyToKaspaAddress(Buffer.from(KEYS.pub, 'hex'), 'kaspa', KaspaAddressType.ECDSA);
+      assert.equal(address, ADDRESSES.validEcdsa);
+    });
+  });
+
+  describe('addressToScriptPublicKey', function () {
+    it('should derive the Schnorr scriptPublicKey from a Schnorr address', function () {
+      const script = addressToScriptPublicKey(ADDRESSES.valid);
+      // Schnorr: OP_DATA_32 (0x20) + 32-byte xOnly + OP_CHECKSIG_SCHNORR (0xAC) = 34 bytes = 68 hex chars
+      assert.equal(script.length, 68);
+      assert.ok(script.endsWith('ac'), 'Schnorr script should end with 0xAC');
+      assert.ok(script.startsWith('20'), 'Schnorr script should start with OP_DATA_32');
+    });
+
+    it('should match the fixture SCRIPT_PUBLIC_KEY for the Schnorr address', function () {
+      const script = addressToScriptPublicKey(ADDRESSES.valid);
+      assert.equal(script, SCRIPT_PUBLIC_KEY);
+    });
+
+    it('should derive the ECDSA scriptPublicKey from an ECDSA address', function () {
+      const script = addressToScriptPublicKey(ADDRESSES.validEcdsa);
+      // ECDSA: OP_DATA_33 (0x21) + 33-byte compressed + OP_CHECKSIG_ECDSA (0xAB) = 35 bytes = 70 hex chars
+      assert.equal(script.length, 70);
+      assert.ok(script.endsWith('ab'), 'ECDSA script should end with 0xAB');
+      assert.ok(script.startsWith('21'), 'ECDSA script should start with OP_DATA_33');
+    });
+
+    it('should match the fixture ECDSA_SCRIPT_PUBLIC_KEY for the ECDSA address', function () {
+      const script = addressToScriptPublicKey(ADDRESSES.validEcdsa);
+      assert.equal(script, ECDSA_SCRIPT_PUBLIC_KEY);
+    });
+
+    it('should throw for an invalid address', function () {
+      assert.throws(() => addressToScriptPublicKey('notanaddress'));
+    });
+
+    it('should throw for an address without a colon prefix', function () {
+      assert.throws(() => addressToScriptPublicKey('nocolon'));
     });
   });
 

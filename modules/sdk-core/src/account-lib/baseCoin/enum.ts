@@ -101,6 +101,10 @@ export enum TransactionType {
   CosignDelegationProposal,
   // canton cosign delegation accept
   CosignDelegationAccept,
+  // canton allocation allocate
+  AllocationAllocate,
+  // canton allocation request (internal/dummy txRequest surfacing DvP trade details to the allocating party)
+  AllocationRequest,
 
   // trx
   FREEZE,
@@ -108,6 +112,8 @@ export enum TransactionType {
   UNFREEZE,
   WITHDRAW_EXPIRE_UNFREEZE,
   CLAIM_REWARDS,
+  // Create an account on-chain (e.g. TRX AccountCreateContract)
+  AccountCreate,
 
   // cspr and stx
   stakingLock,
