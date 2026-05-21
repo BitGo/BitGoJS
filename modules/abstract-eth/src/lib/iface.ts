@@ -91,6 +91,11 @@ export interface EthLikeTransactionData {
    * Return the hex string serialization of this transaction
    */
   toSerialized(): string;
+
+  /**
+   * Return the keccak256 hash of the unsigned transaction — the 32-byte digest an external signer must sign
+   */
+  getSignablePayload(): Buffer;
 }
 
 export interface SignatureParts {

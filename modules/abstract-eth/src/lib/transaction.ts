@@ -170,6 +170,14 @@ export class Transaction extends BaseTransaction {
   }
 
   /** @inheritdoc */
+  get signablePayload(): Buffer {
+    if (!this._transactionData) {
+      throw new InvalidTransactionError('No transaction data to sign');
+    }
+    return this._transactionData.getSignablePayload();
+  }
+
+  /** @inheritdoc */
   toBroadcastFormat(): string {
     if (this._transactionData) {
       return this._transactionData.toSerialized();

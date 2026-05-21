@@ -399,6 +399,11 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
     return txPrebuild.coin === this.tokenConfig.coin && txPrebuild.token === this.tokenConfig.type;
   }
 
+  /** @inheritDoc */
+  async getSignablePayload(serializedTx: string): Promise<Buffer> {
+    return Buffer.from(serializedTx);
+  }
+
   /**
    * Create a new transaction builder for the current chain
    * @return a new transaction builder

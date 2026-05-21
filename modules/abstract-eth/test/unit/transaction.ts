@@ -57,5 +57,20 @@ export function runTransactionTests(coinName: string, testData: any, common: Com
         should.equal(tx.toBroadcastFormat(), testData.ENCODED_TRANSACTION);
       });
     });
+
+    describe('signablePayload', () => {
+      it('should throw on an empty transaction', () => {
+        const tx = getTransaction();
+        should.throws(() => tx.signablePayload);
+      });
+
+      it('should return a 32-byte keccak256 hash for an unsigned transaction', () => {
+        const tx = getTransaction();
+        tx.setTransactionData(testData.TXDATA);
+        const payload = tx.signablePayload;
+        payload.should.be.instanceof(Buffer);
+        payload.length.should.equal(32);
+      });
+    });
   });
 }
