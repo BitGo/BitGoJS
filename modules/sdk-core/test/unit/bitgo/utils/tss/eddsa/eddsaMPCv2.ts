@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as sinon from 'sinon';
 import * as pgp from 'openpgp';
 import { EddsaMPSDsg, MPSComms, MPSUtil } from '@bitgo/sdk-lib-mpc';
 import {
@@ -8,7 +9,20 @@ import {
   EddsaMPCv2SignatureShareRound2Output,
   EddsaMPCv2SignatureShareRound3Input,
 } from '@bitgo/public-types';
-import { SignatureShareRecord, SignatureShareType } from '../../../../../../src';
+import {
+  BitGoBase,
+  BitGoRequest,
+  CustomEddsaMPCv2SigningRound1GeneratingFunction,
+  CustomEddsaMPCv2SigningRound2GeneratingFunction,
+  CustomEddsaMPCv2SigningRound3GeneratingFunction,
+  EddsaMPCv2Utils,
+  IBaseCoin,
+  IWallet,
+  RequestTracer,
+  SignatureShareRecord,
+  SignatureShareType,
+  TxRequest,
+} from '../../../../../../src';
 import {
   getSignatureShareRoundOne,
   getSignatureShareRoundTwo,
@@ -321,5 +335,279 @@ describe('EdDSA MPS DSG helper functions', async () => {
     assert.strictEqual(parsed.type, 'round3Input');
     assert.ok(parsed.data.msg3.message, 'msg3.message should be set');
     assert.ok(parsed.data.msg3.signature, 'msg3.signature should be set');
+  });
+});
+
+describe('EddsaMPCv2Utils.signEddsaMPCv2TssUsingExternalSigner', () => {
+  let sandbox: sinon.SinonSandbox;
+  let eddsaMPCv2Utils: EddsaMPCv2Utils;
+  let mockBitgo: BitGoBase;
+  let bitgoGpgKeyPair: pgp.SerializedKeyPair<string>;
+  let bitgoGpgPubKey: pgp.Key;
+
+  const walletId = 'abc123wallet';
+  const txRequestId = 'txreq-001';
+  const enterpriseId = 'ent-001';
+
+  const mockTxRequest: TxRequest = {
+    txRequestId,
+    walletId,
+    enterpriseId,
+    apiVersion: 'full',
+    transactions: [
+      {
+        unsignedTx: {
+          signableHex: 'deadbeef',
+          derivationPath: 'm/0',
+          serializedTxHex: 'deadbeef',
+        },
+        signatureShares: [
+          {
+            from: SignatureShareType.BITGO,
+            to: SignatureShareType.USER,
+            share: JSON.stringify({ type: 'round1Output', data: {} }),
+          },
+        ],
+      },
+    ],
+    intent: { intentType: 'payment' },
+    unsignedTxs: [],
+  } as unknown as TxRequest;
+
+  const mockTxRequestRound2: TxRequest = {
+    ...mockTxRequest,
+    transactions: [
+      {
+        ...mockTxRequest.transactions![0],
+        signatureShares: [
+          {
+            from: SignatureShareType.BITGO,
+            to: SignatureShareType.USER,
+            share: JSON.stringify({ type: 'round2Output', data: {} }),
+          },
+        ],
+      },
+    ],
+  };
+
+  const dummyShare: SignatureShareRecord = {
+    from: SignatureShareType.USER,
+    to: SignatureShareType.BITGO,
+    share: JSON.stringify({ type: 'round1Input', data: {} }),
+  };
+
+  // Returns a chain compatible with: bitgo.post(url).send(body).result()
+  const makePostChain = (response: TxRequest): BitGoRequest<TxRequest> =>
+    ({ send: () => ({ result: sinon.stub().resolves(response) }) } as unknown as BitGoRequest<TxRequest>);
+
+  // Returns a chain compatible with: bitgo.get(url).query(params).retry(n).result()
+  const makeGetChain = (txRequests: TxRequest[]): BitGoRequest<{ txRequests: TxRequest[] }> =>
+    ({
+      query: () => ({
+        retry: () => ({ result: sinon.stub().resolves({ txRequests }) }),
+      }),
+    } as unknown as BitGoRequest<{ txRequests: TxRequest[] }>);
+
+  before(async () => {
+    bitgoGpgKeyPair = await generateGPGKeyPair('ed25519');
+    bitgoGpgPubKey = await pgp.readKey({ armoredKey: bitgoGpgKeyPair.publicKey });
+  });
+
+  beforeEach(async () => {
+    sandbox = sinon.createSandbox();
+
+    // Full mock of the BitGo HTTP client (consistent with other sdk-core tests such as
+    // tokenApproval.ts and walletsEvmKeyring.ts).  Module-level stubs on tssCommon functions
+    // do not work under tsx 4.x (ESM live bindings), so we mock at the bitgo object level.
+    mockBitgo = {
+      getEnv: sinon.stub().returns('test'),
+      setRequestTracer: sinon.stub(),
+      url: sinon.stub().callsFake((path: string) => `https://test.bitgo.com${path}`),
+      post: sinon.stub(),
+      get: sinon.stub(),
+    } as unknown as BitGoBase;
+
+    const mockCoin = {
+      getMPCAlgorithm: sinon.stub().returns('eddsa'),
+    } as unknown as IBaseCoin;
+
+    const mockWallet = {
+      id: sinon.stub().returns(walletId),
+      keyIds: sinon.stub().returns(['userKeyId', 'backupKeyId', 'bitgoKeyId']),
+      multisigTypeVersion: sinon.stub().returns('MPCv2'),
+    } as unknown as IWallet;
+
+    eddsaMPCv2Utils = new EddsaMPCv2Utils(mockBitgo, mockCoin, mockWallet);
+
+    sandbox.stub(eddsaMPCv2Utils, 'pickBitgoPubGpgKeyForSigning').resolves(bitgoGpgPubKey);
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it('should call all 3 generators and return the final tx request', async () => {
+    const finalTxRequest = { ...mockTxRequest, txRequestId };
+
+    // sendSignatureShareV2 is called 3 times (one per round), sendTxRequest once — all use bitgo.post
+    (mockBitgo.post as sinon.SinonStub)
+      .onCall(0)
+      .returns(makePostChain(mockTxRequest)) // round 1 sign
+      .onCall(1)
+      .returns(makePostChain(mockTxRequestRound2)) // round 2 sign
+      .onCall(2)
+      .returns(makePostChain(mockTxRequestRound2)) // round 3 sign
+      .onCall(3)
+      .returns(makePostChain(finalTxRequest)); // sendTxRequest (send)
+
+    const encryptedRound1Session = 'encrypted-r1-session';
+    const encryptedRound2Session = 'encrypted-r2-session';
+    const encryptedUserGpgPrvKey = 'encrypted-gpg-key';
+    const userGpgPubKey = bitgoGpgKeyPair.publicKey;
+
+    const round1Share: SignatureShareRecord = { ...dummyShare };
+    const round2Share: SignatureShareRecord = { ...dummyShare, share: JSON.stringify({ type: 'round2Input' }) };
+    const round3Share: SignatureShareRecord = { ...dummyShare, share: JSON.stringify({ type: 'round3Input' }) };
+
+    const round1Generator = sinon
+      .stub()
+      .resolves({ signatureShareRound1: round1Share, userGpgPubKey, encryptedRound1Session, encryptedUserGpgPrvKey });
+    const round2Generator = sinon.stub().resolves({ signatureShareRound2: round2Share, encryptedRound2Session });
+    const round3Generator = sinon.stub().resolves({ signatureShareRound3: round3Share });
+
+    const result = await eddsaMPCv2Utils.signEddsaMPCv2TssUsingExternalSigner(
+      { txRequest: mockTxRequest, reqId: new RequestTracer() },
+      round1Generator as unknown as CustomEddsaMPCv2SigningRound1GeneratingFunction,
+      round2Generator as unknown as CustomEddsaMPCv2SigningRound2GeneratingFunction,
+      round3Generator as unknown as CustomEddsaMPCv2SigningRound3GeneratingFunction
+    );
+
+    assert.deepStrictEqual(result, finalTxRequest);
+
+    sinon.assert.calledOnce(round1Generator);
+    sinon.assert.calledWith(round1Generator, { txRequest: mockTxRequest });
+
+    sinon.assert.calledOnce(round2Generator);
+    const round2Call = round2Generator.getCall(0);
+    assert.strictEqual(round2Call.args[0].txRequest, mockTxRequest);
+    assert.strictEqual(round2Call.args[0].encryptedRound1Session, encryptedRound1Session);
+    assert.strictEqual(round2Call.args[0].encryptedUserGpgPrvKey, encryptedUserGpgPrvKey);
+    assert.strictEqual(round2Call.args[0].bitgoPublicGpgKey, bitgoGpgPubKey.armor());
+
+    sinon.assert.calledOnce(round3Generator);
+    const round3Call = round3Generator.getCall(0);
+    assert.strictEqual(round3Call.args[0].txRequest, mockTxRequestRound2);
+    assert.strictEqual(round3Call.args[0].encryptedRound2Session, encryptedRound2Session);
+    assert.strictEqual(round3Call.args[0].encryptedUserGpgPrvKey, encryptedUserGpgPrvKey);
+    assert.strictEqual(round3Call.args[0].bitgoPublicGpgKey, bitgoGpgPubKey.armor());
+
+    // 3 sendSignatureShareV2 calls + 1 sendTxRequest = 4 POST calls total
+    assert.strictEqual((mockBitgo.post as sinon.SinonStub).callCount, 4);
+  });
+
+  it('should resolve txRequest by ID string using getTxRequest', async () => {
+    // getTxRequest uses bitgo.get; sendSignatureShareV2 (×3) + sendTxRequest use bitgo.post
+    (mockBitgo.get as sinon.SinonStub).returns(makeGetChain([mockTxRequest]));
+    (mockBitgo.post as sinon.SinonStub)
+      .onCall(0)
+      .returns(makePostChain(mockTxRequest))
+      .onCall(1)
+      .returns(makePostChain(mockTxRequestRound2))
+      .onCall(2)
+      .returns(makePostChain(mockTxRequestRound2))
+      .onCall(3)
+      .returns(makePostChain(mockTxRequest));
+
+    const round1Generator = sinon.stub().resolves({
+      signatureShareRound1: dummyShare,
+      userGpgPubKey: bitgoGpgKeyPair.publicKey,
+      encryptedRound1Session: 'r1',
+      encryptedUserGpgPrvKey: 'key',
+    });
+    const round2Generator = sinon.stub().resolves({ signatureShareRound2: dummyShare, encryptedRound2Session: 'r2' });
+    const round3Generator = sinon.stub().resolves({ signatureShareRound3: dummyShare });
+
+    await eddsaMPCv2Utils.signEddsaMPCv2TssUsingExternalSigner(
+      { txRequest: txRequestId, reqId: new RequestTracer() },
+      round1Generator as unknown as CustomEddsaMPCv2SigningRound1GeneratingFunction,
+      round2Generator as unknown as CustomEddsaMPCv2SigningRound2GeneratingFunction,
+      round3Generator as unknown as CustomEddsaMPCv2SigningRound3GeneratingFunction
+    );
+
+    sinon.assert.calledOnce(mockBitgo.get as sinon.SinonStub);
+    sinon.assert.calledWith(round1Generator, { txRequest: mockTxRequest });
+  });
+
+  it('should throw when round 2 txRequest is missing signatureShares', async () => {
+    const round2NoShares: TxRequest = {
+      ...mockTxRequest,
+      transactions: [{ ...mockTxRequest.transactions![0], signatureShares: undefined as unknown as [] }],
+    };
+
+    (mockBitgo.post as sinon.SinonStub)
+      .onCall(0)
+      .returns(makePostChain(mockTxRequest))
+      .onCall(1)
+      .returns(makePostChain(round2NoShares));
+
+    const round1Generator = sinon.stub().resolves({
+      signatureShareRound1: dummyShare,
+      userGpgPubKey: bitgoGpgKeyPair.publicKey,
+      encryptedRound1Session: 'r1',
+      encryptedUserGpgPrvKey: 'key',
+    });
+    const round2Generator = sinon.stub().resolves({ signatureShareRound2: dummyShare, encryptedRound2Session: 'r2' });
+    const round3Generator = sinon.stub().resolves({ signatureShareRound3: dummyShare });
+
+    await assert.rejects(
+      () =>
+        eddsaMPCv2Utils.signEddsaMPCv2TssUsingExternalSigner(
+          { txRequest: mockTxRequest, reqId: new RequestTracer() },
+          round1Generator as unknown as CustomEddsaMPCv2SigningRound1GeneratingFunction,
+          round2Generator as unknown as CustomEddsaMPCv2SigningRound2GeneratingFunction,
+          round3Generator as unknown as CustomEddsaMPCv2SigningRound3GeneratingFunction
+        ),
+      /Missing signature shares in round 2 txRequest/
+    );
+  });
+
+  it('should pass armored BitGo public GPG key to round 2 and round 3 generators', async () => {
+    (mockBitgo.post as sinon.SinonStub)
+      .onCall(0)
+      .returns(makePostChain(mockTxRequest))
+      .onCall(1)
+      .returns(makePostChain(mockTxRequestRound2))
+      .onCall(2)
+      .returns(makePostChain(mockTxRequestRound2))
+      .onCall(3)
+      .returns(makePostChain(mockTxRequest));
+
+    const round1Generator = sinon.stub().resolves({
+      signatureShareRound1: dummyShare,
+      userGpgPubKey: bitgoGpgKeyPair.publicKey,
+      encryptedRound1Session: 'r1',
+      encryptedUserGpgPrvKey: 'key',
+    });
+    const round2Generator = sinon.stub().resolves({ signatureShareRound2: dummyShare, encryptedRound2Session: 'r2' });
+    const round3Generator = sinon.stub().resolves({ signatureShareRound3: dummyShare });
+
+    await eddsaMPCv2Utils.signEddsaMPCv2TssUsingExternalSigner(
+      { txRequest: mockTxRequest, reqId: new RequestTracer() },
+      round1Generator as unknown as CustomEddsaMPCv2SigningRound1GeneratingFunction,
+      round2Generator as unknown as CustomEddsaMPCv2SigningRound2GeneratingFunction,
+      round3Generator as unknown as CustomEddsaMPCv2SigningRound3GeneratingFunction
+    );
+
+    const armoredKey = bitgoGpgPubKey.armor();
+    assert.strictEqual(
+      round2Generator.getCall(0).args[0].bitgoPublicGpgKey,
+      armoredKey,
+      'round 2 should receive armored BitGo GPG key'
+    );
+    assert.strictEqual(
+      round3Generator.getCall(0).args[0].bitgoPublicGpgKey,
+      armoredKey,
+      'round 3 should receive armored BitGo GPG key'
+    );
   });
 });
