@@ -4,7 +4,8 @@ import type { Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
 import { AbstractUtxoCoin, VerifyTransactionOptions } from '../../abstractUtxoCoin';
 import { BaseOutput, BaseParsedTransactionOutputs } from '../types';
 import { UtxoCoinName } from '../../names';
-import { toWasmPsbt, UtxoLibPsbt } from '../../wasmUtil';
+import { UtxoLibPsbt } from '../../wasmUtil';
+import { decodeDescriptorPsbt } from '../decode';
 
 import { toBaseParsedTransactionOutputsFromPsbt } from './parse';
 
@@ -76,10 +77,9 @@ export async function verifyTransaction<TNumber extends number | bigint>(
   params: VerifyTransactionOptions<TNumber>,
   descriptorMap: descriptorWallet.DescriptorMap
 ): Promise<boolean> {
-  const tx = coin.decodeTransactionFromPrebuild(params.txPrebuild);
   let psbt: Psbt;
   try {
-    psbt = toWasmPsbt(tx as Psbt | UtxoLibPsbt | Uint8Array);
+    psbt = decodeDescriptorPsbt(params.txPrebuild);
   } catch (e) {
     const txExplanation = await TxIntentMismatchError.tryGetTxExplanation(
       coin as unknown as IBaseCoin,

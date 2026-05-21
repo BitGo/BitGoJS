@@ -10,6 +10,7 @@ import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../r
 import { outputDifferencesWithExpected, OutputDifferenceWithExpected } from '../outputDifference';
 import { UtxoCoinName } from '../../names';
 import { sumValues, toWasmPsbt, UtxoLibPsbt } from '../../wasmUtil';
+import { decodeDescriptorPsbt } from '../decode';
 
 type ParsedOutput = Omit<descriptorWallet.ParsedOutput, 'script'> & { script: Buffer };
 
@@ -128,13 +129,7 @@ export function parse(
   if (!recipients) {
     throw new Error('recipients is required');
   }
-  const psbt = coin.decodeTransactionFromPrebuild(params.txPrebuild);
-  let wasmPsbt: Psbt;
-  try {
-    wasmPsbt = toWasmPsbt(psbt as Psbt | UtxoLibPsbt | Uint8Array);
-  } catch (e) {
-    throw new Error(`expected psbt to be a wasm-utxo or utxo-lib PSBT: ${e instanceof Error ? e.message : e}`);
-  }
+  const wasmPsbt = decodeDescriptorPsbt(params.txPrebuild);
   const walletKeys = toBip32Triple(keychains);
   const descriptorMap = getDescriptorMapFromWallet(wallet, walletKeys, getPolicyForEnv(params.wallet.bitgo.env));
   return {
