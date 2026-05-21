@@ -2,7 +2,7 @@ import { BitGoBase, InitiateRecoveryOptions } from '@bitgo/sdk-core';
 import * as stellar from 'stellar-sdk';
 import { Utils } from './lib';
 
-export function getStellarKeys(bitgo: BitGoBase, params: InitiateRecoveryOptions): stellar.Keypair[] {
+export async function getStellarKeys(bitgo: BitGoBase, params: InitiateRecoveryOptions): Promise<stellar.Keypair[]> {
   const keys: stellar.Keypair[] = [];
   let userKey = params.userKey;
   let backupKey = params.backupKey;
@@ -13,7 +13,7 @@ export function getStellarKeys(bitgo: BitGoBase, params: InitiateRecoveryOptions
 
   try {
     if (!userKey.startsWith('S') && !userKey.startsWith('G')) {
-      userKey = bitgo.decrypt({
+      userKey = await bitgo.decryptAsync({
         input: userKey,
         password: params.walletPassphrase,
       });
@@ -34,7 +34,7 @@ export function getStellarKeys(bitgo: BitGoBase, params: InitiateRecoveryOptions
 
   try {
     if (!backupKey.startsWith('S') && !isKrsRecovery && !isUnsignedSweep) {
-      backupKey = bitgo.decrypt({
+      backupKey = await bitgo.decryptAsync({
         input: backupKey,
         password: params.walletPassphrase,
       });

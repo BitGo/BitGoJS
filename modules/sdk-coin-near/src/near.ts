@@ -654,7 +654,7 @@ export class Near extends BaseCoin {
     // Decrypt private keys from KeyCard values
     let userPrv;
     try {
-      userPrv = this.bitgo.decrypt({
+      userPrv = await this.bitgo.decryptAsync({
         input: userKey,
         password: params.walletPassphrase,
       });
@@ -666,7 +666,7 @@ export class Near extends BaseCoin {
 
     let backupPrv;
     try {
-      backupPrv = this.bitgo.decrypt({
+      backupPrv = await this.bitgo.decryptAsync({
         input: backupKey,
         password: params.walletPassphrase,
       });

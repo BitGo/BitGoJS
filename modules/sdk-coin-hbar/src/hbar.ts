@@ -597,8 +597,8 @@ export class Hbar extends BaseCoin {
     let backUp: string | undefined;
     if (!isUnsignedSweep) {
       try {
-        userPrv = this.bitgo.decrypt({ input: params.userKey, password: params.walletPassphrase });
-        backUp = this.bitgo.decrypt({ input: params.backupKey, password: params.walletPassphrase });
+        userPrv = await this.bitgo.decryptAsync({ input: params.userKey, password: params.walletPassphrase });
+        backUp = await this.bitgo.decryptAsync({ input: params.backupKey, password: params.walletPassphrase });
       } catch (e) {
         throw new Error(
           'unable to decrypt userKey or backupKey with the walletPassphrase provided, got error: ' + e.message

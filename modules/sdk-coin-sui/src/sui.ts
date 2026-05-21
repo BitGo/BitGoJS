@@ -658,7 +658,7 @@ export class Sui extends BaseCoin {
     // Decrypt private keys from KeyCard values
     let userPrv: string;
     try {
-      userPrv = this.bitgo.decrypt({
+      userPrv = await this.bitgo.decryptAsync({
         input: userKey,
         password: params.walletPassphrase,
       });
@@ -670,7 +670,7 @@ export class Sui extends BaseCoin {
 
     let backupPrv: string;
     try {
-      backupPrv = this.bitgo.decrypt({
+      backupPrv = await this.bitgo.decryptAsync({
         input: backupKey,
         password: params.walletPassphrase,
       });

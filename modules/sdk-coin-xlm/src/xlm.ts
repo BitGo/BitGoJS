@@ -674,7 +674,7 @@ export class Xlm extends BaseCoin {
       throw new InvalidAddressError('Invalid destination address!');
     }
 
-    const [userKey, backupKey] = getStellarKeys(this.bitgo, params);
+    const [userKey, backupKey] = await getStellarKeys(this.bitgo, params);
 
     if (!params.rootAddress || !stellar.StrKey.isValidEd25519PublicKey(params.rootAddress)) {
       throw new Error(`Invalid wallet address: ${params.rootAddress}`);

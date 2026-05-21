@@ -1478,7 +1478,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
       try {
-        userKey = this.bitgo.decrypt({
+        userKey = await this.bitgo.decryptAsync({
           input: userKey,
           password: params.walletPassphrase,
         });
@@ -1497,7 +1497,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       let backupPrv;
 
       try {
-        backupPrv = this.bitgo.decrypt({
+        backupPrv = await this.bitgo.decryptAsync({
           input: backupKey,
           password: params.walletPassphrase,
         });
@@ -1670,7 +1670,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     let userKeyPrv;
     try {
-      userKeyPrv = this.bitgo.decrypt({
+      userKeyPrv = await this.bitgo.decryptAsync({
         input: params.encryptedPrv,
         password: params.walletPassphrase,
       });
@@ -1749,7 +1749,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     if (params.walletPassphrase) {
       if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
         try {
-          userKeyPrv = this.bitgo.decrypt({
+          userKeyPrv = await this.bitgo.decryptAsync({
             input: userKey,
             password: params.walletPassphrase,
           });

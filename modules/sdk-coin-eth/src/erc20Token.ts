@@ -171,7 +171,7 @@ export class Erc20Token extends Eth {
     let userPrv;
     if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
       try {
-        userPrv = this.bitgo.decrypt({
+        userPrv = await this.bitgo.decryptAsync({
           input: userKey,
           password: params.walletPassphrase,
         });
@@ -191,7 +191,7 @@ export class Erc20Token extends Eth {
       let backupPrv;
 
       try {
-        backupPrv = this.bitgo.decrypt({
+        backupPrv = await this.bitgo.decryptAsync({
           input: backupKey,
           password: params.walletPassphrase,
         });

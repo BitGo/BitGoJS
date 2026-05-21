@@ -919,7 +919,7 @@ describe('ALGO:', function () {
           },
           {
             message:
-              "unable to decrypt userKey or backupKey with the walletPassphrase provided, got error: password error - ccm: tag doesn't match",
+              'unable to decrypt userKey or backupKey with the walletPassphrase provided, got error: incorrect password',
           }
         );
       });

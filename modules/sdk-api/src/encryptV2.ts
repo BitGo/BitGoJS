@@ -1,7 +1,10 @@
 import { argon2id } from '@bitgo/argon2';
 import { base64String, boundedInt, decodeWithCodec } from '@bitgo/sdk-core';
-import { randomBytes } from 'crypto';
+import { randomBytes, webcrypto } from 'crypto';
 import * as t from 'io-ts';
+
+/** Web Crypto subtle — browser global in DOM; Node/Electron main must use `webcrypto`. */
+const subtle = globalThis.crypto?.subtle ?? webcrypto.subtle;
 
 /** Default Argon2id parameters per RFC 9106 second recommendation
  * @see https://www.rfc-editor.org/rfc/rfc9106#section-4
@@ -80,7 +83,7 @@ async function argon2ToAesKey(
   params: { memorySize: number; iterations: number; parallelism: number }
 ): Promise<CryptoKey> {
   const keyBytes = await argon2Hash(password, salt, params);
-  return crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+  return subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
 }
 
 export async function argon2ToHkdfKey(
@@ -89,11 +92,11 @@ export async function argon2ToHkdfKey(
   params: { memorySize: number; iterations: number; parallelism: number }
 ): Promise<CryptoKey> {
   const keyBytes = await argon2Hash(password, salt, params);
-  return crypto.subtle.importKey('raw', keyBytes, 'HKDF', false, ['deriveKey']);
+  return subtle.importKey('raw', keyBytes, 'HKDF', false, ['deriveKey']);
 }
 
 export function hkdfDeriveAesKey(hkdfKey: CryptoKey, hkdfSalt: Uint8Array, usage: KeyUsage): Promise<CryptoKey> {
-  return crypto.subtle.deriveKey(
+  return subtle.deriveKey(
     { name: 'HKDF', hash: 'SHA-256', salt: hkdfSalt, info: HKDF_INFO },
     hkdfKey,
     { name: 'AES-GCM', length: 256 },
@@ -110,7 +113,7 @@ export async function aesGcmEncrypt(
 ): Promise<Uint8Array> {
   const params: AesGcmParams = { name: 'AES-GCM', iv, tagLength: 128 };
   if (additionalData) params.additionalData = additionalData;
-  const ct = await crypto.subtle.encrypt(params, key, new TextEncoder().encode(plaintext));
+  const ct = await subtle.encrypt(params, key, new TextEncoder().encode(plaintext));
   return new Uint8Array(ct);
 }
 
@@ -122,7 +125,7 @@ export async function aesGcmDecrypt(
 ): Promise<string> {
   const params: AesGcmParams = { name: 'AES-GCM', iv, tagLength: 128 };
   if (additionalData) params.additionalData = additionalData;
-  const plaintext = await crypto.subtle.decrypt(params, key, ct);
+  const plaintext = await subtle.decrypt(params, key, ct);
   return new TextDecoder().decode(plaintext);
 }
 

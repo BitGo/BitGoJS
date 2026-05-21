@@ -208,7 +208,7 @@ export class Eth extends AbstractEthLikeNewCoins {
       : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
     if (!isUnsignedSweep) {
       try {
-        userKey = this.bitgo.decrypt({
+        userKey = await this.bitgo.decryptAsync({
           input: userKey,
           password: params.walletPassphrase,
         });
@@ -229,7 +229,7 @@ export class Eth extends AbstractEthLikeNewCoins {
       let backupPrv;
 
       try {
-        backupPrv = this.bitgo.decrypt({
+        backupPrv = await this.bitgo.decryptAsync({
           input: backupKey,
           password: params.walletPassphrase,
         });
