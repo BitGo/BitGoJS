@@ -23,7 +23,6 @@ export function explainTx<TNumber extends number | bigint>(
     pubs?: string[];
     customChangeXpubs?: Triple<string>;
     txInfo?: { unspents?: Unspent<TNumber>[] };
-    changeInfo?: fixedScript.ChangeAddressInfo[];
   },
   coinName: UtxoCoinName
 ): TransactionExplanationUtxolibPsbt | TransactionExplanationWasm {

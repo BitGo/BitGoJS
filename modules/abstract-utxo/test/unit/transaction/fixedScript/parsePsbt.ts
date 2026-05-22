@@ -9,7 +9,7 @@ import { parseTransaction } from '../../../../src/transaction/fixedScript/parseT
 import { ParsedTransaction } from '../../../../src/transaction/types';
 import { UtxoWallet } from '../../../../src/wallet';
 import { getUtxoCoin } from '../../util';
-import { explainPsbt, explainPsbtWasm } from '../../../../src/transaction/fixedScript';
+import { explainPsbtWasm } from '../../../../src/transaction/fixedScript';
 import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction';
 import { getCoinName } from '../../../../src/names';
 import { TransactionPrebuild } from '../../../../src/abstractUtxoCoin';
@@ -52,7 +52,6 @@ function getTxParamsFromExplanation(
 function describeParseTransactionWith(
   acidTest: utxolib.testutil.AcidTest,
   label: string,
-  backend: 'utxolib' | 'wasm',
   {
     txParams,
     externalCustomChangeAddress = false,
@@ -87,28 +86,19 @@ function describeParseTransactionWith(
       const tx = psbt.getUnsignedTx();
       const txHash = tx.getId();
 
-      let explanation: TransactionExplanation;
-      if (backend === 'utxolib') {
-        explanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, coinName, {
-          strict: true,
-        });
-      } else if (backend === 'wasm') {
-        const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(
-          psbt.toBuffer(),
-          utxolib.getNetworkName(acidTest.network)!
-        );
-        explanation = explainPsbtWasm(
-          wasmPsbt,
-          acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>,
-          {
-            replayProtection: {
-              publicKeys: [acidTest.getReplayProtectionPublicKey()],
-            },
-          }
-        );
-      } else {
-        throw new Error(`Invalid backend: ${backend}`);
-      }
+      const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(
+        psbt.toBuffer(),
+        utxolib.getNetworkName(acidTest.network)!
+      );
+      const explanation: TransactionExplanation = explainPsbtWasm(
+        wasmPsbt,
+        acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>,
+        {
+          replayProtection: {
+            publicKeys: [acidTest.getReplayProtectionPublicKey()],
+          },
+        }
+      );
 
       // Determine txParams
       let resolvedTxParams;
@@ -213,16 +203,13 @@ function describeParseTransactionWith(
   });
 }
 
-function describeTransaction(
-  backend: 'utxolib' | 'wasm',
-  filter: (test: utxolib.testutil.AcidTest) => boolean = () => true
-) {
-  describe(`parseTransaction (${backend})`, function () {
+function describeTransaction(filter: (test: utxolib.testutil.AcidTest) => boolean = () => true) {
+  describe(`parseTransaction`, function () {
     utxolib.testutil.AcidTest.suite()
       .filter(filter)
       .forEach((test) => {
         // Default case: psbt format, infer recipients from explanation
-        describeParseTransactionWith(test, 'default', backend, {
+        describeParseTransactionWith(test, 'default', {
           txParams: 'inferFromExplanation',
           expectedExplicitExternalSpendAmount: 1800n,
           expectedImplicitExternalSpendAmount: 0n,
@@ -233,7 +220,7 @@ function describeTransaction(
         }
         // extended test suite for bitcoin
 
-        describeParseTransactionWith(test, 'empty recipients', backend, {
+        describeParseTransactionWith(test, 'empty recipients', {
           txParams: {
             recipients: [],
           },
@@ -241,7 +228,7 @@ function describeTransaction(
           expectedImplicitExternalSpendAmount: 1800n,
         });
 
-        describeParseTransactionWith(test, 'rbf', backend, {
+        describeParseTransactionWith(test, 'rbf', {
           txParams: {
             rbfTxIds: ['PLACEHOLDER'],
           },
@@ -249,7 +236,7 @@ function describeTransaction(
           expectedImplicitExternalSpendAmount: 0n,
         });
 
-        describeParseTransactionWith(test, 'allowExternalChangeAddress', backend, {
+        describeParseTransactionWith(test, 'allowExternalChangeAddress', {
           txParams: 'inferFromExplanation',
           externalCustomChangeAddress: true,
           expectedExplicitExternalSpendAmount: 1800n,
@@ -259,5 +246,4 @@ function describeTransaction(
   });
 }
 
-describeTransaction('utxolib');
-describeTransaction('wasm');
+describeTransaction();

@@ -1,4 +1,3 @@
-export { explainPsbt, ChangeAddressInfo } from './explainTransaction';
 export {
   explainPsbtWasm,
   explainPsbtWasmBigInt,
