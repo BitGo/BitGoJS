@@ -1,5 +1,6 @@
 import should from 'should';
-import { pubKeyfromPrivKey, publicKeyToString } from '@stacks/transactions';
+import { ClarityType, pubKeyfromPrivKey, publicKeyToString } from '@stacks/transactions';
+import { ContractCallPayload } from '@stacks/transactions/dist/payload';
 
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
@@ -52,6 +53,18 @@ describe('Stacks: sBTC Withdraw Builder', function () {
         should.exist(txJson.payload);
         txJson.payload.should.have.property('contractName', 'sbtc-withdrawal');
         txJson.payload.should.have.property('functionName', 'initiate-withdrawal-request');
+
+        // Verify hashbytes is 20 bytes for P2PKH
+        const payload = (tx as StxLib.Transaction).stxTransaction.payload as ContractCallPayload;
+        const recipientTuple = payload.functionArgs[1];
+        should.equal(recipientTuple.type, ClarityType.Tuple);
+        if (recipientTuple.type === ClarityType.Tuple) {
+          const hashbytes = recipientTuple.data['hashbytes'];
+          should.equal(hashbytes.type, ClarityType.Buffer);
+          if (hashbytes.type === ClarityType.Buffer) {
+            hashbytes.buffer.length.should.equal(20);
+          }
+        }
       });
 
       it('a withdrawal with P2SH address', async () => {
@@ -68,6 +81,16 @@ describe('Stacks: sBTC Withdraw Builder', function () {
         const tx = await builder.build();
         const txJson = tx.toJson();
         txJson.payload.should.have.property('functionName', 'initiate-withdrawal-request');
+
+        // Verify hashbytes is 20 bytes for P2SH
+        const payload = (tx as StxLib.Transaction).stxTransaction.payload as ContractCallPayload;
+        const recipientTuple = payload.functionArgs[1];
+        if (recipientTuple.type === ClarityType.Tuple) {
+          const hashbytes = recipientTuple.data['hashbytes'];
+          if (hashbytes.type === ClarityType.Buffer) {
+            hashbytes.buffer.length.should.equal(20);
+          }
+        }
       });
 
       it('a withdrawal with P2WPKH (bech32) address', async () => {
@@ -84,6 +107,16 @@ describe('Stacks: sBTC Withdraw Builder', function () {
         const tx = await builder.build();
         const txJson = tx.toJson();
         txJson.payload.should.have.property('functionName', 'initiate-withdrawal-request');
+
+        // Verify hashbytes is 20 bytes for P2WPKH
+        const payload = (tx as StxLib.Transaction).stxTransaction.payload as ContractCallPayload;
+        const recipientTuple = payload.functionArgs[1];
+        if (recipientTuple.type === ClarityType.Tuple) {
+          const hashbytes = recipientTuple.data['hashbytes'];
+          if (hashbytes.type === ClarityType.Buffer) {
+            hashbytes.buffer.length.should.equal(20);
+          }
+        }
       });
 
       it('a withdrawal with P2WSH (bech32) address', async () => {
@@ -100,6 +133,16 @@ describe('Stacks: sBTC Withdraw Builder', function () {
         const tx = await builder.build();
         const txJson = tx.toJson();
         txJson.payload.should.have.property('functionName', 'initiate-withdrawal-request');
+
+        // Verify hashbytes is 32 bytes for P2WSH
+        const payload = (tx as StxLib.Transaction).stxTransaction.payload as ContractCallPayload;
+        const recipientTuple = payload.functionArgs[1];
+        if (recipientTuple.type === ClarityType.Tuple) {
+          const hashbytes = recipientTuple.data['hashbytes'];
+          if (hashbytes.type === ClarityType.Buffer) {
+            hashbytes.buffer.length.should.equal(32);
+          }
+        }
       });
 
       it('a withdrawal with P2TR (bech32m) address', async () => {
@@ -116,6 +159,16 @@ describe('Stacks: sBTC Withdraw Builder', function () {
         const tx = await builder.build();
         const txJson = tx.toJson();
         txJson.payload.should.have.property('functionName', 'initiate-withdrawal-request');
+
+        // Verify hashbytes is 32 bytes for P2TR
+        const payload = (tx as StxLib.Transaction).stxTransaction.payload as ContractCallPayload;
+        const recipientTuple = payload.functionArgs[1];
+        if (recipientTuple.type === ClarityType.Tuple) {
+          const hashbytes = recipientTuple.data['hashbytes'];
+          if (hashbytes.type === ClarityType.Buffer) {
+            hashbytes.buffer.length.should.equal(32);
+          }
+        }
       });
     });
 
