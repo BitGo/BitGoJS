@@ -1,7 +1,6 @@
 import assert from 'assert';
 
 import {
-  BaseCoin,
   HalfSignedUtxoTransaction,
   IInscriptionBuilder,
   IWallet,
@@ -29,8 +28,8 @@ import {
 import { BIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
+import { deriveKeyWithSeed } from '../../deriveKeyWithSeed';
 import { fetchKeychains } from '../../keychains';
-import { toUtxolibBIP32 } from '../../wasmUtil';
 
 /** Key identifier for signing */
 type SignerKey = 'user' | 'backup' | 'bitgo';
@@ -58,8 +57,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     const user = await this.wallet.baseCoin.keychains().get({ id: this.wallet.keyIds()[KeyIndices.USER] });
     assert(user.pub);
 
-    const userKey = toUtxolibBIP32(BIP32.fromBase58(user.pub));
-    const { key: derivedKey } = BaseCoin.deriveKeyWithSeedBip32(userKey, inscriptionData.toString());
+    const { key: derivedKey } = deriveKeyWithSeed(BIP32.fromBase58(user.pub), inscriptionData.toString());
 
     const result = inscriptions.createInscriptionRevealData(
       derivedKey.publicKey,
