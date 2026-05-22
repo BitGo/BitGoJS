@@ -115,6 +115,38 @@ describe('Tron AccountCreate builder', function () {
 
       assert.equal(tx2.toJson().txID, originalTxId);
     });
+
+    // Regression test: AccountCreateContract's enum value is 0, which is the
+    // proto3 default for the outer Transaction.Contract.type field. When the
+    // SDK explicitly encoded `type: 0`, the wire format included the 2-byte
+    // tag `0800` inside the contract envelope. TRON's node re-serializes
+    // raw_data from broadcast JSON and omits default-valued fields, producing
+    // a 2-byte-shorter canonical raw_data_hex and a different txID. The TSS
+    // signature was valid for the SDK's hash but recovered to a garbage
+    // pubkey under TRON's canonical hash, so AccountCreate broadcasts failed
+    // with SIGERROR "signed by <random T...> but not contained of permission".
+    it('produces raw_data_hex without the proto3 default-valued type field', async () => {
+      const timestamp = 1779455020653;
+      const expiration = 1779465820653;
+      const txBuilder = initTxBuilder();
+      txBuilder.timestamp(timestamp);
+      txBuilder.expiration(expiration);
+      const tx = await txBuilder.build();
+      const rawDataHex = tx.toJson().raw_data_hex;
+
+      // The buggy encoding had `5a68 0800 1264` (contract tag, length 0x68,
+      // type=0, parameter tag, length 0x64). The canonical encoding TRON
+      // re-serializes to drops the `0800` and decrements the contract length
+      // by 2 -> `5a66 1264`.
+      assert.ok(
+        !rawDataHex.includes('5a68080012'),
+        `raw_data_hex must not include the proto3-default \`type: 0\` tag (0800). Got: ${rawDataHex}`
+      );
+      assert.ok(
+        rawDataHex.includes('5a661264'),
+        `raw_data_hex must use the canonical contract framing (5a66...1264). Got: ${rawDataHex}`
+      );
+    });
   });
 
   describe('should validate', () => {
