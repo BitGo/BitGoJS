@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.12.6...@bitgo/sdk-coin-flrp@1.13.0) (2026-05-22)
+
+
+### Bug Fixes
+
+* **sdk-coin-flrp:** map stake intent type to add permissionless tx ([c41e100](https://github.com/BitGo/BitGoJS/commit/c41e100b660870f3c443a6c3b167761ad7c4f934))
+
+
+### Features
+
+* **sdk-coin-flrp:** enhance txn verification for atomic transactions ([b271b3d](https://github.com/BitGo/BitGoJS/commit/b271b3d02bee132588c80d789c6382d443139ff5))
+
+
+
+
+
 ## [1.12.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.12.5...@bitgo/sdk-coin-flrp@1.12.6) (2026-05-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp

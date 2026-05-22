@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.18.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.18.8...@bitgo/abstract-cosmos@11.18.9) (2026-05-22)
+
+
+### Bug Fixes
+
+* bump vulnerable transitive dependencies ([d69ae10](https://github.com/BitGo/BitGoJS/commit/d69ae10f6dc32def06cb192b4df186021c998d91))
+
+
+
+
+
 ## [11.18.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.18.7...@bitgo/abstract-cosmos@11.18.8) (2026-05-14)
 
 **Note:** Version bump only for package @bitgo/abstract-cosmos

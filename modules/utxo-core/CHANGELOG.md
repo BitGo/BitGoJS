@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.38.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.37.1...@bitgo/utxo-core@1.38.0) (2026-05-22)
+
+
+### Features
+
+* **utxo-descriptors:** add methods to parse sbtc descriptor ([aa18d30](https://github.com/BitGo/BitGoJS/commit/aa18d308ae245a27e39ce0ff5d540cbec1ce4289))
+
+
+
+
+
 ## [1.37.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.37.0...@bitgo/utxo-core@1.37.1) (2026-05-05)
 
 **Note:** Version bump only for package @bitgo/utxo-core

@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@11.1.0...@bitgo/abstract-utxo@11.2.0) (2026-05-22)
+
+
+### Bug Fixes
+
+* **abstract-utxo:** throw on unrecognised chain code ([edbb6be](https://github.com/BitGo/BitGoJS/commit/edbb6beced44f6db64963632ed619fc6516a534c))
+
+
+### Features
+
+* **abstract-utxo:** restrict legacy tx format to BTC and LTC ([2704d15](https://github.com/BitGo/BitGoJS/commit/2704d1523f90cf67a62666367031afc6a8f12a30))
+* **abstract-utxo:** restrict utxolib backend to BTC and LTC ([0e3f366](https://github.com/BitGo/BitGoJS/commit/0e3f36680d23a915c8304ab3d883f7878f2524c0))
+* **utxo-descriptors:** add methods to parse sbtc descriptor ([aa18d30](https://github.com/BitGo/BitGoJS/commit/aa18d308ae245a27e39ce0ff5d540cbec1ce4289))
+
+
+
+
+
 # [11.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@11.0.0...@bitgo/abstract-utxo@11.1.0) (2026-05-14)
 
 

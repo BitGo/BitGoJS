@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [24.25.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.25.0...@bitgo/abstract-eth@24.25.1) (2026-05-22)
+
+
+### Bug Fixes
+
+* **abstract-eth:** decode ERC20 calldata in consolidation base address ([ee5cdca](https://github.com/BitGo/BitGoJS/commit/ee5cdca27c8f8e385c6f75e6d5ab2b97f1162e0a))
+* **abstract-eth:** update abi encoding for zama tx ([f668841](https://github.com/BitGo/BitGoJS/commit/f668841ab940bccfb0352872d711da4f31fd8fe1))
+
+
+
+
+
 # [24.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.24.3...@bitgo/abstract-eth@24.25.0) (2026-05-14)
 
 

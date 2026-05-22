@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [37.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.0.0...@bitgo/sdk-core@37.1.0) (2026-05-22)
+
+
+### Bug Fixes
+
+* trading account sign payload should call with ofc url ([81645f3](https://github.com/BitGo/BitGoJS/commit/81645f39d30669c1d85c92adc7240df7543df290))
+* txHex needs to be set for the txn in case of TSS ([11e1a85](https://github.com/BitGo/BitGoJS/commit/11e1a85b73583e3a2df089b50973ab490ac5d489))
+
+
+### Features
+
+* added recovery flow for tempo chain ([3b14a96](https://github.com/BitGo/BitGoJS/commit/3b14a96e844d049a14c32435b49f3c599f0783ce))
+* **sdk-coin-canton:** added allocation allocate builder ([059f855](https://github.com/BitGo/BitGoJS/commit/059f855b9227a416c4b7545ce0a4c747a4de7e1b))
+* **sdk-coin-canton:** added allocation request builder ([45461e7](https://github.com/BitGo/BitGoJS/commit/45461e7469dbd6b4bf4663ec76f78affe0c6aa76))
+* **sdk-coin-flrp:** enhance txn verification for atomic transactions ([b271b3d](https://github.com/BitGo/BitGoJS/commit/b271b3d02bee132588c80d789c6382d443139ff5))
+* **sdk-coin-trx:** add AccountCreateContract tx builder and support ([f827d69](https://github.com/BitGo/BitGoJS/commit/f827d69066478ea11b56aade865cf8d2fb096eaf))
+* **sdk-core:** add EdDSA MPCv2 external signing helper utils ([53a09b0](https://github.com/BitGo/BitGoJS/commit/53a09b04e0c7da7ebd2fff4bce7a4032a43628dc))
+* **sdk-core:** add support for preHashed flr atomic txn in EcdsaMPCv2Utils ([9973cbc](https://github.com/BitGo/BitGoJS/commit/9973cbc46f08623a694a6192538d836fe1587900))
+* **sdk-core:** add v2 decryption support for gg18 ([f350272](https://github.com/BitGo/BitGoJS/commit/f3502723f176180cca329d4104046e8e2c1c4aa0))
+* **sdk-core:** add v2 decryption support to password change ([792216e](https://github.com/BitGo/BitGoJS/commit/792216e0007afdf33fd95aa568760bf1aaa6f68a))
+* **sdk-core:** added OFC BitGo signing on wallet and coins object ([6c01855](https://github.com/BitGo/BitGoJS/commit/6c018556897e0de96cf2bf2058ad57fef638e3ef))
+* **sdk-core:** implement EdDSA MPCv2 external signer orchestrator ([4636da5](https://github.com/BitGo/BitGoJS/commit/4636da535671af797d75e8e0a5b4e5a0f5552278))
+* **sdk-core:** use deriveUnhardenedMps for EdDSA MPCv2 addresses ([dc870bb](https://github.com/BitGo/BitGoJS/commit/dc870bb60033e1e496d52f1da8545e35726ac3e6))
+* **statics:** add Starknet to statics and environments ([ba966a5](https://github.com/BitGo/BitGoJS/commit/ba966a5c6d453f70c52c3e009ea730a6d0fa2254))
+
+
+
+
+
 # [37.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.44.0...@bitgo/sdk-core@37.0.0) (2026-05-14)
 
 

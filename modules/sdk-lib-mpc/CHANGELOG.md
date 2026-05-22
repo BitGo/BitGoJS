@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.13.0...@bitgo/sdk-lib-mpc@10.14.0) (2026-05-22)
+
+
+### Bug Fixes
+
+* **sdk-lib-mpc:** use MPSUtil.executeTillRound in derive tests ([32bc1d0](https://github.com/BitGo/BitGoJS/commit/32bc1d026cb79f01a5ec50b0e2079ffc445fa594))
+
+
+### Features
+
+* **sdk-lib-mpc:** add deriveUnhardenedMps for EdDSA MPCv2 ([afb3d1e](https://github.com/BitGo/BitGoJS/commit/afb3d1e64a84706e2cf8ab64645a9967f083742b))
+
+
+
+
+
 # [10.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.12.0...@bitgo/sdk-lib-mpc@10.13.0) (2026-05-14)
 
 

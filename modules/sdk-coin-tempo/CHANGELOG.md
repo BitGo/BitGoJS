@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.12.5...@bitgo/sdk-coin-tempo@1.13.0) (2026-05-22)
+
+
+### Bug Fixes
+
+* **root:** update dependency versions for new modules from master merge ([1acc58b](https://github.com/BitGo/BitGoJS/commit/1acc58bc30b535e0d9194b668b6c6c2e182f83be))
+* **sdk-coin-tempo:** update test fixtures for deriveUnhardened and 75% gas buffer ([81a02d6](https://github.com/BitGo/BitGoJS/commit/81a02d6601327fd402fb1673eef743fb1f3a3c30))
+
+
+### Features
+
+* added recovery flow for tempo chain ([3b14a96](https://github.com/BitGo/BitGoJS/commit/3b14a96e844d049a14c32435b49f3c599f0783ce))
+
+
+
+
+
 ## [1.12.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.12.4...@bitgo/sdk-coin-tempo@1.12.5) (2026-05-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-tempo

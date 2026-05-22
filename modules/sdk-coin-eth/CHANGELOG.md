@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [25.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.10.0...@bitgo/sdk-coin-eth@25.10.1) (2026-05-22)
+
+
+### Bug Fixes
+
+* **abstract-eth:** decode ERC20 calldata in consolidation base address ([ee5cdca](https://github.com/BitGo/BitGoJS/commit/ee5cdca27c8f8e385c6f75e6d5ab2b97f1162e0a))
+
+
+
+
+
 # [25.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.9.1...@bitgo/sdk-coin-eth@25.10.0) (2026-05-14)
 
 

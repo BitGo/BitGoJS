@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.20.0...@bitgo/sdk-coin-canton@1.21.0) (2026-05-22)
+
+
+### Features
+
+* **sdk-coin-canton:** added allocation allocate builder ([059f855](https://github.com/BitGo/BitGoJS/commit/059f855b9227a416c4b7545ce0a4c747a4de7e1b))
+* **sdk-coin-canton:** added allocation request builder ([45461e7](https://github.com/BitGo/BitGoJS/commit/45461e7469dbd6b4bf4663ec76f78affe0c6aa76))
+
+
+
+
+
 # [1.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.19.2...@bitgo/sdk-coin-canton@1.20.0) (2026-05-14)
 
 

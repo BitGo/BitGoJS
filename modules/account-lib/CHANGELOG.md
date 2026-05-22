@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.21.3...@bitgo/account-lib@27.22.0) (2026-05-22)
+
+
+### Features
+
+* **bitgo:** wire Starknet into coin factory and account-lib CECHO-924 ([b7e973a](https://github.com/BitGo/BitGoJS/commit/b7e973a59a50bbc791c08762332d3bc3277a9557))
+
+
+
+
+
 ## [27.21.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.21.2...@bitgo/account-lib@27.21.3) (2026-05-14)
 
 **Note:** Version bump only for package @bitgo/account-lib

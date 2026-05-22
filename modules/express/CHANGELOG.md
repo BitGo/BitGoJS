@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.29.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.28.0...@bitgo/express@15.29.0) (2026-05-22)
+
+
+### Bug Fixes
+
+* **express:** use wallet multisigType instead of coin.supportsTss() for TRX consolidation routing ([c749d20](https://github.com/BitGo/BitGoJS/commit/c749d205450ccd4808be9c639629d5d230dc03cb))
+
+
+### Features
+
+* **sdk-core:** add v2 decryption support to password change ([792216e](https://github.com/BitGo/BitGoJS/commit/792216e0007afdf33fd95aa568760bf1aaa6f68a))
+
+
+
+
+
 # [15.28.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.27.2...@bitgo/express@15.28.0) (2026-05-14)
 
 

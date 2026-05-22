@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.9.0...@bitgo/sdk-coin-hbar@2.9.1) (2026-05-22)
+
+
+### Bug Fixes
+
+* bump vulnerable transitive dependencies ([d69ae10](https://github.com/BitGo/BitGoJS/commit/d69ae10f6dc32def06cb192b4df186021c998d91))
+* **sdk-coin-hbar:** merge same-account entries in buildTransferData to fix self-transfer ([c273927](https://github.com/BitGo/BitGoJS/commit/c27392747fb4d1bedd6669dd04ae92031c3b74b9))
+
+
+### Reverts
+
+* **sdk-coin-hbar:** remove buildTransferData merge logic from PR [#8774](https://github.com/BitGo/BitGoJS/issues/8774) ([deb35fb](https://github.com/BitGo/BitGoJS/commit/deb35fb4374b0f2cdb5e1a3f4b311943d692fd92)), closes [#8742](https://github.com/BitGo/BitGoJS/issues/8742)
+* **sdk-coin-hbar:** remove self-transfer fallback from PR [#8742](https://github.com/BitGo/BitGoJS/issues/8742) ([dc901cc](https://github.com/BitGo/BitGoJS/commit/dc901cc459f97d88304d3c701cfcdf2fd312f0ea))
+
+
+
+
+
 # [2.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.8.3...@bitgo/sdk-coin-hbar@2.9.0) (2026-05-14)
 
 
