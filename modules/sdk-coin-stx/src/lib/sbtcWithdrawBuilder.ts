@@ -25,7 +25,6 @@ import { decodeBtcAddress, isValidBtcAddress } from './btcAddressUtils';
 
 const SBTC_TOKEN_CONTRACT_NAME = 'sbtc-token';
 const SBTC_TOKEN_ASSET_NAME = 'sbtc-token';
-const HASHBYTES_BUFFER_LENGTH = 32;
 
 export class SbtcWithdrawBuilder extends AbstractContractBuilder {
   private _withdrawParams: SbtcWithdrawParams | undefined;
@@ -130,20 +129,11 @@ export class SbtcWithdrawBuilder extends AbstractContractBuilder {
 
   private withdrawParamsToFunctionArgs(params: SbtcWithdrawParams) {
     const decoded = decodeBtcAddress(params.btcAddress);
-
-    // Pad 20-byte hashes to 32 bytes with trailing zeros per sBTC contract spec (buff 32)
-    let hashBytes = decoded.hashBytes;
-    if (hashBytes.length < HASHBYTES_BUFFER_LENGTH) {
-      const padded = Buffer.alloc(HASHBYTES_BUFFER_LENGTH, 0);
-      hashBytes.copy(padded);
-      hashBytes = padded;
-    }
-
     return [
       uintCV(params.amount),
       tupleCV({
         version: bufferCV(Buffer.from([decoded.version])),
-        hashbytes: bufferCV(hashBytes),
+        hashbytes: bufferCV(decoded.hashBytes),
       }),
       uintCV(params.maxFee),
     ];
