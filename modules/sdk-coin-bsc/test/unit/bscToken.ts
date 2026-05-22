@@ -29,4 +29,16 @@ describe('Bsc Token:', function () {
     bscTokenCoin.network.should.equal('Testnet');
     bscTokenCoin.decimalPlaces.should.equal(18);
   });
+
+  describe('getSignablePayload', function () {
+    // Tokens are out of scope for CGD-1083; EthLikeToken intentionally preserves
+    // the pre-PR behavior of returning the raw serialized tx bytes rather than
+    // the keccak256 hash returned by the parent chain coin.
+    it('should return the raw serialized bytes unchanged', async function () {
+      const serializedTx =
+        '0xf86b808504a817c80082520894eeaf0f05f37891ab4a21208b105a0687d12c5af7880de0b6b3a76400008025a0';
+      const payload = await bscTokenCoin.getSignablePayload(serializedTx);
+      payload.should.deepEqual(Buffer.from(serializedTx));
+    });
+  });
 });
