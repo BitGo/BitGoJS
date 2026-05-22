@@ -1,6 +1,6 @@
 import { Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
 
-import type { SignerKey } from '../../wasmUtil';
+type SignerKey = Parameters<typeof descriptorWallet.signWithKey>[1];
 
 export class ErrorUnknownInput extends Error {
   constructor(public vin: number) {

@@ -1,10 +1,10 @@
 import { EnvironmentName, Triple } from '@bitgo/sdk-core';
 import { bip32, descriptorWallet } from '@bitgo/wasm-utxo';
 
-import type { DescriptorMap } from '../wasmUtil';
-
 import { parseDescriptor } from './builder';
 import { hasValidSignature, NamedDescriptor, NamedDescriptorNative, toNamedDescriptorNative } from './NamedDescriptor';
+
+import type { DescriptorMap } from './index';
 
 export type KeyTriple = Triple<bip32.BIP32Interface>;
 
