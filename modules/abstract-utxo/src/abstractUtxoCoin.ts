@@ -4,7 +4,6 @@ import { randomBytes } from 'crypto';
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import { address as wasmAddress, BIP32, fixedScriptWallet, hasPsbtMagic } from '@bitgo/wasm-utxo';
-import { bitgo } from '@bitgo/utxo-lib';
 import {
   AddressCoinSpecific,
   BaseCoin,
@@ -62,7 +61,6 @@ import { getReplayProtectionPubkeys, isReplayProtectionUnspent } from './transac
 import { supportedCrossChainRecoveries } from './config';
 import {
   assertValidTransactionRecipient,
-  DecodedTransaction,
   explainTx,
   fromExtendedAddressFormat,
   isScriptRecipient,
@@ -142,28 +140,21 @@ type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   }): Promise<SignedTransaction>;
 };
 
-const { isChainCode, scriptTypeForChain, outputScripts } = bitgo;
+const { ChainCode } = fixedScriptWallet;
 
 /**
  * Check if a decoded transaction has at least one taproot key path spend (MuSig2) input.
- * Works for both utxolib UtxoPsbt and wasm-utxo BitGoPsbt.
  */
-function hasKeyPathSpendInput<TNumber extends number | bigint>(
-  tx: DecodedTransaction<TNumber>,
+function hasKeyPathSpendInput(
+  tx: fixedScriptWallet.BitGoPsbt,
   pubs: string[] | undefined,
   coinName: UtxoCoinName
 ): boolean {
-  if (tx instanceof bitgo.UtxoPsbt) {
-    return bitgo.isTransactionWithKeyPathSpendInput(tx);
-  }
-  if (tx instanceof fixedScriptWallet.BitGoPsbt) {
-    assert(pubs && isTriple(pubs), 'pub triple is required to check for key path spend inputs in wasm-utxo PSBT');
-    const rootWalletKeys = fixedScriptWallet.RootWalletKeys.fromXpubs(pubs);
-    const replayProtection = { publicKeys: getReplayProtectionPubkeys(coinName) };
-    const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, { replayProtection });
-    return parsed.inputs.some((input) => input.scriptType === 'p2trMusig2KeyPath');
-  }
-  return false;
+  assert(pubs && isTriple(pubs), 'pub triple is required to check for key path spend inputs in wasm-utxo PSBT');
+  const rootWalletKeys = fixedScriptWallet.RootWalletKeys.fromXpubs(pubs);
+  const replayProtection = { publicKeys: getReplayProtectionPubkeys(coinName) };
+  const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, { replayProtection });
+  return parsed.inputs.some((input) => input.scriptType === 'p2trMusig2KeyPath');
 }
 
 /**
@@ -216,8 +207,6 @@ function convertValidationErrorToTxIntentMismatch(
 
 export type { DecodedTransaction } from './transaction/types';
 
-export type RootWalletKeys = bitgo.RootWalletKeys;
-
 export type UtxoCoinSpecific = AddressCoinSpecific | DescriptorAddressCoinSpecific;
 
 export interface VerifyAddressOptions<TCoinSpecific extends UtxoCoinSpecific> extends BaseVerifyAddressOptions {
@@ -251,8 +240,6 @@ export interface DecoratedExplainTransactionOptions<TNumber extends number | big
   extends ExplainTransactionOptions<TNumber> {
   changeInfo?: { address: string; chain: number; index: number }[];
 }
-
-export type UtxoNetwork = utxolib.Network;
 
 export interface TransactionPrebuild<TNumber extends number | bigint = number> extends BaseTransactionPrebuild {
   txInfo?: TransactionInfo<TNumber>;
@@ -460,7 +447,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
 
   /** @deprecated */
   static get validAddressTypes(): ScriptType2Of3[] {
-    return [...outputScripts.scriptTypes2Of3];
+    return ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2'];
   }
 
   /**
@@ -591,7 +578,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
    * @param addressDetails
    */
   static inferAddressType(addressDetails: { chain: number }): ScriptType2Of3 | null {
-    return isChainCode(addressDetails.chain) ? scriptTypeForChain(addressDetails.chain) : null;
+    return fixedScriptWallet.ChainCode.is(addressDetails.chain)
+      ? (fixedScriptWallet.ChainCode.scriptType(addressDetails.chain) as ScriptType2Of3)
+      : null;
   }
 
   decodeTransaction(input: Buffer | string): fixedScriptWallet.BitGoPsbt {
@@ -763,7 +752,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
    * @return true iff coin supports spending from chain
    */
   supportsAddressChain(chain: number): boolean {
-    return isChainCode(chain) && this.supportsAddressType(utxolib.bitgo.scriptTypeForChain(chain));
+    return (
+      fixedScriptWallet.ChainCode.is(chain) &&
+      this.supportsAddressType(fixedScriptWallet.ChainCode.scriptType(chain) as ScriptType2Of3)
+    );
   }
 
   keyIdsForSigning(): number[] {
