@@ -1,8 +1,7 @@
-import { BIP32, bip32, ECPair, Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
+import { BIP32, bip32, Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 
 export type BIP32Key = BIP32 | bip32.BIP32Interface | utxolib.BIP32Interface;
-export type ECPairKey = ECPair | utxolib.ECPairInterface | Uint8Array;
 export type UtxoLibPsbt = utxolib.Psbt | utxolib.bitgo.UtxoPsbt;
 
 /**
@@ -36,23 +35,6 @@ export function toUtxolibBIP32(key: BIP32Key): utxolib.BIP32Interface {
   return utxolib.bip32.fromBase58(key.toBase58());
 }
 
-export function toWasmECPair(key: ECPairKey): ECPair {
-  if (key instanceof ECPair) {
-    return key;
-  }
-  if (key instanceof Uint8Array) {
-    return ECPair.from(key);
-  }
-  if (key.privateKey) {
-    return ECPair.fromPrivateKey(key.privateKey);
-  }
-  return ECPair.fromPublicKey(key.publicKey);
-}
-
-export function isUtxoLibPsbt(psbt: unknown): psbt is UtxoLibPsbt {
-  return psbt instanceof utxolib.Psbt || psbt instanceof utxolib.bitgo.UtxoPsbt;
-}
-
 export function toWasmPsbt(psbt: Psbt | UtxoLibPsbt | Uint8Array): Psbt {
   if (psbt instanceof Psbt) {
     return psbt;
@@ -60,10 +42,7 @@ export function toWasmPsbt(psbt: Psbt | UtxoLibPsbt | Uint8Array): Psbt {
   if (psbt instanceof Uint8Array) {
     return Psbt.deserialize(psbt);
   }
-  if (isUtxoLibPsbt(psbt)) {
-    return Psbt.deserialize(psbt.toBuffer());
-  }
-  throw new Error('Unsupported PSBT type');
+  return Psbt.deserialize(psbt.toBuffer());
 }
 
 /**
