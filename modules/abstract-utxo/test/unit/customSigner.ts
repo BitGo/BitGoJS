@@ -3,7 +3,14 @@ import nock = require('nock');
 import * as sinon from 'sinon';
 import { CustomSigningFunction, common } from '@bitgo/sdk-core';
 
-import { defaultBitGo, getDefaultWalletKeys, getUtxoCoin, getUtxoWallet, assertHasProperty } from './util';
+import {
+  defaultBitGo,
+  getDefaultWalletKeys,
+  getNetworkForCoinName,
+  getUtxoCoin,
+  getUtxoWallet,
+  assertHasProperty,
+} from './util';
 
 nock.disableNetConnect();
 
@@ -56,7 +63,7 @@ describe('UTXO Custom Signer Function', function () {
     const psbt = utxoLib.testutil.constructPsbt(
       [{ scriptType: 'taprootKeyPathSpend', value: BigInt(1000) }],
       [{ scriptType: 'p2sh', value: BigInt(900) }],
-      basecoin.network,
+      getNetworkForCoinName(basecoin.name),
       rootWalletKey,
       'unsigned'
     );
@@ -72,7 +79,7 @@ describe('UTXO Custom Signer Function', function () {
     const psbt = utxoLib.testutil.constructPsbt(
       [{ scriptType: 'p2wsh', value: BigInt(1000) }],
       [{ scriptType: 'p2sh', value: BigInt(900) }],
-      basecoin.network,
+      getNetworkForCoinName(basecoin.name),
       rootWalletKey,
       'unsigned'
     );

@@ -75,14 +75,7 @@ import {
   ErrorImplicitExternalOutputs,
 } from './transaction/descriptor/verifyTransaction';
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
-import {
-  getFullNameFromCoinName,
-  getMainnetCoinName,
-  getNetworkFromCoinName,
-  isMainnetCoin,
-  UtxoCoinName,
-  UtxoCoinNameMainnet,
-} from './names';
+import { getFullNameFromCoinName, getMainnetCoinName, isMainnetCoin, UtxoCoinName, UtxoCoinNameMainnet } from './names';
 import { assertFixedScriptWalletAddress } from './address/fixedScript';
 import { ParsedTransaction } from './transaction/types';
 import { decodeDescriptorPsbt, decodePsbt, encodeTransaction, stringToBufferTryFormats } from './transaction/decode';
@@ -411,14 +404,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
   protected constructor(bitgo: BitGoBase, amountType: 'number' | 'bigint' = 'number') {
     super(bitgo);
     this.amountType = amountType;
-  }
-
-  /**
-   * @deprecated - will be removed when we drop support for utxolib
-   * Use `name` property instead.
-   */
-  get network(): utxolib.Network {
-    return getNetworkFromCoinName(this.name);
   }
 
   getChain(): UtxoCoinName {

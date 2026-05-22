@@ -8,10 +8,9 @@ import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 import { parseTransaction } from '../../../../src/transaction/fixedScript/parseTransaction';
 import { ParsedTransaction } from '../../../../src/transaction/types';
 import { UtxoWallet } from '../../../../src/wallet';
-import { getUtxoCoin } from '../../util';
+import { getCoinNameForNetwork, getUtxoCoin } from '../../util';
 import { explainPsbtWasm } from '../../../../src/transaction/fixedScript';
 import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction';
-import { getCoinName } from '../../../../src/names';
 import { TransactionPrebuild } from '../../../../src/abstractUtxoCoin';
 
 function getTxParamsFromExplanation(
@@ -78,7 +77,7 @@ function describeParseTransactionWith(
     let stubExplainTransaction: sinon.SinonStub;
 
     before('prepare', async function () {
-      const coinName = getCoinName(acidTest.network);
+      const coinName = getCoinNameForNetwork(acidTest.network);
       coin = getUtxoCoin(coinName);
 
       // Create PSBT and explanation
