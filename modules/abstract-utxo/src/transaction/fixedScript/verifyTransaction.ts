@@ -2,10 +2,12 @@ import buildDebug from 'debug';
 import _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import { BitGoBase, TxIntentMismatchError, IBaseCoin } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+import { hasPsbtMagic } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin, VerifyTransactionOptions } from '../../abstractUtxoCoin';
 import { Output, ParsedTransaction } from '../types';
+import { toTNumber } from '../../tnumber';
+import { stringToBufferTryFormats } from '../decode';
 import { verifyCustomChangeKeySignatures, verifyKeySignature, verifyUserPublicKey } from '../../verifyKey';
 import { getPsbtTxInputs, getTxInputs } from '../fetchInputs';
 
@@ -60,7 +62,7 @@ export async function verifyTransaction<TNumber extends bigint | number>(
   if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
     throw new TypeError('verification.disableNetworking must be a boolean');
   }
-  const isPsbt = txPrebuild.txHex && utxolib.bitgo.isPsbt(txPrebuild.txHex);
+  const isPsbt = txPrebuild.txHex && hasPsbtMagic(stringToBufferTryFormats(txPrebuild.txHex, ['hex', 'base64']));
   if (isPsbt && txPrebuild.txInfo?.unspents) {
     throw new Error('should not have unspents in txInfo for psbt');
   }
@@ -195,7 +197,7 @@ export async function verifyTransaction<TNumber extends bigint | number>(
   const inputs = isPsbt
     ? getPsbtTxInputs(txPrebuild.txHex, coin.name).map((v) => ({
         ...v,
-        value: utxolib.bitgo.toTNumber(v.value, coin.amountType),
+        value: toTNumber(v.value, coin.amountType),
       }))
     : await getTxInputs({ txPrebuild, bitgo, coin, disableNetworking, reqId });
   // coins (doge) that can exceed number limits (and thus will use bigint) will have the `valueString` field

@@ -3,7 +3,7 @@ import { randomBytes } from 'crypto';
 
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-import { BIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { BIP32, fixedScriptWallet, hasPsbtMagic } from '@bitgo/wasm-utxo';
 import { bitgo, getMainnet } from '@bitgo/utxo-lib';
 import {
   AddressCoinSpecific,
@@ -606,7 +606,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
 
   decodeTransaction(input: Buffer | string): fixedScriptWallet.BitGoPsbt {
     const buffer = typeof input === 'string' ? stringToBufferTryFormats(input, ['hex', 'base64']) : input;
-    if (!utxolib.bitgo.isPsbt(buffer)) {
+    if (!hasPsbtMagic(buffer)) {
       throw new ErrorDeprecatedTxFormat('legacy');
     }
     return decodePsbt(buffer, this.name);
