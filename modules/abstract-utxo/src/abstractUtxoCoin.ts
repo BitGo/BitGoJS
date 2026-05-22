@@ -599,12 +599,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
     return isChainCode(addressDetails.chain) ? scriptTypeForChain(addressDetails.chain) : null;
   }
 
-  createTransactionFromHex<TNumber extends number | bigint = number>(
-    hex: string
-  ): utxolib.bitgo.UtxoTransaction<TNumber> {
-    return utxolib.bitgo.createTransactionFromHex<TNumber>(hex, this.network, this.amountType);
-  }
-
   decodeTransaction(input: Buffer | string): fixedScriptWallet.BitGoPsbt {
     const buffer = typeof input === 'string' ? stringToBufferTryFormats(input, ['hex', 'base64']) : input;
     if (!hasPsbtMagic(buffer)) {
