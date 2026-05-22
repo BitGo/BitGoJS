@@ -1,7 +1,9 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import * as pgp from 'openpgp';
+import { randomBytes } from 'crypto';
 import { EddsaMPSDsg, MPSComms, MPSUtil } from '@bitgo/sdk-lib-mpc';
+import * as sjcl from '@bitgo/sjcl';
 import {
   EddsaMPCv2SignatureShareRound1Input,
   EddsaMPCv2SignatureShareRound1Output,
@@ -337,6 +339,158 @@ describe('EdDSA MPS DSG helper functions', async () => {
     assert.ok(parsed.data.msg3.signature, 'msg3.signature should be set');
   });
 });
+
+describe('EddsaMPCv2Utils.createOfflineRound1Share', () => {
+  let eddsaMPCv2Utils: EddsaMPCv2Utils;
+  let mockBitgo: BitGoBase;
+  let userKeyShare: Buffer;
+
+  const walletPassphrase = 'testPass';
+  const signableHex = 'deadbeef';
+  const derivationPath = 'm/0/0';
+  const expectedAdata = `${signableHex}:${derivationPath}`;
+  const txRequest: TxRequest = {
+    txRequestId: 'txreq-eddsa-round1',
+    walletId: 'wallet-eddsa-round1',
+    enterpriseId: 'enterprise-eddsa-round1',
+    apiVersion: 'full',
+    transactions: [
+      {
+        unsignedTx: {
+          signableHex,
+          derivationPath,
+          serializedTxHex: signableHex,
+        },
+        signatureShares: [],
+      },
+    ],
+    intent: { intentType: 'payment' },
+    unsignedTxs: [],
+  } as unknown as TxRequest;
+
+  before('generate EdDSA user key share', async () => {
+    const [userDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    userKeyShare = userDkg.getKeyShare();
+  });
+
+  beforeEach(() => {
+    mockBitgo = {
+      encrypt: sinon.stub().callsFake((params) => {
+        const salt = randomBytes(8);
+        const iv = randomBytes(16);
+        return sjcl.encrypt(params.password, params.input, {
+          salt: [bytesToWord(salt.subarray(0, 4)), bytesToWord(salt.subarray(4))],
+          iv: [
+            bytesToWord(iv.subarray(0, 4)),
+            bytesToWord(iv.subarray(4, 8)),
+            bytesToWord(iv.subarray(8, 12)),
+            bytesToWord(iv.subarray(12, 16)),
+          ],
+          adata: params.adata,
+        });
+      }),
+    } as unknown as BitGoBase;
+
+    const mockCoin = {
+      getMPCAlgorithm: sinon.stub().returns('eddsa'),
+    } as unknown as IBaseCoin;
+
+    eddsaMPCv2Utils = new EddsaMPCv2Utils(mockBitgo, mockCoin);
+  });
+
+  it('should create a round-1 share and encrypted SJCL session payload', async () => {
+    const result = await eddsaMPCv2Utils.createOfflineRound1Share({
+      txRequest,
+      prv: userKeyShare.toString('base64'),
+      walletPassphrase,
+    });
+
+    assert.strictEqual(result.signatureShareRound1.from, SignatureShareType.USER);
+    assert.strictEqual(result.signatureShareRound1.to, SignatureShareType.BITGO);
+    assert.ok(result.userGpgPubKey.includes('BEGIN PGP PUBLIC KEY BLOCK'));
+    assert.ok(JSON.parse(result.encryptedRound1Session).ct, 'encryptedRound1Session should be an SJCL JSON blob');
+    assert.ok(JSON.parse(result.encryptedUserGpgPrvKey).ct, 'encryptedUserGpgPrvKey should be an SJCL JSON blob');
+
+    const parsedShare = decodeWithCodec(
+      EddsaMPCv2SignatureShareRound1Input,
+      JSON.parse(result.signatureShareRound1.share),
+      'EddsaMPCv2SignatureShareRound1Input'
+    );
+    assert.strictEqual(parsedShare.type, 'round1Input');
+    assert.ok(parsedShare.data.msg1.message, 'msg1.message should be set');
+    assert.ok(parsedShare.data.msg1.signature, 'msg1.signature should be set');
+
+    const encryptedRound1Session = JSON.parse(result.encryptedRound1Session);
+    const encryptedUserGpgPrvKey = JSON.parse(result.encryptedUserGpgPrvKey);
+    assert.strictEqual(
+      decodeURIComponent(encryptedRound1Session.adata),
+      `MPS_DSG_SIGNING_ROUND1_STATE:${expectedAdata}`,
+      'round-1 session adata should bind the signing context'
+    );
+    assert.strictEqual(
+      decodeURIComponent(encryptedUserGpgPrvKey.adata),
+      `MPS_DSG_SIGNING_USER_GPG_KEY:${expectedAdata}`,
+      'GPG private key adata should bind the signing context'
+    );
+
+    const sessionPayload = JSON.parse(sjcl.decrypt(walletPassphrase, result.encryptedRound1Session));
+    assert.ok(sessionPayload.dsgSession, 'dsgSession should be persisted for round 2');
+    assert.ok(sessionPayload.userMsgPayload, 'userMsgPayload should be persisted for round 2');
+  });
+
+  it('should use v2 encryption when encryptedPrv is a v2 envelope', async () => {
+    const encrypt = sinon
+      .stub()
+      .callsFake((input: string, adata: string) => Promise.resolve(JSON.stringify({ v: 2, input, adata })));
+    const destroy = sinon.stub();
+    const createEncryptionSession = sinon.stub().resolves({ encrypt, destroy });
+    mockBitgo.createEncryptionSession = createEncryptionSession;
+
+    const result = await eddsaMPCv2Utils.createOfflineRound1Share({
+      txRequest,
+      prv: userKeyShare.toString('base64'),
+      walletPassphrase,
+      encryptedPrv: JSON.stringify({ v: 2 }),
+    });
+
+    sinon.assert.calledOnce(createEncryptionSession);
+    assert.strictEqual(createEncryptionSession.getCall(0).args[0], walletPassphrase);
+    sinon.assert.notCalled(mockBitgo.encrypt as sinon.SinonStub);
+    sinon.assert.calledTwice(encrypt);
+    sinon.assert.calledOnce(destroy);
+
+    const encryptedRound1Session = JSON.parse(result.encryptedRound1Session);
+    const encryptedUserGpgPrvKey = JSON.parse(result.encryptedUserGpgPrvKey);
+    assert.strictEqual(encryptedRound1Session.v, 2);
+    assert.strictEqual(encryptedRound1Session.adata, `MPS_DSG_SIGNING_ROUND1_STATE:${expectedAdata}`);
+    assert.strictEqual(encryptedUserGpgPrvKey.v, 2);
+    assert.strictEqual(encryptedUserGpgPrvKey.adata, `MPS_DSG_SIGNING_USER_GPG_KEY:${expectedAdata}`);
+
+    const sessionPayload = JSON.parse(encryptedRound1Session.input);
+    assert.ok(sessionPayload.dsgSession, 'dsgSession should be persisted for round 2');
+    assert.ok(sessionPayload.userMsgPayload, 'userMsgPayload should be persisted for round 2');
+  });
+
+  it('should propagate the tx-only guard when transactions are missing', async () => {
+    await assert.rejects(
+      () =>
+        eddsaMPCv2Utils.createOfflineRound1Share({
+          txRequest: { ...txRequest, transactions: undefined } as unknown as TxRequest,
+          prv: userKeyShare.toString('base64'),
+          walletPassphrase,
+        }),
+      /Unable to find transactions in txRequest/
+    );
+  });
+});
+
+function bytesToWord(bytes?: Uint8Array | number[]): number {
+  if (!(bytes instanceof Uint8Array) || bytes.length !== 4) {
+    throw new Error('bytes must be a Uint8Array with length 4');
+  }
+
+  return bytes.reduce((num, byte) => num * 0x100 + byte, 0);
+}
 
 describe('EddsaMPCv2Utils.signEddsaMPCv2TssUsingExternalSigner', () => {
   let sandbox: sinon.SinonSandbox;
