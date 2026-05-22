@@ -10354,9 +10354,9 @@ domhandler@^5.0.2, domhandler@^5.0.3:
     domelementtype "^2.3.0"
 
 dompurify@^3.3.1:
-  version "3.3.1"
-  resolved "https://registry.npmjs.org/dompurify/-/dompurify-3.3.1.tgz"
-  integrity sha512-qkdCKzLNtrgPFP1Vo+98FRzJnBRGe4ffyCea9IwHB1fyxPOeNTHpLKYGd4Uk9xvNoH0ZoOjwZxNptyMwqrId1Q==
+  version "3.4.5"
+  resolved "https://registry.npmjs.org/dompurify/-/dompurify-3.4.5.tgz#bedc7d30a6007ae9a8937b952be6adb76a28e871"
+  integrity sha512-OrwIBKsdNSVEeubdJ1HBv/wNENRM9ytAVCv7YXt//A3vPdVMNuACRqK9mXCGCBW2ln7BT/A4X0jXHo2Gu89miA==
   optionalDependencies:
     "@types/trusted-types" "^2.0.7"
 
