@@ -1,6 +1,5 @@
 import assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
 import * as sinon from 'sinon';
 import { Wallet } from '@bitgo/sdk-core';
 
@@ -217,10 +216,6 @@ describe('Verify Transaction', function () {
       needsCustomChangeKeySignatureVerification: false,
     });
 
-    const bitcoinMock = sinon
-      .stub(coin, 'createTransactionFromHex')
-      .returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
-
     const result = await coin.verifyTransaction({
       txParams: {
         walletPassphrase: passphrase,
@@ -234,7 +229,6 @@ describe('Verify Transaction', function () {
     assert.strictEqual(result, true);
 
     coinMock.restore();
-    bitcoinMock.restore();
   });
 
   it('should not allow any implicit external outputs if paygo outputs are disallowed', async () => {
@@ -284,10 +278,6 @@ describe('Verify Transaction', function () {
       needsCustomChangeKeySignatureVerification: false,
     });
 
-    const bitcoinMock = sinon
-      .stub(coin, 'createTransactionFromHex')
-      .returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
-
     const result = await coin.verifyTransaction({
       txParams: {
         walletPassphrase: passphrase,
@@ -302,7 +292,6 @@ describe('Verify Transaction', function () {
     assert.strictEqual(result, true);
 
     coinMock.restore();
-    bitcoinMock.restore();
   });
 
   it('should verify a bridging transaction whose implicit external output matches the bridge amount', async () => {
@@ -492,10 +481,6 @@ describe('Verify Transaction', function () {
       needsCustomChangeKeySignatureVerification: false,
     });
 
-    const bitcoinMock = sinon
-      .stub(bigintCoin, 'createTransactionFromHex')
-      .returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
-
     const result = await bigintCoin.verifyTransaction({
       txParams: {
         walletPassphrase: passphrase,
@@ -510,6 +495,5 @@ describe('Verify Transaction', function () {
     assert.strictEqual(result, true);
 
     coinMock.restore();
-    bitcoinMock.restore();
   });
 });

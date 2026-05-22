@@ -8,7 +8,7 @@ import {
   krsProviders,
   Triple,
 } from '@bitgo/sdk-core';
-import { BIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { BIP32, fixedScriptWallet, Transaction } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin } from '../abstractUtxoCoin';
 import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction';
@@ -172,8 +172,8 @@ async function queryBlockchainUnspentsPath(
               // json parse won't parse it correctly, so we requery the txid for the tx hex to decode here
               if (!Number.isSafeInteger(u.value)) {
                 const txHex = await getPrevTx(txid);
-                const tx = coin.createTransactionFromHex<bigint>(txHex);
-                val = tx.outs[vout].value;
+                const tx = Transaction.fromBytes(Buffer.from(txHex, 'hex'));
+                val = tx.getOutputs()[vout].value;
               }
             }
             // the api may return cashaddr's instead of legacy for BCH and BCHA
