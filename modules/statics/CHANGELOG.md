@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.40.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.39.0...@bitgo/statics@58.40.0) (2026-05-14)
+
+
+### Bug Fixes
+
+* explicitly set isToken parameter in OFC token definitions ([b9a0474](https://github.com/BitGo/BitGoJS/commit/b9a0474f83670873d8e5ce2ec3d3f43594c9fdf9))
+* rename SOFID to SoFiUSD ([4e131f4](https://github.com/BitGo/BitGoJS/commit/4e131f45c60839606cbcd323b4feb4a46c7aa689))
+* **statics:** set xtzevm decimals to 18 ([766e523](https://github.com/BitGo/BitGoJS/commit/766e5231aac67fc3c3343fc1037d5db0d3bf4f1c))
+
+
+### Features
+
+* add Robinhood mainnet ERC-20 tokens (TSLA and USDG) ([42d4c1d](https://github.com/BitGo/BitGoJS/commit/42d4c1de79c8cd77151985ad58559f0574b7836a))
+* exclude singapore for xpl:syzusd ([4db2fd1](https://github.com/BitGo/BitGoJS/commit/4db2fd190d09253fd545db20ee943a512063023f))
+* onboard ERC-20 tokens on Hemi, Stable.xyz, HPP, and Unichain ([681191b](https://github.com/BitGo/BitGoJS/commit/681191b671a6039bb0517bb9258b658deba6a516))
+* remove staking feature for lightning ([54dc1a3](https://github.com/BitGo/BitGoJS/commit/54dc1a30c812087dfe8c4ca663654976f2cc044f))
+* **sdk-coin-canton:** added new merge utxo feature flag ([e38deb2](https://github.com/BitGo/BitGoJS/commit/e38deb2c1a7c669eae2e72dc55a8da8eafd3f31e))
+* **sdk-coin-stx:** add sBTC withdrawal transaction builder ([02193be](https://github.com/BitGo/BitGoJS/commit/02193be6e686dfcccb92df2200e5d85e180e4816))
+* **statics:** add 19XX CRT POL token (CECHO-918) ([4ac247b](https://github.com/BitGo/BitGoJS/commit/4ac247b0c965f54e64aeb964b91920affd68a411))
+* **statics:** add Gigastar CRT POL tokens (CECHO-918 batch 05/05) ([c37a934](https://github.com/BitGo/BitGoJS/commit/c37a9347bceec65454ac464e832e6f1ca828414e))
+* **statics:** add ondo test tokens and week token ([007a275](https://github.com/BitGo/BitGoJS/commit/007a275226c4642a826238f8bcf16b4d9282a9dd))
+* **statics:** add zama support ([feed663](https://github.com/BitGo/BitGoJS/commit/feed663a719af399f1ddfde0984ea9002be1dffa))
+* **statics:** enable MPC features for FLRP ([bce8fc9](https://github.com/BitGo/BitGoJS/commit/bce8fc955b84d26de5756ea45edeae9536214690))
+* **statics:** exclude Singapore custody for USDGold and ARCHITECT Global Value ([521ffa4](https://github.com/BitGo/BitGoJS/commit/521ffa42f19920135e671b51ee24af8dee580bcc))
+* **statics:** gate Gigastar CRT POL tokens for Singapore trust (CECHO-918) ([6a3218c](https://github.com/BitGo/BitGoJS/commit/6a3218ccf2877428055223d4eb5a3ab0d5468944))
+* **statics:** support tokens on dynamically onboarded EVM chains ([fa4f74e](https://github.com/BitGo/BitGoJS/commit/fa4f74e1b68d07b89b64e15b410ea5952c9a1a56))
+
+
+
+
+
 # [58.39.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.38.0...@bitgo/statics@58.39.0) (2026-05-05)
 
 

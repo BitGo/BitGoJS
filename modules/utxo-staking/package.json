@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/utxo-staking",
-  "version": "1.39.1",
+  "version": "1.39.2",
   "description": "BitGo SDK for build UTXO staking transactions",
   "main": "./dist/cjs/src/index.js",
   "module": "./dist/esm/index.js",

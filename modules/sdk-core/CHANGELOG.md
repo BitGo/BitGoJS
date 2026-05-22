@@ -3,6 +3,51 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [37.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.44.0...@bitgo/sdk-core@37.0.0) (2026-05-14)
+
+
+### Bug Fixes
+
+* **sdk-core:** route EdDSA MPCv2 hot wallets to full apiVersion ([7bf0b12](https://github.com/BitGo/BitGoJS/commit/7bf0b12993085eb1dd1ea322f87c8d4b27e7b885))
+* **sdk-core:** use async decrypt and getUserPrv at v2 call sites ([7680291](https://github.com/BitGo/BitGoJS/commit/76802916fe7d034cb8f961bee4b05c35c6bd0ab5))
+
+
+### Features
+
+* add decryption delegation support for zama ([ac54106](https://github.com/BitGo/BitGoJS/commit/ac5410606336e95063a0221784ce8bb8241b5d48))
+* add lightning provider to generateWallet ([46c88f3](https://github.com/BitGo/BitGoJS/commit/46c88f38d2183aaf0fa9d8345a1a92f3a5d5c7db))
+* **bitgo:** add support for Export txn type in prebuildTransaction ([c20a0aa](https://github.com/BitGo/BitGoJS/commit/c20a0aa8cce8f77a41fefddef2ed98c100ba6b5b))
+* **sdk-api, sdk-core:** thread AAD through v2 encryption for DKLS context binding ([f9b7a24](https://github.com/BitGo/BitGoJS/commit/f9b7a24f34d04aa33f2451115b90fc94d9da53f2))
+* **sdk-api:** add encryptAsync and createEncryptionSession on BitGoBase/BitGoAPI ([8879071](https://github.com/BitGo/BitGoJS/commit/887907110bbe4f5eb06a2f728a7ae4b1abb1f787))
+* **sdk-coin-canton:** add cosign delegation accept builder' ([ab838bf](https://github.com/BitGo/BitGoJS/commit/ab838bfee62e4d6f5d636dee40c6af2abe1ef343))
+* **sdk-coin-canton:** added cosignDelegationProposal builder ([fdb1754](https://github.com/BitGo/BitGoJS/commit/fdb1754d8d3703aecb503036d0fd67323b196208))
+* **sdk-coin-stx:** add sBTC withdrawal transaction builder ([02193be](https://github.com/BitGo/BitGoJS/commit/02193be6e686dfcccb92df2200e5d85e180e4816))
+* **sdk-coin-xrp:** add AccountDelete ([abc2612](https://github.com/BitGo/BitGoJS/commit/abc2612a64fea46df38ccd9b8df7e9500b6deff7))
+* **sdk-core:** add bulk TRX resource delegation SDK methods ([0819ce1](https://github.com/BitGo/BitGoJS/commit/0819ce17f818e6104b08bb19adcb4c7fcba86845))
+* **sdk-core:** add EdDSA MPCv2 DSG helpers and DKG key-share util ([3d581de](https://github.com/BitGo/BitGoJS/commit/3d581dec3fbb99a082e09d5d84be066172f9c81b))
+* **sdk-core:** add EdDSA MPCv2 external signer types and stubs ([5b8d995](https://github.com/BitGo/BitGoJS/commit/5b8d9957c08b4134dc5f255889e3d456cf107a02))
+* **sdk-core:** add EdDSA MPCv2 full 3-round signing orchestration ([1ef502a](https://github.com/BitGo/BitGoJS/commit/1ef502aaa932967640c1326652cd59b21b726e0a))
+* **sdk-core:** add encryptionVersion opt-in param to wallet and keychain types ([fe0150d](https://github.com/BitGo/BitGoJS/commit/fe0150d2f62b48055d5904c9737976034d3740d5))
+* **sdk-core:** add explicit recipient mode typing for TSS signTxRequest ([045afe6](https://github.com/BitGo/BitGoJS/commit/045afe60ba9b70ccc4cf50fe8ce0b5172b9c597a)), closes [#8462](https://github.com/BitGo/BitGoJS/issues/8462)
+* **sdk-core:** add v2 encryption session support to DKLS MPCv2 keygen and signing ([ddd691f](https://github.com/BitGo/BitGoJS/commit/ddd691f84fff120c1ab77858f8ead510602a5ba5))
+* **sdk-core:** add v2 encryption session support to EdDSA keygen and signing ([65bb7a3](https://github.com/BitGo/BitGoJS/commit/65bb7a338541fed3dd88e6a0bc3a45ee95b30239))
+* **sdk-core:** add webauthnInfo support to createMpc [WAL-761] ([b52c7ae](https://github.com/BitGo/BitGoJS/commit/b52c7ae27ff7ae453fcd063289fa3f6704352428))
+* **sdk-core:** added OFC BitGo signing on trading accounts object ([eef9b38](https://github.com/BitGo/BitGoJS/commit/eef9b384c05c085e72f1193159781ee601e8b709))
+* **sdk-core:** make decryptKeychainPrivateKey async for v1/v2 auto-detection ([9679bea](https://github.com/BitGo/BitGoJS/commit/9679bea81027e24b7d6bb485b0896a6d5b7b08ae))
+* **sdk-core:** make wallet passphrase optioanl for prepareAllocation ([06d0ec5](https://github.com/BitGo/BitGoJS/commit/06d0ec57890391918bf69ea811c52e3a38be1427))
+* **sdk-core:** read userKeySigningRequired from coinSpecific ([14fd451](https://github.com/BitGo/BitGoJS/commit/14fd4517bf479b9580129cc0f8887e8863953bf8))
+* **sdk-core:** thread encryptionVersion through multisig wallet creation ([833dbcb](https://github.com/BitGo/BitGoJS/commit/833dbcb0ecfab965580ce8d3250f4f20365214d5))
+* **sdk-core:** update decrypt calls to use decryptAsync ([b5f1ca1](https://github.com/BitGo/BitGoJS/commit/b5f1ca1e718e4910eaf9823c69ca398990205f05))
+
+
+### BREAKING CHANGES
+
+* **sdk-core:** ITssUtils.signTxRequest is now typed as TssSignTxRequestParamsWithPrv instead of a minimal inline shape. TypeScript consumers that implement or narrow this interface may need signature updates; runtime behavior for existing callers is unchanged.
+
+
+
+
+
 # [36.44.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.43.0...@bitgo/sdk-core@36.44.0) (2026-05-05)
 
 

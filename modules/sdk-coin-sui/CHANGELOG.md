@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.23.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.23.6...@bitgo/sdk-coin-sui@5.23.7) (2026-05-14)
+
+
+### Bug Fixes
+
+* **sdk-coin-sui:** update WALRUS package ID ([593cde3](https://github.com/BitGo/BitGoJS/commit/593cde3dc90b718db45ed88a68d2984b4b08a3cd))
+
+
+
+
+
 ## [5.23.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.23.5...@bitgo/sdk-coin-sui@5.23.6) (2026-05-05)
 
 

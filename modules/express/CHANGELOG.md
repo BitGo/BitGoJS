@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.28.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.27.2...@bitgo/express@15.28.0) (2026-05-14)
+
+
+### Features
+
+* **express:** support optional passphrase in handleV2OFCSignPayload ([c9e064a](https://github.com/BitGo/BitGoJS/commit/c9e064af652ba815ac5b30699677aadfb0fe8a2a))
+* **express:** type coinSpecific.userKeySigningRequired on WalletResponse codec ([0d223d5](https://github.com/BitGo/BitGoJS/commit/0d223d5aa742a793b1df12afc4b81421784a4db8))
+* **sdk-core:** add bulk TRX resource delegation SDK methods ([0819ce1](https://github.com/BitGo/BitGoJS/commit/0819ce17f818e6104b08bb19adcb4c7fcba86845))
+
+
+
+
+
 ## [15.27.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.27.1...@bitgo/express@15.27.2) (2026-05-05)
 
 **Note:** Version bump only for package @bitgo/express

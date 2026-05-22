@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.9.1...@bitgo/sdk-coin-eth@25.10.0) (2026-05-14)
+
+
+### Features
+
+* add decryption delegation support for zama ([ac54106](https://github.com/BitGo/BitGoJS/commit/ac5410606336e95063a0221784ce8bb8241b5d48))
+* add zama to coinFactory ([6c61664](https://github.com/BitGo/BitGoJS/commit/6c616641cd2f8ac217fff00e978a87338738a9e8))
+
+
+
+
+
 ## [25.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.9.0...@bitgo/sdk-coin-eth@25.9.1) (2026-05-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

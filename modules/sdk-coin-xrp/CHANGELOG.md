@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.13.7...@bitgo/sdk-coin-xrp@3.14.0) (2026-05-14)
+
+
+### Features
+
+* **sdk-coin-xrp:** add AccountDelete ([abc2612](https://github.com/BitGo/BitGoJS/commit/abc2612a64fea46df38ccd9b8df7e9500b6deff7))
+
+
+
+
+
 ## [3.13.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.13.6...@bitgo/sdk-coin-xrp@3.13.7) (2026-05-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xrp
