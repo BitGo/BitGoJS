@@ -5,7 +5,7 @@ import nock = require('nock');
 import * as _ from 'lodash';
 import { Wallet, ManageUnspentsOptions, common } from '@bitgo/sdk-core';
 
-import { defaultBitGo, getDefaultWalletKeys, toKeychainObjects, getUtxoCoin } from './util';
+import { defaultBitGo, getDefaultWalletKeys, getNetworkForCoinName, toKeychainObjects, getUtxoCoin } from './util';
 
 const bgUrl = common.Environments[defaultBitGo.getEnv()].uri;
 const bitgo = defaultBitGo;
@@ -35,7 +35,7 @@ describe('manage unspents', function () {
       utxoLib.testutil.constructPsbt(
         [{ scriptType, value: BigInt(1000) }],
         [{ scriptType, value: BigInt(900) }],
-        basecoin.network,
+        getNetworkForCoinName(basecoin.name),
         rootWalletKey,
         'unsigned'
       )
@@ -74,7 +74,7 @@ describe('manage unspents', function () {
     const psbt = utxoLib.testutil.constructPsbt(
       [{ scriptType: 'p2wsh', value: BigInt(1000) }],
       [{ scriptType: 'p2shP2wsh', value: BigInt(900) }],
-      basecoin.network,
+      getNetworkForCoinName(basecoin.name),
       rootWalletKey,
       'unsigned'
     );
