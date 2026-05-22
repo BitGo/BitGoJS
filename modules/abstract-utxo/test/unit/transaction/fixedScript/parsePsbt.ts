@@ -3,17 +3,14 @@ import assert from 'node:assert/strict';
 import * as sinon from 'sinon';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Wallet, VerificationOptions, ITransactionRecipient, Triple } from '@bitgo/sdk-core';
-import { address as wasmAddress, fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { parseTransaction } from '../../../../src/transaction/fixedScript/parseTransaction';
 import { ParsedTransaction } from '../../../../src/transaction/types';
 import { UtxoWallet } from '../../../../src/wallet';
 import { getUtxoCoin } from '../../util';
-import { explainLegacyTx, explainPsbt, explainPsbtWasm } from '../../../../src/transaction/fixedScript';
-import type {
-  TransactionExplanation,
-  ChangeAddressInfo,
-} from '../../../../src/transaction/fixedScript/explainTransaction';
+import { explainPsbt, explainPsbtWasm } from '../../../../src/transaction/fixedScript';
+import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction';
 import { getCoinName } from '../../../../src/names';
 import { TransactionPrebuild } from '../../../../src/abstractUtxoCoin';
 
@@ -52,30 +49,6 @@ function getTxParamsFromExplanation(
   };
 }
 
-function getChangeInfoFromPsbt(psbt: utxolib.bitgo.UtxoPsbt): ChangeAddressInfo[] | undefined {
-  try {
-    return utxolib.bitgo.findInternalOutputIndices(psbt).map((i) => {
-      const output = psbt.data.outputs[i];
-      const derivations = output.bip32Derivation ?? output.tapBip32Derivation ?? undefined;
-      if (!derivations || derivations.length !== 3) {
-        throw new Error('expected 3 derivation paths');
-      }
-      const path = derivations[0].path;
-      const { chain, index } = utxolib.bitgo.getChainAndIndexFromPath(path);
-      return {
-        address: wasmAddress.fromOutputScriptWithCoin(psbt.txOutputs[i].script, getCoinName(psbt.network)),
-        chain,
-        index,
-      };
-    });
-  } catch (e) {
-    if (e instanceof utxolib.bitgo.ErrorNoMultiSigInputFound) {
-      return undefined;
-    }
-    throw e;
-  }
-}
-
 function describeParseTransactionWith(
   acidTest: utxolib.testutil.AcidTest,
   label: string,
@@ -85,7 +58,6 @@ function describeParseTransactionWith(
     externalCustomChangeAddress = false,
     expectedExplicitExternalSpendAmount,
     expectedImplicitExternalSpendAmount,
-    txFormat = 'psbt',
   }: {
     txParams:
       | {
@@ -98,7 +70,6 @@ function describeParseTransactionWith(
     externalCustomChangeAddress?: boolean;
     expectedExplicitExternalSpendAmount: bigint;
     expectedImplicitExternalSpendAmount: bigint;
-    txFormat?: 'psbt' | 'legacy';
   }
 ) {
   describe(`${acidTest.name}/${label}`, function () {
@@ -117,35 +88,26 @@ function describeParseTransactionWith(
       const txHash = tx.getId();
 
       let explanation: TransactionExplanation;
-      if (txFormat === 'psbt') {
-        if (backend === 'utxolib') {
-          explanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, coinName, {
-            strict: true,
-          });
-        } else if (backend === 'wasm') {
-          const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(
-            psbt.toBuffer(),
-            utxolib.getNetworkName(acidTest.network)!
-          );
-          explanation = explainPsbtWasm(
-            wasmPsbt,
-            acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>,
-            {
-              replayProtection: {
-                publicKeys: [acidTest.getReplayProtectionPublicKey()],
-              },
-            }
-          );
-        } else {
-          throw new Error(`Invalid backend: ${backend}`);
-        }
-      } else if (txFormat === 'legacy') {
-        const pubs = acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58());
-        // Extract change info from PSBT to pass to explainLegacyTx
-        const changeInfo = getChangeInfoFromPsbt(psbt);
-        explanation = explainLegacyTx(tx, { pubs, changeInfo }, coinName);
+      if (backend === 'utxolib') {
+        explanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, coinName, {
+          strict: true,
+        });
+      } else if (backend === 'wasm') {
+        const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(
+          psbt.toBuffer(),
+          utxolib.getNetworkName(acidTest.network)!
+        );
+        explanation = explainPsbtWasm(
+          wasmPsbt,
+          acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>,
+          {
+            replayProtection: {
+              publicKeys: [acidTest.getReplayProtectionPublicKey()],
+            },
+          }
+        );
       } else {
-        throw new Error(`Invalid txFormat: ${txFormat}`);
+        throw new Error(`Invalid backend: ${backend}`);
       }
 
       // Determine txParams
@@ -198,18 +160,9 @@ function describeParseTransactionWith(
       // Stub explainTransaction to return the explanation without making network calls
       stubExplainTransaction = sinon.stub(coin, 'explainTransaction').resolves(explanation);
 
-      let txPrebuild: TransactionPrebuild<bigint>;
-      if (txFormat === 'psbt') {
-        txPrebuild = {
-          txHex: psbt.toHex(),
-        };
-      } else if (txFormat === 'legacy') {
-        txPrebuild = {
-          txHex: psbt.getUnsignedTx().toHex(),
-        };
-      } else {
-        throw new Error(`Invalid txFormat: ${txFormat}`);
-      }
+      const txPrebuild: TransactionPrebuild<bigint> = {
+        txHex: psbt.toHex(),
+      };
 
       refParsedTransaction = await parseTransaction(coin, {
         wallet: mockWallet as unknown as UtxoWallet,
@@ -279,13 +232,6 @@ function describeTransaction(
           return;
         }
         // extended test suite for bitcoin
-
-        describeParseTransactionWith(test, 'legacy', backend, {
-          txFormat: 'legacy',
-          txParams: 'inferFromExplanation',
-          expectedExplicitExternalSpendAmount: 1800n,
-          expectedImplicitExternalSpendAmount: 0n,
-        });
 
         describeParseTransactionWith(test, 'empty recipients', backend, {
           txParams: {

@@ -7,7 +7,6 @@ import * as utxocore from '@bitgo/utxo-core';
 
 import type { Bip322Message } from '../../abstractUtxoCoin';
 import type { Output, FixedScriptWalletOutput } from '../types';
-import type { Unspent } from '../../unspent';
 import { toExtendedAddressFormat } from '../recipient';
 import { getPayGoVerificationPubkey } from '../getPayGoVerificationPubkey';
 import { toBip32Triple } from '../../keychains';
@@ -56,18 +55,12 @@ export type TransactionExplanationWasm = AbstractUtxoTransactionExplanation<stri
   inputAmount: string;
 };
 
-/** When parsing the legacy transaction format, we cannot always infer the fee so we set it to string | undefined */
-export type TransactionExplanationUtxolibLegacy = TransactionExplanationWithSignatures<string | undefined>;
-
 /** When parsing a PSBT, we can infer the fee so we set TFee to string. */
 export type TransactionExplanationUtxolibPsbt = TransactionExplanationWithSignatures<string>;
 
 export type TransactionExplanationDescriptor = TransactionExplanationWithSignatures<string, Output>;
 
-export type TransactionExplanation =
-  | TransactionExplanationUtxolibLegacy
-  | TransactionExplanationUtxolibPsbt
-  | TransactionExplanationWasm;
+export type TransactionExplanation = TransactionExplanationUtxolibPsbt | TransactionExplanationWasm;
 
 export type ChangeAddressInfo = {
   address: string;
@@ -192,40 +185,6 @@ function getPsbtInputSignaturesCount(
   return rootWalletKeys
     ? bitgo.getSignatureValidationArrayPsbt(psbt, rootWalletKeys).map((sv) => sv[1].filter((v) => v).length)
     : (Array(psbt.data.inputs.length) as number[]).fill(0);
-}
-
-function getTxInputSignaturesCount<TNumber extends number | bigint>(
-  tx: bitgo.UtxoTransaction<TNumber>,
-  params: {
-    txInfo?: { unspents?: Unspent<TNumber>[] };
-    pubs?: bitgo.RootWalletKeys | string[];
-  },
-  coinName: UtxoCoinName
-) {
-  const network = getNetworkFromCoinName(coinName);
-  const prevOutputs = params.txInfo?.unspents?.map((u) => bitgo.toOutput<TNumber>(u, network));
-  const rootWalletKeys = getRootWalletKeys(params);
-  const { unspents = [] } = params.txInfo ?? {};
-
-  // get the number of signatures per input
-  return tx.ins.map((input, idx): number => {
-    if (unspents.length !== tx.ins.length) {
-      return 0;
-    }
-    if (!prevOutputs) {
-      throw new Error(`invalid state`);
-    }
-    if (!rootWalletKeys) {
-      // no pub keys or incorrect number of pub keys
-      return 0;
-    }
-    try {
-      return bitgo.verifySignatureWithUnspent<TNumber>(tx, idx, unspents, rootWalletKeys).filter((v) => v).length;
-    } catch (e) {
-      // some other error occurred and we can't validate the signatures
-      return 0;
-    }
-  });
 }
 
 function getChainAndIndexFromBip32Derivations(output: bitgo.PsbtOutput) {
@@ -441,23 +400,5 @@ export function explainPsbt(
     inputSignatures: inputSignaturesCount,
     signatures: inputSignaturesCount.reduce((prev, curr) => (curr > prev ? curr : prev), 0),
     messages,
-  };
-}
-
-export function explainLegacyTx<TNumber extends number | bigint>(
-  tx: bitgo.UtxoTransaction<TNumber>,
-  params: {
-    pubs?: string[];
-    txInfo?: { unspents?: Unspent<TNumber>[] };
-    changeInfo?: { address: string; chain: number; index: number }[];
-  },
-  coinName: UtxoCoinName
-): TransactionExplanationUtxolibLegacy {
-  const common = explainCommon(tx, params, coinName);
-  const inputSignaturesCount = getTxInputSignaturesCount(tx, params, coinName);
-  return {
-    ...common,
-    inputSignatures: inputSignaturesCount,
-    signatures: inputSignaturesCount.reduce((prev, curr) => (curr > prev ? curr : prev), 0),
   };
 }
