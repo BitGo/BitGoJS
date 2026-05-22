@@ -46,6 +46,7 @@ import { EddsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './eddsaMPCv2K
 export class EddsaMPCv2Utils extends BaseEddsaUtils {
   private static readonly MPS_DSG_SIGNING_USER_GPG_KEY = 'MPS_DSG_SIGNING_USER_GPG_KEY';
   private static readonly MPS_DSG_SIGNING_ROUND1_STATE = 'MPS_DSG_SIGNING_ROUND1_STATE';
+  private static readonly MPS_DSG_SIGNING_ROUND2_STATE = 'MPS_DSG_SIGNING_ROUND2_STATE';
 
   /** @inheritdoc */
   async createKeychains(params: {
@@ -534,6 +535,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 
   // #region external signer
 
+  // #region Round1Share
   async createOfflineRound1Share(params: {
     txRequest: TxRequest;
     prv: string;
@@ -597,6 +599,113 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 
     return { signatureShareRound1, userGpgPubKey, encryptedRound1Session, encryptedUserGpgPrvKey };
   }
+  // #endregion
+
+  // #region Round2Share
+  async createOfflineRound2Share(params: {
+    txRequest: TxRequest;
+    walletPassphrase: string;
+    bitgoPublicGpgKey: string;
+    encryptedUserGpgPrvKey: string;
+    encryptedRound1Session: string;
+  }): Promise<{
+    signatureShareRound2: SignatureShareRecord;
+    encryptedRound2Session: string;
+  }> {
+    const { walletPassphrase, encryptedUserGpgPrvKey, encryptedRound1Session, bitgoPublicGpgKey, txRequest } = params;
+
+    const { signableHex, derivationPath } = this.getSignableHexAndDerivationPath(
+      txRequest,
+      'Unable to find transactions in txRequest'
+    );
+    const adata = `${signableHex}:${derivationPath}`;
+
+    const useV2 = isV2Envelope(encryptedRound1Session);
+
+    const { bitgoGpgKey, userGpgPrvKey } = await this.getBitgoAndUserGpgKeys(
+      bitgoPublicGpgKey,
+      encryptedUserGpgPrvKey,
+      walletPassphrase,
+      adata,
+      EddsaMPCv2Utils.MPS_DSG_SIGNING_USER_GPG_KEY
+    );
+
+    const transactions = txRequest.transactions;
+    assert(Array.isArray(transactions) && transactions.length === 1, 'txRequest must have exactly one transaction');
+    const signatureShares = transactions[0].signatureShares;
+    assert(signatureShares, 'Missing signature shares in round 1 txRequest');
+
+    const bitgoShareRoundOne = getBitgoSignatureShare(signatureShares, SignatureShareType.USER);
+    const parsedBitGoToUserSigShareRoundOne = decodeWithCodec(
+      EddsaMPCv2SignatureShareRound1Output,
+      JSON.parse(bitgoShareRoundOne.share),
+      'Unexpected signature share response. Unable to parse data.'
+    );
+
+    if (parsedBitGoToUserSigShareRoundOne.type !== 'round1Output') {
+      throw new Error('Unexpected signature share response. Unable to parse data.');
+    }
+
+    const bitgoDeserializedMsg1 = await verifyPeerMessageRoundOne(parsedBitGoToUserSigShareRoundOne, bitgoGpgKey);
+
+    this.validateAdata(adata, encryptedRound1Session, EddsaMPCv2Utils.MPS_DSG_SIGNING_ROUND1_STATE);
+
+    let decryptedRound1Session: string;
+    if (useV2) {
+      decryptedRound1Session = await this.bitgo.decryptAsync({
+        input: encryptedRound1Session,
+        password: walletPassphrase,
+      });
+    } else {
+      decryptedRound1Session = this.bitgo.decrypt({
+        input: encryptedRound1Session,
+        password: walletPassphrase,
+      });
+    }
+
+    const { dsgSession, userMsgPayload } = JSON.parse(decryptedRound1Session) as {
+      dsgSession: string;
+      userMsgPayload: string;
+    };
+
+    const userDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER);
+    userDsg.restoreSession(dsgSession);
+    const userMsg1: MPSTypes.DeserializedMessage = {
+      from: MPCv2PartiesEnum.USER,
+      payload: new Uint8Array(Buffer.from(userMsgPayload, 'base64')),
+    };
+
+    const [userMsg2] = userDsg.handleIncomingMessages([userMsg1, bitgoDeserializedMsg1]);
+    assert(userMsg2, 'DSG handleIncomingMessages produced no round-2 output');
+
+    const signatureShareRound2 = await getSignatureShareRoundTwo(userMsg2, userGpgPrvKey);
+    const sessionPayload = JSON.stringify({
+      dsgSession: userDsg.getSession(),
+      userMsgPayload: Buffer.from(userMsg2.payload).toString('base64'),
+    });
+
+    if (useV2) {
+      const session = await this.bitgo.createEncryptionSession(walletPassphrase);
+      try {
+        const encryptedRound2Session = await session.encrypt(
+          sessionPayload,
+          `${EddsaMPCv2Utils.MPS_DSG_SIGNING_ROUND2_STATE}:${adata}`
+        );
+        return { signatureShareRound2, encryptedRound2Session };
+      } finally {
+        session.destroy();
+      }
+    }
+
+    const encryptedRound2Session = this.bitgo.encrypt({
+      input: sessionPayload,
+      password: walletPassphrase,
+      adata: `${EddsaMPCv2Utils.MPS_DSG_SIGNING_ROUND2_STATE}:${adata}`,
+    });
+
+    return { signatureShareRound2, encryptedRound2Session };
+  }
+  // #endregion
 
   /** @inheritdoc */
   async signEddsaMPCv2TssUsingExternalSigner(
