@@ -3,7 +3,7 @@ import { randomBytes } from 'crypto';
 
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-import { BIP32, fixedScriptWallet, hasPsbtMagic } from '@bitgo/wasm-utxo';
+import { address as wasmAddress, BIP32, fixedScriptWallet, hasPsbtMagic } from '@bitgo/wasm-utxo';
 import { bitgo } from '@bitgo/utxo-lib';
 import {
   AddressCoinSpecific,
@@ -498,15 +498,20 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
     // At the time of writing, the only additional address format is bch cashaddr.
     const anyFormat = (param as { anyFormat: boolean } | undefined)?.anyFormat ?? true;
     try {
-      // Find out if the address is valid for any format. Tries all supported formats by default.
-      // Throws if address cannot be decoded with any format.
-      const [format, script] = utxolib.addressFormat.toOutputScriptAndFormat(address, this.network);
-      // unless anyFormat is set, only 'default' is allowed.
-      if (!anyFormat && format !== 'default') {
-        return false;
+      const script = wasmAddress.toOutputScriptWithCoin(address, this.name);
+      // Determine which format the input address was in by round-tripping
+      // through each candidate and checking byte-equality. 'default' is tried
+      // first so canonical default-format addresses early-exit.
+      for (const format of ['default', 'cashaddr'] as const) {
+        try {
+          if (wasmAddress.fromOutputScriptWithCoin(script, this.name, format) === address) {
+            return anyFormat || format === 'default';
+          }
+        } catch {
+          // coin doesn't support this format; try the next one
+        }
       }
-      // make sure that address is in normal representation for given format.
-      return address === utxolib.addressFormat.fromOutputScriptWithFormat(script, format, this.network);
+      return false;
     } catch (e) {
       return false;
     }
