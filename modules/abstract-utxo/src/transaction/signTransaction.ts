@@ -6,11 +6,10 @@ import buildDebug from 'debug';
 import { AbstractUtxoCoin, SignTransactionOptions } from '../abstractUtxoCoin';
 import { getDescriptorMapFromWallet, getPolicyForEnv, isDescriptorWallet } from '../descriptor';
 import { fetchKeychains, toBip32Triple } from '../keychains';
-import { isUtxoLibPsbt } from '../wasmUtil';
 
 import * as fixedScript from './fixedScript';
 import * as descriptor from './descriptor';
-import { decodeDescriptorPsbt, decodePsbtWith, encodeTransaction } from './decode';
+import { decodeDescriptorPsbt, encodeTransaction } from './decode';
 
 const debug = buildDebug('bitgo:abstract-utxo:transaction:signTransaction');
 
@@ -59,13 +58,7 @@ export async function signTransaction<TNumber extends number | bigint>(
     });
     return { txHex: Buffer.from(psbt.serialize()).toString('hex') };
   } else {
-    let tx = coin.decodeTransactionFromPrebuild(params.txPrebuild);
-
-    // When returnLegacyFormat is set, ensure we use wasm-utxo's BitGoPsbt so
-    // getHalfSignedLegacyFormat() is available after signing.
-    if (params.returnLegacyFormat && isUtxoLibPsbt(tx)) {
-      tx = decodePsbtWith(tx.toBuffer(), coin.name, 'wasm-utxo');
-    }
+    const tx = coin.decodeTransactionFromPrebuild(params.txPrebuild);
 
     const signedTx = await fixedScript.signTransaction(coin, tx, getSignerKeychain(params.prv), coin.name, {
       walletId: params.txPrebuild.walletId,

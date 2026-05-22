@@ -1,4 +1,3 @@
-import * as utxolib from '@bitgo/utxo-lib';
 import { fixedScriptWallet, Psbt as WasmPsbt } from '@bitgo/wasm-utxo';
 import { isTriple, IWallet, Triple } from '@bitgo/sdk-core';
 
@@ -9,11 +8,7 @@ import { UtxoCoinName } from '../names';
 import type { Unspent } from '../unspent';
 
 import { getReplayProtectionPubkeys } from './fixedScript/replayProtection';
-import type {
-  TransactionExplanationUtxolibLegacy,
-  TransactionExplanationUtxolibPsbt,
-  TransactionExplanationWasm,
-} from './fixedScript/explainTransaction';
+import type { TransactionExplanationUtxolibPsbt, TransactionExplanationWasm } from './fixedScript/explainTransaction';
 import * as fixedScript from './fixedScript';
 import * as descriptor from './descriptor';
 
@@ -22,7 +17,7 @@ import * as descriptor from './descriptor';
  * change amounts, and transaction outputs.
  */
 export function explainTx<TNumber extends number | bigint>(
-  tx: utxolib.bitgo.UtxoTransaction<TNumber> | utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt | WasmPsbt,
+  tx: fixedScriptWallet.BitGoPsbt | WasmPsbt,
   params: {
     wallet?: IWallet;
     pubs?: string[];
@@ -31,7 +26,7 @@ export function explainTx<TNumber extends number | bigint>(
     changeInfo?: fixedScript.ChangeAddressInfo[];
   },
   coinName: UtxoCoinName
-): TransactionExplanationUtxolibLegacy | TransactionExplanationUtxolibPsbt | TransactionExplanationWasm {
+): TransactionExplanationUtxolibPsbt | TransactionExplanationWasm {
   if (params.wallet && isDescriptorWallet(params.wallet)) {
     if (!(tx instanceof WasmPsbt)) {
       throw new Error('descriptor wallets require PSBT format transactions');
@@ -43,19 +38,12 @@ export function explainTx<TNumber extends number | bigint>(
     const descriptors = getDescriptorMapFromWallet(params.wallet, walletKeys, getPolicyForEnv(params.wallet.bitgo.env));
     return descriptor.explainPsbt(tx, descriptors, coinName);
   }
-  if (tx instanceof utxolib.bitgo.UtxoPsbt) {
-    return fixedScript.explainPsbt(tx, { ...params, customChangePubs: params.customChangeXpubs }, coinName);
-  } else if (tx instanceof fixedScriptWallet.BitGoPsbt) {
+  if (tx instanceof fixedScriptWallet.BitGoPsbt) {
     const pubs = params.pubs;
     if (!pubs) {
       throw new Error('pub triple is required');
     }
-    const walletXpubs: Triple<string> | undefined =
-      pubs instanceof utxolib.bitgo.RootWalletKeys
-        ? (pubs.triple.map((k) => k.neutered().toBase58()) as Triple<string>)
-        : isTriple(pubs)
-        ? (pubs as Triple<string>)
-        : undefined;
+    const walletXpubs: Triple<string> | undefined = isTriple(pubs) ? (pubs as Triple<string>) : undefined;
     if (!walletXpubs) {
       throw new Error('pub triple must be valid triple or RootWalletKeys');
     }
@@ -68,6 +56,6 @@ export function explainTx<TNumber extends number | bigint>(
   } else if (tx instanceof WasmPsbt) {
     throw new Error('descriptor Psbt is only supported for descriptor wallets');
   } else {
-    return fixedScript.explainLegacyTx(tx, params, coinName);
+    throw new Error('unsupported transaction type');
   }
 }
