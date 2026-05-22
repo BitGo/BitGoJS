@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.41.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.40.0...@bitgo/statics@58.41.0) (2026-05-22)
+
+
+### Bug Fixes
+
+* add per-token error isolation in bulk token registration ([694f624](https://github.com/BitGo/BitGoJS/commit/694f624e02ad12a435583cf02538f97e180209d0))
+* change symbol from goqxmp to qxmp ([e312bc7](https://github.com/BitGo/BitGoJS/commit/e312bc729a164f1129bd72e7ebaa6e04356ce147))
+* **sdk-coin-tempo:** update test fixtures for deriveUnhardened and 75% gas buffer ([81a02d6](https://github.com/BitGo/BitGoJS/commit/81a02d6601327fd402fb1673eef743fb1f3a3c30))
+
+
+### Features
+
+* add hoodi zama confidential tokens ([151b4f5](https://github.com/BitGo/BitGoJS/commit/151b4f5ecd9bf379b6243ddd0c463bd56a218170))
+* added new set of tokens ([79cc505](https://github.com/BitGo/BitGoJS/commit/79cc505e8f673ed0b56db4abdaf6c92b1cdde87e))
+* added recovery flow for tempo chain ([3b14a96](https://github.com/BitGo/BitGoJS/commit/3b14a96e844d049a14c32435b49f3c599f0783ce))
+* kaspa support ([436c58d](https://github.com/BitGo/BitGoJS/commit/436c58d2a3ce5e172503bdb28d61278939588cd6))
+* **statics:** add inketh tokens kbtc, usdc, usdt0 (CECHO-976) ([4e176c3](https://github.com/BitGo/BitGoJS/commit/4e176c3093991ccbdcb40c477a8b34ca4bd7ce1b))
+* **statics:** add Starknet to statics and environments ([ba966a5](https://github.com/BitGo/BitGoJS/commit/ba966a5c6d453f70c52c3e009ea730a6d0fa2254))
+
+
+
+
+
 # [58.40.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.39.0...@bitgo/statics@58.40.0) (2026-05-14)
 
 

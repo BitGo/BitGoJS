@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.13.0...@bitgo/sdk-coin-stx@3.13.1) (2026-05-22)
+
+
+### Bug Fixes
+
+* **sdk-coin-stx:** remove incorrect hashbytes padding in sbtc withdraw ([e8e09b3](https://github.com/BitGo/BitGoJS/commit/e8e09b33967cf7308e117363aa301a6ba9c72449))
+
+
+
+
+
 # [3.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.12.7...@bitgo/sdk-coin-stx@3.13.0) (2026-05-14)
 
 

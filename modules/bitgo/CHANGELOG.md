@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.0.0...bitgo@51.1.0) (2026-05-22)
+
+
+### Bug Fixes
+
+* add per-token error isolation in bulk token registration ([694f624](https://github.com/BitGo/BitGoJS/commit/694f624e02ad12a435583cf02538f97e180209d0))
+
+
+### Features
+
+* **bitgo:** wire Starknet into coin factory and account-lib CECHO-924 ([b7e973a](https://github.com/BitGo/BitGoJS/commit/b7e973a59a50bbc791c08762332d3bc3277a9557))
+* **sdk-core:** add v2 decryption support for gg18 ([f350272](https://github.com/BitGo/BitGoJS/commit/f3502723f176180cca329d4104046e8e2c1c4aa0))
+* **sdk-core:** add v2 decryption support to password change ([792216e](https://github.com/BitGo/BitGoJS/commit/792216e0007afdf33fd95aa568760bf1aaa6f68a))
+
+
+
+
+
 # [51.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.35.0...bitgo@51.0.0) (2026-05-14)
 
 

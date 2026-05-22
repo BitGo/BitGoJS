@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/utxo-descriptors",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "BitGo SDK for building UTXO descriptors",
   "main": "./dist/cjs/src/index.js",
   "module": "./dist/esm/index.js",
@@ -59,7 +59,7 @@
     ]
   },
   "dependencies": {
-    "@bitgo/utxo-core": "^1.37.1",
+    "@bitgo/utxo-core": "^1.38.0",
     "@bitgo/wasm-utxo": "^4.13.0"
   }
 }

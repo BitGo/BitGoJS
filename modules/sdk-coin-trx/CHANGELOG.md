@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.14.0...@bitgo/sdk-coin-trx@3.15.0) (2026-05-22)
+
+
+### Bug Fixes
+
+* bump vulnerable transitive dependencies ([d69ae10](https://github.com/BitGo/BitGoJS/commit/d69ae10f6dc32def06cb192b4df186021c998d91))
+* **sdk-coin-trx:** validate TRC20 recipient and amount for TSS transactions ([231e5f5](https://github.com/BitGo/BitGoJS/commit/231e5f5adc82dd8e52999584d31d9b4581bd553c))
+
+
+### Features
+
+* **sdk-coin-trx:** add AccountCreateContract tx builder and support ([f827d69](https://github.com/BitGo/BitGoJS/commit/f827d69066478ea11b56aade865cf8d2fb096eaf))
+
+
+
+
+
 # [3.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.13.7...@bitgo/sdk-coin-trx@3.14.0) (2026-05-14)
 
 

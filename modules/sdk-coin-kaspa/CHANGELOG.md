@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-kaspa@1.2.0...@bitgo/sdk-coin-kaspa@1.3.0) (2026-05-22)
+
+
+### Bug Fixes
+
+* **root:** update dependency versions for new modules from master merge ([1acc58b](https://github.com/BitGo/BitGoJS/commit/1acc58bc30b535e0d9194b668b6c6c2e182f83be))
+
+
+### Features
+
+* ecdsa signing support in kaspa ([3e37f46](https://github.com/BitGo/BitGoJS/commit/3e37f46eceac9cf560609e6976d52fecbd3d4e2b))
+* kaspa support ([436c58d](https://github.com/BitGo/BitGoJS/commit/436c58d2a3ce5e172503bdb28d61278939588cd6))
+
+
+
+
+
 # [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-kaspa@1.1.2...@bitgo/sdk-coin-kaspa@1.2.0) (2026-05-14)
 
 
