@@ -4,7 +4,7 @@ import { randomBytes } from 'crypto';
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32, fixedScriptWallet, hasPsbtMagic } from '@bitgo/wasm-utxo';
-import { bitgo, getMainnet } from '@bitgo/utxo-lib';
+import { bitgo } from '@bitgo/utxo-lib';
 import {
   AddressCoinSpecific,
   BaseCoin,
@@ -335,11 +335,6 @@ type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = 
    */
   isLastSignature?: boolean;
   /**
-   * If true, allows signing a non-segwit input with a witnessUtxo instead requiring a previous
-   * transaction (nonWitnessUtxo)
-   */
-  allowNonSegwitSigningWithoutPrevTx?: boolean;
-  /**
    * When true, the signed transaction will be converted from PSBT to legacy format before returning.
    * Set automatically by presignTransaction() when the caller explicitly requested txFormat: 'legacy'.
    */
@@ -454,13 +449,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
   /** Indicates whether the coin supports a block target */
   supportsBlockTarget(): boolean {
     // FIXME: the SDK does not seem to use this anywhere so it is unclear what the purpose of this method is
-    switch (getMainnet(this.network)) {
-      case utxolib.networks.bitcoin:
-      case utxolib.networks.dogecoin:
-        return true;
-      default:
-        return false;
-    }
+    const mainnet = getMainnetCoinName(this.name);
+    return mainnet === 'btc' || mainnet === 'doge';
   }
 
   sweepWithSendMany(): boolean {
@@ -747,7 +737,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
    * @returns true iff coin supports spending from unspentType
    */
   supportsAddressType(addressType: ScriptType2Of3): boolean {
-    return utxolib.bitgo.outputScripts.isSupportedScriptType(this.network, addressType);
+    return fixedScriptWallet.supportsScriptType(this.name, addressType);
   }
 
   /** inherited doc */
@@ -1049,17 +1039,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
     }
 
     const returnLegacyFormat = (params as Record<string, unknown>).txFormat === 'legacy';
-
-    // In the case that we have a 'psbt-lite' transaction format, we want to indicate in signing to not fail
-    const txHex = (params.txHex ?? params.txPrebuild?.txHex) as string;
-    if (
-      txHex &&
-      utxolib.bitgo.isPsbt(txHex as string) &&
-      utxolib.bitgo.isPsbtLite(utxolib.bitgo.createPsbtFromHex(txHex, this.network)) &&
-      params.allowNonSegwitSigningWithoutPrevTx === undefined
-    ) {
-      return { ...params, allowNonSegwitSigningWithoutPrevTx: true, returnLegacyFormat };
-    }
     return { ...params, returnLegacyFormat };
   }
 
