@@ -2,7 +2,6 @@ import assert from 'assert';
 import { randomBytes } from 'crypto';
 
 import _ from 'lodash';
-import * as utxolib from '@bitgo/utxo-lib';
 import { address as wasmAddress, BIP32, fixedScriptWallet, hasPsbtMagic } from '@bitgo/wasm-utxo';
 import {
   AddressCoinSpecific,
@@ -87,7 +86,7 @@ import { isUtxoWalletData, UtxoWallet } from './wallet';
 import { isDescriptorWalletData } from './descriptor/descriptorWallet';
 import type { Unspent } from './unspent';
 
-import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
+type ScriptType2Of3 = 'p2sh' | 'p2shP2wsh' | 'p2wsh' | 'p2tr' | 'p2trMusig2';
 
 export type TxFormat =
   // This is a legacy transaction format based around the bitcoinjs-lib serialization of unsigned transactions
@@ -132,8 +131,6 @@ type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
     signingStep?: 'signerNonce' | 'signerSignature' | 'cosignerNonce';
   }): Promise<SignedTransaction>;
 };
-
-const { ChainCode } = fixedScriptWallet;
 
 /**
  * Check if a decoded transaction has at least one taproot key path spend (MuSig2) input.
