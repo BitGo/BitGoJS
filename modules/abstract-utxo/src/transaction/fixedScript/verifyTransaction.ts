@@ -5,11 +5,9 @@ import { BitGoBase, TxIntentMismatchError, IBaseCoin } from '@bitgo/sdk-core';
 import { hasPsbtMagic } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin, VerifyTransactionOptions } from '../../abstractUtxoCoin';
-import { Output, ParsedTransaction } from '../types';
-import { toTNumber } from '../../tnumber';
+import { ParsedTransaction } from '../types';
 import { stringToBufferTryFormats } from '../decode';
 import { verifyCustomChangeKeySignatures, verifyKeySignature, verifyUserPublicKey } from '../../verifyKey';
-import { getPsbtTxInputs, getTxInputs } from '../fetchInputs';
 
 const debug = buildDebug('bitgo:abstract-utxo:verifyTransaction');
 
@@ -190,28 +188,8 @@ export async function verifyTransaction<TNumber extends bigint | number>(
     }
   }
 
-  const allOutputs = parsedTransaction.outputs;
   if (!txPrebuild.txHex) {
     throw new Error(`txPrebuild.txHex not set`);
-  }
-  const inputs = isPsbt
-    ? getPsbtTxInputs(txPrebuild.txHex, coin.name).map((v) => ({
-        ...v,
-        value: toTNumber(v.value, coin.amountType),
-      }))
-    : await getTxInputs({ txPrebuild, bitgo, coin, disableNetworking, reqId });
-  // coins (doge) that can exceed number limits (and thus will use bigint) will have the `valueString` field
-  const inputAmount = inputs.reduce(
-    (sum: bigint, i) => sum + BigInt(coin.amountType === 'bigint' ? i.valueString : i.value),
-    BigInt(0)
-  );
-  const outputAmount = allOutputs.reduce((sum: bigint, o: Output) => sum + BigInt(o.amount), BigInt(0));
-  const fee = inputAmount - outputAmount;
-
-  if (fee < 0) {
-    throw new Error(
-      `attempting to spend ${outputAmount} satoshis, which exceeds the input amount (${inputAmount} satoshis) by ${-fee}`
-    );
   }
 
   return true;
