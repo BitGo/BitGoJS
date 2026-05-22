@@ -857,6 +857,18 @@ describe('CoinMap', function () {
       should(ethCoinName).not.be.undefined();
       ethCoinName!.should.equal('eth');
     });
+
+    it('should map Avalanche C-Chain chain IDs to registered coin names', () => {
+      const avaxcName = coins.coinNameFromChainId(43114);
+      should(avaxcName).not.be.undefined();
+      avaxcName!.should.equal('avaxc');
+      should(() => coins.get(avaxcName!)).not.throw();
+
+      const tavaxcName = coins.coinNameFromChainId(43113);
+      should(tavaxcName).not.be.undefined();
+      tavaxcName!.should.equal('tavaxc');
+      should(() => coins.get(tavaxcName!)).not.throw();
+    });
   });
 });
 
