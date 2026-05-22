@@ -4,7 +4,6 @@ import type { Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
 import { AbstractUtxoCoin, VerifyTransactionOptions } from '../../abstractUtxoCoin';
 import { BaseOutput, BaseParsedTransactionOutputs } from '../types';
 import { UtxoCoinName } from '../../names';
-import { UtxoLibPsbt } from '../../wasmUtil';
 import { decodeDescriptorPsbt } from '../decode';
 
 import { toBaseParsedTransactionOutputsFromPsbt } from './parse';
@@ -52,7 +51,7 @@ export function assertExpectedOutputDifference(
 }
 
 export function assertValidTransaction(
-  psbt: Psbt | UtxoLibPsbt | Uint8Array,
+  psbt: Psbt | Uint8Array,
   descriptors: descriptorWallet.DescriptorMap,
   recipients: ITransactionRecipient[],
   coinName: UtxoCoinName

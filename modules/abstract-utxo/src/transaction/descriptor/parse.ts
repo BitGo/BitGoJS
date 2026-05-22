@@ -9,8 +9,11 @@ import { IDescriptorWallet } from '../../descriptor/descriptorWallet';
 import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../recipient';
 import { outputDifferencesWithExpected, OutputDifferenceWithExpected } from '../outputDifference';
 import { UtxoCoinName } from '../../names';
-import { sumValues, toWasmPsbt, UtxoLibPsbt } from '../../wasmUtil';
 import { decodeDescriptorPsbt } from '../decode';
+
+function sumValues(arr: { value: bigint }[]): bigint {
+  return arr.reduce((sum, e) => sum + e.value, 0n);
+}
 
 type ParsedOutput = Omit<descriptorWallet.ParsedOutput, 'script'> & { script: Buffer };
 
@@ -88,12 +91,12 @@ function toBaseParsedTransactionOutputs(
 }
 
 export function toBaseParsedTransactionOutputsFromPsbt(
-  psbt: Psbt | UtxoLibPsbt | Uint8Array,
+  psbt: Psbt | Uint8Array,
   descriptorMap: descriptorWallet.DescriptorMap,
   recipients: ITransactionRecipient[],
   coinName: UtxoCoinName
 ): ParsedOutputsBigInt {
-  const wasmPsbt = toWasmPsbt(psbt);
+  const wasmPsbt = psbt instanceof Psbt ? psbt : Psbt.deserialize(psbt);
   return toBaseParsedTransactionOutputs(
     parseOutputsWithPsbt(
       wasmPsbt,
