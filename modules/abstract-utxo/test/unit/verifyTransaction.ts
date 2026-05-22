@@ -318,10 +318,6 @@ describe('Verify Transaction', function () {
       needsCustomChangeKeySignatureVerification: false,
     });
 
-    const bitcoinMock = sinon
-      .stub(coin, 'createTransactionFromHex')
-      .returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
-
     const result = await coin.verifyTransaction({
       txParams: {
         walletPassphrase: passphrase,
@@ -338,7 +334,6 @@ describe('Verify Transaction', function () {
     assert.strictEqual(result, true);
 
     coinMock.restore();
-    bitcoinMock.restore();
   });
 
   it('should reject a bridging transaction whose implicit external output does not match the bridge amount', async () => {
