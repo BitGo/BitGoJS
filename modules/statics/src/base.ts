@@ -3625,6 +3625,7 @@ export enum UnderlyingAsset {
   'sol:kwyld-cash' = 'sol:kwyld-cash',
   'sol:tusdc' = 'sol:tusdc',
   'sol:slx' = 'sol:slx',
+  'sol:ab1' = 'sol:ab1',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',

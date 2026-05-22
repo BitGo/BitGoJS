@@ -3993,4 +3993,15 @@ export const solTokens = [
     UnderlyingAsset['sol:slx'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    'e760bd37-5709-4ab8-88d4-0c9e4c45ae8f',
+    'sol:ab1',
+    'Animoca',
+    0,
+    '13UnWveBycSEeYJFgvsmE2qHXP5ERienrhGZ5wUjWM8L',
+    '13UnWveBycSEeYJFgvsmE2qHXP5ERienrhGZ5wUjWM8L',
+    UnderlyingAsset['sol:ab1'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
 ];
