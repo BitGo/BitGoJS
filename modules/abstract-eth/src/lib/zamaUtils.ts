@@ -134,3 +134,57 @@ export function wrapInCallFromParent(targetAddress: string, calldata: string): s
   );
   return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
 }
+
+/**
+ * Decodes token contract addresses from delegation calldata.
+ *
+ * Handles two shapes of calldata:
+ *   - Direct ACL.multicall(bytes[]) (root wallet path)
+ *   - ForwarderV4.callFromParent(address, uint256, bytes) wrapping a multicall (forwarder path)
+ *
+ * @param calldata  ABI-encoded delegation calldata (0x-prefixed or raw hex)
+ * @returns Array of token contract addresses (lowercase) found in the delegation calls
+ * @throws {Error} if the calldata does not start with a recognised method selector
+ */
+export function decodeTokenAddressesFromDelegationCalldata(calldata: string): string[] {
+  const data = calldata.startsWith('0x') ? calldata : '0x' + calldata;
+  const methodId = data.slice(0, 10);
+  const abiCoder = new ethers.utils.AbiCoder();
+
+  let multicallHex: string;
+
+  if (methodId === callFromParentMethodId) {
+    // Decode callFromParent(address, uint256, bytes) — inner bytes is the full multicall calldata.
+    // ethers v5 returns `bytes` as a hex string; use hexlify to normalise to a 0x-prefixed hex string
+    // regardless of whether the runtime returns a string or a Uint8Array.
+    const decoded = abiCoder.decode([...callFromParentTypes], '0x' + data.slice(10));
+    multicallHex = ethers.utils.hexlify(decoded[2]);
+  } else if (methodId === aclMulticallMethodId) {
+    multicallHex = data;
+  } else {
+    throw new Error('Not a valid delegation calldata');
+  }
+
+  if (multicallHex.slice(0, 10) !== aclMulticallMethodId) {
+    throw new Error('Not a valid delegation calldata');
+  }
+
+  // Decode multicall(bytes[]) — each element is an inner delegateForUserDecryption call.
+  // ethers v5 returns bytes[] elements as hex strings; use hexlify to normalise each element.
+  const decoded = abiCoder.decode(['bytes[]'], '0x' + multicallHex.slice(10));
+  const innerCalls: unknown[] = decoded[0];
+
+  const tokenAddresses: string[] = [];
+  for (const innerCall of innerCalls) {
+    const innerHex = ethers.utils.hexlify(innerCall as ethers.utils.BytesLike).slice(2); // strip 0x
+    const innerMethodId = '0x' + innerHex.slice(0, 8);
+    if (innerMethodId !== delegateForUserDecryptionMethodId) {
+      continue;
+    }
+    // Decode delegateForUserDecryption(address delegate, address tokenAddress, uint64 expiry)
+    const innerDecoded = abiCoder.decode([...delegateForUserDecryptionTypes], '0x' + innerHex.slice(8));
+    tokenAddresses.push((innerDecoded[1] as string).toLowerCase());
+  }
+
+  return tokenAddresses;
+}
