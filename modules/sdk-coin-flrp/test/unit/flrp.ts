@@ -12,6 +12,7 @@ import { IMPORT_IN_C } from '../resources/transactionData/importInC';
 import {
   MULTISIG_DELEGATION_FULLY_SIGNED_TX_HEX,
   MULTISIG_DELEGATION_PARAMS,
+  MPC_DELEGATION_UNSIGNED_TX_HEX,
 } from '../resources/transactionData/multisigDelegationTx';
 import { HalfSignedAccountTransaction, TransactionType, MPCAlgorithm } from '@bitgo/sdk-core';
 import { secp256k1 } from '@flarenetwork/flarejs';
@@ -973,6 +974,22 @@ describe('Flrp test cases', function () {
             durationSeconds: MULTISIG_DELEGATION_PARAMS.duration * 24 * 60 * 60,
             rewardAddress: MULTISIG_DELEGATION_PARAMS.rewardAddress,
           },
+        };
+
+        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        isVerified.should.equal(true);
+      });
+
+      it('should verify delegation transaction when txParams.type is undefined (MPC intent flow)', async () => {
+        // In the MPC/TSS staking flow, the txRequest is created by staking-service (not the UI).
+        // The UI only has txRequestId — no buildParams. The SDK falls back to { recipients: [] }
+        // with no type and no stakingOptions. verifyTransaction must still pass because the
+        // parsed hex (explainedTx.type) is the source of truth built by wallet-platform.
+        const txPrebuild = { txHex: MPC_DELEGATION_UNSIGNED_TX_HEX, txInfo: {} };
+        const txParams = {
+          recipients: [],
+          // no type — simulates MPC staking flow where buildParams is unavailable
+          // no stakingOptions — not passed through in the MPC intent flow
         };
 
         const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });

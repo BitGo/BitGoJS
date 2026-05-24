@@ -96,7 +96,11 @@ export class Flrp extends BaseCoin {
     // so the TransactionType enum lookup succeeds.
     const normalizedType = type === 'stake' ? 'AddPermissionlessDelegator' : type;
 
-    if (!normalizedType || (normalizedType !== 'ImportToC' && explainedTx.type !== TransactionType[normalizedType])) {
+    // When type is provided, verify it matches the parsed transaction.
+    // When type is not provided (MPC/TSS intent flow where buildParams are unavailable),
+    // skip the type match check and rely on explainedTx.type from the parsed hex —
+    // the transaction was built by wallet-platform and the hex is the source of truth.
+    if (normalizedType && normalizedType !== 'ImportToC' && explainedTx.type !== TransactionType[normalizedType]) {
       throw new Error('Tx type does not match with expected txParams type');
     }
 
@@ -126,8 +130,9 @@ export class Flrp extends BaseCoin {
         }
         break;
       case TransactionType.AddPermissionlessDelegator:
-        // Validate delegation transaction against both txParams and explainedTx
-        this.validateDelegationTx(params.txParams, explainedTx);
+        if (params.txParams.stakingOptions) {
+          this.validateDelegationTx(params.txParams, explainedTx);
+        }
         break;
       default:
         throw new Error('Tx type is not supported yet');
