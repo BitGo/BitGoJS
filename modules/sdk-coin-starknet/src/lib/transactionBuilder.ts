@@ -8,9 +8,17 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { StarknetTransactionData, StarknetTransactionType, StarknetCall } from './iface';
+import { StarknetTransactionData, StarknetTransactionType, StarknetCall, StarknetResourceBounds } from './iface';
 import { Transaction } from './transaction';
 import utils from './utils';
+
+function defaultResourceBounds(): StarknetResourceBounds {
+  return {
+    l2_gas: { max_amount: '0x1c9c380', max_price_per_unit: '0x174876e800' },
+    l1_gas: { max_amount: '0x0', max_price_per_unit: '0x5af3107a4000' },
+    l1_data_gas: { max_amount: '0x3e8', max_price_per_unit: '0x2540be400' },
+  };
+}
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -19,6 +27,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _calls: StarknetCall[] = [];
   protected _nonce?: string;
   protected _chainId?: string;
+  protected _resourceBounds: StarknetResourceBounds = defaultResourceBounds();
+  protected _tip = '0x0';
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -55,6 +65,16 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  public resourceBounds(rb: StarknetResourceBounds): this {
+    this._resourceBounds = rb;
+    return this;
+  }
+
+  public tip(tip: string): this {
+    this._tip = tip;
+    return this;
+  }
+
   /** @inheritdoc */
   get transaction(): Transaction {
     return this._transaction;
@@ -72,6 +92,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._calls = data.calls || [];
     this._nonce = data.nonce;
     this._chainId = data.chainId;
+    if (data.resourceBounds) {
+      this._resourceBounds = data.resourceBounds;
+    }
+    if (data.tip) {
+      this._tip = data.tip;
+    }
   }
 
   /** @inheritdoc */
@@ -128,12 +154,30 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    const sender = this._sender as string;
+    const chainId = this._chainId as string;
+    const nonce = this._nonce as string;
+    const compiledCalldata = utils.compileExecuteCalldata(this._calls);
+
+    const transactionHash = utils.calculateInvokeTransactionHash({
+      senderAddress: sender,
+      compiledCalldata,
+      chainId,
+      nonce,
+      resourceBounds: this._resourceBounds,
+      tip: this._tip,
+    });
+
     const data: StarknetTransactionData = {
-      senderAddress: this._sender!,
+      senderAddress: sender,
       calls: this._calls,
-      nonce: this._nonce!,
-      chainId: this._chainId!,
+      nonce,
+      chainId,
       transactionType: this.transactionType,
+      resourceBounds: this._resourceBounds,
+      tip: this._tip,
+      transactionHash,
+      compiledCalldata,
     };
 
     this._transaction.starknetTransactionData = data;

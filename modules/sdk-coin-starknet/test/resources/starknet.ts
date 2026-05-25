@@ -84,3 +84,34 @@ export const TEST_AMOUNTS = {
   medium: '10000000000000000000',
   large: '999999999999999999999999',
 };
+
+export const SandboxTransferData = {
+  senderAddress: '0x1559292d3f9ea355458f83adf235b400e79786af5dc5e3b50f5505caa2bdc84',
+  receiverAddress: '0x4a1e86ae265e6e6ecbea5be7f67117c3540f8aaf2ad7f1cfec33c53080f05af',
+  amount: '1000000000000000000',
+  chainId: '0x534e5f5345504f4c4941',
+  tokenContract: '0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d',
+  resourceBounds: {
+    l2_gas: { max_amount: '0x1c9c380', max_price_per_unit: '0x174876e800' },
+    l1_gas: { max_amount: '0x0', max_price_per_unit: '0x5af3107a4000' },
+    l1_data_gas: { max_amount: '0x3e8', max_price_per_unit: '0x2540be400' },
+  },
+};
+
+// Known-good tx from coins-sandbox/strkMPC/transferLocal.ts (block 9537253, Sepolia)
+// All inputs from the sandbox script; nonce confirmed via Voyager explorer.
+export const KnownGoodInvokeTx = {
+  senderAddress: '0x1559292d3f9ea355458f83adf235b400e79786af5dc5e3b50f5505caa2bdc84',
+  receiverAddress: '0x4a1e86ae265e6e6ecbea5be7f67117c3540f8aaf2ad7f1cfec33c53080f05af',
+  amount: '1000000000000000000',
+  tokenContract: '0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d',
+  nonce: '0x8',
+  chainId: '0x534e5f5345504f4c4941',
+  tip: '0x0',
+  resourceBounds: {
+    l2_gas: { max_amount: '0x1c9c380', max_price_per_unit: '0x174876e800' },
+    l1_gas: { max_amount: '0x0', max_price_per_unit: '0x5af3107a4000' },
+    l1_data_gas: { max_amount: '0x3e8', max_price_per_unit: '0x2540be400' },
+  },
+  expectedTxHash: '0x739a72831c7f53634a2ffc94b78b61985e3cdffbad09ab20a1480e1bec9bdf2',
+};

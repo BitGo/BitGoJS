@@ -1,6 +1,17 @@
-import { computeHashOnElements } from '@scure/starknet';
-import { FELT_MAX, MASK_128, OZ_ETH_ACCOUNT_CLASS_HASH, ADDR_BOUND, CONTRACT_ADDRESS_PREFIX } from './constants';
-import { StarknetTransactionData, StarknetCall, ParsedTransferData } from './iface';
+import { computeHashOnElements, poseidonHashMany, keccak } from '@scure/starknet';
+import {
+  FELT_MAX,
+  MASK_128,
+  OZ_ETH_ACCOUNT_CLASS_HASH,
+  ADDR_BOUND,
+  CONTRACT_ADDRESS_PREFIX,
+  INVOKE_TX_PREFIX,
+  TRANSACTION_VERSION_3,
+  L1_GAS_NAME,
+  L2_GAS_NAME,
+  L1_DATA_GAS_NAME,
+} from './constants';
+import { StarknetTransactionData, StarknetCall, ParsedTransferData, InvokeTransactionHashParams } from './iface';
 import { ecc } from '@bitgo/secp256k1';
 
 /**
@@ -198,6 +209,106 @@ export function validateRawTransaction(tx: StarknetTransactionData): void {
   }
 }
 
+/**
+ * Encode an ASCII string (max 31 chars) as a felt252.
+ */
+export function encodeShortString(str: string): bigint {
+  if (str.length > 31) {
+    throw new Error(`Short string too long: ${str.length} > 31`);
+  }
+  for (let i = 0; i < str.length; i++) {
+    const code = str.charCodeAt(i);
+    if (code > 127) {
+      throw new Error(`Non-ASCII character at index ${i}: code ${code}`);
+    }
+  }
+  let result = 0n;
+  for (let i = 0; i < str.length; i++) {
+    result = (result << 8n) | BigInt(str.charCodeAt(i));
+  }
+  return result;
+}
+
+/**
+ * Compute the Starknet function selector: keccak256(name) masked to 250 bits.
+ * @scure/starknet's keccak() already applies the 250-bit mask.
+ */
+export function getSelectorFromName(name: string): bigint {
+  return keccak(Buffer.from(name, 'ascii'));
+}
+
+/**
+ * Compile calls into the Cairo 1 multicall __execute__ calldata format.
+ * Format: [num_calls, to_0, selector_0, data_len_0, ...data_0, to_1, ...]
+ */
+export function compileExecuteCalldata(calls: StarknetCall[]): string[] {
+  const result: string[] = [];
+  result.push('0x' + BigInt(calls.length).toString(16));
+  for (const call of calls) {
+    result.push(call.contractAddress);
+    result.push('0x' + getSelectorFromName(call.entrypoint).toString(16));
+    result.push('0x' + BigInt(call.calldata.length).toString(16));
+    result.push(...call.calldata);
+  }
+  return result;
+}
+
+function encodeResourceBound(typeName: bigint, maxAmount: string, maxPricePerUnit: string): bigint {
+  return (typeName << 192n) | (BigInt(maxAmount) << 128n) | BigInt(maxPricePerUnit);
+}
+
+/**
+ * Compute the Poseidon V3 INVOKE transaction hash per SNIP-8.
+ */
+export function calculateInvokeTransactionHash(params: InvokeTransactionHashParams): string {
+  const {
+    senderAddress,
+    compiledCalldata,
+    chainId,
+    nonce,
+    resourceBounds,
+    tip = '0x0',
+    nonceDataAvailabilityMode = 0,
+    feeDataAvailabilityMode = 0,
+    paymasterData = [],
+    accountDeploymentData = [],
+    proofFacts,
+  } = params;
+
+  const feeFieldHash = poseidonHashMany([
+    BigInt(tip),
+    encodeResourceBound(L1_GAS_NAME, resourceBounds.l1_gas.max_amount, resourceBounds.l1_gas.max_price_per_unit),
+    encodeResourceBound(L2_GAS_NAME, resourceBounds.l2_gas.max_amount, resourceBounds.l2_gas.max_price_per_unit),
+    encodeResourceBound(
+      L1_DATA_GAS_NAME,
+      resourceBounds.l1_data_gas.max_amount,
+      resourceBounds.l1_data_gas.max_price_per_unit
+    ),
+  ]);
+
+  const daMode = (BigInt(nonceDataAvailabilityMode) << 32n) | BigInt(feeDataAvailabilityMode);
+
+  const hashFields: bigint[] = [
+    INVOKE_TX_PREFIX,
+    TRANSACTION_VERSION_3,
+    BigInt(senderAddress),
+    feeFieldHash,
+    poseidonHashMany(paymasterData.map(BigInt)),
+    BigInt(chainId),
+    BigInt(nonce),
+    daMode,
+    poseidonHashMany(accountDeploymentData.map(BigInt)),
+    poseidonHashMany(compiledCalldata.map(BigInt)),
+  ];
+
+  if (proofFacts && proofFacts.length > 0) {
+    hashFields.push(poseidonHashMany(proofFacts.map(BigInt)));
+  }
+
+  const hash = poseidonHashMany(hashFields);
+  return '0x' + hash.toString(16);
+}
+
 export default {
   isValidAddress,
   isValidPublicKey,
@@ -212,4 +323,8 @@ export default {
   parseTransferCall,
   generateKeyPair,
   validateRawTransaction,
+  encodeShortString,
+  getSelectorFromName,
+  compileExecuteCalldata,
+  calculateInvokeTransactionHash,
 };

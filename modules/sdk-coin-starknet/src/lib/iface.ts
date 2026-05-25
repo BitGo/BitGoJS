@@ -30,6 +30,24 @@ export interface StarknetTransactionData {
   transactionType: StarknetTransactionType;
   signature?: string[];
   transactionHash?: string;
+  tip?: string;
+  nonceDataAvailabilityMode?: number;
+  feeDataAvailabilityMode?: number;
+  compiledCalldata?: string[];
+}
+
+export interface InvokeTransactionHashParams {
+  senderAddress: string;
+  compiledCalldata: string[];
+  chainId: string;
+  nonce: string;
+  resourceBounds: StarknetResourceBounds;
+  tip?: string;
+  nonceDataAvailabilityMode?: number;
+  feeDataAvailabilityMode?: number;
+  paymasterData?: string[];
+  accountDeploymentData?: string[];
+  proofFacts?: string[];
 }
 
 export interface ParsedTransferData {

@@ -1,5 +1,11 @@
-import utils from '../../src/lib/utils';
-import { Accounts } from '../resources/starknet';
+import utils, {
+  encodeShortString,
+  getSelectorFromName,
+  compileExecuteCalldata,
+  calculateInvokeTransactionHash,
+} from '../../src/lib/utils';
+import { Accounts, SandboxTransferData, KnownGoodInvokeTx } from '../resources/starknet';
+import { MASK_128 } from '../../src/lib/constants';
 import 'should';
 
 describe('Starknet Utils', () => {
@@ -76,6 +82,185 @@ describe('Starknet Utils', () => {
       const sig1 = utils.formatEthAccountSignature(r, s, 1);
       sig0[4].should.equal('0x0');
       sig1[4].should.equal('0x1');
+    });
+  });
+
+  describe('encodeShortString', () => {
+    it('should encode "invoke" correctly', () => {
+      encodeShortString('invoke').should.equal(0x696e766f6b65n);
+    });
+
+    it('should encode "L1_GAS" correctly', () => {
+      encodeShortString('L1_GAS').should.equal(0x4c315f474153n);
+    });
+
+    it('should encode "L2_GAS" correctly', () => {
+      encodeShortString('L2_GAS').should.equal(0x4c325f474153n);
+    });
+
+    it('should encode "L1_DATA" correctly', () => {
+      encodeShortString('L1_DATA').should.equal(0x4c315f44415441n);
+    });
+
+    it('should reject strings longer than 31 chars', () => {
+      (() => encodeShortString('a'.repeat(32))).should.throw(/too long/);
+    });
+  });
+
+  describe('getSelectorFromName', () => {
+    it('should compute selector for "transfer"', () => {
+      const selector = getSelectorFromName('transfer');
+      (typeof selector).should.equal('bigint');
+      (selector > 0n).should.equal(true);
+      (selector < 1n << 250n).should.equal(true);
+    });
+
+    it('should be deterministic', () => {
+      getSelectorFromName('transfer').should.equal(getSelectorFromName('transfer'));
+    });
+  });
+
+  describe('compileExecuteCalldata', () => {
+    it('should compile a single transfer call', () => {
+      const calls = [
+        {
+          contractAddress: SandboxTransferData.tokenContract,
+          entrypoint: 'transfer',
+          calldata: [
+            SandboxTransferData.receiverAddress,
+            '0x' + (BigInt(SandboxTransferData.amount) & MASK_128).toString(16),
+            '0x' + (BigInt(SandboxTransferData.amount) >> 128n).toString(16),
+          ],
+        },
+      ];
+      const compiled = compileExecuteCalldata(calls);
+      compiled[0].should.equal('0x1'); // num_calls = 1
+      compiled[1].should.equal(SandboxTransferData.tokenContract); // to
+      compiled.length.should.equal(1 + 1 + 1 + 1 + 3); // num_calls + to + selector + data_len + 3 calldata
+    });
+  });
+
+  describe('calculateInvokeTransactionHash', () => {
+    it('should produce a deterministic hash', () => {
+      const calls = [
+        {
+          contractAddress: SandboxTransferData.tokenContract,
+          entrypoint: 'transfer',
+          calldata: [
+            SandboxTransferData.receiverAddress,
+            '0x' + (BigInt(SandboxTransferData.amount) & MASK_128).toString(16),
+            '0x' + (BigInt(SandboxTransferData.amount) >> 128n).toString(16),
+          ],
+        },
+      ];
+      const compiledCalldata = compileExecuteCalldata(calls);
+
+      const hash1 = calculateInvokeTransactionHash({
+        senderAddress: SandboxTransferData.senderAddress,
+        compiledCalldata,
+        chainId: SandboxTransferData.chainId,
+        nonce: '0x0',
+        resourceBounds: SandboxTransferData.resourceBounds,
+      });
+
+      const hash2 = calculateInvokeTransactionHash({
+        senderAddress: SandboxTransferData.senderAddress,
+        compiledCalldata,
+        chainId: SandboxTransferData.chainId,
+        nonce: '0x0',
+        resourceBounds: SandboxTransferData.resourceBounds,
+      });
+
+      hash1.should.equal(hash2);
+      hash1.should.startWith('0x');
+    });
+
+    it('should produce different hashes for different nonces', () => {
+      const calls = [
+        {
+          contractAddress: SandboxTransferData.tokenContract,
+          entrypoint: 'transfer',
+          calldata: [SandboxTransferData.receiverAddress, '0xde0b6b3a7640000', '0x0'],
+        },
+      ];
+      const compiledCalldata = compileExecuteCalldata(calls);
+
+      const hash1 = calculateInvokeTransactionHash({
+        senderAddress: SandboxTransferData.senderAddress,
+        compiledCalldata,
+        chainId: SandboxTransferData.chainId,
+        nonce: '0x0',
+        resourceBounds: SandboxTransferData.resourceBounds,
+      });
+
+      const hash2 = calculateInvokeTransactionHash({
+        senderAddress: SandboxTransferData.senderAddress,
+        compiledCalldata,
+        chainId: SandboxTransferData.chainId,
+        nonce: '0x1',
+        resourceBounds: SandboxTransferData.resourceBounds,
+      });
+
+      hash1.should.not.equal(hash2);
+    });
+
+    it('should not include proof_facts when absent', () => {
+      const calls = [
+        {
+          contractAddress: SandboxTransferData.tokenContract,
+          entrypoint: 'transfer',
+          calldata: [SandboxTransferData.receiverAddress, '0xde0b6b3a7640000', '0x0'],
+        },
+      ];
+      const compiledCalldata = compileExecuteCalldata(calls);
+
+      const hashWithout = calculateInvokeTransactionHash({
+        senderAddress: SandboxTransferData.senderAddress,
+        compiledCalldata,
+        chainId: SandboxTransferData.chainId,
+        nonce: '0x0',
+        resourceBounds: SandboxTransferData.resourceBounds,
+      });
+
+      const hashWithEmpty = calculateInvokeTransactionHash({
+        senderAddress: SandboxTransferData.senderAddress,
+        compiledCalldata,
+        chainId: SandboxTransferData.chainId,
+        nonce: '0x0',
+        resourceBounds: SandboxTransferData.resourceBounds,
+        proofFacts: [],
+      });
+
+      // Empty proofFacts should be omitted, producing same hash as absent
+      hashWithout.should.equal(hashWithEmpty);
+    });
+
+    it('should match known-good sandbox tx hash (0x739a728...)', () => {
+      const tv = KnownGoodInvokeTx;
+      const amountBig = BigInt(tv.amount);
+      const calls = [
+        {
+          contractAddress: tv.tokenContract,
+          entrypoint: 'transfer',
+          calldata: [
+            tv.receiverAddress,
+            '0x' + (amountBig & MASK_128).toString(16),
+            '0x' + (amountBig >> 128n).toString(16),
+          ],
+        },
+      ];
+      const compiledCalldata = compileExecuteCalldata(calls);
+
+      const hash = calculateInvokeTransactionHash({
+        senderAddress: tv.senderAddress,
+        compiledCalldata,
+        chainId: tv.chainId,
+        nonce: tv.nonce,
+        resourceBounds: tv.resourceBounds,
+        tip: tv.tip,
+      });
+
+      hash.should.equal(tv.expectedTxHash);
     });
   });
 });
