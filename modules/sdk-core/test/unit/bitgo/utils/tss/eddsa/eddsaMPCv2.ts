@@ -1534,3 +1534,65 @@ function bytesToWord(bytes?: Uint8Array | number[]): number {
 
   return bytes.reduce((num, byte) => num * 0x100 + byte, 0);
 }
+
+describe('EddsaMPCv2Utils.isEddsaMpcV1SigningMaterial', () => {
+  const PASSPHRASE = 'test-passphrase';
+
+  const MPCv1_MATERIAL_BACKUP = {
+    uShare: { i: 1, t: 2, n: 3, y: 'aabbcc', seed: 'deadbeef01234567', chaincode: '00' },
+    bitgoYShare: { i: 3, j: 1, y: 'aabbcc', u: 'bitgo-u-value', chaincode: '00' },
+    backupYShare: { i: 2, j: 1, y: 'aabbcc', u: 'backup-u-value', chaincode: '00' },
+  };
+
+  const MPCv1_MATERIAL_USER = {
+    uShare: { i: 2, t: 2, n: 3, y: 'aabbcc', seed: 'deadbeef01234567', chaincode: '00' },
+    bitgoYShare: { i: 3, j: 2, y: 'aabbcc', u: 'bitgo-u-value', chaincode: '00' },
+    userYShare: { i: 1, j: 2, y: 'aabbcc', u: 'user-u-value', chaincode: '00' },
+  };
+
+  const MPCv2_CBOR_BYTES = Buffer.from([0xd9, 0x01, 0x04, 0xa3, 0x61, 0x78, 0x18, 0x00]).toString('base64');
+
+  let eddsaUtils: EddsaMPCv2Utils;
+  let mockBitgo: BitGoBase;
+
+  beforeEach(() => {
+    mockBitgo = {
+      decryptAsync: sinon
+        .stub()
+        .callsFake(async (params: { input: string; password: string }) => sjcl.decrypt(params.password, params.input)),
+    } as unknown as BitGoBase;
+
+    eddsaUtils = new EddsaMPCv2Utils(mockBitgo, {} as unknown as IBaseCoin);
+  });
+
+  it('returns true for MPCv1 SJCL-encrypted keycard with backupYShare + correct passphrase', async () => {
+    const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL_BACKUP));
+    assert.strictEqual(await eddsaUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE), true);
+  });
+
+  it('returns true for MPCv1 SJCL-encrypted keycard with userYShare + correct passphrase', async () => {
+    const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL_USER));
+    assert.strictEqual(await eddsaUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE), true);
+  });
+
+  it('returns false for MPCv2 CBOR content wrapped in SJCL envelope + correct passphrase', async () => {
+    const encrypted = sjcl.encrypt(PASSPHRASE, MPCv2_CBOR_BYTES);
+    assert.strictEqual(await eddsaUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE), false);
+  });
+
+  it('returns false for MPCv2 Argon2id envelope (v2) + correct passphrase (forward-compat)', async () => {
+    const fakeV2Envelope = JSON.stringify({ v: 2, m: 65536, t: 3, p: 4, salt: 'AAAA', iv: 'AAAA', ct: 'AAAA' });
+    assert.strictEqual(await eddsaUtils.isEddsaMpcV1SigningMaterial(fakeV2Envelope, PASSPHRASE), false);
+  });
+
+  it('returns false for wrong passphrase — does not throw', async () => {
+    const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL_BACKUP));
+    assert.strictEqual(await eddsaUtils.isEddsaMpcV1SigningMaterial(encrypted, 'wrong-passphrase'), false);
+  });
+
+  it('returns false when neither backupYShare.u nor userYShare.u is present', async () => {
+    const partial = { uShare: { seed: 'abc' }, bitgoYShare: { u: 'xyz' } };
+    const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(partial));
+    assert.strictEqual(await eddsaUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE), false);
+  });
+});
