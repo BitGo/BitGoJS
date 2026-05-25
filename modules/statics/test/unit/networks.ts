@@ -1,5 +1,5 @@
 import 'should';
-import { BaseNetwork, DynamicNetwork, getNetwork, Networks, NetworkType } from '../../src/networks';
+import { AccountNetwork, BaseNetwork, DynamicNetwork, getNetwork, Networks, NetworkType } from '../../src/networks';
 
 Object.entries(Networks).forEach(([category, networks]) => {
   Object.entries(networks).forEach(([networkName, network]) => {
@@ -71,6 +71,53 @@ Object.entries(Networks).forEach(([category, networks]) => {
       });
     });
   });
+});
+
+describe('Cosmos-family addressPrefix', function () {
+  const cases: Array<[string, AccountNetwork, string]> = [
+    ['main.atom', Networks.main.atom, 'cosmos'],
+    ['test.atom', Networks.test.atom, 'cosmos'],
+    ['main.osmo', Networks.main.osmo, 'osmo'],
+    ['test.osmo', Networks.test.osmo, 'osmo'],
+    ['main.sei', Networks.main.sei, 'sei'],
+    ['test.sei', Networks.test.sei, 'sei'],
+    ['main.tia', Networks.main.tia, 'celestia'],
+    ['test.tia', Networks.test.tia, 'celestia'],
+    ['main.baby', Networks.main.baby, 'bbn'],
+    ['test.baby', Networks.test.baby, 'bbn'],
+    ['main.bld', Networks.main.bld, 'agoric'],
+    ['test.bld', Networks.test.bld, 'agoric'],
+    ['main.initia', Networks.main.initia, 'init'],
+    ['test.initia', Networks.test.initia, 'init'],
+    ['main.zeta', Networks.main.zeta, 'zeta'],
+    ['test.zeta', Networks.test.zeta, 'zeta'],
+    ['main.asi', Networks.main.asi, 'fetch'],
+    ['test.asi', Networks.test.asi, 'fetch'],
+    ['main.islm', Networks.main.islm, 'haqq'],
+    ['test.islm', Networks.test.islm, 'haqq'],
+    ['main.injective', Networks.main.injective, 'inj'],
+    ['test.injective', Networks.test.injective, 'inj'],
+    ['main.hash', Networks.main.hash, 'pb'],
+    ['test.hash', Networks.test.hash, 'tp'],
+    ['main.coreum', Networks.main.coreum, 'core'],
+    ['test.coreum', Networks.test.coreum, 'testcore'],
+    ['main.cronos', Networks.main.cronos, 'cro'],
+    ['test.cronos', Networks.test.cronos, 'tcro'],
+    ['main.rune', Networks.main.rune, 'thor'],
+    ['test.rune', Networks.test.rune, 'sthor'],
+    ['main.mantra', Networks.main.mantra, 'mantra'],
+    ['test.mantra', Networks.test.mantra, 'mantra'],
+    ['main.kavacosmos', Networks.main.kavacosmos, 'kava'],
+    ['test.kavacosmos', Networks.test.kavacosmos, 'kava'],
+    ['main.dydx', Networks.main.dydx, 'dydx'],
+    ['test.dydx', Networks.test.dydx, 'dydx'],
+  ];
+
+  for (const [label, network, hrp] of cases) {
+    it(`Networks.${label} has addressPrefix '${hrp}'`, function () {
+      network.should.have.property('addressPrefix', hrp);
+    });
+  }
 });
 
 describe('DynamicNetwork and getNetwork', function () {
