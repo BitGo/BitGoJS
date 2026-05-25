@@ -1,0 +1,17 @@
+{
+  "name": "custom-tx",
+  "version": "1.0.0",
+  "description": "Examples to initiate SUI custom tx",
+  "main": "index.js",
+  "scripts": {
+    "customTx": "node custom-tx.js"
+  },
+  "author": "",
+  "license": "ISC",
+    "dependencies": {
+      "bitgo": "^19.18.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.0.3"
+  }
+}

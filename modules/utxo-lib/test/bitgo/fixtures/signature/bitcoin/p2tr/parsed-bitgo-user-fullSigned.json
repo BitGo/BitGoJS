@@ -1,0 +1,15 @@
+{
+  "scriptType": "p2tr",
+  "pubScript": "208fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97ad20e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04ac",
+  "publicKeys": [
+    "8fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97",
+    "e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04"
+  ],
+  "signatures": [
+    "4f72d1b07c665c06832b6c9d7779009bc14471e980f345f3e43b936467a1f7125c78eadb47ebe0af80b114e6b47d2dd1c4c0dffbd9ede78b31bfe47cb25a64c9",
+    "293dada553c21a13a8f9841dd0f2496279b8bb59fe82f129d58e2cb996cdb99d3633ad125185fb1a3249e94980fc3694197ba7094859ffcd3cabf6c51b12cd58"
+  ],
+  "controlBlock": "c169d984b8967c360d084920bb8536dddef42b1ccb6337f2d310a8dabd24d43cc2185457a6e74cdfcdf020c0eef3b794f3077f43139aa7c30d50da5a26dceed225",
+  "scriptPathLevel": 1,
+  "leafVersion": 192
+}

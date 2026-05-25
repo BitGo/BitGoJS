@@ -1,0 +1,8 @@
+address: bc1q62tshlryz9lrjlw9edaf4l5l3v3deg034uw28c
+├── format: default
+├─┬ outputScript: 0014d2970bfc64117e397dc5cb7a9afe9f8b22dca1f1 (22 bytes)
+│ └─┬ scriptPubKey: [22byte]
+│   ├── type: witnesspubkeyhash
+│   ├── hex: 0014d2970bfc64117e397dc5cb7a9afe9f8b22dca1f1
+│   └── asm: OP_0 d2970bfc64117e397dc5cb7a9afe9f8b22dca1f1
+└── network: bitcoin

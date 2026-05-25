@@ -1,0 +1,18 @@
+{
+  "name": "tss-recovery",
+  "version": "1.0.0",
+  "description": "TSS User <> Backup keycard signing",
+  "scripts": {
+    "test:ecdsa": "tsx mpcv2-recovery.ts",
+    "test:eddsa": "tsx eddsa-recovery.ts"
+  },
+  "dependencies": {
+    "@bitgo/sdk-core": "28.10.0",
+    "@bitgo/sdk-lib-mpc": "10.0.0",
+    "secp256k1": "5.0.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.4",
+    "typescript": "5.1.6"
+  }
+}
