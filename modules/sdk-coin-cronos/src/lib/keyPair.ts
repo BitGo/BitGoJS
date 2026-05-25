@@ -2,7 +2,7 @@ import { AddressFormat, KeyPairOptions } from '@bitgo/sdk-core';
 import { pubkeyToAddress } from '@cosmjs/amino';
 
 import { CosmosKeyPair } from '@bitgo/abstract-cosmos';
-import { MAINNET_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX } from './constants';
+import { Networks } from '@bitgo/statics';
 
 /**
  * Cronos keys and address management.
@@ -15,7 +15,8 @@ export class KeyPair extends CosmosKeyPair {
   /** @inheritdoc */
   getAddress(format: AddressFormat = AddressFormat.mainnet): string {
     const base64String = Buffer.from(this.getKeys().pub.slice(0, 66), 'hex').toString('base64');
-    const address_prefix = format === AddressFormat.testnet ? TESTNET_ADDRESS_PREFIX : MAINNET_ADDRESS_PREFIX;
+    const address_prefix =
+      format === AddressFormat.testnet ? Networks.test.cronos.addressPrefix : Networks.main.cronos.addressPrefix;
     return pubkeyToAddress(
       {
         type: 'tendermint/PubKeySecp256k1',

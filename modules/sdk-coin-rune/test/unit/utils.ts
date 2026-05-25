@@ -1,7 +1,6 @@
-import { NetworkType } from '@bitgo/statics';
+import { NetworkType, Networks } from '@bitgo/statics';
 import should from 'should';
 import { RuneUtils } from '../../src/lib/utils';
-import { MAINNET_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX } from '../../src/lib/constants';
 import { blockHash, mainnetCoinAmounts, txIds, mainnetAddress, mainnetGasAmounts } from '../resources/rune';
 import { testnetCoinAmounts, testnetAddress } from '../resources/trune';
 const bech32 = require('bech32-buffer');
@@ -112,7 +111,7 @@ describe('utils', () => {
     should.equal(encodedAddress, testnetAddress.address1);
     should.equal(typeof encodedAddress, 'string');
     should.equal(encodedAddress.length, 44);
-    should.equal(encodedAddress.startsWith(TESTNET_ADDRESS_PREFIX), true);
+    should.equal(encodedAddress.startsWith(Networks.test.rune.addressPrefix), true);
   });
 
   it('should convert Uint8Array type mainnet address to string', () => {
@@ -120,6 +119,6 @@ describe('utils', () => {
     should.equal(encodedAddress, mainnetAddress.address1);
     should.equal(typeof encodedAddress, 'string');
     should.equal(encodedAddress.length, 43);
-    should.equal(encodedAddress.startsWith(MAINNET_ADDRESS_PREFIX), true);
+    should.equal(encodedAddress.startsWith(Networks.main.rune.addressPrefix), true);
   });
 });

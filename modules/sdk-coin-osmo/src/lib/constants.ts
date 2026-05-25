@@ -1,7 +1,9 @@
 import { CosmosUtils } from '@bitgo/abstract-cosmos';
+import { Networks } from '@bitgo/statics';
 
 const cosmosUtils = new CosmosUtils();
+const HRP = Networks.main.osmo.addressPrefix;
 export const validDenoms = ['nosmo', 'uosmo', 'mosmo', 'osmo', ...cosmosUtils.getTokenDenomsUsingCoinFamily('osmo')];
-export const accountAddressRegex = /^(osmo)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38})$/;
-export const validatorAddressRegex = /^(osmovaloper)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38})$/;
-export const contractAddressRegex = /^(osmo)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]+)$/;
+export const accountAddressRegex = new RegExp(`^(${HRP})1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38})$`);
+export const validatorAddressRegex = new RegExp(`^(${HRP}valoper)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38})$`);
+export const contractAddressRegex = new RegExp(`^(${HRP})1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]+)$`);
