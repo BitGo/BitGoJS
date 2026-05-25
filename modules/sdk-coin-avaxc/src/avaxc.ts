@@ -635,7 +635,7 @@ export class AvaxC extends AbstractEthLikeNewCoins {
       : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
     if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
       try {
-        userKey = this.bitgo.decrypt({
+        userKey = await this.bitgo.decryptAsync({
           input: userKey,
           password: params.walletPassphrase,
         });
@@ -654,7 +654,7 @@ export class AvaxC extends AbstractEthLikeNewCoins {
       let backupPrv;
 
       try {
-        backupPrv = this.bitgo.decrypt({
+        backupPrv = await this.bitgo.decryptAsync({
           input: backupKey,
           password: params.walletPassphrase,
         });

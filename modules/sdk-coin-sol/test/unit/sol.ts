@@ -2406,7 +2406,7 @@ describe('SOL:', function () {
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword + 'incorrect',
         })
-        .should.rejectedWith("Error decrypting user keychain: password error - ccm: tag doesn't match");
+        .should.rejectedWith('Error decrypting user keychain: incorrect password');
 
       // no wallet with sufficient funds
       await basecoin
