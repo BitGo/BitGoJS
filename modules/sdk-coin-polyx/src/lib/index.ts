@@ -18,6 +18,7 @@ export { RejectInstructionBuilder } from './rejectInstructionBuilder';
 export { Transaction as PolyxTransaction } from './transaction';
 export { BondExtraBuilder } from './bondExtraBuilder';
 export { BatchStakingBuilder as BatchBuilder } from './batchStakingBuilder';
+export { NominateBuilder } from './nominateBuilder';
 export { BatchUnstakingBuilder } from './batchUnstakingBuilder';
 export { UnbondBuilder } from './unbondBuilder';
 export { WithdrawUnbondedBuilder } from './withdrawUnbondedBuilder';

@@ -136,6 +136,20 @@ export const stakingTx = {
   },
 };
 
+export const nominateTx = {
+  unsigned:
+    '0x11050800025237fdbea82f075296416fa096d3b9807c4f8763d7c3474fdd7470073798110060c819a103b56679947c39924a7cc616cb78e84da6c5303ebe1521b3feb62813',
+  signed:
+    '0xb10284001ed73dfc30f7b1359d92004d6954ea47a1e447f813f637ec44302a9f6d773d4a01822b6f38948c972764afe53df261221dfd65f79bd51517f4384d5669a36aad6a78290cc4c6a678c3ebe698799232a08792cd063e051a642d355bdaa166225d8ec5033c0011050800025237fdbea82f075296416fa096d3b9807c4f8763d7c3474fdd7470073798110060c819a103b56679947c39924a7cc616cb78e84da6c5303ebe1521b3feb62813',
+};
+
+export const nominateSender = '5Cm9EXKwcDDNVNDFSUnsp46YCA7QmMVAaRKSFeeCUed1Jbix';
+
+export const nominateValidators = [
+  '5C7kNpSvVr22Z1X6gVAUjfahSJfSpvw4DHNoY7uUHpLfEJZR',
+  '5EFbtwDBQu64WjUGqAgC3kuaiH86E34CHtqxbN7zAgwwT2cg',
+];
+
 export const { txVersion, specVersion, genesisHash, chainName, specName } = Networks.test.polyx;
 export const {
   txVersion: mainTxVersion,

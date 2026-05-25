@@ -119,9 +119,9 @@ export const BondExtraTransactionSchema = joi.object({
   value: joi.string().required(),
 });
 
-// For nominate transactions in batch
+// For nominate transactions (standalone or in batch)
 export const NominateTransactionSchema = joi.object({
-  validators: joi.array().items(addressSchema).min(1).required(),
+  validators: joi.array().items(addressSchema).min(1).max(16).required(),
 });
 
 // For batch validation
@@ -141,7 +141,7 @@ export const BatchTransactionSchema = {
             })
           )
           .required(),
-        validators: joi.array().items(addressSchema).min(1).required(),
+        validators: joi.array().items(addressSchema).min(1).max(16).required(),
       })
       .validate(value),
 
@@ -165,7 +165,7 @@ export const BatchTransactionSchema = {
   validateNominate: (value: NominateValidationObject): joi.ValidationResult =>
     joi
       .object({
-        validators: joi.array().items(addressSchema).min(1).required(),
+        validators: joi.array().items(addressSchema).min(1).max(16).required(),
       })
       .validate(value),
 };
