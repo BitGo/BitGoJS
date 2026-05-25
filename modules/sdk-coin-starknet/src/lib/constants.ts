@@ -17,3 +17,14 @@ export const ADDR_BOUND = 2n ** 251n - 256n;
 export const CONTRACT_ADDRESS_PREFIX = 0x535441524b4e45545f434f4e54524143545f41444452455353n;
 
 export const DEFAULT_SEED_SIZE_BYTES = 16;
+
+// V3 transaction hash prefix: encodeShortString("invoke")
+export const INVOKE_TX_PREFIX = 0x696e766f6b65n;
+
+// V3 transaction version
+export const TRANSACTION_VERSION_3 = 3n;
+
+// Resource bound type names (short-string encoded felts)
+export const L1_GAS_NAME = 0x4c315f474153n; // "L1_GAS"
+export const L2_GAS_NAME = 0x4c325f474153n; // "L2_GAS"
+export const L1_DATA_GAS_NAME = 0x4c315f44415441n; // "L1_DATA" — NOT "L1_DATA_GAS"

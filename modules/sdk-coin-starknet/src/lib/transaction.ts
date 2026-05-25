@@ -23,6 +23,13 @@ export class Transaction extends BaseTransaction {
 
   set starknetTransactionData(data: StarknetTransactionData) {
     this._starknetTransactionData = data;
+    if (data.transactionHash) {
+      this._id = data.transactionHash;
+    }
+  }
+
+  get signableHex(): string {
+    return this._starknetTransactionData?.transactionHash || '';
   }
 
   get signedTransaction(): string | undefined {
@@ -47,6 +54,11 @@ export class Transaction extends BaseTransaction {
         transactionType: parsed.transactionType || StarknetTransactionType.INVOKE,
         signature: parsed.signature,
         transactionHash: parsed.transactionHash,
+        resourceBounds: parsed.resourceBounds,
+        tip: parsed.tip,
+        compiledCalldata: parsed.compiledCalldata,
+        nonceDataAvailabilityMode: parsed.nonceDataAvailabilityMode,
+        feeDataAvailabilityMode: parsed.feeDataAvailabilityMode,
       };
 
       if (parsed.signature && parsed.signature.length > 0) {
