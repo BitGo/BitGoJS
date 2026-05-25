@@ -1,0 +1,12 @@
+address: bchtest:pqh4utv0fm35eng6gycfwkuluc6l7e0q9vn0enh39m
+├─┬ cashaddr
+│ ├── prefix: bchtest
+│ ├── version: scripthash
+│ └── hash: 2f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b (20 bytes)
+├── format: cashaddr
+├─┬ outputScript: a9142f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b87 (23 bytes)
+│ └─┬ scriptPubKey: [23byte]
+│   ├── type: scripthash
+│   ├── hex: a9142f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b87
+│   └── asm: OP_HASH160 2f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b OP_EQUAL
+└── network: bitcoincashTestnet

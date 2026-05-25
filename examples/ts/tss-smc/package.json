@@ -1,0 +1,17 @@
+{
+  "name": "tss-smc",
+  "version": "1.0.0",
+  "description": "TSS Self Managed Cold Wallets Examples",
+  "scripts": {
+    "step1": "tsx create-smc-wallet-step-1.ts",
+    "step2": "tsx create-smc-wallet-step-2.ts",
+    "create-smc-wallet": "tsx create-smc-wallet-reusing-keys.ts"
+  },
+  "dependencies": {
+    "bitgo": "19.5.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.4",
+    "typescript": "5.1.6"
+  }
+}

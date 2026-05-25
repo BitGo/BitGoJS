@@ -1,0 +1,256 @@
+import { SerializedMessages, AuthEncMessage, AuthEncMessages, PartyGpgKey, AuthMessage } from './types';
+import * as pgp from 'openpgp';
+
+/**
+ * Tolerance window for OpenPGP date-based key validity checks (24 hours).
+ *
+ * Background: OpenPGP.js uses the `date` parameter to check key expiry at a
+ * given point in time. We previously passed `date: null` to disable this check
+ * entirely (see HSM-706) because OVC cold-signing flows for trust and SMC
+ * clients can involve significant clock skew between the signing device and the
+ * server — the device may be air-gapped and its clock can drift by hours.
+ *
+ * Note: this GPG expiry check is not strictly required for replay protection.
+ * The DKLS protocol has its own mechanism for preventing replay attacks
+ * (session-bound commitments and round-specific message validation), so the
+ * OpenPGP date check is a defense-in-depth measure rather than the primary
+ * replay mitigation.
+ *
+ * OpenPGP's `date` parameter shifts the reference time for ALL temporal
+ * checks simultaneously (key expiry, self-signature validity, signature
+ * freshness). This means a single shifted date cannot independently relax
+ * key-expiry checks without breaking self-signature validation on fresh keys.
+ *
+ * Therefore:
+ * - encrypt/decrypt omit `date` (use default = current time) for normal key
+ *   expiry checking and self-signature validation.
+ * - verify uses `now + tolerance` so that signatures from OVC devices whose
+ *   clocks are up to 24 hours ahead are not rejected as "from the future".
+ */
+export const SIGNATURE_DATE_TOLERANCE_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Detach signs a binary and encodes it in base64
+ * @param data binary to encode in base64 and sign
+ * @param privateArmor private key to sign with
+ */
+export async function detachSignData(data: Buffer, privateArmor: string): Promise<AuthMessage> {
+  const message = await pgp.createMessage({ binary: data });
+  const privateKey = await pgp.readPrivateKey({ armoredKey: privateArmor });
+  const signature = await pgp.sign({
+    message,
+    signingKeys: privateKey,
+    format: 'armored',
+    detached: true,
+    config: {
+      rejectCurves: new Set(),
+      showVersion: false,
+      showComment: false,
+    },
+  });
+  return {
+    message: data.toString('base64'),
+    signature: signature,
+  };
+}
+
+/**
+ * Encrypts and detach signs a binary
+ * @param data binary to encrypt and sign
+ * @param publicArmor public key to encrypt with
+ * @param privateArmor private key to sign with
+ */
+export async function encryptAndDetachSignData(
+  data: Buffer,
+  publicArmor: string,
+  privateArmor: string
+): Promise<AuthEncMessage> {
+  const message = await pgp.createMessage({ binary: data });
+  const publicKey = await pgp.readKey({ armoredKey: publicArmor });
+  const privateKey = await pgp.readPrivateKey({ armoredKey: privateArmor });
+  const encryptedMessage = await pgp.encrypt({
+    message,
+    encryptionKeys: publicKey,
+    format: 'armored',
+    config: {
+      rejectCurves: new Set(),
+      showVersion: false,
+      showComment: false,
+    },
+  });
+  const signature = await pgp.sign({
+    message,
+    signingKeys: privateKey,
+    format: 'armored',
+    detached: true,
+    config: {
+      rejectCurves: new Set(),
+      showVersion: false,
+      showComment: false,
+    },
+  });
+  return {
+    encryptedMessage: encryptedMessage,
+    signature: signature,
+  };
+}
+
+/**
+ * Decrypts and verifies signature on a binary
+ * @param encryptedAndSignedMessage message to decrypt and verify
+ * @param publicArmor public key to verify signature with
+ * @param privateArmor private key to decrypt with
+ */
+export async function decryptAndVerifySignedData(
+  encryptedAndSignedMessage: AuthEncMessage,
+  publicArmor: string,
+  privateArmor: string
+): Promise<string> {
+  const publicKey = await pgp.readKey({ armoredKey: publicArmor });
+  const privateKey = await pgp.readPrivateKey({ armoredKey: privateArmor });
+  const decryptedMessage = await pgp.decrypt({
+    message: await pgp.readMessage({ armoredMessage: encryptedAndSignedMessage.encryptedMessage }),
+    decryptionKeys: [privateKey],
+    config: {
+      rejectCurves: new Set(),
+      showVersion: false,
+      showComment: false,
+    },
+    format: 'binary',
+  });
+  const verificationResult = await pgp.verify({
+    message: await pgp.createMessage({ binary: decryptedMessage.data }),
+    signature: await pgp.readSignature({ armoredSignature: encryptedAndSignedMessage.signature }),
+    verificationKeys: publicKey,
+    date: new Date(Date.now() + SIGNATURE_DATE_TOLERANCE_MS),
+  });
+  await verificationResult.signatures[0].verified;
+  return Buffer.from(decryptedMessage.data).toString('base64');
+}
+
+/**
+ * Verifies signature on a binary (message passed should be encoded in base64).
+ * @param signedMessage message to verify
+ * @param publicArmor public key to verify signature with
+ */
+export async function verifySignedData(signedMessage: AuthMessage, publicArmor: string): Promise<boolean> {
+  const publicKey = await pgp.readKey({ armoredKey: publicArmor });
+  const verificationResult = await pgp.verify({
+    message: await pgp.createMessage({ binary: Buffer.from(signedMessage.message, 'base64') }),
+    signature: await pgp.readSignature({ armoredSignature: signedMessage.signature }),
+    verificationKeys: publicKey,
+    date: new Date(Date.now() + SIGNATURE_DATE_TOLERANCE_MS),
+  });
+  try {
+    await verificationResult.signatures[0].verified;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Decrypts and verifies p2p messages + verifies broadcast messages
+ * @param messages message to decrypt and verify
+ * @param pubVerificationGpgKeys public keys to verify signatures with
+ * @param prvDecryptionGpgKeys private keys to decrypt with
+ */
+export async function decryptAndVerifyIncomingMessages(
+  messages: AuthEncMessages,
+  pubVerificationGpgKeys: PartyGpgKey[],
+  prvDecryptionGpgKeys: PartyGpgKey[]
+): Promise<SerializedMessages> {
+  return {
+    p2pMessages: await Promise.all(
+      messages.p2pMessages.map(async (m) => {
+        const pubGpgKey = pubVerificationGpgKeys.find((k) => k.partyId === m.from);
+        const prvGpgKey = prvDecryptionGpgKeys.find((k) => k.partyId === m.to);
+        if (!pubGpgKey) {
+          throw Error(`No public key provided for sender with ID: ${m.from}`);
+        }
+        if (!prvGpgKey) {
+          throw Error(`No private key provided for recepient with ID: ${m.to}`);
+        }
+        return {
+          to: m.to,
+          from: m.from,
+          payload: await decryptAndVerifySignedData(m.payload, pubGpgKey.gpgKey, prvGpgKey.gpgKey),
+          commitment: m.commitment,
+        };
+      })
+    ),
+    broadcastMessages: await Promise.all(
+      messages.broadcastMessages.map(async (m) => {
+        const pubGpgKey = pubVerificationGpgKeys.find((k) => k.partyId === m.from);
+        if (!pubGpgKey) {
+          throw Error(`No public key provided for sender with ID: ${m.from}`);
+        }
+        if (!(await verifySignedData(m.payload, pubGpgKey.gpgKey))) {
+          throw Error(`Failed to authenticate broadcast message from party: ${m.from}`);
+        }
+        if (m.signatureR !== undefined) {
+          if (!(await verifySignedData(m.signatureR, pubGpgKey.gpgKey))) {
+            throw Error(`Failed to authenticate signatureR in broadcast message from party: ${m.from}`);
+          }
+        }
+        return {
+          from: m.from,
+          payload: m.payload.message,
+          signatureR: m.signatureR?.message,
+        };
+      })
+    ),
+  };
+}
+
+/**
+ * Encrypts and signs p2p messages + signs broadcast messages
+ * @param messages messages to encrypt and sign
+ * @param pubEncryptionGpgKey public keys to encrypt data to
+ * @param prvAuthenticationGpgKey private keys to sign with
+ */
+export async function encryptAndAuthOutgoingMessages(
+  messages: SerializedMessages,
+  pubEncryptionGpgKeys: PartyGpgKey[],
+  prvAuthenticationGpgKeys: PartyGpgKey[]
+): Promise<AuthEncMessages> {
+  return {
+    p2pMessages: await Promise.all(
+      messages.p2pMessages.map(async (m) => {
+        const pubGpgKey = pubEncryptionGpgKeys.find((k) => k.partyId === m.to);
+        const prvGpgKey = prvAuthenticationGpgKeys.find((k) => k.partyId === m.from);
+        if (!pubGpgKey) {
+          throw Error(`No public key provided for recipient with ID: ${m.to}`);
+        }
+        if (!prvGpgKey) {
+          throw Error(`No private key provided for sender with ID: ${m.from}`);
+        }
+        return {
+          to: m.to,
+          from: m.from,
+          payload: await encryptAndDetachSignData(Buffer.from(m.payload, 'base64'), pubGpgKey.gpgKey, prvGpgKey.gpgKey),
+          commitment: m.commitment,
+        };
+      })
+    ),
+    broadcastMessages: await Promise.all(
+      messages.broadcastMessages.map(async (m) => {
+        const prvGpgKey = prvAuthenticationGpgKeys.find((k) => k.partyId === m.from);
+        if (!prvGpgKey) {
+          throw Error(`No private key provided for sender with ID: ${m.from}`);
+        }
+        const [signedPayload, signedSignatureR] = await Promise.all([
+          detachSignData(Buffer.from(m.payload, 'base64'), prvGpgKey.gpgKey),
+          m.signatureR
+            ? detachSignData(Buffer.from(m.signatureR, 'base64'), prvGpgKey.gpgKey)
+            : Promise.resolve(undefined),
+        ]);
+        return {
+          from: m.from,
+          payload: signedPayload,
+          signatureR: signedSignatureR,
+        };
+      })
+    ),
+  };
+}
