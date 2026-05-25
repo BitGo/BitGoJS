@@ -9,6 +9,7 @@ import utils from './utils';
 export class TransferBuilder extends TransactionBuilder {
   protected _receiverAddress?: string;
   protected _amount?: string;
+  protected _tokenContractAddress: string = STRK_TOKEN_CONTRACT;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -35,6 +36,14 @@ export class TransferBuilder extends TransactionBuilder {
     return this;
   }
 
+  public tokenContractAddress(address: string): this {
+    if (!address || !utils.isValidAddress(address)) {
+      throw new BuildTransactionError('Invalid token contract address, got: ' + address);
+    }
+    this._tokenContractAddress = address;
+    return this;
+  }
+
   /** @inheritdoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
@@ -43,6 +52,7 @@ export class TransferBuilder extends TransactionBuilder {
       if (transfer) {
         this._receiverAddress = transfer.recipient;
         this._amount = transfer.amount;
+        this._tokenContractAddress = transfer.tokenContract;
       }
     }
   }
@@ -52,7 +62,7 @@ export class TransferBuilder extends TransactionBuilder {
     this.validateTransfer();
 
     const transferCall: StarknetCall = {
-      contractAddress: STRK_TOKEN_CONTRACT,
+      contractAddress: this._tokenContractAddress,
       entrypoint: 'transfer',
       calldata: this.compileTransferCalldata(this._receiverAddress as string, this._amount as string),
     };
