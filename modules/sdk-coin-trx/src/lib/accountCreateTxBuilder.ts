@@ -15,8 +15,6 @@ import {
 } from './utils';
 import { ACCOUNT_CREATE_TYPE_URL } from './constants';
 
-import ContractType = protocol.Transaction.Contract.ContractType;
-
 export class AccountCreateTxBuilder extends TransactionBuilder {
   protected _signingKeys: BaseKey[];
   // Stored as hex address, consistent with _ownerAddress
@@ -148,8 +146,13 @@ export class AccountCreateTxBuilder extends TransactionBuilder {
     };
     const accountCreateContract = protocol.AccountCreateContract.fromObject(rawContract);
     const accountCreateContractBytes = protocol.AccountCreateContract.encode(accountCreateContract).finish();
+    // AccountCreateContract is enum value 0 — the proto3 default. TRON's node
+    // re-serializes raw_data from broadcast JSON and omits default-valued
+    // fields, producing a different raw_data_hex (and txID) than the SDK if
+    // we encode the type field explicitly. Skip it so signing and broadcast
+    // hashes match. See freezeBalanceTxBuilder.ts:175-181 for the same class
+    // of issue on the inner `resource` field.
     const txContract = {
-      type: ContractType.AccountCreateContract,
       parameter: {
         value: accountCreateContractBytes,
         type_url: ACCOUNT_CREATE_TYPE_URL,
