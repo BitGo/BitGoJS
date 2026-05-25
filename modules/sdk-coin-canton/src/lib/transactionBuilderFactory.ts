@@ -7,6 +7,7 @@ import {
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { AllocationAllocateBuilder } from './allocationAllocateBuilder';
 import { AllocationRequestBuilder } from './allocationRequestBuilder';
+import { CantonCommandBuilder } from './cantonCommandBuilder';
 import { CosignDelegationAcceptBuilder } from './cosignDelegationAcceptBuilder';
 import { CosignDelegationProposalBuilder } from './cosignDelegationProposalBuilder';
 import { OneStepPreApprovalBuilder } from './oneStepPreApprovalBuilder';
@@ -64,6 +65,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         case TransactionType.AllocationRequest: {
           return this.getAllocationRequestBuilder(tx);
         }
+        case TransactionType.CantonCommand: {
+          return this.getCantonCommandBuilder(tx);
+        }
         default: {
           throw new InvalidTransactionError('unsupported transaction');
         }
@@ -77,6 +81,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getAllocationRequestBuilder(tx?: Transaction): AllocationRequestBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new AllocationRequestBuilder(this._coinConfig));
+  }
+
+  getCantonCommandBuilder(tx?: Transaction): CantonCommandBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new CantonCommandBuilder(this._coinConfig));
   }
 
   getOneStepPreapprovalBuilder(tx?: Transaction): OneStepPreApprovalBuilder {

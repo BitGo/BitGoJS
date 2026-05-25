@@ -9,6 +9,7 @@ import {
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   AllocationRequest,
+  CantonCommandExplain,
   CantonPrepareCommandResponse,
   CosignDelegationProposal,
   MultiHashSignature,
@@ -28,6 +29,7 @@ export class Transaction extends BaseTransaction {
   private _acknowledgeData: TransferAcknowledge;
   private _cosignDelegationProposalData: CosignDelegationProposal;
   private _allocationRequestData: AllocationRequest;
+  private _cantonCommandActAs: string[];
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -55,6 +57,10 @@ export class Transaction extends BaseTransaction {
 
   set allocationRequestData(data: AllocationRequest) {
     this._allocationRequestData = data;
+  }
+
+  set cantonCommandActAs(parties: string[]) {
+    this._cantonCommandActAs = parties;
   }
 
   get id(): string {
@@ -141,7 +147,6 @@ export class Transaction extends BaseTransaction {
     };
     const signatures: MultiHashSignature[] = [];
     if (this._signatures.length > 0 && this._signerFingerprint) {
-      const signerPartyId = `${this._signerFingerprint.slice(0, 5)}::${this._signerFingerprint}`;
       this.signature.map((signature) => {
         const signatureObj: MultiHashSignature = {
           format: SIGNATURE_FORMAT,
@@ -151,11 +156,20 @@ export class Transaction extends BaseTransaction {
         };
         signatures.push(signatureObj);
       });
-      const partySignature = {
-        party: signerPartyId,
-        signatures: signatures,
-      };
-      data.partySignatures?.signatures.push(partySignature);
+      // CantonCommand: the Canton protocol requires one partySignatures entry per actAs party; all parties share the same TSS key and signature.
+      if (this._type === TransactionType.CantonCommand) {
+        if (!this._cantonCommandActAs?.length) {
+          throw new InvalidTransactionError(
+            'CantonCommand transaction is missing actAs parties required for partySignatures'
+          );
+        }
+        for (const party of this._cantonCommandActAs) {
+          data.partySignatures?.signatures.push({ party, signatures });
+        }
+      } else {
+        const signerPartyId = `${this._signerFingerprint.slice(0, 5)}::${this._signerFingerprint}`;
+        data.partySignatures?.signatures.push({ party: signerPartyId, signatures });
+      }
       data.preparedTransaction = this._prepareCommand.preparedTransaction
         ? this._prepareCommand.preparedTransaction
         : '';
@@ -190,6 +204,16 @@ export class Transaction extends BaseTransaction {
         throw new InvalidTransactionError('AllocationRequestData is not set');
       }
       result.allocationRequestData = this._allocationRequestData;
+      return result;
+    }
+    if (this._type === TransactionType.CantonCommand) {
+      if (!this._prepareCommand?.preparedTransaction) {
+        throw new InvalidTransactionError('Empty transaction data');
+      }
+      const commandSummary = this.buildCantonCommandSummary();
+      if (commandSummary) {
+        result.cantonCommand = commandSummary;
+      }
       return result;
     }
     if (!this._prepareCommand || !this._prepareCommand.preparedTransaction) {
@@ -228,6 +252,10 @@ export class Transaction extends BaseTransaction {
     return Buffer.from(this._prepareCommand.preparedTransactionHash, 'base64');
   }
 
+  get cantonCommandActAsParties(): string[] {
+    return this._cantonCommandActAs ?? [];
+  }
+
   fromRawTransaction(rawTx: string): void {
     try {
       const decoded: TransactionBroadcastData = JSON.parse(Buffer.from(rawTx, 'base64').toString('utf8'));
@@ -248,11 +276,16 @@ export class Transaction extends BaseTransaction {
       } else {
         if (decoded.prepareCommandResponse) {
           this.prepareCommand = decoded.prepareCommandResponse;
-          this.loadInputsAndOutputs();
+          if (this.type !== TransactionType.CantonCommand) {
+            this.loadInputsAndOutputs();
+          }
         }
         if (decoded.partySignatures && decoded.partySignatures.signatures.length > 0) {
           this.signerFingerprint = decoded.partySignatures.signatures[0].party.split('::')[1];
           this.signatures = decoded.partySignatures.signatures[0].signatures[0].signature;
+        }
+        if (this.type === TransactionType.CantonCommand && decoded.prepareCommandResponse?.preparedTransaction) {
+          this.cantonCommandActAs = utils.extractSubmitterActAs(decoded.prepareCommandResponse.preparedTransaction);
         }
       }
     } catch (e) {
@@ -345,6 +378,25 @@ export class Transaction extends BaseTransaction {
         inputAmount = txData.amount;
         break;
       }
+      case TransactionType.CantonCommand: {
+        const commandSummary = this.buildCantonCommandSummary();
+        const explanation: TransactionExplanation = {
+          id: this.id,
+          displayOrder,
+          outputs: outputs,
+          outputAmount: outputAmount,
+          inputs: inputs,
+          inputAmount: inputAmount,
+          changeOutputs: [],
+          changeAmount: '0',
+          fee: { fee: '0' },
+          type: this.type,
+        };
+        if (commandSummary) {
+          explanation.cantonCommand = commandSummary;
+        }
+        return explanation;
+      }
     }
     return {
       id: this.id,
@@ -358,5 +410,26 @@ export class Transaction extends BaseTransaction {
       fee: { fee: '0' },
       type: this.type,
     };
+  }
+
+  private buildCantonCommandSummary(): CantonCommandExplain | undefined {
+    const rawPrepared = this._prepareCommand?.preparedTransaction;
+    if (!rawPrepared) {
+      return undefined;
+    }
+    try {
+      const info = utils.extractCantonCommandInfo(rawPrepared);
+      const templateIdStr = `${info.templateId.packageId}:${info.templateId.moduleName}:${info.templateId.entityName}`;
+      const summary: CantonCommandExplain = {
+        kind: info.kind,
+        templateId: templateIdStr,
+        actAs: this._cantonCommandActAs ?? [],
+      };
+      if (info.choice !== undefined) summary.choice = info.choice;
+      if (info.contractId !== undefined && info.contractId !== '') summary.contractId = info.contractId;
+      return summary;
+    } catch {
+      return undefined;
+    }
   }
 }

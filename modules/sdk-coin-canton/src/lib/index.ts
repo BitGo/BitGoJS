@@ -1,6 +1,7 @@
 import * as Utils from './utils';
 import * as Interface from './iface';
 
+export { CantonCommandBuilder } from './cantonCommandBuilder';
 export { AllocationAllocateBuilder } from './allocationAllocateBuilder';
 export { AllocationRequestBuilder } from './allocationRequestBuilder';
 export { CosignDelegationAcceptBuilder } from './cosignDelegationAcceptBuilder';

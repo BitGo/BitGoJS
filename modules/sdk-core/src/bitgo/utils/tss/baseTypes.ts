@@ -81,6 +81,39 @@ export interface aptosCustomTransactionParams {
   abi?: any;
 }
 
+export interface CantonCreateCommand {
+  CreateCommand: {
+    templateId: string;
+    createArguments: Record<string, unknown>;
+  };
+}
+
+export interface CantonExerciseCommand {
+  ExerciseCommand: {
+    templateId: string;
+    contractId?: string;
+    choice: string;
+    choiceArgument: Record<string, unknown>;
+  };
+}
+
+export type CantonCommand = CantonCreateCommand | CantonExerciseCommand;
+
+export interface CantonCommandResolveContractSpec {
+  templateId: string;
+  actAs: string[];
+  readAs?: string[];
+  injectAs: string;
+  resolveAll?: boolean;
+}
+
+export interface CantonCommandParams {
+  command: CantonCommand;
+  actAs: string[];
+  readAs?: string[];
+  resolveContracts?: CantonCommandResolveContractSpec[];
+}
+
 export enum ShareType {
   R = 'R',
   Commitment = 'commitment',
@@ -319,6 +352,8 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
    * TIP-20 token address to use for paying transaction fees (Tempo only).
    */
   feeToken?: string;
+  /** Canton-specific params for the cantonCommand intent. */
+  cantonCommandParams?: CantonCommandParams;
 }
 export interface IntentRecipient {
   address: {
@@ -400,6 +435,8 @@ export interface PopulatedIntent extends PopulatedIntentBase {
    * Amount for intents that use a top-level amount instead of recipients (e.g. bridgeFunds).
    */
   amount?: { value: string; symbol: string };
+  /** Canton-specific params serialized into the cantonCommand intent payload. */
+  cantonCommandParams?: CantonCommandParams;
 }
 
 export type TxRequestState =

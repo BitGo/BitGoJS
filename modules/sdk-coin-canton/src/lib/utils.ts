@@ -8,8 +8,8 @@ import { computePreparedTransaction } from '../../resources/hash/hash.js';
 import { PreparedTransaction } from '../../resources/proto/preparedTransaction.js';
 
 import { CryptoKeyFormat, SigningAlgorithmSpec, SigningKeySpec } from './constant';
-import { PreparedTransaction as IPreparedTransaction, PreparedTxnParsedInfo } from './iface';
-import { RecordField } from './resourcesInterface';
+import { CantonCommandInfo, PreparedTransaction as IPreparedTransaction, PreparedTxnParsedInfo } from './iface';
+import { RecordField, Value } from './resourcesInterface';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -410,6 +410,243 @@ export class Utils implements BaseUtils {
     return parsedData;
   }
 
+  /** Parses `"Pkg:Module:Entity"` into parts. */
+  parseCantonTemplateId(value: string): { pkg: string; moduleName: string; entityName: string } | undefined {
+    if (typeof value !== 'string') return undefined;
+    const parts = value.split(':');
+    if (parts.length !== 3) return undefined;
+    const [pkg, moduleName, entityName] = parts;
+    if (!pkg || !moduleName || !entityName) return undefined;
+    return { pkg, moduleName, entityName };
+  }
+
+  damlValueToJson(value: Value | undefined): unknown {
+    if (!value || !value.sum) return undefined;
+    const sum = value.sum;
+    switch (sum.oneofKind) {
+      case 'unit':
+        return null;
+      case 'bool':
+        return sum.bool;
+      case 'int64':
+        return sum.int64;
+      case 'date':
+        return sum.date;
+      case 'timestamp':
+        return sum.timestamp;
+      case 'numeric':
+        return sum.numeric;
+      case 'party':
+        return sum.party;
+      case 'text':
+        return sum.text;
+      case 'contractId':
+        return sum.contractId;
+      case 'optional':
+        return sum.optional?.value ? this.damlValueToJson(sum.optional.value) : null;
+      case 'list':
+        return (sum.list?.elements ?? []).map((el) => this.damlValueToJson(el));
+      case 'textMap': {
+        const obj: Record<string, unknown> = {};
+        for (const entry of sum.textMap?.entries ?? []) {
+          obj[entry.key] = this.damlValueToJson(entry.value);
+        }
+        return obj;
+      }
+      case 'genMap':
+        return (sum.genMap?.entries ?? []).map((entry) => [
+          this.damlValueToJson(entry.key),
+          this.damlValueToJson(entry.value),
+        ]);
+      case 'record': {
+        const obj: Record<string, unknown> = {};
+        for (const f of sum.record?.fields ?? []) {
+          obj[f.label] = this.damlValueToJson(f.value);
+        }
+        return obj;
+      }
+      case 'variant': {
+        const obj: Record<string, unknown> = {};
+        obj[sum.variant.constructor] = this.damlValueToJson(sum.variant.value);
+        return obj;
+      }
+      case 'enum':
+        return sum.enum.constructor;
+      default:
+        return undefined;
+    }
+  }
+
+  /** Reads actAs parties from a base64-encoded prepared transaction protobuf. */
+  extractSubmitterActAs(rawBase64: string): string[] {
+    const decoded = this.decodePreparedTransaction(rawBase64);
+    return decoded.metadata?.submitterInfo?.actAs ?? [];
+  }
+
+  /** Decodes a prepared Canton transaction protobuf and extracts the root CreateCommand or ExerciseCommand. */
+  extractCantonCommandInfo(rawBase64: string): CantonCommandInfo {
+    const decoded = this.decodePreparedTransaction(rawBase64);
+    const tx = decoded.transaction;
+    if (!tx) {
+      throw new Error('decoded prepared transaction has no transaction body');
+    }
+    const roots = tx.roots ?? [];
+    if (roots.length === 0) {
+      throw new Error('decoded prepared transaction has no root nodes');
+    }
+    if (roots.length > 1) {
+      throw new Error(`decoded prepared transaction has ${roots.length} root nodes; expected exactly 1`);
+    }
+    const rootId = roots[0];
+    const rootNode = (tx.nodes ?? []).find((n) => n.nodeId === rootId);
+    if (!rootNode) {
+      throw new Error(`root node '${rootId}' not found in nodes list`);
+    }
+    const versionedNode = rootNode.versionedNode;
+    if (!versionedNode || versionedNode.oneofKind !== 'v1') {
+      throw new Error(`unsupported root node version: ${versionedNode?.oneofKind ?? 'undefined'}`);
+    }
+    const nodeType = versionedNode.v1.nodeType;
+    if (nodeType.oneofKind === 'create') {
+      const createNode = nodeType.create;
+      if (!createNode.templateId) {
+        throw new Error('create node missing templateId');
+      }
+      return {
+        kind: 'CreateCommand',
+        templateId: {
+          packageId: createNode.templateId.packageId,
+          moduleName: createNode.templateId.moduleName,
+          entityName: createNode.templateId.entityName,
+        },
+        argument: this.damlValueToJson(createNode.argument),
+      };
+    }
+    if (nodeType.oneofKind === 'exercise') {
+      const exerciseNode = nodeType.exercise;
+      if (!exerciseNode.templateId) {
+        throw new Error('exercise node missing templateId');
+      }
+      return {
+        kind: 'ExerciseCommand',
+        templateId: {
+          packageId: exerciseNode.templateId.packageId,
+          moduleName: exerciseNode.templateId.moduleName,
+          entityName: exerciseNode.templateId.entityName,
+        },
+        argument: this.damlValueToJson(exerciseNode.chosenValue),
+        choice: exerciseNode.choiceId,
+        contractId: exerciseNode.contractId,
+        actingParties: [...(exerciseNode.actingParties ?? [])],
+      };
+    }
+    throw new Error(`unsupported root node type: ${nodeType.oneofKind ?? 'undefined'}`);
+  }
+
+  sameElements(a: readonly string[], b: readonly string[]): boolean {
+    if (a.length !== b.length) return false;
+    const sortedA = [...a].sort();
+    const sortedB = [...b].sort();
+    return sortedA.every((x, i) => x === sortedB[i]);
+  }
+
+  /** Strips the `command.` prefix from injectAs paths (e.g. `command.ExerciseCommand.contractId` → `ExerciseCommand.contractId`). */
+  normalizeInjectAs(specs: readonly { injectAs?: string }[] | undefined): Set<string> {
+    const out = new Set<string>();
+    if (!specs) return out;
+    for (const spec of specs) {
+      if (!spec || typeof spec.injectAs !== 'string') continue;
+      const stripped = spec.injectAs.startsWith('command.') ? spec.injectAs.slice('command.'.length) : spec.injectAs;
+      if (stripped) out.add(stripped);
+    }
+    return out;
+  }
+
+  /**
+   * Recursively asserts that `actual` matches `expected`. Paths in `injectAsPaths` are skipped.
+   * Numeric strings are compared via BigNumber to handle DAML formatting differences (e.g. "100" vs "100.0000000000").
+   */
+  assertDeepCantonMatch(expected: unknown, actual: unknown, injectAsPaths: Set<string>, currentPath = ''): void {
+    if (injectAsPaths.has(currentPath)) return;
+
+    // Only undefined means "unspecified — skip comparison". Empty {} or [] are valid
+    // Daml values and must be verified against actual to prevent accidental under-verification.
+    if (expected === undefined) {
+      return;
+    }
+
+    if (expected === null || actual === null) {
+      if (expected !== actual) {
+        throw new Error(
+          `Canton command mismatch at '${currentPath || '<root>'}': expected ${this.stringifyForError(
+            expected
+          )}, got ${this.stringifyForError(actual)}`
+        );
+      }
+      return;
+    }
+    if (typeof expected === 'string' && typeof actual === 'string') {
+      if (this.areNumericStrings(expected, actual)) {
+        if (!new BigNumber(expected).isEqualTo(new BigNumber(actual))) {
+          throw new Error(
+            `Canton command numeric mismatch at '${currentPath || '<root>'}': expected ${expected}, got ${actual}`
+          );
+        }
+        return;
+      }
+      if (expected !== actual) {
+        throw new Error(
+          `Canton command mismatch at '${currentPath || '<root>'}': expected '${expected}', got '${actual}'`
+        );
+      }
+      return;
+    }
+    if (typeof expected === 'number' && typeof actual === 'number') {
+      if (expected !== actual) {
+        throw new Error(`Canton command mismatch at '${currentPath || '<root>'}': expected ${expected}, got ${actual}`);
+      }
+      return;
+    }
+    if (typeof expected === 'boolean' && typeof actual === 'boolean') {
+      if (expected !== actual) {
+        throw new Error(`Canton command mismatch at '${currentPath || '<root>'}': expected ${expected}, got ${actual}`);
+      }
+      return;
+    }
+    if (Array.isArray(expected) && Array.isArray(actual)) {
+      if (expected.length !== actual.length) {
+        throw new Error(
+          `Canton command list-length mismatch at '${currentPath || '<root>'}': expected ${expected.length}, got ${
+            actual.length
+          }`
+        );
+      }
+      for (let i = 0; i < expected.length; i++) {
+        const childPath = currentPath ? `${currentPath}.${i}` : String(i);
+        this.assertDeepCantonMatch(expected[i], actual[i], injectAsPaths, childPath);
+      }
+      return;
+    }
+    if (this.isPlainObject(expected) && this.isPlainObject(actual)) {
+      const expectedKeys = new Set(Object.keys(expected));
+      const actualKeys = new Set(Object.keys(actual));
+      for (const key of expectedKeys) {
+        const childPath = currentPath ? `${currentPath}.${key}` : key;
+        if (expected[key] === undefined || injectAsPaths.has(childPath)) continue;
+        if (!actualKeys.has(key)) {
+          throw new Error(`Canton command missing field at '${childPath}' on prepared transaction`);
+        }
+        this.assertDeepCantonMatch(expected[key], (actual as Record<string, unknown>)[key], injectAsPaths, childPath);
+      }
+      return;
+    }
+    throw new Error(
+      `Canton command type mismatch at '${currentPath || '<root>'}': expected ${this.describeType(
+        expected
+      )}, got ${this.describeType(actual)}`
+    );
+  }
+
   /**
    * Computes the topology hash from the API response of the 'create party' endpoint.
    *
@@ -563,6 +800,29 @@ export class Utils implements BaseUtils {
    */
   private convertAmountToLowestUnit(value: BigNumber): string {
     return value.multipliedBy(new BigNumber(10).pow(10)).toFixed(0);
+  }
+
+  isPlainObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  }
+
+  private areNumericStrings(a: string, b: string): boolean {
+    const numericRe = /^-?\d+(\.\d+)?$/;
+    return numericRe.test(a) && numericRe.test(b);
+  }
+
+  private describeType(value: unknown): string {
+    if (value === null) return 'null';
+    if (Array.isArray(value)) return 'array';
+    return typeof value;
+  }
+
+  private stringifyForError(value: unknown): string {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
   }
 
   /**

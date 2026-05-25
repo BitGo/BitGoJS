@@ -57,7 +57,7 @@ interface Identifier {
   entityName: string;
 }
 
-interface Value {
+export interface Value {
   sum:
     | {
         oneofKind: 'unit';

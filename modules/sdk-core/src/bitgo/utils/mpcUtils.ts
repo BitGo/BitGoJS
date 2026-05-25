@@ -146,6 +146,31 @@ export abstract class MpcUtils {
       assert(params.transferOfferId, `'transferOfferId' is required parameter for ${params.intentType} intent`);
     }
 
+    if (params.intentType === 'cantonCommand') {
+      assert(baseCoin.getFamily() === 'canton', `'cantonCommand' intent is only supported for the canton coin family`);
+
+      const { cantonCommandParams } = params;
+      assert(cantonCommandParams, `'cantonCommandParams' is required for ${params.intentType} intent`);
+
+      const isPlainObject = (v: unknown): boolean =>
+        v !== null && v !== undefined && typeof v === 'object' && !Array.isArray(v);
+
+      const { command, actAs } = cantonCommandParams;
+      assert(isPlainObject(command), `'cantonCommandParams.command' must be a non-null plain object`);
+
+      const hasCreate = 'CreateCommand' in command && isPlainObject(command['CreateCommand']);
+      const hasExercise = 'ExerciseCommand' in command && isPlainObject(command['ExerciseCommand']);
+      assert(
+        hasCreate !== hasExercise,
+        `'cantonCommandParams.command' must contain exactly one of CreateCommand or ExerciseCommand as a non-null plain object`
+      );
+
+      assert(
+        Array.isArray(actAs) && actAs.length > 0 && actAs.every((p) => typeof p === 'string' && p.trim() !== ''),
+        `'cantonCommandParams.actAs' must be a non-empty array of non-empty strings for ${params.intentType} intent`
+      );
+    }
+
     if (
       ![
         'acceleration',
@@ -157,6 +182,7 @@ export abstract class MpcUtils {
         'transferReject',
         'transferOfferWithdrawn',
         'bridgeFunds',
+        'cantonCommand',
       ].includes(params.intentType)
     ) {
       assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);

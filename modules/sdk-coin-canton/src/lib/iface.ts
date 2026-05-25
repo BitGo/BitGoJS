@@ -2,6 +2,8 @@ import {
   TransactionType,
   TransactionExplanation as BaseTransactionExplanation,
   ITransactionRecipient,
+  CantonCommand,
+  CantonCommandResolveContractSpec,
 } from '@bitgo/sdk-core';
 import { DamlTransaction, Metadata } from './resourcesInterface';
 
@@ -9,6 +11,15 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
   inputs?: ITransactionRecipient[];
   inputAmount?: string;
+  cantonCommand?: CantonCommandExplain;
+}
+
+export interface CantonCommandExplain {
+  kind: CantonCommandKind;
+  templateId: string;
+  actAs: string[];
+  choice?: string;
+  contractId?: string;
 }
 
 /**
@@ -25,6 +36,7 @@ export interface TxData {
   allocationRequestData?: AllocationRequest;
   memoId?: string;
   token?: string;
+  cantonCommand?: CantonCommandExplain;
 }
 
 export interface PreparedTxnParsedInfo {
@@ -208,4 +220,29 @@ export interface AllocationRequest {
   allocateBefore: string;
   settleBefore: string;
   comment?: string;
+}
+
+export const CANTON_COMMAND_KEYS = ['CreateCommand', 'ExerciseCommand'] as const;
+export type CantonCommandKind = (typeof CANTON_COMMAND_KEYS)[number];
+
+export interface CantonCommandRequest {
+  commandId: string;
+  actAs: string[];
+  readAs?: string[];
+  command: CantonCommand;
+  resolveContracts?: CantonCommandResolveContractSpec[];
+}
+
+// Root command decoded from the prepared Canton transaction protobuf, used during verifyTransaction.
+export interface CantonCommandInfo {
+  kind: CantonCommandKind;
+  templateId: {
+    packageId: string;
+    moduleName: string;
+    entityName: string;
+  };
+  argument: unknown;
+  choice?: string; // ExerciseCommand only
+  contractId?: string; // ExerciseCommand only
+  actingParties?: string[]; // ExerciseCommand only
 }
