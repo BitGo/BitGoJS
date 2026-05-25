@@ -1,10 +1,17 @@
 /**
  * @prettier
  */
-import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor, TokenEnablementConfig } from '@bitgo/sdk-core';
 
-import { coins, Erc7984TokenConfig, tokens } from '@bitgo/statics';
-import { CoinNames, DecryptionDelegationBuilder } from '@bitgo/abstract-eth';
+import { coins, Erc7984TokenConfig, EthereumNetwork, tokens } from '@bitgo/statics';
+import {
+  CoinNames,
+  DecryptionDelegationBuilder,
+  decodeTokenAddressesFromDelegationCalldata,
+  VerifyEthTransactionOptions,
+  aclMulticallMethodId,
+  callFromParentMethodId,
+} from '@bitgo/abstract-eth';
 
 import { Eth } from './eth';
 import { TransactionBuilder } from './lib';
@@ -112,6 +119,148 @@ export class Erc7984Token extends Eth {
 
   protected getTransactionBuilder(): TransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
+  }
+
+  /** @inheritDoc */
+  getTokenEnablementConfig(): TokenEnablementConfig {
+    return {
+      requiresTokenEnablement: true,
+      supportsMultipleTokenEnablements: true,
+    };
+  }
+
+  /** @inheritDoc */
+  async verifyTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
+    if (params.txParams?.type === 'enabletoken') {
+      return this.verifyEnableTokenTransaction(params);
+    }
+    return super.verifyTransaction(params);
+  }
+
+  /**
+   * Verifies a token enablement transaction for ERC-7984 decryption delegation.
+   *
+   * TSS path: decodes the raw tx and verifies it calls the ACL contract with
+   * calldata that covers all requested token contract addresses.
+   *
+   * Multisig path: verifies the buildParams recipients carry the correct tokenNames
+   * and zero amounts.
+   */
+  private async verifyEnableTokenTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
+    const { txParams, txPrebuild, walletType } = params;
+
+    if (walletType === 'tss') {
+      // TSS path: full raw-tx decode
+      const enableTokens = txParams.enableTokens;
+      if (!enableTokens || enableTokens.length === 0) {
+        throw new Error('verifyEnableTokenTransaction: enableTokens must be non-empty for TSS path');
+      }
+      if (!txPrebuild.txHex) {
+        throw new Error('verifyEnableTokenTransaction: missing txHex in txPrebuild');
+      }
+
+      // Resolve requested token names → contract addresses
+      const requestedAddresses = enableTokens.map((t) => {
+        const tokenCoin = this.bitgo.coin(t.name) as Erc7984Token;
+        return tokenCoin.tokenContractAddress.toLowerCase();
+      });
+
+      // Parse the raw transaction
+      const txBuilder = this.getTransactionBuilder();
+      txBuilder.from(txPrebuild.txHex);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+
+      // Verify transaction targets the correct contract based on calldata shape
+      const network = this.getNetwork() as EthereumNetwork;
+      const aclContractAddress = network?.zamaAclContractAddress;
+      if (!aclContractAddress) {
+        throw new Error('verifyEnableTokenTransaction: zamaAclContractAddress not configured for this network');
+      }
+      if (!txJson.to) {
+        throw new Error('verifyEnableTokenTransaction: transaction is missing recipient address');
+      }
+
+      // Inspect calldata method ID to distinguish root wallet from forwarder wallet:
+      //   aclMulticallMethodId   → root wallet: to = ACL contract directly
+      //   callFromParentMethodId → forwarder wallet: to = forwarder, ACL address is inside calldata
+      const calldataMethodId = txJson.data.slice(0, 10);
+      if (calldataMethodId === aclMulticallMethodId) {
+        // Root wallet (base address): tx calls the ACL contract directly
+        if (txJson.to.toLowerCase() !== aclContractAddress.toLowerCase()) {
+          throw new Error(
+            `verifyEnableTokenTransaction: transaction target ${txJson.to} does not match ACL contract ${aclContractAddress}`
+          );
+        }
+      } else if (calldataMethodId === callFromParentMethodId) {
+        // Forwarder wallet: tx calls the forwarder, which calls the ACL via callFromParent.
+        // The forwarder address is wallet-specific and cannot be statically verified here;
+        // token address correctness is still verified below via calldata decoding.
+      } else {
+        throw new Error(
+          `verifyEnableTokenTransaction: unrecognised calldata method ID ${calldataMethodId}; expected multicall or callFromParent`
+        );
+      }
+
+      // Verify value is 0
+      if (txJson.value !== '0') {
+        throw new Error(`verifyEnableTokenTransaction: expected transaction value 0 but got ${txJson.value}`);
+      }
+
+      // Decode token addresses from calldata and verify all requested tokens are present
+      const decodedAddresses = decodeTokenAddressesFromDelegationCalldata(txJson.data);
+      for (const requested of requestedAddresses) {
+        if (!decodedAddresses.includes(requested)) {
+          throw new Error(
+            `verifyEnableTokenTransaction: requested token ${requested} not found in delegation calldata`
+          );
+        }
+      }
+
+      return true;
+    } else {
+      // Multisig path: buildParams-level check
+      const recipients = txPrebuild.buildParams?.recipients as
+        | Array<{ tokenName?: string; amount?: string }>
+        | undefined;
+      if (!recipients || recipients.length === 0) {
+        throw new Error('verifyEnableTokenTransaction: missing buildParams.recipients for multisig path');
+      }
+
+      // Determine requested token names from txParams
+      const requestedTokenNames: string[] = [];
+      if (txParams.enableTokens && txParams.enableTokens.length > 0) {
+        requestedTokenNames.push(...txParams.enableTokens.map((t) => t.name));
+      } else if (txParams.recipients && txParams.recipients.length > 0) {
+        requestedTokenNames.push(...txParams.recipients.map((r: any) => r.tokenName).filter(Boolean));
+      }
+
+      // Verify all recipients have tokenName and amount = '0'
+      for (const recipient of recipients) {
+        if (!recipient.tokenName) {
+          throw new Error('verifyEnableTokenTransaction: recipient is missing tokenName in buildParams');
+        }
+        if (recipient.amount !== '0') {
+          throw new Error(
+            `verifyEnableTokenTransaction: expected amount 0 for token enablement but got ${recipient.amount}`
+          );
+        }
+      }
+
+      // Verify requested token names are present in recipients
+      if (requestedTokenNames.length > 0) {
+        const recipientTokenNames = recipients.map((r) => r.tokenName);
+        for (const requested of requestedTokenNames) {
+          if (!recipientTokenNames.includes(requested)) {
+            throw new Error(
+              `verifyEnableTokenTransaction: requested token ${requested} not found in buildParams recipients`
+            );
+          }
+        }
+      }
+
+      return true;
+    }
   }
 
   /**
