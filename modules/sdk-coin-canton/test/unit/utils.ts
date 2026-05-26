@@ -8,6 +8,7 @@ import { Value } from '../../src/lib/resourcesInterface';
 import {
   CANTON_ADDRESSES,
   CANTON_BLOCK_HEIGHT,
+  CantonAllocationAllocatePrepareResponse,
   CantonExerciseCommandPrepareResponse,
   GenerateTopologyResponse,
   OneStepPreApprovalPrepareResponse,
@@ -98,6 +99,24 @@ describe('Canton Util', function () {
         'ravi-test-party-1::12205b4e3537a95126d90604592344d8ad3c3ddccda4f79901954280ee19c576714d'
       );
       assert.equal(parsedData.amount, '0');
+    });
+
+    it('should parse the allocation allocate prepared transaction', () => {
+      const parsedData = utils.parseRawCantonTransactionData(
+        CantonAllocationAllocatePrepareResponse.preparedTransaction,
+        TransactionType.AllocationAllocate
+      );
+      should.exist(parsedData);
+      assert.equal(
+        parsedData.sender,
+        'ravi-2-step-party::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2'
+      );
+      // receiver = transferLeg.receiver from DvpLegAllocation — the actual settlement counterparty
+      assert.equal(
+        parsedData.receiver,
+        'ravi-2-step-party-new::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2'
+      );
+      assert.equal(parsedData.amount, '50000000000');
     });
   });
 

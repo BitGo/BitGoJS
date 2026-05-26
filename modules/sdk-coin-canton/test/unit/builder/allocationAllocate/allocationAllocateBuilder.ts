@@ -5,6 +5,7 @@ import { coins } from '@bitgo/statics';
 
 import { AllocationAllocateBuilder, Transaction } from '../../../../src';
 import { CantonAllocationAllocateRequest } from '../../../../src/lib/iface';
+import { CantonAllocationAllocatePrepareResponse } from '../../../resources';
 
 const commandId = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
 const amount = 100;
@@ -329,5 +330,45 @@ describe('AllocationAllocate Builder', () => {
     };
     txBuilder.setTransaction(prepareCommandResponse);
     assert.deepEqual(tx.prepareCommand, prepareCommandResponse);
+  });
+
+  describe('Prepared transaction parsing', () => {
+    it('should parse the allocation allocate prepared transaction', function () {
+      const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
+      const tx = new Transaction(coins.get('tcanton'));
+      txBuilder.initBuilder(tx);
+      txBuilder.commandId(commandId);
+      txBuilder.setTransaction(CantonAllocationAllocatePrepareResponse);
+      const txData = txBuilder.transaction.toJson();
+      should.exist(txData);
+      assert.equal(
+        txData.sender,
+        'ravi-2-step-party::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2'
+      );
+      // receiver = transferLeg.receiver from DvpLegAllocation — the actual settlement counterparty
+      assert.equal(
+        txData.receiver,
+        'ravi-2-step-party-new::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2'
+      );
+      assert.equal(txData.amount, '50000000000');
+    });
+
+    it('should validate the raw allocation allocate transaction', async function () {
+      const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
+      const tx = new Transaction(coins.get('tcanton'));
+      txBuilder.initBuilder(tx);
+      txBuilder.commandId(commandId);
+      txBuilder.setTransaction(CantonAllocationAllocatePrepareResponse);
+      await txBuilder.validateRawTransaction(CantonAllocationAllocatePrepareResponse.preparedTransaction);
+    });
+
+    it('should validate the allocation allocate transaction', async function () {
+      const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
+      const tx = new Transaction(coins.get('tcanton'));
+      tx.prepareCommand = CantonAllocationAllocatePrepareResponse;
+      txBuilder.initBuilder(tx);
+      txBuilder.setTransaction(CantonAllocationAllocatePrepareResponse);
+      await txBuilder.validateTransaction(tx);
+    });
   });
 });

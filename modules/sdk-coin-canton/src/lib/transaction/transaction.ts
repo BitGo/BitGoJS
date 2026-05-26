@@ -349,6 +349,7 @@ export class Transaction extends BaseTransaction {
         inputAmount = txData.amount;
         break;
       }
+      case TransactionType.AllocationAllocate:
       case TransactionType.Send: {
         const txData = this.toJson();
         const output: ITransactionRecipient = {
