@@ -436,11 +436,11 @@ export abstract class AbstractUtxoCoin
 
   protected supportedTxFormats: { psbt: boolean; legacy: boolean } = {
     psbt: true,
-    legacy: this.getChain() === 'btc' || this.getChain() === 'ltc',
+    legacy: this.getChain() === 'btc',
   };
 
   protected supportedSdkBackends: { utxolib: boolean; 'wasm-utxo': boolean } = {
-    utxolib: this.getChain() === 'btc' || this.getChain() === 'ltc',
+    utxolib: this.getChain() === 'btc',
     'wasm-utxo': true,
   };
 
