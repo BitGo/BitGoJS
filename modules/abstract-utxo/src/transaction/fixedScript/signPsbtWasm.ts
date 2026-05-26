@@ -2,10 +2,12 @@ import assert from 'assert';
 
 import { BIP32, bip32, ECPair, fixedScriptWallet, getWasmUtxoVersion } from '@bitgo/wasm-utxo';
 
-import { toWasmBIP32 } from '../../wasmUtil';
-
 import { BulkSigningError, InputSigningError, TransactionSigningError } from './SigningError';
 import { Musig2Participant } from './musig2';
+
+function toWasmBIP32(key: bip32.BIP32Interface | BIP32): BIP32 {
+  return key instanceof BIP32 ? key : BIP32.fromBase58(key.toBase58());
+}
 
 export type ReplayProtectionKeys = {
   publicKeys: (Uint8Array | ECPair)[];
