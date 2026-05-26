@@ -122,6 +122,8 @@ export interface AccountNetwork extends BaseNetwork {
   // is a url that can be used to look up the account for the gas tank on-chain.
   readonly accountExplorerUrl?: string;
   readonly blockExplorerUrl?: string;
+  // bech32 HRP for chains that use one (e.g. Cosmos-family coins)
+  readonly addressPrefix?: string;
 }
 
 export interface CosmosNetwork extends AccountNetwork {
@@ -978,96 +980,112 @@ class Atom extends Mainnet implements AccountNetwork {
   name = 'Cosmos Hub ATOM';
   family = CoinFamily.ATOM;
   explorerUrl = 'https://www.mintscan.io/cosmos/tx/';
+  addressPrefix = 'cosmos';
 }
 
 class AtomTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Cosmos Hub ATOM';
   family = CoinFamily.ATOM;
   explorerUrl = 'https://explorer.polypore.xyz/provider/tx/';
+  addressPrefix = 'cosmos';
 }
 
 class Osmo extends Mainnet implements AccountNetwork {
   name = 'Osmosis';
   family = CoinFamily.OSMO;
   explorerUrl = 'https://www.mintscan.io/osmosis/txs/';
+  addressPrefix = 'osmo';
 }
 
 class OsmoTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Osmosis';
   family = CoinFamily.OSMO;
   explorerUrl = 'https://testnet.osmosis.explorers.guru/transaction/';
+  addressPrefix = 'osmo';
 }
 
 class Tia extends Mainnet implements AccountNetwork {
   name = 'Celestia';
   family = CoinFamily.TIA;
   explorerUrl = 'https://www.mintscan.io/celestia/tx/';
+  addressPrefix = 'celestia';
 }
 
 class TiaTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Celestia';
   family = CoinFamily.TIA;
   explorerUrl = 'https://testnet.celestia.explorers.guru/transaction/';
+  addressPrefix = 'celestia';
 }
 
 class Hash extends Mainnet implements AccountNetwork {
   name = 'Provenance';
   family = CoinFamily.HASH;
   explorerUrl = 'https://explorer.provenance.io/tx/';
+  addressPrefix = 'pb';
 }
 
 class HashTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Provenance';
   family = CoinFamily.HASH;
   explorerUrl = 'https://explorer.test.provenance.io/tx/';
+  addressPrefix = 'tp';
 }
 
 class Bld extends Mainnet implements AccountNetwork {
   name = 'Agoric';
   family = CoinFamily.BLD;
   explorerUrl = 'https://bigdipper.live/agoric/transactions/';
+  addressPrefix = 'agoric';
 }
 
 class BldTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Agoric';
   family = CoinFamily.BLD;
   explorerUrl = 'https://emerynet.explorer.agoric.net/agoric/tx/';
+  addressPrefix = 'agoric';
 }
 
 class Sei extends Mainnet implements AccountNetwork {
   name = 'Sei';
   family = CoinFamily.SEI;
   explorerUrl = 'https://mintscan.io/sei/tx/';
+  addressPrefix = 'sei';
 }
 
 class SeiTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Sei';
   family = CoinFamily.SEI;
   explorerUrl = 'https://testnet.seitrace.com/tx/';
+  addressPrefix = 'sei';
 }
 
 class Zeta extends Mainnet implements AccountNetwork {
   name = 'Zeta';
   family = CoinFamily.ZETA;
   explorerUrl = 'https://explorer.zetachain.com/cosmos/tx/';
+  addressPrefix = 'zeta';
 }
 
 class ZetaTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Zeta';
   family = CoinFamily.ZETA;
   explorerUrl = 'https://athens.explorer.zetachain.com/cosmos/tx/';
+  addressPrefix = 'zeta';
 }
 
 class Injective extends Mainnet implements AccountNetwork {
   name = 'Injective';
   family = CoinFamily.INJECTIVE;
   explorerUrl = 'https://www.mintscan.io/injective/tx/';
+  addressPrefix = 'inj';
 }
 
 class InjectiveTestnet extends Testnet implements AccountNetwork {
   name = 'InjectiveTestnet';
   family = CoinFamily.INJECTIVE;
   explorerUrl = 'https://testnet.explorer.injective.network/transaction/';
+  addressPrefix = 'inj';
 }
 
 class KavaCosmos extends Mainnet implements CosmosNetwork {
@@ -1134,36 +1152,42 @@ class Coreum extends Mainnet implements AccountNetwork {
   name = 'TX';
   family = CoinFamily.COREUM;
   explorerUrl = 'https://explorer.tx.org/tx/transactions/';
+  addressPrefix = 'core';
 }
 
 class CoreumTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet TX';
   family = CoinFamily.COREUM;
   explorerUrl = 'https://explorer.testnet-1.tx.org/tx/transactions/';
+  addressPrefix = 'testcore';
 }
 
 class Rune extends Mainnet implements AccountNetwork {
   name = 'Rune';
   family = CoinFamily.THOR;
   explorerUrl = 'https://runescan.io/tx/';
+  addressPrefix = 'thor';
 }
 
 class RuneTestNet extends Testnet implements AccountNetwork {
   name = 'RuneTestNet';
   family = CoinFamily.THOR;
   explorerUrl = 'https://runescan.io/tx/?network=stagenet';
+  addressPrefix = 'sthor';
 }
 
 class Baby extends Mainnet implements AccountNetwork {
   name = 'Babylon';
   family = CoinFamily.BABY;
   explorerUrl = 'https://www.mintscan.io/babylon/tx/';
+  addressPrefix = 'bbn';
 }
 
 class BabyTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Babylon';
   family = CoinFamily.BABY;
   explorerUrl = 'https://www.mintscan.io/babylon-testnet/tx/';
+  addressPrefix = 'bbn';
 }
 
 class Mantra extends Mainnet implements CosmosNetwork {
@@ -1194,12 +1218,14 @@ class Cronos extends Mainnet implements AccountNetwork {
   name = 'Cronos POS';
   family = CoinFamily.CRONOS;
   explorerUrl = 'https://cronos-pos.org/explorer/tx/';
+  addressPrefix = 'cro';
 }
 
 class CronosTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Cronos POS';
   family = CoinFamily.CRONOS;
   explorerUrl = 'https://cronos-pos.org/explorer/croeseid4/tx/';
+  addressPrefix = 'tcro';
 }
 
 class FetchAi extends Mainnet implements AccountNetwork {
@@ -1218,36 +1244,42 @@ class Initia extends Mainnet implements AccountNetwork {
   name = 'Initia';
   family = CoinFamily.INITIA;
   explorerUrl = 'https://scan.initia.xyz/interwoven-1/txs/';
+  addressPrefix = 'init';
 }
 
 class InitiaTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Initia';
   family = CoinFamily.INITIA;
   explorerUrl = 'https://scan.testnet.initia.xyz/initiation-2/txs/';
+  addressPrefix = 'init';
 }
 
 class Asi extends Mainnet implements AccountNetwork {
   name = 'Fetch Native';
   family = CoinFamily.ASI;
   explorerUrl = 'https://companion.fetch.ai/fetchhub-4/transactions/';
+  addressPrefix = 'fetch';
 }
 
 class AsiTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Fetch Native';
   family = CoinFamily.ASI;
   explorerUrl = 'https://companion.fetch.ai/dorado-1/transactions/';
+  addressPrefix = 'fetch';
 }
 
 class Islm extends Mainnet implements AccountNetwork {
   name = 'Haqq';
   family = CoinFamily.ISLM;
   explorerUrl = 'https://ping.pub/haqq/tx/';
+  addressPrefix = 'haqq';
 }
 
 class IslmTestnet extends Testnet implements AccountNetwork {
   name = 'HaqqTestnet';
   family = CoinFamily.ISLM;
   explorerUrl = 'https://testnet.ping.pub/haqq/tx/';
+  addressPrefix = 'haqq';
 }
 
 class Stx extends Mainnet implements StacksNetwork {

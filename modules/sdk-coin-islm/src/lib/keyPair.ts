@@ -1,6 +1,6 @@
 import { KeyPairOptions } from '@bitgo/sdk-core';
 import { CosmosKeyPair } from '@bitgo/abstract-cosmos';
-import { ADDRESS_PREFIX } from './constants';
+import { Networks } from '@bitgo/statics';
 import { toBech32, fromHex } from '@cosmjs/encoding';
 import { computeAddress } from 'ethers/lib/utils';
 
@@ -14,6 +14,6 @@ export class KeyPair extends CosmosKeyPair {
 
   /** @inheritdoc */
   getAddress(): string {
-    return toBech32(ADDRESS_PREFIX, fromHex(computeAddress('0x' + this.getKeys().pub).slice(2)));
+    return toBech32(Networks.main.islm.addressPrefix, fromHex(computeAddress('0x' + this.getKeys().pub).slice(2)));
   }
 }

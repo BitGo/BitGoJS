@@ -2,6 +2,7 @@ import { KeyPairOptions } from '@bitgo/sdk-core';
 import { pubkeyToAddress } from '@cosmjs/amino';
 
 import { CosmosKeyPair } from '@bitgo/abstract-cosmos';
+import { Networks } from '@bitgo/statics';
 
 /**
  * Injective keys and address management.
@@ -19,7 +20,7 @@ export class KeyPair extends CosmosKeyPair {
         type: 'tendermint/PubKeySecp256k1',
         value: base64String,
       },
-      'inj'
+      Networks.main.injective.addressPrefix
     );
   }
 }

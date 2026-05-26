@@ -5,9 +5,8 @@ import BigNumber from 'bignumber.js';
 import { CosmosLikeTransaction, CosmosUtils, FeeData } from '@bitgo/abstract-cosmos';
 import { MessageData } from './iface';
 import * as constants from './constants';
-import { NetworkType } from '@bitgo/statics';
+import { NetworkType, Networks } from '@bitgo/statics';
 import { DecodedTxRaw } from '@cosmjs/proto-signing';
-import { MAINNET_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX } from './constants';
 const bech32 = require('bech32-buffer');
 
 export class RuneUtils extends CosmosUtils {
@@ -81,8 +80,8 @@ export class RuneUtils extends CosmosUtils {
   getEncodedAddress(address: Uint8Array): string {
     try {
       return this.networkType === NetworkType.TESTNET
-        ? bech32.encode(TESTNET_ADDRESS_PREFIX, address)
-        : bech32.encode(MAINNET_ADDRESS_PREFIX, address);
+        ? bech32.encode(Networks.test.rune.addressPrefix, address)
+        : bech32.encode(Networks.main.rune.addressPrefix, address);
     } catch (error) {
       throw new Error(`Failed to encode address: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -203,7 +202,9 @@ export class RuneUtils extends CosmosUtils {
   }
 
   getNetworkPrefix() {
-    return this.networkType === NetworkType.TESTNET ? TESTNET_ADDRESS_PREFIX : MAINNET_ADDRESS_PREFIX;
+    return this.networkType === NetworkType.TESTNET
+      ? Networks.test.rune.addressPrefix
+      : Networks.main.rune.addressPrefix;
   }
 }
 

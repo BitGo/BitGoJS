@@ -1,7 +1,7 @@
 import { KeyPairOptions } from '@bitgo/sdk-core';
 import { pubkeyToAddress } from '@cosmjs/amino';
 import { CosmosKeyPair } from '@bitgo/abstract-cosmos';
-import { ADDRESS_PREFIX } from './constants';
+import { Networks } from '@bitgo/statics';
 
 /**
  * Initia keys and address management.
@@ -19,7 +19,7 @@ export class KeyPair extends CosmosKeyPair {
         type: 'tendermint/PubKeySecp256k1',
         value: base64String,
       },
-      ADDRESS_PREFIX
+      Networks.main.initia.addressPrefix
     );
   }
 }
