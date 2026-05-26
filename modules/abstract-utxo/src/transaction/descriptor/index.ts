@@ -1,4 +1,4 @@
-export type { DescriptorMap } from '../../wasmUtil';
+export type { DescriptorMap } from '../../descriptor';
 export { explainPsbt } from './explainPsbt';
 export { parse } from './parse';
 export { parseToAmountType } from './parseToAmountType';

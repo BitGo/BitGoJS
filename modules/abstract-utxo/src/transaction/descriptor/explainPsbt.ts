@@ -3,7 +3,10 @@ import { Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
 
 import type { TransactionExplanationDescriptor } from '../fixedScript/explainTransaction';
 import { UtxoCoinName } from '../../names';
-import { sumValues } from '../../wasmUtil';
+
+function sumValues(arr: { value: bigint }[]): bigint {
+  return arr.reduce((sum, e) => sum + e.value, 0n);
+}
 
 function toRecipient(output: descriptorWallet.ParsedOutput, coinName: UtxoCoinName): ITransactionRecipient {
   const address = output.address ?? `scriptPubKey:${Buffer.from(output.script).toString('hex')}`;
