@@ -207,6 +207,11 @@ export enum CoinFeature {
    * This coin supports merging multiple UTXO-like holdings into fewer outputs.
    */
   MERGE_UTXOS = 'merge-utxos',
+
+  /**
+   * This coin supports fanning out multiple UTXO-like holdings into more outputs.
+   */
+  FANOUT_UTXOS = 'fanout-utxos',
   /*
    * Does this coin align with the Lightning Network model?
    *
