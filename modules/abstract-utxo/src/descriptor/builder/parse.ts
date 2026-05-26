@@ -1,3 +1,4 @@
+import { sbtc } from '@bitgo/utxo-descriptors';
 import { BIP32, bip32, Descriptor } from '@bitgo/wasm-utxo';
 
 import { DescriptorBuilder, getDescriptorFromBuilder } from './builder';
@@ -62,7 +63,7 @@ function parseWshMulti(node: unknown): DescriptorBuilder | undefined {
   const wshMsMulti = unwrapNode(node, ['Wsh', 'Ms', 'Multi']);
   if (wshMsMulti) {
     const { threshold, keys, path } = parseMulti(wshMsMulti);
-    let name;
+    let name: 'Wsh2Of2' | 'Wsh2Of3';
     if (threshold === 2 && keys.length === 2) {
       name = 'Wsh2Of2';
     } else if (threshold === 2 && keys.length === 3) {
@@ -76,6 +77,38 @@ function parseWshMulti(node: unknown): DescriptorBuilder | undefined {
       path,
     };
   }
+}
+
+function parseSbtcDeposit(descriptor: Descriptor): DescriptorBuilder | undefined {
+  const parsed = sbtc.parseSbtcDepositDescriptor(descriptor);
+  if (!parsed) {
+    return;
+  }
+
+  // For wallet descriptors the reclaim leaf is a derivable `multi_a` with
+  // `xpub.../*` entries; split each into xpub + path. Definite descriptors
+  // produce raw hex strings here, which `BIP32.fromBase58` rejects — that
+  // matches our intent, since a definite descriptor isn't a wallet descriptor.
+  const keyWithPath = parsed.reclaimKeyStrings.map((k) => {
+    const [xpub, ...rest] = k.split('/');
+    return { xpub, path: rest.join('/') };
+  });
+  const paths = keyWithPath.map((k) => k.path);
+  paths.forEach((p) => {
+    if (p !== paths[0]) {
+      throw new Error(`Expected all multi_a paths to be the same: ${p} !== ${paths[0]}`);
+    }
+  });
+
+  return {
+    name: 'SbtcDeposit',
+    keys: keyWithPath.map((k) => BIP32.fromBase58(k.xpub)),
+    path: paths[0],
+    lockTime: parsed.lockTime,
+    maxFee: parsed.maxFee,
+    stacksRecipient: parsed.stacksRecipient,
+    signersAggregateKey: parsed.signersAggregateKey,
+  };
 }
 
 function parseCltvDrop(
@@ -120,7 +153,9 @@ export function parseDescriptorNode(node: unknown): DescriptorBuilder {
 }
 
 export function parseDescriptor(descriptor: Descriptor): DescriptorBuilder {
-  const builder = parseDescriptorNode(descriptor.node());
+  // sBTC peg-in uses a Taproot `tr(...)` descriptor that the raw-node parsers
+  // don't recognize; match it against the ast form first.
+  const builder = parseSbtcDeposit(descriptor) ?? parseDescriptorNode(descriptor.node());
   if (getDescriptorFromBuilder(builder).toString() !== descriptor.toString()) {
     throw new Error('Failed to parse descriptor');
   }

@@ -4,6 +4,12 @@ import * as testutils from '@bitgo/wasm-utxo/testutils';
 
 import { parseDescriptor, DescriptorBuilder, getDescriptorFromBuilder } from '../../../src/descriptor/builder';
 
+const SBTC_SIGNERS_AGGREGATE_KEY = Buffer.from(
+  'c9c2312ca406dcb8eed50b829b5292f5fb3e846db0a556af61cc53834ce75421',
+  'hex'
+);
+const SBTC_STACKS_RECIPIENT = Buffer.from('05' + '16' + '6d'.repeat(20), 'hex');
+
 function getDescriptorBuilderForType(name: DescriptorBuilder['name']): DescriptorBuilder {
   const keys = testutils.getKeyTriple('default').map((k) => k.neutered());
   switch (name) {
@@ -21,6 +27,17 @@ function getDescriptorBuilderForType(name: DescriptorBuilder['name']): Descripto
         keys,
         path: '0/*',
         locktime: 1,
+      };
+    case 'SbtcDeposit':
+      return {
+        name,
+        keys,
+        // sBTC reclaim leaf uses bare `/*` wildcard (no chain prefix).
+        path: '*',
+        lockTime: 950,
+        maxFee: 80000n,
+        stacksRecipient: SBTC_STACKS_RECIPIENT,
+        signersAggregateKey: SBTC_SIGNERS_AGGREGATE_KEY,
       };
   }
 }
@@ -46,3 +63,4 @@ describeForName('Wsh2Of2');
 describeForName('Wsh2Of3');
 describeForName('Wsh2Of3CltvDrop');
 describeForName('ShWsh2Of3CltvDrop');
+describeForName('SbtcDeposit');

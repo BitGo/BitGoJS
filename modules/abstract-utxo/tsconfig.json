@@ -28,6 +28,9 @@
       "path": "../utxo-core"
     },
     {
+      "path": "../utxo-descriptors"
+    },
+    {
       "path": "../utxo-ord"
     }
   ]

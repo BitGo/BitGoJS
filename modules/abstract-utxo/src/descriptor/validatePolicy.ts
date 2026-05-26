@@ -104,6 +104,8 @@ export function getPolicyForEnv(env: EnvironmentName): DescriptorValidationPolic
         getValidatorDescriptorTemplate('Wsh2Of3'),
         // allow descriptor groups where all keys match the wallet keys plus OP_DROP (coredao staking)
         getValidatorDescriptorTemplate('Wsh2Of3CltvDrop'),
+        // allow sBTC peg-in deposit descriptors where the reclaim keys match the wallet keys
+        getValidatorDescriptorTemplate('SbtcDeposit'),
         // allow all descriptors signed by the user key
         getValidatorSignedByUserKey(),
       ]);
