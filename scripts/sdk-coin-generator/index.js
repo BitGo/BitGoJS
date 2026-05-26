@@ -1,7 +1,6 @@
 const Generator = require('yeoman-generator');
 const fs = require('fs');
 
-const UTXO_DEPENDENCIES = ['abstract-utxo', 'sdk-core', 'utxo-lib'];
 const ACCOUNT_DEPENDENCIES = ['abstract-eth', 'sdk-core', 'statics'];
 const SIMPLE_DEPENDENCIES = ['sdk-core'];
 
@@ -82,7 +81,6 @@ module.exports = class extends Generator {
         choices: [
           { name: 'Simple (default)', value: 'simple' },
           { name: 'Account', value: 'account' },
-          { name: 'Utxo', value: 'utxo' },
         ],
       },
     ]);
@@ -127,9 +125,6 @@ module.exports = class extends Generator {
       case 'account':
         templatePath = './boilerplates/account';
         break;
-      case 'utxo':
-        templatePath = './boilerplates/utxo';
-        break;
       default:
         templatePath = './boilerplates/simple';
         break;
@@ -160,11 +155,6 @@ module.exports = class extends Generator {
     addNewCoinToBitgoTsConfig(this.contextRoot, this.answers);
 
     switch (this.answers.boilerplate) {
-      case 'utxo': {
-        const dependencies = getDependencies(this.contextRoot, UTXO_DEPENDENCIES);
-        await this.addDependencies(dependencies);
-        break;
-      }
       case 'account': {
         const dependencies = getDependencies(this.contextRoot, ACCOUNT_DEPENDENCIES);
         await this.addDependencies(dependencies);
