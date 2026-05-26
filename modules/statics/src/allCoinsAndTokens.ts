@@ -3582,7 +3582,7 @@ export const allCoinsAndTokens = [
     'Canton Coin',
     Networks.main.canton,
     UnderlyingAsset.CANTON,
-    [...CANTON_FEATURES, CoinFeature.UNSPENT_MODEL],
+    [...CANTON_FEATURES, CoinFeature.UNSPENT_MODEL, CoinFeature.MERGE_UTXOS],
     KeyCurve.Ed25519
   ),
   canton(
