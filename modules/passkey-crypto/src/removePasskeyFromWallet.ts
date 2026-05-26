@@ -1,4 +1,4 @@
-import { BitGoBase, decryptKeychainPrivateKey } from '@bitgo/sdk-core';
+import { BitGoBase, decryptKeychainPrivateKeyAsync } from '@bitgo/sdk-core';
 import { WebAuthnOtpDevice } from './webAuthnTypes';
 
 export async function removePasskeyFromWallet(params: {
@@ -20,7 +20,7 @@ export async function removePasskeyFromWallet(params: {
   const keychain = await baseCoin.keychains().get({ id: keychainId });
 
   // Verify passphrase before any mutation
-  const decrypted = decryptKeychainPrivateKey(bitgo, keychain, walletPassphrase);
+  const decrypted = await decryptKeychainPrivateKeyAsync(bitgo, keychain, walletPassphrase);
   if (!decrypted) {
     throw new Error('Incorrect wallet passphrase. Passkey removal aborted to prevent lockout.');
   }
