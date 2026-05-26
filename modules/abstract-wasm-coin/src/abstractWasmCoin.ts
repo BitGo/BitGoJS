@@ -1,48 +1,82 @@
+import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import type {
-  WasmCoinAdapter,
-  WasmCoinCapability,
-  WasmDerivedAddress,
-  WasmParsedTransaction,
-  WasmBuiltTransaction,
-} from './types';
+  KeyPair,
+  ParsedTransaction,
+  ParseTransactionOptions,
+  SignedTransaction,
+  SignTransactionOptions,
+  VerifyTransactionOptions,
+  VerifyAddressOptions,
+  TssVerifyAddressOptions,
+} from '@bitgo/sdk-core';
+import type { WasmCoinAdapter } from './types';
 
 /**
- * Abstract wrapper that dispatches calls to a registered WasmCoinAdapter.
+ * Abstract base class for WASM-backed coins in BitGoJS.
  *
- * Callers use this class instead of talking to adapters directly so that:
- *   - capability checks are centralized and consistent
- *   - the registry can return a uniform type regardless of which adapter is loaded
- *   - future cross-cutting concerns (telemetry, error wrapping) have one place to live
+ * Extends BaseCoin (IBaseCoin) so that WASM coins fit naturally into the
+ * BitGoJS coin registry and platform infrastructure — no account-lib shims.
+ *
+ * The constructor takes a WasmCoinAdapter that supplies the three chain-native
+ * primitives: address derivation, transaction parsing, and transaction building.
+ * Everything else (explain logic, verification policy, product semantics) is
+ * implemented by the concrete subclass, exactly as in abstract-eth or abstract-cosmos.
+ *
+ * Concrete coin classes (e.g. WasmSol, WasmDot, WasmTon) extend this class and:
+ *   - implement the remaining abstract methods (getChain, getFamily, getFullName,
+ *     getBaseFactor, generateKeyPair, isValidPub, isValidAddress, signTransaction,
+ *     verifyTransaction, isWalletAddress)
+ *   - pass the appropriate WasmCoinAdapter to super()
  */
-export class AbstractWasmCoin {
-  constructor(private readonly adapter: WasmCoinAdapter) {}
+export abstract class AbstractWasmCoin extends BaseCoin {
+  protected readonly wasmAdapter: WasmCoinAdapter;
 
-  get coin(): string {
-    return this.adapter.coin;
+  protected constructor(bitgo: BitGoBase, adapter: WasmCoinAdapter) {
+    super(bitgo);
+    this.wasmAdapter = adapter;
   }
 
-  hasCapability(cap: WasmCoinCapability): boolean {
-    return this.adapter.capabilities.has(cap);
-  }
+  // ---------------------------------------------------------------------------
+  // WASM-backed primitive: parseTransaction
+  //
+  // Delegates to the adapter for raw chain-native decoding.
+  // Explain logic remains in the concrete coin module.
+  // ---------------------------------------------------------------------------
 
-  deriveAddress(params: unknown): Promise<WasmDerivedAddress> {
-    if (!this.adapter.deriveAddress) {
-      throw new Error(`${this.adapter.coin}: deriveAddress is not supported`);
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    if (!this.wasmAdapter.parseTransaction) {
+      throw new Error(`${this.wasmAdapter.coin}: parseTransaction is not supported by the WASM adapter`);
     }
-    return Promise.resolve(this.adapter.deriveAddress(params as never));
+    const result = await Promise.resolve(this.wasmAdapter.parseTransaction(params as never));
+    return result as unknown as ParsedTransaction;
   }
 
-  parseTransaction(params: unknown): Promise<WasmParsedTransaction> {
-    if (!this.adapter.parseTransaction) {
-      throw new Error(`${this.adapter.coin}: parseTransaction is not supported`);
-    }
-    return Promise.resolve(this.adapter.parseTransaction(params as never));
+  // ---------------------------------------------------------------------------
+  // WASM-backed primitive: getSignablePayload
+  //
+  // Concrete coins override this when the WASM adapter provides a
+  // signable-payload extractor (e.g. wasm-ton's tx.signablePayload()).
+  // ---------------------------------------------------------------------------
+
+  async getSignablePayload(serializedTx: string): Promise<Buffer> {
+    return Buffer.from(serializedTx);
   }
 
-  buildTransaction(params: unknown): Promise<WasmBuiltTransaction> {
-    if (!this.adapter.buildTransaction) {
-      throw new Error(`${this.adapter.coin}: buildTransaction is not supported`);
-    }
-    return Promise.resolve(this.adapter.buildTransaction(params as never));
-  }
+  // ---------------------------------------------------------------------------
+  // Mandatory abstract methods inherited from BaseCoin.
+  // Declared abstract here so concrete coin subclasses are forced to implement them.
+  // ---------------------------------------------------------------------------
+
+  abstract getChain(): string;
+  abstract getFamily(): string;
+  abstract getFullName(): string;
+  abstract getBaseFactor(): number | string;
+
+  abstract generateKeyPair(seed?: Buffer): KeyPair;
+  abstract isValidPub(pub: string): boolean;
+  abstract isValidAddress(address: string): boolean;
+
+  abstract signTransaction(params: SignTransactionOptions): Promise<SignedTransaction>;
+  abstract verifyTransaction(params: VerifyTransactionOptions): Promise<boolean>;
+  abstract isWalletAddress(params: VerifyAddressOptions | TssVerifyAddressOptions): Promise<boolean>;
 }

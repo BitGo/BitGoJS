@@ -7,7 +7,7 @@ export type {
 } from './types';
 
 export { AbstractWasmCoin } from './abstractWasmCoin';
-export { WasmCoinRegistry, defaultRegistry } from './registry';
+export { WasmAdapterRegistry, defaultRegistry } from './registry';
 
 export { solanaAdapter } from './adapters/solana';
 export type { SolanaParseParams, SolanaParsedTransaction } from './adapters/solana';

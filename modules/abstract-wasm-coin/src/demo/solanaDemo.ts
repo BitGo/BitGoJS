@@ -1,16 +1,25 @@
 /**
- * Demo: Solana WASM adapter usage through the abstract-wasm-coin registry.
+ * Demo: Solana adapter registration and usage.
  *
- * Shows that BitGoJS code can call the same entry point regardless of chain:
- *   registry.get('sol').parseTransaction(...)
+ * Shows how a concrete WasmSol coin class would obtain its adapter via the
+ * registry and call the WASM primitive directly. The adapter is injected
+ * into AbstractWasmCoin via the constructor, making it available as
+ * `this.wasmAdapter` in every method of the coin class.
+ *
+ *   class Sol extends AbstractWasmCoin {
+ *     constructor(bitgo: BitGoBase) {
+ *       super(bitgo, defaultRegistry.get('sol'));
+ *     }
+ *     // ... coin-specific methods use this.wasmAdapter
+ *   }
  */
 import { defaultRegistry } from '../registry';
 import { solanaAdapter } from '../adapters/solana';
 
-// Register the adapter once at startup
+// Register the adapter once at startup (called from the sdk-coin-sol package init)
 defaultRegistry.register(solanaAdapter);
 
 export async function parseSolanaTransaction(txBase64: string) {
-  const wasm = defaultRegistry.get('sol');
-  return wasm.parseTransaction({ txBase64 });
+  const adapter = defaultRegistry.get('sol');
+  return adapter.parseTransaction!({ txBase64 });
 }

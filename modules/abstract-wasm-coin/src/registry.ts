@@ -1,34 +1,36 @@
 import type { WasmCoinAdapter } from './types';
-import { AbstractWasmCoin } from './abstractWasmCoin';
 
 /**
  * Registry for WASM coin adapters.
  *
- * Each per-coin WASM adapter registers itself once (typically at module init).
- * Consumers call `get(coin)` to obtain an AbstractWasmCoin instance.
+ * Adapters are registered once (typically at module init) and looked up by
+ * coin identifier. The registry is separate from the BitGoJS CoinFactory —
+ * it exists only to make the per-coin WASM package pluggable.
  *
  * Usage:
- *   registry.register(solanaAdapter);
- *   const wasm = registry.get('sol');
- *   const parsed = await wasm.parseTransaction({ txBase64: '...' });
+ *   defaultRegistry.register(solanaAdapter);
+ *   const adapter = defaultRegistry.get('sol');
+ *
+ * The adapter is then passed to the AbstractWasmCoin constructor:
+ *   class Sol extends AbstractWasmCoin {
+ *     constructor(bitgo: BitGoBase) {
+ *       super(bitgo, defaultRegistry.get('sol'));
+ *     }
+ *   }
  */
-export class WasmCoinRegistry {
+export class WasmAdapterRegistry {
   private readonly adapters = new Map<string, WasmCoinAdapter>();
 
   register(adapter: WasmCoinAdapter): void {
     this.adapters.set(adapter.coin, adapter);
   }
 
-  /**
-   * Returns an AbstractWasmCoin for the given coin identifier.
-   * Throws if no adapter has been registered for that coin.
-   */
-  get(coin: string): AbstractWasmCoin {
+  get(coin: string): WasmCoinAdapter {
     const adapter = this.adapters.get(coin);
     if (!adapter) {
       throw new Error(`No WASM adapter registered for coin: ${coin}`);
     }
-    return new AbstractWasmCoin(adapter);
+    return adapter;
   }
 
   has(coin: string): boolean {
@@ -41,4 +43,4 @@ export class WasmCoinRegistry {
 }
 
 /** Module-level default registry. Adapters call `defaultRegistry.register(...)` on import. */
-export const defaultRegistry = new WasmCoinRegistry();
+export const defaultRegistry = new WasmAdapterRegistry();

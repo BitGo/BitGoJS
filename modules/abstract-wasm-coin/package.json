@@ -41,6 +41,7 @@
     ]
   },
   "dependencies": {
+    "@bitgo/sdk-core": "^37.1.0",
     "@bitgo/wasm-dot": "^1.7.0",
     "@bitgo/wasm-solana": "^2.6.0",
     "@bitgo/wasm-ton": "^1.1.1"

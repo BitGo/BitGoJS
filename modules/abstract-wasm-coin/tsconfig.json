@@ -9,5 +9,9 @@
   },
   "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules"],
-  "references": []
+  "references": [
+    {
+      "path": "../sdk-core"
+    }
+  ]
 }
