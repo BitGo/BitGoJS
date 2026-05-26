@@ -105,6 +105,8 @@ export enum TransactionType {
   AllocationAllocate,
   // canton allocation request (internal/dummy txRequest surfacing DvP trade details to the allocating party)
   AllocationRequest,
+  // canton generic DAML command
+  CantonCommand,
 
   // trx
   FREEZE,

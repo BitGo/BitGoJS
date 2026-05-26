@@ -2,6 +2,10 @@ import {
   AuditDecryptedKeyParams,
   BaseCoin,
   BitGoBase,
+  CantonCommand,
+  CantonCommandParams,
+  CantonCreateCommand,
+  CantonExerciseCommand,
   KeyPair,
   MPCAlgorithm,
   MultisigType,
@@ -10,6 +14,7 @@ import {
   ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions,
+  TransactionParams,
   TransactionType,
   VerifyTransactionOptions,
   TransactionExplanation as BaseTransactionExplanation,
@@ -26,7 +31,8 @@ import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { TransactionBuilderFactory } from './lib';
 import { KeyPair as CantonKeyPair } from './lib/keyPair';
-import { TxData } from './lib/iface';
+import { CantonCommandKind, TxData } from './lib/iface';
+import { Transaction } from './lib/transaction/transaction';
 import utils from './lib/utils';
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
@@ -35,6 +41,10 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
 
 export interface ExplainTransactionOptions {
   txHex: string;
+}
+
+export interface CantonTransactionParams extends TransactionParams {
+  cantonCommandParams?: CantonCommandParams;
 }
 
 export class Canton extends BaseCoin {
@@ -118,6 +128,11 @@ export class Canton extends BaseCoin {
       case TransactionType.CosignDelegationProposal:
         // There is no input for these type of transactions, so always return true.
         return true;
+      case TransactionType.CantonCommand:
+        return this.verifyCantonCommandTransaction(
+          transaction,
+          (txParams as CantonTransactionParams).cantonCommandParams
+        );
       case TransactionType.OneStepPreApproval:
         // Canton is always a TSS wallet. The SDK's buildTokenEnablements passes enableTokens
         // through unchanged for TSS wallets (no conversion to recipients), so txParams.enableTokens
@@ -182,6 +197,149 @@ export class Canton extends BaseCoin {
         throw new Error(`unknown transaction type, ${transaction.type}`);
       }
     }
+  }
+
+  private verifyCantonCommandTransaction(
+    transaction: BaseTransaction,
+    userParams: CantonCommandParams | undefined
+  ): boolean {
+    if (!userParams) {
+      return true;
+    }
+
+    const cantonTx = transaction as Transaction;
+    const rawPrepared = cantonTx.prepareCommand?.preparedTransaction;
+    if (!rawPrepared) {
+      throw new Error('CantonCommand verifyTransaction: missing preparedTransaction protobuf on tx prebuild');
+    }
+
+    const decodedCommand = utils.extractCantonCommandInfo(rawPrepared);
+    const userCommand = userParams.command as Partial<CantonCommand>;
+
+    // Input shape is enforced by mpcUtils at build time; here we resolve which branch is present.
+    const hasCreate = 'CreateCommand' in userCommand && utils.isPlainObject(userCommand.CreateCommand);
+    const hasExercise = 'ExerciseCommand' in userCommand && utils.isPlainObject(userCommand.ExerciseCommand);
+    if (!hasCreate && !hasExercise) {
+      throw new Error(
+        `CantonCommand verifyTransaction: command must contain a CreateCommand or ExerciseCommand wrapper`
+      );
+    }
+    if (hasCreate && hasExercise) {
+      throw new Error(
+        `CantonCommand verifyTransaction: command must contain exactly one of CreateCommand or ExerciseCommand, not both`
+      );
+    }
+    const userKind: CantonCommandKind = hasCreate ? 'CreateCommand' : 'ExerciseCommand';
+    if (decodedCommand.kind !== userKind) {
+      throw new Error(
+        `CantonCommand verifyTransaction: command kind mismatch — expected ${userKind}, got ${decodedCommand.kind}`
+      );
+    }
+
+    const userInner =
+      userKind === 'CreateCommand'
+        ? (userCommand as CantonCreateCommand).CreateCommand
+        : (userCommand as CantonExerciseCommand).ExerciseCommand;
+
+    if (!userInner?.templateId) {
+      throw new Error(`CantonCommand verifyTransaction: ${userKind}.templateId must be a non-empty string`);
+    }
+
+    // templateId (moduleName + entityName; package id is mutable, so ignored)
+    const parsed = utils.parseCantonTemplateId(userInner.templateId);
+    if (!parsed) {
+      throw new Error(
+        `CantonCommand verifyTransaction: invalid user templateId '${userInner.templateId}' — expected format 'Pkg:Module:Entity'`
+      );
+    }
+    if (
+      decodedCommand.templateId.moduleName !== parsed.moduleName ||
+      decodedCommand.templateId.entityName !== parsed.entityName
+    ) {
+      throw new Error(
+        `CantonCommand verifyTransaction: templateId mismatch — expected '${parsed.moduleName}:${parsed.entityName}', got '${decodedCommand.templateId.moduleName}:${decodedCommand.templateId.entityName}'`
+      );
+    }
+
+    // Build the inject-as skip set once for use across the contractId and argument checks
+    const skipPaths = utils.normalizeInjectAs(userParams.resolveContracts);
+
+    // metadata.submitterInfo.actAs must contain exactly the same parties as the user's actAs
+    if (!Array.isArray(userParams.actAs) || userParams.actAs.length === 0) {
+      throw new Error(`CantonCommand verifyTransaction: actAs must be a non-empty array of party IDs`);
+    }
+    if (!userParams.actAs.every((p) => typeof p === 'string' && p.trim() !== '')) {
+      throw new Error(`CantonCommand verifyTransaction: all actAs entries must be non-empty strings`);
+    }
+    const submitterActAs = cantonTx.cantonCommandActAsParties ?? [];
+    if (!utils.sameElements(submitterActAs, userParams.actAs)) {
+      throw new Error(
+        `CantonCommand verifyTransaction: submitterInfo.actAs [${submitterActAs.join(
+          ', '
+        )}] does not match user actAs [${userParams.actAs.join(', ')}]`
+      );
+    }
+
+    if (userKind === 'ExerciseCommand') {
+      const exerciseInner = userInner as CantonExerciseCommand['ExerciseCommand'];
+
+      // choice id
+      if (decodedCommand.choice !== exerciseInner.choice) {
+        throw new Error(
+          `CantonCommand verifyTransaction: choice mismatch — expected '${exerciseInner.choice}', got '${
+            decodedCommand.choice ?? ''
+          }'`
+        );
+      }
+
+      // every on-chain actingParty must be in the user's actAs (prevents privilege escalation)
+      const onChainActors = decodedCommand.actingParties ?? [];
+      for (const actor of onChainActors) {
+        if (!userParams.actAs.includes(actor)) {
+          throw new Error(
+            `CantonCommand verifyTransaction: unauthorized acting party '${actor}' on root exercise (not in user actAs)`
+          );
+        }
+      }
+
+      // contractId — skip when absent/empty or when IMS will inject it via resolveContracts
+      if (
+        exerciseInner.contractId !== undefined &&
+        exerciseInner.contractId !== '' &&
+        !skipPaths.has('ExerciseCommand.contractId')
+      ) {
+        if (decodedCommand.contractId !== exerciseInner.contractId) {
+          throw new Error(
+            `CantonCommand verifyTransaction: contractId mismatch — expected '${exerciseInner.contractId}', got '${
+              decodedCommand.contractId ?? ''
+            }'`
+          );
+        }
+      }
+
+      // deep argument compare
+      const argumentSkipPaths = this.relativeSkipPaths(skipPaths, 'ExerciseCommand.choiceArgument.');
+      utils.assertDeepCantonMatch(exerciseInner.choiceArgument, decodedCommand.argument, argumentSkipPaths);
+    } else {
+      const createInner = userInner as CantonCreateCommand['CreateCommand'];
+
+      // deep argument compare
+      const argumentSkipPaths = this.relativeSkipPaths(skipPaths, 'CreateCommand.createArguments.');
+      utils.assertDeepCantonMatch(createInner.createArguments, decodedCommand.argument, argumentSkipPaths);
+    }
+
+    return true;
+  }
+
+  private relativeSkipPaths(skipPaths: Set<string>, prefix: string): Set<string> {
+    const out = new Set<string>();
+    for (const p of skipPaths) {
+      if (p.startsWith(prefix)) {
+        const stripped = p.slice(prefix.length);
+        if (stripped) out.add(stripped);
+      }
+    }
+    return out;
   }
 
   /** @inheritDoc */
@@ -286,6 +444,9 @@ export class Canton extends BaseCoin {
     }
     if (params.unspents) {
       intent.unspents = params.unspents;
+    }
+    if (params.cantonCommandParams) {
+      intent.cantonCommandParams = params.cantonCommandParams;
     }
   }
 }
