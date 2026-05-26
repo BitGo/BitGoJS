@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.42.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.41.0...@bitgo/statics@58.42.0) (2026-05-26)
+
+
+### Bug Fixes
+
+* **statics:** correct Avalanche C-Chain entries in LEGACY_CHAIN_ID_MAP ([fdd06f5](https://github.com/BitGo/BitGoJS/commit/fdd06f56c55f9d639fcae4fa3275856736cc0860))
+
+
+### Features
+
+* added sol ab1 ([9845cf3](https://github.com/BitGo/BitGoJS/commit/9845cf3e3083aefa47e502080385e66a424fc183))
+* **sdk-coin-canton:** added fanout utxos support for tcanton ([3cc5a28](https://github.com/BitGo/BitGoJS/commit/3cc5a280e1193784b76c269f986cb1113813ae67))
+* **sdk-coin-canton:** enabling merge functionality for Production canton wallets ([7225f47](https://github.com/BitGo/BitGoJS/commit/7225f478323aeaed07b6e0fe4b1bbf513d9f87fd))
+* **statics:** expose bech32 HRP via AccountNetwork.addressPrefix ([e481b36](https://github.com/BitGo/BitGoJS/commit/e481b3632086c95f36dc6f5510d75a238e867f07))
+
+
+
+
+
 # [58.41.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.40.0...@bitgo/statics@58.41.0) (2026-05-22)
 
 

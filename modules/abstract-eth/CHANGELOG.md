@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.25.1...@bitgo/abstract-eth@24.26.0) (2026-05-26)
+
+
+### Features
+
+* **abstract-eth:** override getSignablePayload for ETH coin classes ([765df32](https://github.com/BitGo/BitGoJS/commit/765df326a52237322fd76813b787b902d420cf08))
+* add v2 encrypt/decrypt support to WRW flows ([b45de2b](https://github.com/BitGo/BitGoJS/commit/b45de2b7a4def27b2c68fa1a99fcbfe5347dad28))
+* **sdk-coin-eth:** implement enableToken flow for ERC-7984 confidential tokens ([df1c66b](https://github.com/BitGo/BitGoJS/commit/df1c66b7abe71cb2d54ec0488526fe416982c426))
+
+
+
+
+
 ## [24.25.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.25.0...@bitgo/abstract-eth@24.25.1) (2026-05-22)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.21.0...@bitgo/sdk-coin-canton@1.22.0) (2026-05-26)
+
+
+### Features
+
+* **sdk-coin-canton:** add CantonCommand transaction support ([b01d400](https://github.com/BitGo/BitGoJS/commit/b01d40028a5329cf216de8ed880d8b1a9fb7f3ff))
+
+
+
+
+
 # [1.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.20.0...@bitgo/sdk-coin-canton@1.21.0) (2026-05-22)
 
 

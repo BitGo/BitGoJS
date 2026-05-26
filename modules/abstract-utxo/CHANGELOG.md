@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@11.2.0...@bitgo/abstract-utxo@11.3.0) (2026-05-26)
+
+
+### Features
+
+* **abstract-utxo:** restrict utxolib to BTC only ([abfa211](https://github.com/BitGo/BitGoJS/commit/abfa211e64d739849a9f83254e561c0858a2841f))
+
+
+
+
+
 # [11.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@11.1.0...@bitgo/abstract-utxo@11.2.0) (2026-05-22)
 
 

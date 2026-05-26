@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.10.9...@bitgo/sdk-coin-algo@2.11.0) (2026-05-26)
+
+
+### Features
+
+* add v2 encrypt/decrypt support to WRW flows ([b45de2b](https://github.com/BitGo/BitGoJS/commit/b45de2b7a4def27b2c68fa1a99fcbfe5347dad28))
+
+
+
+
+
 ## [2.10.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.10.8...@bitgo/sdk-coin-algo@2.10.9) (2026-05-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-algo

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.11.9...@bitgo/sdk-coin-bsc@22.12.0) (2026-05-26)
+
+
+### Features
+
+* **abstract-eth:** override getSignablePayload for ETH coin classes ([765df32](https://github.com/BitGo/BitGoJS/commit/765df326a52237322fd76813b787b902d420cf08))
+
+
+
+
+
 ## [22.11.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.11.8...@bitgo/sdk-coin-bsc@22.11.9) (2026-05-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bsc

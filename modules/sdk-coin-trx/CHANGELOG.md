@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.15.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.15.0...@bitgo/sdk-coin-trx@3.15.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* **sdk-coin-trx:** emit canonical AccountCreate raw_data_hex ([a9f8bae](https://github.com/BitGo/BitGoJS/commit/a9f8bae8308b657a2744082f4f72f544196d9b40))
+
+
+
+
+
 # [3.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.14.0...@bitgo/sdk-coin-trx@3.15.0) (2026-05-22)
 
 
