@@ -39,7 +39,7 @@ describe('removePasskeyFromWallet', function () {
         wallets: sinon.stub().returns(mockWallets),
         keychains: sinon.stub().returns(mockKeychains),
       }),
-      decrypt: sinon.stub().returns('xprv-decrypted'),
+      decryptAsync: sinon.stub().resolves('xprv-decrypted'),
       del: sinon.stub().returns({
         result: sinon.stub().resolves({}),
       }),
@@ -75,7 +75,7 @@ describe('removePasskeyFromWallet', function () {
   });
 
   it('should throw and not call DELETE if passphrase is wrong', async function () {
-    mockBitGo.decrypt = sinon.stub().throws(new Error('decryption failed'));
+    mockBitGo.decryptAsync = sinon.stub().resolves(undefined);
 
     await assert.rejects(
       () =>
