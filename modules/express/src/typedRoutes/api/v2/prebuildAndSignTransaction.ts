@@ -9,6 +9,7 @@ import {
   SignedTransactionRequestResponse,
   EIP1559,
 } from './coinSignTx';
+import { BridgingParamsCodec } from './sendmany';
 
 /**
  * Request parameters for prebuild and sign transaction
@@ -384,6 +385,8 @@ export const PrebuildAndSignTransactionBody = {
   eip1559: optional(EIP1559),
   /** Gas limit */
   gasLimit: optional(t.number),
+  /** Parameters for bridging transactions (e.g., BTC to sBTC). Used with type: 'bridging'. */
+  bridgingParams: optional(BridgingParamsCodec),
   /** Low fee transaction ID for CPFP */
   lowFeeTxid: optional(t.string),
   /** Receive address */

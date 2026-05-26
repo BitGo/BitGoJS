@@ -1710,6 +1710,55 @@ describe('V2 Wallet:', function () {
       postProcessStub.restore();
     });
 
+    it('should pass bridgingParams to tx/build for non-TSS BTC wallet', async function () {
+      const bridgingParams = {
+        sbtc: {
+          amount: 100000,
+          stacksRecipient: 'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7',
+          maxFee: 5000,
+          lockTime: 144,
+        },
+      };
+      const expectedBuildParams = {
+        type: 'bridging',
+        txFormat: 'psbt',
+        recipients: [],
+        bridgingParams,
+        changeAddressType: ['p2trMusig2', 'p2wsh', 'p2shP2wsh', 'p2sh', 'p2tr'],
+      };
+
+      const scope = nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`, expectedBuildParams)
+        .query({})
+        .reply(200, {});
+      const blockHeightStub = sinon.stub(basecoin, 'getLatestBlockHeight').resolves(100);
+      const postProcessStub = sinon.stub(basecoin, 'postProcessPrebuild').resolves({});
+      await wallet.prebuildTransaction({
+        type: 'bridging',
+        txFormat: 'psbt',
+        recipients: [],
+        bridgingParams,
+      });
+      postProcessStub.should.have.been.calledOnceWith({
+        blockHeight: 100,
+        wallet: wallet,
+        buildParams: expectedBuildParams,
+      });
+      scope.done();
+      blockHeightStub.restore();
+      postProcessStub.restore();
+    });
+
+    it('should throw error when bridgingParams is missing for bridging type', async function () {
+      await wallet
+        .prebuildTransaction({
+          type: 'bridging',
+          txFormat: 'psbt',
+          recipients: [],
+        })
+        .should.be.rejectedWith("'bridgingParams' is required for bridging intent");
+    });
+
     it('prebuild should call build but not getLatestBlockHeight for account coins', async function () {
       ['txrp', 'txlm', 'teth'].forEach(async function (coin) {
         const accountcoin = bitgo.coin(coin);
