@@ -64,8 +64,6 @@ export class MPCv2SMCUtils {
       coin: payload.coin,
       ovc: payload.ovc,
       platform: {
-        walletGpgPubKeySigs: (result as EddsaMPCv2KeyGenRound1Response & { walletGpgPubKeySigs: string })
-          .walletGpgPubKeySigs,
         sessionId: result.sessionId,
         bitgoMsg1: result.bitgoMsg1,
       },
@@ -115,6 +113,8 @@ export class MPCv2SMCUtils {
       coin: payload.coin,
       ovc: payload.ovc,
       platform: {
+        // sessionId carried over from payload.platform; safe because the assert above
+        // guarantees it equals result.sessionId.
         ...payload.platform,
         commonPublicKeychain: result.commonPublicKeychain,
         bitgoMsg2: result.bitgoMsg2,
