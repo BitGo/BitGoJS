@@ -161,7 +161,7 @@ describe('Starknet TransferBuilder', () => {
       tx1.signableHex.should.not.equal(tx2.signableHex);
     });
 
-    it('should round-trip through toBroadcastFormat and fromRawTransaction', async () => {
+    it('should round-trip through toInternalHex and fromRawTransaction', async () => {
       const factory = new TransactionBuilderFactory(coinConfig);
       const builder = factory.getTransferBuilder();
 
@@ -173,14 +173,39 @@ describe('Starknet TransferBuilder', () => {
         .amount('1000000000000000000');
 
       const tx = (await builder.build()) as Transaction;
-      const broadcastHex = tx.toBroadcastFormat();
+      const internalHex = tx.toInternalHex();
 
       const factory2 = new TransactionBuilderFactory(coinConfig);
-      const builder2 = await factory2.from(broadcastHex);
-      const tx2 = (await builder2.build()) as Transaction as Transaction;
+      const builder2 = await factory2.from(internalHex);
+      const tx2 = (await builder2.build()) as Transaction;
 
       tx2.signableHex.should.equal(tx.signableHex);
       tx2.id.should.equal(tx.id);
+    });
+
+    it('toBroadcastFormat should return Starknet RPC-ready JSON', async () => {
+      const factory = new TransactionBuilderFactory(coinConfig);
+      const builder = factory.getTransferBuilder();
+
+      builder
+        .sender(Accounts.account1.address)
+        .nonce('0x0')
+        .chainId(SandboxTransferData.chainId)
+        .receiverId(Accounts.account2.address)
+        .amount('1000000000000000000');
+
+      const tx = (await builder.build()) as Transaction;
+      const broadcast = tx.toBroadcastFormat();
+      const parsed = JSON.parse(broadcast);
+
+      parsed.type.should.equal('INVOKE');
+      parsed.version.should.equal('0x3');
+      parsed.sender_address.should.equal(Accounts.account1.address);
+      parsed.calldata.should.be.Array();
+      parsed.nonce.should.equal('0x0');
+      parsed.resource_bounds.should.have.property('l2_gas');
+      parsed.nonce_data_availability_mode.should.equal('L1');
+      parsed.fee_data_availability_mode.should.equal('L1');
     });
   });
 

@@ -9,16 +9,9 @@ import {
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { StarknetTransactionData, StarknetTransactionType, StarknetCall, StarknetResourceBounds } from './iface';
+import { defaultResourceBounds } from './constants';
 import { Transaction } from './transaction';
 import utils from './utils';
-
-function defaultResourceBounds(): StarknetResourceBounds {
-  return {
-    l2_gas: { max_amount: '0x1c9c380', max_price_per_unit: '0x174876e800' },
-    l1_gas: { max_amount: '0x0', max_price_per_unit: '0x5af3107a4000' },
-    l1_data_gas: { max_amount: '0x3e8', max_price_per_unit: '0x2540be400' },
-  };
-}
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
