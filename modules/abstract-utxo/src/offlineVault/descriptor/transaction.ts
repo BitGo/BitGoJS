@@ -12,7 +12,6 @@ import {
 import { explainPsbt, signPsbt } from '../../transaction/descriptor';
 import { TransactionExplanation } from '../TransactionExplanation';
 import { UtxoCoinName } from '../../names';
-import { toWasmPsbt } from '../../wasmUtil';
 
 export const DescriptorTransaction = t.intersection(
   [OfflineVaultSignable, t.type({ descriptors: t.array(NamedDescriptor) })],
@@ -34,7 +33,7 @@ export function getDescriptorsFromDescriptorTransaction(tx: DescriptorTransactio
 }
 
 export function getHalfSignedPsbt(tx: DescriptorTransaction, prv: bip32.BIP32Interface, coinName: UtxoCoinName): Psbt {
-  const psbt = toWasmPsbt(Buffer.from(tx.coinSpecific.txHex, 'hex'));
+  const psbt = Psbt.deserialize(Buffer.from(tx.coinSpecific.txHex, 'hex'));
   const descriptorMap = getDescriptorsFromDescriptorTransaction(tx);
   signPsbt(psbt, descriptorMap, prv, { onUnknownInput: 'throw' });
   return psbt;
@@ -44,7 +43,7 @@ export function getTransactionExplanationFromPsbt(
   tx: DescriptorTransaction,
   coinName: UtxoCoinName
 ): TransactionExplanation<string> {
-  const psbt = toWasmPsbt(Buffer.from(tx.coinSpecific.txHex, 'hex'));
+  const psbt = Psbt.deserialize(Buffer.from(tx.coinSpecific.txHex, 'hex'));
   const descriptorMap = getDescriptorsFromDescriptorTransaction(tx);
   const { outputs, changeOutputs, fee } = explainPsbt(psbt, descriptorMap, coinName);
   return {
