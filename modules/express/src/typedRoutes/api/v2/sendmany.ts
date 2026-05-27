@@ -429,6 +429,9 @@ export const SendManyRequestBody = {
   /** Flag indicating if this is the last signature */
   isLastSignature: optional(t.boolean),
 
+  /** (UTXO only) Quantum-resistant sweep mode — sweeps quantum-exposed unspents to fresh wallet addresses */
+  qr: optional(t.boolean),
+
   /** Pre-built transaction object */
   txPrebuild: optional(t.any),
 
