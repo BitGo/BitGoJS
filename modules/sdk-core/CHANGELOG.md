@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [37.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.1.0...@bitgo/sdk-core@37.2.0) (2026-05-26)
+
+
+### Features
+
+* **sdk-coin-canton:** add CantonCommand transaction support ([b01d400](https://github.com/BitGo/BitGoJS/commit/b01d40028a5329cf216de8ed880d8b1a9fb7f3ff))
+* **sdk-core:** add externalSigner createOfflineRound1Share handler ([c19a442](https://github.com/BitGo/BitGoJS/commit/c19a44235d13159ba9ce01f36a8b79bbb79bdd58))
+* **sdk-core:** add externalSigner createOfflineRound1Share handler ([bcbfbc7](https://github.com/BitGo/BitGoJS/commit/bcbfbc748a9e6746fdad6e2f712dfa3e19e83178))
+* **sdk-core:** add externalSigner createOfflineRound3Share handler ([9c3fd85](https://github.com/BitGo/BitGoJS/commit/9c3fd85217227112871bc5a3e848228a6845df59))
+
+
+
+
+
 # [37.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.0.0...@bitgo/sdk-core@37.1.0) (2026-05-22)
 
 

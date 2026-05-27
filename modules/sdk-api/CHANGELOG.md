@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.81.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.80.1...@bitgo/sdk-api@1.81.0) (2026-05-26)
+
+
+### Features
+
+* add v2 encrypt/decrypt support to WRW flows ([b45de2b](https://github.com/BitGo/BitGoJS/commit/b45de2b7a4def27b2c68fa1a99fcbfe5347dad28))
+
+
+
+
+
 ## [1.80.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.80.0...@bitgo/sdk-api@1.80.1) (2026-05-22)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/passkey-crypto@0.3.1...@bitgo/passkey-crypto@0.4.0) (2026-05-26)
+
+
+### Features
+
+* add v2 encrypt/decrypt for passkey ([4326ee1](https://github.com/BitGo/BitGoJS/commit/4326ee1aa474eca02fe84ab0c9eb5e9b8ef2fd61))
+
+
+
+
+
 ## [0.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/passkey-crypto@0.3.0...@bitgo/passkey-crypto@0.3.1) (2026-05-22)
 
 **Note:** Version bump only for package @bitgo/passkey-crypto

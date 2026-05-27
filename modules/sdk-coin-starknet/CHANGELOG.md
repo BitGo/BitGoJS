@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-starknet@1.1.0...@bitgo/sdk-coin-starknet@1.2.0) (2026-05-26)
+
+
+### Features
+
+* **sdk-coin-starknet:** add Poseidon V3 INVOKE transaction hash computation ([7a20d3d](https://github.com/BitGo/BitGoJS/commit/7a20d3d98da7d67fc198a005490fe5f883d17c54))
+* **sdk-coin-starknet:** add tokenContractAddress setter to TransferBuilder ([306fb70](https://github.com/BitGo/BitGoJS/commit/306fb70cdffaa7941f1513e8bd30a06e6b9ebd29))
+
+
+
+
+
 # 1.1.0 (2026-05-22)
 
 
