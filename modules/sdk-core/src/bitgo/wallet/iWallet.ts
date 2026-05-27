@@ -274,6 +274,7 @@ export interface PrebuildTransactionOptions {
   };
   txRequestId?: string;
   isTestTransaction?: boolean;
+  qr?: boolean;
   transferOfferId?: string;
   /**
    * Amount for intents that use a top-level amount instead of recipients (e.g. bridgeFunds).

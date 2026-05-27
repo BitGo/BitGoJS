@@ -94,7 +94,32 @@ export async function verifyTransaction<TNumber extends number | bigint>(
     );
   }
 
-  assertValidTransaction(psbt, descriptorMap, params.txParams.recipients ?? [], coin.name);
+  const parsedOutputs = toBaseParsedTransactionOutputsFromPsbt(
+    psbt,
+    descriptorMap,
+    params.txParams.recipients ?? [],
+    coin.name
+  );
+
+  if (params.txParams.qr) {
+    const allExternalOutputs = [...parsedOutputs.explicitExternalOutputs, ...parsedOutputs.implicitExternalOutputs];
+    if (allExternalOutputs.length > 0) {
+      const txExplanation = await TxIntentMismatchError.tryGetTxExplanation(
+        coin as unknown as IBaseCoin,
+        params.txPrebuild
+      );
+      throw new TxIntentMismatchError(
+        'quantum-resistant sweep transactions must only contain wallet-internal outputs',
+        params.reqId,
+        [params.txParams],
+        params.txPrebuild.txHex,
+        txExplanation
+      );
+    }
+    return true;
+  }
+
+  assertExpectedOutputDifference(parsedOutputs);
 
   return true;
 }

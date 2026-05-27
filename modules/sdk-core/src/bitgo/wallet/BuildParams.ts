@@ -38,6 +38,7 @@ export const BuildParamsUTXO = t.partial({
   rbfTxIds: t.array(t.string),
   isReplaceableByFee: t.boolean,
   messages: t.array(Bip322Message),
+  qr: t.boolean,
 });
 
 export const BuildParamsStacks = t.partial({

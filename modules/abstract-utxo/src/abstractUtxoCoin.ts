@@ -279,6 +279,7 @@ export interface TransactionParams extends BaseTransactionParams {
   rbfTxIds?: string[];
   /** Parameters for bridging intents (e.g. BTC -> sBTC peg-in), present when `type === 'bridging'`. */
   bridgingParams?: BridgingParams;
+  qr?: boolean;
 }
 
 export interface ParseTransactionOptions<TNumber extends number | bigint = number> extends BaseParseTransactionOptions {
