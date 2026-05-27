@@ -398,6 +398,8 @@ export const PrebuildAndSignTransactionBody = {
   keepAlive: optional(t.boolean),
   /** Transaction format ('legacy', 'psbt', or 'psbt-lite') */
   txFormat: optional(t.union([t.literal('legacy'), t.literal('psbt'), t.literal('psbt-lite')])),
+  /** (UTXO only) Quantum-resistant sweep mode — sweeps quantum-exposed unspents to fresh wallet addresses */
+  qr: optional(t.boolean),
   /** Solana custom instructions */
   solInstructions: optional(t.array(SolInstruction)),
   /** Solana versioned transaction data */
