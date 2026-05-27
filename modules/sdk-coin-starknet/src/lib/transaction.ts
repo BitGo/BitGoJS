@@ -6,8 +6,29 @@ import {
   InvalidTransactionError,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { StarknetTransactionData, StarknetTransactionType, StarknetTransactionExplanation, TxData } from './iface';
-import utils, { parseTransferCall } from './utils';
+import { defaultResourceBounds } from './constants';
+import {
+  StarknetResourceBounds,
+  StarknetTransactionData,
+  StarknetTransactionType,
+  StarknetTransactionExplanation,
+  TxData,
+} from './iface';
+import utils, { compileExecuteCalldata, parseTransferCall } from './utils';
+
+function resolveCompiledCalldata(data: StarknetTransactionData): string[] {
+  if (data.compiledCalldata && data.compiledCalldata.length > 0) {
+    return data.compiledCalldata;
+  }
+  if (data.calls.length > 0) {
+    return compileExecuteCalldata(data.calls);
+  }
+  throw new InvalidTransactionError('Missing calldata: no compiledCalldata or calls');
+}
+
+function resolveResourceBounds(data: StarknetTransactionData): StarknetResourceBounds {
+  return data.resourceBounds ?? defaultResourceBounds();
+}
 
 export class Transaction extends BaseTransaction {
   protected _starknetTransactionData!: StarknetTransactionData;
@@ -116,14 +137,35 @@ export class Transaction extends BaseTransaction {
     };
   }
 
-  /** @inheritdoc */
+  /** Hex-encoded internal JSON — used by WP for round-trip via fromRawTransaction. */
+  toInternalHex(): string {
+    const data = this._starknetTransactionData;
+    if (!data) {
+      throw new InvalidTransactionError('Empty transaction');
+    }
+    return Buffer.from(JSON.stringify(data), 'utf-8').toString('hex');
+  }
+
+  /** @inheritdoc — returns Starknet RPC-ready JSON string for starknet_addInvokeTransaction. */
   toBroadcastFormat(): string {
     const data = this._starknetTransactionData;
     if (!data) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const json = JSON.stringify(data);
-    return Buffer.from(json, 'utf-8').toString('hex');
+    return JSON.stringify({
+      type: 'INVOKE',
+      version: '0x3',
+      sender_address: data.senderAddress,
+      calldata: resolveCompiledCalldata(data),
+      signature: data.signature || [],
+      nonce: data.nonce,
+      resource_bounds: resolveResourceBounds(data),
+      tip: data.tip || '0x0',
+      paymaster_data: [],
+      account_deployment_data: [],
+      nonce_data_availability_mode: 'L1',
+      fee_data_availability_mode: 'L1',
+    });
   }
 
   /** @inheritdoc */
