@@ -298,6 +298,27 @@ describe('OFC:', function () {
     });
   });
 
+  describe('check ofc tokens for Base USDC', function () {
+    const tokenMain = 'ofcbaseeth:usdc';
+    const tokenTest = 'ofctbaseeth:usdc';
+    describe('for main network', function () {
+      it(`should have the correct values for ${tokenMain}`, function () {
+        const ofcCoin = bitgo.coin(tokenMain);
+        ofcCoin.getChain().should.equal(tokenMain);
+        ofcCoin.getFullName().should.equal('Base USD Coin');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_6);
+      });
+    });
+    describe('for test network', function () {
+      it(`should have the correct values for ${tokenTest}`, function () {
+        const ofcCoin = bitgo.coin(tokenTest);
+        ofcCoin.getChain().should.equal(tokenTest);
+        ofcCoin.getFullName().should.equal('Test Base USD Coin');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_6);
+      });
+    });
+  });
+
   describe('check ofc tokens for Stellar USDC', function () {
     const tokenMain = 'ofcxlm:usdc';
     const tokenTest = 'ofctxlm:tst';
