@@ -1,3 +1,4 @@
+import { sbtc } from '@bitgo/utxo-descriptors';
 import { bip32, Descriptor } from '@bitgo/wasm-utxo';
 
 type DescriptorWithKeys<TName extends string> = {
@@ -14,7 +15,24 @@ export type DescriptorBuilder =
    * relative locktime with an OP_DROP (requiring a miniscript extension).
    * It is basically what is used in CoreDao staking transactions.
    */
-  | (DescriptorWithKeys<'ShWsh2Of3CltvDrop' | 'Wsh2Of3CltvDrop'> & { locktime: number });
+  | (DescriptorWithKeys<'ShWsh2Of3CltvDrop' | 'Wsh2Of3CltvDrop'> & { locktime: number })
+  /*
+   * sBTC peg-in deposit Taproot descriptor:
+   *   tr(<UNSPENDABLE>,
+   *     {
+   *       c:and_v(payload_drop(<feeBE||recipient>), pk_k(<signersKey>)),
+   *       and_v(r:older(<lockTime>), multi_a(2, k1/*, k2/*, k3/*))
+   *     }
+   *   )
+   *
+   * `keys` are the three reclaim keys used in the reclaim-leaf multi_a.
+   */
+  | (DescriptorWithKeys<'SbtcDeposit'> & {
+      lockTime: number;
+      maxFee: bigint;
+      stacksRecipient: Buffer;
+      signersAggregateKey: Buffer;
+    });
 
 function toXPub(k: bip32.BIP32Interface | string): string {
   if (typeof k === 'string') {
@@ -44,6 +62,22 @@ function getDescriptorString(builder: DescriptorBuilder): string {
       return `wsh(and_v(r:after(${builder.locktime}),${multi(2, 3, builder.keys, builder.path)}))`;
     case 'ShWsh2Of3CltvDrop':
       return `sh(${getDescriptorString({ ...builder, name: 'Wsh2Of3CltvDrop' })})`;
+    case 'SbtcDeposit':
+      // The reclaim leaf always uses `/*` wildcard derivation; `createSbtcDepositDescriptor`
+      // hardcodes that suffix when given BIP32 keys, so reject any other path here.
+      if (builder.path !== '*') {
+        throw new Error(`SbtcDeposit path must be '*', got '${builder.path}'`);
+      }
+      if (builder.keys.length !== 3) {
+        throw new Error(`SbtcDeposit needs exactly 3 reclaim keys, got ${builder.keys.length}`);
+      }
+      return sbtc.createSbtcDepositDescriptor({
+        walletKeys: [builder.keys[0], builder.keys[1], builder.keys[2]],
+        lockTime: builder.lockTime,
+        maxFee: builder.maxFee,
+        stacksRecipient: builder.stacksRecipient,
+        signersAggregateKey: builder.signersAggregateKey,
+      });
   }
   throw new Error(`Unknown descriptor template: ${builder}`);
 }

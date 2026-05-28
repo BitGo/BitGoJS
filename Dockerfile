@@ -60,6 +60,7 @@ COPY --from=builder /tmp/bitgo/modules/argon2 /var/modules/argon2/
 COPY --from=builder /tmp/bitgo/modules/sdk-hmac /var/modules/sdk-hmac/
 COPY --from=builder /tmp/bitgo/modules/unspents /var/modules/unspents/
 COPY --from=builder /tmp/bitgo/modules/utxo-core /var/modules/utxo-core/
+COPY --from=builder /tmp/bitgo/modules/utxo-descriptors /var/modules/utxo-descriptors/
 COPY --from=builder /tmp/bitgo/modules/utxo-ord /var/modules/utxo-ord/
 COPY --from=builder /tmp/bitgo/modules/account-lib /var/modules/account-lib/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ada /var/modules/sdk-coin-ada/
@@ -163,6 +164,7 @@ cd /var/modules/argon2 && yarn link && \
 cd /var/modules/sdk-hmac && yarn link && \
 cd /var/modules/unspents && yarn link && \
 cd /var/modules/utxo-core && yarn link && \
+cd /var/modules/utxo-descriptors && yarn link && \
 cd /var/modules/utxo-ord && yarn link && \
 cd /var/modules/account-lib && yarn link && \
 cd /var/modules/sdk-coin-ada && yarn link && \
@@ -269,6 +271,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-hmac && \
     yarn link @bitgo/unspents && \
     yarn link @bitgo/utxo-core && \
+    yarn link @bitgo/utxo-descriptors && \
     yarn link @bitgo/utxo-ord && \
     yarn link @bitgo/account-lib && \
     yarn link @bitgo/sdk-coin-ada && \

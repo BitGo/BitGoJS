@@ -75,6 +75,12 @@ describe('parseSbtcDepositDescriptor', function () {
       assert.deepStrictEqual(parsed.reclaimKeys, sortedInput);
     });
 
+    it('exposes raw hex reclaimKeyStrings for definite inputs', function () {
+      const parsed = parseSbtcDepositDescriptor(descriptor);
+      assert.ok(parsed);
+      assert.deepStrictEqual(parsed.reclaimKeyStrings, [...reclaimKeyHex].sort());
+    });
+
     it('returns miniscript AST nodes for both leaves', function () {
       const parsed = parseSbtcDepositDescriptor(descriptor);
       assert.ok(parsed);
@@ -108,6 +114,15 @@ describe('parseSbtcDepositDescriptor', function () {
       const parsed = parseSbtcDepositDescriptor(descriptor);
       assert.ok(parsed);
       assert.strictEqual(parsed.reclaimKeys, undefined);
+    });
+
+    it('exposes the raw xpub.../* reclaimKeyStrings for derivable inputs', function () {
+      const parsed = parseSbtcDepositDescriptor(descriptor);
+      assert.ok(parsed);
+      assert.strictEqual(parsed.reclaimKeyStrings.length, 3);
+      for (const k of parsed.reclaimKeyStrings) {
+        assert.match(k, /^xpub[1-9A-HJ-NP-Za-km-z]+\/\*$/);
+      }
     });
 
     it('resolves to concrete reclaim keys after atDerivationIndex(0) and compiles to a tap Miniscript', function () {

@@ -34,6 +34,14 @@ export type ParsedSbtcDepositDescriptor = {
   depositMiniscriptNode: ast.MiniscriptNode;
   /** Raw miniscript AST for the reclaim leaf (second tap-tree leaf). */
   reclaimMiniscriptNode: ast.MiniscriptNode;
+  /**
+   * The three raw `multi_a` key entries from the reclaim leaf, exactly as
+   * they appear in the descriptor — `xpub.../*` for derivable descriptors and
+   * 64-hex-char x-only keys for definite descriptors. Useful for callers that
+   * need the original xpub form (e.g. to round-trip back to a descriptor
+   * builder) and don't want the resolved `reclaimKeys` buffers.
+   */
+  reclaimKeyStrings: [string, string, string];
 };
 
 function asString(v: unknown, field: string): string {
@@ -218,6 +226,11 @@ export function parseSbtcDepositDescriptor(
 
   const { signersAggregateKey, maxFee, stacksRecipient } = parseDepositLeaf(depositMiniscriptNode, matcher);
   const { lockTime, reclaimKeyStrings } = parseReclaimLeaf(reclaimMiniscriptNode, matcher);
+  const reclaimKeyStringsTuple: [string, string, string] = [
+    reclaimKeyStrings[0],
+    reclaimKeyStrings[1],
+    reclaimKeyStrings[2],
+  ];
 
   const reclaimKeys = reclaimKeysFromStrings(reclaimKeyStrings);
   if (reclaimKeys) {
@@ -237,6 +250,7 @@ export function parseSbtcDepositDescriptor(
     stacksRecipient,
     lockTime,
     reclaimKeys,
+    reclaimKeyStrings: reclaimKeyStringsTuple,
     depositMiniscriptNode,
     reclaimMiniscriptNode,
   };
