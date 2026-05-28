@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.43.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.42.0...@bitgo/statics@58.43.0) (2026-05-28)
+
+
+### Bug Fixes
+
+* **statics:** correct sol:slx mint address typo ([738b3ae](https://github.com/BitGo/BitGoJS/commit/738b3aeb668113ad1cd82d3cf567b347d246b2f0))
+
+
+### Features
+
+* add new tokens from AMS API ([6e9a0a3](https://github.com/BitGo/BitGoJS/commit/6e9a0a35039e6be4a5b8fecf96c52d71fb0fd061))
+* **statics:** add Katana Network EVM chain (katanaeth/tkatanaeth) ([83be67c](https://github.com/BitGo/BitGoJS/commit/83be67c2a866ae766e9c8d40852083988cc2757a))
+* **statics:** add ofcbaseeth:usdc and ofctbaseeth:usdc ([5f56ac9](https://github.com/BitGo/BitGoJS/commit/5f56ac954e7c53cc1185f0c5257f0d3ad17877b0))
+* **statics:** onboard batch 0526 tokens (CECHO-1183) ([7ec2bce](https://github.com/BitGo/BitGoJS/commit/7ec2bce515894a4d962db9b16ccd37c32f798566))
+
+
+
+
+
 # [58.42.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.41.0...@bitgo/statics@58.42.0) (2026-05-26)
 
 

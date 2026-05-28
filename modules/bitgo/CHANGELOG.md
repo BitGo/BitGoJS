@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.1.1...bitgo@51.2.0) (2026-05-28)
+
+
+### Features
+
+* **statics:** add ofcbaseeth:usdc and ofctbaseeth:usdc ([5f56ac9](https://github.com/BitGo/BitGoJS/commit/5f56ac954e7c53cc1185f0c5257f0d3ad17877b0))
+
+
+
+
+
 ## [51.1.1](https://github.com/BitGo/BitGoJS/compare/bitgo@51.1.0...bitgo@51.1.1) (2026-05-26)
 
 

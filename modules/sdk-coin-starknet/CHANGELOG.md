@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-starknet@1.2.0...@bitgo/sdk-coin-starknet@1.3.0) (2026-05-28)
+
+
+### Features
+
+* **sdk-coin-starknet:** add toInternalHex and fix broadcast payload format ([108dea6](https://github.com/BitGo/BitGoJS/commit/108dea655242675c9bdd99d7bd638fd2a0a92ad9))
+
+
+
+
+
 # [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-starknet@1.1.0...@bitgo/sdk-coin-starknet@1.2.0) (2026-05-26)
 
 

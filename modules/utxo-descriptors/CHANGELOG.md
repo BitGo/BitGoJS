@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-descriptors@1.2.0...@bitgo/utxo-descriptors@1.3.0) (2026-05-28)
+
+
+### Features
+
+* **abstract-utxo:** add support to verify sbtc reclaim transactions ([54c1a6f](https://github.com/BitGo/BitGoJS/commit/54c1a6f7a93b70da80570146cd5c54f0e0268e2b))
+
+
+
+
+
 # [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-descriptors@1.1.0...@bitgo/utxo-descriptors@1.2.0) (2026-05-22)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.30.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.29.1...@bitgo/express@15.30.0) (2026-05-28)
+
+
+### Features
+
+* **express:** add qr param to sendmany, sendcoins, prebuildAndSign schemas ([45e4739](https://github.com/BitGo/BitGoJS/commit/45e473954214a2db61d615aaf317f19bf17092d7))
+
+
+
+
+
 ## [15.29.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.29.0...@bitgo/express@15.29.1) (2026-05-26)
 
 **Note:** Version bump only for package @bitgo/express
