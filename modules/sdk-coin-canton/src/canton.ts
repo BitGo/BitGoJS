@@ -1,31 +1,31 @@
 import {
   AuditDecryptedKeyParams,
   BaseCoin,
+  BaseTransaction,
   BitGoBase,
   CantonCommand,
   CantonCommandParams,
   CantonCreateCommand,
   CantonExerciseCommand,
+  EDDSAMethods,
+  extractCommonKeychain,
+  InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
   MultisigType,
   multisigTypes,
   ParsedTransaction,
   ParseTransactionOptions,
-  SignedTransaction,
-  SignTransactionOptions,
-  TransactionParams,
-  TransactionType,
-  VerifyTransactionOptions,
-  TransactionExplanation as BaseTransactionExplanation,
-  BaseTransaction,
   PopulatedIntent,
   PrebuildTransactionWithIntentOptions,
-  TssVerifyAddressOptions,
-  InvalidAddressError,
-  extractCommonKeychain,
-  EDDSAMethods,
+  SignedTransaction,
+  SignTransactionOptions,
   TokenEnablementConfig,
+  TransactionExplanation as BaseTransactionExplanation,
+  TransactionParams,
+  TransactionType,
+  TssVerifyAddressOptions,
+  VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
@@ -126,7 +126,9 @@ export class Canton extends BaseCoin {
       case TransactionType.TransferOfferWithdrawn:
       case TransactionType.CosignDelegationAccept:
       case TransactionType.CosignDelegationProposal:
-        // There is no input for these type of transactions, so always return true.
+      case TransactionType.AllocationAllocate:
+      case TransactionType.AllocationRequest:
+        // There is no recipient info to verify for these transaction types, so always return true.
         return true;
       case TransactionType.CantonCommand:
         return this.verifyCantonCommandTransaction(

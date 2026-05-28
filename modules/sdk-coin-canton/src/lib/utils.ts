@@ -308,6 +308,49 @@ export class Utils implements BaseUtils {
         break;
       }
 
+      case TransactionType.AllocationAllocate: {
+        // DvpLegAllocation create node → allocation.transferLeg contains the full settlement transfer details:
+        // sender, receiver (the actual settlement counterparty), amount, and instrumentId
+        const dvpFields = findCreateNodeFields('DvpLegAllocation');
+        if (dvpFields) {
+          const allocationField = getField(dvpFields, 'allocation');
+          if (allocationField?.oneofKind === 'record') {
+            const allocationFields = allocationField.record?.fields ?? [];
+            const transferLegField = getField(allocationFields, 'transferLeg');
+            if (transferLegField?.oneofKind === 'record') {
+              const transferLegFields = transferLegField.record?.fields ?? [];
+              const senderData = getField(transferLegFields, 'sender');
+              if (senderData?.oneofKind === 'party') sender = senderData.party ?? '';
+              const receiverData = getField(transferLegFields, 'receiver');
+              if (receiverData?.oneofKind === 'party') receiver = receiverData.party ?? '';
+              const amountData = getField(transferLegFields, 'amount');
+              if (amountData?.oneofKind === 'numeric') amount = amountData.numeric ?? '';
+              const instrumentIdField = getField(transferLegFields, 'instrumentId');
+              if (instrumentIdField?.oneofKind === 'record') {
+                const instrumentIdFields = instrumentIdField.record?.fields ?? [];
+                const adminData = getField(instrumentIdFields, 'admin');
+                if (adminData?.oneofKind === 'party') instrumentAdmin = adminData.party ?? '';
+                const idData = getField(instrumentIdFields, 'id');
+                if (idData?.oneofKind === 'text') instrumentId = idData.text ?? '';
+              }
+            }
+          }
+        }
+        // Fallback: if DvpLegAllocation is absent, use the operator as receiver
+        if (!receiver) {
+          const allocateFields = findExerciseNodeFields('AllocationFactory_Allocate');
+          if (allocateFields) {
+            const adminData = getField(allocateFields, 'expectedAdmin');
+            if (adminData?.oneofKind === 'party') receiver = adminData.party ?? '';
+          }
+        }
+        if (!sender) {
+          const senderParty = findExerciseActingParty('AllocationFactory_Allocate');
+          if (senderParty) sender = senderParty;
+        }
+        break;
+      }
+
       case TransactionType.CosignDelegationAccept: {
         // exercise CosignDelegationProposal_Accept → actingParties[0] = signer (sender)
         const signerParty = findExerciseActingParty('CosignDelegationProposal_Accept');
