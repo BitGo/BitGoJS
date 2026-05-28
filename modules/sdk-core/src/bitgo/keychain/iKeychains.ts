@@ -141,8 +141,13 @@ export interface AddKeychainOptions {
   // indicates if the key is MPCv2 or not
   isMPCv2?: boolean;
   coinSpecific?: { [coinName: string]: unknown };
-  /** WebAuthn devices that have an additional encrypted copy of the private key, keyed by PRF-derived passphrases. */
+  /** WebAuthn devices that have an additional encrypted copy of the private key, keyed by PRF-derived passphrases.
+   *  @deprecated Use {@link webauthnInfo} instead — the backend reads `webauthnInfo` (single object), not `webauthnDevices`. */
   webauthnDevices?: WebauthnInfo[];
+  /** Single webauthn device to atomically attach during key creation.
+   *  Sent as `webauthnInfo` in the POST /key body so the backend can link
+   *  the passkey to the keychain in the same request. */
+  webauthnInfo?: WebauthnInfo;
 }
 
 export interface ApiKeyShare {
