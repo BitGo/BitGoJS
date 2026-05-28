@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [37.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.2.0...@bitgo/sdk-core@37.3.0) (2026-05-28)
+
+
+### Features
+
+* **sdk-core:** create invoice from standard wallet ([e828947](https://github.com/BitGo/BitGoJS/commit/e82894774e16d3d2ce1c86b0f2cd527afef35a7f))
+* **statics:** add Katana Network EVM chain (katanaeth/tkatanaeth) ([83be67c](https://github.com/BitGo/BitGoJS/commit/83be67c2a866ae766e9c8d40852083988cc2757a))
+
+
+
+
+
 # [37.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.1.0...@bitgo/sdk-core@37.2.0) (2026-05-26)
 
 

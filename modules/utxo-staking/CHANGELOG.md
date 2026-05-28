@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.41.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.40.0...@bitgo/utxo-staking@1.41.0) (2026-05-28)
+
+
+### Features
+
+* **abstract-utxo:** add support to verify sbtc reclaim transactions ([54c1a6f](https://github.com/BitGo/BitGoJS/commit/54c1a6f7a93b70da80570146cd5c54f0e0268e2b))
+
+
+
+
+
 # [1.40.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.39.2...@bitgo/utxo-staking@1.40.0) (2026-05-22)
 
 
