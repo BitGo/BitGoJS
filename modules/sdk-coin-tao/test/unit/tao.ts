@@ -4,8 +4,9 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { Tao, Ttao } from '../../src';
 import * as sinon from 'sinon';
 import * as testData from './fixtures';
-import { txVersion, genesisHash, specVersion } from '../resources';
+import { txVersion, genesisHash, specVersion, rawTx } from '../resources';
 import { afterEach } from 'mocha';
+import { TxIntentMismatchRecipientError } from '@bitgo/sdk-core';
 
 describe('Tao:', function () {
   let bitgo: TestBitGoAPI;
@@ -506,6 +507,94 @@ describe('Tao:', function () {
         .should.be.rejectedWith(
           'Invalid starting or ending index to scan for addresses. startingScanIndex: 1, endingScanIndex: 300.'
         );
+    });
+  });
+
+  describe('verifyTransaction', function () {
+    const transferTo = '5EQZSJmHuFH8asYYJruSRwpJmE5aqSdhdiX9oxRbxujKUkTe';
+    const transferAmount = '2';
+    const sweepTo = '5EQZSJmHuFH8asYYJruSRwpJmE5aqSdhdiX9oxRbxujKUkTe';
+    const wrongAddress = '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq';
+
+    describe('transfer transaction', function () {
+      it('should return true when address and amount match', async function () {
+        const result = await baseCoin.verifyTransaction({
+          txPrebuild: { txHex: rawTx.transfer.signed },
+          txParams: { recipients: [{ address: transferTo, amount: transferAmount }] },
+        });
+        result.should.be.true();
+      });
+
+      it('should throw TxIntentMismatchRecipientError for address mismatch', async function () {
+        await baseCoin
+          .verifyTransaction({
+            txPrebuild: { txHex: rawTx.transfer.signed },
+            txParams: { recipients: [{ address: wrongAddress, amount: transferAmount }] },
+          })
+          .should.be.rejectedWith(TxIntentMismatchRecipientError);
+      });
+
+      it('should throw TxIntentMismatchRecipientError for amount mismatch', async function () {
+        await baseCoin
+          .verifyTransaction({
+            txPrebuild: { txHex: rawTx.transfer.signed },
+            txParams: { recipients: [{ address: transferTo, amount: '9999' }] },
+          })
+          .should.be.rejectedWith(TxIntentMismatchRecipientError);
+      });
+    });
+
+    describe('sweep transaction', function () {
+      it('should return true when address matches (amount check skipped for sweep)', async function () {
+        const result = await baseCoin.verifyTransaction({
+          txPrebuild: { txHex: rawTx.transferAll.signed },
+          txParams: { recipients: [{ address: sweepTo, amount: '9999999' }] },
+        });
+        result.should.be.true();
+      });
+
+      it('should throw TxIntentMismatchRecipientError when sweep address does not match', async function () {
+        await baseCoin
+          .verifyTransaction({
+            txPrebuild: { txHex: rawTx.transferAll.signed },
+            txParams: { recipients: [{ address: wrongAddress, amount: '0' }] },
+          })
+          .should.be.rejectedWith(TxIntentMismatchRecipientError);
+      });
+    });
+
+    describe('guard cases', function () {
+      it('should throw when txHex is missing', async function () {
+        await baseCoin
+          .verifyTransaction({
+            txPrebuild: {},
+            txParams: { recipients: [{ address: transferTo, amount: transferAmount }] },
+          })
+          .should.be.rejectedWith('missing txHex in txPrebuild');
+      });
+
+      it('should throw when recipients has more than 1 entry', async function () {
+        await baseCoin
+          .verifyTransaction({
+            txPrebuild: { txHex: rawTx.transfer.signed },
+            txParams: {
+              recipients: [
+                { address: transferTo, amount: transferAmount },
+                { address: wrongAddress, amount: transferAmount },
+              ],
+            },
+          })
+          .should.be.rejectedWith(/doesn't support sending to more than 1 destination address/);
+      });
+
+      it('should throw when recipients is an empty array', async function () {
+        await baseCoin
+          .verifyTransaction({
+            txPrebuild: { txHex: rawTx.transfer.signed },
+            txParams: { recipients: [] },
+          })
+          .should.be.rejectedWith('missing recipients in txParams');
+      });
     });
   });
 });

@@ -6,7 +6,8 @@ import { POLYX_ADDRESS_FORMAT, TPOLYX_ADDRESS_FORMAT } from '../../src/lib/const
 import * as sinon from 'sinon';
 import * as testData from '../resources/wrwUsers';
 import { afterEach } from 'mocha';
-import { genesisHash, specVersion, txVersion } from '../resources';
+import { genesisHash, specVersion, txVersion, rawTx } from '../resources';
+import { TxIntentMismatchRecipientError } from '@bitgo/sdk-core';
 
 describe('Polyx:', function () {
   let bitgo: TestBitGoAPI;
@@ -197,6 +198,74 @@ describe('Polyx:', function () {
       (() => config.validateWallet('cold')).should.throw(
         /Token enablement for Polymesh \(polyx\) is only supported for custodial wallets/
       );
+    });
+  });
+
+  describe('verifyTransaction', function () {
+    const transferTo = '5F8jxKE81GhFrphyfMFr5UjeAz5wS4AaZFmeFPnf8wTetD72';
+    const transferAmount = '2000000000';
+    const wrongAddress = '5GhbC6n2pUFrX98DwyPit67fB5AwQvVCwZ4j2HKA7a4dUK4y';
+
+    describe('transfer transaction', function () {
+      it('should return true when address and amount match', async function () {
+        const result = await baseCoin.verifyTransaction({
+          txPrebuild: { txHex: rawTx.transfer.signed },
+          txParams: { recipients: [{ address: transferTo, amount: transferAmount }] },
+        });
+        result.should.be.true();
+      });
+
+      it('should throw TxIntentMismatchRecipientError for address mismatch', async function () {
+        await baseCoin
+          .verifyTransaction({
+            txPrebuild: { txHex: rawTx.transfer.signed },
+            txParams: { recipients: [{ address: wrongAddress, amount: transferAmount }] },
+          })
+          .should.be.rejectedWith(TxIntentMismatchRecipientError);
+      });
+
+      it('should throw TxIntentMismatchRecipientError for amount mismatch', async function () {
+        await baseCoin
+          .verifyTransaction({
+            txPrebuild: { txHex: rawTx.transfer.signed },
+            txParams: { recipients: [{ address: transferTo, amount: '1' }] },
+          })
+          .should.be.rejectedWith(TxIntentMismatchRecipientError);
+      });
+    });
+
+    describe('guard cases', function () {
+      it('should throw when txHex is missing', async function () {
+        await baseCoin
+          .verifyTransaction({
+            txPrebuild: {},
+            txParams: { recipients: [{ address: transferTo, amount: transferAmount }] },
+          })
+          .should.be.rejectedWith('missing txHex in txPrebuild');
+      });
+
+      it('should throw when recipients has more than 1 entry', async function () {
+        await baseCoin
+          .verifyTransaction({
+            txPrebuild: { txHex: rawTx.transfer.signed },
+            txParams: {
+              recipients: [
+                { address: transferTo, amount: transferAmount },
+                { address: wrongAddress, amount: transferAmount },
+              ],
+            },
+          })
+          .should.be.rejectedWith(/support sending to more than 1 destination address/);
+      });
+
+      it('should throw when recipients is an empty array', async function () {
+        await baseCoin
+          .verifyTransaction({
+            txPrebuild: { txHex: rawTx.transfer.signed },
+            txParams: { recipients: [] },
+          })
+          .should.be.rejectedWith('missing recipients in txParams');
+      });
     });
   });
 });
