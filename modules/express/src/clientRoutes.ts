@@ -8,6 +8,9 @@ import {
   CustomCommitmentGeneratingFunction,
   CustomGShareGeneratingFunction,
   CustomKShareGeneratingFunction,
+  CustomEddsaMPCv2SigningRound1GeneratingFunction,
+  CustomEddsaMPCv2SigningRound2GeneratingFunction,
+  CustomEddsaMPCv2SigningRound3GeneratingFunction,
   CustomMPCv2SigningRound1GeneratingFunction,
   CustomMPCv2SigningRound2GeneratingFunction,
   CustomMPCv2SigningRound3GeneratingFunction,
@@ -17,6 +20,7 @@ import {
   CustomSShareGeneratingFunction,
   EcdsaMPCv2Utils,
   EcdsaUtils,
+  EddsaMPCv2Utils,
   EddsaUtils,
   EncryptedSignerShareRecord,
   encryptRsaWithAesGcm,
@@ -455,18 +459,41 @@ export async function handleV2GenerateShareTSS(
   req.body.walletPassphrase = walletPw;
   try {
     if (coin.getMPCAlgorithm() === MPCType.EDDSA) {
-      const eddsaUtils = new EddsaUtils(bitgo, coin);
-      switch (req.decoded.sharetype) {
-        case ShareType.Commitment:
-          return await eddsaUtils.createCommitmentShareFromTxRequest(req.body);
-        case ShareType.R:
-          return await eddsaUtils.createRShareFromTxRequest(req.body);
-        case ShareType.G:
-          return await eddsaUtils.createGShareFromTxRequest(req.body);
-        default:
-          throw new Error(
-            `Share type ${req.decoded.sharetype} not supported, only commitment, G and R share generation is supported.`
-          );
+      const isMPCv2 =
+        [
+          ShareType.EddsaMPCv2Round1.toString(),
+          ShareType.EddsaMPCv2Round2.toString(),
+          ShareType.EddsaMPCv2Round3.toString(),
+        ].includes(req.decoded.sharetype) || req.decoded.sharetype.startsWith('EddsaMPCv2');
+
+      if (isMPCv2) {
+        const eddsaMPCv2Utils = new EddsaMPCv2Utils(bitgo, coin);
+        switch (req.decoded.sharetype) {
+          case ShareType.EddsaMPCv2Round1:
+            return await eddsaMPCv2Utils.createOfflineRound1Share(req.body);
+          case ShareType.EddsaMPCv2Round2:
+            return await eddsaMPCv2Utils.createOfflineRound2Share(req.body);
+          case ShareType.EddsaMPCv2Round3:
+            return await eddsaMPCv2Utils.createOfflineRound3Share(req.body);
+          default:
+            throw new Error(
+              `Share type ${req.decoded.sharetype} not supported for EdDSA MPCv2, only EddsaMPCv2Round1, EddsaMPCv2Round2 and EddsaMPCv2Round3 is supported.`
+            );
+        }
+      } else {
+        const eddsaUtils = new EddsaUtils(bitgo, coin);
+        switch (req.decoded.sharetype) {
+          case ShareType.Commitment:
+            return await eddsaUtils.createCommitmentShareFromTxRequest(req.body);
+          case ShareType.R:
+            return await eddsaUtils.createRShareFromTxRequest(req.body);
+          case ShareType.G:
+            return await eddsaUtils.createGShareFromTxRequest(req.body);
+          default:
+            throw new Error(
+              `Share type ${req.decoded.sharetype} not supported, only commitment, G and R share generation is supported.`
+            );
+        }
       }
     } else if (coin.getMPCAlgorithm() === MPCType.ECDSA) {
       const isMPCv2 = [
@@ -895,15 +922,33 @@ function createTSSSendParams(req: express.Request, wallet: Wallet) {
   if (req.config?.externalSignerUrl !== undefined) {
     const coin = req.bitgo.coin(req.params.coin);
     if (coin.getMPCAlgorithm() === MPCType.EDDSA) {
-      return {
-        ...req.body,
-        customCommitmentGeneratingFunction: createCustomCommitmentGenerator(
-          req.config.externalSignerUrl,
-          req.params.coin
-        ),
-        customRShareGeneratingFunction: createCustomRShareGenerator(req.config.externalSignerUrl, req.params.coin),
-        customGShareGeneratingFunction: createCustomGShareGenerator(req.config.externalSignerUrl, req.params.coin),
-      };
+      if (wallet._wallet.multisigTypeVersion === 'MPCv2') {
+        return {
+          ...req.body,
+          customEddsaMPCv2SigningRound1GenerationFunction: createCustomEddsaMPCv2SigningRound1Generator(
+            req.config.externalSignerUrl,
+            req.params.coin
+          ),
+          customEddsaMPCv2SigningRound2GenerationFunction: createCustomEddsaMPCv2SigningRound2Generator(
+            req.config.externalSignerUrl,
+            req.params.coin
+          ),
+          customEddsaMPCv2SigningRound3GenerationFunction: createCustomEddsaMPCv2SigningRound3Generator(
+            req.config.externalSignerUrl,
+            req.params.coin
+          ),
+        };
+      } else {
+        return {
+          ...req.body,
+          customCommitmentGeneratingFunction: createCustomCommitmentGenerator(
+            req.config.externalSignerUrl,
+            req.params.coin
+          ),
+          customRShareGeneratingFunction: createCustomRShareGenerator(req.config.externalSignerUrl, req.params.coin),
+          customGShareGeneratingFunction: createCustomGShareGenerator(req.config.externalSignerUrl, req.params.coin),
+        };
+      }
     } else if (coin.getMPCAlgorithm() === MPCType.ECDSA) {
       if (wallet._wallet.multisigTypeVersion === 'MPCv2') {
         return {
@@ -1768,6 +1813,51 @@ export function createCustomMPCv2SigningRound3Generator(
   return async function (params) {
     const { body: result } = await retryPromise(
       () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round3`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function createCustomEddsaMPCv2SigningRound1Generator(
+  externalSignerUrl: string,
+  coin: string
+): CustomEddsaMPCv2SigningRound1GeneratingFunction {
+  return async function (params) {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/EddsaMPCv2Round1`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function createCustomEddsaMPCv2SigningRound2Generator(
+  externalSignerUrl: string,
+  coin: string
+): CustomEddsaMPCv2SigningRound2GeneratingFunction {
+  return async function (params) {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/EddsaMPCv2Round2`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function createCustomEddsaMPCv2SigningRound3Generator(
+  externalSignerUrl: string,
+  coin: string
+): CustomEddsaMPCv2SigningRound3GeneratingFunction {
+  return async function (params) {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/EddsaMPCv2Round3`).type('json').send(params),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }

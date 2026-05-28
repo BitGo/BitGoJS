@@ -13,6 +13,9 @@ import {
   EcdsaMPCv2Round1Response,
   EcdsaMPCv2Round2Response,
   EcdsaMPCv2Round3Response,
+  MPCv2Round1Response,
+  MPCv2Round2Response,
+  MPCv2Round3Response,
 } from '../../../src/typedRoutes/api/v2/generateShareTSS';
 import { assertDecode } from './common';
 import 'should';
@@ -359,6 +362,51 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
           },
         };
         const decoded = assertDecode(EcdsaMPCv2Round3Response, validResponse);
+        assert.strictEqual(decoded.signatureShareRound3.from, 'user');
+        assert.strictEqual(decoded.signatureShareRound3.to, 'bitgo');
+        assert.strictEqual(decoded.signatureShareRound3.share, 'round3-share');
+      });
+
+      it('should validate EdDSA MPCv2 Round1 response', function () {
+        const validResponse = {
+          signatureShareRound1: {
+            from: 'user',
+            to: 'bitgo',
+            share: 'round1-share',
+          },
+          userGpgPubKey: 'user-gpg-key',
+          encryptedRound1Session: 'session1',
+          encryptedUserGpgPrvKey: 'gpg-prv',
+        };
+        const decoded = assertDecode(MPCv2Round1Response, validResponse);
+        assert.strictEqual(decoded.signatureShareRound1.from, 'user');
+        assert.strictEqual(decoded.userGpgPubKey, 'user-gpg-key');
+      });
+
+      it('should validate EdDSA MPCv2 Round2 response', function () {
+        const validResponse = {
+          signatureShareRound2: {
+            from: 'user',
+            to: 'bitgo',
+            share: 'round2-share',
+          },
+          encryptedRound2Session: 'session2',
+        };
+        const decoded = assertDecode(MPCv2Round2Response, validResponse);
+        assert.strictEqual(decoded.signatureShareRound2.from, 'user');
+        assert.strictEqual(decoded.signatureShareRound2.to, 'bitgo');
+        assert.strictEqual(decoded.encryptedRound2Session, 'session2');
+      });
+
+      it('should validate EdDSA MPCv2 Round3 response', function () {
+        const validResponse = {
+          signatureShareRound3: {
+            from: 'user',
+            to: 'bitgo',
+            share: 'round3-share',
+          },
+        };
+        const decoded = assertDecode(MPCv2Round3Response, validResponse);
         assert.strictEqual(decoded.signatureShareRound3.from, 'user');
         assert.strictEqual(decoded.signatureShareRound3.to, 'bitgo');
         assert.strictEqual(decoded.signatureShareRound3.share, 'round3-share');
