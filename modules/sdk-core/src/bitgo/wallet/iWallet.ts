@@ -1,4 +1,5 @@
 import { IRequestTracer } from '../../api';
+import { CreateLightningInvoiceParams, LightningInvoiceResponse } from '../../lightning';
 import {
   IBaseCoin,
   ITransactionRecipient,
@@ -1139,6 +1140,7 @@ export interface IWallet {
   removePolicyRule(params?: RemovePolicyRuleOptions): Promise<any>;
   remove(params?: Record<string, never>): Promise<any>;
   toJSON(): WalletData;
+  createLightningInvoice(params: CreateLightningInvoiceParams): Promise<LightningInvoiceResponse>;
   toTradingAccount(): ITradingAccount;
   toStakingWallet(): IStakingWallet;
   toGoStakingWallet(): IGoStakingWallet;
