@@ -7104,6 +7104,20 @@ export const tOfcErc20Coins = [
     true,
     'baseeth'
   ),
+  ofcerc20(
+    'daab4576-031c-4bf2-b0bf-7ff4d23f0465',
+    'ofcbaseeth:usdc',
+    'Base USD Coin',
+    6,
+    UnderlyingAsset['baseeth:usdc'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
   tofcerc20(
     'b5277412-46b8-4da3-8fd2-5bf4557fcbd8',
     'ofctbaseeth:tusdl',
@@ -7130,6 +7144,20 @@ export const tOfcErc20Coins = [
     undefined,
     undefined,
     undefined,
+    'tbaseeth'
+  ),
+  tofcerc20(
+    'b9b5fc44-0e0a-45ec-8fde-6400ee036af6',
+    'ofctbaseeth:usdc',
+    'Test Base USD Coin',
+    6,
+    UnderlyingAsset['tbaseeth:usdc'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    '',
+    undefined,
+    undefined,
+    true,
     'tbaseeth'
   ),
 ];
