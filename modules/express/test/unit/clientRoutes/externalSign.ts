@@ -6,14 +6,17 @@ import {
   common,
   Ed25519BIP32,
   Eddsa,
+  EddsaMPCv2Utils,
   Ecdsa,
   HDTree,
   SignatureShareType,
+  ShareType,
   ShareKeyPosition,
   TxRequest,
   SignatureShareRecord,
 } from '@bitgo/sdk-core';
 import { Hash } from 'crypto';
+import { logger } from '@bitgo/logger';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import * as should from 'should';
 import * as sinon from 'sinon';
@@ -42,7 +45,14 @@ import 'should-http';
 import 'should-sinon';
 import '../../lib/asserts';
 
-import { handleV2GenerateShareTSS, handleV2Sign } from '../../../src/clientRoutes';
+import {
+  createCustomEddsaMPCv2SigningRound1Generator,
+  createCustomEddsaMPCv2SigningRound2Generator,
+  createCustomEddsaMPCv2SigningRound3Generator,
+  handleV2GenerateShareTSS,
+  handleV2Sign,
+  handleV2SignTSSWalletTx,
+} from '../../../src/clientRoutes';
 import { fetchKeys } from '../../../src/fetchEncryptedPrivKeys';
 import { mockChallengeA, mockChallengeB } from './mocks/ecdsaNtilde';
 import { ExpressApiRouteRequest } from '../../../src/typedRoutes/api';
@@ -654,6 +664,214 @@ describe('External signer', () => {
     envStub.restore();
   });
 
+  it('should route EdDSA MPCv2 share types to offline round share generators', async function () {
+    const bgTest = new BitGo({ env: 'test' });
+    const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
+    const envStub = sinon.stub(process, 'env').value({ ['WALLET_' + walletId + '_PASSPHRASE']: walletPassword });
+    const round1Response = {
+      signatureShareRound1: { from: SignatureShareType.USER, to: SignatureShareType.BITGO, share: 'round1' },
+      userGpgPubKey: 'userGpgPubKey',
+      encryptedRound1Session: 'encryptedRound1Session',
+      encryptedUserGpgPrvKey: 'encryptedUserGpgPrvKey',
+    };
+    const round2Response = {
+      signatureShareRound2: { from: SignatureShareType.USER, to: SignatureShareType.BITGO, share: 'round2' },
+      encryptedRound2Session: 'encryptedRound2Session',
+    };
+    const round3Response = {
+      signatureShareRound3: { from: SignatureShareType.USER, to: SignatureShareType.BITGO, share: 'round3' },
+    };
+    const round1Stub = sinon.stub(EddsaMPCv2Utils.prototype, 'createOfflineRound1Share').resolves(round1Response);
+    const round2Stub = sinon.stub(EddsaMPCv2Utils.prototype, 'createOfflineRound2Share').resolves(round2Response);
+    const round3Stub = sinon.stub(EddsaMPCv2Utils.prototype, 'createOfflineRound3Share').resolves(round3Response);
+
+    try {
+      const round1Result = await handleV2GenerateShareTSS(
+        createEddsaMPCv2GenerateShareRequest(bgTest, walletId, ShareType.EddsaMPCv2Round1)
+      );
+      round1Result.should.eql(round1Response);
+      round1Stub.calledOnce.should.be.true();
+      round1Stub.firstCall.args[0].prv.should.equal(secret);
+      round1Stub.firstCall.args[0].walletPassphrase.should.equal(walletPassword);
+
+      const round2Result = await handleV2GenerateShareTSS(
+        createEddsaMPCv2GenerateShareRequest(bgTest, walletId, ShareType.EddsaMPCv2Round2)
+      );
+      round2Result.should.eql(round2Response);
+      round2Stub.calledOnce.should.be.true();
+
+      const round3Result = await handleV2GenerateShareTSS(
+        createEddsaMPCv2GenerateShareRequest(bgTest, walletId, ShareType.EddsaMPCv2Round3)
+      );
+      round3Result.should.eql(round3Response);
+      round3Stub.calledOnce.should.be.true();
+    } finally {
+      readFileStub.restore();
+      envStub.restore();
+      round1Stub.restore();
+      round2Stub.restore();
+      round3Stub.restore();
+    }
+  });
+
+  it('should throw a clear error for unsupported EdDSA MPCv2 share types', async function () {
+    const bgTest = new BitGo({ env: 'test' });
+    const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
+    const envStub = sinon.stub(process, 'env').value({ ['WALLET_' + walletId + '_PASSPHRASE']: walletPassword });
+    const loggerErrorStub = sinon.stub(logger, 'error');
+
+    try {
+      await assert.rejects(
+        handleV2GenerateShareTSS(createEddsaMPCv2GenerateShareRequest(bgTest, walletId, 'EddsaMPCv2Round4')),
+        (error: Error) => {
+          assert.match(error.message, /Share type EddsaMPCv2Round4 not supported for EdDSA MPCv2/);
+          return true;
+        }
+      );
+      loggerErrorStub.calledOnce.should.be.true();
+    } finally {
+      readFileStub.restore();
+      envStub.restore();
+      loggerErrorStub.restore();
+    }
+  });
+
+  it('should create EdDSA MPCv2 external signer generators with correct route paths', async function () {
+    const externalSignerUrl = 'http://external-signer.example';
+    const coin = 'tsol';
+    type Round1GeneratorParams = Parameters<ReturnType<typeof createCustomEddsaMPCv2SigningRound1Generator>>[0];
+    type Round2GeneratorParams = Parameters<ReturnType<typeof createCustomEddsaMPCv2SigningRound2Generator>>[0];
+    type Round3GeneratorParams = Parameters<ReturnType<typeof createCustomEddsaMPCv2SigningRound3Generator>>[0];
+    const round1Params: Round1GeneratorParams = {
+      txRequest: createExternalSignerTxRequest('round1TxRequestId'),
+    };
+    const round2Params: Round2GeneratorParams = {
+      txRequest: createExternalSignerTxRequest('round2TxRequestId'),
+      bitgoPublicGpgKey: 'bitgoPublicGpgKey',
+      encryptedRound1Session: 'encryptedRound1Session',
+      encryptedUserGpgPrvKey: 'encryptedUserGpgPrvKey',
+    };
+    const round3Params: Round3GeneratorParams = {
+      txRequest: createExternalSignerTxRequest('round3TxRequestId'),
+      bitgoPublicGpgKey: 'bitgoPublicGpgKey',
+      encryptedRound2Session: 'encryptedRound2Session',
+      encryptedUserGpgPrvKey: 'encryptedUserGpgPrvKey',
+    };
+    const round1Response = {
+      signatureShareRound1: { from: SignatureShareType.USER, to: SignatureShareType.BITGO, share: 'round1' },
+      userGpgPubKey: 'userGpgPubKey',
+      encryptedRound1Session: 'encryptedRound1Session',
+      encryptedUserGpgPrvKey: 'encryptedUserGpgPrvKey',
+    };
+    const round2Response = {
+      signatureShareRound2: { from: SignatureShareType.USER, to: SignatureShareType.BITGO, share: 'round2' },
+      encryptedRound2Session: 'encryptedRound2Session',
+    };
+    const round3Response = {
+      signatureShareRound3: { from: SignatureShareType.USER, to: SignatureShareType.BITGO, share: 'round3' },
+    };
+    const matchRound1Body = sinon.spy((body: Round1GeneratorParams) => {
+      assert.deepStrictEqual(body, round1Params);
+      return true;
+    });
+    const matchRound2Body = sinon.spy((body: Round2GeneratorParams) => {
+      assert.deepStrictEqual(body, round2Params);
+      return true;
+    });
+    const matchRound3Body = sinon.spy((body: Round3GeneratorParams) => {
+      assert.deepStrictEqual(body, round3Params);
+      return true;
+    });
+
+    const round1Nock = nock(externalSignerUrl)
+      .post(`/api/v2/${coin}/tssshare/EddsaMPCv2Round1`, (body: Round1GeneratorParams) => matchRound1Body(body))
+      .reply(200, round1Response);
+    const round2Nock = nock(externalSignerUrl)
+      .post(`/api/v2/${coin}/tssshare/EddsaMPCv2Round2`, (body: Round2GeneratorParams) => matchRound2Body(body))
+      .reply(200, round2Response);
+    const round3Nock = nock(externalSignerUrl)
+      .post(`/api/v2/${coin}/tssshare/EddsaMPCv2Round3`, (body: Round3GeneratorParams) => matchRound3Body(body))
+      .reply(200, round3Response);
+
+    const round1Result = await createCustomEddsaMPCv2SigningRound1Generator(externalSignerUrl, coin)(round1Params);
+    const round2Result = await createCustomEddsaMPCv2SigningRound2Generator(externalSignerUrl, coin)(round2Params);
+    const round3Result = await createCustomEddsaMPCv2SigningRound3Generator(externalSignerUrl, coin)(round3Params);
+
+    round1Nock.done();
+    round2Nock.done();
+    round3Nock.done();
+    matchRound1Body.calledOnce.should.be.true();
+    matchRound2Body.calledOnce.should.be.true();
+    matchRound3Body.calledOnce.should.be.true();
+    round1Result.signatureShareRound1.share.should.equal(round1Response.signatureShareRound1.share);
+    round2Result.signatureShareRound2.share.should.equal(round2Response.signatureShareRound2.share);
+    round3Result.signatureShareRound3.share.should.equal(round3Response.signatureShareRound3.share);
+  });
+
+  it('should attach EdDSA MPCv2 external signer generators for MPCv2 wallets', async function () {
+    const ensureCleanSigSharesAndSignTransaction = sinon.stub().callsFake(async (params) => {
+      params.customEddsaMPCv2SigningRound1GenerationFunction.should.be.Function();
+      params.customEddsaMPCv2SigningRound2GenerationFunction.should.be.Function();
+      params.customEddsaMPCv2SigningRound3GenerationFunction.should.be.Function();
+      should.not.exist(params.customCommitmentGeneratingFunction);
+      should.not.exist(params.customRShareGeneratingFunction);
+      should.not.exist(params.customGShareGeneratingFunction);
+      return { txRequestId: 'signedTxRequestId' };
+    });
+    const wallet = {
+      _wallet: { multisigTypeVersion: 'MPCv2' },
+      ensureCleanSigSharesAndSignTransaction,
+    };
+    const coin = {
+      getMPCAlgorithm: () => 'eddsa',
+      wallets: () => ({ get: sinon.stub().resolves(wallet) }),
+    };
+    const req = {
+      bitgo: { coin: sinon.stub().returns(coin) },
+      body: { txRequestId: 'txRequestId' },
+      decoded: { coin: 'tsol', id: 'walletId' },
+      params: { coin: 'tsol' },
+      config: { externalSignerUrl: 'http://external-signer.example' },
+    } as any;
+
+    const result = await handleV2SignTSSWalletTx(req);
+
+    result.should.eql({ txRequestId: 'signedTxRequestId' });
+    ensureCleanSigSharesAndSignTransaction.calledOnce.should.be.true();
+  });
+
+  it('should keep EdDSA v1 external signer generators for non-MPCv2 wallets', async function () {
+    const ensureCleanSigSharesAndSignTransaction = sinon.stub().callsFake(async (params) => {
+      params.customCommitmentGeneratingFunction.should.be.Function();
+      params.customRShareGeneratingFunction.should.be.Function();
+      params.customGShareGeneratingFunction.should.be.Function();
+      should.not.exist(params.customEddsaMPCv2SigningRound1GenerationFunction);
+      should.not.exist(params.customEddsaMPCv2SigningRound2GenerationFunction);
+      should.not.exist(params.customEddsaMPCv2SigningRound3GenerationFunction);
+      return { txRequestId: 'signedTxRequestId' };
+    });
+    const wallet = {
+      _wallet: { multisigTypeVersion: 'MPCv1' },
+      ensureCleanSigSharesAndSignTransaction,
+    };
+    const coin = {
+      getMPCAlgorithm: () => 'eddsa',
+      wallets: () => ({ get: sinon.stub().resolves(wallet) }),
+    };
+    const req = {
+      bitgo: { coin: sinon.stub().returns(coin) },
+      body: { txRequestId: 'txRequestId' },
+      decoded: { coin: 'tsol', id: 'walletId' },
+      params: { coin: 'tsol' },
+      config: { externalSignerUrl: 'http://external-signer.example' },
+    } as any;
+
+    const result = await handleV2SignTSSWalletTx(req);
+
+    result.should.eql({ txRequestId: 'signedTxRequestId' });
+    ensureCleanSigSharesAndSignTransaction.calledOnce.should.be.true();
+  });
+
   it('should read an encrypted prv from signerFileSystemPath and pass it to MPCv2Round1, MPCv2Round2 and MPCv2Round3 share generators', async function () {
     // MPCv2 DKLS flow is CPU-heavy; extend timeout for CI stability
     this.timeout(180000);
@@ -870,6 +1088,7 @@ describe('External signer', () => {
 
     const keyResult = {
       walletId,
+      encryptedPrv: JSON.parse(validPrv)[walletId],
     };
 
     nock(bgUrl).get(`/api/v2/tbtc/wallet/${walletId}`).reply(200, walletResult);
@@ -881,6 +1100,59 @@ describe('External signer', () => {
     data[walletId].should.startWith('{"iv":"');
   });
 });
+
+function createEddsaMPCv2GenerateShareRequest(
+  bitgo: BitGo,
+  walletId: string,
+  sharetype: string
+): ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'> {
+  return {
+    bitgo,
+    body: {
+      txRequest: {
+        txRequestId: '123456',
+        apiVersion: 'full',
+        walletId,
+        transactions: [
+          {
+            unsignedTx: {
+              derivationPath: 'm/0',
+              signableHex: 'deadbeef',
+            },
+            signatureShares: [],
+          },
+        ],
+      },
+    },
+    decoded: {
+      coin: 'tsol',
+      sharetype,
+    },
+    params: {
+      coin: 'tsol',
+      sharetype,
+    },
+    config: {
+      signerFileSystemPath: 'signerFileSystemPath',
+    },
+  } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
+}
+
+function createExternalSignerTxRequest(txRequestId: string): TxRequest {
+  return {
+    txRequestId,
+    walletId: 'walletId',
+    walletType: 'hot',
+    version: 1,
+    state: 'pendingUserSignature',
+    date: '2026-05-28T00:00:00.000Z',
+    userId: 'userId',
+    intent: {},
+    policiesChecked: true,
+    unsignedTxs: [],
+    latest: true,
+  };
+}
 
 // #region MPCv2 utils
 function getBitGoPartyGpgKeyPrv(bitgoPrvKey: string): DklsTypes.PartyGpgKey {

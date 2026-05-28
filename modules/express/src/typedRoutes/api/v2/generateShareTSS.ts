@@ -12,6 +12,7 @@ export const GenerateShareTSSParams = {
   /**
    * The type of share to generate. Valid values depend on the MPC algorithm:
    * - EDDSA: 'commitment', 'R', 'G'
+   * - EDDSA MPCv2: 'EddsaMPCv2Round1', 'EddsaMPCv2Round2', 'EddsaMPCv2Round3'
    * - ECDSA: 'PaillierModulus', 'K', 'MuDelta', 'S'
    * - ECDSA MPCv2: 'MPCv2Round1', 'MPCv2Round2', 'MPCv2Round3'
    */
@@ -471,8 +472,8 @@ export const EcdsaMuDeltaShareResponse = t.type({
 /** ECDSA S share generation response (Step 3) with final signature components */
 export const EcdsaSShareResponse = SShare;
 
-/** ECDSA MPCv2 Round 1 response with initial signature share and encrypted session state */
-export const EcdsaMPCv2Round1Response = t.type({
+/** MPCv2 Round 1 response with initial signature share and encrypted session state (shared by ECDSA and EdDSA) */
+export const MPCv2Round1Response = t.type({
   /** First round signature share for MPCv2 protocol */
   signatureShareRound1: SignatureShareRecord,
   /** User's GPG public key for Round 2 communication */
@@ -483,19 +484,26 @@ export const EcdsaMPCv2Round1Response = t.type({
   encryptedUserGpgPrvKey: t.string,
 });
 
-/** ECDSA MPCv2 Round 2 response with second signature share and session state */
-export const EcdsaMPCv2Round2Response = t.type({
+/** MPCv2 Round 2 response with second signature share and session state (shared by ECDSA and EdDSA) */
+export const MPCv2Round2Response = t.type({
   /** Second round signature share for MPCv2 protocol */
   signatureShareRound2: SignatureShareRecord,
   /** Encrypted session state to continue to Round 3 */
   encryptedRound2Session: t.string,
 });
 
-/** ECDSA MPCv2 Round 3 response with final signature share */
-export const EcdsaMPCv2Round3Response = t.type({
+/** MPCv2 Round 3 response with final signature share (shared by ECDSA and EdDSA) */
+export const MPCv2Round3Response = t.type({
   /** Signature share for round 3 (final signature) */
   signatureShareRound3: SignatureShareRecord,
 });
+
+/** @deprecated Use MPCv2Round1Response */
+export const EcdsaMPCv2Round1Response = MPCv2Round1Response;
+/** @deprecated Use MPCv2Round2Response */
+export const EcdsaMPCv2Round2Response = MPCv2Round2Response;
+/** @deprecated Use MPCv2Round3Response */
+export const EcdsaMPCv2Round3Response = MPCv2Round3Response;
 
 /** Union of all TSS share responses - EDDSA (Commitment/R/G), ECDSA (PaillierModulus/K/MuDelta/S), or MPCv2 (Round1/2/3) */
 export const GenerateShareTSSResponse = {
@@ -511,6 +519,9 @@ export const GenerateShareTSSResponse = {
     EcdsaMPCv2Round1Response, // ECDSA MPCv2 Round 1
     EcdsaMPCv2Round2Response, // ECDSA MPCv2 Round 2
     EcdsaMPCv2Round3Response, // ECDSA MPCv2 Round 3
+    MPCv2Round1Response, // EdDSA MPCv2 Round 1
+    MPCv2Round2Response, // EdDSA MPCv2 Round 2
+    MPCv2Round3Response, // EdDSA MPCv2 Round 3
   ]),
   /** Invalid request parameters, missing configuration, or share generation validation failure */
   400: BitgoExpressError,
