@@ -39,6 +39,7 @@ import {
   KeychainWithEncryptedPrv,
   KeyIndices,
 } from '../keychain';
+import { CreateLightningInvoiceParams, LightningInvoiceResponse } from '../../lightning';
 import { getLightningAuthKey } from '../lightning/lightningWalletUtil';
 import { IPendingApproval, PendingApproval, PendingApprovals } from '../pendingApproval';
 import { GoStakingWallet, StakingWallet } from '../staking';
@@ -3178,6 +3179,39 @@ export class Wallet implements IWallet {
    */
   toJSON(): WalletData {
     return this._wallet;
+  }
+
+  /**
+   * Create a lightning invoice for this wallet.
+   * Supported for OFC (trading) and BTC wallets.
+   * Uses the same wallet-platform endpoint as lnbtc wallets.
+   * @param params.valueSat - Invoice value in satoshis - if not provided, a zero-value invoice is created
+   * @param params.memo - Optional memo/description
+   * @param params.expiry - Optional expiry in seconds (not supported for trading wallets)
+   */
+  async createLightningInvoice(params: CreateLightningInvoiceParams): Promise<LightningInvoiceResponse> {
+    const family = this.baseCoin.getFamily();
+    if (family !== 'ofc' && family !== 'btc') {
+      throw new Error('createLightningInvoice is only supported for OFC and BTC wallets');
+    }
+
+    const body: Record<string, unknown> = {};
+    if (params.valueSat !== undefined) {
+      body.valueSat = params.valueSat;
+    }
+    if (params.memo !== undefined) {
+      body.memo = params.memo;
+    }
+    if (params.expiry !== undefined) {
+      body.expiry = params.expiry;
+    }
+
+    const response = await this.bitgo
+      .post(this.bitgo.url(`/wallet/${this.id()}/lightning/invoice`, 2))
+      .send(body)
+      .result();
+
+    return response as LightningInvoiceResponse;
   }
 
   /**
