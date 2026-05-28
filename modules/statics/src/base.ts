@@ -1931,6 +1931,30 @@ export enum UnderlyingAsset {
   // Robinhood Chain mainnet ERC-20 tokens
   'hoodeth:tsla' = 'hoodeth:tsla',
   'hoodeth:usdg' = 'hoodeth:usdg',
+  // Robinhood Chain tokens - CECHO-1183
+  'hoodeth:nvda' = 'hoodeth:nvda',
+  'hoodeth:mu' = 'hoodeth:mu',
+  'hoodeth:sndk' = 'hoodeth:sndk',
+  'hoodeth:amd' = 'hoodeth:amd',
+  'hoodeth:spy' = 'hoodeth:spy',
+  'hoodeth:msft' = 'hoodeth:msft',
+  'hoodeth:pltr' = 'hoodeth:pltr',
+  'hoodeth:intc' = 'hoodeth:intc',
+  'hoodeth:qqq' = 'hoodeth:qqq',
+  'hoodeth:slv' = 'hoodeth:slv',
+  'hoodeth:crcl' = 'hoodeth:crcl',
+  'hoodeth:meta' = 'hoodeth:meta',
+  'hoodeth:aapl' = 'hoodeth:aapl',
+  'hoodeth:googl' = 'hoodeth:googl',
+  'hoodeth:uso' = 'hoodeth:uso',
+  'hoodeth:amzn' = 'hoodeth:amzn',
+  'hoodeth:crwv' = 'hoodeth:crwv',
+  'hoodeth:orcl' = 'hoodeth:orcl',
+  'hoodeth:sgov' = 'hoodeth:sgov',
+  'hoodeth:be' = 'hoodeth:be',
+  'hoodeth:usar' = 'hoodeth:usar',
+  'hoodeth:dram' = 'hoodeth:dram',
+  'hoodeth:week' = 'hoodeth:week',
   'hemieth:hemi' = 'hemieth:hemi',
   'hemieth:hemibtc' = 'hemieth:hemibtc',
   'usdt0:stable' = 'usdt0:stable',
@@ -3410,6 +3434,12 @@ export enum UnderlyingAsset {
   'inketh:kbtc' = 'inketh:kbtc',
   'inketh:usdc' = 'inketh:usdc',
   'inketh:usdt0' = 'inketh:usdt0',
+  // XTZ EVM (Etherlink) tokens - CECHO-1183
+  'xtzevm:usdt' = 'xtzevm:usdt',
+  'xtzevm:usdc' = 'xtzevm:usdc',
+  'xtzevm:xu3o8' = 'xtzevm:xu3o8',
+  'xtzevm:wxtz' = 'xtzevm:wxtz',
+  'xtzevm:stxtz' = 'xtzevm:stxtz',
 
   //world chain mainnet tokens
   'world:wld' = 'world:wld',
@@ -3783,6 +3813,7 @@ export enum UnderlyingAsset {
   'near:usdt' = 'near:usdt',
   'near:mpdao' = 'near:mpdao',
   'near:stnear' = 'near:stnear',
+  'near:aurora' = 'near:aurora',
 
   // Nep141 testnet tokens
   'tnear:tnep24dp' = 'tnear:tnep24dp',

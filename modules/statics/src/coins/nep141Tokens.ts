@@ -43,6 +43,16 @@ export const nep141Tokens = [
     UnderlyingAsset['near:stnear'],
     [...NEAR_TOKEN_FEATURES, CoinFeature.LIQUID_STAKING]
   ),
+  nep141Token(
+    'f21163ae-33db-48ad-9a5b-aa1af401639f',
+    'near:aurora',
+    'AURORA',
+    18,
+    'aaaaaa20d9e0e2461697782ef11675f668207961.factory.bridge.near',
+    '1250000000000000000000',
+    UnderlyingAsset['near:aurora'],
+    NEAR_TOKEN_FEATURES
+  ),
 
   // testnet tokens
   tnep141Token(
