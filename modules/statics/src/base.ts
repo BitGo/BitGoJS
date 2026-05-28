@@ -82,6 +82,7 @@ export enum CoinFamily {
   JOVAYETH = 'jovayeth',
   KAIA = 'kaia',
   KASPA = 'kaspa',
+  KATANAETH = 'katanaeth', // Katana Network L2
   KAVACOSMOS = 'kavacosmos',
   KAVAEVM = 'kavaevm',
   LNBTC = 'lnbtc',
@@ -659,6 +660,7 @@ export enum UnderlyingAsset {
   ISLM = 'islm',
   JOVAYETH = 'jovayeth',
   KAIA = 'kaia',
+  KATANAETH = 'katanaeth', // Katana Network L2
   KAVACOSMOS = 'kavacosmos',
   KAVAEVM = 'kavaevm',
   LNBTC = 'lnbtc',

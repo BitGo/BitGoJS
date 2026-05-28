@@ -2484,6 +2484,42 @@ export const allCoinsAndTokens = [
     ]
   ),
   account(
+    'd7f76096-3b45-4136-bd1b-74e231c70fef',
+    'katanaeth',
+    'Katana',
+    Networks.main.katanaeth,
+    18,
+    UnderlyingAsset.KATANAETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
+    'dd0cf6a6-2723-42c4-a020-81a1238d8cc4',
+    'tkatanaeth',
+    'Testnet Katana',
+    Networks.test.katanaeth,
+    18,
+    UnderlyingAsset.KATANAETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
     '8bfa7960-008f-4aa0-b49a-589c3127dd46',
     'tinketh',
     'Testnet INK',

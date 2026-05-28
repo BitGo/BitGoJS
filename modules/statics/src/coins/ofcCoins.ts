@@ -374,6 +374,15 @@ export const ofcCoins = [
     UnderlyingAsset.LINEAETH,
     CoinKind.CRYPTO
   ),
+  ofc('84fdd183-ee79-478f-af9a-06ff420e654b', 'ofckatanaeth', 'Katana', 18, UnderlyingAsset.KATANAETH, CoinKind.CRYPTO),
+  tofc(
+    '4a912718-0ae2-4fbc-ae46-f3561e4b3a2a',
+    'ofctkatanaeth',
+    'Testnet Katana',
+    18,
+    UnderlyingAsset.KATANAETH,
+    CoinKind.CRYPTO
+  ),
   ofc('b68e22ea-c6b6-458b-87d1-b6b5f79d9648', 'ofcinketh', 'INK', 18, UnderlyingAsset.INKETH, CoinKind.CRYPTO),
   tofc(
     '4d79941f-58ea-4fca-a784-93cf7acdf508',

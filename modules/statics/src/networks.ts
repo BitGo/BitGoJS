@@ -2580,6 +2580,23 @@ class HemiEthTestnet extends Testnet implements EthereumNetwork {
   chainId = 743111;
   nativeCoinOperationHashPrefix = '743111';
 }
+class KatanaEth extends Mainnet implements EthereumNetwork {
+  name = 'Katana';
+  family = CoinFamily.KATANAETH;
+  explorerUrl = 'https://katanascan.com/tx/';
+  accountExplorerUrl = 'https://katanascan.com/address/';
+  chainId = 747474;
+  nativeCoinOperationHashPrefix = '747474';
+}
+
+class KatanaEthTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Katana';
+  family = CoinFamily.KATANAETH;
+  explorerUrl = 'https://explorer-bokuto.katanarpc.com/tx/';
+  accountExplorerUrl = 'https://explorer-bokuto.katanarpc.com/address/';
+  chainId = 737373;
+  nativeCoinOperationHashPrefix = '737373';
+}
 
 class PrividiumETH extends Mainnet implements EthereumNetwork {
   name = 'Prividium Ethereum Mainnet';
@@ -2869,6 +2886,7 @@ export const Networks = {
     jovayeth: Object.freeze(new JovayETH()),
     kaia: Object.freeze(new Kaia()),
     kaspa: Object.freeze(new KaspaMainnet()),
+    katanaeth: Object.freeze(new KatanaEth()),
     kavacosmos: Object.freeze(new KavaCosmos()),
     kavaevm: Object.freeze(new KavaEVM()),
     lnbtc: Object.freeze(new LightningBitcoin()),
@@ -2999,6 +3017,7 @@ export const Networks = {
     islm: Object.freeze(new IslmTestnet()),
     jovayeth: Object.freeze(new JovayETHTestnet()),
     kaspa: Object.freeze(new KaspaTestnet()),
+    katanaeth: Object.freeze(new KatanaEthTestnet()),
     kavacosmos: Object.freeze(new KavaCosmosTestnet()),
     kavaevm: Object.freeze(new KavaEVMTestnet()),
     kovan: Object.freeze(new Kovan()),
