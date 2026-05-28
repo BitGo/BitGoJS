@@ -75,3 +75,12 @@ GHSA-2w8x-224x-785m
 # - The xmp bypass produces live HTML markup in output, but since we discard all tags and use
 #   the result as plain text in Error messages, there is no DOM rendering path and no XSS risk
 GHSA-rpr9-rxv7-x643
+
+# Excluded because:
+# - Path traversal vulnerability in tmp package (prefix/postfix/dir options not sanitized)
+# - Transitive dependency through lerna>nx>tmp and lerna>@lerna/create>nx>tmp
+# - lerna is a dev-only monorepo management tool; tmp is used internally by nx (lerna's task runner)
+# - The vulnerability requires passing user-controlled data to tmp's prefix, postfix, or dir options
+# - Our usage is fully automated dev tooling with no user-controlled inputs to tmp's options
+# - No patched version of tmp is available that is compatible with the nx version required by lerna
+GHSA-ph9p-34f9-6g65
