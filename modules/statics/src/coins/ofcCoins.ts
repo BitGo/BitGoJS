@@ -4481,6 +4481,13 @@ export const ofcCoins = [
     UnderlyingAsset['near:mpdao']
   ),
   ofcnep141Token(
+    '52a58949-967b-4762-baa8-62e46320582d',
+    'ofcnear:aurora',
+    'AURORA',
+    18,
+    UnderlyingAsset['near:aurora']
+  ),
+  ofcnep141Token(
     '125bd6cb-1927-408e-9045-dc55f2da7eed',
     'ofcnear:stnear',
     'stNEAR',
