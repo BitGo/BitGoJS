@@ -45,6 +45,7 @@ module.exports = {
         'FAC-',
         'GNA-',
         'GO-',
+        'GOA-',
         'GRC-',
         'HSM-',
         'INC-',
