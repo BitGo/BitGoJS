@@ -3988,8 +3988,8 @@ export const solTokens = [
     'sol:slx',
     'Solstice',
     9,
-    'SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfqq',
-    'SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfqq',
+    'SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfgq',
+    'SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfgq',
     UnderlyingAsset['sol:slx'],
     SOL_TOKEN_FEATURES
   ),
