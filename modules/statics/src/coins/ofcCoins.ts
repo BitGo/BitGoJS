@@ -4849,6 +4849,15 @@ export const ofcCoins = [
     UnderlyingAsset['canton:ibenji']
   ),
   ofcCantonToken('784c76fb-59c6-4826-b72e-20e996a35739', 'ofccanton:ceth', 'cETH', 10, UnderlyingAsset['canton:ceth']),
+  ofcCantonToken(
+    '092883f7-c65d-446d-8a92-ad25c39e6e93',
+    'ofccanton:usd1',
+    'USD1',
+    10,
+    UnderlyingAsset['canton:usd1'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   tofcCantonToken(
     'd7297535-c1d4-429d-b3c5-d36351b110e5',
     'ofctcanton:testcoin1',
@@ -4862,6 +4871,24 @@ export const ofcCoins = [
     'Test Token',
     10,
     UnderlyingAsset['tcanton:testtoken']
+  ),
+  tofcCantonToken(
+    '621027de-7161-41ec-a5cc-72fbf16cf275',
+    'ofctcanton:stgusd1',
+    'Test USD1 Token',
+    10,
+    UnderlyingAsset['tcanton:stgusd1'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  tofcCantonToken(
+    '9845adf4-b638-4a4e-be1d-b6d6c7a22fae',
+    'ofctcanton:usd1',
+    'Test USD1 Token',
+    10,
+    UnderlyingAsset['tcanton:usd1'],
+    undefined,
+    [CoinFeature.STABLECOIN]
   ),
   // New SUI OFC token
   ofcSuiToken('1e01eb3d-2573-4662-aa5e-4c390e4a9b38', 'ofcsui:dmc', 'DeLorean', 9, UnderlyingAsset['sui:dmc']),
