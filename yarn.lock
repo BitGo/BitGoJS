@@ -1063,10 +1063,10 @@
     monocle-ts "^2.3.13"
     newtype-ts "^0.3.5"
 
-"@bitgo/public-types@6.17.0":
-  version "6.17.0"
-  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-6.17.0.tgz#9e87418d55926d512610edeb2c46c811dcb09f65"
-  integrity sha512-/7JlGvxNsLx4qZQe5iQVoFoI2vKv1eElJKiiQM8NsARTqX76duYzJeYmiKiFvTERGK+np/gx29ijyBYw40KyGA==
+"@bitgo/public-types@6.21.0":
+  version "6.21.0"
+  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-6.21.0.tgz#54120da43349514cb5f7c98013883fd25e40fdbb"
+  integrity sha512-Y5pVLb81bGUY4jZWvp92AZzpdCmI1qUpDbMOsPEdwMxwlFNwj8gHCjtbW3sNpXpr09m3v9IXUZxdNBdjeGs9/w==
   dependencies:
     fp-ts "^2.0.0"
     io-ts "npm:@bitgo-forks/io-ts@2.1.4"
