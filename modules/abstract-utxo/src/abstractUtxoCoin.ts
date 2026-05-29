@@ -27,6 +27,7 @@ import {
   ParseTransactionOptions as BaseParseTransactionOptions,
   PrecreateBitGoOptions,
   PresignTransactionOptions,
+  BridgingParams,
   RequestTracer,
   SignedTransaction,
   TxIntentMismatchError,
@@ -276,6 +277,8 @@ export interface TransactionParams extends BaseTransactionParams {
   allowExternalChangeAddress?: boolean;
   changeAddress?: string;
   rbfTxIds?: string[];
+  /** Parameters for bridging intents (e.g. BTC -> sBTC peg-in), present when `type === 'bridging'`. */
+  bridgingParams?: BridgingParams;
 }
 
 export interface ParseTransactionOptions<TNumber extends number | bigint = number> extends BaseParseTransactionOptions {
