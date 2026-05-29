@@ -20,12 +20,14 @@ import {
   RecoveryTxRequest,
   SignedTransaction,
   TssVerifyAddressOptions,
+  TxIntentMismatchRecipientError,
   UnexpectedAddressError,
   verifyEddsaTssWalletAddress,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { KeyPair as SubstrateKeyPair, Transaction } from './lib';
+import { NativeTransferBuilder } from './lib/nativeTransferBuilder';
 import { DEFAULT_SUBSTRATE_PREFIX } from './lib/constants';
 import { SignTransactionOptions, VerifiedTransactionParameters, Material } from './lib/iface';
 import utils from './lib/utils';
@@ -132,12 +134,55 @@ export class SubstrateCoin extends BaseCoin {
 
   /** @inheritDoc **/
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const { txParams } = params;
-    if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
-      throw new Error(
-        `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
-      );
+    const { txParams, txPrebuild } = params;
+
+    if (!txParams) {
+      throw new Error('missing txParams');
     }
+    if (!txPrebuild) {
+      throw new Error('missing txPrebuild');
+    }
+    if (!txPrebuild.txHex) {
+      throw new Error('missing txHex in txPrebuild');
+    }
+
+    const factory = this.getBuilder();
+    const txBuilder = factory.from(txPrebuild.txHex) as unknown as NativeTransferBuilder;
+    const txTo: string = txBuilder['_to'];
+    const txAmount: string = txBuilder['_amount'];
+    const isSweep: boolean = txBuilder['_sweepFreeBalance'] === true;
+
+    if (txParams.recipients !== undefined) {
+      if (txParams.recipients.length === 0) {
+        throw new Error('missing recipients in txParams');
+      }
+      if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
+        throw new Error(
+          `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
+        );
+      }
+
+      if (txParams.recipients[0].address !== txTo) {
+        throw new TxIntentMismatchRecipientError(
+          `Recipient address ${txParams.recipients[0].address} does not match transaction destination address ${txTo}`,
+          params.reqId,
+          [txParams],
+          txPrebuild.txHex,
+          [{ address: txTo, amount: txAmount }]
+        );
+      }
+
+      if (!isSweep && txParams.recipients[0].amount !== txAmount) {
+        throw new TxIntentMismatchRecipientError(
+          `Recipient amount ${txParams.recipients[0].amount} does not match transaction amount ${txAmount}`,
+          params.reqId,
+          [txParams],
+          txPrebuild.txHex,
+          [{ address: txTo, amount: txAmount }]
+        );
+      }
+    }
+
     return true;
   }
 
