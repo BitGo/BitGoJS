@@ -41,7 +41,12 @@ export {
   Erc7984Coin,
 } from './account';
 export { CoinMap } from './map';
-export { networkFeatureMapForTokens, registerNetworkFeatures, getNetworkFeatures } from './networkFeatureMapForTokens';
+export {
+  networkFeatureMapForTokens,
+  registerNetworkFeatures,
+  getNetworkFeatures,
+  getTokenFeatures,
+} from './networkFeatureMapForTokens';
 export {
   generateErc20Coin,
   generateTestErc20Coin,
