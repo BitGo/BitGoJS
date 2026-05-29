@@ -3989,6 +3989,20 @@ export const ofcErc20Coins = [
     true,
     'baseeth'
   ),
+  ofcerc20(
+    '118731cd-93c6-49a5-b45b-7c330a49aa51',
+    'ofcbaseeth:gusdcq',
+    'Galaxy USDC Quality',
+    18,
+    UnderlyingAsset['baseeth:gusdcq'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 
   // Ink Network tokens
   ofcerc20(

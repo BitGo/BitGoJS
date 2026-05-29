@@ -4816,6 +4816,16 @@ export const allCoinsAndTokens = [
     Networks.main.basechain,
     [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
   ),
+  erc20Token(
+    '4436f145-938e-4ccd-bb04-810b0f3358fa',
+    'baseeth:gusdcq',
+    'Galaxy USDC Quality',
+    18,
+    '0x1e9e47583f15d45a10df48c0b1846e0492c795d7',
+    UnderlyingAsset['baseeth:gusdcq'],
+    Networks.main.basechain,
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
+  ),
 
   // XDC mainnet tokens
   xdcErc20(
