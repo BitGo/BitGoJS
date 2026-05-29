@@ -29,6 +29,21 @@ export function getNetworkFeatures(family: string): CoinFeature[] | undefined {
   return networkFeatureMapForTokens[family as CoinFamily] ?? dynamicNetworkFeaturesMap.get(family);
 }
 
+/**
+ * Resolve the final feature list for a token: the family's default token features
+ * plus `additionalFeatures`, minus `excludedFeatures`. Used by generated bot-token
+ * lists to apply the per-token diff returned by AMS (`features=false`).
+ */
+export function getTokenFeatures(
+  family: string,
+  additionalFeatures: CoinFeature[] = [],
+  excludedFeatures: CoinFeature[] = []
+): CoinFeature[] {
+  const base = getNetworkFeatures(family) ?? [];
+  const excluded = new Set<CoinFeature>(excludedFeatures);
+  return [...new Set<CoinFeature>([...base, ...additionalFeatures])].filter((f) => !excluded.has(f));
+}
+
 export const networkFeatureMapForTokens: Partial<Record<CoinFamily, CoinFeature[]>> = {
   algo: AccountCoin.DEFAULT_FEATURES,
   apt: APT_FEATURES,
