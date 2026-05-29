@@ -65,6 +65,7 @@ export async function verifyTransaction<TNumber extends bigint | number>(
     throw new Error('should not have unspents in txInfo for psbt');
   }
   const disableNetworking = !!verification.disableNetworking;
+  const isBridging = txParams.type === 'bridging';
   const parsedTransaction: ParsedTransaction<TNumber> = await coin.parseTransaction<TNumber>({
     txParams,
     txPrebuild,
@@ -160,7 +161,21 @@ export async function verifyTransaction<TNumber extends bigint | number>(
 
   // There are two instances where we will get into this point here
   if (nonChangeAmount.gt(payAsYouGoLimit)) {
-    if (isPsbt && parsedTransaction.customChange) {
+    if (isBridging) {
+      // The implicit external output is the bridge deposit address (see note above); it has no
+      // recipient to match against, so instead verify the total implicit external spend equals the
+      // intended bridge amount from bridgingParams.
+      const bridgeAmount = txParams.bridgingParams?.sbtc?.amount;
+      if (bridgeAmount === undefined) {
+        throwTxMismatch('bridging transaction is missing bridgingParams.sbtc.amount');
+      } else if (!nonChangeAmount.eq(bridgeAmount.toString())) {
+        throwTxMismatch(
+          `bridging output amount (${nonChangeAmount.toString()}) does not match intended bridge amount (${bridgeAmount})`
+        );
+      } else {
+        debug('verified bridging output amount matches bridgingParams.sbtc.amount');
+      }
+    } else if (isPsbt && parsedTransaction.customChange) {
       // In the case that we have a custom change address on a wallet and we are building the transaction
       // with a PSBT, we do not have the metadata to verify the address from the custom change wallet, nor
       // can we fetch that information from the other wallet because we may not have the credentials. Therefore,

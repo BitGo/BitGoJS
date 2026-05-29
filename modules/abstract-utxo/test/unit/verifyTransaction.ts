@@ -305,6 +305,166 @@ describe('Verify Transaction', function () {
     bitcoinMock.restore();
   });
 
+  it('should verify a bridging transaction whose implicit external output matches the bridge amount', async () => {
+    // Bridging intents (e.g. BTC -> sBTC peg-in) carry no recipients; the single external output
+    // is the bridge deposit address computed server-side. With explicitExternalSpendAmount 0 the
+    // paygo limit is 0, so any implicit external output would normally be rejected as an
+    // "unintended external recipient". For type: 'bridging' we instead verify that the implicit
+    // external spend equals bridgingParams.sbtc.amount.
+    const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
+      keychains: {} as any,
+      keySignatures: {},
+      outputs: [],
+      missingOutputs: [],
+      explicitExternalOutputs: [],
+      implicitExternalOutputs: [
+        {
+          address: 'sbtc_deposit_address',
+          amount: '22000',
+        },
+      ],
+      changeOutputs: [],
+      explicitExternalSpendAmount: 0,
+      implicitExternalSpendAmount: 22000,
+      needsCustomChangeKeySignatureVerification: false,
+    });
+
+    const bitcoinMock = sinon
+      .stub(coin, 'createTransactionFromHex')
+      .returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
+
+    const result = await coin.verifyTransaction({
+      txParams: {
+        walletPassphrase: passphrase,
+        type: 'bridging',
+        bridgingParams: { sbtc: { amount: '22000', stacksRecipient: 'SM1X', maxFee: '1000', lockTime: 100 } },
+      },
+      txPrebuild: {
+        txHex: '00',
+      },
+      wallet: unsignedSendingWallet as any,
+      verification: {},
+    });
+
+    assert.strictEqual(result, true);
+
+    coinMock.restore();
+    bitcoinMock.restore();
+  });
+
+  it('should reject a bridging transaction whose implicit external output does not match the bridge amount', async () => {
+    const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
+      keychains: {} as any,
+      keySignatures: {},
+      outputs: [],
+      missingOutputs: [],
+      explicitExternalOutputs: [],
+      implicitExternalOutputs: [
+        {
+          address: 'sbtc_deposit_address',
+          amount: '50000',
+        },
+      ],
+      changeOutputs: [],
+      explicitExternalSpendAmount: 0,
+      implicitExternalSpendAmount: 50000,
+      needsCustomChangeKeySignatureVerification: false,
+    });
+
+    await assert.rejects(
+      coin.verifyTransaction({
+        txParams: {
+          walletPassphrase: passphrase,
+          type: 'bridging',
+          bridgingParams: { sbtc: { amount: '22000', stacksRecipient: 'SM1X', maxFee: '1000', lockTime: 100 } },
+        },
+        txPrebuild: {
+          txHex: '00',
+        },
+        wallet: unsignedSendingWallet as any,
+        verification: {},
+      }),
+      /bridging output amount \(50000\) does not match intended bridge amount \(22000\)/
+    );
+
+    coinMock.restore();
+  });
+
+  it('should reject a bridging transaction that is missing bridgingParams.sbtc.amount', async () => {
+    const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
+      keychains: {} as any,
+      keySignatures: {},
+      outputs: [],
+      missingOutputs: [],
+      explicitExternalOutputs: [],
+      implicitExternalOutputs: [
+        {
+          address: 'sbtc_deposit_address',
+          amount: '22000',
+        },
+      ],
+      changeOutputs: [],
+      explicitExternalSpendAmount: 0,
+      implicitExternalSpendAmount: 22000,
+      needsCustomChangeKeySignatureVerification: false,
+    });
+
+    await assert.rejects(
+      coin.verifyTransaction({
+        txParams: {
+          walletPassphrase: passphrase,
+          type: 'bridging',
+        },
+        txPrebuild: {
+          txHex: '00',
+        },
+        wallet: unsignedSendingWallet as any,
+        verification: {},
+      }),
+      /bridging transaction is missing bridgingParams.sbtc.amount/
+    );
+
+    coinMock.restore();
+  });
+
+  it('should still reject the same implicit external output when the intent is not bridging', async () => {
+    // Same shape as the bridging test above, but without type: 'bridging' the implicit external
+    // output is treated as an unintended external recipient and rejected.
+    const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
+      keychains: {} as any,
+      keySignatures: {},
+      outputs: [],
+      missingOutputs: [],
+      explicitExternalOutputs: [],
+      implicitExternalOutputs: [
+        {
+          address: 'sbtc_deposit_address',
+          amount: '22000',
+        },
+      ],
+      changeOutputs: [],
+      explicitExternalSpendAmount: 0,
+      implicitExternalSpendAmount: 22000,
+      needsCustomChangeKeySignatureVerification: false,
+    });
+
+    await assert.rejects(
+      coin.verifyTransaction({
+        txParams: {
+          walletPassphrase: passphrase,
+        },
+        txPrebuild: {
+          txHex: '00',
+        },
+        wallet: unsignedSendingWallet as any,
+        verification: {},
+      }),
+      /prebuild attempts to spend to unintended external recipients/
+    );
+
+    coinMock.restore();
+  });
+
   it('should work with bigint amounts', async () => {
     // need a coin that uses bigint
     const bigintCoin = getUtxoCoin('tdoge');
