@@ -13,7 +13,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 
 import BigNumber from 'bignumber.js';
-import { Signer } from 'xrpl';
+import { MPTokenAuthorize, Signer } from 'xrpl';
 import {
   AccountSetTransactionExplanation,
   SignerListSetTransactionExplanation,
@@ -83,18 +83,29 @@ export class Transaction extends BaseTransaction {
         txData.destinationTag = this._xrpTransaction.DestinationTag;
         return txData;
 
-      case XrpTransactionType.Payment:
-        txData.destination = this._xrpTransaction.Destination;
-        txData.destinationTag = this._xrpTransaction.DestinationTag;
-        if (
-          typeof this._xrpTransaction.Amount === 'string' ||
-          utils.isIssuedCurrencyAmount(this._xrpTransaction.Amount)
-        ) {
-          txData.amount = this._xrpTransaction.Amount;
+      case XrpTransactionType.Payment: {
+        const paymentTx = this._xrpTransaction as xrpl.Payment;
+        txData.destination = paymentTx.Destination;
+        txData.destinationTag = paymentTx.DestinationTag;
+        const paymentAmount = paymentTx.Amount;
+        if (typeof paymentAmount === 'string' || utils.isIssuedCurrencyAmount(paymentAmount)) {
+          txData.amount = paymentAmount as xrpl.Amount;
+        } else if (utils.isMPTAmount(paymentAmount)) {
+          txData.mptAmount = paymentAmount;
         } else {
           throw new InvalidTransactionError('Invalid amount');
         }
         return txData;
+      }
+
+      case XrpTransactionType.MPTokenAuthorize: {
+        const mpTx = this._xrpTransaction as MPTokenAuthorize;
+        txData.mptIssuanceId = mpTx.MPTokenIssuanceID;
+        if (mpTx.Holder) {
+          txData.mptHolder = mpTx.Holder;
+        }
+        return txData;
+      }
 
       case XrpTransactionType.AccountSet:
         txData.setFlag = this._xrpTransaction.SetFlag;
@@ -152,7 +163,7 @@ export class Transaction extends BaseTransaction {
       const signablePayload = this.getSignablePayload();
 
       const xrpWallet = new xrpl.Wallet(pub, prv);
-      const signedTx = xrpWallet.sign(signablePayload, this._isMultiSig);
+      const signedTx = xrpWallet.sign(signablePayload as xrpl.Transaction, this._isMultiSig);
       const xrpSignedTx = xrpl.decode(signedTx.tx_blob);
       xrpl.validate(xrpSignedTx);
 
@@ -169,7 +180,7 @@ export class Transaction extends BaseTransaction {
         const sortedSigners = this.concatAndSortSigners(this._xrpTransaction.Signers || [], xrpSignedTx.Signers);
         this._xrpTransaction = xrpSignedTx as unknown as XrpTransaction;
         this._xrpTransaction.Signers = sortedSigners;
-        this._id = this.calculateIdFromRawTx(xrpl.encode(this._xrpTransaction));
+        this._id = this.calculateIdFromRawTx(xrpl.encode(this._xrpTransaction as xrpl.Transaction));
       }
     }
   }
@@ -179,7 +190,7 @@ export class Transaction extends BaseTransaction {
     if (!this._xrpTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    return xrpl.encode(this._xrpTransaction);
+    return xrpl.encode(this._xrpTransaction as xrpl.Transaction);
   }
 
   explainTransaction(): TransactionExplanation {
@@ -192,9 +203,27 @@ export class Transaction extends BaseTransaction {
         return this.explainAccountSetTransaction();
       case XrpTransactionType.SignerListSet:
         return this.explainSignerListSetTransaction();
+      case XrpTransactionType.MPTokenAuthorize:
+        return this.explainMPTokenAuthorizeTransaction();
       default:
         throw new Error('Unsupported transaction type');
     }
+  }
+
+  private explainMPTokenAuthorizeTransaction(): BaseTransactionExplanation {
+    const tx = this._xrpTransaction as MPTokenAuthorize;
+    return {
+      displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
+      id: this._id as string,
+      changeOutputs: [],
+      outputAmount: 0,
+      changeAmount: 0,
+      outputs: [],
+      fee: {
+        fee: tx.Fee as string,
+        feeRate: undefined,
+      },
+    };
   }
 
   private explainAccountDeleteTransaction(): BaseTransactionExplanation {
@@ -223,7 +252,14 @@ export class Transaction extends BaseTransaction {
   private explainPaymentTransaction(): BaseTransactionExplanation {
     const tx = this._xrpTransaction as xrpl.Payment;
     const address = utils.normalizeAddress({ address: tx.Destination, destinationTag: tx.DestinationTag });
-    const amount = _.isString(tx.Amount) ? tx.Amount : 0;
+    let amount: string | number;
+    if (_.isString(tx.Amount)) {
+      amount = tx.Amount;
+    } else if (utils.isMPTAmount(tx.Amount)) {
+      amount = tx.Amount.value;
+    } else {
+      amount = (tx.Amount as xrpl.IssuedCurrencyAmount).value;
+    }
 
     return {
       displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
@@ -234,7 +270,7 @@ export class Transaction extends BaseTransaction {
       outputs: [
         {
           address,
-          amount,
+          amount: String(amount),
         },
       ],
       fee: {
@@ -351,15 +387,22 @@ export class Transaction extends BaseTransaction {
       case XrpTransactionType.AccountSet:
         this.setTransactionType(TransactionType.AccountUpdate);
         break;
-      case XrpTransactionType.Payment:
-        if (utils.isIssuedCurrencyAmount(this._xrpTransaction.Amount)) {
+      case XrpTransactionType.Payment: {
+        const paymentTx = this._xrpTransaction as xrpl.Payment;
+        if (utils.isMPTAmount(paymentTx.Amount)) {
+          this.setTransactionType(TransactionType.SendMPT);
+        } else if (utils.isIssuedCurrencyAmount(paymentTx.Amount)) {
           this.setTransactionType(TransactionType.SendToken);
         } else {
           this.setTransactionType(TransactionType.Send);
         }
         break;
+      }
       case XrpTransactionType.TrustSet:
         this.setTransactionType(TransactionType.TrustLine);
+        break;
+      case XrpTransactionType.MPTokenAuthorize:
+        this.setTransactionType(TransactionType.MPTokenAuthorize);
         break;
     }
     this.loadInputsAndOutputs();
@@ -388,18 +431,17 @@ export class Transaction extends BaseTransaction {
     }
 
     if (this._xrpTransaction.TransactionType === XrpTransactionType.Payment) {
+      const paymentTx = this._xrpTransaction as xrpl.Payment;
+      const { Account, Destination, Amount, DestinationTag } = paymentTx;
       let value: string;
-      const { Account, Destination, Amount, DestinationTag } = this._xrpTransaction;
       if (typeof Amount === 'string') {
         value = Amount;
-      } else {
+      } else if (utils.isMPTAmount(Amount)) {
         value = Amount.value;
+      } else {
+        value = (Amount as xrpl.IssuedCurrencyAmount).value;
       }
-      this.inputs.push({
-        address: Account,
-        value,
-        coin,
-      });
+      this.inputs.push({ address: Account, value, coin });
       this.outputs.push({
         address: utils.normalizeAddress({ address: Destination, destinationTag: DestinationTag }),
         value,

@@ -5,7 +5,18 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   TransactionPrebuild,
 } from '@bitgo/sdk-core';
-import { AccountDelete, AccountSet, Amount, Payment, Signer, SignerEntry, SignerListSet, TrustSet } from 'xrpl';
+import {
+  AccountDelete,
+  AccountSet,
+  Amount,
+  MPTAmount,
+  MPTokenAuthorize,
+  Payment,
+  Signer,
+  SignerEntry,
+  SignerListSet,
+  TrustSet,
+} from 'xrpl';
 
 export enum XrpTransactionType {
   AccountDelete = 'AccountDelete',
@@ -13,9 +24,13 @@ export enum XrpTransactionType {
   Payment = 'Payment',
   SignerListSet = 'SignerListSet',
   TrustSet = 'TrustSet',
+  MPTokenAuthorize = 'MPTokenAuthorize',
 }
 
-export type XrpTransaction = AccountDelete | Payment | AccountSet | SignerListSet | TrustSet;
+// Re-export so consumers can import alongside other XRP types from this module.
+export type { MPTAmount, MPTokenAuthorize };
+
+export type XrpTransaction = AccountDelete | Payment | AccountSet | SignerListSet | TrustSet | MPTokenAuthorize;
 
 export interface Address {
   address: string;
@@ -138,6 +153,10 @@ export interface TxData {
   // signer list set fields
   signerQuorum?: number;
   signerEntries?: SignerEntry[];
+  // mpt fields
+  mptIssuanceId?: string;
+  mptHolder?: string; // issuer-side auth only (Phase 2) — absent for holder self-auth
+  mptAmount?: MPTAmount;
 }
 
 export interface SignerDetails {

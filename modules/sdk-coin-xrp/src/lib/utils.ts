@@ -10,7 +10,7 @@ import * as querystring from 'querystring';
 import * as rippleKeypairs from 'ripple-keypairs';
 import * as url from 'url';
 import * as xrpl from 'xrpl';
-import { Amount, IssuedCurrencyAmount, MPTAmount } from 'xrpl';
+import { Amount, IssuedCurrencyAmount, isMPTAmount, MPTAmount } from 'xrpl';
 import { VALID_ACCOUNT_SET_FLAGS } from './constants';
 import { Address, SignerDetails } from './iface';
 import { KeyPair as XrpKeyPair } from './keyPair';
@@ -221,11 +221,17 @@ class Utils implements BaseUtils {
   }
 
   /**
-   * Determines if the provided `amount` is for a trust-line token payment (IssuedCurrencyAmount).
-   * Uses `in` narrowing — safe for Amount | MPTAmount without unsafe casts.
+   * Determines if the provided `amount` is a trust-line token payment amount (IssuedCurrencyAmount).
    */
   public isIssuedCurrencyAmount(amount: Amount | MPTAmount): amount is IssuedCurrencyAmount {
     return typeof amount === 'object' && 'currency' in amount && 'issuer' in amount && 'value' in amount;
+  }
+
+  /**
+   * Determines if the provided `amount` is an MPT payment amount.
+   */
+  public isMPTAmount(amount: Amount | MPTAmount): amount is MPTAmount {
+    return isMPTAmount(amount);
   }
 
   /**

@@ -502,6 +502,14 @@ export const destAccountInfoNotFound = {
   },
 };
 
+// ─── MPT test fixtures ────────────────────────────────────────────────────────
+
+/** A valid 48-character hex MPTokenIssuanceID (192 bits) */
+export const MPT_ISSUANCE_ID = '00F633BCDD435DCB9EE57E47809EDE01BBB050679C488A97';
+
+/** Raw integer value (no AssetScale applied) */
+export const MPT_AMOUNT_VALUE = '1000';
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const enableTokenFixtures = {
