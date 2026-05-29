@@ -3927,9 +3927,12 @@ export enum UnderlyingAsset {
   // Canton testnet tokens
   'tcanton:testcoin1' = 'tcanton:testcoin1',
   'tcanton:testtoken' = 'tcanton:testtoken',
+  'tcanton:stgusd1' = 'tcanton:stgusd1',
+  'tcanton:usd1' = 'tcanton:usd1',
 
   // Canton mainnet tokens
   'canton:usdcx' = 'canton:usdcx',
+  'canton:usd1' = 'canton:usd1',
   'canton:cbtc' = 'canton:cbtc',
   'canton:usdxlr' = 'canton:usdxlr',
   'canton:cltc' = 'canton:cltc',

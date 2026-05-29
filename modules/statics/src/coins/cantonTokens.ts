@@ -1,5 +1,5 @@
 import { cantonToken, tcantonToken } from '../account';
-import { UnderlyingAsset } from '../base';
+import { CoinFeature, UnderlyingAsset } from '../base';
 import { CANTON_TOKEN_FEATURES } from '../coinFeatures';
 
 export const cantonTokens = [
@@ -73,6 +73,16 @@ export const cantonTokens = [
     UnderlyingAsset['canton:ceth'],
     CANTON_TOKEN_FEATURES
   ),
+  cantonToken(
+    '9ecb4703-a612-4905-9955-83b273f6decd',
+    'canton:usd1',
+    'USD1',
+    10,
+    'https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/',
+    '12207::12207104d046b9339c2615aaa1ff7170eace89d1e4c657148eab5d0c2417583fa1a0:USD1',
+    UnderlyingAsset['canton:usd1'],
+    [...CANTON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
   // testnet tokens
   tcantonToken(
     '46356790-0ac4-4c3b-8b70-39094106d772',
@@ -93,5 +103,25 @@ export const cantonTokens = [
     'auth0_007c65f857f1c3d599cb6df73775::1220d2d732d042c281cee80f483ab80f3cbaa4782860ed5f4dc228ab03dedd2ee8f9:TestToken',
     UnderlyingAsset['tcanton:testtoken'],
     CANTON_TOKEN_FEATURES
+  ),
+  tcantonToken(
+    '713b202a-d14a-4818-92d8-3505fc39b1bf',
+    'tcanton:stgusd1',
+    'Test USD1 Token',
+    10,
+    'https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/',
+    '1220e::1220e2b2bf85aa100fe92d6089458f19a272205a3cc7fea2eb46030cdc3dff605d4a:STGUSD1',
+    UnderlyingAsset['tcanton:stgusd1'],
+    [...CANTON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tcantonToken(
+    '57b5236d-1660-4756-b76a-2d0ac2290936',
+    'tcanton:usd1',
+    'Test USD1 Token',
+    10,
+    'https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/',
+    '12209::12209fec64653a5324fba57424949ccbdb51828b76d914451772c4496a0215d0cca7:USD1',
+    UnderlyingAsset['tcanton:usd1'],
+    [...CANTON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
 ];
