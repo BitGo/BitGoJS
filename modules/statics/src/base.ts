@@ -582,6 +582,10 @@ export enum CoinFeature {
    * to BitGo via ACL.delegateForUserDecryption() before balances can be displayed.
    */
   REQUIRES_DECRYPTION_DELEGATION = 'requires-decryption-delegation',
+  /**
+   * This token is a receipt token, representing a claim on an underlying asset
+   */
+  RECEIPT_TOKEN = 'receipt-token',
 }
 
 /**
