@@ -137,6 +137,12 @@ export interface XrpCoinConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
 }
 
+export interface XrpMptCoinConstructorOptions extends AccountConstructorOptions {
+  mptIssuanceId: string; // 48-char hex MPTokenIssuanceID — stored as contractAddress
+  canTransfer: boolean; // immutable lsfMPTCanTransfer (0x0008) flag
+  assetScale: number; // immutable AssetScale from MPTokenIssuanceCreate
+}
+
 export interface SuiCoinConstructorOptions extends AccountConstructorOptions {
   packageId: string;
   module: string;
@@ -604,6 +610,34 @@ export class XrpCoin extends AccountCoinToken {
     this.issuerAddress = options.contractAddress.split('::')[0];
     this.currencyCode = options.contractAddress.split('::')[1];
     this.contractAddress = options.contractAddress;
+  }
+}
+
+/**
+ * XRP Ledger Multi-Purpose Token (MPT) — MPTokensV1 amendment.
+ * Identified by a 48-char hex MPTokenIssuanceID stored as contractAddress.
+ * Uses account_objects (not account_lines). No issuer::currency pattern.
+ * Named xrp:<token_name> — same pattern as trust-line tokens.
+ */
+export class XrpMptCoin extends AccountCoinToken {
+  public readonly contractAddress: string; // MPTokenIssuanceID
+  public readonly canTransfer: boolean; // immutable — set at MPTokenIssuanceCreate
+
+  constructor(options: XrpMptCoinConstructorOptions) {
+    super({ ...options });
+
+    if (!/^[0-9a-fA-F]{48}$/.test(options.mptIssuanceId)) {
+      throw new InvalidContractAddressError(options.name, options.mptIssuanceId);
+    }
+
+    if (!Number.isInteger(options.assetScale) || options.assetScale < 0 || options.assetScale > 255) {
+      throw new Error(
+        `invalid assetScale '${options.assetScale}' for coin '${options.name}': must be an integer between 0 and 255 (uint8)`
+      );
+    }
+
+    this.contractAddress = options.mptIssuanceId;
+    this.canTransfer = options.canTransfer;
   }
 }
 
@@ -3305,6 +3339,85 @@ export function txrpToken(
     currencyCode,
     contractAddress,
     domain,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network
+  );
+}
+
+/**
+ * Factory function for mainnet XRP MPT token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token, e.g. "xrp:my_mpt"
+ * @param fullName Complete human-readable name of the token
+ * @param mptIssuanceId 48-char hex MPTokenIssuanceID
+ * @param canTransfer immutable lsfMPTCanTransfer flag from MPTokenIssuanceCreate
+ * @param assetScale immutable display decimal places from MPTokenIssuanceCreate (also used as decimalPlaces)
+ * @param asset UnderlyingAsset enum value
+ * @param features Optional coin features
+ * @param network Optional network override (defaults to mainnet XRP)
+ */
+export function xrpMptToken(
+  id: string,
+  name: string,
+  fullName: string,
+  mptIssuanceId: string,
+  canTransfer: boolean,
+  assetScale: number,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.xrp,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new XrpMptCoin({
+      id,
+      name,
+      fullName,
+      network,
+      mptIssuanceId,
+      canTransfer,
+      assetScale,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces: assetScale, // assetScale IS the display decimal places — same concept as decimalPlaces elsewhere
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.XRP,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet XRP MPT token instances.
+ */
+export function txrpMptToken(
+  id: string,
+  name: string,
+  fullName: string,
+  mptIssuanceId: string,
+  canTransfer: boolean,
+  assetScale: number,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.xrp
+) {
+  return xrpMptToken(
+    id,
+    name,
+    fullName,
+    mptIssuanceId,
+    canTransfer,
+    assetScale,
     asset,
     features,
     prefix,

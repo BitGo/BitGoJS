@@ -33,6 +33,7 @@ import {
   VetToken,
   WorldERC20Token,
   XrpCoin,
+  XrpMptCoin,
   ZkethERC20Token,
   VetNFTCollection,
   AdaToken,
@@ -104,6 +105,11 @@ export type XrpTokenConfig = BaseNetworkConfig & {
   currencyCode: string;
   domain?: string;
   contractAddress: string;
+};
+
+export type XrpMptTokenConfig = BaseNetworkConfig & {
+  contractAddress: string; // MPTokenIssuanceID (48-char hex)
+  canTransfer: boolean; // immutable lsfMPTCanTransfer flag
 };
 
 export type SuiTokenConfig = BaseNetworkConfig & {
@@ -180,6 +186,7 @@ export type TokenConfig =
   | AlgoTokenConfig
   | TrxTokenConfig
   | XrpTokenConfig
+  | XrpMptTokenConfig
   | SuiTokenConfig
   | AptTokenConfig
   | AptNFTCollectionConfig
@@ -225,7 +232,7 @@ export interface TokenNetwork {
   hbar: { tokens: HbarTokenConfig[] };
   ada: { tokens: AdaTokenConfig[] };
   trx: { tokens: TrxTokenConfig[] };
-  xrp: { tokens: XrpTokenConfig[] };
+  xrp: { tokens: XrpTokenConfig[]; mptTokens: XrpMptTokenConfig[] };
   zketh: { tokens: EthLikeTokenConfig[] };
   sui: { tokens: SuiTokenConfig[] };
   tao: { tokens: TaoTokenConfig[] };
@@ -932,6 +939,26 @@ const getFormattedXrpTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+function getXrpMptTokenConfig(coin: XrpMptCoin): XrpMptTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'xrp' : 'txrp',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    decimalPlaces: coin.decimalPlaces, // set from assetScale in factory (same concept)
+    contractAddress: coin.contractAddress,
+    canTransfer: coin.canTransfer,
+  };
+}
+
+const getFormattedXrpMptTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: XrpMptTokenConfig[], coin) => {
+    if (coin instanceof XrpMptCoin) {
+      acc.push(getXrpMptTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
 function getSuiTokenConfig(coin: SuiCoin): SuiTokenConfig {
   return {
     type: coin.name,
@@ -1373,6 +1400,7 @@ export const getFormattedTokensByNetwork = (network: 'Mainnet' | 'Testnet', coin
     },
     xrp: {
       tokens: getFormattedXrpTokens(coinMap).filter((token) => token.network === network),
+      mptTokens: getFormattedXrpMptTokens(coinMap).filter((token) => token.network === network),
     },
     sui: {
       tokens: getFormattedSuiTokens(coinMap).filter((token) => token.network === network),
@@ -1552,6 +1580,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getAdaTokenConfig(coin);
   } else if (coin instanceof TronErc20Coin) {
     return getTrxTokenConfig(coin);
+  } else if (coin instanceof XrpMptCoin) {
+    return getXrpMptTokenConfig(coin);
   } else if (coin instanceof XrpCoin) {
     return getXrpTokenConfig(coin);
   } else if (coin instanceof SuiCoin) {

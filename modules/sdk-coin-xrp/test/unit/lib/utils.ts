@@ -354,6 +354,32 @@ describe('Utils', () => {
     });
   });
 
+  describe('isIssuedCurrencyAmount', () => {
+    it('should return true for a valid trust-line IssuedCurrencyAmount', () => {
+      const amount = { currency: 'USD', issuer: 'rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh', value: '100' };
+      XrpUtils.isIssuedCurrencyAmount(amount).should.be.true();
+    });
+
+    it('should return false for native XRP string amount', () => {
+      XrpUtils.isIssuedCurrencyAmount('1000000' as any).should.be.false();
+    });
+
+    it('should return false for an MPTAmount (mpt_issuance_id + value, no currency/issuer)', () => {
+      const amount = { mpt_issuance_id: '00F633BCDD435DCB9EE57E47809EDE01BBB050679C488A97', value: '1000' };
+      XrpUtils.isIssuedCurrencyAmount(amount as any).should.be.false();
+    });
+
+    it('should return false if currency field is missing', () => {
+      const amount = { issuer: 'rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh', value: '100' };
+      XrpUtils.isIssuedCurrencyAmount(amount as any).should.be.false();
+    });
+
+    it('should return false if issuer field is missing', () => {
+      const amount = { currency: 'USD', value: '100' };
+      XrpUtils.isIssuedCurrencyAmount(amount as any).should.be.false();
+    });
+  });
+
   describe('validateAccountSetFlag', () => {
     it('should throw an error if the flag is not a valid number', () => {
       const invalidFlag = 'invalid';
