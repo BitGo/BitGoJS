@@ -7,6 +7,7 @@ import * as sinon from 'sinon';
 import '../lib/asserts';
 import nock = require('nock');
 import * as _ from 'lodash';
+import * as assert from 'assert';
 
 import {
   BaseTssUtils,
@@ -2590,6 +2591,46 @@ describe('V2 Wallet:', function () {
 
     afterEach(function () {
       sandbox.verifyAndRestore();
+    });
+
+    it('should preserve tss txPrebuild buildParams when presign replaces the txPrebuild', async function () {
+      const recipients = [
+        {
+          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+          amount: '1000',
+        },
+      ];
+      const buildParams = {
+        recipients,
+        type: 'transfer',
+      };
+
+      sandbox.stub(tsol, 'presignTransaction').callsFake(async (presignParams) => {
+        return {
+          ...presignParams,
+          txPrebuild: {
+            txRequestId: 'id',
+            txHex: 'refreshed-tx-hex',
+          },
+        };
+      });
+      const signTxRequest = sandbox.stub(TssUtils.prototype, 'signTxRequest').resolves(txRequest);
+
+      await tssSolWallet.signTransaction({
+        txPrebuild: {
+          txRequestId: 'id',
+          txHex: 'original-tx-hex',
+          buildParams,
+        },
+        prv: 'user-prv',
+      });
+
+      signTxRequest.should.have.been.calledOnce();
+      const firstSignTxRequestCall = signTxRequest.firstCall;
+      assert.ok(firstSignTxRequestCall);
+      const signTxRequestParams = firstSignTxRequestCall.args[0];
+      assert.ok(signTxRequestParams);
+      should(signTxRequestParams.txParams).deepEqual(buildParams);
     });
 
     describe('preBuildAndSignTransaction', async function () {
