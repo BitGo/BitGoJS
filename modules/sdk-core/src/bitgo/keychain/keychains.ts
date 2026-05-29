@@ -307,6 +307,7 @@ export class Keychains implements IKeychains {
         isMPCv2: params.isMPCv2,
         coinSpecific: params.coinSpecific,
         webauthnDevices: params.webauthnDevices,
+        webauthnInfo: params.webauthnInfo,
       })
       .result();
   }
