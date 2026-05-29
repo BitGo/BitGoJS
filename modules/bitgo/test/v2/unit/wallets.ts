@@ -4272,8 +4272,8 @@ describe('V2 Wallets:', function () {
       });
 
       const encryptPrvForUserStub = sinon
-        .stub(wallet, 'encryptPrvForUser')
-        .callsFake((prv, pubKey, userPubKey, path) => {
+        .stub(wallet, 'encryptPrvForUserAsync')
+        .callsFake(async (prv, pubKey, userPubKey, path) => {
           return {
             pub: pubKey,
             encryptedPrv: 'dummyEncryptedPrv',
@@ -4325,6 +4325,80 @@ describe('V2 Wallets:', function () {
         assert.strictEqual(call.args[2], user.pubKey, `Should use user${index + 1}'s public key`);
         assert.strictEqual(call.args[3], user.path, `Should use user${index + 1}'s path`);
       });
+    });
+  });
+
+  describe('downloadKeycardAsync', () => {
+    const localBitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    const walletData = {
+      id: '5b34252f1bf349930e34020a00000002',
+      coin: 'tbtc',
+      keys: [
+        '5b3424f91bf349930e34017500000000',
+        '5b3424f91bf349930e34017600000000',
+        '5b3424f91bf349930e34017700000000',
+      ],
+      coinSpecific: {},
+      multisigType: 'onchain',
+      type: 'hot',
+    };
+    const tbtc = localBitgo.coin('tbtc');
+    const wallet = new Wallet(localBitgo, tbtc, walletData);
+
+    it('should throw when called in Node.js (no browser window)', async () => {
+      // In Node.js, accessing `window` throws ReferenceError; the method rejects.
+      await wallet.downloadKeycardAsync().should.be.rejected();
+    });
+
+    it('downloadKeycard (sync) should throw when called in Node.js (no browser window)', () => {
+      should.throws(() => wallet.downloadKeycard());
+    });
+  });
+
+  describe('encryptPrvForUserAsync', () => {
+    const localBitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    const walletData = {
+      id: '5b34252f1bf349930e34020a00000001',
+      coin: 'tbtc',
+      keys: [
+        '5b3424f91bf349930e34017500000000',
+        '5b3424f91bf349930e34017600000000',
+        '5b3424f91bf349930e34017700000000',
+      ],
+      coinSpecific: {},
+      multisigType: 'onchain',
+      type: 'hot',
+    };
+    const tbtc = localBitgo.coin('tbtc');
+    const wallet = new Wallet(localBitgo, tbtc, walletData);
+
+    before(function () {
+      nock('https://bitgo.fakeurl').persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants: {} });
+      localBitgo.initializeTestVars();
+    });
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('should encrypt prv for user and return the correct output shape', async () => {
+      const decryptedPrv =
+        'xprv9s21ZrQH143K2fJ91S4BRsupcYrE6mmY96fcX5HkhoTrrwmwjd16Cn87cWinJjByrfpojjx7ezsJLx7TAKLT8m8hM5Kax9YcoxnBeJZ3t2k';
+      const pub =
+        'xpub661MyMwAqRbcF9Nc7TbBo1rZAagiWEVPWKbDKThNG8zqjk76HAKLkaSbTn6dK2dQPfuD7xjicxCZVWvj67fP5nQ9W7QURmoMVAX8m6jZsGp';
+      // A valid 33-byte compressed EC point on secp256k1
+      const userPubkey = '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798';
+      const path = 'm/999999/0/1';
+
+      sinon.stub(localBitgo, 'encryptAsync').resolves('encryptedPrvForUser');
+
+      const result = await wallet.encryptPrvForUserAsync(decryptedPrv, pub, userPubkey, path);
+
+      result.should.have.property('pub', pub);
+      result.should.have.property('encryptedPrv', 'encryptedPrvForUser');
+      result.should.have.property('fromPubKey').which.is.a.String();
+      result.should.have.property('toPubKey', userPubkey);
+      result.should.have.property('path', path);
     });
   });
 

@@ -101,6 +101,36 @@ export function getIsUnsignedSweep({
   return backupKey.startsWith('xpub') && userKey.startsWith('xpub');
 }
 
+function parseKeyAsXprv(key: string, source: string): BIP32Interface {
+  try {
+    return bip32.fromBase58(key);
+  } catch (e) {
+    throw new Error(`Failed to validate ${source} key - try again!`);
+  }
+}
+
+function addBitgoKeyIfRequired(
+  keys: BIP32Interface[],
+  params: InitiateRecoveryOptions | InitiateConsolidationRecoveryOptions,
+  requireBitGoXpub: boolean
+): BIP32Interface[] {
+  if (requireBitGoXpub) {
+    if (!params.bitgoKey) {
+      throw new Error(`BitGo xpub required but not provided`);
+    }
+    try {
+      // Box C
+      keys.push(bip32.fromBase58(params.bitgoKey));
+    } catch (e) {
+      throw new Error('Failed to parse bitgo xpub!');
+    }
+  }
+  return keys;
+}
+
+/**
+ * TODO: Deprecate this function in favour of validateKeyAsync when v2 encryption is the default.
+ */
 export function validateKey(
   bitgo: BitGoBase,
   { key, source, passphrase, isUnsignedSweep, isKrsRecovery }: ValidateKeyOptions
@@ -115,13 +145,31 @@ export function validateKey(
       throw new Error(`Failed to decrypt ${source} key with passcode - try again!`);
     }
   }
-  try {
-    return bip32.fromBase58(key);
-  } catch (e) {
-    throw new Error(`Failed to validate ${source} key - try again!`);
-  }
+  return parseKeyAsXprv(key, source);
 }
 
+/**
+ * Async version of validateKey with v2 encrypt/decrypt support.
+ */
+export async function validateKeyAsync(
+  bitgo: BitGoBase,
+  { key, source, passphrase, isUnsignedSweep, isKrsRecovery }: ValidateKeyOptions
+): Promise<BIP32Interface> {
+  if (!key.startsWith('xprv') && !isUnsignedSweep) {
+    try {
+      if (source === 'user' || (source === 'backup' && !isKrsRecovery)) {
+        return bip32.fromBase58(await bitgo.decryptAsync({ password: passphrase, input: key }));
+      }
+    } catch (e) {
+      throw new Error(`Failed to decrypt ${source} key with passcode - try again!`);
+    }
+  }
+  return parseKeyAsXprv(key, source);
+}
+
+/**
+ * TODO: Deprecate this function in favour of getBip32KeysAsync when v2 encryption is the default.
+ */
 export function getBip32Keys(
   bitgo: BitGoBase,
   params: InitiateRecoveryOptions | InitiateConsolidationRecoveryOptions,
@@ -129,36 +177,42 @@ export function getBip32Keys(
 ): BIP32Interface[] {
   const isKrsRecovery = getIsKrsRecovery(params);
   const isUnsignedSweep = getIsUnsignedSweep(params);
+  const validateKeyOpts = {
+    passphrase: params.walletPassphrase,
+    isKrsRecovery,
+    isUnsignedSweep,
+  };
   const keys = [
     // Box A
-    validateKey(bitgo, {
-      key: params.userKey,
-      source: 'user',
-      passphrase: params.walletPassphrase,
-      isKrsRecovery,
-      isUnsignedSweep,
-    }),
+    validateKey(bitgo, { key: params.userKey, source: 'user', ...validateKeyOpts }),
     // Box B
-    validateKey(bitgo, {
-      key: params.backupKey,
-      source: 'backup',
-      passphrase: params.walletPassphrase,
-      isKrsRecovery,
-      isUnsignedSweep,
-    }),
+    validateKey(bitgo, { key: params.backupKey, source: 'backup', ...validateKeyOpts }),
   ];
 
-  if (requireBitGoXpub) {
-    if (!params.bitgoKey) {
-      throw new Error(`BitGo xpub required but not provided`);
-    }
-    try {
-      // Box C
-      keys.push(bip32.fromBase58(params.bitgoKey));
-    } catch (e) {
-      throw new Error('Failed to parse bitgo xpub!');
-    }
-  }
+  return addBitgoKeyIfRequired(keys, params, requireBitGoXpub);
+}
 
-  return keys;
+/**
+ * Async version of getBip32Keys with v2 encrypt/decrypt support.
+ */
+export async function getBip32KeysAsync(
+  bitgo: BitGoBase,
+  params: InitiateRecoveryOptions | InitiateConsolidationRecoveryOptions,
+  { requireBitGoXpub }: { requireBitGoXpub: boolean }
+): Promise<BIP32Interface[]> {
+  const isKrsRecovery = getIsKrsRecovery(params);
+  const isUnsignedSweep = getIsUnsignedSweep(params);
+  const validateKeyOpts = {
+    passphrase: params.walletPassphrase,
+    isKrsRecovery,
+    isUnsignedSweep,
+  };
+  const keys = [
+    // Box A — sequential: backup only after user completes
+    await validateKeyAsync(bitgo, { key: params.userKey, source: 'user', ...validateKeyOpts }),
+    // Box B
+    await validateKeyAsync(bitgo, { key: params.backupKey, source: 'backup', ...validateKeyOpts }),
+  ];
+
+  return addBitgoKeyIfRequired(keys, params, requireBitGoXpub);
 }

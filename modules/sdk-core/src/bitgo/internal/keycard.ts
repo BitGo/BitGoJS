@@ -6,6 +6,7 @@
  */
 import { isUndefined } from 'lodash';
 import { Keychain } from '../keychain';
+import { EncryptFn, EncryptFnAsync } from '../../api';
 
 /**
  * Return the list of questions that will appear on the second page of the keycard
@@ -81,7 +82,7 @@ const generateQuestions = (coin: string) => {
 };
 
 interface GetKeyDataOptions {
-  encrypt: (params: { input: string; password: string }) => string;
+  encrypt: EncryptFn;
   userKeychain: Keychain;
   bitgoKeychain: Keychain;
   backupKeychain: Keychain;
@@ -92,40 +93,24 @@ interface GetKeyDataOptions {
   backupKeyID?: string;
 }
 
+type GetKeyDataAsyncOptions = Omit<GetKeyDataOptions, 'encrypt'> & {
+  encrypt: EncryptFnAsync;
+};
+
+interface BuildKeycardQrDataOptions {
+  userKeychain: Keychain;
+  bitgoKeychain: Keychain;
+  backupKeychain: Keychain;
+  coinShortName: string;
+  walletKeyID?: string;
+  backupKeyID?: string;
+}
+
 /**
- * Collect all data which will go onto the keycard
- * @param options
+ * Build QR code payload for each keycard box. Does not perform encryption.
  */
-function getKeyData(options: GetKeyDataOptions): any {
-  const {
-    encrypt,
-    userKeychain,
-    bitgoKeychain,
-    backupKeychain,
-    coinShortName,
-    passphrase,
-    passcodeEncryptionCode,
-    walletKeyID,
-    backupKeyID,
-  } = options;
-
-  // When using just 'generateWallet', we get back an unencrypted prv for the backup keychain
-  // If the user passes in their passphrase, we can encrypt it
-  if (backupKeychain.prv && passphrase) {
-    backupKeychain.encryptedPrv = encrypt({
-      input: backupKeychain.prv,
-      password: passphrase,
-    });
-  }
-
-  // If we have the passcode encryption code, create a box D with the encryptedWalletPasscode
-  let encryptedWalletPasscode;
-  if (passphrase && passcodeEncryptionCode) {
-    encryptedWalletPasscode = encrypt({
-      input: passphrase,
-      password: passcodeEncryptionCode,
-    });
-  }
+function buildKeycardQrData(options: BuildKeycardQrDataOptions, encryptedWalletPasscode: string | undefined): any {
+  const { userKeychain, bitgoKeychain, backupKeychain, coinShortName, walletKeyID, backupKeyID } = options;
 
   // PDF QR Code data
   const qrData: any = {
@@ -196,21 +181,82 @@ function getKeyData(options: GetKeyDataOptions): any {
   return qrData;
 }
 
-interface DrawKeycardOptions extends GetKeyDataOptions {
+/**
+ * TODO: Deprecate this function in favor of getKeyDataAsync once v2 encryption is default.
+ * Collect all data which will go onto the keycard
+ * @param options
+ */
+function getKeyData(options: GetKeyDataOptions): any {
+  const { encrypt, backupKeychain, passphrase, passcodeEncryptionCode, ...qrOptions } = options;
+
+  // When using just 'generateWallet', we get back an unencrypted prv for the backup keychain
+  // If the user passes in their passphrase, we can encrypt it
+  if (backupKeychain.prv && passphrase) {
+    backupKeychain.encryptedPrv = encrypt({
+      input: backupKeychain.prv,
+      password: passphrase,
+    });
+  }
+
+  // If we have the passcode encryption code, create a box D with the encryptedWalletPasscode
+  let encryptedWalletPasscode: string | undefined;
+  if (passphrase && passcodeEncryptionCode) {
+    encryptedWalletPasscode = encrypt({
+      input: passphrase,
+      password: passcodeEncryptionCode,
+    });
+  }
+
+  return buildKeycardQrData({ ...qrOptions, backupKeychain }, encryptedWalletPasscode);
+}
+
+/**
+ * Async version of getKeyData with support for v2 (Argon2id) encryption.
+ * Sequential encrypt: backup key first, then passcode (matches original getKeyDataAsync).
+ * @param options
+ */
+async function getKeyDataAsync(options: GetKeyDataAsyncOptions): Promise<any> {
+  const { encrypt, backupKeychain, passphrase, passcodeEncryptionCode, ...qrOptions } = options;
+
+  if (backupKeychain.prv && passphrase) {
+    backupKeychain.encryptedPrv = await encrypt({
+      input: backupKeychain.prv,
+      password: passphrase,
+    });
+  }
+
+  let encryptedWalletPasscode: string | undefined;
+  if (passphrase && passcodeEncryptionCode) {
+    encryptedWalletPasscode = await encrypt({
+      input: passphrase,
+      password: passcodeEncryptionCode,
+    });
+  }
+
+  return buildKeycardQrData({ ...qrOptions, backupKeychain }, encryptedWalletPasscode);
+}
+
+interface DrawKeycardLayoutOptions {
   jsPDF: any;
   QRCode: any;
-  coinShortName: string;
   activationCode: string;
   walletLabel: string;
   coinName: string;
 }
 
+interface DrawKeycardOptions extends GetKeyDataOptions, DrawKeycardLayoutOptions {
+  coinShortName: string;
+}
+
+export type DrawKeycardAsyncOptions = Omit<DrawKeycardOptions, 'encrypt'> & {
+  encrypt: EncryptFnAsync;
+};
+
 /**
- * Draw a keycard into a new pdf document object
- * @param options
+ * Render keycard PDF pages from pre-built QR data.
  */
-export function drawKeycard(options: DrawKeycardOptions): any {
-  const { jsPDF, QRCode, coinShortName, activationCode, walletLabel, coinName } = options;
+function renderKeycardPdf(options: DrawKeycardLayoutOptions, keyData: any): any {
+  const { jsPDF, QRCode, activationCode, walletLabel, coinName } = options;
 
   const margin = 30;
 
@@ -281,31 +327,6 @@ export function drawKeycard(options: DrawKeycardOptions): any {
   doc.setFontSize(font.body).setTextColor(color.red);
   doc.text('Print this document, or keep it securely offline. See second page for FAQ.', left(75), y);
 
-  const {
-    encrypt,
-    passphrase,
-    passcodeEncryptionCode,
-    walletKeyID,
-    backupKeyID,
-    userKeychain,
-    bitgoKeychain,
-    backupKeychain,
-  } = options;
-
-  // Get the data for the first page (qr codes)
-  const keyData = getKeyData({
-    encrypt,
-    coinShortName,
-    passphrase,
-    passcodeEncryptionCode,
-    walletKeyID,
-    backupKeyID,
-    userKeychain,
-    bitgoKeychain,
-    backupKeychain,
-  });
-
-  // Generate the first page's data for the backup PDF
   moveDown(35);
   const qrSize = 130;
 
@@ -381,4 +402,83 @@ export function drawKeycard(options: DrawKeycardOptions): any {
   });
 
   return doc;
+}
+
+/**
+ * TODO: Deprecate this function in favor of drawKeycardAsync once v2 encryption is default.
+ * Draw a keycard into a new pdf document object
+ * @param options
+ */
+export function drawKeycard(options: DrawKeycardOptions): any {
+  const {
+    encrypt,
+    passphrase,
+    passcodeEncryptionCode,
+    walletKeyID,
+    backupKeyID,
+    userKeychain,
+    bitgoKeychain,
+    backupKeychain,
+    coinShortName,
+    jsPDF,
+    QRCode,
+    activationCode,
+    walletLabel,
+    coinName,
+  } = options;
+
+  const keyData = getKeyData({
+    encrypt,
+    coinShortName,
+    passphrase,
+    passcodeEncryptionCode,
+    walletKeyID,
+    backupKeyID,
+    userKeychain,
+    bitgoKeychain,
+    backupKeychain,
+  });
+
+  return renderKeycardPdf({ jsPDF, QRCode, activationCode, walletLabel, coinName }, keyData);
+}
+
+/**
+ * Async version of drawKeycard with support for v2 (Argon2id) encryption.
+ * Use this when the encrypt callback may return a Promise (e.g. encryptAsync).
+ *
+ * Draw a keycard into a new pdf document object
+ * @param options
+ */
+export async function drawKeycardAsync(options: DrawKeycardAsyncOptions): Promise<any> {
+  const {
+    encrypt,
+    passphrase,
+    passcodeEncryptionCode,
+    walletKeyID,
+    backupKeyID,
+    userKeychain,
+    bitgoKeychain,
+    backupKeychain,
+    coinShortName,
+    jsPDF,
+    QRCode,
+    activationCode,
+    walletLabel,
+    coinName,
+  } = options;
+
+  // Get the data for the first page (qr codes)
+  const keyData = await getKeyDataAsync({
+    encrypt,
+    coinShortName,
+    passphrase,
+    passcodeEncryptionCode,
+    walletKeyID,
+    backupKeyID,
+    userKeychain,
+    bitgoKeychain,
+    backupKeychain,
+  });
+
+  return renderKeycardPdf({ jsPDF, QRCode, activationCode, walletLabel, coinName }, keyData);
 }

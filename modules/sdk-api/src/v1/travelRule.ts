@@ -15,16 +15,18 @@ import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import _ from 'lodash';
 
+interface ReceivedTravelInfoEntry {
+  toPubKeyPath: string;
+  fromPubKey: string;
+  encryptedTravelInfo: string;
+  travelInfo: string;
+  transactionId: string;
+  outputIndex: number;
+}
+
 interface DecryptReceivedTravelRuleOptions {
   tx?: {
-    receivedTravelInfo?: {
-      toPubKeyPath: string;
-      fromPubKey: string;
-      encryptedTravelInfo: string;
-      travelInfo: string;
-      transactionId: string;
-      outputIndex: number;
-    }[];
+    receivedTravelInfo?: ReceivedTravelInfoEntry[];
   };
   keychain?: {
     xprv?: string;
@@ -101,6 +103,92 @@ TravelRule.prototype.validateTravelInfo = function (info) {
   return result;
 };
 
+function validateTravelRuleDecryptParams(params: DecryptReceivedTravelRuleOptions = {}) {
+  const tx = params.tx;
+  if (!_.isObject(tx)) {
+    throw new Error('expecting tx param to be object');
+  }
+
+  if (!tx.receivedTravelInfo || !tx.receivedTravelInfo.length) {
+    return { tx, hdNode: undefined as BIP32Interface | undefined };
+  }
+
+  const keychain = params.keychain;
+  if (!_.isObject(keychain) || !_.isString(keychain.xprv)) {
+    throw new Error('expecting keychain param with xprv');
+  }
+  const hdNode = bip32.fromBase58(keychain.xprv);
+  return { tx, hdNode };
+}
+
+function prepareTravelRuleParamsCommon(self: { validateTravelInfo: (info: any) => any }, params: any) {
+  params = params || {};
+  params.txid = params.txid || params.hash;
+  common.validateParams(params, ['txid'], ['fromPrivateInfo']);
+  const txid = params.txid;
+  const recipient: Recipient | undefined = params.recipient;
+  let travelInfo = params.travelInfo;
+  if (!recipient || !_.isObject(recipient)) {
+    throw new Error('invalid or missing recipient');
+  }
+  if (!travelInfo || !_.isObject(travelInfo)) {
+    throw new Error('invalid or missing travelInfo');
+  }
+  if (!params.noValidate) {
+    travelInfo = self.validateTravelInfo(travelInfo);
+  }
+
+  if (!travelInfo.toEnterprise && recipient.enterprise) {
+    travelInfo.toEnterprise = recipient.enterprise;
+  }
+
+  // If a key was not provided, create a new random key
+  let fromKey = params.fromKey && utxolib.ECPair.fromWIF(params.fromKey, getNetwork() as utxolib.BitcoinJSNetwork);
+  if (!fromKey) {
+    fromKey = makeRandomKey();
+  }
+
+  // Compute the shared key for encryption
+  const sharedSecret = getSharedSecret(fromKey, Buffer.from(recipient.pubKey, 'hex')).toString('hex');
+
+  // JSON-ify and encrypt the payload
+  const travelInfoJSON = JSON.stringify(travelInfo);
+
+  return {
+    txid,
+    recipient,
+    travelInfoJSON,
+    fromKey,
+    sharedSecret,
+    fromPrivateInfo: params.fromPrivateInfo,
+  };
+}
+
+function buildTravelRuleSendParams(
+  prepared: {
+    txid: string;
+    recipient: Recipient;
+    fromKey: utxolib.ECPairInterface;
+    fromPrivateInfo?: string;
+  },
+  encryptedTravelInfo: string
+) {
+  const result = {
+    txid: prepared.txid,
+    outputIndex: prepared.recipient.outputIndex,
+    toPubKey: prepared.recipient.pubKey,
+    fromPubKey: prepared.fromKey.publicKey.toString('hex'),
+    encryptedTravelInfo: encryptedTravelInfo,
+    fromPrivateInfo: undefined as string | undefined,
+  };
+
+  if (prepared.fromPrivateInfo) {
+    result.fromPrivateInfo = prepared.fromPrivateInfo;
+  }
+
+  return result;
+}
+
 /**
  * Takes a transaction object as returned by getTransaction or listTransactions, along
  * with a keychain (or hdnode object), and attempts to decrypt any encrypted travel
@@ -110,24 +198,15 @@ TravelRule.prototype.validateTravelInfo = function (info) {
  *   keychain: keychain object (with xprv)
  * Returns:
  *   the tx object, augmented with decrypted travelInfo fields
+ * TODO: Deprecate in favor of decryptReceivedTravelInfoAsync once v2 encryption is default.
  */
 TravelRule.prototype.decryptReceivedTravelInfo = function (params: DecryptReceivedTravelRuleOptions = {}) {
-  const tx = params.tx;
-  if (!_.isObject(tx)) {
-    throw new Error('expecting tx param to be object');
-  }
-
-  if (!tx.receivedTravelInfo || !tx.receivedTravelInfo.length) {
+  const { tx, hdNode } = validateTravelRuleDecryptParams(params);
+  if (!hdNode) {
     return tx;
   }
 
-  const keychain = params.keychain;
-  if (!_.isObject(keychain) || !_.isString(keychain.xprv)) {
-    throw new Error('expecting keychain param with xprv');
-  }
-  const hdNode = bip32.fromBase58(keychain.xprv);
-
-  tx.receivedTravelInfo.forEach((info) => {
+  tx!.receivedTravelInfo!.forEach((info) => {
     const key = hdNode.derivePath(sanitizeLegacyPath(info.toPubKeyPath));
     const secret = getSharedSecret(key, Buffer.from(info.fromPubKey, 'hex')).toString('hex');
     try {
@@ -144,58 +223,56 @@ TravelRule.prototype.decryptReceivedTravelInfo = function (params: DecryptReceiv
   return tx;
 };
 
+/**
+ * Async version of decryptReceivedTravelInfo with v2 encrypt/decrypt support.
+ */
+TravelRule.prototype.decryptReceivedTravelInfoAsync = async function (params: DecryptReceivedTravelRuleOptions = {}) {
+  const { tx, hdNode } = validateTravelRuleDecryptParams(params);
+  if (!hdNode) {
+    return tx;
+  }
+
+  for (const info of tx!.receivedTravelInfo!) {
+    const key = hdNode.derivePath(sanitizeLegacyPath(info.toPubKeyPath));
+    const secret = getSharedSecret(key, Buffer.from(info.fromPubKey, 'hex')).toString('hex');
+    try {
+      const decrypted = await this.bitgo.decryptAsync({
+        input: info.encryptedTravelInfo,
+        password: secret,
+      });
+      info.travelInfo = JSON.parse(decrypted);
+    } catch (err) {
+      console.error('failed to decrypt or parse travel info for ', info.transactionId + ':' + info.outputIndex);
+    }
+  }
+
+  return tx;
+};
+
+/**
+ * TODO: Deprecate in favor of prepareParamsAsync once v2 encryption is default.
+ */
 TravelRule.prototype.prepareParams = function (params) {
-  params = params || {};
-  params.txid = params.txid || params.hash;
-  common.validateParams(params, ['txid'], ['fromPrivateInfo']);
-  const txid = params.txid;
-  const recipient: Recipient | undefined = params.recipient;
-  let travelInfo = params.travelInfo;
-  if (!recipient || !_.isObject(recipient)) {
-    throw new Error('invalid or missing recipient');
-  }
-  if (!travelInfo || !_.isObject(travelInfo)) {
-    throw new Error('invalid or missing travelInfo');
-  }
-  if (!params.noValidate) {
-    travelInfo = this.validateTravelInfo(travelInfo);
-  }
-
-  // Fill in toEnterprise if not already filled
-  if (!travelInfo.toEnterprise && recipient.enterprise) {
-    travelInfo.toEnterprise = recipient.enterprise;
-  }
-
-  // If a key was not provided, create a new random key
-  let fromKey = params.fromKey && utxolib.ECPair.fromWIF(params.fromKey, getNetwork() as utxolib.BitcoinJSNetwork);
-  if (!fromKey) {
-    fromKey = makeRandomKey();
-  }
-
-  // Compute the shared key for encryption
-  const sharedSecret = getSharedSecret(fromKey, Buffer.from(recipient.pubKey, 'hex')).toString('hex');
-
-  // JSON-ify and encrypt the payload
-  const travelInfoJSON = JSON.stringify(travelInfo);
+  const prepared = prepareTravelRuleParamsCommon(this, params);
   const encryptedTravelInfo = this.bitgo.encrypt({
-    input: travelInfoJSON,
-    password: sharedSecret,
+    input: prepared.travelInfoJSON,
+    password: prepared.sharedSecret,
   });
 
-  const result = {
-    txid: txid,
-    outputIndex: recipient.outputIndex,
-    toPubKey: recipient.pubKey,
-    fromPubKey: fromKey.publicKey.toString('hex'),
-    encryptedTravelInfo: encryptedTravelInfo,
-    fromPrivateInfo: undefined,
-  };
+  return buildTravelRuleSendParams(prepared, encryptedTravelInfo);
+};
 
-  if (params.fromPrivateInfo) {
-    result.fromPrivateInfo = params.fromPrivateInfo;
-  }
+/**
+ * Async version of prepareParams with v2 encrypt/decrypt support.
+ */
+TravelRule.prototype.prepareParamsAsync = async function (params) {
+  const prepared = prepareTravelRuleParamsCommon(this, params);
+  const encryptedTravelInfo = await this.bitgo.encryptAsync({
+    input: prepared.travelInfoJSON,
+    password: prepared.sharedSecret,
+  });
 
-  return result;
+  return buildTravelRuleSendParams(prepared, encryptedTravelInfo);
 };
 
 /**

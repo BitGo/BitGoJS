@@ -1144,6 +1144,7 @@ export interface IWallet {
   toGoStakingWallet(): IGoStakingWallet;
   toAddressBook(): IAddressBook;
   downloadKeycard(params?: DownloadKeycardOptions): void;
+  downloadKeycardAsync(params?: DownloadKeycardOptions): Promise<void>;
   buildAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<PrebuildTransactionResult[]>;
   sendAccountConsolidation(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<any>;

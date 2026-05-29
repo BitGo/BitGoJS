@@ -30,7 +30,7 @@ import {
   NeedUserSignupError,
 } from '../errors';
 import { SubmitTransactionResponse } from '../inscriptionBuilder';
-import { drawKeycard } from '../internal';
+import { drawKeycard, drawKeycardAsync } from '../internal';
 import * as internal from '../internal/internal';
 import {
   decryptKeychainPrivateKey,
@@ -159,6 +159,70 @@ function isPrebuildTransactionResult(
     return false;
   }
   return (prebuildTx as PrebuildTransactionResult).walletId !== undefined;
+}
+
+function validateDownloadKeycardParams(params: DownloadKeycardOptions = {}) {
+  if (!window || !window.location) {
+    throw new Error('The downloadKeycard function is only callable within a browser.');
+  }
+
+  const {
+    jsPDF,
+    QRCode,
+    userKeychain,
+    backupKeychain,
+    bitgoKeychain,
+    passphrase,
+    passcodeEncryptionCode,
+    walletKeyID,
+    backupKeyID,
+    activationCode = Math.floor(Math.random() * 900000 + 100000).toString(),
+  } = params;
+
+  if (!jsPDF || typeof jsPDF !== 'function') {
+    throw new Error('Please pass in a valid jsPDF instance');
+  }
+
+  if (!userKeychain || typeof userKeychain !== 'object') {
+    throw new Error(`Wallet keychain must have a 'user' property`);
+  }
+
+  if (!backupKeychain || typeof backupKeychain !== 'object') {
+    throw new Error('Backup keychain is required and must be an object');
+  }
+
+  if (!bitgoKeychain || typeof bitgoKeychain !== 'object') {
+    throw new Error('Bitgo keychain is required and must be an object');
+  }
+
+  if (walletKeyID && typeof walletKeyID !== 'string') {
+    throw new Error('walletKeyID must be a string');
+  }
+
+  if (backupKeyID && typeof backupKeyID !== 'string') {
+    throw new Error('backupKeyID must be a string');
+  }
+
+  if (typeof activationCode !== 'string') {
+    throw new Error('Activation Code must be a string');
+  }
+
+  if (activationCode.length !== 6) {
+    throw new Error('Activation code must be six characters');
+  }
+
+  return {
+    jsPDF,
+    QRCode,
+    userKeychain,
+    backupKeychain,
+    bitgoKeychain,
+    passphrase,
+    passcodeEncryptionCode,
+    walletKeyID,
+    backupKeyID,
+    activationCode,
+  };
 }
 
 export class Wallet implements IWallet {
@@ -1781,7 +1845,7 @@ export class Wallet implements IWallet {
       const needsKeychain = shareOption.permissions && shareOption.permissions.includes('spend');
 
       if (needsKeychain && decryptedKeychain) {
-        const sharedKeychain = this.encryptPrvForUser(
+        const sharedKeychain = await this.encryptPrvForUserAsync(
           decryptedKeychain.prv,
           decryptedKeychain.pub,
           shareOption.pubKey,
@@ -1886,6 +1950,7 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * TODO: Deprecate this function in favour of encryptPrvForUserAsync when v2 encryption is the default.
    * Encrypts a decrypted private key for sharing with a specific user.
    * This is the pure encryption step - no API calls, no decryption.
    *
@@ -1899,6 +1964,36 @@ export class Wallet implements IWallet {
     const eckey = makeRandomKey();
     const secret = getSharedSecret(eckey, Buffer.from(userPubkey, 'hex')).toString('hex');
     const newEncryptedPrv = this.bitgo.encrypt({ password: secret, input: decryptedPrv });
+
+    const keychain: BulkWalletShareKeychain = {
+      pub,
+      encryptedPrv: newEncryptedPrv,
+      fromPubKey: eckey.publicKey.toString('hex'),
+      toPubKey: userPubkey,
+      path: path,
+    };
+
+    assert(keychain.pub, 'pub must be defined for sharing');
+    assert(keychain.encryptedPrv, 'encryptedPrv must be defined for sharing');
+    assert(keychain.fromPubKey, 'fromPubKey must be defined for sharing');
+    assert(keychain.toPubKey, 'toPubKey must be defined for sharing');
+    assert(keychain.path, 'path must be defined for sharing');
+
+    return keychain;
+  }
+
+  /**
+   * Async version of encryptPrvForUser with v2 encrypt/decrypt support.
+   */
+  async encryptPrvForUserAsync(
+    decryptedPrv: string,
+    pub: string,
+    userPubkey: string,
+    path: string
+  ): Promise<BulkWalletShareKeychain> {
+    const eckey = makeRandomKey();
+    const secret = getSharedSecret(eckey, Buffer.from(userPubkey, 'hex')).toString('hex');
+    const newEncryptedPrv = await this.bitgo.encryptAsync({ password: secret, input: decryptedPrv });
 
     const keychain: BulkWalletShareKeychain = {
       pub,
@@ -1936,7 +2031,7 @@ export class Wallet implements IWallet {
       if (!decryptedKeychain) {
         return {};
       }
-      return this.encryptPrvForUser(decryptedKeychain.prv, decryptedKeychain.pub, pubkey, path);
+      return await this.encryptPrvForUserAsync(decryptedKeychain.prv, decryptedKeychain.pub, pubkey, path);
     } catch (e) {
       if (e instanceof MissingEncryptedKeychainError) {
         // ignore this error because this looks like a cold wallet
@@ -3222,6 +3317,7 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * TODO: Deprecate this function in favour of downloadKeycardAsync when v2 encryption is the default.
    * Creates and downloads PDF keycard for wallet (requires response from wallets.generateWallet)
    *
    * Note: this is example code and is not the version used on bitgo.com
@@ -3240,11 +3336,6 @@ export class Wallet implements IWallet {
    * @returns {*}
    */
   downloadKeycard(params: DownloadKeycardOptions = {}): void {
-    if (!window || !window.location) {
-      throw new Error('The downloadKeycard function is only callable within a browser.');
-    }
-
-    // Grab parameters with default for activationCode
     const {
       jsPDF,
       QRCode,
@@ -3255,42 +3346,8 @@ export class Wallet implements IWallet {
       passcodeEncryptionCode,
       walletKeyID,
       backupKeyID,
-      activationCode = Math.floor(Math.random() * 900000 + 100000).toString(),
-    } = params;
-
-    if (!jsPDF || typeof jsPDF !== 'function') {
-      throw new Error('Please pass in a valid jsPDF instance');
-    }
-
-    // Validate keychains
-    if (!userKeychain || typeof userKeychain !== 'object') {
-      throw new Error(`Wallet keychain must have a 'user' property`);
-    }
-
-    if (!backupKeychain || typeof backupKeychain !== 'object') {
-      throw new Error('Backup keychain is required and must be an object');
-    }
-
-    if (!bitgoKeychain || typeof bitgoKeychain !== 'object') {
-      throw new Error('Bitgo keychain is required and must be an object');
-    }
-
-    if (walletKeyID && typeof walletKeyID !== 'string') {
-      throw new Error('walletKeyID must be a string');
-    }
-
-    if (backupKeyID && typeof backupKeyID !== 'string') {
-      throw new Error('backupKeyID must be a string');
-    }
-
-    // Validate activation code if provided
-    if (typeof activationCode !== 'string') {
-      throw new Error('Activation Code must be a string');
-    }
-
-    if (activationCode.length !== 6) {
-      throw new Error('Activation code must be six characters');
-    }
+      activationCode,
+    } = validateDownloadKeycardParams(params);
 
     const coinShortName = this.baseCoin.type;
     const coinName = this.baseCoin.getFullName();
@@ -3314,6 +3371,47 @@ export class Wallet implements IWallet {
     });
 
     // Save the PDF on the user's browser
+    doc.save(`BitGo Keycard for ${walletLabel}.pdf`);
+  }
+
+  /**
+   * Async version of downloadKeycard with v2 encrypt/decrypt support.
+   */
+  async downloadKeycardAsync(params: DownloadKeycardOptions = {}): Promise<void> {
+    const {
+      jsPDF,
+      QRCode,
+      userKeychain,
+      backupKeychain,
+      bitgoKeychain,
+      passphrase,
+      passcodeEncryptionCode,
+      walletKeyID,
+      backupKeyID,
+      activationCode,
+    } = validateDownloadKeycardParams(params);
+
+    const coinShortName = this.baseCoin.type;
+    const coinName = this.baseCoin.getFullName();
+    const walletLabel = this._wallet.label;
+
+    const doc = await drawKeycardAsync({
+      jsPDF,
+      QRCode,
+      encrypt: (p: { input: string; password: string }) => this.bitgo.encryptAsync(p),
+      coinShortName,
+      coinName,
+      activationCode,
+      walletLabel,
+      passphrase,
+      passcodeEncryptionCode,
+      userKeychain,
+      backupKeychain,
+      bitgoKeychain,
+      walletKeyID,
+      backupKeyID,
+    });
+
     doc.save(`BitGo Keycard for ${walletLabel}.pdf`);
   }
 
