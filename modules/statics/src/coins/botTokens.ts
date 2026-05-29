@@ -11,7 +11,7 @@ export const botTokens = [
     18,
     '0x2d8e3bd91678a7777ef2f2388dc126b973a43ce5',
     'hteth:testamsv2' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter((f) => !['custody-bitgo-new-york', 'custody-bitgo-korea'].includes(f)),
     undefined,
     undefined,
     Networks.test.hoodi
@@ -23,7 +23,9 @@ export const botTokens = [
     9,
     '0xabcdef1234567890abcdef1234567890abcdef12',
     'ethx1' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'staking'])].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     Networks.test.hoodi
@@ -35,7 +37,7 @@ export const botTokens = [
     18,
     '0x0581ccdf2d9bca21baeff8b32b2551fd49cf70aa',
     'eth:at' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter((f) => !['custody-bitgo-korea'].includes(f)),
     undefined,
     undefined,
     Networks.test.hoodi
@@ -47,7 +49,7 @@ export const botTokens = [
     8,
     '0xa56a332d34b2db33ebc41dc0194afd28cb20d19b',
     'hteth:WBTC' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter((f) => !['custody-bitgo-new-york', 'custody-bitgo-korea'].includes(f)),
     undefined,
     undefined,
     Networks.test.hoodi
@@ -59,7 +61,7 @@ export const botTokens = [
     18,
     '0x7e99ee3c66636de415d2d7c880938f2f40f94de4',
     'hteth:wsteth' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter((f) => !['custody-bitgo-new-york', 'custody-bitgo-korea'].includes(f)),
     undefined,
     undefined,
     Networks.test.hoodi
@@ -71,7 +73,7 @@ export const botTokens = [
     18,
     '0x7728a33ebebcfa852cf7f7fc377bfc87c24a701b',
     'hteth:fgh' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'custody-bitgo-germany'])],
     undefined,
     undefined,
     Networks.test.hoodi
@@ -83,7 +85,7 @@ export const botTokens = [
     18,
     '0x0581dcdf2d9bca21baeff8b32b2551fd49cf70da',
     'hteth:asdf' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'custody-bitgo-germany'])],
     undefined,
     undefined,
     Networks.test.hoodi
@@ -95,6 +97,18 @@ export const botTokens = [
     18,
     '0x0581ccdf2d9bca21baeff8b32b2551fe49cf70da',
     'hteth:lkm' as unknown as UnderlyingAsset,
+    [...new Set([...networkFeatureMapForTokens['eth'], 'custody-bitgo-germany'])],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  AccountCtors.terc20(
+    '832af104-5d50-49d6-84cc-1bd8d3c87a11',
+    'hteth:xcv',
+    'xcv',
+    18,
+    '0xd64aaa49b243fe8d0a0e5c4f27ead9083c756cc2',
+    'hteth:xcv' as unknown as UnderlyingAsset,
     networkFeatureMapForTokens['eth'],
     undefined,
     undefined,
@@ -107,7 +121,9 @@ export const botTokens = [
     18,
     '0x89233399708c18ac6887f90a2b4cd8ba5fedd06e',
     'eth:abtx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -119,7 +135,9 @@ export const botTokens = [
     18,
     '0xfbf2398df672cee4afcc2a4a733222331c742a6a',
     'eth:abbvx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -131,7 +149,9 @@ export const botTokens = [
     18,
     '0x03183ce31b1656b72a55fa6056e287f50c35bbeb',
     'eth:acnx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -143,7 +163,9 @@ export const botTokens = [
     18,
     '0xe92f673ca36c5e2efd2de7628f815f84807e803f',
     'eth:googlx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -155,7 +177,9 @@ export const botTokens = [
     18,
     '0x3557ba345b01efa20a1bddc61f573bfd87195081',
     'eth:amznx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -167,7 +191,9 @@ export const botTokens = [
     18,
     '0x2f9a35ab5ddfbc49927bfdeab98a86c53dc6e763',
     'eth:ambrx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -179,7 +205,9 @@ export const botTokens = [
     18,
     '0x9d275685dc284c8eb1c79f6aba7a63dc75ec890a',
     'eth:aaplx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -191,7 +219,9 @@ export const botTokens = [
     18,
     '0x50a1291f69d9d3853def8209cfb1af0b46927be1',
     'eth:appx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -203,7 +233,9 @@ export const botTokens = [
     18,
     '0x5d642505fe1a28897eb3baba665f454755d8daa2',
     'eth:aznx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -215,7 +247,9 @@ export const botTokens = [
     18,
     '0x314938c596f5ce31c3f75307d2979338c346d7f2',
     'eth:bacx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -227,7 +261,9 @@ export const botTokens = [
     18,
     '0x12992613fdd35abe95dec5a4964331b1ee23b50d',
     'eth:brkbx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -239,7 +275,9 @@ export const botTokens = [
     18,
     '0x38bac69cbbd28156796e4163b2b6dcb81e336565',
     'eth:avgox' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -251,7 +289,9 @@ export const botTokens = [
     18,
     '0xad5cdc3340904285b8159089974a99a1a09eb4c0',
     'eth:cvxx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -263,7 +303,9 @@ export const botTokens = [
     18,
     '0xfebded1b0986a8ee107f5ab1a1c5a813491deceb',
     'eth:crclx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -275,7 +317,9 @@ export const botTokens = [
     18,
     '0x053c784cd87b74f42e0c089f98643e79c1a3ff16',
     'eth:cscox' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -287,7 +331,9 @@ export const botTokens = [
     18,
     '0xdcc1a2699441079da889b1f49e12b69cc791129b',
     'eth:kox' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -299,7 +345,9 @@ export const botTokens = [
     18,
     '0x364f210f430ec2448fc68a49203040f6124096f0',
     'eth:coinx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -311,7 +359,9 @@ export const botTokens = [
     18,
     '0xbc7170a1280be28513b4e940c681537eb25e39f4',
     'eth:cmcsax' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -323,7 +373,9 @@ export const botTokens = [
     18,
     '0x214151022c2a5e380ab80cdac31f23ae554a7345',
     'eth:crwdx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -335,7 +387,9 @@ export const botTokens = [
     18,
     '0xdba228936f4079daf9aa906fd48a87f2300405f4',
     'eth:dhrx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -347,7 +401,9 @@ export const botTokens = [
     18,
     '0x521860bb5df5468358875266b89bfe90d990c6e7',
     'eth:dfdvx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -359,7 +415,9 @@ export const botTokens = [
     18,
     '0x19c41ea77b34bbdee61c3a87a75d1abda2ed0be4',
     'eth:llyx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -371,7 +429,9 @@ export const botTokens = [
     18,
     '0xeedb0273c5af792745180e9ff568cd01550ffa13',
     'eth:xomx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -383,7 +443,9 @@ export const botTokens = [
     18,
     '0xe5f6d3b2405abdfe6f660e63202b25d23763160d',
     'eth:gmex' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -395,7 +457,9 @@ export const botTokens = [
     18,
     '0x3ee7e9b3a992fd23cd1c363b0e296856b04ab149',
     'eth:gsx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -407,7 +471,9 @@ export const botTokens = [
     18,
     '0x766b0cd6ed6d90b5d49d2c36a3761e9728501ba9',
     'eth:hdx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -419,7 +485,9 @@ export const botTokens = [
     18,
     '0x62a48560861b0b451654bfffdb5be6e47aa8ff1b',
     'eth:honx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -431,7 +499,9 @@ export const botTokens = [
     18,
     '0xf8a80d1cb9cfd70d03d655d9df42339846f3b3c8',
     'eth:intcx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -443,7 +513,9 @@ export const botTokens = [
     18,
     '0xd9913208647671fe0f48f7f260076b2c6f310aac',
     'eth:ibmx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -455,7 +527,9 @@ export const botTokens = [
     18,
     '0xa753a7395cae905cd615da0b82a53e0560f250af',
     'eth:qqqx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -467,7 +541,9 @@ export const botTokens = [
     18,
     '0xdb0482cfad4789798623e64b15eeba01b16e917c',
     'eth:jnjx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -479,7 +555,9 @@ export const botTokens = [
     18,
     '0xd9fc3e075d45254a1d834fea18af8041207dea0a',
     'eth:jpmx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -491,7 +569,9 @@ export const botTokens = [
     18,
     '0x15059c599c16fd8f70b633ade165502d6402cd49',
     'eth:linx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -503,7 +583,9 @@ export const botTokens = [
     18,
     '0xeaad46f4146ded5a47b55aa7f6c48c191deaec88',
     'eth:mrvlx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -515,7 +597,9 @@ export const botTokens = [
     18,
     '0xb365cd2588065f522d379ad19e903304f6b622c6',
     'eth:max' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -527,7 +611,9 @@ export const botTokens = [
     18,
     '0x80a77a372c1e12accda84299492f404902e2da67',
     'eth:mcdx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -539,7 +625,9 @@ export const botTokens = [
     18,
     '0x0588e851ec0418d660bee81230d6c678daf21d46',
     'eth:mdtx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -551,7 +639,9 @@ export const botTokens = [
     18,
     '0x17d8186ed8f68059124190d147174d0f6697dc40',
     'eth:mrkx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -563,7 +653,9 @@ export const botTokens = [
     18,
     '0x96702be57cd9777f835117a809c7124fe4ec989a',
     'eth:metax' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -575,7 +667,9 @@ export const botTokens = [
     18,
     '0x5621737f42dae558b81269fcb9e9e70c19aa6b35',
     'eth:msftx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -587,7 +681,9 @@ export const botTokens = [
     18,
     '0xa6a65ac27e76cd53cb790473e4345c46e5ebf961',
     'eth:nflxx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -599,7 +695,9 @@ export const botTokens = [
     18,
     '0xf9523e369c5f55ad72dbaa75b0a9b92b3d8b147e',
     'eth:nvox' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -611,7 +709,9 @@ export const botTokens = [
     18,
     '0xc845b2894dbddd03858fd2d643b4ef725fe0849d',
     'eth:nvdax' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -623,7 +723,9 @@ export const botTokens = [
     18,
     '0xbee6b69345f376598fe16abd5592c6f844825e66',
     'eth:openx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -635,7 +737,9 @@ export const botTokens = [
     18,
     '0x548308e91ec9f285c7bff05295badbd56a6e4971',
     'eth:orclx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -647,7 +751,9 @@ export const botTokens = [
     18,
     '0x6d482cec5f9dd1f05ccee9fd3ff79b246170f8e2',
     'eth:pltrx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -659,7 +765,9 @@ export const botTokens = [
     18,
     '0x36c424a6ec0e264b1616102ad63ed2ad7857413e',
     'eth:pepx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -671,7 +779,9 @@ export const botTokens = [
     18,
     '0x1ac765b5bea23184802c7d2d497f7c33f1444a9e',
     'eth:pfex' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -683,7 +793,9 @@ export const botTokens = [
     18,
     '0x02a6c1789c3b4fdb1a7a3dfa39f90e5d3c94f4f9',
     'eth:pmx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -695,7 +807,9 @@ export const botTokens = [
     18,
     '0xa90424d5d3e770e8644103ab503ed775dd1318fd',
     'eth:pgx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -707,7 +821,9 @@ export const botTokens = [
     18,
     '0xfdddb57878ef9d6f681ec4381dcb626b9e69ac86',
     'eth:tqqqx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -719,7 +835,9 @@ export const botTokens = [
     18,
     '0xe1385fdd5ffb10081cd52c56584f25efa9084015',
     'eth:hoodx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -731,7 +849,9 @@ export const botTokens = [
     18,
     '0x4a4073f2eaf299a1be22254dcd2c41727f6f54a2',
     'eth:crmx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -743,7 +863,9 @@ export const botTokens = [
     18,
     '0x2380f2673c640fb67e2d6b55b44c62f0e0e69da9',
     'eth:gldx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -755,7 +877,9 @@ export const botTokens = [
     18,
     '0x90a2a4c76b5d8c0bc892a69ea28aa775a8f2dd48',
     'eth:spyx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -767,7 +891,9 @@ export const botTokens = [
     18,
     '0xae2f842ef90c0d5213259ab82639d5bbf649b08e',
     'eth:mstrx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -779,7 +905,9 @@ export const botTokens = [
     18,
     '0x1aad217b8f78dba5e6693460e8470f8b1a3977f3',
     'eth:strcx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -791,7 +919,9 @@ export const botTokens = [
     18,
     '0x8ad3c73f833d3f9a523ab01476625f269aeb7cf0',
     'eth:tslax' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -803,7 +933,9 @@ export const botTokens = [
     18,
     '0xaf072f109a2c173d822a4fe9af311a1b18f83d19',
     'eth:tmox' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -815,7 +947,9 @@ export const botTokens = [
     18,
     '0xe95ab205e333443d7970336d5fd827ef9ed97608',
     'eth:tonxx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -827,7 +961,9 @@ export const botTokens = [
     18,
     '0x167a6375da1efc4a5be0f470e73ecefd66245048',
     'eth:unhx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -839,7 +975,9 @@ export const botTokens = [
     18,
     '0xbd730e618bcd88c82ddee52e10275cf2f88a4777',
     'eth:vtix' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -851,7 +989,9 @@ export const botTokens = [
     18,
     '0x2363fd1235c1b6d3a5088ddf8df3a0b3a30c5293',
     'eth:vx' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -863,7 +1003,9 @@ export const botTokens = [
     18,
     '0x7aefc9965699fbea943e03264d96e50cd4a97b21',
     'eth:wmtxstock' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -875,7 +1017,9 @@ export const botTokens = [
     18,
     '0x03168025af98ef150696646ea433f08c9821769f',
     'eth:gobucks' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -887,7 +1031,9 @@ export const botTokens = [
     18,
     '0x4d5f47fa6a74757f35c14fd3a6ef8e3c9bc514e8',
     'eth:aethweth' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'rebase-token'])].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -899,7 +1045,9 @@ export const botTokens = [
     18,
     '0xc00db6b41473d065027f5ed6fada20fde75f142e',
     'eth:krwq' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -911,7 +1059,9 @@ export const botTokens = [
     18,
     '0x67c312a26695ea9842bbcf1e1d0ee64694e42db6',
     'eth:hybond' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    networkFeatureMapForTokens['eth'].filter(
+      (f) => !['custody-bitgo-new-york', 'custody-bitgo-germany', 'custody-bitgo-korea'].includes(f)
+    ),
     undefined,
     undefined,
     undefined
@@ -923,7 +1073,7 @@ export const botTokens = [
     8,
     '0x23878914efe38d27c4d67ab83ed1b93a74d4086a',
     'eth:aethusdt' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'rebase-token'])],
     undefined,
     undefined,
     undefined
@@ -935,7 +1085,7 @@ export const botTokens = [
     6,
     '0x98c23e9d8f34fefb1b7bd6a91b7ff122f4e16f5c',
     'eth:aethusdc' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'rebase-token'])],
     undefined,
     undefined,
     undefined
@@ -947,7 +1097,7 @@ export const botTokens = [
     8,
     '0x5ee5bf7ae06d1be5997a1a72006fe6c607ec6de8',
     'eth:aethwbtc' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'rebase-token'])],
     undefined,
     undefined,
     undefined
@@ -959,7 +1109,7 @@ export const botTokens = [
     8,
     '0x5c647ce0ae10658ec44fa4e11a51c96e94efd1dd',
     'eth:aethcbbtc' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'rebase-token'])],
     undefined,
     undefined,
     undefined
@@ -971,7 +1121,7 @@ export const botTokens = [
     18,
     '0x4f5923fc5fd4a93352581b38b7cd26943012decf',
     'eth:aethusde' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'rebase-token'])],
     undefined,
     undefined,
     undefined
@@ -983,7 +1133,7 @@ export const botTokens = [
     6,
     '0x8a2b6f94ff3a89a03e8c02ee92b55af90c9454a2',
     'eth:aethxaut' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'rebase-token'])],
     undefined,
     undefined,
     undefined
@@ -995,7 +1145,7 @@ export const botTokens = [
     18,
     '0xa700b4eb416be35b2911fd5dee80678ff64ff6c9',
     'eth:aethaave' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'rebase-token'])],
     undefined,
     undefined,
     undefined
@@ -1007,7 +1157,7 @@ export const botTokens = [
     6,
     '0xaa6e91c82942aeae040303bf96c15a6dbcb82ca0',
     'eth:aetheurc' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'rebase-token'])],
     undefined,
     undefined,
     undefined
@@ -1019,7 +1169,7 @@ export const botTokens = [
     6,
     '0x7c0477d085ecb607cf8429f3ec91ae5e1e460f4f',
     'eth:aethusdg' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'rebase-token'])],
     undefined,
     undefined,
     undefined
@@ -1031,7 +1181,7 @@ export const botTokens = [
     6,
     '0x0c0d01abf3e6adfca0989ebba9d6e85dd58eab1e',
     'eth:aethpyusd' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'rebase-token'])],
     undefined,
     undefined,
     undefined
@@ -1043,7 +1193,7 @@ export const botTokens = [
     18,
     '0x977b6fc5de62598b08c85ac8cf2b745874e8b78c',
     'eth:aethcbeth' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'rebase-token'])],
     undefined,
     undefined,
     undefined
@@ -1151,7 +1301,7 @@ export const botTokens = [
     6,
     '0x80ac24aa929eaf5013f6436cda2a7ba190f5cc0b',
     'eth:syrupusdc' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'rebase-token'])],
     undefined,
     undefined,
     undefined
@@ -1163,7 +1313,7 @@ export const botTokens = [
     6,
     '0x356b8d89c1e1239cbbb9de4815c39a1474d5ba7d',
     'eth:syrupusdt' as unknown as UnderlyingAsset,
-    networkFeatureMapForTokens['eth'],
+    [...new Set([...networkFeatureMapForTokens['eth'], 'rebase-token'])],
     undefined,
     undefined,
     undefined
@@ -1211,6 +1361,42 @@ export const botTokens = [
     18,
     '0x0b925ed163218f6662a35e0f0371ac234f9e9371',
     'eth:aethwsteth' as unknown as UnderlyingAsset,
+    [...new Set([...networkFeatureMapForTokens['eth'], 'rebase-token'])],
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '48d76727-de8a-4e7b-a3d7-6c522b521aa1',
+    'eth:gusdcq',
+    'Galaxy USDC Quality',
+    18,
+    '0x91600e31fbedc72433d4a57f16639cfe661be7d8',
+    'eth:gusdcq' as unknown as UnderlyingAsset,
+    networkFeatureMapForTokens['eth'],
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '64ebeef7-7375-4259-8006-127714dd0ddc',
+    'eth:gusdtq',
+    'Galaxy USDT Quality',
+    18,
+    '0x71ffb6a81786ec285d429d531cf655107b9d878d',
+    'eth:gusdtq' as unknown as UnderlyingAsset,
+    networkFeatureMapForTokens['eth'],
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '6ac1354a-72a7-403f-9150-3013011e23d4',
+    'eth:gwethq',
+    'Galaxy WETH Quality',
+    18,
+    '0x1878805799273d10ae96a58201a6f5254cf9824f',
+    'eth:gwethq' as unknown as UnderlyingAsset,
     networkFeatureMapForTokens['eth'],
     undefined,
     undefined,
