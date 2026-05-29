@@ -2235,6 +2235,19 @@ export class Wallet implements IWallet {
       tssUtils: this.tssUtils,
     });
 
+    if (
+      this.multisigType() === 'tss' &&
+      this.multisigTypeVersion() === 'MPCv2' &&
+      this.baseCoin.getMPCAlgorithm() === 'eddsa' &&
+      typeof params.txPrebuild === 'object' &&
+      typeof presign.txPrebuild === 'object' &&
+      params.txPrebuild.buildParams &&
+      !presign.txPrebuild.buildParams
+    ) {
+      // Sol presign hook refreshes txPrebuild, but buildParams is SDK-local intent metadata.
+      presign.txPrebuild.buildParams = params.txPrebuild.buildParams;
+    }
+
     if (this.multisigType() === 'tss') {
       return this.signTransactionTss({
         ...presign,
