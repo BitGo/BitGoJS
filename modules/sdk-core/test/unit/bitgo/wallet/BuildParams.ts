@@ -37,4 +37,41 @@ describe('BuildParams', function () {
       }
     );
   });
+
+  it('should whitelist bridgingParams', function () {
+    const bridgingParams = {
+      sbtc: {
+        amount: 100000,
+        stacksRecipient: 'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7',
+        maxFee: 5000,
+        lockTime: 144,
+      },
+    };
+    assert.deepStrictEqual(
+      BuildParams.encode({
+        type: 'bridging',
+        txFormat: 'psbt',
+        recipients: [],
+        bridgingParams,
+      } as any),
+      {
+        type: 'bridging',
+        txFormat: 'psbt',
+        recipients: [],
+        bridgingParams,
+      }
+    );
+  });
+
+  it('should strip unknown params while keeping bridgingParams', function () {
+    assert.deepStrictEqual(
+      BuildParams.encode({
+        bridgingParams: { sbtc: { amount: 50000, stacksRecipient: 'SP123', maxFee: 1000, lockTime: 100 } },
+        unknownField: 'should be stripped',
+      } as any),
+      {
+        bridgingParams: { sbtc: { amount: 50000, stacksRecipient: 'SP123', maxFee: 1000, lockTime: 100 } },
+      }
+    );
+  });
 });

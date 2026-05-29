@@ -125,6 +125,23 @@ export type NftBalance = BaseBalance & {
 
 export type ApiVersion = 'lite' | 'full';
 
+/** Parameters for sBTC bridging (BTC to sBTC). */
+export interface SbtcBridgingParams {
+  /** Amount in satoshis to bridge */
+  amount: number | string;
+  /** Stacks recipient address */
+  stacksRecipient: string;
+  /** Maximum fee in satoshis */
+  maxFee: number | string;
+  /** Lock time for the bridging transaction */
+  lockTime: number;
+}
+
+/** Parameters for cross-chain bridging transactions. */
+export interface BridgingParams {
+  sbtc?: SbtcBridgingParams;
+}
+
 export interface PrebuildTransactionOptions {
   reqId?: IRequestTracer;
   recipients?: {
@@ -268,6 +285,11 @@ export interface PrebuildTransactionOptions {
    * When specified, fees will be deducted in this token instead of the native currency.
    */
   feeToken?: string;
+  /**
+   * Parameters for bridging transactions (e.g., BTC to sBTC).
+   * Used with type: 'bridging' for cross-chain bridging operations.
+   */
+  bridgingParams?: BridgingParams;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {

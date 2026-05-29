@@ -106,6 +106,27 @@ export const TokenEnablement = t.intersection([
 ]);
 
 /**
+ * sBTC bridging parameters codec
+ */
+export const SbtcBridgingParamsCodec = t.type({
+  /** Amount in satoshis to bridge */
+  amount: t.union([t.number, t.string]),
+  /** Stacks recipient address */
+  stacksRecipient: t.string,
+  /** Maximum fee in satoshis */
+  maxFee: t.union([t.number, t.string]),
+  /** Lock time for the bridging transaction */
+  lockTime: t.number,
+});
+
+/**
+ * Bridging parameters codec for cross-chain bridging transactions (e.g., BTC to sBTC).
+ */
+export const BridgingParamsCodec = t.partial({
+  sbtc: SbtcBridgingParamsCodec,
+});
+
+/**
  * Request body for sending to multiple recipients (v2)
  *
  * This endpoint supports the full set of parameters available in the BitGo SDK
@@ -343,6 +364,9 @@ export const SendManyRequestBody = {
 
   /** Array of tokens to enable on the wallet */
   enableTokens: optional(t.array(TokenEnablement)),
+
+  /** Parameters for bridging transactions (e.g., BTC to sBTC). Used with type: 'bridging'. */
+  bridgingParams: optional(BridgingParamsCodec),
 
   /** Low fee transaction ID (for CPFP - Child Pays For Parent) */
   lowFeeTxid: optional(t.string),

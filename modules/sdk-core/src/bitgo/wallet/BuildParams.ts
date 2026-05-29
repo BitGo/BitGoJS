@@ -132,6 +132,8 @@ export const BuildParams = t.exact(
       aptosCustomTransactionParams: t.unknown,
       isTestTransaction: t.unknown,
       feeToken: t.unknown,
+      // Bridging parameters for cross-chain operations (e.g., BTC to sBTC)
+      bridgingParams: t.unknown,
     }),
   ])
 );

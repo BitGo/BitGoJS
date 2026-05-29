@@ -1,5 +1,10 @@
 import * as assert from 'assert';
-import { SendManyResponse, SendManyRequestParams, SendManyRequestBody } from '../../../src/typedRoutes/api/v2/sendmany';
+import {
+  SendManyResponse,
+  SendManyRequestParams,
+  SendManyRequestBody,
+  BridgingParamsCodec,
+} from '../../../src/typedRoutes/api/v2/sendmany';
 import { assertDecode } from './common';
 import * as t from 'io-ts';
 import 'should';
@@ -1188,6 +1193,79 @@ describe('SendMany V2 codec tests', function () {
 
         assert.throws(() => {
           assertDecode(t.type(SendManyRequestBody), invalidBody);
+        });
+      });
+    });
+
+    describe('BridgingParamsCodec', function () {
+      const validBridgingParams = {
+        sbtc: {
+          amount: 100000,
+          stacksRecipient: 'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7',
+          maxFee: 5000,
+          lockTime: 144,
+        },
+      };
+
+      it('should validate valid bridgingParams with numeric amount and maxFee', function () {
+        const decoded = assertDecode(BridgingParamsCodec, validBridgingParams);
+        assert.deepStrictEqual(decoded, validBridgingParams);
+      });
+
+      it('should validate valid bridgingParams with string amount and maxFee', function () {
+        const validParams = {
+          sbtc: {
+            amount: '100000',
+            stacksRecipient: 'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7',
+            maxFee: '5000',
+            lockTime: 144,
+          },
+        };
+
+        const decoded = assertDecode(BridgingParamsCodec, validParams);
+        assert.deepStrictEqual(decoded, validParams);
+      });
+
+      it('should validate empty bridgingParams object', function () {
+        const decoded = assertDecode(BridgingParamsCodec, {});
+        assert.deepStrictEqual(decoded, {});
+      });
+
+      it('should reject sbtc params with missing stacksRecipient', function () {
+        assert.throws(() => {
+          assertDecode(BridgingParamsCodec, {
+            sbtc: {
+              amount: 100000,
+              maxFee: 5000,
+              lockTime: 144,
+            },
+          });
+        });
+      });
+
+      it('should reject sbtc params with wrong lockTime type', function () {
+        assert.throws(() => {
+          assertDecode(BridgingParamsCodec, {
+            sbtc: {
+              amount: 100000,
+              stacksRecipient: 'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7',
+              maxFee: 5000,
+              lockTime: '144',
+            },
+          });
+        });
+      });
+
+      it('should reject sbtc params with wrong amount type', function () {
+        assert.throws(() => {
+          assertDecode(BridgingParamsCodec, {
+            sbtc: {
+              amount: true,
+              stacksRecipient: 'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7',
+              maxFee: 5000,
+              lockTime: 144,
+            },
+          });
         });
       });
     });

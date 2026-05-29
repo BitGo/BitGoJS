@@ -2052,6 +2052,10 @@ export class Wallet implements IWallet {
       return this.prebuildTransactionTxRequests(params);
     }
 
+    if (params.type === 'bridging') {
+      assert(params.bridgingParams, "'bridgingParams' is required for bridging intent");
+    }
+
     // Whitelist params to build tx
     const whitelistedParams = this.baseCoin.preprocessBuildParams(_.pick(params, this.prebuildWhitelistedParams()));
     debug('prebuilding transaction: %O', whitelistedParams);
