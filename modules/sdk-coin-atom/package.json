@@ -53,7 +53,7 @@
     "@bitgo/sdk-api": "^1.81.1",
     "@bitgo/sdk-test": "^9.1.46",
     "@types/lodash": "^4.14.183",
-    "axios": "1.15.2"
+    "axios": "1.16.1"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [
