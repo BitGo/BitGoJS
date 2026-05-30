@@ -21,6 +21,7 @@ import {
   TransactionType as SuiTransactionBlockType,
 } from './mystenlab/builder';
 import { BCS } from '@mysten/bcs';
+import BigNumber from 'bignumber.js';
 
 export class TokenTransferTransaction extends Transaction<TokenTransferProgrammableTransaction> {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -123,7 +124,9 @@ export class TokenTransferTransaction extends Transaction<TokenTransferProgramma
     }
 
     const recipients = utils.getRecipients(this._suiTransaction);
-    const totalAmount = recipients.reduce((accumulator, current) => accumulator + Number(current.amount), 0);
+    // Use BigNumber: token consolidation amounts can exceed 2^53 and a Number-based sum
+    // would lose precision.
+    const totalAmount = recipients.reduce((accumulator, current) => accumulator.plus(current.amount), new BigNumber(0));
     this._outputs = recipients.map((recipient) => ({
       address: recipient.address,
       value: recipient.amount,
@@ -132,7 +135,7 @@ export class TokenTransferTransaction extends Transaction<TokenTransferProgramma
     this._inputs = [
       {
         address: this.suiTransaction.sender,
-        value: totalAmount.toString(),
+        value: totalAmount.toFixed(),
         coin: this._coinConfig.name,
       },
     ];
@@ -219,7 +222,9 @@ export class TokenTransferTransaction extends Transaction<TokenTransferProgramma
   explainTokenTransferTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
     const recipients = utils.getRecipients(this.suiTransaction);
     const outputs: TransactionRecipient[] = recipients.map((recipient) => recipient);
-    const outputAmount = recipients.reduce((accumulator, current) => accumulator + Number(current.amount), 0);
+    const outputAmount = recipients
+      .reduce((accumulator, current) => accumulator.plus(current.amount), new BigNumber(0))
+      .toFixed();
 
     return {
       ...explanationResult,

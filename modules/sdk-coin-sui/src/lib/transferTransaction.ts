@@ -142,7 +142,9 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
     }
 
     const recipients = utils.getRecipients(this._suiTransaction);
-    const totalAmount = recipients.reduce((accumulator, current) => accumulator + Number(current.amount), 0);
+    // Use BigNumber for the total: consolidation amounts can exceed 2^53, so a Number-based
+    // sum would lose precision.
+    const totalAmount = recipients.reduce((accumulator, current) => accumulator.plus(current.amount), new BigNumber(0));
     this._outputs = recipients.map((recipient, index) => ({
       address: recipient.address,
       value: recipient.amount,
@@ -151,7 +153,7 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
     this._inputs = [
       {
         address: this.suiTransaction.sender,
-        value: totalAmount.toString(),
+        value: totalAmount.toFixed(),
         coin: this._coinConfig.name,
       },
     ];

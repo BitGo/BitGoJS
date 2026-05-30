@@ -85,7 +85,7 @@ export const coinsWithoutGasPayment = [
 export const txInputs = [
   {
     kind: 'Input',
-    value: 100,
+    value: '100',
     index: 0,
     type: 'pure',
   },
@@ -97,7 +97,7 @@ export const txInputs = [
   },
   {
     kind: 'Input',
-    value: 100,
+    value: '100',
     index: 2,
     type: 'pure',
   },
@@ -117,7 +117,7 @@ export const txTransactions = [
     amounts: [
       {
         kind: 'Input',
-        value: 100,
+        value: '100',
         index: 0,
         type: 'pure',
       },
@@ -146,7 +146,7 @@ export const txTransactions = [
     amounts: [
       {
         kind: 'Input',
-        value: 100,
+        value: '100',
         index: 2,
         type: 'pure',
       },
