@@ -171,7 +171,10 @@ export class Utils implements BaseUtils {
    * @returns {boolean} - the validation result
    */
   isValidAmount(amount: string | number): boolean {
-    const bigNumberAmount = new BigNumber(Number(amount));
+    // Build the BigNumber directly from the raw value. Wrapping in Number() first would
+    // truncate integers above 2^53 (e.g. large consolidation amounts in MIST), causing
+    // valid amounts to be mis-validated.
+    const bigNumberAmount = new BigNumber(amount);
     if (!bigNumberAmount.isInteger() || bigNumberAmount.isLessThanOrEqualTo(0)) {
       return false;
     }

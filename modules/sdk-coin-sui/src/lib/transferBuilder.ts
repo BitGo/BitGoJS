@@ -230,7 +230,7 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
       }
       this._recipients.forEach((recipient) => {
         const splitObject = programmableTxBuilder.splitCoins(mergedObject, [
-          programmableTxBuilder.pure(Number(recipient.amount)),
+          programmableTxBuilder.pure(BigInt(recipient.amount)),
         ]);
         programmableTxBuilder.transferObjects([splitObject], programmableTxBuilder.object(recipient.address));
       });
@@ -269,7 +269,7 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
 
       this._recipients.forEach((recipient) => {
         const splitObject = programmableTxBuilder.splitCoins(addrCoin, [
-          programmableTxBuilder.pure(Number(recipient.amount)),
+          programmableTxBuilder.pure(BigInt(recipient.amount)),
         ]);
         programmableTxBuilder.transferObjects([splitObject], programmableTxBuilder.object(recipient.address));
       });
@@ -319,7 +319,7 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
       this._recipients.forEach((recipient) => {
         const coin = programmableTxBuilder.add(
           TransactionsConstructor.SplitCoins(programmableTxBuilder.gas, [
-            programmableTxBuilder.pure(Number(recipient.amount)),
+            programmableTxBuilder.pure(BigInt(recipient.amount)),
           ])
         );
         programmableTxBuilder.add(

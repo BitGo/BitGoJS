@@ -672,6 +672,176 @@ describe('Sui Transfer Builder', () => {
     });
   });
 
+  describe('large amounts exceeding Number.MAX_SAFE_INTEGER', () => {
+    // Number.MAX_SAFE_INTEGER = 9007199254740991.
+    // Using Number() for amounts above this silently rounds to the nearest representable float.
+    // 9007199254740993 (MAX_SAFE_INTEGER + 2) is NOT exactly representable as a JS Number — it
+    // rounds down to 9007199254740992 — so BCS would encode the wrong value.
+    // BigInt preserves the exact value and is the correct type for BCS u64 encoding.
+    //
+    // The core check in each test is tx.outputs[0].value === LARGE_AMOUNT: this reads from the
+    // in-memory builder state (a BigInt, not BCS-decoded), so it accurately distinguishes
+    // BigInt() vs Number() encoding at build time.
+    const LARGE_AMOUNT = '9007199254740993'; // MAX_SAFE_INTEGER + 2
+
+    it('should build a self-pay transfer (Path 2) with amount > Number.MAX_SAFE_INTEGER and encode it precisely', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: LARGE_AMOUNT }]);
+      txBuilder.gasData(testData.gasData);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      // With Number() the amount would be silently rounded to 9007199254740992 — BigInt preserves the exact value
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].value.should.equal(LARGE_AMOUNT);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+
+    it('should build a sponsored transfer with coin objects (Path 1a) with amount > Number.MAX_SAFE_INTEGER and encode it precisely', async function () {
+      const inputObjects = testData.generateObjects(2);
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: LARGE_AMOUNT }]);
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.inputObjects(inputObjects);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      // With Number() the amount would be silently rounded to 9007199254740992 — BigInt preserves the exact value
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].value.should.equal(LARGE_AMOUNT);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+
+    it('should build a sponsored addr-balance-only transfer (Path 1b) with amount > Number.MAX_SAFE_INTEGER and round-trip correctly', async function () {
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: LARGE_AMOUNT }]);
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.fundsInAddressBalance(LARGE_AMOUNT);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      // With Number() the amount would be silently rounded to 9007199254740992 — BigInt preserves the exact value
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].value.should.equal(LARGE_AMOUNT);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // Full round-trip: rebuilding from BCS bytes must produce identical bytes
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+
+      const recipients = utils.getRecipients(
+        (rebuiltTx as SuiTransaction<TransferProgrammableTransaction>).suiTransaction
+      );
+      recipients[0].amount.should.equal(LARGE_AMOUNT);
+    });
+  });
+
+  describe('prod address balance consolidation (CECHO-1210)', () => {
+    // Failed prod consolidation 6a19cb8bcd4751dbd891a722ee04e552 (txRequest ee5d60d7-fa53-4fa4-adcf-26435c9317bf).
+    // Broadcast failed with stale coin object version; the amount must still encode losslessly.
+    const CONSOLIDATION_AMOUNT = '18536797842613700'; // ~18.5M SUI in MIST (sendAccounting.amountString)
+    const CONSOLIDATION_SENDER = '0x46a53e2712561f4e0d8272bd27a396b6bf9325f92f34b949041b8783d57469dd';
+    const CONSOLIDATION_RECIPIENT = '0x3da2cb67c887c9a03d1052d486733a77105824f7413fc3cbbe3641d4b67af102';
+
+    it('should accept the prod consolidation amount in isValidAmount', function () {
+      utils.isValidAmount(CONSOLIDATION_AMOUNT).should.be.true();
+      Number.isSafeInteger(Number(CONSOLIDATION_AMOUNT)).should.be.false();
+    });
+
+    it('should build address-balance-only consolidation with exact prod amount (Path 2, empty payment)', async function () {
+      const gasDataNoPayment = {
+        ...testData.gasDataWithoutGasPayment,
+        payment: [],
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(CONSOLIDATION_SENDER);
+      txBuilder.send([{ address: CONSOLIDATION_RECIPIENT, amount: CONSOLIDATION_AMOUNT }]);
+      txBuilder.gasData(gasDataNoPayment);
+      txBuilder.fundsInAddressBalance(CONSOLIDATION_AMOUNT);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].should.deepEqual({
+        address: CONSOLIDATION_RECIPIENT,
+        value: CONSOLIDATION_AMOUNT,
+        coin: 'tsui',
+      });
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].value.should.equal(CONSOLIDATION_AMOUNT);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const deserialized = SuiTransaction.deserializeSuiTransaction(rawTx);
+      const recipients = utils.getRecipients(deserialized);
+      recipients.length.should.equal(1);
+      recipients[0].address.should.equal(CONSOLIDATION_RECIPIENT);
+      recipients[0].amount.should.equal(CONSOLIDATION_AMOUNT);
+    });
+
+    it('should build address-balance consolidation with coin objects and exact prod amount (Path 2)', async function () {
+      // Prod failure referenced stale gas/coin object versions between sign and broadcast.
+      // Builder must still encode the full consolidation amount in SplitCoins.
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(CONSOLIDATION_SENDER);
+      txBuilder.send([{ address: CONSOLIDATION_RECIPIENT, amount: CONSOLIDATION_AMOUNT }]);
+      txBuilder.gasData({ ...testData.gasData, owner: CONSOLIDATION_SENDER });
+      txBuilder.fundsInAddressBalance(CONSOLIDATION_AMOUNT);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      tx.outputs[0].value.should.equal(CONSOLIDATION_AMOUNT);
+      tx.inputs[0].value.should.equal(CONSOLIDATION_AMOUNT);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+
+      const recipients = utils.getRecipients(
+        (rebuiltTx as SuiTransaction<TransferProgrammableTransaction>).suiTransaction
+      );
+      recipients[0].address.should.equal(CONSOLIDATION_RECIPIENT);
+      recipients[0].amount.should.equal(CONSOLIDATION_AMOUNT);
+    });
+  });
+
   describe('BalanceWithdrawal BCS encoding (FundsWithdrawal format)', () => {
     const AMOUNT = '100000000'; // 0.1 SUI in MIST
     const sponsoredGasData = {

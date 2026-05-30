@@ -221,7 +221,7 @@ export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgra
 
     this._recipients.forEach((recipient) => {
       const splitObject = programmableTxBuilder.splitCoins(mergedObject, [
-        programmableTxBuilder.pure(Number(recipient.amount)),
+        programmableTxBuilder.pure(BigInt(recipient.amount)),
       ]);
       programmableTxBuilder.transferObjects([splitObject], programmableTxBuilder.object(recipient.address));
     });
