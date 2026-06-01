@@ -16,6 +16,7 @@ import { Transaction as PolyxTransaction } from './transaction';
 import { PreApproveAssetBuilder } from './preApproveAssetBuilder';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
 import { RejectInstructionBuilder } from './rejectInstructionBuilder';
+import { NominateBuilder } from './nominateBuilder';
 
 export type SupportedTransaction = BaseTransaction | PolyxTransaction;
 
@@ -65,6 +66,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getWithdrawUnbondedBuilder(): WithdrawUnbondedBuilder {
     return new WithdrawUnbondedBuilder(this._coinConfig).material(this._material);
+  }
+
+  getNominateBuilder(): NominateBuilder {
+    return new NominateBuilder(this._coinConfig).material(this._material);
   }
 
   getWalletInitializationBuilder(): void {
@@ -126,7 +131,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     } else if (methodName === 'bond') {
       return this.getBatchBuilder();
     } else if (methodName === 'nominate') {
-      return this.getBatchBuilder();
+      return this.getNominateBuilder();
     } else if (methodName === 'unbond') {
       return this.getUnbondBuilder();
     } else if (methodName === 'withdrawUnbonded') {
