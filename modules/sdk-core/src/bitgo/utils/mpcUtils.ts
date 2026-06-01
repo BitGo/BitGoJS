@@ -269,6 +269,13 @@ export abstract class MpcUtils {
             feeToken: params.feeToken,
             nonce: params.nonce,
           };
+        case 'enableToken':
+          return {
+            ...baseIntent,
+            enableTokens: params.enableTokens,
+            feeOptions: params.feeOptions,
+            feeToken: params.feeToken,
+          };
         default:
           throw new Error(`Unsupported intent type ${params.intentType}`);
       }

@@ -18,6 +18,7 @@ import {
   multisigTypes,
   Recipient,
   Util,
+  TokenEnablementConfig,
 } from '@bitgo/sdk-core';
 import {
   AbstractEthLikeNewCoins,
@@ -90,6 +91,14 @@ export class Eth extends AbstractEthLikeNewCoins {
 
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
+  }
+
+  /** @inheritDoc */
+  getTokenEnablementConfig(): TokenEnablementConfig {
+    return {
+      requiresTokenEnablement: true,
+      supportsMultipleTokenEnablements: true,
+    };
   }
 
   /**
