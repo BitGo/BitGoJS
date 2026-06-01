@@ -127,6 +127,17 @@ export async function verifyTransaction<TNumber extends bigint | number>(
     debug('successfully verified user public key and custom change key signatures');
   }
 
+  if (txParams.qr) {
+    const allExternalOutputs = [
+      ...parsedTransaction.explicitExternalOutputs,
+      ...parsedTransaction.implicitExternalOutputs,
+    ];
+    if (allExternalOutputs.length > 0) {
+      throwTxMismatch('quantum-resistant sweep transactions must only contain wallet-internal outputs');
+    }
+    return true;
+  }
+
   const missingOutputs = parsedTransaction.missingOutputs;
   if (missingOutputs.length !== 0) {
     // there are some outputs in the recipients list that have not made it into the actual transaction

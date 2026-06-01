@@ -465,6 +465,119 @@ describe('Verify Transaction', function () {
     coinMock.restore();
   });
 
+  describe('quantum-resistant sweep (qr: true)', function () {
+    it('should reject when explicit external outputs are present', async () => {
+      const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
+        keychains: {} as any,
+        keySignatures: {},
+        outputs: [],
+        missingOutputs: [],
+        explicitExternalOutputs: [{ address: 'external_addr', amount: '5000' }],
+        implicitExternalOutputs: [],
+        changeOutputs: [{ address: 'change_addr', amount: '4000' }],
+        explicitExternalSpendAmount: 5000,
+        implicitExternalSpendAmount: 0,
+        needsCustomChangeKeySignatureVerification: false,
+      });
+
+      await assert.rejects(
+        coin.verifyTransaction({
+          txParams: { walletPassphrase: passphrase, qr: true },
+          txPrebuild: {},
+          wallet: unsignedSendingWallet as any,
+          verification: {},
+        }),
+        /quantum-resistant sweep transactions must only contain wallet-internal outputs/
+      );
+
+      coinMock.restore();
+    });
+
+    it('should reject when implicit external outputs are present', async () => {
+      const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
+        keychains: {} as any,
+        keySignatures: {},
+        outputs: [],
+        missingOutputs: [],
+        explicitExternalOutputs: [],
+        implicitExternalOutputs: [{ address: 'paygo_addr', amount: '100' }],
+        changeOutputs: [{ address: 'change_addr', amount: '9900' }],
+        explicitExternalSpendAmount: 0,
+        implicitExternalSpendAmount: 100,
+        needsCustomChangeKeySignatureVerification: false,
+      });
+
+      await assert.rejects(
+        coin.verifyTransaction({
+          txParams: { walletPassphrase: passphrase, qr: true },
+          txPrebuild: {},
+          wallet: unsignedSendingWallet as any,
+          verification: {},
+        }),
+        /quantum-resistant sweep transactions must only contain wallet-internal outputs/
+      );
+
+      coinMock.restore();
+    });
+
+    it('should pass when all outputs are internal (change only)', async () => {
+      const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
+        keychains: {} as any,
+        keySignatures: {},
+        outputs: [{ address: 'change_addr', amount: '10000' }],
+        missingOutputs: [],
+        explicitExternalOutputs: [],
+        implicitExternalOutputs: [],
+        changeOutputs: [{ address: 'change_addr', amount: '10000' }],
+        explicitExternalSpendAmount: 0,
+        implicitExternalSpendAmount: 0,
+        needsCustomChangeKeySignatureVerification: false,
+      });
+
+      const result = await coin.verifyTransaction({
+        txParams: { walletPassphrase: passphrase, qr: true },
+        txPrebuild: {},
+        wallet: unsignedSendingWallet as any,
+        verification: {},
+      });
+
+      assert.strictEqual(result, true);
+
+      coinMock.restore();
+    });
+
+    it('should not apply qr check when qr is not set', async () => {
+      const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
+        keychains: {} as any,
+        keySignatures: {},
+        outputs: [],
+        missingOutputs: [],
+        explicitExternalOutputs: [{ address: 'external_addr', amount: '5000' }],
+        implicitExternalOutputs: [],
+        changeOutputs: [],
+        explicitExternalSpendAmount: 5000,
+        implicitExternalSpendAmount: 0,
+        needsCustomChangeKeySignatureVerification: false,
+      });
+
+      const bitcoinMock = sinon
+        .stub(coin, 'createTransactionFromHex')
+        .returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
+
+      const result = await coin.verifyTransaction({
+        txParams: { walletPassphrase: passphrase },
+        txPrebuild: { txHex: '00' },
+        wallet: unsignedSendingWallet as any,
+        verification: {},
+      });
+
+      assert.strictEqual(result, true);
+
+      coinMock.restore();
+      bitcoinMock.restore();
+    });
+  });
+
   it('should work with bigint amounts', async () => {
     // need a coin that uses bigint
     const bigintCoin = getUtxoCoin('tdoge');
