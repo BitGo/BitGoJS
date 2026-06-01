@@ -4433,7 +4433,7 @@ export const ofcErc20Coins = [
   ofcerc20(
     '43fb356f-8b1e-4569-b6b8-982f8bfb0465',
     'ofchoodeth:week',
-    'Weekly Options/Index tracker asset',
+    'Weekly T-Bill ETF',
     18,
     underlyingAssetForSymbol('hoodeth:week'),
     undefined,

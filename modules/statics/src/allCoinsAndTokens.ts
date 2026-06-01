@@ -3378,7 +3378,7 @@ export const allCoinsAndTokens = [
   erc20Token(
     'ea09a0ff-059b-4527-8e7b-75dfc750218b',
     'hoodeth:week',
-    'Weekly Options/Index tracker asset',
+    'Weekly T-Bill ETF',
     18,
     '0xc93a8c440cea26d7445df01729f193b27965099f',
     UnderlyingAsset['hoodeth:week'],
