@@ -3,6 +3,8 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import xrpl from 'xrpl';
 import { AccountDeleteBuilder } from './accountDeleteBuilder';
 import { AccountSetBuilder } from './accountSetBuilder';
+import { MPTAuthorizeBuilder } from './mpTokenAuthorizeBuilder';
+import { MPTokenTransferBuilder } from './mptTransferBuilder';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
@@ -41,6 +43,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getTokenTransferBuilder(tx);
         case TransactionType.TrustLine:
           return this.getTrustSetBuilder(tx);
+        case TransactionType.MPTokenAuthorize:
+          return this.getMPTokenAuthorizeBuilder(tx);
+        case TransactionType.SendMPT:
+          return this.getMptTransferBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -77,6 +83,16 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   public getTrustSetBuilder(tx?: Transaction): TrustSetBuilder {
     return this.initializeBuilder(tx, new TrustSetBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  public getMPTokenAuthorizeBuilder(tx?: Transaction): MPTAuthorizeBuilder {
+    return this.initializeBuilder(tx, new MPTAuthorizeBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  public getMptTransferBuilder(tx?: Transaction): MPTokenTransferBuilder {
+    return this.initializeBuilder(tx, new MPTokenTransferBuilder(this._coinConfig));
   }
 
   /**

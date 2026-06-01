@@ -5,6 +5,8 @@ export { AccountSetBuilder } from './accountSetBuilder';
 export * from './constants';
 export * from './iface';
 export { KeyPair } from './keyPair';
+export { MPTAuthorizeBuilder } from './mpTokenAuthorizeBuilder';
+export { MPTokenTransferBuilder } from './mptTransferBuilder';
 export { TokenTransferBuilder } from './tokenTransferBuilder';
 export { Transaction } from './transaction';
 export { TransactionBuilder } from './transactionBuilder';
