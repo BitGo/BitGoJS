@@ -94,6 +94,8 @@ export async function verifyTransaction<TNumber extends number | bigint>(
     );
   }
 
+  assertValidTransaction(psbt, descriptorMap, params.txParams.recipients ?? [], coin.name);
+
   const parsedOutputs = toBaseParsedTransactionOutputsFromPsbt(
     psbt,
     descriptorMap,

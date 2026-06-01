@@ -3,6 +3,7 @@ import assert from 'assert';
 import * as testutils from '@bitgo/wasm-utxo/testutils';
 
 import { verifyTransaction } from '../../../../src/transaction/descriptor/verifyTransaction';
+import { toExtendedAddressFormat } from '../../../../src/transaction/recipient';
 import { getUtxoCoin } from '../../util';
 
 const { getDefaultXPubs, getDescriptor, getDescriptorMap, mockPsbt } = testutils.descriptor;
@@ -44,12 +45,17 @@ describe('descriptor verifyTransaction - quantum-resistant sweep', function () {
 
   it('should reject when external outputs exist and qr is true', async function () {
     const psbt = buildPsbtWithExternal();
+    const externalScript = Buffer.from(descriptorOther.atDerivationIndex(0).scriptPubkey());
+    const externalAddress = toExtendedAddressFormat(externalScript, 'tbtc');
 
     await assert.rejects(
       verifyTransaction(
         coin,
         {
-          txParams: { qr: true, recipients: [] },
+          txParams: {
+            qr: true,
+            recipients: [{ address: externalAddress, amount: '400000' }],
+          },
           txPrebuild: { txHex: Buffer.from(psbt.serialize()).toString('hex') },
           wallet: {} as any,
         },
