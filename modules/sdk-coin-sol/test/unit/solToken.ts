@@ -28,4 +28,12 @@ describe('SOL Token:', function () {
     solTokenCoin.tokenAddress.should.equal('J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr');
     solTokenCoin.contractAddress.should.equal('J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr');
   });
+
+  it('should return SPL token type for mainnet token', function () {
+    solTokenCoin.getTokenType().should.equal('SPL');
+  });
+
+  it('should return SPL token type for testnet token', function () {
+    (bitgo.coin('tsol:usdc') as SolToken).getTokenType().should.equal('SPL');
+  });
 });
