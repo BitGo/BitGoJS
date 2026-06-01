@@ -237,41 +237,44 @@ describe('BitGo Prototype Methods', function () {
       'xpub661MyMwAqRbcEusRjkJ64BXgR8ddYsXbuDJfbRc3eZcZVEa2ygswDiFZQpHFsA5N211YDvi2N898h4KrcXcfsR8PLhjJaPUwCUqg1ptBBHN';
     const passwords = ['mickey', 'mouse', 'donald', 'duck'];
 
-    it('should fail to split secret with wrong m', () => {
-      (() =>
-        bitgo.splitSecret({
+    it('should fail to split secret with wrong m', async () => {
+      await bitgo
+        .splitSecretAsync({
           seed,
           passwords: ['abc'],
           m: 0,
-        })).should.throw('m must be a positive integer greater than or equal to 2');
+        })
+        .should.be.rejectedWith('m must be a positive integer greater than or equal to 2');
     });
 
-    it('should fail to split secret with bad password count', () => {
-      (() =>
-        bitgo.splitSecret({
+    it('should fail to split secret with bad password count', async () => {
+      await bitgo
+        .splitSecretAsync({
           seed,
           passwords: ['abc'],
           m: 2,
-        })).should.throw('passwords array length cannot be less than m');
+        })
+        .should.be.rejectedWith('passwords array length cannot be less than m');
     });
 
-    it('should split and fail to reconstitute secret with bad passwords', () => {
-      const splitSecret = bitgo.splitSecret({ seed, passwords: passwords, m: 3 });
+    it('should split and fail to reconstitute secret with bad passwords', async () => {
+      const splitSecret = await bitgo.splitSecretAsync({ seed, passwords: passwords, m: 3 });
       const shards = _.at(splitSecret.seedShares, [0, 2]);
       const subsetPasswords = _.at(passwords, [0, 3]);
-      (() =>
-        bitgo.reconstituteSecret({
+      await bitgo
+        .reconstituteSecretAsync({
           shards,
           passwords: subsetPasswords,
           xpub,
-        } as any)).should.throw(/ccm: tag doesn't match/);
+        } as any)
+        .should.be.rejectedWith('incorrect password');
     });
 
-    it('should split and reconstitute secret', () => {
-      const splitSecret = bitgo.splitSecret({ seed, passwords: passwords, m: 2 });
+    it('should split and reconstitute secret', async () => {
+      const splitSecret = await bitgo.splitSecret({ seed, passwords: passwords, m: 2 });
       const shards = _.at(splitSecret.seedShares, [0, 2]);
       const subsetPasswords = _.at(passwords, [0, 2]);
-      const reconstitutedSeed = bitgo.reconstituteSecret({ shards, passwords: subsetPasswords });
+      const reconstitutedSeed = await bitgo.reconstituteSecret({ shards, passwords: subsetPasswords });
       reconstitutedSeed.seed.should.equal(seed);
       reconstitutedSeed.xpub.should.equal(
         'xpub661MyMwAqRbcEusRjkJ64BXgR8ddYsXbuDJfbRc3eZcZVEa2ygswDiFZQpHFsA5N211YDvi2N898h4KrcXcfsR8PLhjJaPUwCUqg1ptBBHN'
@@ -281,22 +284,63 @@ describe('BitGo Prototype Methods', function () {
       );
     });
 
-    it('should split and incorrectly verify secret', () => {
-      const splitSecret = bitgo.splitSecret({ seed, passwords: passwords, m: 3 });
-      const isValid = bitgo.verifyShards({ shards: splitSecret.seedShares, passwords, m: 2 } as any);
+    it('should split and incorrectly verify secret', async () => {
+      const splitSecret = await bitgo.splitSecret({ seed, passwords: passwords, m: 3 });
+      const isValid = await bitgo.verifyShards({ shards: splitSecret.seedShares, passwords, m: 2 } as any);
       isValid.should.equal(false);
     });
 
-    it('should split and verify secret', () => {
-      const splitSecret = bitgo.splitSecret({ seed, passwords: passwords, m: 2 });
-      const isValid = bitgo.verifyShards({ shards: splitSecret.seedShares, passwords, m: 2, xpub });
+    it('should split and verify secret', async () => {
+      const splitSecret = await bitgo.splitSecret({ seed, passwords: passwords, m: 2 });
+      const isValid = await bitgo.verifyShards({ shards: splitSecret.seedShares, passwords, m: 2, xpub });
       isValid.should.equal(true);
     });
 
-    it('should split and verify secret with many parts', () => {
+    it('should split and verify secret with many parts', async () => {
       const allPws = ['0', '1', '2', '3', '4', '5', '6', '7'];
-      const splitSecret = bitgo.splitSecret({ seed, passwords: allPws, m: 3 });
-      const isValid = bitgo.verifyShards({ shards: splitSecret.seedShares, passwords: allPws, m: 3, xpub });
+      const splitSecret = await bitgo.splitSecret({ seed, passwords: allPws, m: 3 });
+      const isValid = await bitgo.verifyShards({ shards: splitSecret.seedShares, passwords: allPws, m: 3, xpub });
+      isValid.should.equal(true);
+    });
+  });
+
+  describe('Shamir Secret Sharing Async', () => {
+    const bitgo = TestBitGo.decorate(BitGo);
+    const seed = '8cc57dac9cdae42bf7848a2d12f2874d31eca1f9de8fe3f8fa13e7857b545d59';
+    const xpub =
+      'xpub661MyMwAqRbcEusRjkJ64BXgR8ddYsXbuDJfbRc3eZcZVEa2ygswDiFZQpHFsA5N211YDvi2N898h4KrcXcfsR8PLhjJaPUwCUqg1ptBBHN';
+    const passwords = ['mickey', 'mouse', 'donald', 'duck'];
+
+    it('should split and reconstitute secret using async methods', async () => {
+      const splitSecret = await bitgo.splitSecretAsync({ seed, passwords: passwords, m: 2 });
+      const shards = _.at(splitSecret.seedShares, [0, 2]);
+      const subsetPasswords = _.at(passwords, [0, 2]);
+      const reconstitutedSeed = await bitgo.reconstituteSecretAsync({ shards, passwords: subsetPasswords });
+      reconstitutedSeed.seed.should.equal(seed);
+      reconstitutedSeed.xpub.should.equal(
+        'xpub661MyMwAqRbcEusRjkJ64BXgR8ddYsXbuDJfbRc3eZcZVEa2ygswDiFZQpHFsA5N211YDvi2N898h4KrcXcfsR8PLhjJaPUwCUqg1ptBBHN'
+      );
+      reconstitutedSeed.xprv.should.equal(
+        'xprv9s21ZrQH143K2Rnxdim5h3aws6o99QokXzP4o3CS6E5acSEtS9Zgfuw5ZWujhTHTWEAZDfmP3yxA1Ccn6myVkGEpRrT4xWgaEpoW7YiBAtC'
+      );
+    });
+
+    it('should split and incorrectly verify secret using async methods', async () => {
+      const splitSecret = await bitgo.splitSecretAsync({ seed, passwords: passwords, m: 3 });
+      const isValid = await bitgo.verifyShardsAsync({ shards: splitSecret.seedShares, passwords, m: 2 } as any);
+      isValid.should.equal(false);
+    });
+
+    it('should split and verify secret using async methods', async () => {
+      const splitSecret = await bitgo.splitSecretAsync({ seed, passwords: passwords, m: 2 });
+      const isValid = await bitgo.verifyShardsAsync({ shards: splitSecret.seedShares, passwords, m: 2, xpub });
+      isValid.should.equal(true);
+    });
+
+    it('should split and verify secret with many parts using async methods', async () => {
+      const allPws = ['0', '1', '2', '3', '4', '5', '6', '7'];
+      const splitSecret = await bitgo.splitSecretAsync({ seed, passwords: allPws, m: 3 });
+      const isValid = await bitgo.verifyShardsAsync({ shards: splitSecret.seedShares, passwords: allPws, m: 3, xpub });
       isValid.should.equal(true);
     });
   });
@@ -436,7 +480,7 @@ describe('BitGo Prototype Methods', function () {
       requestHeaders.hmac.should.equal('6de77d5a5446a3e5649456c11480706a71071b15639c3c787af65bdb02ecf1ec');
     });
 
-    it('should correctly handle authentication response', () => {
+    it('should correctly handle authentication response', async () => {
       const responseJson = {
         encryptedToken:
           '{"iv":"EqxVaGTLY4naAYkuBaTz0w==","v":1,"iter":1000,"ks":128,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"4S4dBYcgL4s=","ct":"FgBRJljb8iSYxnAjMi4Qotr7sTKbSmWnlfHZShMSi8YeeE3kiS8bpHNUwAPhY8tgouh3UsEwrJnY+54MvqFD7yd19pG1V4CVssr8"}',
@@ -444,7 +488,22 @@ describe('BitGo Prototype Methods', function () {
         encryptedECDHXprv:
           '{"iv":"QKHEF2GNcwOJwy6+pwANRA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"W2sVFvXDlOw=","ct":"8BTCqS25X37kLzmzQdGenhXH6znn9qEmkszAeS8kLnRdqKSiUiC7bTAVgg/Np5yrV7F7Jyiq+MTpVT76EoUT+PMJzArv0gUQKC2JPB3JuVKeAAVWBQmhWfkEwRfyv4hq4WMxwZtocwBqThvd2pJm9HE51GX4/Wo="}',
       };
-      const parsedAuthenticationData = bitgo.handleTokenIssuance(responseJson, 'test@bitgo.com');
+      const parsedAuthenticationData = await bitgo.handleTokenIssuance(responseJson, 'test@bitgo.com');
+      parsedAuthenticationData.token.should.equal(token);
+      parsedAuthenticationData.ecdhXprv.should.equal(
+        'xprv9s21ZrQH143K3si1bKGp7KqgCQv39ttQ7aUwWzVdytgHd8HtDCHyEp14mxfhiT3qHTq4BaSrA7uUkG6AJTfPJBsRu63drvBqYuMZyTxepH7'
+      );
+    });
+
+    it('should correctly handle authentication response using handleTokenIssuanceAsync', async () => {
+      const responseJson = {
+        encryptedToken:
+          '{"iv":"EqxVaGTLY4naAYkuBaTz0w==","v":1,"iter":1000,"ks":128,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"4S4dBYcgL4s=","ct":"FgBRJljb8iSYxnAjMi4Qotr7sTKbSmWnlfHZShMSi8YeeE3kiS8bpHNUwAPhY8tgouh3UsEwrJnY+54MvqFD7yd19pG1V4CVssr8"}',
+        derivationPath: 'm/999999/104490948/173846667',
+        encryptedECDHXprv:
+          '{"iv":"QKHEF2GNcwOJwy6+pwANRA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"W2sVFvXDlOw=","ct":"8BTCqS25X37kLzmzQdGenhXH6znn9qEmkszAeS8kLnRdqKSiUiC7bTAVgg/Np5yrV7F7Jyiq+MTpVT76EoUT+PMJzArv0gUQKC2JPB3JuVKeAAVWBQmhWfkEwRfyv4hq4WMxwZtocwBqThvd2pJm9HE51GX4/Wo="}',
+      };
+      const parsedAuthenticationData = await bitgo.handleTokenIssuanceAsync(responseJson, 'test@bitgo.com');
       parsedAuthenticationData.token.should.equal(token);
       parsedAuthenticationData.ecdhXprv.should.equal(
         'xprv9s21ZrQH143K3si1bKGp7KqgCQv39ttQ7aUwWzVdytgHd8HtDCHyEp14mxfhiT3qHTq4BaSrA7uUkG6AJTfPJBsRu63drvBqYuMZyTxepH7'

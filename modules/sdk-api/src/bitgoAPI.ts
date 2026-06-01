@@ -101,6 +101,133 @@ const PendingApprovals = require('./v1/pendingapprovals');
 const TravelRule = require('./v1/travelRule');
 const TransactionBuilder = require('./v1/transactionBuilder');
 
+function validateDecryptKeysParams(params: DecryptKeysOptions): DecryptKeysOptions {
+  params = params || {};
+  if (!params.walletIdEncryptedKeyPairs) {
+    throw new Error('Missing parameter: walletIdEncryptedKeyPairs');
+  }
+
+  if (!params.password) {
+    throw new Error('Missing parameter: password');
+  }
+
+  if (!Array.isArray(params.walletIdEncryptedKeyPairs)) {
+    throw new Error('walletIdEncryptedKeyPairs must be an array');
+  }
+
+  return params;
+}
+
+function validateSplitSecretInputs({ passwords, m }: SplitSecretOptions): number {
+  if (!Array.isArray(passwords)) {
+    throw new Error('passwords must be an array');
+  }
+  if (!_.isInteger(m) || m < 2) {
+    throw new Error('m must be a positive integer greater than or equal to 2');
+  }
+
+  if (passwords.length < m) {
+    throw new Error('passwords array length cannot be less than m');
+  }
+
+  return passwords.length;
+}
+
+function validateReconstituteInputs({ shards, passwords }: ReconstituteSecretOptions): void {
+  if (!Array.isArray(shards)) {
+    throw new Error('shards must be an array');
+  }
+  if (!Array.isArray(passwords)) {
+    throw new Error('passwords must be an array');
+  }
+
+  if (shards.length !== passwords.length) {
+    throw new Error('shards and passwords arrays must have same length');
+  }
+}
+
+function buildSplitSecretResult(seed: string, shards: string[], m: number, n: number): SplitSecret {
+  const node = bip32.fromSeed(Buffer.from(seed, 'hex'));
+  return {
+    xpub: node.neutered().toBase58(),
+    m,
+    n,
+    seedShares: shards,
+  };
+}
+
+function buildReconstitutedSecret(seed: string): ReconstitutedSecret {
+  const node = bip32.fromSeed(Buffer.from(seed, 'hex'));
+  return {
+    xpub: node.neutered().toBase58() as string,
+    xprv: node.toBase58() as string,
+    seed,
+  };
+}
+
+function verifyShardSecrets(secrets: string[], m: number, xpub?: string): boolean {
+  const generateCombinations = (array: string[], combinationSize: number, entryIndices: number[] = []): string[][] => {
+    let combinations: string[][] = [];
+
+    if (entryIndices.length === combinationSize) {
+      const currentCombination = _.at(array, entryIndices);
+      return [currentCombination];
+    }
+
+    let entryIndex = _.last(entryIndices);
+    if (_.isUndefined(entryIndex)) {
+      entryIndex = -1;
+    }
+    for (let i = entryIndex + 1; i < array.length; i++) {
+      const currentEntryIndices = [...entryIndices, i];
+      const newCombinations = generateCombinations(array, combinationSize, currentEntryIndices);
+      combinations = [...combinations, ...newCombinations];
+    }
+
+    return combinations;
+  };
+
+  const secretCombinations = generateCombinations(secrets, m);
+  const seeds = secretCombinations.map((currentCombination) => {
+    return shamir.combine(currentCombination);
+  });
+  const uniqueSeeds = _.uniq(seeds);
+  if (uniqueSeeds.length !== 1) {
+    return false;
+  }
+  const seed = _.first(uniqueSeeds);
+  const node = bip32.fromSeed(Buffer.from(seed, 'hex'));
+  const restoredXpub = node.neutered().toBase58();
+
+  if (!_.isUndefined(xpub)) {
+    if (!_.isString(xpub)) {
+      throw new Error('xpub must be a string');
+    }
+    if (restoredXpub !== xpub) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function deriveTokenIssuanceEcdhSecret(ecdhXprv: string, derivationPath: string, serverXpub: string): string {
+  const clientHDNode = bip32.fromBase58(ecdhXprv);
+  const serverHDNode = bip32.fromBase58(serverXpub);
+  const sanitizedPath = sanitizeLegacyPath(derivationPath);
+  const clientDerivedNode = clientHDNode.derivePath(sanitizedPath);
+  const serverDerivedNode = serverHDNode.derivePath(sanitizedPath);
+  const secretKey = clientDerivedNode.privateKey;
+  if (!secretKey) {
+    throw new Error('no client private Key');
+  }
+  return Buffer.from(
+    // FIXME(BG-34386): we should use `secp256k1.ecdh()` in the future
+    //                  see discussion here https://github.com/bitcoin-core/secp256k1/issues/352
+    secp256k1.publicKeyTweakMul(serverDerivedNode.publicKey, secretKey)
+  ).toString('hex');
+}
+
 export class BitGoAPI implements BitGoBase {
   // v1 types
   protected _keychains: any;
@@ -783,6 +910,7 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
+   * TODO: deprecate this function in favor of decryptKeysAsync once v2 encryption is default
    * Attempt to decrypt multiple wallet keys with the provided passphrase
    * @param {DecryptKeysOptions} params - Parameters object containing wallet key pairs and password
    * @param {Array<{walletId: string, encryptedPrv: string}>} params.walletIdEncryptedKeyPairs - Array of wallet ID and encrypted private key pairs
@@ -790,26 +918,14 @@ export class BitGoAPI implements BitGoBase {
    * @returns {string[]} - Array of wallet IDs for which decryption failed
    */
   decryptKeys(params: DecryptKeysOptions): string[] {
-    params = params || {};
-    if (!params.walletIdEncryptedKeyPairs) {
-      throw new Error('Missing parameter: walletIdEncryptedKeyPairs');
-    }
-
-    if (!params.password) {
-      throw new Error('Missing parameter: password');
-    }
-
-    if (!Array.isArray(params.walletIdEncryptedKeyPairs)) {
-      throw new Error('walletIdEncryptedKeyPairs must be an array');
-    }
-
-    if (params.walletIdEncryptedKeyPairs.length === 0) {
+    const validatedParams = validateDecryptKeysParams(params);
+    if (validatedParams.walletIdEncryptedKeyPairs.length === 0) {
       return [];
     }
 
     const failedWalletIds: string[] = [];
 
-    for (const keyPair of params.walletIdEncryptedKeyPairs) {
+    for (const keyPair of validatedParams.walletIdEncryptedKeyPairs) {
       if (!keyPair.walletId || typeof keyPair.walletId !== 'string') {
         throw new Error('each key pair must have a string walletId');
       }
@@ -821,11 +937,45 @@ export class BitGoAPI implements BitGoBase {
       try {
         this.decrypt({
           input: keyPair.encryptedPrv,
-          password: params.password,
+          password: validatedParams.password,
         });
         // If no error was thrown, decryption was successful
       } catch (error) {
         // If decryption fails, add the walletId to the failed list
+        failedWalletIds.push(keyPair.walletId);
+      }
+    }
+
+    return failedWalletIds;
+  }
+
+  /**
+   * Async version of decryptKeys with v2 encrypt/decrypt support.
+   * @param params
+   */
+  async decryptKeysAsync(params: DecryptKeysOptions): Promise<string[]> {
+    const validatedParams = validateDecryptKeysParams(params);
+    if (validatedParams.walletIdEncryptedKeyPairs.length === 0) {
+      return [];
+    }
+
+    const failedWalletIds: string[] = [];
+
+    for (const keyPair of validatedParams.walletIdEncryptedKeyPairs) {
+      if (!keyPair.walletId || typeof keyPair.walletId !== 'string') {
+        throw new Error('each key pair must have a string walletId');
+      }
+
+      if (!keyPair.encryptedPrv || typeof keyPair.encryptedPrv !== 'string') {
+        throw new Error('each key pair must have a string encryptedPrv');
+      }
+
+      try {
+        await this.decryptAsync({
+          input: keyPair.encryptedPrv,
+          password: validatedParams.password,
+        });
+      } catch (error) {
         failedWalletIds.push(keyPair.walletId);
       }
     }
@@ -987,7 +1137,7 @@ export class BitGoAPI implements BitGoBase {
     return await this.keychains().add({
       source: 'ecdh',
       xpub: hdNode.neutered().toBase58(),
-      encryptedXprv: this.encrypt({
+      encryptedXprv: await this.encryptAsync({
         password: loginPassword,
         input: hdNode.toBase58(),
       }),
@@ -1083,7 +1233,7 @@ export class BitGoAPI implements BitGoBase {
           throw new Error('Keychain needs encryptedXprv property');
         }
 
-        const responseDetails = this.handleTokenIssuance(response.body, password);
+        const responseDetails = await this.handleTokenIssuanceAsync(response.body, password);
         this._token = responseDetails.token;
         this._ecdhXprv = responseDetails.ecdhXprv;
 
@@ -1157,7 +1307,7 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
-   *
+   * TODO: Deprecate this function in favor of handleTokenIssuanceAsync once v2 encryption is default.
    * @param responseBody Response body object
    * @param password Password for the symmetric decryption
    */
@@ -1185,44 +1335,71 @@ export class BitGoAPI implements BitGoBase {
       }
     }
 
-    // construct HDNode objects for client's xprv and server's xpub
-    const clientHDNode = bip32.fromBase58(ecdhXprv);
-    const serverHDNode = bip32.fromBase58(serverXpub);
+    const secret = deriveTokenIssuanceEcdhSecret(ecdhXprv, responseBody.derivationPath, serverXpub);
 
-    // BIP32 derivation path is applied to both client and server master keys
-    const derivationPath = sanitizeLegacyPath(responseBody.derivationPath);
-    const clientDerivedNode = clientHDNode.derivePath(derivationPath);
-    const serverDerivedNode = serverHDNode.derivePath(derivationPath);
-
-    const publicKey = serverDerivedNode.publicKey;
-    const secretKey = clientDerivedNode.privateKey;
-    if (!secretKey) {
-      throw new Error('no client private Key');
-    }
-    const secret = Buffer.from(
-      // FIXME(BG-34386): we should use `secp256k1.ecdh()` in the future
-      //                  see discussion here https://github.com/bitcoin-core/secp256k1/issues/352
-      secp256k1.publicKeyTweakMul(publicKey, secretKey)
-    ).toString('hex');
-
-    // decrypt token with symmetric ECDH key
-    let response: TokenIssuance;
     try {
-      response = {
-        token: this.decrypt({
-          input: responseBody.encryptedToken,
-          password: secret,
-        }),
-      };
+      const token = this.decrypt({
+        input: responseBody.encryptedToken,
+        password: secret,
+      });
+      const response: TokenIssuance = { token };
+      if (!this._ecdhXprv) {
+        response.ecdhXprv = ecdhXprv;
+      }
+      return response;
     } catch (e) {
       e.errorCode = 'token_decryption_failure';
       console.error('Failed to decrypt token.');
       throw e;
     }
-    if (!this._ecdhXprv) {
-      response.ecdhXprv = ecdhXprv;
+  }
+
+  /**
+   * Async version of handleTokenIssuance with v2 encrypt/decrypt support.
+   * @param responseBody Response body object
+   * @param password Password for the symmetric decryption
+   */
+  async handleTokenIssuanceAsync(responseBody: TokenIssuanceResponse, password?: string): Promise<TokenIssuance> {
+    // make sure the response body contains the necessary properties
+    common.validateParams(responseBody, ['derivationPath'], ['encryptedECDHXprv']);
+
+    const environment = this._env;
+    const environmentConfig = common.Environments[environment];
+    const serverXpub = environmentConfig.serverXpub;
+    let ecdhXprv = this._ecdhXprv;
+    if (!ecdhXprv) {
+      if (!password || !responseBody.encryptedECDHXprv) {
+        throw new Error('ecdhXprv property must be set or password and encrypted encryptedECDHXprv must be provided');
+      }
+      try {
+        ecdhXprv = await this.decryptAsync({
+          input: responseBody.encryptedECDHXprv,
+          password: password,
+        });
+      } catch (e) {
+        e.errorCode = 'ecdh_xprv_decryption_failure';
+        console.error('Failed to decrypt encryptedECDHXprv.');
+        throw e;
+      }
     }
-    return response;
+
+    const secret = deriveTokenIssuanceEcdhSecret(ecdhXprv, responseBody.derivationPath, serverXpub);
+
+    try {
+      const token = await this.decryptAsync({
+        input: responseBody.encryptedToken,
+        password: secret,
+      });
+      const response: TokenIssuance = { token };
+      if (!this._ecdhXprv) {
+        response.ecdhXprv = ecdhXprv;
+      }
+      return response;
+    } catch (e) {
+      e.errorCode = 'token_decryption_failure';
+      console.error('Failed to decrypt token.');
+      throw e;
+    }
   }
 
   /**
@@ -1393,7 +1570,7 @@ export class BitGoAPI implements BitGoBase {
       // verify the authenticity of the server's response before proceeding any further
       await verifyResponseAsync(this, this._token, 'post', request, response, this._authVersion);
 
-      const responseDetails = this.handleTokenIssuance(response.body);
+      const responseDetails = await this.handleTokenIssuanceAsync(response.body);
       response.body.token = responseDetails.token;
 
       return handleResponseResult<AddAccessTokenResponse>()(response);
@@ -1735,141 +1912,93 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
+   * TODO: deprecate this function in favor of splitSecretAsync when v2 encryption is the default
    * Split a secret into shards using Shamir Secret Sharing.
    * @param seed A hexadecimal secret to split
    * @param passwords An array of the passwords used to encrypt each share
    * @param m The threshold number of shards necessary to reconstitute the secret
    */
   splitSecret({ seed, passwords, m }: SplitSecretOptions): SplitSecret {
-    if (!Array.isArray(passwords)) {
-      throw new Error('passwords must be an array');
-    }
-    if (!_.isInteger(m) || m < 2) {
-      throw new Error('m must be a positive integer greater than or equal to 2');
-    }
-
-    if (passwords.length < m) {
-      throw new Error('passwords array length cannot be less than m');
-    }
-
-    const n = passwords.length;
+    const n = validateSplitSecretInputs({ seed, passwords, m });
     const secrets: string[] = shamir.share(seed, n, m);
     const shards = _.zipWith(secrets, passwords, (shard, password) => {
       return this.encrypt({ input: shard, password });
     });
-    const node = bip32.fromSeed(Buffer.from(seed, 'hex'));
-    return {
-      xpub: node.neutered().toBase58(),
-      m,
-      n,
-      seedShares: shards,
-    };
+    return buildSplitSecretResult(seed, shards, m, n);
   }
 
   /**
+   * Async version of splitSecret with v2 encrypt/decrypt support.
+   * @param seed
+   * @param passwords
+   * @param m
+   */
+  async splitSecretAsync({ seed, passwords, m }: SplitSecretOptions): Promise<SplitSecret> {
+    const n = validateSplitSecretInputs({ seed, passwords, m });
+    const secrets: string[] = shamir.share(seed, n, m);
+    const shards = await Promise.all(
+      secrets.map((shard, i) => this.encryptAsync({ input: shard, password: passwords[i] }))
+    );
+    return buildSplitSecretResult(seed, shards, m, n);
+  }
+
+  /**
+   * TODO: deprecate this function in favor of reconstituteSecretAsync when v2 encryption is the default
    * Reconstitute a secret which was sharded with `splitSecret`.
    * @param shards
    * @param passwords
    */
   reconstituteSecret({ shards, passwords }: ReconstituteSecretOptions): ReconstitutedSecret {
-    if (!Array.isArray(shards)) {
-      throw new Error('shards must be an array');
-    }
-    if (!Array.isArray(passwords)) {
-      throw new Error('passwords must be an array');
-    }
-
-    if (shards.length !== passwords.length) {
-      throw new Error('shards and passwords arrays must have same length');
-    }
-
+    validateReconstituteInputs({ shards, passwords });
     const secrets = _.zipWith(shards, passwords, (shard, password) => {
       return this.decrypt({ input: shard, password });
     });
     const seed: string = shamir.combine(secrets);
-    const node = bip32.fromSeed(Buffer.from(seed, 'hex'));
-    return {
-      xpub: node.neutered().toBase58() as string,
-      xprv: node.toBase58() as string,
-      seed,
-    };
+    return buildReconstitutedSecret(seed);
   }
 
   /**
-   *
+   * Async version of reconstituteSecret with v2 encrypt/decrypt support.
+   * @param shards
+   * @param passwords
+   */
+  async reconstituteSecretAsync({ shards, passwords }: ReconstituteSecretOptions): Promise<ReconstitutedSecret> {
+    validateReconstituteInputs({ shards, passwords });
+    const secrets = await Promise.all(
+      shards.map((shard, i) => this.decryptAsync({ input: shard, password: passwords[i] }))
+    );
+    const seed: string = shamir.combine(secrets);
+    return buildReconstitutedSecret(seed);
+  }
+
+  /**
+   * TODO: Deprecate this function in favour of verifyShardsAsync when v2 encryption is the default.
    * @param shards
    * @param passwords
    * @param m
    * @param xpub Optional xpub to verify the results against
    */
   verifyShards({ shards, passwords, m, xpub }: VerifyShardsOptions): boolean {
-    /**
-     * Generate all possible combinations of a given array's values given subset size m
-     * @param array The array whose values are to be arranged in all combinations
-     * @param m The size of each subset
-     * @param entryIndices Recursively trailing set of currently chosen array indices for the combination subset under construction
-     * @returns {Array}
-     */
-    const generateCombinations = (array: string[], m: number, entryIndices: number[] = []): string[][] => {
-      let combinations: string[][] = [];
-
-      if (entryIndices.length === m) {
-        const currentCombination = _.at(array, entryIndices);
-        return [currentCombination];
-      }
-
-      // The highest index
-      let entryIndex = _.last(entryIndices);
-      // If there are currently no indices, assume -1
-      if (_.isUndefined(entryIndex)) {
-        entryIndex = -1;
-      }
-      for (let i = entryIndex + 1; i < array.length; i++) {
-        // append the current index to the trailing indices
-        const currentEntryIndices = [...entryIndices, i];
-        const newCombinations = generateCombinations(array, m, currentEntryIndices);
-        combinations = [...combinations, ...newCombinations];
-      }
-
-      return combinations;
-    };
-
-    if (!Array.isArray(shards)) {
-      throw new Error('shards must be an array');
-    }
-    if (!Array.isArray(passwords)) {
-      throw new Error('passwords must be an array');
-    }
-
-    if (shards.length !== passwords.length) {
-      throw new Error('shards and passwords arrays must have same length');
-    }
-
+    validateReconstituteInputs({ shards, passwords });
     const secrets = _.zipWith(shards, passwords, (shard, password) => {
       return this.decrypt({ input: shard, password });
     });
-    const secretCombinations = generateCombinations(secrets, m);
-    const seeds = secretCombinations.map((currentCombination) => {
-      return shamir.combine(currentCombination);
-    });
-    const uniqueSeeds = _.uniq(seeds);
-    if (uniqueSeeds.length !== 1) {
-      return false;
-    }
-    const seed = _.first(uniqueSeeds);
-    const node = bip32.fromSeed(Buffer.from(seed, 'hex'));
-    const restoredXpub = node.neutered().toBase58();
+    return verifyShardSecrets(secrets, m, xpub);
+  }
 
-    if (!_.isUndefined(xpub)) {
-      if (!_.isString(xpub)) {
-        throw new Error('xpub must be a string');
-      }
-      if (restoredXpub !== xpub) {
-        return false;
-      }
-    }
-
-    return true;
+  /**
+   * Async version of verifyShards with v2 encrypt/decrypt support.
+   * @param shards
+   * @param passwords
+   * @param m
+   * @param xpub
+   */
+  async verifyShardsAsync({ shards, passwords, m, xpub }: VerifyShardsOptions): Promise<boolean> {
+    validateReconstituteInputs({ shards, passwords });
+    const secrets = await Promise.all(
+      shards.map((shard, i) => this.decryptAsync({ input: shard, password: passwords[i] }))
+    );
+    return verifyShardSecrets(secrets, m, xpub);
   }
 
   /**
@@ -1914,7 +2043,7 @@ export class BitGoAPI implements BitGoBase {
     const userEcdhKeychain = await this.getECDHKeychain(userSigningKey.ecdhKeychain);
     let xprv;
     try {
-      xprv = this.decrypt({
+      xprv = await this.decryptAsync({
         password: password,
         input: userEcdhKeychain.encryptedXprv,
       });
