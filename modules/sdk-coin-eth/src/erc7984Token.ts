@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor, TokenEnablementConfig } from '@bitgo/sdk-core';
+import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
 
 import { coins, Erc7984TokenConfig, EthereumNetwork, tokens } from '@bitgo/statics';
 import {
@@ -119,14 +119,6 @@ export class Erc7984Token extends Eth {
 
   protected getTransactionBuilder(): TransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
-  }
-
-  /** @inheritDoc */
-  getTokenEnablementConfig(): TokenEnablementConfig {
-    return {
-      requiresTokenEnablement: true,
-      supportsMultipleTokenEnablements: true,
-    };
   }
 
   /** @inheritDoc */
