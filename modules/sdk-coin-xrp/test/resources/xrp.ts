@@ -81,17 +81,17 @@ export const TEST_TOKEN_TRANSFER_TX = {
 
 export const keys = {
   userKey:
-    '{"iv":"ZN/gBap8QYIpjbbkZCDY8g==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
-    ':"ccm","adata":"","cipher":"aes","salt":"Egt/IC14ugw=","ct":"eRiONKtGrlEX8e\n' +
-    '5s5EAon7MadWZxyQWJMFJp16rimEd/2LWyGObo/d6hdJWUSZE1lDzpYV9x/Qg3vKz8Wy4ee8R0h\n' +
+    '{"iv":"ZN/gBap8QYIpjbbkZCDY8g==","v":1,"iter":10000,"ks":256,"ts":64,"mode"' +
+    ':"ccm","adata":"","cipher":"aes","salt":"Egt/IC14ugw=","ct":"eRiONKtGrlEX8e' +
+    '5s5EAon7MadWZxyQWJMFJp16rimEd/2LWyGObo/d6hdJWUSZE1lDzpYV9x/Qg3vKz8Wy4ee8R0h' +
     '8J+Ddo/Q8dR/yDNImcNGBclBMrh9c8cowuzRMnbMlbrLc949tN3d3A1jXOu3Rr5Wt4h1ag="}',
   backupKey:
-    '{"iv":"D5SCw343R+l9qbP3TrXzlg==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
-    ':"ccm","adata":"","cipher":"aes","salt":"yug6WjWDjCA=","ct":"++m1LyBWw9emM2\n' +
-    'J1P85+T2VJEFPXFjshWssVBaHuccsiD0MsYsFX5d+hVfDrWV2aDOJAuOdtoCo+R3LrG2JST80ru\n' +
+    '{"iv":"D5SCw343R+l9qbP3TrXzlg==","v":1,"iter":10000,"ks":256,"ts":64,"mode"' +
+    ':"ccm","adata":"","cipher":"aes","salt":"yug6WjWDjCA=","ct":"++m1LyBWw9emM2' +
+    'J1P85+T2VJEFPXFjshWssVBaHuccsiD0MsYsFX5d+hVfDrWV2aDOJAuOdtoCo+R3LrG2JST80ru' +
     '37Y383IvRlB3A85MSo/poMtN1JyzorwF6Cfiz26bY3OKxywaeWJvr9SEDJxTDTx8HH9GsE="}',
   bitgoKey:
-    'xpub661MyMwAqRbcGBXTTnaLrqur67ZHc9BA9X3GdAx6Kj8HVyg32TvktXv8DPN13QvnWSnrfC8\n' +
+    'xpub661MyMwAqRbcGBXTTnaLrqur67ZHc9BA9X3GdAx6Kj8HVyg32TvktXv8DPN13QvnWSnrfC8' +
     'KFWvaUfR4kfwyikf6TuyJ3Ei8HGs7vxfdyia',
   rootAddress: 'rNTfZB1h4TDdF9QXw37nbWk9euZmRby4qn',
 };

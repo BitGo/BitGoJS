@@ -1751,7 +1751,10 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
       const safeUserKey = _.get(this.wallet, 'private.userPrivKey');
       if (_.isString(safeUserKey) && _.isString(params.walletPassphrase)) {
         // @ts-expect-error - no implicit this
-        transaction.signingKey = this.bitgo.decrypt({ password: params.walletPassphrase, input: safeUserKey });
+        transaction.signingKey = await this.bitgo.decryptAsync({
+          password: params.walletPassphrase,
+          input: safeUserKey,
+        });
       } else {
         throw e;
       }
@@ -1809,10 +1812,13 @@ Wallet.prototype.getAndPrepareSigningKeychain = function (params, callback) {
 
   // Caller provided a wallet passphrase
   if (params.walletPassphrase) {
-    return self.getEncryptedUserKeychain().then(function (keychain) {
+    return self.getEncryptedUserKeychain().then(async function (keychain) {
       // Decrypt the user key with a passphrase
       try {
-        keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
+        keychain.xprv = await self.bitgo.decryptAsync({
+          password: params.walletPassphrase,
+          input: keychain.encryptedXprv,
+        });
       } catch (e) {
         throw new Error('Unable to decrypt user keychain');
       }
@@ -2295,21 +2301,24 @@ Wallet.prototype.shareWallet = function (params, callback) {
       sharing = result;
 
       if (needsKeychain) {
-        return self.getEncryptedUserKeychain({}).then(function (keychain) {
+        return self.getEncryptedUserKeychain({}).then(async function (keychain) {
           // Decrypt the user key with a passphrase
           if (keychain.encryptedXprv) {
             if (!params.walletPassphrase) {
               throw new Error('Missing walletPassphrase argument');
             }
             try {
-              keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
+              keychain.xprv = await self.bitgo.decryptAsync({
+                password: params.walletPassphrase,
+                input: keychain.encryptedXprv,
+              });
             } catch (e) {
               throw new Error('Unable to decrypt user keychain');
             }
 
             const eckey = makeRandomKey();
             const secret = getSharedSecret(eckey, Buffer.from(sharing.pubkey, 'hex')).toString('hex');
-            const newEncryptedXprv = self.bitgo.encrypt({ password: secret, input: keychain.xprv });
+            const newEncryptedXprv = await self.bitgo.encryptAsync({ password: secret, input: keychain.xprv });
 
             sharedKeychain = {
               xpub: keychain.xpub,
@@ -2599,10 +2608,10 @@ Wallet.prototype.recover = async function (params) {
   assert(parsedUnsignedTx.outs.length === 1);
   assert(_.sumBy(params.unspents, 'value') - _.sumBy(parsedUnsignedTx.outs, 'value') === Number(approximateTxFee));
 
-  const plainUserKey = this.bitgo.decrypt({ password: params.walletPassphrase, input: params.userKey });
+  const plainUserKey = await this.bitgo.decryptAsync({ password: params.walletPassphrase, input: params.userKey });
   const halfSignedTx = await this.signTransaction({ ...unsignedTx, signingKey: plainUserKey });
 
-  const plainBackupKey = this.bitgo.decrypt({ password: params.walletPassphrase, input: params.backupKey });
+  const plainBackupKey = await this.bitgo.decryptAsync({ password: params.walletPassphrase, input: params.backupKey });
   const fullSignedTx = await this.signTransaction({
     ...unsignedTx,
     transactionHex: halfSignedTx.tx,
@@ -2659,7 +2668,7 @@ Wallet.prototype.sweep = async function (params) {
   assert(parsedUnsignedTx.outs.length === 1);
   assert(_.sumBy(params.unspents, 'value') - _.sumBy(parsedUnsignedTx.outs, 'value') === Number(approximateTxFee));
 
-  const plainUserKey = this.bitgo.decrypt({ password: params.walletPassphrase, input: params.userKey });
+  const plainUserKey = await this.bitgo.decryptAsync({ password: params.walletPassphrase, input: params.userKey });
   const halfSignedTx = await this.signTransaction({ ...unsignedTx, signingKey: plainUserKey });
 
   return await this.sendTransaction({

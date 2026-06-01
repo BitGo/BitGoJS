@@ -247,13 +247,13 @@ Wallets.prototype.acceptShare = function (params, callback) {
         throw new Error('userPassword param must be provided to decrypt shared key');
       }
 
-      return self.bitgo.getECDHKeychain().then(function (sharingKeychain) {
+      return self.bitgo.getECDHKeychain().then(async function (sharingKeychain) {
         if (!sharingKeychain.encryptedXprv) {
           throw new Error('EncryptedXprv was not found on sharing keychain');
         }
 
         // Now we have the sharing keychain, we can work out the secret used for sharing the wallet with us
-        sharingKeychain.xprv = self.bitgo.decrypt({
+        sharingKeychain.xprv = await self.bitgo.decryptAsync({
           password: params.userPassword,
           input: sharingKeychain.encryptedXprv,
         });
@@ -265,14 +265,17 @@ Wallets.prototype.acceptShare = function (params, callback) {
         ).toString('hex');
 
         // Yes! We got the secret successfully here, now decrypt the shared wallet xprv
-        const decryptedSharedWalletXprv = self.bitgo.decrypt({
+        const decryptedSharedWalletXprv = await self.bitgo.decryptAsync({
           password: secret,
           input: walletShare.keychain.encryptedXprv,
         });
 
         // We will now re-encrypt the wallet with our own password
         const newWalletPassphrase = params.newWalletPassphrase || params.userPassword;
-        encryptedXprv = self.bitgo.encrypt({ password: newWalletPassphrase, input: decryptedSharedWalletXprv });
+        encryptedXprv = await self.bitgo.encryptAsync({
+          password: newWalletPassphrase,
+          input: decryptedSharedWalletXprv,
+        });
 
         // Carry on to the next block where we will post the acceptance of the share with the encrypted xprv
         return walletShare;
@@ -337,7 +340,7 @@ Wallets.prototype.createKey = function (params) {
 // ** BE SURE TO BACK UP THE ENCRYPTED USER AND BACKUP KEYCHAINS!**
 //
 // }
-Wallets.prototype.createWalletWithKeychains = function (params, callback) {
+Wallets.prototype.createWalletWithKeychains = async function (params, callback) {
   params = params || {};
   common.validateParams(
     params,
@@ -350,7 +353,7 @@ Wallets.prototype.createWalletWithKeychains = function (params, callback) {
 
   // Create the user and backup key.
   const userKeychain = this.bitgo.keychains().create();
-  userKeychain.encryptedXprv = this.bitgo.encrypt({ password: params.passphrase, input: userKeychain.xprv });
+  userKeychain.encryptedXprv = await this.bitgo.encryptAsync({ password: params.passphrase, input: userKeychain.xprv });
 
   const keychainData: any = {
     xpub: userKeychain.xpub,

@@ -92,7 +92,7 @@ export class TradingAccount implements ITradingAccount {
       if (!key.encryptedPrv) {
         throw new Error('Expected encryptedPrv to be present on user keychain.');
       }
-      prv = this.wallet.bitgo.decrypt({
+      prv = await this.wallet.bitgo.decryptAsync({
         input: key.encryptedPrv,
         password: params.walletPassphrase,
       });

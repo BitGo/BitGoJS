@@ -2250,7 +2250,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
         userPublicOrPrivateKeyShare,
         backupPrivateOrPublicKeyShare,
-        params.walletPassphrase
+        params.walletPassphrase,
+        this.bitgo
       );
 
       const { gasLimit, gasPrice } = await this.getGasValues(params);

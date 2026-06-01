@@ -97,15 +97,15 @@ function handleLogin(req: ExpressApiRouteRequest<'express.v1.login' | 'express.l
   return req.bitgo.authenticate(body);
 }
 
-function handleDecrypt(req: ExpressApiRouteRequest<'express.v1.decrypt' | 'express.decrypt', 'post'>) {
+async function handleDecrypt(req: ExpressApiRouteRequest<'express.v1.decrypt' | 'express.decrypt', 'post'>) {
   return {
-    decrypted: req.bitgo.decrypt(req.body),
+    decrypted: await req.bitgo.decryptAsync(req.body),
   };
 }
 
-function handleEncrypt(req: ExpressApiRouteRequest<'express.v1.encrypt' | 'express.encrypt', 'post'>) {
+async function handleEncrypt(req: ExpressApiRouteRequest<'express.v1.encrypt' | 'express.encrypt', 'post'>) {
   return {
-    encrypted: req.bitgo.encrypt(req.body),
+    encrypted: await req.bitgo.encryptAsync(req.body),
   };
 }
 
@@ -424,9 +424,9 @@ async function getEncryptedPrivKey(path: string, walletId: string): Promise<stri
   return encryptedPrivKey[walletId];
 }
 
-function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: string): string {
+async function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: string): Promise<string> {
   try {
-    return bg.decrypt({ password: walletPw, input: encryptedPrivKey });
+    return await bg.decryptAsync({ password: walletPw, input: encryptedPrivKey });
   } catch (e) {
     throw new Error(`Error when trying to decrypt private key: ${e}`);
   }
@@ -449,7 +449,7 @@ export async function handleV2GenerateShareTSS(
 
   const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
   const bitgo = req.bitgo;
-  const privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
+  const privKey = await decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
   const coin = bitgo.coin(req.decoded.coin);
   req.body.prv = privKey;
   req.body.walletPassphrase = walletPw;
@@ -547,7 +547,7 @@ export async function handleV2Sign(req: ExpressApiRouteRequest<'express.v2.coin.
 
   const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
   const bitgo = req.bitgo;
-  let privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
+  let privKey = await decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
   const coin = bitgo.coin(req.decoded.coin);
   if (req.body.derivationSeed) {
     privKey = coin.deriveKeyWithSeed({ key: privKey, seed: req.body.derivationSeed }).key;
@@ -589,7 +589,7 @@ export async function handleV2OFCSignPayloadInExtSigningMode(
   const bitgo = req.bitgo;
 
   // decrypt the encrypted private key using the wallet pwd
-  const privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
+  const privKey = await decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
 
   // create a BaseCoin instance for 'ofc'
   const coin = bitgo.coin(ofcCoinName);

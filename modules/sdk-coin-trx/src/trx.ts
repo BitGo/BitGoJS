@@ -10,7 +10,7 @@ import {
   BaseCoin,
   BitGoBase,
   common,
-  getBip32Keys,
+  getBip32KeysAsync,
   getIsKrsRecovery,
   getIsUnsignedSweep,
   KeyPair,
@@ -848,7 +848,7 @@ export class Trx extends BaseCoin {
     }
 
     // get our user, backup keys
-    const keys = getBip32Keys(this.bitgo, params, { requireBitGoXpub: false });
+    const keys = await getBip32KeysAsync(this.bitgo, params, { requireBitGoXpub: false });
 
     // we need to decode our bitgoKey to a base58 address
     const bitgoHexAddr = this.pubToHexAddress(this.xpubToUncompressedPub(params.bitgoKey));
@@ -1032,7 +1032,7 @@ export class Trx extends BaseCoin {
       );
     }
 
-    const keys = getBip32Keys(this.bitgo, params, { requireBitGoXpub: false });
+    const keys = await getBip32KeysAsync(this.bitgo, params, { requireBitGoXpub: false });
     const baseAddrHex = this.pubToHexAddress(this.xpubToUncompressedPub(params.bitgoKey));
 
     const txnsBatch: RecoveryTransaction[] = [];

@@ -341,20 +341,20 @@ TravelRule.prototype.sendMany = function (params, callback) {
     })
     .value();
 
-  return self.getRecipients({ txid: params.txid }).then(function (recipients) {
+  return self.getRecipients({ txid: params.txid }).then(async function (recipients) {
     // Build up data to post
     const sendParamsList: any[] = [];
     // don't regenerate a new random key for each recipient
     const fromKey = params.fromKey || makeRandomKey().toWIF();
 
-    recipients.forEach(function (recipient) {
+    for (const recipient of recipients) {
       const outputIndex = recipient.outputIndex;
       const info = travelInfoMap[outputIndex];
       if (info) {
         if (info.amount && info.amount !== recipient.amount) {
           throw new Error('amount did not match for output index ' + outputIndex);
         }
-        const sendParams = self.prepareParams({
+        const sendParams = await self.prepareParamsAsync({
           txid: params.txid,
           recipient: recipient,
           travelInfo: info,
@@ -363,7 +363,7 @@ TravelRule.prototype.sendMany = function (params, callback) {
         });
         sendParamsList.push(sendParams);
       }
-    });
+    }
 
     const result: {
       matched: number;

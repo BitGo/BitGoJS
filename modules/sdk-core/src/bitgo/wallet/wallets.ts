@@ -931,7 +931,7 @@ export class Wallets implements IWallets {
       }
 
       const walletKeychain = this.baseCoin.keychains().create();
-      const encryptedPrv = this.bitgo.encrypt({
+      const encryptedPrv = await this.bitgo.encryptAsync({
         password: params.newWalletPassphrase || params.userPassword,
         input: walletKeychain.prv,
       });
@@ -1032,7 +1032,7 @@ export class Wallets implements IWallets {
 
     // We will now re-encrypt the wallet with our own password
     const newWalletPassphrase = params.newWalletPassphrase || params.userPassword;
-    encryptedPrv = this.bitgo.encrypt({
+    encryptedPrv = await this.bitgo.encryptAsync({
       password: newWalletPassphrase,
       input: decryptedSharedWalletPrv,
     });
@@ -1105,7 +1105,7 @@ export class Wallets implements IWallets {
               throw new Error('userLoginPassword param must be provided to generate user keychain');
             }
             const walletKeychain = this.baseCoin.keychains().create();
-            const encryptedPrv = this.bitgo.encrypt({
+            const encryptedPrv = await this.bitgo.encryptAsync({
               password: newWalletPassphrase,
               input: walletKeychain.prv,
             });
@@ -1131,7 +1131,7 @@ export class Wallets implements IWallets {
             password: secret,
             input: walletShare.keychain.encryptedPrv,
           });
-          const newEncryptedPrv = this.bitgo.encrypt({
+          const newEncryptedPrv = await this.bitgo.encryptAsync({
             password: newWalletPassphrase,
             input: decryptedSharedWalletPrv,
           });
@@ -1143,7 +1143,7 @@ export class Wallets implements IWallets {
             entry.webauthnInfo = {
               otpDeviceId: webauthnInfo.otpDeviceId,
               prfSalt: webauthnInfo.prfSalt,
-              encryptedPrv: this.bitgo.encrypt({
+              encryptedPrv: await this.bitgo.encryptAsync({
                 password: webauthnInfo.passphrase,
                 input: decryptedSharedWalletPrv,
               }),
@@ -1403,7 +1403,7 @@ export class Wallets implements IWallets {
       }
 
       const walletKeychain = this.baseCoin.keychains().create();
-      const encryptedPrv = this.bitgo.encrypt({
+      const encryptedPrv = await this.bitgo.encryptAsync({
         password: newWalletPassphrase || userLoginPassword,
         input: walletKeychain.prv,
       });
@@ -1448,7 +1448,7 @@ export class Wallets implements IWallets {
     });
 
     // We will now re-encrypt the wallet with our own password
-    const encryptedPrv = this.bitgo.encrypt({
+    const encryptedPrv = await this.bitgo.encryptAsync({
       password: newWalletPassphrase || userLoginPassword,
       input: decryptedPrv,
     });

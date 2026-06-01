@@ -1076,7 +1076,7 @@ describe('V2 Keychains', function () {
       updateKeychainStub = sandbox.stub().returns({ result: sandbox.stub().resolves() });
       sandbox.stub(BitGo.prototype, 'put').returns({ send: updateKeychainStub });
       createKeypairStub = sandbox.stub(ofcKeychains, 'create').returns(mockNewKeypair);
-      encryptionStub = sandbox.stub(BitGo.prototype, 'encrypt').returns('newEncryptedPrv');
+      encryptionStub = sandbox.stub(BitGo.prototype, 'encryptAsync').resolves('newEncryptedPrv');
     });
 
     afterEach(function () {
@@ -1088,7 +1088,7 @@ describe('V2 Keychains', function () {
 
       await ofcKeychains.rotateKeychain({ id: mockOfcKeychain.id, password: '1234' });
       sinon.assert.called(createKeypairStub);
-      sinon.assert.calledWith(encryptionStub, { input: mockNewKeypair.prv, password: '1234' });
+      sinon.assert.calledWith(encryptionStub, { input: mockNewKeypair.prv, password: '1234', encryptionVersion: 2 });
       sinon.assert.calledWith(updateKeychainStub, {
         pub: mockNewKeypair.pub,
         encryptedPrv: 'newEncryptedPrv',

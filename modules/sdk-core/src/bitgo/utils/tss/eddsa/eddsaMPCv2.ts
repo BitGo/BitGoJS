@@ -226,7 +226,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
         assert(reducedPrivateMaterial, `Reduced private material is required for ${source} keychain`);
         assert(passphrase, `Passphrase is required for ${source} keychain`);
         privateMaterialBase64 = privateMaterial.toString('base64');
-        encryptedPrv = this.bitgo.encrypt({
+        encryptedPrv = await this.bitgo.encryptAsync({
           input: privateMaterialBase64,
           password: passphrase,
         });
@@ -234,7 +234,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
         // key) with the wallet passphrase. The result is stored as reducedEncryptedPrv
         // on the key card QR code and represents a second copy of key material
         // beyond the server-stored encryptedPrv.
-        reducedEncryptedPrv = this.bitgo.encrypt({
+        reducedEncryptedPrv = await this.bitgo.encryptAsync({
           // Buffer.toString('base64') can not be used here as it does not work on the browser.
           // The browser deals with a Buffer as Uint8Array, therefore in the browser .toString('base64') just creates a comma separated string of the array values.
           input: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(reducedPrivateMaterial)))),
@@ -586,12 +586,12 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       }
     }
 
-    const encryptedRound1Session = this.bitgo.encrypt({
+    const encryptedRound1Session = await this.bitgo.encryptAsync({
       input: sessionPayload,
       password: walletPassphrase,
       adata: `${EddsaMPCv2Utils.MPS_DSG_SIGNING_ROUND1_STATE}:${adata}`,
     });
-    const encryptedUserGpgPrvKey = this.bitgo.encrypt({
+    const encryptedUserGpgPrvKey = await this.bitgo.encryptAsync({
       input: userGpgKey.privateKey,
       password: walletPassphrase,
       adata: `${EddsaMPCv2Utils.MPS_DSG_SIGNING_USER_GPG_KEY}:${adata}`,
@@ -697,7 +697,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       }
     }
 
-    const encryptedRound2Session = this.bitgo.encrypt({
+    const encryptedRound2Session = await this.bitgo.encryptAsync({
       input: sessionPayload,
       password: walletPassphrase,
       adata: `${EddsaMPCv2Utils.MPS_DSG_SIGNING_ROUND2_STATE}:${adata}`,

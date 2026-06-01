@@ -82,7 +82,7 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
       };
 
       sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-      sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+      sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
 
       const result = await agent
         .post('/api/v2/ofc/signPayload')
@@ -100,7 +100,7 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
 
       // Verify external signing mode operations
       assert.strictEqual(fsReadFileStub.calledOnce, true);
-      const decryptStub = BitGo.prototype.decrypt as sinon.SinonStub;
+      const decryptStub = BitGo.prototype.decryptAsync as sinon.SinonStub;
       assert.strictEqual(decryptStub.calledOnce, true);
       assert.strictEqual(decryptStub.calledWith({ password: walletPassphrase, input: encryptedPrivKey }), true);
       assert.strictEqual(mockCoin.signMessage.calledOnce, true);
@@ -126,7 +126,7 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
       };
 
       sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-      sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+      sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
 
       const result = await agent
         .post('/api/v2/ofc/signPayload')
@@ -161,7 +161,7 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
       };
 
       sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-      sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+      sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
 
       const result = await agent
         .post('/api/v2/ofc/signPayload')
@@ -174,7 +174,7 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
       assert.ok(decodedResponse.signature);
 
       // Verify decrypt was called with env passphrase
-      const decryptStub = BitGo.prototype.decrypt as sinon.SinonStub;
+      const decryptStub = BitGo.prototype.decryptAsync as sinon.SinonStub;
       assert.strictEqual(decryptStub.calledWith({ password: walletPassphrase, input: encryptedPrivKey }), true);
     });
 
@@ -258,7 +258,7 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
           })
         );
 
-        sinon.stub(BitGo.prototype, 'decrypt').throws(new Error('Invalid passphrase'));
+        sinon.stub(BitGo.prototype, 'decryptAsync').rejects(new Error('Invalid passphrase'));
 
         const result = await agent
           .post('/api/v2/ofc/signPayload')
@@ -288,7 +288,7 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
         };
 
         sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-        sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+        sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
 
         const result = await agent
           .post('/api/v2/ofc/signPayload')

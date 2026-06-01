@@ -94,7 +94,7 @@ import {
   stringToBufferTryFormats,
 } from './transaction/decode';
 import { fetchKeychains, toBip32Triple, UtxoKeychain } from './keychains';
-import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
+import { verifyKeySignature, verifyUserPublicKey, verifyUserPublicKeyAsync } from './verifyKey';
 import { getPolicyForEnv } from './descriptor/validatePolicy';
 import { signTransaction } from './transaction/signTransaction';
 import { isUtxoWalletData, UtxoWallet } from './wallet';
@@ -704,6 +704,13 @@ export abstract class AbstractUtxoCoin
    */
   protected verifyUserPublicKey(params: VerifyUserPublicKeyOptions): boolean {
     return verifyUserPublicKey(this.bitgo, params);
+  }
+
+  /**
+   * @deprecated - use function verifyUserPublicKeyAsync instead
+   */
+  protected async verifyUserPublicKeyAsync(params: VerifyUserPublicKeyOptions): Promise<boolean> {
+    return await verifyUserPublicKeyAsync(this.bitgo, params);
   }
 
   /**

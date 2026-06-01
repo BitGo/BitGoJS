@@ -358,7 +358,7 @@ describe('With the handler to sign an arbitrary payload in external signing mode
       } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
       await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith(
-        "Error when trying to decrypt private key: INVALID: json decode: this isn't json!"
+        'Error when trying to decrypt private key: Error: decrypt: ciphertext is not valid JSON'
       );
 
       readFileStub.restore();
@@ -387,7 +387,7 @@ describe('With the handler to sign an arbitrary payload in external signing mode
       } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
       await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith(
-        "Error when trying to decrypt private key: CORRUPT: password error - ccm: tag doesn't match"
+        'Error when trying to decrypt private key: Error: incorrect password'
       );
 
       readFileStub.restore();
@@ -415,7 +415,7 @@ describe('With the handler to sign an arbitrary payload in external signing mode
       } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
       await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith(
-        "Error when trying to decrypt private key: CORRUPT: password error - ccm: tag doesn't match"
+        'Error when trying to decrypt private key: Error: incorrect password'
       );
 
       readFileStub.restore();

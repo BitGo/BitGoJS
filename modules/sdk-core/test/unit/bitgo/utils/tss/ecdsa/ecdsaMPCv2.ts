@@ -41,7 +41,7 @@ describe('ECDSA MPC v2', async () => {
   before('initialize EcdsaMPCv2Utils', async () => {
     const mockBg = {} as BitGoBase;
     mockBg.getEnv = sinon.stub().returns('test');
-    mockBg.encrypt = sinon.stub().callsFake((params) => {
+    const sjclEncrypt = (params: { password: string; input: string; adata?: string }) => {
       const salt = randomBytes(8);
       const iv = randomBytes(16);
       return sjcl.encrypt(params.password, params.input, {
@@ -54,10 +54,11 @@ describe('ECDSA MPC v2', async () => {
         ],
         adata: params.adata,
       });
-    });
-    mockBg.decrypt = sinon.stub().callsFake((params) => {
-      return sjcl.decrypt(params.password, params.input);
-    });
+    };
+    mockBg.encrypt = sinon.stub().callsFake(sjclEncrypt);
+    mockBg.encryptAsync = sinon.stub().callsFake(async (params) => sjclEncrypt(params));
+    mockBg.decrypt = sinon.stub().callsFake((params) => sjcl.decrypt(params.password, params.input));
+    mockBg.decryptAsync = sinon.stub().callsFake(async (params) => sjcl.decrypt(params.password, params.input));
 
     const mockCoin = {} as IBaseCoin;
     mockCoin.getHashFunction = sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash);
@@ -611,7 +612,9 @@ describe('ECDSA MPC v2', async () => {
     mockBgWithPost.getEnv = sinon.stub().returns('test');
     mockBgWithPost.setRequestTracer = sinon.stub();
     mockBgWithPost.encrypt = sinon.stub().returns('encrypted');
+    mockBgWithPost.encryptAsync = sinon.stub().resolves('encrypted');
     mockBgWithPost.decrypt = sinon.stub().returns('decrypted');
+    mockBgWithPost.decryptAsync = sinon.stub().resolves('decrypted');
     mockBgWithPost.post = sinon.stub().returns({
       send: sinon.stub().returnsThis(),
       set: sinon.stub().returnsThis(),
@@ -677,7 +680,9 @@ describe('ECDSA MPC v2', async () => {
     mockBgWithPost.getEnv = sinon.stub().returns('test');
     mockBgWithPost.setRequestTracer = sinon.stub();
     mockBgWithPost.encrypt = sinon.stub().returns('encrypted');
+    mockBgWithPost.encryptAsync = sinon.stub().resolves('encrypted');
     mockBgWithPost.decrypt = sinon.stub().returns('decrypted');
+    mockBgWithPost.decryptAsync = sinon.stub().resolves('decrypted');
     mockBgWithPost.post = sinon.stub().returns({
       send: sinon.stub().returnsThis(),
       set: sinon.stub().returnsThis(),

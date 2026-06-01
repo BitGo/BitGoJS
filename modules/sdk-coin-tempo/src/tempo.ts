@@ -492,7 +492,8 @@ export class Tempo extends AbstractEthLikeNewCoins {
     const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
       userKey,
       backupKey,
-      params.walletPassphrase
+      params.walletPassphrase,
+      this.bitgo
     );
 
     const MPC = new Ecdsa();
