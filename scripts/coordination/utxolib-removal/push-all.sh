@@ -5,17 +5,16 @@
 # Topology:
 #
 #   master
-#     ├── PR-A  otto/abstract-utxo-foundation         (14 commits — chain foundation)
-#     │     └── PR-C  otto/keychains-drop-utxolib     (stacked on PR-A; type-coupling)
-#     │           └── PR-Z  otto/abstract-utxo-terminal (stacked on PR-C; merges last)
-#     │
-#     ├── PR-B  otto/sdk-coin-generator-drop-utxo     (parallel)
-#     ├── PR-D  otto/derive-key-with-seed             (parallel)
-#     ├── PR-E  otto/descriptor-psbt-narrowing        (parallel)
-#     ├── PR-F  otto/sign-psbt-wasm-inline-bip32      (parallel)
-#     └── PR-G  otto/descriptor-types-from-wasm       (parallel)
+#     └── PR-A  otto/abstract-utxo-foundation         (11 commits — dead code + mechanical)
+#           └── PR-nxrt  otto/drop-fetchinputs         (1 commit — fetchInputs + fee guard)
+#                 └── PR-C  otto/keychains-drop-utxolib  (stacked on PR-nxrt)
+#                       └── PR-Z  otto/abstract-utxo-terminal  (merges last)
 #
-# PR-Z requires PR-A, PR-C, PR-D, PR-E, PR-F, PR-G to all merge first
+# PR-B (sdk-coin-generator-drop-utxo), PR-D (derive-key-with-seed),
+# PR-E (descriptor-psbt-narrowing), PR-F (sign-psbt-wasm-inline-bip32),
+# PR-G (descriptor-types-from-wasm) — all merged.
+#
+# PR-Z requires PR-A, PR-nxrt, and PR-C to all merge first
 # (it deletes wasmUtil.ts and moves @bitgo/utxo-lib to devDependencies).
 
 set -euo pipefail
@@ -24,12 +23,8 @@ cd "$(git rev-parse --show-toplevel)"
 
 BOOKMARKS=(
   otto/abstract-utxo-foundation
-  otto/sdk-coin-generator-drop-utxo
+  otto/drop-fetchinputs
   otto/keychains-drop-utxolib
-  otto/derive-key-with-seed
-  otto/descriptor-psbt-narrowing
-  otto/sign-psbt-wasm-inline-bip32
-  otto/descriptor-types-from-wasm
   otto/abstract-utxo-terminal
 )
 
@@ -64,13 +59,9 @@ cat <<'EOF'
 
 Pushed. Open PRs in this order:
 
-  1. PR-A  abstract-utxo-foundation        (independent)
-  2. PR-B  sdk-coin-generator-drop-utxo    (independent)
-  3. PR-D  derive-key-with-seed            (independent)
-  4. PR-E  descriptor-psbt-narrowing       (independent)
-  5. PR-F  sign-psbt-wasm-inline-bip32     (independent)
-  6. PR-G  descriptor-types-from-wasm      (independent)
-  7. PR-C  keychains-drop-utxolib          (base: PR-A)
-  8. PR-Z  abstract-utxo-terminal          (base: PR-C, merges last after all others)
+  1. PR-A     abstract-utxo-foundation   (independent)
+  2. PR-nxrt  drop-fetchinputs           (base: PR-A)
+  3. PR-C     keychains-drop-utxolib     (base: PR-nxrt)
+  4. PR-Z     abstract-utxo-terminal     (base: PR-C, merges last)
 
 EOF
