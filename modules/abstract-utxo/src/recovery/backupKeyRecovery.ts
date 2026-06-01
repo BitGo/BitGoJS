@@ -3,7 +3,7 @@ import {
   BitGoBase,
   ErrorNoInputToRecover,
   getKrsProvider,
-  getBip32Keys as getBip32KeysFromSdkCore,
+  getBip32KeysAsync as getBip32KeysFromSdkCore,
   isTriple,
   krsProviders,
   Triple,
@@ -410,8 +410,8 @@ export function formatBackupKeyRecoveryResult(
   return txInfo;
 }
 
-function getBip32Keys(bitgo: BitGoBase, params: RecoverParams): Triple<BIP32> {
-  const keys = getBip32KeysFromSdkCore(bitgo, params, { requireBitGoXpub: true });
+async function getBip32Keys(bitgo: BitGoBase, params: RecoverParams): Promise<Triple<BIP32>> {
+  const keys = await getBip32KeysFromSdkCore(bitgo, params, { requireBitGoXpub: true });
   if (!isTriple(keys)) {
     throw new Error(`expected key triple`);
   }
@@ -469,7 +469,7 @@ export async function backupKeyRecovery(
   }
 
   // check whether key material and password authenticate the users and return parent keys of all three keys of the wallet
-  const keys = getBip32Keys(bitgo, params);
+  const keys = await getBip32Keys(bitgo, params);
   const walletKeys = fixedScriptWallet.RootWalletKeys.from({
     triple: keys,
     derivationPrefixes: [params.userKeyPath || 'm/0/0', 'm/0/0', 'm/0/0'],

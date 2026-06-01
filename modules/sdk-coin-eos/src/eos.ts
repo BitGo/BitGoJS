@@ -20,7 +20,7 @@ import {
   BitGoBase,
   checkKrsProvider,
   Environments,
-  getBip32Keys,
+  getBip32KeysAsync,
   getIsKrsRecovery,
   getIsUnsignedSweep,
   HalfSignedAccountTransaction as BaseHalfSignedTransaction,
@@ -905,7 +905,7 @@ export class Eos extends BaseCoin {
       throw new Error('Invalid destination address!');
     }
 
-    const keys = getBip32Keys(this.bitgo, params, { requireBitGoXpub: false });
+    const keys = await getBip32KeysAsync(this.bitgo, params, { requireBitGoXpub: false });
 
     const rootAddressDetails = this.getAddressDetails(params.rootAddress);
     const account = await this.getAccountFromNode({ address: rootAddressDetails.address });

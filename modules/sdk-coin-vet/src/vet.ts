@@ -415,7 +415,8 @@ export class Vet extends BaseCoin {
         ({ userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
           userKey,
           backupKey,
-          params.walletPassphrase
+          params.walletPassphrase,
+          this.bitgo
         ));
         publicKey = MPC.deriveUnhardened(commonKeyChain, 'm/0').slice(0, 66);
       }
@@ -763,7 +764,8 @@ export class Vet extends BaseCoin {
         ({ userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
           userKey,
           backupKey,
-          params.walletPassphrase
+          params.walletPassphrase,
+          this.bitgo
         ));
         publicKey = MPC.deriveUnhardened(commonKeyChain, 'm/0').slice(0, 66);
       }

@@ -89,6 +89,9 @@ describe('Base TSS Utils', function () {
     mockBg.encrypt = sinon
       .stub()
       .callsFake((params) => encryptWithSjcl(params.password ?? '', params.input, params.adata));
+    mockBg.encryptAsync = sinon
+      .stub()
+      .callsFake(async (params) => encryptWithSjcl(params.password ?? '', params.input, params.adata));
     mockBg.decrypt = sinon.stub().callsFake((params) => sjcl.decrypt(params.password ?? '', params.input));
     mockBg.decryptAsync = decryptAsyncStub;
     mockBitgo = mockBg;

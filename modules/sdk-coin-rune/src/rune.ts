@@ -167,7 +167,8 @@ export class Rune extends CosmosCoin {
     const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
       userKey,
       backupKey,
-      params.walletPassphrase
+      params.walletPassphrase,
+      this.bitgo
     ); // baseAddress is not extracted
     // Step 3: Instantiate the ECDSA signer and fetch the address details
     const MPC = new Ecdsa();
