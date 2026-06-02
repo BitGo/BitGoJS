@@ -76,6 +76,14 @@ export class SolToken extends Sol {
   }
 
   /**
+   * Token standard for consolidation intents (wallet-platform).
+   * @returns {string} SPL token type identifier
+   */
+  getTokenType(): string {
+    return 'SPL';
+  }
+
+  /**
    * Flag for sending value of 0
    * @returns {boolean} True if okay to send 0 value, false otherwise
    */

@@ -41,6 +41,7 @@ import {
   trimmedDynamicBaseChainConfig,
 } from './resources/amsTokenConfig';
 import { EthLikeErc20Token } from '../../../sdk-coin-evm/src';
+import { ProgramID } from '../../src/account';
 import { allCoinsAndTokens } from '../../src/allCoinsAndTokens';
 
 interface DuplicateCoinObject {
@@ -1010,6 +1011,15 @@ describe('Token contract address field defaults', () => {
         .forEach((coin) => {
           const solToken = coin as SolCoin;
           solToken.contractAddress.should.eql(solToken.tokenAddress);
+        });
+    });
+
+    it('have valid programId (SPL or Token-2022)', () => {
+      const validProgramIds = [ProgramID.TokenProgramId, ProgramID.Token2022ProgramId];
+      coins
+        .filter((coin) => coin.family === CoinFamily.SOL && coin instanceof SolCoin)
+        .forEach((coin) => {
+          validProgramIds.should.containEql((coin as SolCoin).programId);
         });
     });
   });
