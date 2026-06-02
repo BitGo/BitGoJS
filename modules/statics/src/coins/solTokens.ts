@@ -3617,6 +3617,16 @@ export const solTokens = [
     UnderlyingAsset['sol:usd1'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  tsolToken(
+    '78909b86-75e8-4e8d-b326-5b209c4508eb',
+    'tsol:trump',
+    'OFFICIAL TRUMP',
+    6,
+    'APQkhGVxBZyXkj2hRYDukgAQcqwQCAJ7kTGmVAW1yVRx',
+    'APQkhGVxBZyXkj2hRYDukgAQcqwQCAJ7kTGmVAW1yVRx',
+    UnderlyingAsset['sol:trump'],
+    SOL_TOKEN_FEATURES
+  ),
   solToken(
     '6dea72c2-bef1-4dee-8d8c-5f55bbb1d01b',
     'sol:xyo',
