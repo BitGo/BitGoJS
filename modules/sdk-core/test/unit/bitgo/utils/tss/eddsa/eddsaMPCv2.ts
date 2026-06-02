@@ -17,6 +17,7 @@ import {
   CustomEddsaMPCv2SigningRound1GeneratingFunction,
   CustomEddsaMPCv2SigningRound2GeneratingFunction,
   CustomEddsaMPCv2SigningRound3GeneratingFunction,
+  EDDSAUtils,
   EddsaMPCv2Utils,
   IBaseCoin,
   IWallet,
@@ -338,6 +339,75 @@ describe('EdDSA MPS DSG helper functions', async () => {
     assert.strictEqual(parsed.type, 'round3Input');
     assert.ok(parsed.data.msg3.message, 'msg3.message should be set');
     assert.ok(parsed.data.msg3.signature, 'msg3.signature should be set');
+  });
+});
+
+describe('getEddsaMPCv2RecoveryKeyShares', () => {
+  const walletPassphrase = 'testPass';
+
+  const encryptKey = (keyShare: Buffer): string => sjcl.encrypt(walletPassphrase, keyShare.toString('base64'));
+
+  it('should return recovery key shares from v1-encrypted reduced keys (no bitgo instance)', async () => {
+    const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const result = await EDDSAUtils.getEddsaMPCv2RecoveryKeyShares(
+      encryptKey(userDkg.getReducedKeyShare()),
+      encryptKey(backupDkg.getReducedKeyShare()),
+      walletPassphrase
+    );
+
+    assert.deepStrictEqual(result.userKeyShare, userDkg.getKeyShare());
+    assert.deepStrictEqual(result.backupKeyShare, backupDkg.getKeyShare());
+    assert.strictEqual(result.commonKeyChain, userDkg.getCommonKeychain());
+  });
+
+  it('should route decryption through bitgo.decryptAsync when a bitgo instance is provided', async () => {
+    // sdk-core has no devDependency on sdk-api or argon2, so we cannot encrypt with a real v2 envelope here.
+    // The stub verifies that the function delegates to bitgo.decryptAsync (which supports v1 + v2 in
+    // production) rather than falling back to sjcl.decrypt.
+    const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const userKeyBase64 = userDkg.getReducedKeyShare().toString('base64');
+    const backupKeyBase64 = backupDkg.getReducedKeyShare().toString('base64');
+
+    const mockBitgo = {
+      decryptAsync: sinon.stub().onFirstCall().resolves(userKeyBase64).onSecondCall().resolves(backupKeyBase64),
+    } as unknown as BitGoBase;
+
+    const result = await EDDSAUtils.getEddsaMPCv2RecoveryKeyShares(
+      'encrypted-user-key',
+      'encrypted-backup-key',
+      walletPassphrase,
+      mockBitgo
+    );
+
+    sinon.assert.calledTwice(mockBitgo.decryptAsync as sinon.SinonStub);
+    assert.deepStrictEqual(result.userKeyShare, userDkg.getKeyShare());
+    assert.strictEqual(result.commonKeyChain, userDkg.getCommonKeychain());
+  });
+
+  it('should reject a malformed keycard with a descriptive error', async () => {
+    const [userDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const malformedKey = sjcl.encrypt(walletPassphrase, randomBytes(64).toString('base64'));
+    await assert.rejects(
+      EDDSAUtils.getEddsaMPCv2RecoveryKeyShares(
+        malformedKey,
+        encryptKey(userDkg.getReducedKeyShare()),
+        walletPassphrase
+      ),
+      /keyShare, pub, and rootChainCode/
+    );
+  });
+
+  it('should reject reduced keys from different wallets', async () => {
+    const [userDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const [, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    await assert.rejects(
+      EDDSAUtils.getEddsaMPCv2RecoveryKeyShares(
+        encryptKey(userDkg.getReducedKeyShare()),
+        encryptKey(backupDkg.getReducedKeyShare()),
+        walletPassphrase
+      ),
+      /pub keys do not match/
+    );
   });
 });
 
