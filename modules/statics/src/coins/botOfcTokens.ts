@@ -1093,4 +1093,40 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.ofcerc20(
+    '26f46d44-700d-4e32-8845-fb181e6d8027',
+    'ofceth:gusdcq',
+    'Galaxy USDC Quality',
+    18,
+    'eth:gusdcq' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcerc20(
+    '336f05ca-6548-495e-9c0b-8deba95ea56b',
+    'ofceth:gusdtq',
+    'Galaxy USDT Quality',
+    18,
+    'eth:gusdtq' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcerc20(
+    '0c881f11-064e-4e54-9fa6-55406e419819',
+    'ofceth:gwethq',
+    'Galaxy WETH Quality',
+    18,
+    'eth:gwethq' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
