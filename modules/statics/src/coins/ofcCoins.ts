@@ -1960,6 +1960,14 @@ export const ofcCoins = [
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   tofcsolToken(
+    'c9ee21a5-d000-45b6-a045-cb307810434b',
+    'ofctsol:trump',
+    'Test OFFICIAL TRUMP',
+    6,
+    UnderlyingAsset['sol:trump'],
+    SOL_TOKEN_FEATURES
+  ),
+  tofcsolToken(
     'ad6d7d4e-894b-4cf9-bb66-e4341717969a',
     'ofctsol:txsgd',
     'Test StraitsX SGD',
