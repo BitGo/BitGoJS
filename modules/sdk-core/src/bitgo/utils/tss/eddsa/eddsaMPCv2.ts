@@ -1,5 +1,6 @@
 import assert from 'assert';
 import * as pgp from 'openpgp';
+import * as sjcl from '@bitgo/sjcl';
 import { NonEmptyString } from 'io-ts-types';
 import {
   EddsaMPCv2KeyGenRound1Request,
@@ -42,6 +43,12 @@ import {
 } from '../baseTypes';
 import { BaseEddsaUtils } from './base';
 import { EddsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './eddsaMPCv2KeyGenSender';
+
+export interface EddsaMPCv2RecoveryKeyShares {
+  userKeyShare: Buffer;
+  backupKeyShare: Buffer;
+  commonKeyChain: string;
+}
 
 export class EddsaMPCv2Utils extends BaseEddsaUtils {
   private static readonly MPS_DSG_SIGNING_USER_GPG_KEY = 'MPS_DSG_SIGNING_USER_GPG_KEY';
@@ -912,4 +919,68 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     return sendTxRequest(this.bitgo, txRequestResolved.walletId, txRequestResolved.txRequestId, requestType, reqId);
   }
   // #endregion
+}
+
+/**
+ * Get EdDSA MPCv2 recovery key shares from encrypted reduced user and backup keys.
+ *
+ * The encrypted inputs are the `reducedEncryptedPrv` values stored on EdDSA MPCv2
+ * key cards. They decrypt to CBOR-encoded reduced shares that contain the opaque
+ * MPS signing key-share bytes plus the common public keychain material.
+ *
+ * @param encryptedUserKey encrypted EdDSA MPCv2 reduced user key
+ * @param encryptedBackupKey encrypted EdDSA MPCv2 reduced backup key
+ * @param walletPassphrase password for user and backup keys
+ * @returns EdDSA MPCv2 recovery key shares and common keychain
+ */
+export async function getEddsaMPCv2RecoveryKeyShares(
+  encryptedUserKey: string,
+  encryptedBackupKey: string,
+  walletPassphrase?: string
+): Promise<EddsaMPCv2RecoveryKeyShares> {
+  const decodeKey = async (encryptedKey: string): Promise<MPSTypes.EddsaReducedKeyShare> => {
+    if (isV2Envelope(encryptedKey)) {
+      throw new Error(
+        'EdDSA MPCv2 recovery: v2 (Argon2id) encrypted keycards are not yet supported in standalone recovery. ' +
+          'Use the BitGo SDK with a BitGoBase instance to decrypt v2 keycards.'
+      );
+    }
+    const decrypted = sjcl.decrypt(walletPassphrase ?? '', encryptedKey);
+    let reduced: MPSTypes.EddsaReducedKeyShare;
+    try {
+      reduced = MPSTypes.getDecodedReducedKeyShare(Buffer.from(decrypted, 'base64'));
+    } catch {
+      throw new Error(
+        'EdDSA MPCv2 recovery requires keycard material with keyShare, pub, and rootChainCode. ' +
+          'This keycard may be public-only and cannot be used for recovery.'
+      );
+    }
+    if (!reduced.keyShare?.length || !reduced.pub?.length || !reduced.rootChainCode?.length) {
+      throw new Error(
+        'EdDSA MPCv2 recovery requires keycard material with keyShare, pub, and rootChainCode. ' +
+          'This keycard may be public-only and cannot be used for recovery.'
+      );
+    }
+    return reduced;
+  };
+
+  const [userReduced, backupReduced] = await Promise.all([decodeKey(encryptedUserKey), decodeKey(encryptedBackupKey)]);
+
+  const userPub = Buffer.from(userReduced.pub).toString('hex');
+  const backupPub = Buffer.from(backupReduced.pub).toString('hex');
+  if (userPub !== backupPub) {
+    throw new Error('EdDSA MPCv2 recovery: user and backup pub keys do not match');
+  }
+
+  const userChainCode = Buffer.from(userReduced.rootChainCode).toString('hex');
+  const backupChainCode = Buffer.from(backupReduced.rootChainCode).toString('hex');
+  if (userChainCode !== backupChainCode) {
+    throw new Error('EdDSA MPCv2 recovery: user and backup rootChainCodes do not match');
+  }
+
+  return {
+    userKeyShare: Buffer.from(userReduced.keyShare),
+    backupKeyShare: Buffer.from(backupReduced.keyShare),
+    commonKeyChain: userPub + userChainCode,
+  };
 }
