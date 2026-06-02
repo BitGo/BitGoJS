@@ -4,6 +4,7 @@
  * Covers:
  *   - getTokenEnablementConfig
  *   - verifyTransaction (TSS and multisig paths)
+ *   - verifyTransaction (confidential transfer / SendERC7984 path)
  *   - decodeTokenAddressesFromDelegationCalldata (round-trip and forwarder-wrapped)
  */
 import should from 'should';
@@ -14,11 +15,13 @@ import {
   buildMulticallDelegationCalldata,
   wrapInCallFromParent,
   decodeTokenAddressesFromDelegationCalldata,
+  TransferBuilderERC7984,
 } from '@bitgo/abstract-eth';
 import { Erc7984Token } from '../../src/erc7984Token';
 import { TransactionBuilder } from '../../src/lib';
 import { getBuilder } from './getBuilder';
 import { register } from '../../src/register';
+import * as testData from '../resources/eth';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -112,18 +115,17 @@ describe('Erc7984Token', function () {
 
   // -------------------------------------------------------------------------
   describe('verifyTransaction – non-enable-token', function () {
-    it('should fall through to parent when type is not enabletoken', async function () {
-      // The parent verifyTransaction requires recipients, wallet, etc. When we
-      // pass a params object with no type, it falls into the parent path and
-      // throws with the parent's "missing params" error — confirming the
-      // override only intercepts the enabletoken type.
+    it('should route to confidential transfer path when type is not enabletoken', async function () {
+      // Non-enabletoken transactions route to verifyConfidentialTransfer.
+      // Empty recipients triggers our ERC7984-specific validation error,
+      // confirming the override only intercepts the enabletoken type.
       await coin
         .verifyTransaction({
           txParams: { recipients: [] },
           txPrebuild: {} as any,
           wallet: {} as any,
         })
-        .should.be.rejectedWith(/missing params/);
+        .should.be.rejectedWith(/recipients must contain at least one entry/);
     });
   });
 
@@ -398,6 +400,356 @@ describe('Erc7984Token', function () {
         })
         .should.be.rejectedWith(/missing buildParams.recipients/);
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// verifyTransaction – confidential transfer (SendERC7984) tests
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a raw signed sendMultiSig tx hex that wraps a confidentialTransfer call.
+ * The wallet contract (sendMultiSig wrapper) is `walletContractAddress`.
+ */
+async function buildConfidentialTransferTxHex(opts: {
+  walletContractAddress: string;
+  tokenContractAddress: string;
+  recipientAddress: string;
+  encryptedHandle: string;
+  inputProof: string;
+}): Promise<string> {
+  const key = testData.KEYPAIR_PRV.getKeys().prv as string;
+  const txBuilder = getBuilder('hteth') as TransactionBuilder;
+  txBuilder.fee({ fee: '1000000000', gasLimit: '12100000' });
+  txBuilder.counter(1);
+  txBuilder.contract(opts.walletContractAddress);
+  txBuilder.type(TransactionType.SendERC7984);
+
+  const transferBuilder = txBuilder.transfer() as TransferBuilderERC7984;
+  transferBuilder
+    .from('0x19645032c7f1533395d44a629462e751084d3e4d')
+    .to(opts.recipientAddress)
+    .tokenContractAddress(opts.tokenContractAddress)
+    .encryptedHandle(opts.encryptedHandle)
+    .inputProof(opts.inputProof)
+    .contractSequenceId(1)
+    .expirationTime(Math.floor(Date.now() / 1000) + 3600)
+    .key(key);
+
+  txBuilder.sign({ key: testData.PRIVATE_KEY });
+  const tx = await txBuilder.build();
+  return tx.toBroadcastFormat();
+}
+
+describe('verifyTransaction – confidential transfer (SendERC7984)', function () {
+  // Wallet contract that wraps the sendMultiSig call
+  const WALLET_CONTRACT = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
+  // Recipient of the confidential transfer
+  const RECIPIENT = '0x19645032c7f1533395d44a629462e751084d3e4c';
+  // Encrypted handle: synthetic 32 bytes
+  const HANDLE = '0x' + 'ab'.repeat(32);
+  // Input proof: synthetic 50 bytes
+  const PROOF = '0x' + 'cd'.repeat(50);
+  // A different recipient to trigger mismatch
+  const WRONG_RECIPIENT = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+  // A different token contract to trigger mismatch
+  const WRONG_TOKEN = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+
+  let bitgo: TestBitGoAPI;
+  let coin: Erc7984Token;
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.initializeTestVars();
+    register(bitgo);
+    coin = bitgo.coin('hteth:ctest1') as Erc7984Token;
+  });
+
+  // Representative plaintext amount in base units (e.g., 1 cTEST1 = 1_000_000 units at 6 decimals)
+  const AMOUNT = '1000000';
+
+  it('should verify a valid confidential transfer transaction with matching amounts', async function () {
+    const txHex = await buildConfidentialTransferTxHex({
+      walletContractAddress: WALLET_CONTRACT,
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+
+    const result = await coin.verifyTransaction({
+      txParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+      txPrebuild: { txHex, buildParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] } } as any,
+      wallet: {} as any,
+    });
+    result.should.equal(true);
+  });
+
+  it('should throw when no recipient info is provided in either txParams or buildParams', async function () {
+    const txHex = await buildConfidentialTransferTxHex({
+      walletContractAddress: WALLET_CONTRACT,
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+
+    await coin
+      .verifyTransaction({
+        txParams: {},
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/missing expected recipient/);
+  });
+
+  it('should verify successfully using buildParams.recipients when txParams has no recipients', async function () {
+    const txHex = await buildConfidentialTransferTxHex({
+      walletContractAddress: WALLET_CONTRACT,
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+
+    const result = await coin.verifyTransaction({
+      txParams: {},
+      txPrebuild: {
+        txHex,
+        buildParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+      } as any,
+      wallet: {} as any,
+    });
+    result.should.equal(true);
+  });
+
+  it('should throw when token contract address does not match this coin', async function () {
+    const txHex = await buildConfidentialTransferTxHex({
+      walletContractAddress: WALLET_CONTRACT,
+      tokenContractAddress: WRONG_TOKEN,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/token contract address mismatch/);
+  });
+
+  it('should throw when recipient address does not match txParams', async function () {
+    const txHex = await buildConfidentialTransferTxHex({
+      walletContractAddress: WALLET_CONTRACT,
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: WRONG_RECIPIENT, amount: AMOUNT }] },
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/recipient address mismatch/);
+  });
+
+  it('should throw when calldata is not a confidential transfer', async function () {
+    const txBuilder = getBuilder('hteth') as TransactionBuilder;
+    txBuilder.fee({ fee: '1000000000', gasLimit: '200000' });
+    txBuilder.counter(1);
+    txBuilder.type(TransactionType.ContractCall);
+    txBuilder.contract(WALLET_CONTRACT);
+    txBuilder.data('0xdeadbeef00000000000000000000000000000000000000000000000000000000');
+    const tx = await txBuilder.build();
+    const txHex = tx.toBroadcastFormat();
+
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/failed to decode confidential transfer calldata/);
+  });
+
+  it('should throw when txParams amount does not match buildParams amount (with txHex)', async function () {
+    const txHex = await buildConfidentialTransferTxHex({
+      walletContractAddress: WALLET_CONTRACT,
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: RECIPIENT, amount: '9999999' }] },
+        txPrebuild: {
+          txHex,
+          buildParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+        } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/amount mismatch/);
+  });
+
+  it('should throw when txParams amount is 0 (with txHex)', async function () {
+    const txHex = await buildConfidentialTransferTxHex({
+      walletContractAddress: WALLET_CONTRACT,
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: RECIPIENT, amount: '0' }] },
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/amount must be a positive integer string/);
+  });
+
+  // ── First-signer (no txHex) tests ──────────────────────────────────────────
+
+  it('should verify valid first-signer params when no txHex is present', async function () {
+    const result = await coin.verifyTransaction({
+      txParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+      txPrebuild: {} as any,
+      wallet: {} as any,
+    });
+    result.should.equal(true);
+  });
+
+  it('should verify first-signer params when txParams and buildParams amounts match', async function () {
+    const result = await coin.verifyTransaction({
+      txParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+      txPrebuild: { buildParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] } } as any,
+      wallet: {} as any,
+    });
+    result.should.equal(true);
+  });
+
+  it('should throw when recipients is empty and no txHex is present', async function () {
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [] },
+        txPrebuild: {} as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/recipients must contain at least one entry/);
+  });
+
+  it('should throw when recipient address is invalid and no txHex is present', async function () {
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: 'not-an-address', amount: AMOUNT }] },
+        txPrebuild: {} as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/recipient address is missing or invalid/);
+  });
+
+  it('should throw when amount is 0 and no txHex is present', async function () {
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: RECIPIENT, amount: '0' }] },
+        txPrebuild: {} as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/amount must be a positive integer string/);
+  });
+
+  it('should throw when amount is empty and no txHex is present', async function () {
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: RECIPIENT, amount: '' }] },
+        txPrebuild: {} as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/amount must be a positive integer string/);
+  });
+
+  it('should throw when txParams and buildParams amounts mismatch and no txHex is present', async function () {
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: RECIPIENT, amount: '9999999' }] },
+        txPrebuild: { buildParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] } } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/amount mismatch/);
+  });
+
+  it('should throw when txParams and buildParams recipient addresses mismatch and no txHex is present', async function () {
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+        txPrebuild: {
+          buildParams: { recipients: [{ address: WRONG_RECIPIENT, amount: AMOUNT }] },
+        } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/recipient address mismatch/);
+  });
+
+  it('should verify when txHex absent and buildParams has matching recipient address', async function () {
+    const result = await coin.verifyTransaction({
+      txParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+      txPrebuild: {
+        buildParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+      } as any,
+      wallet: {} as any,
+    });
+    result.should.equal(true);
+  });
+
+  it('should verify decoded recipient against buildParams when txParams.recipients is absent', async function () {
+    const txHex = await buildConfidentialTransferTxHex({
+      walletContractAddress: WALLET_CONTRACT,
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+
+    // No recipients in txParams — falls back to buildParams for recipient verification
+    const result = await coin.verifyTransaction({
+      txParams: {},
+      txPrebuild: {
+        txHex,
+        buildParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+      } as any,
+      wallet: {} as any,
+    });
+    result.should.equal(true);
+  });
+
+  it('should throw when decoded recipient does not match buildParams recipient (txParams absent)', async function () {
+    const txHex = await buildConfidentialTransferTxHex({
+      walletContractAddress: WALLET_CONTRACT,
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+
+    await coin
+      .verifyTransaction({
+        txParams: {},
+        txPrebuild: {
+          txHex,
+          buildParams: { recipients: [{ address: WRONG_RECIPIENT, amount: AMOUNT }] },
+        } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/recipient address mismatch/);
   });
 });
 

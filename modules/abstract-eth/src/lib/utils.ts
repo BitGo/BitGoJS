@@ -83,6 +83,8 @@ import {
   flushForwarderTokensMethodIdV4,
   sendMultiSigTokenTypesFirstSigner,
   sendMultiSigTypesFirstSigner,
+  confidentialTransferWithProofMethodId,
+  confidentialTransferWithProofTypes,
 } from './walletUtil';
 import { EthTransactionData } from './types';
 import { delegateForUserDecryptionMethodId } from './zamaUtils';
@@ -680,6 +682,59 @@ export function decodeFlushTokensData(data: string, to?: string): FlushTokensDat
   }
 }
 
+export interface ConfidentialTransferData {
+  toAddress: string;
+  tokenContractAddress: string;
+  encryptedHandle: string;
+  inputProof: string;
+  expireTime: string;
+  sequenceId: string;
+  signature: string;
+}
+
+/**
+ * Decode ABI-encoded confidential transfer data (sendMultiSig wrapping confidentialTransfer)
+ *
+ * @param data The full calldata hex string
+ * @returns parsed confidential transfer fields
+ */
+export function decodeConfidentialTransferData(data: string): ConfidentialTransferData {
+  if (!data.startsWith(sendMultisigMethodId)) {
+    // Include only the 4-byte method ID in the error to avoid leaking encrypted payloads into logs.
+    throw new BuildTransactionError(
+      `Invalid confidential transfer bytecode: unexpected method ID ${data.slice(0, 10)}`
+    );
+  }
+
+  const [tokenContractAddress, , internalData, expireTime, sequenceId, signature] = getRawDecoded(
+    sendMultiSigTypes,
+    getBufferedByteCode(sendMultisigMethodId, data)
+  );
+
+  const internalDataHex = bufferToHex(internalData as Buffer);
+  if (!internalDataHex.startsWith(confidentialTransferWithProofMethodId)) {
+    // Include only the 4-byte method ID in the error to avoid leaking encrypted payloads into logs.
+    throw new BuildTransactionError(
+      `Invalid confidential transfer inner calldata: unexpected method ID ${internalDataHex.slice(0, 10)}`
+    );
+  }
+
+  const [toAddress, encryptedHandle, inputProof] = getRawDecoded(
+    confidentialTransferWithProofTypes,
+    getBufferedByteCode(confidentialTransferWithProofMethodId, internalDataHex)
+  );
+
+  return {
+    toAddress: addHexPrefix(toAddress as string),
+    tokenContractAddress: addHexPrefix(tokenContractAddress as string),
+    encryptedHandle: bufferToHex(encryptedHandle as Buffer),
+    inputProof: bufferToHex(inputProof as Buffer),
+    expireTime: bufferToInt(expireTime as Buffer).toString(),
+    sequenceId: bufferToInt(sequenceId as Buffer).toString(),
+    signature: bufferToHex(signature as Buffer),
+  };
+}
+
 /**
  * Classify the given transaction data based as a transaction type.
  * ETH transactions are defined by the first 8 bytes of the transaction data, also known as the method id
@@ -696,6 +751,20 @@ export function classifyTransaction(data: string): TransactionType {
 
   // TODO(STLX-1970): validate if we are going to constraint to some methods allowed
   let transactionType = transactionTypesMap[data.slice(0, 10).toLowerCase()];
+
+  // For sendMultiSig transactions, peek at the inner calldata to detect SendERC7984
+  if (transactionType === TransactionType.Send && data.startsWith(sendMultisigMethodId)) {
+    try {
+      const [, , internalData] = getRawDecoded(sendMultiSigTypes, getBufferedByteCode(sendMultisigMethodId, data));
+      const internalDataHex = bufferToHex(internalData as Buffer);
+      if (internalDataHex.startsWith(confidentialTransferWithProofMethodId)) {
+        return TransactionType.SendERC7984;
+      }
+    } catch {
+      // Not a confidential transfer; fall through to normal classification
+    }
+  }
+
   if (transactionType === undefined) {
     transactionType = TransactionType.ContractCall;
   }

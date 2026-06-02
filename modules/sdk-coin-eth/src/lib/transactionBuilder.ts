@@ -4,12 +4,12 @@ import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 
 import { TransferBuilder } from './transferBuilder';
 import { walletSimpleByteCode } from './walletUtil';
-import { ERC721TransferBuilder, ERC1155TransferBuilder } from './transferBuilders';
+import { ERC721TransferBuilder, ERC1155TransferBuilder, TransferBuilderERC7984 } from './transferBuilders';
 /**
  * Ethereum transaction builder.
  */
 export class TransactionBuilder extends EthLikeTransactionBuilder {
-  protected _transfer: TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder;
+  protected _transfer: TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder | TransferBuilderERC7984;
   private _signatures: any;
   /**
    * Public constructor.
@@ -28,14 +28,18 @@ export class TransactionBuilder extends EthLikeTransactionBuilder {
    *
    * @param {string} data transfer data to initialize the transfer builder with, empty if none given
    * @param {boolean} isFirstSigner whether the transaction is being signed by the first signer
-   * @returns {TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder} the transfer builder
+   * @returns {TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder | TransferBuilderERC7984} the transfer builder
    */
-  transfer(data?: string, isFirstSigner?: boolean): TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder {
+  transfer(
+    data?: string,
+    isFirstSigner?: boolean
+  ): TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder | TransferBuilderERC7984 {
     if (
       !(
         this._type === TransactionType.Send ||
         this._type === TransactionType.SendERC721 ||
-        this._type === TransactionType.SendERC1155
+        this._type === TransactionType.SendERC1155 ||
+        this._type === TransactionType.SendERC7984
       )
     ) {
       throw new BuildTransactionError('Transfers can only be set for send transactions');
@@ -46,6 +50,8 @@ export class TransactionBuilder extends EthLikeTransactionBuilder {
         this._transfer = new ERC721TransferBuilder(data);
       } else if (this._type === TransactionType.SendERC1155) {
         this._transfer = new ERC1155TransferBuilder(data);
+      } else if (this._type === TransactionType.SendERC7984) {
+        this._transfer = new TransferBuilderERC7984(data);
       }
     }
     return this._transfer;
