@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.15.1...@bitgo/sdk-coin-polyx@1.16.0) (2026-06-02)
+
+
+### Features
+
+* fixed verify transaction flow for tao and polyx ([d4f6593](https://github.com/BitGo/BitGoJS/commit/d4f65932c4c8fe06422fde29adb55e7790f19c6d))
+* **sdk-coin-polyx:** add NominateBuilder for standalone nominate txns ([9f18bec](https://github.com/BitGo/BitGoJS/commit/9f18bec0af090c68d542b52b49f07f7eb5167f4e))
+
+
+
+
+
 ## [1.15.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.15.0...@bitgo/sdk-coin-polyx@1.15.1) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polyx

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [25.11.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.11.1...@bitgo/sdk-coin-eth@25.11.2) (2026-06-02)
+
+
+### Bug Fixes
+
+* **sdk-coin-eth:** add enable token support for zama ([7adf457](https://github.com/BitGo/BitGoJS/commit/7adf457395afd1ca0120d8a1c2ae596b70c0d493))
+
+
+
+
+
 ## [25.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.11.0...@bitgo/sdk-coin-eth@25.11.1) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

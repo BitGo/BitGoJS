@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.2.0...bitgo@51.3.0) (2026-06-02)
+
+
+### Bug Fixes
+
+* **sdk-core:** preserve tss build params after presign ([8f8e439](https://github.com/BitGo/BitGoJS/commit/8f8e439692b5ba8f8285d2dda5f9a220693686a6))
+
+
+### Features
+
+* add async counterparts for public encrypt/decrypt methods ([b4dde16](https://github.com/BitGo/BitGoJS/commit/b4dde16765309f64d97d86b0c30e6c099653355b))
+* add bridgingParams support for BTC-to-sBTC bridging ([0f27d93](https://github.com/BitGo/BitGoJS/commit/0f27d93d4b3b48218d898509eebfe03438da3b8c))
+* bump public typers to 6.22 ([bc2e6b6](https://github.com/BitGo/BitGoJS/commit/bc2e6b671b61a552602d9a18cc2962137c484435))
+
+
+
+
+
 # [51.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.1.1...bitgo@51.2.0) (2026-05-28)
 
 

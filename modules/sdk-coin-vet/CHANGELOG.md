@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.15.11...@bitgo/sdk-coin-vet@2.16.0) (2026-06-02)
+
+
+### Features
+
+* use decryptAsync/encryptAsync for remaining WRW flows ([195ecdf](https://github.com/BitGo/BitGoJS/commit/195ecdf2ac6fde20bfb18e49ba49f41c391dfba9))
+
+
+
+
+
 ## [2.15.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.15.10...@bitgo/sdk-coin-vet@2.15.11) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-vet

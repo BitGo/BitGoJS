@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.26.1...@bitgo/abstract-eth@24.27.0) (2026-06-02)
+
+
+### Bug Fixes
+
+* **sdk-coin-eth:** add enable token support for zama ([7adf457](https://github.com/BitGo/BitGoJS/commit/7adf457395afd1ca0120d8a1c2ae596b70c0d493))
+
+
+### Features
+
+* use decryptAsync/encryptAsync for remaining WRW flows ([195ecdf](https://github.com/BitGo/BitGoJS/commit/195ecdf2ac6fde20bfb18e49ba49f41c391dfba9))
+
+
+
+
+
 ## [24.26.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.26.0...@bitgo/abstract-eth@24.26.1) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

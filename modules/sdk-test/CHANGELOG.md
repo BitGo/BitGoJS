@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.1.47](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@9.1.46...@bitgo/sdk-test@9.1.47) (2026-06-02)
+
+**Note:** Version bump only for package @bitgo/sdk-test
+
+
+
+
+
 ## [9.1.46](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@9.1.45...@bitgo/sdk-test@9.1.46) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-test

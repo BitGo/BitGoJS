@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.31.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.30.0...@bitgo/express@15.31.0) (2026-06-02)
+
+
+### Features
+
+* add bridgingParams support for BTC-to-sBTC bridging ([0f27d93](https://github.com/BitGo/BitGoJS/commit/0f27d93d4b3b48218d898509eebfe03438da3b8c))
+* bump public typers to 6.22 ([bc2e6b6](https://github.com/BitGo/BitGoJS/commit/bc2e6b671b61a552602d9a18cc2962137c484435))
+
+
+
+
+
 # [15.30.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.29.1...@bitgo/express@15.30.0) (2026-05-28)
 
 
