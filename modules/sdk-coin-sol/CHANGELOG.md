@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.20.1...@bitgo/sdk-coin-sol@7.21.0) (2026-06-02)
+
+
+### Features
+
+* bump public typers to 6.22 ([bc2e6b6](https://github.com/BitGo/BitGoJS/commit/bc2e6b671b61a552602d9a18cc2962137c484435))
+* **sdk-coin-sol:** add SPL getTokenType and SolCoin programId guardrails ([417e3be](https://github.com/BitGo/BitGoJS/commit/417e3be93b293a2f8211423bbc929eb51aee5900))
+
+
+
+
+
 ## [7.20.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.20.0...@bitgo/sdk-coin-sol@7.20.1) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

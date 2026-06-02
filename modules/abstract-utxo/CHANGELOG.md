@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@11.4.0...@bitgo/abstract-utxo@11.5.0) (2026-06-02)
+
+
+### Bug Fixes
+
+* add back in verifyTransaction ([1eec26e](https://github.com/BitGo/BitGoJS/commit/1eec26e9eb2fa6a8a601fa5cb8f893200f3047b1))
+
+
+### Features
+
+* **abstract-utxo:** disable legacy tx format and utxolib backend for all coins ([b1b82de](https://github.com/BitGo/BitGoJS/commit/b1b82deec28bf42e36bb8144630e7dac0738e0d8))
+* **abstract-utxo:** verify sBTC mint amount against change amount ([2c3b12a](https://github.com/BitGo/BitGoJS/commit/2c3b12a31bc933cfad698ef76fa6922b603230b7))
+* **sdk-core,abstract-utxo:** add qr param and client-side output validation ([31e6eec](https://github.com/BitGo/BitGoJS/commit/31e6eec610fa661a3cbad46c7359cfd94cec42f5))
+* use decryptAsync/encryptAsync for remaining WRW flows ([195ecdf](https://github.com/BitGo/BitGoJS/commit/195ecdf2ac6fde20bfb18e49ba49f41c391dfba9))
+
+
+
+
+
 # [11.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@11.3.0...@bitgo/abstract-utxo@11.4.0) (2026-05-28)
 
 

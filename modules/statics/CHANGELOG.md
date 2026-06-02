@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.44.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.43.0...@bitgo/statics@58.44.0) (2026-06-02)
+
+
+### Bug Fixes
+
+* **statics:** update hoodeth:week display name (CECHO-1183) ([a11b3a5](https://github.com/BitGo/BitGoJS/commit/a11b3a58acba006aa0b7f0275744bb2b6919b2e1))
+
+
+### Features
+
+* onboarding usd1 on canton chain ([68c2963](https://github.com/BitGo/BitGoJS/commit/68c296373f5b57bfe7beb7a2f05c11dfe6a871ec))
+* **sdk-coin-sol:** add SPL getTokenType and SolCoin programId guardrails ([417e3be](https://github.com/BitGo/BitGoJS/commit/417e3be93b293a2f8211423bbc929eb51aee5900))
+* **statics:** add baseeth:gusdcq token ([c11e8b6](https://github.com/BitGo/BitGoJS/commit/c11e8b6a8e967862dfc04c6951528d2e7d8fe4ba))
+* **statics:** add getTokenFeatures helper for AMS token feature diffs ([cb78d0f](https://github.com/BitGo/BitGoJS/commit/cb78d0fcaee4f6f745ab88f388de264f6ae935c4))
+* **statics:** add receipt_token coinfeature ([57aafbf](https://github.com/BitGo/BitGoJS/commit/57aafbf2aa225b98416966c337a629353522574c))
+* **statics:** add tsol:trump and ofctsol:trump testnet tokens ([502854d](https://github.com/BitGo/BitGoJS/commit/502854d2f57c88074da7a9da48cb108cb10f0fdc))
+* **statics:** add XrpMptCoin class and token config for XRPL MPT ([c324863](https://github.com/BitGo/BitGoJS/commit/c324863e42019a79c073d6f57e2fdb1fc5068c73))
+
+
+
+
+
 # [58.43.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.42.0...@bitgo/statics@58.43.0) (2026-05-28)
 
 

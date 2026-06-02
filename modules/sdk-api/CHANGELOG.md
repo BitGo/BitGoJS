@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.82.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.81.1...@bitgo/sdk-api@1.82.0) (2026-06-02)
+
+
+### Features
+
+* add async counterparts for public encrypt/decrypt methods ([b4dde16](https://github.com/BitGo/BitGoJS/commit/b4dde16765309f64d97d86b0c30e6c099653355b))
+* use decryptAsync/encryptAsync for remaining WRW flows ([195ecdf](https://github.com/BitGo/BitGoJS/commit/195ecdf2ac6fde20bfb18e49ba49f41c391dfba9))
+
+
+
+
+
 ## [1.81.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.81.0...@bitgo/sdk-api@1.81.1) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-api

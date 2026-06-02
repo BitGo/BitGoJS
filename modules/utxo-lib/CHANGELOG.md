@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.22.1...@bitgo/utxo-lib@11.23.0) (2026-06-02)
+
+
+### Features
+
+* bump axios version to 1.16.1 ([c849e3e](https://github.com/BitGo/BitGoJS/commit/c849e3e39fcc643b6b7b91fdea4246260f6ac77c))
+
+
+
+
+
 ## [11.22.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.22.0...@bitgo/utxo-lib@11.22.1) (2026-05-05)
 
 
