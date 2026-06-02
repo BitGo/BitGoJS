@@ -191,8 +191,8 @@ export const allCoinsAndTokens = [
     Networks.test.flrP,
     UnderlyingAsset.FLRP
   ),
-  kaspa('3eebd6e4-b30a-4b37-819d-1e189372b5c9', 'kaspa', 'Kaspa', Networks.main.kaspa, UnderlyingAsset.KASPA),
-  kaspa('96b7ccfb-6130-43b2-a324-783f86752b94', 'tkaspa', 'Testnet Kaspa', Networks.test.kaspa, UnderlyingAsset.KASPA),
+  kaspa('3eebd6e4-b30a-4b37-819d-1e189372b5c9', 'kas', 'Kaspa', Networks.main.kaspa, UnderlyingAsset.KAS),
+  kaspa('96b7ccfb-6130-43b2-a324-783f86752b94', 'tkas', 'Testnet Kaspa', Networks.test.kaspa, UnderlyingAsset.KAS),
   ada(
     'fd4d125e-f14f-414b-bd17-6cb1393265f0',
     'ada',

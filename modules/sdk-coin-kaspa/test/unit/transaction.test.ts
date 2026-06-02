@@ -4,7 +4,7 @@ import { TransactionType } from '@bitgo/sdk-core';
 import { SIGHASH_ALL } from '../../src/lib/constants';
 import { KEYS, TRANSACTIONS } from '../fixtures/kaspa.fixtures';
 
-const COIN = 'kaspa';
+const COIN = 'kas';
 
 describe('Kaspa Transaction', function () {
   describe('Constructor', function () {

@@ -38,13 +38,13 @@ export abstract class AbstractKaspaLikeCoin extends AbstractUtxoCoin {
   }
 
   /**
-   * Kaspa family name is 'kaspa' for both mainnet and testnet.
+   * Kaspa family name is 'kas' for both mainnet and testnet.
    * Override avoids going through names.ts which only knows Bitcoin-family coins.
    * The cast is required because UtxoCoinNameMainnet is a closed union of Bitcoin-family coins;
    * Kaspa manages its own network stack and is intentionally outside that union.
    */
   getFamily(): UtxoCoinNameMainnet {
-    return 'kaspa' as unknown as UtxoCoinNameMainnet;
+    return 'kas' as unknown as UtxoCoinNameMainnet;
   }
 
   /**
@@ -141,8 +141,7 @@ export abstract class AbstractKaspaLikeCoin extends AbstractUtxoCoin {
       throw new Error('Invalid keychains');
     }
 
-    // Cast to string to avoid type-overlap lint until abstract-utxo dist is rebuilt with kaspa names.
-    const networkType = (this.name as string) === 'kaspa' ? 'mainnet' : 'testnet';
+    const networkType = (this.name as string) === 'kas' ? 'mainnet' : 'testnet';
     const derivedAddress = new KaspaLib.KeyPair({ pub: keychains[0].pub }).getAddress(networkType);
 
     if (derivedAddress !== address) {
@@ -338,7 +337,7 @@ export abstract class AbstractKaspaLikeCoin extends AbstractUtxoCoin {
 }
 
 export class Kaspa extends AbstractKaspaLikeCoin {
-  readonly name = 'kaspa' as UtxoCoinName;
+  readonly name = 'kas' as UtxoCoinName;
 
   getFullName(): string {
     return 'Kaspa';
@@ -354,7 +353,7 @@ export class Kaspa extends AbstractKaspaLikeCoin {
 }
 
 export class Tkaspa extends AbstractKaspaLikeCoin {
-  readonly name = 'tkaspa' as UtxoCoinName;
+  readonly name = 'tkas' as UtxoCoinName;
 
   getFullName(): string {
     return 'Testnet Kaspa';
