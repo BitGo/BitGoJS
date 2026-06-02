@@ -40,9 +40,8 @@ import {
   toBitgoRequest,
   verifyResponseAsync,
 } from './api';
-import { decrypt, decryptAsync, encrypt } from './encrypt';
+import { decrypt, decryptAsync, encrypt, encryptAsync } from './encrypt';
 import { createEncryptionSession } from './encryptionSession';
-import { encryptV2 } from './encryptV2';
 import { verifyAddress } from './v1/verifyAddress';
 import {
   AccessTokenOptions,
@@ -853,10 +852,10 @@ export class BitGoAPI implements BitGoBase {
     if (!params.password) {
       throw new Error('cannot encrypt without password');
     }
-    if (params.encryptionVersion === 2) {
-      return encryptV2(params.password, params.input, { adata: params.adata });
-    }
-    return encrypt(params.password, params.input, { adata: params.adata });
+    return await encryptAsync(params.password, params.input, {
+      adata: params.adata,
+      encryptionVersion: params.encryptionVersion,
+    });
   }
 
   /**
