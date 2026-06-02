@@ -48,6 +48,20 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
   private static readonly MPS_DSG_SIGNING_ROUND1_STATE = 'MPS_DSG_SIGNING_ROUND1_STATE';
   private static readonly MPS_DSG_SIGNING_ROUND2_STATE = 'MPS_DSG_SIGNING_ROUND2_STATE';
 
+  async isEddsaMpcV1SigningMaterial(encryptedKeyShare: string, walletPassphrase: string): Promise<boolean> {
+    try {
+      const prv = await this.bitgo.decryptAsync({ input: encryptedKeyShare, password: walletPassphrase });
+      const signingMaterial = JSON.parse(prv);
+      return (
+        typeof signingMaterial?.uShare?.seed === 'string' &&
+        typeof signingMaterial?.bitgoYShare?.u === 'string' &&
+        (typeof signingMaterial?.backupYShare?.u === 'string' || typeof signingMaterial?.userYShare?.u === 'string')
+      );
+    } catch {
+      return false;
+    }
+  }
+
   /** @inheritdoc */
   async createKeychains(params: {
     passphrase: string;
