@@ -346,12 +346,16 @@ describe('Sui Transfer Builder', () => {
       rebuiltTx.toBroadcastFormat().should.equal(rawTx);
     });
 
-    it('should build a self-pay transfer with coin objects + address balance', async function () {
+    it('should build a self-pay transfer with coin objects + address balance (Path 2c)', async function () {
+      // Regression test for COINS-331: when both gasData.payment (coin objects) and
+      // fundsInAddressBalance are set, Sui does NOT automatically merge address balance into
+      // the gas coin.  Path 2c must explicitly call redeem_funds + MergeCoins(gas, [addrCoin])
+      // before SplitCoins so that the gas coin holds the full spendable amount.
       const txBuilder = factory.getTransferBuilder();
       txBuilder.type(SuiTransactionType.Transfer);
       txBuilder.sender(testData.sender.address);
       txBuilder.send(testData.recipients);
-      txBuilder.gasData(testData.gasData);
+      txBuilder.gasData(testData.gasData); // non-empty payment — triggers Path 2c
       txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
 
       const tx = await txBuilder.build();
@@ -359,12 +363,34 @@ describe('Sui Transfer Builder', () => {
 
       const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
 
-      // Self-pay path: SplitCoins(GasCoin) — protocol merges coin objects + address balance automatically
+      // Path 2c PTB command sequence (for 2 recipients):
+      //   0: MoveCall(redeem_funds)     — materialize addrCoin from address balance
+      //   1: MergeCoins(gas, [addrCoin])— gas coin = coinObjects + addrBal (full spendable amount)
+      //   2: SplitCoins(gas)            — split for recipient 0
+      //   3: TransferObjects            — send to recipient 0
+      //   4: SplitCoins(gas)            — split for recipient 1
+      //   5: TransferObjects            — send to recipient 1
       const programmableTx = suiTx.suiTransaction.tx;
-      (programmableTx.transactions[0] as any).kind.should.equal('SplitCoins');
+      const cmds = programmableTx.transactions as any[];
+      cmds[0].kind.should.equal('MoveCall', 'command 0 must be MoveCall(redeem_funds)');
+      cmds[0].target.should.equal('0x2::coin::redeem_funds');
+      cmds[1].kind.should.equal('MergeCoins', 'command 1 must be MergeCoins(gas, [addrCoin])');
+      cmds[2].kind.should.equal('SplitCoins', 'command 2 must be SplitCoins(gas, [amount0])');
+      cmds[3].kind.should.equal('TransferObjects');
+      cmds[4].kind.should.equal('SplitCoins', 'command 4 must be SplitCoins(gas, [amount1])');
+      cmds[5].kind.should.equal('TransferObjects');
+
+      // fundsInAddressBalance must be persisted in the serialized transaction
+      suiTx.suiTransaction.fundsInAddressBalance!.should.equal(FUNDS_IN_ADDRESS_BALANCE);
 
       const rawTx = tx.toBroadcastFormat();
       should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // Round-trip: rebuilt transaction must be bit-for-bit identical
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
     });
 
     it('should build a sponsored transfer with coin objects + address balance', async function () {
