@@ -409,7 +409,8 @@ export class Icp extends BaseCoin {
         ({ userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
           userKey,
           backupKey,
-          params.walletPassphrase
+          params.walletPassphrase,
+          this.bitgo
         ));
         publicKey = MPC.deriveUnhardened(commonKeyChain, ROOT_PATH).slice(0, 66);
       } else {

@@ -243,7 +243,7 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
       throw new Error('Invalid key format');
     }
 
-    return await ECDSAUtils.getMpcV2RecoveryKeyShares(userKey, backupKey, walletPassphrase);
+    return await ECDSAUtils.getMpcV2RecoveryKeyShares(userKey, backupKey, walletPassphrase, this.bitgo);
   }
 
   /**
@@ -491,7 +491,8 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
     const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
       userKey,
       backupKey,
-      params.walletPassphrase
+      params.walletPassphrase,
+      this.bitgo
     ); // baseAddress is not extracted
 
     const MPC = new Ecdsa();
