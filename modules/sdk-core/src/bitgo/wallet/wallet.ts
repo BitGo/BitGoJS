@@ -42,6 +42,7 @@ import {
 import { CreateLightningInvoiceParams, LightningInvoiceResponse } from '../../lightning';
 import { getLightningAuthKey } from '../lightning/lightningWalletUtil';
 import { IPendingApproval, PendingApproval, PendingApprovals } from '../pendingApproval';
+import { DefiVault } from '../defi';
 import { GoStakingWallet, StakingWallet } from '../staking';
 import { TradingAccount } from '../trading';
 import { getTxRequest } from '../tss';
@@ -230,6 +231,7 @@ export class Wallet implements IWallet {
   public readonly bitgo: BitGoBase;
   public readonly baseCoin: IBaseCoin;
   public _wallet: WalletData;
+  private _defi?: DefiVault;
   private readonly tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | EddsaMPCv2Utils | undefined;
   private readonly _permissions?: string[];
 
@@ -3347,6 +3349,16 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * Access DeFi vault operations for this wallet (deposit, withdraw, resume).
+   */
+  get defi(): DefiVault {
+    if (!this._defi) {
+      this._defi = new DefiVault(this);
+    }
+    return this._defi;
+  }
+
+  /**
    * Create a staking wallet from this wallet
    */
   toStakingWallet(): StakingWallet {
@@ -4381,6 +4393,37 @@ export class Wallet implements IWallet {
             sequenceId: params.sequenceId,
             comment: params.comment,
             recipients: params.recipients || [],
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      case 'defiApprove':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'defi-approve',
+            defiParams: params.defiParams as {
+              vaultId: string;
+              amount: string;
+              clientIdempotencyKey?: string;
+            },
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      case 'defiDeposit':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'defi-deposit',
+            defiParams: params.defiParams as {
+              vaultId: string;
+              amount: string;
+              operationId?: string;
+              clientIdempotencyKey?: string;
+            },
           },
           apiVersion,
           params.preview
