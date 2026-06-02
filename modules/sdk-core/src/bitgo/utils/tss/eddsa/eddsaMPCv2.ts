@@ -42,6 +42,7 @@ import {
 } from '../baseTypes';
 import { BaseEddsaUtils } from './base';
 import { EddsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './eddsaMPCv2KeyGenSender';
+import { decryptAsync } from '../../encrypt';
 
 export class EddsaMPCv2Utils extends BaseEddsaUtils {
   private static readonly MPS_DSG_SIGNING_USER_GPG_KEY = 'MPS_DSG_SIGNING_USER_GPG_KEY';
@@ -898,4 +899,42 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     return sendTxRequest(this.bitgo, txRequestResolved.walletId, txRequestResolved.txRequestId, requestType, reqId);
   }
   // #endregion
+}
+
+export async function getEddsaMpcV2RecoveryKeyShares(
+  encryptedUserKey: string,
+  encryptedBackupKey: string,
+  walletPassphrase?: string
+): Promise<{ userKeyShare: Buffer; backupKeyShare: Buffer; commonKeyChain: string }> {
+  const decodeKey = async (encryptedKey: string): Promise<MPSTypes.EddsaReducedKeyShare> => {
+    const decrypted = await decryptAsync(walletPassphrase ?? '', encryptedKey);
+    const reduced = MPSTypes.getDecodedReducedKeyShare(Buffer.from(decrypted, 'base64'));
+    if (!reduced.keyShare?.length || !reduced.pub?.length || !reduced.rootChainCode?.length) {
+      throw new Error(
+        'EdDSA MPCv2 recovery requires keycard material with keyShare, pub, and rootChainCode. ' +
+          'This keycard may be public-only and cannot be used for recovery.'
+      );
+    }
+    return reduced;
+  };
+
+  const [userReduced, backupReduced] = await Promise.all([decodeKey(encryptedUserKey), decodeKey(encryptedBackupKey)]);
+
+  const userPub = Buffer.from(userReduced.pub).toString('hex');
+  const backupPub = Buffer.from(backupReduced.pub).toString('hex');
+  if (userPub !== backupPub) {
+    throw new Error('EdDSA MPCv2 recovery: user and backup pub keys do not match');
+  }
+
+  const userChainCode = Buffer.from(userReduced.rootChainCode).toString('hex');
+  const backupChainCode = Buffer.from(backupReduced.rootChainCode).toString('hex');
+  if (userChainCode !== backupChainCode) {
+    throw new Error('EdDSA MPCv2 recovery: user and backup rootChainCodes do not match');
+  }
+
+  return {
+    userKeyShare: Buffer.from(userReduced.keyShare),
+    backupKeyShare: Buffer.from(backupReduced.keyShare),
+    commonKeyChain: userPub + userChainCode,
+  };
 }

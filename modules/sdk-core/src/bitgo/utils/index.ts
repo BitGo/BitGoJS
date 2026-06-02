@@ -1,6 +1,7 @@
 import * as openpgpUtils from './opengpgUtils';
 
 export * from './abstractUtxoCoinUtil';
+export * from './encrypt';
 export * from './mpcUtils';
 export * from './opengpgUtils';
 export * from './promise-utils';

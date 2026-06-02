@@ -24,7 +24,9 @@ import {
   SignatureShareRecord,
   SignatureShareType,
   TxRequest,
+  getEddsaMpcV2RecoveryKeyShares,
 } from '../../../../../../src';
+import { encryptV2 } from '../../../../../../src/bitgo/utils/encrypt';
 import {
   getSignatureShareRoundOne,
   getSignatureShareRoundTwo,
@@ -1523,6 +1525,113 @@ describe('EddsaMPCv2Utils.signEddsaMPCv2TssUsingExternalSigner', () => {
       round3Generator.getCall(0).args[0].bitgoPublicGpgKey,
       armoredKey,
       'round 3 should receive armored BitGo GPG key'
+    );
+  });
+});
+
+describe('getEddsaMpcV2RecoveryKeyShares', () => {
+  const passphrase = 'test-passphrase';
+  let userReducedKeyShareBuf: Buffer;
+  let backupReducedKeyShareBuf: Buffer;
+  let userPub: Buffer;
+  let userChainCode: Buffer;
+
+  before('generate DKG key shares and build reduced key share buffers', async () => {
+    // All three parties in a single DKG session share the same pub and rootChainCode.
+    const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    userReducedKeyShareBuf = userDkg.getReducedKeyShare();
+    backupReducedKeyShareBuf = backupDkg.getReducedKeyShare();
+
+    const userDecoded = MPSTypes.getDecodedReducedKeyShare(userReducedKeyShareBuf);
+    userPub = Buffer.from(userDecoded.pub);
+    userChainCode = Buffer.from(userDecoded.rootChainCode);
+  });
+
+  it('v1 SJCL-encrypted reduced key, matching pair — returns correct key shares and commonKeyChain', async () => {
+    const encryptedUser = sjcl.encrypt(passphrase, userReducedKeyShareBuf.toString('base64'));
+    const encryptedBackup = sjcl.encrypt(passphrase, backupReducedKeyShareBuf.toString('base64'));
+
+    const result = await getEddsaMpcV2RecoveryKeyShares(encryptedUser, encryptedBackup, passphrase);
+
+    const userDecoded = MPSTypes.getDecodedReducedKeyShare(userReducedKeyShareBuf);
+    assert.deepStrictEqual(result.userKeyShare, Buffer.from(userDecoded.keyShare));
+    const backupDecoded = MPSTypes.getDecodedReducedKeyShare(backupReducedKeyShareBuf);
+    assert.deepStrictEqual(result.backupKeyShare, Buffer.from(backupDecoded.keyShare));
+    assert.strictEqual(result.commonKeyChain, userPub.toString('hex') + userChainCode.toString('hex'));
+  });
+
+  it('v2 Argon2id-encrypted reduced key, matching pair — returns correct key shares and commonKeyChain', async () => {
+    const encryptedUser = await encryptV2(passphrase, userReducedKeyShareBuf.toString('base64'));
+    const encryptedBackup = await encryptV2(passphrase, backupReducedKeyShareBuf.toString('base64'));
+
+    const result = await getEddsaMpcV2RecoveryKeyShares(encryptedUser, encryptedBackup, passphrase);
+
+    const userDecoded = MPSTypes.getDecodedReducedKeyShare(userReducedKeyShareBuf);
+    assert.deepStrictEqual(result.userKeyShare, Buffer.from(userDecoded.keyShare));
+    const backupDecoded = MPSTypes.getDecodedReducedKeyShare(backupReducedKeyShareBuf);
+    assert.deepStrictEqual(result.backupKeyShare, Buffer.from(backupDecoded.keyShare));
+    assert.strictEqual(result.commonKeyChain, userPub.toString('hex') + userChainCode.toString('hex'));
+  });
+
+  it('throws when keyShare field is empty', async () => {
+    const { encode } = await import('cbor-x');
+    // Empty keyShare passes the io-ts codec but fails our non-empty check.
+    const empty = encode({ keyShare: [], pub: Array.from(userPub), rootChainCode: Array.from(userChainCode) });
+    const encrypted = sjcl.encrypt(passphrase, Buffer.from(empty).toString('base64'));
+    await assert.rejects(
+      () => getEddsaMpcV2RecoveryKeyShares(encrypted, encrypted, passphrase),
+      /keyShare, pub, and rootChainCode/
+    );
+  });
+
+  it('throws when pub field is empty', async () => {
+    const { encode } = await import('cbor-x');
+    const userDecoded = MPSTypes.getDecodedReducedKeyShare(userReducedKeyShareBuf);
+    const empty = encode({ keyShare: userDecoded.keyShare, pub: [], rootChainCode: userDecoded.rootChainCode });
+    const encrypted = sjcl.encrypt(passphrase, Buffer.from(empty).toString('base64'));
+    await assert.rejects(
+      () => getEddsaMpcV2RecoveryKeyShares(encrypted, encrypted, passphrase),
+      /keyShare, pub, and rootChainCode/
+    );
+  });
+
+  it('throws when rootChainCode field is empty', async () => {
+    const { encode } = await import('cbor-x');
+    const userDecoded = MPSTypes.getDecodedReducedKeyShare(userReducedKeyShareBuf);
+    const empty = encode({ keyShare: userDecoded.keyShare, pub: userDecoded.pub, rootChainCode: [] });
+    const encrypted = sjcl.encrypt(passphrase, Buffer.from(empty).toString('base64'));
+    await assert.rejects(
+      () => getEddsaMpcV2RecoveryKeyShares(encrypted, encrypted, passphrase),
+      /keyShare, pub, and rootChainCode/
+    );
+  });
+
+  it('throws when user and backup pub keys do not match', async () => {
+    const [, differentDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const differentReducedBuf = differentDkg.getReducedKeyShare();
+    const encryptedUser = sjcl.encrypt(passphrase, userReducedKeyShareBuf.toString('base64'));
+    const encryptedBackup = sjcl.encrypt(passphrase, differentReducedBuf.toString('base64'));
+    await assert.rejects(
+      () => getEddsaMpcV2RecoveryKeyShares(encryptedUser, encryptedBackup, passphrase),
+      /pub keys do not match/
+    );
+  });
+
+  it('throws when user and backup rootChainCodes do not match', async () => {
+    const { encode } = await import('cbor-x');
+    const backupDecoded = MPSTypes.getDecodedReducedKeyShare(backupReducedKeyShareBuf);
+    // Use a different chain code (all-zero bytes) to force a mismatch.
+    const differentChainCode = new Array(32).fill(0);
+    const mismatchedChainCode = encode({
+      keyShare: backupDecoded.keyShare,
+      pub: Array.from(userPub),
+      rootChainCode: differentChainCode,
+    });
+    const encryptedUser = sjcl.encrypt(passphrase, userReducedKeyShareBuf.toString('base64'));
+    const encryptedBackup = sjcl.encrypt(passphrase, Buffer.from(mismatchedChainCode).toString('base64'));
+    await assert.rejects(
+      () => getEddsaMpcV2RecoveryKeyShares(encryptedUser, encryptedBackup, passphrase),
+      /rootChainCodes do not match/
     );
   });
 });
