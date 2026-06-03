@@ -215,18 +215,28 @@ export class CoinMap {
    * @return {BaseCoin}
    */
   public get(key: string): Readonly<BaseCoin> {
-    const coin =
+    const coin = this.getOrUndefined(key);
+    if (coin) {
+      return coin;
+    }
+    throw new CoinNotDefinedError(key);
+  }
+
+  /**
+   * Safe accessor that returns undefined instead of throwing when a coin is not found.
+   * Prefer this over `get` at call sites where the coin name is not guaranteed to be
+   * registered — it makes the missing-coin case explicit in the type system.
+   * @param {string} key
+   * @return {BaseCoin | undefined}
+   */
+  public getOrUndefined(key: string): Readonly<BaseCoin> | undefined {
+    return (
       this._map.get(key) ||
       this._coinByIds.get(key) ||
       this._coinByAliases.get(key) ||
       this._coinByContractAddress.get(key) ||
-      this._coinByNftCollectionID.get(key);
-
-    if (coin) {
-      return coin;
-    }
-
-    throw new CoinNotDefinedError(key);
+      this._coinByNftCollectionID.get(key)
+    );
   }
 
   public has(key: string): boolean {
