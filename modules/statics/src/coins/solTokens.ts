@@ -3997,7 +3997,7 @@ export const solTokens = [
     '777c1935-c7dd-4652-85cd-4fbc188934aa',
     'sol:slx',
     'Solstice',
-    9,
+    6,
     'SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfgq',
     'SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfgq',
     UnderlyingAsset['sol:slx'],
