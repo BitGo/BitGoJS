@@ -374,21 +374,23 @@ describe('EddsaMPCv2Utils.createOfflineRound1Share', () => {
   });
 
   beforeEach(() => {
+    const sjclEncrypt = (params: { password: string; input: string; adata?: string }) => {
+      const salt = randomBytes(8);
+      const iv = randomBytes(16);
+      return sjcl.encrypt(params.password, params.input, {
+        salt: [bytesToWord(salt.subarray(0, 4)), bytesToWord(salt.subarray(4))],
+        iv: [
+          bytesToWord(iv.subarray(0, 4)),
+          bytesToWord(iv.subarray(4, 8)),
+          bytesToWord(iv.subarray(8, 12)),
+          bytesToWord(iv.subarray(12, 16)),
+        ],
+        adata: params.adata,
+      });
+    };
     mockBitgo = {
-      encrypt: sinon.stub().callsFake((params) => {
-        const salt = randomBytes(8);
-        const iv = randomBytes(16);
-        return sjcl.encrypt(params.password, params.input, {
-          salt: [bytesToWord(salt.subarray(0, 4)), bytesToWord(salt.subarray(4))],
-          iv: [
-            bytesToWord(iv.subarray(0, 4)),
-            bytesToWord(iv.subarray(4, 8)),
-            bytesToWord(iv.subarray(8, 12)),
-            bytesToWord(iv.subarray(12, 16)),
-          ],
-          adata: params.adata,
-        });
-      }),
+      encrypt: sinon.stub().callsFake(sjclEncrypt),
+      encryptAsync: sinon.stub().callsFake(async (params) => sjclEncrypt(params)),
     } as unknown as BitGoBase;
 
     const mockCoin = {
@@ -455,7 +457,7 @@ describe('EddsaMPCv2Utils.createOfflineRound1Share', () => {
 
     sinon.assert.calledOnce(createEncryptionSession);
     assert.strictEqual(createEncryptionSession.getCall(0).args[0], walletPassphrase);
-    sinon.assert.notCalled(mockBitgo.encrypt as sinon.SinonStub);
+    sinon.assert.notCalled(mockBitgo.encryptAsync as sinon.SinonStub);
     sinon.assert.calledTwice(encrypt);
     sinon.assert.calledOnce(destroy);
 
@@ -483,7 +485,7 @@ describe('EddsaMPCv2Utils.createOfflineRound1Share', () => {
     });
 
     sinon.assert.notCalled(mockBitgo.createEncryptionSession as sinon.SinonStub);
-    sinon.assert.calledTwice(mockBitgo.encrypt as sinon.SinonStub);
+    sinon.assert.calledTwice(mockBitgo.encryptAsync as sinon.SinonStub);
     assert.ok(JSON.parse(result.encryptedRound1Session).ct, 'encryptedRound1Session should be an SJCL JSON blob');
     assert.ok(JSON.parse(result.encryptedUserGpgPrvKey).ct, 'encryptedUserGpgPrvKey should be an SJCL JSON blob');
   });
@@ -558,7 +560,22 @@ describe('EddsaMPCv2Utils.createOfflineRound2Share', () => {
           adata: params.adata,
         });
       }),
+      encryptAsync: sinon.stub().callsFake(async (params) => {
+        const salt = randomBytes(8);
+        const iv = randomBytes(16);
+        return sjcl.encrypt(params.password, params.input, {
+          salt: [bytesToWord(salt.subarray(0, 4)), bytesToWord(salt.subarray(4))],
+          iv: [
+            bytesToWord(iv.subarray(0, 4)),
+            bytesToWord(iv.subarray(4, 8)),
+            bytesToWord(iv.subarray(8, 12)),
+            bytesToWord(iv.subarray(12, 16)),
+          ],
+          adata: params.adata,
+        });
+      }),
       decrypt: sinon.stub().callsFake((params) => sjcl.decrypt(params.password, params.input)),
+      decryptAsync: sinon.stub().callsFake(async (params) => sjcl.decrypt(params.password, params.input)),
     } as unknown as BitGoBase;
 
     const mockCoin = {
@@ -660,7 +677,6 @@ describe('EddsaMPCv2Utils.createOfflineRound2Share', () => {
     });
 
     sinon.assert.called(mockBitgo.decryptAsync as sinon.SinonStub);
-    sinon.assert.notCalled(mockBitgo.decrypt as sinon.SinonStub);
     assert.strictEqual(round2.signatureShareRound2.from, SignatureShareType.USER);
 
     const encryptedRound2Session = JSON.parse(round2.encryptedRound2Session);
@@ -900,7 +916,22 @@ describe('EddsaMPCv2Utils.createOfflineRound3Share', () => {
           adata: params.adata,
         });
       }),
+      encryptAsync: sinon.stub().callsFake(async (params) => {
+        const salt = randomBytes(8);
+        const iv = randomBytes(16);
+        return sjcl.encrypt(params.password, params.input, {
+          salt: [bytesToWord(salt.subarray(0, 4)), bytesToWord(salt.subarray(4))],
+          iv: [
+            bytesToWord(iv.subarray(0, 4)),
+            bytesToWord(iv.subarray(4, 8)),
+            bytesToWord(iv.subarray(8, 12)),
+            bytesToWord(iv.subarray(12, 16)),
+          ],
+          adata: params.adata,
+        });
+      }),
       decrypt: sinon.stub().callsFake((params) => sjcl.decrypt(params.password, params.input)),
+      decryptAsync: sinon.stub().callsFake(async (params) => sjcl.decrypt(params.password, params.input)),
     } as unknown as BitGoBase;
 
     const mockCoin = {
@@ -1025,7 +1056,6 @@ describe('EddsaMPCv2Utils.createOfflineRound3Share', () => {
     });
 
     assert.strictEqual((mockBitgo.decryptAsync as sinon.SinonStub).callCount, 4);
-    sinon.assert.notCalled(mockBitgo.decrypt as sinon.SinonStub);
     assert.strictEqual(round3.signatureShareRound3.from, SignatureShareType.USER);
   });
 

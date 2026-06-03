@@ -193,7 +193,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       if (encryptionSession) {
         userKeychainParams.encryptedPrv = await encryptionSession.encrypt(JSON.stringify(userSigningMaterial));
       } else {
-        userKeychainParams.encryptedPrv = this.bitgo.encrypt({
+        userKeychainParams.encryptedPrv = await this.bitgo.encryptAsync({
           input: JSON.stringify(userSigningMaterial),
           password: passphrase,
         });
@@ -295,7 +295,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       if (encryptionSession) {
         params.encryptedPrv = await encryptionSession.encrypt(prv);
       } else {
-        params.encryptedPrv = this.bitgo.encrypt({ input: prv, password: passphrase });
+        params.encryptedPrv = await this.bitgo.encryptAsync({ input: prv, password: passphrase });
       }
     }
 
@@ -489,7 +489,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
         session.destroy();
       }
     } else {
-      encryptedRShare = this.bitgo.encrypt({ input: stringifiedRShare, password: params.walletPassphrase });
+      encryptedRShare = await this.bitgo.encryptAsync({ input: stringifiedRShare, password: params.walletPassphrase });
     }
     const encryptedUserToBitgoRShare = this.createUserToBitgoEncryptedRShare(encryptedRShare);
 

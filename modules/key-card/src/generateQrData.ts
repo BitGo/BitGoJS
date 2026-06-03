@@ -1,6 +1,6 @@
 import { BaseCoin } from '@bitgo/statics';
 import { Keychain } from '@bitgo/sdk-core';
-import { encrypt } from '@bitgo/sdk-api';
+import { encrypt, encryptAsync } from '@bitgo/sdk-api';
 import * as assert from 'assert';
 import {
   GenerateLightningQrDataParams,
@@ -138,6 +138,15 @@ function generatePasscodeQrData(passphrase: string, passcodeEncryptionCode: stri
   };
 }
 
+async function generatePasscodeQrDataAsync(passphrase: string, passcodeEncryptionCode: string): Promise<QrDataEntry> {
+  const encryptedWalletPasscode = await encryptAsync(passcodeEncryptionCode, passphrase);
+  return {
+    title: 'D: Encrypted wallet Password',
+    description: 'This is the wallet password, encrypted client-side with a key held by BitGo.',
+    data: encryptedWalletPasscode,
+  };
+}
+
 function generateBackupMasterPublicKeyQRData(publicKey: string): MasterPublicKeyQrDataEntry {
   return {
     title: 'F: Master Backup Public Key',
@@ -147,20 +156,18 @@ function generateBackupMasterPublicKeyQRData(publicKey: string): MasterPublicKey
   };
 }
 
-export function generateQrData({
+function buildWalletQrData({
   backupKeychain,
   backupKeyProvider,
   backupMasterKey,
   bitgoKeychain,
   coin,
-  passcodeEncryptionCode,
-  passphrase,
   userKeychain,
   userMasterKey,
   userMasterPublicKey,
   backupMasterPublicKey,
 }: GenerateQrDataParams): QrData {
-  const qrData: QrData = {
+  return {
     user: generateUserQrData(userKeychain, userMasterKey),
     userMasterPublicKey: userMasterPublicKey ? generateUserMasterPublicKeyQRData(userMasterPublicKey) : undefined,
     backup: generateBackupQrData(coin, backupKeychain, {
@@ -172,22 +179,12 @@ export function generateQrData({
       : undefined,
     bitgo: generateBitGoQrData(bitgoKeychain),
   };
-
-  if (passphrase && passcodeEncryptionCode) {
-    qrData.passcode = generatePasscodeQrData(passphrase, passcodeEncryptionCode);
-  }
-
-  return qrData;
 }
 
-export function generateLightningQrData({
-  userAuthKeychain,
-  passcodeEncryptionCode,
-  passphrase,
-}: GenerateLightningQrDataParams): QrData {
+function buildLightningQrData({ userAuthKeychain }: GenerateLightningQrDataParams): QrData {
   assert.ok(userAuthKeychain.encryptedPrv, 'userAuthKeychain must have an encryptedPrv');
 
-  const qrData: QrData = {
+  return {
     user: {
       title: 'A: User Auth Key',
       description:
@@ -195,9 +192,49 @@ export function generateLightningQrData({
       data: userAuthKeychain.encryptedPrv,
     },
   };
+}
 
-  if (passphrase && passcodeEncryptionCode) {
-    qrData.passcode = generatePasscodeQrData(passphrase, passcodeEncryptionCode);
+export function generateQrData(params: GenerateQrDataParams): QrData {
+  const qrData = buildWalletQrData(params);
+
+  if (params.passphrase && params.passcodeEncryptionCode) {
+    qrData.passcode = generatePasscodeQrData(params.passphrase, params.passcodeEncryptionCode);
+  }
+
+  return qrData;
+}
+
+/**
+ * Async version of {@link generateQrData} with v1/v2 auto-detect encrypt for Box D via `encryptAsync`.
+ */
+export async function generateQrDataAsync(params: GenerateQrDataParams): Promise<QrData> {
+  const qrData = buildWalletQrData(params);
+
+  if (params.passphrase && params.passcodeEncryptionCode) {
+    qrData.passcode = await generatePasscodeQrDataAsync(params.passphrase, params.passcodeEncryptionCode);
+  }
+
+  return qrData;
+}
+
+export function generateLightningQrData(params: GenerateLightningQrDataParams): QrData {
+  const qrData = buildLightningQrData(params);
+
+  if (params.passphrase && params.passcodeEncryptionCode) {
+    qrData.passcode = generatePasscodeQrData(params.passphrase, params.passcodeEncryptionCode);
+  }
+
+  return qrData;
+}
+
+/**
+ * Async version of {@link generateLightningQrData} with v1/v2 auto-detect encrypt for Box D via `encryptAsync`.
+ */
+export async function generateLightningQrDataAsync(params: GenerateLightningQrDataParams): Promise<QrData> {
+  const qrData = buildLightningQrData(params);
+
+  if (params.passphrase && params.passcodeEncryptionCode) {
+    qrData.passcode = await generatePasscodeQrDataAsync(params.passphrase, params.passcodeEncryptionCode);
   }
 
   return qrData;

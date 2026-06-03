@@ -17,7 +17,7 @@ import { LndSignerClient } from './lndSignerClient';
 import { ApiResponseError } from '../errors';
 import { ExpressApiRouteRequest } from '../typedRoutes/api';
 
-type Decrypt = (params: { input: string; password: string }) => string;
+type Decrypt = (params: { input: string; password: string }) => Promise<string>;
 
 async function createSignerMacaroon(
   lndSignerClient: LndSignerClient,
@@ -31,21 +31,21 @@ async function createSignerMacaroon(
   return macaroonBase64 ? Buffer.from(macaroonBase64, 'base64').toString('hex') : macaroon;
 }
 
-function getSignerRootKey(
+async function getSignerRootKey(
   passphrase: string,
   userMainnetEncryptedPrv: string,
   network: utxolib.Network,
   decrypt: Decrypt
-) {
-  const userMainnetPrv = decrypt({
+): Promise<string> {
+  const userMainnetPrv = await decrypt({
     password: passphrase,
     input: userMainnetEncryptedPrv,
   });
   return utxolib.bitgo.keyutil.convertExtendedKeyNetwork(userMainnetPrv, utxolib.networks.bitcoin, network);
 }
 
-function getMacaroonRootKey(passphrase: string, nodeAuthEncryptedPrv: string, decrypt: Decrypt) {
-  const hdNode = utxolib.bip32.fromBase58(decrypt({ password: passphrase, input: nodeAuthEncryptedPrv }));
+async function getMacaroonRootKey(passphrase: string, nodeAuthEncryptedPrv: string, decrypt: Decrypt): Promise<string> {
+  const hdNode = utxolib.bip32.fromBase58(await decrypt({ password: passphrase, input: nodeAuthEncryptedPrv }));
   if (!hdNode.privateKey) {
     throw new Error('nodeAuthEncryptedPrv is not a private key');
   }
@@ -82,8 +82,8 @@ export async function handleInitLightningWallet(
     throw new ApiResponseError('Missing encryptedPrv in node auth keychain', 400);
   }
   const network = getUtxolibNetwork(coin.getChain());
-  const signerRootKey = getSignerRootKey(passphrase, userKeyEncryptedPrv, network, bitgo.decrypt);
-  const macaroonRootKey = getMacaroonRootKey(passphrase, nodeAuthKeyEncryptedPrv, bitgo.decrypt);
+  const signerRootKey = await getSignerRootKey(passphrase, userKeyEncryptedPrv, network, (p) => bitgo.decryptAsync(p));
+  const macaroonRootKey = await getMacaroonRootKey(passphrase, nodeAuthKeyEncryptedPrv, (p) => bitgo.decryptAsync(p));
 
   const { admin_macaroon: adminMacaroon } = await lndSignerClient.initWallet({
     // The passphrase at LND can only accommodate a base64 character set
@@ -139,7 +139,7 @@ export async function handleCreateSignerMacaroon(
   if (!encryptedSignerAdminMacaroon) {
     throw new ApiResponseError('Missing encryptedSignerAdminMacaroon in wallet', 400);
   }
-  const adminMacaroon = bitgo.decrypt({
+  const adminMacaroon = await bitgo.decryptAsync({
     password: passphrase,
     input: encryptedSignerAdminMacaroon,
   });

@@ -79,10 +79,15 @@ describe('Base TSS Utils', function () {
   });
 
   beforeEach(function () {
-    decryptAsyncStub = sinon.stub().callsFake(({ input }: Parameters<BitGoBase['decryptAsync']>[0]) =>
-      // Fake v2 envelope: resolve the plaintext embedded in the JSON.
-      Promise.resolve((JSON.parse(input) as { plaintext: string }).plaintext)
-    );
+    decryptAsyncStub = sinon.stub().callsFake(async ({ input, password }: Parameters<BitGoBase['decryptAsync']>[0]) => {
+      try {
+        const parsed = JSON.parse(input);
+        if (parsed.v === 2 && parsed.plaintext !== undefined) {
+          return parsed.plaintext;
+        }
+      } catch {}
+      return sjcl.decrypt(password ?? '', input);
+    });
 
     const mockBg = {} as BitGoBase;
     mockBg.getEnv = sinon.stub().returns('test');
@@ -261,9 +266,10 @@ describe('Base TSS Utils', function () {
       assert.equal(result.userGpgPrvKey.isPrivate(), true);
     });
 
-    it('decrypts v2 envelope and returns GPG keys', async function () {
+    it('decrypts via decryptAsync and returns GPG keys', async function () {
       const adata = 'test-adata';
-      // Fake v2 envelope: JSON with v:2 triggers isV2Envelope; decryptAsync stub returns plaintext directly.
+      // Use a fake v2 envelope (v:2) so isV2Envelope returns true and decryptAsync is called.
+      // The stub extracts plaintext directly from this fake format.
       const encryptedUserGpgPrvKey = JSON.stringify({
         v: 2,
         adata: `${signingUserGpgKeyDomainSeparator}:${adata}`,

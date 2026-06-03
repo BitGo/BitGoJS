@@ -1150,7 +1150,7 @@ describe('ALGO:', function () {
             walletPassphrase: 'foo',
           });
         },
-        { message: "failed to decrypt prv: ccm: tag doesn't match" }
+        { message: "failed to decrypt prv: password error - ccm: tag doesn't match" }
       );
     });
 

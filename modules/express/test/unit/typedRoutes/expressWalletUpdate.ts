@@ -114,7 +114,13 @@ describe('Express Wallet Update Typed Routes Tests', function () {
             .returns(
               'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
             ),
+          decryptAsync: sinon
+            .stub()
+            .resolves(
+              'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
+            ),
           encrypt: sinon.stub().callsFake(({ input }: { input: string }) => `encrypted_${input}`),
+          encryptAsync: sinon.stub().callsFake(async ({ input }: { input: string }) => `encrypted_${input}`),
           put: putStub,
         },
       } as any;
@@ -231,7 +237,13 @@ describe('Express Wallet Update Typed Routes Tests', function () {
             .returns(
               'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
             ),
+          decryptAsync: sinon
+            .stub()
+            .resolves(
+              'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
+            ),
           encrypt: sinon.stub().callsFake(({ input }: { input: string }) => `encrypted_${input}`),
+          encryptAsync: sinon.stub().callsFake(async ({ input }: { input: string }) => `encrypted_${input}`),
           put: putStub,
         },
       } as any;

@@ -572,7 +572,7 @@ export class Keychains implements IKeychains {
     const newKeychain = keychains.create();
     const originalPasscodeEncryptionCode = generateRandomPassword(5);
 
-    const encryptedPrv = this.bitgo.encrypt({
+    const encryptedPrv = await this.bitgo.encryptAsync({
       password: walletPassphrase,
       input: newKeychain.prv,
     });
@@ -614,7 +614,7 @@ export class Keychains implements IKeychains {
         throw Error('Expected a public key to be generated');
       }
       pub = keyPub;
-      encryptedPrv = this.bitgo.encrypt({ input: keyPrv, password: params.password });
+      encryptedPrv = await this.bitgo.encryptAsync({ input: keyPrv, password: params.password });
     }
 
     return this.bitgo

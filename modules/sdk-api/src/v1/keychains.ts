@@ -188,16 +188,19 @@ Keychains.prototype.updatePassword = function (params, callback) {
     const newKeychains = {};
     // @ts-expect-error - no implicit this
     const self = this;
-    _.forOwn((encrypted as any).keychains, function keychainsForOwn(oldEncryptedXprv, xpub) {
+    for (const [xpub, oldEncryptedXprv] of Object.entries((encrypted as any).keychains)) {
       try {
-        const decryptedPrv = self.bitgo.decrypt({ input: oldEncryptedXprv, password: params.oldPassword });
-        const newEncryptedPrv = self.bitgo.encrypt({ input: decryptedPrv, password: params.newPassword });
+        const decryptedPrv = await self.bitgo.decryptAsync({
+          input: oldEncryptedXprv as string,
+          password: params.oldPassword,
+        });
+        const newEncryptedPrv = await self.bitgo.encryptAsync({ input: decryptedPrv, password: params.newPassword });
         newKeychains[xpub] = newEncryptedPrv;
       } catch (e) {
         // decrypting the keychain with the old password didn't work so we just keep it the way it is
-        newKeychains[xpub] = oldEncryptedXprv;
+        newKeychains[xpub] = oldEncryptedXprv as string;
       }
-    });
+    }
     return { keychains: newKeychains, version: (encrypted as any).version };
   }
     .call(this)
