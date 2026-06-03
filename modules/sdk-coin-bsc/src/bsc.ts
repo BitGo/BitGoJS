@@ -1,4 +1,12 @@
-import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
+import {
+  BaseCoin,
+  BitGoBase,
+  common,
+  MPCAlgorithm,
+  MultisigType,
+  multisigTypes,
+  NO_RECIPIENT_TX_TYPES,
+} from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
@@ -70,7 +78,9 @@ export class Bsc extends AbstractEthLikeNewCoins {
       !txParams?.recipients &&
       !(
         txParams.prebuildTx?.consolidateId ||
-        (txParams.type && ['acceleration', 'fillNonce', 'transferToken', 'tokenApproval'].includes(txParams.type))
+        txParams.stakingRequestId ||
+        txParams.prebuildTx?.stakingRequestId ||
+        (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type))
       )
     ) {
       throw new Error(`missing txParams`);

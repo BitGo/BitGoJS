@@ -9,6 +9,7 @@ import {
   MPCAlgorithm,
   MultisigType,
   multisigTypes,
+  NO_RECIPIENT_TX_TYPES,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFeature, coins, CoinFamily } from '@bitgo/statics';
 import {
@@ -117,8 +118,9 @@ export class EvmCoin extends AbstractEthLikeNewCoins {
       !txParams?.recipients &&
       !(
         txParams.prebuildTx?.consolidateId ||
-        (txParams.type &&
-          ['acceleration', 'fillNonce', 'transferToken', 'tokenApproval', 'bridgeFunds'].includes(txParams.type))
+        txParams.stakingRequestId ||
+        txParams.prebuildTx?.stakingRequestId ||
+        (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type))
       )
     ) {
       throw new Error(`missing txParams`);

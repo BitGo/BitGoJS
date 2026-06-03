@@ -50,6 +50,7 @@ import {
 } from '../../../tss/types';
 import { BaseEcdsaUtils } from './base';
 import { EncryptionVersion, IRequestTracer } from '../../../../api';
+import { resolveEffectiveTxParams } from '../recipientUtils';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -809,14 +810,14 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       if (this.baseCoin.getConfig().family === 'icp') {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
-          txParams: params.txParams || { recipients: [] },
+          txParams: resolveEffectiveTxParams(txRequest, params.txParams),
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
         });
       } else {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.signableHex },
-          txParams: params.txParams || { recipients: [] },
+          txParams: resolveEffectiveTxParams(txRequest, params.txParams),
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
         });
