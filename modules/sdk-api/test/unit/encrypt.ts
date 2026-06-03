@@ -199,19 +199,18 @@ describe('encryption methods tests', () => {
     const password = 'myPassword';
     const plaintext = 'Hello, World!';
 
-    it('dispatches to v1 by default and output is decryptable via decrypt', async () => {
+    it('dispatches to v2 by default and output is decryptable via decryptAsync', async () => {
       const ct = await encryptAsync(password, plaintext);
-      const envelope = JSON.parse(ct);
-      assert.notStrictEqual(envelope.v, 2, 'default should not produce v2 envelope');
-      assert.strictEqual(decrypt(password, ct), plaintext);
+      const envelope: V2Envelope = JSON.parse(ct);
+      assert.strictEqual(envelope.v, 2, 'default should produce v2 envelope');
+      assert.strictEqual(await decryptAsync(password, ct), plaintext);
     });
 
-    it('dispatches to v2 when encryptionVersion: 2', async () => {
+    it('dispatches to v2 when encryptionVersion: 2 is explicit', async () => {
       const ct = await encryptAsync(password, plaintext, { encryptionVersion: 2 });
       const envelope: V2Envelope = JSON.parse(ct);
       assert.strictEqual(envelope.v, 2);
-      const result = await decryptAsync(password, ct);
-      assert.strictEqual(result, plaintext);
+      assert.strictEqual(await decryptAsync(password, ct), plaintext);
     });
 
     it('dispatches to v1 when encryptionVersion: 1', async () => {
@@ -229,9 +228,18 @@ describe('encryption methods tests', () => {
       assert.strictEqual(await decryptAsync(password, ct), plaintext);
     });
 
-    it('encrypts v1 with adata', async () => {
+    it('forwards adata to v2 envelope by default', async () => {
       const adata = 'additional data';
       const ct = await encryptAsync(password, plaintext, { adata });
+      const envelope: V2Envelope = JSON.parse(ct);
+      assert.strictEqual(envelope.v, 2);
+      assert.strictEqual(envelope.adata, adata);
+      assert.strictEqual(await decryptAsync(password, ct), plaintext);
+    });
+
+    it('encrypts v1 with adata when encryptionVersion: 1', async () => {
+      const adata = 'additional data';
+      const ct = await encryptAsync(password, plaintext, { adata, encryptionVersion: 1 });
       assert.strictEqual(decrypt(password, ct), plaintext);
     });
 
@@ -244,18 +252,24 @@ describe('encryption methods tests', () => {
     it('forwards salt and iv options to v1 encrypt for deterministic output', async () => {
       const salt = randomBytes(8);
       const iv = randomBytes(16);
-      const ct1 = await encryptAsync(password, plaintext, { salt, iv });
-      const ct2 = await encryptAsync(password, plaintext, { salt, iv });
+      const ct1 = await encryptAsync(password, plaintext, { salt, iv, encryptionVersion: 1 });
+      const ct2 = await encryptAsync(password, plaintext, { salt, iv, encryptionVersion: 1 });
       assert.strictEqual(ct1, ct2);
       assert.strictEqual(decrypt(password, ct1), plaintext);
     });
 
-    it('throws an error if the salt length is not 8 bytes', async () => {
-      await assert.rejects(() => encryptAsync(password, plaintext, { salt: randomBytes(4) }), /salt must be 8 bytes/);
+    it('throws an error if the salt length is not 8 bytes for v1', async () => {
+      await assert.rejects(
+        () => encryptAsync(password, plaintext, { salt: randomBytes(4), encryptionVersion: 1 }),
+        /salt must be 8 bytes/
+      );
     });
 
-    it('throws an error if the iv length is not 16 bytes', async () => {
-      await assert.rejects(() => encryptAsync(password, plaintext, { iv: randomBytes(4) }), /iv must be 16 bytes/);
+    it('throws an error if the iv length is not 16 bytes for v1', async () => {
+      await assert.rejects(
+        () => encryptAsync(password, plaintext, { iv: randomBytes(4), encryptionVersion: 1 }),
+        /iv must be 16 bytes/
+      );
     });
   });
 
@@ -448,19 +462,18 @@ describe('encryption methods tests', () => {
       bitgo = new BitGoAPI({ env: 'test' });
     });
 
-    it('dispatches to v1 by default and output is decryptable via decrypt', async () => {
+    it('dispatches to v2 by default and output is decryptable via decryptAsync', async () => {
       const ct = await bitgo.encryptAsync({ input: plaintext, password });
-      const envelope = JSON.parse(ct);
-      assert.notStrictEqual(envelope.v, 2, 'default should not produce v2 envelope');
-      assert.strictEqual(decrypt(password, ct), plaintext);
+      const envelope: V2Envelope = JSON.parse(ct);
+      assert.strictEqual(envelope.v, 2, 'default should produce v2 envelope');
+      assert.strictEqual(await decryptAsync(password, ct), plaintext);
     });
 
-    it('dispatches to v2 when encryptionVersion: 2 and output is decryptable via decryptAsync', async () => {
+    it('dispatches to v2 when encryptionVersion: 2 is explicit', async () => {
       const ct = await bitgo.encryptAsync({ input: plaintext, password, encryptionVersion: 2 });
       const envelope: V2Envelope = JSON.parse(ct);
       assert.strictEqual(envelope.v, 2);
-      const result = await decryptAsync(password, ct);
-      assert.strictEqual(result, plaintext);
+      assert.strictEqual(await decryptAsync(password, ct), plaintext);
     });
 
     it('forwards adata to v2 envelope', async () => {
