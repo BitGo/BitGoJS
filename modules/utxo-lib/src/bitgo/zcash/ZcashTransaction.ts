@@ -25,6 +25,8 @@ const CANOPY_BRANCH_ID = 0xe9ff75a6;
 const NU5_BRANCH_ID = 0xc2d6d0b4;
 const NU6_BRANCH_ID = 0xc8e71055;
 const NU6_1_BRANCH_ID = 0x4dec4df0; // https://zips.z.cash/zip-0255
+// NU6.2 emergency hard fork re-enabling Orchard with a corrected circuit (mainnet block 3364600).
+const NU6_2_BRANCH_ID = 0x5437f330;
 
 export class UnsupportedTransactionError extends Error {
   constructor(message: string) {
@@ -38,18 +40,20 @@ export function getDefaultVersionGroupIdForVersion(version: number): number {
     case 450:
     case 455:
     case 456:
+    case 457:
       return SAPLING_VERSION_GROUP_ID;
     case 500:
     case 550:
     case 551:
+    case 552:
       return ZIP225_VERSION_GROUP_ID;
   }
   throw new Error(`no value for version ${version}`);
 }
 
 export function getDefaultConsensusBranchIdForVersion(network: ZcashNetwork, version: number): number {
-  // Use NU6.1 version for testnet, activated on mainnet in block 2726400
-  // https://zips.z.cash/zip-0255
+  // Testnet has not yet activated NU6.2 (testnet activation block 4052000), so keep
+  // defaulting to NU6.1 there. Mainnet activated NU6.2 at block 3364600.
   if (network === networks.zcashTest) {
     if (version === 4 || version === 5) {
       return NU6_1_BRANCH_ID;
@@ -74,12 +78,16 @@ export function getDefaultConsensusBranchIdForVersion(network: ZcashNetwork, ver
     case ZcashTransaction.VERSION5_BRANCH_NU6:
       // https://zips.z.cash/zip-0253
       return NU6_BRANCH_ID;
-    case 4:
-    case 5:
     case ZcashTransaction.VERSION4_BRANCH_NU6_1:
     case ZcashTransaction.VERSION5_BRANCH_NU6_1:
       // https://zips.z.cash/zip-0255
       return NU6_1_BRANCH_ID;
+    case 4:
+    case 5:
+    case ZcashTransaction.VERSION4_BRANCH_NU6_2:
+    case ZcashTransaction.VERSION5_BRANCH_NU6_2:
+      // NU6.2 — emergency hard fork re-enabling Orchard, mainnet block 3364600
+      return NU6_2_BRANCH_ID;
   }
   throw new Error(`no value for version ${version}`);
 }
@@ -93,9 +101,11 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
   static VERSION4_BRANCH_NU5 = 450;
   static VERSION4_BRANCH_NU6 = 455;
   static VERSION4_BRANCH_NU6_1 = 456;
+  static VERSION4_BRANCH_NU6_2 = 457;
   static VERSION5_BRANCH_NU5 = 500;
   static VERSION5_BRANCH_NU6 = 550;
   static VERSION5_BRANCH_NU6_1 = 551;
+  static VERSION5_BRANCH_NU6_2 = 552;
 
   // 1 if the transaction is post overwinter upgrade, 0 otherwise
   overwintered = 0;

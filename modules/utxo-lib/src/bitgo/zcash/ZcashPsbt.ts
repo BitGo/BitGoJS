@@ -122,12 +122,14 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
       case ZcashTransaction.VERSION4_BRANCH_NU5:
       case ZcashTransaction.VERSION4_BRANCH_NU6:
       case ZcashTransaction.VERSION4_BRANCH_NU6_1:
+      case ZcashTransaction.VERSION4_BRANCH_NU6_2:
         this.setVersion(4);
         break;
       case 5:
       case ZcashTransaction.VERSION5_BRANCH_NU5:
       case ZcashTransaction.VERSION5_BRANCH_NU6:
       case ZcashTransaction.VERSION5_BRANCH_NU6_1:
+      case ZcashTransaction.VERSION5_BRANCH_NU6_2:
         this.setVersion(5);
         break;
       default:
