@@ -2,7 +2,14 @@
  * @prettier
  */
 import { EthLikeTokenConfig, coins } from '@bitgo/statics';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor, common, MPCAlgorithm } from '@bitgo/sdk-core';
+import {
+  BitGoBase,
+  CoinConstructor,
+  NamedCoinConstructor,
+  common,
+  MPCAlgorithm,
+  NO_RECIPIENT_TX_TYPES,
+} from '@bitgo/sdk-core';
 import {
   CoinNames,
   EthLikeToken,
@@ -73,8 +80,9 @@ export class XdcToken extends EthLikeToken {
       !txParams?.recipients &&
       !(
         txParams.prebuildTx?.consolidateId ||
-        (txParams.type &&
-          ['acceleration', 'fillNonce', 'transferToken', 'tokenApproval', 'consolidate'].includes(txParams.type))
+        txParams.stakingRequestId ||
+        txParams.prebuildTx?.stakingRequestId ||
+        (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type))
       )
     ) {
       throw new Error(`missing txParams`);

@@ -57,6 +57,7 @@ import { EcdsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './ecdsaMPCv2K
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
 import { InvalidTransactionError } from '../../../errors';
 import { BitGoBase } from '../../../bitgoBase';
+import { resolveEffectiveTxParams } from '../recipientUtils';
 
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   private static readonly DKLS23_SIGNING_USER_GPG_KEY = 'DKLS23_SIGNING_USER_GPG_KEY';
@@ -843,14 +844,14 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       if (isIcp || isPreHashed) {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
-          txParams: params.txParams || { recipients: [] },
+          txParams: resolveEffectiveTxParams(txRequest, params.txParams),
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
         });
       } else {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.signableHex },
-          txParams: params.txParams || { recipients: [] },
+          txParams: resolveEffectiveTxParams(txRequest, params.txParams),
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
         });

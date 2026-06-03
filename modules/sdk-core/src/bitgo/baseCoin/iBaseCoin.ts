@@ -267,6 +267,7 @@ export interface TransactionParams {
   type?: string;
   memo?: Memo;
   enableTokens?: TokenEnablement[];
+  stakingRequestId?: string;
 }
 
 export interface AddressVerificationData {
