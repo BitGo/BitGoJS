@@ -1,7 +1,7 @@
 import * as sjcl from '@bitgo/sjcl';
 import { randomBytes } from 'crypto';
 
-import { decryptV2 } from './encryptV2';
+import { decryptV2, encryptV2 } from './encryptV2';
 
 /**
  * convert a 4 element Uint8Array to a 4 byte Number
@@ -40,6 +40,21 @@ export function encrypt(
   };
   if (options?.adata) encryptOptions.adata = options.adata;
   return sjcl.encrypt(password, plaintext, encryptOptions);
+}
+
+/**
+ * Async encrypt that dispatches to v1 (SJCL) or v2 (Argon2id + AES-256-GCM)
+ * when `encryptionVersion` is 2. Defaults to v1, matching sync `encrypt()`.
+ */
+export async function encryptAsync(
+  password: string,
+  plaintext: string,
+  options?: { salt?: Buffer; iv?: Buffer; adata?: string; encryptionVersion?: 1 | 2 }
+): Promise<string> {
+  if (options?.encryptionVersion === 2) {
+    return encryptV2(password, plaintext, { adata: options.adata });
+  }
+  return encrypt(password, plaintext, options);
 }
 
 /** Decrypt a v1 SJCL envelope. */
