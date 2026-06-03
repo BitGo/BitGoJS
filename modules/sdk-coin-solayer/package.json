@@ -1,0 +1,71 @@
+{
+  "name": "@bitgo/sdk-coin-solayer",
+  "version": "1.0.0",
+  "description": "BitGo SDK coin library for Solayer",
+  "main": "./dist/cjs/src/index.js",
+  "module": "./dist/esm/index.js",
+  "browser": "./dist/esm/index.js",
+  "types": "./dist/cjs/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/index.d.ts",
+        "default": "./dist/cjs/src/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "yarn tsc --build --incremental --verbose .",
+    "build:esm": "yarn tsc --project tsconfig.esm.json",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
+    "clean": "rm -rf ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-solayer"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/sdk-coin-sol": "^7.20.1",
+    "@bitgo/sdk-core": "^37.3.0",
+    "@bitgo/statics": "^58.43.0"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.81.1",
+    "@bitgo/sdk-test": "^9.1.46"
+  },
+  "files": [
+    "dist/cjs",
+    "dist/esm"
+  ]
+}

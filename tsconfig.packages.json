@@ -218,6 +218,9 @@
       "path": "./modules/sdk-coin-sol"
     },
     {
+      "path": "./modules/sdk-coin-solayer"
+    },
+    {
       "path": "./modules/sdk-coin-soneium"
     },
     {

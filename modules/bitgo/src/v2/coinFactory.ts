@@ -128,6 +128,7 @@ import {
   Sgb,
   Sip10Token,
   Sol,
+  Solayer,
   Soneium,
   SoneiumToken,
   Starknet,
@@ -194,6 +195,7 @@ import {
   Tsgb,
   Tsei,
   Tsol,
+  Tsolayer,
   Tsoneium,
   Tstx,
   Tstt,
@@ -746,6 +748,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Sgb.createInstance;
     case 'sol':
       return Sol.createInstance;
+    case 'solayer':
+      return Solayer.createInstance;
     case 'soneium':
       return Soneium.createInstance;
     case 'starknet':
@@ -878,6 +882,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Tsei.createInstance;
     case 'tsol':
       return Tsol.createInstance;
+    case 'tsolayer':
+      return Tsolayer.createInstance;
     case 'tsoneium':
       return Tsoneium.createInstance;
     case 'tstarknet':

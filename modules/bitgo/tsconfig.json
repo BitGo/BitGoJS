@@ -231,6 +231,9 @@
       "path": "../sdk-coin-sol"
     },
     {
+      "path": "../sdk-coin-solayer"
+    },
+    {
       "path": "../sdk-coin-starknet"
     },
     {

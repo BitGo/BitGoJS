@@ -120,6 +120,8 @@ import {
   SEI_FEATURES,
   SGB_FEATURES,
   SOL_FEATURES,
+  SOLAYER_FEATURES,
+  TSOLAYER_FEATURES,
   SONEIUM_FEATURES,
   STARKNET_FEATURES,
   STX_FEATURES,
@@ -770,6 +772,28 @@ export const allCoinsAndTokens = [
     UnderlyingAsset.SOL,
     BaseUnit.SOL,
     TSOL_FEATURES,
+    KeyCurve.Ed25519
+  ),
+  account(
+    '100c4f50-e4f1-448c-8db0-2fe4e2c8134a',
+    'solayer',
+    'Solayer',
+    Networks.main.solayer,
+    9,
+    UnderlyingAsset.SOLAYER,
+    BaseUnit.SOLAYER,
+    SOLAYER_FEATURES,
+    KeyCurve.Ed25519
+  ),
+  account(
+    '095a4797-4d6f-4d42-b110-25dbe99a30a5',
+    'tsolayer',
+    'Testnet Solayer',
+    Networks.test.solayer,
+    9,
+    UnderlyingAsset.SOLAYER,
+    BaseUnit.SOLAYER,
+    TSOLAYER_FEATURES,
     KeyCurve.Ed25519
   ),
   account(
