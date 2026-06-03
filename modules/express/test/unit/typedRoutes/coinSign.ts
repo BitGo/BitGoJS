@@ -104,7 +104,7 @@ describe('CoinSign codec tests (External Signer Mode)', function () {
 
       // Create mock BitGo with decrypt method
       const mockBitGo = {
-        decrypt: sinon.stub().returns(decryptedPrivKey),
+        decryptAsync: sinon.stub().resolves(decryptedPrivKey),
         coin: sinon.stub(),
       };
 
@@ -117,7 +117,7 @@ describe('CoinSign codec tests (External Signer Mode)', function () {
 
       // Stub BitGo constructor
       sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-      sinon.stub(BitGo.prototype, 'decrypt').callsFake(mockBitGo.decrypt);
+      sinon.stub(BitGo.prototype, 'decryptAsync').callsFake(mockBitGo.decryptAsync);
 
       // Make the request to Express
       const result = await agent
@@ -139,8 +139,11 @@ describe('CoinSign codec tests (External Signer Mode)', function () {
       assert.strictEqual(fsReadFileStub.calledOnce, true);
 
       // Verify private key was decrypted
-      assert.strictEqual(mockBitGo.decrypt.calledOnce, true);
-      assert.strictEqual(mockBitGo.decrypt.calledWith({ password: walletPassphrase, input: encryptedPrivKey }), true);
+      assert.strictEqual(mockBitGo.decryptAsync.calledOnce, true);
+      assert.strictEqual(
+        mockBitGo.decryptAsync.calledWith({ password: walletPassphrase, input: encryptedPrivKey }),
+        true
+      );
 
       // Verify signTransaction was called with decrypted key
       assert.strictEqual(mockCoin.signTransaction.calledOnce, true);
@@ -181,7 +184,7 @@ describe('CoinSign codec tests (External Signer Mode)', function () {
 
       // Stub BitGo methods
       sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-      sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+      sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
 
       // Make the request
       const result = await agent
@@ -238,7 +241,7 @@ describe('CoinSign codec tests (External Signer Mode)', function () {
       };
 
       sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-      sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+      sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
 
       // Make the request
       const result = await agent
@@ -284,7 +287,7 @@ describe('CoinSign codec tests (External Signer Mode)', function () {
       };
 
       sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-      sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+      sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
 
       // Make the request
       const result = await agent
@@ -328,7 +331,7 @@ describe('CoinSign codec tests (External Signer Mode)', function () {
       };
 
       sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-      sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+      sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
 
       // Make the request
       const result = await agent
@@ -399,7 +402,7 @@ describe('CoinSign codec tests (External Signer Mode)', function () {
       };
 
       sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-      sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+      sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
 
       // Make the request
       const result = await agent
@@ -572,7 +575,7 @@ describe('CoinSign codec tests (External Signer Mode)', function () {
       );
 
       // Mock decrypt to throw error
-      sinon.stub(BitGo.prototype, 'decrypt').throws(new Error('Invalid passphrase'));
+      sinon.stub(BitGo.prototype, 'decryptAsync').rejects(new Error('Invalid passphrase'));
 
       // Make the request
       const result = await agent
@@ -607,7 +610,7 @@ describe('CoinSign codec tests (External Signer Mode)', function () {
       };
 
       sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-      sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+      sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
 
       // Make the request
       const result = await agent

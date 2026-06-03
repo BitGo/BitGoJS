@@ -424,7 +424,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         };
 
         sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-        sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+        sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
         sinon
           .stub(EddsaUtils.prototype, 'createCommitmentShareFromTxRequest')
           .callsFake(mockEddsaUtils.createCommitmentShareFromTxRequest);
@@ -502,7 +502,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         };
 
         sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-        sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+        sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
         sinon
           .stub(EddsaUtils.prototype, 'createRShareFromTxRequest')
           .callsFake(mockEddsaUtils.createRShareFromTxRequest);
@@ -578,7 +578,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         };
 
         sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-        sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+        sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
         sinon
           .stub(EddsaUtils.prototype, 'createGShareFromTxRequest')
           .callsFake(mockEddsaUtils.createGShareFromTxRequest);
@@ -631,7 +631,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         };
 
         sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-        sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+        sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
         sinon
           .stub(EcdsaUtils.prototype, 'getOfflineSignerPaillierModulus')
           .callsFake(mockEcdsaUtils.getOfflineSignerPaillierModulus);
@@ -709,7 +709,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         };
 
         sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-        sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+        sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
         sinon.stub(EcdsaUtils.prototype, 'createOfflineKShare').callsFake(mockEcdsaUtils.createOfflineKShare);
 
         // Call API via supertest
@@ -878,7 +878,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         );
 
         // Mock decrypt to throw error
-        sinon.stub(BitGo.prototype, 'decrypt').throws(new Error('Invalid passphrase'));
+        sinon.stub(BitGo.prototype, 'decryptAsync').rejects(new Error('Invalid passphrase'));
 
         // Make the request
         const result = await agent
@@ -911,7 +911,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         };
 
         sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-        sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+        sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
 
         // Make the request
         const result = await agent
@@ -944,7 +944,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         };
 
         sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-        sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+        sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
 
         // Make the request with invalid share type for EDDSA (K is ECDSA only)
         const result = await agent
@@ -977,7 +977,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         };
 
         sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-        sinon.stub(BitGo.prototype, 'decrypt').returns(decryptedPrivKey);
+        sinon.stub(BitGo.prototype, 'decryptAsync').resolves(decryptedPrivKey);
 
         // Make the request with invalid share type
         const result = await agent

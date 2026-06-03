@@ -4,38 +4,38 @@ import { getLightningAuthKeychains, ILightningWallet, LightningWallet } from './
 import { createMessageSignature, deriveLightningServiceSharedSecret, isLightningCoinName } from '../lightning';
 import * as t from 'io-ts';
 
-function encryptWalletUpdateRequest(
+async function encryptWalletUpdateRequest(
   wallet: sdkcore.IWallet,
   params: UpdateLightningWalletClientRequest,
   userAuthKeyEncryptedPrv: string
-): UpdateLightningWalletEncryptedRequest {
+): Promise<UpdateLightningWalletEncryptedRequest> {
   const coinName = wallet.coin() as 'tlnbtc' | 'lnbtc';
 
   const requestWithEncryption: Partial<UpdateLightningWalletClientRequest & UpdateLightningWalletEncryptedRequest> = {
     ...params,
   };
 
-  const userAuthXprv = wallet.bitgo.decrypt({
+  const userAuthXprv = await wallet.bitgo.decryptAsync({
     password: params.passphrase,
     input: userAuthKeyEncryptedPrv,
   });
 
   if (params.signerTlsKey) {
-    requestWithEncryption.encryptedSignerTlsKey = wallet.bitgo.encrypt({
+    requestWithEncryption.encryptedSignerTlsKey = await wallet.bitgo.encryptAsync({
       password: params.passphrase,
       input: params.signerTlsKey,
     });
   }
 
   if (params.signerAdminMacaroon) {
-    requestWithEncryption.encryptedSignerAdminMacaroon = wallet.bitgo.encrypt({
+    requestWithEncryption.encryptedSignerAdminMacaroon = await wallet.bitgo.encryptAsync({
       password: params.passphrase,
       input: params.signerAdminMacaroon,
     });
   }
 
   if (params.signerMacaroon) {
-    requestWithEncryption.encryptedSignerMacaroon = wallet.bitgo.encrypt({
+    requestWithEncryption.encryptedSignerMacaroon = await wallet.bitgo.encryptAsync({
       password: deriveLightningServiceSharedSecret(coinName, userAuthXprv).toString('hex'),
       input: params.signerMacaroon,
     });
@@ -86,10 +86,10 @@ export async function updateWalletCoinSpecific(
   if (!userAuthKeyEncryptedPrv) {
     throw new Error(`user auth key is missing encrypted private key`);
   }
-  const updateRequestWithEncryption = encryptWalletUpdateRequest(wallet, params, userAuthKeyEncryptedPrv);
+  const updateRequestWithEncryption = await encryptWalletUpdateRequest(wallet, params, userAuthKeyEncryptedPrv);
   const signature = createMessageSignature(
     updateRequestWithEncryption,
-    wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
+    await wallet.bitgo.decryptAsync({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
   );
   const coinSpecific = {
     [wallet.coin()]: {

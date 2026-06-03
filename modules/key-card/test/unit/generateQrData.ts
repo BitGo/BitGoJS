@@ -1,7 +1,12 @@
 import * as assert from 'assert';
 import * as should from 'should';
-import { generateLightningQrData, generateQrData } from '../../src/generateQrData';
-import { decrypt } from '@bitgo/sdk-api';
+import { decrypt, decryptAsync } from '@bitgo/sdk-api';
+import {
+  generateLightningQrData,
+  generateLightningQrDataAsync,
+  generateQrData,
+  generateQrDataAsync,
+} from '../../src/generateQrData';
 import { ApiKeyShare, Keychain, KeyType } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 
@@ -222,5 +227,41 @@ describe('generateQrData', function () {
 
     assert.ok(qrData.bitgo);
     qrData.bitgo.data.should.equal(bitgoPub);
+  });
+});
+
+describe('generateQrDataAsync', function () {
+  it('encrypts passcode with encryptAsync', async function () {
+    const passphrase = 'testingIsFun';
+    const passcodeEncryptionCode = '123456';
+    const qrData = await generateQrDataAsync({
+      backupKeychain: createKeychain({ encryptedPrv: 'backupPrv' }),
+      bitgoKeychain: createKeychain({ pub: 'bitgoPub' }),
+      coin: coins.get('btc'),
+      passcodeEncryptionCode,
+      passphrase,
+      userKeychain: createKeychain({ encryptedPrv: 'userPrv' }),
+    });
+
+    assert.ok(qrData.passcode);
+    const decryptedData = await decryptAsync(passcodeEncryptionCode, qrData.passcode.data);
+    decryptedData.should.equal(passphrase);
+  });
+});
+
+describe('generateLightningQrDataAsync', function () {
+  it('encrypts passcode with encryptAsync', async function () {
+    const passphrase = 'testingIsFun';
+    const passcodeEncryptionCode = '123456';
+    const qrData = await generateLightningQrDataAsync({
+      userAuthKeychain: createKeychain({ encryptedPrv: 'userAuthPrv' }),
+      coin: coins.get('lnbtc'),
+      passcodeEncryptionCode,
+      passphrase,
+    });
+
+    assert.ok(qrData.passcode);
+    const decryptedData = await decryptAsync(passcodeEncryptionCode, qrData.passcode.data);
+    decryptedData.should.equal(passphrase);
   });
 });

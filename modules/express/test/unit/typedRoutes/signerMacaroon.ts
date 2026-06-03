@@ -119,7 +119,13 @@ describe('Signer Macaroon Typed Routes Tests', function () {
             .returns(
               'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
             ),
+          decryptAsync: sinon
+            .stub()
+            .resolves(
+              'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
+            ),
           encrypt: sinon.stub().callsFake(({ input }: { input: string }) => `encrypted_${input}`),
+          encryptAsync: sinon.stub().callsFake(async ({ input }: { input: string }) => `encrypted_${input}`),
           put: putStub,
         },
         baseCoin: {
@@ -138,6 +144,7 @@ describe('Signer Macaroon Typed Routes Tests', function () {
 
       sinon.stub(BitGo.prototype, 'coin').returns(coinStub);
       sinon.stub(BitGo.prototype, 'decrypt').callsFake(walletStub.bitgo.decrypt);
+      sinon.stub(BitGo.prototype, 'decryptAsync').callsFake(walletStub.bitgo.decryptAsync);
       sinon.stub(BitGo.prototype, 'put').callsFake(putStub as any);
 
       const res = await agent.post(`/api/v2/${coin}/wallet/${walletId}/signermacaroon`).send({
@@ -234,7 +241,13 @@ describe('Signer Macaroon Typed Routes Tests', function () {
             .returns(
               'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
             ),
+          decryptAsync: sinon
+            .stub()
+            .resolves(
+              'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
+            ),
           encrypt: sinon.stub().callsFake(({ input }: { input: string }) => `encrypted_${input}`),
+          encryptAsync: sinon.stub().callsFake(async ({ input }: { input: string }) => `encrypted_${input}`),
           put: putStub,
         },
         baseCoin: {
@@ -253,6 +266,7 @@ describe('Signer Macaroon Typed Routes Tests', function () {
 
       sinon.stub(BitGo.prototype, 'coin').returns(coinStub);
       sinon.stub(BitGo.prototype, 'decrypt').callsFake(walletStub.bitgo.decrypt);
+      sinon.stub(BitGo.prototype, 'decryptAsync').callsFake(walletStub.bitgo.decryptAsync);
       sinon.stub(BitGo.prototype, 'put').callsFake(putStub as any);
 
       const res = await agent.post(`/api/v2/${coin}/wallet/${walletId}/signermacaroon`).send({

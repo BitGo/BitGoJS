@@ -2518,7 +2518,7 @@ describe('ETH:', function () {
               encryptedPrv: key,
               walletPassphrase: 'foo',
             }),
-          { message: "failed to decrypt prv: ccm: tag doesn't match" }
+          { message: "failed to decrypt prv: password error - ccm: tag doesn't match" }
         );
       });
 
@@ -2574,7 +2574,7 @@ describe('ETH:', function () {
               walletPassphrase: incorrectPassphrase,
               multiSigType,
             }),
-          { message: "failed to decrypt prv: ccm: tag doesn't match" }
+          { message: "failed to decrypt prv: password error - ccm: tag doesn't match" }
         );
       });
 

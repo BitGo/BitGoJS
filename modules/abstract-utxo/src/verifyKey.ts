@@ -7,7 +7,7 @@ import assert from 'assert';
 
 import buildDebug from 'debug';
 import { BIP32, message } from '@bitgo/wasm-utxo';
-import { BitGoBase, decryptKeychainPrivateKey, KeyIndices } from '@bitgo/sdk-core';
+import { BitGoBase, decryptKeychainPrivateKey, decryptKeychainPrivateKeyAsync, KeyIndices } from '@bitgo/sdk-core';
 
 import { VerifyKeySignaturesOptions, VerifyUserPublicKeyOptions } from './abstractUtxoCoin';
 import { ParsedTransaction } from './transaction/types';
@@ -81,21 +81,12 @@ export function verifyCustomChangeKeySignatures<TNumber extends number | bigint>
   return true;
 }
 
-/**
- * Decrypt the wallet's user private key and verify that the claimed public key matches
- */
-export function verifyUserPublicKey(bitgo: BitGoBase, params: VerifyUserPublicKeyOptions): boolean {
-  const { userKeychain, txParams, disableNetworking } = params;
-  if (!userKeychain) {
-    throw new Error('user keychain is required');
-  }
-
+function verifyUserPublicKeyWithPrv(
+  userKeychain: NonNullable<VerifyUserPublicKeyOptions['userKeychain']>,
+  userPrv: string | undefined,
+  disableNetworking: boolean | undefined
+): boolean {
   const userPub = userKeychain.pub;
-
-  let userPrv = userKeychain.prv;
-  if (!userPrv && txParams.walletPassphrase) {
-    userPrv = decryptKeychainPrivateKey(bitgo, userKeychain, txParams.walletPassphrase);
-  }
 
   if (!userPrv) {
     const errorMessage = 'user private key unavailable for verification';
@@ -105,15 +96,50 @@ export function verifyUserPublicKey(bitgo: BitGoBase, params: VerifyUserPublicKe
     } else {
       throw new Error(errorMessage);
     }
-  } else {
-    const userPrivateKey = BIP32.fromBase58(userPrv);
-    if (userPrivateKey.toBase58() === userPrivateKey.neutered().toBase58()) {
-      throw new Error('user private key is only public');
-    }
-    if (userPrivateKey.neutered().toBase58() !== userPub) {
-      throw new Error('user private key does not match public key');
-    }
+  }
+
+  const userPrivateKey = BIP32.fromBase58(userPrv);
+  if (userPrivateKey.toBase58() === userPrivateKey.neutered().toBase58()) {
+    throw new Error('user private key is only public');
+  }
+  if (userPrivateKey.neutered().toBase58() !== userPub) {
+    throw new Error('user private key does not match public key');
   }
 
   return true;
+}
+
+/**
+ * TODO: Deprecate in favor of verifyUserPublicKeyAsync once v2 encryption is default.
+ * Decrypt the wallet's user private key and verify that the claimed public key matches (sync, v1 only).
+ */
+export function verifyUserPublicKey(bitgo: BitGoBase, params: VerifyUserPublicKeyOptions): boolean {
+  const { userKeychain, txParams, disableNetworking } = params;
+  if (!userKeychain) {
+    throw new Error('user keychain is required');
+  }
+
+  let userPrv = userKeychain.prv;
+  if (!userPrv && txParams.walletPassphrase) {
+    userPrv = decryptKeychainPrivateKey(bitgo, userKeychain, txParams.walletPassphrase);
+  }
+
+  return verifyUserPublicKeyWithPrv(userKeychain, userPrv, disableNetworking);
+}
+
+/**
+ * Async version of verifyUserPublicKey with v2 encrypt/decrypt support.
+ */
+export async function verifyUserPublicKeyAsync(bitgo: BitGoBase, params: VerifyUserPublicKeyOptions): Promise<boolean> {
+  const { userKeychain, txParams, disableNetworking } = params;
+  if (!userKeychain) {
+    throw new Error('user keychain is required');
+  }
+
+  let userPrv = userKeychain.prv;
+  if (!userPrv && txParams.walletPassphrase) {
+    userPrv = await decryptKeychainPrivateKeyAsync(bitgo, userKeychain, txParams.walletPassphrase);
+  }
+
+  return verifyUserPublicKeyWithPrv(userKeychain, userPrv, disableNetworking);
 }
