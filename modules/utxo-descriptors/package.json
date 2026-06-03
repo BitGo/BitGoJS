@@ -60,6 +60,6 @@
   },
   "dependencies": {
     "@bitgo/utxo-core": "^1.39.0",
-    "@bitgo/wasm-utxo": "^4.14.1"
+    "@bitgo/wasm-utxo": "^4.16.0"
   }
 }
