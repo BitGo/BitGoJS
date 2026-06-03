@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.45.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.44.0...@bitgo/statics@58.45.0) (2026-06-03)
+
+
+### Bug Fixes
+
+* **statics:** sdk bump ([f7a0736](https://github.com/BitGo/BitGoJS/commit/f7a07365dc44a8a8f5fa5ede3d1150047605d659))
+
+
+### Features
+
+* add new tokens from AMS API ([a54b75e](https://github.com/BitGo/BitGoJS/commit/a54b75e7241ad48bbcee4dfc020de2bea1e67d20))
+* add new tokens from AMS API ([ead9d12](https://github.com/BitGo/BitGoJS/commit/ead9d12157ae4d8ce34c3f14a559d981f888a395))
+* add new tokens from AMS API ([285b90d](https://github.com/BitGo/BitGoJS/commit/285b90d4749e6951ea1cc63104e9a31cbeb6a0c7))
+* **statics:** exclude Singapore custody for CECHO-1183 HoodETH and XTZEVM tokens ([b183180](https://github.com/BitGo/BitGoJS/commit/b1831800eacfb4f3578a7958b2b1500ac0587c68))
+
+
+
+
+
 # [58.44.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.43.0...@bitgo/statics@58.44.0) (2026-06-02)
 
 

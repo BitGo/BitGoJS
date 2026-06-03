@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.32.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.31.0...@bitgo/express@15.32.0) (2026-06-03)
+
+
+### Features
+
+* **express:** add EdDSA MPCv2 external signer routing ([a9e2dd9](https://github.com/BitGo/BitGoJS/commit/a9e2dd99c076bd4325e26df984f6ff138451c399))
+
+
+
+
+
 # [15.31.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.30.0...@bitgo/express@15.31.0) (2026-06-02)
 
 

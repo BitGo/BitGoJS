@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.83.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.82.0...@bitgo/sdk-api@1.83.0) (2026-06-03)
+
+
+### Features
+
+* add encryptAsync to encrypt.ts ([7e6555a](https://github.com/BitGo/BitGoJS/commit/7e6555abddc947715ef57358ebef72b3d30d69cc))
+
+
+
+
+
 # [1.82.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.81.1...@bitgo/sdk-api@1.82.0) (2026-06-02)
 
 

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [37.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.4.0...@bitgo/sdk-core@37.4.1) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/sdk-core
+
+
+
+
+
 # [37.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.3.0...@bitgo/sdk-core@37.4.0) (2026-06-02)
 
 

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.7.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-oas@2.7.12...@bitgo/sdk-coin-oas@2.7.13) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-oas
+
+
+
+
+
 ## [2.7.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-oas@2.7.11...@bitgo/sdk-coin-oas@2.7.12) (2026-06-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-oas

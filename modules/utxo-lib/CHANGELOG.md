@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.23.0...@bitgo/utxo-lib@11.24.0) (2026-06-03)
+
+
+### Features
+
+* **utxo-lib:** add ZEC NU6.2 consensus branch id ([216825c](https://github.com/BitGo/BitGoJS/commit/216825c137d2ac614d9403ea1eac65db2dad4cd2))
+
+
+
+
+
 # [11.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.22.1...@bitgo/utxo-lib@11.23.0) (2026-06-02)
 
 
