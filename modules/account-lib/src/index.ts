@@ -122,6 +122,9 @@ export { Asi };
 import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
 
+import * as Solayer from '@bitgo/sdk-coin-solayer';
+export { Solayer };
+
 import * as Ada from '@bitgo/sdk-coin-ada';
 export { Ada };
 

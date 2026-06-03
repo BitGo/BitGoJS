@@ -114,6 +114,7 @@ export enum CoinFamily {
   SEI = 'sei',
   SEIEVM = 'seievm',
   SOL = 'sol',
+  SOLAYER = 'solayer',
   SONIC = 'sonic',
   SONEIUM = 'soneium',
   STARKNET = 'starknet',
@@ -697,6 +698,7 @@ export enum UnderlyingAsset {
   SEIEVM = 'seievm',
   SGB = 'sgb',
   SOL = 'sol',
+  SOLAYER = 'solayer',
   SOMI = 'somi', // Somnia Chain
   SONEIUM = 'soneium',
   SONIC = 'sonic',
@@ -4051,6 +4053,7 @@ export enum BaseUnit {
   TASI = 'atestfet',
   CANTON = 'canton',
   KASPA = 'sompi',
+  SOLAYER = 'lamport',
   STARKNET = 'fri',
   USDC = 'usdc',
 }

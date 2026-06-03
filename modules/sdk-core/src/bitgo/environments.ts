@@ -38,6 +38,7 @@ interface EnvironmentTemplate {
   nearNodeUrls: string[];
   solNodeUrl: string;
   solAlchemyNodeUrl: string;
+  solayerNodeUrl: string;
   adaNodeUrl: string;
   hashNodeUrl: string;
   injNodeUrl: string;
@@ -183,6 +184,7 @@ const mainnetBase: EnvironmentTemplate = {
   nearNodeUrls: ['https://api.fastnear.com'],
   solNodeUrl: 'https://api.mainnet-beta.solana.com',
   solAlchemyNodeUrl: 'https://solana-mainnet.g.alchemy.com/v2',
+  solayerNodeUrl: 'https://mainnet-rpc.solayer.org',
   adaNodeUrl: 'https://api.koios.rest/api/v1',
   hashNodeUrl: 'https://api.provenance.io',
   injNodeUrl: 'https://sentry.lcd.injective.network', // reference https://docs.injective.network/develop/public-endpoints/
@@ -415,6 +417,7 @@ const testnetBase: EnvironmentTemplate = {
   nearNodeUrls: ['https://test.rpc.fastnear.com'],
   solNodeUrl: 'https://api.devnet.solana.com',
   solAlchemyNodeUrl: 'https://solana-devnet.g.alchemy.com/v2',
+  solayerNodeUrl: 'https://devnet-rpc.solayer.org',
   adaNodeUrl: 'https://preprod.koios.rest/api/v1',
   hashNodeUrl: 'https://api.test.provenance.io',
   injNodeUrl: 'https://testnet.sentry.lcd.injective.network', // COIN-1219 : reference  https://docs.injective.network/develop/public-endpoints/#testnet

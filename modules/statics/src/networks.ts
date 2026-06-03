@@ -948,6 +948,18 @@ class SolTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.solana.com/tx/?cluster=devnet';
 }
 
+class SolayerMainnet extends Mainnet implements AccountNetwork {
+  name = 'Solayer';
+  family = CoinFamily.SOLAYER;
+  explorerUrl = 'https://explorer.solayer.org/tx/';
+}
+
+class SolayerTestnet extends Testnet implements AccountNetwork {
+  name = 'SolayerTestnet';
+  family = CoinFamily.SOLAYER;
+  explorerUrl = 'https://explorer.solayer.org/tx/?cluster=devnet';
+}
+
 class StarknetMainnet extends Mainnet implements AccountNetwork {
   name = 'Starknet';
   family = CoinFamily.STARKNET;
@@ -2921,6 +2933,7 @@ export const Networks = {
     seievm: Object.freeze(new SeiEvm()),
     sgb: Object.freeze(new Songbird()),
     sol: Object.freeze(new Sol()),
+    solayer: Object.freeze(new SolayerMainnet()),
     sonic: Object.freeze(new Sonic()),
     starknet: Object.freeze(new StarknetMainnet()),
     sui: Object.freeze(new Sui()),
@@ -3052,6 +3065,7 @@ export const Networks = {
     sei: Object.freeze(new SeiTestnet()),
     seievm: Object.freeze(new SeiEvmTestnet()),
     sol: Object.freeze(new SolTestnet()),
+    solayer: Object.freeze(new SolayerTestnet()),
     starknet: Object.freeze(new StarknetTestnet()),
     sui: Object.freeze(new SuiTestnet()),
     near: Object.freeze(new NearTestnet()),
