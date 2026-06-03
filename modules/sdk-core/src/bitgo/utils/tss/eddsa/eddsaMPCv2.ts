@@ -469,7 +469,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
         ? latestTxRequest.transactions![0].signatureShares
         : latestTxRequest.messages![0].signatureShares;
 
-    const bitgoShareRoundOne = getBitgoSignatureShare(signatureShares1, signerShareType);
+    const bitgoShareRoundOne = getBitgoSignatureShare(signatureShares1, signerShareType, 'round1Output');
     const parsedBitGoToUserSigShareRoundOne = decodeWithCodec(
       EddsaMPCv2SignatureShareRound1Output,
       JSON.parse(bitgoShareRoundOne.share),
@@ -508,7 +508,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
         ? latestTxRequest.transactions![0].signatureShares
         : latestTxRequest.messages![0].signatureShares;
 
-    const bitgoShareRoundTwo = getBitgoSignatureShare(txRequestSignatureShares, signerShareType);
+    const bitgoShareRoundTwo = getBitgoSignatureShare(txRequestSignatureShares, signerShareType, 'round2Output');
     const parsedBitGoToUserSigShareRoundTwo = decodeWithCodec(
       EddsaMPCv2SignatureShareRound2Output,
       JSON.parse(bitgoShareRoundTwo.share),
@@ -649,7 +649,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     const signatureShares = transactions[0].signatureShares;
     assert(signatureShares, 'Missing signature shares in round 1 txRequest');
 
-    const bitgoShareRoundOne = getBitgoSignatureShare(signatureShares, SignatureShareType.USER);
+    const bitgoShareRoundOne = getBitgoSignatureShare(signatureShares, SignatureShareType.USER, 'round1Output');
     const parsedBitGoToUserSigShareRoundOne = decodeWithCodec(
       EddsaMPCv2SignatureShareRound1Output,
       JSON.parse(bitgoShareRoundOne.share),
@@ -754,18 +754,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     const signatureShares = transactions[0].signatureShares;
     assert(signatureShares, 'Missing signature shares in round 2 txRequest');
 
-    const bitgoShareRoundTwo = [...signatureShares].reverse().find((share) => {
-      if (share.from !== SignatureShareType.BITGO || share.to !== SignatureShareType.USER) {
-        return false;
-      }
-
-      try {
-        return JSON.parse(share.share).type === 'round2Output';
-      } catch {
-        return false;
-      }
-    });
-    assert(bitgoShareRoundTwo, 'Missing BitGo round 2 signature share');
+    const bitgoShareRoundTwo = getBitgoSignatureShare(signatureShares, SignatureShareType.USER, 'round2Output');
 
     const parsedBitGoToUserSigShareRoundTwo = decodeWithCodec(
       EddsaMPCv2SignatureShareRound2Output,

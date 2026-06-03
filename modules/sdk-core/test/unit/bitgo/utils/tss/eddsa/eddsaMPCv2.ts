@@ -32,6 +32,7 @@ import {
   verifyPeerMessageRoundOne,
   verifyPeerMessageRoundTwo,
 } from '../../../../../../src/bitgo/tss/eddsa/eddsaMPCv2';
+import { getBitgoSignatureShare } from '../../../../../../src/bitgo/tss/common';
 import { decodeWithCodec } from '../../../../../../src/bitgo/utils/codecs';
 import { generateGPGKeyPair } from '../../../../../../src/bitgo/utils/opengpgUtils';
 import { MPCv2PartiesEnum } from '../../../../../../src/bitgo/utils/tss/ecdsa/typesMPCv2';
@@ -799,7 +800,7 @@ describe('EddsaMPCv2Utils.createOfflineRound2Share', () => {
           encryptedUserGpgPrvKey: round1.encryptedUserGpgPrvKey,
           encryptedRound1Session: round1.encryptedRound1Session,
         }),
-      /Missing BitGo signature share/
+      /Missing BitGo round1Output signature share/
     );
   });
 
@@ -1114,7 +1115,7 @@ describe('EddsaMPCv2Utils.createOfflineRound3Share', () => {
           encryptedUserGpgPrvKey: round1.encryptedUserGpgPrvKey,
           encryptedRound2Session: round2.encryptedRound2Session,
         }),
-      /Missing BitGo round 2 signature share/
+      /Missing BitGo round2Output signature share/
     );
   });
 
@@ -1147,6 +1148,45 @@ describe('EddsaMPCv2Utils.createOfflineRound3Share', () => {
           encryptedRound2Session: round2.encryptedRound2Session,
         }),
       /Unable to find transactions in txRequest/
+    );
+  });
+});
+
+describe('getBitgoSignatureShare', () => {
+  const round1OutputShare: SignatureShareRecord = {
+    from: SignatureShareType.BITGO,
+    to: SignatureShareType.USER,
+    share: JSON.stringify({ type: 'round1Output', data: {} }),
+  };
+  const round2OutputShare: SignatureShareRecord = {
+    from: SignatureShareType.BITGO,
+    to: SignatureShareType.USER,
+    share: JSON.stringify({ type: 'round2Output', data: {} }),
+  };
+
+  it('selects the requested BitGo round output when multiple round outputs are present', () => {
+    const signatureShares = [round1OutputShare, round2OutputShare];
+
+    assert.strictEqual(
+      getBitgoSignatureShare(signatureShares, SignatureShareType.USER, 'round2Output'),
+      round2OutputShare
+    );
+    assert.strictEqual(
+      getBitgoSignatureShare(signatureShares, SignatureShareType.USER, 'round1Output'),
+      round1OutputShare
+    );
+  });
+
+  it('skips malformed share records while selecting the requested BitGo round output', () => {
+    const malformedShare: SignatureShareRecord = {
+      from: SignatureShareType.BITGO,
+      to: SignatureShareType.USER,
+      share: 'not-json',
+    };
+
+    assert.strictEqual(
+      getBitgoSignatureShare([malformedShare, round2OutputShare], SignatureShareType.USER, 'round2Output'),
+      round2OutputShare
     );
   });
 });
