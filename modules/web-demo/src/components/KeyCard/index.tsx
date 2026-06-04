@@ -12,7 +12,7 @@ import {
 
 // Configure pdfjs worker for webpack (must be set before calling extractKeycardEntriesFromPDF)
 GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
+  'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url,
 ).toString();
 
