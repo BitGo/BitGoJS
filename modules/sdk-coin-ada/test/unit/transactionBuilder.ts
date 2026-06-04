@@ -549,4 +549,71 @@ describe('ADA Transaction Builder', async () => {
   //     console.log(err);
   //   }
   // });
+
+  describe('explainTransaction change output marking', () => {
+    it('should mark the change output with change: true for a shelley send tx', async () => {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+      const outputAmount = 7823121;
+      txBuilder.output({
+        address: testData.rawTx.outputAddress1.address,
+        amount: outputAmount.toString(),
+      });
+      const totalInput = 21032023;
+      txBuilder.changeAddress(testData.rawTx.outputAddress2.address, totalInput.toString());
+      txBuilder.ttl(800000000);
+      const tx = (await txBuilder.build()) as Transaction;
+      const explained = tx.explainTransaction();
+      explained.outputs.length.should.equal(2);
+      const recipientOutput = explained.outputs.find((o) => o.address === testData.rawTx.outputAddress1.address);
+      const changeOutput = explained.outputs.find((o) => o.address === testData.rawTx.outputAddress2.address);
+      should.exist(recipientOutput);
+      should.exist(changeOutput);
+      should.not.exist(recipientOutput!.change);
+      changeOutput!.change!.should.be.true();
+    });
+
+    it('should mark the change output with change: true for a byron send tx', async () => {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '1b53331e069a6e58fe77919d30c0cf299d13a2f5b3d9970ce473c1a66d71bf03',
+        transaction_index: 1,
+      });
+      const outputAmount = 200000000;
+      txBuilder.output({
+        address: testData.rawTxByron.outputAddress1.address,
+        amount: outputAmount.toString(),
+      });
+      const totalInput = 999600000;
+      txBuilder.changeAddress(testData.rawTxByron.outputAddress2.address, totalInput.toString());
+      txBuilder.ttl(800000000);
+      const tx = (await txBuilder.build()) as Transaction;
+      const explained = tx.explainTransaction();
+      explained.outputs.length.should.equal(2);
+      const recipientOutput = explained.outputs.find((o) => o.address === testData.rawTxByron.outputAddress1.address);
+      const changeOutput = explained.outputs.find((o) => o.address === testData.rawTxByron.outputAddress2.address);
+      should.exist(recipientOutput);
+      should.exist(changeOutput);
+      should.not.exist(recipientOutput!.change);
+      changeOutput!.change!.should.be.true();
+    });
+
+    it('should not set change on any output when no change address is set (consolidation)', async () => {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+      const totalInput = 20000000;
+      txBuilder.changeAddress(testData.rawTx.outputAddress1.address, totalInput.toString());
+      txBuilder.ttl(800000000);
+      const tx = (await txBuilder.build()) as Transaction;
+      const explained = tx.explainTransaction();
+      explained.outputs.length.should.equal(1);
+      explained.outputs[0].change!.should.be.true();
+    });
+  });
 });

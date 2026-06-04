@@ -227,6 +227,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.setMutableSenderAssetList();
     this.addOutputs(outputs);
     this._transaction.transaction = this.prepareAdaTransactionDraft(inputs, outputs, true);
+    if (this._changeAddress) {
+      this._transaction.changeAddress = this._changeAddress;
+    }
     return this.transaction;
   }
 
@@ -573,6 +576,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
     const finalOutputs = this.buildExplicitOutputsCollection(this._fee);
     this._transaction.transaction = this.prepareAdaTransactionDraft(inputs, finalOutputs, true);
+    if (this._changeAddress) {
+      this._transaction.changeAddress = this._changeAddress;
+    }
     return this.transaction;
   }
 
@@ -924,6 +930,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     });
     witnessSet.set_vkeys(vkeyWitnesses);
     this._transaction.transaction = CardanoWasm.Transaction.new(txRaw, witnessSet);
+    if (this._changeAddress) {
+      this._transaction.changeAddress = this._changeAddress;
+    }
     return this.transaction;
   }
 
