@@ -5,7 +5,6 @@ import * as crypto from 'crypto';
 import { Hash } from 'crypto';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32 } from '@bitgo/utxo-lib';
-import * as sjcl from '@bitgo/sjcl';
 import { BigNumber } from 'bignumber.js';
 import { BaseCoin as StaticsBaseCoin, CoinFeature } from '@bitgo/statics';
 
@@ -645,10 +644,28 @@ export abstract class BaseCoin implements IBaseCoin {
 
   /** @inheritDoc */
   assertIsValidKey(params: AuditKeyParams): void {
+    if (!params.encryptedPrv) {
+      throw new Error('encryptedPrv is required');
+    }
     let decryptedKey: string;
 
     try {
-      decryptedKey = sjcl.decrypt(params.walletPassphrase, params.encryptedPrv);
+      decryptedKey = this.bitgo.decrypt({ password: params.walletPassphrase, input: params.encryptedPrv });
+    } catch (e) {
+      throw new Error(`failed to decrypt prv: ${e.message}`);
+    }
+    this.auditDecryptedKey({ ...params, prv: decryptedKey });
+  }
+
+  /** @inheritDoc */
+  async assertIsValidKeyAsync(params: AuditKeyParams): Promise<void> {
+    if (!params.encryptedPrv) {
+      throw new Error('encryptedPrv is required');
+    }
+    let decryptedKey: string;
+
+    try {
+      decryptedKey = await this.bitgo.decryptAsync({ password: params.walletPassphrase, input: params.encryptedPrv });
     } catch (e) {
       throw new Error(`failed to decrypt prv: ${e.message}`);
     }

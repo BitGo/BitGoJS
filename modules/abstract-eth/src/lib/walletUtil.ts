@@ -45,3 +45,10 @@ export const ERC1155SafeTransferTypes = ['address', 'address', 'uint256', 'uint2
 export const ERC1155BatchTransferTypes = ['address', 'address', 'uint256[]', 'uint256[]', 'bytes'];
 export const createV1ForwarderTypes = ['address', 'bytes32'];
 export const createV4ForwarderTypes = ['address', 'address', 'bytes32'];
+
+// keccak256("confidentialTransfer(address,bytes32,bytes)")[0:4]
+export const confidentialTransferWithProofMethodId = '0x2fb74e62';
+// keccak256("confidentialTransfer(address,bytes32)")[0:4] — for decoding only
+export const confidentialTransferNoProofMethodId = '0x5bebed7e';
+// ABI parameter types for the 3-param version
+export const confidentialTransferWithProofTypes = ['address', 'bytes32', 'bytes'];

@@ -8,6 +8,7 @@ import {
   CoinNames,
   DecryptionDelegationBuilder,
   decodeTokenAddressesFromDelegationCalldata,
+  decodeConfidentialTransferData,
   VerifyEthTransactionOptions,
   aclMulticallMethodId,
   callFromParentMethodId,
@@ -30,7 +31,10 @@ export class Erc7984Token extends Eth {
     const staticsCoin = coins.get(Erc7984Token.coinNames[tokenConfig.network]);
     super(bitgo, staticsCoin);
     this.tokenConfig = tokenConfig;
-    this.sendMethodName = 'sendMultiSigToken';
+    // ERC7984 confidential transfers use sendMultiSig (not sendMultiSigToken) because
+    // the calldata parameter is required to carry confidentialTransfer(recipient, encryptedHandle, inputProof).
+    // sendMultiSigToken has no data parameter and cannot carry inner calldata.
+    this.sendMethodName = 'sendMultiSig';
   }
 
   static createTokenConstructor(config: Erc7984TokenConfig): CoinConstructor {
@@ -126,7 +130,139 @@ export class Erc7984Token extends Eth {
     if (params.txParams?.type === 'enabletoken') {
       return this.verifyEnableTokenTransaction(params);
     }
-    return super.verifyTransaction(params);
+    return this.verifyConfidentialTransfer(params);
+  }
+
+  /**
+   * Verifies a confidential token transfer (SendERC7984) transaction.
+   *
+   * With txHex (multisig second-signer, MPC post-signing):
+   *  1. Decodes the sendMultiSig calldata and checks the inner token contract address.
+   *  2. Requires the decoded recipient to match txParams.recipients[0].address or
+   *     buildParams.recipients[0].address — at least one must be present.
+   *  3. Confirms encryptedHandle and inputProof are structurally present.
+   *  4. Validates txParams.recipients[0].amount is a positive integer and matches
+   *     buildParams.recipients[0].amount when both are present.
+   *
+   * Without txHex (multisig first-signer, MPC pre-signing):
+   *  1. Requires exactly one recipient in txParams.
+   *  2. Validates txParams.recipients[0].address is a valid Ethereum address.
+   *  3. Validates txParams.recipients[0].amount is a positive integer.
+   *  4. Cross-checks address and amount against buildParams when the server has stored the intent.
+   */
+  private async verifyConfidentialTransfer(params: VerifyEthTransactionOptions): Promise<boolean> {
+    const { txParams, txPrebuild } = params;
+
+    if (!txPrebuild?.txHex) {
+      // No raw tx available (multisig first-signer path).
+      // Validate ERC7984-specific invariants from txParams and buildParams.
+      const recipients = txParams?.recipients;
+      if (!recipients || recipients.length === 0) {
+        throw new Error('verifyConfidentialTransfer: recipients must contain at least one entry');
+      }
+      if (recipients.length !== 1) {
+        throw new Error(
+          `verifyConfidentialTransfer: confidential transfers support exactly 1 recipient, got ${recipients.length}`
+        );
+      }
+      const recipient = recipients[0];
+      if (!recipient.address || !this.isValidAddress(recipient.address)) {
+        throw new Error(`verifyConfidentialTransfer: recipient address is missing or invalid: ${recipient.address}`);
+      }
+      const amountStr = String(recipient.amount);
+      if (!Erc7984Token.isPositiveIntegerString(amountStr)) {
+        throw new Error(
+          `verifyConfidentialTransfer: amount must be a positive integer string in base units, got '${amountStr}'`
+        );
+      }
+      // Cross-check against buildParams when the server has already stored the intent
+      const buildParamsRecipient = txPrebuild?.buildParams?.recipients?.[0];
+      if (buildParamsRecipient?.address !== undefined) {
+        if (recipient.address.toLowerCase() !== buildParamsRecipient.address.toLowerCase()) {
+          throw new Error(
+            `verifyConfidentialTransfer: recipient address mismatch — ` +
+              `txParams has '${recipient.address}' but buildParams has '${buildParamsRecipient.address}'`
+          );
+        }
+      }
+      const buildParamsAmount = buildParamsRecipient?.amount;
+      if (buildParamsAmount !== undefined && buildParamsAmount !== amountStr) {
+        throw new Error(
+          `verifyConfidentialTransfer: amount mismatch — txParams has '${amountStr}' but buildParams has '${buildParamsAmount}'`
+        );
+      }
+      return true;
+    }
+
+    // Parse and decode the raw transaction
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txPrebuild.txHex);
+    const tx = await txBuilder.build();
+    const txJson = tx.toJson();
+
+    let decoded: ReturnType<typeof decodeConfidentialTransferData>;
+    try {
+      decoded = decodeConfidentialTransferData(txJson.data);
+    } catch (e) {
+      throw new Error(
+        `verifyConfidentialTransfer: failed to decode confidential transfer calldata — ${(e as Error).message}`
+      );
+    }
+
+    // 1. Token contract address must match this coin
+    if (decoded.tokenContractAddress.toLowerCase() !== this.tokenContractAddress.toLowerCase()) {
+      throw new Error(
+        `verifyConfidentialTransfer: token contract address mismatch — ` +
+          `expected ${this.tokenContractAddress}, got ${decoded.tokenContractAddress}`
+      );
+    }
+
+    // 2. Recipient address must match txParams.recipients[0] or buildParams.recipients[0]
+    const expectedRecipient = txParams?.recipients?.[0]?.address ?? txPrebuild.buildParams?.recipients?.[0]?.address;
+    if (!expectedRecipient) {
+      throw new Error(
+        'verifyConfidentialTransfer: missing expected recipient (provide txParams.recipients or txPrebuild.buildParams.recipients)'
+      );
+    }
+    if (decoded.toAddress.toLowerCase() !== expectedRecipient.toLowerCase()) {
+      throw new Error(
+        `verifyConfidentialTransfer: recipient address mismatch — ` +
+          `expected ${expectedRecipient}, got ${decoded.toAddress}`
+      );
+    }
+
+    // 3. encryptedHandle must be a non-trivial hex value (not bare '0x')
+    if (!decoded.encryptedHandle || decoded.encryptedHandle === '0x') {
+      throw new Error('verifyConfidentialTransfer: encryptedHandle is missing or empty in transaction calldata');
+    }
+
+    // 4. inputProof must be a non-trivial hex value
+    if (!decoded.inputProof || decoded.inputProof === '0x') {
+      throw new Error('verifyConfidentialTransfer: inputProof is missing or empty in transaction calldata');
+    }
+
+    // 5. Verify plaintext intent: txParams amount must be valid and consistent with buildParams
+    const rawTxParamsAmount = txParams?.recipients?.[0]?.amount;
+    if (rawTxParamsAmount !== undefined) {
+      const txParamsAmount = String(rawTxParamsAmount);
+      if (!Erc7984Token.isPositiveIntegerString(txParamsAmount)) {
+        throw new Error(
+          `verifyConfidentialTransfer: amount must be a positive integer string in base units, got '${txParamsAmount}'`
+        );
+      }
+      const buildParamsAmount = txPrebuild.buildParams?.recipients?.[0]?.amount;
+      if (buildParamsAmount !== undefined && txParamsAmount !== buildParamsAmount) {
+        throw new Error(
+          `verifyConfidentialTransfer: amount mismatch — txParams has '${txParamsAmount}' but buildParams has '${buildParamsAmount}'`
+        );
+      }
+    }
+
+    return true;
+  }
+
+  private static isPositiveIntegerString(value: string): boolean {
+    return /^\d+$/.test(value) && BigInt(value) > 0n;
   }
 
   /**

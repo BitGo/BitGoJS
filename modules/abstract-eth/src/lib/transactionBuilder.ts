@@ -45,6 +45,7 @@ import {
 import { defaultWalletVersion, walletSimpleConstructor } from './walletUtil';
 import { ERC1155TransferBuilder } from './transferBuilders/transferBuilderERC1155';
 import { ERC721TransferBuilder } from './transferBuilders/transferBuilderERC721';
+import { TransferBuilderERC7984 } from './transferBuilders/transferBuilderERC7984';
 import { Transaction } from './transaction';
 import { TransferBuilder } from './transferBuilder';
 
@@ -77,7 +78,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _tokenId: string;
 
   // Send and AddressInitialization transaction specific parameters
-  protected _transfer: TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder;
+  protected _transfer: TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder | TransferBuilderERC7984;
   private _contractAddress: string;
   private _contractCounter: number;
   private _forwarderVersion: number;
@@ -143,6 +144,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.Send:
       case TransactionType.SendERC721:
       case TransactionType.SendERC1155:
+      case TransactionType.SendERC7984:
         return this.buildSendTransaction();
       case TransactionType.AddressInitialization:
         return this.buildAddressInitializationTransaction();
@@ -270,6 +272,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.Send:
       case TransactionType.SendERC1155:
       case TransactionType.SendERC721:
+      case TransactionType.SendERC7984:
         this.setContract(transactionJson.to);
         this._transfer = this.transfer(transactionJson.data, isFirstSigner);
         break;
@@ -406,6 +409,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.Send:
       case TransactionType.SendERC721:
       case TransactionType.SendERC1155:
+      case TransactionType.SendERC7984:
         this.validateContractAddress();
         break;
       case TransactionType.AddressInitialization:
@@ -673,12 +677,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @param {string} data transfer data to initialize the transfer builder with, empty if none given
    * @param {boolean} isFirstSigner whether the transaction is being signed by the first signer
-   * @returns {TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder} the transfer builder
+   * @returns {TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder | TransferBuilderERC7984} the transfer builder
    */
   abstract transfer(
     data?: string,
     isFirstSigner?: boolean
-  ): TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder;
+  ): TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder | TransferBuilderERC7984;
 
   /**
    * Returns the serialized sendMultiSig contract method data

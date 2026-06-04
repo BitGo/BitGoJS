@@ -1,5 +1,11 @@
 import { BaseCoin } from './base';
-import { DuplicateCoinDefinitionError, CoinNotDefinedError, DuplicateCoinIdDefinitionError } from './errors';
+import {
+  DuplicateCoinDefinitionError,
+  CoinNotDefinedError,
+  DuplicateCoinIdDefinitionError,
+  DuplicateContractAddressDefinitionError,
+  DuplicateNftCollectionIdDefinitionError,
+} from './errors';
 import { ContractAddressDefinedToken, NFTCollectionIdDefinedToken } from './account';
 import { EthereumNetwork } from './networks';
 
@@ -8,16 +14,24 @@ export class CoinMap {
   private readonly _coinByIds = new Map<string, Readonly<BaseCoin>>();
   // Holds key equivalences used during an asset name migration
   private readonly _coinByAliases = new Map<string, Readonly<BaseCoin>>();
-  // map of coin by address -> the key is the family:contractAddress
+  // map of coin by address -> the key is the family:networkType:contractAddress
   // the family is the where the coin is e.g l1 chains like eth, bsc etc. or l2 like arbeth, celo etc.
   private readonly _coinByContractAddress = new Map<string, Readonly<BaseCoin>>();
-  // map of coin by NFT collection ID -> the key is the (t)family:nftCollectionID
+  // map of coin by NFT collection ID -> the key is the (t)family:networkType:nftCollectionID
   private readonly _coinByNftCollectionID = new Map<string, Readonly<BaseCoin>>();
   // Lazily initialized cache for chainId to coin name mapping (derived from network definitions)
   private _coinByChainId: Map<number, string> | null = null;
 
   private constructor() {
     // Do not instantiate
+  }
+
+  private static contractAddressKey(coin: ContractAddressDefinedToken): string {
+    return `${coin.family}:${coin.network.type}:${coin.contractAddress}`;
+  }
+
+  private static nftCollectionIdKey(coin: NFTCollectionIdDefinedToken): string {
+    return `${coin.prefix}${coin.family}:${coin.network.type}:${coin.nftCollectionId}`;
   }
 
   static fromCoins(coins: Readonly<BaseCoin>[]): CoinMap {
@@ -47,9 +61,19 @@ export class CoinMap {
 
     if (coin.isToken) {
       if (coin instanceof ContractAddressDefinedToken) {
-        this._coinByContractAddress.set(`${coin.family}:${coin.contractAddress}`, coin);
+        const contractAddressKey = CoinMap.contractAddressKey(coin);
+        const existingByContractAddress = this._coinByContractAddress.get(contractAddressKey);
+        if (existingByContractAddress) {
+          throw new DuplicateContractAddressDefinitionError(contractAddressKey, existingByContractAddress.name);
+        }
+        this._coinByContractAddress.set(contractAddressKey, coin);
       } else if (coin instanceof NFTCollectionIdDefinedToken) {
-        this._coinByNftCollectionID.set(`${coin.prefix}${coin.family}:${coin.nftCollectionId}`, coin);
+        const nftCollectionKey = CoinMap.nftCollectionIdKey(coin);
+        const existingByNftCollectionId = this._coinByNftCollectionID.get(nftCollectionKey);
+        if (existingByNftCollectionId) {
+          throw new DuplicateNftCollectionIdDefinitionError(nftCollectionKey, existingByNftCollectionId.name);
+        }
+        this._coinByNftCollectionID.set(nftCollectionKey, coin);
       }
     }
   }
@@ -69,9 +93,9 @@ export class CoinMap {
       }
       if (oldCoin.isToken) {
         if (oldCoin instanceof ContractAddressDefinedToken) {
-          this._coinByContractAddress.delete(`${oldCoin.family}:${oldCoin.contractAddress}`);
+          this._coinByContractAddress.delete(CoinMap.contractAddressKey(oldCoin));
         } else if (oldCoin instanceof NFTCollectionIdDefinedToken) {
-          this._coinByNftCollectionID.delete(`${oldCoin.prefix}${oldCoin.family}:${oldCoin.nftCollectionId}`);
+          this._coinByNftCollectionID.delete(CoinMap.nftCollectionIdKey(oldCoin));
         }
       }
     }

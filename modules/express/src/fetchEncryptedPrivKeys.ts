@@ -77,7 +77,7 @@ export async function fetchKeys(ids: WalletIds, token: string, accessToken?: str
 
       if (keychain.encryptedPrv === undefined) {
         if (typeof credential === 'object') {
-          const encryptedPrv = bg.encrypt({ password: credential.walletPassword, input: credential.secret });
+          const encryptedPrv = await bg.encryptAsync({ password: credential.walletPassword, input: credential.secret });
           output[id] = encryptedPrv;
         } else {
           console.warn(`could not find a ${coinName} encrypted user private key for wallet id ${id}, skipping`);

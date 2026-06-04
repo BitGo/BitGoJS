@@ -18,6 +18,7 @@ import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
 import { IGoStakingWallet, IStakingWallet } from '../staking';
 import { ITradingAccount } from '../trading';
 import {
+  CantonCommandParams,
   CustomCommitmentGeneratingFunction,
   CustomEddsaMPCv2SigningRound1GeneratingFunction,
   CustomEddsaMPCv2SigningRound2GeneratingFunction,
@@ -291,6 +292,10 @@ export interface PrebuildTransactionOptions {
    * Used with type: 'bridging' for cross-chain bridging operations.
    */
   bridgingParams?: BridgingParams;
+  /**
+   * Parameters for executing DAML commands on Canton.
+   */
+  cantonCommandParams?: CantonCommandParams;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {

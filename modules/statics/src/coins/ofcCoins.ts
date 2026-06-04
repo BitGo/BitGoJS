@@ -594,6 +594,15 @@ export const ofcCoins = [
   ),
   ofc('06f28a2c-8a52-41d8-a404-e8e82e81bea5', 'ofcflow', 'Flow', 18, UnderlyingAsset.FLOW, CoinKind.CRYPTO),
   tofc('3c964b1b-4ace-4730-a307-4a9d90d98f6d', 'ofctflow', 'Testnet Flow', 18, UnderlyingAsset.FLOW, CoinKind.CRYPTO),
+  ofc('b8295034-e9a3-4890-ba92-9646e877ce02', 'ofchbarevm', 'Hedera EVM', 18, UnderlyingAsset.HBAREVM, CoinKind.CRYPTO),
+  tofc(
+    '9b7f4183-5508-47f3-852c-e29e9b30eb64',
+    'ofcthbarevm',
+    'Testnet Hedera EVM',
+    18,
+    UnderlyingAsset.HBAREVM,
+    CoinKind.CRYPTO
+  ),
   ofc('32b87bea-ba5f-4cab-9516-647b1fba9ea2', 'ofcxpl', 'Plasma', 18, UnderlyingAsset.XPL, CoinKind.CRYPTO),
   tofc('7783b655-1d01-4c99-b35f-1525d9a1d191', 'ofctxpl', 'Plasma Testnet', 18, UnderlyingAsset.XPL, CoinKind.CRYPTO),
   ofc('1876cf96-a0b7-4b7b-9024-6bd89df9814b', 'ofcflr', 'Flare', 18, UnderlyingAsset.FLR, CoinKind.CRYPTO),
