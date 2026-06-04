@@ -11,7 +11,10 @@ import {
 } from '@components/KeyCard/fixtures';
 
 // Configure pdfjs worker for webpack (must be set before calling extractKeycardEntriesFromPDF)
-GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
+GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url,
+).toString();
 
 const KeyCard = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -74,7 +77,9 @@ const KeyCard = () => {
 
       <hr />
       <h3>Parse Keycard from PDF</h3>
-      <p>Upload a BitGo keycard PDF to extract and inspect its sections (A–D).</p>
+      <p>
+        Upload a BitGo keycard PDF to extract and inspect its sections (A–D).
+      </p>
       <input
         ref={fileInputRef}
         type="file"
@@ -85,20 +90,54 @@ const KeyCard = () => {
       {isLoading && <p>Parsing PDF…</p>}
       {error && <p style={{ color: 'red' }}>Error: {error}</p>}
       {entries && entries.length > 0 && (
-        <table style={{ marginTop: '1em', borderCollapse: 'collapse', width: '100%' }}>
+        <table
+          style={{
+            marginTop: '1em',
+            borderCollapse: 'collapse',
+            width: '100%',
+          }}
+        >
           <thead>
             <tr>
-              <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>Section</th>
-              <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>Value</th>
+              <th
+                style={{
+                  textAlign: 'left',
+                  padding: '4px 8px',
+                  borderBottom: '1px solid #ccc',
+                }}
+              >
+                Section
+              </th>
+              <th
+                style={{
+                  textAlign: 'left',
+                  padding: '4px 8px',
+                  borderBottom: '1px solid #ccc',
+                }}
+              >
+                Value
+              </th>
             </tr>
           </thead>
           <tbody>
             {entries.map((entry) => (
               <tr key={entry.label}>
-                <td style={{ padding: '4px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
+                <td
+                  style={{
+                    padding: '4px 8px',
+                    verticalAlign: 'top',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   <strong>{entry.label}</strong>
                 </td>
-                <td style={{ padding: '4px 8px', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                <td
+                  style={{
+                    padding: '4px 8px',
+                    fontFamily: 'monospace',
+                    wordBreak: 'break-all',
+                  }}
+                >
                   {entry.value}
                 </td>
               </tr>
