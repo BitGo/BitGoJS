@@ -44,17 +44,17 @@ export function encrypt(
 
 /**
  * Async encrypt that dispatches to v1 (SJCL) or v2 (Argon2id + AES-256-GCM)
- * when `encryptionVersion` is 2. Defaults to v2.
+ * when `encryptionVersion` is 2. Defaults to v1, matching sync `encrypt()`.
  */
 export async function encryptAsync(
   password: string,
   plaintext: string,
   options?: { salt?: Buffer; iv?: Buffer; adata?: string; encryptionVersion?: 1 | 2 }
 ): Promise<string> {
-  if (options?.encryptionVersion === 1) {
-    return encrypt(password, plaintext, options);
+  if (options?.encryptionVersion === 2) {
+    return encryptV2(password, plaintext, { adata: options.adata });
   }
-  return encryptV2(password, plaintext, { adata: options?.adata });
+  return encrypt(password, plaintext, options);
 }
 
 /** Decrypt a v1 SJCL envelope. */
