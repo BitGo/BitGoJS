@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.84.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.83.0...@bitgo/sdk-api@1.84.0) (2026-06-04)
+
+
+### Features
+
+* default encryptAsync to v2 ([32b5688](https://github.com/BitGo/BitGoJS/commit/32b5688996f20ce8aedbfdf1d2ddf3d006212f07))
+* migrate remaining sync decrypt/encrypt calls ([a52f1ae](https://github.com/BitGo/BitGoJS/commit/a52f1ae2a177c1fc02c82ff254cd08ed90760f16))
+
+
+
+
+
 # [1.83.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.82.0...@bitgo/sdk-api@1.83.0) (2026-06-03)
 
 

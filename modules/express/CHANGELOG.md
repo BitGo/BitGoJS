@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.33.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.32.0...@bitgo/express@15.33.0) (2026-06-04)
+
+
+### Features
+
+* migrate remaining sync decrypt/encrypt calls ([a52f1ae](https://github.com/BitGo/BitGoJS/commit/a52f1ae2a177c1fc02c82ff254cd08ed90760f16))
+
+
+
+
+
 # [15.32.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.31.0...@bitgo/express@15.32.0) (2026-06-03)
 
 

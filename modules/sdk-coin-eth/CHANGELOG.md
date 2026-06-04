@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.11.3...@bitgo/sdk-coin-eth@25.12.0) (2026-06-04)
+
+
+### Bug Fixes
+
+* **abstract-eth:** fix verifyTransaction for base multig address during enable token flow ([a82b334](https://github.com/BitGo/BitGoJS/commit/a82b3349dc7ec6fe5023736dc86a6141a1229de8))
+
+
+### Features
+
+* migrate remaining sync decrypt/encrypt calls ([a52f1ae](https://github.com/BitGo/BitGoJS/commit/a52f1ae2a177c1fc02c82ff254cd08ed90760f16))
+* **sdk-coin-eth:** add zama token withdrawal support ([d5f0c0c](https://github.com/BitGo/BitGoJS/commit/d5f0c0c56e07f6c7770ba8561e894b5a8a2da2e8))
+
+
+
+
+
 ## [25.11.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.11.2...@bitgo/sdk-coin-eth@25.11.3) (2026-06-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

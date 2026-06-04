@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [37.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.4.1...@bitgo/sdk-core@37.5.0) (2026-06-04)
+
+
+### Features
+
+* add cantonCommand intent to prebuild ([1d8f0da](https://github.com/BitGo/BitGoJS/commit/1d8f0da5d79581f5586204e17939b421b53f1a10))
+* migrate remaining sync decrypt/encrypt calls ([a52f1ae](https://github.com/BitGo/BitGoJS/commit/a52f1ae2a177c1fc02c82ff254cd08ed90760f16))
+* **sdk-coin-eth:** add zama token withdrawal support ([d5f0c0c](https://github.com/BitGo/BitGoJS/commit/d5f0c0c56e07f6c7770ba8561e894b5a8a2da2e8))
+
+
+
+
+
 ## [37.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.4.0...@bitgo/sdk-core@37.4.1) (2026-06-03)
 
 **Note:** Version bump only for package @bitgo/sdk-core

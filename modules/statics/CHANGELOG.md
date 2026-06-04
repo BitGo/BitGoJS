@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.46.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.45.0...@bitgo/statics@58.46.0) (2026-06-04)
+
+
+### Bug Fixes
+
+* **statics:** reject duplicate contract address and NFT index keys in CoinMap ([a61f795](https://github.com/BitGo/BitGoJS/commit/a61f79586171a6c3411547ef7109d3c4a5855c6f))
+
+
+### Features
+
+* add hbarevm ofc coins ([b54d738](https://github.com/BitGo/BitGoJS/commit/b54d7382404578e1303295201e799da8953d75d3))
+
+
+
+
+
 # [58.45.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.44.0...@bitgo/statics@58.45.0) (2026-06-03)
 
 
