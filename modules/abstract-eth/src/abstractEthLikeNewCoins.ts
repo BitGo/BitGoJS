@@ -3362,7 +3362,22 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
           [{ address: txPrebuild.recipients[0].address, amount: txPrebuild.recipients[0].amount.toString() }]
         );
       }
-      if (this.isETHAddress(recipients[0].address) && recipients[0].address !== txPrebuild.recipients[0].address) {
+      // For ERC-7984 token enablement on multisig base-address wallets, the client provides
+      // txParams.recipients[0].address = wallet base address (its own address), but the
+      // constructed transaction targets the Zama ACL contract for decryption delegation.
+      // In this case the address mismatch is intentional — skip the equality check and
+      // instead confirm that txPrebuild targets the ACL contract configured for this network.
+      const zamaAclContractAddress = (ethNetwork as EthLikeNetwork)?.zamaAclContractAddress;
+      const isZamaEnableTokenDelegation =
+        txParams.type === 'enabletoken' &&
+        !!zamaAclContractAddress &&
+        txPrebuild.recipients[0].address.toLowerCase() === zamaAclContractAddress.toLowerCase();
+
+      if (
+        !isZamaEnableTokenDelegation &&
+        this.isETHAddress(recipients[0].address) &&
+        recipients[0].address !== txPrebuild.recipients[0].address
+      ) {
         await throwRecipientMismatch(
           'destination address in normal txPrebuild does not match that in txParams supplied by client',
           [{ address: txPrebuild.recipients[0].address, amount: txPrebuild.recipients[0].amount.toString() }]
