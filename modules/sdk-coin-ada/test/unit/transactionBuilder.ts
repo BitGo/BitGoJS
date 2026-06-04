@@ -549,4 +549,66 @@ describe('ADA Transaction Builder', async () => {
   //     console.log(err);
   //   }
   // });
+
+  describe('explainTransaction change output marking', () => {
+    it('should mark the change output with change: true in explainTransaction', async () => {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+      const outputAmount = 7823121;
+      txBuilder.output({
+        address: testData.rawTx.outputAddress1.address,
+        amount: outputAmount.toString(),
+      });
+      const changeAddr = testData.rawTx.outputAddress2.address;
+      const totalInput = 21032023;
+      txBuilder.changeAddress(changeAddr, totalInput.toString());
+      txBuilder.ttl(800000000);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const explained = tx.explainTransaction();
+
+      const changeOutputs = explained.outputs.filter((o) => o.change === true);
+      const nonChangeOutputs = explained.outputs.filter((o) => !o.change);
+
+      changeOutputs.length.should.equal(1);
+      changeOutputs[0].address.should.equal(changeAddr);
+      nonChangeOutputs.length.should.equal(1);
+      nonChangeOutputs[0].address.should.equal(testData.rawTx.outputAddress1.address);
+    });
+
+    it('should not mark any output as change when no changeAddress is set', async () => {
+      const preBuiltTx = new Transaction(coins.get('tada'));
+      preBuiltTx.fromRawTransaction(testData.rawTx.unsignedTx2);
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.initBuilder(preBuiltTx);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const explained = tx.explainTransaction();
+
+      const changeOutputs = explained.outputs.filter((o) => o.change === true);
+      changeOutputs.length.should.equal(0);
+    });
+
+    it('should mark consolidation output with change: true when changeAddress matches the single output', async () => {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+      const changeAddr = testData.rawTx.outputAddress1.address;
+      const totalInput = 20000000;
+      txBuilder.changeAddress(changeAddr, totalInput.toString());
+      txBuilder.ttl(800000000);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const explained = tx.explainTransaction();
+
+      const changeOutputs = explained.outputs.filter((o) => o.change === true);
+      changeOutputs.length.should.equal(1);
+      changeOutputs[0].address.should.equal(changeAddr);
+    });
+  });
 });

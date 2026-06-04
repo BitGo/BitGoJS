@@ -54,6 +54,7 @@ export interface AdaTxInfo {
 
 export interface ExplainTransactionOptions {
   txPrebuild: TransactionPrebuild;
+  changeAddress?: string;
 }
 
 export interface AdaParseTransactionOptions extends BaseParseTransactionOptions {
@@ -204,14 +205,18 @@ export class Ada extends BaseCoin {
    */
   async explainTransaction(params: ExplainTransactionOptions): Promise<AdaTransactionExplanation> {
     const factory = this.getBuilder();
-    let rebuiltTransaction: BaseTransaction;
+    let rebuiltTransaction: Transaction;
     const txRaw = params.txPrebuild.txHex;
 
     try {
       const transactionBuilder = factory.from(txRaw);
-      rebuiltTransaction = await transactionBuilder.build();
+      rebuiltTransaction = (await transactionBuilder.build()) as Transaction;
     } catch {
       throw new Error('Invalid transaction');
+    }
+
+    if (params.changeAddress) {
+      rebuiltTransaction.changeAddress = params.changeAddress;
     }
 
     return rebuiltTransaction.explainTransaction() as unknown as AdaTransactionExplanation;

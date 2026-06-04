@@ -101,6 +101,11 @@ export class Transaction extends BaseTransaction {
   private _transaction: CardanoWasm.Transaction;
   private _fee: string;
   private _pledgeDetails?: PledgeDetails;
+  private _changeAddress?: string;
+
+  set changeAddress(address: string) {
+    this._changeAddress = address;
+  }
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -426,10 +431,12 @@ export class Transaction extends BaseTransaction {
       id: txJson.id,
       outputs: txJson.outputs.map((o) => {
         const multiAssets = Transaction.parseMultiAssets(o.multiAssets as CardanoWasm.MultiAsset | undefined);
+        const isChange = this._changeAddress !== undefined && o.address === this._changeAddress;
         return {
           address: o.address,
           amount: o.amount,
           ...(multiAssets && { multiAssets }),
+          ...(isChange && { change: true }),
         };
       }),
       outputAmount: outputAmount,
