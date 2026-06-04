@@ -2647,4 +2647,171 @@ describe('ETH:', function () {
       assert.strictEqual(payload.length, 32);
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // ERC-7984 token enablement — multisig verifyTransaction (all scenarios)
+  // ---------------------------------------------------------------------------
+  describe('verifyTransaction – ERC-7984 enabletoken (multisig wallet)', function () {
+    // hteth Zama ACL contract (Networks.test.hoodi.zamaAclContractAddress)
+    const ZAMA_ACL_ADDRESS = '0x6d3faf6f86e1ff9f3b0831dda920aba1cbd5bd68';
+    // Simulated wallet base address (what the client sends as the recipient for base-address wallets)
+    const WALLET_BASE_ADDRESS = '0x08e6736e876d772d2fa8f803a076cd6c9f845546';
+    // Simulated forwarder address (what the client sends as recipient for forwarder wallets)
+    const FORWARDER_ADDRESS = '0x1234567890123456789012345678901234567890';
+    const WRONG_ADDRESS = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+
+    const makePrebuild = (recipientAddress: string) => ({
+      recipients: [{ address: recipientAddress, amount: '0' }],
+      nextContractSequenceId: 0,
+      gasPrice: 20000000000,
+      gasLimit: 300000,
+      isBatch: false,
+      coin: 'hteth',
+      walletId: 'fakeWalletId',
+    });
+
+    // ── Base-address wallet ──────────────────────────────────────────────────
+
+    it('base-address, single token: txParams → walletBase, txPrebuild → ACL', async function () {
+      const htethCoin = bitgo.coin('hteth') as Hteth;
+      const wallet = new Wallet(bitgo, htethCoin, { coinSpecific: { baseAddress: WALLET_BASE_ADDRESS } });
+
+      const result = await htethCoin.verifyTransaction({
+        txParams: {
+          type: 'enabletoken',
+          recipients: [{ address: WALLET_BASE_ADDRESS, amount: '0', tokenName: 'hteth:ctest1' }],
+        } as any,
+        txPrebuild: makePrebuild(ZAMA_ACL_ADDRESS) as any,
+        wallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('base-address, multi-token: multiple txParams recipients (same base address), txPrebuild → ACL multicall', async function () {
+      const htethCoin = bitgo.coin('hteth') as Hteth;
+      const wallet = new Wallet(bitgo, htethCoin, { coinSpecific: { baseAddress: WALLET_BASE_ADDRESS } });
+
+      const result = await htethCoin.verifyTransaction({
+        txParams: {
+          type: 'enabletoken',
+          recipients: [
+            { address: WALLET_BASE_ADDRESS, amount: '0', tokenName: 'hteth:ctest1' },
+            { address: WALLET_BASE_ADDRESS, amount: '0', tokenName: 'hteth:cusdt' },
+          ],
+        } as any,
+        txPrebuild: makePrebuild(ZAMA_ACL_ADDRESS) as any,
+        wallet,
+      });
+      result.should.equal(true);
+    });
+
+    // ── Forwarder wallet ─────────────────────────────────────────────────────
+
+    it('forwarder, single token: txParams → forwarder, txPrebuild → forwarder', async function () {
+      const htethCoin = bitgo.coin('hteth') as Hteth;
+      const wallet = new Wallet(bitgo, htethCoin, { coinSpecific: { baseAddress: WALLET_BASE_ADDRESS } });
+
+      const result = await htethCoin.verifyTransaction({
+        txParams: {
+          type: 'enabletoken',
+          recipients: [{ address: FORWARDER_ADDRESS, amount: '0', tokenName: 'hteth:ctest1' }],
+        } as any,
+        txPrebuild: makePrebuild(FORWARDER_ADDRESS) as any,
+        wallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('forwarder, multi-token: multiple txParams recipients (same forwarder), txPrebuild → forwarder', async function () {
+      const htethCoin = bitgo.coin('hteth') as Hteth;
+      const wallet = new Wallet(bitgo, htethCoin, { coinSpecific: { baseAddress: WALLET_BASE_ADDRESS } });
+
+      const result = await htethCoin.verifyTransaction({
+        txParams: {
+          type: 'enabletoken',
+          recipients: [
+            { address: FORWARDER_ADDRESS, amount: '0', tokenName: 'hteth:ctest1' },
+            { address: FORWARDER_ADDRESS, amount: '0', tokenName: 'hteth:cusdt' },
+          ],
+        } as any,
+        txPrebuild: makePrebuild(FORWARDER_ADDRESS) as any,
+        wallet,
+      });
+      result.should.equal(true);
+    });
+
+    // ── Negative cases ───────────────────────────────────────────────────────
+
+    it('should throw when txPrebuild recipient is neither the ACL contract nor the forwarder from txParams', async function () {
+      const htethCoin = bitgo.coin('hteth') as Hteth;
+      const wallet = new Wallet(bitgo, htethCoin, { coinSpecific: { baseAddress: WALLET_BASE_ADDRESS } });
+
+      await htethCoin
+        .verifyTransaction({
+          txParams: {
+            type: 'enabletoken',
+            recipients: [{ address: WALLET_BASE_ADDRESS, amount: '0', tokenName: 'hteth:ctest1' }],
+          } as any,
+          txPrebuild: makePrebuild(WRONG_ADDRESS) as any,
+          wallet,
+        })
+        .should.be.rejectedWith(/token enablement txPrebuild recipient must be/);
+    });
+
+    it('should throw when txParams recipients have different addresses', async function () {
+      const htethCoin = bitgo.coin('hteth') as Hteth;
+      const wallet = new Wallet(bitgo, htethCoin, { coinSpecific: { baseAddress: WALLET_BASE_ADDRESS } });
+
+      await htethCoin
+        .verifyTransaction({
+          txParams: {
+            type: 'enabletoken',
+            recipients: [
+              { address: WALLET_BASE_ADDRESS, amount: '0', tokenName: 'hteth:ctest1' },
+              { address: FORWARDER_ADDRESS, amount: '0', tokenName: 'hteth:cusdt' },
+            ],
+          } as any,
+          txPrebuild: makePrebuild(ZAMA_ACL_ADDRESS) as any,
+          wallet,
+        })
+        .should.be.rejectedWith(/must all have the same address/);
+    });
+
+    it('should throw when a txParams recipient has non-zero amount', async function () {
+      const htethCoin = bitgo.coin('hteth') as Hteth;
+      const wallet = new Wallet(bitgo, htethCoin, { coinSpecific: { baseAddress: WALLET_BASE_ADDRESS } });
+
+      await htethCoin
+        .verifyTransaction({
+          txParams: {
+            type: 'enabletoken',
+            recipients: [{ address: WALLET_BASE_ADDRESS, amount: '100', tokenName: 'hteth:ctest1' }],
+          } as any,
+          txPrebuild: makePrebuild(ZAMA_ACL_ADDRESS) as any,
+          wallet,
+        })
+        .should.be.rejectedWith(/must all have amount 0/);
+    });
+
+    it('should throw when txPrebuild recipient has non-zero amount', async function () {
+      const htethCoin = bitgo.coin('hteth') as Hteth;
+      const wallet = new Wallet(bitgo, htethCoin, { coinSpecific: { baseAddress: WALLET_BASE_ADDRESS } });
+
+      await htethCoin
+        .verifyTransaction({
+          txParams: {
+            type: 'enabletoken',
+            recipients: [{ address: WALLET_BASE_ADDRESS, amount: '0', tokenName: 'hteth:ctest1' }],
+          } as any,
+          txPrebuild: {
+            recipients: [{ address: ZAMA_ACL_ADDRESS, amount: '500' }],
+            nextContractSequenceId: 0,
+            coin: 'hteth',
+            walletId: 'fakeWalletId',
+          } as any,
+          wallet,
+        })
+        .should.be.rejectedWith(/expected amount 0 in txPrebuild/);
+    });
+  });
 });

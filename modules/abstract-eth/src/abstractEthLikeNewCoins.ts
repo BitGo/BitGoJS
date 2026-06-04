@@ -3289,7 +3289,12 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
       );
     }
-    if (txParams.hop && txPrebuild.hopTransaction) {
+    if (txParams.type === 'enabletoken') {
+      // ERC-7984 token enablement: intercept before hop/batch/single routing.
+      // Handles both base-address (txPrebuild → ACL) and forwarder (txPrebuild → forwarder) wallets,
+      // for single or multiple tokens at once.
+      await this.verifyMultisigEnableTokenTransaction(params, throwRecipientMismatch);
+    } else if (txParams.hop && txPrebuild.hopTransaction) {
       // Check recipient amount for hop transaction
       if (recipients.length !== 1) {
         throw new Error(`hop transaction only supports 1 recipient but ${recipients.length} found`);
@@ -3388,6 +3393,80 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param address
    * @returns {boolean}
    */
+  /**
+   * Verifies an ERC-7984 token enablement (decryption delegation) transaction for multisig wallets.
+   *
+   * Two wallet shapes are supported:
+   *
+   *  Base-address wallet — txPrebuild targets the Zama ACL contract directly:
+   *    txParams.recipients  : one entry per token, all with the wallet base address, amount '0'
+   *    txPrebuild.recipients[0] : the Zama ACL contract address
+   *
+   *  Forwarder wallet — txPrebuild targets the forwarder which calls the ACL via callFromParent:
+   *    txParams.recipients  : one entry per token, all with the forwarder address, amount '0'
+   *    txPrebuild.recipients[0] : the forwarder address (matches txParams recipients)
+   *
+   * In both cases all amounts must be 0 and all txParams recipients must share the same address.
+   */
+  private async verifyMultisigEnableTokenTransaction(
+    params: VerifyEthTransactionOptions,
+    throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
+  ): Promise<void> {
+    const { txParams, txPrebuild } = params;
+    const recipients = txParams.recipients!;
+
+    if (!recipients || recipients.length === 0) {
+      throw new Error('token enablement transaction must have at least one recipient in txParams');
+    }
+
+    // All txParams recipients must have amount 0
+    for (const r of recipients) {
+      if (!new BigNumber(r.amount).isEqualTo(0)) {
+        await throwRecipientMismatch('token enablement txParams recipients must all have amount 0', [
+          { address: r.address, amount: String(r.amount) },
+        ]);
+      }
+    }
+
+    // txPrebuild recipient amount must be 0
+    if (!new BigNumber(txPrebuild.recipients[0].amount).isEqualTo(0)) {
+      await throwRecipientMismatch('token enablement transaction expected amount 0 in txPrebuild', [
+        { address: txPrebuild.recipients[0].address, amount: txPrebuild.recipients[0].amount.toString() },
+      ]);
+    }
+
+    // All txParams recipients must share the same address —
+    // a single delegation tx covers one wallet, not multiple wallets simultaneously.
+    const firstAddress = recipients[0].address.toLowerCase();
+    for (const r of recipients) {
+      if (r.address.toLowerCase() !== firstAddress) {
+        await throwRecipientMismatch('token enablement txParams recipients must all have the same address', [
+          { address: r.address, amount: String(r.amount) },
+        ]);
+      }
+    }
+
+    const prebuildAddress = txPrebuild.recipients[0].address.toLowerCase();
+    const zamaAclContractAddress = (this.getNetwork() as EthLikeNetwork)?.zamaAclContractAddress;
+
+    // Base-address wallet: txPrebuild targets the Zama ACL contract directly.
+    // txParams recipients carry the wallet base address — the intentional address mismatch is expected.
+    if (zamaAclContractAddress && prebuildAddress === zamaAclContractAddress.toLowerCase()) {
+      return;
+    }
+
+    // Forwarder wallet: txPrebuild targets the forwarder address, which must match txParams recipients.
+    if (prebuildAddress === firstAddress) {
+      return;
+    }
+
+    // Neither recognised shape — txPrebuild address is not the ACL contract and doesn't match txParams
+    await throwRecipientMismatch(
+      'token enablement txPrebuild recipient must be the Zama ACL contract (base-address wallet) or match txParams recipients (forwarder wallet)',
+      [{ address: txPrebuild.recipients[0].address, amount: txPrebuild.recipients[0].amount.toString() }]
+    );
+  }
+
   private isETHAddress(address: string): boolean {
     return !!address.match(/0x[a-fA-F0-9]{40}/);
   }
