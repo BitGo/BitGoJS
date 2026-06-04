@@ -4292,6 +4292,23 @@ export class Wallet implements IWallet {
         );
         break;
       }
+      case 'cantonCommand': {
+        if (!params.cantonCommandParams) {
+          throw new Error('cantonCommandParams is required for cantonCommand intent');
+        }
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'cantonCommand',
+            cantonCommandParams: params.cantonCommandParams,
+            sequenceId: params.sequenceId,
+            comment: params.comment,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
       case 'customTx':
         txRequest = await this.tssUtils!.prebuildTxWithIntent(
           {
