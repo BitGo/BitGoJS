@@ -148,6 +148,8 @@ export enum TransactionType {
   SendMPT,
   // Delegate decryption access for Zama ERC-7984 confidential tokens via ACL contract
   DecryptionDelegation,
+  // Send ERC-7984 confidential tokens via encrypted transfer
+  SendERC7984,
 }
 
 /**

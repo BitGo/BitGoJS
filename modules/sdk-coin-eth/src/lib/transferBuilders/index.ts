@@ -1,3 +1,8 @@
-import { BaseNFTTransferBuilder, ERC721TransferBuilder, ERC1155TransferBuilder } from '@bitgo/abstract-eth';
+import {
+  BaseNFTTransferBuilder,
+  ERC721TransferBuilder,
+  ERC1155TransferBuilder,
+  TransferBuilderERC7984,
+} from '@bitgo/abstract-eth';
 
-export { BaseNFTTransferBuilder, ERC721TransferBuilder, ERC1155TransferBuilder };
+export { BaseNFTTransferBuilder, ERC721TransferBuilder, ERC1155TransferBuilder, TransferBuilderERC7984 };
