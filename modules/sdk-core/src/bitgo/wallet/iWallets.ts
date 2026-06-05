@@ -63,6 +63,19 @@ export interface GenerateSMCMpcWalletOptions extends GenerateBaseMpcWalletOption
   coldDerivationSeed?: string;
 }
 
+export interface CreateKeychainCallbackParams {
+  source: 'user' | 'backup';
+  coin: string;
+}
+
+export interface CreateKeychainCallbackResult {
+  pub: string;
+  type: string;
+  source: string;
+}
+
+export type CreateKeychainCallback = (params: CreateKeychainCallbackParams) => Promise<CreateKeychainCallbackResult>;
+
 export interface GenerateWalletOptions {
   label?: string;
   passphrase?: string;
@@ -95,6 +108,14 @@ export interface GenerateWalletOptions {
   /** Optional WebAuthn PRF-based encryption info. When provided, the user private key is additionally encrypted with the PRF-derived passphrase so the server can store a WebAuthn-protected copy. */
   webauthnInfo?: WebauthnKeyEncryptionInfo;
   encryptionVersion?: EncryptionVersion;
+  /** Delegates user/backup key creation to an external signer (onchain multisig only). */
+  createKeychainCallback?: CreateKeychainCallback;
+}
+
+export interface GenerateWalletWithExternalSignerOptions
+  extends Omit<GenerateWalletOptions, 'passphrase' | 'userKey' | 'backupXpub' | 'backupXpubProvider'> {
+  label: string;
+  createKeychainCallback: CreateKeychainCallback;
 }
 
 export const GenerateLightningWalletOptionsCodec = t.intersection(
@@ -281,6 +302,7 @@ export interface IWallets {
   generateWallet(
     params?: GenerateWalletOptions
   ): Promise<WalletWithKeychains | LightningWalletWithKeychains | GoAccountWalletWithUserKeychain>;
+  generateWalletWithExternalSigner(params: GenerateWalletWithExternalSignerOptions): Promise<WalletWithKeychains>;
   listShares(params?: Record<string, unknown>): Promise<any>;
   getShare(params?: { walletShareId?: string }): Promise<any>;
   updateShare(params?: UpdateShareOptions): Promise<any>;
