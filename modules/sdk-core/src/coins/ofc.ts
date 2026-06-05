@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { randomBytes } from 'crypto';
+import { createPublicKey, randomBytes } from 'crypto';
 import { bip32 } from '@bitgo/utxo-lib';
 import {
   AuditDecryptedKeyParams,
@@ -70,12 +70,26 @@ export class Ofc extends BaseCoin {
   /**
    * Return boolean indicating whether input is valid public key for the coin.
    *
+   * OFC wallets hold keys in two formats: the user key is a BIP-32 base58 xpub,
+   * and the BitGo key (source: 'bitgo') is a base64-encoded SPKI (DER-wrapped)
+   * secp256k1 public key. Both are valid.
+   *
    * @param {String} pub the pub to be checked
    * @returns {Boolean} is it valid?
    */
   isValidPub(pub: string): boolean {
+    // BIP-32 base58 xpub (user key)
     try {
-      return bip32.fromBase58(pub).isNeutered();
+      if (bip32.fromBase58(pub).isNeutered()) {
+        return true;
+      }
+    } catch (e) {
+      // not a BIP-32 key; fall through to the SPKI check
+    }
+    // base64-encoded SPKI DER secp256k1 public key (BitGo key)
+    try {
+      const key = createPublicKey({ key: Buffer.from(pub, 'base64'), format: 'der', type: 'spki' });
+      return key.asymmetricKeyType === 'ec' && key.asymmetricKeyDetails?.namedCurve === 'secp256k1';
     } catch (e) {
       return false;
     }
