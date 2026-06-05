@@ -1252,6 +1252,52 @@ describe('create token map using config details', () => {
     tokenMap.has('hteth:faketoken').should.eql(false);
   });
 
+  it('should skip an ams token that reuses an existing static contract address under a different name', () => {
+    // Find any static ERC20 token to collide with. The merge only fails when the colliding
+    // AMS token's contract address already lives in the static coin map under a different name --
+    // the failure observed via syncAmsCoinsToPresenter in bitgo-retail.
+    let staticToken: Readonly<Erc20Coin> | undefined;
+    for (const [, coin] of coins) {
+      if (coin instanceof Erc20Coin) {
+        staticToken = coin;
+        break;
+      }
+    }
+    if (!staticToken) {
+      throw new Error('expected at least one static ERC20 token in the coin map');
+    }
+
+    const collidingName = 'eth:cshld976colliding';
+    const collidingId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+    // Sanity: the colliding identity is not already in statics, so only the contract address collides.
+    coins.has(collidingName).should.eql(false);
+    coins.has(collidingId).should.eql(false);
+
+    const baseConfig = amsTokenConfigWithCustomToken['hteth:faketoken'][0];
+    const tokenConfig = {
+      [collidingName]: [
+        {
+          ...baseConfig,
+          id: collidingId,
+          name: collidingName,
+          asset: collidingName,
+          family: staticToken.family,
+          contractAddress: staticToken.contractAddress,
+          network: staticToken.network,
+        },
+      ],
+    } as unknown as Parameters<typeof createTokenMapUsingConfigDetails>[0];
+
+    let tokenMap: ReturnType<typeof createTokenMapUsingConfigDetails> | undefined;
+    (() => {
+      tokenMap = createTokenMapUsingConfigDetails(tokenConfig);
+    }).should.not.throw();
+
+    // The colliding AMS token is dropped; the static token at that contract address is preserved.
+    tokenMap!.has(collidingName).should.eql(false);
+    tokenMap!.has(staticToken.name).should.eql(true);
+  });
+
   it('should create a coin map using reduced token config details', () => {
     const coinMap1 = createTokenMapUsingTrimmedConfigDetails(reducedAmsTokenConfig);
     const amsToken1 = coinMap1.get('hteth:faketoken');
