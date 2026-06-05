@@ -116,14 +116,16 @@ export class AtaInitializationBuilder extends TransactionBuilder {
       throw new DuplicateMethodError('Invalid method: single mint already used');
     }
     validateOwnerAddress(recipient.ownerAddress);
-    const token = getSolTokenFromTokenName(recipient.tokenName);
     let tokenAddress: string;
     if (recipient.tokenAddress) {
       tokenAddress = recipient.tokenAddress;
-    } else if (token) {
-      tokenAddress = token.tokenAddress;
     } else {
-      throw new BuildTransactionError('Invalid transaction: invalid token name, got: ' + recipient.tokenName);
+      const token = getSolTokenFromTokenName(recipient.tokenName);
+      if (token) {
+        tokenAddress = token.tokenAddress;
+      } else {
+        throw new BuildTransactionError('Invalid transaction: invalid token name, got: ' + recipient.tokenName);
+      }
     }
     validateMintAddress(tokenAddress);
 
@@ -147,17 +149,19 @@ export class AtaInitializationBuilder extends TransactionBuilder {
     this._instructionsData = [];
     await Promise.all(
       this._tokenAssociateRecipients.map(async (recipient) => {
-        const token = getSolTokenFromTokenName(recipient.tokenName);
         let tokenAddress: string;
         let programId: string;
         if (recipient.tokenAddress && recipient.programId) {
           tokenAddress = recipient.tokenAddress;
           programId = recipient.programId;
-        } else if (token) {
-          tokenAddress = token.tokenAddress;
-          programId = token.programId;
         } else {
-          throw new BuildTransactionError('Invalid transaction: invalid token name, got: ' + recipient.tokenName);
+          const token = getSolTokenFromTokenName(recipient.tokenName);
+          if (token) {
+            tokenAddress = token.tokenAddress;
+            programId = token.programId;
+          } else {
+            throw new BuildTransactionError('Invalid transaction: invalid token name, got: ' + recipient.tokenName);
+          }
         }
 
         // Use the provided ataAddress if it exists, otherwise calculate it
