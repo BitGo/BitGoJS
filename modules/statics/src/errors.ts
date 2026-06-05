@@ -33,20 +33,6 @@ export class DuplicateCoinIdDefinitionError extends BitGoStaticsError {
   }
 }
 
-export class DuplicateContractAddressDefinitionError extends BitGoStaticsError {
-  public constructor(contractAddressKey: string, existingCoinName: string) {
-    super(`token with contract address '${contractAddressKey}' is already defined as '${existingCoinName}'`);
-    Object.setPrototypeOf(this, DuplicateContractAddressDefinitionError.prototype);
-  }
-}
-
-export class DuplicateNftCollectionIdDefinitionError extends BitGoStaticsError {
-  public constructor(nftCollectionKey: string, existingCoinName: string) {
-    super(`token with NFT collection id '${nftCollectionKey}' is already defined as '${existingCoinName}'`);
-    Object.setPrototypeOf(this, DuplicateNftCollectionIdDefinitionError.prototype);
-  }
-}
-
 export class DisallowedCoinFeatureError extends BitGoStaticsError {
   public constructor(coinName: string, feature: CoinFeature) {
     super(`coin feature '${feature}' is disallowed for coin ${coinName}.`);

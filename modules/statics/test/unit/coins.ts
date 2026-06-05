@@ -41,7 +41,7 @@ import {
   trimmedDynamicBaseChainConfig,
 } from './resources/amsTokenConfig';
 import { EthLikeErc20Token } from '../../../sdk-coin-evm/src';
-import { ProgramID, taptNFTCollection, terc20 } from '../../src/account';
+import { ProgramID } from '../../src/account';
 import { allCoinsAndTokens } from '../../src/allCoinsAndTokens';
 
 interface DuplicateCoinObject {
@@ -753,70 +753,6 @@ describe('CoinMap', function () {
     (() => CoinMap.fromCoins([btc, btc2])).should.throw(`coin with id '${btc.id}' is already defined`);
   });
 
-  it('should fail to map tokens with duplicated contract address for the same family', () => {
-    const template = coins.get('tusdc');
-    const contractAddress = (template as Erc20Coin).contractAddress;
-    const tokenA = terc20(
-      '11111111-1111-4111-8111-111111111111',
-      'token-a',
-      'Token A',
-      6,
-      contractAddress,
-      template.asset,
-      template.features,
-      template.prefix,
-      template.suffix,
-      template.network
-    );
-    const tokenB = terc20(
-      '22222222-2222-4222-8222-222222222222',
-      'token-b',
-      'Token B',
-      18,
-      contractAddress,
-      template.asset,
-      template.features,
-      template.prefix,
-      template.suffix,
-      template.network
-    );
-    const contractAddressKey = `${tokenA.family}:${tokenA.network.type}:${contractAddress}`;
-    (() => CoinMap.fromCoins([tokenA, tokenB])).should.throw(
-      `token with contract address '${contractAddressKey}' is already defined as 'token-a'`
-    );
-  });
-
-  it('should fail to map tokens with duplicated NFT collection id for the same family', () => {
-    const template = coins.get('tapt:nftcollection1');
-    const nftCollectionId = '0xbbc561fbfa5d105efd8dfb06ae3e7e5be46331165b99d518f094c701e40603b5';
-    const tokenA = taptNFTCollection(
-      '11111111-1111-4111-8111-111111111111',
-      'tapt:nftcollection-a',
-      'NFT Collection A',
-      nftCollectionId,
-      template.asset,
-      template.features,
-      template.prefix,
-      template.suffix,
-      template.network
-    );
-    const tokenB = taptNFTCollection(
-      '22222222-2222-4222-8222-222222222222',
-      'tapt:nftcollection-b',
-      'NFT Collection B',
-      nftCollectionId,
-      template.asset,
-      template.features,
-      template.prefix,
-      template.suffix,
-      template.network
-    );
-    const nftCollectionKey = `${tokenA.prefix}${tokenA.family}:${tokenA.network.type}:${nftCollectionId}`;
-    (() => CoinMap.fromCoins([tokenA, tokenB])).should.throw(
-      `token with NFT collection id '${nftCollectionKey}' is already defined as 'tapt:nftcollection-a'`
-    );
-  });
-
   it('should have iterator', function () {
     [...coins].length.should.be.greaterThan(100);
   });
@@ -847,10 +783,10 @@ describe('CoinMap', function () {
 
   it('should get coin by address', () => {
     const weth = coins.get('weth');
-    const wethByAddress = coins.get(`${weth.family}:${weth.network.type}:${(weth as Erc20Coin).contractAddress}`);
+    const wethByAddress = coins.get(`${weth.family}:${(weth as Erc20Coin).contractAddress}`);
     wethByAddress.should.deepEqual(weth);
     const tweth = coins.get('tweth');
-    const twethByAddress = coins.get(`${tweth.family}:${tweth.network.type}:${(tweth as Erc20Coin).contractAddress}`);
+    const twethByAddress = coins.get(`${tweth.family}:${(tweth as Erc20Coin).contractAddress}`);
     twethByAddress.should.deepEqual(tweth);
   });
 
@@ -859,11 +795,7 @@ describe('CoinMap', function () {
   });
 
   it('should find coin by NFT collection ID', () => {
-    const nftCollectionStatics = coins.get(
-      `tapt:${
-        coins.get('tapt:nftcollection1').network.type
-      }:0xbbc561fbfa5d105efd8dfb06ae3e7e5be46331165b99d518f094c701e40603b5`
-    );
+    const nftCollectionStatics = coins.get('tapt:0xbbc561fbfa5d105efd8dfb06ae3e7e5be46331165b99d518f094c701e40603b5');
     nftCollectionStatics.name.should.eql('tapt:nftcollection1');
   });
 
