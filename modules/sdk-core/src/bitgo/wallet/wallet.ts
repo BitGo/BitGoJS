@@ -4153,6 +4153,7 @@ export class Wallet implements IWallet {
             unspents: params.unspents,
             senderAddress: params.senderAddress,
             isTestTransaction: params.isTestTransaction,
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4170,6 +4171,7 @@ export class Wallet implements IWallet {
             feeToken: params.feeToken,
             unspents: params.unspents,
             sequenceId: params.sequenceId,
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4183,6 +4185,7 @@ export class Wallet implements IWallet {
             recipients: params.recipients || [],
             enableTokens: params.enableTokens,
             memo: params.memo,
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4195,6 +4198,7 @@ export class Wallet implements IWallet {
             intentType: 'closeAssociatedTokenAccount',
             recipients: params.recipients || [],
             memo: params.memo,
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4210,6 +4214,7 @@ export class Wallet implements IWallet {
             receiveAddress: params.receiveAddress,
             feeOptions,
             feeToken: params.feeToken,
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4225,6 +4230,7 @@ export class Wallet implements IWallet {
             receiveAddress: params.receiveAddress,
             feeOptions,
             feeToken: params.feeToken,
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4237,6 +4243,7 @@ export class Wallet implements IWallet {
             intentType: 'tokenApproval',
             tokenName: params.tokenName,
             feeToken: params.feeToken,
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4248,6 +4255,7 @@ export class Wallet implements IWallet {
             reqId,
             intentType: 'createAccount',
             recipients: params.recipients || [],
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4260,6 +4268,7 @@ export class Wallet implements IWallet {
             intentType: 'transferAccept',
             txRequestId: params.txRequestId,
             sequenceId: params.txRequestId,
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4273,6 +4282,7 @@ export class Wallet implements IWallet {
             intentType: 'transferReject',
             txRequestId: params.txRequestId,
             sequenceId: params.txRequestId,
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4286,6 +4296,7 @@ export class Wallet implements IWallet {
             intentType: 'transferOfferWithdrawn',
             transferOfferId: params.transferOfferId,
             sequenceId: params.transferOfferId,
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4303,6 +4314,7 @@ export class Wallet implements IWallet {
             cantonCommandParams: params.cantonCommandParams,
             sequenceId: params.sequenceId,
             comment: params.comment,
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4323,6 +4335,7 @@ export class Wallet implements IWallet {
             nonce: params.nonce,
             memo: params.memo,
             feeOptions,
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4339,6 +4352,7 @@ export class Wallet implements IWallet {
             nonce: params.nonce,
             feeOptions,
             feeToken: params.feeToken,
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4355,6 +4369,7 @@ export class Wallet implements IWallet {
             nonce: params.nonce,
             feeOptions,
             feeToken: params.feeToken,
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4368,6 +4383,7 @@ export class Wallet implements IWallet {
             sequenceId: params.sequenceId,
             comment: params.comment,
             recipients: params.recipients || [],
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
@@ -4381,6 +4397,7 @@ export class Wallet implements IWallet {
             sequenceId: params.sequenceId,
             comment: params.comment,
             recipients: params.recipients || [],
+            execMode: params.execMode,
           },
           apiVersion,
           params.preview
