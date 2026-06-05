@@ -40,7 +40,11 @@ export interface EncryptOptions {
 /** Sync encrypt callback — used by v1 (SJCL) code paths. */
 export type EncryptFn = (params: { input: string; password: string }) => string;
 /** Async encrypt callback — used by v2 (Argon2id) code paths. */
-export type EncryptFnAsync = (params: { input: string; password: string }) => Promise<string>;
+export type EncryptFnAsync = (params: {
+  input: string;
+  password: string;
+  encryptionVersion?: EncryptionVersion;
+}) => Promise<string>;
 
 export interface GetSharingKeyOptions {
   email: string;

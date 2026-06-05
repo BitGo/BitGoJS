@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import 'should';
 import { BitGoAPI } from '../../src/bitgoAPI';
 import { ProxyAgent } from 'proxy-agent';
@@ -1038,6 +1039,84 @@ describe('Constructor', function () {
       await bitgo.changePassword({ oldPassword: 'oldpw', newPassword: 'newpw' });
 
       legacyScope.isDone().should.be.true();
+    });
+  });
+
+  describe('createUserEcdhKeychain - encryptionVersion threading', function () {
+    const ROOT = 'https://app.bitgo-test.com';
+    let bitgo: BitGoAPI;
+
+    beforeEach(function () {
+      bitgo = new BitGoAPI({ env: 'test' });
+    });
+
+    afterEach(function () {
+      nock.cleanAll();
+      sinon.restore();
+    });
+
+    it('passes encryptionVersion: 2 to encryptAsync', async function () {
+      const encryptAsyncSpy = sinon.spy(bitgo, 'encryptAsync');
+      nock(ROOT).post('/api/v1/keychain').reply(200, { xpub: 'xpub123', id: 'key-id' });
+
+      await bitgo.createUserEcdhKeychain('loginPassword', 2);
+
+      assert.ok(encryptAsyncSpy.calledOnce);
+      assert.strictEqual(encryptAsyncSpy.firstCall.args[0].encryptionVersion, 2);
+    });
+
+    it('passes encryptionVersion: undefined when not set (defaults to v1)', async function () {
+      const encryptAsyncSpy = sinon.spy(bitgo, 'encryptAsync');
+      nock(ROOT).post('/api/v1/keychain').reply(200, { xpub: 'xpub123', id: 'key-id' });
+
+      await bitgo.createUserEcdhKeychain('loginPassword');
+
+      assert.ok(encryptAsyncSpy.calledOnce);
+      assert.strictEqual(encryptAsyncSpy.firstCall.args[0].encryptionVersion, undefined);
+    });
+  });
+
+  describe('splitSecretAsync - encryptionVersion threading', function () {
+    let bitgo: BitGoAPI;
+
+    beforeEach(function () {
+      bitgo = new BitGoAPI({ env: 'test' });
+    });
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('passes encryptionVersion: 2 to every encryptAsync shard call', async function () {
+      const encryptAsyncSpy = sinon.spy(bitgo, 'encryptAsync');
+      const passwords = ['pw1', 'pw2', 'pw3'];
+
+      await bitgo.splitSecretAsync({
+        seed: 'a'.repeat(64),
+        passwords,
+        m: 2,
+        encryptionVersion: 2,
+      });
+
+      assert.strictEqual(encryptAsyncSpy.callCount, 3, 'should encrypt each shard');
+      for (const call of encryptAsyncSpy.getCalls()) {
+        assert.strictEqual(call.args[0].encryptionVersion, 2);
+      }
+    });
+
+    it('passes encryptionVersion: undefined when not set', async function () {
+      const encryptAsyncSpy = sinon.spy(bitgo, 'encryptAsync');
+
+      await bitgo.splitSecretAsync({
+        seed: 'b'.repeat(64),
+        passwords: ['pw1', 'pw2'],
+        m: 2,
+      });
+
+      assert.strictEqual(encryptAsyncSpy.callCount, 2);
+      for (const call of encryptAsyncSpy.getCalls()) {
+        assert.strictEqual(call.args[0].encryptionVersion, undefined);
+      }
     });
   });
 });

@@ -13,7 +13,7 @@
 
 import { bip32 } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
-import { common, Util, sanitizeLegacyPath } from '@bitgo/sdk-core';
+import { common, isV2Envelope, Util, sanitizeLegacyPath } from '@bitgo/sdk-core';
 const _ = require('lodash');
 
 //
@@ -194,7 +194,12 @@ Keychains.prototype.updatePassword = function (params, callback) {
           input: oldEncryptedXprv as string,
           password: params.oldPassword,
         });
-        const newEncryptedPrv = await self.bitgo.encryptAsync({ input: decryptedPrv, password: params.newPassword });
+        const encryptionVersion = isV2Envelope(oldEncryptedXprv as string) ? 2 : 1;
+        const newEncryptedPrv = await self.bitgo.encryptAsync({
+          input: decryptedPrv,
+          password: params.newPassword,
+          encryptionVersion,
+        });
         newKeychains[xpub] = newEncryptedPrv;
       } catch (e) {
         // decrypting the keychain with the old password didn't work so we just keep it the way it is

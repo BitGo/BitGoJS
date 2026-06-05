@@ -155,6 +155,7 @@ export interface AcceptShareOptions {
   walletShareId?: string;
   userPassword?: string;
   newWalletPassphrase?: string;
+  encryptionVersion?: EncryptionVersion;
 }
 
 export interface BulkAcceptShareOptions {
@@ -162,6 +163,7 @@ export interface BulkAcceptShareOptions {
   userLoginPassword: string;
   newWalletPassphrase?: string;
   webauthnInfo?: WebauthnKeyEncryptionInfo;
+  encryptionVersion?: EncryptionVersion;
 }
 
 export interface AcceptShareOptionsRequest {
@@ -188,6 +190,7 @@ export interface BulkUpdateWalletShareOptions {
   }[];
   userLoginPassword?: string;
   newWalletPassphrase?: string;
+  encryptionVersion?: EncryptionVersion;
 }
 
 export interface BulkUpdateWalletShareOptionsRequest {

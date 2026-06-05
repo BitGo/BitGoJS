@@ -114,6 +114,7 @@ describe('attachPasskeyToWallet', function () {
       device,
       existingPassphrase,
       provider: mockProvider as unknown as WebAuthnProvider,
+      encryptionVersion: 2,
       ...overrides,
     });
   }

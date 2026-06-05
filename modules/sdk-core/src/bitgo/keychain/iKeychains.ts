@@ -110,6 +110,7 @@ export type RotateKeychainOptions =
       id: string;
       password: string;
       reqId?: IRequestTracer;
+      encryptionVersion?: EncryptionVersion;
     }
   | {
       id: string;
@@ -254,6 +255,6 @@ export interface IKeychains {
   createMpc(params: CreateMpcOptions): Promise<KeychainsTriplet>;
   recreateMpc(params: RecreateMpcOptions): Promise<KeychainsTriplet>;
   createTssBitGoKeyFromOvcShares(ovcOutput: OvcToBitGoJSON, enterprise?: string): Promise<BitGoKeyFromOvcShares>;
-  createUserKeychain(userPassword: string): Promise<Keychain>;
+  createUserKeychain(userPassword: string, encryptionVersion?: EncryptionVersion): Promise<Keychain>;
   rotateKeychain(params: RotateKeychainOptions): Promise<Keychain>;
 }

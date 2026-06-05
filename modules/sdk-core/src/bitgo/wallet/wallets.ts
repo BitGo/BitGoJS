@@ -7,7 +7,7 @@ import { bip32 } from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import { CoinFeature } from '@bitgo/statics';
 
-import { sanitizeLegacyPath } from '../../api';
+import { EncryptionVersion, sanitizeLegacyPath } from '../../api';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
@@ -873,7 +873,11 @@ export class Wallets implements IWallets {
    * @param walletId
    * @param userPassword
    */
-  async reshareWalletWithSpenders(walletId: string, userPassword: string): Promise<void> {
+  async reshareWalletWithSpenders(
+    walletId: string,
+    userPassword: string,
+    encryptionVersion?: EncryptionVersion
+  ): Promise<void> {
     const wallet = await this.get({ id: walletId });
     if (!wallet?._wallet?.enterprise) {
       throw new Error('Enterprise not found for the wallet');
@@ -899,6 +903,7 @@ export class Wallets implements IWallets {
             email: userObject.email.email,
             reshare: true,
             skipKeychain: false,
+            encryptionVersion,
           };
           await wallet.shareWallet(shareParams);
         }
@@ -934,6 +939,7 @@ export class Wallets implements IWallets {
       const encryptedPrv = await this.bitgo.encryptAsync({
         password: params.newWalletPassphrase || params.userPassword,
         input: walletKeychain.prv,
+        encryptionVersion: params.encryptionVersion,
       });
 
       const updateParams: UpdateShareOptions = {
@@ -958,7 +964,9 @@ export class Wallets implements IWallets {
         throw new Error('userPassword param must be provided to decrypt shared key');
       }
 
-      const walletKeychain = await this.baseCoin.keychains().createUserKeychain(params.userPassword);
+      const walletKeychain = await this.baseCoin
+        .keychains()
+        .createUserKeychain(params.userPassword, params.encryptionVersion);
       if (_.isUndefined(walletKeychain.encryptedPrv)) {
         throw new Error('encryptedPrv was not found on wallet keychain');
       }
@@ -986,7 +994,7 @@ export class Wallets implements IWallets {
       // If the wallet share was accepted successfully (changed=true), reshare the wallet with the spenders
       if (response.changed && response.state === 'accepted') {
         try {
-          await this.reshareWalletWithSpenders(walletShare.wallet, params.userPassword);
+          await this.reshareWalletWithSpenders(walletShare.wallet, params.userPassword, params.encryptionVersion);
         } catch (e) {
           // TODO: PX-3826
           // Do nothing
@@ -1035,6 +1043,7 @@ export class Wallets implements IWallets {
     encryptedPrv = await this.bitgo.encryptAsync({
       password: newWalletPassphrase,
       input: decryptedSharedWalletPrv,
+      encryptionVersion: params.encryptionVersion,
     });
     const updateParams: UpdateShareOptions = {
       walletShareId: params.walletShareId,
@@ -1108,6 +1117,7 @@ export class Wallets implements IWallets {
             const encryptedPrv = await this.bitgo.encryptAsync({
               password: newWalletPassphrase,
               input: walletKeychain.prv,
+              encryptionVersion: params.encryptionVersion,
             });
             return [
               {
@@ -1134,6 +1144,7 @@ export class Wallets implements IWallets {
           const newEncryptedPrv = await this.bitgo.encryptAsync({
             password: newWalletPassphrase,
             input: decryptedSharedWalletPrv,
+            encryptionVersion: params.encryptionVersion,
           });
           const entry: AcceptShareOptionsRequest = {
             walletShareId: walletShare.id,
@@ -1146,6 +1157,7 @@ export class Wallets implements IWallets {
               encryptedPrv: await this.bitgo.encryptAsync({
                 password: webauthnInfo.passphrase,
                 input: decryptedSharedWalletPrv,
+                encryptionVersion: params.encryptionVersion,
               }),
             };
           }
@@ -1208,7 +1220,7 @@ export class Wallets implements IWallets {
     }
     assert(params.shares.length > 0, 'no shares are passed');
 
-    const { shares: inputShares, userLoginPassword, newWalletPassphrase } = params;
+    const { shares: inputShares, userLoginPassword, newWalletPassphrase, encryptionVersion } = params;
 
     const allWalletShares = await this.listSharesV2();
 
@@ -1275,7 +1287,8 @@ export class Wallets implements IWallets {
             walletShare,
             userLoginPassword,
             newWalletPassphrase,
-            sharingKeychainPrv
+            sharingKeychainPrv,
+            encryptionVersion
           );
         }
 
@@ -1317,7 +1330,7 @@ export class Wallets implements IWallets {
         if (specialOverrideCases.has(walletShareId)) {
           const walletId = specialOverrideCases.get(walletShareId);
           try {
-            await this.reshareWalletWithSpenders(walletId, userLoginPassword);
+            await this.reshareWalletWithSpenders(walletId, userLoginPassword, encryptionVersion);
           } catch (e) {
             // Log error but continue processing other shares
             console.error(`Error resharing wallet ${walletId} with spenders: ${e?.message}`);
@@ -1353,7 +1366,8 @@ export class Wallets implements IWallets {
     walletShare: WalletShare,
     userLoginPassword?: string,
     newWalletPassphrase?: string,
-    sharingKeychainPrv?: string
+    sharingKeychainPrv?: string,
+    encryptionVersion?: EncryptionVersion
   ): Promise<BulkUpdateWalletShareOptionsRequest[]> {
     // Special override case: requires user keychain and signing
     if (
@@ -1367,7 +1381,7 @@ export class Wallets implements IWallets {
 
       const walletKeychain = await this.baseCoin
         .keychains()
-        .createUserKeychain(newWalletPassphrase || userLoginPassword);
+        .createUserKeychain(newWalletPassphrase || userLoginPassword, encryptionVersion);
       if (!walletKeychain.encryptedPrv) {
         throw new Error('encryptedPrv was not found on wallet keychain');
       }
@@ -1406,6 +1420,7 @@ export class Wallets implements IWallets {
       const encryptedPrv = await this.bitgo.encryptAsync({
         password: newWalletPassphrase || userLoginPassword,
         input: walletKeychain.prv,
+        encryptionVersion,
       });
 
       return [
@@ -1451,6 +1466,7 @@ export class Wallets implements IWallets {
     const encryptedPrv = await this.bitgo.encryptAsync({
       password: newWalletPassphrase || userLoginPassword,
       input: decryptedPrv,
+      encryptionVersion,
     });
 
     return [
