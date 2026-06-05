@@ -12,6 +12,7 @@ import { AShare, DShare, SShare } from '../../tss/ecdsa/types';
 import { MessageStandardType } from '../messageTypes';
 
 export type TxRequestVersion = 'full' | 'lite';
+export type TxRequestExecMode = 'EXEC_TRY' | 'EXEC_UNSPECIFIED';
 export interface HopParams {
   paymentId?: string;
   userReqSig?: string;
@@ -354,6 +355,12 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   feeToken?: string;
   /** Canton-specific params for the cantonCommand intent. */
   cantonCommandParams?: CantonCommandParams;
+  /**
+   * Controls transaction execution mode on the server side.
+   * Use 'EXEC_UNSPECIFIED' to defer execution (e.g. Figure Markets exchange flow).
+   * Defaults to 'EXEC_TRY' when omitted.
+   */
+  execMode?: TxRequestExecMode;
 }
 export interface IntentRecipient {
   address: {

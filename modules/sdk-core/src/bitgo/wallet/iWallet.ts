@@ -296,6 +296,11 @@ export interface PrebuildTransactionOptions {
    * Parameters for executing DAML commands on Canton.
    */
   cantonCommandParams?: CantonCommandParams;
+  /**
+   * Controls transaction execution mode. Use 'EXEC_UNSPECIFIED' to defer
+   * execution (e.g. Figure Markets exchange flow). Defaults to 'EXEC_TRY'.
+   */
+  execMode?: 'EXEC_TRY' | 'EXEC_UNSPECIFIED';
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {

@@ -135,6 +135,7 @@ export const BuildParams = t.exact(
       feeToken: t.unknown,
       // Bridging parameters for cross-chain operations (e.g., BTC to sBTC)
       bridgingParams: t.unknown,
+      execMode: t.unknown,
     }),
   ])
 );

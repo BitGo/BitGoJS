@@ -386,6 +386,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       },
       apiVersion: apiVersion,
       preview,
+      ...(params.execMode !== undefined && { execMode: params.execMode }),
     };
 
     const reqTracer = params.reqId || new RequestTracer();

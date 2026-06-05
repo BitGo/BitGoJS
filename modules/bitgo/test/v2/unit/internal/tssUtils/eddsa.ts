@@ -1029,6 +1029,82 @@ describe('TSS Utils:', async function () {
 
       nockedCreateTx.isDone().should.be.true();
     });
+
+    it('should include execMode in request body when specified', async function () {
+      const nockedCreateTx = await nockCreateTxRequest({
+        walletId: wallet.id(),
+        requestBody: {
+          apiVersion: 'lite',
+          execMode: 'EXEC_UNSPECIFIED',
+          intent: {
+            intentType: 'payment',
+            recipients: [
+              {
+                address: {
+                  address: 'recipient',
+                },
+                amount: {
+                  value: '10000',
+                  symbol: 'tsol',
+                },
+              },
+            ],
+          },
+        },
+        response: {},
+      });
+
+      await tssUtils.prebuildTxWithIntent({
+        reqId,
+        recipients: [
+          {
+            address: 'recipient',
+            amount: '10000',
+          },
+        ],
+        intentType: 'payment',
+        execMode: 'EXEC_UNSPECIFIED',
+      });
+
+      nockedCreateTx.isDone().should.be.true();
+    });
+
+    it('should not include execMode in request body when not specified', async function () {
+      const nockedCreateTx = await nockCreateTxRequest({
+        walletId: wallet.id(),
+        requestBody: {
+          apiVersion: 'lite',
+          intent: {
+            intentType: 'payment',
+            recipients: [
+              {
+                address: {
+                  address: 'recipient',
+                },
+                amount: {
+                  value: '10000',
+                  symbol: 'tsol',
+                },
+              },
+            ],
+          },
+        },
+        response: {},
+      });
+
+      await tssUtils.prebuildTxWithIntent({
+        reqId,
+        recipients: [
+          {
+            address: 'recipient',
+            amount: '10000',
+          },
+        ],
+        intentType: 'payment',
+      });
+
+      nockedCreateTx.isDone().should.be.true();
+    });
   });
 
   describe('delete SignatureShare:', async function () {
