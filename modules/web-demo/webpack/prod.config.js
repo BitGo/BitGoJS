@@ -23,7 +23,7 @@ module.exports = (env, options) => {
         rules: prodRules,
       },
       resolve: {
-        extensions: ['.tsx', '.ts', '.js'],
+        extensions: ['.tsx', '.ts', '.js', '.mjs'],
         alias: aliasItems,
         fallback: resolveFallback,
       },

@@ -5,8 +5,10 @@ import { generateParamsForKeyCreation } from './generateParamsForKeyCreation';
 import { GenerateKeycardParams, GenerateLightningQrDataParams, GenerateQrDataBaseParams } from './types';
 
 export * from './drawKeycard';
+export * from './extractKeycardFromPDF';
 export * from './faq';
 export * from './generateQrData';
+export * from './parseKeycard';
 export * from './utils';
 export * from './types';
 
