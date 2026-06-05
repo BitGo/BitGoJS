@@ -15,6 +15,12 @@ const sectionHeaderRegex = /^([A-D])\s*[:.)-]\s*(.+?)\s*$/i;
 const dataLineRegex = /^data\s*:\s*(.*)$/i;
 const faqHeaderRegex = /^BitGo\s+KeyCard\s+FAQ$/i;
 
+// PDF coordinate tolerance in points. Nodes within this distance on the Y-axis
+// are treated as belonging to the same line; nodes further apart are separate lines.
+const PDF_LINE_Y_TOLERANCE = 2;
+// Horizontal gap in points above which a space is inserted between adjacent nodes.
+const PDF_NODE_GAP_THRESHOLD = 2;
+
 function sanitizeText(input: string): string {
   return input.replace(/\s+/g, ' ').trim();
 }
@@ -43,13 +49,22 @@ function isEncryptedWalletPasswordSectionTitle(title: string): boolean {
   return title.toLowerCase().includes('encrypted wallet password');
 }
 
+/**
+ * Reconstructs logical text lines from an unordered set of PDF text nodes.
+ *
+ * PDF text extraction returns individual positioned fragments. This function
+ * sorts them by page then Y-coordinate (top-to-bottom), groups fragments
+ * within PDF_LINE_Y_TOLERANCE points of each other onto the same line, and
+ * inserts a space between fragments that are separated by more than
+ * PDF_NODE_GAP_THRESHOLD points horizontally.
+ */
 export function buildLinesFromPDFNodes(nodes: PDFTextNode[]): string[] {
   const sortedNodes = [...nodes].sort((a, b) => {
     if (a.page !== b.page) {
       return a.page - b.page;
     }
     const yDiff = Math.abs(a.y - b.y);
-    if (yDiff > 2) {
+    if (yDiff > PDF_LINE_Y_TOLERANCE) {
       return b.y - a.y;
     }
     return a.x - b.x;
@@ -74,7 +89,7 @@ export function buildLinesFromPDFNodes(nodes: PDFTextNode[]): string[] {
         continue;
       }
 
-      if (previousRightEdge !== null && node.x - previousRightEdge > 2) {
+      if (previousRightEdge !== null && node.x - previousRightEdge > PDF_NODE_GAP_THRESHOLD) {
         line += ' ';
       }
       line += piece;
@@ -89,7 +104,7 @@ export function buildLinesFromPDFNodes(nodes: PDFTextNode[]): string[] {
 
   for (const node of sortedNodes) {
     const pageChanged = node.page !== currentPage;
-    const lineChanged = Number.isNaN(currentY) || Math.abs(node.y - currentY) > 2;
+    const lineChanged = Number.isNaN(currentY) || Math.abs(node.y - currentY) > PDF_LINE_Y_TOLERANCE;
     if (pageChanged || lineChanged) {
       flushLine();
       currentLineNodes = [node];
