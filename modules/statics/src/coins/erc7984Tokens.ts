@@ -24,7 +24,7 @@ export const erc7984Tokens = [
     'eth:ctkn',
     'Confidential Test Token',
     6,
-    '0x0000000000000000000000000000000000000001', // TODO: update with mainnet contract address
+    '0x0000000000000000000000000000000000000000', // TODO: update with mainnet contract address
     UnderlyingAsset['eth:ctkn']
   ),
   erc7984(
@@ -32,7 +32,7 @@ export const erc7984Tokens = [
     'eth:cusdt',
     'Confidential USDT',
     6,
-    '0x0000000000000000000000000000000000000002', // TODO: update with mainnet contract address
+    '0x0000000000000000000000000000000000000000', // TODO: update with mainnet contract address
     UnderlyingAsset['eth:cusdt']
   ),
 
