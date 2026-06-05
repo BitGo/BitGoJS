@@ -29,18 +29,6 @@ export const botTokens = [
     Networks.test.hoodi
   ),
   AccountCtors.terc20(
-    '3b0d47ca-d5a9-49d6-a063-8946b88fb843',
-    'eth:at',
-    'APT',
-    18,
-    '0x0581ccdf2d9bca21baeff8b32b2551fd49cf70aa',
-    'eth:at' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth'),
-    undefined,
-    undefined,
-    Networks.test.hoodi
-  ),
-  AccountCtors.terc20(
     '1f8f6be2-e97e-4f41-836d-c4420b8cc77b',
     'hteth:WBTC',
     'Wrapped BTC',
