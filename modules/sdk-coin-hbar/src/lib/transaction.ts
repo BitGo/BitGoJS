@@ -166,12 +166,20 @@ export class Transaction extends BaseTransaction {
    *
    * @returns {object} The account update parameters including stakedNodeId and declineReward
    */
-  private getAccountUpdateData(): { accountId: string; stakedNodeId?: string; declineReward?: boolean } {
+  private getAccountUpdateData(): {
+    accountId: string;
+    stakedNodeId?: string;
+    stakedAccountId?: string;
+    declineReward?: boolean;
+  } {
     const updateBody = this._txBody.cryptoUpdateAccount!;
     return {
       accountId: stringifyAccountId(updateBody.accountIDToUpdate!),
       ...(updateBody.stakedNodeId != null && {
         stakedNodeId: Long.fromValue(updateBody.stakedNodeId).toString(),
+      }),
+      ...(updateBody.stakedAccountId && {
+        stakedAccountId: stringifyAccountId(updateBody.stakedAccountId),
       }),
       ...(updateBody.declineReward != null && {
         declineReward:
