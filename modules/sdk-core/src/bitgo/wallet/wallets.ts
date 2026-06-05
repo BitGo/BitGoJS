@@ -12,7 +12,7 @@ import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { getSharedSecret } from '../ecdh';
-import { AddKeychainOptions, Keychain, KeyIndices, KeyType } from '../keychain';
+import { AddKeychainOptions, Keychain, KeyIndices } from '../keychain';
 import { decodeOrElse, promiseProps, RequestTracer } from '../utils';
 import {
   AcceptShareOptions,
@@ -743,8 +743,9 @@ export class Wallets implements IWallets {
       throw new Error('external signer wallet generation is only supported for onchain multisig wallets');
     }
 
-    const conflictingParams = ['passphrase', 'userKey', 'backupXpub', 'backupXpubProvider'] as const;
-    for (const key of conflictingParams) {
+    // these belong to the passphrase-based path and are incompatible with createKeychainCallback
+    const passphrasePathParams = ['passphrase', 'userKey', 'backupXpub', 'backupXpubProvider'] as const;
+    for (const key of passphrasePathParams) {
       if (!_.isUndefined(params[key])) {
         throw new Error(`createKeychainCallback cannot be used with ${key}`);
       }
@@ -833,16 +834,30 @@ export class Wallets implements IWallets {
     const coin = this.baseCoin.getChain();
 
     const createAndUploadKeychain = async (source: 'user' | 'backup'): Promise<Keychain> => {
-      const keychainFromCallback = await createKeychainCallback({ source, coin });
-      if (keychainFromCallback.source !== source) {
-        throw new Error(`createKeychainCallback returned source ${keychainFromCallback.source}, expected ${source}`);
+      try {
+        const keychainFromCallback = await createKeychainCallback({ source, coin });
+        if (keychainFromCallback.source !== source) {
+          throw new Error(`createKeychainCallback returned source ${keychainFromCallback.source}, expected ${source}`);
+        }
+        if (keychainFromCallback.type !== 'independent') {
+          throw new Error(
+            `createKeychainCallback returned invalid type ${keychainFromCallback.type}, expected 'independent' for onchain multisig`
+          );
+        }
+        if (!this.baseCoin.isValidPub(keychainFromCallback.pub)) {
+          throw new Error(`createKeychainCallback returned invalid pub for ${source} key on ${coin}`);
+        }
+        return this.baseCoin.keychains().add({
+          pub: keychainFromCallback.pub,
+          keyType: keychainFromCallback.type,
+          source: keychainFromCallback.source,
+          reqId,
+        });
+      } catch (error) {
+        throw new Error(
+          `Failed to create ${source} keychain: ${error instanceof Error ? error.message : String(error)}`
+        );
       }
-      return this.baseCoin.keychains().add({
-        pub: keychainFromCallback.pub,
-        keyType: keychainFromCallback.type as KeyType,
-        source: keychainFromCallback.source,
-        reqId,
-      });
     };
 
     const { userKeychain, backupKeychain, bitgoKeychain }: KeychainsTriplet = await promiseProps({
@@ -854,6 +869,10 @@ export class Wallets implements IWallets {
     });
 
     walletParams.keys = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
+
+    if (params.keySignatures) {
+      walletParams.keySignatures = params.keySignatures;
+    }
 
     const keychains = {
       userKeychain,

@@ -4,6 +4,7 @@ import 'should';
 
 import { Wallets } from '../../../../src/bitgo/wallet/wallets';
 import { CreateKeychainCallback } from '../../../../src/bitgo/wallet/iWallets';
+import { Wallet } from '../../../../src/bitgo/wallet/wallet';
 
 describe('Wallets - external signer onchain wallet generation', function () {
   let wallets: Wallets;
@@ -24,12 +25,12 @@ describe('Wallets - external signer onchain wallet generation', function () {
     createKeychainCallback = sinon.stub();
     createKeychainCallback.withArgs({ source: 'user', coin: 'tbtc' }).resolves({
       pub: userPub,
-      type: 'tbtc',
+      type: 'independent',
       source: 'user',
     });
     createKeychainCallback.withArgs({ source: 'backup', coin: 'tbtc' }).resolves({
       pub: backupPub,
-      type: 'tbtc',
+      type: 'independent',
       source: 'backup',
     });
 
@@ -62,6 +63,7 @@ describe('Wallets - external signer onchain wallet generation', function () {
       url: sinon.stub().returns('/api/v2/tbtc/wallet/add'),
       getConfig: sinon.stub().returns({ features: [] }),
       supplementGenerateWallet: sinon.stub().callsFake((walletParams: unknown) => Promise.resolve(walletParams)),
+      isValidPub: sinon.stub().returns(true),
     };
 
     wallets = new Wallets(mockBitGo, mockBaseCoin);
@@ -86,7 +88,7 @@ describe('Wallets - external signer onchain wallet generation', function () {
 
       const addUserParams = mockKeychains.add.getCall(0).args[0];
       addUserParams.should.have.property('pub', userPub);
-      addUserParams.should.have.property('keyType', 'tbtc');
+      addUserParams.should.have.property('keyType', 'independent');
       addUserParams.should.have.property('source', 'user');
 
       const walletBody = sendStub.firstCall.args[0];
@@ -103,7 +105,7 @@ describe('Wallets - external signer onchain wallet generation', function () {
     it('should reject when callback source does not match requested source', async function () {
       createKeychainCallback.withArgs({ source: 'user', coin: 'tbtc' }).resolves({
         pub: userPub,
-        type: 'tbtc',
+        type: 'independent',
         source: 'backup',
       });
 
@@ -112,7 +114,32 @@ describe('Wallets - external signer onchain wallet generation', function () {
           label: 'External Signer Wallet',
           createKeychainCallback,
         })
-        .should.be.rejectedWith('createKeychainCallback returned source backup, expected user');
+        .should.be.rejectedWith(
+          'Failed to create user keychain: createKeychainCallback returned source backup, expected user'
+        );
+    });
+
+    it('should reject invalid type from callback', async function () {
+      const badTypeCallback = sinon.stub();
+      badTypeCallback.withArgs({ source: 'user', coin: 'tbtc' }).resolves({
+        pub: userPub,
+        type: 'tss',
+        source: 'user',
+      });
+      badTypeCallback.withArgs({ source: 'backup', coin: 'tbtc' }).resolves({
+        pub: backupPub,
+        type: 'independent',
+        source: 'backup',
+      });
+
+      await wallets
+        .generateWalletWithExternalSigner({
+          label: 'External Signer Wallet',
+          createKeychainCallback: badTypeCallback,
+        })
+        .should.be.rejectedWith(
+          "Failed to create user keychain: createKeychainCallback returned invalid type tss, expected 'independent' for onchain multisig"
+        );
     });
 
     it('should reject TSS multisig type', async function () {
@@ -149,7 +176,7 @@ describe('Wallets - external signer onchain wallet generation', function () {
       await wallets
         .generateWalletWithExternalSigner({
           label: 'Wallet',
-          webauthnInfo: { otpDeviceId: 'dev-id', prfSalt: 'salt', passphrase: 'pass' } as any,
+          webauthnInfo: { otpDeviceId: 'dev-id', prfSalt: 'salt', passphrase: 'pass' },
           createKeychainCallback,
         })
         .should.be.rejectedWith('webauthnInfo is not supported for external signer wallet generation');
@@ -177,16 +204,96 @@ describe('Wallets - external signer onchain wallet generation', function () {
         })
         .should.be.rejectedWith('distributed custody wallets must be type: cold');
     });
+
+    it('should reject when callback returns invalid pub for coin', async function () {
+      // only invalidate user pub so the rejection source is deterministic
+      mockBaseCoin.isValidPub.callsFake((pub: string) => pub !== userPub);
+
+      await wallets
+        .generateWalletWithExternalSigner({
+          label: 'External Signer Wallet',
+          createKeychainCallback,
+        })
+        .should.be.rejectedWith(
+          'Failed to create user keychain: createKeychainCallback returned invalid pub for user key on tbtc'
+        );
+    });
+
+    it('should wrap error when callback throws', async function () {
+      createKeychainCallback.withArgs({ source: 'user', coin: 'tbtc' }).rejects(new Error('HSM unreachable'));
+
+      await wallets
+        .generateWalletWithExternalSigner({
+          label: 'External Signer Wallet',
+          createKeychainCallback,
+        })
+        .should.be.rejectedWith('Failed to create user keychain: HSM unreachable');
+    });
+
+    it('should reject with backup keychain error when backup callback throws', async function () {
+      createKeychainCallback.withArgs({ source: 'backup', coin: 'tbtc' }).rejects(new Error('HSM unreachable'));
+
+      await wallets
+        .generateWalletWithExternalSigner({
+          label: 'External Signer Wallet',
+          createKeychainCallback,
+        })
+        .should.be.rejectedWith('Failed to create backup keychain: HSM unreachable');
+
+      assert.strictEqual(mockBitGo.post.callCount, 0);
+    });
+
+    it('should wrap non-Error thrown by callback', async function () {
+      createKeychainCallback
+        .withArgs({ source: 'user', coin: 'tbtc' })
+        .returns(Promise.reject('plain string rejection'));
+
+      await wallets
+        .generateWalletWithExternalSigner({
+          label: 'External Signer Wallet',
+          createKeychainCallback,
+        })
+        .should.be.rejectedWith('Failed to create user keychain: plain string rejection');
+    });
+
+    it('should forward keySignatures to wallet params when provided', async function () {
+      const keySignatures = {
+        backup: 'deadbeef01',
+        bitgo: 'deadbeef02',
+      };
+
+      await wallets.generateWalletWithExternalSigner({
+        label: 'External Signer Wallet',
+        enterprise: 'enterprise-id',
+        createKeychainCallback,
+        keySignatures,
+      });
+
+      const walletBody = sendStub.firstCall.args[0];
+      walletBody.should.have.property('keySignatures');
+      walletBody.keySignatures.should.deepEqual(keySignatures);
+    });
+
+    it('should not include keySignatures in wallet params when not provided', async function () {
+      await wallets.generateWalletWithExternalSigner({
+        label: 'External Signer Wallet',
+        enterprise: 'enterprise-id',
+        createKeychainCallback,
+      });
+
+      const walletBody = sendStub.firstCall.args[0];
+      walletBody.should.not.have.property('keySignatures');
+    });
   });
 
   describe('generateWallet with createKeychainCallback', function () {
     it('should delegate to generateWalletWithExternalSigner', async function () {
       const generateWalletWithExternalSignerStub = sinon.stub(wallets, 'generateWalletWithExternalSigner').resolves({
         responseType: 'WalletWithKeychains',
-        wallet: {} as any,
-        userKeychain: { id: 'user-key-id', pub: userPub, type: 'independent' } as any,
-        backupKeychain: { id: 'backup-key-id', pub: backupPub, type: 'independent' } as any,
-        bitgoKeychain: { id: 'bitgo-key-id', pub: bitgoPub, type: 'independent' } as any,
+        wallet: sinon.createStubInstance(Wallet),
+        userKeychain: { id: 'user-key-id', pub: userPub, type: 'independent' as const },
+        backupKeychain: { id: 'backup-key-id', pub: backupPub, type: 'independent' as const },
+        bitgoKeychain: { id: 'bitgo-key-id', pub: bitgoPub, type: 'independent' as const },
       });
 
       await wallets.generateWallet({

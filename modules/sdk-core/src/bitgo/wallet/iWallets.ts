@@ -70,8 +70,8 @@ export interface CreateKeychainCallbackParams {
 
 export interface CreateKeychainCallbackResult {
   pub: string;
-  type: string;
-  source: string;
+  type: 'independent';
+  source: 'user' | 'backup';
 }
 
 export type CreateKeychainCallback = (params: CreateKeychainCallbackParams) => Promise<CreateKeychainCallbackResult>;
@@ -116,6 +116,8 @@ export interface GenerateWalletWithExternalSignerOptions
   extends Omit<GenerateWalletOptions, 'passphrase' | 'userKey' | 'backupXpub' | 'backupXpubProvider'> {
   label: string;
   createKeychainCallback: CreateKeychainCallback;
+  /** Optional user-key signatures over backup/bitgo pubs. Omit when the external signer cannot produce them (equivalent to a cold wallet). */
+  keySignatures?: { backup: string; bitgo: string };
 }
 
 export const GenerateLightningWalletOptionsCodec = t.intersection(
