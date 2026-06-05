@@ -17,6 +17,7 @@ export class CantonCommandBuilder extends TransactionBuilder {
   private _readAs: string[] = [];
   private _command: CantonCommand;
   private _resolveContracts: CantonCommandResolveContractSpec[] = [];
+  private _token?: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -138,6 +139,21 @@ export class CantonCommandBuilder extends TransactionBuilder {
   }
 
   /**
+   * Sets the Canton token identifier (e.g. 'tcanton:stgusd1') forwarded to IMS for
+   * choice-context resolution on token-specific commands such as mint and burn.
+   *
+   * @param name - Registered BitGo canton token name
+   * @returns The current builder instance for chaining.
+   */
+  token(name: string): this {
+    if (typeof name !== 'string' || !name.trim()) {
+      throw new Error('token must be a non-empty string');
+    }
+    this._token = name.trim();
+    return this;
+  }
+
+  /**
    * Builds and returns the CantonCommandRequest from the builder's internal state.
    *
    * @returns {CantonCommandRequest}
@@ -146,13 +162,17 @@ export class CantonCommandBuilder extends TransactionBuilder {
   toRequestObject(): CantonCommandRequest {
     this.validate();
 
-    return {
+    const req: CantonCommandRequest = {
       commandId: this._commandId,
       actAs: this._actAs,
       readAs: this._readAs ?? [],
       command: this._command,
       resolveContracts: this._resolveContracts ?? [],
     };
+    if (this._token) {
+      req.token = this._token;
+    }
+    return req;
   }
 
   private validate(): void {

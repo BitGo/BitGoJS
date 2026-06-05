@@ -4301,6 +4301,7 @@ export class Wallet implements IWallet {
             reqId,
             intentType: 'cantonCommand',
             cantonCommandParams: params.cantonCommandParams,
+            tokenName: params.tokenName,
             sequenceId: params.sequenceId,
             comment: params.comment,
           },

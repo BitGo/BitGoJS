@@ -93,7 +93,7 @@ export interface CantonExerciseCommand {
     templateId: string;
     contractId?: string;
     choice: string;
-    choiceArgument: Record<string, unknown>;
+    choiceArgument?: Record<string, unknown>;
   };
 }
 

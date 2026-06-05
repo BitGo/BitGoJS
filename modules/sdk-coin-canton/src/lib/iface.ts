@@ -231,6 +231,7 @@ export interface CantonCommandRequest {
   readAs?: string[];
   command: CantonCommand;
   resolveContracts?: CantonCommandResolveContractSpec[];
+  token?: string;
 }
 
 // Root command decoded from the prepared Canton transaction protobuf, used during verifyTransaction.
