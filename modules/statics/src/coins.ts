@@ -476,7 +476,10 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
     if (!isCoinPresentInCoinMap({ ...tokenConfig }) && !nftAndOtherTokens.has(tokenConfig.name)) {
       try {
         const token = createToken(tokenConfig);
-        if (token) {
+        // A token whose name is absent from the static map can still reuse a contract address (or
+        // NFT collection id) that a static token already claims. Adding it would make the final
+        // CoinMap.fromCoins throw DuplicateContractAddressDefinitionError, so skip it instead.
+        if (token && !coins.hasTokenAddressConflict(token)) {
           BaseCoins.set(token.name, token);
         }
       } catch (e) {

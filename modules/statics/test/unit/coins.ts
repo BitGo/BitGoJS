@@ -1515,6 +1515,72 @@ describe('create token map using config details', () => {
   });
 });
 
+describe('create token map contract address de-duplication', () => {
+  // Locate any static ERC20 token to collide with. The merge path only fails when the
+  // colliding token's contract address already lives in the static coin map.
+  function firstStaticErc20(): Readonly<Erc20Coin> {
+    for (const [, coin] of coins) {
+      if (coin instanceof Erc20Coin) {
+        return coin as Readonly<Erc20Coin>;
+      }
+    }
+    throw new Error('expected at least one static ERC20 token in the coin map');
+  }
+
+  // Build an AMS token config that reuses an existing static token's contract address
+  // (same family + network) but under a brand-new name and id.
+  function collidingAmsConfig(
+    staticToken: Readonly<Erc20Coin>,
+    name: string,
+    id: string
+  ): Parameters<typeof createTokenMapUsingConfigDetails>[0] {
+    return {
+      [name]: [
+        {
+          id,
+          fullName: 'Colliding AMS Token',
+          name,
+          prefix: '',
+          suffix: name.toUpperCase(),
+          baseUnit: 'wei',
+          kind: 'crypto',
+          family: staticToken.family,
+          isToken: true,
+          features: [...staticToken.features],
+          decimalPlaces: staticToken.decimalPlaces,
+          asset: name,
+          network: staticToken.network,
+          primaryKeyCurve: 'secp256k1',
+          contractAddress: staticToken.contractAddress,
+        },
+      ],
+    } as unknown as Parameters<typeof createTokenMapUsingConfigDetails>[0];
+  }
+
+  const collidingName = 'eth:cshld976colliding';
+  const collidingId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+
+  it('uses a name and id not already in the static coin map', () => {
+    coins.has(collidingName).should.eql(false);
+    coins.has(collidingId).should.eql(false);
+  });
+
+  it('skips an AMS token that reuses an existing static contract address under a different name', () => {
+    const staticToken = firstStaticErc20();
+    const config = collidingAmsConfig(staticToken, collidingName, collidingId);
+
+    let tokenMap: CoinMap | undefined;
+    (() => {
+      tokenMap = createTokenMapUsingConfigDetails(config);
+    }).should.not.throw();
+
+    // The colliding AMS token is dropped...
+    (tokenMap as CoinMap).has(collidingName).should.eql(false);
+    // ...and the original static token at that contract address is preserved.
+    (tokenMap as CoinMap).has(staticToken.name).should.eql(true);
+  });
+});
+
 describe('DynamicCoin and dynamic base chain support', function () {
   describe('createToken with dynamic base chain', function () {
     it('should return a DynamicCoin when isToken is false with a BaseNetwork instance', function () {

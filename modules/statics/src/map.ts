@@ -34,6 +34,24 @@ export class CoinMap {
     return `${coin.prefix}${coin.family}:${coin.network.type}:${coin.nftCollectionId}`;
   }
 
+  /**
+   * Whether a different token with the same contract address (or NFT collection id) is already
+   * registered. Token identity in the map is keyed by name/id/alias, but a token also claims a
+   * contract-address key (`family:network.type:contractAddress`) and, for NFTs, a collection-id
+   * key. Two tokens that share such a key but differ in name cannot coexist — `addCoin` throws on
+   * the second. Callers merging externally-sourced tokens use this to skip a colliding token
+   * rather than crash.
+   */
+  public hasTokenAddressConflict(coin: Readonly<BaseCoin>): boolean {
+    if (coin instanceof ContractAddressDefinedToken) {
+      return this._coinByContractAddress.has(CoinMap.contractAddressKey(coin));
+    }
+    if (coin instanceof NFTCollectionIdDefinedToken) {
+      return this._coinByNftCollectionID.has(CoinMap.nftCollectionIdKey(coin));
+    }
+    return false;
+  }
+
   static fromCoins(coins: Readonly<BaseCoin>[]): CoinMap {
     const coinMap = new CoinMap();
     coins.forEach((coin) => {
