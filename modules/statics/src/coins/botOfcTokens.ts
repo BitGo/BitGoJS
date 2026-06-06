@@ -134,18 +134,6 @@ export const botOfcTokens = [
     undefined
   ),
   AccountCtors.ofcerc20(
-    '62dfdcbe-c204-4595-a042-96dc31ca28ca',
-    'ofceth:usdds',
-    'Usdd Stablecoin',
-    18,
-    'eth:usdds' as unknown as UnderlyingAsset,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined
-  ),
-  AccountCtors.ofcerc20(
     '4b5a115f-534e-4cd7-befc-9e432b6fe3c4',
     'ofceth:frnt',
     'Frontier Stable Token',

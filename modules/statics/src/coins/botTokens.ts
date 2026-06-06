@@ -1442,22 +1442,6 @@ export const botTokens = [
     undefined
   ),
   AccountCtors.erc20(
-    '29db2da1-2c00-4b31-9974-73b981ec3b3e',
-    'eth:usdds',
-    'Usdd Stablecoin',
-    18,
-    '0x4f8e5de400de08b164e7421b3ee387f461becd1a',
-    'eth:usdds' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', [
-      'custody-bitgo-new-york' as CoinFeature,
-      'custody-bitgo-germany' as CoinFeature,
-      'custody-bitgo-korea' as CoinFeature,
-    ]),
-    undefined,
-    undefined,
-    undefined
-  ),
-  AccountCtors.erc20(
     'c1482f56-3438-4278-b735-71c13b28ef08',
     'eth:frnt',
     'Frontier Stable Token',
