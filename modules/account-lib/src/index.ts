@@ -347,6 +347,8 @@ const coinMessageBuilderFactoryMap = {
   tada: Ada.MessageBuilderFactory,
   sol: Sol.MessageBuilderFactory,
   tsol: Sol.MessageBuilderFactory,
+  canton: Canton.MessageBuilderFactory,
+  tcanton: Canton.MessageBuilderFactory,
 };
 
 coins
