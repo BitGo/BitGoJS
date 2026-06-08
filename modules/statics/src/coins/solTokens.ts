@@ -39,6 +39,17 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    '44ebb5cb-d170-4746-b673-c088baf7b187',
+    'sol:frnt',
+    'Frontier Stable Token',
+    6,
+    'FRNTPi9V3Sw9b9U8d5Q3WY7tNANT6Q394d7dYtv7Jdog', // https://solscan.io/token/FRNTPi9V3Sw9b9U8d5Q3WY7tNANT6Q394d7dYtv7Jdog
+    'FRNTPi9V3Sw9b9U8d5Q3WY7tNANT6Q394d7dYtv7Jdog',
+    UnderlyingAsset['sol:frnt'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    ProgramID.Token2022ProgramId
+  ),
+  solToken(
     'f4c9d8e3-0a5b-4f6c-91e7-6d2a9f4c0e8b',
     'sol:wet',
     'Humidifi',
@@ -1973,6 +1984,16 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    'f6997681-ca0a-496a-b80f-e14177bae32a',
+    'sol:brs',
+    'Brazilian Real Stablecoin',
+    6,
+    'BRSxQRUaGswjLs7ewcH7uXj3r7SgmfKSSLLXyCKHZtUo', // https://solscan.io/token/BRSxQRUaGswjLs7ewcH7uXj3r7SgmfKSSLLXyCKHZtUo
+    'BRSxQRUaGswjLs7ewcH7uXj3r7SgmfKSSLLXyCKHZtUo',
+    UnderlyingAsset['sol:brs'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '2b1d83de-1cb8-4e22-bc25-8f66e758c809',
     'sol:w',
     'Wormhole Token',
@@ -2522,6 +2543,16 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    'b65a01e2-e153-49fc-9821-f5a43d7af2df',
+    'sol:arx',
+    'Arcium',
+    9,
+    'ARXwZkNAtzPfdcoqQiduJn8EPv9fKiDfGn2KyggyDrFs', // https://solscan.io/token/ARXwZkNAtzPfdcoqQiduJn8EPv9fKiDfGn2KyggyDrFs
+    'ARXwZkNAtzPfdcoqQiduJn8EPv9fKiDfGn2KyggyDrFs',
+    UnderlyingAsset['sol:arx'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '6408895b-98c7-4d8b-bbce-1dc096420879',
     'sol:nos',
     'Nosana',
@@ -2955,6 +2986,16 @@ export const solTokens = [
     'ZBCNpuD7YMXzTHB2fhGkGi78MNsHGLRXUhRewNRm9RU',
     UnderlyingAsset['sol:zbcn'],
     SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  solToken(
+    '97779b54-b3bd-4a12-9f2d-a6e95fa1cb54',
+    'sol:zaru',
+    'ZAR Universal Network',
+    9,
+    'ZARUjhn7JPUXNEJud1SPExtjRma52bJ1nqHtk9NHrv8', // https://solscan.io/token/ZARUjhn7JPUXNEJud1SPExtjRma52bJ1nqHtk9NHrv8
+    'ZARUjhn7JPUXNEJud1SPExtjRma52bJ1nqHtk9NHrv8',
+    UnderlyingAsset['sol:zaru'],
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '14d02815-9642-4cc7-9f8c-136281e6b0af',
@@ -4033,6 +4074,17 @@ export const solTokens = [
     '13UnWveBycSEeYJFgvsmE2qHXP5ERienrhGZ5wUjWM8L',
     '13UnWveBycSEeYJFgvsmE2qHXP5ERienrhGZ5wUjWM8L',
     UnderlyingAsset['sol:ab1'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
+  solToken(
+    '077b78d0-bdb1-467d-9f3c-ff33bac66bae',
+    'sol:blsh',
+    'Bullish Ordinary Shares',
+    6,
+    '6d5zakCaxjjRALNRyudC6ArivxeBGT3XUAci7ybWQY8U', // https://solscan.io/token/6d5zakCaxjjRALNRyudC6ArivxeBGT3XUAci7ybWQY8U
+    '6d5zakCaxjjRALNRyudC6ArivxeBGT3XUAci7ybWQY8U',
+    UnderlyingAsset['sol:blsh'],
     SOL_TOKEN_FEATURES,
     ProgramID.Token2022ProgramId
   ),

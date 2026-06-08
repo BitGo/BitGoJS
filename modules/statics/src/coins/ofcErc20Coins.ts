@@ -4003,6 +4003,34 @@ export const ofcErc20Coins = [
     true,
     'baseeth'
   ),
+  ofcerc20(
+    '68989b3f-16dc-4f6a-bdc8-ec85563321ff',
+    'ofcbaseeth:nock',
+    'Nockchain',
+    16,
+    UnderlyingAsset['baseeth:nock'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    '0322c739-f78c-4ebc-9b90-4cd64e8ac0b4',
+    'ofcbaseeth:frnt',
+    'Frontier Stable Token',
+    6,
+    UnderlyingAsset['baseeth:frnt'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 
   // Ink Network tokens
   ofcerc20(
@@ -5180,6 +5208,20 @@ export const tOfcErc20Coins = [
     UnderlyingAsset['hteth:htusdlt'],
     undefined,
     [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    'f6917f65-c94d-444d-8ff7-a9d92c043edd',
+    'ofchteth:tprn',
+    'Hoodi Testnet Peoples Reserve',
+    18,
+    UnderlyingAsset['hteth:tprn'],
+    undefined,
+    undefined,
     undefined,
     undefined,
     undefined,

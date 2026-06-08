@@ -177,6 +177,15 @@ export const polygonTokens = [
     POLYGON_TOKEN_FEATURES
   ),
   polygonErc20(
+    '8f27f720-aa64-45a2-a552-b8debeffcb81',
+    'polygon:frnt',
+    'Frontier Stable Token',
+    6,
+    '0x5e817f2abccb9095585d26c2a3ce234a440574fc',
+    UnderlyingAsset['polygon:frnt'],
+    [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  polygonErc20(
     '76c72a22-c2f9-41d3-afa5-b90bdefe95f9',
     'polygon:crv',
     'CRV',
@@ -1054,6 +1063,15 @@ export const polygonTokens = [
     18,
     '0x12050c705152931cfee3dd56c52fb09dea816c23',
     UnderlyingAsset['polygon:copm'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  polygonErc20(
+    '2e5c9993-5754-4e7f-a181-333c5afdd571',
+    'polygon:copr',
+    'COP Clyratech',
+    18,
+    '0x090c899a79fc28a6886c125601afe7d48e5fc855',
+    UnderlyingAsset['polygon:copr'],
     POLYGON_TOKEN_FEATURES
   ),
   polygonErc20(

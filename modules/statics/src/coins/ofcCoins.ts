@@ -1019,6 +1019,38 @@ export const ofcCoins = [
   ),
   ofcsolToken('e5b0c9d4-6f1a-4e8b-97f3-8d4c0a5e9b1f', 'ofcsol:fight', 'FIGHT', 9, UnderlyingAsset['sol:fight']),
   ofcsolToken('f6c1d0e5-7a2b-4f9c-88a4-9e5d1b6f0c2a', 'ofcsol:wet', 'Humidifi', 6, UnderlyingAsset['sol:wet']),
+  ofcsolToken('6a39eba5-442b-4b10-82e4-de29192ac75c', 'ofcsol:arx', 'Arcium', 9, UnderlyingAsset['sol:arx']),
+  ofcsolToken(
+    'deaadf12-fcaf-49af-8e00-ca28b162dd6e',
+    'ofcsol:zaru',
+    'ZAR Universal Network',
+    9,
+    UnderlyingAsset['sol:zaru']
+  ),
+  ofcsolToken(
+    '89dec885-1969-4405-8fa3-91e7023b35ea',
+    'ofcsol:frnt',
+    'Frontier Stable Token',
+    6,
+    UnderlyingAsset['sol:frnt'],
+    [...SOL_OFC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  ofcsolToken(
+    '172ad4f9-8e3a-40a6-9d7c-5b0efb1e608a',
+    'ofcsol:brs',
+    'Brazilian Real Stablecoin',
+    6,
+    UnderlyingAsset['sol:brs'],
+    SOL_OFC_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'f9e4338f-971b-47d2-a12a-809ed2fa6522',
+    'ofcsol:blsh',
+    'Bullish Ordinary Shares',
+    6,
+    UnderlyingAsset['sol:blsh'],
+    SOL_OFC_TOKEN_FEATURES
+  ),
   ofcsolToken('e792c18a-05d1-4622-a8db-192f431b70a2', 'ofcsol:usdg', 'Global Dollar', 6, UnderlyingAsset['sol:usdg'], [
     CoinFeature.STABLECOIN,
   ]),
@@ -2356,6 +2388,24 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['arbeth:testnflx']
   ),
+  ofcArbethErc20(
+    '1932ddde-e0a2-4868-a30f-2e798e163078',
+    'ofcarbeth:ausd',
+    'AUSD',
+    6,
+    UnderlyingAsset['arbeth:ausd'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcArbethErc20(
+    '13e0248b-0af0-4f7f-9ff1-1404d94d4049',
+    'ofcarbeth:frnt',
+    'Frontier Stable Token',
+    6,
+    UnderlyingAsset['arbeth:frnt'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
 
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20(
@@ -2488,6 +2538,15 @@ export const ofcCoins = [
     UnderlyingAsset['avaxc:eurc']
   ),
   ofcAvaxErc20('9f0a8419-c114-4809-96af-d083e2945c8d', 'ofcavaxc:ausd', 'AUSD', 6, UnderlyingAsset['avaxc:ausd']),
+  ofcAvaxErc20(
+    '3bb1172e-9834-4130-8276-27eaf95cea6b',
+    'ofcavaxc:frnt',
+    'Frontier Stable Token',
+    6,
+    UnderlyingAsset['avaxc:frnt'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcAvaxErc20('9fb77e47-8916-4dcb-ac10-e11fa07172fb', 'ofcavaxc:nxpc', 'NEXPACE', 18, UnderlyingAsset['avaxc:nxpc']),
   ofcOpethErc20('10259b23-2e2e-4574-b146-b49f1119600f', 'ofcopeth:op', 'Optimism', 18, UnderlyingAsset['opeth:op']),
   ofcOpethErc20(
@@ -2595,6 +2654,22 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['opeth:velo']
   ),
+  ofcOpethErc20(
+    'fcc23357-4fbd-4b86-a2f6-5e5d3563483e',
+    'ofcopeth:mre7',
+    'Midas Re7 Ethereum',
+    18,
+    UnderlyingAsset['opeth:mre7']
+  ),
+  ofcOpethErc20(
+    '5c2362de-2122-4767-8248-7d7e972ddcf1',
+    'ofcopeth:frnt',
+    'Frontier Stable Token',
+    6,
+    UnderlyingAsset['opeth:frnt'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcBscToken('a79933f5-a9d2-4a29-a948-79313a569988', 'ofcbsc:cfx', 'BSC Conflux', 18, UnderlyingAsset['bsc:cfx']),
   ofcBscToken('c6f5df09-5a21-468b-89cc-f626d02d74d0', 'ofcbsc:oort', 'OORT', 18, UnderlyingAsset['bsc:oort']),
   ofcBscToken('a0d5a2bc-75ab-4272-8b62-b513e88b6e5f', 'ofcbsc:soon', 'Soon Token', 18, UnderlyingAsset['bsc:soon']),
@@ -2639,6 +2714,15 @@ export const ofcCoins = [
   ofcBscToken('f8c3d7b5-2d9e-4b3f-8a1e-7c6d9e3a2f4b', 'ofcbsc:brise', 'Bitrise Token', 9, UnderlyingAsset['bsc:brise']),
   ofcBscToken('2e9f4c6b-8a7d-4b2e-9d3f-7c6a5e8b1f2a', 'ofcbsc:bsw', 'Biswap', 18, UnderlyingAsset['bsc:bsw']),
   ofcBscToken('654fcfa2-fe12-4f53-ab42-60e303b9f6ac', 'ofcbsc:sqd', 'Subsquid', 18, UnderlyingAsset['bsc:sqd']),
+  ofcBscToken(
+    '47ef3a5b-1072-4f93-8ef0-956fcd162c1f',
+    'ofcbsc:btcb',
+    'Binance Bitcoin',
+    18,
+    UnderlyingAsset['bsc:btcb']
+  ),
+  ofcBscToken('f6c6ffed-f153-40ea-8fbe-768c4975c525', 'ofcbsc:dusk', 'Dusk Network', 18, UnderlyingAsset['bsc:dusk']),
+  ofcBscToken('1421a7b9-cae3-4291-9211-68c9de1d0b5d', 'ofcbsc:hybond', 'HYBOND', 18, UnderlyingAsset['bsc:hybond']),
   ofcBscToken(
     '89dfd19c-d241-45e2-94b1-8a9bcdb9c09b',
     'ofcbsc:parti',
@@ -3356,6 +3440,15 @@ export const ofcCoins = [
     UnderlyingAsset['polygon:frax']
   ),
   ofcPolygonErc20(
+    '325e9513-6d6f-44e8-89de-dadee2181c63',
+    'ofcpolygon:frnt',
+    'Frontier Stable Token',
+    6,
+    UnderlyingAsset['polygon:frnt'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcPolygonErc20(
     'c7d91dc9-c1c4-4a8d-883d-e9ab70c0b8b5',
     'ofcpolygon:gfc',
     'Gcoin',
@@ -3439,6 +3532,13 @@ export const ofcCoins = [
     'COP Minteo',
     18,
     UnderlyingAsset['polygon:copm']
+  ),
+  ofcPolygonErc20(
+    'd5594f85-bba4-49da-8ca6-7989007dcaae',
+    'ofcpolygon:copr',
+    'COP Clyratech',
+    18,
+    UnderlyingAsset['polygon:copr']
   ),
   ofcPolygonErc20(
     'e5812e67-f82d-4f9f-9018-9ed20ba2f871',
@@ -4639,6 +4739,13 @@ export const ofcCoins = [
     UnderlyingAsset['tsui:deep']
   ),
   tofcSuiToken('ece96015-0a66-4f59-a8a9-36317304a936', 'ofctsui:wal', 'Testnet Walrus', 9, UnderlyingAsset['tsui:wal']),
+  tofcSuiToken(
+    '3bbae052-9e38-4370-a59c-68eef065bff3',
+    'ofctsui:tmerog',
+    'Testnet MeroG',
+    9,
+    UnderlyingAsset['tsui:tmerog']
+  ),
   ofc('d45636f8-f120-4374-b717-70fe999baa43', 'ofcarcusdc', 'USDC (ARC)', 18, UnderlyingAsset.ARCUSDC, CoinKind.CRYPTO),
   tofc(
     'bc57e64d-045e-4421-aa92-64db0c51e1d7',

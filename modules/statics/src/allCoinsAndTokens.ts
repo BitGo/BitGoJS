@@ -4852,6 +4852,25 @@ export const allCoinsAndTokens = [
     Networks.main.basechain,
     [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
   ),
+  erc20Token(
+    'ee820f5e-580d-4aba-85dc-fae843200be6',
+    'baseeth:nock',
+    'Nockchain',
+    16,
+    '0x9b5e262cf9bb04869ab40b19af91d2dc85761722',
+    UnderlyingAsset['baseeth:nock'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'b120a596-a9b2-4f87-bda9-24254489623c',
+    'baseeth:frnt',
+    'Frontier Stable Token',
+    6,
+    '0x5e817f2abccb9095585d26c2a3ce234a440574fc',
+    UnderlyingAsset['baseeth:frnt'],
+    Networks.main.basechain,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
 
   // XDC mainnet tokens
   xdcErc20(
@@ -6964,6 +6983,24 @@ export const allCoinsAndTokens = [
     '0x5ae39d492e06bedf5a261687af18c653e920a8a3',
     UnderlyingAsset['arbeth:week']
   ),
+  arbethErc20(
+    'de30d487-8349-4cf6-b018-2291bddbd26a',
+    'arbeth:ausd',
+    'AUSD',
+    6,
+    '0x00000000efe302beaa2b3e6e1b18d08d69a9012a',
+    UnderlyingAsset['arbeth:ausd'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  arbethErc20(
+    '6092bc16-1eb5-42be-b33b-9c760838ac0b',
+    'arbeth:frnt',
+    'Frontier Stable Token',
+    6,
+    '0x5e817f2abccb9095585d26c2a3ce234a440574fc',
+    UnderlyingAsset['arbeth:frnt'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
 
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
@@ -7172,6 +7209,23 @@ export const allCoinsAndTokens = [
     18,
     '0x9560e827af36c94d2ac33a39bce1fe78631088db',
     UnderlyingAsset['opeth:velo']
+  ),
+  opethErc20(
+    '3bd2e304-040e-47eb-ad5a-2a184e3100fc',
+    'opeth:mre7',
+    'Midas Re7 Ethereum',
+    18,
+    '0xe7ba07519dfa06e60059563f484d6090dedf21b3',
+    UnderlyingAsset['opeth:mre7']
+  ),
+  opethErc20(
+    'c97e8174-ab12-4787-bd4c-3f8aeeae9880',
+    'opeth:frnt',
+    'Frontier Stable Token',
+    6,
+    '0x5e817f2abccb9095585d26c2a3ce234a440574fc',
+    UnderlyingAsset['opeth:frnt'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   topethErc20(
     '3c06bc28-1af2-4869-a632-bd081376fb46',
@@ -7852,6 +7906,18 @@ export const allCoinsAndTokens = [
     '0x8190b041122eb492bf63cb464476bd68c6b7e570a4079645a8b28732b6197a82::wal::WAL',
     UnderlyingAsset['tsui:wal'],
     SUI_TOKEN_FEATURES_STAKING
+  ),
+  tsuiToken(
+    'ac944510-223e-43d7-a81f-1f9d9c522aef',
+    'tsui:tmerog',
+    'Testnet MeroG',
+    9,
+    '0x10596a4e0b68bdcb2699142707439997cbdcb5a467e4132e9c173910cd656a84',
+    'merog',
+    'MEROG',
+    '0x10596a4e0b68bdcb2699142707439997cbdcb5a467e4132e9c173910cd656a84::merog::MEROG',
+    UnderlyingAsset['tsui:tmerog'],
+    SUI_TOKEN_FEATURES
   ),
   ttaoToken(
     'b8b5fded-65f8-49eb-8f83-ad97d08d07f2',
