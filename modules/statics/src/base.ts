@@ -1214,6 +1214,8 @@ export enum UnderlyingAsset {
   'tsol:sofid' = 'tsol:sofid',
   'tsol:stgsofid' = 'tsol:stgsofid',
   'sol:sofid' = 'sol:sofid',
+  'tsol:spcx' = 'tsol:spcx',
+  'tsol:stgspcx' = 'tsol:stgspcx',
   'sol:usd1' = 'sol:usd1',
   'sol:usdm1' = 'sol:usdm1',
   'tsol:slnd' = 'tsol:slnd',

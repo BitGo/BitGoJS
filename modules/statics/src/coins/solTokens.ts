@@ -3608,6 +3608,28 @@ export const solTokens = [
     ProgramID.Token2022ProgramId
   ),
   tsolToken(
+    '70f8706b-d4c8-49ac-a8ae-ea1c3c60249e',
+    'tsol:stgspcx',
+    'Test SpaceX',
+    6,
+    '98iaHRfvCnaihEHcLK5EpwLq3w5yHiKKfSgpYLcxEScB',
+    '98iaHRfvCnaihEHcLK5EpwLq3w5yHiKKfSgpYLcxEScB',
+    UnderlyingAsset['tsol:stgspcx'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    '44e9960a-e7ed-4ae5-8cc9-f16de5744866',
+    'tsol:spcx',
+    'Test SpaceX',
+    6,
+    '4gvEw3Lx2gkAByv4X8hLnHujneN5bwtMGSu2ZDoip4vj',
+    '4gvEw3Lx2gkAByv4X8hLnHujneN5bwtMGSu2ZDoip4vj',
+    UnderlyingAsset['tsol:spcx'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
     '6405b589-e0cf-4481-a48f-60f8416e21ca',
     'tsol:stgusd1',
     'Test USD1 Token',
