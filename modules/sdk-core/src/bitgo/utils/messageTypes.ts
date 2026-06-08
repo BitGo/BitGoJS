@@ -10,6 +10,8 @@ export enum MessageStandardType {
   EIP191 = 'EIP191',
   EIP712 = 'EIP712',
   CIP8 = 'CIP8',
+  CANTON_SIGN_TRANSACTION = 'CANTON_SIGN_TRANSACTION',
+  CANTON_SIGN_TOPOLOGY = 'CANTON_SIGN_TOPOLOGY',
 }
 
 export type MessagePayload = string;

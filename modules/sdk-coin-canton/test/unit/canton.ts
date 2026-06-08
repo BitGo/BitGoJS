@@ -42,6 +42,25 @@ function walletWithRootAddress(rootAddress: string): IWallet {
   return { coinSpecific: () => ({ rootAddress }) } as unknown as IWallet;
 }
 
+describe('Canton coin:', function () {
+  let bitgo: TestBitGoAPI;
+  let basecoin: Canton;
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.safeRegister('canton', Canton.createInstance);
+    bitgo.safeRegister('tcanton', Tcanton.createInstance);
+    bitgo.initializeTestVars();
+    basecoin = bitgo.coin('tcanton') as Canton;
+  });
+
+  describe('supportsMessageSigning', function () {
+    it('should return true', function () {
+      basecoin.supportsMessageSigning().should.equal(true);
+    });
+  });
+});
+
 describe('Canton verifyTransaction:', function () {
   let bitgo: TestBitGoAPI;
   let basecoin: Canton;
