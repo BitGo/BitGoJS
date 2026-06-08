@@ -48,6 +48,7 @@ import {
   ttronToken,
   tvetNFTCollection,
   tworldErc20,
+  txrpMptToken,
   txrpToken,
   tzkethErc20,
   vetNFTCollection,
@@ -7552,6 +7553,51 @@ export const allCoinsAndTokens = [
     'rKgjEa9gEyyumaJsfkPq9uSAyaecQRmvYD::5853474400000000000000000000000000000000',
     'straitsx.com',
     UnderlyingAsset['txrp:xsgd']
+  ),
+  txrpMptToken(
+    'b8016d32-12d1-4bbd-b0f7-5e543557c0f7',
+    'txrp:sec0',
+    'Test Security Token 0dp',
+    '01135794225BAA3A7F9DA001AF93FB258C517F50E20DE771',
+    true,
+    0,
+    UnderlyingAsset['txrp:sec0']
+  ),
+  txrpMptToken(
+    '5df3833f-74c4-4607-bccf-1bc061b1b092',
+    'txrp:sec2',
+    'Test Security Token 2dp',
+    '0113578F225BAA3A7F9DA001AF93FB258C517F50E20DE771',
+    true,
+    2,
+    UnderlyingAsset['txrp:sec2']
+  ),
+  txrpMptToken(
+    '44d89e3d-4938-41bf-bc4d-a8fcd3ea34b2',
+    'txrp:wrapt',
+    'Test Wrapped Token',
+    '01135790225BAA3A7F9DA001AF93FB258C517F50E20DE771',
+    true,
+    8,
+    UnderlyingAsset['txrp:wrapt']
+  ),
+  txrpMptToken(
+    '18c9a83b-b147-41cb-9586-e8e966948422',
+    'txrp:ntsec',
+    'Test Non-Transferable Security',
+    '01135791225BAA3A7F9DA001AF93FB258C517F50E20DE771',
+    false,
+    2,
+    UnderlyingAsset['txrp:ntsec']
+  ),
+  txrpMptToken(
+    '2bad14c2-e6b8-41ea-a204-17ceeb501daf',
+    'txrp:feesec',
+    'Test Fee Security Token',
+    '01135792225BAA3A7F9DA001AF93FB258C517F50E20DE771',
+    true,
+    6,
+    UnderlyingAsset['txrp:feesec']
   ),
   suiToken(
     'f26941b7-1110-4aa7-a2bc-29807297a51c',

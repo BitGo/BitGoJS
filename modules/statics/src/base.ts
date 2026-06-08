@@ -3706,6 +3706,12 @@ export enum UnderlyingAsset {
   'xrp:fiuaxrp' = 'xrp:fiuaxrp',
   // XRP testnet tokens
   'txrp:xsgd' = 'txrp:xsgd',
+  // XRP MPT testnet tokens
+  'txrp:sec0' = 'txrp:sec0',
+  'txrp:sec2' = 'txrp:sec2',
+  'txrp:wrapt' = 'txrp:wrapt',
+  'txrp:ntsec' = 'txrp:ntsec',
+  'txrp:feesec' = 'txrp:feesec',
 
   // Sui tokens
   'sui:deep' = 'sui:deep',
