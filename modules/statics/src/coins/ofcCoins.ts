@@ -234,11 +234,11 @@ export const ofcCoins = [
     UnderlyingAsset.SONIC,
     CoinKind.CRYPTO
   ),
-  ofc('13151b0b-3734-452d-8ad9-21af03a08bfe', 'ofcusdt0', 'USDT0', 18, UnderlyingAsset.USDT0, CoinKind.CRYPTO),
+  ofc('13151b0b-3734-452d-8ad9-21af03a08bfe', 'ofcusdt0', 'StableEVM', 18, UnderlyingAsset.USDT0, CoinKind.CRYPTO),
   tofc(
     '39a4dd77-b824-47b9-baff-b45398012511',
     'ofctusdt0',
-    'USDT0 Testnet',
+    'StableEVM Testnet',
     18,
     UnderlyingAsset.USDT0,
     CoinKind.CRYPTO
@@ -251,11 +251,11 @@ export const ofcCoins = [
     UnderlyingAsset.HYPEEVM,
     CoinKind.CRYPTO
   ),
-  ofc('dc825481-0a15-44ab-84e6-6f182b13eb87', 'ofcxtzevm', 'XTZ EVM', 18, UnderlyingAsset.XTZEVM, CoinKind.CRYPTO),
+  ofc('dc825481-0a15-44ab-84e6-6f182b13eb87', 'ofcxtzevm', 'Etherlink', 18, UnderlyingAsset.XTZEVM, CoinKind.CRYPTO),
   tofc(
     '0e42884b-c01e-461b-b108-1ed0d0fbbd7b',
     'ofctxtzevm',
-    'XTZ EVM Testnet',
+    'Etherlink Testnet',
     18,
     UnderlyingAsset.XTZEVM,
     CoinKind.CRYPTO

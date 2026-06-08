@@ -405,7 +405,7 @@ export const allCoinsAndTokens = [
   account(
     '260a8571-1f89-40ad-af8d-c58a391581b5',
     'xtzevm',
-    'XTZ EVM',
+    'Etherlink',
     Networks.main.xtzevm,
     18,
     UnderlyingAsset.XTZEVM,
@@ -471,7 +471,7 @@ export const allCoinsAndTokens = [
   account(
     'e7fdbd6f-93ff-4dda-8a57-81580827188e',
     'txtzevm',
-    'Testnet XTZ EVM',
+    'Testnet Etherlink',
     Networks.test.xtzevm,
     18,
     UnderlyingAsset.XTZEVM,
@@ -1938,7 +1938,7 @@ export const allCoinsAndTokens = [
   account(
     '599ab8d6-ebda-460e-8527-677157f86021',
     'usdt0',
-    'USDT0',
+    'StableEVM',
     Networks.main.usdt0,
     18,
     UnderlyingAsset.USDT0,
@@ -1956,7 +1956,7 @@ export const allCoinsAndTokens = [
   account(
     'fd6b7af0-aff3-45fb-9a71-2d7100a1cd89',
     'tusdt0',
-    'Testnet USDT0',
+    'Testnet StableEVM',
     Networks.test.usdt0,
     18,
     UnderlyingAsset.USDT0,
