@@ -1,0 +1,27 @@
+{
+  "redo-staking-msgdelegate": {
+    "status": "funded",
+    "txHash": "6479FE9A2F28A1BE91B2252603CAFEBAEFB65BE995920F834098D4607E01232C",
+    "height": "250591162"
+  },
+  "redo-staking-msgundelegate": {
+    "status": "funded",
+    "txHash": "4EF35105C7F4CFF3C89A33AB7BE1F850D752FC80CBBB2DDEEE3C3F1883A0BC33",
+    "height": "250591174"
+  },
+  "redo-staking-msgbeginredelegate": {
+    "status": "funded",
+    "txHash": "BADDE294E563C37765C1296A25A6408A0188E7E2A4C9112D033621907F97696F",
+    "height": "250591186"
+  },
+  "redo-staking-msgwithdrawdelegatorreward": {
+    "status": "funded",
+    "txHash": "188EAA01793DCBA684BC6EB25639D485B11D369A50BA65971DC5651ADC9156D9",
+    "height": "250591197"
+  },
+  "edge-same-address-twice": {
+    "status": "funded",
+    "txHash": "F01D44559E3E105C73E19723CC5DCAE2634F07177A962EA6AF85B490A21B0714",
+    "height": "250591208"
+  }
+}

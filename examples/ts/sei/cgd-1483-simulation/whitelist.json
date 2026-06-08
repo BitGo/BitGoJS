@@ -1,0 +1,164 @@
+{
+  "chain": "sei",
+  "version": "v6.5.0",
+  "generated": "2026-05-26",
+  "source": "CGD-1483 testnet simulation against atlantic-2 + CGD-1465 final-report.md",
+
+  "_note": "This is the empirical Step-6 whitelist derived from the testnet simulation. It promotes/demotes the preliminary whitelist from CGD-1465's report based on what landed on chain. Per-row evidence is in `reconciliation.csv` and `fixtures/*.json`.",
+
+  "whitelist": [
+    "/cosmos.bank.v1beta1.MsgSend",
+    "/cosmos.bank.v1beta1.MsgMultiSend",
+    "/cosmos.staking.v1beta1.MsgUndelegate",
+    "/cosmos.staking.v1beta1.MsgCreateValidator",
+    "/cosmos.staking.v1beta1.MsgEditValidator",
+    "/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward",
+    "/cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission",
+    "/cosmos.distribution.v1beta1.MsgSetWithdrawAddress",
+    "/cosmos.distribution.v1beta1.MsgFundCommunityPool",
+    "/cosmos.gov.v1beta1.MsgVote",
+    "/cosmos.gov.v1beta1.MsgVoteWeighted",
+    "/cosmos.gov.v1beta1.MsgDeposit",
+    "/cosmos.gov.v1beta1.MsgSubmitProposal",
+    "/cosmos.authz.v1beta1.MsgGrant",
+    "/cosmos.authz.v1beta1.MsgRevoke",
+    "/cosmos.feegrant.v1beta1.MsgGrantAllowance",
+    "/cosmos.feegrant.v1beta1.MsgRevokeAllowance",
+    "/cosmos.feegrant.v1beta1.MsgPruneAllowances",
+    "/cosmos.slashing.v1beta1.MsgUnjail",
+    "/cosmos.vesting.v1beta1.MsgCreateVestingAccount",
+    "/ibc.applications.transfer.v1.MsgTransfer",
+    "/ibc.core.channel.v1.MsgTimeout",
+    "/ibc.core.channel.v1.MsgCreateClient",
+    "/ibc.core.channel.v1.MsgUpdateClient",
+    "/ibc.core.channel.v1.MsgConnectionOpenInit",
+    "/ibc.core.channel.v1.MsgConnectionOpenTry",
+    "/ibc.core.channel.v1.MsgConnectionOpenAck",
+    "/ibc.core.channel.v1.MsgConnectionOpenConfirm",
+    "/ibc.core.channel.v1.MsgChannelOpenInit",
+    "/ibc.core.channel.v1.MsgChannelOpenTry",
+    "/ibc.core.channel.v1.MsgChannelOpenAck",
+    "/ibc.core.channel.v1.MsgChannelOpenConfirm",
+    "/ibc.core.channel.v1.MsgChannelCloseInit",
+    "/ibc.core.channel.v1.MsgChannelCloseConfirm",
+    "/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
+    "/cosmos.upgrade.v1beta1.MsgCancelUpgrade",
+    "/cosmos.crisis.v1beta1.MsgVerifyInvariant",
+    "/cosmos.evidence.v1beta1.MsgSubmitEvidence",
+    "/cosmos.mint.v1beta1.MsgUpdateParams",
+    "/seiprotocol.seichain.oracle.MsgAggregateExchangeRateVote",
+    "/seiprotocol.seichain.oracle.MsgDelegateFeedConsent",
+    "/seiprotocol.seichain.tokenfactory.MsgCreateDenom",
+    "/seiprotocol.seichain.tokenfactory.MsgUpdateDenom",
+    "/seiprotocol.seichain.tokenfactory.MsgChangeAdmin",
+    "/seiprotocol.seichain.tokenfactory.MsgSetDenomMetadata",
+    "/cosmwasm.wasm.v1.MsgStoreCode",
+    "/cosmwasm.wasm.v1.MsgMigrateContract",
+    "/cosmwasm.wasm.v1.MsgUpdateAdmin",
+    "/cosmwasm.wasm.v1.MsgClearAdmin",
+    "/cosmwasm.wasm.v1.MsgUpdateParams",
+    "/seiprotocol.seichain.evm.MsgAssociate",
+    "/seiprotocol.seichain.evm.MsgAssociateContractAddress",
+    "/seiprotocol.seichain.evm.MsgRegisterPointer"
+  ],
+
+  "whitelist_after_fix": [
+    "/cosmos.staking.v1beta1.MsgDelegate",
+    "/cosmos.authz.v1beta1.MsgExec",
+    "/cosmwasm.wasm.v1.MsgInstantiateContract"
+  ],
+
+  "route_to_zero_value_alert": [
+    "/cosmos.staking.v1beta1.MsgBeginRedelegate",
+    "/seiprotocol.seichain.evm.MsgEVMTransaction",
+    "/seiprotocol.seichain.tokenfactory.MsgMint",
+    "/seiprotocol.seichain.tokenfactory.MsgBurn",
+    "/seiprotocol.seichain.evm.MsgClaim",
+    "/seiprotocol.seichain.evm.MsgClaimSpecific",
+    "/seiprotocol.seichain.evm.MsgInternalEVMCall",
+    "/seiprotocol.seichain.evm.MsgInternalEVMDelegateCall",
+    "/cosmwasm.wasm.v1.MsgExecuteContract"
+  ],
+
+  "needs_simulation": [
+    "/ibc.core.channel.v1.MsgAcknowledgement",
+    "/ibc.core.channel.v1.MsgRecvPacket"
+  ],
+
+  "_demotions_from_preliminary": {
+    "/cosmos.staking.v1beta1.MsgCancelUnbondingDelegation": "Removed from whitelist — Sei v6.5.0 returns \"tx parse error: unable to resolve type URL\" at broadcast time. The msg type is NOT registered on Sei's staking module. The indexer's double-credit-at-completion-time risk is moot in practice; no Sei tx can trigger it. Evidence: fixtures/staking-msgcancelunbondingdelegation.json.",
+
+    "/cosmos.gov.v1.MsgSubmitProposal": "Removed — Sei v6.5.0 returns \"tx parse error\" on broadcast. Sei is based on cosmos-sdk v0.45 which only ships gov v1beta1. The v1 path is not registered. v1beta1 is whitelisted. Evidence: fixtures/gov-msgsubmitproposal-v1.json.",
+
+    "/cosmos.gov.v1.MsgVote": "Implicit removal — same v1-not-registered reason. v1beta1.MsgVote remains whitelisted.",
+    "/cosmos.gov.v1.MsgVoteWeighted": "Implicit removal — same v1-not-registered reason.",
+    "/cosmos.gov.v1.MsgDeposit": "Implicit removal — same v1-not-registered reason.",
+    "/cosmos.gov.v1.MsgExecLegacyContent": "Implicit removal — same v1-not-registered reason.",
+
+    "/cosmos.vesting.v1beta1.MsgCreatePermanentLockedAccount": "Removed — Sei v6.5.0 mempool silently drops the broadcast (CheckTx accepts, but tx never lands in a block). Matches the report's \"0 LCD results\" — Sei likely does not register this variant. Evidence: fixtures/vesting-msgcreatepermanentlockedaccount.json.",
+    "/cosmos.vesting.v1beta1.MsgCreatePeriodicVestingAccount": "Removed — same drop-at-mempool behavior. Evidence: fixtures/vesting-msgcreateperiodicvestingaccount.json.",
+    "/cosmos.vesting.v1beta1.MsgFundVestingAccount": "Removed — depends on a pre-existing permanent/periodic account, which Sei doesn't register either.",
+
+    "/cosmwasm.wasm.v1.MsgInstantiateContract2": "Removed — Sei v6.5.0 returns \"tx parse error\" on broadcast. Sei's wasmd fork predates v0.30 and does not register the predictable-address variant. Evidence: fixtures/wasm-msginstantiatecontract2.json.",
+
+    "/seiprotocol.seichain.evm.MsgSend": "Moved to historical-mainnet-only — Sei v6.5.0 disallows direct user submission of evm.MsgSend (it's internal-only). Evidence: fixtures/evm-msgsend.json (mainnet historical sample 40CACAF09A15F025...)."
+  },
+
+  "_promotions_from_preliminary_needing_fix": {
+    "/cosmos.staking.v1beta1.MsgDelegate": "Promoted to whitelist_after_fix — testnet sim confirmed the delegator-side path works (tx 413A59B3... + FA67C0E9...). The SUSPECT verdict (phantom bonded_tokens_pool receive) is contingent on fee-collector map gap — fix that and this is OK.",
+
+    "/cosmos.authz.v1beta1.MsgExec": "Promoted to whitelist_after_fix — confirmed authz.MsgExec works on Sei testnet (txs 180DCFBA..., 10BE1868..., 49F99605...). Bank-event capture from inner msgs is verified (single + multi inner). The bug is specifically inner-MsgUndelegate parser blindness; fix `parseIsUnstakeTx` and `findVestingMessageIndices` to recurse into MsgExec.msgs[]."
+  },
+
+  "_provenance": {
+    "testnet_simulations": {
+      "total_attempted": 28,
+      "broadcast_success_code_0": 23,
+      "broadcast_failure_code_29": 2,
+      "msg_not_registered_placeholders": 6,
+      "mainnet_historical_captures": 3
+    },
+    "testnet_tx_hashes": {
+      "/cosmos.bank.v1beta1.MsgSend": "018766A3BA6C248E842B4126E36B2B96B43DED4EBFCE9468AE76B72073EC7222",
+      "/cosmos.bank.v1beta1.MsgMultiSend": "6BABE89A950346F68C79F0FC03477BDFAE6B3B57F29918D59C212978C07C491D",
+      "edge-msgmultisend-selfloop": "0548480C073891737EC9E48A53C7FD2C54515F3D778586C53147EE661B09D319",
+      "edge-same-address-twice": "FA1DBDCE0CBBF012B36EA990098971AF7AEBA18B062F85E39D8223178F665841",
+      "/cosmos.staking.v1beta1.MsgDelegate": "413A59B3A073636BDD98D2BCF3053CE29024F915E25D6C2DB9D72EEFC19EC22E",
+      "/cosmos.staking.v1beta1.MsgUndelegate": "BE14142F057C7536626D2342E0E3B8EDC52EF089B3042212ED94E66578C47E8F",
+      "/cosmos.staking.v1beta1.MsgBeginRedelegate": "FC3A13BCCF91A534C622313B39E164C8DC3DA740924E6D2DDF01AC0FF5EEB153",
+      "/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward": "F9E21AF94F227C0AE43EFD9D91A2A5C1F20A65A82FB805415D86B9E02862DF0D",
+      "/cosmos.distribution.v1beta1.MsgSetWithdrawAddress": "5B5AF6C1FF686EE6902144E1984C54F4E407864BEACB221DD959DE5C559A4B10",
+      "/cosmos.distribution.v1beta1.MsgFundCommunityPool": "DCFCA0511132666146920D9F43F90DC243DC130443A297BF80F637CC699E3F16",
+      "/cosmos.authz.v1beta1.MsgGrant": "78E5C7C132F2C90E2CC5752F5CAB5D90B4F6A9FC62621EA2B5873BFF7C7E367D",
+      "/cosmos.authz.v1beta1.MsgExec (inner MsgUndelegate, broken case)": "180DCFBABB1ADD998E4E44AD4A381219947FAD7C0657E54829A2360C90BBCF54",
+      "edge-msgexec-single-inner": "10BE1868DC8ADE5C70A9513C5203EC8CD092FBC044E076D712E78A8DC95891A9",
+      "edge-msgexec-multi-inner": "49F9960552385535364FB90F13441F529AE29639F690D05FE854E44B5E29DAAB",
+      "/cosmos.feegrant.v1beta1.MsgGrantAllowance": "3096F42FAC6E013AE93445777C29B3E6D8956D2CEBE1807FAB8A0CDCF8365E8F",
+      "/cosmos.vesting.v1beta1.MsgCreateVestingAccount": "7E2B499CB0C6A8503069D819A0FD35BA313CFA65401A9A3054664D677F648A5D",
+      "/ibc.applications.transfer.v1.MsgTransfer (client expired, code 29)": "79E6BD0D346EA5FA4031679E14B71B9433751AE59F475F02C0030E113EC2960C",
+      "/cosmos.gov.v1beta1.MsgSubmitProposal": "B96DD20A51D9F053DE8CE8E92B1FD41793E248B9FA1CA30EAD783048DDBEA350",
+      "/seiprotocol.seichain.tokenfactory.MsgCreateDenom": "30B220D1B310E8EF64954EAC3527648DF3CCB1A9DB253E022FE903025BF1AAD7",
+      "/seiprotocol.seichain.tokenfactory.MsgMint (kept by attacker)": "D734B5DC3805B94E3E69B78B3590CC5C79B56B12AA0196B497387BB9A1A31B9E",
+      "/seiprotocol.seichain.tokenfactory.MsgMint (forwarded to victim)": "F385B6A1C09F72D741748B97B7C99B3DC53F8BE0E1ADC91B38373313984B899D",
+      "/seiprotocol.seichain.tokenfactory.MsgBurn": "89B9FC3044BDA96B9F66090D6D8709A9D03E62060E5671A67291AF8D388F0F21",
+      "/cosmwasm.wasm.v1.MsgInstantiateContract": "5CA109F991D394C5BF4CD3835B8571C606E61643E0812BEC9B2F88D6A44C31EF",
+      "/cosmwasm.wasm.v1.MsgExecuteContract (CW-20 transfer)": "6776EB6AE32F8237CF51807C815F77D29E75DFD6FC947CD97BEF63282AC1C1C3"
+    },
+    "msg_not_registered_on_sei_v6_5_0": [
+      "/cosmos.staking.v1beta1.MsgCancelUnbondingDelegation",
+      "/cosmos.vesting.v1beta1.MsgCreatePermanentLockedAccount",
+      "/cosmos.vesting.v1beta1.MsgCreatePeriodicVestingAccount",
+      "/cosmwasm.wasm.v1.MsgInstantiateContract2",
+      "/cosmos.gov.v1.MsgSubmitProposal"
+    ],
+    "msg_dropped_at_sei_mempool": [
+      "/cosmos.bank.v1beta1.MsgSend with out-of-gas (DeliverTx failures rejected at CheckTx)"
+    ],
+    "historical_mainnet_fixtures": [
+      "/seiprotocol.seichain.evm.MsgEVMTransaction — tx 62ABC7EAC436271559CF1A197957B364AE78A4E1CA200DC5415B720A78CD63C0 h=209671085",
+      "/seiprotocol.seichain.evm.MsgSend — tx 40CACAF09A15F025E1B68C2BD0CBFA48434370BE391B93055EB41A7184140560 h=204636477",
+      "/ibc.core.channel.v1.MsgRecvPacket — tx 96C863A17E5BD3F8EE4FD63CC06C03D44B2A42EA14C97377FFA82D500206F499 h=207042134"
+    ],
+    "ibc_client_state_finding": "All 51 open transfer-port channels on atlantic-2 had Expired clients at sim time (2026-05-26). MsgTransfer outbound lands at code=29 (Client Expired). MsgTimeout edge case is unobservable on testnet until relayers refresh clients. The historical-mainnet MsgTimeout fixture from the report still stands as the IBC-timeout reference."
+  }
+}

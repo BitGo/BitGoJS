@@ -1,0 +1,5 @@
+wallets.json
+tokenfactory-state.json
+fixtures/
+reconciliation.csv
+.env

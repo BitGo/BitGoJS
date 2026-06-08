@@ -1,0 +1,38 @@
+{
+  "redo-bank-msgsend-selfloop": {
+    "walletId": "6a180f6fa462f8b03dce8cbf808a5fe9",
+    "address": "sei1xuy46c3n9uhx8c5vlpfumrvmsfq4lmksxl0qvk",
+    "label": "CGD-1483 sei sim REDO | redo-bank-msgsend-selfloop | 2026-05-28",
+    "createdAt": "2026-05-28T09:48:31.908Z"
+  },
+  "redo-staking-msgdelegate": {
+    "walletId": "6a180f82ff52cea1f6f875b38042b198",
+    "address": "sei19urvgvahwsu8nr2fpzvfdkgd30ykkhvwaczfc3",
+    "label": "CGD-1483 sei sim REDO | redo-staking-msgdelegate | 2026-05-28",
+    "createdAt": "2026-05-28T09:48:51.080Z"
+  },
+  "redo-staking-msgundelegate": {
+    "walletId": "6a180f93378e5d82cec8e4e8cab44f3b",
+    "address": "sei13wk6r363yuh8uk4s0xenxzgry0pfseccrnmrhf",
+    "label": "CGD-1483 sei sim REDO | redo-staking-msgundelegate | 2026-05-28",
+    "createdAt": "2026-05-28T09:49:07.889Z"
+  },
+  "redo-staking-msgbeginredelegate": {
+    "walletId": "6a180fa5c656436698e8247143a611be",
+    "address": "sei1hdf3ld43r4nv2t0a6hq3sgva6vfyg4jp557s7t",
+    "label": "CGD-1483 sei sim REDO | redo-staking-msgbeginredelegate | 2026-05-28",
+    "createdAt": "2026-05-28T09:49:25.538Z"
+  },
+  "redo-staking-msgwithdrawdelegatorreward": {
+    "walletId": "6a180fb517a04fdc032f6da09b099ca3",
+    "address": "sei1ntn9qzys409q8a22ya0z800knv873k8tl3m3gf",
+    "label": "CGD-1483 sei sim REDO | redo-staking-msgwithdrawdelegatorreward | 2026-05-28",
+    "createdAt": "2026-05-28T09:49:41.824Z"
+  },
+  "redo-bank-msgsend-fanout": {
+    "walletId": "6a180fc6a48c22a4a7a280b733fe2a47",
+    "address": "sei1h5224ssqzdeepqnqryq8xal2mxj3k369c7q79z",
+    "label": "CGD-1483 sei sim REDO | redo-bank-msgsend-fanout | 2026-05-28",
+    "createdAt": "2026-05-28T09:49:58.582Z"
+  }
+}
