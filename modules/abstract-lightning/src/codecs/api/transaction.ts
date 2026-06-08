@@ -18,6 +18,7 @@ export const TransactionEntry = t.intersection(
     }),
     t.partial({
       wallet: t.string,
+      isReward: t.boolean,
     }),
   ],
   'TransactionEntry'
