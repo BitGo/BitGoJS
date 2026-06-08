@@ -743,6 +743,15 @@ export const avaxTokens = [
     '0x00000000efe302beaa2b3e6e1b18d08d69a9012a',
     UnderlyingAsset['avaxc:ausd']
   ),
+  avaxErc20(
+    '3fed1a2a-a6d5-44f8-b745-b1fb86c5b9e9',
+    'avaxc:frnt',
+    'Frontier Stable Token',
+    6,
+    '0x5e817f2abccb9095585d26c2a3ce234a440574fc',
+    UnderlyingAsset['avaxc:frnt'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
   // End FTX missing AVAXC tokens
   tavaxErc20(
     'cd107316-6e78-4936-946f-70e8fd5d8040',

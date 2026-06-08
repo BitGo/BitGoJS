@@ -1688,4 +1688,31 @@ export const bscTokens = [
     UnderlyingAsset['bsc:sqd'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    '7c4d08e9-d88e-4e2e-9eb7-841408182c12',
+    'bsc:btcb',
+    'Binance Bitcoin',
+    18,
+    '0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c',
+    UnderlyingAsset['bsc:btcb'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '31ff3fc6-6f99-4477-a316-eef8a8864fbe',
+    'bsc:dusk',
+    'Dusk Network',
+    18,
+    '0xb2bd0749dbe21f623d9baba856d3b0f0e1bfec9c',
+    UnderlyingAsset['bsc:dusk'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'fc833ff6-0a89-4ff2-8910-69b99729c72c',
+    'bsc:hybond',
+    'HYBOND',
+    18,
+    '0xb613ab1be4039a7d799ad968ba9e425b6bff4224',
+    UnderlyingAsset['bsc:hybond'],
+    BSC_TOKEN_FEATURES
+  ),
 ];
