@@ -4765,6 +4765,7 @@ export class Wallet implements IWallet {
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
         apiVersion: params.apiVersion,
+        verification: params.verification,
       });
     } catch (e) {
       throw new Error('failed to sign transaction ' + e);

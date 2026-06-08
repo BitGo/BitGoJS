@@ -54,7 +54,15 @@ export class BscToken extends EthLikeToken {
    */
   async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
     const { txParams, txPrebuild, wallet } = params;
+    if (!wallet || !txPrebuild) {
+      throw new Error(`missing params`);
+    }
+    if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
+      throw new Error(`tx cannot be both a batch and hop transaction`);
+    }
+
     if (
+      !params.verification?.skipTssRecipientVerification &&
       !txParams?.recipients &&
       !(
         txParams.prebuildTx?.consolidateId ||
@@ -64,12 +72,6 @@ export class BscToken extends EthLikeToken {
       )
     ) {
       throw new Error(`missing txParams`);
-    }
-    if (!wallet || !txPrebuild) {
-      throw new Error(`missing params`);
-    }
-    if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
-      throw new Error(`tx cannot be both a batch and hop transaction`);
     }
 
     return true;

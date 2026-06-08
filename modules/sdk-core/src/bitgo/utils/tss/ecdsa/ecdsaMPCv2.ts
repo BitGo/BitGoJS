@@ -834,12 +834,15 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       // For all other coins, signableHex IS the unsigned transaction (e.g. RLP bytes).
       const isIcp = this.baseCoin.getConfig().family === 'icp';
       const isAvalancheAtomic = unsignedTx.serializedTxHex && unsignedTx.serializedTxHex.startsWith('0000');
+      const verification =
+        'verification' in params ? (params as TssSignTxRequestParamsWithPrv).verification : undefined;
       if (isIcp || isAvalancheAtomic) {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
           txParams: resolveEffectiveTxParams(txRequest, params.txParams),
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
+          verification,
         });
       } else {
         await this.baseCoin.verifyTransaction({
@@ -847,6 +850,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
           txParams: resolveEffectiveTxParams(txRequest, params.txParams),
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
+          verification,
         });
       }
       txOrMessageToSign = unsignedTx.signableHex;

@@ -113,8 +113,17 @@ export class EvmCoin extends AbstractEthLikeNewCoins {
   private async verifyLegacyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
     const { txParams, txPrebuild, wallet } = params;
 
-    // Basic validation for legacy transactions only
+    if (!wallet || !txPrebuild) {
+      throw new Error(`missing params`);
+    }
+
+    if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
+      throw new Error(`tx cannot be both a batch and hop transaction`);
+    }
+
+    // Only enforce recipient presence when skipTssRecipientVerification is not set
     if (
+      !params.verification?.skipTssRecipientVerification &&
       !txParams?.recipients &&
       !(
         txParams.prebuildTx?.consolidateId ||
@@ -124,14 +133,6 @@ export class EvmCoin extends AbstractEthLikeNewCoins {
       )
     ) {
       throw new Error(`missing txParams`);
-    }
-
-    if (!wallet || !txPrebuild) {
-      throw new Error(`missing params`);
-    }
-
-    if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
-      throw new Error(`tx cannot be both a batch and hop transaction`);
     }
 
     // If validation passes, consider it verified

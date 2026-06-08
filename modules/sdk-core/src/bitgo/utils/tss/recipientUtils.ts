@@ -3,9 +3,20 @@ import { InvalidTransactionError } from '../../errors';
 import { PopulatedIntent, TxRequest } from './baseTypes';
 
 /**
+ * Type guard that narrows `TxRequest.intent` (typed as `unknown`) to `PopulatedIntent`.
+ * Checks for the required `intentType` string field that all populated intents carry.
+ */
+function isPopulatedIntent(intent: unknown): intent is PopulatedIntent {
+  return (
+    typeof intent === 'object' &&
+    intent !== null &&
+    'intentType' in intent &&
+    typeof (intent as PopulatedIntent).intentType === 'string'
+  );
+}
+
+/**
  * Transaction types that legitimately carry no explicit recipients.
- * These are the intentType strings as stored in TxRequest.intent.intentType by WP.
- * verifyTransaction handles no-recipient validation for these internally.
  * Mirrors the bypass list in abstractEthLikeNewCoins.ts verifyTssTransaction.
  *
  * ECDSA types: acceleration, fillNonce, transferToken, tokenApproval, consolidate,
@@ -14,10 +25,6 @@ import { PopulatedIntent, TxRequest } from './baseTypes';
  * CELO/ETH lock-based staking: stake, unstake, stakeWithCallData, unstakeWithCallData,
  *              transferStake, increaseStake, goUnstake
  * Claim rewards (BSC, CELO — TRX/SOL use EdDSA and are unaffected): claim, stakeClaimRewards
- * Dry-run confirmed (2026-05-20 investigation): createAccount, transferAccept, transferReject,
- *              transferOfferWithdrawn, cantonCommand, pledge
- * Dry-run confirmed (2026-06-03 investigation): contractCall (hash/Provenance — secp256k1,
- *              smart contract invocation with no explicit recipients)
  */
 export const NO_RECIPIENT_TX_TYPES = new Set([
   // ECDSA types
@@ -29,10 +36,10 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   'bridgeFunds',
   'enableToken',
   'customTx',
-  // Smart contract invocations with no explicit SDK-level recipients (e.g. hash/Provenance)
+  // Smart contract
   'contractCall',
 
-  // BSC/BNB delegation-based staking — intentType strings from TxRequest.intent.intentType
+  // BSC/BNB delegation-based staking
   'delegate',
   'undelegate',
   'switchValidator',
@@ -46,11 +53,10 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   'increaseStake',
   'goUnstake',
 
-  // Claim rewards — BSC and CELO (TRX/SOL/Cosmos use EdDSA, not affected by this guard)
+  // Claim rewards
   'claim',
   'stakeClaimRewards',
 
-  // Dry-run confirmed no-recipient types (13-day observation, 2026-05-20)
   'createAccount',
   'transferAccept',
   'transferReject',
@@ -78,7 +84,9 @@ export function resolveEffectiveTxParams(
   txRequest: TxRequest,
   txParams: TransactionParams | undefined
 ): TransactionParams {
-  const intentRecipients = (txRequest.intent as PopulatedIntent)?.recipients?.map((intentRecipient) => ({
+  const intent = isPopulatedIntent(txRequest.intent) ? txRequest.intent : undefined;
+
+  const intentRecipients = intent?.recipients?.map((intentRecipient) => ({
     address: intentRecipient.address.address,
     amount: intentRecipient.amount.value,
     data: intentRecipient.data,
@@ -91,7 +99,7 @@ export function resolveEffectiveTxParams(
 
   // Fall back to intent.intentType when txParams.type is not explicitly set.
   // Staking wallets call signTransaction without txParams, so the type lives only in the intent.
-  const txType = effectiveTxParams.type ?? (txRequest.intent as PopulatedIntent)?.intentType ?? '';
+  const txType = effectiveTxParams.type ?? intent?.intentType ?? '';
 
   // Propagate the resolved type so downstream callers (e.g. verifyTssTransaction) can use it.
   if (!effectiveTxParams.type && txType) {
@@ -100,15 +108,14 @@ export function resolveEffectiveTxParams(
 
   // Propagate stakingRequestId from intent into effectiveTxParams so verifyTssTransaction
   // overrides can bypass the no-recipient guard without needing access to txRequest directly.
-  const intentStakingRequestId = (txRequest.intent as PopulatedIntent)?.stakingRequestId;
+  const intentStakingRequestId = intent?.stakingRequestId;
   if (intentStakingRequestId && !effectiveTxParams.stakingRequestId) {
     effectiveTxParams.stakingRequestId = intentStakingRequestId;
   }
 
-  // All staking intents (BSC delegate/undelegate, CELO stake/unstake, etc.) carry
-  // stakingRequestId as a required field on BaseStakeIntent (@bitgo/public-types).
-  // Use its presence as a generic staking signal — no need to enumerate every intentType.
-  const isStakingIntent = !!(txRequest.intent as PopulatedIntent)?.stakingRequestId;
+  // All staking intents carry stakingRequestId as a required field on BaseStakeIntent
+  // Use its presence as a generic staking signal
+  const isStakingIntent = !!intent?.stakingRequestId;
 
   if (!effectiveTxParams.recipients?.length && !isStakingIntent && !NO_RECIPIENT_TX_TYPES.has(txType)) {
     throw new InvalidTransactionError(

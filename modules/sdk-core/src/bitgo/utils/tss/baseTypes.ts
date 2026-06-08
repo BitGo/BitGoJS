@@ -1,6 +1,12 @@
 import { Key, SerializedKeyPair } from 'openpgp';
 import { EncryptionVersion, IEncryptionSession, IRequestTracer } from '../../../api';
-import { type ITransactionRecipient, KeychainsTriplet, ParsedTransaction, TransactionParams } from '../../baseCoin';
+import {
+  type ITransactionRecipient,
+  KeychainsTriplet,
+  ParsedTransaction,
+  TransactionParams,
+  VerificationOptions,
+} from '../../baseCoin';
 import { ApiKeyShare, Keychain, WebauthnKeyEncryptionInfo } from '../../keychain';
 import { ApiVersion, Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, Signature, SignShare } from '../../../account-lib/mpc/tss';
@@ -679,6 +685,7 @@ export type TssSignTxExplicitRecipientParams = {
   apiVersion?: ApiVersion;
   recipientSource: typeof TssTxRecipientSource.Explicit;
   txParams: TransactionParamsWithMandatoryRecipients;
+  verification?: VerificationOptions;
 };
 
 export type TssSignTxResolvedRecipientParams = {
@@ -687,6 +694,7 @@ export type TssSignTxResolvedRecipientParams = {
   apiVersion?: ApiVersion;
   recipientSource?: typeof TssTxRecipientSource.Resolved;
   txParams?: TransactionParams;
+  verification?: VerificationOptions;
 };
 
 /**

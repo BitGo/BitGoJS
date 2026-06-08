@@ -156,4 +156,27 @@ describe('recipientUtils', function () {
       assert.strictEqual(result.recipients?.[0].address, '0xcaller');
     });
   });
+
+  describe('skipTssRecipientVerification integration', function () {
+    it('resolveEffectiveTxParams still throws for unknown types regardless of flag (flag is checked at coin layer)', function () {
+      // The flag is checked in verifyTssTransaction, not in resolveEffectiveTxParams.
+      // resolveEffectiveTxParams enforces recipient presence — it does not know about the flag.
+      const txRequest = makeTxRequest();
+      assert.throws(() => resolveEffectiveTxParams(txRequest, { type: 'payment' }), InvalidTransactionError);
+    });
+
+    it('resolveEffectiveTxParams does not throw for exempt types (flag not needed)', function () {
+      const txRequest = makeTxRequest();
+      for (const txType of NO_RECIPIENT_TX_TYPES) {
+        assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, { type: txType }), `${txType} should not throw`);
+      }
+    });
+
+    it('resolveEffectiveTxParams does not throw when recipients are present regardless of type', function () {
+      const txRequest = makeTxRequest();
+      const txParams = { type: 'payment', recipients: [{ address: '0xabc', amount: '100' }] };
+      const result = resolveEffectiveTxParams(txRequest, txParams);
+      assert.strictEqual(result.recipients?.length, 1);
+    });
+  });
 });

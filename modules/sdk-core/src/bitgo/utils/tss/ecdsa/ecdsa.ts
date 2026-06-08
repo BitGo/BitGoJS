@@ -807,12 +807,15 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       // Verification cannot be performed directly on the signableHex alone. However, we can parse the serializedTxHex
       // to regenerate the signableHex and compare it against the provided value for verification.
       // In contrast, for other coin families, verification is typically done using just the signableHex.
+      const verification =
+        'verification' in params ? (params as TssSignTxRequestParamsWithPrv).verification : undefined;
       if (this.baseCoin.getConfig().family === 'icp') {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
           txParams: resolveEffectiveTxParams(txRequest, params.txParams),
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
+          verification,
         });
       } else {
         await this.baseCoin.verifyTransaction({
@@ -820,6 +823,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
           txParams: resolveEffectiveTxParams(txRequest, params.txParams),
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
+          verification,
         });
       }
       signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');

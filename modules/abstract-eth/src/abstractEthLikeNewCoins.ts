@@ -3105,7 +3105,15 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       );
     };
 
+    if (!wallet || !txPrebuild) {
+      throw new Error('missing params');
+    }
+    if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
+      throw new Error('tx cannot be both a batch and hop transaction');
+    }
+
     if (
+      !params.verification?.skipTssRecipientVerification &&
       !txParams?.recipients &&
       !(
         txParams.prebuildTx?.consolidateId ||
@@ -3117,14 +3125,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     ) {
       throw new Error('missing txParams');
     }
-    if (!wallet || !txPrebuild) {
-      throw new Error('missing params');
-    }
-    if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
-      throw new Error('tx cannot be both a batch and hop transaction');
-    }
 
-    if (txParams.type && ['transfer'].includes(txParams.type)) {
+    if (!params.verification?.skipTssRecipientVerification && txParams.type && ['transfer'].includes(txParams.type)) {
       if (txParams.recipients && txParams.recipients.length === 1) {
         const recipients = txParams.recipients;
         const expectedAmount = recipients[0].amount.toString();

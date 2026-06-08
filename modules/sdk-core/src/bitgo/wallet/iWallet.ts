@@ -363,6 +363,7 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
   apiVersion?: ApiVersion;
   multisigTypeVersion?: 'MPCv2';
   walletPassphrase?: string;
+  verification?: VerificationOptions;
   /**
    * Optional transaction verification parameters. When provided, the transaction will be verified
    * using verifyTransaction before signing.
