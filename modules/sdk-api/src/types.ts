@@ -182,6 +182,7 @@ export interface AddAccessTokenOptions {
   txValueLimit?: number;
   scope: string[];
   spendingLimits?: AccessTokenSpendingLimit[];
+  enterprise?: string;
 }
 
 export interface AddAccessTokenResponse {
