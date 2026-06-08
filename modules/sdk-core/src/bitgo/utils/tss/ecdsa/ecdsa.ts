@@ -110,6 +110,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     enterprise?: string | undefined;
     originalPasscodeEncryptionCode?: string | undefined;
     webauthnInfo?: WebauthnKeyEncryptionInfo;
+    encryptionVersion?: EncryptionVersion;
   }): Promise<KeychainsTriplet> {
     const MPC = new Ecdsa();
     const m = 2;
@@ -143,6 +144,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       passphrase: params.passphrase,
       originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
       webauthnInfo: params.webauthnInfo,
+      encryptionVersion: params.encryptionVersion,
     });
     const backupKeychainPromise = this.createBackupKeychain({
       userGpgKey,
@@ -152,6 +154,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       backupKeyShare,
       bitgoKeychain,
       passphrase: params.passphrase,
+      encryptionVersion: params.encryptionVersion,
     });
 
     const [userKeychain, backupKeychain] = await Promise.all([userKeychainPromise, backupKeychainPromise]);
@@ -424,6 +427,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
                 encryptedPrv: await this.bitgo.encryptAsync({
                   input: prv,
                   password: webauthnInfo.passphrase,
+                  encryptionVersion,
                 }),
               },
             ]
@@ -444,6 +448,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     prv: string;
     derivationPath: string;
     walletPassphrase?: string;
+    encryptionVersion?: EncryptionVersion;
   }): Promise<TssEcdsaStep1ReturnMessage> {
     const { challenges, derivationPath, prv } = params;
     const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(prv);
@@ -510,6 +515,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
         ? await this.bitgo.encryptAsync({
             input: JSON.stringify(userSignShare.wShare),
             password: params.walletPassphrase,
+            encryptionVersion: params.encryptionVersion,
           })
         : userSignShare.wShare,
     };
@@ -520,6 +526,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     wShare: WShare;
     aShareFromBitgo: Omit<AShare, 'h1' | 'h2' | 'ntilde'>;
     walletPassphrase?: string;
+    encryptionVersion?: EncryptionVersion;
   }): Promise<TssEcdsaStep2ReturnMessage> {
     // Append the BitGo challenge to the Ashare to be used in subsequent proofs
     const bitgoToUserAShareWithNtilde: AShare = {
@@ -543,6 +550,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
         ? await this.bitgo.encryptAsync({
             input: JSON.stringify(userOmicronAndDeltaShare.oShare),
             password: params.walletPassphrase,
+            encryptionVersion: params.encryptionVersion,
           })
         : userOmicronAndDeltaShare.oShare,
     };
@@ -563,6 +571,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     requestType: RequestType;
     prv: string;
     walletPassphrase: string;
+    encryptionVersion?: EncryptionVersion;
   }): Promise<TssEcdsaStep1ReturnMessage> {
     const { tssParams, prv, requestType, challenges } = params;
     assert(typeof tssParams.txRequest !== 'string', 'Invalid txRequest type');
@@ -586,6 +595,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       challenges: challenges,
       derivationPath: derivationPath,
       walletPassphrase: params.walletPassphrase,
+      encryptionVersion: params.encryptionVersion,
     });
   }
 
@@ -594,6 +604,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     bitgoChallenge: TxRequestChallengeResponse;
     encryptedWShare: string;
     walletPassphrase: string;
+    encryptionVersion?: EncryptionVersion;
   }): Promise<TssEcdsaStep2ReturnMessage> {
     const decryptedWShare = await this.bitgo.decryptAsync({
       input: params.encryptedWShare,
@@ -604,6 +615,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       bitgoChallenge: params.bitgoChallenge,
       wShare: JSON.parse(decryptedWShare),
       walletPassphrase: params.walletPassphrase,
+      encryptionVersion: params.encryptionVersion,
     });
   }
 

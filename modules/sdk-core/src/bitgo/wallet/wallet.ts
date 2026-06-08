@@ -7,7 +7,7 @@ import assert from 'assert';
 import BigNumber from 'bignumber.js';
 import * as t from 'io-ts';
 import * as _ from 'lodash';
-import { IRequestTracer } from '../../api';
+import { EncryptionVersion, IRequestTracer } from '../../api';
 import * as common from '../../common';
 import { AddressBook, IAddressBook } from '../address-book';
 import {
@@ -1850,7 +1850,8 @@ export class Wallet implements IWallet {
           decryptedKeychain.prv,
           decryptedKeychain.pub,
           shareOption.pubKey,
-          shareOption.path
+          shareOption.path,
+          params.encryptionVersion
         );
 
         bulkCreateShareOptions.push({
@@ -1990,11 +1991,12 @@ export class Wallet implements IWallet {
     decryptedPrv: string,
     pub: string,
     userPubkey: string,
-    path: string
+    path: string,
+    encryptionVersion?: EncryptionVersion
   ): Promise<BulkWalletShareKeychain> {
     const eckey = makeRandomKey();
     const secret = getSharedSecret(eckey, Buffer.from(userPubkey, 'hex')).toString('hex');
-    const newEncryptedPrv = await this.bitgo.encryptAsync({ password: secret, input: decryptedPrv });
+    const newEncryptedPrv = await this.bitgo.encryptAsync({ password: secret, input: decryptedPrv, encryptionVersion });
 
     const keychain: BulkWalletShareKeychain = {
       pub,
@@ -2025,14 +2027,21 @@ export class Wallet implements IWallet {
   async prepareSharedKeychain(
     walletPassphrase: string | undefined,
     pubkey: string,
-    path: string
+    path: string,
+    encryptionVersion?: EncryptionVersion
   ): Promise<SharedKeyChain> {
     try {
       const decryptedKeychain = await this.getDecryptedKeychainForSharing(walletPassphrase);
       if (!decryptedKeychain) {
         return {};
       }
-      return await this.encryptPrvForUserAsync(decryptedKeychain.prv, decryptedKeychain.pub, pubkey, path);
+      return await this.encryptPrvForUserAsync(
+        decryptedKeychain.prv,
+        decryptedKeychain.pub,
+        pubkey,
+        path,
+        encryptionVersion
+      );
     } catch (e) {
       if (e instanceof MissingEncryptedKeychainError) {
         // ignore this error because this looks like a cold wallet
@@ -2078,7 +2087,12 @@ export class Wallet implements IWallet {
     })) as any;
     let sharedKeychain;
     if (needsKeychain) {
-      sharedKeychain = await this.prepareSharedKeychain(params.walletPassphrase, sharing.pubkey, sharing.path);
+      sharedKeychain = await this.prepareSharedKeychain(
+        params.walletPassphrase,
+        sharing.pubkey,
+        sharing.path,
+        params.encryptionVersion
+      );
     }
 
     const options: CreateShareOptions = {
@@ -3441,6 +3455,7 @@ export class Wallet implements IWallet {
       backupKeyID,
       activationCode,
     } = validateDownloadKeycardParams(params);
+    const { encryptionVersion } = params;
 
     const coinShortName = this.baseCoin.type;
     const coinName = this.baseCoin.getFullName();
@@ -3449,7 +3464,8 @@ export class Wallet implements IWallet {
     const doc = await drawKeycardAsync({
       jsPDF,
       QRCode,
-      encrypt: (p: { input: string; password: string }) => this.bitgo.encryptAsync(p),
+      encrypt: (p) => this.bitgo.encryptAsync(p),
+      encryptionVersion,
       coinShortName,
       coinName,
       activationCode,

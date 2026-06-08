@@ -1,4 +1,4 @@
-import { EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
+import { EncryptionVersion, EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
 import { ECPairInterface } from '@bitgo/utxo-lib';
 import { type Agent } from 'http';
 
@@ -104,6 +104,11 @@ export interface AuthenticateOptions {
    * It is highly recommended that this is always set to avoid any issues when using a BitGo wallet
    */
   ensureEcdhKeychain?: boolean;
+  /**
+   * Encryption version to use when creating the ECDH keychain if it does not already exist.
+   * Only applies when `ensureEcdhKeychain` is true and no ECDH keychain exists for the user yet.
+   */
+  encryptionVersion?: EncryptionVersion;
   forReset2FA?: boolean;
   /**
    * The initial stage fingerprint hash used for device identification and verification.
@@ -226,6 +231,7 @@ export interface SplitSecretOptions {
   seed: string;
   passwords: string[];
   m: number;
+  encryptionVersion?: EncryptionVersion;
 }
 
 export interface SplitSecret {

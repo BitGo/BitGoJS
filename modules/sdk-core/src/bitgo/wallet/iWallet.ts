@@ -1,4 +1,4 @@
-import { IRequestTracer } from '../../api';
+import { EncryptionVersion, IRequestTracer } from '../../api';
 import { CreateLightningInvoiceParams, LightningInvoiceResponse } from '../../lightning';
 import {
   IBaseCoin,
@@ -771,6 +771,7 @@ export interface ShareWalletOptions {
    */
   skipKeychain?: boolean;
   disableEmail?: boolean;
+  encryptionVersion?: EncryptionVersion;
 }
 
 export interface BulkCreateShareOption {
@@ -787,6 +788,7 @@ export interface BulkWalletShareOptions {
     path: string;
     permissions: string[];
   }>;
+  encryptionVersion?: EncryptionVersion;
 }
 
 export type WalletShareState = 'active' | 'accepted' | 'canceled' | 'rejected' | 'pendingapproval';
@@ -1057,6 +1059,7 @@ export interface DownloadKeycardOptions {
   activationCode?: string;
   walletKeyID?: string;
   backupKeyID?: string;
+  encryptionVersion?: EncryptionVersion;
 }
 
 export interface ChallengeVerifiers {

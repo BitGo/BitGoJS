@@ -270,6 +270,7 @@ TravelRule.prototype.prepareParamsAsync = async function (params) {
   const encryptedTravelInfo = await this.bitgo.encryptAsync({
     input: prepared.travelInfoJSON,
     password: prepared.sharedSecret,
+    encryptionVersion: params.encryptionVersion,
   });
 
   return buildTravelRuleSendParams(prepared, encryptedTravelInfo);

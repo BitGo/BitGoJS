@@ -10,6 +10,7 @@ import {
   DecryptOptions,
   defaultConstants,
   EcdhDerivedKeypair,
+  EncryptionVersion,
   EncryptOptions,
   EnvironmentName,
   generateRandomPassword,
@@ -1125,7 +1126,7 @@ export class BitGoAPI implements BitGoBase {
    * @returns {Promise<any>} - A promise that resolves with the new ECDH keychain data.
    * @throws {Error} - Throws an error if there is an issue creating the keychain.
    */
-  public async createUserEcdhKeychain(loginPassword: string): Promise<any> {
+  public async createUserEcdhKeychain(loginPassword: string, encryptionVersion?: EncryptionVersion): Promise<any> {
     const keyData = this.keychains().create();
     const hdNode = bitcoin.HDNode.fromBase58(keyData.xprv);
 
@@ -1139,6 +1140,7 @@ export class BitGoAPI implements BitGoBase {
       encryptedXprv: await this.encryptAsync({
         password: loginPassword,
         input: hdNode.toBase58(),
+        encryptionVersion,
       }),
     });
   }
@@ -1160,7 +1162,10 @@ export class BitGoAPI implements BitGoBase {
    * @returns {Promise<any>} - A promise that resolves with the user's settings ensuring we have the ecdhKeychain in there.
    * @throws {Error} - Throws an error if there is an issue creating the keychain or updating the user's settings.
    */
-  private async ensureUserEcdhKeychainIsCreated(loginPassword: string): Promise<any> {
+  private async ensureUserEcdhKeychainIsCreated(
+    loginPassword: string,
+    encryptionVersion?: EncryptionVersion
+  ): Promise<any> {
     /**
      * Get the user's current settings.
      */
@@ -1169,7 +1174,7 @@ export class BitGoAPI implements BitGoBase {
      * If the user's ECDH keychain does not exist, create a new keychain and update the user's settings.
      */
     if (!userSettings.settings.ecdhKeychain) {
-      const newKeychain = await this.createUserEcdhKeychain(loginPassword);
+      const newKeychain = await this.createUserEcdhKeychain(loginPassword, encryptionVersion);
       await this.updateUserSettings({
         settings: {
           ecdhKeychain: newKeychain.xpub,
@@ -1251,7 +1256,9 @@ export class BitGoAPI implements BitGoBase {
         await this._hmacAuthStrategy.setToken?.(this._token);
       }
 
-      const userSettings = params.ensureEcdhKeychain ? await this.ensureUserEcdhKeychainIsCreated(password) : undefined;
+      const userSettings = params.ensureEcdhKeychain
+        ? await this.ensureUserEcdhKeychainIsCreated(password, params.encryptionVersion)
+        : undefined;
       if (userSettings?.ecdhKeychain) {
         response.body.user.ecdhKeychain = userSettings.ecdhKeychain;
       }
@@ -1932,11 +1939,11 @@ export class BitGoAPI implements BitGoBase {
    * @param passwords
    * @param m
    */
-  async splitSecretAsync({ seed, passwords, m }: SplitSecretOptions): Promise<SplitSecret> {
+  async splitSecretAsync({ seed, passwords, m, encryptionVersion }: SplitSecretOptions): Promise<SplitSecret> {
     const n = validateSplitSecretInputs({ seed, passwords, m });
     const secrets: string[] = shamir.share(seed, n, m);
     const shards = await Promise.all(
-      secrets.map((shard, i) => this.encryptAsync({ input: shard, password: passwords[i] }))
+      secrets.map((shard, i) => this.encryptAsync({ input: shard, password: passwords[i], encryptionVersion }))
     );
     return buildSplitSecretResult(seed, shards, m, n);
   }

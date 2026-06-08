@@ -2318,7 +2318,11 @@ Wallet.prototype.shareWallet = function (params, callback) {
 
             const eckey = makeRandomKey();
             const secret = getSharedSecret(eckey, Buffer.from(sharing.pubkey, 'hex')).toString('hex');
-            const newEncryptedXprv = await self.bitgo.encryptAsync({ password: secret, input: keychain.xprv });
+            const newEncryptedXprv = await self.bitgo.encryptAsync({
+              password: secret,
+              input: keychain.xprv,
+              encryptionVersion: params.encryptionVersion,
+            });
 
             sharedKeychain = {
               xpub: keychain.xpub,

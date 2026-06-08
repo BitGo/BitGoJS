@@ -138,8 +138,12 @@ function generatePasscodeQrData(passphrase: string, passcodeEncryptionCode: stri
   };
 }
 
-async function generatePasscodeQrDataAsync(passphrase: string, passcodeEncryptionCode: string): Promise<QrDataEntry> {
-  const encryptedWalletPasscode = await encryptAsync(passcodeEncryptionCode, passphrase);
+async function generatePasscodeQrDataAsync(
+  passphrase: string,
+  passcodeEncryptionCode: string,
+  encryptionVersion?: 1 | 2
+): Promise<QrDataEntry> {
+  const encryptedWalletPasscode = await encryptAsync(passcodeEncryptionCode, passphrase, { encryptionVersion });
   return {
     title: 'D: Encrypted wallet Password',
     description: 'This is the wallet password, encrypted client-side with a key held by BitGo.',
@@ -211,7 +215,11 @@ export async function generateQrDataAsync(params: GenerateQrDataParams): Promise
   const qrData = buildWalletQrData(params);
 
   if (params.passphrase && params.passcodeEncryptionCode) {
-    qrData.passcode = await generatePasscodeQrDataAsync(params.passphrase, params.passcodeEncryptionCode);
+    qrData.passcode = await generatePasscodeQrDataAsync(
+      params.passphrase,
+      params.passcodeEncryptionCode,
+      params.encryptionVersion
+    );
   }
 
   return qrData;
@@ -234,7 +242,11 @@ export async function generateLightningQrDataAsync(params: GenerateLightningQrDa
   const qrData = buildLightningQrData(params);
 
   if (params.passphrase && params.passcodeEncryptionCode) {
-    qrData.passcode = await generatePasscodeQrDataAsync(params.passphrase, params.passcodeEncryptionCode);
+    qrData.passcode = await generatePasscodeQrDataAsync(
+      params.passphrase,
+      params.passcodeEncryptionCode,
+      params.encryptionVersion
+    );
   }
 
   return qrData;

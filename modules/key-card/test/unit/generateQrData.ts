@@ -247,6 +247,72 @@ describe('generateQrDataAsync', function () {
     const decryptedData = await decryptAsync(passcodeEncryptionCode, qrData.passcode.data);
     decryptedData.should.equal(passphrase);
   });
+
+  it('produces a v1 Box D when encryptionVersion is not set', async function () {
+    const passphrase = 'testingIsFun';
+    const passcodeEncryptionCode = '123456';
+    const qrData = await generateQrDataAsync({
+      backupKeychain: createKeychain({ encryptedPrv: 'backupPrv' }),
+      bitgoKeychain: createKeychain({ pub: 'bitgoPub' }),
+      coin: coins.get('btc'),
+      passcodeEncryptionCode,
+      passphrase,
+      userKeychain: createKeychain({ encryptedPrv: 'userPrv' }),
+    });
+
+    assert.ok(qrData.passcode);
+    const envelope = JSON.parse(qrData.passcode.data);
+    assert.notStrictEqual(envelope.v, 2, 'should default to v1 envelope');
+  });
+
+  it('produces a v2 Box D when encryptionVersion: 2', async function () {
+    const passphrase = 'testingIsFun';
+    const passcodeEncryptionCode = '123456';
+    const qrData = await generateQrDataAsync({
+      backupKeychain: createKeychain({ encryptedPrv: 'backupPrv' }),
+      bitgoKeychain: createKeychain({ pub: 'bitgoPub' }),
+      coin: coins.get('btc'),
+      passcodeEncryptionCode,
+      passphrase,
+      userKeychain: createKeychain({ encryptedPrv: 'userPrv' }),
+      encryptionVersion: 2,
+    });
+
+    assert.ok(qrData.passcode);
+    const envelope = JSON.parse(qrData.passcode.data);
+    assert.strictEqual(envelope.v, 2, 'should produce v2 envelope');
+    const decryptedData = await decryptAsync(passcodeEncryptionCode, qrData.passcode.data);
+    decryptedData.should.equal(passphrase);
+  });
+
+  it('produces a v1 Box D when encryptionVersion: 1 is explicit', async function () {
+    const passphrase = 'testingIsFun';
+    const passcodeEncryptionCode = '123456';
+    const qrData = await generateQrDataAsync({
+      backupKeychain: createKeychain({ encryptedPrv: 'backupPrv' }),
+      bitgoKeychain: createKeychain({ pub: 'bitgoPub' }),
+      coin: coins.get('btc'),
+      passcodeEncryptionCode,
+      passphrase,
+      userKeychain: createKeychain({ encryptedPrv: 'userPrv' }),
+      encryptionVersion: 1,
+    });
+
+    assert.ok(qrData.passcode);
+    const envelope = JSON.parse(qrData.passcode.data);
+    assert.notStrictEqual(envelope.v, 2, 'should produce v1 envelope');
+  });
+
+  it('omits Box D when passphrase or passcodeEncryptionCode is missing', async function () {
+    const qrData = await generateQrDataAsync({
+      backupKeychain: createKeychain({ encryptedPrv: 'backupPrv' }),
+      bitgoKeychain: createKeychain({ pub: 'bitgoPub' }),
+      coin: coins.get('btc'),
+      userKeychain: createKeychain({ encryptedPrv: 'userPrv' }),
+      encryptionVersion: 2,
+    });
+    assert.strictEqual(qrData.passcode, undefined);
+  });
 });
 
 describe('generateLightningQrDataAsync', function () {
@@ -261,6 +327,24 @@ describe('generateLightningQrDataAsync', function () {
     });
 
     assert.ok(qrData.passcode);
+    const decryptedData = await decryptAsync(passcodeEncryptionCode, qrData.passcode.data);
+    decryptedData.should.equal(passphrase);
+  });
+
+  it('produces a v2 Box D when encryptionVersion: 2', async function () {
+    const passphrase = 'testingIsFun';
+    const passcodeEncryptionCode = '123456';
+    const qrData = await generateLightningQrDataAsync({
+      userAuthKeychain: createKeychain({ encryptedPrv: 'userAuthPrv' }),
+      coin: coins.get('lnbtc'),
+      passcodeEncryptionCode,
+      passphrase,
+      encryptionVersion: 2,
+    });
+
+    assert.ok(qrData.passcode);
+    const envelope = JSON.parse(qrData.passcode.data);
+    assert.strictEqual(envelope.v, 2);
     const decryptedData = await decryptAsync(passcodeEncryptionCode, qrData.passcode.data);
     decryptedData.should.equal(passphrase);
   });

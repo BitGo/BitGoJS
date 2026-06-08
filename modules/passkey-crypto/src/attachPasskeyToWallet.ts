@@ -1,4 +1,4 @@
-import { BitGoBase, Keychain } from '@bitgo/sdk-core';
+import { BitGoBase, EncryptionVersion, Keychain } from '@bitgo/sdk-core';
 import { base64UrlToBuffer } from './base64url';
 import { deriveEnterpriseSalt } from './deriveEnterpriseSalt';
 import { derivePassword } from './derivePassword';
@@ -11,8 +11,9 @@ export async function attachPasskeyToWallet(params: {
   device: WebAuthnOtpDevice;
   existingPassphrase: string;
   provider: WebAuthnProvider;
+  encryptionVersion?: EncryptionVersion;
 }): Promise<Keychain> {
-  const { bitgo, coin, walletId, device, existingPassphrase, provider } = params;
+  const { bitgo, coin, walletId, device, existingPassphrase, provider, encryptionVersion } = params;
 
   // Throw early if PRF extension is not supported
   if (!device.prfSalt) {
@@ -66,7 +67,7 @@ export async function attachPasskeyToWallet(params: {
   }
 
   const prfPassword = derivePassword(authResult.prfResult);
-  const encryptedPrv = await bitgo.encryptAsync({ password: prfPassword, input: privateKey, encryptionVersion: 2 });
+  const encryptedPrv = await bitgo.encryptAsync({ password: prfPassword, input: privateKey, encryptionVersion });
 
   const updatedKeychain = await bitgo
     .put(bitgo.url(`/${coin}/key/${keychainId}`, 2))
