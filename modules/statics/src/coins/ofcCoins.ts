@@ -1961,6 +1961,18 @@ export const ofcCoins = [
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   tofcsolToken(
+    '3441411c-d379-4f61-9630-1e8de117717a',
+    'ofctsol:stgspcx',
+    'Test SpaceX',
+    6,
+    UnderlyingAsset['tsol:stgspcx'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tofcsolToken('84f901ed-5654-47a7-9d08-7ff7c27a8c16', 'ofctsol:spcx', 'Test SpaceX', 6, UnderlyingAsset['tsol:spcx'], [
+    ...SOL_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+  ]),
+  tofcsolToken(
     '750f0e40-c5b9-464f-874f-dc455cf1494b',
     'ofctsol:stgusd1',
     'Test USD1 Token',
