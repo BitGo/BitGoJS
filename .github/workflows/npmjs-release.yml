@@ -239,7 +239,7 @@ jobs:
       - name: Install retry
         uses: BitGo/install-github-release-binary@v2
         with:
-          targets: EricCrosson/retry@v1
+          targets: EricCrosson/retry@v1.4.8:sha256-15224553f40d5d16dcc1a696798741227c79670a41f43e522002e634aa1d7c64
 
       - name: Run yarn audit
         run: retry --up-to 2x --every 3s -- yarn run audit-high --retry-on-network-failure
