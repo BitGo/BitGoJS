@@ -15,6 +15,7 @@ import {
 import { BitGoBase } from '../bitgoBase';
 import { Keychain, KeychainWithEncryptedPrv } from '../keychain';
 import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
+import { IDefiVault } from '../defi';
 import { IGoStakingWallet, IStakingWallet } from '../staking';
 import { ITradingAccount } from '../trading';
 import {
@@ -1172,6 +1173,7 @@ export interface IWallet {
   remove(params?: Record<string, never>): Promise<any>;
   toJSON(): WalletData;
   createLightningInvoice(params: CreateLightningInvoiceParams): Promise<LightningInvoiceResponse>;
+  readonly defi: IDefiVault;
   toTradingAccount(): ITradingAccount;
   toStakingWallet(): IStakingWallet;
   toGoStakingWallet(): IGoStakingWallet;

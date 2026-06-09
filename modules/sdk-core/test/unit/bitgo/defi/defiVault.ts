@@ -1,0 +1,341 @@
+import sinon from 'sinon';
+import assert from 'assert';
+import 'should';
+import { ActiveOperationExistsError, DefiVault, Wallet } from '../../../../src';
+
+describe('DefiVault', function () {
+  let wallet: Wallet;
+  let defiVault: DefiVault;
+  let mockBitGo: any;
+  let mockBaseCoin: any;
+
+  // Helper to create a chainable request mock
+  function mockRequest(result: any) {
+    return {
+      send: sinon.stub().returnsThis(),
+      query: sinon.stub().returnsThis(),
+      result: sinon.stub().resolves(result),
+    };
+  }
+
+  beforeEach(function () {
+    mockBitGo = {
+      post: sinon.stub(),
+      get: sinon.stub(),
+      del: sinon.stub(),
+      url: sinon.stub().callsFake((path: string, version: number) => `https://bitgo.com/api/v${version}${path}`),
+      microservicesUrl: sinon.stub().callsFake((path: string) => `https://bitgo.com${path}`),
+      setRequestTracer: sinon.stub(),
+    };
+
+    mockBaseCoin = {
+      getFamily: sinon.stub().returns('eth'),
+      url: sinon.stub(),
+      keychains: sinon.stub(),
+      supportsTss: sinon.stub().returns(true),
+      getMPCAlgorithm: sinon.stub(),
+    };
+
+    const mockWalletData = {
+      id: 'test-wallet-id',
+      coin: 'eth',
+      keys: ['user-key', 'backup-key', 'bitgo-key'],
+    };
+
+    wallet = new Wallet(mockBitGo, mockBaseCoin, mockWalletData);
+    defiVault = wallet.defi;
+  });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  describe('depositToVault', function () {
+    it('should call sendMany for approve and deposit on happy path', async function () {
+      const operationId = 'op-uuid-123';
+
+      // Pre-flight: no active operations
+      const preflightReq = mockRequest({ items: [] });
+      mockBitGo.get.onFirstCall().returns(preflightReq);
+
+      // Mock sendMany for approve and deposit
+      const sendManyStub = sinon.stub(wallet, 'sendMany');
+      sendManyStub.onFirstCall().resolves({
+        txRequest: {
+          txRequestId: 'txreq-approve-1',
+          intent: { intentType: 'defi-approve', operationId },
+        },
+      });
+      sendManyStub.onSecondCall().resolves({
+        txRequest: {
+          txRequestId: 'txreq-deposit-1',
+          intent: { intentType: 'defi-deposit', operationId },
+        },
+      });
+
+      const result = await defiVault.depositToVault({
+        vaultId: 'vlt-galaxy-usdc',
+        amount: '1000000',
+      });
+
+      result.operationId.should.equal(operationId);
+      result.txRequestIds.approve.should.equal('txreq-approve-1');
+      result.txRequestIds.deposit.should.equal('txreq-deposit-1');
+
+      // Verify pre-flight was called with correct query
+      preflightReq.query.calledWith({ vaultId: 'vlt-galaxy-usdc', state: 'active' }).should.be.true();
+
+      // Verify sendMany was called with correct params for approve
+      sendManyStub.calledTwice.should.be.true();
+      const approveArgs: any = sendManyStub.firstCall.args[0];
+      approveArgs.type.should.equal('defiApprove');
+      approveArgs.defiParams.vaultId.should.equal('vlt-galaxy-usdc');
+      approveArgs.defiParams.amount.should.equal('1000000');
+
+      // Verify sendMany was called with correct params for deposit
+      const depositArgs: any = sendManyStub.secondCall.args[0];
+      depositArgs.type.should.equal('defiDeposit');
+      depositArgs.defiParams.operationId.should.equal(operationId);
+    });
+
+    it('should reject when an active operation already exists', async function () {
+      const preflightReq = mockRequest({
+        items: [{ operationId: 'existing-op-id', state: 'APPROVE_TX_REQUESTED' }],
+      });
+      mockBitGo.get.returns(preflightReq);
+
+      await assert.rejects(
+        () => defiVault.depositToVault({ vaultId: 'vlt-galaxy-usdc', amount: '1000000' }),
+        (err: Error) => {
+          (err instanceof ActiveOperationExistsError).should.be.true();
+          (err as ActiveOperationExistsError).operationId.should.equal('existing-op-id');
+          return true;
+        }
+      );
+    });
+
+    it('should propagate deposit sendMany failure without cleanup', async function () {
+      const operationId = 'op-uuid-456';
+
+      // Pre-flight: no active operations
+      const preflightReq = mockRequest({ items: [] });
+      mockBitGo.get.returns(preflightReq);
+
+      // Mock sendMany: approve succeeds, deposit fails
+      const sendManyStub = sinon.stub(wallet, 'sendMany');
+      sendManyStub.onFirstCall().resolves({
+        txRequest: {
+          txRequestId: 'txreq-approve-2',
+          intent: { intentType: 'defi-approve', operationId },
+        },
+      });
+      sendManyStub.onSecondCall().rejects(new Error('deposit creation failed'));
+
+      await assert.rejects(() => defiVault.depositToVault({ vaultId: 'vlt-galaxy-usdc', amount: '1000000' }), {
+        message: 'deposit creation failed',
+      });
+
+      // SDK does not attempt cleanup — reconciler handles orphaned approvals
+      mockBitGo.del.called.should.be.false();
+    });
+
+    it('should throw if vaultId is missing', async function () {
+      await assert.rejects(() => defiVault.depositToVault({ vaultId: '', amount: '1000000' }), {
+        message: 'vaultId is required',
+      });
+    });
+
+    it('should throw if amount is missing', async function () {
+      await assert.rejects(() => defiVault.depositToVault({ vaultId: 'vlt-1', amount: '' }), {
+        message: 'amount is required',
+      });
+    });
+
+    it('should pass clientIdempotencyKey and walletPassphrase when provided', async function () {
+      const operationId = 'op-uuid-789';
+
+      const preflightReq = mockRequest({ items: [] });
+      mockBitGo.get.returns(preflightReq);
+
+      const sendManyStub = sinon.stub(wallet, 'sendMany');
+      sendManyStub.onFirstCall().resolves({
+        txRequest: {
+          txRequestId: 'txreq-approve-3',
+          intent: { intentType: 'defi-approve', operationId },
+        },
+      });
+      sendManyStub.onSecondCall().resolves({
+        txRequest: {
+          txRequestId: 'txreq-deposit-3',
+          intent: { intentType: 'defi-deposit', operationId },
+        },
+      });
+
+      await defiVault.depositToVault({
+        vaultId: 'vlt-galaxy-usdc',
+        amount: '1000000',
+        clientIdempotencyKey: 'idem-key-123',
+        walletPassphrase: 'test-passphrase',
+      });
+
+      const approveArgs: any = sendManyStub.firstCall.args[0];
+      approveArgs.defiParams.clientIdempotencyKey.should.equal('idem-key-123');
+      approveArgs.walletPassphrase.should.equal('test-passphrase');
+
+      const depositArgs: any = sendManyStub.secondCall.args[0];
+      depositArgs.defiParams.clientIdempotencyKey.should.equal('idem-key-123');
+      depositArgs.walletPassphrase.should.equal('test-passphrase');
+    });
+  });
+
+  describe('resumeDeposit', function () {
+    it('should issue the deposit sendMany for a partial operation', async function () {
+      const operation = {
+        operationId: 'op-resume-1',
+        walletId: 'test-wallet-id',
+        vaultId: 'vlt-galaxy-usdc',
+        type: 'DEPOSIT',
+        assetAmount: '1000000',
+        state: 'APPROVE_TX_REQUESTED',
+        txRequestId: 'txreq-approve-existing',
+        associatedTxRequestId: undefined,
+        createdAt: '2026-05-14T07:12:00Z',
+        updatedAt: '2026-05-14T07:12:00Z',
+      };
+
+      // getOperation call
+      const getOpReq = mockRequest(operation);
+      mockBitGo.get.returns(getOpReq);
+
+      // deposit sendMany
+      const sendManyStub = sinon.stub(wallet, 'sendMany');
+      sendManyStub.resolves({
+        txRequest: {
+          txRequestId: 'txreq-deposit-resume',
+          intent: { intentType: 'defi-deposit', operationId: 'op-resume-1' },
+        },
+      });
+
+      const result = await defiVault.resumeDeposit({ operationId: 'op-resume-1' });
+
+      result.operationId.should.equal('op-resume-1');
+      result.txRequestIds.approve.should.equal('txreq-approve-existing');
+      result.txRequestIds.deposit.should.equal('txreq-deposit-resume');
+
+      // Verify sendMany was called with correct defiParams
+      const depositArgs: any = sendManyStub.firstCall.args[0];
+      depositArgs.type.should.equal('defiDeposit');
+      depositArgs.defiParams.vaultId.should.equal('vlt-galaxy-usdc');
+      depositArgs.defiParams.amount.should.equal('1000000');
+      depositArgs.defiParams.operationId.should.equal('op-resume-1');
+    });
+
+    it('should throw if deposit txRequest already exists', async function () {
+      const operation = {
+        operationId: 'op-already-done',
+        walletId: 'test-wallet-id',
+        vaultId: 'vlt-galaxy-usdc',
+        type: 'DEPOSIT',
+        assetAmount: '1000000',
+        state: 'DEPOSIT_TX_REQUESTED',
+        txRequestId: 'txreq-approve-x',
+        associatedTxRequestId: 'txreq-deposit-x',
+        createdAt: '2026-05-14T07:12:00Z',
+        updatedAt: '2026-05-14T07:12:00Z',
+      };
+
+      const getOpReq = mockRequest(operation);
+      mockBitGo.get.returns(getOpReq);
+
+      await assert.rejects(() => defiVault.resumeDeposit({ operationId: 'op-already-done' }), {
+        message: 'Deposit txRequest already exists for this operation; nothing to resume',
+      });
+    });
+
+    it('should throw if operationId is missing', async function () {
+      await assert.rejects(() => defiVault.resumeDeposit({ operationId: '' }), { message: 'operationId is required' });
+    });
+  });
+
+  describe('getOperation', function () {
+    it('should fetch an operation by ID', async function () {
+      const operation = {
+        operationId: 'op-get-1',
+        walletId: 'test-wallet-id',
+        vaultId: 'vlt-galaxy-usdc',
+        type: 'DEPOSIT',
+        assetAmount: '1000000',
+        state: 'COMPLETED',
+        txRequestId: 'txreq-1',
+        associatedTxRequestId: 'txreq-2',
+        createdAt: '2026-05-14T07:12:00Z',
+        updatedAt: '2026-05-14T07:18:00Z',
+      };
+
+      const req = mockRequest(operation);
+      mockBitGo.get.returns(req);
+
+      const result = await defiVault.getOperation({ operationId: 'op-get-1' });
+      result.should.deepEqual(operation);
+    });
+
+    it('should throw if operationId is missing', async function () {
+      await assert.rejects(() => defiVault.getOperation({ operationId: '' }), { message: 'operationId is required' });
+    });
+  });
+
+  describe('listOperations', function () {
+    it('should list operations for a vault', async function () {
+      const listResult = {
+        items: [
+          {
+            operationId: 'op-1',
+            walletId: 'test-wallet-id',
+            vaultId: 'vlt-galaxy-usdc',
+            type: 'DEPOSIT',
+            assetAmount: '1000000',
+            state: 'COMPLETED',
+            createdAt: '2026-05-14T07:12:00Z',
+            updatedAt: '2026-05-14T07:18:00Z',
+          },
+        ],
+        nextCursor: 'cursor-abc',
+      };
+
+      const req = mockRequest(listResult);
+      mockBitGo.get.returns(req);
+
+      const result = await defiVault.listOperations({
+        vaultId: 'vlt-galaxy-usdc',
+        state: 'COMPLETED',
+        limit: 10,
+      });
+
+      result.items.length.should.equal(1);
+      result.nextCursor!.should.equal('cursor-abc');
+
+      // Verify query params
+      const queryArgs = req.query.firstCall.args[0];
+      queryArgs.vaultId.should.equal('vlt-galaxy-usdc');
+      queryArgs.state.should.equal('COMPLETED');
+      queryArgs.limit.should.equal(10);
+    });
+
+    it('should throw if vaultId is missing', async function () {
+      await assert.rejects(() => defiVault.listOperations({ vaultId: '' }), { message: 'vaultId is required' });
+    });
+  });
+
+  describe('wallet.defi getter', function () {
+    it('should return a DefiVault instance', function () {
+      const defi = wallet.defi;
+      (defi instanceof DefiVault).should.be.true();
+    });
+
+    it('should return the same instance on subsequent calls', function () {
+      const defi1 = wallet.defi;
+      const defi2 = wallet.defi;
+      (defi1 === defi2).should.be.true();
+    });
+  });
+});
