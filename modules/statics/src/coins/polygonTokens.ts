@@ -134,6 +134,15 @@ export const polygonTokens = [
     POLYGON_TOKEN_FEATURES
   ),
   polygonErc20(
+    '51bd5013-bd3c-44b8-91cf-475cffe32347',
+    'polygon:linkv2',
+    'ChainLink Token (Polygon Bridged)',
+    18,
+    '0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39',
+    UnderlyingAsset['polygon:linkv2'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  polygonErc20(
     '2cc67591-9f69-4a42-950f-22a996e63b9a',
     'polygon:tusd',
     'TrueUSD',

@@ -2756,6 +2756,7 @@ export enum UnderlyingAsset {
   'polygon:woo' = 'polygon:woo',
   'polygon:aave' = 'polygon:aave',
   'polygon:link' = 'polygon:link',
+  'polygon:linkv2' = 'polygon:linkv2',
   'polygon:tusd' = 'polygon:tusd',
   'polygon:cel' = 'polygon:cel',
   'polygon:busd' = 'polygon:busd',
