@@ -133,4 +133,16 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.ofcerc20(
+    '4b5a115f-534e-4cd7-befc-9e432b6fe3c4',
+    'ofceth:frnt',
+    'Frontier Stable Token',
+    6,
+    'eth:frnt' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
