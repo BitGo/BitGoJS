@@ -36,6 +36,7 @@ import { CoinMap } from './map';
 import { BaseNetwork, getNetwork, getNetworksMap, NetworkType } from './networks';
 import { getNetworkFeatures } from './networkFeatureMapForTokens';
 import { ofcErc20Coins, tOfcErc20Coins } from './coins/ofcErc20Coins';
+import { ofcHoodethTokens } from './coins/ofcHoodethTokens';
 import { ofcCoins } from './coins/ofcCoins';
 import { allCoinsAndTokens } from './allCoinsAndTokens';
 import { botOfcTokens } from './coins/botOfcTokens';
@@ -43,6 +44,7 @@ import { botOfcTokens } from './coins/botOfcTokens';
 export const coins = CoinMap.fromCoins([
   ...allCoinsAndTokens,
   ...ofcErc20Coins,
+  ...ofcHoodethTokens,
   ...tOfcErc20Coins,
   ...ofcCoins,
   ...botOfcTokens,

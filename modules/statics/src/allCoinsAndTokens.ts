@@ -76,6 +76,7 @@ import { jettonTokens } from './coins/jettonTokens';
 import { erc7984Tokens } from './coins/erc7984Tokens';
 import { polyxTokens } from './coins/polyxTokens';
 import { cantonTokens } from './coins/cantonTokens';
+import { hoodethTokens } from './coins/hoodethTokens';
 import { flrp } from './flrp';
 import { hypeEvm } from './hypeevm';
 import { kaspa } from './kaspa';
@@ -171,6 +172,7 @@ export const allCoinsAndTokens = [
   ...erc7984Tokens,
   ...polyxTokens,
   ...cantonTokens,
+  ...hoodethTokens,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',
@@ -3121,24 +3123,6 @@ export const allCoinsAndTokens = [
     '',
     'THoodETH'
   ),
-  erc20Token(
-    '3493d608-fd3e-45dc-926d-783d54a8fe4d',
-    'thoodeth:amzn',
-    'Amazon',
-    18,
-    '0x5884ad2f920c162cfbbacc88c9c51aa75ec09e02',
-    UnderlyingAsset['thoodeth:amzn'],
-    Networks.test.hoodeth
-  ),
-  erc20Token(
-    '8ede8dbd-1fa6-4669-be6d-6b19b3c98766',
-    'thoodeth:tsla',
-    'Tesla',
-    18,
-    '0xc9f9c86933092bbbfff3ccb4b105a4a94bf3bd4e',
-    UnderlyingAsset['thoodeth:tsla'],
-    Networks.test.hoodeth
-  ),
   account(
     '1b17bbf4-02fc-492d-9071-6d7f47395f7a',
     'hoodeth',
@@ -3161,255 +3145,6 @@ export const allCoinsAndTokens = [
     KeyCurve.Secp256k1,
     '',
     'HoodETH'
-  ),
-  erc20Token(
-    '71bfcfbb-0e1d-4712-9836-8e7c481b9d87',
-    'hoodeth:tsla',
-    'Tesla',
-    18,
-    '0x322f0929c4625ed5bad873c95208d54e1c003b2d',
-    UnderlyingAsset['hoodeth:tsla'],
-    Networks.main.hoodeth
-  ),
-  erc20Token(
-    'ca3ac76e-e88f-4f39-8571-006cd9b97389',
-    'hoodeth:usdg',
-    'USDG',
-    18,
-    '0x5fc5360d0400a0fd4f2af552add042d716f1d168',
-    UnderlyingAsset['hoodeth:usdg'],
-    Networks.main.hoodeth
-  ),
-  // Robinhood Chain tokens - CECHO-1183 (gated for BitGo Singapore Trust)
-  erc20Token(
-    'eada9a10-3d17-465f-978b-5a183e73f4c6',
-    'hoodeth:nvda',
-    'NVIDIA Corporation',
-    18,
-    '0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec',
-    UnderlyingAsset['hoodeth:nvda'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    '13ebc2ae-5bee-4433-b5f1-94d823c0db20',
-    'hoodeth:mu',
-    'Micron Technology',
-    18,
-    '0xff080c8ce2e5feadaca0da81314ae59d232d4afd',
-    UnderlyingAsset['hoodeth:mu'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    'b3a25405-760f-4578-bbe8-14ddfbe3aacd',
-    'hoodeth:sndk',
-    'SanDisk',
-    18,
-    '0xb90a19ff0af67f7779aff50a882a9cff42446400',
-    UnderlyingAsset['hoodeth:sndk'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    '2597a273-8103-4e42-89cd-da241c231bc0',
-    'hoodeth:amd',
-    'Advanced Micro Devices, Inc.',
-    18,
-    '0x86923f96303d656e4aa86d9d42d1e57ad2023fdc',
-    UnderlyingAsset['hoodeth:amd'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    'e3613375-49ff-4279-9c57-e5fb9728a931',
-    'hoodeth:spy',
-    'SPDR S&P 500 ETF Trust',
-    18,
-    '0x117cc2133c37b721f49de2a7a74833232b3b4c0c',
-    UnderlyingAsset['hoodeth:spy'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    '49c855b1-0d85-4f79-9756-7ecf28440225',
-    'hoodeth:msft',
-    'Microsoft Corporation',
-    18,
-    '0xe93237c50d904957cf27e7b1133b510c669c2e74',
-    UnderlyingAsset['hoodeth:msft'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    'f4e2c9a2-130f-4080-ba53-d43d5494ee2b',
-    'hoodeth:pltr',
-    'Palantir Technologies Inc.',
-    18,
-    '0x894e1ec2d74ffe5aef8dc8a9e84686accb964f2a',
-    UnderlyingAsset['hoodeth:pltr'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    '8aa38d75-8f24-4fe4-8642-072e3e0529bd',
-    'hoodeth:intc',
-    'Intel Corporation',
-    18,
-    '0xc72b96e0e48ecd4dc75e1e45396e26300bc39681',
-    UnderlyingAsset['hoodeth:intc'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    '92f0c908-efa9-490a-a344-15511d54ce57',
-    'hoodeth:qqq',
-    'Invesco QQQ Trust',
-    18,
-    '0xd5f3879160bc7c32ebb4dc785f8a4f505888de68',
-    UnderlyingAsset['hoodeth:qqq'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    '326f35b5-d998-4851-81b3-fcb5c0ccf0ec',
-    'hoodeth:slv',
-    'iShares Silver Trust',
-    18,
-    '0x411efb0e7f985935daec3d4c3ebaea0d0ad7d89f',
-    UnderlyingAsset['hoodeth:slv'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    'c7491c49-a509-4791-aa18-2ab12130c518',
-    'hoodeth:crcl',
-    'Circle Internet Group Inc',
-    18,
-    '0xdf0992e440dd0be65bd8439b609d6d4366bf1cb5',
-    UnderlyingAsset['hoodeth:crcl'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    'df3845bb-bab1-49d4-a040-c81a768d244a',
-    'hoodeth:meta',
-    'Meta Platforms, Inc.',
-    18,
-    '0xc0d6457c16cc70d6790dd43521c899c87ce02f35',
-    UnderlyingAsset['hoodeth:meta'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    'da8769ad-98d5-4349-bea9-8fee3be83c9a',
-    'hoodeth:aapl',
-    'Apple Inc.',
-    18,
-    '0xaf3d76f1834a1d425780943c99ea8a608f8a93f9',
-    UnderlyingAsset['hoodeth:aapl'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    '31baa733-4e2b-4fc6-82ea-2653cbd083ff',
-    'hoodeth:googl',
-    'Alphabet Inc.',
-    18,
-    '0x2e0847e8910a9732eb3fb1bb4b70a580adad4fe3',
-    UnderlyingAsset['hoodeth:googl'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    'f6f0a6f8-fea8-4306-baaf-c88a96b071de',
-    'hoodeth:uso',
-    'United States Oil Fund, LP',
-    18,
-    '0xa30fa36db767ad9ed3f7a60fc79526fb4d56d344',
-    UnderlyingAsset['hoodeth:uso'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    '6852e072-48ec-41e7-b0ad-c8594c560f5c',
-    'hoodeth:amzn',
-    'Amazon.com, Inc.',
-    18,
-    '0x12f190a9f9d7d37a250758b26824b97ce941bf54',
-    UnderlyingAsset['hoodeth:amzn'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    '9c12894d-62c6-4e9c-bea7-9d909a23c496',
-    'hoodeth:crwv',
-    'CoreWeave',
-    18,
-    '0x5f10a1c971b69e47e059e1dc91901b59b3fb49c3',
-    UnderlyingAsset['hoodeth:crwv'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    '0519b754-a119-4431-9d00-490522e2a4d1',
-    'hoodeth:orcl',
-    'Oracle Corporation',
-    18,
-    '0xb0992820e760d836549ba69bc7598b4af75dee03',
-    UnderlyingAsset['hoodeth:orcl'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    'be7d01f7-12e9-4e19-91be-56d894c9fa9c',
-    'hoodeth:sgov',
-    'iShares 0-3 Month Treasury Bond ETF',
-    18,
-    '0x92fd66527192e3e61d4ddd13322aa222de86f9b5',
-    UnderlyingAsset['hoodeth:sgov'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    'ffb9fa51-e51b-40f0-a2c9-3f735bab7d7c',
-    'hoodeth:be',
-    'Bloom Energy Corporation',
-    18,
-    '0x822cc93ffd030293e9842c30bbd678f530701867',
-    UnderlyingAsset['hoodeth:be'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    '7d0446f2-929f-4bea-b9b7-cb9f40dc0786',
-    'hoodeth:usar',
-    'USA Rare Earth Inc.',
-    18,
-    '0xd917b029c761d264c6a312bbbcda868658ef86a6',
-    UnderlyingAsset['hoodeth:usar'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    '7e955555-9504-4173-b9a6-2799b88e38f0',
-    'hoodeth:dram',
-    'Dataram Corporation',
-    18,
-    '0x33c18e2cc8ae9ae486e785090d86b2ce632ff994',
-    UnderlyingAsset['hoodeth:dram'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
-  ),
-  erc20Token(
-    'ea09a0ff-059b-4527-8e7b-75dfc750218b',
-    'hoodeth:week',
-    'Weekly T-Bill ETF',
-    18,
-    '0xc93a8c440cea26d7445df01729f193b27965099f',
-    UnderlyingAsset['hoodeth:week'],
-    Networks.main.hoodeth,
-    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
 
   account(
