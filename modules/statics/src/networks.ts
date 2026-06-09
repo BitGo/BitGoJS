@@ -2652,7 +2652,7 @@ class Canton extends Mainnet implements BaseNetwork {
 class CantonTestnet extends Testnet implements BaseNetwork {
   name = 'CantonTestnet';
   family = CoinFamily.CANTON;
-  explorerUrl = 'https://lighthouse.devnet.cantonloop.com/transactions/';
+  explorerUrl = 'https://lighthouse.testnet.cantonloop.com/transactions/';
 }
 
 class Dogeos extends Mainnet implements EthereumNetwork {
