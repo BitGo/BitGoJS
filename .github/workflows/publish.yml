@@ -42,7 +42,7 @@ jobs:
           targets: EricCrosson/retry@v1
 
       - name: Audit Dependencies
-        run: retry --up-to 3x -- yarn run improved-yarn-audit --min-severity high
+        run: retry --up-to 2x --every 3s -- yarn run improved-yarn-audit --min-severity high --retry-on-network-failure
 
       - name: Set Environment Variable for Alpha
         if: github.ref != 'refs/heads/master' # only publish changes if on feature branches

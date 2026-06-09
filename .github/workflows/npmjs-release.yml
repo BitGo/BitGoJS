@@ -242,7 +242,7 @@ jobs:
           targets: EricCrosson/retry@v1
 
       - name: Run yarn audit
-        run: retry --up-to 3x -- yarn run audit-high
+        run: retry --up-to 2x --every 3s -- yarn run audit-high --retry-on-network-failure
 
       - name: Run dependency check
         run: |
