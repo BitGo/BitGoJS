@@ -1251,18 +1251,12 @@ export const botTokens = [
     18,
     '0x91600e31fbedc72433d4a57f16639cfe661be7d8',
     'eth:gusdcq' as unknown as UnderlyingAsset,
-    getTokenFeatures(
-      'eth',
-      ['receipt-token' as CoinFeature],
-      [
-        'custody-bitgo-mena-fze' as CoinFeature,
-        'custody-bitgo-custody-mena-fze' as CoinFeature,
-        'custody-bitgo-singapore' as CoinFeature,
-        'custody-bitgo-europe-aps' as CoinFeature,
-        'custody-bitgo-frankfurt' as CoinFeature,
-        'custody-bitgo-india' as CoinFeature,
-      ]
-    ),
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+      'receipt-token' as CoinFeature,
+    ]),
     undefined,
     undefined,
     undefined
@@ -1274,18 +1268,12 @@ export const botTokens = [
     18,
     '0x71ffb6a81786ec285d429d531cf655107b9d878d',
     'eth:gusdtq' as unknown as UnderlyingAsset,
-    getTokenFeatures(
-      'eth',
-      ['receipt-token' as CoinFeature],
-      [
-        'custody-bitgo-mena-fze' as CoinFeature,
-        'custody-bitgo-custody-mena-fze' as CoinFeature,
-        'custody-bitgo-singapore' as CoinFeature,
-        'custody-bitgo-europe-aps' as CoinFeature,
-        'custody-bitgo-frankfurt' as CoinFeature,
-        'custody-bitgo-india' as CoinFeature,
-      ]
-    ),
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+      'receipt-token' as CoinFeature,
+    ]),
     undefined,
     undefined,
     undefined
@@ -1297,18 +1285,12 @@ export const botTokens = [
     18,
     '0x1878805799273d10ae96a58201a6f5254cf9824f',
     'eth:gwethq' as unknown as UnderlyingAsset,
-    getTokenFeatures(
-      'eth',
-      ['receipt-token' as CoinFeature],
-      [
-        'custody-bitgo-mena-fze' as CoinFeature,
-        'custody-bitgo-custody-mena-fze' as CoinFeature,
-        'custody-bitgo-singapore' as CoinFeature,
-        'custody-bitgo-europe-aps' as CoinFeature,
-        'custody-bitgo-frankfurt' as CoinFeature,
-        'custody-bitgo-india' as CoinFeature,
-      ]
-    ),
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+      'receipt-token' as CoinFeature,
+    ]),
     undefined,
     undefined,
     undefined
