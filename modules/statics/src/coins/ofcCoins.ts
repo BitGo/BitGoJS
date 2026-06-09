@@ -3214,6 +3214,13 @@ export const ofcCoins = [
     UnderlyingAsset['polygon:link']
   ),
   ofcPolygonErc20(
+    '2b983228-e362-40e0-9aa9-2b0fdf21cd03',
+    'ofcpolygon:linkv2',
+    'ChainLink Token (Polygon Bridged)',
+    18,
+    UnderlyingAsset['polygon:linkv2']
+  ),
+  ofcPolygonErc20(
     '42ec9712-e47b-43c2-bec3-18cbc18fd944',
     'ofcpolygon:usdcv2',
     'USD Coin (native)',
