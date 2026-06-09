@@ -29,6 +29,7 @@ import {
   AdaTokenConfig,
   AlgoTokenConfig,
   TrxTokenConfig,
+  XrpMptTokenConfig,
   XrpTokenConfig,
   SuiTokenConfig,
   AptTokenConfig,
@@ -222,6 +223,7 @@ import {
   XdcToken,
   Xlm,
   Xrp,
+  XrpMptToken,
   XrpToken,
   Xtz,
   Zec,
@@ -540,6 +542,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   );
 
   XrpToken.createTokenConstructors([...tokens.bitcoin.xrp.tokens, ...tokens.testnet.xrp.tokens]).forEach(
+    ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
+  );
+
+  XrpMptToken.createTokenConstructors([...tokens.bitcoin.xrp.mptTokens, ...tokens.testnet.xrp.mptTokens]).forEach(
     ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
   );
 
@@ -1065,6 +1071,9 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
       return PolyxToken.createTokenConstructor(tokenConfig as PolyxTokenConfig);
     case 'xrp':
     case 'txrp':
+      if ('canTransfer' in tokenConfig) {
+        return XrpMptToken.createTokenConstructor(tokenConfig as XrpMptTokenConfig);
+      }
       return XrpToken.createTokenConstructor(tokenConfig as XrpTokenConfig);
     case 'apt':
     case 'tapt':
