@@ -183,6 +183,8 @@ export abstract class MpcUtils {
         'transferOfferWithdrawn',
         'bridgeFunds',
         'cantonCommand',
+        'defi-approve',
+        'defi-deposit',
       ].includes(params.intentType)
     ) {
       assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);
@@ -276,6 +278,19 @@ export abstract class MpcUtils {
             feeOptions: params.feeOptions,
             feeToken: params.feeToken,
           };
+        case 'defi-approve':
+        case 'defi-deposit': {
+          assert(params.defiParams, `'defiParams' is required for ${params.intentType} intent`);
+          return {
+            ...baseIntent,
+            vaultId: params.defiParams.vaultId,
+            amount: params.defiParams.amount,
+            ...(params.defiParams.operationId && { operationId: params.defiParams.operationId }),
+            ...(params.defiParams.clientIdempotencyKey && {
+              clientIdempotencyKey: params.defiParams.clientIdempotencyKey,
+            }),
+          };
+        }
         default:
           throw new Error(`Unsupported intent type ${params.intentType}`);
       }

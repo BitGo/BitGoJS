@@ -138,6 +138,38 @@ describe('CantonCommandBuilder', () => {
     });
   });
 
+  describe('token()', () => {
+    it('should set the token', function () {
+      const builder = new CantonCommandBuilder(coins.get('tcanton'));
+      const tx = new Transaction(coins.get('tcanton'));
+      builder.initBuilder(tx);
+      builder.commandId('cmd-tok-1').actAs([PARTY_A]).command(sampleExerciseCommand).token('tcanton:testtoken');
+      assert.equal(builder.toRequestObject().token, 'tcanton:testtoken');
+    });
+
+    it('should trim whitespace', function () {
+      const builder = new CantonCommandBuilder(coins.get('tcanton'));
+      const tx = new Transaction(coins.get('tcanton'));
+      builder.initBuilder(tx);
+      builder.commandId('cmd-tok-2').actAs([PARTY_A]).command(sampleExerciseCommand).token('  tcanton:testtoken  ');
+      assert.equal(builder.toRequestObject().token, 'tcanton:testtoken');
+    });
+
+    it('should throw on empty string', function () {
+      const builder = new CantonCommandBuilder(coins.get('tcanton'));
+      const tx = new Transaction(coins.get('tcanton'));
+      builder.initBuilder(tx);
+      assert.throws(() => builder.token(''), /token must be a non-empty string/);
+    });
+
+    it('should throw on whitespace-only string', function () {
+      const builder = new CantonCommandBuilder(coins.get('tcanton'));
+      const tx = new Transaction(coins.get('tcanton'));
+      builder.initBuilder(tx);
+      assert.throws(() => builder.token('   '), /token must be a non-empty string/);
+    });
+  });
+
   describe('resolveContracts()', () => {
     it('should set the spec array', function () {
       const spec = [{ templateId: TEMPLATE_ID, actAs: [PARTY_A], injectAs: 'command.ExerciseCommand.contractId' }];
@@ -205,6 +237,24 @@ describe('CantonCommandBuilder', () => {
       builder.commandId('cmd-002').actAs([PARTY_A]).command(sampleCreateCommand);
       const req = builder.toRequestObject();
       assert.deepEqual(req.resolveContracts, []);
+    });
+
+    it('should include token when set', function () {
+      const builder = new CantonCommandBuilder(coins.get('tcanton'));
+      const tx = new Transaction(coins.get('tcanton'));
+      builder.initBuilder(tx);
+      builder.commandId('cmd-003').actAs([PARTY_A]).command(sampleExerciseCommand).token('tcanton:testtoken');
+      const req = builder.toRequestObject();
+      assert.equal(req.token, 'tcanton:testtoken');
+    });
+
+    it('should not include token key when not set', function () {
+      const builder = new CantonCommandBuilder(coins.get('tcanton'));
+      const tx = new Transaction(coins.get('tcanton'));
+      builder.initBuilder(tx);
+      builder.commandId('cmd-004').actAs([PARTY_A]).command(sampleExerciseCommand);
+      const req = builder.toRequestObject();
+      assert.ok(!('token' in req));
     });
   });
 

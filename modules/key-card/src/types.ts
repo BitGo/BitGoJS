@@ -1,4 +1,4 @@
-import { Keychain } from '@bitgo/sdk-core';
+import { EncryptionVersion, Keychain } from '@bitgo/sdk-core';
 import { BaseCoin, KeyCurve } from '@bitgo/statics';
 
 export interface GenerateQrDataBaseParams {
@@ -25,6 +25,7 @@ export interface GenerateQrDataCoinParams {
   // If both the passphrase and passcodeEncryptionCode are passed, then this code encrypts the passphrase with the
   // passcodeEncryptionCode and puts the result into Box D. Allows recoveries of the wallet password.
   passphrase?: string;
+  encryptionVersion?: EncryptionVersion;
 }
 
 export interface GenerateQrDataParams extends GenerateQrDataCoinParams {

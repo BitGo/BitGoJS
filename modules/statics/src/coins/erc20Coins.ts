@@ -14916,4 +14916,16 @@ export const erc20Coins = [
     undefined,
     Networks.test.hoodi
   ),
+  terc20(
+    '878acb7f-baca-4a32-a546-a8251e1f22b1',
+    'hteth:tprn',
+    'Hoodi Testnet Peoples Reserve',
+    18,
+    '0x80aad09be9112d53d77997174388a65fa66bb308',
+    UnderlyingAsset['hteth:tprn'],
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
 ];

@@ -24,6 +24,7 @@ async function encryptWalletUpdateRequest(
     requestWithEncryption.encryptedSignerTlsKey = await wallet.bitgo.encryptAsync({
       password: params.passphrase,
       input: params.signerTlsKey,
+      encryptionVersion: params.encryptionVersion,
     });
   }
 
@@ -31,6 +32,7 @@ async function encryptWalletUpdateRequest(
     requestWithEncryption.encryptedSignerAdminMacaroon = await wallet.bitgo.encryptAsync({
       password: params.passphrase,
       input: params.signerAdminMacaroon,
+      encryptionVersion: params.encryptionVersion,
     });
   }
 
@@ -38,6 +40,7 @@ async function encryptWalletUpdateRequest(
     requestWithEncryption.encryptedSignerMacaroon = await wallet.bitgo.encryptAsync({
       password: deriveLightningServiceSharedSecret(coinName, userAuthXprv).toString('hex'),
       input: params.signerMacaroon,
+      encryptionVersion: params.encryptionVersion,
     });
   }
 

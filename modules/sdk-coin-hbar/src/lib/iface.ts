@@ -61,6 +61,7 @@ export interface AccountUpdateInstruction {
   params: {
     accountId: string;
     stakedNodeId?: string;
+    stakedAccountId?: string;
     declineReward?: boolean;
   };
 }

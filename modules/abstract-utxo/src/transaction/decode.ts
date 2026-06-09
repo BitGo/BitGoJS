@@ -3,7 +3,7 @@ import { fixedScriptWallet, hasPsbtMagic, Psbt as WasmPsbt, utxolibCompat } from
 
 import { getNetworkFromCoinName, UtxoCoinName } from '../names';
 
-import { SdkBackend, BitGoPsbt } from './types';
+import { BitGoPsbt } from './types';
 
 type BufferEncoding = 'hex' | 'base64';
 
@@ -31,39 +31,11 @@ function toNetworkName(coinName: UtxoCoinName): utxolibCompat.UtxolibName {
   return networkName;
 }
 
-export function decodePsbtWith(
-  psbt: string | Buffer,
-  coinName: UtxoCoinName,
-  backend: 'utxolib'
-): utxolib.bitgo.UtxoPsbt;
-export function decodePsbtWith(
-  psbt: string | Buffer,
-  coinName: UtxoCoinName,
-  backend: 'wasm-utxo'
-): fixedScriptWallet.BitGoPsbt;
-export function decodePsbtWith(
-  psbt: string | Buffer,
-  coinName: UtxoCoinName,
-  backend: SdkBackend
-): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt;
-export function decodePsbtWith(
-  psbt: string | Buffer,
-  coinName: UtxoCoinName,
-  backend: SdkBackend
-): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt {
+export function decodePsbt(psbt: string | Buffer, coinName: UtxoCoinName): BitGoPsbt {
   if (typeof psbt === 'string') {
     psbt = Buffer.from(psbt, 'hex');
   }
-  if (backend === 'utxolib') {
-    const network = getNetworkFromCoinName(coinName);
-    return utxolib.bitgo.createPsbtFromBuffer(psbt, network);
-  } else {
-    return fixedScriptWallet.BitGoPsbt.fromBytes(psbt, toNetworkName(coinName));
-  }
-}
-
-export function decodePsbt(psbt: string | Buffer, coinName: UtxoCoinName): BitGoPsbt {
-  return decodePsbtWith(psbt, coinName, 'wasm-utxo');
+  return fixedScriptWallet.BitGoPsbt.fromBytes(psbt, toNetworkName(coinName));
 }
 
 export type PrebuildLike = {
@@ -90,14 +62,6 @@ export function decodeDescriptorPsbt(prebuild: PrebuildLike): WasmPsbt {
   return WasmPsbt.deserialize(bytes);
 }
 
-export function encodeTransaction(
-  transaction: utxolib.bitgo.UtxoTransaction<bigint | number> | utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt
-): Buffer {
-  if (transaction instanceof utxolib.bitgo.UtxoTransaction) {
-    return transaction.toBuffer();
-  } else if (transaction instanceof utxolib.bitgo.UtxoPsbt) {
-    return transaction.toBuffer();
-  } else {
-    return Buffer.from(transaction.serialize());
-  }
+export function encodeTransaction(transaction: fixedScriptWallet.BitGoPsbt): Buffer {
+  return Buffer.from(transaction.serialize());
 }

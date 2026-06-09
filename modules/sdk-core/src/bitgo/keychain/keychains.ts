@@ -567,7 +567,7 @@ export class Keychains implements IKeychains {
    * @param walletPassphrase
    * @returns Keychain including the decrypted private key
    */
-  async createUserKeychain(walletPassphrase: string): Promise<Keychain> {
+  async createUserKeychain(walletPassphrase: string, encryptionVersion?: EncryptionVersion): Promise<Keychain> {
     const keychains = this.baseCoin.keychains();
     const newKeychain = keychains.create();
     const originalPasscodeEncryptionCode = generateRandomPassword(5);
@@ -575,6 +575,7 @@ export class Keychains implements IKeychains {
     const encryptedPrv = await this.bitgo.encryptAsync({
       password: walletPassphrase,
       input: newKeychain.prv,
+      encryptionVersion,
     });
 
     return {
@@ -614,7 +615,11 @@ export class Keychains implements IKeychains {
         throw Error('Expected a public key to be generated');
       }
       pub = keyPub;
-      encryptedPrv = await this.bitgo.encryptAsync({ input: keyPrv, password: params.password });
+      encryptedPrv = await this.bitgo.encryptAsync({
+        input: keyPrv,
+        password: params.password,
+        encryptionVersion: params.encryptionVersion,
+      });
     }
 
     return this.bitgo

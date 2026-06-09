@@ -27,7 +27,7 @@ module.exports = (env, options) => {
         rules: devRules,
       },
       resolve: {
-        extensions: ['.tsx', '.ts', '.js'],
+        extensions: ['.tsx', '.ts', '.js', '.mjs'],
         alias: aliasItems,
         fallback: resolveFallback,
       },

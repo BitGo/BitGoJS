@@ -7,7 +7,7 @@ import assert from 'assert';
 import BigNumber from 'bignumber.js';
 import * as t from 'io-ts';
 import * as _ from 'lodash';
-import { IRequestTracer } from '../../api';
+import { EncryptionVersion, IRequestTracer } from '../../api';
 import * as common from '../../common';
 import { AddressBook, IAddressBook } from '../address-book';
 import {
@@ -42,6 +42,7 @@ import {
 import { CreateLightningInvoiceParams, LightningInvoiceResponse } from '../../lightning';
 import { getLightningAuthKey } from '../lightning/lightningWalletUtil';
 import { IPendingApproval, PendingApproval, PendingApprovals } from '../pendingApproval';
+import { DefiVault } from '../defi';
 import { GoStakingWallet, StakingWallet } from '../staking';
 import { TradingAccount } from '../trading';
 import { getTxRequest } from '../tss';
@@ -230,6 +231,7 @@ export class Wallet implements IWallet {
   public readonly bitgo: BitGoBase;
   public readonly baseCoin: IBaseCoin;
   public _wallet: WalletData;
+  private _defi?: DefiVault;
   private readonly tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | EddsaMPCv2Utils | undefined;
   private readonly _permissions?: string[];
 
@@ -1850,7 +1852,8 @@ export class Wallet implements IWallet {
           decryptedKeychain.prv,
           decryptedKeychain.pub,
           shareOption.pubKey,
-          shareOption.path
+          shareOption.path,
+          params.encryptionVersion
         );
 
         bulkCreateShareOptions.push({
@@ -1990,11 +1993,12 @@ export class Wallet implements IWallet {
     decryptedPrv: string,
     pub: string,
     userPubkey: string,
-    path: string
+    path: string,
+    encryptionVersion?: EncryptionVersion
   ): Promise<BulkWalletShareKeychain> {
     const eckey = makeRandomKey();
     const secret = getSharedSecret(eckey, Buffer.from(userPubkey, 'hex')).toString('hex');
-    const newEncryptedPrv = await this.bitgo.encryptAsync({ password: secret, input: decryptedPrv });
+    const newEncryptedPrv = await this.bitgo.encryptAsync({ password: secret, input: decryptedPrv, encryptionVersion });
 
     const keychain: BulkWalletShareKeychain = {
       pub,
@@ -2025,14 +2029,21 @@ export class Wallet implements IWallet {
   async prepareSharedKeychain(
     walletPassphrase: string | undefined,
     pubkey: string,
-    path: string
+    path: string,
+    encryptionVersion?: EncryptionVersion
   ): Promise<SharedKeyChain> {
     try {
       const decryptedKeychain = await this.getDecryptedKeychainForSharing(walletPassphrase);
       if (!decryptedKeychain) {
         return {};
       }
-      return await this.encryptPrvForUserAsync(decryptedKeychain.prv, decryptedKeychain.pub, pubkey, path);
+      return await this.encryptPrvForUserAsync(
+        decryptedKeychain.prv,
+        decryptedKeychain.pub,
+        pubkey,
+        path,
+        encryptionVersion
+      );
     } catch (e) {
       if (e instanceof MissingEncryptedKeychainError) {
         // ignore this error because this looks like a cold wallet
@@ -2078,7 +2089,12 @@ export class Wallet implements IWallet {
     })) as any;
     let sharedKeychain;
     if (needsKeychain) {
-      sharedKeychain = await this.prepareSharedKeychain(params.walletPassphrase, sharing.pubkey, sharing.path);
+      sharedKeychain = await this.prepareSharedKeychain(
+        params.walletPassphrase,
+        sharing.pubkey,
+        sharing.path,
+        params.encryptionVersion
+      );
     }
 
     const options: CreateShareOptions = {
@@ -3347,6 +3363,16 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * Access DeFi vault operations for this wallet (deposit, withdraw, resume).
+   */
+  get defi(): DefiVault {
+    if (!this._defi) {
+      this._defi = new DefiVault(this);
+    }
+    return this._defi;
+  }
+
+  /**
    * Create a staking wallet from this wallet
    */
   toStakingWallet(): StakingWallet {
@@ -3441,6 +3467,7 @@ export class Wallet implements IWallet {
       backupKeyID,
       activationCode,
     } = validateDownloadKeycardParams(params);
+    const { encryptionVersion } = params;
 
     const coinShortName = this.baseCoin.type;
     const coinName = this.baseCoin.getFullName();
@@ -3449,7 +3476,8 @@ export class Wallet implements IWallet {
     const doc = await drawKeycardAsync({
       jsPDF,
       QRCode,
-      encrypt: (p: { input: string; password: string }) => this.bitgo.encryptAsync(p),
+      encrypt: (p) => this.bitgo.encryptAsync(p),
+      encryptionVersion,
       coinShortName,
       coinName,
       activationCode,
@@ -4301,6 +4329,7 @@ export class Wallet implements IWallet {
             reqId,
             intentType: 'cantonCommand',
             cantonCommandParams: params.cantonCommandParams,
+            tokenName: params.tokenName,
             sequenceId: params.sequenceId,
             comment: params.comment,
           },
@@ -4381,6 +4410,37 @@ export class Wallet implements IWallet {
             sequenceId: params.sequenceId,
             comment: params.comment,
             recipients: params.recipients || [],
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      case 'defiApprove':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'defi-approve',
+            defiParams: params.defiParams as {
+              vaultId: string;
+              amount: string;
+              clientIdempotencyKey?: string;
+            },
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      case 'defiDeposit':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'defi-deposit',
+            defiParams: params.defiParams as {
+              vaultId: string;
+              amount: string;
+              operationId?: string;
+              clientIdempotencyKey?: string;
+            },
           },
           apiVersion,
           params.preview

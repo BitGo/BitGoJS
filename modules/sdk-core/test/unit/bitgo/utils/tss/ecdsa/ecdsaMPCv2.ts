@@ -880,6 +880,66 @@ describe('ECDSA MPC v2', async () => {
     assert.strictEqual(sigParts[1].length, 64, 'Signature R must be 32 bytes hex');
     assert.strictEqual(sigParts[2].length, 64, 'Signature S must be 32 bytes hex');
   });
+
+  describe('createOfflineRound1Share and createOfflineRound2Share - encryptionVersion: 1 in v1 path', async () => {
+    let ecdsaMPCv2UtilsWithSpy: EcdsaMPCv2Utils;
+    let encryptAsyncSpy: sinon.SinonStub;
+
+    before(async () => {
+      const mockBg = {} as BitGoBase;
+      mockBg.getEnv = sinon.stub().returns('test');
+      const encryptImpl = (params: { password: string; input: string; adata?: string }) => {
+        const salt = randomBytes(8);
+        const iv = randomBytes(16);
+        return sjcl.encrypt(params.password, params.input, {
+          salt: [bytesToWord(salt.subarray(0, 4)), bytesToWord(salt.subarray(4))],
+          iv: [
+            bytesToWord(iv.subarray(0, 4)),
+            bytesToWord(iv.subarray(4, 8)),
+            bytesToWord(iv.subarray(8, 12)),
+            bytesToWord(iv.subarray(12, 16)),
+          ],
+          adata: params.adata,
+        });
+      };
+      encryptAsyncSpy = sinon.stub().callsFake(async (params) => encryptImpl(params));
+      mockBg.encrypt = sinon.stub().callsFake(encryptImpl);
+      mockBg.encryptAsync = encryptAsyncSpy;
+      mockBg.decrypt = sinon.stub().callsFake((params) => sjcl.decrypt(params.password, params.input));
+      mockBg.decryptAsync = sinon.stub().callsFake(async (params) => sjcl.decrypt(params.password, params.input));
+
+      const mockCoin = {} as IBaseCoin;
+      mockCoin.getHashFunction = sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash);
+      ecdsaMPCv2UtilsWithSpy = new EcdsaMPCv2Utils(mockBg, mockCoin);
+    });
+
+    it('createOfflineRound1Share uses encryptionVersion: 1 in v1 (non-v2 envelope) path', async () => {
+      const txRequest = {
+        txRequestId: 'req-id',
+        walletId: walletID,
+        transactions: [{ unsignedTx: { signableHex: 'deadbeef01', derivationPath: 'm/0', serializedTxHex: '' } }],
+        apiVersion: 'full',
+      } as any;
+
+      encryptAsyncSpy.resetHistory();
+
+      await ecdsaMPCv2UtilsWithSpy.createOfflineRound1Share({
+        txRequest,
+        prv: Buffer.from(userShare).toString('base64'),
+        walletPassphrase,
+        encryptedPrv: undefined,
+      });
+
+      assert.ok(encryptAsyncSpy.called, 'encryptAsync should be called in v1 path');
+      for (const call of encryptAsyncSpy.getCalls()) {
+        assert.strictEqual(
+          call.args[0].encryptionVersion,
+          1,
+          'encryptionVersion should be hardcoded to 1 in the v1 signing session path'
+        );
+      }
+    });
+  });
 });
 
 function bytesToWord(bytes?: Uint8Array | number[]): number {

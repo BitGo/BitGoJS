@@ -20,3 +20,5 @@ export { WalletInitBuilder } from './walletInitBuilder';
 export { WalletInitTransaction } from './walletInitialization/walletInitTransaction';
 
 export { Utils, Interface };
+export * from './messages';
+export * from './clearSigning';

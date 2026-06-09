@@ -37,6 +37,7 @@
     "@bitgo/sdk-core": "^37.5.0",
     "@bitgo/statics": "^58.46.0",
     "jspdf": ">=4.2.0",
+    "pdfjs-dist": "^4.0.0",
     "qrcode": "^1.5.1"
   },
   "devDependencies": {

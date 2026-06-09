@@ -1,4 +1,4 @@
-import { IRequestTracer } from '../../api';
+import { EncryptionVersion, IRequestTracer } from '../../api';
 import { CreateLightningInvoiceParams, LightningInvoiceResponse } from '../../lightning';
 import {
   IBaseCoin,
@@ -15,6 +15,7 @@ import {
 import { BitGoBase } from '../bitgoBase';
 import { Keychain, KeychainWithEncryptedPrv } from '../keychain';
 import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
+import { IDefiVault } from '../defi';
 import { IGoStakingWallet, IStakingWallet } from '../staking';
 import { ITradingAccount } from '../trading';
 import {
@@ -771,6 +772,7 @@ export interface ShareWalletOptions {
    */
   skipKeychain?: boolean;
   disableEmail?: boolean;
+  encryptionVersion?: EncryptionVersion;
 }
 
 export interface BulkCreateShareOption {
@@ -787,6 +789,7 @@ export interface BulkWalletShareOptions {
     path: string;
     permissions: string[];
   }>;
+  encryptionVersion?: EncryptionVersion;
 }
 
 export type WalletShareState = 'active' | 'accepted' | 'canceled' | 'rejected' | 'pendingapproval';
@@ -1057,6 +1060,7 @@ export interface DownloadKeycardOptions {
   activationCode?: string;
   walletKeyID?: string;
   backupKeyID?: string;
+  encryptionVersion?: EncryptionVersion;
 }
 
 export interface ChallengeVerifiers {
@@ -1169,6 +1173,7 @@ export interface IWallet {
   remove(params?: Record<string, never>): Promise<any>;
   toJSON(): WalletData;
   createLightningInvoice(params: CreateLightningInvoiceParams): Promise<LightningInvoiceResponse>;
+  readonly defi: IDefiVault;
   toTradingAccount(): ITradingAccount;
   toStakingWallet(): IStakingWallet;
   toGoStakingWallet(): IGoStakingWallet;

@@ -93,7 +93,7 @@ export interface CantonExerciseCommand {
     templateId: string;
     contractId?: string;
     choice: string;
-    choiceArgument: Record<string, unknown>;
+    choiceArgument?: Record<string, unknown>;
   };
 }
 
@@ -280,6 +280,25 @@ interface IntentOptionsBase {
   custodianMessageId?: string;
 }
 
+/**
+ * DeFi intent fields for ERC-4626 vault operations.
+ * Extended by PopulatedIntent so these land at the top level of the payload.
+ */
+export interface DefiIntentFields {
+  vaultId?: string;
+  amount?: { value: string; symbol: string } | string;
+  operationId?: string;
+  clientIdempotencyKey?: string;
+}
+
+/** DeFi-specific intent parameters (input container for defiParams). */
+export interface DefiIntentParams {
+  vaultId: string;
+  amount: string;
+  operationId?: string;
+  clientIdempotencyKey?: string;
+}
+
 export interface IntentOptionsForMessage extends IntentOptionsBase {
   messageRaw: string;
   messageEncoded?: string;
@@ -354,6 +373,8 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   feeToken?: string;
   /** Canton-specific params for the cantonCommand intent. */
   cantonCommandParams?: CantonCommandParams;
+  /** DeFi vault intent fields for defi-approve / defi-deposit intents. */
+  defiParams?: DefiIntentParams;
 }
 export interface IntentRecipient {
   address: {
@@ -388,7 +409,7 @@ export interface PopulatedIntentForTypedDataSigning extends PopulatedIntentBase 
   custodianMessageId?: string;
 }
 
-export interface PopulatedIntent extends PopulatedIntentBase {
+export interface PopulatedIntent extends PopulatedIntentBase, DefiIntentFields {
   recipients?: IntentRecipient[];
   nonce?: string;
   token?: string;
@@ -434,7 +455,7 @@ export interface PopulatedIntent extends PopulatedIntentBase {
   /**
    * Amount for intents that use a top-level amount instead of recipients (e.g. bridgeFunds).
    */
-  amount?: { value: string; symbol: string };
+  amount?: { value: string; symbol: string } | string;
   /** Canton-specific params serialized into the cantonCommand intent payload. */
   cantonCommandParams?: CantonCommandParams;
 }

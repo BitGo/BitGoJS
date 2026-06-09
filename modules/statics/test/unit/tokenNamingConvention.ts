@@ -74,6 +74,7 @@ describe('Token Naming Convention Tests', function () {
       'hteth:stgwbtc',
       'hteth:htusdl',
       'hteth:htusdlt',
+      'hteth:tprn',
       'hterc6dp',
       'hterc2dp',
       'fixed',

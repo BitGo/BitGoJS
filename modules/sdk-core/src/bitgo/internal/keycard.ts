@@ -6,7 +6,7 @@
  */
 import { isUndefined } from 'lodash';
 import { Keychain } from '../keychain';
-import { EncryptFn, EncryptFnAsync } from '../../api';
+import { EncryptFn, EncryptFnAsync, EncryptionVersion } from '../../api';
 
 /**
  * Return the list of questions that will appear on the second page of the keycard
@@ -95,6 +95,7 @@ interface GetKeyDataOptions {
 
 type GetKeyDataAsyncOptions = Omit<GetKeyDataOptions, 'encrypt'> & {
   encrypt: EncryptFnAsync;
+  encryptionVersion?: EncryptionVersion;
 };
 
 interface BuildKeycardQrDataOptions {
@@ -216,12 +217,13 @@ function getKeyData(options: GetKeyDataOptions): any {
  * @param options
  */
 async function getKeyDataAsync(options: GetKeyDataAsyncOptions): Promise<any> {
-  const { encrypt, backupKeychain, passphrase, passcodeEncryptionCode, ...qrOptions } = options;
+  const { encrypt, backupKeychain, passphrase, passcodeEncryptionCode, encryptionVersion, ...qrOptions } = options;
 
   if (backupKeychain.prv && passphrase) {
     backupKeychain.encryptedPrv = await encrypt({
       input: backupKeychain.prv,
       password: passphrase,
+      encryptionVersion,
     });
   }
 
@@ -230,6 +232,7 @@ async function getKeyDataAsync(options: GetKeyDataAsyncOptions): Promise<any> {
     encryptedWalletPasscode = await encrypt({
       input: passphrase,
       password: passcodeEncryptionCode,
+      encryptionVersion,
     });
   }
 
@@ -250,6 +253,7 @@ interface DrawKeycardOptions extends GetKeyDataOptions, DrawKeycardLayoutOptions
 
 export type DrawKeycardAsyncOptions = Omit<DrawKeycardOptions, 'encrypt'> & {
   encrypt: EncryptFnAsync;
+  encryptionVersion?: EncryptionVersion;
 };
 
 /**
@@ -465,6 +469,7 @@ export async function drawKeycardAsync(options: DrawKeycardAsyncOptions): Promis
     activationCode,
     walletLabel,
     coinName,
+    encryptionVersion,
   } = options;
 
   // Get the data for the first page (qr codes)
@@ -478,6 +483,7 @@ export async function drawKeycardAsync(options: DrawKeycardAsyncOptions): Promis
     userKeychain,
     bitgoKeychain,
     backupKeychain,
+    encryptionVersion,
   });
 
   return renderKeycardPdf({ jsPDF, QRCode, activationCode, walletLabel, coinName }, keyData);

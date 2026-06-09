@@ -20,6 +20,7 @@ type Credentials = {
   walletId: string; // Id of the BitGo wallet.
   walletPassword: string; // Password used for the wallet.
   secret: string; // xprv of user key or backup key.
+  encryptionVersion?: 1 | 2;
 };
 
 type WalletIds = {
@@ -77,7 +78,11 @@ export async function fetchKeys(ids: WalletIds, token: string, accessToken?: str
 
       if (keychain.encryptedPrv === undefined) {
         if (typeof credential === 'object') {
-          const encryptedPrv = await bg.encryptAsync({ password: credential.walletPassword, input: credential.secret });
+          const encryptedPrv = await bg.encryptAsync({
+            password: credential.walletPassword,
+            input: credential.secret,
+            encryptionVersion: credential.encryptionVersion,
+          });
           output[id] = encryptedPrv;
         } else {
           console.warn(`could not find a ${coinName} encrypted user private key for wallet id ${id}, skipping`);

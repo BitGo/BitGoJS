@@ -275,6 +275,7 @@ Wallets.prototype.acceptShare = function (params, callback) {
         encryptedXprv = await self.bitgo.encryptAsync({
           password: newWalletPassphrase,
           input: decryptedSharedWalletXprv,
+          encryptionVersion: params.encryptionVersion,
         });
 
         // Carry on to the next block where we will post the acceptance of the share with the encrypted xprv
@@ -368,7 +369,13 @@ Wallets.prototype.createWalletWithKeychains = function (params, callback) {
   let bitgoKeychain;
 
   return Promise.resolve()
-    .then(() => self.bitgo.encryptAsync({ password: params.passphrase, input: userKeychain.xprv }))
+    .then(() =>
+      self.bitgo.encryptAsync({
+        password: params.passphrase,
+        input: userKeychain.xprv,
+        encryptionVersion: params.encryptionVersion,
+      })
+    )
     .then(function (encryptedXprv) {
       userKeychain.encryptedXprv = encryptedXprv;
 

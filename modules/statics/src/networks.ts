@@ -735,7 +735,7 @@ class EthereumW extends Mainnet implements EthereumNetwork {
 }
 
 class XtzEvm extends Mainnet implements EthereumNetwork {
-  name = 'XTZ EVM';
+  name = 'Etherlink';
   family = CoinFamily.XTZEVM;
   explorerUrl = 'https://explorer.etherlink.com/tx/';
   accountExplorerUrl = 'https://explorer.etherlink.com/address/';
@@ -744,7 +744,7 @@ class XtzEvm extends Mainnet implements EthereumNetwork {
 }
 
 class XtzEvmTestnet extends Testnet implements EthereumNetwork {
-  name = 'Testnet XTZ EVM';
+  name = 'Testnet Etherlink';
   family = CoinFamily.XTZEVM;
   explorerUrl = 'https://shadownet.explorer.etherlink.com/tx/';
   accountExplorerUrl = 'https://shadownet.explorer.etherlink.com/address/';
@@ -2021,7 +2021,7 @@ class SonicTestnet extends Testnet implements EthereumNetwork {
 }
 
 class Usdt0 extends Mainnet implements EthereumNetwork {
-  name = 'USDT0';
+  name = 'StableEVM';
   family = CoinFamily.USDT0;
   explorerUrl = 'https://stablescan.xyz/tx/';
   accountExplorerUrl = 'https://stablescan.xyz/address/';
@@ -2030,7 +2030,7 @@ class Usdt0 extends Mainnet implements EthereumNetwork {
 }
 
 class Usdt0Testnet extends Testnet implements EthereumNetwork {
-  name = 'Testnet USDT0';
+  name = 'Testnet StableEVM';
   family = CoinFamily.USDT0;
   explorerUrl = 'https://testnet.stablescan.xyz/tx/';
   accountExplorerUrl = 'https://testnet.stablescan.xyz/address/';
@@ -2652,7 +2652,7 @@ class Canton extends Mainnet implements BaseNetwork {
 class CantonTestnet extends Testnet implements BaseNetwork {
   name = 'CantonTestnet';
   family = CoinFamily.CANTON;
-  explorerUrl = 'https://lighthouse.devnet.cantonloop.com/transactions/';
+  explorerUrl = 'https://lighthouse.testnet.cantonloop.com/transactions/';
 }
 
 class Dogeos extends Mainnet implements EthereumNetwork {

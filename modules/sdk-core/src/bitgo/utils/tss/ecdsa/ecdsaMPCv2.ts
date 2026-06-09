@@ -335,7 +335,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         params.passphrase,
         params.originalPasscodeEncryptionCode,
         params.webauthnInfo,
-        encryptionSession
+        encryptionSession,
+        params.encryptionVersion
       );
       const backupKeychainPromise = this.addBackupKeychain(
         bitgoCommonKeychain,
@@ -343,7 +344,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         backupReducedPrivateMaterial,
         params.passphrase,
         params.originalPasscodeEncryptionCode,
-        encryptionSession
+        encryptionSession,
+        params.encryptionVersion
       );
       const bitgoKeychainPromise = this.addBitgoKeychain(bitgoCommonKeychain);
 
@@ -377,7 +379,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       encrypt(plaintext: string): Promise<string>;
       decrypt(ciphertext: string): Promise<string>;
       destroy(): void;
-    }
+    },
+    encryptionVersion?: EncryptionVersion
   ): Promise<Keychain> {
     let source: string;
     let encryptedPrv: string | undefined = undefined;
@@ -400,6 +403,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
           encryptedPrv = await this.bitgo.encryptAsync({
             input: privateMaterialBase64,
             password: passphrase,
+            encryptionVersion,
           });
           // Encrypts the CBOR-encoded ReducedKeyShare (which contains the party's private
           // scalar s_i) with the wallet passphrase. The result is stored as reducedEncryptedPrv
@@ -410,6 +414,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
             // The browser deals with a Buffer as Uint8Array, therefore in the browser .toString('base64') just creates a comma seperated string of the array values.
             input: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(reducedPrivateMaterial)))),
             password: passphrase,
+            encryptionVersion,
           });
         }
         break;
@@ -437,6 +442,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
           encryptedPrv: await this.bitgo.encryptAsync({
             input: privateMaterialBase64,
             password: webauthnInfo.passphrase,
+            encryptionVersion,
           }),
         },
       ];
@@ -567,7 +573,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       encrypt(plaintext: string): Promise<string>;
       decrypt(ciphertext: string): Promise<string>;
       destroy(): void;
-    }
+    },
+    encryptionVersion?: EncryptionVersion
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.USER,
@@ -577,7 +584,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       passphrase,
       originalPasscodeEncryptionCode,
       webauthnInfo,
-      encryptionSession
+      encryptionSession,
+      encryptionVersion
     );
   }
 
@@ -591,7 +599,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       encrypt(plaintext: string): Promise<string>;
       decrypt(ciphertext: string): Promise<string>;
       destroy(): void;
-    }
+    },
+    encryptionVersion?: EncryptionVersion
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.BACKUP,
@@ -601,7 +610,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       passphrase,
       originalPasscodeEncryptionCode,
       undefined,
-      encryptionSession
+      encryptionSession,
+      encryptionVersion
     );
   }
 
@@ -1214,11 +1224,13 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       input: sessionData,
       password: walletPassphrase,
       adata: `${EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND1_STATE}:${adata}`,
+      encryptionVersion: 1,
     });
     const encryptedUserGpgPrvKey = await this.bitgo.encryptAsync({
       input: userGpgKey.privateKey,
       password: walletPassphrase,
       adata: `${EcdsaMPCv2Utils.DKLS23_SIGNING_USER_GPG_KEY}:${adata}`,
+      encryptionVersion: 1,
     });
 
     return { signatureShareRound1, userGpgPubKey, encryptedRound1Session, encryptedUserGpgPrvKey };
@@ -1315,6 +1327,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       input: sessionData,
       password: walletPassphrase,
       adata: `${EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND2_STATE}:${adata}`,
+      encryptionVersion: 1,
     });
 
     return {

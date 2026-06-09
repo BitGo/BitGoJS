@@ -88,6 +88,7 @@ export const UpdateLightningWalletClientRequest = t.intersection([
     signerMacaroon: t.string,
     signerAdminMacaroon: t.string,
     signerTlsKey: t.string,
+    encryptionVersion: t.union([t.literal(1), t.literal(2)]),
   }),
 ]);
 

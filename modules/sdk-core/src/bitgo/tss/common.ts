@@ -1,6 +1,7 @@
 import assert from 'assert';
 import openpgp from 'openpgp';
 
+import { MPCv2SigningState } from '@bitgo/public-types';
 import { BitGoBase } from '../bitgoBase';
 import { TxRequestChallengeResponse } from './types';
 import {
@@ -20,12 +21,21 @@ const debug = require('debug')('bitgo:tss:common');
 
 export function getBitgoSignatureShare(
   signatureShares: SignatureShareRecord[],
-  signerShareType: SignatureShareType
+  signerShareType: SignatureShareType,
+  shareType: MPCv2SigningState
 ): SignatureShareRecord {
-  const bitgoShare = signatureShares.find(
-    (share) => share.from === SignatureShareType.BITGO && share.to === signerShareType
-  );
-  assert(bitgoShare, 'Missing BitGo signature share');
+  const bitgoShare = signatureShares.find((share) => {
+    if (share.from !== SignatureShareType.BITGO || share.to !== signerShareType) {
+      return false;
+    }
+
+    try {
+      return JSON.parse(share.share).type === shareType;
+    } catch {
+      return false;
+    }
+  });
+  assert(bitgoShare, `Missing BitGo ${shareType} signature share`);
   return bitgoShare;
 }
 

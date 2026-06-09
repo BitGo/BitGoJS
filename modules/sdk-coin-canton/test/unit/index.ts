@@ -4,6 +4,10 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { Canton, Tcanton } from '../../src';
 
 import './canton';
+import './messages/clearSigning';
+import './messages/cantonSignTransactionMessage';
+import './messages/cantonSignTopologyMessage';
+import './messages/messageBuilderFactory';
 
 describe('Canton:', function () {
   let bitgo: TestBitGoAPI;

@@ -99,14 +99,16 @@ export class TokenTransferBuilder extends TransactionBuilder {
    */
   createAssociatedTokenAccount(recipient: TokenAssociateRecipient): this {
     validateOwnerAddress(recipient.ownerAddress);
-    const token = getSolTokenFromTokenName(recipient.tokenName);
     let tokenAddress: string;
     if (recipient.tokenAddress) {
       tokenAddress = recipient.tokenAddress;
-    } else if (token) {
-      tokenAddress = token.tokenAddress;
     } else {
-      throw new BuildTransactionError('Invalid token name, got: ' + recipient.tokenName);
+      const token = getSolTokenFromTokenName(recipient.tokenName);
+      if (token) {
+        tokenAddress = token.tokenAddress;
+      } else {
+        throw new BuildTransactionError('Invalid token name, got: ' + recipient.tokenName);
+      }
     }
     validateMintAddress(tokenAddress);
 
@@ -119,7 +121,6 @@ export class TokenTransferBuilder extends TransactionBuilder {
     assert(this._sender, 'Sender must be set before building the transaction');
     const sendInstructions = await Promise.all(
       this._sendParams.map(async (sendParams: SendParams): Promise<TokenTransfer> => {
-        const coin = getSolTokenFromTokenName(sendParams.tokenName);
         let tokenAddress: string;
         let tokenName: string;
         let programId: string | undefined;
@@ -129,13 +130,16 @@ export class TokenTransferBuilder extends TransactionBuilder {
           tokenName = sendParams.tokenName;
           programId = sendParams.programId;
           decimals = sendParams.decimalPlaces;
-        } else if (coin) {
-          tokenAddress = coin.tokenAddress;
-          tokenName = coin.name;
-          programId = coin.programId;
-          decimals = coin.decimalPlaces;
         } else {
-          throw new Error(`Could not determine token information for ${sendParams.tokenName}`);
+          const coin = getSolTokenFromTokenName(sendParams.tokenName);
+          if (coin) {
+            tokenAddress = coin.tokenAddress;
+            tokenName = coin.name;
+            programId = coin.programId;
+            decimals = coin.decimalPlaces;
+          } else {
+            throw new Error(`Could not determine token information for ${sendParams.tokenName}`);
+          }
         }
         const sourceAddress = await getAssociatedTokenAccountAddress(tokenAddress, this._sender, false, programId);
         return {
@@ -158,20 +162,22 @@ export class TokenTransferBuilder extends TransactionBuilder {
     });
     const createAtaInstructions = await Promise.all(
       uniqueCreateAtaParams.map(async (recipient: TokenAssociateRecipient): Promise<AtaInit> => {
-        const coin = getSolTokenFromTokenName(recipient.tokenName);
         let tokenAddress: string;
         let tokenName: string;
         let programId: string | undefined;
-        if (coin) {
-          tokenName = coin.name;
-          tokenAddress = coin.tokenAddress;
-          programId = coin.programId;
-        } else if (recipient.tokenAddress && recipient.programId) {
+        if (recipient.tokenAddress && recipient.programId) {
           tokenName = recipient.tokenName;
           tokenAddress = recipient.tokenAddress;
           programId = recipient.programId;
         } else {
-          throw new Error(`Could not determine token information for ${recipient.tokenName}`);
+          const coin = getSolTokenFromTokenName(recipient.tokenName);
+          if (coin) {
+            tokenName = coin.name;
+            tokenAddress = coin.tokenAddress;
+            programId = coin.programId;
+          } else {
+            throw new Error(`Could not determine token information for ${recipient.tokenName}`);
+          }
         }
 
         // Use the provided ataAddress if it exists, otherwise calculate it
