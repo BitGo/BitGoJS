@@ -36,8 +36,13 @@ jobs:
       - name: Install BitGoJS
         run: sfw yarn install --with-frozen-lockfile
 
+      - name: Install retry
+        uses: BitGo/install-github-release-binary@v2
+        with:
+          targets: EricCrosson/retry@v1
+
       - name: Audit Dependencies
-        run: yarn run improved-yarn-audit --min-severity high
+        run: retry --up-to 3x -- yarn run improved-yarn-audit --min-severity high
 
       - name: Set Environment Variable for Alpha
         if: github.ref != 'refs/heads/master' # only publish changes if on feature branches
