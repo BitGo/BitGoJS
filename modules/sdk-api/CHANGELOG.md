@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.85.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.84.0...@bitgo/sdk-api@1.85.0) (2026-06-09)
+
+
+### Features
+
+* **sdk-api:** add enterprise to AddAccessTokenOptions ([a95bf93](https://github.com/BitGo/BitGoJS/commit/a95bf9309e1f5e0a0c6ec54c5d704c6c52a27ee2))
+* thread encryptionVersion in SDK ([cb174f4](https://github.com/BitGo/BitGoJS/commit/cb174f47c34f113880650516a12d7b8c69d89e77))
+
+
+
+
+
 # [1.84.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.83.0...@bitgo/sdk-api@1.84.0) (2026-06-04)
 
 

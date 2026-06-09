@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [37.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.5.0...@bitgo/sdk-core@37.6.0) (2026-06-09)
+
+
+### Bug Fixes
+
+* **sdk-core:** pass round to getBitgoSignatureShare helper ([de2b822](https://github.com/BitGo/BitGoJS/commit/de2b822b6902e1815742c9cb5cad71fe65f20552))
+
+
+### Features
+
+* **sdk-coin-canton:** added message signing builders for canton ([316475b](https://github.com/BitGo/BitGoJS/commit/316475b3f8cb3ed4f75e25e77374d8582aa5e46e))
+* **sdk-coin-canton:** forward token and make choiceArgument optional ([f2f4244](https://github.com/BitGo/BitGoJS/commit/f2f4244b2c2ba20b3d588c2a368388744107cb4a))
+* **sdk-core:** accept SPKI secp256k1 pubs in Ofc.isValidPub ([c7ab5b1](https://github.com/BitGo/BitGoJS/commit/c7ab5b1eb89a7a5826c99991cee36d60b705bc9d))
+* **sdk-core:** add wallet.defi DeFi vault orchestration methods ([756618f](https://github.com/BitGo/BitGoJS/commit/756618fd1acb95c05b010b5223632909e4c04c5f))
+* thread encryptionVersion in SDK ([cb174f4](https://github.com/BitGo/BitGoJS/commit/cb174f47c34f113880650516a12d7b8c69d89e77))
+
+
+
+
+
 # [37.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.4.1...@bitgo/sdk-core@37.5.0) (2026-06-04)
 
 

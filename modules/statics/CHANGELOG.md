@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.47.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.46.0...@bitgo/statics@58.47.0) (2026-06-09)
+
+
+### Bug Fixes
+
+* **statics:** use Etherlink and StableEVM display names (CECHO-1255) ([ec0ba8c](https://github.com/BitGo/BitGoJS/commit/ec0ba8c94f16d1e83a7445d6d6de95e604f7fca0))
+
+
+### Features
+
+* add new tokens from AMS API ([f34e3ec](https://github.com/BitGo/BitGoJS/commit/f34e3ec1958a5861e16359339baba1720f24086c))
+* add new tokens from AMS API ([8ed51d8](https://github.com/BitGo/BitGoJS/commit/8ed51d8fedc7fad818b2bb9589deb3a8cecbefaa))
+* add new tokens from AMS API ([272e00f](https://github.com/BitGo/BitGoJS/commit/272e00fc3fa6545aa8d9fdd539846953d91c531f))
+* add new tokens from AMS API ([2e34539](https://github.com/BitGo/BitGoJS/commit/2e3453942e141d324d1a661b780eac1e1025d684))
+* added polygon link v2 token ([0c5388b](https://github.com/BitGo/BitGoJS/commit/0c5388bd245bbf91a29a62ce121d303dcb2d543c))
+* onboard MPT tokens ([14474cb](https://github.com/BitGo/BitGoJS/commit/14474cb8bd863fd207697220adaf57081455af4d))
+* onboard spcx in test and stage ([e7a75d4](https://github.com/BitGo/BitGoJS/commit/e7a75d4c3768017a404c44c5845dd0c5a3941d76))
+* **sdk-coin-canton:** updated canton testnet explorer urls ([1c5df24](https://github.com/BitGo/BitGoJS/commit/1c5df246f636f081d4de266fba8e6477bf89f2c9))
+* **statics:** add mainnet and testnet token configs ([6ade015](https://github.com/BitGo/BitGoJS/commit/6ade015d82a6b44ee919a048602f3da50fdaef61))
+
+
+
+
+
 # [58.46.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.45.0...@bitgo/statics@58.46.0) (2026-06-04)
 
 

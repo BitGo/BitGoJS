@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.23.3...@bitgo/sdk-coin-canton@1.24.0) (2026-06-09)
+
+
+### Features
+
+* **sdk-coin-canton:** added message signing builders for canton ([316475b](https://github.com/BitGo/BitGoJS/commit/316475b3f8cb3ed4f75e25e77374d8582aa5e46e))
+* **sdk-coin-canton:** forward token and make choiceArgument optional ([f2f4244](https://github.com/BitGo/BitGoJS/commit/f2f4244b2c2ba20b3d588c2a368388744107cb4a))
+
+
+
+
+
 ## [1.23.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.23.2...@bitgo/sdk-coin-canton@1.23.3) (2026-06-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-canton

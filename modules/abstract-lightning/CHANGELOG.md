@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.12.0...@bitgo/abstract-lightning@7.13.0) (2026-06-09)
+
+
+### Features
+
+* add isReward to tx entry for ln ([686cd15](https://github.com/BitGo/BitGoJS/commit/686cd1527728deaac2edb491fec920cd3358837e))
+* thread encryptionVersion in SDK ([cb174f4](https://github.com/BitGo/BitGoJS/commit/cb174f47c34f113880650516a12d7b8c69d89e77))
+
+
+
+
+
 # [7.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.11.1...@bitgo/abstract-lightning@7.12.0) (2026-06-04)
 
 

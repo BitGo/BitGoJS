@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/passkey-crypto@0.4.4...@bitgo/passkey-crypto@0.5.0) (2026-06-09)
+
+
+### Features
+
+* thread encryptionVersion in SDK ([cb174f4](https://github.com/BitGo/BitGoJS/commit/cb174f47c34f113880650516a12d7b8c69d89e77))
+
+
+
+
+
 ## [0.4.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/passkey-crypto@0.4.3...@bitgo/passkey-crypto@0.4.4) (2026-06-04)
 
 **Note:** Version bump only for package @bitgo/passkey-crypto

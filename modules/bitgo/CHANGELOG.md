@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.4.0...bitgo@51.5.0) (2026-06-09)
+
+
+### Features
+
+* onboard MPT tokens ([14474cb](https://github.com/BitGo/BitGoJS/commit/14474cb8bd863fd207697220adaf57081455af4d))
+* **sdk-core:** accept SPKI secp256k1 pubs in Ofc.isValidPub ([c7ab5b1](https://github.com/BitGo/BitGoJS/commit/c7ab5b1eb89a7a5826c99991cee36d60b705bc9d))
+
+
+
+
+
 # [51.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.3.1...bitgo@51.4.0) (2026-06-04)
 
 

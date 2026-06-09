@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.34.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.33.0...@bitgo/express@15.34.0) (2026-06-09)
+
+
+### Features
+
+* thread encryptionVersion in SDK ([cb174f4](https://github.com/BitGo/BitGoJS/commit/cb174f47c34f113880650516a12d7b8c69d89e77))
+
+
+
+
+
 # [15.33.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.32.0...@bitgo/express@15.33.0) (2026-06-04)
 
 

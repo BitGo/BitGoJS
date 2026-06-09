@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.5.6...@bitgo/web-demo@3.6.0) (2026-06-09)
+
+
+### Bug Fixes
+
+* downgrade pdfjs-dist to ^4.0.0 for node 20 compatibility ([f2319d9](https://github.com/BitGo/BitGoJS/commit/f2319d9676d42a4c596f8d35499d1a7bd818522c))
+* restore pdfjs worker to .mjs and add mjs to webpack resolve extensions ([45ec5bf](https://github.com/BitGo/BitGoJS/commit/45ec5bf83ca69fcbb3e0ff9bceb609295856d7a1))
+
+
+### Features
+
+* move keycard pdf parse/upload code from bitgo-retail to key-card sdk ([93af96b](https://github.com/BitGo/BitGoJS/commit/93af96bc681a44f1300f81f24406bfaaa7b99118))
+
+
+
+
+
 ## [3.5.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.5.5...@bitgo/web-demo@3.5.6) (2026-06-04)
 
 **Note:** Version bump only for package @bitgo/web-demo
