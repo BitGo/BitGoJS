@@ -236,9 +236,13 @@ jobs:
         run: |
           yarn install --frozen-lockfile
 
+      - name: Install retry
+        uses: BitGo/install-github-release-binary@v2
+        with:
+          targets: EricCrosson/retry@v1
+
       - name: Run yarn audit
-        run: |
-          yarn run audit-high
+        run: retry --up-to 2x --every 3s -- yarn run audit-high --retry-on-network-failure
 
       - name: Run dependency check
         run: |
