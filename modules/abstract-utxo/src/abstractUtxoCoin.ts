@@ -3,7 +3,7 @@ import { randomBytes } from 'crypto';
 
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-import { BIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { BIP32, fixedScriptWallet, hasPsbtMagic } from '@bitgo/wasm-utxo';
 import { bitgo, getMainnet } from '@bitgo/utxo-lib';
 import {
   AddressCoinSpecific,
@@ -86,13 +86,8 @@ import {
   UtxoCoinNameMainnet,
 } from './names';
 import { assertFixedScriptWalletAddress } from './address/fixedScript';
-import { isSdkBackend, ParsedTransaction, SdkBackend } from './transaction/types';
-import {
-  decodeDescriptorPsbt,
-  decodePsbtWith,
-  encodeTransaction,
-  stringToBufferTryFormats,
-} from './transaction/decode';
+import { ParsedTransaction } from './transaction/types';
+import { decodeDescriptorPsbt, decodePsbt, encodeTransaction, stringToBufferTryFormats } from './transaction/decode';
 import { fetchKeychains, toBip32Triple, UtxoKeychain } from './keychains';
 import { verifyKeySignature, verifyUserPublicKey, verifyUserPublicKeyAsync } from './verifyKey';
 import { getPolicyForEnv } from './descriptor/validatePolicy';
@@ -250,7 +245,6 @@ export interface ExplainTransactionOptions<TNumber extends number | bigint = num
   feeInfo?: string;
   pubs?: Triple<string>;
   customChangeXpubs?: Triple<string>;
-  decodeWith?: SdkBackend;
 }
 
 export interface DecoratedExplainTransactionOptions<TNumber extends number | bigint = number>
@@ -263,7 +257,6 @@ export type UtxoNetwork = utxolib.Network;
 export interface TransactionPrebuild<TNumber extends number | bigint = number> extends BaseTransactionPrebuild {
   txInfo?: TransactionInfo<TNumber>;
   blockHeight?: number;
-  decodeWith?: SdkBackend;
   /**
    * PSBT-lite hex present only in pending approval flows, where another user's send fixed the format.
    * Not set in regular /tx/build responses (where the caller controls the build parameters).
@@ -332,7 +325,6 @@ type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = 
     walletId?: string;
     txHex: string;
     txInfo?: TransactionInfo<TNumber>;
-    decodeWith?: SdkBackend;
   };
   /** xpubs triple for wallet (user, backup, bitgo). Required only when txPrebuild.txHex is not a PSBT */
   pubs?: Triple<string>;
@@ -421,10 +413,7 @@ export interface SignPsbtResponse {
   psbt: string;
 }
 
-export abstract class AbstractUtxoCoin
-  extends BaseCoin
-  implements Musig2Participant<utxolib.bitgo.UtxoPsbt>, Musig2Participant<fixedScriptWallet.BitGoPsbt>
-{
+export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Participant<fixedScriptWallet.BitGoPsbt> {
   abstract name: UtxoCoinName;
 
   /**
@@ -438,22 +427,10 @@ export abstract class AbstractUtxoCoin
 
   public readonly amountType: 'number' | 'bigint';
 
-  protected supportedTxFormats: { psbt: boolean; legacy: boolean } = {
-    psbt: true,
-    legacy: false,
-  };
-
-  protected supportedSdkBackends: { utxolib: boolean; 'wasm-utxo': boolean } = {
-    utxolib: false,
-    'wasm-utxo': true,
-  };
-
   protected constructor(bitgo: BitGoBase, amountType: 'number' | 'bigint' = 'number') {
     super(bitgo);
     this.amountType = amountType;
   }
-
-  defaultSdkBackend: SdkBackend = 'wasm-utxo';
 
   /**
    * @deprecated - will be removed when we drop support for utxolib
@@ -628,65 +605,29 @@ export abstract class AbstractUtxoCoin
     return utxolib.bitgo.createTransactionFromHex<TNumber>(hex, this.network, this.amountType);
   }
 
-  decodeTransaction<TNumber extends number | bigint>(
-    input: Buffer | string,
-    decodeWith: SdkBackend = this.defaultSdkBackend
-  ): DecodedTransaction<TNumber> {
-    if (typeof input === 'string') {
-      const buffer = stringToBufferTryFormats(input, ['hex', 'base64']);
-      return this.decodeTransaction(buffer, decodeWith);
+  decodeTransaction(input: Buffer | string): fixedScriptWallet.BitGoPsbt {
+    const buffer = typeof input === 'string' ? stringToBufferTryFormats(input, ['hex', 'base64']) : input;
+    if (!hasPsbtMagic(buffer)) {
+      throw new ErrorDeprecatedTxFormat('legacy');
     }
-
-    if (utxolib.bitgo.isPsbt(input)) {
-      if (this.supportedSdkBackends[decodeWith] !== true) {
-        throw new Error(`SDK support for decodeWith=${decodeWith} is not available on this environment.`);
-      }
-
-      if (!this.supportedTxFormats.psbt) {
-        throw new ErrorDeprecatedTxFormat('psbt');
-      }
-      return decodePsbtWith(input, this.name, decodeWith);
-    } else {
-      // Legacy format transactions are deprecated. This will be an unconditional error in the future.
-      if (!this.supportedTxFormats.legacy) {
-        throw new ErrorDeprecatedTxFormat('legacy');
-      }
-      if (decodeWith !== 'utxolib') {
-        console.error('received decodeWith hint %s, ignoring for legacy transaction', decodeWith);
-      }
-      return utxolib.bitgo.createTransactionFromBuffer(input, this.network, {
-        amountType: this.amountType,
-      });
-    }
+    return decodePsbt(buffer, this.name);
   }
 
-  decodeTransactionAsPsbt(input: Buffer | string): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt {
-    const decoded = this.decodeTransaction(input);
-    if (decoded instanceof fixedScriptWallet.BitGoPsbt || decoded instanceof utxolib.bitgo.UtxoPsbt) {
-      return decoded;
-    }
-    throw new Error('expected psbt but got transaction');
+  decodeTransactionAsPsbt(input: Buffer | string): fixedScriptWallet.BitGoPsbt {
+    return this.decodeTransaction(input);
   }
 
-  decodeTransactionFromPrebuild<TNumber extends number | bigint>(prebuild: {
+  decodeTransactionFromPrebuild(prebuild: {
     txHex?: string;
     txBase64?: string;
     /** See TransactionPrebuild.txHexPsbt — only present in pending approval flows. */
     txHexPsbt?: string;
-    decodeWith?: string;
-  }): DecodedTransaction<TNumber> {
+  }): fixedScriptWallet.BitGoPsbt {
     const string = prebuild.txHexPsbt ?? prebuild.txHex ?? prebuild.txBase64;
     if (!string) {
       throw new Error('missing required txHex or txBase64 property');
     }
-    let { decodeWith } = prebuild;
-    if (decodeWith !== undefined) {
-      if (typeof decodeWith !== 'string' || !isSdkBackend(decodeWith)) {
-        console.error('decodeWith %s is not a valid value, using default', decodeWith);
-        decodeWith = undefined;
-      }
-    }
-    return this.decodeTransaction(string, decodeWith);
+    return this.decodeTransaction(string);
   }
 
   /**
@@ -845,26 +786,13 @@ export abstract class AbstractUtxoCoin
    * @param psbt all MuSig2 inputs should contain user MuSig2 nonce
    * @param walletId
    */
-  async getMusig2Nonces(psbt: utxolib.bitgo.UtxoPsbt, walletId: string): Promise<utxolib.bitgo.UtxoPsbt>;
-  async getMusig2Nonces(psbt: fixedScriptWallet.BitGoPsbt, walletId: string): Promise<fixedScriptWallet.BitGoPsbt>;
-  async getMusig2Nonces<T extends utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt>(
-    psbt: T,
-    walletId: string
-  ): Promise<T>;
-  async getMusig2Nonces<T extends utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt>(
-    psbt: T,
-    walletId: string
-  ): Promise<T> {
+  async getMusig2Nonces(psbt: fixedScriptWallet.BitGoPsbt, walletId: string): Promise<fixedScriptWallet.BitGoPsbt> {
     const buffer = encodeTransaction(psbt);
     const response = await this.bitgo
       .post(this.url('/wallet/' + walletId + '/tx/signpsbt'))
       .send({ psbt: buffer.toString('hex') })
       .result();
-    if (psbt instanceof utxolib.bitgo.UtxoPsbt) {
-      return decodePsbtWith(response.psbt, this.name, 'utxolib') as T;
-    } else {
-      return decodePsbtWith(response.psbt, this.name, 'wasm-utxo') as T;
-    }
+    return decodePsbt(response.psbt, this.name);
   }
 
   /**
