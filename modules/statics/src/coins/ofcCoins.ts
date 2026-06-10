@@ -1619,6 +1619,14 @@ export const ofcCoins = [
     CoinFeature.STABLECOIN,
   ]),
   ofcsolToken(
+    'b53025fd-20e7-4a61-8893-2f26ed2daa7b',
+    'ofcsol:gospcx',
+    'SPCX goStock',
+    6,
+    UnderlyingAsset['sol:gospcx'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  ofcsolToken(
     'e343b3c2-dcbb-4a9f-a60e-3dd79825c5fb',
     'ofcsol:rksol',
     'Starke Staked SOL',
@@ -1994,16 +2002,20 @@ export const ofcCoins = [
   ),
   tofcsolToken(
     '3441411c-d379-4f61-9630-1e8de117717a',
-    'ofctsol:stgspcx',
-    'Test SpaceX',
+    'ofctsol:stggospcx',
+    'Test SPCX goStock',
     6,
-    UnderlyingAsset['tsol:stgspcx'],
+    UnderlyingAsset['tsol:stggospcx'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
-  tofcsolToken('84f901ed-5654-47a7-9d08-7ff7c27a8c16', 'ofctsol:spcx', 'Test SpaceX', 6, UnderlyingAsset['tsol:spcx'], [
-    ...SOL_TOKEN_FEATURES,
-    CoinFeature.STABLECOIN,
-  ]),
+  tofcsolToken(
+    '84f901ed-5654-47a7-9d08-7ff7c27a8c16',
+    'ofctsol:gospcx',
+    'Test SPCX goStock',
+    6,
+    UnderlyingAsset['tsol:gospcx'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
   tofcsolToken(
     '750f0e40-c5b9-464f-874f-dc455cf1494b',
     'ofctsol:stgusd1',
