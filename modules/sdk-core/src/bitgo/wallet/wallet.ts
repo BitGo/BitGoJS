@@ -3973,6 +3973,20 @@ export class Wallet implements IWallet {
     }
     // Check if we build with intent
     if (this._wallet.multisigType === 'tss') {
+      // Populate recipients from enableTokens so verifyTransaction can access tokenName.
+      // enableTokens is kept (not deleted) since the server needs it to build the transaction.
+      buildParams.recipients = params.enableTokens.map((token) => {
+        const address =
+          token.address || this._wallet.coinSpecific?.baseAddress || this._wallet.coinSpecific?.rootAddress;
+        if (!address) {
+          throw new Error('Wallet does not have base address, must specify with token param');
+        }
+        return {
+          tokenName: token.name,
+          address,
+          amount: '0',
+        };
+      });
       return [await this.prebuildTransaction(buildParams)];
     } else {
       // Rewrite tokens into recipients for buildTransaction

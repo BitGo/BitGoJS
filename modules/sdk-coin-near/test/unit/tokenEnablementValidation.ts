@@ -612,6 +612,57 @@ describe('NEAR Token Enablement Validation', function () {
         );
     });
 
+    it('should populate recipients from enableTokens in buildParams for TSS wallets', async function () {
+      // Regression test: before the fix, buildTokenEnablements on TSS wallets did not populate
+      // buildParams.recipients — only buildParams.enableTokens was set. This caused verifyTransaction
+      // to throw "missing token name in transaction parameters" because it reads from
+      // txParams.recipients[0].tokenName (where txParams = { ...txPrebuild.buildParams, ...params }).
+      const bgUrl = common.Environments['test'].uri;
+
+      nock(bgUrl)
+        .post(`/api/v2/wallet/${tssWallet.id()}/txrequests`)
+        .reply(200, {
+          txRequestId: 'test-request-id',
+          apiVersion: 'full',
+          transactions: [
+            {
+              state: 'pending',
+              unsignedTx: {
+                serializedTxHex: testData.rawTx.selfStorageDeposit.unsigned,
+                signableHex: testData.rawTx.selfStorageDeposit.unsigned,
+                derivationPath: 'm/0',
+                feeInfo: { fee: 1160407, feeString: '1160407' },
+              },
+              signatureShares: [],
+            },
+          ],
+        });
+
+      const buildResult = await tssWallet.buildTokenEnablements({
+        enableTokens: [{ name: 'tnear:tnep24dp' }],
+      });
+
+      const txPrebuild = buildResult[0] as any;
+
+      // Verify buildParams.recipients is populated — this is what flows into txParams
+      // via { ...txPrebuild.buildParams, ...params } inside prebuildAndSignTransaction
+      txPrebuild.buildParams.should.have.property('recipients');
+      txPrebuild.buildParams.recipients.should.have.length(1);
+      txPrebuild.buildParams.recipients[0].tokenName.should.equal('tnear:tnep24dp');
+      txPrebuild.buildParams.recipients[0].address.should.equal(testData.accounts.account1.address);
+
+      // Simulate the txParams construction that prebuildAndSignTransaction performs,
+      // then confirm verifyTransaction no longer throws "missing token name"
+      const txParams = { ...txPrebuild.buildParams };
+      await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet: tssWallet as any,
+        verification: { verifyTokenEnablement: true },
+        walletType: 'tss',
+      });
+    });
+
     it('should validate correct storage deposit in TSS wallet flow', async function () {
       const bgUrl = common.Environments['test'].uri;
 
