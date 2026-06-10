@@ -64,6 +64,20 @@ describe('Account Consolidations:', function () {
           scope.isDone().should.be.True();
         });
 
+        it('should forward tokenName to the build request', async function () {
+          const tokenName = 'talgo:USDt';
+          const scope = nock(bgUrl)
+            .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`, { tokenName })
+            .query({})
+            .reply(200, fixtures.buildAccountConsolidation);
+
+          const accountConsolidationBuild = await wallet.buildAccountConsolidations({ tokenName });
+
+          accountConsolidationBuild.length.should.equal(2);
+
+          scope.isDone().should.be.True();
+        });
+
         it('should throw if the result is an empty array', async function () {
           const scope = nock(bgUrl)
             .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`)
