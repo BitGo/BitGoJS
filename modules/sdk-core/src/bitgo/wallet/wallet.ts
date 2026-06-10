@@ -4308,6 +4308,32 @@ export class Wallet implements IWallet {
         );
         break;
       }
+      case 'cosignDelegationAccept': {
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'cosignDelegationAccept',
+            txRequestId: params.txRequestId,
+            sequenceId: params.txRequestId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
+      case 'allocationAllocate': {
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'allocationAllocate',
+            txRequestId: params.txRequestId,
+            sequenceId: params.txRequestId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
       case 'transferReject': {
         txRequest = await this.tssUtils!.prebuildTxWithIntent(
           {
@@ -4326,6 +4352,19 @@ export class Wallet implements IWallet {
           {
             reqId,
             intentType: 'transferOfferWithdrawn',
+            transferOfferId: params.transferOfferId,
+            sequenceId: params.transferOfferId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
+      case 'allocationAllocateWithdrawn': {
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'allocationAllocateWithdrawn',
             transferOfferId: params.transferOfferId,
             sequenceId: params.transferOfferId,
           },
