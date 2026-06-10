@@ -10,6 +10,8 @@ export interface WebauthnInfo {
   prfSalt: string;
   otpDeviceId: string;
   encryptedPrv: string;
+  /** Required by POST /key to validate the PRF salt; not needed on the PUT /key/:id update path. */
+  enterpriseId?: string;
 }
 
 import type { WebauthnKeyEncryptionInfo } from '../wallet/iWallets';

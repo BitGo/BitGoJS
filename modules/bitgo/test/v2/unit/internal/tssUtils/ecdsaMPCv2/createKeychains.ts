@@ -57,6 +57,9 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
   });
 
   before(async function () {
+    // Allow secp256k1 GPG keys used by these fixtures (the full suite enables this
+    // globally via sibling test files; set it here so this file also runs in isolation).
+    openpgp.config.rejectCurves = new Set();
     bitGoGgpKey = await openpgp.generateKey({
       userIDs: [
         {
@@ -174,6 +177,68 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
       assert.ok(bitgoKeychain);
       assert.equal(bitgoKeychain.source, 'bitgo');
+    });
+
+    it('should send webauthnInfo (with enterpriseId) on the user keychain when webauthnInfo is provided', async function () {
+      const bitgoSession = new DklsDkg.Dkg(3, 2, 2);
+
+      const round1Nock = await nockKeyGenRound1(bitgoSession, 1);
+      const round2Nock = await nockKeyGenRound2(bitgoSession, 1);
+      const round3Nock = await nockKeyGenRound3(bitgoSession, 1);
+
+      // Capture each keychain POST body by source so we can assert what the user key sends.
+      const capturedBodies: Record<string, AddKeychainOptions> = {};
+      const addKeyNock = nock('https://bitgo.fakeurl')
+        .post(`/api/v2/${coinName}/key`, (body) => body.keyType === 'tss' && body.isMPCv2)
+        .times(3)
+        .reply(200, async (uri, requestBody: AddKeychainOptions) => {
+          capturedBodies[requestBody.source as string] = requestBody;
+          const key = {
+            id: requestBody.source,
+            source: requestBody.source,
+            type: requestBody.keyType,
+            commonKeychain: requestBody.commonKeychain,
+            encryptedPrv: requestBody.encryptedPrv,
+          };
+          nock('https://bitgo.fakeurl').get(`/api/v2/${coinName}/key/${requestBody.source}`).reply(200, key);
+          return key;
+        });
+
+      const webauthnInfo = {
+        otpDeviceId: 'device-123',
+        prfSalt: 'salt-abc',
+        passphrase: 'prf-derived-passphrase',
+      };
+      const params = {
+        passphrase: 'test',
+        enterprise: enterpriseId,
+        originalPasscodeEncryptionCode: '123456',
+        webauthnInfo,
+      };
+      await tssUtils.createKeychains(params);
+      assert.ok(round1Nock.isDone());
+      assert.ok(round2Nock.isDone());
+      assert.ok(round3Nock.isDone());
+      assert.ok(addKeyNock.isDone());
+
+      // User keychain must carry webauthnInfo (the field the backend POST /key consumes),
+      // including enterpriseId, and must NOT use the deprecated webauthnDevices array.
+      const userBody = capturedBodies['user'];
+      assert.ok(userBody, 'user keychain should have been created');
+      assert.ok(userBody.webauthnInfo, 'user keychain body should include webauthnInfo');
+      assert.equal(userBody.webauthnInfo.otpDeviceId, webauthnInfo.otpDeviceId);
+      assert.equal(userBody.webauthnInfo.prfSalt, webauthnInfo.prfSalt);
+      assert.equal(userBody.webauthnInfo.enterpriseId, enterpriseId);
+      assert.ok(userBody.webauthnInfo.encryptedPrv, 'encryptedPrv should be set');
+      // encryptedPrv is the user key share encrypted with the PRF-derived passphrase.
+      assert.ok(bitgo.decrypt({ input: userBody.webauthnInfo.encryptedPrv, password: webauthnInfo.passphrase }));
+      assert.strictEqual(userBody.webauthnDevices, undefined, 'deprecated webauthnDevices should not be sent');
+
+      // Backup keychain must never carry passkey material.
+      const backupBody = capturedBodies['backup'];
+      assert.ok(backupBody, 'backup keychain should have been created');
+      assert.strictEqual(backupBody.webauthnInfo, undefined);
+      assert.strictEqual(backupBody.webauthnDevices, undefined);
     });
 
     it('should generate TSS MPCv2 keys with v2 encryption envelopes', async function () {

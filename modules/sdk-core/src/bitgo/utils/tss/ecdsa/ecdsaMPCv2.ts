@@ -336,7 +336,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         params.originalPasscodeEncryptionCode,
         params.webauthnInfo,
         encryptionSession,
-        params.encryptionVersion
+        params.encryptionVersion,
+        params.enterprise
       );
       const backupKeychainPromise = this.addBackupKeychain(
         bitgoCommonKeychain,
@@ -380,7 +381,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       decrypt(ciphertext: string): Promise<string>;
       destroy(): void;
     },
-    encryptionVersion?: EncryptionVersion
+    encryptionVersion?: EncryptionVersion,
+    enterprise?: string
   ): Promise<Keychain> {
     let source: string;
     let encryptedPrv: string | undefined = undefined;
@@ -435,17 +437,18 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     };
 
     if (webauthnInfo && participantIndex === MPCv2PartiesEnum.USER && privateMaterialBase64) {
-      recipientKeychainParams.webauthnDevices = [
-        {
-          otpDeviceId: webauthnInfo.otpDeviceId,
-          prfSalt: webauthnInfo.prfSalt,
-          encryptedPrv: await this.bitgo.encryptAsync({
-            input: privateMaterialBase64,
-            password: webauthnInfo.passphrase,
-            encryptionVersion,
-          }),
-        },
-      ];
+      // Send the passkey as `webauthnInfo`; the deprecated `webauthnDevices` array is ignored by POST /key.
+      assert(enterprise, 'enterprise is required to attach a webauthn device to the user keychain');
+      recipientKeychainParams.webauthnInfo = {
+        otpDeviceId: webauthnInfo.otpDeviceId,
+        prfSalt: webauthnInfo.prfSalt,
+        encryptedPrv: await this.bitgo.encryptAsync({
+          input: privateMaterialBase64,
+          password: webauthnInfo.passphrase,
+          encryptionVersion,
+        }),
+        enterpriseId: enterprise,
+      };
     }
 
     const keychains = this.baseCoin.keychains();
@@ -574,7 +577,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       decrypt(ciphertext: string): Promise<string>;
       destroy(): void;
     },
-    encryptionVersion?: EncryptionVersion
+    encryptionVersion?: EncryptionVersion,
+    enterprise?: string
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.USER,
@@ -585,7 +589,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       originalPasscodeEncryptionCode,
       webauthnInfo,
       encryptionSession,
-      encryptionVersion
+      encryptionVersion,
+      enterprise
     );
   }
 

@@ -145,6 +145,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
       webauthnInfo: params.webauthnInfo,
       encryptionVersion: params.encryptionVersion,
+      enterprise: params.enterprise,
     });
     const backupKeychainPromise = this.createBackupKeychain({
       userGpgKey,
@@ -187,6 +188,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     originalPasscodeEncryptionCode,
     webauthnInfo,
     encryptionVersion,
+    enterprise,
   }: CreateEcdsaKeychainParams): Promise<Keychain> {
     if (!passphrase) {
       throw new Error('Please provide a wallet passphrase');
@@ -203,7 +205,8 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       passphrase,
       originalPasscodeEncryptionCode,
       webauthnInfo,
-      encryptionVersion
+      encryptionVersion,
+      enterprise
     );
   }
 
@@ -322,7 +325,8 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     passphrase: string,
     originalPasscodeEncryptionCode?: string,
     webauthnInfo?: WebauthnKeyEncryptionInfo,
-    encryptionVersion?: EncryptionVersion
+    encryptionVersion?: EncryptionVersion,
+    enterprise?: string
   ): Promise<Keychain> {
     const bitgoKeyShares = bitgoKeychain.keyShares;
     if (!bitgoKeyShares) {
@@ -407,7 +411,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     );
 
     const prv = JSON.stringify(recipientCombinedKey.signingMaterial);
-    const recipientKeychainParams = {
+    const recipientKeychainParams: AddKeychainOptions & { prv: string } = {
       source: recipient,
       keyType: 'tss' as KeyType,
       commonKeychain: bitgoKeychain.commonKeychain,
@@ -418,21 +422,22 @@ export class EcdsaUtils extends BaseEcdsaUtils {
         encryptionVersion,
       }),
       originalPasscodeEncryptionCode,
-      webauthnDevices:
-        webauthnInfo && recipientIndex === ShareKeyPosition.USER
-          ? [
-              {
-                otpDeviceId: webauthnInfo.otpDeviceId,
-                prfSalt: webauthnInfo.prfSalt,
-                encryptedPrv: await this.bitgo.encryptAsync({
-                  input: prv,
-                  password: webauthnInfo.passphrase,
-                  encryptionVersion,
-                }),
-              },
-            ]
-          : undefined,
     };
+
+    if (webauthnInfo && recipientIndex === ShareKeyPosition.USER) {
+      // Send the passkey as `webauthnInfo`; the deprecated `webauthnDevices` array is ignored by POST /key.
+      assert(enterprise, 'enterprise is required to attach a webauthn device to the user keychain');
+      recipientKeychainParams.webauthnInfo = {
+        otpDeviceId: webauthnInfo.otpDeviceId,
+        prfSalt: webauthnInfo.prfSalt,
+        encryptedPrv: await this.bitgo.encryptAsync({
+          input: prv,
+          password: webauthnInfo.passphrase,
+          encryptionVersion,
+        }),
+        enterpriseId: enterprise,
+      };
+    }
 
     const keychains = this.baseCoin.keychains();
     return recipientIndex === 1

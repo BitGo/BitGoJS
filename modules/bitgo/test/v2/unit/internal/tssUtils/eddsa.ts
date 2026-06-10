@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import * as sodium from 'libsodium-wrappers-sumo';
 import * as _ from 'lodash';
 import nock = require('nock');
@@ -8,6 +9,7 @@ import * as sinon from 'sinon';
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../../src';
 import {
+  AddKeychainOptions,
   BaseCoin,
   BitgoGPGPublicKey,
   CommitmentShareRecord,
@@ -267,6 +269,62 @@ describe('TSS Utils:', async function () {
         userYShare: userKeyShare.yShares[2],
       }).should.equal(backupKeychain.prv);
       should.exist(backupKeychain.encryptedPrv);
+    });
+
+    it('should send webauthnInfo (with enterpriseId) on the user keychain when webauthnInfo is provided', async function () {
+      const userKeyShare = MPC.keyShare(1, 2, 3);
+      const backupKeyShare = MPC.keyShare(2, 2, 3);
+
+      // Real crypto deps (constants w/ bitgo gpg key for verifyWalletSignatures + bitgo keychain),
+      // then capture the user keychain add() params by stubbing baseCoin.keychains().
+      nock.cleanAll();
+      nock(bgUrl)
+        .get('/api/v1/client/constants')
+        .times(23)
+        .reply(200, { ttl: 3600, constants: { mpc: { bitgoPublicKey: bitgoGpgKey.publicKey } } });
+      await nockBitgoKeychain({
+        coin: coinName,
+        userKeyShare,
+        backupKeyShare,
+        bitgoKeyShare,
+        userGpgKey,
+        backupGpgKey,
+        bitgoGpgKey,
+      });
+      const bitgoKeychain = await tssUtils.createBitgoKeychain({
+        userGpgKey,
+        backupGpgKey,
+        userKeyShare,
+        backupKeyShare,
+      });
+
+      const addStub = sandbox.stub().resolves({ id: '1', pub: '', type: 'tss' });
+      sandbox.stub(baseCoin, 'keychains').returns({ add: addStub } as unknown as ReturnType<BaseCoin['keychains']>);
+
+      const enterpriseId = 'enterprise_id';
+      const webauthnInfo = { otpDeviceId: 'device-123', prfSalt: 'salt-abc', passphrase: 'prf-derived-passphrase' };
+      await tssUtils.createUserKeychain({
+        userGpgKey,
+        backupGpgKey,
+        userKeyShare,
+        backupKeyShare,
+        bitgoKeychain,
+        passphrase: 'passphrase',
+        webauthnInfo,
+        enterprise: enterpriseId,
+      });
+
+      // User keychain must carry webauthnInfo (the field the backend POST /key consumes), including
+      // enterpriseId, and must NOT use the deprecated webauthnDevices array.
+      assert.ok(addStub.calledOnce, 'keychains().add should have been called for the user keychain');
+      const body = addStub.firstCall.args[0] as AddKeychainOptions;
+      assert.ok(body.webauthnInfo, 'user keychain body should include webauthnInfo');
+      assert.equal(body.webauthnInfo.otpDeviceId, webauthnInfo.otpDeviceId);
+      assert.equal(body.webauthnInfo.prfSalt, webauthnInfo.prfSalt);
+      assert.equal(body.webauthnInfo.enterpriseId, enterpriseId);
+      assert.ok(body.webauthnInfo.encryptedPrv, 'encryptedPrv should be set');
+      assert.ok(bitgo.decrypt({ input: body.webauthnInfo.encryptedPrv, password: webauthnInfo.passphrase }));
+      assert.strictEqual(body.webauthnDevices, undefined, 'deprecated webauthnDevices should not be sent');
     });
 
     it('should generate TSS key chains without passphrase', async function () {
