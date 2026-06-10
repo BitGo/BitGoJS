@@ -273,6 +273,10 @@ export enum CoinFeature {
    */
   DEPRECATED = 'deprecated',
   /**
+   * This coin is sunsetting and will be deprecated in the near future, but is not deprecated yet
+   */
+  SUNSETTING = 'sunsetting',
+  /**
    * This coin is a dummy object meant to be a placeholder for an unsupported token
    */
   GENERIC_TOKEN = 'genericToken',
