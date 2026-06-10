@@ -23,6 +23,9 @@ export const DEFAULT_SEED_SIZE_BYTES = 16;
 // V3 transaction hash prefix: encodeShortString("invoke")
 export const INVOKE_TX_PREFIX = 0x696e766f6b65n;
 
+// V3 transaction hash prefix: encodeShortString("deploy_account")
+export const DEPLOY_ACCOUNT_TX_PREFIX = 0x6465706c6f795f6163636f756e74n;
+
 // V3 transaction version
 export const TRANSACTION_VERSION_3 = 3n;
 
