@@ -234,9 +234,9 @@ jobs:
           EOF
       - name: Generate GitHub App Token
         id: generate-github-app-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ env.STATIC_ANALYSIS_BOT_APP_ID }}
+          client-id: ${{ env.STATIC_ANALYSIS_BOT_APP_ID }}
           private-key: ${{ secrets.STATIC_ANALYSIS_BOT_PRIVATE_KEY }}
           owner: bitgo
           repositories: |

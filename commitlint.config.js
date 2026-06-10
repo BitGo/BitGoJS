@@ -20,6 +20,7 @@ module.exports = {
   parserPreset: {
     parserOpts: {
       issuePrefixes: [
+        'AI-',
         'BG-',
         'BMF-',
         'BOS-',
