@@ -6,12 +6,20 @@ import {
   ADDR_BOUND,
   CONTRACT_ADDRESS_PREFIX,
   INVOKE_TX_PREFIX,
+  DEPLOY_ACCOUNT_TX_PREFIX,
   TRANSACTION_VERSION_3,
   L1_GAS_NAME,
   L2_GAS_NAME,
   L1_DATA_GAS_NAME,
 } from './constants';
-import { StarknetTransactionData, StarknetCall, ParsedTransferData, InvokeTransactionHashParams } from './iface';
+import {
+  StarknetTransactionData,
+  StarknetTransactionType,
+  StarknetCall,
+  ParsedTransferData,
+  InvokeTransactionHashParams,
+  DeployAccountTransactionHashParams,
+} from './iface';
 import { ecc } from '@bitgo/secp256k1';
 
 /**
@@ -207,6 +215,17 @@ export function validateRawTransaction(tx: StarknetTransactionData): void {
   if (!isValidAddress(tx.senderAddress)) {
     throw new Error(`Invalid sender address: ${tx.senderAddress}`);
   }
+  if (tx.transactionType === StarknetTransactionType.DEPLOY_ACCOUNT) {
+    if (!tx.classHash) {
+      throw new Error('Missing class hash for deploy account transaction');
+    }
+    if (!tx.constructorCalldata || tx.constructorCalldata.length === 0) {
+      throw new Error('Missing constructor calldata for deploy account transaction');
+    }
+    if (!tx.contractAddressSalt) {
+      throw new Error('Missing contract address salt for deploy account transaction');
+    }
+  }
 }
 
 /**
@@ -309,6 +328,55 @@ export function calculateInvokeTransactionHash(params: InvokeTransactionHashPara
   return '0x' + hash.toString(16);
 }
 
+/**
+ * Compute the Poseidon V3 DEPLOY_ACCOUNT transaction hash per SNIP-8 (starknet.js v3).
+ */
+export function calculateDeployAccountTransactionHash(params: DeployAccountTransactionHashParams): string {
+  const {
+    contractAddress,
+    classHash,
+    constructorCalldata,
+    contractAddressSalt,
+    chainId,
+    nonce,
+    resourceBounds,
+    tip = '0x0',
+    nonceDataAvailabilityMode = 0,
+    feeDataAvailabilityMode = 0,
+    paymasterData = [],
+  } = params;
+
+  const feeFieldHash = poseidonHashMany([
+    BigInt(tip),
+    encodeResourceBound(L1_GAS_NAME, resourceBounds.l1_gas.max_amount, resourceBounds.l1_gas.max_price_per_unit),
+    encodeResourceBound(L2_GAS_NAME, resourceBounds.l2_gas.max_amount, resourceBounds.l2_gas.max_price_per_unit),
+    encodeResourceBound(
+      L1_DATA_GAS_NAME,
+      resourceBounds.l1_data_gas.max_amount,
+      resourceBounds.l1_data_gas.max_price_per_unit
+    ),
+  ]);
+
+  const daMode = (BigInt(nonceDataAvailabilityMode) << 32n) | BigInt(feeDataAvailabilityMode);
+
+  const hashFields: bigint[] = [
+    DEPLOY_ACCOUNT_TX_PREFIX,
+    TRANSACTION_VERSION_3,
+    BigInt(contractAddress),
+    feeFieldHash,
+    poseidonHashMany(paymasterData.map(BigInt)),
+    BigInt(chainId),
+    BigInt(nonce),
+    daMode,
+    poseidonHashMany(constructorCalldata.map(BigInt)),
+    BigInt(classHash),
+    BigInt(contractAddressSalt),
+  ];
+
+  const hash = poseidonHashMany(hashFields);
+  return '0x' + hash.toString(16);
+}
+
 export default {
   isValidAddress,
   isValidPublicKey,
@@ -327,4 +395,5 @@ export default {
   getSelectorFromName,
   compileExecuteCalldata,
   calculateInvokeTransactionHash,
+  calculateDeployAccountTransactionHash,
 };

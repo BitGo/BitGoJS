@@ -3,7 +3,10 @@ import utils, {
   getSelectorFromName,
   compileExecuteCalldata,
   calculateInvokeTransactionHash,
+  calculateDeployAccountTransactionHash,
 } from '../../src/lib/utils';
+import { coins } from '@bitgo/statics';
+import { TransactionBuilderFactory } from '../../src/lib/transactionBuilderFactory';
 import { Accounts, SandboxTransferData, KnownGoodInvokeTx } from '../resources/starknet';
 import { MASK_128 } from '../../src/lib/constants';
 import 'should';
@@ -261,6 +264,46 @@ describe('Starknet Utils', () => {
       });
 
       hash.should.equal(tv.expectedTxHash);
+    });
+  });
+
+  describe('calculateDeployAccountTransactionHash', () => {
+    it('should be deterministic for the same deploy inputs', () => {
+      const fullPub = utils.getUncompressedPublicKey(Accounts.account1.publicKey);
+      const { address, constructorCalldata, salt } = utils.computeStarknetAddress(fullPub);
+      const params = {
+        contractAddress: address,
+        classHash: '0x3940bc18abf1df6bc540cabadb1cad9486c6803b95801e57b6153ae21abfe06',
+        constructorCalldata,
+        contractAddressSalt: salt,
+        chainId: SandboxTransferData.chainId,
+        nonce: '0x0',
+        resourceBounds: SandboxTransferData.resourceBounds,
+        tip: '0x0',
+      };
+      const hash1 = calculateDeployAccountTransactionHash(params);
+      const hash2 = calculateDeployAccountTransactionHash(params);
+      hash1.should.equal(hash2);
+      hash1.should.startWith('0x');
+    });
+
+    it('should match hash from WalletInitializationBuilder build', async () => {
+      const factory = new TransactionBuilderFactory(coins.get('starknet'));
+      const builder = factory.getWalletInitializationBuilder();
+      builder.fromPublicKey(Accounts.account1.publicKey).nonce('0x0').chainId(SandboxTransferData.chainId);
+      const tx = (await builder.build()) as import('../../src/lib/transaction').Transaction;
+      const fullPub = utils.getUncompressedPublicKey(Accounts.account1.publicKey);
+      const { address, constructorCalldata, salt } = utils.computeStarknetAddress(fullPub);
+      const hash = calculateDeployAccountTransactionHash({
+        contractAddress: address,
+        classHash: '0x3940bc18abf1df6bc540cabadb1cad9486c6803b95801e57b6153ae21abfe06',
+        constructorCalldata,
+        contractAddressSalt: salt,
+        chainId: SandboxTransferData.chainId,
+        nonce: '0x0',
+        resourceBounds: SandboxTransferData.resourceBounds,
+      });
+      hash.should.equal(tx.starknetTransactionData.transactionHash);
     });
   });
 });
