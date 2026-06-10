@@ -9,7 +9,14 @@ import { common, Triple } from '@bitgo/sdk-core';
 import { getReplayProtectionPubkeys, ErrorDeprecatedTxFormat } from '../../src';
 import type { Unspent } from '../../src/unspent';
 
-import { getUtxoWallet, getDefaultWalletKeys, getUtxoCoin, keychainsBase58, defaultBitGo } from './util';
+import {
+  getUtxoWallet,
+  getDefaultWalletKeys,
+  getNetworkForCoinName,
+  getUtxoCoin,
+  keychainsBase58,
+  defaultBitGo,
+} from './util';
 
 describe('signTransaction', function () {
   const bgUrl = common.Environments[defaultBitGo.getEnv()].uri;
@@ -21,7 +28,7 @@ describe('signTransaction', function () {
   const pubs = keychainsBase58.map((v) => v.pub) as Triple<string>;
 
   function validatePsbt(txHex: string, targetSigCount: 0 | 1, targetNonceCount?: 1 | 2) {
-    const psbt = utxolib.bitgo.createPsbtFromHex(txHex, coin.network);
+    const psbt = utxolib.bitgo.createPsbtFromHex(txHex, getNetworkForCoinName(coin.name));
     psbt.data.inputs.forEach((input, index) => {
       const parsed = utxolib.bitgo.parsePsbtInput(input);
       if (parsed.scriptType === 'taprootKeyPathSpend') {
@@ -38,7 +45,7 @@ describe('signTransaction', function () {
   }
 
   function validateTx(txHex: string, unspents: Unspent<bigint>[], targetSigCount: 0 | 1) {
-    const tx = utxolib.bitgo.createTransactionFromHex(txHex, coin.network);
+    const tx = utxolib.bitgo.createTransactionFromHex(txHex, getNetworkForCoinName(coin.name));
     unspents.forEach((u, i) => {
       const sigCount = utxolib.bitgo.getStrictSignatureCount(tx.ins[i]);
       const expectedSigCount = utxolib.bitgo.isWalletUnspent(u) && !!targetSigCount ? 1 : 0;
@@ -56,7 +63,7 @@ describe('signTransaction', function () {
     const txHex = tx.toHex();
 
     function nockSignPsbt(psbtHex: string): nock.Scope {
-      const psbt = utxolib.bitgo.createPsbtFromHex(psbtHex, coin.network);
+      const psbt = utxolib.bitgo.createPsbtFromHex(psbtHex, getNetworkForCoinName(coin.name));
       return nock(bgUrl)
         .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/signpsbt`, (body) => body.psbt)
         .reply(200, { psbt: psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo).toHex() });
@@ -147,7 +154,7 @@ describe('signTransaction', function () {
       .map((scriptType) => ({ scriptType, value: BigInt(1000) }));
     const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
     const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
-    const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned', {
+    const psbt = testutil.constructPsbt(inputs, outputs, getNetworkForCoinName(coin.name), rootWalletKeys, 'unsigned', {
       p2shP2pkKey: replayProtectionKey,
     });
 
@@ -163,7 +170,7 @@ describe('signTransaction', function () {
       .map((scriptType) => ({ scriptType, value: BigInt(1000) }));
     const unspentSum = inputs.reduce((prev: bigint, cur) => prev + cur.value, BigInt(0));
     const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
-    const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned', {
+    const psbt = testutil.constructPsbt(inputs, outputs, getNetworkForCoinName(coin.name), rootWalletKeys, 'unsigned', {
       p2shP2pkKey: replayProtectionKey,
     });
 
@@ -181,8 +188,16 @@ describe('signTransaction', function () {
       }));
     const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
     const outputs: testutil.TxnOutput<bigint>[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
-    const txBuilder = testutil.constructTxnBuilder(inputs, outputs, coin.network, rootWalletKeys, 'unsigned');
-    const unspents = inputs.map((v, i) => testutil.toTxnUnspent(v, i, coin.network, rootWalletKeys));
+    const txBuilder = testutil.constructTxnBuilder(
+      inputs,
+      outputs,
+      getNetworkForCoinName(coin.name),
+      rootWalletKeys,
+      'unsigned'
+    );
+    const unspents = inputs.map((v, i) =>
+      testutil.toTxnUnspent(v, i, getNetworkForCoinName(coin.name), rootWalletKeys)
+    );
 
     // Legacy format transactions are now deprecated and should throw ErrorDeprecatedTxFormat
     await assert.rejects(async () => {
@@ -194,7 +209,7 @@ describe('signTransaction', function () {
     const inputs: testutil.Input[] = [{ scriptType: 'taprootKeyPathSpend', value: BigInt(1000) }];
     const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
     const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
-    const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned');
+    const psbt = testutil.constructPsbt(inputs, outputs, getNetworkForCoinName(coin.name), rootWalletKeys, 'unsigned');
 
     await assert.rejects(
       async () => {

@@ -1,5 +1,4 @@
 import { BitGoBase, HalfSignedUtxoTransaction, SignedTransaction } from '@bitgo/sdk-core';
-import { bitgo } from '@bitgo/utxo-lib';
 
 import {
   AbstractUtxoCoin,
@@ -74,10 +73,6 @@ export class Doge extends AbstractUtxoCoin {
   /* amountType is set in constructor. Functions below override the default TNumber of AbstractUtxoCoin to bigint */
 
   /* postProcessPrebuild, isBitGoTaintedUnspent, verifyCustomChangeKeySignatures do not care whether they receive number or bigint */
-
-  createTransactionFromHex<TNumber extends number | bigint = bigint>(hex: string): bitgo.UtxoTransaction<TNumber> {
-    return super.createTransactionFromHex<TNumber>(hex);
-  }
 
   async parseTransaction<TNumber extends number | bigint = bigint>(
     params: ParseTransactionOptions<TNumber>

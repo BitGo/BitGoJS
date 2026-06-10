@@ -65,7 +65,6 @@ export async function signTransaction<TNumber extends number | bigint>(
       txInfo: params.txPrebuild.txInfo,
       isLastSignature: params.isLastSignature ?? false,
       signingStep: params.signingStep,
-      allowNonSegwitSigningWithoutPrevTx: params.allowNonSegwitSigningWithoutPrevTx ?? false,
       pubs: params.pubs,
       cosignerPub: params.cosignerPub,
       extractTransaction: params.extractTransaction,
