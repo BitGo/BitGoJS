@@ -31,6 +31,7 @@ import {
   GenerateMpcWalletOptions,
   GenerateSMCMpcWalletOptions,
   GenerateWalletOptions,
+  GenerateWalletWithExternalSignerOptions,
   GetWalletByAddressOptions,
   GetWalletOptions,
   GoAccountWalletWithUserKeychain,
@@ -358,6 +359,10 @@ export class Wallets implements IWallets {
     common.validateParams(params, ['label'], ['passphrase', 'userKey', 'backupXpub']);
     if (typeof params.label !== 'string') {
       throw new Error('missing required string parameter label');
+    }
+
+    if (params.createKeychainCallback) {
+      return this.generateWalletWithExternalSigner(params as GenerateWalletWithExternalSignerOptions);
     }
 
     const { type = 'hot', label, passphrase, enterprise, isDistributedCustody, evmKeyRingReferenceWalletId } = params;
@@ -716,6 +721,181 @@ export class Wallets implements IWallets {
 
       return result;
     }
+  }
+
+  /**
+   * Generate an onchain multisig wallet using an external signer for user and backup key creation.
+   * 1. Calls createKeychainCallback for user and backup keys
+   * 2. Uploads keychains via keychains().add()
+   * 3. Creates the BitGo key on the service
+   * 4. Creates the wallet on BitGo with the 3 public keys
+   * @param params
+   */
+  async generateWalletWithExternalSigner(
+    params: GenerateWalletWithExternalSignerOptions
+  ): Promise<WalletWithKeychains> {
+    if (!_.isFunction(params.createKeychainCallback)) {
+      throw new Error('missing required function parameter createKeychainCallback');
+    }
+
+    const multisigType = params.multisigType ?? this.baseCoin.getDefaultMultisigType();
+    if (multisigType !== 'onchain') {
+      throw new Error('external signer wallet generation is only supported for onchain multisig wallets');
+    }
+
+    // these belong to the passphrase-based path and are incompatible with createKeychainCallback
+    const passphrasePathParams = ['passphrase', 'userKey', 'backupXpub', 'backupXpubProvider'] as const;
+    for (const key of passphrasePathParams) {
+      if (!_.isUndefined(params[key])) {
+        throw new Error(`createKeychainCallback cannot be used with ${key}`);
+      }
+    }
+
+    const { label, createKeychainCallback, type = 'hot', enterprise, isDistributedCustody } = params;
+
+    if (type === 'custodial') {
+      throw new Error('external signer wallet generation is not supported for custodial onchain wallets');
+    }
+
+    if (!_.isUndefined(params.webauthnInfo)) {
+      throw new Error('webauthnInfo is not supported for external signer wallet generation');
+    }
+
+    if (!_.isUndefined(params.passcodeEncryptionCode)) {
+      throw new Error('passcodeEncryptionCode is not supported for external signer wallet generation');
+    }
+
+    if (isDistributedCustody) {
+      if (!enterprise) {
+        throw new Error('must provide enterprise when creating distributed custody wallet');
+      }
+      if (type !== 'cold') {
+        throw new Error('distributed custody wallets must be type: cold');
+      }
+    }
+
+    if (params.gasPrice && params.eip1559) {
+      throw new Error('can not use both eip1559 and gasPrice values');
+    }
+
+    const walletParams: SupplementGenerateWalletOptions = {
+      label,
+      m: 2,
+      n: 3,
+      keys: [],
+      type,
+    };
+
+    if (!_.isUndefined(enterprise)) {
+      if (!_.isString(enterprise)) {
+        throw new Error('invalid enterprise argument, expecting string');
+      }
+      walletParams.enterprise = enterprise;
+    }
+
+    if (!_.isUndefined(params.disableTransactionNotifications)) {
+      if (!_.isBoolean(params.disableTransactionNotifications)) {
+        throw new Error('invalid disableTransactionNotifications argument, expecting boolean');
+      }
+      walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
+    }
+
+    if (!_.isUndefined(params.gasPrice)) {
+      const gasPriceBN = new BigNumber(params.gasPrice);
+      if (gasPriceBN.isNaN()) {
+        throw new Error('invalid gas price argument, expecting number or number as string');
+      }
+      walletParams.gasPrice = gasPriceBN.toString();
+    }
+
+    if (!_.isUndefined(params.eip1559) && !_.isEmpty(params.eip1559)) {
+      const maxFeePerGasBN = new BigNumber(params.eip1559.maxFeePerGas);
+      if (maxFeePerGasBN.isNaN()) {
+        throw new Error('invalid max fee argument, expecting number or number as string');
+      }
+      const maxPriorityFeePerGasBN = new BigNumber(params.eip1559.maxPriorityFeePerGas);
+      if (maxPriorityFeePerGasBN.isNaN()) {
+        throw new Error('invalid priority fee argument, expecting number or number as string');
+      }
+      walletParams.eip1559 = {
+        maxFeePerGas: maxFeePerGasBN.toString(),
+        maxPriorityFeePerGas: maxPriorityFeePerGasBN.toString(),
+      };
+    }
+
+    if (!_.isUndefined(params.walletVersion)) {
+      if (!_.isNumber(params.walletVersion)) {
+        throw new Error('invalid walletVersion provided, expecting number');
+      }
+      walletParams.walletVersion = params.walletVersion;
+    }
+
+    const reqId = new RequestTracer();
+    const coin = this.baseCoin.getChain();
+
+    const createAndUploadKeychain = async (source: 'user' | 'backup'): Promise<Keychain> => {
+      try {
+        const keychainFromCallback = await createKeychainCallback({ source, coin });
+        if (keychainFromCallback.source !== source) {
+          throw new Error(`createKeychainCallback returned source ${keychainFromCallback.source}, expected ${source}`);
+        }
+        if (keychainFromCallback.type !== 'independent') {
+          throw new Error(
+            `createKeychainCallback returned invalid type ${keychainFromCallback.type}, expected 'independent' for onchain multisig`
+          );
+        }
+        if (!this.baseCoin.isValidPub(keychainFromCallback.pub)) {
+          throw new Error(`createKeychainCallback returned invalid pub for ${source} key on ${coin}`);
+        }
+        return this.baseCoin.keychains().add({
+          pub: keychainFromCallback.pub,
+          keyType: keychainFromCallback.type,
+          source: keychainFromCallback.source,
+          reqId,
+        });
+      } catch (error) {
+        throw new Error(
+          `Failed to create ${source} keychain: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
+    };
+
+    const { userKeychain, backupKeychain, bitgoKeychain }: KeychainsTriplet = await promiseProps({
+      userKeychain: createAndUploadKeychain('user'),
+      backupKeychain: createAndUploadKeychain('backup'),
+      bitgoKeychain: this.baseCoin
+        .keychains()
+        .createBitGo({ enterprise, reqId, isDistributedCustody: params.isDistributedCustody }),
+    });
+
+    walletParams.keys = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
+
+    if (params.keySignatures) {
+      walletParams.keySignatures = params.keySignatures;
+    }
+
+    const keychains = {
+      userKeychain,
+      backupKeychain,
+      bitgoKeychain,
+    };
+
+    if (_.includes(['xrp', 'xlm', 'cspr'], this.baseCoin.getFamily()) && !_.isUndefined(params.rootPrivateKey)) {
+      walletParams.rootPrivateKey = params.rootPrivateKey;
+    }
+
+    const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams, keychains);
+
+    this.bitgo.setRequestTracer(reqId);
+    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(finalWalletParams).result();
+
+    return {
+      wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
+      userKeychain,
+      backupKeychain,
+      bitgoKeychain,
+      responseType: 'WalletWithKeychains',
+    };
   }
 
   /**
