@@ -34,6 +34,6 @@ export class Tton extends Ton {
    * Complete human-readable name of this coin
    */
   public getFullName(): string {
-    return 'Testnet Ton';
+    return 'Testnet Gram';
   }
 }

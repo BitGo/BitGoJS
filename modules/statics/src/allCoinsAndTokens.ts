@@ -1418,7 +1418,7 @@ export const allCoinsAndTokens = [
   account(
     'b5ba2fc6-706b-433f-9bcf-4ea4aaa09281',
     'ton',
-    'Ton',
+    'Gram',
     Networks.main.ton,
     9,
     UnderlyingAsset.TON,
@@ -1429,7 +1429,7 @@ export const allCoinsAndTokens = [
   account(
     '8244f85f-943c-4520-8e68-9e7f4361a13f',
     'tton',
-    'Testnet Ton',
+    'Testnet Gram',
     Networks.test.ton,
     9,
     UnderlyingAsset.TON,

@@ -60,12 +60,12 @@ describe('TON:', function () {
 
     ton.getChain().should.equal('ton');
     ton.getFamily().should.equal('ton');
-    ton.getFullName().should.equal('Ton');
+    ton.getFullName().should.equal('Gram');
     ton.getBaseFactor().should.equal(1e9);
 
     tton.getChain().should.equal('tton');
     tton.getFamily().should.equal('ton');
-    tton.getFullName().should.equal('Testnet Ton');
+    tton.getFullName().should.equal('Testnet Gram');
     tton.getBaseFactor().should.equal(1e9);
   });
 
