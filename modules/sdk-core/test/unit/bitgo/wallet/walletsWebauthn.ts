@@ -65,7 +65,7 @@ describe('Wallets - WebAuthn wallet creation', function () {
   });
 
   describe('generateWallet with webauthnInfo', function () {
-    it('should add webauthnDevices to keychain params when webauthnInfo is provided', async function () {
+    it('should add webauthnInfo (with enterpriseId) to keychain params when webauthnInfo is provided', async function () {
       const webauthnInfo = {
         otpDeviceId: 'device-123',
         prfSalt: 'salt-abc',
@@ -75,16 +75,18 @@ describe('Wallets - WebAuthn wallet creation', function () {
       await wallets.generateWallet({
         label: 'Test Wallet',
         passphrase: 'wallet-passphrase',
+        enterprise: 'enterprise-123',
         webauthnInfo,
       });
 
       assert.strictEqual(mockKeychains.add.calledOnce, true);
       const addParams = mockKeychains.add.firstCall.args[0];
-      addParams.should.have.property('webauthnDevices');
-      addParams.webauthnDevices.should.have.length(1);
-      addParams.webauthnDevices[0].should.have.property('otpDeviceId', webauthnInfo.otpDeviceId);
-      addParams.webauthnDevices[0].should.have.property('prfSalt', webauthnInfo.prfSalt);
-      addParams.webauthnDevices[0].should.have.property('encryptedPrv');
+      addParams.should.not.have.property('webauthnDevices');
+      addParams.should.have.property('webauthnInfo');
+      addParams.webauthnInfo.should.have.property('otpDeviceId', webauthnInfo.otpDeviceId);
+      addParams.webauthnInfo.should.have.property('prfSalt', webauthnInfo.prfSalt);
+      addParams.webauthnInfo.should.have.property('enterpriseId', 'enterprise-123');
+      addParams.webauthnInfo.should.have.property('encryptedPrv');
     });
 
     it('should encrypt user private key with the webauthn passphrase', async function () {
@@ -102,7 +104,7 @@ describe('Wallets - WebAuthn wallet creation', function () {
 
       const addParams = mockKeychains.add.firstCall.args[0];
       const expectedEncryptedPrv = `encrypted:${webauthnPassphrase}:${userPrv}`;
-      addParams.webauthnDevices[0].should.have.property('encryptedPrv', expectedEncryptedPrv);
+      addParams.webauthnInfo.should.have.property('encryptedPrv', expectedEncryptedPrv);
     });
 
     it('should also encrypt user private key with wallet passphrase when webauthnInfo is provided', async function () {
@@ -143,7 +145,7 @@ describe('Wallets - WebAuthn wallet creation', function () {
       passwordsUsed.should.containEql(webauthnPassphrase);
     });
 
-    it('should not add webauthnDevices when webauthnInfo is not provided', async function () {
+    it('should not add webauthnInfo when webauthnInfo is not provided', async function () {
       await wallets.generateWallet({
         label: 'Test Wallet',
         passphrase: 'wallet-passphrase',
@@ -151,11 +153,12 @@ describe('Wallets - WebAuthn wallet creation', function () {
 
       assert.strictEqual(mockKeychains.add.calledOnce, true);
       const addParams = mockKeychains.add.firstCall.args[0];
+      addParams.should.not.have.property('webauthnInfo');
       addParams.should.not.have.property('webauthnDevices');
     });
 
-    it('should not add webauthnDevices when userKey is explicitly provided (no prv available)', async function () {
-      // When a user-provided public key is used, there is no private key to encrypt, so webauthnDevices is skipped
+    it('should not add webauthnInfo when userKey is explicitly provided (no prv available)', async function () {
+      // When a user-provided public key is used, there is no private key to encrypt, so webauthnInfo is skipped
       await wallets.generateWallet({
         label: 'Test Wallet',
         userKey: userPub,
@@ -167,10 +170,11 @@ describe('Wallets - WebAuthn wallet creation', function () {
         },
       });
 
-      // add is called for both user keychain (pub-only) and backup keychain - neither should have webauthnDevices
+      // add is called for both user keychain (pub-only) and backup keychain - neither should have webauthnInfo
       const allAddCalls = mockKeychains.add.getCalls();
       assert.ok(allAddCalls.length > 0, 'expected keychains().add to be called at least once');
       for (const call of allAddCalls) {
+        call.args[0].should.not.have.property('webauthnInfo');
         call.args[0].should.not.have.property('webauthnDevices');
       }
     });
