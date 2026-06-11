@@ -752,6 +752,14 @@ export const avaxTokens = [
     UnderlyingAsset['avaxc:frnt'],
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
+  avaxErc20(
+    '7efffcb6-b961-428b-9eed-41cea87e97b8',
+    'avaxc:mxnd',
+    'Mexican Digital Peso',
+    6,
+    '0x6122c5964d39416c3f34475d00ceb37f50700314',
+    UnderlyingAsset['avaxc:mxnd']
+  ),
   // End FTX missing AVAXC tokens
   tavaxErc20(
     'cd107316-6e78-4936-946f-70e8fd5d8040',

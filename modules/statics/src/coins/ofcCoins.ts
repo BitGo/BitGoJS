@@ -2559,6 +2559,13 @@ export const ofcCoins = [
     undefined,
     [CoinFeature.STABLECOIN]
   ),
+  ofcAvaxErc20(
+    '475bfba5-3fd2-4f3c-8f0c-bb740e722f4d',
+    'ofcavaxc:mxnd',
+    'Mexican Digital Peso',
+    6,
+    UnderlyingAsset['avaxc:mxnd']
+  ),
   ofcAvaxErc20('9fb77e47-8916-4dcb-ac10-e11fa07172fb', 'ofcavaxc:nxpc', 'NEXPACE', 18, UnderlyingAsset['avaxc:nxpc']),
   ofcOpethErc20('10259b23-2e2e-4574-b146-b49f1119600f', 'ofcopeth:op', 'Optimism', 18, UnderlyingAsset['opeth:op']),
   ofcOpethErc20(
@@ -3379,6 +3386,13 @@ export const ofcCoins = [
     'XSGD',
     6,
     UnderlyingAsset['polygon:xsgd']
+  ),
+  ofcPolygonErc20(
+    '76d1f5d9-b848-4a06-b541-bbb4c86dcfad',
+    'ofcpolygon:mxnd',
+    'Mexican Digital Peso',
+    6,
+    UnderlyingAsset['polygon:mxnd']
   ),
   ofcPolygonErc20(
     '26eda2a9-0559-4f18-9bb7-547c2682b742',
@@ -5090,6 +5104,7 @@ export const ofcCoins = [
   ),
   ofcTempoToken('c9a90ee0-6546-413c-9cbe-94fdc14985c5', 'ofctempo:usdc', 'USDC', 6, UnderlyingAsset['tempo:usdc']),
   ofcTempoToken('05ac1283-5e72-4cba-8b0f-38cbd23a25c6', 'ofctempo:usd1', 'USD1', 6, UnderlyingAsset['tempo:usd1']),
+  ofcTempoToken('554f9084-4ac8-466a-8675-3de33ffd47d7', 'ofctempo:usdt0', 'USDT0', 6, UnderlyingAsset['tempo:usdt0']),
   // Tempo testnet OFC tokens
   tofcTempoToken(
     '7912e76e-5a5c-4f1b-86e9-1fc2a51f5a98',
