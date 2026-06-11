@@ -54,10 +54,6 @@ describe('DefiVault', function () {
     it('should call sendMany for approve and deposit on happy path', async function () {
       const operationId = 'op-uuid-123';
 
-      // Pre-flight: no active operations
-      const preflightReq = mockRequest({ items: [] });
-      mockBitGo.get.onFirstCall().returns(preflightReq);
-
       // Mock sendMany for approve and deposit
       const sendManyStub = sinon.stub(wallet, 'sendMany');
       sendManyStub.onFirstCall().resolves({
@@ -82,9 +78,6 @@ describe('DefiVault', function () {
       result.txRequestIds.approve.should.equal('txreq-approve-1');
       result.txRequestIds.deposit.should.equal('txreq-deposit-1');
 
-      // Verify pre-flight was called with correct query
-      preflightReq.query.calledWith({ vaultId: 'vlt-galaxy-usdc', state: 'active' }).should.be.true();
-
       // Verify sendMany was called with correct params for approve
       sendManyStub.calledTwice.should.be.true();
       const approveArgs: any = sendManyStub.firstCall.args[0];
@@ -98,7 +91,8 @@ describe('DefiVault', function () {
       depositArgs.defiParams.operationId.should.equal(operationId);
     });
 
-    it('should reject when an active operation already exists', async function () {
+    // TODO(CGD-1709): Re-enable when active operation pre-flight check is restored
+    xit('should reject when an active operation already exists', async function () {
       const preflightReq = mockRequest({
         items: [{ operationId: 'existing-op-id', state: 'APPROVE_TX_REQUESTED' }],
       });
@@ -116,10 +110,6 @@ describe('DefiVault', function () {
 
     it('should propagate deposit sendMany failure without cleanup', async function () {
       const operationId = 'op-uuid-456';
-
-      // Pre-flight: no active operations
-      const preflightReq = mockRequest({ items: [] });
-      mockBitGo.get.returns(preflightReq);
 
       // Mock sendMany: approve succeeds, deposit fails
       const sendManyStub = sinon.stub(wallet, 'sendMany');
@@ -153,9 +143,6 @@ describe('DefiVault', function () {
 
     it('should pass clientIdempotencyKey and walletPassphrase when provided', async function () {
       const operationId = 'op-uuid-789';
-
-      const preflightReq = mockRequest({ items: [] });
-      mockBitGo.get.returns(preflightReq);
 
       const sendManyStub = sinon.stub(wallet, 'sendMany');
       sendManyStub.onFirstCall().resolves({
