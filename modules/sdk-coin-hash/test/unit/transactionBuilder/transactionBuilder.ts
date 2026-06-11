@@ -3,6 +3,7 @@ import should from 'should';
 
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { fromBase64, toHex } from '@cosmjs/encoding';
 import { Hash, Thash } from '../../../src';
 import * as testData from '../../resources/hash';
 
@@ -110,5 +111,91 @@ describe('Hash Transaction Builder', async () => {
         'transactionBuilder: address isValidAddress check failed: ' + invalidAddress.address
       );
     }
+  });
+
+  /**
+   * Tests for the execType setter on CosmosTransactionBuilder.
+   * execType is used with MsgSubmitProposal group proposals to control how the proposal
+   * is executed — EXEC_TRY (exec=1) causes immediate execution, EXEC_UNSPECIFIED (exec=0) does not.
+   *
+   * To avoid message-validation side-effects from the proposal-decoding path in messages(),
+   * we use the pre-encoded MessageData route: factory.from() deserializes an existing
+   * MsgSubmitProposal tx, which stores sendMessages[0].value as a Uint8Array. That Uint8Array
+   * is then forwarded directly to a new ContractCallBuilder. When ContractCallBuilder.messages()
+   * receives an object without a `.msg` field it treats it as a pre-encoded MessageData and
+   * skips all address / proposal-type validation, keeping the test focused on execType behaviour.
+   */
+  describe('execType tests', async () => {
+    /**
+     * Returns the pre-encoded MessageData extracted from a round-trip through factory.from()
+     * on the known TEST_SUBMIT_PROPOSAL tx. The deserialized sendMessages[0] has
+     * { typeUrl: '/cosmos.group.v1.MsgSubmitProposal', value: Uint8Array } which bypasses
+     * the isGroupProposal / validateExecuteContractMessage validation in ContractCallBuilder.
+     */
+    const getPreEncodedProposalMessage = async () => {
+      const seedBuilder = factory.from(testData.TEST_SUBMIT_PROPOSAL.randomMsgSubmitProposalEncoded);
+      const seedTx = await seedBuilder.build();
+      // sendMessages[0].value is a Uint8Array after deserialization — the pre-encoded path
+      return seedTx.cosmosLikeTransaction.sendMessages[0];
+    };
+
+    /**
+     * Builds a ContractCallBuilder using the pre-encoded proposal MessageData and the
+     * provided execType string, using TEST_CONTRACT_CALL metadata for chain parameters.
+     */
+    const buildProposalTxWithExecType = async (execTypeValue: string) => {
+      const preEncodedMessage = await getPreEncodedProposalMessage();
+
+      const txBuilder = factory.getContractCallBuilder();
+      txBuilder.sequence(testData.TEST_CONTRACT_CALL.sequence);
+      txBuilder.accountNumber(testData.TEST_CONTRACT_CALL.accountNumber);
+      txBuilder.chainId(testData.TEST_CONTRACT_CALL.chainId);
+      txBuilder.gasBudget({
+        amount: [{ denom: 'nhash', amount: testData.TEST_CONTRACT_CALL.fee }],
+        gasLimit: testData.TEST_CONTRACT_CALL.gasLimit,
+      });
+      txBuilder.publicKey(toHex(fromBase64(testData.TEST_CONTRACT_CALL.pubKey)));
+      // Passing the pre-encoded MessageData (value is Uint8Array) bypasses isGroupProposal
+      // detection and goes through the "pre-encoded round-trip" branch in messages()
+      txBuilder.messages([preEncodedMessage]);
+      txBuilder.execType(execTypeValue);
+      return txBuilder.build();
+    };
+
+    it('should store execType on cosmosLikeTransaction when execType is set to EXEC_UNSPECIFIED', async function () {
+      // Verifies that calling execType('EXEC_UNSPECIFIED') propagates the value through
+      // createTransaction() into cosmosLikeTransaction.execType, which utils then uses
+      // to set decoded.exec = 0 when serializing the group proposal message.
+      const tx = await buildProposalTxWithExecType('EXEC_UNSPECIFIED');
+      tx.cosmosLikeTransaction.execType.should.equal('EXEC_UNSPECIFIED');
+    });
+
+    it('should store execType on cosmosLikeTransaction when execType is set to EXEC_TRY', async function () {
+      // Verifies that EXEC_TRY is stored correctly — this is the value that causes
+      // getSendMessagesForEncodingTx to set decoded.exec = 1 on the group proposal message.
+      const tx = await buildProposalTxWithExecType('EXEC_TRY');
+      tx.cosmosLikeTransaction.execType.should.equal('EXEC_TRY');
+    });
+
+    it('should leave execType undefined when execType() is never called', async function () {
+      // Verifies that omitting the execType() call leaves cosmosLikeTransaction.execType
+      // as undefined, which means getSendMessagesForEncodingTx will not override the exec
+      // field and the original encoded value in the message bytes is preserved.
+      const preEncodedMessage = await getPreEncodedProposalMessage();
+
+      const txBuilder = factory.getContractCallBuilder();
+      txBuilder.sequence(testData.TEST_CONTRACT_CALL.sequence);
+      txBuilder.accountNumber(testData.TEST_CONTRACT_CALL.accountNumber);
+      txBuilder.chainId(testData.TEST_CONTRACT_CALL.chainId);
+      txBuilder.gasBudget({
+        amount: [{ denom: 'nhash', amount: testData.TEST_CONTRACT_CALL.fee }],
+        gasLimit: testData.TEST_CONTRACT_CALL.gasLimit,
+      });
+      txBuilder.publicKey(toHex(fromBase64(testData.TEST_CONTRACT_CALL.pubKey)));
+      txBuilder.messages([preEncodedMessage]);
+      // Intentionally not calling txBuilder.execType() to confirm the field remains undefined
+      const tx = await txBuilder.build();
+      should.equal(tx.cosmosLikeTransaction.execType, undefined);
+    });
   });
 });

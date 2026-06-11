@@ -416,6 +416,9 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
           // For group proposal/vote messages, the pre-encoded bytes contain the full message
           try {
             const decoded = this.registry.decode({ typeUrl: msg.typeUrl, value: msg.value });
+            if (cosmosLikeTransaction.execType !== undefined && msg.typeUrl === constants.groupProposalMsgTypeUrl) {
+              decoded.exec = cosmosLikeTransaction.execType === 'EXEC_TRY' ? 1 : 0;
+            }
             return {
               typeUrl: msg.typeUrl,
               value: decoded,
@@ -737,7 +740,8 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
     messages: MessageData<CustomMessage>[],
     gasBudget: FeeData,
     publicKey?: string,
-    memo?: string
+    memo?: string,
+    execType?: string
   ): CosmosLikeTransaction<CustomMessage> {
     const cosmosLikeTxn = {
       sequence: sequence,
@@ -745,6 +749,7 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
       gasBudget: gasBudget,
       publicKey: publicKey,
       memo: memo,
+      execType: execType,
     };
     this.validateTransaction(cosmosLikeTxn);
     return cosmosLikeTxn;
@@ -766,9 +771,10 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
     gasBudget: FeeData,
     publicKey?: string,
     signature?: Buffer,
-    memo?: string
+    memo?: string,
+    execType?: string
   ): CosmosLikeTransaction<CustomMessage> {
-    const cosmosLikeTxn = this.createTransaction(sequence, messages, gasBudget, publicKey, memo);
+    const cosmosLikeTxn = this.createTransaction(sequence, messages, gasBudget, publicKey, memo, execType);
     let hash = constants.UNAVAILABLE_TEXT;
     if (signature !== undefined) {
       const unsignedTx = this.createTxRawFromCosmosLikeTransaction(cosmosLikeTxn);

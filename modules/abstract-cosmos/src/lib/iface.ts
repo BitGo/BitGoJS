@@ -110,6 +110,7 @@ export interface CosmosLikeTransaction<CustomMessage = never> {
   readonly signature?: Uint8Array;
   readonly hash?: string;
   readonly memo?: string;
+  readonly execType?: string;
 }
 
 export interface KeyShares {

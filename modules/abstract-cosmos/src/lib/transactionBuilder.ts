@@ -30,6 +30,7 @@ export abstract class CosmosTransactionBuilder<CustomMessage = never> extends Ba
   protected _memo?: string;
 
   protected _utils: CosmosUtils<CustomMessage>;
+  protected _execType?: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>, _utils: CosmosUtils<CustomMessage>) {
     super(_coinConfig);
@@ -158,6 +159,11 @@ export abstract class CosmosTransactionBuilder<CustomMessage = never> extends Ba
     return this;
   }
 
+  execType(value: string): this {
+    this._execType = value;
+    return this;
+  }
+
   /**
    * Initialize the transaction builder fields using the decoded transaction data
    * @param {CosmosTransaction} tx the transaction data
@@ -214,7 +220,8 @@ export abstract class CosmosTransactionBuilder<CustomMessage = never> extends Ba
       this._messages,
       this._gasBudget,
       this._publicKey,
-      this._memo
+      this._memo,
+      this._execType
     );
 
     const privateKey = this._signer?.getPrivateKey();
@@ -238,7 +245,8 @@ export abstract class CosmosTransactionBuilder<CustomMessage = never> extends Ba
         this._gasBudget,
         this._publicKey,
         this._signature,
-        this._memo
+        this._memo,
+        this._execType
       );
     }
     this.transaction.loadInputsAndOutputs();
