@@ -4085,7 +4085,7 @@ export const solTokens = [
     '13UnWveBycSEeYJFgvsmE2qHXP5ERienrhGZ5wUjWM8L',
     '13UnWveBycSEeYJFgvsmE2qHXP5ERienrhGZ5wUjWM8L',
     UnderlyingAsset['sol:ab1'],
-    SOL_TOKEN_FEATURES,
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE,
     ProgramID.Token2022ProgramId
   ),
   solToken(
