@@ -235,6 +235,7 @@ export abstract class MpcUtils {
       recipients: intentRecipients,
       tokenName: params.tokenName,
       isTestTransaction: params.isTestTransaction,
+      execType: params.execType,
     };
 
     if (baseCoin.isEVM() && baseCoin.supportsTss()) {
