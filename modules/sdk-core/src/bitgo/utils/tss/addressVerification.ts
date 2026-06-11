@@ -49,28 +49,35 @@ export async function verifyEddsaTssWalletAddress(
 }
 
 /**
- * Verifies if an address belongs to a wallet using ECDSA TSS MPC derivation.
- * This is a common implementation for ECDSA-based MPC coins (ETH, BTC, etc.)
+ * Options for deriving an MPC wallet address. This is the subset of
+ * {@link TssVerifyAddressOptions} needed to *produce* an address (no `address` to check),
+ * plus the key curve.
+ */
+export type DeriveMPCWalletAddressOptions = Pick<
+  TssVerifyAddressOptions,
+  'keychains' | 'index' | 'derivedFromParentWithSeed' | 'multisigTypeVersion'
+> & {
+  keyCurve: 'secp256k1' | 'ed25519';
+};
+
+/**
+ * Derives a wallet address using TSS/MPC HD derivation from the commonKeychain,
+ * using public key material only (no private keys, no network access).
+ * Shared by EdDSA- and ECDSA-based MPC coins.
  *
- * @param params - Verification options including keychains, address, and derivation index
- * @param isValidAddress - Coin-specific function to validate address format
+ * This is the derivation half of {@link verifyMPCWalletAddress}: it *produces* the address
+ * rather than comparing it against a candidate, so the two can never diverge.
+ *
+ * @param params - keychains (commonKeychain), derivation index, optional seed/version, and keyCurve
  * @param getAddressFromPublicKey - Coin-specific function to convert public key to address
- * @returns true if the address matches the derived address, false otherwise
- * @throws {InvalidAddressError} if the address is invalid
+ * @returns the derived address and the HD derivation path used to derive it
  * @throws {Error} if required parameters are missing or invalid
  */
-export async function verifyMPCWalletAddress(
-  params: TssVerifyAddressOptions & {
-    keyCurve: 'secp256k1' | 'ed25519';
-  },
-  isValidAddress: (address: string) => boolean,
+export async function deriveMPCWalletAddress(
+  params: DeriveMPCWalletAddressOptions,
   getAddressFromPublicKey: (publicKey: string) => string
-): Promise<boolean> {
-  const { keychains, address, index, derivedFromParentWithSeed } = params;
-
-  if (!isValidAddress(address)) {
-    throw new InvalidAddressError(`invalid address: ${address}`);
-  }
+): Promise<{ address: string; derivationPath: string }> {
+  const { keychains, index, derivedFromParentWithSeed } = params;
 
   const commonKeychain = extractCommonKeychain(keychains);
 
@@ -93,7 +100,34 @@ export async function verifyMPCWalletAddress(
   const publicKeySize = params.keyCurve === 'secp256k1' ? 33 : 32;
   const publicKeyOnly = Buffer.from(derivedPublicKey, 'hex').subarray(0, publicKeySize).toString('hex');
 
-  const expectedAddress = getAddressFromPublicKey(publicKeyOnly);
+  return { address: getAddressFromPublicKey(publicKeyOnly), derivationPath };
+}
+
+/**
+ * Verifies if an address belongs to a wallet using ECDSA TSS MPC derivation.
+ * This is a common implementation for ECDSA-based MPC coins (ETH, BTC, etc.)
+ *
+ * @param params - Verification options including keychains, address, and derivation index
+ * @param isValidAddress - Coin-specific function to validate address format
+ * @param getAddressFromPublicKey - Coin-specific function to convert public key to address
+ * @returns true if the address matches the derived address, false otherwise
+ * @throws {InvalidAddressError} if the address is invalid
+ * @throws {Error} if required parameters are missing or invalid
+ */
+export async function verifyMPCWalletAddress(
+  params: TssVerifyAddressOptions & {
+    keyCurve: 'secp256k1' | 'ed25519';
+  },
+  isValidAddress: (address: string) => boolean,
+  getAddressFromPublicKey: (publicKey: string) => string
+): Promise<boolean> {
+  const { address } = params;
+
+  if (!isValidAddress(address)) {
+    throw new InvalidAddressError(`invalid address: ${address}`);
+  }
+
+  const { address: expectedAddress } = await deriveMPCWalletAddress(params, getAddressFromPublicKey);
 
   return address === expectedAddress;
 }
