@@ -1137,13 +1137,13 @@ class DydxTestnet extends Testnet implements CosmosNetwork {
 }
 
 class Ton extends Mainnet implements AccountNetwork {
-  name = 'Ton';
+  name = 'Gram';
   family = CoinFamily.TON;
   explorerUrl = 'https://tonscan.org/tx/';
 }
 
 class TonTestnet extends Testnet implements AccountNetwork {
-  name = 'Testnet Ton';
+  name = 'Testnet Gram';
   family = CoinFamily.TON;
   explorerUrl = 'https://testnet.tonscan.org/tx/';
 }

@@ -203,7 +203,7 @@ export const ofcCoins = [
     UnderlyingAsset.OPETH,
     CoinKind.CRYPTO
   ),
-  ofc('07083ea6-74ba-4da7-8cf3-031126a130a4', 'ofcton', 'Ton', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
+  ofc('07083ea6-74ba-4da7-8cf3-031126a130a4', 'ofcton', 'Gram', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
   ofc(
     '055691ec-f750-4349-b505-92954ca08257',
     'ofccoredao',
@@ -990,7 +990,7 @@ export const ofcCoins = [
     UnderlyingAsset.OPETH,
     CoinKind.CRYPTO
   ),
-  tofc('b364799a-e6d1-4d84-afc9-588594e850f7', 'ofctton', 'Test Ton', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
+  tofc('b364799a-e6d1-4d84-afc9-588594e850f7', 'ofctton', 'Test Gram', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
   tofc('d7ec69dc-619d-4c10-b269-75c2327bd69d', 'ofcttao', 'Testnet Bittensor', 9, UnderlyingAsset.TAO, CoinKind.CRYPTO),
   ofc('8d329a6a-7b7a-4663-b3a4-a027fc3386d8', 'ofciota', 'Iota', 9, UnderlyingAsset.IOTA, CoinKind.CRYPTO),
   tofc('35d5b5eb-f61d-428d-8908-2f161507511f', 'ofctiota', 'Testnet Iota', 9, UnderlyingAsset.IOTA, CoinKind.CRYPTO),
