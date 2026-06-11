@@ -102,6 +102,18 @@ describe('Wallets - external signer onchain wallet generation', function () {
       assert.strictEqual(result.bitgoKeychain.pub, bitgoPub);
     });
 
+    it('should pass advanced wallet type through to wallet/add', async function () {
+      await wallets.generateWalletWithExternalSigner({
+        label: 'Advanced Wallet',
+        enterprise: 'enterprise-id',
+        type: 'advanced',
+        createKeychainCallback,
+      });
+
+      const walletBody = sendStub.firstCall.args[0];
+      walletBody.type.should.equal('advanced');
+    });
+
     it('should reject when callback source does not match requested source', async function () {
       createKeychainCallback.withArgs({ source: 'user', coin: 'tbtc' }).resolves({
         pub: userPub,
