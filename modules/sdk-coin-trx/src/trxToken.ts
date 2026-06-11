@@ -100,8 +100,10 @@ export class TrxToken extends Trx {
 
     if (walletType === 'tss') {
       // For TSS wallets, TRC20 token transfers are TriggerSmartContract transactions.
-      // Decode the transaction and validate destination address and amount against
-      // txParams.recipients before signing to ensure intent matches the prebuild.
+      // Always verify structure and ABI decodability. Intent validation (address + amount
+      // comparison) is performed only when recipients are present — absent recipients
+      // indicates a server-determined transfer (e.g. consolidation) where the server
+      // owns the intent.
       const rawDataHex = this.extractRawDataHex(txPrebuild.txHex);
       const decodedTx = Utils.decodeTransaction(rawDataHex);
 
@@ -110,7 +112,6 @@ export class TrxToken extends Trx {
           `Expected TriggerSmartContract for TRC20 token transfer, got contract type: ${decodedTx.contractType}`
         );
       }
-
       if (!Array.isArray(decodedTx.contract) || decodedTx.contract.length !== 1) {
         throw new Error('Invalid TriggerSmartContract structure');
       }
@@ -118,11 +119,6 @@ export class TrxToken extends Trx {
       const triggerContract = decodedTx.contract[0] as Interface.TriggerSmartContract;
       // data is base64-encoded from protobuf decoding; convert to hex for decodeDataParams
       const contractData = Buffer.from(triggerContract.parameter.value.data, 'base64').toString('hex');
-
-      const recipients = txParams.recipients || (txPrebuild.txInfo as TronTxInfo).recipients;
-      if (!recipients || recipients.length !== 1) {
-        throw new Error('missing or invalid required property recipients');
-      }
 
       let recipientHex: string;
       let transferAmount: { toString(): string };
@@ -133,6 +129,15 @@ export class TrxToken extends Trx {
         ];
       } catch (e) {
         throw new Error(`Failed to decode TRC20 transfer ABI data: ${e instanceof Error ? e.message : String(e)}`);
+      }
+
+      const recipients = txParams.recipients || (txPrebuild.txInfo as TronTxInfo | undefined)?.recipients;
+      if (!recipients || recipients.length === 0) {
+        // No recipients — server-determined transfer (e.g. consolidation); structural check above is sufficient.
+        return true;
+      }
+      if (recipients.length !== 1) {
+        throw new Error('invalid required property recipients');
       }
 
       // recipientHex has '41' hex prefix; convert to base58 for comparison

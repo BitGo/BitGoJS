@@ -83,15 +83,29 @@ describe('TrxToken verifyTransaction:', function () {
       );
     });
 
-    it('should throw when recipients is empty', async function () {
-      await assert.rejects(
-        tokenCoin.verifyTransaction({
-          txPrebuild: { txHex: TRC20_RAW_DATA_HEX },
-          txParams: { recipients: [] },
-          walletType: 'tss',
-        } as any),
-        { message: 'missing or invalid required property recipients' }
-      );
+    it('should return true when recipients is absent (consolidation path — undefined)', async function () {
+      // Consolidation: server determines intent; no recipients on txParams or txInfo.
+      // Verify passes because tx structure is valid TriggerSmartContract AND ABI decodes
+      // to a valid (address, uint256) pair — malformed ABI would still throw.
+      const result = await tokenCoin.verifyTransaction({
+        txPrebuild: { txHex: TRC20_RAW_DATA_HEX },
+        txParams: {},
+        walletType: 'tss',
+      } as any);
+
+      assert.strictEqual(result, true);
+    });
+
+    it('should return true when recipients is empty array (consolidation path — [])', async function () {
+      // Some callers pass recipients: [] rather than omitting the field entirely.
+      // Empty array must be treated the same as absent — consolidation, no intent match.
+      const result = await tokenCoin.verifyTransaction({
+        txPrebuild: { txHex: TRC20_RAW_DATA_HEX },
+        txParams: { recipients: [] },
+        walletType: 'tss',
+      } as any);
+
+      assert.strictEqual(result, true);
     });
 
     it('should throw when contract type is not TriggerSmartContract', async function () {
