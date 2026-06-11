@@ -637,6 +637,17 @@ export class Utils implements BaseUtils {
         }
         return;
       }
+      // ISO 8601 input vs microsecond-since-epoch encoding in the prepared-transaction protobuf.
+      if (this.isIsoTimestamp(expected) && this.isIntegerString(actual)) {
+        const expectedMicroseconds = new BigNumber(new Date(expected).getTime()).multipliedBy(1000);
+        if (!expectedMicroseconds.isEqualTo(new BigNumber(actual))) {
+          throw new Error(
+            `Canton command timestamp mismatch at '${currentPath || '<root>'}': ` +
+              `expected '${expected}' (${expectedMicroseconds.toFixed(0)} µs), got '${actual}'`
+          );
+        }
+        return;
+      }
       if (expected !== actual) {
         throw new Error(
           `Canton command mismatch at '${currentPath || '<root>'}': expected '${expected}', got '${actual}'`
@@ -852,6 +863,17 @@ export class Utils implements BaseUtils {
   private areNumericStrings(a: string, b: string): boolean {
     const numericRe = /^-?\d+(\.\d+)?$/;
     return numericRe.test(a) && numericRe.test(b);
+  }
+
+  private isIsoTimestamp(value: string): boolean {
+    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$/.test(value)) {
+      return false;
+    }
+    return Number.isFinite(Date.parse(value));
+  }
+
+  private isIntegerString(value: string): boolean {
+    return /^\d+$/.test(value);
   }
 
   private describeType(value: unknown): string {
