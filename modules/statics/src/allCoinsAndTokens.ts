@@ -2680,11 +2680,14 @@ export const allCoinsAndTokens = [
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,
+      CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.SHARED_EVM_SIGNING,
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -2697,11 +2700,14 @@ export const allCoinsAndTokens = [
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,
+      CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.SHARED_EVM_SIGNING,
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
 
