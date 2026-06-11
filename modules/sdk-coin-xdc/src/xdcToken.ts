@@ -59,22 +59,42 @@ export class XdcToken extends EthLikeToken {
   }
 
   /**
-   * Verify if a tss transaction is valid
+   * Verify if a TSS transaction is valid.
+   *
+   * NOTE: This override intentionally does NOT call super.verifyTssTransaction() and does NOT
+   * parse txPrebuild.txHex.  XDC tokens are built with a non-standard chain ID; the signable
+   * hex produced during TSS pre-signing carries a `v` value that is incompatible with the EIP-155
+   * check performed by the XDC TransactionBuilder, which would throw "Incompatible EIP155-based V".
+   * Until the XDC signable-hex format is standardised, calldata comparison is skipped here and
+   * relies on the server-side intent verification layer in wallet-platform.
+   *
+   * Regression risk: do not remove this override or add super() without first confirming that
+   * XDC token signable hexes pass TransactionBuilder.from() without error.
    *
    * @param {VerifyEthTransactionOptions} params
-   * @param {TransactionParams} params.txParams - params object passed to send
-   * @param {TransactionPrebuild} params.txPrebuild - prebuild object returned by server
-   * @param {Wallet} params.wallet - Wallet object to obtain keys to verify against
-   * @returns {boolean}
    */
   async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
     const { txParams, txPrebuild, wallet } = params;
+
+    // Structural guard: mirrors the parent's guard so that only known no-recipient types
+    // bypass the recipient requirement.  Keep in sync with AbstractEthLikeNewCoins.
     if (
       !txParams?.recipients &&
       !(
         txParams.prebuildTx?.consolidateId ||
+        txPrebuild?.consolidateId ||
         (txParams.type &&
-          ['acceleration', 'fillNonce', 'transferToken', 'tokenApproval', 'consolidate'].includes(txParams.type))
+          [
+            'acceleration',
+            'fillNonce',
+            'transferToken',
+            'tokenApproval',
+            'consolidate',
+            'bridgeFunds',
+            'enableToken',
+            'enabletoken',
+            'customTx',
+          ].includes(txParams.type))
       )
     ) {
       throw new Error(`missing txParams`);
@@ -86,6 +106,7 @@ export class XdcToken extends EthLikeToken {
       throw new Error(`tx cannot be both a batch and hop transaction`);
     }
 
+    // Calldata comparison is intentionally skipped — see method JSDoc.
     return true;
   }
 }
