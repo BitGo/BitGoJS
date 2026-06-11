@@ -2823,6 +2823,7 @@ export enum UnderlyingAsset {
   'avaxc:emdx' = 'avaxc:emdx',
   'avaxc:eurc' = 'avaxc:eurc',
   'avaxc:ausd' = 'avaxc:ausd',
+  'avaxc:mxnd' = 'avaxc:mxnd',
   // End FTX missing AVAXC tokens
 
   // polygon Token ERC-20
@@ -2982,6 +2983,7 @@ export enum UnderlyingAsset {
   'polygon:vio0' = 'polygon:vio0',
   'polygon:wots0' = 'polygon:wots0',
   'polygon:mext' = 'polygon:mext',
+  'polygon:mxnd' = 'polygon:mxnd',
   'polygon:pert' = 'polygon:pert',
   'polygon:colt' = 'polygon:colt',
   'polygon:bolt' = 'polygon:bolt',
@@ -4058,6 +4060,7 @@ export enum UnderlyingAsset {
   'tempo:pathusd' = 'tempo:pathusd',
   'tempo:usdc' = 'tempo:usdc',
   'tempo:usd1' = 'tempo:usd1',
+  'tempo:usdt0' = 'tempo:usdt0',
 
   // Tempo testnet tokens
   'ttempo:pathusd' = 'ttempo:pathusd',

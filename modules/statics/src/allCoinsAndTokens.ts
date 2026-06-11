@@ -3544,6 +3544,20 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
+  tip20Token(
+    '9dd63f8e-3f35-4d10-a623-fe7358ad66a4',
+    'tempo:usdt0',
+    'USDT0',
+    6,
+    '0x20c00000000000000000000014f22ca97301eb73',
+    UnderlyingAsset['tempo:usdt0'],
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
   // Tempo TIP20 testnet tokens
   ttip20Token(
     'e1872fd8-14ee-4dc9-bc5e-fd52552d9c60',
