@@ -78,6 +78,7 @@
   },
   "devDependencies": {
     "@bitgo/sdk-test": "^9.1.50",
+    "@bitgo/utxo-lib": "^11.24.0",
     "mocha": "^10.2.0"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"

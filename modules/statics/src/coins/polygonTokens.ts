@@ -1182,6 +1182,15 @@ export const polygonTokens = [
     POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   polygonErc20(
+    'eee6f253-4490-46cd-92b3-59d8288a46a2',
+    'polygon:mxnd',
+    'Mexican Digital Peso',
+    6,
+    '0xa4a4fcb23ffcd964346d2e4ecdf5a8c15c69b219',
+    UnderlyingAsset['polygon:mxnd'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  polygonErc20(
     'cb393313-9ce5-44aa-aec0-f07c0ab13d76',
     'polygon:pert',
     'Peruvian Sol Token',

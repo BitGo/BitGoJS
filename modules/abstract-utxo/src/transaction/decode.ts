@@ -1,7 +1,6 @@
-import * as utxolib from '@bitgo/utxo-lib';
-import { fixedScriptWallet, hasPsbtMagic, Psbt as WasmPsbt, utxolibCompat } from '@bitgo/wasm-utxo';
+import { fixedScriptWallet, hasPsbtMagic, Psbt as WasmPsbt } from '@bitgo/wasm-utxo';
 
-import { getNetworkFromCoinName, UtxoCoinName } from '../names';
+import { UtxoCoinName } from '../names';
 
 import { BitGoPsbt } from './types';
 
@@ -22,20 +21,11 @@ export function stringToBufferTryFormats(input: string, formats: BufferEncoding[
   throw new Error('input must be a valid hex or base64 string');
 }
 
-function toNetworkName(coinName: UtxoCoinName): utxolibCompat.UtxolibName {
-  const network = getNetworkFromCoinName(coinName);
-  const networkName = utxolib.getNetworkName(network);
-  if (!networkName) {
-    throw new Error(`Invalid coinName: ${coinName}`);
-  }
-  return networkName;
-}
-
 export function decodePsbt(psbt: string | Buffer, coinName: UtxoCoinName): BitGoPsbt {
   if (typeof psbt === 'string') {
     psbt = Buffer.from(psbt, 'hex');
   }
-  return fixedScriptWallet.BitGoPsbt.fromBytes(psbt, toNetworkName(coinName));
+  return fixedScriptWallet.BitGoPsbt.fromBytes(psbt, coinName);
 }
 
 export type PrebuildLike = {

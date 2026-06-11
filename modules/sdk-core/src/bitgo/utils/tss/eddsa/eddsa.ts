@@ -135,6 +135,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     webauthnInfo,
     encryptionSession,
     encryptionVersion,
+    enterprise,
   }: CreateEddsaKeychainParams): Promise<Keychain> {
     const MPC = await Eddsa.initialize();
     const bitgoKeyShares = bitgoKeychain.keyShares;
@@ -202,17 +203,18 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       }
     }
     if (webauthnInfo && userKeychainParams.encryptedPrv) {
-      userKeychainParams.webauthnDevices = [
-        {
-          otpDeviceId: webauthnInfo.otpDeviceId,
-          prfSalt: webauthnInfo.prfSalt,
-          encryptedPrv: await this.bitgo.encryptAsync({
-            input: JSON.stringify(userSigningMaterial),
-            password: webauthnInfo.passphrase,
-            encryptionVersion,
-          }),
-        },
-      ];
+      // Send the passkey as `webauthnInfo`; the deprecated `webauthnDevices` array is ignored by POST /key.
+      assert(enterprise, 'enterprise is required to attach a webauthn device to the user keychain');
+      userKeychainParams.webauthnInfo = {
+        otpDeviceId: webauthnInfo.otpDeviceId,
+        prfSalt: webauthnInfo.prfSalt,
+        encryptedPrv: await this.bitgo.encryptAsync({
+          input: JSON.stringify(userSigningMaterial),
+          password: webauthnInfo.passphrase,
+          encryptionVersion,
+        }),
+        enterpriseId: enterprise,
+      };
     }
 
     return await this.baseCoin.keychains().add(userKeychainParams);
@@ -412,6 +414,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
         webauthnInfo: params.webauthnInfo,
         encryptionSession,
         encryptionVersion: params.encryptionVersion,
+        enterprise: params.enterprise,
       });
       const backupKeychainPromise = this.createBackupKeychain({
         userGpgKey,

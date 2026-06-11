@@ -3973,6 +3973,20 @@ export class Wallet implements IWallet {
     }
     // Check if we build with intent
     if (this._wallet.multisigType === 'tss') {
+      // Populate recipients from enableTokens so verifyTransaction can access tokenName.
+      // enableTokens is kept (not deleted) since the server needs it to build the transaction.
+      buildParams.recipients = params.enableTokens.map((token) => {
+        const address =
+          token.address || this._wallet.coinSpecific?.baseAddress || this._wallet.coinSpecific?.rootAddress;
+        if (!address) {
+          throw new Error('Wallet does not have base address, must specify with token param');
+        }
+        return {
+          tokenName: token.name,
+          address,
+          amount: '0',
+        };
+      });
       return [await this.prebuildTransaction(buildParams)];
     } else {
       // Rewrite tokens into recipients for buildTransaction
@@ -4294,6 +4308,32 @@ export class Wallet implements IWallet {
         );
         break;
       }
+      case 'cosignDelegationAccept': {
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'cosignDelegationAccept',
+            txRequestId: params.txRequestId,
+            sequenceId: params.txRequestId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
+      case 'allocationAllocate': {
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'allocationAllocate',
+            txRequestId: params.txRequestId,
+            sequenceId: params.txRequestId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
       case 'transferReject': {
         txRequest = await this.tssUtils!.prebuildTxWithIntent(
           {
@@ -4312,6 +4352,19 @@ export class Wallet implements IWallet {
           {
             reqId,
             intentType: 'transferOfferWithdrawn',
+            transferOfferId: params.transferOfferId,
+            sequenceId: params.transferOfferId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
+      case 'allocationAllocateWithdrawn': {
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'allocationAllocateWithdrawn',
             transferOfferId: params.transferOfferId,
             sequenceId: params.transferOfferId,
           },

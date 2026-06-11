@@ -2,9 +2,7 @@ import assert from 'assert';
 import { randomBytes } from 'crypto';
 
 import _ from 'lodash';
-import * as utxolib from '@bitgo/utxo-lib';
-import { BIP32, fixedScriptWallet, hasPsbtMagic } from '@bitgo/wasm-utxo';
-import { bitgo, getMainnet } from '@bitgo/utxo-lib';
+import { address as wasmAddress, BIP32, fixedScriptWallet, hasPsbtMagic } from '@bitgo/wasm-utxo';
 import {
   AddressCoinSpecific,
   BaseCoin,
@@ -62,7 +60,6 @@ import { getReplayProtectionPubkeys, isReplayProtectionUnspent } from './transac
 import { supportedCrossChainRecoveries } from './config';
 import {
   assertValidTransactionRecipient,
-  DecodedTransaction,
   explainTx,
   fromExtendedAddressFormat,
   isScriptRecipient,
@@ -77,14 +74,7 @@ import {
   ErrorImplicitExternalOutputs,
 } from './transaction/descriptor/verifyTransaction';
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
-import {
-  getFullNameFromCoinName,
-  getMainnetCoinName,
-  getNetworkFromCoinName,
-  isMainnetCoin,
-  UtxoCoinName,
-  UtxoCoinNameMainnet,
-} from './names';
+import { getFullNameFromCoinName, getMainnetCoinName, isMainnetCoin, UtxoCoinName, UtxoCoinNameMainnet } from './names';
 import { assertFixedScriptWalletAddress } from './address/fixedScript';
 import { ParsedTransaction } from './transaction/types';
 import { decodeDescriptorPsbt, decodePsbt, encodeTransaction, stringToBufferTryFormats } from './transaction/decode';
@@ -96,7 +86,7 @@ import { isUtxoWalletData, UtxoWallet } from './wallet';
 import { isDescriptorWalletData } from './descriptor/descriptorWallet';
 import type { Unspent } from './unspent';
 
-import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
+type ScriptType2Of3 = 'p2sh' | 'p2shP2wsh' | 'p2wsh' | 'p2tr' | 'p2trMusig2';
 
 export type TxFormat =
   // This is a legacy transaction format based around the bitcoinjs-lib serialization of unsigned transactions
@@ -142,28 +132,19 @@ type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   }): Promise<SignedTransaction>;
 };
 
-const { isChainCode, scriptTypeForChain, outputScripts } = bitgo;
-
 /**
  * Check if a decoded transaction has at least one taproot key path spend (MuSig2) input.
- * Works for both utxolib UtxoPsbt and wasm-utxo BitGoPsbt.
  */
-function hasKeyPathSpendInput<TNumber extends number | bigint>(
-  tx: DecodedTransaction<TNumber>,
+function hasKeyPathSpendInput(
+  tx: fixedScriptWallet.BitGoPsbt,
   pubs: string[] | undefined,
   coinName: UtxoCoinName
 ): boolean {
-  if (tx instanceof bitgo.UtxoPsbt) {
-    return bitgo.isTransactionWithKeyPathSpendInput(tx);
-  }
-  if (tx instanceof fixedScriptWallet.BitGoPsbt) {
-    assert(pubs && isTriple(pubs), 'pub triple is required to check for key path spend inputs in wasm-utxo PSBT');
-    const rootWalletKeys = fixedScriptWallet.RootWalletKeys.fromXpubs(pubs);
-    const replayProtection = { publicKeys: getReplayProtectionPubkeys(coinName) };
-    const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, { replayProtection });
-    return parsed.inputs.some((input) => input.scriptType === 'p2trMusig2KeyPath');
-  }
-  return false;
+  assert(pubs && isTriple(pubs), 'pub triple is required to check for key path spend inputs in wasm-utxo PSBT');
+  const rootWalletKeys = fixedScriptWallet.RootWalletKeys.fromXpubs(pubs);
+  const replayProtection = { publicKeys: getReplayProtectionPubkeys(coinName) };
+  const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, { replayProtection });
+  return parsed.inputs.some((input) => input.scriptType === 'p2trMusig2KeyPath');
 }
 
 /**
@@ -216,8 +197,6 @@ function convertValidationErrorToTxIntentMismatch(
 
 export type { DecodedTransaction } from './transaction/types';
 
-export type RootWalletKeys = bitgo.RootWalletKeys;
-
 export type UtxoCoinSpecific = AddressCoinSpecific | DescriptorAddressCoinSpecific;
 
 export interface VerifyAddressOptions<TCoinSpecific extends UtxoCoinSpecific> extends BaseVerifyAddressOptions {
@@ -251,8 +230,6 @@ export interface DecoratedExplainTransactionOptions<TNumber extends number | big
   extends ExplainTransactionOptions<TNumber> {
   changeInfo?: { address: string; chain: number; index: number }[];
 }
-
-export type UtxoNetwork = utxolib.Network;
 
 export interface TransactionPrebuild<TNumber extends number | bigint = number> extends BaseTransactionPrebuild {
   txInfo?: TransactionInfo<TNumber>;
@@ -335,11 +312,6 @@ type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = 
    * When false, creates half-signed transaction with placeholder signatures.
    */
   isLastSignature?: boolean;
-  /**
-   * If true, allows signing a non-segwit input with a witnessUtxo instead requiring a previous
-   * transaction (nonWitnessUtxo)
-   */
-  allowNonSegwitSigningWithoutPrevTx?: boolean;
   /**
    * When true, the signed transaction will be converted from PSBT to legacy format before returning.
    * Set automatically by presignTransaction() when the caller explicitly requested txFormat: 'legacy'.
@@ -432,14 +404,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
     this.amountType = amountType;
   }
 
-  /**
-   * @deprecated - will be removed when we drop support for utxolib
-   * Use `name` property instead.
-   */
-  get network(): utxolib.Network {
-    return getNetworkFromCoinName(this.name);
-  }
-
   getChain(): UtxoCoinName {
     return this.name;
   }
@@ -455,13 +419,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
   /** Indicates whether the coin supports a block target */
   supportsBlockTarget(): boolean {
     // FIXME: the SDK does not seem to use this anywhere so it is unclear what the purpose of this method is
-    switch (getMainnet(this.network)) {
-      case utxolib.networks.bitcoin:
-      case utxolib.networks.dogecoin:
-        return true;
-      default:
-        return false;
-    }
+    const mainnet = getMainnetCoinName(this.name);
+    return mainnet === 'btc' || mainnet === 'doge';
   }
 
   sweepWithSendMany(): boolean {
@@ -470,7 +429,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
 
   /** @deprecated */
   static get validAddressTypes(): ScriptType2Of3[] {
-    return [...outputScripts.scriptTypes2Of3];
+    return ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2'];
   }
 
   /**
@@ -508,15 +467,20 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
     // At the time of writing, the only additional address format is bch cashaddr.
     const anyFormat = (param as { anyFormat: boolean } | undefined)?.anyFormat ?? true;
     try {
-      // Find out if the address is valid for any format. Tries all supported formats by default.
-      // Throws if address cannot be decoded with any format.
-      const [format, script] = utxolib.addressFormat.toOutputScriptAndFormat(address, this.network);
-      // unless anyFormat is set, only 'default' is allowed.
-      if (!anyFormat && format !== 'default') {
-        return false;
+      const script = wasmAddress.toOutputScriptWithCoin(address, this.name);
+      // Determine which format the input address was in by round-tripping
+      // through each candidate and checking byte-equality. 'default' is tried
+      // first so canonical default-format addresses early-exit.
+      for (const format of ['default', 'cashaddr'] as const) {
+        try {
+          if (wasmAddress.fromOutputScriptWithCoin(script, this.name, format) === address) {
+            return anyFormat || format === 'default';
+          }
+        } catch {
+          // coin doesn't support this format; try the next one
+        }
       }
-      // make sure that address is in normal representation for given format.
-      return address === utxolib.addressFormat.fromOutputScriptWithFormat(script, format, this.network);
+      return false;
     } catch (e) {
       return false;
     }
@@ -596,13 +560,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
    * @param addressDetails
    */
   static inferAddressType(addressDetails: { chain: number }): ScriptType2Of3 | null {
-    return isChainCode(addressDetails.chain) ? scriptTypeForChain(addressDetails.chain) : null;
-  }
-
-  createTransactionFromHex<TNumber extends number | bigint = number>(
-    hex: string
-  ): utxolib.bitgo.UtxoTransaction<TNumber> {
-    return utxolib.bitgo.createTransactionFromHex<TNumber>(hex, this.network, this.amountType);
+    return fixedScriptWallet.ChainCode.is(addressDetails.chain)
+      ? (fixedScriptWallet.ChainCode.scriptType(addressDetails.chain) as ScriptType2Of3)
+      : null;
   }
 
   decodeTransaction(input: Buffer | string): fixedScriptWallet.BitGoPsbt {
@@ -761,7 +721,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
    * @returns true iff coin supports spending from unspentType
    */
   supportsAddressType(addressType: ScriptType2Of3): boolean {
-    return utxolib.bitgo.outputScripts.isSupportedScriptType(this.network, addressType);
+    return fixedScriptWallet.supportsScriptType(this.name, addressType);
   }
 
   /** inherited doc */
@@ -774,7 +734,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
    * @return true iff coin supports spending from chain
    */
   supportsAddressChain(chain: number): boolean {
-    return isChainCode(chain) && this.supportsAddressType(utxolib.bitgo.scriptTypeForChain(chain));
+    return (
+      fixedScriptWallet.ChainCode.is(chain) &&
+      this.supportsAddressType(fixedScriptWallet.ChainCode.scriptType(chain) as ScriptType2Of3)
+    );
   }
 
   keyIdsForSigning(): number[] {
@@ -1063,17 +1026,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
     }
 
     const returnLegacyFormat = (params as Record<string, unknown>).txFormat === 'legacy';
-
-    // In the case that we have a 'psbt-lite' transaction format, we want to indicate in signing to not fail
-    const txHex = (params.txHex ?? params.txPrebuild?.txHex) as string;
-    if (
-      txHex &&
-      utxolib.bitgo.isPsbt(txHex as string) &&
-      utxolib.bitgo.isPsbtLite(utxolib.bitgo.createPsbtFromHex(txHex, this.network)) &&
-      params.allowNonSegwitSigningWithoutPrevTx === undefined
-    ) {
-      return { ...params, allowNonSegwitSigningWithoutPrevTx: true, returnLegacyFormat };
-    }
     return { ...params, returnLegacyFormat };
   }
 

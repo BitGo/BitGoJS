@@ -352,13 +352,13 @@ export class Utils implements BaseUtils {
       }
 
       case TransactionType.CosignDelegationAccept: {
-        // exercise CosignDelegationProposal_Accept → actingParties[0] = signer (sender)
-        const signerParty = findExerciseActingParty('CosignDelegationProposal_Accept');
+        // exercise CosigningDelegationProposal_Accept → actingParties[0] = signer (sender)
+        const signerParty = findExerciseActingParty('CosigningDelegationProposal_Accept');
         if (signerParty) sender = signerParty;
-        // CosignDelegationProposal create node → admin = receiver
-        const proposalFields = findCreateNodeFields('CosignDelegationProposal');
-        if (proposalFields) {
-          const adminData = getField(proposalFields, 'admin');
+        // CosigningDelegation create node (result of the accept) → admin = receiver
+        const delegationFields = findCreateNodeFields('CosigningDelegation');
+        if (delegationFields) {
+          const adminData = getField(delegationFields, 'admin');
           if (adminData?.oneofKind === 'party') receiver = adminData.party ?? '';
         }
         amount = '0';

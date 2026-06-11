@@ -138,11 +138,19 @@ export abstract class MpcUtils {
       );
     }
 
-    if (['transferAccept', 'transferReject'].includes(params.intentType) && baseCoin.getFamily() === 'canton') {
+    if (
+      ['transferAccept', 'transferReject', 'cosignDelegationAccept', 'allocationAllocate'].includes(
+        params.intentType
+      ) &&
+      baseCoin.getFamily() === 'canton'
+    ) {
       assert(params.txRequestId, `'txRequestId' is required parameter for ${params.intentType} intent`);
     }
 
-    if (params.intentType === 'transferOfferWithdrawn' && baseCoin.getFamily() === 'canton') {
+    if (
+      ['transferOfferWithdrawn', 'allocationAllocateWithdrawn'].includes(params.intentType) &&
+      baseCoin.getFamily() === 'canton'
+    ) {
       assert(params.transferOfferId, `'transferOfferId' is required parameter for ${params.intentType} intent`);
     }
 
@@ -181,6 +189,9 @@ export abstract class MpcUtils {
         'transferAccept',
         'transferReject',
         'transferOfferWithdrawn',
+        'cosignDelegationAccept',
+        'allocationAllocate',
+        'allocationAllocateWithdrawn',
         'bridgeFunds',
         'cantonCommand',
         'defi-approve',

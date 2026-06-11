@@ -36,6 +36,7 @@ import { CoinMap } from './map';
 import { BaseNetwork, getNetwork, getNetworksMap, NetworkType } from './networks';
 import { getNetworkFeatures } from './networkFeatureMapForTokens';
 import { ofcErc20Coins, tOfcErc20Coins } from './coins/ofcErc20Coins';
+import { ofcHoodethTokens } from './coins/ofcHoodethTokens';
 import { ofcCoins } from './coins/ofcCoins';
 import { allCoinsAndTokens } from './allCoinsAndTokens';
 import { botOfcTokens } from './coins/botOfcTokens';
@@ -43,6 +44,7 @@ import { botOfcTokens } from './coins/botOfcTokens';
 export const coins = CoinMap.fromCoins([
   ...allCoinsAndTokens,
   ...ofcErc20Coins,
+  ...ofcHoodethTokens,
   ...tOfcErc20Coins,
   ...ofcCoins,
   ...botOfcTokens,
@@ -468,6 +470,10 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
     BaseCoins.set(coinName, coin);
   });
 
+  // Accumulates both static and already-accepted AMS tokens so AMS-vs-AMS contract address
+  // conflicts are caught in addition to static-vs-AMS conflicts.
+  const accumulatedMap = CoinMap.fromCoins(Array.from(BaseCoins.values()));
+
   // add the tokens not present in the static coin map
   for (const tokenConfigs of Object.values(tokenConfigMap)) {
     if (!tokenConfigs.length) continue;
@@ -476,8 +482,16 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
     if (!isCoinPresentInCoinMap({ ...tokenConfig }) && !nftAndOtherTokens.has(tokenConfig.name)) {
       try {
         const token = createToken(tokenConfig);
-        if (token) {
+        // A token whose name is absent from the accumulated map can still reuse a contract address
+        // (or NFT collection id) already claimed by a static or previously-accepted AMS token.
+        // Adding it would make the final CoinMap.fromCoins throw, so skip it instead.
+        if (token && !accumulatedMap.hasTokenAddressConflict(token)) {
           BaseCoins.set(token.name, token);
+          accumulatedMap.addCoin(token);
+        } else if (token) {
+          console.warn(
+            `Skipping token with conflicting contract address or NFT collection id: name="${tokenConfig.name}" id="${tokenConfig.id}"`
+          );
         }
       } catch (e) {
         console.warn(

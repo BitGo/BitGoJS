@@ -33,8 +33,6 @@ export async function signTransaction(
     txInfo: { unspents?: Unspent<bigint | number>[] } | undefined;
     isLastSignature: boolean;
     signingStep: 'signerNonce' | 'cosignerNonce' | 'signerSignature' | undefined;
-    /** deprecated */
-    allowNonSegwitSigningWithoutPrevTx: boolean;
     pubs: string[] | undefined;
     cosignerPub: string | undefined;
     /** When true (default), extract finalized PSBT to legacy transaction format. When false, return finalized PSBT. */

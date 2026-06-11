@@ -34,6 +34,12 @@ export interface StarknetTransactionData {
   nonceDataAvailabilityMode?: number;
   feeDataAvailabilityMode?: number;
   compiledCalldata?: string[];
+  /** DEPLOY_ACCOUNT: OZ EthAccount class hash. */
+  classHash?: string;
+  /** DEPLOY_ACCOUNT: constructor calldata (pubkey limbs). */
+  constructorCalldata?: string[];
+  /** DEPLOY_ACCOUNT: address salt derived from pubkey. */
+  contractAddressSalt?: string;
 }
 
 export interface InvokeTransactionHashParams {
@@ -48,6 +54,20 @@ export interface InvokeTransactionHashParams {
   paymasterData?: string[];
   accountDeploymentData?: string[];
   proofFacts?: string[];
+}
+
+export interface DeployAccountTransactionHashParams {
+  contractAddress: string;
+  classHash: string;
+  constructorCalldata: string[];
+  contractAddressSalt: string;
+  chainId: string;
+  nonce: string;
+  resourceBounds: StarknetResourceBounds;
+  tip?: string;
+  nonceDataAvailabilityMode?: number;
+  feeDataAvailabilityMode?: number;
+  paymasterData?: string[];
 }
 
 export interface ParsedTransferData {

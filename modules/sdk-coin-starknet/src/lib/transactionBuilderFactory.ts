@@ -1,8 +1,9 @@
-import { BaseTransactionBuilderFactory, InvalidTransactionError, MethodNotImplementedError } from '@bitgo/sdk-core';
+import { BaseTransactionBuilderFactory, InvalidTransactionError } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
+import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { StarknetTransactionType } from './iface';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
@@ -18,6 +19,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       switch (transaction.starknetTransactionData.transactionType) {
         case StarknetTransactionType.INVOKE:
           return this.getTransferBuilder(transaction);
+        case StarknetTransactionType.DEPLOY_ACCOUNT:
+          return this.getWalletInitializationBuilder(transaction);
         default:
           throw new InvalidTransactionError('Invalid transaction type');
       }
@@ -39,7 +42,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  getWalletInitializationBuilder(): void {
-    throw new MethodNotImplementedError();
+  getWalletInitializationBuilder(tx?: Transaction): WalletInitializationBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new WalletInitializationBuilder(this._coinConfig));
   }
 }

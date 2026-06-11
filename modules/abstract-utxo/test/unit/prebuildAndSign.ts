@@ -12,6 +12,7 @@ import {
   defaultBitGo,
   getDefaultWalletKeys,
   getMinUtxoCoins,
+  getNetworkForCoinName,
   getUtxoWallet,
   keychainsBase58,
   getScriptTypes,
@@ -62,7 +63,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[]): void {
     const psbt = utxolib.testutil.constructPsbt(
       inputs as utxolib.testutil.Input[],
       outputs,
-      coin.network,
+      getNetworkForCoinName(coin.name),
       rootWalletKeys,
       'unsigned',
       {
@@ -178,7 +179,12 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[]): void {
       const outputAmount = BigInt(inputScripts.length) * BigInt(1e8) - fee;
       const outputScriptType: utxolib.bitgo.outputScripts.ScriptType = 'p2sh';
       const outputChain = utxolib.bitgo.getExternalChainCode(outputScriptType);
-      const outputAddress = utxolib.bitgo.getWalletAddress(rootWalletKeys, outputChain, 0, coin.network);
+      const outputAddress = utxolib.bitgo.getWalletAddress(
+        rootWalletKeys,
+        outputChain,
+        0,
+        getNetworkForCoinName(coin.name)
+      );
 
       recipient = {
         address: outputAddress,
@@ -222,7 +228,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[]): void {
 
       nocks.forEach((nock) => assert.ok(nock.isDone()));
 
-      assertSignable(res.txHex, inputScripts, coin.network);
+      assertSignable(res.txHex, inputScripts, getNetworkForCoinName(coin.name));
     });
 
     [true, false].forEach((selfSend) => {
@@ -254,7 +260,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[]): void {
 
         nocks.forEach((nock) => assert.ok(nock.isDone()));
 
-        assertSignable(res.txHex, inputScripts, coin.network);
+        assertSignable(res.txHex, inputScripts, getNetworkForCoinName(coin.name));
       });
     });
   });

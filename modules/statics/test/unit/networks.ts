@@ -70,6 +70,17 @@ Object.entries(Networks).forEach(([category, networks]) => {
         Networks.test.near.accountExplorerUrl.should.equal('https://testnet.nearblocks.io/address/');
       });
     });
+
+    describe('FlareP Network', function () {
+      it('should have correct explorer URLs', function () {
+        Networks.main.flrP.explorerUrl.should.equal('https://flarescan.com/blockchain/pvm/tx/');
+        Networks.main.flrP.accountExplorerUrl.should.equal('https://flarescan.com/blockchain/pvm/address/');
+        Networks.test.flrP.explorerUrl.should.equal('https://coston2.testnet.flarescan.com/blockchain/pvm/tx/');
+        Networks.test.flrP.accountExplorerUrl.should.equal(
+          'https://coston2.testnet.flarescan.com/blockchain/pvm/address/'
+        );
+      });
+    });
   });
 });
 

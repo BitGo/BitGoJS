@@ -31,6 +31,7 @@ import {
   getWalletKeys,
   defaultBitGo,
   getMinUtxoCoins,
+  getNetworkForCoinName,
   getScriptTypes,
 } from './util';
 
@@ -60,7 +61,7 @@ function run<TNumber extends number | bigint = number>(
         return testutil.toUnspent(
           { scriptType: t, value: t === 'p2shP2pk' ? BigInt(1000) : BigInt(value) },
           index,
-          coin.network,
+          getNetworkForCoinName(coin.name),
           walletKeys
         );
       });
@@ -72,7 +73,7 @@ function run<TNumber extends number | bigint = number>(
 
     function getUnspents(): Unspent<TNumber>[] {
       return inputScripts.map((type, i) =>
-        mockUnspent<TNumber>(coin.network, walletKeys, toTxnInputScriptType(type), i, value)
+        mockUnspent<TNumber>(getNetworkForCoinName(coin.name), walletKeys, toTxnInputScriptType(type), i, value)
       );
     }
 
@@ -113,7 +114,9 @@ function run<TNumber extends number | bigint = number>(
         scope = nock(bgUrl)
           .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/signpsbt`, (body) => body.psbt)
           .reply(200, (_uri: string, requestBody: unknown) => {
-            const networkName = utxolib.getNetworkName(coin.network) as fixedScriptWallet.NetworkName;
+            const networkName = utxolib.getNetworkName(
+              getNetworkForCoinName(coin.name)
+            ) as fixedScriptWallet.NetworkName;
             const reqBytes = Buffer.from((requestBody as { psbt: string }).psbt, 'hex');
             const reqPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(reqBytes, networkName);
             const cosignerWasm = BIP32.fromBase58(cosigner.toBase58());
@@ -166,7 +169,7 @@ function run<TNumber extends number | bigint = number>(
       const outputs: testutil.Output[] = [
         { address: getOutputAddress(getWalletKeys('test')), value: unspentSum - BigInt(1000) },
       ];
-      const psbt = testutil.constructPsbt(inputs, outputs, coin.network, walletKeys, 'unsigned', {
+      const psbt = testutil.constructPsbt(inputs, outputs, getNetworkForCoinName(coin.name), walletKeys, 'unsigned', {
         p2shP2pkKey: getReplayProtectionPubkeys(coin.name)[0],
       });
       utxolib.bitgo.addXpubsToPsbt(psbt, walletKeys);
@@ -177,7 +180,11 @@ function run<TNumber extends number | bigint = number>(
       const prebuild =
         txFormat === 'psbt'
           ? createPrebuildPsbt()
-          : createPrebuildTransaction<TNumber>(coin.network, getUnspents(), getOutputAddress(walletKeys));
+          : createPrebuildTransaction<TNumber>(
+              getNetworkForCoinName(coin.name),
+              getUnspents(),
+              getOutputAddress(walletKeys)
+            );
 
       const halfSignedUserBitGo = await createHalfSignedTransaction(prebuild, walletKeys.user, walletKeys.bitgo);
       const fullSignedUserBitGo =
@@ -225,7 +232,7 @@ function run<TNumber extends number | bigint = number>(
             ? undefined
             : v instanceof utxolib.bitgo.UtxoTransaction
             ? transactionToObj<TNumber>(v)
-            : transactionHexToObj(v.txHex, coin.network, amountType)
+            : transactionHexToObj(v.txHex, getNetworkForCoinName(coin.name), amountType)
         ) as TransactionObjStages;
       }
 
@@ -240,7 +247,7 @@ function run<TNumber extends number | bigint = number>(
     });
 
     function testPsbtValidSignatures(tx: HalfSignedUtxoTransaction, signedBy: BIP32Interface[]) {
-      const psbt = utxolib.bitgo.createPsbtFromHex(tx.txHex, coin.network);
+      const psbt = utxolib.bitgo.createPsbtFromHex(tx.txHex, getNetworkForCoinName(coin.name));
       const unspents = getUnspentsForPsbt();
       psbt.data.inputs.forEach((input, index) => {
         const unspent = unspents[index];
@@ -278,7 +285,7 @@ function run<TNumber extends number | bigint = number>(
 
       const transaction = utxolib.bitgo.createTransactionFromBuffer<TNumber>(
         Buffer.from(tx.txHex, 'hex'),
-        coin.network,
+        getNetworkForCoinName(coin.name),
         { amountType }
       );
       transaction.ins.forEach((input, index) => {
