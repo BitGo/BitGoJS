@@ -64,6 +64,15 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   // with intentType 'import' (P-chain) or 'importtoc' (C-chain).
   'import',
   'importtoc',
+
+  // SOL token account management
+  'closeAssociatedTokenAccount',
+
+  // ADA governance
+  'voteDelegation',
+
+  // CANTON multi-step transfer lifecycle
+  'transferAcknowledge',
 ]);
 
 /**

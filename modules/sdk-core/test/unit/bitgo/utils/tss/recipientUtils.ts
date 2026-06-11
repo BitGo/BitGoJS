@@ -49,9 +49,11 @@ describe('recipientUtils', function () {
         'transferOfferWithdrawn',
         'cantonCommand',
         'pledge',
-        // Avalanche / Flare cross-chain atomic imports
         'import',
         'importtoc',
+        'closeAssociatedTokenAccount',
+        'voteDelegation',
+        'transferAcknowledge',
       ];
       expected.forEach((t) => assert.ok(NO_RECIPIENT_TX_TYPES.has(t), `${t} should be in NO_RECIPIENT_TX_TYPES`));
       assert.strictEqual(NO_RECIPIENT_TX_TYPES.size, expected.length);
