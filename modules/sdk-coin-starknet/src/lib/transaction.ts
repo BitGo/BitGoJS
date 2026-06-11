@@ -80,6 +80,9 @@ export class Transaction extends BaseTransaction {
         compiledCalldata: parsed.compiledCalldata,
         nonceDataAvailabilityMode: parsed.nonceDataAvailabilityMode,
         feeDataAvailabilityMode: parsed.feeDataAvailabilityMode,
+        classHash: parsed.classHash,
+        constructorCalldata: parsed.constructorCalldata,
+        contractAddressSalt: parsed.contractAddressSalt,
       };
 
       if (parsed.signature && parsed.signature.length > 0) {
@@ -146,13 +149,44 @@ export class Transaction extends BaseTransaction {
     return Buffer.from(JSON.stringify(data), 'utf-8').toString('hex');
   }
 
-  /** @inheritdoc — returns Starknet RPC-ready JSON string for starknet_addInvokeTransaction. */
+  /** @inheritdoc — returns Starknet RPC-ready JSON for addInvoke or addDeployAccount. */
   toBroadcastFormat(): string {
     const data = this._starknetTransactionData;
     if (!data) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    return JSON.stringify({
+
+    const payload =
+      data.transactionType === StarknetTransactionType.DEPLOY_ACCOUNT
+        ? this.buildDeployAccountPayload(data)
+        : this.buildInvokePayload(data);
+
+    return JSON.stringify(payload);
+  }
+  private buildDeployAccountPayload(data: StarknetTransactionData) {
+    if (!data.classHash || !data.constructorCalldata || !data.contractAddressSalt) {
+      throw new InvalidTransactionError('Incomplete deploy account transaction');
+    }
+
+    return {
+      type: 'DEPLOY_ACCOUNT',
+      version: '0x3',
+      signature: data.signature || [],
+      nonce: data.nonce,
+      contract_address_salt: data.contractAddressSalt,
+      constructor_calldata: data.constructorCalldata,
+      class_hash: data.classHash,
+      sender_address: data.senderAddress,
+      resource_bounds: resolveResourceBounds(data),
+      tip: data.tip || '0x0',
+      paymaster_data: [],
+      nonce_data_availability_mode: 'L1',
+      fee_data_availability_mode: 'L1',
+    };
+  }
+
+  private buildInvokePayload(data: StarknetTransactionData) {
+    return {
       type: 'INVOKE',
       version: '0x3',
       sender_address: data.senderAddress,
@@ -165,7 +199,7 @@ export class Transaction extends BaseTransaction {
       account_deployment_data: [],
       nonce_data_availability_mode: 'L1',
       fee_data_availability_mode: 'L1',
-    });
+    };
   }
 
   /** @inheritdoc */

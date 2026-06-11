@@ -11,6 +11,7 @@ import {
   encryptKeychain,
   getDefaultWalletKeys,
   getMinUtxoCoins,
+  getNetworkForCoinName,
   getUtxoWallet,
   keychainsBase58,
   getScriptTypes,
@@ -46,12 +47,17 @@ describe('prebuildAndSign-returnLegacyFormat', function () {
     const outputAmount = BigInt(inputScripts.length) * BigInt(1e8) - fee;
     const outputScriptType: utxolib.bitgo.outputScripts.ScriptType = 'p2sh';
     const outputChain = utxolib.bitgo.getExternalChainCode(outputScriptType);
-    const outputAddress = utxolib.bitgo.getWalletAddress(rootWalletKeys, outputChain, 0, coin.network);
+    const outputAddress = utxolib.bitgo.getWalletAddress(
+      rootWalletKeys,
+      outputChain,
+      0,
+      getNetworkForCoinName(coin.name)
+    );
     recipient = { address: outputAddress, amount: outputAmount.toString() };
     prebuild = utxolib.testutil.constructPsbt(
       inputScripts.map((s) => ({ scriptType: s, value: BigInt(1e8) })),
       [{ scriptType: outputScriptType, value: outputAmount }],
-      coin.network,
+      getNetworkForCoinName(coin.name),
       rootWalletKeys,
       'unsigned'
     );

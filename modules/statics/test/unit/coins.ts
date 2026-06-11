@@ -41,7 +41,7 @@ import {
   trimmedDynamicBaseChainConfig,
 } from './resources/amsTokenConfig';
 import { EthLikeErc20Token } from '../../../sdk-coin-evm/src';
-import { ProgramID } from '../../src/account';
+import { ProgramID, taptNFTCollection, terc20 } from '../../src/account';
 import { allCoinsAndTokens } from '../../src/allCoinsAndTokens';
 
 interface DuplicateCoinObject {
@@ -753,6 +753,70 @@ describe('CoinMap', function () {
     (() => CoinMap.fromCoins([btc, btc2])).should.throw(`coin with id '${btc.id}' is already defined`);
   });
 
+  it('should fail to map tokens with duplicated contract address for the same family', () => {
+    const template = coins.get('tusdc') as Erc20Coin;
+    const contractAddress = template.contractAddress.toString();
+    const tokenA = terc20(
+      '11111111-1111-4111-8111-111111111111',
+      'token-a',
+      'Token A',
+      6,
+      contractAddress,
+      template.asset,
+      template.features,
+      template.prefix,
+      template.suffix,
+      template.network as EthereumNetwork
+    );
+    const tokenB = terc20(
+      '22222222-2222-4222-8222-222222222222',
+      'token-b',
+      'Token B',
+      18,
+      contractAddress,
+      template.asset,
+      template.features,
+      template.prefix,
+      template.suffix,
+      template.network as EthereumNetwork
+    );
+    const contractAddressKey = `${tokenA.family}:${contractAddress}`;
+    (() => CoinMap.fromCoins([tokenA, tokenB])).should.throw(
+      `token with contract address '${contractAddressKey}' is already defined as 'token-a'`
+    );
+  });
+
+  it('should fail to map tokens with duplicated NFT collection id for the same family', () => {
+    const template = coins.get('tapt:nftcollection1');
+    const nftCollectionId = '0xbbc561fbfa5d105efd8dfb06ae3e7e5be46331165b99d518f094c701e40603b5';
+    const tokenA = taptNFTCollection(
+      '11111111-1111-4111-8111-111111111111',
+      'tapt:nftcollection-a',
+      'NFT Collection A',
+      nftCollectionId,
+      template.asset,
+      template.features,
+      template.prefix,
+      template.suffix,
+      template.network
+    );
+    const tokenB = taptNFTCollection(
+      '22222222-2222-4222-8222-222222222222',
+      'tapt:nftcollection-b',
+      'NFT Collection B',
+      nftCollectionId,
+      template.asset,
+      template.features,
+      template.prefix,
+      template.suffix,
+      template.network
+    );
+    const nftCollectionKey = `${tokenA.prefix}${tokenA.family}:${nftCollectionId}`;
+    (() => CoinMap.fromCoins([tokenA, tokenB])).should.throw(
+      `token with NFT collection id '${nftCollectionKey}' is already defined as 'tapt:nftcollection-a'`
+    );
+  });
+
   it('should have iterator', function () {
     [...coins].length.should.be.greaterThan(100);
   });
@@ -1444,6 +1508,112 @@ describe('create token map using config details', () => {
       should(coinName).not.be.undefined();
       // Note: This may return 'tzketh' due to legacy mapping - verify expected behavior
     });
+  });
+});
+
+describe('create token map contract address de-duplication', () => {
+  function firstStaticErc20(): Readonly<Erc20Coin> {
+    for (const [, coin] of coins) {
+      if (coin instanceof Erc20Coin) {
+        return coin as Readonly<Erc20Coin>;
+      }
+    }
+    throw new Error('expected at least one static ERC20 token in the coin map');
+  }
+
+  function collidingAmsConfig(
+    staticToken: Readonly<Erc20Coin>,
+    name: string,
+    id: string
+  ): Parameters<typeof createTokenMapUsingConfigDetails>[0] {
+    return {
+      [name]: [
+        {
+          id,
+          fullName: 'Colliding AMS Token',
+          name,
+          prefix: '',
+          suffix: name.toUpperCase(),
+          baseUnit: 'wei',
+          kind: 'crypto',
+          family: staticToken.family,
+          isToken: true,
+          features: [...staticToken.features],
+          decimalPlaces: staticToken.decimalPlaces,
+          asset: name,
+          network: staticToken.network,
+          primaryKeyCurve: 'secp256k1',
+          contractAddress: staticToken.contractAddress,
+        },
+      ],
+    } as unknown as Parameters<typeof createTokenMapUsingConfigDetails>[0];
+  }
+
+  const collidingName = 'eth:cshld976colliding';
+  const collidingId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+
+  it('uses a name and id not already in the static coin map', () => {
+    coins.has(collidingName).should.eql(false);
+    coins.has(collidingId).should.eql(false);
+  });
+
+  it('skips an AMS token that reuses an existing static contract address under a different name', () => {
+    const staticToken = firstStaticErc20();
+    const config = collidingAmsConfig(staticToken, collidingName, collidingId);
+
+    let tokenMap: CoinMap | undefined;
+    (() => {
+      tokenMap = createTokenMapUsingConfigDetails(config);
+    }).should.not.throw();
+
+    (tokenMap as CoinMap).has(collidingName).should.eql(false);
+    (tokenMap as CoinMap).has(staticToken.name).should.eql(true);
+  });
+
+  it('skips second AMS token that reuses a contract address already claimed by a first AMS token', () => {
+    const staticToken = firstStaticErc20();
+    const sharedContractAddress = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
+    const amsNameA = 'eth:ams-only-a-976';
+    const amsIdA = 'cccccccc-dddd-4eee-8fff-000000000001';
+    const amsNameB = 'eth:ams-only-b-976';
+    const amsIdB = 'cccccccc-dddd-4eee-8fff-000000000002';
+
+    const makeConfig = (name: string, id: string): Parameters<typeof createTokenMapUsingConfigDetails>[0] =>
+      ({
+        [name]: [
+          {
+            id,
+            fullName: 'AMS-only Token',
+            name,
+            prefix: '',
+            suffix: name.toUpperCase(),
+            baseUnit: 'wei',
+            kind: 'crypto',
+            family: staticToken.family,
+            isToken: true,
+            features: [...staticToken.features],
+            decimalPlaces: staticToken.decimalPlaces,
+            asset: name,
+            network: staticToken.network,
+            primaryKeyCurve: 'secp256k1',
+            contractAddress: sharedContractAddress,
+          },
+        ],
+      } as unknown as Parameters<typeof createTokenMapUsingConfigDetails>[0]);
+
+    const config = { ...makeConfig(amsNameA, amsIdA), ...makeConfig(amsNameB, amsIdB) };
+
+    let tokenMap: CoinMap | undefined;
+    (() => {
+      tokenMap = createTokenMapUsingConfigDetails(config);
+    }).should.not.throw();
+
+    const map = tokenMap as CoinMap;
+    const hasA = map.has(amsNameA);
+    const hasB = map.has(amsNameB);
+    // Exactly one of the two AMS tokens wins; the second with the same address is skipped.
+    (hasA || hasB).should.eql(true, 'first AMS token should be accepted');
+    (hasA && hasB).should.eql(false, 'second AMS token with duplicate address should be skipped');
   });
 });
 

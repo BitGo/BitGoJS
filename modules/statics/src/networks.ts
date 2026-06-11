@@ -1137,13 +1137,13 @@ class DydxTestnet extends Testnet implements CosmosNetwork {
 }
 
 class Ton extends Mainnet implements AccountNetwork {
-  name = 'Ton';
+  name = 'Gram';
   family = CoinFamily.TON;
   explorerUrl = 'https://tonscan.org/tx/';
 }
 
 class TonTestnet extends Testnet implements AccountNetwork {
-  name = 'Testnet Ton';
+  name = 'Testnet Gram';
   family = CoinFamily.TON;
   explorerUrl = 'https://testnet.tonscan.org/tx/';
 }
@@ -2297,7 +2297,7 @@ export class FlareP extends Mainnet implements FlareNetwork {
   assetId = 'Flare';
   name = 'FlareP';
   family = CoinFamily.FLRP;
-  explorerUrl = 'https://flarescan.com/blockchain/pvm/transactions/';
+  explorerUrl = 'https://flarescan.com/blockchain/pvm/tx/';
   accountExplorerUrl = 'https://flarescan.com/blockchain/pvm/address/';
   blockchainID = '11111111111111111111111111111111LpoYY';
   cChainBlockchainID = '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5';
@@ -2331,7 +2331,7 @@ export class FlareP extends Mainnet implements FlareNetwork {
 export class FlarePTestnet extends Testnet implements FlareNetwork {
   name = 'FlarePTestnet';
   family = CoinFamily.FLRP;
-  explorerUrl = 'https://coston2.testnet.flarescan.com/blockchain/pvm/transactions';
+  explorerUrl = 'https://coston2.testnet.flarescan.com/blockchain/pvm/tx/';
   accountExplorerUrl = 'https://coston2.testnet.flarescan.com/blockchain/pvm/address/';
   flarePublicUrl = 'https://coston2.testnet.flare.network';
   blockchainID = '11111111111111111111111111111111LpoYY';

@@ -1,5 +1,11 @@
 import { BaseCoin } from './base';
-import { DuplicateCoinDefinitionError, CoinNotDefinedError, DuplicateCoinIdDefinitionError } from './errors';
+import {
+  DuplicateCoinDefinitionError,
+  CoinNotDefinedError,
+  DuplicateCoinIdDefinitionError,
+  DuplicateContractAddressDefinitionError,
+  DuplicateNftCollectionIdDefinitionError,
+} from './errors';
 import { ContractAddressDefinedToken, NFTCollectionIdDefinedToken } from './account';
 import { EthereumNetwork } from './networks';
 
@@ -18,6 +24,35 @@ export class CoinMap {
 
   private constructor() {
     // Do not instantiate
+  }
+
+  private static contractAddressKey(coin: ContractAddressDefinedToken): string {
+    return `${coin.family}:${coin.contractAddress}`;
+  }
+
+  private static nftCollectionIdKey(coin: NFTCollectionIdDefinedToken): string {
+    return `${coin.prefix}${coin.family}:${coin.nftCollectionId}`;
+  }
+
+  /**
+   * Whether a different token with the same contract address (or NFT collection id) is already
+   * registered. Token identity in the map is keyed by name/id/alias, but a token also claims a
+   * contract-address key (`family:contractAddress`) and, for NFTs, a collection-id key. Two tokens
+   * that share such a key but differ in name cannot coexist — `addCoin` throws on the second.
+   * Callers merging externally-sourced tokens use this to skip a colliding token rather than crash.
+   */
+  public hasTokenAddressConflict(coin: Readonly<BaseCoin>): boolean {
+    if (coin instanceof ContractAddressDefinedToken) {
+      const key = CoinMap.contractAddressKey(coin);
+      const existing = this._coinByContractAddress.get(key);
+      return existing !== undefined && existing.network.type === coin.network.type;
+    }
+    if (coin instanceof NFTCollectionIdDefinedToken) {
+      const key = CoinMap.nftCollectionIdKey(coin);
+      const existing = this._coinByNftCollectionID.get(key);
+      return existing !== undefined && existing.network.type === coin.network.type;
+    }
+    return false;
   }
 
   static fromCoins(coins: Readonly<BaseCoin>[]): CoinMap {
@@ -47,9 +82,25 @@ export class CoinMap {
 
     if (coin.isToken) {
       if (coin instanceof ContractAddressDefinedToken) {
-        this._coinByContractAddress.set(`${coin.family}:${coin.contractAddress}`, coin);
+        const contractAddressKey = CoinMap.contractAddressKey(coin);
+        const existingByContractAddress = this._coinByContractAddress.get(contractAddressKey);
+        if (existingByContractAddress) {
+          if (existingByContractAddress.network.type === coin.network.type) {
+            throw new DuplicateContractAddressDefinitionError(contractAddressKey, existingByContractAddress.name);
+          }
+        } else {
+          this._coinByContractAddress.set(contractAddressKey, coin);
+        }
       } else if (coin instanceof NFTCollectionIdDefinedToken) {
-        this._coinByNftCollectionID.set(`${coin.prefix}${coin.family}:${coin.nftCollectionId}`, coin);
+        const nftCollectionKey = CoinMap.nftCollectionIdKey(coin);
+        const existingByNftCollectionId = this._coinByNftCollectionID.get(nftCollectionKey);
+        if (existingByNftCollectionId) {
+          if (existingByNftCollectionId.network.type === coin.network.type) {
+            throw new DuplicateNftCollectionIdDefinitionError(nftCollectionKey, existingByNftCollectionId.name);
+          }
+        } else {
+          this._coinByNftCollectionID.set(nftCollectionKey, coin);
+        }
       }
     }
   }
@@ -69,9 +120,9 @@ export class CoinMap {
       }
       if (oldCoin.isToken) {
         if (oldCoin instanceof ContractAddressDefinedToken) {
-          this._coinByContractAddress.delete(`${oldCoin.family}:${oldCoin.contractAddress}`);
+          this._coinByContractAddress.delete(CoinMap.contractAddressKey(oldCoin));
         } else if (oldCoin instanceof NFTCollectionIdDefinedToken) {
-          this._coinByNftCollectionID.delete(`${oldCoin.prefix}${oldCoin.family}:${oldCoin.nftCollectionId}`);
+          this._coinByNftCollectionID.delete(CoinMap.nftCollectionIdKey(oldCoin));
         }
       }
     }

@@ -94,6 +94,33 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
 
 describe('explainPsbt(Wasm)', function () {
   testutil.AcidTest.suite().forEach((test) => describeTransactionWith(test));
+
+  it('explainPsbtWasmBigInt throws when total output value exceeds total input value', function () {
+    const network = utxolib.networks.bitcoin;
+    const rootWalletKeys = testutil.getDefaultWalletKeys();
+    // Valid PSBT: one p2wsh input (5000 sat), one internal p2wsh output (3000 sat), fee = 2000
+    const psbt = testutil.constructPsbt(
+      [{ scriptType: 'p2wsh', value: 5000n }],
+      [{ scriptType: 'p2wsh', value: 3000n, isInternalAddress: true }],
+      network,
+      rootWalletKeys,
+      'unsigned'
+    );
+    // Tamper: reduce the witnessUtxo.value so that inputs (1000) < outputs (3000).
+    // Direct mutation avoids bip174's "duplicate data" guard on updateInput.
+    psbt.data.inputs[0].witnessUtxo!.value = 1000n;
+
+    const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(psbt.toBuffer(), 'bitcoin');
+    const walletXpubs = fixedScriptWallet.RootWalletKeys.from(rootWalletKeys);
+
+    assert.throws(
+      () =>
+        explainPsbtWasmBigInt(wasmPsbt, walletXpubs, {
+          replayProtection: { publicKeys: [] },
+        }),
+      /Fee calculation error: outputs exceed inputs/
+    );
+  });
 });
 
 describe('aggregateTransactionExplanations', function () {

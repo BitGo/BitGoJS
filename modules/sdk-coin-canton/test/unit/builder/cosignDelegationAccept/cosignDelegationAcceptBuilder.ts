@@ -3,8 +3,9 @@ import should from 'should';
 
 import { coins } from '@bitgo/statics';
 
-import { CosignDelegationAcceptBuilder, Transaction } from '../../../../src';
-import { CantonTransferAcceptRejectRequest } from '../../../../src/lib/iface';
+import { CosignDelegationAcceptBuilder, Transaction, TransactionBuilderFactory } from '../../../../src';
+import { CantonTransferAcceptRejectRequest, TxData } from '../../../../src/lib/iface';
+import { CosignDelegationAcceptPrepareResponse, CosignDelegationAcceptRawTransaction } from '../../../resources';
 
 const commandId = '3935a06d-3b03-41be-99a5-95b2ecaabf7d';
 const contractId =
@@ -78,5 +79,42 @@ describe('CosignDelegationAccept Builder', () => {
     const tx = new Transaction(coins.get('tcanton'));
     txBuilder.initBuilder(tx);
     assert.throws(() => txBuilder.actAs(''), /actAsPartyId must be a non-empty string/);
+  });
+
+  it('should parse preparedTransaction and extract sender, receiver, and amount via setTransaction + toJson', function () {
+    const txBuilder = new CosignDelegationAcceptBuilder(coins.get('tcanton'));
+    const tx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(tx);
+    txBuilder.setTransaction(CosignDelegationAcceptPrepareResponse);
+    txBuilder.commandId(commandId).contractId(contractId).actAs(actAsPartyId);
+    const txData = txBuilder.transaction.toJson() as TxData;
+    should.exist(txData);
+    assert.equal(txData.sender, '12208::122083082e9af156feaeb7afd363a0ee5ffa1fd160947b647a139a7e0c2ed78f5dc7');
+    assert.equal(
+      txData.receiver,
+      'ravi-new-party::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2'
+    );
+    assert.equal(txData.amount, '0');
+  });
+
+  it('should parse round-trip from raw transaction via TransactionBuilderFactory.from', function () {
+    const factory = new TransactionBuilderFactory(coins.get('tcanton'));
+    const txBuilder = factory.from(CosignDelegationAcceptRawTransaction);
+    const txData = txBuilder.transaction.toJson() as TxData;
+    should.exist(txData);
+    assert.equal(txData.sender, '12208::122083082e9af156feaeb7afd363a0ee5ffa1fd160947b647a139a7e0c2ed78f5dc7');
+    assert.equal(
+      txData.receiver,
+      'ravi-new-party::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2'
+    );
+    assert.equal(txData.amount, '0');
+  });
+
+  it('should validate raw transaction hash', function () {
+    const txBuilder = new CosignDelegationAcceptBuilder(coins.get('tcanton'));
+    const tx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(tx);
+    txBuilder.setTransaction(CosignDelegationAcceptPrepareResponse);
+    txBuilder.validateRawTransaction(CosignDelegationAcceptPrepareResponse.preparedTransaction);
   });
 });

@@ -3650,23 +3650,34 @@ export const solTokens = [
   ),
   tsolToken(
     '70f8706b-d4c8-49ac-a8ae-ea1c3c60249e',
-    'tsol:stgspcx',
-    'Test SpaceX',
+    'tsol:stggospcx',
+    'Test SPCX goStock',
     6,
     '98iaHRfvCnaihEHcLK5EpwLq3w5yHiKKfSgpYLcxEScB',
     '98iaHRfvCnaihEHcLK5EpwLq3w5yHiKKfSgpYLcxEScB',
-    UnderlyingAsset['tsol:stgspcx'],
+    UnderlyingAsset['tsol:stggospcx'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
     ProgramID.Token2022ProgramId
   ),
   tsolToken(
     '44e9960a-e7ed-4ae5-8cc9-f16de5744866',
-    'tsol:spcx',
-    'Test SpaceX',
+    'tsol:gospcx',
+    'Test SPCX goStock',
     6,
     '4gvEw3Lx2gkAByv4X8hLnHujneN5bwtMGSu2ZDoip4vj',
     '4gvEw3Lx2gkAByv4X8hLnHujneN5bwtMGSu2ZDoip4vj',
-    UnderlyingAsset['tsol:spcx'],
+    UnderlyingAsset['tsol:gospcx'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    ProgramID.Token2022ProgramId
+  ),
+  solToken(
+    '83ec93bc-e142-4c32-874a-65f5b8974548',
+    'sol:gospcx',
+    'SPCX goStock',
+    6,
+    'AAVvaNDwkGfxGNaf1HJ5JzfwDb1PYmAgXSixRsczyrk4',
+    'AAVvaNDwkGfxGNaf1HJ5JzfwDb1PYmAgXSixRsczyrk4',
+    UnderlyingAsset['sol:gospcx'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
     ProgramID.Token2022ProgramId
   ),
@@ -4074,7 +4085,7 @@ export const solTokens = [
     '13UnWveBycSEeYJFgvsmE2qHXP5ERienrhGZ5wUjWM8L',
     '13UnWveBycSEeYJFgvsmE2qHXP5ERienrhGZ5wUjWM8L',
     UnderlyingAsset['sol:ab1'],
-    SOL_TOKEN_FEATURES,
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE,
     ProgramID.Token2022ProgramId
   ),
   solToken(

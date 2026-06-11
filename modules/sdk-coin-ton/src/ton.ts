@@ -76,7 +76,7 @@ export class Ton extends BaseCoin {
   }
 
   public getFullName(): string {
-    return 'Ton';
+    return 'Gram';
   }
 
   /** @inheritDoc */

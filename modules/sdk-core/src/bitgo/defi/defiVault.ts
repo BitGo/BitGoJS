@@ -52,7 +52,8 @@ export class DefiVault implements IDefiVault {
    *
    * Internally issues two sendMany calls (approve + deposit) and returns the
    * operationId that links them. If the deposit sendMany fails after
-   * the approve succeeds, the approve is auto-cancelled (fail-fast).
+   * the approve succeeds, the error propagates — the server-side reconciler
+   * handles orphaned approvals.
    *
    * @param params.vaultId - DeFi-service vault identifier
    * @param params.amount - amount in base units of the underlying asset
@@ -67,15 +68,16 @@ export class DefiVault implements IDefiVault {
       throw new Error('amount is required');
     }
 
-    // Layer-1 pre-flight: reject if an active deposit already exists for this (wallet, vault)
-    const activeOps: DefiOperationListResult = await this.bitgo
-      .get(this.bitgo.microservicesUrl(this.operationsUrl()))
-      .query({ vaultId: params.vaultId, state: 'active' })
-      .result();
-
-    if (activeOps.items && activeOps.items.length > 0) {
-      throw new ActiveOperationExistsError(activeOps.items[0].operationId);
-    }
+    // TODO(CGD-1709): Re-enable active operation pre-flight check once the
+    // defi-service operations endpoint is deployed and returning active state.
+    // const activeOps: DefiOperationListResult = await this.bitgo
+    //   .get(this.bitgo.microservicesUrl(this.operationsUrl()))
+    //   .query({ vaultId: params.vaultId, state: 'active' })
+    //   .result();
+    //
+    // if (activeOps.items && activeOps.items.length > 0) {
+    //   throw new ActiveOperationExistsError(activeOps.items[0].operationId);
+    // }
 
     // Step 1: Approve txRequest via sendMany
     const approveResult = await this.wallet.sendMany({

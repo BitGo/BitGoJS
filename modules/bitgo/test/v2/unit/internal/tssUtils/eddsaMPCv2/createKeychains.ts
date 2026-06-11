@@ -109,6 +109,52 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
       assert.equal(userKeychain.commonKeychain, bitgoKeychain.commonKeychain);
     });
 
+    it('should send webauthnInfo (with enterpriseId) on the user keychain when webauthnInfo is provided', async function () {
+      const commonKeychain = 'a'.repeat(64);
+      const capturedBodies: Record<string, AddKeychainOptions> = {};
+      const addKeyNock = nock('https://bitgo.fakeurl')
+        .post(`/api/v2/${coinName}/key`, (body) => body.keyType === 'tss' && body.isMPCv2)
+        .times(1)
+        .reply(200, async (uri, requestBody: AddKeychainOptions) => {
+          capturedBodies[requestBody.source as string] = requestBody;
+          return {
+            id: requestBody.source,
+            source: requestBody.source,
+            type: requestBody.keyType,
+            commonKeychain: requestBody.commonKeychain,
+            encryptedPrv: requestBody.encryptedPrv,
+          };
+        });
+
+      const webauthnInfo = { otpDeviceId: 'device-123', prfSalt: 'salt-abc', passphrase: 'prf-derived-passphrase' };
+      // Direct participant-keychain call avoids the EdDSA DKG ceremony while still exercising the
+      // user-keychain webauthn assembly that POSTs to /key.
+      await tssUtils.createParticipantKeychain(
+        MPCv2PartiesEnum.USER,
+        commonKeychain,
+        Buffer.from('userPrivate'),
+        Buffer.from('userReduced'),
+        'passphrase',
+        undefined,
+        webauthnInfo,
+        undefined,
+        enterpriseId
+      );
+      assert.ok(addKeyNock.isDone());
+
+      // User keychain must carry webauthnInfo (the field the backend POST /key consumes), including
+      // enterpriseId, and must NOT use the deprecated webauthnDevices array.
+      const userBody = capturedBodies['user'];
+      assert.ok(userBody, 'user keychain should have been created');
+      assert.ok(userBody.webauthnInfo, 'user keychain body should include webauthnInfo');
+      assert.equal(userBody.webauthnInfo.otpDeviceId, webauthnInfo.otpDeviceId);
+      assert.equal(userBody.webauthnInfo.prfSalt, webauthnInfo.prfSalt);
+      assert.equal(userBody.webauthnInfo.enterpriseId, enterpriseId);
+      assert.ok(userBody.webauthnInfo.encryptedPrv, 'encryptedPrv should be set');
+      assert.ok(bitgo.decrypt({ input: userBody.webauthnInfo.encryptedPrv, password: webauthnInfo.passphrase }));
+      assert.strictEqual(userBody.webauthnDevices, undefined, 'deprecated webauthnDevices should not be sent');
+    });
+
     it('should create TSS key chains', async function () {
       const fakeCommonKeychain = 'a'.repeat(64);
 
