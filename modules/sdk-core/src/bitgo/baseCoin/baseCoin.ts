@@ -47,6 +47,8 @@ import {
   AuditKeyParams,
   AuditDecryptedKeyParams,
   TssVerifyAddressOptions,
+  DeriveAddressOptions,
+  DeriveAddressResult,
 } from './iBaseCoin';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import {
@@ -351,6 +353,22 @@ export abstract class BaseCoin implements IBaseCoin {
    * @return true iff address is a wallet address. Must return false if address is outside wallet.
    */
   abstract isWalletAddress(params: VerifyAddressOptions | TssVerifyAddressOptions): Promise<boolean>;
+
+  /**
+   * Locally derive and return a wallet receive address for the given derivation path,
+   * using public key material only (no private keys, no network access).
+   *
+   * This is the inverse of {@link isWalletAddress}: rather than checking a candidate
+   * address, it *produces* the address from the wallet's keychains and a chain/index.
+   *
+   * Coins opt in by overriding this method; the default implementation throws.
+   *
+   * @param {DeriveAddressOptions} params - parameters for address derivation (keychains, chain, index, …)
+   * @returns {Promise<DeriveAddressResult>} the derived address plus the path and coin-specific data
+   */
+  deriveAddress(params: DeriveAddressOptions): Promise<DeriveAddressResult> {
+    throw new NotImplementedError('deriveAddress is not supported for this coin');
+  }
 
   /**
    * convert address into desired address format.
