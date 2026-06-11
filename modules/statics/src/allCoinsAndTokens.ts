@@ -3632,7 +3632,7 @@ export const allCoinsAndTokens = [
   canton(
     '07385320-5a4f-48e9-97a5-86d4be9f24b0',
     'canton',
-    'Canton Coin',
+    'Canton',
     Networks.main.canton,
     UnderlyingAsset.CANTON,
     [...CANTON_FEATURES, CoinFeature.UNSPENT_MODEL, CoinFeature.MERGE_UTXOS],
@@ -3641,7 +3641,7 @@ export const allCoinsAndTokens = [
   canton(
     'f5d7f76b-fc5a-4da8-b1d0-a86ad0fd269e',
     'tcanton',
-    'Testnet Canton Coin',
+    'Testnet Canton',
     Networks.test.canton,
     UnderlyingAsset.CANTON,
     [...CANTON_FEATURES, CoinFeature.UNSPENT_MODEL, CoinFeature.MERGE_UTXOS, CoinFeature.FANOUT_UTXOS],
