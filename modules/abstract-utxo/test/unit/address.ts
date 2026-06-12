@@ -5,7 +5,7 @@ import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { assertFixedScriptWalletAddress, generateAddress } from '../../src';
 
-import { keychainsBase58 } from './util';
+import { getUtxoCoin, keychainsBase58 } from './util';
 
 const keychains = keychainsBase58.map((k) => ({ pub: k.pub }));
 
@@ -200,5 +200,32 @@ describe('assertFixedScriptWalletAddress', function () {
         UnexpectedAddressError
       );
     });
+  });
+});
+
+describe('AbstractUtxoCoin.deriveAddress', function () {
+  const coin = getUtxoCoin('btc');
+
+  // Bullish scope: legacy P2SH (chain 0) + bech32 P2WSH (chain 20).
+  for (const { label, chain } of [
+    { label: 'legacy P2SH', chain: 0 },
+    { label: 'bech32 P2WSH', chain: 20 },
+  ]) {
+    it(`derives the ${label} address (chain ${chain}) matching generateAddress`, async function () {
+      const result = await coin.deriveAddress({ keychains, chain, index: 0 });
+      result.address.should.equal(generateAddress('btc', { keychains, chain, index: 0 }));
+      result.chain!.should.equal(chain);
+      result.index!.should.equal(0);
+    });
+
+    it(`round-trips with isWalletAddress for ${label} (chain ${chain})`, async function () {
+      const { address } = await coin.deriveAddress({ keychains, chain, index: 3 });
+      const verified = await coin.isWalletAddress({ address, keychains, chain, index: 3 });
+      verified.should.equal(true);
+    });
+  }
+
+  it('throws if keychains are missing', async function () {
+    await assert.rejects(async () => coin.deriveAddress({ chain: 0, index: 0 }), /keychains/);
   });
 });
