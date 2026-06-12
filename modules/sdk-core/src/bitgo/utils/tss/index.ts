@@ -15,3 +15,4 @@ export { ITssUtils, IEddsaUtils, TxRequest, EddsaUnsignedTransaction } from './e
 export * as BaseTssUtils from './baseTSSUtils';
 export * from './baseTypes';
 export * from './addressVerification';
+export * from './preHashedSignable';

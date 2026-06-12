@@ -49,7 +49,9 @@ import {
   TssTxRecipientSource,
   TxRequest,
   isV2Envelope,
+  SignableTransaction,
 } from '../baseTypes';
+import { shouldUsePreHashedSignable } from '../preHashedSignable';
 import { BaseEcdsaUtils } from './base';
 import { EcdsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './ecdsaMPCv2KeyGenSender';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
@@ -837,8 +839,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       //   serializedTxHex is the PVM/EVM atomic tx (codec prefix 0x0000).
       // For all other coins, signableHex IS the unsigned transaction (e.g. RLP bytes).
       const isIcp = this.baseCoin.getConfig().family === 'icp';
-      const isAvalancheAtomic = unsignedTx.serializedTxHex && unsignedTx.serializedTxHex.startsWith('0000');
-      if (isIcp || isAvalancheAtomic) {
+      const isPreHashed = shouldUsePreHashedSignable(this.baseCoin, unsignedTx);
+      if (isIcp || isPreHashed) {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
           txParams: params.txParams || { recipients: [] },
@@ -870,19 +872,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     // pre-hashed digest.  Use it directly as the DKLS message hash instead of
     // applying the coin's hash function (keccak256 for EVM coins).
     // Same logic as getHashStringAndDerivationPath (external signer path).
-    let hashBuffer: Buffer;
-    if (serializedTxHex && serializedTxHex.startsWith('0000')) {
-      hashBuffer = bufferContent;
-      assert(hashBuffer.length === 32, `Avalanche pre-hashed signableHex must be 32 bytes, got ${hashBuffer.length}`);
-    } else {
-      let hash: Hash;
-      try {
-        hash = this.baseCoin.getHashFunction();
-      } catch (err) {
-        hash = createKeccakHash('keccak256') as Hash;
-      }
-      hashBuffer = hash.update(bufferContent).digest();
-    }
+    const hashBuffer = this.getMpcv2HashBuffer(serializedTxHex, txOrMessageToSign, bufferContent);
     const otherSigner = new DklsDsg.Dsg(
       userKeyShare,
       params.mpcv2PartyId !== undefined ? params.mpcv2PartyId : 0,
@@ -1059,18 +1049,27 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       throw new Error('Invalid request type, got: ' + requestType);
     }
 
-    // For Avalanche atomic transactions (cross-chain export/import between
-    // C-chain and P-chain), signableHex is already SHA-256(txBody) — a 32-byte
-    // pre-hashed digest.  Use it directly as the DKLS message hash instead of
-    // applying the coin's hash function (keccak256 for EVM coins).
-    // This matches the WP/HSM BitGo-party behaviour (MPCv2Signer.isPreHashed)
-    // so both DKLS parties agree on the same message hash.
-    // Detection: Avalanche codec type ID prefix is 0x0000; standard EVM RLP
-    // starts with 0xf8xx, so there is no collision.
-    if (serializedTxHex && serializedTxHex.startsWith('0000')) {
-      const hashBuffer = Buffer.from(txToSign, 'hex');
-      assert(hashBuffer.length === 32, `Avalanche pre-hashed signableHex must be 32 bytes, got ${hashBuffer.length}`);
-      return { hashBuffer, derivationPath };
+    const hashBuffer = this.getMpcv2HashBuffer(serializedTxHex, txToSign, Buffer.from(txToSign, 'hex'));
+    return { hashBuffer, derivationPath };
+  }
+
+  /**
+   * Build the DKLS message hash for MPCv2 signing.
+   * For pre-hashed signable material (Avalanche atomic txs), signableHex is
+   * already SHA-256(txBody) and is used directly. Otherwise the coin hash
+   * function is applied (keccak256 for EVM coins by default).
+   */
+  private getMpcv2HashBuffer(serializedTxHex: string | undefined, signableHex: string, bufferContent: Buffer): Buffer {
+    const unsignedTx: SignableTransaction = {
+      serializedTxHex: serializedTxHex ?? '',
+      signableHex,
+    };
+    if (serializedTxHex && shouldUsePreHashedSignable(this.baseCoin, unsignedTx)) {
+      assert(
+        bufferContent.length === 32,
+        `Avalanche pre-hashed signableHex must be 32 bytes, got ${bufferContent.length}`
+      );
+      return bufferContent;
     }
 
     let hash: Hash;
@@ -1079,9 +1078,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     } catch (err) {
       hash = createKeccakHash('keccak256') as Hash;
     }
-    const hashBuffer = hash.update(Buffer.from(txToSign, 'hex')).digest();
-
-    return { hashBuffer, derivationPath };
+    return hash.update(bufferContent).digest();
   }
 
   // #endregion

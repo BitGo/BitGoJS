@@ -1,7 +1,7 @@
 import * as FlrpLib from '../../src/lib';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { Flrp, TflrP } from '../../src/';
-import { randomBytes } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
 import { SEED_ACCOUNT, ACCOUNT_1, ACCOUNT_2, ON_CHAIN_TEST_WALLET, CONTEXT } from '../resources/account';
@@ -1051,6 +1051,17 @@ describe('Flrp test cases', function () {
           walletType: 'tss',
         });
         isVerified.should.equal(true);
+      });
+
+      it('isSignablePreHashed should be true for Avalanche atomic txs', async () => {
+        const txHex = await buildUnsignedExportInP();
+        const rawHex = txHex.startsWith('0x') ? txHex.substring(2) : txHex;
+        const signableHex = createHash('sha256').update(Buffer.from(rawHex, 'hex')).digest('hex');
+
+        basecoin.isSignablePreHashed({ serializedTxHex: rawHex, signableHex }).should.equal(true);
+        basecoin
+          .isSignablePreHashed({ serializedTxHex: 'f86c808504a817c800825208', signableHex: 'f86c808504a817c800825208' })
+          .should.equal(false);
       });
 
       it('should verify signablePayload is SHA-256 of serialized tx (sandbox-verified)', async () => {
