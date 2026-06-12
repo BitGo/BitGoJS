@@ -47,8 +47,8 @@ import { GShare, SignShare } from '../../../account-lib/mpc/tss';
 import { RequestTracer } from '../util';
 import { envRequiresBitgoPubGpgKeyConfig, getBitgoMpcGpgPubKey } from '../../tss/bitgoPubKeys';
 import { getBitgoGpgPubKey } from '../opengpgUtils';
-import assert from 'assert';
 import { MessageStandardType } from '../messageTypes';
+import assert from 'assert';
 
 /**
  * BaseTssUtil class which different signature schemes have to extend
@@ -476,6 +476,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       isTss: params.isTss,
       messageRaw: params.typedDataRaw,
       messageEncoded: params.typedDataEncoded ?? '',
+      messageStandardType: params.messageStandardType,
     };
 
     return this.createTxRequestBase(intentOptions, apiVersion, preview, params.reqId);
