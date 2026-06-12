@@ -128,6 +128,22 @@ export const botTokens = [
     undefined,
     Networks.test.hoodi
   ),
+  AccountCtors.terc20(
+    '6ed32c82-b855-4e23-a156-2e12569b854d',
+    'hteth:cssv',
+    'cSSV',
+    18,
+    '0x6e1a5d27361c666f681af06535c8ac773e571d4d',
+    'hteth:cssv' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
