@@ -145,4 +145,16 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.ofcerc20(
+    '4f06be6b-081c-45cd-8d13-77f88e735ebc',
+    'ofceth:usdds',
+    'Usdd Stablecoin',
+    18,
+    'eth:usdds' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
