@@ -54,6 +54,9 @@ import {
   VerifyTransactionOptions,
   TssVerifyAddressOptions,
   verifyEddsaTssWalletAddress,
+  deriveMPCWalletAddress,
+  DeriveAddressOptions,
+  DeriveAddressResult,
   UnexpectedAddressError,
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
@@ -712,6 +715,30 @@ export class Sol extends BaseCoin {
     }
 
     return true;
+  }
+
+  /**
+   * Locally derive a SOL wallet receive address from a derivation path, using the wallet's
+   * commonKeychain only (no private keys, no network access). This is the inverse of
+   * {@link isWalletAddress}: it *produces* the address via the same EdDSA TSS derivation that
+   * isWalletAddress checks against, so the two can never diverge.
+   * @param params keychains (commonKeychain), derivation index, and optional SMC seed
+   * @returns the derived address, the index used, and the HD derivation path
+   */
+  async deriveAddress(params: DeriveAddressOptions): Promise<DeriveAddressResult> {
+    const { address, derivationPath } = await deriveMPCWalletAddress(
+      {
+        // extractCommonKeychain validates the commonKeychain is present at runtime
+        keychains: (params.keychains ?? []) as TssVerifyAddressOptions['keychains'],
+        index: params.index,
+        derivedFromParentWithSeed: params.derivedFromParentWithSeed,
+        multisigTypeVersion: params.multisigTypeVersion,
+        keyCurve: 'ed25519',
+      },
+      (publicKey) => this.getAddressFromPublicKey(publicKey)
+    );
+
+    return { address, index: params.index, derivationPath };
   }
 
   /**
