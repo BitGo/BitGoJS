@@ -17,6 +17,7 @@ import {
   CustomEddsaMPCv2SigningRound1GeneratingFunction,
   CustomEddsaMPCv2SigningRound2GeneratingFunction,
   CustomEddsaMPCv2SigningRound3GeneratingFunction,
+  EDDSAUtils,
   EddsaMPCv2Utils,
   IBaseCoin,
   IWallet,
@@ -338,6 +339,58 @@ describe('EdDSA MPS DSG helper functions', async () => {
     assert.strictEqual(parsed.type, 'round3Input');
     assert.ok(parsed.data.msg3.message, 'msg3.message should be set');
     assert.ok(parsed.data.msg3.signature, 'msg3.signature should be set');
+  });
+});
+
+describe('getEddsaMPCv2RecoveryKeyShares', () => {
+  const walletPassphrase = 'testPass';
+
+  const encryptReducedKeyShare = (keyShare: Buffer): string =>
+    sjcl.encrypt(walletPassphrase, keyShare.toString('base64'));
+
+  it('should return recovery key shares from v1 SJCL-encrypted reduced keys', async () => {
+    const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const encryptedUserKey = encryptReducedKeyShare(userDkg.getReducedKeyShare());
+    const encryptedBackupKey = encryptReducedKeyShare(backupDkg.getReducedKeyShare());
+
+    const result = await EDDSAUtils.getEddsaMPCv2RecoveryKeyShares(
+      encryptedUserKey,
+      encryptedBackupKey,
+      walletPassphrase
+    );
+
+    assert.deepStrictEqual(result.userKeyShare, userDkg.getKeyShare());
+    assert.deepStrictEqual(result.backupKeyShare, backupDkg.getKeyShare());
+    assert.strictEqual(result.commonKeyChain, userDkg.getCommonKeychain());
+  });
+
+  it('should reject v2 (Argon2id) encrypted keycards with a clear error', async () => {
+    const v2Envelope = JSON.stringify({ v: 2, m: 65536, t: 3, p: 4, salt: 'AA==', iv: 'AA==', ct: 'AA==' });
+    await assert.rejects(
+      EDDSAUtils.getEddsaMPCv2RecoveryKeyShares(v2Envelope, v2Envelope, walletPassphrase),
+      /v2 \(Argon2id\) encrypted keycards are not yet supported/
+    );
+  });
+
+  it('should reject a malformed keycard with a descriptive error', async () => {
+    const [userDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const malformedKey = sjcl.encrypt(walletPassphrase, randomBytes(64).toString('base64'));
+    const goodKey = encryptReducedKeyShare(userDkg.getReducedKeyShare());
+    await assert.rejects(
+      EDDSAUtils.getEddsaMPCv2RecoveryKeyShares(malformedKey, goodKey, walletPassphrase),
+      /keyShare, pub, and rootChainCode/
+    );
+  });
+
+  it('should reject reduced keys from different wallets', async () => {
+    const [userDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const [, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const encryptedUserKey = encryptReducedKeyShare(userDkg.getReducedKeyShare());
+    const encryptedBackupKey = encryptReducedKeyShare(backupDkg.getReducedKeyShare());
+    await assert.rejects(
+      EDDSAUtils.getEddsaMPCv2RecoveryKeyShares(encryptedUserKey, encryptedBackupKey, walletPassphrase),
+      /pub keys do not match/
+    );
   });
 });
 
