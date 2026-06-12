@@ -1486,6 +1486,56 @@ describe('ETH:', function () {
         });
       });
 
+      describe('deriveAddress (MPC)', function () {
+        // Same vector as the MPC isWalletAddress tests above:
+        // commonKeychain @ index 0 -> 0x01153f3adfe454a72589ca9ef74f013c19e54961
+        const commonKeychain =
+          '03f9c2fb2e5a8b78a44f5d1e4f906f8e3d7a0e6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9e8d7c6b5a4' +
+          '93827160594857463728190a0b0c0d0e0f101112131415161718191a1b1c1d1e1f';
+        const keychains = [
+          { pub: 'user_pub', commonKeychain },
+          { pub: 'backup_pub', commonKeychain },
+          { pub: 'bitgo_pub', commonKeychain },
+        ];
+
+        it('should derive the expected MPC address for a commonKeychain at index 0', async function () {
+          const coin = bitgo.coin('teth') as Teth;
+          const result = await coin.deriveAddress({ keychains, index: 0, walletVersion: 3 });
+          result.address.should.equal('0x01153f3adfe454a72589ca9ef74f013c19e54961');
+          result.index.should.equal(0);
+          assert.strictEqual(result.derivationPath, 'm/0');
+        });
+
+        it('round-trips with isWalletAddress (derived address verifies as true)', async function () {
+          const coin = bitgo.coin('teth') as Teth;
+          const derived = await coin.deriveAddress({ keychains, index: 3, walletVersion: 6 });
+          const verified = await coin.isWalletAddress({
+            address: derived.address,
+            coinSpecific: { forwarderVersion: 5 },
+            keychains,
+            index: 3,
+            walletVersion: 6,
+          } as unknown as TssVerifyEthAddressOptions);
+          verified.should.equal(true);
+        });
+
+        it('should throw for legacy BIP32 forwarder wallet versions (1/2/4)', async function () {
+          const coin = bitgo.coin('teth') as Teth;
+          await assert.rejects(
+            async () => coin.deriveAddress({ keychains, index: 0, walletVersion: 1 }),
+            /only MPC\/TSS ETH wallets/
+          );
+        });
+
+        it('should throw if keychains are missing', async function () {
+          const coin = bitgo.coin('teth') as Teth;
+          await assert.rejects(
+            async () => coin.deriveAddress({ keychains: [], index: 0, walletVersion: 3 }),
+            /keychains/
+          );
+        });
+      });
+
       describe('Base Address Verification', function () {
         it('should verify base address for wallet version 6 (TSS)', async function () {
           const coin = bitgo.coin('hteth') as Hteth;
