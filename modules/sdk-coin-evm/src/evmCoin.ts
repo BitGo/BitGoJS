@@ -107,33 +107,15 @@ export class EvmCoin extends AbstractEthLikeNewCoins {
   }
 
   /**
-   * Verifies legacy (non-EIP-1559) TSS transactions with basic validation.
+   * Verifies legacy (non-EIP-1559) TSS transactions.
+   *
+   * Delegates to the parent verifyTssTransaction which performs both the structural
+   * recipient guard and the deep calldata comparison (transferToken, tokenApproval).
+   * Legacy (Type 0) and EIP-1559 (Type 2) transactions share the same calldata format,
+   * so the same verification logic applies to both.
    */
   private async verifyLegacyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
-    const { txParams, txPrebuild, wallet } = params;
-
-    // Basic validation for legacy transactions only
-    if (
-      !txParams?.recipients &&
-      !(
-        txParams.prebuildTx?.consolidateId ||
-        (txParams.type &&
-          ['acceleration', 'fillNonce', 'transferToken', 'tokenApproval', 'bridgeFunds'].includes(txParams.type))
-      )
-    ) {
-      throw new Error(`missing txParams`);
-    }
-
-    if (!wallet || !txPrebuild) {
-      throw new Error(`missing params`);
-    }
-
-    if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
-      throw new Error(`tx cannot be both a batch and hop transaction`);
-    }
-
-    // If validation passes, consider it verified
-    return true;
+    return super.verifyTssTransaction(params);
   }
 
   /** @inheritDoc */

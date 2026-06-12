@@ -3117,7 +3117,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
             'tokenApproval',
             'consolidate',
             'bridgeFunds',
+            // Keep both spellings until all callers are confirmed to use the camelCase form.
+            'enableToken',
             'enabletoken',
+            'customTx',
           ].includes(txParams.type))
       )
     ) {
@@ -3130,7 +3133,19 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       throw new Error('tx cannot be both a batch and hop transaction');
     }
 
-    if (txParams.type && ['transfer'].includes(txParams.type)) {
+    // Deep calldata comparison against user intent.
+    //
+    // • 'transfer'      – native ETH send (data='0x') or ERC-20 transfer via 0xa9059cbb.
+    //                     Unknown calldata is passed through for backward-compat.
+    // • 'transferToken' – ERC-20 token transfer. Calldata MUST be transfer(address,uint256).
+    //                     Fail closed: unexpected selector is treated as tampering.
+    // • 'tokenApproval' – ERC-20 approve(address,uint256) = 0x095ea7b3.
+    //                     Fail closed: unexpected selector is treated as tampering.
+    //                     Guards against approve(attacker, MAX_UINT256) substitution.
+    //
+    // The comparison only runs when exactly one recipient is supplied so that the
+    // declared intent can be compared against the decoded calldata.
+    if (txParams.type && ['transfer', 'transferToken', 'tokenApproval'].includes(txParams.type)) {
       if (txParams.recipients && txParams.recipients.length === 1) {
         const recipients = txParams.recipients;
         const expectedAmount = recipients[0].amount.toString();
@@ -3140,54 +3155,141 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         txBuilder.from(txPrebuild.txHex);
         const tx = await txBuilder.build();
         const txJson = tx.toJson();
-        if (txJson.data === '0x') {
-          if (expectedAmount !== txJson.value) {
-            await throwRecipientMismatch(
-              'the transaction amount in txPrebuild does not match the value given by client',
-              [{ address: txJson.to, amount: txJson.value }]
-            );
-          }
-          if (expectedDestination.toLowerCase() !== txJson.to.toLowerCase()) {
-            await throwRecipientMismatch('destination address does not match with the recipient address', [
-              { address: txJson.to, amount: txJson.value },
-            ]);
-          }
-        } else if (txJson.data.startsWith('0xa9059cbb')) {
-          const [recipientAddress, amount] = getRawDecoded(
-            ['address', 'uint256'],
-            getBufferedByteCode('0xa9059cbb', txJson.data)
-          );
 
-          // Check if recipients[0].data exists (WalletConnect flow)
-          let expectedRecipientAddress: string;
-          let expectedTokenAmount: string;
-          const recipientData = (recipients[0] as any).data;
-
-          if (recipientData && recipientData.startsWith('0xa9059cbb')) {
-            // WalletConnect: decode expected recipient and amount from recipients[0].data
-            const [expectedRecipient, expectedAmount] = getRawDecoded(
+        if (txParams.type === 'transfer') {
+          // ── 'transfer' ────────────────────────────────────────────────────────────
+          // Native ETH send: verify to-address and value directly.
+          if (txJson.data === '0x') {
+            if (expectedAmount !== txJson.value) {
+              await throwRecipientMismatch(
+                'the transaction amount in txPrebuild does not match the value given by client',
+                [{ address: txJson.to, amount: txJson.value }]
+              );
+            }
+            if (expectedDestination.toLowerCase() !== txJson.to.toLowerCase()) {
+              await throwRecipientMismatch('destination address does not match with the recipient address', [
+                { address: txJson.to, amount: txJson.value },
+              ]);
+            }
+          } else if (txJson.data.startsWith('0xa9059cbb')) {
+            // ERC-20 transfer encoded under the 'transfer' type (e.g. WalletConnect flows).
+            const [recipientAddress, amount] = getRawDecoded(
               ['address', 'uint256'],
-              getBufferedByteCode('0xa9059cbb', recipientData)
+              getBufferedByteCode('0xa9059cbb', txJson.data)
             );
-            expectedRecipientAddress = addHexPrefix(expectedRecipient.toString()).toLowerCase();
-            expectedTokenAmount = expectedAmount.toString();
+
+            // WalletConnect passes the expected calldata inside recipients[0].data.
+            let expectedRecipientAddress: string;
+            let expectedTokenAmount: string;
+            const recipientData = (recipients[0] as any).data;
+
+            if (recipientData && recipientData.startsWith('0xa9059cbb')) {
+              const [expectedRecipient, expectedAmt] = getRawDecoded(
+                ['address', 'uint256'],
+                getBufferedByteCode('0xa9059cbb', recipientData)
+              );
+              expectedRecipientAddress = addHexPrefix(expectedRecipient.toString()).toLowerCase();
+              expectedTokenAmount = expectedAmt.toString();
+            } else {
+              // Normal flow: use recipients[0].address and recipients[0].amount
+              expectedRecipientAddress = expectedDestination.toLowerCase();
+              expectedTokenAmount = expectedAmount;
+            }
+
+            if (expectedTokenAmount !== amount.toString()) {
+              await throwRecipientMismatch(
+                'the transaction amount in txPrebuild does not match the value given by client',
+                [{ address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() }]
+              );
+            }
+            if (expectedRecipientAddress !== addHexPrefix(recipientAddress.toString()).toLowerCase()) {
+              await throwRecipientMismatch('destination address does not match with the recipient address', [
+                { address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() },
+              ]);
+            }
+          }
+          // Any other calldata under 'transfer' is passed through — preserves backward
+          // compat for non-standard transfer variants (e.g. multi-call, custom wallets).
+        } else if (txParams.type === 'transferToken') {
+          // ── 'transferToken' ───────────────────────────────────────────────────────
+          // Must be ERC-20 transfer(address,uint256). Fail closed on any other selector.
+          if (txJson.data && txJson.data.startsWith('0xa9059cbb')) {
+            const [recipientAddress, amount] = getRawDecoded(
+              ['address', 'uint256'],
+              getBufferedByteCode('0xa9059cbb', txJson.data)
+            );
+
+            let expectedRecipientAddress: string;
+            let expectedTokenAmount: string;
+            const recipientData = (recipients[0] as any).data;
+
+            if (recipientData && recipientData.startsWith('0xa9059cbb')) {
+              const [expectedRecipient, expectedAmt] = getRawDecoded(
+                ['address', 'uint256'],
+                getBufferedByteCode('0xa9059cbb', recipientData)
+              );
+              expectedRecipientAddress = addHexPrefix(expectedRecipient.toString()).toLowerCase();
+              expectedTokenAmount = expectedAmt.toString();
+            } else {
+              expectedRecipientAddress = expectedDestination.toLowerCase();
+              expectedTokenAmount = expectedAmount;
+            }
+
+            if (expectedTokenAmount !== amount.toString()) {
+              await throwRecipientMismatch(
+                'the transaction amount in txPrebuild does not match the value given by client',
+                [{ address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() }]
+              );
+            }
+            if (expectedRecipientAddress !== addHexPrefix(recipientAddress.toString()).toLowerCase()) {
+              await throwRecipientMismatch('destination address does not match with the recipient address', [
+                { address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() },
+              ]);
+            }
           } else {
-            // Normal flow: use recipients[0].address and recipients[0].amount
-            expectedRecipientAddress = expectedDestination.toLowerCase();
-            expectedTokenAmount = expectedAmount;
-          }
-
-          if (expectedTokenAmount !== amount.toString()) {
+            // Fail closed: 'transferToken' MUST carry ERC-20 transfer calldata.
+            // Any other selector indicates the server substituted unexpected calldata.
             await throwRecipientMismatch(
-              'the transaction amount in txPrebuild does not match the value given by client',
-              [{ address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() }]
+              'transferToken transaction must use ERC-20 transfer(address,uint256) calldata; unexpected selector detected',
+              [{ address: expectedDestination, amount: expectedAmount }]
             );
           }
+        } else if (txParams.type === 'tokenApproval') {
+          // ── 'tokenApproval' ───────────────────────────────────────────────────────
+          // Must be ERC-20 approve(address,uint256) = 0x095ea7b3.
+          // Guards against approve(attacker, MAX_UINT256) substitution by a compromised server.
+          // Fail closed on any other selector.
+          const erc20ApproveSelector = addHexPrefix(
+            optionalDeps.ethAbi.methodID('approve', ['address', 'uint256']).toString('hex')
+          );
+          if (txJson.data && txJson.data.startsWith(erc20ApproveSelector)) {
+            const [spenderAddress, allowanceAmount] = getRawDecoded(
+              ['address', 'uint256'],
+              getBufferedByteCode(erc20ApproveSelector, txJson.data)
+            );
 
-          if (expectedRecipientAddress !== addHexPrefix(recipientAddress.toString()).toLowerCase()) {
-            await throwRecipientMismatch('destination address does not match with the recipient address', [
-              { address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() },
-            ]);
+            const decodedSpender = addHexPrefix(spenderAddress.toString()).toLowerCase();
+            const decodedAllowance = allowanceAmount.toString();
+
+            if (decodedAllowance !== expectedAmount) {
+              await throwRecipientMismatch(
+                'the token approval amount in txPrebuild does not match the value given by client',
+                [{ address: decodedSpender, amount: decodedAllowance }]
+              );
+            }
+            if (decodedSpender !== expectedDestination.toLowerCase()) {
+              await throwRecipientMismatch(
+                'the token approval spender in txPrebuild does not match the recipient address given by client',
+                [{ address: decodedSpender, amount: decodedAllowance }]
+              );
+            }
+          } else {
+            // Fail closed: 'tokenApproval' MUST carry ERC-20 approve calldata.
+            // Any other selector indicates the server substituted unexpected calldata.
+            await throwRecipientMismatch(
+              'tokenApproval transaction must use ERC-20 approve(address,uint256) calldata; unexpected selector detected',
+              [{ address: expectedDestination, amount: expectedAmount }]
+            );
           }
         }
       }
