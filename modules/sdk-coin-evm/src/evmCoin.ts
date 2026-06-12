@@ -9,6 +9,7 @@ import {
   MPCAlgorithm,
   MultisigType,
   multisigTypes,
+  NO_RECIPIENT_TX_TYPES,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFeature, coins, CoinFamily } from '@bitgo/statics';
 import {
@@ -112,24 +113,26 @@ export class EvmCoin extends AbstractEthLikeNewCoins {
   private async verifyLegacyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
     const { txParams, txPrebuild, wallet } = params;
 
-    // Basic validation for legacy transactions only
-    if (
-      !txParams?.recipients &&
-      !(
-        txParams.prebuildTx?.consolidateId ||
-        (txParams.type &&
-          ['acceleration', 'fillNonce', 'transferToken', 'tokenApproval', 'bridgeFunds'].includes(txParams.type))
-      )
-    ) {
-      throw new Error(`missing txParams`);
-    }
-
     if (!wallet || !txPrebuild) {
       throw new Error(`missing params`);
     }
 
     if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
       throw new Error(`tx cannot be both a batch and hop transaction`);
+    }
+
+    // Only enforce recipient presence when skipTssRecipientVerification is not set
+    if (
+      !params.verification?.skipTssRecipientVerification &&
+      !txParams?.recipients &&
+      !(
+        txParams.prebuildTx?.consolidateId ||
+        txParams.stakingRequestId ||
+        txParams.prebuildTx?.stakingRequestId ||
+        (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type))
+      )
+    ) {
+      throw new Error(`missing txParams`);
     }
 
     // If validation passes, consider it verified

@@ -266,6 +266,7 @@ export interface TransactionParams {
   type?: string;
   memo?: Memo;
   enableTokens?: TokenEnablement[];
+  stakingRequestId?: string;
 }
 
 export interface AddressVerificationData {
@@ -287,6 +288,9 @@ export interface VerificationOptions {
   verifyTokenEnablement?: boolean;
   // Verify transaction is consolidating to wallet's base address
   consolidationToBaseAddress?: boolean;
+  // Skip TSS recipient verification during signing (safety-net opt-out for callers
+  // whose transaction type legitimately carries no explicit recipients).
+  skipTssRecipientVerification?: boolean;
 }
 
 export interface VerifyTransactionOptions {

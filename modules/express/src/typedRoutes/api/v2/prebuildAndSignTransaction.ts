@@ -287,6 +287,8 @@ export const VerificationOptions = t.partial({
   verifyTokenEnablement: t.boolean,
   /** Verify consolidation to base address */
   consolidationToBaseAddress: t.boolean,
+  /** Skip TSS recipient verification during signing */
+  skipTssRecipientVerification: t.boolean,
 });
 
 /**

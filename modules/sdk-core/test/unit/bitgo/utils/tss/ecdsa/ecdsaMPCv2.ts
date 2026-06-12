@@ -660,6 +660,7 @@ describe('ECDSA MPC v2', async () => {
     try {
       await hotWalletUtils.signTxRequest({
         txRequest,
+        txParams: { recipients: [{ address: '0x' + '00'.repeat(20), amount: '1000' }] },
         prv: userShare.toString('base64'),
         reqId: { inc: sinon.stub(), toString: sinon.stub().returns('test-req') } as any,
       });
@@ -728,6 +729,7 @@ describe('ECDSA MPC v2', async () => {
     try {
       await evmUtils.signTxRequest({
         txRequest,
+        txParams: { recipients: [{ address: '0x' + '00'.repeat(20), amount: '1000' }] },
         prv: userShare.toString('base64'),
         reqId: { inc: sinon.stub(), toString: sinon.stub().returns('test-req') } as any,
       });

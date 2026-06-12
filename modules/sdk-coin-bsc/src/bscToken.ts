@@ -3,7 +3,7 @@
  */
 
 import { EthLikeTokenConfig, coins } from '@bitgo/statics';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor, MPCAlgorithm } from '@bitgo/sdk-core';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor, MPCAlgorithm, NO_RECIPIENT_TX_TYPES } from '@bitgo/sdk-core';
 import { CoinNames, EthLikeToken, VerifyEthTransactionOptions } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
 
@@ -54,20 +54,24 @@ export class BscToken extends EthLikeToken {
    */
   async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
     const { txParams, txPrebuild, wallet } = params;
-    if (
-      !txParams?.recipients &&
-      !(
-        txParams.prebuildTx?.consolidateId ||
-        (txParams.type && ['acceleration', 'fillNonce', 'transferToken'].includes(txParams.type))
-      )
-    ) {
-      throw new Error(`missing txParams`);
-    }
     if (!wallet || !txPrebuild) {
       throw new Error(`missing params`);
     }
     if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
       throw new Error(`tx cannot be both a batch and hop transaction`);
+    }
+
+    if (
+      !params.verification?.skipTssRecipientVerification &&
+      !txParams?.recipients &&
+      !(
+        txParams.prebuildTx?.consolidateId ||
+        txParams.stakingRequestId ||
+        txParams.prebuildTx?.stakingRequestId ||
+        (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type))
+      )
+    ) {
+      throw new Error(`missing txParams`);
     }
 
     return true;

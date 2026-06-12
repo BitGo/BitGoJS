@@ -43,6 +43,7 @@ import {
   verifyMPCWalletAddress,
   TssVerifyAddressOptions,
   isTssVerifyAddressOptions,
+  NO_RECIPIENT_TX_TYPES,
 } from '@bitgo/sdk-core';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/secp256k1';
@@ -3104,25 +3105,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       );
     };
 
-    if (
-      !txParams?.recipients &&
-      !(
-        txParams.prebuildTx?.consolidateId ||
-        txPrebuild?.consolidateId ||
-        (txParams.type &&
-          [
-            'acceleration',
-            'fillNonce',
-            'transferToken',
-            'tokenApproval',
-            'consolidate',
-            'bridgeFunds',
-            'enabletoken',
-          ].includes(txParams.type))
-      )
-    ) {
-      throw new Error('missing txParams');
-    }
     if (!wallet || !txPrebuild) {
       throw new Error('missing params');
     }
@@ -3130,7 +3112,21 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       throw new Error('tx cannot be both a batch and hop transaction');
     }
 
-    if (txParams.type && ['transfer'].includes(txParams.type)) {
+    if (
+      !params.verification?.skipTssRecipientVerification &&
+      !txParams?.recipients &&
+      !(
+        txParams.prebuildTx?.consolidateId ||
+        txPrebuild?.consolidateId ||
+        txParams.stakingRequestId ||
+        txParams.prebuildTx?.stakingRequestId ||
+        (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type))
+      )
+    ) {
+      throw new Error('missing txParams');
+    }
+
+    if (!params.verification?.skipTssRecipientVerification && txParams.type && ['transfer'].includes(txParams.type)) {
       if (txParams.recipients && txParams.recipients.length === 1) {
         const recipients = txParams.recipients;
         const expectedAmount = recipients[0].amount.toString();
