@@ -1561,8 +1561,9 @@ export class BitGoAPI implements BitGoBase {
       const authUrl = this.microservicesUrl('/api/auth/v1/accesstoken');
       const request = this.post(authUrl);
 
-      if (!this._ecdhXprv) {
-        // without a private key, the user cannot decrypt the new access token the server will send
+      const strategyAuthenticated = this._hmacAuthStrategy.isAuthenticated?.() ?? false;
+      if (!this._ecdhXprv && !strategyAuthenticated) {
+        // No ECDH key and no authenticated HMAC strategy — fall back to V1 Bearer auth.
         request.forceV1Auth = true;
         debug('forcing v1 auth for adding access token using token %s', this._token?.substr(0, 8));
       }
@@ -1576,8 +1577,14 @@ export class BitGoAPI implements BitGoBase {
       // verify the authenticity of the server's response before proceeding any further
       await verifyResponseAsync(this, this._token, 'post', request, response, this._authVersion);
 
-      const responseDetails = await this.handleTokenIssuanceAsync(response.body);
-      response.body.token = responseDetails.token;
+      // When ecdhXprv is available, the server returns an ECDH-encrypted token that
+      // must be decrypted. When the HMAC strategy is authenticated but ecdhXprv is
+      // absent (e.g. SSO/WebCrypto users), the server includes the plain token
+      // directly in response.body.token — no decryption step needed.
+      if (this._ecdhXprv) {
+        const responseDetails = await this.handleTokenIssuanceAsync(response.body);
+        response.body.token = responseDetails.token;
+      }
 
       return handleResponseResult<AddAccessTokenResponse>()(response);
     } catch (e) {
