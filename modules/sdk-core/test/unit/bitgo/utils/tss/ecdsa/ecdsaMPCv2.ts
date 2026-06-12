@@ -65,6 +65,7 @@ describe('ECDSA MPC v2', async () => {
 
     const mockCoin = {} as IBaseCoin;
     mockCoin.getHashFunction = sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash);
+    mockCoin.isSignablePreHashed = (unsignedTx) => unsignedTx.serializedTxHex?.startsWith('0000') ?? false;
 
     ecdsaMPCv2Utils = new EcdsaMPCv2Utils(mockBg, mockCoin);
   });
@@ -630,6 +631,8 @@ describe('ECDSA MPC v2', async () => {
       verifyTransaction: sinon.stub().resolves(true),
       getMPCAlgorithm: sinon.stub().returns('ecdsa'),
       getConfig: sinon.stub().returns({ family: 'flrp' }),
+      isSignablePreHashed: (unsignedTx: { serializedTxHex?: string }) =>
+        unsignedTx.serializedTxHex?.startsWith('0000') ?? false,
     } as unknown as IBaseCoin;
 
     const mockWallet = {
@@ -910,6 +913,7 @@ describe('ECDSA MPC v2', async () => {
 
       const mockCoin = {} as IBaseCoin;
       mockCoin.getHashFunction = sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash);
+      mockCoin.isSignablePreHashed = (unsignedTx) => unsignedTx.serializedTxHex?.startsWith('0000') ?? false;
       ecdsaMPCv2UtilsWithSpy = new EcdsaMPCv2Utils(mockBg, mockCoin);
     });
 
