@@ -394,8 +394,8 @@ export class Sui extends BaseCoin {
         inputCoins = inputCoins.slice(0, MAX_OBJECT_LIMIT);
       }
       // Include funds held in the address balance system (not in coin objects).
-      // SplitCoins(GasCoin, [amount]) draws from both gasData.payment objects
-      // and address balance at execution time, so both are spendable.
+      // When gasData.payment is non-empty, Path 2c merges the address balance into GasCoin.
+      // When gasData.payment is empty (address-balance only), Path 2b uses withdrawal+redeem_funds.
       const coinObjectsBalance = inputCoins.reduce((acc, obj) => acc.plus(obj.balance), new BigNumber(0));
       let netAmount = coinObjectsBalance.plus(fundsInAddressBalance).minus(MAX_GAS_BUDGET);
 
