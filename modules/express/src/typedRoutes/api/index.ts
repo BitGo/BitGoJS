@@ -58,6 +58,7 @@ import { PostWalletEnableTokens } from './v2/walletEnableTokens';
 import { PostWalletSweep } from './v2/walletSweep';
 import { PostWalletAccelerateTx } from './v2/walletAccelerateTx';
 import { PostIsWalletAddress } from './v2/isWalletAddress';
+import { PostDeriveAddress } from './v2/deriveAddress';
 import { GetAccountResources } from './v2/accountResources';
 import { GetResourceDelegations } from './v2/resourceDelegations';
 import { PostDelegateResources } from './v2/delegateResources';
@@ -235,6 +236,12 @@ export const ExpressV2WalletIsWalletAddressApiSpec = apiSpec({
   },
 });
 
+export const ExpressV2AddressDeriveApiSpec = apiSpec({
+  'express.v2.address.derive': {
+    post: PostDeriveAddress,
+  },
+});
+
 export const ExpressV2WalletSendManyApiSpec = apiSpec({
   'express.wallet.sendmany': {
     post: PostSendMany,
@@ -399,6 +406,7 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressWalletFanoutUnspentsApiSpec &
   typeof ExpressV2WalletCreateAddressApiSpec &
   typeof ExpressV2WalletIsWalletAddressApiSpec &
+  typeof ExpressV2AddressDeriveApiSpec &
   typeof ExpressKeychainLocalApiSpec &
   typeof ExpressKeychainChangePasswordApiSpec &
   typeof ExpressLightningWalletPaymentApiSpec &
@@ -444,6 +452,7 @@ export const ExpressApi: ExpressApi = {
   ...ExpressV2WalletCreateAddressApiSpec,
   ...ExpressV2WalletConsolidateAccountApiSpec,
   ...ExpressV2WalletIsWalletAddressApiSpec,
+  ...ExpressV2AddressDeriveApiSpec,
   ...ExpressKeychainLocalApiSpec,
   ...ExpressKeychainChangePasswordApiSpec,
   ...ExpressLightningWalletPaymentApiSpec,
