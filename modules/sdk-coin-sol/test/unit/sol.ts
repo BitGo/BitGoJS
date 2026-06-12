@@ -3842,6 +3842,49 @@ describe('SOL:', function () {
     });
   });
 
+  describe('deriveAddress', () => {
+    // Same vector as the isWalletAddress tests above: commonKeychain @ index 1 -> address.
+    const address = '7YAesfwPk41VChUgr65bm8FEep7ymWqLSW5rpYB5zZPY';
+    const commonKeychain =
+      '8ea32ecacfc83effbd2e2790ee44fa7c59b4d86c29a12f09fb613d8195f93f4e21875cad3b98adada40c040c54c3569467df41a020881a6184096378701862bd';
+    const keychains = [{ id: '1', type: 'tss' as const, commonKeychain }];
+
+    it('should derive the expected address for a given commonKeychain and index', async function () {
+      const result = await basecoin.deriveAddress({ keychains, index: 1 });
+      result.address.should.equal(address);
+      result.index.should.equal(1);
+      assert.strictEqual(result.derivationPath, 'm/1');
+    });
+
+    it('should derive a different address for a different index', async function () {
+      const result = await basecoin.deriveAddress({ keychains, index: 2 });
+      result.address.should.not.equal(address);
+    });
+
+    it('round-trips with isWalletAddress (derived address verifies as true)', async function () {
+      const derived = await basecoin.deriveAddress({ keychains, index: 5 });
+      const verified = await basecoin.isWalletAddress({ keychains, address: derived.address, index: 5 });
+      verified.should.equal(true);
+    });
+
+    it('should use the SMC prefix path when derivedFromParentWithSeed is set', async function () {
+      const derivedFromParentWithSeed = 'smc-test-seed-123';
+      const derived = await basecoin.deriveAddress({ keychains, index: 1, derivedFromParentWithSeed });
+      // round-trips through the SMC verify path
+      const verified = await basecoin.isWalletAddress({
+        keychains,
+        address: derived.address,
+        index: 1,
+        derivedFromParentWithSeed,
+      });
+      verified.should.equal(true);
+    });
+
+    it('should throw if keychains are missing', async function () {
+      await assert.rejects(async () => await basecoin.deriveAddress({ keychains: [], index: 0 }), /keychains/);
+    });
+  });
+
   describe('getAddressFromPublicKey', () => {
     it('should convert public key to base58 address', function () {
       const publicKey = '61220a9394802b1d1df37b35f7a3197970f48081092cee011fc98f7b71b2bd43';
