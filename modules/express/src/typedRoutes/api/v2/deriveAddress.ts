@@ -1,0 +1,103 @@
+import * as t from 'io-ts';
+import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
+import { BitgoExpressError } from '../../schemas/error';
+import { CreateAddressFormat } from '../../schemas/address';
+
+/**
+ * Path parameters for locally deriving a wallet address
+ */
+export const DeriveAddressParams = {
+  /** Blockchain identifier (e.g., 'btc', 'eth', 'tbtc', 'teth', 'sol') */
+  coin: t.string,
+} as const;
+
+/**
+ * A keychain entry for local derivation. Public key material only — no private keys.
+ * Modelled as a union so a keychain must carry at least one of `pub` / `commonKeychain`:
+ * - `pub` (xpub) for BIP32 multisig coins (UTXO, legacy EVM)
+ * - `commonKeychain` for TSS/MPC coins (SOL, EVM MPC) — identical across keychains
+ *
+ * (A keychain may legitimately carry both; TSS keychains commonly do.)
+ */
+export const DeriveAddressKeychainCodec = t.union([t.type({ pub: t.string }), t.type({ commonKeychain: t.string })]);
+
+/** A non-negative integer — used for derivation `index` and `chain` (both are always >= 0). */
+export const NonNegativeInteger = t.refinement(
+  t.number,
+  (n): boolean => Number.isInteger(n) && n >= 0,
+  'NonNegativeInteger'
+);
+
+/**
+ * Request body for locally deriving a wallet receive address
+ */
+export const DeriveAddressBody = {
+  /**
+   * Keychains for derivation (public key material only).
+   * BIP32 multisig: the user/backup/bitgo xpub triple via `pub`.
+   * TSS/MPC: the `commonKeychain`.
+   */
+  keychains: t.array(DeriveAddressKeychainCodec),
+  /** Derivation index for the address (caller-supplied; the endpoint is stateless). Non-negative integer. */
+  index: NonNegativeInteger,
+  /** Derivation chain code: UTXO script-type / external(0) vs internal(1) selector. Non-negative integer. */
+  chain: optional(NonNegativeInteger),
+  /** Address format override (e.g. 'p2sh', 'p2wsh' for UTXO; 'cashaddr' / 'base58') */
+  format: optional(CreateAddressFormat),
+  /** Wallet version, to disambiguate derivation strategy (e.g. EVM forwarder vs MPC) */
+  walletVersion: optional(t.number),
+  /**
+   * Seed from the user keychain's derivedFromParentWithSeed field (SMC TSS wallets);
+   * makes the derivation path `{prefix}/{index}` instead of `m/{index}`.
+   */
+  derivedFromParentWithSeed: optional(t.string),
+} as const;
+
+/**
+ * Response for locally deriving a wallet address
+ */
+export const DeriveAddressResponse = {
+  /** The derived address and related derivation info */
+  200: t.intersection([
+    t.type({
+      /** The derived address */
+      address: t.string,
+      /** The derivation index used */
+      index: t.number,
+    }),
+    t.partial({
+      /** The derivation chain code used */
+      chain: t.number,
+      /** Coin-specific address data (e.g. redeemScript/witnessScript for UTXO) */
+      coinSpecific: t.UnknownRecord,
+      /** The HD derivation path actually used */
+      derivationPath: t.string,
+    }),
+  ]),
+  /** Invalid request parameters or derivation failed */
+  400: BitgoExpressError,
+} as const;
+
+/**
+ * Locally derive and return a wallet receive address from a derivation path.
+ *
+ * Unlike `iswalletaddress` (which checks a candidate address), this *produces* the address
+ * offline from public key material only — the xpub triple for BIP32 multisig coins, or the
+ * commonKeychain for TSS/MPC coins. No private keys, no wallet lookup, and no network access:
+ * the handler operates purely on the request body and can run in an air-gapped Express.
+ *
+ * Pairs with `iswalletaddress` for a derive→verify round-trip: derive the address here, then
+ * verify it against the same keychains to independently confirm correctness.
+ *
+ * @operationId express.v2.address.derive
+ * @tag Express
+ */
+export const PostDeriveAddress = httpRoute({
+  path: '/api/v2/{coin}/address/derive',
+  method: 'POST',
+  request: httpRequest({
+    params: DeriveAddressParams,
+    body: DeriveAddressBody,
+  }),
+  response: DeriveAddressResponse,
+});
