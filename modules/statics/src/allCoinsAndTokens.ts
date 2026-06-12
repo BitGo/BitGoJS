@@ -2671,6 +2671,46 @@ export const allCoinsAndTokens = [
     Networks.main.hemieth
   ),
   account(
+    '1d547ad4-3165-4a51-922a-b29f8a427f88',
+    'midlbtc',
+    'MIDL Bitcoin',
+    Networks.main.midlbtc,
+    18,
+    UnderlyingAsset.MIDLBTC,
+    BaseUnit.MIDLBTC,
+    [
+      ...EVM_NON_EIP1559_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    'midlBTC'
+  ),
+  account(
+    '1b2bdc62-c990-4194-b05e-fb4d840abc1d',
+    'tmidlbtc',
+    'Testnet MIDL Bitcoin',
+    Networks.test.midlbtc,
+    18,
+    UnderlyingAsset.MIDLBTC,
+    BaseUnit.MIDLBTC,
+    [
+      ...EVM_NON_EIP1559_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    'midlBTC'
+  ),
+  account(
     'd055d442-03f1-4d24-b61c-5312e480e378',
     'bobaeth',
     'Boba Network',
