@@ -77,6 +77,7 @@ export type StellarTokenConfig = BaseNetworkConfig;
 export type SolTokenConfig = BaseNetworkConfig & {
   tokenAddress: string;
   contractAddress: string;
+  programId?: string;
 };
 
 export type AdaTokenConfig = BaseNetworkConfig & {
@@ -832,9 +833,10 @@ function getSolTokenConfig(coin: SolCoin): SolTokenConfig {
     tokenAddress: coin.tokenAddress,
     decimalPlaces: coin.decimalPlaces,
     contractAddress: coin.contractAddress,
+    programId: coin.programId,
   };
 }
-const getFormattedSolTokens = (customCoinMap = coins) =>
+export const getFormattedSolTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: SolTokenConfig[], coin) => {
     if (coin instanceof SolCoin) {
       acc.push(getSolTokenConfig(coin));
