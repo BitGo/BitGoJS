@@ -15,6 +15,7 @@ import { Hash } from 'crypto';
 import { TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { MessageStandardType, MPCTx, PopulatedIntent, TokenTransferRecipientParams, TokenType } from '../utils';
+import type { SignableTransaction } from '../utils/tss/baseTypes';
 import { IWebhooks } from '../webhook/iWebhooks';
 
 export const multisigTypes = {
@@ -708,6 +709,12 @@ export interface IBaseCoin {
    */
   buildNftTransferData(params: BuildNftTransferDataOptions): string | TokenTransferRecipientParams;
   getHashFunction(): Hash;
+  /**
+   * Returns true when signableHex is already the final signing hash for MPC signing
+   * (e.g. SHA-256 for Avalanche atomic cross-chain txs). Only implemented by coins
+   * that produce pre-hashed signable material.
+   */
+  isSignablePreHashed?(unsignedTx: SignableTransaction): boolean;
   broadcastTransaction(params: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult>;
   setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void;
 

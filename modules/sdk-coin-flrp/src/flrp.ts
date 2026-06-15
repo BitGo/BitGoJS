@@ -19,6 +19,8 @@ import {
   BaseTransaction,
   SigningError,
   MethodNotImplementedError,
+  SignableTransaction,
+  isAvalancheAtomicTx,
 } from '@bitgo/sdk-core';
 import * as FlrpLib from './lib';
 import {
@@ -440,6 +442,15 @@ export class Flrp extends BaseCoin {
       message = Buffer.from(message, 'hex');
     }
     return FlrpLib.Utils.createSignature(this._staticsCoin.network as FlareNetwork, message, prv);
+  }
+
+  /**
+   * Returns true when the signableHex for this transaction is already the
+   * final signing hash (SHA-256 for Avalanche atomic txs), and the MPC
+   * signing flow should use it directly without additional hashing.
+   */
+  isSignablePreHashed(unsignedTx: SignableTransaction): boolean {
+    return isAvalancheAtomicTx(unsignedTx);
   }
 
   /** @inheritDoc */
