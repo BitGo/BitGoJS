@@ -65,6 +65,7 @@ export enum CoinFamily {
   FANTOM = 'fantom', // Fantom
   FLR = 'flr',
   FLRP = 'flrp',
+  GASEVM = 'gasevm', // Neo X EVM sidechain (native GAS token)
   H = 'h', // Humanity Protocol
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
@@ -610,6 +611,7 @@ export enum UnderlyingAsset {
   FLRP = 'flrp',
   FLUENTETH = 'fluenteth',
   FANTOM = 'fantom', // Fantom
+  GASEVM = 'gasevm', // Neo X EVM sidechain (native GAS token)
   GTC = 'gtc',
   H = 'h', // Humanity Protocol
   HASH = 'hash', // Provenance

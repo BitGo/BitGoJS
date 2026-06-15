@@ -2431,6 +2431,24 @@ class FlowTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '545';
 }
 
+class GasEvm extends Mainnet implements EthereumNetwork {
+  name = 'Neo X';
+  family = CoinFamily.GASEVM;
+  explorerUrl = 'https://neoxscan.ngd.network/tx/';
+  accountExplorerUrl = 'https://neoxscan.ngd.network/address/';
+  chainId = 47763;
+  nativeCoinOperationHashPrefix = '47763';
+}
+
+class GasEvmTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Neo X';
+  family = CoinFamily.GASEVM;
+  explorerUrl = 'https://neoxt4scan.ngd.network/tx/';
+  accountExplorerUrl = 'https://neoxt4scan.ngd.network/address/';
+  chainId = 12227332;
+  nativeCoinOperationHashPrefix = '12227332';
+}
+
 class MegaETH extends Mainnet implements EthereumNetwork {
   name = 'MegaETH';
   family = CoinFamily.MEGAETH;
@@ -2742,6 +2760,7 @@ export const Networks = {
     fiat: Object.freeze(new Fiat()),
     fetchai: Object.freeze(new FetchAi()),
     flow: Object.freeze(new Flow()),
+    gasevm: Object.freeze(new GasEvm()),
     flr: Object.freeze(new Flare()),
     flrP: Object.freeze(new FlareP()),
     fluenteth: Object.freeze(new FluentETH()),
@@ -2864,6 +2883,7 @@ export const Networks = {
     fiat: Object.freeze(new FiatTestnet()),
     fetchai: Object.freeze(new FetchAiTestnet()),
     flow: Object.freeze(new FlowTestnet()),
+    tgasevm: Object.freeze(new GasEvmTestnet()),
     flr: Object.freeze(new FlareTestnet()),
     flrP: Object.freeze(new FlarePTestnet()),
     fluenteth: Object.freeze(new FluentETHTestnet()),

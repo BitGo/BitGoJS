@@ -414,6 +414,24 @@ export const allCoinsAndTokens = [
     ]
   ),
   account(
+    '7b83f1e2-28f2-464d-84d0-1d36cc738cae',
+    'gasevm',
+    'Neo X',
+    Networks.main.gasevm,
+    18,
+    UnderlyingAsset.GASEVM,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
+  ),
+  account(
     'e7fdbd6f-93ff-4dda-8a57-81580827188e',
     'txtzevm',
     'Testnet XTZ EVM',
@@ -990,6 +1008,24 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.STAKING,
+    ]
+  ),
+  account(
+    'c61b81b8-c216-435c-8281-8f8b649e1f94',
+    'tgasevm',
+    'Testnet Neo X',
+    Networks.test.tgasevm,
+    18,
+    UnderlyingAsset.GASEVM,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
