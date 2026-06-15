@@ -2,7 +2,8 @@ import * as assert from 'assert';
 import * as sinon from 'sinon';
 import * as pgp from 'openpgp';
 import { randomBytes } from 'crypto';
-import { EddsaMPSDsg, MPSComms, MPSTypes, MPSUtil } from '@bitgo/sdk-lib-mpc';
+import { deriveUnhardenedMps, EddsaMPSDsg, MPSComms, MPSTypes, MPSUtil } from '@bitgo/sdk-lib-mpc';
+import * as nacl from 'tweetnacl';
 import * as sjcl from '@bitgo/sjcl';
 import {
   EddsaMPCv2SignatureShareRound1Input,
@@ -1734,5 +1735,76 @@ describe('EddsaMPCv2Utils.isEddsaMpcV1SigningMaterial', () => {
     const partial = { uShare: { seed: 'abc' }, bitgoYShare: { u: 'xyz' } };
     const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(partial));
     assert.strictEqual(await eddsaUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE), false);
+  });
+});
+
+describe('signRecoveryMpcV2', () => {
+  const derivationPath = 'm/0/0';
+
+  it('should return a 64-byte signature that verifies against the derived public key', async () => {
+    const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const message = Buffer.from('deadbeef', 'hex');
+    const commonKeyChain = userDkg.getCommonKeychain();
+
+    const signature = EDDSAUtils.signRecoveryMpcV2(
+      message,
+      derivationPath,
+      userDkg.getKeyShare(),
+      backupDkg.getKeyShare(),
+      commonKeyChain
+    );
+
+    assert.strictEqual(signature.length, 64);
+
+    const derivedKeychain = deriveUnhardenedMps(commonKeyChain, derivationPath);
+    const publicKeyBytes = Buffer.from(derivedKeychain.slice(0, 64), 'hex');
+    const ok = nacl.sign.detached.verify(
+      new Uint8Array(message),
+      new Uint8Array(signature),
+      new Uint8Array(publicKeyBytes)
+    );
+    assert.strictEqual(ok, true);
+  });
+
+  it('should throw when the signed message is different from the verified message', async () => {
+    const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const message = Buffer.from('deadbeef', 'hex');
+    const commonKeyChain = userDkg.getCommonKeychain();
+
+    const signature = EDDSAUtils.signRecoveryMpcV2(
+      message,
+      derivationPath,
+      userDkg.getKeyShare(),
+      backupDkg.getKeyShare(),
+      commonKeyChain
+    );
+
+    const differentMessage = Buffer.from('cafebabe', 'hex');
+    const derivedKeychain = deriveUnhardenedMps(commonKeyChain, derivationPath);
+    const publicKeyBytes = Buffer.from(derivedKeychain.slice(0, 64), 'hex');
+    const ok = nacl.sign.detached.verify(
+      new Uint8Array(differentMessage),
+      new Uint8Array(signature),
+      new Uint8Array(publicKeyBytes)
+    );
+    assert.strictEqual(ok, false);
+  });
+
+  it('should throw when a wrong commonKeyChain is provided (verification mismatch)', async () => {
+    const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const [wrongDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const message = Buffer.from('deadbeef', 'hex');
+
+    assert.throws(
+      () =>
+        EDDSAUtils.signRecoveryMpcV2(
+          message,
+          derivationPath,
+          userDkg.getKeyShare(),
+          backupDkg.getKeyShare(),
+          wrongDkg.getCommonKeychain() // key chain from a different wallet
+        ),
+      /EdDSA MPCv2 recovery signature verification failed/
+    );
   });
 });

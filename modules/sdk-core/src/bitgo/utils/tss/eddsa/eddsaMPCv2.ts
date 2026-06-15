@@ -12,7 +12,8 @@ import {
   MPCv2KeyGenStateEnum,
   MPCv2PartyFromStringOrNumber,
 } from '@bitgo/public-types';
-import { EddsaMPSDkg, EddsaMPSDsg, MPSComms, MPSTypes } from '@bitgo/sdk-lib-mpc';
+import * as nacl from 'tweetnacl';
+import { deriveUnhardenedMps, EddsaMPSDkg, EddsaMPSDsg, MPSComms, MPSTypes, MPSUtil } from '@bitgo/sdk-lib-mpc';
 import { KeychainsTriplet } from '../../../baseCoin';
 import { AddKeychainOptions, Keychain, KeyType, WebauthnKeyEncryptionInfo } from '../../../keychain';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoEddsaMpcv2PubKey } from '../../../tss/bitgoPubKeys';
@@ -991,4 +992,53 @@ export async function getEddsaMPCv2RecoveryKeyShares(
     backupKeyShare: Buffer.from(backupReduced.keyShare),
     commonKeyChain: userPub + userChainCode,
   };
+}
+
+/**
+ * Sign a message for recovery using EdDSA MPCv2 (MPS) with user and backup key shares.
+ *
+ * Runs the MPS DSG protocol locally to round 3, then verifies the resulting
+ * Ed25519 signature against the public key derived from the common keychain.
+ *
+ * @param message raw bytes to sign
+ * @param derivationPath BIP-32-style derivation path, e.g. `"m/0/0"`
+ * @param userKeyShare opaque MPS signing key-share bytes for the user party
+ * @param backupKeyShare opaque MPS signing key-share bytes for the backup party
+ * @param commonKeyChain 128-hex-char string: 32-byte pub + 32-byte rootChainCode
+ * @returns 64-byte Ed25519 signature Buffer
+ */
+export function signRecoveryMpcV2(
+  message: Buffer,
+  derivationPath: string,
+  userKeyShare: Buffer,
+  backupKeyShare: Buffer,
+  commonKeyChain: string
+): Buffer {
+  const userDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER);
+  const backupDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BACKUP);
+
+  const signature = MPSUtil.executeTillRound(
+    3,
+    userDsg,
+    backupDsg,
+    userKeyShare,
+    backupKeyShare,
+    message,
+    derivationPath
+  ) as Buffer;
+
+  // deriveUnhardenedMps returns 128 hex chars: first 64 are the 32-byte public key
+  const derivedKeychain = deriveUnhardenedMps(commonKeyChain, derivationPath);
+  const publicKeyBytes = Buffer.from(derivedKeychain.slice(0, 64), 'hex');
+
+  const verified = nacl.sign.detached.verify(
+    new Uint8Array(message),
+    new Uint8Array(signature),
+    new Uint8Array(publicKeyBytes)
+  );
+  if (!verified) {
+    throw new Error('EdDSA MPCv2 recovery signature verification failed');
+  }
+
+  return signature;
 }
