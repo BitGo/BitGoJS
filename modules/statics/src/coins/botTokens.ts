@@ -144,6 +144,22 @@ export const botTokens = [
     undefined,
     Networks.test.hoodi
   ),
+  AccountCtors.terc20(
+    '3becf88d-8816-425e-86b6-bd8002c154b9',
+    'hteth:amsv3',
+    'AMS Token V3',
+    18,
+    '0x911af1133a0292998ea06a8fa22f512d74e74644',
+    'hteth:amsv3' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
