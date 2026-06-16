@@ -220,6 +220,7 @@ export class CoinMap {
     1952: 'tokbxlayer',
     5734951: 'jovayeth',
     2019775: 'tjovayeth',
+    5042: 'arcusdc',
     5042002: 'tarcusdc',
     4217: 'tempo',
     42431: 'ttempo',

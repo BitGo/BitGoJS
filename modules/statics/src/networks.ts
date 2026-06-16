@@ -2685,10 +2685,10 @@ class ArcUSDCTestnet extends Testnet implements EthereumNetwork {
 class ArcUSDC extends Mainnet implements EthereumNetwork {
   name = 'USDC (ARC)';
   family = CoinFamily.ARCUSDC;
-  explorerUrl = 'https://testnet.arcscan.app/tx/'; // WIN-8844 change to prod explorer url
-  accountExplorerUrl = 'https://testnet.arcscan.app/address/'; // change to prod explorer url when available
-  chainId = 5042002; // change to prod chain id when available
-  nativeCoinOperationHashPrefix = '5042002'; // change to prod native coin operation hash prefix when available
+  explorerUrl = 'https://explorer.arc.io/tx/'; // WIN-8844 change to prod explorer url
+  accountExplorerUrl = 'https://explorer.arc.io/address/'; // change to prod explorer url when available
+  chainId = 5042;
+  nativeCoinOperationHashPrefix = '5042';
 }
 
 class Tempo extends Mainnet implements EthereumNetwork {
