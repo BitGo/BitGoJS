@@ -3551,6 +3551,20 @@ export const allCoinsAndTokens = [
     ]
   ),
   tip20Token(
+    '95acea50-87a0-4e7f-b84e-e98ad27ee757',
+    'tempo:gousd',
+    'goUSD',
+    6,
+    '0x20c0000000000000000000006d194f9810e6f886',
+    UnderlyingAsset['tempo:gousd'],
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
+  tip20Token(
     '9dd63f8e-3f35-4d10-a623-fe7358ad66a4',
     'tempo:usdt0',
     'USDT0',
@@ -3642,6 +3656,62 @@ export const allCoinsAndTokens = [
     6,
     '0x20c000000000000000000000e4662b69291ab60a',
     UnderlyingAsset['ttempo:stgusd1'],
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
+  ttip20Token(
+    '07cd2cf3-490d-4776-84cf-e1bb47cf3cc0',
+    'ttempo:gousd',
+    'Testnet goUSD',
+    6,
+    '0x20c000000000000000000000abbd755acb373233',
+    UnderlyingAsset['ttempo:gousd'],
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
+  ttip20Token(
+    '0ac48bf9-e8dd-442e-ba8e-a800b525f68a',
+    'ttempo:stggousd',
+    'Testnet goUSD',
+    6,
+    '0x20c0000000000000000000004005ba0e59b1e1e5',
+    UnderlyingAsset['ttempo:stggousd'],
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
+  ttip20Token(
+    '79428fe9-cfdb-43b2-8b95-9d0ca2c04a8d',
+    'ttempo:stgscaasacme',
+    'Testnet Acme USD',
+    6,
+    '0x20c000000000000000000000d846672b70a3dbf9',
+    UnderlyingAsset['ttempo:stgscaasacme'],
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
+  ttip20Token(
+    '250efa18-66a4-43c7-a01c-c037505d0d19',
+    'ttempo:scaasacme',
+    'Testnet Acme USD',
+    6,
+    '0x20c0000000000000000000007b20a5729bbc4f2d',
+    UnderlyingAsset['ttempo:scaasacme'],
     [
       ...TEMPO_FEATURES,
       CoinFeature.STABLECOIN,
