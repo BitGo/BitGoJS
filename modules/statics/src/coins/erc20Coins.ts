@@ -12858,6 +12858,30 @@ export const erc20Coins = [
     Networks.test.hoodi
   ),
   terc20(
+    '5add4bd7-9889-4639-b130-083d083ebbe4',
+    'hteth:stgscaasacme',
+    'Testnet Acme USD',
+    6,
+    '0x3273bfa01f481b13b5fb31f3d47252ea3da2308a',
+    UnderlyingAsset['hteth:stgscaasacme'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
+    '3ecfecc1-c910-483f-af54-b737452ceb00',
+    'hteth:scaasacme',
+    'Testnet Acme USD',
+    6,
+    '0xadebc52bb71dbc09729d6c0727a507fd42b2944e',
+    UnderlyingAsset['hteth:scaasacme'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
     '8e4f9c4c-2b03-4ad4-8019-ace4bbda3acd',
     'hteth:sofid',
     'Test SoFiUSD',

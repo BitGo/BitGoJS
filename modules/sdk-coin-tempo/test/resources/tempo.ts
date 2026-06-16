@@ -31,6 +31,22 @@ export const TESTNET_TOKENS = {
     address: '0x20c000000000000000000000e4662b69291ab60a',
     name: 'ttempo:stgusd1',
   },
+  gousd: {
+    address: '0x20c000000000000000000000abbd755acb373233',
+    name: 'ttempo:gousd',
+  },
+  stgGoUSD: {
+    address: '0x20c0000000000000000000004005ba0e59b1e1e5',
+    name: 'ttempo:stggousd',
+  },
+  scaasacme: {
+    address: '0x20c0000000000000000000007b20a5729bbc4f2d',
+    name: 'ttempo:scaasacme',
+  },
+  stgScaasacme: {
+    address: '0x20c000000000000000000000d846672b70a3dbf9',
+    name: 'ttempo:stgscaasacme',
+  },
 };
 
 // Valid checksummed test recipient address

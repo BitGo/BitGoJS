@@ -63,6 +63,8 @@ describe('Token Naming Convention Tests', function () {
       'hteth:qxmp',
       'hteth:stgqxmp',
       'hteth:usd1',
+      'hteth:stgscaasacme',
+      'hteth:scaasacme',
       'hteth:amstest',
       'hterc18dp',
       'hteth:bgerchv2',
