@@ -3,6 +3,16 @@
   "extends": ["github>BitGo/gha-renovate-bot//presets/default"],
   "baseBranches": ["master"],
   "enabledManagers": ["github-actions", "regex", "npm"],
+  "customManagers": [
+    {
+      "description": "Track sfw version pinned in Dockerfile",
+      "customType": "regex",
+      "fileMatch": ["(^|/)Dockerfile$"],
+      "matchStrings": ["sfw@(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "sfw",
+      "datasourceTemplate": "npm"
+    }
+  ],
   "packageRules": [
     {
       "description": "Disable all npm dependencies by default",
