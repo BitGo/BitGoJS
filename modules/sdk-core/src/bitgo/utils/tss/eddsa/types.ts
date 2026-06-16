@@ -18,6 +18,12 @@ export type CreateEddsaKeychainParams = CreateKeychainParamsBase & {
   backupKeyShare: EDDSA.KeyShare;
 };
 
+export interface EddsaMPCv2RecoveryKeyShares {
+  userKeyShare: Buffer;
+  backupKeyShare: Buffer;
+  commonKeyChain: string;
+}
+
 export type CreateEddsaBitGoKeychainParams = Omit<CreateEddsaKeychainParams, 'bitgoKeychain'>;
 
 // For backward compatibility
