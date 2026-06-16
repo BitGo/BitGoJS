@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.29.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.28.1...@bitgo/abstract-eth@24.29.0) (2026-06-16)
+
+
+### Features
+
+* **abstract-eth:** implement deriveAddress for MPC/TSS ETH wallets ([59dc3d2](https://github.com/BitGo/BitGoJS/commit/59dc3d2f3daabc17fef0b36245f0bedf380581d1))
+
+
+
+
+
 ## [24.28.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.28.0...@bitgo/abstract-eth@24.28.1) (2026-06-09)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

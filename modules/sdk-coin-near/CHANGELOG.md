@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.18.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.18.5...@bitgo/sdk-coin-near@2.18.6) (2026-06-16)
+
+
+### Bug Fixes
+
+* **sdk-core:** populate recipients in buildTokenEnablements for TSS wallets ([6fc31f6](https://github.com/BitGo/BitGoJS/commit/6fc31f6707e39516b4ceb6b6bce72b6cabb6b2cf))
+
+
+
+
+
 ## [2.18.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.18.4...@bitgo/sdk-coin-near@2.18.5) (2026-06-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-near

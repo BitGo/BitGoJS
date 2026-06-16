@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.24.0...@bitgo/sdk-coin-canton@1.25.0) (2026-06-16)
+
+
+### Features
+
+* **sdk-coin-canton:** handle ISO timestamp vs microsecond mismatch ([b158331](https://github.com/BitGo/BitGoJS/commit/b1583312194d7d6700a6a231f47110542c924e26))
+* **sdk-core:** added canton types in tss prebuild flow ([52df0da](https://github.com/BitGo/BitGoJS/commit/52df0da41a49c703fed70a6991566b40c1ebd25a))
+
+
+
+
+
 # [1.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.23.3...@bitgo/sdk-coin-canton@1.24.0) (2026-06-09)
 
 

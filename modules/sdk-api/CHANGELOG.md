@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.86.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.85.0...@bitgo/sdk-api@1.86.0) (2026-06-16)
+
+
+### Features
+
+* **sdk-api:** pass recipient addresses to v1 billing fee endpoint ([ff0cbb7](https://github.com/BitGo/BitGoJS/commit/ff0cbb70dbeea56c357d4b44800c12a309888d91))
+* skip forceV1Auth when HMAC present for SSO ([c578250](https://github.com/BitGo/BitGoJS/commit/c578250a1aa6df1ae44c641cb527dde1abbeb10e))
+
+
+
+
+
 # [1.85.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.84.0...@bitgo/sdk-api@1.85.0) (2026-06-09)
 
 

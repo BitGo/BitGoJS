@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.48.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.47.0...@bitgo/statics@58.48.0) (2026-06-16)
+
+
+### Bug Fixes
+
+* migrate tcanton:usd1 token to testnet ([7c3f7c0](https://github.com/BitGo/BitGoJS/commit/7c3f7c025b01fa68d45f2deffe007a32c96a47d2))
+* **statics:** correct FLRP P-chain explorer transaction URLs ([477ffdc](https://github.com/BitGo/BitGoJS/commit/477ffdc55f6b0560e2efcacf44a7be5a088af01c))
+* **statics:** reject duplicate contract address and NFT index keys in CoinMap ([292a83b](https://github.com/BitGo/BitGoJS/commit/292a83be46ea67aea78105ffe275b74b62acedde))
+
+
+### Features
+
+* add new tokens from AMS API ([82e0b42](https://github.com/BitGo/BitGoJS/commit/82e0b42ecab138a1aa0992b554cb866dec088c18))
+* add new tokens from AMS API ([8360a49](https://github.com/BitGo/BitGoJS/commit/8360a49ea5b0163c16c63670005c53d3cffaa767))
+* exclude singapore trust for ab1 ([020b722](https://github.com/BitGo/BitGoJS/commit/020b722fa2757cc77c3e8ca1555ca7a35ada233f))
+* introduce SUNSETTING coin feature for SEI ([54c9627](https://github.com/BitGo/BitGoJS/commit/54c9627c860b70193d898feaa9c42d48558ca6fe))
+* onboards spaceX token ([758c712](https://github.com/BitGo/BitGoJS/commit/758c712d67674b0d16f3fee5bcb4db879c9eecb5))
+* **statics:** onboard GoUSD and SCAASACME tokens ([3d5723d](https://github.com/BitGo/BitGoJS/commit/3d5723d1570b8bc994b80c7d4bd7b8dec303d53d))
+* **statics:** onboard polygon, avaxc, tempo ([6f72724](https://github.com/BitGo/BitGoJS/commit/6f72724dd68be6e8f51c9e9a165ec7c9e3fb7f6d))
+* **statics:** onboard Robinhood EVM tokens ([103baf9](https://github.com/BitGo/BitGoJS/commit/103baf9de7eef7cfa4165fe95eb4572df04b27c9))
+* **statics:** rename canton fullname in test & prod env ([dbbec42](https://github.com/BitGo/BitGoJS/commit/dbbec427ac7325bd19dbedaaa9a24440eb99db42))
+
+
+
+
+
 # [58.47.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.46.0...@bitgo/statics@58.47.0) (2026-06-09)
 
 

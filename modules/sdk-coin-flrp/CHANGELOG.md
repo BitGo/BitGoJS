@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.14.3...@bitgo/sdk-coin-flrp@1.15.0) (2026-06-16)
+
+
+### Features
+
+* **sdk-coin-flrp:** add createPairedWallet method to Flrp ([eeae274](https://github.com/BitGo/BitGoJS/commit/eeae274c41c79ce982e5b33cbaa744d68c0c3a4d))
+* **sdk-core:** add pre-hashed signable support for Avalanche atomic MPCv2 txs ([629332d](https://github.com/BitGo/BitGoJS/commit/629332db37815a7a0f04849c628bb6fdf6654836))
+
+
+
+
+
 ## [1.14.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.14.2...@bitgo/sdk-coin-flrp@1.14.3) (2026-06-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp

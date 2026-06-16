@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@11.6.1...@bitgo/abstract-utxo@11.7.0) (2026-06-16)
+
+
+### Features
+
+* **abstract-utxo:** implement deriveAddress for fixed-script UTXO wallets ([44c361f](https://github.com/BitGo/BitGoJS/commit/44c361f544b10d4eb778c0d92c6616cfc33de6ad))
+
+
+
+
+
 ## [11.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@11.6.0...@bitgo/abstract-utxo@11.6.1) (2026-06-09)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

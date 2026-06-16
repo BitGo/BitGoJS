@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-starknet@1.3.4...@bitgo/sdk-coin-starknet@1.4.0) (2026-06-16)
+
+
+### Features
+
+* **sdk-coin-starknet:** implement deploy account transaction support ([95e1e84](https://github.com/BitGo/BitGoJS/commit/95e1e8408001179275f6e9a0592fae496f306fa0))
+
+
+
+
+
 ## [1.3.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-starknet@1.3.3...@bitgo/sdk-coin-starknet@1.3.4) (2026-06-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-starknet

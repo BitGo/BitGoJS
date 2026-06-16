@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.12.1...@bitgo/sdk-coin-eth@25.13.0) (2026-06-16)
+
+
+### Features
+
+* **abstract-eth:** implement deriveAddress for MPC/TSS ETH wallets ([59dc3d2](https://github.com/BitGo/BitGoJS/commit/59dc3d2f3daabc17fef0b36245f0bedf380581d1))
+
+
+
+
+
 ## [25.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.12.0...@bitgo/sdk-coin-eth@25.12.1) (2026-06-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

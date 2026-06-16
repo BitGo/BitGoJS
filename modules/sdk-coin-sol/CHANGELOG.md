@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.22.1...@bitgo/sdk-coin-sol@7.23.0) (2026-06-16)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** skip checking recipients in case of ATA tx ([c54e674](https://github.com/BitGo/BitGoJS/commit/c54e674c02a5684df204d1f57035f037d857cb43))
+
+
+### Features
+
+* **sdk-coin-sol:** implement deriveAddress for SOL ([448229a](https://github.com/BitGo/BitGoJS/commit/448229ac81fddd6e557d09df7f8ebc5d9e738c7c))
+
+
+
+
+
 ## [7.22.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.22.0...@bitgo/sdk-coin-sol@7.22.1) (2026-06-09)
 
 

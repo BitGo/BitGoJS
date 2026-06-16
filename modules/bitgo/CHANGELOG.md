@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.6.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.5.0...bitgo@51.6.0) (2026-06-16)
+
+
+### Features
+
+* **sdk-core:** send webauthnInfo with enterpriseId for MPC user keychain ([0547f98](https://github.com/BitGo/BitGoJS/commit/0547f9859cb413c6ff4bb4e37fd4d7309723e8d2))
+
+
+
+
+
 # [51.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.4.0...bitgo@51.5.0) (2026-06-09)
 
 

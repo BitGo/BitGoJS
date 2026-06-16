@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [37.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.6.0...@bitgo/sdk-core@37.7.0) (2026-06-16)
+
+
+### Bug Fixes
+
+* fixes for external signer callback ([87d04a7](https://github.com/BitGo/BitGoJS/commit/87d04a789b5e0bf44ad7d6b64e860873237f4c30))
+* **sdk-core:** persist passkey for onchain generateWallet ([cb63106](https://github.com/BitGo/BitGoJS/commit/cb631061486289f3ce1ad237a984eddcf3e8a0e0))
+* **sdk-core:** populate recipients in buildTokenEnablements for TSS wallets ([6fc31f6](https://github.com/BitGo/BitGoJS/commit/6fc31f6707e39516b4ceb6b6bce72b6cabb6b2cf))
+* **sdk-core:** skip keychain fetch in createAddress for OFC wallets ([c3aff4f](https://github.com/BitGo/BitGoJS/commit/c3aff4ffc8b19f6559401b51c19093cb988c48a6))
+
+
+### Features
+
+* add 'advanced' wallet generation in type ([9a5888d](https://github.com/BitGo/BitGoJS/commit/9a5888ddbbcbddcd42fce4a6c53f8b9c9d3a24b5))
+* external signer callback for multisig akm wallet gen ([7466534](https://github.com/BitGo/BitGoJS/commit/74665341dfe611d3475f8777b39462d0076692ea))
+* **sdk-core:** add deriveAddress primitive to BaseCoin ([f5c2224](https://github.com/BitGo/BitGoJS/commit/f5c2224b4a1537cab6c53a877162382d94e2c753))
+* **sdk-core:** add getEddsaMPCv2RecoveryKeyShares helper ([95b7c38](https://github.com/BitGo/BitGoJS/commit/95b7c384d4b49b1ed938b0ed384ff02197e92e9f))
+* **sdk-core:** add pre-hashed signable support for Avalanche atomic MPCv2 txs ([629332d](https://github.com/BitGo/BitGoJS/commit/629332db37815a7a0f04849c628bb6fdf6654836))
+* **sdk-core:** added canton types in tss prebuild flow ([52df0da](https://github.com/BitGo/BitGoJS/commit/52df0da41a49c703fed70a6991566b40c1ebd25a))
+* **sdk-core:** disable active operation pre-flight check in DefiVault ([7ace459](https://github.com/BitGo/BitGoJS/commit/7ace4598f7bb2fb21eefb9a6c617de993baeb961))
+* **sdk-core:** send webauthnInfo with enterpriseId for MPC user keychain ([0547f98](https://github.com/BitGo/BitGoJS/commit/0547f9859cb413c6ff4bb4e37fd4d7309723e8d2))
+
+
+
+
+
 # [37.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.5.0...@bitgo/sdk-core@37.6.0) (2026-06-09)
 
 

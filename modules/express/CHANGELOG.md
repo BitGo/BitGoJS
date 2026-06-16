@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.35.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.34.0...@bitgo/express@15.35.0) (2026-06-16)
+
+
+### Features
+
+* **express:** add POST /api/v2/:coin/address/derive endpoint ([3f286af](https://github.com/BitGo/BitGoJS/commit/3f286af39000a58b1b024caef12f2d99ebe16797))
+
+
+
+
+
 # [15.34.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.33.0...@bitgo/express@15.34.0) (2026-06-09)
 
 
