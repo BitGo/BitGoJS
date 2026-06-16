@@ -18,8 +18,41 @@ env:
   SOCKET_SECURITY_MODE: monitor  # Options: monitor (non-blocking) or block (fails on vulnerabilities)
 
 jobs:
+  # Detect which file groups changed so downstream jobs can skip when irrelevant.
+  # Only runs on pull_request — on push/workflow_dispatch it is skipped, which causes
+  # downstream jobs (via `needs.changes.result == 'skipped'`) to run unconditionally.
+  changes:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    outputs:
+      source: ${{ steps.filter.outputs.source }}
+      docker: ${{ steps.filter.outputs.docker }}
+      vendor: ${{ steps.filter.outputs.vendor }}
+    steps:
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        id: filter
+        with:
+          filters: |
+            source:
+              - 'modules/**'
+              - 'package.json'
+              - 'yarn.lock'
+              - 'tsconfig*.json'
+              - 'lerna.json'
+            docker:
+              - 'Dockerfile'
+              - '.dockerignore'
+              - 'modules/**'
+              - 'package.json'
+              - 'yarn.lock'
+              - 'lerna.json'
+            vendor:
+              - 'modules/argon2/**'
+
   unit-test:
     runs-on: ubuntu-latest
+    needs: [changes]
+    if: always() && (needs.changes.result == 'skipped' || needs.changes.outputs.source == 'true')
 
     strategy:
       fail-fast: false
@@ -146,6 +179,8 @@ jobs:
 
   browser-test:
     runs-on: ubuntu-22.04
+    needs: [changes]
+    if: always() && (needs.changes.result == 'skipped' || needs.changes.outputs.source == 'true')
 
     steps:
       - uses: socketdev/action@v1
@@ -242,6 +277,8 @@ jobs:
 
   docker-build:
     runs-on: ubuntu-latest
+    needs: [changes]
+    if: always() && (needs.changes.result == 'skipped' || needs.changes.outputs.docker == 'true')
 
     steps:
       - uses: actions/checkout@v6
@@ -314,6 +351,8 @@ jobs:
 
   verify-vendor-integrity:
     runs-on: ubuntu-latest
+    needs: [changes]
+    if: always() && (needs.changes.result == 'skipped' || needs.changes.outputs.vendor == 'true')
 
     steps:
       - uses: actions/checkout@v6
@@ -336,6 +375,8 @@ jobs:
 
   dockerfile-check:
     runs-on: ubuntu-latest
+    needs: [changes]
+    if: always() && (needs.changes.result == 'skipped' || needs.changes.outputs.docker == 'true')
 
     steps:
       - uses: socketdev/action@v1
