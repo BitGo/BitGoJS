@@ -74,13 +74,34 @@ export const DeriveAddressResponse = {
 /**
  * Locally derive and return a wallet receive address from a derivation path.
  *
- * Unlike `iswalletaddress` (which checks a candidate address), this *produces* the address
- * offline from public key material only — the xpub triple for BIP32 multisig coins, or the
- * commonKeychain for TSS/MPC coins. No private keys, no wallet lookup, and no network access:
- * the handler operates purely on the request body and can run in an air-gapped Express.
+ * Unlike `iswalletaddress` (which checks a candidate address), this endpoint *produces* the
+ * address offline from public key material only, using the same derivation BitGo performs
+ * server-side. A client can therefore independently reproduce a wallet's deposit address and
+ * confirm the one returned by the BitGo API rather than trusting it.
  *
- * Pairs with `iswalletaddress` for a derive→verify round-trip: derive the address here, then
- * verify it against the same keychains to independently confirm correctness.
+ * Offline & stateless: the handler operates purely on the request body — no wallet lookup, no
+ * private keys, and no network access — so it can run in an air-gapped BitGo Express. The caller
+ * supplies the derivation `index`; the endpoint never allocates or increments one.
+ *
+ * Supported coins and the keychain material each requires:
+ * - BIP32 multisig UTXO (e.g. `btc`, `tbtc`): the user/backup/bitgo **xpub triple** via `pub`,
+ *   in that order. The `chain` code selects the script type — 0/1 = P2SH (legacy),
+ *   10/11 = P2SH-P2WSH (wrapped segwit), 20/21 = P2WSH (native segwit / bech32),
+ *   30/31 = P2TR (taproot); an optional `format` overrides the encoding.
+ * - MPC/TSS EVM (e.g. `eth`, `teth`; wallet versions 3/5/6): the `commonKeychain`; returns an
+ *   EIP-55 checksummed `0x` address. Legacy BIP32 forwarder wallets (versions 1/2/4) are not yet
+ *   supported and return an error.
+ * - EdDSA TSS (e.g. `sol`, `tsol`): the `commonKeychain`; returns a base58 address. For SMC
+ *   wallets, pass `derivedFromParentWithSeed` so the derivation path is prefixed accordingly.
+ *
+ * Bring your own trusted keys: the security value comes from supplying keychains you hold
+ * independently (captured at wallet creation and stored on your side) and then checking the
+ * derived address against what the BitGo API returns. Feeding in keychains freshly fetched from
+ * the same API you are verifying makes the check circular and provides no assurance.
+ *
+ * Recommended derive→verify round-trip: derive the address here, then call `iswalletaddress`
+ * with the same keychains and index. The two share the same derivation, so a matching result is
+ * a strong, independent correctness guarantee.
  *
  * @operationId express.v2.address.derive
  * @tag Express
