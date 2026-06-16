@@ -1614,6 +1614,10 @@ export const ofcCoins = [
     ...SOL_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
   ]),
+  ofcsolToken('4cde3d6b-1b58-49f2-a689-6242d819ed3d', 'ofcsol:gousd', 'goUSD', 6, UnderlyingAsset['sol:gousd'], [
+    ...SOL_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+  ]),
   ofcsolToken('d398e9e1-1a3e-4307-9e31-e1dbc03aa0f0', 'ofcsol:sofid', 'SoFiUSD', 6, UnderlyingAsset['sol:sofid'], [
     ...SOL_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
@@ -2022,6 +2026,22 @@ export const ofcCoins = [
     'Test USD1 Token',
     6,
     UnderlyingAsset['sol:usd1'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tofcsolToken(
+    'cc4c424f-d4e1-4674-8c5f-a1f6754ebde5',
+    'ofctsol:gousd',
+    'Testnet goUSD',
+    6,
+    UnderlyingAsset['tsol:gousd'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tofcsolToken(
+    '0ed96aeb-fdb5-4426-81b2-05791d4c21d8',
+    'ofctsol:stggousd',
+    'Testnet goUSD',
+    6,
+    UnderlyingAsset['tsol:stggousd'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   tofcsolToken(
@@ -3215,6 +3235,24 @@ export const ofcCoins = [
     'Test USD1 Token',
     18,
     UnderlyingAsset['tbsc:stgusd1'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  tofcBscToken(
+    'b94eff50-b8aa-4503-9b56-c6f7fb32bcde',
+    'ofctbsc:stgscaasacme',
+    'Testnet Acme USD',
+    6,
+    UnderlyingAsset['tbsc:stgscaasacme'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  tofcBscToken(
+    '6e4c653e-a614-4a68-8a6b-eba76fb37515',
+    'ofctbsc:scaasacme',
+    'Testnet Acme USD',
+    6,
+    UnderlyingAsset['tbsc:scaasacme'],
     undefined,
     [CoinFeature.STABLECOIN]
   ),
@@ -5104,6 +5142,7 @@ export const ofcCoins = [
   ),
   ofcTempoToken('c9a90ee0-6546-413c-9cbe-94fdc14985c5', 'ofctempo:usdc', 'USDC', 6, UnderlyingAsset['tempo:usdc']),
   ofcTempoToken('05ac1283-5e72-4cba-8b0f-38cbd23a25c6', 'ofctempo:usd1', 'USD1', 6, UnderlyingAsset['tempo:usd1']),
+  ofcTempoToken('11894b40-38da-4c52-80c3-a824bb452e69', 'ofctempo:gousd', 'goUSD', 6, UnderlyingAsset['tempo:gousd']),
   ofcTempoToken('554f9084-4ac8-466a-8675-3de33ffd47d7', 'ofctempo:usdt0', 'USDT0', 6, UnderlyingAsset['tempo:usdt0']),
   // Tempo testnet OFC tokens
   tofcTempoToken(
@@ -5147,6 +5186,34 @@ export const ofcCoins = [
     'Test USD1 Token',
     6,
     UnderlyingAsset['ttempo:stgusd1']
+  ),
+  tofcTempoToken(
+    '7cbcd988-0cec-4d42-849c-d6a00591d862',
+    'ofcttempo:gousd',
+    'Testnet goUSD',
+    6,
+    UnderlyingAsset['ttempo:gousd']
+  ),
+  tofcTempoToken(
+    '3c728a90-7dc9-4ae9-962f-e18417dffdc2',
+    'ofcttempo:stggousd',
+    'Testnet goUSD',
+    6,
+    UnderlyingAsset['ttempo:stggousd']
+  ),
+  tofcTempoToken(
+    '8876a3e5-5b6d-4184-8c26-0520b5a4a89b',
+    'ofcttempo:stgscaasacme',
+    'Testnet Acme USD',
+    6,
+    UnderlyingAsset['ttempo:stgscaasacme']
+  ),
+  tofcTempoToken(
+    '3407563d-4e99-46d5-8d87-16ef1adeb9b3',
+    'ofcttempo:scaasacme',
+    'Testnet Acme USD',
+    6,
+    UnderlyingAsset['ttempo:scaasacme']
   ),
   ofc('6f0246cf-b792-483a-b720-9755b158c614', 'ofcunieth', 'Unichain', 18, UnderlyingAsset.UNIETH, CoinKind.CRYPTO),
   tofc(

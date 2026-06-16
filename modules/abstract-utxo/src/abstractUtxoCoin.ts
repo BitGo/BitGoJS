@@ -41,6 +41,8 @@ import {
   Wallet,
   isValidPrv,
   isValidXprv,
+  DeriveAddressOptions,
+  DeriveAddressResult,
 } from '@bitgo/sdk-core';
 
 import {
@@ -75,7 +77,7 @@ import {
 } from './transaction/descriptor/verifyTransaction';
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
 import { getFullNameFromCoinName, getMainnetCoinName, isMainnetCoin, UtxoCoinName, UtxoCoinNameMainnet } from './names';
-import { assertFixedScriptWalletAddress } from './address/fixedScript';
+import { assertFixedScriptWalletAddress, generateAddress } from './address/fixedScript';
 import { ParsedTransaction } from './transaction/types';
 import { decodeDescriptorPsbt, decodePsbt, encodeTransaction, stringToBufferTryFormats } from './transaction/decode';
 import { fetchKeychains, toBip32Triple, UtxoKeychain } from './keychains';
@@ -714,6 +716,35 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
     });
 
     return true;
+  }
+
+  /**
+   * Locally derive a fixed-script (2-of-3 multisig) wallet receive address from the xpub triple
+   * and a chain/index, using public keys only (no private keys, no network access). This is the
+   * inverse of {@link isWalletAddress}, delegating to the same `generateAddress` used by the
+   * verification path, so derive and verify can never diverge.
+   *
+   * The `chain` code selects the script type (e.g. 0/1 = P2SH, 20/21 = P2WSH/bech32, 30/31 = P2TR);
+   * an optional `format` overrides the address encoding.
+   * @param params keychains (xpub triple via `pub`), chain, index, and optional format
+   * @returns the derived address and the chain/index used
+   */
+  async deriveAddress(params: DeriveAddressOptions): Promise<DeriveAddressResult> {
+    const { keychains, chain, index, format } = params;
+
+    if (!keychains) {
+      throw new Error('missing required param keychains');
+    }
+
+    const address = generateAddress(this.name, {
+      // fixed-script (multisig) coins derive from the xpub triple via `pub`
+      keychains: keychains as { pub: string }[],
+      chain,
+      index,
+      format,
+    });
+
+    return { address, chain, index };
   }
 
   /**

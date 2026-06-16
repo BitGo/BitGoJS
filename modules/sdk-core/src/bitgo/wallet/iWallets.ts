@@ -101,7 +101,7 @@ export interface GenerateWalletOptions {
   isDistributedCustody?: boolean;
   bitgoKeyId?: string;
   commonKeychain?: string;
-  type?: 'hot' | 'cold' | 'custodial' | 'trading';
+  type?: 'hot' | 'cold' | 'custodial' | 'trading' | 'advanced';
   subType?: 'lightningCustody' | 'lightningSelfCustody';
   evmKeyRingReferenceWalletId?: string;
   lightningProvider?: 'amboss' | 'voltage';

@@ -119,8 +119,8 @@ export const cantonTokens = [
     'tcanton:usd1',
     'Test USD1 Token',
     10,
-    'https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/',
-    '12209::12209fec64653a5324fba57424949ccbdb51828b76d914451772c4496a0215d0cca7:USD1',
+    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    '12203::12203db723d11df3e69eb66fa9bbb5904269895ac0b284b61e3aeb03b748ca09802e:USD1',
     UnderlyingAsset['tcanton:usd1'],
     [...CANTON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),

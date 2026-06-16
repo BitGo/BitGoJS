@@ -19,9 +19,13 @@ import {
   BaseTransaction,
   SigningError,
   MethodNotImplementedError,
+  SignableTransaction,
+  isAvalancheAtomicTx,
 } from '@bitgo/sdk-core';
 import * as FlrpLib from './lib';
 import {
+  CreatePairedWalletParams,
+  CreatePairedWalletResponse,
   FlrpEntry,
   FlrpExplainTransactionOptions,
   FlrpSignTransactionOptions,
@@ -440,8 +444,25 @@ export class Flrp extends BaseCoin {
     return FlrpLib.Utils.createSignature(this._staticsCoin.network as FlareNetwork, message, prv);
   }
 
+  /**
+   * Returns true when the signableHex for this transaction is already the
+   * final signing hash (SHA-256 for Avalanche atomic txs), and the MPC
+   * signing flow should use it directly without additional hashing.
+   */
+  isSignablePreHashed(unsignedTx: SignableTransaction): boolean {
+    return isAvalancheAtomicTx(unsignedTx);
+  }
+
   /** @inheritDoc */
   auditDecryptedKey(params: AuditDecryptedKeyParams): void {
     throw new MethodNotImplementedError();
+  }
+
+  async createPairedWallet(params: CreatePairedWalletParams): Promise<CreatePairedWalletResponse> {
+    const { walletId, label } = params;
+    return this.bitgo
+      .post(this.url(`/wallet/${walletId}/create-paired-wallet`))
+      .send(label ? { label } : {})
+      .result();
   }
 }

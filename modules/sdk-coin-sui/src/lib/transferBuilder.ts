@@ -193,9 +193,17 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
    *   Handles Case 5 (sponsor coin-object gas) and Case 7/Phase-4b (sponsor addr-bal gas).
    *   Caller must set ValidDuring expiration when gasData.payment = [] (Cases 7, 9).
    *
-   * Path 2a/2b — Self-pay, coin objects only OR address-balance only (sender === gasData.owner):
+   * Path 2a — Self-pay, coin objects only (sender === gasData.owner, payment non-empty, fundsInAddressBalance==0):
    *   SplitCoins(GasCoin, [amount]) → TransferObjects
-   *   Handles Case 1 (coins only) and Case 2 (addr-bal only, caller sets ValidDuring).
+   *   Handles Case 1 (coins only).
+   *
+   * Path 2b — Self-pay, address-balance only (sender === gasData.owner, payment==[], fundsInAddressBalance>0):
+   *   withdrawal(totalRecipientAmount) → redeem_funds → Coin<SUI>
+   *   SplitCoins(addrCoin, [amount]) → TransferObjects
+   *   MergeCoins(GasCoin, [addrCoin])   ← destroys 0-balance addrCoin; gas paid from accumulator remainder
+   *   Handles Case 2 (addr-bal only, caller sets ValidDuring).
+   *   NOTE: SplitCoins(GasCoin, [amount]) does NOT work here — with payment=[], GasCoin only
+   *   carries up to gas-budget-worth of balance for PTB operations, not the full address balance.
    *
    * Path 2c — Self-pay, mixed (sender === gasData.owner, gasData.payment non-empty AND fundsInAddressBalance > 0):
    *   Sui does NOT automatically merge address balance into gas coin when payment is non-empty.
@@ -359,7 +367,53 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
         };
       }
 
-      // Path 2a / 2b: self-pay, coin objects only OR address-balance only.
+      // Path 2b: self-pay, address-balance only (payment=[], fundsInAddressBalance>0).
+      // With payment=[], GasCoin is backed by the address accumulator only for gas reservation;
+      // it does NOT expose the full address balance for SplitCoins. Attempting
+      // SplitCoins(GasCoin, [large_amount]) with payment=[] always fails with
+      // InsufficientCoinBalance in command 0 because GasCoin only carries up to
+      // gas-budget-worth of balance for PTB operations.
+      // Fix: use withdrawal+redeem_funds to materialise the transfer amount as a coin
+      // object, split from that coin, then merge the 0-balance remainder into GasCoin
+      // (destroying it). The accumulator retains the gas budget for gas settlement.
+      if (this._fundsInAddressBalance.gt(0) && this._gasData.payment.length === 0) {
+        const totalRecipientAmount = this._recipients.reduce(
+          (acc, r) => acc.plus(new BigNumber(r.amount)),
+          new BigNumber(0)
+        );
+        // Withdraw exactly the total transfer amount. The difference
+        // (fundsInAddressBalance - totalRecipientAmount ≈ gasBudget) remains in the
+        // accumulator and is consumed by the empty-payment gas mechanism.
+        const [addrCoin] = programmableTxBuilder.moveCall({
+          target: '0x2::coin::redeem_funds',
+          typeArguments: ['0x2::sui::SUI'],
+          arguments: [programmableTxBuilder.withdrawal({ amount: BigInt(totalRecipientAmount.toFixed()) })],
+        });
+        this._recipients.forEach((recipient) => {
+          const splitObject = programmableTxBuilder.splitCoins(addrCoin, [
+            programmableTxBuilder.pure(BigInt(recipient.amount)),
+          ]);
+          programmableTxBuilder.transferObjects([splitObject], programmableTxBuilder.object(recipient.address));
+        });
+        // addrCoin has 0 balance after all splits; merge into GasCoin to delete it.
+        programmableTxBuilder.mergeCoins(programmableTxBuilder.gas, [addrCoin]);
+        const txData2b = programmableTxBuilder.blockData;
+        return {
+          type: this._type,
+          sender: this._sender,
+          tx: {
+            inputs: [...txData2b.inputs],
+            transactions: [...txData2b.transactions],
+          },
+          gasData: {
+            ...this._gasData,
+          },
+          expiration: this._expiration,
+          fundsInAddressBalance: this._fundsInAddressBalance.toFixed(),
+        };
+      }
+
+      // Path 2a: self-pay, coin objects only (payment non-empty, fundsInAddressBalance==0).
       // number of objects passed as gas payment should be strictly less than `MAX_GAS_OBJECTS`. When the transaction
       // requires a larger number of inputs we use the merge command to merge the rest of the objects into the gasCoin
       if (this._gasData.payment.length >= MAX_GAS_OBJECTS) {

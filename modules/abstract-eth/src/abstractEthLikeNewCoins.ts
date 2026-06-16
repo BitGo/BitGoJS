@@ -41,8 +41,11 @@ import {
   VerifyTransactionOptions,
   Wallet,
   verifyMPCWalletAddress,
+  deriveMPCWalletAddress,
   TssVerifyAddressOptions,
   isTssVerifyAddressOptions,
+  DeriveAddressOptions,
+  DeriveAddressResult,
 } from '@bitgo/sdk-core';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/secp256k1';
@@ -3038,6 +3041,43 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     // If we reach here, it's a base address verification for an unsupported wallet version
     throw new Error(`Base address verification not supported for wallet version ${params.walletVersion}`);
+  }
+
+  /**
+   * Locally derive an ETH wallet receive address from a derivation path, using the wallet's
+   * commonKeychain only (no private keys, no network access). The inverse of
+   * {@link isWalletAddress}: it *produces* the address via the same secp256k1 MPC derivation
+   * that isWalletAddress checks against (`deriveMPCWalletAddress` + `KeyPair.getAddress()`),
+   * so derive and verify can never diverge.
+   *
+   * Supports MPC/TSS wallets only (wallet versions 3, 5, 6). Legacy BIP32 forwarder wallets
+   * (versions 1, 2, 4) derive per-index forwarder contract addresses and are handled separately.
+   * @param params keychains (commonKeychain), derivation index, walletVersion, and optional SMC seed
+   * @returns the derived address, the index used, and the HD derivation path
+   */
+  async deriveAddress(params: DeriveAddressOptions): Promise<DeriveAddressResult> {
+    const isMpcWallet = params.walletVersion === 3 || params.walletVersion === 5 || params.walletVersion === 6;
+    if (!isMpcWallet) {
+      throw new Error(
+        `deriveAddress currently supports only MPC/TSS ETH wallets (wallet versions 3, 5, 6). ` +
+          `Legacy BIP32 forwarder wallets (versions 1, 2, 4) are not yet supported. ` +
+          `Got walletVersion ${params.walletVersion}.`
+      );
+    }
+
+    const { address, derivationPath } = await deriveMPCWalletAddress(
+      {
+        // extractCommonKeychain validates the commonKeychain is present at runtime
+        keychains: (params.keychains ?? []) as TssVerifyAddressOptions['keychains'],
+        index: params.index,
+        derivedFromParentWithSeed: params.derivedFromParentWithSeed,
+        multisigTypeVersion: params.multisigTypeVersion,
+        keyCurve: 'secp256k1',
+      },
+      (pubKey) => new KeyPairLib({ pub: pubKey }).getAddress()
+    );
+
+    return { address, index: params.index, derivationPath };
   }
 
   /**

@@ -1715,4 +1715,22 @@ export const bscTokens = [
     UnderlyingAsset['bsc:hybond'],
     BSC_TOKEN_FEATURES
   ),
+  tbscToken(
+    '2d4e4f61-1acd-416c-9d38-3d80d95a38d4',
+    'tbsc:stgscaasacme',
+    'Testnet Acme USD',
+    6,
+    '0x3273bfa01f481b13b5fb31f3d47252ea3da2308a',
+    UnderlyingAsset['tbsc:stgscaasacme'],
+    [...BSC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tbscToken(
+    '661d9dfc-a267-47e9-ba45-cfb598c58eb3',
+    'tbsc:scaasacme',
+    'Testnet Acme USD',
+    6,
+    '0x1494a12f1a60ed1d21ab98f00eb629e5cd16bc17',
+    UnderlyingAsset['tbsc:scaasacme'],
+    [...BSC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
 ];
