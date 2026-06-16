@@ -136,6 +136,7 @@
 /modules/sdk-core/src/bitgo/lightning/ @BitGo/btc-team
 /modules/sdk-core/test/unit/bitgo/lightning/ @BitGo/btc-team
 /modules/sdk-core/test/unit/bitgo/wallet/resourceManagement.ts @BitGo/ethalt-team
+/modules/sdk-core/test/unit/bitgo/utils/tss/preHashedSignable.ts @BitGo/ethalt-team
 /modules/sdk-lib-mpc/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
 /modules/deser-lib/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
 /modules/sdk-rpc-wrapper @BitGo/ethalt-team

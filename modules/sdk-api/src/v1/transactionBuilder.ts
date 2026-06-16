@@ -288,13 +288,19 @@ exports.createTransaction = function (params) {
       if (bitgoFeeInfo) {
         return;
       }
-      return params.wallet.getBitGoFee({ amount: totalOutputAmount, instant: params.instant }).then(function (result) {
-        if (result && result.fee > 0) {
-          bitgoFeeInfo = {
-            amount: result.fee,
-          };
-        }
-      });
+      return params.wallet
+        .getBitGoFee({
+          amount: totalOutputAmount,
+          instant: params.instant,
+          recipients: params.recipients?.map((r: any) => r.address).filter(Boolean) ?? [],
+        })
+        .then(function (result) {
+          if (result && result.fee > 0) {
+            bitgoFeeInfo = {
+              amount: result.fee,
+            };
+          }
+        });
     }).then(function () {
       if (bitgoFeeInfo && bitgoFeeInfo.amount > 0) {
         totalAmount += bitgoFeeInfo.amount;

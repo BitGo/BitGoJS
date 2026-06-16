@@ -10,6 +10,7 @@ function getAddressVerificationModule() {
 const getExtractCommonKeychain = () => getAddressVerificationModule().extractCommonKeychain;
 const getVerifyEddsaTssWalletAddress = () => getAddressVerificationModule().verifyEddsaTssWalletAddress;
 const getVerifyMPCWalletAddress = () => getAddressVerificationModule().verifyMPCWalletAddress;
+const getDeriveMPCWalletAddress = () => getAddressVerificationModule().deriveMPCWalletAddress;
 
 // RFC 8032 test vector: known valid Ed25519 public key + arbitrary chaincode = 128 hex chars.
 const TEST_PK = 'd75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a';
@@ -242,5 +243,80 @@ describe('verifyMPCWalletAddress - ECDSA (secp256k1)', function () {
       getAddressFromPublicKey
     );
     result.should.be.false();
+  });
+});
+
+describe('deriveMPCWalletAddress', function () {
+  const getAddressFromPublicKey = (pk: string) => pk;
+
+  describe('ed25519 (MPCv2)', function () {
+    const keychains = [{ commonKeychain: TEST_KEYCHAIN }, { commonKeychain: TEST_KEYCHAIN }];
+
+    it('derives the address and path for the simple m/{index} path', async function () {
+      const deriveMPCWalletAddress = getDeriveMPCWalletAddress();
+      const expectedAddress = deriveUnhardenedMps(TEST_KEYCHAIN, 'm/3').slice(0, 64);
+
+      const result = await deriveMPCWalletAddress(
+        { keychains, index: 3, multisigTypeVersion: 'MPCv2', keyCurve: 'ed25519' },
+        getAddressFromPublicKey
+      );
+
+      result.address.should.equal(expectedAddress);
+      result.derivationPath.should.equal('m/3');
+    });
+
+    it('uses the SMC prefix path when derivedFromParentWithSeed is set', async function () {
+      const deriveMPCWalletAddress = getDeriveMPCWalletAddress();
+      const seed = 'smc-seed-123';
+      const prefix = getDerivationPath(seed);
+      const expectedAddress = deriveUnhardenedMps(TEST_KEYCHAIN, `${prefix}/0`).slice(0, 64);
+
+      const result = await deriveMPCWalletAddress(
+        { keychains, index: 0, multisigTypeVersion: 'MPCv2', derivedFromParentWithSeed: seed, keyCurve: 'ed25519' },
+        getAddressFromPublicKey
+      );
+
+      result.address.should.equal(expectedAddress);
+      result.derivationPath.should.equal(`${prefix}/0`);
+    });
+  });
+
+  describe('secp256k1', function () {
+    const ecdsaKeychains = [{ commonKeychain: ECDSA_KEYCHAIN }, { commonKeychain: ECDSA_KEYCHAIN }];
+
+    it('derives the secp256k1 address (33-byte pubkey)', async function () {
+      const deriveMPCWalletAddress = getDeriveMPCWalletAddress();
+      const expectedAddress = new Ecdsa().deriveUnhardened(ECDSA_KEYCHAIN, 'm/2').slice(0, 66);
+
+      const result = await deriveMPCWalletAddress(
+        { keychains: ecdsaKeychains, index: 2, keyCurve: 'secp256k1' },
+        getAddressFromPublicKey
+      );
+
+      result.address.should.equal(expectedAddress);
+      result.derivationPath.should.equal('m/2');
+    });
+  });
+
+  describe('round-trip with verifyMPCWalletAddress', function () {
+    it('an address produced by deriveMPCWalletAddress verifies as true', async function () {
+      const deriveMPCWalletAddress = getDeriveMPCWalletAddress();
+      const verifyMPCWalletAddress = getVerifyMPCWalletAddress();
+      const ecdsaKeychains = [{ commonKeychain: ECDSA_KEYCHAIN }, { commonKeychain: ECDSA_KEYCHAIN }];
+      const isValidEcdsaAddress = (addr: string) => addr.length === 66;
+
+      const { address } = await deriveMPCWalletAddress(
+        { keychains: ecdsaKeychains, index: 7, keyCurve: 'secp256k1' },
+        getAddressFromPublicKey
+      );
+
+      const verified = await verifyMPCWalletAddress(
+        { address, keychains: ecdsaKeychains, index: 7, keyCurve: 'secp256k1' },
+        isValidEcdsaAddress,
+        getAddressFromPublicKey
+      );
+
+      verified.should.be.true();
+    });
   });
 });

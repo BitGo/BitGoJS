@@ -1462,8 +1462,12 @@ export class Wallet implements IWallet {
       addressParams.evmKeyRingReferenceAddress = evmKeyRingReferenceAddress;
     }
 
-    // get keychains for address verification
-    const keychains = await Promise.all(this._wallet.keys.map((k) => this.baseCoin.keychains().get({ id: k, reqId })));
+    // OFC coins skip address verification (isWalletAddress throws MethodNotImplementedError),
+    // so fetching keychains is unnecessary and can fail for server-managed keys.
+    const keychains =
+      this.baseCoin.getFamily() === 'ofc'
+        ? []
+        : await Promise.all(this._wallet.keys.map((k) => this.baseCoin.keychains().get({ id: k, reqId })));
     const rootAddress = _.get(this._wallet, 'receiveAddress.address');
 
     const newAddresses = _.times(count, async () => {

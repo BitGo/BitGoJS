@@ -508,5 +508,65 @@ describe('Canton Utils - CantonCommand helpers', function () {
     it('should throw on type mismatch', function () {
       assert.throws(() => utils.assertDeepCantonMatch({ a: 'str' }, { a: 42 }, noInject), /mismatch/);
     });
+
+    describe('ISO timestamp vs microsecond string normalisation', function () {
+      const isoTs = '2026-06-12T10:00:00.000Z';
+      const isoTsUs = String(new Date(isoTs).getTime() * 1000);
+
+      it('should pass when ISO timestamp (expected) equals microseconds (actual)', function () {
+        assert.doesNotThrow(() => utils.assertDeepCantonMatch(isoTs, isoTsUs, noInject));
+      });
+
+      it('should throw timestamp mismatch when microseconds do not correspond to the ISO value', function () {
+        const wrongUs = String(new Date(isoTs).getTime() * 1000 + 1_000_000);
+        assert.throws(() => utils.assertDeepCantonMatch(isoTs, wrongUs, noInject), /timestamp mismatch/);
+      });
+
+      it('should pass for ISO timestamp nested inside a mint-like choiceArgument object', function () {
+        const executeBefore = '2026-06-13T10:00:00.000Z';
+        const executeBeforeUs = String(new Date(executeBefore).getTime() * 1000);
+
+        const expected = {
+          expectedAdmin: 'registrar::1220abc',
+          mint: {
+            instrumentId: { admin: 'registrar::1220abc', id: 'STGUSD1' },
+            amount: '1000000.0',
+            holder: 'registrar::1220abc',
+            reference: 'mint-stgusd1-12345',
+            requestedAt: isoTs,
+            executeBefore: executeBefore,
+            meta: { values: {} },
+          },
+        };
+
+        const actual = {
+          expectedAdmin: 'registrar::1220abc',
+          mint: {
+            instrumentId: { admin: 'registrar::1220abc', id: 'STGUSD1' },
+            amount: '1000000.0000000000',
+            holder: 'registrar::1220abc',
+            reference: 'mint-stgusd1-12345',
+            requestedAt: isoTsUs,
+            executeBefore: executeBeforeUs,
+            meta: { values: {} },
+          },
+        };
+
+        assert.doesNotThrow(() => utils.assertDeepCantonMatch(expected, actual, noInject));
+      });
+
+      it('should throw when ISO timestamp in nested object does not match microseconds', function () {
+        const wrongUs = String(new Date(isoTs).getTime() * 1000 + 5_000_000);
+
+        const expected = { mint: { requestedAt: isoTs } };
+        const actual = { mint: { requestedAt: wrongUs } };
+
+        assert.throws(() => utils.assertDeepCantonMatch(expected, actual, noInject), /timestamp mismatch/);
+      });
+
+      it('should not treat an arbitrary non-timestamp ISO-like string as a timestamp', function () {
+        assert.throws(() => utils.assertDeepCantonMatch('not-a-timestamp', isoTsUs, noInject), /mismatch/);
+      });
+    });
   });
 });

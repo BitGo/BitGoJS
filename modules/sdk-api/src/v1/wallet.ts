@@ -2555,9 +2555,12 @@ Wallet.prototype.getBitGoFee = function (params, callback) {
   if (params.instant && !_.isBoolean(params.instant)) {
     throw new Error('invalid instant argument');
   }
-  return Promise.resolve(this.bitgo.get(this.url('/billing/fee')).query(params).result())
-    .then(callback)
-    .catch(callback);
+  const { recipients, ...baseParams } = params;
+  let req = this.bitgo.get(this.url('/billing/fee')).query(baseParams);
+  if (Array.isArray(recipients) && recipients.length > 0) {
+    req = req.query({ 'recipients[]': recipients });
+  }
+  return Promise.resolve(req.result()).then(callback).catch(callback);
 };
 
 /*

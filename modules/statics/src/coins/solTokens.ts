@@ -4099,4 +4099,37 @@ export const solTokens = [
     SOL_TOKEN_FEATURES,
     ProgramID.Token2022ProgramId
   ),
+  solToken(
+    '7b7edb2a-3952-4083-8df9-cf16baa8d82c',
+    'sol:gousd',
+    'goUSD',
+    6,
+    '7vXcrS2iHjBhQwP6RhAPhZaTGKjodfGPr2H3GDaqmnPN',
+    '7vXcrS2iHjBhQwP6RhAPhZaTGKjodfGPr2H3GDaqmnPN',
+    UnderlyingAsset['sol:gousd'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    '5f4de23d-67b5-4a8f-bb31-9c1c72f62489',
+    'tsol:gousd',
+    'Testnet goUSD',
+    6,
+    'BtY9vAphvWWtwFoThckHP9ciY9Mvy2nLyhiYKeRhb3Ds',
+    'BtY9vAphvWWtwFoThckHP9ciY9Mvy2nLyhiYKeRhb3Ds',
+    UnderlyingAsset['tsol:gousd'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    '0b18da3c-a072-42cb-a3bf-3818af269287',
+    'tsol:stggousd',
+    'Testnet goUSD',
+    6,
+    'Ec7mXJZtXnbn34Mt9LaLZe3DRmEZmWCxcNrAmvK4HKaS',
+    'Ec7mXJZtXnbn34Mt9LaLZe3DRmEZmWCxcNrAmvK4HKaS',
+    UnderlyingAsset['tsol:stggousd'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    ProgramID.Token2022ProgramId
+  ),
 ];
