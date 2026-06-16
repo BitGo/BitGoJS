@@ -16,7 +16,7 @@ FROM node:22.22.0-bookworm-slim@sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c4084
 ARG SOCKET_SECURITY_MODE=monitor
 ENV SOCKET_SECURITY_MODE=${SOCKET_SECURITY_MODE}
 RUN apt-get update && apt-get install -y git python3 make g++ libtool autoconf automake
-RUN npm i -g sfw
+RUN npm i -g --no-fund sfw@2.0.6 && sfw true
 WORKDIR /tmp/bitgo
 COPY --from=filter-packages-json /tmp/bitgo .
 # (skip postinstall) https://github.com/yarnpkg/yarn/issues/4100#issuecomment-388944260
