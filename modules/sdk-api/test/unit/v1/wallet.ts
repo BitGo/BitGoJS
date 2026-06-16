@@ -1823,4 +1823,71 @@ describe('Wallet Prototype Methods', function () {
       });
     });
   });
+
+  describe('getBitGoFee', function () {
+    let bgUrl: string;
+    let wallet: any;
+
+    before(function () {
+      nock.pendingMocks().should.be.empty();
+      const prodBitgo = new BitGoAPI({ env: 'prod', clientConstants: { constants: {} } });
+      bgUrl = common.Environments[prodBitgo.getEnv()].uri;
+      wallet = new Wallet(prodBitgo, {
+        id: '2NCoSfHH6Ls4CdTS5QahgC9k7x9RfXeSwY4',
+        private: { keychains: [userKeypair, backupKeypair, bitgoKey] },
+      });
+    });
+
+    afterEach(function () {
+      nock.cleanAll();
+    });
+
+    it('sends amount and instant without recipients when recipients array is empty', async function () {
+      const scope = nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/billing/fee`)
+        .query({ amount: '100000', instant: 'false' })
+        .reply(200, { fee: 1000 });
+
+      const result = await wallet.getBitGoFee({ amount: 100000, instant: false });
+      result.fee.should.equal(1000);
+      scope.isDone().should.be.true();
+    });
+
+    it('sends recipients[] query params when recipients are provided', async function () {
+      const addr1 = '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy';
+      const addr2 = '3FZbgi29cpjq2GjdwV8eyHuJJnkLtktZc5';
+
+      const scope = nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/billing/fee`)
+        .query((query) => {
+          const recipientsParam = query['recipients[]'];
+          const recipientsList = Array.isArray(recipientsParam) ? recipientsParam : [recipientsParam];
+          return query.amount === '100000' && recipientsList.includes(addr1) && recipientsList.includes(addr2);
+        })
+        .reply(200, { fee: 0 });
+
+      const result = await wallet.getBitGoFee({ amount: 100000, recipients: [addr1, addr2] });
+      result.fee.should.equal(0);
+      scope.isDone().should.be.true();
+    });
+
+    it('omits recipients[] when recipients array is empty', async function () {
+      const scope = nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/billing/fee`)
+        .query((query) => query.amount === '200000' && !('recipients[]' in query))
+        .reply(200, { fee: 500 });
+
+      const result = await wallet.getBitGoFee({ amount: 200000, recipients: [] });
+      result.fee.should.equal(500);
+      scope.isDone().should.be.true();
+    });
+
+    it('throws when amount is not a number', function () {
+      (() => wallet.getBitGoFee({ amount: 'bad' })).should.throw('invalid amount argument');
+    });
+
+    it('throws when instant is not a boolean', function () {
+      (() => wallet.getBitGoFee({ amount: 100, instant: 'yes' })).should.throw('invalid instant argument');
+    });
+  });
 });

@@ -15,6 +15,7 @@ import { Hash } from 'crypto';
 import { TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { MessageStandardType, MPCTx, PopulatedIntent, TokenTransferRecipientParams, TokenType } from '../utils';
+import type { SignableTransaction } from '../utils/tss/baseTypes';
 import { IWebhooks } from '../webhook/iWebhooks';
 
 export const multisigTypes = {
@@ -208,6 +209,56 @@ export function isTssVerifyAddressOptions<T extends VerifyAddressOptions | TssVe
     'address' in params &&
     params.keychains?.some((kc) => 'commonKeychain' in kc && !!kc.commonKeychain)
   );
+}
+
+/**
+ * Options for locally deriving a wallet receive address from a derivation path.
+ *
+ * Unlike {@link VerifyAddressOptions}, which checks a candidate address, these options are
+ * used to *produce* the address offline from public key material only:
+ * - the user/backup/bitgo xpub triple (`pub`) for BIP32 multisig coins, or
+ * - the `commonKeychain` for TSS/MPC coins.
+ *
+ * No private keys and no network access are required.
+ */
+export interface DeriveAddressOptions
+  extends Pick<VerifyAddressOptions, 'format' | 'derivedFromParentWithSeed' | 'multisigTypeVersion'> {
+  // `format`, `derivedFromParentWithSeed` and `multisigTypeVersion` are reused from
+  // VerifyAddressOptions so derive and verify stay in sync on shared fields.
+  /**
+   * Derivation index for the address.
+   * For BIP32 multisig coins this is combined with `chain`; for TSS/MPC coins the
+   * derivation path is `m/{index}` (or `{prefix}/{index}` for SMC wallets).
+   */
+  index: number;
+  /** Derivation chain code (UTXO script-type / external-vs-internal selector). */
+  chain?: number;
+  /**
+   * Public key material for derivation. Each keychain must carry at least one of:
+   * - BIP32 multisig (UTXO, legacy EVM): the user/backup/bitgo xpub triple via `pub`.
+   * - TSS/MPC (SOL, EVM MPC, etc.): the `commonKeychain` (identical across keychains).
+   *
+   * Modelled as a union so a keychain with neither field is a type error. A keychain may
+   * still carry both fields (TSS keychains commonly expose `pub` alongside `commonKeychain`).
+   */
+  keychains?: ({ pub: string } | { commonKeychain: string })[];
+  /** Wallet version, used to disambiguate derivation strategy for some coin families. */
+  walletVersion?: number;
+}
+
+/**
+ * Result of locally deriving a wallet receive address.
+ *
+ * Extends {@link AddressVerificationData} (`chain`, `index`, `coinSpecific`) and adds the
+ * resolved `address` and the HD `derivationPath` actually used.
+ */
+export interface DeriveAddressResult extends AddressVerificationData {
+  /** The derived address. */
+  address: string;
+  /** The derivation index used. */
+  index: number;
+  /** The HD derivation path actually used to derive the address. */
+  derivationPath?: string;
 }
 
 export interface TransactionParams {
@@ -618,6 +669,7 @@ export interface IBaseCoin {
   verifyTransaction(params: VerifyTransactionOptions): Promise<boolean>;
   verifyAddress(params: VerifyAddressOptions): Promise<boolean>;
   isWalletAddress(params: VerifyAddressOptions | TssVerifyAddressOptions, wallet?: IWallet): Promise<boolean>;
+  deriveAddress(params: DeriveAddressOptions): Promise<DeriveAddressResult>;
   canonicalAddress(address: string, format: unknown): string;
   supportsBlockTarget(): boolean;
   supportsLightning(): boolean;
@@ -657,6 +709,12 @@ export interface IBaseCoin {
    */
   buildNftTransferData(params: BuildNftTransferDataOptions): string | TokenTransferRecipientParams;
   getHashFunction(): Hash;
+  /**
+   * Returns true when signableHex is already the final signing hash for MPC signing
+   * (e.g. SHA-256 for Avalanche atomic cross-chain txs). Only implemented by coins
+   * that produce pre-hashed signable material.
+   */
+  isSignablePreHashed?(unsignedTx: SignableTransaction): boolean;
   broadcastTransaction(params: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult>;
   setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void;
 

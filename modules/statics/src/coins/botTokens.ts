@@ -128,6 +128,22 @@ export const botTokens = [
     undefined,
     Networks.test.hoodi
   ),
+  AccountCtors.terc20(
+    '6ed32c82-b855-4e23-a156-2e12569b854d',
+    'hteth:cssv',
+    'cSSV',
+    18,
+    '0x6e1a5d27361c666f681af06535c8ac773e571d4d',
+    'hteth:cssv' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
@@ -1430,6 +1446,22 @@ export const botTokens = [
     6,
     '0x5e817f2abccb9095585d26c2a3ce234a440574fc',
     'eth:frnt' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '29db2da1-2c00-4b31-9974-73b981ec3b3e',
+    'eth:usdds',
+    'Usdd Stablecoin',
+    18,
+    '0x4f8e5de400de08b164e7421b3ee387f461becd1a',
+    'eth:usdds' as unknown as UnderlyingAsset,
     getTokenFeatures('eth', [
       'custody-bitgo-new-york' as CoinFeature,
       'custody-bitgo-germany' as CoinFeature,

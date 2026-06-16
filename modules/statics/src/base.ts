@@ -1222,6 +1222,9 @@ export enum UnderlyingAsset {
   'tsol:stggospcx' = 'tsol:stggospcx',
   'sol:gospcx' = 'sol:gospcx',
   'sol:usd1' = 'sol:usd1',
+  'sol:gousd' = 'sol:gousd',
+  'tsol:gousd' = 'tsol:gousd',
+  'tsol:stggousd' = 'tsol:stggousd',
   'sol:usdm1' = 'sol:usdm1',
   'tsol:slnd' = 'tsol:slnd',
   'tsol:orca' = 'tsol:orca',
@@ -1923,6 +1926,8 @@ export enum UnderlyingAsset {
   'hteth:stgsofid' = 'hteth:stgsofid',
   'hteth:usd1' = 'hteth:usd1',
   'hteth:stgusd1' = 'hteth:stgusd1',
+  'hteth:stgscaasacme' = 'hteth:stgscaasacme',
+  'hteth:scaasacme' = 'hteth:scaasacme',
   'hteth:cusd' = 'hteth:cusd',
   'hteth:fyusd' = 'hteth:fyusd',
   'hteth:stgcusd' = 'hteth:stgcusd',
@@ -3111,6 +3116,8 @@ export enum UnderlyingAsset {
   'tbsc:busd' = 'tbsc:busd',
   'tbsc:usd1' = 'tbsc:usd1',
   'tbsc:stgusd1' = 'tbsc:stgusd1',
+  'tbsc:stgscaasacme' = 'tbsc:stgscaasacme',
+  'tbsc:scaasacme' = 'tbsc:scaasacme',
   'bsc:city' = 'bsc:city',
   'bsc:fdusd' = 'bsc:fdusd',
   'bsc:floki' = 'bsc:floki',
@@ -4061,6 +4068,7 @@ export enum UnderlyingAsset {
   'tempo:usdc' = 'tempo:usdc',
   'tempo:usd1' = 'tempo:usd1',
   'tempo:usdt0' = 'tempo:usdt0',
+  'tempo:gousd' = 'tempo:gousd',
 
   // Tempo testnet tokens
   'ttempo:pathusd' = 'ttempo:pathusd',
@@ -4069,6 +4077,10 @@ export enum UnderlyingAsset {
   'ttempo:thetausd' = 'ttempo:thetausd',
   'ttempo:usd1' = 'ttempo:usd1',
   'ttempo:stgusd1' = 'ttempo:stgusd1',
+  'ttempo:gousd' = 'ttempo:gousd',
+  'ttempo:stggousd' = 'ttempo:stggousd',
+  'ttempo:stgscaasacme' = 'ttempo:stgscaasacme',
+  'ttempo:scaasacme' = 'ttempo:scaasacme',
 
   // Prividium Ethereum testnet tokens
   'tprividiumeth:USB-ESCROW-D' = 'tprividiumeth:USB-ESCROW-D',

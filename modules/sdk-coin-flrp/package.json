@@ -44,7 +44,8 @@
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.85.0",
-    "@bitgo/sdk-test": "^9.1.50"
+    "@bitgo/sdk-test": "^9.1.50",
+    "nock": "^13.3.1"
   },
   "dependencies": {
     "@bitgo/public-types": "6.22.0",

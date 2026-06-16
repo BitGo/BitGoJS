@@ -83,15 +83,13 @@ describe('TrxToken verifyTransaction:', function () {
       );
     });
 
-    it('should throw when recipients is empty', async function () {
-      await assert.rejects(
-        tokenCoin.verifyTransaction({
-          txPrebuild: { txHex: TRC20_RAW_DATA_HEX },
-          txParams: { recipients: [] },
-          walletType: 'tss',
-        } as any),
-        { message: 'missing or invalid required property recipients' }
-      );
+    it('should return true when recipients is empty array (consolidation path)', async function () {
+      const result = await tokenCoin.verifyTransaction({
+        txPrebuild: { txHex: TRC20_RAW_DATA_HEX },
+        txParams: { recipients: [] },
+        walletType: 'tss',
+      } as any);
+      assert.strictEqual(result, true);
     });
 
     it('should throw when contract type is not TriggerSmartContract', async function () {

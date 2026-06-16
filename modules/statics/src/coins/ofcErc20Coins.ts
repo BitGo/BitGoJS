@@ -4569,6 +4569,34 @@ export const tOfcErc20Coins = [
     'hteth'
   ),
   tofcerc20(
+    '59a31295-88d3-4142-9e88-c8e500888aef',
+    'ofchteth:stgscaasacme',
+    'Testnet Acme USD',
+    6,
+    UnderlyingAsset['hteth:stgscaasacme'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    '03ebbbe2-6ba3-45c9-ad82-4f86ae48be69',
+    'ofchteth:scaasacme',
+    'Testnet Acme USD',
+    6,
+    UnderlyingAsset['hteth:scaasacme'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
     '145b2e09-453d-4861-8f54-5791d295bd96',
     'ofchteth:stgsofid',
     'Test SoFiUSD',

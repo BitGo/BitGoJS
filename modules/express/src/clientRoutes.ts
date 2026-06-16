@@ -722,6 +722,20 @@ export async function handleV2IsWalletAddress(
 }
 
 /**
+ * handle v2 deriveAddress - locally derive and return a wallet receive address from a
+ * derivation path, using public key material only.
+ *
+ * Offline by design: operates purely on the request body (keychains + chain/index), with no
+ * `wallets().get` lookup and no network access. The inverse of {@link handleV2IsWalletAddress}.
+ * @param req
+ */
+export async function handleV2DeriveAddress(req: ExpressApiRouteRequest<'express.v2.address.derive', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  return await coin.deriveAddress(req.decoded as any);
+}
+
+/**
  * handle v2 approve transaction
  * @param req
  */
@@ -1963,6 +1977,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     prepareBitGo(config),
     typedPromiseWrapper(handleV2IsWalletAddress),
   ]);
+  router.post('express.v2.address.derive', [prepareBitGo(config), typedPromiseWrapper(handleV2DeriveAddress)]);
 
   router.post('express.wallet.share', [prepareBitGo(config), typedPromiseWrapper(handleV2ShareWallet)]);
   app.post(
