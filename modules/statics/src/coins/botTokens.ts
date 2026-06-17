@@ -144,6 +144,22 @@ export const botTokens = [
     undefined,
     Networks.test.hoodi
   ),
+  AccountCtors.terc20(
+    '3becf88d-8816-425e-86b6-bd8002c154b9',
+    'hteth:amsv3',
+    'AMS Token V3',
+    18,
+    '0x911af1133a0292998ea06a8fa22f512d74e74644',
+    'hteth:amsv3' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
@@ -1462,6 +1478,182 @@ export const botTokens = [
     18,
     '0x4f8e5de400de08b164e7421b3ee387f461becd1a',
     'eth:usdds' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    'e87074ab-4565-4a05-94a6-6e3c39e292e9',
+    'eth:lbtc',
+    'Lombard Staked BTC',
+    8,
+    '0x8236a87084f8b84306f72007f36f2618a5634494',
+    'eth:lbtc' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '23d9a239-7553-4421-a87f-adce940506c2',
+    'eth:usdai',
+    'USDai',
+    18,
+    '0x0a1a1a107e45b7ced86833863f482bc5f4ed82ef',
+    'eth:usdai' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    'a307eb99-639d-47e6-a9c3-b01a2d1f6dd4',
+    'eth:susdai',
+    'Staked USDai',
+    18,
+    '0x0b2b2b2076d95dda7817e785989fe353fe955ef9',
+    'eth:susdai' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '2f6415bc-2307-4afb-a710-8044e1132a0e',
+    'eth:hv2',
+    'Humanity Protocol (New)',
+    18,
+    '0xe76c5b78f93909d34404e9eb4c1f19e7582a5de1',
+    'eth:hv2' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '5c5ff341-0388-4d46-8a30-d9f35bf2b80d',
+    'eth:nvprime',
+    'Nuva Prime Vault',
+    18,
+    '0xc360e625f19a7ea47e47810b13e386221d5187d1',
+    'eth:nvprime' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '5fd7bb5b-cf4c-4fa6-a811-e67ab6dfc619',
+    'eth:emxnd',
+    'MXND',
+    6,
+    '0x23b12f2d770dbfc21eae860b62185fb92e314455',
+    'eth:emxnd' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    'b64564c8-4012-4d2b-97b8-156a20663889',
+    'eth:king',
+    'King Protocol',
+    18,
+    '0x8f08b70456eb22f6109f57b8fafe862ed28e6040',
+    'eth:king' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '3645ef27-c327-4fb9-a2fe-3abce0b8504c',
+    'eth:valt',
+    'VALT Token',
+    18,
+    '0x8f70171dfc3c1620b0d179bb11f2033ca7a8350a',
+    'eth:valt' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '9594262a-e8d0-435a-b099-6f82949c2d12',
+    'eth:myrt',
+    'MYR Stablecoin',
+    6,
+    '0x3fc98a885e99420d0ce43bcb81bf21a4e3f45e5f',
+    'eth:myrt' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    'a0f6ad46-8b32-4189-ab63-5601fdb5e524',
+    'eth:sent',
+    'Sentient',
+    18,
+    '0x56a3ba04e95d34268a19b2a4474dc979babdaf76',
+    'eth:sent' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    'c14a707e-948b-4979-99aa-343a57b98b93',
+    'eth:strat',
+    'Stratofied',
+    18,
+    '0xe63368de2dfca89df4f3c3de0e867c01470b0ec8',
+    'eth:strat' as unknown as UnderlyingAsset,
     getTokenFeatures('eth', [
       'custody-bitgo-new-york' as CoinFeature,
       'custody-bitgo-germany' as CoinFeature,
