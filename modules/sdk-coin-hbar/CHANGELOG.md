@@ -3,6 +3,52 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.12.0...@bitgo/sdk-coin-hbar@2.12.1) (2026-06-16)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-hbar
+
+
+
+
+
+# [2.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.11.0...@bitgo/sdk-coin-hbar@2.12.0) (2026-06-09)
+
+
+### Features
+
+* **sdk-coin-hbar:** add stakedAccountId support to AccountUpdateBuilder ([0c292c3](https://github.com/BitGo/BitGoJS/commit/0c292c3dcea0ff19f078c35c5f5707c8b06c59d8))
+
+
+
+
+
+# [2.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.10.3...@bitgo/sdk-coin-hbar@2.11.0) (2026-06-04)
+
+
+### Features
+
+* migrate remaining sync decrypt/encrypt calls ([a52f1ae](https://github.com/BitGo/BitGoJS/commit/a52f1ae2a177c1fc02c82ff254cd08ed90760f16))
+
+
+
+
+
+## [2.10.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.10.2...@bitgo/sdk-coin-hbar@2.10.3) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-hbar
+
+
+
+
+
+## [2.10.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.10.1...@bitgo/sdk-coin-hbar@2.10.2) (2026-06-02)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-hbar
+
+
+
+
+
 ## [2.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.10.0...@bitgo/sdk-coin-hbar@2.10.1) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-hbar

@@ -3,6 +3,65 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.86.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.85.0...@bitgo/sdk-api@1.86.0) (2026-06-16)
+
+
+### Features
+
+* **sdk-api:** pass recipient addresses to v1 billing fee endpoint ([ff0cbb7](https://github.com/BitGo/BitGoJS/commit/ff0cbb70dbeea56c357d4b44800c12a309888d91))
+* skip forceV1Auth when HMAC present for SSO ([c578250](https://github.com/BitGo/BitGoJS/commit/c578250a1aa6df1ae44c641cb527dde1abbeb10e))
+
+
+
+
+
+# [1.85.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.84.0...@bitgo/sdk-api@1.85.0) (2026-06-09)
+
+
+### Features
+
+* **sdk-api:** add enterprise to AddAccessTokenOptions ([a95bf93](https://github.com/BitGo/BitGoJS/commit/a95bf9309e1f5e0a0c6ec54c5d704c6c52a27ee2))
+* thread encryptionVersion in SDK ([cb174f4](https://github.com/BitGo/BitGoJS/commit/cb174f47c34f113880650516a12d7b8c69d89e77))
+
+
+
+
+
+# [1.84.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.83.0...@bitgo/sdk-api@1.84.0) (2026-06-04)
+
+
+### Features
+
+* default encryptAsync to v2 ([32b5688](https://github.com/BitGo/BitGoJS/commit/32b5688996f20ce8aedbfdf1d2ddf3d006212f07))
+* migrate remaining sync decrypt/encrypt calls ([a52f1ae](https://github.com/BitGo/BitGoJS/commit/a52f1ae2a177c1fc02c82ff254cd08ed90760f16))
+
+
+
+
+
+# [1.83.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.82.0...@bitgo/sdk-api@1.83.0) (2026-06-03)
+
+
+### Features
+
+* add encryptAsync to encrypt.ts ([7e6555a](https://github.com/BitGo/BitGoJS/commit/7e6555abddc947715ef57358ebef72b3d30d69cc))
+
+
+
+
+
+# [1.82.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.81.1...@bitgo/sdk-api@1.82.0) (2026-06-02)
+
+
+### Features
+
+* add async counterparts for public encrypt/decrypt methods ([b4dde16](https://github.com/BitGo/BitGoJS/commit/b4dde16765309f64d97d86b0c30e6c099653355b))
+* use decryptAsync/encryptAsync for remaining WRW flows ([195ecdf](https://github.com/BitGo/BitGoJS/commit/195ecdf2ac6fde20bfb18e49ba49f41c391dfba9))
+
+
+
+
+
 ## [1.81.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.81.0...@bitgo/sdk-api@1.81.1) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-api

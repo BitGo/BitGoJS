@@ -3,6 +3,113 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.48.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.47.0...@bitgo/statics@58.48.0) (2026-06-16)
+
+
+### Bug Fixes
+
+* migrate tcanton:usd1 token to testnet ([7c3f7c0](https://github.com/BitGo/BitGoJS/commit/7c3f7c025b01fa68d45f2deffe007a32c96a47d2))
+* **statics:** correct FLRP P-chain explorer transaction URLs ([477ffdc](https://github.com/BitGo/BitGoJS/commit/477ffdc55f6b0560e2efcacf44a7be5a088af01c))
+* **statics:** reject duplicate contract address and NFT index keys in CoinMap ([292a83b](https://github.com/BitGo/BitGoJS/commit/292a83be46ea67aea78105ffe275b74b62acedde))
+
+
+### Features
+
+* add new tokens from AMS API ([82e0b42](https://github.com/BitGo/BitGoJS/commit/82e0b42ecab138a1aa0992b554cb866dec088c18))
+* add new tokens from AMS API ([8360a49](https://github.com/BitGo/BitGoJS/commit/8360a49ea5b0163c16c63670005c53d3cffaa767))
+* exclude singapore trust for ab1 ([020b722](https://github.com/BitGo/BitGoJS/commit/020b722fa2757cc77c3e8ca1555ca7a35ada233f))
+* introduce SUNSETTING coin feature for SEI ([54c9627](https://github.com/BitGo/BitGoJS/commit/54c9627c860b70193d898feaa9c42d48558ca6fe))
+* onboards spaceX token ([758c712](https://github.com/BitGo/BitGoJS/commit/758c712d67674b0d16f3fee5bcb4db879c9eecb5))
+* **statics:** onboard GoUSD and SCAASACME tokens ([3d5723d](https://github.com/BitGo/BitGoJS/commit/3d5723d1570b8bc994b80c7d4bd7b8dec303d53d))
+* **statics:** onboard polygon, avaxc, tempo ([6f72724](https://github.com/BitGo/BitGoJS/commit/6f72724dd68be6e8f51c9e9a165ec7c9e3fb7f6d))
+* **statics:** onboard Robinhood EVM tokens ([103baf9](https://github.com/BitGo/BitGoJS/commit/103baf9de7eef7cfa4165fe95eb4572df04b27c9))
+* **statics:** rename canton fullname in test & prod env ([dbbec42](https://github.com/BitGo/BitGoJS/commit/dbbec427ac7325bd19dbedaaa9a24440eb99db42))
+
+
+
+
+
+# [58.47.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.46.0...@bitgo/statics@58.47.0) (2026-06-09)
+
+
+### Bug Fixes
+
+* **statics:** use Etherlink and StableEVM display names (CECHO-1255) ([ec0ba8c](https://github.com/BitGo/BitGoJS/commit/ec0ba8c94f16d1e83a7445d6d6de95e604f7fca0))
+
+
+### Features
+
+* add new tokens from AMS API ([f34e3ec](https://github.com/BitGo/BitGoJS/commit/f34e3ec1958a5861e16359339baba1720f24086c))
+* add new tokens from AMS API ([8ed51d8](https://github.com/BitGo/BitGoJS/commit/8ed51d8fedc7fad818b2bb9589deb3a8cecbefaa))
+* add new tokens from AMS API ([272e00f](https://github.com/BitGo/BitGoJS/commit/272e00fc3fa6545aa8d9fdd539846953d91c531f))
+* add new tokens from AMS API ([2e34539](https://github.com/BitGo/BitGoJS/commit/2e3453942e141d324d1a661b780eac1e1025d684))
+* added polygon link v2 token ([0c5388b](https://github.com/BitGo/BitGoJS/commit/0c5388bd245bbf91a29a62ce121d303dcb2d543c))
+* onboard MPT tokens ([14474cb](https://github.com/BitGo/BitGoJS/commit/14474cb8bd863fd207697220adaf57081455af4d))
+* onboard spcx in test and stage ([e7a75d4](https://github.com/BitGo/BitGoJS/commit/e7a75d4c3768017a404c44c5845dd0c5a3941d76))
+* **sdk-coin-canton:** updated canton testnet explorer urls ([1c5df24](https://github.com/BitGo/BitGoJS/commit/1c5df246f636f081d4de266fba8e6477bf89f2c9))
+* **statics:** add mainnet and testnet token configs ([6ade015](https://github.com/BitGo/BitGoJS/commit/6ade015d82a6b44ee919a048602f3da50fdaef61))
+
+
+
+
+
+# [58.46.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.45.0...@bitgo/statics@58.46.0) (2026-06-04)
+
+
+### Bug Fixes
+
+* **statics:** reject duplicate contract address and NFT index keys in CoinMap ([a61f795](https://github.com/BitGo/BitGoJS/commit/a61f79586171a6c3411547ef7109d3c4a5855c6f))
+
+
+### Features
+
+* add hbarevm ofc coins ([b54d738](https://github.com/BitGo/BitGoJS/commit/b54d7382404578e1303295201e799da8953d75d3))
+
+
+
+
+
+# [58.45.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.44.0...@bitgo/statics@58.45.0) (2026-06-03)
+
+
+### Bug Fixes
+
+* **statics:** sdk bump ([f7a0736](https://github.com/BitGo/BitGoJS/commit/f7a07365dc44a8a8f5fa5ede3d1150047605d659))
+
+
+### Features
+
+* add new tokens from AMS API ([a54b75e](https://github.com/BitGo/BitGoJS/commit/a54b75e7241ad48bbcee4dfc020de2bea1e67d20))
+* add new tokens from AMS API ([ead9d12](https://github.com/BitGo/BitGoJS/commit/ead9d12157ae4d8ce34c3f14a559d981f888a395))
+* add new tokens from AMS API ([285b90d](https://github.com/BitGo/BitGoJS/commit/285b90d4749e6951ea1cc63104e9a31cbeb6a0c7))
+* **statics:** exclude Singapore custody for CECHO-1183 HoodETH and XTZEVM tokens ([b183180](https://github.com/BitGo/BitGoJS/commit/b1831800eacfb4f3578a7958b2b1500ac0587c68))
+
+
+
+
+
+# [58.44.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.43.0...@bitgo/statics@58.44.0) (2026-06-02)
+
+
+### Bug Fixes
+
+* **statics:** update hoodeth:week display name (CECHO-1183) ([a11b3a5](https://github.com/BitGo/BitGoJS/commit/a11b3a58acba006aa0b7f0275744bb2b6919b2e1))
+
+
+### Features
+
+* onboarding usd1 on canton chain ([68c2963](https://github.com/BitGo/BitGoJS/commit/68c296373f5b57bfe7beb7a2f05c11dfe6a871ec))
+* **sdk-coin-sol:** add SPL getTokenType and SolCoin programId guardrails ([417e3be](https://github.com/BitGo/BitGoJS/commit/417e3be93b293a2f8211423bbc929eb51aee5900))
+* **statics:** add baseeth:gusdcq token ([c11e8b6](https://github.com/BitGo/BitGoJS/commit/c11e8b6a8e967862dfc04c6951528d2e7d8fe4ba))
+* **statics:** add getTokenFeatures helper for AMS token feature diffs ([cb78d0f](https://github.com/BitGo/BitGoJS/commit/cb78d0fcaee4f6f745ab88f388de264f6ae935c4))
+* **statics:** add receipt_token coinfeature ([57aafbf](https://github.com/BitGo/BitGoJS/commit/57aafbf2aa225b98416966c337a629353522574c))
+* **statics:** add tsol:trump and ofctsol:trump testnet tokens ([502854d](https://github.com/BitGo/BitGoJS/commit/502854d2f57c88074da7a9da48cb108cb10f0fdc))
+* **statics:** add XrpMptCoin class and token config for XRPL MPT ([c324863](https://github.com/BitGo/BitGoJS/commit/c324863e42019a79c073d6f57e2fdb1fc5068c73))
+
+
+
+
+
 # [58.43.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.42.0...@bitgo/statics@58.43.0) (2026-05-28)
 
 

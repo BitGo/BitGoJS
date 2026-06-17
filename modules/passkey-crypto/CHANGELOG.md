@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/passkey-crypto@0.5.0...@bitgo/passkey-crypto@0.5.1) (2026-06-16)
+
+**Note:** Version bump only for package @bitgo/passkey-crypto
+
+
+
+
+
+# [0.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/passkey-crypto@0.4.4...@bitgo/passkey-crypto@0.5.0) (2026-06-09)
+
+
+### Features
+
+* thread encryptionVersion in SDK ([cb174f4](https://github.com/BitGo/BitGoJS/commit/cb174f47c34f113880650516a12d7b8c69d89e77))
+
+
+
+
+
+## [0.4.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/passkey-crypto@0.4.3...@bitgo/passkey-crypto@0.4.4) (2026-06-04)
+
+**Note:** Version bump only for package @bitgo/passkey-crypto
+
+
+
+
+
+## [0.4.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/passkey-crypto@0.4.2...@bitgo/passkey-crypto@0.4.3) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/passkey-crypto
+
+
+
+
+
+## [0.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/passkey-crypto@0.4.1...@bitgo/passkey-crypto@0.4.2) (2026-06-02)
+
+**Note:** Version bump only for package @bitgo/passkey-crypto
+
+
+
+
+
 ## [0.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/passkey-crypto@0.4.0...@bitgo/passkey-crypto@0.4.1) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/passkey-crypto

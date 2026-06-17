@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [27.23.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.23.0...@bitgo/account-lib@27.23.1) (2026-06-16)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+
+
+
+
+# [27.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.22.5...@bitgo/account-lib@27.23.0) (2026-06-09)
+
+
+### Features
+
+* **sdk-coin-canton:** added message signing builders for canton ([316475b](https://github.com/BitGo/BitGoJS/commit/316475b3f8cb3ed4f75e25e77374d8582aa5e46e))
+
+
+
+
+
+## [27.22.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.22.4...@bitgo/account-lib@27.22.5) (2026-06-04)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+
+
+
+
+## [27.22.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.22.3...@bitgo/account-lib@27.22.4) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+
+
+
+
+## [27.22.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.22.2...@bitgo/account-lib@27.22.3) (2026-06-02)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+
+
+
+
 ## [27.22.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.22.1...@bitgo/account-lib@27.22.2) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/account-lib

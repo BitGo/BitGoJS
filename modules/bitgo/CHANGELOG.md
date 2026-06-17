@@ -3,6 +3,66 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.6.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.5.0...bitgo@51.6.0) (2026-06-16)
+
+
+### Features
+
+* **sdk-core:** send webauthnInfo with enterpriseId for MPC user keychain ([0547f98](https://github.com/BitGo/BitGoJS/commit/0547f9859cb413c6ff4bb4e37fd4d7309723e8d2))
+
+
+
+
+
+# [51.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.4.0...bitgo@51.5.0) (2026-06-09)
+
+
+### Features
+
+* onboard MPT tokens ([14474cb](https://github.com/BitGo/BitGoJS/commit/14474cb8bd863fd207697220adaf57081455af4d))
+* **sdk-core:** accept SPKI secp256k1 pubs in Ofc.isValidPub ([c7ab5b1](https://github.com/BitGo/BitGoJS/commit/c7ab5b1eb89a7a5826c99991cee36d60b705bc9d))
+
+
+
+
+
+# [51.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.3.1...bitgo@51.4.0) (2026-06-04)
+
+
+### Features
+
+* migrate remaining sync decrypt/encrypt calls ([a52f1ae](https://github.com/BitGo/BitGoJS/commit/a52f1ae2a177c1fc02c82ff254cd08ed90760f16))
+
+
+
+
+
+## [51.3.1](https://github.com/BitGo/BitGoJS/compare/bitgo@51.3.0...bitgo@51.3.1) (2026-06-03)
+
+**Note:** Version bump only for package bitgo
+
+
+
+
+
+# [51.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.2.0...bitgo@51.3.0) (2026-06-02)
+
+
+### Bug Fixes
+
+* **sdk-core:** preserve tss build params after presign ([8f8e439](https://github.com/BitGo/BitGoJS/commit/8f8e439692b5ba8f8285d2dda5f9a220693686a6))
+
+
+### Features
+
+* add async counterparts for public encrypt/decrypt methods ([b4dde16](https://github.com/BitGo/BitGoJS/commit/b4dde16765309f64d97d86b0c30e6c099653355b))
+* add bridgingParams support for BTC-to-sBTC bridging ([0f27d93](https://github.com/BitGo/BitGoJS/commit/0f27d93d4b3b48218d898509eebfe03438da3b8c))
+* bump public typers to 6.22 ([bc2e6b6](https://github.com/BitGo/BitGoJS/commit/bc2e6b671b61a552602d9a18cc2962137c484435))
+
+
+
+
+
 # [51.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.1.1...bitgo@51.2.0) (2026-05-28)
 
 

@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.23.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.23.3...@bitgo/sdk-coin-icp@1.23.4) (2026-06-16)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-icp
+
+
+
+
+
+## [1.23.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.23.2...@bitgo/sdk-coin-icp@1.23.3) (2026-06-09)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-icp
+
+
+
+
+
+## [1.23.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.23.1...@bitgo/sdk-coin-icp@1.23.2) (2026-06-04)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-icp
+
+
+
+
+
+## [1.23.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.23.0...@bitgo/sdk-coin-icp@1.23.1) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-icp
+
+
+
+
+
+# [1.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.22.11...@bitgo/sdk-coin-icp@1.23.0) (2026-06-02)
+
+
+### Features
+
+* use decryptAsync/encryptAsync for remaining WRW flows ([195ecdf](https://github.com/BitGo/BitGoJS/commit/195ecdf2ac6fde20bfb18e49ba49f41c391dfba9))
+
+
+
+
+
 ## [1.22.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.22.10...@bitgo/sdk-coin-icp@1.22.11) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-icp

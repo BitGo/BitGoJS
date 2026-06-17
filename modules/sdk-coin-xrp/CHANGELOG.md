@@ -3,6 +3,54 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.16.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.16.0...@bitgo/sdk-coin-xrp@3.16.1) (2026-06-16)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xrp
+
+
+
+
+
+# [3.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.15.2...@bitgo/sdk-coin-xrp@3.16.0) (2026-06-09)
+
+
+### Features
+
+* onboard MPT tokens ([14474cb](https://github.com/BitGo/BitGoJS/commit/14474cb8bd863fd207697220adaf57081455af4d))
+
+
+
+
+
+## [3.15.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.15.1...@bitgo/sdk-coin-xrp@3.15.2) (2026-06-04)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xrp
+
+
+
+
+
+## [3.15.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.15.0...@bitgo/sdk-coin-xrp@3.15.1) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xrp
+
+
+
+
+
+# [3.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.14.3...@bitgo/sdk-coin-xrp@3.15.0) (2026-06-02)
+
+
+### Features
+
+* **sdk-coin-xrp:** add MPT transaction builders ([c04303a](https://github.com/BitGo/BitGoJS/commit/c04303ab174ebb1ff59cd0d910a5d9600641e6ac))
+* **statics:** add XrpMptCoin class and token config for XRPL MPT ([c324863](https://github.com/BitGo/BitGoJS/commit/c324863e42019a79c073d6f57e2fdb1fc5068c73))
+* use decryptAsync/encryptAsync for remaining WRW flows ([195ecdf](https://github.com/BitGo/BitGoJS/commit/195ecdf2ac6fde20bfb18e49ba49f41c391dfba9))
+
+
+
+
+
 ## [3.14.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.14.2...@bitgo/sdk-coin-xrp@3.14.3) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xrp

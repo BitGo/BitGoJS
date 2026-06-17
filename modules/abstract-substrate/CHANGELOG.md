@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.16.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.16.3...@bitgo/abstract-substrate@1.16.4) (2026-06-16)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.16.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.16.2...@bitgo/abstract-substrate@1.16.3) (2026-06-09)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.16.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.16.1...@bitgo/abstract-substrate@1.16.2) (2026-06-04)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+## [1.16.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.16.0...@bitgo/abstract-substrate@1.16.1) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
+# [1.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.15.1...@bitgo/abstract-substrate@1.16.0) (2026-06-02)
+
+
+### Features
+
+* fixed verify transaction flow for tao and polyx ([d4f6593](https://github.com/BitGo/BitGoJS/commit/d4f65932c4c8fe06422fde29adb55e7790f19c6d))
+
+
+
+
+
 ## [1.15.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.15.0...@bitgo/abstract-substrate@1.15.1) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/abstract-substrate

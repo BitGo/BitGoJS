@@ -3,6 +3,59 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.31.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.31.0...@bitgo/key-card@0.31.1) (2026-06-16)
+
+**Note:** Version bump only for package @bitgo/key-card
+
+
+
+
+
+# [0.31.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.30.0...@bitgo/key-card@0.31.0) (2026-06-09)
+
+
+### Bug Fixes
+
+* downgrade pdfjs-dist to ^4.0.0 for node 20 compatibility ([f2319d9](https://github.com/BitGo/BitGoJS/commit/f2319d9676d42a4c596f8d35499d1a7bd818522c))
+* use dynamic import for pdfjs-dist to avoid dom globals in node.js ([6d19387](https://github.com/BitGo/BitGoJS/commit/6d19387467894c89aab269303b953afac71fee6b))
+
+
+### Features
+
+* move keycard pdf parse/upload code from bitgo-retail to key-card sdk ([93af96b](https://github.com/BitGo/BitGoJS/commit/93af96bc681a44f1300f81f24406bfaaa7b99118))
+* thread encryptionVersion in SDK ([cb174f4](https://github.com/BitGo/BitGoJS/commit/cb174f47c34f113880650516a12d7b8c69d89e77))
+
+
+
+
+
+# [0.30.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.29.6...@bitgo/key-card@0.30.0) (2026-06-04)
+
+
+### Features
+
+* migrate remaining sync decrypt/encrypt calls ([a52f1ae](https://github.com/BitGo/BitGoJS/commit/a52f1ae2a177c1fc02c82ff254cd08ed90760f16))
+
+
+
+
+
+## [0.29.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.29.5...@bitgo/key-card@0.29.6) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/key-card
+
+
+
+
+
+## [0.29.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.29.4...@bitgo/key-card@0.29.5) (2026-06-02)
+
+**Note:** Version bump only for package @bitgo/key-card
+
+
+
+
+
 ## [0.29.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.29.3...@bitgo/key-card@0.29.4) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/key-card

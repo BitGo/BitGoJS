@@ -3,6 +3,46 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.20.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.20.5...@bitgo/sdk-coin-ton@3.20.6) (2026-06-16)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ton
+
+
+
+
+
+## [3.20.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.20.4...@bitgo/sdk-coin-ton@3.20.5) (2026-06-09)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ton
+
+
+
+
+
+## [3.20.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.20.3...@bitgo/sdk-coin-ton@3.20.4) (2026-06-04)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ton
+
+
+
+
+
+## [3.20.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.20.2...@bitgo/sdk-coin-ton@3.20.3) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ton
+
+
+
+
+
+## [3.20.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.20.1...@bitgo/sdk-coin-ton@3.20.2) (2026-06-02)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ton
+
+
+
+
+
 ## [3.20.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.20.0...@bitgo/sdk-coin-ton@3.20.1) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ton

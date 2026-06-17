@@ -3,6 +3,64 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.22.1...@bitgo/sdk-coin-sol@7.23.0) (2026-06-16)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** skip checking recipients in case of ATA tx ([c54e674](https://github.com/BitGo/BitGoJS/commit/c54e674c02a5684df204d1f57035f037d857cb43))
+
+
+### Features
+
+* **sdk-coin-sol:** implement deriveAddress for SOL ([448229a](https://github.com/BitGo/BitGoJS/commit/448229ac81fddd6e557d09df7f8ebc5d9e738c7c))
+
+
+
+
+
+## [7.22.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.22.0...@bitgo/sdk-coin-sol@7.22.1) (2026-06-09)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** decoupling static call for token info ([f4a81a1](https://github.com/BitGo/BitGoJS/commit/f4a81a1147362dd2065ff5aa5b23abe60632dc78))
+
+
+
+
+
+# [7.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.21.1...@bitgo/sdk-coin-sol@7.22.0) (2026-06-04)
+
+
+### Features
+
+* migrate remaining sync decrypt/encrypt calls ([a52f1ae](https://github.com/BitGo/BitGoJS/commit/a52f1ae2a177c1fc02c82ff254cd08ed90760f16))
+
+
+
+
+
+## [7.21.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.21.0...@bitgo/sdk-coin-sol@7.21.1) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sol
+
+
+
+
+
+# [7.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.20.1...@bitgo/sdk-coin-sol@7.21.0) (2026-06-02)
+
+
+### Features
+
+* bump public typers to 6.22 ([bc2e6b6](https://github.com/BitGo/BitGoJS/commit/bc2e6b671b61a552602d9a18cc2962137c484435))
+* **sdk-coin-sol:** add SPL getTokenType and SolCoin programId guardrails ([417e3be](https://github.com/BitGo/BitGoJS/commit/417e3be93b293a2f8211423bbc929eb51aee5900))
+
+
+
+
+
 ## [7.20.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.20.0...@bitgo/sdk-coin-sol@7.20.1) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

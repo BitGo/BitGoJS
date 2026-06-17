@@ -3,6 +3,62 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.35.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.34.0...@bitgo/express@15.35.0) (2026-06-16)
+
+
+### Features
+
+* **express:** add POST /api/v2/:coin/address/derive endpoint ([3f286af](https://github.com/BitGo/BitGoJS/commit/3f286af39000a58b1b024caef12f2d99ebe16797))
+
+
+
+
+
+# [15.34.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.33.0...@bitgo/express@15.34.0) (2026-06-09)
+
+
+### Features
+
+* thread encryptionVersion in SDK ([cb174f4](https://github.com/BitGo/BitGoJS/commit/cb174f47c34f113880650516a12d7b8c69d89e77))
+
+
+
+
+
+# [15.33.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.32.0...@bitgo/express@15.33.0) (2026-06-04)
+
+
+### Features
+
+* migrate remaining sync decrypt/encrypt calls ([a52f1ae](https://github.com/BitGo/BitGoJS/commit/a52f1ae2a177c1fc02c82ff254cd08ed90760f16))
+
+
+
+
+
+# [15.32.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.31.0...@bitgo/express@15.32.0) (2026-06-03)
+
+
+### Features
+
+* **express:** add EdDSA MPCv2 external signer routing ([a9e2dd9](https://github.com/BitGo/BitGoJS/commit/a9e2dd99c076bd4325e26df984f6ff138451c399))
+
+
+
+
+
+# [15.31.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.30.0...@bitgo/express@15.31.0) (2026-06-02)
+
+
+### Features
+
+* add bridgingParams support for BTC-to-sBTC bridging ([0f27d93](https://github.com/BitGo/BitGoJS/commit/0f27d93d4b3b48218d898509eebfe03438da3b8c))
+* bump public typers to 6.22 ([bc2e6b6](https://github.com/BitGo/BitGoJS/commit/bc2e6b671b61a552602d9a18cc2962137c484435))
+
+
+
+
+
 # [15.30.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.29.1...@bitgo/express@15.30.0) (2026-05-28)
 
 

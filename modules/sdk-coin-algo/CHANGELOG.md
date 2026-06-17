@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.12.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.12.1...@bitgo/sdk-coin-algo@2.12.2) (2026-06-16)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-algo
+
+
+
+
+
+## [2.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.12.0...@bitgo/sdk-coin-algo@2.12.1) (2026-06-09)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-algo
+
+
+
+
+
+# [2.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.11.3...@bitgo/sdk-coin-algo@2.12.0) (2026-06-04)
+
+
+### Features
+
+* migrate remaining sync decrypt/encrypt calls ([a52f1ae](https://github.com/BitGo/BitGoJS/commit/a52f1ae2a177c1fc02c82ff254cd08ed90760f16))
+
+
+
+
+
+## [2.11.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.11.2...@bitgo/sdk-coin-algo@2.11.3) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-algo
+
+
+
+
+
+## [2.11.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.11.1...@bitgo/sdk-coin-algo@2.11.2) (2026-06-02)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-algo
+
+
+
+
+
 ## [2.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.11.0...@bitgo/sdk-coin-algo@2.11.1) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-algo

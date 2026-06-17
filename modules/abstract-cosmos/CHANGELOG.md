@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.19.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.19.3...@bitgo/abstract-cosmos@11.19.4) (2026-06-16)
+
+**Note:** Version bump only for package @bitgo/abstract-cosmos
+
+
+
+
+
+## [11.19.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.19.2...@bitgo/abstract-cosmos@11.19.3) (2026-06-09)
+
+**Note:** Version bump only for package @bitgo/abstract-cosmos
+
+
+
+
+
+## [11.19.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.19.1...@bitgo/abstract-cosmos@11.19.2) (2026-06-04)
+
+**Note:** Version bump only for package @bitgo/abstract-cosmos
+
+
+
+
+
+## [11.19.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.19.0...@bitgo/abstract-cosmos@11.19.1) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/abstract-cosmos
+
+
+
+
+
+# [11.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.18.11...@bitgo/abstract-cosmos@11.19.0) (2026-06-02)
+
+
+### Features
+
+* use decryptAsync/encryptAsync for remaining WRW flows ([195ecdf](https://github.com/BitGo/BitGoJS/commit/195ecdf2ac6fde20bfb18e49ba49f41c391dfba9))
+
+
+
+
+
 ## [11.18.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.18.10...@bitgo/abstract-cosmos@11.18.11) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/abstract-cosmos

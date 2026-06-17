@@ -3,6 +3,63 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@11.6.1...@bitgo/abstract-utxo@11.7.0) (2026-06-16)
+
+
+### Features
+
+* **abstract-utxo:** implement deriveAddress for fixed-script UTXO wallets ([44c361f](https://github.com/BitGo/BitGoJS/commit/44c361f544b10d4eb778c0d92c6616cfc33de6ad))
+
+
+
+
+
+## [11.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@11.6.0...@bitgo/abstract-utxo@11.6.1) (2026-06-09)
+
+**Note:** Version bump only for package @bitgo/abstract-utxo
+
+
+
+
+
+# [11.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@11.5.1...@bitgo/abstract-utxo@11.6.0) (2026-06-04)
+
+
+### Features
+
+* migrate remaining sync decrypt/encrypt calls ([a52f1ae](https://github.com/BitGo/BitGoJS/commit/a52f1ae2a177c1fc02c82ff254cd08ed90760f16))
+
+
+
+
+
+## [11.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@11.5.0...@bitgo/abstract-utxo@11.5.1) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/abstract-utxo
+
+
+
+
+
+# [11.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@11.4.0...@bitgo/abstract-utxo@11.5.0) (2026-06-02)
+
+
+### Bug Fixes
+
+* add back in verifyTransaction ([1eec26e](https://github.com/BitGo/BitGoJS/commit/1eec26e9eb2fa6a8a601fa5cb8f893200f3047b1))
+
+
+### Features
+
+* **abstract-utxo:** disable legacy tx format and utxolib backend for all coins ([b1b82de](https://github.com/BitGo/BitGoJS/commit/b1b82deec28bf42e36bb8144630e7dac0738e0d8))
+* **abstract-utxo:** verify sBTC mint amount against change amount ([2c3b12a](https://github.com/BitGo/BitGoJS/commit/2c3b12a31bc933cfad698ef76fa6922b603230b7))
+* **sdk-core,abstract-utxo:** add qr param and client-side output validation ([31e6eec](https://github.com/BitGo/BitGoJS/commit/31e6eec610fa661a3cbad46c7359cfd94cec42f5))
+* use decryptAsync/encryptAsync for remaining WRW flows ([195ecdf](https://github.com/BitGo/BitGoJS/commit/195ecdf2ac6fde20bfb18e49ba49f41c391dfba9))
+
+
+
+
+
 # [11.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@11.3.0...@bitgo/abstract-utxo@11.4.0) (2026-05-28)
 
 

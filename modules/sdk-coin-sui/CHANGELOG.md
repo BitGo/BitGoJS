@@ -3,6 +3,58 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.25.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.25.3...@bitgo/sdk-coin-sui@5.25.4) (2026-06-16)
+
+
+### Bug Fixes
+
+* **sdk-coin-sui:** handle gas coin empty with only address balance ([4698398](https://github.com/BitGo/BitGoJS/commit/4698398c4c5ccb576c9afd78509637b0e1d8f4d2))
+
+
+
+
+
+## [5.25.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.25.2...@bitgo/sdk-coin-sui@5.25.3) (2026-06-09)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sui
+
+
+
+
+
+## [5.25.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.25.1...@bitgo/sdk-coin-sui@5.25.2) (2026-06-04)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sui
+
+
+
+
+
+## [5.25.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.25.0...@bitgo/sdk-coin-sui@5.25.1) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sui
+
+
+
+
+
+# [5.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.24.1...@bitgo/sdk-coin-sui@5.25.0) (2026-06-02)
+
+
+### Bug Fixes
+
+* **sdk-coin-sui:** preserve large u64 amounts in transfer and consolidation paths ([4977637](https://github.com/BitGo/BitGoJS/commit/497763737b9b1ddb5e7e6bd1aafc6573e3f12109))
+
+
+### Features
+
+* bump axios version to 1.16.1 ([c849e3e](https://github.com/BitGo/BitGoJS/commit/c849e3e39fcc643b6b7b91fdea4246260f6ac77c))
+* **sdk-coin-sui:** handle fab balance instruction ([051eda5](https://github.com/BitGo/BitGoJS/commit/051eda588fa71641a6994c5206e63e9a32a1ac5f))
+
+
+
+
+
 ## [5.24.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.24.0...@bitgo/sdk-coin-sui@5.24.1) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

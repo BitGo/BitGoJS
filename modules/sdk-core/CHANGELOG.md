@@ -3,6 +3,99 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [37.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.6.0...@bitgo/sdk-core@37.7.0) (2026-06-16)
+
+
+### Bug Fixes
+
+* fixes for external signer callback ([87d04a7](https://github.com/BitGo/BitGoJS/commit/87d04a789b5e0bf44ad7d6b64e860873237f4c30))
+* **sdk-core:** persist passkey for onchain generateWallet ([cb63106](https://github.com/BitGo/BitGoJS/commit/cb631061486289f3ce1ad237a984eddcf3e8a0e0))
+* **sdk-core:** populate recipients in buildTokenEnablements for TSS wallets ([6fc31f6](https://github.com/BitGo/BitGoJS/commit/6fc31f6707e39516b4ceb6b6bce72b6cabb6b2cf))
+* **sdk-core:** skip keychain fetch in createAddress for OFC wallets ([c3aff4f](https://github.com/BitGo/BitGoJS/commit/c3aff4ffc8b19f6559401b51c19093cb988c48a6))
+
+
+### Features
+
+* add 'advanced' wallet generation in type ([9a5888d](https://github.com/BitGo/BitGoJS/commit/9a5888ddbbcbddcd42fce4a6c53f8b9c9d3a24b5))
+* external signer callback for multisig akm wallet gen ([7466534](https://github.com/BitGo/BitGoJS/commit/74665341dfe611d3475f8777b39462d0076692ea))
+* **sdk-core:** add deriveAddress primitive to BaseCoin ([f5c2224](https://github.com/BitGo/BitGoJS/commit/f5c2224b4a1537cab6c53a877162382d94e2c753))
+* **sdk-core:** add getEddsaMPCv2RecoveryKeyShares helper ([95b7c38](https://github.com/BitGo/BitGoJS/commit/95b7c384d4b49b1ed938b0ed384ff02197e92e9f))
+* **sdk-core:** add pre-hashed signable support for Avalanche atomic MPCv2 txs ([629332d](https://github.com/BitGo/BitGoJS/commit/629332db37815a7a0f04849c628bb6fdf6654836))
+* **sdk-core:** added canton types in tss prebuild flow ([52df0da](https://github.com/BitGo/BitGoJS/commit/52df0da41a49c703fed70a6991566b40c1ebd25a))
+* **sdk-core:** disable active operation pre-flight check in DefiVault ([7ace459](https://github.com/BitGo/BitGoJS/commit/7ace4598f7bb2fb21eefb9a6c617de993baeb961))
+* **sdk-core:** send webauthnInfo with enterpriseId for MPC user keychain ([0547f98](https://github.com/BitGo/BitGoJS/commit/0547f9859cb413c6ff4bb4e37fd4d7309723e8d2))
+
+
+
+
+
+# [37.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.5.0...@bitgo/sdk-core@37.6.0) (2026-06-09)
+
+
+### Bug Fixes
+
+* **sdk-core:** pass round to getBitgoSignatureShare helper ([de2b822](https://github.com/BitGo/BitGoJS/commit/de2b822b6902e1815742c9cb5cad71fe65f20552))
+
+
+### Features
+
+* **sdk-coin-canton:** added message signing builders for canton ([316475b](https://github.com/BitGo/BitGoJS/commit/316475b3f8cb3ed4f75e25e77374d8582aa5e46e))
+* **sdk-coin-canton:** forward token and make choiceArgument optional ([f2f4244](https://github.com/BitGo/BitGoJS/commit/f2f4244b2c2ba20b3d588c2a368388744107cb4a))
+* **sdk-core:** accept SPKI secp256k1 pubs in Ofc.isValidPub ([c7ab5b1](https://github.com/BitGo/BitGoJS/commit/c7ab5b1eb89a7a5826c99991cee36d60b705bc9d))
+* **sdk-core:** add wallet.defi DeFi vault orchestration methods ([756618f](https://github.com/BitGo/BitGoJS/commit/756618fd1acb95c05b010b5223632909e4c04c5f))
+* thread encryptionVersion in SDK ([cb174f4](https://github.com/BitGo/BitGoJS/commit/cb174f47c34f113880650516a12d7b8c69d89e77))
+
+
+
+
+
+# [37.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.4.1...@bitgo/sdk-core@37.5.0) (2026-06-04)
+
+
+### Features
+
+* add cantonCommand intent to prebuild ([1d8f0da](https://github.com/BitGo/BitGoJS/commit/1d8f0da5d79581f5586204e17939b421b53f1a10))
+* migrate remaining sync decrypt/encrypt calls ([a52f1ae](https://github.com/BitGo/BitGoJS/commit/a52f1ae2a177c1fc02c82ff254cd08ed90760f16))
+* **sdk-coin-eth:** add zama token withdrawal support ([d5f0c0c](https://github.com/BitGo/BitGoJS/commit/d5f0c0c56e07f6c7770ba8561e894b5a8a2da2e8))
+
+
+
+
+
+## [37.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.4.0...@bitgo/sdk-core@37.4.1) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/sdk-core
+
+
+
+
+
+# [37.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.3.0...@bitgo/sdk-core@37.4.0) (2026-06-02)
+
+
+### Bug Fixes
+
+* remove walletGpgPubKeySigs in eddsa v2 round1 response ([c74ea84](https://github.com/BitGo/BitGoJS/commit/c74ea8437b7fad17930f136315a4af64c9a1bbdc))
+* **sdk-coin-eth:** add enable token support for zama ([7adf457](https://github.com/BitGo/BitGoJS/commit/7adf457395afd1ca0120d8a1c2ae596b70c0d493))
+* **sdk-core:** preserve tss build params after presign ([8f8e439](https://github.com/BitGo/BitGoJS/commit/8f8e439692b5ba8f8285d2dda5f9a220693686a6))
+
+
+### Features
+
+* add async counterparts for public encrypt/decrypt methods ([b4dde16](https://github.com/BitGo/BitGoJS/commit/b4dde16765309f64d97d86b0c30e6c099653355b))
+* add bridgingParams support for BTC-to-sBTC bridging ([0f27d93](https://github.com/BitGo/BitGoJS/commit/0f27d93d4b3b48218d898509eebfe03438da3b8c))
+* add eddsa MPCv2 SMC utils ([b2b1adc](https://github.com/BitGo/BitGoJS/commit/b2b1adc4c129bac185e99e602524f2d66170a022))
+* bump public typers to 6.22 ([bc2e6b6](https://github.com/BitGo/BitGoJS/commit/bc2e6b671b61a552602d9a18cc2962137c484435))
+* **sdk-coin-xrp:** add MPT transaction builders ([c04303a](https://github.com/BitGo/BitGoJS/commit/c04303ab174ebb1ff59cd0d910a5d9600641e6ac))
+* **sdk-core,abstract-utxo:** add qr param and client-side output validation ([31e6eec](https://github.com/BitGo/BitGoJS/commit/31e6eec610fa661a3cbad46c7359cfd94cec42f5))
+* **sdk-core:** add isEddsaMpcV1SigningMaterial format detector ([1d396cc](https://github.com/BitGo/BitGoJS/commit/1d396cca6df814ef93c4294c52e9aece75721216))
+* **sdk-core:** add webauthnInfo param to AddKeychainOptions for atomic passkey attachment ([1aa502f](https://github.com/BitGo/BitGoJS/commit/1aa502fcaed0e28cc0c9f575a572582fd72fe498))
+* use decryptAsync/encryptAsync for remaining WRW flows ([195ecdf](https://github.com/BitGo/BitGoJS/commit/195ecdf2ac6fde20bfb18e49ba49f41c391dfba9))
+
+
+
+
+
 # [37.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.2.0...@bitgo/sdk-core@37.3.0) (2026-05-28)
 
 

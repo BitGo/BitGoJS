@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [13.13.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.13.3...@bitgo/sdk-coin-atom@13.13.4) (2026-06-16)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-atom
+
+
+
+
+
+## [13.13.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.13.2...@bitgo/sdk-coin-atom@13.13.3) (2026-06-09)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-atom
+
+
+
+
+
+## [13.13.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.13.1...@bitgo/sdk-coin-atom@13.13.2) (2026-06-04)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-atom
+
+
+
+
+
+## [13.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.13.0...@bitgo/sdk-coin-atom@13.13.1) (2026-06-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-atom
+
+
+
+
+
+# [13.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.12.11...@bitgo/sdk-coin-atom@13.13.0) (2026-06-02)
+
+
+### Features
+
+* bump axios version to 1.16.1 ([c849e3e](https://github.com/BitGo/BitGoJS/commit/c849e3e39fcc643b6b7b91fdea4246260f6ac77c))
+
+
+
+
+
 ## [13.12.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.12.10...@bitgo/sdk-coin-atom@13.12.11) (2026-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-atom
