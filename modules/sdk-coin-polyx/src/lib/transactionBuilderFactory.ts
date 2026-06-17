@@ -2,6 +2,7 @@ import { BaseTransactionBuilderFactory, NotImplementedError } from '@bitgo/sdk-c
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { decode } from '@substrate/txwrapper-polkadot';
 import { TransferBuilder } from './transferBuilder';
+import { HexTransferBuilder } from './hexTransferBuilder';
 import { RegisterDidWithCDDBuilder } from './registerDidWithCDDBuilder';
 import { BondExtraBuilder } from './bondExtraBuilder';
 import { BatchStakingBuilder } from './batchStakingBuilder';
@@ -30,6 +31,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getTransferBuilder(): TransferBuilder {
     return new TransferBuilder(this._coinConfig).material(this._material);
+  }
+
+  getHexTransferBuilder(): HexTransferBuilder {
+    return new HexTransferBuilder(this._coinConfig).material(this._material);
   }
 
   getRegisterDidWithCDDBuilder(): RegisterDidWithCDDBuilder {
@@ -96,6 +101,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
     const methodName = decodedTxn.method?.name;
     if (methodName === Interface.MethodNames.TransferWithMemo) {
+      const args = decodedTxn.method.args as Interface.TransferWithMemoArgs;
+      if (utils.isNewMemoEncoding(args.memo)) {
+        return this.getHexTransferBuilder();
+      }
       return this.getTransferBuilder();
     } else if (methodName === MethodNames.RegisterDidWithCDD) {
       return this.getRegisterDidWithCDDBuilder();
