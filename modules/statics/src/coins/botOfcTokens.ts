@@ -277,4 +277,16 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.ofcerc20(
+    'bedae556-f9e0-4066-97c9-400c479b3898',
+    'ofceth:strat',
+    'Stratofied',
+    18,
+    'eth:strat' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
