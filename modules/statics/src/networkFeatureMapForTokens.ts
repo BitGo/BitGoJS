@@ -54,6 +54,15 @@ export const networkFeatureMapForTokens: Partial<Record<CoinFamily, CoinFeature[
   celo: AccountCoin.DEFAULT_FEATURES,
   eth: AccountCoin.DEFAULT_FEATURES,
   eos: AccountCoin.DEFAULT_FEATURES,
+  gasevm: [
+    ...EVM_FEATURES,
+    CoinFeature.SHARED_EVM_SIGNING,
+    CoinFeature.SHARED_EVM_SDK,
+    CoinFeature.EVM_COMPATIBLE_IMS,
+    CoinFeature.EVM_COMPATIBLE_UI,
+    CoinFeature.EVM_COMPATIBLE_WP,
+    CoinFeature.SUPPORTS_ERC20,
+  ],
   hbar: AccountCoin.DEFAULT_FEATURES,
   opeth: [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
   katanaeth: [

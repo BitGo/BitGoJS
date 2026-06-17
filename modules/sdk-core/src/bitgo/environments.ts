@@ -294,6 +294,9 @@ const mainnetBase: EnvironmentTemplate = {
     xtzevm: {
       baseUrl: 'https://explorer.etherlink.com/api',
     },
+    gasevm: {
+      baseUrl: 'https://neoxscan.ngd.network/api',
+    },
     flow: {
       baseUrl: 'https://evm.flowscan.io',
     },
@@ -526,6 +529,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     xtzevm: {
       baseUrl: 'https://shadownet.explorer.etherlink.com/api',
+    },
+    tgasevm: {
+      baseUrl: 'https://neoxt4scan.ngd.network/api',
     },
     flow: {
       baseUrl: 'https://evm-testnet.flowscan.io',
