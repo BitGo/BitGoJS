@@ -271,20 +271,76 @@ describe('XDC Token:', function () {
         .should.be.rejectedWith('tx cannot be both a batch and hop transaction');
     });
 
-    it('should not throw EIP155 error when verifying token transaction', async function () {
-      // This test ensures that verifyTssTransaction does NOT parse the txHex
-      // which would fail with "Incompatible EIP155-based V" error
+    it('should return true for bridgeFunds type without recipients (WCN-495: now in structural guard)', async function () {
       const token = bitgo.coin('txdc:tmt') as XdcToken;
       const mockWallet = {} as unknown as IWallet;
 
-      // Use the signableHex (with v=51) which would fail if parsed
+      const result = await token.verifyTssTransaction({
+        txParams: { type: 'bridgeFunds' },
+        txPrebuild: mockTokenTransferData.txPrebuild as unknown as Parameters<
+          typeof token.verifyTssTransaction
+        >[0]['txPrebuild'],
+        wallet: mockWallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should return true for enableToken type without recipients (WCN-495: typo fix + guard alignment)', async function () {
+      const token = bitgo.coin('txdc:tmt') as XdcToken;
+      const mockWallet = {} as unknown as IWallet;
+
+      const result = await token.verifyTssTransaction({
+        txParams: { type: 'enableToken' },
+        txPrebuild: mockTokenTransferData.txPrebuild as unknown as Parameters<
+          typeof token.verifyTssTransaction
+        >[0]['txPrebuild'],
+        wallet: mockWallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should return true for customTx type without recipients (WCN-495: guard alignment)', async function () {
+      const token = bitgo.coin('txdc:tmt') as XdcToken;
+      const mockWallet = {} as unknown as IWallet;
+
+      const result = await token.verifyTssTransaction({
+        txParams: { type: 'customTx' },
+        txPrebuild: mockTokenTransferData.txPrebuild as unknown as Parameters<
+          typeof token.verifyTssTransaction
+        >[0]['txPrebuild'],
+        wallet: mockWallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should bypass structural guard when consolidateId is present on txPrebuild', async function () {
+      const token = bitgo.coin('txdc:tmt') as XdcToken;
+      const mockWallet = {} as unknown as IWallet;
+
+      const result = await token.verifyTssTransaction({
+        txParams: {},
+        txPrebuild: {
+          ...mockTokenTransferData.txPrebuild,
+          consolidateId: 'consolidate-1',
+        } as unknown as Parameters<typeof token.verifyTssTransaction>[0]['txPrebuild'],
+        wallet: mockWallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should not throw EIP155 error when verifying token transaction', async function () {
+      // XDC tokens use a non-standard chain ID in their signable hex which would cause
+      // "Incompatible EIP155-based V" if parsed.  The override intentionally skips txHex
+      // parsing — this test guards that constraint.
+      const token = bitgo.coin('txdc:tmt') as XdcToken;
+      const mockWallet = {} as unknown as IWallet;
+
+      // Use the signableHex (with v=51) which would fail if parsed by the XDC builder
       const txPrebuildWithSignableHex = {
         ...mockTokenTransferData.txPrebuild,
         txHex: mockTokenTransferData.signableHex,
       };
 
-      // This should NOT throw EIP155 error because verifyTssTransaction
-      // does not parse the transaction
       const result = await token.verifyTssTransaction({
         txParams: {
           recipients: [
