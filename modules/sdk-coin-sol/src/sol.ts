@@ -58,8 +58,9 @@ import {
   DeriveAddressOptions,
   DeriveAddressResult,
   UnexpectedAddressError,
+  EDDSAUtils,
 } from '@bitgo/sdk-core';
-import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey, deriveUnhardenedMps, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseNetwork, CoinFamily, coins, SolCoin, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import {
   KeyPair as SolKeyPair,
@@ -1224,13 +1225,28 @@ export class Sol extends BaseCoin {
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
     const isUnsignedSweep = !params.walletPassphrase;
 
-    // Build the transaction
-    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    // Detect MPCv2 keycards early so we can use the correct derivation and signing path.
+    // MPCv1 keycards decrypt to JSON with uShare/bitgoYShare; MPCv2 keycards are CBOR.
+    const isMpcV2 = params.walletPassphrase
+      ? !(await EDDSAUtils.EddsaMPCv2RecoveryFunctions.isEddsaMpcV1SigningMaterial(
+          params.userKey?.replace(/\s/g, '') ?? '',
+          params.walletPassphrase,
+          this.bitgo
+        ))
+      : false;
+
     let balance = 0;
 
     const index = params.index || 0;
     const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
-    const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+
+    let accountId: string;
+    if (isMpcV2) {
+      accountId = deriveUnhardenedMps(bitgoKey, currPath).slice(0, 64);
+    } else {
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+    }
     const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
 
     balance = await this.getAccountBalance(bs58EncodedPublicKey, params.apiKey);
@@ -1421,40 +1437,60 @@ export class Sol extends BaseCoin {
       const userKey = params.userKey.replace(/\s/g, '');
       const backupKey = params.backupKey.replace(/\s/g, '');
 
-      // Decrypt private keys from KeyCard values
-      let userPrv;
+      if (!isMpcV2) {
+        // MPCv1 path: decrypt JSON signing material and use TSS signing
+        let userPrv: string;
+        try {
+          userPrv = await this.bitgo.decryptAsync({
+            input: userKey,
+            password: params.walletPassphrase,
+          });
+        } catch (e) {
+          throw new Error(`Error decrypting user keychain: ${e.message}`);
+        }
+        const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
 
-      try {
-        userPrv = await this.bitgo.decryptAsync({
-          input: userKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting user keychain: ${e.message}`);
+        let backupPrv: string;
+        try {
+          backupPrv = await this.bitgo.decryptAsync({
+            input: backupKey,
+            password: params.walletPassphrase,
+          });
+        } catch (e) {
+          throw new Error(`Error decrypting backup keychain: ${e.message}`);
+        }
+        const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+
+        const signatureHex = await EDDSAMethods.getTSSSignature(
+          userSigningMaterial,
+          backupSigningMaterial,
+          currPath,
+          unsignedTransaction
+        );
+        txBuilder.addSignature({ pub: bs58EncodedPublicKey } as PublicKey, signatureHex);
+      } else {
+        // MPCv2 path: decrypt CBOR reduced key shares and sign with MPS DSG protocol
+        const { userKeyShare, backupKeyShare, commonKeyChain } =
+          await EDDSAUtils.EddsaMPCv2RecoveryFunctions.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
+            userKey,
+            backupKey,
+            params.walletPassphrase,
+            this.bitgo
+          );
+
+        if (commonKeyChain.toLowerCase() !== bitgoKey.toLowerCase()) {
+          throw new Error('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+        }
+
+        const signature = EDDSAUtils.EddsaMPCv2RecoveryFunctions.signRecoveryEddsaMPCv2(
+          unsignedTransaction.signablePayload,
+          currPath,
+          userKeyShare,
+          backupKeyShare,
+          commonKeyChain
+        );
+        txBuilder.addSignature({ pub: bs58EncodedPublicKey } as PublicKey, signature);
       }
-
-      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
-
-      let backupPrv;
-      try {
-        backupPrv = await this.bitgo.decryptAsync({
-          input: backupKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting backup keychain: ${e.message}`);
-      }
-      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-
-      const signatureHex = await EDDSAMethods.getTSSSignature(
-        userSigningMaterial,
-        backupSigningMaterial,
-        currPath,
-        unsignedTransaction
-      );
-
-      const publicKeyObj = { pub: bs58EncodedPublicKey };
-      txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
     }
 
     if (params.durableNonce) {
