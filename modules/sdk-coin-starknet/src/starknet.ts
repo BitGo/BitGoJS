@@ -154,6 +154,11 @@ export class Starknet extends BaseCoin {
   }
 
   /** @inheritDoc */
+  requiresWalletInitializationTransaction(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
   }
