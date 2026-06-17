@@ -105,6 +105,42 @@ describe('Walrus Staking Builder', () => {
     });
   });
 
+  describe('large amounts exceeding Number.MAX_SAFE_INTEGER', () => {
+    // 9007199254740993 = MAX_SAFE_INTEGER + 2. Number() silently rounds this to MAX_SAFE_INTEGER + 1,
+    // causing BCS to encode the wrong amount and the wrong coin to be split for staking.
+    const LARGE_AMOUNT = '9007199254740993';
+
+    it('should build a staking tx with amount > Number.MAX_SAFE_INTEGER and preserve precision', async function () {
+      const txBuilder = factory.getWalrusStakingBuilder();
+      txBuilder.type(SuiTransactionType.WalrusStakeWithPool);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.stake([
+        { amount: LARGE_AMOUNT, validatorAddress: testData.requestWalrusStakeWithPool.validatorAddress },
+      ]);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.inputObjects([testData.walToken]);
+
+      const tx = await txBuilder.build();
+
+      assert(tx instanceof SuiTransaction);
+      tx.type.should.equal(TransactionType.StakingAdd);
+      // The output and input values must equal the exact string — Number() would silently round it
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].value.should.equal(LARGE_AMOUNT);
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].value.should.equal(LARGE_AMOUNT);
+
+      const rawTx = tx.toBroadcastFormat();
+      utils.isValidRawTransaction(rawTx).should.be.true();
+
+      // Round-trip: rebuild from serialized bytes and verify the amount survives without precision loss
+      const rebuilder = factory.from(rawTx);
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.outputs[0].value.should.equal(LARGE_AMOUNT);
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+  });
+
   describe('Fail', () => {
     it('should fail for invalid sender', async function () {
       const builder = factory.getWalrusStakingBuilder();

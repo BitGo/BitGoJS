@@ -110,22 +110,22 @@ export interface SuiTransaction<T = SuiProgrammableTransaction> {
 }
 
 export interface RequestAddStake {
-  amount: number;
+  amount: string | number | bigint;
   validatorAddress: SuiAddress;
 }
 
 export interface RequestWithdrawStakedSui {
-  amount?: number;
+  amount?: string | number | bigint;
   stakedSui: SuiObjectRef;
 }
 
 export interface RequestWalrusStakeWithPool {
-  amount: number;
+  amount: string | number | bigint;
   validatorAddress: SuiAddress;
 }
 
 export interface RequestWalrusWithdrawStake {
-  amount?: number;
+  amount?: string | number | bigint;
   stakedWal: SuiObjectRef;
 }
 

@@ -203,7 +203,7 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
         // Create a new coin with staking balance, based on the coins used as gas payment.
         this._addStakeTx.forEach((req) => {
           const coin = programmableTxBuilder.splitCoins(programmableTxBuilder.gas, [
-            programmableTxBuilder.pure(req.amount),
+            programmableTxBuilder.pure(BigInt(req.amount)),
           ]);
           // Stake the split coin to a specific validator address.
           programmableTxBuilder.moveCall({

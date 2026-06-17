@@ -205,7 +205,7 @@ export class WalrusStakingBuilder extends TransactionBuilder<WalrusStakingProgra
         // Create a new coin with staking balance, based on the coins used as gas payment.
         const stakedWals = this._stakeWithPoolTx.map((req) => {
           const splitObject = programmableTxBuilder.splitCoins(mergedObject, [
-            programmableTxBuilder.pure(Number(req.amount)),
+            programmableTxBuilder.pure(BigInt(req.amount)),
           ]);
           // Stake the split coin to a specific validator address.
           return programmableTxBuilder.moveCall({

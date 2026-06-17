@@ -98,6 +98,40 @@ describe('Sui Staking Builder', () => {
     });
   });
 
+  describe('large amounts exceeding Number.MAX_SAFE_INTEGER', () => {
+    // 9007199254740993 = MAX_SAFE_INTEGER + 2. Number() silently rounds this to MAX_SAFE_INTEGER + 1.
+    // BigInt()/String() must be used in pure() to preserve the exact value through BCS serialization.
+    const LARGE_STAKE_AMOUNT = '9007199254740993';
+
+    it('should build a staking tx with amount > Number.MAX_SAFE_INTEGER and preserve precision', async function () {
+      const txBuilder = factory.getStakingBuilder();
+      txBuilder.type(SuiTransactionType.AddStake);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.stake([{ amount: LARGE_STAKE_AMOUNT, validatorAddress: testData.VALIDATOR_ADDRESS }]);
+      txBuilder.gasData(testData.gasData);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.StakingAdd);
+
+      // The output value must equal the exact string — Number() would silently round to 9007199254740992
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].value.should.equal(LARGE_STAKE_AMOUNT);
+
+      // The input total must also be correct
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].value.should.equal(LARGE_STAKE_AMOUNT);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // Round-trip: rebuild from serialized bytes and verify the amount survives
+      const rebuilder = factory.from(rawTx);
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.outputs[0].value.should.equal(LARGE_STAKE_AMOUNT);
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+  });
+
   describe('Fail', () => {
     it('should fail for invalid sender', async function () {
       const builder = factory.getStakingBuilder();
