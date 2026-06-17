@@ -22,7 +22,7 @@ import { BondExtraBuilder } from './lib/bondExtraBuilder';
 import { POLYX_ADDRESS_FORMAT } from './lib/constants';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import BigNumber from 'bignumber.js';
-import { TransactionBuilderFactory, TransferBuilder } from './lib';
+import { TransactionBuilderFactory, TransferBuilder, HexTransferBuilder } from './lib';
 
 export class Polyx extends SubstrateCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -73,6 +73,10 @@ export class Polyx extends SubstrateCoin {
 
   bondExtra(): BondExtraBuilder {
     return this.getBuilder().getBondExtraBuilder();
+  }
+
+  hexTransfer(): HexTransferBuilder {
+    return this.getBuilder().getHexTransferBuilder();
   }
 
   /**

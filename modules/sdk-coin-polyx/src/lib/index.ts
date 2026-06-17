@@ -11,6 +11,7 @@ export {
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { PolyxBaseBuilder } from './baseBuilder';
 export { TransferBuilder } from './transferBuilder';
+export { HexTransferBuilder } from './hexTransferBuilder';
 export { RegisterDidWithCDDBuilder } from './registerDidWithCDDBuilder';
 export { PreApproveAssetBuilder } from './preApproveAssetBuilder';
 export { TokenTransferBuilder } from './tokenTransferBuilder';
