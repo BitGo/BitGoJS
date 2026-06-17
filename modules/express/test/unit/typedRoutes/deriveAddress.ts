@@ -93,6 +93,21 @@ describe('DeriveAddress codec tests', function () {
       assert.strictEqual(decoded.derivedFromParentWithSeed, 'my-unique-smc-seed-123');
     });
 
+    it('should validate an EVM legacy-forwarder body with baseAddress and coinSpecific', function () {
+      const validBody = {
+        keychains: [{ pub: 'xpub1...' }, { pub: 'xpub2...' }, { pub: 'xpub3...' }],
+        index: 117,
+        walletVersion: 5,
+        baseAddress: '0xf1e3d30798acdf3a12fa5beb5fad8efb23d5be11',
+        coinSpecific: { forwarderVersion: 4, feeAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09' },
+      };
+
+      const decoded = assertDecode(t.type(DeriveAddressBody), validBody);
+      assert.strictEqual(decoded.baseAddress, validBody.baseAddress);
+      assert.strictEqual(decoded.coinSpecific?.forwarderVersion, 4);
+      assert.strictEqual(decoded.coinSpecific?.feeAddress, validBody.coinSpecific.feeAddress);
+    });
+
     it('should reject body with missing index', function () {
       assert.throws(() => {
         assertDecode(t.type(DeriveAddressBody), { keychains: [{ pub: 'xpub1...' }] });

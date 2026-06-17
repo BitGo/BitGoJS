@@ -40,6 +40,21 @@ export const DeriveAddressBody = {
   /** Wallet version, to disambiguate derivation strategy (e.g. EVM forwarder vs MPC) */
   walletVersion: optional(t.number),
   /**
+   * Wallet base address (the wallet contract address for EVM wallets). Required to derive
+   * per-index forwarder receive addresses for legacy multisig EVM wallets (versions 1/2/4).
+   */
+  baseAddress: optional(t.string),
+  /**
+   * Coin-specific derivation inputs. For EVM legacy forwarder wallets:
+   * `forwarderVersion` (1/2/4) selects the forwarder factory, and `feeAddress` is required for v4.
+   */
+  coinSpecific: optional(
+    t.partial({
+      forwarderVersion: t.number,
+      feeAddress: t.string,
+    })
+  ),
+  /**
    * Seed from the user keychain's derivedFromParentWithSeed field (SMC TSS wallets);
    * makes the derivation path `{prefix}/{index}` instead of `m/{index}`.
    */

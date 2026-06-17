@@ -244,6 +244,16 @@ export interface DeriveAddressOptions
   keychains?: ({ pub: string } | { commonKeychain: string })[];
   /** Wallet version, used to disambiguate derivation strategy for some coin families. */
   walletVersion?: number;
+  /**
+   * Wallet base address (the wallet contract address for EVM wallets). Required to derive
+   * per-index forwarder (CREATE2) receive addresses for legacy multisig EVM wallets.
+   */
+  baseAddress?: string;
+  /**
+   * Coin-specific derivation inputs. For EVM legacy forwarder wallets this carries
+   * `forwarderVersion` (1/2/4) and, for v4, `feeAddress`.
+   */
+  coinSpecific?: AddressCoinSpecific;
 }
 
 /**
@@ -487,6 +497,8 @@ export interface AddressCoinSpecific {
   baseAddress?: string;
   pendingChainInitialization?: boolean;
   forwarderVersion?: number;
+  /** Fee address for v4 EVM forwarders (used when deriving/verifying v4 forwarder addresses). */
+  feeAddress?: string;
 }
 
 export interface FullySignedTransaction {
