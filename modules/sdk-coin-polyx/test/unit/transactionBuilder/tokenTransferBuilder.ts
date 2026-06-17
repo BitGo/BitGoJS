@@ -40,7 +40,7 @@ describe('Polyx token transfer Builder - Testnet', () => {
       should.deepEqual(txJson.fromDID, senderDID);
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.assetId, assetId);
-      should.deepEqual(txJson.memo, '0x3030303030303030303030303030303030303030303030303030303030303030');
+      should.deepEqual(txJson.memo, '0x3000000000000000000000000000000000000000000000000000000000000000');
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, genesisHash);
@@ -79,7 +79,7 @@ describe('Polyx token transfer Builder - Testnet', () => {
       should.deepEqual(txJson.fromDID, senderDID);
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.assetId, assetId);
-      should.deepEqual(txJson.memo, '0x3030303030303030303030303030303030303030303030303030303030303030');
+      should.deepEqual(txJson.memo, '0x3000000000000000000000000000000000000000000000000000000000000000');
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, genesisHash);

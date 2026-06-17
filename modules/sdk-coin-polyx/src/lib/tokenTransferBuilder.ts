@@ -84,14 +84,25 @@ export class TokenTransferBuilder extends PolyxBaseBuilder<TxMethod, Transaction
 
   /**
    * Sets the memo for the transaction.
-   * Pads the memo on the left with zeros to ensure it is 32 characters long.
+   * Encodes the memo as UTF-8 bytes right-padded with zero bytes to 32 bytes,
+   * matching the Polymesh Memo type ([u8; 32]).
    *
    * @param {string} memo - The memo for the transaction.
    * @returns {this} The current instance of the builder.
    */
   memo(memo: string): this {
-    const paddedMemo = memo.padStart(32, '0');
-    this._memo = paddedMemo;
+    // fromImplementation passes the decoded on-chain hex (0x + 64 hex chars) — pass through unchanged
+    if (/^0x[0-9a-fA-F]{64}$/.test(memo)) {
+      this._memo = memo;
+      return this;
+    }
+    const memoBytes = Buffer.from(memo, 'utf8');
+    if (memoBytes.length > 32) {
+      throw new Error('Memo must be 32 bytes or fewer when UTF-8 encoded');
+    }
+    const paddedBuffer = Buffer.alloc(32, 0);
+    memoBytes.copy(paddedBuffer, 0);
+    this._memo = '0x' + paddedBuffer.toString('hex');
     return this;
   }
 
