@@ -16,6 +16,7 @@ import {
   SignedMessage,
   SignedTransaction,
   SignedTransactionRequest,
+  TransactionParams,
   TransactionPrebuild,
   VerifyAddressOptions,
 } from '../baseCoin';
@@ -57,6 +58,7 @@ import {
   TxRequest,
 } from '../utils';
 import { postWithCodec } from '../utils/postWithCodec';
+import { txParamsFromIntent } from '../utils/tss/baseTSSUtils';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils, { EddsaMPCv2Utils } from '../utils/tss/eddsa';
 import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
@@ -4896,9 +4898,25 @@ export class Wallet implements IWallet {
     }
 
     try {
+      let txRequest: string | TxRequest = params.txPrebuild.txRequestId;
+      let txParams: TransactionParams | undefined = params.txPrebuild.buildParams;
+
+      // EdDSA MPCv2 re-sign path: buildParams is absent when the UI calls signAndSendTxRequest with
+      // only txRequestId. Derive txParams from the persisted intent so verifyTransaction receives
+      // the correct recipients before DSG starts. Other TSS variants are unaffected by the guard.
+      if (!txParams && this.multisigTypeVersion() === 'MPCv2' && this.baseCoin.getMPCAlgorithm() === 'eddsa') {
+        txRequest = await getTxRequest(
+          this.bitgo,
+          this.id(),
+          params.txPrebuild.txRequestId,
+          params.reqId || new RequestTracer()
+        );
+        txParams = txParamsFromIntent(txRequest.intent, this.baseCoin.getChain());
+      }
+
       return await this.tssUtils!.signTxRequest({
-        txRequest: params.txPrebuild.txRequestId,
-        txParams: params.txPrebuild.buildParams,
+        txRequest,
+        txParams,
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
         apiVersion: params.apiVersion,

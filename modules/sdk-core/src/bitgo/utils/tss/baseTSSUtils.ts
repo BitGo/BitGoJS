@@ -1,7 +1,7 @@
 import { EncryptionVersion, IRequestTracer } from '../../../api';
 import * as openpgp from 'openpgp';
 import { Key, readKey, SerializedKeyPair } from 'openpgp';
-import { IBaseCoin, KeychainsTriplet } from '../../baseCoin';
+import { IBaseCoin, KeychainsTriplet, TransactionParams } from '../../baseCoin';
 import { BitGoBase } from '../../bitgoBase';
 import { Keychain, KeyIndices, WebauthnKeyEncryptionInfo } from '../../keychain';
 import { getTxRequest } from '../../tss';
@@ -31,6 +31,7 @@ import {
   IntentOptionsForMessage,
   IntentOptionsForTypedData,
   ITssUtils,
+  PopulatedIntent,
   PopulatedIntentForMessageSigning,
   PopulatedIntentForTypedDataSigning,
   PrebuildTransactionWithIntentOptions,
@@ -49,6 +50,28 @@ import { envRequiresBitgoPubGpgKeyConfig, getBitgoMpcGpgPubKey } from '../../tss
 import { getBitgoGpgPubKey } from '../opengpgUtils';
 import assert from 'assert';
 import { MessageStandardType } from '../messageTypes';
+
+/**
+ * Derives txParams from the persisted intent on a TxRequest for EdDSA MPCv2 signing paths
+ * where no SDK-local buildParams is available (PA path and UI re-sign path).
+ * Native coin transfers (where symbol equals the chain name) are excluded from tokenName.
+ */
+export function txParamsFromIntent(intent: unknown, chainName: string): TransactionParams | undefined {
+  if (typeof intent !== 'object' || intent === null || !('recipients' in intent)) {
+    return undefined;
+  }
+  const { recipients } = intent as PopulatedIntent;
+  if (!recipients?.length) {
+    return undefined;
+  }
+  return {
+    recipients: recipients.map((r) => ({
+      address: r.address.address,
+      amount: String(r.amount.value),
+      ...(r.amount.symbol && r.amount.symbol !== chainName && { tokenName: r.amount.symbol }),
+    })),
+  };
+}
 
 /**
  * BaseTssUtil class which different signature schemes have to extend
@@ -579,8 +602,15 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   async recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: IRequestTracer): Promise<TxRequest> {
     await this.deleteSignatureShares(txRequestId, reqId);
     // after delete signatures shares get the tx without them
-    const txRequest = await getTxRequest(this.bitgo, this.wallet.id(), txRequestId, reqId);
-    return await this.signTxRequest({ txRequest, prv: decryptedPrv, reqId });
+    const txRequest = await this.getTxRequest(txRequestId, reqId);
+    // EdDSA MPCv2 re-verifies the transaction against txParams.recipients before DSG starts.
+    // On the PA path there is no SDK-local buildParams, so derive txParams from the persisted
+    // intent. Other TSS variants either skip recipient verification or already work without txParams.
+    const txParams =
+      this.wallet.multisigTypeVersion() === 'MPCv2' && this.baseCoin.getMPCAlgorithm() === 'eddsa'
+        ? txParamsFromIntent(txRequest.intent, this.baseCoin.getChain())
+        : undefined;
+    return await this.signTxRequest({ txRequest, prv: decryptedPrv, reqId, txParams });
   }
 
   /**
