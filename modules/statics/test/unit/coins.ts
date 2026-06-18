@@ -845,6 +845,24 @@ describe('CoinMap', function () {
     btcById.should.deepEqual(btc);
   });
 
+  it('getOrUndefined should return coin for known key', () => {
+    const btc = coins.getOrUndefined('btc');
+    should(btc).not.be.undefined();
+    btc!.name.should.equal('btc');
+  });
+
+  it('getOrUndefined should return undefined for unknown key', () => {
+    const result = coins.getOrUndefined('zzzz:TBD:no_such_coin');
+    should(result).be.undefined();
+  });
+
+  it('getOrUndefined should return coin by id', () => {
+    const btc = coins.get('btc');
+    const btcById = coins.getOrUndefined(btc.id);
+    should(btcById).not.be.undefined();
+    btcById!.should.deepEqual(btc);
+  });
+
   it('should get coin by address', () => {
     const weth = coins.get('weth');
     const wethByAddress = coins.get(`${weth.family}:${(weth as Erc20Coin).contractAddress}`);
