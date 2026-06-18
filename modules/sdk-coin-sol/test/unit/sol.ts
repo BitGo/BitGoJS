@@ -9,7 +9,7 @@ import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import {
   common,
-  EDDSAUtils,
+  EDDSAMethods,
   Environments,
   generateRandomPassword,
   IWallet,
@@ -23,9 +23,17 @@ import {
   Wallet,
   WalletCoinSpecific,
 } from '@bitgo/sdk-core';
+import { deriveUnhardenedMps, MPSUtil } from '@bitgo/sdk-lib-mpc';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
-import { getAmountBasedOnEndianness, KeyPair, Sol, SolVerifyTransactionOptions, Tsol } from '../../src';
+import {
+  getAmountBasedOnEndianness,
+  KeyPair,
+  Sol,
+  SolRecoveryOptions,
+  SolVerifyTransactionOptions,
+  Tsol,
+} from '../../src';
 import { Transaction } from '../../src/lib';
 import { AtaInit, InstructionParams, TokenTransfer } from '../../src/lib/iface';
 import { getAssociatedTokenAccountAddress } from '../../src/lib/utils';
@@ -2294,6 +2302,8 @@ describe('SOL:', function () {
     });
 
     it('should recover a txn for non-bitgo recoveries (latest blockhash)', async function () {
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
       // Latest Blockhash Recovery (BitGo-less)
       const latestBlockHashTxn = await basecoin.recover({
         userKey: testData.keys.userKey,
@@ -2316,9 +2326,12 @@ describe('SOL:', function () {
       should.equal(latestBlockhashTxnJson.numSignatures, testData.SolInputData.latestBlockhashSignatures);
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 3);
+      sandBox.assert.calledOnce(getTSSSignatureSpy);
     });
 
     it('should recover a txn for non-bitgo recoveries (durable nonce)', async function () {
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
       // Durable Nonce Recovery (BitGo-less)
       const durableNonceTxn = await basecoin.recover({
         userKey: testData.keys.userKey,
@@ -2346,6 +2359,7 @@ describe('SOL:', function () {
       should.equal(durableNonceTxnJson.numSignatures, testData.SolInputData.durableNonceSignatures);
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 4);
+      sandBox.assert.calledOnce(getTSSSignatureSpy);
     });
 
     it('should recover a txn for unsigned sweep recoveries', async function () {
@@ -2422,6 +2436,8 @@ describe('SOL:', function () {
     });
 
     it('should recover sol tokens to recovery destination with no existing token accounts', async function () {
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
       const tokenTxn = await basecoin.recover({
         userKey: testData.wrwUser.userKey,
         backupKey: testData.wrwUser.backupKey,
@@ -2476,9 +2492,12 @@ describe('SOL:', function () {
 
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 7);
+      sandBox.assert.calledOnce(getTSSSignatureSpy);
     });
 
     it('should recover sol 2022 tokens to recovery destination with no existing token accounts', async function () {
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
       const tokenTxn = await basecoin.recover({
         userKey: testData.wrwUser.userKey,
         backupKey: testData.wrwUser.backupKey,
@@ -2538,9 +2557,12 @@ describe('SOL:', function () {
 
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 7);
+      sandBox.assert.calledOnce(getTSSSignatureSpy);
     });
 
     it('should recover sol tokens to recovery destination with existing token accounts', async function () {
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
       const tokenTxn = await basecoin.recover({
         userKey: testData.wrwUser.userKey,
         backupKey: testData.wrwUser.backupKey,
@@ -2588,9 +2610,12 @@ describe('SOL:', function () {
 
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 7);
+      sandBox.assert.calledOnce(getTSSSignatureSpy);
     });
 
     it('should recover sol 2022 tokens to recovery destination with existing token accounts', async function () {
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
       const tokenTxn = await basecoin.recover({
         userKey: testData.wrwUser.userKey,
         backupKey: testData.wrwUser.backupKey,
@@ -2642,6 +2667,7 @@ describe('SOL:', function () {
       should.equal(instructionsData[1].params.sourceAddress, source2022TokenAccount);
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 7);
+      sandBox.assert.calledOnce(getTSSSignatureSpy);
     });
 
     it('should recover sol tokens to recovery destination with existing token accounts for unsigned sweep recoveries', async function () {
@@ -2698,7 +2724,8 @@ describe('SOL:', function () {
     });
 
     it('should recover sol funds from ATA address for non-bitgo recoveries', async function () {
-      // close ATA address instruction type txn
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
       const closeATATxns = await basecoin.recoverCloseATA({
         userKey: testData.closeATAkeys.userKey,
         backupKey: testData.closeATAkeys.backupKey,
@@ -2717,6 +2744,39 @@ describe('SOL:', function () {
         closeATATxns[1].txId,
         '5oUBgXX4enGmFEspG64goy3PRysjfrekZGg3rZNkBHUCQFd482vrVWbfDcRYMBEJt65JXymfEPm8M6d89X4xV79n'
       );
+      sandBox.assert.calledTwice(getTSSSignatureSpy);
+    });
+
+    it('should sign recoverCloseATA via signAndGenerateBroadcastableTransaction with MPCv1 keys', async function () {
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+      const factory = (basecoin as any).getBuilder();
+      const blockhash = testData.SolResponses.getBlockhashResponse.body.result.value.blockhash;
+      const txBuilder = factory.getCloseAtaInitializationBuilder();
+      txBuilder.nonce(blockhash);
+      txBuilder.sender(testData.closeATAkeys.bs58EncodedPublicKey);
+      txBuilder.accountAddress(testData.closeATAkeys.closeAtaAddress);
+      txBuilder.destinationAddress(testData.closeATAkeys.destinationPubKey);
+      txBuilder.authorityAddress(testData.closeATAkeys.bs58EncodedPublicKey);
+      txBuilder.associatedTokenAccountRent('2039280');
+
+      const result = await basecoin.signAndGenerateBroadcastableTransaction(
+        {
+          userKey: testData.closeATAkeys.userKey,
+          backupKey: testData.closeATAkeys.backupKey,
+          bitgoKey: testData.closeATAkeys.bitgoKey,
+          recoveryDestination: testData.closeATAkeys.destinationPubKey,
+          walletPassphrase: testData.closeATAkeys.walletPassword,
+          closeAtaAddress: testData.closeATAkeys.closeAtaAddress,
+        },
+        txBuilder,
+        testData.closeATAkeys.bs58EncodedPublicKey,
+        false
+      );
+
+      result.should.hasOwnProperty('serializedTx');
+      result.should.hasOwnProperty('scanIndex');
+      should.equal(result.scanIndex, 0);
+      sandBox.assert.calledOnce(getTSSSignatureSpy);
     });
 
     it('should recover tokens from a nested ATA (ATA whose owner is another ATA)', async function () {
@@ -2783,12 +2843,77 @@ describe('SOL:', function () {
 
   describe('Recover Transactions (MPCv2):', () => {
     const mpcV2SandBox = sinon.createSandbox();
-    // MPCv2-derived address for wrwUser.bitgoKey at m/0 via deriveUnhardenedMps
-    const mpcV2WalletAddress = '4nPsUgktdtrPBf3V8GojBukffEbYPq7sQ15gSRNztk1n';
     const usdtMintAddress = '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C';
     const t22mintAddress = '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6';
     const token22ProgramId = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb';
     let callBack: sinon.SinonStub;
+    let mpcV2UserKey: string;
+    let mpcV2BackupKey: string;
+    let mpcV2CommonKeyChain: string;
+    let mpcV2WalletAddress: string;
+    let mpcV2TokenUserKey: string;
+    let mpcV2TokenBackupKey: string;
+    let mpcV2TokenCommonKeyChain: string;
+    let mpcV2TokenWalletAddress: string;
+    let mismatchedBitgoKey: string;
+    let mismatchedWalletAddress: string;
+    let mpcV2RecoverParams: SolRecoveryOptions;
+    let mpcV2TokenRecoverParams: SolRecoveryOptions;
+    let closeAtaMpcV2Params: SolRecoveryOptions;
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      const [tokenUserDkg, tokenBackupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      const [otherUserDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      const walletPassphrase = testData.keys.walletPassword;
+
+      mpcV2UserKey = encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+      mpcV2BackupKey = encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+      mpcV2WalletAddress = new KeyPair({
+        pub: deriveUnhardenedMps(mpcV2CommonKeyChain, 'm/0').slice(0, 64),
+      }).getAddress();
+      mismatchedBitgoKey = otherUserDkg.getCommonKeychain();
+      mismatchedWalletAddress = new KeyPair({
+        pub: deriveUnhardenedMps(mismatchedBitgoKey, 'm/0').slice(0, 64),
+      }).getAddress();
+
+      mpcV2TokenUserKey = encrypt(walletPassphrase, tokenUserDkg.getReducedKeyShare().toString('base64'));
+      mpcV2TokenBackupKey = encrypt(walletPassphrase, tokenBackupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2TokenCommonKeyChain = tokenUserDkg.getCommonKeychain();
+      mpcV2TokenWalletAddress = new KeyPair({
+        pub: deriveUnhardenedMps(mpcV2TokenCommonKeyChain, 'm/0').slice(0, 64),
+      }).getAddress();
+
+      mpcV2RecoverParams = {
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        recoveryDestination: testData.keys.destinationPubKey,
+        walletPassphrase,
+      };
+      mpcV2TokenRecoverParams = {
+        userKey: mpcV2TokenUserKey,
+        backupKey: mpcV2TokenBackupKey,
+        bitgoKey: mpcV2TokenCommonKeyChain,
+        recoveryDestination: testData.keys.destinationPubKey,
+        walletPassphrase,
+        tokenContractAddress: usdtMintAddress,
+        durableNonce: {
+          publicKey: testData.keys.durableNoncePubKey,
+          secretKey: testData.keys.durableNoncePrivKey,
+        },
+      };
+      closeAtaMpcV2Params = {
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        recoveryDestination: testData.closeATAkeys.destinationPubKey,
+        walletPassphrase,
+        closeAtaAddress: testData.closeATAkeys.closeAtaAddress,
+        recoveryDestinationAtaAddress: testData.closeATAkeys.recoveryDestinationAtaAddress,
+      };
+    });
 
     beforeEach(() => {
       callBack = mpcV2SandBox.stub(Sol.prototype, 'getDataFromNode' as keyof Sol);
@@ -2799,16 +2924,9 @@ describe('SOL:', function () {
         })
         .resolves(testData.SolResponses.getBlockhashResponse);
 
-      // MPCv2 derives address via deriveUnhardenedMps — different from MPCv1's MPC.deriveUnhardened.
-      // Derived from testData.keys.bitgoKey at m/0 using deriveUnhardenedMps.
       callBack
         .withArgs({
-          payload: {
-            id: '1',
-            jsonrpc: '2.0',
-            method: 'getBalance',
-            params: ['6UhWoz6WMtnk1quBibd7KAuoshvSL7vSiPe3ycDw2Kh6'],
-          },
+          payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [mpcV2WalletAddress] },
         })
         .resolves(testData.SolResponses.getAccountBalanceResponse);
 
@@ -2827,8 +2945,6 @@ describe('SOL:', function () {
         .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getMinimumBalanceForRentExemption', params: [165] } })
         .resolves(testData.SolResponses.getMinimumBalanceForRentExemptionResponse);
 
-      // The stub signature (Buffer.alloc(64)) is not a valid Ed25519 signature so Solana's
-      // serializer would reject it. Bypass the check by returning a fixed hex string.
       mpcV2SandBox.stub(Transaction.prototype, 'toBroadcastFormat').returns('stub-serialized-tx');
     });
 
@@ -2837,58 +2953,34 @@ describe('SOL:', function () {
     });
 
     it('should route to MPCv2 path for native SOL recovery when keycard is MPCv2', async function () {
-      mpcV2SandBox.stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'isEddsaMpcV1SigningMaterial').resolves(false);
-      const getSharesStub = mpcV2SandBox
-        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'getEddsaMpcV2RecoveryKeySharesFromReducedKey')
-        .resolves({
-          userKeyShare: Buffer.alloc(32),
-          backupKeyShare: Buffer.alloc(32),
-          commonKeyChain: testData.keys.bitgoKey.replace(/\s/g, ''),
-        });
-      const signMpcV2Stub = mpcV2SandBox
-        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'signRecoveryEddsaMPCv2')
-        .returns(Buffer.alloc(64));
+      const getTSSSignatureSpy = mpcV2SandBox.spy(EDDSAMethods, 'getTSSSignature');
 
-      const result = await basecoin.recover({
-        userKey: testData.keys.userKey,
-        backupKey: testData.keys.backupKey,
-        bitgoKey: testData.keys.bitgoKey,
-        recoveryDestination: testData.keys.destinationPubKey,
-        walletPassphrase: testData.keys.walletPassword,
-      });
+      const result = await basecoin.recover(mpcV2RecoverParams);
 
       result.should.not.be.empty();
       result.should.hasOwnProperty('serializedTx');
       result.should.hasOwnProperty('scanIndex');
       should.equal((result as MPCTx).scanIndex, 0);
-      mpcV2SandBox.assert.calledOnce(getSharesStub);
-      mpcV2SandBox.assert.calledOnce(signMpcV2Stub);
+      should.equal(
+        callBack.getCalls().find((call) => call.args[0]?.payload?.method === 'getBalance')?.args[0].payload.params[0],
+        mpcV2WalletAddress
+      );
+      mpcV2SandBox.assert.notCalled(getTSSSignatureSpy);
     });
 
     it('should throw when MPCv2 commonKeyChain does not match bitgoKey', async function () {
-      mpcV2SandBox.stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'isEddsaMpcV1SigningMaterial').resolves(false);
-      mpcV2SandBox
-        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'getEddsaMpcV2RecoveryKeySharesFromReducedKey')
-        .resolves({
-          userKeyShare: Buffer.alloc(32),
-          backupKeyShare: Buffer.alloc(32),
-          commonKeyChain: 'deadbeef'.repeat(16), // deliberate mismatch
-        });
+      callBack
+        .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [mismatchedWalletAddress] } })
+        .resolves(testData.SolResponses.getAccountBalanceResponse);
 
       await basecoin
-        .recover({
-          userKey: testData.keys.userKey,
-          backupKey: testData.keys.backupKey,
-          bitgoKey: testData.keys.bitgoKey,
-          recoveryDestination: testData.keys.destinationPubKey,
-          walletPassphrase: testData.keys.walletPassword,
-        })
+        .recover({ ...mpcV2RecoverParams, bitgoKey: mismatchedBitgoKey })
         .should.be.rejectedWith('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
     });
 
     it('should route to MPCv2 path for SPL token recovery when keycard is MPCv2', async function () {
       callBack
-        .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [mpcV2WalletAddress] } })
+        .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [mpcV2TokenWalletAddress] } })
         .resolves(testData.SolResponses.getAccountBalanceResponse);
       callBack
         .withArgs({
@@ -2897,7 +2989,7 @@ describe('SOL:', function () {
             jsonrpc: '2.0',
             method: 'getTokenAccountsByOwner',
             params: [
-              mpcV2WalletAddress,
+              mpcV2TokenWalletAddress,
               { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
               { encoding: 'jsonParsed' },
             ],
@@ -2929,42 +3021,20 @@ describe('SOL:', function () {
         })
         .resolves(testData.SolResponses.getAccountInfoResponse);
 
-      mpcV2SandBox.stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'isEddsaMpcV1SigningMaterial').resolves(false);
-      const getSharesStub = mpcV2SandBox
-        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'getEddsaMpcV2RecoveryKeySharesFromReducedKey')
-        .resolves({
-          userKeyShare: Buffer.alloc(32),
-          backupKeyShare: Buffer.alloc(32),
-          commonKeyChain: testData.wrwUser.bitgoKey.replace(/\s/g, ''),
-        });
-      const signMpcV2Stub = mpcV2SandBox
-        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'signRecoveryEddsaMPCv2')
-        .returns(Buffer.alloc(64));
+      const getTSSSignatureSpy = mpcV2SandBox.spy(EDDSAMethods, 'getTSSSignature');
 
-      const result = await basecoin.recover({
-        userKey: testData.wrwUser.userKey,
-        backupKey: testData.wrwUser.backupKey,
-        bitgoKey: testData.wrwUser.bitgoKey,
-        recoveryDestination: testData.keys.destinationPubKey,
-        tokenContractAddress: usdtMintAddress,
-        walletPassphrase: testData.wrwUser.walletPassphrase,
-        durableNonce: {
-          publicKey: testData.keys.durableNoncePubKey,
-          secretKey: testData.keys.durableNoncePrivKey,
-        },
-      });
+      const result = await basecoin.recover(mpcV2TokenRecoverParams);
 
       result.should.not.be.empty();
       result.should.hasOwnProperty('serializedTx');
       result.should.hasOwnProperty('scanIndex');
       should.equal((result as MPCTx).scanIndex, 0);
-      mpcV2SandBox.assert.calledOnce(getSharesStub);
-      mpcV2SandBox.assert.calledOnce(signMpcV2Stub);
+      mpcV2SandBox.assert.notCalled(getTSSSignatureSpy);
     });
 
     it('should route to MPCv2 path for Token-2022 recovery and preserve programId', async function () {
       callBack
-        .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [mpcV2WalletAddress] } })
+        .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [mpcV2TokenWalletAddress] } })
         .resolves(testData.SolResponses.getAccountBalanceResponse);
       callBack
         .withArgs({
@@ -2972,7 +3042,7 @@ describe('SOL:', function () {
             id: '1',
             jsonrpc: '2.0',
             method: 'getTokenAccountsByOwner',
-            params: [mpcV2WalletAddress, { programId: token22ProgramId }, { encoding: 'jsonParsed' }],
+            params: [mpcV2TokenWalletAddress, { programId: token22ProgramId }, { encoding: 'jsonParsed' }],
           },
         })
         .resolves(testData.SolResponses.getTokenAccountsByOwnerForSol2022Response);
@@ -2997,51 +3067,22 @@ describe('SOL:', function () {
         })
         .resolves(testData.SolResponses.getAccountInfoResponse);
 
-      mpcV2SandBox.stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'isEddsaMpcV1SigningMaterial').resolves(false);
-      const getSharesStub = mpcV2SandBox
-        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'getEddsaMpcV2RecoveryKeySharesFromReducedKey')
-        .resolves({
-          userKeyShare: Buffer.alloc(32),
-          backupKeyShare: Buffer.alloc(32),
-          commonKeyChain: testData.wrwUser.bitgoKey.replace(/\s/g, ''),
-        });
-      const signMpcV2Stub = mpcV2SandBox
-        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'signRecoveryEddsaMPCv2')
-        .returns(Buffer.alloc(64));
+      const getTSSSignatureSpy = mpcV2SandBox.spy(EDDSAMethods, 'getTSSSignature');
 
       const result = await basecoin.recover({
-        userKey: testData.wrwUser.userKey,
-        backupKey: testData.wrwUser.backupKey,
-        bitgoKey: testData.wrwUser.bitgoKey,
-        recoveryDestination: testData.keys.destinationPubKey,
+        ...mpcV2TokenRecoverParams,
         tokenContractAddress: t22mintAddress,
         programId: token22ProgramId,
-        walletPassphrase: testData.wrwUser.walletPassphrase,
-        durableNonce: {
-          publicKey: testData.keys.durableNoncePubKey,
-          secretKey: testData.keys.durableNoncePrivKey,
-        },
       });
 
       result.should.not.be.empty();
       result.should.hasOwnProperty('serializedTx');
       result.should.hasOwnProperty('scanIndex');
       should.equal((result as MPCTx).scanIndex, 0);
-      mpcV2SandBox.assert.calledOnce(getSharesStub);
-      mpcV2SandBox.assert.calledOnce(signMpcV2Stub);
+      mpcV2SandBox.assert.notCalled(getTSSSignatureSpy);
     });
 
     it('should apply durable nonce account signature when keycard is MPCv2', async function () {
-      callBack
-        .withArgs({
-          payload: {
-            id: '1',
-            jsonrpc: '2.0',
-            method: 'getBalance',
-            params: ['6UhWoz6WMtnk1quBibd7KAuoshvSL7vSiPe3ycDw2Kh6'],
-          },
-        })
-        .resolves(testData.SolResponses.getAccountBalanceResponse);
       callBack
         .withArgs({
           payload: {
@@ -3053,24 +3094,10 @@ describe('SOL:', function () {
         })
         .resolves(testData.SolResponses.getAccountInfoResponse);
 
-      mpcV2SandBox.stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'isEddsaMpcV1SigningMaterial').resolves(false);
-      const getSharesStub = mpcV2SandBox
-        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'getEddsaMpcV2RecoveryKeySharesFromReducedKey')
-        .resolves({
-          userKeyShare: Buffer.alloc(32),
-          backupKeyShare: Buffer.alloc(32),
-          commonKeyChain: testData.keys.bitgoKey.replace(/\s/g, ''),
-        });
-      const signMpcV2Stub = mpcV2SandBox
-        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'signRecoveryEddsaMPCv2')
-        .returns(Buffer.alloc(64));
+      const getTSSSignatureSpy = mpcV2SandBox.spy(EDDSAMethods, 'getTSSSignature');
 
       const result = await basecoin.recover({
-        userKey: testData.keys.userKey,
-        backupKey: testData.keys.backupKey,
-        bitgoKey: testData.keys.bitgoKey,
-        recoveryDestination: testData.keys.destinationPubKey,
-        walletPassphrase: testData.keys.walletPassword,
+        ...mpcV2RecoverParams,
         durableNonce: {
           publicKey: testData.keys.durableNoncePubKey,
           secretKey: testData.keys.durableNoncePrivKey,
@@ -3081,8 +3108,152 @@ describe('SOL:', function () {
       result.should.hasOwnProperty('serializedTx');
       result.should.hasOwnProperty('scanIndex');
       should.equal((result as MPCTx).scanIndex, 0);
-      mpcV2SandBox.assert.calledOnce(getSharesStub);
-      mpcV2SandBox.assert.calledOnce(signMpcV2Stub);
+      mpcV2SandBox.assert.notCalled(getTSSSignatureSpy);
+    });
+
+    describe('recoverCloseATA', () => {
+      const zeroTokenInfoResponse = _.cloneDeep(testData.SolResponses.getTokenInfoResponse);
+      zeroTokenInfoResponse.body.result.value.data.parsed.info.tokenAmount.amount = '0';
+
+      beforeEach(() => {
+        callBack
+          .withArgs({
+            payload: {
+              id: '1',
+              jsonrpc: '2.0',
+              method: 'getBalance',
+              params: [testData.closeATAkeys.closeAtaAddress],
+            },
+          })
+          .resolves(testData.SolResponses.getAccountBalanceResponseM2Derivation);
+
+        callBack
+          .withArgs({
+            payload: {
+              id: '1',
+              jsonrpc: '2.0',
+              method: 'getBalance',
+              params: sinon.match((address: string) => address !== testData.closeATAkeys.closeAtaAddress),
+            },
+          })
+          .resolves(testData.SolResponses.getAccountBalanceResponse);
+
+        callBack
+          .withArgs({
+            payload: {
+              id: '1',
+              jsonrpc: '2.0',
+              method: 'getAccountInfo',
+              params: [testData.closeATAkeys.closeAtaAddress, { encoding: 'jsonParsed' }],
+            },
+          })
+          .resolves(testData.SolResponses.getTokenInfoResponse);
+
+        callBack
+          .withArgs({
+            payload: { id: '1', jsonrpc: '2.0', method: 'sendTransaction', params: sinon.match.array },
+          })
+          .onCall(0)
+          .resolves(testData.SolResponses.broadcastTransactionResponse)
+          .onCall(1)
+          .resolves(testData.SolResponses.broadcastTransactionResponse1);
+
+        let broadcastCallIndex = 0;
+        mpcV2SandBox.stub(Sol.prototype, 'broadcastTransaction' as keyof Sol).callsFake(async () => {
+          broadcastCallIndex++;
+          return {
+            txId:
+              broadcastCallIndex === 1
+                ? testData.SolResponses.broadcastTransactionResponse.body.result
+                : testData.SolResponses.broadcastTransactionResponse1.body.result,
+          };
+        });
+      });
+
+      it('should recover close ATA with MPCv2 keys when no token balance is present', async function () {
+        callBack
+          .withArgs({
+            payload: {
+              id: '1',
+              jsonrpc: '2.0',
+              method: 'getAccountInfo',
+              params: [testData.closeATAkeys.closeAtaAddress, { encoding: 'jsonParsed' }],
+            },
+          })
+          .resolves(zeroTokenInfoResponse);
+
+        const getTSSSignatureSpy = mpcV2SandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+        const results = await basecoin.recoverCloseATA(closeAtaMpcV2Params);
+
+        results.should.have.length(1);
+        should.equal(results[0].txId, testData.SolResponses.broadcastTransactionResponse.body.result);
+        should.equal(
+          callBack.getCalls().find((call) => call.args[0]?.payload?.method === 'getBalance')?.args[0].payload.params[0],
+          mpcV2WalletAddress
+        );
+        mpcV2SandBox.assert.notCalled(getTSSSignatureSpy);
+      });
+
+      it('should recover close ATA with MPCv2 keys when token balance is present', async function () {
+        const getTSSSignatureSpy = mpcV2SandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+        const results = await basecoin.recoverCloseATA(closeAtaMpcV2Params);
+
+        results.should.have.length(2);
+        should.equal(results[0].txId, testData.SolResponses.broadcastTransactionResponse.body.result);
+        should.equal(results[1].txId, testData.SolResponses.broadcastTransactionResponse1.body.result);
+        should.equal(
+          callBack.getCalls().find((call) => call.args[0]?.payload?.method === 'getBalance')?.args[0].payload.params[0],
+          mpcV2WalletAddress
+        );
+        mpcV2SandBox.assert.notCalled(getTSSSignatureSpy);
+      });
+
+      it('should throw when MPCv2 recoverCloseATA bitgoKey does not match keycard commonKeyChain', async function () {
+        callBack
+          .withArgs({
+            payload: {
+              id: '1',
+              jsonrpc: '2.0',
+              method: 'getAccountInfo',
+              params: [testData.closeATAkeys.closeAtaAddress, { encoding: 'jsonParsed' }],
+            },
+          })
+          .resolves(zeroTokenInfoResponse);
+
+        await basecoin
+          .recoverCloseATA({ ...closeAtaMpcV2Params, bitgoKey: mismatchedBitgoKey })
+          .should.be.rejectedWith('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+      });
+
+      it('should sign recoverCloseATA via signAndGenerateBroadcastableTransaction with MPCv2 keys', async function () {
+        const getTSSSignatureSpy = mpcV2SandBox.spy(EDDSAMethods, 'getTSSSignature');
+        const factory = (basecoin as any).getBuilder();
+        const blockhash = testData.SolResponses.getBlockhashResponse.body.result.value.blockhash;
+        const txBuilder = factory.getCloseAtaInitializationBuilder();
+        txBuilder.nonce(blockhash);
+        txBuilder.sender(mpcV2WalletAddress);
+        txBuilder.accountAddress(testData.closeATAkeys.closeAtaAddress);
+        txBuilder.destinationAddress(testData.closeATAkeys.destinationPubKey);
+        txBuilder.authorityAddress(mpcV2WalletAddress);
+        txBuilder.associatedTokenAccountRent('2039280');
+        const addSignatureSpy = mpcV2SandBox.spy(txBuilder, 'addSignature');
+
+        const result = await basecoin.signAndGenerateBroadcastableTransaction(
+          closeAtaMpcV2Params,
+          txBuilder,
+          mpcV2WalletAddress,
+          true
+        );
+
+        result.should.hasOwnProperty('serializedTx');
+        result.should.hasOwnProperty('scanIndex');
+        should.equal(result.scanIndex, 0);
+        mpcV2SandBox.assert.notCalled(getTSSSignatureSpy);
+        mpcV2SandBox.assert.calledOnce(addSignatureSpy);
+        should.equal(addSignatureSpy.firstCall.args[0].pub, mpcV2WalletAddress);
+      });
     });
   });
 
