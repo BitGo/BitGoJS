@@ -3158,6 +3158,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
             'consolidate',
             'bridgeFunds',
             'enabletoken',
+            'defiApprove',
+            'defiDeposit',
           ].includes(txParams.type))
       )
     ) {
