@@ -413,3 +413,27 @@ jobs:
             git diff -- . ':!yarn.lock'
             exit 1
           fi
+
+  # Umbrella job that branch protection should require instead of individual jobs.
+  # Passes when every dependency either succeeded or was intentionally skipped,
+  # so CI-only PRs (where tests are skipped by path filters) can still merge.
+  # `changes` is included in needs so a failure there (not a skip) is caught and
+  # blocks the merge — preventing test jobs from being falsely skipped.
+  all-checks:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - changes
+      - unit-test
+      - browser-test
+      - docker-build
+      - dockerfile-check
+      - verify-vendor-integrity
+      - verify-npm-packages
+      - code-quality
+    steps:
+      - name: All checks passed or skipped
+        run: |
+          results='${{ toJSON(needs) }}'
+          echo "$results"
+          echo "$results" | jq -e '[.[].result] | all(. == "success" or . == "skipped")'
