@@ -11,11 +11,12 @@ import { UnbondBuilder } from './unbondBuilder';
 import { WithdrawUnbondedBuilder } from './withdrawUnbondedBuilder';
 import utils from './utils';
 import { Interface, SingletonRegistry, TransactionBuilder } from './';
-import { TxMethod, BatchCallObject, MethodNames } from './iface';
+import { TxMethod, BatchCallObject, MethodNames, AddAndAffirmWithMediatorsArgs } from './iface';
 import { Transaction as BaseTransaction } from '@bitgo/abstract-substrate';
 import { Transaction as PolyxTransaction } from './transaction';
 import { PreApproveAssetBuilder } from './preApproveAssetBuilder';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
+import { HexTokenTransferBuilder } from './hexTokenTransferBuilder';
 import { RejectInstructionBuilder } from './rejectInstructionBuilder';
 import { NominateBuilder } from './nominateBuilder';
 
@@ -47,6 +48,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getTokenTransferBuilder(): TokenTransferBuilder {
     return new TokenTransferBuilder(this._coinConfig).material(this._material);
+  }
+
+  getHexTokenTransferBuilder(): HexTokenTransferBuilder {
+    return new HexTokenTransferBuilder(this._coinConfig).material(this._material);
   }
 
   getRejectInstructionBuilder(): RejectInstructionBuilder {
@@ -111,6 +116,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     } else if (methodName === MethodNames.PreApproveAsset) {
       return this.getPreApproveAssetBuilder();
     } else if (methodName === MethodNames.AddAndAffirmWithMediators) {
+      const args = decodedTxn.method.args as AddAndAffirmWithMediatorsArgs;
+      if (utils.isNewMemoEncoding(args.instructionMemo)) {
+        return this.getHexTokenTransferBuilder();
+      }
       return this.getTokenTransferBuilder();
     } else if (methodName === MethodNames.RejectInstruction) {
       return this.getRejectInstructionBuilder();
