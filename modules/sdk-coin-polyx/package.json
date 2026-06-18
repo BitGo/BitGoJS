@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-polyx",
-  "version": "1.16.4",
+  "version": "1.17.0",
   "description": "BitGo SDK coin library for POLYX (Polymesh) coin",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,10 +40,10 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-substrate": "^1.16.4",
-    "@bitgo/sdk-core": "^37.7.0",
+    "@bitgo/abstract-substrate": "^1.16.5",
+    "@bitgo/sdk-core": "^37.8.0",
     "@bitgo/sdk-lib-mpc": "^10.14.0",
-    "@bitgo/statics": "^58.48.0",
+    "@bitgo/statics": "^58.49.0",
     "@polkadot/api": "14.1.1",
     "@polkadot/keyring": "13.5.6",
     "@substrate/txwrapper-core": "7.5.2",
@@ -52,8 +52,8 @@
     "joi": "^17.4.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.86.0",
-    "@bitgo/sdk-test": "^9.1.51"
+    "@bitgo/sdk-api": "^1.86.1",
+    "@bitgo/sdk-test": "^9.1.52"
   },
   "files": [
     "dist"

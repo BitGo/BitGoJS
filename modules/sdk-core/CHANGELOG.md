@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [37.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.7.0...@bitgo/sdk-core@37.8.0) (2026-06-18)
+
+
+### Features
+
+* **abstract-eth:** derive legacy multisig forwarder addresses (v1/v2/v4) ([40d0a6f](https://github.com/BitGo/BitGoJS/commit/40d0a6f2683526491d779fb5d526f7a938f3c500))
+* added bitgojs details for the arc mainnet ([2a5de9d](https://github.com/BitGo/BitGoJS/commit/2a5de9d31c1d56f394fed47bb29616a17d535553))
+* **sdk-core:** add PolyxSwitchValidatorOptions for multi-nomination switch ([3b6317a](https://github.com/BitGo/BitGoJS/commit/3b6317af39705541cca88e7b2c81d4800e37a7ec))
+* **sdk-core:** add signRecoveryMpcV2 for EdDSA MPCv2 offline signing ([a6d0813](https://github.com/BitGo/BitGoJS/commit/a6d0813cbb7d8f214989c013371c6dd4eff12feb))
+* **sdk-core:** make GoStakeOptions.walletPassphrase optional ([d1b529a](https://github.com/BitGo/BitGoJS/commit/d1b529a9c9456d120352fc4d851a8b57b7b337ab))
+* **statics:** add Neo X EVM chain (gasevm/tgasevm) ([2100940](https://github.com/BitGo/BitGoJS/commit/21009408f4fb07d825c81f6979cc401594ea2a6b))
+
+
+
+
+
 # [37.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.6.0...@bitgo/sdk-core@37.7.0) (2026-06-16)
 
 

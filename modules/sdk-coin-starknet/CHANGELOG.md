@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-starknet@1.4.0...@bitgo/sdk-coin-starknet@1.5.0) (2026-06-18)
+
+
+### Features
+
+* **sdk-coin-starknet:** add requiresWalletInitializationTransaction override ([88af11d](https://github.com/BitGo/BitGoJS/commit/88af11d7b5a31e6db71ce697e7650c4b08c02788))
+* **sdk-coin-starknet:** handle 0x-prefixed signableHex in verifyTransaction ([af1b19a](https://github.com/BitGo/BitGoJS/commit/af1b19a652713c0e41f138d7465be1bf89c19518))
+
+
+
+
+
 # [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-starknet@1.3.4...@bitgo/sdk-coin-starknet@1.4.0) (2026-06-16)
 
 
