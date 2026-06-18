@@ -867,6 +867,76 @@ describe('ETH:', function () {
       isTransactionVerified.should.equal(true);
     });
 
+    it('should verify TSS transaction with defiApprove type', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: {
+          baseAddress: baseAddress,
+        },
+      });
+
+      // DeFi deposit flow is intent-based: recipients/calldata are built server-side
+      // from defiParams, so txParams has no recipients (see CGD-1815).
+      const txParams = {
+        type: 'defiApprove',
+        defiParams: { vaultId: 'hteth-usdc-test', amount: '10' },
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        txHex: '0x',
+        coin: 'hteth',
+        walletId: 'fakeWalletId',
+      };
+
+      const verification = {};
+
+      const isTransactionVerified = await coin.verifyTransaction({
+        txParams: txParams as any,
+        txPrebuild: txPrebuild as any,
+        wallet,
+        verification,
+        walletType: 'tss',
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should verify TSS transaction with defiDeposit type', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: {
+          baseAddress: baseAddress,
+        },
+      });
+
+      const txParams = {
+        type: 'defiDeposit',
+        defiParams: { vaultId: 'hteth-usdc-test', amount: '10', operationId: 'fakeOperationId' },
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        txHex: '0x',
+        coin: 'hteth',
+        walletId: 'fakeWalletId',
+      };
+
+      const verification = {};
+
+      const isTransactionVerified = await coin.verifyTransaction({
+        txParams: txParams as any,
+        txPrebuild: txPrebuild as any,
+        wallet,
+        verification,
+        walletType: 'tss',
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
     describe('consolidationToBaseAddress verification', function () {
       it('should verify consolidation when recipient matches base address', async function () {
         const coin = bitgo.coin('hteth') as Hteth;
