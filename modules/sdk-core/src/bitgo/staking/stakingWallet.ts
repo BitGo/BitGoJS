@@ -23,6 +23,7 @@ import {
   TronStakeOptions,
   TaoStakeOptions,
   TaoSwitchValidatorOptions,
+  PolyxSwitchValidatorOptions,
   VetStakeOptions,
   StoryStakeOptions,
   XdcStakeOptions,
@@ -84,7 +85,9 @@ export class StakingWallet implements IStakingWallet {
    * @param options - switch validator options
    * @return StakingRequest
    */
-  async switchValidator(options: SwitchValidatorOptions | TaoSwitchValidatorOptions): Promise<StakingRequest> {
+  async switchValidator(
+    options: SwitchValidatorOptions | TaoSwitchValidatorOptions | PolyxSwitchValidatorOptions
+  ): Promise<StakingRequest> {
     return await this.createStakingRequest(options, 'SWITCH_VALIDATOR');
   }
 
@@ -325,6 +328,7 @@ export class StakingWallet implements IStakingWallet {
       | TronStakeOptions
       | TaoStakeOptions
       | TaoSwitchValidatorOptions
+      | PolyxSwitchValidatorOptions
       | VetStakeOptions
       | StoryStakeOptions
       | XdcStakeOptions,

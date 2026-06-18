@@ -227,6 +227,12 @@ export interface TaoSwitchValidatorOptions extends SwitchValidatorOptions {
   netUID: string;
 }
 
+export interface PolyxSwitchValidatorOptions {
+  delegationId: string;
+  validators: string[];
+  clientId?: string;
+}
+
 export interface ClaimRewardsOptions {
   amount: string;
   clientId?: string;
@@ -322,7 +328,9 @@ export interface IStakingWallet {
     options: StakeOptions | TronStakeOptions | TaoStakeOptions | VetStakeOptions | StoryStakeOptions | XdcStakeOptions
   ): Promise<StakingRequest>;
   unstake(options: UnstakeOptions | EthUnstakeOptions): Promise<StakingRequest>;
-  switchValidator(options: SwitchValidatorOptions | TaoSwitchValidatorOptions): Promise<StakingRequest>;
+  switchValidator(
+    options: SwitchValidatorOptions | TaoSwitchValidatorOptions | PolyxSwitchValidatorOptions
+  ): Promise<StakingRequest>;
   claimRewards(options: ClaimRewardsOptions): Promise<StakingRequest>;
   getStakingRequest(stakingRequestId: string): Promise<StakingRequest>;
   getTransactionsReadyToSign(stakingRequestId: string): Promise<TransactionsReadyToSign>;
