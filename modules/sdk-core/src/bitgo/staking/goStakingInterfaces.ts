@@ -32,7 +32,11 @@ interface GoStakingRequestProperties {
 export interface GoStakeOptions {
   amount: string;
   clientId?: string;
-  walletPassphrase: string;
+  /**
+   * Passphrase used to decrypt the user key and sign locally. Optional: omitted for OFC wallets that
+   * sign remotely via the BitGo key (userKeySigningRequired === false).
+   */
+  walletPassphrase?: string;
 }
 
 export interface BaseGoStakeOptions {

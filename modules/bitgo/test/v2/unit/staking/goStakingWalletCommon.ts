@@ -124,6 +124,70 @@ describe('Go Staking Wallet Common', function () {
       msScope1.isDone().should.be.True();
       msScope2.isDone().should.be.True();
     });
+
+    it('should stake without a wallet passphrase for an OFC wallet that signs remotely (userKeySigningRequired === false)', async function () {
+      // OFC wallet signs remotely via the BitGo key instead of decrypting the user key locally.
+      const remoteWallet = new Wallet(bitgo, baseCoin, {
+        id: 'remoteWalletId',
+        coin: ofcCoin,
+        enterprise: enterprise.id,
+        keys: ['5b3424f91bf349930e340175', '5b3424f91bf349930e340174', '5b3424f91bf349930e340173'],
+        coinSpecific: { userKeySigningRequired: false },
+      });
+      const remoteStakingWallet = remoteWallet.toGoStakingWallet();
+
+      // prebuildAndSignTransaction still fetches the user keychain (index 0), but with no passphrase
+      // the decrypt check is skipped and the key is never used to sign.
+      nock(microservicesUri).get(`/api/v2/${ofcCoin}/key/${remoteStakingWallet.wallet.keyIds()[0]}`).reply(200, {
+        id: remoteStakingWallet.wallet.keyIds()[0],
+        pub: 'xpub661MyMwAqRbcFq65dvGMeEVb81KKDRRkWkawSVesWcyevGc5gr8V27LjNfkktaMuKtM362jhgKy2eu35RdArcmmEAoULzAvgKkJpWQPvLXM',
+        source: 'user',
+        coinSpecific: {},
+      });
+
+      const preview = fixtures.previewGoStakingRequest(coin);
+      const msScope1 = nock(microservicesUri)
+        .post(`/api/go-staking/v1/${ofcCoin}/accounts/${remoteStakingWallet.accountId}/requests/preview`, {
+          amount: '1',
+          clientId: 'clientId',
+          type: 'STAKE',
+        })
+        .reply(201, preview);
+
+      // remote signing: the BitGo key signs the payload and returns the signature
+      const signature =
+        '1f4f7e789ef485363b33dca7273717a4a4413330f2badbcaf302758bc404ff8e930943db81aa2c77007738afa23166934c2a3136bae281bea037095be7183c0602';
+      const signScope = nock(microservicesUri)
+        .post(`/api/v2/ofc/wallet/${remoteWallet.id()}/tx/sign`, { payload: preview.payload })
+        .reply(200, { signature });
+
+      const expected = fixtures.finalizeGoStakingRequest(coin, 'STAKE');
+      const msScope2 = nock(microservicesUri)
+        .post(`/api/go-staking/v1/${ofcCoin}/accounts/${remoteStakingWallet.accountId}/requests/finalize`, {
+          amount: '1',
+          clientId: 'clientId',
+          frontTransferSendRequest: {
+            halfSigned: {
+              payload: preview.payload,
+              signature,
+            },
+          },
+          type: 'STAKE',
+        })
+        .reply(201, expected);
+
+      const stakingRequest = await remoteStakingWallet.stake({
+        amount: '1',
+        clientId: 'clientId',
+      });
+
+      should.exist(stakingRequest);
+
+      stakingRequest.should.deepEqual(expected);
+      msScope1.isDone().should.be.True();
+      signScope.isDone().should.be.True();
+      msScope2.isDone().should.be.True();
+    });
   });
 
   describe('unstake', function () {
