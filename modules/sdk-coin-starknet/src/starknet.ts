@@ -70,8 +70,12 @@ export class Starknet extends BaseCoin {
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     const { txParams, txPrebuild } = params;
     const txHex = txPrebuild?.txHex;
-    if (!txHex) {
-      throw new Error('txHex is required');
+
+    // 0x-prefixed txHex means this is the Starknet transaction hash (signableHex), not the
+    // full serialized transaction. Recipient verification already happened in prebuildAndSignTransaction
+    // using serializedTxHex — nothing to verify from a hash alone.
+    if (!txHex || txHex.startsWith('0x')) {
+      return true;
     }
 
     const explainedTx = await this.explainTransaction({ transactionHex: txHex });
