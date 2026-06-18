@@ -2,14 +2,14 @@ import { SharedObjectRef } from '../mystenlab/types';
 
 export const WALRUS_TESTNET_CONFIG = {
   WALRUS_SYSTEM_OBJECT: {
-    objectId: '0x98ebc47370603fe81d9e15491b2f1443d619d1dab720d586e429ed233e1255c1',
-    initialSharedVersion: 1,
+    objectId: '0x6c2547cbbc38025cf3adac45f63cb0a8d12ecf777cdc75a4971612bf97fdf6af',
+    initialSharedVersion: 400185623,
     mutable: true,
   } as SharedObjectRef,
 
   WALRUS_STAKING_OBJECT: {
-    objectId: '0x20266a17b4f1a216727f3eef5772f8d486a9e3b5e319af80a5b75809c035561d',
-    initialSharedVersion: 334023834,
+    objectId: '0xbe46180321c30aab2f8b3501e24048377287fa708018a5b7c2792b35fe339ee3',
+    initialSharedVersion: 400185623,
     mutable: true,
   } as SharedObjectRef,
 
