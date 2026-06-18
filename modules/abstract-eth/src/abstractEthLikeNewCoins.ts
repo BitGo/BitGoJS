@@ -3056,28 +3056,65 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @returns the derived address, the index used, and the HD derivation path
    */
   async deriveAddress(params: DeriveAddressOptions): Promise<DeriveAddressResult> {
-    const isMpcWallet = params.walletVersion === 3 || params.walletVersion === 5 || params.walletVersion === 6;
-    if (!isMpcWallet) {
-      throw new Error(
-        `deriveAddress currently supports only MPC/TSS ETH wallets (wallet versions 3, 5, 6). ` +
-          `Legacy BIP32 forwarder wallets (versions 1, 2, 4) are not yet supported. ` +
-          `Got walletVersion ${params.walletVersion}.`
+    const { walletVersion, index } = params;
+    const forwarderVersion = params.coinSpecific?.forwarderVersion;
+
+    // Mirrors isWalletAddress's branching:
+    // - MPC/TSS receive addresses: v3 & v6 (every index), and the v5 *base* address (index 0).
+    // - Forwarder (CREATE2) receive addresses: legacy v1/v2/v4 wallets, and v5 forwarders (index > 0).
+    const useMpc = walletVersion === 3 || walletVersion === 6 || (walletVersion === 5 && index === 0);
+    if (useMpc) {
+      const { address, derivationPath } = await deriveMPCWalletAddress(
+        {
+          // extractCommonKeychain validates the commonKeychain is present at runtime
+          keychains: (params.keychains ?? []) as TssVerifyAddressOptions['keychains'],
+          index,
+          derivedFromParentWithSeed: params.derivedFromParentWithSeed,
+          multisigTypeVersion: params.multisigTypeVersion,
+          keyCurve: 'secp256k1',
+        },
+        (pubKey) => new KeyPairLib({ pub: pubKey }).getAddress()
       );
+
+      return { address, index, derivationPath };
     }
 
-    const { address, derivationPath } = await deriveMPCWalletAddress(
-      {
-        // extractCommonKeychain validates the commonKeychain is present at runtime
-        keychains: (params.keychains ?? []) as TssVerifyAddressOptions['keychains'],
-        index: params.index,
-        derivedFromParentWithSeed: params.derivedFromParentWithSeed,
-        multisigTypeVersion: params.multisigTypeVersion,
-        keyCurve: 'secp256k1',
-      },
-      (pubKey) => new KeyPairLib({ pub: pubKey }).getAddress()
-    );
+    // Forwarder (CREATE2) derivation for legacy multisig / v5 forwarder receive addresses.
+    if (forwarderVersion === 0) {
+      throw new Error(
+        'Forwarder version 0 addresses cannot be derived: the nonce required for address derivation is not stored.'
+      );
+    }
+    if (forwarderVersion === 1 || forwarderVersion === 2 || forwarderVersion === 4) {
+      const { baseAddress, coinSpecific } = params;
+      if (!baseAddress) {
+        throw new Error('baseAddress is required to derive a forwarder address');
+      }
+      const feeAddress = coinSpecific?.feeAddress ?? '';
+      if (forwarderVersion === 4 && !feeAddress) {
+        throw new Error('coinSpecific.feeAddress is required to derive a v4 forwarder address');
+      }
 
-    return { address, index: params.index, derivationPath };
+      const { forwarderFactoryAddress, forwarderImplementationAddress } =
+        this.getForwarderFactoryAddressesAndForwarderImplementationAddress(forwarderVersion);
+      // For BitGo forwarders the per-address salt is the derivation index, so the forwarder
+      // address is reproducible from (baseAddress, index) plus the network factory/implementation.
+      const address = this.generateForwarderAddress(
+        baseAddress,
+        feeAddress,
+        forwarderFactoryAddress,
+        forwarderImplementationAddress,
+        index
+      );
+
+      return { address, index, coinSpecific: { forwarderVersion } };
+    }
+
+    throw new Error(
+      `deriveAddress: could not determine an ETH derivation strategy. Provide an MPC wallet ` +
+        `(walletVersion 3/5/6 with commonKeychain), or a legacy forwarder (coinSpecific.forwarderVersion ` +
+        `1/2/4 with baseAddress). Got walletVersion=${walletVersion}, forwarderVersion=${forwarderVersion}.`
+    );
   }
 
   /**

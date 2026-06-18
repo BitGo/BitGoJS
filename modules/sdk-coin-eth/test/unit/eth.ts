@@ -1589,11 +1589,12 @@ describe('ETH:', function () {
           verified.should.equal(true);
         });
 
-        it('should throw for legacy BIP32 forwarder wallet versions (1/2/4)', async function () {
+        it('should throw when neither MPC nor forwarder inputs are provided', async function () {
           const coin = bitgo.coin('teth') as Teth;
+          // walletVersion 1 with no coinSpecific.forwarderVersion and no baseAddress is ambiguous
           await assert.rejects(
             async () => coin.deriveAddress({ keychains, index: 0, walletVersion: 1 }),
-            /only MPC\/TSS ETH wallets/
+            /could not determine an ETH derivation strategy/
           );
         });
 
@@ -1602,6 +1603,89 @@ describe('ETH:', function () {
           await assert.rejects(
             async () => coin.deriveAddress({ keychains: [], index: 0, walletVersion: 3 }),
             /keychains/
+          );
+        });
+      });
+
+      describe('deriveAddress (forwarder)', function () {
+        // Same vectors as the forwarder isWalletAddress tests above (coin: hteth).
+        // salt == index for BitGo forwarders, so deriving by index reproduces the address.
+        it('derives the exact v1 forwarder address and round-trips', async function () {
+          const coin = bitgo.coin('hteth') as Hteth;
+          const baseAddress = '0xe1253bcce7d87db522fbceec6e55c9f78c376d9f';
+          const result = await coin.deriveAddress({
+            baseAddress,
+            index: 7,
+            walletVersion: 1,
+            coinSpecific: { forwarderVersion: 1 },
+          });
+          result.address.should.equal('0x6069a4baf2360bf67a6d02a7fc43d8f3910016ae');
+
+          const verified = await coin.isWalletAddress({
+            address: result.address,
+            baseAddress,
+            index: 7,
+            walletVersion: 1,
+            coinSpecific: { salt: '0x7', forwarderVersion: 1 },
+          } as unknown as TssVerifyEthAddressOptions);
+          verified.should.equal(true);
+        });
+
+        it('derives the exact v2 forwarder address', async function () {
+          const coin = bitgo.coin('hteth') as Hteth;
+          const result = await coin.deriveAddress({
+            baseAddress: '0xdc485da076ed4a2b19584e9a1fdbb974f89b60f4',
+            index: 23,
+            walletVersion: 2,
+            coinSpecific: { forwarderVersion: 2 },
+          });
+          result.address.should.equal('0xf636ceddffe41d106586875c0e56dc8feb6268f7');
+        });
+
+        it('derives the exact v4 forwarder address (wallet v5, needs feeAddress)', async function () {
+          const coin = bitgo.coin('hteth') as Hteth;
+          const result = await coin.deriveAddress({
+            baseAddress: '0xf1e3d30798acdf3a12fa5beb5fad8efb23d5be11',
+            index: 117,
+            walletVersion: 5,
+            coinSpecific: { forwarderVersion: 4, feeAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09' },
+          });
+          result.address.should.equal('0xd63b5e2b8d1b4fba3625460508900bf2a0499a4d');
+        });
+
+        it('throws if baseAddress is missing for a forwarder', async function () {
+          const coin = bitgo.coin('hteth') as Hteth;
+          await assert.rejects(
+            async () => coin.deriveAddress({ index: 7, walletVersion: 1, coinSpecific: { forwarderVersion: 1 } }),
+            /baseAddress is required/
+          );
+        });
+
+        it('throws if feeAddress is missing for a v4 forwarder', async function () {
+          const coin = bitgo.coin('hteth') as Hteth;
+          await assert.rejects(
+            async () =>
+              coin.deriveAddress({
+                baseAddress: '0xf1e3d30798acdf3a12fa5beb5fad8efb23d5be11',
+                index: 117,
+                walletVersion: 5,
+                coinSpecific: { forwarderVersion: 4 },
+              }),
+            /feeAddress is required/
+          );
+        });
+
+        it('throws for forwarder version 0 (not derivable)', async function () {
+          const coin = bitgo.coin('hteth') as Hteth;
+          await assert.rejects(
+            async () =>
+              coin.deriveAddress({
+                baseAddress: '0xe1253bcce7d87db522fbceec6e55c9f78c376d9f',
+                index: 0,
+                walletVersion: 1,
+                coinSpecific: { forwarderVersion: 0 },
+              }),
+            /version 0 addresses cannot be derived/
           );
         });
       });
