@@ -102,4 +102,37 @@ describe('Starknet', function () {
       kp1.pub.should.not.equal(kp2.pub);
     });
   });
+
+  describe('verifyTransaction', () => {
+    it('should return true when txHex is a 0x-prefixed signableHex (deploy_account, no recipients)', async function () {
+      // During TSS ECDSA signing, sdk-core passes signableHex (0x-prefixed transaction hash)
+      // as txHex. It cannot be decoded as internal JSON hex, so verification must short-circuit.
+      const result = await basecoin.verifyTransaction({
+        txParams: { recipients: [] },
+        txPrebuild: { txHex: '0xdeadbeefcafe1234567890abcdef' },
+        wallet: {} as any,
+      });
+      result.should.equal(true);
+    });
+
+    it('should return true when txHex is a 0x-prefixed signableHex (transfer with recipients)', async function () {
+      // Same signing path for transfers — signableHex is 0x-prefixed, full verification
+      // is already done in prebuildAndSignTransaction with serializedTxHex.
+      const result = await basecoin.verifyTransaction({
+        txParams: { recipients: [{ address: '0xabc', amount: '1000' }] },
+        txPrebuild: { txHex: '0xdeadbeefcafe1234567890abcdef' },
+        wallet: {} as any,
+      });
+      result.should.equal(true);
+    });
+
+    it('should return true when txHex is absent', async function () {
+      const result = await basecoin.verifyTransaction({
+        txParams: { recipients: [] },
+        txPrebuild: {},
+        wallet: {} as any,
+      });
+      result.should.equal(true);
+    });
+  });
 });
