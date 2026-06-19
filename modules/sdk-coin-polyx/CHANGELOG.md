@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.16.4...@bitgo/sdk-coin-polyx@1.17.0) (2026-06-18)
+
+
+### Features
+
+* **sdk-coin-polyx:** add HexTokenTransferBuilder for NEW token memo encoding (CECHO-1381) ([a87e4ca](https://github.com/BitGo/BitGoJS/commit/a87e4ca615993bdd1b66622d8e62ae5cc86ea4ab))
+* **sdk-coin-polyx:** add HexTransferBuilder for NEW Polymesh memo encoding (CECHO-1370) ([62a4fd6](https://github.com/BitGo/BitGoJS/commit/62a4fd6badc03153adb222eebcb8f492c8ff3138))
+
+
+
+
+
 ## [1.16.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.16.3...@bitgo/sdk-coin-polyx@1.16.4) (2026-06-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polyx

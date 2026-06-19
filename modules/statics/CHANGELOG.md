@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.49.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.48.0...@bitgo/statics@58.49.0) (2026-06-18)
+
+
+### Features
+
+* add new tokens from AMS API ([4170ac3](https://github.com/BitGo/BitGoJS/commit/4170ac34d95911d1419c0effe0493f3bc61dae32))
+* add new tokens from AMS API ([888336a](https://github.com/BitGo/BitGoJS/commit/888336ac16c0c80ddaedc0c7fe8977eb618db38d))
+* add new tokens from AMS API ([75476ca](https://github.com/BitGo/BitGoJS/commit/75476ca4a40153aace2a12e9f453ca2a5574ab79))
+* added bitgojs details for the arc mainnet ([2a5de9d](https://github.com/BitGo/BitGoJS/commit/2a5de9d31c1d56f394fed47bb29616a17d535553))
+* **statics:** add CoinMap.getOrUndefined() safe accessor ([366fef5](https://github.com/BitGo/BitGoJS/commit/366fef51c6b4d022b798c355eb32bccecd7d19c2))
+* **statics:** add Neo X EVM chain (gasevm/tgasevm) ([2100940](https://github.com/BitGo/BitGoJS/commit/21009408f4fb07d825c81f6979cc401594ea2a6b))
+* **statics:** onboard Canton testnet tokens ([acf95fd](https://github.com/BitGo/BitGoJS/commit/acf95fdb9047982568b588648078f86522ada19e))
+
+
+
+
+
 # [58.48.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.47.0...@bitgo/statics@58.48.0) (2026-06-16)
 
 

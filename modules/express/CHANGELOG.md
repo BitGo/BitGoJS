@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.36.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.35.0...@bitgo/express@15.36.0) (2026-06-18)
+
+
+### Features
+
+* **abstract-eth:** derive legacy multisig forwarder addresses (v1/v2/v4) ([40d0a6f](https://github.com/BitGo/BitGoJS/commit/40d0a6f2683526491d779fb5d526f7a938f3c500))
+
+
+
+
+
 # [15.35.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.34.0...@bitgo/express@15.35.0) (2026-06-16)
 
 

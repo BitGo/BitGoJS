@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.7.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.6.0...bitgo@51.7.0) (2026-06-18)
+
+
+### Features
+
+* **sdk-core:** make GoStakeOptions.walletPassphrase optional ([d1b529a](https://github.com/BitGo/BitGoJS/commit/d1b529a9c9456d120352fc4d851a8b57b7b337ab))
+
+
+
+
+
 # [51.6.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.5.0...bitgo@51.6.0) (2026-06-16)
 
 

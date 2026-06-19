@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.13.0...@bitgo/sdk-coin-eth@25.14.0) (2026-06-18)
+
+
+### Bug Fixes
+
+* **abstract-eth:** allow defi TSS tx verification ([16392ee](https://github.com/BitGo/BitGoJS/commit/16392ee73c79dea311b5c98881f883c2176dd833))
+
+
+### Features
+
+* **abstract-eth:** derive legacy multisig forwarder addresses (v1/v2/v4) ([40d0a6f](https://github.com/BitGo/BitGoJS/commit/40d0a6f2683526491d779fb5d526f7a938f3c500))
+
+
+
+
+
 # [25.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.12.1...@bitgo/sdk-coin-eth@25.13.0) (2026-06-16)
 
 
