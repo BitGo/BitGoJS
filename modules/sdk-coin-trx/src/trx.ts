@@ -87,13 +87,14 @@ export interface ExplainTransactionOptions {
 export interface RecoveryOptions {
   userKey: string; // Box A
   backupKey: string; // Box B
-  bitgoKey: string; // Box C - this is bitgo's xpub and will be used to derive their root address
+  bitgoKey: string; // Box C - for multisig: BitGo's xpub; for TSS: the commonKeychain (compressed secp256k1 hex)
   recoveryDestination: string; // base58 address
   krsProvider?: string;
   tokenContractAddress?: string;
   walletPassphrase?: string;
   startingScanIndex?: number;
   scan?: number;
+  isTss?: boolean;
 }
 
 export interface ConsolidationRecoveryOptions {
@@ -822,6 +823,10 @@ export class Trx extends BaseCoin {
    * @param params
    */
   async recover(params: RecoveryOptions): Promise<RecoveryTransaction> {
+    if (params.isTss) {
+      return this.recoverTss(params);
+    }
+
     const isKrsRecovery = getIsKrsRecovery(params);
     const isUnsignedSweep = getIsUnsignedSweep(params);
 
@@ -1010,6 +1015,114 @@ export class Trx extends BaseCoin {
     }
     const txSigned = await txBuilder.build();
     return this.formatForOfflineVault(txSigned, SAFE_TRON_TRANSACTION_FEE, recoveryAmountMinusFees, addressInfo);
+  }
+
+  /**
+   * Builds a TSS (MPC/ECDSA) funds recovery transaction without BitGo.
+   * TSS wallets are single-address (no receive address scanning) and use a single-key signing model
+   * (no Tron on-chain multisig permission structure).
+   *
+   * For unsigned sweeps: pass xpub-format userKey/backupKey so getIsUnsignedSweep() returns true.
+   * For signed recovery: pass encrypted userKey JSON and walletPassphrase; the decrypted value
+   * is a raw secp256k1 private key hex (not a BIP32 xprv).
+   *
+   * @param params - RecoveryOptions with isTss: true. bitgoKey is the commonKeychain
+   *   (compressed secp256k1 public key hex, 66 chars).
+   */
+  private async recoverTss(params: RecoveryOptions): Promise<RecoveryTransaction> {
+    const isUnsignedSweep = getIsUnsignedSweep(params);
+
+    if (!this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('Invalid destination address!');
+    }
+
+    // Derive wallet address from commonKeychain using same method as verifyMPCWalletAddress
+    const walletAddress = new TronKeyPair({ pub: params.bitgoKey }).getAddress();
+    const walletAddressHex = Utils.getHexAddressFromBase58Address(walletAddress);
+    const recoveryToAddressHex = Utils.getHexAddressFromBase58Address(params.recoveryDestination);
+
+    const account = await this.getAccountBalancesFromNode(walletAddress);
+
+    if (!account.data[0]) {
+      throw new Error(`Account ${walletAddress} not found or has no data`);
+    }
+
+    const tokenContractAddr = params.tokenContractAddress;
+
+    if (tokenContractAddr) {
+      let rawTokenTxn: any | undefined;
+      let recoveryAmount = 0;
+
+      for (const token of account.data[0].trc20) {
+        if (token[tokenContractAddr]) {
+          const amount = token[tokenContractAddr];
+          const tokenContractAddrHex = Utils.getHexAddressFromBase58Address(tokenContractAddr);
+          rawTokenTxn = (
+            await this.getTriggerSmartContractTransaction(
+              recoveryToAddressHex,
+              walletAddressHex,
+              amount,
+              tokenContractAddrHex
+            )
+          ).transaction;
+          recoveryAmount = parseInt(amount, 10);
+          break;
+        }
+      }
+
+      if (!rawTokenTxn) {
+        throw new Error('Not found token to recover, please check token balance');
+      }
+
+      const trxBalance = account.data[0].balance;
+      if (trxBalance < SAFE_TRON_TOKEN_TRANSACTION_FEE) {
+        throw new Error(
+          `Amount of funds to recover ${trxBalance} is less than ${SAFE_TRON_TOKEN_TRANSACTION_FEE} and wouldn't be able to fund a trc20 send`
+        );
+      }
+
+      const txBuilder = getBuilder(this.getChain()).from(rawTokenTxn);
+      txBuilder.extendValidTo(RECOVER_TRANSACTION_EXPIRY);
+
+      if (isUnsignedSweep) {
+        return this.formatForOfflineVault(await txBuilder.build(), SAFE_TRON_TOKEN_TRANSACTION_FEE, recoveryAmount);
+      }
+
+      const userPrvHex = await this.bitgo.decryptAsync({
+        password: params.walletPassphrase!,
+        input: params.userKey,
+      });
+      txBuilder.sign({ key: userPrvHex });
+      return this.formatForOfflineVault(await txBuilder.build(), SAFE_TRON_TOKEN_TRANSACTION_FEE, recoveryAmount);
+    }
+
+    // Native TRX recovery
+    const recoveryAmount = account.data[0].balance;
+
+    if (!recoveryAmount || SAFE_TRON_TRANSACTION_FEE >= recoveryAmount) {
+      throw new Error(
+        `Amount of funds to recover ${recoveryAmount} is less than ${SAFE_TRON_TRANSACTION_FEE} and wouldn't be able to fund a send`
+      );
+    }
+
+    const recoveryAmountMinusFees = recoveryAmount - SAFE_TRON_TRANSACTION_FEE;
+    const buildTx = await this.getBuildTransaction(recoveryToAddressHex, walletAddressHex, recoveryAmountMinusFees);
+
+    const txBuilder = (getBuilder(this.getChain()) as WrappedBuilder).from(buildTx);
+    txBuilder.extendValidTo(RECOVER_TRANSACTION_EXPIRY);
+    const tx = await txBuilder.build();
+
+    if (isUnsignedSweep) {
+      return this.formatForOfflineVault(tx, SAFE_TRON_TRANSACTION_FEE, recoveryAmountMinusFees);
+    }
+
+    const userPrvHex = await this.bitgo.decryptAsync({
+      password: params.walletPassphrase!,
+      input: params.userKey,
+    });
+    txBuilder.sign({ key: userPrvHex });
+    const txSigned = await txBuilder.build();
+    return this.formatForOfflineVault(txSigned, SAFE_TRON_TRANSACTION_FEE, recoveryAmountMinusFees);
   }
 
   /**
