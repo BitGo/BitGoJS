@@ -159,7 +159,7 @@ export const cantonTokens = [
     'tcanton:lsqa003',
     'LSQA003-LSQA003',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:LSQA003-LSQA003',
     UnderlyingAsset['tcanton:lsqa003'],
     CANTON_TOKEN_FEATURES
@@ -169,7 +169,7 @@ export const cantonTokens = [
     'tcanton:lsqa513',
     'LSQA513-LSQA513',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:LSQA513-LSQA513',
     UnderlyingAsset['tcanton:lsqa513'],
     CANTON_TOKEN_FEATURES
@@ -179,7 +179,7 @@ export const cantonTokens = [
     'tcanton:lsqa007',
     'LSQA007-LSQA007',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:LSQA007-LSQA007',
     UnderlyingAsset['tcanton:lsqa007'],
     CANTON_TOKEN_FEATURES
@@ -189,7 +189,7 @@ export const cantonTokens = [
     'tcanton:lsqa009',
     'LSQA009-LSQA009',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:LSQA009-LSQA009',
     UnderlyingAsset['tcanton:lsqa009'],
     CANTON_TOKEN_FEATURES
@@ -199,7 +199,7 @@ export const cantonTokens = [
     'tcanton:lsqa001',
     'LSQA001-LSQA001',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:LSQA001-LSQA001',
     UnderlyingAsset['tcanton:lsqa001'],
     CANTON_TOKEN_FEATURES
@@ -209,7 +209,7 @@ export const cantonTokens = [
     'tcanton:lsqa011',
     'LSQA011-LSQA011',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:LSQA011-LSQA011',
     UnderlyingAsset['tcanton:lsqa011'],
     CANTON_TOKEN_FEATURES
@@ -219,7 +219,7 @@ export const cantonTokens = [
     'tcanton:uatdemosym',
     'UATDEMO1-UATDEMOSYM',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UATDEMO1-UATDEMOSYM',
     UnderlyingAsset['tcanton:uatdemosym'],
     CANTON_TOKEN_FEATURES
@@ -229,7 +229,7 @@ export const cantonTokens = [
     'tcanton:symuat39j206',
     'UAT39J206-SYMUAT39J206',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT39J206-SYMUAT39J206',
     UnderlyingAsset['tcanton:symuat39j206'],
     CANTON_TOKEN_FEATURES
@@ -239,7 +239,7 @@ export const cantonTokens = [
     'tcanton:symuat39j305',
     'UAT39J305-SYMUAT39J305',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT39J305-SYMUAT39J305',
     UnderlyingAsset['tcanton:symuat39j305'],
     CANTON_TOKEN_FEATURES
@@ -249,7 +249,7 @@ export const cantonTokens = [
     'tcanton:symuat797tl8',
     'UAT797TL8-SYMUAT797TL8',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT797TL8-SYMUAT797TL8',
     UnderlyingAsset['tcanton:symuat797tl8'],
     CANTON_TOKEN_FEATURES
@@ -259,7 +259,7 @@ export const cantonTokens = [
     'tcanton:symuat797ts3',
     'UAT797TS3-SYMUAT797TS3',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT797TS3-SYMUAT797TS3',
     UnderlyingAsset['tcanton:symuat797ts3'],
     CANTON_TOKEN_FEATURES
@@ -269,7 +269,7 @@ export const cantonTokens = [
     'tcanton:symuat282cn5',
     'UAT282CN5-SYMUAT282CN5',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT282CN5-SYMUAT282CN5',
     UnderlyingAsset['tcanton:symuat282cn5'],
     CANTON_TOKEN_FEATURES
@@ -279,7 +279,7 @@ export const cantonTokens = [
     'tcanton:symuat82cnp9',
     'UAT82CNP9-SYMUAT82CNP9',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT82CNP9-SYMUAT82CNP9',
     UnderlyingAsset['tcanton:symuat82cnp9'],
     CANTON_TOKEN_FEATURES
@@ -289,7 +289,7 @@ export const cantonTokens = [
     'tcanton:symuat992135',
     'UAT992135-SYMUAT992135',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT992135-SYMUAT992135',
     UnderlyingAsset['tcanton:symuat992135'],
     CANTON_TOKEN_FEATURES
@@ -299,7 +299,7 @@ export const cantonTokens = [
     'tcanton:symuat992358',
     'UAT992358-SYMUAT992358',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT992358-SYMUAT992358',
     UnderlyingAsset['tcanton:symuat992358'],
     CANTON_TOKEN_FEATURES
@@ -309,7 +309,7 @@ export const cantonTokens = [
     'tcanton:symuat252308',
     'UAT252308-SYMUAT252308',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT252308-SYMUAT252308',
     UnderlyingAsset['tcanton:symuat252308'],
     CANTON_TOKEN_FEATURES
@@ -319,7 +319,7 @@ export const cantonTokens = [
     'tcanton:symuat72d108',
     'UAT72D108-SYMUAT72D108',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT72D108-SYMUAT72D108',
     UnderlyingAsset['tcanton:symuat72d108'],
     CANTON_TOKEN_FEATURES
@@ -329,7 +329,7 @@ export const cantonTokens = [
     'tcanton:symuat85r102',
     'UAT85R102-SYMUAT85R102',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT85R102-SYMUAT85R102',
     UnderlyingAsset['tcanton:symuat85r102'],
     CANTON_TOKEN_FEATURES
@@ -339,7 +339,7 @@ export const cantonTokens = [
     'tcanton:symuat797uq5',
     'UAT797UQ5-SYMUAT797UQ5',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT797UQ5-SYMUAT797UQ5',
     UnderlyingAsset['tcanton:symuat797uq5'],
     CANTON_TOKEN_FEATURES
@@ -349,7 +349,7 @@ export const cantonTokens = [
     'tcanton:symuat520100',
     'UAT520100-SYMUAT520100',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT520100-SYMUAT520100',
     UnderlyingAsset['tcanton:symuat520100'],
     CANTON_TOKEN_FEATURES
@@ -359,7 +359,7 @@ export const cantonTokens = [
     'tcanton:symuat82cnu8',
     'UAT82CNU8-SYMUAT82CNU8',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT82CNU8-SYMUAT82CNU8',
     UnderlyingAsset['tcanton:symuat82cnu8'],
     CANTON_TOKEN_FEATURES
@@ -369,7 +369,7 @@ export const cantonTokens = [
     'tcanton:symuat39j404',
     'UAT39J404-SYMUAT39J404',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT39J404-SYMUAT39J404',
     UnderlyingAsset['tcanton:symuat39j404'],
     CANTON_TOKEN_FEATURES
@@ -379,7 +379,7 @@ export const cantonTokens = [
     'tcanton:symuat82cny0',
     'UAT82CNY0-SYMUAT82CNY0',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT82CNY0-SYMUAT82CNY0',
     UnderlyingAsset['tcanton:symuat82cny0'],
     CANTON_TOKEN_FEATURES
@@ -389,7 +389,7 @@ export const cantonTokens = [
     'tcanton:symuat39j503',
     'UAT39J503-SYMUAT39J503',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT39J503-SYMUAT39J503',
     UnderlyingAsset['tcanton:symuat39j503'],
     CANTON_TOKEN_FEATURES
@@ -399,7 +399,7 @@ export const cantonTokens = [
     'tcanton:symuat82cpb8',
     'UAT82CPB8-SYMUAT82CPB8',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT82CPB8-SYMUAT82CPB8',
     UnderlyingAsset['tcanton:symuat82cpb8'],
     CANTON_TOKEN_FEATURES
@@ -409,7 +409,7 @@ export const cantonTokens = [
     'tcanton:symuat82cpr3',
     'UAT82CPR3-SYMUAT82CPR3',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT82CPR3-SYMUAT82CPR3',
     UnderlyingAsset['tcanton:symuat82cpr3'],
     CANTON_TOKEN_FEATURES
@@ -419,7 +419,7 @@ export const cantonTokens = [
     'tcanton:symuat82cpt9',
     'UAT82CPT9-SYMUAT82CPT9',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT82CPT9-SYMUAT82CPT9',
     UnderlyingAsset['tcanton:symuat82cpt9'],
     CANTON_TOKEN_FEATURES
@@ -429,7 +429,7 @@ export const cantonTokens = [
     'tcanton:symuat82cqb7',
     'UAT82CQB7-SYMUAT82CQB7',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT82CQB7-SYMUAT82CQB7',
     UnderlyingAsset['tcanton:symuat82cqb7'],
     CANTON_TOKEN_FEATURES
@@ -439,7 +439,7 @@ export const cantonTokens = [
     'tcanton:symuat081103',
     'UAT081103-SYMUAT081103',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT081103-SYMUAT081103',
     UnderlyingAsset['tcanton:symuat081103'],
     CANTON_TOKEN_FEATURES
@@ -449,7 +449,7 @@ export const cantonTokens = [
     'tcanton:symuat12a107',
     'UAT12A107-SYMUAT12A107',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT12A107-SYMUAT12A107',
     UnderlyingAsset['tcanton:symuat12a107'],
     CANTON_TOKEN_FEATURES
@@ -459,7 +459,7 @@ export const cantonTokens = [
     'tcanton:symuat12k105',
     'UAT12K105-SYMUAT12K105',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT12K105-SYMUAT12K105',
     UnderlyingAsset['tcanton:symuat12k105'],
     CANTON_TOKEN_FEATURES
@@ -469,7 +469,7 @@ export const cantonTokens = [
     'tcanton:symuat138101',
     'UAT138101-SYMUAT138101',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT138101-SYMUAT138101',
     UnderlyingAsset['tcanton:symuat138101'],
     CANTON_TOKEN_FEATURES
@@ -479,7 +479,7 @@ export const cantonTokens = [
     'tcanton:symuat15m108',
     'UAT15M108-SYMUAT15M108',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT15M108-SYMUAT15M108',
     UnderlyingAsset['tcanton:symuat15m108'],
     CANTON_TOKEN_FEATURES
@@ -489,7 +489,7 @@ export const cantonTokens = [
     'tcanton:symuat06p102',
     'UAT06P102-SYMUAT06P102',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT06P102-SYMUAT06P102',
     UnderlyingAsset['tcanton:symuat06p102'],
     CANTON_TOKEN_FEATURES
@@ -499,7 +499,7 @@ export const cantonTokens = [
     'tcanton:symuat760102',
     'UAT760102-SYMUAT760102',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT760102-SYMUAT760102',
     UnderlyingAsset['tcanton:symuat760102'],
     CANTON_TOKEN_FEATURES
@@ -509,7 +509,7 @@ export const cantonTokens = [
     'tcanton:symuat87t106',
     'UAT87T106-SYMUAT87T106',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT87T106-SYMUAT87T106',
     UnderlyingAsset['tcanton:symuat87t106'],
     CANTON_TOKEN_FEATURES
@@ -519,7 +519,7 @@ export const cantonTokens = [
     'tcanton:symuat89y202',
     'UAT89Y202-SYMUAT89Y202',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT89Y202-SYMUAT89Y202',
     UnderlyingAsset['tcanton:symuat89y202'],
     CANTON_TOKEN_FEATURES
@@ -529,7 +529,7 @@ export const cantonTokens = [
     'tcanton:symuat991053',
     'UAT991053-SYMUAT991053',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT991053-SYMUAT991053',
     UnderlyingAsset['tcanton:symuat991053'],
     CANTON_TOKEN_FEATURES
@@ -539,7 +539,7 @@ export const cantonTokens = [
     'tcanton:symuat44h104',
     'UAT44H104-SYMUAT44H104',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT44H104-SYMUAT44H104',
     UnderlyingAsset['tcanton:symuat44h104'],
     CANTON_TOKEN_FEATURES
@@ -549,7 +549,7 @@ export const cantonTokens = [
     'tcanton:symuat80c118',
     'UAT80C118-SYMUAT80C118',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT80C118-SYMUAT80C118',
     UnderlyingAsset['tcanton:symuat80c118'],
     CANTON_TOKEN_FEATURES
@@ -559,7 +559,7 @@ export const cantonTokens = [
     'tcanton:symuat66t309',
     'UAT66T309-SYMUAT66T309',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT66T309-SYMUAT66T309',
     UnderlyingAsset['tcanton:symuat66t309'],
     CANTON_TOKEN_FEATURES
@@ -569,7 +569,7 @@ export const cantonTokens = [
     'tcanton:symuat91e103',
     'UAT91E103-SYMUAT91E103',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT91E103-SYMUAT91E103',
     UnderlyingAsset['tcanton:symuat91e103'],
     CANTON_TOKEN_FEATURES
@@ -579,7 +579,7 @@ export const cantonTokens = [
     'tcanton:symuat966105',
     'UAT966105-SYMUAT966105',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT966105-SYMUAT966105',
     UnderlyingAsset['tcanton:symuat966105'],
     CANTON_TOKEN_FEATURES
@@ -589,7 +589,7 @@ export const cantonTokens = [
     'tcanton:symuat526107',
     'UAT526107-SYMUAT526107',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT526107-SYMUAT526107',
     UnderlyingAsset['tcanton:symuat526107'],
     CANTON_TOKEN_FEATURES
@@ -599,7 +599,7 @@ export const cantonTokens = [
     'tcanton:symuat932107',
     'UAT932107-SYMUAT932107',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT932107-SYMUAT932107',
     UnderlyingAsset['tcanton:symuat932107'],
     CANTON_TOKEN_FEATURES
@@ -609,7 +609,7 @@ export const cantonTokens = [
     'tcanton:symuat804108',
     'UAT804108-SYMUAT804108',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT804108-SYMUAT804108',
     UnderlyingAsset['tcanton:symuat804108'],
     CANTON_TOKEN_FEATURES
@@ -619,7 +619,7 @@ export const cantonTokens = [
     'tcanton:symuat39j602',
     'UAT39J602-SYMUAT39J602',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT39J602-SYMUAT39J602',
     UnderlyingAsset['tcanton:symuat39j602'],
     CANTON_TOKEN_FEATURES
@@ -629,7 +629,7 @@ export const cantonTokens = [
     'tcanton:sym868686866',
     '868686866-SYM868686866',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:868686866-SYM868686866',
     UnderlyingAsset['tcanton:sym868686866'],
     CANTON_TOKEN_FEATURES
@@ -639,7 +639,7 @@ export const cantonTokens = [
     'tcanton:symuat39j701',
     'UAT39J701-SYMUAT39J701',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT39J701-SYMUAT39J701',
     UnderlyingAsset['tcanton:symuat39j701'],
     CANTON_TOKEN_FEATURES
@@ -649,7 +649,7 @@ export const cantonTokens = [
     'tcanton:symuat39j735',
     'UAT39J735-SYMUAT39J735',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT39J735-SYMUAT39J735',
     UnderlyingAsset['tcanton:symuat39j735'],
     CANTON_TOKEN_FEATURES
@@ -659,7 +659,7 @@ export const cantonTokens = [
     'tcanton:symuat39j743',
     'UAT39J743-SYMUAT39J743',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT39J743-SYMUAT39J743',
     UnderlyingAsset['tcanton:symuat39j743'],
     CANTON_TOKEN_FEATURES
@@ -669,7 +669,7 @@ export const cantonTokens = [
     'tcanton:symuat797uc6',
     'UAT797UC6-SYMUAT797UC6',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT797UC6-SYMUAT797UC6',
     UnderlyingAsset['tcanton:symuat797uc6'],
     CANTON_TOKEN_FEATURES
@@ -679,7 +679,7 @@ export const cantonTokens = [
     'tcanton:symuat797ud4',
     'UAT797UD4-SYMUAT797UD4',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT797UD4-SYMUAT797UD4',
     UnderlyingAsset['tcanton:symuat797ud4'],
     CANTON_TOKEN_FEATURES
@@ -689,7 +689,7 @@ export const cantonTokens = [
     'tcanton:symuat797ug7',
     'UAT797UG7-SYMUAT797UG7',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT797UG7-SYMUAT797UG7',
     UnderlyingAsset['tcanton:symuat797ug7'],
     CANTON_TOKEN_FEATURES
@@ -699,7 +699,7 @@ export const cantonTokens = [
     'tcanton:symuat797un2',
     'UAT797UN2-SYMUAT797UN2',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UAT797UN2-SYMUAT797UN2',
     UnderlyingAsset['tcanton:symuat797un2'],
     CANTON_TOKEN_FEATURES
@@ -709,7 +709,7 @@ export const cantonTokens = [
     'tcanton:sym051193ed8',
     '051193ED8-SYM051193ED8',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:051193ED8-SYM051193ED8',
     UnderlyingAsset['tcanton:sym051193ed8'],
     CANTON_TOKEN_FEATURES
@@ -719,7 +719,7 @@ export const cantonTokens = [
     'tcanton:sym051193md9',
     '051193MD9-SYM051193MD9',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:051193MD9-SYM051193MD9',
     UnderlyingAsset['tcanton:sym051193md9'],
     CANTON_TOKEN_FEATURES
@@ -729,7 +729,7 @@ export const cantonTokens = [
     'tcanton:sym051193ea4',
     '051193EA4-SYM051193EA4',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:051193EA4-SYM051193EA4',
     UnderlyingAsset['tcanton:sym051193ea4'],
     CANTON_TOKEN_FEATURES
@@ -739,7 +739,7 @@ export const cantonTokens = [
     'tcanton:sym051193mc1',
     '051193MC1-SYM051193MC1',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:051193MC1-SYM051193MC1',
     UnderlyingAsset['tcanton:sym051193mc1'],
     CANTON_TOKEN_FEATURES
@@ -749,7 +749,7 @@ export const cantonTokens = [
     'tcanton:symuatcshaa8',
     'UATCSHAA8-SYMUATCSHAA8',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UATCSHAA8-SYMUATCSHAA8',
     UnderlyingAsset['tcanton:symuatcshaa8'],
     CANTON_TOKEN_FEATURES
@@ -759,7 +759,7 @@ export const cantonTokens = [
     'tcanton:symuatcshad2',
     'UATCSHAD2-SYMUATCSHAD2',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UATCSHAD2-SYMUATCSHAD2',
     UnderlyingAsset['tcanton:symuatcshad2'],
     CANTON_TOKEN_FEATURES
@@ -769,7 +769,7 @@ export const cantonTokens = [
     'tcanton:symuatcshae0',
     'UATCSHAE0-SYMUATCSHAE0',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UATCSHAE0-SYMUATCSHAE0',
     UnderlyingAsset['tcanton:symuatcshae0'],
     CANTON_TOKEN_FEATURES
@@ -779,7 +779,7 @@ export const cantonTokens = [
     'tcanton:arise',
     '778946125-ARISE',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:778946125-ARISE',
     UnderlyingAsset['tcanton:arise'],
     CANTON_TOKEN_FEATURES
@@ -789,7 +789,7 @@ export const cantonTokens = [
     'tcanton:lsqa999',
     'LSQA999-LSQA999',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:LSQA999-LSQA999',
     UnderlyingAsset['tcanton:lsqa999'],
     CANTON_TOKEN_FEATURES
@@ -799,7 +799,7 @@ export const cantonTokens = [
     'tcanton:lsqa05271',
     'LSQA05271-LSQA05271',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:LSQA05271-LSQA05271',
     UnderlyingAsset['tcanton:lsqa05271'],
     CANTON_TOKEN_FEATURES
@@ -809,7 +809,7 @@ export const cantonTokens = [
     'tcanton:lsqa05272',
     'LSQA05272-LSQA05272',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:LSQA05272-LSQA05272',
     UnderlyingAsset['tcanton:lsqa05272'],
     CANTON_TOKEN_FEATURES
@@ -819,7 +819,7 @@ export const cantonTokens = [
     'tcanton:lsqa777',
     'LSQA777-LSQA777',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:LSQA777-LSQA777',
     UnderlyingAsset['tcanton:lsqa777'],
     CANTON_TOKEN_FEATURES
@@ -829,7 +829,7 @@ export const cantonTokens = [
     'tcanton:lsqa0915',
     'LSQA0915-LSQA0915',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:LSQA0915-LSQA0915',
     UnderlyingAsset['tcanton:lsqa0915'],
     CANTON_TOKEN_FEATURES
@@ -839,7 +839,7 @@ export const cantonTokens = [
     'tcanton:lsqa0512',
     'LSQA0512-LSQA0512',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:LSQA0512-LSQA0512',
     UnderlyingAsset['tcanton:lsqa0512'],
     CANTON_TOKEN_FEATURES
@@ -849,7 +849,7 @@ export const cantonTokens = [
     'tcanton:lsqa512',
     'LSQA512-LSQA512',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:LSQA512-LSQA512',
     UnderlyingAsset['tcanton:lsqa512'],
     CANTON_TOKEN_FEATURES
@@ -859,7 +859,7 @@ export const cantonTokens = [
     'tcanton:lsqa87',
     'LSQA87-LSQA87',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:LSQA87-LSQA87',
     UnderlyingAsset['tcanton:lsqa87'],
     CANTON_TOKEN_FEATURES
@@ -869,7 +869,7 @@ export const cantonTokens = [
     'tcanton:canton-test-canton',
     'TEST-CANTON-TEST-CANTON',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:TEST-CANTON-TEST-CANTON',
     UnderlyingAsset['tcanton:canton-test-canton'],
     CANTON_TOKEN_FEATURES
@@ -879,7 +879,7 @@ export const cantonTokens = [
     'tcanton:syme2e705109',
     'E2E705109-SYME2E705109',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:E2E705109-SYME2E705109',
     UnderlyingAsset['tcanton:syme2e705109'],
     CANTON_TOKEN_FEATURES
@@ -889,7 +889,7 @@ export const cantonTokens = [
     'tcanton:syme2e797uq7',
     'E2E797UQ7-SYME2E797UQ7',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:E2E797UQ7-SYME2E797UQ7',
     UnderlyingAsset['tcanton:syme2e797uq7'],
     CANTON_TOKEN_FEATURES
@@ -899,7 +899,7 @@ export const cantonTokens = [
     'tcanton:syme2e39j109',
     'E2E39J109-SYME2E39J109',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:E2E39J109-SYME2E39J109',
     UnderlyingAsset['tcanton:syme2e39j109'],
     CANTON_TOKEN_FEATURES
@@ -909,7 +909,7 @@ export const cantonTokens = [
     'tcanton:ddaqqq',
     '46090E103-DDAQQQ',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:46090E103-DDAQQQ',
     UnderlyingAsset['tcanton:ddaqqq'],
     CANTON_TOKEN_FEATURES
@@ -919,7 +919,7 @@ export const cantonTokens = [
     'tcanton:psttst001',
     'PSTTST001-PSTTST001',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:PSTTST001-PSTTST001',
     UnderlyingAsset['tcanton:psttst001'],
     CANTON_TOKEN_FEATURES
@@ -929,7 +929,7 @@ export const cantonTokens = [
     'tcanton:sym420434dc3',
     '420434DC3-SYM420434DC3',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:420434DC3-SYM420434DC3',
     UnderlyingAsset['tcanton:sym420434dc3'],
     CANTON_TOKEN_FEATURES
@@ -939,7 +939,7 @@ export const cantonTokens = [
     'tcanton:symuatcshac4',
     'UATCSHAC4-SYMUATCSHAC4',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:UATCSHAC4-SYMUATCSHAC4',
     UnderlyingAsset['tcanton:symuatcshac4'],
     CANTON_TOKEN_FEATURES
@@ -949,7 +949,7 @@ export const cantonTokens = [
     'tcanton:orc6789abc12',
     'ORC6789abc12-ORC6789abc12',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:ORC6789abc12-ORC6789abc12',
     UnderlyingAsset['tcanton:orc6789abc12'],
     CANTON_TOKEN_FEATURES
@@ -959,7 +959,7 @@ export const cantonTokens = [
     'tcanton:orc12345h928',
     'ORC12345H928-ORC12345H928',
     10,
-    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
     'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:ORC12345H928-ORC12345H928',
     UnderlyingAsset['tcanton:orc12345h928'],
     CANTON_TOKEN_FEATURES
