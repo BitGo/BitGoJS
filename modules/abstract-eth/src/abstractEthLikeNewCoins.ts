@@ -46,6 +46,7 @@ import {
   isTssVerifyAddressOptions,
   DeriveAddressOptions,
   DeriveAddressResult,
+  NO_RECIPIENT_TX_TYPES,
 } from '@bitgo/sdk-core';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/secp256k1';
@@ -3186,18 +3187,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       !(
         txParams.prebuildTx?.consolidateId ||
         txPrebuild?.consolidateId ||
-        (txParams.type &&
-          [
-            'acceleration',
-            'fillNonce',
-            'transferToken',
-            'tokenApproval',
-            'consolidate',
-            'bridgeFunds',
-            'enabletoken',
-            'defiApprove',
-            'defiDeposit',
-          ].includes(txParams.type))
+        txParams.stakingRequestId ||
+        txParams.prebuildTx?.stakingRequestId ||
+        (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type))
       )
     ) {
       throw new Error('missing txParams');

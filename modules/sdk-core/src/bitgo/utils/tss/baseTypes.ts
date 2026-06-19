@@ -410,6 +410,7 @@ export interface PopulatedIntentForTypedDataSigning extends PopulatedIntentBase 
 }
 
 export interface PopulatedIntent extends PopulatedIntentBase, DefiIntentFields {
+  stakingRequestId?: string;
   recipients?: IntentRecipient[];
   nonce?: string;
   token?: string;

@@ -309,6 +309,7 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
   // Consolidate ID is used for consolidate account transactions and indicates if this is
   // a consolidation and what consolidate group it should be referenced by.
   consolidateId?: string;
+  stakingRequestId?: string;
   consolidationDetails?: {
     senderAddressIndex: number;
   };
