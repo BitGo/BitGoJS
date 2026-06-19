@@ -4222,6 +4222,16 @@ export const allCoinsAndTokens = [
     Networks.main.basechain
   ),
   erc20Token(
+    'e6caf804-8d29-4e32-b653-cbbdbb256f0e',
+    'baseeth:usdai',
+    'USDai',
+    18,
+    '0x0a1a1a107e45b7ced86833863f482bc5f4ed82ef',
+    UnderlyingAsset['baseeth:usdai'],
+    Networks.main.basechain,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  erc20Token(
     '525a07c9-4df0-4e79-8e65-9cf74e07cd5b',
     'baseeth:trust',
     'Trust',
@@ -4508,6 +4518,15 @@ export const allCoinsAndTokens = [
     18,
     '0xc729777d0470f30612b1564fd96e8dd26f5814e3',
     UnderlyingAsset['baseeth:sapien'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '54a3a118-8e62-4b15-89c6-94412c4703ba',
+    'baseeth:susdai',
+    'Staked USDai',
+    18,
+    '0x0b2b2b2076d95dda7817e785989fe353fe955ef9',
+    UnderlyingAsset['baseeth:susdai'],
     Networks.main.basechain
   ),
   erc20Token(
@@ -5094,6 +5113,17 @@ export const allCoinsAndTokens = [
   ),
 
   erc20Token(
+    '2593f60f-2c89-4b0b-ba66-4fb7d87187cf',
+    'xpl:susdai',
+    'Staked USDai',
+    18,
+    '0x0b2b2b2076d95dda7817e785989fe353fe955ef9',
+    UnderlyingAsset['xpl:susdai'],
+    Networks.main.xpl,
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
+  ),
+
+  erc20Token(
     '8f896fc5-4c33-4104-a316-b75000160f7b',
     'xpl:syzusd',
     'Stake Yuzu USD',
@@ -5102,6 +5132,17 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['xpl:syzusd'],
     Networks.main.xpl,
     [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
+  ),
+
+  erc20Token(
+    '6d1cba93-2f19-47b5-a968-5d6676837388',
+    'xpl:usdai',
+    'USDai',
+    18,
+    '0x0a1a1a107e45b7ced86833863f482bc5f4ed82ef',
+    UnderlyingAsset['xpl:usdai'],
+    Networks.main.xpl,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559, CoinFeature.STABLECOIN]
   ),
 
   erc20Token(
@@ -6352,6 +6393,15 @@ export const allCoinsAndTokens = [
     [...TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.STABLECOIN]
   ),
   arbethErc20(
+    '13f61e68-3e05-48c8-938e-86b7c2821548',
+    'arbeth:usdai',
+    'USDai',
+    18,
+    '0x0a1a1a107e45b7ced86833863f482bc5f4ed82ef',
+    UnderlyingAsset['arbeth:usdai'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  arbethErc20(
     'a49b04e6-5a1b-4d55-9187-4d41c41f8f1e',
     'arbeth:usdt',
     'Tether USD',
@@ -6376,6 +6426,14 @@ export const allCoinsAndTokens = [
     18,
     '0x1337420ded5adb9980cfc35f8f2b054ea86f8ab1',
     UnderlyingAsset['arbeth:sqd']
+  ),
+  arbethErc20(
+    '6002c026-afe4-4190-b80b-e88ca5c6b3ab',
+    'arbeth:susdai',
+    'Staked USDai',
+    18,
+    '0x0b2b2b2076d95dda7817e785989fe353fe955ef9',
+    UnderlyingAsset['arbeth:susdai']
   ),
   arbethErc20(
     'e3c7b25e-d9e4-45cd-a3c2-4abec8483489',

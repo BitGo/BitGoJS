@@ -6443,6 +6443,21 @@ export const tOfcErc20Coins = [
   ),
 
   ofcerc20(
+    'b9fabd5a-cb5b-4a69-aad9-5a3af8d013fa',
+    'ofcxpl:susdai',
+    'Staked USDai',
+    18,
+    underlyingAssetForSymbol('xpl:susdai'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'xpl'
+  ),
+
+  ofcerc20(
     'e46e4acc-5014-4dad-ba7d-660bae9299a4',
     'ofcxpl:syzusd',
     'Stake Yuzu USD',
@@ -6450,6 +6465,21 @@ export const tOfcErc20Coins = [
     underlyingAssetForSymbol('xpl:syzusd'),
     undefined,
     undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'xpl'
+  ),
+
+  ofcerc20(
+    '627a43ca-d4e0-4531-b304-d85d8073e3cd',
+    'ofcxpl:usdai',
+    'USDai',
+    18,
+    underlyingAssetForSymbol('xpl:usdai'),
+    undefined,
+    [CoinFeature.STABLECOIN],
     '',
     undefined,
     undefined,
@@ -6772,6 +6802,34 @@ export const tOfcErc20Coins = [
     'Lydia',
     18,
     UnderlyingAsset['baseeth:usad'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    '5b197b74-eb40-4766-9448-1991bf401f8b',
+    'ofcbaseeth:usdai',
+    'USDai',
+    18,
+    underlyingAssetForSymbol('baseeth:usdai'),
+    undefined,
+    [CoinFeature.STABLECOIN],
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    '1d601176-3e97-4694-b2c3-928e69294ae9',
+    'ofcbaseeth:susdai',
+    'Staked USDai',
+    18,
+    underlyingAssetForSymbol('baseeth:susdai'),
     undefined,
     undefined,
     '',

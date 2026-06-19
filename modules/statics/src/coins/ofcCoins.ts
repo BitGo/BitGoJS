@@ -2228,6 +2228,22 @@ export const ofcCoins = [
     [CoinFeature.STABLECOIN]
   ),
   ofcArbethErc20(
+    '92aaec83-0a93-4efe-bb4d-da9fa615c40a',
+    'ofcarbeth:usdai',
+    'USDai',
+    18,
+    UnderlyingAsset['arbeth:usdai'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcArbethErc20(
+    '08ae246f-85fa-42dd-8d78-f14b07309874',
+    'ofcarbeth:susdai',
+    'Staked USDai',
+    18,
+    UnderlyingAsset['arbeth:susdai']
+  ),
+  ofcArbethErc20(
     'e91ce545-8ace-4f12-b6d4-8c5a3e84022f',
     'ofcarbeth:arb',
     'Arbitrum',
