@@ -372,8 +372,18 @@ export class Canton extends BaseCoin {
   }
 
   /** @inheritDoc */
-  parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
-    throw new Error('Method not implemented.');
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    const txHex = params.txHex as string | undefined;
+    if (!txHex) {
+      // Message-only signing requests (e.g. CANTON_SIGN_TRANSACTION, CANTON_SIGN_TOPOLOGY)
+      // have no transaction hex to parse — return an empty result.
+      return {};
+    }
+    const transactionExplanation = await this.explainTransaction({ txHex });
+    if (!transactionExplanation) {
+      throw new Error('Invalid transaction');
+    }
+    return transactionExplanation as unknown as ParsedTransaction;
   }
 
   /** @inheritDoc */
