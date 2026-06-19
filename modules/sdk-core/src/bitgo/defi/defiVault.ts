@@ -220,12 +220,39 @@ export class DefiVault implements IDefiVault {
   }
 
   /**
-   * Extract operationId from the intent of a sendMany result.
-   * The WP populates operationId in the intent of the approve txRequest.
+   * Extract operationId from a sendMany result.
+   *
+   * The WP writes the defi-service-minted operationId into the built
+   * transaction's `coinSpecific` (alongside `assignedNonce`), not into the
+   * intent. Read it from there: the `full` apiVersion surfaces it at
+   * `transactions[0].unsignedTx.coinSpecific.operationId`, the `lite` version
+   * at `unsignedTxs[0].coinSpecific.operationId`. Fall back to
+   * `intent.operationId` for forward-compat in case the WP later also
+   * populates the intent.
    */
   private extractOperationId(sendManyResult: Record<string, unknown>): string | undefined {
     const txRequest = sendManyResult.txRequest as Record<string, unknown> | undefined;
-    const intent = txRequest?.intent as Record<string, unknown> | undefined;
+    if (!txRequest) {
+      return undefined;
+    }
+
+    // full apiVersion: transactions[0].unsignedTx.coinSpecific.operationId
+    const transactions = txRequest.transactions as Array<Record<string, unknown>> | undefined;
+    const fullUnsignedTx = transactions?.[0]?.unsignedTx as Record<string, unknown> | undefined;
+    const fullCoinSpecific = fullUnsignedTx?.coinSpecific as Record<string, unknown> | undefined;
+    if (fullCoinSpecific?.operationId) {
+      return fullCoinSpecific.operationId as string;
+    }
+
+    // lite apiVersion: unsignedTxs[0].coinSpecific.operationId
+    const unsignedTxs = txRequest.unsignedTxs as Array<Record<string, unknown>> | undefined;
+    const liteCoinSpecific = unsignedTxs?.[0]?.coinSpecific as Record<string, unknown> | undefined;
+    if (liteCoinSpecific?.operationId) {
+      return liteCoinSpecific.operationId as string;
+    }
+
+    // forward-compat: intent.operationId (in case the WP later populates the intent)
+    const intent = txRequest.intent as Record<string, unknown> | undefined;
     return intent?.operationId as string | undefined;
   }
 

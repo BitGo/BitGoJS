@@ -56,16 +56,20 @@ describe('DefiVault', function () {
 
       // Mock sendMany for approve and deposit
       const sendManyStub = sinon.stub(wallet, 'sendMany');
+      // WP writes operationId into the built tx's coinSpecific (full apiVersion),
+      // not into the intent — mirror that real shape here.
       sendManyStub.onFirstCall().resolves({
         txRequest: {
           txRequestId: 'txreq-approve-1',
-          intent: { intentType: 'defi-approve', operationId },
+          intent: { intentType: 'defi-approve' },
+          transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
         },
       });
       sendManyStub.onSecondCall().resolves({
         txRequest: {
           txRequestId: 'txreq-deposit-1',
-          intent: { intentType: 'defi-deposit', operationId },
+          intent: { intentType: 'defi-deposit' },
+          transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
         },
       });
 
@@ -89,6 +93,65 @@ describe('DefiVault', function () {
       const depositArgs: any = sendManyStub.secondCall.args[0];
       depositArgs.type.should.equal('defiDeposit');
       depositArgs.defiParams.operationId.should.equal(operationId);
+    });
+
+    it('should extract operationId from the lite apiVersion coinSpecific', async function () {
+      const operationId = 'op-uuid-lite';
+
+      const sendManyStub = sinon.stub(wallet, 'sendMany');
+      sendManyStub.onFirstCall().resolves({
+        txRequest: {
+          txRequestId: 'txreq-approve-lite',
+          intent: { intentType: 'defi-approve' },
+          unsignedTxs: [{ coinSpecific: { operationId } }],
+        },
+      });
+      sendManyStub.onSecondCall().resolves({
+        txRequest: { txRequestId: 'txreq-deposit-lite' },
+      });
+
+      const result = await defiVault.depositToVault({ vaultId: 'vlt-galaxy-usdc', amount: '1000000' });
+
+      result.operationId.should.equal(operationId);
+      const depositArgs: any = sendManyStub.secondCall.args[0];
+      depositArgs.defiParams.operationId.should.equal(operationId);
+    });
+
+    it('should fall back to intent.operationId for forward-compat', async function () {
+      const operationId = 'op-uuid-intent';
+
+      const sendManyStub = sinon.stub(wallet, 'sendMany');
+      sendManyStub.onFirstCall().resolves({
+        txRequest: {
+          txRequestId: 'txreq-approve-intent',
+          intent: { intentType: 'defi-approve', operationId },
+        },
+      });
+      sendManyStub.onSecondCall().resolves({
+        txRequest: { txRequestId: 'txreq-deposit-intent' },
+      });
+
+      const result = await defiVault.depositToVault({ vaultId: 'vlt-galaxy-usdc', amount: '1000000' });
+
+      result.operationId.should.equal(operationId);
+    });
+
+    it('should throw when operationId is absent from the approve txRequest', async function () {
+      const sendManyStub = sinon.stub(wallet, 'sendMany');
+      sendManyStub.onFirstCall().resolves({
+        txRequest: {
+          txRequestId: 'txreq-approve-missing',
+          intent: { intentType: 'defi-approve' },
+          transactions: [{ unsignedTx: { coinSpecific: {} } }],
+        },
+      });
+
+      await assert.rejects(() => defiVault.depositToVault({ vaultId: 'vlt-galaxy-usdc', amount: '1000000' }), {
+        message: 'operationId not found in approve txRequest response',
+      });
+
+      // Deposit sendMany must not be issued when the operationId is missing
+      sendManyStub.calledOnce.should.be.true();
     });
 
     // TODO(CGD-1709): Re-enable when active operation pre-flight check is restored
@@ -116,7 +179,8 @@ describe('DefiVault', function () {
       sendManyStub.onFirstCall().resolves({
         txRequest: {
           txRequestId: 'txreq-approve-2',
-          intent: { intentType: 'defi-approve', operationId },
+          intent: { intentType: 'defi-approve' },
+          transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
         },
       });
       sendManyStub.onSecondCall().rejects(new Error('deposit creation failed'));
@@ -148,13 +212,15 @@ describe('DefiVault', function () {
       sendManyStub.onFirstCall().resolves({
         txRequest: {
           txRequestId: 'txreq-approve-3',
-          intent: { intentType: 'defi-approve', operationId },
+          intent: { intentType: 'defi-approve' },
+          transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
         },
       });
       sendManyStub.onSecondCall().resolves({
         txRequest: {
           txRequestId: 'txreq-deposit-3',
-          intent: { intentType: 'defi-deposit', operationId },
+          intent: { intentType: 'defi-deposit' },
+          transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
         },
       });
 
