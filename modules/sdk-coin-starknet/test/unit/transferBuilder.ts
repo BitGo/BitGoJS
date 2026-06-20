@@ -39,7 +39,7 @@ describe('Starknet TransferBuilder', () => {
         .amount('1000000000000000000');
 
       const tx = (await builder.build()) as Transaction;
-      tx.signableHex.should.equal(tx.starknetTransactionData.transactionHash);
+      tx.signableHex.should.equal(tx.starknetTransactionData.transactionHash!.replace(/^0x/i, '').padStart(64, '0'));
       tx.id.should.equal(tx.starknetTransactionData.transactionHash);
     });
 

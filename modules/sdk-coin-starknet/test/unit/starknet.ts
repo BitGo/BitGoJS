@@ -126,6 +126,15 @@ describe('Starknet', function () {
       result.should.equal(true);
     });
 
+    it('should return true when txHex is a 64-character unprefixed signableHex', async function () {
+      const result = await basecoin.verifyTransaction({
+        txParams: { recipients: [] },
+        txPrebuild: { txHex: 'deadbeefcafe1234567890abcdefdeadbeefcafe1234567890abcdef12345678' },
+        wallet: {} as any,
+      });
+      result.should.equal(true);
+    });
+
     it('should return true when txHex is absent', async function () {
       const result = await basecoin.verifyTransaction({
         txParams: { recipients: [] },

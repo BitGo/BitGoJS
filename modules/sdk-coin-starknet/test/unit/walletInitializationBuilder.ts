@@ -37,7 +37,7 @@ describe('Starknet WalletInitializationBuilder', () => {
       builder.fromPublicKey(Accounts.account1.publicKey).nonce('0x0').chainId(chainId);
 
       const tx = (await builder.build()) as Transaction;
-      tx.signableHex.should.equal(tx.starknetTransactionData.transactionHash);
+      tx.signableHex.should.equal(tx.starknetTransactionData.transactionHash!.replace(/^0x/i, '').padStart(64, '0'));
       tx.id.should.equal(tx.starknetTransactionData.transactionHash);
     });
 
