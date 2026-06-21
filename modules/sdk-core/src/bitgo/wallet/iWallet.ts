@@ -33,6 +33,7 @@ import {
   CustomPaillierModulusGetterFunction,
   CustomRShareGeneratingFunction,
   CustomSShareGeneratingFunction,
+  ExecType,
   TokenEnablement,
   TokenTransferRecipientParams,
   TxRequest,
@@ -297,6 +298,7 @@ export interface PrebuildTransactionOptions {
    * Parameters for executing DAML commands on Canton.
    */
   cantonCommandParams?: CantonCommandParams;
+  execType?: ExecType;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {

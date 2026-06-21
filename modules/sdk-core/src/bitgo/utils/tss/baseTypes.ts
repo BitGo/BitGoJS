@@ -269,6 +269,11 @@ export interface TokenTransferRecipientParams {
   tokenId?: string;
   decimalPlaces?: number;
 }
+export enum ExecType {
+  EXEC_UNSPECIFIED = 'EXEC_UNSPECIFIED',
+  EXEC_TRY = 'EXEC_TRY',
+}
+
 interface IntentOptionsBase {
   reqId: IRequestTracer;
   intentType: string;
@@ -278,6 +283,7 @@ interface IntentOptionsBase {
   memo?: Memo;
   custodianTransactionId?: string;
   custodianMessageId?: string;
+  execType?: ExecType;
 }
 
 /**
@@ -393,6 +399,7 @@ interface PopulatedIntentBase {
   comment?: string;
   memo?: string;
   isTss?: boolean;
+  execType?: ExecType;
 }
 
 export interface PopulatedIntentForMessageSigning extends PopulatedIntentBase {
