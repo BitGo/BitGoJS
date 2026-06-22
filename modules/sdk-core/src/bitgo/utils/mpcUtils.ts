@@ -139,12 +139,33 @@ export abstract class MpcUtils {
     }
 
     if (
-      ['transferAccept', 'transferReject', 'cosignDelegationAccept', 'allocationAllocate'].includes(
-        params.intentType
-      ) &&
+      [
+        'transferAccept',
+        'transferReject',
+        'cosignDelegationAccept',
+        'allocationAllocate',
+        'cantonEndInvestorOnboardingAccept',
+        'cantonEndInvestorOnboardingReject',
+      ].includes(params.intentType) &&
       baseCoin.getFamily() === 'canton'
     ) {
       assert(params.txRequestId, `'txRequestId' is required parameter for ${params.intentType} intent`);
+    }
+
+    if (params.intentType === 'cantonEndInvestorOnboardingOffer') {
+      assert(params.endInvestorPartyId, `'endInvestorPartyId' is required parameter for ${params.intentType} intent`);
+    }
+
+    if (params.intentType === 'cantonEndInvestorOnboardingReject') {
+      assert(params.reason, `'reason' is required parameter for ${params.intentType} intent`);
+    }
+
+    if (params.intentType === 'cantonParticipantOnboardingRequest') {
+      assert(params.operator, `'operator' is required parameter for ${params.intentType} intent`);
+      assert(params.provider, `'provider' is required parameter for ${params.intentType} intent`);
+      assert(params.compliance, `'compliance' is required parameter for ${params.intentType} intent`);
+      assert(params.registrar, `'registrar' is required parameter for ${params.intentType} intent`);
+      assert(params.clientOnboarder, `'clientOnboarder' is required parameter for ${params.intentType} intent`);
     }
 
     if (
@@ -194,6 +215,10 @@ export abstract class MpcUtils {
         'allocationAllocateWithdrawn',
         'bridgeFunds',
         'cantonCommand',
+        'cantonEndInvestorOnboardingOffer',
+        'cantonEndInvestorOnboardingAccept',
+        'cantonEndInvestorOnboardingReject',
+        'cantonParticipantOnboardingRequest',
         'defi-approve',
         'defi-deposit',
       ].includes(params.intentType)

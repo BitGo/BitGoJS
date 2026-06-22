@@ -375,6 +375,22 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   cantonCommandParams?: CantonCommandParams;
   /** DeFi vault intent fields for defi-approve / defi-deposit intents. */
   defiParams?: DefiIntentParams;
+  /** Canton party ID of the end investor to onboard (cantonEndInvestorOnboardingOffer intent). */
+  endInvestorPartyId?: string;
+  /** Reason for rejecting the onboarding offer (cantonEndInvestorOnboardingReject intent). */
+  reason?: string;
+  /** DTCC operator party ID (cantonParticipantOnboardingRequest intent). */
+  operator?: string;
+  /** DTCC provider party ID (cantonParticipantOnboardingRequest intent). */
+  provider?: string;
+  /** DTCC compliance party ID (cantonParticipantOnboardingRequest intent). */
+  compliance?: string;
+  /** DTCC registrar party ID (cantonParticipantOnboardingRequest intent). */
+  registrar?: string;
+  /** DTCC client onboarder party ID (cantonParticipantOnboardingRequest intent). */
+  clientOnboarder?: string;
+  /** Optional ISO 8601 expiration timestamp (cantonParticipantOnboardingRequest intent). */
+  expirationIso?: string;
 }
 export interface IntentRecipient {
   address: {
@@ -459,6 +475,22 @@ export interface PopulatedIntent extends PopulatedIntentBase, DefiIntentFields {
   amount?: { value: string; symbol: string } | string;
   /** Canton-specific params serialized into the cantonCommand intent payload. */
   cantonCommandParams?: CantonCommandParams;
+  /** Canton party ID of the end investor to onboard (cantonEndInvestorOnboardingOffer intent). */
+  endInvestorPartyId?: string;
+  /** Reason for rejecting the onboarding offer (cantonEndInvestorOnboardingReject intent). */
+  reason?: string;
+  /** DTCC operator party ID (cantonParticipantOnboardingRequest intent). */
+  operator?: string;
+  /** DTCC provider party ID (cantonParticipantOnboardingRequest intent). */
+  provider?: string;
+  /** DTCC compliance party ID (cantonParticipantOnboardingRequest intent). */
+  compliance?: string;
+  /** DTCC registrar party ID (cantonParticipantOnboardingRequest intent). */
+  registrar?: string;
+  /** DTCC client onboarder party ID (cantonParticipantOnboardingRequest intent). */
+  clientOnboarder?: string;
+  /** Optional ISO 8601 expiration timestamp (cantonParticipantOnboardingRequest intent). */
+  expirationIso?: string;
 }
 
 export type TxRequestState =
