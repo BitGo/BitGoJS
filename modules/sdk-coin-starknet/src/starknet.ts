@@ -15,6 +15,7 @@ import {
   VerifyTransactionOptions,
   verifyMPCWalletAddress,
   UnexpectedAddressError,
+  SignableTransaction,
 } from '@bitgo/sdk-core';
 import { coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { createHash, Hash } from 'crypto';
@@ -124,6 +125,14 @@ export class Starknet extends BaseCoin {
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
     return {};
+  }
+
+  /**
+   * Returns true because Starknet's signableHex is already the final 32-byte hash.
+   * This prevents ecdsaMPCv2 from hashing the payload a second time.
+   */
+  isSignablePreHashed(unsignedTx: SignableTransaction): boolean {
+    return true;
   }
 
   public generateKeyPair(seed?: Buffer): KeyPair {
