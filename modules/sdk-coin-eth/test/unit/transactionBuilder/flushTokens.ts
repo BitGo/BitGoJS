@@ -10,11 +10,16 @@ import {
 } from '../../../src';
 import { getBuilder } from '../getBuilder';
 // eslint-disable-next-line import/no-internal-modules
-import { runFlushNftTests } from '@bitgo/abstract-eth/test/unit/transactionBuilder';
+import { runFlushNftTests, runFlushERC7984Tests } from '@bitgo/abstract-eth/test/unit/transactionBuilder';
 
 // Run the shared flush NFT tests from abstract-eth
 describe('ETH Flush NFT Tests (from abstract-eth)', () => {
   runFlushNftTests('eth', getBuilder);
+});
+
+// Run the shared FlushERC7984ForwarderToken tests from abstract-eth
+describe('ETH FlushERC7984ForwarderToken Tests (from abstract-eth)', () => {
+  runFlushERC7984Tests('eth', getBuilder);
 });
 
 describe('Eth Transaction builder flush tokens (ETH-specific)', function () {

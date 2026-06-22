@@ -3,11 +3,15 @@ import EthereumAbi from 'ethereumjs-abi';
 import {
   buildDelegationCalldata,
   buildMulticallDelegationCalldata,
+  buildConfidentialTransferByHandleCalldata,
+  buildFlushERC7984ForwarderTokenCalldata,
+  decodeFlushERC7984ForwarderTokenCalldata,
   wrapInCallFromParent,
   delegateForUserDecryptionMethodId,
   aclMulticallMethodId,
   callFromParentMethodId,
 } from '../../src/lib/zamaUtils';
+import { confidentialTransferNoProofMethodId } from '../../src/lib/walletUtil';
 
 describe('Zama Utils', () => {
   const ACL_ADDRESS = '0xf0Ffdc93b7E186bC2f8CB3dAA75D86d1930A433D';
@@ -300,6 +304,134 @@ describe('Zama Utils', () => {
         const w2 = wrapInCallFromParent(FORWARDER_ADDRESS, inner);
         w1.should.not.equal(w2);
       });
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  describe('buildConfidentialTransferByHandleCalldata', () => {
+    const HANDLE = '0x' + 'ab'.repeat(32); // 32-byte mock handle
+
+    it('should return a 0x-prefixed hex string', () => {
+      const result = buildConfidentialTransferByHandleCalldata(DELEGATE_ADDRESS, HANDLE);
+      result.should.be.a.String();
+      result.should.startWith('0x');
+    });
+
+    it('should start with the confidentialTransferNoProof selector (0x5bebed7e)', () => {
+      const result = buildConfidentialTransferByHandleCalldata(DELEGATE_ADDRESS, HANDLE);
+      result.should.startWith(confidentialTransferNoProofMethodId);
+    });
+
+    it('should encode the recipient address correctly', () => {
+      const result = buildConfidentialTransferByHandleCalldata(DELEGATE_ADDRESS, HANDLE);
+      const payload = Buffer.from(result.slice(10), 'hex');
+      const decoded = EthereumAbi.rawDecode(['address', 'bytes32'], payload);
+      ('0x' + (decoded[0] as Buffer).toString('hex')).toLowerCase().should.equal(DELEGATE_ADDRESS.toLowerCase());
+    });
+
+    it('should encode the encrypted handle correctly', () => {
+      const result = buildConfidentialTransferByHandleCalldata(DELEGATE_ADDRESS, HANDLE);
+      const payload = Buffer.from(result.slice(10), 'hex');
+      const decoded = EthereumAbi.rawDecode(['address', 'bytes32'], payload);
+      ('0x' + (decoded[1] as Buffer).toString('hex')).should.equal(HANDLE);
+    });
+
+    it('different handles should produce different calldata', () => {
+      const h1 = '0x' + '01'.repeat(32);
+      const h2 = '0x' + '02'.repeat(32);
+      buildConfidentialTransferByHandleCalldata(DELEGATE_ADDRESS, h1).should.not.equal(
+        buildConfidentialTransferByHandleCalldata(DELEGATE_ADDRESS, h2)
+      );
+    });
+
+    it('different recipient addresses should produce different calldata', () => {
+      buildConfidentialTransferByHandleCalldata(DELEGATE_ADDRESS, HANDLE).should.not.equal(
+        buildConfidentialTransferByHandleCalldata(TOKEN_ADDRESS, HANDLE)
+      );
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  describe('buildFlushERC7984ForwarderTokenCalldata', () => {
+    const PARENT_ADDRESS = '0x2222222222222222222222222222222222222222';
+    const HANDLE = '0x' + 'cd'.repeat(32);
+
+    it('should return a 0x-prefixed hex string', () => {
+      const result = buildFlushERC7984ForwarderTokenCalldata(TOKEN_ADDRESS, PARENT_ADDRESS, HANDLE);
+      result.should.be.a.String();
+      result.should.startWith('0x');
+    });
+
+    it('should start with the callFromParent selector', () => {
+      const result = buildFlushERC7984ForwarderTokenCalldata(TOKEN_ADDRESS, PARENT_ADDRESS, HANDLE);
+      result.should.startWith(callFromParentMethodId);
+    });
+
+    it('inner calldata should start with confidentialTransferNoProof selector', () => {
+      const result = buildFlushERC7984ForwarderTokenCalldata(TOKEN_ADDRESS, PARENT_ADDRESS, HANDLE);
+      const payload = Buffer.from(result.slice(10), 'hex');
+      const decoded = EthereumAbi.rawDecode(['address', 'uint256', 'bytes'], payload);
+      const innerCalldata = '0x' + (decoded[2] as Buffer).toString('hex');
+      innerCalldata.should.startWith(confidentialTransferNoProofMethodId);
+    });
+
+    it('outer target address should equal the token contract address', () => {
+      const result = buildFlushERC7984ForwarderTokenCalldata(TOKEN_ADDRESS, PARENT_ADDRESS, HANDLE);
+      const payload = Buffer.from(result.slice(10), 'hex');
+      const decoded = EthereumAbi.rawDecode(['address', 'uint256', 'bytes'], payload);
+      ('0x' + (decoded[0] as Buffer).toString('hex')).toLowerCase().should.equal(TOKEN_ADDRESS.toLowerCase());
+    });
+
+    it('inner recipient should equal the parent address', () => {
+      const result = buildFlushERC7984ForwarderTokenCalldata(TOKEN_ADDRESS, PARENT_ADDRESS, HANDLE);
+      const payload = Buffer.from(result.slice(10), 'hex');
+      const decoded = EthereumAbi.rawDecode(['address', 'uint256', 'bytes'], payload);
+      const innerCalldata = '0x' + (decoded[2] as Buffer).toString('hex');
+      const innerPayload = Buffer.from(innerCalldata.slice(10), 'hex');
+      const innerDecoded = EthereumAbi.rawDecode(['address', 'bytes32'], innerPayload);
+      ('0x' + (innerDecoded[0] as Buffer).toString('hex')).toLowerCase().should.equal(PARENT_ADDRESS.toLowerCase());
+    });
+
+    it('different token addresses should produce different calldata', () => {
+      buildFlushERC7984ForwarderTokenCalldata(TOKEN_ADDRESS, PARENT_ADDRESS, HANDLE).should.not.equal(
+        buildFlushERC7984ForwarderTokenCalldata(TOKEN_ADDRESS_2, PARENT_ADDRESS, HANDLE)
+      );
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  describe('decodeFlushERC7984ForwarderTokenCalldata', () => {
+    const PARENT_ADDRESS = '0x2222222222222222222222222222222222222222';
+    const HANDLE = '0x' + 'ef'.repeat(32);
+
+    it('should round-trip encode and decode correctly', () => {
+      const encoded = buildFlushERC7984ForwarderTokenCalldata(TOKEN_ADDRESS, PARENT_ADDRESS, HANDLE);
+      const decoded = decodeFlushERC7984ForwarderTokenCalldata(encoded);
+      decoded.tokenContractAddress.toLowerCase().should.equal(TOKEN_ADDRESS.toLowerCase());
+      decoded.parentAddress.toLowerCase().should.equal(PARENT_ADDRESS.toLowerCase());
+      decoded.encryptedHandle.should.equal(HANDLE);
+    });
+
+    it('should throw for calldata with wrong outer selector', () => {
+      const bad = '0xdeadbeef' + '00'.repeat(64);
+      should.throws(() => decodeFlushERC7984ForwarderTokenCalldata(bad), /Invalid FlushERC7984ForwarderToken calldata/);
+    });
+
+    it('should throw for calldata with correct outer but wrong inner selector', () => {
+      // Wrap delegation calldata in callFromParent — inner starts with 0x04f61a95, not 0x5bebed7e
+      const innerCalldata = buildDelegationCalldata(DELEGATE_ADDRESS, TOKEN_ADDRESS, EXPIRY);
+      const wrapped = wrapInCallFromParent(TOKEN_ADDRESS, innerCalldata);
+      should.throws(
+        () => decodeFlushERC7984ForwarderTokenCalldata(wrapped),
+        /Invalid FlushERC7984ForwarderToken inner calldata/
+      );
+    });
+
+    it('decoded tokenContractAddress should be checksummed or lowercase consistently', () => {
+      const encoded = buildFlushERC7984ForwarderTokenCalldata(TOKEN_ADDRESS, PARENT_ADDRESS, HANDLE);
+      const decoded = decodeFlushERC7984ForwarderTokenCalldata(encoded);
+      should.exist(decoded.tokenContractAddress);
+      decoded.tokenContractAddress.should.be.a.String();
     });
   });
 });

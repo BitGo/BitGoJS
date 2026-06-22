@@ -152,6 +152,9 @@ export enum TransactionType {
   DecryptionDelegation,
   // Send ERC-7984 confidential tokens via encrypted transfer
   SendERC7984,
+  // Flush ERC-7984 confidential tokens from a forwarder address to the parent wallet
+  // via forwarder.callFromParent(tokenAddr, 0, confidentialTransfer(parentAddr, handle))
+  FlushERC7984ForwarderToken,
 }
 
 /**

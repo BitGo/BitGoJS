@@ -34,6 +34,7 @@ import {
   ERC1155TransferData,
   ERC721TransferData,
   FlushTokensData,
+  FlushERC7984ForwarderTokenData,
   NativeTransferData,
   SignatureParts,
   TokenTransferData,
@@ -85,9 +86,15 @@ import {
   sendMultiSigTypesFirstSigner,
   confidentialTransferWithProofMethodId,
   confidentialTransferWithProofTypes,
+  confidentialTransferNoProofMethodId,
 } from './walletUtil';
 import { EthTransactionData } from './types';
-import { delegateForUserDecryptionMethodId } from './zamaUtils';
+import {
+  callFromParentMethodId,
+  callFromParentTypes,
+  decodeFlushERC7984ForwarderTokenCalldata,
+  delegateForUserDecryptionMethodId,
+} from './zamaUtils';
 
 /**
  * @param network
@@ -736,6 +743,23 @@ export function decodeConfidentialTransferData(data: string): ConfidentialTransf
 }
 
 /**
+ * Decode a FlushERC7984ForwarderToken transaction's calldata into its component parts.
+ *
+ * @param data The full calldata hex string (callFromParent wrapping confidentialTransfer)
+ * @param to   The `to` field of the transaction (equals the forwarder address for V4)
+ * @returns Decoded fields including forwarderAddress, tokenContractAddress, parentAddress, encryptedHandle
+ */
+export function decodeFlushERC7984ForwarderTokenData(data: string, to: string): FlushERC7984ForwarderTokenData {
+  const { tokenContractAddress, parentAddress, encryptedHandle } = decodeFlushERC7984ForwarderTokenCalldata(data);
+  return {
+    forwarderAddress: to,
+    tokenContractAddress,
+    parentAddress,
+    encryptedHandle,
+  };
+}
+
+/**
  * Classify the given transaction data based as a transaction type.
  * ETH transactions are defined by the first 8 bytes of the transaction data, also known as the method id
  *
@@ -762,6 +786,22 @@ export function classifyTransaction(data: string): TransactionType {
       }
     } catch {
       // Not a confidential transfer; fall through to normal classification
+    }
+  }
+
+  // Peek inside callFromParent to detect FlushERC7984ForwarderToken
+  if (transactionType === undefined && data.startsWith(callFromParentMethodId)) {
+    try {
+      const [, , innerData] = getRawDecoded(
+        [...callFromParentTypes],
+        getBufferedByteCode(callFromParentMethodId, data)
+      );
+      const innerHex = bufferToHex(innerData as Buffer);
+      if (innerHex.startsWith(confidentialTransferNoProofMethodId)) {
+        return TransactionType.FlushERC7984ForwarderToken;
+      }
+    } catch {
+      // Not a confidential flush; fall through to ContractCall
     }
   }
 

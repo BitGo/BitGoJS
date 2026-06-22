@@ -1,6 +1,7 @@
-import { addHexPrefix, toBuffer } from 'ethereumjs-util';
+import { addHexPrefix, bufferToHex, toBuffer } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import { ethers } from 'ethers';
+import { confidentialTransferNoProofMethodId, confidentialTransferNoProofTypes } from './walletUtil';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -187,4 +188,83 @@ export function decodeTokenAddressesFromDelegationCalldata(calldata: string): st
   }
 
   return tokenAddresses;
+}
+
+/**
+ * Encodes confidentialTransfer(address to, bytes32 encryptedHandle) calldata.
+ * Uses the no-proof variant (selector 0x5bebed7e) — valid when the caller (forwarder)
+ * is already ACL-allowed on the handle from when it received the tokens.
+ *
+ * @param toAddress       Address that will receive the tokens
+ * @param encryptedHandle bytes32 encrypted balance handle from confidentialBalanceOf
+ * @returns ABI-encoded calldata hex string (0x-prefixed)
+ */
+export function buildConfidentialTransferByHandleCalldata(toAddress: string, encryptedHandle: string): string {
+  const method = Buffer.from(confidentialTransferNoProofMethodId.slice(2), 'hex');
+  const handleBuffer = toBuffer(encryptedHandle);
+  const args = EthereumAbi.rawEncode([...confidentialTransferNoProofTypes], [toAddress, handleBuffer]);
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Encodes the full flush calldata for ERC-7984 forwarder consolidation:
+ *   callFromParent(tokenContractAddress, 0, confidentialTransfer(parentAddress, encryptedHandle))
+ * The forwarder executes the inner confidentialTransfer with msg.sender = forwarder.
+ *
+ * @param tokenContractAddress  ERC-7984 token contract address
+ * @param parentAddress         Root wallet address (destination of flushed tokens)
+ * @param encryptedHandle       bytes32 encrypted balance handle from confidentialBalanceOf
+ * @returns ABI-encoded calldata hex string (0x-prefixed)
+ */
+export function buildFlushERC7984ForwarderTokenCalldata(
+  tokenContractAddress: string,
+  parentAddress: string,
+  encryptedHandle: string
+): string {
+  const innerCalldata = buildConfidentialTransferByHandleCalldata(parentAddress, encryptedHandle);
+  return wrapInCallFromParent(tokenContractAddress, innerCalldata);
+}
+
+/**
+ * Decodes a FlushERC7984ForwarderToken calldata.
+ * Strips the outer callFromParent wrapper and the inner confidentialTransfer.
+ * Returns { tokenContractAddress, parentAddress, encryptedHandle }.
+ *
+ * @param data  ABI-encoded flush calldata (0x-prefixed)
+ * @returns Decoded fields
+ */
+export function decodeFlushERC7984ForwarderTokenCalldata(data: string): {
+  tokenContractAddress: string;
+  parentAddress: string;
+  encryptedHandle: string;
+} {
+  if (!data.startsWith(callFromParentMethodId)) {
+    throw new Error(
+      `Invalid FlushERC7984ForwarderToken calldata: expected callFromParent selector, got ${data.slice(0, 10)}`
+    );
+  }
+
+  const abiCoder = new ethers.utils.AbiCoder();
+  const outerDecoded = abiCoder.decode([...callFromParentTypes], '0x' + data.slice(10));
+  const tokenContractAddress: string = outerDecoded[0];
+  const innerCalldata: string = ethers.utils.hexlify(outerDecoded[2]);
+
+  if (!innerCalldata.startsWith(confidentialTransferNoProofMethodId)) {
+    throw new Error(
+      `Invalid FlushERC7984ForwarderToken inner calldata: expected confidentialTransfer selector, got ${innerCalldata.slice(
+        0,
+        10
+      )}`
+    );
+  }
+
+  const innerDecoded = abiCoder.decode([...confidentialTransferNoProofTypes], '0x' + innerCalldata.slice(10));
+  const parentAddress: string = innerDecoded[0];
+  const encryptedHandle: string = bufferToHex(toBuffer(innerDecoded[1]));
+
+  return {
+    tokenContractAddress,
+    parentAddress,
+    encryptedHandle,
+  };
 }
