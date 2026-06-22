@@ -10,6 +10,7 @@ import {
   SampleRawTokenSendTxn,
   receiveAddressBalance,
   TestRecoverData,
+  TssTestRecoverData,
   creationTransaction,
 } from '../resources';
 
@@ -631,6 +632,197 @@ describe('TRON:', function () {
       assert.equal(value1.amount, 100000000);
       assert.equal(Utils.getBase58AddressFromHex(value1.owner_address), TestRecoverData.firstReceiveAddress);
       assert.equal(Utils.getBase58AddressFromHex(value1.to_address), TestRecoverData.baseAddress);
+    });
+  });
+
+  describe('TSS Recovery', () => {
+    afterEach(() => {
+      mock.reset();
+    });
+
+    const walletAddrHex = Utils.getHexAddressFromBase58Address(TssTestRecoverData.walletAddress);
+    const destinationHex = Utils.getHexAddressFromBase58Address(TssTestRecoverData.recoveryDestination);
+
+    it('should recover TRX from TSS wallet (unsigned sweep)', async function () {
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', () => {
+        return Promise.resolve(baseAddressBalance(3000000));
+      });
+
+      mock.method(Trx.prototype as any, 'getBuildTransaction', (...args) => {
+        if (args[0] === destinationHex && args[1] === walletAddrHex && args[2] === 900000) {
+          return Promise.resolve(creationTransaction(walletAddrHex, destinationHex, 900000));
+        }
+        return undefined;
+      });
+
+      const res = await basecoin.recover({
+        userKey: TssTestRecoverData.userKey,
+        backupKey: TssTestRecoverData.backupKey,
+        bitgoKey: TssTestRecoverData.bitgoKey,
+        recoveryDestination: TssTestRecoverData.recoveryDestination,
+        isTss: true,
+      });
+
+      assert.ok(Object.prototype.hasOwnProperty.call(res, 'txHex'));
+      assert.ok(Object.prototype.hasOwnProperty.call(res, 'feeInfo'));
+      assert.equal(res.recoveryAmount, 900000);
+      const rawData = JSON.parse(res.txHex).raw_data;
+      assert.ok(Object.prototype.hasOwnProperty.call(rawData, 'contract'));
+      const value = rawData.contract[0].parameter.value;
+      assert.equal(value.amount, 900000);
+      assert.equal(Utils.getBase58AddressFromHex(value.owner_address), TssTestRecoverData.walletAddress);
+      assert.equal(Utils.getBase58AddressFromHex(value.to_address), TssTestRecoverData.recoveryDestination);
+      // unsigned sweep: no signatures
+      const sig = JSON.parse(res.txHex).signature;
+      assert.ok(!sig || sig.length === 0);
+    });
+
+    it('should recover TRX from TSS wallet (signed recovery)', async function () {
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', () => {
+        return Promise.resolve(baseAddressBalance(3000000));
+      });
+
+      mock.method(Trx.prototype as any, 'getBuildTransaction', (...args) => {
+        if (args[0] === destinationHex && args[1] === walletAddrHex && args[2] === 900000) {
+          return Promise.resolve(creationTransaction(walletAddrHex, destinationHex, 900000));
+        }
+        return undefined;
+      });
+
+      mock.method(bitgo as any, 'decryptAsync', () => {
+        return Promise.resolve(TssTestRecoverData.userPrvKey);
+      });
+
+      const res = await basecoin.recover({
+        userKey: TssTestRecoverData.encryptedUserKey,
+        backupKey: TssTestRecoverData.encryptedUserKey,
+        bitgoKey: TssTestRecoverData.bitgoKey,
+        recoveryDestination: TssTestRecoverData.recoveryDestination,
+        walletPassphrase: TssTestRecoverData.walletPassphrase,
+        isTss: true,
+      });
+
+      assert.ok(Object.prototype.hasOwnProperty.call(res, 'txHex'));
+      assert.ok(Object.prototype.hasOwnProperty.call(res, 'feeInfo'));
+      assert.equal(res.recoveryAmount, 900000);
+      const rawData = JSON.parse(res.txHex).raw_data;
+      const value = rawData.contract[0].parameter.value;
+      assert.equal(value.amount, 900000);
+      assert.equal(Utils.getBase58AddressFromHex(value.owner_address), TssTestRecoverData.walletAddress);
+      assert.equal(Utils.getBase58AddressFromHex(value.to_address), TssTestRecoverData.recoveryDestination);
+      // signed recovery: should have exactly 1 signature
+      const sig = JSON.parse(res.txHex).signature;
+      assert.equal(sig.length, 1);
+    });
+
+    it('should recover TRC-20 token from TSS wallet (unsigned sweep)', async function () {
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', () => {
+        return Promise.resolve(
+          baseAddressBalance(100000000, [
+            {
+              TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs: '1100000000',
+            },
+          ])
+        );
+      });
+
+      mock.method(Trx.prototype as any, 'getTriggerSmartContractTransaction', () => {
+        return Promise.resolve(SampleRawTokenSendTxn);
+      });
+
+      const res = await basecoin.recover({
+        userKey: TssTestRecoverData.userKey,
+        backupKey: TssTestRecoverData.backupKey,
+        bitgoKey: TssTestRecoverData.bitgoKey,
+        tokenContractAddress: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
+        recoveryDestination: TssTestRecoverData.recoveryDestination,
+        isTss: true,
+      });
+
+      assert.ok(Object.prototype.hasOwnProperty.call(res, 'txHex'));
+      assert.equal(res.recoveryAmount, 1100000000);
+      assert.equal(res.feeInfo.fee, '100000000');
+      const expirationDuration = res.tx.raw_data.expiration - res.tx.raw_data.timestamp;
+      assert.ok(expirationDuration >= 86400000);
+      // unsigned sweep: no signatures
+      const sig = JSON.parse(res.txHex).signature;
+      assert.ok(!sig || sig.length === 0);
+    });
+
+    it('should recover TRC-20 token from TSS wallet (signed recovery)', async function () {
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', () => {
+        return Promise.resolve(
+          baseAddressBalance(100000000, [
+            {
+              TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs: '1100000000',
+            },
+          ])
+        );
+      });
+
+      mock.method(Trx.prototype as any, 'getTriggerSmartContractTransaction', () => {
+        return Promise.resolve(SampleRawTokenSendTxn);
+      });
+
+      mock.method(bitgo as any, 'decryptAsync', () => {
+        return Promise.resolve(TssTestRecoverData.userPrvKey);
+      });
+
+      const res = await basecoin.recover({
+        userKey: TssTestRecoverData.encryptedUserKey,
+        backupKey: TssTestRecoverData.encryptedUserKey,
+        bitgoKey: TssTestRecoverData.bitgoKey,
+        tokenContractAddress: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
+        recoveryDestination: TssTestRecoverData.recoveryDestination,
+        walletPassphrase: TssTestRecoverData.walletPassphrase,
+        isTss: true,
+      });
+
+      assert.ok(Object.prototype.hasOwnProperty.call(res, 'txHex'));
+      assert.equal(res.recoveryAmount, 1100000000);
+      assert.equal(res.feeInfo.fee, '100000000');
+      // signed recovery: should have exactly 1 signature
+      const sig = JSON.parse(res.txHex).signature;
+      assert.equal(sig.length, 1);
+    });
+
+    it('should throw if TSS wallet has insufficient balance', async function () {
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', () => {
+        return Promise.resolve(baseAddressBalance(1000000)); // less than SAFE_TRON_TRANSACTION_FEE (2.1e6)
+      });
+
+      await assert.rejects(
+        basecoin.recover({
+          userKey: TssTestRecoverData.userKey,
+          backupKey: TssTestRecoverData.backupKey,
+          bitgoKey: TssTestRecoverData.bitgoKey,
+          recoveryDestination: TssTestRecoverData.recoveryDestination,
+          isTss: true,
+        }),
+        {
+          message: "Amount of funds to recover 1000000 is less than 2100000 and wouldn't be able to fund a send",
+        }
+      );
+    });
+
+    it('should throw if TRC-20 token not found for TSS wallet', async function () {
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', () => {
+        return Promise.resolve(baseAddressBalance(100000000, []));
+      });
+
+      await assert.rejects(
+        basecoin.recover({
+          userKey: TssTestRecoverData.userKey,
+          backupKey: TssTestRecoverData.backupKey,
+          bitgoKey: TssTestRecoverData.bitgoKey,
+          tokenContractAddress: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
+          recoveryDestination: TssTestRecoverData.recoveryDestination,
+          isTss: true,
+        }),
+        {
+          message: 'Not found token to recover, please check token balance',
+        }
+      );
     });
   });
 
