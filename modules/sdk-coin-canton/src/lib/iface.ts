@@ -159,6 +159,10 @@ export interface CantonTransferOfferWithdrawnRequest extends CantonTransferAccep
   tokenName?: string;
 }
 
+export interface CantonAllocationAllocateWithdrawnRequest extends CantonTransferAcceptRejectRequest {
+  tokenName?: string;
+}
+
 export interface TransferAcknowledge {
   contractId: string;
   senderPartyId: string;

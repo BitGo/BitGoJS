@@ -103,6 +103,8 @@ export enum TransactionType {
   CosignDelegationAccept,
   // canton allocation allocate
   AllocationAllocate,
+  // canton allocation allocate withdrawn
+  AllocationAllocateWithdrawn,
   // canton allocation request (internal/dummy txRequest surfacing DvP trade details to the allocating party)
   AllocationRequest,
   // canton generic DAML command
