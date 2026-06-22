@@ -9,6 +9,7 @@ export interface SolTokenConfig {
   network: string;
   tokenAddress: string;
   decimalPlaces: number;
+  programId?: string;
 }
 
 export class SolToken extends Sol {
@@ -57,6 +58,10 @@ export class SolToken extends Sol {
 
   get contractAddress() {
     return this.tokenConfig.tokenAddress;
+  }
+
+  get programId() {
+    return this.tokenConfig.programId;
   }
 
   getChain() {

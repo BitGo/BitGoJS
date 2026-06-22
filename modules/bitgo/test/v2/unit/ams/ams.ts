@@ -154,5 +154,23 @@ describe('Asset metadata service', () => {
       }
       staticsCoin.family.should.equal('hypeevm');
     });
+
+    it('should register a SOL token from statics library if available', async () => {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
+      bitgo.initializeTestVars();
+      await bitgo.registerToken('tsol:usdc');
+      const coin = bitgo.coin('tsol:usdc');
+      should.exist(coin);
+      coin.type.should.equal('tsol:usdc');
+      coin.getBaseFactor().should.equal(1e9);
+    });
+  });
+
+  it('should create a custom coin factory from ams response and include SOL tokens from statics', async () => {
+    bitgo.initCoinFactory(reducedAmsTokenConfig);
+    const coin = bitgo.coin('tsol:usdc');
+    should.exist(coin);
+    coin.type.should.equal('tsol:usdc');
+    coin.getBaseFactor().should.equal(1e9);
   });
 });
