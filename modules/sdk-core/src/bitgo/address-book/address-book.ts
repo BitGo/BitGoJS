@@ -50,7 +50,11 @@ export class AddressBook implements IAddressBook {
    */
   getConnections(params?: GetAddressBookConnectionsParams): Promise<GetAddressBookConnectionsResponse> {
     const url = this.bitgo.microservicesUrl('/api/address-book/v1/connections');
-    return this.bitgo.get(url).set('enterprise-id', this.enterpriseId).send(params).result();
+    return this.bitgo
+      .get(url)
+      .set('enterprise-id', this.enterpriseId)
+      .query(params ?? {})
+      .result();
   }
 
   /**
@@ -84,7 +88,6 @@ export class AddressBook implements IAddressBook {
     const response: GetAddressBookListingResponse = await this.bitgo
       .get(url)
       .set('enterprise-id', this.enterpriseId)
-      .send()
       .result();
     this._listing = response;
     return this.listing() as AddressBookListing;
@@ -125,7 +128,11 @@ export class AddressBook implements IAddressBook {
     params?: GetAddressBookListingEntryContactsParams
   ): Promise<GetAddressBookListingEntryContactsResponse> {
     const url = this.bitgo.microservicesUrl('/api/address-book/v1/listing/entry/contacts');
-    return this.bitgo.get(url).set('enterprise-id', this.enterpriseId).send(params).result();
+    return this.bitgo
+      .get(url)
+      .set('enterprise-id', this.enterpriseId)
+      .query(params ?? {})
+      .result();
   }
 
   /**
@@ -135,7 +142,11 @@ export class AddressBook implements IAddressBook {
     params?: GetAddressBookListingEntryDirectoryParams
   ): Promise<GetAddressBookListingEntryDirectoryResponse> {
     const url = this.bitgo.microservicesUrl('/api/address-book/v1/listing/entry/directory');
-    return this.bitgo.get(url).set('enterprise-id', this.enterpriseId).send(params).result();
+    return this.bitgo
+      .get(url)
+      .set('enterprise-id', this.enterpriseId)
+      .query(params ?? {})
+      .result();
   }
 
   /**
