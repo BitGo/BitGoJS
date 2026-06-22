@@ -4058,7 +4058,10 @@ export class Wallet implements IWallet {
       teConfig.validateWallet(this._wallet.type);
     }
 
-    if (typeof params.prebuildTx === 'string' || params.prebuildTx?.buildParams?.type !== 'enabletoken') {
+    if (
+      typeof params.prebuildTx === 'string' ||
+      (params.prebuildTx?.buildParams?.type !== 'enabletoken' && params.prebuildTx?.buildParams?.type !== 'enableMpt')
+    ) {
       throw new Error('Invalid build of token enablement.');
     }
 

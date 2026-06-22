@@ -15,6 +15,7 @@ import * as xrpl from 'xrpl';
 import { XrpToken } from '../../src';
 import * as testData from '../resources/xrp';
 import { SIGNER_BACKUP, SIGNER_BITGO, SIGNER_USER } from '../resources/xrp';
+import { getMptBuilderFactory } from './getBuilderFactory';
 
 nock.disableNetConnect();
 
@@ -200,6 +201,41 @@ describe('XRP:', function () {
     });
     assert(Array.isArray(signedTransaction.Signers));
     (signedTransaction.Signers as Array<string>).length.should.equal(2);
+  });
+
+  it('should multi-sign an MPTokenAuthorize transaction using the xrpl codec (encodeForMultiSigning)', async function () {
+    // Build an unsigned MPTokenAuthorize tx using the builder so we get a real XRPL-encoded hex.
+    // This exercises the ripple.ts encodeForMultiSigning path via the xrpl codec (v2.7.0)
+    // which supports the MPTokenAuthorize transaction type absent in ripple-binary-codec v2.1.0.
+    const factory = getMptBuilderFactory(testData.MPT_ISSUANCE_ID);
+    const sender = testData.TEST_MULTI_SIG_ACCOUNT.address.split('?')[0]; // strip destination tag
+
+    const builder = factory.getMPTokenAuthorizeBuilder();
+    builder.sender(sender);
+    builder.mptIssuanceId(testData.MPT_ISSUANCE_ID);
+    builder.sequence(1600000);
+    builder.fee('12');
+    builder.flags(2147483648);
+
+    const unsignedTx = await builder.build();
+    const unsignedHex = unsignedTx.toBroadcastFormat();
+
+    // Sign with first signer
+    const firstSigned = ripple.signWithPrivateKey(unsignedHex, SIGNER_USER.prv, {
+      signAs: SIGNER_USER.address,
+    });
+
+    // Add second signature
+    const fullySigned = ripple.signWithPrivateKey(firstSigned.signedTransaction, SIGNER_BITGO.prv, {
+      signAs: SIGNER_BITGO.address,
+    });
+
+    // Must use xrpl.decode (ripple-binary-codec v2.7.0) — the standalone
+    // ripple-binary-codec v2.1.0 doesn't know the MPTokenAuthorize type.
+    const decoded = xrpl.decode(fullySigned.signedTransaction);
+    (decoded.TransactionType as string).should.equal('MPTokenAuthorize');
+    assert(Array.isArray(decoded.Signers));
+    (decoded.Signers as Array<unknown>).length.should.equal(2);
   });
 
   it('should be able to cosign XRP transaction in any form', function () {
@@ -963,6 +999,42 @@ describe('XRP:', function () {
             verification: { verifyTokenEnablement: true },
           }),
         { message: 'Invalid token issuer or currency on token enablement tx' }
+      );
+    });
+
+    it('should pass verifyMptTxType for a valid MPTokenAuthorize prebuild', async function () {
+      const factory = getMptBuilderFactory(testData.MPT_ISSUANCE_ID);
+      const sender = testData.TEST_MULTI_SIG_ACCOUNT.address.split('?')[0];
+
+      const builder = factory.getMPTokenAuthorizeBuilder();
+      builder.sender(sender);
+      builder.mptIssuanceId(testData.MPT_ISSUANCE_ID);
+      builder.sequence(1600000);
+      builder.fee('12');
+      builder.flags(2147483648);
+
+      const txHex = (await builder.build()).toBroadcastFormat();
+
+      const result = await basecoin.verifyTransaction({
+        txParams: { type: 'enableMpt' },
+        txPrebuild: { txHex },
+        verification: { verifyTokenEnablement: true },
+      });
+      result.should.equal(true);
+    });
+
+    it('should reject enableMpt when on-chain type is not MPTokenAuthorize', async function () {
+      // TrustSet hex — wrong on-chain type for an enableMpt intent
+      const txHex = `{"TransactionType":"TrustSet","Account":"rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG","LimitAmount":{"currency":"524C555344000000000000000000000000000000","issuer":"rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV","value":"99999999"},"Flags":2147483648,"Fee":"45","Sequence":7}`;
+
+      await assert.rejects(
+        async () =>
+          basecoin.verifyTransaction({
+            txParams: { type: 'enableMpt' },
+            txPrebuild: { txHex },
+            verification: { verifyTokenEnablement: true },
+          }),
+        { message: 'tx type TrustSet does not match expected type MPTokenAuthorize' }
       );
     });
   });

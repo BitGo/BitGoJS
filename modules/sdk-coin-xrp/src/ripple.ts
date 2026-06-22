@@ -9,7 +9,9 @@ import * as xrpl from 'xrpl';
 import { ECPair } from '@bitgo/secp256k1';
 import BigNumber from 'bignumber.js';
 
-import * as binary from 'ripple-binary-codec';
+// xrpl re-exports ripple-binary-codec@2.7.0 which supports MPTokenAuthorize.
+// The standalone ripple-binary-codec dep is 2.1.0 (pre-MPT), so use xrpl as the codec.
+const binary = xrpl;
 
 /**
  * Convert an XRP address to a BigNumber for numeric comparison.
@@ -24,7 +26,7 @@ function addressToBigNumber(address: string): BigNumber {
 }
 
 function computeSignature(tx, privateKey, signAs) {
-  const signingData = signAs ? binary.encodeForMultisigning(tx, signAs) : binary.encodeForSigning(tx);
+  const signingData = signAs ? binary.encodeForMultiSigning(tx, signAs) : binary.encodeForSigning(tx);
   return rippleKeypairs.sign(signingData, privateKey);
 }
 

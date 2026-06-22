@@ -104,7 +104,8 @@ export type TransactionExplanation =
   | BaseTransactionExplanation
   | AccountSetTransactionExplanation
   | TrustSetTransactionExplanation
-  | SignerListSetTransactionExplanation;
+  | SignerListSetTransactionExplanation
+  | MPTokenAuthorizeTransactionExplanation;
 
 export interface AccountSetTransactionExplanation extends BaseTransactionExplanation {
   accountSet: {
@@ -127,6 +128,11 @@ export interface SignerListSetTransactionExplanation extends BaseTransactionExpl
     signerQuorum: number;
     signerEntries: SignerEntry[];
   };
+}
+
+export interface MPTokenAuthorizeTransactionExplanation extends BaseTransactionExplanation {
+  mptIssuanceId: string;
+  mptHolder?: string;
 }
 
 export interface TxData {
