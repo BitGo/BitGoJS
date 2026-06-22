@@ -297,6 +297,22 @@ export interface PrebuildTransactionOptions {
    * Parameters for executing DAML commands on Canton.
    */
   cantonCommandParams?: CantonCommandParams;
+  /** Canton party ID of the end investor to onboard (cantonEndInvestorOnboardingOffer intent). */
+  endInvestorPartyId?: string;
+  /** Reason for rejecting the onboarding offer (cantonEndInvestorOnboardingReject intent). */
+  reason?: string;
+  /** DTCC operator party ID (cantonParticipantOnboardingRequest intent). */
+  operator?: string;
+  /** DTCC provider party ID (cantonParticipantOnboardingRequest intent). */
+  provider?: string;
+  /** DTCC compliance party ID (cantonParticipantOnboardingRequest intent). */
+  compliance?: string;
+  /** DTCC registrar party ID (cantonParticipantOnboardingRequest intent). */
+  registrar?: string;
+  /** DTCC client onboarder party ID (cantonParticipantOnboardingRequest intent). */
+  clientOnboarder?: string;
+  /** Optional ISO 8601 expiration timestamp (cantonParticipantOnboardingRequest intent). */
+  expirationIso?: string;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {

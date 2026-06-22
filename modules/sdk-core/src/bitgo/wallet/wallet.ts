@@ -4377,6 +4377,83 @@ export class Wallet implements IWallet {
         );
         break;
       }
+      case 'cantonEndInvestorOnboardingOffer': {
+        if (!params.endInvestorPartyId) {
+          throw new Error('endInvestorPartyId is required for cantonEndInvestorOnboardingOffer intent');
+        }
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'cantonEndInvestorOnboardingOffer',
+            endInvestorPartyId: params.endInvestorPartyId,
+            comment: params.comment,
+            sequenceId: params.sequenceId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
+      case 'cantonEndInvestorOnboardingAccept': {
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'cantonEndInvestorOnboardingAccept',
+            txRequestId: params.txRequestId,
+            sequenceId: params.txRequestId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
+      case 'cantonEndInvestorOnboardingReject': {
+        if (!params.reason) {
+          throw new Error('reason is required for cantonEndInvestorOnboardingReject intent');
+        }
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'cantonEndInvestorOnboardingReject',
+            txRequestId: params.txRequestId,
+            sequenceId: params.txRequestId,
+            reason: params.reason,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
+      case 'cantonParticipantOnboardingRequest': {
+        if (
+          !params.operator ||
+          !params.provider ||
+          !params.compliance ||
+          !params.registrar ||
+          !params.clientOnboarder
+        ) {
+          throw new Error(
+            'operator, provider, compliance, registrar, and clientOnboarder are required for cantonParticipantOnboardingRequest intent'
+          );
+        }
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'cantonParticipantOnboardingRequest',
+            operator: params.operator,
+            provider: params.provider,
+            compliance: params.compliance,
+            registrar: params.registrar,
+            clientOnboarder: params.clientOnboarder,
+            expirationIso: params.expirationIso,
+            comment: params.comment,
+            sequenceId: params.sequenceId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
       case 'cantonCommand': {
         if (!params.cantonCommandParams) {
           throw new Error('cantonCommandParams is required for cantonCommand intent');

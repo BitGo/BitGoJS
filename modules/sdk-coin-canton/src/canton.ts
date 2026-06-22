@@ -465,5 +465,29 @@ export class Canton extends BaseCoin {
     if (params.cantonCommandParams) {
       intent.cantonCommandParams = params.cantonCommandParams;
     }
+    if (params.endInvestorPartyId) {
+      intent.endInvestorPartyId = params.endInvestorPartyId;
+    }
+    if (params.reason) {
+      intent.reason = params.reason;
+    }
+    if (params.operator) {
+      intent.operator = params.operator;
+    }
+    if (params.provider) {
+      intent.provider = params.provider;
+    }
+    if (params.compliance) {
+      intent.compliance = params.compliance;
+    }
+    if (params.registrar) {
+      intent.registrar = params.registrar;
+    }
+    if (params.clientOnboarder) {
+      intent.clientOnboarder = params.clientOnboarder;
+    }
+    if (params.expirationIso) {
+      intent.expirationIso = params.expirationIso;
+    }
   }
 }
