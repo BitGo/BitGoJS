@@ -1,0 +1,20 @@
+name: nightshift-task
+run-name: 'nightshift: ${{ inputs.task_type }}'
+
+on:
+  workflow_dispatch:
+    inputs:
+      task_type:
+        description: 'Task type to run'
+        required: true
+        type: string
+
+jobs:
+  run:
+    uses: BitGo/nightshift-actions/.github/workflows/nightshift-task.yaml@v1
+    with:
+      task_type: ${{ inputs.task_type }}
+      provider: bedrock
+      sign_commits: true
+    secrets:
+      VAULT_CF_ACCESS_CLIENT_SECRET: ${{ secrets.VAULT_CF_ACCESS_CLIENT_SECRET }}
