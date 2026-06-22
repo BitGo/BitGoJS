@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { common, FullySignedTransaction, HalfSignedTransaction, TransactionType } from '@bitgo/sdk-core';
-import { OfflineVaultTxInfo, TransferBuilder } from '@bitgo/abstract-eth';
+import { common, FullySignedTransaction, HalfSignedTransaction, TransactionType, Util } from '@bitgo/sdk-core';
+import { OfflineVaultTxInfo, optionalDeps, TransferBuilder } from '@bitgo/abstract-eth';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { bip32 } from '@bitgo/secp256k1';
 import nock from 'nock';
@@ -356,6 +356,69 @@ describe('EthLikeCoin', function () {
       assert(transaction.txHex);
       assert(transaction.contractSequenceId);
       assert.strictEqual(transaction.gasLimit, '500000');
+    });
+
+    it('should support external signing recovery via buildRecoveryTxForBackupSigning and finalizeRecoveryTx', async function () {
+      const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
+      const backupKeyAddress = '0x4f2c4830cc37f2785c646f89ded8a919219fa0e9';
+      const userXprv =
+        'xprv9s21ZrQH143K2AP925b8zB8evEQ4JvYCsqZQKPcp4gopaN81TzUxEW8bPtVyDgjmddGhRRETn8xi1cVAB9bf1Bx9kGRRFgTZXxJayZLnag1';
+      const backupXprv =
+        'xprv9s21ZrQH143K35SXywHZHvHgeETE5yaumd9bGbHQRBx3Q4JQew5JFGBvzqiZjCUkBdBUZnfuMDTGURRayN1hFSWxEJQsCEAMm1D3pk1h7Jj';
+
+      nock(baseUrl)
+        .get('/api')
+        .twice()
+        .query(mockData.getTxListRequest(backupKeyAddress))
+        .reply(200, mockData.getTxListResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getBalanceRequest(walletContractAddress))
+        .reply(200, mockData.getBalanceResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getBalanceRequest(backupKeyAddress))
+        .reply(200, mockData.getBalanceResponse);
+      nock(baseUrl).get('/api').query(mockData.getContractCallRequest).reply(200, mockData.getContractCallResponse);
+
+      const baseCoin = bitgo.coin('tbaseeth') as TethLikeCoin;
+      const unsignedSweep = (await baseCoin.recover({
+        userKey: userXpub,
+        backupKey: backupXpub,
+        walletContractAddress: walletContractAddress,
+        recoveryDestination: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT as string,
+        eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+        gasLimit: 500000,
+        common: baseChainCommon,
+      })) as OfflineVaultTxInfo & { expireTime: number; contractSequenceId: number };
+
+      const operationHash = baseCoin.getOperationSha3ForExecuteAndConfirm(
+        unsignedSweep.recipients,
+        unsignedSweep.expireTime,
+        unsignedSweep.contractSequenceId ?? unsignedSweep.nextContractSequenceId
+      );
+      const userSignature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userXprv));
+
+      const { txHash, txHex } = await baseCoin.buildRecoveryTxForBackupSigning(unsignedSweep, userSignature);
+      assert(txHash);
+      assert(txHex);
+
+      const backupPrivateKey = bip32.fromBase58(backupXprv).privateKey!;
+      const hashBuffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(txHash), 'hex');
+      const sigParts = optionalDeps.ethUtil.ecsign(hashBuffer, backupPrivateKey);
+      const r = optionalDeps.ethUtil.setLengthLeft(sigParts.r, 32).toString('hex');
+      const s = optionalDeps.ethUtil.setLengthLeft(sigParts.s, 32).toString('hex');
+      const v = optionalDeps.ethUtil.stripHexPrefix(optionalDeps.ethUtil.intToHex(sigParts.v));
+      const backupSignature = optionalDeps.ethUtil.addHexPrefix(r.concat(s, v));
+
+      const signedTxHex = await baseCoin.finalizeRecoveryTx(txHex, backupSignature);
+      assert(signedTxHex);
+
+      const txBuilder = getBuilder('tbaseeth', baseChainCommon) as EthLikeTransactionBuilder;
+      txBuilder.from(signedTxHex);
+      const rebuiltTx = await txBuilder.build();
+      assert.strictEqual(rebuiltTx.signature.length, 2);
+      assert.strictEqual(rebuiltTx.outputs.length, 1);
     });
   });
 

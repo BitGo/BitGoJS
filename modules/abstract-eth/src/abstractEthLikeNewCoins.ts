@@ -87,6 +87,8 @@ import {
   getRawDecoded,
   getToken,
   KeyPair as KeyPairLib,
+  sendMultiSigData,
+  sendMultiSigTokenData,
   TransactionBuilder,
   TransferBuilder,
 } from './lib';
@@ -218,6 +220,8 @@ export interface OfflineVaultTxInfo {
   feesUsed?: FeesUsed;
   isEvmBasedCrossChainRecovery?: boolean;
   walletVersion?: number;
+  expireTime?: number;
+  operationHash?: string;
 }
 
 interface UnformattedTxInfo {
@@ -1635,6 +1639,144 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       id: signedTx.toJson().id,
       tx: signedTx.toBroadcastFormat(),
     };
+  }
+
+  /**
+   * Injects a user signature into recovery calldata and builds an unsigned EIP-1559 (or legacy) tx
+   * for the backup key to sign. Used by external signing flows (e.g. AWM) during multisig recovery
+   * when isUnsignedSweep is true.
+   *
+   * @param unsignedSweepPrebuildTx - OfflineVaultTxInfo from recover() with isUnsignedSweep
+   * @param userSignature - ECDSA signature of the operation hash from the user key
+   * @returns txHash for the backup key to sign, and unsigned txHex for finalizeRecoveryTx
+   */
+  async buildRecoveryTxForBackupSigning(
+    unsignedSweepPrebuildTx: OfflineVaultTxInfo,
+    userSignature: string
+  ): Promise<{ txHash: string; txHex: string }> {
+    if (!userSignature) {
+      throw new Error('missing userSignature');
+    }
+
+    const serializedTxHex = unsignedSweepPrebuildTx.txHex ?? unsignedSweepPrebuildTx.tx;
+    if (!serializedTxHex) {
+      throw new Error('missing txHex');
+    }
+
+    const replayProtectionOptions =
+      unsignedSweepPrebuildTx.replayProtectionOptions ??
+      ({
+        chain: this.getChainId(),
+        hardfork: unsignedSweepPrebuildTx.eip1559 ? 'london' : optionalDeps.EthCommon.Hardfork.Petersburg,
+      } as ReplayProtectionOptions);
+
+    const ethCommon = AbstractEthLikeNewCoins.getEthLikeCommon(
+      unsignedSweepPrebuildTx.eip1559,
+      replayProtectionOptions
+    );
+    const txBuffer = optionalDeps.ethUtil.toBuffer(serializedTxHex);
+
+    let unsignedTx: EthLikeTxLib.FeeMarketEIP1559Transaction | EthLikeTxLib.Transaction;
+    if (unsignedSweepPrebuildTx.eip1559) {
+      unsignedTx = FeeMarketEIP1559Transaction.fromSerializedTx(txBuffer, { common: ethCommon });
+    } else {
+      unsignedTx = LegacyTransaction.fromSerializedTx(txBuffer, { common: ethCommon });
+    }
+
+    if (!unsignedTx.to) {
+      throw new Error('unsigned recovery tx is missing to address');
+    }
+
+    const dataHex = optionalDeps.ethUtil.bufferToHex(unsignedTx.data);
+    const transferData = decodeTransferData(dataHex);
+
+    const newDataHex = transferData.tokenContractAddress
+      ? sendMultiSigTokenData(
+          transferData.to,
+          transferData.amount,
+          transferData.tokenContractAddress,
+          transferData.expireTime,
+          transferData.sequenceId,
+          userSignature
+        )
+      : sendMultiSigData(
+          transferData.to,
+          transferData.amount,
+          transferData.data ?? '0x',
+          transferData.expireTime,
+          transferData.sequenceId,
+          userSignature
+        );
+
+    const buildParams: BuildTransactionParams = {
+      to: unsignedTx.to.toString(),
+      nonce: unsignedTx.nonce.toNumber(),
+      value: 0,
+      data: Buffer.from(optionalDeps.ethUtil.stripHexPrefix(newDataHex), 'hex'),
+      gasLimit: unsignedTx.gasLimit.toNumber(),
+      eip1559: unsignedSweepPrebuildTx.eip1559,
+      replayProtectionOptions,
+    };
+
+    if (!unsignedSweepPrebuildTx.eip1559) {
+      const legacyTx = unsignedTx as EthLikeTxLib.Transaction;
+      buildParams.gasPrice = legacyTx.gasPrice.toNumber();
+    }
+
+    const rebuiltTx = AbstractEthLikeNewCoins.buildTransaction(buildParams);
+
+    return {
+      txHash: optionalDeps.ethUtil.bufferToHex(Buffer.from(rebuiltTx.getMessageToSign(true))),
+      txHex: addHexPrefix(rebuiltTx.serialize().toString('hex')),
+    };
+  }
+
+  /**
+   * Attaches the backup key signature to an unsigned recovery tx and returns broadcast-ready tx hex.
+   * Used by external signing flows (e.g. AWM) as the final step of multisig recovery.
+   *
+   * @param txHex - unsigned tx hex from buildRecoveryTxForBackupSigning
+   * @param backupSignature - ECDSA signature of txHash from the backup key (r+s+v, v is 27/28 or 0/1)
+   * @returns fully signed, broadcast-ready transaction hex
+   */
+  async finalizeRecoveryTx(txHex: string, backupSignature: string): Promise<string> {
+    if (!txHex) {
+      throw new Error('missing txHex');
+    }
+    if (!backupSignature) {
+      throw new Error('missing backupSignature');
+    }
+
+    const txBuffer = optionalDeps.ethUtil.toBuffer(txHex);
+    const isEip1559 = txBuffer.length > 0 && txBuffer[0] === 0x02;
+    const ethCommon = AbstractEthLikeNewCoins.getCustomChainCommon(this.getChainId());
+    ethCommon.setHardfork(isEip1559 ? 'london' : optionalDeps.EthCommon.Hardfork.Petersburg);
+
+    let unsignedTx: EthLikeTxLib.FeeMarketEIP1559Transaction | EthLikeTxLib.Transaction;
+    if (isEip1559) {
+      unsignedTx = FeeMarketEIP1559Transaction.fromSerializedTx(txBuffer, { common: ethCommon });
+    } else {
+      unsignedTx = LegacyTransaction.fromSerializedTx(txBuffer, { common: ethCommon });
+    }
+
+    const signedTx = this.getSignedTxFromSignature(ethCommon, unsignedTx, this.parseEcdsaSignature(backupSignature));
+
+    return addHexPrefix(signedTx.serialize().toString('hex'));
+  }
+
+  /**
+   * Parse a 65-byte ECDSA signature (r+s+v) into the format used by getSignedTxFromSignature.
+   */
+  private parseEcdsaSignature(signature: string): ECDSAMethodTypes.Signature {
+    const sigBuffer = Buffer.from(stripHexPrefix(signature), 'hex');
+    if (sigBuffer.length !== 65) {
+      throw new Error(`Invalid signature length: expected 65 bytes, got ${sigBuffer.length}`);
+    }
+    const r = addHexPrefix(sigBuffer.subarray(0, 32).toString('hex'));
+    const s = addHexPrefix(sigBuffer.subarray(32, 64).toString('hex'));
+    const v = sigBuffer[64];
+    const recid = v > 1 ? v - 27 : v;
+    return { r, s, recid } as ECDSAMethodTypes.Signature;
   }
 
   /**
