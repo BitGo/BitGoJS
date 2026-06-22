@@ -69,6 +69,7 @@ export class Transaction extends BaseTransaction {
 
       this._starknetTransactionData = {
         senderAddress: parsed.senderAddress,
+        contractAddress: parsed.contractAddress,
         calls: parsed.calls || [],
         nonce: parsed.nonce,
         chainId: parsed.chainId,
