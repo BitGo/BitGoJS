@@ -53,20 +53,6 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
   private static readonly MPS_DSG_SIGNING_ROUND1_STATE = 'MPS_DSG_SIGNING_ROUND1_STATE';
   private static readonly MPS_DSG_SIGNING_ROUND2_STATE = 'MPS_DSG_SIGNING_ROUND2_STATE';
 
-  async isEddsaMpcV1SigningMaterial(encryptedKeyShare: string, walletPassphrase: string): Promise<boolean> {
-    try {
-      const prv = await this.bitgo.decryptAsync({ input: encryptedKeyShare, password: walletPassphrase });
-      const signingMaterial = JSON.parse(prv);
-      return (
-        typeof signingMaterial?.uShare?.seed === 'string' &&
-        typeof signingMaterial?.bitgoYShare?.u === 'string' &&
-        (typeof signingMaterial?.backupYShare?.u === 'string' || typeof signingMaterial?.userYShare?.u === 'string')
-      );
-    } catch {
-      return false;
-    }
-  }
-
   /** @inheritdoc */
   async createKeychains(params: {
     passphrase: string;
@@ -929,6 +915,41 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 }
 
 /**
+ * Detect whether an encrypted keycard contains MPCv1 signing material.
+ *
+ * Decrypts the keycard and checks for the JSON shape produced by the MPCv1 TSS
+ * key-generation flow (uShare.seed + bitgoYShare.u + backupYShare.u / userYShare.u).
+ * Returns false for MPCv2 CBOR keycards, wrong passwords, or any decryption error.
+ *
+ * @param encryptedKeyShare encrypted user or backup keycard
+ * @param walletPassphrase passphrase used to encrypt the keycard
+ * @param bitgo optional BitGoBase instance; when provided, decrypts via
+ *   bitgo.decryptAsync (supports both v1 SJCL and v2 Argon2id envelopes);
+ *   when absent, falls back to sjcl.decrypt (v1 only)
+ */
+export async function isEddsaMpcV1SigningMaterial(
+  encryptedKeyShare: string,
+  walletPassphrase: string,
+  bitgo?: BitGoBase
+): Promise<boolean> {
+  const prv = bitgo
+    ? await bitgo.decryptAsync({ input: encryptedKeyShare, password: walletPassphrase })
+    : sjcl.decrypt(walletPassphrase, encryptedKeyShare);
+
+  try {
+    const m = JSON.parse(prv);
+    return (
+      typeof m?.uShare?.seed === 'string' &&
+      typeof m?.bitgoYShare?.u === 'string' &&
+      (typeof m?.backupYShare?.u === 'string' || typeof m?.userYShare?.u === 'string')
+    );
+  } catch {
+    // JSON parse error indicates MPCv2 CBOR format, not JSON.
+    return false;
+  }
+}
+
+/**
  * Get EdDSA MPCv2 recovery key shares from encrypted reduced user and backup keys.
  *
  * The encrypted inputs are the `reducedEncryptedPrv` values stored on EdDSA MPCv2
@@ -1031,3 +1052,9 @@ export function signRecoveryEddsaMPCv2(
 
   return signature;
 }
+
+export const EddsaMPCv2RecoveryFunctions = {
+  isEddsaMpcV1SigningMaterial,
+  getEddsaMpcV2RecoveryKeySharesFromReducedKey,
+  signRecoveryEddsaMPCv2,
+};

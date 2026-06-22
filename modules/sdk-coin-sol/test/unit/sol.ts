@@ -9,6 +9,7 @@ import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import {
   common,
+  EDDSAUtils,
   Environments,
   generateRandomPassword,
   IWallet,
@@ -2777,6 +2778,311 @@ describe('SOL:', function () {
           ownerAtaAddress: 'Zfm98ZpVafydhFTYcsY6bHgubhB4cFgWFvbdEJxYhTA',
         })
         .should.be.rejectedWith('invalid tokenMintAddress');
+    });
+  });
+
+  describe('Recover Transactions (MPCv2):', () => {
+    const mpcV2SandBox = sinon.createSandbox();
+    // MPCv2-derived address for wrwUser.bitgoKey at m/0 via deriveUnhardenedMps
+    const mpcV2WalletAddress = '4nPsUgktdtrPBf3V8GojBukffEbYPq7sQ15gSRNztk1n';
+    const usdtMintAddress = '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C';
+    const t22mintAddress = '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6';
+    const token22ProgramId = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb';
+    let callBack: sinon.SinonStub;
+
+    beforeEach(() => {
+      callBack = mpcV2SandBox.stub(Sol.prototype, 'getDataFromNode' as keyof Sol);
+
+      callBack
+        .withArgs({
+          payload: { id: '1', jsonrpc: '2.0', method: 'getLatestBlockhash', params: [{ commitment: 'finalized' }] },
+        })
+        .resolves(testData.SolResponses.getBlockhashResponse);
+
+      // MPCv2 derives address via deriveUnhardenedMps — different from MPCv1's MPC.deriveUnhardened.
+      // Derived from testData.keys.bitgoKey at m/0 using deriveUnhardenedMps.
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getBalance',
+            params: ['6UhWoz6WMtnk1quBibd7KAuoshvSL7vSiPe3ycDw2Kh6'],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponse);
+
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getFeeForMessage',
+            params: [sinon.match.string, { commitment: 'finalized' }],
+          },
+        })
+        .resolves(testData.SolResponses.getFeesForMessageResponse);
+
+      callBack
+        .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getMinimumBalanceForRentExemption', params: [165] } })
+        .resolves(testData.SolResponses.getMinimumBalanceForRentExemptionResponse);
+
+      // The stub signature (Buffer.alloc(64)) is not a valid Ed25519 signature so Solana's
+      // serializer would reject it. Bypass the check by returning a fixed hex string.
+      mpcV2SandBox.stub(Transaction.prototype, 'toBroadcastFormat').returns('stub-serialized-tx');
+    });
+
+    afterEach(() => {
+      mpcV2SandBox.restore();
+    });
+
+    it('should route to MPCv2 path for native SOL recovery when keycard is MPCv2', async function () {
+      mpcV2SandBox.stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'isEddsaMpcV1SigningMaterial').resolves(false);
+      const getSharesStub = mpcV2SandBox
+        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'getEddsaMpcV2RecoveryKeySharesFromReducedKey')
+        .resolves({
+          userKeyShare: Buffer.alloc(32),
+          backupKeyShare: Buffer.alloc(32),
+          commonKeyChain: testData.keys.bitgoKey.replace(/\s/g, ''),
+        });
+      const signMpcV2Stub = mpcV2SandBox
+        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'signRecoveryEddsaMPCv2')
+        .returns(Buffer.alloc(64));
+
+      const result = await basecoin.recover({
+        userKey: testData.keys.userKey,
+        backupKey: testData.keys.backupKey,
+        bitgoKey: testData.keys.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey,
+        walletPassphrase: testData.keys.walletPassword,
+      });
+
+      result.should.not.be.empty();
+      result.should.hasOwnProperty('serializedTx');
+      result.should.hasOwnProperty('scanIndex');
+      should.equal((result as MPCTx).scanIndex, 0);
+      mpcV2SandBox.assert.calledOnce(getSharesStub);
+      mpcV2SandBox.assert.calledOnce(signMpcV2Stub);
+    });
+
+    it('should throw when MPCv2 commonKeyChain does not match bitgoKey', async function () {
+      mpcV2SandBox.stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'isEddsaMpcV1SigningMaterial').resolves(false);
+      mpcV2SandBox
+        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'getEddsaMpcV2RecoveryKeySharesFromReducedKey')
+        .resolves({
+          userKeyShare: Buffer.alloc(32),
+          backupKeyShare: Buffer.alloc(32),
+          commonKeyChain: 'deadbeef'.repeat(16), // deliberate mismatch
+        });
+
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          bitgoKey: testData.keys.bitgoKey,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword,
+        })
+        .should.be.rejectedWith('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+    });
+
+    it('should route to MPCv2 path for SPL token recovery when keycard is MPCv2', async function () {
+      callBack
+        .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [mpcV2WalletAddress] } })
+        .resolves(testData.SolResponses.getAccountBalanceResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              mpcV2WalletAddress,
+              { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+              { encoding: 'jsonParsed' },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              testData.keys.destinationPubKey,
+              { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+              { encoding: 'jsonParsed' },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponseNoAccounts);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getAccountInfo',
+            params: [testData.keys.durableNoncePubKey, { encoding: 'jsonParsed' }],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountInfoResponse);
+
+      mpcV2SandBox.stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'isEddsaMpcV1SigningMaterial').resolves(false);
+      const getSharesStub = mpcV2SandBox
+        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'getEddsaMpcV2RecoveryKeySharesFromReducedKey')
+        .resolves({
+          userKeyShare: Buffer.alloc(32),
+          backupKeyShare: Buffer.alloc(32),
+          commonKeyChain: testData.wrwUser.bitgoKey.replace(/\s/g, ''),
+        });
+      const signMpcV2Stub = mpcV2SandBox
+        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'signRecoveryEddsaMPCv2')
+        .returns(Buffer.alloc(64));
+
+      const result = await basecoin.recover({
+        userKey: testData.wrwUser.userKey,
+        backupKey: testData.wrwUser.backupKey,
+        bitgoKey: testData.wrwUser.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey,
+        tokenContractAddress: usdtMintAddress,
+        walletPassphrase: testData.wrwUser.walletPassphrase,
+        durableNonce: {
+          publicKey: testData.keys.durableNoncePubKey,
+          secretKey: testData.keys.durableNoncePrivKey,
+        },
+      });
+
+      result.should.not.be.empty();
+      result.should.hasOwnProperty('serializedTx');
+      result.should.hasOwnProperty('scanIndex');
+      should.equal((result as MPCTx).scanIndex, 0);
+      mpcV2SandBox.assert.calledOnce(getSharesStub);
+      mpcV2SandBox.assert.calledOnce(signMpcV2Stub);
+    });
+
+    it('should route to MPCv2 path for Token-2022 recovery and preserve programId', async function () {
+      callBack
+        .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [mpcV2WalletAddress] } })
+        .resolves(testData.SolResponses.getAccountBalanceResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [mpcV2WalletAddress, { programId: token22ProgramId }, { encoding: 'jsonParsed' }],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerForSol2022Response);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [testData.keys.destinationPubKey, { programId: token22ProgramId }, { encoding: 'jsonParsed' }],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponseNoAccounts);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getAccountInfo',
+            params: [testData.keys.durableNoncePubKey, { encoding: 'jsonParsed' }],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountInfoResponse);
+
+      mpcV2SandBox.stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'isEddsaMpcV1SigningMaterial').resolves(false);
+      const getSharesStub = mpcV2SandBox
+        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'getEddsaMpcV2RecoveryKeySharesFromReducedKey')
+        .resolves({
+          userKeyShare: Buffer.alloc(32),
+          backupKeyShare: Buffer.alloc(32),
+          commonKeyChain: testData.wrwUser.bitgoKey.replace(/\s/g, ''),
+        });
+      const signMpcV2Stub = mpcV2SandBox
+        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'signRecoveryEddsaMPCv2')
+        .returns(Buffer.alloc(64));
+
+      const result = await basecoin.recover({
+        userKey: testData.wrwUser.userKey,
+        backupKey: testData.wrwUser.backupKey,
+        bitgoKey: testData.wrwUser.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey,
+        tokenContractAddress: t22mintAddress,
+        programId: token22ProgramId,
+        walletPassphrase: testData.wrwUser.walletPassphrase,
+        durableNonce: {
+          publicKey: testData.keys.durableNoncePubKey,
+          secretKey: testData.keys.durableNoncePrivKey,
+        },
+      });
+
+      result.should.not.be.empty();
+      result.should.hasOwnProperty('serializedTx');
+      result.should.hasOwnProperty('scanIndex');
+      should.equal((result as MPCTx).scanIndex, 0);
+      mpcV2SandBox.assert.calledOnce(getSharesStub);
+      mpcV2SandBox.assert.calledOnce(signMpcV2Stub);
+    });
+
+    it('should apply durable nonce account signature when keycard is MPCv2', async function () {
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getBalance',
+            params: ['6UhWoz6WMtnk1quBibd7KAuoshvSL7vSiPe3ycDw2Kh6'],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getAccountInfo',
+            params: [testData.keys.durableNoncePubKey, { encoding: 'jsonParsed' }],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountInfoResponse);
+
+      mpcV2SandBox.stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'isEddsaMpcV1SigningMaterial').resolves(false);
+      const getSharesStub = mpcV2SandBox
+        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'getEddsaMpcV2RecoveryKeySharesFromReducedKey')
+        .resolves({
+          userKeyShare: Buffer.alloc(32),
+          backupKeyShare: Buffer.alloc(32),
+          commonKeyChain: testData.keys.bitgoKey.replace(/\s/g, ''),
+        });
+      const signMpcV2Stub = mpcV2SandBox
+        .stub(EDDSAUtils.EddsaMPCv2RecoveryFunctions, 'signRecoveryEddsaMPCv2')
+        .returns(Buffer.alloc(64));
+
+      const result = await basecoin.recover({
+        userKey: testData.keys.userKey,
+        backupKey: testData.keys.backupKey,
+        bitgoKey: testData.keys.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey,
+        walletPassphrase: testData.keys.walletPassword,
+        durableNonce: {
+          publicKey: testData.keys.durableNoncePubKey,
+          secretKey: testData.keys.durableNoncePrivKey,
+        },
+      });
+
+      result.should.not.be.empty();
+      result.should.hasOwnProperty('serializedTx');
+      result.should.hasOwnProperty('scanIndex');
+      should.equal((result as MPCTx).scanIndex, 0);
+      mpcV2SandBox.assert.calledOnce(getSharesStub);
+      mpcV2SandBox.assert.calledOnce(signMpcV2Stub);
     });
   });
 
