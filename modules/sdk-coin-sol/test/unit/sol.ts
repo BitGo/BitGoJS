@@ -4189,6 +4189,29 @@ describe('SOL:', function () {
     it('should throw if keychains are missing', async function () {
       await assert.rejects(async () => await basecoin.deriveAddress({ keychains: [], index: 0 }), /keychains/);
     });
+
+    it('should derive the SPL token (ATA) address when tokenName is given', async function () {
+      // owner = native address at index 1 (7YAesf…); ATA for sol:usdc:
+      const result = await basecoin.deriveAddress({ keychains, index: 1, tokenName: 'sol:usdc' });
+      result.address.should.equal('FG1XMJdXBQ5uYaNoKposABg6erxsvzbwC283W2ipnjQB');
+      result.address.should.not.equal(address); // not the native address
+      result.index.should.equal(1);
+    });
+
+    it('the derived token ATA matches getAssociatedTokenAccountAddress for the owner+mint', async function () {
+      const native = await basecoin.deriveAddress({ keychains, index: 3 });
+      const token = await basecoin.deriveAddress({ keychains, index: 3, tokenName: 'sol:usdc' });
+      const mint = (coins.get('sol:usdc') as unknown as { tokenAddress: string }).tokenAddress;
+      const expectedAta = await getAssociatedTokenAccountAddress(mint, native.address, true);
+      token.address.should.equal(expectedAta);
+    });
+
+    it('should throw for an unknown token name', async function () {
+      await assert.rejects(
+        async () => await basecoin.deriveAddress({ keychains, index: 1, tokenName: 'sol:not-a-real-token' }),
+        /unknown or unsupported SOL token/
+      );
+    });
   });
 
   describe('getAddressFromPublicKey', () => {
