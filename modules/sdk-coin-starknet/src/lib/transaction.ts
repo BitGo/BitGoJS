@@ -50,7 +50,9 @@ export class Transaction extends BaseTransaction {
   }
 
   get signableHex(): string {
-    return this._starknetTransactionData?.transactionHash || '';
+    const hash = this._starknetTransactionData?.transactionHash;
+    if (!hash) return '';
+    return hash.replace(/^0x/i, '').padStart(64, '0');
   }
 
   get signedTransaction(): string | undefined {
