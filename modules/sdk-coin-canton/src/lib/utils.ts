@@ -308,6 +308,30 @@ export class Utils implements BaseUtils {
         break;
       }
 
+      case TransactionType.AllocationAllocateWithdrawn: {
+        // Holding create node → owner=sender=receiver (allocating party gets their holding back),
+        // instrument.{source=admin, id}, amount
+        const holdingFields = findCreateNodeFields('Holding');
+        if (holdingFields) {
+          const ownerData = getField(holdingFields, 'owner');
+          if (ownerData?.oneofKind === 'party') {
+            receiver = ownerData.party ?? '';
+            sender = receiver;
+          }
+          const amountData = getField(holdingFields, 'amount');
+          if (amountData?.oneofKind === 'numeric') amount = amountData.numeric ?? '';
+          const instrumentData = getField(holdingFields, 'instrument');
+          if (instrumentData?.oneofKind === 'record') {
+            const instrumentFields = instrumentData.record?.fields ?? [];
+            const sourceData = getField(instrumentFields, 'source');
+            if (sourceData?.oneofKind === 'party') instrumentAdmin = sourceData.party ?? '';
+            const idData = getField(instrumentFields, 'id');
+            if (idData?.oneofKind === 'text') instrumentId = idData.text ?? '';
+          }
+        }
+        break;
+      }
+
       case TransactionType.AllocationAllocate: {
         // DvpLegAllocation create node → allocation.transferLeg contains the full settlement transfer details:
         // sender, receiver (the actual settlement counterparty), amount, and instrumentId

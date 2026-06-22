@@ -6,6 +6,7 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { AllocationAllocateBuilder } from './allocationAllocateBuilder';
+import { AllocationAllocateWithdrawnBuilder } from './allocationAllocateWithdrawnBuilder';
 import { AllocationRequestBuilder } from './allocationRequestBuilder';
 import { CantonCommandBuilder } from './cantonCommandBuilder';
 import { CosignDelegationAcceptBuilder } from './cosignDelegationAcceptBuilder';
@@ -62,6 +63,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         case TransactionType.AllocationAllocate: {
           return this.getAllocationAllocateBuilder(tx);
         }
+        case TransactionType.AllocationAllocateWithdrawn: {
+          return this.getAllocationAllocateWithdrawnBuilder(tx);
+        }
         case TransactionType.AllocationRequest: {
           return this.getAllocationRequestBuilder(tx);
         }
@@ -77,6 +81,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getAllocationAllocateBuilder(tx?: Transaction): AllocationAllocateBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new AllocationAllocateBuilder(this._coinConfig));
+  }
+
+  getAllocationAllocateWithdrawnBuilder(tx?: Transaction): AllocationAllocateWithdrawnBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new AllocationAllocateWithdrawnBuilder(this._coinConfig));
   }
 
   getAllocationRequestBuilder(tx?: Transaction): AllocationRequestBuilder {
