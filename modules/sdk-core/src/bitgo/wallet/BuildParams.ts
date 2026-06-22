@@ -105,6 +105,8 @@ export const BuildParams = t.exact(
       sourceChain: t.unknown,
       destinationChain: t.unknown,
       trustlines: t.unknown,
+      accountConfig: t.unknown,
+      authorizeTrustline: t.unknown,
       type: t.unknown,
       limit: t.unknown,
       timeBounds: t.unknown,
