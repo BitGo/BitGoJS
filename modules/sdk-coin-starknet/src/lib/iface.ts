@@ -40,6 +40,8 @@ export interface StarknetTransactionData {
   constructorCalldata?: string[];
   /** DEPLOY_ACCOUNT: address salt derived from pubkey. */
   contractAddressSalt?: string;
+  /** DEPLOY_ACCOUNT: deployed contract address (== senderAddress). Required by HSM firmware. */
+  contractAddress?: string;
 }
 
 export interface InvokeTransactionHashParams {

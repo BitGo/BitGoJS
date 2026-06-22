@@ -83,6 +83,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
 
     const data: StarknetTransactionData = {
       senderAddress: contractAddress,
+      contractAddress,
       calls: [],
       nonce,
       chainId,
