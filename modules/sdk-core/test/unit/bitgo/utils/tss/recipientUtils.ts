@@ -126,6 +126,13 @@ describe('recipientUtils', function () {
       }
     });
 
+    it('does not throw when buildParams.type is PascalCase but intent.intentType is lowercase', function () {
+      // signTransactionTss passes txPrebuild.buildParams as txParams. Prebuild uses
+      // type: 'Import' while WP stores intentType: 'import' on the txRequest.
+      const txRequest = makeTxRequest({ intent: { intentType: 'import', recipients: [] } as any });
+      assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, { type: 'Import', recipients: [] }));
+    });
+
     it('throws InvalidTransactionError for unknown types with no recipients', function () {
       const txRequest = makeTxRequest();
       assert.throws(

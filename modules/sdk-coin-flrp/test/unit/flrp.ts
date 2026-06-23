@@ -940,6 +940,19 @@ describe('Flrp test cases', function () {
         isVerified.should.equal(true);
       });
 
+      it('should verify MPC ImportInP transaction when txParams.type is the "import" intent alias', async () => {
+        const txHex = await buildUnsignedImportInP();
+        const txPrebuild = { txHex, txInfo: {} };
+        const txParams = {
+          recipients: [],
+          type: 'import',
+          locktime: 0,
+        };
+
+        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        isVerified.should.equal(true);
+      });
+
       it('should verify MPC ExportInP transaction', async () => {
         const txHex = await buildUnsignedExportInP();
         const txPrebuild = { txHex, txInfo: {} };
