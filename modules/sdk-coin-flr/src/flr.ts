@@ -19,10 +19,12 @@ import {
   common,
   FeeEstimateOptions,
   IWallet,
+  isAvalancheAtomicTx,
   MPCAlgorithm,
   MultisigType,
   multisigTypes,
   Recipient,
+  SignableTransaction,
   TransactionExplanation,
   Entry,
 } from '@bitgo/sdk-core';
@@ -83,6 +85,16 @@ export class Flr extends AbstractEthLikeNewCoins {
   /** @inheritDoc */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
+  }
+
+  /**
+   * Returns true when the signableHex for this transaction is already the
+   * final signing hash. Cross-chain export atomic transactions from FLR
+   * C-chain to FLRP P-chain are pre-hashed with SHA-256(txBody); the MPC
+   * signing flow must use that digest directly without applying keccak256.
+   */
+  isSignablePreHashed(unsignedTx: SignableTransaction): boolean {
+    return isAvalancheAtomicTx(unsignedTx);
   }
 
   protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
