@@ -15,12 +15,12 @@ export class TransactionBuilder extends AbstractTransactionBuilder {
   }
 
   /** @inheritdoc */
-  transfer(data?: string): TransferBuilder {
+  transfer(data?: string, isFirstSigner?: boolean): TransferBuilder {
     if (this._type !== TransactionType.Send) {
       throw new BuildTransactionError('Transfers can only be set for send transactions');
     }
     if (!this._transfer) {
-      this._transfer = new TransferBuilder(data);
+      this._transfer = new TransferBuilder(data, isFirstSigner);
     }
     return this._transfer;
   }
