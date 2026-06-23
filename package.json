@@ -114,7 +114,7 @@
     "**/avalanche/**/ws": "8.18.3",
     "**/ethers/**/ws": "7.5.10",
     "**/swarm-js/**/ws": "5.2.4",
-    "tar": "7.5.16",
+    "**/swarm-js/**/tar": "6.2.1",
     "serialize-javascript": "7.0.5",
     "@grpc/grpc-js": "^1.14.4",
     "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10",
@@ -139,8 +139,7 @@
     "react-router-dom": "6.30.4",
     "webpack": "5.107.2",
     "@babel/core": "^7.29.7",
-    "minimatch": "9.0.9",
-    "@stablelib/ed25519": "2.1.0"
+    "minimatch": "9.0.9"
   },
   "workspaces": [
     "modules/*"
