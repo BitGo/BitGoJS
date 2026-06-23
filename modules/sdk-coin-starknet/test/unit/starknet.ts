@@ -87,6 +87,10 @@ describe('Starknet', function () {
     it('should return ECDSA as MPC algorithm', function () {
       basecoin.getMPCAlgorithm().should.equal('ecdsa');
     });
+
+    it('should identify as pre-hashed signable', function () {
+      basecoin.isSignablePreHashed({} as any).should.equal(true);
+    });
   });
 
   describe('Key pair generation', () => {
