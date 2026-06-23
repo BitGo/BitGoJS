@@ -4,6 +4,7 @@ import * as Interface from './iface';
 export { CantonCommandBuilder } from './cantonCommandBuilder';
 export { AllocationAllocateBuilder } from './allocationAllocateBuilder';
 export { AllocationAllocateWithdrawnBuilder } from './allocationAllocateWithdrawnBuilder';
+export { AllocationRejectBuilder } from './allocationRejectBuilder';
 export { AllocationRequestBuilder } from './allocationRequestBuilder';
 export { CosignDelegationAcceptBuilder } from './cosignDelegationAcceptBuilder';
 export { CosignDelegationProposalBuilder } from './cosignDelegationProposalBuilder';

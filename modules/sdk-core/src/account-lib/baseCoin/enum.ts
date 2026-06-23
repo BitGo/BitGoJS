@@ -107,6 +107,8 @@ export enum TransactionType {
   AllocationAllocateWithdrawn,
   // canton allocation request (internal/dummy txRequest surfacing DvP trade details to the allocating party)
   AllocationRequest,
+  // canton allocation reject
+  AllocationReject,
   // canton generic DAML command
   CantonCommand,
 
