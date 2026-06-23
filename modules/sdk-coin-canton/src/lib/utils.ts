@@ -375,6 +375,43 @@ export class Utils implements BaseUtils {
         break;
       }
 
+      case TransactionType.AllocationReject: {
+        // RejectedDvp create node → dvp.{seller=sender, buyer=receiver, terms.deliveries[0].{amount, instrument.{admin, id}}}
+        const rejectedDvpFields = findCreateNodeFields('RejectedDvp');
+        if (rejectedDvpFields) {
+          const dvpField = getField(rejectedDvpFields, 'dvp');
+          if (dvpField?.oneofKind === 'record') {
+            const dvpFields = dvpField.record?.fields ?? [];
+            const sellerData = getField(dvpFields, 'seller');
+            if (sellerData?.oneofKind === 'party') sender = sellerData.party ?? '';
+            const buyerData = getField(dvpFields, 'buyer');
+            if (buyerData?.oneofKind === 'party') receiver = buyerData.party ?? '';
+            const termsField = getField(dvpFields, 'terms');
+            if (termsField?.oneofKind === 'record') {
+              const termsFields = termsField.record?.fields ?? [];
+              const deliveriesField = getField(termsFields, 'deliveries');
+              if (deliveriesField?.oneofKind === 'list') {
+                const firstDelivery = deliveriesField.list?.elements?.[0]?.sum;
+                if (firstDelivery?.oneofKind === 'record') {
+                  const deliveryFields = firstDelivery.record?.fields ?? [];
+                  const amountData = getField(deliveryFields, 'amount');
+                  if (amountData?.oneofKind === 'numeric') amount = amountData.numeric ?? '';
+                  const instrumentField = getField(deliveryFields, 'instrument');
+                  if (instrumentField?.oneofKind === 'record') {
+                    const instrumentFields = instrumentField.record?.fields ?? [];
+                    const adminData = getField(instrumentFields, 'admin');
+                    if (adminData?.oneofKind === 'party') instrumentAdmin = adminData.party ?? '';
+                    const idData = getField(instrumentFields, 'id');
+                    if (idData?.oneofKind === 'text') instrumentId = idData.text ?? '';
+                  }
+                }
+              }
+            }
+          }
+        }
+        break;
+      }
+
       case TransactionType.CosignDelegationAccept: {
         // exercise CosigningDelegationProposal_Accept → actingParties[0] = signer (sender)
         const signerParty = findExerciseActingParty('CosigningDelegationProposal_Accept');
