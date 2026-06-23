@@ -20,7 +20,7 @@ import {
 } from '@bitgo/sdk-core';
 
 import { KeyPair } from './keyPair';
-import { ETHTransactionType, Fee, SignatureParts, TxData } from './iface';
+import { ETHTransactionType, Fee, FlushERC7984ForwarderTokenData, SignatureParts, TxData } from './iface';
 import {
   calculateForwarderAddress,
   calculateForwarderV1Address,
@@ -29,6 +29,7 @@ import {
   decodeFlushTokensData,
   decodeFlushERC721TokensData,
   decodeFlushERC1155TokensData,
+  decodeFlushERC7984ForwarderTokenData,
   decodeWalletCreationData,
   flushCoinsData,
   flushTokensData,
@@ -42,6 +43,7 @@ import {
   getV1WalletInitializationData,
   getCreateForwarderParamsAndTypes,
 } from './utils';
+import { buildFlushERC7984ForwarderTokenCalldata } from './zamaUtils';
 import { defaultWalletVersion, walletSimpleConstructor } from './walletUtil';
 import { ERC1155TransferBuilder } from './transferBuilders/transferBuilderERC1155';
 import { ERC721TransferBuilder } from './transferBuilders/transferBuilderERC721';
@@ -76,6 +78,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _forwarderAddress: string;
   private _tokenAddress: string;
   private _tokenId: string;
+
+  // FlushERC7984ForwarderToken parameters
+  private _tokenContractAddress: string;
+  private _encryptedHandle: string; // bytes32 hex from confidentialBalanceOf
+  private _parentAddress: string; // where flushed tokens go (wallet base address)
 
   // Send and AddressInitialization transaction specific parameters
   protected _transfer: TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder | TransferBuilderERC7984;
@@ -161,6 +168,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.ContractCall:
       case TransactionType.DecryptionDelegation:
         return this.buildGenericContractCallTransaction();
+      case TransactionType.FlushERC7984ForwarderToken:
+        return this.buildFlushERC7984ForwarderTokenTransaction();
       default:
         throw new BuildTransactionError('Unsupported transaction type');
     }
@@ -303,6 +312,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         this.setContract(transactionJson.to);
         this.data(transactionJson.data);
         break;
+      case TransactionType.FlushERC7984ForwarderToken: {
+        this.setContract(transactionJson.to);
+        const erc7984Data: FlushERC7984ForwarderTokenData = decodeFlushERC7984ForwarderTokenData(
+          transactionJson.data,
+          transactionJson.to!
+        );
+        this.forwarderAddress(erc7984Data.forwarderAddress);
+        this.tokenContractAddress(erc7984Data.tokenContractAddress);
+        this.encryptedHandle(erc7984Data.encryptedHandle);
+        this.parentAddress(erc7984Data.parentAddress);
+        break;
+      }
       default:
         throw new BuildTransactionError('Unsupported transaction type');
       // TODO: Add other cases of deserialization
@@ -454,6 +475,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         this.validateContractAddress();
         this.validateDataField();
         break;
+      case TransactionType.FlushERC7984ForwarderToken:
+        this.validateContractAddress();
+        this.validateForwarderAddress();
+        this.validateTokenContractAddress();
+        this.validateEncryptedHandle();
+        this.validateParentAddress();
+        break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
     }
@@ -507,6 +535,33 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private validateDataField(): void {
     if (!this._data) {
       throw new BuildTransactionError('Invalid transaction: missing contract call data field');
+    }
+  }
+
+  /**
+   * Check if a token contract address for ERC-7984 flush was defined or throw.
+   */
+  private validateTokenContractAddress(): void {
+    if (!this._tokenContractAddress) {
+      throw new BuildTransactionError('Invalid transaction: missing tokenContractAddress');
+    }
+  }
+
+  /**
+   * Check if an encrypted handle for ERC-7984 flush was defined or throw.
+   */
+  private validateEncryptedHandle(): void {
+    if (!this._encryptedHandle) {
+      throw new BuildTransactionError('Invalid transaction: missing encryptedHandle');
+    }
+  }
+
+  /**
+   * Check if a parent address for ERC-7984 flush was defined or throw.
+   */
+  private validateParentAddress(): void {
+    if (!this._parentAddress) {
+      throw new BuildTransactionError('Invalid transaction: missing parentAddress');
     }
   }
 
@@ -982,4 +1037,61 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   public getWalletVersion(): number {
     return this._walletVersion;
   }
+
+  // region FlushERC7984ForwarderToken builder methods
+
+  /**
+   * Set the ERC-7984 token contract address for forwarder flush transactions.
+   *
+   * @param {string} address The ERC-7984 token contract address
+   */
+  tokenContractAddress(address: string): void {
+    if (!isValidEthAddress(address)) {
+      throw new BuildTransactionError('Invalid address: ' + address);
+    }
+    this._tokenContractAddress = address;
+  }
+
+  /**
+   * Set the encrypted balance handle (bytes32 hex) for forwarder flush transactions.
+   * This is the opaque handle returned by confidentialBalanceOf() on the ERC-7984 token contract.
+   *
+   * @param {string} handle The bytes32 hex encrypted balance handle
+   */
+  encryptedHandle(handle: string): void {
+    this._encryptedHandle = handle;
+  }
+
+  /**
+   * Set the parent address (root wallet) for ERC-7984 forwarder flush transactions.
+   * The flushed tokens will be transferred to this address.
+   *
+   * @param {string} address The parent wallet address
+   */
+  parentAddress(address: string): void {
+    if (!isValidEthAddress(address)) {
+      throw new BuildTransactionError('Invalid address: ' + address);
+    }
+    this._parentAddress = address;
+  }
+
+  /**
+   * Build a transaction to flush ERC-7984 tokens from a V4 forwarder to the parent wallet.
+   * Encodes: callFromParent(tokenContractAddress, 0, confidentialTransfer(parentAddress, encryptedHandle))
+   *
+   * @returns {TxData} The Ethereum transaction data
+   */
+  private buildFlushERC7984ForwarderTokenTransaction(): TxData {
+    if (this._contractAddress !== this._forwarderAddress) {
+      throw new BuildTransactionError('contractAddress must equal forwarderAddress for FlushERC7984ForwarderToken');
+    }
+    const data = buildFlushERC7984ForwarderTokenCalldata(
+      this._tokenContractAddress,
+      this._parentAddress,
+      this._encryptedHandle
+    );
+    return this.buildBase(data);
+  }
+
+  // endregion
 }

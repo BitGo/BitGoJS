@@ -159,3 +159,10 @@ export interface ForwarderInitializationData {
   addressCreationSalt?: string;
   feeAddress?: string;
 }
+
+export interface FlushERC7984ForwarderTokenData {
+  forwarderAddress: string;
+  tokenContractAddress: string;
+  encryptedHandle: string; // bytes32 hex
+  parentAddress: string;
+}

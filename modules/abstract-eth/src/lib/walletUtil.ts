@@ -52,3 +52,5 @@ export const confidentialTransferWithProofMethodId = '0x2fb74e62';
 export const confidentialTransferNoProofMethodId = '0x5bebed7e';
 // ABI parameter types for the 3-param version
 export const confidentialTransferWithProofTypes = ['address', 'bytes32', 'bytes'];
+// ABI parameter types for confidentialTransfer(address, bytes32) — no proof version
+export const confidentialTransferNoProofTypes = ['address', 'bytes32'];
