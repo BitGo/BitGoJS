@@ -245,6 +245,13 @@ export interface DeriveAddressOptions
   /** Wallet version, used to disambiguate derivation strategy for some coin families. */
   walletVersion?: number;
   /**
+   * Token name (e.g. `sol:usdc`, `tsol:usdt`) to derive a token deposit address instead of the
+   * native receive address. For Solana this resolves to the SPL mint and returns the wallet's
+   * Associated Token Account (ATA) for that mint. Ignored by coins/tokens that reuse the native
+   * address (e.g. ERC-20 on EVM).
+   */
+  tokenName?: string;
+  /**
    * Wallet base address (the wallet contract address for EVM wallets). Required to derive
    * per-index forwarder (CREATE2) receive addresses for legacy multisig EVM wallets.
    */

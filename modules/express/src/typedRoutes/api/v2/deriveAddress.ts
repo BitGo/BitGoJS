@@ -40,6 +40,11 @@ export const DeriveAddressBody = {
   /** Wallet version, to disambiguate derivation strategy (e.g. EVM forwarder vs MPC) */
   walletVersion: optional(t.number),
   /**
+   * Token name (e.g. `sol:usdc`) to derive a token deposit address instead of the native one.
+   * For Solana this returns the wallet's Associated Token Account (ATA) for the token's mint.
+   */
+  tokenName: optional(t.string),
+  /**
    * Wallet base address (the wallet contract address for EVM wallets). Required to derive
    * per-index forwarder receive addresses for legacy multisig EVM wallets (versions 1/2/4).
    */

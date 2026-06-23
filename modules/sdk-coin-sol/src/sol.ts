@@ -728,7 +728,8 @@ export class Sol extends BaseCoin {
    * @returns the derived address, the index used, and the HD derivation path
    */
   async deriveAddress(params: DeriveAddressOptions): Promise<DeriveAddressResult> {
-    const { address, derivationPath } = await deriveMPCWalletAddress(
+    // Derive the native owner (wallet) address from the commonKeychain.
+    const { address: ownerAddress, derivationPath } = await deriveMPCWalletAddress(
       {
         // extractCommonKeychain validates the commonKeychain is present at runtime
         keychains: (params.keychains ?? []) as TssVerifyAddressOptions['keychains'],
@@ -739,6 +740,19 @@ export class Sol extends BaseCoin {
       },
       (publicKey) => this.getAddressFromPublicKey(publicKey)
     );
+
+    // No token requested: return the native SOL receive address.
+    if (!params.tokenName) {
+      return { address: ownerAddress, index: params.index, derivationPath };
+    }
+
+    // Token requested: the deposit address is the owner's Associated Token Account (ATA) for the
+    // token's mint, derived the same way SOL token addresses are produced elsewhere in this coin.
+    const token = getSolTokenFromTokenName(params.tokenName);
+    if (!token || token.tokenAddress === undefined || token.programId === undefined) {
+      throw new Error(`unknown or unsupported SOL token: ${params.tokenName}`);
+    }
+    const address = await getAssociatedTokenAccountAddress(token.tokenAddress, ownerAddress, true, token.programId);
 
     return { address, index: params.index, derivationPath };
   }
