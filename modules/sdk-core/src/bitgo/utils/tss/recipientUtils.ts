@@ -57,6 +57,13 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   'transferOfferWithdrawn',
   'cantonCommand',
   'pledge',
+
+  // Avalanche / Flare cross-chain atomic imports — recipients are not supplied
+  // by the client because the import consumes UTXOs already owned by the
+  // wallet; the destination address is the wallet itself. WP issues these
+  // with intentType 'import' (P-chain) or 'importtoc' (C-chain).
+  'import',
+  'importtoc',
 ]);
 
 /**
