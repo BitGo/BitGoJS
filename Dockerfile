@@ -35,7 +35,7 @@ RUN \
 
 
 FROM node:22.22.0-bookworm-slim@sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb7897be2554
-RUN apt-get update && apt-get install -y tini
+RUN apt-get update && apt-get upgrade -y && apt-get install -y tini && apt-get clean && rm -rf /var/lib/apt/lists/*
 # copy the root node_modules to the bitgo-express parent node_modules
 COPY --from=builder /tmp/bitgo/node_modules  /var/node_modules/
 COPY --from=builder /tmp/bitgo/modules/express /var/bitgo-express/
