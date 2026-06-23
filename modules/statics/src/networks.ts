@@ -2294,14 +2294,14 @@ class Somi extends Mainnet implements EthereumNetwork {
 }
 
 export class FlareP extends Mainnet implements FlareNetwork {
-  assetId = 'Flare';
+  assetId = '2MxKSeEWXViLdYyDhW1SQ46AECZEbE2bnVRZptv42JrxqyUX5k';
   name = 'FlareP';
   family = CoinFamily.FLRP;
   explorerUrl = 'https://flarescan.com/blockchain/pvm/tx/';
   accountExplorerUrl = 'https://flarescan.com/blockchain/pvm/address/';
   blockchainID = '11111111111111111111111111111111LpoYY';
-  cChainBlockchainID = '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5';
-  xChainBlockchainID = 'FJuSwZuP85eyBpuBrKECnpPedGyXoDy2hP9q4JD8qBTZGxJ';
+  cChainBlockchainID = 'umkbhSrjVw5nUvy1eo25AdrjRkPBdtzAMewuxA2rqEx4YMo4c';
+  xChainBlockchainID = 'fK5e6T3EniMqagBkxXjAug9EbhFDZbEzPPr4f22uwMoP5i2cJ';
   networkID = 14;
   hrp = 'flare';
   alias = 'P';
