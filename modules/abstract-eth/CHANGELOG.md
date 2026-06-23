@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.31.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.30.0...@bitgo/abstract-eth@24.31.0) (2026-06-23)
+
+
+### Bug Fixes
+
+* **sdk-core:** enforce recipient verification in ECDSA TSS signing ([3e14d3a](https://github.com/BitGo/BitGoJS/commit/3e14d3a92d63a1c0400890cd8bbe55e0457456a7))
+
+
+### Features
+
+* **abstract-eth:** add zama token consolidation support ([b06ca49](https://github.com/BitGo/BitGoJS/commit/b06ca4912bef64004ff109ba5c89954b2be61f55))
+
+
+
+
+
 # [24.30.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.29.0...@bitgo/abstract-eth@24.30.0) (2026-06-18)
 
 

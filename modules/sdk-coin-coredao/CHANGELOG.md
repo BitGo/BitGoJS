@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.8.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@2.8.17...@bitgo/sdk-coin-coredao@2.8.18) (2026-06-23)
+
+
+### Bug Fixes
+
+* **root:** pass isFirstSigner through transfer() in all EVM TransactionBuilders ([961e195](https://github.com/BitGo/BitGoJS/commit/961e195eaca5c69f4aadc2e108123dd38bce7fdd))
+
+
+
+
+
 ## [2.8.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@2.8.16...@bitgo/sdk-coin-coredao@2.8.17) (2026-06-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-coredao

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [51.7.1](https://github.com/BitGo/BitGoJS/compare/bitgo@51.7.0...bitgo@51.7.1) (2026-06-23)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** token support in coin map registry ([0427d9e](https://github.com/BitGo/BitGoJS/commit/0427d9ece2ceb61f1e27b8e59b1e2a474810b20a))
+
+
+
+
+
 # [51.7.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.6.0...bitgo@51.7.0) (2026-06-18)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.14.0...@bitgo/sdk-coin-eth@25.15.0) (2026-06-23)
+
+
+### Features
+
+* **abstract-eth:** add zama token consolidation support ([b06ca49](https://github.com/BitGo/BitGoJS/commit/b06ca4912bef64004ff109ba5c89954b2be61f55))
+
+
+
+
+
 # [25.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.13.0...@bitgo/sdk-coin-eth@25.14.0) (2026-06-18)
 
 

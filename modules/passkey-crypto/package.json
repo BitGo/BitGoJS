@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/passkey-crypto",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Pure cryptographic primitives for BitGo passkey (WebAuthn PRF) key derivation",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@bitgo/public-types": "6.1.0",
-    "@bitgo/sdk-core": "^37.8.0"
+    "@bitgo/sdk-core": "^37.9.0"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",

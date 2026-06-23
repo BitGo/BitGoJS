@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-starknet@1.5.0...@bitgo/sdk-coin-starknet@1.6.0) (2026-06-23)
+
+
+### Bug Fixes
+
+* **sdk-coin-starknet:** normalize signableHex and widen verifyTransaction guard ([4ad8faa](https://github.com/BitGo/BitGoJS/commit/4ad8faa6ddcc66620507714f572c35dbea0308e7))
+
+
+### Features
+
+* **sdk-coin-starknet:** add contractAddress field to transaction interface ([c4f1151](https://github.com/BitGo/BitGoJS/commit/c4f11510378857ee5651159f3252cff2f6427981))
+* **sdk-coin-starknet:** add isSignablePreHashed to starknet ([e31371c](https://github.com/BitGo/BitGoJS/commit/e31371ceda6ef3169cec4746641d2b386e343b1d))
+
+
+
+
+
 # [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-starknet@1.4.0...@bitgo/sdk-coin-starknet@1.5.0) (2026-06-18)
 
 

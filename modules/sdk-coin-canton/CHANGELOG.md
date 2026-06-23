@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.25.1...@bitgo/sdk-coin-canton@1.26.0) (2026-06-23)
+
+
+### Features
+
+* add allocation allocate withdrawn builder ([b57f0bf](https://github.com/BitGo/BitGoJS/commit/b57f0bfcb8627521058f835c9a7f4f9f6bf77916))
+* add canton participant and end invester intents ([cc4ea7e](https://github.com/BitGo/BitGoJS/commit/cc4ea7ecfa354645904c254fe0fcd48e51735017))
+* added parseTransaction method implementation for canton ([4b85161](https://github.com/BitGo/BitGoJS/commit/4b85161a38c15250e3530e19523ba86816d6ccaf))
+* **sdk-coin-canton:** add allocation reject builder ([971243c](https://github.com/BitGo/BitGoJS/commit/971243c14ed5ae469a3fae6407af978089fa6a32))
+
+
+
+
+
 ## [1.25.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.25.0...@bitgo/sdk-coin-canton@1.25.1) (2026-06-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-canton

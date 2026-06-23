@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.50.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.49.0...@bitgo/statics@58.50.0) (2026-06-23)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** token support in coin map registry ([0427d9e](https://github.com/BitGo/BitGoJS/commit/0427d9ece2ceb61f1e27b8e59b1e2a474810b20a))
+* **statics:** correct hoodeth:usdg decimals from 18 to 6 ([0643bb1](https://github.com/BitGo/BitGoJS/commit/0643bb186200903cb87d4c2f18991ab6ebeb788f))
+* **statics:** update FlareP asset and blockchain IDs ([c92de4e](https://github.com/BitGo/BitGoJS/commit/c92de4eaf862a98a816d188bf6c1fc56c8c47447))
+* **statics:** use DTCC PSE registrar URL for Canton test tokens ([7880c1c](https://github.com/BitGo/BitGoJS/commit/7880c1c618adf3aacbe475efcc92302069e23b7c))
+
+
+### Features
+
+* **statics:** onboard USDai and sUSDai ([44dce1b](https://github.com/BitGo/BitGoJS/commit/44dce1bd37a6ad6a28d5b04493b9c0285cf3f447))
+* **statics:** register txlm BTGT testnet token ([f2c6fa3](https://github.com/BitGo/BitGoJS/commit/f2c6fa3fb5cb3078a4d33c8fa80e45424e98121c))
+
+
+
+
+
 # [58.49.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.48.0...@bitgo/statics@58.49.0) (2026-06-18)
 
 

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.23.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.23.5...@bitgo/sdk-coin-icp@1.23.6) (2026-06-23)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-icp
+
+
+
+
+
 ## [1.23.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.23.4...@bitgo/sdk-coin-icp@1.23.5) (2026-06-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-icp
