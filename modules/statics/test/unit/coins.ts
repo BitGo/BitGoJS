@@ -1232,6 +1232,16 @@ describe('ERC20 Bulk Transaction Feature', () => {
       coin.features.includes(CoinFeature.ERC20_BULK_TRANSACTION).should.eql(true);
     });
   });
+
+  it('Polygon ERC-20 tokens should have ERC20_BULK_TRANSACTION feature', () => {
+    coins.forEach((coin) => {
+      if (coin.name.startsWith('polygon:') || coin.name.startsWith('tpolygon:')) {
+        coin.features
+          .includes(CoinFeature.ERC20_BULK_TRANSACTION)
+          .should.eql(true, `expected ${coin.name} to include ERC20_BULK_TRANSACTION`);
+      }
+    });
+  });
 });
 
 describe('Custody Bulk Withdrawal Features', () => {
