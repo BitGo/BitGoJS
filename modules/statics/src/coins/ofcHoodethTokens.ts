@@ -1337,7 +1337,7 @@ export const ofcHoodethTokens = [
     '4099ae4f-a6d0-4ee5-b26b-029cdd93645a',
     'ofchoodeth:usdg',
     'USDG',
-    18,
+    6,
     UnderlyingAsset['hoodeth:usdg'],
     undefined,
     undefined,
