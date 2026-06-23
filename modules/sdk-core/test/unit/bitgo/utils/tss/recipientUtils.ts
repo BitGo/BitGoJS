@@ -49,6 +49,9 @@ describe('recipientUtils', function () {
         'transferOfferWithdrawn',
         'cantonCommand',
         'pledge',
+        // Avalanche / Flare cross-chain atomic imports
+        'import',
+        'importtoc',
       ];
       expected.forEach((t) => assert.ok(NO_RECIPIENT_TX_TYPES.has(t), `${t} should be in NO_RECIPIENT_TX_TYPES`));
       assert.strictEqual(NO_RECIPIENT_TX_TYPES.size, expected.length);
@@ -104,9 +107,22 @@ describe('recipientUtils', function () {
         'stake',
         'createAccount',
         'pledge',
+        'import',
+        'importtoc',
       ]) {
         const txRequest = makeTxRequest();
         assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, { type: txType }));
+      }
+    });
+
+    it('does not throw for Avalanche cross-chain imports resolved from intent.intentType', function () {
+      // P-chain and C-chain import intents legitimately carry no recipients —
+      // the wallet imports its own UTXOs and the destination address is the
+      // wallet itself. The intentType lives only on the intent (txParams.type
+      // is unset on the MPC signing call) so the guard must read it from there.
+      for (const intentType of ['import', 'importtoc']) {
+        const txRequest = makeTxRequest({ intent: { intentType } as any });
+        assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, {}));
       }
     });
 

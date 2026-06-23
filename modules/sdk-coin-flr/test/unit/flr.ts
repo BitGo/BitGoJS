@@ -97,6 +97,26 @@ describe('flr', function () {
     });
   });
 
+  describe('isSignablePreHashed', function () {
+    it('returns true for Avalanche atomic txs (codec prefix 0000)', function () {
+      // C->P cross-chain export atomic tx — signableHex is already SHA-256(txBody).
+      // The MPC layer must use this digest directly, not re-hash with keccak256,
+      // otherwise the user and BitGo signature shares will not combine.
+      const signableHex = 'a'.repeat(64);
+      flrCoin.isSignablePreHashed({ serializedTxHex: '0000' + 'b'.repeat(20), signableHex }).should.equal(true);
+    });
+
+    it('returns false for standard EVM RLP transactions', function () {
+      // EIP-1559 / RLP serialized transactions start with 0x02 or 0xf8 — never 0x0000.
+      flrCoin
+        .isSignablePreHashed({
+          serializedTxHex: '02f17281d902850ba43b740283061a80',
+          signableHex: '02f17281d902850ba43b740283061a80',
+        })
+        .should.equal(false);
+    });
+  });
+
   describe('Address Validation', function () {
     it('should validate valid eth address', function () {
       const address = '0x1374a2046661f914d1687d85dbbceb9ac7910a29';
