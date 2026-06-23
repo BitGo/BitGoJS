@@ -5949,6 +5949,17 @@ export const allCoinsAndTokens = [
     '',
     'TST'
   ),
+  tstellarToken(
+    '3cd8a334-f0ad-4cb3-8b53-ff3ef7fc507b',
+    'txlm:BTGT-GCCUFJV5P32QGVZVW73SF7P53ZH2OXJ5C3DYSXDECSRCP3FU2GJ2PXGE',
+    'BitGo Testnet Token',
+    7,
+    UnderlyingAsset['txlm:BTGT-GCCUFJV5P32QGVZVW73SF7P53ZH2OXJ5C3DYSXDECSRCP3FU2GJ2PXGE'],
+    'bitgo.com',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'BTGT'
+  ),
   ttronToken(
     '4ece7f15-a5c9-4302-8c82-787d7eb7e3c9',
     'ttrx:wbtc',
