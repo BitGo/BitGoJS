@@ -958,7 +958,7 @@ export const hoodethTokens = [
     'ca3ac76e-e88f-4f39-8571-006cd9b97389',
     'hoodeth:usdg',
     'USDG',
-    18,
+    6,
     '0x5fc5360d0400a0fd4f2af552add042d716f1d168',
     UnderlyingAsset['hoodeth:usdg'],
     Networks.main.hoodeth
