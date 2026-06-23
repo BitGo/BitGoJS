@@ -26,9 +26,12 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { coins, BaseCoin as StaticsBaseCoin, XrpCoin } from '@bitgo/statics';
-import * as rippleBinaryCodec from 'ripple-binary-codec';
 import * as rippleKeypairs from 'ripple-keypairs';
 import * as xrpl from 'xrpl';
+
+// xrpl re-exports ripple-binary-codec@2.7.0 which supports MPTokenAuthorize.
+// The standalone ripple-binary-codec dep is 2.1.0 (pre-MPT), so use xrpl as the codec.
+const rippleBinaryCodec = xrpl;
 
 import { AccountDeleteBuilder, TokenTransferBuilder, TransactionBuilderFactory, TransferBuilder } from './lib';
 import {
@@ -276,6 +279,22 @@ export class Xrp extends BaseCoin {
           value: transaction.LimitAmount.value,
         },
       };
+    } else if (transaction.TransactionType === 'MPTokenAuthorize') {
+      return {
+        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'mptIssuanceId'],
+        id: id,
+        changeOutputs: [],
+        outputAmount: 0,
+        changeAmount: 0,
+        outputs: [],
+        fee: {
+          fee: transaction.Fee,
+          feeRate: undefined,
+          size: txHex.length / 2,
+        },
+        mptIssuanceId: transaction.MPTokenIssuanceID,
+        ...(transaction.MPTHolder !== undefined && { mptHolder: transaction.MPTHolder }),
+      };
     }
 
     const address =
@@ -335,6 +354,18 @@ export class Xrp extends BaseCoin {
       return;
 
     throw new Error(`tx type ${actualTypeFromDecoded} does not match the expected type enabletoken`);
+  }
+
+  verifyMptTxType(txPrebuildDecoded: TransactionExplanation, txHexPrebuild: string | undefined): void {
+    if (!txHexPrebuild) throw new Error('Missing txHexPrebuild to verify token type for enableMpt tx');
+    const transactionType = this.getTransactionTypeRawTxHex(txHexPrebuild);
+    if (transactionType === undefined) throw new Error('Missing TransactionType on MPT enablement tx');
+    if (transactionType !== XrpTransactionType.MPTokenAuthorize)
+      throw new Error(`tx type ${transactionType} does not match expected type MPTokenAuthorize`);
+    const actualTypeFromDecoded =
+      'type' in txPrebuildDecoded && typeof txPrebuildDecoded.type === 'string' ? txPrebuildDecoded.type : undefined;
+    if (!actualTypeFromDecoded || actualTypeFromDecoded === 'enableMpt') return;
+    throw new Error(`tx type ${actualTypeFromDecoded} does not match the expected type enableMpt`);
   }
 
   verifyTokenName(
@@ -413,6 +444,15 @@ export class Xrp extends BaseCoin {
       this.verifyTokenIssuer(txParams, explanation);
       this.verifyTokenName(txParams, explanation, txPrebuild.txHex, coinConfig);
       this.verifyRequiredKeys(txParams, explanation);
+    }
+
+    if (txParams.type === 'enableMpt') {
+      if (verification?.verifyTokenEnablement) {
+        this.verifyMptTxType(explanation, txPrebuild.txHex);
+      }
+      // MPTokenAuthorize transactions have no destination or amount;
+      // the output comparator below does not apply.
+      return true;
     }
 
     const output = [...explanation.outputs, ...explanation.changeOutputs][0];

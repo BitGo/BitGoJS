@@ -150,4 +150,86 @@ describe('Wallet - Token Approval', function () {
       await wallet.buildErc20TokenApproval('USDC', 'passphrase123').should.be.rejectedWith('signing error');
     });
   });
+
+  describe('sendTokenEnablement', function () {
+    let teWallet: Wallet;
+    let teBaseCoin: any;
+    let teBitGo: any;
+
+    beforeEach(function () {
+      teBitGo = {
+        post: sinon.stub(),
+        get: sinon.stub(),
+        setRequestTracer: sinon.stub(),
+      };
+
+      teBaseCoin = {
+        getFamily: sinon.stub().returns('txrp'),
+        getFullName: sinon.stub().returns('Testnet XRP'),
+        url: sinon.stub(),
+        keychains: sinon.stub(),
+        supportsTss: sinon.stub().returns(false),
+        getMPCAlgorithm: sinon.stub(),
+        getTokenEnablementConfig: sinon.stub().returns({ requiresTokenEnablement: true }),
+      };
+
+      // custodial wallet so the path after validation calls initiateTransaction
+      const walletData = {
+        id: 'te-wallet-id',
+        coin: 'txrp',
+        type: 'custodial',
+        keys: ['user-key', 'backup-key', 'bitgo-key'],
+      };
+
+      teWallet = new Wallet(teBitGo, teBaseCoin, walletData);
+    });
+
+    it('should throw "Invalid build of token enablement." when prebuildTx is a string', async function () {
+      await teWallet
+        .sendTokenEnablement({ prebuildTx: 'raw-hex-string' as any })
+        .should.be.rejectedWith('Invalid build of token enablement.');
+    });
+
+    it('should throw "Invalid build of token enablement." when buildParams.type is undefined', async function () {
+      await teWallet
+        .sendTokenEnablement({ prebuildTx: { buildParams: {} } as any })
+        .should.be.rejectedWith('Invalid build of token enablement.');
+    });
+
+    it('should throw "Invalid build of token enablement." when buildParams.type is an unrecognised type', async function () {
+      await teWallet
+        .sendTokenEnablement({ prebuildTx: { buildParams: { type: 'transfer' } } as any })
+        .should.be.rejectedWith('Invalid build of token enablement.');
+    });
+
+    it('should pass validation and proceed when buildParams.type is "enabletoken"', async function () {
+      const initiateStub = sinon.stub(teWallet as any, 'initiateTransaction').resolves({ txid: 'abc123' });
+
+      const result = await teWallet.sendTokenEnablement({
+        prebuildTx: { buildParams: { type: 'enabletoken' } } as any,
+      });
+
+      result.should.eql({ txid: 'abc123' });
+      sinon.assert.calledOnce(initiateStub);
+    });
+
+    it('should pass validation and proceed when buildParams.type is "enableMpt"', async function () {
+      const initiateStub = sinon.stub(teWallet as any, 'initiateTransaction').resolves({ txid: 'mpt456' });
+
+      const result = await teWallet.sendTokenEnablement({
+        prebuildTx: { buildParams: { type: 'enableMpt' } } as any,
+      });
+
+      result.should.eql({ txid: 'mpt456' });
+      sinon.assert.calledOnce(initiateStub);
+    });
+
+    it('should throw when the coin does not require token enablement', async function () {
+      teBaseCoin.getTokenEnablementConfig.returns({ requiresTokenEnablement: false });
+
+      await teWallet
+        .sendTokenEnablement({ prebuildTx: { buildParams: { type: 'enableMpt' } } as any })
+        .should.be.rejectedWith(/does not require token enablement transactions/);
+    });
+  });
 });
