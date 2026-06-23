@@ -4003,6 +4003,34 @@ export const ofcErc20Coins = [
     true,
     'baseeth'
   ),
+  ofcerc20(
+    '15d5e890-b5f0-427a-bc97-05f42d939d60',
+    'ofcbaseeth:vbtc.b',
+    'Verified Bitcoin',
+    8,
+    UnderlyingAsset['baseeth:vbtc.b'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    '1ddf8597-52b1-4995-abe8-58db12509f59',
+    'ofcbaseeth:laptop',
+    'Laptop',
+    18,
+    UnderlyingAsset['baseeth:laptop'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 
   // Ink Network tokens
   ofcerc20(
@@ -6898,7 +6926,7 @@ export const tOfcErc20Coins = [
     'db419053-4226-4dd3-8fce-f0f2c28fafaa',
     'ofctbaseeth:ttbills',
     'Test TBILLS',
-    6,
+    18,
     UnderlyingAsset['tbaseeth:ttbills'],
     undefined,
     undefined,

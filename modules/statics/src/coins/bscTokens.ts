@@ -1715,6 +1715,24 @@ export const bscTokens = [
     UnderlyingAsset['bsc:hybond'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    '20996d6a-c0f6-46cc-8912-9381c0ad08d0',
+    'bsc:zktc',
+    'Zakat Coin',
+    18,
+    '0x30437efebb55d190aadea63430fc2f4a7cf8991d',
+    UnderlyingAsset['bsc:zktc'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'b4e855e4-0132-4fb2-80a4-620d3ed4c123',
+    'bsc:skyai',
+    'SKYAI',
+    18,
+    '0x92aa03137385f18539301349dcfc9ebc923ffb10',
+    UnderlyingAsset['bsc:skyai'],
+    BSC_TOKEN_FEATURES
+  ),
   tbscToken(
     '2d4e4f61-1acd-416c-9d38-3d80d95a38d4',
     'tbsc:stgscaasacme',

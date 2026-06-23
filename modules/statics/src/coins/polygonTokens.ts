@@ -1624,6 +1624,15 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:wots0'],
     POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
+  polygonErc20(
+    '704cbc32-a299-428e-8b58-7b4b69715419',
+    'polygon:gmc',
+    'GameChips',
+    18,
+    '0x77ed728a4bcf7707a72a6a60a8e4ec95853311e2',
+    UnderlyingAsset['polygon:gmc'],
+    [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
   tpolygonErc20(
     '13dd4ab7-2d94-493c-9a61-323f6300f7e5',
     'tpolygon:tusdl',

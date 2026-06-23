@@ -1051,6 +1051,18 @@ export const ofcCoins = [
     UnderlyingAsset['sol:blsh'],
     SOL_OFC_TOKEN_FEATURES
   ),
+  ofcsolToken('57b9f83c-8699-49af-a8a0-377ed9ea1066', 'ofcsol:usde', 'Ethena USDe', 9, UnderlyingAsset['sol:usde'], [
+    ...SOL_OFC_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+  ]),
+  ofcsolToken(
+    '749387d9-c5b0-4ed2-91ae-56c6bdef6eda',
+    'ofcsol:stampy',
+    'Stampede',
+    6,
+    UnderlyingAsset['sol:stampy'],
+    SOL_OFC_TOKEN_FEATURES
+  ),
   ofcsolToken('e792c18a-05d1-4622-a8db-192f431b70a2', 'ofcsol:usdg', 'Global Dollar', 6, UnderlyingAsset['sol:usdg'], [
     CoinFeature.STABLECOIN,
   ]),
@@ -2454,6 +2466,62 @@ export const ofcCoins = [
     undefined,
     [CoinFeature.STABLECOIN]
   ),
+  ofcArbethErc20(
+    '088c42ee-cd8d-4984-a69e-f5cda577bf35',
+    'ofcarbeth:opsbtc',
+    'Enhanced BTC Long Short Momentum',
+    18,
+    UnderlyingAsset['arbeth:opsbtc']
+  ),
+  ofcArbethErc20(
+    'e6c3c234-5bae-4c81-85b6-44ee76d391b8',
+    'ofcarbeth:argt',
+    'Argentine Peso token',
+    18,
+    UnderlyingAsset['arbeth:argt']
+  ),
+  ofcArbethErc20(
+    '3b0588c7-4c88-4561-8004-40edc4dae30f',
+    'ofcarbeth:brat',
+    'Brazilian Real token',
+    18,
+    UnderlyingAsset['arbeth:brat']
+  ),
+  ofcArbethErc20(
+    'b740ab2e-339a-4252-a6a6-bf3d1d7f211e',
+    'ofcarbeth:colt',
+    'Colombian Peso token',
+    18,
+    UnderlyingAsset['arbeth:colt']
+  ),
+  ofcArbethErc20(
+    '973b2d0f-4117-47a5-ac20-8873e8788873',
+    'ofcarbeth:mext',
+    'Mexican Peso token',
+    18,
+    UnderlyingAsset['arbeth:mext']
+  ),
+  ofcArbethErc20(
+    'da83022e-aecc-41b3-819f-13634635dd36',
+    'ofcarbeth:chlt',
+    'Chilean Peso token',
+    18,
+    UnderlyingAsset['arbeth:chlt']
+  ),
+  ofcArbethErc20(
+    '537a23e6-1f3c-40ed-b89b-c8ab98a4d206',
+    'ofcarbeth:bolt',
+    'Bolivian Boliviano token',
+    18,
+    UnderlyingAsset['arbeth:bolt']
+  ),
+  ofcArbethErc20(
+    '27e7407b-3ae2-4058-91d4-48755257488d',
+    'ofcarbeth:pert',
+    'Peruvian Sol Token',
+    18,
+    UnderlyingAsset['arbeth:pert']
+  ),
 
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20(
@@ -2778,6 +2846,8 @@ export const ofcCoins = [
   ),
   ofcBscToken('f6c6ffed-f153-40ea-8fbe-768c4975c525', 'ofcbsc:dusk', 'Dusk Network', 18, UnderlyingAsset['bsc:dusk']),
   ofcBscToken('1421a7b9-cae3-4291-9211-68c9de1d0b5d', 'ofcbsc:hybond', 'HYBOND', 18, UnderlyingAsset['bsc:hybond']),
+  ofcBscToken('a7383921-3475-4ce9-b8c6-6a1c420213c3', 'ofcbsc:zktc', 'Zakat Coin', 18, UnderlyingAsset['bsc:zktc']),
+  ofcBscToken('a877ca78-c4df-45ab-ba16-d21cf2c2bed6', 'ofcbsc:skyai', 'SKYAI', 18, UnderlyingAsset['bsc:skyai']),
   ofcBscToken(
     '89dfd19c-d241-45e2-94b1-8a9bcdb9c09b',
     'ofcbsc:parti',
@@ -4352,6 +4422,15 @@ export const ofcCoins = [
     'Bolivian Boliviano Token',
     18,
     UnderlyingAsset['polygon:bolt']
+  ),
+  ofcPolygonErc20(
+    'c1276d10-6247-4da1-a295-2bc3988883a6',
+    'ofcpolygon:gmc',
+    'GameChips',
+    18,
+    UnderlyingAsset['polygon:gmc'],
+    undefined,
+    [CoinFeature.STABLECOIN]
   ),
 
   tofcPolygonErc20(

@@ -4100,6 +4100,27 @@ export const solTokens = [
     ProgramID.Token2022ProgramId
   ),
   solToken(
+    '2615f1bc-9514-45a6-acc1-7c6d6fa0213a',
+    'sol:usde',
+    'Ethena USDe',
+    9,
+    'DEkqHyPN7GMRJ5cArtQFAWefqbZb33Hyf6s5iCwjEonT', // https://solscan.io/token/DEkqHyPN7GMRJ5cArtQFAWefqbZb33Hyf6s5iCwjEonT
+    'DEkqHyPN7GMRJ5cArtQFAWefqbZb33Hyf6s5iCwjEonT',
+    UnderlyingAsset['sol:usde'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  solToken(
+    'a17c6aff-5123-4c27-9c30-a7224f16a794',
+    'sol:stampy',
+    'Stampede',
+    6,
+    'EhTpqkdEXVhLHd1ufVVTKmH5XUQbJWDT3i1s5nvDSUvV', // https://solscan.io/token/EhTpqkdEXVhLHd1ufVVTKmH5XUQbJWDT3i1s5nvDSUvV
+    'EhTpqkdEXVhLHd1ufVVTKmH5XUQbJWDT3i1s5nvDSUvV',
+    UnderlyingAsset['sol:stampy'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
+  solToken(
     '7b7edb2a-3952-4083-8df9-cf16baa8d82c',
     'sol:gousd',
     'goUSD',

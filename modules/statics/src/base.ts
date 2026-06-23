@@ -2142,6 +2142,7 @@ export enum UnderlyingAsset {
   'sol:usdc' = 'sol:usdc',
   'sol:agri' = 'sol:agri',
   'sol:usdca' = 'sol:usdca',
+  'sol:usde' = 'sol:usde',
   'sol:sonic' = 'sol:sonic',
   'sol:crdt' = 'sol:crdt',
   'sol:epxc' = 'sol:epxc',
@@ -2997,6 +2998,7 @@ export enum UnderlyingAsset {
   'polygon:pert' = 'polygon:pert',
   'polygon:colt' = 'polygon:colt',
   'polygon:bolt' = 'polygon:bolt',
+  'polygon:gmc' = 'polygon:gmc',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -3191,6 +3193,8 @@ export enum UnderlyingAsset {
   'bsc:t-ibiton' = 'bsc:t-ibiton',
   'bsc:t-ivvon' = 'bsc:t-ivvon',
   'bsc:sqd' = 'bsc:sqd',
+  'bsc:skyai' = 'bsc:skyai',
+  'bsc:zktc' = 'bsc:zktc',
 
   // BSC NFTs
   // generic NFTs
@@ -3290,6 +3294,14 @@ export enum UnderlyingAsset {
   'arbeth:testpltr' = 'arbeth:testpltr',
   'arbeth:testnflx' = 'arbeth:testnflx',
   'arbeth:week' = 'arbeth:week',
+  'arbeth:opsbtc' = 'arbeth:opsbtc',
+  'arbeth:argt' = 'arbeth:argt',
+  'arbeth:brat' = 'arbeth:brat',
+  'arbeth:colt' = 'arbeth:colt',
+  'arbeth:mext' = 'arbeth:mext',
+  'arbeth:chlt' = 'arbeth:chlt',
+  'arbeth:bolt' = 'arbeth:bolt',
+  'arbeth:pert' = 'arbeth:pert',
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
@@ -3346,6 +3358,8 @@ export enum UnderlyingAsset {
   'baseeth:colt' = 'baseeth:colt',
   'baseeth:bolt' = 'baseeth:bolt',
   'baseeth:gusdcq' = 'baseeth:gusdcq',
+  'baseeth:laptop' = 'baseeth:laptop',
+  'baseeth:vbtc.b' = 'baseeth:vbtc.b',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -3728,6 +3742,7 @@ export enum UnderlyingAsset {
   'sol:alch' = 'sol:alch',
   'sol:launchcoin' = 'sol:launchcoin',
   'sol:stik' = 'sol:stik',
+  'sol:stampy' = 'sol:stampy',
   'sol:chill' = 'sol:chill',
   'sol:zbcn' = 'sol:zbcn',
   'sol:zaru' = 'sol:zaru',
