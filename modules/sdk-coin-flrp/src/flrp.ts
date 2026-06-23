@@ -96,9 +96,15 @@ export class Flrp extends BaseCoin {
     const explainedTx = tx.explainTransaction();
 
     const type = params.txParams.type;
-    // 'stake' is the intent-type alias for AddPermissionlessDelegator; normalize it
-    // so the TransactionType enum lookup succeeds.
-    const normalizedType = type === 'stake' ? 'AddPermissionlessDelegator' : type;
+    // WP intentType aliases (lowercase) must map to TransactionType enum keys.
+    const normalizedType =
+      type === 'stake'
+        ? 'AddPermissionlessDelegator'
+        : type === 'import'
+        ? 'Import'
+        : type === 'importtoc'
+        ? 'ImportToC'
+        : type;
 
     // When type is provided, verify it matches the parsed transaction.
     // When type is not provided (MPC/TSS intent flow where buildParams are unavailable),

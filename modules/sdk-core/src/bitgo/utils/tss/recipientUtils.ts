@@ -117,7 +117,16 @@ export function resolveEffectiveTxParams(
   // Use its presence as a generic staking signal — no need to enumerate every intentType.
   const isStakingIntent = !!(txRequest.intent as PopulatedIntent)?.stakingRequestId;
 
-  if (!effectiveTxParams.recipients?.length && !isStakingIntent && !NO_RECIPIENT_TX_TYPES.has(txType)) {
+  // buildParams.type from the wallet UI is PascalCase ('Import'); intent.intentType from WP
+  // is lowercase ('import'). Either may be the source of truth depending on the signing path.
+  const intentType = (txRequest.intent as PopulatedIntent)?.intentType ?? '';
+
+  if (
+    !effectiveTxParams.recipients?.length &&
+    !isStakingIntent &&
+    !NO_RECIPIENT_TX_TYPES.has(txType) &&
+    !NO_RECIPIENT_TX_TYPES.has(intentType)
+  ) {
     throw new InvalidTransactionError(
       'Recipient details are required to verify this transaction before signing. Pass txParams with at least one recipient.'
     );
