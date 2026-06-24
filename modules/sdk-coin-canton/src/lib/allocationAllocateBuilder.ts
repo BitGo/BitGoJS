@@ -10,7 +10,7 @@ export class AllocationAllocateBuilder extends TransactionBuilder {
   private _amount: number;
   private _token: string;
   private _operatorId: string;
-  private _contractId: string;
+  private _contractId: string | null | undefined;
   private _tradeId: string;
   private _transferLegId: string;
   private _allocateBefore: string;
@@ -116,11 +116,11 @@ export class AllocationAllocateBuilder extends TransactionBuilder {
    * @returns The current builder instance for chaining.
    * @throws Error if id is empty.
    */
-  contractId(id: string): this {
-    if (!id || !id.trim()) {
+  contractId(id: string | null): this {
+    if (id !== null && (!id || !id.trim())) {
       throw new Error('contractId must be a non-empty string');
     }
-    this._contractId = id.trim();
+    this._contractId = id === null ? null : id.trim();
     return this;
   }
 
@@ -231,7 +231,7 @@ export class AllocationAllocateBuilder extends TransactionBuilder {
       amount: this._amount,
       token: this._token,
       operatorId: this._operatorId,
-      contractId: this._contractId,
+      ...(this._contractId !== null && this._contractId !== undefined && { contractId: this._contractId }),
       tradeId: this._tradeId,
       transferLegId: this._transferLegId,
       allocateBefore: this._allocateBefore,
@@ -256,7 +256,7 @@ export class AllocationAllocateBuilder extends TransactionBuilder {
     if (!this._amount) throw new Error('amount is missing');
     if (!this._token) throw new Error('token is missing');
     if (!this._operatorId) throw new Error('operatorId is missing');
-    if (!this._contractId) throw new Error('contractId is missing');
+    if (this._contractId === undefined) throw new Error('contractId is missing');
     if (!this._tradeId) throw new Error('tradeId is missing');
     if (!this._transferLegId) throw new Error('transferLegId is missing');
     if (!this._allocateBefore) throw new Error('allocateBefore is missing');
