@@ -5,7 +5,7 @@ import { BitgoExpressError } from '../../schemas/error';
 /**
  * Ping (v1)
  *
- * Health check endpoint that returns 200 when the Express server is running.
+ * Health check endpoint that returns a 200 status code when the BitGo Express server is up and running.
  *
  * @operationId express.v1.ping
  * @tag Express
