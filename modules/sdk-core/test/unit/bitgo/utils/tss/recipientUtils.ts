@@ -29,6 +29,8 @@ describe('recipientUtils', function () {
         'customTx',
         'defiApprove',
         'defiDeposit',
+        'defi-approve',
+        'defi-deposit',
         'contractCall',
         // Staking
         'delegate',
@@ -49,16 +51,25 @@ describe('recipientUtils', function () {
         'transferOfferWithdrawn',
         'cantonCommand',
         'pledge',
-        // Avalanche / Flare cross-chain atomic imports
         'import',
         'importtoc',
+        'closeAssociatedTokenAccount',
+        'voteDelegation',
+        'transferAcknowledge',
+        'cosignDelegationAccept',
+        'allocationAllocate',
+        'allocationAllocateWithdrawn',
+        'cantonEndInvestorOnboardingOffer',
+        'cantonEndInvestorOnboardingAccept',
+        'cantonEndInvestorOnboardingReject',
+        'cantonParticipantOnboardingRequest',
       ];
       expected.forEach((t) => assert.ok(NO_RECIPIENT_TX_TYPES.has(t), `${t} should be in NO_RECIPIENT_TX_TYPES`));
       assert.strictEqual(NO_RECIPIENT_TX_TYPES.size, expected.length);
     });
 
     it('does not contain value-transfer types', function () {
-      ['payment', 'fanout', 'vote', 'defi-deposit', 'defi-redeem'].forEach((t) => {
+      ['payment', 'fanout', 'vote', 'defi-redeem'].forEach((t) => {
         assert.ok(!NO_RECIPIENT_TX_TYPES.has(t), `${t} must NOT be in NO_RECIPIENT_TX_TYPES`);
       });
     });

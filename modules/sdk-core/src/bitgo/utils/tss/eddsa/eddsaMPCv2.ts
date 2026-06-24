@@ -42,6 +42,7 @@ import {
   TxRequest,
   isV2Envelope,
 } from '../baseTypes';
+import { resolveEffectiveTxParams } from '../recipientUtils';
 import { EncryptionVersion } from '../../../../api';
 import { BitGoBase } from '../../../bitgoBase';
 import { BaseEddsaUtils } from './base';
@@ -432,9 +433,10 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       assert(txOrMessageToSign, 'Missing signableHex in unsignedTx');
       derivationPath = unsignedTx.derivationPath;
       bufferContent = Buffer.from(txOrMessageToSign, 'hex');
+
       await this.baseCoin.verifyTransaction({
         txPrebuild: { txHex: unsignedTx.serializedTxHex ?? txOrMessageToSign },
-        txParams: params.txParams || { recipients: [] },
+        txParams: resolveEffectiveTxParams(txRequest, params.txParams),
         wallet: this.wallet,
         walletType: this.wallet.multisigType(),
       });

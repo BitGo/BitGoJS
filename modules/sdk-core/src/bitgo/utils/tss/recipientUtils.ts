@@ -27,9 +27,13 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   'enabletoken',
   'disabletoken',
   'customTx',
-  // DeFi vault operations — recipients/calldata built server-side from defiParams
+  // DeFi operations — recipients/calldata built server-side from defiParams.
+  // camelCase variants match buildParams.type (SDK-facing); kebab-case variants match
+  // intent.intentType (WP-facing, used on the PA path where buildParams is absent).
   'defiApprove',
   'defiDeposit',
+  'defi-approve',
+  'defi-deposit',
   // Smart contract invocations with no explicit SDK-level recipients
   'contractCall',
 
@@ -64,6 +68,25 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   // with intentType 'import' (P-chain) or 'importtoc' (C-chain).
   'import',
   'importtoc',
+
+  // SOL token account management
+  'closeAssociatedTokenAccount',
+
+  // ADA governance
+  'voteDelegation',
+
+  // CANTON multi-step transfer lifecycle
+  'transferAcknowledge',
+
+  // CANTON no-recipient workflow intents — per mpcUtils.ts exempt list and wallet.ts builders;
+  // these intents carry no client recipients
+  'cosignDelegationAccept',
+  'allocationAllocate',
+  'allocationAllocateWithdrawn',
+  'cantonEndInvestorOnboardingOffer',
+  'cantonEndInvestorOnboardingAccept',
+  'cantonEndInvestorOnboardingReject',
+  'cantonParticipantOnboardingRequest',
 ]);
 
 /**

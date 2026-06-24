@@ -37,6 +37,7 @@ import {
   isV2Envelope,
 } from '../baseTypes';
 import { InvalidTransactionError } from '../../../errors';
+import { resolveEffectiveTxParams } from '../recipientUtils';
 import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
 import { BaseEddsaUtils } from './base';
@@ -690,6 +691,13 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       );
       unsignedTx =
         apiVersion === 'full' ? txRequestResolved.transactions![0].unsignedTx : txRequestResolved.unsignedTxs[0];
+
+      await this.baseCoin.verifyTransaction({
+        txPrebuild: { txHex: unsignedTx.serializedTxHex ?? unsignedTx.signableHex },
+        txParams: resolveEffectiveTxParams(txRequestResolved, params.txParams),
+        wallet: this.wallet,
+        walletType: this.wallet.multisigType(),
+      });
     } else if (requestType === RequestType.message) {
       assert(txRequestResolved.messages?.length, 'Unable to find messages in txRequest for message signing');
       const message = txRequestResolved.messages[0];
