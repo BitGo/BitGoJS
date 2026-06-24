@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.25.5...@bitgo/sdk-coin-sui@5.26.0) (2026-06-23)
+
+
+### Features
+
+* **sdk-coin-sui:** update walrus testnet config ([966b330](https://github.com/BitGo/BitGoJS/commit/966b33078f5984212c93873acb1876271582f1f0))
+
+
+
+
+
 ## [5.25.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.25.4...@bitgo/sdk-coin-sui@5.25.5) (2026-06-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

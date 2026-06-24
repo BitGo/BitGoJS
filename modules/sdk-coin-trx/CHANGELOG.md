@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.16.5...@bitgo/sdk-coin-trx@3.17.0) (2026-06-23)
+
+
+### Features
+
+* recovery support for TRX MPC wallets ([02acc08](https://github.com/BitGo/BitGoJS/commit/02acc08ed314919f69d2aafa4c00ab558150ced9))
+
+
+
+
+
 ## [3.16.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.16.4...@bitgo/sdk-coin-trx@3.16.5) (2026-06-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx

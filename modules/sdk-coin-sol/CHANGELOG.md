@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.23.1...@bitgo/sdk-coin-sol@7.24.0) (2026-06-23)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** token support in coin map registry ([0427d9e](https://github.com/BitGo/BitGoJS/commit/0427d9ece2ceb61f1e27b8e59b1e2a474810b20a))
+
+
+### Features
+
+* **sdk-coin-sol:** add MPCv2 signed recovery to Sol.recover() ([8ef93db](https://github.com/BitGo/BitGoJS/commit/8ef93db31a119c48b2a037a5185877af4dbc357c))
+
+
+
+
+
 ## [7.23.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.23.0...@bitgo/sdk-coin-sol@7.23.1) (2026-06-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

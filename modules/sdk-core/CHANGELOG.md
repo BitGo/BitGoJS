@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [37.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.8.0...@bitgo/sdk-core@37.9.0) (2026-06-23)
+
+
+### Bug Fixes
+
+* **sdk-coin-flr:** support FLR C->P atomic TSS signing ([068d9ec](https://github.com/BitGo/BitGoJS/commit/068d9eca093a37f2a23721c4c67c7058f1a88d3f))
+* **sdk-core:** enforce recipient verification in ECDSA TSS signing ([3e14d3a](https://github.com/BitGo/BitGoJS/commit/3e14d3a92d63a1c0400890cd8bbe55e0457456a7))
+* **sdk-core:** exempt FLRP import from TSS recipient guard on PascalCase buildParams ([3fe3af7](https://github.com/BitGo/BitGoJS/commit/3fe3af7a551b02f496ecfb27f1f340b697e750b3))
+* **sdk-core:** read defi vault operationId from coinSpecific ([c7c8011](https://github.com/BitGo/BitGoJS/commit/c7c80114038bce0e3d87dd6d4c84b4c198c78e6e))
+
+
+### Features
+
+* **abstract-eth:** add zama token consolidation support ([b06ca49](https://github.com/BitGo/BitGoJS/commit/b06ca4912bef64004ff109ba5c89954b2be61f55))
+* add allocation allocate withdrawn builder ([b57f0bf](https://github.com/BitGo/BitGoJS/commit/b57f0bfcb8627521058f835c9a7f4f9f6bf77916))
+* add canton participant and end invester intents ([cc4ea7e](https://github.com/BitGo/BitGoJS/commit/cc4ea7ecfa354645904c254fe0fcd48e51735017))
+* **sdk-coin-canton:** add allocation reject builder ([971243c](https://github.com/BitGo/BitGoJS/commit/971243c14ed5ae469a3fae6407af978089fa6a32))
+* **sdk-coin-sol:** add MPCv2 signed recovery to Sol.recover() ([8ef93db](https://github.com/BitGo/BitGoJS/commit/8ef93db31a119c48b2a037a5185877af4dbc357c))
+* **sdk-coin-xrp:** support MPToken via xrpl codec and enableMpt wallet type ([87964d0](https://github.com/BitGo/BitGoJS/commit/87964d05c87eb85ffc9aad4b2e6fcd0dfd6cf2d3))
+
+
+
+
+
 # [37.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.7.0...@bitgo/sdk-core@37.8.0) (2026-06-18)
 
 

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [22.12.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.12.7...@bitgo/sdk-coin-bsc@22.12.8) (2026-06-23)
+
+
+### Bug Fixes
+
+* **root:** pass isFirstSigner through transfer() in all EVM TransactionBuilders ([961e195](https://github.com/BitGo/BitGoJS/commit/961e195eaca5c69f4aadc2e108123dd38bce7fdd))
+* **sdk-core:** enforce recipient verification in ECDSA TSS signing ([3e14d3a](https://github.com/BitGo/BitGoJS/commit/3e14d3a92d63a1c0400890cd8bbe55e0457456a7))
+
+
+
+
+
 ## [22.12.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.12.6...@bitgo/sdk-coin-bsc@22.12.7) (2026-06-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bsc

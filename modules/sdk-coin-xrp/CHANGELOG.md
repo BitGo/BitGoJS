@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.16.2...@bitgo/sdk-coin-xrp@3.17.0) (2026-06-23)
+
+
+### Features
+
+* **sdk-coin-xrp:** support MPToken via xrpl codec and enableMpt wallet type ([87964d0](https://github.com/BitGo/BitGoJS/commit/87964d05c87eb85ffc9aad4b2e6fcd0dfd6cf2d3))
+
+
+
+
+
 ## [3.16.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.16.1...@bitgo/sdk-coin-xrp@3.16.2) (2026-06-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xrp

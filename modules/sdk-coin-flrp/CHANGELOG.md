@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.15.1...@bitgo/sdk-coin-flrp@1.15.2) (2026-06-23)
+
+
+### Bug Fixes
+
+* **sdk-core:** exempt FLRP import from TSS recipient guard on PascalCase buildParams ([3fe3af7](https://github.com/BitGo/BitGoJS/commit/3fe3af7a551b02f496ecfb27f1f340b697e750b3))
+
+
+
+
+
 ## [1.15.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.15.0...@bitgo/sdk-coin-flrp@1.15.1) (2026-06-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp
