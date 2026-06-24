@@ -118,7 +118,54 @@ const approval = pendingApprovals.find((pa) => pa.state() === 'pending');
 await approval.approve({ walletPassphrase, otp });
 ```
 
-### 6. Sign Transaction — sign only (Step 2 of 3)
+### 6. Go Account Whitelist List — view policy rules
+**File:** `examples/ts/go-account/go-account-whitelist-list.ts`
+
+Fetches and displays all policy rules on a Go Account wallet, including existing whitelist policy IDs and their entries.
+
+**Best for:**
+- Discovering the correct policy ID before running the update script
+- Auditing which addresses are currently whitelisted
+
+**Example:**
+```typescript
+const wallet = await bitgo.coin('ofc').wallets().get({ id: walletId });
+const rules = wallet._wallet?.admin?.policy?.rules || [];
+```
+
+### 7. Go Account Whitelist Update — add or remove addresses
+**File:** `examples/ts/go-account/go-account-whitelist-update.ts`
+
+Adds or removes an address from an existing `advancedWhitelist` policy rule on a Go Account wallet.
+
+**Best for:**
+- Managing which destination addresses are permitted for withdrawals
+- Automating whitelist maintenance via the BitGo API
+
+**Flow:**
+```
+PUT /api/v2/ofc/wallet/{walletId}/policy/rule
+  → immediate: update applied
+  → approval required: pendingApproval ID returned
+```
+
+> **Note:** If approval is required, a second administrator must approve the pending change. Use `go-account-approve.ts` or the BitGo portal.
+
+**Example:**
+```typescript
+const body = {
+  id: 'Offchain Wallet Whitelist',
+  type: 'advancedWhitelist',
+  condition: {
+    add: { type: 'address', item: '0xabc...' },
+  },
+  action: { type: 'deny' },
+};
+const url = coin.url(`/wallet/${walletId}/policy/rule`);
+const result = await bitgo.put(url).send(body).result();
+```
+
+### 8. Sign Transaction — sign only (Step 2 of 3)
 **File:** `examples/ts/go-account/sign-transaction.ts`
 
 Signs a pre-built payload and outputs the hex signature. Use this when the build
@@ -291,6 +338,15 @@ const usdtAddress = await wallet.createAddress({
 
    # Sign only: sign a pre-built payload (Step 2 of 3)
    OFC_WALLET_ID=your_wallet_id OFC_WALLET_PASSPHRASE=your_passphrase OFC_PREBUILD_PAYLOAD='{"..."}' npx tsx sign-transaction.ts
+
+   # List whitelist policy rules on a wallet
+   OFC_WALLET_ID=your_wallet_id npx tsx go-account-whitelist-list.ts
+
+   # Add an address to the whitelist
+   OFC_WALLET_ID=your_wallet_id WHITELIST_ADDRESS=your_address WHITELIST_OPERATION=add npx tsx go-account-whitelist-update.ts
+
+   # Remove an address from the whitelist
+   OFC_WALLET_ID=your_wallet_id WHITELIST_ADDRESS=your_address WHITELIST_OPERATION=remove npx tsx go-account-whitelist-update.ts
    ```
 
 ## Supported Tokens
