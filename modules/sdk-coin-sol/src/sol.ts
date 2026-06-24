@@ -533,6 +533,8 @@ export class Sol extends BaseCoin {
     }
 
     const transaction = new Transaction(coinConfig);
+    // Allow unsupported tokens (not in static map) to use their mint address as tokenName during parsing
+    transaction.setUseTokenAddressTokenName(true);
     const rawTx = txPrebuild.txBase64 || txPrebuild.txHex;
     const consolidateId = txPrebuild.consolidateId;
 
@@ -571,7 +573,7 @@ export class Sol extends BaseCoin {
     // Close-ATA txs do not populate explainedTx.outputs; recipients carry ATA addresses for intent only.
     if (txParams.recipients !== undefined && !isTokenEnablementTx && !isCloseAssociatedTokenAccountTx) {
       const filteredRecipients = txParams.recipients?.map((recipient) =>
-        _.pick(recipient, ['address', 'amount', 'tokenName'])
+        _.pick(recipient, ['address', 'amount', 'tokenName', 'tokenAddress', 'programId'])
       );
       const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount', 'tokenName']));
 
@@ -609,15 +611,19 @@ export class Sol extends BaseCoin {
             // If getAssociatedTokenAccountAddress throws an error, then we are unable to derive the ATA for that address.
             // Return false and throw an error if that is the case.
             try {
-              const tokenMintAddress = getSolTokenFromTokenName(recipientFromUser.tokenName);
-              return getAssociatedTokenAccountAddress(
-                tokenMintAddress!.tokenAddress,
-                recipientFromUser.address,
-                true,
-                tokenMintAddress!.programId
-              ).then((ata: string) => {
-                return ata === recipientFromTx.address;
-              });
+              const tokenFromMap = getSolTokenFromTokenName(recipientFromUser.tokenName);
+              const mintAddress = tokenFromMap?.tokenAddress ?? recipientFromUser.tokenAddress;
+              const programId = tokenFromMap?.programId ?? recipientFromUser.programId;
+
+              if (!mintAddress) {
+                return false;
+              }
+
+              return getAssociatedTokenAccountAddress(mintAddress, recipientFromUser.address, true, programId).then(
+                (ata: string) => {
+                  return ata === recipientFromTx.address;
+                }
+              );
             } catch {
               // Unable to derive ATA
               return false;
@@ -641,16 +647,22 @@ export class Sol extends BaseCoin {
         if (output.tokenName) {
           // Check cache first before deriving ATA address
           if (!ataAddressCache[output.tokenName]) {
-            const tokenMintAddress = getSolTokenFromTokenName(output.tokenName);
-            if (tokenMintAddress?.tokenAddress && tokenMintAddress?.programId) {
+            const tokenFromMap = getSolTokenFromTokenName(output.tokenName);
+            if (tokenFromMap?.tokenAddress && tokenFromMap?.programId) {
               ataAddressCache[output.tokenName] = await getAssociatedTokenAccountAddress(
-                tokenMintAddress.tokenAddress,
+                tokenFromMap.tokenAddress,
                 walletRootAddress as string,
                 true,
-                tokenMintAddress.programId
+                tokenFromMap.programId
               );
             } else {
-              throw new Error(`Unable to get token information for ${output.tokenName}`);
+              // For unsupported tokens, explainTransaction sets tokenName to the mint address itself.
+              // Attempt ATA derivation using tokenName as the mint address; programId defaults to TOKEN_PROGRAM_ID.
+              ataAddressCache[output.tokenName] = await getAssociatedTokenAccountAddress(
+                output.tokenName,
+                walletRootAddress as string,
+                true
+              );
             }
           }
 

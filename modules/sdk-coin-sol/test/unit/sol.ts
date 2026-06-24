@@ -4,7 +4,7 @@ import nock from 'nock';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
+import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import {
@@ -674,6 +674,200 @@ describe('SOL:', function () {
           txPrebuild,
           wallet: walletObj,
         } as any)
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should succeed to verify token transaction for unsupported token when tokenAddress and programId are provided', async function () {
+      // Use an address that is NOT in the static token map as the unsupported mint
+      const unsupportedMintAddress = resources.stakeAccount.pub; // '3c5emUWjViFqT72LxQYec8gkU8ZtmfKKXHvGgJNUBdYx'
+      const recipientNativeAddress = resources.authAccount2.pub;
+      const amount = '1000';
+
+      // Pre-derive the ATA so the builder's instruction destination matches what verifyTransaction will compute
+      const ataAddress = await getAssociatedTokenAccountAddress(
+        unsupportedMintAddress,
+        recipientNativeAddress,
+        true,
+        TOKEN_PROGRAM_ID.toString()
+      );
+
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.sender(wallet.pub);
+      txBuilder.nonce(blockHash);
+      txBuilder.fee({ amount: 5000 });
+      txBuilder.send({
+        address: ataAddress, // pass the ATA as the direct destination
+        amount,
+        tokenName: unsupportedMintAddress, // tokenName equals mint address (matches explainTransaction fallback)
+        tokenAddress: unsupportedMintAddress,
+        programId: TOKEN_PROGRAM_ID.toString(),
+        decimalPlaces: 6,
+      });
+      const tx = await txBuilder.build();
+
+      const txPrebuild = {
+        txBase64: tx.toBroadcastFormat(),
+        txInfo: { feePayer: wallet.pub, nonce: blockHash },
+        coin: 'tsol',
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: recipientNativeAddress, // native address — verifyTransaction will derive the ATA
+            amount,
+            tokenName: unsupportedMintAddress, // must match output's tokenName (mint address as fallback)
+            tokenAddress: unsupportedMintAddress,
+            programId: TOKEN_PROGRAM_ID.toString(),
+          },
+        ],
+      };
+
+      const result = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet: walletObj } as any);
+      result.should.equal(true);
+    });
+
+    it('should fail to verify token transaction for unsupported token when tokenAddress and programId are not provided', async function () {
+      const unsupportedMintAddress = resources.stakeAccount.pub;
+      const recipientNativeAddress = resources.authAccount2.pub;
+      const amount = '1000';
+
+      const ataAddress = await getAssociatedTokenAccountAddress(
+        unsupportedMintAddress,
+        recipientNativeAddress,
+        true,
+        TOKEN_PROGRAM_ID.toString()
+      );
+
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.sender(wallet.pub);
+      txBuilder.nonce(blockHash);
+      txBuilder.fee({ amount: 5000 });
+      txBuilder.send({
+        address: ataAddress,
+        amount,
+        tokenName: unsupportedMintAddress,
+        tokenAddress: unsupportedMintAddress,
+        programId: TOKEN_PROGRAM_ID.toString(),
+        decimalPlaces: 6,
+      });
+      const tx = await txBuilder.build();
+
+      const txPrebuild = {
+        txBase64: tx.toBroadcastFormat(),
+        txInfo: { feePayer: wallet.pub, nonce: blockHash },
+        coin: 'tsol',
+      };
+      // No tokenAddress or programId — static map lookup will fail for unsupported token
+      const txParams = {
+        recipients: [
+          {
+            address: recipientNativeAddress,
+            amount,
+            tokenName: unsupportedMintAddress,
+          },
+        ],
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet: walletObj } as any)
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should succeed to verify token transaction for unsupported Token-2022 token when tokenAddress and programId are provided', async function () {
+      const unsupportedMintAddress = resources.stakeAccount.pub;
+      const recipientNativeAddress = resources.authAccount2.pub;
+      const amount = '1000';
+
+      const ataAddress = await getAssociatedTokenAccountAddress(
+        unsupportedMintAddress,
+        recipientNativeAddress,
+        true,
+        TOKEN_2022_PROGRAM_ID.toString()
+      );
+
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.sender(wallet.pub);
+      txBuilder.nonce(blockHash);
+      txBuilder.fee({ amount: 5000 });
+      txBuilder.send({
+        address: ataAddress,
+        amount,
+        tokenName: unsupportedMintAddress,
+        tokenAddress: unsupportedMintAddress,
+        programId: TOKEN_2022_PROGRAM_ID.toString(),
+        decimalPlaces: 6,
+      });
+      const tx = await txBuilder.build();
+
+      const txPrebuild = {
+        txBase64: tx.toBroadcastFormat(),
+        txInfo: { feePayer: wallet.pub, nonce: blockHash },
+        coin: 'tsol',
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: recipientNativeAddress,
+            amount,
+            tokenName: unsupportedMintAddress,
+            tokenAddress: unsupportedMintAddress,
+            programId: TOKEN_2022_PROGRAM_ID.toString(),
+          },
+        ],
+      };
+
+      const result = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet: walletObj } as any);
+      result.should.equal(true);
+    });
+
+    it('should fail to verify token transaction for unsupported Token-2022 token when wrong programId is provided', async function () {
+      const unsupportedMintAddress = resources.stakeAccount.pub;
+      const recipientNativeAddress = resources.authAccount2.pub;
+      const amount = '1000';
+
+      // Build with Token-2022 program ID (ATA derived using TOKEN_2022_PROGRAM_ID)
+      const ataAddress = await getAssociatedTokenAccountAddress(
+        unsupportedMintAddress,
+        recipientNativeAddress,
+        true,
+        TOKEN_2022_PROGRAM_ID.toString()
+      );
+
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.sender(wallet.pub);
+      txBuilder.nonce(blockHash);
+      txBuilder.fee({ amount: 5000 });
+      txBuilder.send({
+        address: ataAddress,
+        amount,
+        tokenName: unsupportedMintAddress,
+        tokenAddress: unsupportedMintAddress,
+        programId: TOKEN_2022_PROGRAM_ID.toString(),
+        decimalPlaces: 6,
+      });
+      const tx = await txBuilder.build();
+
+      const txPrebuild = {
+        txBase64: tx.toBroadcastFormat(),
+        txInfo: { feePayer: wallet.pub, nonce: blockHash },
+        coin: 'tsol',
+      };
+      // Verify with the wrong programId (TOKEN_PROGRAM_ID instead of TOKEN_2022_PROGRAM_ID)
+      // ATA derivation will produce a different address → mismatch → rejection
+      const txParams = {
+        recipients: [
+          {
+            address: recipientNativeAddress,
+            amount,
+            tokenName: unsupportedMintAddress,
+            tokenAddress: unsupportedMintAddress,
+            programId: TOKEN_PROGRAM_ID.toString(),
+          },
+        ],
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet: walletObj } as any)
         .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
     });
 
