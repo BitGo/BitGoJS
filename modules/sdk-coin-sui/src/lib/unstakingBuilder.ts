@@ -140,7 +140,7 @@ export class UnstakingBuilder extends TransactionBuilder<UnstakingProgrammableTr
         objectId: normalizeSuiObjectId(parsed.stakedObjectRef.objectId),
         version: Number(parsed.stakedObjectRef.version),
       },
-      amount: parsed.amount === undefined ? undefined : Number(parsed.amount),
+      amount: parsed.amount,
     });
   }
 

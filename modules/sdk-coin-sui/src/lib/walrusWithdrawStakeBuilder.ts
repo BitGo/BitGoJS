@@ -119,7 +119,7 @@ export class WalrusWithdrawStakeBuilder extends TransactionBuilder<WalrusWithdra
         objectId: normalizeSuiObjectId(parsed.stakedWal.objectId),
         version: Number(parsed.stakedWal.version),
       },
-      amount: parsed.amount === undefined ? undefined : Number(parsed.amount),
+      amount: parsed.amount,
     });
   }
 
@@ -143,7 +143,7 @@ export class WalrusWithdrawStakeBuilder extends TransactionBuilder<WalrusWithdra
             target: `${this.walrusConfig.WALRUS_PKG_ID}::staked_wal::split`,
             arguments: [
               ptb.object(Inputs.ObjectRef(this._withdrawStake.stakedWal)),
-              ptb.pure(Number(this._withdrawStake.amount)),
+              ptb.pure(BigInt(this._withdrawStake.amount!)),
             ],
           } as unknown as MoveCallTransaction);
 

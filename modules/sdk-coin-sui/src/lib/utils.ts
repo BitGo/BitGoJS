@@ -170,11 +170,11 @@ export class Utils implements BaseUtils {
    * @param {number} amounts - the amount to validate
    * @returns {boolean} - the validation result
    */
-  isValidAmount(amount: string | number): boolean {
+  isValidAmount(amount: string | number | bigint): boolean {
     // Build the BigNumber directly from the raw value. Wrapping in Number() first would
     // truncate integers above 2^53 (e.g. large consolidation amounts in MIST), causing
     // valid amounts to be mis-validated.
-    const bigNumberAmount = new BigNumber(amount);
+    const bigNumberAmount = new BigNumber(String(amount));
     if (!bigNumberAmount.isInteger() || bigNumberAmount.isLessThanOrEqualTo(0)) {
       return false;
     }
@@ -268,7 +268,7 @@ export class Utils implements BaseUtils {
 
   getRecipients(tx: SuiTransaction<SuiProgrammableTransaction>): Recipient[] {
     const receipts: Recipient[] = [];
-    const splitResults: number[] = [];
+    const splitResults: string[] = [];
     tx.tx.transactions.forEach((transaction) => {
       if (transaction.kind === 'SplitCoins') {
         const index = transaction.amounts[0].index;
@@ -334,7 +334,7 @@ export class Utils implements BaseUtils {
    * @return {RequestAddStake[]}  add staking requests
    */
   getStakeRequests(tx: StakingProgrammableTransaction): RequestAddStake[] {
-    const amounts: number[] = [];
+    const amounts: string[] = [];
     const addresses: string[] = [];
     tx.transactions.forEach((transaction, i) => {
       if (transaction.kind === 'SplitCoins') {
@@ -357,7 +357,7 @@ export class Utils implements BaseUtils {
   }
 
   getWalrusStakeWithPoolRequests(tx: WalrusStakingProgrammableTransaction): RequestWalrusStakeWithPool[] {
-    const amounts: number[] = [];
+    const amounts: string[] = [];
     const addresses: string[] = [];
     tx.transactions.forEach((transaction, i) => {
       if (transaction.kind === 'SplitCoins') {
@@ -386,7 +386,7 @@ export class Utils implements BaseUtils {
   }
 
   getWalrusWithdrawStakeRequests(tx: WalrusWithdrawStakeProgrammableTransaction): RequestWalrusWithdrawStake {
-    let amount: number | undefined = undefined;
+    let amount: string | undefined = undefined;
     let stakedWal: SuiObjectRef;
     let stakedWalInputIdx = -1;
 
@@ -426,10 +426,11 @@ export class Utils implements BaseUtils {
     return { amount, stakedWal };
   }
 
-  getAmount(input: SuiJsonValue | TransactionBlockInput): number {
-    return isPureArg(input)
+  getAmount(input: SuiJsonValue | TransactionBlockInput): string {
+    const raw = isPureArg(input)
       ? builder.de(BCS.U64, Buffer.from(new Uint16Array(input.Pure)).toString('base64'), 'base64')
       : (input as TransactionBlockInput).value;
+    return String(raw);
   }
 
   getAddress(input: TransactionBlockInput): string {

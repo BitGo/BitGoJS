@@ -9,6 +9,7 @@ import {
 } from '@bitgo/sdk-core';
 import { StakingProgrammableTransaction, SuiTransaction, TransactionExplanation, TxData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import BigNumber from 'bignumber.js';
 import utils from './utils';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
@@ -142,7 +143,7 @@ export class StakingTransaction extends Transaction<StakingProgrammableTransacti
     this._inputs = [
       {
         address: this.suiTransaction.sender,
-        value: this._outputs.reduce((acc, output) => acc + Number(output.value), 0).toString(),
+        value: this._outputs.reduce((acc, output) => acc.plus(output.value), new BigNumber(0)).toFixed(),
         coin: this._coinConfig.name,
       },
     ];
