@@ -4153,7 +4153,7 @@ export const allCoinsAndTokens = [
     '941e3bbc-aaa4-4e06-837d-3511c9c09e5c',
     'tbaseeth:ttbills',
     'Test TBILLS',
-    6,
+    18,
     '0x52ae479d8b7ef0f3c27a3eb0072fb3995bdb77ca',
     UnderlyingAsset['tbaseeth:ttbills'],
     Networks.test.basechain
@@ -4751,6 +4751,24 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:frnt'],
     Networks.main.basechain,
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  erc20Token(
+    'de84435e-7312-40a6-8822-c50a17fd7729',
+    'baseeth:vbtc.b',
+    'Verified Bitcoin',
+    8,
+    '0x09096c6ebf35f0adaeec02d06a0de77e790f132d',
+    UnderlyingAsset['baseeth:vbtc.b'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '33bde2a5-9082-47b3-9f56-de4900914bcc',
+    'baseeth:laptop',
+    'Laptop',
+    18,
+    '0xb095274743941e953c746f9c228da9c18bb6ec29',
+    UnderlyingAsset['baseeth:laptop'],
+    Networks.main.basechain
   ),
 
   // XDC mainnet tokens
@@ -6931,6 +6949,70 @@ export const allCoinsAndTokens = [
     '0x5e817f2abccb9095585d26c2a3ce234a440574fc',
     UnderlyingAsset['arbeth:frnt'],
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  arbethErc20(
+    'f0d99eb4-941d-4ed9-abe5-612be2c5a2c2',
+    'arbeth:opsbtc',
+    'Enhanced BTC Long Short Momentum',
+    18,
+    '0xc6900e6cdee6e46380289c0c854551f9896cbf5c',
+    UnderlyingAsset['arbeth:opsbtc']
+  ),
+  arbethErc20(
+    '90ec0b8b-8224-4c96-8392-835adba0cb17',
+    'arbeth:argt',
+    'Argentine Peso token',
+    18,
+    '0x59863989d080b22476db95656d0c3cc18be92214',
+    UnderlyingAsset['arbeth:argt']
+  ),
+  arbethErc20(
+    'ad5ad62d-e6dd-440c-b7e9-ea12a85dbf4e',
+    'arbeth:brat',
+    'Brazilian Real token',
+    18,
+    '0xc4ed6aba5373d78e160f4df39e011f078be54df8',
+    UnderlyingAsset['arbeth:brat']
+  ),
+  arbethErc20(
+    '6f154207-f173-464a-b797-89918f982509',
+    'arbeth:colt',
+    'Colombian Peso token',
+    18,
+    '0xa16d5db80a45157e0e451750b81ff0cc0b61d558',
+    UnderlyingAsset['arbeth:colt']
+  ),
+  arbethErc20(
+    '652367a5-29ef-4653-8568-a2da29ec3781',
+    'arbeth:mext',
+    'Mexican Peso token',
+    18,
+    '0xb96aa6babccd738d6644add4912fe5efbebf5a25',
+    UnderlyingAsset['arbeth:mext']
+  ),
+  arbethErc20(
+    'f0c16b09-762e-4e0a-b420-7e3732036fb1',
+    'arbeth:chlt',
+    'Chilean Peso token',
+    18,
+    '0xe8dbc4680235ccaeff48e4c0b0eaceebb89e5e17',
+    UnderlyingAsset['arbeth:chlt']
+  ),
+  arbethErc20(
+    '95de709e-8b1b-4aa4-987e-ff8b7e826647',
+    'arbeth:bolt',
+    'Bolivian Boliviano token',
+    18,
+    '0x1edf5e61b6a4fe19fef3a695328f61aaa07728ea',
+    UnderlyingAsset['arbeth:bolt']
+  ),
+  arbethErc20(
+    '323823d0-d249-4d1a-b770-e82963855022',
+    'arbeth:pert',
+    'Peruvian Sol Token',
+    18,
+    '0x899438713f62b04d6cd8e8709986f7256fb6e3d9',
+    UnderlyingAsset['arbeth:pert']
   ),
 
   opethErc20(
