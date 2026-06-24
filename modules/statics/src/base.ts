@@ -2052,6 +2052,7 @@ export enum UnderlyingAsset {
   'hoodeth:xom' = 'hoodeth:xom',
   'hoodeth:zm' = 'hoodeth:zm',
   'hoodeth:zs' = 'hoodeth:zs',
+  'hoodeth:spcx' = 'hoodeth:spcx',
   'hemieth:hemi' = 'hemieth:hemi',
   'hemieth:hemibtc' = 'hemieth:hemibtc',
   'usdt0:stable' = 'usdt0:stable',
@@ -4177,6 +4178,10 @@ export enum UnderlyingAsset {
   'tempo:usd1' = 'tempo:usd1',
   'tempo:usdt0' = 'tempo:usdt0',
   'tempo:gousd' = 'tempo:gousd',
+  'tempo:cbbtc' = 'tempo:cbbtc',
+  'tempo:syrupusdc' = 'tempo:syrupusdc',
+  'tempo:cusd' = 'tempo:cusd',
+  'tempo:stcusd' = 'tempo:stcusd',
 
   // Tempo testnet tokens
   'ttempo:pathusd' = 'ttempo:pathusd',

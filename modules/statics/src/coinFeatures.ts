@@ -610,6 +610,9 @@ export const TEMPO_FEATURES = [
   ...EVM_FEATURES.filter((feature) => feature !== CoinFeature.ENTERPRISE_PAYS_FEES),
   CoinFeature.EVM_KEYRING_UNSUPPORTED,
 ];
+export const TEMPO_FEATURES_EXCLUDE_SINGAPORE = TEMPO_FEATURES.filter(
+  (feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE
+);
 export const HYPERLIQUID_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.MULTISIG_COLD,
