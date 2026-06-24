@@ -6,7 +6,7 @@ import * as sinon from 'sinon';
 import * as sjcl from '@bitgo/sjcl';
 import { DklsUtils } from '@bitgo/sdk-lib-mpc';
 
-import { BitGoBase, EcdsaMPCv2Utils, IBaseCoin, TxRequest } from '../../../../../src';
+import { BitGoBase, EcdsaMPCv2Utils, IBaseCoin, IWallet, RequestTracer, TxRequest } from '../../../../../src';
 import BaseTssUtils from '../../../../../src/bitgo/utils/tss/baseTSSUtils';
 
 type BitgoGpgKeyPair = openpgp.SerializedKeyPair<string> & { revocationCertificate: string };
@@ -319,6 +319,107 @@ describe('Base TSS Utils', function () {
         ),
         /json decode|Failed to parse cyphertext to JSON/
       );
+    });
+  });
+
+  describe('recreateTxRequest', function () {
+    function makeWallet(multisigTypeVersion: 'MPCv2' | undefined): IWallet {
+      return {
+        id: sinon.stub().returns('wallet-id'),
+        multisigTypeVersion: sinon.stub().returns(multisigTypeVersion),
+      } as unknown as IWallet;
+    }
+
+    function makeCoin(mpcAlgorithm: 'eddsa' | 'ecdsa', chain = 'tsol'): IBaseCoin {
+      const coin = {} as IBaseCoin;
+      coin.getHashFunction = sinon.stub();
+      coin.getMPCAlgorithm = sinon.stub().returns(mpcAlgorithm);
+      coin.getChain = sinon.stub().returns(chain);
+      return coin;
+    }
+
+    it('derives txParams from intent for EdDSA MPCv2 wallets', async function () {
+      const txRequestId = 'tx-req-id-1';
+      const reqId = new RequestTracer();
+      const txRequest = buildTxRequest({
+        txRequestId,
+        intent: {
+          intentType: 'payment',
+          recipients: [{ address: { address: 'solAddr1' }, amount: { value: '5000000', symbol: 'tsol' } }],
+        },
+      });
+
+      const utils = new TestBaseTssUtils(mockBitgo, makeCoin('eddsa'), makeWallet('MPCv2'));
+      sinon.stub(utils, 'deleteSignatureShares').resolves();
+      sinon.stub(utils, 'getTxRequest').resolves(txRequest);
+      const signTxRequestStub = sinon.stub(utils, 'signTxRequest').resolves(txRequest);
+
+      await utils.recreateTxRequest(txRequestId, 'prv', reqId);
+
+      // Native SOL: symbol equals the chain name, so tokenName must be omitted
+      assert.deepStrictEqual(signTxRequestStub.firstCall.args[0].txParams, {
+        recipients: [{ address: 'solAddr1', amount: '5000000' }],
+      });
+    });
+
+    it('sets tokenName for SPL tokens (symbol differs from chain name)', async function () {
+      const txRequestId = 'tx-req-id-spl';
+      const reqId = new RequestTracer();
+      const txRequest = buildTxRequest({
+        txRequestId,
+        intent: {
+          intentType: 'payment',
+          recipients: [{ address: { address: 'splAddr1' }, amount: { value: '1000', symbol: 'tsol:usdc' } }],
+        },
+      });
+
+      const utils = new TestBaseTssUtils(mockBitgo, makeCoin('eddsa', 'tsol'), makeWallet('MPCv2'));
+      sinon.stub(utils, 'deleteSignatureShares').resolves();
+      sinon.stub(utils, 'getTxRequest').resolves(txRequest);
+      const signTxRequestStub = sinon.stub(utils, 'signTxRequest').resolves(txRequest);
+
+      await utils.recreateTxRequest(txRequestId, 'prv', reqId);
+
+      // SPL token: symbol differs from chain name, so tokenName must be set
+      assert.deepStrictEqual(signTxRequestStub.firstCall.args[0].txParams, {
+        recipients: [{ address: 'splAddr1', amount: '1000', tokenName: 'tsol:usdc' }],
+      });
+    });
+
+    it('passes undefined txParams for EdDSA MPCv2 when intent has no recipients', async function () {
+      const txRequestId = 'tx-req-id-2';
+      const reqId = new RequestTracer();
+      const txRequest = buildTxRequest({ txRequestId, intent: { intentType: 'enableToken' } });
+
+      const utils = new TestBaseTssUtils(mockBitgo, makeCoin('eddsa'), makeWallet('MPCv2'));
+      sinon.stub(utils, 'deleteSignatureShares').resolves();
+      sinon.stub(utils, 'getTxRequest').resolves(txRequest);
+      const signTxRequestStub = sinon.stub(utils, 'signTxRequest').resolves(txRequest);
+
+      await utils.recreateTxRequest(txRequestId, 'prv', reqId);
+
+      assert.strictEqual(signTxRequestStub.firstCall.args[0].txParams, undefined);
+    });
+
+    it('passes undefined txParams for ECDSA MPCv2 wallets (guard does not apply)', async function () {
+      const txRequestId = 'tx-req-id-3';
+      const reqId = new RequestTracer();
+      const txRequest = buildTxRequest({
+        txRequestId,
+        intent: {
+          intentType: 'payment',
+          recipients: [{ address: { address: 'ethAddr1' }, amount: { value: '1000000', symbol: 'eth' } }],
+        },
+      });
+
+      const utils = new TestBaseTssUtils(mockBitgo, makeCoin('ecdsa'), makeWallet('MPCv2'));
+      sinon.stub(utils, 'deleteSignatureShares').resolves();
+      sinon.stub(utils, 'getTxRequest').resolves(txRequest);
+      const signTxRequestStub = sinon.stub(utils, 'signTxRequest').resolves(txRequest);
+
+      await utils.recreateTxRequest(txRequestId, 'prv', reqId);
+
+      assert.strictEqual(signTxRequestStub.firstCall.args[0].txParams, undefined);
     });
   });
 
