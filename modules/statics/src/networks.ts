@@ -2367,9 +2367,9 @@ export class FlarePTestnet extends Testnet implements FlareNetwork {
 export class Flare extends Mainnet implements EthereumNetwork {
   name = 'Flarechain';
   family = CoinFamily.FLR;
-  explorerUrl = 'https://flare-explorer.flare.network/tx/';
-  accountExplorerUrl = 'https://flare-explorer.flare.network/address/';
-  flarePublicUrl = 'https://flare-explorer.flare.network';
+  explorerUrl = 'https://flarescan.com/tx/';
+  accountExplorerUrl = 'https://flarescan.com/blockchain/address/';
+  flarePublicUrl = 'https://flarescan.com';
   chainId = 14;
   nativeCoinOperationHashPrefix = '14';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
@@ -2382,8 +2382,8 @@ export class Flare extends Mainnet implements EthereumNetwork {
 export class FlareTestnet extends Testnet implements EthereumNetwork {
   name = 'FlarechainTestnet';
   family = CoinFamily.FLR;
-  explorerUrl = 'https://coston2-explorer.flare.network/tx/';
-  accountExplorerUrl = 'https://coston2-explorer.flare.network/address/';
+  explorerUrl = 'https://coston2.testnet.flarescan.com/tx/';
+  accountExplorerUrl = 'https://coston2.testnet.flarescan.com/blockchain/address/';
   chainId = 114;
   nativeCoinOperationHashPrefix = '114';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
