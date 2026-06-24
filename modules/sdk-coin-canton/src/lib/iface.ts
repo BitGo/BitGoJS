@@ -194,7 +194,7 @@ export interface CantonAllocationAllocateRequest {
   amount: number;
   token: string;
   operatorId: string;
-  contractId: string;
+  contractId?: string;
   tradeId: string;
   transferLegId: string;
   allocateBefore: string;
