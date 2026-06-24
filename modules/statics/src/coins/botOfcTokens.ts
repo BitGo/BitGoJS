@@ -253,4 +253,52 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.ofcerc20(
+    'e7fb9bbd-e72d-4863-9aad-a851ac00c7c5',
+    'ofceth:thusd',
+    'thUSD',
+    6,
+    'eth:thusd' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcerc20(
+    '33656cee-7e60-424c-930e-6525c6bcbeda',
+    'ofceth:sthusd',
+    'Staked thUSD',
+    6,
+    'eth:sthusd' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcerc20(
+    'f284e63e-381b-48e0-9f7d-dfecebbb8b9e',
+    'ofceth:cap',
+    'Cap',
+    18,
+    'eth:cap' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcerc20(
+    '5f4cbbd9-7ced-4ef9-9499-9f8e1203e6e4',
+    'ofceth:allo',
+    'Allora',
+    18,
+    'eth:allo' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
