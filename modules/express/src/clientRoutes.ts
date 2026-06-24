@@ -18,6 +18,7 @@ import {
   CustomPaillierModulusGetterFunction,
   CustomRShareGeneratingFunction,
   CustomSShareGeneratingFunction,
+  DeriveAddressOptions,
   EcdsaMPCv2Utils,
   EcdsaUtils,
   EddsaMPCv2Utils,
@@ -698,6 +699,75 @@ export async function handleV2GenerateWallet(req: ExpressApiRouteRequest<'expres
 }
 
 /**
+ * Independently verify newly created address(es) against client-supplied trusted keychains.
+ *
+ * "Bring your own trusted keys": the caller passes keychains it holds independently, and we
+ * locally re-derive each created address and compare it to what the service returned. Because the
+ * keys do not come from the service, a match is an independent correctness guarantee (unlike the
+ * SDK's built-in check, which verifies using service-fetched keys). Throws on any mismatch.
+ *
+ * The caller opted in by supplying the keychains, so if the coin/wallet does not support local
+ * derivation we surface that as an error rather than silently skipping the requested verification.
+ */
+/**
+ * The fields of a created address we read to re-derive it. `wallet.createAddress` is typed `any`
+ * in the SDK and returns either a single address or `{ addresses: [...] }`, so we model just the
+ * subset we consume and reuse {@link DeriveAddressOptions} types for the derivation inputs.
+ */
+type CreatedAddress = {
+  address?: unknown;
+  index?: unknown;
+  chain?: number;
+  format?: DeriveAddressOptions['format'];
+  baseAddress?: string;
+  coinSpecific?: DeriveAddressOptions['coinSpecific'];
+};
+type CreateAddressResult = CreatedAddress & { addresses?: CreatedAddress[] };
+
+async function verifyCreatedAddressesWithTrustedKeys(
+  coin: ReturnType<BitGo['coin']>,
+  wallet: Wallet,
+  result: CreateAddressResult,
+  trustedKeychains: ({ pub: string } | { commonKeychain: string })[]
+): Promise<void> {
+  const addresses = Array.isArray(result?.addresses) ? result.addresses : [result];
+  const walletCoinSpecific = (wallet.coinSpecific?.() ?? {}) as { walletVersion?: number; baseAddress?: string };
+
+  for (const addr of addresses) {
+    if (!addr || typeof addr.address !== 'string' || typeof addr.index !== 'number') {
+      continue;
+    }
+    // The caller opted in, so any derivation failure (e.g. an unsupported coin) must surface as a
+    // 400 rather than the default 500 — hence we map derivation errors and mismatches alike to 400.
+    try {
+      const derived = await coin.deriveAddress({
+        keychains: trustedKeychains,
+        index: addr.index,
+        chain: addr.chain,
+        format: addr.format,
+        walletVersion: walletCoinSpecific.walletVersion,
+        baseAddress: addr.baseAddress ?? walletCoinSpecific.baseAddress,
+        coinSpecific: addr.coinSpecific,
+      });
+      if (derived.address !== addr.address) {
+        throw new ApiResponseError(
+          `address verification failed: service returned ${addr.address} but trusted keychains derive ${derived.address}`,
+          400
+        );
+      }
+    } catch (e) {
+      if (e instanceof ApiResponseError) {
+        throw e;
+      }
+      throw new ApiResponseError(
+        `address verification with trusted keychains failed for ${addr.address}: ${(e as Error).message}`,
+        400
+      );
+    }
+  }
+}
+
+/**
  * handle new address creation
  * @param req
  */
@@ -705,7 +775,17 @@ export async function handleV2CreateAddress(req: ExpressApiRouteRequest<'express
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const wallet = await coin.wallets().get({ id: req.decoded.id });
-  return wallet.createAddress(req.decoded);
+  const result = await wallet.createAddress(req.decoded);
+
+  // Opt-in, per-request: if the caller supplied trusted keychains, independently verify the
+  // created address(es) before returning. No effect on requests that omit trustedKeychains.
+  // Token (e.g. SPL) deposit addresses derive differently (associated token account) and are not
+  // verified here yet — that lands once token derivation (WCN-1054) is available on this path.
+  const trustedKeychains = req.decoded.trustedKeychains;
+  if (trustedKeychains && trustedKeychains.length > 0 && !req.decoded.onToken) {
+    await verifyCreatedAddressesWithTrustedKeys(coin, wallet, result, trustedKeychains);
+  }
+  return result;
 }
 
 /**

@@ -157,6 +157,98 @@ describe('CreateAddress codec tests', function () {
         true
       );
     });
+
+    describe('trustedKeychains verification', function () {
+      const trustedKeychains = [{ pub: 'xpub-user' }, { pub: 'xpub-backup' }, { pub: 'xpub-bitgo' }];
+
+      function stubCoin(deriveAddressStub: sinon.SinonStub) {
+        const mockWallet = {
+          createAddress: sinon.stub().resolves(mockResponse),
+          coinSpecific: sinon.stub().returns({}),
+        };
+        const mockCoin = {
+          wallets: sinon.stub().returns({ get: sinon.stub().resolves(mockWallet) }),
+          deriveAddress: deriveAddressStub,
+        };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+        return { mockCoin };
+      }
+
+      it('returns the address when the derived address matches the trusted keychains', async function () {
+        const deriveAddressStub = sinon.stub().resolves({ address: mockResponse.address, index: 1 });
+        const { mockCoin } = stubCoin(deriveAddressStub);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/address`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send({ chain: 0, trustedKeychains });
+
+        assert.strictEqual(result.status, 200);
+        assert.strictEqual(result.body.address, mockResponse.address);
+        // deriveAddress was called with the client's trusted keychains (not service keys)
+        sinon.assert.calledOnce(mockCoin.deriveAddress);
+        const callArgs = mockCoin.deriveAddress.firstCall.args[0];
+        assert.deepStrictEqual(callArgs.keychains, trustedKeychains);
+        assert.strictEqual(callArgs.index, 1);
+      });
+
+      it('returns 400 when the derived address does not match (service returned a different address)', async function () {
+        const deriveAddressStub = sinon.stub().resolves({ address: '2NDifferentAddressXXXXXXXXXXXXXXXXXXX', index: 1 });
+        stubCoin(deriveAddressStub);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/address`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send({ chain: 0, trustedKeychains });
+
+        assert.strictEqual(result.status, 400);
+        result.body.should.have.property('error');
+      });
+
+      it('returns 400 when derivation is not supported for the coin/wallet (caller opted in)', async function () {
+        const deriveAddressStub = sinon.stub().rejects(new Error('deriveAddress is not supported for this coin'));
+        stubCoin(deriveAddressStub);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/address`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send({ chain: 0, trustedKeychains });
+
+        assert.strictEqual(result.status, 400);
+        result.body.should.have.property('error');
+      });
+
+      it('does not verify (no deriveAddress call) when trustedKeychains is omitted', async function () {
+        const deriveAddressStub = sinon.stub().resolves({ address: mockResponse.address, index: 1 });
+        const { mockCoin } = stubCoin(deriveAddressStub);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/address`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send({ chain: 0 });
+
+        assert.strictEqual(result.status, 200);
+        sinon.assert.notCalled(mockCoin.deriveAddress);
+      });
+
+      it('skips trusted verification for token (onToken) addresses', async function () {
+        const deriveAddressStub = sinon.stub().resolves({ address: mockResponse.address, index: 1 });
+        const { mockCoin } = stubCoin(deriveAddressStub);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/address`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send({ chain: 0, trustedKeychains, onToken: 'tsol:usdc' });
+
+        assert.strictEqual(result.status, 200);
+        sinon.assert.notCalled(mockCoin.deriveAddress);
+      });
+    });
   });
 
   describe('CreateAddressParams', function () {

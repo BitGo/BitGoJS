@@ -2,6 +2,7 @@ import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 import { EIP1559, ForwarderVersion, CreateAddressFormat } from '../../schemas/address';
+import { DeriveAddressKeychainCodec } from './deriveAddress';
 
 /**
  * Path parameters for creating a wallet address
@@ -51,6 +52,15 @@ export const CreateAddressBody = {
   baseAddress: optional(t.string),
   /** When false, throws error if address verification is skipped (e.g., during pending chain initialization). Default: true */
   allowSkipVerifyAddress: optional(t.boolean),
+  /**
+   * Optional independently-held keychains (public key material only). When provided, Express
+   * locally re-derives each newly created address from these keys and fails the request if it
+   * does not match the address returned by the service — an independent ("bring your own trusted
+   * keys") verification folded into the create call. Omit to keep the default behavior.
+   * Supported for coins with local derivation (BTC/UTXO, ETH MPC + forwarder, SOL incl. SPL tokens);
+   * requesting it for an unsupported coin returns an error rather than silently skipping.
+   */
+  trustedKeychains: optional(t.array(DeriveAddressKeychainCodec)),
 } as const;
 
 /** Response for creating wallet address(es) */
