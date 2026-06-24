@@ -4005,10 +4005,10 @@ export const ofcErc20Coins = [
   ),
   ofcerc20(
     '15d5e890-b5f0-427a-bc97-05f42d939d60',
-    'ofcbaseeth:vbtc.b',
+    'ofcbaseeth:vbtcb',
     'Verified Bitcoin',
     8,
-    UnderlyingAsset['baseeth:vbtc.b'],
+    UnderlyingAsset['baseeth:vbtcb'],
     undefined,
     undefined,
     '',
