@@ -1014,6 +1014,16 @@ export const hoodethTokens = [
     EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20Token(
+    'd24014ac-e038-4c8b-8fba-c6792433191d',
+    'hoodeth:spcx',
+    'Space Exploration Technologies Corp',
+    18,
+    '0x4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea',
+    UnderlyingAsset['hoodeth:spcx'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
     '3493d608-fd3e-45dc-926d-783d54a8fe4d',
     'thoodeth:amzn',
     'Amazon',

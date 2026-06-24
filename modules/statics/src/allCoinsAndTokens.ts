@@ -133,6 +133,7 @@ import {
   TAO_FEATURES,
   TAO_TOKEN_FEATURES,
   TEMPO_FEATURES,
+  TEMPO_FEATURES_EXCLUDE_SINGAPORE,
   TIA_FEATURES,
   TOKEN_FEATURES_WITH_FRANKFURT,
   TON_FEATURES,
@@ -3593,6 +3594,57 @@ export const allCoinsAndTokens = [
     6,
     '0x20c0000000000000000000006d194f9810e6f886',
     UnderlyingAsset['tempo:gousd'],
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
+  tip20Token(
+    'eb3e7e10-fadf-48ea-9032-707989c76d8d',
+    'tempo:cbbtc',
+    'Coinbase Wrapped BTC',
+    6,
+    '0x20c000000000000000000000c412ec89d0c08be5',
+    UnderlyingAsset['tempo:cbbtc'],
+    [...TEMPO_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EVM_NON_BITGO_RECOVERY, CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY]
+  ),
+  tip20Token(
+    '6c20b4b7-8a34-43be-90ac-21750cb1b906',
+    'tempo:syrupusdc',
+    'Syrup USDC',
+    6,
+    '0x20c0000000000000000000008191667423f70e67',
+    UnderlyingAsset['tempo:syrupusdc'],
+    [
+      ...TEMPO_FEATURES_EXCLUDE_SINGAPORE,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
+  tip20Token(
+    '091ff847-8a7d-4b70-984c-7745a9a49621',
+    'tempo:cusd',
+    'Cap USD',
+    6,
+    '0x20c0000000000000000000000520792dcccccccc',
+    UnderlyingAsset['tempo:cusd'],
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
+  tip20Token(
+    'bf365219-09a1-4527-9956-4b4add11666e',
+    'tempo:stcusd',
+    'Staked Cap USD',
+    6,
+    '0x20c0000000000000000000008ee4fcff88888888',
+    UnderlyingAsset['tempo:stcusd'],
     [
       ...TEMPO_FEATURES,
       CoinFeature.STABLECOIN,

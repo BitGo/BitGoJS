@@ -5160,6 +5160,28 @@ export const ofcCoins = [
   ofcTempoToken('05ac1283-5e72-4cba-8b0f-38cbd23a25c6', 'ofctempo:usd1', 'USD1', 6, UnderlyingAsset['tempo:usd1']),
   ofcTempoToken('11894b40-38da-4c52-80c3-a824bb452e69', 'ofctempo:gousd', 'goUSD', 6, UnderlyingAsset['tempo:gousd']),
   ofcTempoToken('554f9084-4ac8-466a-8675-3de33ffd47d7', 'ofctempo:usdt0', 'USDT0', 6, UnderlyingAsset['tempo:usdt0']),
+  ofcTempoToken(
+    '4bc4f843-b9b0-41b5-a06b-9d5712d0a94f',
+    'ofctempo:cbbtc',
+    'Coinbase Wrapped BTC',
+    6,
+    UnderlyingAsset['tempo:cbbtc']
+  ),
+  ofcTempoToken(
+    '58f3519d-1216-4190-a3c6-f8bff36323cd',
+    'ofctempo:syrupusdc',
+    'Syrup USDC',
+    6,
+    UnderlyingAsset['tempo:syrupusdc']
+  ),
+  ofcTempoToken('8e318174-31d2-41ec-bc6d-8652a6504a9c', 'ofctempo:cusd', 'Cap USD', 6, UnderlyingAsset['tempo:cusd']),
+  ofcTempoToken(
+    'df42beff-ea28-4e08-b881-a1b946aa5182',
+    'ofctempo:stcusd',
+    'Staked Cap USD',
+    6,
+    UnderlyingAsset['tempo:stcusd']
+  ),
   // Tempo testnet OFC tokens
   tofcTempoToken(
     '7912e76e-5a5c-4f1b-86e9-1fc2a51f5a98',
