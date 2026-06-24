@@ -1618,6 +1618,10 @@ export const ofcCoins = [
     ...SOL_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
   ]),
+  ofcsolToken('d7498d62-efa3-4767-95ba-155568b65a48', 'ofcsol:abc', 'ABC', 6, UnderlyingAsset['sol:abc'], [
+    ...SOL_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+  ]),
   ofcsolToken('d398e9e1-1a3e-4307-9e31-e1dbc03aa0f0', 'ofcsol:sofid', 'SoFiUSD', 6, UnderlyingAsset['sol:sofid'], [
     ...SOL_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
@@ -2042,6 +2046,14 @@ export const ofcCoins = [
     'Testnet goUSD',
     6,
     UnderlyingAsset['tsol:stggousd'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tofcsolToken(
+    '068d158c-9032-4096-ba52-4127f11b0981',
+    'ofctsol:abc',
+    'Testnet ABC',
+    6,
+    UnderlyingAsset['tsol:abc'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   tofcsolToken(
