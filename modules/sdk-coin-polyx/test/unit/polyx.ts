@@ -3,6 +3,8 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Polyx, Tpolyx } from '../../src';
 import { POLYX_ADDRESS_FORMAT, TPOLYX_ADDRESS_FORMAT } from '../../src/lib/constants';
+import utils from '../../src/lib/utils';
+import { coins } from '@bitgo/statics';
 import * as sinon from 'sinon';
 import * as testData from '../resources/wrwUsers';
 import { afterEach } from 'mocha';
@@ -36,11 +38,14 @@ describe('Polyx:', function () {
     let accountInfoCB;
     let headerInfoCB;
     let getFeeCB;
+    let getMaterialCB;
 
     beforeEach(function () {
       accountInfoCB = sandBox.stub(Polyx.prototype, 'getAccountInfo' as keyof Polyx);
       headerInfoCB = sandBox.stub(Polyx.prototype, 'getHeaderInfo' as keyof Polyx);
       getFeeCB = sandBox.stub(Polyx.prototype, 'getFee' as keyof Polyx);
+      getMaterialCB = sandBox.stub(Polyx.prototype, 'getMaterial' as keyof Polyx);
+      getMaterialCB.resolves(utils.getMaterial(coins.get('tpolyx').network.type));
     });
 
     afterEach(function () {
