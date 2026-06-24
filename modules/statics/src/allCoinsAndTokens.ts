@@ -4807,11 +4807,11 @@ export const allCoinsAndTokens = [
   ),
   erc20Token(
     'de84435e-7312-40a6-8822-c50a17fd7729',
-    'baseeth:vbtc.b',
+    'baseeth:vbtcb',
     'Verified Bitcoin',
     8,
     '0x09096c6ebf35f0adaeec02d06a0de77e790f132d',
-    UnderlyingAsset['baseeth:vbtc.b'],
+    UnderlyingAsset['baseeth:vbtcb'],
     Networks.main.basechain
   ),
   erc20Token(

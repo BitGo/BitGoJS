@@ -3365,7 +3365,7 @@ export enum UnderlyingAsset {
   'baseeth:bolt' = 'baseeth:bolt',
   'baseeth:gusdcq' = 'baseeth:gusdcq',
   'baseeth:laptop' = 'baseeth:laptop',
-  'baseeth:vbtc.b' = 'baseeth:vbtc.b',
+  'baseeth:vbtcb' = 'baseeth:vbtcb',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
