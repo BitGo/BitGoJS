@@ -4,7 +4,7 @@
  * - Doc: https://docs.flare.network/user/wallets/
  *
  * @coinFullName Flare
- * @coinWebsite https://flare-explorer.flare.network
+ * @coinWebsite https://flarescan.com
  */
 
 import { BigNumber } from 'bignumber.js';
