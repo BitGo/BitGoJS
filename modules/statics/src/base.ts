@@ -591,6 +591,11 @@ export enum CoinFeature {
    * This token is a receipt token, representing a claim on an underlying asset
    */
   RECEIPT_TOKEN = 'receipt-token',
+
+  /**
+   * This coin supports bring-your-own-validator (BYOV) staking
+   */
+  BYOV_VALIDATOR = 'byov-validator',
 }
 
 /**

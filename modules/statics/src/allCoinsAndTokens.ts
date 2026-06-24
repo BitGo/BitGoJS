@@ -92,6 +92,7 @@ import {
   BERA_FEATURES,
   BSC_FEATURES,
   CANTON_FEATURES,
+  TCANTON_FEATURES,
   CELO_FEATURES,
   COREDAO_FEATURES,
   COREUM_FEATURES,
@@ -3822,7 +3823,7 @@ export const allCoinsAndTokens = [
     'Testnet Canton',
     Networks.test.canton,
     UnderlyingAsset.CANTON,
-    [...CANTON_FEATURES, CoinFeature.UNSPENT_MODEL, CoinFeature.MERGE_UTXOS, CoinFeature.FANOUT_UTXOS],
+    TCANTON_FEATURES,
     KeyCurve.Ed25519
   ),
   gasTankAccount(
