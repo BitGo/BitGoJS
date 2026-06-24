@@ -4132,4 +4132,37 @@ export const solTokens = [
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
     ProgramID.Token2022ProgramId
   ),
+  solToken(
+    'e475abac-72ed-4ace-8b5f-8eb4c31d2f54',
+    'sol:scaassachu',
+    'SCAASSACHU',
+    6,
+    '7vXcrS2iHjBhQwP6RhAPhZaTGKjodfGPr2H3GDaqmnXCa',
+    '7vXcrS2iHjBhQwP6RhAPhZaTGKjodfGPr2H3GDaqmnXCa',
+    UnderlyingAsset['sol:scaassachu'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    '56910acd-586b-4556-9c56-73e7ecbd00fa',
+    'tsol:scaassachu',
+    'Testnet SCAASSACHU',
+    6,
+    '7vXcrS2iHjBhQwP6RhAPhZaTGKjodfGPr2H3GDaqmBHX',
+    '7vXcrS2iHjBhQwP6RhAPhZaTGKjodfGPr2H3GDaqmBHX',
+    UnderlyingAsset['tsol:scaassachu'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    '9715aa3e-0083-4ee6-b2c2-a5e3c33b88d7',
+    'tsol:stgscaassachu',
+    'Testnet SCAASSACHU',
+    6,
+    '7vXcrS2iHjBhQwP6RhAPhZaTGKjodfGPr2H3GDaqmXHD',
+    '7vXcrS2iHjBhQwP6RhAPhZaTGKjodfGPr2H3GDaqmXHD',
+    UnderlyingAsset['tsol:stgscaassachu'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    ProgramID.Token2022ProgramId
+  ),
 ];

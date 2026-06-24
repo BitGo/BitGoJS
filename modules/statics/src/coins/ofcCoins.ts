@@ -1618,6 +1618,14 @@ export const ofcCoins = [
     ...SOL_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
   ]),
+  ofcsolToken(
+    '5453b2dc-7367-42da-9f2f-7bc80c217059',
+    'ofcsol:scaassachu',
+    'SCAASSACHU',
+    6,
+    UnderlyingAsset['sol:scaassachu'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
   ofcsolToken('d398e9e1-1a3e-4307-9e31-e1dbc03aa0f0', 'ofcsol:sofid', 'SoFiUSD', 6, UnderlyingAsset['sol:sofid'], [
     ...SOL_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
@@ -2042,6 +2050,14 @@ export const ofcCoins = [
     'Testnet goUSD',
     6,
     UnderlyingAsset['tsol:stggousd'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tofcsolToken(
+    'c46a1aa8-0479-4f22-a505-e398d7c2bbfd',
+    'ofctsol:scaassachu',
+    'Testnet SCAASSACHU',
+    6,
+    UnderlyingAsset['tsol:scaassachu'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   tofcsolToken(
