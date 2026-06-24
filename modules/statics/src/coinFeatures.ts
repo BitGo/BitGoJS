@@ -806,6 +806,14 @@ export const CANTON_TOKEN_FEATURES = [
   CoinFeature.ALPHANUMERIC_MEMO_ID,
 ];
 
+export const TCANTON_FEATURES = [
+  ...CANTON_FEATURES,
+  CoinFeature.UNSPENT_MODEL,
+  CoinFeature.MERGE_UTXOS,
+  CoinFeature.FANOUT_UTXOS,
+  CoinFeature.BYOV_VALIDATOR,
+];
+
 export const ERC7984_TOKEN_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.BULK_TRANSACTION,
