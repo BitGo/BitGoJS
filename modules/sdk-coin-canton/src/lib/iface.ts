@@ -212,7 +212,7 @@ export interface CantonAllocationAllocateRequest {
 export interface AllocationRequest {
   updateId: string;
   operatorId: string;
-  contractId: string;
+  contractId?: string;
   tradeId: string;
   transferLegId: string;
   senderPartyId: string;

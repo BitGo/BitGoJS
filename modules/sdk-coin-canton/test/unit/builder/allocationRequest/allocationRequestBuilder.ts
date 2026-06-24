@@ -348,6 +348,28 @@ describe('AllocationRequest Builder', () => {
     assert.throws(() => txBuilder.contractId(''), /contractId must be a non-empty string/);
   });
 
+  it('should accept null contractId and omit it from the request object', function () {
+    const txBuilder = new AllocationRequestBuilder(coins.get('tcanton'));
+    const tx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(tx);
+    txBuilder
+      .updateId(updateId)
+      .operatorId(operatorId)
+      .contractId(null)
+      .tradeId(tradeId)
+      .transferLegId(transferLegId)
+      .senderPartyId(senderPartyId)
+      .receiverPartyId(receiverPartyId)
+      .amount(amount)
+      .token(token)
+      .receiveToken(receiveToken)
+      .receiveAmount(receiveAmount)
+      .allocateBefore(allocateBefore)
+      .settleBefore(settleBefore);
+    const requestObj: AllocationRequest = txBuilder.toRequestObject();
+    assert.equal(requestObj.contractId, undefined, 'contractId should be absent when set to null');
+  });
+
   it('should throw if tradeId is an empty string', function () {
     const txBuilder = new AllocationRequestBuilder(coins.get('tcanton'));
     assert.throws(() => txBuilder.tradeId(''), /tradeId must be a non-empty string/);

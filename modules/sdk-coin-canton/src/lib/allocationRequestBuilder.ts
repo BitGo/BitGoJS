@@ -15,7 +15,7 @@ import { Transaction } from './transaction/transaction';
 export class AllocationRequestBuilder extends TransactionBuilder {
   private _updateId: string;
   private _operatorId: string;
-  private _contractId: string;
+  private _contractId: string | null | undefined;
   private _tradeId: string;
   private _transferLegId: string;
   private _senderPartyId: string;
@@ -84,11 +84,11 @@ export class AllocationRequestBuilder extends TransactionBuilder {
    * Sets the settlement batch contract id.
    * @param id - settlement batch contract id
    */
-  contractId(id: string): this {
-    if (!id || !id.trim()) {
+  contractId(id: string | null): this {
+    if (id !== null && (!id || !id.trim())) {
       throw new Error('contractId must be a non-empty string');
     }
-    this._contractId = id.trim();
+    this._contractId = id === null ? null : id.trim();
     return this;
   }
 
@@ -232,7 +232,6 @@ export class AllocationRequestBuilder extends TransactionBuilder {
     const result: AllocationRequest = {
       updateId: this._updateId,
       operatorId: this._operatorId,
-      contractId: this._contractId,
       tradeId: this._tradeId,
       transferLegId: this._transferLegId,
       senderPartyId: this._senderPartyId,
@@ -244,6 +243,9 @@ export class AllocationRequestBuilder extends TransactionBuilder {
       allocateBefore: this._allocateBefore,
       settleBefore: this._settleBefore,
     };
+    if (this._contractId !== null && this._contractId !== undefined) {
+      result.contractId = this._contractId;
+    }
     if (this._comment !== undefined) {
       result.comment = this._comment;
     }
@@ -253,7 +255,7 @@ export class AllocationRequestBuilder extends TransactionBuilder {
   private validate(): void {
     if (!this._updateId) throw new Error('updateId is missing');
     if (!this._operatorId) throw new Error('operatorId is missing');
-    if (!this._contractId) throw new Error('contractId is missing');
+    if (this._contractId === undefined) throw new Error('contractId is missing');
     if (!this._tradeId) throw new Error('tradeId is missing');
     if (!this._transferLegId) throw new Error('transferLegId is missing');
     if (!this._senderPartyId) throw new Error('senderPartyId is missing');
