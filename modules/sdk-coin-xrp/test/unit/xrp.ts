@@ -920,6 +920,78 @@ describe('XRP:', function () {
     });
   });
 
+  describe('verifyTransaction destination tag enforcement', () => {
+    // txHex for: Payment from rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG to rfjub8A4dpSD5nnszUFTsLprxu1W398jwc
+    // DestinationTag: 0, Amount: 253481 drops
+    const txHexWithDt0 =
+      '{"TransactionType":"Payment","Account":"rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG","Destination":"rfjub8A4dpSD5nnszUFTsLprxu1W398jwc","DestinationTag":0,"Amount":"253481","Flags":2147483648,"LastLedgerSequence":1626225,"Fee":"45","Sequence":7}';
+    // txHex for: same but DestinationTag: 42
+    const txHexWithDt42 =
+      '{"TransactionType":"Payment","Account":"rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG","Destination":"rfjub8A4dpSD5nnszUFTsLprxu1W398jwc","DestinationTag":42,"Amount":"253481","Flags":2147483648,"LastLedgerSequence":1626225,"Fee":"45","Sequence":7}';
+    // txHex for: same but no DestinationTag
+    const txHexNoDt =
+      '{"TransactionType":"Payment","Account":"rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG","Destination":"rfjub8A4dpSD5nnszUFTsLprxu1W398jwc","Amount":"253481","Flags":2147483648,"LastLedgerSequence":1626225,"Fee":"45","Sequence":7}';
+
+    it('should pass when transaction and recipient both have matching destination tag', async function () {
+      const result = await basecoin.verifyTransaction({
+        txParams: {
+          recipients: [{ address: 'rfjub8A4dpSD5nnszUFTsLprxu1W398jwc?dt=0', amount: '253481' }],
+        },
+        txPrebuild: { txHex: txHexWithDt0 },
+      });
+      result.should.equal(true);
+    });
+
+    it('should pass when transaction and recipient both have no destination tag', async function () {
+      const result = await basecoin.verifyTransaction({
+        txParams: {
+          recipients: [{ address: 'rfjub8A4dpSD5nnszUFTsLprxu1W398jwc', amount: '253481' }],
+        },
+        txPrebuild: { txHex: txHexNoDt },
+      });
+      result.should.equal(true);
+    });
+
+    it('should reject when transaction has destination tag 0 but recipient has no destination tag', async function () {
+      await assert.rejects(
+        async () =>
+          basecoin.verifyTransaction({
+            txParams: {
+              recipients: [{ address: 'rfjub8A4dpSD5nnszUFTsLprxu1W398jwc', amount: '253481' }],
+            },
+            txPrebuild: { txHex: txHexWithDt0 },
+          }),
+        { message: 'transaction prebuild does not match expected output' }
+      );
+    });
+
+    it('should reject when transaction has no destination tag but recipient has destination tag 0', async function () {
+      await assert.rejects(
+        async () =>
+          basecoin.verifyTransaction({
+            txParams: {
+              recipients: [{ address: 'rfjub8A4dpSD5nnszUFTsLprxu1W398jwc?dt=0', amount: '253481' }],
+            },
+            txPrebuild: { txHex: txHexNoDt },
+          }),
+        { message: 'transaction prebuild does not match expected output' }
+      );
+    });
+
+    it('should reject when transaction has destination tag 42 but recipient has destination tag 0', async function () {
+      await assert.rejects(
+        async () =>
+          basecoin.verifyTransaction({
+            txParams: {
+              recipients: [{ address: 'rfjub8A4dpSD5nnszUFTsLprxu1W398jwc?dt=0', amount: '253481' }],
+            },
+            txPrebuild: { txHex: txHexWithDt42 },
+          }),
+        { message: 'transaction prebuild does not match expected output' }
+      );
+    });
+  });
+
   describe('blind signing token enablement protection', () => {
     it('should verify as valid the enabletoken intent when prebuild tx matchs user intent ', async function () {
       const { txParams, txPrebuildRaw, walletData } = testData.enableTokenFixtures;

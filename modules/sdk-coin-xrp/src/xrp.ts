@@ -459,7 +459,12 @@ export class Xrp extends BaseCoin {
     const expectedOutput = txParams.recipients && txParams.recipients[0];
 
     const comparator = (recipient1, recipient2) => {
-      if (utils.getAddressDetails(recipient1.address).address !== utils.getAddressDetails(recipient2.address).address) {
+      const r1Details = utils.getAddressDetails(recipient1.address);
+      const r2Details = utils.getAddressDetails(recipient2.address);
+      if (r1Details.address !== r2Details.address) {
+        return false;
+      }
+      if (r1Details.destinationTag !== r2Details.destinationTag) {
         return false;
       }
       const amount1 = new BigNumber(recipient1.amount);
