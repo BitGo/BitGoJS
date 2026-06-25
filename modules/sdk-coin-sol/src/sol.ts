@@ -187,6 +187,8 @@ export interface SolRecoveryOptions extends MPCRecoveryOptions {
   tokenMintAddress?: string;
   programId?: string; // programId of the token
   apiKey?: string; // API key for node requests
+  // Pre-resolved signing route; when set, skips per-call keycard decryption in recover().
+  multisigTypeVersion?: 'MPCv2';
 }
 
 export interface SolConsolidationRecoveryOptions extends MPCConsolidationRecoveryOptions {
@@ -1252,8 +1254,13 @@ export class Sol extends BaseCoin {
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
     const isUnsignedSweep = !params.walletPassphrase;
 
-    // Validate signing keys and detect MPCv2 format early for signed recovery
-    const isMpcV2 = await this.isMpcv2SigningMaterial(params.userKey, params.backupKey, params.walletPassphrase);
+    // Validate signing keys and detect MPCv2 format early for signed recovery.
+    // When multisigTypeVersion is pre-resolved by the caller (e.g. recoverConsolidations),
+    // skip keycard decryption to avoid redundant work on each loop iteration.
+    const isMpcV2 =
+      params.multisigTypeVersion === 'MPCv2'
+        ? true
+        : await this.isMpcv2SigningMaterial(params.userKey, params.backupKey, params.walletPassphrase);
 
     let balance = 0;
 
@@ -1810,13 +1817,22 @@ export class Sol extends BaseCoin {
     }
 
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
-    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    const userKey = params.userKey?.replace(/\s/g, '') ?? '';
+
+    // Detect once at the top to avoid decrypting the keycard on every iteration of the scan loop.
+    // For unsigned sweep (no passphrase), isMpcV2 is false — cold MPCv2 is out of scope.
+    const isMpcV2 = params.walletPassphrase
+      ? !(await EDDSAUtils.isEddsaMpcV1SigningMaterial(userKey, params.walletPassphrase, this.bitgo))
+      : false;
+
     const baseAddressIndex = 0;
     const baseAddressPath = params.seed
       ? getDerivationPath(params.seed) + `/${baseAddressIndex}`
       : `m/${baseAddressIndex}`;
-    const accountId = MPC.deriveUnhardened(bitgoKey, baseAddressPath).slice(0, 64);
-    const baseAddress = new SolKeyPair({ pub: accountId }).getAddress();
+    const baseAccountId = isMpcV2
+      ? deriveUnhardenedMps(bitgoKey, baseAddressPath).slice(0, 64)
+      : (await EDDSAMethods.getInitializedMpcInstance()).deriveUnhardened(bitgoKey, baseAddressPath).slice(0, 64);
+    const baseAddress = new SolKeyPair({ pub: baseAccountId }).getAddress();
 
     let durableNoncePubKeysIndex = 0;
     const durableNoncePubKeysLength = params.durableNonces.publicKeys.length;
@@ -1829,6 +1845,7 @@ export class Sol extends BaseCoin {
         backupKey: params.backupKey,
         bitgoKey: params.bitgoKey,
         walletPassphrase: params.walletPassphrase,
+        multisigTypeVersion: isMpcV2 ? ('MPCv2' as const) : undefined,
         recoveryDestination: baseAddress,
         seed: params.seed,
         index: i,

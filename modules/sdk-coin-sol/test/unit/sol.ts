@@ -3845,6 +3845,342 @@ describe('SOL:', function () {
     });
   });
 
+  describe('Build Consolidation Recoveries (MPCv2):', () => {
+    const mpcV2ConsolidationSandBox = sinon.createSandbox();
+    const usdtMintAddress = '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C';
+    const durableNonces = {
+      publicKeys: [
+        testData.keys.durableNoncePubKey,
+        testData.keys.durableNoncePubKey2,
+        testData.keys.durableNoncePubKey3,
+      ],
+      secretKey: testData.keys.durableNoncePrivKey,
+    };
+
+    let callBack: sinon.SinonStub;
+    let mpcV2UserKey: string;
+    let mpcV2BackupKey: string;
+    let mpcV2CommonKeyChain: string;
+    let mpcV2Address1: string;
+    let mpcV2Address2: string;
+    let mpcV2Address3: string;
+    let mpcV2TokenUserKey: string;
+    let mpcV2TokenBackupKey: string;
+    let mpcV2TokenCommonKeyChain: string;
+    let mpcV2TokenBaseAddress: string;
+    let mpcV2TokenAddress1: string;
+    let walletPassphrase: string;
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      const [tokenUserDkg, tokenBackupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      walletPassphrase = testData.keys.walletPassword;
+
+      mpcV2UserKey = encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+      mpcV2BackupKey = encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+
+      mpcV2Address1 = new KeyPair({ pub: deriveUnhardenedMps(mpcV2CommonKeyChain, 'm/1').slice(0, 64) }).getAddress();
+      mpcV2Address2 = new KeyPair({ pub: deriveUnhardenedMps(mpcV2CommonKeyChain, 'm/2').slice(0, 64) }).getAddress();
+      mpcV2Address3 = new KeyPair({ pub: deriveUnhardenedMps(mpcV2CommonKeyChain, 'm/3').slice(0, 64) }).getAddress();
+
+      mpcV2TokenUserKey = encrypt(walletPassphrase, tokenUserDkg.getReducedKeyShare().toString('base64'));
+      mpcV2TokenBackupKey = encrypt(walletPassphrase, tokenBackupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2TokenCommonKeyChain = tokenUserDkg.getCommonKeychain();
+
+      mpcV2TokenBaseAddress = new KeyPair({
+        pub: deriveUnhardenedMps(mpcV2TokenCommonKeyChain, 'm/0').slice(0, 64),
+      }).getAddress();
+      mpcV2TokenAddress1 = new KeyPair({
+        pub: deriveUnhardenedMps(mpcV2TokenCommonKeyChain, 'm/1').slice(0, 64),
+      }).getAddress();
+    });
+
+    beforeEach(() => {
+      callBack = mpcV2ConsolidationSandBox.stub(Sol.prototype, 'getDataFromNode' as keyof Sol);
+
+      callBack
+        .withArgs({
+          payload: { id: '1', jsonrpc: '2.0', method: 'getLatestBlockhash', params: [{ commitment: 'finalized' }] },
+        })
+        .resolves(testData.SolResponses.getBlockhashResponse);
+
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getFeeForMessage',
+            params: [sinon.match.string, { commitment: 'finalized' }],
+          },
+        })
+        .resolves(testData.SolResponses.getFeesForMessageResponse);
+
+      callBack
+        .withArgs({
+          payload: { id: '1', jsonrpc: '2.0', method: 'getMinimumBalanceForRentExemption', params: [165] },
+        })
+        .resolves(testData.SolResponses.getMinimumBalanceForRentExemptionResponse);
+
+      mpcV2ConsolidationSandBox.stub(Transaction.prototype, 'toBroadcastFormat').returns('stub-serialized-tx');
+    });
+
+    afterEach(() => {
+      mpcV2ConsolidationSandBox.restore();
+    });
+
+    it('should build MPCv2 signed native SOL consolidation recoveries across 2+ funded indexes', async function () {
+      // Spy on the private detection helper — must be called once at top, not per-iteration
+      const isMpcv2Spy = mpcV2ConsolidationSandBox.spy(Sol.prototype, 'isMpcv2SigningMaterial' as keyof Sol);
+
+      callBack
+        .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [mpcV2Address1] } })
+        .resolves(testData.SolResponses.getAccountBalanceResponseNoFunds);
+      callBack
+        .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [mpcV2Address2] } })
+        .resolves(testData.SolResponses.getAccountBalanceResponse);
+      callBack
+        .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [mpcV2Address3] } })
+        .resolves(testData.SolResponses.getAccountBalanceResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              mpcV2Address2,
+              { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+              { encoding: 'jsonParsed' },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponseNoAccounts);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              mpcV2Address3,
+              { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+              { encoding: 'jsonParsed' },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponseNoAccounts);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getAccountInfo',
+            params: [testData.keys.durableNoncePubKey, { encoding: 'jsonParsed' }],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountInfoResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getAccountInfo',
+            params: [testData.keys.durableNoncePubKey2, { encoding: 'jsonParsed' }],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountInfoResponse2);
+
+      const res = (await basecoin.recoverConsolidations({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+        durableNonces,
+      })) as MPCTxs;
+
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(2);
+      (res.lastScanIndex ?? 0).should.equal(3);
+
+      const txn1 = res.transactions[0] as MPCTx;
+      txn1.serializedTx.should.equal('stub-serialized-tx');
+
+      // isMpcv2SigningMaterial must NOT be called at all — recoverConsolidations detects directly
+      // and threads multisigTypeVersion='MPCv2' so recover() skips detection entirely
+      mpcV2ConsolidationSandBox.assert.notCalled(isMpcv2Spy);
+    });
+
+    it('should call isMpcv2SigningMaterial exactly zero times in recover() when multisigTypeVersion is pre-resolved', async function () {
+      // isMpcv2SigningMaterial must not be called inside recover() when recoverConsolidations
+      // pre-resolves the route and passes multisigTypeVersion='MPCv2'
+      const isMpcv2Spy = mpcV2ConsolidationSandBox.spy(Sol.prototype, 'isMpcv2SigningMaterial' as keyof Sol);
+
+      // addresses 1–4 all have no funds — scan range is 5 indexes wide
+      for (const addr of [mpcV2Address1, mpcV2Address2, mpcV2Address3]) {
+        callBack
+          .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [addr] } })
+          .resolves(testData.SolResponses.getAccountBalanceResponseNoFunds);
+      }
+      const mpcV2Address4 = new KeyPair({
+        pub: deriveUnhardenedMps(mpcV2CommonKeyChain, 'm/4').slice(0, 64),
+      }).getAddress();
+      callBack
+        .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [mpcV2Address4] } })
+        .resolves(testData.SolResponses.getAccountBalanceResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              mpcV2Address4,
+              { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+              { encoding: 'jsonParsed' },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponseNoAccounts);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getAccountInfo',
+            params: [testData.keys.durableNoncePubKey, { encoding: 'jsonParsed' }],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountInfoResponse);
+
+      await basecoin.recoverConsolidations({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 5,
+        durableNonces,
+      });
+
+      // recover() must not call isMpcv2SigningMaterial — multisigTypeVersion short-circuits it
+      mpcV2ConsolidationSandBox.assert.notCalled(isMpcv2Spy);
+    });
+
+    it('should build MPCv2 signed SPL token consolidation recoveries', async function () {
+      callBack
+        .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [mpcV2TokenAddress1] } })
+        .resolves(testData.SolResponses.getAccountBalanceResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              mpcV2TokenAddress1,
+              { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+              { encoding: 'jsonParsed' },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              mpcV2TokenBaseAddress,
+              { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+              { encoding: 'jsonParsed' },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponseNoAccounts);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getAccountInfo',
+            params: [testData.keys.durableNoncePubKey, { encoding: 'jsonParsed' }],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountInfoResponse);
+
+      const res = (await basecoin.recoverConsolidations({
+        userKey: mpcV2TokenUserKey,
+        backupKey: mpcV2TokenBackupKey,
+        bitgoKey: mpcV2TokenCommonKeyChain,
+        walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 2,
+        tokenContractAddress: usdtMintAddress,
+        durableNonces,
+      })) as MPCTxs;
+
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(1);
+      const txn = res.transactions[0] as MPCTx;
+      txn.serializedTx.should.equal('stub-serialized-tx');
+    });
+
+    it('should use legacy derivation for MPCv2 unsigned (no passphrase) consolidation — cold path unchanged', async function () {
+      // Without walletPassphrase, isMpcV2 must be false, base address uses MPC.deriveUnhardened
+      callBack
+        .withArgs({
+          payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [testData.wrwUser.walletAddress1] },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponseNoFunds);
+      callBack
+        .withArgs({
+          payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [testData.wrwUser.walletAddress2] },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              testData.wrwUser.walletAddress2,
+              { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+              { encoding: 'jsonParsed' },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponseNoAccounts);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getAccountInfo',
+            params: [testData.keys.durableNoncePubKey, { encoding: 'jsonParsed' }],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountInfoResponse);
+
+      const res = (await basecoin.recoverConsolidations({
+        bitgoKey: testData.wrwUser.bitgoKey,
+        startingScanIndex: 1,
+        endingScanIndex: 3,
+        durableNonces,
+      })) as MPCSweepTxs;
+
+      res.should.not.be.empty();
+      res.txRequests.length.should.equal(1);
+      const txn1 = res.txRequests[0].transactions[0].unsignedTx;
+      // source address is legacy-derived from walletAddress2
+      should.equal(txn1.coinSpecific?.commonKeychain, testData.wrwUser.bitgoKey.replace(/\s/g, ''));
+    });
+  });
+
   describe('broadcastTransaction', function () {
     const sandBox = sinon.createSandbox();
 
