@@ -5474,7 +5474,7 @@ export const allCoinsAndTokens = [
     'bitgo.com',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'BST'
+    'XLM:BST'
   ),
   stellarToken(
     '3c72d612-d3bb-482b-8f0e-e541c5f13ea0',
@@ -5485,7 +5485,7 @@ export const allCoinsAndTokens = [
     'velo.org',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'VELO'
+    'XLM:VELO'
   ),
   stellarToken(
     '3589f447-9f9e-4964-a1cd-57266ed77320',
@@ -5496,7 +5496,7 @@ export const allCoinsAndTokens = [
     'smartlands.io',
     ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
     '',
-    'SLT'
+    'XLM:SLT'
   ),
   stellarToken(
     'd5e3ef15-5e13-4dbe-b6f4-68deaa9aa45b',
@@ -5507,7 +5507,7 @@ export const allCoinsAndTokens = [
     'anchorusd.com',
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     '',
-    'USD'
+    'XLM:USD'
   ),
   stellarToken(
     '36dc0757-8583-4f42-bf62-8eea12cb5268',
@@ -5518,7 +5518,7 @@ export const allCoinsAndTokens = [
     'stellarport.io',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'ETH'
+    'XLM:ETH'
   ),
   stellarToken(
     '13ddfca0-1d8b-457e-b465-b6ca2da24148',
@@ -5529,7 +5529,7 @@ export const allCoinsAndTokens = [
     'wxt.wirexapp.com',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'WXT'
+    'XLM:WXT'
   ),
   stellarToken(
     'd64a43e4-8b3d-448c-a292-b5222b61a3ed',
@@ -5540,7 +5540,7 @@ export const allCoinsAndTokens = [
     'centre.io',
     [...XLM_TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.STABLECOIN],
     '',
-    'USDC'
+    'XLM:USDC'
   ),
   stellarToken(
     'b7f3e8d2-5a9c-4e6b-8f1d-3c2a7e9b4f0d',
@@ -5551,7 +5551,7 @@ export const allCoinsAndTokens = [
     '',
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     '',
-    'USDM1'
+    'XLM:USDM1'
   ),
   stellarToken(
     '8b30dc19-aad7-426b-a98b-ee05f2e6dd71',
@@ -5562,7 +5562,7 @@ export const allCoinsAndTokens = [
     'six.network',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'SIX'
+    'XLM:SIX'
   ),
   stellarToken(
     '62e2dab9-5d6b-416b-a6fd-88aaedd5677a',
@@ -5573,7 +5573,7 @@ export const allCoinsAndTokens = [
     'anchors.stablex.org',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'ARST'
+    'XLM:ARST'
   ),
   stellarToken(
     '2b1ced39-0aee-4d35-b109-aa03e44768cb',
@@ -5584,7 +5584,7 @@ export const allCoinsAndTokens = [
     'anchors.stablex.org',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'BRLT'
+    'XLM:BRLT'
   ),
   stellarToken(
     '13820800-a6e0-4a09-95e9-76df0313c5ed',
@@ -5595,7 +5595,7 @@ export const allCoinsAndTokens = [
     'aqua.network',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'AQUA'
+    'XLM:AQUA'
   ),
   stellarToken(
     '9ed420a6-3da6-4b3f-984b-19b03f3098ec',
@@ -5606,7 +5606,7 @@ export const allCoinsAndTokens = [
     'circle.com',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'EURC'
+    'XLM:EURC'
   ),
   stellarToken(
     'f41ca148-3c44-48e2-aabf-0e1ab5f0bf3e',
@@ -5617,7 +5617,7 @@ export const allCoinsAndTokens = [
     'stablecoin.z.com',
     XLM_TOKEN_FEATURES_WITH_FRANKFURT,
     '',
-    'GYEN'
+    'XLM:GYEN'
   ),
   stellarToken(
     '2f654247-3708-4e20-978b-af896fd910d3',
@@ -5628,7 +5628,7 @@ export const allCoinsAndTokens = [
     'stablecoin.z.com',
     [...XLM_TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.STABLECOIN],
     '',
-    'ZUSD'
+    'XLM:ZUSD'
   ),
   stellarToken(
     'bde64255-0065-4e01-add4-3226325d512e',
@@ -5639,7 +5639,7 @@ export const allCoinsAndTokens = [
     'stasis.net',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'EURS'
+    'XLM:EURS'
   ),
   stellarToken(
     '86841e89-011e-486d-bd29-1474cca0dd65',
@@ -5650,7 +5650,7 @@ export const allCoinsAndTokens = [
     'vnx.li',
     XLM_TOKEN_FEATURES_WITH_FRANKFURT,
     '',
-    'VEUR'
+    'XLM:VEUR'
   ),
   stellarToken(
     '2bcb06ec-8043-4568-a236-274ddad2335f',
@@ -5661,7 +5661,7 @@ export const allCoinsAndTokens = [
     'vnx.li',
     XLM_TOKEN_FEATURES_WITH_FRANKFURT,
     '',
-    'VCHF'
+    'XLM:VCHF'
   ),
   stellarToken(
     'ea901538-9adf-485f-82d1-3a80b94359aa',
@@ -5672,7 +5672,7 @@ export const allCoinsAndTokens = [
     'audd.digital',
     XLM_TOKEN_FEATURES_WITH_FRANKFURT,
     '',
-    'AUDD'
+    'XLM:AUDD'
   ),
   stellarToken(
     '10a1aeb5-c738-4ff2-9924-58b0aabaf6e4',
@@ -5683,7 +5683,7 @@ export const allCoinsAndTokens = [
     'www.franklintempleton.com',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'BENJI'
+    'XLM:BENJI'
   ),
   stellarToken(
     '4afce14d-e061-4008-8ef6-ef13c42d667a',
@@ -5694,7 +5694,7 @@ export const allCoinsAndTokens = [
     'www.franklintempleton.com',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'GBENJI'
+    'XLM:GBENJI'
   ),
   stellarToken(
     'c72bcc64-9269-45ae-9a08-9efa8afb071a',
@@ -5705,7 +5705,7 @@ export const allCoinsAndTokens = [
     'stronghold.co',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'SHX'
+    'XLM:SHX'
   ),
   stellarToken(
     'd11c66e6-b519-4dbb-9050-f35304129571',
@@ -5716,7 +5716,7 @@ export const allCoinsAndTokens = [
     '',
     AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE,
     '',
-    'YLDS'
+    'XLM:YLDS'
   ),
   tronToken(
     '5f3266f8-252c-492a-90d7-bb6d3bf550fb',
@@ -6007,7 +6007,7 @@ export const allCoinsAndTokens = [
     'bitgo.com',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'BST'
+    'TXLM:BST'
   ),
   tstellarToken(
     '9e1d4f1a-661b-4a51-b647-71f8c1330201',
@@ -6018,7 +6018,7 @@ export const allCoinsAndTokens = [
     'bitgo.com',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'TST'
+    'TXLM:TST'
   ),
   tstellarToken(
     '3cd8a334-f0ad-4cb3-8b53-ff3ef7fc507b',
@@ -6029,7 +6029,7 @@ export const allCoinsAndTokens = [
     'bitgo.com',
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'BTGT'
+    'TXLM:BTGT'
   ),
   ttronToken(
     '4ece7f15-a5c9-4302-8c82-787d7eb7e3c9',
