@@ -130,7 +130,7 @@ export const cantonTokens = [
     'USDCx',
     10,
     'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
-    'decentralized-usdc-interchain-rep::122049e2af8a725bd19759320fc83c638e7718973eac189d8f201309c512d1ffec61:USDCX',
+    'decentralized-usdc-interchain-rep::122049e2af8a725bd19759320fc83c638e7718973eac189d8f201309c512d1ffec61:USDCx',
     UnderlyingAsset['tcanton:usdcx'],
     CANTON_TOKEN_FEATURES
   ),
