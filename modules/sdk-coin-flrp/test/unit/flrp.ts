@@ -282,6 +282,19 @@ describe('Flrp test cases', function () {
       txExplain.changeOutputs.should.be.empty();
     });
 
+    it('should explain a signed export from C-chain transaction and include recipient P-chain address', async () => {
+      const txExplain = await basecoin.explainTransaction({ txHex: EXPORT_IN_C.signedHex });
+
+      txExplain.type.should.equal(TransactionType.Export);
+      txExplain.outputs.should.be.an.Array();
+      txExplain.outputs.length.should.equal(1);
+      // The recipient address must be the P-chain destination — not empty.
+      txExplain.outputs[0].address.should.be.a.String();
+      txExplain.outputs[0].address.should.not.be.empty();
+      txExplain.outputs[0].address.should.startWith('P-');
+      txExplain.changeOutputs.should.be.empty();
+    });
+
     it('should fail when transaction hex is not provided', async () => {
       await basecoin.explainTransaction({}).should.be.rejectedWith('missing transaction hex');
     });
