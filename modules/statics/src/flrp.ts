@@ -22,8 +22,6 @@ export class FLRPCoin extends BaseCoin {
     CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
     CoinFeature.CUSTODY_BITGO_GERMANY,
     CoinFeature.CUSTODY_BITGO_FRANKFURT,
-    CoinFeature.MULTISIG_COLD,
-    CoinFeature.MULTISIG,
     CoinFeature.STAKING,
     CoinFeature.TSS,
     CoinFeature.TSS_COLD,
