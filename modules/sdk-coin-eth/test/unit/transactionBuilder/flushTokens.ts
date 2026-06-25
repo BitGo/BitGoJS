@@ -162,6 +162,41 @@ describe('Eth Transaction builder flush tokens (ETH-specific)', function () {
       txJson.data.should.startWith(flushForwarderTokensMethodIdV4);
     });
 
+    it('a SUSHI token flush from v4 forwarder with EIP-1559 fees', async () => {
+      // SUSHI mainnet contract: 0x6b3595068778dd592e39a122f4f5a5cf09c90fe2
+      // For v4 forwarder, contractAddress must equal forwarderAddress
+      const sushiContractAddress = '0x6b3595068778dd592e39a122f4f5a5cf09c90fe2';
+      const v4ForwarderAddress = '0x53b8e91bb3b8f618b5f01004ef108f134f219573';
+
+      const tx = await buildTransaction({
+        fee: {
+          fee: '30',
+          eip1559: {
+            maxPriorityFeePerGas: '2000000000',
+            maxFeePerGas: '30000000000',
+          },
+          gasLimit: '100000',
+        },
+        counter: 1,
+        forwarderAddress: v4ForwarderAddress,
+        tokenAddress: sushiContractAddress,
+        contractAddress: v4ForwarderAddress,
+        forwarderVersion: 4,
+      });
+
+      tx.type.should.equal(TransactionType.FlushTokens);
+      const txJson = tx.toJson();
+      txJson.gasLimit.should.equal('100000');
+      txJson._type.should.equals(ETHTransactionType.EIP1559);
+      txJson.maxFeePerGas!.should.equal('30000000000');
+      txJson.maxPriorityFeePerGas!.should.equal('2000000000');
+      txJson.to!.should.equal(v4ForwarderAddress);
+      should.equal(txJson.nonce, 1);
+      txJson.data.should.startWith(flushForwarderTokensMethodIdV4);
+      // Verify SUSHI contract address is encoded in calldata
+      txJson.data.should.containEql(sushiContractAddress.slice(2).toLowerCase());
+    });
+
     it('decode wallet flush forwarder transaction with forwarder Version 4', async () => {
       const tx = await buildTransaction({
         fee: {
