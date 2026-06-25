@@ -68,7 +68,7 @@ export class Flrp extends BaseCoin {
 
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
-    return multisigTypes.onchain;
+    return multisigTypes.tss;
   }
 
   /** @inheritdoc */

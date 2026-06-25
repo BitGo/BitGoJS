@@ -64,7 +64,7 @@ describe('Flrp test cases', function () {
   });
 
   it('should return default multisig type', function () {
-    basecoin.getDefaultMultisigType().should.equal('onchain');
+    basecoin.getDefaultMultisigType().should.equal('tss');
   });
 
   it('should support TSS', function () {
