@@ -1189,6 +1189,24 @@ describe('ADA', function () {
       res.should.not.be.empty();
       res.transactions.length.should.equal(2);
     });
+
+    it('should treat as unsigned sweep when walletPassphrase is absent even if keys are provided', async function () {
+      // recover() determines isUnsignedSweep solely from !walletPassphrase.
+      // recoverConsolidations must use the same signal so result handling is consistent.
+      // Providing userKey/backupKey without walletPassphrase must still produce an unsigned sweep
+      // (MPCSweepTxs), not silently mangle the result by treating it as a signed MPCTxs.
+      const res = await basecoin.recoverConsolidations({
+        userKey: consolidationWrwUser.userKey,
+        backupKey: consolidationWrwUser.backupKey,
+        bitgoKey: consolidationWrwUser.bitgoKey,
+        // walletPassphrase intentionally omitted
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+      res.should.not.be.empty();
+      // unsigned sweep returns MPCSweepTxs shape with txRequests
+      res.txRequests.length.should.equal(2);
+    });
   });
 
   describe('Recover Transactions Failure:', () => {

@@ -558,7 +558,7 @@ export class Ada extends BaseCoin {
    * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
    */
   async recoverConsolidations(params: MPCConsolidationRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
-    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+    const isUnsignedSweep = !params.walletPassphrase;
     const startIdx = params.startingScanIndex || 1;
     const endIdx = params.endingScanIndex || startIdx + DEFAULT_SCAN_FACTOR;
 
