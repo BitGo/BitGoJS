@@ -176,7 +176,10 @@ export class Flr extends AbstractEthLikeNewCoins {
     if (!txHex) {
       throw new Error('missing txHex in explain tx parameters');
     }
-    if (params.crossChainType) {
+    // Avalanche atomic transactions are identified by their codec prefix (0x00000000).
+    // Auto-detect them so callers don't need to pass crossChainType explicitly.
+    const hexWithout0x = txHex.startsWith('0x') ? txHex.slice(2) : txHex;
+    if (params.crossChainType || hexWithout0x.startsWith('0000')) {
       return this.explainAtomicTransaction(txHex);
     }
     if (!params.feeInfo) {

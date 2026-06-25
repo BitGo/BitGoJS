@@ -249,6 +249,19 @@ describe('flr', function () {
       txExplain.changeOutputs.should.be.empty();
     });
 
+    it('should explain an export in C transaction without crossChainType when hex is atomic', async function () {
+      const testData = EXPORT_C_TEST_DATA;
+      // Wallet platform may omit crossChainType; auto-detection via codec prefix must still return
+      // the recipient P-chain address so the UI can display it.
+      const txExplain = await tflrCoin.explainTransaction({
+        txHex: testData.fullsigntxHex,
+      });
+      txExplain.type.should.equal(TransactionType.Export);
+      const sortedPAddresses = testData.pAddresses.slice().sort().join('~');
+      txExplain.outputs[0].address.should.equal(sortedPAddresses);
+      txExplain.outputAmount.should.equal(testData.amount);
+    });
+
     it('should throw error when missing txHex', async function () {
       await tflrCoin
         .explainTransaction({ crossChainType: 'export' } as ExplainTransactionOptions)
