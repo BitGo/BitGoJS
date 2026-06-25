@@ -295,6 +295,24 @@ describe('Flrp test cases', function () {
       txExplain.changeOutputs.should.be.empty();
     });
 
+    it('should subtract minImportToPFee from ExportInC outputAmount to show expected net P-chain receipt', async () => {
+      // The ExportInC UTXO amount is the gross amount going to P-chain. The actual P-chain
+      // credit will be UTXO - importFee. We subtract minImportToPFee to show the minimum
+      // net amount the user will receive on P-chain, preventing the pending display from
+      // showing an inflated amount compared to the confirmed P-chain balance.
+      const minImportToPFee = BigInt('1261000'); // from FlarePTestnet.minImportToPFee
+      const expectedAdjustedAmount = (BigInt(EXPORT_IN_C.amount) - minImportToPFee).toString();
+
+      // Should work for both unsigned (pending) and signed ExportInC hex
+      const unsignedExplain = await basecoin.explainTransaction({ txHex: EXPORT_IN_C.unsignedHex });
+      unsignedExplain.outputAmount.should.equal(expectedAdjustedAmount);
+      unsignedExplain.outputs[0].amount.should.equal(expectedAdjustedAmount);
+
+      const signedExplain = await basecoin.explainTransaction({ txHex: EXPORT_IN_C.signedHex });
+      signedExplain.outputAmount.should.equal(expectedAdjustedAmount);
+      signedExplain.outputs[0].amount.should.equal(expectedAdjustedAmount);
+    });
+
     it('should fail when transaction hex is not provided', async () => {
       await basecoin.explainTransaction({}).should.be.rejectedWith('missing transaction hex');
     });
