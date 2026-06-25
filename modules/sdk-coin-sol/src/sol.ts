@@ -1700,11 +1700,17 @@ export class Sol extends BaseCoin {
     }
 
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
-    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    const userKey = params.userKey?.replace(/\s/g, '') ?? '';
+
+    const isMpcV2 = params.walletPassphrase
+      ? !(await EDDSAUtils.isEddsaMpcV1SigningMaterial(userKey, params.walletPassphrase, this.bitgo))
+      : false;
 
     const index = params.index || 0;
     const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
-    const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+    const accountId = isMpcV2
+      ? deriveUnhardenedMps(bitgoKey, currPath).slice(0, 64)
+      : (await EDDSAMethods.getInitializedMpcInstance()).deriveUnhardened(bitgoKey, currPath).slice(0, 64);
     const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
 
     const blockhash = await this.getBlockhash(params.apiKey);
@@ -1726,7 +1732,8 @@ export class Sol extends BaseCoin {
     const recoverNestedTxn = await this.signAndGenerateBroadcastableTransaction(
       params,
       txBuilder,
-      bs58EncodedPublicKey
+      bs58EncodedPublicKey,
+      isMpcV2
     );
 
     const serializedTxn = (await recoverNestedTxn).serializedTx;
