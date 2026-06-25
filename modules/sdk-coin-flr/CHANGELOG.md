@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.11.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.11.16...@bitgo/sdk-coin-flr@1.11.17) (2026-06-25)
+
+
+### Bug Fixes
+
+* **sdk-coin-flr:** auto-detect atomic export txs in explainTransaction ([d3a368a](https://github.com/BitGo/BitGoJS/commit/d3a368a752eb330042ade41dc9940ff7268098f0))
+* **statics:** update FLR explorer URLs to flarescan.com ([d144744](https://github.com/BitGo/BitGoJS/commit/d144744457a852c0cc9b5429ecd33acd2d0d0404))
+
+
+
+
+
 ## [1.11.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.11.15...@bitgo/sdk-coin-flr@1.11.16) (2026-06-23)
 
 

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.26.0...@bitgo/sdk-coin-canton@1.27.0) (2026-06-25)
+
+
+### Features
+
+* allow null value in contractId field of allocate ([4797e8d](https://github.com/BitGo/BitGoJS/commit/4797e8d4d8506f51834935ed538f0cc25a916cf5))
+* make contractId field optional in allocation request builder ([f66615e](https://github.com/BitGo/BitGoJS/commit/f66615e9552a21ec37dfa35275f0edefd052e3bd))
+
+
+
+
+
 # [1.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.25.1...@bitgo/sdk-coin-canton@1.26.0) (2026-06-23)
 
 

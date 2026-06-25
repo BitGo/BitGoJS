@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.51.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.50.0...@bitgo/statics@58.51.0) (2026-06-25)
+
+
+### Bug Fixes
+
+* rename baseeth:vbtc.b to baseeth:vbtcb ([326b3f5](https://github.com/BitGo/BitGoJS/commit/326b3f52f549405e1f729a5dd2fe50bf410ca873))
+* **statics:** correct tcanton:usdcx contract address casing ([8ee14ae](https://github.com/BitGo/BitGoJS/commit/8ee14ae579a6d8cc4e3348860533a27cb4995996))
+* **statics:** make ofc and custody suffix consistent for xlm ([8beb7ec](https://github.com/BitGo/BitGoJS/commit/8beb7ecc422a5c8cb0b876b6551c6faef3f54171))
+* **statics:** remove MultiSig feature for FLRP ([ec9b447](https://github.com/BitGo/BitGoJS/commit/ec9b447d06c4545f1d9fee3ea44c9e721fae8499))
+* **statics:** update FLR explorer URLs to flarescan.com ([d144744](https://github.com/BitGo/BitGoJS/commit/d144744457a852c0cc9b5429ecd33acd2d0d0404))
+
+
+### Features
+
+* added new set of tokens ([cf0dcb4](https://github.com/BitGo/BitGoJS/commit/cf0dcb4a870be31fa9790816a7c19363b2aa066e))
+* **sdk-coin-canton:** added coinfeature for byov validators ([7646f2d](https://github.com/BitGo/BitGoJS/commit/7646f2d9f0608ce22f04a4c255d864cdf6c54fc3))
+* **statics:** add CGD-1836 mainnet and testnet token configs ([f0e30bf](https://github.com/BitGo/BitGoJS/commit/f0e30bfbfaf01321f95970802465a40c8c04a38d))
+
+
+
+
+
 # [58.50.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.49.0...@bitgo/statics@58.50.0) (2026-06-23)
 
 
