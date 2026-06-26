@@ -44,9 +44,10 @@ import { KeychainsTriplet } from '../../../baseCoin';
 import { exchangeEddsaCommitments } from '../../../tss/common';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
 import { EncryptionVersion, IRequestTracer } from '../../../../api';
-import { getBitgoMpcGpgPubKey } from '../../../tss/bitgoPubKeys';
+import { envRequiresBitgoPubGpgKeyConfig, getBitgoMpcGpgPubKey, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
 import { EnvironmentName } from '../../../environments';
 import { readKey } from 'openpgp';
+import type { EddsaKeyGenCallbacks } from '../../../wallet/iWallets';
 
 /**
  * Utility functions for TSS work flows.
@@ -436,6 +437,86 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     } finally {
       encryptionSession?.destroy();
     }
+  }
+
+  /**
+   * Creates EdDSA TSS keychains using external signer callbacks instead of a passphrase.
+   * The external signer holds all private key material and pre-encrypts shares to BitGo's GPG key.
+   */
+  async createKeychainsWithExternalSigner(params: {
+    enterprise: string;
+    callbacks: EddsaKeyGenCallbacks;
+  }): Promise<KeychainsTriplet> {
+    const { enterprise, callbacks } = params;
+    const bitgoGpgPubKey = (await getBitgoGpgPubKey(this.bitgo)).mpcV1;
+
+    if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
+      assert(isBitgoMpcPubKey(bitgoGpgPubKey.armor(), 'mpcv1'), 'Invalid BitGo GPG public key');
+    }
+
+    const {
+      userGpgPublicKey,
+      backupGpgPublicKey,
+      userToBitgoKeyShare,
+      backupToBitgoKeyShare,
+      userState,
+      backupState,
+      backupCounterPartyKeyShare,
+    } = await callbacks.initializeCallback({ enterprise, bitgoPublicGpgKey: bitgoGpgPubKey.armor() });
+
+    // Create BitGo keychain with pre-encrypted shares from the external signer
+    const bitgoKeychain = await this.baseCoin.keychains().add({
+      keyType: 'tss',
+      source: 'bitgo',
+      keyShares: [
+        { from: 'user', to: 'bitgo', ...userToBitgoKeyShare },
+        { from: 'backup', to: 'bitgo', ...backupToBitgoKeyShare },
+      ],
+      userGPGPublicKey: userGpgPublicKey,
+      backupGPGPublicKey: backupGpgPublicKey,
+      enterprise,
+    });
+
+    // Finalize runs sequentially: user finalize produces a counterparty key share that backup finalize consumes.
+    const coin = this.baseCoin.getChain();
+    const userResult = await callbacks.finalizeCallback({
+      source: 'user',
+      coin,
+      bitgoKeychain,
+      counterPartyGPGKey: backupGpgPublicKey,
+      counterPartyKeyShare: backupCounterPartyKeyShare,
+      state: userState,
+    });
+    assert(userResult.counterpartyKeyShare, 'User finalize did not produce a counterparty key share');
+
+    const backupResult = await callbacks.finalizeCallback({
+      source: 'backup',
+      coin,
+      bitgoKeychain,
+      counterPartyGPGKey: userGpgPublicKey,
+      counterPartyKeyShare: userResult.counterpartyKeyShare,
+      state: backupState,
+    });
+
+    assert(bitgoKeychain.commonKeychain, 'BitGo keychain missing commonKeychain');
+    assert.strictEqual(
+      userResult.commonKeychain,
+      bitgoKeychain.commonKeychain,
+      'User common keychain does not match BitGo'
+    );
+    assert.strictEqual(
+      backupResult.commonKeychain,
+      bitgoKeychain.commonKeychain,
+      'Backup common keychain does not match BitGo'
+    );
+
+    const { commonKeychain } = bitgoKeychain;
+    const [userKeychain, backupKeychain] = await Promise.all([
+      this.baseCoin.keychains().add({ source: 'user', keyType: 'tss', commonKeychain }),
+      this.baseCoin.keychains().add({ source: 'backup', keyType: 'tss', commonKeychain }),
+    ]);
+
+    return { userKeychain, backupKeychain, bitgoKeychain };
   }
 
   async createCommitmentShareFromTxRequest(params: {

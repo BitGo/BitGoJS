@@ -1,8 +1,10 @@
 import * as t from 'io-ts';
+import { DklsTypes } from '@bitgo/sdk-lib-mpc';
+import { MPCv2BroadcastMessage, MPCv2P2PMessage } from '@bitgo/public-types';
 
 import { EncryptionVersion, IRequestTracer } from '../../api';
 import { KeychainsTriplet, LightningKeychainsTriplet } from '../baseCoin';
-import { Keychain, WebauthnInfo } from '../keychain';
+import { ApiKeyShare, Keychain, WebauthnInfo } from '../keychain';
 import { IWallet, PaginationOptions, WalletShare } from './iWallet';
 import { Wallet } from './wallet';
 
@@ -76,6 +78,105 @@ export interface CreateKeychainCallbackResult {
 
 export type CreateKeychainCallback = (params: CreateKeychainCallbackParams) => Promise<CreateKeychainCallbackResult>;
 
+/** Per-source encrypted session state threaded through MPC rounds by the external signer. */
+export interface ExternalSignerMpcState {
+  encryptedData: string;
+  encryptedDataKey: string;
+}
+
+/** A key share supplied by the external signer — routing fields (from/to) are added by the SDK. */
+export type ExternalSignerKeyShare = Omit<ApiKeyShare, 'from' | 'to'> & {
+  privateShareProof: string;
+  vssProof: string;
+  gpgKey: string;
+};
+
+export type EcdsaMPCv2KeyGenInitializeCallback = (params: {
+  enterprise: string;
+  bitgoPublicGpgKey: string;
+}) => Promise<{
+  userGpgPublicKey: string;
+  backupGpgPublicKey: string;
+  round1Messages: DklsTypes.AuthEncMessages;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}>;
+
+export type EcdsaMPCv2KeyGenRound2Callback = (params: {
+  sessionId: string;
+  bitgoMsg1: MPCv2BroadcastMessage;
+  bitgoToUserMsg2: MPCv2P2PMessage;
+  bitgoToBackupMsg2: MPCv2P2PMessage;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}) => Promise<{
+  round2Messages: DklsTypes.AuthEncMessages;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}>;
+
+export type EcdsaMPCv2KeyGenRound3Callback = (params: {
+  sessionId: string;
+  bitgoCommitment2: string;
+  bitgoToUserMsg3: MPCv2P2PMessage;
+  bitgoToBackupMsg3: MPCv2P2PMessage;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}) => Promise<{
+  round3Messages: DklsTypes.AuthEncMessages;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}>;
+
+export type EcdsaMPCv2KeyGenFinalizeCallback = (params: {
+  sessionId: string;
+  bitgoMsg4: MPCv2BroadcastMessage;
+  bitgoCommonKeychain: string;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}) => Promise<{ commonKeychain: string }>;
+
+export interface EcdsaMPCv2KeyGenCallbacks {
+  initializeCallback: EcdsaMPCv2KeyGenInitializeCallback;
+  round2Callback: EcdsaMPCv2KeyGenRound2Callback;
+  round3Callback: EcdsaMPCv2KeyGenRound3Callback;
+  finalizeCallback: EcdsaMPCv2KeyGenFinalizeCallback;
+}
+
+export interface EddsaKeyGenInitializeResult {
+  userGpgPublicKey: string;
+  backupGpgPublicKey: string;
+  userToBitgoKeyShare: ExternalSignerKeyShare;
+  backupToBitgoKeyShare: ExternalSignerKeyShare;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+  backupCounterPartyKeyShare: ExternalSignerKeyShare;
+}
+
+export type EddsaKeyGenInitializeCallback = (params: {
+  enterprise: string;
+  bitgoPublicGpgKey: string;
+}) => Promise<EddsaKeyGenInitializeResult>;
+
+export type EddsaKeyGenFinalizeResult = {
+  commonKeychain: string;
+  counterpartyKeyShare?: ExternalSignerKeyShare;
+};
+
+export type EddsaKeyGenFinalizeCallback = (params: {
+  source: 'user' | 'backup';
+  coin: string;
+  bitgoKeychain: Keychain;
+  counterPartyGPGKey: string;
+  counterPartyKeyShare: ExternalSignerKeyShare;
+  state: ExternalSignerMpcState;
+}) => Promise<EddsaKeyGenFinalizeResult>;
+
+export interface EddsaKeyGenCallbacks {
+  initializeCallback: EddsaKeyGenInitializeCallback;
+  finalizeCallback: EddsaKeyGenFinalizeCallback;
+}
+
 export interface GenerateWalletOptions {
   label?: string;
   passphrase?: string;
@@ -115,9 +216,11 @@ export interface GenerateWalletOptions {
 export interface GenerateWalletWithExternalSignerOptions
   extends Omit<GenerateWalletOptions, 'passphrase' | 'userKey' | 'backupXpub' | 'backupXpubProvider'> {
   label: string;
-  createKeychainCallback: CreateKeychainCallback;
+  createKeychainCallback?: CreateKeychainCallback;
   /** Optional user-key signatures over backup/bitgo pubs. Omit when the external signer cannot produce them (equivalent to a cold wallet). */
   keySignatures?: { backup: string; bitgo: string };
+  ecdsaMPCv2Callbacks?: EcdsaMPCv2KeyGenCallbacks;
+  eddsaCallbacks?: EddsaKeyGenCallbacks;
 }
 
 export const GenerateLightningWalletOptionsCodec = t.intersection(

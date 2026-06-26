@@ -58,6 +58,7 @@ import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/
 import { InvalidTransactionError } from '../../../errors';
 import { BitGoBase } from '../../../bitgoBase';
 import { resolveEffectiveTxParams } from '../recipientUtils';
+import type { EcdsaMPCv2KeyGenCallbacks } from '../../../wallet/iWallets';
 
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   private static readonly DKLS23_SIGNING_USER_GPG_KEY = 'DKLS23_SIGNING_USER_GPG_KEY';
@@ -646,6 +647,92 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     return this.createParticipantKeychain(MPCv2PartiesEnum.BITGO, commonKeychain);
   }
   // #endregion
+
+  /**
+   * Creates ECDSA MPCv2 keychains using external signer callbacks instead of a passphrase.
+   * The external signer holds all private key material; the SDK only coordinates the DKG protocol.
+   */
+  async createKeychainsWithExternalSigner(params: {
+    enterprise: string;
+    callbacks: EcdsaMPCv2KeyGenCallbacks;
+  }): Promise<KeychainsTriplet> {
+    const { enterprise, callbacks } = params;
+    const { mpcv2PublicKey } = await this.getBitgoGpgPubkeyBasedOnFeatureFlags(enterprise, true);
+    const mpcv2Key = mpcv2PublicKey ?? this.bitgoMPCv2PublicGpgKey;
+    assert(mpcv2Key, 'Failed to get BitGo MPCv2 GPG public key');
+    const bitgoPublicGpgKey = mpcv2Key.armor();
+
+    if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
+      assert(isBitgoMpcPubKey(bitgoPublicGpgKey, 'mpcv2'), 'Invalid BitGo GPG public key');
+    }
+
+    // Round 1: external signer generates GPG keys and initial DKG messages
+    const { userGpgPublicKey, backupGpgPublicKey, round1Messages, userState, backupState } =
+      await callbacks.initializeCallback({
+        enterprise,
+        bitgoPublicGpgKey,
+      });
+
+    const { sessionId, bitgoMsg1, bitgoToUserMsg2, bitgoToBackupMsg2 } = await this.sendKeyGenerationRound1(
+      enterprise,
+      userGpgPublicKey,
+      backupGpgPublicKey,
+      round1Messages
+    );
+
+    // Round 2: external signer processes BitGo's round 1 response
+    const {
+      round2Messages,
+      userState: userStateAfter2,
+      backupState: backupStateAfter2,
+    } = await callbacks.round2Callback({
+      sessionId,
+      bitgoMsg1,
+      bitgoToUserMsg2,
+      bitgoToBackupMsg2,
+      userState,
+      backupState,
+    });
+
+    const round2Response = await this.sendKeyGenerationRound2(enterprise, sessionId, round2Messages);
+    assert.strictEqual(round2Response.sessionId, sessionId, 'Session ID mismatch after round 2');
+
+    // Round 3: external signer processes BitGo's round 2 response
+    const {
+      round3Messages,
+      userState: userStateAfter3,
+      backupState: backupStateAfter3,
+    } = await callbacks.round3Callback({
+      sessionId,
+      bitgoCommitment2: round2Response.bitgoCommitment2,
+      bitgoToUserMsg3: round2Response.bitgoToUserMsg3,
+      bitgoToBackupMsg3: round2Response.bitgoToBackupMsg3,
+      userState: userStateAfter2,
+      backupState: backupStateAfter2,
+    });
+
+    const round3Response = await this.sendKeyGenerationRound3(enterprise, sessionId, round3Messages);
+    assert.strictEqual(round3Response.sessionId, sessionId, 'Session ID mismatch after round 3');
+
+    // Finalize: external signer verifies BitGo's final message against the derived common keychain
+    const { commonKeychain } = await callbacks.finalizeCallback({
+      sessionId,
+      bitgoMsg4: round3Response.bitgoMsg4,
+      bitgoCommonKeychain: round3Response.commonKeychain,
+      userState: userStateAfter3,
+      backupState: backupStateAfter3,
+    });
+    assert.strictEqual(commonKeychain, round3Response.commonKeychain, 'Common keychains do not match');
+
+    const keychains = this.baseCoin.keychains();
+    const [userKeychain, backupKeychain, bitgoKeychain] = await Promise.all([
+      keychains.add({ source: 'user', keyType: 'tss', commonKeychain, isMPCv2: true }),
+      keychains.add({ source: 'backup', keyType: 'tss', commonKeychain, isMPCv2: true }),
+      this.addBitgoKeychain(commonKeychain),
+    ]);
+
+    return { userKeychain, backupKeychain, bitgoKeychain };
+  }
 
   async sendKeyGenerationRound1(
     enterprise: string,
