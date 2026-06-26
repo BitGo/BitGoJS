@@ -8,6 +8,7 @@ import * as base58 from 'bs58';
 import * as _ from 'lodash';
 import * as request from 'superagent';
 import { logger } from '@bitgo/logger';
+import assert from 'assert';
 
 import {
   AuditDecryptedKeyParams,
@@ -1252,28 +1253,7 @@ export class Sol extends BaseCoin {
     const isUnsignedSweep = !params.walletPassphrase;
 
     // Validate signing keys and detect MPCv2 format early for signed recovery
-    let isMpcV2 = false;
-    if (params.walletPassphrase) {
-      if (!params.userKey) {
-        throw new Error('missing userKey');
-      }
-      if (!params.backupKey) {
-        throw new Error('missing backupKey');
-      }
-      // Detect MPCv2 keycards — will throw if decryption fails (e.g., wrong password).
-      // MPCv1 keycards decrypt to JSON with uShare/bitgoYShare; MPCv2 keycards are CBOR.
-      try {
-        const isV1 = await EDDSAUtils.EddsaMPCv2RecoveryFunctions.isEddsaMpcV1SigningMaterial(
-          params.userKey.replace(/\s/g, ''),
-          params.walletPassphrase,
-          this.bitgo
-        );
-        isMpcV2 = !isV1;
-      } catch (e) {
-        // Re-wrap decryption errors with context
-        throw new Error(`Error decrypting user keychain: ${e instanceof Error ? e.message : String(e)}`);
-      }
-    }
+    const isMpcV2 = await this.isMpcv2SigningMaterial(params.userKey, params.backupKey, params.walletPassphrase);
 
     let balance = 0;
 
@@ -1474,63 +1454,15 @@ export class Sol extends BaseCoin {
       // build the transaction with fee
       const unsignedTransaction = (await txBuilder.build()) as Transaction;
 
-      const userKey = params.userKey.replace(/\s/g, '');
-      const backupKey = params.backupKey.replace(/\s/g, '');
-
-      if (!isMpcV2) {
-        // MPCv1 path: decrypt JSON signing material and use TSS signing
-        let userPrv: string;
-        try {
-          userPrv = await this.bitgo.decryptAsync({
-            input: userKey,
-            password: params.walletPassphrase,
-          });
-        } catch (e) {
-          throw new Error(`Error decrypting user keychain: ${e.message}`);
-        }
-        const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
-
-        let backupPrv: string;
-        try {
-          backupPrv = await this.bitgo.decryptAsync({
-            input: backupKey,
-            password: params.walletPassphrase,
-          });
-        } catch (e) {
-          throw new Error(`Error decrypting backup keychain: ${e.message}`);
-        }
-        const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-
-        const signatureHex = await EDDSAMethods.getTSSSignature(
-          userSigningMaterial,
-          backupSigningMaterial,
-          currPath,
-          unsignedTransaction
-        );
-        txBuilder.addSignature({ pub: bs58EncodedPublicKey } as PublicKey, signatureHex);
-      } else {
-        // MPCv2 path: decrypt CBOR reduced key shares and sign with MPS DSG protocol
-        const { userKeyShare, backupKeyShare, commonKeyChain } =
-          await EDDSAUtils.EddsaMPCv2RecoveryFunctions.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
-            userKey,
-            backupKey,
-            params.walletPassphrase,
-            this.bitgo
-          );
-
-        if (commonKeyChain.toLowerCase() !== bitgoKey.toLowerCase()) {
-          throw new Error('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
-        }
-
-        const signature = EDDSAUtils.EddsaMPCv2RecoveryFunctions.signRecoveryEddsaMPCv2(
-          unsignedTransaction.signablePayload,
-          currPath,
-          userKeyShare,
-          backupKeyShare,
-          commonKeyChain
-        );
-        txBuilder.addSignature({ pub: bs58EncodedPublicKey } as PublicKey, signature);
-      }
+      await this.addRecoverySignature(
+        params,
+        txBuilder,
+        bs58EncodedPublicKey,
+        isMpcV2,
+        unsignedTransaction,
+        currPath,
+        bitgoKey
+      );
     }
 
     if (params.durableNonce) {
@@ -1611,13 +1543,22 @@ export class Sol extends BaseCoin {
 
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
 
+    // Validate signing keys and detect MPCv2 format early
+    const isMpcV2 = await this.isMpcv2SigningMaterial(params.userKey, params.backupKey, params.walletPassphrase);
+
     // Build the transaction
-    const MPC = await EDDSAMethods.getInitializedMpcInstance();
     let balance = 0;
 
     const index = params.index || 0;
     const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
-    const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+
+    let accountId: string;
+    if (isMpcV2) {
+      accountId = deriveUnhardenedMps(bitgoKey, currPath).slice(0, 64);
+    } else {
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+    }
     const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
 
     const accountBalance = await this.getAccountBalance(bs58EncodedPublicKey);
@@ -1679,7 +1620,8 @@ export class Sol extends BaseCoin {
       const tokenRecoveryTxn = await this.signAndGenerateBroadcastableTransaction(
         params,
         txBuilder,
-        bs58EncodedPublicKey
+        bs58EncodedPublicKey,
+        isMpcV2
       );
       const serializedTokenRecoveryTxn = (await tokenRecoveryTxn).serializedTx;
       const broadcastTokenRecoveryTxn = await this.broadcastTransaction({
@@ -1708,7 +1650,8 @@ export class Sol extends BaseCoin {
     const closeATARecoveryTxn = await this.signAndGenerateBroadcastableTransaction(
       params,
       txBuilder,
-      bs58EncodedPublicKey
+      bs58EncodedPublicKey,
+      isMpcV2
     );
     const serializedCloseATARecoveryTxn = (await closeATARecoveryTxn).serializedTx;
     const broadcastCloseATARecoveryTxn = await this.broadcastTransaction({
@@ -1797,10 +1740,10 @@ export class Sol extends BaseCoin {
 
   async signAndGenerateBroadcastableTransaction(
     params: SolRecoveryOptions,
-    txBuilder: any,
-    bs58EncodedPublicKey: string
+    txBuilder: TransactionBuilder,
+    bs58EncodedPublicKey: string,
+    isMpcV2 = false
   ): Promise<MPCTx> {
-    // Sign the txn
     if (!params.userKey) {
       throw new Error('missing userKey');
     }
@@ -1814,47 +1757,18 @@ export class Sol extends BaseCoin {
     }
 
     const unsignedTransaction = (await txBuilder.build()) as Transaction;
-
-    const userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
-
-    // Decrypt private keys from KeyCard values
-    let userPrv;
-
-    try {
-      userPrv = await this.bitgo.decryptAsync({
-        input: userKey,
-        password: params.walletPassphrase,
-      });
-    } catch (e) {
-      throw new Error(`Error decrypting user keychain: ${e.message}`);
-    }
-
-    const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
-
-    let backupPrv;
-    try {
-      backupPrv = await this.bitgo.decryptAsync({
-        input: backupKey,
-        password: params.walletPassphrase,
-      });
-    } catch (e) {
-      throw new Error(`Error decrypting backup keychain: ${e.message}`);
-    }
-    const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-
     const index = params.index || 0;
     const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
 
-    const signatureHex = await EDDSAMethods.getTSSSignature(
-      userSigningMaterial,
-      backupSigningMaterial,
+    await this.addRecoverySignature(
+      params,
+      txBuilder,
+      bs58EncodedPublicKey,
+      isMpcV2,
+      unsignedTransaction,
       currPath,
-      unsignedTransaction
+      params.bitgoKey.replace(/\s/g, '')
     );
-
-    const publicKeyObj = { pub: bs58EncodedPublicKey };
-    txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
 
     const completedTransaction = await txBuilder.build();
     const serializedTx = completedTransaction.toBroadcastFormat();
@@ -1988,6 +1902,104 @@ export class Sol extends BaseCoin {
 
   private getBuilder(): TransactionBuilderFactory {
     return new TransactionBuilderFactory(coins.get(this.getChain()));
+  }
+
+  private async addRecoverySignature(
+    params: SolRecoveryOptions,
+    txBuilder: TransactionBuilder,
+    bs58EncodedPublicKey: string,
+    isMpcV2: boolean,
+    unsignedTransaction: Transaction,
+    currPath: string,
+    bitgoKey: string
+  ): Promise<void> {
+    assert(params.userKey, 'missing userKey');
+    assert(params.backupKey, 'missing backupKey');
+    const userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+
+    if (!isMpcV2) {
+      let userPrv: string;
+      try {
+        userPrv = await this.bitgo.decryptAsync({
+          input: userKey,
+          password: params.walletPassphrase!,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${e.message}`);
+      }
+      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+
+      let backupPrv: string;
+      try {
+        backupPrv = await this.bitgo.decryptAsync({
+          input: backupKey,
+          password: params.walletPassphrase!,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting backup keychain: ${e.message}`);
+      }
+      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+
+      const signatureHex = await EDDSAMethods.getTSSSignature(
+        userSigningMaterial,
+        backupSigningMaterial,
+        currPath,
+        unsignedTransaction
+      );
+      txBuilder.addSignature({ pub: bs58EncodedPublicKey } as PublicKey, signatureHex);
+    } else {
+      const { userKeyShare, backupKeyShare, commonKeyChain } =
+        await EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
+          userKey,
+          backupKey,
+          params.walletPassphrase!,
+          this.bitgo
+        );
+
+      if (commonKeyChain.toLowerCase() !== bitgoKey.toLowerCase()) {
+        throw new Error('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+      }
+
+      const signature = EDDSAUtils.signRecoveryEddsaMPCv2(
+        unsignedTransaction.signablePayload,
+        currPath,
+        userKeyShare,
+        backupKeyShare,
+        commonKeyChain
+      );
+      txBuilder.addSignature({ pub: bs58EncodedPublicKey } as PublicKey, signature);
+    }
+  }
+
+  private async isMpcv2SigningMaterial(
+    userKey?: string,
+    backupKey?: string,
+    walletPassphrase?: string
+  ): Promise<boolean> {
+    let isMpcV2 = false;
+    if (walletPassphrase) {
+      if (!userKey) {
+        throw new Error('missing userKey');
+      }
+      if (!backupKey) {
+        throw new Error('missing backupKey');
+      }
+      // Detect MPCv2 keycards — will throw if decryption fails (e.g., wrong password).
+      // MPCv1 keycards decrypt to JSON with uShare/bitgoYShare; MPCv2 keycards are CBOR.
+      try {
+        const isV1 = await EDDSAUtils.isEddsaMpcV1SigningMaterial(
+          userKey.replace(/\s/g, ''),
+          walletPassphrase,
+          this.bitgo
+        );
+        isMpcV2 = !isV1;
+      } catch (e) {
+        // Re-wrap decryption errors with context
+        throw new Error(`Error decrypting user keychain: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+    return isMpcV2;
   }
 
   async broadcastTransaction({
