@@ -83,6 +83,16 @@ export const cantonTokens = [
     UnderlyingAsset['canton:usd1'],
     [...CANTON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  cantonToken(
+    '80daa520-71e2-482c-a235-80a165e8869d',
+    'canton:sofid',
+    'SoFiUSD',
+    10,
+    'https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/',
+    '1220f::1220f4c76343491c0951f54ede55f112b71c4b17714ed353bc6c820af96142a36f01:SOFID',
+    UnderlyingAsset['canton:sofid'],
+    [...CANTON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
   // testnet tokens
   tcantonToken(
     '46356790-0ac4-4c3b-8b70-39094106d772',
@@ -122,6 +132,26 @@ export const cantonTokens = [
     'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
     '12203::12203db723d11df3e69eb66fa9bbb5904269895ac0b284b61e3aeb03b748ca09802e:USD1',
     UnderlyingAsset['tcanton:usd1'],
+    [...CANTON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tcantonToken(
+    'b7702863-189f-4c5f-92d7-460c759bafd3',
+    'tcanton:sofid',
+    'Test SoFiUSD',
+    10,
+    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    '12207::12207dc95b8662cb8f8fc8372cdc04e378f96247c25f34c3d0a5404aea58d6a2b945:SOFID',
+    UnderlyingAsset['tcanton:sofid'],
+    [...CANTON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tcantonToken(
+    '5dedd29c-969f-4232-adc5-e7e94edf9de2',
+    'tcanton:stgsofid',
+    'Test SoFiUSD',
+    10,
+    'https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/',
+    '12205::122057fae04d9ff02cc5702f053e7ef005ea34ea1e50474cc00e54b276b7850e96e4:STGSOFID',
+    UnderlyingAsset['tcanton:stgsofid'],
     [...CANTON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   tcantonToken(

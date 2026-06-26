@@ -4175,6 +4175,8 @@ export enum UnderlyingAsset {
   'tcanton:912797va2' = 'tcanton:912797va2',
   'tcanton:912810up1' = 'tcanton:912810up1',
   'tcanton:91282ckf7' = 'tcanton:91282ckf7',
+  'tcanton:sofid' = 'tcanton:sofid',
+  'tcanton:stgsofid' = 'tcanton:stgsofid',
 
   // Canton mainnet tokens
   'canton:usdcx' = 'canton:usdcx',
@@ -4185,6 +4187,7 @@ export enum UnderlyingAsset {
   'canton:ibenji' = 'canton:ibenji',
   'canton:sbc' = 'canton:sbc',
   'canton:ceth' = 'canton:ceth',
+  'canton:sofid' = 'canton:sofid',
 
   // Tempo mainnet tokens
   'tempo:pathusd' = 'tempo:pathusd',
