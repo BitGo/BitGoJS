@@ -3449,6 +3449,86 @@ describe('SOL:', function () {
         should.equal(addSignatureSpy.firstCall.args[0].pub, mpcV2WalletAddress);
       });
     });
+
+    describe('recoverNestedAta', () => {
+      let nestedAtaMpcV2Params: SolRecoveryOptions;
+
+      before(function () {
+        nestedAtaMpcV2Params = {
+          userKey: mpcV2UserKey,
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mpcV2CommonKeyChain,
+          recoveryDestination: testData.closeATAkeys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword,
+          nestedAtaAddress: 'FGuZSBhtreqSUsE86xokyjKz2i8VBtJzy6uMXXKyGHug',
+          ownerAtaAddress: 'Zfm98ZpVafydhFTYcsY6bHgubhB4cFgWFvbdEJxYhTA',
+          tokenMintAddress: 'ZBCNpuD7YMXzTHB2fhGkGi78MNsHGLRXUhRewNRm9RU',
+        };
+      });
+
+      beforeEach(() => {
+        mpcV2SandBox.stub(Sol.prototype, 'broadcastTransaction' as keyof Sol).resolves({
+          txId: testData.SolResponses.broadcastTransactionResponse.body.result,
+        });
+      });
+
+      it('should recover nested ATA with MPCv2 keycard using MPS-derived wallet address', async function () {
+        const getTSSSignatureSpy = mpcV2SandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+        const result = await basecoin.recoverNestedAta(nestedAtaMpcV2Params);
+
+        result.should.not.be.empty();
+        should.equal(result.txId, testData.SolResponses.broadcastTransactionResponse.body.result);
+        should.equal(
+          callBack.getCalls().find((call) => call.args[0]?.payload?.method === 'getLatestBlockhash') !== undefined,
+          true
+        );
+        mpcV2SandBox.assert.notCalled(getTSSSignatureSpy);
+      });
+
+      it('should recover nested ATA with MPCv1 keycard using MPC.deriveUnhardened (regression)', async function () {
+        const getTSSSignatureSpy = mpcV2SandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+        const result = await basecoin.recoverNestedAta({
+          userKey: testData.closeATAkeys.userKey,
+          backupKey: testData.closeATAkeys.backupKey,
+          bitgoKey: testData.closeATAkeys.bitgoKey,
+          recoveryDestination: testData.closeATAkeys.destinationPubKey,
+          walletPassphrase: testData.closeATAkeys.walletPassword,
+          nestedAtaAddress: 'FGuZSBhtreqSUsE86xokyjKz2i8VBtJzy6uMXXKyGHug',
+          ownerAtaAddress: 'Zfm98ZpVafydhFTYcsY6bHgubhB4cFgWFvbdEJxYhTA',
+          tokenMintAddress: 'ZBCNpuD7YMXzTHB2fhGkGi78MNsHGLRXUhRewNRm9RU',
+        });
+
+        result.should.not.be.empty();
+        should.equal(result.txId, testData.SolResponses.broadcastTransactionResponse.body.result);
+        mpcV2SandBox.assert.calledOnce(getTSSSignatureSpy);
+      });
+
+      it('should throw when MPCv2 recoverNestedAta bitgoKey does not match keycard commonKeyChain', async function () {
+        await basecoin
+          .recoverNestedAta({ ...nestedAtaMpcV2Params, bitgoKey: mismatchedBitgoKey })
+          .should.be.rejectedWith('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+      });
+
+      it('should throw when nestedAtaAddress is missing for recoverNestedAta MPCv2', async function () {
+        await basecoin
+          .recoverNestedAta({
+            ...nestedAtaMpcV2Params,
+            nestedAtaAddress: undefined,
+          })
+          .should.be.rejectedWith('invalid nestedAtaAddress');
+      });
+
+      it('should throw when ownerAtaAddress is missing for recoverNestedAta MPCv2', async function () {
+        await basecoin
+          .recoverNestedAta({
+            ...nestedAtaMpcV2Params,
+            ownerAtaAddress: undefined,
+          })
+          .should.be.rejectedWith('invalid ownerAtaAddress');
+      });
+    });
   });
 
   describe('Build Consolidation Recoveries:', () => {
