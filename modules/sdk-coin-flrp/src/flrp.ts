@@ -428,8 +428,30 @@ export class Flrp extends BaseCoin {
     }
     try {
       const txBuilder = this.getBuilder().from(txHex);
-      const tx = await txBuilder.build();
-      return tx.explainTransaction();
+      const tx = (await txBuilder.build()) as FlrpLib.Transaction;
+      const explanation = tx.explainTransaction();
+
+      // For a C→P export (ExportInC viewed from the FLRP P-chain perspective), the
+      // exportedOutputs contain the P-chain UTXO amount, which is the gross amount
+      // BEFORE the import fee is deducted. The platform uses this explanation to show
+      // the "pending import amount" before the ImportInP is confirmed. To avoid
+      // displaying a higher-than-actual amount, subtract the minimum import-to-P fee
+      // so the displayed amount reflects the expected net P-chain receipt.
+      if (tx.isTransactionForCChain && explanation.type === TransactionType.Export) {
+        const minImportToPFee = BigInt((this._staticsCoin.network as FlareNetwork).minImportToPFee);
+        const adjustedOutputs = explanation.outputs.map((o) => ({
+          ...o,
+          amount: (BigInt(o.amount) - minImportToPFee).toString(),
+        }));
+        const adjustedOutputAmount = (BigInt(explanation.outputAmount) - minImportToPFee).toString();
+        return {
+          ...explanation,
+          outputs: adjustedOutputs,
+          outputAmount: adjustedOutputAmount,
+        };
+      }
+
+      return explanation;
     } catch (e) {
       throw new Error(`Invalid transaction: ${e.message}`);
     }
