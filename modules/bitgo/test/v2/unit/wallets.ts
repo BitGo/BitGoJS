@@ -810,6 +810,44 @@ describe('V2 Wallets:', function () {
       walletNock.isDone().should.be.true();
     });
 
+    it('should create a new FLRP TSS custodial wallet without requiring a passphrase', async function () {
+      const keys = ['1', '2', '3'];
+      const tflrp = bitgo.coin('tflrp');
+
+      const walletParams: GenerateWalletOptions = {
+        label: 'flrp custodial wallet',
+        enterprise: 'enterprise',
+        type: 'custodial',
+        // No multisigType specified — should default to 'tss' for FLRP
+        // No passphrase — custodial wallets must not require one
+      };
+
+      // FLRP is ECDSA, so generateCustodialMpcWallet fetches TSS settings
+      nock('https://bitgo.fakeurl')
+        .get('/api/v2/tss/settings')
+        .reply(200, { coinSettings: { flrp: { walletCreationSettings: {} } } });
+
+      const walletNock = nock('https://bitgo.fakeurl')
+        .post('/api/v2/tflrp/wallet/add')
+        .times(1)
+        .reply(200, { ...walletParams, multisigType: 'tss', keys });
+
+      const flrpWallets = new Wallets(bitgo, tflrp);
+
+      const res = await flrpWallets.generateWallet(walletParams);
+      if (!isWalletWithKeychains(res)) {
+        throw new Error('wallet missing required keychains');
+      }
+      res.wallet.label().should.equal(walletParams.label);
+      should.equal(res.wallet.type(), walletParams.type);
+      res.wallet.multisigType().should.equal('tss');
+      res.userKeychain.id.should.equal(keys[0]);
+      res.backupKeychain.id.should.equal(keys[1]);
+      res.bitgoKeychain.id.should.equal(keys[2]);
+
+      walletNock.isDone().should.be.true();
+    });
+
     it('should create a new TSS SMC wallet', async function () {
       const commonKeychain = 'longstring';
       const seed = 'seed';
