@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [37.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.9.0...@bitgo/sdk-core@37.10.0) (2026-06-25)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** support unsupported tokens in verifyTransaction ([df78c7f](https://github.com/BitGo/BitGoJS/commit/df78c7fe6356af43e981327e1b37f207609d1e9e))
+* **sdk-core:** add missing no-recipient types to EdDSA TSS signing ([b131347](https://github.com/BitGo/BitGoJS/commit/b131347fed455e91733186bac63380b5c4c49689))
+* **sdk-core:** enforce recipient verification in EdDSA TSS signing ([a70114f](https://github.com/BitGo/BitGoJS/commit/a70114f21ac9f2398f9a2ff04bb4560d0a8ea007))
+* **sdk-core:** pass txParams on EdDSA MPCv2 re-sign and PA paths ([9467022](https://github.com/BitGo/BitGoJS/commit/9467022b94ec4ca7245e53f9aa17b831505612ea))
+* use query params for GET address-book methods ([3fe461e](https://github.com/BitGo/BitGoJS/commit/3fe461e52cf559790b1fa9a0b5daa8db632b3fcd)), closes [#9084](https://github.com/BitGo/BitGoJS/issues/9084)
+
+
+### Features
+
+* **sdk-coin-sol:** derive SPL token (ATA) deposit addresses ([0b2d684](https://github.com/BitGo/BitGoJS/commit/0b2d6840e09a570fdbda393b1e4408264aa8cb05))
+
+
+
+
+
 # [37.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.8.0...@bitgo/sdk-core@37.9.0) (2026-06-23)
 
 

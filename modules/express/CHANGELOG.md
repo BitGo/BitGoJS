@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.37.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.36.1...@bitgo/express@15.37.0) (2026-06-25)
+
+
+### Features
+
+* **express:** verify created addresses against client-supplied trusted keychains ([e5129b5](https://github.com/BitGo/BitGoJS/commit/e5129b53ee258cd042904aa9d9a6e641091eb632))
+* **sdk-coin-sol:** derive SPL token (ATA) deposit addresses ([0b2d684](https://github.com/BitGo/BitGoJS/commit/0b2d6840e09a570fdbda393b1e4408264aa8cb05))
+
+
+
+
+
 ## [15.36.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.36.0...@bitgo/express@15.36.1) (2026-06-23)
 
 **Note:** Version bump only for package @bitgo/express

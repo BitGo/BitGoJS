@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.15.2...@bitgo/sdk-coin-flrp@1.15.3) (2026-06-25)
+
+
+### Bug Fixes
+
+* **sdk-coin-flr:** auto-detect atomic export txs in explainTransaction ([d3a368a](https://github.com/BitGo/BitGoJS/commit/d3a368a752eb330042ade41dc9940ff7268098f0))
+
+
+
+
+
 ## [1.15.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.15.1...@bitgo/sdk-coin-flrp@1.15.2) (2026-06-23)
 
 

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.24.0...@bitgo/sdk-coin-sol@7.25.0) (2026-06-25)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** support unsupported tokens in verifyTransaction ([df78c7f](https://github.com/BitGo/BitGoJS/commit/df78c7fe6356af43e981327e1b37f207609d1e9e))
+
+
+### Features
+
+* **sdk-coin-sol:** derive SPL token (ATA) deposit addresses ([0b2d684](https://github.com/BitGo/BitGoJS/commit/0b2d6840e09a570fdbda393b1e4408264aa8cb05))
+
+
+
+
+
 # [7.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.23.1...@bitgo/sdk-coin-sol@7.24.0) (2026-06-23)
 
 
