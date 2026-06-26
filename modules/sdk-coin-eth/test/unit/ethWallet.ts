@@ -583,4 +583,30 @@ describe('final-sign transaction from WRW', function () {
     outputs[0].address.should.equal(fixtures.WRWUnsignedSweepERC20Tx.recipient.address);
     outputs[0].amount.should.equal(fixtures.WRWUnsignedSweepERC20Tx.recipient.amount);
   });
+
+  it('should add a second EIP-1559 signature to unsigned sweep for teth without throwing when gasPrice is absent', async function () {
+    const bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.safeRegister('teth', Teth.createInstance);
+    const basecoin: any = bitgo.coin('teth');
+    const gasLimit = 500000;
+    const prv =
+      'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
+    const tx = {
+      txPrebuild: fixtures.WRWUnsignedSweepEIP1559ETHTx,
+      prv,
+    };
+    const halfSigned = await basecoin.signTransaction(tx);
+
+    const wrapper = {} as SignTransactionOptions;
+    wrapper.txPrebuild = halfSigned;
+    wrapper.txPrebuild.recipients = halfSigned.halfSigned.recipients;
+    wrapper.txPrebuild.eip1559 = fixtures.WRWUnsignedSweepEIP1559ETHTx.eip1559;
+    wrapper.txPrebuild.gasLimit = gasLimit.toString();
+    wrapper.isLastSignature = true;
+    wrapper.walletContractAddress = fixtures.WRWUnsignedSweepEIP1559ETHTx.walletContractAddress;
+    wrapper.prv = prv;
+
+    const finalSignedTx = await basecoin.signTransaction(wrapper);
+    finalSignedTx.should.have.property('txHex');
+  });
 });
