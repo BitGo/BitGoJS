@@ -6,6 +6,20 @@ export * from './bitgojsError';
 export * as coins from './coins';
 import { EddsaUtils } from './bitgo/utils/tss/eddsa/eddsa';
 export { EddsaUtils };
+export type {
+  EcdsaMPCv2KeyGenCallbacks,
+  EcdsaMPCv2KeyGenInitializeCallback,
+  EcdsaMPCv2KeyGenRound2Callback,
+  EcdsaMPCv2KeyGenRound3Callback,
+  EcdsaMPCv2KeyGenFinalizeCallback,
+  EddsaKeyGenCallbacks,
+  EddsaKeyGenInitializeCallback,
+  EddsaKeyGenInitializeResult,
+  EddsaKeyGenFinalizeCallback,
+  EddsaKeyGenFinalizeResult,
+  ExternalSignerKeyShare,
+  ExternalSignerMpcState,
+} from './bitgo/wallet/iWallets';
 import { EcdsaUtils } from './bitgo/utils/tss/ecdsa/ecdsa';
 export { EcdsaUtils };
 import { EcdsaMPCv2Utils } from './bitgo/utils/tss/ecdsa/ecdsaMPCv2';
