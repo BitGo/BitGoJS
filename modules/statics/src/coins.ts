@@ -75,7 +75,107 @@ allCoinsAndTokens.forEach((coin) => {
   }
 });
 
+const VALID_COIN_FEATURES = new Set<string>(Object.values(CoinFeature));
+
+/**
+ * Validates AMS token metadata before it is used to construct coin objects.
+ *
+ * Throws an error describing the first invalid field encountered. Callers that
+ * want to skip malformed tokens rather than throw should catch and log.
+ *
+ * Specific guards:
+ * - Required string fields must be non-empty strings.
+ * - `decimalPlaces` must be a finite, non-negative integer so that
+ *   downstream `Math.pow(10, decimalPlaces)` cannot produce NaN, Infinity,
+ *   or corrupt amounts via a negative exponent.
+ * - `features` / `additionalFeatures`, when present, must contain only
+ *   recognised CoinFeature values, preventing injection of values such as
+ *   `"genericToken"` that bypass contract-address format checks.
+ */
+export function validateAmsTokenConfig(token: AmsTokenConfig): void {
+  const requiredStrings: (keyof AmsTokenConfig)[] = ['id', 'name', 'fullName', 'family', 'asset'];
+  for (const field of requiredStrings) {
+    const value = token[field];
+    if (typeof value !== 'string' || value.trim() === '') {
+      throw new Error(`AMS token config has invalid required field "${field}": ${JSON.stringify(value)}`);
+    }
+  }
+
+  if (typeof token.isToken !== 'boolean') {
+    throw new Error(`AMS token config has invalid required field "isToken": ${JSON.stringify(token.isToken)}`);
+  }
+
+  const dp = token.decimalPlaces;
+  if (typeof dp !== 'number' || !Number.isFinite(dp) || !Number.isInteger(dp) || dp < 0) {
+    throw new Error(
+      `AMS token config has invalid "decimalPlaces": ${JSON.stringify(dp)}. ` +
+        `Must be a non-negative integer.`
+    );
+  }
+
+  const features = token.features;
+  if (features !== undefined) {
+    if (!Array.isArray(features)) {
+      throw new Error(
+        `AMS token config has invalid field "features": expected string array, got ${typeof features}`
+      );
+    }
+    for (const feature of features) {
+      if (!VALID_COIN_FEATURES.has(feature)) {
+        throw new Error(`AMS token config contains unrecognised feature "${feature}" in field "features"`);
+      }
+    }
+  }
+}
+
+/**
+ * Validates a TrimmedAmsTokenConfig before features are merged and a full
+ * AmsTokenConfig is assembled. Focuses on the fields unique to the trimmed
+ * format (additionalFeatures, excludedFeatures) and the subset of base fields
+ * that are always present regardless of the trim step.
+ */
+export function validateTrimmedAmsTokenConfig(token: TrimmedAmsTokenConfig): void {
+  const requiredStrings: (keyof TrimmedAmsTokenConfig)[] = ['id', 'name', 'fullName', 'family', 'asset'];
+  for (const field of requiredStrings) {
+    const value = token[field];
+    if (typeof value !== 'string' || (value as string).trim() === '') {
+      throw new Error(`AMS token config has invalid required field "${field}": ${JSON.stringify(value)}`);
+    }
+  }
+
+  if (typeof token.isToken !== 'boolean') {
+    throw new Error(`AMS token config has invalid required field "isToken": ${JSON.stringify(token.isToken)}`);
+  }
+
+  const dp = token.decimalPlaces;
+  if (typeof dp !== 'number' || !Number.isFinite(dp) || !Number.isInteger(dp) || dp < 0) {
+    throw new Error(
+      `AMS token config has invalid "decimalPlaces": ${JSON.stringify(dp)}. ` +
+        `Must be a non-negative integer.`
+    );
+  }
+
+  for (const featureField of ['additionalFeatures', 'excludedFeatures'] as const) {
+    const featureList = token[featureField];
+    if (featureList === undefined) continue;
+    if (!Array.isArray(featureList)) {
+      throw new Error(
+        `AMS token config has invalid field "${featureField}": expected string array, got ${typeof featureList}`
+      );
+    }
+    for (const feature of featureList) {
+      if (!VALID_COIN_FEATURES.has(feature)) {
+        throw new Error(
+          `AMS token config contains unrecognised feature "${feature}" in field "${featureField}"`
+        );
+      }
+    }
+  }
+}
+
 export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefined {
+  validateAmsTokenConfig(token);
+
   if (!token.isToken) {
     try {
       return buildDynamicCoin(token);
@@ -544,6 +644,16 @@ export function createTokenMapUsingTrimmedConfigDetails(
   for (const tokenConfigs of Object.values(reducedTokenConfigMap)) {
     if (!tokenConfigs.length) continue;
     const tokenConfig = tokenConfigs[0];
+
+    try {
+      validateTrimmedAmsTokenConfig(tokenConfig);
+    } catch (e) {
+      console.warn(
+        `Skipping malformed token: name="${tokenConfig.name}" id="${tokenConfig.id}" error=${(e as Error).message}`
+      );
+      continue;
+    }
+
     const network = networkNameMap.get(tokenConfig.network.name);
 
     if (isCoinPresentInCoinMap({ ...tokenConfig })) continue;
@@ -571,6 +681,8 @@ export function createTokenMapUsingTrimmedConfigDetails(
 export function createTokenUsingTrimmedConfigDetails(
   tokenConfig: TrimmedAmsTokenConfig
 ): Readonly<BaseCoin> | undefined {
+  validateTrimmedAmsTokenConfig(tokenConfig);
+
   let fullTokenConfig: AmsTokenConfig | undefined;
   const networkNameMap = getNetworksMap();
   const network = networkNameMap.get(tokenConfig.network.name);

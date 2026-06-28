@@ -25,6 +25,8 @@ import {
   tokens,
   UnderlyingAsset,
   UtxoCoin,
+  validateAmsTokenConfig,
+  validateTrimmedAmsTokenConfig,
   XrpCoin,
 } from '../../src';
 import { utxo } from '../../src/utxo';
@@ -1710,5 +1712,195 @@ describe('DynamicCoin and dynamic base chain support', function () {
       const coin = createTokenUsingTrimmedConfigDetails(config);
       should(coin).be.undefined();
     });
+  });
+});
+
+describe('validateAmsTokenConfig', function () {
+  const validBase = {
+    id: 'test-id-001',
+    name: 'eth:testtoken',
+    fullName: 'Test Token',
+    family: 'eth',
+    isToken: true,
+    decimalPlaces: 18,
+    asset: 'eth:testtoken',
+    features: [CoinFeature.ACCOUNT_MODEL, CoinFeature.REQUIRES_BIG_NUMBER],
+  };
+
+  it('should not throw for a valid config', function () {
+    (() => validateAmsTokenConfig(validBase as any)).should.not.throw();
+  });
+
+  it('should throw when a required string field is missing', function () {
+    (() => validateAmsTokenConfig({ ...validBase, id: '' } as any)).should.throw(
+      /invalid required field "id"/
+    );
+    (() => validateAmsTokenConfig({ ...validBase, name: undefined } as any)).should.throw(
+      /invalid required field "name"/
+    );
+    (() => validateAmsTokenConfig({ ...validBase, fullName: '   ' } as any)).should.throw(
+      /invalid required field "fullName"/
+    );
+    (() => validateAmsTokenConfig({ ...validBase, family: 42 } as any)).should.throw(
+      /invalid required field "family"/
+    );
+    (() => validateAmsTokenConfig({ ...validBase, asset: '' } as any)).should.throw(
+      /invalid required field "asset"/
+    );
+  });
+
+  it('should throw when isToken is not a boolean', function () {
+    (() => validateAmsTokenConfig({ ...validBase, isToken: 'true' } as any)).should.throw(
+      /invalid required field "isToken"/
+    );
+  });
+
+  it('should throw when decimalPlaces is NaN', function () {
+    (() => validateAmsTokenConfig({ ...validBase, decimalPlaces: NaN } as any)).should.throw(
+      /invalid "decimalPlaces"/
+    );
+  });
+
+  it('should throw when decimalPlaces is Infinity', function () {
+    (() => validateAmsTokenConfig({ ...validBase, decimalPlaces: Infinity } as any)).should.throw(
+      /invalid "decimalPlaces"/
+    );
+  });
+
+  it('should throw when decimalPlaces is negative', function () {
+    (() => validateAmsTokenConfig({ ...validBase, decimalPlaces: -1 } as any)).should.throw(
+      /invalid "decimalPlaces"/
+    );
+  });
+
+  it('should throw when decimalPlaces is a non-integer', function () {
+    (() => validateAmsTokenConfig({ ...validBase, decimalPlaces: 6.5 } as any)).should.throw(
+      /invalid "decimalPlaces"/
+    );
+  });
+
+  it('should throw when decimalPlaces is a string', function () {
+    (() => validateAmsTokenConfig({ ...validBase, decimalPlaces: '18' } as any)).should.throw(
+      /invalid "decimalPlaces"/
+    );
+  });
+
+  it('should allow decimalPlaces of zero', function () {
+    (() => validateAmsTokenConfig({ ...validBase, decimalPlaces: 0 } as any)).should.not.throw();
+  });
+
+  it('should throw when features contains an unrecognised value', function () {
+    (() =>
+      validateAmsTokenConfig({
+        ...validBase,
+        features: [CoinFeature.ACCOUNT_MODEL, 'totally-fake-feature'],
+      } as any)
+    ).should.throw(/unrecognised feature "totally-fake-feature"/);
+  });
+
+  it('should throw when features is not an array', function () {
+    (() => validateAmsTokenConfig({ ...validBase, features: 'account-model' } as any)).should.throw(
+      /invalid field "features"/
+    );
+  });
+
+  it('should accept a config with no optional feature fields', function () {
+    const { features: _f, ...noFeatures } = validBase;
+    (() => validateAmsTokenConfig(noFeatures as any)).should.not.throw();
+  });
+
+  it('should throw when createToken is given a config with invalid decimalPlaces', function () {
+    (() => createToken({ ...validBase, decimalPlaces: -5 } as any)).should.throw(/invalid "decimalPlaces"/);
+  });
+
+  it('should throw when createToken is given a config with an unknown feature', function () {
+    (() =>
+      createToken({
+        ...validBase,
+        network: coins.get('eth').network,
+        features: [CoinFeature.ACCOUNT_MODEL, 'injected-bad-feature'],
+        contractAddress: '0x' + 'a'.repeat(40),
+      } as any)
+    ).should.throw(/unrecognised feature/);
+  });
+});
+
+describe('validateTrimmedAmsTokenConfig', function () {
+  const validTrimmedBase = {
+    id: 'trimmed-id-001',
+    name: 'eth:trimtoken',
+    fullName: 'Trimmed Token',
+    family: 'eth',
+    isToken: true,
+    decimalPlaces: 6,
+    asset: 'eth:trimtoken',
+    network: { name: 'Ethereum Mainnet' },
+  };
+
+  it('should not throw for a valid trimmed config', function () {
+    (() => validateTrimmedAmsTokenConfig(validTrimmedBase as any)).should.not.throw();
+  });
+
+  it('should throw when decimalPlaces is invalid', function () {
+    (() => validateTrimmedAmsTokenConfig({ ...validTrimmedBase, decimalPlaces: NaN } as any)).should.throw(
+      /invalid "decimalPlaces"/
+    );
+    (() => validateTrimmedAmsTokenConfig({ ...validTrimmedBase, decimalPlaces: -2 } as any)).should.throw(
+      /invalid "decimalPlaces"/
+    );
+  });
+
+  it('should throw when additionalFeatures contains an unknown value', function () {
+    (() =>
+      validateTrimmedAmsTokenConfig({
+        ...validTrimmedBase,
+        additionalFeatures: ['fake-feature-xyz'],
+      } as any)
+    ).should.throw(/unrecognised feature "fake-feature-xyz"/);
+  });
+
+  it('should throw when excludedFeatures contains an unknown value', function () {
+    (() =>
+      validateTrimmedAmsTokenConfig({
+        ...validTrimmedBase,
+        excludedFeatures: ['not-valid'],
+      } as any)
+    ).should.throw(/unrecognised feature "not-valid"/);
+  });
+
+  it('should accept valid additionalFeatures and excludedFeatures', function () {
+    (() =>
+      validateTrimmedAmsTokenConfig({
+        ...validTrimmedBase,
+        additionalFeatures: [CoinFeature.BULK_TRANSACTION],
+        excludedFeatures: [CoinFeature.STAKING],
+      } as any)
+    ).should.not.throw();
+  });
+
+  it('should skip invalid tokens in createTokenMapUsingTrimmedConfigDetails', function () {
+    const badConfig = {
+      'eth:badtoken': [
+        {
+          ...validTrimmedBase,
+          name: 'eth:badtoken',
+          id: 'bad-id-001',
+          decimalPlaces: NaN,
+          network: { name: 'Ethereum Mainnet' },
+        },
+      ],
+    };
+    (() => createTokenMapUsingTrimmedConfigDetails(badConfig as any)).should.not.throw();
+    const result = createTokenMapUsingTrimmedConfigDetails(badConfig as any);
+    result.has('eth:badtoken').should.be.false();
+  });
+
+  it('should throw in createTokenUsingTrimmedConfigDetails when config is invalid', function () {
+    (() =>
+      createTokenUsingTrimmedConfigDetails({
+        ...validTrimmedBase,
+        decimalPlaces: -1,
+      } as any)
+    ).should.throw(/invalid "decimalPlaces"/);
   });
 });
