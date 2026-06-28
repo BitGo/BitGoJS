@@ -964,4 +964,94 @@ export const cantonTokens = [
     UnderlyingAsset['tcanton:orc12345h928'],
     CANTON_TOKEN_FEATURES
   ),
+  tcantonToken(
+    '1bc6995e-ed61-4cb9-8ae1-3ca4fd57cfd6',
+    'tcanton:qqq',
+    'Invesco QQQ Trust (Nasdaq-100 ETF)',
+    10,
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
+    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:46090E103-46090E103',
+    UnderlyingAsset['tcanton:qqq'],
+    CANTON_TOKEN_FEATURES
+  ),
+  tcantonToken(
+    '70d96745-0d0b-4bfb-afdc-36a1bd637674',
+    'tcanton:msft',
+    'Microsoft Corp.',
+    10,
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
+    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:594918104-594918104',
+    UnderlyingAsset['tcanton:msft'],
+    CANTON_TOKEN_FEATURES
+  ),
+  tcantonToken(
+    '1d42d17f-d12d-4890-97a4-f6e5120989ac',
+    'tcanton:crcl',
+    'Circle Internet Group, Inc.',
+    10,
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
+    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:172573107-172573107',
+    UnderlyingAsset['tcanton:crcl'],
+    CANTON_TOKEN_FEATURES
+  ),
+  tcantonToken(
+    'a45b4121-6a6b-4277-9307-72323d6bfcf6',
+    'tcanton:sgov',
+    'iShares 0-3 Month Treasury Bond ETF',
+    10,
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
+    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:46436E718-46436E718',
+    UnderlyingAsset['tcanton:sgov'],
+    CANTON_TOKEN_FEATURES
+  ),
+  tcantonToken(
+    'f8e70d30-2997-457f-b6f3-6cc354fcdc96',
+    'tcanton:spy',
+    'SPDR S&P 500 ETF Trust',
+    10,
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
+    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:78462F103-78462F103',
+    UnderlyingAsset['tcanton:spy'],
+    CANTON_TOKEN_FEATURES
+  ),
+  tcantonToken(
+    'e51407f3-edc4-4eee-938c-85a0a1b054fb',
+    'tcanton:voo',
+    'Vanguard S&P 500 ETF',
+    10,
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
+    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:922908363-922908363',
+    UnderlyingAsset['tcanton:voo'],
+    CANTON_TOKEN_FEATURES
+  ),
+  tcantonToken(
+    '04b851fa-6ab1-420f-8c6d-ef97bbf0a458',
+    'tcanton:912797va2',
+    'U.S. Treasury Bill (26-week)',
+    10,
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
+    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:912797VA2-912797VA2',
+    UnderlyingAsset['tcanton:912797va2'],
+    CANTON_TOKEN_FEATURES
+  ),
+  tcantonToken(
+    'f2be87ba-ee7b-4631-a3b2-085d05bc7a99',
+    'tcanton:912810up1',
+    'U.S. Treasury Bond (30-year, 4.625%, 2055)',
+    10,
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
+    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:912810UP1-912810UP1',
+    UnderlyingAsset['tcanton:912810up1'],
+    CANTON_TOKEN_FEATURES
+  ),
+  tcantonToken(
+    'bd7d1ada-e686-41e8-8eda-c06d586fffd3',
+    'tcanton:91282ckf7',
+    'U.S. Treasury Note (maturing Mar 31, 2031)',
+    10,
+    'https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/',
+    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:91282CKF7-91282CKF7',
+    UnderlyingAsset['tcanton:91282ckf7'],
+    CANTON_TOKEN_FEATURES
+  ),
 ];

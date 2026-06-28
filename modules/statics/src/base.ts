@@ -4166,6 +4166,15 @@ export enum UnderlyingAsset {
   'tcanton:symuatcshac4' = 'tcanton:symuatcshac4',
   'tcanton:orc6789abc12' = 'tcanton:orc6789abc12',
   'tcanton:orc12345h928' = 'tcanton:orc12345h928',
+  'tcanton:qqq' = 'tcanton:qqq',
+  'tcanton:msft' = 'tcanton:msft',
+  'tcanton:crcl' = 'tcanton:crcl',
+  'tcanton:sgov' = 'tcanton:sgov',
+  'tcanton:spy' = 'tcanton:spy',
+  'tcanton:voo' = 'tcanton:voo',
+  'tcanton:912797va2' = 'tcanton:912797va2',
+  'tcanton:912810up1' = 'tcanton:912810up1',
+  'tcanton:91282ckf7' = 'tcanton:91282ckf7',
 
   // Canton mainnet tokens
   'canton:usdcx' = 'canton:usdcx',
