@@ -234,6 +234,38 @@ describe('Polyx Batch Builder', function () {
     });
   });
 
+  describe('signablePayload (Substrate 256-byte blake2 rule)', function () {
+    const buildBatchTx = async (numValidators: number) => {
+      const batchBuilder = factory.getBatchBuilder();
+      batchBuilder
+        .amount(testAmount)
+        .controller({ address: controllerAddress })
+        .payee('Staked')
+        .validators(Array(numValidators).fill(validatorAddress))
+        .sender({ address: senderAddress })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 100 });
+      batchBuilder.material(utils.getMaterial(coins.get('tpolyx').network.type));
+      return batchBuilder.build();
+    };
+
+    it('should return raw payload bytes when the batch extrinsic is at most 256 bytes', async () => {
+      // bond + nominate with a single validator stays under the 256-byte threshold
+      const tx = await buildBatchTx(1);
+      const signablePayload = tx.signablePayload;
+      signablePayload.length.should.be.belowOrEqual(256);
+      signablePayload.length.should.not.equal(32);
+    });
+
+    it('should return the 32-byte blake2_256 hash when the batch extrinsic exceeds 256 bytes', async () => {
+      // bond + nominate with many validators pushes the batch over the 256-byte threshold
+      const tx = await buildBatchTx(6);
+      const signablePayload = tx.signablePayload;
+      should.equal(signablePayload.length, 32);
+    });
+  });
+
   describe('From Raw Transaction', function () {
     it('should rebuild from real batch transaction', async () => {
       // First build a transaction to get a real raw transaction

@@ -4,8 +4,8 @@ import { decodeAddress, encodeAddress, Keyring } from '@polkadot/keyring';
 import { decodePair } from '@polkadot/keyring/pair/decode';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
-import { hexToU8a, isHex, u8aToHex, u8aToU8a } from '@polkadot/util';
-import { base64Decode, signatureVerify } from '@polkadot/util-crypto';
+import { hexToU8a, isHex, u8aToBuffer, u8aToHex, u8aToU8a } from '@polkadot/util';
+import { base64Decode, blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { construct, decode } from '@substrate/txwrapper-polkadot';
@@ -31,6 +31,7 @@ import {
   MoveStakeArgs,
 } from './iface';
 import { SingletonRegistry } from './singletonRegistry';
+import { MAX_RAW_SIGNING_PAYLOAD_BYTES } from './constants';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -342,6 +343,22 @@ export class Utils implements BaseUtils {
     } catch (error) {
       throw new Error(`Failed to decode transaction: ${error}`);
     }
+  }
+
+  /**
+   * Returns the bytes that Substrate actually signs for a given raw encoded `ExtrinsicPayload`.
+   *
+   * Substrate signs the raw payload as-is when it is at most {@link MAX_RAW_SIGNING_PAYLOAD_BYTES}
+   * bytes, but for larger payloads it signs the 32-byte blake2_256 hash of those bytes instead
+   * (see Polkadot.js `@polkadot/types/extrinsic/util` and the HSM firmware). Using this helper
+   * ensures the user and the HSM sign the same message, which is required for TSS signature
+   * combination to succeed on large extrinsics (e.g. nominate with many validators).
+   *
+   * @param {Uint8Array} raw The raw encoded extrinsic payload bytes.
+   * @returns {Buffer} The bytes to sign: the raw payload, or its blake2_256 hash when oversized.
+   */
+  getSubstrateSigningBytes(raw: Uint8Array): Buffer {
+    return u8aToBuffer(raw.length > MAX_RAW_SIGNING_PAYLOAD_BYTES ? blake2AsU8a(raw, 256) : raw);
   }
 }
 
