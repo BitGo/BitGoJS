@@ -1,0 +1,91 @@
+inputScripts
+├─┬ redeemScript
+│ └─┬ script: length 34 bytes
+│   ├── error: Error: failed to parse as miniscript
+│   ├─┬ classification
+│   │ ├── input: nonstandard
+│   │ ├── output: witnessscripthash
+│   │ └── witness: undefined
+│   ├── asm: 
+│   │   OP_0
+│   │   e8400eafa6da42eead5045da37c9735f3831efcd1a15cf7cf9794a0b3409c881
+│   ├─┬ decompiled
+│   │ ├── 0: 0
+│   │ └── 1: e8400eafa6da42eead5045da37c9735f3831efcd1a15cf7cf9794a0b3409c881 (32 bytes)
+│   ├─┬ payment: p2sh
+│   │ ├── name: "p2sh"
+│   │ ├── address: "3HLJ2i2H7Q32yR2bc47ucAJHnoEdcKQGPS"
+│   │ ├── hash: ab96b8e16da18fa7ff6a4b33a34bf1a0332ca7fe (20 bytes)
+│   │ ├── output: a914ab96b8e16da18fa7ff6a4b33a34bf1a0332ca7fe87 (23 bytes)
+│   │ ├─┬ redeem
+│   │ │ └── output: 0020e8400eafa6da42eead5045da37c9735f3831efcd1a15cf7cf9794a0b3409c881 (34 bytes)
+│   │ ├── input: undefined
+│   │ └── witness: undefined
+│   ├─┬ payment: p2shP2wsh
+│   │ ├── name: "p2sh"
+│   │ ├── address: "376R37KT3hPnsmUy3MLNmPyoTcx5D6A6B9"
+│   │ ├── hash: 3b457d6ee684d95498b0dc86a1f1375f50fadb18 (20 bytes)
+│   │ ├── output: a9143b457d6ee684d95498b0dc86a1f1375f50fadb1887 (23 bytes)
+│   │ ├─┬ redeem
+│   │ │ └── output: 0020fe03b7fe65038ad549da635334b569665847ad37831629197d50eebc2deb2353 (34 bytes)
+│   │ ├── input: undefined
+│   │ └── witness: undefined
+│   └─┬ payment: p2wsh
+│     ├── name: "p2wsh"
+│     ├── address: "bc1qapqqataxmfpwat2sghdr0jtntuurrm7drg2u7l8e099qkdqfezqs8n9etw"
+│     ├── hash: e8400eafa6da42eead5045da37c9735f3831efcd1a15cf7cf9794a0b3409c881 (32 bytes)
+│     ├── output: 0020e8400eafa6da42eead5045da37c9735f3831efcd1a15cf7cf9794a0b3409c881 (34 bytes)
+│     ├── redeem: undefined
+│     ├── input: undefined
+│     └── witness: undefined
+└─┬ witnessScript
+  └─┬ script: length 105 bytes
+    ├── miniscript: multi(2,03393e3c784cf42a09c32b33b3ee2879ab092fd381c2187deafe6b69e0dc5bee4e,02089e4bad05bf0f0a67f5055c6518d5ae05de86db8081e9d5d2e654c710280507,03c154061b8a77902eeebf5c39429515b572161af576610f66f0d4269940f0f81b)
+    ├─┬ classification
+    │ ├── input: nonstandard
+    │ ├── output: multisig
+    │ └── witness: undefined
+    ├── asm: 
+    │   OP_2
+    │   03393e3c784cf42a09c32b33b3ee2879ab092fd381c2187deafe6b69e0dc5bee4e
+    │   02089e4bad05bf0f0a67f5055c6518d5ae05de86db8081e9d5d2e654c710280507
+    │   03c154061b8a77902eeebf5c39429515b572161af576610f66f0d4269940f0f81b
+    │   OP_3
+    │   OP_CHECKMULTISIG
+    ├─┬ decompiled
+    │ ├── 0: 82
+    │ ├── 1: 03393e3c784cf42a09c32b33b3ee2879ab092fd381c2187deafe6b69e0dc5bee4e (33 bytes)
+    │ ├── 2: 02089e4bad05bf0f0a67f5055c6518d5ae05de86db8081e9d5d2e654c710280507 (33 bytes)
+    │ ├── 3: 03c154061b8a77902eeebf5c39429515b572161af576610f66f0d4269940f0f81b (33 bytes)
+    │ ├── 4: 83
+    │ └── 5: 174
+    ├─┬ payment: p2sh
+    │ ├── name: "p2sh"
+    │ ├── address: "3BYbNC7nFJrZUYLmMmJesiopANxXWoCrW2"
+    │ ├── hash: 6c196e2acee024ec30185725a1765ea452c6e6e6 (20 bytes)
+    │ ├── output: a9146c196e2acee024ec30185725a1765ea452c6e6e687 (23 bytes)
+    │ ├─┬ redeem
+    │ │ └── output: 522103393e3c784cf42a09c32b33b3ee2879ab092fd381c2187deafe6b69e0dc5bee4e2102089e4bad05bf0f0a67f5055c6518d5ae05de86db8081e9d5d2e654c7102805072103c154061b8a77902eeebf5c39429515b572161af576610f66f0d4269940f0f81b53ae (105 bytes)
+    │ ├── input: undefined
+    │ └── witness: undefined
+    ├─┬ payment: p2shP2wsh
+    │ ├── name: "p2sh"
+    │ ├── address: "3HLJ2i2H7Q32yR2bc47ucAJHnoEdcKQGPS"
+    │ ├── hash: ab96b8e16da18fa7ff6a4b33a34bf1a0332ca7fe (20 bytes)
+    │ ├── output: a914ab96b8e16da18fa7ff6a4b33a34bf1a0332ca7fe87 (23 bytes)
+    │ ├─┬ redeem
+    │ │ └── output: 0020e8400eafa6da42eead5045da37c9735f3831efcd1a15cf7cf9794a0b3409c881 (34 bytes)
+    │ ├── input: undefined
+    │ └── witness: undefined
+    └─┬ payment: p2ms
+      ├── name: "p2ms(2 of 3)"
+      ├── output: 522103393e3c784cf42a09c32b33b3ee2879ab092fd381c2187deafe6b69e0dc5bee4e2102089e4bad05bf0f0a67f5055c6518d5ae05de86db8081e9d5d2e654c7102805072103c154061b8a77902eeebf5c39429515b572161af576610f66f0d4269940f0f81b53ae (105 bytes)
+      ├── m: 2
+      ├── n: 3
+      ├─┬ pubkeys: length: 3
+      │ ├── 0: 03393e3c784cf42a09c32b33b3ee2879ab092fd381c2187deafe6b69e0dc5bee4e (33 bytes)
+      │ ├── 1: 02089e4bad05bf0f0a67f5055c6518d5ae05de86db8081e9d5d2e654c710280507 (33 bytes)
+      │ └── 2: 03c154061b8a77902eeebf5c39429515b572161af576610f66f0d4269940f0f81b (33 bytes)
+      ├── signatures: undefined
+      ├── input: undefined
+      └── witness: undefined

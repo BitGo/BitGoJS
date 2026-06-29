@@ -1,0 +1,85 @@
+{
+  "name": "@bitgo/abstract-utxo",
+  "version": "11.7.3",
+  "description": "BitGo SDK coin library for UTXO base implementation",
+  "main": "./dist/cjs/src/index.js",
+  "module": "./dist/esm/index.js",
+  "browser": "./dist/esm/index.js",
+  "types": "./dist/cjs/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/index.d.ts",
+        "default": "./dist/cjs/src/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist/cjs",
+    "dist/esm"
+  ],
+  "scripts": {
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "yarn tsc --build --incremental --verbose .",
+    "build:esm": "yarn tsc --project tsconfig.esm.json",
+    "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'",
+    "check-fmt": "prettier --check '{src,test}/**/*.{ts,js,json}'",
+    "clean": "rm -rf ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "test": "mocha --recursive test/unit/",
+    "unit-test": "mocha --recursive test/unit/",
+    "integration-test": "mocha --recursive test/integration/"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/abstract-utxo"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/blockapis": "^1.13.7",
+    "@bitgo/sdk-api": "^1.86.3",
+    "@bitgo/sdk-core": "^37.10.0",
+    "@bitgo/utxo-core": "^1.39.2",
+    "@bitgo/utxo-descriptors": "^1.3.2",
+    "@bitgo/utxo-lib": "^11.24.0",
+    "@bitgo/utxo-ord": "^1.32.2",
+    "@bitgo/wasm-utxo": "^4.16.0",
+    "@types/lodash": "^4.14.121",
+    "@types/superagent": "4.1.15",
+    "bignumber.js": "^9.0.2",
+    "debug": "^3.1.0",
+    "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
+    "lodash": "^4.18.0",
+    "superagent": "^9.0.1"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-test": "^9.1.54",
+    "@bitgo/utxo-lib": "^11.24.0",
+    "mocha": "^10.2.0"
+  },
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
+}

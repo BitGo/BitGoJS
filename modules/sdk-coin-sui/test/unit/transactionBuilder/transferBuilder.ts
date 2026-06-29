@@ -1,0 +1,1261 @@
+import assert from 'assert';
+import { getBuilderFactory } from '../getBuilderFactory';
+import * as testData from '../../resources/sui';
+import should from 'should';
+import { TransactionType } from '@bitgo/sdk-core';
+import utils from '../../../src/lib/utils';
+import { Transaction as SuiTransaction } from '../../../src/lib/transaction';
+import { SuiTransactionType, TransferProgrammableTransaction } from '../../../src/lib/iface';
+import { MAX_COMMAND_ARGS, MAX_GAS_OBJECTS } from '../../../src/lib/constants';
+
+describe('Sui Transfer Builder', () => {
+  const factory = getBuilderFactory('tsui');
+
+  describe('Succeed', () => {
+    it('should build a transfer tx', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(testData.gasData);
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+      (tx as SuiTransaction<TransferProgrammableTransaction>).suiTransaction.gasData.payment!.should.deepEqual(
+        testData.coinsGasPayment
+      );
+
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: testData.sender.address,
+        value: (testData.AMOUNT * 2).toString(),
+        coin: 'tsui',
+      });
+      tx.outputs.length.should.equal(2);
+      tx.outputs[0].should.deepEqual({
+        address: testData.recipients[0].address,
+        value: testData.recipients[0].amount,
+        coin: 'tsui',
+      });
+      tx.outputs[1].should.deepEqual({
+        address: testData.recipients[1].address,
+        value: testData.recipients[1].amount,
+        coin: 'tsui',
+      });
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+      should.equal(rawTx, testData.TRANSFER);
+    });
+
+    it('should build a sponsored transfer tx with inputObjects', async function () {
+      const inputObjects = [
+        {
+          objectId: '0000000000000000000000001234567890abcdef1234567890abcdef12345678',
+          version: 100,
+          digest: '2B8XKQJ7mfxQPUWqJJAGjzBAzivkWKq2cEa3W8LLz1yB',
+        },
+        {
+          objectId: '000000000000000000000000abcdef1234567890abcdef1234567890abcdef12',
+          version: 200,
+          digest: 'DoJwXuz9oU5Y5v5vBRiTgisVTQuZQLmHZWeqJzzD5QUE',
+        },
+      ];
+
+      // Create gas data with different owner (sponsor)
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address, // Different from sender
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address); // Sender
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(sponsoredGasData); // Gas paid by sponsor
+      txBuilder.inputObjects(inputObjects); // Required for sponsored tx
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+
+      // Verify transaction structure for sponsored transaction
+      const programmableTx = suiTx.suiTransaction.tx;
+      programmableTx.transactions.length.should.be.greaterThan(0);
+
+      // Verify sponsored transaction characteristics
+      suiTx.suiTransaction.sender.should.equal(testData.sender.address);
+      suiTx.suiTransaction.gasData.owner.should.equal(testData.feePayer.address);
+
+      // Should have transactions for merging/splitting and transferring when using inputObjects
+      programmableTx.transactions.length.should.be.greaterThan(0);
+
+      // Verify we have transfer operations (the exact structure varies with API versions)
+      should.exist(programmableTx.transactions);
+
+      // Verify inputObjects are not used in gas payment (they're separate)
+      suiTx.suiTransaction.gasData.payment.should.not.containDeep(inputObjects);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.exist(rawTx);
+      should.equal(typeof rawTx, 'string');
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+
+    it('should build a split coin tx', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      const amount = 1000000000;
+      const recipients = new Array(100).fill({ address: testData.sender.address, amount: amount.toString() });
+      txBuilder.send(recipients);
+      txBuilder.gasData(testData.gasData);
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+      (tx as SuiTransaction<TransferProgrammableTransaction>).suiTransaction.gasData.payment!.should.deepEqual(
+        testData.coinsGasPayment
+      );
+
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: testData.sender.address,
+        value: (amount * 100).toString(),
+        coin: 'tsui',
+      });
+      tx.outputs.length.should.equal(100);
+      tx.outputs.forEach((output) =>
+        output.should.deepEqual({
+          address: testData.sender.address,
+          value: amount.toString(),
+          coin: 'tsui',
+        })
+      );
+    });
+
+    it('should build a split coin tx with more than 255 input objects', async function () {
+      const amount = 1000000000;
+      const numberOfRecipients = 10;
+      const numberOfPaymentObjects = 1000;
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+
+      const recipients = new Array(numberOfRecipients).fill({
+        address: testData.sender.address,
+        amount: amount.toString(),
+      });
+
+      const gasData = {
+        ...testData.gasData,
+        payment: testData.generateObjects(numberOfPaymentObjects),
+      };
+
+      txBuilder.send(recipients);
+      txBuilder.gasData(gasData);
+      const tx = await txBuilder.build();
+
+      assert(tx instanceof SuiTransaction);
+      tx.type.should.equal(TransactionType.Send);
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: testData.sender.address,
+        value: (amount * 10).toString(),
+        coin: 'tsui',
+      });
+      tx.outputs.length.should.equal(10);
+      tx.outputs.forEach((output) =>
+        output.should.deepEqual({
+          coin: 'tsui',
+          address: testData.sender.address,
+          value: amount.toString(),
+        })
+      );
+      tx.suiTransaction.gasData.owner.should.equal(gasData.owner);
+      tx.suiTransaction.gasData.price.should.equal(gasData.price);
+      tx.suiTransaction.gasData.budget.should.equal(gasData.budget);
+      tx.suiTransaction.gasData.payment.length.should.equal(MAX_GAS_OBJECTS - 1);
+
+      const programmableTx = tx.suiTransaction.tx;
+
+      // total objects - objects sent as gas payment + no. of recipient amounts(pure)
+      // + no. of unique recipient addresses(de-duped objects)
+      programmableTx.inputs.length.should.equal(
+        numberOfPaymentObjects - (MAX_GAS_OBJECTS - 1) + numberOfRecipients + 1
+      );
+      programmableTx.transactions[0].kind.should.equal('MergeCoins');
+      programmableTx.transactions[0].sources.length.should.equal(MAX_COMMAND_ARGS - 1);
+      programmableTx.transactions[1].kind.should.equal('MergeCoins');
+      programmableTx.transactions[1].sources.length.should.equal(
+        numberOfPaymentObjects - (MAX_COMMAND_ARGS - 1) - (MAX_GAS_OBJECTS - 1)
+      );
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+      rebuiltTx.toJson().gasData.payment.length.should.equal(numberOfPaymentObjects);
+    });
+  });
+
+  describe('Fail', () => {
+    it('should fail for invalid sender', async function () {
+      const builder = factory.getTransferBuilder();
+      should(() => builder.sender('randomString')).throwError('Invalid or missing sender, got: randomString');
+    });
+
+    it('should fail for invalid payTx', async function () {
+      const builder = factory.getTransferBuilder();
+      should(() => builder.send([testData.invalidRecipients[0]])).throwError(
+        'Invalid or missing address, got: randomString'
+      );
+      should(() => builder.send([testData.invalidRecipients[1]])).throwError('Invalid recipient amount');
+    });
+
+    it('should fail for invalid gasData', function () {
+      const builder = factory.getTransferBuilder();
+      should(() => builder.gasData(testData.invalidGasOwner)).throwError(
+        `Invalid gas address ${testData.invalidGasOwner.owner}`
+      );
+    });
+
+    it('should fail for invalid gasBudget', function () {
+      const builder = factory.getTransferBuilder();
+      should(() => builder.gasData(testData.invalidGasBudget)).throwError('Invalid gas budget -1');
+    });
+
+    it('should fail for invalid gasPayment', function () {
+      const builder = factory.getTransferBuilder();
+      const invalidGasPayment = {
+        ...testData.gasDataWithoutGasPayment,
+        payment: [
+          {
+            objectId: '',
+            version: -1,
+            digest: '',
+          },
+        ],
+      };
+      should(() => builder.gasData(invalidGasPayment)).throwError('Invalid payment, invalid or missing version');
+    });
+
+    it('should fail for invalid inputObjects', function () {
+      const builder = factory.getTransferBuilder();
+      const invalidInputObjects = [
+        {
+          objectId: '',
+          version: -1,
+          digest: '',
+        },
+      ];
+      should(() => builder.inputObjects(invalidInputObjects)).throwError(
+        'Invalid input object, invalid or missing version'
+      );
+    });
+
+    it('should build transfer with different gas owner but no inputObjects', async function () {
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address, // Different from sender
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address); // Sender
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(sponsoredGasData); // Gas paid by sponsor
+      // Note: NOT providing inputObjects - should still work (fee sponsorship without coin sponsorship)
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      should.not.exist(suiTx.suiTransaction.inputObjects);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+
+    it('should extract inputObjects from transaction data via toJson', async function () {
+      const inputObjects = [
+        {
+          objectId: '0x1234567890abcdef1234567890abcdef12345678',
+          version: 100,
+          digest: '2B8XKQJ7mfxQPUWqJJAGjzBAzivkWKq2cEa3W8LLz1yB',
+        },
+      ];
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address, // Different from sender
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.inputObjects(inputObjects);
+
+      const tx = await txBuilder.build();
+
+      // Test that toJson extracts inputObjects from transaction structure
+      const txData = (tx as any).toJson();
+      should.exist(txData.inputObjects);
+
+      // The toJson should extract the inputObjects from the transaction structure
+      // This tests our new getInputObjectsFromTx method
+      should.exist(txData.inputObjects);
+      Array.isArray(txData.inputObjects).should.equal(true);
+    });
+  });
+
+  describe('fundsInAddressBalance', () => {
+    const FUNDS_IN_ADDRESS_BALANCE = '5000000000'; // 5 SUI
+
+    it('should build Path 2b: self-pay, address-balance only — uses withdrawal+redeem_funds, not SplitCoins(GasCoin)', async function () {
+      // Regression for production InsufficientCoinBalance failures on consolidation.
+      // With payment=[], GasCoin only has gas-budget-worth of balance for PTB operations;
+      // SplitCoins(GasCoin, [large_amount]) always fails at command 0.
+      // Path 2b must use withdrawal+redeem_funds to materialise the address balance as a
+      // coin object and split from that coin instead.
+      const gasDataNoPayment = {
+        ...testData.gasDataWithoutGasPayment,
+        payment: [],
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients); // 2 recipients
+      txBuilder.gasData(gasDataNoPayment);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      suiTx.suiTransaction.gasData.payment.length.should.equal(0);
+
+      // Path 2b PTB command sequence (2 recipients):
+      //   0: MoveCall(redeem_funds)          — materialise addrCoin from address balance
+      //   1: SplitCoins(addrCoin, [amount0]) — split for recipient 0
+      //   2: TransferObjects                 — send to recipient 0
+      //   3: SplitCoins(addrCoin, [amount1]) — split for recipient 1
+      //   4: TransferObjects                 — send to recipient 1
+      //   5: MergeCoins(GasCoin, [addrCoin]) — destroy 0-balance addrCoin; gas from accumulator
+      const cmds = suiTx.suiTransaction.tx.transactions as any[];
+      cmds[0].kind.should.equal('MoveCall', 'command 0 must be MoveCall(redeem_funds)');
+      cmds[0].target.should.equal('0x2::coin::redeem_funds');
+      cmds[1].kind.should.equal('SplitCoins', 'command 1 must be SplitCoins(addrCoin)');
+      cmds[2].kind.should.equal('TransferObjects', 'command 2 must be TransferObjects');
+      cmds[3].kind.should.equal('SplitCoins', 'command 3 must be SplitCoins(addrCoin)');
+      cmds[4].kind.should.equal('TransferObjects', 'command 4 must be TransferObjects');
+      cmds[5].kind.should.equal('MergeCoins', 'command 5 must be MergeCoins(GasCoin, [addrCoin])');
+      cmds.length.should.equal(6);
+
+      suiTx.suiTransaction.fundsInAddressBalance!.should.equal(FUNDS_IN_ADDRESS_BALANCE);
+
+      // Transaction parser must correctly identify recipients despite the MoveCall preamble
+      const parsedRecipients = utils.getRecipients(suiTx.suiTransaction);
+      parsedRecipients.length.should.equal(testData.recipients.length);
+      parsedRecipients[0].address.should.equal(testData.recipients[0].address);
+      parsedRecipients[0].amount.should.equal(testData.recipients[0].amount);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // Round-trip: rebuilt transaction must be bit-for-bit identical
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build Path 2b with a single recipient', async function () {
+      const SEND_AMOUNT = '1275170993710'; // realistic consolidation amount (~1275 SUI)
+      const ADDR_BAL = '1275177540910'; // fundsInAddressBalance > SEND_AMOUNT + gas budget
+      const gasDataNoPayment = {
+        ...testData.gasDataWithoutGasPayment,
+        payment: [],
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: SEND_AMOUNT }]);
+      txBuilder.gasData(gasDataNoPayment);
+      txBuilder.fundsInAddressBalance(ADDR_BAL);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      const cmds = suiTx.suiTransaction.tx.transactions as any[];
+
+      // Command sequence for 1 recipient:
+      //   0: MoveCall(redeem_funds)
+      //   1: SplitCoins(addrCoin, [SEND_AMOUNT])
+      //   2: TransferObjects
+      //   3: MergeCoins(GasCoin, [addrCoin])
+      cmds[0].kind.should.equal('MoveCall');
+      cmds[0].target.should.equal('0x2::coin::redeem_funds');
+      cmds[1].kind.should.equal('SplitCoins');
+      cmds[2].kind.should.equal('TransferObjects');
+      cmds[3].kind.should.equal('MergeCoins', 'expected MergeCoins to consume 0-balance addrCoin');
+      cmds.length.should.equal(4);
+
+      const parsedRecipients = utils.getRecipients(suiTx.suiTransaction);
+      parsedRecipients.length.should.equal(1);
+      parsedRecipients[0].address.should.equal(testData.recipients[0].address);
+      parsedRecipients[0].amount.should.equal(SEND_AMOUNT);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build Path 2b with ValidDuring expiration (production consolidation scenario)', async function () {
+      // Mirrors the real on-chain consolidation that failed: address index 10, wallet
+      // 67fe3f15..., txid JDbnybotg3axfjtB53LrnV1YtvGLFBVG8o2Xz5xX1m6Z.
+      // The recover() code sets ValidDuring when coinObjectsBalance=0 and
+      // fundsInAddressBalance>0 (Case 2). This test verifies both the expiration survives
+      // serialization and the PTB uses Path 2b (not the broken SplitCoins(GasCoin) path).
+      const GENESIS_CHAIN_ID = 'GAFpCCcRCxTdFfUEMbQbkLBaZy2RNiGAfvFBhMNpq2kT';
+      const SEND_AMOUNT = '1275170993710';
+      const ADDR_BAL = '1275177540910';
+      const gasDataNoPayment = {
+        ...testData.gasDataWithoutGasPayment,
+        payment: [],
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: SEND_AMOUNT }]);
+      txBuilder.gasData(gasDataNoPayment);
+      txBuilder.fundsInAddressBalance(ADDR_BAL);
+      txBuilder.expiration({
+        ValidDuring: {
+          minEpoch: { Some: 1156 },
+          maxEpoch: { Some: 1157 },
+          minTimestamp: { None: null },
+          maxTimestamp: { None: null },
+          chain: GENESIS_CHAIN_ID,
+          nonce: 12345678,
+        },
+      });
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      suiTx.suiTransaction.gasData.payment.length.should.equal(0);
+
+      // Must use Path 2b (MoveCall first), never SplitCoins(GasCoin) first
+      const cmds = suiTx.suiTransaction.tx.transactions as any[];
+      cmds[0].kind.should.equal('MoveCall', 'Path 2b must start with MoveCall(redeem_funds), not SplitCoins(GasCoin)');
+      cmds[0].target.should.equal('0x2::coin::redeem_funds');
+      cmds[cmds.length - 1].kind.should.equal(
+        'MergeCoins',
+        'Path 2b must end with MergeCoins to destroy 0-balance addrCoin'
+      );
+
+      // ValidDuring expiration must survive BCS round-trip
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+
+      const expiration = (rebuiltTx.toJson().expiration as any)?.ValidDuring;
+      should.exist(expiration, 'ValidDuring expiration must survive round-trip');
+      Number(expiration.minEpoch.Some).should.equal(1156);
+      Number(expiration.maxEpoch.Some).should.equal(1157);
+    });
+
+    it('should build a self-pay transfer with coin objects + address balance (Path 2c)', async function () {
+      // Regression test for COINS-331: when both gasData.payment (coin objects) and
+      // fundsInAddressBalance are set, Sui does NOT automatically merge address balance into
+      // the gas coin.  Path 2c must explicitly call redeem_funds + MergeCoins(gas, [addrCoin])
+      // before SplitCoins so that the gas coin holds the full spendable amount.
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(testData.gasData); // non-empty payment — triggers Path 2c
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+
+      // Path 2c PTB command sequence (for 2 recipients):
+      //   0: MoveCall(redeem_funds)     — materialize addrCoin from address balance
+      //   1: MergeCoins(gas, [addrCoin])— gas coin = coinObjects + addrBal (full spendable amount)
+      //   2: SplitCoins(gas)            — split for recipient 0
+      //   3: TransferObjects            — send to recipient 0
+      //   4: SplitCoins(gas)            — split for recipient 1
+      //   5: TransferObjects            — send to recipient 1
+      const programmableTx = suiTx.suiTransaction.tx;
+      const cmds = programmableTx.transactions as any[];
+      cmds[0].kind.should.equal('MoveCall', 'command 0 must be MoveCall(redeem_funds)');
+      cmds[0].target.should.equal('0x2::coin::redeem_funds');
+      cmds[1].kind.should.equal('MergeCoins', 'command 1 must be MergeCoins(gas, [addrCoin])');
+      cmds[2].kind.should.equal('SplitCoins', 'command 2 must be SplitCoins(gas, [amount0])');
+      cmds[3].kind.should.equal('TransferObjects');
+      cmds[4].kind.should.equal('SplitCoins', 'command 4 must be SplitCoins(gas, [amount1])');
+      cmds[5].kind.should.equal('TransferObjects');
+
+      // fundsInAddressBalance must be persisted in the serialized transaction
+      suiTx.suiTransaction.fundsInAddressBalance!.should.equal(FUNDS_IN_ADDRESS_BALANCE);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // Round-trip: rebuilt transaction must be bit-for-bit identical
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build a sponsored transfer with coin objects + address balance', async function () {
+      const inputObjects = testData.generateObjects(2);
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.inputObjects(inputObjects);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      suiTx.suiTransaction.gasData.owner.should.equal(testData.feePayer.address);
+
+      // Sponsored path: MoveCall(redeem_funds) + MergeCoins + SplitCoins
+      const programmableTx = suiTx.suiTransaction.tx;
+      (programmableTx.transactions[0] as any).kind.should.equal('MoveCall');
+      (programmableTx.transactions[0] as any).target.should.equal('0x2::coin::redeem_funds');
+      (programmableTx.transactions[1] as any).kind.should.equal('MergeCoins');
+      (programmableTx.transactions[2] as any).kind.should.equal('SplitCoins');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // Round-trip
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build a sponsored transfer with address balance only (no coin inputObjects)', async function () {
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      // Path 1b: withdrawal → redeem_funds → SplitCoins(addrCoin) → TransferObjects
+      // Sponsor's gas coins remain in gasData.payment; tx.gas is NOT used for the transfer amount.
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      suiTx.suiTransaction.gasData.owner.should.equal(testData.feePayer.address);
+      const programmableTx = suiTx.suiTransaction.tx;
+      (programmableTx.transactions[0] as any).kind.should.equal('MoveCall');
+      (programmableTx.transactions[0] as any).target.should.equal('0x2::coin::redeem_funds');
+      (programmableTx.transactions[1] as any).kind.should.equal('SplitCoins');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // Round-trip: rebuild from raw
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build Path 1b send-all: sponsored addr-balance-only, no change (MergeCoins consumes addrCoin)', async function () {
+      // Reproduces the real on-chain failure: UnusedValueWithoutDrop { result_idx: 0 }
+      // Occurs when redeem_funds returns addrCoin, SplitCoins drains it completely, and the
+      // 0-balance source coin is never consumed.  Fix: MergeCoins(gas, [addrCoin]) at the end.
+      const SEND_AMOUNT = '1000000'; // 0.001 SUI — same as the failing tx
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: SEND_AMOUNT }]);
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.fundsInAddressBalance(SEND_AMOUNT); // send-all: balance == recipient amount
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      const cmds = suiTx.suiTransaction.tx.transactions as any[];
+
+      // Expected command sequence for Path 1b send-all:
+      //   0: MoveCall (redeem_funds)     — withdraw addrCoin
+      //   1: SplitCoins(addrCoin)        — split recipient amount off addrCoin
+      //   2: TransferObjects([split])    — send to recipient
+      //   3: MergeCoins(gas, [addrCoin]) — consume the now-zero-balance addrCoin
+      cmds[0].kind.should.equal('MoveCall');
+      cmds[0].target.should.equal('0x2::coin::redeem_funds');
+      cmds[1].kind.should.equal('SplitCoins');
+      cmds[2].kind.should.equal('TransferObjects');
+      cmds[3].kind.should.equal('MergeCoins', 'expected MergeCoins to consume 0-balance addrCoin after send-all');
+
+      // Recipient parsing must not be affected by the trailing MergeCoins
+      const recipients = utils.getRecipients(suiTx.suiTransaction);
+      recipients.length.should.equal(1);
+      recipients[0].address.should.equal(testData.recipients[0].address);
+      recipients[0].amount.should.equal(SEND_AMOUNT);
+
+      // Round-trip
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build Path 1b with change: sponsored addr-balance-only, excess returned to sender', async function () {
+      // fundsInAddressBalance exceeds the total recipient amount → change must be returned to
+      // the sender as an extra TransferObjects([addrCoin], sender).  The transaction parser must
+      // skip this change transfer and only report actual recipients.
+      const SEND_AMOUNT = '100'; // each of the two testData.recipients gets 100
+      const EXCESS = '9999900'; // fundsInAddressBalance = 10_000_000, total send = 200
+      const FUNDS_BALANCE = (Number(SEND_AMOUNT) * testData.recipients.length + Number(EXCESS)).toString();
+
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients); // 2 recipients × 100 MIST = 200 MIST total
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.fundsInAddressBalance(FUNDS_BALANCE); // 10_000_000 > 200 → has change
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      const cmds = suiTx.suiTransaction.tx.transactions as any[];
+
+      // Expected sequence for Path 1b with change (2 recipients):
+      //   0: MoveCall (redeem_funds)
+      //   1: SplitCoins  —  recipient 0
+      //   2: TransferObjects  —  recipient 0
+      //   3: SplitCoins  —  recipient 1
+      //   4: TransferObjects  —  recipient 1
+      //   5: TransferObjects([addrCoin], sender)  —  change back to sender
+      cmds[0].kind.should.equal('MoveCall');
+      cmds[0].target.should.equal('0x2::coin::redeem_funds');
+      const lastCmd = cmds[cmds.length - 1];
+      lastCmd.kind.should.equal('TransferObjects', 'last command must be the change transfer');
+
+      // The last TransferObjects returns change to the *sender*, not a recipient
+      const changeAddrInput = suiTx.suiTransaction.tx.inputs[lastCmd.address.index] as any;
+      const changeAddr = utils.getAddress(changeAddrInput);
+      changeAddr.should.equal(testData.sender.address, 'change must go back to sender');
+
+      // Parser must return only the actual recipients, not the change transfer
+      const recipients = utils.getRecipients(suiTx.suiTransaction);
+      recipients.length.should.equal(testData.recipients.length);
+      recipients[0].address.should.equal(testData.recipients[0].address);
+      recipients[0].amount.should.equal(SEND_AMOUNT);
+      recipients[1].address.should.equal(testData.recipients[1].address);
+      recipients[1].amount.should.equal(SEND_AMOUNT);
+
+      // Round-trip
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build a sponsored tx gas paid from sponsor address balance (empty payment)', async function () {
+      const inputObjects = testData.generateObjects(1);
+      const sponsoredGasDataNoPayment = {
+        payment: [],
+        owner: testData.feePayer.address,
+        price: testData.gasData.price,
+        budget: testData.gasData.budget,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(sponsoredGasDataNoPayment);
+      txBuilder.inputObjects(inputObjects);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      suiTx.suiTransaction.gasData.owner.should.equal(testData.feePayer.address);
+      suiTx.suiTransaction.gasData.payment.length.should.equal(0);
+
+      // Sponsored path with coin objects, no address balance withdrawal
+      const programmableTx = suiTx.suiTransaction.tx;
+      (programmableTx.transactions[0] as any).kind.should.equal('SplitCoins');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+
+    it('should round-trip a self-pay transfer with Epoch expiration via fromBytes', async function () {
+      // Regression test for the BigInt round-trip bug:
+      // BCS.U64 deserializes u64 as BigInt, but the previous superstruct schema used integer()
+      // which rejected BigInt, causing fromBytes() to throw a StructError at "expiration".
+      // StringEncodedBigint now accepts string | number | bigint, fixing the round-trip.
+      const gasDataNoPayment = {
+        ...testData.gasDataWithoutGasPayment,
+        payment: [],
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(gasDataNoPayment);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+      txBuilder.expiration({ Epoch: 324 }); // number input
+
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // fromBytes must not throw StructError — this was the failing case before the fix
+      should.doesNotThrow(() => {
+        const rebuilder = factory.from(rawTx);
+        should.exist(rebuilder);
+      });
+
+      // Full round-trip: rebuilt tx must serialize identically
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+
+      // Epoch value must survive the round-trip regardless of BigInt/number representation
+      const rebuiltJson = rebuiltTx.toJson();
+      const epochVal = (rebuiltJson.expiration as any)?.Epoch;
+      should.exist(epochVal);
+      Number(epochVal).should.equal(324);
+    });
+
+    it('should round-trip a self-pay transfer with ValidDuring expiration via fromBytes', async function () {
+      // Verifies the full 6-field ValidDuringExpiration BCS schema:
+      //   minEpoch/maxEpoch as Option<u64>, minTimestamp/maxTimestamp as Option<u64> (None),
+      //   chain as 32-byte Base58 ObjectDigest, nonce as u32.
+      // Uses a real mainnet genesis checkpoint digest (32 bytes, Base58).
+      const GENESIS_CHAIN_ID = 'GAFpCCcRCxTdFfUEMbQbkLBaZy2RNiGAfvFBhMNpq2kT';
+      const FUNDS_IN_ADDRESS_BALANCE = '5000000000';
+      const gasDataNoPayment = {
+        ...testData.gasDataWithoutGasPayment,
+        payment: [],
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(gasDataNoPayment);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+      txBuilder.expiration({
+        ValidDuring: {
+          minEpoch: { Some: 500 },
+          maxEpoch: { Some: 501 },
+          minTimestamp: { None: null },
+          maxTimestamp: { None: null },
+          chain: GENESIS_CHAIN_ID,
+          nonce: 0xdeadbeef,
+        },
+      });
+
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // fromBytes must not throw — ValidDuring fields must survive deserialization
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+
+      // BCS round-trip: serialized bytes must be identical
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+
+      // All ValidDuring fields must survive the round-trip
+      const expiration = (rebuiltTx.toJson().expiration as any)?.ValidDuring;
+      should.exist(expiration);
+      Number(expiration.minEpoch?.Some ?? expiration.minEpoch).should.equal(500);
+      Number(expiration.maxEpoch?.Some ?? expiration.maxEpoch).should.equal(501);
+      expiration.chain.should.equal(GENESIS_CHAIN_ID);
+      Number(expiration.nonce).should.equal(0xdeadbeef);
+    });
+  });
+
+  describe('large amounts exceeding Number.MAX_SAFE_INTEGER', () => {
+    // Number.MAX_SAFE_INTEGER = 9007199254740991.
+    // Using Number() for amounts above this silently rounds to the nearest representable float.
+    // 9007199254740993 (MAX_SAFE_INTEGER + 2) is NOT exactly representable as a JS Number — it
+    // rounds down to 9007199254740992 — so BCS would encode the wrong value.
+    // BigInt preserves the exact value and is the correct type for BCS u64 encoding.
+    //
+    // The core check in each test is tx.outputs[0].value === LARGE_AMOUNT: this reads from the
+    // in-memory builder state (a BigInt, not BCS-decoded), so it accurately distinguishes
+    // BigInt() vs Number() encoding at build time.
+    const LARGE_AMOUNT = '9007199254740993'; // MAX_SAFE_INTEGER + 2
+
+    it('should build a self-pay transfer (Path 2) with amount > Number.MAX_SAFE_INTEGER and encode it precisely', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: LARGE_AMOUNT }]);
+      txBuilder.gasData(testData.gasData);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      // With Number() the amount would be silently rounded to 9007199254740992 — BigInt preserves the exact value
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].value.should.equal(LARGE_AMOUNT);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+
+    it('should build a sponsored transfer with coin objects (Path 1a) with amount > Number.MAX_SAFE_INTEGER and encode it precisely', async function () {
+      const inputObjects = testData.generateObjects(2);
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: LARGE_AMOUNT }]);
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.inputObjects(inputObjects);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      // With Number() the amount would be silently rounded to 9007199254740992 — BigInt preserves the exact value
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].value.should.equal(LARGE_AMOUNT);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+
+    it('should build a sponsored addr-balance-only transfer (Path 1b) with amount > Number.MAX_SAFE_INTEGER and round-trip correctly', async function () {
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: LARGE_AMOUNT }]);
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.fundsInAddressBalance(LARGE_AMOUNT);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      // With Number() the amount would be silently rounded to 9007199254740992 — BigInt preserves the exact value
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].value.should.equal(LARGE_AMOUNT);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // Full round-trip: rebuilding from BCS bytes must produce identical bytes
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+
+      const recipients = utils.getRecipients(
+        (rebuiltTx as SuiTransaction<TransferProgrammableTransaction>).suiTransaction
+      );
+      recipients[0].amount.should.equal(LARGE_AMOUNT);
+    });
+  });
+
+  describe('prod address balance consolidation (CECHO-1210)', () => {
+    // Failed prod consolidation 6a19cb8bcd4751dbd891a722ee04e552 (txRequest ee5d60d7-fa53-4fa4-adcf-26435c9317bf).
+    // Broadcast failed with stale coin object version; the amount must still encode losslessly.
+    const CONSOLIDATION_AMOUNT = '18536797842613700'; // ~18.5M SUI in MIST (sendAccounting.amountString)
+    const CONSOLIDATION_SENDER = '0x46a53e2712561f4e0d8272bd27a396b6bf9325f92f34b949041b8783d57469dd';
+    const CONSOLIDATION_RECIPIENT = '0x3da2cb67c887c9a03d1052d486733a77105824f7413fc3cbbe3641d4b67af102';
+
+    it('should accept the prod consolidation amount in isValidAmount', function () {
+      utils.isValidAmount(CONSOLIDATION_AMOUNT).should.be.true();
+      Number.isSafeInteger(Number(CONSOLIDATION_AMOUNT)).should.be.false();
+    });
+
+    it('should build address-balance-only consolidation with exact prod amount (Path 2, empty payment)', async function () {
+      const gasDataNoPayment = {
+        ...testData.gasDataWithoutGasPayment,
+        payment: [],
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(CONSOLIDATION_SENDER);
+      txBuilder.send([{ address: CONSOLIDATION_RECIPIENT, amount: CONSOLIDATION_AMOUNT }]);
+      txBuilder.gasData(gasDataNoPayment);
+      txBuilder.fundsInAddressBalance(CONSOLIDATION_AMOUNT);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].should.deepEqual({
+        address: CONSOLIDATION_RECIPIENT,
+        value: CONSOLIDATION_AMOUNT,
+        coin: 'tsui',
+      });
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].value.should.equal(CONSOLIDATION_AMOUNT);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const deserialized = SuiTransaction.deserializeSuiTransaction(rawTx);
+      const recipients = utils.getRecipients(deserialized);
+      recipients.length.should.equal(1);
+      recipients[0].address.should.equal(CONSOLIDATION_RECIPIENT);
+      recipients[0].amount.should.equal(CONSOLIDATION_AMOUNT);
+    });
+
+    it('should build address-balance consolidation with coin objects and exact prod amount (Path 2)', async function () {
+      // Prod failure referenced stale gas/coin object versions between sign and broadcast.
+      // Builder must still encode the full consolidation amount in SplitCoins.
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(CONSOLIDATION_SENDER);
+      txBuilder.send([{ address: CONSOLIDATION_RECIPIENT, amount: CONSOLIDATION_AMOUNT }]);
+      txBuilder.gasData({ ...testData.gasData, owner: CONSOLIDATION_SENDER });
+      txBuilder.fundsInAddressBalance(CONSOLIDATION_AMOUNT);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      tx.outputs[0].value.should.equal(CONSOLIDATION_AMOUNT);
+      tx.inputs[0].value.should.equal(CONSOLIDATION_AMOUNT);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+
+      const recipients = utils.getRecipients(
+        (rebuiltTx as SuiTransaction<TransferProgrammableTransaction>).suiTransaction
+      );
+      recipients[0].address.should.equal(CONSOLIDATION_RECIPIENT);
+      recipients[0].amount.should.equal(CONSOLIDATION_AMOUNT);
+    });
+  });
+
+  describe('BalanceWithdrawal BCS encoding (FundsWithdrawal format)', () => {
+    const AMOUNT = '100000000'; // 0.1 SUI in MIST
+    const sponsoredGasData = {
+      ...testData.gasData,
+      owner: testData.feePayer.address,
+    };
+
+    async function buildSponsoredTxWithAddressBalance() {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: AMOUNT }]);
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.fundsInAddressBalance(AMOUNT);
+      return txBuilder.build();
+    }
+
+    it('should encode BalanceWithdrawal input with FundsWithdrawal structure (reservation/typeArg/withdrawFrom)', async function () {
+      const tx = await buildSponsoredTxWithAddressBalance();
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      const inputs = suiTx.suiTransaction.tx.inputs as any[];
+
+      const bwInput = inputs.find(
+        (inp) => inp?.BalanceWithdrawal !== undefined || inp?.value?.BalanceWithdrawal !== undefined
+      );
+      should.exist(bwInput, 'BalanceWithdrawal input must be present');
+
+      const bw = bwInput.BalanceWithdrawal ?? bwInput.value?.BalanceWithdrawal;
+
+      should.exist(bw.reservation, 'reservation field must exist');
+      should.exist(bw.reservation.MaxAmountU64, 'reservation.MaxAmountU64 must exist');
+      bw.reservation.MaxAmountU64.toString().should.equal(AMOUNT);
+
+      should.exist(bw.typeArg, 'typeArg field must exist');
+      should.exist(bw.typeArg.Balance, 'typeArg.Balance must exist');
+
+      should.exist(bw.withdrawFrom, 'withdrawFrom field must exist');
+      should.exist(
+        bw.withdrawFrom.Sender !== undefined || bw.withdrawFrom.Sponsor !== undefined,
+        'withdrawFrom must be Sender or Sponsor'
+      );
+
+      // Old format fields must NOT exist directly on bw
+      should.not.exist(bw.amount, 'old "amount" field must not exist on BalanceWithdrawal');
+      should.not.exist(bw.type_, 'old "type_" field must not exist on BalanceWithdrawal');
+    });
+
+    it('should produce BCS bytes that decode back to FundsWithdrawal with correct amount', async function () {
+      const tx = await buildSponsoredTxWithAddressBalance();
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const deserialized = SuiTransaction.deserializeSuiTransaction(rawTx);
+      const inputs = deserialized.tx.inputs as any[];
+
+      const bwInput = inputs.find(
+        (inp) => inp?.BalanceWithdrawal !== undefined || inp?.value?.BalanceWithdrawal !== undefined
+      );
+      should.exist(bwInput, 'BalanceWithdrawal must be present in deserialized inputs');
+
+      const bw = bwInput.BalanceWithdrawal ?? bwInput.value?.BalanceWithdrawal;
+
+      // FundsWithdrawal structure (not old {amount, type_})
+      should.exist(bw.reservation, 'reservation must survive BCS round-trip');
+      should.exist(bw.reservation.MaxAmountU64, 'MaxAmountU64 must survive BCS round-trip');
+      bw.reservation.MaxAmountU64.toString().should.equal(AMOUNT);
+
+      should.exist(bw.typeArg, 'typeArg must survive BCS round-trip');
+      should.exist(bw.typeArg.Balance, 'typeArg.Balance must survive BCS round-trip');
+
+      should.exist(bw.withdrawFrom, 'withdrawFrom must survive BCS round-trip');
+    });
+
+    it('should serialize toJson() without a BigInt replacer (no TypeError)', async function () {
+      const tx = await buildSponsoredTxWithAddressBalance();
+      should.doesNotThrow(
+        () => JSON.stringify(tx.toJson()),
+        'JSON.stringify(tx.toJson()) must not throw — BalanceWithdrawal amount must not be stored as BigInt'
+      );
+    });
+
+    it('should preserve fundsInAddressBalance amount through full round-trip', async function () {
+      const tx = await buildSponsoredTxWithAddressBalance();
+      const rawTx = tx.toBroadcastFormat();
+
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+
+      const suiTx = rebuiltTx as SuiTransaction<TransferProgrammableTransaction>;
+      const inputs = suiTx.suiTransaction.tx.inputs as any[];
+      const bwInput = inputs.find(
+        (inp) => inp?.BalanceWithdrawal !== undefined || inp?.value?.BalanceWithdrawal !== undefined
+      );
+      should.exist(bwInput);
+      const bw = bwInput.BalanceWithdrawal ?? bwInput.value?.BalanceWithdrawal;
+      bw.reservation.MaxAmountU64.toString().should.equal(AMOUNT);
+    });
+
+    it('should build Path 2b: self-pay, empty payment — uses withdrawal+redeem_funds instead of SplitCoins(GasCoin)', async function () {
+      // With gasData.payment=[] the runtime exposes only the gas-budget amount via GasCoin for
+      // PTB SplitCoins operations. SplitCoins(GasCoin, [large_amount]) always fails with
+      // InsufficientCoinBalance (confirmed by production failures JDbnybotg3ax..., ATUbeLX3...).
+      // Path 2b fixes this by withdrawing from the address accumulator via redeem_funds,
+      // splitting from that coin object, and merging the 0-balance remainder into GasCoin.
+      const selfPayNoPayment = { ...testData.gasDataWithoutGasPayment, payment: [] };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: AMOUNT }]);
+      txBuilder.gasData(selfPayNoPayment);
+      txBuilder.fundsInAddressBalance(AMOUNT);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+
+      // Gas owner must equal sender (self-pay)
+      suiTx.suiTransaction.gasData.owner.should.equal(testData.sender.address);
+      // Payment must be empty — gas funded from address balance by the runtime
+      suiTx.suiTransaction.gasData.payment.length.should.equal(0);
+
+      // Path 2b: BalanceWithdrawal input MUST be present (withdrawal+redeem_funds approach)
+      const inputs = suiTx.suiTransaction.tx.inputs as any[];
+      const bwInput = inputs.find(
+        (inp) => inp?.BalanceWithdrawal !== undefined || inp?.value?.BalanceWithdrawal !== undefined
+      );
+      should.exist(bwInput, 'Path 2b: BalanceWithdrawal input must be present');
+      const bw = bwInput.BalanceWithdrawal ?? bwInput.value?.BalanceWithdrawal;
+      bw.reservation.MaxAmountU64.toString().should.equal(AMOUNT);
+
+      // First command must be MoveCall(redeem_funds), NOT SplitCoins(GasCoin)
+      const commands = suiTx.suiTransaction.tx.transactions as any[];
+      commands[0].kind.should.equal('MoveCall');
+      commands[0].target.should.equal('0x2::coin::redeem_funds');
+      // Followed by: SplitCoins(addrCoin), TransferObjects, MergeCoins(GasCoin, addrCoin)
+      commands[1].kind.should.equal('SplitCoins');
+      commands[2].kind.should.equal('TransferObjects');
+      commands[3].kind.should.equal('MergeCoins');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const deserialized = SuiTransaction.deserializeSuiTransaction(rawTx);
+      deserialized.sender.should.equal(testData.sender.address);
+      deserialized.gasData.owner.should.equal(testData.sender.address);
+      deserialized.gasData.payment.length.should.equal(0);
+
+      // BalanceWithdrawal must survive BCS round-trip
+      const decodedInputs = deserialized.tx.inputs as any[];
+      const decodedBwInput = decodedInputs.find(
+        (inp: any) => inp?.BalanceWithdrawal !== undefined || inp?.value?.BalanceWithdrawal !== undefined
+      );
+      should.exist(decodedBwInput, 'BalanceWithdrawal must survive BCS round-trip for Path 2b');
+
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build Path 2b with ValidDuring expiration (self-pay, empty payment)', async function () {
+      // Path 2b with ValidDuring expiration — required when gasData.payment=[] to prevent
+      // replay attacks. Uses withdrawal+redeem_funds to materialise transfer amount from the
+      // address accumulator, NOT SplitCoins(GasCoin) which fails with InsufficientCoinBalance.
+      const GENESIS_CHAIN_ID = 'GAFpCCcRCxTdFfUEMbQbkLBaZy2RNiGAfvFBhMNpq2kT';
+      const selfPayNoPayment = { ...testData.gasDataWithoutGasPayment, payment: [] };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: AMOUNT }]);
+      txBuilder.gasData(selfPayNoPayment);
+      txBuilder.fundsInAddressBalance(AMOUNT);
+      txBuilder.expiration({
+        ValidDuring: {
+          minEpoch: { Some: 500 },
+          maxEpoch: { Some: 501 },
+          minTimestamp: { None: null },
+          maxTimestamp: { None: null },
+          chain: GENESIS_CHAIN_ID,
+          nonce: 0xdeadbeef,
+        },
+      });
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+
+      // Self-pay: owner === sender, payment empty
+      suiTx.suiTransaction.gasData.owner.should.equal(testData.sender.address);
+      suiTx.suiTransaction.gasData.payment.length.should.equal(0);
+
+      // Path 2b: BalanceWithdrawal input MUST be present
+      const inputs = suiTx.suiTransaction.tx.inputs as any[];
+      const bwInput = inputs.find(
+        (inp) => inp?.BalanceWithdrawal !== undefined || inp?.value?.BalanceWithdrawal !== undefined
+      );
+      should.exist(bwInput, 'Path 2b: BalanceWithdrawal input must be present');
+
+      // First command: MoveCall(redeem_funds), NOT SplitCoins(GasCoin)
+      const commands = suiTx.suiTransaction.tx.transactions as any[];
+      commands[0].kind.should.equal('MoveCall');
+      commands[0].target.should.equal('0x2::coin::redeem_funds');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const deserialized = SuiTransaction.deserializeSuiTransaction(rawTx);
+      deserialized.sender.should.equal(testData.sender.address);
+      deserialized.gasData.payment.length.should.equal(0);
+
+      const expiration = (deserialized.expiration as any)?.ValidDuring;
+      should.exist(expiration, 'ValidDuring expiration must survive BCS round-trip');
+      Number(expiration.minEpoch?.Some ?? expiration.minEpoch).should.equal(500);
+      Number(expiration.maxEpoch?.Some ?? expiration.maxEpoch).should.equal(501);
+      expiration.chain.should.equal(GENESIS_CHAIN_ID);
+      Number(expiration.nonce).should.equal(0xdeadbeef);
+
+      // BalanceWithdrawal must survive BCS round-trip
+      const decodedInputs = deserialized.tx.inputs as any[];
+      const decodedBwInput = decodedInputs.find(
+        (inp: any) => inp?.BalanceWithdrawal !== undefined || inp?.value?.BalanceWithdrawal !== undefined
+      );
+      should.exist(decodedBwInput, 'BalanceWithdrawal must survive BCS round-trip for Path 2b');
+
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build and correctly decode a MoveCall to 0x2::coin::redeem_funds with BalanceWithdrawal arg', async function () {
+      const tx = await buildSponsoredTxWithAddressBalance();
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      const commands = suiTx.suiTransaction.tx.transactions as any[];
+
+      commands[0].kind.should.equal('MoveCall');
+      commands[0].target.should.equal('0x2::coin::redeem_funds');
+      commands[0].typeArguments[0].should.equal('0x2::sui::SUI');
+
+      // The argument to redeem_funds must reference the BalanceWithdrawal input (index 0)
+      const arg = commands[0].arguments[0];
+      arg.kind.should.equal('Input');
+      arg.index.should.equal(0);
+      arg.type.should.equal('object');
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+  });
+});

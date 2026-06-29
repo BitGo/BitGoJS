@@ -1,0 +1,1105 @@
+import assert from 'assert';
+import { randomBytes } from 'crypto';
+
+import _ from 'lodash';
+import { address as wasmAddress, BIP32, fixedScriptWallet, hasPsbtMagic } from '@bitgo/wasm-utxo';
+import {
+  AddressCoinSpecific,
+  BaseCoin,
+  BitGoBase,
+  CreateAddressFormat,
+  ExtraPrebuildParamsOptions,
+  HalfSignedUtxoTransaction,
+  IBaseCoin,
+  isBolt11Invoice,
+  InvalidAddressDerivationPropertyError,
+  InvalidAddressError,
+  IRequestTracer,
+  isTriple,
+  IWallet,
+  KeychainsTriplet,
+  KeyIndices,
+  MismatchedRecipient,
+  MultisigType,
+  multisigTypes,
+  ParseTransactionOptions as BaseParseTransactionOptions,
+  PrecreateBitGoOptions,
+  PresignTransactionOptions,
+  BridgingParams,
+  RequestTracer,
+  SignedTransaction,
+  TxIntentMismatchError,
+  SignTransactionOptions as BaseSignTransactionOptions,
+  SupplementGenerateWalletOptions,
+  TransactionParams as BaseTransactionParams,
+  TransactionPrebuild as BaseTransactionPrebuild,
+  Triple,
+  TxIntentMismatchRecipientError,
+  VerificationOptions,
+  VerifyAddressOptions as BaseVerifyAddressOptions,
+  VerifyTransactionOptions as BaseVerifyTransactionOptions,
+  Wallet,
+  isValidPrv,
+  isValidXprv,
+  DeriveAddressOptions,
+  DeriveAddressResult,
+} from '@bitgo/sdk-core';
+
+import {
+  backupKeyRecovery,
+  CrossChainRecoverySigned,
+  CrossChainRecoveryUnsigned,
+  forCoin,
+  recoverCrossChain,
+  RecoverParams,
+  RecoveryProvider,
+  v1BackupKeyRecovery,
+  V1RecoverParams,
+  v1Sweep,
+  V1SweepParams,
+} from './recovery';
+import { getReplayProtectionPubkeys, isReplayProtectionUnspent } from './transaction/fixedScript/replayProtection';
+import { supportedCrossChainRecoveries } from './config';
+import {
+  assertValidTransactionRecipient,
+  explainTx,
+  fromExtendedAddressFormat,
+  isScriptRecipient,
+  parseTransaction,
+  verifyTransaction,
+} from './transaction';
+import type { TransactionExplanation } from './transaction/fixedScript/explainTransaction';
+import { Musig2Participant } from './transaction/fixedScript/musig2';
+import {
+  AggregateValidationError,
+  ErrorMissingOutputs,
+  ErrorImplicitExternalOutputs,
+} from './transaction/descriptor/verifyTransaction';
+import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
+import { getFullNameFromCoinName, getMainnetCoinName, isMainnetCoin, UtxoCoinName, UtxoCoinNameMainnet } from './names';
+import { assertFixedScriptWalletAddress, generateAddress } from './address/fixedScript';
+import { ParsedTransaction } from './transaction/types';
+import { decodeDescriptorPsbt, decodePsbt, encodeTransaction, stringToBufferTryFormats } from './transaction/decode';
+import { fetchKeychains, toBip32Triple, UtxoKeychain } from './keychains';
+import { verifyKeySignature, verifyUserPublicKey, verifyUserPublicKeyAsync } from './verifyKey';
+import { getPolicyForEnv } from './descriptor/validatePolicy';
+import { signTransaction } from './transaction/signTransaction';
+import { isUtxoWalletData, UtxoWallet } from './wallet';
+import { isDescriptorWalletData } from './descriptor/descriptorWallet';
+import type { Unspent } from './unspent';
+
+type ScriptType2Of3 = 'p2sh' | 'p2shP2wsh' | 'p2wsh' | 'p2tr' | 'p2trMusig2';
+
+export type TxFormat =
+  // This is a legacy transaction format based around the bitcoinjs-lib serialization of unsigned transactions
+  // does not include prevOut data and is a bit painful to work with
+  // going to be deprecated in favor of psbt
+  // @deprecated
+  | 'legacy'
+  // This is the standard psbt format, including the full prevTx data for legacy transactions.
+  // This will remain supported but is not the default, since the data sizes can become prohibitively large.
+  | 'psbt'
+  // This is a nonstandard psbt version where legacy inputs are serialized as if they were segwit inputs.
+  // While this prevents us to fully verify the transaction fee, we have other checks in place to ensure the fee is within bounds.
+  | 'psbt-lite';
+
+export class ErrorDeprecatedTxFormat extends Error {
+  constructor(txFormat: TxFormat) {
+    super(`SDK support for txFormat=${txFormat} is deprecated on this environment. Please use psbt instead.`);
+  }
+}
+
+type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
+  (params: {
+    coin: IBaseCoin;
+    txPrebuild: TransactionPrebuild<TNumber>;
+    pubs?: string[];
+    /**
+     * signingStep flag becomes applicable when both of the following conditions are met:
+     * 1) When the external express signer is activated
+     * 2) When the PSBT includes at least one taprootKeyPathSpend input.
+     *
+     * The signing process of a taprootKeyPathSpend input is a 4-step sequence:
+     * i) user nonce generation - signerNonce - this is the first call to external express signer signTransaction
+     * ii) bitgo nonce generation - cosignerNonce - this is the first and only call to local signTransaction
+     * iii) user signature - signerSignature - this is the second call to external express signer signTransaction
+     * iv) bitgo signature - not in signTransaction method’s scope
+     *
+     * In the absence of this flag, the aforementioned first three sequence is executed in a single signTransaction call.
+     *
+     * NOTE: We make a strong assumption that the external express signer and its caller uses sticky sessions,
+     * since PSBTs are cached in step 1 to be used in step 3 for MuSig2 user secure nonce access.
+     */
+    signingStep?: 'signerNonce' | 'signerSignature' | 'cosignerNonce';
+  }): Promise<SignedTransaction>;
+};
+
+/**
+ * Check if a decoded transaction has at least one taproot key path spend (MuSig2) input.
+ */
+function hasKeyPathSpendInput(
+  tx: fixedScriptWallet.BitGoPsbt,
+  pubs: string[] | undefined,
+  coinName: UtxoCoinName
+): boolean {
+  assert(pubs && isTriple(pubs), 'pub triple is required to check for key path spend inputs in wasm-utxo PSBT');
+  const rootWalletKeys = fixedScriptWallet.RootWalletKeys.fromXpubs(pubs);
+  const replayProtection = { publicKeys: getReplayProtectionPubkeys(coinName) };
+  const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, { replayProtection });
+  return parsed.inputs.some((input) => input.scriptType === 'p2trMusig2KeyPath');
+}
+
+/**
+ * Convert ValidationError to TxIntentMismatchRecipientError with structured data
+ *
+ * This preserves the structured error information from the original ValidationError
+ * by extracting the mismatched outputs and converting them to the standardized format.
+ * The original error is preserved as the `cause` for debugging purposes.
+ */
+function convertValidationErrorToTxIntentMismatch(
+  error: AggregateValidationError,
+  reqId: string | IRequestTracer | undefined,
+  txParams: BaseTransactionParams,
+  txHex: string | undefined,
+  txExplanation?: unknown
+): TxIntentMismatchRecipientError {
+  const mismatchedRecipients: MismatchedRecipient[] = [];
+
+  for (const err of error.errors) {
+    if (err instanceof ErrorMissingOutputs) {
+      mismatchedRecipients.push(
+        ...err.missingOutputs.map((output) => ({
+          address: output.address,
+          amount: output.amount.toString(),
+        }))
+      );
+    } else if (err instanceof ErrorImplicitExternalOutputs) {
+      mismatchedRecipients.push(
+        ...err.implicitExternalOutputs.map((output) => ({
+          address: output.address,
+          amount: output.amount.toString(),
+        }))
+      );
+    }
+  }
+
+  const txIntentError = new TxIntentMismatchRecipientError(
+    error.message,
+    reqId,
+    [txParams],
+    txHex,
+    mismatchedRecipients,
+    txExplanation
+  );
+  // Preserve the original structured error as the cause for debugging
+  // See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause
+  (txIntentError as Error & { cause?: Error }).cause = error;
+  return txIntentError;
+}
+
+export type { DecodedTransaction } from './transaction/types';
+
+export type UtxoCoinSpecific = AddressCoinSpecific | DescriptorAddressCoinSpecific;
+
+export interface VerifyAddressOptions<TCoinSpecific extends UtxoCoinSpecific> extends BaseVerifyAddressOptions {
+  chain?: number;
+  index: number;
+  coinSpecific?: TCoinSpecific;
+}
+
+export type Bip322Message = {
+  address: string;
+  message: string;
+};
+
+export interface TransactionInfo<TNumber extends number | bigint = number> {
+  /** Maps txid to txhex. Required for offline signing. */
+  txHexes?: Record<string, string>;
+  changeAddresses?: string[];
+  /** psbt does not require unspents. */
+  unspents?: Unspent<TNumber>[];
+}
+
+export interface ExplainTransactionOptions<TNumber extends number | bigint = number> {
+  txHex: string;
+  txInfo?: TransactionInfo<TNumber>;
+  feeInfo?: string;
+  pubs?: Triple<string>;
+  customChangeXpubs?: Triple<string>;
+}
+
+export interface DecoratedExplainTransactionOptions<TNumber extends number | bigint = number>
+  extends ExplainTransactionOptions<TNumber> {
+  changeInfo?: { address: string; chain: number; index: number }[];
+}
+
+export interface TransactionPrebuild<TNumber extends number | bigint = number> extends BaseTransactionPrebuild {
+  txInfo?: TransactionInfo<TNumber>;
+  blockHeight?: number;
+  /**
+   * PSBT-lite hex present only in pending approval flows, where another user's send fixed the format.
+   * Not set in regular /tx/build responses (where the caller controls the build parameters).
+   * Preferred over txHex when present, as it carries richer data (nonWitnessUtxo, redeemScript, BIP-32 paths).
+   */
+  txHexPsbt?: string;
+}
+
+export interface TransactionParams extends BaseTransactionParams {
+  walletPassphrase?: string;
+  allowExternalChangeAddress?: boolean;
+  changeAddress?: string;
+  rbfTxIds?: string[];
+  /** Parameters for bridging intents (e.g. BTC -> sBTC peg-in), present when `type === 'bridging'`. */
+  bridgingParams?: BridgingParams;
+  qr?: boolean;
+}
+
+export interface ParseTransactionOptions<TNumber extends number | bigint = number> extends BaseParseTransactionOptions {
+  txParams: TransactionParams;
+  txPrebuild: TransactionPrebuild<TNumber>;
+  wallet: UtxoWallet;
+  verification?: VerificationOptions;
+  reqId?: IRequestTracer;
+}
+
+export interface GenerateAddressOptions {
+  addressType?: ScriptType2Of3;
+  threshold?: number;
+  chain?: number;
+  index?: number;
+  segwit?: boolean;
+  bech32?: boolean;
+}
+
+export interface GenerateFixedScriptAddressOptions extends GenerateAddressOptions {
+  format?: CreateAddressFormat;
+  keychains: {
+    pub: string;
+    aspKeyId?: string;
+  }[];
+}
+
+export interface AddressDetails {
+  address: string;
+  chain: number;
+  index: number;
+  coin: string;
+  coinSpecific: AddressCoinSpecific | DescriptorAddressCoinSpecific;
+  addressType?: string;
+}
+
+export interface DescriptorAddressCoinSpecific extends AddressCoinSpecific {
+  descriptorName: string;
+  descriptorChecksum: string;
+}
+
+type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = BaseSignTransactionOptions & {
+  /** Transaction prebuild from bitgo server */
+  txPrebuild: {
+    /**
+     * walletId is required in following 2 scenarios.
+     * 1. External signer express mode is used.
+     * 2. bitgo MuSig2 nonce is requested
+     */
+    walletId?: string;
+    txHex: string;
+    txInfo?: TransactionInfo<TNumber>;
+  };
+  /** xpubs triple for wallet (user, backup, bitgo). Required only when txPrebuild.txHex is not a PSBT */
+  pubs?: Triple<string>;
+  /** xpub for cosigner (defaults to bitgo) */
+  cosignerPub?: string;
+  /**
+   * When true, creates full-signed transaction without placeholder signatures.
+   * When false, creates half-signed transaction with placeholder signatures.
+   */
+  isLastSignature?: boolean;
+  /**
+   * When true, the signed transaction will be converted from PSBT to legacy format before returning.
+   * Set automatically by presignTransaction() when the caller explicitly requested txFormat: 'legacy'.
+   */
+  returnLegacyFormat?: boolean;
+  wallet?: UtxoWallet;
+  /**
+   * When true (default), extract finalized PSBT to legacy transaction format.
+   * When false, return finalized PSBT. Useful for testing to keep transactions in PSBT format.
+   */
+  extractTransaction?: boolean;
+  /** When true, embeds WASM-UTXO version metadata into the signed PSBT. Defaults to false. */
+  writeSignedWith?: boolean;
+};
+
+export type SignTransactionOptions<TNumber extends number | bigint = number> = UtxoBaseSignTransactionOptions<TNumber> &
+  (
+    | {
+        prv: string;
+        signingStep?: 'signerNonce' | 'signerSignature';
+      }
+    | {
+        signingStep: 'cosignerNonce';
+      }
+  );
+
+export interface MultiSigAddress {
+  outputScript: Buffer;
+  redeemScript?: Buffer;
+  witnessScript?: Buffer;
+  address: string;
+}
+
+export interface RecoverFromWrongChainOptions {
+  txid: string;
+  recoveryAddress: string;
+  wallet: string;
+  walletPassphrase?: string;
+  xprv?: string;
+  apiKey?: string;
+  /** @deprecated */
+  coin?: AbstractUtxoCoin;
+  recoveryCoin?: AbstractUtxoCoin;
+  signed?: boolean;
+}
+
+export interface VerifyKeySignaturesOptions {
+  userKeychain: { pub?: string };
+  keychainToVerify: { pub?: string };
+  keySignature: string;
+}
+
+export interface VerifyUserPublicKeyOptions {
+  userKeychain?: UtxoKeychain;
+  disableNetworking: boolean;
+  txParams: TransactionParams;
+}
+
+export interface VerifyTransactionOptions<TNumber extends number | bigint = number>
+  extends BaseVerifyTransactionOptions {
+  txPrebuild: TransactionPrebuild<TNumber>;
+  txParams: TransactionParams;
+  wallet: UtxoWallet;
+}
+
+export interface SignPsbtRequest {
+  psbt: string;
+}
+
+export interface SignPsbtResponse {
+  psbt: string;
+}
+
+export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Participant<fixedScriptWallet.BitGoPsbt> {
+  abstract name: UtxoCoinName;
+
+  /**
+   * Returns whether this coin is a mainnet coin.
+   * Default implementation uses the name property.
+   * Can be overridden by subclasses.
+   */
+  protected isMainnet(): boolean {
+    return isMainnetCoin(this.name);
+  }
+
+  public readonly amountType: 'number' | 'bigint';
+
+  protected constructor(bitgo: BitGoBase, amountType: 'number' | 'bigint' = 'number') {
+    super(bitgo);
+    this.amountType = amountType;
+  }
+
+  getChain(): UtxoCoinName {
+    return this.name;
+  }
+
+  getFamily(): UtxoCoinNameMainnet {
+    return getMainnetCoinName(this.name);
+  }
+
+  getFullName(): string {
+    return getFullNameFromCoinName(this.name);
+  }
+
+  /** Indicates whether the coin supports a block target */
+  supportsBlockTarget(): boolean {
+    // FIXME: the SDK does not seem to use this anywhere so it is unclear what the purpose of this method is
+    const mainnet = getMainnetCoinName(this.name);
+    return mainnet === 'btc' || mainnet === 'doge';
+  }
+
+  sweepWithSendMany(): boolean {
+    return true;
+  }
+
+  /** @deprecated */
+  static get validAddressTypes(): ScriptType2Of3[] {
+    return ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2'];
+  }
+
+  /**
+   * Returns the factor between the base unit and its smallest subdivison
+   * @return {number}
+   */
+  getBaseFactor(): number {
+    return 1e8;
+  }
+
+  /**
+   * Check if an address is valid
+   * @param address
+   * @param param
+   */
+  isValidAddress(
+    address: string,
+    param?: { anyFormat?: boolean; allowLightning?: boolean } | /* legacy parameter */ boolean
+  ): boolean {
+    if (typeof param === 'boolean' && param) {
+      throw new Error('deprecated');
+    }
+
+    const allowLightning = (param as { allowLightning?: boolean } | undefined)?.allowLightning ?? false;
+    if (allowLightning) {
+      if (/^(02|03)[0-9a-fA-F]{64}$/.test(address)) {
+        return true;
+      }
+      if (isBolt11Invoice(address)) {
+        return true;
+      }
+    }
+
+    // By default, allow all address formats.
+    // At the time of writing, the only additional address format is bch cashaddr.
+    const anyFormat = (param as { anyFormat: boolean } | undefined)?.anyFormat ?? true;
+    try {
+      const script = wasmAddress.toOutputScriptWithCoin(address, this.name);
+      // Determine which format the input address was in by round-tripping
+      // through each candidate and checking byte-equality. 'default' is tried
+      // first so canonical default-format addresses early-exit.
+      for (const format of ['default', 'cashaddr'] as const) {
+        try {
+          if (wasmAddress.fromOutputScriptWithCoin(script, this.name, format) === address) {
+            return anyFormat || format === 'default';
+          }
+        } catch {
+          // coin doesn't support this format; try the next one
+        }
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * Return boolean indicating whether input is valid public key for the coin.
+   *
+   * @param {String} pub the pub to be checked
+   * @returns {Boolean} is it valid?
+   */
+  isValidPub(pub: string): boolean {
+    try {
+      return BIP32.fromBase58(pub).isNeutered();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * This is called before crafting the HTTP request to the BitGo API.
+   * It converts the recipient address `scriptPubKey:...` to { script: string } | { address: string }.
+   */
+  override preprocessBuildParams(params: Record<string, any>): Record<string, any> {
+    if (params.recipients !== undefined) {
+      params.recipients =
+        params.recipients instanceof Array
+          ? params?.recipients?.map((recipient) => {
+              const { address, ...rest } = recipient;
+              if (address === undefined) {
+                return recipient; // Already { script, amount } — pass through unchanged
+              }
+              return { ...rest, ...fromExtendedAddressFormat(address) };
+            })
+          : params.recipients;
+    }
+
+    return params;
+  }
+
+  /**
+   * Get the latest block height
+   * @param reqId
+   */
+  async getLatestBlockHeight(reqId?: RequestTracer): Promise<number> {
+    if (reqId) {
+      this.bitgo.setRequestTracer(reqId);
+    }
+    const chainhead = await this.bitgo.get(this.url('/public/block/latest')).result();
+    return (chainhead as any).height;
+  }
+
+  checkRecipient(recipient: { address?: string; amount: number | string }): void {
+    assertValidTransactionRecipient(recipient);
+    if (recipient.address && !isScriptRecipient(recipient.address)) {
+      super.checkRecipient({ address: recipient.address, amount: recipient.amount });
+    }
+  }
+
+  /**
+   * Run custom coin logic after a transaction prebuild has been received from BitGo
+   * @param prebuild
+   */
+  async postProcessPrebuild<TNumber extends number | bigint>(
+    prebuild: TransactionPrebuild<TNumber>
+  ): Promise<TransactionPrebuild<TNumber>> {
+    const tx = this.decodeTransactionFromPrebuild(prebuild);
+    if (_.isUndefined(prebuild.blockHeight)) {
+      prebuild.blockHeight = (await this.getLatestBlockHeight()) as number;
+    }
+    return _.extend({}, prebuild, { txHex: encodeTransaction(tx).toString('hex') });
+  }
+
+  /**
+   * @deprecated - will be removed when we drop support for utxolib
+   * Determine an address' type based on its witness and redeem script presence
+   * @param addressDetails
+   */
+  static inferAddressType(addressDetails: { chain: number }): ScriptType2Of3 | null {
+    return fixedScriptWallet.ChainCode.is(addressDetails.chain)
+      ? (fixedScriptWallet.ChainCode.scriptType(addressDetails.chain) as ScriptType2Of3)
+      : null;
+  }
+
+  decodeTransaction(input: Buffer | string): fixedScriptWallet.BitGoPsbt {
+    const buffer = typeof input === 'string' ? stringToBufferTryFormats(input, ['hex', 'base64']) : input;
+    if (!hasPsbtMagic(buffer)) {
+      throw new ErrorDeprecatedTxFormat('legacy');
+    }
+    return decodePsbt(buffer, this.name);
+  }
+
+  decodeTransactionAsPsbt(input: Buffer | string): fixedScriptWallet.BitGoPsbt {
+    return this.decodeTransaction(input);
+  }
+
+  decodeTransactionFromPrebuild(prebuild: {
+    txHex?: string;
+    txBase64?: string;
+    /** See TransactionPrebuild.txHexPsbt — only present in pending approval flows. */
+    txHexPsbt?: string;
+  }): fixedScriptWallet.BitGoPsbt {
+    const string = prebuild.txHexPsbt ?? prebuild.txHex ?? prebuild.txBase64;
+    if (!string) {
+      throw new Error('missing required txHex or txBase64 property');
+    }
+    return this.decodeTransaction(string);
+  }
+
+  /**
+   * Extract and fill transaction details such as internal/change spend, external spend (explicit vs. implicit), etc.
+   * @param params
+   * @returns {*}
+   */
+  async parseTransaction<TNumber extends number | bigint = number>(
+    params: ParseTransactionOptions<TNumber>
+  ): Promise<ParsedTransaction<TNumber>> {
+    return parseTransaction(this, params);
+  }
+
+  /**
+   * @deprecated - use function verifyUserPublicKey instead
+   */
+  protected verifyUserPublicKey(params: VerifyUserPublicKeyOptions): boolean {
+    return verifyUserPublicKey(this.bitgo, params);
+  }
+
+  /**
+   * @deprecated - use function verifyUserPublicKeyAsync instead
+   */
+  protected async verifyUserPublicKeyAsync(params: VerifyUserPublicKeyOptions): Promise<boolean> {
+    return await verifyUserPublicKeyAsync(this.bitgo, params);
+  }
+
+  /**
+   * @deprecated - use function verifyKeySignature instead
+   */
+  public verifyKeySignature(params: VerifyKeySignaturesOptions): boolean {
+    return verifyKeySignature(params);
+  }
+
+  /**
+   * Verify that a transaction prebuild complies with the original intention
+   *
+   * @param params
+   * @param params.txParams params object passed to send
+   * @param params.txPrebuild prebuild object returned by server
+   * @param params.txPrebuild.txHex prebuilt transaction's txHex form
+   * @param params.wallet Wallet object to obtain keys to verify against
+   * @param params.verification Object specifying some verification parameters
+   * @param params.verification.disableNetworking Disallow fetching any data from the internet for verification purposes
+   * @param params.verification.keychains Pass keychains manually rather than fetching them by id
+   * @param params.verification.addresses Address details to pass in for out-of-band verification
+   * @returns {boolean} True if verification passes
+   * @throws {TxIntentMismatchError} if transaction validation fails
+   * @throws {TxIntentMismatchRecipientError} if transaction recipients don't match user intent
+   */
+  async verifyTransaction<TNumber extends number | bigint = number>(
+    params: VerifyTransactionOptions<TNumber>
+  ): Promise<boolean> {
+    try {
+      return await verifyTransaction(this, this.bitgo, params);
+    } catch (error) {
+      if (error instanceof AggregateValidationError) {
+        const txExplanation = await TxIntentMismatchError.tryGetTxExplanation(
+          this as unknown as IBaseCoin,
+          params.txPrebuild
+        );
+        throw convertValidationErrorToTxIntentMismatch(
+          error,
+          params.reqId,
+          params.txParams,
+          params.txPrebuild.txHex,
+          txExplanation
+        );
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Make sure an address is valid and throw an error if it's not.
+   * @param params.address The address string on the network
+   * @param params.addressType
+   * @param params.keychains Keychain objects with xpubs
+   * @param params.coinSpecific Coin-specific details for the address such as a witness script
+   * @param params.chain Derivation chain
+   * @param params.index Derivation index
+   * @throws {InvalidAddressError}
+   * @throws {InvalidAddressDerivationPropertyError}
+   * @throws {UnexpectedAddressError}
+   */
+  async isWalletAddress(params: VerifyAddressOptions<UtxoCoinSpecific>, wallet?: IWallet): Promise<boolean> {
+    const { address, keychains, chain, index } = params;
+
+    if (!this.isValidAddress(address)) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    if (wallet && isDescriptorWallet(wallet)) {
+      if (!keychains) {
+        throw new Error('missing required param keychains');
+      }
+      if (!isTriple(keychains)) {
+        throw new Error('keychains must be a triple');
+      }
+      assertDescriptorWalletAddress(
+        this.name,
+        params,
+        getDescriptorMapFromWallet(wallet, toBip32Triple(keychains), getPolicyForEnv(this.bitgo.env))
+      );
+      return true;
+    }
+
+    if ((_.isUndefined(chain) && _.isUndefined(index)) || !(_.isFinite(chain) && _.isFinite(index))) {
+      throw new InvalidAddressDerivationPropertyError(
+        `address validation failure: invalid chain (${chain}) or index (${index})`
+      );
+    }
+
+    if (!keychains) {
+      throw new Error('missing required param keychains');
+    }
+
+    assertFixedScriptWalletAddress(this.name, {
+      address,
+      keychains,
+      format: params.format ?? 'base58',
+      chain,
+      index,
+    });
+
+    return true;
+  }
+
+  /**
+   * Locally derive a fixed-script (2-of-3 multisig) wallet receive address from the xpub triple
+   * and a chain/index, using public keys only (no private keys, no network access). This is the
+   * inverse of {@link isWalletAddress}, delegating to the same `generateAddress` used by the
+   * verification path, so derive and verify can never diverge.
+   *
+   * The `chain` code selects the script type (e.g. 0/1 = P2SH, 20/21 = P2WSH/bech32, 30/31 = P2TR);
+   * an optional `format` overrides the address encoding.
+   * @param params keychains (xpub triple via `pub`), chain, index, and optional format
+   * @returns the derived address and the chain/index used
+   */
+  async deriveAddress(params: DeriveAddressOptions): Promise<DeriveAddressResult> {
+    const { keychains, chain, index, format } = params;
+
+    if (!keychains) {
+      throw new Error('missing required param keychains');
+    }
+
+    const address = generateAddress(this.name, {
+      // fixed-script (multisig) coins derive from the xpub triple via `pub`
+      keychains: keychains as { pub: string }[],
+      chain,
+      index,
+      format,
+    });
+
+    return { address, chain, index };
+  }
+
+  /**
+   * @param addressType
+   * @returns true iff coin supports spending from unspentType
+   */
+  supportsAddressType(addressType: ScriptType2Of3): boolean {
+    return fixedScriptWallet.supportsScriptType(this.name, addressType);
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
+  }
+
+  /**
+   * @param chain
+   * @return true iff coin supports spending from chain
+   */
+  supportsAddressChain(chain: number): boolean {
+    return (
+      fixedScriptWallet.ChainCode.is(chain) &&
+      this.supportsAddressType(fixedScriptWallet.ChainCode.scriptType(chain) as ScriptType2Of3)
+    );
+  }
+
+  keyIdsForSigning(): number[] {
+    return [KeyIndices.USER, KeyIndices.BACKUP, KeyIndices.BITGO];
+  }
+
+  /**
+   * @returns input psbt added with deterministic MuSig2 nonce for bitgo key for each MuSig2 inputs.
+   * @param psbt all MuSig2 inputs should contain user MuSig2 nonce
+   * @param walletId
+   */
+  async getMusig2Nonces(psbt: fixedScriptWallet.BitGoPsbt, walletId: string): Promise<fixedScriptWallet.BitGoPsbt> {
+    const buffer = encodeTransaction(psbt);
+    const response = await this.bitgo
+      .post(this.url('/wallet/' + walletId + '/tx/signpsbt'))
+      .send({ psbt: buffer.toString('hex') })
+      .result();
+    return decodePsbt(response.psbt, this.name);
+  }
+
+  /**
+   * @deprecated Use getMusig2Nonces instead
+   * @returns input psbt added with deterministic MuSig2 nonce for bitgo key for each MuSig2 inputs.
+   * @param psbtHex all MuSig2 inputs should contain user MuSig2 nonce
+   * @param walletId
+   */
+  async signPsbt(psbtHex: string, walletId: string): Promise<SignPsbtResponse> {
+    const psbt = await this.getMusig2Nonces(this.decodeTransactionAsPsbt(psbtHex), walletId);
+    return { psbt: encodeTransaction(psbt).toString('hex') };
+  }
+
+  /**
+   * @returns input psbt added with deterministic MuSig2 nonce for bitgo key for each MuSig2 inputs from OVC.
+   * @param ovcJson JSON object provided by OVC with fields psbtHex and walletId
+   */
+  async signPsbtFromOVC(ovcJson: Record<string, unknown>): Promise<Record<string, unknown>> {
+    assert(ovcJson['psbtHex'], 'ovcJson must contain psbtHex');
+    assert(ovcJson['walletId'], 'ovcJson must contain walletId');
+    const hex = ovcJson['psbtHex'] as string;
+    const walletId = ovcJson['walletId'] as string;
+    const psbt = await this.getMusig2Nonces(this.decodeTransactionAsPsbt(hex), walletId);
+    return _.extend(ovcJson, { txHex: encodeTransaction(psbt).toString('hex') });
+  }
+
+  /**
+   * Assemble keychain and half-sign prebuilt transaction
+   * @param params - {@see SignTransactionOptions}
+   * @returns {Promise<SignedTransaction | HalfSignedUtxoTransaction>}
+   */
+  async signTransaction<TNumber extends number | bigint = number>(
+    params: SignTransactionOptions<TNumber>
+  ): Promise<SignedTransaction | HalfSignedUtxoTransaction> {
+    return signTransaction<TNumber>(this, this.bitgo, params);
+  }
+
+  /**
+   * Sign a transaction with a custom signing function. Example use case is express external signer
+   * @param customSigningFunction custom signing function that returns a single signed transaction
+   * @param signTransactionParams parameters for custom signing function. Includes txPrebuild and pubs
+   *
+   * @returns signed transaction as hex string
+   */
+  async signWithCustomSigningFunction<TNumber extends number | bigint>(
+    customSigningFunction: UtxoCustomSigningFunction<TNumber>,
+    signTransactionParams: { txPrebuild: TransactionPrebuild<TNumber>; pubs: string[] }
+  ): Promise<SignedTransaction> {
+    const txHex = signTransactionParams.txPrebuild.txHex;
+    assert(txHex, 'missing txHex parameter');
+
+    const tx = this.decodeTransaction(txHex);
+
+    const isTxWithKeyPathSpendInput = hasKeyPathSpendInput(tx, signTransactionParams.pubs, this.name);
+
+    if (!isTxWithKeyPathSpendInput) {
+      return await customSigningFunction({ ...signTransactionParams, coin: this });
+    }
+
+    const getTxHex = (v: SignedTransaction): string => {
+      if ('txHex' in v) {
+        return v.txHex;
+      }
+      throw new Error('txHex not found in signTransaction result');
+    };
+
+    const signerNonceTx = await customSigningFunction({
+      ...signTransactionParams,
+      signingStep: 'signerNonce',
+      coin: this,
+    });
+
+    const { pubs } = signTransactionParams;
+    assert(pubs === undefined || isTriple(pubs));
+
+    const cosignerNonceTx = await this.signTransaction<TNumber>({
+      ...signTransactionParams,
+      pubs,
+      txPrebuild: { ...signTransactionParams.txPrebuild, txHex: getTxHex(signerNonceTx) },
+      signingStep: 'cosignerNonce',
+    });
+
+    return await customSigningFunction({
+      ...signTransactionParams,
+      txPrebuild: { ...signTransactionParams.txPrebuild, txHex: getTxHex(cosignerNonceTx) },
+      signingStep: 'signerSignature',
+      coin: this,
+    });
+  }
+
+  /**
+   * @param unspent
+   * @returns {boolean}
+   */
+  isBitGoTaintedUnspent<TNumber extends number | bigint>(unspent: Unspent<TNumber>): boolean {
+    return isReplayProtectionUnspent(unspent, this.name);
+  }
+
+  /**
+   * Decompose a raw psbt/transaction into useful information, such as the total amounts,
+   * change amounts, and transaction outputs.
+   * @param params
+   */
+  override async explainTransaction<TNumber extends number | bigint = number>(
+    params: ExplainTransactionOptions<TNumber>,
+    wallet?: IWallet
+  ): Promise<TransactionExplanation> {
+    if (!params.pubs) {
+      // if no pubs are provided, opportunistically fetch the keychains from the wallet
+      if (wallet) {
+        const keychains = await fetchKeychains(this, wallet);
+        params.pubs = toBip32Triple(keychains).map((k) => k.neutered().toBase58()) as Triple<string>;
+      }
+    }
+    if (wallet && isDescriptorWallet(wallet)) {
+      // Descriptor wallets decode prebuild bytes straight into the wasm-utxo
+      // descriptor Psbt, skipping the fixedScriptWallet.BitGoPsbt intermediate.
+      return explainTx(decodeDescriptorPsbt(params), { ...params, wallet }, this.name);
+    }
+    return explainTx(this.decodeTransactionFromPrebuild(params), { ...params, wallet }, this.name);
+  }
+
+  /**
+   * @deprecated - use {@see backupKeyRecovery}
+   * Builds a funds recovery transaction without BitGo
+   * @param params - {@see backupKeyRecovery}
+   */
+  async recover(params: RecoverParams): ReturnType<typeof backupKeyRecovery> {
+    return backupKeyRecovery(this, this.bitgo, params);
+  }
+
+  async recoverV1(params: V1RecoverParams): ReturnType<typeof v1BackupKeyRecovery> {
+    return v1BackupKeyRecovery(this, this.bitgo, params);
+  }
+
+  async sweepV1(params: V1SweepParams): ReturnType<typeof v1Sweep> {
+    return v1Sweep(this, this.bitgo, params);
+  }
+
+  /**
+   * Recover coin that was sent to wrong chain
+   * @param params
+   * @param params.txid The txid of the faulty transaction
+   * @param params.recoveryAddress address to send recovered funds to
+   * @param params.wallet the wallet that received the funds
+   * @param params.recoveryCoin the coin type of the wallet that received the funds
+   * @param params.signed return a half-signed transaction (default=true)
+   * @param params.walletPassphrase the wallet passphrase
+   * @param params.xprv the unencrypted xprv (used instead of wallet passphrase)
+   * @param params.apiKey for utxo coins other than [BTC,TBTC] this is a Block Chair api key
+   * @returns {*}
+   */
+  async recoverFromWrongChain<TNumber extends number | bigint = number>(
+    params: RecoverFromWrongChainOptions
+  ): Promise<CrossChainRecoverySigned<TNumber> | CrossChainRecoveryUnsigned<TNumber>> {
+    const { txid, recoveryAddress, wallet, walletPassphrase, xprv, apiKey } = params;
+
+    // params.recoveryCoin used to be params.coin, backwards compatibility
+    const recoveryCoin = params.coin || params.recoveryCoin;
+    if (!recoveryCoin) {
+      throw new Error('missing required object recoveryCoin');
+    }
+    // signed should default to true, and only be disabled if explicitly set to false (not undefined)
+    const signed = params.signed !== false;
+
+    const sourceCoinFamily = this.getFamily();
+    const recoveryCoinFamily = recoveryCoin.getFamily();
+    const supportedRecoveryCoins = supportedCrossChainRecoveries[sourceCoinFamily];
+
+    if (_.isUndefined(supportedRecoveryCoins) || !supportedRecoveryCoins.includes(recoveryCoinFamily)) {
+      throw new Error(`Recovery of ${sourceCoinFamily} balances from ${recoveryCoinFamily} wallets is not supported.`);
+    }
+
+    return await recoverCrossChain<TNumber>(this.bitgo, {
+      sourceCoin: this,
+      recoveryCoin,
+      walletId: wallet,
+      txid,
+      recoveryAddress,
+      walletPassphrase: signed ? walletPassphrase : undefined,
+      xprv: signed ? xprv : undefined,
+      apiKey,
+    });
+  }
+
+  /**
+   * Generate bip32 key pair
+   *
+   * @param seed
+   * @returns {Object} object with generated pub and prv
+   */
+  generateKeyPair(seed: Buffer): { pub: string; prv: string } {
+    if (!seed) {
+      // An extended private key has both a normal 256 bit private key and a 256
+      // bit chain code, both of which must be random. 512 bits is therefore the
+      // maximum entropy and gives us maximum security against cracking.
+      seed = randomBytes(512 / 8);
+    }
+    const extendedKey = BIP32.fromSeed(seed);
+    return {
+      pub: extendedKey.neutered().toBase58(),
+      prv: extendedKey.toBase58(),
+    };
+  }
+
+  /**
+   * Determines the default transaction format based on wallet properties and network
+   * @param wallet - The wallet to check
+   * @param requestedFormat - Optional explicitly requested format
+   * @returns The transaction format to use, or undefined if no default applies
+   */
+  getDefaultTxFormat(wallet: Wallet, requestedFormat?: TxFormat): TxFormat {
+    if (requestedFormat === 'legacy') {
+      return 'psbt-lite';
+    }
+    return requestedFormat ?? 'psbt-lite';
+  }
+
+  async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<{
+    txFormat?: TxFormat;
+    changeAddressType?: ScriptType2Of3[] | ScriptType2Of3;
+    allowedInputScriptTypes?: ScriptType2Of3[];
+  }> {
+    const requestedFormat = buildParams.txFormat as TxFormat | undefined;
+    const txFormat = this.getDefaultTxFormat(buildParams.wallet, requestedFormat);
+    let changeAddressType = buildParams.changeAddressType as ScriptType2Of3[] | ScriptType2Of3 | undefined;
+
+    // if the addressType is not specified, we need to default to p2trMusig2 for testnet hot wallets for staged rollout of p2trMusig2
+    if (
+      buildParams.addressType === undefined && // addressType is deprecated and replaced by `changeAddress`
+      buildParams.changeAddressType === undefined &&
+      buildParams.changeAddress === undefined &&
+      buildParams.wallet.type() === 'hot'
+    ) {
+      changeAddressType = ['p2trMusig2', 'p2wsh', 'p2shP2wsh', 'p2sh', 'p2tr'];
+    }
+
+    // getHalfSignedLegacyFormat() only supports p2ms-based types (p2sh, p2shP2wsh, p2wsh).
+    // Filter change outputs and restrict input selection to these types.
+    const legacyCompatibleTypes: ScriptType2Of3[] = ['p2sh', 'p2shP2wsh', 'p2wsh'];
+    let allowedInputScriptTypes: ScriptType2Of3[] | undefined;
+
+    if (requestedFormat === 'legacy') {
+      allowedInputScriptTypes = legacyCompatibleTypes;
+      if (Array.isArray(changeAddressType)) {
+        changeAddressType = changeAddressType.filter((t): t is ScriptType2Of3 =>
+          legacyCompatibleTypes.includes(t as ScriptType2Of3)
+        );
+      } else if (changeAddressType !== undefined && !legacyCompatibleTypes.includes(changeAddressType)) {
+        changeAddressType = legacyCompatibleTypes;
+      }
+    }
+
+    return {
+      txFormat,
+      changeAddressType,
+      allowedInputScriptTypes,
+    };
+  }
+
+  preCreateBitGo(params: PrecreateBitGoOptions): void {
+    return;
+  }
+
+  async presignTransaction(params: PresignTransactionOptions): Promise<any> {
+    if (params.walletData && isUtxoWalletData(params.walletData) && isDescriptorWalletData(params.walletData)) {
+      return params;
+    }
+
+    const returnLegacyFormat = (params as Record<string, unknown>).txFormat === 'legacy';
+    return { ...params, returnLegacyFormat };
+  }
+
+  async supplementGenerateWallet(
+    walletParams: SupplementGenerateWalletOptions,
+    keychains: KeychainsTriplet
+  ): Promise<any> {
+    return walletParams;
+  }
+
+  transactionDataAllowed(): boolean {
+    return false;
+  }
+
+  valuelessTransferAllowed(): boolean {
+    return false;
+  }
+
+  getRecoveryProvider(apiToken?: string): RecoveryProvider {
+    return forCoin(this.getChain(), apiToken);
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey({
+    multiSigType,
+    publicKey,
+    prv,
+  }: {
+    multiSigType: MultisigType;
+    publicKey: string;
+    prv: string;
+  }): void {
+    if (multiSigType === 'tss') {
+      throw new Error('tss auditing is not supported for this coin');
+    }
+    if (!isValidPrv(prv) && !isValidXprv(prv)) {
+      throw new Error('invalid private key');
+    }
+    if (publicKey) {
+      const genPubKey = BIP32.fromBase58(prv).neutered().toBase58();
+      if (genPubKey !== publicKey) {
+        throw new Error('public key does not match private key');
+      }
+    }
+  }
+}

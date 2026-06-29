@@ -1,0 +1,25 @@
+import { KeyPairOptions } from '@bitgo/sdk-core';
+import { pubkeyToAddress } from '@cosmjs/amino';
+
+import { CosmosKeyPair, PubKeyType } from '@bitgo/abstract-cosmos';
+import { Networks } from '@bitgo/statics';
+/**
+ * Cosmos keys and address management.
+ */
+export class KeyPair extends CosmosKeyPair {
+  constructor(source?: KeyPairOptions) {
+    super(source);
+  }
+
+  /** @inheritdoc */
+  getAddress(): string {
+    const base64String = Buffer.from(this.getKeys().pub.slice(0, 66), 'hex').toString('base64');
+    return pubkeyToAddress(
+      {
+        type: PubKeyType.secp256k1,
+        value: base64String,
+      },
+      Networks.main.atom.addressPrefix
+    );
+  }
+}
