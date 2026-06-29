@@ -9,7 +9,6 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import Keyring, { decodeAddress } from '@polkadot/keyring';
-import { u8aToBuffer } from '@polkadot/util';
 import { construct, decode } from '@substrate/txwrapper-polkadot';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
@@ -533,12 +532,21 @@ export class Transaction extends BaseTransaction {
     this._substrateTransaction = tx;
   }
 
-  /** @inheritdoc **/
+  /**
+   * @inheritdoc
+   *
+   * Returns the bytes that are actually signed for this transaction. Substrate signs the raw
+   * encoded `ExtrinsicPayload` when it is at most 256 bytes, but for payloads larger than 256
+   * bytes it signs the blake2_256 hash of those bytes instead (see Polkadot.js
+   * `@polkadot/types/extrinsic/util` and the HSM firmware). Returning the raw payload for large
+   * extrinsics (e.g. nominate with many validators) would make the user and the HSM sign different
+   * messages, causing TSS signature combination to fail.
+   */
   get signablePayload(): Buffer {
     const extrinsicPayload = this._registry.createType('ExtrinsicPayload', this._substrateTransaction, {
       version: EXTRINSIC_VERSION,
     });
-    return u8aToBuffer(extrinsicPayload.toU8a({ method: true }));
+    return utils.getSubstrateSigningBytes(extrinsicPayload.toU8a({ method: true }));
   }
 
   /**

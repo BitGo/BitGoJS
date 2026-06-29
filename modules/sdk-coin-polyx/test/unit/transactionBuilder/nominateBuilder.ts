@@ -179,6 +179,52 @@ describe('Polyx Nominate Builder', function () {
     });
   });
 
+  describe('signablePayload (Substrate 256-byte blake2 rule)', () => {
+    const buildNominateTx = async (validators: string[]) => {
+      const material = utils.getMaterial(coins.get('tpolyx').network.type);
+      const nominateBuilder = factory.getNominateBuilder();
+      nominateBuilder
+        .validators(validators)
+        .sender({ address: senderAddress })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 15 })
+        .fee({ amount: 0, type: 'tip' })
+        .material(material);
+      return nominateBuilder.build();
+    };
+
+    it('should return raw payload bytes when the extrinsic is at most 256 bytes', async () => {
+      const tx = await buildNominateTx([validatorAddress, validatorAddress2]);
+      const signablePayload = tx.signablePayload;
+      // small nominate extrinsic stays under the 256-byte threshold, so it is signed as-is
+      signablePayload.length.should.be.belowOrEqual(256);
+      signablePayload.length.should.not.equal(32);
+    });
+
+    it('should return the 32-byte blake2_256 hash when the extrinsic exceeds 256 bytes', async () => {
+      // 6+ validators (~33 bytes each) pushes the nominate extrinsic over the 256-byte threshold
+      const manyValidators = Array(8).fill(validatorAddress);
+      const tx = await buildNominateTx(manyValidators);
+      const signablePayload = tx.signablePayload;
+      should.equal(signablePayload.length, 32);
+    });
+
+    // The 256-byte boundary is impractical to hit with a real extrinsic, so exercise the
+    // raw-vs-hash decision directly through the shared Substrate signing-bytes helper.
+    it('should keep payloads of exactly 256 bytes raw and only hash strictly larger ones', () => {
+      const at = utils.getSubstrateSigningBytes(new Uint8Array(256).fill(7));
+      should.equal(at.length, 256);
+      at.should.deepEqual(Buffer.alloc(256, 7));
+
+      const below = utils.getSubstrateSigningBytes(new Uint8Array(255).fill(7));
+      should.equal(below.length, 255);
+
+      const above = utils.getSubstrateSigningBytes(new Uint8Array(257).fill(7));
+      should.equal(above.length, 32);
+    });
+  });
+
   describe('factory routing', () => {
     it('should route raw nominate extrinsic to NominateBuilder', () => {
       const resolvedBuilder = factory.from(nominateTx.signed);
