@@ -21,19 +21,27 @@ export const erc7984Tokens = [
   // Mainnet tokens (contract addresses TBD pending Zama fhEVM mainnet launch)
   erc7984(
     'f47ac10b-58cc-4372-a567-0e02b2c3d479',
-    'eth:ctkn',
+    'eth:czama',
     'Confidential Test Token',
     6,
-    '0x0000000000000000000000000000000000000001', // TODO: update with mainnet contract address
-    UnderlyingAsset['eth:ctkn']
+    '0xeb5015ff021db115ace010f23f55c2591059bba0', // https://etherscan.io/address/0xeb5015ff021db115ace010f23f55c2591059bba0
+    UnderlyingAsset['eth:czama']
   ),
   erc7984(
     'f47ac10b-58cc-4372-a567-0e02b2c3d480',
     'eth:cusdt',
     'Confidential USDT',
     6,
-    '0x0000000000000000000000000000000000000002', // TODO: update with mainnet contract address
+    '0xae0207c757aa2b4019ad96edd0092ddc63ef0c50', // https://etherscan.io/token/0xAe0207C757Aa2B4019Ad96edD0092ddc63EF0c50
     UnderlyingAsset['eth:cusdt']
+  ),
+  erc7984(
+    'fb41ba70-858c-48e6-a513-9da1ea030853',
+    'eth:cusdc',
+    'Confidential USDC',
+    6,
+    '0xe978f22157048e5db8e5d07971376e86671672b2', // https://etherscan.io/token/0xe978f22157048e5db8e5d07971376e86671672b2
+    UnderlyingAsset['eth:cusdc']
   ),
 
   // Testnet tokens (hteth / Hoodi) — Zama cleartext FHE stack (chain ID 560048)
