@@ -5718,6 +5718,17 @@ export const allCoinsAndTokens = [
     '',
     'XLM:YLDS'
   ),
+  stellarToken(
+    'c88318f9-ae09-4602-89fd-1f403534ed44',
+    'xlm:BTGO-GAXTPUVP2XINTMEN57FPJ34DAPZXDMMGX7TB7ASIBWHWT6ARC3IOGA2W',
+    'BTGO',
+    7,
+    UnderlyingAsset['xlm:BTGO-GAXTPUVP2XINTMEN57FPJ34DAPZXDMMGX7TB7ASIBWHWT6ARC3IOGA2W'],
+    '',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'XLM:BTGO'
+  ),
   tronToken(
     '5f3266f8-252c-492a-90d7-bb6d3bf550fb',
     'trx:btt',

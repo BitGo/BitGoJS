@@ -4634,6 +4634,14 @@ export const ofcCoins = [
     UnderlyingAsset['xlm:YLDS-GAC7MOPTQLQUM3KC24AW4GHS3RLF72LPEZO54AH7EZ6TSMGRB5SOAVH3']
   ),
 
+  ofcStellarToken(
+    'bebecdfe-0a09-4e43-be91-62afdbe2ce49',
+    'ofcxlm:btgo',
+    'BTGO',
+    7,
+    UnderlyingAsset['xlm:BTGO-GAXTPUVP2XINTMEN57FPJ34DAPZXDMMGX7TB7ASIBWHWT6ARC3IOGA2W']
+  ),
+
   tofcStellarToken(
     '4883a062-c38c-43d9-92c6-7cec9aaef995',
     'ofctxlm:tst',
