@@ -754,6 +754,157 @@ describe('verifyTransaction – confidential transfer (SendERC7984)', function (
 });
 
 // ---------------------------------------------------------------------------
+// verifyTransaction – direct confidentialTransfer (hot/TSS EOA wallet) tests
+// ---------------------------------------------------------------------------
+
+/**
+ * Builds a raw tx hex where the EOA calls confidentialTransfer directly on the token
+ * contract (no sendMultiSig wrapper). This is the hot/TSS wallet path.
+ */
+async function buildDirectConfidentialTransferTxHex(opts: {
+  tokenContractAddress: string;
+  recipientAddress: string;
+  encryptedHandle: string;
+  inputProof: string;
+}): Promise<string> {
+  const txBuilder = getBuilder('hteth') as TransactionBuilder;
+  txBuilder.fee({ fee: '1000000000', gasLimit: '200000' });
+  txBuilder.counter(1);
+  txBuilder.type(TransactionType.ContractCall);
+  // tx.to = token contract (EOA calls it directly)
+  txBuilder.contract(opts.tokenContractAddress);
+  // Inner calldata: confidentialTransfer(address, bytes32, bytes) — no sendMultiSig wrapper
+  const calldata = new TransferBuilderERC7984()
+    .to(opts.recipientAddress)
+    .tokenContractAddress(opts.tokenContractAddress)
+    .encryptedHandle(opts.encryptedHandle)
+    .inputProof(opts.inputProof)
+    .build();
+  txBuilder.data(calldata);
+  const tx = await txBuilder.build();
+  return tx.toBroadcastFormat();
+}
+
+describe('verifyTransaction – direct confidentialTransfer (hot/TSS EOA wallet)', function () {
+  const RECIPIENT = '0x19645032c7f1533395d44a629462e751084d3e4c';
+  const HANDLE = '0x' + 'ab'.repeat(32);
+  const PROOF = '0x' + 'cd'.repeat(50);
+  const WRONG_RECIPIENT = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+  const WRONG_TOKEN = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+  const AMOUNT = '1000000';
+
+  let bitgo: TestBitGoAPI;
+  let coin: Erc7984Token;
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.initializeTestVars();
+    register(bitgo);
+    coin = bitgo.coin('hteth:ctest1') as Erc7984Token;
+  });
+
+  it('should verify a valid direct confidentialTransfer tx', async function () {
+    const txHex = await buildDirectConfidentialTransferTxHex({
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+    const result = await coin.verifyTransaction({
+      txParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+      txPrebuild: { txHex, buildParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] } } as any,
+      wallet: {} as any,
+    });
+    result.should.equal(true);
+  });
+
+  it('should verify using buildParams.recipients when txParams has no recipients', async function () {
+    const txHex = await buildDirectConfidentialTransferTxHex({
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+    const result = await coin.verifyTransaction({
+      txParams: {},
+      txPrebuild: {
+        txHex,
+        buildParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+      } as any,
+      wallet: {} as any,
+    });
+    result.should.equal(true);
+  });
+
+  it('should throw when token contract address (tx.to) does not match this coin', async function () {
+    const txHex = await buildDirectConfidentialTransferTxHex({
+      tokenContractAddress: WRONG_TOKEN,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/token contract address mismatch/);
+  });
+
+  it('should throw when recipient address does not match txParams', async function () {
+    const txHex = await buildDirectConfidentialTransferTxHex({
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: WRONG_RECIPIENT, amount: AMOUNT }] },
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/recipient address mismatch/);
+  });
+
+  it('should throw when no recipient info is provided in either txParams or buildParams', async function () {
+    const txHex = await buildDirectConfidentialTransferTxHex({
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+    await coin
+      .verifyTransaction({
+        txParams: {},
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/missing expected recipient/);
+  });
+
+  it('should throw when txParams amount does not match buildParams amount', async function () {
+    const txHex = await buildDirectConfidentialTransferTxHex({
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: RECIPIENT, amount: '9999999' }] },
+        txPrebuild: {
+          txHex,
+          buildParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+        } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/amount mismatch/);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // decodeTokenAddressesFromDelegationCalldata tests
 // ---------------------------------------------------------------------------
 

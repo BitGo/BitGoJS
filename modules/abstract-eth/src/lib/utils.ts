@@ -742,6 +742,40 @@ export function decodeConfidentialTransferData(data: string): ConfidentialTransf
   };
 }
 
+export interface DirectConfidentialTransferData {
+  toAddress: string;
+  encryptedHandle: string;
+  inputProof: string;
+}
+
+/**
+ * Decode a direct confidentialTransfer(address, bytes32, bytes) calldata.
+ *
+ * Used for hot/TSS wallets where the signing address calls the token contract directly,
+ * without a sendMultiSig wrapper. In this path the `to` field of the EIP-1559 transaction
+ * is the token contract address and the calldata carries only the three transfer parameters.
+ *
+ * @param data  0x-prefixed calldata starting with confidentialTransferWithProofMethodId (0x2fb74e62)
+ * @returns toAddress, encryptedHandle, inputProof
+ */
+export function decodeDirectConfidentialTransferCalldata(data: string): DirectConfidentialTransferData {
+  if (!data.startsWith(confidentialTransferWithProofMethodId)) {
+    // Include only the 4-byte method ID in the error to avoid leaking encrypted payloads into logs.
+    throw new BuildTransactionError(
+      `Invalid direct confidential transfer calldata: unexpected method ID ${data.slice(0, 10)}`
+    );
+  }
+  const [toAddress, encryptedHandle, inputProof] = getRawDecoded(
+    confidentialTransferWithProofTypes,
+    getBufferedByteCode(confidentialTransferWithProofMethodId, data)
+  );
+  return {
+    toAddress: addHexPrefix(toAddress as string),
+    encryptedHandle: bufferToHex(encryptedHandle as Buffer),
+    inputProof: bufferToHex(inputProof as Buffer),
+  };
+}
+
 /**
  * Decode a FlushERC7984ForwarderToken transaction's calldata into its component parts.
  *
