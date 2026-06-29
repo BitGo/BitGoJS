@@ -5160,6 +5160,15 @@ export const ofcCoins = [
     undefined,
     [CoinFeature.STABLECOIN]
   ),
+  ofcCantonToken(
+    '83066d8d-7be7-4385-a969-0c79e5d24451',
+    'ofccanton:sofid',
+    'SoFiUSD',
+    10,
+    UnderlyingAsset['canton:sofid'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   tofcCantonToken(
     'd7297535-c1d4-429d-b3c5-d36351b110e5',
     'ofctcanton:testcoin1',
@@ -5189,6 +5198,24 @@ export const ofcCoins = [
     'Test USD1 Token',
     10,
     UnderlyingAsset['tcanton:usd1'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  tofcCantonToken(
+    '02fdcbf4-c1d9-4783-a0f6-b877bec8460a',
+    'ofctcanton:stgsofid',
+    'Test SoFiUSD',
+    10,
+    UnderlyingAsset['tcanton:stgsofid'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  tofcCantonToken(
+    'e3211c0c-b576-4194-a3f3-0936cc835783',
+    'ofctcanton:sofid',
+    'Test SoFiUSD',
+    10,
+    UnderlyingAsset['tcanton:sofid'],
     undefined,
     [CoinFeature.STABLECOIN]
   ),
