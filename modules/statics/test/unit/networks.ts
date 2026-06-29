@@ -1,5 +1,13 @@
 import 'should';
-import { AccountNetwork, BaseNetwork, DynamicNetwork, getNetwork, Networks, NetworkType } from '../../src/networks';
+import {
+  AccountNetwork,
+  BaseNetwork,
+  DynamicNetwork,
+  getNetwork,
+  Networks,
+  NetworkType,
+  PolyxNetwork,
+} from '../../src/networks';
 
 Object.entries(Networks).forEach(([category, networks]) => {
   Object.entries(networks).forEach(([networkName, network]) => {
@@ -129,6 +137,31 @@ describe('Cosmos-family addressPrefix', function () {
       network.should.have.property('addressPrefix', hrp);
     });
   }
+});
+
+describe('Polymesh (POLYX) v8 network fields', function () {
+  it('mainnet has v8SpecVersion and v8TxVersion', function () {
+    const network: PolyxNetwork = Networks.main.polyx as PolyxNetwork;
+    network.should.have.property('v8SpecVersion', 8000000);
+    network.should.have.property('v8TxVersion', 8);
+    network.should.have.property('specVersion', 7002000);
+    network.should.have.property('txVersion', 7);
+  });
+
+  it('testnet has v8SpecVersion and v8TxVersion', function () {
+    const network: PolyxNetwork = Networks.test.polyx as PolyxNetwork;
+    network.should.have.property('v8SpecVersion', 8000000);
+    network.should.have.property('v8TxVersion', 8);
+    network.should.have.property('specVersion', 7002000);
+    network.should.have.property('txVersion', 7);
+  });
+
+  it('PolyxNetwork interface has required fields', function () {
+    const network: PolyxNetwork = Networks.main.polyx as PolyxNetwork;
+    network.should.have.property('specName', 'polymesh_mainnet');
+    network.should.have.property('genesisHash');
+    network.should.have.property('chainName', 'Polymesh Mainnet');
+  });
 });
 
 describe('DynamicNetwork and getNetwork', function () {
