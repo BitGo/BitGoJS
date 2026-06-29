@@ -4639,7 +4639,7 @@ export const ofcCoins = [
     'ofctxlm:tst',
     'Test Stellar BitGo Test Token',
     7,
-    UnderlyingAsset['txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L']
+    UnderlyingAsset['txlm:TST-GC26PEYGETD7L6PUW2VCU3PSC7LCLRRPOSUILSHD2RT23IQUEAN4TQBQ']
   ),
   tofcArbethErc20(
     '2489c0e2-c13f-4287-bd1f-03dcd0a8562e',

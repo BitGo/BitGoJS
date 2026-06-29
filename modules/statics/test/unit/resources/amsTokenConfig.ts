@@ -35,11 +35,11 @@ export const trimmedDynamicBaseChainConfig = {
 };
 
 export const amsTokenConfig = {
-  'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L': [
+  'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU': [
     {
       id: '47887cb5-98bb-4942-bd25-3ccca0847f36',
       fullName: 'BitGo Shield Token',
-      name: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+      name: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU',
       prefix: '',
       suffix: 'BST',
       baseUnit: 'stroop',
@@ -62,7 +62,7 @@ export const amsTokenConfig = {
         'custody-bitgo-india',
       ],
       decimalPlaces: 7,
-      asset: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+      asset: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU',
       network: {
         type: 'testnet',
         name: 'StellarTestnet',
@@ -1179,28 +1179,6 @@ export const reducedTokenConfigForAllChains = {
       assetId: '0x780602887b358cf48989d0d9aa6c8d29',
       network: {
         name: 'PolymeshTestnet',
-      },
-      additionalFeatures: [],
-      excludedFeatures: [],
-    },
-  ],
-  'txlm:FKE-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L': [
-    {
-      id: '9e1d4f1a-661b-4a51-b647-71f8c1330202',
-      fullName: 'BitGo Fake token',
-      name: 'txlm:FKE-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
-      prefix: '',
-      suffix: 'FKE',
-      baseUnit: 'stroop',
-      kind: 'crypto',
-      family: 'xlm',
-      isToken: true,
-      decimalPlaces: 7,
-      asset: 'txlm:FKE-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
-      primaryKeyCurve: 'ed25519',
-      domain: 'bitgo.com',
-      network: {
-        name: 'StellarTestnet',
       },
       additionalFeatures: [],
       excludedFeatures: [],

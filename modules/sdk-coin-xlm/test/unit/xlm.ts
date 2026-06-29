@@ -234,7 +234,7 @@ describe('XLM:', function () {
   it('Should explain a trustline transaction', async function () {
     const explanation = await basecoin.explainTransaction({
       txBase64:
-        'AAAAAIKWO6R0/V4oJDk2LZsdiEInIzgJ6L0GxmSU2Ffs8Y7ZAAABLAAIj4EAAAACAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
+        'AAAAAIKWO6R0/V4oJDk2LZsdiEInIzgJ6L0GxmSU2Ffs8Y7ZAAABLAAIj4EAAAACAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAACscDuSqHir7h7UMmzQ9D6NI+3Ir9Ev42x8HFNApgv8jAAAAOjUpRAAAAAAAAAAAAA=',
     });
     explanation.outputAmount.should.equal('0');
     explanation.fee.fee.should.equal('300');
@@ -243,17 +243,17 @@ describe('XLM:', function () {
     explanation.changeAmount.should.equal('0');
     explanation.operations.length.should.equal(1);
     explanation.operations[0].limit.should.equal('1000000000000');
-    explanation.operations[0].coin.should.equal('txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L');
+    explanation.operations[0].coin.should.equal('txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU');
     explanation.operations[0].type.should.equal('changeTrust');
     explanation.operations[0].should.have.property('asset');
     explanation.operations[0].asset.code.should.equal('BST');
-    explanation.operations[0].asset.issuer.should.equal('GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L');
+    explanation.operations[0].asset.issuer.should.equal('GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU');
   });
 
   it('Should explain a token transaction', async function () {
     const explanation = await basecoin.explainTransaction({
       txBase64:
-        'AAAAAIXpiGPR/Yc+gSN614hAf1N1hecXFL7Lac99olpq38K/AAAAZAAC9TAAAAAEAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAgpY7pHT9XigkOTYtmx2IQicjOAnovQbGZJTYV+zxjtkAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAAAdzWUAAAAAAAAAAAFq38K/AAAAQPJTLIGGY06BuVDw0ISasYwHZpR6V38CaOfGhSooclY+4IBE9JKdKuMyGNXXCcFxM/NxrX64jhBXk+lWvjjo4wY=',
+        'AAAAAIXpiGPR/Yc+gSN614hAf1N1hecXFL7Lac99olpq38K/AAAAZAAC9TAAAAAEAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAgpY7pHT9XigkOTYtmx2IQicjOAnovQbGZJTYV+zxjtkAAAABQlNUAAAAAACscDuSqHir7h7UMmzQ9D6NI+3Ir9Ev42x8HFNApgv8jAAAAAAdzWUAAAAAAAAAAAFq38K/AAAAQPJTLIGGY06BuVDw0ISasYwHZpR6V38CaOfGhSooclY+4IBE9JKdKuMyGNXXCcFxM/NxrX64jhBXk+lWvjjo4wY=',
     });
     explanation.outputAmount.should.equal('0');
     explanation.fee.fee.should.equal('100');
@@ -261,7 +261,7 @@ describe('XLM:', function () {
     explanation.changeOutputs.length.should.equal(0);
     explanation.changeAmount.should.equal('0');
     explanation.outputAmounts.should.have.property(
-      'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+      'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU',
       '500000000'
     );
   });
@@ -781,7 +781,7 @@ describe('XLM:', function () {
           recipients: [],
           trustlines: [
             {
-              token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+              token: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU',
               action: 'remove',
             },
           ],
@@ -813,7 +813,7 @@ describe('XLM:', function () {
           recipients: [],
           trustlines: [
             {
-              token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+              token: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU',
               action: 'add',
               limit: '999',
             },
@@ -846,12 +846,12 @@ describe('XLM:', function () {
           recipients: [],
           trustlines: [
             {
-              token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+              token: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU',
               action: 'add',
               limit: '1000000000000',
             },
             {
-              token: 'txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+              token: 'txlm:TST-GC26PEYGETD7L6PUW2VCU3PSC7LCLRRPOSUILSHD2RT23IQUEAN4TQBQ',
               action: 'remove',
             },
           ],
@@ -859,7 +859,7 @@ describe('XLM:', function () {
 
         const buildResult = {
           txBase64:
-            'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAAAyAAM4aEAAAAJAAAAAAAAAAAAAAACAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAYAAAABVFNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAAAAAAAAAAAAAAAAAAA=',
+            'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAAAyAAM4aEAAAAJAAAAAAAAAAAAAAACAAAAAAAAAAYAAAABQlNUAAAAAACscDuSqHir7h7UMmzQ9D6NI+3Ir9Ev42x8HFNApgv8jAAAAOjUpRAAAAAAAAAAAAYAAAABVFNUAAAAAAC155MGJMf1+fS2qipt8hfWJcYvdKiFyOPUZ62iFCAbyQAAAAAAAAAAAAAAAAAAAAA=',
         };
 
         nock(uri).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`).reply(200, buildResult);
@@ -912,7 +912,7 @@ describe('XLM:', function () {
           type: 'enabletoken',
           recipients: [
             {
-              tokenName: 'txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+              tokenName: 'txlm:TST-GC26PEYGETD7L6PUW2VCU3PSC7LCLRRPOSUILSHD2RT23IQUEAN4TQBQ',
               amount: 0,
               address: '',
             },
@@ -921,7 +921,7 @@ describe('XLM:', function () {
 
         const buildResult = {
           txBase64:
-            'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
+            'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAACscDuSqHir7h7UMmzQ9D6NI+3Ir9Ev42x8HFNApgv8jAAAAOjUpRAAAAAAAAAAAAA=',
         };
 
         nock(uri).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`).reply(200, buildResult);
@@ -935,9 +935,12 @@ describe('XLM:', function () {
           },
           verifyTokenEnablement: true,
         };
+        // BST and TST now have different issuers, so issuer check triggers before code check
         await basecoin
           .verifyTransaction({ txParams, txPrebuild, wallet, verification })
-          .should.be.rejectedWith('Invalid token code on token enablement operation: expected TST, got BST');
+          .should.be.rejectedWith(
+            'Invalid issuer on token enablement operation: expected GC26PEYGETD7L6PUW2VCU3PSC7LCLRRPOSUILSHD2RT23IQUEAN4TQBQ, got GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU'
+          );
       });
     });
 
