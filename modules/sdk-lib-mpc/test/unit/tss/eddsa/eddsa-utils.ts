@@ -76,8 +76,8 @@ describe('EdDSA Utility Functions', function () {
     ];
 
     PARTY_PAIRS.forEach(([p1, p2]) => {
-      it(`should produce a valid signature verifying under the DKG public key for parties ${p1}+${p2}`, function () {
-        const sig = MPSUtil.executeTillRound(
+      it(`should produce a valid signature verifying under the DKG public key for parties ${p1}+${p2}`, async function () {
+        const sig = (await MPSUtil.executeTillRound(
           3,
           new EddsaMPSDsg.DSG(p1),
           new EddsaMPSDsg.DSG(p2),
@@ -85,14 +85,14 @@ describe('EdDSA Utility Functions', function () {
           keySharesByIdx[p2],
           MESSAGE,
           'm'
-        ) as Buffer;
+        )) as Buffer;
         assert.strictEqual(sig.length, 64);
         assert(ed25519.verify(sig, MESSAGE, dkgPubKey));
       });
     });
 
-    it('should verify round-3 signature against root public key from getCommonKeychain()', function () {
-      const sig = MPSUtil.executeTillRound(
+    it('should verify round-3 signature against root public key from getCommonKeychain()', async function () {
+      const sig = (await MPSUtil.executeTillRound(
         3,
         new EddsaMPSDsg.DSG(0),
         new EddsaMPSDsg.DSG(2),
@@ -100,13 +100,13 @@ describe('EdDSA Utility Functions', function () {
         keySharesByIdx[2],
         MESSAGE,
         'm'
-      ) as Buffer;
+      )) as Buffer;
       const rootPubKey = Buffer.from(userDkg.getCommonKeychain().slice(0, 64), 'hex');
       assert(ed25519.verify(sig, MESSAGE, rootPubKey), 'should verify under root public key from getCommonKeychain()');
     });
 
-    it('should not verify under the root public key when signing at a derived path (m/0/0)', function () {
-      const sig = MPSUtil.executeTillRound(
+    it('should not verify under the root public key when signing at a derived path (m/0/0)', async function () {
+      const sig = (await MPSUtil.executeTillRound(
         3,
         new EddsaMPSDsg.DSG(0),
         new EddsaMPSDsg.DSG(2),
@@ -114,7 +114,7 @@ describe('EdDSA Utility Functions', function () {
         keySharesByIdx[2],
         MESSAGE,
         'm/0/0'
-      ) as Buffer;
+      )) as Buffer;
       assert.strictEqual(sig.length, 64, 'Derived path signature must be 64 bytes');
       const rootPubKey = Buffer.from(userDkg.getCommonKeychain().slice(0, 64), 'hex');
       assert(
@@ -123,8 +123,8 @@ describe('EdDSA Utility Functions', function () {
       );
     });
 
-    it('should return message arrays (not a Buffer) for intermediate round 1', function () {
-      const result = MPSUtil.executeTillRound(
+    it('should return message arrays (not a Buffer) for intermediate round 1', async function () {
+      const result = await MPSUtil.executeTillRound(
         1,
         new EddsaMPSDsg.DSG(0),
         new EddsaMPSDsg.DSG(2),
@@ -137,8 +137,8 @@ describe('EdDSA Utility Functions', function () {
       assert.strictEqual(result.length, 2, 'should contain message arrays for both parties');
     });
 
-    it('should return message arrays (not a Buffer) for intermediate round 2', function () {
-      const result = MPSUtil.executeTillRound(
+    it('should return message arrays (not a Buffer) for intermediate round 2', async function () {
+      const result = await MPSUtil.executeTillRound(
         2,
         new EddsaMPSDsg.DSG(0),
         new EddsaMPSDsg.DSG(2),
@@ -151,15 +151,15 @@ describe('EdDSA Utility Functions', function () {
       assert.strictEqual(result.length, 2, 'should contain message arrays for both parties');
     });
 
-    it('should throw for round out of range', function () {
+    it('should throw for round out of range', async function () {
       const dsg1 = new EddsaMPSDsg.DSG(0);
       const dsg2 = new EddsaMPSDsg.DSG(2);
-      assert.throws(
-        () => MPSUtil.executeTillRound(0, dsg1, dsg2, keySharesByIdx[0], keySharesByIdx[2], MESSAGE, 'm'),
+      await assert.rejects(
+        MPSUtil.executeTillRound(0, dsg1, dsg2, keySharesByIdx[0], keySharesByIdx[2], MESSAGE, 'm'),
         /Invalid round number/
       );
-      assert.throws(
-        () => MPSUtil.executeTillRound(4, dsg1, dsg2, keySharesByIdx[0], keySharesByIdx[2], MESSAGE, 'm'),
+      await assert.rejects(
+        MPSUtil.executeTillRound(4, dsg1, dsg2, keySharesByIdx[0], keySharesByIdx[2], MESSAGE, 'm'),
         /Invalid round number/
       );
     });

@@ -73,7 +73,7 @@ describe('EdDSA MPS DSG helper functions', async () => {
   it('getSignatureShareRoundOne should build a valid round-1 share', async () => {
     const messageBuffer = Buffer.from(signableHex, 'hex');
     const userDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER);
-    userDsg.initDsg(userKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
+    await userDsg.initDsg(userKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
     const userMsg1 = userDsg.getFirstMessage();
 
     const share: SignatureShareRecord = await getSignatureShareRoundOne(userMsg1, userGpgPrivKey);
@@ -94,7 +94,7 @@ describe('EdDSA MPS DSG helper functions', async () => {
   it('getSignatureShareRoundOne should build a valid backup round-1 share', async () => {
     const messageBuffer = Buffer.from(signableHex, 'hex');
     const backupDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BACKUP);
-    backupDsg.initDsg(backupKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
+    await backupDsg.initDsg(backupKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
     const backupMsg1 = backupDsg.getFirstMessage();
 
     const share: SignatureShareRecord = await getSignatureShareRoundOne(
@@ -119,7 +119,7 @@ describe('EdDSA MPS DSG helper functions', async () => {
   it('verifyPeerMessageRoundOne should verify a valid BitGo round-1 message', async () => {
     const messageBuffer = Buffer.from(signableHex, 'hex');
     const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
-    bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
+    await bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
     const bitgoMsg1 = bitgoDsg.getFirstMessage();
 
     const bitgoSignedMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg1.payload), bitgoGpgPrivKey);
@@ -153,11 +153,11 @@ describe('EdDSA MPS DSG helper functions', async () => {
   it('getSignatureShareRoundTwo should build a valid round-2 share', async () => {
     const messageBuffer = Buffer.from(signableHex, 'hex');
     const userDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER);
-    userDsg.initDsg(userKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
+    await userDsg.initDsg(userKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
     const userMsg1 = userDsg.getFirstMessage();
 
     const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
-    bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
+    await bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
     const bitgoMsg1 = bitgoDsg.getFirstMessage();
 
     const bitgoSignedMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg1.payload), bitgoGpgPrivKey);
@@ -185,11 +185,11 @@ describe('EdDSA MPS DSG helper functions', async () => {
   it('getSignatureShareRoundTwo should build a valid backup round-2 share', async () => {
     const messageBuffer = Buffer.from(signableHex, 'hex');
     const backupDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BACKUP);
-    backupDsg.initDsg(backupKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
+    await backupDsg.initDsg(backupKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
     const backupMsg1 = backupDsg.getFirstMessage();
 
     const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
-    bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BACKUP);
+    await bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BACKUP);
     const bitgoMsg1 = bitgoDsg.getFirstMessage();
 
     const bitgoSignedMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg1.payload), bitgoGpgPrivKey);
@@ -221,11 +221,11 @@ describe('EdDSA MPS DSG helper functions', async () => {
   it('verifyPeerMessageRoundTwo should verify a valid BitGo round-2 message', async () => {
     const messageBuffer = Buffer.from(signableHex, 'hex');
     const userDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER);
-    userDsg.initDsg(userKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
+    await userDsg.initDsg(userKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
     const userMsg1 = userDsg.getFirstMessage();
 
     const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
-    bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
+    await bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
     const bitgoMsg1 = bitgoDsg.getFirstMessage();
 
     const [bitgoMsg2] = bitgoDsg.handleIncomingMessages([bitgoMsg1, userMsg1]);
@@ -261,11 +261,11 @@ describe('EdDSA MPS DSG helper functions', async () => {
   it('getSignatureShareRoundThree should build a valid round-3 share', async () => {
     const messageBuffer = Buffer.from(signableHex, 'hex');
     const userDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER);
-    userDsg.initDsg(userKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
+    await userDsg.initDsg(userKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
     const userMsg1 = userDsg.getFirstMessage();
 
     const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
-    bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
+    await bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
     const bitgoMsg1 = bitgoDsg.getFirstMessage();
 
     // Advance to round 2
@@ -302,11 +302,11 @@ describe('EdDSA MPS DSG helper functions', async () => {
   it('getSignatureShareRoundThree should build a valid backup round-3 share', async () => {
     const messageBuffer = Buffer.from(signableHex, 'hex');
     const backupDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BACKUP);
-    backupDsg.initDsg(backupKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
+    await backupDsg.initDsg(backupKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
     const backupMsg1 = backupDsg.getFirstMessage();
 
     const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
-    bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BACKUP);
+    await bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BACKUP);
     const bitgoMsg1 = bitgoDsg.getFirstMessage();
 
     const bitgoSignedMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg1.payload), bitgoGpgPrivKey);
@@ -698,7 +698,7 @@ describe('EddsaMPCv2Utils.createOfflineRound2Share', () => {
 
     const messageBuffer = Buffer.from(signableHex, 'hex');
     const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
-    bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
+    await bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
 
     const txRequestRound1 = await signBitgoEddsaRound1(
       bitgoDsg,
@@ -756,7 +756,7 @@ describe('EddsaMPCv2Utils.createOfflineRound2Share', () => {
 
     const messageBuffer = Buffer.from(signableHex, 'hex');
     const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
-    bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
+    await bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
 
     const txRequestRound1 = await signBitgoEddsaRound1(
       bitgoDsg,
@@ -817,7 +817,7 @@ describe('EddsaMPCv2Utils.createOfflineRound2Share', () => {
 
     const messageBuffer = Buffer.from(signableHex, 'hex');
     const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
-    bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
+    await bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
 
     const txRequestRound1 = await signBitgoEddsaRound1(
       bitgoDsg,
@@ -869,7 +869,7 @@ describe('EddsaMPCv2Utils.createOfflineRound2Share', () => {
 
     const messageBuffer = Buffer.from(signableHex, 'hex');
     const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
-    bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
+    await bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
 
     const txRequestRound1 = await signBitgoEddsaRound1(
       bitgoDsg,
@@ -1073,7 +1073,7 @@ describe('EddsaMPCv2Utils.createOfflineRound3Share', () => {
     const transaction = assertSingleTransaction(txRequest);
     const messageBuffer = Buffer.from(transaction.unsignedTx.signableHex, 'hex');
     const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
-    bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, transaction.unsignedTx.derivationPath, MPCv2PartiesEnum.USER);
+    await bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, transaction.unsignedTx.derivationPath, MPCv2PartiesEnum.USER);
 
     const txRequestRound1 = await signBitgoEddsaRound1(
       bitgoDsg,
@@ -1782,7 +1782,7 @@ describe('signRecoveryEddsaMPCv2', () => {
     const message = Buffer.from('deadbeef', 'hex');
     const commonKeyChain = userDkg.getCommonKeychain();
 
-    const signature = EDDSAUtils.signRecoveryEddsaMPCv2(
+    const signature = await EDDSAUtils.signRecoveryEddsaMPCv2(
       message,
       derivationPath,
       userDkg.getKeyShare(),
@@ -1803,7 +1803,7 @@ describe('signRecoveryEddsaMPCv2', () => {
     const message = Buffer.from('deadbeef', 'hex');
     const commonKeyChain = userDkg.getCommonKeychain();
 
-    const signature = EDDSAUtils.signRecoveryEddsaMPCv2(
+    const signature = await EDDSAUtils.signRecoveryEddsaMPCv2(
       message,
       derivationPath,
       userDkg.getKeyShare(),
@@ -1827,15 +1827,14 @@ describe('signRecoveryEddsaMPCv2', () => {
     const [wrongDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
     const message = Buffer.from('deadbeef', 'hex');
 
-    assert.throws(
-      () =>
-        EDDSAUtils.signRecoveryEddsaMPCv2(
-          message,
-          derivationPath,
-          userDkg.getKeyShare(),
-          backupDkg.getKeyShare(),
-          wrongDkg.getCommonKeychain() // key chain from a different wallet
-        ),
+    await assert.rejects(
+      EDDSAUtils.signRecoveryEddsaMPCv2(
+        message,
+        derivationPath,
+        userDkg.getKeyShare(),
+        backupDkg.getKeyShare(),
+        wrongDkg.getCommonKeychain() // key chain from a different wallet
+      ),
       /EdDSA MPCv2 recovery signature verification failed/
     );
   });
