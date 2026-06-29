@@ -58,19 +58,19 @@ jobs:
           echo "::add-mask::$AWS_SECRET_ACCESS_KEY"
           { echo "aws-access-key-id=$AWS_ACCESS_KEY_ID"; echo "aws-secret-access-key=$AWS_SECRET_ACCESS_KEY"; echo "aws-session-token=$AWS_SESSION_TOKEN"; } >> "$GITHUB_OUTPUT"
 
-      - name: Read prune prompt
-        id: read-prompt
+      - name: Load iyarc-prune agent instructions
+        id: agent
         run: |
           {
-            echo "prompt<<IYARC_PRUNE_EOF"
-            cat .github/prompts/iyarc-prune.md
+            echo "content<<IYARC_PRUNE_EOF"
+            sed '1,/^---$/d' .claude/agents/iyarc-prune.md
             echo "IYARC_PRUNE_EOF"
           } >> "$GITHUB_OUTPUT"
 
       - name: Run Claude Code (Bedrock)
         uses: anthropics/claude-code-action@v1
         with:
-          prompt: ${{ steps.read-prompt.outputs.prompt }}
+          prompt: ${{ steps.agent.outputs.content }}
           use_commit_signing: 'true'
           branch_prefix: 'iyarc-prune/'
           claude_args: --allowed-tools 'Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash,mcp__github_file_ops__commit_files,mcp__github_file_ops__delete_files'
