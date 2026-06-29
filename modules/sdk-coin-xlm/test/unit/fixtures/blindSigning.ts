@@ -1,10 +1,10 @@
 export const tokenEnablements = {
   txParams: {
-    trustlines: [{ token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L', action: 'add' }],
+    trustlines: [{ token: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU', action: 'add' }],
     type: 'enabletoken',
     recipients: [
       {
-        tokenName: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+        tokenName: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU',
         address: 'GDE3LSSPJRE5WYTEQCWXR42AJ7JRROKGYLTU6LND2MWNICHBJO7S5P5F',
         amount: '0',
       },
@@ -77,15 +77,15 @@ export const tokenEnablements = {
       },
       pendingApprovals: [],
     },
-    enableTokens: [{ name: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L' }],
+    enableTokens: [{ name: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU' }],
     walletId: '68c8228d6881d3f00ddd811f2b40cfca',
     coin: 'txlm',
     walletPassphrase: 'F5R*KDzwg3Wjg3s',
     prebuildTx: {
       txHex:
-        '0000000200000000c9b5ca4f4c49db626480ad78f3404fd318b946c2e74f2da3d32cd408e14bbf2e0000afc8000865760000000200000001000000000000000000000000000000000000000000000001000000000000000600000001425354000000000061343a5bb98e1faeb830550aa4c2cee3c4afa4e0832b27a05a13438552f6bdbf7fffffffffffffff0000000000000000',
+        '0000000200000000c9b5ca4f4c49db626480ad78f3404fd318b946c2e74f2da3d32cd408e14bbf2e0000afc80008657600000002000000010000000000000000000000000000000000000000000000010000000000000006000000014253540000000000ac703b92a878abee1ed4326cd0f43e8d23edc8afd12fe36c7c1c5340a60bfc8c7fffffffffffffff0000000000000000',
       txBase64:
-        'AAAAAgAAAADJtcpPTEnbYmSArXjzQE/TGLlGwudPLaPTLNQI4Uu/LgAAr8gACGV2AAAAAgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAABgAAAAFCU1QAAAAAAGE0Olu5jh+uuDBVCqTCzuPEr6TggysnoFoTQ4VS9r2/f/////////8AAAAAAAAAAA==',
+        'AAAAAgAAAADJtcpPTEnbYmSArXjzQE/TGLlGwudPLaPTLNQI4Uu/LgAAr8gACGV2AAAAAgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAABgAAAAFCU1QAAAAAAKxwO5KoeKvuHtQybND0Po0j7civ0S/jbHwcU0CmC/yMf/////////8AAAAAAAAAAA==',
       txInfo: {
         _networkPassphrase: 'Test SDF Network ; September 2015',
         _tx: {
@@ -159,7 +159,7 @@ export const tokenEnablements = {
         _operations: [
           {
             type: 'changeTrust',
-            line: { code: 'BST', issuer: 'GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L' },
+            line: { code: 'BST', issuer: 'GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU' },
             limit: '922337203685.4775807',
           },
         ],
@@ -167,7 +167,7 @@ export const tokenEnablements = {
         operations: [
           {
             type: 'changeTrust',
-            line: { code: 'BST', issuer: 'GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L' },
+            line: { code: 'BST', issuer: 'GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU' },
             limit: '922337203685.4775807',
           },
         ],
@@ -183,11 +183,11 @@ export const tokenEnablements = {
       coin: 'txlm',
       walletId: '68c8228d6881d3f00ddd811f2b40cfca',
       buildParams: {
-        trustlines: [{ token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L', action: 'add' }],
+        trustlines: [{ token: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU', action: 'add' }],
         type: 'enabletoken',
         recipients: [
           {
-            tokenName: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+            tokenName: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU',
             address: 'GDE3LSSPJRE5WYTEQCWXR42AJ7JRROKGYLTU6LND2MWNICHBJO7S5P5F',
             amount: '0',
           },
@@ -265,9 +265,9 @@ export const tokenEnablements = {
   },
   txPrebuild: {
     txHex:
-      '0000000200000000c9b5ca4f4c49db626480ad78f3404fd318b946c2e74f2da3d32cd408e14bbf2e0000afc8000865760000000200000001000000000000000000000000000000000000000000000001000000000000000600000001425354000000000061343a5bb98e1faeb830550aa4c2cee3c4afa4e0832b27a05a13438552f6bdbf7fffffffffffffff0000000000000000',
+      '0000000200000000c9b5ca4f4c49db626480ad78f3404fd318b946c2e74f2da3d32cd408e14bbf2e0000afc80008657600000002000000010000000000000000000000000000000000000000000000010000000000000006000000014253540000000000ac703b92a878abee1ed4326cd0f43e8d23edc8afd12fe36c7c1c5340a60bfc8c7fffffffffffffff0000000000000000',
     txBase64:
-      'AAAAAgAAAADJtcpPTEnbYmSArXjzQE/TGLlGwudPLaPTLNQI4Uu/LgAAr8gACGV2AAAAAgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAABgAAAAFCU1QAAAAAAGE0Olu5jh+uuDBVCqTCzuPEr6TggysnoFoTQ4VS9r2/f/////////8AAAAAAAAAAA==',
+      'AAAAAgAAAADJtcpPTEnbYmSArXjzQE/TGLlGwudPLaPTLNQI4Uu/LgAAr8gACGV2AAAAAgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAABgAAAAFCU1QAAAAAAKxwO5KoeKvuHtQybND0Po0j7civ0S/jbHwcU0CmC/yMf/////////8AAAAAAAAAAA==',
     txInfo: {
       _networkPassphrase: 'Test SDF Network ; September 2015',
       _tx: {
@@ -312,8 +312,8 @@ export const tokenEnablements = {
                               _value: {
                                 type: 'Buffer',
                                 data: [
-                                  97, 52, 58, 91, 185, 142, 31, 174, 184, 48, 85, 10, 164, 194, 206, 227, 196, 175, 164,
-                                  224, 131, 43, 39, 160, 90, 19, 67, 133, 82, 246, 189, 191,
+                                  172, 112, 59, 146, 168, 120, 171, 238, 30, 212, 50, 108, 208, 244, 62, 141, 35, 237,
+                                  208, 175, 209, 47, 227, 108, 124, 28, 83, 64, 166, 11, 252, 140,
                                 ],
                               },
                             },
@@ -338,7 +338,7 @@ export const tokenEnablements = {
       _operations: [
         {
           type: 'changeTrust',
-          line: { code: 'BST', issuer: 'GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L' },
+          line: { code: 'BST', issuer: 'GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU' },
           limit: '922337203685.4775807',
         },
       ],
@@ -346,7 +346,7 @@ export const tokenEnablements = {
       operations: [
         {
           type: 'changeTrust',
-          line: { code: 'BST', issuer: 'GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L' },
+          line: { code: 'BST', issuer: 'GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU' },
           limit: '922337203685.4775807',
         },
       ],
@@ -362,11 +362,11 @@ export const tokenEnablements = {
     coin: 'txlm',
     walletId: '68c8228d6881d3f00ddd811f2b40cfca',
     buildParams: {
-      trustlines: [{ token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L', action: 'add' }],
+      trustlines: [{ token: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU', action: 'add' }],
       type: 'enabletoken',
       recipients: [
         {
-          tokenName: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+          tokenName: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU',
           address: 'GDE3LSSPJRE5WYTEQCWXR42AJ7JRROKGYLTU6LND2MWNICHBJO7S5P5F',
           amount: '0',
         },
@@ -506,17 +506,17 @@ export const tokenEnablements = {
     pendingApprovals: [],
   },
   sendTokenEnablementPayload: {
-    enableTokens: [{ name: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L' }],
+    enableTokens: [{ name: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU' }],
     walletId: '68c8228d6881d3f00ddd811f2b40cfca',
     coin: 'txlm',
     type: 'enabletoken',
-    trustlines: [{ token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L', action: 'add' }],
+    trustlines: [{ token: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU', action: 'add' }],
     walletPassphrase: 'F5R*KDzwg3Wjg3s',
     prebuildTx: {
       txHex:
-        '0000000200000000c9b5ca4f4c49db626480ad78f3404fd318b946c2e74f2da3d32cd408e14bbf2e0000afc8000865760000000200000001000000000000000000000000000000000000000000000001000000000000000600000001425354000000000061343a5bb98e1faeb830550aa4c2cee3c4afa4e0832b27a05a13438552f6bdbf7fffffffffffffff0000000000000000',
+        '0000000200000000c9b5ca4f4c49db626480ad78f3404fd318b946c2e74f2da3d32cd408e14bbf2e0000afc80008657600000002000000010000000000000000000000000000000000000000000000010000000000000006000000014253540000000000ac703b92a878abee1ed4326cd0f43e8d23edc8afd12fe36c7c1c5340a60bfc8c7fffffffffffffff0000000000000000',
       txBase64:
-        'AAAAAgAAAADJtcpPTEnbYmSArXjzQE/TGLlGwudPLaPTLNQI4Uu/LgAAr8gACGV2AAAAAgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAABgAAAAFCU1QAAAAAAGE0Olu5jh+uuDBVCqTCzuPEr6TggysnoFoTQ4VS9r2/f/////////8AAAAAAAAAAA==',
+        'AAAAAgAAAADJtcpPTEnbYmSArXjzQE/TGLlGwudPLaPTLNQI4Uu/LgAAr8gACGV2AAAAAgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAABgAAAAFCU1QAAAAAAKxwO5KoeKvuHtQybND0Po0j7civ0S/jbHwcU0CmC/yMf/////////8AAAAAAAAAAA==',
       txInfo: {
         _networkPassphrase: 'Test SDF Network ; September 2015',
         _tx: {
@@ -590,7 +590,7 @@ export const tokenEnablements = {
         _operations: [
           {
             type: 'changeTrust',
-            line: { code: 'BST', issuer: 'GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L' },
+            line: { code: 'BST', issuer: 'GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU' },
             limit: '922337203685.4775807',
           },
         ],
@@ -598,7 +598,7 @@ export const tokenEnablements = {
         operations: [
           {
             type: 'changeTrust',
-            line: { code: 'BST', issuer: 'GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L' },
+            line: { code: 'BST', issuer: 'GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU' },
             limit: '922337203685.4775807',
           },
         ],
@@ -614,11 +614,11 @@ export const tokenEnablements = {
       coin: 'txlm',
       walletId: '68c8228d6881d3f00ddd811f2b40cfca',
       buildParams: {
-        trustlines: [{ token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L', action: 'add' }],
+        trustlines: [{ token: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU', action: 'add' }],
         type: 'enabletoken',
         recipients: [
           {
-            tokenName: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+            tokenName: 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU',
             address: 'GDE3LSSPJRE5WYTEQCWXR42AJ7JRROKGYLTU6LND2MWNICHBJO7S5P5F',
             amount: '0',
           },
@@ -697,6 +697,7 @@ export const tokenEnablements = {
 
   wrongTxTypeTxPrebuildBase64:
     'AAAAAgAAAADJtcpPTEnbYmSArXjzQE/TGLlGwudPLaPTLNQI4Uu/LgAAr8gACGV2AAAAAgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAQAAAADJtcpPTEnbYmSArXjzQE/TGLlGwudPLaPTLNQI4Uu/LgAAAAAAAAAAAA9CQAAAAAAAAAAA',
+  // TST token with BST's new issuer (GCWHAO4) so that issuer check passes and token code check fails
   wrongTokenTxPrebuildBase64:
-    'AAAAAgAAAADJtcpPTEnbYmSArXjzQE/TGLlGwudPLaPTLNQI4Uu/LgAAr8gACGV2AAAAAgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAABgAAAAFUU1QAAAAAAGE0Olu5jh+uuDBVCqTCzuPEr6TggysnoFoTQ4VS9r2/f/////////8AAAAAAAAAAA==',
+    'AAAAAgAAAADJtcpPTEnbYmSArXjzQE/TGLlGwudPLaPTLNQI4Uu/LgAAr8gACGV2AAAAAgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAABgAAAAFUU1QAAAAAAKxwO5KoeKvuHtQybND0Po0j7civ0S/jbHwcU0CmC/yMf/////////8AAAAAAAAAAA==',
 };

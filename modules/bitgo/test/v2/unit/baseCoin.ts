@@ -36,7 +36,7 @@ describe('V2 Base Coin:', function () {
     basecoinEth.keychains();
     basecoinErc20TokenWithName = bitgo.coin('terc');
     basecoinErc20TokenWithContractHash = bitgo.coin('0x945ac907cf021a6bcd07852bb3b8c087051706a9');
-    baseCoinStellarToken = bitgo.coin('txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L');
+    baseCoinStellarToken = bitgo.coin('txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU');
   });
 
   describe('Currency conversion', function () {
