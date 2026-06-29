@@ -160,6 +160,16 @@ export interface DotNetwork extends AccountNetwork {
   readonly txVersion: number;
 }
 
+export interface PolyxNetwork extends AccountNetwork {
+  readonly specName: SubstrateSpecNameType;
+  readonly genesisHash: string;
+  readonly specVersion: number;
+  readonly chainName: string;
+  readonly txVersion: number;
+  readonly v8SpecVersion: number;
+  readonly v8TxVersion: number;
+}
+
 export interface EthereumNetwork extends AccountNetwork {
   // unique chain id used for replay-protecting transactions
   readonly chainId: number;
@@ -2444,18 +2454,20 @@ class BaseChain extends Mainnet implements EthereumNetwork {
   walletImplementationAddress = '0x92db2759d1dca129a0d9d46877f361be819184c4';
 }
 
-class Polymesh extends Mainnet implements AccountNetwork {
+class Polymesh extends Mainnet implements PolyxNetwork {
   name = 'Polymesh';
   family = CoinFamily.POLYX;
   explorerUrl = 'https://polymesh.subscan.io/extrinsic/';
-  specName = 'polymesh_mainnet';
+  specName = 'polymesh_mainnet' as SubstrateSpecNameType;
   genesisHash = '0x6fbd74e5e1d0a61d52ccfe9d4adaed16dd3a7caa37c6bc4d0c2fa12e8b2f4063';
   specVersion = 7002000;
   chainName = 'Polymesh Mainnet';
   txVersion = 7;
+  v8SpecVersion = 8000000;
+  v8TxVersion = 8;
 }
 
-class PolymeshTestnet extends Testnet implements AccountNetwork {
+class PolymeshTestnet extends Testnet implements PolyxNetwork {
   name = 'PolymeshTestnet';
   family = CoinFamily.POLYX;
   explorerUrl = 'https://polymesh-testnet.subscan.io/extrinsic/';
@@ -2464,6 +2476,8 @@ class PolymeshTestnet extends Testnet implements AccountNetwork {
   specVersion = 7002000;
   chainName = 'Polymesh Testnet';
   txVersion = 7;
+  v8SpecVersion = 8000000;
+  v8TxVersion = 8;
 }
 
 class Vet extends Mainnet implements EthereumNetwork {
