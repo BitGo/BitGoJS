@@ -1,0 +1,85 @@
+name: iyarc-prune
+run-name: 'iyarc-prune'
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC (weekly)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+concurrency:
+  group: iyarc-prune
+  cancel-in-progress: false
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      AWS_REGION: us-west-2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Enable Corepack (yarn 1.22.22)
+        run: corepack enable
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::199765120567:role/${{ github.event.repository.name }}-iam-protected
+          aws-region: us-west-2
+
+      - name: Assume Bedrock inference role
+        id: inference-role
+        run: |
+          CREDS="$(aws sts assume-role \
+            --role-arn arn:aws:iam::168000258654:role/BedrockInferenceRole \
+            --role-session-name iyarc-prune-session \
+            --query 'Credentials' \
+            --output json)"
+
+          AWS_ACCESS_KEY_ID="$(echo "$CREDS" | jq -r '.AccessKeyId')"
+          AWS_SECRET_ACCESS_KEY="$(echo "$CREDS" | jq -r '.SecretAccessKey')"
+          AWS_SESSION_TOKEN="$(echo "$CREDS" | jq -r '.SessionToken')"
+
+          echo "::add-mask::$AWS_SECRET_ACCESS_KEY"
+          { echo "aws-access-key-id=$AWS_ACCESS_KEY_ID"; echo "aws-secret-access-key=$AWS_SECRET_ACCESS_KEY"; echo "aws-session-token=$AWS_SESSION_TOKEN"; } >> "$GITHUB_OUTPUT"
+
+      - name: Load iyarc-prune agent instructions
+        id: agent
+        run: |
+          {
+            echo "content<<IYARC_PRUNE_EOF"
+            sed '1,/^---$/d' .claude/agents/iyarc-prune.md
+            echo "IYARC_PRUNE_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude Code (Bedrock)
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: ${{ steps.agent.outputs.content }}
+          use_commit_signing: 'true'
+          branch_prefix: 'iyarc-prune/'
+          claude_args: --allowed-tools 'Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash,mcp__github_file_ops__commit_files,mcp__github_file_ops__delete_files'
+          use_bedrock: 'true'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          ANTHROPIC_MODEL: arn:aws:bedrock:us-west-2:168000258654:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0
+          AWS_REGION: us-west-2
+          AWS_ACCESS_KEY_ID: ${{ steps.inference-role.outputs.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.inference-role.outputs.aws-secret-access-key }}
+          AWS_SESSION_TOKEN: ${{ steps.inference-role.outputs.aws-session-token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

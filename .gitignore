@@ -18,5 +18,8 @@ modules/**/dist/
 modules/**/pack-scoped/
 coverage
 /.direnv/
-.claude/
+.claude/*
+!.claude/agents/
+.claude/agents/*
+!.claude/agents/*.md
 .cursor/
