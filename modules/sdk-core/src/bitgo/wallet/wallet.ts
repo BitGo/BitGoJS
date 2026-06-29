@@ -57,6 +57,7 @@ import {
   TokenType,
   TxRequest,
 } from '../utils';
+import { MessageStandardType } from '../utils/messageTypes';
 import { postWithCodec } from '../utils/postWithCodec';
 import { txParamsFromIntent } from '../utils/tss/baseTSSUtils';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
@@ -5020,6 +5021,7 @@ export class Wallet implements IWallet {
           isTss: true,
           typedDataRaw: params.typedData.typedDataRaw,
           typedDataEncoded: params.typedData.typedDataEncoded!.toString('hex'),
+          messageStandardType: MessageStandardType.EIP712,
         };
         txRequest = await this.tssUtils!.createTxRequestWithIntentForTypedDataSigning(intentOptions);
         params.typedData.txRequestId = txRequest.txRequestId;

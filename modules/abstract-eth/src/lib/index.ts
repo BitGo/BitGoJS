@@ -13,6 +13,7 @@ export * from './types';
 export * from './utils';
 export * from './walletUtil';
 export * from './messages';
+export * from './eip712';
 
 // for Backwards Compatibility
 import * as Interface from './iface';
