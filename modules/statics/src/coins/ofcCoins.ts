@@ -425,6 +425,22 @@ export const ofcCoins = [
     UnderlyingAsset.HEMIETH,
     CoinKind.CRYPTO
   ),
+  ofc(
+    'c2698de6-27a0-41fc-96fc-8a2bf2777359',
+    'ofcmidlbtc',
+    'MIDL Bitcoin',
+    18,
+    UnderlyingAsset.MIDLBTC,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    'f67dee61-409b-40e2-a7b0-bda680d889eb',
+    'ofctmidlbtc',
+    'MIDL Bitcoin Testnet',
+    18,
+    UnderlyingAsset.MIDLBTC,
+    CoinKind.CRYPTO
+  ),
   tofc(
     '7d18cdc5-a7da-4c76-8ce0-f80c391f80b3',
     'ofctprividiumeth',
