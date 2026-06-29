@@ -9,6 +9,9 @@ import {
   DecryptionDelegationBuilder,
   decodeTokenAddressesFromDelegationCalldata,
   decodeConfidentialTransferData,
+  decodeDirectConfidentialTransferCalldata,
+  sendMultisigMethodId,
+  confidentialTransferWithProofMethodId,
   VerifyEthTransactionOptions,
   aclMulticallMethodId,
   callFromParentMethodId,
@@ -136,15 +139,25 @@ export class Erc7984Token extends Eth {
   /**
    * Verifies a confidential token transfer (SendERC7984) transaction.
    *
-   * With txHex (multisig second-signer, MPC post-signing):
-   *  1. Decodes the sendMultiSig calldata and checks the inner token contract address.
-   *  2. Requires the decoded recipient to match txParams.recipients[0].address or
-   *     buildParams.recipients[0].address — at least one must be present.
-   *  3. Confirms encryptedHandle and inputProof are structurally present.
-   *  4. Validates txParams.recipients[0].amount is a positive integer and matches
-   *     buildParams.recipients[0].amount when both are present.
+   * With txHex — two on-chain shapes are supported:
    *
-   * Without txHex (multisig first-signer, MPC pre-signing):
+   *   sendMultiSig-wrapped (multisig / smart-contract wallet):
+   *     tx.to   = wallet contract
+   *     tx.data = sendMultiSig(tokenAddr, 0, confidentialTransfer(recipient, handle, proof), ...)
+   *     Token contract address is decoded from the sendMultiSig inner calldata.
+   *
+   *   Direct call (hot / TSS EOA wallet):
+   *     tx.to   = token contract
+   *     tx.data = confidentialTransfer(recipient, handle, proof)
+   *     Token contract address is taken from tx.to.
+   *
+   *   For both shapes the verifier checks:
+   *     1. Token contract address matches this coin's tokenContractAddress.
+   *     2. Decoded recipient matches txParams.recipients[0].address or buildParams.recipients[0].address.
+   *     3. encryptedHandle and inputProof are structurally present (non-empty).
+   *     4. txParams.recipients[0].amount is a positive integer and matches buildParams when both present.
+   *
+   * Without txHex (first-signer / pre-signing path):
    *  1. Requires exactly one recipient in txParams.
    *  2. Validates txParams.recipients[0].address is a valid Ethereum address.
    *  3. Validates txParams.recipients[0].amount is a positive integer.
@@ -200,9 +213,34 @@ export class Erc7984Token extends Eth {
     const tx = await txBuilder.build();
     const txJson = tx.toJson();
 
-    let decoded: ReturnType<typeof decodeConfidentialTransferData>;
+    let toAddress: string;
+    let tokenContractAddress: string;
+    let encryptedHandle: string;
+    let inputProof: string;
+
     try {
-      decoded = decodeConfidentialTransferData(txJson.data);
+      if (txJson.data.startsWith(sendMultisigMethodId)) {
+        // sendMultiSig-wrapped path: smart-contract wallet relays the confidentialTransfer call.
+        // Token contract address is encoded inside the sendMultiSig calldata.
+        const decoded = decodeConfidentialTransferData(txJson.data);
+        toAddress = decoded.toAddress;
+        tokenContractAddress = decoded.tokenContractAddress;
+        encryptedHandle = decoded.encryptedHandle;
+        inputProof = decoded.inputProof;
+      } else if (txJson.data.startsWith(confidentialTransferWithProofMethodId)) {
+        // Direct call path: hot/TSS EOA wallet calls the token contract directly.
+        // The transaction's `to` field is the token contract address.
+        if (!txJson.to) {
+          throw new Error('direct confidentialTransfer call is missing transaction to address');
+        }
+        const decoded = decodeDirectConfidentialTransferCalldata(txJson.data);
+        toAddress = decoded.toAddress;
+        tokenContractAddress = txJson.to;
+        encryptedHandle = decoded.encryptedHandle;
+        inputProof = decoded.inputProof;
+      } else {
+        throw new Error(`unexpected method ID ${txJson.data.slice(0, 10)}`);
+      }
     } catch (e) {
       throw new Error(
         `verifyConfidentialTransfer: failed to decode confidential transfer calldata — ${(e as Error).message}`
@@ -210,10 +248,10 @@ export class Erc7984Token extends Eth {
     }
 
     // 1. Token contract address must match this coin
-    if (decoded.tokenContractAddress.toLowerCase() !== this.tokenContractAddress.toLowerCase()) {
+    if (tokenContractAddress.toLowerCase() !== this.tokenContractAddress.toLowerCase()) {
       throw new Error(
         `verifyConfidentialTransfer: token contract address mismatch — ` +
-          `expected ${this.tokenContractAddress}, got ${decoded.tokenContractAddress}`
+          `expected ${this.tokenContractAddress}, got ${tokenContractAddress}`
       );
     }
 
@@ -224,20 +262,19 @@ export class Erc7984Token extends Eth {
         'verifyConfidentialTransfer: missing expected recipient (provide txParams.recipients or txPrebuild.buildParams.recipients)'
       );
     }
-    if (decoded.toAddress.toLowerCase() !== expectedRecipient.toLowerCase()) {
+    if (toAddress.toLowerCase() !== expectedRecipient.toLowerCase()) {
       throw new Error(
-        `verifyConfidentialTransfer: recipient address mismatch — ` +
-          `expected ${expectedRecipient}, got ${decoded.toAddress}`
+        `verifyConfidentialTransfer: recipient address mismatch — ` + `expected ${expectedRecipient}, got ${toAddress}`
       );
     }
 
     // 3. encryptedHandle must be a non-trivial hex value (not bare '0x')
-    if (!decoded.encryptedHandle || decoded.encryptedHandle === '0x') {
+    if (!encryptedHandle || encryptedHandle === '0x') {
       throw new Error('verifyConfidentialTransfer: encryptedHandle is missing or empty in transaction calldata');
     }
 
     // 4. inputProof must be a non-trivial hex value
-    if (!decoded.inputProof || decoded.inputProof === '0x') {
+    if (!inputProof || inputProof === '0x') {
       throw new Error('verifyConfidentialTransfer: inputProof is missing or empty in transaction calldata');
     }
 
