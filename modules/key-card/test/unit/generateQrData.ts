@@ -71,14 +71,12 @@ describe('generateQrData', function () {
     qrData.backup.data.should.equal(backupEncryptedPrv);
 
     assert.ok(qrData.bitgo);
-    qrData.bitgo.title.should.equal('C: BitGo Public Key');
-    qrData.bitgo.description.should.equal(
-      'This is the public part of the key that BitGo will use to ' + 'co-sign transactions\r\nwith you on your wallet.'
-    );
+    qrData.bitgo.title.should.equal('C: BitGo Key');
+    qrData.bitgo.description.should.equal('This is the public part of the key held by BitGo.');
     qrData.bitgo.data.should.equal(bitgoPub);
 
     assert.ok(qrData.passcode);
-    qrData.passcode.title.should.equal('D: Encrypted wallet Password');
+    qrData.passcode.title.should.equal('D: Encrypted Wallet Password');
     qrData.passcode.description.should.equal(
       'This is the wallet password, encrypted client-side with a key held by BitGo.'
     );
@@ -163,7 +161,7 @@ describe('generateQrData', function () {
       should.not.exist(qrData.bitgo);
 
       assert.ok(qrData.passcode);
-      qrData.passcode.title.should.equal('D: Encrypted wallet Password');
+      qrData.passcode.title.should.equal('D: Encrypted Wallet Password');
       const decryptedData = decrypt(passcodeEncryptionCode, qrData.passcode.data);
       decryptedData.should.equal(passphrase);
     });

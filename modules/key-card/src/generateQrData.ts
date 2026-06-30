@@ -113,9 +113,8 @@ function generateBitGoQrData(bitgoKeychain: Keychain): QrDataEntry {
   assert.ok(bitgoData);
 
   return {
-    title: 'C: BitGo Public Key',
-    description:
-      'This is the public part of the key that BitGo will use to ' + 'co-sign transactions\r\nwith you on your wallet.',
+    title: 'C: BitGo Key',
+    description: 'This is the public part of the key held by BitGo.',
     data: bitgoData,
   };
 }
@@ -132,7 +131,7 @@ function generateUserMasterPublicKeyQRData(publicKey: string): MasterPublicKeyQr
 function generatePasscodeQrData(passphrase: string, passcodeEncryptionCode: string): QrDataEntry {
   const encryptedWalletPasscode = encrypt(passcodeEncryptionCode, passphrase);
   return {
-    title: 'D: Encrypted wallet Password',
+    title: 'D: Encrypted Wallet Password',
     description: 'This is the wallet password, encrypted client-side with a key held by BitGo.',
     data: encryptedWalletPasscode,
   };
@@ -145,7 +144,7 @@ async function generatePasscodeQrDataAsync(
 ): Promise<QrDataEntry> {
   const encryptedWalletPasscode = await encryptAsync(passcodeEncryptionCode, passphrase, { encryptionVersion });
   return {
-    title: 'D: Encrypted wallet Password',
+    title: 'D: Encrypted Wallet Password',
     description: 'This is the wallet password, encrypted client-side with a key held by BitGo.',
     data: encryptedWalletPasscode,
   };
