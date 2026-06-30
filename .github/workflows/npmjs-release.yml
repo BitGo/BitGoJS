@@ -43,6 +43,35 @@ env:
   DOCKER_HUB_USERNAME: "bgdeploybot"
 
 jobs:
+  verify-back-merge:
+    name: Verify previous back-merge landed
+    # Each release bumps versions on rel/latest; a back-merge PR (rel/latest ->
+    # master) returns them. If that PR is missed, rel/latest stays ahead and the
+    # next release would publish on top of an out-of-sync rel/latest. Block the
+    # release until the previous back-merge has landed.
+    # Skipped in recovery mode, where rel/latest is intentionally ahead.
+    if: ${{ !inputs.recovery-mode }}
+    runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Ensure rel/latest is not ahead of master
+        run: |
+          git fetch --no-tags origin +refs/heads/rel/latest:refs/remotes/origin/rel/latest
+          if git merge-base --is-ancestor origin/rel/latest origin/master; then
+            echo "✅ rel/latest is not ahead of master — previous back-merge has landed."
+            exit 0
+          fi
+          echo "::error::rel/latest is ahead of master. The back-merge PR (rel/latest -> master) from the previous release has not landed. Merge it before releasing."
+          echo "Commits on rel/latest not yet in master:"
+          git log --oneline origin/master..origin/rel/latest
+          exit 1
+
   get-release-context:
     name: Get release context
     if: ${{ !inputs.recovery-mode }}
@@ -182,7 +211,8 @@ jobs:
     needs:
       - get-release-context
       - get-recovery-context
-    if: ${{ always() && needs.get-release-context.result != 'failure' && needs.get-recovery-context.result != 'failure' }}
+      - verify-back-merge
+    if: ${{ always() && needs.get-release-context.result != 'failure' && needs.get-recovery-context.result != 'failure' && needs.verify-back-merge.result != 'failure' }}
     runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
     timeout-minutes: 60
     environment: npmjs-release
