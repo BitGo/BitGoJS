@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [25.15.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.15.1...@bitgo/sdk-coin-eth@25.15.2) (2026-06-30)
+
+
+### Bug Fixes
+
+* **sdk-coin-eth:** fix the verify confidential transfer for zama ([96e38d7](https://github.com/BitGo/BitGoJS/commit/96e38d739c3759e86c5fb1308b999c8613ce68c1))
+
+
+
+
+
 ## [25.15.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.15.0...@bitgo/sdk-coin-eth@25.15.1) (2026-06-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

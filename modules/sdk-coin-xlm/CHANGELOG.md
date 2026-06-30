@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.11.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@3.11.5...@bitgo/sdk-coin-xlm@3.11.6) (2026-06-30)
+
+
+### Bug Fixes
+
+* **statics:** update XLM testnet BST and TST issuer addresses ([bebaddd](https://github.com/BitGo/BitGoJS/commit/bebadddb7314711b9e15a3e1cb294cd522bd1b3a))
+
+
+
+
+
 ## [3.11.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@3.11.4...@bitgo/sdk-coin-xlm@3.11.5) (2026-06-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xlm

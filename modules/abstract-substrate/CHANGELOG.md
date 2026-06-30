@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.16.7...@bitgo/abstract-substrate@1.17.0) (2026-06-30)
+
+
+### Bug Fixes
+
+* **abstract-substrate:** blake2_256 prehash signablePayload over 256 bytes ([c964f36](https://github.com/BitGo/BitGoJS/commit/c964f36d7cf9c368d47714848088cf7ac48e41cf)), closes [/linear.app/bitgo/issue/SI-911/fix-signablepayload-to-apply-substrate-blake2-256-prehash-when#agent-session-0bfb5d75](https://github.com//linear.app/bitgo/issue/SI-911/fix-signablepayload-to-apply-substrate-blake2-256-prehash-when/issues/agent-session-0bfb5d75)
+
+
+### Features
+
+* **abstract-substrate:** expose rawExtrinsicPayload separate from signablePayload ([50cae11](https://github.com/BitGo/BitGoJS/commit/50cae11b2e375f4a9cb3d5f6e971cbb6cded5f52)), closes [/linear.app/bitgo/issue/SI-926/polyx-expose-raw-extrinsicpayload-separately-from-signable-signing#agent-session-0ac3bf90](https://github.com//linear.app/bitgo/issue/SI-926/polyx-expose-raw-extrinsicpayload-separately-from-signable-signing/issues/agent-session-0ac3bf90)
+
+
+
+
+
 ## [1.16.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.16.6...@bitgo/abstract-substrate@1.16.7) (2026-06-25)
 
 **Note:** Version bump only for package @bitgo/abstract-substrate

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [37.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.10.0...@bitgo/sdk-core@37.10.1) (2026-06-30)
+
+
+### Bug Fixes
+
+* **statics:** update hoodeth mainnet explorer url ([ad9b2ee](https://github.com/BitGo/BitGoJS/commit/ad9b2ee71cb6d8115de9951739c56e325235faa4))
+
+
+
+
+
 # [37.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.9.0...@bitgo/sdk-core@37.10.0) (2026-06-25)
 
 

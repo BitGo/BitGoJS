@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xdc@1.9.19...@bitgo/sdk-coin-xdc@1.10.0) (2026-06-30)
+
+
+### Features
+
+* **sdk-coin-xdc:** add signXdcKycMessage utility ([e4729d1](https://github.com/BitGo/BitGoJS/commit/e4729d14f9060971246004de7a6ba992391b43f0))
+
+
+
+
+
 ## [1.9.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xdc@1.9.18...@bitgo/sdk-coin-xdc@1.9.19) (2026-06-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xdc
