@@ -533,6 +533,21 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
+   * Returns the full raw encoded `ExtrinsicPayload` bytes (including the method) for this
+   * transaction, without applying the Substrate 256-byte blake2_256 signing rule.
+   *
+   * These are the bytes the HSM signs on the `polyx/signtx` path. They differ from
+   * {@link signablePayload} once the payload exceeds 256 bytes, where {@link signablePayload}
+   * is the blake2_256 hash instead of the raw bytes.
+   */
+  get rawExtrinsicPayload(): Uint8Array {
+    const extrinsicPayload = this._registry.createType('ExtrinsicPayload', this._substrateTransaction, {
+      version: EXTRINSIC_VERSION,
+    });
+    return extrinsicPayload.toU8a({ method: true });
+  }
+
+  /**
    * @inheritdoc
    *
    * Returns the bytes that are actually signed for this transaction. Substrate signs the raw
@@ -543,10 +558,7 @@ export class Transaction extends BaseTransaction {
    * messages, causing TSS signature combination to fail.
    */
   get signablePayload(): Buffer {
-    const extrinsicPayload = this._registry.createType('ExtrinsicPayload', this._substrateTransaction, {
-      version: EXTRINSIC_VERSION,
-    });
-    return utils.getSubstrateSigningBytes(extrinsicPayload.toU8a({ method: true }));
+    return utils.getSubstrateSigningBytes(this.rawExtrinsicPayload);
   }
 
   /**
