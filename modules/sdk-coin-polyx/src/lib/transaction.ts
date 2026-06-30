@@ -71,6 +71,7 @@ export class Transaction extends SubstrateTransaction {
       eraPeriod: decodedTx.eraPeriod,
       chainName: this._chainName,
       tip: decodedTx.tip ? Number(decodedTx.tip) : 0,
+      rawSignableHex: Buffer.from(this.rawExtrinsicPayload).toString('hex'),
     };
 
     const txMethod = decodedTx.method.args;
@@ -99,7 +100,9 @@ export class Transaction extends SubstrateTransaction {
       result.portfolioDID = rejectInstructionArgs.portfolio.did as string;
       result.amount = '0'; // Reject instruction does not transfer any value
     } else {
-      return super.toJson() as TxData;
+      const baseResult = super.toJson() as TxData;
+      baseResult.rawSignableHex = result.rawSignableHex;
+      return baseResult;
     }
 
     return result;

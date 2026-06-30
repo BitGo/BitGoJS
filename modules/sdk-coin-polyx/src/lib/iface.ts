@@ -14,6 +14,13 @@ export interface TxData extends Interface.TxData {
   toDID?: string;
   instructionId?: string;
   portfolioDID?: string;
+  /**
+   * Hex of the full raw encoded `ExtrinsicPayload` (see `Transaction.rawExtrinsicPayload`).
+   * Surfaced alongside the MPC/combine `signableHex` so consumers that need the raw payload
+   * (e.g. the HSM `polyx/signtx` path) can use it for extrinsics larger than 256 bytes, where
+   * the signing bytes are the blake2_256 hash rather than the raw payload.
+   */
+  rawSignableHex?: string;
 }
 
 /**

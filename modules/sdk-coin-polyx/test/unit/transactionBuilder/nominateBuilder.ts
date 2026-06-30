@@ -1,7 +1,7 @@
 import { decode } from '@substrate/txwrapper-polkadot';
 import { coins } from '@bitgo/statics';
 import should from 'should';
-import { TransactionBuilderFactory, NominateBuilder, BatchBuilder } from '../../../src/lib';
+import { TransactionBuilderFactory, NominateBuilder, BatchBuilder, PolyxTransaction } from '../../../src/lib';
 import { TransactionType } from '@bitgo/sdk-core';
 import utils from '../../../src/lib/utils';
 import { accounts, nominateTx, nominateValidators, stakingTx } from '../../resources';
@@ -191,7 +191,7 @@ describe('Polyx Nominate Builder', function () {
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 15 })
         .fee({ amount: 0, type: 'tip' })
         .material(material);
-      return nominateBuilder.build();
+      return (await nominateBuilder.build()) as PolyxTransaction;
     };
 
     it('should return raw payload bytes when the extrinsic is at most 256 bytes', async () => {
@@ -200,14 +200,31 @@ describe('Polyx Nominate Builder', function () {
       // small nominate extrinsic stays under the 256-byte threshold, so it is signed as-is
       signablePayload.length.should.be.belowOrEqual(256);
       signablePayload.length.should.not.equal(32);
+      // for a sub-256-byte payload, signablePayload is exactly the raw extrinsic payload
+      const rawExtrinsicPayload = Buffer.from(tx.rawExtrinsicPayload);
+      rawExtrinsicPayload.should.deepEqual(signablePayload);
+      // toJson surfaces the full raw payload as rawSignableHex even when it equals signablePayload
+      should.equal(tx.toJson().rawSignableHex, rawExtrinsicPayload.toString('hex'));
     });
 
     it('should return the 32-byte blake2_256 hash when the extrinsic exceeds 256 bytes', async () => {
-      // 6+ validators (~33 bytes each) pushes the nominate extrinsic over the 256-byte threshold
-      const manyValidators = Array(8).fill(validatorAddress);
+      // Each nominate target adds a 33-byte MultiAddress (1-byte variant + 32-byte account id) on
+      // top of 79 bytes of fixed signing-payload overhead (call index, era, nonce, tip,
+      // spec/transaction versions, genesis + block hash). So 5 targets stay raw at 244 bytes and
+      // 6 already cross to 277 bytes (hashed). 8 would also exceed the threshold; this uses 9 to
+      // mirror the multi-nomination scenario from SI-926 with margin (376 bytes).
+      const manyValidators = Array(9).fill(validatorAddress);
       const tx = await buildNominateTx(manyValidators);
       const signablePayload = tx.signablePayload;
       should.equal(signablePayload.length, 32);
+      // the raw extrinsic payload stays full-length and diverges from the hashed signablePayload
+      const rawExtrinsicPayload = Buffer.from(tx.rawExtrinsicPayload);
+      rawExtrinsicPayload.length.should.be.greaterThan(256);
+      rawExtrinsicPayload.should.not.deepEqual(signablePayload);
+      // signablePayload is the blake2_256 hash of the raw extrinsic payload
+      utils.getSubstrateSigningBytes(tx.rawExtrinsicPayload).should.deepEqual(signablePayload);
+      // toJson surfaces the full raw payload as rawSignableHex for the HSM signing path
+      should.equal(tx.toJson().rawSignableHex, rawExtrinsicPayload.toString('hex'));
     });
 
     // The 256-byte boundary is impractical to hit with a real extrinsic, so exercise the
