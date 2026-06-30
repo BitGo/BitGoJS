@@ -1,8 +1,26 @@
 import assert from 'assert';
 import { ed25519 } from '@noble/curves/ed25519';
+import { Ed25519Bip32HdTree } from '../../../../src/curves/ed25519Bip32HdTree';
+import { bigIntFromBufferBE, bigIntFromBufferLE, bigIntToBufferBE, bigIntToBufferLE } from '../../../../src/util';
 import { EddsaMPSDsg, MPSUtil } from '../../../../src/tss/eddsa-mps';
 import { deriveUnhardenedMps } from '../../../../src/tss/eddsa-mps/derive';
 import { generateEdDsaDKGKeyShares } from './util';
+
+/**
+ * Derives a child public key from a common keychain using the Cardano BIP32-Ed25519
+ * formula (same as Eddsa.deriveUnhardened). Returns the 128-char hex common keychain
+ * (64-char pk + 64-char chaincode) that wasm-mps 1.10.0 now uses for key derivation.
+ */
+function deriveUnhardenedBip32(commonKeychainHex: string, path: string): string {
+  const buf = Buffer.from(commonKeychainHex, 'hex');
+  const keychain = {
+    pk: bigIntFromBufferLE(buf.subarray(0, 32)),
+    chaincode: bigIntFromBufferBE(buf.subarray(32, 64)),
+  };
+  const hdTree = new Ed25519Bip32HdTree();
+  const derived = hdTree.publicDerive(keychain, path);
+  return bigIntToBufferLE(derived.pk, 32).toString('hex') + bigIntToBufferBE(derived.chaincode, 32).toString('hex');
+}
 
 const MESSAGE = Buffer.from('The Times 03/Jan/2009 Chancellor on brink of second bailout for banks');
 
@@ -63,7 +81,7 @@ describe('deriveUnhardenedMps', function () {
     });
   });
 
-  describe('DSG signature cross-check against the public key derived by deriveUnhardenedMps', function () {
+  describe('DSG signature cross-check against the public key derived by BIP32 (deriveUnhardenedBip32)', function () {
     let sigAtRoot: Buffer;
     let sigAtM0: Buffer;
     let sigAtM01: Buffer;
@@ -86,19 +104,19 @@ describe('deriveUnhardenedMps', function () {
       assert(ed25519.verify(sigAtRoot, MESSAGE, rootPubKey), 'DSG at "m" should verify against the raw DKG public key');
     });
 
-    it('signature from DSG at "m/0" verifies against deriveUnhardenedMps(commonKeychain, "m/0")', function () {
-      const derivedPk = Buffer.from(deriveUnhardenedMps(commonKeychain, 'm/0').slice(0, 64), 'hex');
+    it('signature from DSG at "m/0" verifies against deriveUnhardenedBip32(commonKeychain, "m/0")', function () {
+      const derivedPk = Buffer.from(deriveUnhardenedBip32(commonKeychain, 'm/0').slice(0, 64), 'hex');
       assert(
         ed25519.verify(sigAtM0, MESSAGE, derivedPk),
-        'DSG at "m/0" should verify against deriveUnhardenedMps result at "m/0"'
+        'DSG at "m/0" should verify against BIP32-derived public key at "m/0"'
       );
     });
 
-    it('signature from DSG at "m/0/1" verifies against deriveUnhardenedMps(commonKeychain, "m/0/1")', function () {
-      const derivedPk = Buffer.from(deriveUnhardenedMps(commonKeychain, 'm/0/1').slice(0, 64), 'hex');
+    it('signature from DSG at "m/0/1" verifies against deriveUnhardenedBip32(commonKeychain, "m/0/1")', function () {
+      const derivedPk = Buffer.from(deriveUnhardenedBip32(commonKeychain, 'm/0/1').slice(0, 64), 'hex');
       assert(
         ed25519.verify(sigAtM01, MESSAGE, derivedPk),
-        'DSG at "m/0/1" should verify against deriveUnhardenedMps result at "m/0/1"'
+        'DSG at "m/0/1" should verify against BIP32-derived public key at "m/0/1"'
       );
     });
   });
