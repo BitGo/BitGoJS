@@ -126,15 +126,13 @@ function buildKeycardQrData(options: BuildKeycardQrDataOptions, encryptedWalletP
       data: backupKeychain.encryptedPrv,
     },
     bitgo: {
-      title: 'C: BitGo Public Key',
-      desc:
-        'This is the public part of the key that BitGo will use to ' +
-        'co-sign transactions\r\nwith you on your wallet.',
+      title: 'C: BitGo Key',
+      desc: 'This is the public part of the key held by BitGo.',
       data: bitgoKeychain.pub,
     },
     passcode: {
       title: 'D: Encrypted Wallet Password',
-      desc: 'This is the wallet  password, encrypted client-side ' + 'with a key held by\r\nBitGo.',
+      desc: 'This is the wallet password, encrypted client-side ' + 'with a key held by\r\nBitGo.',
       data: encryptedWalletPasscode,
     },
   };
