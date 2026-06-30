@@ -17,6 +17,11 @@ import { pathToIndices } from '../../curves/util';
  *
  * Returns the same on-the-wire format as `Eddsa.deriveUnhardened`:
  *   128-char hex = 64-char derived pk + 64-char derived chaincode
+ *
+ * @deprecated Use `Eddsa.deriveUnhardened` instead. wasm-mps >=1.9.0 uses
+ * standard BIP32-Ed25519 (the Cardano formula) for DSG path derivation, so
+ * `deriveUnhardenedMps` no longer matches what DSG signs with. This function
+ * will be removed in a future release as part of WCI-644.
  */
 export function deriveUnhardenedMps(commonKeychainHex: string, path: string): string {
   if (commonKeychainHex.length !== 128) {

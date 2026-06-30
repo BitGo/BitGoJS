@@ -2,6 +2,8 @@ import assert from 'assert';
 import { ed25519 } from '@noble/curves/ed25519';
 import { EddsaMPSDsg, MPSUtil } from '../../../../src/tss/eddsa-mps';
 import { deriveUnhardenedMps } from '../../../../src/tss/eddsa-mps/derive';
+import { Ed25519Bip32HdTree } from '../../../../src/curves/ed25519Bip32HdTree';
+import { bigIntFromBufferBE, bigIntFromBufferLE, bigIntToBufferLE } from '../../../../src/util';
 import { generateEdDsaDKGKeyShares } from './util';
 
 const MESSAGE = Buffer.from('The Times 03/Jan/2009 Chancellor on brink of second bailout for banks');
@@ -14,6 +16,7 @@ describe('deriveUnhardenedMps', function () {
   let rootPubKey: Buffer;
   let userKeyShare: Buffer;
   let bitgoKeyShare: Buffer;
+  let hdTree: Ed25519Bip32HdTree;
 
   before(async function () {
     const [userDkg, , bitgoDkg] = await generateEdDsaDKGKeyShares();
@@ -21,7 +24,19 @@ describe('deriveUnhardenedMps', function () {
     rootPubKey = userDkg.getSharePublicKey();
     userKeyShare = userDkg.getKeyShare();
     bitgoKeyShare = bitgoDkg.getKeyShare();
+    hdTree = await Ed25519Bip32HdTree.initialize();
   });
+
+  // Derives a public key from commonKeychain using the standard Ed25519 BIP32
+  // formula (same as Eddsa.deriveUnhardened). Returns the 32-byte public key.
+  function derivePublicKeyBip32(keychain: string, path: string): Buffer {
+    const buf = Buffer.from(keychain, 'hex');
+    const derived = hdTree.publicDerive(
+      { pk: bigIntFromBufferLE(buf.slice(0, 32)), chaincode: bigIntFromBufferBE(buf.slice(32, 64)) },
+      path
+    );
+    return bigIntToBufferLE(derived.pk, 32);
+  }
 
   describe('input validation', function () {
     it('throws when commonKeychainHex is shorter than 128 chars', function () {
@@ -63,10 +78,10 @@ describe('deriveUnhardenedMps', function () {
     });
   });
 
-  describe('DSG signature cross-check against the public key derived by deriveUnhardenedMps', function () {
+  describe('DSG signature cross-check against Ed25519Bip32HdTree (deriveUnhardened)', function () {
     let sigAtRoot: Buffer;
     let sigAtM0: Buffer;
-    let sigAtM01: Buffer;
+    let sigAtM1: Buffer;
 
     before(async function () {
       const dsgA1 = new EddsaMPSDsg.DSG(0);
@@ -78,27 +93,27 @@ describe('deriveUnhardenedMps', function () {
       sigAtM0 = dsgA2.getSignature();
 
       const dsgA3 = new EddsaMPSDsg.DSG(0);
-      await MPSUtil.executeTillRound(3, dsgA3, new EddsaMPSDsg.DSG(2), userKeyShare, bitgoKeyShare, MESSAGE, 'm/0/1');
-      sigAtM01 = dsgA3.getSignature();
+      await MPSUtil.executeTillRound(3, dsgA3, new EddsaMPSDsg.DSG(2), userKeyShare, bitgoKeyShare, MESSAGE, 'm/1');
+      sigAtM1 = dsgA3.getSignature();
     });
 
     it('signature from DSG at "m" verifies against the root public key', function () {
       assert(ed25519.verify(sigAtRoot, MESSAGE, rootPubKey), 'DSG at "m" should verify against the raw DKG public key');
     });
 
-    it('signature from DSG at "m/0" verifies against deriveUnhardenedMps(commonKeychain, "m/0")', function () {
-      const derivedPk = Buffer.from(deriveUnhardenedMps(commonKeychain, 'm/0').slice(0, 64), 'hex');
+    it('signature from DSG at "m/0" verifies against Eddsa.deriveUnhardened key at "m/0"', function () {
+      const derivedPk = derivePublicKeyBip32(commonKeychain, 'm/0');
       assert(
         ed25519.verify(sigAtM0, MESSAGE, derivedPk),
-        'DSG at "m/0" should verify against deriveUnhardenedMps result at "m/0"'
+        'DSG at "m/0" should verify against Eddsa.deriveUnhardened result at "m/0"'
       );
     });
 
-    it('signature from DSG at "m/0/1" verifies against deriveUnhardenedMps(commonKeychain, "m/0/1")', function () {
-      const derivedPk = Buffer.from(deriveUnhardenedMps(commonKeychain, 'm/0/1').slice(0, 64), 'hex');
+    it('signature from DSG at "m/1" verifies against Eddsa.deriveUnhardened key at "m/1"', function () {
+      const derivedPk = derivePublicKeyBip32(commonKeychain, 'm/1');
       assert(
-        ed25519.verify(sigAtM01, MESSAGE, derivedPk),
-        'DSG at "m/0/1" should verify against deriveUnhardenedMps result at "m/0/1"'
+        ed25519.verify(sigAtM1, MESSAGE, derivedPk),
+        'DSG at "m/1" should verify against Eddsa.deriveUnhardened result at "m/1"'
       );
     });
   });
