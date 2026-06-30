@@ -1915,8 +1915,8 @@ class HoodethTestnet extends Testnet implements EthereumNetwork {
 class Hoodeth extends Mainnet implements EthereumNetwork {
   name = 'Robinhood Chain';
   family = CoinFamily.HOODETH;
-  explorerUrl = 'https://8crv4vmq6tiu1yqr.blockscout.com/tx/';
-  accountExplorerUrl = 'https://8crv4vmq6tiu1yqr.blockscout.com/address/';
+  explorerUrl = 'https://robinhoodchain.blockscout.com/tx/';
+  accountExplorerUrl = 'https://robinhoodchain.blockscout.com/address/';
   chainId = 4663;
   nativeCoinOperationHashPrefix = '4663';
 }
