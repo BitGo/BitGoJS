@@ -33,7 +33,6 @@ import {
   MPSUtil,
   MPSComms,
   MPSTypes,
-  deriveUnhardenedMps,
 } from '@bitgo/sdk-lib-mpc';
 import {
   MPCv2PartyFromStringOrNumber,
@@ -1224,7 +1223,7 @@ describe('External signer', () => {
     // legacy EdDSA v1 test (MPC.verify) and ECDSA MPCv2 test (DklsUtils.verifyAndConvert...).
     // Uses Node.js built-in crypto — no extra npm dependency needed.
     const signature = bitgoDsg.getSignature();
-    const derivedKeychainHex = deriveUnhardenedMps(userDkg.getCommonKeychain(), derivationPath);
+    const derivedKeychainHex = MPC.deriveUnhardened(userDkg.getCommonKeychain(), derivationPath);
     const derivedPubKeyBytes = Buffer.from(derivedKeychainHex.slice(0, 64), 'hex');
     // Ed25519 SubjectPublicKeyInfo DER header: SEQUENCE { SEQUENCE { OID 1.3.101.112 } BIT STRING }
     const spkiDer = Buffer.concat([Buffer.from('302a300506032b6570032100', 'hex'), derivedPubKeyBytes]);

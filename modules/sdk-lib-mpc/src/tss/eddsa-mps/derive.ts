@@ -3,20 +3,8 @@ import { ed25519 } from '@noble/curves/ed25519';
 import { pathToIndices } from '../../curves/util';
 
 /**
- * Derives a child public key from a common keychain using the Silence Labs
- * BIP32-Ed25519 non-hardened derivation formula:
- *
- *   HMAC = HMAC-SHA512(key=chaincode, data=pk_bytes || index_BE_4)
- *   child_pk = parent_pk + 8 * LE(trunc28(HMAC_left)) * G
- *   child_chaincode = HMAC_right (right 32 bytes)
- *
- * This differs from the Cardano BIP32-Ed25519 formula used by
- * `Eddsa.deriveUnhardened` in three ways: no 0x02 prefix byte, big-endian
- * index, and a single HMAC instead of two. The formulas produce completely
- * different child keys at every derived level.
- *
- * Returns the same on-the-wire format as `Eddsa.deriveUnhardened`:
- *   128-char hex = 64-char derived pk + 64-char derived chaincode
+ * @deprecated Use `Eddsa.deriveUnhardened` instead. wasm-mps >=1.9.0 uses
+ * standard BIP32-Ed25519 (the Cardano formula) for DSG path derivation.
  */
 export function deriveUnhardenedMps(commonKeychainHex: string, path: string): string {
   if (commonKeychainHex.length !== 128) {

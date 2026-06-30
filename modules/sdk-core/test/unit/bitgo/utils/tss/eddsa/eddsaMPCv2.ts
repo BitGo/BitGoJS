@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as sinon from 'sinon';
 import * as pgp from 'openpgp';
 import { randomBytes } from 'crypto';
-import { deriveUnhardenedMps, EddsaMPSDsg, MPSComms, MPSTypes, MPSUtil } from '@bitgo/sdk-lib-mpc';
+import { EddsaMPSDsg, MPSComms, MPSTypes, MPSUtil } from '@bitgo/sdk-lib-mpc';
 import { ed25519 } from '@noble/curves/ed25519';
 import * as sjcl from '@bitgo/sjcl';
 import {
@@ -34,6 +34,7 @@ import {
   verifyPeerMessageRoundOne,
   verifyPeerMessageRoundTwo,
 } from '../../../../../../src/bitgo/tss/eddsa/eddsaMPCv2';
+import { getInitializedMpcInstance } from '../../../../../../src/bitgo/tss/eddsa/eddsa';
 import { getBitgoSignatureShare } from '../../../../../../src/bitgo/tss/common';
 import { decodeWithCodec } from '../../../../../../src/bitgo/utils/codecs';
 import { generateGPGKeyPair } from '../../../../../../src/bitgo/utils/opengpgUtils';
@@ -1792,13 +1793,14 @@ describe('signRecoveryEddsaMPCv2', () => {
 
     assert.strictEqual(signature.length, 64);
 
-    const derivedKeychain = deriveUnhardenedMps(commonKeyChain, derivationPath);
+    const mpc = await getInitializedMpcInstance();
+    const derivedKeychain = mpc.deriveUnhardened(commonKeyChain, derivationPath);
     const publicKeyBytes = Buffer.from(derivedKeychain.slice(0, 64), 'hex');
     const ok = ed25519.verify(new Uint8Array(signature), new Uint8Array(message), new Uint8Array(publicKeyBytes));
     assert.strictEqual(ok, true);
   });
 
-  it('should throw when the signed message is different from the verified message', async () => {
+  it('should return false when verifying the signature against a different message', async () => {
     const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
     const message = Buffer.from('deadbeef', 'hex');
     const commonKeyChain = userDkg.getCommonKeychain();
@@ -1812,7 +1814,8 @@ describe('signRecoveryEddsaMPCv2', () => {
     );
 
     const differentMessage = Buffer.from('cafebabe', 'hex');
-    const derivedKeychain = deriveUnhardenedMps(commonKeyChain, derivationPath);
+    const mpc = await getInitializedMpcInstance();
+    const derivedKeychain = mpc.deriveUnhardened(commonKeyChain, derivationPath);
     const publicKeyBytes = Buffer.from(derivedKeychain.slice(0, 64), 'hex');
     const ok = ed25519.verify(
       new Uint8Array(signature),
@@ -1828,13 +1831,14 @@ describe('signRecoveryEddsaMPCv2', () => {
     const message = Buffer.from('deadbeef', 'hex');
 
     await assert.rejects(
-      EDDSAUtils.signRecoveryEddsaMPCv2(
-        message,
-        derivationPath,
-        userDkg.getKeyShare(),
-        backupDkg.getKeyShare(),
-        wrongDkg.getCommonKeychain() // key chain from a different wallet
-      ),
+      () =>
+        EDDSAUtils.signRecoveryEddsaMPCv2(
+          message,
+          derivationPath,
+          userDkg.getKeyShare(),
+          backupDkg.getKeyShare(),
+          wrongDkg.getCommonKeychain() // key chain from a different wallet
+        ),
       /EdDSA MPCv2 recovery signature verification failed/
     );
   });
