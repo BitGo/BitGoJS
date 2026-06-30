@@ -206,7 +206,7 @@ jobs:
         if: ${{ inputs.dry-run == false && !inputs.recovery-mode }}
         run: |
           echo "${{ secrets.BITGOBOT_GPG_PRIVATE_KEY }}" | gpg --batch --import
-          git config --global user.signingkey 67A9A0B77F0BD445E45CC8B719828A304678A92F
+          git config --global user.signingkey 477C1077386517D7ED64277C56FC3A6E8059B391
           git config --global commit.gpgsign true
           git config --global user.email "bitgobot@bitgo.com"
           git config --global user.name "bitgobot"
