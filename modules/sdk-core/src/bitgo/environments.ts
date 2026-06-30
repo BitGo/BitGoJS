@@ -359,7 +359,7 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://unichain.blockscout.com/api',
     },
     hoodeth: {
-      baseUrl: 'https://8crv4vmq6tiu1yqr.blockscout.com/api',
+      baseUrl: 'https://robinhoodchain.blockscout.com/api',
     },
     hppeth: {
       baseUrl: 'https://explorer.hpp.io/api',
