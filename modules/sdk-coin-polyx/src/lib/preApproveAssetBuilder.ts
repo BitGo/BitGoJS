@@ -74,7 +74,6 @@ export class PreApproveAssetBuilder extends PolyxBaseBuilder<TxMethod, Transacti
    * @returns {UnsignedTransaction} an unsigned transaction for asset pre-approval
    */
   private preApproveAsset(args: PreApproveAssetArgs, info: Interface.CreateBaseTxInfo): UnsignedTransaction {
-    console.log(`PreApproveAssetBuilder: preApproveAsset called with args: ${JSON.stringify(args)}`);
     return defineMethod(
       {
         method: {

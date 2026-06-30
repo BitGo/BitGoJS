@@ -1,7 +1,7 @@
 import { Utils as SubstrateUtils, Interface } from '@bitgo/abstract-substrate';
 import { NetworkType } from '@bitgo/statics';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
-import { mainnetMaterial, testnetMaterial } from '../resources';
+import { mainnetMaterial, testnetMaterial, mainnetV8Material, testnetV8Material } from '../resources';
 import { BatchCallObject } from './iface';
 import { MEMO_HEX_REGEX, MEMO_MAX_BYTES, POLYX_DID_REGEX } from './constants';
 
@@ -75,6 +75,12 @@ export class Utils extends SubstrateUtils {
 
   getMaterial(networkType: NetworkType): Interface.Material {
     return (networkType === NetworkType.MAINNET ? mainnetMaterial : testnetMaterial) as unknown as Interface.Material;
+  }
+
+  getV8Material(networkType: NetworkType): Interface.Material {
+    return (networkType === NetworkType.MAINNET
+      ? mainnetV8Material
+      : testnetV8Material) as unknown as Interface.Material;
   }
 
   decodeMethodName(call: BatchCallObject, registry: TypeRegistry): string {

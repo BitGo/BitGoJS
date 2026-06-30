@@ -19,6 +19,12 @@ import { TokenTransferBuilder } from './tokenTransferBuilder';
 import { HexTokenTransferBuilder } from './hexTokenTransferBuilder';
 import { RejectInstructionBuilder } from './rejectInstructionBuilder';
 import { NominateBuilder } from './nominateBuilder';
+import { V8TransferBuilder } from './v8TransferBuilder';
+import { V8HexTransferBuilder } from './v8HexTransferBuilder';
+import { V8RegisterDidWithCDDBuilder } from './v8RegisterDidWithCDDBuilder';
+import { V8TokenTransferBuilder } from './v8TokenTransferBuilder';
+import { V8HexTokenTransferBuilder } from './v8HexTokenTransferBuilder';
+import { V8PreApproveAssetBuilder } from './v8PreApproveAssetBuilder';
 
 export type SupportedTransaction = BaseTransaction | PolyxTransaction;
 
@@ -80,6 +86,30 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getNominateBuilder(): NominateBuilder {
     return new NominateBuilder(this._coinConfig).material(this._material);
+  }
+
+  getV8TransferBuilder(): V8TransferBuilder {
+    return new V8TransferBuilder(this._coinConfig);
+  }
+
+  getV8HexTransferBuilder(): V8HexTransferBuilder {
+    return new V8HexTransferBuilder(this._coinConfig);
+  }
+
+  getV8RegisterDidWithCDDBuilder(): V8RegisterDidWithCDDBuilder {
+    return new V8RegisterDidWithCDDBuilder(this._coinConfig);
+  }
+
+  getV8TokenTransferBuilder(): V8TokenTransferBuilder {
+    return new V8TokenTransferBuilder(this._coinConfig);
+  }
+
+  getV8HexTokenTransferBuilder(): V8HexTokenTransferBuilder {
+    return new V8HexTokenTransferBuilder(this._coinConfig);
+  }
+
+  getV8PreApproveAssetBuilder(): V8PreApproveAssetBuilder {
+    return new V8PreApproveAssetBuilder(this._coinConfig);
   }
 
   getWalletInitializationBuilder(): void {
