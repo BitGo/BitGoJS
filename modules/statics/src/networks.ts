@@ -722,6 +722,8 @@ class Ethereum extends Mainnet implements EthereumNetwork {
   walletV2ImplementationAddress = '0xe5DcdC13B628c2df813DB1080367E929c1507Ca0';
   walletV4FactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
   walletV4ImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  // https://github.com/zama-ai/sdk/blob/prerelease/packages/sdk/src/chains/configs.ts#L17
+  zamaAclContractAddress = '0xca2e8f1f656cd25c01f05d0b243ab1ecd4a8ffb6';
 }
 
 class Ethereum2 extends Mainnet implements AccountNetwork {
