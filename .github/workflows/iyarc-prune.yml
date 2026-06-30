@@ -56,6 +56,7 @@ jobs:
           AWS_SESSION_TOKEN="$(echo "$CREDS" | jq -r '.SessionToken')"
 
           echo "::add-mask::$AWS_SECRET_ACCESS_KEY"
+          echo "::add-mask::$AWS_SESSION_TOKEN"
           { echo "aws-access-key-id=$AWS_ACCESS_KEY_ID"; echo "aws-secret-access-key=$AWS_SECRET_ACCESS_KEY"; echo "aws-session-token=$AWS_SESSION_TOKEN"; } >> "$GITHUB_OUTPUT"
 
       - name: Load iyarc-prune agent instructions
