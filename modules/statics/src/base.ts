@@ -591,6 +591,11 @@ export enum CoinFeature {
    * This token is a receipt token, representing a claim on an underlying asset
    */
   RECEIPT_TOKEN = 'receipt-token',
+  /**
+   * This receipt token is priced using the underlying asset as a proxy rather
+   * than a direct price feed. The displayed balance value is approximate.
+   */
+  RECEIPT_TOKEN_APPROXIMATE_PRICE = 'receipt-token-approximate-price',
 
   /**
    * This coin supports bring-your-own-validator (BYOV) staking
