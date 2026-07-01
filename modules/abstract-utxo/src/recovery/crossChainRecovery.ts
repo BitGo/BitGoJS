@@ -1,5 +1,5 @@
 import { BIP32, CoinName, fixedScriptWallet, address as wasmAddress } from '@bitgo/wasm-utxo';
-import { decryptAsync } from '@bitgo/sdk-api';
+import { decrypt } from '@bitgo/sdk-api';
 import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
 
 import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin';
@@ -313,7 +313,7 @@ async function getPrv(xprv?: string, passphrase?: string, wallet?: IWallet | Wal
     encryptedPrv = (await (wallet as WalletV1).getEncryptedUserKeychain()).encryptedXprv;
   }
 
-  return getPrv(await decryptAsync(passphrase, encryptedPrv));
+  return getPrv(await decrypt(passphrase, encryptedPrv));
 }
 
 /**

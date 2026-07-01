@@ -198,35 +198,9 @@ function buildTravelRuleSendParams(
  *   keychain: keychain object (with xprv)
  * Returns:
  *   the tx object, augmented with decrypted travelInfo fields
- * TODO: Deprecate in favor of decryptReceivedTravelInfoAsync once v2 encryption is default.
+ * Auto-detects v1 (SJCL) and v2 (Argon2id) envelopes.
  */
-TravelRule.prototype.decryptReceivedTravelInfo = function (params: DecryptReceivedTravelRuleOptions = {}) {
-  const { tx, hdNode } = validateTravelRuleDecryptParams(params);
-  if (!hdNode) {
-    return tx;
-  }
-
-  tx!.receivedTravelInfo!.forEach((info) => {
-    const key = hdNode.derivePath(sanitizeLegacyPath(info.toPubKeyPath));
-    const secret = getSharedSecret(key, Buffer.from(info.fromPubKey, 'hex')).toString('hex');
-    try {
-      const decrypted = this.bitgo.decrypt({
-        input: info.encryptedTravelInfo,
-        password: secret,
-      });
-      info.travelInfo = JSON.parse(decrypted);
-    } catch (err) {
-      console.error('failed to decrypt or parse travel info for ', info.transactionId + ':' + info.outputIndex);
-    }
-  });
-
-  return tx;
-};
-
-/**
- * Async version of decryptReceivedTravelInfo with v2 encrypt/decrypt support.
- */
-TravelRule.prototype.decryptReceivedTravelInfoAsync = async function (params: DecryptReceivedTravelRuleOptions = {}) {
+TravelRule.prototype.decryptReceivedTravelInfo = async function (params: DecryptReceivedTravelRuleOptions = {}) {
   const { tx, hdNode } = validateTravelRuleDecryptParams(params);
   if (!hdNode) {
     return tx;
@@ -236,7 +210,7 @@ TravelRule.prototype.decryptReceivedTravelInfoAsync = async function (params: De
     const key = hdNode.derivePath(sanitizeLegacyPath(info.toPubKeyPath));
     const secret = getSharedSecret(key, Buffer.from(info.fromPubKey, 'hex')).toString('hex');
     try {
-      const decrypted = await this.bitgo.decryptAsync({
+      const decrypted = await this.bitgo.decrypt({
         input: info.encryptedTravelInfo,
         password: secret,
       });
@@ -249,25 +223,9 @@ TravelRule.prototype.decryptReceivedTravelInfoAsync = async function (params: De
   return tx;
 };
 
-/**
- * TODO: Deprecate in favor of prepareParamsAsync once v2 encryption is default.
- */
-TravelRule.prototype.prepareParams = function (params) {
+TravelRule.prototype.prepareParams = async function (params) {
   const prepared = prepareTravelRuleParamsCommon(this, params);
-  const encryptedTravelInfo = this.bitgo.encrypt({
-    input: prepared.travelInfoJSON,
-    password: prepared.sharedSecret,
-  });
-
-  return buildTravelRuleSendParams(prepared, encryptedTravelInfo);
-};
-
-/**
- * Async version of prepareParams with v2 encrypt/decrypt support.
- */
-TravelRule.prototype.prepareParamsAsync = async function (params) {
-  const prepared = prepareTravelRuleParamsCommon(this, params);
-  const encryptedTravelInfo = await this.bitgo.encryptAsync({
+  const encryptedTravelInfo = await this.bitgo.encrypt({
     input: prepared.travelInfoJSON,
     password: prepared.sharedSecret,
     encryptionVersion: params.encryptionVersion,
@@ -355,7 +313,7 @@ TravelRule.prototype.sendMany = function (params, callback) {
         if (info.amount && info.amount !== recipient.amount) {
           throw new Error('amount did not match for output index ' + outputIndex);
         }
-        const sendParams = await self.prepareParamsAsync({
+        const sendParams = await self.prepareParams({
           txid: params.txid,
           recipient: recipient,
           travelInfo: info,

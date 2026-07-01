@@ -242,122 +242,82 @@ describe('Constructor', function () {
       sinon.restore();
     });
 
-    it('should throw if no params are provided', function () {
+    it('should throw if no params are provided', async function () {
       // @ts-expect-error - intentionally calling with no params for test
-      (() => bitgo.decryptKeys()).should.throw('Missing parameter: walletIdEncryptedKeyPairs');
+      await bitgo.decryptKeys().should.be.rejectedWith('Missing parameter: walletIdEncryptedKeyPairs');
     });
 
-    it('should throw if walletIdEncryptedKeyPairs is missing', function () {
+    it('should throw if walletIdEncryptedKeyPairs is missing', async function () {
+      await bitgo
+        // @ts-expect-error - intentionally missing required param
+        .decryptKeys({ password: 'password123' })
+        .should.be.rejectedWith('Missing parameter: walletIdEncryptedKeyPairs');
+    });
+
+    it('should throw if password is missing', async function () {
       // @ts-expect-error - intentionally missing required param
-      (() => bitgo.decryptKeys({ password: 'password123' })).should.throw(
-        'Missing parameter: walletIdEncryptedKeyPairs'
-      );
+      await bitgo.decryptKeys({ walletIdEncryptedKeyPairs: [] }).should.be.rejectedWith('Missing parameter: password');
     });
 
-    it('should throw if password is missing', function () {
-      // @ts-expect-error - intentionally missing required param
-      (() => bitgo.decryptKeys({ walletIdEncryptedKeyPairs: [] })).should.throw('Missing parameter: password');
+    it('should throw if walletIdEncryptedKeyPairs is not an array', async function () {
+      await bitgo
+        // @ts-expect-error - intentionally providing wrong type
+        .decryptKeys({ walletIdEncryptedKeyPairs: 'not an array', password: 'password123' })
+        .should.be.rejectedWith('walletIdEncryptedKeyPairs must be an array');
     });
 
-    it('should throw if walletIdEncryptedKeyPairs is not an array', function () {
-      // @ts-expect-error - intentionally providing wrong type
-      (() => bitgo.decryptKeys({ walletIdEncryptedKeyPairs: 'not an array', password: 'password123' })).should.throw(
-        'walletIdEncryptedKeyPairs must be an array'
-      );
-    });
-
-    it('should return empty array for empty walletIdEncryptedKeyPairs', function () {
-      const result = bitgo.decryptKeys({ walletIdEncryptedKeyPairs: [], password: 'password123' });
+    it('should return empty array for empty walletIdEncryptedKeyPairs', async function () {
+      const result = await bitgo.decryptKeys({ walletIdEncryptedKeyPairs: [], password: 'password123' });
       result.should.be.an.Array();
       result.should.be.empty();
     });
 
-    it('should throw if any walletId is missing or not a string', function () {
-      (() =>
-        bitgo.decryptKeys({
+    it('should throw if any walletId is missing or not a string', async function () {
+      await bitgo
+        .decryptKeys({
           walletIdEncryptedKeyPairs: [
             // @ts-expect-error - intentionally missing walletId
             { encryptedPrv: 'encrypted-data' },
           ],
           password: 'password123',
-        })).should.throw('each key pair must have a string walletId');
+        })
+        .should.be.rejectedWith('each key pair must have a string walletId');
 
-      (() =>
-        bitgo.decryptKeys({
+      await bitgo
+        .decryptKeys({
           walletIdEncryptedKeyPairs: [
             // @ts-expect-error - intentionally providing wrong type
             { walletId: 123, encryptedPrv: 'encrypted-data' },
           ],
           password: 'password123',
-        })).should.throw('each key pair must have a string walletId');
+        })
+        .should.be.rejectedWith('each key pair must have a string walletId');
     });
 
-    it('should throw if any encryptedPrv is missing or not a string', function () {
-      (() =>
-        bitgo.decryptKeys({
+    it('should throw if any encryptedPrv is missing or not a string', async function () {
+      await bitgo
+        .decryptKeys({
           walletIdEncryptedKeyPairs: [
             // @ts-expect-error - intentionally missing encryptedPrv
             { walletId: 'wallet-id-1' },
           ],
           password: 'password123',
-        })).should.throw('each key pair must have a string encryptedPrv');
+        })
+        .should.be.rejectedWith('each key pair must have a string encryptedPrv');
 
-      (() =>
-        bitgo.decryptKeys({
+      await bitgo
+        .decryptKeys({
           walletIdEncryptedKeyPairs: [
             // @ts-expect-error - intentionally providing wrong type
             { walletId: 'wallet-id-1', encryptedPrv: 123 },
           ],
           password: 'password123',
-        })).should.throw('each key pair must have a string encryptedPrv');
-    });
-
-    it('should return walletIds of keys that failed to decrypt', function () {
-      const decryptStub = sinon.stub(bitgo, 'decrypt');
-      decryptStub.onFirstCall().returns('decrypted-key-1');
-      decryptStub.onSecondCall().throws(new Error('decryption failed'));
-
-      const result = bitgo.decryptKeys({
-        walletIdEncryptedKeyPairs: [
-          { walletId: 'wallet-id-1', encryptedPrv: 'encrypted-data-1' },
-          { walletId: 'wallet-id-2', encryptedPrv: 'encrypted-data-2' },
-        ],
-        password: 'password123',
-      });
-
-      result.should.be.an.Array();
-      result.should.have.length(1);
-      result[0].should.equal('wallet-id-2');
-    });
-
-    it('should correctly process multiple wallet keys', function () {
-      const decryptStub = sinon.stub(bitgo, 'decrypt');
-      decryptStub
-        .withArgs({ input: 'encrypted-data-2', password: 'password123' })
-        .throws(new Error('decryption failed'));
-      decryptStub
-        .withArgs({ input: 'encrypted-data-4', password: 'password123' })
-        .throws(new Error('decryption failed'));
-      decryptStub.returns('success');
-
-      const result = bitgo.decryptKeys({
-        walletIdEncryptedKeyPairs: [
-          { walletId: 'wallet-id-1', encryptedPrv: 'encrypted-data-1' },
-          { walletId: 'wallet-id-2', encryptedPrv: 'encrypted-data-2' },
-          { walletId: 'wallet-id-3', encryptedPrv: 'encrypted-data-3' },
-          { walletId: 'wallet-id-4', encryptedPrv: 'encrypted-data-4' },
-        ],
-        password: 'password123',
-      });
-
-      decryptStub.callCount.should.equal(4);
-      result.should.be.an.Array();
-      result.should.have.length(2);
-      result.should.containDeep(['wallet-id-2', 'wallet-id-4']);
+        })
+        .should.be.rejectedWith('each key pair must have a string encryptedPrv');
     });
   });
 
-  describe('decryptKeysAsync', function () {
+  describe('decryptKeys', function () {
     let bitgo: BitGoAPI;
 
     beforeEach(function () {
@@ -369,11 +329,11 @@ describe('Constructor', function () {
     });
 
     it('should return walletIds of keys that failed to decrypt', async function () {
-      const decryptAsyncStub = sinon.stub(bitgo, 'decryptAsync');
+      const decryptAsyncStub = sinon.stub(bitgo, 'decrypt');
       decryptAsyncStub.onFirstCall().resolves('decrypted-key-1');
       decryptAsyncStub.onSecondCall().rejects(new Error('decryption failed'));
 
-      const result = await bitgo.decryptKeysAsync({
+      const result = await bitgo.decryptKeys({
         walletIdEncryptedKeyPairs: [
           { walletId: 'wallet-id-1', encryptedPrv: 'encrypted-data-1' },
           { walletId: 'wallet-id-2', encryptedPrv: 'encrypted-data-2' },
@@ -387,7 +347,7 @@ describe('Constructor', function () {
     });
 
     it('should correctly process multiple wallet keys', async function () {
-      const decryptAsyncStub = sinon.stub(bitgo, 'decryptAsync');
+      const decryptAsyncStub = sinon.stub(bitgo, 'decrypt');
       decryptAsyncStub
         .withArgs({ input: 'encrypted-data-2', password: 'password123' })
         .rejects(new Error('decryption failed'));
@@ -396,7 +356,7 @@ describe('Constructor', function () {
         .rejects(new Error('decryption failed'));
       decryptAsyncStub.resolves('success');
 
-      const result = await bitgo.decryptKeysAsync({
+      const result = await bitgo.decryptKeys({
         walletIdEncryptedKeyPairs: [
           { walletId: 'wallet-id-1', encryptedPrv: 'encrypted-data-1' },
           { walletId: 'wallet-id-2', encryptedPrv: 'encrypted-data-2' },
@@ -731,7 +691,7 @@ describe('Constructor', function () {
       });
 
       it('should return plain token from response body when ecdhXprv is absent but strategyAuthenticated', async function () {
-        const handleTokenSpy = sinon.spy(BitGoAPI.prototype, 'handleTokenIssuanceAsync');
+        const handleTokenSpy = sinon.spy(BitGoAPI.prototype, 'handleTokenIssuance');
         const { strategy } = makeStrategy({
           isAuthenticated: sinon.stub().returns(true),
         });
@@ -745,7 +705,7 @@ describe('Constructor', function () {
 
         const result = await bitgo.addAccessToken(validParams);
 
-        // handleTokenIssuanceAsync should NOT be called — no ECDH decryption needed
+        // handleTokenIssuance should NOT be called — no ECDH decryption needed
         handleTokenSpy.called.should.be.false();
         result.token.should.equal('v2xplaintoken');
 
@@ -1143,8 +1103,8 @@ describe('Constructor', function () {
       sinon.restore();
     });
 
-    it('passes encryptionVersion: 2 to encryptAsync', async function () {
-      const encryptAsyncSpy = sinon.spy(bitgo, 'encryptAsync');
+    it('passes encryptionVersion: 2 to encrypt', async function () {
+      const encryptAsyncSpy = sinon.spy(bitgo, 'encrypt');
       nock(ROOT).post('/api/v1/keychain').reply(200, { xpub: 'xpub123', id: 'key-id' });
 
       await bitgo.createUserEcdhKeychain('loginPassword', 2);
@@ -1154,7 +1114,7 @@ describe('Constructor', function () {
     });
 
     it('passes encryptionVersion: undefined when not set (defaults to v1)', async function () {
-      const encryptAsyncSpy = sinon.spy(bitgo, 'encryptAsync');
+      const encryptAsyncSpy = sinon.spy(bitgo, 'encrypt');
       nock(ROOT).post('/api/v1/keychain').reply(200, { xpub: 'xpub123', id: 'key-id' });
 
       await bitgo.createUserEcdhKeychain('loginPassword');
@@ -1164,7 +1124,7 @@ describe('Constructor', function () {
     });
   });
 
-  describe('splitSecretAsync - encryptionVersion threading', function () {
+  describe('splitSecret - encryptionVersion threading', function () {
     let bitgo: BitGoAPI;
 
     beforeEach(function () {
@@ -1175,11 +1135,11 @@ describe('Constructor', function () {
       sinon.restore();
     });
 
-    it('passes encryptionVersion: 2 to every encryptAsync shard call', async function () {
-      const encryptAsyncSpy = sinon.spy(bitgo, 'encryptAsync');
+    it('passes encryptionVersion: 2 to every encrypt shard call', async function () {
+      const encryptAsyncSpy = sinon.spy(bitgo, 'encrypt');
       const passwords = ['pw1', 'pw2', 'pw3'];
 
-      await bitgo.splitSecretAsync({
+      await bitgo.splitSecret({
         seed: 'a'.repeat(64),
         passwords,
         m: 2,
@@ -1193,9 +1153,9 @@ describe('Constructor', function () {
     });
 
     it('passes encryptionVersion: undefined when not set', async function () {
-      const encryptAsyncSpy = sinon.spy(bitgo, 'encryptAsync');
+      const encryptAsyncSpy = sinon.spy(bitgo, 'encrypt');
 
-      await bitgo.splitSecretAsync({
+      await bitgo.splitSecret({
         seed: 'b'.repeat(64),
         passwords: ['pw1', 'pw2'],
         m: 2,

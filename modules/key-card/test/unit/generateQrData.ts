@@ -1,12 +1,7 @@
 import * as assert from 'assert';
 import * as should from 'should';
-import { decrypt, decryptAsync } from '@bitgo/sdk-api';
-import {
-  generateLightningQrData,
-  generateLightningQrDataAsync,
-  generateQrData,
-  generateQrDataAsync,
-} from '../../src/generateQrData';
+import { decrypt } from '@bitgo/sdk-api';
+import { generateLightningQrData, generateQrData } from '../../src/generateQrData';
 import { ApiKeyShare, Keychain, KeyType } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 
@@ -40,13 +35,13 @@ function createKeychain({
 }
 
 describe('generateQrData', function () {
-  it('hot wallet, backup key provided by user with encryptedPrv', function () {
+  it('hot wallet, backup key provided by user with encryptedPrv', async function () {
     const userEncryptedPrv = 'prv123encrypted';
     const backupEncryptedPrv = 'prv456encrypted';
     const bitgoPub = 'pub789bitgo';
     const passphrase = 'testingIsFun';
     const passcodeEncryptionCode = '123456';
-    const qrData = generateQrData({
+    const qrData = await generateQrData({
       backupKeychain: createKeychain({
         encryptedPrv: backupEncryptedPrv,
       }),
@@ -80,7 +75,7 @@ describe('generateQrData', function () {
     qrData.passcode.description.should.equal(
       'This is the wallet password, encrypted client-side with a key held by BitGo.'
     );
-    const decryptedData = decrypt(passcodeEncryptionCode, qrData.passcode.data);
+    const decryptedData = await decrypt(passcodeEncryptionCode, qrData.passcode.data);
     decryptedData.should.equal(passphrase);
   });
 
@@ -91,13 +86,13 @@ describe('generateQrData', function () {
       { coinName: 'eth', keyType: 'blsdkg' },
     ];
     for (const testSet of testSets) {
-      it(`key type ${testSet.keyType}`, function () {
+      it(`key type ${testSet.keyType}`, async function () {
         const userPub = 'pub012user';
         const userMasterKey = 'userMasterKey';
         const backupPub = 'pub345backup';
         const backupMasterKey = 'backupMasterKey';
         const bitgoPub = 'pub789bitgo';
-        const qrData = generateQrData({
+        const qrData = await generateQrData({
           backupKeychain: createKeychain({
             commonKeychain: testSet.keyType === 'tss' ? backupPub : undefined,
             commonPub: testSet.keyType === 'blsdkg' ? backupPub : undefined,
@@ -141,12 +136,12 @@ describe('generateQrData', function () {
   });
 
   describe('generateLightningQrData', function () {
-    it('lightning wallet with encrypted key and passcode', function () {
+    it('lightning wallet with encrypted key and passcode', async function () {
       const userAuthEncryptedPrv = 'userAuthPrv123encrypted';
       const passphrase = 'testingIsFun';
       const passcodeEncryptionCode = '123456';
 
-      const qrData = generateLightningQrData({
+      const qrData = await generateLightningQrData({
         userAuthKeychain: createKeychain({ encryptedPrv: userAuthEncryptedPrv }),
         coin: coins.get('lnbtc'),
         passcodeEncryptionCode,
@@ -162,12 +157,12 @@ describe('generateQrData', function () {
 
       assert.ok(qrData.passcode);
       qrData.passcode.title.should.equal('D: Encrypted Wallet Password');
-      const decryptedData = decrypt(passcodeEncryptionCode, qrData.passcode.data);
+      const decryptedData = await decrypt(passcodeEncryptionCode, qrData.passcode.data);
       decryptedData.should.equal(passphrase);
     });
 
-    it('lightning wallet without passcode', function () {
-      const qrData = generateLightningQrData({
+    it('lightning wallet without passcode', async function () {
+      const qrData = await generateLightningQrData({
         userAuthKeychain: createKeychain({ encryptedPrv: 'userAuthPrv' }),
         coin: coins.get('lnbtc'),
       });
@@ -175,8 +170,8 @@ describe('generateQrData', function () {
       should.not.exist(qrData.passcode);
     });
 
-    it('throws when userAuthKeychain is missing encryptedPrv', function () {
-      assert.throws(
+    it('throws when userAuthKeychain is missing encryptedPrv', async function () {
+      await assert.rejects(
         () =>
           generateLightningQrData({
             userAuthKeychain: createKeychain({ pub: 'pub123' }),
@@ -187,13 +182,13 @@ describe('generateQrData', function () {
     });
   });
 
-  it('backup key from provider', function () {
+  it('backup key from provider', async function () {
     const coin = coins.get('btc');
     const userEncryptedPrv = 'prv123encrypted';
     const backupPub = 'pub673backup';
     const provider = '3rd Party Provider';
     const bitgoPub = 'pub789bitgo';
-    const qrData = generateQrData({
+    const qrData = await generateQrData({
       backupKeychain: createKeychain({
         pub: backupPub,
         provider,
@@ -228,11 +223,11 @@ describe('generateQrData', function () {
   });
 });
 
-describe('generateQrDataAsync', function () {
-  it('encrypts passcode with encryptAsync', async function () {
+describe('generateQrData', function () {
+  it('encrypts passcode with encrypt', async function () {
     const passphrase = 'testingIsFun';
     const passcodeEncryptionCode = '123456';
-    const qrData = await generateQrDataAsync({
+    const qrData = await generateQrData({
       backupKeychain: createKeychain({ encryptedPrv: 'backupPrv' }),
       bitgoKeychain: createKeychain({ pub: 'bitgoPub' }),
       coin: coins.get('btc'),
@@ -242,14 +237,14 @@ describe('generateQrDataAsync', function () {
     });
 
     assert.ok(qrData.passcode);
-    const decryptedData = await decryptAsync(passcodeEncryptionCode, qrData.passcode.data);
+    const decryptedData = await decrypt(passcodeEncryptionCode, qrData.passcode.data);
     decryptedData.should.equal(passphrase);
   });
 
-  it('produces a v1 Box D when encryptionVersion is not set', async function () {
+  it('produces a v2 Box D when encryptionVersion is not set', async function () {
     const passphrase = 'testingIsFun';
     const passcodeEncryptionCode = '123456';
-    const qrData = await generateQrDataAsync({
+    const qrData = await generateQrData({
       backupKeychain: createKeychain({ encryptedPrv: 'backupPrv' }),
       bitgoKeychain: createKeychain({ pub: 'bitgoPub' }),
       coin: coins.get('btc'),
@@ -260,13 +255,13 @@ describe('generateQrDataAsync', function () {
 
     assert.ok(qrData.passcode);
     const envelope = JSON.parse(qrData.passcode.data);
-    assert.notStrictEqual(envelope.v, 2, 'should default to v1 envelope');
+    assert.strictEqual(envelope.v, 2, 'should default to v2 envelope');
   });
 
   it('produces a v2 Box D when encryptionVersion: 2', async function () {
     const passphrase = 'testingIsFun';
     const passcodeEncryptionCode = '123456';
-    const qrData = await generateQrDataAsync({
+    const qrData = await generateQrData({
       backupKeychain: createKeychain({ encryptedPrv: 'backupPrv' }),
       bitgoKeychain: createKeychain({ pub: 'bitgoPub' }),
       coin: coins.get('btc'),
@@ -279,14 +274,14 @@ describe('generateQrDataAsync', function () {
     assert.ok(qrData.passcode);
     const envelope = JSON.parse(qrData.passcode.data);
     assert.strictEqual(envelope.v, 2, 'should produce v2 envelope');
-    const decryptedData = await decryptAsync(passcodeEncryptionCode, qrData.passcode.data);
+    const decryptedData = await decrypt(passcodeEncryptionCode, qrData.passcode.data);
     decryptedData.should.equal(passphrase);
   });
 
   it('produces a v1 Box D when encryptionVersion: 1 is explicit', async function () {
     const passphrase = 'testingIsFun';
     const passcodeEncryptionCode = '123456';
-    const qrData = await generateQrDataAsync({
+    const qrData = await generateQrData({
       backupKeychain: createKeychain({ encryptedPrv: 'backupPrv' }),
       bitgoKeychain: createKeychain({ pub: 'bitgoPub' }),
       coin: coins.get('btc'),
@@ -302,7 +297,7 @@ describe('generateQrDataAsync', function () {
   });
 
   it('omits Box D when passphrase or passcodeEncryptionCode is missing', async function () {
-    const qrData = await generateQrDataAsync({
+    const qrData = await generateQrData({
       backupKeychain: createKeychain({ encryptedPrv: 'backupPrv' }),
       bitgoKeychain: createKeychain({ pub: 'bitgoPub' }),
       coin: coins.get('btc'),
@@ -313,11 +308,11 @@ describe('generateQrDataAsync', function () {
   });
 });
 
-describe('generateLightningQrDataAsync', function () {
-  it('encrypts passcode with encryptAsync', async function () {
+describe('generateLightningQrData', function () {
+  it('encrypts passcode with encrypt', async function () {
     const passphrase = 'testingIsFun';
     const passcodeEncryptionCode = '123456';
-    const qrData = await generateLightningQrDataAsync({
+    const qrData = await generateLightningQrData({
       userAuthKeychain: createKeychain({ encryptedPrv: 'userAuthPrv' }),
       coin: coins.get('lnbtc'),
       passcodeEncryptionCode,
@@ -325,14 +320,14 @@ describe('generateLightningQrDataAsync', function () {
     });
 
     assert.ok(qrData.passcode);
-    const decryptedData = await decryptAsync(passcodeEncryptionCode, qrData.passcode.data);
+    const decryptedData = await decrypt(passcodeEncryptionCode, qrData.passcode.data);
     decryptedData.should.equal(passphrase);
   });
 
   it('produces a v2 Box D when encryptionVersion: 2', async function () {
     const passphrase = 'testingIsFun';
     const passcodeEncryptionCode = '123456';
-    const qrData = await generateLightningQrDataAsync({
+    const qrData = await generateLightningQrData({
       userAuthKeychain: createKeychain({ encryptedPrv: 'userAuthPrv' }),
       coin: coins.get('lnbtc'),
       passcodeEncryptionCode,
@@ -343,7 +338,7 @@ describe('generateLightningQrDataAsync', function () {
     assert.ok(qrData.passcode);
     const envelope = JSON.parse(qrData.passcode.data);
     assert.strictEqual(envelope.v, 2);
-    const decryptedData = await decryptAsync(passcodeEncryptionCode, qrData.passcode.data);
+    const decryptedData = await decrypt(passcodeEncryptionCode, qrData.passcode.data);
     decryptedData.should.equal(passphrase);
   });
 });

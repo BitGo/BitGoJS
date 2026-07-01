@@ -81,7 +81,7 @@ import { assertFixedScriptWalletAddress, generateAddress } from './address/fixed
 import { ParsedTransaction } from './transaction/types';
 import { decodeDescriptorPsbt, decodePsbt, encodeTransaction, stringToBufferTryFormats } from './transaction/decode';
 import { fetchKeychains, toBip32Triple, UtxoKeychain } from './keychains';
-import { verifyKeySignature, verifyUserPublicKey, verifyUserPublicKeyAsync } from './verifyKey';
+import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
 import { getPolicyForEnv } from './descriptor/validatePolicy';
 import { signTransaction } from './transaction/signTransaction';
 import { isUtxoWalletData, UtxoWallet } from './wallet';
@@ -604,17 +604,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
   }
 
   /**
-   * @deprecated - use function verifyUserPublicKey instead
+   * @deprecated - use the exported `verifyUserPublicKey` function instead
    */
-  protected verifyUserPublicKey(params: VerifyUserPublicKeyOptions): boolean {
-    return verifyUserPublicKey(this.bitgo, params);
-  }
-
-  /**
-   * @deprecated - use function verifyUserPublicKeyAsync instead
-   */
-  protected async verifyUserPublicKeyAsync(params: VerifyUserPublicKeyOptions): Promise<boolean> {
-    return await verifyUserPublicKeyAsync(this.bitgo, params);
+  protected async verifyUserPublicKey(params: VerifyUserPublicKeyOptions): Promise<boolean> {
+    return await verifyUserPublicKey(this.bitgo, params);
   }
 
   /**

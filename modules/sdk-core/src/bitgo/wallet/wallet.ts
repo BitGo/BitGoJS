@@ -31,15 +31,9 @@ import {
   NeedUserSignupError,
 } from '../errors';
 import { SubmitTransactionResponse } from '../inscriptionBuilder';
-import { drawKeycard, drawKeycardAsync } from '../internal';
+import { drawKeycard } from '../internal';
 import * as internal from '../internal/internal';
-import {
-  decryptKeychainPrivateKey,
-  decryptKeychainPrivateKeyAsync,
-  Keychain,
-  KeychainWithEncryptedPrv,
-  KeyIndices,
-} from '../keychain';
+import { decryptKeychainPrivateKey, Keychain, KeychainWithEncryptedPrv, KeyIndices } from '../keychain';
 import { CreateLightningInvoiceParams, LightningInvoiceResponse } from '../../lightning';
 import { getLightningAuthKey } from '../lightning/lightningWalletUtil';
 import { IPendingApproval, PendingApproval, PendingApprovals } from '../pendingApproval';
@@ -1757,7 +1751,7 @@ export class Wallet implements IWallet {
     if (!params.walletPassphrase) {
       throw new Error('wallet passphrase was not provided');
     }
-    const userPrv = await decryptKeychainPrivateKeyAsync(this.bitgo, userKeychain, params.walletPassphrase);
+    const userPrv = await decryptKeychainPrivateKey(this.bitgo, userKeychain, params.walletPassphrase);
     if (!userPrv) {
       throw new Error('error decrypting wallet private key');
     }
@@ -1854,7 +1848,7 @@ export class Wallet implements IWallet {
       const needsKeychain = shareOption.permissions && shareOption.permissions.includes('spend');
 
       if (needsKeychain && decryptedKeychain) {
-        const sharedKeychain = await this.encryptPrvForUserAsync(
+        const sharedKeychain = await this.encryptPrvForUser(
           decryptedKeychain.prv,
           decryptedKeychain.pub,
           shareOption.pubKey,
@@ -1938,7 +1932,7 @@ export class Wallet implements IWallet {
       throw new Error('Missing walletPassphrase argument');
     }
 
-    const prv = await decryptKeychainPrivateKeyAsync(this.bitgo, keychain, walletPassphrase);
+    const prv = await decryptKeychainPrivateKey(this.bitgo, keychain, walletPassphrase);
     if (!prv) {
       throw new IncorrectPasswordError('Password shared is incorrect for this wallet');
     }
@@ -1960,7 +1954,6 @@ export class Wallet implements IWallet {
   }
 
   /**
-   * TODO: Deprecate this function in favour of encryptPrvForUserAsync when v2 encryption is the default.
    * Encrypts a decrypted private key for sharing with a specific user.
    * This is the pure encryption step - no API calls, no decryption.
    *
@@ -1968,34 +1961,10 @@ export class Wallet implements IWallet {
    * @param pub - The wallet's public key
    * @param userPubkey - The recipient user's public key
    * @param path - The key path
+   * @param encryptionVersion - Optional encryption version (defaults to v2)
    * @returns The encrypted keychain for the recipient with all required fields
    */
-  encryptPrvForUser(decryptedPrv: string, pub: string, userPubkey: string, path: string): BulkWalletShareKeychain {
-    const eckey = makeRandomKey();
-    const secret = getSharedSecret(eckey, Buffer.from(userPubkey, 'hex')).toString('hex');
-    const newEncryptedPrv = this.bitgo.encrypt({ password: secret, input: decryptedPrv });
-
-    const keychain: BulkWalletShareKeychain = {
-      pub,
-      encryptedPrv: newEncryptedPrv,
-      fromPubKey: eckey.publicKey.toString('hex'),
-      toPubKey: userPubkey,
-      path: path,
-    };
-
-    assert(keychain.pub, 'pub must be defined for sharing');
-    assert(keychain.encryptedPrv, 'encryptedPrv must be defined for sharing');
-    assert(keychain.fromPubKey, 'fromPubKey must be defined for sharing');
-    assert(keychain.toPubKey, 'toPubKey must be defined for sharing');
-    assert(keychain.path, 'path must be defined for sharing');
-
-    return keychain;
-  }
-
-  /**
-   * Async version of encryptPrvForUser with v2 encrypt/decrypt support.
-   */
-  async encryptPrvForUserAsync(
+  async encryptPrvForUser(
     decryptedPrv: string,
     pub: string,
     userPubkey: string,
@@ -2004,7 +1973,7 @@ export class Wallet implements IWallet {
   ): Promise<BulkWalletShareKeychain> {
     const eckey = makeRandomKey();
     const secret = getSharedSecret(eckey, Buffer.from(userPubkey, 'hex')).toString('hex');
-    const newEncryptedPrv = await this.bitgo.encryptAsync({ password: secret, input: decryptedPrv, encryptionVersion });
+    const newEncryptedPrv = await this.bitgo.encrypt({ password: secret, input: decryptedPrv, encryptionVersion });
 
     const keychain: BulkWalletShareKeychain = {
       pub,
@@ -2043,7 +2012,7 @@ export class Wallet implements IWallet {
       if (!decryptedKeychain) {
         return {};
       }
-      return await this.encryptPrvForUserAsync(
+      return await this.encryptPrvForUser(
         decryptedKeychain.prv,
         decryptedKeychain.pub,
         pubkey,
@@ -2373,7 +2342,7 @@ export class Wallet implements IWallet {
     if (this.multisigType() === 'tss') {
       return this.signTransactionTss({
         ...presign,
-        prv: await this.getUserPrvAsync(presign as GetUserPrvOptions),
+        prv: await this.getUserPrv(presign as GetUserPrvOptions),
         apiVersion,
       });
     }
@@ -2412,7 +2381,7 @@ export class Wallet implements IWallet {
 
     if (this.baseCoin.getFamily() === 'ofc') {
       const userKeySigningRequired = this.toTradingAccount().userKeySigningRequired;
-      const prv = userKeySigningRequired ? await this.getUserPrvAsync(presign as GetUserPrvOptions) : undefined;
+      const prv = userKeySigningRequired ? await this.getUserPrv(presign as GetUserPrvOptions) : undefined;
       return this.baseCoin.signTransaction({
         ...signTransactionParams,
         prv,
@@ -2422,7 +2391,7 @@ export class Wallet implements IWallet {
 
     return this.baseCoin.signTransaction({
       ...signTransactionParams,
-      prv: await this.getUserPrvAsync(presign as GetUserPrvOptions),
+      prv: await this.getUserPrv(presign as GetUserPrvOptions),
       wallet: this,
     });
   }
@@ -2457,7 +2426,7 @@ export class Wallet implements IWallet {
       ...params,
       walletData: this._wallet,
       tssUtils: this.tssUtils,
-      prv: await this.getUserPrvAsync(userPrvOptions),
+      prv: await this.getUserPrv(userPrvOptions),
       keychain: keychains[0],
       backupKeychain: keychains.length > 1 ? keychains[1] : null,
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
@@ -2496,7 +2465,7 @@ export class Wallet implements IWallet {
       ...params,
       walletData: this._wallet,
       tssUtils: this.tssUtils,
-      prv: await this.getUserPrvAsync(userPrvOptions),
+      prv: await this.getUserPrv(userPrvOptions),
       keychain: keychains[0],
       backupKeychain: keychains.length > 1 ? keychains[1] : null,
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
@@ -2549,11 +2518,12 @@ export class Wallet implements IWallet {
   }
 
   /**
-   * Get the user private key from either a derivation or an encrypted keychain (sync, v1 only).
+   * Get the user private key from either a derivation or an encrypted keychain.
+   * Supports both v1 (SJCL) and v2 (Argon2id) envelopes.
    * @param [params.keychain / params.key] (object) or params.prv (string)
    * @param params.walletPassphrase (string)
    */
-  getUserPrv(params: GetUserPrvOptions = {}): string {
+  async getUserPrv(params: GetUserPrvOptions = {}): Promise<string> {
     const userKeychain = params.keychain || params.key;
     let userPrv = params.prv;
     if (userPrv && typeof userPrv !== 'string') {
@@ -2586,53 +2556,7 @@ export class Wallet implements IWallet {
       if (!params.walletPassphrase) {
         throw new Error('walletPassphrase property missing');
       }
-      userPrv = decryptKeychainPrivateKey(this.bitgo, userKeychain, params.walletPassphrase);
-      if (!userPrv) {
-        throw new Error('failed to decrypt user keychain');
-      }
-    }
-    return userPrv;
-  }
-
-  /**
-   * Async version of getUserPrv that supports both v1 (SJCL) and v2 (Argon2id) envelopes.
-   * @param [params.keychain / params.key] (object) or params.prv (string)
-   * @param params.walletPassphrase (string)
-   */
-  async getUserPrvAsync(params: GetUserPrvOptions = {}): Promise<string> {
-    const userKeychain = params.keychain || params.key;
-    let userPrv = params.prv;
-    if (userPrv && typeof userPrv !== 'string') {
-      throw new Error('prv must be a string');
-    }
-
-    if (
-      params.coldDerivationSeed === undefined &&
-      params.keychain !== undefined &&
-      params.keychain.derivedFromParentWithSeed !== undefined &&
-      this.multisigType() === 'onchain'
-    ) {
-      params.coldDerivationSeed = params.keychain.derivedFromParentWithSeed;
-    }
-
-    if (userPrv && params.coldDerivationSeed) {
-      const derivation = this.baseCoin.deriveKeyWithSeed({
-        key: userPrv,
-        seed: params.coldDerivationSeed,
-      });
-      userPrv = derivation.key;
-    } else if (!userPrv) {
-      if (!userKeychain || typeof userKeychain !== 'object') {
-        throw new Error('keychain must be an object');
-      }
-      const userEncryptedPrv = userKeychain.encryptedPrv;
-      if (!userEncryptedPrv) {
-        throw new Error('keychain does not have property encryptedPrv');
-      }
-      if (!params.walletPassphrase) {
-        throw new Error('walletPassphrase property missing');
-      }
-      userPrv = await decryptKeychainPrivateKeyAsync(this.bitgo, userKeychain, params.walletPassphrase);
+      userPrv = await decryptKeychainPrivateKey(this.bitgo, userKeychain, params.walletPassphrase);
       if (!userPrv) {
         throw new Error('failed to decrypt user keychain');
       }
@@ -3400,8 +3324,8 @@ export class Wallet implements IWallet {
   }
 
   /**
-   * TODO: Deprecate this function in favour of downloadKeycardAsync when v2 encryption is the default.
-   * Creates and downloads PDF keycard for wallet (requires response from wallets.generateWallet)
+   * Creates and downloads PDF keycard for wallet (requires response from wallets.generateWallet).
+   * Defaults to v2 encryption for Box D; pass `encryptionVersion: 1` for legacy v1.
    *
    * Note: this is example code and is not the version used on bitgo.com
    *
@@ -3418,49 +3342,7 @@ export class Wallet implements IWallet {
    *   * backupKeyID - the Key ID used for deriving a cold wallet's backup key
    * @returns {*}
    */
-  downloadKeycard(params: DownloadKeycardOptions = {}): void {
-    const {
-      jsPDF,
-      QRCode,
-      userKeychain,
-      backupKeychain,
-      bitgoKeychain,
-      passphrase,
-      passcodeEncryptionCode,
-      walletKeyID,
-      backupKeyID,
-      activationCode,
-    } = validateDownloadKeycardParams(params);
-
-    const coinShortName = this.baseCoin.type;
-    const coinName = this.baseCoin.getFullName();
-    const walletLabel = this._wallet.label;
-
-    const doc = drawKeycard({
-      jsPDF,
-      QRCode,
-      encrypt: this.bitgo.encrypt,
-      coinShortName,
-      coinName,
-      activationCode,
-      walletLabel,
-      passphrase,
-      passcodeEncryptionCode,
-      userKeychain,
-      backupKeychain,
-      bitgoKeychain,
-      walletKeyID,
-      backupKeyID,
-    });
-
-    // Save the PDF on the user's browser
-    doc.save(`BitGo Keycard for ${walletLabel}.pdf`);
-  }
-
-  /**
-   * Async version of downloadKeycard with v2 encrypt/decrypt support.
-   */
-  async downloadKeycardAsync(params: DownloadKeycardOptions = {}): Promise<void> {
+  async downloadKeycard(params: DownloadKeycardOptions = {}): Promise<void> {
     const {
       jsPDF,
       QRCode,
@@ -3479,10 +3361,10 @@ export class Wallet implements IWallet {
     const coinName = this.baseCoin.getFullName();
     const walletLabel = this._wallet.label;
 
-    const doc = await drawKeycardAsync({
+    const doc = await drawKeycard({
       jsPDF,
       QRCode,
-      encrypt: (p) => this.bitgo.encryptAsync(p),
+      encrypt: (p) => this.bitgo.encrypt(p),
       encryptionVersion,
       coinShortName,
       coinName,
@@ -5223,7 +5105,7 @@ export class Wallet implements IWallet {
     // we ignore this check with if customSigningFunction is provided
     //  which means that the user is handling the signing in external signing mode
     if (!customSigningFunction && keychains?.[0]?.encryptedPrv && walletPassphrase) {
-      if (!(await decryptKeychainPrivateKeyAsync(this.bitgo, keychains[0], walletPassphrase))) {
+      if (!(await decryptKeychainPrivateKey(this.bitgo, keychains[0], walletPassphrase))) {
         const error: Error & { code?: string } = new Error(
           `unable to decrypt keychain with the given wallet passphrase`
         );

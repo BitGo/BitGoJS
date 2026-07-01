@@ -89,9 +89,9 @@ describe('Wallet - OFC', function () {
 
         beforeEach(function () {
           // compiled wallet.js: getUserPrv (sync) → decryptKeychainPrivateKey → bitgo.decrypt
-          // TypeScript source:  getUserPrvAsync        → decryptKeychainPrivateKeyAsync → bitgo.decryptAsync
+          // TypeScript source:  getUserPrv        → decryptKeychainPrivateKey → bitgo.decrypt
           mockBitGo.decrypt = sinon.stub().returns(prv);
-          mockBitGo.decryptAsync = sinon.stub().resolves(prv);
+          mockBitGo.decrypt = sinon.stub().resolves(prv);
         });
 
         it('should decrypt the keychain with the passphrase and sign via baseCoin.signMessage', async function () {
@@ -103,7 +103,7 @@ describe('Wallet - OFC', function () {
 
           const decryptCalled =
             mockBitGo.decrypt.calledWith({ input: encryptedPrv, password: walletPassphrase }) ||
-            mockBitGo.decryptAsync.calledWith({ input: encryptedPrv, password: walletPassphrase });
+            mockBitGo.decrypt.calledWith({ input: encryptedPrv, password: walletPassphrase });
           decryptCalled.should.be.true();
           signMessageStub.calledOnceWith({ prv }, payload).should.be.true();
           mockBitGo.post.called.should.be.false();

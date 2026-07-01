@@ -16,8 +16,13 @@ export function bytesToWord(bytes?: Uint8Array | number[]): number {
   return bytes.reduce((num, byte) => num * 0x100 + byte, 0);
 }
 
-/** Encrypt using legacy v1 SJCL (PBKDF2-SHA256 + AES-256-CCM). */
-export function encrypt(
+/**
+ * Internal v1 (SJCL PBKDF2-SHA256 + AES-256-CCM) encrypt helper.
+ *
+ * Not exported as part of the public encrypt/decrypt surface: callers must not use
+ * this directly. v1 output is requested via `encrypt(..., { encryptionVersion: 1 })`.
+ */
+function encryptV1(
   password: string,
   plaintext: string,
   options?: { salt?: Buffer; iv?: Buffer; adata?: string }
@@ -43,32 +48,34 @@ export function encrypt(
 }
 
 /**
- * Async encrypt that dispatches to v1 (SJCL) or v2 (Argon2id + AES-256-GCM)
- * when `encryptionVersion` is 2. Defaults to v1, matching sync `encrypt()`.
+ * Encrypt `plaintext` with `password`. Defaults to v2 (Argon2id + AES-256-GCM).
+ *
+ * Pass `encryptionVersion: 1` to produce a legacy v1 (SJCL) envelope; this is the
+ * only supported way to request v1 encryption.
  */
-export async function encryptAsync(
+export async function encrypt(
   password: string,
   plaintext: string,
   options?: { salt?: Buffer; iv?: Buffer; adata?: string; encryptionVersion?: 1 | 2 }
 ): Promise<string> {
-  if (options?.encryptionVersion === 2) {
-    return encryptV2(password, plaintext, { adata: options.adata });
+  if (options?.encryptionVersion === 1) {
+    return encryptV1(password, plaintext, options);
   }
-  return encrypt(password, plaintext, options);
+  return encryptV2(password, plaintext, { adata: options?.adata });
 }
 
-/** Decrypt a v1 SJCL envelope. */
-export function decrypt(password: string, ciphertext: string): string {
+/**
+ * Internal v1 (SJCL) decrypt helper. Not part of the public surface: callers use
+ * the auto-detecting `decrypt` instead.
+ */
+function decryptV1(password: string, ciphertext: string): string {
   return sjcl.decrypt(password, ciphertext);
 }
 
 /**
  * Auto-detect v1 (SJCL) or v2 (Argon2id + AES-256-GCM) from the envelope `v` field and decrypt.
- *
- * Migration path from sync `decrypt()`. Move call sites to `decryptAsync()` before
- * the breaking release that flips the default to v2.
  */
-export async function decryptAsync(password: string, ciphertext: string): Promise<string> {
+export async function decrypt(password: string, ciphertext: string): Promise<string> {
   let envelopeVersion: number | undefined;
   try {
     const envelope = JSON.parse(ciphertext);
@@ -83,5 +90,5 @@ export async function decryptAsync(password: string, ciphertext: string): Promis
   if (envelopeVersion !== undefined && envelopeVersion !== 1) {
     throw new Error(`decrypt: unknown envelope version ${envelopeVersion}`);
   }
-  return sjcl.decrypt(password, ciphertext);
+  return decryptV1(password, ciphertext);
 }

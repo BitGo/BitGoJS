@@ -227,7 +227,7 @@ describe('Lightning wallets', function () {
         assert.ok(response.wallet);
         assert.ok(response.encryptedWalletPassphrase);
         assert.equal(
-          bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+          await bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
           params.passphrase
         );
       });

@@ -253,7 +253,7 @@ Wallets.prototype.acceptShare = function (params, callback) {
         }
 
         // Now we have the sharing keychain, we can work out the secret used for sharing the wallet with us
-        sharingKeychain.xprv = await self.bitgo.decryptAsync({
+        sharingKeychain.xprv = await self.bitgo.decrypt({
           password: params.userPassword,
           input: sharingKeychain.encryptedXprv,
         });
@@ -265,14 +265,14 @@ Wallets.prototype.acceptShare = function (params, callback) {
         ).toString('hex');
 
         // Yes! We got the secret successfully here, now decrypt the shared wallet xprv
-        const decryptedSharedWalletXprv = await self.bitgo.decryptAsync({
+        const decryptedSharedWalletXprv = await self.bitgo.decrypt({
           password: secret,
           input: walletShare.keychain.encryptedXprv,
         });
 
         // We will now re-encrypt the wallet with our own password
         const newWalletPassphrase = params.newWalletPassphrase || params.userPassword;
-        encryptedXprv = await self.bitgo.encryptAsync({
+        encryptedXprv = await self.bitgo.encrypt({
           password: newWalletPassphrase,
           input: decryptedSharedWalletXprv,
           encryptionVersion: params.encryptionVersion,
@@ -370,7 +370,7 @@ Wallets.prototype.createWalletWithKeychains = function (params, callback) {
 
   return Promise.resolve()
     .then(() =>
-      self.bitgo.encryptAsync({
+      self.bitgo.encrypt({
         password: params.passphrase,
         input: userKeychain.xprv,
         encryptionVersion: params.encryptionVersion,

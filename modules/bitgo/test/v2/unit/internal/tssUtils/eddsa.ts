@@ -323,7 +323,7 @@ describe('TSS Utils:', async function () {
       assert.equal(body.webauthnInfo.prfSalt, webauthnInfo.prfSalt);
       assert.equal(body.webauthnInfo.enterpriseId, enterpriseId);
       assert.ok(body.webauthnInfo.encryptedPrv, 'encryptedPrv should be set');
-      assert.ok(bitgo.decrypt({ input: body.webauthnInfo.encryptedPrv, password: webauthnInfo.passphrase }));
+      assert.ok(await bitgo.decrypt({ input: body.webauthnInfo.encryptedPrv, password: webauthnInfo.passphrase }));
       assert.strictEqual(body.webauthnDevices, undefined, 'deprecated webauthnDevices should not be sent');
     });
 
@@ -644,7 +644,7 @@ describe('TSS Utils:', async function () {
       const envelope = JSON.parse(userKeychain.encryptedPrv!);
       envelope.v.should.equal(2);
 
-      const decrypted = await bitgo.decryptAsync({ input: userKeychain.encryptedPrv!, password: passphrase });
+      const decrypted = await bitgo.decrypt({ input: userKeychain.encryptedPrv!, password: passphrase });
       should.exist(decrypted);
       const parsed: Record<string, unknown> = JSON.parse(decrypted);
       should.exist(parsed.uShare);
@@ -677,7 +677,7 @@ describe('TSS Utils:', async function () {
       const prv = JSON.stringify(validUserSigningMaterial);
 
       // 1. Encrypt prv with v2
-      const encryptedPrv = await bitgo.encryptAsync({
+      const encryptedPrv = await bitgo.encrypt({
         input: prv,
         password: passphrase,
         encryptionVersion: 2,

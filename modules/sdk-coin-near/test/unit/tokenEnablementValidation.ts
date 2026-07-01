@@ -391,7 +391,7 @@ describe('NEAR Token Enablement Validation', function () {
     const spoofedTxHex = testData.rawTx.storageDeposit.unsigned;
     const bgUrl = common.Environments['test'].uri;
 
-    const encryptedPrv = bitgo.encrypt({
+    const encryptedPrv = await bitgo.encrypt({
       input: testData.accounts.account1.secretKey,
       password: 'test',
     });

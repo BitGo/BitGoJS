@@ -33,10 +33,7 @@ describe('Verify Transaction', function () {
           // user public key swapped out
           user: {
             pub: otherKeychain.pub,
-            encryptedPrv: defaultBitGo.encrypt({
-              input: userKeychain.prv,
-              password: passphrase,
-            }),
+            encryptedPrv: '' as string, // set in before()
           },
         },
         needsCustomChangeKeySignatureVerification: true,
@@ -78,6 +75,13 @@ describe('Verify Transaction', function () {
       }),
     },
   };
+
+  before(async () => {
+    stubData.parseTransactionData.badKey.keychains.user.encryptedPrv = await defaultBitGo.encrypt({
+      input: userKeychain.prv,
+      password: passphrase,
+    });
+  });
 
   const unsignedSendingWallet = sinon.createStubInstance(Wallet, stubData.unsignedSendingWallet as any);
 

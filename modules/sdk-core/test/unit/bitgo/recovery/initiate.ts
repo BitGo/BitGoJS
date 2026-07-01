@@ -1,12 +1,7 @@
 import 'should';
 import * as sinon from 'sinon';
 import * as sjcl from '@bitgo/sjcl';
-import {
-  validateKey,
-  validateKeyAsync,
-  getBip32Keys,
-  getBip32KeysAsync,
-} from '../../../../src/bitgo/recovery/initiate';
+import { validateKey, getBip32Keys } from '../../../../src/bitgo/recovery/initiate';
 import { BitGoBase } from '../../../../src/bitgo/bitgoBase';
 
 // A deterministic xprv used across all tests.
@@ -16,7 +11,7 @@ const TEST_XPUB =
   'xpub661MyMwAqRbcF9Nc7TbBo1rZAagiWEVPWKbDKThNG8zqjk76HAKLkaSbTn6dK2dQPfuD7xjicxCZVWvj67fP5nQ9W7QURmoMVAX8m6jZsGp';
 
 /**
- * Encrypt plaintext with SJCL (same algorithm as BitGoAPI.encrypt).
+ * Encrypt plaintext with SJCL (legacy v1 envelope, matching `encryptionVersion: 1`).
  */
 function sjclEncrypt(password: string, input: string): string {
   return sjcl.encrypt(password, input) as unknown as string;
@@ -24,10 +19,8 @@ function sjclEncrypt(password: string, input: string): string {
 
 function makeMockBitGo(decryptImpl: (params: { password?: string; input: string }) => string): BitGoBase {
   return {
-    decrypt: sinon.stub().callsFake(decryptImpl),
-    decryptAsync: sinon.stub().callsFake(async (params: { password?: string; input: string }) => decryptImpl(params)),
+    decrypt: sinon.stub().callsFake(async (params: { password?: string; input: string }) => decryptImpl(params)),
     encrypt: sinon.stub(),
-    encryptAsync: sinon.stub(),
   } as unknown as BitGoBase;
 }
 
@@ -36,11 +29,11 @@ describe('validateKey', () => {
     sinon.restore();
   });
 
-  it('returns a BIP32 node directly when key starts with xprv (bypasses decrypt)', () => {
+  it('returns a BIP32 node directly when key starts with xprv (bypasses decrypt)', async () => {
     const bitgo = makeMockBitGo(() => {
       throw new Error('should not be called');
     });
-    const node = validateKey(bitgo, {
+    const node = await validateKey(bitgo, {
       key: TEST_XPRV,
       source: 'user',
       passphrase: 'secret',
@@ -51,14 +44,14 @@ describe('validateKey', () => {
     (bitgo.decrypt as sinon.SinonStub).callCount.should.equal(0);
   });
 
-  it('calls decrypt and returns BIP32 node when key is encrypted (not xprv)', () => {
+  it('calls decrypt and returns BIP32 node when key is encrypted (not xprv)', async () => {
     const passphrase = 'hunter2';
     const encryptedKey = sjclEncrypt(passphrase, TEST_XPRV);
     const bitgo = makeMockBitGo(({ password, input }) => {
       if (input === encryptedKey && password === passphrase) return TEST_XPRV;
       throw new Error('unexpected decrypt call');
     });
-    const node = validateKey(bitgo, {
+    const node = await validateKey(bitgo, {
       key: encryptedKey,
       source: 'user',
       passphrase,
@@ -69,64 +62,11 @@ describe('validateKey', () => {
     (bitgo.decrypt as sinon.SinonStub).callCount.should.equal(1);
   });
 
-  it('throws with friendly message when decrypt fails (wrong passphrase)', () => {
+  it('rejects with friendly message when decrypt fails (wrong passphrase)', async () => {
     const bitgo = makeMockBitGo(() => {
       throw new Error('sjcl: ccm: tag does not match');
     });
-    (() =>
-      validateKey(bitgo, {
-        key: 'notAnXprv',
-        source: 'user',
-        passphrase: 'wrong',
-        isUnsignedSweep: false,
-        isKrsRecovery: false,
-      })).should.throw('Failed to decrypt user key with passcode - try again!');
-  });
-});
-
-describe('validateKeyAsync', () => {
-  afterEach(() => {
-    sinon.restore();
-  });
-
-  it('returns a BIP32 node directly when key starts with xprv (bypasses decryptAsync)', async () => {
-    const bitgo = makeMockBitGo(() => {
-      throw new Error('should not be called');
-    });
-    const node = await validateKeyAsync(bitgo, {
-      key: TEST_XPRV,
-      source: 'user',
-      passphrase: 'secret',
-      isUnsignedSweep: false,
-      isKrsRecovery: false,
-    });
-    node.toBase58().should.equal(TEST_XPRV);
-    (bitgo.decryptAsync as sinon.SinonStub).callCount.should.equal(0);
-  });
-
-  it('calls decryptAsync and returns BIP32 node when key is encrypted (not xprv)', async () => {
-    const passphrase = 'hunter2';
-    const encryptedKey = sjclEncrypt(passphrase, TEST_XPRV);
-    const bitgo = makeMockBitGo(({ password, input }) => {
-      if (input === encryptedKey && password === passphrase) return TEST_XPRV;
-      throw new Error('unexpected decrypt call');
-    });
-    const node = await validateKeyAsync(bitgo, {
-      key: encryptedKey,
-      source: 'user',
-      passphrase,
-      isUnsignedSweep: false,
-      isKrsRecovery: false,
-    });
-    node.toBase58().should.equal(TEST_XPRV);
-    (bitgo.decryptAsync as sinon.SinonStub).callCount.should.equal(1);
-  });
-
-  it('rejects with friendly message when decryptAsync fails (wrong passphrase)', async () => {
-    const bitgo = makeMockBitGo(() => {
-      throw new Error('sjcl: ccm: tag does not match');
-    });
-    await validateKeyAsync(bitgo, {
+    await validateKey(bitgo, {
       key: 'notAnXprv',
       source: 'user',
       passphrase: 'wrong',
@@ -135,11 +75,11 @@ describe('validateKeyAsync', () => {
     }).should.be.rejectedWith('Failed to decrypt user key with passcode - try again!');
   });
 
-  it('skips decryptAsync for unsigned sweep (isUnsignedSweep = true)', async () => {
+  it('skips decrypt for unsigned sweep (isUnsignedSweep = true)', async () => {
     const bitgo = makeMockBitGo(() => {
       throw new Error('should not be called');
     });
-    const node = await validateKeyAsync(bitgo, {
+    const node = await validateKey(bitgo, {
       key: TEST_XPUB,
       source: 'user',
       passphrase: 'secret',
@@ -147,7 +87,7 @@ describe('validateKeyAsync', () => {
       isKrsRecovery: false,
     });
     node.neutered().toBase58().should.equal(TEST_XPUB);
-    (bitgo.decryptAsync as sinon.SinonStub).callCount.should.equal(0);
+    (bitgo.decrypt as sinon.SinonStub).callCount.should.equal(0);
   });
 });
 
@@ -156,43 +96,11 @@ describe('getBip32Keys', () => {
     sinon.restore();
   });
 
-  it('returns [userKey, backupKey] when both are provided as xprv', () => {
-    const bitgo = makeMockBitGo(() => {
-      throw new Error('should not be called');
-    });
-    const keys = getBip32Keys(
-      bitgo,
-      { userKey: TEST_XPRV, backupKey: TEST_XPRV, recoveryDestination: 'addr' },
-      { requireBitGoXpub: false }
-    );
-    keys.should.have.length(2);
-    keys[0].toBase58().should.equal(TEST_XPRV);
-    keys[1].toBase58().should.equal(TEST_XPRV);
-  });
-
-  it('throws when requireBitGoXpub is true but bitgoKey is missing', () => {
-    const bitgo = makeMockBitGo(() => {
-      throw new Error('should not be called');
-    });
-    (() =>
-      getBip32Keys(
-        bitgo,
-        { userKey: TEST_XPRV, backupKey: TEST_XPRV, recoveryDestination: 'addr' },
-        { requireBitGoXpub: true }
-      )).should.throw('BitGo xpub required but not provided');
-  });
-});
-
-describe('getBip32KeysAsync', () => {
-  afterEach(() => {
-    sinon.restore();
-  });
-
   it('returns [userKey, backupKey] when both are provided as xprv', async () => {
     const bitgo = makeMockBitGo(() => {
       throw new Error('should not be called');
     });
-    const keys = await getBip32KeysAsync(
+    const keys = await getBip32Keys(
       bitgo,
       { userKey: TEST_XPRV, backupKey: TEST_XPRV, recoveryDestination: 'addr' },
       { requireBitGoXpub: false }
@@ -206,7 +114,7 @@ describe('getBip32KeysAsync', () => {
     const bitgo = makeMockBitGo(() => {
       throw new Error('should not be called');
     });
-    const keys = await getBip32KeysAsync(
+    const keys = await getBip32Keys(
       bitgo,
       { userKey: TEST_XPRV, backupKey: TEST_XPRV, bitgoKey: TEST_XPUB, recoveryDestination: 'addr' },
       { requireBitGoXpub: true }
@@ -215,28 +123,28 @@ describe('getBip32KeysAsync', () => {
     keys[2].neutered().toBase58().should.equal(TEST_XPUB);
   });
 
-  it('calls decryptAsync for encrypted user key', async () => {
+  it('calls decrypt for encrypted user key', async () => {
     const passphrase = 'pass1';
     const encryptedUserKey = sjclEncrypt(passphrase, TEST_XPRV);
     const bitgo = makeMockBitGo(({ password, input }) => {
       if (input === encryptedUserKey && password === passphrase) return TEST_XPRV;
       throw new Error('unexpected decrypt call');
     });
-    const keys = await getBip32KeysAsync(
+    const keys = await getBip32Keys(
       bitgo,
       { userKey: encryptedUserKey, backupKey: TEST_XPRV, walletPassphrase: passphrase, recoveryDestination: 'addr' },
       { requireBitGoXpub: false }
     );
     keys.should.have.length(2);
     keys[0].toBase58().should.equal(TEST_XPRV);
-    (bitgo.decryptAsync as sinon.SinonStub).callCount.should.equal(1);
+    (bitgo.decrypt as sinon.SinonStub).callCount.should.equal(1);
   });
 
   it('rejects when requireBitGoXpub is true but bitgoKey is missing', async () => {
     const bitgo = makeMockBitGo(() => {
       throw new Error('should not be called');
     });
-    await getBip32KeysAsync(
+    await getBip32Keys(
       bitgo,
       { userKey: TEST_XPRV, backupKey: TEST_XPRV, recoveryDestination: 'addr' },
       { requireBitGoXpub: true }
