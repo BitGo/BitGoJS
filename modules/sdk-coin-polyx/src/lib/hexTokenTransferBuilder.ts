@@ -10,6 +10,9 @@ import utils from './utils';
  *
  * OLD encoding (TokenTransferBuilder): plain string, left-padded with ASCII '0' to 32 chars.
  * NEW encoding (this class):           0x-prefixed hex, right-padded with 0x00 to 32 bytes.
+ *
+ * [CLEANUP-V8-OLD] v7 args shape (bare PortfolioId). Kept for Flipt rollback alongside
+ * V8HexTokenTransferBuilder (AssetHolder-wrapped legs/holderSet).
  */
 export class HexTokenTransferBuilder extends TokenTransferBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {

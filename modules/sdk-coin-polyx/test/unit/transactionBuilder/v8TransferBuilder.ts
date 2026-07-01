@@ -2,7 +2,7 @@ import should from 'should';
 import { V8TransferBuilder, TransactionBuilderFactory } from '../../../src/lib';
 import { utils } from '../../../src';
 import { accounts, mockTssSignature } from '../../resources';
-import { testnetV8Material, mainnetV8Material } from '../../../src/resources';
+import { testnetMaterial, testnetV8Material, mainnetV8Material } from '../../../src/resources';
 import { buildTestConfig, buildMainnetConfig } from './base';
 
 describe('V8TransferBuilder', () => {
@@ -32,6 +32,10 @@ describe('V8TransferBuilder', () => {
         v8Material.specVersion > v7Material.specVersion,
         `expected v8 (${v8Material.specVersion}) > v7 (${v7Material.specVersion})`
       );
+    });
+
+    it('testnet v8 metadata bytes differ from v7 (real chain metadata, not placeholder)', () => {
+      should.notEqual(testnetV8Material.metadata, testnetMaterial.metadata);
     });
   });
 
@@ -91,6 +95,24 @@ describe('V8TransferBuilder', () => {
       const txJson = tx.toJson();
       should.deepEqual(txJson.specVersion, testnetV8Material.specVersion);
       should.deepEqual(txJson.transactionVersion, testnetV8Material.txVersion);
+    });
+
+    it('encodes transferWithMemo at v8 call index 0x0528 (HSM method ID 1320)', async () => {
+      const config = buildTestConfig();
+      const tx = await new V8TransferBuilder(config)
+        .amount('1000000')
+        .to({ address: receiver.address })
+        .sender({ address: sender.address })
+        .memo('0')
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 1 })
+        .fee({ amount: 0, type: 'tip' })
+        .build();
+
+      const methodHex = (tx as any)._substrateTransaction.method as string;
+      // pallet 5 (balances) + call 0x28 (transferWithMemo) → hex bytes 05 28
+      should.equal(methodHex.slice(2, 6), '0528');
     });
   });
 });

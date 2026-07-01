@@ -7,6 +7,8 @@ import { Interface } from '@bitgo/abstract-substrate';
 import { AddAndAffirmWithMediatorsTransactionSchema } from './txnSchema';
 import { DecodedSignedTx, DecodedSigningPayload, defineMethod, UnsignedTransaction } from '@substrate/txwrapper-core';
 
+// [CLEANUP-V8-OLD] v7 settlement.addAndAffirmWithMediators — bare PortfolioId legs/portfolios.
+// Kept for Flipt rollback alongside V8TokenTransferBuilder (AssetHolder-wrapped legs/holderSet).
 export class TokenTransferBuilder extends PolyxBaseBuilder<TxMethod, Transaction> {
   protected _assetId: string;
   protected _amount: string;
@@ -121,16 +123,24 @@ export class TokenTransferBuilder extends PolyxBaseBuilder<TxMethod, Transaction
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
     if (this._method?.name === MethodNames.AddAndAffirmWithMediators) {
-      const txMethod = this._method.args as AddAndAffirmWithMediatorsArgs;
-      this.assetId(txMethod.legs[0].fungible.assetId);
-      this.amount(txMethod.legs[0].fungible.amount);
-      this.memo(txMethod.instructionMemo);
-      this.fromDID(txMethod.legs[0].fungible.sender.did);
-      this.toDID(txMethod.legs[0].fungible.receiver.did);
+      this.populateFromMethodArgs(this._method.args as AddAndAffirmWithMediatorsArgs);
     } else {
       throw new Error(`Invalid Transaction Type: ${this._method?.name}. Expected AddAndAffirmWithMediators`);
     }
     return tx;
+  }
+
+  /**
+   * Populates builder state from decoded method args. Extracted as its own method so
+   * V8TokenTransferBuilder can override just the AssetHolder-shaped field access while
+   * reusing the rest of fromImplementation.
+   */
+  protected populateFromMethodArgs(txMethod: AddAndAffirmWithMediatorsArgs): void {
+    this.assetId(txMethod.legs[0].fungible.assetId);
+    this.amount(txMethod.legs[0].fungible.amount);
+    this.memo(txMethod.instructionMemo);
+    this.fromDID(txMethod.legs[0].fungible.sender.did);
+    this.toDID(txMethod.legs[0].fungible.receiver.did);
   }
 
   /** @inheritdoc */

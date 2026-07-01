@@ -10,6 +10,8 @@ import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo/sd
 
 import utils from './utils';
 
+// [CLEANUP-V8-OLD] v7 balances.transferWithMemo builder (call index 0x0501). Kept for Flipt
+// rollback alongside V8TransferBuilder (v8 metadata; call index 0x0528).
 export class TransferBuilder extends PolyxBaseBuilder<TxMethod, Transaction> {
   protected _amount: string;
   protected _to: string;

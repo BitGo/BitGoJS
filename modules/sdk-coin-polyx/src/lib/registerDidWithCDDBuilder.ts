@@ -7,6 +7,9 @@ import { RegisterDidWithCDDArgs, TxMethod, MethodNames } from './iface';
 import { RegisterDidWithCDDTransactionSchema } from './txnSchema';
 import { Transaction } from './transaction';
 
+// [CLEANUP-V8-OLD] v7 CDD-provider path (identity.cddRegisterDidWithCdd, 0x0714). Still present
+// and callable on v8 at the same call index — kept for Flipt rollback alongside the v8 DID
+// Registrar path (V8RegisterDidBuilder, identity.registerDid @ 0x0718).
 export class RegisterDidWithCDDBuilder extends PolyxBaseBuilder<TxMethod, Transaction> {
   protected _to: string;
   protected _method: TxMethod;

@@ -22,6 +22,7 @@ import { NominateBuilder } from './nominateBuilder';
 import { V8TransferBuilder } from './v8TransferBuilder';
 import { V8HexTransferBuilder } from './v8HexTransferBuilder';
 import { V8RegisterDidWithCDDBuilder } from './v8RegisterDidWithCDDBuilder';
+import { V8RegisterDidBuilder } from './v8RegisterDidBuilder';
 import { V8TokenTransferBuilder } from './v8TokenTransferBuilder';
 import { V8HexTokenTransferBuilder } from './v8HexTokenTransferBuilder';
 import { V8PreApproveAssetBuilder } from './v8PreApproveAssetBuilder';
@@ -98,6 +99,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getV8RegisterDidWithCDDBuilder(): V8RegisterDidWithCDDBuilder {
     return new V8RegisterDidWithCDDBuilder(this._coinConfig);
+  }
+
+  getV8RegisterDidBuilder(): V8RegisterDidBuilder {
+    return new V8RegisterDidBuilder(this._coinConfig);
   }
 
   getV8TokenTransferBuilder(): V8TokenTransferBuilder {

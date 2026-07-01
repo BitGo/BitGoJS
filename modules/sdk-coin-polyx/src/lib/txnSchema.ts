@@ -30,6 +30,12 @@ export const RegisterDidWithCDDTransactionSchema = joi.object({
   expiry: joi.valid(null).required(),
 });
 
+// v8 identity.registerDid — unlike the v7 CDD path, this call only carries targetAccount
+// (verified against the real testnetV8Material metadata; no secondaryKeys/expiry fields).
+export const RegisterDidTransactionSchema = joi.object({
+  targetAccount: addressSchema.required(),
+});
+
 export const PreApproveAssetTransactionSchema = joi.object({
   assetId: joi.string().required(),
 });
@@ -89,6 +95,51 @@ export const AddAndAffirmWithMediatorsTransactionSchema = joi.object({
       })
     )
     .required(),
+  instructionMemo: joi.string().required(),
+  mediators: joi.array().length(0).required(),
+});
+
+// v8 settlement.addAndAffirmWithMediators — legs/holderSet wrap the DID+kind in an AssetHolder
+// enum. Decoded shape lowercases the variant name (`portfolio`, not `Portfolio`) — verified by
+// round-tripping a sample value through the real v8 testnet metadata registry.
+const assetHolderSchema = joi.object({
+  portfolio: joi
+    .object({
+      did: addressSchema.required(),
+      kind: joi
+        .object({
+          default: joi.valid(null),
+        })
+        .required(),
+    })
+    .required(),
+});
+
+export const V8AddAndAffirmWithMediatorsTransactionSchema = joi.object({
+  venueId: joi.valid(null).required(),
+  settlementType: joi
+    .object({
+      settleOnAffirmation: joi.valid(null),
+    })
+    .required(),
+  tradeDate: joi.valid(null).required(),
+  valueDate: joi.valid(null).required(),
+  legs: joi
+    .array()
+    .items(
+      joi.object({
+        fungible: joi
+          .object({
+            sender: assetHolderSchema.required(),
+            receiver: assetHolderSchema.required(),
+            assetId: joi.string().required(),
+            amount: joi.number().required(),
+          })
+          .required(),
+      })
+    )
+    .required(),
+  holderSet: joi.array().items(assetHolderSchema).required(),
   instructionMemo: joi.string().required(),
   mediators: joi.array().length(0).required(),
 });
