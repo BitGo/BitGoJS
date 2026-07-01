@@ -89,7 +89,7 @@ export async function generateEdDsaDKGKeyShares(
  * @param message - Raw message bytes to sign.
  * @param derivationPath - BIP-32-style derivation path, e.g. `"m"` or `"m/0/0"`.
  */
-export function executeTillRound(
+export async function executeTillRound(
   round: number,
   party1Dsg: DSG,
   party2Dsg: DSG,
@@ -97,12 +97,12 @@ export function executeTillRound(
   keyShare2: Buffer,
   message: Buffer,
   derivationPath: string
-): DeserializedMessages[] | Buffer {
+): Promise<DeserializedMessages[] | Buffer> {
   if (round < 1 || round > 3) {
     throw Error('Invalid round number');
   }
-  party1Dsg.initDsg(keyShare1, message, derivationPath, party2Dsg.getPartyIdx());
-  party2Dsg.initDsg(keyShare2, message, derivationPath, party1Dsg.getPartyIdx());
+  await party1Dsg.initDsg(keyShare1, message, derivationPath, party2Dsg.getPartyIdx());
+  await party2Dsg.initDsg(keyShare2, message, derivationPath, party1Dsg.getPartyIdx());
   const party1Round0Message = party1Dsg.getFirstMessage();
   const party2Round0Message = party2Dsg.getFirstMessage();
 

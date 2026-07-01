@@ -242,7 +242,7 @@ describe('signTxRequest:', function () {
   it('should throw if round 2 response has wrong type', async function () {
     const messageBuffer = Buffer.from(signableHex, 'hex');
     const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
-    bitgoDsg.initDsg(
+    await bitgoDsg.initDsg(
       bitgoKeyShare,
       messageBuffer,
       txRequest.transactions![0].unsignedTx.derivationPath,
@@ -433,7 +433,7 @@ describe('signTxRequest:', function () {
         : txRequest.transactions![0].unsignedTx.signableHex;
     const messageBuffer = Buffer.from(txOrMessageToSign, 'hex');
     const bitgoSession = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
-    bitgoSession.initDsg(
+    await bitgoSession.initDsg(
       bitgoKeyShare,
       messageBuffer,
       txRequest.transactions?.[0].unsignedTx.derivationPath || 'm/0',

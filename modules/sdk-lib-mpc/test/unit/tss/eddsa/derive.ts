@@ -68,17 +68,17 @@ describe('deriveUnhardenedMps', function () {
     let sigAtM0: Buffer;
     let sigAtM01: Buffer;
 
-    before(function () {
+    before(async function () {
       const dsgA1 = new EddsaMPSDsg.DSG(0);
-      MPSUtil.executeTillRound(3, dsgA1, new EddsaMPSDsg.DSG(2), userKeyShare, bitgoKeyShare, MESSAGE, 'm');
+      await MPSUtil.executeTillRound(3, dsgA1, new EddsaMPSDsg.DSG(2), userKeyShare, bitgoKeyShare, MESSAGE, 'm');
       sigAtRoot = dsgA1.getSignature();
 
       const dsgA2 = new EddsaMPSDsg.DSG(0);
-      MPSUtil.executeTillRound(3, dsgA2, new EddsaMPSDsg.DSG(2), userKeyShare, bitgoKeyShare, MESSAGE, 'm/0');
+      await MPSUtil.executeTillRound(3, dsgA2, new EddsaMPSDsg.DSG(2), userKeyShare, bitgoKeyShare, MESSAGE, 'm/0');
       sigAtM0 = dsgA2.getSignature();
 
       const dsgA3 = new EddsaMPSDsg.DSG(0);
-      MPSUtil.executeTillRound(3, dsgA3, new EddsaMPSDsg.DSG(2), userKeyShare, bitgoKeyShare, MESSAGE, 'm/0/1');
+      await MPSUtil.executeTillRound(3, dsgA3, new EddsaMPSDsg.DSG(2), userKeyShare, bitgoKeyShare, MESSAGE, 'm/0/1');
       sigAtM01 = dsgA3.getSignature();
     });
 

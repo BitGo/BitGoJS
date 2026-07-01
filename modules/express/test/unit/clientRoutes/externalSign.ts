@@ -1113,7 +1113,7 @@ describe('External signer', () => {
     // Initialise BitGo-side DSG session (party 2, co-signing with User party 0)
     const message = Buffer.from(signableHex, 'hex');
     const bitgoDsg = new EddsaMPSDsg.DSG(2 /* BITGO */);
-    bitgoDsg.initDsg(bitgoKeyShareBuffer, message, derivationPath, 0 /* USER */);
+    await bitgoDsg.initDsg(bitgoKeyShareBuffer, message, derivationPath, 0 /* USER */);
 
     const baseTxRequest = {
       txRequestId: 'eddsa-mpcv2-round-trip-test',

@@ -452,7 +452,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     const partyId = params.mpcv2PartyId ?? MPCv2PartiesEnum.USER;
     const signerShareType = partyId === MPCv2PartiesEnum.USER ? SignatureShareType.USER : SignatureShareType.BACKUP;
     const userDsg = new EddsaMPSDsg.DSG(partyId);
-    userDsg.initDsg(userKeyShare, bufferContent, derivationPath, MPCv2PartiesEnum.BITGO);
+    await userDsg.initDsg(userKeyShare, bufferContent, derivationPath, MPCv2PartiesEnum.BITGO);
     const userMsg1 = userDsg.getFirstMessage();
 
     // ── API Round 1 ───────────────────────────────────────────────────────────
@@ -581,7 +581,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     const userGpgPrvKey = await pgp.readPrivateKey({ armoredKey: userGpgKey.privateKey });
 
     const userDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER);
-    userDsg.initDsg(userKeyShare, Buffer.from(signableHex, 'hex'), derivationPath, MPCv2PartiesEnum.BITGO);
+    await userDsg.initDsg(userKeyShare, Buffer.from(signableHex, 'hex'), derivationPath, MPCv2PartiesEnum.BITGO);
     const userMsg1 = userDsg.getFirstMessage();
     const signatureShareRound1 = await getSignatureShareRoundOne(userMsg1, userGpgPrvKey);
     const sessionPayload = JSON.stringify({
@@ -693,7 +693,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     };
 
     const userDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER);
-    userDsg.restoreSession(dsgSession);
+    await userDsg.restoreSession(dsgSession);
     const userMsg1: MPSTypes.DeserializedMessage = {
       from: MPCv2PartiesEnum.USER,
       payload: new Uint8Array(Buffer.from(userMsgPayload, 'base64')),
@@ -800,7 +800,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     };
 
     const userDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER);
-    userDsg.restoreSession(dsgSession);
+    await userDsg.restoreSession(dsgSession);
     const userMsg2: MPSTypes.DeserializedMessage = {
       from: MPCv2PartiesEnum.USER,
       payload: new Uint8Array(Buffer.from(userMsgPayload, 'base64')),
@@ -1021,17 +1021,17 @@ export async function getEddsaMpcV2RecoveryKeySharesFromReducedKey(
  * @param commonKeyChain 128-hex-char string: 32-byte pub + 32-byte rootChainCode
  * @returns 64-byte Ed25519 signature Buffer
  */
-export function signRecoveryEddsaMPCv2(
+export async function signRecoveryEddsaMPCv2(
   message: Buffer,
   derivationPath: string,
   userKeyShare: Buffer,
   backupKeyShare: Buffer,
   commonKeyChain: string
-): Buffer {
+): Promise<Buffer> {
   const userDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER);
   const backupDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BACKUP);
 
-  const signature = MPSUtil.executeTillRound(
+  const signature = (await MPSUtil.executeTillRound(
     3,
     userDsg,
     backupDsg,
@@ -1039,7 +1039,7 @@ export function signRecoveryEddsaMPCv2(
     backupKeyShare,
     message,
     derivationPath
-  ) as Buffer;
+  )) as Buffer;
 
   // deriveUnhardenedMps returns 128 hex chars: first 64 are the 32-byte public key
   const derivedKeychain = deriveUnhardenedMps(commonKeyChain, derivationPath);

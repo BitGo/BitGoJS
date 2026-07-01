@@ -1,11 +1,10 @@
 import assert from 'assert';
-import {
-  ed25519_dsg_round0_process,
-  ed25519_dsg_round1_process,
-  ed25519_dsg_round2_process,
-  ed25519_dsg_round3_process,
-} from '@bitgo/wasm-mps';
+import type { MsgState } from '@bitgo/wasm-mps';
 import { DeserializedMessage, DeserializedMessages, DsgState } from './types';
+
+type NodeWasmer = typeof import('@bitgo/wasm-mps');
+type WebWasmer = typeof import('@bitgo/wasm-mps/web');
+type WasmMps = NodeWasmer | WebWasmer;
 
 /**
  * EdDSA Distributed Sign Generation (DSG) implementation using @bitgo/wasm-mps.
@@ -22,7 +21,7 @@ import { DeserializedMessage, DeserializedMessages, DsgState } from './types';
  * @example
  * ```typescript
  * const dsg = new DSG(0);  // partyIdx 0
- * dsg.initDsg(keyShare, message, 'm', 2);  // counterpart is party 2
+ * await dsg.initDsg(keyShare, message, 'm', 2);  // counterpart is party 2
  * const msg1 = dsg.getFirstMessage();
  * const msg2 = dsg.handleIncomingMessages([msg1, peerMsg1]);  // emits SignMsg2
  * const msg3 = dsg.handleIncomingMessages([msg2[0], peerMsg2]);  // emits SignMsg3
@@ -45,6 +44,8 @@ export class DSG {
   private dsgStateBytes: Buffer | null = null;
   /** Final 64-byte Ed25519 signature, available after WaitMsg3 -> Complete */
   private signature: Buffer | null = null;
+  /** Lazily loaded WASM module */
+  private wasmMps: WasmMps | null = null;
 
   protected dsgState: DsgState = DsgState.Uninitialized;
 
@@ -64,6 +65,33 @@ export class DSG {
     return this.otherPartyIdx;
   }
 
+  private async loadWasmMps(): Promise<void> {
+    if (!this.wasmMps) {
+      if (
+        typeof window !== 'undefined' &&
+        /* checks for electron processes */
+        !window.process &&
+        !window.process?.['type']
+      ) {
+        // Browser: web build has explicit init() — guaranteed ready after await
+        // eslint-disable-next-line import/no-internal-modules -- @bitgo/wasm-mps exposes environment-specific subpath exports.
+        const webWasm = await import('@bitgo/wasm-mps/web');
+        await webWasm.default();
+        this.wasmMps = webWasm;
+      } else {
+        // Node.js: dynamic import() rewritten to require() by tsc → CJS build → readFileSync
+        this.wasmMps = await import('@bitgo/wasm-mps');
+      }
+    }
+  }
+
+  private getWasmMps(): WasmMps {
+    if (!this.wasmMps) {
+      throw Error('WASM module not loaded');
+    }
+    return this.wasmMps;
+  }
+
   /**
    * Initialises the DSG session. The keyshare must come from a prior DKG run, and
    * `otherPartyIdx` must be the single counterpart who will co-sign with this party.
@@ -74,7 +102,8 @@ export class DSG {
    * @param otherPartyIdx - Party index of the single counterpart in this signing session.
    *   Must differ from this party's own `partyIdx` and be in `[0, 2]`.
    */
-  initDsg(keyShare: Buffer, message: Buffer, derivationPath: string, otherPartyIdx: number): void {
+  async initDsg(keyShare: Buffer, message: Buffer, derivationPath: string, otherPartyIdx: number): Promise<void> {
+    await this.loadWasmMps();
     if (!keyShare || keyShare.length === 0) {
       throw Error('Missing or invalid keyShare');
     }
@@ -108,9 +137,10 @@ export class DSG {
     assert(this.derivationPath !== null, 'derivationPath must be set after initDsg');
     assert(this.message, 'message must be set after initDsg');
 
-    let result;
+    const wasm = this.getWasmMps();
+    let result: MsgState;
     try {
-      result = ed25519_dsg_round0_process(this.keyShare, this.derivationPath, this.message);
+      result = wasm.ed25519_dsg_round0_process(this.keyShare, this.derivationPath, this.message);
     } catch (err) {
       throw new Error(`Error while creating the first message from party ${this.partyIdx}: ${err}`);
     }
@@ -159,12 +189,13 @@ export class DSG {
       throw Error(`Unexpected counterpart party index: got ${peerMsg.from}, expected ${this.otherPartyIdx}`);
     }
     const peerPayload = Buffer.from(peerMsg.payload);
+    const wasm = this.getWasmMps();
 
     if (this.dsgState === DsgState.WaitMsg1) {
       assert(this.dsgStateBytes, 'dsgStateBytes must be set in WaitMsg1');
-      let result;
+      let result: MsgState;
       try {
-        result = ed25519_dsg_round1_process(peerPayload, this.dsgStateBytes);
+        result = wasm.ed25519_dsg_round1_process(peerPayload, this.dsgStateBytes);
       } catch (err) {
         throw new Error(`Error while creating messages from party ${this.partyIdx}, round ${this.dsgState}: ${err}`);
       }
@@ -175,9 +206,9 @@ export class DSG {
 
     if (this.dsgState === DsgState.WaitMsg2) {
       assert(this.dsgStateBytes, 'dsgStateBytes must be set in WaitMsg2');
-      let result;
+      let result: MsgState;
       try {
-        result = ed25519_dsg_round2_process(peerPayload, this.dsgStateBytes);
+        result = wasm.ed25519_dsg_round2_process(peerPayload, this.dsgStateBytes);
       } catch (err) {
         throw new Error(`Error while creating messages from party ${this.partyIdx}, round ${this.dsgState}: ${err}`);
       }
@@ -190,7 +221,7 @@ export class DSG {
       assert(this.dsgStateBytes, 'dsgStateBytes must be set in WaitMsg3');
       let sigBytes;
       try {
-        sigBytes = ed25519_dsg_round3_process(peerPayload, this.dsgStateBytes);
+        sigBytes = wasm.ed25519_dsg_round3_process(peerPayload, this.dsgStateBytes);
       } catch (err) {
         throw new Error(`Error while creating messages from party ${this.partyIdx}, round ${this.dsgState}: ${err}`);
       }
@@ -244,7 +275,8 @@ export class DSG {
    * Restores a previously exported session. Allows the protocol to continue from
    * where it left off, as if the round state was loaded from a database.
    */
-  restoreSession(session: string): void {
+  async restoreSession(session: string): Promise<void> {
+    await this.loadWasmMps();
     const data = JSON.parse(session);
     if (!Object.values(DsgState).includes(data.dsgRound)) {
       throw Error(`Invalid dsgRound in session: ${data.dsgRound}`);

@@ -1985,7 +1985,7 @@ export class Sol extends BaseCoin {
         throw new Error('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
       }
 
-      const signature = EDDSAUtils.signRecoveryEddsaMPCv2(
+      const signature = await EDDSAUtils.signRecoveryEddsaMPCv2(
         unsignedTransaction.signablePayload,
         currPath,
         userKeyShare,
