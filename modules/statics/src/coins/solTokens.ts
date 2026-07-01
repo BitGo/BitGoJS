@@ -2,6 +2,7 @@ import { AccountCoin, ProgramID, SolCoin, solToken, tsolToken } from '../account
 import { CoinFeature, UnderlyingAsset } from '../base';
 import {
   SOL_TOKEN_FEATURES,
+  SOL_TOKEN_FEATURES_EXCLUDE_EUROPE,
   SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE,
   SOL_TOKEN_FEATURES_WITH_FRANKFURT,
   SOL_TOKEN_FEATURES_WITH_FRANKFURT_GERMANY,
@@ -77,7 +78,7 @@ export const solTokens = [
     'PRTLSwfLzpVGSAQiUfXEenJkq1cwTsEcsn1hPL9zwwg', // https://solscan.io/token/PRTLSwfLzpVGSAQiUfXEenJkq1cwTsEcsn1hPL9zwwg
     'PRTLSwfLzpVGSAQiUfXEenJkq1cwTsEcsn1hPL9zwwg',
     UnderlyingAsset['sol:portals'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_EUROPE
   ),
   solToken(
     '5367fe0f-1f39-48c1-8673-23cd6bc1f445',
@@ -283,7 +284,7 @@ export const solTokens = [
     'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE', // https://explorer.solana.com/address/orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE
     'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE',
     UnderlyingAsset['sol:orca'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_EUROPE
   ),
   solToken(
     '39022e21-d617-40d8-bf35-0a8a73a55a83',
@@ -570,7 +571,7 @@ export const solTokens = [
     'z3dn17yLaGMKffVogeFHQ9zWVcXgqgf3PQnDsNs2g6M',
     'z3dn17yLaGMKffVogeFHQ9zWVcXgqgf3PQnDsNs2g6M',
     UnderlyingAsset.OXY,
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_EUROPE
   ),
   solToken(
     'd1d5ce88-f892-4fe3-92be-7b28a1316aaa',
@@ -1891,7 +1892,7 @@ export const solTokens = [
     'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL',
     'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL',
     UnderlyingAsset['jto'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_EUROPE
   ),
   solToken(
     '407cfd7c-ff3d-4501-a0a5-4d53af00512a',
@@ -2251,7 +2252,7 @@ export const solTokens = [
     '2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo',
     '2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo',
     UnderlyingAsset['sol:pyusd'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    [...SOL_TOKEN_FEATURES_EXCLUDE_EUROPE, CoinFeature.STABLECOIN],
     ProgramID.Token2022ProgramId
   ),
   solToken(
@@ -2345,7 +2346,7 @@ export const solTokens = [
     'ABAq2R9gSpDDGguQxBk4u13s4ZYW6zbwKVBx15mCMG8',
     'ABAq2R9gSpDDGguQxBk4u13s4ZYW6zbwKVBx15mCMG8',
     UnderlyingAsset['sol:gt'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_EUROPE
   ),
   solToken(
     'a8ebc810-a065-486d-844e-10802fffbabc',
@@ -2355,7 +2356,7 @@ export const solTokens = [
     '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr',
     '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr',
     UnderlyingAsset['sol:popcat'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_EUROPE
   ),
   solToken(
     'ec3a6d0d-e6bf-4a2f-9e07-19bc81beee47',
@@ -2605,12 +2606,7 @@ export const solTokens = [
     'FUAfBo2jgks6gB4Z4LfZkqSZgzNucisEHqnNebaRxM1P',
     'FUAfBo2jgks6gB4Z4LfZkqSZgzNucisEHqnNebaRxM1P',
     UnderlyingAsset['sol:melania'],
-    [
-      ...SOL_TOKEN_FEATURES,
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
-      CoinFeature.CUSTODY_BITGO_GERMANY,
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ]
+    [...SOL_TOKEN_FEATURES_EXCLUDE_EUROPE, CoinFeature.CUSTODY_BITGO_SINGAPORE]
   ),
   solToken(
     '42b30171-13d3-4c18-befc-9643c701061f',
@@ -3036,7 +3032,7 @@ export const solTokens = [
     'USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB',
     'USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB',
     UnderlyingAsset['sol:usd1'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+    [...SOL_TOKEN_FEATURES_EXCLUDE_EUROPE, CoinFeature.STABLECOIN]
   ),
   solToken(
     '18e33ee6-dd70-437b-9153-e79ec01c475e',
@@ -3890,7 +3886,7 @@ export const solTokens = [
     'SonicxvLud67EceaEzCLRnMTBqzYUUYNr93DBkBdDES',
     'SonicxvLud67EceaEzCLRnMTBqzYUUYNr93DBkBdDES',
     UnderlyingAsset['sol:sonic'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_EUROPE
   ),
   solToken(
     '004e525b-3c31-4fb2-9346-636110623995',

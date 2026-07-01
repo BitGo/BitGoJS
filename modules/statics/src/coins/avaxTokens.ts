@@ -1,6 +1,9 @@
 import { AccountCoin, avaxErc20, tavaxErc20 } from '../account';
 import { CoinFeature, UnderlyingAsset } from '../base';
-import { ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE } from '../coinFeatures';
+import {
+  ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE,
+  ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
+} from '../coinFeatures';
 
 export const avaxTokens = [
   avaxErc20(
@@ -41,7 +44,8 @@ export const avaxTokens = [
     'Trader Joe',
     18,
     '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd',
-    UnderlyingAsset['avaxc:joe']
+    UnderlyingAsset['avaxc:joe'],
+    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE
   ),
   avaxErc20(
     'd0b1c811-6fb5-4628-b039-d7f1b1dd3fad',

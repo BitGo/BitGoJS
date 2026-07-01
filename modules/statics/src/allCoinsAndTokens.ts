@@ -81,10 +81,12 @@ import { flrp } from './flrp';
 import { hypeEvm } from './hypeevm';
 import { kaspa } from './kaspa';
 import {
+  ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
   ADA_FEATURES,
   ALGO_FEATURES,
   APT_FEATURES,
+  APT_FEATURES_EXCLUDE_EUROPE,
   ARBETH_FEATURES,
   ATOM_FEATURES,
   AVAXC_FEATURES,
@@ -134,6 +136,7 @@ import {
   TAO_FEATURES,
   TAO_TOKEN_FEATURES,
   TEMPO_FEATURES,
+  TEMPO_FEATURES_EXCLUDE_EUROPE,
   TEMPO_FEATURES_EXCLUDE_SINGAPORE,
   TIA_FEATURES,
   TOKEN_FEATURES_WITH_FRANKFURT,
@@ -2922,7 +2925,8 @@ export const allCoinsAndTokens = [
     18,
     '0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34',
     UnderlyingAsset['mantle:usde'],
-    Networks.main.mantle
+    Networks.main.mantle,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE, CoinFeature.EIP1559]
   ),
   erc20Token(
     'a33599fe-2245-49de-86ab-44eb1755ed30',
@@ -2949,7 +2953,8 @@ export const allCoinsAndTokens = [
     18,
     '0x111111d2bf19e43c34263401e0cad979ed1cdb61',
     UnderlyingAsset['mantle:usd1'],
-    Networks.main.mantle
+    Networks.main.mantle,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE, CoinFeature.EIP1559]
   ),
   // Mantle testnet tokens
   erc20Token(
@@ -3582,7 +3587,7 @@ export const allCoinsAndTokens = [
     '0x20c000000000000000000000111111111e910f0f',
     UnderlyingAsset['tempo:usd1'],
     [
-      ...TEMPO_FEATURES,
+      ...TEMPO_FEATURES_EXCLUDE_EUROPE,
       CoinFeature.STABLECOIN,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
@@ -4272,7 +4277,8 @@ export const allCoinsAndTokens = [
     18,
     '0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34',
     UnderlyingAsset['baseeth:usde'],
-    Networks.main.basechain
+    Networks.main.basechain,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE, CoinFeature.EIP1559]
   ),
   erc20Token(
     'e6caf804-8d29-4e32-b653-cbbdbb256f0e',
@@ -5111,7 +5117,8 @@ export const allCoinsAndTokens = [
     18,
     '0x111111d2bf19e43c34263401e0cad979ed1cdb61',
     UnderlyingAsset['morpheth:usd1'],
-    Networks.main.morpheth
+    Networks.main.morpheth,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE, CoinFeature.EIP1559]
   ),
 
   // MorphEth testnet tokens
@@ -5751,7 +5758,8 @@ export const allCoinsAndTokens = [
     'Tron Wrapped Bitcoin',
     8,
     'TXpw8XeWYeTUd4quDskoUqeQPowRh4jY65',
-    UnderlyingAsset.WBTC
+    UnderlyingAsset.WBTC,
+    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE
   ),
   tronToken(
     '2fab33a1-0a7b-4935-82c2-b0b5c22540ee',
@@ -5759,7 +5767,8 @@ export const allCoinsAndTokens = [
     'Tron Wrapped Ether',
     18,
     'TXWkP3jLBqRGojUih1ShzNyDaN5Csnebok',
-    UnderlyingAsset.WETH
+    UnderlyingAsset.WETH,
+    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE
   ),
   tronToken(
     'f950c2f5-508f-49e5-88a7-9de3da1f5cf9',
@@ -5810,7 +5819,7 @@ export const allCoinsAndTokens = [
     18,
     'TUpMhErZL2fhh4sVNULAbNKLokS4GjC1F4',
     UnderlyingAsset['trx:tusd'],
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE, CoinFeature.STABLECOIN]
   ),
   tronToken(
     '71084f91-30f3-4907-bbb0-ce26ea8584d5',
@@ -5844,7 +5853,7 @@ export const allCoinsAndTokens = [
     18,
     'TPFqcBAaaUMCSVRCqPaQ9QnzKhmuoLR6Rc',
     UnderlyingAsset['trx:usd1'],
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE, CoinFeature.STABLECOIN]
   ),
   tronToken(
     '35b44b0f-272c-4e13-8056-3bbab3fd609e',
@@ -6225,7 +6234,7 @@ export const allCoinsAndTokens = [
     'core.vaulta',
     'core.vaulta',
     UnderlyingAsset.VAULTA,
-    AccountCoin.DEFAULT_FEATURES,
+    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE,
     '',
     'VAULTA',
     'A'
@@ -6623,7 +6632,7 @@ export const allCoinsAndTokens = [
     18,
     '0x4d15a3a2286d883af0aa1b3f21367843fac63e07',
     UnderlyingAsset['arbeth:tusd'],
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE, CoinFeature.STABLECOIN]
   ),
   arbethErc20(
     'eb721759-6da6-46c3-b0d2-a7e9d939c527',
@@ -6655,7 +6664,8 @@ export const allCoinsAndTokens = [
     'Woo',
     18,
     '0xcafcd85d8ca7ad1e1c6f82f651fa15e33aefd07b',
-    UnderlyingAsset['arbeth:woo']
+    UnderlyingAsset['arbeth:woo'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE, CoinFeature.EIP1559]
   ),
   arbethErc20(
     'c8dbdec7-124b-41a0-98a2-88949dbefa72',
@@ -6736,7 +6746,8 @@ export const allCoinsAndTokens = [
     'LayerZero',
     18,
     '0x6985884c4392d348587b19cb9eaaf157f13271cd',
-    UnderlyingAsset['arbeth:zro']
+    UnderlyingAsset['arbeth:zro'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE, CoinFeature.EIP1559]
   ),
   arbethErc20(
     'e342adb7-3623-41c0-b8ae-1cb7cd046f70',
@@ -6961,7 +6972,15 @@ export const allCoinsAndTokens = [
     18,
     '0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a',
     UnderlyingAsset['arbeth:gmx'],
-    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE, CoinFeature.EIP1559]
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559]
+    )
   ),
 
   arbethErc20(
@@ -6970,7 +6989,8 @@ export const allCoinsAndTokens = [
     'Pendle',
     18,
     '0x0c880f6761f1af8d9aa9c466984b80dab9a8c9e8',
-    UnderlyingAsset['arbeth:pendle']
+    UnderlyingAsset['arbeth:pendle'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE, CoinFeature.EIP1559]
   ),
   arbethErc20(
     '98000a40-1674-4bff-8579-949d9dd1a733',
@@ -7121,7 +7141,7 @@ export const allCoinsAndTokens = [
     18,
     '0x4200000000000000000000000000000000000042',
     UnderlyingAsset['opeth:op'],
-    TOKEN_FEATURES_WITH_FRANKFURT
+    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE
   ),
   opethErc20(
     '0d045493-8667-4d86-b5c2-d90d2dd38ae5',
@@ -7379,7 +7399,8 @@ export const allCoinsAndTokens = [
     'Infrared Bera',
     18,
     '0x9b6761bf2397bb5a6624a856cc84a3a14dcd3fe5',
-    UnderlyingAsset['bera:ibera']
+    UnderlyingAsset['bera:ibera'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE, CoinFeature.EIP1559]
   ),
   beraErc20(
     'e2a5a47c-d188-44d5-a1c4-280973c99dbb',
@@ -8084,7 +8105,7 @@ export const allCoinsAndTokens = [
     6,
     '0x05fabd1b12e39967a3c24e91b7b8f67719a6dacee74f3c8b9fb7d93e855437d2',
     UnderlyingAsset['apt:usd1'],
-    [...APT_FEATURES, CoinFeature.STABLECOIN]
+    [...APT_FEATURES_EXCLUDE_EUROPE, CoinFeature.STABLECOIN]
   ),
   aptToken(
     'e8bfdab3-4ef6-4b39-9450-d9cb59593f7a',
