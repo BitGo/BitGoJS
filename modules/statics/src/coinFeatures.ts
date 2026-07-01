@@ -44,6 +44,10 @@ export const ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE = ACCO
   (feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE && feature !== CoinFeature.CUSTODY_BITGO_MENA_FZE
 );
 
+export const ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE = ACCOUNT_COIN_DEFAULT_FEATURES.filter(
+  (feature) => feature !== CoinFeature.CUSTODY_BITGO_EUROPE_APS && feature !== CoinFeature.CUSTODY_BITGO_FRANKFURT
+);
+
 export const ETH_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.SUPPORTS_TOKENS,
@@ -822,3 +826,25 @@ export const ERC7984_TOKEN_FEATURES = [
   CoinFeature.CONFIDENTIAL_TRANSFER,
   CoinFeature.REQUIRES_DECRYPTION_DELEGATION,
 ];
+
+export const ETH_FEATURES_EXCLUDE_EUROPE = ETH_FEATURES.filter(
+  (feature) => feature !== CoinFeature.CUSTODY_BITGO_EUROPE_APS && feature !== CoinFeature.CUSTODY_BITGO_FRANKFURT
+);
+export const POLYGON_TOKEN_FEATURES_EXCLUDE_EUROPE = POLYGON_TOKEN_FEATURES.filter(
+  (feature) => feature !== CoinFeature.CUSTODY_BITGO_EUROPE_APS && feature !== CoinFeature.CUSTODY_BITGO_FRANKFURT
+);
+export const SOL_TOKEN_FEATURES_EXCLUDE_EUROPE = SOL_TOKEN_FEATURES.filter(
+  (feature) => feature !== CoinFeature.CUSTODY_BITGO_EUROPE_APS && feature !== CoinFeature.CUSTODY_BITGO_FRANKFURT
+);
+export const BSC_TOKEN_FEATURES_EXCLUDE_EUROPE = BSC_TOKEN_FEATURES.filter(
+  (feature) => feature !== CoinFeature.CUSTODY_BITGO_EUROPE_APS && feature !== CoinFeature.CUSTODY_BITGO_FRANKFURT
+);
+export const TON_TOKEN_FEATURES_EXCLUDE_EUROPE = TON_TOKEN_FEATURES.filter(
+  (feature) => feature !== CoinFeature.CUSTODY_BITGO_EUROPE_APS && feature !== CoinFeature.CUSTODY_BITGO_FRANKFURT
+);
+export const TEMPO_FEATURES_EXCLUDE_EUROPE = TEMPO_FEATURES.filter(
+  (feature) => feature !== CoinFeature.CUSTODY_BITGO_EUROPE_APS && feature !== CoinFeature.CUSTODY_BITGO_FRANKFURT
+);
+export const APT_FEATURES_EXCLUDE_EUROPE = APT_FEATURES.filter(
+  (feature) => feature !== CoinFeature.CUSTODY_BITGO_EUROPE_APS && feature !== CoinFeature.CUSTODY_BITGO_FRANKFURT
+);

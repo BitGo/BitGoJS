@@ -1,6 +1,6 @@
 import { jettonToken, tjettonToken } from '../account';
 import { UnderlyingAsset } from '../base';
-import { TON_TOKEN_FEATURES } from '../coinFeatures';
+import { TON_TOKEN_FEATURES, TON_TOKEN_FEATURES_EXCLUDE_EUROPE } from '../coinFeatures';
 
 export const jettonTokens = [
   // mainnet tokens
@@ -20,7 +20,7 @@ export const jettonTokens = [
     6,
     'EQAIb6KmdfdDR7CN1GBqVJuP25iCnLKCvBlJ07Evuu2dzP5f',
     UnderlyingAsset['ton:usde'],
-    TON_TOKEN_FEATURES
+    TON_TOKEN_FEATURES_EXCLUDE_EUROPE
   ),
   jettonToken(
     '3879d8a3-5273-455e-9c9d-de6784953b34',

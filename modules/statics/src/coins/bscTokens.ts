@@ -2,6 +2,7 @@ import { AccountCoin, bscToken, tbscToken } from '../account';
 import { CoinFeature, UnderlyingAsset } from '../base';
 import {
   BSC_TOKEN_FEATURES,
+  BSC_TOKEN_FEATURES_EXCLUDE_EUROPE,
   BSC_TOKEN_FEATURES_EXCLUDE_MENA_FZE,
   BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE,
 } from '../coinFeatures';
@@ -398,7 +399,7 @@ export const bscTokens = [
     6,
     '0xce7de646e7208a4ef112cb6ed5038fa6cc6b12e3',
     UnderlyingAsset['bsc:trx'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_EUROPE
   ),
   bscToken(
     '3239d21c-81fd-4fc9-86d9-6b9999d0c6d9',
@@ -782,7 +783,7 @@ export const bscTokens = [
     18,
     '0x40af3827f39d0eacbf4a168f8d4ee67c121d11c9',
     UnderlyingAsset['bsc:tusd'],
-    [...BSC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+    [...BSC_TOKEN_FEATURES_EXCLUDE_EUROPE, CoinFeature.STABLECOIN]
   ),
   bscToken(
     '75d857f8-577a-4daa-becc-32be8c2f9366',
@@ -1037,7 +1038,7 @@ export const bscTokens = [
     18,
     '0x76f3ce6af26de7a9854dbd153acd8f46a2cf5133',
     UnderlyingAsset['bsc:glmr'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_EUROPE
   ),
   bscToken(
     'bcc8389e-a3bf-493d-89a8-3d95676e817c',
@@ -1130,7 +1131,7 @@ export const bscTokens = [
     18,
     '0x8d0d000ee44948fc98c9b98a4fa4921476f08b0d',
     UnderlyingAsset['bsc:usd1'],
-    [...BSC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+    [...BSC_TOKEN_FEATURES_EXCLUDE_EUROPE, CoinFeature.STABLECOIN]
   ),
   bscToken(
     '290801fc-fc48-4b5d-b5e7-abbc2101de13',
@@ -1314,6 +1315,8 @@ export const bscTokens = [
         CoinFeature.CUSTODY_BITGO_SINGAPORE,
         CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
         CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
       ],
       BSC_TOKEN_FEATURES
     )
