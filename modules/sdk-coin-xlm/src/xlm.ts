@@ -121,9 +121,13 @@ interface TransactionMemo {
 
 interface TransactionOperation {
   type: string;
-  coin: string;
+  coin?: string;
   limit?: string;
   asset?: stellar.Asset;
+  setFlags?: number;
+  clearFlags?: number;
+  trustor?: string;
+  flags?: Record<string, boolean>;
 }
 
 interface TransactionOutput extends BaseTransactionOutput {
@@ -144,8 +148,42 @@ interface TrustlineOptions {
   limit?: string;
 }
 
+/**
+ * Subset of Stellar account flags that can be toggled via setOptions.
+ * ImmutableFlag is intentionally excluded — it is irreversible.
+ */
+interface XlmAccountFlags {
+  authRequired?: boolean;
+  authRevocable?: boolean;
+  authClawbackEnabled?: boolean;
+}
+
+/**
+ * Account flag configuration using explicit setFlags/clearFlags objects.
+ * Mirrors the Stellar setOptions operation — a flag in setFlags is enabled,
+ * a flag in clearFlags is disabled, absent flags are left unchanged.
+ * A flag must not appear in both setFlags and clearFlags simultaneously.
+ */
+interface AccountConfigOptions {
+  setFlags?: XlmAccountFlags;
+  clearFlags?: XlmAccountFlags;
+}
+
+/**
+ * Options for issuer-side trustline authorization via setTrustLineFlags.
+ * authorized = true grants permission; false revokes it (freezes the holder's balance).
+ */
+interface AuthorizeTrustlineOptions {
+  trustorAddress: string;
+  assetCode: string;
+  assetIssuer: string;
+  authorized: boolean;
+}
+
 interface TransactionParams extends BaseTransactionParams {
   trustlines?: TrustlineOptions[];
+  accountConfig?: AccountConfigOptions;
+  authorizeTrustline?: AuthorizeTrustlineOptions;
 }
 
 interface VerifyTransactionOptions extends BaseVerifyTransactionOptions {
@@ -620,12 +658,17 @@ export class Xlm extends BaseCoin {
   }
 
   /**
-   * Get extra parameters for prebuilding a tx
-   * Set empty recipients array in trustline txs
+   * Get extra parameters for prebuilding a tx.
+   * Trustline, accountConfig, and authorizeTrustline txs carry no recipients.
    */
   async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions): Promise<BuildOptions> {
     const params: { recipients?: Record<string, string>[] } = {};
-    if (buildParams.type === 'trustline') {
+    if (
+      buildParams.type === 'trustline' ||
+      buildParams.type === 'accountConfig' ||
+      buildParams.type === 'authorizeTrustline'
+    ) {
+      // These transaction types operate on account or trustline state — no fund recipients.
       params.recipients = [];
     }
     return params;
@@ -961,6 +1004,19 @@ export class Xlm extends BaseCoin {
           asset,
           limit: this.bigUnitsToBaseUnits(op.limit),
         });
+      } else if (op.type === 'setOptions') {
+        operations.push({
+          type: op.type,
+          setFlags: op.setFlags,
+          clearFlags: op.clearFlags,
+        });
+      } else if (op.type === 'setTrustLineFlags') {
+        operations.push({
+          type: op.type,
+          trustor: op.trustor,
+          asset: op.asset,
+          flags: op.flags,
+        });
       }
     });
 
@@ -1064,6 +1120,91 @@ export class Xlm extends BaseCoin {
         throw new Error('transaction prebuild does not match expected trustline tokens');
       }
     });
+  }
+
+  /**
+   * Verify that an accountConfig transaction contains exactly one setOptions operation
+   * whose setFlags/clearFlags bitmasks match the requested flag changes.
+   *
+   * Stellar flag bitmask values:
+   *   AuthRequiredFlag        = 0x1
+   *   AuthRevocableFlag       = 0x2
+   *   AuthClawbackEnabledFlag = 0x8
+   */
+  verifyAccountConfigTxOperations(operations: stellar.Operation[], txParams: TransactionParams): void {
+    if (!txParams.accountConfig) {
+      throw new Error('accountConfig txParams missing accountConfig field');
+    }
+    const setOptionsOps = operations.filter((op) => op.type === 'setOptions');
+    if (setOptionsOps.length !== 1) {
+      throw new Error(
+        `accountConfig transaction must have exactly 1 setOptions operation, got ${setOptionsOps.length}`
+      );
+    }
+    const op = setOptionsOps[0] as stellar.Operation.SetOptions;
+    const { setFlags: flagsToSet, clearFlags: flagsToClear } = txParams.accountConfig;
+
+    // Build expected bitmasks from the structured setFlags/clearFlags objects.
+    let expectedSetMask = 0;
+    let expectedClearMask = 0;
+    if (flagsToSet?.authRequired) expectedSetMask |= stellar.AuthRequiredFlag;
+    if (flagsToSet?.authRevocable) expectedSetMask |= stellar.AuthRevocableFlag;
+    if (flagsToSet?.authClawbackEnabled) expectedSetMask |= stellar.AuthClawbackEnabledFlag;
+    if (flagsToClear?.authRequired) expectedClearMask |= stellar.AuthRequiredFlag;
+    if (flagsToClear?.authRevocable) expectedClearMask |= stellar.AuthRevocableFlag;
+    if (flagsToClear?.authClawbackEnabled) expectedClearMask |= stellar.AuthClawbackEnabledFlag;
+
+    const actualSetMask = (op.setFlags ?? 0) as number;
+    const actualClearMask = (op.clearFlags ?? 0) as number;
+    if (actualSetMask !== expectedSetMask) {
+      throw new Error(
+        `accountConfig setFlags mismatch: expected 0x${expectedSetMask.toString(16)}, got 0x${actualSetMask.toString(
+          16
+        )}`
+      );
+    }
+    if (actualClearMask !== expectedClearMask) {
+      throw new Error(
+        `accountConfig clearFlags mismatch: expected 0x${expectedClearMask.toString(
+          16
+        )}, got 0x${actualClearMask.toString(16)}`
+      );
+    }
+  }
+
+  /**
+   * Verify that an authorizeTrustline transaction contains exactly one setTrustLineFlags
+   * operation targeting the expected trustor, asset, and authorization state.
+   */
+  verifyAuthorizeTrustlineTxOperations(operations: stellar.Operation[], txParams: TransactionParams): void {
+    if (!txParams.authorizeTrustline) {
+      throw new Error('authorizeTrustline txParams missing authorizeTrustline field');
+    }
+    const authOps = operations.filter((op) => op.type === 'setTrustLineFlags');
+    if (authOps.length !== 1) {
+      throw new Error(
+        `authorizeTrustline transaction must have exactly 1 setTrustLineFlags operation, got ${authOps.length}`
+      );
+    }
+    const op = authOps[0] as stellar.Operation.SetTrustLineFlags;
+    const { trustorAddress, assetCode, assetIssuer, authorized } = txParams.authorizeTrustline;
+
+    if (op.trustor !== trustorAddress) {
+      throw new Error(`authorizeTrustline trustor mismatch: expected ${trustorAddress}, got ${op.trustor}`);
+    }
+    const asset = op.asset as stellar.Asset;
+    if (asset.getCode() !== assetCode) {
+      throw new Error(`authorizeTrustline asset code mismatch: expected ${assetCode}, got ${asset.getCode()}`);
+    }
+    if (asset.getIssuer() !== assetIssuer) {
+      throw new Error(`authorizeTrustline asset issuer mismatch: expected ${assetIssuer}, got ${asset.getIssuer()}`);
+    }
+    // The Stellar SDK decodes setTrustLineFlags flags as a plain object { authorized?: boolean, ... }
+    const flagsObj = op.flags as { authorized?: boolean };
+    const actualAuthorized = flagsObj?.authorized ?? false;
+    if (actualAuthorized !== authorized) {
+      throw new Error(`authorizeTrustline authorized flag mismatch: expected ${authorized}, got ${actualAuthorized}`);
+    }
   }
 
   getRecipientOrThrow(txParams: TransactionParams): ITransactionRecipient {
@@ -1199,6 +1340,10 @@ export class Xlm extends BaseCoin {
       this.verifyTokenLimits(txParams, trustlineOperations);
     } else if (txParams.type === 'trustline') {
       this.verifyTrustlineTxOperations(tx.operations, txParams);
+    } else if (txParams.type === 'accountConfig') {
+      this.verifyAccountConfigTxOperations(tx.operations, txParams);
+    } else if (txParams.type === 'authorizeTrustline') {
+      this.verifyAuthorizeTrustlineTxOperations(tx.operations, txParams);
     } else {
       if (_.isEmpty(outputOperations)) {
         throw new Error('transaction prebuild does not have any operations');

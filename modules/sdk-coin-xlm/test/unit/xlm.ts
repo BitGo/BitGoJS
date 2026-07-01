@@ -250,6 +250,71 @@ describe('XLM:', function () {
     explanation.operations[0].asset.issuer.should.equal('GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU');
   });
 
+  it('Should explain a setOptions (accountConfig) transaction', async function () {
+    // Build a setOptions tx that sets authRequired (0x1) and clears authClawbackEnabled (0x8).
+    const keypair = stellar.Keypair.fromSecret('SAQDKA5TZKTP2XZ67ZZ5MWDR7EJZFBAGVMRYITKEL5SABJ3ZTJN5WMWQ');
+    const account = new stellar.Account(keypair.publicKey(), '0');
+    const txBase64 = new stellar.TransactionBuilder(account, {
+      fee: '100',
+      networkPassphrase: stellar.Networks.TESTNET,
+    })
+      .addOperation(
+        stellar.Operation.setOptions({
+          setFlags: stellar.AuthRequiredFlag as stellar.AuthFlag,
+          clearFlags: stellar.AuthClawbackEnabledFlag as stellar.AuthFlag,
+        })
+      )
+      .setTimeout(0)
+      .build()
+      .toEnvelope()
+      .toXDR('base64');
+
+    const explanation = await basecoin.explainTransaction({ txBase64 });
+
+    explanation.outputAmount.should.equal('0');
+    explanation.outputs.length.should.equal(0);
+    explanation.operations.length.should.equal(1);
+    // setFlags and clearFlags are decoded as numeric bitmasks by the Stellar SDK
+    explanation.operations[0].type.should.equal('setOptions');
+    explanation.operations[0].setFlags.should.equal(stellar.AuthRequiredFlag);
+    explanation.operations[0].clearFlags.should.equal(stellar.AuthClawbackEnabledFlag);
+  });
+
+  it('Should explain a setTrustLineFlags (authorizeTrustline) transaction', async function () {
+    // Build a setTrustLineFlags tx granting authorization to a holder's trustline.
+    const issuer = stellar.Keypair.fromSecret('SAQDKA5TZKTP2XZ67ZZ5MWDR7EJZFBAGVMRYITKEL5SABJ3ZTJN5WMWQ');
+    const holderAddress = 'GAJTPNROWXZN4ILJ7K3K3BAAKF7M3E7B3F2P6YTGMIFBW7OZX6KDBSBB';
+    const asset = new stellar.Asset('BGTKN', issuer.publicKey());
+    const account = new stellar.Account(issuer.publicKey(), '0');
+    const txBase64 = new stellar.TransactionBuilder(account, {
+      fee: '100',
+      networkPassphrase: stellar.Networks.TESTNET,
+    })
+      .addOperation(
+        stellar.Operation.setTrustLineFlags({
+          trustor: holderAddress,
+          asset,
+          flags: { authorized: true },
+        })
+      )
+      .setTimeout(0)
+      .build()
+      .toEnvelope()
+      .toXDR('base64');
+
+    const explanation = await basecoin.explainTransaction({ txBase64 });
+
+    explanation.outputAmount.should.equal('0');
+    explanation.outputs.length.should.equal(0);
+    explanation.operations.length.should.equal(1);
+    explanation.operations[0].type.should.equal('setTrustLineFlags');
+    explanation.operations[0].trustor.should.equal(holderAddress);
+    // The Stellar SDK decodes flags as a plain object after XDR round-trip
+    (explanation.operations[0].flags as any).authorized.should.equal(true);
+    (explanation.operations[0].asset as stellar.Asset).getCode().should.equal('BGTKN');
+    (explanation.operations[0].asset as stellar.Asset).getIssuer().should.equal(issuer.publicKey());
+  });
+
   it('Should explain a token transaction', async function () {
     const explanation = await basecoin.explainTransaction({
       txBase64:
@@ -1013,6 +1078,313 @@ describe('XLM:', function () {
           message: 'Invalid token code on token enablement operation: expected BST, got TST',
         }
       );
+    });
+  });
+
+  describe('accountConfig transactions', function () {
+    // Issuer keypair used as the source account for all accountConfig test transactions.
+    const issuerKeypair = stellar.Keypair.fromSecret('SAQDKA5TZKTP2XZ67ZZ5MWDR7EJZFBAGVMRYITKEL5SABJ3ZTJN5WMWQ');
+    const testnet = stellar.Networks.TESTNET;
+
+    // wallet and keychains needed by verifyTransaction — reuse the same test fixtures
+    // as the Transaction Verification describe block so the key math stays consistent
+    let wallet;
+    const userKeychain = {
+      pub: 'GA34NPQ4M54HHZBKSDZ5B3J3BZHTXKCZD4UFO2OYZERPOASK4DAATSIB',
+      prv: 'SDADJSTZNIKF46NM7LE3ZHMX4TJ2VJBL7PTERNDLWHZ5U6KNO5S7XFJD',
+    };
+    const backupKeychain = {
+      pub: 'GC3D3ZNNK7GHLMSWJA54DQO6QJUJJF7K6J5JGCEW45ZT6QMKZ6PMUHUM',
+      prv: 'SA22TDBINLZMGYUDVXGUP2JMYIQ3DTJE53PNQUVCDK73XRS6TDVYU7WW',
+    };
+
+    before(function () {
+      const walletData = {
+        id: '5a78dd561c6258a907f1eeaee132f796',
+        coin: 'txlm',
+        keys: [
+          '5a78dd56bfe424aa07aa068651b194fd',
+          '5a78dd5674a70eb4079f58797dfe2f5e',
+          '5a78dd561c6258a907f1eea9f1d079e2',
+        ],
+        coinSpecific: {},
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+    });
+
+    /**
+     * Build a minimal setOptions transaction with the given setFlags/clearFlags bitmasks.
+     * Returns a txBase64 string suitable for use as a txPrebuild in verifyTransaction.
+     */
+    function buildSetOptionsTx(setFlagsMask: number, clearFlagsMask: number): string {
+      const account = new stellar.Account(issuerKeypair.publicKey(), '0');
+      const tx = new stellar.TransactionBuilder(account, { fee: '100', networkPassphrase: testnet })
+        .addOperation(
+          stellar.Operation.setOptions({
+            setFlags: setFlagsMask as stellar.AuthFlag,
+            clearFlags: clearFlagsMask as stellar.AuthFlag,
+          })
+        )
+        .setTimeout(0)
+        .build();
+      return tx.toEnvelope().toXDR('base64');
+    }
+
+    it('should verify an accountConfig transaction that sets authRequired and authRevocable', async function () {
+      // Setting two flags simultaneously — bitmask 0x1 | 0x2 = 3
+      const txBase64 = buildSetOptionsTx(stellar.AuthRequiredFlag | stellar.AuthRevocableFlag, 0);
+      const txPrebuild = { txBase64 };
+      const txParams = {
+        type: 'accountConfig',
+        recipients: [],
+        accountConfig: {
+          setFlags: { authRequired: true, authRevocable: true },
+        },
+      };
+      const result = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet,
+        verification: {
+          disableNetworking: true,
+          keychains: { user: { pub: userKeychain.pub }, backup: { pub: backupKeychain.pub } },
+        },
+      });
+      result.should.equal(true);
+    });
+
+    it('should verify an accountConfig transaction that clears authClawbackEnabled', async function () {
+      // Clearing a single flag — bitmask 0x8
+      const txBase64 = buildSetOptionsTx(0, stellar.AuthClawbackEnabledFlag);
+      const txPrebuild = { txBase64 };
+      const txParams = {
+        type: 'accountConfig',
+        recipients: [],
+        accountConfig: {
+          clearFlags: { authClawbackEnabled: true },
+        },
+      };
+      const result = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet,
+        verification: {
+          disableNetworking: true,
+          keychains: { user: { pub: userKeychain.pub }, backup: { pub: backupKeychain.pub } },
+        },
+      });
+      result.should.equal(true);
+    });
+
+    it('should fail verification when setFlags bitmask does not match txParams', async function () {
+      // Transaction sets only authRequired (0x1) but txParams expects authRequired + authRevocable (0x3)
+      const txBase64 = buildSetOptionsTx(stellar.AuthRequiredFlag, 0);
+      const txPrebuild = { txBase64 };
+      const txParams = {
+        type: 'accountConfig',
+        recipients: [],
+        accountConfig: {
+          setFlags: { authRequired: true, authRevocable: true },
+        },
+      };
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet,
+          verification: {
+            disableNetworking: true,
+            keychains: { user: { pub: userKeychain.pub }, backup: { pub: backupKeychain.pub } },
+          },
+        })
+        .should.be.rejectedWith(/accountConfig setFlags mismatch/);
+    });
+
+    it('should fail verification when accountConfig field is missing from txParams', async function () {
+      const txBase64 = buildSetOptionsTx(stellar.AuthRequiredFlag, 0);
+      const txPrebuild = { txBase64 };
+      const txParams = { type: 'accountConfig', recipients: [] };
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet,
+          verification: {
+            disableNetworking: true,
+            keychains: { user: { pub: userKeychain.pub }, backup: { pub: backupKeychain.pub } },
+          },
+        })
+        .should.be.rejectedWith(/accountConfig txParams missing accountConfig field/);
+    });
+  });
+
+  describe('authorizeTrustline transactions', function () {
+    const issuerKeypair = stellar.Keypair.fromSecret('SAQDKA5TZKTP2XZ67ZZ5MWDR7EJZFBAGVMRYITKEL5SABJ3ZTJN5WMWQ');
+    const holderAddress = 'GAJTPNROWXZN4ILJ7K3K3BAAKF7M3E7B3F2P6YTGMIFBW7OZX6KDBSBB';
+    const testnet = stellar.Networks.TESTNET;
+    const assetCode = 'BGTKN';
+
+    let wallet;
+    const userKeychain = {
+      pub: 'GA34NPQ4M54HHZBKSDZ5B3J3BZHTXKCZD4UFO2OYZERPOASK4DAATSIB',
+      prv: 'SDADJSTZNIKF46NM7LE3ZHMX4TJ2VJBL7PTERNDLWHZ5U6KNO5S7XFJD',
+    };
+    const backupKeychain = {
+      pub: 'GC3D3ZNNK7GHLMSWJA54DQO6QJUJJF7K6J5JGCEW45ZT6QMKZ6PMUHUM',
+      prv: 'SA22TDBINLZMGYUDVXGUP2JMYIQ3DTJE53PNQUVCDK73XRS6TDVYU7WW',
+    };
+
+    before(function () {
+      const walletData = {
+        id: '5a78dd561c6258a907f1eeaee132f796',
+        coin: 'txlm',
+        keys: [
+          '5a78dd56bfe424aa07aa068651b194fd',
+          '5a78dd5674a70eb4079f58797dfe2f5e',
+          '5a78dd561c6258a907f1eea9f1d079e2',
+        ],
+        coinSpecific: {},
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+    });
+
+    /**
+     * Build a setTrustLineFlags transaction granting or revoking authorization.
+     * authorized=true sets AUTHORIZED_FLAG (1); authorized=false clears it.
+     */
+    function buildSetTrustLineFlagsTx(authorized: boolean): string {
+      const asset = new stellar.Asset(assetCode, issuerKeypair.publicKey());
+      const account = new stellar.Account(issuerKeypair.publicKey(), '0');
+      const tx = new stellar.TransactionBuilder(account, { fee: '100', networkPassphrase: testnet })
+        .addOperation(
+          stellar.Operation.setTrustLineFlags({
+            trustor: holderAddress,
+            asset,
+            flags: { authorized },
+          })
+        )
+        .setTimeout(0)
+        .build();
+      return tx.toEnvelope().toXDR('base64');
+    }
+
+    it('should verify an authorizeTrustline transaction that grants authorization', async function () {
+      const txBase64 = buildSetTrustLineFlagsTx(true);
+      const txPrebuild = { txBase64 };
+      const txParams = {
+        type: 'authorizeTrustline',
+        recipients: [],
+        authorizeTrustline: {
+          trustorAddress: holderAddress,
+          assetCode,
+          assetIssuer: issuerKeypair.publicKey(),
+          authorized: true,
+        },
+      };
+      const result = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet,
+        verification: {
+          disableNetworking: true,
+          keychains: { user: { pub: userKeychain.pub }, backup: { pub: backupKeychain.pub } },
+        },
+      });
+      result.should.equal(true);
+    });
+
+    it('should verify an authorizeTrustline transaction that revokes authorization', async function () {
+      const txBase64 = buildSetTrustLineFlagsTx(false);
+      const txPrebuild = { txBase64 };
+      const txParams = {
+        type: 'authorizeTrustline',
+        recipients: [],
+        authorizeTrustline: {
+          trustorAddress: holderAddress,
+          assetCode,
+          assetIssuer: issuerKeypair.publicKey(),
+          authorized: false,
+        },
+      };
+      const result = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet,
+        verification: {
+          disableNetworking: true,
+          keychains: { user: { pub: userKeychain.pub }, backup: { pub: backupKeychain.pub } },
+        },
+      });
+      result.should.equal(true);
+    });
+
+    it('should fail verification when trustor address does not match', async function () {
+      const txBase64 = buildSetTrustLineFlagsTx(true);
+      const txPrebuild = { txBase64 };
+      const txParams = {
+        type: 'authorizeTrustline',
+        recipients: [],
+        authorizeTrustline: {
+          trustorAddress: 'GBIEJQUARJ33DIZU4AIRDOKYPSVK66Z3O5XU7OOI7LUOAJWTPI4OA4JI', // wrong trustor
+          assetCode,
+          assetIssuer: issuerKeypair.publicKey(),
+          authorized: true,
+        },
+      };
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet,
+          verification: {
+            disableNetworking: true,
+            keychains: { user: { pub: userKeychain.pub }, backup: { pub: backupKeychain.pub } },
+          },
+        })
+        .should.be.rejectedWith(/authorizeTrustline trustor mismatch/);
+    });
+
+    it('should fail verification when asset code does not match', async function () {
+      const txBase64 = buildSetTrustLineFlagsTx(true);
+      const txPrebuild = { txBase64 };
+      const txParams = {
+        type: 'authorizeTrustline',
+        recipients: [],
+        authorizeTrustline: {
+          trustorAddress: holderAddress,
+          assetCode: 'USDC', // wrong asset code
+          assetIssuer: issuerKeypair.publicKey(),
+          authorized: true,
+        },
+      };
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet,
+          verification: {
+            disableNetworking: true,
+            keychains: { user: { pub: userKeychain.pub }, backup: { pub: backupKeychain.pub } },
+          },
+        })
+        .should.be.rejectedWith(/authorizeTrustline asset code mismatch/);
+    });
+
+    it('should fail verification when authorizeTrustline field is missing from txParams', async function () {
+      const txBase64 = buildSetTrustLineFlagsTx(true);
+      const txPrebuild = { txBase64 };
+      const txParams = { type: 'authorizeTrustline', recipients: [] };
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet,
+          verification: {
+            disableNetworking: true,
+            keychains: { user: { pub: userKeychain.pub }, backup: { pub: backupKeychain.pub } },
+          },
+        })
+        .should.be.rejectedWith(/authorizeTrustline txParams missing authorizeTrustline field/);
     });
   });
 
