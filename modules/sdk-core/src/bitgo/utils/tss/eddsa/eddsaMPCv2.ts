@@ -13,7 +13,7 @@ import {
   MPCv2PartyFromStringOrNumber,
 } from '@bitgo/public-types';
 import { ed25519 } from '@noble/curves/ed25519';
-import { deriveUnhardenedMps, EddsaMPSDkg, EddsaMPSDsg, MPSComms, MPSTypes, MPSUtil } from '@bitgo/sdk-lib-mpc';
+import { EddsaMPSDkg, EddsaMPSDsg, MPSComms, MPSTypes, MPSUtil } from '@bitgo/sdk-lib-mpc';
 import { KeychainsTriplet } from '../../../baseCoin';
 import { AddKeychainOptions, Keychain, KeyType, WebauthnKeyEncryptionInfo } from '../../../keychain';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoEddsaMpcv2PubKey } from '../../../tss/bitgoPubKeys';
@@ -26,6 +26,7 @@ import {
   verifyPeerMessageRoundOne,
   verifyPeerMessageRoundTwo,
 } from '../../../tss/eddsa/eddsaMPCv2';
+import { getInitializedMpcInstance } from '../../../tss/eddsa/eddsa';
 import { generateGPGKeyPair } from '../../opengpgUtils';
 import { MPCv2PartiesEnum } from '../ecdsa/typesMPCv2';
 import {
@@ -1015,7 +1016,7 @@ export async function getEddsaMpcV2RecoveryKeySharesFromReducedKey(
  * Ed25519 signature against the public key derived from the common keychain.
  *
  * @param message raw bytes to sign
- * @param derivationPath BIP-32-style derivation path, e.g. `"m/0/0"`
+ * @param derivationPath BIP-32-style derivation path, e.g. `"m/0"`
  * @param userKeyShare opaque MPS signing key-share bytes for the user party
  * @param backupKeyShare opaque MPS signing key-share bytes for the backup party
  * @param commonKeyChain 128-hex-char string: 32-byte pub + 32-byte rootChainCode
@@ -1041,8 +1042,10 @@ export async function signRecoveryEddsaMPCv2(
     derivationPath
   )) as Buffer;
 
-  // deriveUnhardenedMps returns 128 hex chars: first 64 are the 32-byte public key
-  const derivedKeychain = deriveUnhardenedMps(commonKeyChain, derivationPath);
+  // Use Eddsa.deriveUnhardened (BIP32-Ed25519), which matches what DSG uses
+  // internally for path derivation since wasm-mps 1.9.0.
+  const mpc = await getInitializedMpcInstance();
+  const derivedKeychain = mpc.deriveUnhardened(commonKeyChain, derivationPath);
   const publicKeyBytes = Buffer.from(derivedKeychain.slice(0, 64), 'hex');
 
   const verified = ed25519.verify(new Uint8Array(signature), new Uint8Array(message), new Uint8Array(publicKeyBytes));
