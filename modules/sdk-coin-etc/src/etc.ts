@@ -296,11 +296,11 @@ export class Etc extends AbstractEthLikeCoin {
       params: [address, 'latest'],
       id: 1,
     });
-    if (!result || isNaN(result.result)) {
+    if (!result || !result.result || typeof result.result !== 'string' || !/^0x[0-9a-fA-F]*$/.test(result.result)) {
       throw new Error('Unable to find next nonce from etc.network, got: ' + JSON.stringify(result));
     }
     const nonceHex = result.result;
-    return new optionalDeps.ethUtil.BN(nonceHex.slice(2), 16).toNumber();
+    return new optionalDeps.ethUtil.BN(nonceHex.slice(2) || '0', 16).toNumber();
   }
 
   /**
@@ -322,13 +322,13 @@ export class Etc extends AbstractEthLikeCoin {
     } else if (result.error) {
       // throw if result.error exists
       throw new Error(`Could not obtain address balance for ${address} from etc.network, got: ${result.error}`);
-    } else if (!result.result || isNaN(result.result)) {
-      // throw if the result.result is not a number
+    } else if (!result.result || typeof result.result !== 'string' || !/^0x[0-9a-fA-F]*$/.test(result.result)) {
       throw new Error(`Could not obtain address balance for ${address} from etc.network, got: Incorrect Balance Hex`);
     }
 
     const nativeBalanceHex = result.result;
-    return new optionalDeps.ethUtil.BN(nativeBalanceHex.slice(2), 16);
+    // slice(2) strips '0x'; fall back to '0' if bare '0x' is returned for zero balance
+    return new optionalDeps.ethUtil.BN(nativeBalanceHex.slice(2) || '0', 16);
   }
   /**
    * Queries the contract (via explorer API) for the next sequence ID
