@@ -224,11 +224,11 @@ describe('Ethereum Hop Transactions', function () {
     let gasLimitEstimate;
     let gasPrice;
 
-    const nockUserKey = function () {
+    const nockUserKey = async function () {
       nock(bgUrl)
         .get(`/api/v2/teth/key/user`)
         .reply(200, {
-          encryptedPrv: bitgo.encrypt({ input: userKeypair.xprv, password: TestBitGo.TEST_WALLET1_PASSCODE }),
+          encryptedPrv: await bitgo.encrypt({ input: userKeypair.xprv, password: TestBitGo.TEST_WALLET1_PASSCODE }),
           path: userKeypair.path + userKeypair.walletSubPath,
         });
     };
@@ -272,7 +272,7 @@ describe('Ethereum Hop Transactions', function () {
     });
 
     it('should prebuild a hop transaction if given the correct args', async function () {
-      nockUserKey();
+      await nockUserKey();
       const feeScope = nockFees();
       nockBuild(ethWallet.id());
       const res = (await ethWallet.prebuildTransaction(buildParams)) as any;

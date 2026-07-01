@@ -689,7 +689,7 @@ describe('TRON:', function () {
         return undefined;
       });
 
-      mock.method(bitgo as any, 'decryptAsync', () => {
+      mock.method(bitgo as any, 'decrypt', () => {
         return Promise.resolve(TssTestRecoverData.userPrvKey);
       });
 
@@ -764,7 +764,7 @@ describe('TRON:', function () {
         return Promise.resolve(SampleRawTokenSendTxn);
       });
 
-      mock.method(bitgo as any, 'decryptAsync', () => {
+      mock.method(bitgo as any, 'decrypt', () => {
         return Promise.resolve(TssTestRecoverData.userPrvKey);
       });
 

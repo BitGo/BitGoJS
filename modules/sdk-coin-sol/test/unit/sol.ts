@@ -3061,8 +3061,8 @@ describe('SOL:', function () {
       const [otherUserDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
       const walletPassphrase = testData.keys.walletPassword;
 
-      mpcV2UserKey = encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
-      mpcV2BackupKey = encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2UserKey = await encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+      mpcV2BackupKey = await encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
       mpcV2CommonKeyChain = userDkg.getCommonKeychain();
       mpcV2WalletAddress = new KeyPair({
         pub: deriveUnhardenedMps(mpcV2CommonKeyChain, 'm/0').slice(0, 64),
@@ -3072,8 +3072,8 @@ describe('SOL:', function () {
         pub: deriveUnhardenedMps(mismatchedBitgoKey, 'm/0').slice(0, 64),
       }).getAddress();
 
-      mpcV2TokenUserKey = encrypt(walletPassphrase, tokenUserDkg.getReducedKeyShare().toString('base64'));
-      mpcV2TokenBackupKey = encrypt(walletPassphrase, tokenBackupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2TokenUserKey = await encrypt(walletPassphrase, tokenUserDkg.getReducedKeyShare().toString('base64'));
+      mpcV2TokenBackupKey = await encrypt(walletPassphrase, tokenBackupDkg.getReducedKeyShare().toString('base64'));
       mpcV2TokenCommonKeyChain = tokenUserDkg.getCommonKeychain();
       mpcV2TokenWalletAddress = new KeyPair({
         pub: deriveUnhardenedMps(mpcV2TokenCommonKeyChain, 'm/0').slice(0, 64),
@@ -3956,16 +3956,16 @@ describe('SOL:', function () {
       const [tokenUserDkg, tokenBackupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
       walletPassphrase = testData.keys.walletPassword;
 
-      mpcV2UserKey = encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
-      mpcV2BackupKey = encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2UserKey = await encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+      mpcV2BackupKey = await encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
       mpcV2CommonKeyChain = userDkg.getCommonKeychain();
 
       mpcV2Address1 = new KeyPair({ pub: deriveUnhardenedMps(mpcV2CommonKeyChain, 'm/1').slice(0, 64) }).getAddress();
       mpcV2Address2 = new KeyPair({ pub: deriveUnhardenedMps(mpcV2CommonKeyChain, 'm/2').slice(0, 64) }).getAddress();
       mpcV2Address3 = new KeyPair({ pub: deriveUnhardenedMps(mpcV2CommonKeyChain, 'm/3').slice(0, 64) }).getAddress();
 
-      mpcV2TokenUserKey = encrypt(walletPassphrase, tokenUserDkg.getReducedKeyShare().toString('base64'));
-      mpcV2TokenBackupKey = encrypt(walletPassphrase, tokenBackupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2TokenUserKey = await encrypt(walletPassphrase, tokenUserDkg.getReducedKeyShare().toString('base64'));
+      mpcV2TokenBackupKey = await encrypt(walletPassphrase, tokenBackupDkg.getReducedKeyShare().toString('base64'));
       mpcV2TokenCommonKeyChain = tokenUserDkg.getCommonKeychain();
 
       mpcV2TokenBaseAddress = new KeyPair({
@@ -4363,9 +4363,9 @@ describe('SOL:', function () {
       });
     });
 
-    it('should throw error if the commonKeychain is invalid', () => {
+    it('should throw error if the commonKeychain is invalid', async () => {
       const alteredCommonKeychain = generateRandomPassword(10);
-      assert.throws(
+      await assert.rejects(
         () =>
           basecoin.assertIsValidKey({
             encryptedPrv: key,
@@ -4379,9 +4379,9 @@ describe('SOL:', function () {
       );
     });
 
-    it('should throw error if the walletPassphrase is incorrect', () => {
+    it('should throw error if the walletPassphrase is incorrect', async () => {
       const incorrectPassphrase = 'foo';
-      assert.throws(
+      await assert.rejects(
         () =>
           basecoin.assertIsValidKey({
             encryptedPrv: key,
@@ -4390,14 +4390,14 @@ describe('SOL:', function () {
             multiSigType,
           }),
         {
-          message: "failed to decrypt prv: password error - ccm: tag doesn't match",
+          message: 'failed to decrypt prv: incorrect password',
         }
       );
     });
 
-    it('should throw error if the key is altered', () => {
+    it('should throw error if the key is altered', async () => {
       const alteredKey = key.replace(/[0-9]/g, '0');
-      assert.throws(
+      await assert.rejects(
         () =>
           basecoin.assertIsValidKey({
             encryptedPrv: alteredKey,
@@ -4406,7 +4406,7 @@ describe('SOL:', function () {
             multiSigType,
           }),
         {
-          message: 'failed to decrypt prv: json decrypt: invalid parameters',
+          message: 'failed to decrypt prv: decrypt: ciphertext is not valid JSON',
         }
       );
     });
@@ -4426,7 +4426,7 @@ describe('SOL:', function () {
         },
         multisigType: 'tss',
       };
-      const fakePrv = encrypt('password', 'prv');
+      const fakePrv = await encrypt('password', 'prv');
 
       const walletObj = new Wallet(bitgo, basecoin, walletData);
       const bgUrl = common.Environments['mock'].uri;

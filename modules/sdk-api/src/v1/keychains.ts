@@ -190,12 +190,12 @@ Keychains.prototype.updatePassword = function (params, callback) {
     const self = this;
     for (const [xpub, oldEncryptedXprv] of Object.entries((encrypted as any).keychains)) {
       try {
-        const decryptedPrv = await self.bitgo.decryptAsync({
+        const decryptedPrv = await self.bitgo.decrypt({
           input: oldEncryptedXprv as string,
           password: params.oldPassword,
         });
         const encryptionVersion = isV2Envelope(oldEncryptedXprv as string) ? 2 : 1;
-        const newEncryptedPrv = await self.bitgo.encryptAsync({
+        const newEncryptedPrv = await self.bitgo.encrypt({
           input: decryptedPrv,
           password: params.newPassword,
           encryptionVersion,

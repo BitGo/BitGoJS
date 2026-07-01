@@ -183,7 +183,7 @@ describe('External signer', () => {
     };
     const bg = new BitGo({ env: 'test' });
     const walletPassphrase = 'testPass';
-    const validPrv = bg.encrypt({ input: JSON.stringify(userSigningMaterial), password: walletPassphrase });
+    const validPrv = await bg.encrypt({ input: JSON.stringify(userSigningMaterial), password: walletPassphrase });
     const output: Output = {};
     output[walletID] = validPrv;
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(output));
@@ -478,7 +478,7 @@ describe('External signer', () => {
     };
     const bg = new BitGo({ env: 'test' });
     const walletPassphrase = 'testPass';
-    const validPrv = bg.encrypt({ input: JSON.stringify(userSigningMaterial), password: walletPassphrase });
+    const validPrv = await bg.encrypt({ input: JSON.stringify(userSigningMaterial), password: walletPassphrase });
     const output: Output = {};
     output[walletID] = validPrv;
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(output));
@@ -896,7 +896,7 @@ describe('External signer', () => {
 
     const bgTest = new BitGo({ env: 'test' });
     const userKeyShare = userShare.getKeyShare().toString('base64');
-    const validPrv = bgTest.encrypt({ input: userKeyShare, password: walletPassphrase });
+    const validPrv = await bgTest.encrypt({ input: userKeyShare, password: walletPassphrase });
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ [walletID]: validPrv }));
     const envStub = sinon.stub(process, 'env').value({ ['WALLET_' + walletID + '_PASSPHRASE']: walletPassphrase });
 
@@ -1095,7 +1095,7 @@ describe('External signer', () => {
 
     const bgTest = new BitGo({ env: 'test' });
     const userKeyShareB64 = userKeyShareBuffer.toString('base64');
-    const validPrvEdDSA = bgTest.encrypt({ input: userKeyShareB64, password: walletPassphrase });
+    const validPrvEdDSA = await bgTest.encrypt({ input: userKeyShareB64, password: walletPassphrase });
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ [walletID]: validPrvEdDSA }));
     const envStub = sinon.stub(process, 'env').value({ ['WALLET_' + walletID + '_PASSPHRASE']: walletPassphrase });
 

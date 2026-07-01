@@ -15,13 +15,13 @@ async function encryptWalletUpdateRequest(
     ...params,
   };
 
-  const userAuthXprv = await wallet.bitgo.decryptAsync({
+  const userAuthXprv = await wallet.bitgo.decrypt({
     password: params.passphrase,
     input: userAuthKeyEncryptedPrv,
   });
 
   if (params.signerTlsKey) {
-    requestWithEncryption.encryptedSignerTlsKey = await wallet.bitgo.encryptAsync({
+    requestWithEncryption.encryptedSignerTlsKey = await wallet.bitgo.encrypt({
       password: params.passphrase,
       input: params.signerTlsKey,
       encryptionVersion: params.encryptionVersion,
@@ -29,7 +29,7 @@ async function encryptWalletUpdateRequest(
   }
 
   if (params.signerAdminMacaroon) {
-    requestWithEncryption.encryptedSignerAdminMacaroon = await wallet.bitgo.encryptAsync({
+    requestWithEncryption.encryptedSignerAdminMacaroon = await wallet.bitgo.encrypt({
       password: params.passphrase,
       input: params.signerAdminMacaroon,
       encryptionVersion: params.encryptionVersion,
@@ -37,7 +37,7 @@ async function encryptWalletUpdateRequest(
   }
 
   if (params.signerMacaroon) {
-    requestWithEncryption.encryptedSignerMacaroon = await wallet.bitgo.encryptAsync({
+    requestWithEncryption.encryptedSignerMacaroon = await wallet.bitgo.encrypt({
       password: deriveLightningServiceSharedSecret(coinName, userAuthXprv).toString('hex'),
       input: params.signerMacaroon,
       encryptionVersion: params.encryptionVersion,
@@ -92,7 +92,7 @@ export async function updateWalletCoinSpecific(
   const updateRequestWithEncryption = await encryptWalletUpdateRequest(wallet, params, userAuthKeyEncryptedPrv);
   const signature = createMessageSignature(
     updateRequestWithEncryption,
-    await wallet.bitgo.decryptAsync({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
+    await wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
   );
   const coinSpecific = {
     [wallet.coin()]: {

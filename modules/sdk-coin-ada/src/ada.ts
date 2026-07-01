@@ -464,7 +464,7 @@ export class Ada extends BaseCoin {
       // Decrypt private keys from KeyCard values
       let userPrv;
       try {
-        userPrv = await this.bitgo.decryptAsync({
+        userPrv = await this.bitgo.decrypt({
           input: userKey,
           password: params.walletPassphrase,
         });
@@ -476,7 +476,7 @@ export class Ada extends BaseCoin {
 
       let backupPrv;
       try {
-        backupPrv = await this.bitgo.decryptAsync({
+        backupPrv = await this.bitgo.decrypt({
           input: backupKey,
           password: params.walletPassphrase,
         });

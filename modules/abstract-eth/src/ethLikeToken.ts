@@ -219,7 +219,7 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
     // Decrypt private keys from KeyCard values
     if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
       try {
-        userKey = await this.bitgo.decryptAsync({
+        userKey = await this.bitgo.decrypt({
           input: userKey,
           password: params.walletPassphrase,
         });
@@ -239,7 +239,7 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
       let backupPrv;
 
       try {
-        backupPrv = await this.bitgo.decryptAsync({
+        backupPrv = await this.bitgo.decrypt({
           input: backupKey,
           password: params.walletPassphrase,
         });

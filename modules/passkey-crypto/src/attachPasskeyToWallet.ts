@@ -45,7 +45,7 @@ export async function attachPasskeyToWallet(params: {
   const prfSalt = deriveEnterpriseSalt(device.prfSalt, enterpriseId);
 
   // Decrypt private key with existing passphrase
-  const privateKey = await bitgo.decryptAsync({ password: existingPassphrase, input: keychain.encryptedPrv });
+  const privateKey = await bitgo.decrypt({ password: existingPassphrase, input: keychain.encryptedPrv });
 
   // Decode credentialId from base64url to ArrayBuffer for allowCredentials.
   // The WebAuthn spec requires allowCredentials to be non-empty when using evalByCredential,
@@ -67,7 +67,7 @@ export async function attachPasskeyToWallet(params: {
   }
 
   const prfPassword = derivePassword(authResult.prfResult);
-  const encryptedPrv = await bitgo.encryptAsync({ password: prfPassword, input: privateKey, encryptionVersion });
+  const encryptedPrv = await bitgo.encrypt({ password: prfPassword, input: privateKey, encryptionVersion });
 
   const updatedKeychain = await bitgo
     .put(bitgo.url(`/${coin}/key/${keychainId}`, 2))

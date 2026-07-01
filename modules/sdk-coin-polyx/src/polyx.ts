@@ -205,7 +205,7 @@ export class Polyx extends SubstrateCoin {
       // Decrypt private keys from KeyCard values
       let userPrv;
       try {
-        userPrv = await this.bitgo.decryptAsync({
+        userPrv = await this.bitgo.decrypt({
           input: userKey,
           password: params.walletPassphrase,
         });
@@ -216,7 +216,7 @@ export class Polyx extends SubstrateCoin {
 
       let backupPrv;
       try {
-        backupPrv = await this.bitgo.decryptAsync({
+        backupPrv = await this.bitgo.decrypt({
           input: backupKey,
           password: params.walletPassphrase,
         });

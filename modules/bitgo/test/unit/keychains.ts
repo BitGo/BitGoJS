@@ -47,28 +47,31 @@ describe('Keychains', function v2keychains() {
       const newPassword = 'newPassword';
       const otherPassword = 'otherPassword';
 
+      const encryptedXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
+      const encryptedXprv2 = await bitgo.encrypt({ input: 'xprv2', password: otherPassword });
+
       nock(bgUrl)
         .post('/api/v1/user/encrypted')
         .reply(200, {
           keychains: {
-            xpub1: bitgo.encrypt({ input: 'xprv1', password: oldPassword }),
-            xpub2: bitgo.encrypt({ input: 'xprv2', password: otherPassword }),
+            xpub1: encryptedXprv1,
+            xpub2: encryptedXprv2,
           },
           version: 1,
         });
 
       const result = await keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
-      _.forOwn(result.keychains, function (encryptedXprv, xpub) {
+      for (const [xpub, encryptedXprv] of Object.entries(result.keychains as Record<string, string>)) {
         xpub.should.startWith('xpub');
         try {
-          const decryptedPrv = bitgo.decrypt({ input: encryptedXprv, password: newPassword });
+          const decryptedPrv = await bitgo.decrypt({ input: encryptedXprv, password: newPassword });
           decryptedPrv.should.startWith('xprv');
         } catch (e) {
           // the decryption didn't work because of the wrong password, this is one of the keychains that didn't match
           // the old password
-          e.message.should.startWith('password error');
+          e.message.should.equal('incorrect password');
         }
-      });
+      }
       result.should.hasOwnProperty('version');
     });
   });

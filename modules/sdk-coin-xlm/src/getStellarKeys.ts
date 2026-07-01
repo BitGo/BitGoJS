@@ -13,7 +13,7 @@ export async function getStellarKeys(bitgo: BitGoBase, params: InitiateRecoveryO
 
   try {
     if (!userKey.startsWith('S') && !userKey.startsWith('G')) {
-      userKey = await bitgo.decryptAsync({
+      userKey = await bitgo.decrypt({
         input: userKey,
         password: params.walletPassphrase,
       });
@@ -34,7 +34,7 @@ export async function getStellarKeys(bitgo: BitGoBase, params: InitiateRecoveryO
 
   try {
     if (!backupKey.startsWith('S') && !isKrsRecovery && !isUnsignedSweep) {
-      backupKey = await bitgo.decryptAsync({
+      backupKey = await bitgo.decrypt({
         input: backupKey,
         password: params.walletPassphrase,
       });

@@ -1673,21 +1673,21 @@ describe('Hedera Hashgraph:', function () {
       });
     });
 
-    it('should throw error if the walletPassphrase is incorrect', () => {
-      assert.throws(
+    it('should throw error if the walletPassphrase is incorrect', async () => {
+      await assert.rejects(
         () =>
           basecoin.assertIsValidKey({
             coinName: 'hbar',
             encryptedPrv: key,
             walletPassphrase: 'foo',
           }),
-        { message: "failed to decrypt prv: password error - ccm: tag doesn't match" }
+        { message: 'failed to decrypt prv: incorrect password' }
       );
     });
 
-    it('should throw error if the key is altered', () => {
+    it('should throw error if the key is altered', async () => {
       const alteredKey = key.replace(/[0-9]/g, '0');
-      assert.throws(
+      await assert.rejects(
         () =>
           basecoin.assertIsValidKey({
             coinName: 'hbar',
@@ -1695,15 +1695,15 @@ describe('Hedera Hashgraph:', function () {
             walletPassphrase,
           }),
         {
-          message: 'failed to decrypt prv: json decrypt: invalid parameters',
+          message: 'failed to decrypt prv: decrypt: ciphertext is not valid JSON',
         }
       );
     });
 
-    it('should throw error if the key is not a valid key', () => {
+    it('should throw error if the key is not a valid key', async () => {
       const invalidKey = '#@)$#($*@)#($*';
-      const encryptedPrv = encrypt(walletPassphrase, invalidKey);
-      assert.throws(
+      const encryptedPrv = await encrypt(walletPassphrase, invalidKey);
+      await assert.rejects(
         () =>
           basecoin.assertIsValidKey({
             coinName: 'hbar',

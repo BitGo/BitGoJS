@@ -2022,6 +2022,9 @@ describe('V2 Wallet:', function () {
 
           const getKeyNocks: nock.Scope[] = [];
           if (hotWallet.baseCoin.getFamily() === 'lnbtc') {
+            const encXprv0 = await bitgo.encrypt({ input: 'xprv0', password: walletPassphrase });
+            const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: walletPassphrase });
+            const encryptedPrvs = [encXprv0, encXprv1];
             for (let i = 0; i < 2; i++) {
               const keyId = lightningWalletData.coinSpecific.keys[i];
               const getKeyNock = nock(bgUrl)
@@ -2030,7 +2033,7 @@ describe('V2 Wallet:', function () {
                   id: keyId,
                   pub: i === 0 ? pub : 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQm',
                   source: 'user',
-                  encryptedPrv: bitgo.encrypt({ input: 'xprv' + i, password: walletPassphrase }),
+                  encryptedPrv: encryptedPrvs[i],
                   coinSpecific:
                     i === 0
                       ? { [hotWallet.baseCoin.getChain()]: { purpose: 'userAuth' } }
@@ -2039,13 +2042,14 @@ describe('V2 Wallet:', function () {
               getKeyNocks.push(getKeyNock);
             }
           } else {
+            const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: walletPassphrase });
             const getKeyNock = nock(bgUrl)
               .get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`)
               .reply(200, {
                 id: wallet.keyIds()[0],
                 pub,
                 source: 'user',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
+                encryptedPrv: encXprv1,
                 coinSpecific: {},
               });
             getKeyNocks.push(getKeyNock);
@@ -2108,13 +2112,15 @@ describe('V2 Wallet:', function () {
         .reply(200, { userId, pubkey, path });
 
       const pub = 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk';
+      const encPrv1 = await bitgo.encrypt({ input: privateKey, password: walletPassphrase1 });
+      const encPrv2 = await bitgo.encrypt({ input: privateKey, password: walletPassphrase2 });
       const getKeyNock = nock(bgUrl)
         .get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`)
         .reply(200, {
           id: wallet.keyIds()[0],
           pub,
           source: 'user',
-          encryptedPrv: bitgo.encrypt({ input: privateKey, password: walletPassphrase1 }),
+          encryptedPrv: encPrv1,
           webauthnDevices: [
             {
               otpDeviceId: '123',
@@ -2124,7 +2130,7 @@ describe('V2 Wallet:', function () {
                 publicKey: 'some value',
               },
               prfSalt: '456',
-              encryptedPrv: bitgo.encrypt({ input: privateKey, password: walletPassphrase2 }),
+              encryptedPrv: encPrv2,
             },
           ],
           coinSpecific: {},
@@ -2362,13 +2368,14 @@ describe('V2 Wallet:', function () {
               .post('/api/v1/user/sharingkey', { email })
               .reply(200, { userId, pubkey, path });
 
+            const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: walletPassphrase });
             const getKeyNock = nock(bgUrl)
               .get(`/api/v2/ofc/key/${nonMultiUserKeyWallet.keyIds()[0]}`)
               .reply(200, {
                 id: nonMultiUserKeyWallet.keyIds()[0],
                 pub,
                 source: 'user',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
+                encryptedPrv: encXprv1,
                 coinSpecific: {},
               });
 
@@ -5195,13 +5202,14 @@ describe('V2 Wallet:', function () {
 
         // commonPub + commonChaincode
         const commonKeychain = randomBytes(32).toString('hex') + randomBytes(32).toString('hex');
+        const encXprv1Tss = await bitgo.encrypt({ input: 'xprv1', password: walletPassphrase });
         const getKeyNock = nock(bgUrl)
           .get(`/api/v2/tsol/key/${tssSolWallet.keyIds()[0]}`)
           .reply(200, {
             id: tssSolWallet.keyIds()[0],
             commonKeychain: commonKeychain,
             source: 'user',
-            encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
+            encryptedPrv: encXprv1Tss,
             coinSpecific: {},
           });
 

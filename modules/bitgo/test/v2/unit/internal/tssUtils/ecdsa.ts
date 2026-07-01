@@ -348,7 +348,7 @@ describe('TSS Ecdsa Utils:', async function () {
       assert.equal(body.webauthnInfo.prfSalt, webauthnInfo.prfSalt);
       assert.equal(body.webauthnInfo.enterpriseId, enterpriseId);
       assert.ok(body.webauthnInfo.encryptedPrv, 'encryptedPrv should be set');
-      assert.ok(bitgo.decrypt({ input: body.webauthnInfo.encryptedPrv, password: webauthnInfo.passphrase }));
+      assert.ok(await bitgo.decrypt({ input: body.webauthnInfo.encryptedPrv, password: webauthnInfo.passphrase }));
       assert.strictEqual(body.webauthnDevices, undefined, 'deprecated webauthnDevices should not be sent');
     });
 
@@ -1036,7 +1036,7 @@ describe('TSS Ecdsa Utils:', async function () {
       const step2SigningMaterial = await tssUtils.createOfflineMuDeltaShare({
         aShareFromBitgo: aShare,
         bitgoChallenge: bitgoChallenges,
-        encryptedWShare: bitgo.encrypt({ input: JSON.stringify(wShare), password: mockPassword }),
+        encryptedWShare: await bitgo.encrypt({ input: JSON.stringify(wShare), password: mockPassword }),
         walletPassphrase: mockPassword,
       });
       step2SigningMaterial.muDShare.muShare.alpha.length.should.equal(alphaLength);
@@ -1051,7 +1051,7 @@ describe('TSS Ecdsa Utils:', async function () {
         .createOfflineMuDeltaShare({
           aShareFromBitgo: aShare,
           bitgoChallenge: bitgoChallenges,
-          encryptedWShare: bitgo.encrypt({ input: JSON.stringify(wShare), password: mockPassword }),
+          encryptedWShare: await bitgo.encrypt({ input: JSON.stringify(wShare), password: mockPassword }),
           walletPassphrase: 'password1',
         })
         .should.be.rejectedWith('incorrect password');
@@ -1062,7 +1062,7 @@ describe('TSS Ecdsa Utils:', async function () {
       const alphaLength = 1536;
       const deltaLength = 64;
       const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
-      const encryptedWShare = await bitgo.encryptAsync({
+      const encryptedWShare = await bitgo.encrypt({
         input: JSON.stringify(wShare),
         password: mockPassword,
         encryptionVersion: 2,
@@ -1089,7 +1089,7 @@ describe('TSS Ecdsa Utils:', async function () {
           reqId: reqId,
         },
         dShareFromBitgo: dShare,
-        encryptedOShare: bitgo.encrypt({ input: JSON.stringify(oShare), password: mockPassword }),
+        encryptedOShare: await bitgo.encrypt({ input: JSON.stringify(oShare), password: mockPassword }),
         walletPassphrase: mockPassword,
         requestType: RequestType.tx,
       });
@@ -1103,7 +1103,7 @@ describe('TSS Ecdsa Utils:', async function () {
       const pubKeyLength = 66;
       const privKeyLength = 64;
       const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
-      const encryptedOShare = await bitgo.encryptAsync({
+      const encryptedOShare = await bitgo.encrypt({
         input: JSON.stringify(oShare),
         password: mockPassword,
         encryptionVersion: 2,
@@ -1134,7 +1134,7 @@ describe('TSS Ecdsa Utils:', async function () {
             reqId: reqId,
           },
           dShareFromBitgo: dShare,
-          encryptedOShare: bitgo.encrypt({ input: JSON.stringify(oShare), password: mockPassword }),
+          encryptedOShare: await bitgo.encrypt({ input: JSON.stringify(oShare), password: mockPassword }),
           walletPassphrase: mockPassword,
           requestType: RequestType.tx,
         })
@@ -1446,9 +1446,13 @@ describe('TSS Ecdsa Utils:', async function () {
     const bitgoInstChallenge = mockChallengeA;
     const bitgoNitroChallenge = mockChallengeB;
     const userPassword = 'password123';
-    const encryptedXprv = bitgo.encrypt({
-      password: userPassword,
-      input: adminEcdhKey.xprv,
+    let encryptedXprv: string;
+
+    before(async function () {
+      encryptedXprv = await bitgo.encrypt({
+        password: userPassword,
+        input: adminEcdhKey.xprv,
+      });
     });
 
     beforeEach(async function () {
@@ -1632,9 +1636,13 @@ describe('TSS Ecdsa Utils:', async function () {
     const bitgoNitroChallenge = mockChallengeB;
     const serializedEntChallenge = mockChallengeC;
     const userPassword = 'password123';
-    const encryptedXprv = bitgo.encrypt({
-      password: userPassword,
-      input: adminEcdhKey.xprv,
+    let encryptedXprv: string;
+
+    before(async function () {
+      encryptedXprv = await bitgo.encrypt({
+        password: userPassword,
+        input: adminEcdhKey.xprv,
+      });
     });
 
     beforeEach(async function () {

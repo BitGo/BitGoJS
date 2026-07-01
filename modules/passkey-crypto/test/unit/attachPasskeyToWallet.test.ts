@@ -54,8 +54,8 @@ describe('attachPasskeyToWallet', function () {
     url: sinon.SinonStub;
     coin: sinon.SinonStub;
     put: sinon.SinonStub;
-    decryptAsync: sinon.SinonStub;
-    encryptAsync: sinon.SinonStub;
+    decrypt: sinon.SinonStub;
+    encrypt: sinon.SinonStub;
   };
 
   let mockProvider: {
@@ -84,8 +84,8 @@ describe('attachPasskeyToWallet', function () {
         .callsFake((path, version) => `/api/v${version ?? 1}${path}`),
       coin: sinon.stub().returns(mockBaseCoin),
       put: sinon.stub(),
-      decryptAsync: sinon.stub(),
-      encryptAsync: sinon.stub(),
+      decrypt: sinon.stub(),
+      encrypt: sinon.stub(),
     };
 
     mockProvider = {
@@ -93,8 +93,8 @@ describe('attachPasskeyToWallet', function () {
       get: sinon.stub(),
     };
 
-    mockBitGo.decryptAsync.resolves(decryptedPrv);
-    mockBitGo.encryptAsync.resolves(reEncryptedPrv);
+    mockBitGo.decrypt.resolves(decryptedPrv);
+    mockBitGo.encrypt.resolves(reEncryptedPrv);
 
     const putSendStub = sinon.stub().returns({ result: sinon.stub().resolves(updatedKeychain) });
     mockBitGo.put.returns({ send: putSendStub });
@@ -126,8 +126,8 @@ describe('attachPasskeyToWallet', function () {
     sinon.assert.calledWith(mockWallets.get, { id: walletId });
     sinon.assert.calledOnce(mockWallet.type);
     sinon.assert.calledOnce(mockWallet.getEncryptedUserKeychain);
-    sinon.assert.calledOnce(mockBitGo.decryptAsync);
-    sinon.assert.calledWithExactly(mockBitGo.decryptAsync, { password: existingPassphrase, input: encryptedPrv });
+    sinon.assert.calledOnce(mockBitGo.decrypt);
+    sinon.assert.calledWithExactly(mockBitGo.decrypt, { password: existingPassphrase, input: encryptedPrv });
 
     // provider.get called with evalByCredential keyed on device.credentialId
     sinon.assert.calledOnce(mockProvider.get);
@@ -153,9 +153,9 @@ describe('attachPasskeyToWallet', function () {
     assert.match(putBody.webauthnInfo.prfSalt, /^[A-Za-z0-9\-_]+$/);
     assert.strictEqual(typeof putBody.webauthnInfo.encryptedPrv, 'string');
 
-    // encryptAsync must be called with encryptionVersion 2
-    sinon.assert.calledOnce(mockBitGo.encryptAsync);
-    sinon.assert.calledWithMatch(mockBitGo.encryptAsync, { encryptionVersion: 2 });
+    // encrypt must be called with encryptionVersion 2
+    sinon.assert.calledOnce(mockBitGo.encrypt);
+    sinon.assert.calledWithMatch(mockBitGo.encrypt, { encryptionVersion: 2 });
 
     assert.strictEqual(result.id, keychainId);
   });
@@ -165,14 +165,14 @@ describe('attachPasskeyToWallet', function () {
 
     await callAttach();
 
-    // The PRF-derived password and the decrypted xprv must be passed to encryptAsync
-    sinon.assert.calledWithMatch(mockBitGo.encryptAsync, {
+    // The PRF-derived password and the decrypted xprv must be passed to encrypt
+    sinon.assert.calledWithMatch(mockBitGo.encrypt, {
       password: expectedPrfPassword,
       input: decryptedPrv,
       encryptionVersion: 2,
     });
 
-    // The v2 blob returned by encryptAsync is what gets stored on the server
+    // The v2 blob returned by encrypt is what gets stored on the server
     const putBody = mockBitGo.put.firstCall.returnValue.send.firstCall.args[0];
     assert.strictEqual(putBody.webauthnInfo.encryptedPrv, reEncryptedPrv);
   });
@@ -246,7 +246,7 @@ describe('attachPasskeyToWallet', function () {
   });
 
   it('should propagate decrypt errors', async function () {
-    mockBitGo.decryptAsync.rejects(new Error('decryption failed'));
+    mockBitGo.decrypt.rejects(new Error('decryption failed'));
 
     await assert.rejects(
       () => callAttach(),

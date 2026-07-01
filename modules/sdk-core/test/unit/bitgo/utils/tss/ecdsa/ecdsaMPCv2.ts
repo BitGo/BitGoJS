@@ -59,9 +59,9 @@ describe('ECDSA MPC v2', async () => {
       return sjcl.decrypt(params.password, params.input);
     };
     mockBg.encrypt = sinon.stub().callsFake(encryptImpl);
-    mockBg.encryptAsync = sinon.stub().callsFake(async (params) => encryptImpl(params));
+    mockBg.encrypt = sinon.stub().callsFake(async (params) => encryptImpl(params));
     mockBg.decrypt = sinon.stub().callsFake(decryptImpl);
-    mockBg.decryptAsync = sinon.stub().callsFake(async (params) => decryptImpl(params));
+    mockBg.decrypt = sinon.stub().callsFake(async (params) => decryptImpl(params));
 
     const mockCoin = {} as IBaseCoin;
     mockCoin.getHashFunction = sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash);
@@ -616,9 +616,9 @@ describe('ECDSA MPC v2', async () => {
     mockBgWithPost.getEnv = sinon.stub().returns('test');
     mockBgWithPost.setRequestTracer = sinon.stub();
     mockBgWithPost.encrypt = sinon.stub().returns('encrypted');
-    mockBgWithPost.encryptAsync = sinon.stub().resolves('encrypted');
+    mockBgWithPost.encrypt = sinon.stub().resolves('encrypted');
     mockBgWithPost.decrypt = sinon.stub().returns('decrypted');
-    mockBgWithPost.decryptAsync = sinon.stub().resolves('decrypted');
+    mockBgWithPost.decrypt = sinon.stub().resolves('decrypted');
     mockBgWithPost.post = sinon.stub().returns({
       send: sinon.stub().returnsThis(),
       set: sinon.stub().returnsThis(),
@@ -687,9 +687,9 @@ describe('ECDSA MPC v2', async () => {
     mockBgWithPost.getEnv = sinon.stub().returns('test');
     mockBgWithPost.setRequestTracer = sinon.stub();
     mockBgWithPost.encrypt = sinon.stub().returns('encrypted');
-    mockBgWithPost.encryptAsync = sinon.stub().resolves('encrypted');
+    mockBgWithPost.encrypt = sinon.stub().resolves('encrypted');
     mockBgWithPost.decrypt = sinon.stub().returns('decrypted');
-    mockBgWithPost.decryptAsync = sinon.stub().resolves('decrypted');
+    mockBgWithPost.decrypt = sinon.stub().resolves('decrypted');
     mockBgWithPost.post = sinon.stub().returns({
       send: sinon.stub().returnsThis(),
       set: sinon.stub().returnsThis(),
@@ -909,9 +909,9 @@ describe('ECDSA MPC v2', async () => {
       };
       encryptAsyncSpy = sinon.stub().callsFake(async (params) => encryptImpl(params));
       mockBg.encrypt = sinon.stub().callsFake(encryptImpl);
-      mockBg.encryptAsync = encryptAsyncSpy;
+      mockBg.encrypt = encryptAsyncSpy;
       mockBg.decrypt = sinon.stub().callsFake((params) => sjcl.decrypt(params.password, params.input));
-      mockBg.decryptAsync = sinon.stub().callsFake(async (params) => sjcl.decrypt(params.password, params.input));
+      mockBg.decrypt = sinon.stub().callsFake(async (params) => sjcl.decrypt(params.password, params.input));
 
       const mockCoin = {} as IBaseCoin;
       mockCoin.getHashFunction = sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash);
@@ -936,7 +936,7 @@ describe('ECDSA MPC v2', async () => {
         encryptedPrv: undefined,
       });
 
-      assert.ok(encryptAsyncSpy.called, 'encryptAsync should be called in v1 path');
+      assert.ok(encryptAsyncSpy.called, 'encrypt should be called in v1 path');
       for (const call of encryptAsyncSpy.getCalls()) {
         assert.strictEqual(
           call.args[0].encryptionVersion,

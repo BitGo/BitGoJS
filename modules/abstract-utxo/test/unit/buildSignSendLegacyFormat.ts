@@ -24,7 +24,7 @@ const keyDocumentObjects = rootWalletKeys.triple.map((bip32, keyIdx) => ({
   id: getSeed(keychainsBase58[keyIdx].pub).toString('hex'),
   pub: bip32.neutered().toBase58(),
   source: ['user', 'backup', 'bitgo'][keyIdx],
-  encryptedPrv: encryptKeychain(walletPassphrase, keychainsBase58[keyIdx]),
+  encryptedPrv: '',
   coinSpecific: {},
 }));
 
@@ -43,7 +43,12 @@ describe('prebuildAndSign-returnLegacyFormat', function () {
   let recipient: { address: string; amount: string };
   const fee = BigInt(10000);
 
-  before(function () {
+  before(async function () {
+    await Promise.all(
+      keyDocumentObjects.map(async (doc, keyIdx) => {
+        doc.encryptedPrv = await encryptKeychain(walletPassphrase, keychainsBase58[keyIdx]);
+      })
+    );
     const outputAmount = BigInt(inputScripts.length) * BigInt(1e8) - fee;
     const outputScriptType: utxolib.bitgo.outputScripts.ScriptType = 'p2sh';
     const outputChain = utxolib.bitgo.getExternalChainCode(outputScriptType);

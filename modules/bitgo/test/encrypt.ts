@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import should = require('should');
+import 'should';
 
 import { randomBytes } from 'crypto';
 import { decrypt, encrypt, bytesToWord } from '@bitgo/sdk-api';
@@ -62,10 +62,11 @@ describe('encrypt, decrypt', function () {
   const passwords = Array.from({ length: 2 }).map((_, i) => `key/${i}`);
   const plaintexts = Array.from({ length: 2 }).map((_, i) => `plaintext/${i}`);
 
-  it('matches fixture', function () {
-    const ciphertext = encrypt(passwords[0], plaintexts[0], {
+  it('matches fixture', async function () {
+    const ciphertext = await encrypt(passwords[0], plaintexts[0], {
       salt: getSeed(`randomSalt`).slice(0, 8),
       iv: getSeed(`randomIV`).slice(0, 16),
+      encryptionVersion: 1,
     });
     ciphertext.should.eql(
       '{"iv":"BVDN1IpOeJ6E5kSV88MsHA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"aJjlH+mKW1E=","ct":"loJEsFuypKZMZ+igqCUmbwQfMw=="}'
@@ -84,23 +85,23 @@ describe('encrypt, decrypt', function () {
     });
   });
 
-  it('encrypts and decrypts', function () {
-    passwords.forEach((password) => {
-      plaintexts.forEach((plaintext) => {
-        const ciphertext1 = encrypt(password, plaintext);
-        const ciphertext2 = encrypt(password, plaintext);
+  it('encrypts and decrypts', async function () {
+    for (const password of passwords) {
+      for (const plaintext of plaintexts) {
+        const ciphertext1 = await encrypt(password, plaintext);
+        const ciphertext2 = await encrypt(password, plaintext);
         (ciphertext1 === ciphertext2).should.eql(false);
 
-        [ciphertext1, ciphertext2].forEach((ct) => {
-          passwords.forEach((otherPassword) => {
+        for (const ct of [ciphertext1, ciphertext2]) {
+          for (const otherPassword of passwords) {
             if (password === otherPassword) {
-              decrypt(otherPassword, ct).should.eql(plaintext);
+              (await decrypt(otherPassword, ct)).should.eql(plaintext);
             } else {
-              should.throws(() => decrypt(otherPassword, ct), /ccm: tag doesn't match/);
+              await decrypt(otherPassword, ct).should.be.rejected();
             }
-          });
-        });
-      });
-    });
+          }
+        }
+      }
+    }
   });
 });

@@ -310,7 +310,7 @@ describe('signTxRequest:', function () {
       const userShare = fs.readFileSync(shareFiles[vector.party1]);
       const userPrvBase64 = Buffer.from(userShare).toString('base64');
 
-      const encryptedPrv = await bitgo.encryptAsync({
+      const encryptedPrv = await bitgo.encrypt({
         input: userPrvBase64,
         password: walletPassphrase,
         encryptionVersion: 2,
@@ -403,7 +403,7 @@ describe('signTxRequest:', function () {
     it('validateAdata accepts v2 envelopes with matching adata and domain separator', async function () {
       const adata = 'txhash:m/0/1';
       const domainSep = 'DKLS23_SIGNING_ROUND1_STATE';
-      const ct = await bitgo.encryptAsync({
+      const ct = await bitgo.encrypt({
         input: 'test-data',
         password: 'testpass',
         encryptionVersion: 2,
@@ -415,7 +415,7 @@ describe('signTxRequest:', function () {
 
     it('validateAdata rejects v2 envelopes with mismatched adata', async function () {
       const domainSep = 'DKLS23_SIGNING_ROUND1_STATE';
-      const ct = await bitgo.encryptAsync({
+      const ct = await bitgo.encrypt({
         input: 'test-data',
         password: 'testpass',
         encryptionVersion: 2,

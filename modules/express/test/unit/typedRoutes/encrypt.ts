@@ -197,7 +197,7 @@ describe('Encrypt codec tests', function () {
         password: 'mySecurePassword123',
       };
 
-      sinon.stub(BitGo.prototype, 'encryptAsync').resolves(mockEncryptResponse);
+      sinon.stub(BitGo.prototype, 'encrypt').resolves(mockEncryptResponse);
 
       const result = await agent
         .post('/api/v1/encrypt')
@@ -219,7 +219,7 @@ describe('Encrypt codec tests', function () {
         password: 'mySecurePassword123',
       };
 
-      sinon.stub(BitGo.prototype, 'encryptAsync').resolves(mockEncryptResponse);
+      sinon.stub(BitGo.prototype, 'encrypt').resolves(mockEncryptResponse);
 
       const result = await agent
         .post('/api/v2/encrypt')
@@ -242,7 +242,7 @@ describe('Encrypt codec tests', function () {
         adata: 'additionalAuthData',
       };
 
-      sinon.stub(BitGo.prototype, 'encryptAsync').resolves(mockEncryptResponse);
+      sinon.stub(BitGo.prototype, 'encrypt').resolves(mockEncryptResponse);
 
       const result = await agent
         .post('/api/v1/encrypt')
@@ -264,7 +264,7 @@ describe('Encrypt codec tests', function () {
         adata: 'additionalAuthData',
       };
 
-      sinon.stub(BitGo.prototype, 'encryptAsync').resolves(mockEncryptResponse);
+      sinon.stub(BitGo.prototype, 'encrypt').resolves(mockEncryptResponse);
 
       const result = await agent
         .post('/api/v2/encrypt')
@@ -286,7 +286,7 @@ describe('Encrypt codec tests', function () {
       };
 
       const mockLongEncrypted = 'b'.repeat(1500);
-      sinon.stub(BitGo.prototype, 'encryptAsync').resolves(mockLongEncrypted);
+      sinon.stub(BitGo.prototype, 'encrypt').resolves(mockLongEncrypted);
 
       const result = await agent
         .post('/api/v1/encrypt')
@@ -307,7 +307,7 @@ describe('Encrypt codec tests', function () {
         password: 'p@ssw0rd!#$%^&*()',
       };
 
-      sinon.stub(BitGo.prototype, 'encryptAsync').resolves(mockEncryptResponse);
+      sinon.stub(BitGo.prototype, 'encrypt').resolves(mockEncryptResponse);
 
       const result = await agent
         .post('/api/v2/encrypt')
@@ -328,7 +328,7 @@ describe('Encrypt codec tests', function () {
         password: 'mySecurePassword123',
       };
 
-      sinon.stub(BitGo.prototype, 'encryptAsync').resolves(mockEncryptResponse);
+      sinon.stub(BitGo.prototype, 'encrypt').resolves(mockEncryptResponse);
 
       const result = await agent
         .post('/api/v1/encrypt')
@@ -361,7 +361,7 @@ describe('Encrypt codec tests', function () {
         password: '',
       };
 
-      sinon.stub(BitGo.prototype, 'encryptAsync').rejects(new Error('cannot encrypt without password'));
+      sinon.stub(BitGo.prototype, 'encrypt').rejects(new Error('cannot encrypt without password'));
 
       const result = await agent
         .post('/api/v1/encrypt')
@@ -379,7 +379,7 @@ describe('Encrypt codec tests', function () {
         password: '',
       };
 
-      sinon.stub(BitGo.prototype, 'encryptAsync').rejects(new Error('cannot encrypt without password'));
+      sinon.stub(BitGo.prototype, 'encrypt').rejects(new Error('cannot encrypt without password'));
 
       const result = await agent
         .post('/api/v2/encrypt')
@@ -397,7 +397,7 @@ describe('Encrypt codec tests', function () {
         password: 'mySecurePassword123',
       };
 
-      sinon.stub(BitGo.prototype, 'encryptAsync').rejects(new Error('Invalid input format'));
+      sinon.stub(BitGo.prototype, 'encrypt').rejects(new Error('Invalid input format'));
 
       const result = await agent
         .post('/api/v1/encrypt')
@@ -415,7 +415,7 @@ describe('Encrypt codec tests', function () {
         password: 'mySecurePassword123',
       };
 
-      sinon.stub(BitGo.prototype, 'encryptAsync').rejects(new Error('Encrypt method not available'));
+      sinon.stub(BitGo.prototype, 'encrypt').rejects(new Error('Encrypt method not available'));
 
       const result = await agent
         .post('/api/v2/encrypt')
@@ -434,7 +434,7 @@ describe('Encrypt codec tests', function () {
         adata: 'invalidAdataFormat',
       };
 
-      sinon.stub(BitGo.prototype, 'encryptAsync').rejects(new Error('Invalid adata format'));
+      sinon.stub(BitGo.prototype, 'encrypt').rejects(new Error('Invalid adata format'));
 
       const result = await agent
         .post('/api/v1/encrypt')

@@ -19,7 +19,7 @@ import {
   Wallet,
   isWalletWithKeychains,
   OptionalKeychainEncryptedKey,
-  decryptKeychainPrivateKeyAsync,
+  decryptKeychainPrivateKey,
   makeRandomKey,
   getSharedSecret,
   BulkWalletShareOptions,
@@ -478,7 +478,7 @@ describe('V2 Wallets:', function () {
       assert.ok(response.encryptedWalletPassphrase);
       assert.ok(response.wallet);
       assert.equal(
-        bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+        await bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
         params.passphrase
       );
     });
@@ -514,7 +514,7 @@ describe('V2 Wallets:', function () {
       assert.ok(response.encryptedWalletPassphrase);
       assert.ok(response.wallet);
       assert.equal(
-        bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+        await bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
         params.passphrase
       );
     });
@@ -633,7 +633,7 @@ describe('V2 Wallets:', function () {
       assert.ok(response.encryptedWalletPassphrase);
       assert.ok(response.wallet);
       assert.equal(
-        bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+        await bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
         params.passphrase
       );
     });
@@ -685,7 +685,7 @@ describe('V2 Wallets:', function () {
       assert.ok(response.encryptedWalletPassphrase);
       assert.ok(response.wallet);
       assert.equal(
-        bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+        await bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
         params.passphrase
       );
     });
@@ -1108,7 +1108,7 @@ describe('V2 Wallets:', function () {
         assert.ok(response.encryptedWalletPassphrase);
         assert.ok(response.wallet);
         assert.equal(
-          bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+          await bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
           params.passphrase
         );
       });
@@ -1164,7 +1164,7 @@ describe('V2 Wallets:', function () {
         assert.ok(response.encryptedWalletPassphrase);
         assert.ok(response.wallet);
         assert.equal(
-          bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+          await bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
           params.passphrase
         );
       });
@@ -1348,7 +1348,7 @@ describe('V2 Wallets:', function () {
       assert.ok(response.encryptedWalletPassphrase);
       assert.ok(response.wallet);
       assert.equal(
-        bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+        await bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
         params.passphrase
       );
     });
@@ -1405,7 +1405,7 @@ describe('V2 Wallets:', function () {
       assert.ok(response.encryptedWalletPassphrase);
       assert.ok(response.wallet);
       assert.equal(
-        bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+        await bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
         params.passphrase
       );
     });
@@ -1478,7 +1478,7 @@ describe('V2 Wallets:', function () {
       assert.ok(response.encryptedWalletPassphrase);
       assert.ok(response.wallet);
       assert.equal(
-        bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+        await bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
         params.passphrase
       );
     });
@@ -1957,8 +1957,8 @@ describe('V2 Wallets:', function () {
         const keychainsInstance = ofcWallets.baseCoin.keychains();
         const keychainsStub = sandbox.stub(keychainsInstance, 'create').returns(keychain);
 
-        const encryptedPrv = bitgo.encrypt({ input: keychain.prv, password: userPassword });
-        const encryptStub = sandbox.stub(bitgo, 'encrypt').returns(encryptedPrv);
+        const encryptedPrv = await bitgo.encrypt({ input: keychain.prv, password: userPassword });
+        const encryptStub = sandbox.stub(bitgo, 'encrypt').resolves(encryptedPrv);
 
         // Mock the updateShare API call
         const acceptShareNock = nock(bgUrl)
@@ -2006,7 +2006,7 @@ describe('V2 Wallets:', function () {
           prv: testKeychain.prv,
           pub: testKeychain.pub,
         };
-        const encryptedPrv = bitgo.encrypt({ input: keychain.prv, password: userPassword });
+        const encryptedPrv = await bitgo.encrypt({ input: keychain.prv, password: userPassword });
 
         const acceptShareNock = nock(bgUrl)
           .post(`/api/v2/ofc/walletshare/${shareId}`)
@@ -2014,7 +2014,7 @@ describe('V2 Wallets:', function () {
 
         const keychainsInstance = ofcWallets.baseCoin.keychains();
         sandbox.stub(keychainsInstance, 'create').returns(keychain);
-        sandbox.stub(bitgo, 'encrypt').returns(encryptedPrv);
+        sandbox.stub(bitgo, 'encrypt').resolves(encryptedPrv);
 
         // Stub reshareWalletWithSpenders to verify it's NOT called
         const reshareStub = sandbox.stub(Wallets.prototype, 'reshareWalletWithSpenders');
@@ -2065,8 +2065,8 @@ describe('V2 Wallets:', function () {
         const keychainsInstance = ofcWallets.baseCoin.keychains();
         const keychainsStub = sandbox.stub(keychainsInstance, 'create').returns(keychain);
 
-        const encryptedPrv = bitgo.encrypt({ input: keychain.prv, password: userPassword });
-        const encryptStub = sandbox.stub(bitgo, 'encrypt').returns(encryptedPrv);
+        const encryptedPrv = await bitgo.encrypt({ input: keychain.prv, password: userPassword });
+        const encryptStub = sandbox.stub(bitgo, 'encrypt').resolves(encryptedPrv);
 
         // Mock bulk update API - this is called via bulkUpdateWalletShare
         nock(bgUrl)
@@ -2138,8 +2138,8 @@ describe('V2 Wallets:', function () {
         const keychainsStub = sandbox.stub(keychainsInstance, 'create').returns(keychain);
 
         // Should encrypt with newWalletPassphrase if provided (as per implementation)
-        const encryptedPrv = bitgo.encrypt({ input: keychain.prv, password: newWalletPassphrase });
-        const encryptStub = sandbox.stub(bitgo, 'encrypt').returns(encryptedPrv);
+        const encryptedPrv = await bitgo.encrypt({ input: keychain.prv, password: newWalletPassphrase });
+        const encryptStub = sandbox.stub(bitgo, 'encrypt').resolves(encryptedPrv);
 
         // Mock bulk update API - this is called via bulkUpdateWalletShare
         nock(bgUrl)
@@ -2248,8 +2248,8 @@ describe('V2 Wallets:', function () {
         sandbox.stub(keychainsInstance, 'create').returns(keychain);
 
         // Should encrypt with newWalletPassphrase if provided (as per implementation)
-        const encryptedPrv = bitgo.encrypt({ input: keychain.prv, password: newWalletPassphrase });
-        const encryptStub = sandbox.stub(bitgo, 'encrypt').returns(encryptedPrv);
+        const encryptedPrv = await bitgo.encrypt({ input: keychain.prv, password: newWalletPassphrase });
+        const encryptStub = sandbox.stub(bitgo, 'encrypt').resolves(encryptedPrv);
 
         const acceptShareNock = nock(bgUrl)
           .post(`/api/v2/ofc/walletshare/${shareId}`, (body: any) => {
@@ -2301,8 +2301,8 @@ describe('V2 Wallets:', function () {
         const keychainsInstance = ofcWallets.baseCoin.keychains();
         sandbox.stub(keychainsInstance, 'create').returns(keychain);
 
-        const encryptedPrv = bitgo.encrypt({ input: keychain.prv, password: userPassword });
-        sandbox.stub(bitgo, 'encrypt').returns(encryptedPrv);
+        const encryptedPrv = await bitgo.encrypt({ input: keychain.prv, password: userPassword });
+        sandbox.stub(bitgo, 'encrypt').resolves(encryptedPrv);
 
         // Should use the multi-key-user-key flow (no signature/payload/keyId)
         const acceptShareNock = nock(bgUrl)
@@ -2404,8 +2404,8 @@ describe('V2 Wallets:', function () {
         const keychainsInstance = ofcWallets.baseCoin.keychains();
         sandbox.stub(keychainsInstance, 'create').returns(keychain);
 
-        const encryptedPrv = bitgo.encrypt({ input: keychain.prv, password: userPassword });
-        sandbox.stub(bitgo, 'encrypt').returns(encryptedPrv);
+        const encryptedPrv = await bitgo.encrypt({ input: keychain.prv, password: userPassword });
+        sandbox.stub(bitgo, 'encrypt').resolves(encryptedPrv);
 
         const acceptShareNock = nock(bgUrl)
           .post(`/api/v2/ofc/walletshare/${shareId}`, (body: any) => {
@@ -2450,8 +2450,8 @@ describe('V2 Wallets:', function () {
         const keychainsInstance = ofcWallets.baseCoin.keychains();
         sandbox.stub(keychainsInstance, 'create').returns(keychain);
 
-        const encryptedPrv = bitgo.encrypt({ input: keychain.prv, password: userPassword });
-        sandbox.stub(bitgo, 'encrypt').returns(encryptedPrv);
+        const encryptedPrv = await bitgo.encrypt({ input: keychain.prv, password: userPassword });
+        sandbox.stub(bitgo, 'encrypt').resolves(encryptedPrv);
 
         let capturedBody: any;
         const acceptShareNock = nock(bgUrl)
@@ -2504,7 +2504,7 @@ describe('V2 Wallets:', function () {
         const decryptedWalletPrv = 'walletPrivKeyPlaintext';
 
         const eckey = makeRandomKey();
-        const v2EncryptedPrv = bitgo.encrypt({ password: fakeSecret, input: decryptedWalletPrv });
+        const v2EncryptedPrv = await bitgo.encrypt({ password: fakeSecret, input: decryptedWalletPrv });
 
         nock(bgUrl)
           .get(`/api/v2/tbtc/walletshare/${shareId}`)
@@ -2520,7 +2520,7 @@ describe('V2 Wallets:', function () {
         nock(bgUrl).post(`/api/v2/tbtc/walletshare/${shareId}`).reply(200, { changed: true, state: 'accepted' });
 
         sandbox.stub(bitgo, 'getECDHKeychain').resolves({ encryptedXprv: v2EncryptedXprv });
-        const decryptAsyncStub = sandbox.stub(bitgo, 'decryptAsync');
+        const decryptAsyncStub = sandbox.stub(bitgo, 'decrypt');
         // First call decrypts the ECDH keychain (v2), second decrypts the shared wallet prv
         decryptAsyncStub.onFirstCall().resolves(fakeXprv);
         decryptAsyncStub.onSecondCall().resolves(decryptedWalletPrv);
@@ -2529,7 +2529,7 @@ describe('V2 Wallets:', function () {
         const res = await wallets.acceptShare({ walletShareId: shareId, userPassword });
         should.equal(res.changed, true);
         should.equal(res.state, 'accepted');
-        // Must have called decryptAsync (not the sync decrypt) for both the ECDH key and the wallet prv
+        // Must have called decrypt (not the sync decrypt) for both the ECDH key and the wallet prv
         assert.equal(decryptAsyncStub.callCount, 2);
       });
 
@@ -2558,7 +2558,7 @@ describe('V2 Wallets:', function () {
         nock(bgUrl).post(`/api/v2/tbtc/walletshare/${shareId}`).reply(200, { changed: true, state: 'accepted' });
 
         sandbox.stub(bitgo, 'getECDHKeychain').resolves({ encryptedXprv: v2EncryptedXprv });
-        const decryptAsyncStub = sandbox.stub(bitgo, 'decryptAsync');
+        const decryptAsyncStub = sandbox.stub(bitgo, 'decrypt');
         decryptAsyncStub.onFirstCall().resolves(fakeXprv);
         decryptAsyncStub.onSecondCall().resolves(decryptedWalletPrv);
         sandbox.stub(moduleBitgo, 'getSharedSecret').returns(Buffer.from(fakeSecret));
@@ -2682,9 +2682,9 @@ describe('V2 Wallets:', function () {
         const fromUserPrv = Math.random();
         const walletPassphrase = 'bitgo1234';
         const keychainTest: OptionalKeychainEncryptedKey = {
-          encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
+          encryptedPrv: await bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
         };
-        const userPrv = await decryptKeychainPrivateKeyAsync(bitgo, keychainTest, walletPassphrase);
+        const userPrv = await decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
         if (!userPrv) {
           throw new Error('Unable to decrypt user keychain');
         }
@@ -2695,7 +2695,7 @@ describe('V2 Wallets:', function () {
 
         const eckey = makeRandomKey();
         const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
-        const newEncryptedPrv = bitgo.encrypt({ password: secret, input: userPrv });
+        const newEncryptedPrv = await bitgo.encrypt({ password: secret, input: userPrv });
         nock(bgUrl)
           .get('/api/v2/walletshares')
           .reply(200, {
@@ -2725,14 +2725,14 @@ describe('V2 Wallets:', function () {
 
         const myEcdhKeychain = await bitgo.keychains().create();
         sinon.stub(bitgo, 'getECDHKeychain').resolves({
-          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+          encryptedXprv: await bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
 
-        const prvKey = bitgo.decrypt({
+        const prvKey = await bitgo.decrypt({
           password: walletPassphrase,
-          input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+          input: await bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
-        sinon.stub(bitgo, 'decryptAsync').resolves(prvKey);
+        sinon.stub(bitgo, 'decrypt').resolves(prvKey);
         sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
 
         const share = await wallets.bulkAcceptShare({
@@ -2758,7 +2758,7 @@ describe('V2 Wallets:', function () {
         const eckey = makeRandomKey();
         const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
         const decryptedPrv = 'someWalletPrivateKey';
-        const newEncryptedPrv = bitgo.encrypt({ password: secret, input: decryptedPrv });
+        const newEncryptedPrv = await bitgo.encrypt({ password: secret, input: decryptedPrv });
 
         // Simulate v2-encrypted ECDH keychain xprv (envelope with v:2 marker)
         const v2EncryptedXprv = JSON.stringify({ v: 2, iv: 'aaa', ct: 'bbb', adata: 'ccc' });
@@ -2786,8 +2786,8 @@ describe('V2 Wallets:', function () {
           .reply(200, { acceptedWalletShares: [{ walletShareId: shareId }] });
 
         sinon.stub(bitgo, 'getECDHKeychain').resolves({ encryptedXprv: v2EncryptedXprv });
-        // decryptAsync resolves with the xprv regardless of whether the envelope is v1 or v2
-        sinon.stub(bitgo, 'decryptAsync').resolves(myEcdhXprv);
+        // decrypt resolves with the xprv regardless of whether the envelope is v1 or v2
+        sinon.stub(bitgo, 'decrypt').resolves(myEcdhXprv);
         sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
 
         const share = await wallets.bulkAcceptShare({
@@ -2835,7 +2835,7 @@ describe('V2 Wallets:', function () {
 
         sinon.stub(bitgo, 'getECDHKeychain').resolves({ encryptedXprv: v2EncryptedXprv });
         // First call: decrypt ECDH keychain xprv; second call: decrypt v2 wallet share prv
-        const decryptAsyncStub = sinon.stub(bitgo, 'decryptAsync');
+        const decryptAsyncStub = sinon.stub(bitgo, 'decrypt');
         decryptAsyncStub.onFirstCall().resolves(myEcdhXprv);
         decryptAsyncStub.onSecondCall().resolves(decryptedWalletPrv);
         sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
@@ -2845,7 +2845,7 @@ describe('V2 Wallets:', function () {
           userLoginPassword: walletPassphrase,
         });
         assert.deepEqual(share, { acceptedWalletShares: [{ walletShareId: shareId }] });
-        // Both decrypt calls must use decryptAsync (not the sync decrypt)
+        // Both decrypt calls must use decrypt (not the sync decrypt)
         assert.equal(decryptAsyncStub.callCount, 2);
       });
 
@@ -2855,9 +2855,9 @@ describe('V2 Wallets:', function () {
         const webauthnPassphrase = 'prf-derived-secret';
         const shareId = '66a229dbdccdcfb95b44fc2745a60bd4';
         const keychainTest: OptionalKeychainEncryptedKey = {
-          encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
+          encryptedPrv: await bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
         };
-        const userPrv = await decryptKeychainPrivateKeyAsync(bitgo, keychainTest, walletPassphrase);
+        const userPrv = await decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
         if (!userPrv) {
           throw new Error('Unable to decrypt user keychain');
         }
@@ -2868,7 +2868,7 @@ describe('V2 Wallets:', function () {
 
         const eckey = makeRandomKey();
         const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
-        const newEncryptedPrv = bitgo.encrypt({ password: secret, input: userPrv });
+        const newEncryptedPrv = await bitgo.encrypt({ password: secret, input: userPrv });
 
         let capturedBody: any;
         nock(bgUrl)
@@ -2899,14 +2899,14 @@ describe('V2 Wallets:', function () {
 
         const myEcdhKeychain = await bitgo.keychains().create();
         sinon.stub(bitgo, 'getECDHKeychain').resolves({
-          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+          encryptedXprv: await bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
 
-        const prvKey = bitgo.decrypt({
+        const prvKey = await bitgo.decrypt({
           password: walletPassphrase,
-          input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+          input: await bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
-        sinon.stub(bitgo, 'decryptAsync').resolves(prvKey);
+        sinon.stub(bitgo, 'decrypt').resolves(prvKey);
         sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
 
         await wallets.bulkAcceptShare({
@@ -2934,9 +2934,9 @@ describe('V2 Wallets:', function () {
         const walletPassphrase = 'bitgo1234';
         const shareId = '66a229dbdccdcfb95b44fc2745a60bd4';
         const keychainTest: OptionalKeychainEncryptedKey = {
-          encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
+          encryptedPrv: await bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
         };
-        const userPrv = await decryptKeychainPrivateKeyAsync(bitgo, keychainTest, walletPassphrase);
+        const userPrv = await decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
         if (!userPrv) {
           throw new Error('Unable to decrypt user keychain');
         }
@@ -2947,7 +2947,7 @@ describe('V2 Wallets:', function () {
 
         const eckey = makeRandomKey();
         const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
-        const newEncryptedPrv = bitgo.encrypt({ password: secret, input: userPrv });
+        const newEncryptedPrv = await bitgo.encrypt({ password: secret, input: userPrv });
 
         let capturedBody: any;
         nock(bgUrl)
@@ -2978,13 +2978,13 @@ describe('V2 Wallets:', function () {
 
         const myEcdhKeychain = await bitgo.keychains().create();
         sinon.stub(bitgo, 'getECDHKeychain').resolves({
-          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+          encryptedXprv: await bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
-        const prvKey = bitgo.decrypt({
+        const prvKey = await bitgo.decrypt({
           password: walletPassphrase,
-          input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+          input: await bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
-        sinon.stub(bitgo, 'decryptAsync').resolves(prvKey);
+        sinon.stub(bitgo, 'decrypt').resolves(prvKey);
         sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
 
         await wallets.bulkAcceptShare({
@@ -3002,9 +3002,9 @@ describe('V2 Wallets:', function () {
         const walletPassphrase = 'bitgo1234';
         const fromUserPrv = Math.random();
         const keychainTest: OptionalKeychainEncryptedKey = {
-          encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
+          encryptedPrv: await bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
         };
-        const userPrv = await decryptKeychainPrivateKeyAsync(bitgo, keychainTest, walletPassphrase);
+        const userPrv = await decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
         if (!userPrv) {
           throw new Error('Unable to decrypt user keychain');
         }
@@ -3016,7 +3016,7 @@ describe('V2 Wallets:', function () {
         const eckey = makeRandomKey();
         const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
         // Pad the private key with additional data to make it larger before encrypting
-        const newEncryptedPrv = bitgo.encrypt({ password: secret, input: userPrv });
+        const newEncryptedPrv = await bitgo.encrypt({ password: secret, input: userPrv });
         const keychain = {
           path: path,
           fromPubKey: eckey.publicKey.toString('hex'),
@@ -3046,15 +3046,15 @@ describe('V2 Wallets:', function () {
 
         const myEcdhKeychain = await bitgo.keychains().create();
         sinon.stub(bitgo, 'getECDHKeychain').resolves({
-          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+          encryptedXprv: await bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
 
-        const prvKey = bitgo.decrypt({
+        const prvKey = await bitgo.decrypt({
           password: walletPassphrase,
-          input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+          input: await bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
-        sinon.stub(bitgo, 'decryptAsync').resolves(prvKey);
-        sinon.stub(bitgo, 'encrypt').returns(userPrv + 'X'.repeat(100000));
+        sinon.stub(bitgo, 'decrypt').resolves(prvKey);
+        sinon.stub(bitgo, 'encrypt').resolves(userPrv + 'X'.repeat(100000));
         sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
 
         // Mock bulkAcceptShareRequestWithRetry to track batch sizes
@@ -3103,9 +3103,9 @@ describe('V2 Wallets:', function () {
         const walletPassphrase = 'bitgo1234';
         const fromUserPrv = Math.random();
         const keychainTest: OptionalKeychainEncryptedKey = {
-          encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
+          encryptedPrv: await bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
         };
-        const userPrv = await decryptKeychainPrivateKeyAsync(bitgo, keychainTest, walletPassphrase);
+        const userPrv = await decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
         if (!userPrv) {
           throw new Error('Unable to decrypt user keychain');
         }
@@ -3116,7 +3116,7 @@ describe('V2 Wallets:', function () {
 
         const eckey = makeRandomKey();
         const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
-        const newEncryptedPrv = bitgo.encrypt({ password: secret, input: userPrv });
+        const newEncryptedPrv = await bitgo.encrypt({ password: secret, input: userPrv });
         const keychain = {
           path: path,
           fromPubKey: eckey.publicKey.toString('hex'),
@@ -3146,15 +3146,15 @@ describe('V2 Wallets:', function () {
 
         const myEcdhKeychain = await bitgo.keychains().create();
         sinon.stub(bitgo, 'getECDHKeychain').resolves({
-          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+          encryptedXprv: await bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
 
-        const prvKey = bitgo.decrypt({
+        const prvKey = await bitgo.decrypt({
           password: walletPassphrase,
-          input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+          input: await bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
-        sinon.stub(bitgo, 'decryptAsync').resolves(prvKey);
-        sinon.stub(bitgo, 'encrypt').returns(userPrv + 'X'.repeat(100000));
+        sinon.stub(bitgo, 'decrypt').resolves(prvKey);
+        sinon.stub(bitgo, 'encrypt').resolves(userPrv + 'X'.repeat(100000));
         sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
 
         // Track the sequence of batch sizes attempted
@@ -3205,9 +3205,9 @@ describe('V2 Wallets:', function () {
         const walletPassphrase = 'bitgo1234';
         const fromUserPrv = Math.random();
         const keychainTest: OptionalKeychainEncryptedKey = {
-          encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
+          encryptedPrv: await bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
         };
-        const userPrv = await decryptKeychainPrivateKeyAsync(bitgo, keychainTest, walletPassphrase);
+        const userPrv = await decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
         if (!userPrv) {
           throw new Error('Unable to decrypt user keychain');
         }
@@ -3218,7 +3218,7 @@ describe('V2 Wallets:', function () {
 
         const eckey = makeRandomKey();
         const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
-        const newEncryptedPrv = bitgo.encrypt({ password: secret, input: userPrv });
+        const newEncryptedPrv = await bitgo.encrypt({ password: secret, input: userPrv });
         const keychain = {
           path: path,
           fromPubKey: eckey.publicKey.toString('hex'),
@@ -3248,14 +3248,14 @@ describe('V2 Wallets:', function () {
 
         const myEcdhKeychain = await bitgo.keychains().create();
         sinon.stub(bitgo, 'getECDHKeychain').resolves({
-          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+          encryptedXprv: await bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
 
-        const prvKey = bitgo.decrypt({
+        const prvKey = await bitgo.decrypt({
           password: walletPassphrase,
-          input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+          input: await bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
-        sinon.stub(bitgo, 'decryptAsync').resolves(prvKey);
+        sinon.stub(bitgo, 'decrypt').resolves(prvKey);
         sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
 
         // Always throw 413 error, even for batch size 1
@@ -3503,7 +3503,7 @@ describe('V2 Wallets:', function () {
           .resolves(userKeychain);
 
         // Mock decrypt and signMessage
-        sinon.stub(bitgo, 'decryptAsync').resolves('decryptedPrivateKey');
+        sinon.stub(bitgo, 'decrypt').resolves('decryptedPrivateKey');
         sinon.stub(wallets.baseCoin, 'signMessage').resolves(Buffer.from('signature'));
 
         // Mock bulkUpdateWalletShareRequest
@@ -3567,7 +3567,7 @@ describe('V2 Wallets:', function () {
         sinon.stub(ofcWallets.baseCoin.keychains(), 'createUserKeychain').resolves(userKeychain);
 
         // Mock decrypt and signMessage
-        sinon.stub(bitgo, 'decryptAsync').resolves('decryptedPrivateKey');
+        sinon.stub(bitgo, 'decrypt').resolves('decryptedPrivateKey');
         sinon.stub(ofcWallets.baseCoin, 'signMessage').resolves(Buffer.from('signature'));
 
         // Mock getECDHKeychain
@@ -3674,7 +3674,7 @@ describe('V2 Wallets:', function () {
         const originalPrivKey = 'originalPrivateKey';
         const sharedSecret = getSharedSecret(fromKeychain, Buffer.from(toPubKey, 'hex')).toString('hex');
 
-        const encryptedPrv = bitgo.encrypt({
+        const encryptedPrv = await bitgo.encrypt({
           password: sharedSecret,
           input: originalPrivKey,
         });
@@ -3706,15 +3706,15 @@ describe('V2 Wallets:', function () {
         // Mock getECDHKeychain
         const myEcdhKeychain = await bitgo.keychains().create();
         sinon.stub(bitgo, 'getECDHKeychain').resolves({
-          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+          encryptedXprv: await bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
 
         // Setup decrypt and encrypt stubs
-        const decryptStub = sinon.stub(bitgo, 'decryptAsync');
+        const decryptStub = sinon.stub(bitgo, 'decrypt');
         decryptStub.onFirstCall().resolves(myEcdhKeychain.xprv); // For sharing keychain
         decryptStub.onSecondCall().resolves(originalPrivKey); // For wallet keychain
 
-        const encryptStub = sinon.stub(bitgo, 'encrypt').returns('newEncryptedPrv');
+        const encryptStub = sinon.stub(bitgo, 'encrypt').resolves('newEncryptedPrv');
 
         // Mock getSharedSecret
         sinon.stub(moduleBitgo, 'getSharedSecret').returns(Buffer.from(sharedSecret));
@@ -3856,7 +3856,7 @@ describe('V2 Wallets:', function () {
 
         const originalPrivKey = 'originalPrivateKey';
         const sharedSecret = getSharedSecret(fromKeychain, Buffer.from(toPubKey, 'hex')).toString('hex');
-        const encryptedPrv = bitgo.encrypt({ password: sharedSecret, input: originalPrivKey });
+        const encryptedPrv = await bitgo.encrypt({ password: sharedSecret, input: originalPrivKey });
 
         // Both the ECDH keychain and share prv are v2-encrypted in this scenario
         const v2EncryptedXprv = JSON.stringify({ v: 2, iv: 'aabbcc', ct: 'ddeeff', adata: '00' });
@@ -3881,12 +3881,12 @@ describe('V2 Wallets:', function () {
         const myEcdhKeychain = await bitgo.keychains().create();
         sinon.stub(bitgo, 'getECDHKeychain').resolves({ encryptedXprv: v2EncryptedXprv });
 
-        // decryptAsync handles v2 transparently; stub to return expected values
-        const decryptAsyncStub = sinon.stub(bitgo, 'decryptAsync');
+        // decrypt handles v2 transparently; stub to return expected values
+        const decryptAsyncStub = sinon.stub(bitgo, 'decrypt');
         decryptAsyncStub.onFirstCall().resolves(myEcdhKeychain.xprv); // ECDH keychain
         decryptAsyncStub.onSecondCall().resolves(originalPrivKey); // wallet share prv
 
-        const encryptStub = sinon.stub(bitgo, 'encrypt').returns('newEncryptedPrv');
+        const encryptStub = sinon.stub(bitgo, 'encrypt').resolves('newEncryptedPrv');
         sinon.stub(moduleBitgo, 'getSharedSecret').returns(Buffer.from(sharedSecret));
 
         const bulkUpdateStub = sinon.stub(Wallets.prototype, 'bulkUpdateWalletShareRequest').resolves({
@@ -3907,7 +3907,7 @@ describe('V2 Wallets:', function () {
           walletShareUpdateErrors: [],
         });
 
-        // Both decrypt calls must have gone through decryptAsync
+        // Both decrypt calls must have gone through decrypt
         assert.equal(decryptAsyncStub.callCount, 2);
         bulkUpdateStub.calledOnce.should.be.true();
         encryptStub.calledOnce.should.be.true();
@@ -4156,7 +4156,7 @@ describe('V2 Wallets:', function () {
           id: wallet.keyIds()[0],
           pub,
           source: 'user',
-          encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
+          encryptedPrv: await bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
           coinSpecific: {},
         });
       const params: BulkWalletShareOptions = {
@@ -4173,7 +4173,7 @@ describe('V2 Wallets:', function () {
 
       const prv1 = Math.random().toString();
       const keychainTest: OptionalKeychainEncryptedKey = {
-        encryptedPrv: bitgo.encrypt({ input: prv1, password: walletPassphrase }),
+        encryptedPrv: await bitgo.encrypt({ input: prv1, password: walletPassphrase }),
       };
 
       sinon.stub(wallet, 'getEncryptedUserKeychain').resolves({
@@ -4238,7 +4238,7 @@ describe('V2 Wallets:', function () {
           id: wallet.keyIds()[0],
           pub,
           source: 'user',
-          encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
+          encryptedPrv: await bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
           coinSpecific: {},
         });
       const params: BulkWalletShareOptions = {
@@ -4255,7 +4255,7 @@ describe('V2 Wallets:', function () {
 
       const prv1 = Math.random().toString();
       const keychainTest: OptionalKeychainEncryptedKey = {
-        encryptedPrv: bitgo.encrypt({ input: prv1, password: walletPassphrase }),
+        encryptedPrv: await bitgo.encrypt({ input: prv1, password: walletPassphrase }),
       };
 
       sinon.stub(wallet, 'getEncryptedUserKeychain').resolves({
@@ -4310,7 +4310,7 @@ describe('V2 Wallets:', function () {
       });
 
       const encryptPrvForUserStub = sinon
-        .stub(wallet, 'encryptPrvForUserAsync')
+        .stub(wallet, 'encryptPrvForUser')
         .callsFake(async (prv, pubKey, userPubKey, path) => {
           return {
             pub: pubKey,
@@ -4366,7 +4366,7 @@ describe('V2 Wallets:', function () {
     });
   });
 
-  describe('downloadKeycardAsync', () => {
+  describe('downloadKeycard', () => {
     const localBitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     const walletData = {
       id: '5b34252f1bf349930e34020a00000002',
@@ -4385,7 +4385,7 @@ describe('V2 Wallets:', function () {
 
     it('should throw when called in Node.js (no browser window)', async () => {
       // In Node.js, accessing `window` throws ReferenceError; the method rejects.
-      await wallet.downloadKeycardAsync().should.be.rejected();
+      await wallet.downloadKeycard().should.be.rejected();
     });
 
     it('downloadKeycard (sync) should throw when called in Node.js (no browser window)', () => {
@@ -4393,7 +4393,7 @@ describe('V2 Wallets:', function () {
     });
   });
 
-  describe('encryptPrvForUserAsync', () => {
+  describe('encryptPrvForUser', () => {
     const localBitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     const walletData = {
       id: '5b34252f1bf349930e34020a00000001',
@@ -4428,9 +4428,9 @@ describe('V2 Wallets:', function () {
       const userPubkey = '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798';
       const path = 'm/999999/0/1';
 
-      sinon.stub(localBitgo, 'encryptAsync').resolves('encryptedPrvForUser');
+      sinon.stub(localBitgo, 'encrypt').resolves('encryptedPrvForUser');
 
-      const result = await wallet.encryptPrvForUserAsync(decryptedPrv, pub, userPubkey, path);
+      const result = await wallet.encryptPrvForUser(decryptedPrv, pub, userPubkey, path);
 
       result.should.have.property('pub', pub);
       result.should.have.property('encryptedPrv', 'encryptedPrvForUser');

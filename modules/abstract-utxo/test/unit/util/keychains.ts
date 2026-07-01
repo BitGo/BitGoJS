@@ -29,17 +29,19 @@ export function toKeychainBase58(k: BIP32Interface): KeychainBase58 {
   };
 }
 
-export function toKeychainObjects(rootWalletKeys: RootWalletKeys, walletPassphrase: string): KeyDoc[] {
-  return rootWalletKeys.triple.map((bip32, keyIdx) => {
-    const pub = bip32.neutered().toBase58();
-    return {
-      id: getSeed(pub).toString('hex'),
-      pub,
-      source: KeyNames[keyIdx],
-      encryptedPrv: encrypt(walletPassphrase, bip32.toBase58()),
-      coinSpecific: {},
-    };
-  });
+export async function toKeychainObjects(rootWalletKeys: RootWalletKeys, walletPassphrase: string): Promise<KeyDoc[]> {
+  return Promise.all(
+    rootWalletKeys.triple.map(async (bip32, keyIdx) => {
+      const pub = bip32.neutered().toBase58();
+      return {
+        id: getSeed(pub).toString('hex'),
+        pub,
+        source: KeyNames[keyIdx],
+        encryptedPrv: await encrypt(walletPassphrase, bip32.toBase58()),
+        coinSpecific: {},
+      };
+    })
+  );
 }
 
 export const KeyNames = ['user', 'backup', 'bitgo'];
@@ -81,7 +83,7 @@ export function getDefaultWalletUnspentSigner(): bitgo.WalletUnspentSigner<RootW
   return getWalletUnspentSignerUserBitGo(keychains);
 }
 
-export function encryptKeychain(password: string, keychain: KeychainBase58): string {
+export function encryptKeychain(password: string, keychain: KeychainBase58): Promise<string> {
   return encrypt(password, keychain.prv);
 }
 

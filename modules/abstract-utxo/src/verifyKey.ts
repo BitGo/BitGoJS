@@ -7,7 +7,7 @@ import assert from 'assert';
 
 import buildDebug from 'debug';
 import { BIP32, message } from '@bitgo/wasm-utxo';
-import { BitGoBase, decryptKeychainPrivateKey, decryptKeychainPrivateKeyAsync, KeyIndices } from '@bitgo/sdk-core';
+import { BitGoBase, decryptKeychainPrivateKey, KeyIndices } from '@bitgo/sdk-core';
 
 import { VerifyKeySignaturesOptions, VerifyUserPublicKeyOptions } from './abstractUtxoCoin';
 import { ParsedTransaction } from './transaction/types';
@@ -110,10 +110,10 @@ function verifyUserPublicKeyWithPrv(
 }
 
 /**
- * TODO: Deprecate in favor of verifyUserPublicKeyAsync once v2 encryption is default.
- * Decrypt the wallet's user private key and verify that the claimed public key matches (sync, v1 only).
+ * Decrypt the wallet's user private key and verify that the claimed public key matches.
+ * Supports both v1 (SJCL) and v2 (Argon2id) envelopes.
  */
-export function verifyUserPublicKey(bitgo: BitGoBase, params: VerifyUserPublicKeyOptions): boolean {
+export async function verifyUserPublicKey(bitgo: BitGoBase, params: VerifyUserPublicKeyOptions): Promise<boolean> {
   const { userKeychain, txParams, disableNetworking } = params;
   if (!userKeychain) {
     throw new Error('user keychain is required');
@@ -121,24 +121,7 @@ export function verifyUserPublicKey(bitgo: BitGoBase, params: VerifyUserPublicKe
 
   let userPrv = userKeychain.prv;
   if (!userPrv && txParams.walletPassphrase) {
-    userPrv = decryptKeychainPrivateKey(bitgo, userKeychain, txParams.walletPassphrase);
-  }
-
-  return verifyUserPublicKeyWithPrv(userKeychain, userPrv, disableNetworking);
-}
-
-/**
- * Async version of verifyUserPublicKey with v2 encrypt/decrypt support.
- */
-export async function verifyUserPublicKeyAsync(bitgo: BitGoBase, params: VerifyUserPublicKeyOptions): Promise<boolean> {
-  const { userKeychain, txParams, disableNetworking } = params;
-  if (!userKeychain) {
-    throw new Error('user keychain is required');
-  }
-
-  let userPrv = userKeychain.prv;
-  if (!userPrv && txParams.walletPassphrase) {
-    userPrv = await decryptKeychainPrivateKeyAsync(bitgo, userKeychain, txParams.walletPassphrase);
+    userPrv = await decryptKeychainPrivateKey(bitgo, userKeychain, txParams.walletPassphrase);
   }
 
   return verifyUserPublicKeyWithPrv(userKeychain, userPrv, disableNetworking);

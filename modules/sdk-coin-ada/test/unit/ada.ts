@@ -413,7 +413,7 @@ describe('ADA', function () {
         },
         multisigType: 'tss',
       };
-      const fakePrv = encrypt('password', 'prv');
+      const fakePrv = await encrypt('password', 'prv');
 
       const walletObj = new Wallet(bitgo, basecoin, walletData);
       const bgUrl = common.Environments['mock'].uri;

@@ -335,11 +335,6 @@ describe('Lightning Payment API Tests', function () {
         setRequestTracer: sinon.stub(),
         decrypt: sinon
           .stub()
-          .returns(
-            'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
-          ),
-        decryptAsync: sinon
-          .stub()
           .resolves(
             'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
           ),
@@ -511,11 +506,6 @@ describe('Lightning Payment API Tests', function () {
         setRequestTracer: sinon.stub(),
         decrypt: sinon
           .stub()
-          .returns(
-            'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
-          ),
-        decryptAsync: sinon
-          .stub()
           .resolves(
             'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
           ),
@@ -646,11 +636,6 @@ describe('Lightning Payment API Tests', function () {
       const mockBitgo: any = {
         setRequestTracer: sinon.stub(),
         decrypt: sinon
-          .stub()
-          .returns(
-            'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
-          ),
-        decryptAsync: sinon
           .stub()
           .resolves(
             'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
@@ -809,11 +794,6 @@ describe('Lightning Payment API Tests', function () {
           setRequestTracer: sinon.stub(),
           decrypt: sinon
             .stub()
-            .returns(
-              'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
-            ),
-          decryptAsync: sinon
-            .stub()
             .resolves(
               'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
             ),
@@ -892,11 +872,6 @@ describe('Lightning Payment API Tests', function () {
         const mockBitgo: any = {
           setRequestTracer: sinon.stub(),
           decrypt: sinon
-            .stub()
-            .returns(
-              'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
-            ),
-          decryptAsync: sinon
             .stub()
             .resolves(
               'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
@@ -977,11 +952,6 @@ describe('Lightning Payment API Tests', function () {
         const mockBitgo: any = {
           setRequestTracer: sinon.stub(),
           decrypt: sinon
-            .stub()
-            .returns(
-              'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
-            ),
-          decryptAsync: sinon
             .stub()
             .resolves(
               'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'

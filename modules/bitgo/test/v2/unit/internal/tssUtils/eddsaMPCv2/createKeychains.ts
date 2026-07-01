@@ -93,13 +93,13 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
       assert.equal(userKeychain.source, 'user');
       assert.ok(userKeychain.commonKeychain);
       assert.ok(userKeychain.encryptedPrv);
-      assert.ok(bitgo.decrypt({ input: userKeychain.encryptedPrv, password: params.passphrase }));
+      assert.ok(await bitgo.decrypt({ input: userKeychain.encryptedPrv, password: params.passphrase }));
 
       assert.ok(backupKeychain);
       assert.equal(backupKeychain.source, 'backup');
       assert.ok(backupKeychain.commonKeychain);
       assert.ok(backupKeychain.encryptedPrv);
-      assert.ok(bitgo.decrypt({ input: backupKeychain.encryptedPrv, password: params.passphrase }));
+      assert.ok(await bitgo.decrypt({ input: backupKeychain.encryptedPrv, password: params.passphrase }));
 
       assert.ok(bitgoKeychain);
       assert.equal(bitgoKeychain.source, 'bitgo');
@@ -151,7 +151,7 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
       assert.equal(userBody.webauthnInfo.prfSalt, webauthnInfo.prfSalt);
       assert.equal(userBody.webauthnInfo.enterpriseId, enterpriseId);
       assert.ok(userBody.webauthnInfo.encryptedPrv, 'encryptedPrv should be set');
-      assert.ok(bitgo.decrypt({ input: userBody.webauthnInfo.encryptedPrv, password: webauthnInfo.passphrase }));
+      assert.ok(await bitgo.decrypt({ input: userBody.webauthnInfo.encryptedPrv, password: webauthnInfo.passphrase }));
       assert.strictEqual(userBody.webauthnDevices, undefined, 'deprecated webauthnDevices should not be sent');
     });
 
@@ -212,12 +212,12 @@ describe('TSS EdDSA MPCv2 Utils:', async function () {
 
       assert.ok(userKeychain.reducedEncryptedPrv);
       assert.equal(
-        bitgo.decrypt({ input: userKeychain.reducedEncryptedPrv, password: 'passphrase' }),
+        await bitgo.decrypt({ input: userKeychain.reducedEncryptedPrv, password: 'passphrase' }),
         encodeReduced(Buffer.from('userReduced'))
       );
       assert.ok(backupKeychain.reducedEncryptedPrv);
       assert.equal(
-        bitgo.decrypt({ input: backupKeychain.reducedEncryptedPrv, password: 'passphrase' }),
+        await bitgo.decrypt({ input: backupKeychain.reducedEncryptedPrv, password: 'passphrase' }),
         encodeReduced(Buffer.from('backupReduced'))
       );
     });

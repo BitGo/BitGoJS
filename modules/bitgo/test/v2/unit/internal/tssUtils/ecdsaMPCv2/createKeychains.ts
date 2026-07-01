@@ -275,9 +275,9 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       const reducedEncryptedPrvParsed: { v: number } = JSON.parse(userKeychain.reducedEncryptedPrv);
       assert.equal(reducedEncryptedPrvParsed.v, 2, 'reducedEncryptedPrv should be a v2 envelope');
 
-      // Verify v2 envelope is decryptable via decryptAsync
-      const decrypted = await bitgo.decryptAsync({ input: userKeychain.encryptedPrv, password: params.passphrase });
-      assert.ok(decrypted, 'decryptAsync should successfully decrypt v2 envelope');
+      // Verify v2 envelope is decryptable via decrypt
+      const decrypted = await bitgo.decrypt({ input: userKeychain.encryptedPrv, password: params.passphrase });
+      assert.ok(decrypted, 'decrypt should successfully decrypt v2 envelope');
 
       // Verify backup keychain also uses v2 envelopes
       assert.ok(backupKeychain);
