@@ -2749,7 +2749,7 @@ export class Wallet implements IWallet {
       });
     }
 
-    if (signingParams.txPrebuild.txRequestId) {
+    if (this._wallet.multisigType === 'tss' && signingParams.txPrebuild.txRequestId) {
       assert(this.tssUtils, 'tssUtils must be defined for TSS wallets');
       const txRequest = await this.tssUtils.getTxRequest(signingParams.txPrebuild.txRequestId, params.reqId);
       if (this.tssUtils.isPendingApprovalTxRequestFull(txRequest)) {
