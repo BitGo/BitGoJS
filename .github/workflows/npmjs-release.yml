@@ -309,16 +309,32 @@ jobs:
           echo "New version: $NEW_VERSION"
           echo "new-version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
+      # NPM publish has already happened by this point, so a failure here
+      # requires manual remediation (see VL-5474). Retry transient failures,
+      # then surface as a job failure — no continue-on-error. Existing
+      # org-level Slack notifications fire on the resulting job failure.
       - name: Create GitHub release
         if: inputs.dry-run == false && steps.version-bump-summary.outcome == 'success'
-        continue-on-error: true
+        id: create-github-release
         env:
           GH_TOKEN: ${{ secrets.BITGOBOT_PAT_TOKEN || github.token }}
         run: |
-          gh release create "v${{ steps.extract-version.outputs.new-version }}" \
-            --latest \
-            --title "v${{ steps.extract-version.outputs.new-version }}" \
-            --notes-file "${{ steps.version-bump-summary.outputs.text-file }}"
+          for attempt in 1 2 3; do
+            if gh release create "v${{ steps.extract-version.outputs.new-version }}" \
+              --latest \
+              --title "v${{ steps.extract-version.outputs.new-version }}" \
+              --notes-file "${{ steps.version-bump-summary.outputs.text-file }}"; then
+              echo "GitHub release created on attempt $attempt"
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              delay=$((attempt * 30))
+              echo "Attempt $attempt failed. Retrying in ${delay}s..."
+              sleep "$delay"
+            fi
+          done
+          echo "::error::All retry attempts exhausted creating GitHub release v${{ steps.extract-version.outputs.new-version }}. NPM publish succeeded; manual GitHub release required."
+          exit 1
 
   get-express-release-context:
     name: Get Express release context
