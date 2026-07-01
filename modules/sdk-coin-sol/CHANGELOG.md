@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.25.0...@bitgo/sdk-coin-sol@7.26.0) (2026-06-30)
+
+
+### Features
+
+* **sdk-coin-sol:** add MPCv2 support to recoverCloseATA signing ([fb76dcc](https://github.com/BitGo/BitGoJS/commit/fb76dccb009745982ddb6c602aa7c5331db15c9c))
+* **sdk-coin-sol:** add MPCv2 support to recoverConsolidations ([f40fe4c](https://github.com/BitGo/BitGoJS/commit/f40fe4c849a8e68aae40c7efb4d5b9e449e592c5))
+* **sdk-coin-sol:** add MPCv2 support to recoverNestedAta ([bc52daa](https://github.com/BitGo/BitGoJS/commit/bc52daa83fe92619e076fa010c7838795f91d329))
+
+
+
+
+
 # [7.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.24.0...@bitgo/sdk-coin-sol@7.25.0) (2026-06-25)
 
 

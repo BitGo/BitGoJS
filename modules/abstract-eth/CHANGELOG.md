@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [24.31.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.31.1...@bitgo/abstract-eth@24.31.2) (2026-06-30)
+
+
+### Bug Fixes
+
+* **sdk-coin-eth:** fix the verify confidential transfer for zama ([96e38d7](https://github.com/BitGo/BitGoJS/commit/96e38d739c3759e86c5fb1308b999c8613ce68c1))
+
+
+
+
+
 ## [24.31.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.31.0...@bitgo/abstract-eth@24.31.1) (2026-06-25)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

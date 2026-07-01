@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.52.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.51.0...@bitgo/statics@58.52.0) (2026-06-30)
+
+
+### Bug Fixes
+
+* **statics:** update hoodeth mainnet explorer url ([ad9b2ee](https://github.com/BitGo/BitGoJS/commit/ad9b2ee71cb6d8115de9951739c56e325235faa4))
+* **statics:** update XLM testnet BST and TST issuer addresses ([bebaddd](https://github.com/BitGo/BitGoJS/commit/bebadddb7314711b9e15a3e1cb294cd522bd1b3a))
+
+
+### Features
+
+* onboard equity and treasury tokens for canton testnet ([aaec435](https://github.com/BitGo/BitGoJS/commit/aaec4359e807f58644343525bbc03d87d7760b7b))
+* onboard xlm test token for prod ([2d21f6e](https://github.com/BitGo/BitGoJS/commit/2d21f6edf6ad7edf663c12b899927428e42d49cd))
+* onboard zama prod tokens ([94218b9](https://github.com/BitGo/BitGoJS/commit/94218b9435e4e6e46878d426358ddc55cfd0543a))
+* **statics:** add PolyxNetwork interface with v8SpecVersion and v8TxVersion ([e12ee2a](https://github.com/BitGo/BitGoJS/commit/e12ee2a0e1e8115e4b8ae21770341c2f296710f1))
+* **statics:** add SoFiUSD Canton token (staging, test, prod) ([561cbef](https://github.com/BitGo/BitGoJS/commit/561cbef48fc6fafb8ca716d724c088fd0b5e1a4f))
+* **statics:** add zama acl contract for eth ([4d78659](https://github.com/BitGo/BitGoJS/commit/4d78659206051cd940fb10d5305e5befc8e6c368))
+
+
+
+
+
 # [58.51.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.50.0...@bitgo/statics@58.51.0) (2026-06-25)
 
 

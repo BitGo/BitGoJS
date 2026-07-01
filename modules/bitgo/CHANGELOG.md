@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [51.7.3](https://github.com/BitGo/BitGoJS/compare/bitgo@51.7.2...bitgo@51.7.3) (2026-06-30)
+
+
+### Bug Fixes
+
+* **sdk-coin-flrp:** custody wallets no longer require a password ([b73b34e](https://github.com/BitGo/BitGoJS/commit/b73b34e91e343c9549b4654f3b08f55508943f76))
+* **statics:** update XLM testnet BST and TST issuer addresses ([bebaddd](https://github.com/BitGo/BitGoJS/commit/bebadddb7314711b9e15a3e1cb294cd522bd1b3a))
+
+
+
+
+
 ## [51.7.2](https://github.com/BitGo/BitGoJS/compare/bitgo@51.7.1...bitgo@51.7.2) (2026-06-25)
 
 **Note:** Version bump only for package bitgo

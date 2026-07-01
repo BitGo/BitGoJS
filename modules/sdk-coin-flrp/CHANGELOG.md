@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.15.3...@bitgo/sdk-coin-flrp@1.15.4) (2026-06-30)
+
+
+### Bug Fixes
+
+* **sdk-coin-flrp:** custody wallets no longer require a password ([b73b34e](https://github.com/BitGo/BitGoJS/commit/b73b34e91e343c9549b4654f3b08f55508943f76))
+* **sdk-coin-flrp:** subtract minImportToPFee from ExportInC outputAmount ([d9434aa](https://github.com/BitGo/BitGoJS/commit/d9434aa02b1f302da0c7a67b0b349d79eb8c9721))
+
+
+
+
+
 ## [1.15.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.15.2...@bitgo/sdk-coin-flrp@1.15.3) (2026-06-25)
 
 
