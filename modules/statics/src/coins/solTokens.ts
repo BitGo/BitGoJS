@@ -1292,11 +1292,11 @@ export const solTokens = [
   solToken(
     '6f459ab5-5d0c-4d8d-96d8-46aaaa0e73b0',
     'sol:jsol',
-    'JPOOL Solana Token',
+    'JPool Staked SOL',
     9,
     '7Q2afV64in6N6SeZsAAB81TJzwDoD6zpqmHkzi9Dcavn',
     '7Q2afV64in6N6SeZsAAB81TJzwDoD6zpqmHkzi9Dcavn',
-    UnderlyingAsset.JSOL,
+    UnderlyingAsset['sol:jsol'],
     SOL_TOKEN_FEATURES
   ),
   solToken(

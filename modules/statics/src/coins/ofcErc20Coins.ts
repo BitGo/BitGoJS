@@ -4479,6 +4479,13 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:t-ivvon')
   ),
+  ofcerc20(
+    '02121989-6c07-4b15-a419-f01c42eaa885',
+    'ofceth:ehybond-1',
+    'EVK Vault eHYBOND-1',
+    18,
+    underlyingAssetForSymbol('eth:ehybond-1')
+  ),
 ];
 
 export const tOfcErc20Coins = [

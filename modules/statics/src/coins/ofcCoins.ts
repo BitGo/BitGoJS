@@ -1144,6 +1144,10 @@ export const ofcCoins = [
     ...SOL_OFC_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
   ]),
+  ofcsolToken('7921023f-ee5c-4649-9445-d0847719da01', 'ofcsol:pyusd', 'PayPal USD', 6, UnderlyingAsset['sol:pyusd'], [
+    ...SOL_OFC_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+  ]),
   ofcsolToken('2ef2ca5a-139b-4797-97e1-476b2a39e63e', 'ofcsol:usdm1', 'USDM1', 9, UnderlyingAsset['sol:usdm1'], [
     ...SOL_OFC_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
@@ -5455,4 +5459,12 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['tada:tusda']
   ),
+  ofcsolToken(
+    'b3bbf580-1cdf-418e-a3aa-bc7d573e6720',
+    'ofcsol:jsol',
+    'JPool Staked SOL',
+    9,
+    UnderlyingAsset['sol:jsol']
+  ),
+  ofcBscToken('3a9daeda-7e08-494d-a47c-d2c89dd1c735', 'ofcbsc:godl', 'GODL', 18, UnderlyingAsset['bsc:godl']),
 ];
