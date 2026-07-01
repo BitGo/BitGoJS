@@ -2925,7 +2925,8 @@ export const allCoinsAndTokens = [
     18,
     '0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34',
     UnderlyingAsset['mantle:usde'],
-    Networks.main.mantle
+    Networks.main.mantle,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE, CoinFeature.EIP1559]
   ),
   erc20Token(
     'a33599fe-2245-49de-86ab-44eb1755ed30',
@@ -6631,7 +6632,7 @@ export const allCoinsAndTokens = [
     18,
     '0x4d15a3a2286d883af0aa1b3f21367843fac63e07',
     UnderlyingAsset['arbeth:tusd'],
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE, CoinFeature.STABLECOIN]
   ),
   arbethErc20(
     'eb721759-6da6-46c3-b0d2-a7e9d939c527',
