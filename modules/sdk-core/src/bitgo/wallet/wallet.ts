@@ -100,7 +100,9 @@ import {
   GetTransferOptions,
   GetUserPrvOptions,
   type IWallet,
+  ListReservedUnspentsResponse,
   ManageUnspentReservationOptions,
+  ReservedUnspent,
   MaximumSpendable,
   MaximumSpendableOptions,
   ModifyWebhookOptions,
@@ -893,16 +895,12 @@ export class Wallet implements IWallet {
    * @param params.create - create a new reservation
    * @param params.modify - modify an existing reservation
    * @param params.delete - delete an existing reservation
+   * @param params.list - list existing reservations
    */
-  async manageUnspentReservations(params: ManageUnspentReservationOptions): Promise<{
-    unspents: {
-      id: string;
-      walletId: string;
-      expireTime: string;
-      userId?: string;
-    }[];
-  }> {
-    const filteredParams = _.pick(params, ['create', 'modify', 'delete']);
+  async manageUnspentReservations(
+    params: ManageUnspentReservationOptions
+  ): Promise<{ unspents: ReservedUnspent[] } | ListReservedUnspentsResponse> {
+    const filteredParams = _.pick(params, ['create', 'modify', 'delete', 'list']);
     this.bitgo.setRequestTracer(new RequestTracer());
     // The URL cannot contain the coinName, so we remove it from the URL
     const url = this.url(`/reservedunspents`).replace(`/${this.baseCoin.getChain()}`, '');
@@ -915,8 +913,11 @@ export class Wallet implements IWallet {
     } else if (filteredParams.delete) {
       const filteredDeleteParams = _.pick(params.delete, ['id']);
       return this.bitgo.del(url).query(filteredDeleteParams).result();
+    } else if (filteredParams.list) {
+      const filteredListParams = _.pick(params.list, ['limit', 'prevId', 'expireTimeGt']);
+      return this.bitgo.get(url).query(filteredListParams).result();
     } else {
-      throw new Error('Did not detect a creation, modification, or deletion request.');
+      throw new Error('Did not detect a creation, modification, deletion, or list request.');
     }
   }
 

@@ -196,9 +196,63 @@ describe('Verify string type is used for value of unspent', function () {
         delete: { id: unspentIds[0], dontIncludeThis: 'this' } as unknown as { id: string },
       });
 
+      // List
+      const listScope = nock(bgUrl)
+        .get(`/api/v2/wallet/${wallet.id()}/reservedunspents`)
+        .query({ limit: '10', prevId: 'prev-123' })
+        .reply(200, { unspents: [], nextBatchPrevId: undefined });
+      await wallet.manageUnspentReservations({
+        list: { limit: 10, prevId: 'prev-123', dontIncludeThis: 'this' } as unknown as {
+          limit: number;
+          prevId: string;
+        },
+      });
+
       createScope.done();
       modifyScope.done();
       deleteScope.done();
+      listScope.done();
+    });
+
+    it('should list reserved unspents with pagination', async function () {
+      const mockUnspents = [
+        { id: 'txid:0', walletId: wallet.id(), expireTime: '2030-01-01T00:00:00.000Z' },
+        { id: 'txid:1', walletId: wallet.id(), expireTime: '2030-01-01T00:00:00.000Z' },
+      ];
+      const mockNextBatchPrevId = 'next-page-cursor';
+
+      const listScope = nock(bgUrl)
+        .get(`/api/v2/wallet/${wallet.id()}/reservedunspents`)
+        .query({ limit: '2' })
+        .reply(200, { unspents: mockUnspents, nextBatchPrevId: mockNextBatchPrevId });
+
+      const result = await wallet.manageUnspentReservations({ list: { limit: 2 } });
+
+      result.should.deepEqual({ unspents: mockUnspents, nextBatchPrevId: mockNextBatchPrevId });
+      listScope.done();
+    });
+
+    it('should list reserved unspents filtering by expireTimeGt', async function () {
+      const expireTimeGt = '2025-01-01T00:00:00.000Z';
+      const mockUnspents = [
+        { id: 'txid:2', walletId: wallet.id(), expireTime: '2030-06-01T00:00:00.000Z' },
+      ];
+
+      const listScope = nock(bgUrl)
+        .get(`/api/v2/wallet/${wallet.id()}/reservedunspents`)
+        .query({ expireTimeGt })
+        .reply(200, { unspents: mockUnspents });
+
+      const result = await wallet.manageUnspentReservations({ list: { expireTimeGt } });
+
+      result.should.deepEqual({ unspents: mockUnspents });
+      listScope.done();
+    });
+
+    it('should throw when no operation is provided', async function () {
+      await wallet
+        .manageUnspentReservations({})
+        .should.be.rejectedWith('Did not detect a creation, modification, deletion, or list request.');
     });
   });
 });
