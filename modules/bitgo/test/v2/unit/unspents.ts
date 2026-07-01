@@ -1,5 +1,6 @@
 import nock = require('nock');
 import * as sinon from 'sinon';
+import * as assert from 'assert';
 import { common, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src';
@@ -199,6 +200,83 @@ describe('Verify string type is used for value of unspent', function () {
       createScope.done();
       modifyScope.done();
       deleteScope.done();
+    });
+  });
+
+  describe('Frozen Unspents', function () {
+    after(nock.cleanAll);
+
+    const unspentId = 'abc123def456abc123def456abc123def456abc123def456abc123def456abc123:0';
+
+    it('should list frozen unspents by passing frozen=true query param', async function () {
+      const scope = nock(bgUrl)
+        .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/unspents`)
+        .query({ frozen: 'true' })
+        .reply(200, { unspents: [], count: 0 });
+
+      await wallet.unspents({ frozen: true });
+
+      scope.done();
+    });
+
+    it('should list non-frozen unspents by passing frozen=false query param', async function () {
+      const scope = nock(bgUrl)
+        .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/unspents`)
+        .query({ frozen: 'false' })
+        .reply(200, { unspents: [], count: 0 });
+
+      await wallet.unspents({ frozen: false });
+
+      scope.done();
+    });
+
+    it('should not include frozen param when not specified', async function () {
+      const scope = nock(bgUrl)
+        .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/unspents`)
+        .query({})
+        .reply(200, { unspents: [], count: 0 });
+
+      await wallet.unspents({});
+
+      scope.done();
+    });
+
+    it('should freeze an unspent', async function () {
+      const scope = nock(bgUrl)
+        .post(
+          `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/unspents/${encodeURIComponent(unspentId)}/freeze`
+        )
+        .reply(200, { id: unspentId, frozen: true });
+
+      await wallet.freezeUnspent({ unspentId });
+
+      scope.done();
+    });
+
+    it('should unfreeze an unspent', async function () {
+      const scope = nock(bgUrl)
+        .delete(
+          `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/unspents/${encodeURIComponent(unspentId)}/freeze`
+        )
+        .reply(200, { id: unspentId, frozen: false });
+
+      await wallet.unfreezeUnspent({ unspentId });
+
+      scope.done();
+    });
+
+    it('should throw when freezeUnspent is called without unspentId', async function () {
+      await assert.rejects(
+        () => wallet.freezeUnspent({ unspentId: '' }),
+        { message: 'unspentId is required' }
+      );
+    });
+
+    it('should throw when unfreezeUnspent is called without unspentId', async function () {
+      await assert.rejects(
+        () => wallet.unfreezeUnspent({ unspentId: '' }),
+        { message: 'unspentId is required' }
+      );
     });
   });
 });

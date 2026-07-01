@@ -493,6 +493,15 @@ export interface UnspentsOptions extends PaginationOptions {
   segwit?: boolean;
   chains?: number[];
   unspentIds?: string[];
+  frozen?: boolean;
+}
+
+export interface FreezeUnspentOptions {
+  unspentId: string;
+}
+
+export interface UnfreezeUnspentOptions {
+  unspentId: string;
 }
 
 export interface ManageUnspentReservationOptions {
@@ -1141,6 +1150,8 @@ export interface IWallet {
   transferBySequenceId(params?: TransferBySequenceIdOptions): Promise<any>;
   maximumSpendable(params?: MaximumSpendableOptions): Promise<MaximumSpendable>;
   unspents(params?: UnspentsOptions): Promise<any>;
+  freezeUnspent(params: FreezeUnspentOptions): Promise<any>;
+  unfreezeUnspent(params: UnfreezeUnspentOptions): Promise<any>;
   consolidateUnspents(params?: ConsolidateUnspentsOptions): Promise<unknown>;
   fanoutUnspents(params?: FanoutUnspentsOptions): Promise<unknown>;
   updateTokenFlushThresholds(thresholds?: any): Promise<any>;

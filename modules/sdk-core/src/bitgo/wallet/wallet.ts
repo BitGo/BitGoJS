@@ -92,6 +92,8 @@ import {
   ForwarderBalance,
   ForwarderBalanceOptions,
   FreezeOptions,
+  FreezeUnspentOptions,
+  UnfreezeUnspentOptions,
   FundForwarderParams,
   FundForwardersOptions,
   GetAddressOptions,
@@ -742,6 +744,7 @@ export class Wallet implements IWallet {
   async unspents(params: UnspentsOptions = {}): Promise<any> {
     const query = _.pick(params, [
       'chains',
+      'frozen',
       'limit',
       'maxValue',
       'minConfirms',
@@ -754,6 +757,32 @@ export class Wallet implements IWallet {
     ]);
 
     return this.bitgo.get(this.url('/unspents')).query(query).result();
+  }
+
+  /**
+   * Freeze a specific unspent, preventing it from being selected during transaction building.
+   * @param params
+   * @param params.unspentId - the ID of the unspent to freeze (format: txid:vout)
+   * @returns {*}
+   */
+  async freezeUnspent(params: FreezeUnspentOptions): Promise<any> {
+    if (!params.unspentId) {
+      throw new Error('unspentId is required');
+    }
+    return this.bitgo.post(this.url(`/unspents/${encodeURIComponent(params.unspentId)}/freeze`)).result();
+  }
+
+  /**
+   * Unfreeze a previously frozen unspent, allowing it to be selected during transaction building.
+   * @param params
+   * @param params.unspentId - the ID of the unspent to unfreeze (format: txid:vout)
+   * @returns {*}
+   */
+  async unfreezeUnspent(params: UnfreezeUnspentOptions): Promise<any> {
+    if (!params.unspentId) {
+      throw new Error('unspentId is required');
+    }
+    return this.bitgo.del(this.url(`/unspents/${encodeURIComponent(params.unspentId)}/freeze`)).result();
   }
 
   /**
