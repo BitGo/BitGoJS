@@ -54,7 +54,7 @@
     "@bitgo/sdk-test": "^9.1.55"
   },
   "resolutions": {
-    "form-data": "^4.0.4"
+    "form-data": "^4.0.6"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [
