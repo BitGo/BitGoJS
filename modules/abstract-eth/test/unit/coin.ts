@@ -1,7 +1,7 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { bip32 } from '@bitgo/secp256k1';
 import * as secp256k1 from 'secp256k1';
-import { FullySignedTransaction, TransactionType, Wallet } from '@bitgo/sdk-core';
+import { FullySignedTransaction, TransactionType, Util, Wallet } from '@bitgo/sdk-core';
 import nock from 'nock';
 import * as should from 'should';
 import {
@@ -639,6 +639,67 @@ export function runRecoveryTransactionTests(
       )) as FullySignedTransaction;
       finalSigned.should.have.property('txHex');
       txBuilder.from(finalSigned.txHex);
+      const rebuiltTx = await txBuilder.build();
+      rebuiltTx.signature.length.should.equal(2);
+      rebuiltTx.outputs.length.should.equal(1);
+    });
+
+    it('should support external signing recovery via buildRecoveryTxForBackupSigning and finalizeRecoveryTx', async () => {
+      const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
+      const backupKeyAddress = '0x4f2c4830cc37f2785c646f89ded8a919219fa0e9';
+      nock(baseUrl)
+        .get('/api')
+        .twice()
+        .query(mockData.getTxListRequest(backupKeyAddress))
+        .reply(200, mockData.getTxListResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getBalanceRequest(walletContractAddress))
+        .reply(200, mockData.getBalanceResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getBalanceRequest(backupKeyAddress))
+        .reply(200, mockData.getBalanceResponse);
+      nock(baseUrl).get('/api').query(mockData.getContractCallRequest).reply(200, mockData.getContractCallResponse);
+      const basecoin: any = bitgo.coin(coin);
+      const unsignedSweep = (await basecoin.recover({
+        userKey: userXpub,
+        backupKey: backupXpub,
+        walletContractAddress: walletContractAddress,
+        recoveryDestination: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT as string,
+        eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+        replayProtectionOptions: { chain: 80001, hardfork: 'london' },
+        gasLimit: 500000,
+      })) as OfflineVaultTxInfo;
+
+      const unsignedSweepWithMeta = unsignedSweep as OfflineVaultTxInfo & {
+        expireTime: number;
+        contractSequenceId: number;
+      };
+
+      const operationHash = basecoin.getOperationSha3ForExecuteAndConfirm(
+        unsignedSweepWithMeta.recipients,
+        unsignedSweepWithMeta.expireTime,
+        unsignedSweepWithMeta.contractSequenceId ?? unsignedSweepWithMeta.nextContractSequenceId
+      );
+      const userSignature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userXprv));
+
+      const { txHash, txHex } = await basecoin.buildRecoveryTxForBackupSigning(unsignedSweep, userSignature);
+      should.exist(txHash);
+      should.exist(txHex);
+
+      const backupPrivateKey = bip32.fromBase58(backupXprv).privateKey!;
+      const hashBuffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(txHash), 'hex');
+      const sigParts = optionalDeps.ethUtil.ecsign(hashBuffer, backupPrivateKey);
+      const r = optionalDeps.ethUtil.setLengthLeft(sigParts.r, 32).toString('hex');
+      const s = optionalDeps.ethUtil.setLengthLeft(sigParts.s, 32).toString('hex');
+      const v = optionalDeps.ethUtil.stripHexPrefix(optionalDeps.ethUtil.intToHex(sigParts.v));
+      const backupSignature = optionalDeps.ethUtil.addHexPrefix(r.concat(s, v));
+
+      const signedTxHex = await basecoin.finalizeRecoveryTx(txHex, backupSignature);
+      should.exist(signedTxHex);
+
+      txBuilder.from(signedTxHex);
       const rebuiltTx = await txBuilder.build();
       rebuiltTx.signature.length.should.equal(2);
       rebuiltTx.outputs.length.should.equal(1);
