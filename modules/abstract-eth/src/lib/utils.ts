@@ -742,6 +742,43 @@ export function decodeConfidentialTransferData(data: string): ConfidentialTransf
   };
 }
 
+export interface SendMultiSigFlushERC7984Data {
+  forwarderAddress: string;
+  tokenContractAddress: string;
+  parentAddress: string;
+  encryptedHandle: string;
+}
+
+/**
+ * Decode sendMultiSig-wrapped ERC-7984 forwarder consolidation (flush) calldata.
+ *
+ * Multisig consolidation shape:
+ *   sendMultiSig(forwarder, 0, callFromParent(token, 0, confidentialTransferNoProof(parent, handle)), ...)
+ *
+ * @param data The full calldata hex string starting with sendMultiSigMethodId
+ */
+export function decodeSendMultiSigFlushERC7984Data(data: string): SendMultiSigFlushERC7984Data {
+  if (!data.startsWith(sendMultisigMethodId)) {
+    throw new BuildTransactionError(`Invalid multisig flush bytecode: unexpected method ID ${data.slice(0, 10)}`);
+  }
+
+  const [forwarderAddress, , internalData] = getRawDecoded(
+    sendMultiSigTypes,
+    getBufferedByteCode(sendMultisigMethodId, data)
+  );
+
+  const internalDataHex = bufferToHex(internalData as Buffer);
+  const { tokenContractAddress, parentAddress, encryptedHandle } =
+    decodeFlushERC7984ForwarderTokenCalldata(internalDataHex);
+
+  return {
+    forwarderAddress: addHexPrefix(forwarderAddress as string),
+    tokenContractAddress,
+    parentAddress,
+    encryptedHandle,
+  };
+}
+
 export interface DirectConfidentialTransferData {
   toAddress: string;
   encryptedHandle: string;

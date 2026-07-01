@@ -10,9 +10,11 @@
 import should from 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType, Wallet } from '@bitgo/sdk-core';
 import {
   buildMulticallDelegationCalldata,
+  buildFlushERC7984ForwarderTokenCalldata,
+  sendMultiSigData,
   wrapInCallFromParent,
   decodeTokenAddressesFromDelegationCalldata,
   TransferBuilderERC7984,
@@ -955,5 +957,117 @@ describe('decodeTokenAddressesFromDelegationCalldata', function () {
       () => decodeTokenAddressesFromDelegationCalldata('0xdeadbeef00000000'),
       /Not a valid delegation calldata/
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// verifyTransaction – confidential consolidation (FlushERC7984ForwarderToken)
+// ---------------------------------------------------------------------------
+
+const MULTISIG_WALLET_CONTRACT = '0x3b58684525564b38a381e46a731703ed03f32122';
+const CONSOLIDATION_FORWARDER = '0xf4bcb366bb5e34ebbee51fae5de98cc876c0146f';
+const CONSOLIDATION_BASE_ADDRESS = '0x3b58684525564b38a381e46a731703ed03f32122';
+const CONSOLIDATION_HANDLE = '0x65df136b609ab395c1a99ae46f7939c7f8b20dff4bff0000000088bb0050';
+const DUMMY_MULTISIG_SIGNATURE = '0x' + '00'.repeat(65);
+
+async function buildMultisigConsolidationTxHex(): Promise<string> {
+  const flushCalldata = buildFlushERC7984ForwarderTokenCalldata(
+    CTEST1_TOKEN_ADDRESS,
+    CONSOLIDATION_BASE_ADDRESS,
+    CONSOLIDATION_HANDLE
+  );
+  const sendData = sendMultiSigData(
+    CONSOLIDATION_FORWARDER,
+    '0',
+    flushCalldata,
+    Math.floor(Date.now() / 1000) + 3600,
+    14,
+    DUMMY_MULTISIG_SIGNATURE
+  );
+
+  const txBuilder = getBuilder('hteth') as TransactionBuilder;
+  txBuilder.fee({ fee: '1000000000', gasLimit: '12100000' });
+  txBuilder.counter(1);
+  txBuilder.type(TransactionType.ContractCall);
+  txBuilder.contract(MULTISIG_WALLET_CONTRACT);
+  txBuilder.data(sendData);
+  const tx = await txBuilder.build();
+  return tx.toBroadcastFormat();
+}
+
+async function buildDirectConsolidationTxHex(): Promise<string> {
+  const txBuilder = getBuilder('hteth') as TransactionBuilder;
+  txBuilder.fee({ fee: '1000000000', gasLimit: '200000' });
+  txBuilder.counter(1);
+  txBuilder.type(TransactionType.FlushERC7984ForwarderToken);
+  txBuilder.contract(CONSOLIDATION_FORWARDER);
+  txBuilder.forwarderAddress(CONSOLIDATION_FORWARDER);
+  txBuilder.tokenContractAddress(CTEST1_TOKEN_ADDRESS);
+  txBuilder.parentAddress(CONSOLIDATION_BASE_ADDRESS);
+  txBuilder.encryptedHandle(CONSOLIDATION_HANDLE);
+  const tx = await txBuilder.build();
+  return tx.toBroadcastFormat();
+}
+
+describe('verifyTransaction – confidential consolidation (FlushERC7984ForwarderToken)', function () {
+  let bitgo: TestBitGoAPI;
+  let coin: Erc7984Token;
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.initializeTestVars();
+    register(bitgo);
+    coin = bitgo.coin('hteth:ctest1') as Erc7984Token;
+  });
+
+  it('should verify a valid multisig consolidation tx (sendMultiSig → callFromParent → confidentialTransferNoProof)', async function () {
+    const txHex = await buildMultisigConsolidationTxHex();
+    const wallet = new Wallet(bitgo, coin, {
+      coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+    });
+
+    const result = await coin.verifyTransaction({
+      txParams: { type: 'consolidate' } as any,
+      txPrebuild: {
+        consolidateId: '6a44ebc0326e1be45c1d797542c8c634',
+        txHex,
+        recipients: [{ address: CONSOLIDATION_FORWARDER, amount: '0' }],
+      } as any,
+      wallet,
+    });
+    result.should.equal(true);
+  });
+
+  it('should verify a valid direct callFromParent consolidation tx (TSS shape)', async function () {
+    const txHex = await buildDirectConsolidationTxHex();
+    const wallet = new Wallet(bitgo, coin, {
+      coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+    });
+
+    const result = await coin.verifyTransaction({
+      txParams: { type: 'consolidate' } as any,
+      txPrebuild: {
+        consolidateId: '6a44ebc0326e1be45c1d797542c8c634',
+        txHex,
+      } as any,
+      wallet,
+      verification: { consolidationToBaseAddress: true },
+    });
+    result.should.equal(true);
+  });
+
+  it('should reject multisig consolidation when parent address does not match wallet base address', async function () {
+    const txHex = await buildMultisigConsolidationTxHex();
+    const wallet = new Wallet(bitgo, coin, {
+      coinSpecific: { baseAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
+    });
+
+    await coin
+      .verifyTransaction({
+        txParams: { type: 'consolidate' } as any,
+        txPrebuild: { consolidateId: 'abc123', txHex } as any,
+        wallet,
+      })
+      .should.be.rejectedWith(/parent address mismatch/);
   });
 });

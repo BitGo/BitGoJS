@@ -10,6 +10,8 @@ import {
   decodeTokenAddressesFromDelegationCalldata,
   decodeConfidentialTransferData,
   decodeDirectConfidentialTransferCalldata,
+  decodeFlushERC7984ForwarderTokenCalldata,
+  decodeSendMultiSigFlushERC7984Data,
   sendMultisigMethodId,
   confidentialTransferWithProofMethodId,
   VerifyEthTransactionOptions,
@@ -133,7 +135,116 @@ export class Erc7984Token extends Eth {
     if (params.txParams?.type === 'enabletoken') {
       return this.verifyEnableTokenTransaction(params);
     }
+    if (this.isConsolidationTransaction(params)) {
+      return this.verifyConfidentialConsolidation(params);
+    }
     return this.verifyConfidentialTransfer(params);
+  }
+
+  private isConsolidationTransaction(params: VerifyEthTransactionOptions): boolean {
+    const { txParams, txPrebuild, verification } = params;
+    return !!(
+      verification?.consolidationToBaseAddress ||
+      txPrebuild?.consolidateId ||
+      txParams?.type === 'consolidate' ||
+      txParams?.prebuildTx?.consolidateId
+    );
+  }
+
+  private getWalletBaseAddress(wallet: VerifyEthTransactionOptions['wallet']): string | undefined {
+    if (!wallet) {
+      return undefined;
+    }
+    const coinSpecific = typeof wallet.coinSpecific === 'function' ? wallet.coinSpecific() : wallet.coinSpecific;
+    const ethCoinSpecific = coinSpecific as { baseAddress?: string; rootAddress?: string } | undefined;
+    return ethCoinSpecific?.baseAddress ?? ethCoinSpecific?.rootAddress;
+  }
+
+  /**
+   * Verifies ERC-7984 forwarder consolidation (flush) transactions.
+   *
+   * Multisig shape:
+   *   tx.to   = wallet contract
+   *   tx.data = sendMultiSig(forwarder, 0, callFromParent(token, 0, confidentialTransferNoProof(base, handle)), ...)
+   *
+   * TSS / direct shape:
+   *   tx.to   = forwarder contract
+   *   tx.data = callFromParent(token, 0, confidentialTransferNoProof(base, handle))
+   */
+  private async verifyConfidentialConsolidation(params: VerifyEthTransactionOptions): Promise<boolean> {
+    const { txParams, txPrebuild, wallet } = params;
+
+    if (!txPrebuild?.txHex) {
+      if (!txPrebuild?.consolidateId && !txParams?.prebuildTx?.consolidateId) {
+        throw new Error('verifyConfidentialConsolidation: missing consolidateId');
+      }
+      return true;
+    }
+
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txPrebuild.txHex);
+    const tx = await txBuilder.build();
+    const txJson = tx.toJson();
+
+    let tokenContractAddress: string;
+    let parentAddress: string;
+    let encryptedHandle: string;
+    let forwarderAddress: string | undefined;
+
+    try {
+      if (txJson.data.startsWith(sendMultisigMethodId)) {
+        const decoded = decodeSendMultiSigFlushERC7984Data(txJson.data);
+        forwarderAddress = decoded.forwarderAddress;
+        tokenContractAddress = decoded.tokenContractAddress;
+        parentAddress = decoded.parentAddress;
+        encryptedHandle = decoded.encryptedHandle;
+      } else if (txJson.data.startsWith(callFromParentMethodId)) {
+        const decoded = decodeFlushERC7984ForwarderTokenCalldata(txJson.data);
+        tokenContractAddress = decoded.tokenContractAddress;
+        parentAddress = decoded.parentAddress;
+        encryptedHandle = decoded.encryptedHandle;
+        forwarderAddress = txJson.to;
+      } else {
+        throw new Error(`unexpected method ID ${txJson.data.slice(0, 10)}`);
+      }
+    } catch (e) {
+      throw new Error(
+        `verifyConfidentialConsolidation: failed to decode consolidation calldata — ${(e as Error).message}`
+      );
+    }
+
+    if (tokenContractAddress.toLowerCase() !== this.tokenContractAddress.toLowerCase()) {
+      throw new Error(
+        `verifyConfidentialConsolidation: token contract address mismatch — ` +
+          `expected ${this.tokenContractAddress}, got ${tokenContractAddress}`
+      );
+    }
+
+    const baseAddress = this.getWalletBaseAddress(wallet);
+    if (!baseAddress) {
+      throw new Error('verifyConfidentialConsolidation: unable to determine wallet base address');
+    }
+    if (parentAddress.toLowerCase() !== baseAddress.toLowerCase()) {
+      throw new Error(
+        `verifyConfidentialConsolidation: parent address mismatch — expected ${baseAddress}, got ${parentAddress}`
+      );
+    }
+
+    if (!encryptedHandle || encryptedHandle === '0x') {
+      throw new Error('verifyConfidentialConsolidation: encryptedHandle is missing or empty in transaction calldata');
+    }
+
+    const expectedForwarder = txPrebuild.recipients?.[0]?.address ?? txParams?.recipients?.[0]?.address;
+    if (forwarderAddress && expectedForwarder) {
+      if (forwarderAddress.toLowerCase() !== expectedForwarder.toLowerCase()) {
+        throw new Error(
+          `verifyConfidentialConsolidation: forwarder address mismatch — ` +
+            `expected ${expectedForwarder}, got ${forwarderAddress}`
+        );
+      }
+    }
+
+    return true;
   }
 
   /**
