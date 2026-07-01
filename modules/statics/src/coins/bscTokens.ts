@@ -1050,15 +1050,6 @@ export const bscTokens = [
     BSC_TOKEN_FEATURES
   ),
   bscToken(
-    '6868c5ee-9bf8-4258-9cb1-7886bc8557e6',
-    'bsc:godl',
-    'GODL',
-    18,
-    '0x75a312c4e703a4d73290f6f45f373da085bee9b5',
-    UnderlyingAsset['bsc:godl'],
-    BSC_TOKEN_FEATURES
-  ),
-  bscToken(
     'cc8ee3f4-ffac-4046-9d38-dff2be8c5e2a',
     'bsc:h2o',
     'H2O DAO',
