@@ -495,6 +495,13 @@ export interface UnspentsOptions extends PaginationOptions {
   unspentIds?: string[];
 }
 
+export interface ReservedUnspent {
+  id: string;
+  walletId: string;
+  expireTime: string;
+  userId?: string;
+}
+
 export interface ManageUnspentReservationOptions {
   create?: {
     unspentIds: string[];
@@ -509,6 +516,16 @@ export interface ManageUnspentReservationOptions {
   delete?: {
     id: string;
   };
+  list?: {
+    limit?: number;
+    prevId?: string;
+    expireTimeGt?: string;
+  };
+}
+
+export interface ListReservedUnspentsResponse {
+  unspents: ReservedUnspent[];
+  nextBatchPrevId?: string;
 }
 
 export interface ConsolidateUnspentsOptions extends WalletSignTransactionOptions {
@@ -1143,6 +1160,9 @@ export interface IWallet {
   unspents(params?: UnspentsOptions): Promise<any>;
   consolidateUnspents(params?: ConsolidateUnspentsOptions): Promise<unknown>;
   fanoutUnspents(params?: FanoutUnspentsOptions): Promise<unknown>;
+  manageUnspentReservations(
+    params: ManageUnspentReservationOptions
+  ): Promise<{ unspents: ReservedUnspent[] } | ListReservedUnspentsResponse>;
   updateTokenFlushThresholds(thresholds?: any): Promise<any>;
   updateForwarders(forwarderFlags?: any): Promise<any>;
   deployForwarders(params: DeployForwardersOptions): Promise<any>;
