@@ -1,3 +1,6 @@
+// [UPDATE-V8] Mainnet v8 is not live yet (mainnet specVersion still v7 until July 2026 fork).
+// This file mirrors v7 metadata with v8 specVersion/txVersion placeholders only.
+// After mainnet fork: replace the metadata blob here the same way as src/resources/mainnet.ts (committed static material, no runtime fetch).
 export const mainnetV8Material = {
   at: {
     hash: '0x0f213f2094c92ef71cf93d302814438bf8193358159de30edddab29d435e7d98',

@@ -9,9 +9,26 @@ import {
   PreApproveAssetArgs,
   TxData,
   AddAndAffirmWithMediatorsArgs,
+  DecodedV8AddAndAffirmWithMediatorsArgs,
   RejectInstructionBuilderArgs,
 } from './iface';
 import polyxUtils from './utils';
+
+/**
+ * Reads the DID out of a decoded settlement leg holder. This Transaction class is shared by
+ * TokenTransferBuilder (v7, bare `{ did, kind }`) and V8TokenTransferBuilder (v8, AssetHolder-
+ * wrapped `{ portfolio: { did, kind } }`) — both are decoded here, so both shapes must be
+ * supported. `Account`-variant AssetHolders (v8 account-based ownership) are out of scope.
+ */
+function extractPortfolioDID(holder: { did: string } | { portfolio: { did: string } } | { account: string }): string {
+  if ('did' in holder) {
+    return holder.did;
+  }
+  if ('portfolio' in holder) {
+    return holder.portfolio.did;
+  }
+  throw new InvalidTransactionError('Unsupported settlement leg holder shape (expected did or portfolio.did)');
+}
 
 export class Transaction extends SubstrateTransaction {
   /**
@@ -88,9 +105,9 @@ export class Transaction extends SubstrateTransaction {
       result.sender = decodedTx.address;
       result.amount = '0'; // Pre-approval does not transfer any value
     } else if (this.type === TransactionType.SendToken) {
-      const sendTokenArgs = txMethod as AddAndAffirmWithMediatorsArgs;
-      result.fromDID = sendTokenArgs.legs[0].fungible.sender.did;
-      result.toDID = sendTokenArgs.legs[0].fungible.receiver.did;
+      const sendTokenArgs = txMethod as AddAndAffirmWithMediatorsArgs | DecodedV8AddAndAffirmWithMediatorsArgs;
+      result.fromDID = extractPortfolioDID(sendTokenArgs.legs[0].fungible.sender);
+      result.toDID = extractPortfolioDID(sendTokenArgs.legs[0].fungible.receiver);
       result.amount = sendTokenArgs.legs[0].fungible.amount.toString();
       result.assetId = sendTokenArgs.legs[0].fungible.assetId;
       result.memo = sendTokenArgs.instructionMemo;
@@ -173,9 +190,9 @@ export class Transaction extends SubstrateTransaction {
   }
 
   private decodeInputsAndOutputsForSendToken(decodedTx: DecodedTx) {
-    const txMethod = decodedTx.method.args as AddAndAffirmWithMediatorsArgs;
-    const fromDID = txMethod.legs[0].fungible.sender.did;
-    const toDID = txMethod.legs[0].fungible.receiver.did;
+    const txMethod = decodedTx.method.args as AddAndAffirmWithMediatorsArgs | DecodedV8AddAndAffirmWithMediatorsArgs;
+    const fromDID = extractPortfolioDID(txMethod.legs[0].fungible.sender);
+    const toDID = extractPortfolioDID(txMethod.legs[0].fungible.receiver);
     const amount = txMethod.legs[0].fungible.amount.toString();
     const assetId = txMethod.legs[0].fungible.assetId;
     const tokenName = this.getTokenNameByAssetId(assetId);

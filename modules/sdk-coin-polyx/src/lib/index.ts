@@ -27,6 +27,7 @@ export { WithdrawUnbondedBuilder } from './withdrawUnbondedBuilder';
 export { V8TransferBuilder } from './v8TransferBuilder';
 export { V8HexTransferBuilder } from './v8HexTransferBuilder';
 export { V8RegisterDidWithCDDBuilder } from './v8RegisterDidWithCDDBuilder';
+export { V8RegisterDidBuilder } from './v8RegisterDidBuilder';
 export { V8TokenTransferBuilder } from './v8TokenTransferBuilder';
 export { V8HexTokenTransferBuilder } from './v8HexTokenTransferBuilder';
 export { V8PreApproveAssetBuilder } from './v8PreApproveAssetBuilder';

@@ -1,5 +1,12 @@
 import should from 'should';
-import { V8HexTokenTransferBuilder, TransactionBuilderFactory } from '../../../src/lib';
+import { decode } from '@substrate/txwrapper-polkadot';
+import {
+  V8HexTokenTransferBuilder,
+  V8TokenTransferBuilder,
+  TransactionBuilderFactory,
+  SingletonRegistry,
+  utils,
+} from '../../../src/lib';
 import { accounts, mockTssSignature } from '../../resources';
 import { testnetV8Material } from '../../../src/resources';
 import { buildTestConfig } from './base';
@@ -22,6 +29,11 @@ describe('V8HexTokenTransferBuilder', () => {
     it('getV8HexTokenTransferBuilder returns a V8HexTokenTransferBuilder', () => {
       const factory = new TransactionBuilderFactory(buildTestConfig());
       should.ok(factory.getV8HexTokenTransferBuilder() instanceof V8HexTokenTransferBuilder);
+    });
+
+    it('extends V8TokenTransferBuilder — shares the AssetHolder-wrapped legs/holderSet logic', () => {
+      const builder = new V8HexTokenTransferBuilder(buildTestConfig());
+      should.ok(builder instanceof V8TokenTransferBuilder);
     });
   });
 
@@ -56,6 +68,33 @@ describe('V8HexTokenTransferBuilder', () => {
       const txJson = tx.toJson();
       should.deepEqual(txJson.specVersion, testnetV8Material.specVersion);
       should.deepEqual(txJson.transactionVersion, testnetV8Material.txVersion);
+    });
+
+    it('encodes legs/holderSet using the v8 AssetHolder wrapper', async () => {
+      const builder = new V8HexTokenTransferBuilder(buildTestConfig())
+        .assetId(ASSET_ID)
+        .amount('1000000')
+        .fromDID(FROM_DID)
+        .toDID(TO_DID)
+        .memo('56594')
+        .sender({ address: sender.address })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 1 })
+        .fee({ amount: 0, type: 'tip' });
+      builder.addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
+      const tx = await builder.build();
+
+      const v8Material = utils.getV8Material(buildTestConfig().network.type);
+      const registry = SingletonRegistry.getInstance(v8Material);
+      const decoded = decode(tx.toBroadcastFormat(), {
+        metadataRpc: v8Material.metadata,
+        registry,
+      });
+      const args = decoded.method.args as any;
+      should.not.exist(args.portfolios);
+      should.exist(args.holderSet);
+      should.equal(args.holderSet[0].portfolio.did, FROM_DID);
     });
   });
 });

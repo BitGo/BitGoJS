@@ -7,6 +7,7 @@ import { TxMethod, PreApproveAssetArgs, MethodNames } from './iface';
 import { PreApproveAssetTransactionSchema } from './txnSchema';
 import { Transaction } from './transaction';
 
+// [CLEANUP-V8-OLD] v7 metadata. Kept for Flipt rollback alongside V8PreApproveAssetBuilder.
 export class PreApproveAssetBuilder extends PolyxBaseBuilder<TxMethod, Transaction> {
   protected _assetId: string;
   protected _method: TxMethod;

@@ -13,6 +13,8 @@ import utils from './utils';
  *
  * Same intended memo produces different on-chain bytes depending on which builder is used.
  * Use this builder when the recipient or downstream tooling expects Polymesh-native encoding.
+ *
+ * [CLEANUP-V8-OLD] v7 metadata. Kept for Flipt rollback alongside V8HexTransferBuilder.
  */
 export class HexTransferBuilder extends TransferBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
