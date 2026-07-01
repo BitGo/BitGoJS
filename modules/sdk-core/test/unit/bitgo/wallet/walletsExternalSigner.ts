@@ -3,7 +3,13 @@ import * as sinon from 'sinon';
 import 'should';
 
 import { Wallets } from '../../../../src/bitgo/wallet/wallets';
-import { CreateKeychainCallback } from '../../../../src/bitgo/wallet/iWallets';
+import { ECDSAUtils } from '../../../../src/bitgo/utils';
+import { CoinFeature } from '@bitgo/statics';
+import {
+  CreateKeychainCallback,
+  EcdsaMPCv2KeyGenCallbacks,
+  EddsaKeyGenCallbacks,
+} from '../../../../src/bitgo/wallet/iWallets';
 import { Wallet } from '../../../../src/bitgo/wallet/wallet';
 
 describe('Wallets - external signer onchain wallet generation', function () {
@@ -35,11 +41,11 @@ describe('Wallets - external signer onchain wallet generation', function () {
     });
 
     mockKeychains = {
-      add: sinon.stub().callsFake(async (params: { pub: string; source: string }) => ({
-        id: `${params.source}-key-id`,
-        pub: params.pub,
-        source: params.source,
-      })),
+      add: sinon
+        .stub()
+        .callsFake((params: any) =>
+          Promise.resolve({ id: `${params?.source ?? ''}-key-id`, pub: params?.pub, source: params?.source })
+        ),
       createBitGo: sinon.stub().resolves({ id: 'bitgo-key-id', pub: bitgoPub }),
     };
 
@@ -56,13 +62,14 @@ describe('Wallets - external signer onchain wallet generation', function () {
     mockBaseCoin = {
       isEVM: sinon.stub().returns(false),
       supportsTss: sinon.stub().returns(true),
+      getMPCAlgorithm: sinon.stub().returns('ecdsa'),
       getFamily: sinon.stub().returns('btc'),
       getChain: sinon.stub().returns('tbtc'),
       getDefaultMultisigType: sinon.stub().returns('onchain'),
       keychains: sinon.stub().returns(mockKeychains),
       url: sinon.stub().returns('/api/v2/tbtc/wallet/add'),
       getConfig: sinon.stub().returns({ features: [] }),
-      supplementGenerateWallet: sinon.stub().callsFake((walletParams: unknown) => Promise.resolve(walletParams)),
+      supplementGenerateWallet: sinon.stub().callsFake((params: any) => Promise.resolve(params)),
       isValidPub: sinon.stub().returns(true),
     };
 
@@ -154,14 +161,44 @@ describe('Wallets - external signer onchain wallet generation', function () {
         );
     });
 
-    it('should reject TSS multisig type', async function () {
+    it('should reject TSS multisig type without TSS callbacks', async function () {
       await wallets
         .generateWalletWithExternalSigner({
           label: 'TSS Wallet',
           multisigType: 'tss',
+          enterprise: 'enterprise-id',
           createKeychainCallback,
         })
-        .should.be.rejectedWith('external signer wallet generation is only supported for onchain multisig wallets');
+        .should.be.rejectedWith('ecdsaMPCv2Callbacks is required for ECDSA TSS wallet generation with external signer');
+    });
+
+    it('should route to onchain when createKeychainCallback is provided on a TSS-default coin', async function () {
+      mockBaseCoin.getDefaultMultisigType.returns('tss');
+
+      await wallets.generateWalletWithExternalSigner({
+        label: 'Onchain on TSS coin',
+        enterprise: 'enterprise-id',
+        createKeychainCallback,
+      });
+
+      assert.strictEqual(createKeychainCallback.callCount, 2);
+      assert.strictEqual(mockKeychains.createBitGo.calledOnce, true);
+    });
+
+    it('should reject when both createKeychainCallback and MPC callbacks are provided', async function () {
+      await wallets
+        .generateWalletWithExternalSigner({
+          label: 'Ambiguous Wallet',
+          enterprise: 'enterprise-id',
+          createKeychainCallback,
+          ecdsaMPCv2Callbacks: {
+            initializeCallback: sinon.stub(),
+            round2Callback: sinon.stub(),
+            round3Callback: sinon.stub(),
+            finalizeCallback: sinon.stub(),
+          },
+        })
+        .should.be.rejectedWith('createKeychainCallback cannot be used together with MPC TSS key generation callbacks');
     });
 
     it('should reject custodial wallet type', async function () {
@@ -218,7 +255,6 @@ describe('Wallets - external signer onchain wallet generation', function () {
     });
 
     it('should reject when callback returns invalid pub for coin', async function () {
-      // only invalidate user pub so the rejection source is deterministic
       mockBaseCoin.isValidPub.callsFake((pub: string) => pub !== userPub);
 
       await wallets
@@ -269,10 +305,7 @@ describe('Wallets - external signer onchain wallet generation', function () {
     });
 
     it('should forward keySignatures to wallet params when provided', async function () {
-      const keySignatures = {
-        backup: 'deadbeef01',
-        bitgo: 'deadbeef02',
-      };
+      const keySignatures = { backup: 'deadbeef01', bitgo: 'deadbeef02' };
 
       await wallets.generateWalletWithExternalSigner({
         label: 'External Signer Wallet',
@@ -295,6 +328,479 @@ describe('Wallets - external signer onchain wallet generation', function () {
 
       const walletBody = sendStub.firstCall.args[0];
       walletBody.should.not.have.property('keySignatures');
+    });
+  });
+
+  describe('generateWalletWithExternalSigner - ECDSA MPCv2 TSS', function () {
+    let ecdsaCallbacks: EcdsaMPCv2KeyGenCallbacks;
+    let ecdsaMockBaseCoin: any;
+    let ecdsaWallets: Wallets;
+
+    const commonKeychain = 'abc123commonkeychain';
+
+    beforeEach(function () {
+      const mpcState = { encryptedData: 'data', encryptedDataKey: 'data-key' };
+      ecdsaCallbacks = {
+        initializeCallback: sinon.stub().resolves({
+          userGpgPublicKey: 'user-gpg-pub',
+          backupGpgPublicKey: 'backup-gpg-pub',
+          round1Messages: { broadcastMessages: [], p2pMessages: [] },
+          userState: mpcState,
+          backupState: mpcState,
+        }),
+        round2Callback: sinon.stub().resolves({
+          round2Messages: { broadcastMessages: [], p2pMessages: [] },
+          userState: mpcState,
+          backupState: mpcState,
+        }),
+        round3Callback: sinon.stub().resolves({
+          round3Messages: { broadcastMessages: [], p2pMessages: [] },
+          userState: mpcState,
+          backupState: mpcState,
+        }),
+        finalizeCallback: sinon.stub().resolves({ commonKeychain }),
+      };
+
+      const mockEcdsaBitGo = {
+        post: sinon.stub().returns({
+          send: sinon.stub().returns({ result: sinon.stub().resolves({ id: 'tss-wallet-id' }) }),
+        }),
+        get: sinon.stub().returns({ result: sinon.stub().resolves({ coinSettings: {} }) }),
+        setRequestTracer: sinon.stub(),
+        microservicesUrl: sinon.stub().returns('/api/v2/tss/settings'),
+      };
+
+      ecdsaMockBaseCoin = {
+        isEVM: sinon.stub().returns(false),
+        supportsTss: sinon.stub().returns(true),
+        getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+        getFamily: sinon.stub().returns('eth'),
+        getChain: sinon.stub().returns('teth'),
+        getDefaultMultisigType: sinon.stub().returns('tss'),
+        keychains: sinon.stub().returns({ add: sinon.stub() }),
+        url: sinon.stub().returns('/api/v2/teth/wallet/add'),
+        getConfig: sinon.stub().returns({ features: [] }),
+        supplementGenerateWallet: sinon.stub().callsFake((params: any) => Promise.resolve(params)),
+      };
+
+      ecdsaWallets = new Wallets(mockEcdsaBitGo as any, ecdsaMockBaseCoin);
+      sinon.stub(ecdsaWallets as any, 'generateMpcWalletWithExternalSigner').resolves({
+        responseType: 'WalletWithKeychains' as const,
+        wallet: sinon.createStubInstance(Wallet),
+        userKeychain: { id: 'user-key-id', commonKeychain, type: 'tss' },
+        backupKeychain: { id: 'backup-key-id', commonKeychain, type: 'tss' },
+        bitgoKeychain: { id: 'bitgo-key-id', commonKeychain, type: 'tss' },
+      });
+    });
+
+    it('should route to generateMpcWalletWithExternalSigner for tss multisig type', async function () {
+      const result = await ecdsaWallets.generateWalletWithExternalSigner({
+        label: 'ECDSA TSS Wallet',
+        multisigType: 'tss',
+        enterprise: 'enterprise-id',
+        ecdsaMPCv2Callbacks: ecdsaCallbacks,
+      });
+
+      result.responseType.should.equal('WalletWithKeychains');
+      assert.strictEqual((ecdsaWallets as any).generateMpcWalletWithExternalSigner.calledOnce, true);
+    });
+
+    it('should reject without enterprise', async function () {
+      sinon.restore();
+      ecdsaMockBaseCoin.getMPCAlgorithm = sinon.stub().returns('ecdsa');
+
+      await ecdsaWallets
+        .generateWalletWithExternalSigner({
+          label: 'ECDSA TSS Wallet',
+          multisigType: 'tss',
+          ecdsaMPCv2Callbacks: ecdsaCallbacks,
+        })
+        .should.be.rejectedWith('enterprise is required for TSS wallet generation with external signer');
+    });
+
+    it('should reject without ecdsaMPCv2Callbacks for ecdsa coin', async function () {
+      sinon.restore();
+      ecdsaMockBaseCoin.getMPCAlgorithm = sinon.stub().returns('ecdsa');
+
+      await ecdsaWallets
+        .generateWalletWithExternalSigner({
+          label: 'ECDSA TSS Wallet',
+          multisigType: 'tss',
+          enterprise: 'enterprise-id',
+        })
+        .should.be.rejectedWith('ecdsaMPCv2Callbacks is required for ECDSA TSS wallet generation with external signer');
+    });
+
+    it('should reject when coin does not support TSS', async function () {
+      sinon.restore();
+      ecdsaMockBaseCoin.supportsTss = sinon.stub().returns(false);
+      ecdsaMockBaseCoin.getFamily = sinon.stub().returns('btc');
+
+      await ecdsaWallets
+        .generateWalletWithExternalSigner({
+          label: 'ECDSA TSS Wallet',
+          multisigType: 'tss',
+          enterprise: 'enterprise-id',
+          ecdsaMPCv2Callbacks: ecdsaCallbacks,
+        })
+        .should.be.rejectedWith('coin btc does not support TSS at this time');
+    });
+
+    it('should reject EVM coin with invalid walletVersion', async function () {
+      sinon.restore();
+      ecdsaMockBaseCoin.isEVM = sinon.stub().returns(true);
+      ecdsaMockBaseCoin.getMPCAlgorithm = sinon.stub().returns('ecdsa');
+
+      await ecdsaWallets
+        .generateWalletWithExternalSigner({
+          label: 'ECDSA TSS Wallet',
+          multisigType: 'tss',
+          enterprise: 'enterprise-id',
+          walletVersion: 4,
+          ecdsaMPCv2Callbacks: ecdsaCallbacks,
+        })
+        .should.be.rejectedWith('EVM TSS wallets are only supported for wallet version 3, 5 and 6');
+    });
+
+    it('should reject custodial TSS wallet', async function () {
+      sinon.restore();
+      ecdsaMockBaseCoin.getMPCAlgorithm = sinon.stub().returns('ecdsa');
+
+      await ecdsaWallets
+        .generateWalletWithExternalSigner({
+          label: 'Custodial TSS Wallet',
+          multisigType: 'tss',
+          enterprise: 'enterprise-id',
+          type: 'custodial',
+          ecdsaMPCv2Callbacks: ecdsaCallbacks,
+        })
+        .should.be.rejectedWith('custodial TSS wallets are not supported for external signer wallet generation');
+    });
+
+    it('should reject passphrase on TSS path', async function () {
+      sinon.restore();
+      ecdsaMockBaseCoin.getMPCAlgorithm = sinon.stub().returns('ecdsa');
+
+      await ecdsaWallets
+        .generateWalletWithExternalSigner({
+          label: 'TSS Wallet',
+          multisigType: 'tss',
+          enterprise: 'enterprise-id',
+          ecdsaMPCv2Callbacks: ecdsaCallbacks,
+          passphrase: 'secret',
+        } as Parameters<Wallets['generateWalletWithExternalSigner']>[0] & { passphrase: string })
+        .should.be.rejectedWith('passphrase cannot be used with TSS external signer wallet generation');
+    });
+
+    it('should reject ECDSA MPCv1 wallet version 3', async function () {
+      sinon.restore();
+      ecdsaMockBaseCoin.getMPCAlgorithm = sinon.stub().returns('ecdsa');
+      ecdsaMockBaseCoin.isEVM = sinon.stub().returns(true);
+
+      await ecdsaWallets
+        .generateWalletWithExternalSigner({
+          label: 'MPCv1 Wallet',
+          multisigType: 'tss',
+          enterprise: 'enterprise-id',
+          walletVersion: 3,
+          ecdsaMPCv2Callbacks: ecdsaCallbacks,
+        })
+        .should.be.rejectedWith(
+          'ECDSA MPCv1 (wallet version 3) is not supported for external signer wallet generation'
+        );
+    });
+
+    it('should pass advanced wallet type through to wallet/add', async function () {
+      sinon.restore();
+
+      const mpcState = { encryptedData: 'data', encryptedDataKey: 'data-key' };
+      const callbacks: EcdsaMPCv2KeyGenCallbacks = {
+        initializeCallback: sinon.stub().resolves({
+          userGpgPublicKey: 'user-gpg-pub',
+          backupGpgPublicKey: 'backup-gpg-pub',
+          round1Messages: { broadcastMessages: [], p2pMessages: [] },
+          userState: mpcState,
+          backupState: mpcState,
+        }),
+        round2Callback: sinon.stub().resolves({
+          round2Messages: { broadcastMessages: [], p2pMessages: [] },
+          userState: mpcState,
+          backupState: mpcState,
+        }),
+        round3Callback: sinon.stub().resolves({
+          round3Messages: { broadcastMessages: [], p2pMessages: [] },
+          userState: mpcState,
+          backupState: mpcState,
+        }),
+        finalizeCallback: sinon.stub().resolves({ commonKeychain }),
+      };
+
+      const send = sinon.stub().returns({
+        result: sinon.stub().resolves({ id: 'tss-wallet-id' }),
+      });
+      const integrationBitGo = {
+        post: sinon.stub().returns({ send }),
+        get: sinon.stub().returns({ result: sinon.stub().resolves({ coinSettings: {} }) }),
+        setRequestTracer: sinon.stub(),
+        microservicesUrl: sinon.stub().returns('/api/v2/tss/settings'),
+        getEnv: sinon.stub().returns('dev'),
+        fetchConstants: sinon.stub().resolves({ mpc: { bitgoMPCv2PublicKey: 'key' } }),
+      };
+      const integrationCoin = {
+        isEVM: sinon.stub().returns(false),
+        supportsTss: sinon.stub().returns(true),
+        getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+        getFamily: sinon.stub().returns('eth'),
+        getChain: sinon.stub().returns('teth'),
+        getDefaultMultisigType: sinon.stub().returns('tss'),
+        getConfig: sinon.stub().returns({ features: ['MPCV2'] }),
+        keychains: sinon.stub().returns({
+          add: sinon
+            .stub()
+            .callsFake((params: any) =>
+              Promise.resolve({ id: `${params.source}-key-id`, commonKeychain, source: params.source, type: 'tss' })
+            ),
+        }),
+        url: sinon.stub().returns('/api/v2/teth/wallet/add'),
+        supplementGenerateWallet: sinon.stub().callsFake((params: any) => Promise.resolve(params)),
+      };
+      const integrationWallets = new Wallets(integrationBitGo as any, integrationCoin as any);
+
+      sinon.stub(ECDSAUtils.EcdsaMPCv2Utils.prototype, 'createKeychainsWithExternalSigner').resolves({
+        userKeychain: { id: 'user-key-id', commonKeychain, type: 'tss' },
+        backupKeychain: { id: 'backup-key-id', commonKeychain, type: 'tss' },
+        bitgoKeychain: { id: 'bitgo-key-id', commonKeychain, type: 'tss' },
+      });
+
+      await integrationWallets.generateWalletWithExternalSigner({
+        label: 'Advanced TSS Wallet',
+        type: 'advanced',
+        multisigType: 'tss',
+        enterprise: 'enterprise-id',
+        ecdsaMPCv2Callbacks: callbacks,
+      });
+
+      send.firstCall.args[0].type.should.equal('advanced');
+    });
+
+    it('should default EVM walletVersion to 5 when TSS settings specify MPCv2', async function () {
+      sinon.restore();
+
+      const mpcState = { encryptedData: 'data', encryptedDataKey: 'data-key' };
+      const callbacks: EcdsaMPCv2KeyGenCallbacks = {
+        initializeCallback: sinon.stub().resolves({
+          userGpgPublicKey: 'user-gpg-pub',
+          backupGpgPublicKey: 'backup-gpg-pub',
+          round1Messages: { broadcastMessages: [], p2pMessages: [] },
+          userState: mpcState,
+          backupState: mpcState,
+        }),
+        round2Callback: sinon.stub().resolves({
+          round2Messages: { broadcastMessages: [], p2pMessages: [] },
+          userState: mpcState,
+          backupState: mpcState,
+        }),
+        round3Callback: sinon.stub().resolves({
+          round3Messages: { broadcastMessages: [], p2pMessages: [] },
+          userState: mpcState,
+          backupState: mpcState,
+        }),
+        finalizeCallback: sinon.stub().resolves({ commonKeychain }),
+      };
+
+      const send = sinon.stub().returns({
+        result: sinon.stub().resolves({ id: 'tss-wallet-id' }),
+      });
+      const integrationBitGo = {
+        post: sinon.stub().returns({ send }),
+        get: sinon.stub().returns({
+          result: sinon.stub().resolves({
+            coinSettings: { eth: { walletCreationSettings: { multiSigTypeVersion: 'MPCv2' } } },
+          }),
+        }),
+        setRequestTracer: sinon.stub(),
+        microservicesUrl: sinon.stub().returns('/api/v2/tss/settings'),
+      };
+      const integrationCoin = {
+        isEVM: sinon.stub().returns(true),
+        supportsTss: sinon.stub().returns(true),
+        getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+        getFamily: sinon.stub().returns('eth'),
+        getChain: sinon.stub().returns('teth'),
+        getDefaultMultisigType: sinon.stub().returns('tss'),
+        getConfig: sinon.stub().returns({ features: [CoinFeature.MPCV2] }),
+        keychains: sinon.stub().returns({ add: sinon.stub() }),
+        url: sinon.stub().returns('/api/v2/teth/wallet/add'),
+        supplementGenerateWallet: sinon.stub().callsFake((params: any) => Promise.resolve(params)),
+      };
+      const integrationWallets = new Wallets(integrationBitGo as any, integrationCoin as any);
+
+      sinon.stub(ECDSAUtils.EcdsaMPCv2Utils.prototype, 'createKeychainsWithExternalSigner').resolves({
+        userKeychain: { id: 'user-key-id', commonKeychain, type: 'tss' },
+        backupKeychain: { id: 'backup-key-id', commonKeychain, type: 'tss' },
+        bitgoKeychain: { id: 'bitgo-key-id', commonKeychain, type: 'tss' },
+      });
+
+      await integrationWallets.generateWalletWithExternalSigner({
+        label: 'EVM TSS Wallet',
+        type: 'advanced',
+        multisigType: 'tss',
+        enterprise: 'enterprise-id',
+        ecdsaMPCv2Callbacks: callbacks,
+      });
+
+      send.firstCall.args[0].walletVersion.should.equal(5);
+    });
+
+    it('should forward explicit walletVersion to wallet/add', async function () {
+      sinon.restore();
+
+      const mpcState = { encryptedData: 'data', encryptedDataKey: 'data-key' };
+      const callbacks: EcdsaMPCv2KeyGenCallbacks = {
+        initializeCallback: sinon.stub().resolves({
+          userGpgPublicKey: 'user-gpg-pub',
+          backupGpgPublicKey: 'backup-gpg-pub',
+          round1Messages: { broadcastMessages: [], p2pMessages: [] },
+          userState: mpcState,
+          backupState: mpcState,
+        }),
+        round2Callback: sinon.stub().resolves({
+          round2Messages: { broadcastMessages: [], p2pMessages: [] },
+          userState: mpcState,
+          backupState: mpcState,
+        }),
+        round3Callback: sinon.stub().resolves({
+          round3Messages: { broadcastMessages: [], p2pMessages: [] },
+          userState: mpcState,
+          backupState: mpcState,
+        }),
+        finalizeCallback: sinon.stub().resolves({ commonKeychain }),
+      };
+
+      const send = sinon.stub().returns({
+        result: sinon.stub().resolves({ id: 'tss-wallet-id' }),
+      });
+      const integrationBitGo = {
+        post: sinon.stub().returns({ send }),
+        get: sinon.stub().returns({ result: sinon.stub().resolves({ coinSettings: {} }) }),
+        setRequestTracer: sinon.stub(),
+        microservicesUrl: sinon.stub().returns('/api/v2/tss/settings'),
+      };
+      const integrationCoin = {
+        isEVM: sinon.stub().returns(true),
+        supportsTss: sinon.stub().returns(true),
+        getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+        getFamily: sinon.stub().returns('eth'),
+        getChain: sinon.stub().returns('teth'),
+        getDefaultMultisigType: sinon.stub().returns('tss'),
+        getConfig: sinon.stub().returns({ features: [CoinFeature.MPCV2] }),
+        keychains: sinon.stub().returns({ add: sinon.stub() }),
+        url: sinon.stub().returns('/api/v2/teth/wallet/add'),
+        supplementGenerateWallet: sinon.stub().callsFake((params: any) => Promise.resolve(params)),
+      };
+      const integrationWallets = new Wallets(integrationBitGo as any, integrationCoin as any);
+
+      sinon.stub(ECDSAUtils.EcdsaMPCv2Utils.prototype, 'createKeychainsWithExternalSigner').resolves({
+        userKeychain: { id: 'user-key-id', commonKeychain, type: 'tss' },
+        backupKeychain: { id: 'backup-key-id', commonKeychain, type: 'tss' },
+        bitgoKeychain: { id: 'bitgo-key-id', commonKeychain, type: 'tss' },
+      });
+
+      await integrationWallets.generateWalletWithExternalSigner({
+        label: 'EVM TSS Wallet v6',
+        type: 'advanced',
+        multisigType: 'tss',
+        enterprise: 'enterprise-id',
+        walletVersion: 6,
+        ecdsaMPCv2Callbacks: callbacks,
+      });
+
+      send.firstCall.args[0].walletVersion.should.equal(6);
+    });
+  });
+
+  describe('generateWalletWithExternalSigner - EdDSA TSS', function () {
+    let eddsaCallbacks: EddsaKeyGenCallbacks;
+    let eddsaMockBaseCoin: any;
+    let eddsaWallets: Wallets;
+
+    const commonKeychain = 'eddsa-common-keychain';
+
+    beforeEach(function () {
+      const keyShare = (pub: string, prv: string, proof: string) => ({
+        publicShare: pub,
+        privateShare: prv,
+        privateShareProof: proof,
+        vssProof: `${proof}-vss`,
+        gpgKey: `${pub}-gpg`,
+      });
+      const mpcState = { encryptedData: 'data', encryptedDataKey: 'data-key' };
+      eddsaCallbacks = {
+        initializeCallback: sinon.stub().resolves({
+          userGpgPublicKey: 'user-gpg-pub',
+          backupGpgPublicKey: 'backup-gpg-pub',
+          userToBitgoKeyShare: keyShare('upub', 'uprv-enc', 'uproof'),
+          backupToBitgoKeyShare: keyShare('bpub', 'bprv-enc', 'bproof'),
+          userState: mpcState,
+          backupState: mpcState,
+          backupCounterPartyKeyShare: keyShare('ucp', 'ucp-prv', 'ucp-proof'),
+        }),
+        finalizeCallback: sinon.stub().resolves({ commonKeychain }),
+      };
+
+      const mockEddsaBitGo = {
+        post: sinon.stub().returns({
+          send: sinon.stub().returns({ result: sinon.stub().resolves({ id: 'eddsa-wallet-id' }) }),
+        }),
+        setRequestTracer: sinon.stub(),
+      };
+
+      eddsaMockBaseCoin = {
+        isEVM: sinon.stub().returns(false),
+        supportsTss: sinon.stub().returns(true),
+        getMPCAlgorithm: sinon.stub().returns('eddsa'),
+        getFamily: sinon.stub().returns('sol'),
+        getChain: sinon.stub().returns('tsol'),
+        getDefaultMultisigType: sinon.stub().returns('tss'),
+        keychains: sinon.stub().returns({ add: sinon.stub() }),
+        url: sinon.stub().returns('/api/v2/tsol/wallet/add'),
+        getConfig: sinon.stub().returns({ features: [] }),
+        supplementGenerateWallet: sinon.stub().callsFake((params: any) => Promise.resolve(params)),
+      };
+
+      eddsaWallets = new Wallets(mockEddsaBitGo as any, eddsaMockBaseCoin);
+      sinon.stub(eddsaWallets as any, 'generateMpcWalletWithExternalSigner').resolves({
+        responseType: 'WalletWithKeychains' as const,
+        wallet: sinon.createStubInstance(Wallet),
+        userKeychain: { id: 'user-key-id', commonKeychain, type: 'tss' },
+        backupKeychain: { id: 'backup-key-id', commonKeychain, type: 'tss' },
+        bitgoKeychain: { id: 'bitgo-key-id', commonKeychain, type: 'tss' },
+      });
+    });
+
+    it('should route to generateMpcWalletWithExternalSigner for tss EdDSA coin', async function () {
+      const result = await eddsaWallets.generateWalletWithExternalSigner({
+        label: 'EdDSA TSS Wallet',
+        multisigType: 'tss',
+        enterprise: 'enterprise-id',
+        eddsaCallbacks,
+      });
+
+      result.responseType.should.equal('WalletWithKeychains');
+      assert.strictEqual((eddsaWallets as any).generateMpcWalletWithExternalSigner.calledOnce, true);
+    });
+
+    it('should reject without eddsaCallbacks for eddsa coin', async function () {
+      sinon.restore();
+      eddsaMockBaseCoin.getMPCAlgorithm = sinon.stub().returns('eddsa');
+
+      await eddsaWallets
+        .generateWalletWithExternalSigner({
+          label: 'EdDSA TSS Wallet',
+          multisigType: 'tss',
+          enterprise: 'enterprise-id',
+        })
+        .should.be.rejectedWith('eddsaCallbacks is required for EdDSA TSS wallet generation with external signer');
     });
   });
 
