@@ -13857,6 +13857,14 @@ export const erc20Coins = [
     UnderlyingAsset['eth:efaon']
   ),
   erc20(
+    'e8ba2011-e687-42c7-b473-df67a9dc4d14',
+    'eth:ehybond-1',
+    'EVK Vault eHYBOND-1',
+    18,
+    '0xa10bdc927d70325326d71fa7971f7b0e4afff702',
+    UnderlyingAsset['eth:ehybond-1']
+  ),
+  erc20(
     '2e26002f-b72f-4d05-93d8-5c94ccb82acd',
     'eth:nkeon',
     'Nike (Ondo Tokenized)',
