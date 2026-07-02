@@ -2551,7 +2551,7 @@ export enum UnderlyingAsset {
   'eth:abton' = 'eth:abton',
   'eth:nvoon' = 'eth:nvoon',
   'eth:efaon' = 'eth:efaon',
-  'eth:ehybond-1' = 'eth:ehybond-1',
+  'eth:ehybond1' = 'eth:ehybond1',
   'eth:nkeon' = 'eth:nkeon',
   'eth:intcon' = 'eth:intcon',
   'eth:iefaon' = 'eth:iefaon',
