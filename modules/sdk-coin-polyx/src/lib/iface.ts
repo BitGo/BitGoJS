@@ -215,9 +215,22 @@ export interface DecodedTx extends Omit<DecodedUnsignedTx, 'method'> {
   method: TxMethod;
 }
 
+// [CLEANUP-V8-OLD] v7 staking.bond args carry `controller` (bond(controller, value, payee)).
+// v8 drops the controller leg (stash is its own controller) — see V8BondArgs below. Kept for the
+// v7 BatchStakingBuilder rollback path.
 export interface BondArgs extends Args {
   value: string;
   controller: string;
+  payee: string | { Account: string };
+}
+
+/**
+ * v8 staking.bond args. Polymesh v8 changed `bond(controller, value, payee)` to
+ * `bond(value, payee)` — the stash account is its own controller, so no `controller` field is
+ * encoded. Used by V8BatchStakingBuilder.
+ */
+export interface V8BondArgs extends Args {
+  value: string;
   payee: string | { Account: string };
 }
 

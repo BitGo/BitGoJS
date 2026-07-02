@@ -8,6 +8,8 @@ import { PolyxBaseBuilder } from './baseBuilder';
 import { WithdrawUnbondedTransactionSchema } from './txnSchema';
 import { WithdrawUnbondedArgs } from './iface';
 
+// [CLEANUP-V8-OLD] v7 path — v7 metadata material. Retained as the Flipt rollback path alongside
+// V8WithdrawUnbondedBuilder (same logic, v8 material).
 export class WithdrawUnbondedBuilder extends PolyxBaseBuilder {
   protected _slashingSpans = 0;
 

@@ -9,6 +9,8 @@ import { BatchArgs } from './iface';
 import { BatchUnstakingTransactionSchema } from './txnSchema';
 import utils from './utils';
 
+// [CLEANUP-V8-OLD] v7 path — v7 metadata material. Retained as the Flipt rollback path alongside
+// V8BatchUnstakingBuilder (same logic, v8 material).
 export class BatchUnstakingBuilder extends PolyxBaseBuilder {
   protected _amount: string;
 

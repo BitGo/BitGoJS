@@ -18,6 +18,18 @@ export type NominateValidationObject = {
   validators: string[];
 };
 
+// v8 bond/batch validation objects — no `controller` (stash is its own controller in v8).
+export type V8BatchValidationObject = {
+  amount: string;
+  payee: string | { Account: string };
+  validators: string[];
+};
+
+export type V8BondValidationObject = {
+  value: string;
+  payee: string | { Account: string };
+};
+
 export type BondExtraValidationObject = {
   value: string;
 };
@@ -201,6 +213,51 @@ export const BatchTransactionSchema = {
       .object({
         value: joi.string().required(),
         controller: addressSchema.required(),
+        payee: joi
+          .alternatives()
+          .try(
+            joi.string(),
+            joi.object({
+              Account: addressSchema,
+            })
+          )
+          .required(),
+      })
+      .validate(value),
+
+  validateNominate: (value: NominateValidationObject): joi.ValidationResult =>
+    joi
+      .object({
+        validators: joi.array().items(addressSchema).min(1).max(16).required(),
+      })
+      .validate(value),
+};
+
+// v8 batch validation — mirrors BatchTransactionSchema but drops the `controller` field, which
+// v8 staking.bond no longer encodes.
+export const V8BatchTransactionSchema = {
+  validate: (value: V8BatchValidationObject): joi.ValidationResult =>
+    joi
+      .object({
+        amount: joi.string().required(),
+        // Payee can be a string or an object with Account property
+        payee: joi
+          .alternatives()
+          .try(
+            joi.string(),
+            joi.object({
+              Account: addressSchema,
+            })
+          )
+          .required(),
+        validators: joi.array().items(addressSchema).min(1).max(16).required(),
+      })
+      .validate(value),
+
+  validateBond: (value: V8BondValidationObject): joi.ValidationResult =>
+    joi
+      .object({
+        value: joi.string().required(),
         payee: joi
           .alternatives()
           .try(
