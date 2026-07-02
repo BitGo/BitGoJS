@@ -4481,10 +4481,10 @@ export const ofcErc20Coins = [
   ),
   ofcerc20(
     '02121989-6c07-4b15-a419-f01c42eaa885',
-    'ofceth:ehybond-1',
+    'ofceth:ehybond1',
     'EVK Vault eHYBOND-1',
     18,
-    underlyingAssetForSymbol('eth:ehybond-1')
+    underlyingAssetForSymbol('eth:ehybond1')
   ),
 ];
 
