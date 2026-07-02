@@ -461,7 +461,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       backupToBitgoKeyShare,
       userState,
       backupState,
-      backupCounterPartyKeyShare,
+      backupToUserCounterPartyKeyShare,
     } = await callbacks.initializeCallback({ enterprise, bitgoPublicGpgKey: bitgoGpgPubKey.armor() });
 
     // Create BitGo keychain with pre-encrypted shares from the external signer
@@ -484,7 +484,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       coin,
       bitgoKeychain,
       counterPartyGPGKey: backupGpgPublicKey,
-      counterPartyKeyShare: backupCounterPartyKeyShare,
+      counterPartyKeyShare: backupToUserCounterPartyKeyShare,
       state: userState,
     });
     assert(userResult.counterpartyKeyShare, 'User finalize did not produce a counterparty key share');

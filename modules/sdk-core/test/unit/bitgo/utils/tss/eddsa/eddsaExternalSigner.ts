@@ -19,7 +19,7 @@ describe('EddsaUtils.createKeychainsWithExternalSigner', function () {
   });
   const userToBitgoKeyShare = keyShare('upub', 'uprv-enc', 'uproof');
   const backupToBitgoKeyShare = keyShare('bpub', 'bprv-enc', 'bproof');
-  const backupCounterPartyKeyShare = keyShare('ucp-pub', 'ucp-prv', 'ucp-proof');
+  const backupToUserCounterPartyKeyShare = keyShare('ucp-pub', 'ucp-prv', 'ucp-proof');
   const userState = { encryptedData: 'u-data', encryptedDataKey: 'u-data-key' };
   const backupState = { encryptedData: 'b-data', encryptedDataKey: 'b-data-key' };
   const bitgoKeychain = { id: 'bitgo-key-id', commonKeychain, source: 'bitgo', type: 'tss' };
@@ -31,7 +31,7 @@ describe('EddsaUtils.createKeychainsWithExternalSigner', function () {
     backupToBitgoKeyShare,
     userState,
     backupState,
-    backupCounterPartyKeyShare,
+    backupToUserCounterPartyKeyShare,
   };
 
   beforeEach(function () {
@@ -107,7 +107,7 @@ describe('EddsaUtils.createKeychainsWithExternalSigner', function () {
     assert.strictEqual(userCall.coin, 'tsol');
     assert.deepStrictEqual(userCall.bitgoKeychain, bitgoKeychain);
     assert.strictEqual(userCall.counterPartyGPGKey, 'backup-gpg-pub');
-    assert.deepStrictEqual(userCall.counterPartyKeyShare, backupCounterPartyKeyShare);
+    assert.deepStrictEqual(userCall.counterPartyKeyShare, backupToUserCounterPartyKeyShare);
     assert.deepStrictEqual(userCall.state, userState);
 
     assert.strictEqual(backupCall.source, 'backup');

@@ -150,7 +150,7 @@ export interface EddsaKeyGenInitializeResult {
   backupToBitgoKeyShare: ExternalSignerKeyShare;
   userState: ExternalSignerMpcState;
   backupState: ExternalSignerMpcState;
-  backupCounterPartyKeyShare: ExternalSignerKeyShare;
+  backupToUserCounterPartyKeyShare: ExternalSignerKeyShare;
 }
 
 export type EddsaKeyGenInitializeCallback = (params: {
@@ -160,6 +160,7 @@ export type EddsaKeyGenInitializeCallback = (params: {
 
 export type EddsaKeyGenFinalizeResult = {
   commonKeychain: string;
+  /** Required when the callback is invoked with source: 'user'; must be omitted for source: 'backup'. */
   counterpartyKeyShare?: ExternalSignerKeyShare;
 };
 

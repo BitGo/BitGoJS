@@ -1747,9 +1747,9 @@ export class Wallets implements IWallets {
     if (
       this.baseCoin.isEVM() &&
       params.walletVersion !== undefined &&
-      !(params.walletVersion === 3 || params.walletVersion === 5 || params.walletVersion === 6)
+      !(params.walletVersion === 5 || params.walletVersion === 6)
     ) {
-      throw new Error('EVM TSS wallets are only supported for wallet version 3, 5 and 6');
+      throw new Error('EVM TSS wallets are only supported for wallet version 5 and 6');
     }
 
     if (type === 'custodial') {
