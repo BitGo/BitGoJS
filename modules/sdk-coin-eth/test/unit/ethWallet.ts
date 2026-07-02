@@ -94,6 +94,104 @@ describe('Sign ETH Transaction', async function () {
   });
 });
 
+describe('Sign ETH Transaction – txInfo fallback', async function () {
+  let bitgo: TestBitGoAPI;
+  let ethWallet;
+  const recipients = [{ address: '0xe59dfe5c67114b39a5662cc856be536c614124c0', amount: '100000' }];
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.initializeTestVars();
+    bitgo.safeRegister('teth', Teth.createInstance);
+    const coin = bitgo.coin('teth');
+    ethWallet = coin.newWalletObject({});
+  });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  it('should read recipients from txPrebuild.txInfo.recipients when txPrebuild.recipients is absent', async function () {
+    sinon.stub(Util, 'xprvToEthPrivateKey');
+    sinon.stub(Util, 'ethSignMsgHash');
+    sinon.stub(ethWallet.getOperationSha3ForExecuteAndConfirm);
+
+    const txPrebuild = { txInfo: { recipients, nextContractSequenceId: 1 } };
+    const { halfSigned } = (await ethWallet.signTransaction({ txPrebuild, prv: 'my_user_prv' })) as any;
+    halfSigned.should.have.property('recipients', recipients);
+  });
+
+  it('should prefer txPrebuild.recipients over txPrebuild.txInfo.recipients', async function () {
+    sinon.stub(Util, 'xprvToEthPrivateKey');
+    sinon.stub(Util, 'ethSignMsgHash');
+    sinon.stub(ethWallet.getOperationSha3ForExecuteAndConfirm);
+
+    const txInfoRecipients = [{ address: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', amount: '1' }];
+    const txPrebuild = { recipients, nextContractSequenceId: 0, txInfo: { recipients: txInfoRecipients } };
+    const { halfSigned } = (await ethWallet.signTransaction({ txPrebuild, prv: 'my_user_prv' })) as any;
+    halfSigned.should.have.property('recipients', recipients);
+  });
+
+  it('should use txPrebuild.txInfo.nextContractSequenceId when nextContractSequenceId is absent', async function () {
+    sinon.stub(Util, 'xprvToEthPrivateKey');
+    sinon.stub(Util, 'ethSignMsgHash');
+    sinon.stub(ethWallet.getOperationSha3ForExecuteAndConfirm);
+
+    const txPrebuild = { recipients, txInfo: { nextContractSequenceId: 5 } };
+    const { halfSigned } = (await ethWallet.signTransaction({ txPrebuild, prv: 'my_user_prv' })) as any;
+    halfSigned.should.have.property('contractSequenceId', 5);
+  });
+
+  it('should throw when nextContractSequenceId is absent from both txPrebuild and txInfo', async function () {
+    await ethWallet
+      .signTransaction({ txPrebuild: { recipients }, prv: 'my_user_prv' })
+      .should.be.rejectedWith('transaction prebuild missing required property nextContractSequenceId');
+  });
+
+  it('should use txPrebuild.txInfo.eip1559 when txPrebuild.eip1559 is absent', async function () {
+    sinon.stub(Util, 'xprvToEthPrivateKey');
+    sinon.stub(Util, 'ethSignMsgHash');
+    sinon.stub(ethWallet.getOperationSha3ForExecuteAndConfirm);
+
+    const eip1559 = { maxFeePerGas: '100', maxPriorityFeePerGas: '10' };
+    const txPrebuild = { recipients, nextContractSequenceId: 0, txInfo: { eip1559 } };
+    const { halfSigned } = (await ethWallet.signTransaction({ txPrebuild, prv: 'my_user_prv' })) as any;
+    halfSigned.should.have.property('eip1559', eip1559);
+  });
+
+  it('should prefer txPrebuild.eip1559 over txPrebuild.txInfo.eip1559', async function () {
+    sinon.stub(Util, 'xprvToEthPrivateKey');
+    sinon.stub(Util, 'ethSignMsgHash');
+    sinon.stub(ethWallet.getOperationSha3ForExecuteAndConfirm);
+
+    const eip1559 = { maxFeePerGas: '200', maxPriorityFeePerGas: '20' };
+    const txInfoEip1559 = { maxFeePerGas: '999', maxPriorityFeePerGas: '99' };
+    const txPrebuild = { recipients, nextContractSequenceId: 0, eip1559, txInfo: { eip1559: txInfoEip1559 } };
+    const { halfSigned } = (await ethWallet.signTransaction({ txPrebuild, prv: 'my_user_prv' })) as any;
+    halfSigned.should.have.property('eip1559', eip1559);
+  });
+
+  it('should use txPrebuild.txInfo.isBatch when txPrebuild.isBatch is absent', async function () {
+    sinon.stub(Util, 'xprvToEthPrivateKey');
+    sinon.stub(Util, 'ethSignMsgHash');
+    sinon.stub(ethWallet.getOperationSha3ForExecuteAndConfirm);
+
+    const txPrebuild = { recipients, nextContractSequenceId: 0, txInfo: { isBatch: true } };
+    const { halfSigned } = (await ethWallet.signTransaction({ txPrebuild, prv: 'my_user_prv' })) as any;
+    halfSigned.should.have.property('isBatch', true);
+  });
+
+  it('should prefer txPrebuild.isBatch over txPrebuild.txInfo.isBatch', async function () {
+    sinon.stub(Util, 'xprvToEthPrivateKey');
+    sinon.stub(Util, 'ethSignMsgHash');
+    sinon.stub(ethWallet.getOperationSha3ForExecuteAndConfirm);
+
+    const txPrebuild = { recipients, nextContractSequenceId: 0, isBatch: false, txInfo: { isBatch: true } };
+    const { halfSigned } = (await ethWallet.signTransaction({ txPrebuild, prv: 'my_user_prv' })) as any;
+    halfSigned.should.have.property('isBatch', false);
+  });
+});
+
 describe('Ethereum Hop Transactions', function () {
   let bitgo: TestBitGoAPI;
   let ethWallet;
