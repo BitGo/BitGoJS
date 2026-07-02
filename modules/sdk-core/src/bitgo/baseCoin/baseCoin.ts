@@ -661,29 +661,14 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   /** @inheritDoc */
-  assertIsValidKey(params: AuditKeyParams): void {
+  async assertIsValidKey(params: AuditKeyParams): Promise<void> {
     if (!params.encryptedPrv) {
       throw new Error('encryptedPrv is required');
     }
     let decryptedKey: string;
 
     try {
-      decryptedKey = this.bitgo.decrypt({ password: params.walletPassphrase, input: params.encryptedPrv });
-    } catch (e) {
-      throw new Error(`failed to decrypt prv: ${e.message}`);
-    }
-    this.auditDecryptedKey({ ...params, prv: decryptedKey });
-  }
-
-  /** @inheritDoc */
-  async assertIsValidKeyAsync(params: AuditKeyParams): Promise<void> {
-    if (!params.encryptedPrv) {
-      throw new Error('encryptedPrv is required');
-    }
-    let decryptedKey: string;
-
-    try {
-      decryptedKey = await this.bitgo.decryptAsync({ password: params.walletPassphrase, input: params.encryptedPrv });
+      decryptedKey = await this.bitgo.decrypt({ password: params.walletPassphrase, input: params.encryptedPrv });
     } catch (e) {
       throw new Error(`failed to decrypt prv: ${e.message}`);
     }

@@ -79,7 +79,7 @@ describe('Base TSS Utils', function () {
   });
 
   beforeEach(function () {
-    decryptAsyncStub = sinon.stub().callsFake(async ({ input, password }: Parameters<BitGoBase['decryptAsync']>[0]) => {
+    decryptAsyncStub = sinon.stub().callsFake(async ({ input, password }: Parameters<BitGoBase['decrypt']>[0]) => {
       try {
         const parsed = JSON.parse(input);
         if (parsed.v === 2 && parsed.plaintext !== undefined) {
@@ -94,11 +94,11 @@ describe('Base TSS Utils', function () {
     mockBg.encrypt = sinon
       .stub()
       .callsFake((params) => encryptWithSjcl(params.password ?? '', params.input, params.adata));
-    mockBg.encryptAsync = sinon
+    mockBg.encrypt = sinon
       .stub()
       .callsFake(async (params) => encryptWithSjcl(params.password ?? '', params.input, params.adata));
     mockBg.decrypt = sinon.stub().callsFake((params) => sjcl.decrypt(params.password ?? '', params.input));
-    mockBg.decryptAsync = decryptAsyncStub;
+    mockBg.decrypt = decryptAsyncStub;
     mockBitgo = mockBg;
 
     const mockCoin = {} as IBaseCoin;
@@ -191,9 +191,9 @@ describe('Base TSS Utils', function () {
   });
 
   describe('validateAdata', function () {
-    it('passes when adata matches with domain separator', function () {
+    it('passes when adata matches with domain separator', async function () {
       const adata = 'test-value';
-      const cyphertext = mockBitgo.encrypt({
+      const cyphertext = await mockBitgo.encrypt({
         input: 'secret',
         password: walletPassphrase,
         adata: `${roundOneDomainSeparator}:${adata}`,
@@ -201,14 +201,14 @@ describe('Base TSS Utils', function () {
       assert.doesNotThrow(() => baseTssUtils.validateAdataForTest(adata, cyphertext, roundOneDomainSeparator));
     });
 
-    it('passes when adata matches without domain separator', function () {
+    it('passes when adata matches without domain separator', async function () {
       const adata = 'test-value';
-      const cyphertext = mockBitgo.encrypt({ input: 'secret', password: walletPassphrase, adata });
+      const cyphertext = await mockBitgo.encrypt({ input: 'secret', password: walletPassphrase, adata });
       assert.doesNotThrow(() => baseTssUtils.validateAdataForTest(adata, cyphertext, roundOneDomainSeparator));
     });
 
-    it('throws when adata does not match', function () {
-      const cyphertext = mockBitgo.encrypt({
+    it('throws when adata does not match', async function () {
+      const cyphertext = await mockBitgo.encrypt({
         input: 'secret',
         password: walletPassphrase,
         adata: `${roundOneDomainSeparator}:correct`,
@@ -229,7 +229,7 @@ describe('Base TSS Utils', function () {
 
   describe('getBitgoAndUserGpgKeys', function () {
     it('decrypts v1 SJCL envelope without adata and skips validation', async function () {
-      const encryptedUserGpgPrvKey = mockBitgo.encrypt({
+      const encryptedUserGpgPrvKey = await mockBitgo.encrypt({
         input: userGpgKeyPair.privateKey,
         password: walletPassphrase,
       });
@@ -248,7 +248,7 @@ describe('Base TSS Utils', function () {
 
     it('decrypts v1 SJCL envelope with matching adata', async function () {
       const adata = 'test-adata';
-      const encryptedUserGpgPrvKey = mockBitgo.encrypt({
+      const encryptedUserGpgPrvKey = await mockBitgo.encrypt({
         input: userGpgKeyPair.privateKey,
         password: walletPassphrase,
         adata: `${signingUserGpgKeyDomainSeparator}:${adata}`,
@@ -266,9 +266,9 @@ describe('Base TSS Utils', function () {
       assert.equal(result.userGpgPrvKey.isPrivate(), true);
     });
 
-    it('decrypts via decryptAsync and returns GPG keys', async function () {
+    it('decrypts via decrypt and returns GPG keys', async function () {
       const adata = 'test-adata';
-      // Use a fake v2 envelope (v:2) so isV2Envelope returns true and decryptAsync is called.
+      // Use a fake v2 envelope (v:2) so isV2Envelope returns true and decrypt is called.
       // The stub extracts plaintext directly from this fake format.
       const encryptedUserGpgPrvKey = JSON.stringify({
         v: 2,
@@ -290,7 +290,7 @@ describe('Base TSS Utils', function () {
     });
 
     it('throws when adata does not match', async function () {
-      const encryptedUserGpgPrvKey = mockBitgo.encrypt({
+      const encryptedUserGpgPrvKey = await mockBitgo.encrypt({
         input: userGpgKeyPair.privateKey,
         password: walletPassphrase,
         adata: `${signingUserGpgKeyDomainSeparator}:correct-adata`,

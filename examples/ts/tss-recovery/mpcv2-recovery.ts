@@ -1,4 +1,5 @@
 import { ECDSAUtils } from '@bitgo/sdk-core';
+import { BitGo } from 'bitgo';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as secp256k1 from 'secp256k1';
@@ -12,10 +13,11 @@ const walletPassphrase = "<Wallet passphrase>";
 
 
 async function testRecoveryMpcV2() {
+  const bitgo = new BitGo({ env: 'test' });
   const userKey = fs.readFileSync('userKey.txt', 'utf8').replace(/(\r\n|\n|\r)/gm, "");
   const backupKey = fs.readFileSync('backupKey.txt', 'utf8').replace(/(\r\n|\n|\r)/gm, "");
   // Converting the user and backup keys on the keycard to key buffers that can be used in signing.
-  const mpcv2KeyChain = await ECDSAUtils.getMpcV2RecoveryKeyShares(userKey, backupKey, walletPassphrase);
+  const mpcv2KeyChain = await ECDSAUtils.getMpcV2RecoveryKeyShares(userKey, backupKey, walletPassphrase, bitgo);
   assert(mpcv2KeyChain.commonKeyChain === commonKeyChain, "Common key chain on keys do not match the common key chain from keycard.");
   // Computing SHA256 hash of the message.
   const messageHash = crypto.createHash('sha256').update(Buffer.from(sampleMessage, 'utf8')).digest();

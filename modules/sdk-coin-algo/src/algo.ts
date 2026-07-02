@@ -883,8 +883,8 @@ export class Algo extends BaseCoin {
         throw new Error('bitgo public key from the keyCard is required for non-bitgo recovery');
       }
       try {
-        userPrv = await this.bitgo.decryptAsync({ input: params.userKey, password: params.walletPassphrase });
-        backupPrv = await this.bitgo.decryptAsync({ input: params.backupKey, password: params.walletPassphrase });
+        userPrv = await this.bitgo.decrypt({ input: params.userKey, password: params.walletPassphrase });
+        backupPrv = await this.bitgo.decrypt({ input: params.backupKey, password: params.walletPassphrase });
         const userKeyAddress = Utils.privateKeyToAlgoAddress(userPrv);
         const backupKeyAddress = Utils.privateKeyToAlgoAddress(backupPrv);
         txBuilder.numberOfRequiredSigners(2).setSigners([userKeyAddress, backupKeyAddress, params.bitgoKey]);

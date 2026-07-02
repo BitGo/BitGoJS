@@ -417,7 +417,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       keyType: 'tss' as KeyType,
       commonKeychain: bitgoKeychain.commonKeychain,
       prv: prv,
-      encryptedPrv: await this.bitgo.encryptAsync({
+      encryptedPrv: await this.bitgo.encrypt({
         input: prv,
         password: passphrase,
         encryptionVersion,
@@ -431,7 +431,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       recipientKeychainParams.webauthnInfo = {
         otpDeviceId: webauthnInfo.otpDeviceId,
         prfSalt: webauthnInfo.prfSalt,
-        encryptedPrv: await this.bitgo.encryptAsync({
+        encryptedPrv: await this.bitgo.encrypt({
           input: prv,
           password: webauthnInfo.passphrase,
           encryptionVersion,
@@ -518,7 +518,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       userPublicGpgKey: userPublicGpgKey,
       kShare: userSignShare.kShare,
       wShare: params.walletPassphrase
-        ? await this.bitgo.encryptAsync({
+        ? await this.bitgo.encrypt({
             input: JSON.stringify(userSignShare.wShare),
             password: params.walletPassphrase,
             encryptionVersion: params.encryptionVersion,
@@ -553,7 +553,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
         i: userGammaAndMuShares.muShare.i,
       },
       oShare: params.walletPassphrase
-        ? await this.bitgo.encryptAsync({
+        ? await this.bitgo.encrypt({
             input: JSON.stringify(userOmicronAndDeltaShare.oShare),
             password: params.walletPassphrase,
             encryptionVersion: params.encryptionVersion,
@@ -612,7 +612,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     walletPassphrase: string;
     encryptionVersion?: EncryptionVersion;
   }): Promise<TssEcdsaStep2ReturnMessage> {
-    const decryptedWShare = await this.bitgo.decryptAsync({
+    const decryptedWShare = await this.bitgo.decrypt({
       input: params.encryptedWShare,
       password: params.walletPassphrase,
     });
@@ -650,7 +650,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     } catch (err) {
       hash = undefined;
     }
-    const decryptedOShare = await this.bitgo.decryptAsync({ input: encryptedOShare, password: walletPassphrase });
+    const decryptedOShare = await this.bitgo.decrypt({ input: encryptedOShare, password: walletPassphrase });
     const { i, R, s, y } = await ECDSAMethods.createUserSignatureShare(
       JSON.parse(decryptedOShare),
       dShareFromBitgo,

@@ -114,7 +114,7 @@ export class Keychains implements IKeychains {
           continue;
         }
         try {
-          const updatedKeychain = await this.updateSingleKeychainPasswordAsync({
+          const updatedKeychain = await this.updateSingleKeychainPassword({
             keychain: key,
             oldPassword: params.oldPassword,
             newPassword: params.newPassword,
@@ -130,8 +130,13 @@ export class Keychains implements IKeychains {
             }
           }
         } catch (e) {
-          // if the password was incorrect, silence the error, throw otherwise
-          if (!e.message.includes('private key is incorrect')) {
+          // if the password was incorrect, silence the error, throw otherwise.
+          // updateSingleKeychainPassword wraps a wrong-password (or corrupt input) failure as
+          // 'failed to update keychain password: ...', so treat that as a skip-able error.
+          if (
+            !e.message.includes('private key is incorrect') &&
+            !e.message.includes('failed to update keychain password')
+          ) {
             throw e;
           }
         }
@@ -143,40 +148,6 @@ export class Keychains implements IKeychains {
       }
     }
     return changedKeys;
-  }
-
-  /**
-   * TODO: Deprecate this function in favor of updateSingleKeychainPasswordAsync once v2 encryption is default
-   * Update the password used to decrypt a single keychain.
-   * Handles v1 (SJCL) envelopes only. For v2 (Argon2id) support use {@link updateSingleKeychainPasswordAsync}.
-   * @param params
-   * @param params.keychain - The keychain whose password should be updated
-   * @param params.oldPassword - The old password used for encrypting the key
-   * @param params.newPassword - The new password to be used for encrypting the key
-   * @returns {Keychain}
-   */
-  updateSingleKeychainPassword(params: UpdateSingleKeychainPasswordOptions = {}): Keychain {
-    if (!_.isString(params.oldPassword)) {
-      throw new Error('expected old password to be a string');
-    }
-
-    if (!_.isString(params.newPassword)) {
-      throw new Error('expected new password to be a string');
-    }
-
-    if (!_.isObject(params.keychain) || !_.isString(params.keychain.encryptedPrv)) {
-      throw new Error('expected keychain to be an object with an encryptedPrv property');
-    }
-
-    const oldEncryptedPrv = params.keychain.encryptedPrv;
-    try {
-      const decryptedPrv = this.bitgo.decrypt({ input: oldEncryptedPrv, password: params.oldPassword });
-      const newEncryptedPrv = this.bitgo.encrypt({ input: decryptedPrv, password: params.newPassword });
-      return _.assign({}, params.keychain, { encryptedPrv: newEncryptedPrv });
-    } catch (e) {
-      // catching an error here means that the password was incorrect or, less likely, the input to decrypt is corrupted
-      throw new Error('password used to decrypt keychain private key is incorrect');
-    }
   }
 
   /**
@@ -208,7 +179,7 @@ export class Keychains implements IKeychains {
    * @param params.newPassword - The new password to be used for encrypting the key
    * @returns {Promise<Keychain>}
    */
-  async updateSingleKeychainPasswordAsync(params: UpdateSingleKeychainPasswordOptions = {}): Promise<Keychain> {
+  async updateSingleKeychainPassword(params: UpdateSingleKeychainPasswordOptions = {}): Promise<Keychain> {
     if (!_.isString(params.oldPassword)) {
       throw new Error('expected old password to be a string');
     }
@@ -223,9 +194,9 @@ export class Keychains implements IKeychains {
 
     const oldEncryptedPrv = params.keychain.encryptedPrv;
     try {
-      const decryptedPrv = await this.bitgo.decryptAsync({ input: oldEncryptedPrv, password: params.oldPassword });
+      const decryptedPrv = await this.bitgo.decrypt({ input: oldEncryptedPrv, password: params.oldPassword });
       const encryptionVersion = this.getEncryptionVersion(oldEncryptedPrv);
-      const newEncryptedPrv = await this.bitgo.encryptAsync({
+      const newEncryptedPrv = await this.bitgo.encrypt({
         input: decryptedPrv,
         password: params.newPassword,
         encryptionVersion,
@@ -339,7 +310,7 @@ export class Keychains implements IKeychains {
       _.extend(params, key);
       if (params.passphrase !== undefined) {
         _.extend(params, {
-          encryptedPrv: await this.bitgo.encryptAsync({
+          encryptedPrv: await this.bitgo.encrypt({
             input: key.prv,
             password: params.passphrase,
             encryptionVersion: params.encryptionVersion,
@@ -422,17 +393,17 @@ export class Keychains implements IKeychains {
       throw new Error('failed to get recovery info');
     }
 
-    const decryptedWalletPassphrase = await this.bitgo.decryptAsync({
+    const decryptedWalletPassphrase = await this.bitgo.decrypt({
       input: params.encryptedMaterial.encryptedWalletPassphrase,
       password: recoveryInfo.passcodeEncryptionCode,
     });
 
-    const decryptedUserKey = await this.bitgo.decryptAsync({
+    const decryptedUserKey = await this.bitgo.decrypt({
       input: params.encryptedMaterial.encryptedUserKey,
       password: decryptedWalletPassphrase,
     });
 
-    const decryptedBackupKey = await this.bitgo.decryptAsync({
+    const decryptedBackupKey = await this.bitgo.decrypt({
       input: params.encryptedMaterial.encryptedBackupKey,
       password: decryptedWalletPassphrase,
     });
@@ -572,7 +543,7 @@ export class Keychains implements IKeychains {
     const newKeychain = keychains.create();
     const originalPasscodeEncryptionCode = generateRandomPassword(5);
 
-    const encryptedPrv = await this.bitgo.encryptAsync({
+    const encryptedPrv = await this.bitgo.encrypt({
       password: walletPassphrase,
       input: newKeychain.prv,
       encryptionVersion,
@@ -615,7 +586,7 @@ export class Keychains implements IKeychains {
         throw Error('Expected a public key to be generated');
       }
       pub = keyPub;
-      encryptedPrv = await this.bitgo.encryptAsync({
+      encryptedPrv = await this.bitgo.encrypt({
         input: keyPrv,
         password: params.password,
         encryptionVersion: params.encryptionVersion,

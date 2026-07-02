@@ -10,7 +10,7 @@ import {
   BaseCoin,
   BitGoBase,
   common,
-  getBip32KeysAsync,
+  getBip32Keys,
   getIsKrsRecovery,
   getIsUnsignedSweep,
   KeyPair,
@@ -853,7 +853,7 @@ export class Trx extends BaseCoin {
     }
 
     // get our user, backup keys
-    const keys = await getBip32KeysAsync(this.bitgo, params, { requireBitGoXpub: false });
+    const keys = await getBip32Keys(this.bitgo, params, { requireBitGoXpub: false });
 
     // we need to decode our bitgoKey to a base58 address
     const bitgoHexAddr = this.pubToHexAddress(this.xpubToUncompressedPub(params.bitgoKey));
@@ -1088,7 +1088,7 @@ export class Trx extends BaseCoin {
         return this.formatForOfflineVault(await txBuilder.build(), SAFE_TRON_TOKEN_TRANSACTION_FEE, recoveryAmount);
       }
 
-      const userPrvHex = await this.bitgo.decryptAsync({
+      const userPrvHex = await this.bitgo.decrypt({
         password: params.walletPassphrase!,
         input: params.userKey,
       });
@@ -1116,7 +1116,7 @@ export class Trx extends BaseCoin {
       return this.formatForOfflineVault(tx, SAFE_TRON_TRANSACTION_FEE, recoveryAmountMinusFees);
     }
 
-    const userPrvHex = await this.bitgo.decryptAsync({
+    const userPrvHex = await this.bitgo.decrypt({
       password: params.walletPassphrase!,
       input: params.userKey,
     });
@@ -1145,7 +1145,7 @@ export class Trx extends BaseCoin {
       );
     }
 
-    const keys = await getBip32KeysAsync(this.bitgo, params, { requireBitGoXpub: false });
+    const keys = await getBip32Keys(this.bitgo, params, { requireBitGoXpub: false });
     const baseAddrHex = this.pubToHexAddress(this.xpubToUncompressedPub(params.bitgoKey));
 
     const txnsBatch: RecoveryTransaction[] = [];

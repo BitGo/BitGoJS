@@ -41,7 +41,7 @@ import {
   toBitgoRequest,
   verifyResponseAsync,
 } from './api';
-import { decrypt, decryptAsync, encrypt, encryptAsync } from './encrypt';
+import { decrypt, encrypt } from './encrypt';
 import { createEncryptionSession } from './encryptionSession';
 import { verifyAddress } from './v1/verifyAddress';
 import {
@@ -834,26 +834,15 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
-   * Utility function to encrypt locally.
+   * Utility function to encrypt locally. Defaults to v2 (Argon2id + AES-256-GCM);
+   * pass `encryptionVersion: 1` to produce a legacy v1 (SJCL) envelope.
    */
-  encrypt(params: EncryptOptions): string {
+  async encrypt(params: EncryptOptions): Promise<string> {
     common.validateParams(params, ['input', 'password'], ['adata']);
-    if (!params.password) {
-      throw new Error(`cannot encrypt without password`);
-    }
-    return encrypt(params.password, params.input, { adata: params.adata });
-  }
-
-  /**
-   * Async encrypt that dispatches to v1 (SJCL) or v2 (Argon2id + AES-256-GCM)
-   * based on `encryptionVersion`.
-   */
-  async encryptAsync(params: EncryptOptions): Promise<string> {
-    common.validateParams(params, ['input', 'password'], []);
     if (!params.password) {
       throw new Error('cannot encrypt without password');
     }
-    return await encryptAsync(params.password, params.input, {
+    return await encrypt(params.password, params.input, {
       adata: params.adata,
       encryptionVersion: params.encryptionVersion,
     });
@@ -868,36 +857,16 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
-   * Decrypt an encrypted string locally.
+   * Decrypt an encrypted string locally. Auto-detects v1 (SJCL) or v2 (Argon2id).
    */
-  decrypt(params: DecryptOptions): string {
+  async decrypt(params: DecryptOptions): Promise<string> {
     params = params || {};
     common.validateParams(params, ['input', 'password'], []);
     if (!params.password) {
       throw new Error(`cannot decrypt without password`);
     }
     try {
-      return decrypt(params.password, params.input);
-    } catch (error) {
-      if (error.message.includes("ccm: tag doesn't match")) {
-        error.message = 'password error - ' + error.message;
-      }
-      throw error;
-    }
-  }
-
-  /**
-   * Async decrypt that auto-detects v1 (SJCL) or v2 (Argon2id).
-   * Migration path from sync decrypt() -- use this before the breaking release.
-   */
-  async decryptAsync(params: DecryptOptions): Promise<string> {
-    params = params || {};
-    common.validateParams(params, ['input', 'password'], []);
-    if (!params.password) {
-      throw new Error(`cannot decrypt without password`);
-    }
-    try {
-      return await decryptAsync(params.password, params.input);
+      return await decrypt(params.password, params.input);
     } catch (error) {
       if (
         error.message.includes("ccm: tag doesn't match") ||
@@ -910,14 +879,13 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
-   * TODO: deprecate this function in favor of decryptKeysAsync once v2 encryption is default
-   * Attempt to decrypt multiple wallet keys with the provided passphrase
+   * Attempt to decrypt multiple wallet keys with the provided passphrase.
    * @param {DecryptKeysOptions} params - Parameters object containing wallet key pairs and password
    * @param {Array<{walletId: string, encryptedPrv: string}>} params.walletIdEncryptedKeyPairs - Array of wallet ID and encrypted private key pairs
    * @param {string} params.password - The passphrase to attempt decryption with
-   * @returns {string[]} - Array of wallet IDs for which decryption failed
+   * @returns {Promise<string[]>} - Array of wallet IDs for which decryption failed
    */
-  decryptKeys(params: DecryptKeysOptions): string[] {
+  async decryptKeys(params: DecryptKeysOptions): Promise<string[]> {
     const validatedParams = validateDecryptKeysParams(params);
     if (validatedParams.walletIdEncryptedKeyPairs.length === 0) {
       return [];
@@ -935,43 +903,7 @@ export class BitGoAPI implements BitGoBase {
       }
 
       try {
-        this.decrypt({
-          input: keyPair.encryptedPrv,
-          password: validatedParams.password,
-        });
-        // If no error was thrown, decryption was successful
-      } catch (error) {
-        // If decryption fails, add the walletId to the failed list
-        failedWalletIds.push(keyPair.walletId);
-      }
-    }
-
-    return failedWalletIds;
-  }
-
-  /**
-   * Async version of decryptKeys with v2 encrypt/decrypt support.
-   * @param params
-   */
-  async decryptKeysAsync(params: DecryptKeysOptions): Promise<string[]> {
-    const validatedParams = validateDecryptKeysParams(params);
-    if (validatedParams.walletIdEncryptedKeyPairs.length === 0) {
-      return [];
-    }
-
-    const failedWalletIds: string[] = [];
-
-    for (const keyPair of validatedParams.walletIdEncryptedKeyPairs) {
-      if (!keyPair.walletId || typeof keyPair.walletId !== 'string') {
-        throw new Error('each key pair must have a string walletId');
-      }
-
-      if (!keyPair.encryptedPrv || typeof keyPair.encryptedPrv !== 'string') {
-        throw new Error('each key pair must have a string encryptedPrv');
-      }
-
-      try {
-        await this.decryptAsync({
+        await this.decrypt({
           input: keyPair.encryptedPrv,
           password: validatedParams.password,
         });
@@ -1137,7 +1069,7 @@ export class BitGoAPI implements BitGoBase {
     return await this.keychains().add({
       source: 'ecdh',
       xpub: hdNode.neutered().toBase58(),
-      encryptedXprv: await this.encryptAsync({
+      encryptedXprv: await this.encrypt({
         password: loginPassword,
         input: hdNode.toBase58(),
         encryptionVersion,
@@ -1237,7 +1169,7 @@ export class BitGoAPI implements BitGoBase {
           throw new Error('Keychain needs encryptedXprv property');
         }
 
-        const responseDetails = await this.handleTokenIssuanceAsync(response.body, password);
+        const responseDetails = await this.handleTokenIssuance(response.body, password);
         this._token = responseDetails.token;
         this._ecdhXprv = responseDetails.ecdhXprv;
 
@@ -1313,11 +1245,11 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
-   * TODO: Deprecate this function in favor of handleTokenIssuanceAsync once v2 encryption is default.
+   * Decrypt an issued token (and the ECDH xprv when needed). Auto-detects v1/v2 envelopes.
    * @param responseBody Response body object
    * @param password Password for the symmetric decryption
    */
-  handleTokenIssuance(responseBody: TokenIssuanceResponse, password?: string): TokenIssuance {
+  async handleTokenIssuance(responseBody: TokenIssuanceResponse, password?: string): Promise<TokenIssuance> {
     // make sure the response body contains the necessary properties
     common.validateParams(responseBody, ['derivationPath'], ['encryptedECDHXprv']);
 
@@ -1330,7 +1262,7 @@ export class BitGoAPI implements BitGoBase {
         throw new Error('ecdhXprv property must be set or password and encrypted encryptedECDHXprv must be provided');
       }
       try {
-        ecdhXprv = this.decrypt({
+        ecdhXprv = await this.decrypt({
           input: responseBody.encryptedECDHXprv,
           password: password,
         });
@@ -1344,55 +1276,7 @@ export class BitGoAPI implements BitGoBase {
     const secret = deriveTokenIssuanceEcdhSecret(ecdhXprv, responseBody.derivationPath, serverXpub);
 
     try {
-      const token = this.decrypt({
-        input: responseBody.encryptedToken,
-        password: secret,
-      });
-      const response: TokenIssuance = { token };
-      if (!this._ecdhXprv) {
-        response.ecdhXprv = ecdhXprv;
-      }
-      return response;
-    } catch (e) {
-      e.errorCode = 'token_decryption_failure';
-      console.error('Failed to decrypt token.');
-      throw e;
-    }
-  }
-
-  /**
-   * Async version of handleTokenIssuance with v2 encrypt/decrypt support.
-   * @param responseBody Response body object
-   * @param password Password for the symmetric decryption
-   */
-  async handleTokenIssuanceAsync(responseBody: TokenIssuanceResponse, password?: string): Promise<TokenIssuance> {
-    // make sure the response body contains the necessary properties
-    common.validateParams(responseBody, ['derivationPath'], ['encryptedECDHXprv']);
-
-    const environment = this._env;
-    const environmentConfig = common.Environments[environment];
-    const serverXpub = environmentConfig.serverXpub;
-    let ecdhXprv = this._ecdhXprv;
-    if (!ecdhXprv) {
-      if (!password || !responseBody.encryptedECDHXprv) {
-        throw new Error('ecdhXprv property must be set or password and encrypted encryptedECDHXprv must be provided');
-      }
-      try {
-        ecdhXprv = await this.decryptAsync({
-          input: responseBody.encryptedECDHXprv,
-          password: password,
-        });
-      } catch (e) {
-        e.errorCode = 'ecdh_xprv_decryption_failure';
-        console.error('Failed to decrypt encryptedECDHXprv.');
-        throw e;
-      }
-    }
-
-    const secret = deriveTokenIssuanceEcdhSecret(ecdhXprv, responseBody.derivationPath, serverXpub);
-
-    try {
-      const token = await this.decryptAsync({
+      const token = await this.decrypt({
         input: responseBody.encryptedToken,
         password: secret,
       });
@@ -1582,7 +1466,7 @@ export class BitGoAPI implements BitGoBase {
       // absent (e.g. SSO/WebCrypto users), the server includes the plain token
       // directly in response.body.token — no decryption step needed.
       if (this._ecdhXprv) {
-        const responseDetails = await this.handleTokenIssuanceAsync(response.body);
+        const responseDetails = await this.handleTokenIssuance(response.body);
         response.body.token = responseDetails.token;
       }
 
@@ -1925,92 +1809,42 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
-   * TODO: deprecate this function in favor of splitSecretAsync when v2 encryption is the default
    * Split a secret into shards using Shamir Secret Sharing.
    * @param seed A hexadecimal secret to split
    * @param passwords An array of the passwords used to encrypt each share
    * @param m The threshold number of shards necessary to reconstitute the secret
+   * @param encryptionVersion Optional encryption version for the encrypted shards (defaults to v2)
    */
-  splitSecret({ seed, passwords, m }: SplitSecretOptions): SplitSecret {
-    const n = validateSplitSecretInputs({ seed, passwords, m });
-    const secrets: string[] = shamir.share(seed, n, m);
-    const shards = _.zipWith(secrets, passwords, (shard, password) => {
-      return this.encrypt({ input: shard, password });
-    });
-    return buildSplitSecretResult(seed, shards, m, n);
-  }
-
-  /**
-   * Async version of splitSecret with v2 encrypt/decrypt support.
-   * @param seed
-   * @param passwords
-   * @param m
-   */
-  async splitSecretAsync({ seed, passwords, m, encryptionVersion }: SplitSecretOptions): Promise<SplitSecret> {
+  async splitSecret({ seed, passwords, m, encryptionVersion }: SplitSecretOptions): Promise<SplitSecret> {
     const n = validateSplitSecretInputs({ seed, passwords, m });
     const secrets: string[] = shamir.share(seed, n, m);
     const shards = await Promise.all(
-      secrets.map((shard, i) => this.encryptAsync({ input: shard, password: passwords[i], encryptionVersion }))
+      secrets.map((shard, i) => this.encrypt({ input: shard, password: passwords[i], encryptionVersion }))
     );
     return buildSplitSecretResult(seed, shards, m, n);
   }
 
   /**
-   * TODO: deprecate this function in favor of reconstituteSecretAsync when v2 encryption is the default
    * Reconstitute a secret which was sharded with `splitSecret`.
    * @param shards
    * @param passwords
    */
-  reconstituteSecret({ shards, passwords }: ReconstituteSecretOptions): ReconstitutedSecret {
+  async reconstituteSecret({ shards, passwords }: ReconstituteSecretOptions): Promise<ReconstitutedSecret> {
     validateReconstituteInputs({ shards, passwords });
-    const secrets = _.zipWith(shards, passwords, (shard, password) => {
-      return this.decrypt({ input: shard, password });
-    });
+    const secrets = await Promise.all(shards.map((shard, i) => this.decrypt({ input: shard, password: passwords[i] })));
     const seed: string = shamir.combine(secrets);
     return buildReconstitutedSecret(seed);
   }
 
   /**
-   * Async version of reconstituteSecret with v2 encrypt/decrypt support.
-   * @param shards
-   * @param passwords
-   */
-  async reconstituteSecretAsync({ shards, passwords }: ReconstituteSecretOptions): Promise<ReconstitutedSecret> {
-    validateReconstituteInputs({ shards, passwords });
-    const secrets = await Promise.all(
-      shards.map((shard, i) => this.decryptAsync({ input: shard, password: passwords[i] }))
-    );
-    const seed: string = shamir.combine(secrets);
-    return buildReconstitutedSecret(seed);
-  }
-
-  /**
-   * TODO: Deprecate this function in favour of verifyShardsAsync when v2 encryption is the default.
    * @param shards
    * @param passwords
    * @param m
    * @param xpub Optional xpub to verify the results against
    */
-  verifyShards({ shards, passwords, m, xpub }: VerifyShardsOptions): boolean {
+  async verifyShards({ shards, passwords, m, xpub }: VerifyShardsOptions): Promise<boolean> {
     validateReconstituteInputs({ shards, passwords });
-    const secrets = _.zipWith(shards, passwords, (shard, password) => {
-      return this.decrypt({ input: shard, password });
-    });
-    return verifyShardSecrets(secrets, m, xpub);
-  }
-
-  /**
-   * Async version of verifyShards with v2 encrypt/decrypt support.
-   * @param shards
-   * @param passwords
-   * @param m
-   * @param xpub
-   */
-  async verifyShardsAsync({ shards, passwords, m, xpub }: VerifyShardsOptions): Promise<boolean> {
-    validateReconstituteInputs({ shards, passwords });
-    const secrets = await Promise.all(
-      shards.map((shard, i) => this.decryptAsync({ input: shard, password: passwords[i] }))
-    );
+    const secrets = await Promise.all(shards.map((shard, i) => this.decrypt({ input: shard, password: passwords[i] })));
     return verifyShardSecrets(secrets, m, xpub);
   }
 
@@ -2056,7 +1890,7 @@ export class BitGoAPI implements BitGoBase {
     const userEcdhKeychain = await this.getECDHKeychain(userSigningKey.ecdhKeychain);
     let xprv;
     try {
-      xprv = await this.decryptAsync({
+      xprv = await this.decrypt({
         password: password,
         input: userEcdhKeychain.encryptedXprv,
       });

@@ -14,11 +14,11 @@ export function nockBitGo(bitgo = defaultBitGo): nock.Scope {
  * Mock the key fetching endpoints for a wallet.
  * Sets up nock to return the key triple with the user key encrypted.
  */
-export function nockWalletKeys(wallet: Wallet, keyTriple: Triple<BIP32>, userPassphrase: string): void {
+export async function nockWalletKeys(wallet: Wallet, keyTriple: Triple<BIP32>, userPassphrase: string): Promise<void> {
   const [user] = keyTriple;
   const pubs = keyTriple.map((k) => k.neutered().toBase58());
   const responses = [
-    { pub: pubs[0], encryptedPrv: encrypt(userPassphrase, user.toBase58()) },
+    { pub: pubs[0], encryptedPrv: await encrypt(userPassphrase, user.toBase58()) },
     { pub: pubs[1] },
     { pub: pubs[2] },
   ];

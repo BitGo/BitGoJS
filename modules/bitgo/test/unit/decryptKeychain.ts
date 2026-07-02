@@ -1,9 +1,5 @@
 import 'should';
-import {
-  decryptKeychainPrivateKey,
-  decryptKeychainPrivateKeyAsync,
-  OptionalKeychainEncryptedKey,
-} from '@bitgo/sdk-core';
+import { decryptKeychainPrivateKey, OptionalKeychainEncryptedKey } from '@bitgo/sdk-core';
 import { BitGoAPI } from '@bitgo/sdk-api';
 
 describe('decryptKeychainPrivateKey', () => {
@@ -15,92 +11,15 @@ describe('decryptKeychainPrivateKey', () => {
   const prv2 = Math.random().toString();
   const password2 = Math.random().toString();
 
-  it('should decrypt encryptedPrv', () => {
+  it('should decrypt encryptedPrv', async () => {
     const keychain: OptionalKeychainEncryptedKey = {
-      encryptedPrv: bitgo.encrypt({ input: prv1, password: password1 }),
+      encryptedPrv: await bitgo.encrypt({ input: prv1, password: password1 }),
     };
-    decryptKeychainPrivateKey(bitgo, keychain, password1)!.should.equal(prv1);
-  });
-
-  it('should decrypt webauthnDevices encryptedPrv', () => {
-    const keychain: OptionalKeychainEncryptedKey = {
-      webauthnDevices: [
-        {
-          otpDeviceId: '123',
-          authenticatorInfo: {
-            credID: 'credID',
-            fmt: 'packed',
-            publicKey: 'some value',
-          },
-          prfSalt: '456',
-          encryptedPrv: bitgo.encrypt({ input: prv2, password: password2 }),
-        },
-      ],
-    };
-    decryptKeychainPrivateKey(bitgo, keychain, password2)!.should.equal(prv2);
-  });
-
-  it('should try and decrypt all encryptedPrvs', () => {
-    const keychain: OptionalKeychainEncryptedKey = {
-      encryptedPrv: bitgo.encrypt({ input: prv1, password: password1 }),
-      webauthnDevices: [
-        {
-          otpDeviceId: '123',
-          authenticatorInfo: {
-            credID: 'credID',
-            fmt: 'packed',
-            publicKey: 'some value',
-          },
-          prfSalt: '456',
-          encryptedPrv: bitgo.encrypt({ input: prv2, password: password2 }),
-        },
-      ],
-    };
-    decryptKeychainPrivateKey(bitgo, keychain, password2)!.should.equal(prv2);
-  });
-
-  it('should return undefined if no encryptedPrv can be decrypted', () => {
-    const keychain: OptionalKeychainEncryptedKey = {
-      encryptedPrv: bitgo.encrypt({ input: prv1, password: password1 }),
-      webauthnDevices: [
-        {
-          otpDeviceId: '123',
-          authenticatorInfo: {
-            credID: 'credID',
-            fmt: 'packed',
-            publicKey: 'some value',
-          },
-          prfSalt: '456',
-          encryptedPrv: bitgo.encrypt({ input: prv2, password: password2 }),
-        },
-      ],
-    };
-    (decryptKeychainPrivateKey(bitgo, keychain, Math.random().toString()) === undefined).should.equal(true);
-  });
-
-  it('should return undefined if no encryptedPrv is present', () => {
-    (decryptKeychainPrivateKey(bitgo, {}, 'password') === undefined).should.be.true();
-  });
-});
-
-describe('decryptKeychainPrivateKeyAsync', () => {
-  const bitgo = new BitGoAPI();
-
-  const prv1 = Math.random().toString();
-  const password1 = Math.random().toString();
-
-  const prv2 = Math.random().toString();
-  const password2 = Math.random().toString();
-
-  it('should decrypt encryptedPrv (v1)', async () => {
-    const keychain: OptionalKeychainEncryptedKey = {
-      encryptedPrv: bitgo.encrypt({ input: prv1, password: password1 }),
-    };
-    const result = await decryptKeychainPrivateKeyAsync(bitgo, keychain, password1);
+    const result = await decryptKeychainPrivateKey(bitgo, keychain, password1);
     result!.should.equal(prv1);
   });
 
-  it('should decrypt webauthnDevices encryptedPrv (v1)', async () => {
+  it('should decrypt webauthnDevices encryptedPrv', async () => {
     const keychain: OptionalKeychainEncryptedKey = {
       webauthnDevices: [
         {
@@ -111,24 +30,56 @@ describe('decryptKeychainPrivateKeyAsync', () => {
             publicKey: 'some value',
           },
           prfSalt: '456',
-          encryptedPrv: bitgo.encrypt({ input: prv2, password: password2 }),
+          encryptedPrv: await bitgo.encrypt({ input: prv2, password: password2 }),
         },
       ],
     };
-    const result = await decryptKeychainPrivateKeyAsync(bitgo, keychain, password2);
+    const result = await decryptKeychainPrivateKey(bitgo, keychain, password2);
+    result!.should.equal(prv2);
+  });
+
+  it('should try and decrypt all encryptedPrvs', async () => {
+    const keychain: OptionalKeychainEncryptedKey = {
+      encryptedPrv: await bitgo.encrypt({ input: prv1, password: password1 }),
+      webauthnDevices: [
+        {
+          otpDeviceId: '123',
+          authenticatorInfo: {
+            credID: 'credID',
+            fmt: 'packed',
+            publicKey: 'some value',
+          },
+          prfSalt: '456',
+          encryptedPrv: await bitgo.encrypt({ input: prv2, password: password2 }),
+        },
+      ],
+    };
+    const result = await decryptKeychainPrivateKey(bitgo, keychain, password2);
     result!.should.equal(prv2);
   });
 
   it('should return undefined if no encryptedPrv can be decrypted', async () => {
     const keychain: OptionalKeychainEncryptedKey = {
-      encryptedPrv: bitgo.encrypt({ input: prv1, password: password1 }),
+      encryptedPrv: await bitgo.encrypt({ input: prv1, password: password1 }),
+      webauthnDevices: [
+        {
+          otpDeviceId: '123',
+          authenticatorInfo: {
+            credID: 'credID',
+            fmt: 'packed',
+            publicKey: 'some value',
+          },
+          prfSalt: '456',
+          encryptedPrv: await bitgo.encrypt({ input: prv2, password: password2 }),
+        },
+      ],
     };
-    const result = await decryptKeychainPrivateKeyAsync(bitgo, keychain, Math.random().toString());
+    const result = await decryptKeychainPrivateKey(bitgo, keychain, Math.random().toString());
     (result === undefined).should.equal(true);
   });
 
   it('should return undefined if no encryptedPrv is present', async () => {
-    const result = await decryptKeychainPrivateKeyAsync(bitgo, {}, 'password');
+    const result = await decryptKeychainPrivateKey(bitgo, {}, 'password');
     (result === undefined).should.be.true();
   });
 });

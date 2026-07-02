@@ -237,7 +237,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
         assert(reducedPrivateMaterial, `Reduced private material is required for ${source} keychain`);
         assert(passphrase, `Passphrase is required for ${source} keychain`);
         privateMaterialBase64 = privateMaterial.toString('base64');
-        encryptedPrv = await this.bitgo.encryptAsync({
+        encryptedPrv = await this.bitgo.encrypt({
           input: privateMaterialBase64,
           password: passphrase,
           encryptionVersion,
@@ -246,7 +246,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
         // key) with the wallet passphrase. The result is stored as reducedEncryptedPrv
         // on the key card QR code and represents a second copy of key material
         // beyond the server-stored encryptedPrv.
-        reducedEncryptedPrv = await this.bitgo.encryptAsync({
+        reducedEncryptedPrv = await this.bitgo.encrypt({
           // Buffer.toString('base64') can not be used here as it does not work on the browser.
           // The browser deals with a Buffer as Uint8Array, therefore in the browser .toString('base64') just creates a comma separated string of the array values.
           input: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(reducedPrivateMaterial)))),
@@ -276,7 +276,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       keychainParams.webauthnInfo = {
         otpDeviceId: webauthnInfo.otpDeviceId,
         prfSalt: webauthnInfo.prfSalt,
-        encryptedPrv: await this.bitgo.encryptAsync({
+        encryptedPrv: await this.bitgo.encrypt({
           input: privateMaterialBase64,
           password: webauthnInfo.passphrase,
           encryptionVersion,
@@ -608,13 +608,13 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       }
     }
 
-    const encryptedRound1Session = await this.bitgo.encryptAsync({
+    const encryptedRound1Session = await this.bitgo.encrypt({
       input: sessionPayload,
       password: walletPassphrase,
       adata: `${EddsaMPCv2Utils.MPS_DSG_SIGNING_ROUND1_STATE}:${adata}`,
       encryptionVersion: 1,
     });
-    const encryptedUserGpgPrvKey = await this.bitgo.encryptAsync({
+    const encryptedUserGpgPrvKey = await this.bitgo.encrypt({
       input: userGpgKey.privateKey,
       password: walletPassphrase,
       adata: `${EddsaMPCv2Utils.MPS_DSG_SIGNING_USER_GPG_KEY}:${adata}`,
@@ -674,18 +674,10 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 
     this.validateAdata(adata, encryptedRound1Session, EddsaMPCv2Utils.MPS_DSG_SIGNING_ROUND1_STATE);
 
-    let decryptedRound1Session: string;
-    if (useV2) {
-      decryptedRound1Session = await this.bitgo.decryptAsync({
-        input: encryptedRound1Session,
-        password: walletPassphrase,
-      });
-    } else {
-      decryptedRound1Session = this.bitgo.decrypt({
-        input: encryptedRound1Session,
-        password: walletPassphrase,
-      });
-    }
+    const decryptedRound1Session = await this.bitgo.decrypt({
+      input: encryptedRound1Session,
+      password: walletPassphrase,
+    });
 
     const { dsgSession, userMsgPayload } = JSON.parse(decryptedRound1Session) as {
       dsgSession: string;
@@ -721,7 +713,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       }
     }
 
-    const encryptedRound2Session = await this.bitgo.encryptAsync({
+    const encryptedRound2Session = await this.bitgo.encrypt({
       input: sessionPayload,
       password: walletPassphrase,
       adata: `${EddsaMPCv2Utils.MPS_DSG_SIGNING_ROUND2_STATE}:${adata}`,
@@ -749,8 +741,6 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       'Unable to find transactions in txRequest'
     );
     const adata = `${signableHex}:${derivationPath}`;
-
-    const useV2 = isV2Envelope(encryptedRound2Session);
 
     const { bitgoGpgKey, userGpgPrvKey } = await this.getBitgoAndUserGpgKeys(
       bitgoPublicGpgKey,
@@ -781,18 +771,10 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 
     this.validateAdata(adata, encryptedRound2Session, EddsaMPCv2Utils.MPS_DSG_SIGNING_ROUND2_STATE);
 
-    let decryptedRound2Session: string;
-    if (useV2) {
-      decryptedRound2Session = await this.bitgo.decryptAsync({
-        input: encryptedRound2Session,
-        password: walletPassphrase,
-      });
-    } else {
-      decryptedRound2Session = this.bitgo.decrypt({
-        input: encryptedRound2Session,
-        password: walletPassphrase,
-      });
-    }
+    const decryptedRound2Session = await this.bitgo.decrypt({
+      input: encryptedRound2Session,
+      password: walletPassphrase,
+    });
 
     const { dsgSession, userMsgPayload } = JSON.parse(decryptedRound2Session) as {
       dsgSession: string;
@@ -924,7 +906,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
  * @param encryptedKeyShare encrypted user or backup keycard
  * @param walletPassphrase passphrase used to encrypt the keycard
  * @param bitgo optional BitGoBase instance; when provided, decrypts via
- *   bitgo.decryptAsync (supports both v1 SJCL and v2 Argon2id envelopes);
+ *   bitgo.decrypt (supports both v1 SJCL and v2 Argon2id envelopes);
  *   when absent, falls back to sjcl.decrypt (v1 only)
  */
 export async function isEddsaMpcV1SigningMaterial(
@@ -933,7 +915,7 @@ export async function isEddsaMpcV1SigningMaterial(
   bitgo?: BitGoBase
 ): Promise<boolean> {
   const prv = bitgo
-    ? await bitgo.decryptAsync({ input: encryptedKeyShare, password: walletPassphrase })
+    ? await bitgo.decrypt({ input: encryptedKeyShare, password: walletPassphrase })
     : sjcl.decrypt(walletPassphrase, encryptedKeyShare);
 
   try {
@@ -969,7 +951,7 @@ export async function getEddsaMpcV2RecoveryKeySharesFromReducedKey(
 ): Promise<EddsaMPCv2RecoveryKeyShares> {
   const decodeKey = async (encryptedKey: string): Promise<MPSTypes.EddsaReducedKeyShare> => {
     const decrypted = bitgo
-      ? await bitgo.decryptAsync({ input: encryptedKey, password: walletPassphrase })
+      ? await bitgo.decrypt({ input: encryptedKey, password: walletPassphrase })
       : sjcl.decrypt(walletPassphrase, encryptedKey);
     let reduced: MPSTypes.EddsaReducedKeyShare;
     try {

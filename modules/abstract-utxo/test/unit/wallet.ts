@@ -20,7 +20,7 @@ describe('manage unspents', function () {
   before(async function () {
     rootWalletKey = getDefaultWalletKeys();
     walletPassphrase = 'fixthemoneyfixtheworld';
-    keysObj = toKeychainObjects(rootWalletKey, walletPassphrase);
+    keysObj = await toKeychainObjects(rootWalletKey, walletPassphrase);
     basecoin = getUtxoCoin('tbtc');
     const walletData = {
       id: '5b34252f1bf349930e34020a',

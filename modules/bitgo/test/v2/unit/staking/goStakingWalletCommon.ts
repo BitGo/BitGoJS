@@ -36,47 +36,34 @@ describe('Go Staking Wallet Common', function () {
     };
     const wallet = new Wallet(bitgo, baseCoin, walletData);
     stakingWallet = wallet.toGoStakingWallet();
-    nock(microservicesUri)
-      .get(`/api/v2/${ofcCoin}/key/${stakingWallet.wallet.keyIds()[0]}`)
-      .reply(200, {
-        id: stakingWallet.wallet.keyIds()[0],
-        pub: 'xpub661MyMwAqRbcFq65dvGMeEVb81KKDRRkWkawSVesWcyevGc5gr8V27LjNfkktaMuKtM362jhgKy2eu35RdArcmmEAoULzAvgKkJpWQPvLXM',
-        source: 'user',
-        encryptedPrv: bitgo.encrypt({
-          input:
-            'xprvA41z7zogVVwxVSgdKUHDy1SKmdb533PjDz7J6N6mV6uS3ze1ai8FHa8kmHScGpWmj4WggLyQjgPie1rFSruoUihUZREPSL39UNdE3BBDu76',
-          password: 'passphrase',
-        }),
-        coinSpecific: {},
-      });
+    const encryptedStakingPrv = await bitgo.encrypt({
+      input:
+        'xprvA41z7zogVVwxVSgdKUHDy1SKmdb533PjDz7J6N6mV6uS3ze1ai8FHa8kmHScGpWmj4WggLyQjgPie1rFSruoUihUZREPSL39UNdE3BBDu76',
+      password: 'passphrase',
+    });
+    nock(microservicesUri).get(`/api/v2/${ofcCoin}/key/${stakingWallet.wallet.keyIds()[0]}`).reply(200, {
+      id: stakingWallet.wallet.keyIds()[0],
+      pub: 'xpub661MyMwAqRbcFq65dvGMeEVb81KKDRRkWkawSVesWcyevGc5gr8V27LjNfkktaMuKtM362jhgKy2eu35RdArcmmEAoULzAvgKkJpWQPvLXM',
+      source: 'user',
+      encryptedPrv: encryptedStakingPrv,
+      coinSpecific: {},
+    });
 
-    nock(microservicesUri)
-      .get(`/api/v2/${ofcCoin}/key/${stakingWallet.wallet.keyIds()[1]}`)
-      .reply(200, {
-        id: stakingWallet.wallet.keyIds()[1],
-        pub: 'xpub661MyMwAqRbcFq65dvGMeEVb81KKDRRkWkawSVesWcyevGc5gr8V27LjNfkktaMuKtM362jhgKy2eu35RdArcmmEAoULzAvgKkJpWQPvLXM',
-        source: 'user',
-        encryptedPrv: bitgo.encrypt({
-          input:
-            'xprvA41z7zogVVwxVSgdKUHDy1SKmdb533PjDz7J6N6mV6uS3ze1ai8FHa8kmHScGpWmj4WggLyQjgPie1rFSruoUihUZREPSL39UNdE3BBDu76',
-          password: 'passphrase',
-        }),
-        coinSpecific: {},
-      });
+    nock(microservicesUri).get(`/api/v2/${ofcCoin}/key/${stakingWallet.wallet.keyIds()[1]}`).reply(200, {
+      id: stakingWallet.wallet.keyIds()[1],
+      pub: 'xpub661MyMwAqRbcFq65dvGMeEVb81KKDRRkWkawSVesWcyevGc5gr8V27LjNfkktaMuKtM362jhgKy2eu35RdArcmmEAoULzAvgKkJpWQPvLXM',
+      source: 'user',
+      encryptedPrv: encryptedStakingPrv,
+      coinSpecific: {},
+    });
 
-    nock(microservicesUri)
-      .get(`/api/v2/${ofcCoin}/key/${stakingWallet.wallet.keyIds()[2]}`)
-      .reply(200, {
-        id: stakingWallet.wallet.keyIds()[2],
-        pub: 'xpub661MyMwAqRbcFq65dvGMeEVb81KKDRRkWkawSVesWcyevGc5gr8V27LjNfkktaMuKtM362jhgKy2eu35RdArcmmEAoULzAvgKkJpWQPvLXM',
-        source: 'user',
-        encryptedPrv: bitgo.encrypt({
-          input:
-            'xprvA41z7zogVVwxVSgdKUHDy1SKmdb533PjDz7J6N6mV6uS3ze1ai8FHa8kmHScGpWmj4WggLyQjgPie1rFSruoUihUZREPSL39UNdE3BBDu76',
-          password: 'passphrase',
-        }),
-        coinSpecific: {},
-      });
+    nock(microservicesUri).get(`/api/v2/${ofcCoin}/key/${stakingWallet.wallet.keyIds()[2]}`).reply(200, {
+      id: stakingWallet.wallet.keyIds()[2],
+      pub: 'xpub661MyMwAqRbcFq65dvGMeEVb81KKDRRkWkawSVesWcyevGc5gr8V27LjNfkktaMuKtM362jhgKy2eu35RdArcmmEAoULzAvgKkJpWQPvLXM',
+      source: 'user',
+      encryptedPrv: encryptedStakingPrv,
+      coinSpecific: {},
+    });
   });
 
   const sandbox = sinon.createSandbox();

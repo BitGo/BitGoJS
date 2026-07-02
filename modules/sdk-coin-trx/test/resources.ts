@@ -244,7 +244,7 @@ export const TestRecoverData = {
  * bitgoKey is a compressed secp256k1 public key (66 hex chars) used as the commonKeychain.
  * The wallet address is derived from it via new TronKeyPair({ pub: bitgoKey }).getAddress().
  * userPrvKey is the raw secp256k1 private key hex that the encrypted userKey decrypts to.
- * userKey is a placeholder encrypted blob; tests mock decryptAsync to return userPrvKey directly.
+ * userKey is a placeholder encrypted blob; tests mock decrypt to return userPrvKey directly.
  */
 export const TssTestRecoverData = {
   // compressed pub of PARTICIPANTS.from.pk — used as commonKeychain (bitgoKey)
@@ -256,11 +256,11 @@ export const TssTestRecoverData = {
     'xpub6BvMpt8ke8tCycBBw6uDob6PyNBkHbTyEztaRuwdMZhpiFk1mXpS7P7iv4c4w7XWFFRySMokUuFUqqgpZxK5wLxm6pgjpkNFhKsMaXTJoUN',
   backupKey:
     'xpub687kC8LeSJwj1gYQr4Js2BHbLK1nFeLvMzsDmH2LKMNrqAHNfeCw1sp61cbf2WxeY1QssaUBh9EFJbJ9LBuPivv7XDsFPVaFYj19ueCNczT',
-  // encrypted userKey JSON (placeholder — tests mock decryptAsync)
+  // encrypted userKey JSON (placeholder — tests mock decrypt)
   encryptedUserKey:
     '{"iv":"abc","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","ct":"xyz"}',
   walletPassphrase: 'testpassphrase123',
-  // raw secp256k1 private key hex returned when decryptAsync is called (PARTICIPANTS.custodian.pk)
+  // raw secp256k1 private key hex returned when decrypt is called (PARTICIPANTS.custodian.pk)
   userPrvKey: 'c4b3a04836efc2ee2917235f55ccfb2dcf6b8341e5ea0405da5ba10cd526dfed',
   recoveryDestination: 'TWkzN4WjxkyoRTmFHaMQ9po77uEerngjyQ',
 };

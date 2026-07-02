@@ -41,8 +41,8 @@ type NamedKeys = {
 // Get default wasm wallet keys (xpubs, xprivs, and walletKeys)
 const { walletKeys: wasmWalletKeys, xpubs, xprivs } = getDefaultWasmWalletKeys();
 
-function getNamedKeys(keys: Triple<BIP32>, password: string): NamedKeys {
-  function encode(k: BIP32): string {
+async function getNamedKeys(keys: Triple<BIP32>, password: string): Promise<NamedKeys> {
+  async function encode(k: BIP32): Promise<string> {
     const base58 = k.toBase58();
     // Check if it's a public key
     const pubKeyMatch = keychainsBase58.find((kc) => kc.pub === base58);
@@ -57,17 +57,17 @@ function getNamedKeys(keys: Triple<BIP32>, password: string): NamedKeys {
     return encryptKeychain(password, keyBase58);
   }
   return {
-    userKey: encode(keys[0]),
-    backupKey: encode(keys[1]),
-    bitgoKey: encode(keys[2]),
+    userKey: await encode(keys[0]),
+    backupKey: await encode(keys[1]),
+    bitgoKey: await encode(keys[2]),
   };
 }
 
-function getKeysForFullSignedRecovery(password: string): NamedKeys {
+function getKeysForFullSignedRecovery(password: string): Promise<NamedKeys> {
   return getNamedKeys([xprivs[0], xprivs[1], xpubs[2]], password);
 }
 
-const keysFullSignedRecovery = getKeysForFullSignedRecovery(walletPassphrase);
+let keysFullSignedRecovery: NamedKeys;
 
 /**
  * Tests for unspent gathering via backupKeyRecovery with MockRecoveryProvider.
@@ -76,6 +76,10 @@ const keysFullSignedRecovery = getKeysForFullSignedRecovery(walletPassphrase);
  */
 describe('Backup Key Recovery - Unspent Gathering', function () {
   const defaultFeeRateSatB = 100;
+
+  before(async function () {
+    keysFullSignedRecovery = await getKeysForFullSignedRecovery(walletPassphrase);
+  });
 
   getMinUtxoCoins().forEach((coin) => {
     describe(`Unspent Gathering [${coin.getChain()}]`, function () {

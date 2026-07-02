@@ -129,36 +129,17 @@ function addBitgoKeyIfRequired(
 }
 
 /**
- * TODO: Deprecate this function in favour of validateKeyAsync when v2 encryption is the default.
+ * Validate and decrypt a recovery key. Auto-detects v1 (SJCL) and v2 (Argon2id) envelopes.
  */
-export function validateKey(
-  bitgo: BitGoBase,
-  { key, source, passphrase, isUnsignedSweep, isKrsRecovery }: ValidateKeyOptions
-): BIP32Interface {
-  if (!key.startsWith('xprv') && !isUnsignedSweep) {
-    // Try to decrypt the key
-    try {
-      if (source === 'user' || (source === 'backup' && !isKrsRecovery)) {
-        return bip32.fromBase58(bitgo.decrypt({ password: passphrase, input: key }));
-      }
-    } catch (e) {
-      throw new Error(`Failed to decrypt ${source} key with passcode - try again!`);
-    }
-  }
-  return parseKeyAsXprv(key, source);
-}
-
-/**
- * Async version of validateKey with v2 encrypt/decrypt support.
- */
-export async function validateKeyAsync(
+export async function validateKey(
   bitgo: BitGoBase,
   { key, source, passphrase, isUnsignedSweep, isKrsRecovery }: ValidateKeyOptions
 ): Promise<BIP32Interface> {
   if (!key.startsWith('xprv') && !isUnsignedSweep) {
+    // Try to decrypt the key
     try {
       if (source === 'user' || (source === 'backup' && !isKrsRecovery)) {
-        return bip32.fromBase58(await bitgo.decryptAsync({ password: passphrase, input: key }));
+        return bip32.fromBase58(await bitgo.decrypt({ password: passphrase, input: key }));
       }
     } catch (e) {
       throw new Error(`Failed to decrypt ${source} key with passcode - try again!`);
@@ -167,35 +148,7 @@ export async function validateKeyAsync(
   return parseKeyAsXprv(key, source);
 }
 
-/**
- * TODO: Deprecate this function in favour of getBip32KeysAsync when v2 encryption is the default.
- */
-export function getBip32Keys(
-  bitgo: BitGoBase,
-  params: InitiateRecoveryOptions | InitiateConsolidationRecoveryOptions,
-  { requireBitGoXpub }: { requireBitGoXpub: boolean }
-): BIP32Interface[] {
-  const isKrsRecovery = getIsKrsRecovery(params);
-  const isUnsignedSweep = getIsUnsignedSweep(params);
-  const validateKeyOpts = {
-    passphrase: params.walletPassphrase,
-    isKrsRecovery,
-    isUnsignedSweep,
-  };
-  const keys = [
-    // Box A
-    validateKey(bitgo, { key: params.userKey, source: 'user', ...validateKeyOpts }),
-    // Box B
-    validateKey(bitgo, { key: params.backupKey, source: 'backup', ...validateKeyOpts }),
-  ];
-
-  return addBitgoKeyIfRequired(keys, params, requireBitGoXpub);
-}
-
-/**
- * Async version of getBip32Keys with v2 encrypt/decrypt support.
- */
-export async function getBip32KeysAsync(
+export async function getBip32Keys(
   bitgo: BitGoBase,
   params: InitiateRecoveryOptions | InitiateConsolidationRecoveryOptions,
   { requireBitGoXpub }: { requireBitGoXpub: boolean }
@@ -209,9 +162,9 @@ export async function getBip32KeysAsync(
   };
   const keys = [
     // Box A — sequential: backup only after user completes
-    await validateKeyAsync(bitgo, { key: params.userKey, source: 'user', ...validateKeyOpts }),
+    await validateKey(bitgo, { key: params.userKey, source: 'user', ...validateKeyOpts }),
     // Box B
-    await validateKeyAsync(bitgo, { key: params.backupKey, source: 'backup', ...validateKeyOpts }),
+    await validateKey(bitgo, { key: params.backupKey, source: 'backup', ...validateKeyOpts }),
   ];
 
   return addBitgoKeyIfRequired(keys, params, requireBitGoXpub);

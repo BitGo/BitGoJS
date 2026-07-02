@@ -47,26 +47,26 @@ describe('Audit Key', function () {
     });
   });
 
-  it('should throw error if the walletPassphrase is incorrect', function () {
-    assert.throws(
+  it('should throw error if the walletPassphrase is incorrect', async function () {
+    await assert.rejects(
       () =>
         coin.assertIsValidKey({
           encryptedPrv: btcBackupKey.key,
           walletPassphrase: 'foo',
         }),
-      { message: "failed to decrypt prv: password error - ccm: tag doesn't match" }
+      { message: 'failed to decrypt prv: incorrect password' }
     );
   });
 
-  it('should throw if the key is altered', function () {
+  it('should throw if the key is altered', async function () {
     const alteredKey = btcBackupKey.key.replace(/[0-9]/g, '0');
-    assert.throws(
+    await assert.rejects(
       () =>
         coin.assertIsValidKey({
           encryptedPrv: alteredKey,
           walletPassphrase: 'kAm[EFQ6o=SxlcLFDw%,',
         }),
-      { message: 'failed to decrypt prv: json decrypt: invalid parameters' }
+      { message: 'failed to decrypt prv: decrypt: ciphertext is not valid JSON' }
     );
   });
 });

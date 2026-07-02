@@ -1290,7 +1290,7 @@ describe('Wallet Prototype Methods', function () {
     describe('successful tx acceleration', function successfulTxDescribe() {
       const feeRate = 20000;
 
-      beforeEach(() => {
+      beforeEach(async () => {
         nock(bgUrl).post(`/api/v1/wallet/${wallet.id()}/address/1`).reply(200, {
           address: '2NCYjG8Q56yr8tx9jazNoYnGKxjgB2MQSfY',
         });
@@ -1306,7 +1306,7 @@ describe('Wallet Prototype Methods', function () {
         nock(bgUrl)
           .post(`/api/v1/keychain/${userKeypair.xpub}`, {})
           .reply(200, {
-            encryptedXprv: bitgo.encrypt({ input: userKeypair.xprv, password: TestBitGo.TEST_WALLET1_PASSCODE }),
+            encryptedXprv: await bitgo.encrypt({ input: userKeypair.xprv, password: TestBitGo.TEST_WALLET1_PASSCODE }),
             path: userKeypair.path + userKeypair.walletSubPath,
           });
       });

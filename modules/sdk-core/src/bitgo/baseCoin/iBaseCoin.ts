@@ -748,7 +748,6 @@ export interface IBaseCoin {
    * @param {string} params.walletPassphrase - The passphrase to decrypt the private key
    * @param {string} params.multiSigType - The type of multisig (e.g. 'onchain' or 'tss')
    */
-  assertIsValidKey({ publicKey, encryptedPrv, walletPassphrase, multiSigType }: AuditKeyParams): void;
-  assertIsValidKeyAsync(params: AuditKeyParams): Promise<void>;
+  assertIsValidKey(params: AuditKeyParams): Promise<void>;
   requiresWalletInitializationTransaction(): boolean;
 }

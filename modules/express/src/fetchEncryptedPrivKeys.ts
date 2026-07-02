@@ -78,7 +78,7 @@ export async function fetchKeys(ids: WalletIds, token: string, accessToken?: str
 
       if (keychain.encryptedPrv === undefined) {
         if (typeof credential === 'object') {
-          const encryptedPrv = await bg.encryptAsync({
+          const encryptedPrv = await bg.encrypt({
             password: credential.walletPassword,
             input: credential.secret,
             encryptionVersion: credential.encryptionVersion,

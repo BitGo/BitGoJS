@@ -193,18 +193,18 @@ describe('BitGo Prototype Methods', function () {
     const password = 'mickey mouse';
     const secret = 'this is a secret';
 
-    it('invalid password', () => {
+    it('invalid password', async () => {
       const bitgo = TestBitGo.decorate(BitGo);
       bitgo.initializeTestVars();
-      const opaque = bitgo.encrypt({ password: password, input: secret });
-      (() => bitgo.decrypt({ password: 'hack hack', input: opaque })).should.throw();
+      const opaque = await bitgo.encrypt({ password: password, input: secret });
+      await bitgo.decrypt({ password: 'hack hack', input: opaque }).should.be.rejected();
     });
 
-    it('valid password', () => {
+    it('valid password', async () => {
       const bitgo = TestBitGo.decorate(BitGo);
       bitgo.initializeTestVars();
-      const opaque = bitgo.encrypt({ password: password, input: secret });
-      bitgo.decrypt({ password: password, input: opaque }).should.equal(secret);
+      const opaque = await bitgo.encrypt({ password: password, input: secret });
+      (await bitgo.decrypt({ password: password, input: opaque })).should.equal(secret);
     });
   });
 
@@ -239,7 +239,7 @@ describe('BitGo Prototype Methods', function () {
 
     it('should fail to split secret with wrong m', async () => {
       await bitgo
-        .splitSecretAsync({
+        .splitSecret({
           seed,
           passwords: ['abc'],
           m: 0,
@@ -249,7 +249,7 @@ describe('BitGo Prototype Methods', function () {
 
     it('should fail to split secret with bad password count', async () => {
       await bitgo
-        .splitSecretAsync({
+        .splitSecret({
           seed,
           passwords: ['abc'],
           m: 2,
@@ -258,11 +258,11 @@ describe('BitGo Prototype Methods', function () {
     });
 
     it('should split and fail to reconstitute secret with bad passwords', async () => {
-      const splitSecret = await bitgo.splitSecretAsync({ seed, passwords: passwords, m: 3 });
+      const splitSecret = await bitgo.splitSecret({ seed, passwords: passwords, m: 3 });
       const shards = _.at(splitSecret.seedShares, [0, 2]);
       const subsetPasswords = _.at(passwords, [0, 3]);
       await bitgo
-        .reconstituteSecretAsync({
+        .reconstituteSecret({
           shards,
           passwords: subsetPasswords,
           xpub,
@@ -312,10 +312,10 @@ describe('BitGo Prototype Methods', function () {
     const passwords = ['mickey', 'mouse', 'donald', 'duck'];
 
     it('should split and reconstitute secret using async methods', async () => {
-      const splitSecret = await bitgo.splitSecretAsync({ seed, passwords: passwords, m: 2 });
+      const splitSecret = await bitgo.splitSecret({ seed, passwords: passwords, m: 2 });
       const shards = _.at(splitSecret.seedShares, [0, 2]);
       const subsetPasswords = _.at(passwords, [0, 2]);
-      const reconstitutedSeed = await bitgo.reconstituteSecretAsync({ shards, passwords: subsetPasswords });
+      const reconstitutedSeed = await bitgo.reconstituteSecret({ shards, passwords: subsetPasswords });
       reconstitutedSeed.seed.should.equal(seed);
       reconstitutedSeed.xpub.should.equal(
         'xpub661MyMwAqRbcEusRjkJ64BXgR8ddYsXbuDJfbRc3eZcZVEa2ygswDiFZQpHFsA5N211YDvi2N898h4KrcXcfsR8PLhjJaPUwCUqg1ptBBHN'
@@ -326,21 +326,21 @@ describe('BitGo Prototype Methods', function () {
     });
 
     it('should split and incorrectly verify secret using async methods', async () => {
-      const splitSecret = await bitgo.splitSecretAsync({ seed, passwords: passwords, m: 3 });
-      const isValid = await bitgo.verifyShardsAsync({ shards: splitSecret.seedShares, passwords, m: 2 } as any);
+      const splitSecret = await bitgo.splitSecret({ seed, passwords: passwords, m: 3 });
+      const isValid = await bitgo.verifyShards({ shards: splitSecret.seedShares, passwords, m: 2 } as any);
       isValid.should.equal(false);
     });
 
     it('should split and verify secret using async methods', async () => {
-      const splitSecret = await bitgo.splitSecretAsync({ seed, passwords: passwords, m: 2 });
-      const isValid = await bitgo.verifyShardsAsync({ shards: splitSecret.seedShares, passwords, m: 2, xpub });
+      const splitSecret = await bitgo.splitSecret({ seed, passwords: passwords, m: 2 });
+      const isValid = await bitgo.verifyShards({ shards: splitSecret.seedShares, passwords, m: 2, xpub });
       isValid.should.equal(true);
     });
 
     it('should split and verify secret with many parts using async methods', async () => {
       const allPws = ['0', '1', '2', '3', '4', '5', '6', '7'];
-      const splitSecret = await bitgo.splitSecretAsync({ seed, passwords: allPws, m: 3 });
-      const isValid = await bitgo.verifyShardsAsync({ shards: splitSecret.seedShares, passwords: allPws, m: 3, xpub });
+      const splitSecret = await bitgo.splitSecret({ seed, passwords: allPws, m: 3 });
+      const isValid = await bitgo.verifyShards({ shards: splitSecret.seedShares, passwords: allPws, m: 3, xpub });
       isValid.should.equal(true);
     });
   });
@@ -426,10 +426,10 @@ describe('BitGo Prototype Methods', function () {
         .reply(200, {
           version: 1,
           keychains: {
-            xpub11: bitgo.encrypt({ input: 'xprv11', password: oldPassword }),
-            xpub12: bitgo.encrypt({ input: 'xprv12', password: oldPassword }),
-            xpub13: bitgo.encrypt({ input: 'xprv13', password: otherPassword }),
-            xpub14: bitgo.encrypt({ input: 'xprv14', password: oldPassword }),
+            xpub11: await bitgo.encrypt({ input: 'xprv11', password: oldPassword }),
+            xpub12: await bitgo.encrypt({ input: 'xprv12', password: oldPassword }),
+            xpub13: await bitgo.encrypt({ input: 'xprv13', password: otherPassword }),
+            xpub14: await bitgo.encrypt({ input: 'xprv14', password: oldPassword }),
           },
         });
 
@@ -440,11 +440,11 @@ describe('BitGo Prototype Methods', function () {
           keys: [
             {
               pub: 'xpub21',
-              encryptedPrv: bitgo.encrypt({ input: 'xprv21', password: oldPassword }),
+              encryptedPrv: await bitgo.encrypt({ input: 'xprv21', password: oldPassword }),
             },
             {
               pub: 'xpub22',
-              encryptedPrv: bitgo.encrypt({ input: 'xprv22', password: otherPassword }),
+              encryptedPrv: await bitgo.encrypt({ input: 'xprv22', password: otherPassword }),
             },
           ],
         });
@@ -495,7 +495,7 @@ describe('BitGo Prototype Methods', function () {
       );
     });
 
-    it('should correctly handle authentication response using handleTokenIssuanceAsync', async () => {
+    it('should correctly handle authentication response using handleTokenIssuance', async () => {
       const responseJson = {
         encryptedToken:
           '{"iv":"EqxVaGTLY4naAYkuBaTz0w==","v":1,"iter":1000,"ks":128,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"4S4dBYcgL4s=","ct":"FgBRJljb8iSYxnAjMi4Qotr7sTKbSmWnlfHZShMSi8YeeE3kiS8bpHNUwAPhY8tgouh3UsEwrJnY+54MvqFD7yd19pG1V4CVssr8"}',
@@ -503,7 +503,7 @@ describe('BitGo Prototype Methods', function () {
         encryptedECDHXprv:
           '{"iv":"QKHEF2GNcwOJwy6+pwANRA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"W2sVFvXDlOw=","ct":"8BTCqS25X37kLzmzQdGenhXH6znn9qEmkszAeS8kLnRdqKSiUiC7bTAVgg/Np5yrV7F7Jyiq+MTpVT76EoUT+PMJzArv0gUQKC2JPB3JuVKeAAVWBQmhWfkEwRfyv4hq4WMxwZtocwBqThvd2pJm9HE51GX4/Wo="}',
       };
-      const parsedAuthenticationData = await bitgo.handleTokenIssuanceAsync(responseJson, 'test@bitgo.com');
+      const parsedAuthenticationData = await bitgo.handleTokenIssuance(responseJson, 'test@bitgo.com');
       parsedAuthenticationData.token.should.equal(token);
       parsedAuthenticationData.ecdhXprv.should.equal(
         'xprv9s21ZrQH143K3si1bKGp7KqgCQv39ttQ7aUwWzVdytgHd8HtDCHyEp14mxfhiT3qHTq4BaSrA7uUkG6AJTfPJBsRu63drvBqYuMZyTxepH7'

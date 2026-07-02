@@ -170,7 +170,7 @@ describe('Decrypt codec tests', function () {
         password: 'mySecurePassword123',
       };
 
-      sinon.stub(BitGo.prototype, 'decryptAsync').resolves(mockDecryptResponse);
+      sinon.stub(BitGo.prototype, 'decrypt').resolves(mockDecryptResponse);
 
       const result = await agent
         .post('/api/v1/decrypt')
@@ -192,7 +192,7 @@ describe('Decrypt codec tests', function () {
         password: 'mySecurePassword123',
       };
 
-      sinon.stub(BitGo.prototype, 'decryptAsync').resolves(mockDecryptResponse);
+      sinon.stub(BitGo.prototype, 'decrypt').resolves(mockDecryptResponse);
 
       const result = await agent
         .post('/api/v2/decrypt')
@@ -215,7 +215,7 @@ describe('Decrypt codec tests', function () {
       };
 
       const mockLongDecrypted = 'b'.repeat(500);
-      sinon.stub(BitGo.prototype, 'decryptAsync').resolves(mockLongDecrypted);
+      sinon.stub(BitGo.prototype, 'decrypt').resolves(mockLongDecrypted);
 
       const result = await agent
         .post('/api/v1/decrypt')
@@ -236,7 +236,7 @@ describe('Decrypt codec tests', function () {
         password: 'p@ssw0rd!#$%^&*()',
       };
 
-      sinon.stub(BitGo.prototype, 'decryptAsync').resolves(mockDecryptResponse);
+      sinon.stub(BitGo.prototype, 'decrypt').resolves(mockDecryptResponse);
 
       const result = await agent
         .post('/api/v2/decrypt')
@@ -269,7 +269,7 @@ describe('Decrypt codec tests', function () {
         password: 'wrongPassword',
       };
 
-      sinon.stub(BitGo.prototype, 'decryptAsync').rejects(new Error("password error - ccm: tag doesn't match"));
+      sinon.stub(BitGo.prototype, 'decrypt').rejects(new Error("password error - ccm: tag doesn't match"));
 
       const result = await agent
         .post('/api/v1/decrypt')
@@ -287,7 +287,7 @@ describe('Decrypt codec tests', function () {
         password: 'wrongPassword',
       };
 
-      sinon.stub(BitGo.prototype, 'decryptAsync').rejects(new Error("password error - ccm: tag doesn't match"));
+      sinon.stub(BitGo.prototype, 'decrypt').rejects(new Error("password error - ccm: tag doesn't match"));
 
       const result = await agent
         .post('/api/v2/decrypt')
@@ -305,7 +305,7 @@ describe('Decrypt codec tests', function () {
         password: '',
       };
 
-      sinon.stub(BitGo.prototype, 'decryptAsync').rejects(new Error('cannot decrypt without password'));
+      sinon.stub(BitGo.prototype, 'decrypt').rejects(new Error('cannot decrypt without password'));
 
       const result = await agent
         .post('/api/v1/decrypt')
@@ -323,7 +323,7 @@ describe('Decrypt codec tests', function () {
         password: 'mySecurePassword123',
       };
 
-      sinon.stub(BitGo.prototype, 'decryptAsync').rejects(new Error('Invalid encrypted input format'));
+      sinon.stub(BitGo.prototype, 'decrypt').rejects(new Error('Invalid encrypted input format'));
 
       const result = await agent
         .post('/api/v2/decrypt')
@@ -341,7 +341,7 @@ describe('Decrypt codec tests', function () {
         password: 'mySecurePassword123',
       };
 
-      sinon.stub(BitGo.prototype, 'decryptAsync').rejects(new Error('Decrypt method not available'));
+      sinon.stub(BitGo.prototype, 'decrypt').rejects(new Error('Decrypt method not available'));
 
       const result = await agent
         .post('/api/v1/decrypt')

@@ -15,13 +15,10 @@ import { EcdhDerivedKeypair, GetSigningKeyApi } from './keychain';
 export interface BitGoBase {
   wallets(): any; // TODO - define v1 wallets type
   coin(coinName: string): IBaseCoin; // need to change it to BaseCoin once it's moved to @bitgo/sdk-core
-  decrypt(params: DecryptOptions): string;
-  decryptAsync(params: DecryptOptions): Promise<string>;
-  decryptKeys(params: DecryptKeysOptions): string[];
-  decryptKeysAsync(params: DecryptKeysOptions): Promise<string[]>;
+  decrypt(params: DecryptOptions): Promise<string>;
+  decryptKeys(params: DecryptKeysOptions): Promise<string[]>;
   del(url: string): BitGoRequest;
-  encrypt(params: EncryptOptions): string;
-  encryptAsync(params: EncryptOptions): Promise<string>;
+  encrypt(params: EncryptOptions): Promise<string>;
   createEncryptionSession(password: string): Promise<IEncryptionSession>;
   readonly env: EnvironmentName;
   fetchConstants(): Promise<any>;

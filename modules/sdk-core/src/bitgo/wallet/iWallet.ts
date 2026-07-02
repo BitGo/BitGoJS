@@ -1170,8 +1170,7 @@ export interface IWallet {
   removeUser(params?: RemoveUserOptions): Promise<any>;
   prebuildTransaction(params?: PrebuildTransactionOptions): Promise<PrebuildTransactionResult>;
   signTransaction(params?: WalletSignTransactionOptions): Promise<SignedTransaction>;
-  getUserPrv(params?: GetUserPrvOptions): string;
-  getUserPrvAsync(params?: GetUserPrvOptions): Promise<string>;
+  getUserPrv(params?: GetUserPrvOptions): Promise<string>;
   prebuildAndSignTransaction(params?: PrebuildAndSignTransactionOptions): Promise<SignedTransaction>;
   signAndSendTxRequest(params?: SignAndSendTxRequestOptions): Promise<SignedTransaction>;
   accelerateTransaction(params?: AccelerateTransactionOptions): Promise<any>;
@@ -1195,8 +1194,7 @@ export interface IWallet {
   toStakingWallet(): IStakingWallet;
   toGoStakingWallet(): IGoStakingWallet;
   toAddressBook(): IAddressBook;
-  downloadKeycard(params?: DownloadKeycardOptions): void;
-  downloadKeycardAsync(params?: DownloadKeycardOptions): Promise<void>;
+  downloadKeycard(params?: DownloadKeycardOptions): Promise<void>;
   buildAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<PrebuildTransactionResult[]>;
   sendAccountConsolidation(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<any>;

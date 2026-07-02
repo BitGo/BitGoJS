@@ -31,7 +31,7 @@ describe('TradingAccount', function () {
       coin: sinon.stub().callsFake((coin: string) => ({
         url: sinon.stub().callsFake((url: string) => `https://app.bitgo-staging.com/api/v2/${coin}${url}`),
       })),
-      decryptAsync: sinon
+      decrypt: sinon
         .stub()
         .callsFake(async ({ input, password }) =>
           input === encryptedPrv && password === walletPassphrase ? decryptedPrv : undefined
@@ -160,7 +160,7 @@ describe('TradingAccount', function () {
         const result = await tradingAccount.signPayload({ payload, walletPassphrase });
 
         mockBaseCoin.keychains().get.calledWith({ id: 'user-key-id' }).should.be.true();
-        mockBitGo.decryptAsync.calledWith({ input: encryptedPrv, password: walletPassphrase }).should.be.true();
+        mockBitGo.decrypt.calledWith({ input: encryptedPrv, password: walletPassphrase }).should.be.true();
         mockBaseCoin.signMessage.calledOnce.should.be.true();
         result.should.equal(Buffer.from(signature, 'hex').toString('hex'));
       });
@@ -184,7 +184,7 @@ describe('TradingAccount', function () {
       it('should use prv directly and not call decrypt when both are provided', async function () {
         await tradingAccount.signPayload({ payload, walletPassphrase, prv: decryptedPrv });
 
-        mockBitGo.decryptAsync.called.should.be.false();
+        mockBitGo.decrypt.called.should.be.false();
         mockBaseCoin.keychains.called.should.be.false();
         const signMessageCall = mockBaseCoin.signMessage.getCall(0);
         signMessageCall.args[0].should.deepEqual({ prv: decryptedPrv });
@@ -195,7 +195,7 @@ describe('TradingAccount', function () {
       it('should sign using the provided prv without calling decrypt', async function () {
         const result = await tradingAccount.signPayload({ payload, prv: decryptedPrv });
 
-        mockBitGo.decryptAsync.called.should.be.false();
+        mockBitGo.decrypt.called.should.be.false();
         mockBaseCoin.keychains.called.should.be.false();
         mockBaseCoin.signMessage.calledOnce.should.be.true();
         result.should.equal(Buffer.from(signature, 'hex').toString('hex'));

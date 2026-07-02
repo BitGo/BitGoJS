@@ -44,7 +44,7 @@ describe('Transaction Spoofability Tests', function () {
           return [200, { txid: 'test-txid-123', status: 'signed' }];
         });
 
-      nockWalletKeys(wallet, keyTriple, 'pass');
+      await nockWalletKeys(wallet, keyTriple, 'pass');
 
       await assert.rejects(
         wallet.consolidateUnspents({ walletPassphrase: 'pass' }),
@@ -92,7 +92,7 @@ describe('Transaction Spoofability Tests', function () {
           return [200, { txid: 'test-txid-123', status: 'signed' }];
         });
 
-      nockWalletKeys(wallet, keyTriple, 'pass');
+      await nockWalletKeys(wallet, keyTriple, 'pass');
 
       await assert.rejects(
         wallet.fanoutUnspents({ walletPassphrase: 'pass' }),

@@ -1,6 +1,5 @@
 import { EncryptionVersion } from '../../../../api';
 import { bigIntToBufferBE, DklsComms, DklsDkg, DklsDsg, DklsTypes, DklsUtils } from '@bitgo/sdk-lib-mpc';
-import * as sjcl from '@bitgo/sjcl';
 import assert from 'assert';
 import { Buffer } from 'buffer';
 import { Hash } from 'crypto';
@@ -405,7 +404,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
             btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(reducedPrivateMaterial))))
           );
         } else {
-          encryptedPrv = await this.bitgo.encryptAsync({
+          encryptedPrv = await this.bitgo.encrypt({
             input: privateMaterialBase64,
             password: passphrase,
             encryptionVersion,
@@ -414,7 +413,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
           // scalar s_i) with the wallet passphrase. The result is stored as reducedEncryptedPrv
           // on the key card QR code and represents a second copy of private key material
           // beyond the server-stored encryptedPrv.
-          reducedEncryptedPrv = await this.bitgo.encryptAsync({
+          reducedEncryptedPrv = await this.bitgo.encrypt({
             // Buffer.toString('base64') can not be used here as it does not work on the browser.
             // The browser deals with a Buffer as Uint8Array, therefore in the browser .toString('base64') just creates a comma seperated string of the array values.
             input: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(reducedPrivateMaterial)))),
@@ -445,7 +444,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       recipientKeychainParams.webauthnInfo = {
         otpDeviceId: webauthnInfo.otpDeviceId,
         prfSalt: webauthnInfo.prfSalt,
-        encryptedPrv: await this.bitgo.encryptAsync({
+        encryptedPrv: await this.bitgo.encrypt({
           input: privateMaterialBase64,
           password: webauthnInfo.passphrase,
           encryptionVersion,
@@ -1223,13 +1222,13 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       }
     }
 
-    const encryptedRound1Session = await this.bitgo.encryptAsync({
+    const encryptedRound1Session = await this.bitgo.encrypt({
       input: sessionData,
       password: walletPassphrase,
       adata: `${EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND1_STATE}:${adata}`,
       encryptionVersion: 1,
     });
-    const encryptedUserGpgPrvKey = await this.bitgo.encryptAsync({
+    const encryptedUserGpgPrvKey = await this.bitgo.encrypt({
       input: userGpgKey.privateKey,
       password: walletPassphrase,
       adata: `${EcdsaMPCv2Utils.DKLS23_SIGNING_USER_GPG_KEY}:${adata}`,
@@ -1284,12 +1283,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       bitgoGpgKey
     );
 
-    let round1Session: string;
-    if (useV2) {
-      round1Session = await this.bitgo.decryptAsync({ input: encryptedRound1Session, password: walletPassphrase });
-    } else {
-      round1Session = this.bitgo.decrypt({ input: encryptedRound1Session, password: walletPassphrase });
-    }
+    const round1Session = await this.bitgo.decrypt({ input: encryptedRound1Session, password: walletPassphrase });
     this.validateAdata(adata, encryptedRound1Session, EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND1_STATE);
 
     const userKeyShare = Buffer.from(prv, 'base64');
@@ -1326,7 +1320,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       }
     }
 
-    const encryptedRound2Session = await this.bitgo.encryptAsync({
+    const encryptedRound2Session = await this.bitgo.encrypt({
       input: sessionData,
       password: walletPassphrase,
       adata: `${EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND2_STATE}:${adata}`,
@@ -1355,8 +1349,6 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     assert(txRequest.transactions && txRequest.transactions.length === 1, 'Unable to find transactions in txRequest');
     const { hashBuffer, derivationPath } = this.getHashStringAndDerivationPath(txRequest);
     const adata = `${hashBuffer.toString('hex')}:${derivationPath}`;
-
-    const useV2 = isV2Envelope(encryptedRound2Session);
 
     const { bitgoGpgKey, userGpgPrvKey } = await this.getBitgoAndUserGpgKeys(
       bitgoPublicGpgKey,
@@ -1389,12 +1381,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       broadcastMessages: [],
     });
 
-    let round2Session: string;
-    if (useV2) {
-      round2Session = await this.bitgo.decryptAsync({ input: encryptedRound2Session, password: walletPassphrase });
-    } else {
-      round2Session = this.bitgo.decrypt({ input: encryptedRound2Session, password: walletPassphrase });
-    }
+    const round2Session = await this.bitgo.decrypt({ input: encryptedRound2Session, password: walletPassphrase });
     this.validateAdata(adata, encryptedRound2Session, EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND2_STATE);
 
     const userKeyShare = Buffer.from(prv, 'base64');
@@ -1414,37 +1401,20 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
 }
 
 /**
- * TODO: deprecate this function in favor of isGG18SigningMaterialAsync once v2 encryption is default
  * Checks if the given key share, when decrypted, contains valid GG18 signing material.
  *
  * @param {string} keyShare - The encrypted key share string.
  * @param {string|undefined} walletPassphrase - The passphrase used to decrypt the key share
- * @returns {boolean} - Returns `true` if the decrypted data contains valid signing material, otherwise `false`.
+ * @param {BitGoBase} bitgo - BitGo instance for v1/v2 auto-detect decrypt
+ * @returns {Promise<boolean>} - Resolves `true` if the decrypted data contains valid signing material, otherwise `false`.
  */
-export function isGG18SigningMaterial(keyShare: string, walletPassphrase: string | undefined): boolean {
-  const prv = sjcl.decrypt(walletPassphrase, keyShare);
-  try {
-    const signingMaterial = JSON.parse(prv);
-    return (
-      signingMaterial.pShare &&
-      signingMaterial.bitgoNShare &&
-      (signingMaterial.userNShare || signingMaterial.backupNShare)
-    );
-  } catch (error) {
-    return false;
-  }
-}
-
-/**
- * Async version of {@link isGG18SigningMaterial} with v1/v2 auto-detect decrypt via `bitgo.decryptAsync`.
- */
-export async function isGG18SigningMaterialAsync(
+export async function isGG18SigningMaterial(
   keyShare: string,
   walletPassphrase: string | undefined,
   bitgo: BitGoBase
 ): Promise<boolean> {
   try {
-    const prv = await bitgo.decryptAsync({ password: walletPassphrase, input: keyShare });
+    const prv = await bitgo.decrypt({ password: walletPassphrase, input: keyShare });
     const signingMaterial = JSON.parse(prv);
     return (
       signingMaterial.pShare &&
@@ -1467,23 +1437,17 @@ export async function isGG18SigningMaterialAsync(
 export async function getMpcV2RecoveryKeyShares(
   encryptedUserKey: string,
   encryptedBackupKey: string,
-  walletPassphrase?: string,
-  bitgo?: BitGoBase
+  walletPassphrase: string | undefined,
+  bitgo: BitGoBase
 ): Promise<{
   userKeyShare: Buffer;
   backupKeyShare: Buffer;
   commonKeyChain: string;
 }> {
-  if (bitgo) {
-    if (await isGG18SigningMaterialAsync(encryptedUserKey, walletPassphrase, bitgo)) {
-      return getMpcV2RecoveryKeySharesFromGG18(encryptedUserKey, encryptedBackupKey, walletPassphrase, bitgo);
-    }
-    return getMpcV2RecoveryKeySharesFromReducedKey(encryptedUserKey, encryptedBackupKey, walletPassphrase, bitgo);
+  if (await isGG18SigningMaterial(encryptedUserKey, walletPassphrase, bitgo)) {
+    return getMpcV2RecoveryKeySharesFromGG18(encryptedUserKey, encryptedBackupKey, walletPassphrase, bitgo);
   }
-  if (isGG18SigningMaterial(encryptedUserKey, walletPassphrase)) {
-    return getMpcV2RecoveryKeySharesFromGG18(encryptedUserKey, encryptedBackupKey, walletPassphrase);
-  }
-  return getMpcV2RecoveryKeySharesFromReducedKey(encryptedUserKey, encryptedBackupKey, walletPassphrase);
+  return getMpcV2RecoveryKeySharesFromReducedKey(encryptedUserKey, encryptedBackupKey, walletPassphrase, bitgo);
 }
 
 /**
@@ -1541,8 +1505,8 @@ export async function signRecoveryMpcV2(
 async function getMpcV2RecoveryKeySharesFromGG18(
   encryptedGG18UserKey: string,
   encryptedGG18BackupKey: string,
-  walletPassphrase?: string,
-  bitgo?: BitGoBase
+  walletPassphrase: string | undefined,
+  bitgo: BitGoBase
 ): Promise<{
   userKeyShare: Buffer;
   backupKeyShare: Buffer;
@@ -1584,28 +1548,21 @@ async function getMpcV2RecoveryKeySharesFromGG18(
 async function getMpcV2RecoveryKeySharesFromReducedKey(
   encryptedMPCv2UserKey: string,
   encryptedMPCv2BackupKey: string,
-  walletPassphrase?: string,
-  bitgo?: BitGoBase
+  walletPassphrase: string | undefined,
+  bitgo: BitGoBase
 ): Promise<{
   userKeyShare: Buffer;
   backupKeyShare: Buffer;
   commonKeyChain: string;
 }> {
-  let userCompressedPrv: Buffer;
-  let bakcupCompressedPrv: Buffer;
-  if (bitgo) {
-    userCompressedPrv = Buffer.from(
-      await bitgo.decryptAsync({ password: walletPassphrase, input: encryptedMPCv2UserKey }),
-      'base64'
-    );
-    bakcupCompressedPrv = Buffer.from(
-      await bitgo.decryptAsync({ password: walletPassphrase, input: encryptedMPCv2BackupKey }),
-      'base64'
-    );
-  } else {
-    userCompressedPrv = Buffer.from(sjcl.decrypt(walletPassphrase, encryptedMPCv2UserKey), 'base64');
-    bakcupCompressedPrv = Buffer.from(sjcl.decrypt(walletPassphrase, encryptedMPCv2BackupKey), 'base64');
-  }
+  const userCompressedPrv = Buffer.from(
+    await bitgo.decrypt({ password: walletPassphrase, input: encryptedMPCv2UserKey }),
+    'base64'
+  );
+  const bakcupCompressedPrv = Buffer.from(
+    await bitgo.decrypt({ password: walletPassphrase, input: encryptedMPCv2BackupKey }),
+    'base64'
+  );
 
   const userPrvJSON: DklsTypes.ReducedKeyShare = DklsTypes.getDecodedReducedKeyShare(userCompressedPrv);
   const backupPrvJSON: DklsTypes.ReducedKeyShare = DklsTypes.getDecodedReducedKeyShare(bakcupCompressedPrv);
@@ -1642,19 +1599,14 @@ async function getMpcV2RecoveryKeySharesFromReducedKey(
 async function getKeyCombinedFromTssKeyShares(
   encryptedGG18UserKey: string,
   encryptedGG18BackupKey: string,
-  walletPassphrase?: string,
-  bitgo?: BitGoBase
+  walletPassphrase: string | undefined,
+  bitgo: BitGoBase
 ): Promise<[ECDSAMethodTypes.KeyCombined, ECDSAMethodTypes.KeyCombined]> {
   let backupPrv;
   let userPrv;
   try {
-    if (bitgo) {
-      backupPrv = await bitgo.decryptAsync({ password: walletPassphrase, input: encryptedGG18BackupKey });
-      userPrv = await bitgo.decryptAsync({ password: walletPassphrase, input: encryptedGG18UserKey });
-    } else {
-      backupPrv = sjcl.decrypt(walletPassphrase, encryptedGG18BackupKey);
-      userPrv = sjcl.decrypt(walletPassphrase, encryptedGG18UserKey);
-    }
+    backupPrv = await bitgo.decrypt({ password: walletPassphrase, input: encryptedGG18BackupKey });
+    userPrv = await bitgo.decrypt({ password: walletPassphrase, input: encryptedGG18UserKey });
   } catch (e) {
     throw new Error(`Error decrypting backup keychain: ${e.message}`);
   }
