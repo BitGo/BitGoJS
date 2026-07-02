@@ -2748,8 +2748,8 @@ class TempoTestnet extends Testnet implements EthereumNetwork {
 class Boba extends Mainnet implements EthereumNetwork {
   name = 'Boba';
   family = CoinFamily.BOBAETH;
-  explorerUrl = 'https://bobascan.com/blockchain/transactions';
-  accountExplorerUrl = 'https://bobascan.com/blockchain/accounts';
+  explorerUrl = 'https://bobascan.com/tx/';
+  accountExplorerUrl = 'https://bobascan.com/address/';
   chainId = 288;
   nativeCoinOperationHashPrefix = '288';
   tokenOperationHashPrefix = '288-ERC20';
@@ -2758,8 +2758,8 @@ class Boba extends Mainnet implements EthereumNetwork {
 class BobaTestnet extends Testnet implements EthereumNetwork {
   name = 'Boba Testnet';
   family = CoinFamily.BOBAETH;
-  explorerUrl = 'https://testnet.bobascan.com/blockchain/transactions';
-  accountExplorerUrl = 'https://testnet.bobascan.com/blockchain/accounts';
+  explorerUrl = 'https://testnet.bobascan.com/tx/';
+  accountExplorerUrl = 'https://testnet.bobascan.com/address/';
   chainId = 28882;
   nativeCoinOperationHashPrefix = '28882';
   tokenOperationHashPrefix = '28882-ERC20';
