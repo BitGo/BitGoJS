@@ -133,7 +133,9 @@
     "@babel/plugin-transform-modules-systemjs": "7.29.4",
     "protobufjs": "7.5.8",
     "@protobufjs/fetch": "1.1.0",
-    "@protobufjs/inquire": "1.1.0"
+    "@protobufjs/inquire": "1.1.0",
+    "@iota/iota-sdk":"1.6.1",
+    "graphql":"16.14.2"
   },
   "workspaces": [
     "modules/*"
@@ -174,9 +176,13 @@
   },
   "dependencies": {
     "axios": "1.16.1",
+    "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10",
+    "form-data": "^4.0.4",
+    "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
+    "request": "npm:@cypress/request@3.0.9",
+    "sjcl": "npm:@bitgo/sjcl@1.0.1",
     "terser": "^5.14.2",
-    "tmp": "^0.2.3",
-    "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10"
+    "tmp": "^0.2.3"
   },
   "packageManager": "yarn@1.22.22"
 }

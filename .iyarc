@@ -115,3 +115,12 @@ GHSA-wcpc-wj8m-hjx6
 # - The prefix/postfix/template args are all hard-coded string constants in calling code,
 #   not user-supplied — the type-confusion vector does not apply
 GHSA-7c78-jf6q-g5cm
+
+# Excluded because:
+# - sigstore: certificateOIDs verification constraints silently dropped and never enforced
+# - Transitive dependency via yeoman-generator > pacote@15.x > sigstore@^1.3.0 (resolves to 1.9.0)
+# - yeoman-generator is dev-time only (yarn sdk-coin:new); no production runtime exposure
+# - pacote 15.x (the last version compatible with yeoman-generator 5.x CJS) pins sigstore@^1.x;
+#   sigstore 4.x has a breaking API and cannot be forced via resolutions without breaking pacote
+# - yeoman-generator 6.x+ drops pacote entirely but is ESM-only, incompatible with our CJS generator
+GHSA-52v5-jr5w-gjxr
