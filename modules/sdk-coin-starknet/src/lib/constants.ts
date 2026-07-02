@@ -42,3 +42,10 @@ export function defaultResourceBounds(): StarknetResourceBounds {
     l1_data_gas: { max_amount: '0x3e8', max_price_per_unit: '0x2540be400' },
   };
 }
+
+// Fixed gas amounts per tx-type. EthAccount secp256k1 __validate__ costs ~24M L2 gas; 40M ≈ 1.6x buffer.
+export const RECOVERY_L2_GAS_MAX_AMOUNT = '0x2625a00'; // 40,000,000
+export const RECOVERY_L1_DATA_GAS_MAX_AMOUNT = '0xbb8'; // 3,000
+export const RECOVERY_GAS_PRICE_BUFFER_MULTIPLIER = 2n;
+// Floor for the committed L2 price. The Starknet sequencer currently requires ≥ ~29 GFri;
+export const RECOVERY_L2_GAS_MIN_PRICE_PER_UNIT = 50_000_000_000n;
