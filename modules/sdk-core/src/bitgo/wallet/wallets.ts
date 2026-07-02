@@ -13,7 +13,7 @@ import { IBaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from '..
 import { BitGoBase } from '../bitgoBase';
 import { getSharedSecret } from '../ecdh';
 import { AddKeychainOptions, Keychain, KeyIndices } from '../keychain';
-import { decodeOrElse, promiseProps, RequestTracer } from '../utils';
+import { decodeOrElse, ECDSAUtils, EDDSAUtils, promiseProps, RequestTracer } from '../utils';
 import {
   AcceptShareOptions,
   AcceptShareOptionsRequest,
@@ -735,13 +735,26 @@ export class Wallets implements IWallets {
   async generateWalletWithExternalSigner(
     params: GenerateWalletWithExternalSignerOptions
   ): Promise<WalletWithKeychains> {
-    if (!_.isFunction(params.createKeychainCallback)) {
-      throw new Error('missing required function parameter createKeychainCallback');
+    const hasOnchainCallback = _.isFunction(params.createKeychainCallback);
+    const hasMpcCallbacks = !!(params.ecdsaMPCv2Callbacks || params.eddsaCallbacks);
+
+    if (hasOnchainCallback && hasMpcCallbacks) {
+      throw new Error('createKeychainCallback cannot be used together with MPC TSS key generation callbacks');
     }
 
-    const multisigType = params.multisigType ?? this.baseCoin.getDefaultMultisigType();
+    const multisigType =
+      params.multisigType ?? (hasOnchainCallback ? 'onchain' : this.baseCoin.getDefaultMultisigType());
+
+    if (multisigType === 'tss') {
+      return this.generateMpcWalletWithExternalSigner(params);
+    }
+
     if (multisigType !== 'onchain') {
       throw new Error('external signer wallet generation is only supported for onchain multisig wallets');
+    }
+
+    if (!_.isFunction(params.createKeychainCallback)) {
+      throw new Error('missing required function parameter createKeychainCallback');
     }
 
     // these belong to the passphrase-based path and are incompatible with createKeychainCallback
@@ -1712,6 +1725,117 @@ export class Wallets implements IWallets {
    */
   async getTotalBalances(params: Record<string, never> = {}): Promise<any> {
     return await this.bitgo.get(this.baseCoin.url('/wallet/balances')).result();
+  }
+
+  /**
+   * Generates a TSS wallet using external signer callbacks for key generation.
+   * @private
+   */
+  private async generateMpcWalletWithExternalSigner(
+    params: GenerateWalletWithExternalSignerOptions
+  ): Promise<WalletWithKeychains> {
+    const { label, enterprise, type = 'hot' } = params;
+
+    if (!this.baseCoin.supportsTss()) {
+      throw new Error(`coin ${this.baseCoin.getFamily()} does not support TSS at this time`);
+    }
+
+    if (!enterprise) {
+      throw new Error('enterprise is required for TSS wallet generation with external signer');
+    }
+
+    if (
+      this.baseCoin.isEVM() &&
+      params.walletVersion !== undefined &&
+      !(params.walletVersion === 5 || params.walletVersion === 6)
+    ) {
+      throw new Error('EVM TSS wallets are only supported for wallet version 5 and 6');
+    }
+
+    if (type === 'custodial') {
+      throw new Error('custodial TSS wallets are not supported for external signer wallet generation');
+    }
+
+    if (!_.isUndefined(params.passcodeEncryptionCode)) {
+      throw new Error('passcodeEncryptionCode is not supported for TSS external signer wallet generation');
+    }
+
+    if (!_.isUndefined(params.webauthnInfo)) {
+      throw new Error('webauthnInfo is not supported for TSS external signer wallet generation');
+    }
+
+    const passphrasePathParams = ['passphrase', 'userKey', 'backupXpub', 'backupXpubProvider'] as const;
+    for (const key of passphrasePathParams) {
+      if (!_.isUndefined(params[key])) {
+        throw new Error(`${key} cannot be used with TSS external signer wallet generation`);
+      }
+    }
+
+    const mpcAlgorithm = this.baseCoin.getMPCAlgorithm();
+    let walletVersion: number | undefined = params.walletVersion;
+    let keychains: KeychainsTriplet;
+
+    if (mpcAlgorithm === 'ecdsa') {
+      if (!params.ecdsaMPCv2Callbacks) {
+        throw new Error('ecdsaMPCv2Callbacks is required for ECDSA TSS wallet generation with external signer');
+      }
+      const tssSettings: TssSettings = await this.bitgo
+        .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
+        .result();
+      const multisigTypeVersion =
+        tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
+      walletVersion = this.determineEcdsaMpcWalletVersion(walletVersion, multisigTypeVersion);
+
+      if (walletVersion === 3) {
+        throw new Error('ECDSA MPCv1 (wallet version 3) is not supported for external signer wallet generation');
+      }
+
+      if (
+        (walletVersion === 5 || walletVersion === 6) &&
+        !this.baseCoin.getConfig().features.includes(CoinFeature.MPCV2)
+      ) {
+        throw new Error(`coin ${this.baseCoin.getFamily()} does not support TSS MPCv2 at this time`);
+      }
+
+      keychains = await new ECDSAUtils.EcdsaMPCv2Utils(this.bitgo, this.baseCoin).createKeychainsWithExternalSigner({
+        enterprise,
+        callbacks: params.ecdsaMPCv2Callbacks,
+      });
+    } else {
+      if (!params.eddsaCallbacks) {
+        throw new Error('eddsaCallbacks is required for EdDSA TSS wallet generation with external signer');
+      }
+      keychains = await new EDDSAUtils.default(this.bitgo, this.baseCoin).createKeychainsWithExternalSigner({
+        enterprise,
+        callbacks: params.eddsaCallbacks,
+      });
+    }
+
+    const { userKeychain, backupKeychain, bitgoKeychain } = keychains;
+    const walletParams: SupplementGenerateWalletOptions = {
+      label,
+      m: 2,
+      n: 3,
+      keys: [userKeychain.id, backupKeychain.id, bitgoKeychain.id],
+      type,
+      multisigType: 'tss',
+      enterprise,
+      walletVersion,
+    };
+
+    const reqId = new RequestTracer();
+    this.bitgo.setRequestTracer(reqId);
+
+    const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams, keychains);
+    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(finalWalletParams).result();
+
+    return {
+      wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
+      userKeychain,
+      backupKeychain,
+      bitgoKeychain,
+      responseType: 'WalletWithKeychains',
+    };
   }
 
   /**
