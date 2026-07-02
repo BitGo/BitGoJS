@@ -1115,7 +1115,7 @@ export const botTokens = [
     6,
     '0x28b3a8fb53b741a8fd78c0fb9a6b2393d896a43d',
     'eth:spusdc' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', ['receipt-token' as CoinFeature]),
+    getTokenFeatures('eth', ['receipt-token' as CoinFeature, 'receipt-token-approximate-price' as CoinFeature]),
     undefined,
     undefined,
     undefined
@@ -1127,7 +1127,7 @@ export const botTokens = [
     6,
     '0xe2e7a17dff93280dec073c995595155283e3c372',
     'eth:spusdt' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', ['receipt-token' as CoinFeature]),
+    getTokenFeatures('eth', ['receipt-token' as CoinFeature, 'receipt-token-approximate-price' as CoinFeature]),
     undefined,
     undefined,
     undefined
@@ -1139,7 +1139,7 @@ export const botTokens = [
     18,
     '0xfe6eb3b609a7c8352a241f7f3a21cea4e9209b8f',
     'eth:speth' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', ['receipt-token' as CoinFeature]),
+    getTokenFeatures('eth', ['receipt-token' as CoinFeature, 'receipt-token-approximate-price' as CoinFeature]),
     undefined,
     undefined,
     undefined
@@ -1151,7 +1151,7 @@ export const botTokens = [
     6,
     '0x80128dbb9f07b93dde62a6daeadb69ed14a7d354',
     'eth:sppyusd' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', ['receipt-token' as CoinFeature]),
+    getTokenFeatures('eth', ['receipt-token' as CoinFeature, 'receipt-token-approximate-price' as CoinFeature]),
     undefined,
     undefined,
     undefined
@@ -1163,7 +1163,7 @@ export const botTokens = [
     18,
     '0x12b54025c112aa61face2cdb7118740875a566e9',
     'eth:spwsteth' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', ['receipt-token' as CoinFeature]),
+    getTokenFeatures('eth', ['receipt-token' as CoinFeature, 'receipt-token-approximate-price' as CoinFeature]),
     undefined,
     undefined,
     undefined
@@ -1175,7 +1175,7 @@ export const botTokens = [
     18,
     '0x59cd1c87501baa753d0b5b5ab5d8416a45cd71db',
     'eth:spweth' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', ['receipt-token' as CoinFeature]),
+    getTokenFeatures('eth', ['receipt-token' as CoinFeature, 'receipt-token-approximate-price' as CoinFeature]),
     undefined,
     undefined,
     undefined
@@ -1187,7 +1187,7 @@ export const botTokens = [
     8,
     '0x4197ba364ae6698015ae5c1468f54087602715b2',
     'eth:spwbtc' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', ['receipt-token' as CoinFeature]),
+    getTokenFeatures('eth', ['receipt-token' as CoinFeature, 'receipt-token-approximate-price' as CoinFeature]),
     undefined,
     undefined,
     undefined
@@ -1199,7 +1199,7 @@ export const botTokens = [
     8,
     '0xb3973d459df38ae57797811f2a1fd061da1bc123',
     'eth:spcbbtc' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', ['receipt-token' as CoinFeature]),
+    getTokenFeatures('eth', ['receipt-token' as CoinFeature, 'receipt-token-approximate-price' as CoinFeature]),
     undefined,
     undefined,
     undefined
@@ -1211,7 +1211,7 @@ export const botTokens = [
     6,
     '0x80ac24aa929eaf5013f6436cda2a7ba190f5cc0b',
     'eth:syrupusdc' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', ['rebase-token' as CoinFeature, 'receipt-token' as CoinFeature]),
+    getTokenFeatures('eth', ['receipt-token' as CoinFeature, 'receipt-token-approximate-price' as CoinFeature]),
     undefined,
     undefined,
     undefined
@@ -1223,7 +1223,7 @@ export const botTokens = [
     6,
     '0x356b8d89c1e1239cbbb9de4815c39a1474d5ba7d',
     'eth:syrupusdt' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', ['rebase-token' as CoinFeature, 'receipt-token' as CoinFeature]),
+    getTokenFeatures('eth', ['receipt-token' as CoinFeature, 'receipt-token-approximate-price' as CoinFeature]),
     undefined,
     undefined,
     undefined
@@ -1235,7 +1235,7 @@ export const botTokens = [
     6,
     '0xe7df13b8e3d6740fe17cbe928c7334243d86c92f',
     'eth:sparkusdt' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', ['receipt-token' as CoinFeature]),
+    getTokenFeatures('eth', ['receipt-token' as CoinFeature, 'receipt-token-approximate-price' as CoinFeature]),
     undefined,
     undefined,
     undefined
@@ -1247,7 +1247,7 @@ export const botTokens = [
     6,
     '0x779224df1c756b4edd899854f32a53e8c2b2ce5d',
     'eth:sparkpyusd' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', ['receipt-token' as CoinFeature]),
+    getTokenFeatures('eth', ['receipt-token' as CoinFeature, 'receipt-token-approximate-price' as CoinFeature]),
     undefined,
     undefined,
     undefined
@@ -1259,7 +1259,7 @@ export const botTokens = [
     6,
     '0x377c3bd93f2a2984e1e7be6a5c22c525ed4a4815',
     'eth:sparkusdc' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', ['receipt-token' as CoinFeature]),
+    getTokenFeatures('eth', ['receipt-token' as CoinFeature, 'receipt-token-approximate-price' as CoinFeature]),
     undefined,
     undefined,
     undefined
