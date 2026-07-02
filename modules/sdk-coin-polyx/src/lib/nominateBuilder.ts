@@ -8,6 +8,8 @@ import { NominateTransactionSchema } from './txnSchema';
 import utils from './utils';
 import { NominateArgs } from './iface';
 
+// [CLEANUP-V8-OLD] v7 path — v7 metadata material. Retained as the Flipt rollback path alongside
+// V8NominateBuilder (same logic, v8 material).
 export class NominateBuilder extends PolyxBaseBuilder {
   protected _validators: string[] = [];
 

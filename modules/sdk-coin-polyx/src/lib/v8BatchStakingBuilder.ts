@@ -3,17 +3,13 @@ import { PolyxBaseBuilder } from './baseBuilder';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { methods } from '@substrate/txwrapper-polkadot';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { BatchTransactionSchema } from './txnSchema';
+import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { V8BatchTransactionSchema } from './txnSchema';
 import utils from './utils';
-import { BatchArgs, BondArgs, NominateArgs } from './iface';
+import { BatchArgs, NominateArgs, V8BondArgs } from './iface';
 import BigNumber from 'bignumber.js';
 
 // Type definitions for decoded transaction formats
-interface DecodedController {
-  id: string;
-}
-
 interface DecodedPayee {
   staked?: null;
   stash?: null;
@@ -21,17 +17,23 @@ interface DecodedPayee {
   account?: string;
 }
 
-type ControllerValue = string | DecodedController;
 type PayeeValue = string | DecodedPayee;
 type AmountValue = string | number;
 
-// [CLEANUP-V8-OLD] v7 path — builds `utility.batchAll([bond, nominate])` with the 3-arg
-// `bond(controller, value, payee)` against v7 metadata. Retained as the Flipt rollback path
-// alongside V8BatchStakingBuilder (v8 2-arg `bond(value, payee)`).
-export class BatchStakingBuilder extends PolyxBaseBuilder {
+/**
+ * Polymesh v8 batch staking builder.
+ *
+ * Polymesh v8 changed `staking.bond` from `bond(controller, value, payee)` to `bond(value, payee)`
+ * — the stash account is its own controller, so no `controller` leg is encoded. This builder
+ * constructs `utility.batchAll([bond, nominate])` with the 2-arg bond call against v8 chain
+ * metadata (v8 specVersion / txVersion).
+ *
+ * Behaviour is otherwise identical to the v7 {@link BatchStakingBuilder}, which is retained as the
+ * `[CLEANUP-V8-OLD]` rollback path.
+ */
+export class V8BatchStakingBuilder extends PolyxBaseBuilder {
   // For bond operation
   protected _amount: string;
-  protected _controller: string;
   protected _payee: string | { Account: string };
 
   // For nominate operation
@@ -39,7 +41,7 @@ export class BatchStakingBuilder extends PolyxBaseBuilder {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this.material(utils.getMaterial(_coinConfig.network.type));
+    this.material(utils.getV8Material(_coinConfig.network.type));
   }
 
   protected get transactionType(): TransactionType {
@@ -61,13 +63,12 @@ export class BatchStakingBuilder extends PolyxBaseBuilder {
     // Create the individual calls
     const calls: string[] = [];
 
-    // Add bond call
+    // Add bond call — v8 bond takes only { value, payee } (no controller)
     const bondCall = methods.staking.bond(
       {
-        controller: this._controller || this._sender,
         value: this._amount,
         payee: this._payee || 'Staked',
-      },
+      } as unknown as { controller: string; value: string; payee: string | { Account: string } },
       baseTxInfo.baseTxInfo,
       baseTxInfo.options
     );
@@ -110,30 +111,10 @@ export class BatchStakingBuilder extends PolyxBaseBuilder {
   }
 
   /**
-   * Set the controller account for bond
-   */
-  controller(controller: BaseAddress): this {
-    this.validateAddress(controller);
-    this._controller = controller.address;
-    return this;
-  }
-
-  /**
-   * Get the controller address
-   */
-  getController(): string {
-    return this._controller;
-  }
-
-  /**
    * Set the rewards destination for bond ('Staked', 'Stash','Controller', or { Account: string })
    */
   payee(payee: string | { Account: string }): this {
-    if (typeof payee === 'object' && payee.Account) {
-      this._payee = payee;
-    } else {
-      this._payee = payee;
-    }
+    this._payee = payee;
     return this;
   }
 
@@ -194,7 +175,7 @@ export class BatchStakingBuilder extends PolyxBaseBuilder {
       }
 
       // Validate bond arguments
-      const bondArgs = calls[0].args as unknown as BondArgs;
+      const bondArgs = calls[0].args as unknown as V8BondArgs;
       this.validateBondArgs(bondArgs);
 
       // Validate nominate arguments
@@ -206,25 +187,9 @@ export class BatchStakingBuilder extends PolyxBaseBuilder {
   }
 
   /**
-   * Validate bond arguments
+   * Normalize a decoded payee value into the construction-side shape.
    */
-  private validateBondArgs(args: BondArgs): void {
-    // Handle both string and object formats for controller
-    const controllerValue = args.controller as ControllerValue;
-    const controllerAddress = typeof controllerValue === 'string' ? controllerValue : controllerValue.id;
-
-    if (!utils.isValidAddress(controllerAddress)) {
-      throw new InvalidTransactionError(
-        `Invalid bond args: controller address ${controllerAddress} is not a well-formed address`
-      );
-    }
-
-    // Handle both string and number formats for value
-    const amountValue = args.value as AmountValue;
-    const valueString = typeof amountValue === 'string' ? amountValue : amountValue.toString();
-
-    // Handle different payee formats
-    const payeeValue = args.payee as PayeeValue;
+  private normalizePayee(payeeValue: PayeeValue): string | { Account: string } {
     let normalizedPayee: string | { Account: string } = payeeValue as string;
     if (typeof payeeValue === 'object' && payeeValue !== null) {
       const decodedPayee = payeeValue as DecodedPayee;
@@ -238,10 +203,21 @@ export class BatchStakingBuilder extends PolyxBaseBuilder {
         normalizedPayee = { Account: decodedPayee.account };
       }
     }
+    return normalizedPayee;
+  }
 
-    const validationResult = BatchTransactionSchema.validateBond({
+  /**
+   * Validate v8 bond arguments (no controller)
+   */
+  private validateBondArgs(args: V8BondArgs): void {
+    // Handle both string and number formats for value
+    const amountValue = args.value as AmountValue;
+    const valueString = typeof amountValue === 'string' ? amountValue : amountValue.toString();
+
+    const normalizedPayee = this.normalizePayee(args.payee as PayeeValue);
+
+    const validationResult = V8BatchTransactionSchema.validateBond({
       value: valueString,
-      controller: controllerAddress,
       payee: normalizedPayee,
     });
 
@@ -264,7 +240,7 @@ export class BatchStakingBuilder extends PolyxBaseBuilder {
       throw new InvalidTransactionError(`Invalid target format: ${JSON.stringify(target)}`);
     });
 
-    const validationResult = BatchTransactionSchema.validateNominate({
+    const validationResult = V8BatchTransactionSchema.validateNominate({
       validators: targetAddresses,
     });
 
@@ -288,33 +264,14 @@ export class BatchStakingBuilder extends PolyxBaseBuilder {
       for (const call of txMethod.calls) {
         const callMethod = utils.decodeMethodName(call, this._registry);
         if (callMethod === 'bond') {
-          const bondArgs = call.args as unknown as BondArgs;
+          const bondArgs = call.args as unknown as V8BondArgs;
           // Handle both string and number formats for value
           const amountValue = bondArgs.value as AmountValue;
           const valueString = typeof amountValue === 'string' ? amountValue : amountValue.toString();
           this.amount(valueString);
 
-          // Handle both string and object formats for controller
-          const controllerValue = bondArgs.controller as ControllerValue;
-          const controllerAddress = typeof controllerValue === 'string' ? controllerValue : controllerValue.id;
-          this.controller({ address: controllerAddress });
-
           // Handle different payee formats
-          const payeeValue = bondArgs.payee as PayeeValue;
-          let normalizedPayee: string | { Account: string } = payeeValue as string;
-          if (typeof payeeValue === 'object' && payeeValue !== null) {
-            const decodedPayee = payeeValue as DecodedPayee;
-            if (decodedPayee.staked !== undefined) {
-              normalizedPayee = 'Staked';
-            } else if (decodedPayee.stash !== undefined) {
-              normalizedPayee = 'Stash';
-            } else if (decodedPayee.controller !== undefined) {
-              normalizedPayee = 'Controller';
-            } else if (decodedPayee.account) {
-              normalizedPayee = { Account: decodedPayee.account };
-            }
-          }
-          this.payee(normalizedPayee);
+          this.payee(this.normalizePayee(bondArgs.payee as PayeeValue));
         } else if (callMethod === 'nominate') {
           const nominateArgs = call.args as unknown as NominateArgs;
 
@@ -350,9 +307,8 @@ export class BatchStakingBuilder extends PolyxBaseBuilder {
       throw new InvalidTransactionError('Batch transaction must include both bond and nominate operations');
     }
 
-    const validationResult = BatchTransactionSchema.validate({
+    const validationResult = V8BatchTransactionSchema.validate({
       amount: this._amount,
-      controller: this._controller,
       payee: this._payee,
       validators: this._validators,
     });
@@ -366,7 +322,7 @@ export class BatchStakingBuilder extends PolyxBaseBuilder {
     this.validateFields();
   }
 
-  public testValidateBondArgs(args: BondArgs): void {
+  public testValidateBondArgs(args: V8BondArgs): void {
     return this.validateBondArgs(args);
   }
 

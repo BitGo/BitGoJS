@@ -31,11 +31,17 @@ export { V8RegisterDidBuilder } from './v8RegisterDidBuilder';
 export { V8TokenTransferBuilder } from './v8TokenTransferBuilder';
 export { V8HexTokenTransferBuilder } from './v8HexTokenTransferBuilder';
 export { V8PreApproveAssetBuilder } from './v8PreApproveAssetBuilder';
+export { V8BatchStakingBuilder } from './v8BatchStakingBuilder';
+export { V8BondExtraBuilder } from './v8BondExtraBuilder';
+export { V8UnbondBuilder } from './v8UnbondBuilder';
+export { V8BatchUnstakingBuilder } from './v8BatchUnstakingBuilder';
+export { V8WithdrawUnbondedBuilder } from './v8WithdrawUnbondedBuilder';
+export { V8NominateBuilder } from './v8NominateBuilder';
 import polyxUtils from './utils';
 export { Utils, default as utils } from './utils';
 export * from './iface';
 
-export { BondArgs, NominateArgs, BatchCallObject, BatchArgs } from './iface';
+export { BondArgs, V8BondArgs, NominateArgs, BatchCallObject, BatchArgs } from './iface';
 
 /**
  * Checks if a string is a valid Polymesh DID (Decentralized Identifier)

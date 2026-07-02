@@ -136,6 +136,37 @@ export const stakingTx = {
   },
 };
 
+/** v8 testnet sandbox — block 24829135, stakeV8.cjs --batch */
+export const stakingTxV8 = {
+  sandbox: {
+    stash: '5CLYvxwx4PUS678MNuhNJ9EfpUU9utrYCz9WVxovac4u9AYD',
+    validator: '5C7kNpSvVr22Z1X6gVAUjfahSJfSpvw4DHNoY7uUHpLfEJZR',
+    bondAmount: '10000000',
+    payee: 'Staked',
+    specVersion: 8000000,
+    transactionVersion: 8,
+    blockHeight: 24829135,
+    blockHash: '0xfe64f0f0be51fc791b12dcf81d3ad82a682719f498639dde956baaf473a57e8c',
+    referenceBlock: '0x52ea71e4fec68c49f8e6511c7209bc6ab5411547308a37648d126f9e0041a420',
+    nonce: 189,
+    firstValid: 24829132,
+    bondedEvent: ['5CLYvxwx4PUS678MNuhNJ9EfpUU9utrYCz9WVxovac4u9AYD', 10000000],
+  },
+  batch: {
+    bondAndNominate: {
+      // full utility.batchAll method hex from sandbox (46 bytes)
+      callHex: '0x2902081100025a62020011050400025237fdbea82f075296416fa096d3b9807c4f8763d7c3474fdd747007379811',
+      // full ExtrinsicPayload.toU8a({ method: true }) — 125 bytes
+      extrinsicPayloadHex:
+        '0x2902081100025a62020011050400025237fdbea82f075296416fa096d3b9807c4f8763d7c3474fdd747007379811c500f502000000127a00080000002ace05e703aa50b48c0ccccfc8b424f7aab9a1e2c424ed12e45d20b1e8ffd0d652ea71e4fec68c49f8e6511c7209bc6ab5411547308a37648d126f9e0041a42000',
+      payloadLength: 125,
+      specVersionLE: '00127a00',
+      txVersionLE: '08000000',
+      tailAfterRefBlock: '0000',
+    },
+  },
+};
+
 export const nominateTx = {
   unsigned:
     '0x11050800025237fdbea82f075296416fa096d3b9807c4f8763d7c3474fdd7470073798110060c819a103b56679947c39924a7cc616cb78e84da6c5303ebe1521b3feb62813',

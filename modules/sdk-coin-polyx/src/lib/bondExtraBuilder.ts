@@ -9,6 +9,8 @@ import utils from './utils';
 import { BondExtraArgs } from './iface';
 import BigNumber from 'bignumber.js';
 
+// [CLEANUP-V8-OLD] v7 path — v7 metadata material. Retained as the Flipt rollback path alongside
+// V8BondExtraBuilder (same logic, v8 material).
 export class BondExtraBuilder extends PolyxBaseBuilder {
   protected _amount: string;
 
