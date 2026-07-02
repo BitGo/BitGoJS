@@ -343,10 +343,13 @@ const usdtAddress = await wallet.createAddress({
    OFC_WALLET_ID=your_wallet_id npx tsx go-account-whitelist-list.ts
 
    # Add an address to the whitelist
-   OFC_WALLET_ID=your_wallet_id WHITELIST_ADDRESS=your_address WHITELIST_OPERATION=add npx tsx go-account-whitelist-update.ts
+   OFC_WALLET_ID=your_wallet_id WHITELIST_ITEM=your_address WHITELIST_OPERATION=add npx tsx go-account-whitelist-update.ts
 
-   # Remove an address from the whitelist
-   OFC_WALLET_ID=your_wallet_id WHITELIST_ADDRESS=your_address WHITELIST_OPERATION=remove npx tsx go-account-whitelist-update.ts
+   # Add a wallet ID to the whitelist
+   OFC_WALLET_ID=your_wallet_id WHITELIST_ITEM=your_target_wallet_id WHITELIST_ITEM_TYPE=walletId WHITELIST_OPERATION=add npx tsx go-account-whitelist-update.ts
+
+   # Remove an entry from the whitelist
+   OFC_WALLET_ID=your_wallet_id WHITELIST_ITEM=your_address WHITELIST_OPERATION=remove npx tsx go-account-whitelist-update.ts
    ```
 
 ## Supported Tokens
