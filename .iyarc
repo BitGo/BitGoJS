@@ -67,6 +67,9 @@ GHSA-9ppj-qmqm-q256
 # - No patched version of sjcl exists upstream (first_patched_version: null)
 GHSA-2w8x-224x-785m
 
+
+
+
 # Excluded because:
 # - ws: Memory exhaustion DoS by sending many tiny fragments/data chunks to exhaust server memory
 # - Transitive dependency via @cosmjs/socket, @ethersproject/providers, @polkadot/rpc-provider,
@@ -77,25 +80,10 @@ GHSA-2w8x-224x-785m
 GHSA-96hv-2xvq-fx4p
 
 # Excluded because:
-# - form-data: CRLF injection via unescaped multipart field names and filenames
-# - Transitive dependency via superagent (abstract-cosmos, express, supertest) and @aptos-labs/ts-sdk
-# - The injection requires attacker-controlled field names or filenames in multipart requests
-# - All form-data field names and filenames in our codebase are code-controlled constants,
-#   not derived from user input — no untrusted data flows into form field names or filenames
-GHSA-hmw2-7cc7-3qxx
-
-# Excluded because:
-# - protobufjs: DoS through unbounded Any expansion during JSON conversion (parseAny recursion)
-# - Transitive dependency via @cosmjs (abstract-cosmos, babylonlabs-io-btc-staking-ts) and
-#   @hashgraph/proto, @hashgraph/sdk (sdk-coin-hbar) — all requiring protobufjs <=7.5.x
-# - Input to protobuf decoding comes from trusted blockchain RPC responses, not arbitrary user data
-# - Patched version (7.6.1) requires upstream @cosmjs and @hashgraph dependency updates
-GHSA-wcpc-wj8m-hjx6
-
-# Excluded because:
 # - tmp: path traversal via type-confusion in _assertPath (non-string prefix/postfix/template)
 # - Transitive dependency via cypress (web-demo), karma (bitgo module), and lerna/nx (dev tooling)
 # - All usages are dev-time only; tmp is never used in production or runtime code
 # - The prefix/postfix/template args are all hard-coded string constants in calling code,
 #   not user-supplied — the type-confusion vector does not apply
 GHSA-7c78-jf6q-g5cm
+
