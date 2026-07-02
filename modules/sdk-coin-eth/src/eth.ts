@@ -475,7 +475,8 @@ export class Eth extends AbstractEthLikeNewCoins {
       throw new Error('missing prv parameter to sign transaction');
     }
 
-    params.recipients = txPrebuild.recipients || params.recipients;
+    params.recipients =
+      txPrebuild.recipients || (txPrebuild.txInfo?.recipients as Recipient[] | undefined) || params.recipients;
 
     // if no recipients in either params or txPrebuild, then throw an error
     if (!params.recipients || !Array.isArray(params.recipients)) {
@@ -494,7 +495,7 @@ export class Eth extends AbstractEthLikeNewCoins {
 
     const secondsSinceEpoch = Math.floor(new Date().getTime() / 1000);
     const expireTime = params.expireTime || secondsSinceEpoch + EXPIRETIME_DEFAULT;
-    const sequenceId = txPrebuild.nextContractSequenceId;
+    const sequenceId = txPrebuild.nextContractSequenceId ?? txPrebuild.txInfo?.nextContractSequenceId;
 
     if (_.isUndefined(sequenceId)) {
       throw new Error('transaction prebuild missing required property nextContractSequenceId');
@@ -504,8 +505,8 @@ export class Eth extends AbstractEthLikeNewCoins {
     const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
     const txParams = {
-      eip1559: params.txPrebuild.eip1559,
-      isBatch: params.txPrebuild.isBatch,
+      eip1559: params.txPrebuild.eip1559 ?? params.txPrebuild.txInfo?.eip1559,
+      isBatch: params.txPrebuild.isBatch ?? params.txPrebuild.txInfo?.isBatch,
       recipients: params.recipients,
       expireTime: expireTime,
       contractSequenceId: sequenceId,
