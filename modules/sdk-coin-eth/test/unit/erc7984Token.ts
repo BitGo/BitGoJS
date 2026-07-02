@@ -1070,4 +1070,42 @@ describe('verifyTransaction – confidential consolidation (FlushERC7984Forwarde
       })
       .should.be.rejectedWith(/parent address mismatch/);
   });
+
+  it('should verify multisig consolidation using forwarder address from txPrebuild.txInfo.recipients', async function () {
+    const txHex = await buildMultisigConsolidationTxHex();
+    const wallet = new Wallet(bitgo, coin, {
+      coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+    });
+
+    // No top-level recipients; forwarder comes from txInfo.recipients
+    const result = await coin.verifyTransaction({
+      txParams: { type: 'consolidate' } as any,
+      txPrebuild: {
+        consolidateId: '6a44ebc0326e1be45c1d797542c8c634',
+        txHex,
+        txInfo: { recipients: [{ address: CONSOLIDATION_FORWARDER, amount: '0' }] },
+      } as any,
+      wallet,
+    });
+    result.should.equal(true);
+  });
+
+  it('should reject multisig consolidation when txInfo.recipients forwarder address does not match tx forwarder', async function () {
+    const txHex = await buildMultisigConsolidationTxHex();
+    const wallet = new Wallet(bitgo, coin, {
+      coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+    });
+
+    await coin
+      .verifyTransaction({
+        txParams: { type: 'consolidate' } as any,
+        txPrebuild: {
+          consolidateId: 'abc123',
+          txHex,
+          txInfo: { recipients: [{ address: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', amount: '0' }] },
+        } as any,
+        wallet,
+      })
+      .should.be.rejectedWith(/forwarder address mismatch/);
+  });
 });
