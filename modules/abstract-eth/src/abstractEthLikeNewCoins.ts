@@ -143,6 +143,12 @@ export interface TransactionPrebuild extends BaseTransactionPrebuild {
   isBatch: boolean;
   coin: string;
   token?: string;
+  txInfo?: {
+    recipients?: TransactionRecipient[];
+    nextContractSequenceId?: number;
+    eip1559?: EIP1559;
+    isBatch?: boolean;
+  };
 }
 
 export interface SignFinalOptions {
@@ -165,6 +171,12 @@ export interface SignFinalOptions {
     isBatch?: boolean;
     txHex?: string;
     expireTime?: number;
+    txInfo?: {
+      recipients?: TransactionRecipient[];
+      nextContractSequenceId?: number;
+      eip1559?: EIP1559;
+      isBatch?: boolean;
+    };
   };
   signingKeyNonce?: number;
   walletContractAddress?: string;

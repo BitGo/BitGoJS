@@ -234,7 +234,10 @@ export class Erc7984Token extends Eth {
       throw new Error('verifyConfidentialConsolidation: encryptedHandle is missing or empty in transaction calldata');
     }
 
-    const expectedForwarder = txPrebuild.recipients?.[0]?.address ?? txParams?.recipients?.[0]?.address;
+    const expectedForwarder =
+      txPrebuild.recipients?.[0]?.address ??
+      txPrebuild.txInfo?.recipients?.[0]?.address ??
+      txParams?.recipients?.[0]?.address;
     if (forwarderAddress && expectedForwarder) {
       if (forwarderAddress.toLowerCase() !== expectedForwarder.toLowerCase()) {
         throw new Error(
