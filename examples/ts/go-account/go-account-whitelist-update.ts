@@ -1,11 +1,11 @@
 /**
  * Go Account Whitelist Update
  *
- * Adds or removes an address from a Go Account wallet's advanced whitelist policy.
+ * Adds or removes an entry from a Go Account wallet's advanced whitelist policy.
  *
  * The whitelist policy (type: "advancedWhitelist") restricts withdrawals to only
- * pre-approved destination addresses. This script updates that list by either
- * adding or removing a single address per run.
+ * pre-approved destinations. This script updates that list by either
+ * adding or removing a single entry per run.
  *
  * Two possible outcomes after calling the API:
  *   A) No approval required — update takes effect immediately.
@@ -16,8 +16,10 @@
  *       Contact support@bitgo.com to unlock a locked policy before updating.
  *
  * Required environment variables (in examples/.env):
- *   TESTNET_ACCESS_TOKEN   - your BitGo access token
- *   OFC_WALLET_ID          - the wallet ID of your Go Account
+ *   TESTNET_ACCESS_TOKEN      - your BitGo access token
+ *   OFC_WALLET_ID             - the wallet ID of your Go Account
+ *   WHITELIST_ITEM            - the address or wallet ID to add/remove
+ *   WHITELIST_ITEM_TYPE       - type of item: 'address' or 'walletId' (default: 'address')
  *
  * Copyright 2025, BitGo, Inc.  All Rights Reserved.
  */
@@ -49,17 +51,23 @@ const walletId = process.env.OFC_WALLET_ID || 'your_wallet_id';
 const policyId = process.env.WHITELIST_POLICY_ID || 'Offchain Wallet Whitelist';
 
 /**
- * The address to add or remove from the whitelist.
+ * The address or wallet ID to add or remove from the whitelist.
  */
-const address = process.env.WHITELIST_ADDRESS || 'your_address_here';
+const item = process.env.WHITELIST_ITEM || 'your_address_or_wallet_id_here';
 
 /**
- * Optional human-readable label for the address (only used when adding).
+ * Type of item being whitelisted.
+ * Use 'address' for a destination address, 'walletId' to whitelist an entire wallet.
  */
-const addressLabel = process.env.WHITELIST_ADDRESS_LABEL || '';
+const itemType = process.env.WHITELIST_ITEM_TYPE || 'address';
 
 /**
- * Operation: 'add' to whitelist the address, 'remove' to de-list it.
+ * Optional human-readable label for the item (only used when adding).
+ */
+const itemLabel = process.env.WHITELIST_ITEM_LABEL || '';
+
+/**
+ * Operation: 'add' to whitelist the item, 'remove' to de-list it.
  */
 const operation: 'add' | 'remove' = (process.env.WHITELIST_OPERATION as 'add' | 'remove') || 'add';
 
@@ -73,11 +81,11 @@ async function main() {
   // Build the condition object — shape is the same for add and remove;
   // the key ('add' | 'remove') tells the API which operation to perform.
   const conditionItem: { type: string; item: string; metaData?: { label: string } } = {
-    type: 'address',
-    item: address,
+    type: itemType,
+    item,
   };
-  if (operation === 'add' && addressLabel) {
-    conditionItem.metaData = { label: addressLabel };
+  if (operation === 'add' && itemLabel) {
+    conditionItem.metaData = { label: itemLabel };
   }
 
   const body = {
@@ -94,9 +102,10 @@ async function main() {
   console.log(`Wallet ID  : ${walletId}`);
   console.log(`Policy ID  : ${policyId}`);
   console.log(`Operation  : ${operation}`);
-  console.log(`Address    : ${address}`);
-  if (addressLabel && operation === 'add') {
-    console.log(`Label      : ${addressLabel}`);
+  console.log(`Type       : ${itemType}`);
+  console.log(`Item       : ${item}`);
+  if (itemLabel && operation === 'add') {
+    console.log(`Label      : ${itemLabel}`);
   }
   console.log('');
   console.log('Sending whitelist update...');
@@ -122,7 +131,8 @@ async function main() {
     console.log(`  Wallet ID          : ${walletId}`);
     console.log(`  Policy ID          : ${policyId}`);
     console.log(`  Operation          : ${operation}`);
-    console.log(`  Address            : ${address}`);
+    console.log(`  Type               : ${itemType}`);
+    console.log(`  Item               : ${item}`);
     console.log(`  Status             : pending approval`);
     console.log(`  Pending Approval   : ${approvalId}`);
     console.log('='.repeat(60));
@@ -137,7 +147,8 @@ async function main() {
     console.log(`  Wallet ID  : ${walletId}`);
     console.log(`  Policy ID  : ${policyId}`);
     console.log(`  Operation  : ${operation}`);
-    console.log(`  Address    : ${address}`);
+    console.log(`  Type       : ${itemType}`);
+    console.log(`  Item       : ${item}`);
     console.log(`  Status     : applied`);
     console.log('='.repeat(60));
   }
