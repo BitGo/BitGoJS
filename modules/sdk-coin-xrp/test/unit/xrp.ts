@@ -158,6 +158,38 @@ describe('XRP:', function () {
     unsignedExplanation.fee.fee.should.equal('45');
   });
 
+  it('should explain an MPTokenAuthorize transaction from hex', async function () {
+    const factory = getMptBuilderFactory(testData.MPT_ISSUANCE_ID);
+    const sender = testData.TEST_MULTI_SIG_ACCOUNT.address.split('?')[0];
+
+    const builder = factory.getMPTokenAuthorizeBuilder();
+    builder.sender(sender);
+    builder.mptIssuanceId(testData.MPT_ISSUANCE_ID);
+    builder.sequence(1600000);
+    builder.fee('12');
+    builder.flags(2147483648);
+
+    const txHex = (await builder.build()).toBroadcastFormat();
+    const explanation = await basecoin.explainTransaction({ txHex });
+
+    explanation.id.should.be.a.String();
+    explanation.fee.fee.should.equal('12');
+  });
+
+  it('should explain an MPTokenAuthorize transaction from JSON string', async function () {
+    const txJson = JSON.stringify({
+      TransactionType: 'MPTokenAuthorize',
+      Account: 'rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG',
+      MPTokenIssuanceID: testData.MPT_ISSUANCE_ID,
+      Fee: '12',
+      Sequence: 1600000,
+      Flags: 2147483648,
+    });
+    const explanation = await basecoin.explainTransaction({ txHex: txJson });
+
+    explanation.fee.fee.should.equal('12');
+  });
+
   it('should be able to sign an XRP transaction', async function () {
     const txPrebuild = {
       txHex:
@@ -1036,6 +1068,29 @@ describe('XRP:', function () {
           }),
         { message: 'tx type TrustSet does not match expected type MPTokenAuthorize' }
       );
+    });
+  });
+
+  describe('getTokenEnablementConfig', function () {
+    it('should return enableMpt for a registered MPT token', function () {
+      const config = basecoin.getTokenEnablementConfig();
+      config.getEnableTokenType('txrp:feesec').should.equal('enableMpt');
+    });
+
+    it('should return enabletoken for a registered IOU token', function () {
+      const config = basecoin.getTokenEnablementConfig();
+      config.getEnableTokenType('txrp:rlusd').should.equal('enabletoken');
+    });
+
+    it('should return enabletoken for an unknown token name', function () {
+      const config = basecoin.getTokenEnablementConfig();
+      config.getEnableTokenType('txrp:unknown-token').should.equal('enabletoken');
+    });
+
+    it('should require token enablement and not support multiple enablements in one tx', function () {
+      const config = basecoin.getTokenEnablementConfig();
+      config.requiresTokenEnablement.should.equal(true);
+      config.supportsMultipleTokenEnablements.should.equal(false);
     });
   });
 });
