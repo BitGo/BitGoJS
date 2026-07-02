@@ -75,8 +75,6 @@ jobs:
           prompt: ${{ steps.agent.outputs.content }}
           use_commit_signing: 'true'
           branch_prefix: 'iyarc-prune/'
-          # TEMPORARY (HSM-429 diagnosis): revert to false once fixed.
-          show_full_output: 'true'
           claude_args: --allowed-tools 'Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash,mcp__github_file_ops__commit_files,mcp__github_file_ops__delete_files'
           use_bedrock: 'true'
           github_token: ${{ secrets.GITHUB_TOKEN }}
