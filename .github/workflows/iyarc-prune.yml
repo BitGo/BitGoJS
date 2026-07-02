@@ -69,11 +69,14 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Run Claude Code (Bedrock)
+        id: claude
         uses: anthropics/claude-code-action@v1
         with:
           prompt: ${{ steps.agent.outputs.content }}
           use_commit_signing: 'true'
           branch_prefix: 'iyarc-prune/'
+          # TEMPORARY (HSM-429 diagnosis): revert to false once fixed.
+          show_full_output: 'true'
           claude_args: --allowed-tools 'Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash,mcp__github_file_ops__commit_files,mcp__github_file_ops__delete_files'
           use_bedrock: 'true'
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -84,3 +87,22 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ steps.inference-role.outputs.aws-secret-access-key }}
           AWS_SESSION_TOKEN: ${{ steps.inference-role.outputs.aws-session-token }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Surface Claude error and fail on is_error
+        if: always()
+        env:
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+        run: |
+          set -euo pipefail
+          if [ -z "${EXECUTION_FILE:-}" ] || [ ! -f "$EXECUTION_FILE" ]; then
+            echo "::error::no Claude execution file produced"; exit 1
+          fi
+          EVENTS="$(jq -c 'if type=="array" then . else [.] end' "$EXECUTION_FILE")"
+          echo "=== result event (metadata only) ==="
+          echo "$EVENTS" | jq -c 'map(select(.type=="result"))[-1] // empty'
+          echo "=== assistant text turns (no tool output) ==="
+          echo "$EVENTS" | jq -r '.[] | select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text'
+          RES="$(echo "$EVENTS" | jq -c 'map(select(.type=="result"))[-1] // empty')"
+          if [ "$(echo "$RES" | jq -r '.is_error // false')" = "true" ]; then
+            echo "::error::Claude returned is_error=true"; exit 1
+          fi
