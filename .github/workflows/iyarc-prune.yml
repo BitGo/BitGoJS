@@ -82,6 +82,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
         env:
           ANTHROPIC_MODEL: arn:aws:bedrock:us-west-2:168000258654:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0
+          # Bedrock: replaying a tool-call turn requires a leading thinking block; disable to avoid 400.
+          MAX_THINKING_TOKENS: '0'
           AWS_REGION: us-west-2
           AWS_ACCESS_KEY_ID: ${{ steps.inference-role.outputs.aws-access-key-id }}
           AWS_SECRET_ACCESS_KEY: ${{ steps.inference-role.outputs.aws-secret-access-key }}
