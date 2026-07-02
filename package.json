@@ -133,7 +133,8 @@
     "@babel/plugin-transform-modules-systemjs": "7.29.4",
     "protobufjs": "7.5.8",
     "@protobufjs/fetch": "1.1.0",
-    "@protobufjs/inquire": "1.1.0"
+    "@protobufjs/inquire": "1.1.0",
+    "sigstore": "4.1.1"
   },
   "workspaces": [
     "modules/*"
