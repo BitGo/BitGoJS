@@ -50,7 +50,7 @@ const signWithPrivateKey = function (txHex, privateKey, options) {
   } catch (e) {
     try {
       tx = JSON.parse(txHex);
-    } catch (e) {
+    } catch (e2) {
       throw new Error('txHex needs to be either hex or JSON string for XRP');
     }
   }

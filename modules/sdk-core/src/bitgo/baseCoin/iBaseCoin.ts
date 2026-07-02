@@ -608,6 +608,7 @@ export interface TokenEnablementConfig {
   requiresTokenEnablement: boolean;
   supportsMultipleTokenEnablements: boolean;
   validateWallet?: (walletType: string) => void;
+  getEnableTokenType?: (tokenName: string) => string;
 }
 
 export interface MessagePrep {

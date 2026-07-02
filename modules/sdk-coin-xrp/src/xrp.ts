@@ -25,7 +25,7 @@ import {
   UnexpectedAddressError,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-import { coins, BaseCoin as StaticsBaseCoin, XrpCoin } from '@bitgo/statics';
+import { coins, BaseCoin as StaticsBaseCoin, XrpCoin, XrpMptCoin } from '@bitgo/statics';
 import * as rippleKeypairs from 'ripple-keypairs';
 import * as xrpl from 'xrpl';
 
@@ -132,6 +132,8 @@ export class Xrp extends BaseCoin {
     return {
       requiresTokenEnablement: true,
       supportsMultipleTokenEnablements: false,
+      getEnableTokenType: (tokenName: string) =>
+        coins.has(tokenName) && coins.get(tokenName) instanceof XrpMptCoin ? 'enableMpt' : 'enabletoken',
     };
   }
 
@@ -219,7 +221,7 @@ export class Xrp extends BaseCoin {
       try {
         transaction = JSON.parse(txHex);
         txHex = rippleBinaryCodec.encode(transaction);
-      } catch (e) {
+      } catch (e2) {
         throw new Error('txHex needs to be either hex or JSON string for XRP');
       }
     }
@@ -329,7 +331,7 @@ export class Xrp extends BaseCoin {
     } catch (e) {
       try {
         transaction = JSON.parse(txHex);
-      } catch (e) {
+      } catch (e2) {
         throw new Error('txHex needs to be either hex or JSON string for XRP');
       }
     }
@@ -337,10 +339,17 @@ export class Xrp extends BaseCoin {
     return transaction.TransactionType;
   }
 
-  verifyTxType(txPrebuildDecoded: TransactionExplanation, txHexPrebuild: string | undefined): void {
+  verifyTxType(txPrebuildDecoded: TransactionExplanation, txHexPrebuild: string | undefined, isMpt = false): void {
     if (!txHexPrebuild) throw new Error('Missing txHexPrebuild to verify token type for enabletoken tx');
     const transactionType = this.getTransactionTypeRawTxHex(txHexPrebuild);
     if (transactionType === undefined) throw new Error('Missing TransactionType on token enablement tx');
+
+    if (isMpt) {
+      if (transactionType !== XrpTransactionType.MPTokenAuthorize)
+        throw new Error(`tx type ${transactionType} does not match expected type MPTokenAuthorize`);
+      return;
+    }
+
     if (transactionType !== XrpTransactionType.TrustSet)
       throw new Error(`tx type ${transactionType} does not match expected type TrustSet`);
     // decoded payload type could come as undefined or any of the enabletoken like types but never as something else like Send, etc
@@ -438,6 +447,13 @@ export class Xrp extends BaseCoin {
 
     // Explaining a tx strips out certain data, for extra measurement we're checking vs the explained tx
     // but also vs the tx pre explained.
+    if (txParams.type === 'enableMpt') {
+      if (verification?.verifyTokenEnablement) {
+        this.verifyTxType(explanation, txPrebuild.txHex, true);
+      }
+      return true;
+    }
+
     if (txParams.type === 'enabletoken' && verification?.verifyTokenEnablement) {
       this.verifyTxType(explanation, txPrebuild.txHex);
       this.verifyActivationAddress(txParams, explanation);
