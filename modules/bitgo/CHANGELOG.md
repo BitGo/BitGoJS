@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [51.7.4](https://github.com/BitGo/BitGoJS/compare/bitgo@51.7.3...bitgo@51.7.4) (2026-07-02)
+
+
+### Bug Fixes
+
+* **sdk-lib-mpc:** lazy-load wasm-mps to fix browser DSG ([8e65cb9](https://github.com/BitGo/BitGoJS/commit/8e65cb91333d1d8ae96349de30c8d6647779dd44))
+
+
+
+
+
 ## [51.7.3](https://github.com/BitGo/BitGoJS/compare/bitgo@51.7.2...bitgo@51.7.3) (2026-06-30)
 
 

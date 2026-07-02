@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.18.0...@bitgo/sdk-coin-polyx@1.19.0) (2026-07-02)
+
+
+### Features
+
+* **sdk-coin-polyx:** add real v8 testnet metadata and assetholder settlement builders ([9818176](https://github.com/BitGo/BitGoJS/commit/9818176e159528300ff120ecb225eefb6dd195ba))
+* **sdk-coin-polyx:** add v8 staking builders ([da400f4](https://github.com/BitGo/BitGoJS/commit/da400f42a370a8c16159427ca94d5f6439d0e16a))
+
+
+
+
+
 # [1.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.17.2...@bitgo/sdk-coin-polyx@1.18.0) (2026-06-30)
 
 

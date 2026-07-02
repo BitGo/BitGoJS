@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.53.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.52.0...@bitgo/statics@58.53.0) (2026-07-02)
+
+
+### Bug Fixes
+
+* remove special char from symbol ([f2344ce](https://github.com/BitGo/BitGoJS/commit/f2344ce55fd1d3803ea52e39eb11388cc609fe16))
+* **statics:** gate missing arbeth:tusd and mantle:usde for Europe (CHALO-633) ([7903ca4](https://github.com/BitGo/BitGoJS/commit/7903ca44647d159aa489e1190155bbd13a0e38b9))
+
+
+### Features
+
+* remove multisig support for flr ([6724704](https://github.com/BitGo/BitGoJS/commit/67247049345d15a3fb0dc3a7e88afec34a94fd79))
+* **statics:** gate assets for BitGo Europe (CHALO-633) ([ebcbed6](https://github.com/BitGo/BitGoJS/commit/ebcbed68a18092eff6a0712916cd4af365399004))
+* **statics:** onboard JSOL, GODL, eHYBOND-1 tokens and PYUSD OFC ([38fe40b](https://github.com/BitGo/BitGoJS/commit/38fe40b39ad55b8fb3eddc190ba241a18dacbe64))
+* **statics:** update receipt tokens coin features ([6e324dd](https://github.com/BitGo/BitGoJS/commit/6e324dd2fd6e5a371bb214abd37bb4fe9405b8be))
+* update Boba network explorer URLs ([7b1963e](https://github.com/BitGo/BitGoJS/commit/7b1963ef44e883e7085f59ef923f9ab9dbd2c090))
+
+
+
+
+
 # [58.52.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.51.0...@bitgo/statics@58.52.0) (2026-06-30)
 
 
