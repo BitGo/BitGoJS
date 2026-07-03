@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [15.37.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.37.1...@bitgo/express@15.37.2) (2026-07-02)
+
+
+### Bug Fixes
+
+* **sdk-lib-mpc:** lazy-load wasm-mps to fix browser DSG ([8e65cb9](https://github.com/BitGo/BitGoJS/commit/8e65cb91333d1d8ae96349de30c8d6647779dd44))
+
+
+
+
+
 ## [15.37.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.37.0...@bitgo/express@15.37.1) (2026-06-30)
 
 **Note:** Version bump only for package @bitgo/express

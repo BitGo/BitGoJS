@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [37.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.10.1...@bitgo/sdk-core@37.11.0) (2026-07-02)
+
+
+### Bug Fixes
+
+* **sdk-coin-xrp:** route MPT token enablement to enableMpt type via coin config ([d274c8e](https://github.com/BitGo/BitGoJS/commit/d274c8ec46cdffe4ecbf1a7e1bc368a51e33c8c2))
+* **sdk-core:** check wallet type before accessing tssUtils ([765fa34](https://github.com/BitGo/BitGoJS/commit/765fa34589ec3d6b0a6fc02219f535242b9dd712))
+* **sdk-lib-mpc:** lazy-load wasm-mps to fix browser DSG ([8e65cb9](https://github.com/BitGo/BitGoJS/commit/8e65cb91333d1d8ae96349de30c8d6647779dd44))
+
+
+### Features
+
+* add external signer support for ECDSA and EdDSA TSS key gen ([920e574](https://github.com/BitGo/BitGoJS/commit/920e574036ec079a693d5ca1468be825379896f2))
+* followups for mpctss external signer ([d36c197](https://github.com/BitGo/BitGoJS/commit/d36c19793aee4e4dcf817f580d8be7942188c167))
+
+
+
+
+
 ## [37.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.10.0...@bitgo/sdk-core@37.10.1) (2026-06-30)
 
 

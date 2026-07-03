@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.17.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.17.2...@bitgo/sdk-coin-xrp@3.17.3) (2026-07-02)
+
+
+### Bug Fixes
+
+* **sdk-coin-xrp:** route MPT token enablement to enableMpt type via coin config ([d274c8e](https://github.com/BitGo/BitGoJS/commit/d274c8ec46cdffe4ecbf1a7e1bc368a51e33c8c2))
+
+
+
+
+
 ## [3.17.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.17.1...@bitgo/sdk-coin-xrp@3.17.2) (2026-06-30)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xrp

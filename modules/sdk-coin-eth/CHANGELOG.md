@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [25.15.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.15.2...@bitgo/sdk-coin-eth@25.15.3) (2026-07-02)
+
+
+### Bug Fixes
+
+* **sdk-coin-eth:** update verify transaction for zama consolidation ([3dce7be](https://github.com/BitGo/BitGoJS/commit/3dce7be2ba2de4e86d68b8c6bfbef2c41c5c1df5))
+* **sdk-coin-eth:** use txInfo to fetch recipients ([04132eb](https://github.com/BitGo/BitGoJS/commit/04132ebc19e7e5f3936934e5d686db21f62c7cfd))
+
+
+
+
+
 ## [25.15.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.15.1...@bitgo/sdk-coin-eth@25.15.2) (2026-06-30)
 
 
