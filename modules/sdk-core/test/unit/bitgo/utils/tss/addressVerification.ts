@@ -1,7 +1,8 @@
 import * as assert from 'assert';
 import 'should';
-import { deriveUnhardenedMps, getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { Ecdsa } from '../../../../../src/account-lib/mpc';
+import { EDDSAMethods } from '../../../../../src/bitgo/tss';
 
 function getAddressVerificationModule() {
   return require('../../../../../src/bitgo/utils/tss/addressVerification');
@@ -84,10 +85,12 @@ describe('verifyEddsaTssWalletAddress', function () {
   const isValidAddress = (addr: string) => addr.length === 64;
   const getAddressFromPublicKey = (pk: string) => pk;
 
-  describe('MPCv2 wallets (Silence Labs / MPS formula)', function () {
-    it('verifies a correct address derived with deriveUnhardenedMps at index 0', async function () {
+  describe('MPCv2 wallets (BIP32-Ed25519 formula)', function () {
+    it('verifies a correct address at index 0', async function () {
       const verifyEddsaTssWalletAddress = getVerifyEddsaTssWalletAddress();
-      const expectedAddress = deriveUnhardenedMps(TEST_KEYCHAIN, 'm/0').slice(0, 64);
+      const expectedAddress = (await EDDSAMethods.getInitializedMpcInstance())
+        .deriveUnhardened(TEST_KEYCHAIN, 'm/0')
+        .slice(0, 64);
 
       const result = await verifyEddsaTssWalletAddress(
         { address: expectedAddress, keychains, index: 0, multisigTypeVersion: 'MPCv2' },
@@ -97,9 +100,11 @@ describe('verifyEddsaTssWalletAddress', function () {
       result.should.be.true();
     });
 
-    it('verifies a correct address derived with deriveUnhardenedMps at index 1', async function () {
+    it('verifies a correct address at index 1', async function () {
       const verifyEddsaTssWalletAddress = getVerifyEddsaTssWalletAddress();
-      const expectedAddress = deriveUnhardenedMps(TEST_KEYCHAIN, 'm/1').slice(0, 64);
+      const expectedAddress = (await EDDSAMethods.getInitializedMpcInstance())
+        .deriveUnhardened(TEST_KEYCHAIN, 'm/1')
+        .slice(0, 64);
 
       const result = await verifyEddsaTssWalletAddress(
         { address: expectedAddress, keychains, index: 1, multisigTypeVersion: 'MPCv2' },
@@ -111,7 +116,9 @@ describe('verifyEddsaTssWalletAddress', function () {
 
     it('rejects an address derived at a different index', async function () {
       const verifyEddsaTssWalletAddress = getVerifyEddsaTssWalletAddress();
-      const addressFromIndex0 = deriveUnhardenedMps(TEST_KEYCHAIN, 'm/0').slice(0, 64);
+      const addressFromIndex0 = (await EDDSAMethods.getInitializedMpcInstance())
+        .deriveUnhardened(TEST_KEYCHAIN, 'm/0')
+        .slice(0, 64);
 
       const result = await verifyEddsaTssWalletAddress(
         { address: addressFromIndex0, keychains, index: 1, multisigTypeVersion: 'MPCv2' },
@@ -137,7 +144,9 @@ describe('verifyEddsaTssWalletAddress', function () {
       const verifyEddsaTssWalletAddress = getVerifyEddsaTssWalletAddress();
       const seed = 'smc-seed-123';
       const prefix = getDerivationPath(seed);
-      const expectedAddress = deriveUnhardenedMps(TEST_KEYCHAIN, `${prefix}/0`).slice(0, 64);
+      const expectedAddress = (await EDDSAMethods.getInitializedMpcInstance())
+        .deriveUnhardened(TEST_KEYCHAIN, `${prefix}/0`)
+        .slice(0, 64);
 
       const result = await verifyEddsaTssWalletAddress(
         {
@@ -157,7 +166,9 @@ describe('verifyEddsaTssWalletAddress', function () {
       const verifyEddsaTssWalletAddress = getVerifyEddsaTssWalletAddress();
       const seed = 'smc-seed-123';
       const prefix = getDerivationPath(seed);
-      const addressAtIndex1 = deriveUnhardenedMps(TEST_KEYCHAIN, `${prefix}/1`).slice(0, 64);
+      const addressAtIndex1 = (await EDDSAMethods.getInitializedMpcInstance())
+        .deriveUnhardened(TEST_KEYCHAIN, `${prefix}/1`)
+        .slice(0, 64);
 
       const result = await verifyEddsaTssWalletAddress(
         {
@@ -174,16 +185,16 @@ describe('verifyEddsaTssWalletAddress', function () {
     });
   });
 
-  describe('non-MPCv2 wallets (MPCv1 formula)', function () {
-    it('rejects an MPCv2-derived address when multisigTypeVersion is not set', async function () {
+  describe('legacy Silence Labs formula', function () {
+    it('rejects an address derived with the old Silence Labs single-HMAC formula', async function () {
       const verifyEddsaTssWalletAddress = getVerifyEddsaTssWalletAddress();
-      // MPCv2 (Silence Labs) and MPCv1 formulas produce different addresses for the same keychain.
-      // Without multisigTypeVersion: 'MPCv2', the MPCv1 formula is used, so the MPCv2-derived
-      // address should not match.
-      const mpcv2Address = deriveUnhardenedMps(TEST_KEYCHAIN, 'm/0').slice(0, 64);
+      // The Silence Labs and BIP32-Ed25519 formulas produce different addresses for the same keychain.
+      // Addresses derived with the old formula no longer verify against the current derivation.
+      const { deriveUnhardenedMps: deriveSL } = await import('@bitgo/sdk-lib-mpc');
+      const silenceLabsAddress = deriveSL(TEST_KEYCHAIN, 'm/0').slice(0, 64);
 
       const result = await verifyEddsaTssWalletAddress(
-        { address: mpcv2Address, keychains, index: 0 },
+        { address: silenceLabsAddress, keychains, index: 0 },
         isValidAddress,
         getAddressFromPublicKey
       );
@@ -254,7 +265,9 @@ describe('deriveMPCWalletAddress', function () {
 
     it('derives the address and path for the simple m/{index} path', async function () {
       const deriveMPCWalletAddress = getDeriveMPCWalletAddress();
-      const expectedAddress = deriveUnhardenedMps(TEST_KEYCHAIN, 'm/3').slice(0, 64);
+      const expectedAddress = (await EDDSAMethods.getInitializedMpcInstance())
+        .deriveUnhardened(TEST_KEYCHAIN, 'm/3')
+        .slice(0, 64);
 
       const result = await deriveMPCWalletAddress(
         { keychains, index: 3, multisigTypeVersion: 'MPCv2', keyCurve: 'ed25519' },
@@ -269,7 +282,9 @@ describe('deriveMPCWalletAddress', function () {
       const deriveMPCWalletAddress = getDeriveMPCWalletAddress();
       const seed = 'smc-seed-123';
       const prefix = getDerivationPath(seed);
-      const expectedAddress = deriveUnhardenedMps(TEST_KEYCHAIN, `${prefix}/0`).slice(0, 64);
+      const expectedAddress = (await EDDSAMethods.getInitializedMpcInstance())
+        .deriveUnhardened(TEST_KEYCHAIN, `${prefix}/0`)
+        .slice(0, 64);
 
       const result = await deriveMPCWalletAddress(
         { keychains, index: 0, multisigTypeVersion: 'MPCv2', derivedFromParentWithSeed: seed, keyCurve: 'ed25519' },
