@@ -3064,19 +3064,20 @@ describe('SOL:', function () {
       mpcV2UserKey = encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
       mpcV2BackupKey = encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
       mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+      const mpc = await EDDSAMethods.getInitializedMpcInstance();
       mpcV2WalletAddress = new KeyPair({
-        pub: deriveUnhardenedMps(mpcV2CommonKeyChain, 'm/0').slice(0, 64),
+        pub: mpc.deriveUnhardened(mpcV2CommonKeyChain, 'm/0').slice(0, 64),
       }).getAddress();
       mismatchedBitgoKey = otherUserDkg.getCommonKeychain();
       mismatchedWalletAddress = new KeyPair({
-        pub: deriveUnhardenedMps(mismatchedBitgoKey, 'm/0').slice(0, 64),
+        pub: mpc.deriveUnhardened(mismatchedBitgoKey, 'm/0').slice(0, 64),
       }).getAddress();
 
       mpcV2TokenUserKey = encrypt(walletPassphrase, tokenUserDkg.getReducedKeyShare().toString('base64'));
       mpcV2TokenBackupKey = encrypt(walletPassphrase, tokenBackupDkg.getReducedKeyShare().toString('base64'));
       mpcV2TokenCommonKeyChain = tokenUserDkg.getCommonKeychain();
       mpcV2TokenWalletAddress = new KeyPair({
-        pub: deriveUnhardenedMps(mpcV2TokenCommonKeyChain, 'm/0').slice(0, 64),
+        pub: mpc.deriveUnhardened(mpcV2TokenCommonKeyChain, 'm/0').slice(0, 64),
       }).getAddress();
 
       mpcV2RecoverParams = {
@@ -3959,10 +3960,11 @@ describe('SOL:', function () {
       mpcV2UserKey = encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
       mpcV2BackupKey = encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
       mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+      const mpc = await EDDSAMethods.getInitializedMpcInstance();
 
-      mpcV2Address1 = new KeyPair({ pub: deriveUnhardenedMps(mpcV2CommonKeyChain, 'm/1').slice(0, 64) }).getAddress();
-      mpcV2Address2 = new KeyPair({ pub: deriveUnhardenedMps(mpcV2CommonKeyChain, 'm/2').slice(0, 64) }).getAddress();
-      mpcV2Address3 = new KeyPair({ pub: deriveUnhardenedMps(mpcV2CommonKeyChain, 'm/3').slice(0, 64) }).getAddress();
+      mpcV2Address1 = new KeyPair({ pub: mpc.deriveUnhardened(mpcV2CommonKeyChain, 'm/1').slice(0, 64) }).getAddress();
+      mpcV2Address2 = new KeyPair({ pub: mpc.deriveUnhardened(mpcV2CommonKeyChain, 'm/2').slice(0, 64) }).getAddress();
+      mpcV2Address3 = new KeyPair({ pub: mpc.deriveUnhardened(mpcV2CommonKeyChain, 'm/3').slice(0, 64) }).getAddress();
 
       mpcV2TokenUserKey = encrypt(walletPassphrase, tokenUserDkg.getReducedKeyShare().toString('base64'));
       mpcV2TokenBackupKey = encrypt(walletPassphrase, tokenBackupDkg.getReducedKeyShare().toString('base64'));
@@ -3972,7 +3974,7 @@ describe('SOL:', function () {
         pub: deriveUnhardenedMps(mpcV2TokenCommonKeyChain, 'm/0').slice(0, 64),
       }).getAddress();
       mpcV2TokenAddress1 = new KeyPair({
-        pub: deriveUnhardenedMps(mpcV2TokenCommonKeyChain, 'm/1').slice(0, 64),
+        pub: mpc.deriveUnhardened(mpcV2TokenCommonKeyChain, 'm/1').slice(0, 64),
       }).getAddress();
     });
 
@@ -4105,7 +4107,7 @@ describe('SOL:', function () {
           .resolves(testData.SolResponses.getAccountBalanceResponseNoFunds);
       }
       const mpcV2Address4 = new KeyPair({
-        pub: deriveUnhardenedMps(mpcV2CommonKeyChain, 'm/4').slice(0, 64),
+        pub: (await EDDSAMethods.getInitializedMpcInstance()).deriveUnhardened(mpcV2CommonKeyChain, 'm/4').slice(0, 64),
       }).getAddress();
       callBack
         .withArgs({ payload: { id: '1', jsonrpc: '2.0', method: 'getBalance', params: [mpcV2Address4] } })

@@ -1267,13 +1267,8 @@ export class Sol extends BaseCoin {
     const index = params.index || 0;
     const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
 
-    let accountId: string;
-    if (isMpcV2) {
-      accountId = deriveUnhardenedMps(bitgoKey, currPath).slice(0, 64);
-    } else {
-      const MPC = await EDDSAMethods.getInitializedMpcInstance();
-      accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
-    }
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
     const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
 
     balance = await this.getAccountBalance(bs58EncodedPublicKey, params.apiKey);
@@ -1559,13 +1554,8 @@ export class Sol extends BaseCoin {
     const index = params.index || 0;
     const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
 
-    let accountId: string;
-    if (isMpcV2) {
-      accountId = deriveUnhardenedMps(bitgoKey, currPath).slice(0, 64);
-    } else {
-      const MPC = await EDDSAMethods.getInitializedMpcInstance();
-      accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
-    }
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
     const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
 
     const accountBalance = await this.getAccountBalance(bs58EncodedPublicKey);
