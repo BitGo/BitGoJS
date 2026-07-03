@@ -23,7 +23,7 @@ import {
   Wallet,
   WalletCoinSpecific,
 } from '@bitgo/sdk-core';
-import { deriveUnhardenedMps, MPSUtil } from '@bitgo/sdk-lib-mpc';
+import { MPSUtil } from '@bitgo/sdk-lib-mpc';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
 import {
@@ -3971,7 +3971,7 @@ describe('SOL:', function () {
       mpcV2TokenCommonKeyChain = tokenUserDkg.getCommonKeychain();
 
       mpcV2TokenBaseAddress = new KeyPair({
-        pub: deriveUnhardenedMps(mpcV2TokenCommonKeyChain, 'm/0').slice(0, 64),
+        pub: mpc.deriveUnhardened(mpcV2TokenCommonKeyChain, 'm/0').slice(0, 64),
       }).getAddress();
       mpcV2TokenAddress1 = new KeyPair({
         pub: mpc.deriveUnhardened(mpcV2TokenCommonKeyChain, 'm/1').slice(0, 64),

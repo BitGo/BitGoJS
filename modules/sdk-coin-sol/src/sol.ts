@@ -61,7 +61,7 @@ import {
   UnexpectedAddressError,
   EDDSAUtils,
 } from '@bitgo/sdk-core';
-import { auditEddsaPrivateKey, deriveUnhardenedMps, getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseNetwork, CoinFamily, coins, SolCoin, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import {
   KeyPair as SolKeyPair,
@@ -1705,9 +1705,9 @@ export class Sol extends BaseCoin {
 
     const index = params.index || 0;
     const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
-    const accountId = isMpcV2
-      ? deriveUnhardenedMps(bitgoKey, currPath).slice(0, 64)
-      : (await EDDSAMethods.getInitializedMpcInstance()).deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+    const accountId = (await EDDSAMethods.getInitializedMpcInstance())
+      .deriveUnhardened(bitgoKey, currPath)
+      .slice(0, 64);
     const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
 
     const blockhash = await this.getBlockhash(params.apiKey);
@@ -1826,9 +1826,9 @@ export class Sol extends BaseCoin {
     const baseAddressPath = params.seed
       ? getDerivationPath(params.seed) + `/${baseAddressIndex}`
       : `m/${baseAddressIndex}`;
-    const baseAccountId = isMpcV2
-      ? deriveUnhardenedMps(bitgoKey, baseAddressPath).slice(0, 64)
-      : (await EDDSAMethods.getInitializedMpcInstance()).deriveUnhardened(bitgoKey, baseAddressPath).slice(0, 64);
+    const baseAccountId = (await EDDSAMethods.getInitializedMpcInstance())
+      .deriveUnhardened(bitgoKey, baseAddressPath)
+      .slice(0, 64);
     const baseAddress = new SolKeyPair({ pub: baseAccountId }).getAddress();
 
     let durableNoncePubKeysIndex = 0;
