@@ -302,6 +302,48 @@ export class Utils implements BaseUtils {
       });
     });
 
+    // Full-amount addr-bal transfer: the last recipient receives mergedObject (addrCoin)
+    // directly via TransferObjects rather than via SplitCoins, to avoid leaving a zero-balance
+    // Coin<T> unused (UnusedValueWithoutDrop). Recover amounts from BalanceWithdrawal.
+    //
+    // Single-recipient (0 SplitCoins, 1 TransferObjects): receipts is empty — recover the
+    // full withdrawal amount and push one receipt.
+    //
+    // Multi-recipient (N-1 SplitCoins, N TransferObjects): receipts has N-1 entries — recover
+    // the last recipient's amount as BalanceWithdrawal.amount - sum(splitResults).
+    if (receipts.length === 0 && destinations.length > 0) {
+      const withdrawalInput = (tx.tx.inputs as any[]).find(
+        (input: any) => input?.BalanceWithdrawal != null || input?.value?.BalanceWithdrawal != null
+      ) as any;
+      if (withdrawalInput) {
+        const bw = withdrawalInput.BalanceWithdrawal ?? withdrawalInput.value?.BalanceWithdrawal;
+        const amount = String(bw.reservation?.MaxAmountU64 ?? bw.amount ?? 0);
+        destinations.forEach((address) => {
+          receipts.push({ address, amount });
+        });
+      }
+    } else if (receipts.length > 0 && destinations.length === receipts.length + 1) {
+      const lastDest = destinations[destinations.length - 1];
+      // Path 1b with change returns the surplus to the sender via a trailing TransferObjects —
+      // this destination is intentionally excluded by the zip-limit above and must not be
+      // re-added as a recipient. Only proceed when the last destination is NOT the sender
+      // (i.e. it is the final recipient in a multi-recipient full-amount addr-bal send).
+      if (lastDest !== tx.sender) {
+        const withdrawalInput = (tx.tx.inputs as any[]).find(
+          (input: any) => input?.BalanceWithdrawal != null || input?.value?.BalanceWithdrawal != null
+        ) as any;
+        if (withdrawalInput) {
+          const bw = withdrawalInput.BalanceWithdrawal ?? withdrawalInput.value?.BalanceWithdrawal;
+          const totalWithdrawn = Number(bw.reservation?.MaxAmountU64 ?? bw.amount ?? 0);
+          const splitTotal = splitResults.reduce((sum, v) => sum + v, 0);
+          const lastAmount = totalWithdrawn - splitTotal;
+          if (lastAmount > 0) {
+            receipts.push({ address: lastDest, amount: String(lastAmount) });
+          }
+        }
+      }
+    }
+
     tx.tx.transactions.forEach((transaction) => {
       if (transaction.kind === 'MoveCall' && transaction.target.endsWith(MethodNames.PublicTransfer)) {
         const destinationArg = transaction.arguments[1];

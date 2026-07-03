@@ -274,6 +274,21 @@ export abstract class Transaction<T> extends BaseTransaction {
     ) {
       return SuiTransactionType.Transfer;
     }
+    // Full-amount token addr-bal send: MoveCall(redeem_funds, TOKEN_TYPE) + TransferObjects
+    // with no SplitCoins. Both commands return Transfer from getSuiTransactionType, so the
+    // check below wouldn't fire. Detect by finding redeem_funds with a non-native type arg.
+    if (
+      transactions.some((tx) => {
+        if (tx.kind !== 'MoveCall') return false;
+        const moveCall = tx as any;
+        if (!moveCall.target?.endsWith(MethodNames.RedeemFunds)) return false;
+        const typeArg: string = moveCall.typeArguments?.[0] ?? '';
+        const [addr = '', mod = '', name = ''] = typeArg.split('::');
+        return !(normalizeSuiAddress(addr) === suiNativeAddress && mod === 'sui' && name === 'SUI');
+      })
+    ) {
+      return SuiTransactionType.TokenTransfer;
+    }
     if (transactions.some((tx) => utils.getSuiTransactionType(tx) === SuiTransactionType.TokenTransfer)) {
       return SuiTransactionType.TokenTransfer;
     }

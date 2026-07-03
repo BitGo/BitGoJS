@@ -217,6 +217,194 @@ describe('Sui Token Transfer Builder', () => {
       rebuiltTx.toJson().inputObjects.length.should.equal(numberOfInputObjects);
     });
 
+    it('should build a token transfer using only address balance when sending the full amount (no SplitCoins)', async function () {
+      const fullAmount = '82402000000';
+
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.type(SuiTransactionType.TokenTransfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: fullAmount }]);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.fundsInAddressBalance(fullAmount);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TokenTransferProgrammableTransaction>;
+      const programmableTx = suiTx.suiTransaction.tx;
+
+      // Cmd 0: MoveCall(redeem_funds)
+      (programmableTx.transactions[0] as any).kind.should.equal('MoveCall');
+      (programmableTx.transactions[0] as any).target.should.equal('0x2::coin::redeem_funds');
+
+      // Cmd 1: TransferObjects directly — no SplitCoins
+      (programmableTx.transactions[1] as any).kind.should.equal('TransferObjects');
+      programmableTx.transactions.some((t: any) => t.kind === 'SplitCoins').should.be.false();
+
+      // getRecipients must recover the correct amount and address
+      const recipients = utils.getRecipients(suiTx.suiTransaction);
+      recipients.length.should.equal(1);
+      recipients[0].address.should.equal(testData.recipients[0].address);
+      recipients[0].amount.should.equal(fullAmount);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // Round-trip: rebuilt tx must produce the same serialized output
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build a token transfer using only address balance when sending the full amount to multiple recipients (no unused Coin<T>)', async function () {
+      const amounts = ['30000000000', '52402000000'];
+      const total = (BigInt(amounts[0]) + BigInt(amounts[1])).toString();
+
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.type(SuiTransactionType.TokenTransfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([
+        { address: testData.recipients[0].address, amount: amounts[0] },
+        { address: testData.recipients[1].address, amount: amounts[1] },
+      ]);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.fundsInAddressBalance(total);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TokenTransferProgrammableTransaction>;
+      const cmds = suiTx.suiTransaction.tx.transactions as any[];
+
+      // Cmd 0: MoveCall(redeem_funds)
+      cmds[0].kind.should.equal('MoveCall');
+      cmds[0].target.should.equal('0x2::coin::redeem_funds');
+
+      // Cmd 1+2: SplitCoins + TransferObjects for first recipient
+      cmds[1].kind.should.equal('SplitCoins');
+      cmds[2].kind.should.equal('TransferObjects');
+
+      // Cmd 3: TransferObjects directly for last recipient — no SplitCoins for it
+      cmds[3].kind.should.equal('TransferObjects');
+      cmds.length.should.equal(4);
+
+      // getRecipients must recover both amounts and addresses
+      const recipients = utils.getRecipients(suiTx.suiTransaction);
+      recipients.length.should.equal(2);
+      recipients[0].address.should.equal(testData.recipients[0].address);
+      recipients[0].amount.should.equal(amounts[0]);
+      recipients[1].address.should.equal(testData.recipients[1].address);
+      recipients[1].amount.should.equal(amounts[1]);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build a token transfer using partial address balance (single recipient) and return change to sender', async function () {
+      const addrBal = '100000000000';
+      const sendAmount = '82402000000'; // less than addrBal → change = 17598000000
+
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.type(SuiTransactionType.TokenTransfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: sendAmount }]);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.fundsInAddressBalance(addrBal);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TokenTransferProgrammableTransaction>;
+      const cmds = suiTx.suiTransaction.tx.transactions as any[];
+
+      // Cmd 0: MoveCall(redeem_funds)
+      cmds[0].kind.should.equal('MoveCall');
+      cmds[0].target.should.equal('0x2::coin::redeem_funds');
+      // Cmd 1: SplitCoins for the recipient
+      cmds[1].kind.should.equal('SplitCoins');
+      // Cmd 2: TransferObjects to recipient
+      cmds[2].kind.should.equal('TransferObjects');
+      // Cmd 3: TransferObjects([addrCoin], sender) — returns change, consumes addrCoin
+      cmds[3].kind.should.equal('TransferObjects');
+      cmds.length.should.equal(4);
+
+      // Verify the last TransferObjects goes to the sender (not the recipient)
+      const lastCmd = cmds[3] as any;
+      const changeAddrInput = suiTx.suiTransaction.tx.inputs[lastCmd.address.index] as any;
+      utils.getAddress(changeAddrInput).should.equal(testData.sender.address);
+
+      // getRecipients must return only the actual recipient, not the change transfer
+      const recipients = utils.getRecipients(suiTx.suiTransaction);
+      recipients.length.should.equal(1);
+      recipients[0].address.should.equal(testData.recipients[0].address);
+      recipients[0].amount.should.equal(sendAmount);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build a token transfer using partial address balance (multiple recipients) and return change to sender', async function () {
+      const amounts = ['30000000000', '40000000000'];
+      const addrBal = '100000000000'; // more than total → change = 30000000000
+
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.type(SuiTransactionType.TokenTransfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([
+        { address: testData.recipients[0].address, amount: amounts[0] },
+        { address: testData.recipients[1].address, amount: amounts[1] },
+      ]);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.fundsInAddressBalance(addrBal);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TokenTransferProgrammableTransaction>;
+      const cmds = suiTx.suiTransaction.tx.transactions as any[];
+
+      // MoveCall + 2×(SplitCoins+TransferObjects) + TransferObjects(change to sender)
+      cmds[0].kind.should.equal('MoveCall');
+      cmds[1].kind.should.equal('SplitCoins');
+      cmds[2].kind.should.equal('TransferObjects');
+      cmds[3].kind.should.equal('SplitCoins');
+      cmds[4].kind.should.equal('TransferObjects');
+      cmds[5].kind.should.equal('TransferObjects'); // change
+      cmds.length.should.equal(6);
+
+      // Last command returns change to sender
+      const lastCmd = cmds[5] as any;
+      const changeAddrInput = suiTx.suiTransaction.tx.inputs[lastCmd.address.index] as any;
+      utils.getAddress(changeAddrInput).should.equal(testData.sender.address);
+
+      // getRecipients must return only the 2 actual recipients
+      const recipients = utils.getRecipients(suiTx.suiTransaction);
+      recipients.length.should.equal(2);
+      recipients[0].address.should.equal(testData.recipients[0].address);
+      recipients[0].amount.should.equal(amounts[0]);
+      recipients[1].address.should.equal(testData.recipients[1].address);
+      recipients[1].amount.should.equal(amounts[1]);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
     it('should correctly reconstruct fundsInAddressBalance from raw transaction', async function () {
       const inputObjects = testData.generateObjects(2);
 
