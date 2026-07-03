@@ -1258,4 +1258,154 @@ describe('Sui Transfer Builder', () => {
       should.equal(utils.isValidRawTransaction(rawTx), true);
     });
   });
+
+  describe('full-amount addr-bal send (UnusedValueWithoutDrop parity with token fix)', () => {
+    // For Coin<Token> (TokenTransferBuilder), when fundsInAddressBalance === sendAmount
+    // and there are no coin objects, SplitCoins leaves a zero-balance Coin<T> command result
+    // unused, causing UnusedValueWithoutDrop at the SUI VM level. The token builder fixes
+    // this by using TransferObjects(addrCoin, recipient) directly — skipping SplitCoins.
+    //
+    // For native SUI (TransferBuilder), the same "zero-balance command result" issue does NOT
+    // require a special path because:
+    //   - Path 1b (sponsored): MergeCoins(GasCoin, [addrCoin]) destroys the 0-balance Coin<SUI>
+    //     (gas IS SUI, so the merge is type-compatible). Tested in fundsInAddressBalance suite.
+    //   - Path 2b (self-pay):  withdrawal(totalRecipientAmount) drains addrCoin exactly, then
+    //     MergeCoins(GasCoin, [addrCoin]) destroys it. Tested in BalanceWithdrawal BCS suite.
+    //
+    // These tests verify that TransferBuilder always uses the native SUI type arg (not a token
+    // type) and that the full-amount send correctly destroys the zero-balance addrCoin.
+
+    it('Path 1b full-amount: sponsored addr-bal-only send uses 0x2::sui::SUI type arg and destroys zero-balance addrCoin', async function () {
+      const SEND_AMOUNT = '500000000'; // 0.5 SUI
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: SEND_AMOUNT }]);
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.fundsInAddressBalance(SEND_AMOUNT); // exact match: send-all
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      const cmds = suiTx.suiTransaction.tx.transactions as any[];
+
+      // MoveCall must use native SUI type, never a token type
+      cmds[0].kind.should.equal('MoveCall');
+      cmds[0].target.should.equal('0x2::coin::redeem_funds');
+      cmds[0].typeArguments[0].should.equal('0x2::sui::SUI');
+
+      // Path 1b send-all: SplitCoins → TransferObjects → MergeCoins(gas, [addrCoin])
+      // The MergeCoins at the end destroys the zero-balance addrCoin (type-compatible since gas IS SUI)
+      cmds[1].kind.should.equal('SplitCoins');
+      cmds[2].kind.should.equal('TransferObjects');
+      cmds[3].kind.should.equal('MergeCoins', 'zero-balance addrCoin must be destroyed via MergeCoins(gas)');
+      cmds.length.should.equal(4);
+
+      const parsedRecipients = utils.getRecipients(suiTx.suiTransaction);
+      parsedRecipients.length.should.equal(1);
+      parsedRecipients[0].address.should.equal(testData.recipients[0].address);
+      parsedRecipients[0].amount.should.equal(SEND_AMOUNT);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('Path 1b full-amount: multiple recipients, all drained from addr-bal, last MergeCoins destroys addrCoin', async function () {
+      const SEND_AMOUNT_EACH = '100000000'; // 0.1 SUI per recipient
+      const TOTAL = (Number(SEND_AMOUNT_EACH) * testData.recipients.length).toString();
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address,
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients.map((r) => ({ ...r, amount: SEND_AMOUNT_EACH })));
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.fundsInAddressBalance(TOTAL); // send-all across multiple recipients
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      const cmds = suiTx.suiTransaction.tx.transactions as any[];
+
+      // For N recipients: MoveCall + N×(SplitCoins+TransferObjects) + MergeCoins
+      cmds[0].kind.should.equal('MoveCall');
+      cmds[0].typeArguments[0].should.equal('0x2::sui::SUI');
+      cmds[cmds.length - 1].kind.should.equal('MergeCoins', 'last command must destroy zero-balance addrCoin');
+
+      const parsedRecipients = utils.getRecipients(suiTx.suiTransaction);
+      parsedRecipients.length.should.equal(testData.recipients.length);
+      parsedRecipients.forEach((r, i) => {
+        r.address.should.equal(testData.recipients[i].address);
+        r.amount.should.equal(SEND_AMOUNT_EACH);
+      });
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('Path 2b full-amount: self-pay addr-bal-only uses native SUI type arg and destroys zero-balance addrCoin', async function () {
+      // Path 2b withdraws totalRecipientAmount (not fundsInAddressBalance), so addrCoin is
+      // exactly 0 after all splits. MergeCoins(GasCoin, [addrCoin]) destroys it.
+      // The remaining fundsInAddressBalance in the accumulator covers gas settlement.
+      const SEND_AMOUNT = '500000000'; // 0.5 SUI to send
+      const ADDR_BAL = '510000000'; // 0.51 SUI total — surplus stays in accumulator for gas
+      const gasDataNoPayment = {
+        ...testData.gasDataWithoutGasPayment,
+        payment: [],
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: SEND_AMOUNT }]);
+      txBuilder.gasData(gasDataNoPayment);
+      txBuilder.fundsInAddressBalance(ADDR_BAL);
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      const cmds = suiTx.suiTransaction.tx.transactions as any[];
+
+      // Path 2b: MoveCall(redeem_funds, SUI) → SplitCoins → TransferObjects → MergeCoins(gas, addrCoin)
+      cmds[0].kind.should.equal('MoveCall');
+      cmds[0].target.should.equal('0x2::coin::redeem_funds');
+      cmds[0].typeArguments[0].should.equal('0x2::sui::SUI'); // always native SUI, never a token type
+      cmds[1].kind.should.equal('SplitCoins');
+      cmds[2].kind.should.equal('TransferObjects');
+      cmds[3].kind.should.equal('MergeCoins', 'zero-balance addrCoin must be destroyed via MergeCoins(gas)');
+      cmds.length.should.equal(4);
+
+      const parsedRecipients = utils.getRecipients(suiTx.suiTransaction);
+      parsedRecipients.length.should.equal(1);
+      parsedRecipients[0].address.should.equal(testData.recipients[0].address);
+      parsedRecipients[0].amount.should.equal(SEND_AMOUNT);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+      const rebuilder = factory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+    });
+  });
 });

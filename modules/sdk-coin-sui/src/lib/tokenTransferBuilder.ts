@@ -186,6 +186,25 @@ export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgra
    *   MoveCall(0x2::coin::redeem_funds, [withdrawal(amount, coinType)]) → Coin<T>
    *   MergeCoins(inputObject[0] | addrCoin, [rest...]) → SplitCoins → TransferObjects
    *
+   *   Exception A — addr-bal only, full amount (fundsInAddressBalance === sum(recipient amounts)):
+   *   MoveCall(0x2::coin::redeem_funds, [withdrawal(amount, coinType)]) → Coin<T>
+   *   SplitCoins(addrCoin, [amount0]) → TransferObjects(split0, addr0)   # recipients 0..N-2
+   *   ...
+   *   TransferObjects([addrCoin], addrN-1)                                # last recipient directly
+   *   (After N-1 splits addrCoin.balance === recipients[N-1].amount exactly, so it can be
+   *   transferred directly. SplitCoins on the last recipient would leave a zero-balance Coin<T>
+   *   unused, which causes UnusedValueWithoutDrop since Coin<T> has no drop ability.)
+   *
+   *   Exception B — addr-bal only, partial amount (fundsInAddressBalance > sum(recipient amounts)):
+   *   MoveCall(0x2::coin::redeem_funds, [withdrawal(amount, coinType)]) → Coin<T>
+   *   SplitCoins(addrCoin, [amount0]) → TransferObjects(split0, addr0)   # all recipients
+   *   ...
+   *   TransferObjects([addrCoin], sender)                                 # return change to sender
+   *   (addrCoin still holds the unspent remainder; transferring it back to the sender consumes
+   *   the command result, avoiding UnusedValueWithoutDrop. Mirrors the native SUI TransferBuilder
+   *   change-return path. Unlike native SUI, MergeCoins(gas, [addrCoin]) is not possible here
+   *   because gas is Coin<SUI> and addrCoin is Coin<T> — incompatible types.)
+   *
    * @return {SuiTransaction<TokenTransferProgrammableTransaction>}
    * @protected
    */
@@ -219,12 +238,39 @@ export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgra
       programmableTxBuilder.mergeCoins(mergedObject, inputObjects);
     }
 
-    this._recipients.forEach((recipient) => {
-      const splitObject = programmableTxBuilder.splitCoins(mergedObject, [
-        programmableTxBuilder.pure(BigInt(recipient.amount)),
-      ]);
-      programmableTxBuilder.transferObjects([splitObject], programmableTxBuilder.object(recipient.address));
-    });
+    // addrCoin (the Coin<T> returned by redeem_funds) is a command result and must be explicitly
+    // consumed — Coin<T> has no `drop` ability, so leaving it unused causes UnusedValueWithoutDrop.
+    // This only applies when there are no coin objects (addr-bal only); in the hybrid case addrCoin
+    // is consumed upfront by the MergeCoins above.
+    const recipientTotal = this._recipients.reduce((sum, r) => sum.plus(r.amount), new BigNumber(0));
+    const isAddrBalOnly = (this._inputObjects ?? []).length === 0 && this._fundsInAddressBalance.gt(0);
+
+    if (isAddrBalOnly && this._fundsInAddressBalance.eq(recipientTotal)) {
+      // Exception A — full amount: split for first N-1 recipients, transfer addrCoin directly
+      // to the last. After N-1 splits addrCoin.balance === recipients[N-1].amount exactly.
+      this._recipients.slice(0, -1).forEach((recipient) => {
+        const splitObject = programmableTxBuilder.splitCoins(mergedObject, [
+          programmableTxBuilder.pure(BigInt(recipient.amount)),
+        ]);
+        programmableTxBuilder.transferObjects([splitObject], programmableTxBuilder.object(recipient.address));
+      });
+      const lastRecipient = this._recipients[this._recipients.length - 1];
+      programmableTxBuilder.transferObjects([mergedObject], programmableTxBuilder.object(lastRecipient.address));
+    } else {
+      // Standard path: split and transfer for every recipient.
+      this._recipients.forEach((recipient) => {
+        const splitObject = programmableTxBuilder.splitCoins(mergedObject, [
+          programmableTxBuilder.pure(BigInt(recipient.amount)),
+        ]);
+        programmableTxBuilder.transferObjects([splitObject], programmableTxBuilder.object(recipient.address));
+      });
+      if (isAddrBalOnly && this._fundsInAddressBalance.gt(recipientTotal)) {
+        // Exception B — partial amount: addrCoin still holds the unspent remainder.
+        // Return it to the sender to consume the command result (MergeCoins into gas is not
+        // possible here — gas is Coin<SUI> but addrCoin is Coin<T>, incompatible types).
+        programmableTxBuilder.transferObjects([mergedObject], programmableTxBuilder.object(this._sender));
+      }
+    }
 
     const txData = programmableTxBuilder.blockData;
     return {
