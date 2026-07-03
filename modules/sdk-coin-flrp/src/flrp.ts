@@ -451,6 +451,24 @@ export class Flrp extends BaseCoin {
         };
       }
 
+      // For a P→C export (ExportInP), the exported UTXO amount includes the C-chain
+      // import fee that will be deducted when ImportInC is confirmed. Subtract the
+      // minimum import-to-C fee so the displayed amount reflects the expected net
+      // C-chain receipt, consistent with how ExportInC subtracts minImportToPFee.
+      if (!tx.isTransactionForCChain && explanation.type === TransactionType.Export) {
+        const minImportToCFee = BigInt((this._staticsCoin.network as FlareNetwork).minImportToCFee);
+        const adjustedOutputs = explanation.outputs.map((o) => ({
+          ...o,
+          amount: (BigInt(o.amount) - minImportToCFee).toString(),
+        }));
+        const adjustedOutputAmount = (BigInt(explanation.outputAmount) - minImportToCFee).toString();
+        return {
+          ...explanation,
+          outputs: adjustedOutputs,
+          outputAmount: adjustedOutputAmount,
+        };
+      }
+
       return explanation;
     } catch (e) {
       throw new Error(`Invalid transaction: ${e.message}`);
