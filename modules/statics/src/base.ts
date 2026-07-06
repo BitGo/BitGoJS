@@ -2063,6 +2063,7 @@ export enum UnderlyingAsset {
   'hoodeth:zm' = 'hoodeth:zm',
   'hoodeth:zs' = 'hoodeth:zs',
   'hoodeth:spcx' = 'hoodeth:spcx',
+  'hoodeth:skhy' = 'hoodeth:skhy',
   'hemieth:hemi' = 'hemieth:hemi',
   'hemieth:hemibtc' = 'hemieth:hemibtc',
   'usdt0:stable' = 'usdt0:stable',
@@ -3374,6 +3375,7 @@ export enum UnderlyingAsset {
   'baseeth:gusdcq' = 'baseeth:gusdcq',
   'baseeth:laptop' = 'baseeth:laptop',
   'baseeth:vbtcb' = 'baseeth:vbtcb',
+  'baseeth:gldy' = 'baseeth:gldy',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -4070,6 +4072,8 @@ export enum UnderlyingAsset {
   'eth:mony' = 'eth:mony',
   'eth:architectgvi' = 'eth:architectgvi',
   'eth:zk' = 'eth:zk',
+  'eth:grove' = 'eth:grove',
+  'eth:scx' = 'eth:scx',
   // ADA testnet tokens
   'tada:water' = 'tada:water',
   'tada:tusda' = 'tada:tusda',

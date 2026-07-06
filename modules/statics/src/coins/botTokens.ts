@@ -969,7 +969,7 @@ export const botTokens = [
     'eth:hybond',
     'HYBOND',
     18,
-    '0x67c312a26695ea9842bbcf1e1d0ee64694e42db6',
+    '0x1204371ac0e5176f4b8c5b2f16c2bec551b6fc1a',
     'eth:hybond' as unknown as UnderlyingAsset,
     getTokenFeatures('eth'),
     undefined,

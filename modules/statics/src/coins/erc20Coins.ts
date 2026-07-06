@@ -14922,6 +14922,22 @@ export const erc20Coins = [
     UnderlyingAsset['eth:qncxt'],
     AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
+  erc20(
+    '2cc47af3-63e8-440a-b992-e23cca3ed065',
+    'eth:grove',
+    'Grove',
+    18,
+    '0xb30fe1cf884b48a22a50d22a9282004f2c5e9406',
+    UnderlyingAsset['eth:grove']
+  ),
+  erc20(
+    '70001f46-0ea6-4326-9f7a-7d53df743233',
+    'eth:scx',
+    'Steelcoin X',
+    18,
+    '0xf23043c848b642e69350fa7623af1c1e3e6fda9b',
+    UnderlyingAsset['eth:scx']
+  ),
   terc20(
     '0c333619-e5a6-4f9d-8bbc-5b0e5dc64d03',
     'hteth:grtxp',

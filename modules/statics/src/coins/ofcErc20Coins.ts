@@ -6831,6 +6831,8 @@ export const tOfcErc20Coins = [
     UnderlyingAsset['eth:architectgvi']
   ),
   ofcerc20('3c49d36b-3f11-4da6-a2df-e031507d596d', 'ofceth:zk', 'ZKsync', 18, UnderlyingAsset['eth:zk']),
+  ofcerc20('28e1a1f5-66e1-4e13-b9e7-6f5242337142', 'ofceth:grove', 'Grove', 18, UnderlyingAsset['eth:grove']),
+  ofcerc20('cfe69d97-db40-4c05-9978-b945a7ddd203', 'ofceth:scx', 'Steelcoin X', 18, UnderlyingAsset['eth:scx']),
   ofcerc20(
     '47d8cf79-ed67-4e9c-8e51-422d31290282',
     'ofcbaseeth:usad',
@@ -6909,6 +6911,20 @@ export const tOfcErc20Coins = [
     UnderlyingAsset['baseeth:usdc'],
     undefined,
     [CoinFeature.STABLECOIN],
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    'bce06462-e580-4116-a30e-bb77f5ae5001',
+    'ofcbaseeth:gldy',
+    'Streamex GLDY',
+    18,
+    UnderlyingAsset['baseeth:gldy'],
+    undefined,
+    undefined,
     '',
     undefined,
     undefined,

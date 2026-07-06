@@ -1459,4 +1459,18 @@ export const ofcHoodethTokens = [
     undefined,
     'thoodeth'
   ),
+  ofcerc20(
+    '1c1827db-2217-4769-990b-e5820d02396f',
+    'ofchoodeth:skhy',
+    'SK Hynix Inc ADR',
+    18,
+    UnderlyingAsset['hoodeth:skhy'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'hoodeth'
+  ),
 ];

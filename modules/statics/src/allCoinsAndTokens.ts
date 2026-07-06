@@ -4829,6 +4829,15 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:laptop'],
     Networks.main.basechain
   ),
+  erc20Token(
+    '9e45a421-f59f-48d2-97c6-dcfe06d3aff9',
+    'baseeth:gldy',
+    'Streamex GLDY',
+    18,
+    '0x632db1aaace73401a5dc8cde6e9062b8ec0fd819',
+    UnderlyingAsset['baseeth:gldy'],
+    Networks.main.basechain
+  ),
 
   // XDC mainnet tokens
   xdcErc20(
