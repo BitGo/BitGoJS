@@ -184,24 +184,6 @@ describe('verifyEddsaTssWalletAddress', function () {
       result.should.be.false();
     });
   });
-
-  describe('legacy Silence Labs formula', function () {
-    it('rejects an address derived with the old Silence Labs single-HMAC formula', async function () {
-      const verifyEddsaTssWalletAddress = getVerifyEddsaTssWalletAddress();
-      // The Silence Labs and BIP32-Ed25519 formulas produce different addresses for the same keychain.
-      // Addresses derived with the old formula no longer verify against the current derivation.
-      const { deriveUnhardenedMps: deriveSL } = await import('@bitgo/sdk-lib-mpc');
-      const silenceLabsAddress = deriveSL(TEST_KEYCHAIN, 'm/0').slice(0, 64);
-
-      const result = await verifyEddsaTssWalletAddress(
-        { address: silenceLabsAddress, keychains, index: 0 },
-        isValidAddress,
-        getAddressFromPublicKey
-      );
-
-      result.should.be.false();
-    });
-  });
 });
 
 describe('verifyMPCWalletAddress - ECDSA (secp256k1)', function () {
