@@ -147,6 +147,10 @@ export class Erc7984Token extends Eth {
       verification?.consolidationToBaseAddress ||
       txPrebuild?.consolidateId ||
       txParams?.type === 'consolidate' ||
+      // TSS signing path: resolveEffectiveTxParams sets type from intent.intentType which is
+      // 'consolidateToken' for ERC-7984 token consolidations. txPrebuild has only txHex
+      // (no consolidateId) in this path.
+      txParams?.type === 'consolidateToken' ||
       txParams?.prebuildTx?.consolidateId
     );
   }
