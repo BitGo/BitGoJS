@@ -124,6 +124,15 @@ interface TransactionOperation {
   coin: string;
   limit?: string;
   asset?: stellar.Asset;
+  // accountConfig (setOptions) operation fields
+  setFlags?: number;
+  clearFlags?: number;
+  // authorizeTrustline (setTrustLineFlags) operation fields
+  trustor?: string;
+  authorized?: boolean;
+  // clawback operation fields
+  from?: string;
+  amount?: string;
 }
 
 interface TransactionOutput extends BaseTransactionOutput {
@@ -150,6 +159,65 @@ interface TransactionParams extends BaseTransactionParams {
 
 interface VerifyTransactionOptions extends BaseVerifyTransactionOptions {
   txParams: TransactionParams;
+}
+
+export interface AccountFlags {
+  authRequired?: boolean;
+  authRevocable?: boolean;
+  authClawbackEnabled?: boolean;
+}
+
+export interface TrustlineAuthEntry {
+  trustor: string;
+  token: string; // 'xlm:ASSETCODE-ISSUERADDRESS'
+  authorize: boolean;
+}
+
+export interface ClawbackEntry {
+  from: string;
+  token: string; // 'xlm:ASSETCODE-ISSUERADDRESS'
+  amount: string; // base units (stroops)
+}
+
+export interface AccountConfigVerifyParams extends BuildOptions {
+  type: 'accountConfig';
+  flags?: AccountFlags;
+  clearFlags?: AccountFlags;
+}
+
+export interface AuthorizeTrustlineVerifyParams extends BuildOptions {
+  type: 'authorizeTrustline';
+  trustlineAuths: TrustlineAuthEntry[];
+}
+
+export interface ClawbackVerifyParams extends BuildOptions {
+  type: 'clawback';
+  clawbacks: ClawbackEntry[];
+}
+
+function isAccountConfigVerifyParams(params: unknown): params is AccountConfigVerifyParams {
+  if (typeof params !== 'object' || params === null) return false;
+  const p = params as Record<string, unknown>;
+  // flags and clearFlags are optional, but must be plain objects when present
+  return (
+    p.type === 'accountConfig' &&
+    (p.flags === undefined || (typeof p.flags === 'object' && p.flags !== null)) &&
+    (p.clearFlags === undefined || (typeof p.clearFlags === 'object' && p.clearFlags !== null))
+  );
+}
+
+function isAuthorizeTrustlineVerifyParams(params: unknown): params is AuthorizeTrustlineVerifyParams {
+  if (typeof params !== 'object' || params === null) return false;
+  const p = params as Record<string, unknown>;
+  // trustlineAuths is required and must be an array
+  return p.type === 'authorizeTrustline' && Array.isArray(p.trustlineAuths);
+}
+
+function isClawbackVerifyParams(params: unknown): params is ClawbackVerifyParams {
+  if (typeof params !== 'object' || params === null) return false;
+  const p = params as Record<string, unknown>;
+  // clawbacks is required and must be an array
+  return p.type === 'clawback' && Array.isArray(p.clawbacks);
 }
 
 export class Xlm extends BaseCoin {
@@ -625,7 +693,9 @@ export class Xlm extends BaseCoin {
    */
   async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions): Promise<BuildOptions> {
     const params: { recipients?: Record<string, string>[] } = {};
-    if (buildParams.type === 'trustline') {
+    const nonPaymentTypes = ['trustline', 'accountConfig', 'authorizeTrustline', 'clawback'];
+    // Non-payment transaction types must not inject a default recipient
+    if (nonPaymentTypes.includes(buildParams.type as string)) {
       params.recipients = [];
     }
     return params;
@@ -961,6 +1031,30 @@ export class Xlm extends BaseCoin {
           asset,
           limit: this.bigUnitsToBaseUnits(op.limit),
         });
+      } else if (op.type === 'setOptions') {
+        const setOptionsOp = op as stellar.Operation.SetOptions;
+        operations.push({
+          type: 'accountConfig',
+          coin: this.getChain(),
+          setFlags: setOptionsOp.setFlags,
+          clearFlags: setOptionsOp.clearFlags,
+        });
+      } else if (op.type === 'setTrustLineFlags') {
+        const setTrustLineFlagsOp = op as stellar.Operation.SetTrustLineFlags;
+        operations.push({
+          type: 'authorizeTrustline',
+          coin: this.getTokenNameFromStellarAsset(setTrustLineFlagsOp.asset),
+          trustor: setTrustLineFlagsOp.trustor,
+          authorized: setTrustLineFlagsOp.flags?.authorized,
+        });
+      } else if (op.type === 'clawback') {
+        const clawbackOp = op as stellar.Operation.Clawback;
+        operations.push({
+          type: 'clawback',
+          coin: this.getTokenNameFromStellarAsset(clawbackOp.asset),
+          from: clawbackOp.from,
+          amount: this.bigUnitsToBaseUnits(clawbackOp.amount),
+        });
       }
     });
 
@@ -1062,6 +1156,105 @@ export class Xlm extends BaseCoin {
       });
       if (!tokenTrustline) {
         throw new Error('transaction prebuild does not match expected trustline tokens');
+      }
+    });
+  }
+
+  private verifyAccountConfigOperations(operations: stellar.Operation[], txParams: AccountConfigVerifyParams): void {
+    const setOptionsOps = operations.filter(
+      (operation): operation is stellar.Operation.SetOptions => operation.type === 'setOptions'
+    );
+    if (setOptionsOps.length === 0) {
+      throw new Error('accountConfig transaction must contain at least one setOptions operation');
+    }
+    // Reject multiple setOptions ops: txParams only carries one flags/clearFlags set, so any
+    // additional ops would be silently unverified — a verification gap.
+    if (setOptionsOps.length > 1) {
+      throw new Error('accountConfig transaction must contain exactly one setOptions operation');
+    }
+    const setOptionsOp = setOptionsOps[0];
+
+    if (txParams.flags) {
+      const expectedSetFlag = ((txParams.flags.authRequired ? stellar.AuthRequiredFlag : 0) |
+        (txParams.flags.authRevocable ? stellar.AuthRevocableFlag : 0) |
+        (txParams.flags.authClawbackEnabled ? stellar.AuthClawbackEnabledFlag : 0)) as number;
+      if (setOptionsOp.setFlags !== expectedSetFlag) {
+        throw new Error(`accountConfig setFlags mismatch: expected ${expectedSetFlag}, got ${setOptionsOp.setFlags}`);
+      }
+    }
+
+    if (txParams.clearFlags) {
+      const expectedClearFlag = ((txParams.clearFlags.authRequired ? stellar.AuthRequiredFlag : 0) |
+        (txParams.clearFlags.authRevocable ? stellar.AuthRevocableFlag : 0) |
+        (txParams.clearFlags.authClawbackEnabled ? stellar.AuthClawbackEnabledFlag : 0)) as number;
+      if (setOptionsOp.clearFlags !== expectedClearFlag) {
+        throw new Error(
+          `accountConfig clearFlags mismatch: expected ${expectedClearFlag}, got ${setOptionsOp.clearFlags}`
+        );
+      }
+    }
+  }
+
+  private verifyAuthorizeTrustlineOperations(
+    operations: stellar.Operation[],
+    txParams: AuthorizeTrustlineVerifyParams
+  ): void {
+    const trustLineFlagOps = operations.filter(
+      (operation): operation is stellar.Operation.SetTrustLineFlags => operation.type === 'setTrustLineFlags'
+    );
+    if (trustLineFlagOps.length !== txParams.trustlineAuths.length) {
+      throw new Error(
+        `authorizeTrustline operation count mismatch: expected ${txParams.trustlineAuths.length}, got ${trustLineFlagOps.length}`
+      );
+    }
+    txParams.trustlineAuths.forEach((trustlineAuth, index) => {
+      const trustLineFlagOp = trustLineFlagOps[index];
+      if (trustLineFlagOp.trustor !== trustlineAuth.trustor) {
+        throw new Error(`authorizeTrustline trustor mismatch at index ${index}`);
+      }
+      const actualToken = this.getTokenNameFromStellarAsset(trustLineFlagOp.asset);
+      if (actualToken !== trustlineAuth.token) {
+        throw new Error(
+          `authorizeTrustline token mismatch at index ${index}: expected ${trustlineAuth.token}, got ${actualToken}`
+        );
+      }
+      const actualAuthorized = trustLineFlagOp.flags?.authorized;
+      if (actualAuthorized !== trustlineAuth.authorize) {
+        throw new Error(
+          `authorizeTrustline authorize mismatch at index ${index}: expected ${trustlineAuth.authorize}, got ${actualAuthorized}`
+        );
+      }
+    });
+  }
+
+  private verifyClawbackOperations(operations: stellar.Operation[], txParams: ClawbackVerifyParams): void {
+    const clawbackOps = operations.filter(
+      (operation): operation is stellar.Operation.Clawback => operation.type === 'clawback'
+    );
+    if (clawbackOps.length !== txParams.clawbacks.length) {
+      throw new Error(
+        `clawback operation count mismatch: expected ${txParams.clawbacks.length}, got ${clawbackOps.length}`
+      );
+    }
+    txParams.clawbacks.forEach((clawbackEntry, index) => {
+      const clawbackOp = clawbackOps[index];
+      if (clawbackOp.from !== clawbackEntry.from) {
+        throw new Error(`clawback 'from' address mismatch at index ${index}`);
+      }
+      const actualToken = this.getTokenNameFromStellarAsset(clawbackOp.asset);
+      if (actualToken !== clawbackEntry.token) {
+        throw new Error(
+          `clawback token mismatch at index ${index}: expected ${clawbackEntry.token}, got ${actualToken}`
+        );
+      }
+      const actualAmountInBaseUnits = new BigNumber(this.bigUnitsToBaseUnits(clawbackOp.amount));
+      const expectedAmountInBaseUnits = new BigNumber(clawbackEntry.amount);
+      if (!actualAmountInBaseUnits.eq(expectedAmountInBaseUnits)) {
+        throw new Error(
+          `clawback amount mismatch at index ${index}: expected ${
+            clawbackEntry.amount
+          }, got ${actualAmountInBaseUnits.toFixed()}`
+        );
       }
     });
   }
@@ -1199,6 +1392,12 @@ export class Xlm extends BaseCoin {
       this.verifyTokenLimits(txParams, trustlineOperations);
     } else if (txParams.type === 'trustline') {
       this.verifyTrustlineTxOperations(tx.operations, txParams);
+    } else if (isAccountConfigVerifyParams(txParams)) {
+      this.verifyAccountConfigOperations(tx.operations, txParams);
+    } else if (isAuthorizeTrustlineVerifyParams(txParams)) {
+      this.verifyAuthorizeTrustlineOperations(tx.operations, txParams);
+    } else if (isClawbackVerifyParams(txParams)) {
+      this.verifyClawbackOperations(tx.operations, txParams);
     } else {
       if (_.isEmpty(outputOperations)) {
         throw new Error('transaction prebuild does not have any operations');
