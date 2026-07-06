@@ -1108,4 +1108,42 @@ describe('verifyTransaction – confidential consolidation (FlushERC7984Forwarde
       })
       .should.be.rejectedWith(/forwarder address mismatch/);
   });
+
+  // TSS MPCv2 signing path — resolveEffectiveTxParams sets type from intent.intentType ('consolidateToken'),
+  // and txPrebuild has only txHex (no consolidateId, no recipients). This was the broken path before
+  // isConsolidationTransaction was updated to recognise 'consolidateToken'.
+  it('should verify a valid direct callFromParent consolidation tx when type is consolidateToken (TSS MPCv2 signing path)', async function () {
+    const txHex = await buildDirectConsolidationTxHex();
+    const wallet = new Wallet(bitgo, coin, {
+      coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+    });
+
+    const result = await coin.verifyTransaction({
+      txParams: {
+        type: 'consolidateToken',
+        recipients: [{ address: CONSOLIDATION_FORWARDER, amount: '0' }],
+      } as any,
+      txPrebuild: { txHex } as any,
+      wallet,
+    });
+    result.should.equal(true);
+  });
+
+  it('should reject callFromParent consolidation with type consolidateToken when parent address does not match wallet base address', async function () {
+    const txHex = await buildDirectConsolidationTxHex();
+    const wallet = new Wallet(bitgo, coin, {
+      coinSpecific: { baseAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
+    });
+
+    await coin
+      .verifyTransaction({
+        txParams: {
+          type: 'consolidateToken',
+          recipients: [{ address: CONSOLIDATION_FORWARDER, amount: '0' }],
+        } as any,
+        txPrebuild: { txHex } as any,
+        wallet,
+      })
+      .should.be.rejectedWith(/parent address mismatch/);
+  });
 });
