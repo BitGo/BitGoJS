@@ -291,6 +291,10 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://explorer.fantom.network',
       rpcUrl: 'https://rpcapi.fantom.network/',
     },
+    cotieth: {
+      baseUrl: 'https://mainnet.cotiscan.io',
+      rpcUrl: 'https://mainnet.coti.io/rpc',
+    },
     xtzevm: {
       baseUrl: 'https://explorer.etherlink.com/api',
     },
@@ -526,6 +530,10 @@ const testnetBase: EnvironmentTemplate = {
     topbnb: {
       baseUrl: 'https://api.etherscan.io/v2',
       apiToken: process.env.ETHERSCAN_API_TOKEN,
+    },
+    tcotieth: {
+      baseUrl: 'https://testnet.cotiscan.io',
+      rpcUrl: 'https://testnet.coti.io/rpc',
     },
     xtzevm: {
       baseUrl: 'https://shadownet.explorer.etherlink.com/api',
