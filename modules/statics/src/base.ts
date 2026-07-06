@@ -46,6 +46,7 @@ export enum CoinFamily {
   CODEXETH = 'codexeth', // Codex Ethereum L2
   COREDAO = 'coredao',
   COREUM = 'coreum',
+  COTIETH = 'cotieth', // COTI EVM native chain
   CRONOS = 'cronos',
   CSPR = 'cspr',
   DASH = 'dash',
@@ -643,6 +644,7 @@ export enum UnderlyingAsset {
   CODEXETH = 'codexeth', // Codex Ethereum L2
   COREDAO = 'coredao',
   COREUM = 'coreum',
+  COTIETH = 'cotieth', // COTI EVM native chain
   CRONOS = 'cronos',
   CSPR = 'cspr',
   EOS = 'eos',

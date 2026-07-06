@@ -463,6 +463,26 @@ class FantomTestnet extends Testnet implements EthereumNetwork {
   tokenOperationHashPrefix = '4002-ERC20';
 }
 
+class Cotieth extends Mainnet implements EthereumNetwork {
+  name = 'Cotieth';
+  family = CoinFamily.COTIETH;
+  explorerUrl = 'https://mainnet.cotiscan.io/tx/';
+  accountExplorerUrl = 'https://mainnet.cotiscan.io/address/';
+  chainId = 2632500;
+  nativeCoinOperationHashPrefix = '2632500';
+  tokenOperationHashPrefix = '2632500-ERC20';
+}
+
+class CotiethTestnet extends Testnet implements EthereumNetwork {
+  name = 'CotiethTestnet';
+  family = CoinFamily.COTIETH;
+  explorerUrl = 'https://testnet.cotiscan.io/tx/';
+  accountExplorerUrl = 'https://testnet.cotiscan.io/address/';
+  chainId = 7082400;
+  nativeCoinOperationHashPrefix = '7082400';
+  tokenOperationHashPrefix = '7082400-ERC20';
+}
+
 class LightningBitcoin extends Mainnet implements LightningNetwork {
   name = 'LightningBitcoin';
   family = CoinFamily.LNBTC;
@@ -2944,6 +2964,7 @@ export const Networks = {
     okbxlayer: Object.freeze(new Xlayer()),
     opbnb: Object.freeze(new OpBNB()),
     fantom: Object.freeze(new Fantom()),
+    cotieth: Object.freeze(new Cotieth()),
     morph: Object.freeze(new Morph()),
     morpheth: Object.freeze(new MorphETH()),
     optimism: Object.freeze(new Optimism()),
@@ -3077,6 +3098,7 @@ export const Networks = {
     okbxlayer: Object.freeze(new XlayerTestnet()),
     opbnb: Object.freeze(new OpBNBTestnet()),
     fantom: Object.freeze(new FantomTestnet()),
+    cotieth: Object.freeze(new CotiethTestnet()),
     morph: Object.freeze(new MorphTestnet()),
     morpheth: Object.freeze(new MorphETHTestnet()),
     optimism: Object.freeze(new OptimismTestnet()),

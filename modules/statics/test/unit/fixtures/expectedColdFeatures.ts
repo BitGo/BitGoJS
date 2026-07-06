@@ -254,6 +254,8 @@ export const expectedColdFeatures = {
     'tfantom',
     'opbnb',
     'topbnb',
+    'cotieth',
+    'tcotieth',
     'fiataed',
     'fiataud',
     'fiatcad',

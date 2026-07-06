@@ -598,6 +598,26 @@ export const allCoinsAndTokens = [
     [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
   ),
   account(
+    'c4f8e2a1-9b3d-4e5f-a6c7-8d9e0f1a2b3c',
+    'tcotieth',
+    'COTI Ethereum Testnet',
+    Networks.test.cotieth,
+    18,
+    UnderlyingAsset.COTIETH,
+    BaseUnit.ETH,
+    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
+  ),
+  account(
+    'd5a9f3b2-0c4e-5f6a-b7d8-9e0f1a2b3c4d',
+    'cotieth',
+    'COTI Ethereum',
+    Networks.main.cotieth,
+    18,
+    UnderlyingAsset.COTIETH,
+    BaseUnit.ETH,
+    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
+  ),
+  account(
     'ffc472f5-27c6-49f8-ad9a-f57659258fb9',
     'etc',
     'Ethereum Classic',

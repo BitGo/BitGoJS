@@ -30,6 +30,10 @@ const coins = [
     name: 'tfantom',
     common: getCommon('tfantom'),
   },
+  {
+    name: 'tcotieth',
+    common: getCommon('tcotieth'),
+  },
 ];
 
 describe('EthLike coin tests', function () {
