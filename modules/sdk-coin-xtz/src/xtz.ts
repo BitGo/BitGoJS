@@ -351,7 +351,7 @@ export class Xtz extends BaseCoin {
       keyPair = new KeyPair({ pub: backupKey });
     } else {
       try {
-        backupPrv = await this.bitgo.decryptAsync({
+        backupPrv = await this.bitgo.decrypt({
           input: backupKey,
           password: params.walletPassphrase,
         });

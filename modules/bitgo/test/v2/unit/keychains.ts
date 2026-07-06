@@ -173,7 +173,7 @@ describe('V2 Keychains', function () {
           .should.be.rejectedWith('Expecting parameter string: newPassword but found number');
       });
 
-      it('to update the password for a single keychain', function () {
+      it('to update the password for a single keychain', async function () {
         (() => keychains.updateSingleKeychainPassword({ newPassword: '5678' })).should.throw(
           'expected old password to be a string'
         );
@@ -206,7 +206,7 @@ describe('V2 Keychains', function () {
             keychain: { encryptedPrv: 123 },
           })).should.throw('expected keychain to be an object with an encryptedPrv property');
 
-        const keychain = { encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: otherPassword }) };
+        const keychain = { encryptedPrv: await bitgo.encrypt({ input: 'xprv1', password: otherPassword }) };
         (() => keychains.updateSingleKeychainPassword({ oldPassword, newPassword, keychain })).should.throw(
           'password used to decrypt keychain private key is incorrect'
         );
@@ -214,31 +214,31 @@ describe('V2 Keychains', function () {
 
       it('to update the password for a single keychain (async)', async function () {
         await keychains
-          .updateSingleKeychainPasswordAsync({ newPassword: '5678' })
+          .updateSingleKeychainPassword({ newPassword: '5678' })
           .should.be.rejectedWith('expected old password to be a string');
 
         await keychains
-          .updateSingleKeychainPasswordAsync({ oldPassword: 1234, newPassword: '5678' })
+          .updateSingleKeychainPassword({ oldPassword: 1234, newPassword: '5678' })
           .should.be.rejectedWith('expected old password to be a string');
 
         await keychains
-          .updateSingleKeychainPasswordAsync({ oldPassword: '1234' })
+          .updateSingleKeychainPassword({ oldPassword: '1234' })
           .should.be.rejectedWith('expected new password to be a string');
 
         await keychains
-          .updateSingleKeychainPasswordAsync({ oldPassword: '1234', newPassword: 5678 })
+          .updateSingleKeychainPassword({ oldPassword: '1234', newPassword: 5678 })
           .should.be.rejectedWith('expected new password to be a string');
 
         await keychains
-          .updateSingleKeychainPasswordAsync({ oldPassword: '1234', newPassword: '5678' })
+          .updateSingleKeychainPassword({ oldPassword: '1234', newPassword: '5678' })
           .should.be.rejectedWith('expected keychain to be an object with an encryptedPrv property');
 
         await keychains
-          .updateSingleKeychainPasswordAsync({ oldPassword: '1234', newPassword: '5678', keychain: {} })
+          .updateSingleKeychainPassword({ oldPassword: '1234', newPassword: '5678', keychain: {} })
           .should.be.rejectedWith('expected keychain to be an object with an encryptedPrv property');
 
         await keychains
-          .updateSingleKeychainPasswordAsync({
+          .updateSingleKeychainPassword({
             oldPassword: '1234',
             newPassword: '5678',
             keychain: { encryptedPrv: 123 },
@@ -246,20 +246,20 @@ describe('V2 Keychains', function () {
           .should.be.rejectedWith('expected keychain to be an object with an encryptedPrv property');
 
         // wrong password — decrypt fails
-        const keychain = { encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: otherPassword }) };
+        const keychain = { encryptedPrv: await bitgo.encrypt({ input: 'xprv1', password: otherPassword }) };
         await keychains
-          .updateSingleKeychainPasswordAsync({ oldPassword, newPassword, keychain })
+          .updateSingleKeychainPassword({ oldPassword, newPassword, keychain })
           .should.be.rejectedWith('failed to update keychain password: incorrect password');
 
         // invalid JSON in encryptedPrv
         await keychains
-          .updateSingleKeychainPasswordAsync({ oldPassword, newPassword, keychain: { encryptedPrv: 'not-valid-json' } })
+          .updateSingleKeychainPassword({ oldPassword, newPassword, keychain: { encryptedPrv: 'not-valid-json' } })
           .should.be.rejectedWith('failed to update keychain password: decrypt: ciphertext is not valid JSON');
 
         // unknown envelope version
         const unknownVersionEnvelope = JSON.stringify({ v: 99, ct: 'abc' });
         await keychains
-          .updateSingleKeychainPasswordAsync({
+          .updateSingleKeychainPassword({
             oldPassword,
             newPassword,
             keychain: { encryptedPrv: unknownVersionEnvelope },
@@ -268,6 +268,7 @@ describe('V2 Keychains', function () {
       });
 
       it('on any other error', async function () {
+        const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
         nock(bgUrl)
           .get('/api/v2/tltc/key')
           .query(true)
@@ -275,28 +276,31 @@ describe('V2 Keychains', function () {
             keys: [
               {
                 pub: 'xpub1',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: oldPassword }),
+                encryptedPrv: encXprv1,
               },
             ],
           });
 
-        sandbox.stub(keychains, 'updateSingleKeychainPasswordAsync').throws('error', 'some random error');
+        sandbox.stub(keychains, 'updateSingleKeychainPassword').throws('error', 'some random error');
 
         await keychains.updatePassword({ oldPassword, newPassword }).should.be.rejectedWith('some random error');
       });
     });
 
     describe('successful password update', function () {
-      const validateKeys = function (keys, newPassword, expectedLength) {
+      const validateKeys = async function (keys, newPassword, expectedLength) {
         assert.ok(Object.keys(keys).length === expectedLength, 'should have the expected number of keys');
-        _.each(keys, function (value, key) {
+        for (const [key, value] of Object.entries(keys)) {
           assert.ok(key.includes('xpub') || key.includes('randomid'), 'key should be xpub or randomid');
-          const decryptedPrv = bitgo.decrypt({ input: value, password: newPassword });
+          const decryptedPrv = await bitgo.decrypt({ input: value, password: newPassword });
           decryptedPrv.should.startWith('xprv');
-        });
+        }
       };
 
       it('receive only one page when listing keychains', async function () {
+        const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
+        const encXprv2 = await bitgo.encrypt({ input: 'xprv2', password: otherPassword });
+        const encXprv3 = await bitgo.encrypt({ input: 'xprv3', password: oldPassword });
         nock(bgUrl)
           .get('/api/v2/tltc/key')
           .query(true)
@@ -304,26 +308,31 @@ describe('V2 Keychains', function () {
             keys: [
               {
                 pub: 'xpub1',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: oldPassword }),
+                encryptedPrv: encXprv1,
               },
               {
                 pub: 'xpub2',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv2', password: otherPassword }),
+                encryptedPrv: encXprv2,
               },
               {
                 id: 'randomid1',
                 type: 'tss',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv3', password: oldPassword }),
+                encryptedPrv: encXprv3,
               },
             ],
           });
 
         const keys = await keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
-        validateKeys(keys, newPassword, 2);
+        await validateKeys(keys, newPassword, 2);
       });
 
       it('receive multiple pages when listing keychains', async function () {
         const prevId = 'prevId';
+        const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
+        const encXprv2 = await bitgo.encrypt({ input: 'xprv2', password: otherPassword });
+        const encXprv3a = await bitgo.encrypt({ input: 'xprv3', password: oldPassword });
+        const encXprv3b = await bitgo.encrypt({ input: 'xprv3', password: oldPassword });
+        const encXprv4 = await bitgo.encrypt({ input: 'xprv4', password: otherPassword });
         nock(bgUrl)
           .get('/api/v2/tltc/key')
           .query(true)
@@ -332,16 +341,16 @@ describe('V2 Keychains', function () {
             keys: [
               {
                 pub: 'xpub1',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: oldPassword }),
+                encryptedPrv: encXprv1,
               },
               {
                 pub: 'xpub2',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv2', password: otherPassword }),
+                encryptedPrv: encXprv2,
               },
               {
                 id: 'randomid1',
                 type: 'tss',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv3', password: oldPassword }),
+                encryptedPrv: encXprv3a,
               },
             ],
           });
@@ -355,53 +364,57 @@ describe('V2 Keychains', function () {
             keys: [
               {
                 pub: 'xpub3',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv3', password: oldPassword }),
+                encryptedPrv: encXprv3b,
               },
               {
                 pub: 'xpub4',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv4', password: otherPassword }),
+                encryptedPrv: encXprv4,
               },
             ],
           });
 
         const keys = await keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
-        validateKeys(keys, newPassword, 3);
+        await validateKeys(keys, newPassword, 3);
       });
 
       it('single keychain password update', async () => {
         const prv = 'xprvtest';
         const keychain = {
           xpub: 'xpub123',
-          encryptedPrv: bitgo.encrypt({ input: prv, password: oldPassword }),
+          encryptedPrv: await bitgo.encrypt({ input: prv, password: oldPassword }),
         };
 
         const newKeychain = await keychains.updateSingleKeychainPassword({ keychain, oldPassword, newPassword });
 
-        const decryptedPrv = bitgo.decrypt({ input: newKeychain.encryptedPrv, password: newPassword });
+        const decryptedPrv = await bitgo.decrypt({ input: newKeychain.encryptedPrv, password: newPassword });
         decryptedPrv.should.equal(prv);
       });
 
       it('single keychain password update preserves v2 (Argon2id) envelope', async () => {
         const prv = 'xprvtest-v2';
-        const encryptedPrv = await bitgo.encryptAsync({ input: prv, password: oldPassword, encryptionVersion: 2 });
+        const encryptedPrv = await bitgo.encrypt({ input: prv, password: oldPassword, encryptionVersion: 2 });
         const envelope = JSON.parse(encryptedPrv);
         envelope.v.should.equal(2, 'pre-condition: keychain must be v2-encrypted');
 
         const keychain = { xpub: 'xpub123', encryptedPrv };
-        const newKeychain = await keychains.updateSingleKeychainPasswordAsync({ keychain, oldPassword, newPassword });
+        const newKeychain = await keychains.updateSingleKeychainPassword({ keychain, oldPassword, newPassword });
 
         const newEnvelope = JSON.parse(newKeychain.encryptedPrv);
         newEnvelope.v.should.equal(2, 're-encrypted keychain must still be v2');
 
-        const decryptedPrv = await bitgo.decryptAsync({ input: newKeychain.encryptedPrv, password: newPassword });
+        const decryptedPrv = await bitgo.decrypt({ input: newKeychain.encryptedPrv, password: newPassword });
         decryptedPrv.should.equal(prv, 'new password must decrypt to original prv');
 
-        await bitgo.decryptAsync({ input: newKeychain.encryptedPrv, password: oldPassword }).should.be.rejected();
+        await bitgo.decrypt({ input: newKeychain.encryptedPrv, password: oldPassword }).should.be.rejected();
       });
 
       it('updatePassword handles a mix of v1 and v2 keychains', async function () {
         const v1Prv = 'xprv-v1';
         const v2Prv = 'xprv-v2';
+
+        const encV1 = await bitgo.encrypt({ input: v1Prv, password: oldPassword });
+        const encV2 = await bitgo.encrypt({ input: v2Prv, password: oldPassword, encryptionVersion: 2 });
+        const encOther = await bitgo.encrypt({ input: 'xprv-other', password: 'different-password' });
 
         nock(bgUrl)
           .get('/api/v2/tltc/key')
@@ -410,15 +423,15 @@ describe('V2 Keychains', function () {
             keys: [
               {
                 pub: 'xpub-v1',
-                encryptedPrv: bitgo.encrypt({ input: v1Prv, password: oldPassword }),
+                encryptedPrv: encV1,
               },
               {
                 pub: 'xpub-v2',
-                encryptedPrv: await bitgo.encryptAsync({ input: v2Prv, password: oldPassword, encryptionVersion: 2 }),
+                encryptedPrv: encV2,
               },
               {
                 pub: 'xpub-other',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv-other', password: 'different-password' }),
+                encryptedPrv: encOther,
               },
             ],
           });
@@ -432,15 +445,17 @@ describe('V2 Keychains', function () {
         assert.ok(updatedV1, 'v1 keychain must be in the result');
         assert.ok(updatedV2, 'v2 keychain must be in the result');
 
-        bitgo.decrypt({ input: updatedV1, password: newPassword }).should.equal(v1Prv);
+        (await bitgo.decrypt({ input: updatedV1, password: newPassword })).should.equal(v1Prv);
 
         const updatedV2Envelope = JSON.parse(updatedV2);
         updatedV2Envelope.v.should.equal(2, 'v2 keychain must remain v2 after password change');
-        const decryptedV2 = await bitgo.decryptAsync({ input: updatedV2, password: newPassword });
+        const decryptedV2 = await bitgo.decrypt({ input: updatedV2, password: newPassword });
         decryptedV2.should.equal(v2Prv);
       });
 
       it('should return the updated keys with ids', async function () {
+        const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
+        const encXprv2 = await bitgo.encrypt({ input: 'xprv2', password: otherPassword });
         nock(bgUrl)
           .get('/api/v2/tltc/key')
           .query(true)
@@ -449,21 +464,23 @@ describe('V2 Keychains', function () {
               {
                 id: 'randomid1',
                 type: 'tss',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: oldPassword }),
+                encryptedPrv: encXprv1,
               },
               {
                 id: 'randomid2',
                 type: 'tss',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv2', password: otherPassword }),
+                encryptedPrv: encXprv2,
               },
             ],
           });
 
         const keys = await keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
-        validateKeys(keys, newPassword, 1);
+        await validateKeys(keys, newPassword, 1);
       });
 
       it('should update multi-user-ofc keys', async function () {
+        const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
+        const encXprv2 = await bitgo.encrypt({ input: 'xprv2', password: otherPassword });
         nock(bgUrl)
           .get('/api/v2/tltc/key')
           .query(true)
@@ -471,7 +488,7 @@ describe('V2 Keychains', function () {
             keys: [
               {
                 id: 'randomid1',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: oldPassword }),
+                encryptedPrv: encXprv1,
                 coinSpecific: {
                   ofc: {
                     features: ['multi-user-key'],
@@ -480,7 +497,7 @@ describe('V2 Keychains', function () {
               },
               {
                 id: 'randomid2',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv2', password: otherPassword }),
+                encryptedPrv: encXprv2,
                 coinSpecific: {
                   ofc: {
                     features: ['multi-user-key'],
@@ -491,7 +508,7 @@ describe('V2 Keychains', function () {
           });
 
         const keys = await keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
-        validateKeys(keys, newPassword, 1);
+        await validateKeys(keys, newPassword, 1);
       });
     });
 
@@ -616,7 +633,7 @@ describe('V2 Keychains', function () {
             },
           });
 
-        sandbox.stub(bitgo, 'decryptAsync').resolves(decryptResult);
+        sandbox.stub(bitgo, 'decrypt').resolves(decryptResult);
       });
 
       afterEach(function () {
@@ -1027,7 +1044,7 @@ describe('V2 Keychains', function () {
     const backup = await keychains.createBackup({ passphrase: 't3stSicretly!' });
     scope.isDone().should.be.true();
     backup.should.have.property('encryptedPrv');
-    const decryptedPrv = bitgo.decrypt({ input: backup.encryptedPrv, password: 't3stSicretly!' });
+    const decryptedPrv = await bitgo.decrypt({ input: backup.encryptedPrv, password: 't3stSicretly!' });
     decryptedPrv.should.startWith('xprv');
   });
 
@@ -1076,7 +1093,7 @@ describe('V2 Keychains', function () {
       updateKeychainStub = sandbox.stub().returns({ result: sandbox.stub().resolves() });
       sandbox.stub(BitGo.prototype, 'put').returns({ send: updateKeychainStub });
       createKeypairStub = sandbox.stub(ofcKeychains, 'create').returns(mockNewKeypair);
-      encryptionStub = sandbox.stub(BitGo.prototype, 'encryptAsync').resolves('newEncryptedPrv');
+      encryptionStub = sandbox.stub(BitGo.prototype, 'encrypt').resolves('newEncryptedPrv');
     });
 
     afterEach(function () {

@@ -196,7 +196,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       if (encryptionSession) {
         userKeychainParams.encryptedPrv = await encryptionSession.encrypt(JSON.stringify(userSigningMaterial));
       } else {
-        userKeychainParams.encryptedPrv = await this.bitgo.encryptAsync({
+        userKeychainParams.encryptedPrv = await this.bitgo.encrypt({
           input: JSON.stringify(userSigningMaterial),
           password: passphrase,
           encryptionVersion,
@@ -209,7 +209,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       userKeychainParams.webauthnInfo = {
         otpDeviceId: webauthnInfo.otpDeviceId,
         prfSalt: webauthnInfo.prfSalt,
-        encryptedPrv: await this.bitgo.encryptAsync({
+        encryptedPrv: await this.bitgo.encrypt({
           input: JSON.stringify(userSigningMaterial),
           password: webauthnInfo.passphrase,
           encryptionVersion,
@@ -302,7 +302,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       if (encryptionSession) {
         params.encryptedPrv = await encryptionSession.encrypt(prv);
       } else {
-        params.encryptedPrv = await this.bitgo.encryptAsync({ input: prv, password: passphrase, encryptionVersion });
+        params.encryptedPrv = await this.bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion });
       }
     }
 
@@ -579,7 +579,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
         session.destroy();
       }
     } else {
-      encryptedRShare = await this.bitgo.encryptAsync({
+      encryptedRShare = await this.bitgo.encrypt({
         input: stringifiedRShare,
         password: params.walletPassphrase,
         encryptionVersion: 1,
@@ -597,18 +597,10 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
   }): Promise<{ rShare: SignShare }> {
     const { walletPassphrase, encryptedUserToBitgoRShare } = params;
 
-    let decryptedRShare: string;
-    if (isV2Envelope(encryptedUserToBitgoRShare.share)) {
-      decryptedRShare = await this.bitgo.decryptAsync({
-        input: encryptedUserToBitgoRShare.share,
-        password: walletPassphrase,
-      });
-    } else {
-      decryptedRShare = this.bitgo.decrypt({
-        input: encryptedUserToBitgoRShare.share,
-        password: walletPassphrase,
-      });
-    }
+    const decryptedRShare = await this.bitgo.decrypt({
+      input: encryptedUserToBitgoRShare.share,
+      password: walletPassphrase,
+    });
     const rShare = JSON.parse(decryptedRShare);
     assert(rShare.xShare, 'Unable to find xShare in decryptedRShare');
     assert(rShare.rShares, 'Unable to find rShares in decryptedRShare');

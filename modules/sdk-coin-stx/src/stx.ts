@@ -4,7 +4,7 @@ import {
   BaseTransaction,
   BitGoBase,
   Environments,
-  getBip32KeysAsync,
+  getBip32Keys,
   getIsUnsignedSweep,
   KeyPair,
   MethodNotImplementedError,
@@ -701,7 +701,7 @@ export class Stx extends BaseCoin {
       }
     }
     const isUnsignedSweep = getIsUnsignedSweep(params);
-    const keys = await getBip32KeysAsync(this.bitgo, params, { requireBitGoXpub: true });
+    const keys = await getBip32Keys(this.bitgo, params, { requireBitGoXpub: true });
     const rootAddressDetails = getAddressDetails(params.rootAddress);
     const [accountBalanceData, accountNonceData] = await Promise.all([
       this.getNativeStxBalanceFromNode({ address: rootAddressDetails.address }),

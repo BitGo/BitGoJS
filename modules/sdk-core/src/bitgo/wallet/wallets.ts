@@ -180,7 +180,7 @@ export class Wallets implements IWallets {
         const keychain = this.baseCoin.keychains().create();
         const keychainParams: AddKeychainOptions = {
           pub: keychain.pub,
-          encryptedPrv: await this.bitgo.encryptAsync({
+          encryptedPrv: await this.bitgo.encrypt({
             password: passphrase,
             input: keychain.prv,
             encryptionVersion,
@@ -240,7 +240,7 @@ export class Wallets implements IWallets {
 
     const keychainParams: AddKeychainOptions = {
       pub: keychain.pub,
-      encryptedPrv: await this.bitgo.encryptAsync({
+      encryptedPrv: await this.bitgo.encrypt({
         password: passphrase,
         input: keychain.prv,
         encryptionVersion,
@@ -328,7 +328,7 @@ export class Wallets implements IWallets {
       );
 
       const walletData = await this.generateLightningWallet(options);
-      walletData.encryptedWalletPassphrase = await this.bitgo.encryptAsync({
+      walletData.encryptedWalletPassphrase = await this.bitgo.encrypt({
         input: options.passphrase,
         password: options.passcodeEncryptionCode,
         encryptionVersion: options.encryptionVersion,
@@ -348,7 +348,7 @@ export class Wallets implements IWallets {
       );
 
       const walletData = await this.generateGoAccountWallet(options);
-      walletData.encryptedWalletPassphrase = await this.bitgo.encryptAsync({
+      walletData.encryptedWalletPassphrase = await this.bitgo.encrypt({
         input: options.passphrase,
         password: options.passcodeEncryptionCode,
         encryptionVersion: options.encryptionVersion,
@@ -457,7 +457,7 @@ export class Wallets implements IWallets {
         encryptionVersion: params.encryptionVersion,
       });
       if (params.passcodeEncryptionCode) {
-        walletData.encryptedWalletPassphrase = await this.bitgo.encryptAsync({
+        walletData.encryptedWalletPassphrase = await this.bitgo.encrypt({
           input: passphrase,
           password: params.passcodeEncryptionCode,
           encryptionVersion: params.encryptionVersion,
@@ -593,7 +593,7 @@ export class Wallets implements IWallets {
           }
           // Create the user key.
           userKeychain = this.baseCoin.keychains().create();
-          userKeychain.encryptedPrv = await this.bitgo.encryptAsync({
+          userKeychain.encryptedPrv = await this.bitgo.encrypt({
             password: passphrase,
             input: userKeychain.prv,
             encryptionVersion: params.encryptionVersion,
@@ -613,7 +613,7 @@ export class Wallets implements IWallets {
               otpDeviceId: params.webauthnInfo.otpDeviceId,
               prfSalt: params.webauthnInfo.prfSalt,
               enterpriseId: params.enterprise,
-              encryptedPrv: await this.bitgo.encryptAsync({
+              encryptedPrv: await this.bitgo.encrypt({
                 password: params.webauthnInfo.passphrase,
                 input: userKeychain.prv,
                 encryptionVersion: params.encryptionVersion,
@@ -713,7 +713,7 @@ export class Wallets implements IWallets {
       }
 
       if (canEncrypt && params.passcodeEncryptionCode) {
-        result.encryptedWalletPassphrase = await this.bitgo.encryptAsync({
+        result.encryptedWalletPassphrase = await this.bitgo.encrypt({
           input: passphrase,
           password: params.passcodeEncryptionCode,
           encryptionVersion: params.encryptionVersion,
@@ -1130,7 +1130,7 @@ export class Wallets implements IWallets {
       }
 
       const walletKeychain = this.baseCoin.keychains().create();
-      const encryptedPrv = await this.bitgo.encryptAsync({
+      const encryptedPrv = await this.bitgo.encrypt({
         password: params.newWalletPassphrase || params.userPassword,
         input: walletKeychain.prv,
         encryptionVersion: params.encryptionVersion,
@@ -1172,7 +1172,7 @@ export class Wallets implements IWallets {
       };
       const payloadString = JSON.stringify(payload);
 
-      const privateKey = await this.bitgo.decryptAsync({
+      const privateKey = await this.bitgo.decrypt({
         password: params.userPassword,
         input: walletKeychain.encryptedPrv,
       });
@@ -1216,7 +1216,7 @@ export class Wallets implements IWallets {
     }
 
     // Now we have the sharing keychain, we can work out the secret used for sharing the wallet with us
-    sharingKeychain.prv = await this.bitgo.decryptAsync({
+    sharingKeychain.prv = await this.bitgo.decrypt({
       password: params.userPassword,
       input: sharingKeychain.encryptedXprv,
     });
@@ -1227,14 +1227,14 @@ export class Wallets implements IWallets {
     ).toString('hex');
 
     // Yes! We got the secret successfully here, now decrypt the shared wallet prv
-    const decryptedSharedWalletPrv = await this.bitgo.decryptAsync({
+    const decryptedSharedWalletPrv = await this.bitgo.decrypt({
       password: secret,
       input: walletShare.keychain.encryptedPrv,
     });
 
     // We will now re-encrypt the wallet with our own password
     const newWalletPassphrase = params.newWalletPassphrase || params.userPassword;
-    encryptedPrv = await this.bitgo.encryptAsync({
+    encryptedPrv = await this.bitgo.encrypt({
       password: newWalletPassphrase,
       input: decryptedSharedWalletPrv,
       encryptionVersion: params.encryptionVersion,
@@ -1293,7 +1293,7 @@ export class Wallets implements IWallets {
       throw new Error('encryptedXprv was not found on sharing keychain');
     }
 
-    sharingKeychain.prv = await this.bitgo.decryptAsync({
+    sharingKeychain.prv = await this.bitgo.decrypt({
       password: params.userLoginPassword,
       input: sharingKeychain.encryptedXprv,
     });
@@ -1308,7 +1308,7 @@ export class Wallets implements IWallets {
               throw new Error('userLoginPassword param must be provided to generate user keychain');
             }
             const walletKeychain = this.baseCoin.keychains().create();
-            const encryptedPrv = await this.bitgo.encryptAsync({
+            const encryptedPrv = await this.bitgo.encrypt({
               password: newWalletPassphrase,
               input: walletKeychain.prv,
               encryptionVersion: params.encryptionVersion,
@@ -1331,11 +1331,11 @@ export class Wallets implements IWallets {
             Buffer.from(walletShare.keychain.fromPubKey, 'hex')
           ).toString('hex');
 
-          const decryptedSharedWalletPrv = await this.bitgo.decryptAsync({
+          const decryptedSharedWalletPrv = await this.bitgo.decrypt({
             password: secret,
             input: walletShare.keychain.encryptedPrv,
           });
-          const newEncryptedPrv = await this.bitgo.encryptAsync({
+          const newEncryptedPrv = await this.bitgo.encrypt({
             password: newWalletPassphrase,
             input: decryptedSharedWalletPrv,
             encryptionVersion: params.encryptionVersion,
@@ -1348,7 +1348,7 @@ export class Wallets implements IWallets {
             entry.webauthnInfo = {
               otpDeviceId: webauthnInfo.otpDeviceId,
               prfSalt: webauthnInfo.prfSalt,
-              encryptedPrv: await this.bitgo.encryptAsync({
+              encryptedPrv: await this.bitgo.encrypt({
                 password: webauthnInfo.passphrase,
                 input: decryptedSharedWalletPrv,
                 encryptionVersion: params.encryptionVersion,
@@ -1464,7 +1464,7 @@ export class Wallets implements IWallets {
       if (!sharingKeychain.encryptedXprv) {
         throw new Error('encryptedXprv was not found on sharing keychain');
       }
-      sharingKeychainPrv = await this.bitgo.decryptAsync({
+      sharingKeychainPrv = await this.bitgo.decrypt({
         password: userLoginPassword,
         input: sharingKeychain.encryptedXprv,
       });
@@ -1586,7 +1586,7 @@ export class Wallets implements IWallets {
         timestamp: new Date().toISOString(),
       });
 
-      const prv = await this.bitgo.decryptAsync({
+      const prv = await this.bitgo.decrypt({
         password: userLoginPassword,
         input: walletKeychain.encryptedPrv,
       });
@@ -1611,7 +1611,7 @@ export class Wallets implements IWallets {
       }
 
       const walletKeychain = this.baseCoin.keychains().create();
-      const encryptedPrv = await this.bitgo.encryptAsync({
+      const encryptedPrv = await this.bitgo.encrypt({
         password: newWalletPassphrase || userLoginPassword,
         input: walletKeychain.prv,
         encryptionVersion,
@@ -1651,13 +1651,13 @@ export class Wallets implements IWallets {
       'hex'
     );
 
-    const decryptedPrv = await this.bitgo.decryptAsync({
+    const decryptedPrv = await this.bitgo.decrypt({
       password: sharedSecret,
       input: walletShare.keychain.encryptedPrv,
     });
 
     // We will now re-encrypt the wallet with our own password
-    const encryptedPrv = await this.bitgo.encryptAsync({
+    const encryptedPrv = await this.bitgo.encrypt({
       password: newWalletPassphrase || userLoginPassword,
       input: decryptedPrv,
       encryptionVersion,

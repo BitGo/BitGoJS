@@ -3,7 +3,7 @@ import {
   BitGoBase,
   ErrorNoInputToRecover,
   getKrsProvider,
-  getBip32KeysAsync as getBip32KeysFromSdkCore,
+  getBip32Keys as getBip32KeysFromSdkCore,
   isTriple,
   krsProviders,
   Triple,

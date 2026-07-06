@@ -823,7 +823,7 @@ export class Iota extends BaseCoin {
     // Decrypt private keys from KeyCard values
     let userPrv: string;
     try {
-      userPrv = await this.bitgo.decryptAsync({ input: userKey, password: params.walletPassphrase });
+      userPrv = await this.bitgo.decrypt({ input: userKey, password: params.walletPassphrase });
     } catch (e) {
       throw new Error(`Error decrypting user keychain: ${(e as Error).message}`);
     }
@@ -831,7 +831,7 @@ export class Iota extends BaseCoin {
 
     let backupPrv: string;
     try {
-      backupPrv = await this.bitgo.decryptAsync({ input: backupKey, password: params.walletPassphrase });
+      backupPrv = await this.bitgo.decrypt({ input: backupKey, password: params.walletPassphrase });
     } catch (e) {
       throw new Error(`Error decrypting backup keychain: ${(e as Error).message}`);
     }

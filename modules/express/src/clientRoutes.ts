@@ -104,13 +104,13 @@ function handleLogin(req: ExpressApiRouteRequest<'express.v1.login' | 'express.l
 
 async function handleDecrypt(req: ExpressApiRouteRequest<'express.v1.decrypt' | 'express.decrypt', 'post'>) {
   return {
-    decrypted: await req.bitgo.decryptAsync(req.body),
+    decrypted: await req.bitgo.decrypt(req.body),
   };
 }
 
 async function handleEncrypt(req: ExpressApiRouteRequest<'express.v1.encrypt' | 'express.encrypt', 'post'>) {
   return {
-    encrypted: await req.bitgo.encryptAsync(req.body),
+    encrypted: await req.bitgo.encrypt(req.body),
   };
 }
 
@@ -431,7 +431,7 @@ async function getEncryptedPrivKey(path: string, walletId: string): Promise<stri
 
 async function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: string): Promise<string> {
   try {
-    return await bg.decryptAsync({ password: walletPw, input: encryptedPrivKey });
+    return await bg.decrypt({ password: walletPw, input: encryptedPrivKey });
   } catch (e) {
     throw new Error(`Error when trying to decrypt private key: ${e}`);
   }
@@ -1387,7 +1387,7 @@ export async function handleKeychainChangePassword(
     );
   }
 
-  const updatedKeychain = await coin.keychains().updateSingleKeychainPasswordAsync({
+  const updatedKeychain = await coin.keychains().updateSingleKeychainPassword({
     keychain,
     oldPassword,
     newPassword,

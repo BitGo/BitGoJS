@@ -1751,7 +1751,7 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
       const safeUserKey = _.get(this.wallet, 'private.userPrivKey');
       if (_.isString(safeUserKey) && _.isString(params.walletPassphrase)) {
         // @ts-expect-error - no implicit this
-        transaction.signingKey = await this.bitgo.decryptAsync({
+        transaction.signingKey = await this.bitgo.decrypt({
           password: params.walletPassphrase,
           input: safeUserKey,
         });
@@ -1815,7 +1815,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function (params, callback) {
     return self.getEncryptedUserKeychain().then(async function (keychain) {
       // Decrypt the user key with a passphrase
       try {
-        keychain.xprv = await self.bitgo.decryptAsync({
+        keychain.xprv = await self.bitgo.decrypt({
           password: params.walletPassphrase,
           input: keychain.encryptedXprv,
         });
@@ -2308,7 +2308,7 @@ Wallet.prototype.shareWallet = function (params, callback) {
               throw new Error('Missing walletPassphrase argument');
             }
             try {
-              keychain.xprv = await self.bitgo.decryptAsync({
+              keychain.xprv = await self.bitgo.decrypt({
                 password: params.walletPassphrase,
                 input: keychain.encryptedXprv,
               });
@@ -2318,7 +2318,7 @@ Wallet.prototype.shareWallet = function (params, callback) {
 
             const eckey = makeRandomKey();
             const secret = getSharedSecret(eckey, Buffer.from(sharing.pubkey, 'hex')).toString('hex');
-            const newEncryptedXprv = await self.bitgo.encryptAsync({
+            const newEncryptedXprv = await self.bitgo.encrypt({
               password: secret,
               input: keychain.xprv,
               encryptionVersion: params.encryptionVersion,
@@ -2615,10 +2615,10 @@ Wallet.prototype.recover = async function (params) {
   assert(parsedUnsignedTx.outs.length === 1);
   assert(_.sumBy(params.unspents, 'value') - _.sumBy(parsedUnsignedTx.outs, 'value') === Number(approximateTxFee));
 
-  const plainUserKey = await this.bitgo.decryptAsync({ password: params.walletPassphrase, input: params.userKey });
+  const plainUserKey = await this.bitgo.decrypt({ password: params.walletPassphrase, input: params.userKey });
   const halfSignedTx = await this.signTransaction({ ...unsignedTx, signingKey: plainUserKey });
 
-  const plainBackupKey = await this.bitgo.decryptAsync({ password: params.walletPassphrase, input: params.backupKey });
+  const plainBackupKey = await this.bitgo.decrypt({ password: params.walletPassphrase, input: params.backupKey });
   const fullSignedTx = await this.signTransaction({
     ...unsignedTx,
     transactionHex: halfSignedTx.tx,
@@ -2675,7 +2675,7 @@ Wallet.prototype.sweep = async function (params) {
   assert(parsedUnsignedTx.outs.length === 1);
   assert(_.sumBy(params.unspents, 'value') - _.sumBy(parsedUnsignedTx.outs, 'value') === Number(approximateTxFee));
 
-  const plainUserKey = await this.bitgo.decryptAsync({ password: params.walletPassphrase, input: params.userKey });
+  const plainUserKey = await this.bitgo.decrypt({ password: params.walletPassphrase, input: params.userKey });
   const halfSignedTx = await this.signTransaction({ ...unsignedTx, signingKey: plainUserKey });
 
   return await this.sendTransaction({

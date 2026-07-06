@@ -1494,7 +1494,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
       try {
-        userKey = await this.bitgo.decryptAsync({
+        userKey = await this.bitgo.decrypt({
           input: userKey,
           password: params.walletPassphrase,
         });
@@ -1513,7 +1513,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       let backupPrv;
 
       try {
-        backupPrv = await this.bitgo.decryptAsync({
+        backupPrv = await this.bitgo.decrypt({
           input: backupKey,
           password: params.walletPassphrase,
         });
@@ -1686,7 +1686,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     let userKeyPrv;
     try {
-      userKeyPrv = await this.bitgo.decryptAsync({
+      userKeyPrv = await this.bitgo.decrypt({
         input: params.encryptedPrv,
         password: params.walletPassphrase,
       });
@@ -1765,7 +1765,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     if (params.walletPassphrase) {
       if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
         try {
-          userKeyPrv = await this.bitgo.decryptAsync({
+          userKeyPrv = await this.bitgo.decrypt({
             input: userKey,
             password: params.walletPassphrase,
           });
@@ -2571,7 +2571,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const walletPassphrase = buildParams.walletPassphrase;
 
     const userKeychain = await this.keychains().get({ id: wallet.keyIds()[0] });
-    const userPrv = await wallet.getUserPrvAsync({ keychain: userKeychain, walletPassphrase });
+    const userPrv = await wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
     const userPrvBuffer = bip32.fromBase58(userPrv).privateKey;
     if (!userPrvBuffer) {
       throw new Error('invalid userPrv');

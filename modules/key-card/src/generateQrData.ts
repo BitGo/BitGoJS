@@ -1,6 +1,6 @@
 import { BaseCoin } from '@bitgo/statics';
 import { Keychain } from '@bitgo/sdk-core';
-import { encrypt, encryptAsync } from '@bitgo/sdk-api';
+import { encrypt } from '@bitgo/sdk-api';
 import * as assert from 'assert';
 import {
   GenerateLightningQrDataParams,
@@ -128,21 +128,12 @@ function generateUserMasterPublicKeyQRData(publicKey: string): MasterPublicKeyQr
   };
 }
 
-function generatePasscodeQrData(passphrase: string, passcodeEncryptionCode: string): QrDataEntry {
-  const encryptedWalletPasscode = encrypt(passcodeEncryptionCode, passphrase);
-  return {
-    title: 'D: Encrypted Wallet Password',
-    description: 'This is the wallet password, encrypted client-side with a key held by BitGo.',
-    data: encryptedWalletPasscode,
-  };
-}
-
-async function generatePasscodeQrDataAsync(
+async function generatePasscodeQrData(
   passphrase: string,
   passcodeEncryptionCode: string,
   encryptionVersion?: 1 | 2
 ): Promise<QrDataEntry> {
-  const encryptedWalletPasscode = await encryptAsync(passcodeEncryptionCode, passphrase, { encryptionVersion });
+  const encryptedWalletPasscode = await encrypt(passcodeEncryptionCode, passphrase, { encryptionVersion });
   return {
     title: 'D: Encrypted Wallet Password',
     description: 'This is the wallet password, encrypted client-side with a key held by BitGo.',
@@ -197,24 +188,11 @@ function buildLightningQrData({ userAuthKeychain }: GenerateLightningQrDataParam
   };
 }
 
-export function generateQrData(params: GenerateQrDataParams): QrData {
+export async function generateQrData(params: GenerateQrDataParams): Promise<QrData> {
   const qrData = buildWalletQrData(params);
 
   if (params.passphrase && params.passcodeEncryptionCode) {
-    qrData.passcode = generatePasscodeQrData(params.passphrase, params.passcodeEncryptionCode);
-  }
-
-  return qrData;
-}
-
-/**
- * Async version of {@link generateQrData} with v1/v2 auto-detect encrypt for Box D via `encryptAsync`.
- */
-export async function generateQrDataAsync(params: GenerateQrDataParams): Promise<QrData> {
-  const qrData = buildWalletQrData(params);
-
-  if (params.passphrase && params.passcodeEncryptionCode) {
-    qrData.passcode = await generatePasscodeQrDataAsync(
+    qrData.passcode = await generatePasscodeQrData(
       params.passphrase,
       params.passcodeEncryptionCode,
       params.encryptionVersion
@@ -224,24 +202,11 @@ export async function generateQrDataAsync(params: GenerateQrDataParams): Promise
   return qrData;
 }
 
-export function generateLightningQrData(params: GenerateLightningQrDataParams): QrData {
+export async function generateLightningQrData(params: GenerateLightningQrDataParams): Promise<QrData> {
   const qrData = buildLightningQrData(params);
 
   if (params.passphrase && params.passcodeEncryptionCode) {
-    qrData.passcode = generatePasscodeQrData(params.passphrase, params.passcodeEncryptionCode);
-  }
-
-  return qrData;
-}
-
-/**
- * Async version of {@link generateLightningQrData} with v1/v2 auto-detect encrypt for Box D via `encryptAsync`.
- */
-export async function generateLightningQrDataAsync(params: GenerateLightningQrDataParams): Promise<QrData> {
-  const qrData = buildLightningQrData(params);
-
-  if (params.passphrase && params.passcodeEncryptionCode) {
-    qrData.passcode = await generatePasscodeQrDataAsync(
+    qrData.passcode = await generatePasscodeQrData(
       params.passphrase,
       params.passcodeEncryptionCode,
       params.encryptionVersion

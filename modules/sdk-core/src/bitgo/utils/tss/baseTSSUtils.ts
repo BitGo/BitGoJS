@@ -42,7 +42,6 @@ import {
   TssSignTxRequestParamsWithPrv,
   TxRequest,
   TxRequestVersion,
-  isV2Envelope,
 } from './baseTypes';
 import { GShare, SignShare } from '../../../account-lib/mpc/tss';
 import { RequestTracer } from '../util';
@@ -728,9 +727,10 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   }> {
     const bitgoGpgKey = await openpgp.readKey({ armoredKey: bitgoPublicGpgKey });
 
-    const decryptedGpgPrvKey = isV2Envelope(encryptedUserGpgPrvKey)
-      ? await this.bitgo.decryptAsync({ input: encryptedUserGpgPrvKey, password: walletPassphrase })
-      : this.bitgo.decrypt({ input: encryptedUserGpgPrvKey, password: walletPassphrase });
+    const decryptedGpgPrvKey = await this.bitgo.decrypt({
+      input: encryptedUserGpgPrvKey,
+      password: walletPassphrase,
+    });
 
     if (adata) {
       this.validateAdata(adata, encryptedUserGpgPrvKey, userGpgKeyDomainSeparator);

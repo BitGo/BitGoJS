@@ -1029,10 +1029,10 @@ describe('ALGO:', function () {
       const expectedAmount = new BigNumber(nativeBalance).minus(fee).minus(MIN_ACCOUNT_BALANCE).toString();
       let getBalanceStub: SinonStub;
 
-      beforeEach(function () {
+      beforeEach(async function () {
         const userSeed = Buffer.from('9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60', 'hex');
         userKp = basecoin.generateRootKeyPair(userSeed);
-        encryptedUserPrv = bitgo.encrypt({
+        encryptedUserPrv = await bitgo.encrypt({
           input: userKp.prv,
           password: walletPassphrase,
         });
@@ -1040,7 +1040,7 @@ describe('ALGO:', function () {
 
         const backupSeed = Buffer.from('6d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60', 'hex');
         backupKp = basecoin.generateRootKeyPair(backupSeed);
-        encryptedBackupPrv = bitgo.encrypt({
+        encryptedBackupPrv = await bitgo.encrypt({
           input: backupKp.prv,
           password: walletPassphrase,
         });
@@ -1142,41 +1142,38 @@ describe('ALGO:', function () {
       });
     });
 
-    it('should throw error if the walletPassphrase is incorrect', () => {
-      assert.throws(
-        () => {
+    it('should throw error if the walletPassphrase is incorrect', async () => {
+      await assert.rejects(
+        () =>
           basecoin.assertIsValidKey({
             encryptedPrv: key,
             walletPassphrase: 'foo',
-          });
-        },
-        { message: "failed to decrypt prv: password error - ccm: tag doesn't match" }
+          }),
+        { message: 'failed to decrypt prv: incorrect password' }
       );
     });
 
-    it('should throw error if the key is altered', () => {
+    it('should throw error if the key is altered', async () => {
       const alteredKey = key.replace(/[0-9]/g, '0');
-      assert.throws(
-        () => {
+      await assert.rejects(
+        () =>
           basecoin.assertIsValidKey({
             encryptedPrv: alteredKey,
             walletPassphrase,
-          });
-        },
-        { message: 'failed to decrypt prv: json decrypt: invalid parameters' }
+          }),
+        { message: 'failed to decrypt prv: decrypt: ciphertext is not valid JSON' }
       );
     });
 
-    it('should throw error if the key is not a valid key', () => {
+    it('should throw error if the key is not a valid key', async () => {
       const invalidKey = '#@)$#($*@)#($*';
-      const encryptedPrv = encrypt(walletPassphrase, invalidKey);
-      assert.throws(
-        () => {
+      const encryptedPrv = await encrypt(walletPassphrase, invalidKey);
+      await assert.rejects(
+        () =>
           basecoin.assertIsValidKey({
             encryptedPrv,
             walletPassphrase,
-          });
-        },
+          }),
         { message: 'Invalid private key: Invalid base32 characters' }
       );
     });

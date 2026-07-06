@@ -1935,7 +1935,7 @@ export class Sol extends BaseCoin {
     if (!isMpcV2) {
       let userPrv: string;
       try {
-        userPrv = await this.bitgo.decryptAsync({
+        userPrv = await this.bitgo.decrypt({
           input: userKey,
           password: params.walletPassphrase!,
         });
@@ -1946,7 +1946,7 @@ export class Sol extends BaseCoin {
 
       let backupPrv: string;
       try {
-        backupPrv = await this.bitgo.decryptAsync({
+        backupPrv = await this.bitgo.decrypt({
           input: backupKey,
           password: params.walletPassphrase!,
         });

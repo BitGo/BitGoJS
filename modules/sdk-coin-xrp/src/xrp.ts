@@ -11,7 +11,7 @@ import {
   BaseCoin,
   BitGoBase,
   checkKrsProvider,
-  getBip32KeysAsync,
+  getBip32Keys,
   InvalidAddressError,
   KeyPair,
   MethodNotImplementedError,
@@ -608,7 +608,7 @@ export class Xrp extends BaseCoin {
       throw new Error('Invalid destination address!');
     }
 
-    const keys = await getBip32KeysAsync(this.bitgo, params, { requireBitGoXpub: false });
+    const keys = await getBip32Keys(this.bitgo, params, { requireBitGoXpub: false });
 
     const { addressDetails, feeDetails, serverDetails, accountLines } = await promiseProps({
       addressDetails: this.bitgo.post(rippledUrl).send(accountInfoParams),

@@ -2715,26 +2715,26 @@ describe('ETH:', function () {
         });
       });
 
-      it('should throw error if the walletPassphrase is incorrect', () => {
-        assert.throws(
+      it('should throw error if the walletPassphrase is incorrect', async () => {
+        await assert.rejects(
           () =>
             coin.assertIsValidKey({
               encryptedPrv: key,
               walletPassphrase: 'foo',
             }),
-          { message: "failed to decrypt prv: password error - ccm: tag doesn't match" }
+          { message: 'failed to decrypt prv: decrypt: ciphertext is not valid JSON' }
         );
       });
 
-      it('should throw error if the key is altered', () => {
+      it('should throw error if the key is altered', async () => {
         const alteredKey = key.replace(/[0-9]/g, '0');
-        assert.throws(
+        await assert.rejects(
           () =>
             coin.assertIsValidKey({
               encryptedPrv: alteredKey,
               walletPassphrase: 'kAm[EFQ6o=SxlcLFDw%,',
             }),
-          { message: 'failed to decrypt prv: json decrypt: invalid parameters' }
+          { message: 'failed to decrypt prv: decrypt: ciphertext is not valid JSON' }
         );
       });
     });
@@ -2754,9 +2754,9 @@ describe('ETH:', function () {
         });
       });
 
-      it('should throw if the commonKeychain is altered', () => {
+      it('should throw if the commonKeychain is altered', async () => {
         const alteredCommonKeychain = generateRandomPassword(10);
-        assert.throws(
+        await assert.rejects(
           () =>
             coin.assertIsValidKey({
               encryptedPrv: key,
@@ -2768,9 +2768,9 @@ describe('ETH:', function () {
         );
       });
 
-      it('should throw error if the walletPassphrase is incorrect', () => {
+      it('should throw error if the walletPassphrase is incorrect', async () => {
         const incorrectPassphrase = 'foo';
-        assert.throws(
+        await assert.rejects(
           () =>
             coin.assertIsValidKey({
               encryptedPrv: key,
@@ -2778,13 +2778,13 @@ describe('ETH:', function () {
               walletPassphrase: incorrectPassphrase,
               multiSigType,
             }),
-          { message: "failed to decrypt prv: password error - ccm: tag doesn't match" }
+          { message: 'failed to decrypt prv: incorrect password' }
         );
       });
 
-      it('should throw error if the key is altered', () => {
+      it('should throw error if the key is altered', async () => {
         const alteredKey = key.replace(/[0-9]/g, '0');
-        assert.throws(
+        await assert.rejects(
           () =>
             coin.assertIsValidKey({
               encryptedPrv: alteredKey,
@@ -2792,7 +2792,7 @@ describe('ETH:', function () {
               walletPassphrase,
               multiSigType,
             }),
-          { message: 'failed to decrypt prv: json decrypt: invalid parameters' }
+          { message: 'failed to decrypt prv: decrypt: ciphertext is not valid JSON' }
         );
       });
     });

@@ -21,10 +21,10 @@ describe('Wallets - encryptionVersion threading', function () {
     };
 
     mockBitGo = {
-      encryptAsync: sinon
+      encrypt: sinon
         .stub()
         .callsFake(async ({ password, input }: { password: string; input: string }) => `enc:${password}:${input}`),
-      decryptAsync: sinon.stub().resolves('decryptedPrv'),
+      decrypt: sinon.stub().resolves('decryptedPrv'),
       get: sinon.stub().returns({ result: sinon.stub(), query: sinon.stub().returnsThis() }),
       post: sinon.stub().returns({ send: sinon.stub().returns({ result: sinon.stub().resolves({}) }) }),
       put: sinon.stub().returns({
@@ -54,7 +54,7 @@ describe('Wallets - encryptionVersion threading', function () {
   });
 
   describe('acceptShare', function () {
-    it('passes encryptionVersion: 2 to encryptAsync on the multiUserKeyRotationRequired path', async function () {
+    it('passes encryptionVersion: 2 to encrypt on the multiUserKeyRotationRequired path', async function () {
       mockBitGo.get.returns({
         result: sinon.stub().resolves({
           userMultiKeyRotationRequired: true,
@@ -70,8 +70,8 @@ describe('Wallets - encryptionVersion threading', function () {
         encryptionVersion: 2,
       });
 
-      assert.ok(mockBitGo.encryptAsync.called, 'encryptAsync should have been called');
-      const call = mockBitGo.encryptAsync.firstCall;
+      assert.ok(mockBitGo.encrypt.called, 'encrypt should have been called');
+      const call = mockBitGo.encrypt.firstCall;
       assert.strictEqual(call.args[0].encryptionVersion, 2);
     });
 
@@ -90,8 +90,8 @@ describe('Wallets - encryptionVersion threading', function () {
         userPassword: 'my-password',
       });
 
-      assert.ok(mockBitGo.encryptAsync.called);
-      const call = mockBitGo.encryptAsync.firstCall;
+      assert.ok(mockBitGo.encrypt.called);
+      const call = mockBitGo.encrypt.firstCall;
       assert.strictEqual(call.args[0].encryptionVersion, undefined);
     });
   });
@@ -113,15 +113,15 @@ describe('Wallets - encryptionVersion threading', function () {
       mockBitGo.get.returns({ result: sinon.stub().resolves(walletSharesList) });
     });
 
-    it('passes encryptionVersion: 2 to encryptAsync on the multiUserKeyRotationRequired path', async function () {
+    it('passes encryptionVersion: 2 to encrypt on the multiUserKeyRotationRequired path', async function () {
       await wallets.bulkAcceptShare({
         walletShareIds: ['share-id'],
         userLoginPassword: 'login-password',
         encryptionVersion: 2,
       });
 
-      assert.ok(mockBitGo.encryptAsync.called);
-      const call = mockBitGo.encryptAsync.firstCall;
+      assert.ok(mockBitGo.encrypt.called);
+      const call = mockBitGo.encrypt.firstCall;
       assert.strictEqual(call.args[0].encryptionVersion, 2);
     });
 
@@ -131,8 +131,8 @@ describe('Wallets - encryptionVersion threading', function () {
         userLoginPassword: 'login-password',
       });
 
-      assert.ok(mockBitGo.encryptAsync.called);
-      const call = mockBitGo.encryptAsync.firstCall;
+      assert.ok(mockBitGo.encrypt.called);
+      const call = mockBitGo.encrypt.firstCall;
       assert.strictEqual(call.args[0].encryptionVersion, undefined);
     });
   });
@@ -186,9 +186,9 @@ describe('Wallets - encryptionVersion threading', function () {
       assert.strictEqual(prepareStub.firstCall.args[3], undefined);
     });
 
-    it('createBulkWalletShare passes encryptionVersion to encryptPrvForUserAsync', async function () {
+    it('createBulkWalletShare passes encryptionVersion to encryptPrvForUser', async function () {
       const encryptPrvStub = sinon
-        .stub(wallet, 'encryptPrvForUserAsync')
+        .stub(wallet, 'encryptPrvForUser')
         .resolves({ encryptedPrv: 'enc', pub: 'pub', fromPubKey: 'fpk', toPubKey: 'tpk', path: 'm/0' });
       sinon
         .stub(wallet as any, 'getDecryptedKeychainForSharing')
@@ -207,7 +207,7 @@ describe('Wallets - encryptionVersion threading', function () {
 
     it('createBulkWalletShare passes encryptionVersion: undefined when not set', async function () {
       const encryptPrvStub = sinon
-        .stub(wallet, 'encryptPrvForUserAsync')
+        .stub(wallet, 'encryptPrvForUser')
         .resolves({ encryptedPrv: 'enc', pub: 'pub', fromPubKey: 'fpk', toPubKey: 'tpk', path: 'm/0' });
       sinon
         .stub(wallet as any, 'getDecryptedKeychainForSharing')

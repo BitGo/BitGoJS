@@ -7,7 +7,7 @@ import { hasPsbtMagic } from '@bitgo/wasm-utxo';
 import { AbstractUtxoCoin, VerifyTransactionOptions } from '../../abstractUtxoCoin';
 import { ParsedTransaction } from '../types';
 import { stringToBufferTryFormats } from '../decode';
-import { verifyCustomChangeKeySignatures, verifyKeySignature, verifyUserPublicKeyAsync } from '../../verifyKey';
+import { verifyCustomChangeKeySignatures, verifyKeySignature, verifyUserPublicKey } from '../../verifyKey';
 
 const debug = buildDebug('bitgo:abstract-utxo:verifyTransaction');
 
@@ -80,7 +80,7 @@ export async function verifyTransaction<TNumber extends bigint | number>(
   let userPublicKeyVerified = false;
   try {
     // verify the user public key matches the private key - this will throw if there is no match
-    userPublicKeyVerified = await verifyUserPublicKeyAsync(bitgo, {
+    userPublicKeyVerified = await verifyUserPublicKey(bitgo, {
       userKeychain: keychains.user,
       disableNetworking,
       txParams,

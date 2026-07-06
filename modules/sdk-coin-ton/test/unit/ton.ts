@@ -715,7 +715,7 @@ describe('TON:', function () {
 
       sandbox.stub(Tonweb, 'HttpProvider').returns(mockProvider);
 
-      const decryptStub = sandbox.stub(bitgo, 'decryptAsync');
+      const decryptStub = sandbox.stub(bitgo, 'decrypt');
       decryptStub.onFirstCall().resolves(JSON.stringify({ dummy: 'userSigningMaterial' }));
       decryptStub.onSecondCall().resolves(JSON.stringify({ dummy: 'backupSigningMaterial' }));
 
