@@ -1024,6 +1024,16 @@ export const hoodethTokens = [
     EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20Token(
+    '7871813c-80d5-412a-82ac-a3fe5f4ea1da',
+    'hoodeth:skhy',
+    'SK Hynix Inc ADR',
+    18,
+    '0x84cab63bc87912e71ad199ff14a0ba45de68fef8',
+    UnderlyingAsset['hoodeth:skhy'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
     '3493d608-fd3e-45dc-926d-783d54a8fe4d',
     'thoodeth:amzn',
     'Amazon',
