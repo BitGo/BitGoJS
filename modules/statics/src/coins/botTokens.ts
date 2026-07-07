@@ -160,6 +160,18 @@ export const botTokens = [
     undefined,
     Networks.test.hoodi
   ),
+  AccountCtors.terc20(
+    '90575fb0-dab0-4951-9469-957e7dc5dbbd',
+    'hteth:dro',
+    'Drosera',
+    18,
+    '0x499b095ed02f76e56444c242ec43a05f9c2a3ac8',
+    'hteth:dro' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', ['custody-bitgo-new-york' as CoinFeature]),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
@@ -969,7 +981,7 @@ export const botTokens = [
     'eth:hybond',
     'HYBOND',
     18,
-    '0x67c312a26695ea9842bbcf1e1d0ee64694e42db6',
+    '0x1204371ac0e5176f4b8c5b2f16c2bec551b6fc1a',
     'eth:hybond' as unknown as UnderlyingAsset,
     getTokenFeatures('eth'),
     undefined,
