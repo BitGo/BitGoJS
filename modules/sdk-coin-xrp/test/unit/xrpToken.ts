@@ -58,6 +58,38 @@ describe('Xrp MPT Tokens', function () {
     names.should.containEql('txrp:feesec');
   });
 
+  it('should register mainnet MPT tokens xrp:kld and xrp:key', function () {
+    const names = XrpMptToken.createTokenConstructors().map(({ name }) => name);
+    names.should.containEql('xrp:kld');
+    names.should.containEql('xrp:key');
+  });
+
+  it('should return correct constants for xrp:kld', function () {
+    const kld = bitgo.coin('xrp:kld') as XrpMptToken;
+    kld.getChain().should.equal('xrp:kld');
+    kld.getBaseChain().should.equal('xrp');
+    kld.getFullName().should.equal('XRP MPT Token');
+    kld.getBaseFactor().should.equal(1000000); // assetScale 6 → 10^6
+    kld.coin.should.equal('xrp');
+    kld.network.should.equal('Mainnet');
+    kld.decimalPlaces.should.equal(6);
+    kld.contractAddress.should.equal('061B3FA2C51CC6B8BEF8E672C70638FCB4D474427155A753');
+    kld.canTransfer.should.equal(true);
+  });
+
+  it('should return correct constants for xrp:key', function () {
+    const key = bitgo.coin('xrp:key') as XrpMptToken;
+    key.getChain().should.equal('xrp:key');
+    key.getBaseChain().should.equal('xrp');
+    key.getFullName().should.equal('XRP MPT Token');
+    key.getBaseFactor().should.equal(1000000); // assetScale 6 → 10^6
+    key.coin.should.equal('xrp');
+    key.network.should.equal('Mainnet');
+    key.decimalPlaces.should.equal(6);
+    key.contractAddress.should.equal('0634CF15DADB8E4C44F8CEAFF89B3A9FED52604FEE1A184F');
+    key.canTransfer.should.equal(true);
+  });
+
   it('should return constants for txrp:sec0', function () {
     mptCoin.getChain().should.equal('txrp:sec0');
     mptCoin.getBaseChain().should.equal('txrp');

@@ -3858,6 +3858,9 @@ export enum UnderlyingAsset {
   'xrp:eurcv' = 'xrp:eurcv',
   'xrp:aau' = 'xrp:aau',
   'xrp:fiuaxrp' = 'xrp:fiuaxrp',
+  // XRP MPT mainnet tokens
+  'xrp:kld' = 'xrp:kld',
+  'xrp:key' = 'xrp:key',
   // XRP testnet tokens
   'txrp:xsgd' = 'txrp:xsgd',
   // XRP MPT testnet tokens

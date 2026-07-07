@@ -53,6 +53,7 @@ import {
   tzkethErc20,
   vetNFTCollection,
   worldErc20,
+  xrpMptToken,
   xrpToken,
   zkethErc20,
 } from './account';
@@ -7778,6 +7779,24 @@ export const allCoinsAndTokens = [
     true,
     6,
     UnderlyingAsset['txrp:feesec']
+  ),
+  xrpMptToken(
+    '54e5efa7-1ef1-4d74-8ead-8248d387623c',
+    'xrp:kld',
+    'Kladia Liquidity Deflator',
+    '061B3FA2C51CC6B8BEF8E672C70638FCB4D474427155A753',
+    true,
+    6,
+    UnderlyingAsset['xrp:kld']
+  ),
+  xrpMptToken(
+    'fcfb6345-3dad-48a6-870c-67acfdbbc821',
+    'xrp:key',
+    'Keystone Protocol Token',
+    '0634CF15DADB8E4C44F8CEAFF89B3A9FED52604FEE1A184F',
+    true,
+    6,
+    UnderlyingAsset['xrp:key']
   ),
   suiToken(
     'f26941b7-1110-4aa7-a2bc-29807297a51c',
