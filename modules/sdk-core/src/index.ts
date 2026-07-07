@@ -19,6 +19,11 @@ export type {
   EddsaKeyGenFinalizeResult,
   ExternalSignerKeyShare,
   ExternalSignerMpcState,
+  EddsaMPCv2KeyGenCallbacks,
+  EddsaMPCv2KeyGenInitializeCallback,
+  EddsaMPCv2KeyGenRound1Callback,
+  EddsaMPCv2KeyGenRound2Callback,
+  EddsaMPCv2KeyGenFinalizeCallback,
 } from './bitgo/wallet/iWallets';
 import { EcdsaUtils } from './bitgo/utils/tss/ecdsa/ecdsa';
 export { EcdsaUtils };

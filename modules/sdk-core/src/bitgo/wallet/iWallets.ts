@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { DklsTypes } from '@bitgo/sdk-lib-mpc';
+import { DklsTypes, MPSTypes } from '@bitgo/sdk-lib-mpc';
 import { MPCv2BroadcastMessage, MPCv2P2PMessage } from '@bitgo/public-types';
 
 import { EncryptionVersion, IRequestTracer } from '../../api';
@@ -176,6 +176,56 @@ export type EddsaKeyGenFinalizeCallback = (params: {
 export interface EddsaKeyGenCallbacks {
   initializeCallback: EddsaKeyGenInitializeCallback;
   finalizeCallback: EddsaKeyGenFinalizeCallback;
+}
+
+export type EddsaMPCv2KeyGenInitializeCallback = (params: {
+  enterprise: string;
+  bitgoPublicGpgKey: string;
+}) => Promise<{
+  userGpgPublicKey: string;
+  backupGpgPublicKey: string;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}>;
+
+export type EddsaMPCv2KeyGenRound1Callback = (params: {
+  bitgoPublicGpgKey: string;
+  userGpgPublicKey: string;
+  backupGpgPublicKey: string;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}) => Promise<{
+  userSignedMsg1: MPSTypes.MPSSignedMessage;
+  backupSignedMsg1: MPSTypes.MPSSignedMessage;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}>;
+
+export type EddsaMPCv2KeyGenRound2Callback = (params: {
+  bitgoMsg1: MPSTypes.MPSSignedMessage;
+  userSignedMsg1: MPSTypes.MPSSignedMessage;
+  backupSignedMsg1: MPSTypes.MPSSignedMessage;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}) => Promise<{
+  userSignedMsg2: MPSTypes.MPSSignedMessage;
+  backupSignedMsg2: MPSTypes.MPSSignedMessage;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}>;
+
+export type EddsaMPCv2KeyGenFinalizeCallback = (params: {
+  bitgoMsg2: MPSTypes.MPSSignedMessage;
+  bitgoCommonKeychain: string;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}) => Promise<{ commonKeychain: string }>;
+
+export interface EddsaMPCv2KeyGenCallbacks {
+  initializeCallback: EddsaMPCv2KeyGenInitializeCallback;
+  round1Callback: EddsaMPCv2KeyGenRound1Callback;
+  round2Callback: EddsaMPCv2KeyGenRound2Callback;
+  finalizeCallback: EddsaMPCv2KeyGenFinalizeCallback;
 }
 
 export interface GenerateWalletOptions {
