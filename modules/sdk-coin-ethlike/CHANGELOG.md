@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ethlike@2.8.11...@bitgo/sdk-coin-ethlike@2.9.0) (2026-07-07)
+
+
+### Features
+
+* **statics:** add cotievm/tcotievm statics for COTI EVM CCR ([742dd10](https://github.com/BitGo/BitGoJS/commit/742dd10c6b71d5ab0e8db01cfa1af2654265da91))
+
+
+
+
+
 ## [2.8.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ethlike@2.8.10...@bitgo/sdk-coin-ethlike@2.8.11) (2026-07-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ethlike

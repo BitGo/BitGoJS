@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.54.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.53.0...@bitgo/statics@58.54.0) (2026-07-07)
+
+
+### Features
+
+* add client requested tokens ([685b13a](https://github.com/BitGo/BitGoJS/commit/685b13ad9cb7e0592b10fa366666d203f609363f))
+* **statics:** add cotievm/tcotievm statics for COTI EVM CCR ([742dd10](https://github.com/BitGo/BitGoJS/commit/742dd10c6b71d5ab0e8db01cfa1af2654265da91))
+* **statics:** onboard XRP MPT mainnet tokens xrp:kld and xrp:key ([9c4db5a](https://github.com/BitGo/BitGoJS/commit/9c4db5a4a6f25dfbfc35b6677d366f13f714d66f))
+
+
+
+
+
 # [58.53.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.52.0...@bitgo/statics@58.53.0) (2026-07-02)
 
 

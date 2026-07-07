@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@3.11.7...@bitgo/sdk-coin-xlm@4.0.0) (2026-07-07)
+
+
+### Features
+
+* make encrypt/decrypt async ([7e845c3](https://github.com/BitGo/BitGoJS/commit/7e845c3041a08f8e7ade472eb43a5b997507d9ec))
+
+
+### BREAKING CHANGES
+
+* synchronous encrypt/decrypt callsites have been removed
+
+Ticket: WCN-174
+
+
+
+
+
 ## [3.11.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@3.11.6...@bitgo/sdk-coin-xlm@3.11.7) (2026-07-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xlm

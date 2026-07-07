@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.16.11...@bitgo/sdk-coin-dot@5.0.0) (2026-07-07)
+
+
+### Features
+
+* make encrypt/decrypt async ([7e845c3](https://github.com/BitGo/BitGoJS/commit/7e845c3041a08f8e7ade472eb43a5b997507d9ec))
+
+
+### BREAKING CHANGES
+
+* synchronous encrypt/decrypt callsites have been removed
+
+Ticket: WCN-174
+
+
+
+
+
 ## [4.16.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.16.10...@bitgo/sdk-coin-dot@4.16.11) (2026-07-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot

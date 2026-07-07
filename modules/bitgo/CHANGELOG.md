@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [52.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@51.7.4...bitgo@52.0.0) (2026-07-07)
+
+
+### Features
+
+* make encrypt/decrypt async ([7e845c3](https://github.com/BitGo/BitGoJS/commit/7e845c3041a08f8e7ade472eb43a5b997507d9ec))
+* **statics:** add cotievm/tcotievm statics for COTI EVM CCR ([742dd10](https://github.com/BitGo/BitGoJS/commit/742dd10c6b71d5ab0e8db01cfa1af2654265da91))
+
+
+### BREAKING CHANGES
+
+* synchronous encrypt/decrypt callsites have been removed
+
+Ticket: WCN-174
+
+
+
+
+
 ## [51.7.4](https://github.com/BitGo/BitGoJS/compare/bitgo@51.7.3...bitgo@51.7.4) (2026-07-02)
 
 

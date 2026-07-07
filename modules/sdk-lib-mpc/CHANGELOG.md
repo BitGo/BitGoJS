@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.14.1...@bitgo/sdk-lib-mpc@10.15.0) (2026-07-07)
+
+
+### Features
+
+* **sdk-lib-mpc:** bump @bitgo/wasm-mps to 1.10.0 and use Eddsa.deriveUnhardened ([f5ea12d](https://github.com/BitGo/BitGoJS/commit/f5ea12dbe8f4d209021024e14962308f1b8291d4))
+
+
+
+
+
 ## [10.14.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.14.0...@bitgo/sdk-lib-mpc@10.14.1) (2026-07-02)
 
 

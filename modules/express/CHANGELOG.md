@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [16.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.37.2...@bitgo/express@16.0.0) (2026-07-07)
+
+
+### Features
+
+* make encrypt/decrypt async ([7e845c3](https://github.com/BitGo/BitGoJS/commit/7e845c3041a08f8e7ade472eb43a5b997507d9ec))
+* **sdk-lib-mpc:** bump @bitgo/wasm-mps to 1.10.0 and use Eddsa.deriveUnhardened ([f5ea12d](https://github.com/BitGo/BitGoJS/commit/f5ea12dbe8f4d209021024e14962308f1b8291d4))
+
+
+### BREAKING CHANGES
+
+* synchronous encrypt/decrypt callsites have been removed
+
+Ticket: WCN-174
+
+
+
+
+
 ## [15.37.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.37.1...@bitgo/express@15.37.2) (2026-07-02)
 
 

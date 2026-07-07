@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.31.3...@bitgo/abstract-eth@25.0.0) (2026-07-07)
+
+
+### Features
+
+* make encrypt/decrypt async ([7e845c3](https://github.com/BitGo/BitGoJS/commit/7e845c3041a08f8e7ade472eb43a5b997507d9ec))
+
+
+### BREAKING CHANGES
+
+* synchronous encrypt/decrypt callsites have been removed
+
+Ticket: WCN-174
+
+
+
+
+
 ## [24.31.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.31.2...@bitgo/abstract-eth@24.31.3) (2026-07-02)
 
 

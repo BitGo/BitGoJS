@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.11.0...@bitgo/sdk-core@38.0.0) (2026-07-07)
+
+
+### Bug Fixes
+
+* **sdk-core:** migrate MPCv2 EdDSA address derivation to BIP32-Ed25519 ([ce75035](https://github.com/BitGo/BitGoJS/commit/ce7503578aa1daf7157ed4b966ab4526c2ce4469))
+
+
+### Features
+
+* make encrypt/decrypt async ([7e845c3](https://github.com/BitGo/BitGoJS/commit/7e845c3041a08f8e7ade472eb43a5b997507d9ec))
+* **sdk-lib-mpc:** bump @bitgo/wasm-mps to 1.10.0 and use Eddsa.deriveUnhardened ([f5ea12d](https://github.com/BitGo/BitGoJS/commit/f5ea12dbe8f4d209021024e14962308f1b8291d4))
+* **statics:** add cotievm/tcotievm statics for COTI EVM CCR ([742dd10](https://github.com/BitGo/BitGoJS/commit/742dd10c6b71d5ab0e8db01cfa1af2654265da91))
+
+
+### BREAKING CHANGES
+
+* synchronous encrypt/decrypt callsites have been removed
+
+Ticket: WCN-174
+
+
+
+
+
 # [37.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.10.1...@bitgo/sdk-core@37.11.0) (2026-07-02)
 
 
