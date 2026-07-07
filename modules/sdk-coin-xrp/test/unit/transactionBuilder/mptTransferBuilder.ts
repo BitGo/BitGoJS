@@ -185,6 +185,99 @@ describe('XRP MPTokenTransfer Builder', () => {
     });
   });
 
+  describe('transferFee / SendMax', () => {
+    it('should set SendMax when transferFee is non-zero', async () => {
+      const builder = factory.getMptTransferBuilder();
+      builder.sender(sender);
+      builder.to(destination);
+      builder.mptAmount(testData.MPT_ISSUANCE_ID, '1000000');
+      builder.transferFee(100); // 0.1% — same as feesec token
+      builder.sequence(1600010);
+      builder.fee('12');
+      builder.flags(2147483648);
+
+      const tx = await builder.build();
+      const payload = tx.getSignablePayload() as Record<string, unknown>;
+
+      should.exist(payload.SendMax);
+      (payload.SendMax as { mpt_issuance_id: string; value: string }).value.should.equal('1001000');
+    });
+
+    it('should use ceiling division for fractional fees', async () => {
+      const builder = factory.getMptTransferBuilder();
+      builder.sender(sender);
+      builder.to(destination);
+      builder.mptAmount(testData.MPT_ISSUANCE_ID, '1'); // 1 unit, fee = ceil(1 * 100 / 100000) = 1
+      builder.transferFee(100);
+      builder.sequence(1600010);
+      builder.fee('12');
+      builder.flags(2147483648);
+
+      const tx = await builder.build();
+      const payload = tx.getSignablePayload() as Record<string, unknown>;
+
+      (payload.SendMax as { value: string }).value.should.equal('2');
+    });
+
+    it('should not set SendMax when transferFee is 0', async () => {
+      const builder = factory.getMptTransferBuilder();
+      builder.sender(sender);
+      builder.to(destination);
+      builder.mptAmount(testData.MPT_ISSUANCE_ID, testData.MPT_AMOUNT_VALUE);
+      builder.transferFee(0);
+      builder.sequence(1600010);
+      builder.fee('12');
+      builder.flags(2147483648);
+
+      const tx = await builder.build();
+      const payload = tx.getSignablePayload() as Record<string, unknown>;
+
+      should.not.exist(payload.SendMax);
+    });
+
+    it('should not set SendMax when transferFee is not called', async () => {
+      const builder = factory.getMptTransferBuilder();
+      builder.sender(sender);
+      builder.to(destination);
+      builder.mptAmount(testData.MPT_ISSUANCE_ID, testData.MPT_AMOUNT_VALUE);
+      builder.sequence(1600010);
+      builder.fee('12');
+      builder.flags(2147483648);
+
+      const tx = await builder.build();
+      const payload = tx.getSignablePayload() as Record<string, unknown>;
+
+      should.not.exist(payload.SendMax);
+    });
+
+    it('should throw if transferFee is out of range', () => {
+      const builder = factory.getMptTransferBuilder();
+      should(() => builder.transferFee(-1)).throw(/0 and 50,000/);
+      should(() => builder.transferFee(50_001)).throw(/0 and 50,000/);
+    });
+
+    it('should preserve SendMax through build→serialize→rebuild round-trip', async () => {
+      const builder = factory.getMptTransferBuilder();
+      builder.sender(sender);
+      builder.to(destination);
+      builder.mptAmount(testData.MPT_ISSUANCE_ID, '1000000');
+      builder.transferFee(100);
+      builder.sequence(1600010);
+      builder.fee('12');
+      builder.flags(2147483648);
+
+      const tx = await builder.build();
+      const rawTx = tx.toBroadcastFormat();
+
+      const rebuilder = factory.from(rawTx);
+      const rebuiltTx = await rebuilder.build();
+      const rebuiltPayload = rebuiltTx.getSignablePayload() as Record<string, unknown>;
+
+      should.exist(rebuiltPayload.SendMax);
+      (rebuiltPayload.SendMax as { value: string }).value.should.equal('1001000');
+    });
+  });
+
   describe('explainTransaction', () => {
     it('should return explanation with outputs for MPT transfer', async () => {
       const builder = factory.getMptTransferBuilder();
