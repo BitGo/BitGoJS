@@ -5,13 +5,14 @@ import { SuiTransaction, SuiTransactionType, TokenTransferProgrammableTransactio
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { TokenTransferTransaction } from './tokenTransferTransaction';
-import { SuiObjectRef } from './mystenlab/types';
+import { normalizeSuiAddress, SuiObjectRef } from './mystenlab/types';
 import utils from './utils';
 import {
   Inputs,
   TransactionBlock as ProgrammingTransactionBlockBuilder,
   TransactionArgument,
 } from './mystenlab/builder';
+import { TypeTagSerializer } from './mystenlab/txn-data-serializers/type-tag-serializer';
 import BigNumber from 'bignumber.js';
 
 export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgrammableTransaction> {
@@ -24,6 +25,14 @@ export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgra
    * to a Coin<T> that is merged with any coin objects before splitting.
    */
   protected _fundsInAddressBalance: BigNumber = new BigNumber(0);
+  /**
+   * Coin type recovered from a deserialized transaction (the `redeem_funds` type argument /
+   * `BalanceWithdrawal` type). When set it takes precedence over the coin type derived from the
+   * coin config, so re-building a transaction (e.g. to attach a TSS signature before broadcast)
+   * preserves the exact coin type it was signed with even when the builder was constructed with
+   * the parent chain config rather than the token config.
+   */
+  protected _tokenCoinTypeOverride?: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -38,6 +47,9 @@ export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgra
    * The full coin type string derived from the coin config (e.g. `0xabc::my_token::MY_TOKEN`).
    */
   private get tokenCoinType(): string {
+    if (this._tokenCoinTypeOverride) {
+      return this._tokenCoinTypeOverride;
+    }
     const config = this._coinConfig as SuiCoin;
     return `${config.packageId}::${config.module}::${config.symbol}`;
   }
@@ -113,6 +125,19 @@ export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgra
     if (withdrawalInput) {
       const bw = withdrawalInput.BalanceWithdrawal ?? withdrawalInput.value?.BalanceWithdrawal;
       this._fundsInAddressBalance = new BigNumber(String(bw.reservation?.MaxAmountU64 ?? bw.amount));
+      // Recover the coin type from the withdrawal's TypeTag so that re-building uses the exact
+      // coin type the transaction was created (and signed) with. Without this, buildSuiTransaction
+      // would re-derive the coin type from this._coinConfig, which is the parent chain config
+      // (no packageId/module/symbol) when the builder is constructed via the chain — producing an
+      // `undefined::undefined::undefined` coin type and a signature that fails on-chain verification.
+      const withdrawalTypeTag = bw?.typeArg?.Balance;
+      if (withdrawalTypeTag) {
+        // BCS decodes the struct address without the `0x` prefix; normalize it so the recovered
+        // coin type matches the config-derived form (`0x<addr>::module::name`). The serialized
+        // bytes are identical either way since parseFromStr re-normalizes the address on encode.
+        const [address, ...rest] = TypeTagSerializer.tagToString(withdrawalTypeTag).split('::');
+        this._tokenCoinTypeOverride = [normalizeSuiAddress(address), ...rest].join('::');
+      }
     }
 
     if (txData.inputObjects && txData.inputObjects.length > 0) {

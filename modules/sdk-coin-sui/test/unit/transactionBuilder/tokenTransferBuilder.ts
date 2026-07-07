@@ -180,6 +180,36 @@ describe('Sui Token Transfer Builder', () => {
       rebuiltTx.toBroadcastFormat().should.equal(rawTx);
     });
 
+    it('should preserve the token coin type when rebuilt with the parent chain config', async function () {
+      // Reproduces the production broadcast path: the transaction is created with the token config
+      // (tsui:deep) but re-assembled for broadcast by a builder constructed with the parent CHAIN
+      // config (tsui, no packageId/module/symbol). Before the fix, buildSuiTransaction re-derived
+      // the coin type from the chain config and produced `undefined::undefined::undefined`, changing
+      // the tx bytes so the already-computed signature failed on-chain verification.
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.type(SuiTransactionType.TokenTransfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send([{ address: testData.recipients[0].address, amount: '1000' }]);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.fundsInAddressBalance(FUNDS_IN_ADDRESS_BALANCE);
+
+      const rawTx = (await txBuilder.build()).toBroadcastFormat();
+
+      // Rebuild using the CHAIN config, not the token config.
+      const chainFactory = getBuilderFactory('tsui');
+      const rebuilder = chainFactory.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const rebuiltTx = await rebuilder.build();
+
+      // Bytes must be unchanged so the signature still verifies.
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+
+      const rebuiltProgrammableTx = (rebuiltTx as SuiTransaction<TokenTransferProgrammableTransaction>).suiTransaction
+        .tx;
+      (rebuiltProgrammableTx.transactions[0] as any).target.should.equal('0x2::coin::redeem_funds');
+      (rebuiltProgrammableTx.transactions[0] as any).typeArguments[0].should.equal(TOKEN_COIN_TYPE);
+    });
+
     it('should build a token transfer with coin objects + address balance', async function () {
       const numberOfInputObjects = 3;
       const inputObjects = testData.generateObjects(numberOfInputObjects);
