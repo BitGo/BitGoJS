@@ -19,6 +19,7 @@ import {
   CustomEddsaMPCv2SigningRound2GeneratingFunction,
   CustomEddsaMPCv2SigningRound3GeneratingFunction,
   EDDSAUtils,
+  EddsaMPCv2KeyGenCallbacks,
   EddsaMPCv2Utils,
   IBaseCoin,
   IWallet,
@@ -1809,6 +1810,159 @@ describe('signRecoveryEddsaMPCv2', () => {
           wrongDkg.getCommonKeychain() // key chain from a different wallet
         ),
       /EdDSA MPCv2 recovery signature verification failed/
+    );
+  });
+});
+
+describe('EddsaMPCv2Utils.createKeychainsWithExternalSigner', function () {
+  let utils: EddsaMPCv2Utils;
+  let callbacks: EddsaMPCv2KeyGenCallbacks;
+  const enterprise = 'enterprise-id';
+  const sessionId = 'session-001';
+  const commonKeychain = 'common-keychain-hex';
+
+  const userState = { encryptedData: 'u-data', encryptedDataKey: 'u-data-key' };
+  const backupState = { encryptedData: 'b-data', encryptedDataKey: 'b-data-key' };
+  const userSignedMsg1: MPSTypes.MPSSignedMessage = { message: 'umsg1', signature: 'usig1' };
+  const backupSignedMsg1: MPSTypes.MPSSignedMessage = { message: 'bmsg1', signature: 'bsig1' };
+  const userSignedMsg2: MPSTypes.MPSSignedMessage = { message: 'umsg2', signature: 'usig2' };
+  const backupSignedMsg2: MPSTypes.MPSSignedMessage = { message: 'bmsg2', signature: 'bsig2' };
+  const bitgoMsg1: MPSTypes.MPSSignedMessage = { message: 'bitgo-msg1', signature: 'bitgo-sig1' };
+  const bitgoMsg2: MPSTypes.MPSSignedMessage = { message: 'bitgo-msg2', signature: 'bitgo-sig2' };
+
+  beforeEach(function () {
+    callbacks = {
+      initializeCallback: sinon.stub().resolves({
+        userGpgPublicKey: 'user-gpg-pub',
+        backupGpgPublicKey: 'backup-gpg-pub',
+        userState,
+        backupState,
+      }),
+      round1Callback: sinon.stub().resolves({
+        userSignedMsg1,
+        backupSignedMsg1,
+        userState,
+        backupState,
+      }),
+      round2Callback: sinon.stub().resolves({
+        userSignedMsg2,
+        backupSignedMsg2,
+        userState,
+        backupState,
+      }),
+      finalizeCallback: sinon.stub().resolves({ commonKeychain }),
+    };
+
+    const mockBitGo = {
+      getEnv: sinon.stub().returns('dev'),
+    } as any;
+
+    const mockKeychains = {
+      add: sinon
+        .stub()
+        .callsFake((params: any) => Promise.resolve({ id: `${params.source}-key-id`, commonKeychain, isMPCv2: true })),
+    };
+
+    const mockCoin = {
+      keychains: sinon.stub().returns(mockKeychains),
+    } as any;
+
+    utils = new EddsaMPCv2Utils(mockBitGo, mockCoin);
+
+    sinon.stub(utils, 'getBitgoGpgPubkeyBasedOnFeatureFlags' as any).resolves({ eddsaMpcv2PublicKey: null });
+    (utils as any).bitgoEddsaMpcv2PublicGpgKey = { armor: () => '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' };
+
+    sinon.stub(utils, 'sendKeyGenerationRound1').resolves({
+      sessionId: sessionId as any,
+      bitgoMsg1,
+    });
+    sinon.stub(utils, 'sendKeyGenerationRound2').resolves({
+      sessionId: sessionId as any,
+      commonPublicKeychain: commonKeychain as any,
+      bitgoMsg2,
+    });
+    sinon.stub(utils as any, 'addBitgoKeychain').resolves({ id: 'bitgo-key-id', commonKeychain, isMPCv2: true });
+  });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  it('should invoke callbacks in order and return keychains', async function () {
+    const keychains = await utils.createKeychainsWithExternalSigner({ enterprise, callbacks });
+
+    assert.ok(keychains.userKeychain);
+    assert.ok(keychains.backupKeychain);
+    assert.ok(keychains.bitgoKeychain);
+
+    sinon.assert.calledOnce(callbacks.initializeCallback as sinon.SinonStub);
+    sinon.assert.calledOnce(callbacks.round1Callback as sinon.SinonStub);
+    sinon.assert.calledOnce(callbacks.round2Callback as sinon.SinonStub);
+    sinon.assert.calledOnce(callbacks.finalizeCallback as sinon.SinonStub);
+  });
+
+  it('should pass round1 response to round2Callback', async function () {
+    await utils.createKeychainsWithExternalSigner({ enterprise, callbacks });
+
+    const round2Args = (callbacks.round2Callback as sinon.SinonStub).firstCall.args[0];
+    assert.deepStrictEqual(round2Args.bitgoMsg1, bitgoMsg1);
+    assert.deepStrictEqual(round2Args.userSignedMsg1, userSignedMsg1);
+    assert.deepStrictEqual(round2Args.backupSignedMsg1, backupSignedMsg1);
+    assert.deepStrictEqual(round2Args.userState, userState);
+    assert.deepStrictEqual(round2Args.backupState, backupState);
+  });
+
+  it('should pass round2 response to finalizeCallback', async function () {
+    await utils.createKeychainsWithExternalSigner({ enterprise, callbacks });
+
+    const finalizeArgs = (callbacks.finalizeCallback as sinon.SinonStub).firstCall.args[0];
+    assert.deepStrictEqual(finalizeArgs.bitgoMsg2, bitgoMsg2);
+    assert.strictEqual(finalizeArgs.bitgoCommonKeychain, commonKeychain);
+    assert.deepStrictEqual(finalizeArgs.userState, userState);
+    assert.deepStrictEqual(finalizeArgs.backupState, backupState);
+  });
+
+  it('should register keychains with isMPCv2: true', async function () {
+    await utils.createKeychainsWithExternalSigner({ enterprise, callbacks });
+
+    const mockKeychains = (utils as any).baseCoin.keychains();
+    const addCalls = (mockKeychains.add as sinon.SinonStub).getCalls();
+    assert.ok(addCalls.length >= 2, 'keychains.add should be called for user and backup');
+    for (const call of addCalls) {
+      assert.strictEqual(call.args[0].isMPCv2, true);
+      assert.strictEqual(call.args[0].keyType, 'tss');
+      assert.strictEqual(call.args[0].commonKeychain, commonKeychain);
+    }
+  });
+
+  it('should reject when finalizeCallback returns mismatched commonKeychain', async function () {
+    (callbacks.finalizeCallback as sinon.SinonStub).resolves({ commonKeychain: 'different-keychain' });
+
+    await assert.rejects(
+      () => utils.createKeychainsWithExternalSigner({ enterprise, callbacks }),
+      /Common keychains do not match/
+    );
+  });
+
+  it('should reject when round2 returns mismatched sessionId', async function () {
+    (utils.sendKeyGenerationRound2 as sinon.SinonStub).resolves({
+      sessionId: 'different-session' as any,
+      commonPublicKeychain: commonKeychain as any,
+      bitgoMsg2,
+    });
+
+    await assert.rejects(
+      () => utils.createKeychainsWithExternalSigner({ enterprise, callbacks }),
+      /Round 1 and round 2 session IDs do not match/
+    );
+  });
+
+  it('should reject when BitGo EdDSA MPCv2 GPG public key is missing', async function () {
+    (utils as any).bitgoEddsaMpcv2PublicGpgKey = undefined;
+
+    await assert.rejects(
+      () => utils.createKeychainsWithExternalSigner({ enterprise, callbacks }),
+      /Failed to get BitGo EdDSA MPCv2 GPG public key/
     );
   });
 });
