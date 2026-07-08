@@ -64,6 +64,23 @@ export const BuildParamsOffchain = t.partial({
   idfUserId: t.unknown,
 });
 
+/**
+ * WebAuthn attestation proving a passkey user signed off on this withdrawal intent.
+ * Pure pass-through — the SDK does not validate or interpret this payload.
+ *
+ * TODO(WCN-541): move this codec to @bitgo/public-types as the shared AttestationPayload
+ * and add it to the canonical TxSendBody/BuildParams codecs there; this local copy only
+ * covers the multisig /tx/build, /tx/send, and /tx/initiate paths.
+ */
+export const AttestationPayload = t.type({
+  signature: t.string,
+  credentialId: t.string,
+  clientDataJSON: t.string,
+  authenticatorData: t.string,
+});
+
+export type AttestationPayload = t.TypeOf<typeof AttestationPayload>;
+
 export const BuildParams = t.exact(
   t.intersection([
     BuildParamsUTXO,
@@ -140,6 +157,8 @@ export const BuildParams = t.exact(
       // Bridging parameters for cross-chain operations (e.g., BTC to sBTC)
       bridgingParams: t.unknown,
       defiParams: t.unknown,
+      // WebAuthn attestation for the withdrawal intent (WCN-539) — pass-through only.
+      attestation: AttestationPayload,
     }),
   ])
 );

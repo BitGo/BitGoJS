@@ -111,6 +111,8 @@ export async function sendSignatureShare(
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/signatureshares';
   const reqTracer = reqId || new RequestTracer();
   bitgo.setRequestTracer(reqTracer);
+  // TODO(WCN-541): add optional attestation pass-through for MPC /signatureshares, first round
+  // only (deferred until multisig attestation, WCN-539, is verified end-to-end on staging).
   return bitgo
     .post(bitgo.url(urlPath, 2))
     .send({

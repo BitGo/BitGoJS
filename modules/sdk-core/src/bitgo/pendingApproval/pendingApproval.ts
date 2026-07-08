@@ -31,6 +31,8 @@ type PreApproveResult = {
   halfSigned?: string;
 };
 
+// TODO(WCN-541): add optional attestation pass-through for PUT /pendingapprovals/:id (deferred
+// until multisig attestation, WCN-539, is verified end-to-end on staging).
 type ApprovePendingApprovalRequestBody = {
   state: 'approved';
   otp: string | undefined;
