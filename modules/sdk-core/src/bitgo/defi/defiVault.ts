@@ -2,14 +2,17 @@
  * @prettier
  */
 import {
+  ConcreteDepositResult,
   DefiOperation,
   DefiOperationListResult,
   DepositResult,
   DepositToVaultOptions,
   GetOperationOptions,
+  GetVaultConfigOptions,
   IDefiVault,
   ListOperationsOptions,
   ResumeDepositOptions,
+  VaultConfig,
 } from './iDefiVault';
 import { IWallet } from '../wallet';
 import { BitGoBase } from '../bitgoBase';
@@ -48,12 +51,24 @@ export class DefiVault implements IDefiVault {
   }
 
   /**
+   * Fetch vault config from defi-service. Used internally to determine
+   * which deposit path to take (Concrete vs Morpho).
+   */
+  async getVaultConfig(params: GetVaultConfigOptions): Promise<VaultConfig> {
+    if (!params.vaultId) {
+      throw new Error('vaultId is required');
+    }
+    return await this.bitgo
+      .get(this.bitgo.microservicesUrl(`/api/defi-service/v1/vaults/${params.vaultId}`))
+      .result();
+  }
+
+  /**
    * Deposit an amount of underlying asset into a vault.
    *
-   * Internally issues two sendMany calls (approve + deposit) and returns the
-   * operationId that links them. If the deposit sendMany fails after
-   * the approve succeeds, the error propagates — the server-side reconciler
-   * handles orphaned approvals.
+   * Dispatches to the concrete or morpho path based on vault provider.
+   * The concrete path returns a pendingApproval (custodial wallet).
+   * The morpho path issues two sendMany calls (approve + deposit).
    *
    * @param params.vaultId - DeFi-service vault identifier
    * @param params.amount - amount in base units of the underlying asset
@@ -68,16 +83,52 @@ export class DefiVault implements IDefiVault {
       throw new Error('amount is required');
     }
 
+    const config = await this.getVaultConfig({ vaultId: params.vaultId });
+
+    if (config.provider === 'concrete_btccx') {
+      return this.depositToConcreteVault(params);
+    }
+
+    return this.depositToMorphoVault(params);
+  }
+
+  /**
+   * Concrete BTC vault deposit path. The client BTC wallet is custodial, so
+   * sendMany returns a pendingApproval rather than a signed transfer.
+   * No recipients are sent — WP resolves the escrow destination server-side.
+   */
+  private async depositToConcreteVault(params: DepositToVaultOptions): Promise<ConcreteDepositResult> {
+    const sendManyResult = await this.wallet.sendMany({
+      type: 'defi-deposit',
+      defiParams: {
+        vaultId: params.vaultId,
+        amount: params.amount,
+        actionType: 'defi-deposit',
+      },
+      ...(params.walletPassphrase ? { walletPassphrase: params.walletPassphrase } : {}),
+    });
+
+    return this.extractConcreteDepositResult(sendManyResult);
+  }
+
+  private extractConcreteDepositResult(sendManyResult: unknown): ConcreteDepositResult {
+    const pendingApproval = (sendManyResult as { pendingApproval?: { id?: string; state?: string } })?.pendingApproval;
+    if (!pendingApproval?.id) {
+      throw new Error('Unexpected sendMany response for defi-deposit: no pendingApproval.id');
+    }
+    return { pendingApprovalId: pendingApproval.id, state: pendingApproval.state ?? 'awaitingSignature' };
+  }
+
+  /**
+   * Morpho vault deposit path. Issues two sendMany calls (approve + deposit)
+   * and returns the operationId that links them.
+   */
+  private async depositToMorphoVault(params: DepositToVaultOptions): Promise<{
+    operationId: string;
+    txRequestIds: { approve: string; deposit: string };
+  }> {
     // TODO(CGD-1709): Re-enable active operation pre-flight check once the
     // defi-service operations endpoint is deployed and returning active state.
-    // const activeOps: DefiOperationListResult = await this.bitgo
-    //   .get(this.bitgo.microservicesUrl(this.operationsUrl()))
-    //   .query({ vaultId: params.vaultId, state: 'active' })
-    //   .result();
-    //
-    // if (activeOps.items && activeOps.items.length > 0) {
-    //   throw new ActiveOperationExistsError(activeOps.items[0].operationId);
-    // }
 
     // Step 1: Approve txRequest via sendMany
     const approveResult = await this.wallet.sendMany({
