@@ -136,6 +136,113 @@
     "@protobufjs/inquire": "1.1.0",
     "sigstore": "4.1.1"
   },
+  "overrides": {
+    "qs": "6.14.1",
+    "lodash": ">=4.18.1",
+    "sha.js": ">=2.4.12",
+    "serialize-javascript": "7.0.5",
+    "jspdf": ">=4.2.1",
+    "@ethereumjs/util": "8.0.3",
+    "@types/keyv": "3.1.4",
+    "@types/react": "17.0.24",
+    "@types/react-dom": "17.0.16",
+    "@solana/web3.js": "1.95.8",
+    "handlebars": "4.7.9",
+    "@babel/runtime": "^7.28.2",
+    "@babel/helpers": "^7.28.2",
+    "buffer": "^6.0.3",
+    "body-parser": "1.20.3",
+    "degenerator": "5.0.0",
+    "eventsource": "2.0.2",
+    "follow-redirects": "1.15.11",
+    "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
+    "isbinaryfile": "5.0.0",
+    "minimist": "1.2.6",
+    "parse-path": "^5.0.0",
+    "parse-url": "8.1.0",
+    "terser": "^5.14.2",
+    "json5": "^2.2.2",
+    "ua-parser-js": ">0.7.30 <0.8.0",
+    "secp256k1": "5.0.1",
+    "socks": "2.7.3",
+    "web3-utils": "4.2.1",
+    "@polkadot/api": "14.1.1",
+    "@polkadot/util": "13.5.6",
+    "@polkadot/util-crypto": "13.5.6",
+    "@polkadot/keyring": "13.5.6",
+    "elliptic": "^6.6.1",
+    "cookie": "^0.7.1",
+    "axios": "1.16.1",
+    "canvg": "4.0.3",
+    "bignumber.js": "9.1.2",
+    "form-data": "^4.0.4",
+    "@grpc/grpc-js": "^1.14.4",
+    "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10",
+    "request": "npm:@cypress/request@3.0.9",
+    "webpack-dev-server": "5.2.1",
+    "memfs": "4.46.0",
+    "@isaacs/brace-expansion": "5.0.1",
+    "basic-ftp": "5.3.1",
+    "flatted": "3.4.2",
+    "sjcl": "npm:@bitgo/sjcl@1.0.1",
+    "picomatch": ">=2.3.2",
+    "fast-uri": "3.1.2",
+    "@babel/plugin-transform-modules-systemjs": "7.29.4",
+    "protobufjs": "7.5.8",
+    "@protobufjs/fetch": "1.1.0",
+    "@protobufjs/inquire": "1.1.0",
+    "sigstore": "4.1.1",
+    "cliui": {
+      "strip-ansi": "6.0.1",
+      "string-width": "4.2.3"
+    },
+    "yargs": {
+      "cliui": {
+        "string-width": "4.2.3"
+      }
+    },
+    "lerna": {
+      "glob": "11.1.0"
+    },
+    "yeoman-generator": {
+      "glob": "11.1.0"
+    },
+    "cacache": {
+      "glob": "11.1.0"
+    },
+    "pacote": {
+      "glob": "11.1.0"
+    },
+    "nise": {
+      "path-to-regexp": "8.4.0"
+    },
+    "express": {
+      "path-to-regexp": "0.1.13"
+    },
+    "stellar-sdk": {
+      "bignumber.js": "4.1.0"
+    },
+    "stellar-base": {
+      "bignumber.js": "4.1.0"
+    },
+    "avalanche": {
+      "ws": "8.18.3",
+      "store2": "2.14.4"
+    },
+    "ethers": {
+      "ws": "7.5.10"
+    },
+    "swarm-js": {
+      "ws": "5.2.4",
+      "tar": "6.2.1"
+    },
+    "iota-sdk": {
+      "valibot": "1.2.0"
+    },
+    "tronweb": {
+      "validator": "13.15.23"
+    }
+  },
   "workspaces": [
     "modules/*"
   ],
