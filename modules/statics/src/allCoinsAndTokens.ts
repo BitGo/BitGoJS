@@ -5986,12 +5986,6 @@ export const allCoinsAndTokens = [
     '0x5180db8f5c931aae63c74266b211f580155ecac8'
   ),
   erc721(
-    '7edee566-24d5-4523-ab01-3e1abe6ffff2',
-    'erc721:themine',
-    'The Mine Box',
-    '0x2b3c1760a126275002cf7ea003fa4d513cc89f0d'
-  ),
-  erc721(
     '64dfc2da-97b9-4228-a991-847148bcde5e',
     'erc721:token',
     'Generic ETH ERC721',
