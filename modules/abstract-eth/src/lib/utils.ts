@@ -31,6 +31,7 @@ import {
 } from '@bitgo/sdk-core';
 
 import {
+  BatchTransferData,
   ERC1155TransferData,
   ERC721TransferData,
   FlushTokensData,
@@ -66,6 +67,8 @@ import {
   flushERC1155ForwarderTokensMethodIdV4,
   flushERC1155TokensTypes,
   flushERC1155TokensTypesv4,
+  batchMethodId,
+  batchMethodTypes,
   sendMultisigMethodId,
   sendMultisigTokenMethodId,
   sendMultiSigTokenTypes,
@@ -467,6 +470,34 @@ export function decodeTransferData(data: string, isFirstSigner?: boolean): Trans
   } else {
     throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
   }
+}
+
+/**
+ * Decode the inner batch(address[],uint256[]) calldata produced for batcher contract sends.
+ * The data is the inner payload nested inside a sendMultiSig wrapper, not a full transaction.
+ *
+ * @param data Hex string starting with the batch method selector
+ * @returns Decoded recipients and amounts in the order they appear in the calldata
+ */
+export function decodeBatchTransferData(data: string): BatchTransferData {
+  if (!data.toLowerCase().startsWith(batchMethodId)) {
+    throw new BuildTransactionError(`Invalid batch transfer bytecode: ${data}`);
+  }
+  const [addresses, amounts] = getRawDecoded(batchMethodTypes, getBufferedByteCode(batchMethodId, data));
+  if (!Array.isArray(addresses) || !Array.isArray(amounts)) {
+    throw new BuildTransactionError(`Invalid batch transfer bytecode: ${data}`);
+  }
+  if (addresses.length !== amounts.length) {
+    throw new BuildTransactionError(
+      `Mismatched batch address/amount array lengths: ${addresses.length} vs ${amounts.length}`
+    );
+  }
+  return {
+    recipients: addresses.map((addr, i) => ({
+      address: addHexPrefix(addr as string),
+      amount: new BigNumber(bufferToHex(amounts[i] as Buffer)).toFixed(),
+    })),
+  };
 }
 
 /**
