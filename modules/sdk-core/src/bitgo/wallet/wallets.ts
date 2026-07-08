@@ -617,6 +617,7 @@ export class Wallets implements IWallets {
                 password: params.webauthnInfo.passphrase,
                 input: userKeychain.prv,
                 encryptionVersion: params.encryptionVersion,
+                adata: params.enterprise,
               }),
             };
           }
@@ -1352,6 +1353,7 @@ export class Wallets implements IWallets {
                 password: webauthnInfo.passphrase,
                 input: decryptedSharedWalletPrv,
                 encryptionVersion: params.encryptionVersion,
+                adata: walletShare.enterprise,
               }),
             };
           }

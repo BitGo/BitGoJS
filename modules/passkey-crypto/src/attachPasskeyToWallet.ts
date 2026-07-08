@@ -67,7 +67,12 @@ export async function attachPasskeyToWallet(params: {
   }
 
   const prfPassword = derivePassword(authResult.prfResult);
-  const encryptedPrv = await bitgo.encrypt({ password: prfPassword, input: privateKey, encryptionVersion });
+  const encryptedPrv = await bitgo.encrypt({
+    password: prfPassword,
+    input: privateKey,
+    encryptionVersion,
+    adata: enterpriseId,
+  });
 
   const updatedKeychain = await bitgo
     .put(bitgo.url(`/${coin}/key/${keychainId}`, 2))
