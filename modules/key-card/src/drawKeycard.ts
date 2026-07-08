@@ -29,6 +29,10 @@ enum KeyCurveName {
 // this limitation was chosen by trial and error
 export const QRBinaryMaxLength = 1500;
 
+// Default page-break layout: start a new page before the 3rd box (index 2), matching the
+// historical wallet keycard. Callers (e.g. the vault keycard) may override with their own indices.
+const DEFAULT_PAGE_BREAK_INDICES = [2];
+
 const font = {
   header: 24,
   subheader: 15,
@@ -110,6 +114,7 @@ export async function drawKeycard({
   qrData,
   walletLabel,
   curve,
+  pageBreakBeforeIndices = DEFAULT_PAGE_BREAK_INDICES,
 }: IDrawKeyCard): Promise<jsPDF> {
   const jsPDFModule = await loadJSPDF();
 
@@ -182,8 +187,9 @@ export async function drawKeycard({
   );
   for (let index = 0; index < qrKeys.length; index++) {
     const name = qrKeys[index];
-    if (index === 2) {
-      // Add 2nd Page
+
+    if (pageBreakBeforeIndices.includes(index)) {
+      // Start a new page for this box
       doc.addPage();
 
       // 2nd page title

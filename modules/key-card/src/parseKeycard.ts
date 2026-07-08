@@ -1,3 +1,5 @@
+import { VaultKeycardRoots, VAULT_ROOT_ORDER } from './types';
+
 export type PDFTextNode = {
   text: string;
   x: number;
@@ -10,6 +12,31 @@ export type KeycardEntry = {
   label: string;
   value: string;
 };
+
+/**
+ * Parses a vault keycard box value — the JSON packed by `generateVaultQrData`, e.g.
+ * `{"secp256k1Multisig":"…","ecdsaMpc":"…",…}` — into its four roots. Validates that all four
+ * roots are present. Recovery tooling calls this on the A/B/C box value returned by
+ * {@link parseKeycardFromLines}, then decrypts each root value with the wallet password.
+ */
+export function parseVaultKeycardBox(data: string): VaultKeycardRoots {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(data);
+  } catch {
+    throw new Error('parseVaultKeycardBox: value is not valid JSON');
+  }
+  if (typeof parsed !== 'object' || parsed === null) {
+    throw new Error('parseVaultKeycardBox: value is not an object');
+  }
+  const roots = parsed as Record<string, unknown>;
+  for (const slot of VAULT_ROOT_ORDER) {
+    if (typeof roots[slot] !== 'string') {
+      throw new Error(`parseVaultKeycardBox: missing or invalid root ${slot}`);
+    }
+  }
+  return parsed as VaultKeycardRoots;
+}
 
 const sectionHeaderRegex = /^([A-D])\s*[:.)-]\s*(.+?)\s*$/i;
 const dataLineRegex = /^data\s*:\s*(.*)$/i;

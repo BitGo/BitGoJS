@@ -1,4 +1,4 @@
-import { EncryptionVersion, Keychain } from '@bitgo/sdk-core';
+import { EncryptionVersion, Keychain, KeychainsTriplet } from '@bitgo/sdk-core';
 import { BaseCoin, KeyCurve } from '@bitgo/statics';
 
 export interface GenerateQrDataBaseParams {
@@ -56,6 +56,31 @@ export interface GenerateLightningQrDataParams extends GenerateQrDataCoinParams 
   userAuthKeychain: Keychain;
 }
 
+/**
+ * Identifier for one of a vault's four roots (one per signing scheme). Each value is the
+ * root's `rootKeyType`, which is also the key used in the keycard's per-box JSON.
+ */
+export type VaultRootKeyType = 'secp256k1Multisig' | 'ecdsaMpc' | 'eddsaMpc' | 'ed25519Multisig';
+
+/**
+ * Fixed render/scan order of the four roots on the vault keycard. Kept stable so a
+ * generated keycard and a re-scanned one line up slot-for-slot.
+ */
+export const VAULT_ROOT_ORDER: VaultRootKeyType[] = ['secp256k1Multisig', 'ecdsaMpc', 'eddsaMpc', 'ed25519Multisig'];
+
+/**
+ * The JSON object encoded in a vault keycard box (A/B/C): the four roots keyed by
+ * {@link VaultRootKeyType}. Values are per-root ciphertext for A/B (encryptedPrv or
+ * reducedEncryptedPrv) or public keys for C. The root-key-type keys are self-identifying, so a
+ * consumer parses by key rather than by size/offset.
+ */
+export type VaultKeycardRoots = Record<VaultRootKeyType, string>;
+
+export interface GenerateVaultQrDataParams extends GenerateQrDataCoinParams {
+  // The four root triplets (user/backup/bitgo keychains), keyed by rootKeyType.
+  roots: Record<VaultRootKeyType, KeychainsTriplet>;
+}
+
 export type GenerateKeycardParams = GenerateQrDataBaseParams &
   (GenerateQrDataForKeychainParams | GenerateQrDataParams | GenerateLightningQrDataParams);
 
@@ -66,6 +91,8 @@ export interface IDrawKeyCard {
   questions: FAQ[];
   walletLabel?: string;
   curve?: KeyCurve;
+  // Box indices to start a new page before. Omit for the default wallet layout.
+  pageBreakBeforeIndices?: number[];
 }
 
 export interface FAQ {
