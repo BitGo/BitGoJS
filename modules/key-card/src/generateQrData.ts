@@ -1,13 +1,17 @@
 import { BaseCoin } from '@bitgo/statics';
-import { Keychain } from '@bitgo/sdk-core';
+import { Keychain, KeychainsTriplet } from '@bitgo/sdk-core';
 import { encrypt } from '@bitgo/sdk-api';
 import * as assert from 'assert';
 import {
   GenerateLightningQrDataParams,
   GenerateQrDataParams,
+  GenerateVaultQrDataParams,
   MasterPublicKeyQrDataEntry,
   QrData,
   QrDataEntry,
+  VaultKeycardRoots,
+  VaultRootKeyType,
+  VAULT_ROOT_ORDER,
 } from './types';
 
 function getPubFromKey(key: Keychain): string | undefined {
@@ -204,6 +208,75 @@ export async function generateQrData(params: GenerateQrDataParams): Promise<QrDa
 
 export async function generateLightningQrData(params: GenerateLightningQrDataParams): Promise<QrData> {
   const qrData = buildLightningQrData(params);
+
+  if (params.passphrase && params.passcodeEncryptionCode) {
+    qrData.passcode = await generatePasscodeQrData(
+      params.passphrase,
+      params.passcodeEncryptionCode,
+      params.encryptionVersion
+    );
+  }
+
+  return qrData;
+}
+
+function selectRootPrivateKey(keychain: Keychain, slot: VaultRootKeyType, role: 'user' | 'backup'): string {
+  // Prefer the compact MPCv2 reduced share; fall back to encryptedPrv (e.g. multisig roots).
+  const data = keychain.reducedEncryptedPrv ?? keychain.encryptedPrv;
+  assert.ok(data, `Vault ${role} root ${slot} is missing encrypted private key material`);
+  return data;
+}
+
+function selectRootPublicKey(keychain: Keychain, slot: VaultRootKeyType): string {
+  const pub = getPubFromKey(keychain);
+  assert.ok(pub, `Vault BitGo root ${slot} is missing a public key`);
+  return pub;
+}
+
+/**
+ * Serializes one box's four roots into a single JSON object keyed by rootKeyType, e.g.
+ * `{"secp256k1Multisig":"<encPrv>","ecdsaMpc":"<reducedEncPrv>",...}`. This keeps the vault
+ * keycard on the existing 4-box layout — one box (= one QR/data block) per role — with the
+ * four roots packed into each box's data. `splitKeys` fragments the box if it exceeds the QR
+ * threshold, exactly as for a normal wallet keycard. Reversed by {@link parseVaultKeycardBox}.
+ */
+function buildVaultBoxData(
+  roots: Record<VaultRootKeyType, KeychainsTriplet>,
+  select: (root: KeychainsTriplet, slot: VaultRootKeyType) => string
+): string {
+  const box: VaultKeycardRoots = {} as VaultKeycardRoots;
+  for (const slot of VAULT_ROOT_ORDER) {
+    const root = roots[slot];
+    assert.ok(root, `Vault is missing the ${slot} root`);
+    box[slot] = select(root, slot);
+  }
+  return JSON.stringify(box);
+}
+
+/**
+ * Builds vault keycard QR data in the existing wallet {@link QrData} shape: boxes A (user),
+ * B (backup), C (BitGo), D (passcode). Each of A/B/C carries a JSON object of the four roots,
+ * so the vault renders and parses through the same {@link drawKeycard} path as a wallet.
+ */
+export async function generateVaultQrData(params: GenerateVaultQrDataParams): Promise<QrData> {
+  const { roots } = params;
+  const qrData: QrData = {
+    user: {
+      title: 'A: User Key',
+      description: 'Your 4 root private keys, encrypted with your wallet password.',
+      data: buildVaultBoxData(roots, (root, slot) => selectRootPrivateKey(root.userKeychain, slot, 'user')),
+    },
+    backup: {
+      title: 'B: Backup Key',
+      description: 'Your 4 root backup keys, encrypted with your wallet password.',
+      data: buildVaultBoxData(roots, (root, slot) => selectRootPrivateKey(root.backupKeychain, slot, 'backup')),
+    },
+    bitgo: {
+      title: 'C: BitGo Key',
+      description: 'The public parts of the 4 root keys held by BitGo.',
+      data: buildVaultBoxData(roots, (root, slot) => selectRootPublicKey(root.bitgoKeychain, slot)),
+    },
+  };
 
   if (params.passphrase && params.passcodeEncryptionCode) {
     qrData.passcode = await generatePasscodeQrData(
