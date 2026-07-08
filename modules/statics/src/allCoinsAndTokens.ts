@@ -5987,7 +5987,7 @@ export const allCoinsAndTokens = [
   ),
   erc721(
     '7edee566-24d5-4523-ab01-3e1abe6ffff2',
-    'erc721:themine',
+    'erc721:minebox',
     'The Mine Box',
     '0x2b3c1760a126275002cf7ea003fa4d513cc89f0d'
   ),
