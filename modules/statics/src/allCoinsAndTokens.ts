@@ -8097,10 +8097,10 @@ export const allCoinsAndTokens = [
     'tsui:wal',
     'Walrus',
     9,
-    '0x8190b041122eb492bf63cb464476bd68c6b7e570a4079645a8b28732b6197a82',
+    '0x8270feb7375eee355e64fdb69c50abb6b5f9393a722883c1cf45f8e26048810a',
     'wal',
     'WAL',
-    '0x8190b041122eb492bf63cb464476bd68c6b7e570a4079645a8b28732b6197a82::wal::WAL',
+    '0x8270feb7375eee355e64fdb69c50abb6b5f9393a722883c1cf45f8e26048810a::wal::WAL',
     UnderlyingAsset['tsui:wal'],
     SUI_TOKEN_FEATURES_STAKING
   ),
