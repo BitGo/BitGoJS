@@ -20,6 +20,7 @@ import {
   RecoveryTxRequest,
   SignedTransaction,
   TssVerifyAddressOptions,
+  TransactionPrebuild,
   TxIntentMismatchRecipientError,
   UnexpectedAddressError,
   verifyEddsaTssWalletAddress,
@@ -147,6 +148,15 @@ export class SubstrateCoin extends BaseCoin {
     }
 
     const factory = this.getBuilder();
+    // Use the live chain material embedded in the prebuild (if present) so the factory can decode
+    // transactions built against a chain spec version newer than the SDK's hardcoded metadata.
+    // Without this, the factory falls back to its hardcoded material and misidentifies the call
+    // pallet (e.g. reads a Balances transfer as treasury.disbursement after a chain upgrade).
+    const prebuildMaterial = (txPrebuild as TransactionPrebuild & { coinSpecific?: { material?: Material } })
+      .coinSpecific?.material;
+    if (prebuildMaterial && typeof factory.material === 'function') {
+      factory.material(prebuildMaterial);
+    }
     const txBuilder = factory.from(txPrebuild.txHex) as unknown as NativeTransferBuilder;
     const txTo: string = txBuilder['_to'];
     const txAmount: string = txBuilder['_amount'];

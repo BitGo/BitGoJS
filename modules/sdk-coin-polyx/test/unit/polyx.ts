@@ -8,8 +8,10 @@ import { coins } from '@bitgo/statics';
 import * as sinon from 'sinon';
 import * as testData from '../resources/wrwUsers';
 import { afterEach } from 'mocha';
-import { genesisHash, specVersion, txVersion, rawTx } from '../resources';
+import { genesisHash, specVersion, txVersion, rawTx, accounts, mockTssSignature } from '../resources';
 import { TxIntentMismatchRecipientError } from '@bitgo/sdk-core';
+import { V8TransferBuilder } from '../../src/lib';
+import { testnetV8Material } from '../../src/resources';
 
 describe('Polyx:', function () {
   let bitgo: TestBitGoAPI;
@@ -270,6 +272,67 @@ describe('Polyx:', function () {
             txParams: { recipients: [] },
           })
           .should.be.rejectedWith('missing recipients in txParams');
+      });
+    });
+
+    describe('v8 transfer with coinSpecific.material', function () {
+      const v8Amount = '1000000';
+      const v8Receiver = accounts.account2;
+      const v8Sender = accounts.account1;
+      let v8SignedTxHex: string;
+
+      before(async function () {
+        // Build a signed v8 transfer tx using testnetV8Material.
+        // The server embeds this material in coinSpecific during prebuild so that
+        // verifyTransaction can decode txHex built against a chain spec newer than
+        // the SDK's hardcoded v7 material (CECHO-1471).
+        const builder = new V8TransferBuilder(coins.get('tpolyx'))
+          .amount(v8Amount)
+          .to({ address: v8Receiver.address })
+          .sender({ address: v8Sender.address })
+          .memo('0')
+          .validity({ firstValid: 3933, maxDuration: 64 })
+          .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+          .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 1 })
+          .fee({ amount: 0, type: 'tip' });
+        builder.addSignature({ pub: v8Sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
+        const tx = await builder.build();
+        v8SignedTxHex = tx.toBroadcastFormat();
+      });
+
+      it('verifies a v8 transfer when coinSpecific.material is provided', async function () {
+        const result = await baseCoin.verifyTransaction({
+          txPrebuild: {
+            txHex: v8SignedTxHex,
+            coinSpecific: { material: testnetV8Material },
+          },
+          txParams: { recipients: [{ address: v8Receiver.address, amount: v8Amount }] },
+        });
+        result.should.be.true();
+      });
+
+      it('throws TxIntentMismatchRecipientError for address mismatch on v8 transfer', async function () {
+        await baseCoin
+          .verifyTransaction({
+            txPrebuild: {
+              txHex: v8SignedTxHex,
+              coinSpecific: { material: testnetV8Material },
+            },
+            txParams: { recipients: [{ address: wrongAddress, amount: v8Amount }] },
+          })
+          .should.be.rejectedWith(TxIntentMismatchRecipientError);
+      });
+
+      it('throws TxIntentMismatchRecipientError for amount mismatch on v8 transfer', async function () {
+        await baseCoin
+          .verifyTransaction({
+            txPrebuild: {
+              txHex: v8SignedTxHex,
+              coinSpecific: { material: testnetV8Material },
+            },
+            txParams: { recipients: [{ address: v8Receiver.address, amount: '1' }] },
+          })
+          .should.be.rejectedWith(TxIntentMismatchRecipientError);
       });
     });
   });
