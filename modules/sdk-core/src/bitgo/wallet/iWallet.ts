@@ -937,6 +937,7 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   eip1559?: EIP1559;
   gasLimit?: number;
   custodianTransactionId?: string;
+  defiParams?: { vaultId?: string; amount?: string | number; actionType?: string; operationId?: string; clientIdempotencyKey?: string };
 }
 
 export interface FetchCrossChainUTXOsOptions {

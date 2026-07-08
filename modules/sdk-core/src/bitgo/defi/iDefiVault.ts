@@ -32,6 +32,10 @@ export interface ListOperationsOptions {
   cursor?: string;
 }
 
+export interface GetVaultConfigOptions {
+  vaultId: string;
+}
+
 export interface DefiOperation {
   operationId: string;
   walletId: string;
@@ -45,13 +49,38 @@ export interface DefiOperation {
   updatedAt: string;
 }
 
-export interface DepositResult {
-  operationId: string;
-  txRequestIds: {
-    approve: string;
-    deposit: string;
-  };
+export type VaultProvider = 'morpho' | 'concrete_btccx';
+
+export interface ConcreteVaultConfig {
+  sourceWalletId: string;
+  escrowWalletId: string;
+  escrowDepositAddress: string;
+  positionWalletId: string;
+  positionBaseAddress: string;
 }
+
+export interface VaultConfig {
+  id: string;
+  name: string;
+  provider: VaultProvider;
+  status: string;
+  coin: string;
+  assetToken: string;
+  shareToken: string;
+  riskManager: string;
+  custodyType: string;
+  vaultContractAddress?: string;
+  concreteConfig?: ConcreteVaultConfig;
+}
+
+export interface ConcreteDepositResult {
+  pendingApprovalId: string;
+  state: string;
+}
+
+export type DepositResult =
+  | { pendingApprovalId: string; state: string } // concrete_btccx
+  | { operationId: string; txRequestIds: { approve: string; deposit: string } }; // morpho
 
 export interface DefiOperationListResult {
   items: DefiOperation[];
@@ -63,4 +92,5 @@ export interface IDefiVault {
   resumeDeposit(params: ResumeDepositOptions): Promise<DepositResult>;
   getOperation(params: GetOperationOptions): Promise<DefiOperation>;
   listOperations(params: ListOperationsOptions): Promise<DefiOperationListResult>;
+  getVaultConfig(params: GetVaultConfigOptions): Promise<VaultConfig>;
 }
