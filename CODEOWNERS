@@ -161,10 +161,10 @@
 /DEVELOPERS.md @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
 /commitlint.config.js @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
 /Dockerfile @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
-/lerna.json @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/devops
+/lerna.json @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/infrastructure
 /package.json @BitGo/sdk-reviewers
 **/package.json @BitGo/sdk-reviewers
-/tsconfig.json @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/devops
+/tsconfig.json @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/infrastructure
 /tsconfig.packages.json @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
 /yarn.lock @BitGo/sdk-reviewers
 /.iyarc @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm @BitGo/velocity
