@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.26.3...@bitgo/sdk-coin-sui@6.0.0) (2026-07-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-sui:** keep token coin type on addr-balance rebuild ([c139f7f](https://github.com/BitGo/BitGoJS/commit/c139f7f4917b2224121718c25831a3307fc3dc73))
+* **sdk-coin-sui:** skip splitCoins entirely when the full amount withdrawn ([112ddb8](https://github.com/BitGo/BitGoJS/commit/112ddb8f86aab5e3b996848b775f7d5e2a90a632))
+
+
+### Features
+
+* make encrypt/decrypt async ([7e845c3](https://github.com/BitGo/BitGoJS/commit/7e845c3041a08f8e7ade472eb43a5b997507d9ec))
+
+
+### BREAKING CHANGES
+
+* synchronous encrypt/decrypt callsites have been removed
+
+Ticket: WCN-174
+
+
+
+
+
 ## [5.26.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.26.2...@bitgo/sdk-coin-sui@5.26.3) (2026-07-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

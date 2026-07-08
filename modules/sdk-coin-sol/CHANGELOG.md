@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.26.1...@bitgo/sdk-coin-sol@8.0.0) (2026-07-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** migrate recover and recoverCloseATA to BIP32-Ed25519 ([3b31af4](https://github.com/BitGo/BitGoJS/commit/3b31af4d9a8d44b1ff7fcb399ba6f93b609e4029))
+* **sdk-coin-sol:** migrate remaining recovery methods to BIP32-Ed25519 ([a91e197](https://github.com/BitGo/BitGoJS/commit/a91e1970d4b483e57c94a96e5ce11e91f393173e))
+
+
+### Features
+
+* make encrypt/decrypt async ([7e845c3](https://github.com/BitGo/BitGoJS/commit/7e845c3041a08f8e7ade472eb43a5b997507d9ec))
+
+
+### BREAKING CHANGES
+
+* synchronous encrypt/decrypt callsites have been removed
+
+Ticket: WCN-174
+
+
+
+
+
 ## [7.26.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.26.0...@bitgo/sdk-coin-sol@7.26.1) (2026-07-02)
 
 

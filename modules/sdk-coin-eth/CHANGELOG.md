@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.15.3...@bitgo/sdk-coin-eth@26.0.0) (2026-07-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-eth:** fix verifyTransaction for zama TSS tx ([83d5bae](https://github.com/BitGo/BitGoJS/commit/83d5bae5154e97ba74eb03acf34eab46f8a32426))
+
+
+### Features
+
+* make encrypt/decrypt async ([7e845c3](https://github.com/BitGo/BitGoJS/commit/7e845c3041a08f8e7ade472eb43a5b997507d9ec))
+
+
+### BREAKING CHANGES
+
+* synchronous encrypt/decrypt callsites have been removed
+
+Ticket: WCN-174
+
+
+
+
+
 ## [25.15.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.15.2...@bitgo/sdk-coin-eth@25.15.3) (2026-07-02)
 
 
