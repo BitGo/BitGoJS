@@ -13,6 +13,13 @@ describe('Starknet TransactionBuilderFactory', () => {
     });
   });
 
+  describe('getUdcDeployBuilder', () => {
+    it('should return a UDC deploy builder', () => {
+      const builder = new TransactionBuilderFactory(coinConfig).getUdcDeployBuilder();
+      should.exist(builder);
+    });
+  });
+
   describe('from', () => {
     it('should rebuild unsigned tx from raw hex', async () => {
       const builder = await new TransactionBuilderFactory(coinConfig).from(rawTx.transfer.unsigned);

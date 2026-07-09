@@ -11,12 +11,15 @@ import {
   L1_GAS_NAME,
   L2_GAS_NAME,
   L1_DATA_GAS_NAME,
+  UDC_ADDRESS,
+  UDC_DEPLOY_ENTRYPOINT,
 } from './constants';
 import {
   StarknetTransactionData,
   StarknetTransactionType,
   StarknetCall,
   ParsedTransferData,
+  ParsedUdcDeployData,
   InvokeTransactionHashParams,
   DeployAccountTransactionHashParams,
 } from './iface';
@@ -189,6 +192,39 @@ export function parseTransferCall(call: StarknetCall): ParsedTransferData | unde
     recipient: call.calldata[0],
     amount,
     tokenContract: call.contractAddress,
+  };
+}
+
+/** True if call targets UDC deployContract. */
+export function isUdcDeployCall(call: StarknetCall | undefined): boolean {
+  if (!call) {
+    return false;
+  }
+  return (
+    call.entrypoint === UDC_DEPLOY_ENTRYPOINT &&
+    normalizeAddress(call.contractAddress) === normalizeAddress(UDC_ADDRESS) &&
+    call.calldata.length >= 4
+  );
+}
+
+/** Parse UDC deployContract calldata: [classHash, salt, unique, ctor_len, ...ctor]. */
+export function parseUdcDeployCall(call: StarknetCall): ParsedUdcDeployData | undefined {
+  if (!isUdcDeployCall(call)) {
+    return undefined;
+  }
+  const classHash = call.calldata[0];
+  const salt = call.calldata[1];
+  const uniqueFelt = BigInt(call.calldata[2]);
+  const ctorLen = Number(BigInt(call.calldata[3]));
+  if (!Number.isFinite(ctorLen) || ctorLen < 0 || call.calldata.length < 4 + ctorLen) {
+    return undefined;
+  }
+  return {
+    classHash,
+    salt,
+    unique: uniqueFelt !== 0n,
+    constructorCalldata: call.calldata.slice(4, 4 + ctorLen),
+    udcAddress: call.contractAddress,
   };
 }
 
@@ -389,6 +425,8 @@ export default {
   normalizeAddress,
   formatEthAccountSignature,
   parseTransferCall,
+  isUdcDeployCall,
+  parseUdcDeployCall,
   generateKeyPair,
   validateRawTransaction,
   encodeShortString,

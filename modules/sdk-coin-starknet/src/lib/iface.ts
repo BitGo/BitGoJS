@@ -78,6 +78,21 @@ export interface ParsedTransferData {
   tokenContract: string;
 }
 
+export interface ParsedUdcDeployData {
+  classHash: string;
+  salt: string;
+  /** Must be false for BitGo address match (deployer=0). */
+  unique: boolean;
+  constructorCalldata: string[];
+  udcAddress: string;
+}
+
+export interface UdcDeployParams {
+  classHash: string;
+  salt: string;
+  constructorCalldata: string[];
+}
+
 export interface TxData {
   id?: string;
   sender: string;

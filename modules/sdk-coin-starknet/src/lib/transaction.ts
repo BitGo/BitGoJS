@@ -14,7 +14,7 @@ import {
   StarknetTransactionExplanation,
   TxData,
 } from './iface';
-import utils, { compileExecuteCalldata, parseTransferCall } from './utils';
+import utils, { compileExecuteCalldata, parseTransferCall, parseUdcDeployCall } from './utils';
 
 function resolveCompiledCalldata(data: StarknetTransactionData): string[] {
   if (data.compiledCalldata && data.compiledCalldata.length > 0) {
@@ -104,18 +104,40 @@ export class Transaction extends BaseTransaction {
     if (!this._starknetTransactionData) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const transfer =
-      this._starknetTransactionData.calls.length > 0
-        ? parseTransferCall(this._starknetTransactionData.calls[0])
-        : undefined;
-    return {
+
+    const data = this._starknetTransactionData;
+    const result: TxData = {
       id: this._id,
-      sender: this._starknetTransactionData.senderAddress,
-      recipient: transfer?.recipient,
-      amount: transfer?.amount,
-      nonce: this._starknetTransactionData.nonce,
+      sender: data.senderAddress,
+      nonce: data.nonce,
       type: TransactionType.Send,
     };
+
+    const firstCall = data.calls[0];
+    if (!firstCall) {
+      return result;
+    }
+
+    const transfer = parseTransferCall(firstCall);
+    if (transfer) {
+      result.recipient = transfer.recipient;
+      result.amount = transfer.amount;
+      return result;
+    }
+
+    const udcDeploy = parseUdcDeployCall(firstCall);
+    if (udcDeploy && !udcDeploy.unique) {
+      result.recipient = utils.calculateContractAddressFromHash(
+        udcDeploy.salt,
+        udcDeploy.classHash,
+        udcDeploy.constructorCalldata,
+        0
+      );
+      result.amount = '0';
+      result.type = TransactionType.ContractCall;
+    }
+
+    return result;
   }
 
   /** @inheritDoc */
