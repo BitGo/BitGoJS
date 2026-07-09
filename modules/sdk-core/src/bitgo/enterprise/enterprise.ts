@@ -7,6 +7,7 @@ import { BitGoBase } from '../bitgoBase';
 import { EnterpriseData, EnterpriseFeatureFlag, IEnterprise } from '../enterprise';
 import { getFirstPendingTransaction } from '../internal';
 import { ListWalletOptions, Wallet } from '../wallet';
+import { Vaults } from '../vault';
 import { BitGoProofSignatures, EcdsaUtils, SerializedNtildeWithVerifiers } from '../utils/tss/ecdsa';
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { verifyEcdhSignature } from '../ecdh';
@@ -248,5 +249,13 @@ export class Enterprise implements IEnterprise {
    */
   hasFeatureFlags(flags: EnterpriseFeatureFlag[]): boolean {
     return flags.every((targetFlag) => this._enterprise.featureFlags?.includes(targetFlag));
+  }
+
+  /**
+   * Get the vaults collection accessor scoped to this Enterprise
+   * @experimental
+   */
+  vaults(): Vaults {
+    return new Vaults(this.bitgo, this.id);
   }
 }

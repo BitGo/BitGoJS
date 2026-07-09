@@ -27,6 +27,7 @@ export * from './tss';
 export { sendSignatureShare } from './tss';
 export * from './types';
 export * from './utils';
+export * from './vault';
 export * from './wallet';
 export * from './webhook';
 export { bitcoinUtil };
