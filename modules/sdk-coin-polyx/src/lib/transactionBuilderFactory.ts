@@ -11,7 +11,13 @@ import { UnbondBuilder } from './unbondBuilder';
 import { WithdrawUnbondedBuilder } from './withdrawUnbondedBuilder';
 import utils from './utils';
 import { Interface, SingletonRegistry, TransactionBuilder } from './';
-import { TxMethod, BatchCallObject, MethodNames, AddAndAffirmWithMediatorsArgs } from './iface';
+import {
+  TxMethod,
+  BatchCallObject,
+  MethodNames,
+  AddAndAffirmWithMediatorsArgs,
+  V8AddAndAffirmWithMediatorsArgs,
+} from './iface';
 import { Transaction as BaseTransaction } from '@bitgo/abstract-substrate';
 import { Transaction as PolyxTransaction } from './transaction';
 import { PreApproveAssetBuilder } from './preApproveAssetBuilder';
@@ -257,7 +263,25 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     }
 
     const methodName = decodedTxn.method?.name;
-    if (methodName === 'batchAll') {
+    if (methodName === Interface.MethodNames.TransferWithMemo) {
+      const args = decodedTxn.method.args as Interface.TransferWithMemoArgs;
+      if (utils.isNewMemoEncoding(args.memo)) {
+        return this.getV8HexTransferBuilder();
+      }
+      return this.getV8TransferBuilder();
+    } else if (methodName === MethodNames.AddAndAffirmWithMediators) {
+      const args = decodedTxn.method.args as AddAndAffirmWithMediatorsArgs | V8AddAndAffirmWithMediatorsArgs;
+      if (utils.isNewMemoEncoding(args.instructionMemo)) {
+        return this.getV8HexTokenTransferBuilder();
+      }
+      return this.getV8TokenTransferBuilder();
+    } else if (methodName === MethodNames.RegisterDidWithCDD) {
+      return this.getV8RegisterDidWithCDDBuilder();
+    } else if (methodName === MethodNames.RegisterDid) {
+      return this.getV8RegisterDidBuilder();
+    } else if (methodName === MethodNames.PreApproveAsset) {
+      return this.getV8PreApproveAssetBuilder();
+    } else if (methodName === 'batchAll') {
       const args = decodedTxn.method.args as { calls?: BatchCallObject[] };
 
       if (args.calls && args.calls.length === 2) {
