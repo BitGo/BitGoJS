@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.55.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.54.0...@bitgo/statics@58.55.0) (2026-07-09)
+
+
+### Bug Fixes
+
+* **statics:** correct The Mine Box NFT symbol to erc721:minebox ([61f0746](https://github.com/BitGo/BitGoJS/commit/61f074633dd0b406b02701fb3a5f33678811838b))
+* **statics:** update TSUI:WAL token package ID to new testnet address ([9114b90](https://github.com/BitGo/BitGoJS/commit/9114b90fa9c3b4e41f1d9b3a96507371c205c142))
+
+
+### Features
+
+* add new tokens from AMS API ([4e09651](https://github.com/BitGo/BitGoJS/commit/4e09651b121aa98069ead9d635bef5a826b5476a))
+* **statics:** add The Mine Box ERC721 NFT statics ([b00dc37](https://github.com/BitGo/BitGoJS/commit/b00dc37ca1e55da197091a64812e1b269484071d))
+* **statics:** onboard BSC:GDL and BSC:USGD BEP-20 tokens ([957da86](https://github.com/BitGo/BitGoJS/commit/957da863f2500825b6f30a74631c179318579e27))
+* update test env usd1 and sofid canton contract addresses ([c86df9a](https://github.com/BitGo/BitGoJS/commit/c86df9a50b727dfaa9d582929562dbb1bfc128a3)), closes [/linear.app/bitgo/issue/SCAAS-10171/update-bitgojs-with-new-contract-address#agent-session-0d9c48](https://github.com//linear.app/bitgo/issue/SCAAS-10171/update-bitgojs-with-new-contract-address/issues/agent-session-0d9c48)
+
+
+
+
+
 # [58.54.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.53.0...@bitgo/statics@58.54.0) (2026-07-07)
 
 

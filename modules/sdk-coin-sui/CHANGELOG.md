@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@6.0.0...@bitgo/sdk-coin-sui@6.0.1) (2026-07-09)
+
+
+### Bug Fixes
+
+* **sdk-coin-sui:** update walrus staking pkg ID in testnet config ([51e2d11](https://github.com/BitGo/BitGoJS/commit/51e2d11b747d1eb86f988111b12aca4c33faa97f))
+* **statics:** update TSUI:WAL token package ID to new testnet address ([9114b90](https://github.com/BitGo/BitGoJS/commit/9114b90fa9c3b4e41f1d9b3a96507371c205c142))
+
+
+
+
+
 # [6.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.26.3...@bitgo/sdk-coin-sui@6.0.0) (2026-07-07)
 
 

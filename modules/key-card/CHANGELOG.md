@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.33.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.32.0...@bitgo/key-card@0.33.0) (2026-07-09)
+
+
+### Features
+
+* multi-root layout in keycard module for wallet-vaults ([15fdb25](https://github.com/BitGo/BitGoJS/commit/15fdb259d54480f065b53ad47510e3b5ce5c57ea))
+
+
+
+
+
 # [0.32.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.31.6...@bitgo/key-card@0.32.0) (2026-07-07)
 
 

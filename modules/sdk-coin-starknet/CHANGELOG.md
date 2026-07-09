@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-starknet@1.6.4...@bitgo/sdk-coin-starknet@1.7.0) (2026-07-09)
+
+
+### Features
+
+* **sdk-coin-starknet:** add UDC deploy builder for master-wallet auto-init ([52fbf16](https://github.com/BitGo/BitGoJS/commit/52fbf1684af1aa6c9ec36f3f7697081f4ad2358d))
+
+
+
+
+
 ## [1.6.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-starknet@1.6.3...@bitgo/sdk-coin-starknet@1.6.4) (2026-07-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-starknet

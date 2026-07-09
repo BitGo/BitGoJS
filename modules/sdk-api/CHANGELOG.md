@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.0.0...@bitgo/sdk-api@2.1.0) (2026-07-09)
+
+
+### Features
+
+* encryption tests for enterprise-bound ciphertext ([a36b806](https://github.com/BitGo/BitGoJS/commit/a36b806e78a506f4e578fa6ddb797b2c6be82cc0))
+
+
+
+
+
 # [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.86.5...@bitgo/sdk-api@2.0.0) (2026-07-07)
 
 
