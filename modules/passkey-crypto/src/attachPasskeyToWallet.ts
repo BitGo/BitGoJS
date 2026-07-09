@@ -67,7 +67,14 @@ export async function attachPasskeyToWallet(params: {
   }
 
   const prfPassword = derivePassword(authResult.prfResult);
-  const encryptedPrv = await bitgo.encrypt({ password: prfPassword, input: privateKey, encryptionVersion });
+  const encryptedPrv = await bitgo.encrypt({
+    password: prfPassword,
+    input: privateKey,
+    encryptionVersion,
+    // Bind to this enterprise via AES-GCM AAD — moving this blob to another enterprise
+    // or tampering with the stored adata field invalidates the GCM tag.
+    adata: enterpriseId,
+  });
 
   const updatedKeychain = await bitgo
     .put(bitgo.url(`/${coin}/key/${keychainId}`, 2))

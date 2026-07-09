@@ -153,9 +153,9 @@ describe('attachPasskeyToWallet', function () {
     assert.match(putBody.webauthnInfo.prfSalt, /^[A-Za-z0-9\-_]+$/);
     assert.strictEqual(typeof putBody.webauthnInfo.encryptedPrv, 'string');
 
-    // encrypt must be called with encryptionVersion 2
+    // encrypt must be called with encryptionVersion 2 and enterpriseId as AAD
     sinon.assert.calledOnce(mockBitGo.encrypt);
-    sinon.assert.calledWithMatch(mockBitGo.encrypt, { encryptionVersion: 2 });
+    sinon.assert.calledWithMatch(mockBitGo.encrypt, { encryptionVersion: 2, adata: enterpriseId });
 
     assert.strictEqual(result.id, keychainId);
   });
@@ -165,11 +165,12 @@ describe('attachPasskeyToWallet', function () {
 
     await callAttach();
 
-    // The PRF-derived password and the decrypted xprv must be passed to encrypt
+    // The PRF-derived password, decrypted xprv, and enterpriseId AAD must be passed to encrypt
     sinon.assert.calledWithMatch(mockBitGo.encrypt, {
       password: expectedPrfPassword,
       input: decryptedPrv,
       encryptionVersion: 2,
+      adata: enterpriseId,
     });
 
     // The v2 blob returned by encrypt is what gets stored on the server
