@@ -220,6 +220,16 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
         // Check for batch staking pattern: bond + nominate
         if (firstCallMethod === 'bond' && secondCallMethod === 'nominate') {
+          // v8 dropped the controller leg of `staking.bond` (bond(controller, value, payee) →
+          // bond(value, payee)). When the transaction was decoded against v8 material the bond call
+          // carries no `controller`, so route it to the v8 batch staking builder — the v7
+          // BatchStakingBuilder would otherwise crash reading `args.controller.id`. This runs on the
+          // decode-success path because, unlike v8 transfers, v8 staking batchAll can decode without
+          // throwing, so tryGetV8Builder never fires. See SI-981.
+          const bondArgs = args.calls[0].args as { controller?: unknown };
+          if (bondArgs.controller === undefined) {
+            return this.getV8BatchStakingBuilder();
+          }
           return this.getBatchBuilder();
         }
         // Check for batch unstaking pattern: chill + unbond

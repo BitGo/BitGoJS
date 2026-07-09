@@ -158,6 +158,18 @@ describe('V8BatchStakingBuilder', function () {
       const builder = factory.from(rawTxHex);
       should.ok(builder instanceof V8BatchStakingBuilder);
     });
+
+    it('factory.from routes to V8BatchStakingBuilder on the v8 decode-success path (SI-981)', async () => {
+      // Reproduces the staging incident: when the factory carries v8 material, `decode()` succeeds
+      // and yields a bond call with no `controller`. Routing must detect the missing controller and
+      // return the v8 builder rather than the v7 BatchStakingBuilder, which crashes reading
+      // `args.controller.id`.
+      const rawTxHex = (await buildSandboxBatch().build()).toBroadcastFormat();
+      const v8Material = utils.getV8Material(coins.get('tpolyx').network.type);
+      const v8Factory = new TransactionBuilderFactory(coins.get('tpolyx')).material(v8Material);
+      const builder = v8Factory.from(rawTxHex);
+      should.ok(builder instanceof V8BatchStakingBuilder);
+    });
   });
 });
 
