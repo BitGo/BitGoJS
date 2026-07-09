@@ -299,6 +299,25 @@ describe('Polyx Batch Builder', function () {
       should.equal(newBuilder.getPayee(), 'Staked');
       should.deepEqual(newBuilder.getValidators(), [validatorAddress]);
     });
+
+    it('factory.from routes a v7 bond+nominate transaction to BatchStakingBuilder (SI-981 regression)', async () => {
+      // A v7 bond call carries a `controller`, so routing must keep it on the v7 builder and not
+      // fall through to the v8 batch staking builder.
+      const originalBuilder = factory.getBatchBuilder();
+      originalBuilder
+        .amount(testAmount)
+        .controller({ address: controllerAddress })
+        .payee('Staked')
+        .validators([validatorAddress])
+        .sender({ address: senderAddress })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 100 });
+      const rawTxHex = (await originalBuilder.build()).toBroadcastFormat();
+
+      const builder = factory.from(rawTxHex);
+      should.ok(builder instanceof BatchBuilder);
+    });
   });
 
   describe('should create properly configured transactions', function () {
