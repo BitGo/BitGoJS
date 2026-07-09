@@ -253,8 +253,9 @@ export class Enterprise implements IEnterprise {
 
   /**
    * Get the vaults collection accessor scoped to this Enterprise
+   * @experimental
    */
   vaults(): Vaults {
-    return new Vaults(this.bitgo, this.baseCoin, this.id);
+    return new Vaults(this.bitgo, this.id);
   }
 }

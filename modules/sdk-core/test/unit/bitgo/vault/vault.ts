@@ -5,16 +5,14 @@ import { Vault, VaultData } from '../../../../src';
 describe('Vault', function () {
   let vault: Vault;
   let mockBitGo: any;
-  let mockBaseCoin: any;
   let vaultData: VaultData;
+  // wire-shaped VaultData (timestamps as ISO strings) for mocked REST responses that get decoded
+  let vaultDataWire: any;
 
   beforeEach(function () {
     mockBitGo = {
       url: sinon.stub().callsFake((path: string) => path),
       post: sinon.stub(),
-    };
-    mockBaseCoin = {
-      url: sinon.stub().callsFake((path: string) => path),
     };
     vaultData = {
       id: 'test-vault-id',
@@ -23,9 +21,18 @@ describe('Vault', function () {
       status: 'active',
       creator: 'creator-id',
       users: [{ userId: 'creator-id', permissions: ['admin', 'spend'] }],
+      createdAt: new Date('2026-07-07T00:00:00.000Z'),
+    };
+    vaultDataWire = {
+      id: 'test-vault-id',
+      enterpriseId: 'test-enterprise-id',
+      label: 'my vault',
+      status: 'active',
+      creator: 'creator-id',
+      users: [{ userId: 'creator-id', permissions: ['admin', 'spend'] }],
       createdAt: '2026-07-07T00:00:00.000Z',
     };
-    vault = new Vault(mockBitGo, mockBaseCoin, vaultData);
+    vault = new Vault(mockBitGo, vaultData);
   });
 
   afterEach(function () {
@@ -34,20 +41,18 @@ describe('Vault', function () {
 
   describe('constructor', function () {
     it('throws when vaultData is not an object', function () {
-      (() => new Vault(mockBitGo, mockBaseCoin, undefined as unknown as VaultData)).should.throw(
-        'vaultData has to be an object'
-      );
+      (() => new Vault(mockBitGo, undefined as unknown as VaultData)).should.throw('vaultData has to be an object');
     });
 
     it('throws when id is not a string', function () {
-      (() => new Vault(mockBitGo, mockBaseCoin, { ...vaultData, id: 123 as unknown as string })).should.throw(
+      (() => new Vault(mockBitGo, { ...vaultData, id: 123 as unknown as string })).should.throw(
         'vault id has to be a string'
       );
     });
 
     it('throws when enterpriseId is not a string', function () {
       (() =>
-        new Vault(mockBitGo, mockBaseCoin, {
+        new Vault(mockBitGo, {
           ...vaultData,
           enterpriseId: undefined as unknown as string,
         })).should.throw('vault enterpriseId has to be a string');
@@ -83,27 +88,23 @@ describe('Vault', function () {
       return { sendStub };
     }
 
-    it('archive sends an empty body', async function () {
-      const { sendStub } = stubPost({ ...vaultData, status: 'archived' as const });
-      await vault.archive();
-      sendStub.calledWithExactly().should.be.true();
-    });
-
-    it('freeze posts to the freeze route and returns VaultData', async function () {
-      const frozen = { ...vaultData, freeze: { reason: 'incident' } };
+    it('freeze posts the encoded body to the freeze route and decodes VaultData', async function () {
+      const frozen = { ...vaultDataWire, freeze: { reason: 'incident' } };
       const { sendStub } = stubPost(frozen);
       const result = await vault.freeze({ duration: 3600 });
       mockBitGo.post.calledWith('/enterprise/test-enterprise-id/vaults/test-vault-id/freeze').should.be.true();
       sendStub.calledWith({ duration: 3600 }).should.be.true();
-      result.should.equal(frozen);
+      result.freeze!.reason!.should.equal('incident');
+      result.createdAt.should.be.instanceof(Date);
     });
 
-    it('archive posts to the archive route and returns VaultData', async function () {
-      const archived = { ...vaultData, status: 'archived' as const };
-      stubPost(archived);
+    it('archive posts an empty body to the archive route and decodes VaultData', async function () {
+      const archived = { ...vaultDataWire, status: 'archived' as const };
+      const { sendStub } = stubPost(archived);
       const result = await vault.archive();
       mockBitGo.post.calledWith('/enterprise/test-enterprise-id/vaults/test-vault-id/archive').should.be.true();
-      result.should.equal(archived);
+      sendStub.calledWithExactly().should.be.true();
+      result.status.should.equal('archived');
     });
   });
 
@@ -113,11 +114,11 @@ describe('Vault', function () {
     });
 
     it('addMember throws not-implemented (WCN-1204)', async function () {
-      await vault.addMember({ permissions: ['view'] }).should.be.rejectedWith(/WCN-1204/);
+      await vault.addMember({ userId: 'u', permissions: ['view'] }).should.be.rejectedWith(/WCN-1204/);
     });
 
     it('addMemberToWallet throws not-implemented (WCN-1204)', async function () {
-      await vault.addMemberToWallet({ walletId: 'w' }).should.be.rejectedWith(/WCN-1204/);
+      await vault.addMemberToWallet({ walletId: 'w', walletPassphrase: 'p' }).should.be.rejectedWith(/WCN-1204/);
     });
 
     it('listShares throws not-implemented (WCN-1204)', async function () {

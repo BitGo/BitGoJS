@@ -40,5 +40,6 @@ export interface IEnterprise {
     bitgoNitroChallenge: SerializedNtildeWithVerifiers
   ): Promise<void>;
   hasFeatureFlags(flags: EnterpriseFeatureFlag[]): boolean;
+  /** @experimental */
   vaults(): IVaults;
 }

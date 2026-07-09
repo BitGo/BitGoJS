@@ -5,31 +5,36 @@ import { Enterprise, Vaults } from '../../../../src';
 describe('Vaults', function () {
   let vaults: Vaults;
   let mockBitGo: any;
-  let mockBaseCoin: any;
 
   beforeEach(function () {
     mockBitGo = {
       url: sinon.stub().callsFake((path: string) => path),
     };
-    mockBaseCoin = {
-      url: sinon.stub().callsFake((path: string) => path),
-    };
-    vaults = new Vaults(mockBitGo, mockBaseCoin, 'test-enterprise-id');
+    vaults = new Vaults(mockBitGo, 'test-enterprise-id');
   });
 
   afterEach(function () {
     sinon.restore();
   });
 
-  // Phase 2 (createVault/initialize/finalize) and Phase 3 (list/get) are not yet implemented —
-  // they are gated on WCN-1175 / WCN-1177. Assert the interface is wired and stubbed for now.
+  // Phase 2 (generateVault/initialize/createVaultKeys/finalize) and Phase 3 (list/get) are not yet
+  // implemented — they are gated on WCN-1175 / WCN-1176 / WCN-1177. Assert the interface is wired
+  // and stubbed for now.
   describe('unimplemented lifecycle methods', function () {
-    it('createVault throws (Phase 2)', async function () {
-      await vaults.createVault({ label: 'v', passphrase: 'p' }).should.be.rejectedWith(/not yet implemented .*Phase 2/);
+    it('generateVault throws (Phase 2)', async function () {
+      await vaults
+        .generateVault({ label: 'v', passphrase: 'p' })
+        .should.be.rejectedWith(/not yet implemented .*Phase 2/);
     });
 
     it('initializeVault throws (Phase 2)', async function () {
       await vaults.initializeVault({ label: 'v' }).should.be.rejectedWith(/not yet implemented .*Phase 2/);
+    });
+
+    it('createVaultKeys throws (Phase 2)', async function () {
+      await vaults
+        .createVaultKeys({ label: 'v', passphrase: 'p', vaultId: 'vid' })
+        .should.be.rejectedWith(/not yet implemented .*Phase 2/);
     });
 
     it('finalizeVault throws (Phase 2)', async function () {
@@ -56,7 +61,7 @@ describe('Vaults', function () {
 
   describe('Enterprise.vaults() accessor', function () {
     it('returns a Vaults instance scoped to the enterprise', function () {
-      const enterprise = new Enterprise(mockBitGo, mockBaseCoin, { id: 'ent-id', name: 'ent' });
+      const enterprise = new Enterprise(mockBitGo, {} as any, { id: 'ent-id', name: 'ent' });
       enterprise.vaults().should.be.instanceof(Vaults);
     });
   });

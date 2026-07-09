@@ -1,25 +1,34 @@
 /**
  * @prettier
+ *
+ * @experimental The vault client surface is experimental and may change (including breaking
+ * changes) before the public release.
  */
-import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { FinalizeVaultOptions, InitializeVaultOptions } from './iVault';
-import { CreateVaultOptions, GetVaultOptions, IVaults, ListVaultsOptions } from './iVaults';
+import {
+  CreateVaultOptions,
+  GetVaultOptions,
+  IVaults,
+  ListVaultsOptions,
+  VaultCreationHandle,
+  VaultKeys,
+} from './iVaults';
 import { Vault } from './vault';
 
 /**
  * Collection accessor for a single enterprise's vaults, mirroring Wallets / Enterprises.
  * Vault routes are enterprise-scoped (/api/v2/enterprise/:eId/vaults), so the accessor is
  * constructed with the enterprise id (see Enterprise.vaults()).
+ *
+ * @experimental
  */
 export class Vaults implements IVaults {
   private readonly bitgo: BitGoBase;
-  private readonly baseCoin: IBaseCoin;
   private readonly enterpriseId: string;
 
-  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, enterpriseId: string) {
+  constructor(bitgo: BitGoBase, enterpriseId: string) {
     this.bitgo = bitgo;
-    this.baseCoin = baseCoin;
     this.enterpriseId = enterpriseId;
   }
 
@@ -32,11 +41,11 @@ export class Vaults implements IVaults {
   }
 
   /**
-   * One-call orchestrator: initialize → 4 root key ceremonies (vaultId-tagged) → finalize → keycard.
-   * HOT custody only in v1. Implemented in WCN-1192 Phase 2.
+   * One-call convenience wrapper: initialize → createVaultKeys (4 vaultId-tagged ceremonies) →
+   * finalize → keycard. HOT custody only. Implemented in WCN-1192 Phase 2.
    */
-  async createVault(params: CreateVaultOptions): Promise<Vault> {
-    throw new Error('Vaults.createVault is not yet implemented (WCN-1192 Phase 2)');
+  async generateVault(params: CreateVaultOptions): Promise<Vault> {
+    throw new Error('Vaults.generateVault is not yet implemented (WCN-1192 Phase 2)');
   }
 
   /**
@@ -45,6 +54,14 @@ export class Vaults implements IVaults {
    */
   async initializeVault(params: InitializeVaultOptions): Promise<Vault> {
     throw new Error('Vaults.initializeVault is not yet implemented (WCN-1192 Phase 2)');
+  }
+
+  /**
+   * Phase 2 — run the 4 root key ceremonies tagged with `vaultId`; returns the 12 minted key ids.
+   * Implemented in WCN-1192 Phase 2 (blocked on WCN-1176).
+   */
+  async createVaultKeys(params: CreateVaultOptions & VaultCreationHandle): Promise<VaultKeys> {
+    throw new Error('Vaults.createVaultKeys is not yet implemented (WCN-1192 Phase 2)');
   }
 
   /**

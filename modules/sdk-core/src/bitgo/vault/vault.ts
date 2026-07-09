@@ -1,10 +1,15 @@
 /**
  * @prettier
+ *
+ * @experimental The vault client surface is experimental and may change (including breaking
+ * changes) before the public release.
  */
 import * as _ from 'lodash';
-import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
+import { decodeWithCodec } from '../utils/codecs';
+import { postWithCodec } from '../utils/postWithCodec';
 import { FreezeOptions, Wallet } from '../wallet';
+import * as VaultCodecs from './codecs';
 import {
   AcceptVaultShareOptions,
   AddVaultMemberOptions,
@@ -17,14 +22,15 @@ import {
   WalletShareData,
 } from './iVault';
 
+/**
+ * @experimental
+ */
 export class Vault implements IVault {
   private readonly bitgo: BitGoBase;
-  private readonly baseCoin: IBaseCoin;
   public readonly _vault: VaultData;
 
-  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, vaultData: VaultData) {
+  constructor(bitgo: BitGoBase, vaultData: VaultData) {
     this.bitgo = bitgo;
-    this.baseCoin = baseCoin;
     if (!_.isObject(vaultData)) {
       throw new Error('vaultData has to be an object');
     }
@@ -106,7 +112,8 @@ export class Vault implements IVault {
    * @param params
    */
   async freeze(params: FreezeOptions = {}): Promise<VaultData> {
-    return (await this.bitgo.post(this.url('/freeze')).send(params).result()) as VaultData;
+    const response = await postWithCodec(this.bitgo, this.url('/freeze'), VaultCodecs.FreezeVaultBody, params).result();
+    return decodeWithCodec(VaultCodecs.VaultData, response, 'VaultData');
   }
 
   /**
@@ -114,7 +121,8 @@ export class Vault implements IVault {
    * path for a stuck 'initializing' vault.
    */
   async archive(): Promise<VaultData> {
-    return (await this.bitgo.post(this.url('/archive')).send().result()) as VaultData;
+    const response = await this.bitgo.post(this.url('/archive')).send().result();
+    return decodeWithCodec(VaultCodecs.VaultData, response, 'VaultData');
   }
 
   toJSON(): VaultData {
