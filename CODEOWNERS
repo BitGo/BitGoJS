@@ -27,7 +27,7 @@
 /modules/utxo-lib/ @BitGo/btc-team
 /modules/utxo-ord/ @BitGo/btc-team
 /modules/utxo-staking/ @BitGo/btc-team
-/modules/utxo-descriptors/ @BitGo/btc-team @BitGo/ethalt-team
+/modules/utxo-descriptors/ @BitGo/btc-team @BitGo/ecosystem
 /modules/babylonlabs-io-btc-staking-ts @BitGo/btc-team
 /modules/bitgo/test/v2/unit/coins/abstractUtxoCoin.ts @BitGo/btc-team
 /modules/bitgo/test/v2/unit/coins/payGoPSBTHexFixture/psbtHexProof.ts @BitGo/btc-team
@@ -37,78 +37,78 @@
 /modules/sdk-coin-lnbtc/ @BitGo/btc-team
 
 # Eth
-/modules/account-lib/ @BitGo/ethalt-team
-/modules/sdk-coin-celo/ @BitGo/ethalt-team
-/modules/sdk-coin-etc/ @BitGo/ethalt-team
-/modules/abstract-eth/ @BitGo/ethalt-team
-/modules/sdk-coin-eth/ @BitGo/ethalt-team
-/modules/sdk-coin-rbtc/ @BitGo/ethalt-team
-/modules/bitgo/test/v2/unit/coins/staking/ @BitGo/ethalt-team
-/modules/bitgo/test/v2/unit/coins/token.ts @BitGo/ethalt-team
+/modules/account-lib/ @BitGo/ecosystem
+/modules/sdk-coin-celo/ @BitGo/ecosystem
+/modules/sdk-coin-etc/ @BitGo/ecosystem
+/modules/abstract-eth/ @BitGo/ecosystem
+/modules/sdk-coin-eth/ @BitGo/ecosystem
+/modules/sdk-coin-rbtc/ @BitGo/ecosystem
+/modules/bitgo/test/v2/unit/coins/staking/ @BitGo/ecosystem
+/modules/bitgo/test/v2/unit/coins/token.ts @BitGo/ecosystem
 
 # All other coins
-/modules/abstract-cosmos/ @BitGo/ethalt-team
-/modules/abstract-substrate/ @BitGo/ethalt-team
-/modules/sdk-coin-ada/ @BitGo/ethalt-team
-/modules/sdk-coin-algo/ @BitGo/ethalt-team
-/modules/sdk-coin-apechain/ @BitGo/ethalt-team
-/modules/sdk-coin-apt/ @Bitgo/ethalt-team
-/modules/sdk-coin-arbeth/ @BitGo/ethalt-team
-/modules/sdk-coin-asi/ @BitGo/ethalt-team
-/modules/sdk-coin-atom/ @BitGo/ethalt-team
-/modules/sdk-coin-avaxc/ @BitGo/ethalt-team
-/modules/sdk-coin-avaxp/ @BitGo/ethalt-team
-/modules/sdk-coin-baby/ @BitGo/ethalt-team
-/modules/sdk-coin-bera/ @BitGo/ethalt-team
-/modules/sdk-coin-bsc/ @BitGo/ethalt-team
-/modules/sdk-coin-canton/ @BitGo/ethalt-team
-/modules/sdk-coin-coredao/ @BitGo/ethalt-team
-/modules/sdk-coin-coreum/ @BitGo/ethalt-team
-/modules/sdk-coin-cosmos/ @BitGo/ethalt-team
-/modules/sdk-coin-cronos/ @BitGo/ethalt-team
-/modules/sdk-coin-cspr/ @BitGo/ethalt-team
-/modules/sdk-coin-dot/ @BitGo/ethalt-team
-/modules/sdk-coin-eos/ @BitGo/ethalt-team
-/modules/sdk-coin-evm/ @BitGo/ethalt-team
-/modules/sdk-coin-flr/ @BitGo/ethalt-team
-/modules/sdk-coin-flrp/ @BitGo/ethalt-team
-/modules/sdk-coin-ethlike/ @BitGo/ethalt-team
-/modules/sdk-coin-hbar/ @BitGo/ethalt-team
-/modules/sdk-coin-icp/ @BitGo/ethalt-team
-/modules/sdk-coin-initia/ @BitGo/ethalt-team
-/modules/sdk-coin-iota/ @BitGo/ethalt-team
-/modules/sdk-coin-kaspa/ @BitGo/ethalt-team
-/modules/sdk-coin-mon/ @BitGo/ethalt-team
-/modules/sdk-coin-mantra/ @BitGo/ethalt-team
-/modules/sdk-coin-near/ @BitGo/ethalt-team
-/modules/sdk-coin-oas/ @BitGo/ethalt-team
-/modules/sdk-coin-opeth/ @BitGo/ethalt-team
-/modules/sdk-coin-polygon/ @BitGo/ethalt-team
-/modules/sdk-coin-polyx/ @BitGo/ethalt-team
-/modules/sdk-coin-rune/ @BitGo/ethalt-team
-/modules/sdk-coin-sgb/ @BitGo/ethalt-team
-/modules/sdk-coin-sol/ @BitGo/ethalt-team
-/modules/sdk-coin-stx/ @BitGo/ethalt-team
-/modules/sdk-coin-stt/ @BitGo/ethalt-team
-/modules/sdk-coin-soneium/ @BitGo/ethalt-team
-/modules/sdk-coin-starknet/ @BitGo/ethalt-team
-/modules/sdk-coin-sui/ @BitGo/ethalt-team
-/modules/sdk-coin-tao/ @BitGo/ethalt-team
-/modules/sdk-coin-tempo/ @BitGo/ethalt-team
-/modules/sdk-coin-ton/ @BitGo/ethalt-team
-/modules/sdk-coin-trx/ @BitGo/ethalt-team
-/modules/sdk-coin-vet/ @Bitgo/ethalt-team
-/modules/sdk-coin-wemix/ @BitGo/ethalt-team
-/modules/sdk-coin-world/ @BitGo/ethalt-team
-/modules/sdk-coin-xdc/ @BitGo/ethalt-team
-/modules/sdk-coin-xlm/ @BitGo/ethalt-team
-/modules/sdk-coin-xrp/ @BitGo/ethalt-team
-/modules/sdk-coin-xtz/ @BitGo/ethalt-team
-/modules/sdk-coin-zketh/ @BitGo/ethalt-team
-/modules/sdk-coin-hash/ @BitGo/ethalt-team
+/modules/abstract-cosmos/ @BitGo/ecosystem
+/modules/abstract-substrate/ @BitGo/ecosystem
+/modules/sdk-coin-ada/ @BitGo/ecosystem
+/modules/sdk-coin-algo/ @BitGo/ecosystem
+/modules/sdk-coin-apechain/ @BitGo/ecosystem
+/modules/sdk-coin-apt/ @Bitgo/ecosystem
+/modules/sdk-coin-arbeth/ @BitGo/ecosystem
+/modules/sdk-coin-asi/ @BitGo/ecosystem
+/modules/sdk-coin-atom/ @BitGo/ecosystem
+/modules/sdk-coin-avaxc/ @BitGo/ecosystem
+/modules/sdk-coin-avaxp/ @BitGo/ecosystem
+/modules/sdk-coin-baby/ @BitGo/ecosystem
+/modules/sdk-coin-bera/ @BitGo/ecosystem
+/modules/sdk-coin-bsc/ @BitGo/ecosystem
+/modules/sdk-coin-canton/ @BitGo/ecosystem
+/modules/sdk-coin-coredao/ @BitGo/ecosystem
+/modules/sdk-coin-coreum/ @BitGo/ecosystem
+/modules/sdk-coin-cosmos/ @BitGo/ecosystem
+/modules/sdk-coin-cronos/ @BitGo/ecosystem
+/modules/sdk-coin-cspr/ @BitGo/ecosystem
+/modules/sdk-coin-dot/ @BitGo/ecosystem
+/modules/sdk-coin-eos/ @BitGo/ecosystem
+/modules/sdk-coin-evm/ @BitGo/ecosystem
+/modules/sdk-coin-flr/ @BitGo/ecosystem
+/modules/sdk-coin-flrp/ @BitGo/ecosystem
+/modules/sdk-coin-ethlike/ @BitGo/ecosystem
+/modules/sdk-coin-hbar/ @BitGo/ecosystem
+/modules/sdk-coin-icp/ @BitGo/ecosystem
+/modules/sdk-coin-initia/ @BitGo/ecosystem
+/modules/sdk-coin-iota/ @BitGo/ecosystem
+/modules/sdk-coin-kaspa/ @BitGo/ecosystem
+/modules/sdk-coin-mon/ @BitGo/ecosystem
+/modules/sdk-coin-mantra/ @BitGo/ecosystem
+/modules/sdk-coin-near/ @BitGo/ecosystem
+/modules/sdk-coin-oas/ @BitGo/ecosystem
+/modules/sdk-coin-opeth/ @BitGo/ecosystem
+/modules/sdk-coin-polygon/ @BitGo/ecosystem
+/modules/sdk-coin-polyx/ @BitGo/ecosystem
+/modules/sdk-coin-rune/ @BitGo/ecosystem
+/modules/sdk-coin-sgb/ @BitGo/ecosystem
+/modules/sdk-coin-sol/ @BitGo/ecosystem
+/modules/sdk-coin-stx/ @BitGo/ecosystem
+/modules/sdk-coin-stt/ @BitGo/ecosystem
+/modules/sdk-coin-soneium/ @BitGo/ecosystem
+/modules/sdk-coin-starknet/ @BitGo/ecosystem
+/modules/sdk-coin-sui/ @BitGo/ecosystem
+/modules/sdk-coin-tao/ @BitGo/ecosystem
+/modules/sdk-coin-tempo/ @BitGo/ecosystem
+/modules/sdk-coin-ton/ @BitGo/ecosystem
+/modules/sdk-coin-trx/ @BitGo/ecosystem
+/modules/sdk-coin-vet/ @Bitgo/ecosystem
+/modules/sdk-coin-wemix/ @BitGo/ecosystem
+/modules/sdk-coin-world/ @BitGo/ecosystem
+/modules/sdk-coin-xdc/ @BitGo/ecosystem
+/modules/sdk-coin-xlm/ @BitGo/ecosystem
+/modules/sdk-coin-xrp/ @BitGo/ecosystem
+/modules/sdk-coin-xtz/ @BitGo/ecosystem
+/modules/sdk-coin-zketh/ @BitGo/ecosystem
+/modules/sdk-coin-hash/ @BitGo/ecosystem
 
 # Examples
-/examples/ @BitGo/ethalt-team
+/examples/ @BitGo/ecosystem
 /examples/ts/btc/ @BitGo/btc-team
 /examples/ts/stablecoin @Bitgo/stablecoins
 
@@ -123,11 +123,11 @@
 /modules/blake2b/ @BitGo/wallet-core @BitGo/wallet-core-india
 /modules/express/ @BitGo/wallet-core @BitGo/wallet-core-india
 /modules/express/src/lightning/ @BitGo/btc-team
-/modules/express/src/typedRoutes/api/v2/delegateResources.ts @BitGo/ethalt-team
-/modules/express/src/typedRoutes/api/v2/undelegateResources.ts @BitGo/ethalt-team
+/modules/express/src/typedRoutes/api/v2/delegateResources.ts @BitGo/ecosystem
+/modules/express/src/typedRoutes/api/v2/undelegateResources.ts @BitGo/ecosystem
 /modules/express/test/unit/lightning/ @BitGo/btc-team
 /modules/express/test/unit/clientRoutes/lightning/ @BitGo/btc-team
-/modules/express/test/unit/clientRoutes/bulkResourceManagement.ts @BitGo/ethalt-team
+/modules/express/test/unit/clientRoutes/bulkResourceManagement.ts @BitGo/ecosystem
 /modules/key-card/ @BitGo/wallet-core @BitGo/wallet-core-india
 /modules/sdk-api/ @BitGo/wallet-core @BitGo/wallet-core-india
 /modules/sdk-api/src/v1 @BitGo/btc-team
@@ -135,18 +135,18 @@
 /modules/sdk-core/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm @BitGo/coins
 /modules/sdk-core/src/bitgo/lightning/ @BitGo/btc-team
 /modules/sdk-core/test/unit/bitgo/lightning/ @BitGo/btc-team
-/modules/sdk-core/test/unit/bitgo/wallet/resourceManagement.ts @BitGo/ethalt-team
-/modules/sdk-core/test/unit/bitgo/utils/tss/preHashedSignable.ts @BitGo/ethalt-team
+/modules/sdk-core/test/unit/bitgo/wallet/resourceManagement.ts @BitGo/ecosystem
+/modules/sdk-core/test/unit/bitgo/utils/tss/preHashedSignable.ts @BitGo/ecosystem
 /modules/sdk-lib-mpc/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
 /modules/deser-lib/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
-/modules/sdk-rpc-wrapper @BitGo/ethalt-team
+/modules/sdk-rpc-wrapper @BitGo/ecosystem
 /modules/sdk-test/ @BitGo/wallet-core @BitGo/wallet-core-india
 /modules/sjcl/ @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
-/modules/statics/ @BitGo/ethalt-team
+/modules/statics/ @BitGo/ecosystem
 /modules/statics/src/utxo.ts @BitGo/btc-team
 /modules/web-demo/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
 /scripts/ @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
-/scripts/sdk-coin-generator-v2/ @BitGo/ethalt-team
+/scripts/sdk-coin-generator-v2/ @BitGo/ecosystem
 /types/ @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
 /webpack/ @BitGo/coins @BitGo/wallet-core @BitGo/wallet-core-india
 
