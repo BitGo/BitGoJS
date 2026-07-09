@@ -71,6 +71,8 @@ export async function attachPasskeyToWallet(params: {
     password: prfPassword,
     input: privateKey,
     encryptionVersion,
+    // Bind to this enterprise via AES-GCM AAD — moving this blob to another enterprise
+    // or tampering with the stored adata field invalidates the GCM tag.
     adata: enterpriseId,
   });
 

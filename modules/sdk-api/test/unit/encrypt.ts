@@ -191,6 +191,30 @@ describe('encryption methods tests', () => {
       await assert.rejects(() => decryptV2(password, JSON.stringify(envelope)), /operation-specific reason|incorrect/i);
     });
 
+    it('adata: undefined is equivalent to omitting adata', async () => {
+      const fixedOpts = {
+        memorySize: 1024,
+        iterations: 1,
+        parallelism: 1,
+        salt: new Uint8Array(16).fill(0xaa),
+        iv: new Uint8Array(12).fill(0xbb),
+      };
+      const withUndefined = await encryptV2(password, plaintext, { ...fixedOpts, adata: undefined });
+      const withOmitted = await encryptV2(password, plaintext, fixedOpts);
+      assert.strictEqual(withUndefined, withOmitted);
+      assert.strictEqual(await decryptV2(password, withUndefined), plaintext);
+    });
+
+    it('ciphertext bound to enterprise-A cannot be re-attributed to enterprise-B', async () => {
+      const prv = 'xprv-private-key-bytes';
+      const prfKey = 'prf-derived-key';
+      const ct = await encryptV2(prfKey, prv, { adata: 'enterprise-A' });
+      // Attacker moves blob to enterprise-B by altering the stored adata field
+      const envelope = JSON.parse(ct);
+      envelope.adata = 'enterprise-B';
+      await assert.rejects(() => decryptV2(prfKey, JSON.stringify(envelope)));
+    });
+
     it('v1 and v2 are independent (v1 data does not decrypt with v2)', async () => {
       const v1ct = await encrypt(password, plaintext, { encryptionVersion: 1 });
       await assert.rejects(() => decryptV2(password, v1ct), /invalid envelope/);
