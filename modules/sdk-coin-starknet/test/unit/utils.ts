@@ -4,12 +4,14 @@ import utils, {
   compileExecuteCalldata,
   calculateInvokeTransactionHash,
   calculateDeployAccountTransactionHash,
+  parseUdcDeployCall,
+  isUdcDeployCall,
 } from '../../src/lib/utils';
 import { coins } from '@bitgo/statics';
 import { TransactionBuilderFactory } from '../../src/lib/transactionBuilderFactory';
 import { Accounts, SandboxTransferData, KnownGoodInvokeTx } from '../resources/starknet';
-import { MASK_128 } from '../../src/lib/constants';
-import 'should';
+import { MASK_128, OZ_ETH_ACCOUNT_CLASS_HASH, UDC_ADDRESS, UDC_DEPLOY_ENTRYPOINT } from '../../src/lib/constants';
+import should from 'should';
 
 describe('Starknet Utils', () => {
   describe('isValidAddress', () => {
@@ -31,6 +33,10 @@ describe('Starknet Utils', () => {
 
     it('should reject address without 0x prefix', () => {
       utils.isValidAddress('04a1f29b8b8e3d3c9f6c9b7a8d2e1f0c5b4a3d2e1f0c5b4a3d2e1f0c5b4a3d2e').should.equal(false);
+    });
+
+    it('should reject zero (addresses must be non-zero)', () => {
+      utils.isValidAddress('0x0').should.equal(false);
     });
   });
 
@@ -304,6 +310,56 @@ describe('Starknet Utils', () => {
         resourceBounds: SandboxTransferData.resourceBounds,
       });
       hash.should.equal(tx.starknetTransactionData.transactionHash);
+    });
+  });
+
+  describe('parseUdcDeployCall / isUdcDeployCall', () => {
+    it('should parse a valid UDC deploy call', () => {
+      const derived = utils.computeStarknetAddress(utils.getUncompressedPublicKey(Accounts.account2.publicKey));
+      const call = {
+        contractAddress: UDC_ADDRESS,
+        entrypoint: UDC_DEPLOY_ENTRYPOINT,
+        calldata: [OZ_ETH_ACCOUNT_CLASS_HASH, derived.salt, '0x0', '0x4', ...derived.constructorCalldata],
+      };
+      isUdcDeployCall(call).should.equal(true);
+      const parsed = parseUdcDeployCall(call);
+      should.exist(parsed);
+      parsed!.unique.should.equal(false);
+      parsed!.classHash.should.equal(OZ_ETH_ACCOUNT_CLASS_HASH);
+      parsed!.salt.should.equal(derived.salt);
+      parsed!.constructorCalldata.should.deepEqual(derived.constructorCalldata);
+    });
+
+    it('should reject a transfer call', () => {
+      const call = {
+        contractAddress: SandboxTransferData.tokenContract,
+        entrypoint: 'transfer',
+        calldata: [Accounts.account2.address, '0x1', '0x0'],
+      };
+      isUdcDeployCall(call).should.equal(false);
+      should.equal(parseUdcDeployCall(call), undefined);
+    });
+
+    it('should parse unique=true but leave unique flag set', () => {
+      const derived = utils.computeStarknetAddress(utils.getUncompressedPublicKey(Accounts.account2.publicKey));
+      const call = {
+        contractAddress: UDC_ADDRESS,
+        entrypoint: UDC_DEPLOY_ENTRYPOINT,
+        calldata: [OZ_ETH_ACCOUNT_CLASS_HASH, derived.salt, '0x1', '0x4', ...derived.constructorCalldata],
+      };
+      const parsed = parseUdcDeployCall(call);
+      should.exist(parsed);
+      parsed!.unique.should.equal(true);
+    });
+
+    it('should return undefined when ctor_len exceeds remaining calldata', () => {
+      const call = {
+        contractAddress: UDC_ADDRESS,
+        entrypoint: UDC_DEPLOY_ENTRYPOINT,
+        calldata: [OZ_ETH_ACCOUNT_CLASS_HASH, '0x1', '0x0', '0x99'],
+      };
+      isUdcDeployCall(call).should.equal(true);
+      should.equal(parseUdcDeployCall(call), undefined);
     });
   });
 });

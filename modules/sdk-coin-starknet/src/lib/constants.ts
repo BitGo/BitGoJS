@@ -6,6 +6,10 @@ export const OZ_ETH_ACCOUNT_CLASS_HASH = '0x3940bc18abf1df6bc540cabadb1cad9486c6
 // STRK token contract (same on both mainnet and sepolia)
 export const STRK_TOKEN_CONTRACT = '0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d';
 
+// UDC — same address on mainnet and Sepolia
+export const UDC_ADDRESS = '0x041a78e741e5af2fec34b695679bc6891742439f7afb8484ecd7766661ad02bf';
+export const UDC_DEPLOY_ENTRYPOINT = 'deployContract';
+
 // felt252 max value (2^251 + 17 * 2^192 + 1)
 export const FELT_MAX = (1n << 251n) + 17n * (1n << 192n) + 1n;
 
