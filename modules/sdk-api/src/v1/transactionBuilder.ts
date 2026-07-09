@@ -292,7 +292,7 @@ exports.createTransaction = function (params) {
         .getBitGoFee({
           amount: totalOutputAmount,
           instant: params.instant,
-          recipients: params.recipients?.map((r: any) => r.address).filter(Boolean) ?? [],
+          recipients: recipients.map((r) => r.address).filter(Boolean),
         })
         .then(function (result) {
           if (result && result.fee > 0) {

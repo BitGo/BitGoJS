@@ -165,6 +165,71 @@ describe('Wallet Prototype Methods', function () {
       scope.isDone().should.be.true();
     });
 
+    it('forwards recipient addresses to the billing/fee endpoint (dict-form recipients)', async function () {
+      // Regression test: sendCoins builds recipients as a dict ({ [address]: amount }), not an
+      // array. getBitGoFee must forward the recipient addresses to /billing/fee so the server can
+      // waive the PayGo fee on v1->v2 migration transfers. A previous bug read params.recipients
+      // (the dict) and called .map on it, which threw for the dict form and never sent recipients.
+      const recipientAddress = '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy';
+      const sendAmount = 1e5;
+
+      const p2shAddress = fakeProdWallet.generateAddress({ path: '/0/13', segwit: false });
+      const unspent: any = {
+        addresses: ['2NCEDmmKNNnqKvnWw7pE3RLzuFe5aHHVy1X'],
+        value_int: 504422,
+        txid: 'b816ded89c3d8d5021b01097f4a3129a6a68a5cb7c886e97945f4205cba5de44',
+        n: 1,
+        script_pub_key: {
+          asm: 'OP_HASH160 d039cb3344294a5a384a5508a006444c420cbc11 OP_EQUAL',
+          hex: 'a914d039cb3344294a5a384a5508a006444c420cbc1187',
+        },
+        req_sigs: 1,
+        type: 'scripthash',
+        confirmations: 9,
+        id: 61330229,
+      };
+      _.extend(unspent, p2shAddress);
+      unspent.value = unspent.value_int;
+      unspent.tx_hash = unspent.txid;
+      unspent.tx_output_n = unspent.n;
+      unspent.script = unspent.outputScript;
+
+      let capturedQuery: any;
+      const billingScope = nock(bgUrl)
+        .get(`/api/v1/wallet/${fakeProdWallet.id()}/billing/fee`)
+        .query((actualQuery) => {
+          capturedQuery = actualQuery;
+          return true;
+        })
+        // fee: 0 exercises the v1->v2 PayGo waiver path (no bitgoFee output added)
+        .reply(200, { fee: 0 });
+
+      // No bitgoFee passed in, so getBitGoFee must hit /billing/fee.
+      const transaction = (await fakeProdWallet.createTransaction({
+        changeAddress: p2shAddress.address,
+        unspents: [unspent],
+        recipients: { [recipientAddress]: sendAmount },
+        noSplitChange: true,
+        forceChangeAtEnd: true,
+        feeRate: 10000,
+        usePsbt: false,
+      })) as any;
+
+      // The recipient address must have reached /billing/fee (this is what the fix restores).
+      billingScope.isDone().should.be.true();
+      should.exist(capturedQuery);
+      const forwardedRecipients = [].concat(capturedQuery['recipients[]'] || []);
+      forwardedRecipients.should.deepEqual([recipientAddress]);
+      capturedQuery.amount.should.equal(String(sendAmount));
+
+      // fee: 0 => no PayGo fee output added; the tx builds successfully.
+      should.exist(transaction.transactionHex);
+      should.not.exist(transaction.bitgoFee);
+      const tx = utxolib.bitgo.createTransactionFromHex(transaction.transactionHex, utxolib.networks.bitcoin);
+      // recipient output + change output, no extra fee output
+      tx.outs.length.should.equal(2);
+    });
+
     it('default p2sh', async function () {
       const p2shAddress = fakeProdWallet.generateAddress({ path: '/0/13', segwit: false });
       const unspent: any = {
