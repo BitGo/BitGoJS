@@ -234,6 +234,15 @@ export const bscTokens = [
     [...BSC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   bscToken(
+    'badcdb58-01ea-4ede-a262-c00688f3f1fb',
+    'bsc:usgd',
+    'USGD',
+    18,
+    '0x09bf0e706d066cff5a4399b4022be8872645739e',
+    UnderlyingAsset['bsc:usgd'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
     'ce33169c-7706-4f6b-9cbd-cd00ec785e7d',
     'bsc:eth',
     'Ethereum',
@@ -1047,6 +1056,15 @@ export const bscTokens = [
     8,
     '0x3019bf2a2ef8040c242c9a4c5c4bd4c81678b2a1',
     UnderlyingAsset['bsc:gmt'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'ffa8c040-0e52-40a1-8888-4a4620e789e7',
+    'bsc:gdl',
+    'GDL',
+    18,
+    '0xf1c9fcbce80d92ad7cb12bea3333d8e5349c5bfe',
+    UnderlyingAsset['bsc:gdl'],
     BSC_TOKEN_FEATURES
   ),
   bscToken(
