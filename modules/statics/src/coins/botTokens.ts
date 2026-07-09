@@ -160,6 +160,18 @@ export const botTokens = [
     undefined,
     Networks.test.hoodi
   ),
+  AccountCtors.terc20(
+    '90575fb0-dab0-4951-9469-957e7dc5dbbd',
+    'hteth:dro',
+    'Drosera',
+    18,
+    '0x499b095ed02f76e56444c242ec43a05f9c2a3ac8',
+    'hteth:dro' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', ['custody-bitgo-new-york' as CoinFeature]),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
@@ -1654,6 +1666,70 @@ export const botTokens = [
     18,
     '0xe63368de2dfca89df4f3c3de0e867c01470b0ec8',
     'eth:strat' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '050bff56-13dd-46a3-8a5b-3107bc616d6e',
+    'eth:thusd',
+    'thUSD',
+    6,
+    '0xa3fe5c7596024e6811e14f029937d5bd8ae485b3',
+    'eth:thusd' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    'f100ef34-d0ec-4111-a814-ade9b3f86f00',
+    'eth:sthusd',
+    'Staked thUSD',
+    6,
+    '0xa808bc9775cb41c52c7842f8b50427fe7a770326',
+    'eth:sthusd' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '65a65adf-394e-4670-bdec-afa87e7abe23',
+    'eth:cap',
+    'Cap',
+    18,
+    '0x99991c6aabba5a096f24f250b73580f5179b9999',
+    'eth:cap' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '7564ef29-1137-453b-bc43-9593948814b4',
+    'eth:allo',
+    'Allora',
+    18,
+    '0x8408d45b61f5823298f19a09b53b7339c0280489',
+    'eth:allo' as unknown as UnderlyingAsset,
     getTokenFeatures('eth', [
       'custody-bitgo-new-york' as CoinFeature,
       'custody-bitgo-germany' as CoinFeature,
