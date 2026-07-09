@@ -325,6 +325,22 @@ jobs:
           fi
           echo "✅ All public package versions on rel/latest are present on npm."
 
+      # bitgo's `prepack` script generates npm-shrinkwrap.json at pack time (see
+      # scripts/generate-bitgo-shrinkwrap.ts). npm only honors a shipped shrinkwrap
+      # for installers when the registry's own metadata says hasShrinkwrap: true —
+      # confirm that here so a silent registry-side omission fails the release
+      # instead of shipping a package whose shrinkwrap consumers won't get.
+      - name: Verify bitgo package has shrinkwrap metadata
+        if: ${{ inputs.dry-run == false }}
+        run: |
+          version=$(jq -r '.version' modules/bitgo/package.json)
+          has_shrinkwrap=$(curl -sL "https://registry.npmjs.org/bitgo/${version}" | jq -r '.dist.hasShrinkwrap // false')
+          if [ "$has_shrinkwrap" != "true" ]; then
+            echo "::error::Published bitgo@${version} is missing hasShrinkwrap metadata on the npm registry."
+            exit 1
+          fi
+          echo "✅ bitgo@${version} published with hasShrinkwrap: true."
+
       - name: Generate version bump summary
         id: version-bump-summary
         if: inputs.dry-run == false
