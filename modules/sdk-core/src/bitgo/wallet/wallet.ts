@@ -56,7 +56,7 @@ import { txParamsFromIntent } from '../utils/tss/baseTSSUtils';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils, { EddsaMPCv2Utils } from '../utils/tss/eddsa';
 import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
-import { buildParamKeys, BuildParams, AttestationPayload } from './BuildParams';
+import { buildParamKeys, BuildParams } from './BuildParams';
 import {
   AccelerateTransactionOptions,
   AddressesByBalanceOptions,
@@ -143,9 +143,7 @@ const debug = require('debug')('bitgo:v2:wallet');
 
 type ManageUnspents = 'consolidate' | 'fanout';
 
-// TODO(WCN-541): 'attestation' is appended locally because @bitgo/public-types' TxSendBody
-// codec doesn't declare it yet. Once TxSendBody adds it upstream, drop this local addition.
-const whitelistedSendParams = [...TxSendBody.type.types.flatMap((t) => Object.keys(t.props)), 'attestation'];
+const whitelistedSendParams = TxSendBody.type.types.flatMap((t) => Object.keys(t.props));
 
 export enum ManageUnspentsOptions {
   BUILD_ONLY,
@@ -5066,13 +5064,10 @@ export class Wallet implements IWallet {
     const whitelistedParams = this.baseCoin.preprocessBuildParams(_.pick(params, whitelistedSendParams));
     const reqTracer = reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqTracer);
-    // TODO(WCN-541): attestation is added to this local intersection because @bitgo/public-types'
-    // TxSendBody codec (t.exact) doesn't declare it yet, and t.exact strips undeclared keys on
-    // encode. Once TxSendBody adds it upstream, drop `attestation` from this local partial.
     return postWithCodec(
       this.bitgo,
       this.baseCoin.url('/wallet/' + this.id() + '/tx/send'),
-      t.intersection([TxSendBody, t.partial({ locktime: t.number, attestation: AttestationPayload })]),
+      t.intersection([TxSendBody, t.partial({ locktime: t.number })]),
       whitelistedParams
     ).result();
   }
@@ -5084,11 +5079,10 @@ export class Wallet implements IWallet {
     const whitelistedParams = this.baseCoin.preprocessBuildParams(_.pick(params, whitelistedSendParams));
     const reqTracer = reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqTracer);
-    // TODO(WCN-541): see sendTransaction — same local-codec workaround for attestation pass-through.
     return postWithCodec(
       this.bitgo,
       this.baseCoin.url('/wallet/' + this.id() + '/tx/initiate'),
-      t.intersection([TxSendBody, t.partial({ attestation: AttestationPayload })]),
+      TxSendBody,
       whitelistedParams
     ).result();
   }

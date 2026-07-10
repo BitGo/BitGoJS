@@ -68,9 +68,13 @@ export const BuildParamsOffchain = t.partial({
  * WebAuthn attestation proving a passkey user signed off on this withdrawal intent.
  * Pure pass-through — the SDK does not validate or interpret this payload.
  *
- * TODO(WCN-541): move this codec to @bitgo/public-types as the shared AttestationPayload
- * and add it to the canonical TxSendBody/BuildParams codecs there; this local copy only
- * covers the multisig /tx/build, /tx/send, and /tx/initiate paths.
+ * @bitgo/public-types' TxSendBody now declares this field natively (WCN-539), so /tx/send and
+ * /tx/initiate no longer need a local copy. This one remains for BuildParams (custodial
+ * /tx/build), which has no upstream equivalent yet.
+ *
+ * TODO(WCN-541): add attestation pass-through for MPC (/txrequests, /signatureshares) and
+ * /pendingapprovals — see the TODO(WCN-541) markers in baseTSSUtils.ts, common.ts, and
+ * pendingApproval.ts.
  */
 export const AttestationPayload = t.type({
   signature: t.string,
