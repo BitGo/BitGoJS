@@ -290,6 +290,10 @@ jobs:
           yarn lerna publish --sign-git-tag --sign-git-commit --include-merged-tags --conventional-commits --conventional-graduate --yes
         env:
           NPM_CONFIG_PROVENANCE: true
+          # Tells bitgo's `prepack` script (scripts/generate-bitgo-shrinkwrap.ts) to
+          # actually generate npm-shrinkwrap.json — kept opt-in so a plain local
+          # `npm pack` doesn't force a network install of the full dependency tree.
+          BITGO_GENERATE_SHRINKWRAP: true
 
       - name: Publish missing versions (recovery)
         if: ${{ inputs.dry-run == false && inputs.recovery-mode }}
@@ -300,6 +304,7 @@ jobs:
           yarn lerna publish from-package --yes
         env:
           NPM_CONFIG_PROVENANCE: true
+          BITGO_GENERATE_SHRINKWRAP: true
 
       - name: Verify recovery published the missing versions
         if: ${{ inputs.dry-run == false && inputs.recovery-mode }}
@@ -324,6 +329,26 @@ jobs:
             exit 1
           fi
           echo "✅ All public package versions on rel/latest are present on npm."
+
+      # bitgo's `prepack` script generates npm-shrinkwrap.json at pack time (see
+      # scripts/generate-bitgo-shrinkwrap.ts). npm only honors a shipped shrinkwrap
+      # for installers when the registry's own metadata says hasShrinkwrap: true —
+      # confirm that here so a silent registry-side omission fails the release
+      # instead of shipping a package whose shrinkwrap consumers won't get.
+      - name: Verify bitgo package has shrinkwrap metadata
+        if: ${{ inputs.dry-run == false }}
+        run: |
+          version=$(jq -r '.version' modules/bitgo/package.json)
+          # Registry metadata can lag briefly right after publish, so retry before
+          # failing the release on what might just be propagation delay.
+          if ! retry --up-to 5x --every 5s -- bash -c "
+            has_shrinkwrap=\$(curl -sL 'https://registry.npmjs.org/bitgo/${version}' | jq -r '.dist.hasShrinkwrap // false')
+            [ \"\$has_shrinkwrap\" = 'true' ]
+          "; then
+            echo "::error::Published bitgo@${version} is missing hasShrinkwrap metadata on the npm registry."
+            exit 1
+          fi
+          echo "✅ bitgo@${version} published with hasShrinkwrap: true."
 
       - name: Generate version bump summary
         id: version-bump-summary

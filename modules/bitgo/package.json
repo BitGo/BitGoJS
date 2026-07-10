@@ -36,6 +36,7 @@
     "build": "yarn tsc --build --incremental --verbose .",
     "prepare": "npm run build",
     "prepublishOnly": "npm run compile",
+    "prepack": "tsx ../../scripts/generate-bitgo-shrinkwrap.ts",
     "upload-artifacts": "node scripts/upload-test-reports.js",
     "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test",
@@ -181,6 +182,7 @@
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [
-    "dist"
+    "dist",
+    "npm-shrinkwrap.json"
   ]
 }
