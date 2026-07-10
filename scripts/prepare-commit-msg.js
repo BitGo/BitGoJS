@@ -5,21 +5,35 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const exec = promisify(childProcess.exec);
 
-// ex WP-1234 or WEB-000 (case-insensitive)
-const branchRegex = /([A-Za-z]+-)(\d+)/i;
+// Build regex from commitlint's known issuePrefixes so arbitrary branch segments
+// (e.g. "release-2-hotfix") don't produce bogus TICKET footers.
+let issuePrefixes;
+try {
+  issuePrefixes = require('../commitlint.config.js').parserPreset.parserOpts.issuePrefixes;
+} catch (_) {
+  issuePrefixes = [];
+}
+const escapedPrefixes = issuePrefixes
+  .filter((p) => p !== '#')
+  .map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+// Anchored at branch start; case-insensitive so "web-000-desc" matches "WEB-"
+const branchRegex = new RegExp(`^(${escapedPrefixes.join('|')})(\\d+)`, 'i');
 // ex TICKET: WP-1234
 const commitRegex = /(ticket|issue):\s(\S+)/gim;
+
+function extractTicket(branch) {
+  const found = branch.match(branchRegex);
+  return found ? found[0].toUpperCase() : null;
+}
 
 async function main() {
   const commitMsgFilepath = process.argv[2];
   try {
     const branch = (await exec(`git branch --show-current`)).stdout.trim();
-    const found = branch.match(branchRegex);
-    // Do not append message if branch name does not match regex
-    if (!found) {
+    const ticket = extractTicket(branch);
+    if (!ticket) {
       return;
     }
-    const ticket = found[0].toUpperCase();
     const data = fs.readFileSync(commitMsgFilepath, 'utf8');
     // Exit if ticket is already in commit footer
     if (data.match(commitRegex)) {
@@ -29,4 +43,5 @@ async function main() {
   } catch (e) {}
 }
 
-main();
+module.exports = { extractTicket };
+if (require.main === module) main();
