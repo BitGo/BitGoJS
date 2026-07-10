@@ -4,6 +4,8 @@ import { IDrawKeyCard } from './types';
 import { splitKeys } from './utils';
 type jsPDFModule = typeof import('jspdf');
 
+const isNode = typeof window === 'undefined' || typeof window.document === 'undefined';
+
 async function loadJSPDF(): Promise<jsPDFModule> {
   let jsPDF: jsPDFModule;
 
@@ -60,7 +62,7 @@ function moveDown(y: number, ydelta: number): number {
 // continuation on a later page) and the y-offset just below the drawn QR column (so callers
 // can place content, e.g. a note, under the QR codes).
 function drawOnePageOfQrCodes(
-  qrImages: HTMLCanvasElement[],
+  qrImages: (HTMLCanvasElement | string)[],
   doc: jsPDF,
   y: number,
   qrSize: number,
@@ -75,7 +77,11 @@ function drawOnePageOfQrCodes(
       return { nextIndex: qrIndex, endY: y };
     }
 
-    doc.addImage(image, left(0), y, qrSize, qrSize);
+    if (typeof image === 'string') {
+      doc.addImage(image, 'PNG', left(0), y, qrSize, qrSize);
+    } else {
+      doc.addImage(image, left(0), y, qrSize, qrSize);
+    }
 
     if (qrImages.length === 1) {
       return { nextIndex: qrIndex + 1, endY: y + qrSize };
@@ -135,7 +141,13 @@ export async function drawKeycard({
 
   if (keyCardImage) {
     const [imgWidth, imgHeight] = computeKeyCardImageDimensions(keyCardImage);
-    doc.addImage(keyCardImage, left(0), y, imgWidth, imgHeight);
+    if (isNode) {
+      // In Node.js, jsPDF cannot extract pixels from an HTMLImageElement (no DOM/canvas).
+      // The script passes a duck-typed object whose .src is a base64 data URL — use it directly.
+      doc.addImage((keyCardImage as unknown as { src: string }).src, 'PNG', left(0), y, imgWidth, imgHeight);
+    } else {
+      doc.addImage(keyCardImage, left(0), y, imgWidth, imgHeight);
+    }
   }
 
   // Activation Code
@@ -204,10 +216,14 @@ export async function drawKeycard({
     const textLeft = left(qrSize + 15);
     let textHeight = 0;
 
-    const qrImages: HTMLCanvasElement[] = [];
+    const qrImages: (HTMLCanvasElement | string)[] = [];
     const keys = splitKeys(qr.data, QRBinaryMaxLength);
     for (const key of keys) {
-      qrImages.push(await QRCode.toCanvas(key, { errorCorrectionLevel: 'L' }));
+      if (isNode) {
+        qrImages.push(await QRCode.toDataURL(key, { errorCorrectionLevel: 'L' }));
+      } else {
+        qrImages.push(await QRCode.toCanvas(key, { errorCorrectionLevel: 'L' }));
+      }
     }
 
     const isMultiPart = qr?.data?.length > QRBinaryMaxLength;
