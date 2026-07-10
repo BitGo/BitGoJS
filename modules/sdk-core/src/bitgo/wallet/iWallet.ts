@@ -323,7 +323,13 @@ export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOp
   verification?: VerificationOptions;
 }
 
-export interface PrebuildTransactionResult extends TransactionPrebuild {
+/** Fee fields returned on {@link PrebuildTransactionResult} (withdraw / send previews). */
+export type PrebuildTransactionFeeInfo = {
+  fee?: number;
+  feeString?: string;
+};
+
+export type PrebuildTransactionResult = TransactionPrebuild & {
   walletId: string;
   // Consolidate ID is used for consolidate account transactions and indicates if this is
   // a consolidation and what consolidate group it should be referenced by.
@@ -332,16 +338,13 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
   consolidationDetails?: {
     senderAddressIndex: number;
   };
-  feeInfo?: {
-    fee?: number;
-    feeString?: string;
-  };
+  feeInfo?: PrebuildTransactionFeeInfo;
   pendingApprovalId?: string;
   reqId?: IRequestTracer;
   payload?: string;
   stakingParams?: unknown;
   recipients?: ITransactionRecipient[];
-}
+};
 
 export interface CustomSigningFunction {
   (params: {

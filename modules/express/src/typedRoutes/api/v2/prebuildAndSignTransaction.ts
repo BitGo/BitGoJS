@@ -217,7 +217,7 @@ export const AddressVerificationData = t.partial({
 });
 
 /**
- * Fee information
+ * Fee information — codec for {@link PrebuildTransactionFeeInfo} from sdk-core.
  */
 export const FeeInfo = t.partial({
   /** Fee amount */
@@ -225,6 +225,7 @@ export const FeeInfo = t.partial({
   /** Fee as string */
   feeString: t.string,
 });
+export type FeeInfo = t.TypeOf<typeof FeeInfo>;
 
 /**
  * Consolidation details for sweep/consolidation transactions
