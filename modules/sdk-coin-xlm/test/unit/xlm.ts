@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto';
 import * as should from 'should';
-import * as stellar from 'stellar-sdk';
+import * as stellar from '@stellar/stellar-sdk';
 
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import { Environments, PrebuildAndSignTransactionOptions, Wallet } from '@bitgo/sdk-core';

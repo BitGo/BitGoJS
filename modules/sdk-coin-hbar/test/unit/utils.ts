@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import * as stellar from 'stellar-sdk';
+import * as stellar from '@stellar/stellar-sdk';
 import * as Utils from '../../src/lib/utils';
 import * as testData from '../resources/hbar';
 import { isValidEd25519PublicKey } from '@bitgo/sdk-core';

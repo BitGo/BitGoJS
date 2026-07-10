@@ -1,4 +1,4 @@
-import * as stellar from 'stellar-sdk';
+import * as stellar from '@stellar/stellar-sdk';
 import { DefaultKeys, Ed25519KeyPair, InvalidKey, KeyPairOptions } from '@bitgo/sdk-core';
 import { decodePrivateKey, decodePublicKey, encodePrivateKey, encodePublicKey } from './utils';
 

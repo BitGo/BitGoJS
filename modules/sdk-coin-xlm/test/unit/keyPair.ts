@@ -1,5 +1,5 @@
 import * as should from 'should';
-import * as stellar from 'stellar-sdk';
+import * as stellar from '@stellar/stellar-sdk';
 import { KeyPair } from '../../src';
 import { randomBytes } from 'crypto';
 import assert from 'assert';

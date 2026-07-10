@@ -1,4 +1,4 @@
-import * as stellar from 'stellar-sdk';
+import * as stellar from '@stellar/stellar-sdk';
 import * as _ from 'lodash';
 import { CoinFamily } from '@bitgo/statics';
 import { Hbar, Algo } from '@bitgo/account-lib';

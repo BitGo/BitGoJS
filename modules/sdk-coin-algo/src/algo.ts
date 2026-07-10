@@ -32,7 +32,7 @@ import {
   AuditDecryptedKeyParams,
   TxIntentMismatchError,
 } from '@bitgo/sdk-core';
-import stellar from 'stellar-sdk';
+import * as stellar from '@stellar/stellar-sdk';
 import BigNumber from 'bignumber.js';
 import Utils from './lib/utils';
 import { TxData } from './lib/ifaces';

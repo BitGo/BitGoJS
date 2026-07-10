@@ -1,5 +1,5 @@
 import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '@bitgo/sdk-core';
-import * as stellar from 'stellar-sdk';
+import * as stellar from '@stellar/stellar-sdk';
 
 /**
  * Creates a Stellar keypair from a public key.

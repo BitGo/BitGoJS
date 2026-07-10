@@ -1,5 +1,5 @@
 import algosdk from 'algosdk';
-import stellar from 'stellar-sdk';
+import * as stellar from '@stellar/stellar-sdk';
 import * as hex from '@stablelib/hex';
 import * as nacl from 'tweetnacl';
 import base32 from 'hi-base32';

@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import { AccountId, PrivateKey, PublicKey, TokenId, TransactionId } from '@hashgraph/sdk';
 import { proto } from '@hashgraph/proto';
 import BigNumber from 'bignumber.js';
-import * as stellar from 'stellar-sdk';
+import * as stellar from '@stellar/stellar-sdk';
 import { AddressDetails } from './iface';
 import url from 'url';
 import { toHex, toUint8Array, UtilsError } from '@bitgo/sdk-core';
