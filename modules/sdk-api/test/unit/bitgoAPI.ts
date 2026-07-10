@@ -1168,3 +1168,27 @@ describe('Constructor', function () {
     });
   });
 });
+
+describe('wallets() v1 facade', function () {
+  it('returns BitGoApiV1Wallets with bitgo reference and all prototype methods', function () {
+    const bitgo = new BitGoAPI({ env: 'test' });
+    const wallets = bitgo.wallets();
+    wallets.bitgo.should.equal(bitgo);
+    wallets.list.should.be.a.Function();
+    wallets.get.should.be.a.Function();
+    wallets.getWallet.should.be.a.Function();
+    wallets.add.should.be.a.Function();
+    wallets.remove.should.be.a.Function();
+    wallets.acceptShare.should.be.a.Function();
+    wallets.createWalletWithKeychains.should.be.a.Function();
+    wallets.createForwardWallet.should.be.a.Function();
+    wallets.createKey.should.be.a.Function();
+    wallets.listInvites.should.be.a.Function();
+    wallets.cancelInvite.should.be.a.Function();
+    wallets.listShares.should.be.a.Function();
+    wallets.getShare.should.be.a.Function();
+    wallets.updateShare.should.be.a.Function();
+    wallets.cancelShare.should.be.a.Function();
+    wallets.resendShareInvite.should.be.a.Function();
+  });
+});
