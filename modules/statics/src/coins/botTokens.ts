@@ -172,6 +172,18 @@ export const botTokens = [
     undefined,
     Networks.test.hoodi
   ),
+  AccountCtors.terc20(
+    'dab09c2a-e17b-4723-9cfe-e979d995bd7f',
+    'hteth:sachu',
+    'Sachu',
+    18,
+    '0xdbb7a34ea6859d307c4f2bb5be266e2d32356f51',
+    'hteth:sachu' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth'),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
