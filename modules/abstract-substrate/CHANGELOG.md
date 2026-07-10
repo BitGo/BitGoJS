@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@2.0.0...@bitgo/abstract-substrate@2.0.1) (2026-07-09)
+
+
+### Bug Fixes
+
+* **sdk-coin-polyx:** route v8 transfers and use live chain material ([36d878b](https://github.com/BitGo/BitGoJS/commit/36d878be053f9342aebf2cce7f846c24e7192824))
+
+
+
+
+
 # [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.17.1...@bitgo/abstract-substrate@2.0.0) (2026-07-07)
 
 

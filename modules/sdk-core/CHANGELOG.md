@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.0.0...@bitgo/sdk-core@38.1.0) (2026-07-09)
+
+
+### Features
+
+* include enterpriseId as AAD in passkeys encryption process ([2af5f62](https://github.com/BitGo/BitGoJS/commit/2af5f627683c023612b5a5108fff543d405d3948))
+* **sdk-core:** define EdDSA MPCv2 key gen callback types ([248bbfd](https://github.com/BitGo/BitGoJS/commit/248bbfd59c56a5d5ae90d4915ddaa8c87ddad4ec))
+
+
+
+
+
 # [38.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@37.11.0...@bitgo/sdk-core@38.0.0) (2026-07-07)
 
 

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/passkey-crypto@0.6.0...@bitgo/passkey-crypto@0.7.0) (2026-07-09)
+
+
+### Features
+
+* encryption tests for enterprise-bound ciphertext ([a36b806](https://github.com/BitGo/BitGoJS/commit/a36b806e78a506f4e578fa6ddb797b2c6be82cc0))
+* include enterpriseId as AAD in passkeys encryption process ([2af5f62](https://github.com/BitGo/BitGoJS/commit/2af5f627683c023612b5a5108fff543d405d3948))
+
+
+
+
+
 # [0.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/passkey-crypto@0.5.6...@bitgo/passkey-crypto@0.6.0) (2026-07-07)
 
 
