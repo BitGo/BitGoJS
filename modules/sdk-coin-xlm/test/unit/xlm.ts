@@ -1245,4 +1245,372 @@ describe('XLM:', function () {
       );
     });
   });
+
+  describe('getExtraPrebuildParams for non-payment types', () => {
+    // Non-payment intents (accountConfig/authorizeTrustline/clawback) must inject an empty
+    // recipients array so the platform build path does not synthesize a default payment recipient.
+    it('should return empty recipients for accountConfig', async () => {
+      const extraParams = await basecoin.getExtraPrebuildParams({ type: 'accountConfig' });
+      extraParams.should.deepEqual({ recipients: [] });
+    });
+
+    it('should return empty recipients for authorizeTrustline', async () => {
+      const extraParams = await basecoin.getExtraPrebuildParams({ type: 'authorizeTrustline' });
+      extraParams.should.deepEqual({ recipients: [] });
+    });
+
+    it('should return empty recipients for clawback', async () => {
+      const extraParams = await basecoin.getExtraPrebuildParams({ type: 'clawback' });
+      extraParams.should.deepEqual({ recipients: [] });
+    });
+
+    it('should not override recipients for a payment (no type) intent', async () => {
+      // A plain payment build has no `type`, so the method must return {} and leave
+      // recipients untouched rather than clobbering them with an empty array.
+      const extraParams = await basecoin.getExtraPrebuildParams({});
+      extraParams.should.deepEqual({});
+    });
+  });
+
+  describe('verifyTransaction for accountConfig/authorizeTrustline/clawback', () => {
+    // txlm uses the Stellar TESTNET passphrase, so every transaction under test must be built
+    // and re-parsed against the same network the coin verifies with.
+    const stellarNetworkPassphrase = stellar.Networks.TESTNET;
+    const sourceAddress = 'GA34NPQ4M54HHZBKSDZ5B3J3BZHTXKCZD4UFO2OYZERPOASK4DAATSIB';
+    const issuerAddress = 'GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU';
+    const trustorAddress = 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY';
+    const bstAsset = new stellar.Asset('BST', issuerAddress);
+    const bstTokenName = `txlm:BST-${issuerAddress}`;
+
+    // Builds an unsigned txlm transaction from the given operations and returns its base64 XDR.
+    // Unsigned is intentional: verifyTransaction only runs signature checks when signatures exist,
+    // so these tests exercise only the operation-verification branches.
+    const buildTxBase64 = (stellarOperations: stellar.xdr.Operation[]): string => {
+      const sourceAccount = new stellar.Account(sourceAddress, '1');
+      const transactionBuilder = new stellar.TransactionBuilder(sourceAccount, {
+        fee: '100',
+        networkPassphrase: stellarNetworkPassphrase,
+      });
+      stellarOperations.forEach((stellarOperation) => transactionBuilder.addOperation(stellarOperation));
+      const builtTransaction = transactionBuilder.setTimeout(0).build();
+      return builtTransaction.toEnvelope().toXDR('base64');
+    };
+
+    describe('accountConfig', () => {
+      it('should verify a setOptions tx whose setFlags match the requested flags', async () => {
+        // authRequired (1) | authRevocable (2) => setFlags 3 on the parsed operation
+        const txPrebuild = {
+          txBase64: buildTxBase64([
+            stellar.Operation.setOptions({
+              setFlags: (stellar.AuthRequiredFlag | stellar.AuthRevocableFlag) as stellar.AuthFlag,
+            }),
+          ]),
+        };
+        const txParams = { type: 'accountConfig', flags: { authRequired: true, authRevocable: true } };
+        const isValid = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} });
+        isValid.should.equal(true);
+      });
+
+      it('should verify a setOptions tx whose clearFlags match the requested clearFlags', async () => {
+        // authClawbackEnabled (8) is the only cleared flag, so expected clearFlags is 8.
+        const txPrebuild = {
+          txBase64: buildTxBase64([stellar.Operation.setOptions({ clearFlags: stellar.AuthClawbackEnabledFlag })]),
+        };
+        const txParams = { type: 'accountConfig', clearFlags: { authClawbackEnabled: true } };
+        const isValid = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} });
+        isValid.should.equal(true);
+      });
+
+      it('should throw setFlags mismatch when tx flags differ from requested flags', async () => {
+        // tx sets authRequired|authRevocable (3) but params only expect authRequired (1) => mismatch.
+        const txPrebuild = {
+          txBase64: buildTxBase64([
+            stellar.Operation.setOptions({
+              setFlags: (stellar.AuthRequiredFlag | stellar.AuthRevocableFlag) as stellar.AuthFlag,
+            }),
+          ]),
+        };
+        const txParams = { type: 'accountConfig', flags: { authRequired: true } };
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} })
+          .should.be.rejectedWith(/accountConfig setFlags mismatch/);
+      });
+
+      it('should throw when the tx contains no setOptions operation', async () => {
+        // A clawback op stands in for "some other op"; accountConfig verification requires setOptions.
+        const txPrebuild = {
+          txBase64: buildTxBase64([stellar.Operation.clawback({ from: trustorAddress, asset: bstAsset, amount: '1' })]),
+        };
+        const txParams = { type: 'accountConfig', flags: { authRequired: true } };
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} })
+          .should.be.rejectedWith(/must contain at least one setOptions/);
+      });
+
+      it('should throw when the tx contains more than one setOptions operation', async () => {
+        // Multiple setOptions ops cannot all be verified against the single flags/clearFlags spec in
+        // txParams — any extra op would be silently unverified, so we reject outright.
+        const txPrebuild = {
+          txBase64: buildTxBase64([
+            stellar.Operation.setOptions({ setFlags: stellar.AuthRequiredFlag }),
+            stellar.Operation.setOptions({ setFlags: stellar.AuthRevocableFlag }),
+          ]),
+        };
+        const txParams = { type: 'accountConfig', flags: { authRequired: true } };
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} })
+          .should.be.rejectedWith(/must contain exactly one setOptions/);
+      });
+    });
+
+    describe('authorizeTrustline', () => {
+      it('should verify a setTrustLineFlags tx when trustor and token match', async () => {
+        const txPrebuild = {
+          txBase64: buildTxBase64([
+            stellar.Operation.setTrustLineFlags({
+              trustor: trustorAddress,
+              asset: bstAsset,
+              flags: { authorized: true },
+            }),
+          ]),
+        };
+        const txParams = {
+          type: 'authorizeTrustline',
+          trustlineAuths: [{ trustor: trustorAddress, token: bstTokenName, authorize: true }],
+        };
+        const isValid = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} });
+        isValid.should.equal(true);
+      });
+
+      it('should throw count mismatch when op count differs from trustlineAuths count', async () => {
+        // Two setTrustLineFlags ops vs a single expected auth entry => count mismatch.
+        const txPrebuild = {
+          txBase64: buildTxBase64([
+            stellar.Operation.setTrustLineFlags({
+              trustor: trustorAddress,
+              asset: bstAsset,
+              flags: { authorized: true },
+            }),
+            stellar.Operation.setTrustLineFlags({
+              trustor: trustorAddress,
+              asset: bstAsset,
+              flags: { authorized: false },
+            }),
+          ]),
+        };
+        const txParams = {
+          type: 'authorizeTrustline',
+          trustlineAuths: [{ trustor: trustorAddress, token: bstTokenName, authorize: true }],
+        };
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} })
+          .should.be.rejectedWith(/authorizeTrustline operation count mismatch/);
+      });
+
+      it('should throw trustor mismatch when the tx trustor differs from the requested trustor', async () => {
+        const differentTrustorAddress = 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4';
+        const txPrebuild = {
+          txBase64: buildTxBase64([
+            stellar.Operation.setTrustLineFlags({
+              trustor: trustorAddress,
+              asset: bstAsset,
+              flags: { authorized: true },
+            }),
+          ]),
+        };
+        const txParams = {
+          type: 'authorizeTrustline',
+          trustlineAuths: [{ trustor: differentTrustorAddress, token: bstTokenName, authorize: true }],
+        };
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} })
+          .should.be.rejectedWith(/authorizeTrustline trustor mismatch/);
+      });
+
+      it('should throw authorize mismatch when the tx authorization state differs from the requested state', async () => {
+        const txPrebuild = {
+          txBase64: buildTxBase64([
+            stellar.Operation.setTrustLineFlags({
+              trustor: trustorAddress,
+              asset: bstAsset,
+              flags: { authorized: false },
+            }),
+          ]),
+        };
+        const txParams = {
+          type: 'authorizeTrustline',
+          trustlineAuths: [{ trustor: trustorAddress, token: bstTokenName, authorize: true }],
+        };
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} })
+          .should.be.rejectedWith(/authorizeTrustline authorize mismatch/);
+      });
+
+      it('should not be treated as authorizeTrustline when trustlineAuths is not an array', async () => {
+        // The type guard requires trustlineAuths to be an array; a missing or non-array value means
+        // the params fail the guard and fall through to the default payment-verification path.
+        const txPrebuild = {
+          txBase64: buildTxBase64([
+            stellar.Operation.setTrustLineFlags({
+              trustor: trustorAddress,
+              asset: bstAsset,
+              flags: { authorized: true },
+            }),
+          ]),
+        };
+        const txParams = { type: 'authorizeTrustline' }; // trustlineAuths missing
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} })
+          .should.be.rejectedWith(/transaction prebuild does not have any operations/);
+      });
+    });
+
+    describe('clawback', () => {
+      it('should verify a clawback tx when from, token and amount all match', async () => {
+        // Operation amount is in big units ('10' XLM), which the verifier converts to base units.
+        // 10 * 1e7 = 100000000 stroops, so the params amount must be expressed in base units.
+        const txPrebuild = {
+          txBase64: buildTxBase64([
+            stellar.Operation.clawback({ from: trustorAddress, asset: bstAsset, amount: '10' }),
+          ]),
+        };
+        const txParams = {
+          type: 'clawback',
+          clawbacks: [{ from: trustorAddress, token: bstTokenName, amount: '100000000' }],
+        };
+        const isValid = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} });
+        isValid.should.equal(true);
+      });
+
+      it('should throw amount mismatch when base-unit amount differs', async () => {
+        // tx claws back 100000000 base units but params expect 200000000 => mismatch.
+        const txPrebuild = {
+          txBase64: buildTxBase64([
+            stellar.Operation.clawback({ from: trustorAddress, asset: bstAsset, amount: '10' }),
+          ]),
+        };
+        const txParams = {
+          type: 'clawback',
+          clawbacks: [{ from: trustorAddress, token: bstTokenName, amount: '200000000' }],
+        };
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} })
+          .should.be.rejectedWith(/clawback amount mismatch/);
+      });
+
+      it('should throw from mismatch when the tx from address differs', async () => {
+        const differentFromAddress = 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4';
+        const txPrebuild = {
+          txBase64: buildTxBase64([
+            stellar.Operation.clawback({ from: trustorAddress, asset: bstAsset, amount: '10' }),
+          ]),
+        };
+        const txParams = {
+          type: 'clawback',
+          clawbacks: [{ from: differentFromAddress, token: bstTokenName, amount: '100000000' }],
+        };
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} })
+          .should.be.rejectedWith(/clawback 'from' address mismatch/);
+      });
+
+      it('should throw token mismatch when the tx asset differs from the requested token', async () => {
+        const differentIssuerAddress = 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4';
+        const differentTokenName = `txlm:TST-${differentIssuerAddress}`;
+        const txPrebuild = {
+          txBase64: buildTxBase64([
+            stellar.Operation.clawback({ from: trustorAddress, asset: bstAsset, amount: '10' }),
+          ]),
+        };
+        const txParams = {
+          type: 'clawback',
+          clawbacks: [{ from: trustorAddress, token: differentTokenName, amount: '100000000' }],
+        };
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} })
+          .should.be.rejectedWith(/clawback token mismatch/);
+      });
+
+      it('should not be treated as clawback when clawbacks is not an array', async () => {
+        // The type guard requires clawbacks to be an array; a missing or non-array value means the
+        // params fail the guard and fall through to the default payment-verification path.
+        const txPrebuild = {
+          txBase64: buildTxBase64([
+            stellar.Operation.clawback({ from: trustorAddress, asset: bstAsset, amount: '10' }),
+          ]),
+        };
+        const txParams = { type: 'clawback' }; // clawbacks missing
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} })
+          .should.be.rejectedWith(/transaction prebuild does not have any operations/);
+      });
+    });
+  });
+
+  describe('explainTransaction for accountConfig/authorizeTrustline/clawback', () => {
+    const stellarNetworkPassphrase = stellar.Networks.TESTNET;
+    const sourceAddress = 'GA34NPQ4M54HHZBKSDZ5B3J3BZHTXKCZD4UFO2OYZERPOASK4DAATSIB';
+    const issuerAddress = 'GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU';
+    const trustorAddress = 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY';
+    const bstAsset = new stellar.Asset('BST', issuerAddress);
+    const bstTokenName = `txlm:BST-${issuerAddress}`;
+
+    const buildTxBase64 = (stellarOperations: stellar.xdr.Operation[]): string => {
+      const sourceAccount = new stellar.Account(sourceAddress, '1');
+      const transactionBuilder = new stellar.TransactionBuilder(sourceAccount, {
+        fee: '100',
+        networkPassphrase: stellarNetworkPassphrase,
+      });
+      stellarOperations.forEach((stellarOperation) => transactionBuilder.addOperation(stellarOperation));
+      const builtTransaction = transactionBuilder.setTimeout(0).build();
+      return builtTransaction.toEnvelope().toXDR('base64');
+    };
+
+    it('should parse a setOptions op into an accountConfig operation', async () => {
+      const txBase64 = buildTxBase64([
+        stellar.Operation.setOptions({
+          setFlags: (stellar.AuthRequiredFlag | stellar.AuthRevocableFlag) as stellar.AuthFlag,
+        }),
+      ]);
+      const explanation = await basecoin.explainTransaction({ txBase64 });
+      explanation.operations.length.should.equal(1);
+      const accountConfigOperation = explanation.operations[0];
+      accountConfigOperation.type.should.equal('accountConfig');
+      accountConfigOperation.coin.should.equal('txlm');
+      // authRequired (1) | authRevocable (2) => setFlags 3; clearFlags is unset for this op.
+      accountConfigOperation.setFlags.should.equal(3);
+      should.not.exist(accountConfigOperation.clearFlags);
+    });
+
+    it('should parse a setTrustLineFlags op into an authorizeTrustline operation', async () => {
+      const txBase64 = buildTxBase64([
+        stellar.Operation.setTrustLineFlags({
+          trustor: trustorAddress,
+          asset: bstAsset,
+          flags: { authorized: true },
+        }),
+      ]);
+      const explanation = await basecoin.explainTransaction({ txBase64 });
+      explanation.operations.length.should.equal(1);
+      const authorizeTrustlineOperation = explanation.operations[0];
+      authorizeTrustlineOperation.type.should.equal('authorizeTrustline');
+      authorizeTrustlineOperation.coin.should.equal(bstTokenName);
+      authorizeTrustlineOperation.trustor.should.equal(trustorAddress);
+      authorizeTrustlineOperation.authorized.should.equal(true);
+    });
+
+    it('should parse a clawback op into a clawback operation', async () => {
+      const txBase64 = buildTxBase64([
+        stellar.Operation.clawback({ from: trustorAddress, asset: bstAsset, amount: '10' }),
+      ]);
+      const explanation = await basecoin.explainTransaction({ txBase64 });
+      explanation.operations.length.should.equal(1);
+      const clawbackOperation = explanation.operations[0];
+      clawbackOperation.type.should.equal('clawback');
+      clawbackOperation.coin.should.equal(bstTokenName);
+      clawbackOperation.from.should.equal(trustorAddress);
+      // 10 big units clawed back => 10 * 1e7 = 100000000 base units in the explanation.
+      clawbackOperation.amount.should.equal('100000000');
+    });
+  });
 });
