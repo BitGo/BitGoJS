@@ -1,18 +1,24 @@
 /**
  * @prettier
  */
+import * as t from 'io-ts';
+import { GetVaultResponse, VaultProtocol } from '@bitgo/public-types';
 import {
+  ConcreteDepositResult,
+  MorphoDepositResult,
   DefiOperation,
   DefiOperationListResult,
   DepositResult,
   DepositToVaultOptions,
   GetOperationOptions,
+  GetVaultConfigOptions,
   IDefiVault,
   ListOperationsOptions,
   ResumeDepositOptions,
 } from './iDefiVault';
 import { IWallet } from '../wallet';
 import { BitGoBase } from '../bitgoBase';
+import { decodeWithCodec } from '../utils';
 
 /**
  * Error thrown when a concurrent active deposit already exists for the (wallet, vault) pair.
@@ -48,12 +54,25 @@ export class DefiVault implements IDefiVault {
   }
 
   /**
+   * Fetch vault config from defi-service. Used internally to determine
+   * which deposit path to take (Concrete vs Morpho).
+   */
+  async getVaultConfig(params: GetVaultConfigOptions): Promise<GetVaultResponse> {
+    if (!params.vaultId) {
+      throw new Error('vaultId is required');
+    }
+    const raw = await this.bitgo
+      .get(this.bitgo.microservicesUrl(`/api/defi-service/v1/vaults/${params.vaultId}`))
+      .result();
+    return decodeWithCodec(GetVaultResponse, raw, 'getVaultConfig');
+  }
+
+  /**
    * Deposit an amount of underlying asset into a vault.
    *
-   * Internally issues two sendMany calls (approve + deposit) and returns the
-   * operationId that links them. If the deposit sendMany fails after
-   * the approve succeeds, the error propagates — the server-side reconciler
-   * handles orphaned approvals.
+   * Dispatches to the concrete or morpho path based on vault provider.
+   * The concrete path returns a pendingApproval (custodial wallet).
+   * The morpho path issues two sendMany calls (approve + deposit).
    *
    * @param params.vaultId - DeFi-service vault identifier
    * @param params.amount - amount in base units of the underlying asset
@@ -68,6 +87,41 @@ export class DefiVault implements IDefiVault {
       throw new Error('amount is required');
     }
 
+    const config = await this.getVaultConfig({ vaultId: params.vaultId });
+
+    if (config.protocol === VaultProtocol.CONCRETE_BTCCX) {
+      return this.depositToConcreteVault(params);
+    } else if (config.protocol === VaultProtocol.MORPHO) {
+      return this.depositToMorphoVault(params);
+    } else {
+      throw new Error(`Unsupported vault protocol: ${config.protocol}`);
+    }
+  }
+
+  /**
+   * Concrete BTC vault deposit path. The client BTC wallet is custodial, so
+   * sendMany returns a pendingApproval rather than a signed transfer.
+   * No recipients are sent — WP resolves the escrow destination server-side.
+   */
+  private async depositToConcreteVault(params: DepositToVaultOptions): Promise<ConcreteDepositResult> {
+    const sendManyResult = await this.wallet.sendMany({
+      type: 'defi-deposit',
+      defiParams: {
+        vaultId: params.vaultId,
+        amount: params.amount,
+        actionType: 'defi-deposit',
+      },
+      ...(params.walletPassphrase ? { walletPassphrase: params.walletPassphrase } : {}),
+    });
+
+    return this.extractConcreteDepositResult(sendManyResult);
+  }
+
+  /**
+   * Morpho vault deposit path. Issues two sendMany calls (approve + deposit)
+   * and returns the operationId that links them.
+   */
+  private async depositToMorphoVault(params: DepositToVaultOptions): Promise<MorphoDepositResult> {
     // TODO(CGD-1709): Re-enable active operation pre-flight check once the
     // defi-service operations endpoint is deployed and returning active state.
     // const activeOps: DefiOperationListResult = await this.bitgo
@@ -254,6 +308,22 @@ export class DefiVault implements IDefiVault {
     // forward-compat: intent.operationId (in case the WP later populates the intent)
     const intent = txRequest.intent as Record<string, unknown> | undefined;
     return intent?.operationId as string | undefined;
+  }
+
+  /**
+   * Extracts {@link ConcreteDepositResult} from a custodial sendMany response.
+   * Concrete BTC deposits return a `pendingApproval` instead of a txRequest —
+   * throws if `pendingApproval.id` is absent, indicating an unexpected shape.
+   */
+  private extractConcreteDepositResult(sendManyResult: Record<string, unknown>): ConcreteDepositResult {
+    const SendManyConcreteResponse = t.type({
+      pendingApproval: t.intersection([t.type({ id: t.string }), t.partial({ state: t.string })]),
+    });
+    const decoded = decodeWithCodec(SendManyConcreteResponse, sendManyResult, 'defi-deposit sendMany response');
+    return {
+      pendingApprovalId: decoded.pendingApproval.id,
+      state: decoded.pendingApproval.state ?? 'awaitingSignature',
+    };
   }
 
   private operationsUrl(): string {
