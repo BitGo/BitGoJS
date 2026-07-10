@@ -8,7 +8,7 @@
  *     --coin tbtc \
  *     --walletId <walletId> \
  *     --passphrase <walletPassphrase> \
- *     --accessToken <bearerToken> \
+ *     --accessToken <sessionToken> \
  *     [--otp <code>] \
  *     [--boxD <ciphertext>] \
  *     [--boxA <ciphertext>] \
@@ -157,9 +157,9 @@ function parseArgs() {
     .option('passphrase', { type: 'string', demandOption: true, description: 'Current wallet passphrase' })
     .option('accessToken', { type: 'string', demandOption: true, description: 'Short-lived BitGo access token' })
     .option('otp', { type: 'string', description: 'OTP for session unlock' })
-    .option('boxD', { type: 'string', description: 'Box D ciphertext from the original keycard' })
-    .option('boxA', { type: 'string', description: 'Box A ciphertext from the original keycard (MPCv2)' })
-    .option('boxB', { type: 'string', description: 'Box B ciphertext from the original keycard' })
+    .option('boxD', { type: 'string', description: 'Box D ciphertext from the original keycard', coerce: (v: string) => v?.replace(/\s/g, '') })
+    .option('boxA', { type: 'string', description: 'Box A ciphertext from the original keycard (MPCv2)', coerce: (v: string) => v?.replace(/\s/g, '') })
+    .option('boxB', { type: 'string', description: 'Box B ciphertext from the original keycard', coerce: (v: string) => v?.replace(/\s/g, '') })
     .option('passcodeEncryptionCode', {
       type: 'string',
       description: 'Passcode encryption code (fetched automatically if omitted)',
@@ -204,15 +204,32 @@ async function main() {
   if (dryRun) console.log('[dry-run] No changes will be persisted.');
 
   const bitgo = new BitGo({ env });
+
   bitgo.authenticateWithAccessToken({ accessToken });
 
   if (!dryRun) {
-    await bitgo.unlock({ otp: otp ?? '0000000', duration: 600 });
-    console.log('Session unlocked.');
+    try {
+      await bitgo.unlock({ otp: otp ?? '0000000', duration: 600 });
+      console.log('Session unlocked.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('already unlocked longer')) {
+        console.log('Session already unlocked (longer duration) — proceeding.');
+      } else {
+        throw err;
+      }
+    }
   }
 
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
   console.log(`Wallet: ${wallet.label()} (${walletId})`);
+
+  if (wallet.multisigTypeVersion() === 'MPCv2' && (!boxA || !boxB)) {
+    throw new Error(
+      'This is an MPCv2 wallet. --boxA and --boxB are required to re-encrypt the reducedEncryptedPrv ' +
+        'key shares stored on the keycard. Without them the new keycard will be missing Box A and Box B.'
+    );
+  }
 
   // Fetch passcodeEncryptionCode — needed to decrypt Box D (when provided) and to generate Box D
   // in the new keycard. Always fetched when boxD is provided; otherwise skipped in dry-run.
