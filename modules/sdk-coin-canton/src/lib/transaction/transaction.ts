@@ -12,6 +12,7 @@ import {
   CantonCommandExplain,
   CantonPrepareCommandResponse,
   CosignDelegationProposal,
+  EndInvestorOnboardingOfferData,
   MultiHashSignature,
   PartySignature,
   PreparedTxnParsedInfo,
@@ -29,6 +30,7 @@ export class Transaction extends BaseTransaction {
   private _acknowledgeData: TransferAcknowledge;
   private _cosignDelegationProposalData: CosignDelegationProposal;
   private _allocationRequestData: AllocationRequest;
+  private _endInvestorOnboardingOfferData: EndInvestorOnboardingOfferData;
   private _cantonCommandActAs: string[];
 
   constructor(coinConfig: Readonly<CoinConfig>) {
@@ -57,6 +59,10 @@ export class Transaction extends BaseTransaction {
 
   set allocationRequestData(data: AllocationRequest) {
     this._allocationRequestData = data;
+  }
+
+  set endInvestorOnboardingOfferData(data: EndInvestorOnboardingOfferData) {
+    this._endInvestorOnboardingOfferData = data;
   }
 
   set cantonCommandActAs(parties: string[]) {
@@ -120,6 +126,17 @@ export class Transaction extends BaseTransaction {
         txType: TransactionType[this._type],
         submissionId: this.id,
         allocationRequestData: this._allocationRequestData,
+      };
+      return Buffer.from(JSON.stringify(minData)).toString('base64');
+    }
+    if (this._type === TransactionType.EndInvestorOnboardingOffer) {
+      if (!this._endInvestorOnboardingOfferData) {
+        throw new InvalidTransactionError('EndInvestorOnboardingOfferData is not set');
+      }
+      const minData: TransactionBroadcastData = {
+        txType: TransactionType[this._type],
+        submissionId: this.id,
+        endInvestorOnboardingOfferData: this._endInvestorOnboardingOfferData,
       };
       return Buffer.from(JSON.stringify(minData)).toString('base64');
     }
@@ -206,6 +223,13 @@ export class Transaction extends BaseTransaction {
       result.allocationRequestData = this._allocationRequestData;
       return result;
     }
+    if (this._type === TransactionType.EndInvestorOnboardingOffer) {
+      if (!this._endInvestorOnboardingOfferData) {
+        throw new InvalidTransactionError('EndInvestorOnboardingOfferData is not set');
+      }
+      result.endInvestorOnboardingOfferData = this._endInvestorOnboardingOfferData;
+      return result;
+    }
     if (this._type === TransactionType.CantonCommand) {
       if (!this._prepareCommand?.preparedTransaction) {
         throw new InvalidTransactionError('Empty transaction data');
@@ -242,7 +266,8 @@ export class Transaction extends BaseTransaction {
     if (
       this._type === TransactionType.TransferAcknowledge ||
       this._type === TransactionType.CosignDelegationProposal ||
-      this._type === TransactionType.AllocationRequest
+      this._type === TransactionType.AllocationRequest ||
+      this._type === TransactionType.EndInvestorOnboardingOffer
     ) {
       return Buffer.from(DUMMY_HASH, 'base64');
     }
@@ -272,6 +297,10 @@ export class Transaction extends BaseTransaction {
       } else if (this.type === TransactionType.AllocationRequest) {
         if (decoded.allocationRequestData) {
           this.allocationRequestData = decoded.allocationRequestData;
+        }
+      } else if (this.type === TransactionType.EndInvestorOnboardingOffer) {
+        if (decoded.endInvestorOnboardingOfferData) {
+          this.endInvestorOnboardingOfferData = decoded.endInvestorOnboardingOfferData;
         }
       } else {
         if (decoded.prepareCommandResponse) {
@@ -397,6 +426,21 @@ export class Transaction extends BaseTransaction {
           explanation.cantonCommand = commandSummary;
         }
         return explanation;
+      }
+      case TransactionType.EndInvestorOnboardingOffer: {
+        // Non-signable notification record — no inputs, outputs, or amounts to explain.
+        return {
+          id: this.id,
+          displayOrder,
+          outputs: [],
+          outputAmount: '0',
+          inputs: [],
+          inputAmount: '0',
+          changeOutputs: [],
+          changeAmount: '0',
+          fee: { fee: '0' },
+          type: this.type,
+        };
       }
     }
     return {

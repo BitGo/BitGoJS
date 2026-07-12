@@ -111,6 +111,10 @@ export enum TransactionType {
   AllocationReject,
   // canton generic DAML command
   CantonCommand,
+  // canton end investor onboarding offer (internal/dummy txRequest recording an on-chain
+  // EndInvestorOnboardingOffer contract on the end investor's wallet so they can accept or reject.
+  // Never signed or submitted — built locally without an IMS call.)
+  EndInvestorOnboardingOffer,
 
   // trx
   FREEZE,
