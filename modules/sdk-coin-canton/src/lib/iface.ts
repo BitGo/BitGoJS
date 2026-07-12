@@ -34,6 +34,7 @@ export interface TxData {
   acknowledgeData?: TransferAcknowledge;
   cosignDelegationProposalData?: CosignDelegationProposal;
   allocationRequestData?: AllocationRequest;
+  endInvestorOnboardingOfferData?: EndInvestorOnboardingOfferData;
   memoId?: string;
   token?: string;
   cantonCommand?: CantonCommandExplain;
@@ -128,6 +129,7 @@ export interface TransactionBroadcastData {
   acknowledgeData?: TransferAcknowledge;
   cosignDelegationProposalData?: CosignDelegationProposal;
   allocationRequestData?: AllocationRequest;
+  endInvestorOnboardingOfferData?: EndInvestorOnboardingOfferData;
   prepareCommandResponse?: CantonPrepareCommandResponse;
   txType: string;
   preparedTransaction?: string;
@@ -223,6 +225,23 @@ export interface AllocationRequest {
   receiveAmount: number;
   allocateBefore: string;
   settleBefore: string;
+  comment?: string;
+}
+
+/**
+ * Internal (non-signable) data for an EndInvestorOnboardingOffer txRequest.
+ * Records an on-chain EndInvestorOnboardingOffer contract on the end investor's wallet
+ * so they can accept or reject. Built locally without an IMS call — the participant
+ * party may be external (non-BitGo) and therefore not registered in BitGo's IMS.
+ */
+export interface EndInvestorOnboardingOfferData {
+  /** The on-chain contractId of the EndInvestorOnboardingOffer (from pendingContractId). */
+  contractId: string;
+  /** Canton party ID of the end investor being onboarded. */
+  endInvestorPartyId: string;
+  /** Canton party ID of the participant that created the offer (may be external to BitGo). */
+  participantPartyId: string;
+  /** Optional comment from the participant. */
   comment?: string;
 }
 

@@ -10,6 +10,7 @@ import { AllocationAllocateWithdrawnBuilder } from './allocationAllocateWithdraw
 import { AllocationRejectBuilder } from './allocationRejectBuilder';
 import { AllocationRequestBuilder } from './allocationRequestBuilder';
 import { CantonCommandBuilder } from './cantonCommandBuilder';
+import { EndInvestorOnboardingOfferBuilder } from './endInvestorOnboardingOfferBuilder';
 import { CosignDelegationAcceptBuilder } from './cosignDelegationAcceptBuilder';
 import { CosignDelegationProposalBuilder } from './cosignDelegationProposalBuilder';
 import { OneStepPreApprovalBuilder } from './oneStepPreApprovalBuilder';
@@ -76,6 +77,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         case TransactionType.CantonCommand: {
           return this.getCantonCommandBuilder(tx);
         }
+        case TransactionType.EndInvestorOnboardingOffer: {
+          return this.getEndInvestorOnboardingOfferBuilder(tx);
+        }
         default: {
           throw new InvalidTransactionError('unsupported transaction');
         }
@@ -101,6 +105,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getCantonCommandBuilder(tx?: Transaction): CantonCommandBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new CantonCommandBuilder(this._coinConfig));
+  }
+
+  getEndInvestorOnboardingOfferBuilder(tx?: Transaction): EndInvestorOnboardingOfferBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new EndInvestorOnboardingOfferBuilder(this._coinConfig));
   }
 
   getOneStepPreapprovalBuilder(tx?: Transaction): OneStepPreApprovalBuilder {

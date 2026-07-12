@@ -6,6 +6,7 @@ export { AllocationAllocateBuilder } from './allocationAllocateBuilder';
 export { AllocationAllocateWithdrawnBuilder } from './allocationAllocateWithdrawnBuilder';
 export { AllocationRejectBuilder } from './allocationRejectBuilder';
 export { AllocationRequestBuilder } from './allocationRequestBuilder';
+export { EndInvestorOnboardingOfferBuilder } from './endInvestorOnboardingOfferBuilder';
 export { CosignDelegationAcceptBuilder } from './cosignDelegationAcceptBuilder';
 export { CosignDelegationProposalBuilder } from './cosignDelegationProposalBuilder';
 export { KeyPair } from './keyPair';
