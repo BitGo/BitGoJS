@@ -1,4 +1,4 @@
-import { generateLightningQrData, generateQrData, generateVaultQrData } from './generateQrData';
+import { generateLightningQrData, generateQrData, generateSafeQrData } from './generateQrData';
 import { generateFaq, generateLightningFaq } from './faq';
 import { drawKeycard } from './drawKeycard';
 import { generateParamsForKeyCreation } from './generateParamsForKeyCreation';
@@ -6,7 +6,7 @@ import {
   GenerateKeycardParams,
   GenerateLightningQrDataParams,
   GenerateQrDataBaseParams,
-  GenerateVaultQrDataParams,
+  GenerateSafeQrDataParams,
 } from './types';
 
 export * from './drawKeycard';
@@ -51,16 +51,14 @@ export async function generateLightningKeycard(
 }
 
 /**
- * Generates a vault keycard using the existing 4-box layout: boxes A/B/C each carry a JSON
- * object of the four roots (see {@link generateVaultQrData}), rendered through the same
- * {@link drawKeycard} path as a wallet. Generated as part of vault creation, once all four
+ * Generates a safe keycard using the existing 4-box layout: boxes A/B/C each carry a JSON
+ * object of the four roots (see {@link generateSafeQrData}), rendered through the same
+ * {@link drawKeycard} path as a wallet. Generated as part of safe creation, once all four
  * root triplets exist.
  */
-export async function generateVaultKeycard(
-  params: GenerateQrDataBaseParams & GenerateVaultQrDataParams
-): Promise<void> {
+export async function generateSafeKeycard(params: GenerateQrDataBaseParams & GenerateSafeQrDataParams): Promise<void> {
   const questions = generateFaq(params.coin.fullName);
-  const qrData = await generateVaultQrData(params);
+  const qrData = await generateSafeQrData(params);
   const keycard = await drawKeycard({ ...params, questions, qrData, pageBreakBeforeIndices: [1, 2] });
   const label = params.walletLabel || params.coin.fullName;
   keycard.save(`BitGo Keycard for ${label}.pdf`);

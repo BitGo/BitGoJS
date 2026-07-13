@@ -1,4 +1,4 @@
-import { VaultKeycardRoots, VAULT_ROOT_ORDER } from './types';
+import { SafeKeycardRoots, SAFE_ROOT_ORDER } from './types';
 
 export type PDFTextNode = {
   text: string;
@@ -14,28 +14,28 @@ export type KeycardEntry = {
 };
 
 /**
- * Parses a vault keycard box value — the JSON packed by `generateVaultQrData`, e.g.
+ * Parses a safe keycard box value — the JSON packed by `generateSafeQrData`, e.g.
  * `{"secp256k1Multisig":"…","ecdsaMpc":"…",…}` — into its four roots. Validates that all four
  * roots are present. Recovery tooling calls this on the A/B/C box value returned by
  * {@link parseKeycardFromLines}, then decrypts each root value with the wallet password.
  */
-export function parseVaultKeycardBox(data: string): VaultKeycardRoots {
+export function parseSafeKeycardBox(data: string): SafeKeycardRoots {
   let parsed: unknown;
   try {
     parsed = JSON.parse(data);
   } catch {
-    throw new Error('parseVaultKeycardBox: value is not valid JSON');
+    throw new Error('parseSafeKeycardBox: value is not valid JSON');
   }
   if (typeof parsed !== 'object' || parsed === null) {
-    throw new Error('parseVaultKeycardBox: value is not an object');
+    throw new Error('parseSafeKeycardBox: value is not an object');
   }
   const roots = parsed as Record<string, unknown>;
-  for (const slot of VAULT_ROOT_ORDER) {
+  for (const slot of SAFE_ROOT_ORDER) {
     if (typeof roots[slot] !== 'string') {
-      throw new Error(`parseVaultKeycardBox: missing or invalid root ${slot}`);
+      throw new Error(`parseSafeKeycardBox: missing or invalid root ${slot}`);
     }
   }
-  return parsed as VaultKeycardRoots;
+  return parsed as SafeKeycardRoots;
 }
 
 const sectionHeaderRegex = /^([A-D])\s*[:.)-]\s*(.+?)\s*$/i;
@@ -73,7 +73,9 @@ function countChar(input: string, char: string): number {
 }
 
 function isEncryptedWalletPasswordSectionTitle(title: string): boolean {
-  return title.toLowerCase().includes('encrypted wallet password');
+  const normalized = title.toLowerCase();
+  // Box D is titled "Encrypted Wallet Password" (wallet) or "Encrypted Safe Password" (safe).
+  return normalized.includes('encrypted wallet password') || normalized.includes('encrypted safe password');
 }
 
 /**
