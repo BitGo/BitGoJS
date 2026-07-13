@@ -12,6 +12,7 @@ import {
   MPCv2KeyGenStateEnum,
   MPCv2PartyFromStringOrNumber,
 } from '@bitgo/public-types';
+import { EddsaMPCv2KeyGenCallbacks } from '../../../wallet/iWallets';
 import { ed25519 } from '@noble/curves/ed25519';
 import { EddsaMPSDkg, EddsaMPSDsg, MPSComms, MPSTypes, MPSUtil } from '@bitgo/sdk-lib-mpc';
 import { KeychainsTriplet } from '../../../baseCoin';
@@ -211,6 +212,95 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       backupKeychain,
       bitgoKeychain,
     };
+  }
+
+  async createKeychainsWithExternalSigner(params: {
+    enterprise: string;
+    callbacks: EddsaMPCv2KeyGenCallbacks;
+  }): Promise<KeychainsTriplet> {
+    const { enterprise, callbacks } = params;
+
+    const { eddsaMpcv2PublicKey } = await this.getBitgoGpgPubkeyBasedOnFeatureFlags(enterprise, true);
+    const bitgoPublicGpgKey = eddsaMpcv2PublicKey ?? this.bitgoEddsaMpcv2PublicGpgKey;
+    assert(bitgoPublicGpgKey, 'Failed to get BitGo EdDSA MPCv2 GPG public key');
+    const bitgoPublicGpgKeyArmored = bitgoPublicGpgKey.armor();
+
+    if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
+      assert(isBitgoEddsaMpcv2PubKey(bitgoPublicGpgKeyArmored), 'Invalid BitGo EdDSA MPCv2 GPG public key');
+    }
+
+    // Round 0: both parties generate GPG keys
+    const { userGpgPublicKey, backupGpgPublicKey, userState, backupState } = await callbacks.initializeCallback({
+      enterprise,
+      bitgoPublicGpgKey: bitgoPublicGpgKeyArmored,
+    });
+
+    assert(NonEmptyString.is(userGpgPublicKey), 'User GPG public key is required');
+    assert(NonEmptyString.is(backupGpgPublicKey), 'Backup GPG public key is required');
+
+    // Round 1: both parties run DKG round 1
+    const {
+      userSignedMsg1,
+      backupSignedMsg1,
+      userState: userStateAfter1,
+      backupState: backupStateAfter1,
+    } = await callbacks.round1Callback({
+      bitgoPublicGpgKey: bitgoPublicGpgKeyArmored,
+      userGpgPublicKey,
+      backupGpgPublicKey,
+      userState,
+      backupState,
+    });
+
+    const { sessionId, bitgoMsg1 } = await this.sendKeyGenerationRound1(enterprise, {
+      userGpgPublicKey,
+      backupGpgPublicKey,
+      userMsg1: userSignedMsg1,
+      backupMsg1: backupSignedMsg1,
+    });
+
+    // Round 2: both parties run DKG round 2
+    const {
+      userSignedMsg2,
+      backupSignedMsg2,
+      userState: userStateAfter2,
+      backupState: backupStateAfter2,
+    } = await callbacks.round2Callback({
+      bitgoMsg1,
+      userSignedMsg1,
+      backupSignedMsg1,
+      userState: userStateAfter1,
+      backupState: backupStateAfter1,
+    });
+
+    const {
+      sessionId: sessionIdRound2,
+      commonPublicKeychain: bitgoCommonKeychain,
+      bitgoMsg2,
+    } = await this.sendKeyGenerationRound2(enterprise, {
+      sessionId,
+      userMsg2: userSignedMsg2,
+      backupMsg2: backupSignedMsg2,
+    });
+    assert.strictEqual(sessionId, sessionIdRound2, 'Round 1 and round 2 session IDs do not match');
+
+    // Finalize: both parties verify and derive the common keychain
+    const { commonKeychain } = await callbacks.finalizeCallback({
+      bitgoMsg2,
+      bitgoCommonKeychain,
+      userState: userStateAfter2,
+      backupState: backupStateAfter2,
+    });
+    assert.strictEqual(commonKeychain, bitgoCommonKeychain, 'Common keychains do not match');
+
+    const keychains = this.baseCoin.keychains();
+    const [userKeychain, backupKeychain, bitgoKeychain] = await Promise.all([
+      keychains.add({ source: 'user', keyType: 'tss' as KeyType, commonKeychain, isMPCv2: true }),
+      keychains.add({ source: 'backup', keyType: 'tss' as KeyType, commonKeychain, isMPCv2: true }),
+      this.addBitgoKeychain(commonKeychain),
+    ]);
+
+    return { userKeychain, backupKeychain, bitgoKeychain };
   }
 
   // #region keychain utils
