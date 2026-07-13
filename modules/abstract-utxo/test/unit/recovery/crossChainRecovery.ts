@@ -11,6 +11,7 @@ import {
   CrossChainRecoverySigned,
   CrossChainRecoveryUnsigned,
   getWallet,
+  isWalletAddress,
   supportedCrossChainRecoveries,
   generateAddress,
   convertLtcAddressToLegacyFormat,
@@ -294,6 +295,70 @@ describe(`Cross-Chain Recovery getWallet`, async function () {
       });
       nockV2Wallet.done();
     }
+  });
+});
+
+describe('isWalletAddress', function () {
+  const coin = getUtxoCoin('btc');
+  const walletId = '5abacebe28d72fbd07e0b8cbba0ff39e';
+  const testAddress = '3GBygsGPvTdfKMbq4AKZZRu1sPMWPEsBfd';
+
+  function nockAddress(statusCode: number, body?: unknown): nock.Scope {
+    return nockBitGo()
+      .get(`/api/v2/${coin.getChain()}/wallet/${walletId}/address/${testAddress}`)
+      .reply(statusCode, body ?? {});
+  }
+
+  before('setup wallet nock', function () {
+    nockBitGo()
+      .get(`/api/v2/${coin.getChain()}/wallet/${walletId}`)
+      .reply(200, {
+        id: walletId,
+        coin: coin.getChain(),
+        label: 'isWalletAddress test',
+        keys: keychainsBase58.map((k) => getSeed(k.pub).toString('hex')),
+      })
+      .persist();
+    keychainsBase58.forEach((k) => {
+      nockBitGo()
+        .get(`/api/v2/${coin.getChain()}/key/${getSeed(k.pub).toString('hex')}`)
+        .reply(200, k)
+        .persist();
+    });
+  });
+
+  after(function () {
+    nock.cleanAll();
+  });
+
+  it('returns true when address belongs to wallet', async function () {
+    nockAddress(200, { address: testAddress, chain: 0, index: 0, coin: coin.getChain(), wallet: walletId });
+    const wallet = await getWallet(defaultBitGo, coin, walletId);
+    assert.strictEqual(await isWalletAddress(wallet, testAddress), true);
+  });
+
+  it('returns false for 404 (address not found in wallet)', async function () {
+    nockAddress(404);
+    const wallet = await getWallet(defaultBitGo, coin, walletId);
+    assert.strictEqual(await isWalletAddress(wallet, testAddress), false);
+  });
+
+  it('re-throws on 503 (server error during recovery silently excludes outputs)', async function () {
+    nockAddress(503);
+    const wallet = await getWallet(defaultBitGo, coin, walletId);
+    await assert.rejects(() => isWalletAddress(wallet, testAddress), { status: 503 });
+  });
+
+  it('re-throws on 500', async function () {
+    nockAddress(500);
+    const wallet = await getWallet(defaultBitGo, coin, walletId);
+    await assert.rejects(() => isWalletAddress(wallet, testAddress), { status: 500 });
+  });
+
+  it('re-throws on 401 (auth failure)', async function () {
+    nockAddress(401);
+    const wallet = await getWallet(defaultBitGo, coin, walletId);
+    await assert.rejects(() => isWalletAddress(wallet, testAddress), { status: 401 });
   });
 });
 

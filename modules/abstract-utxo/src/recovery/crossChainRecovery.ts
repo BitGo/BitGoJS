@@ -108,7 +108,10 @@ export async function isWalletAddress(wallet: IWallet | WalletV1, address: strin
 
     return addressData !== undefined;
   } catch (e) {
-    return false;
+    if (e.status === 404) {
+      return false;
+    }
+    throw e;
   }
 }
 
