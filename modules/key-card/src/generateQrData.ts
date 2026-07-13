@@ -5,13 +5,14 @@ import * as assert from 'assert';
 import {
   GenerateLightningQrDataParams,
   GenerateQrDataParams,
-  GenerateVaultQrDataParams,
+  GenerateSafeQrDataParams,
+  KeycardEntity,
   MasterPublicKeyQrDataEntry,
   QrData,
   QrDataEntry,
-  VaultKeycardRoots,
-  VaultRootKeyType,
-  VAULT_ROOT_ORDER,
+  SafeKeycardRoots,
+  SafeRootKeyType,
+  SAFE_ROOT_ORDER,
 } from './types';
 
 function getPubFromKey(key: Keychain): string | undefined {
@@ -135,13 +136,15 @@ function generateUserMasterPublicKeyQRData(publicKey: string): MasterPublicKeyQr
 async function generatePasscodeQrData(
   passphrase: string,
   passcodeEncryptionCode: string,
-  encryptionVersion?: 1 | 2
+  encryptionVersion?: 1 | 2,
+  entityNoun: KeycardEntity = 'wallet'
 ): Promise<QrDataEntry> {
-  const encryptedWalletPasscode = await encrypt(passcodeEncryptionCode, passphrase, { encryptionVersion });
+  const encryptedPasscode = await encrypt(passcodeEncryptionCode, passphrase, { encryptionVersion });
+  const titleNoun = entityNoun === 'safe' ? 'Safe' : 'Wallet';
   return {
-    title: 'D: Encrypted Wallet Password',
-    description: 'This is the wallet password, encrypted client-side with a key held by BitGo.',
-    data: encryptedWalletPasscode,
+    title: `D: Encrypted ${titleNoun} Password`,
+    description: `This is the ${entityNoun} password, encrypted client-side with a key held by BitGo.`,
+    data: encryptedPasscode,
   };
 }
 
@@ -220,61 +223,61 @@ export async function generateLightningQrData(params: GenerateLightningQrDataPar
   return qrData;
 }
 
-function selectRootPrivateKey(keychain: Keychain, slot: VaultRootKeyType, role: 'user' | 'backup'): string {
+function selectRootPrivateKey(keychain: Keychain, slot: SafeRootKeyType, role: 'user' | 'backup'): string {
   // Prefer the compact MPCv2 reduced share; fall back to encryptedPrv (e.g. multisig roots).
   const data = keychain.reducedEncryptedPrv ?? keychain.encryptedPrv;
-  assert.ok(data, `Vault ${role} root ${slot} is missing encrypted private key material`);
+  assert.ok(data, `Safe ${role} root ${slot} is missing encrypted private key material`);
   return data;
 }
 
-function selectRootPublicKey(keychain: Keychain, slot: VaultRootKeyType): string {
+function selectRootPublicKey(keychain: Keychain, slot: SafeRootKeyType): string {
   const pub = getPubFromKey(keychain);
-  assert.ok(pub, `Vault BitGo root ${slot} is missing a public key`);
+  assert.ok(pub, `Safe BitGo root ${slot} is missing a public key`);
   return pub;
 }
 
 /**
  * Serializes one box's four roots into a single JSON object keyed by rootKeyType, e.g.
- * `{"secp256k1Multisig":"<encPrv>","ecdsaMpc":"<reducedEncPrv>",...}`. This keeps the vault
+ * `{"secp256k1Multisig":"<encPrv>","ecdsaMpc":"<reducedEncPrv>",...}`. This keeps the safe
  * keycard on the existing 4-box layout — one box (= one QR/data block) per role — with the
  * four roots packed into each box's data. `splitKeys` fragments the box if it exceeds the QR
- * threshold, exactly as for a normal wallet keycard. Reversed by {@link parseVaultKeycardBox}.
+ * threshold, exactly as for a normal wallet keycard. Reversed by {@link parseSafeKeycardBox}.
  */
-function buildVaultBoxData(
-  roots: Record<VaultRootKeyType, KeychainsTriplet>,
-  select: (root: KeychainsTriplet, slot: VaultRootKeyType) => string
+function buildSafeBoxData(
+  roots: Record<SafeRootKeyType, KeychainsTriplet>,
+  select: (root: KeychainsTriplet, slot: SafeRootKeyType) => string
 ): string {
-  const box: VaultKeycardRoots = {} as VaultKeycardRoots;
-  for (const slot of VAULT_ROOT_ORDER) {
+  const box: SafeKeycardRoots = {} as SafeKeycardRoots;
+  for (const slot of SAFE_ROOT_ORDER) {
     const root = roots[slot];
-    assert.ok(root, `Vault is missing the ${slot} root`);
+    assert.ok(root, `Safe is missing the ${slot} root`);
     box[slot] = select(root, slot);
   }
   return JSON.stringify(box);
 }
 
 /**
- * Builds vault keycard QR data in the existing wallet {@link QrData} shape: boxes A (user),
+ * Builds safe keycard QR data in the existing wallet {@link QrData} shape: boxes A (user),
  * B (backup), C (BitGo), D (passcode). Each of A/B/C carries a JSON object of the four roots,
- * so the vault renders and parses through the same {@link drawKeycard} path as a wallet.
+ * so the safe renders and parses through the same {@link drawKeycard} path as a wallet.
  */
-export async function generateVaultQrData(params: GenerateVaultQrDataParams): Promise<QrData> {
+export async function generateSafeQrData(params: GenerateSafeQrDataParams): Promise<QrData> {
   const { roots } = params;
   const qrData: QrData = {
     user: {
       title: 'A: User Key',
-      description: 'Your 4 root private keys, encrypted with your wallet password.',
-      data: buildVaultBoxData(roots, (root, slot) => selectRootPrivateKey(root.userKeychain, slot, 'user')),
+      description: 'Your 4 root private keys, encrypted with your safe password.',
+      data: buildSafeBoxData(roots, (root, slot) => selectRootPrivateKey(root.userKeychain, slot, 'user')),
     },
     backup: {
       title: 'B: Backup Key',
-      description: 'Your 4 root backup keys, encrypted with your wallet password.',
-      data: buildVaultBoxData(roots, (root, slot) => selectRootPrivateKey(root.backupKeychain, slot, 'backup')),
+      description: 'Your 4 root backup keys, encrypted with your safe password.',
+      data: buildSafeBoxData(roots, (root, slot) => selectRootPrivateKey(root.backupKeychain, slot, 'backup')),
     },
     bitgo: {
       title: 'C: BitGo Key',
       description: 'The public parts of the 4 root keys held by BitGo.',
-      data: buildVaultBoxData(roots, (root, slot) => selectRootPublicKey(root.bitgoKeychain, slot)),
+      data: buildSafeBoxData(roots, (root, slot) => selectRootPublicKey(root.bitgoKeychain, slot)),
     },
   };
 
@@ -282,7 +285,8 @@ export async function generateVaultQrData(params: GenerateVaultQrDataParams): Pr
     qrData.passcode = await generatePasscodeQrData(
       params.passphrase,
       params.passcodeEncryptionCode,
-      params.encryptionVersion
+      params.encryptionVersion,
+      'safe'
     );
   }
 

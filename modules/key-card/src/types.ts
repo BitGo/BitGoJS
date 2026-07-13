@@ -57,28 +57,31 @@ export interface GenerateLightningQrDataParams extends GenerateQrDataCoinParams 
 }
 
 /**
- * Identifier for one of a vault's four roots (one per signing scheme). Each value is the
+ * Identifier for one of a safe's four roots (one per signing scheme). Each value is the
  * root's `rootKeyType`, which is also the key used in the keycard's per-box JSON.
  */
-export type VaultRootKeyType = 'secp256k1Multisig' | 'ecdsaMpc' | 'eddsaMpc' | 'ed25519Multisig';
+export type SafeRootKeyType = 'secp256k1Multisig' | 'ecdsaMpc' | 'eddsaMpc' | 'ed25519Multisig';
 
 /**
- * Fixed render/scan order of the four roots on the vault keycard. Kept stable so a
+ * Fixed render/scan order of the four roots on the safe keycard. Kept stable so a
  * generated keycard and a re-scanned one line up slot-for-slot.
  */
-export const VAULT_ROOT_ORDER: VaultRootKeyType[] = ['secp256k1Multisig', 'ecdsaMpc', 'eddsaMpc', 'ed25519Multisig'];
+export const SAFE_ROOT_ORDER: SafeRootKeyType[] = ['secp256k1Multisig', 'ecdsaMpc', 'eddsaMpc', 'ed25519Multisig'];
 
 /**
- * The JSON object encoded in a vault keycard box (A/B/C): the four roots keyed by
- * {@link VaultRootKeyType}. Values are per-root ciphertext for A/B (encryptedPrv or
+ * The JSON object encoded in a safe keycard box (A/B/C): the four roots keyed by
+ * {@link SafeRootKeyType}. Values are per-root ciphertext for A/B (encryptedPrv or
  * reducedEncryptedPrv) or public keys for C. The root-key-type keys are self-identifying, so a
  * consumer parses by key rather than by size/offset.
  */
-export type VaultKeycardRoots = Record<VaultRootKeyType, string>;
+export type SafeKeycardRoots = Record<SafeRootKeyType, string>;
 
-export interface GenerateVaultQrDataParams extends GenerateQrDataCoinParams {
+/** The product a keycard belongs to, used for user-facing wording (e.g. Box D copy). */
+export type KeycardEntity = 'wallet' | 'safe';
+
+export interface GenerateSafeQrDataParams extends GenerateQrDataCoinParams {
   // The four root triplets (user/backup/bitgo keychains), keyed by rootKeyType.
-  roots: Record<VaultRootKeyType, KeychainsTriplet>;
+  roots: Record<SafeRootKeyType, KeychainsTriplet>;
 }
 
 export type GenerateKeycardParams = GenerateQrDataBaseParams &

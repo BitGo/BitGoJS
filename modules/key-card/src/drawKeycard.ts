@@ -30,7 +30,7 @@ enum KeyCurveName {
 export const QRBinaryMaxLength = 1500;
 
 // Default page-break layout: start a new page before the 3rd box (index 2), matching the
-// historical wallet keycard. Callers (e.g. the vault keycard) may override with their own indices.
+// historical wallet keycard. Callers (e.g. the safe keycard) may override with their own indices.
 const DEFAULT_PAGE_BREAK_INDICES = [2];
 
 const font = {
@@ -56,26 +56,29 @@ function moveDown(y: number, ydelta: number): number {
   return y + ydelta;
 }
 
+// Draws QR codes down the left column, returning the index of the next QR still to draw (for
+// continuation on a later page) and the y-offset just below the drawn QR column (so callers
+// can place content, e.g. a note, under the QR codes).
 function drawOnePageOfQrCodes(
   qrImages: HTMLCanvasElement[],
   doc: jsPDF,
   y: number,
   qrSize: number,
-  startIndex
-): number {
+  startIndex: number
+): { nextIndex: number; endY: number } {
   doc.setFont('helvetica');
   let qrIndex: number = startIndex;
   for (; qrIndex < qrImages.length; qrIndex++) {
     const image = qrImages[qrIndex];
     const textBuffer = 15;
     if (y + qrSize + textBuffer >= doc.internal.pageSize.getHeight()) {
-      return qrIndex;
+      return { nextIndex: qrIndex, endY: y };
     }
 
     doc.addImage(image, left(0), y, qrSize, qrSize);
 
     if (qrImages.length === 1) {
-      return qrIndex + 1;
+      return { nextIndex: qrIndex + 1, endY: y + qrSize };
     }
 
     y = moveDown(y, qrSize + textBuffer);
@@ -83,7 +86,7 @@ function drawOnePageOfQrCodes(
     doc.text('Part ' + (qrIndex + 1).toString(), left(0), y);
     y = moveDown(y, 20);
   }
-  return qrIndex + 1;
+  return { nextIndex: qrIndex, endY: y };
 }
 
 function computeKeyCardImageDimensions(keyCardImage: HTMLImageElement) {
@@ -207,7 +210,21 @@ export async function drawKeycard({
       qrImages.push(await QRCode.toCanvas(key, { errorCorrectionLevel: 'L' }));
     }
 
-    let nextQrIndex = drawOnePageOfQrCodes(qrImages, doc, y, qrSize, 0);
+    const isMultiPart = qr?.data?.length > QRBinaryMaxLength;
+    const { nextIndex, endY: qrColumnEndY } = drawOnePageOfQrCodes(qrImages, doc, y, qrSize, 0);
+    let nextQrIndex = nextIndex;
+
+    // For a split key, place the "put all Parts together" note directly under the QR codes,
+    // wrapped to the QR column width so it stays in the left column and never overlaps the
+    // Data payload rendered on the right.
+    let qrColumnBottom = qrColumnEndY;
+    if (isMultiPart) {
+      doc.setFontSize(font.body - 2).setTextColor(color.darkgray);
+      const noteLines = doc.splitTextToSize('Note: you will need to put all Parts together for the full key', qrSize);
+      const noteY = moveDown(qrColumnEndY, 15);
+      doc.text(noteLines, left(0), noteY);
+      qrColumnBottom = noteY + noteLines.length * doc.getLineHeight();
+    }
 
     doc.setFontSize(font.subheader).setTextColor(color.black);
     y = moveDown(y, 10);
@@ -220,11 +237,6 @@ export async function drawKeycard({
     doc.text(qr.description, textLeft, y);
     textHeight += doc.getLineHeight();
     doc.setFontSize(font.body - 2);
-    if (qr?.data?.length > QRBinaryMaxLength) {
-      y = moveDown(y, 30);
-      textHeight += 30;
-      doc.text('Note: you will need to put all Parts together for the full key', textLeft, y);
-    }
     y = moveDown(y, 30);
     textHeight += 30;
     doc.text('Data:', textLeft, y);
@@ -242,7 +254,11 @@ export async function drawKeycard({
         textHeight = 0;
         y = 30;
         topY = y;
-        nextQrIndex = drawOnePageOfQrCodes(qrImages, doc, y, qrSize, nextQrIndex);
+        // Redraw remaining QRs on the new page and update the column bottom to THIS page, so
+        // the rowHeight math below stays same-page (avoids a stale page-1 coordinate).
+        const continued = drawOnePageOfQrCodes(qrImages, doc, y, qrSize, nextQrIndex);
+        nextQrIndex = continued.nextIndex;
+        qrColumnBottom = continued.endY;
         doc.setFont('courier').setFontSize(9).setTextColor(color.black);
       }
       doc.text(lines[line], textLeft, y);
@@ -273,9 +289,10 @@ export async function drawKeycard({
     }
 
     doc.setFont('helvetica');
-    // Move down the size of the QR code minus accumulated height on the right side, plus margin
-    // if we have a key that spans multiple pages, then exclude QR code size
-    const rowHeight = Math.max(qr.data.length > QRBinaryMaxLength ? qrSize + 20 : qrSize, textHeight);
+    // Move down past the taller of the two columns: the right-side text (textHeight) or the
+    // left-side QR column (plus the note printed under it for split keys), then add a margin.
+    const qrColumnHeight = isMultiPart ? qrColumnBottom - topY : qrSize;
+    const rowHeight = Math.max(qrColumnHeight, textHeight);
     const marginBottom = 15;
     y = moveDown(y, rowHeight - (y - topY) + marginBottom);
   }

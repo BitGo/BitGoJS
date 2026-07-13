@@ -3,13 +3,13 @@ import * as assert from 'assert';
 import { decrypt, encrypt } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
 import { Keychain, KeychainsTriplet, KeyType } from '@bitgo/sdk-core';
-import { generateVaultQrData } from '../../src/generateQrData';
+import { generateSafeQrData } from '../../src/generateQrData';
 import { splitKeys } from '../../src/utils';
 import { QRBinaryMaxLength } from '../../src/drawKeycard';
-import { parseKeycardFromLines, parseVaultKeycardBox } from '../../src/parseKeycard';
-import { VaultRootKeyType, VAULT_ROOT_ORDER } from '../../src/types';
+import { parseKeycardFromLines, parseSafeKeycardBox } from '../../src/parseKeycard';
+import { SafeRootKeyType, SAFE_ROOT_ORDER } from '../../src/types';
 
-const passphrase = 'vault-keycard-round-trip';
+const passphrase = 'safe-keycard-round-trip';
 
 // Courier chars per line when synthesizing the "Data:" block of a scanned PDF (see the parser
 // round-trip test); any value works — it only exercises line reassembly in parseKeycardFromLines.
@@ -29,7 +29,7 @@ function makeKeychain(overrides: Partial<Keychain>): Keychain {
  *                     (`MPSUtil.generateEdDsaDKGKeyShares()[i].getReducedKeyShare()`)
  * Using the real lengths keeps the round-trip and QR-split assertions representative.
  */
-const ROOT_PLAINTEXT_LENGTHS: Record<VaultRootKeyType, number> = {
+const ROOT_PLAINTEXT_LENGTHS: Record<SafeRootKeyType, number> = {
   secp256k1Multisig: 111,
   ecdsaMpc: 808,
   eddsaMpc: 548,
@@ -38,20 +38,20 @@ const ROOT_PLAINTEXT_LENGTHS: Record<VaultRootKeyType, number> = {
 
 // Distinct, correctly-sized plaintext per (slot, role) — the prefix makes each value unique;
 // padEnd brings it to the real length above.
-function plaintextFor(slot: VaultRootKeyType, role: string): string {
+function plaintextFor(slot: SafeRootKeyType, role: string): string {
   return `${slot}:${role}:`.padEnd(ROOT_PLAINTEXT_LENGTHS[slot], 'x');
 }
 
 async function buildRoots(): Promise<{
-  roots: Record<VaultRootKeyType, KeychainsTriplet>;
-  plaintexts: Record<VaultRootKeyType, { user: string; backup: string }>;
-  bitgoPubs: Record<VaultRootKeyType, string>;
+  roots: Record<SafeRootKeyType, KeychainsTriplet>;
+  plaintexts: Record<SafeRootKeyType, { user: string; backup: string }>;
+  bitgoPubs: Record<SafeRootKeyType, string>;
 }> {
-  const roots = {} as Record<VaultRootKeyType, KeychainsTriplet>;
-  const plaintexts = {} as Record<VaultRootKeyType, { user: string; backup: string }>;
-  const bitgoPubs = {} as Record<VaultRootKeyType, string>;
+  const roots = {} as Record<SafeRootKeyType, KeychainsTriplet>;
+  const plaintexts = {} as Record<SafeRootKeyType, { user: string; backup: string }>;
+  const bitgoPubs = {} as Record<SafeRootKeyType, string>;
 
-  for (const slot of VAULT_ROOT_ORDER) {
+  for (const slot of SAFE_ROOT_ORDER) {
     const isMpc = slot === 'ecdsaMpc' || slot === 'eddsaMpc';
     const keyType: KeyType = isMpc ? 'tss' : 'independent';
     const userPrv = plaintextFor(slot, 'user');
@@ -84,35 +84,35 @@ function reassemble(data: string): string {
   return splitKeys(data, QRBinaryMaxLength).join('');
 }
 
-describe('generateVaultQrData', function () {
+describe('generateSafeQrData', function () {
   // Argon2id encryption of several root payloads is CPU-heavy.
   this.timeout(30000);
 
   it('produces the existing 4-box QrData shape, each box a JSON object of the 4 roots', async function () {
     const { roots } = await buildRoots();
-    const qrData = await generateVaultQrData({ coin: coins.get('btc'), roots });
+    const qrData = await generateSafeQrData({ coin: coins.get('btc'), roots });
 
     qrData.user.title.should.equal('A: User Key');
     qrData.backup?.title.should.equal('B: Backup Key');
     qrData.bitgo?.title.should.equal('C: BitGo Key');
 
-    // Each box parses via parseVaultKeycardBox into the four root slots, in order.
+    // Each box parses via parseSafeKeycardBox into the four root slots, in order.
     for (const box of [qrData.user, qrData.backup, qrData.bitgo]) {
       assert.ok(box);
-      Object.keys(parseVaultKeycardBox(box.data)).should.deepEqual([...VAULT_ROOT_ORDER]);
+      Object.keys(parseSafeKeycardBox(box.data)).should.deepEqual([...SAFE_ROOT_ORDER]);
     }
   });
 
   it('round-trips: reassemble box -> JSON.parse -> decrypt all 4 user + backup roots', async function () {
     const { roots, plaintexts, bitgoPubs } = await buildRoots();
-    const qrData = await generateVaultQrData({ coin: coins.get('btc'), roots });
+    const qrData = await generateSafeQrData({ coin: coins.get('btc'), roots });
     assert.ok(qrData.backup && qrData.bitgo);
 
-    const userBox = parseVaultKeycardBox(reassemble(qrData.user.data));
-    const backupBox = parseVaultKeycardBox(reassemble(qrData.backup.data));
-    const bitgoBox = parseVaultKeycardBox(reassemble(qrData.bitgo.data));
+    const userBox = parseSafeKeycardBox(reassemble(qrData.user.data));
+    const backupBox = parseSafeKeycardBox(reassemble(qrData.backup.data));
+    const bitgoBox = parseSafeKeycardBox(reassemble(qrData.bitgo.data));
 
-    for (const slot of VAULT_ROOT_ORDER) {
+    for (const slot of SAFE_ROOT_ORDER) {
       (await decrypt(passphrase, userBox[slot])).should.equal(plaintexts[slot].user);
       (await decrypt(passphrase, backupBox[slot])).should.equal(plaintexts[slot].backup);
       bitgoBox[slot].should.equal(bitgoPubs[slot]);
@@ -121,8 +121,8 @@ describe('generateVaultQrData', function () {
 
   it('uses reducedEncryptedPrv for MPC roots and encryptedPrv for multisig roots', async function () {
     const { roots } = await buildRoots();
-    const qrData = await generateVaultQrData({ coin: coins.get('btc'), roots });
-    const userBox = parseVaultKeycardBox(qrData.user.data);
+    const qrData = await generateSafeQrData({ coin: coins.get('btc'), roots });
+    const userBox = parseSafeKeycardBox(qrData.user.data);
 
     // The reduced (MPC) value must equal the keychain's reducedEncryptedPrv; multisig the encryptedPrv.
     userBox['ecdsaMpc'].should.equal(roots.ecdsaMpc.userKeychain.reducedEncryptedPrv);
@@ -131,34 +131,37 @@ describe('generateVaultQrData', function () {
     userBox['ed25519Multisig'].should.equal(roots.ed25519Multisig.userKeychain.encryptedPrv);
   });
 
-  it('includes box D when passphrase + passcodeEncryptionCode are provided', async function () {
+  it('includes box D with safe wording when passphrase + passcodeEncryptionCode are provided', async function () {
     const { roots } = await buildRoots();
-    const qrData = await generateVaultQrData({
+    const qrData = await generateSafeQrData({
       coin: coins.get('btc'),
       roots,
-      passphrase: 'wallet-pw',
+      passphrase: 'safe-pw',
       passcodeEncryptionCode: '123456',
     });
     assert.ok(qrData.passcode);
-    qrData.passcode.title.should.equal('D: Encrypted Wallet Password');
-    (await decrypt('123456', qrData.passcode.data)).should.equal('wallet-pw');
+    qrData.passcode.title.should.equal('D: Encrypted Safe Password');
+    qrData.passcode.description.should.equal(
+      'This is the safe password, encrypted client-side with a key held by BitGo.'
+    );
+    (await decrypt('123456', qrData.passcode.data)).should.equal('safe-pw');
   });
 
   it('throws when a user root is missing private key material', async function () {
     const { roots } = await buildRoots();
     roots.eddsaMpc.userKeychain = makeKeychain({ type: 'tss' });
-    await assert.rejects(() => generateVaultQrData({ coin: coins.get('btc'), roots }), /missing encrypted private key/);
+    await assert.rejects(() => generateSafeQrData({ coin: coins.get('btc'), roots }), /missing encrypted private key/);
   });
 
   it('throws a clear error when an entire root triplet is missing', async function () {
     const { roots } = await buildRoots();
-    delete (roots as Partial<Record<VaultRootKeyType, KeychainsTriplet>>).ecdsaMpc;
-    await assert.rejects(() => generateVaultQrData({ coin: coins.get('btc'), roots }), /missing the ecdsaMpc root/);
+    delete (roots as Partial<Record<SafeRootKeyType, KeychainsTriplet>>).ecdsaMpc;
+    await assert.rejects(() => generateSafeQrData({ coin: coins.get('btc'), roots }), /missing the ecdsaMpc root/);
   });
 
   it('recovers all 4 roots through the existing PDF-line parser + JSON.parse', async function () {
     const { roots, plaintexts } = await buildRoots();
-    const qrData = await generateVaultQrData({ coin: coins.get('btc'), roots });
+    const qrData = await generateSafeQrData({ coin: coins.get('btc'), roots });
     assert.ok(qrData.backup && qrData.bitgo);
 
     // Synthesize the text lines a PDF scan of a wallet-format keycard produces.
@@ -180,15 +183,15 @@ describe('generateVaultQrData', function () {
     const entries = parseKeycardFromLines(lines);
     const userEntry = entries.find((e) => e.label.startsWith('A'));
     assert.ok(userEntry);
-    const userBox = parseVaultKeycardBox(userEntry.value);
-    for (const slot of VAULT_ROOT_ORDER) {
+    const userBox = parseSafeKeycardBox(userEntry.value);
+    for (const slot of SAFE_ROOT_ORDER) {
       (await decrypt(passphrase, userBox[slot])).should.equal(plaintexts[slot].user);
     }
   });
 
-  it('parseVaultKeycardBox rejects malformed / incomplete box data', function () {
-    assert.throws(() => parseVaultKeycardBox('not json'), /not valid JSON/);
-    assert.throws(() => parseVaultKeycardBox('"a string"'), /not an object/);
-    assert.throws(() => parseVaultKeycardBox('{"secp256k1Multisig":"x"}'), /missing or invalid root/);
+  it('parseSafeKeycardBox rejects malformed / incomplete box data', function () {
+    assert.throws(() => parseSafeKeycardBox('not json'), /not valid JSON/);
+    assert.throws(() => parseSafeKeycardBox('"a string"'), /not an object/);
+    assert.throws(() => parseSafeKeycardBox('{"secp256k1Multisig":"x"}'), /missing or invalid root/);
   });
 });
