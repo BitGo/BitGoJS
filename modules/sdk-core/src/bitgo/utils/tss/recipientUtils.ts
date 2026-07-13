@@ -30,6 +30,7 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   // DeFi vault operations — recipients/calldata built server-side from defiParams
   'defiApprove',
   'defiDeposit',
+  'defiWithdraw',
   // Smart contract invocations with no explicit SDK-level recipients
   'contractCall',
 

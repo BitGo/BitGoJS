@@ -29,6 +29,7 @@ describe('recipientUtils', function () {
         'customTx',
         'defiApprove',
         'defiDeposit',
+        'defiWithdraw',
         'contractCall',
         // Staking
         'delegate',

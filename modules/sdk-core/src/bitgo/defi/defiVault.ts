@@ -15,6 +15,8 @@ import {
   IDefiVault,
   ListOperationsOptions,
   ResumeDepositOptions,
+  WithdrawFromVaultOptions,
+  WithdrawResult,
 } from './iDefiVault';
 import { IWallet } from '../wallet';
 import { BitGoBase } from '../bitgoBase';
@@ -76,7 +78,6 @@ export class DefiVault implements IDefiVault {
    *
    * @param params.vaultId - DeFi-service vault identifier
    * @param params.amount - amount in base units of the underlying asset
-   * @param params.clientIdempotencyKey - optional client idempotency key
    * @param params.walletPassphrase - required for hot wallets, omit for custody
    */
   async depositToVault(params: DepositToVaultOptions): Promise<DepositResult> {
@@ -139,7 +140,6 @@ export class DefiVault implements IDefiVault {
       defiParams: {
         vaultId: params.vaultId,
         amount: params.amount,
-        ...(params.clientIdempotencyKey ? { clientIdempotencyKey: params.clientIdempotencyKey } : {}),
       },
       ...(params.walletPassphrase ? { walletPassphrase: params.walletPassphrase } : {}),
     });
@@ -158,7 +158,6 @@ export class DefiVault implements IDefiVault {
         vaultId: params.vaultId,
         amount: params.amount,
         operationId,
-        ...(params.clientIdempotencyKey ? { clientIdempotencyKey: params.clientIdempotencyKey } : {}),
       },
       ...(params.walletPassphrase ? { walletPassphrase: params.walletPassphrase } : {}),
     });
@@ -252,6 +251,44 @@ export class DefiVault implements IDefiVault {
     if (params.cursor) query.cursor = params.cursor;
 
     return await this.bitgo.get(this.bitgo.microservicesUrl(this.operationsUrl())).query(query).result();
+  }
+
+  /**
+   * Withdraw vault shares from a DeFi vault.
+   *
+   * Issues a single sendMany call (defiWithdraw) and returns the operationId
+   * and txRequestId. The state machine for withdrawal is simpler than deposit:
+   * CREATED → WITHDRAW_TX_REQUESTED → WITHDRAW_SIGNED → WITHDRAW_CONFIRMED → COMPLETED
+   *
+   * @param params.vaultId - DeFi-service vault identifier
+   * @param params.amount - amount in base units of the vault share token
+   * @param params.walletPassphrase - required for hot wallets, omit for custody
+   */
+  async withdrawFromVault(params: WithdrawFromVaultOptions): Promise<WithdrawResult> {
+    if (!params.vaultId) {
+      throw new Error('vaultId is required');
+    }
+    if (!params.amount) {
+      throw new Error('amount is required');
+    }
+
+    const withdrawResult = await this.wallet.sendMany({
+      type: 'defiWithdraw',
+      defiParams: {
+        vaultId: params.vaultId,
+        amount: params.amount,
+      },
+      ...(params.walletPassphrase ? { walletPassphrase: params.walletPassphrase } : {}),
+    });
+
+    const txRequestId = this.extractTxRequestId(withdrawResult);
+    const operationId = this.extractOperationId(withdrawResult);
+
+    if (!operationId) {
+      throw new Error('operationId not found in withdraw txRequest response');
+    }
+
+    return { operationId, txRequestId };
   }
 
   // ── Internal helpers ────────────────────────────────────────────────

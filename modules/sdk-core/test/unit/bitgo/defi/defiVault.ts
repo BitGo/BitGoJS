@@ -353,41 +353,16 @@ describe('DefiVault', function () {
         mockBitGo.del.called.should.be.false();
       });
 
-      it('should pass clientIdempotencyKey and walletPassphrase when provided', async function () {
-        mockBitGo.get.returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
-
-        const operationId = 'op-uuid-789';
-
-        const sendManyStub = sinon.stub(wallet, 'sendMany');
-        sendManyStub.onFirstCall().resolves({
-          txRequest: {
-            txRequestId: 'txreq-approve-3',
-            intent: { intentType: 'defi-approve' },
-            transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
-          },
+      it('should throw if vaultId is missing', async function () {
+        await assert.rejects(() => defiVault.depositToVault({ vaultId: '', amount: '1000000' }), {
+          message: 'vaultId is required',
         });
-        sendManyStub.onSecondCall().resolves({
-          txRequest: {
-            txRequestId: 'txreq-deposit-3',
-            intent: { intentType: 'defi-deposit' },
-            transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
-          },
+      });
+
+      it('should throw if amount is missing', async function () {
+        await assert.rejects(() => defiVault.depositToVault({ vaultId: 'vlt-1', amount: '' }), {
+          message: 'amount is required',
         });
-
-        await defiVault.depositToVault({
-          vaultId: 'vlt-galaxy-usdc',
-          amount: '1000000',
-          clientIdempotencyKey: 'idem-key-123',
-          walletPassphrase: 'test-passphrase',
-        });
-
-        const approveArgs: any = sendManyStub.firstCall.args[0];
-        approveArgs.defiParams.clientIdempotencyKey.should.equal('idem-key-123');
-        approveArgs.walletPassphrase.should.equal('test-passphrase');
-
-        const depositArgs: any = sendManyStub.secondCall.args[0];
-        depositArgs.defiParams.clientIdempotencyKey.should.equal('idem-key-123');
-        depositArgs.walletPassphrase.should.equal('test-passphrase');
       });
     });
 
@@ -541,6 +516,129 @@ describe('DefiVault', function () {
 
     it('should throw if vaultId is missing', async function () {
       await assert.rejects(() => defiVault.listOperations({ vaultId: '' }), { message: 'vaultId is required' });
+    });
+  });
+
+  describe('withdrawFromVault', function () {
+    it('should call sendMany with defiWithdraw and return operationId + txRequestId', async function () {
+      const operationId = 'op-withdraw-1';
+
+      const sendManyStub = sinon.stub(wallet, 'sendMany');
+      sendManyStub.resolves({
+        txRequest: {
+          txRequestId: 'txreq-withdraw-1',
+          transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
+        },
+      });
+
+      const result = await defiVault.withdrawFromVault({
+        vaultId: 'vlt-galaxy-usdc',
+        amount: '500000',
+      });
+
+      result.operationId.should.equal(operationId);
+      result.txRequestId.should.equal('txreq-withdraw-1');
+
+      sendManyStub.calledOnce.should.be.true();
+      const args: any = sendManyStub.firstCall.args[0];
+      args.type.should.equal('defiWithdraw');
+      args.defiParams.vaultId.should.equal('vlt-galaxy-usdc');
+      args.defiParams.amount.should.equal('500000');
+    });
+
+    it('should extract operationId from lite apiVersion coinSpecific', async function () {
+      const operationId = 'op-withdraw-lite';
+
+      const sendManyStub = sinon.stub(wallet, 'sendMany');
+      sendManyStub.resolves({
+        txRequest: {
+          txRequestId: 'txreq-withdraw-lite',
+          unsignedTxs: [{ coinSpecific: { operationId } }],
+        },
+      });
+
+      const result = await defiVault.withdrawFromVault({ vaultId: 'vlt-galaxy-usdc', amount: '500000' });
+
+      result.operationId.should.equal(operationId);
+      result.txRequestId.should.equal('txreq-withdraw-lite');
+    });
+
+    it('should throw when operationId is absent from the withdraw txRequest response', async function () {
+      const sendManyStub = sinon.stub(wallet, 'sendMany');
+      sendManyStub.resolves({
+        txRequest: {
+          txRequestId: 'txreq-withdraw-missing',
+          transactions: [{ unsignedTx: { coinSpecific: {} } }],
+        },
+      });
+
+      await assert.rejects(() => defiVault.withdrawFromVault({ vaultId: 'vlt-galaxy-usdc', amount: '500000' }), {
+        message: 'operationId not found in withdraw txRequest response',
+      });
+    });
+
+    it('should pass walletPassphrase when provided', async function () {
+      const operationId = 'op-withdraw-opts';
+
+      const sendManyStub = sinon.stub(wallet, 'sendMany');
+      sendManyStub.resolves({
+        txRequest: {
+          txRequestId: 'txreq-withdraw-opts',
+          transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
+        },
+      });
+
+      await defiVault.withdrawFromVault({
+        vaultId: 'vlt-galaxy-usdc',
+        amount: '500000',
+        walletPassphrase: 'test-passphrase',
+      });
+
+      const args: any = sendManyStub.firstCall.args[0];
+      args.walletPassphrase.should.equal('test-passphrase');
+    });
+
+    it('should throw if vaultId is missing', async function () {
+      await assert.rejects(() => defiVault.withdrawFromVault({ vaultId: '', amount: '500000' }), {
+        message: 'vaultId is required',
+      });
+    });
+
+    it('should throw if amount is missing', async function () {
+      await assert.rejects(() => defiVault.withdrawFromVault({ vaultId: 'vlt-1', amount: '' }), {
+        message: 'amount is required',
+      });
+    });
+
+    describe('prebuildTransactionTxRequests defiWithdraw defiParams validation', function () {
+      it('should throw when defiParams is missing', async function () {
+        await assert.rejects(
+          () => (wallet as any).prebuildTransactionTxRequests({ type: 'defiWithdraw' }),
+          /defiWithdraw\.defiParams/
+        );
+      });
+
+      it('should throw when vaultId is not a string', async function () {
+        await assert.rejects(
+          () =>
+            (wallet as any).prebuildTransactionTxRequests({
+              type: 'defiWithdraw',
+              defiParams: { vaultId: 123, amount: '500000' },
+            }),
+          /defiWithdraw\.defiParams/
+        );
+      });
+
+      it('should throw when amount is not a string', async function () {
+        await assert.rejects(
+          () =>
+            (wallet as any).prebuildTransactionTxRequests({
+              type: 'defiWithdraw',
+              defiParams: { vaultId: 'vlt-1', amount: 500000 },
+            }),
+          /defiWithdraw\.defiParams/
+        );
+      });
     });
   });
 

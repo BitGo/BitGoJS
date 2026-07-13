@@ -287,8 +287,9 @@ interface IntentOptionsBase {
 export interface DefiIntentFields {
   vaultId?: string;
   amount?: { value: string; symbol: string } | string;
+  /** Vault share token amount for defi-withdraw intent (base units) */
+  shareTokenAmount?: { value: string; symbol: string } | string;
   operationId?: string;
-  clientIdempotencyKey?: string;
 }
 
 /** DeFi-specific intent parameters (input container for defiParams). */
@@ -296,7 +297,6 @@ export interface DefiIntentParams {
   vaultId: string;
   amount: string;
   operationId?: string;
-  clientIdempotencyKey?: string;
 }
 
 export interface IntentOptionsForMessage extends IntentOptionsBase {

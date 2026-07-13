@@ -6,6 +6,7 @@ import { CoinFamily } from '@bitgo/statics';
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
 import * as t from 'io-ts';
+import { BigIntFromString } from 'io-ts-types';
 import * as _ from 'lodash';
 import { EncryptionVersion, IRequestTracer } from '../../api';
 import * as common from '../../common';
@@ -51,6 +52,7 @@ import {
   TokenType,
   TxRequest,
 } from '../utils';
+import { decodeWithCodec } from '../utils/codecs';
 import { postWithCodec } from '../utils/postWithCodec';
 import { txParamsFromIntent } from '../utils/tss/baseTSSUtils';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
@@ -4445,7 +4447,6 @@ export class Wallet implements IWallet {
             defiParams: params.defiParams as {
               vaultId: string;
               amount: string;
-              clientIdempotencyKey?: string;
             },
           },
           apiVersion,
@@ -4461,13 +4462,29 @@ export class Wallet implements IWallet {
               vaultId: string;
               amount: string;
               operationId?: string;
-              clientIdempotencyKey?: string;
             },
           },
           apiVersion,
           params.preview
         );
         break;
+      case 'defiWithdraw': {
+        const defiWithdrawParams = decodeWithCodec(
+          t.type({ vaultId: t.string, amount: BigIntFromString }),
+          params.defiParams,
+          'defiWithdraw.defiParams'
+        );
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'defi-withdraw',
+            defiParams: { ...defiWithdrawParams, amount: defiWithdrawParams.amount.toString() },
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
       default:
         throw new Error(`transaction type not supported: ${params.type}`);
     }
