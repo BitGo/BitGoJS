@@ -96,6 +96,10 @@ export interface IDrawKeyCard {
   curve?: KeyCurve;
   // Box indices to start a new page before. Omit for the default wallet layout.
   pageBreakBeforeIndices?: number[];
+  // When true, a split key's QR fragments are prefixed with a "<index>/<total>|" part header
+  // so a scanner can reassemble them. Opt-in (used by the safe keycard); omit to leave QR
+  // payloads as raw fragments, keeping the wallet keycard output unchanged.
+  useQrPartHeaders?: boolean;
 }
 
 export interface FAQ {

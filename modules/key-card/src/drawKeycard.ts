@@ -58,6 +58,36 @@ function moveDown(y: number, ydelta: number): number {
   return y + ydelta;
 }
 
+/**
+ * Prefixes one fragment of a split key with a part header so a QR scanner can reassemble the
+ * fragments without relying on scan order.
+ *
+ * When a key box's payload exceeds {@link QRBinaryMaxLength}, {@link splitKeys} divides it into
+ * multiple QR codes. Each fragment's QR payload is encoded as a 1-based part header followed by
+ * the fragment:
+ *
+ *     "<index>/<total>|<fragment>"      e.g.  "1/3|<chunk>", "2/3|<chunk>", "3/3|<chunk>"
+ *
+ * A single-fragment payload is returned unchanged (no header).
+ *
+ * Reassembly contract for a consumer (e.g. a future recovery/scan tool):
+ *   1. Scan every QR code for a box.
+ *   2. Split each payload on the FIRST "|": the left side is "<index>/<total>", the right side
+ *      is the fragment.
+ *   3. Verify parts 1..total are all present (total is identical in every header).
+ *   4. Concatenate the fragments in ascending index order to recover the full box payload.
+ *   5. Parse/decrypt as usual (for a safe box: JSON.parse, then decrypt each root value).
+ *
+ * Notes:
+ *   - The "|" delimiter is safe: base64 ciphertext, JSON, and base58 xpubs never contain it.
+ *   - This header exists ONLY inside the QR image. The human-readable "Data:" text printed on
+ *     the card is the full, unheadered payload; the PDF-text parser reads that, so this header
+ *     does not affect PDF-based recovery.
+ */
+function encodeQrCodePart(fragment: string, index: number, total: number): string {
+  return total > 1 ? `${index + 1}/${total}|${fragment}` : fragment;
+}
+
 // Draws QR codes down the left column, returning the index of the next QR still to draw (for
 // continuation on a later page) and the y-offset just below the drawn QR column (so callers
 // can place content, e.g. a note, under the QR codes).
@@ -124,6 +154,7 @@ export async function drawKeycard({
   walletLabel,
   curve,
   pageBreakBeforeIndices = DEFAULT_PAGE_BREAK_INDICES,
+  useQrPartHeaders = false,
 }: IDrawKeyCard): Promise<jsPDF> {
   const jsPDFModule = await loadJSPDF();
 
@@ -218,11 +249,12 @@ export async function drawKeycard({
 
     const qrImages: (HTMLCanvasElement | string)[] = [];
     const keys = splitKeys(qr.data, QRBinaryMaxLength);
-    for (const key of keys) {
+    for (let i = 0; i < keys.length; i++) {
+      const payload = useQrPartHeaders ? encodeQrCodePart(keys[i], i, keys.length) : keys[i];
       if (isNode) {
-        qrImages.push(await QRCode.toDataURL(key, { errorCorrectionLevel: 'L' }));
+        qrImages.push(await QRCode.toDataURL(payload, { errorCorrectionLevel: 'L' }));
       } else {
-        qrImages.push(await QRCode.toCanvas(key, { errorCorrectionLevel: 'L' }));
+        qrImages.push(await QRCode.toCanvas(payload, { errorCorrectionLevel: 'L' }));
       }
     }
 
