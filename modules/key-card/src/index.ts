@@ -14,6 +14,7 @@ export * from './extractKeycardFromPDF';
 export * from './faq';
 export * from './generateQrData';
 export * from './parseKeycard';
+export * from './upgradeWalletEncryption';
 export * from './utils';
 export * from './types';
 

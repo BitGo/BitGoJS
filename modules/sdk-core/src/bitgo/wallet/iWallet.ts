@@ -1077,6 +1077,51 @@ export interface RemovePolicyRuleOptions {
   message?: string;
 }
 
+/**
+ * Callback invoked by {@link IWallet.upgradeEncryption} to generate the regenerated keycard PDF.
+ * The wallet method itself is agnostic to how the PDF is produced — callers wire in the PDF
+ * generator (typically the one exported from `@bitgo/key-card`) so `sdk-core` does not need
+ * a browser/canvas dependency at build time.
+ */
+export type UpgradeEncryptionPdfGenerator = (params: {
+  coinName: string;
+  userKeychain: Keychain;
+  backupKeychain: Keychain;
+  bitgoKeychain: Keychain;
+  passphrase: string;
+  passcodeEncryptionCode: string;
+  walletLabel: string;
+}) => Promise<unknown>;
+
+export interface UpgradeEncryptionOptions {
+  /**
+   * Current wallet passphrase. Omit when {@link boxD} is provided and the passphrase has never
+   * been changed — the passphrase is derived by decrypting Box D with the PEC.
+   */
+  passphrase?: string;
+  otp?: string;
+  /**
+   * Box D ciphertext from the original keycard.
+   * Required when {@link passphrase} is omitted (to derive it).
+   * Also required when the passphrase was changed after wallet creation (to recover the original
+   * passphrase for decrypting the backup key).
+   */
+  boxD?: string;
+  /** Box A ciphertext — required for MPCv2 wallets (user reducedEncryptedPrv). */
+  boxA?: string;
+  /** Box B ciphertext — required for MPCv2 wallets and older wallets without server-stored backup key. */
+  boxB?: string;
+  passcodeEncryptionCode?: string;
+  dryRun?: boolean;
+  /** Optional callback for regenerating the keycard PDF. When omitted, no PDF is produced. */
+  generatePdf?: UpgradeEncryptionPdfGenerator;
+}
+
+export interface UpgradeEncryptionResult {
+  doc: unknown;
+  walletLabel: string;
+}
+
 export interface DownloadKeycardOptions {
   jsPDF?: any;
   QRCode?: any;
@@ -1206,6 +1251,7 @@ export interface IWallet {
   toGoStakingWallet(): IGoStakingWallet;
   toAddressBook(): IAddressBook;
   downloadKeycard(params?: DownloadKeycardOptions): Promise<void>;
+  upgradeEncryption(params: UpgradeEncryptionOptions): Promise<UpgradeEncryptionResult | undefined>;
   buildAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<PrebuildTransactionResult[]>;
   sendAccountConsolidation(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<any>;
