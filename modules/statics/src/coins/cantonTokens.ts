@@ -99,7 +99,7 @@ export const cantonTokens = [
     'DTCC Test Token 1',
     10,
     'https://app.cts.dtcc-da.com/api/token-standard/v0/registrars/',
-    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:999990690-999990690',
+    'bd::1220abd5bddef1e6c121b8887f37a79cb7299c346f9e95ebfb9563e08f295c8c8707:999990690-999990690',
     UnderlyingAsset['canton:999990690'],
     [...CANTON_TOKEN_FEATURES]
   ),
@@ -109,7 +109,7 @@ export const cantonTokens = [
     'DTCC Test Token 2',
     10,
     'https://app.cts.dtcc-da.com/api/token-standard/v0/registrars/',
-    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:99999X763-99999X763',
+    'bd::1220abd5bddef1e6c121b8887f37a79cb7299c346f9e95ebfb9563e08f295c8c8707:99999X763-99999X763',
     UnderlyingAsset['canton:99999x763'],
     [...CANTON_TOKEN_FEATURES]
   ),
@@ -119,7 +119,7 @@ export const cantonTokens = [
     'Circle Internet Group, Inc.',
     10,
     'https://app.cts.dtcc-da.com/api/token-standard/v0/registrars/',
-    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:172573107-172573107',
+    'bd::1220abd5bddef1e6c121b8887f37a79cb7299c346f9e95ebfb9563e08f295c8c8707:172573107-172573107',
     UnderlyingAsset['canton:crcl'],
     [...CANTON_TOKEN_FEATURES]
   ),
@@ -129,7 +129,7 @@ export const cantonTokens = [
     'Microsoft Corp.',
     10,
     'https://app.cts.dtcc-da.com/api/token-standard/v0/registrars/',
-    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:594918104-594918104',
+    'bd::1220abd5bddef1e6c121b8887f37a79cb7299c346f9e95ebfb9563e08f295c8c8707:594918104-594918104',
     UnderlyingAsset['canton:msft'],
     [...CANTON_TOKEN_FEATURES]
   ),
@@ -139,7 +139,7 @@ export const cantonTokens = [
     'Invesco QQQ Trust (Nasdaq-100 ETF)',
     10,
     'https://app.cts.dtcc-da.com/api/token-standard/v0/registrars/',
-    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:46090E103-46090E103',
+    'bd::1220abd5bddef1e6c121b8887f37a79cb7299c346f9e95ebfb9563e08f295c8c8707:46090E103-46090E103',
     UnderlyingAsset['canton:qqq'],
     [...CANTON_TOKEN_FEATURES]
   ),
@@ -149,7 +149,7 @@ export const cantonTokens = [
     'iShares 0-3 Month Treasury Bond ETF',
     10,
     'https://app.cts.dtcc-da.com/api/token-standard/v0/registrars/',
-    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:46436E718-46436E718',
+    'bd::1220abd5bddef1e6c121b8887f37a79cb7299c346f9e95ebfb9563e08f295c8c8707:46436E718-46436E718',
     UnderlyingAsset['canton:sgov'],
     [...CANTON_TOKEN_FEATURES]
   ),
@@ -159,7 +159,7 @@ export const cantonTokens = [
     'SPDR S&P 500 ETF Trust',
     10,
     'https://app.cts.dtcc-da.com/api/token-standard/v0/registrars/',
-    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:78462F103-78462F103',
+    'bd::1220abd5bddef1e6c121b8887f37a79cb7299c346f9e95ebfb9563e08f295c8c8707:78462F103-78462F103',
     UnderlyingAsset['canton:spy'],
     [...CANTON_TOKEN_FEATURES]
   ),
@@ -169,7 +169,7 @@ export const cantonTokens = [
     'U.S. Treasury Bill',
     10,
     'https://app.cts.dtcc-da.com/api/token-standard/v0/registrars/',
-    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:912797RS8-912797RS8',
+    'bd::1220abd5bddef1e6c121b8887f37a79cb7299c346f9e95ebfb9563e08f295c8c8707:912797RS8-912797RS8',
     UnderlyingAsset['canton:912797rs8'],
     [...CANTON_TOKEN_FEATURES]
   ),
@@ -179,7 +179,7 @@ export const cantonTokens = [
     'U.S. Treasury Bill',
     10,
     'https://app.cts.dtcc-da.com/api/token-standard/v0/registrars/',
-    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:912797VA2-912797VA2',
+    'bd::1220abd5bddef1e6c121b8887f37a79cb7299c346f9e95ebfb9563e08f295c8c8707:912797VA2-912797VA2',
     UnderlyingAsset['canton:912797va2'],
     [...CANTON_TOKEN_FEATURES]
   ),
@@ -189,7 +189,7 @@ export const cantonTokens = [
     'U.S. Treasury Bill',
     10,
     'https://app.cts.dtcc-da.com/api/token-standard/v0/registrars/',
-    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:912797VE4-912797VE4',
+    'bd::1220abd5bddef1e6c121b8887f37a79cb7299c346f9e95ebfb9563e08f295c8c8707:912797VE4-912797VE4',
     UnderlyingAsset['canton:912797ve4'],
     [...CANTON_TOKEN_FEATURES]
   ),
@@ -199,7 +199,7 @@ export const cantonTokens = [
     'U.S. Treasury Note',
     10,
     'https://app.cts.dtcc-da.com/api/token-standard/v0/registrars/',
-    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:91282CAY7-91282CAY7',
+    'bd::1220abd5bddef1e6c121b8887f37a79cb7299c346f9e95ebfb9563e08f295c8c8707:91282CAY7-91282CAY7',
     UnderlyingAsset['canton:91282cay7'],
     [...CANTON_TOKEN_FEATURES]
   ),
@@ -209,7 +209,7 @@ export const cantonTokens = [
     'U.S. Treasury Note',
     10,
     'https://app.cts.dtcc-da.com/api/token-standard/v0/registrars/',
-    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:91282CKF7-91282CKF7',
+    'bd::1220abd5bddef1e6c121b8887f37a79cb7299c346f9e95ebfb9563e08f295c8c8707:91282CKF7-91282CKF7',
     UnderlyingAsset['canton:91282ckf7'],
     [...CANTON_TOKEN_FEATURES]
   ),
@@ -219,7 +219,7 @@ export const cantonTokens = [
     'U.S. Treasury Note',
     10,
     'https://app.cts.dtcc-da.com/api/token-standard/v0/registrars/',
-    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:91282CLW9-91282CLW9',
+    'bd::1220abd5bddef1e6c121b8887f37a79cb7299c346f9e95ebfb9563e08f295c8c8707:91282CLW9-91282CLW9',
     UnderlyingAsset['canton:91282clw9'],
     [...CANTON_TOKEN_FEATURES]
   ),
@@ -229,7 +229,7 @@ export const cantonTokens = [
     'U.S. Treasury Bond',
     10,
     'https://app.cts.dtcc-da.com/api/token-standard/v0/registrars/',
-    'bd::12201c0aa2b22c529ab0b1f780a9364aa9797a51214aa981d3306df43d0338f9cf07:912810RC4-912810RC4',
+    'bd::1220abd5bddef1e6c121b8887f37a79cb7299c346f9e95ebfb9563e08f295c8c8707:912810RC4-912810RC4',
     UnderlyingAsset['canton:912810rc4'],
     [...CANTON_TOKEN_FEATURES]
   ),
