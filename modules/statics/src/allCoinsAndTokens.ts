@@ -3840,7 +3840,7 @@ export const allCoinsAndTokens = [
     'Canton',
     Networks.main.canton,
     UnderlyingAsset.CANTON,
-    [...CANTON_FEATURES, CoinFeature.UNSPENT_MODEL, CoinFeature.MERGE_UTXOS],
+    [...CANTON_FEATURES, CoinFeature.UNSPENT_MODEL, CoinFeature.MERGE_UTXOS, CoinFeature.BYOV_VALIDATOR],
     KeyCurve.Ed25519
   ),
   canton(
