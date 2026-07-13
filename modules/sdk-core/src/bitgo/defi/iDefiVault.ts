@@ -2,6 +2,8 @@
  * @prettier
  */
 
+import { GetVaultResponse } from '@bitgo/public-types';
+
 export interface DepositToVaultOptions {
   /** DeFi-service vault identifier */
   vaultId: string;
@@ -32,6 +34,10 @@ export interface ListOperationsOptions {
   cursor?: string;
 }
 
+export interface GetVaultConfigOptions {
+  vaultId: string;
+}
+
 export interface DefiOperation {
   operationId: string;
   walletId: string;
@@ -45,13 +51,17 @@ export interface DefiOperation {
   updatedAt: string;
 }
 
-export interface DepositResult {
-  operationId: string;
-  txRequestIds: {
-    approve: string;
-    deposit: string;
-  };
+export interface ConcreteDepositResult {
+  pendingApprovalId: string;
+  state: string;
 }
+
+export interface MorphoDepositResult {
+  operationId: string;
+  txRequestIds: { approve: string; deposit: string };
+}
+
+export type DepositResult = ConcreteDepositResult | MorphoDepositResult;
 
 export interface DefiOperationListResult {
   items: DefiOperation[];
@@ -63,4 +73,5 @@ export interface IDefiVault {
   resumeDeposit(params: ResumeDepositOptions): Promise<DepositResult>;
   getOperation(params: GetOperationOptions): Promise<DefiOperation>;
   listOperations(params: ListOperationsOptions): Promise<DefiOperationListResult>;
+  getVaultConfig(params: GetVaultConfigOptions): Promise<GetVaultResponse>;
 }
