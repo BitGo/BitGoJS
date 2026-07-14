@@ -3389,6 +3389,7 @@ export enum UnderlyingAsset {
   'tbaseeth:ctusd1cx' = 'tbaseeth:ctusd1cx',
   'tbaseeth:tusdl' = 'tbaseeth:tusdl',
   'tbaseeth:ttbills' = 'tbaseeth:ttbills',
+  'tbaseeth:kmusdc' = 'tbaseeth:kmusdc',
 
   // Og mainnet tokens
   'og:wog' = 'og:wog',

@@ -4238,6 +4238,15 @@ export const allCoinsAndTokens = [
     Networks.test.basechain
   ),
   erc20Token(
+    'ce261382-b945-4966-bfbd-bfc68eaf8ee5',
+    'tbaseeth:kmusdc',
+    'Defi Test Token',
+    6,
+    '0x1c3e28e5048f30ab3aa8a5dc4e71a806ec97a6c4',
+    UnderlyingAsset['tbaseeth:kmusdc'],
+    Networks.test.basechain
+  ),
+  erc20Token(
     '439fb12d-fddf-4749-8a33-b7c79fefc1b4',
     'baseeth:wave',
     'Waveform',
