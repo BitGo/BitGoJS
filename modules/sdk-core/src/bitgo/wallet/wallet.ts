@@ -4254,11 +4254,11 @@ export class Wallet implements IWallet {
         );
         break;
       }
-      case 'allocationAllocateWithdrawn': {
+      case 'allocationOfferWithdrawn': {
         txRequest = await this.tssUtils!.prebuildTxWithIntent(
           {
             reqId,
-            intentType: 'allocationAllocateWithdrawn',
+            intentType: 'allocationOfferWithdrawn',
             transferOfferId: params.transferOfferId,
             sequenceId: params.transferOfferId,
           },
