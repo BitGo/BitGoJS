@@ -274,7 +274,8 @@ export class DKG {
    * Restores a previously exported session. Allows the protocol to continue
    * from where it left off, as if the round state was loaded from a database.
    */
-  restoreSession(session: string): void {
+  async restoreSession(session: string): Promise<void> {
+    await this.loadWasmMps();
     const data = JSON.parse(session);
     this.dkgStateBytes = data.dkgStateBytes ? Buffer.from(data.dkgStateBytes, 'base64') : null;
     this.dkgState = data.dkgRound;

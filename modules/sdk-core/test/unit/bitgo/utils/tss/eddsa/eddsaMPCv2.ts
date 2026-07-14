@@ -639,10 +639,8 @@ describe('EddsaMPCv2Utils.createOfflineKeyGenRound1Share', () => {
       });
     };
     mockBitgo = {
-      encrypt: sinon.stub().callsFake(sjclEncrypt),
-      encryptAsync: sinon.stub().callsFake(async (params) => sjclEncrypt(params)),
-      decrypt: sinon.stub().callsFake((params) => sjcl.decrypt(params.password, params.input)),
-      decryptAsync: sinon.stub().callsFake(async (params) => sjcl.decrypt(params.password, params.input)),
+      encrypt: sinon.stub().callsFake(async (params) => sjclEncrypt(params)),
+      decrypt: sinon.stub().callsFake(async (params) => sjcl.decrypt(params.password, params.input)),
       getEnv: sinon.stub().returns('mock'),
     } as unknown as BitGoBase;
 
@@ -773,6 +771,248 @@ describe('EddsaMPCv2Utils.createOfflineKeyGenRound1Share', () => {
     assert.throws(
       () => sjcl.decrypt(walletPassphrase, tamperedSession),
       'should fail to decrypt with wrong party adata'
+    );
+  });
+});
+
+describe('EddsaMPCv2Utils.createOfflineKeyGenRound2Share', () => {
+  let eddsaMPCv2Utils: EddsaMPCv2Utils;
+  let mockBitgo: BitGoBase;
+  let userGpgKeyPair: pgp.SerializedKeyPair<string>;
+  let backupGpgKeyPair: pgp.SerializedKeyPair<string>;
+  let bitgoGpgKeyPair: pgp.SerializedKeyPair<string>;
+
+  const walletPassphrase = 'testPass';
+
+  before('generate GPG key pairs', async () => {
+    userGpgKeyPair = await generateGPGKeyPair('ed25519');
+    backupGpgKeyPair = await generateGPGKeyPair('ed25519');
+    bitgoGpgKeyPair = await generateGPGKeyPair('ed25519');
+  });
+
+  function makeMockBitgo(): BitGoBase {
+    const sjclEncrypt = (params: { password: string; input: string; adata?: string }) => {
+      const salt = randomBytes(8);
+      const iv = randomBytes(16);
+      return sjcl.encrypt(params.password, params.input, {
+        salt: [bytesToWord(salt.subarray(0, 4)), bytesToWord(salt.subarray(4))],
+        iv: [
+          bytesToWord(iv.subarray(0, 4)),
+          bytesToWord(iv.subarray(4, 8)),
+          bytesToWord(iv.subarray(8, 12)),
+          bytesToWord(iv.subarray(12, 16)),
+        ],
+        adata: params.adata,
+      });
+    };
+    return {
+      encrypt: sinon.stub().callsFake(async (params) => sjclEncrypt(params)),
+      decrypt: sinon.stub().callsFake(async (params) => sjcl.decrypt(params.password, params.input)),
+      getEnv: sinon.stub().returns('mock'),
+    } as unknown as BitGoBase;
+  }
+
+  beforeEach(() => {
+    mockBitgo = makeMockBitgo();
+    const mockCoin = { getMPCAlgorithm: sinon.stub().returns('eddsa') } as unknown as IBaseCoin;
+    eddsaMPCv2Utils = new EddsaMPCv2Utils(mockBitgo, mockCoin);
+  });
+
+  async function runRound1(
+    partyId: MPCv2PartiesEnum.USER | MPCv2PartiesEnum.BACKUP = MPCv2PartiesEnum.USER
+  ): Promise<{
+    result: { signedMsg1: MPSTypes.MPSSignedMessage; encryptedRound1Session: string };
+    ownGpgKeyPair: pgp.SerializedKeyPair<string>;
+    counterPartyGpgKeyPair: pgp.SerializedKeyPair<string>;
+  }> {
+    const ownGpgKeyPair = partyId === MPCv2PartiesEnum.USER ? userGpgKeyPair : backupGpgKeyPair;
+    const counterPartyGpgKeyPair = partyId === MPCv2PartiesEnum.USER ? backupGpgKeyPair : userGpgKeyPair;
+    const encryptedUserGpgPrvKey = sjcl.encrypt(walletPassphrase, ownGpgKeyPair.privateKey);
+    const result = await eddsaMPCv2Utils.createOfflineKeyGenRound1Share({
+      walletPassphrase,
+      encryptedUserGpgPrvKey,
+      bitgoGpgPubKey: bitgoGpgKeyPair.publicKey,
+      counterPartyGpgPubKey: counterPartyGpgKeyPair.publicKey,
+      partyId,
+    });
+    return { result, ownGpgKeyPair, counterPartyGpgKeyPair };
+  }
+
+  async function buildCounterPartyAndBitgoMsgs(
+    userRound1Result: MPSTypes.MPSSignedMessage,
+    backupRound1Result: MPSTypes.MPSSignedMessage
+  ): Promise<{ bitgoMsg1: MPSTypes.MPSSignedMessage; counterPartyMsg1ForUser: MPSTypes.MPSSignedMessage }> {
+    const bitgoGpgPrivKey = await pgp.readPrivateKey({ armoredKey: bitgoGpgKeyPair.privateKey });
+
+    // Build a real user DKG round1 to get the bitgo msg
+    const userGpgPrivKey = await pgp.readPrivateKey({ armoredKey: userGpgKeyPair.privateKey });
+    const [, ownUserSk] = await MPSComms.extractEd25519KeyPair(userGpgPrivKey);
+
+    const backupGpgPrivKey = await pgp.readPrivateKey({ armoredKey: backupGpgKeyPair.privateKey });
+    const [, ownBackupSk] = await MPSComms.extractEd25519KeyPair(backupGpgPrivKey);
+
+    const bitgoGpgPubKeyObj = await pgp.readKey({ armoredKey: bitgoGpgKeyPair.publicKey });
+    const bitgoPk = await MPSComms.extractEd25519PublicKey(bitgoGpgPubKeyObj);
+
+    const userGpgPubKeyObj = await pgp.readKey({ armoredKey: userGpgKeyPair.publicKey });
+    const userPk = await MPSComms.extractEd25519PublicKey(userGpgPubKeyObj);
+
+    const backupGpgPubKeyObj = await pgp.readKey({ armoredKey: backupGpgKeyPair.publicKey });
+    const backupPk = await MPSComms.extractEd25519PublicKey(backupGpgPubKeyObj);
+
+    const bitgoDkg = new EddsaMPSDkg.DKG(3, 2, MPCv2PartiesEnum.BITGO);
+    await bitgoDkg.initDkg(
+      (await MPSComms.extractEd25519KeyPair(bitgoGpgPrivKey))[1],
+      [userPk, backupPk]
+    );
+    const bitgoRawMsg1 = bitgoDkg.getFirstMessage();
+    const bitgoMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoRawMsg1.payload), bitgoGpgPrivKey);
+
+    return { bitgoMsg1, counterPartyMsg1ForUser: backupRound1Result };
+  }
+
+  it('Round1 → Round2 produces valid { signedMsg2, encryptedRound2Session }', async () => {
+    // Run round 1 for all three parties
+    const { result: userRound1 } = await runRound1(MPCv2PartiesEnum.USER);
+    const { result: backupRound1 } = await runRound1(MPCv2PartiesEnum.BACKUP);
+
+    const encryptedUserGpgPrvKey = sjcl.encrypt(walletPassphrase, userGpgKeyPair.privateKey);
+    const { bitgoMsg1, counterPartyMsg1ForUser } = await buildCounterPartyAndBitgoMsgs(
+      userRound1.signedMsg1,
+      backupRound1.signedMsg1
+    );
+
+    const result = await eddsaMPCv2Utils.createOfflineKeyGenRound2Share({
+      walletPassphrase,
+      encryptedUserGpgPrvKey,
+      encryptedRound1Session: userRound1.encryptedRound1Session,
+      bitgoGpgPubKey: bitgoGpgKeyPair.publicKey,
+      counterPartyGpgPubKey: backupGpgKeyPair.publicKey,
+      bitgoMsg1,
+      counterPartyMsg1: counterPartyMsg1ForUser,
+    });
+
+    assert.ok(result.signedMsg2.message, 'signedMsg2.message should be set');
+    assert.ok(
+      result.signedMsg2.signature.includes('BEGIN PGP SIGNATURE'),
+      'signedMsg2.signature should be PGP armored'
+    );
+    assert.ok(JSON.parse(result.encryptedRound2Session).ct, 'encryptedRound2Session should be an SJCL JSON blob');
+
+    const sessionPayload = JSON.parse(sjcl.decrypt(walletPassphrase, result.encryptedRound2Session));
+    assert.ok(sessionPayload.dkgSession, 'dkgSession should be persisted for finalize');
+    assert.ok(sessionPayload.ownMsgPayload, 'ownMsgPayload should be persisted for finalize');
+    assert.strictEqual(typeof sessionPayload.ownMsgFrom, 'number', 'ownMsgFrom should be a number');
+  });
+
+  it('encryptedRound2Session should only be decryptable with correct walletPassphrase', async () => {
+    const { result: userRound1 } = await runRound1(MPCv2PartiesEnum.USER);
+    const { result: backupRound1 } = await runRound1(MPCv2PartiesEnum.BACKUP);
+    const encryptedUserGpgPrvKey = sjcl.encrypt(walletPassphrase, userGpgKeyPair.privateKey);
+    const { bitgoMsg1, counterPartyMsg1ForUser } = await buildCounterPartyAndBitgoMsgs(
+      userRound1.signedMsg1,
+      backupRound1.signedMsg1
+    );
+
+    const result = await eddsaMPCv2Utils.createOfflineKeyGenRound2Share({
+      walletPassphrase,
+      encryptedUserGpgPrvKey,
+      encryptedRound1Session: userRound1.encryptedRound1Session,
+      bitgoGpgPubKey: bitgoGpgKeyPair.publicKey,
+      counterPartyGpgPubKey: backupGpgKeyPair.publicKey,
+      bitgoMsg1,
+      counterPartyMsg1: counterPartyMsg1ForUser,
+    });
+
+    assert.throws(
+      () => sjcl.decrypt('wrongpassphrase', result.encryptedRound2Session),
+      'should fail to decrypt with wrong passphrase'
+    );
+  });
+
+  it('should reject tampered incoming messages (signature verification failure)', async () => {
+    const { result: userRound1 } = await runRound1(MPCv2PartiesEnum.USER);
+    const { result: backupRound1 } = await runRound1(MPCv2PartiesEnum.BACKUP);
+    const encryptedUserGpgPrvKey = sjcl.encrypt(walletPassphrase, userGpgKeyPair.privateKey);
+    const { bitgoMsg1 } = await buildCounterPartyAndBitgoMsgs(userRound1.signedMsg1, backupRound1.signedMsg1);
+
+    const tamperedMsg: MPSTypes.MPSSignedMessage = {
+      message: Buffer.from('tampered').toString('base64'),
+      signature: '-----BEGIN PGP SIGNATURE-----\n\nINVALID\n-----END PGP SIGNATURE-----\n',
+    };
+
+    await assert.rejects(
+      () =>
+        eddsaMPCv2Utils.createOfflineKeyGenRound2Share({
+          walletPassphrase,
+          encryptedUserGpgPrvKey,
+          encryptedRound1Session: userRound1.encryptedRound1Session,
+          bitgoGpgPubKey: bitgoGpgKeyPair.publicKey,
+          counterPartyGpgPubKey: backupGpgKeyPair.publicKey,
+          bitgoMsg1,
+          counterPartyMsg1: tamperedMsg,
+        }),
+      'should throw on tampered counterParty message'
+    );
+  });
+
+  it('should reject wrong walletPassphrase for session decryption', async () => {
+    const { result: userRound1 } = await runRound1(MPCv2PartiesEnum.USER);
+    const { result: backupRound1 } = await runRound1(MPCv2PartiesEnum.BACKUP);
+    const encryptedUserGpgPrvKey = sjcl.encrypt(walletPassphrase, userGpgKeyPair.privateKey);
+    const { bitgoMsg1, counterPartyMsg1ForUser } = await buildCounterPartyAndBitgoMsgs(
+      userRound1.signedMsg1,
+      backupRound1.signedMsg1
+    );
+
+    const wrongPassphraseBitgo = makeMockBitgo();
+    (wrongPassphraseBitgo.decrypt as sinon.SinonStub).callsFake(() => {
+      throw new Error('ccm: tag does not match');
+    });
+    const mockCoin = { getMPCAlgorithm: sinon.stub().returns('eddsa') } as unknown as IBaseCoin;
+    const utilsWrongPass = new EddsaMPCv2Utils(wrongPassphraseBitgo, mockCoin);
+
+    await assert.rejects(
+      () =>
+        utilsWrongPass.createOfflineKeyGenRound2Share({
+          walletPassphrase: 'wrongpassphrase',
+          encryptedUserGpgPrvKey,
+          encryptedRound1Session: userRound1.encryptedRound1Session,
+          bitgoGpgPubKey: bitgoGpgKeyPair.publicKey,
+          counterPartyGpgPubKey: backupGpgKeyPair.publicKey,
+          bitgoMsg1,
+          counterPartyMsg1: counterPartyMsg1ForUser,
+        }),
+      /ccm: tag does not match/
+    );
+  });
+
+  it('should reject non-BitGo pub key when env requires BitGo pub key config', async () => {
+    const { result: userRound1 } = await runRound1(MPCv2PartiesEnum.USER);
+    const { result: backupRound1 } = await runRound1(MPCv2PartiesEnum.BACKUP);
+    const encryptedUserGpgPrvKey = sjcl.encrypt(walletPassphrase, userGpgKeyPair.privateKey);
+    const { bitgoMsg1, counterPartyMsg1ForUser } = await buildCounterPartyAndBitgoMsgs(
+      userRound1.signedMsg1,
+      backupRound1.signedMsg1
+    );
+
+    const prodMockBitgo = makeMockBitgo();
+    (prodMockBitgo.getEnv as sinon.SinonStub).returns('prod');
+    const mockCoin = { getMPCAlgorithm: sinon.stub().returns('eddsa') } as unknown as IBaseCoin;
+    const prodUtils = new EddsaMPCv2Utils(prodMockBitgo, mockCoin);
+
+    await assert.rejects(
+      () =>
+        prodUtils.createOfflineKeyGenRound2Share({
+          walletPassphrase,
+          encryptedUserGpgPrvKey,
+          encryptedRound1Session: userRound1.encryptedRound1Session,
+          bitgoGpgPubKey: bitgoGpgKeyPair.publicKey,
+          counterPartyGpgPubKey: backupGpgKeyPair.publicKey,
+          bitgoMsg1,
+          counterPartyMsg1: counterPartyMsg1ForUser,
+        }),
+      /Invalid BitGo GPG public key/
     );
   });
 });
