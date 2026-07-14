@@ -112,6 +112,10 @@
 /examples/ts/btc/ @BitGo/btc-team
 /examples/ts/stablecoin @Bitgo/stablecoins
 
+# DeFi
+/modules/sdk-core/src/bitgo/defi/ @BitGo/defi_team
+/modules/sdk-core/test/unit/bitgo/defi/ @BitGo/defi_team
+
 # Trade
 /modules/sdk-core/src/bitgo/address-book/ @BitGo/prime
 /modules/sdk-core/src/bitgo/trading/ @BitGo/prime
