@@ -221,6 +221,7 @@ export abstract class MpcUtils {
         'cantonParticipantOnboardingRequest',
         'defi-approve',
         'defi-deposit',
+        'defi-withdraw',
       ].includes(params.intentType)
     ) {
       assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);
@@ -322,9 +323,15 @@ export abstract class MpcUtils {
             vaultId: params.defiParams.vaultId,
             amount: params.defiParams.amount,
             ...(params.defiParams.operationId && { operationId: params.defiParams.operationId }),
-            ...(params.defiParams.clientIdempotencyKey && {
-              clientIdempotencyKey: params.defiParams.clientIdempotencyKey,
-            }),
+          };
+        }
+        case 'defi-withdraw': {
+          assert(params.defiParams, `'defiParams' is required for ${params.intentType} intent`);
+          return {
+            ...baseIntent,
+            vaultId: params.defiParams.vaultId,
+            // DefiWithdrawIntent uses shareTokenAmount (vault shares, base units)
+            shareTokenAmount: params.defiParams.amount,
           };
         }
         default:

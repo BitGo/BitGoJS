@@ -942,7 +942,6 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
     amount?: string | number;
     actionType?: string;
     operationId?: string;
-    clientIdempotencyKey?: string;
   };
 }
 

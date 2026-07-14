@@ -9,8 +9,6 @@ export interface DepositToVaultOptions {
   vaultId: string;
   /** Amount in base units of the underlying asset */
   amount: string;
-  /** Optional client-supplied idempotency key */
-  clientIdempotencyKey?: string;
   /** Wallet passphrase — required for hot wallets, omit for custody */
   walletPassphrase?: string;
 }
@@ -68,10 +66,25 @@ export interface DefiOperationListResult {
   nextCursor?: string;
 }
 
+export interface WithdrawFromVaultOptions {
+  /** DeFi-service vault identifier */
+  vaultId: string;
+  /** Amount in base units of the vault share token */
+  amount: string;
+  /** Wallet passphrase — required for hot wallets, omit for custody */
+  walletPassphrase?: string;
+}
+
+export interface WithdrawResult {
+  operationId: string;
+  txRequestId: string;
+}
+
 export interface IDefiVault {
   depositToVault(params: DepositToVaultOptions): Promise<DepositResult>;
   resumeDeposit(params: ResumeDepositOptions): Promise<DepositResult>;
   getOperation(params: GetOperationOptions): Promise<DefiOperation>;
   listOperations(params: ListOperationsOptions): Promise<DefiOperationListResult>;
   getVaultConfig(params: GetVaultConfigOptions): Promise<GetVaultResponse>;
+  withdrawFromVault(params: WithdrawFromVaultOptions): Promise<WithdrawResult>;
 }
