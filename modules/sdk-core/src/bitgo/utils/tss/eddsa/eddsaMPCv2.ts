@@ -767,7 +767,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     };
 
     const round2Msgs = dkg.handleIncomingMessages([ownMsg1, counterPartyDeserializedMsg1, bitgoDeserializedMsg1]);
-    assert(round2Msgs.length === 1, 'DKG round 1 should produce exactly one round 2 message');
+    assert(round2Msgs.length === 1, 'DKG round 2 should produce exactly one round 2 message');
 
     const ownMsg2 = round2Msgs[0];
     const signedMsg2 = await MPSComms.detachSignMpsMessage(Buffer.from(ownMsg2.payload), gpgPrvKey);
