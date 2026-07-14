@@ -59,7 +59,17 @@ async function main() {
     isolatedPackageJson.dependencies = Object.fromEntries(
       Object.entries(bitgoPackageJson.dependencies ?? {}).filter(([name]) => !name.startsWith('@bitgo/'))
     );
-    isolatedPackageJson.overrides = rootPackageJson.overrides;
+    const directDeps = new Set(Object.keys(bitgoPackageJson.dependencies ?? {}));
+    const filteredOverrides = Object.fromEntries(
+      Object.entries(rootPackageJson.overrides as Record<string, unknown>).filter(
+        ([name, value]) => typeof value !== 'string' || !directDeps.has(name)
+      )
+    );
+    const filteredCount = Object.keys(rootPackageJson.overrides).length - Object.keys(filteredOverrides).length;
+    if (filteredCount > 0) {
+      console.log(`Skipping ${filteredCount} override(s) already pinned as direct bitgo dependencies.`);
+    }
+    isolatedPackageJson.overrides = filteredOverrides;
 
     fs.writeFileSync(path.join(tempDir, 'package.json'), JSON.stringify(isolatedPackageJson, null, 2) + '\n');
 
