@@ -3659,7 +3659,7 @@ export const allCoinsAndTokens = [
     '0x20c0000000000000000000000520792dcccccccc',
     UnderlyingAsset['tempo:cusd'],
     [
-      ...TEMPO_FEATURES,
+      ...TEMPO_FEATURES_EXCLUDE_SINGAPORE,
       CoinFeature.STABLECOIN,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
