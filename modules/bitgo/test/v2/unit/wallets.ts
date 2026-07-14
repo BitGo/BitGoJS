@@ -788,6 +788,10 @@ describe('V2 Wallets:', function () {
         type: 'custodial',
       };
 
+      nock('https://bitgo.fakeurl')
+        .get('/api/v2/tss/settings')
+        .reply(200, { coinSettings: { sol: { walletCreationSettings: {} } } });
+
       const walletNock = nock('https://bitgo.fakeurl')
         .post('/api/v2/tsol/wallet/add')
         .times(1)
@@ -1420,11 +1424,12 @@ describe('V2 Wallets:', function () {
           sol: {
             walletCreationSettings: {
               multiSigTypeVersion: 'MPCv2',
+              custodialMultiSigTypeVersion: 'MPCv2',
             },
           },
         },
       };
-      nock('https://bitgo.fakeurl').get(`/api/v2/tss/settings`).times(2).reply(200, tssSettings);
+      nock('https://bitgo.fakeurl').get(`/api/v2/tss/settings`).times(3).reply(200, tssSettings);
     });
 
     afterEach(function () {
@@ -1533,6 +1538,38 @@ describe('V2 Wallets:', function () {
 
       assert.ok(response.encryptedWalletPassphrase);
       assert.ok(response.wallet);
+    });
+
+    it('should create a new tsol TSS EdDSA MPCv2 custodial wallet', async function () {
+      const keys = ['1', '2', '3'];
+      const testCoin = bitgo.coin('tsol');
+
+      const walletParams: GenerateWalletOptions = {
+        label: 'tss eddsa mpcv2 custodial wallet',
+        multisigType: 'tss',
+        enterprise: 'enterprise',
+        type: 'custodial',
+      };
+
+      const walletNock = nock('https://bitgo.fakeurl')
+        .post('/api/v2/tsol/wallet/add')
+        .times(1)
+        .reply(200, { ...walletParams, keys });
+
+      const wallets = new Wallets(bitgo, testCoin);
+
+      const res = await wallets.generateWallet(walletParams);
+      if (!isWalletWithKeychains(res)) {
+        throw new Error('wallet missing required keychains');
+      }
+      res.wallet.label().should.equal(walletParams.label);
+      should.equal(res.wallet.type(), walletParams.type);
+      res.wallet.multisigType().should.equal(walletParams.multisigType);
+      res.userKeychain.id.should.equal(keys[0]);
+      res.backupKeychain.id.should.equal(keys[1]);
+      res.bitgoKeychain.id.should.equal(keys[2]);
+
+      walletNock.isDone().should.be.true();
     });
   });
 
