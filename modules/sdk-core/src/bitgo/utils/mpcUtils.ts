@@ -169,7 +169,7 @@ export abstract class MpcUtils {
     }
 
     if (
-      ['transferOfferWithdrawn', 'allocationAllocateWithdrawn'].includes(params.intentType) &&
+      ['transferOfferWithdrawn', 'allocationOfferWithdrawn'].includes(params.intentType) &&
       baseCoin.getFamily() === 'canton'
     ) {
       assert(params.transferOfferId, `'transferOfferId' is required parameter for ${params.intentType} intent`);
@@ -212,7 +212,7 @@ export abstract class MpcUtils {
         'transferOfferWithdrawn',
         'cosignDelegationAccept',
         'allocationAllocate',
-        'allocationAllocateWithdrawn',
+        'allocationOfferWithdrawn',
         'bridgeFunds',
         'cantonCommand',
         'cantonEndInvestorOnboardingOffer',
