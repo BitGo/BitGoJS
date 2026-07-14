@@ -818,9 +818,7 @@ describe('EddsaMPCv2Utils.createOfflineKeyGenRound2Share', () => {
     eddsaMPCv2Utils = new EddsaMPCv2Utils(mockBitgo, mockCoin);
   });
 
-  async function runRound1(
-    partyId: MPCv2PartiesEnum.USER | MPCv2PartiesEnum.BACKUP = MPCv2PartiesEnum.USER
-  ): Promise<{
+  async function runRound1(partyId: MPCv2PartiesEnum.USER | MPCv2PartiesEnum.BACKUP = MPCv2PartiesEnum.USER): Promise<{
     result: { signedMsg1: MPSTypes.MPSSignedMessage; encryptedRound1Session: string };
     ownGpgKeyPair: pgp.SerializedKeyPair<string>;
     counterPartyGpgKeyPair: pgp.SerializedKeyPair<string>;
@@ -839,20 +837,10 @@ describe('EddsaMPCv2Utils.createOfflineKeyGenRound2Share', () => {
   }
 
   async function buildCounterPartyAndBitgoMsgs(
-    userRound1Result: MPSTypes.MPSSignedMessage,
+    _userRound1Result: MPSTypes.MPSSignedMessage,
     backupRound1Result: MPSTypes.MPSSignedMessage
   ): Promise<{ bitgoMsg1: MPSTypes.MPSSignedMessage; counterPartyMsg1ForUser: MPSTypes.MPSSignedMessage }> {
     const bitgoGpgPrivKey = await pgp.readPrivateKey({ armoredKey: bitgoGpgKeyPair.privateKey });
-
-    // Build a real user DKG round1 to get the bitgo msg
-    const userGpgPrivKey = await pgp.readPrivateKey({ armoredKey: userGpgKeyPair.privateKey });
-    const [, ownUserSk] = await MPSComms.extractEd25519KeyPair(userGpgPrivKey);
-
-    const backupGpgPrivKey = await pgp.readPrivateKey({ armoredKey: backupGpgKeyPair.privateKey });
-    const [, ownBackupSk] = await MPSComms.extractEd25519KeyPair(backupGpgPrivKey);
-
-    const bitgoGpgPubKeyObj = await pgp.readKey({ armoredKey: bitgoGpgKeyPair.publicKey });
-    const bitgoPk = await MPSComms.extractEd25519PublicKey(bitgoGpgPubKeyObj);
 
     const userGpgPubKeyObj = await pgp.readKey({ armoredKey: userGpgKeyPair.publicKey });
     const userPk = await MPSComms.extractEd25519PublicKey(userGpgPubKeyObj);
@@ -861,10 +849,7 @@ describe('EddsaMPCv2Utils.createOfflineKeyGenRound2Share', () => {
     const backupPk = await MPSComms.extractEd25519PublicKey(backupGpgPubKeyObj);
 
     const bitgoDkg = new EddsaMPSDkg.DKG(3, 2, MPCv2PartiesEnum.BITGO);
-    await bitgoDkg.initDkg(
-      (await MPSComms.extractEd25519KeyPair(bitgoGpgPrivKey))[1],
-      [userPk, backupPk]
-    );
+    await bitgoDkg.initDkg((await MPSComms.extractEd25519KeyPair(bitgoGpgPrivKey))[1], [userPk, backupPk]);
     const bitgoRawMsg1 = bitgoDkg.getFirstMessage();
     const bitgoMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoRawMsg1.payload), bitgoGpgPrivKey);
 

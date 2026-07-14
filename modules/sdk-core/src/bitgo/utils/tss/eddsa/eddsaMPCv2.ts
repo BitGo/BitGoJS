@@ -735,7 +735,10 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     const bitgoKeyObj = await pgp.readKey({ armoredKey: bitgoGpgPubKey });
     const counterPartyKeyObj = await pgp.readKey({ armoredKey: counterPartyGpgPubKey });
 
-    const decryptedRound1Session = await this.bitgo.decrypt({ input: encryptedRound1Session, password: walletPassphrase });
+    const decryptedRound1Session = await this.bitgo.decrypt({
+      input: encryptedRound1Session,
+      password: walletPassphrase,
+    });
 
     const { dkgSession, ownMsgPayload, ownMsgFrom } = JSON.parse(decryptedRound1Session) as {
       dkgSession: string;
