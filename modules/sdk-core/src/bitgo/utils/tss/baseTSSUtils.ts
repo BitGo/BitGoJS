@@ -514,6 +514,8 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     preview?: boolean,
     reqId?: IRequestTracer
   ): Promise<TxRequest> {
+    // TODO(WCN-541): add optional attestation pass-through for MPC /txrequests (deferred until
+    // multisig attestation, WCN-539, is verified end-to-end on staging).
     const whitelistedParams = {
       intent: {
         ...intentOptions,

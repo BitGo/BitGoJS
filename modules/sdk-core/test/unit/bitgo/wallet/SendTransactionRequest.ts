@@ -24,4 +24,13 @@ describe('SendTransactionRequest', function () {
       addressType: 'p2sh',
     });
   });
+
+  it('preserves attestation (WCN-539: @bitgo/public-types TxSendBody declares it natively)', function () {
+    const attestation = { signature: 'sig', credentialId: 'c', clientDataJSON: 'cd', authenticatorData: 'ad' };
+
+    assert.deepStrictEqual(TxSendBody.encode({ txHex: '00', attestation } as any), {
+      txHex: '00',
+      attestation,
+    });
+  });
 });

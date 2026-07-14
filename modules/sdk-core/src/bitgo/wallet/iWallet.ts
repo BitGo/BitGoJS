@@ -38,6 +38,7 @@ import {
   TxRequest,
 } from '../utils';
 import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
+import { AttestationPayload } from './BuildParams';
 import { IAddressBook } from '../address-book';
 import { WalletUser, AddressQueryResult } from '@bitgo/public-types';
 import { SubmitTransactionResponse } from '../inscriptionBuilder';
@@ -203,6 +204,8 @@ export interface PrebuildTransactionOptions {
   idfUserId?: string;
   idfVersion?: number;
   comment?: string;
+  /** WebAuthn attestation for the withdrawal intent (WCN-539) — pass-through only. */
+  attestation?: AttestationPayload;
   [index: string]: unknown;
   tokenName?: string;
   nftCollectionId?: string;
@@ -883,6 +886,8 @@ export interface SubmitTransactionOptions {
   };
   comment?: string;
   txRequestId?: string;
+  /** WebAuthn attestation for the withdrawal intent (WCN-539) — pass-through only. */
+  attestation?: AttestationPayload;
 }
 
 export interface SendOptions {
