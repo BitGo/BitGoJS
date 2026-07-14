@@ -4,7 +4,10 @@
  * @experimental The safe client surface is experimental and may change (including breaking
  * changes) before the public release.
  */
+import { InitializeSafeBody, SafeData } from '@bitgo/public-types';
 import { BitGoBase } from '../bitgoBase';
+import { decodeWithCodec } from '../utils/codecs';
+import { postWithCodec } from '../utils/postWithCodec';
 import { FinalizeSafeOptions, InitializeSafeOptions } from './iSafe';
 import { CreateSafeOptions, GetSafeOptions, ISafes, ListSafesOptions, SafeCreationHandle, SafeKeys } from './iSafes';
 import { Safe } from './safe';
@@ -43,10 +46,12 @@ export class Safes implements ISafes {
 
   /**
    * Phase 1 — initialize a safe (metadata only, no key material).
-   * Implemented in WCN-1192 Phase 2 (blocked on WCN-1175).
+   * POST /api/v2/enterprise/:eId/safes { label }
    */
   async initializeSafe(params: InitializeSafeOptions): Promise<Safe> {
-    throw new Error('Safes.initializeSafe is not yet implemented (WCN-1192 Phase 2)');
+    const response = await postWithCodec(this.bitgo, this.url(), InitializeSafeBody, params).result();
+    const safeData = decodeWithCodec(SafeData, response, 'SafeData');
+    return new Safe(this.bitgo, safeData);
   }
 
   /**
