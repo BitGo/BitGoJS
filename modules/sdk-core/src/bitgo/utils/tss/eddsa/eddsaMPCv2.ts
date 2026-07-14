@@ -54,6 +54,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
   private static readonly MPS_DSG_SIGNING_USER_GPG_KEY = 'MPS_DSG_SIGNING_USER_GPG_KEY';
   private static readonly MPS_DSG_SIGNING_ROUND1_STATE = 'MPS_DSG_SIGNING_ROUND1_STATE';
   private static readonly MPS_DSG_SIGNING_ROUND2_STATE = 'MPS_DSG_SIGNING_ROUND2_STATE';
+  private static readonly MPS_DKG_KEYGEN_ROUND1_STATE = 'MPS_DKG_KEYGEN_ROUND1_STATE';
 
   /** @inheritdoc */
   async createKeychains(params: {
@@ -647,6 +648,60 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
   // #endregion
 
   // #region external signer
+
+  // #region KeyGenRound1Share
+  async createOfflineKeyGenRound1Share(params: {
+    walletPassphrase: string;
+    encryptedUserGpgPrvKey: string;
+    bitgoGpgPubKey: string;
+    counterPartyGpgPubKey: string;
+    partyId?: MPCv2PartiesEnum.USER | MPCv2PartiesEnum.BACKUP;
+  }): Promise<{
+    signedMsg1: MPSTypes.MPSSignedMessage;
+    encryptedRound1Session: string;
+  }> {
+    const { walletPassphrase, encryptedUserGpgPrvKey, bitgoGpgPubKey, counterPartyGpgPubKey } = params;
+    const partyId = params.partyId ?? MPCv2PartiesEnum.USER;
+
+    const decryptedGpgPrvKey = isV2Envelope(encryptedUserGpgPrvKey)
+      ? await this.bitgo.decryptAsync({ input: encryptedUserGpgPrvKey, password: walletPassphrase })
+      : this.bitgo.decrypt({ input: encryptedUserGpgPrvKey, password: walletPassphrase });
+    const gpgPrvKey = await pgp.readPrivateKey({ armoredKey: decryptedGpgPrvKey });
+
+    const [, ownSk] = await MPSComms.extractEd25519KeyPair(gpgPrvKey);
+
+    if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
+      assert(isBitgoEddsaMpcv2PubKey(bitgoGpgPubKey), 'Invalid BitGo GPG public key');
+    }
+
+    const bitgoKeyObj = await pgp.readKey({ armoredKey: bitgoGpgPubKey });
+    const bitgoPk = await MPSComms.extractEd25519PublicKey(bitgoKeyObj);
+
+    const counterPartyKeyObj = await pgp.readKey({ armoredKey: counterPartyGpgPubKey });
+    const counterPartyPk = await MPSComms.extractEd25519PublicKey(counterPartyKeyObj);
+
+    const dkg = new EddsaMPSDkg.DKG(3, 2, partyId);
+    await dkg.initDkg(ownSk, [counterPartyPk, bitgoPk]);
+
+    const msg1 = dkg.getFirstMessage();
+    const signedMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(msg1.payload), gpgPrvKey);
+
+    const sessionPayload = JSON.stringify({
+      dkgSession: dkg.getSession(),
+      ownMsgPayload: Buffer.from(msg1.payload).toString('base64'),
+      ownMsgFrom: msg1.from,
+    });
+
+    const encryptedRound1Session = await this.bitgo.encryptAsync({
+      input: sessionPayload,
+      password: walletPassphrase,
+      adata: `${EddsaMPCv2Utils.MPS_DKG_KEYGEN_ROUND1_STATE}:${partyId}`,
+      encryptionVersion: 1,
+    });
+
+    return { signedMsg1, encryptedRound1Session };
+  }
+  // #endregion
 
   // #region Round1Share
   async createOfflineRound1Share(params: {
