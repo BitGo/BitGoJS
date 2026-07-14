@@ -1,0 +1,272 @@
+{
+  "_generated": "2026-07-14T19:04:08.369Z",
+  "_scheme": "BIP32-Ed25519 (Khovratovich-Law) — HSM-447 I3 normative spec",
+  "_implementation": "SDK Ed25519Bip32HdTree + @noble/curves independent cross-validation",
+  "normativeSpec": {
+    "rootGeneration": {
+      "step1": "k = SHA-512(seed32)",
+      "step2": "kL = k[0..31], kR = k[32..63]",
+      "step3_clamp": "kL[0] &= 0xF8; kL[31] &= 0x1F; kL[31] |= 0x40",
+      "step4_discard": "if (kL[31] & 0x20) discard — VACUOUSLY SATISFIED: step3 already clears bit5 via &=0x1F; discard never triggers",
+      "step5_pk": "A = scalarmult_ed25519_base_noclamp(kL_clamped)",
+      "step6_chaincode": "c = SHA-256(0x01 || k)",
+      "cardano_note": "CIP-3/Icarus also clears bits 5,6,7 then sets bit6 — identical clamping; discard rule not needed"
+    },
+    "byteOrderLoading": {
+      "sk_kL": "bigIntFromBufferLE(kLBuf) — kL scalar is little-endian throughout paper",
+      "prefix_kR": "bigIntFromBufferBE(kRBuf) — stored as BE bigint for arithmetic; serialize as bigIntToBufferBE for signing nonce",
+      "chaincode": "bigIntFromBufferBE(chaincodeBuf) — stored as BE bigint; HMAC key = bigIntToBufferBE(cc, 32)",
+      "pk": "bigIntFromBufferLE(pkBuf) — compressed Edwards point is LE in tree"
+    },
+    "signingNonce_P2": {
+      "convention": "prefix_bytes_for_nonce = bigIntToBufferBE(prefix, 32) = raw kR bytes",
+      "wrong_was": "bigIntToBufferLE(prefix, 32) — byte-reversed kR — round-1 bug",
+      "fixed_now": "bigIntToBufferBE(prefix, 32) — raw kR bytes as per paper §3",
+      "nonce_formula": "r = scalar_reduce(SHA512(kR_raw || msg))"
+    },
+    "signing": {
+      "R": "R = r * B (base point)",
+      "S": "S = (r + SHA512(R || A || msg) * sk) mod L",
+      "serialization": "64-byte: R_compressed_LE[32] || S_LE[32]"
+    },
+    "childDerivation": {
+      "non_hardened": {
+        "Z": "HMAC-SHA512(chaincode, 0x02 || pk_LE || index_LE4)",
+        "I": "HMAC-SHA512(chaincode, 0x03 || pk_LE || index_LE4)"
+      },
+      "hardened": {
+        "Z": "HMAC-SHA512(chaincode, 0x00 || kL_LE || index_LE4)",
+        "I": "HMAC-SHA512(chaincode, 0x01 || kL_LE || index_LE4)"
+      },
+      "child_kL": "kL + 8 * trunc28(Z[0..27]) — no mod-L at derivation; reduce only at signing",
+      "child_kR": "(kR_BE_int + Z[32..63]_BE_int) mod 2^256 — stored as BE bigint",
+      "child_pk": "A + (8 * trunc28(Z[0..27])) * B",
+      "child_cc": "I[32..63] as BE bigint",
+      "mod_l_note": "child_kL is NOT reduced mod L at derivation; this is intentional per paper to maintain key space; reduction only happens at signing via scalar_reduce"
+    },
+    "mintTimeValidation": {
+      "checks": [
+        "child_pk != identity point (0100...00 LE)",
+        "child_pk not in ED25519_TORSION_SUBGROUP (8 low-order points)",
+        "crypto_core_ed25519_is_valid_point(child_pk) == true"
+      ],
+      "rationale": "low-order child pubkeys leak private key information or cause signature forgeries"
+    },
+    "bundleFormat_P4": {
+      "description": "Versioned JSON bundle for serializing child private keys (FR-13 / signing)",
+      "schema": {
+        "v": 1,
+        "scheme": "bip32ed25519",
+        "sk": "32B LE scalar hex",
+        "prefix": "32B raw kR hex (BE-bigint byte order)",
+        "chaincode": "32B raw chaincode hex",
+        "pub": "32B compressed pubkey LE hex"
+      },
+      "guardNotes": [
+        "Bundle is a JSON string (length >> 64 chars) — isValidEd25519Seed check on the JSON string fails",
+        "bundle.sk passes isValidEd25519Seed(hex) — DANGER: guard must be structural (parse JSON, check v+scheme)",
+        "Decoding bundle.sk as a seed produces WRONG pubkey (SHA512(sk_scalar) expands differently)",
+        "HBAR fromString/XLM fromRawSeed/ALGO mnemonic all require different input types — JSON throws",
+        "MANDATORY: SDK loaders for bip32ed25519 bundles must reject inputs without {v:1, scheme:\"bip32ed25519\"}"
+      ]
+    },
+    "indexNamespaces": {
+      "non_hardened_minting": "[0, 2^31) — server can derive pub-only",
+      "hardened_FR13": "[2^31, 2^32) — client-only derivation (requires root prv)",
+      "disjoint": "no index overlap; hardened bit is the namespace separator"
+    }
+  },
+  "root": {
+    "seed": "deadbeefcafebabe0102030405060708090a0b0c0d0e0f101112131415161718",
+    "sha512_seed": "4a13f7fe37abf405e8fe8b879174f6858908ce061bfa0280a25d6508f7a5d285874a99792879b513f854c226e1e04a15438142755bd2c03dc167ef0817e96f2e",
+    "kL_pre_clamp": "4a13f7fe37abf405e8fe8b879174f6858908ce061bfa0280a25d6508f7a5d285",
+    "kL_post_clamp": "4813f7fe37abf405e8fe8b879174f6858908ce061bfa0280a25d6508f7a5d245",
+    "kR_raw": "874a99792879b513f854c226e1e04a15438142755bd2c03dc167ef0817e96f2e",
+    "chaincode": "cdbdf1f7a4f9d30d140a3465c25e67cb5d22cccb6f3e4eb69a995c94a74dbd68",
+    "pub_LE": "fd0ee879c1665bdeae7f7dd772c897060c758e21a22b62d9a395d11610b621b3"
+  },
+  "msg": "48534d2d343437206e6f726d6174697665207465737420766563746f72204933",
+  "msg_utf8": "HSM-447 normative test vector I3",
+  "vectors": [
+    {
+      "path": "m/0",
+      "mode": "non-hardened",
+      "note": null,
+      "msg": "48534d2d343437206e6f726d6174697665207465737420766563746f72204933",
+      "sdk": {
+        "childSk_LE": "c4400637cdd64942073469013d6b7a3abb2e71ea81f80fcd581beb14fda5d205",
+        "childPrefix_raw": "b0fea4684d3912e35c74e4fb1e80a7aceabe71d437ec8b689cbbd1dae1882970",
+        "childChaincode_raw": "b84338f66c7de766759c3fe18b8eedbf667bfa3384c3847650245c1186ddb04d",
+        "childPub_LE": "6c15415ef5a18846c2a541404cc23d778d0f294320a7d1110b6f732cf382bd1b",
+        "sig": "609400654e859e43972445cf6de83d4475c1b511c3adb87607f3a774a4235bedba9014be00080b372f18ba06ebb9dee8fd32f4bc2cc0bf1e057ac153e6fd5305",
+        "verify_tweetnacl": true,
+        "verify_libsodium": true,
+        "pubDeriveConsistent": true
+      },
+      "noble": {
+        "childSk_LE": "7890ddaa366393a260a7478db752f68dbb2e71ea81f80fcd581beb14fda5d245",
+        "childPrefix_raw": "b0fea4684d3912e35c74e4fb1e80a7aceabe71d437ec8b689cbbd1dae1882970",
+        "childChaincode_raw": "b84338f66c7de766759c3fe18b8eedbf667bfa3384c3847650245c1186ddb04d",
+        "childPub_LE": "6c15415ef5a18846c2a541404cc23d778d0f294320a7d1110b6f732cf382bd1b",
+        "sig": "609400654e859e43972445cf6de83d4475c1b511c3adb87607f3a774a4235bedba9014be00080b372f18ba06ebb9dee8fd32f4bc2cc0bf1e057ac153e6fd5305",
+        "verify_tweetnacl": true,
+        "verify_libsodium": true
+      },
+      "crossMatch": {
+        "sk": false,
+        "kR": true,
+        "cc": true,
+        "pk": true,
+        "sig": true
+      },
+      "mintValid": true
+    },
+    {
+      "path": "m/1",
+      "mode": "non-hardened",
+      "note": null,
+      "msg": "48534d2d343437206e6f726d6174697665207465737420766563746f72204933",
+      "sdk": {
+        "childSk_LE": "347acf0c0d8c3ddf786b1cb0bbcffec052a39b8563ab505607db2285fda5d205",
+        "childPrefix_raw": "e4b049e9e14fb2731460202e10400ecd9224337d0bba1bd2810c7eddc11e39cb",
+        "childChaincode_raw": "4637f0325f9dea103dc6e36974286d66641692b07649e0e272042adf8833d792",
+        "childPub_LE": "b81ede18a6951fb846333556401a4c83eee25b0cccca758230346623a147f459",
+        "sig": "79da7271750d7c29335c1e22fc706f24f179fbd5b0071d2013adaf40ef8208011123f9840c67ce25325a94e1aae58cec7cbcf36a5e6657593e28daf4d16e3003",
+        "verify_tweetnacl": true,
+        "verify_libsodium": true,
+        "pubDeriveConsistent": true
+      },
+      "noble": {
+        "childSk_LE": "e8c9a6807618873fd2defa3b36b77a1453a39b8563ab505607db2285fda5d245",
+        "childPrefix_raw": "e4b049e9e14fb2731460202e10400ecd9224337d0bba1bd2810c7eddc11e39cb",
+        "childChaincode_raw": "4637f0325f9dea103dc6e36974286d66641692b07649e0e272042adf8833d792",
+        "childPub_LE": "b81ede18a6951fb846333556401a4c83eee25b0cccca758230346623a147f459",
+        "sig": "79da7271750d7c29335c1e22fc706f24f179fbd5b0071d2013adaf40ef8208011123f9840c67ce25325a94e1aae58cec7cbcf36a5e6657593e28daf4d16e3003",
+        "verify_tweetnacl": true,
+        "verify_libsodium": true
+      },
+      "crossMatch": {
+        "sk": false,
+        "kR": true,
+        "cc": true,
+        "pk": true,
+        "sig": true
+      },
+      "mintValid": true
+    },
+    {
+      "path": "m/0/1",
+      "mode": "non-hardened",
+      "note": null,
+      "msg": "48534d2d343437206e6f726d6174697665207465737420766563746f72204933",
+      "sdk": {
+        "childSk_LE": "7c6c500db2e373edb403aaabbb0d0562e5c001aaaa07009d83ccb34603a6d205",
+        "childPrefix_raw": "f23400c97614210f75614b3fb44de99446ef4c5e43dda707e33ffa8c45fc987f",
+        "childChaincode_raw": "0e0f791f173c57104fe2e0325df432ada8a0d3b76e1e66ced5a6a6f46c071225",
+        "childPub_LE": "92fd7ce1add4256fea4a4e2d7c1601eee2ba883698953130c68f7e1d5bd52ea3",
+        "sig": "428f6bd45510ab4f381b8eb8c6c624471e4c6146056cf46dd04585e34b155bf370bc2c25ac5b1c2963964b38f44ef029b75759788a7728cca08886632d6b4609",
+        "verify_tweetnacl": true,
+        "verify_libsodium": true,
+        "pubDeriveConsistent": true
+      },
+      "noble": {
+        "childSk_LE": "30bc27811b70bd4d0e77883736f580b5e5c001aaaa07009d83ccb34603a6d245",
+        "childPrefix_raw": "f23400c97614210f75614b3fb44de99446ef4c5e43dda707e33ffa8c45fc987f",
+        "childChaincode_raw": "0e0f791f173c57104fe2e0325df432ada8a0d3b76e1e66ced5a6a6f46c071225",
+        "childPub_LE": "92fd7ce1add4256fea4a4e2d7c1601eee2ba883698953130c68f7e1d5bd52ea3",
+        "sig": "428f6bd45510ab4f381b8eb8c6c624471e4c6146056cf46dd04585e34b155bf370bc2c25ac5b1c2963964b38f44ef029b75759788a7728cca08886632d6b4609",
+        "verify_tweetnacl": true,
+        "verify_libsodium": true
+      },
+      "crossMatch": {
+        "sk": false,
+        "kR": true,
+        "cc": true,
+        "pk": true,
+        "sig": true
+      },
+      "mintValid": true
+    },
+    {
+      "path": "m/2147483648",
+      "mode": "hardened",
+      "note": null,
+      "msg": "48534d2d343437206e6f726d6174697665207465737420766563746f72204933",
+      "sdk": {
+        "childSk_LE": "e45ac46cd1c47f0c726ac8a2ffb850783f8d507585b86b7aad8bd778faa5d205",
+        "childPrefix_raw": "b3c58355af77b5395ebf6cbec55938de2a4db3b0ab91dbd606364cd3e9ec7fc2",
+        "childChaincode_raw": "234076d7188057b9ad3b7125709a394cf49883e373c255cb730a5ea83994bfad",
+        "childPub_LE": "85182f1440f17f42797e72e5dd79a4add8d9ba87ac3ef69e02f582c06094c86f",
+        "sig": "eebd2fd239115b87790a0c82da500038559d560b3254e4824b37a1f8bd5d1a6eb4fdf783851f8eb5e184420c22052684f672f687bc6080f306a5443a29561c0d",
+        "verify_tweetnacl": true,
+        "verify_libsodium": true,
+        "pubDeriveConsistent": null
+      },
+      "noble": {
+        "childSk_LE": "98aa9be03a51c96ccbdda62e7aa0cccb3f8d507585b86b7aad8bd778faa5d245",
+        "childPrefix_raw": "b3c58355af77b5395ebf6cbec55938de2a4db3b0ab91dbd606364cd3e9ec7fc2",
+        "childChaincode_raw": "234076d7188057b9ad3b7125709a394cf49883e373c255cb730a5ea83994bfad",
+        "childPub_LE": "85182f1440f17f42797e72e5dd79a4add8d9ba87ac3ef69e02f582c06094c86f",
+        "sig": "eebd2fd239115b87790a0c82da500038559d560b3254e4824b37a1f8bd5d1a6eb4fdf783851f8eb5e184420c22052684f672f687bc6080f306a5443a29561c0d",
+        "verify_tweetnacl": true,
+        "verify_libsodium": true
+      },
+      "crossMatch": {
+        "sk": false,
+        "kR": true,
+        "cc": true,
+        "pk": true,
+        "sig": true
+      },
+      "mintValid": true
+    },
+    {
+      "path": "m/44/60/0/0",
+      "mode": "non-hardened",
+      "note": "deep path",
+      "msg": "48534d2d343437206e6f726d6174697665207465737420766563746f72204933",
+      "sdk": {
+        "childSk_LE": "943fe9a08d11de4f73f466610d6aa6f4111c7704ecb58beeb41690b906a6d205",
+        "childPrefix_raw": "c5acd2b1584270bca622c033815391039d2c9458a7faeaf5ee92e845a5cfc694",
+        "childChaincode_raw": "c9ba33ec99acdab1cbb9d47eb32f35ede4acf9dcd1162cb846f1ec45c14529b7",
+        "childPub_LE": "4c49e8b3554d0922afe7d11b1716ad921e6c67525b173765039787d3a7262176",
+        "sig": "20e1df8ee48e80a0f6ccf6f6c15561b11d0dc608349eb2ddf10588d2ece2d54b8cdfe093ef9085f38d4ad456c1dd3f03fc3d6dbbdb8487fe309c15c0b7955001",
+        "verify_tweetnacl": true,
+        "verify_libsodium": true,
+        "pubDeriveConsistent": true
+      },
+      "noble": {
+        "childSk_LE": "488fc014f79d27b0cc6745ed87512248121c7704ecb58beeb41690b906a6d245",
+        "childPrefix_raw": "c5acd2b1584270bca622c033815391039d2c9458a7faeaf5ee92e845a5cfc694",
+        "childChaincode_raw": "c9ba33ec99acdab1cbb9d47eb32f35ede4acf9dcd1162cb846f1ec45c14529b7",
+        "childPub_LE": "4c49e8b3554d0922afe7d11b1716ad921e6c67525b173765039787d3a7262176",
+        "sig": "20e1df8ee48e80a0f6ccf6f6c15561b11d0dc608349eb2ddf10588d2ece2d54b8cdfe093ef9085f38d4ad456c1dd3f03fc3d6dbbdb8487fe309c15c0b7955001",
+        "verify_tweetnacl": true,
+        "verify_libsodium": true
+      },
+      "crossMatch": {
+        "sk": false,
+        "kR": true,
+        "cc": true,
+        "pk": true,
+        "sig": true
+      },
+      "mintValid": true
+    }
+  ],
+  "crossValidationSummary": {
+    "allSkMatch": false,
+    "allKrMatch": true,
+    "allCcMatch": true,
+    "allPkMatch": true,
+    "allSigMatch": true,
+    "allSdkVerify": true,
+    "allNobleVerify": true,
+    "allPubConsistent": true,
+    "allMintValid": true,
+    "VERDICT": "DIVERGENCE DETECTED — investigate mismatches above"
+  },
+  "p2_verdict": "VALIDATED: prefix (kR) stored as BE bigint; signing nonce uses bigIntToBufferBE(prefix,32) = raw kR bytes; P2 convention holds with BE serialization not LE",
+  "p1_verdict": "VALIDATED: root=32-byte seed, SHA-512(seed)→(kL,kR), clamp kL, chaincode=SHA-256(0x01||SHA512(seed)); discard rule vacuously satisfied by clamping; keycard unchanged",
+  "p4_verdict": "VALIDATED with caveat: bundle.sk field alone passes hex-seed heuristic — loader MUST check {v:1,scheme:\"bip32ed25519\"} structurally; raw sk silently produces wrong pubkey from standard seed decoders"
+}
