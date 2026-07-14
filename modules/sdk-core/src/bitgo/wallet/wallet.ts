@@ -3525,7 +3525,12 @@ export class Wallet implements IWallet {
       if (keychainsApi.getEncryptionVersion(backupSource) === 2) {
         skipped.push({ type: 'backup', reason: 'already v2' });
       } else {
-        const newEncryptedPrv = await keychainsApi.reencryptAsV2(backupSource, passphrase, originalPassphrase);
+        const newEncryptedPrv = await this.reencryptCreationTimeKey(
+          backupSource,
+          passphrase,
+          originalPassphrase,
+          'backup key'
+        );
         backupKeychain.encryptedPrv = newEncryptedPrv;
         if (!dryRun && serverStored) {
           // Only PUT if the key was server-stored; boxB-only wallets have no server record.
@@ -3560,13 +3565,23 @@ export class Wallet implements IWallet {
 
     // Re-encrypt MPCv2 key shares (keycard-only — not stored server-side).
     if (boxA) {
-      userKeychain.reducedEncryptedPrv = await keychainsApi.reencryptAsV2(boxA, passphrase, originalPassphrase);
+      userKeychain.reducedEncryptedPrv = await this.reencryptCreationTimeKey(
+        boxA,
+        passphrase,
+        originalPassphrase,
+        'boxA'
+      );
       updated.push({ type: 'user reducedEncryptedPrv (keycard only)', id: userKeychain.id });
     }
     if (boxB && backupKeychain.encryptedPrv) {
       // MPCv2: encryptedPrv exists server-side but reducedEncryptedPrv does not.
       // Re-encrypt boxB so the new keycard uses the reduced form instead of the full blob.
-      backupKeychain.reducedEncryptedPrv = await keychainsApi.reencryptAsV2(boxB, passphrase, originalPassphrase);
+      backupKeychain.reducedEncryptedPrv = await this.reencryptCreationTimeKey(
+        boxB,
+        passphrase,
+        originalPassphrase,
+        'boxB'
+      );
       updated.push({ type: 'backup reducedEncryptedPrv (keycard only)', id: backupKeychain.id });
     }
 
@@ -3587,6 +3602,33 @@ export class Wallet implements IWallet {
 
     console.log('Done.');
     return { doc, walletLabel };
+  }
+
+  /**
+   * Re-encrypt a ciphertext that was written at wallet creation time (backup key, boxA, boxB).
+   * These are not re-encrypted on password change, so the encryption passphrase may still be
+   * the original one from when the wallet was created. Try the current passphrase first; fall
+   * back to `originalPassphrase` if provided.
+   */
+  private async reencryptCreationTimeKey(
+    encryptedPrv: string,
+    passphrase: string,
+    originalPassphrase: string | undefined,
+    keyDescription: string
+  ): Promise<string> {
+    const keychainsApi = this.baseCoin.keychains();
+    try {
+      return await keychainsApi.reencryptAsV2(encryptedPrv, passphrase);
+    } catch (err) {
+      if (!originalPassphrase) {
+        throw new Error(
+          `Failed to decrypt ${keyDescription} with the provided passphrase. If the wallet passphrase ` +
+            'was changed after creation, pass boxD so the original passphrase can be recovered.'
+        );
+      }
+      const prv = await this.bitgo.decrypt({ input: encryptedPrv, password: originalPassphrase });
+      return this.bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 2 });
+    }
   }
 
   private async fetchPasscodeEncryptionCode(coin: string, walletId: string): Promise<string> {

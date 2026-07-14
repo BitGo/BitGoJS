@@ -212,26 +212,16 @@ export class Keychains implements IKeychains {
   }
 
   /**
-   * Decrypt an encrypted private key and re-encrypt it as a v2 (Argon2id + AES-256-GCM) envelope.
-   * Tries `passphrase` first; falls back to `originalPassphrase` if provided and decryption fails.
-   * The result is always encrypted with `passphrase` (the current one), never the original.
+   * Decrypt an encrypted private key with `passphrase` and re-encrypt it as a v2
+   * (Argon2id + AES-256-GCM) envelope with the same passphrase.
    *
    * Used to upgrade legacy v1 (SJCL) envelopes to v2 without changing the passphrase.
+   * Callers that need to try a fallback passphrase (e.g. an original passphrase from
+   * before a password rotation) should handle that themselves — this primitive does one
+   * thing and lets decryption errors surface directly.
    */
-  async reencryptAsV2(encryptedPrv: string, passphrase: string, originalPassphrase?: string): Promise<string> {
-    let prv: string;
-    try {
-      prv = await this.bitgo.decrypt({ input: encryptedPrv, password: passphrase });
-    } catch {
-      if (originalPassphrase) {
-        prv = await this.bitgo.decrypt({ input: encryptedPrv, password: originalPassphrase });
-      } else {
-        throw new Error(
-          'Failed to decrypt with the provided passphrase. ' +
-            'If the wallet password was changed after creation, provide the original passphrase so the backup key can be decrypted.'
-        );
-      }
-    }
+  async reencryptAsV2(encryptedPrv: string, passphrase: string): Promise<string> {
+    const prv = await this.bitgo.decrypt({ input: encryptedPrv, password: passphrase });
     return this.bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 2 });
   }
 

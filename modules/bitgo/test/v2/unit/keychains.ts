@@ -1197,7 +1197,7 @@ describe('V2 Keychains', function () {
   });
 
   describe('reencryptAsV2', function () {
-    it('decrypts a v1 envelope with the current passphrase and re-encrypts as v2', async function () {
+    it('decrypts a v1 envelope with the passphrase and re-encrypts as v2', async function () {
       const prv = 'thePrivateKey';
       const encryptedV1 = await bitgo.encrypt({ input: prv, password: 'myPass', encryptionVersion: 1 });
       JSON.parse(encryptedV1).v.should.equal(1);
@@ -1205,30 +1205,6 @@ describe('V2 Keychains', function () {
       const result = await keychains.reencryptAsV2(encryptedV1, 'myPass');
       JSON.parse(result).v.should.equal(2);
       (await bitgo.decrypt({ input: result, password: 'myPass' })).should.equal(prv);
-    });
-
-    it('falls back to originalPassphrase when the current passphrase fails to decrypt', async function () {
-      const prv = 'thePrivateKey';
-      const encryptedWithOriginal = await bitgo.encrypt({
-        input: prv,
-        password: 'originalPass',
-        encryptionVersion: 1,
-      });
-
-      const result = await keychains.reencryptAsV2(encryptedWithOriginal, 'currentPass', 'originalPass');
-      JSON.parse(result).v.should.equal(2);
-      (await bitgo.decrypt({ input: result, password: 'currentPass' })).should.equal(prv);
-      await bitgo.decrypt({ input: result, password: 'originalPass' }).should.be.rejected();
-    });
-
-    it('throws with a helpful message when decryption fails and no originalPassphrase is provided', async function () {
-      const encrypted = await bitgo.encrypt({ input: 'prv', password: 'realPass', encryptionVersion: 1 });
-      await keychains.reencryptAsV2(encrypted, 'wrongPass').should.be.rejectedWith(/original passphrase/);
-    });
-
-    it('throws when both the current and original passphrases fail', async function () {
-      const encrypted = await bitgo.encrypt({ input: 'prv', password: 'realPass', encryptionVersion: 1 });
-      await keychains.reencryptAsV2(encrypted, 'wrongCurrent', 'alsoWrong').should.be.rejected();
     });
 
     it('accepts a v2 envelope and re-encrypts it as v2 (idempotent)', async function () {
@@ -1239,6 +1215,11 @@ describe('V2 Keychains', function () {
       const result = await keychains.reencryptAsV2(encryptedV2, 'pass');
       JSON.parse(result).v.should.equal(2);
       (await bitgo.decrypt({ input: result, password: 'pass' })).should.equal(prv);
+    });
+
+    it('surfaces decrypt errors directly (no fallback logic in the primitive)', async function () {
+      const encrypted = await bitgo.encrypt({ input: 'prv', password: 'realPass', encryptionVersion: 1 });
+      await keychains.reencryptAsV2(encrypted, 'wrongPass').should.be.rejected();
     });
   });
 });
