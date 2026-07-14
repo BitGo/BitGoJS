@@ -6846,4 +6846,238 @@ describe('V2 Wallet:', function () {
       });
     });
   });
+
+  describe('upgradeEncryption', function () {
+    const walletId = walletData.id;
+    const [userKeyId, backupKeyId, bitgoKeyId] = walletData.keys;
+    const passphrase = 'walletPassphrase';
+
+    beforeEach(function () {
+      nock.cleanAll();
+    });
+
+    afterEach(function () {
+      // Prevent leftover interceptors from bleeding into other suites in the file.
+      nock.cleanAll();
+    });
+
+    function nockUnlock(times = 1) {
+      return nock(bgUrl).post('/api/v1/user/unlock').times(times).reply(200, {});
+    }
+
+    function nockKeychain(id: string, keychain: Record<string, unknown>) {
+      return nock(bgUrl)
+        .get(`/api/v2/tbtc/key/${id}`)
+        .reply(200, { id, pub: 'pub', type: 'independent', ...keychain });
+    }
+
+    function nockPecFetch(pec: string) {
+      return nock(bgUrl)
+        .post(`/api/v2/tbtc/wallet/${walletId}/passcoderecovery`)
+        .reply(200, { recoveryInfo: { passcodeEncryptionCode: pec } });
+    }
+
+    it('re-encrypts both user and backup keys and PUTs them as v2', async function () {
+      const userEnc = await bitgo.encrypt({ input: 'userPrv', password: passphrase, encryptionVersion: 1 });
+      const backupEnc = await bitgo.encrypt({ input: 'backupPrv', password: passphrase, encryptionVersion: 1 });
+
+      nockUnlock();
+      nockKeychain(userKeyId, { encryptedPrv: userEnc });
+      nockKeychain(backupKeyId, { encryptedPrv: backupEnc });
+      nockKeychain(bitgoKeyId, {});
+
+      const puts: Array<{ url: string; body: Record<string, unknown> }> = [];
+      nock(bgUrl)
+        .put(`/api/v2/tbtc/key/${userKeyId}`, (body) => {
+          puts.push({ url: userKeyId, body });
+          return true;
+        })
+        .reply(200, {});
+      nock(bgUrl)
+        .put(`/api/v2/tbtc/key/${backupKeyId}`, (body) => {
+          puts.push({ url: backupKeyId, body });
+          return true;
+        })
+        .reply(200, {});
+
+      const result = await wallet.upgradeEncryption({ passphrase, passcodeEncryptionCode: 'pec-xyz' });
+
+      assert.ok(result === undefined, 'no PDF generator → returns undefined');
+      puts.should.have.length(2);
+      const userPut = puts.find((p) => p.url === userKeyId)!;
+      JSON.parse(userPut.body.encryptedPrv as string).v.should.equal(2);
+      JSON.parse(userPut.body.originalEncryptedPrv as string).v.should.equal(2);
+    });
+
+    it('throws when neither passphrase nor boxD is provided', async function () {
+      await wallet.upgradeEncryption({}).should.be.rejectedWith(/passphrase.*boxD/);
+    });
+
+    it('throws for an MPCv2 wallet when boxA or boxB are missing', async function () {
+      const mpcWalletData = { ...walletData, multisigTypeVersion: 'MPCv2' as const };
+      const mpcWallet = new Wallet(bitgo, basecoin, mpcWalletData);
+
+      nockUnlock();
+      // PEC fetch happens before the MPCv2 validation short-circuits — allow the call to noop
+      nockPecFetch('pec');
+
+      await mpcWallet.upgradeEncryption({ passphrase, passcodeEncryptionCode: 'pec' }).should.be.rejectedWith(/MPCv2/);
+    });
+
+    it('re-encrypts boxA and boxB as reducedEncryptedPrv on the keychains for MPCv2 wallets', async function () {
+      const mpcWalletData = { ...walletData, multisigTypeVersion: 'MPCv2' as const };
+      const mpcWallet = new Wallet(bitgo, basecoin, mpcWalletData);
+      const userEnc = await bitgo.encrypt({ input: 'userPrv', password: passphrase, encryptionVersion: 1 });
+      const backupEnc = await bitgo.encrypt({ input: 'backupPrv', password: passphrase, encryptionVersion: 1 });
+      const boxA = await bitgo.encrypt({ input: 'userReducedPrv', password: passphrase, encryptionVersion: 1 });
+      const boxB = await bitgo.encrypt({ input: 'backupReducedPrv', password: passphrase, encryptionVersion: 1 });
+
+      nockUnlock();
+      nockKeychain(userKeyId, { encryptedPrv: userEnc });
+      nockKeychain(backupKeyId, { encryptedPrv: backupEnc });
+      nockKeychain(bitgoKeyId, {});
+      nock(bgUrl).put(`/api/v2/tbtc/key/${userKeyId}`).reply(200, {});
+      nock(bgUrl).put(`/api/v2/tbtc/key/${backupKeyId}`).reply(200, {});
+
+      const capturedPdfParams: Array<Record<string, unknown>> = [];
+      const generatePdf = async (params: Record<string, unknown>) => {
+        capturedPdfParams.push(params);
+        return { output: () => new ArrayBuffer(0) };
+      };
+
+      await mpcWallet.upgradeEncryption({
+        passphrase,
+        boxA,
+        boxB,
+        passcodeEncryptionCode: 'pec',
+        generatePdf,
+      });
+
+      capturedPdfParams.should.have.length(1);
+      const { userKeychain, backupKeychain } = capturedPdfParams[0] as {
+        userKeychain: { reducedEncryptedPrv?: string };
+        backupKeychain: { reducedEncryptedPrv?: string };
+      };
+      assert.ok(userKeychain.reducedEncryptedPrv, 'user reducedEncryptedPrv must be set');
+      JSON.parse(userKeychain.reducedEncryptedPrv!).v.should.equal(2);
+      assert.ok(backupKeychain.reducedEncryptedPrv, 'backup reducedEncryptedPrv must be set');
+      JSON.parse(backupKeychain.reducedEncryptedPrv!).v.should.equal(2);
+    });
+
+    it('skips keychains that are already v2', async function () {
+      const userV2 = await bitgo.encrypt({ input: 'userPrv', password: passphrase, encryptionVersion: 2 });
+      const backupV1 = await bitgo.encrypt({ input: 'backupPrv', password: passphrase, encryptionVersion: 1 });
+
+      nockUnlock();
+      nockKeychain(userKeyId, { encryptedPrv: userV2 });
+      nockKeychain(backupKeyId, { encryptedPrv: backupV1 });
+      nockKeychain(bitgoKeyId, {});
+
+      const puts: string[] = [];
+      // Only the backup key should be PUT — user is already v2.
+      nock(bgUrl)
+        .put(new RegExp(`/api/v2/tbtc/key/(${userKeyId}|${backupKeyId})`))
+        .reply(200, function (uri) {
+          puts.push(uri);
+          return {};
+        });
+
+      await wallet.upgradeEncryption({ passphrase, passcodeEncryptionCode: 'pec' });
+
+      puts.should.have.length(1);
+      puts[0].should.containEql(backupKeyId);
+    });
+
+    it('handles backup keychain with no encryptedPrv (public-key-only) without PUTing', async function () {
+      const userV1 = await bitgo.encrypt({ input: 'userPrv', password: passphrase, encryptionVersion: 1 });
+
+      nockUnlock();
+      nockKeychain(userKeyId, { encryptedPrv: userV1 });
+      nockKeychain(backupKeyId, {}); // public key only
+      nockKeychain(bitgoKeyId, {});
+      nock(bgUrl).put(`/api/v2/tbtc/key/${userKeyId}`).reply(200, {});
+
+      await wallet.upgradeEncryption({ passphrase, passcodeEncryptionCode: 'pec' });
+      // If we reached here without unhandled nock error, the flow completed without PUTing the backup.
+    });
+
+    it('re-encrypts a backup key from boxB without PUTing to the server', async function () {
+      const userV1 = await bitgo.encrypt({ input: 'userPrv', password: passphrase, encryptionVersion: 1 });
+      const boxB = await bitgo.encrypt({ input: 'backupPrv', password: passphrase, encryptionVersion: 1 });
+
+      nockUnlock();
+      nockKeychain(userKeyId, { encryptedPrv: userV1 });
+      nockKeychain(backupKeyId, {}); // no encryptedPrv server-side
+      nockKeychain(bitgoKeyId, {});
+      nock(bgUrl).put(`/api/v2/tbtc/key/${userKeyId}`).reply(200, {});
+
+      await wallet.upgradeEncryption({ passphrase, boxB, passcodeEncryptionCode: 'pec' });
+    });
+
+    it('derives the passphrase from boxD when passphrase is omitted', async function () {
+      const pec = 'pec-derive';
+      const derivedPass = 'derivedFromBoxD';
+      const boxD = await bitgo.encrypt({ input: derivedPass, password: pec, encryptionVersion: 1 });
+      const userV1 = await bitgo.encrypt({ input: 'userPrv', password: derivedPass, encryptionVersion: 1 });
+      const backupV1 = await bitgo.encrypt({ input: 'backupPrv', password: derivedPass, encryptionVersion: 1 });
+
+      nockUnlock();
+      nockPecFetch(pec);
+      nockKeychain(userKeyId, { encryptedPrv: userV1 });
+      nockKeychain(backupKeyId, { encryptedPrv: backupV1 });
+      nockKeychain(bitgoKeyId, {});
+      nock(bgUrl).put(new RegExp(`/api/v2/tbtc/key/`)).twice().reply(200, {});
+
+      // No passphrase — must be derived from boxD.
+      await wallet.upgradeEncryption({ boxD });
+    });
+
+    it('makes no PUT calls in dry-run mode and returns undefined', async function () {
+      const userV1 = await bitgo.encrypt({ input: 'userPrv', password: passphrase, encryptionVersion: 1 });
+      const backupV1 = await bitgo.encrypt({ input: 'backupPrv', password: passphrase, encryptionVersion: 1 });
+
+      // No unlock, no PEC, no PUTs expected.
+      nockKeychain(userKeyId, { encryptedPrv: userV1 });
+      nockKeychain(backupKeyId, { encryptedPrv: backupV1 });
+      nockKeychain(bitgoKeyId, {});
+
+      const result = await wallet.upgradeEncryption({ passphrase, dryRun: true });
+      assert.strictEqual(result, undefined);
+    });
+
+    it('throws when unlock rejects with an error unrelated to session duration', async function () {
+      nock(bgUrl).post('/api/v1/user/unlock').replyWithError('invalid OTP');
+
+      await wallet
+        .upgradeEncryption({ passphrase, passcodeEncryptionCode: 'pec' })
+        .should.be.rejectedWith(/invalid OTP/);
+    });
+
+    it('proceeds when unlock reports "already unlocked longer"', async function () {
+      const userV1 = await bitgo.encrypt({ input: 'userPrv', password: passphrase, encryptionVersion: 1 });
+      const backupV1 = await bitgo.encrypt({ input: 'backupPrv', password: passphrase, encryptionVersion: 1 });
+
+      nock(bgUrl).post('/api/v1/user/unlock').reply(401, { error: 'Session already unlocked longer' });
+      nockKeychain(userKeyId, { encryptedPrv: userV1 });
+      nockKeychain(backupKeyId, { encryptedPrv: backupV1 });
+      nockKeychain(bitgoKeyId, {});
+      nock(bgUrl).put(new RegExp(`/api/v2/tbtc/key/`)).twice().reply(200, {});
+
+      await wallet.upgradeEncryption({ passphrase, passcodeEncryptionCode: 'pec' });
+    });
+
+    it('uses the supplied passcodeEncryptionCode and skips the passcoderecovery fetch', async function () {
+      const userV1 = await bitgo.encrypt({ input: 'userPrv', password: passphrase, encryptionVersion: 1 });
+      const backupV1 = await bitgo.encrypt({ input: 'backupPrv', password: passphrase, encryptionVersion: 1 });
+
+      nockUnlock();
+      // Intentionally do NOT nock passcoderecovery — the test fails if the code tries to call it.
+      nockKeychain(userKeyId, { encryptedPrv: userV1 });
+      nockKeychain(backupKeyId, { encryptedPrv: backupV1 });
+      nockKeychain(bitgoKeyId, {});
+      nock(bgUrl).put(new RegExp(`/api/v2/tbtc/key/`)).twice().reply(200, {});
+
+      await wallet.upgradeEncryption({ passphrase, passcodeEncryptionCode: 'pec-supplied' });
+    });
+  });
 });

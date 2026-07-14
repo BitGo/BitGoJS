@@ -248,6 +248,8 @@ export interface IKeychains {
   list(params?: ListKeychainOptions): Promise<ListKeychainsResult>;
   updatePassword(params: UpdatePasswordOptions): Promise<ChangedKeychains>;
   updateSingleKeychainPassword(params?: UpdateSingleKeychainPasswordOptions): Promise<Keychain>;
+  getEncryptionVersion(ciphertext: string): EncryptionVersion;
+  reencryptAsV2(encryptedPrv: string, passphrase: string): Promise<string>;
   create(params?: { seed?: Buffer; isRootKey?: boolean }): KeyPair;
   add(params?: AddKeychainOptions): Promise<Keychain>;
   createBitGo(params?: CreateBitGoOptions): Promise<Keychain>;

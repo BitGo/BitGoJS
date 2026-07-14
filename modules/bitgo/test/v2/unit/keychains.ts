@@ -1135,4 +1135,91 @@ describe('V2 Keychains', function () {
       );
     });
   });
+
+  describe('getEncryptionVersion', function () {
+    it('returns 1 when the v field is absent', function () {
+      const envelope = JSON.stringify({ ct: 'cipher', iv: 'iv', s: 'salt' });
+      keychains.getEncryptionVersion(envelope).should.equal(1);
+    });
+
+    it('returns 1 when v is explicitly 1', function () {
+      keychains.getEncryptionVersion(JSON.stringify({ v: 1, ct: 'abc' })).should.equal(1);
+    });
+
+    it('returns 2 when v is 2', function () {
+      keychains.getEncryptionVersion(JSON.stringify({ v: 2, ct: 'abc' })).should.equal(2);
+    });
+
+    it('throws on an unrecognized version number', function () {
+      assert.throws(
+        () => keychains.getEncryptionVersion(JSON.stringify({ v: 3, ct: 'abc' })),
+        /Unrecognized encryption version: 3/
+      );
+    });
+
+    it('throws when the input is not valid JSON', function () {
+      assert.throws(() => keychains.getEncryptionVersion('not-json'), /Failed to parse ciphertext envelope/);
+    });
+
+    it('throws when the input is an empty string', function () {
+      assert.throws(() => keychains.getEncryptionVersion(''), /Failed to parse ciphertext envelope/);
+    });
+
+    it('handles a real SJCL v1 envelope', function () {
+      const sjcl = JSON.stringify({
+        iv: 'aaaa',
+        v: 1,
+        iter: 10000,
+        ks: 256,
+        ts: 64,
+        mode: 'ccm',
+        adata: '',
+        cipher: 'aes',
+        salt: 'ssss',
+        ct: 'cccc',
+      });
+      keychains.getEncryptionVersion(sjcl).should.equal(1);
+    });
+
+    it('handles a real Argon2id v2 envelope', function () {
+      const argon2 = JSON.stringify({
+        v: 2,
+        ct: 'cccc',
+        iv: 'iiii',
+        tag: 'tttt',
+        salt: 'ssss',
+        m: 65536,
+        t: 3,
+        p: 4,
+      });
+      keychains.getEncryptionVersion(argon2).should.equal(2);
+    });
+  });
+
+  describe('reencryptAsV2', function () {
+    it('decrypts a v1 envelope with the passphrase and re-encrypts as v2', async function () {
+      const prv = 'thePrivateKey';
+      const encryptedV1 = await bitgo.encrypt({ input: prv, password: 'myPass', encryptionVersion: 1 });
+      JSON.parse(encryptedV1).v.should.equal(1);
+
+      const result = await keychains.reencryptAsV2(encryptedV1, 'myPass');
+      JSON.parse(result).v.should.equal(2);
+      (await bitgo.decrypt({ input: result, password: 'myPass' })).should.equal(prv);
+    });
+
+    it('accepts a v2 envelope and re-encrypts it as v2 (idempotent)', async function () {
+      const prv = 'xprv-v2';
+      const encryptedV2 = await bitgo.encrypt({ input: prv, password: 'pass', encryptionVersion: 2 });
+      JSON.parse(encryptedV2).v.should.equal(2);
+
+      const result = await keychains.reencryptAsV2(encryptedV2, 'pass');
+      JSON.parse(result).v.should.equal(2);
+      (await bitgo.decrypt({ input: result, password: 'pass' })).should.equal(prv);
+    });
+
+    it('surfaces decrypt errors directly (no fallback logic in the primitive)', async function () {
+      const encrypted = await bitgo.encrypt({ input: 'prv', password: 'realPass', encryptionVersion: 1 });
+      await keychains.reencryptAsV2(encrypted, 'wrongPass').should.be.rejected();
+    });
+  });
 });

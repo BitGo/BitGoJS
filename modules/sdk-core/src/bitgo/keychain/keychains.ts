@@ -151,23 +151,25 @@ export class Keychains implements IKeychains {
   }
 
   /**
-   * Helper function to determine the encryption version of a ciphertext by parsing it as JSON and checking the "v" field.
-   * Return undefined if the ciphertext is not a valid JSON or does not contain a supported "v" field.
+   * Determine the encryption version of a ciphertext by inspecting its "v" field.
+   *   - v1 (SJCL / PBKDF2-SHA256 + AES-256-CCM): "v" absent or explicitly 1
+   *   - v2 (Argon2id + AES-256-GCM): "v" === 2
+   * Throws on unrecognized values so callers cannot silently mis-handle unknown envelopes.
    */
-  private getEncryptionVersion(ciphertext: string): EncryptionVersion | undefined {
+  getEncryptionVersion(ciphertext: string): EncryptionVersion {
+    let envelope: { v?: unknown };
     try {
-      const envelope = JSON.parse(ciphertext);
-      switch (envelope.v) {
-        case 1:
-          return 1;
-        case 2:
-          return 2;
-        default:
-          return undefined;
-      }
-    } catch (_) {
-      return undefined;
+      envelope = JSON.parse(ciphertext);
+    } catch (e) {
+      throw new Error(`Failed to parse ciphertext envelope: ${(e as Error).message}`);
     }
+    if (envelope.v === 2) {
+      return 2;
+    }
+    if (envelope.v === undefined || envelope.v === 1) {
+      return 1;
+    }
+    throw new Error(`Unrecognized encryption version: ${String(envelope.v)}`);
   }
 
   /**
@@ -207,6 +209,20 @@ export class Keychains implements IKeychains {
       const errorDetail = e instanceof Error ? e.message : String(e);
       throw new Error(`failed to update keychain password: ${errorDetail}`);
     }
+  }
+
+  /**
+   * Decrypt an encrypted private key with `passphrase` and re-encrypt it as a v2
+   * (Argon2id + AES-256-GCM) envelope with the same passphrase.
+   *
+   * Used to upgrade legacy v1 (SJCL) envelopes to v2 without changing the passphrase.
+   * Callers that need to try a fallback passphrase (e.g. an original passphrase from
+   * before a password rotation) should handle that themselves — this primitive does one
+   * thing and lets decryption errors surface directly.
+   */
+  async reencryptAsV2(encryptedPrv: string, passphrase: string): Promise<string> {
+    const prv = await this.bitgo.decrypt({ input: encryptedPrv, password: passphrase });
+    return this.bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 2 });
   }
 
   /**

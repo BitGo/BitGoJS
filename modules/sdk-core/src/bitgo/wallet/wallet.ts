@@ -126,6 +126,8 @@ import {
   UpdateAddressOptions,
   UpdateBuildDefaultOptions,
   UpdateWalletOptions,
+  UpgradeEncryptionOptions,
+  UpgradeEncryptionResult,
   WalletCoinSpecific,
   WalletData,
   WalletEcdsaChallenges,
@@ -3382,6 +3384,263 @@ export class Wallet implements IWallet {
     });
 
     doc.save(`BitGo Keycard for ${walletLabel}.pdf`);
+  }
+
+  /**
+   * Upgrade this wallet's keychain encryption from v1 (SJCL / PBKDF2-SHA256 + AES-256-CCM) to
+   * v2 (Argon2id + AES-256-GCM) and, optionally, regenerate the keycard PDF.
+   *
+   * Steps:
+   *   1. Unlock the BitGo session (skipped in dry-run).
+   *   2. Validate MPCv2 requirements (boxA/boxB when relevant).
+   *   3. Resolve the current and original passphrases (deriving from boxD if needed).
+   *   4. Re-encrypt user and backup keychains from v1 to v2 and PUT them to the server.
+   *   5. Re-encrypt MPCv2 reducedEncryptedPrv shares from boxA/boxB (keycard-only, no server PUT).
+   *   6. Invoke the injected {@link UpgradeEncryptionPdfGenerator} to regenerate the keycard PDF.
+   *
+   * @returns the generated PDF and wallet label, or undefined in dry-run or when no PDF generator is provided.
+   */
+  async upgradeEncryption(params: UpgradeEncryptionOptions): Promise<UpgradeEncryptionResult | undefined> {
+    const {
+      passphrase: passphraseArg,
+      otp,
+      boxD,
+      boxA,
+      boxB,
+      passcodeEncryptionCode: pecArg,
+      dryRun = false,
+      generatePdf,
+    } = params;
+
+    if (!passphraseArg && !boxD) {
+      throw new Error('Either passphrase or boxD must be provided.');
+    }
+
+    const coinName = this.baseCoin.getChain();
+    const walletId = this.id();
+    const walletLabel = this.label();
+    const keychainsApi = this.baseCoin.keychains();
+
+    if (dryRun) console.log('[dry-run] No changes will be persisted.');
+
+    if (!dryRun) {
+      try {
+        await this.bitgo
+          .post(this.bitgo.microservicesUrl('/api/v1/user/unlock'))
+          .send({ otp: otp ?? '0000000', duration: 600 })
+          .result();
+        console.log('Session unlocked.');
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes('already unlocked longer')) {
+          console.log('Session already unlocked (longer duration) — proceeding.');
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    console.log(`Wallet: ${walletLabel} (${walletId})`);
+
+    if (this.multisigTypeVersion() === 'MPCv2' && (!boxA || !boxB)) {
+      throw new Error(
+        'This is an MPCv2 wallet. boxA and boxB are required to re-encrypt the reducedEncryptedPrv ' +
+          'key shares stored on the keycard. Without them the new keycard will be missing Box A and Box B.'
+      );
+    }
+
+    // PEC is needed to decrypt boxD (when provided) and to generate Box D in the new keycard.
+    // Always fetched when boxD is provided; otherwise skipped in dry-run.
+    const needsPec = boxD || !dryRun;
+    const pecResolved: string | undefined =
+      pecArg ?? (needsPec ? await this.fetchPasscodeEncryptionCode(coinName, walletId) : undefined);
+
+    if (!pecResolved && !dryRun) {
+      throw new Error(
+        'passcodeEncryptionCode is required — pass passcodeEncryptionCode or ensure the endpoint is accessible'
+      );
+    }
+
+    // pecResolved is guaranteed to be a string when not in dry-run; dry-run returns early before use.
+    const passcodeEncryptionCode = pecResolved as string;
+
+    // Resolve the wallet passphrase and the original passphrase (if different).
+    //
+    // Two scenarios:
+    //   1. passphrase omitted, boxD provided: passphrase was never changed. Box D decrypts to the
+    //      current passphrase. Derive it — no separate originalPassphrase needed.
+    //   2. passphrase provided, boxD provided: passphrase was changed after creation. Box D holds
+    //      the original (needed to decrypt the backup key, which was encrypted at creation time).
+    let passphrase: string;
+    let originalPassphrase: string | undefined;
+
+    if (!passphraseArg) {
+      passphrase = await this.bitgo.decrypt({ input: boxD as string, password: passcodeEncryptionCode });
+      console.log('Passphrase derived from Box D.');
+    } else {
+      passphrase = passphraseArg;
+      if (boxD && passcodeEncryptionCode) {
+        originalPassphrase = await this.bitgo.decrypt({ input: boxD, password: passcodeEncryptionCode });
+        console.log('Recovered original passphrase from Box D.');
+      }
+    }
+
+    const keyIds = this.keyIds();
+    const [userKeychain, backupKeychain, bitgoKeychain] = await Promise.all([
+      keychainsApi.get({ id: keyIds[0] }),
+      keychainsApi.get({ id: keyIds[1] }),
+      keychainsApi.get({ id: keyIds[2] }),
+    ]);
+
+    const updated: Array<{ type: string; id: string }> = [];
+    const skipped: Array<{ type: string; reason: string }> = [];
+
+    // Re-encrypt user key. Always encrypted with the current passphrase (BitGo re-encrypts on
+    // password change), so no originalPassphrase fallback is needed here. originalEncryptedPrv
+    // is set to the new value so BitGo's password-change flow stays consistent.
+    if (userKeychain.encryptedPrv) {
+      if (keychainsApi.getEncryptionVersion(userKeychain.encryptedPrv) === 2) {
+        skipped.push({ type: 'user', reason: 'already v2' });
+      } else {
+        const newEncryptedPrv = await keychainsApi.reencryptAsV2(userKeychain.encryptedPrv, passphrase);
+        userKeychain.encryptedPrv = newEncryptedPrv;
+        if (!dryRun) {
+          await this.bitgo
+            .put(this.baseCoin.url(`/key/${encodeURIComponent(userKeychain.id)}`))
+            .send({ encryptedPrv: newEncryptedPrv, originalEncryptedPrv: newEncryptedPrv })
+            .result();
+        }
+        updated.push({ type: 'user', id: userKeychain.id });
+      }
+    } else {
+      skipped.push({ type: 'user', reason: 'no encryptedPrv' });
+    }
+
+    // Re-encrypt backup key. May be encrypted under the original passphrase if the wallet
+    // password was changed after creation — fall back to originalPassphrase if current fails.
+    // Source: server-stored encryptedPrv (preferred) or boxB for older/keycard-only wallets.
+    const serverStored = !!backupKeychain.encryptedPrv;
+    const backupSource = backupKeychain.encryptedPrv ?? boxB;
+    if (backupSource) {
+      if (keychainsApi.getEncryptionVersion(backupSource) === 2) {
+        skipped.push({ type: 'backup', reason: 'already v2' });
+      } else {
+        const newEncryptedPrv = await this.reencryptCreationTimeKey(
+          backupSource,
+          passphrase,
+          originalPassphrase,
+          'backup key'
+        );
+        backupKeychain.encryptedPrv = newEncryptedPrv;
+        if (!dryRun && serverStored) {
+          // Only PUT if the key was server-stored; boxB-only wallets have no server record.
+          await this.bitgo
+            .put(this.baseCoin.url(`/key/${encodeURIComponent(backupKeychain.id)}`))
+            .send({ encryptedPrv: newEncryptedPrv })
+            .result();
+        }
+        updated.push({ type: serverStored ? 'backup' : 'backup (keycard only)', id: backupKeychain.id });
+      }
+    } else {
+      skipped.push({ type: 'backup', reason: 'public key only' });
+    }
+
+    if (dryRun) {
+      console.log('Skipped (dry-run):');
+      skipped.forEach((s) => console.log(`  ${s.type}: ${s.reason}`));
+      console.log('Would re-encrypt:');
+      updated.forEach((u) => console.log(`  ${u.type} key ${u.id}`));
+      console.log('[dry-run] Done — no changes persisted.');
+      return undefined;
+    }
+
+    if (updated.length > 0) {
+      console.log('Re-encrypted:');
+      updated.forEach((u) => console.log(`  ${u.type} key ${u.id}`));
+    }
+    if (skipped.length > 0) {
+      console.log('Skipped:');
+      skipped.forEach((s) => console.log(`  ${s.type}: ${s.reason}`));
+    }
+
+    // Re-encrypt MPCv2 key shares (keycard-only — not stored server-side).
+    if (boxA) {
+      userKeychain.reducedEncryptedPrv = await this.reencryptCreationTimeKey(
+        boxA,
+        passphrase,
+        originalPassphrase,
+        'boxA'
+      );
+      updated.push({ type: 'user reducedEncryptedPrv (keycard only)', id: userKeychain.id });
+    }
+    if (boxB && backupKeychain.encryptedPrv) {
+      // MPCv2: encryptedPrv exists server-side but reducedEncryptedPrv does not.
+      // Re-encrypt boxB so the new keycard uses the reduced form instead of the full blob.
+      backupKeychain.reducedEncryptedPrv = await this.reencryptCreationTimeKey(
+        boxB,
+        passphrase,
+        originalPassphrase,
+        'boxB'
+      );
+      updated.push({ type: 'backup reducedEncryptedPrv (keycard only)', id: backupKeychain.id });
+    }
+
+    if (!generatePdf) {
+      console.log('Done (no PDF generator provided).');
+      return undefined;
+    }
+
+    const doc = await generatePdf({
+      coinName,
+      userKeychain,
+      backupKeychain,
+      bitgoKeychain,
+      passphrase,
+      passcodeEncryptionCode,
+      walletLabel,
+    });
+
+    console.log('Done.');
+    return { doc, walletLabel };
+  }
+
+  /**
+   * Re-encrypt a ciphertext that was written at wallet creation time (backup key, boxA, boxB).
+   * These are not re-encrypted on password change, so the encryption passphrase may still be
+   * the original one from when the wallet was created. Try the current passphrase first; fall
+   * back to `originalPassphrase` if provided.
+   */
+  private async reencryptCreationTimeKey(
+    encryptedPrv: string,
+    passphrase: string,
+    originalPassphrase: string | undefined,
+    keyDescription: string
+  ): Promise<string> {
+    const keychainsApi = this.baseCoin.keychains();
+    try {
+      return await keychainsApi.reencryptAsV2(encryptedPrv, passphrase);
+    } catch (err) {
+      if (!originalPassphrase) {
+        throw new Error(
+          `Failed to decrypt ${keyDescription} with the provided passphrase. If the wallet passphrase ` +
+            'was changed after creation, pass boxD so the original passphrase can be recovered.'
+        );
+      }
+      const prv = await this.bitgo.decrypt({ input: encryptedPrv, password: originalPassphrase });
+      return this.bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 2 });
+    }
+  }
+
+  private async fetchPasscodeEncryptionCode(coin: string, walletId: string): Promise<string> {
+    const response = (await this.bitgo
+      .post(this.bitgo.microservicesUrl(`/api/v2/${coin}/wallet/${walletId}/passcoderecovery`))
+      .result()) as { recoveryInfo?: { passcodeEncryptionCode?: string } };
+    if (!response.recoveryInfo || typeof response.recoveryInfo.passcodeEncryptionCode !== 'string') {
+      throw new Error(
+        'passcoderecovery endpoint did not return a passcodeEncryptionCode — pass passcodeEncryptionCode manually'
+      );
+    }
+    return response.recoveryInfo.passcodeEncryptionCode;
   }
 
   /**
