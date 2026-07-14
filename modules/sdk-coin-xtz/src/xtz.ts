@@ -122,12 +122,61 @@ export class Xtz extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const { txParams } = params;
+    const { txParams, txPrebuild, wallet, verification } = params;
     if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
       throw new Error(
         `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
       );
     }
+
+    const rawTx = txPrebuild?.txHex;
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txHex');
+    }
+
+    // Decode the prebuild and verify destination/amount. Fail closed on decode failure or mismatch.
+    let txOutputs: { address: string; value: string }[];
+    try {
+      const txBuilder = new TransactionBuilder(coins.get(this.getChain()));
+      txBuilder.from(rawTx);
+      const tx = await txBuilder.build();
+      txOutputs = tx.outputs;
+    } catch (e) {
+      throw new Error(`Failed to decode Tezos prebuild transaction: ${e.message}`);
+    }
+
+    if (txOutputs.length !== 1) {
+      throw new Error(`Tezos prebuild contains ${txOutputs.length} output(s) but expected exactly 1`);
+    }
+
+    const { address: prebuildAddress, value: prebuildAmount } = txOutputs[0];
+
+    // Validate recipients if provided (normal send). Consolidation builds omit recipients.
+    const recipient = txParams.recipients?.[0];
+    if (recipient) {
+      const requestedAddress = recipient.address;
+      const requestedAmount = recipient.amount.toString();
+
+      if (prebuildAddress !== requestedAddress) {
+        throw new Error(`Tezos prebuild destination mismatch: expected ${requestedAddress} but got ${prebuildAddress}`);
+      }
+
+      if (new BigNumber(prebuildAmount).toFixed(0) !== new BigNumber(requestedAmount).toFixed(0)) {
+        throw new Error(`Tezos prebuild amount mismatch: expected ${requestedAmount} but got ${prebuildAmount}`);
+      }
+    }
+
+    // Consolidation txs are built by the server with no client recipients — verify funds go to the base address.
+    if (verification?.consolidationToBaseAddress) {
+      const baseAddress = wallet?.coinSpecific()?.baseAddress || wallet?.coinSpecific()?.rootAddress;
+      if (!baseAddress) {
+        throw new Error('Unable to determine base address for consolidation');
+      }
+      if (prebuildAddress !== baseAddress) {
+        throw new Error('Consolidation transaction recipient does not match wallet base address');
+      }
+    }
+
     return true;
   }
 
