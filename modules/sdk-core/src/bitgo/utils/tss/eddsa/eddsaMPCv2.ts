@@ -663,9 +663,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     const { walletPassphrase, encryptedUserGpgPrvKey, bitgoGpgPubKey, counterPartyGpgPubKey } = params;
     const partyId = params.partyId ?? MPCv2PartiesEnum.USER;
 
-    const decryptedGpgPrvKey = isV2Envelope(encryptedUserGpgPrvKey)
-      ? await this.bitgo.decryptAsync({ input: encryptedUserGpgPrvKey, password: walletPassphrase })
-      : this.bitgo.decrypt({ input: encryptedUserGpgPrvKey, password: walletPassphrase });
+    const decryptedGpgPrvKey = await this.bitgo.decrypt({ input: encryptedUserGpgPrvKey, password: walletPassphrase });
     const gpgPrvKey = await pgp.readPrivateKey({ armoredKey: decryptedGpgPrvKey });
 
     const [, ownSk] = await MPSComms.extractEd25519KeyPair(gpgPrvKey);
@@ -692,7 +690,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       ownMsgFrom: msg1.from,
     });
 
-    const encryptedRound1Session = await this.bitgo.encryptAsync({
+    const encryptedRound1Session = await this.bitgo.encrypt({
       input: sessionPayload,
       password: walletPassphrase,
       adata: `${EddsaMPCv2Utils.MPS_DKG_KEYGEN_ROUND1_STATE}:${partyId}`,
