@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.19.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.19.11...@bitgo/abstract-cosmos@11.19.12) (2026-07-14)
+
+**Note:** Version bump only for package @bitgo/abstract-cosmos
+
+
+
+
+
 ## [11.19.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.19.10...@bitgo/abstract-cosmos@11.19.11) (2026-07-09)
 
 **Note:** Version bump only for package @bitgo/abstract-cosmos

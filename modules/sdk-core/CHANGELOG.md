@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.1.0...@bitgo/sdk-core@38.2.0) (2026-07-14)
+
+
+### Bug Fixes
+
+* **sdk-core:** use decrypt/encrypt in createOfflineKeyGenRound1Share ([8a49c2d](https://github.com/BitGo/BitGoJS/commit/8a49c2dfd93bc6195a8a1414ad36ad5513a964aa))
+
+
+### Features
+
+* add canton end investor offer invite builder ([1cc6827](https://github.com/BitGo/BitGoJS/commit/1cc68272022716f20bf583373bb62f4affe5bbe5))
+* add sdk-core vault module interfaces and scaffolding ([7bc1790](https://github.com/BitGo/BitGoJS/commit/7bc1790c119ecc9cb6dea0d458706d48be5d70e7))
+* bump public types ([cf2267f](https://github.com/BitGo/BitGoJS/commit/cf2267fdead5b8417bf404ded1d7c9a4f589640d))
+* bump public-types to 6.43.0 ([0b15b31](https://github.com/BitGo/BitGoJS/commit/0b15b314ff89643f84b1418319b7898070426711))
+* **sdk-coin-xlm:** add accountConfig, authorizeTrustline, clawback ops ([1208c63](https://github.com/BitGo/BitGoJS/commit/1208c6386c36cb932809b426019618a3c6663ca7))
+* **sdk-core:** add createOfflineKeyGenRound1Share to EddsaMPCv2Utils ([8d9aadf](https://github.com/BitGo/BitGoJS/commit/8d9aadfa3fb15e5b5f58a734897fe8eb10d6d420))
+* **sdk-core:** add EddsaMPCv2Utils.createKeychainsWithExternalSigner ([7adb2e8](https://github.com/BitGo/BitGoJS/commit/7adb2e8fac675e73f24039bcb846175db3de2fb1))
+* **sdk-core:** add withdrawFromVault() to DefiVault ([f8f5489](https://github.com/BitGo/BitGoJS/commit/f8f54890c0d4fa8efc108b0100fb93a946df6ad9))
+* **sdk-core:** depositToVault and getVaultConfig for DefiVault ([47e9153](https://github.com/BitGo/BitGoJS/commit/47e915341ed77a4d3082409fd5bced9c6d8c572d))
+
+
+
+
+
 # [38.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.0.0...@bitgo/sdk-core@38.1.0) (2026-07-09)
 
 
