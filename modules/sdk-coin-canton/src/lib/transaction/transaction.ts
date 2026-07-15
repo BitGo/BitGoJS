@@ -395,7 +395,8 @@ export class Transaction extends BaseTransaction {
         outputAmount = txData.amount;
         break;
       }
-      case TransactionType.TransferOfferWithdrawn: {
+      case TransactionType.TransferOfferWithdrawn:
+      case TransactionType.AllocationAllocateWithdrawn: {
         const txData = this.toJson();
         const input: ITransactionRecipient = {
           address: txData.receiver,

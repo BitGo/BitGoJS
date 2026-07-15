@@ -134,6 +134,7 @@ export class Canton extends BaseCoin {
       case TransactionType.AllocationAllocate:
       case TransactionType.AllocationRequest:
       case TransactionType.EndInvestorOnboardingOffer:
+      case TransactionType.AllocationAllocateWithdrawn:
         // There is no recipient info to verify for these transaction types, so always return true.
         return true;
       case TransactionType.CantonCommand:
