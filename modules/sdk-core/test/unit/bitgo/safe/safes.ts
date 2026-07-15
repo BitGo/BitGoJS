@@ -80,7 +80,7 @@ describe('Safes', function () {
             secp256k1Multisig: ['tbtc-user', 'tbtc-backup', 'tbtc-bitgo'],
             ecdsaMpc: ['hteth-user', 'hteth-backup', 'hteth-bitgo'],
             eddsaMpc: ['tsol-user', 'tsol-backup', 'tsol-bitgo'],
-            ed25519Multisig: ['talgo-user', 'talgo-backup', 'talgo-bitgo'],
+            ed25519Multisig: ['txlm-user', 'txlm-backup', 'txlm-bitgo'],
           },
         },
       });
@@ -124,7 +124,7 @@ describe('Safes', function () {
       sinon.assert.calledWith(mockBitGo.coin, 'btc');
       sinon.assert.calledWith(mockBitGo.coin, 'eth');
       sinon.assert.calledWith(mockBitGo.coin, 'sol');
-      sinon.assert.calledWith(mockBitGo.coin, 'algo');
+      sinon.assert.calledWith(mockBitGo.coin, 'xlm');
     });
 
     it('runs the 4 root ceremonies in parallel (none awaits another)', async function () {
@@ -145,8 +145,8 @@ describe('Safes', function () {
       // one gated entry point per root: multisig roots via createBitGo, MPC roots via createMpc
       keychainsByCoin['tbtc'] = makeKeychains('tbtc');
       keychainsByCoin['tbtc'].createBitGo = gated({ id: 'tbtc-bitgo' });
-      keychainsByCoin['talgo'] = makeKeychains('talgo');
-      keychainsByCoin['talgo'].createBitGo = gated({ id: 'talgo-bitgo' });
+      keychainsByCoin['txlm'] = makeKeychains('txlm');
+      keychainsByCoin['txlm'].createBitGo = gated({ id: 'txlm-bitgo' });
       keychainsByCoin['hteth'] = makeKeychains('hteth');
       keychainsByCoin['hteth'].createMpc = gated({
         userKeychain: { id: 'hteth-user' },
@@ -168,8 +168,8 @@ describe('Safes', function () {
       // Two ceremonies fail (an MPC and a multisig root).
       keychainsByCoin['hteth'] = makeKeychains('hteth');
       keychainsByCoin['hteth'].createMpc = sinon.stub().rejects(new Error('dkls boom'));
-      keychainsByCoin['talgo'] = makeKeychains('talgo');
-      keychainsByCoin['talgo'].createBitGo = sinon.stub().rejects(new Error('bitgo key boom'));
+      keychainsByCoin['txlm'] = makeKeychains('txlm');
+      keychainsByCoin['txlm'].createBitGo = sinon.stub().rejects(new Error('bitgo key boom'));
       // archive succeeds, returning a valid (archived) SafeData
       const send = sinon.stub().returns({
         result: sinon.stub().resolves({ ...safeDataWire, status: 'archived' }),
@@ -219,6 +219,19 @@ describe('Safes', function () {
       result.status().should.equal('active');
       sinon.assert.calledWith(mockBitGo.post, '/enterprise/test-enterprise-id/safes/test-safe-id/finalize');
       sinon.assert.calledWithMatch(send, { rootKeys });
+    });
+  });
+
+  describe('archiveSafe', function () {
+    it('POSTs to the archive URL and returns the archived Safe', async function () {
+      const send = sinon.stub().returns({ result: sinon.stub().resolves({ ...safeDataWire, status: 'archived' }) });
+      mockBitGo.post.returns({ send });
+
+      const result = await safes.archiveSafe('test-safe-id');
+
+      result.should.be.instanceof(Safe);
+      result.status().should.equal('archived');
+      sinon.assert.calledWith(mockBitGo.post, '/enterprise/test-enterprise-id/safes/test-safe-id/archive');
     });
   });
 

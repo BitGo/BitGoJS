@@ -23,16 +23,20 @@ import { Safe } from './safe';
  */
 const ROOT_COIN_BY_NETWORK: Record<'mainnet' | 'testnet', Record<RootKeyType, string>> = {
   mainnet: {
+    // multisig roots
     secp256k1Multisig: 'btc',
+    ed25519Multisig: 'xlm',
+    // MPC roots
     ecdsaMpc: 'eth',
     eddsaMpc: 'sol',
-    ed25519Multisig: 'algo',
   },
   testnet: {
+    // multisig roots
     secp256k1Multisig: 'tbtc',
+    ed25519Multisig: 'txlm',
+    // MPC roots
     ecdsaMpc: 'hteth',
     eddsaMpc: 'tsol',
-    ed25519Multisig: 'talgo',
   },
 };
 
@@ -103,15 +107,16 @@ export class Safes implements ISafes {
     const { safeId, passphrase } = params;
     const enterprise = this.enterpriseId;
 
-    // Slots are ordered to match the destructuring below; keep the two lists in sync.
-    const slots: RootKeyType[] = ['secp256k1Multisig', 'ecdsaMpc', 'eddsaMpc', 'ed25519Multisig'];
+    // `slots` MUST stay index-aligned with the Promise.allSettled array below. Ordered by scheme:
+    // the two multisig roots first, then the two MPC roots.
+    const slots: RootKeyType[] = ['secp256k1Multisig', 'ed25519Multisig', 'ecdsaMpc', 'eddsaMpc'];
     const results = await Promise.allSettled([
       // Phase 2.1 — multisig roots (①④): local user/backup keypairs + BitGo key, all safeId-tagged.
       this.createMultisigRoot('secp256k1Multisig', safeId, passphrase, enterprise),
+      this.createMultisigRoot('ed25519Multisig', safeId, passphrase, enterprise),
       // Phase 2.2 — MPC roots (②③): the existing DKLS (②) and EdDSA (③) ceremonies, safeId threaded.
       this.createMpcRoot('ecdsaMpc', safeId, passphrase, enterprise),
       this.createMpcRoot('eddsaMpc', safeId, passphrase, enterprise),
-      this.createMultisigRoot('ed25519Multisig', safeId, passphrase, enterprise),
     ]);
 
     // Single pass over the settled results: `status === 'fulfilled'` narrows `.value` to a
@@ -154,7 +159,7 @@ export class Safes implements ISafes {
    * POST /api/v2/enterprise/:eId/safes/:safeId/archive
    * @experimental
    */
-  private async archiveSafe(safeId: string): Promise<Safe> {
+  async archiveSafe(safeId: string): Promise<Safe> {
     const response = await this.bitgo
       .post(this.url(`/${safeId}/archive`))
       .send()

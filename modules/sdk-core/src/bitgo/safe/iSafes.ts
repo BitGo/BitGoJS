@@ -76,6 +76,11 @@ export interface ISafes {
    * @experimental
    */
   finalizeSafe(safeId: string, params: FinalizeSafeOptions): Promise<Safe>;
+  /**
+   * Archive a safe. Also the abandonment path for a stuck `initializing` safe.
+   * @experimental
+   */
+  archiveSafe(safeId: string): Promise<Safe>;
   /** @experimental */
   list(params?: ListSafesOptions): Promise<{ safes: Safe[]; nextCursor?: string }>;
   /** @experimental */
