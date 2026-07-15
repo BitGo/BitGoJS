@@ -51,10 +51,10 @@ const walletId = process.env.OFC_WALLET_ID || 'your_wallet_id';
 const walletPassphrase = process.env.OFC_WALLET_PASSPHRASE || 'your_wallet_passphrase';
 
 /**
- * Withdrawal destination address.
- * For OFC wallets this is typically a BitGo address or counterparty address.
+ * Withdrawal destination — either a BitGo address or another Go Account wallet ID.
+ * Internal OFC transfers between same-jurisdiction Go Accounts accept a wallet ID directly.
  */
-const recipientAddress = process.env.RECIPIENT_ADDRESS || 'your_recipient_address';
+const recipientAddress = process.env.RECIPIENT_ADDRESS || 'your_recipient_address_or_wallet_id';
 
 /**
  * Amount to withdraw, in the base unit of the token being sent.
@@ -70,7 +70,7 @@ const withdrawalAmount = process.env.WITHDRAWAL_AMOUNT || '1000000'; // e.g. 1.0
  * Note: For OFC wallets, the token name embedded in the recipient address usually
  * determines which token moves — check BitGo docs for your specific flow.
  */
-const token: string | undefined = 'ofctsol';
+const token: string | undefined = 'ofctbtc4';
 
 // ---------------------------------------------------------------------------
 
@@ -155,13 +155,24 @@ async function main() {
   console.log(`Payload: ${payload}`);
 
   // -------------------------------------------------------------------------
-  // Step 3: Submit the half-signed transaction to BitGo
+  // Step 3: Unlock the session, then submit the half-signed transaction
+  //
+  // BitGo requires an unlocked session (OTP) before accepting a send request.
+  // Set OFC_OTP in your environment (or .env) to your current TOTP code.
   //
   // The 'halfSigned' object carries the payload + signature.  BitGo will
   // validate the signature against the registered public key and, if valid,
   // co-sign and broadcast the transaction.
   // -------------------------------------------------------------------------
-  console.log('\nSubmitting signed transaction to BitGo...');
+  const otp = process.env.OFC_OTP;
+  if (!otp) {
+    throw new Error('OFC_OTP is required to unlock the session before submitting. Set it to your current TOTP code.');
+  }
+  console.log('\nUnlocking session...');
+  await bitgo.unlock({ otp });
+  console.log('✓ Session unlocked\n');
+
+  console.log('Submitting signed transaction to BitGo...');
   // wallet.submitTransaction() runs the body through an io-ts codec (TxSendBody)
   // that strips unknown fields — including `payload` — from halfSigned before
   // sending. For OFC the server needs both fields, so call the endpoint directly.
