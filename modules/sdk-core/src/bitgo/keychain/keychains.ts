@@ -257,6 +257,7 @@ export class Keychains implements IKeychains {
         'originalPasscodeEncryptionCode',
         'enterprise',
         'derivedFromParentWithSeed',
+        'safeId',
       ]
     );
 
@@ -295,6 +296,7 @@ export class Keychains implements IKeychains {
         coinSpecific: params.coinSpecific,
         webauthnDevices: params.webauthnDevices,
         webauthnInfo: params.webauthnInfo,
+        safeId: params.safeId,
       })
       .result();
   }
@@ -384,6 +386,7 @@ export class Keychains implements IKeychains {
       retrofit: params.retrofit,
       webauthnInfo: params.webauthnInfo,
       encryptionVersion: params.encryptionVersion,
+      safeId: params.safeId,
     });
   }
 

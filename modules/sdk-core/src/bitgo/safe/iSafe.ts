@@ -17,11 +17,15 @@ import type {
 } from '@bitgo/public-types';
 import type { Wallet, WalletShare } from '../wallet';
 
+/** @experimental */
 export interface InitializeSafeOptions {
   label: string;
 }
 
-// Phase 3 — the client hands back the 12 key ids it created in Phase 2:
+/**
+ * Phase 3 — the client hands back the 12 key ids it created in Phase 2.
+ * @experimental
+ */
 export interface FinalizeSafeOptions {
   rootKeys: SafeRootKeys;
 }

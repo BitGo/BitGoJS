@@ -112,6 +112,9 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     originalPasscodeEncryptionCode?: string | undefined;
     webauthnInfo?: WebauthnKeyEncryptionInfo;
     encryptionVersion?: EncryptionVersion;
+    // Accepted for signature-compatibility with the MPCv2 path (Wallet Safes v1); the legacy
+    // MPCv1 ceremony does not support safe root tagging, so it is intentionally ignored here.
+    safeId?: string;
   }): Promise<KeychainsTriplet> {
     const MPC = new Ecdsa();
     const m = 2;

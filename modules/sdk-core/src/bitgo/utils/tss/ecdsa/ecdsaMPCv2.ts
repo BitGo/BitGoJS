@@ -72,6 +72,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     retrofit?: DecryptedRetrofitPayload;
     webauthnInfo?: WebauthnKeyEncryptionInfo;
     encryptionVersion?: EncryptionVersion;
+    // Wallet Safes v1 (@experimental): tags the resulting user/backup/bitgo root keys with this safe.
+    safeId?: string;
   }): Promise<KeychainsTriplet> {
     const { userSession, backupSession } = this.getUserAndBackupSession(2, 3, params.retrofit);
     const userGpgKey = await generateGPGKeyPair('secp256k1');
@@ -125,7 +127,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
             ...round1Messages,
             walletId: params.retrofit.walletId,
           }
-        : round1Messages
+        : round1Messages,
+      params.safeId
     );
     // #endregion
 
@@ -340,7 +343,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         params.webauthnInfo,
         encryptionSession,
         params.encryptionVersion,
-        params.enterprise
+        params.enterprise,
+        params.safeId
       );
       const backupKeychainPromise = this.addBackupKeychain(
         bitgoCommonKeychain,
@@ -349,9 +353,10 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         params.passphrase,
         params.originalPasscodeEncryptionCode,
         encryptionSession,
-        params.encryptionVersion
+        params.encryptionVersion,
+        params.safeId
       );
-      const bitgoKeychainPromise = this.addBitgoKeychain(bitgoCommonKeychain);
+      const bitgoKeychainPromise = this.addBitgoKeychain(bitgoCommonKeychain, params.safeId);
 
       const [userKeychain, backupKeychain, bitgoKeychain] = await Promise.all([
         userKeychainPromise,
@@ -385,7 +390,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       destroy(): void;
     },
     encryptionVersion?: EncryptionVersion,
-    enterprise?: string
+    enterprise?: string,
+    safeId?: string
   ): Promise<Keychain> {
     let source: string;
     let encryptedPrv: string | undefined = undefined;
@@ -437,6 +443,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       encryptedPrv,
       originalPasscodeEncryptionCode,
       isMPCv2: true,
+      safeId,
     };
 
     if (webauthnInfo && participantIndex === MPCv2PartiesEnum.USER && privateMaterialBase64) {
@@ -581,7 +588,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       destroy(): void;
     },
     encryptionVersion?: EncryptionVersion,
-    enterprise?: string
+    enterprise?: string,
+    safeId?: string
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.USER,
@@ -593,7 +601,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       webauthnInfo,
       encryptionSession,
       encryptionVersion,
-      enterprise
+      enterprise,
+      safeId
     );
   }
 
@@ -608,7 +617,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       decrypt(ciphertext: string): Promise<string>;
       destroy(): void;
     },
-    encryptionVersion?: EncryptionVersion
+    encryptionVersion?: EncryptionVersion,
+    safeId?: string
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.BACKUP,
@@ -619,7 +629,9 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       originalPasscodeEncryptionCode,
       undefined,
       encryptionSession,
-      encryptionVersion
+      encryptionVersion,
+      undefined,
+      safeId
     );
   }
 
@@ -642,8 +654,20 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     return { userSession, backupSession };
   }
 
-  private async addBitgoKeychain(commonKeychain: string): Promise<Keychain> {
-    return this.createParticipantKeychain(MPCv2PartiesEnum.BITGO, commonKeychain);
+  private async addBitgoKeychain(commonKeychain: string, safeId?: string): Promise<Keychain> {
+    return this.createParticipantKeychain(
+      MPCv2PartiesEnum.BITGO,
+      commonKeychain,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      safeId
+    );
   }
   // #endregion
 
@@ -737,10 +761,11 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     enterprise: string,
     userGpgPublicKey: string,
     backupGpgPublicKey: string,
-    payload: DklsTypes.AuthEncMessages & { walletId?: string }
+    payload: DklsTypes.AuthEncMessages & { walletId?: string },
+    safeId?: string
   ): Promise<MPCv2KeyGenRound1Response> {
     return this.sendKeyGenerationRound1BySender(
-      KeyGenSenderForEnterprise(this.bitgo, enterprise),
+      KeyGenSenderForEnterprise(this.bitgo, enterprise, safeId),
       userGpgPublicKey,
       backupGpgPublicKey,
       payload

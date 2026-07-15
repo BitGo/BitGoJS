@@ -151,6 +151,9 @@ export interface AddKeychainOptions {
    *  Sent as `webauthnInfo` in the POST /key body so the backend can link
    *  the passkey to the keychain in the same request. */
   webauthnInfo?: WebauthnInfo;
+  /** Public id of the safe this key is a root of (Wallet Safes v1). When set, the backend tags
+   *  the key with the safe and stamps its curve server-side. @experimental */
+  safeId?: string;
 }
 
 export interface ApiKeyShare {
@@ -178,6 +181,8 @@ export interface CreateBackupOptions {
   encryptedPrv?: string;
   passphrase?: string;
   encryptionVersion?: EncryptionVersion;
+  /** Public id of the safe this backup key is a root of (Wallet Safes v1). @experimental */
+  safeId?: string;
 }
 
 export interface CreateBitGoOptions {
@@ -186,6 +191,8 @@ export interface CreateBitGoOptions {
   reqId?: IRequestTracer;
   keyType?: KeyType;
   isDistributedCustody?: boolean;
+  /** Public id of the safe this BitGo key is a root of (Wallet Safes v1). @experimental */
+  safeId?: string;
 }
 
 export type DecryptedRetrofitPayload = {
@@ -202,6 +209,9 @@ export interface CreateMpcOptions {
   retrofit?: DecryptedRetrofitPayload;
   webauthnInfo?: WebauthnKeyEncryptionInfo;
   encryptionVersion?: EncryptionVersion;
+  /** Public id of the safe these MPC root keys belong to (Wallet Safes v1). Threaded through the
+   *  ceremony so the resulting user/backup/bitgo keys land tagged. @experimental */
+  safeId?: string;
 }
 
 export interface RecreateMpcOptions extends Omit<CreateMpcOptions, 'retrofit' | 'multisigType'> {

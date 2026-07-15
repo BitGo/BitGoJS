@@ -9,12 +9,15 @@ export type EddsaMPCv2KeyGenSendFn<T extends GenerateEddsaMPCv2KeyRequestRespons
 
 export function KeyGenSenderForEnterprise<T extends GenerateEddsaMPCv2KeyRequestResponse>(
   bitgo: BitGoBase,
-  enterprise: string
+  enterprise: string,
+  // Wallet Safes v1 (@experimental): when set, tags the resulting root keys with this safe. WP only reads it on
+  // round MPCv2-R1; passing it on a sender used solely for round 1 is sufficient.
+  safeId?: string
 ): EddsaMPCv2KeyGenSendFn<T> {
   return (round, payload) => {
     return bitgo
       .post(bitgo.url('/mpc/generatekey', 2))
-      .send({ enterprise, type: KeyGenTypeEnum.MPCv2, curveType: KeyCurveEnum.EdDSA, round, payload })
+      .send({ enterprise, safeId, type: KeyGenTypeEnum.MPCv2, curveType: KeyCurveEnum.EdDSA, round, payload })
       .result();
   };
 }
