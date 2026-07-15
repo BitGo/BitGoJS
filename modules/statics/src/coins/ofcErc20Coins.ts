@@ -2383,7 +2383,13 @@ export const ofcErc20Coins = [
     underlyingAssetForSymbol('chainlink')
   ),
   ofcerc20('ae1e9792-7cc8-4f79-aeb6-b0ac8331f814', 'ofcchart', 'ChartEx', 18, underlyingAssetForSymbol('chart')),
-  ofcerc20('74c70236-33ce-4f28-a437-a748e090339f', 'ofccnfi', 'Connect Finance', 18, underlyingAssetForSymbol('cnfi')),
+  ofcerc20(
+    '74c70236-33ce-4f28-a437-a748e090339f',
+    'ofccnfi',
+    'Connect Financial',
+    18,
+    underlyingAssetForSymbol('cnfi')
+  ),
   ofcerc20('8dcefa77-fe16-4b8e-8396-1dcf28e74abb', 'ofccollar', 'DOG COLLAR', 18, underlyingAssetForSymbol('collar')),
   ofcerc20('0adac8a6-33a9-4b6f-be55-65ca17ea5086', 'ofccombo', 'Combo', 18, underlyingAssetForSymbol('combo')),
   ofcerc20('d7721a78-95be-44fc-b0c0-9b008c9f822e', 'ofccos', 'Contentos', 18, underlyingAssetForSymbol('cos')),
