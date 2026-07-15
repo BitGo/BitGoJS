@@ -14713,7 +14713,8 @@ export const erc20Coins = [
     'SHVon',
     18,
     '0x2d8b65306a6c23da6342cb94d4251fb4302a624f',
-    UnderlyingAsset['eth:shvon']
+    UnderlyingAsset['eth:shvon'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '9fff6a5f-b144-4e5b-9837-cbf1f53acc70',
