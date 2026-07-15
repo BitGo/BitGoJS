@@ -63,7 +63,7 @@
     "@bitgo/babylonlabs-io-btc-staking-ts": "^3.5.1",
     "@bitgo/utxo-core": "^1.39.2",
     "@bitgo/utxo-lib": "^11.24.0",
-    "@bitgo/wasm-utxo": "^4.16.0",
+    "@bitgo/wasm-utxo": "^4.21.1",
     "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4",
     "bip322-js": "^2.0.0",
     "bitcoinjs-lib": "^6.1.7",
