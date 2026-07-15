@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@4.0.1...@bitgo/sdk-coin-xrp@4.0.2) (2026-07-14)
+
+
+### Bug Fixes
+
+* **sdk-coin-xrp:** set SendMax to cover MPT TransferFee on withdrawal ([9a5b56d](https://github.com/BitGo/BitGoJS/commit/9a5b56dff3df530baba7289454881f439d3ecc7f))
+
+
+
+
+
 ## [4.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@4.0.0...@bitgo/sdk-coin-xrp@4.0.1) (2026-07-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xrp

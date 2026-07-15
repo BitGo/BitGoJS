@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.56.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.55.0...@bitgo/statics@58.56.0) (2026-07-14)
+
+
+### Bug Fixes
+
+* **sdk-coin-canton:** added correct token addresses for mainnet ([90e48ee](https://github.com/BitGo/BitGoJS/commit/90e48ee8d657ef7d349484fb4fb6187961d6ab42))
+
+
+### Features
+
+* **sdk-coin-canton:** added byov validator to mainnet ([773c3fc](https://github.com/BitGo/BitGoJS/commit/773c3fc57eb6bc1efe9466e54028159d6db88cb5))
+* **statics:** onboard DTCC Canton tokens [CHALO-932] ([3ce02f6](https://github.com/BitGo/BitGoJS/commit/3ce02f61e1071b1f0dc4879747d27553aeaa295a))
+
+
+
+
+
 # [58.55.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.54.0...@bitgo/statics@58.55.0) (2026-07-09)
 
 

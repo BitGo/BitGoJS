@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@8.0.1...@bitgo/abstract-lightning@8.1.0) (2026-07-14)
+
+
+### Features
+
+* bump public types ([cf2267f](https://github.com/BitGo/BitGoJS/commit/cf2267fdead5b8417bf404ded1d7c9a4f589640d))
+* bump public-types to 6.43.0 ([0b15b31](https://github.com/BitGo/BitGoJS/commit/0b15b314ff89643f84b1418319b7898070426711))
+
+
+
+
+
 ## [8.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@8.0.0...@bitgo/abstract-lightning@8.0.1) (2026-07-09)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning

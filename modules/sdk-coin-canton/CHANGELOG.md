@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.28.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.27.4...@bitgo/sdk-coin-canton@1.28.0) (2026-07-14)
+
+
+### Features
+
+* add canton end investor offer invite builder ([1cc6827](https://github.com/BitGo/BitGoJS/commit/1cc68272022716f20bf583373bb62f4affe5bbe5))
+
+
+
+
+
 ## [1.27.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.27.3...@bitgo/sdk-coin-canton@1.27.4) (2026-07-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-canton
