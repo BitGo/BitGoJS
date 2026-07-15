@@ -380,6 +380,9 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     originalPasscodeEncryptionCode?: string;
     webauthnInfo?: WebauthnKeyEncryptionInfo;
     encryptionVersion?: EncryptionVersion;
+    // Accepted for signature-compatibility with the MPCv2 path (Wallet Safes v1); the legacy
+    // MPCv1 ceremony does not support safe root tagging, so it is intentionally ignored here.
+    safeId?: string;
   }): Promise<KeychainsTriplet> {
     const MPC = await Eddsa.initialize();
     const m = 2;

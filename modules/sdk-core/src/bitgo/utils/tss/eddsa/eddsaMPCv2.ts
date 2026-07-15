@@ -63,6 +63,8 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     originalPasscodeEncryptionCode?: string;
     webauthnInfo?: WebauthnKeyEncryptionInfo;
     encryptionVersion?: EncryptionVersion;
+    // Wallet Safes v1 (@experimental): tags the resulting user/backup/bitgo root keys with this safe.
+    safeId?: string;
   }): Promise<KeychainsTriplet> {
     const userKeyPair = await generateGPGKeyPair('ed25519');
     const userGpgKey = await pgp.readPrivateKey({ armoredKey: userKeyPair.privateKey });
@@ -105,12 +107,16 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     assert(NonEmptyString.is(userGpgPublicKey), 'User GPG public key is required');
     assert(NonEmptyString.is(backupGpgPublicKey), 'Backup GPG public key is required');
 
-    const { sessionId, bitgoMsg1 } = await this.sendKeyGenerationRound1(params.enterprise, {
-      userGpgPublicKey,
-      backupGpgPublicKey,
-      userMsg1: userSignedMsg1,
-      backupMsg1: backupSignedMsg1,
-    });
+    const { sessionId, bitgoMsg1 } = await this.sendKeyGenerationRound1(
+      params.enterprise,
+      {
+        userGpgPublicKey,
+        backupGpgPublicKey,
+        userMsg1: userSignedMsg1,
+        backupMsg1: backupSignedMsg1,
+      },
+      params.safeId
+    );
     // #endregion
 
     // #region round 2
@@ -189,7 +195,8 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       params.originalPasscodeEncryptionCode,
       params.webauthnInfo,
       params.encryptionVersion,
-      params.enterprise
+      params.enterprise,
+      params.safeId
     );
     const backupKeychainPromise = this.addBackupKeychain(
       backupCommonKeychain,
@@ -197,9 +204,10 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       backupReducedPrivateMaterial,
       params.passphrase,
       params.originalPasscodeEncryptionCode,
-      params.encryptionVersion
+      params.encryptionVersion,
+      params.safeId
     );
-    const bitgoKeychainPromise = this.addBitgoKeychain(userCommonKeychain);
+    const bitgoKeychainPromise = this.addBitgoKeychain(userCommonKeychain, params.safeId);
 
     const [userKeychain, backupKeychain, bitgoKeychain] = await Promise.all([
       userKeychainPromise,
@@ -314,7 +322,8 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     originalPasscodeEncryptionCode?: string,
     webauthnInfo?: WebauthnKeyEncryptionInfo,
     encryptionVersion?: EncryptionVersion,
-    enterprise?: string
+    enterprise?: string,
+    safeId?: string
   ): Promise<Keychain> {
     let source: string;
     let encryptedPrv: string | undefined = undefined;
@@ -360,6 +369,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       encryptedPrv,
       originalPasscodeEncryptionCode,
       isMPCv2: true,
+      safeId,
     };
 
     if (webauthnInfo && participantIndex === MPCv2PartiesEnum.USER && privateMaterialBase64) {
@@ -389,7 +399,8 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     originalPasscodeEncryptionCode?: string,
     webauthnInfo?: WebauthnKeyEncryptionInfo,
     encryptionVersion?: EncryptionVersion,
-    enterprise?: string
+    enterprise?: string,
+    safeId?: string
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.USER,
@@ -400,7 +411,8 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       originalPasscodeEncryptionCode,
       webauthnInfo,
       encryptionVersion,
-      enterprise
+      enterprise,
+      safeId
     );
   }
 
@@ -410,7 +422,8 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     reducedPrivateMaterial: Buffer,
     passphrase: string,
     originalPasscodeEncryptionCode?: string,
-    encryptionVersion?: EncryptionVersion
+    encryptionVersion?: EncryptionVersion,
+    safeId?: string
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.BACKUP,
@@ -420,20 +433,34 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       passphrase,
       originalPasscodeEncryptionCode,
       undefined,
-      encryptionVersion
+      encryptionVersion,
+      undefined,
+      safeId
     );
   }
 
-  private async addBitgoKeychain(commonKeychain: string): Promise<Keychain> {
-    return this.createParticipantKeychain(MPCv2PartiesEnum.BITGO, commonKeychain);
+  private async addBitgoKeychain(commonKeychain: string, safeId?: string): Promise<Keychain> {
+    return this.createParticipantKeychain(
+      MPCv2PartiesEnum.BITGO,
+      commonKeychain,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      safeId
+    );
   }
   // #endregion
 
   async sendKeyGenerationRound1(
     enterprise: string,
-    payload: EddsaMPCv2KeyGenRound1Request
+    payload: EddsaMPCv2KeyGenRound1Request,
+    safeId?: string
   ): Promise<EddsaMPCv2KeyGenRound1Response> {
-    return this.sendKeyGenerationRound1BySender(KeyGenSenderForEnterprise(this.bitgo, enterprise), payload);
+    return this.sendKeyGenerationRound1BySender(KeyGenSenderForEnterprise(this.bitgo, enterprise, safeId), payload);
   }
 
   async sendKeyGenerationRound1BySender(
