@@ -60,7 +60,13 @@ export async function generateLightningKeycard(
 export async function generateSafeKeycard(params: GenerateQrDataBaseParams & GenerateSafeQrDataParams): Promise<void> {
   const questions = generateFaq(params.coin.fullName);
   const qrData = await generateSafeQrData(params);
-  const keycard = await drawKeycard({ ...params, questions, qrData, pageBreakBeforeIndices: [1, 2] });
+  const keycard = await drawKeycard({
+    ...params,
+    questions,
+    qrData,
+    pageBreakBeforeIndices: [1, 2],
+    useQrPartHeaders: true,
+  });
   const label = params.walletLabel || params.coin.fullName;
   keycard.save(`BitGo Keycard for ${label}.pdf`);
 }

@@ -190,8 +190,11 @@ describe('generateSafeQrData', function () {
   });
 
   it('parseSafeKeycardBox rejects malformed / incomplete box data', function () {
-    assert.throws(() => parseSafeKeycardBox('not json'), /not valid JSON/);
-    assert.throws(() => parseSafeKeycardBox('"a string"'), /not an object/);
-    assert.throws(() => parseSafeKeycardBox('{"secp256k1Multisig":"x"}'), /missing or invalid root/);
+    assert.throws(() => parseSafeKeycardBox('not json'), /parseSafeKeycardBox/); // invalid JSON
+    assert.throws(() => parseSafeKeycardBox('"a string"'), /parseSafeKeycardBox/); // not an object
+    assert.throws(() => parseSafeKeycardBox('{"secp256k1Multisig":"x"}'), /parseSafeKeycardBox/); // missing roots
+    // A well-formed box with all four roots decodes successfully.
+    const ok = parseSafeKeycardBox('{"secp256k1Multisig":"a","ecdsaMpc":"b","eddsaMpc":"c","ed25519Multisig":"d"}');
+    ok.ecdsaMpc.should.equal('b');
   });
 });

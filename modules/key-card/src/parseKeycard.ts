@@ -1,4 +1,8 @@
-import { SafeKeycardRoots, SAFE_ROOT_ORDER } from './types';
+import * as t from 'io-ts';
+import { isLeft } from 'fp-ts/Either';
+import { PathReporter } from 'io-ts/lib/PathReporter';
+import { JsonFromString } from 'io-ts-types';
+import { SafeKeycardRoots } from './types';
 
 export type PDFTextNode = {
   text: string;
@@ -13,29 +17,31 @@ export type KeycardEntry = {
   value: string;
 };
 
+// A safe keycard box is a JSON object mapping each rootKeyType to a string (per-root
+// ciphertext for A/B, public key for C).
+const SafeKeycardRootsCodec: t.Type<SafeKeycardRoots> = t.type({
+  secp256k1Multisig: t.string,
+  ecdsaMpc: t.string,
+  eddsaMpc: t.string,
+  ed25519Multisig: t.string,
+});
+
+// Decodes a box's JSON string straight into the validated roots record.
+const SafeKeycardBoxFromString = JsonFromString.pipe(SafeKeycardRootsCodec);
+
 /**
  * Parses a safe keycard box value — the JSON packed by `generateSafeQrData`, e.g.
- * `{"secp256k1Multisig":"…","ecdsaMpc":"…",…}` — into its four roots. Validates that all four
- * roots are present. Recovery tooling calls this on the A/B/C box value returned by
- * {@link parseKeycardFromLines}, then decrypts each root value with the wallet password.
+ * `{"secp256k1Multisig":"…","ecdsaMpc":"…",…}` — into its four roots. Throws if the value is
+ * not valid JSON or any root is missing/non-string. Recovery tooling calls this on the A/B/C
+ * box value returned by {@link parseKeycardFromLines}, then decrypts each root value with the
+ * safe password.
  */
 export function parseSafeKeycardBox(data: string): SafeKeycardRoots {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(data);
-  } catch {
-    throw new Error('parseSafeKeycardBox: value is not valid JSON');
+  const decoded = SafeKeycardBoxFromString.decode(data);
+  if (isLeft(decoded)) {
+    throw new Error(`parseSafeKeycardBox: ${PathReporter.report(decoded).join('; ')}`);
   }
-  if (typeof parsed !== 'object' || parsed === null) {
-    throw new Error('parseSafeKeycardBox: value is not an object');
-  }
-  const roots = parsed as Record<string, unknown>;
-  for (const slot of SAFE_ROOT_ORDER) {
-    if (typeof roots[slot] !== 'string') {
-      throw new Error(`parseSafeKeycardBox: missing or invalid root ${slot}`);
-    }
-  }
-  return parsed as SafeKeycardRoots;
+  return decoded.right;
 }
 
 const sectionHeaderRegex = /^([A-D])\s*[:.)-]\s*(.+?)\s*$/i;
