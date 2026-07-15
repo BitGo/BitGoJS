@@ -324,6 +324,8 @@ describe('STX:', function () {
   describe('Verify Transaction', function () {
     const address1 = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
     const address2 = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
+    const txPrebuild = { txHex: testData.txForExplainTransfer, txInfo: {} };
+
     it('should reject a txPrebuild with more than one recipient', async function () {
       const wallet = new Wallet(bitgo, basecoin, {});
 
@@ -341,6 +343,91 @@ describe('STX:', function () {
         .should.be.rejectedWith(
           `tstx doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
         );
+    });
+
+    it('should reject when txPrebuild is missing txHex', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+      const txParams = {
+        recipients: [{ amount: '1000', address: testData.txExplainedTransfer.recipient }],
+        wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+      await basecoin
+        .verifyTransaction({ txPrebuild: {}, txParams })
+        .should.be.rejectedWith('missing required tx prebuild property txHex');
+    });
+
+    it('should succeed to verify a native STX transfer with matching recipient and amount', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+      const txParams = {
+        recipients: [
+          {
+            address: testData.txExplainedTransfer.recipient,
+            amount: testData.txExplainedTransfer.outputAmount,
+          },
+        ],
+        memo: { type: '', value: testData.txExplainedTransfer.memo },
+        wallet,
+      };
+      const result = await basecoin.verifyTransaction({ txPrebuild, txParams });
+      result.should.equal(true);
+    });
+
+    it('should fail to verify transaction with wrong recipient address', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+      const requestedAddress = 'ST11NJTTKGVT6D1HY4NJRVQWMQM7TVAR091EJ8P2Y';
+      const txParams = {
+        recipients: [
+          {
+            address: requestedAddress,
+            amount: testData.txExplainedTransfer.outputAmount,
+          },
+        ],
+        memo: { type: '', value: testData.txExplainedTransfer.memo },
+        wallet,
+      };
+      await basecoin
+        .verifyTransaction({ txPrebuild, txParams })
+        .should.be.rejectedWith(
+          `Tx destination does not match with expected txParams recipient: expected ${requestedAddress} but got ${testData.txExplainedTransfer.recipient}`
+        );
+    });
+
+    it('should fail to verify transaction with wrong amount', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+      const requestedAmount = '9999';
+      const txParams = {
+        recipients: [
+          {
+            address: testData.txExplainedTransfer.recipient,
+            amount: requestedAmount,
+          },
+        ],
+        memo: { type: '', value: testData.txExplainedTransfer.memo },
+        wallet,
+      };
+      await basecoin
+        .verifyTransaction({ txPrebuild, txParams })
+        .should.be.rejectedWith(
+          `Tx amount does not match with expected txParams recipient amount: expected ${requestedAmount} but got ${testData.txExplainedTransfer.outputAmount}`
+        );
+    });
+
+    it('should fail to verify transaction with wrong memo', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+      const txParams = {
+        recipients: [
+          {
+            address: testData.txExplainedTransfer.recipient,
+            amount: testData.txExplainedTransfer.outputAmount,
+          },
+        ],
+        memo: { type: '', value: 'wrong memo' },
+        wallet,
+      };
+      await basecoin
+        .verifyTransaction({ txPrebuild, txParams })
+        .should.be.rejectedWith('Tx memo does not match with expected txParams recipient memo');
     });
   });
 
