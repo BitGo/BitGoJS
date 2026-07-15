@@ -4,6 +4,7 @@
  * @experimental The safe client surface is experimental and may change (including breaking
  * changes) before the public release.
  */
+import * as t from 'io-ts';
 import { FinalizeSafeBody, InitializeSafeBody, RootKeyTriplet, RootKeyType, SafeData } from '@bitgo/public-types';
 import { Environments } from '../../common';
 import { IBaseCoin } from '../baseCoin';
@@ -39,6 +40,17 @@ const ROOT_COIN_BY_NETWORK: Record<'mainnet' | 'testnet', Record<RootKeyType, st
     eddsaMpc: 'tsol',
   },
 };
+
+/**
+ * Wire shape of the paginated `GET /enterprise/:eId/safes` response. WP paginates with the v2
+ * `prevId`/`nextBatchPrevId` convention; the SDK re-exposes it as an opaque `cursor`/`nextCursor`
+ * (see `list`).
+ * @experimental
+ */
+const ListSafesResponse = t.intersection([
+  t.type({ safes: t.array(SafeData) }),
+  t.partial({ nextBatchPrevId: t.string }),
+]);
 
 /**
  * Collection accessor for a single enterprise's safes, mirroring Wallets / Enterprises.
@@ -248,20 +260,38 @@ export class Safes implements ISafes {
   }
 
   /**
-   * List the enterprise's safes (cursor pagination).
-   * Implemented in WCN-1192 Phase 3 (blocked on WCN-1177).
+   * List the enterprise's safes the caller is a member of (cursor pagination).
+   * GET /api/v2/enterprise/:eId/safes?limit&prevId
+   *
+   * `cursor` is the opaque `nextCursor` returned by a previous call; page forward until
+   * `nextCursor` is absent.
    * @experimental
    */
   async list(params: ListSafesOptions = {}): Promise<{ safes: Safe[]; nextCursor?: string }> {
-    throw new Error('Safes.list is not yet implemented (WCN-1192 Phase 3)');
+    // SDK exposes an opaque cursor; WP speaks prevId/nextBatchPrevId (v2 list convention).
+    const query: { limit?: number; prevId?: string } = {};
+    if (params.limit !== undefined) {
+      query.limit = params.limit;
+    }
+    if (params.cursor !== undefined) {
+      query.prevId = params.cursor;
+    }
+    const response = await this.bitgo.get(this.url()).query(query).result();
+    const { safes, nextBatchPrevId } = decodeWithCodec(ListSafesResponse, response, 'ListSafesResponse');
+    return {
+      safes: safes.map((safeData) => new Safe(this.bitgo, safeData)),
+      nextCursor: nextBatchPrevId,
+    };
   }
 
   /**
-   * Fetch a single safe by id.
-   * Implemented in WCN-1192 Phase 3 (blocked on WCN-1177).
+   * Fetch a single safe by id. Non-members get a 404 (existence is not leaked).
+   * GET /api/v2/enterprise/:eId/safes/:safeId
    * @experimental
    */
   async get(params: GetSafeOptions): Promise<Safe> {
-    throw new Error('Safes.get is not yet implemented (WCN-1192 Phase 3)');
+    const response = await this.bitgo.get(this.url(`/${params.id}`)).result();
+    const safeData = decodeWithCodec(SafeData, response, 'SafeData');
+    return new Safe(this.bitgo, safeData);
   }
 }
