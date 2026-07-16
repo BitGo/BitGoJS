@@ -278,7 +278,8 @@
     "precommit": "lint-staged",
     "lint-fix": "lerna run lint --parallel -- --fix",
     "prepare-commit-msg": "node ./scripts/prepare-commit-msg.js",
-    "test:prepare-release": "mocha --require tsx ./scripts/tests/prepareRelease/prepare-release-main.test.ts"
+    "test:prepare-release": "mocha --require tsx ./scripts/tests/prepareRelease/prepare-release-main.test.ts",
+    "test:scripts": "mocha './scripts/tests/**/*.test.js'"
   },
   "dependencies": {
     "axios": "1.16.1",

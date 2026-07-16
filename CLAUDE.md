@@ -75,6 +75,8 @@ For modules that need browser support (especially those using `@bitgo/wasm-utxo`
 ### Commits
 BitGoJS uses conventional commits. All commits MUST pass the spec described in `commitlint.config.js`.
 
+Every commit needs a footer issue reference (`references-empty: never`). Web Experience side work without a Linear ticket may use `WEB-000` in the footer (junk-drawer reference, same pattern as `BTC-000` / `CSHLD-000`). Branches named `WEB-000-*` get `TICKET: WEB-000` appended automatically by `scripts/prepare-commit-msg.js`.
+
 ### TypeScript Guidelines
 - **Avoid `any` type**: Use specific types, interfaces, or union types instead of `any`. If absolutely necessary, prefer `unknown` and use type guards for safety.
 

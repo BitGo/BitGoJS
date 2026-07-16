@@ -127,7 +127,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: ['lint', 'format', 'commit-lint', 'dependencies']
+        check: ['lint', 'format', 'commit-lint', 'dependencies', 'scripts']
 
     steps:
       - uses: socketdev/action@v1
@@ -173,6 +173,10 @@ jobs:
       - name: Check Package Dependencies
         if: matrix.check == 'dependencies'
         run: yarn run check-deps
+
+      - name: Test Root Scripts
+        if: matrix.check == 'scripts'
+        run: yarn run test:scripts
 
       # We conciously do not audit dependencies as a PR step since errors are typically
       # unrelated to the PR changes. This check is performed in `publish.yml`.

@@ -74,6 +74,7 @@ module.exports = {
         'WAL-',
         'WCN-',
         'WCI-',
+        'WEB-',
         'COIN-',
         'COINS-',
         'COINFLP-',
