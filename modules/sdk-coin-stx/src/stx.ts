@@ -40,7 +40,12 @@ import { ExplainTransactionOptions, StxSignTransactionOptions, StxTransactionExp
 import { StxLib } from '.';
 import { TransactionBuilderFactory } from './lib';
 import { TransactionBuilder } from './lib/transactionBuilder';
-import { findContractTokenNameUsingContract, findTokenNameByContract, getAddressDetails } from './lib/utils';
+import {
+  findContractTokenNameUsingContract,
+  findTokenNameByContract,
+  getAddressDetails,
+  getMemoIdAndBaseAddressFromAddress,
+} from './lib/utils';
 import {
   AddressDetails,
   NativeStxBalance,
@@ -98,11 +103,48 @@ export class Stx extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const { txParams } = params;
+    const { txPrebuild, txParams } = params;
+    const { memo } = txParams;
     if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
       throw new Error(
         `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
       );
+    }
+    const rawTx = txPrebuild?.txHex;
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txHex');
+    }
+    const explainedTx = await this.explainTransaction({ txHex: rawTx, feeInfo: { fee: '' } });
+    const recipient = txParams.recipients?.[0];
+    if (recipient !== undefined && explainedTx) {
+      const txOutput = explainedTx.outputs[0];
+      const recipientAddress = getMemoIdAndBaseAddressFromAddress(recipient.address).address;
+      if (txOutput?.address !== recipientAddress) {
+        throw new Error(
+          `Tx destination does not match with expected txParams recipient: expected ${recipientAddress} but got ${txOutput?.address}`
+        );
+      }
+      if (BigInt(txOutput?.amount) !== BigInt(recipient.amount)) {
+        throw new Error(
+          `Tx amount does not match with expected txParams recipient amount: expected ${recipient.amount} but got ${txOutput?.amount}`
+        );
+      }
+      // compare memo
+      let memoInput = '';
+      if (memo && memo.value) {
+        memoInput = memo.value;
+      } else {
+        const addressDetails = getMemoIdAndBaseAddressFromAddress(recipient.address);
+        memoInput = addressDetails.memoId ?? '';
+      }
+      const memoOutput = explainedTx.memo ?? '';
+      if (memoInput !== memoOutput) {
+        throw new Error('Tx memo does not match with expected txParams recipient memo');
+      }
+      // compare amount
+      if (!new BigNumber(recipient.amount).isEqualTo(explainedTx.outputAmount)) {
+        throw new Error('Tx total amount does not match with expected total amount field');
+      }
     }
     return true;
   }
