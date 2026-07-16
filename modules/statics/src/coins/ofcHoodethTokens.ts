@@ -1447,7 +1447,7 @@ export const ofcHoodethTokens = [
   ),
   tofcerc20(
     '838a17f6-55b6-44d9-affc-9567859fc5de',
-    'ofchoodeth:spcx',
+    'ofcthoodeth:spcx',
     'Space Exploration Technologies Corp',
     18,
     UnderlyingAsset['hoodeth:spcx'],
