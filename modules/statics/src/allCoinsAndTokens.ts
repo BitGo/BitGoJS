@@ -4244,7 +4244,8 @@ export const allCoinsAndTokens = [
     6,
     '0x1c3e28e5048f30ab3aa8a5dc4e71a806ec97a6c4',
     UnderlyingAsset['tbaseeth:kmusdc'],
-    Networks.test.basechain
+    Networks.test.basechain,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559, CoinFeature.RECEIPT_TOKEN]
   ),
   erc20Token(
     '79fcac64-cad2-4c17-b8fc-2930b7022384',
