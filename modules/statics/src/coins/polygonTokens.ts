@@ -1636,6 +1636,15 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:gmc'],
     [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  polygonErc20(
+    '8dbecb0b-aa9c-4582-915f-729d20c0d296',
+    'polygon:wpay',
+    'WPAY',
+    18,
+    '0x7abe9edf5c544a04da83e9110cf46dbc4759170c',
+    UnderlyingAsset['polygon:wpay'],
+    POLYGON_TOKEN_FEATURES
+  ),
   tpolygonErc20(
     '13dd4ab7-2d94-493c-9a61-323f6300f7e5',
     'tpolygon:tusdl',

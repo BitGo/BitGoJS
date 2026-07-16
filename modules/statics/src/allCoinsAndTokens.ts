@@ -4247,6 +4247,15 @@ export const allCoinsAndTokens = [
     Networks.test.basechain
   ),
   erc20Token(
+    '79fcac64-cad2-4c17-b8fc-2930b7022384',
+    'tbaseeth:tpdd',
+    'MarketplacePDD ALPACA',
+    18,
+    '0x924928512fb9a1836111cb5214774a5f620be40a',
+    UnderlyingAsset['tbaseeth:tpdd'],
+    Networks.test.basechain
+  ),
+  erc20Token(
     '439fb12d-fddf-4749-8a33-b7c79fefc1b4',
     'baseeth:wave',
     'Waveform',
@@ -4866,6 +4875,15 @@ export const allCoinsAndTokens = [
     18,
     '0x632db1aaace73401a5dc8cde6e9062b8ec0fd819',
     UnderlyingAsset['baseeth:gldy'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '78b46b24-ca4f-45e9-9dd8-f3be5b3a6070',
+    'baseeth:wpay',
+    'WPAY',
+    18,
+    '0x35e0966208f518371e79cc9fd35559112068ddad',
+    UnderlyingAsset['baseeth:wpay'],
     Networks.main.basechain
   ),
 

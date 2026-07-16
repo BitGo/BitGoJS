@@ -6189,6 +6189,7 @@ export const tOfcErc20Coins = [
     18,
     UnderlyingAsset['eth:qncxt']
   ),
+  ofcerc20('7f4173d2-1638-4216-8d14-f97f56155c60', 'ofceth:jpysc', 'JPYSC', 18, UnderlyingAsset['eth:jpysc']),
 
   // MON Network tokens
   ofcerc20(
@@ -6937,6 +6938,20 @@ export const tOfcErc20Coins = [
     true,
     'baseeth'
   ),
+  ofcerc20(
+    'ca37bdc8-4dec-4a97-b659-98fe1863f046',
+    'ofcbaseeth:wpay',
+    'WPAY',
+    18,
+    UnderlyingAsset['baseeth:wpay'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
   tofcerc20(
     'b5277412-46b8-4da3-8fd2-5bf4557fcbd8',
     'ofctbaseeth:tusdl',
@@ -6977,6 +6992,20 @@ export const tOfcErc20Coins = [
     undefined,
     undefined,
     true,
+    'tbaseeth'
+  ),
+  tofcerc20(
+    '14d08f4c-cc9d-45b3-94ed-972e993fef30',
+    'ofctbaseeth:tpdd',
+    'MarketplacePDD ALPACA',
+    18,
+    UnderlyingAsset['tbaseeth:tpdd'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
     'tbaseeth'
   ),
 ];
