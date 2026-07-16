@@ -871,7 +871,7 @@ export class Trx extends BaseCoin {
     // check for possible token recovery, recover the token provide by user
     if (tokenContractAddr) {
       let rawTokenTxn: any | undefined;
-      for (const token of account.data[0].trc20) {
+      for (const token of account.data[0].trc20 ?? []) {
         if (token[tokenContractAddr]) {
           const amount = token[tokenContractAddr];
           const tokenContractAddrHex = Utils.getHexAddressFromBase58Address(tokenContractAddr);
@@ -1053,7 +1053,7 @@ export class Trx extends BaseCoin {
       let rawTokenTxn: any | undefined;
       let recoveryAmount = 0;
 
-      for (const token of account.data[0].trc20) {
+      for (const token of account.data[0].trc20 ?? []) {
         if (token[tokenContractAddr]) {
           const amount = token[tokenContractAddr];
           const tokenContractAddrHex = Utils.getHexAddressFromBase58Address(tokenContractAddr);
@@ -1165,8 +1165,9 @@ export class Trx extends BaseCoin {
 
         // check for possible token recovery, recover the token provide by user
         if (params.tokenContractAddress) {
-          if (accountInfo.data[0].balance > SAFE_TRON_TOKEN_TRANSACTION_FEE && accountInfo.data[0].trc20[0]) {
-            const tokenDataArray = accountInfo.data[0].trc20;
+          const trc20Data = accountInfo.data[0].trc20 ?? [];
+          if (accountInfo.data[0].balance > SAFE_TRON_TOKEN_TRANSACTION_FEE && trc20Data.length > 0) {
+            const tokenDataArray = trc20Data;
             for (const tokenData of tokenDataArray) {
               const contractAddress = Object.keys(tokenData) as Array<string>;
               if (params.tokenContractAddress === contractAddress[0]) {

@@ -125,7 +125,7 @@ export interface AccountInfo {
     keys: [PermissionKey];
   };
   active_permission: [{ keys: [PermissionKey] }];
-  trc20: [Record<string, string>];
+  trc20?: Record<string, string>[];
 }
 
 /**
