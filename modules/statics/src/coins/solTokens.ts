@@ -3479,6 +3479,30 @@ export const solTokens = [
     SOL_TOKEN_FEATURES,
     ProgramID.Token2022ProgramId
   ),
+  // Ondo Tokens (Mainnet Ungated)
+  solToken(
+    'b0f11ccb-5a2a-4146-9a68-b8e5309eba7c',
+    'sol:shvon',
+    'SHVon (SHVon)',
+    9,
+    'XDZNiWPHH8fyb8PCyTeiJsVsBnBhkBZbcYoxvVpondo',
+    'XDZNiWPHH8fyb8PCyTeiJsVsBnBhkBZbcYoxvVpondo',
+    UnderlyingAsset['sol:shvon'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
+  // Ondo Test Tokens (Mainnet Gated) - hyphen-free symbols
+  solToken(
+    '11e131b5-3cd0-4834-ae5c-4750d230e55c',
+    'sol:tshvontesting',
+    'SHVon (t-SHVon)',
+    9,
+    'ogWN69D5Se26pz8dHtvExhHMDiR9FWUUo8s92GEondo',
+    'ogWN69D5Se26pz8dHtvExhHMDiR9FWUUo8s92GEondo',
+    UnderlyingAsset['sol:tshvontesting'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',
