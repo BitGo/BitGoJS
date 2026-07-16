@@ -8706,7 +8706,7 @@ export const erc20Coins = [
   erc20(
     '33a27b5a-dc72-470b-b652-edd07ec1bdf2',
     'cnfi',
-    'Connect Finance',
+    'Connect Financial',
     18,
     '0xeabb8996ea1662cad2f7fb715127852cd3262ae9',
     UnderlyingAsset.CNFI
