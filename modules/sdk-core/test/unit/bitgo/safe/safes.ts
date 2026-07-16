@@ -253,13 +253,46 @@ describe('Safes', function () {
     });
   });
 
-  describe('unimplemented lifecycle methods', function () {
-    it('list throws (Phase 3)', async function () {
-      await safes.list().should.be.rejectedWith(/not yet implemented .*Phase 3/);
+  describe('get', function () {
+    it('GETs the safe URL and returns a Safe', async function () {
+      mockBitGo.get = sinon.stub().returns({ result: sinon.stub().resolves(safeDataWire) });
+
+      const result = await safes.get({ id: 'test-safe-id' });
+
+      result.should.be.instanceof(Safe);
+      result.id().should.equal('test-safe-id');
+      sinon.assert.calledWith(mockBitGo.get, '/enterprise/test-enterprise-id/safes/test-safe-id');
+    });
+  });
+
+  describe('list', function () {
+    it('GETs the safes collection and maps the response to Safes', async function () {
+      const query = sinon.stub().returnsThis();
+      const result = sinon.stub().resolves({ safes: [safeDataWire], nextBatchPrevId: 'next-page-id' });
+      mockBitGo.get = sinon.stub().returns({ query, result });
+
+      const page = await safes.list();
+
+      page.safes.should.have.length(1);
+      page.safes[0].should.be.instanceof(Safe);
+      page.safes[0].id().should.equal('test-safe-id');
+      page.should.have.property('nextCursor', 'next-page-id');
+      sinon.assert.calledWith(mockBitGo.get, '/enterprise/test-enterprise-id/safes');
+      // no cursor/limit passed → empty query
+      sinon.assert.calledWith(query, {});
     });
 
-    it('get throws (Phase 3)', async function () {
-      await safes.get({ id: 'vid' }).should.be.rejectedWith(/not yet implemented .*Phase 3/);
+    it('maps cursor→prevId and limit onto the query', async function () {
+      const query = sinon.stub().returnsThis();
+      const result = sinon.stub().resolves({ safes: [] });
+      mockBitGo.get = sinon.stub().returns({ query, result });
+
+      const page = await safes.list({ cursor: 'prev-page-id', limit: 50 });
+
+      page.safes.should.have.length(0);
+      // absent nextBatchPrevId → undefined nextCursor (last page)
+      (page.nextCursor === undefined).should.be.true();
+      sinon.assert.calledWith(query, { limit: 50, prevId: 'prev-page-id' });
     });
   });
 
