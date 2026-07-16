@@ -165,7 +165,95 @@ const url = coin.url(`/wallet/${walletId}/policy/rule`);
 const result = await bitgo.put(url).send(body).result();
 ```
 
-### 8. Sign Transaction — sign only (Step 2 of 3)
+### 8. Go Account List Products — view available trading pairs
+**File:** `examples/ts/go-account/go-account-list-products.ts`
+
+Fetches all trading products (pairs) available for a Go Account.
+Use this before placing an order to find valid product symbols.
+
+**Best for:**
+- Discovering which trading pairs are enabled for your account
+- Validating product symbols before placing an order
+
+**Example:**
+```typescript
+const url = (bitgo as any).microservicesUrl(
+  `/api/prime/trading/v1/accounts/${accountId}/products`
+);
+const response = await (bitgo as any).get(url).result();
+// response.data → array of { id, baseCurrency, quoteCurrency, isTradeDisabled, ... }
+```
+
+### 9. Go Account Place Order — place a trade order
+**File:** `examples/ts/go-account/go-account-place-order.ts`
+
+Places a trade order (market, limit, or TWAP) on a Go Account via the BitGo prime trading API. Assets are reserved until the order completes. In production, orders settle off-chain on weekdays at 12:00 PM EST.
+
+**Best for:**
+- Programmatically executing trades on a Go Account
+- All order types: market, limit, TWAP (with optional time-slicing)
+
+**Flow:**
+```
+POST /api/prime/trading/v1/accounts/{accountId}/orders
+  → response: { id, status, filledQuantity, averagePrice, settleDate, ... }
+```
+
+> **Note:** Testnet orders confirm but do not settle. Use `env: 'production'` for actual settlement.
+
+**Example:**
+```typescript
+const body = {
+  clientOrderId: 'unique-id',
+  type: 'market',          // 'market' | 'limit' | 'twap'
+  product: 'TBTC-TUSD*',  // from go-account-list-products.ts
+  side: 'buy',             // 'buy' | 'sell'
+  quantity: '0.001',
+  quantityCurrency: 'TBTC',
+};
+const url = (bitgo as any).microservicesUrl(
+  `/api/prime/trading/v1/accounts/${accountId}/orders`
+);
+const order = await (bitgo as any).post(url).send(body).result();
+```
+
+### 10. Go Account Get Order — check trade order status
+**File:** `examples/ts/go-account/go-account-get-order.ts`
+
+Fetches the status and details of a specific trade order by order ID.
+Use this to monitor execution after placing an order.
+
+**Best for:**
+- Checking whether an order has been filled
+- Retrieving the average execution price after fill
+
+**Example:**
+```typescript
+const url = (bitgo as any).microservicesUrl(
+  `/api/prime/trading/v1/accounts/${accountId}/orders/${orderId}`
+);
+const order = await (bitgo as any).get(url).result();
+```
+
+### 11. Go Account List Orders — list all trade orders
+**File:** `examples/ts/go-account/go-account-list-orders.ts`
+
+Fetches all trade orders for a Go Account, with optional filtering by status or product symbol.
+
+**Best for:**
+- Reviewing order history
+- Filtering open or filled orders for a specific trading pair
+
+**Example:**
+```typescript
+const url = (bitgo as any).microservicesUrl(
+  `/api/prime/trading/v1/accounts/${accountId}/orders`
+);
+const response = await (bitgo as any).get(url).query({ status: 'filled' }).result();
+// response.data → array of orders
+```
+
+### 12. Sign Transaction — sign only (Step 2 of 3)
 **File:** `examples/ts/go-account/sign-transaction.ts`
 
 Signs a pre-built payload and outputs the hex signature. Use this when the build
@@ -338,6 +426,25 @@ const usdtAddress = await wallet.createAddress({
 
    # Sign only: sign a pre-built payload (Step 2 of 3)
    OFC_WALLET_ID=your_wallet_id OFC_WALLET_PASSPHRASE=your_passphrase OFC_PREBUILD_PAYLOAD='{"..."}' npx tsx sign-transaction.ts
+
+   # List available trading pairs for a Go Account
+   OFC_WALLET_ID=your_wallet_id npx tsx go-account-list-products.ts
+
+   # Place a market order
+   OFC_WALLET_ID=your_wallet_id npx tsx go-account-place-order.ts
+
+   # Place a limit order
+   OFC_WALLET_ID=your_wallet_id TRADE_TYPE=limit TRADE_PRODUCT=TBTC4-TEUR TRADE_SIDE=buy TRADE_QUANTITY=6 TRADE_QUANTITY_CURRENCY=TEUR TRADE_LIMIT_PRICE=95000 TRADE_DURATION=3600 npx tsx go-account-place-order.ts
+
+   # Get a specific order's status
+   OFC_WALLET_ID=your_wallet_id TRADE_ORDER_ID=your_order_id npx tsx go-account-get-order.ts
+
+   # List all orders
+   OFC_WALLET_ID=your_wallet_id npx tsx go-account-list-orders.ts
+
+   # List orders filtered by status or product
+   OFC_WALLET_ID=your_wallet_id TRADE_ORDER_STATUS=filled npx tsx go-account-list-orders.ts
+   OFC_WALLET_ID=your_wallet_id TRADE_ORDER_PRODUCT=TBTC4-TEUR npx tsx go-account-list-orders.ts
 
    # List whitelist policy rules on a wallet
    OFC_WALLET_ID=your_wallet_id npx tsx go-account-whitelist-list.ts
