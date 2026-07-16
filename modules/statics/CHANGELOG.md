@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.57.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.56.0...@bitgo/statics@58.57.0) (2026-07-16)
+
+
+### Bug Fixes
+
+* **statics:** added program id for sol token ([ae8cae9](https://github.com/BitGo/BitGoJS/commit/ae8cae933c21271636d013fe61e6cf4145265ef9))
+* **statics:** correct addressCoin for non-ETH L2 OFC tokens ([ec2d1ed](https://github.com/BitGo/BitGoJS/commit/ec2d1eda7251777127c3fd59a688f47e8ab46250))
+* **statics:** rename cnfi token to connect financial ([97b56ae](https://github.com/BitGo/BitGoJS/commit/97b56ae650e1e11aebd6a47b3951146644a2f786))
+
+
+### Features
+
+* onboard ondo tokens ([9371905](https://github.com/BitGo/BitGoJS/commit/9371905c9a7a262e43e2157c83a3ef035f7d0a42))
+* **statics:** add tbaseeth:kmusdc token on base-sepolia ([a3e7555](https://github.com/BitGo/BitGoJS/commit/a3e75551031f4b9a5cf26f279d1fcbe133342ed3))
+* **statics:** onboard eth sol pol baseeth assets ([9babccb](https://github.com/BitGo/BitGoJS/commit/9babccbaf3b143c0d578fcebb2f0b0cfdd56ce56))
+
+
+
+
+
 # [58.56.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.55.0...@bitgo/statics@58.56.0) (2026-07-14)
 
 

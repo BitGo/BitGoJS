@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@4.0.2...@bitgo/sdk-coin-stx@4.0.3) (2026-07-16)
+
+
+### Bug Fixes
+
+* **sdk-coin-stx:** verify recipient and amount in native STX verifyTransaction ([aea2d73](https://github.com/BitGo/BitGoJS/commit/aea2d738e0eb88148d1c8e859d3cf38ed5593fdd))
+
+
+
+
+
 ## [4.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@4.0.1...@bitgo/sdk-coin-stx@4.0.2) (2026-07-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

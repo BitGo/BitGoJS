@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [27.23.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.23.9...@bitgo/account-lib@27.23.10) (2026-07-16)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+
+
+
+
 ## [27.23.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.23.8...@bitgo/account-lib@27.23.9) (2026-07-14)
 
 **Note:** Version bump only for package @bitgo/account-lib

@@ -5,7 +5,7 @@
   "module": "./dist/esm/index.js",
   "browser": "./dist/esm/index.js",
   "types": "./dist/cjs/src/index.d.ts",
-  "version": "1.32.2",
+  "version": "1.32.3",
   "exports": {
     ".": {
       "import": {

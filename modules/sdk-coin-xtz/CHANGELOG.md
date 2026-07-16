@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@3.0.2...@bitgo/sdk-coin-xtz@3.0.3) (2026-07-16)
+
+
+### Bug Fixes
+
+* **sdk-coin-xtz:** verify destination and amount in verifyTransaction ([a3af4e4](https://github.com/BitGo/BitGoJS/commit/a3af4e4bd83e7f1069a973852b1eb85fe8b3528f))
+
+
+
+
+
 ## [3.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@3.0.1...@bitgo/sdk-coin-xtz@3.0.2) (2026-07-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xtz

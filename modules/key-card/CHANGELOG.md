@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.34.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.33.1...@bitgo/key-card@0.34.0) (2026-07-16)
+
+
+### Features
+
+* add script to reencrypt wallet with v2 encryption ([3dbc8aa](https://github.com/BitGo/BitGoJS/commit/3dbc8aabc6aa48961e202c15e75cd2fd80a4be6c))
+* **sdk-core:** add argon2 re-encryption to sdk-core (WCN-174) ([8b6909e](https://github.com/BitGo/BitGoJS/commit/8b6909e717a290151eb42600825d69c644486e4f))
+
+
+
+
+
 ## [0.33.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.33.0...@bitgo/key-card@0.33.1) (2026-07-14)
 
 **Note:** Version bump only for package @bitgo/key-card
