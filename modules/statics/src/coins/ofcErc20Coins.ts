@@ -3765,42 +3765,84 @@ export const ofcErc20Coins = [
     'ofcmantle:usdt',
     'USDT',
     6,
-    underlyingAssetForSymbol('mantle:usdt')
+    underlyingAssetForSymbol('mantle:usdt'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'mantle'
   ),
   ofcerc20(
     '058cb406-168d-4d76-9393-2d010ff7600e',
     'ofcmantle:usdc',
     'USDC',
     6,
-    underlyingAssetForSymbol('mantle:usdc')
+    underlyingAssetForSymbol('mantle:usdc'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'mantle'
   ),
   ofcerc20(
     '2b0ecf3d-fe95-4c95-bf53-bc4bb8f6265b',
     'ofcmantle:usde',
     'USDe',
     18,
-    underlyingAssetForSymbol('mantle:usde')
+    underlyingAssetForSymbol('mantle:usde'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'mantle'
   ),
   ofcerc20(
     '48cf8c79-d8e3-4889-be2d-2419ce85eabf',
     'ofcmantle:usdt0',
     'USDT0',
     6,
-    underlyingAssetForSymbol('mantle:usdt0')
+    underlyingAssetForSymbol('mantle:usdt0'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'mantle'
   ),
   ofcerc20(
     '93264efe-c5c3-4f53-91d4-6871ecb579d8',
     'ofcmantle:ausd',
     'AUSD',
     6,
-    underlyingAssetForSymbol('mantle:ausd')
+    underlyingAssetForSymbol('mantle:ausd'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'mantle'
   ),
   ofcerc20(
     'e304dde3-8782-4e54-b6e7-c0080d1ea485',
     'ofcmantle:usd1',
     'USD1',
     18,
-    underlyingAssetForSymbol('mantle:usd1')
+    underlyingAssetForSymbol('mantle:usd1'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'mantle'
   ),
   // New ETH OFC tokens
   ofcerc20('a5357ba2-5a2a-4d73-8f65-e01b9158ea9c', 'ofceth:resolv', 'Resolv', 18, UnderlyingAsset['eth:resolv']),
@@ -6549,21 +6591,42 @@ export const tOfcErc20Coins = [
     'ofctmantle:bgerch',
     'BGERCH',
     18,
-    underlyingAssetForSymbol('tmantle:bgerch')
+    underlyingAssetForSymbol('tmantle:bgerch'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tmantle'
   ),
   tofcerc20(
     'ca77595a-dd77-4c64-a9d5-59d70ae9ac43',
     'ofctmantle:usd1',
     'Test USD1 Token',
     18,
-    underlyingAssetForSymbol('tmantle:usd1')
+    underlyingAssetForSymbol('tmantle:usd1'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tmantle'
   ),
   tofcerc20(
     '4fc97feb-4d66-4ab7-8538-83ccf25673bb',
     'ofctmantle:stgusd1',
     'Test USD1 Token',
     18,
-    underlyingAssetForSymbol('tmantle:stgusd1')
+    underlyingAssetForSymbol('tmantle:stgusd1'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tmantle'
   ),
 
   // MegaEth Network tokens
@@ -6572,14 +6635,28 @@ export const tOfcErc20Coins = [
     'ofcmegaeth:mega',
     'Mega',
     18,
-    underlyingAssetForSymbol('megaeth:mega')
+    underlyingAssetForSymbol('megaeth:mega'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'megaeth'
   ),
   ofcerc20(
     '7bcafa71-a2f3-4a9e-98e2-4d3f655281f8',
     'ofcmegaeth:weth',
     'Wrapped Ether',
     18,
-    underlyingAssetForSymbol('megaeth:weth')
+    underlyingAssetForSymbol('megaeth:weth'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'megaeth'
   ),
 
   // MegaEth testnet tokens
@@ -6588,7 +6665,14 @@ export const tOfcErc20Coins = [
     'ofctmegaeth:tmt',
     'Test Mintable Token',
     6,
-    underlyingAssetForSymbol('tmegaeth:tmt')
+    underlyingAssetForSymbol('tmegaeth:tmt'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tmegaeth'
   ),
 
   // Morph tokens
@@ -6711,7 +6795,14 @@ export const tOfcErc20Coins = [
     'ofcseievm:wsei',
     'Wrapped SEI',
     18,
-    underlyingAssetForSymbol('seievm:wsei')
+    underlyingAssetForSymbol('seievm:wsei'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'seievm'
   ),
   tofcerc20(
     '8c64311b-e288-4dd4-8f9f-25dad3418837',

@@ -1,7 +1,7 @@
 const should = require('should');
 import { randomUUID } from 'crypto';
 
-import { CoinFeature, coins, UnderlyingAsset } from '../../src';
+import { CoinFeature, coins, OfcCoin, UnderlyingAsset } from '../../src';
 import { ofcErc20Coins } from '../../src/coins/ofcErc20Coins';
 
 const EXCLUDED_ASSETS = new Set<string>([
@@ -91,6 +91,35 @@ describe('OFC Coin parity tests', function () {
     );
     missingFeatures.length.should.equal(0, `Missing features for ${coinName}`);
   }
+  it('should have correct addressCoin for all OFC tokens', function () {
+    const ofcCoinsWithAddressCoin = coins.filter((coin) => coin.family === 'ofc' && !!(coin as OfcCoin).addressCoin);
+
+    const failures: string[] = [];
+
+    ofcCoinsWithAddressCoin.forEach((coin) => {
+      const ofcCoin = coin as OfcCoin;
+      const addressCoin = ofcCoin.addressCoin;
+
+      // Verify addressCoin refers to a real coin
+      const addressCoinObj = getCoin(addressCoin as string);
+      if (!addressCoinObj) {
+        failures.push(`${ofcCoin.name}: addressCoin='${addressCoin}' does not exist in coin map`);
+        return;
+      }
+
+      // For tokens with format ofc{chain}:{token}, derive expected addressCoin from the name
+      const baseName = ofcCoin.name.replace(/^ofc/, '');
+      if (baseName.includes(':')) {
+        const expectedAddressCoin = baseName.split(':')[0];
+        if (addressCoin !== expectedAddressCoin) {
+          failures.push(`${ofcCoin.name}: expected addressCoin='${expectedAddressCoin}' but got '${addressCoin}'`);
+        }
+      }
+    });
+
+    should(failures).deepEqual([], `OFC tokens with incorrect addressCoin:\n${failures.join('\n')}`);
+  });
+
   function getCoin(coinName: string) {
     try {
       {
