@@ -204,6 +204,11 @@ describe('Tezos:', function () {
   describe('Verify Transaction', function () {
     const address1 = '5Ge59qRnZa8bxyhVFE6BDoY3kuhSrNVETRxXYLty1Hh6XTaf';
     const address2 = '5DiMLZugmcKEH3igPZP367FqummZkWeW5Z6zDCHLfxRjnPXe';
+
+    // unsignedHex encodes: destination=tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS, amount=11800000
+    const prebuildDestination = 'tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS';
+    const prebuildAmount = '11800000';
+
     it('should reject a txPrebuild with more than one recipient', async function () {
       const wallet = new Wallet(bitgo, basecoin, {});
 
@@ -217,10 +222,124 @@ describe('Tezos:', function () {
       };
 
       await basecoin
-        .verifyTransaction({ txParams })
+        .verifyTransaction({ txParams, txPrebuild: { txHex: unsignedHex } })
         .should.be.rejectedWith(
           `txtz doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
         );
+    });
+
+    it('should pass when no recipients are specified (consolidation builds omit them)', async function () {
+      const txParams = { recipients: [] };
+      const txPrebuild = { txHex: unsignedHex };
+
+      const result = await basecoin.verifyTransaction({ txParams, txPrebuild } as any);
+      result.should.equal(true);
+    });
+
+    it('should reject when txPrebuild is missing txHex', async function () {
+      const txParams = {
+        recipients: [{ address: prebuildDestination, amount: prebuildAmount }],
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild: {} } as any)
+        .should.be.rejectedWith('missing required tx prebuild property txHex');
+    });
+
+    it('should verify a valid transaction where destination and amount match', async function () {
+      const txParams = {
+        recipients: [{ address: prebuildDestination, amount: prebuildAmount }],
+      };
+      const txPrebuild = { txHex: unsignedHex };
+
+      const result = await basecoin.verifyTransaction({ txParams, txPrebuild } as any);
+      result.should.equal(true);
+    });
+
+    it('should reject when prebuild destination does not match requested recipient', async function () {
+      const txParams = {
+        recipients: [{ address: 'tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A', amount: prebuildAmount }],
+      };
+      const txPrebuild = { txHex: unsignedHex };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild } as any)
+        .should.be.rejectedWith(
+          `Tezos prebuild destination mismatch: expected tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A but got ${prebuildDestination}`
+        );
+    });
+
+    it('should reject when prebuild amount does not match requested recipient', async function () {
+      const txParams = {
+        recipients: [{ address: prebuildDestination, amount: '99999999' }],
+      };
+      const txPrebuild = { txHex: unsignedHex };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild } as any)
+        .should.be.rejectedWith(`Tezos prebuild amount mismatch: expected 99999999 but got ${prebuildAmount}`);
+    });
+
+    it('should reject when the prebuild contains an unexpected number of outputs', async function () {
+      // unsignedTransactionWithTwoTransfersHex has 2 outputs, so it should fail the single-output check
+      const txParams = {
+        recipients: [{ address: prebuildDestination, amount: prebuildAmount }],
+      };
+      const txPrebuild = { txHex: unsignedTransactionWithTwoTransfersHex };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild } as any)
+        .should.be.rejectedWith('Tezos prebuild contains 2 output(s) but expected exactly 1');
+    });
+
+    it('should reject when the prebuild cannot be decoded', async function () {
+      const txParams = {
+        recipients: [{ address: prebuildDestination, amount: prebuildAmount }],
+      };
+      // A hex string that is not a valid Tezos transaction
+      const txPrebuild = { txHex: 'ff'.repeat(200) };
+
+      let threw = false;
+      try {
+        await basecoin.verifyTransaction({ txParams, txPrebuild } as any);
+      } catch (e) {
+        threw = true;
+        e.message.should.startWith('Failed to decode Tezos prebuild transaction');
+      }
+      threw.should.equal(true);
+    });
+
+    it('should verify consolidation to wallet base address', async function () {
+      const mockWallet = {
+        coinSpecific: () => ({
+          baseAddress: prebuildDestination,
+        }),
+      };
+
+      const result = await basecoin.verifyTransaction({
+        txParams: {},
+        txPrebuild: { txHex: unsignedHex },
+        verification: { consolidationToBaseAddress: true },
+        wallet: mockWallet as any,
+      } as any);
+      result.should.equal(true);
+    });
+
+    it('should reject consolidation when destination does not match base address', async function () {
+      const mockWallet = {
+        coinSpecific: () => ({
+          baseAddress: 'tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A',
+        }),
+      };
+
+      await basecoin
+        .verifyTransaction({
+          txParams: {},
+          txPrebuild: { txHex: unsignedHex },
+          verification: { consolidationToBaseAddress: true },
+          wallet: mockWallet as any,
+        } as any)
+        .should.be.rejectedWith('Consolidation transaction recipient does not match wallet base address');
     });
   });
 });
