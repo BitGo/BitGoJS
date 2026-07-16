@@ -26,7 +26,7 @@ import {
   AuditDecryptedKeyParams,
 } from '@bitgo/sdk-core';
 import { BigNumber } from 'bignumber.js';
-import * as stellar from 'stellar-sdk';
+import * as stellar from '@stellar/stellar-sdk';
 import { SeedValidator } from './seedValidator';
 import { KeyPair as HbarKeyPair, TransactionBuilderFactory, Transaction, Recipient as HederaRecipient } from './lib';
 import * as Utils from './lib/utils';

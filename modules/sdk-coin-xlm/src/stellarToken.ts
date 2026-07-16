@@ -4,7 +4,7 @@
 import * as _ from 'lodash';
 import { Xlm } from './xlm';
 import { BitGoBase, BitGoJsError, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import * as stellar from 'stellar-sdk';
+import * as stellar from '@stellar/stellar-sdk';
 import { StellarTokenConfig, tokens } from '@bitgo/statics';
 
 export { StellarTokenConfig };

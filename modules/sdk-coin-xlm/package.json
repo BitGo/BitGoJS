@@ -44,7 +44,7 @@
     "@bitgo/statics": "^58.56.0",
     "bignumber.js": "^9.1.1",
     "lodash": "^4.18.0",
-    "stellar-sdk": "^10.0.1",
+    "@stellar/stellar-sdk": "^16.0.0",
     "superagent": "^9.0.1"
   },
   "devDependencies": {

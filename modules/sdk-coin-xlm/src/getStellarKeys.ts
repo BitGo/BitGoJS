@@ -1,5 +1,5 @@
 import { BitGoBase, InitiateRecoveryOptions } from '@bitgo/sdk-core';
-import * as stellar from 'stellar-sdk';
+import * as stellar from '@stellar/stellar-sdk';
 import { Utils } from './lib';
 
 export async function getStellarKeys(bitgo: BitGoBase, params: InitiateRecoveryOptions): Promise<stellar.Keypair[]> {

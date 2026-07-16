@@ -2,7 +2,9 @@ import assert from 'assert';
 import { BigNumber } from 'bignumber.js';
 import * as _ from 'lodash';
 import * as querystring from 'querystring';
-import * as stellar from 'stellar-sdk';
+import * as stellar from '@stellar/stellar-sdk';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { Federation: FederationAxios } = require('@stellar/stellar-sdk/axios') as typeof stellar;
 import * as request from 'superagent';
 import * as url from 'url';
 import { KeyPair as StellarKeyPair } from './lib/keyPair';
@@ -432,7 +434,7 @@ export class Xlm extends BaseCoin {
    * @returns minimum balance in stroops
    */
   async getMinimumReserve(): Promise<number> {
-    const server = new stellar.Server(this.getHorizonUrl());
+    const server = new stellar.Horizon.Server(this.getHorizonUrl());
 
     const horizonLedgerInfo = await server.ledgers().order('desc').limit(1).call();
 
@@ -451,7 +453,7 @@ export class Xlm extends BaseCoin {
    * @returns transaction fee in stroops
    */
   async getBaseTransactionFee(): Promise<number> {
-    const server = new stellar.Server(this.getHorizonUrl());
+    const server = new stellar.Horizon.Server(this.getHorizonUrl());
 
     const horizonLedgerInfo = await server.ledgers().order('desc').limit(1).call();
 
@@ -599,11 +601,11 @@ export class Xlm extends BaseCoin {
    *
    * @returns instance of BitGo Federation Server
    */
-  getBitGoFederationServer(): stellar.FederationServer {
+  getBitGoFederationServer(): stellar.Federation.Server {
     // Identify the URI scheme in case we need to allow connecting to HTTP server.
     const isNonSecureEnv = !_.startsWith(common.Environments[this.bitgo.env].uri, 'https');
     const federationServerOptions = { allowHttp: isNonSecureEnv };
-    return new stellar.FederationServer(this.getFederationServerUrl(), 'bitgo.com', federationServerOptions);
+    return new FederationAxios.Server(this.getFederationServerUrl(), 'bitgo.com', federationServerOptions);
   }
 
   /**
@@ -619,7 +621,7 @@ export class Xlm extends BaseCoin {
   }: {
     address?: string;
     accountId?: string;
-  }): Promise<stellar.FederationServer.Record> {
+  }): Promise<stellar.Federation.Api.Record> {
     try {
       const federationServer = this.getBitGoFederationServer();
       if (address) {
@@ -644,7 +646,7 @@ export class Xlm extends BaseCoin {
    *
    * @param {String} address - stellar address to look for
    */
-  async federationLookupByName(address: string): Promise<stellar.FederationServer.Record> {
+  async federationLookupByName(address: string): Promise<stellar.Federation.Api.Record> {
     if (!address) {
       throw new Error('invalid Stellar address');
     }
@@ -658,7 +660,7 @@ export class Xlm extends BaseCoin {
    *
    * @param {String} accountId - stellar account id
    */
-  async federationLookupByAccountId(accountId: string): Promise<stellar.FederationServer.Record> {
+  async federationLookupByAccountId(accountId: string): Promise<stellar.Federation.Api.Record> {
     if (!accountId) {
       throw new Error('invalid Stellar account');
     }
@@ -987,7 +989,7 @@ export class Xlm extends BaseCoin {
     const outputs: TransactionOutput[] = [];
     const operations: TransactionOperation[] = []; // non-payment operations
 
-    _.forEach(tx.operations, (op: stellar.Operation) => {
+    _.forEach(tx.operations, (op) => {
       if (op.type === 'createAccount' || op.type === 'payment') {
         // TODO Remove memoId from address
         // Get memo to attach to address, if type is 'id'
@@ -1091,11 +1093,13 @@ export class Xlm extends BaseCoin {
   }
 
   getTrustlineOperationsOrThrow(
-    operations: stellar.Operation[],
+    operations: stellar.OperationRecord[],
     txParams: TransactionParams,
     operationTypePropName: 'trustlines' | 'recipients'
   ): stellar.Operation.ChangeTrust[] {
-    const trustlineOperations = operations.filter((op) => op?.type === 'changeTrust');
+    const trustlineOperations = operations.filter(
+      (op): op is stellar.Operation.ChangeTrust => op?.type === 'changeTrust'
+    );
     if (trustlineOperations.length !== _.get(txParams, operationTypePropName, []).length) {
       throw new Error('transaction prebuild does not match expected trustline operations');
     }
@@ -1103,16 +1107,16 @@ export class Xlm extends BaseCoin {
     return trustlineOperations;
   }
 
-  isChangeTrustOperation(operation: stellar.Operation): operation is stellar.Operation.ChangeTrust {
-    return operation.type && operation.type === 'changeTrust';
+  isChangeTrustOperation(operation: stellar.OperationRecord): operation is stellar.Operation.ChangeTrust {
+    return operation.type === 'changeTrust';
   }
 
-  getTrustlineOperationLineOrThrow(operation: stellar.Operation): stellar.Asset | stellar.LiquidityPoolAsset {
+  getTrustlineOperationLineOrThrow(operation: stellar.OperationRecord): stellar.Asset | stellar.LiquidityPoolAsset {
     if (this.isChangeTrustOperation(operation) && operation.line) return operation.line;
     throw new Error('Invalid operation - expected changeTrust operation with line property');
   }
 
-  getTrustlineOperationLimitOrThrow(operation: stellar.Operation): string {
+  getTrustlineOperationLimitOrThrow(operation: stellar.OperationRecord): string {
     if (this.isChangeTrustOperation(operation) && operation.limit) return operation.limit;
     throw new Error('Invalid operation - expected changeTrust operation with limit property');
   }
@@ -1128,9 +1132,9 @@ export class Xlm extends BaseCoin {
    * @param {stellar.Operation} operations - tx operations
    * @param {TransactionParams} txParams - params used to build the tx
    */
-  verifyTrustlineTxOperations(operations: stellar.Operation[], txParams: TransactionParams): void {
+  verifyTrustlineTxOperations(operations: stellar.OperationRecord[], txParams: TransactionParams): void {
     const trustlineOperations = this.getTrustlineOperationsOrThrow(operations, txParams, 'trustlines');
-    _.forEach(trustlineOperations, (op: stellar.Operation) => {
+    _.forEach(trustlineOperations, (op) => {
       if (op.type !== 'changeTrust') {
         throw new Error('Invalid asset type');
       }
@@ -1285,7 +1289,7 @@ export class Xlm extends BaseCoin {
     return issuer;
   }
 
-  verifyTxType(operations: stellar.Operation[]): void {
+  verifyTxType(operations: stellar.OperationRecord[]): void {
     operations.forEach((operation) => {
       if (!this.isChangeTrustOperation(operation))
         throw new Error(
@@ -1296,7 +1300,7 @@ export class Xlm extends BaseCoin {
     });
   }
 
-  verifyAssetType(txParams: TransactionParams, operations: stellar.Operation[]): void {
+  verifyAssetType(txParams: TransactionParams, operations: stellar.OperationRecord[]): void {
     operations.forEach((operation) => {
       const line = this.getTrustlineOperationLineOrThrow(operation);
       if (!this.isOperationLineOfAssetType(line)) {
@@ -1306,7 +1310,7 @@ export class Xlm extends BaseCoin {
     });
   }
 
-  verifyTokenIssuer(txParams: TransactionParams, operations: stellar.Operation[]): void {
+  verifyTokenIssuer(txParams: TransactionParams, operations: stellar.OperationRecord[]): void {
     const fullTokenData = this.getTokenDataOrThrow(txParams);
     const expectedIssuer = this.getIssuerFromTokenName(fullTokenData);
 
@@ -1318,7 +1322,7 @@ export class Xlm extends BaseCoin {
     });
   }
 
-  verifyTokenName(txParams: TransactionParams, operations: stellar.Operation[]): void {
+  verifyTokenName(txParams: TransactionParams, operations: stellar.OperationRecord[]): void {
     const fullTokenData = this.getTokenDataOrThrow(txParams);
     const expectedTokenCode = this.getTokenCodeFromTokenName(fullTokenData);
 
@@ -1333,7 +1337,7 @@ export class Xlm extends BaseCoin {
     });
   }
 
-  verifyTokenLimits(txParams: TransactionParams, operations: stellar.Operation[]): void {
+  verifyTokenLimits(txParams: TransactionParams, operations: stellar.OperationRecord[]): void {
     const recipient = this.getRecipientOrThrow(txParams);
 
     operations.forEach((operation) => {
@@ -1459,13 +1463,8 @@ export class Xlm extends BaseCoin {
     throw new NotSupported('method deriveKeyWithSeed not supported for eddsa curve');
   }
 
-  /**
-   * stellar-sdk has two overloads for toXDR, and typescript can't seem to figure out the
-   * correct one to use, so we have to be very explicit as to which one we want.
-   * @param tx transaction to convert
-   */
-  protected static txToString = (tx: stellar.Transaction): string =>
-    (tx.toEnvelope().toXDR as (_: string) => string)('base64');
+  // v16 exposes toXDR() directly on TransactionBase, returning base64
+  protected static txToString = (tx: stellar.Transaction): string => tx.toXDR();
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
     return {};

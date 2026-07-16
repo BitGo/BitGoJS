@@ -1,6 +1,6 @@
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { Xlm } from './xlm';
-const stellar = require('stellar-sdk');
+const stellar = require('@stellar/stellar-sdk');
 
 export class Txlm extends Xlm {
   constructor(bitgo: BitGoBase) {
