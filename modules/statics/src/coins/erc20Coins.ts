@@ -14939,6 +14939,14 @@ export const erc20Coins = [
     '0xf23043c848b642e69350fa7623af1c1e3e6fda9b',
     UnderlyingAsset['eth:scx']
   ),
+  erc20(
+    '31b2b1cc-f8af-44b5-91e6-29e9de4f7fdf',
+    'eth:jpysc',
+    'JPYSC',
+    18,
+    '0x6781d5631bfe47432b089e64e3eab3b6edd26177',
+    UnderlyingAsset['eth:jpysc']
+  ),
   terc20(
     '0c333619-e5a6-4f9d-8bbc-5b0e5dc64d03',
     'hteth:grtxp',

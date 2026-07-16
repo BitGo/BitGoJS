@@ -4127,6 +4127,16 @@ export const solTokens = [
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
     ProgramID.Token2022ProgramId
   ),
+  solToken(
+    '2eb90745-a24c-47d4-b2dd-876dc6208144',
+    'sol:bils',
+    'BILS',
+    6,
+    'CDxFUPSRK4dC68jWV7SCPezU1vNYXz87Y6fjhhRvsuhd',
+    'CDxFUPSRK4dC68jWV7SCPezU1vNYXz87Y6fjhhRvsuhd',
+    UnderlyingAsset['sol:bils'],
+    SOL_TOKEN_FEATURES
+  ),
   tsolToken(
     '5f4de23d-67b5-4a8f-bb31-9c1c72f62489',
     'tsol:gousd',

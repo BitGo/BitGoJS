@@ -4436,6 +4436,13 @@ export const ofcCoins = [
     undefined,
     [CoinFeature.STABLECOIN]
   ),
+  ofcPolygonErc20(
+    'a8a7b8d6-8c38-4750-9f96-8b45f0611094',
+    'ofcpolygon:wpay',
+    'WPAY',
+    18,
+    UnderlyingAsset['polygon:wpay']
+  ),
 
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
@@ -5466,6 +5473,7 @@ export const ofcCoins = [
     9,
     UnderlyingAsset['sol:jsol']
   ),
+  ofcsolToken('a903ea3b-de91-4d57-9fc1-56fdf8b3b249', 'ofcsol:bils', 'BILS', 6, UnderlyingAsset['sol:bils']),
   ofcBscToken('3a9daeda-7e08-494d-a47c-d2c89dd1c735', 'ofcbsc:godl', 'GODL', 18, UnderlyingAsset['bsc:godl']),
   ofcBscToken('93a459bc-c661-4001-be26-9175046c9a36', 'ofcbsc:gdl', 'GDL', 18, UnderlyingAsset['bsc:gdl']),
   ofcBscToken('9febc919-85af-48eb-9821-e9d18e4cd98e', 'ofcbsc:usgd', 'USGD', 18, UnderlyingAsset['bsc:usgd']),

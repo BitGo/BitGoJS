@@ -2503,6 +2503,7 @@ export enum UnderlyingAsset {
   'eth:bard' = 'eth:bard',
   'eth:sfp' = 'eth:sfp',
   'eth:aztec' = 'eth:aztec',
+  'eth:jpysc' = 'eth:jpysc',
 
   // Ondo Tokenized Assets
   'eth:qqqon' = 'qqqon',
@@ -3015,6 +3016,7 @@ export enum UnderlyingAsset {
   'polygon:colt' = 'polygon:colt',
   'polygon:bolt' = 'polygon:bolt',
   'polygon:gmc' = 'polygon:gmc',
+  'polygon:wpay' = 'polygon:wpay',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -3380,6 +3382,7 @@ export enum UnderlyingAsset {
   'baseeth:laptop' = 'baseeth:laptop',
   'baseeth:vbtcb' = 'baseeth:vbtcb',
   'baseeth:gldy' = 'baseeth:gldy',
+  'baseeth:wpay' = 'baseeth:wpay',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -3390,6 +3393,7 @@ export enum UnderlyingAsset {
   'tbaseeth:tusdl' = 'tbaseeth:tusdl',
   'tbaseeth:ttbills' = 'tbaseeth:ttbills',
   'tbaseeth:kmusdc' = 'tbaseeth:kmusdc',
+  'tbaseeth:tpdd' = 'tbaseeth:tpdd',
 
   // Og mainnet tokens
   'og:wog' = 'og:wog',
@@ -3825,6 +3829,7 @@ export enum UnderlyingAsset {
   'sol:tusdc' = 'sol:tusdc',
   'sol:slx' = 'sol:slx',
   'sol:ab1' = 'sol:ab1',
+  'sol:bils' = 'sol:bils',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',
