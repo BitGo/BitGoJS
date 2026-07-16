@@ -4135,7 +4135,8 @@ export const solTokens = [
     'CDxFUPSRK4dC68jWV7SCPezU1vNYXz87Y6fjhhRvsuhd',
     'CDxFUPSRK4dC68jWV7SCPezU1vNYXz87Y6fjhhRvsuhd',
     UnderlyingAsset['sol:bils'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
   ),
   tsolToken(
     '5f4de23d-67b5-4a8f-bb31-9c1c72f62489',
