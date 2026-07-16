@@ -4940,6 +4940,23 @@ export const ofcCoins = [
     UnderlyingAsset.ARCUSDC,
     CoinKind.CRYPTO
   ),
+  ofcsolToken(
+    '43920b10-fd29-4761-a09a-b15af17a01e7',
+    'ofcsol:shvon',
+    'SHVon (SHVon)',
+    9,
+    UnderlyingAsset['sol:shvon'],
+    SOL_OFC_TOKEN_FEATURES
+  ),
+  // Ondo Test Tokens OFC (SOL Mainnet Gated) - hyphen-free symbols
+  ofcsolToken(
+    '5202d559-af16-42f8-9608-aefbbb2ca82d',
+    'ofcsol:tshvontesting',
+    'SHVon (t-SHVon)',
+    9,
+    UnderlyingAsset['sol:tshvontesting'],
+    SOL_OFC_TOKEN_FEATURES
+  ),
   // New BSC OFC token
   ofcBscToken('b4200c85-f550-44d6-a6cb-a590f19773b0', 'ofcbsc:sto', 'StakeStone', 18, UnderlyingAsset['bsc:sto']),
   ofcBscToken('167c65f6-c097-462f-99ec-18ab234a935b', 'ofcbsc:mito', 'Mitosis', 18, UnderlyingAsset['bsc:mito']),
@@ -4955,6 +4972,853 @@ export const ofcCoins = [
   ),
   ofcBscToken('d08948fa-0378-4736-a5ab-0b4ec9182b8a', 'ofcbsc:xter', 'Xterio', 18, UnderlyingAsset['bsc:xter']),
   ofcBscToken('b73d634a-a60d-4e2d-835b-3d8a527979b1', 'ofcbsc:usdau', 'USD GOLD', 18, UnderlyingAsset['bsc:usdau']),
+  // Ondo Tokens OFC (BSC Mainnet Ungated)
+  ofcBscToken(
+    'cf2b0030-bd09-427f-b645-e3c0e8ebf42d',
+    'ofcbsc:baion',
+    'iShares A.I. Innovation and Tech Active ETF',
+    18,
+    UnderlyingAsset['bsc:baion']
+  ),
+  ofcBscToken(
+    '54d22918-4dd9-4f9d-9291-cf5907057270',
+    'ofcbsc:bincon',
+    'iShares Flexible Income Active ETF',
+    18,
+    UnderlyingAsset['bsc:bincon']
+  ),
+  ofcBscToken(
+    '3caadb3e-f22d-4387-a236-359f80c54d67',
+    'ofcbsc:blcron',
+    'iShares Large Cap Core Active ETF',
+    18,
+    UnderlyingAsset['bsc:blcron']
+  ),
+  ofcBscToken(
+    '3646da7b-e41e-4a3d-9f4f-e3b6e567e6ba',
+    'ofcbsc:brlnon',
+    'iShares Floating Rate Loan Active ETF',
+    18,
+    UnderlyingAsset['bsc:brlnon']
+  ),
+  ofcBscToken(
+    '29e11915-508d-4fc9-8613-e4ffde0d2800',
+    'ofcbsc:brtron',
+    'iShares Total Return Active ETF',
+    18,
+    UnderlyingAsset['bsc:brtron']
+  ),
+  ofcBscToken(
+    'b0e074f9-ce6d-4f91-8c64-05c3b8d3b372',
+    'ofcbsc:cloaon',
+    'iShares AAA CLO Active ETF',
+    18,
+    UnderlyingAsset['bsc:cloaon']
+  ),
+  ofcBscToken(
+    '75619ef0-cd6b-4673-8a6c-63ba35b8fe94',
+    'ofcbsc:coroon',
+    'iShares International Country Rotation Active ETF',
+    18,
+    UnderlyingAsset['bsc:coroon']
+  ),
+  ofcBscToken(
+    '4d840a61-e12f-4406-9830-7586d6b18cdb',
+    'ofcbsc:dynfon',
+    'iShares US Equity Factor Rotation Active ETF',
+    18,
+    UnderlyingAsset['bsc:dynfon']
+  ),
+  ofcBscToken(
+    'd3d797f5-18bd-4453-8b7e-6d29a7e5da7c',
+    'ofcbsc:euhyon',
+    'iShares Euro High Yield Corporate Bond USD Hedged ETF',
+    18,
+    UnderlyingAsset['bsc:euhyon']
+  ),
+  ofcBscToken(
+    'c5bdcd44-d440-4c2c-a6c6-aaa52170d39f',
+    'ofcbsc:ggovon',
+    'iShares Global Government Bond USD Hedged Active ETF',
+    18,
+    UnderlyingAsset['bsc:ggovon']
+  ),
+  ofcBscToken(
+    '72030990-eb41-4d17-8d6b-27980b7d56e5',
+    'ofcbsc:iauon',
+    'iShares Gold Trust',
+    18,
+    UnderlyingAsset['bsc:iauon']
+  ),
+  ofcBscToken(
+    'a0e2fa24-4576-4f44-a886-561c4b8ef4af',
+    'ofcbsc:ibiton',
+    'iShares Bitcoin Trust',
+    18,
+    UnderlyingAsset['bsc:ibiton']
+  ),
+  ofcBscToken(
+    '81af8731-1317-487e-885d-6395ce8452dc',
+    'ofcbsc:iefon',
+    'iShares 7-10 Year Treasury Bond ETF',
+    18,
+    UnderlyingAsset['bsc:iefon']
+  ),
+  ofcBscToken('30108623-e9eb-48d7-ab69-3a4eabf6d658', 'ofcbsc:aaplon', 'Apple', 18, UnderlyingAsset['bsc:aaplon']),
+  ofcBscToken('77e88cde-a5c7-4601-afc9-94c65967e15b', 'ofcbsc:amznon', 'Amazon', 18, UnderlyingAsset['bsc:amznon']),
+  ofcBscToken(
+    '6421c0b2-cb3f-409d-94c8-20a7e537f539',
+    'ofcbsc:ethaon',
+    'iShares Ethereum Trust',
+    18,
+    UnderlyingAsset['bsc:ethaon']
+  ),
+  ofcBscToken(
+    '3cd40f04-6a21-4dae-a076-3bef2361310f',
+    'ofcbsc:googlon',
+    'Alphabet Class A',
+    18,
+    UnderlyingAsset['bsc:googlon']
+  ),
+  ofcBscToken(
+    '03801ced-64a8-40e4-8f11-086754568aca',
+    'ofcbsc:metaon',
+    'Meta Platforms',
+    18,
+    UnderlyingAsset['bsc:metaon']
+  ),
+  ofcBscToken('257971c7-da8e-43e6-bdcb-27b9ac1b2aa2', 'ofcbsc:msfton', 'Microsoft', 18, UnderlyingAsset['bsc:msfton']),
+  ofcBscToken('59dfa84a-f44d-4a59-a887-11d42e4e39af', 'ofcbsc:nvdaon', 'NVIDIA', 18, UnderlyingAsset['bsc:nvdaon']),
+  ofcBscToken('b0accf23-1d75-4e9e-a8bc-a2a1b65acdd9', 'ofcbsc:tslaon', 'Tesla', 18, UnderlyingAsset['bsc:tslaon']),
+  ofcBscToken(
+    'bec187e2-6ba6-47e2-8e50-9a332263f8ac',
+    'ofcbsc:aggon',
+    'iShares Core US Aggregate Bond ETF',
+    18,
+    UnderlyingAsset['bsc:aggon']
+  ),
+  ofcBscToken(
+    '3cd3a0ce-21ad-4fc5-9923-fc019c8dadde',
+    'ofcbsc:alabon',
+    'Astera Labs',
+    18,
+    UnderlyingAsset['bsc:alabon']
+  ),
+  ofcBscToken(
+    'df03d9eb-ef66-4d19-afa9-3138412c45eb',
+    'ofcbsc:amaton',
+    'Applied Materials',
+    18,
+    UnderlyingAsset['bsc:amaton']
+  ),
+  ofcBscToken('236b7a54-725d-4fe6-9102-d7434248e535', 'ofcbsc:amdon', 'AMD', 18, UnderlyingAsset['bsc:amdon']),
+  ofcBscToken(
+    '997e77d1-dff6-493f-ac21-eb6d0fa6da47',
+    'ofcbsc:aneton',
+    'Arista Networks',
+    18,
+    UnderlyingAsset['bsc:aneton']
+  ),
+  ofcBscToken(
+    'd22103c9-b03a-492d-b61f-e8ddf30dcb94',
+    'ofcbsc:armon',
+    'Arm Holdings plc',
+    18,
+    UnderlyingAsset['bsc:armon']
+  ),
+  ofcBscToken(
+    'adf14936-a864-411a-a8b0-a801f322740a',
+    'ofcbsc:asmlon',
+    'ASML Holding NV',
+    18,
+    UnderlyingAsset['bsc:asmlon']
+  ),
+  ofcBscToken('ecd8330c-5731-4059-ae71-1f3a9cb63373', 'ofcbsc:avgoon', 'Broadcom', 18, UnderlyingAsset['bsc:avgoon']),
+  ofcBscToken('f59b23ee-3b79-46a1-a029-1f1cd7a304b5', 'ofcbsc:beon', 'Bloom Energy', 18, UnderlyingAsset['bsc:beon']),
+  ofcBscToken(
+    '0615313d-0ab6-4a6c-8960-c59126c11fb5',
+    'ofcbsc:botzon',
+    'Global X Robotics & Artificial Intelligence ETF',
+    18,
+    UnderlyingAsset['bsc:botzon']
+  ),
+  ofcBscToken(
+    'f3a9b164-d9e9-43d3-8683-5c5e6426b30c',
+    'ofcbsc:brhyon',
+    'iShares High Yield Active ETF',
+    18,
+    UnderlyingAsset['bsc:brhyon']
+  ),
+  ofcBscToken(
+    '579c10a5-c8b0-4b54-9562-7736588929e1',
+    'ofcbsc:cegon',
+    'Constellation Energy',
+    18,
+    UnderlyingAsset['bsc:cegon']
+  ),
+  ofcBscToken('e67d4f05-6362-4adc-9232-21fb260eb92b', 'ofcbsc:cienon', 'Ciena', 18, UnderlyingAsset['bsc:cienon']),
+  ofcBscToken(
+    '9726bdaf-8021-4c8f-9542-54f11c2e792e',
+    'ofcbsc:cifron',
+    'Cipher Mining',
+    18,
+    UnderlyingAsset['bsc:cifron']
+  ),
+  ofcBscToken('a4a2141c-8ce5-4f9b-8572-0209c32c8089', 'ofcbsc:cohron', 'Coherent', 18, UnderlyingAsset['bsc:cohron']),
+  ofcBscToken(
+    'bc1830fa-4805-4e25-b506-e9a04397e0e6',
+    'ofcbsc:crdoon',
+    'Credo Technology Group Holding',
+    18,
+    UnderlyingAsset['bsc:crdoon']
+  ),
+  ofcBscToken('65defc6a-c85b-496f-98f1-80ba0568e283', 'ofcbsc:crwvon', 'CoreWeave', 18, UnderlyingAsset['bsc:crwvon']),
+  ofcBscToken(
+    '7b0100aa-1857-43b3-b321-860b797efe15',
+    'ofcbsc:dellon',
+    'Dell Technologies',
+    18,
+    UnderlyingAsset['bsc:dellon']
+  ),
+  ofcBscToken(
+    '048fe558-afa5-4d71-b318-ff57c8de336f',
+    'ofcbsc:dramon',
+    'Roundhill Memory ETF',
+    18,
+    UnderlyingAsset['bsc:dramon']
+  ),
+  ofcBscToken(
+    '5fdff5bf-3f0e-4948-92dc-a1d733f6cf28',
+    'ofcbsc:dtcron',
+    'Global X Data Center & Digital Infrastructure ETF',
+    18,
+    UnderlyingAsset['bsc:dtcron']
+  ),
+  ofcBscToken('63b22f77-3d10-4fd6-9b7f-58f32ef916e3', 'ofcbsc:etnon', 'Eaton', 18, UnderlyingAsset['bsc:etnon']),
+  ofcBscToken('313f4f2f-c2ec-4b09-a5e3-aed9170b3278', 'ofcbsc:fnon', 'Fabrinet', 18, UnderlyingAsset['bsc:fnon']),
+  ofcBscToken('a983293d-58f4-4791-9b7b-ab67c5cda1fa', 'ofcbsc:gevon', 'GE Vernova', 18, UnderlyingAsset['bsc:gevon']),
+  ofcBscToken('e6ebf551-8bc1-4579-ba95-82d2c9261d39', 'ofcbsc:glwon', 'Corning', 18, UnderlyingAsset['bsc:glwon']),
+  ofcBscToken(
+    '2a91df02-e5ab-489a-a22b-2bed6d51e768',
+    'ofcbsc:hygon',
+    'iBoxx $ High Yield Corporate Bond ETF',
+    18,
+    UnderlyingAsset['bsc:hygon']
+  ),
+  ofcBscToken(
+    'a38ade30-de2e-48d0-bc2b-8b0bb1f9d000',
+    'ofcbsc:ialton',
+    'iShares Systematic Alternatives Active ETF',
+    18,
+    UnderlyingAsset['bsc:ialton']
+  ),
+  ofcBscToken(
+    '7afdb362-d5ef-41b7-8e87-f8243ed83610',
+    'ofcbsc:igebon',
+    'iShares Investment Grade Systematic Bond ETF',
+    18,
+    UnderlyingAsset['bsc:igebon']
+  ),
+  ofcBscToken(
+    '554bff09-a777-4261-be8d-f9f2cef41c69',
+    'ofcbsc:igvon',
+    'iShares Expanded Tech-Software ETF',
+    18,
+    UnderlyingAsset['bsc:igvon']
+  ),
+  ofcBscToken(
+    '8f0428dd-c377-42c5-92aa-b49fc628de34',
+    'ofcbsc:inroon',
+    'iShares US Industry Rotation Active ETF',
+    18,
+    UnderlyingAsset['bsc:inroon']
+  ),
+  ofcBscToken('fa5f7547-f0a9-474e-9b2d-7e44dda5eaee', 'ofcbsc:irenon', 'IREN', 18, UnderlyingAsset['bsc:irenon']),
+  ofcBscToken('de1338d4-43f5-4e71-acd4-a5fcf0de19bb', 'ofcbsc:klacon', 'KLA', 18, UnderlyingAsset['bsc:klacon']),
+  ofcBscToken(
+    'dbd235c7-c041-4126-a6de-d760823531e8',
+    'ofcbsc:lembon',
+    'iShares J.P. Morgan EM Local Currency Bond ETF',
+    18,
+    UnderlyingAsset['bsc:lembon']
+  ),
+  ofcBscToken(
+    'cebc1258-7c1c-4b22-a3e0-5c19971ce3d4',
+    'ofcbsc:liteon',
+    'Lumentum Holdings',
+    18,
+    UnderlyingAsset['bsc:liteon']
+  ),
+  ofcBscToken(
+    '0ec77831-92eb-4b3c-bf8b-f83751d65ef2',
+    'ofcbsc:lrcxon',
+    'Lam Research',
+    18,
+    UnderlyingAsset['bsc:lrcxon']
+  ),
+  ofcBscToken(
+    'f75ec1f0-5f25-4515-80a5-a17abdc05d64',
+    'ofcbsc:mrvlon',
+    'Marvell Technology',
+    18,
+    UnderlyingAsset['bsc:mrvlon']
+  ),
+  ofcBscToken(
+    'cda4d762-db83-47e8-aa1b-a670e4fc1005',
+    'ofcbsc:muon',
+    'Micron Technology',
+    18,
+    UnderlyingAsset['bsc:muon']
+  ),
+  ofcBscToken(
+    '17e56a11-08e0-448a-8641-436e49eafb30',
+    'ofcbsc:nbison',
+    'Nebius Group',
+    18,
+    UnderlyingAsset['bsc:nbison']
+  ),
+  ofcBscToken(
+    'b70dd281-48d2-4c73-83b1-f5b009f07105',
+    'ofcbsc:qltaon',
+    'iShares Aaa - A Rated Corporate Bond ETF',
+    18,
+    UnderlyingAsset['bsc:qltaon']
+  ),
+  ofcBscToken(
+    'cb192fb9-5903-4a56-bf30-ae7a738a1fb0',
+    'ofcbsc:sataon',
+    'Strive Preferred',
+    18,
+    UnderlyingAsset['bsc:sataon']
+  ),
+  ofcBscToken(
+    '2ffa274a-63f4-41a2-8027-9c38b3bc3a9a',
+    'ofcbsc:sgovon',
+    'iShares 0-3 Month Treasury Bond ETF',
+    18,
+    UnderlyingAsset['bsc:sgovon']
+  ),
+  ofcBscToken(
+    '051964b5-fa9f-4f8a-926f-c9cc4af8e277',
+    'ofcbsc:smcion',
+    'Super Micro Computer',
+    18,
+    UnderlyingAsset['bsc:smcion']
+  ),
+  ofcBscToken(
+    'f4bc6fac-d3d7-41f7-873b-813d02f5d1d4',
+    'ofcbsc:strcon',
+    'Strategy Stretch Preferred',
+    18,
+    UnderlyingAsset['bsc:strcon']
+  ),
+  ofcBscToken(
+    '23620d4c-ad46-498a-9cdc-1ce05bd55000',
+    'ofcbsc:tsmon',
+    'Taiwan Semiconductor Manufacturing',
+    18,
+    UnderlyingAsset['bsc:tsmon']
+  ),
+  ofcBscToken(
+    '1ce989f2-ddeb-4366-bf66-b014d7995883',
+    'ofcbsc:vnqon',
+    'Vanguard Real Estate ETF',
+    18,
+    UnderlyingAsset['bsc:vnqon']
+  ),
+  ofcBscToken('1c036092-1927-492b-9f13-211d275e8e70', 'ofcbsc:vrton', 'Vertiv', 18, UnderlyingAsset['bsc:vrton']),
+  ofcBscToken('184b544e-0705-493f-b96d-5a10ab5687d9', 'ofcbsc:vston', 'Vistra', 18, UnderlyingAsset['bsc:vston']),
+  ofcBscToken(
+    'a5aaa26a-5cae-468f-a4e1-c905728b3991',
+    'ofcbsc:qyldon',
+    'Global X NASDAQ 100 Covered Call ETF',
+    18,
+    UnderlyingAsset['bsc:qyldon']
+  ),
+  ofcBscToken(
+    '9999e42d-4867-4576-9620-f2629a0e7356',
+    'ofcbsc:xyldon',
+    'Global X S&P 500 Covered Call ETF',
+    18,
+    UnderlyingAsset['bsc:xyldon']
+  ),
+  ofcBscToken(
+    '0b4e0aed-5b8f-4013-aa83-ea444b602e19',
+    'ofcbsc:jaaaon',
+    'Janus Henderson AAA CLO ETF',
+    18,
+    UnderlyingAsset['bsc:jaaaon']
+  ),
+  // Ondo Test Tokens OFC (BSC Mainnet Gated) - hyphen-free symbols
+  ofcBscToken(
+    '9024c381-0fbf-44d8-8f99-cb1e14a2257a',
+    'ofcbsc:tbaiontesting',
+    'iShares A.I. Innovation and Tech Active ETF',
+    18,
+    UnderlyingAsset['bsc:tbaiontesting']
+  ),
+  ofcBscToken(
+    '54cf5577-0f07-4795-bc6f-22b55990c7f4',
+    'ofcbsc:tblcrontesting',
+    'iShares Large Cap Core Active ETF',
+    18,
+    UnderlyingAsset['bsc:tblcrontesting']
+  ),
+  ofcBscToken(
+    'd2cf7301-7578-41d3-ab02-61608c000569',
+    'ofcbsc:tbrlnontesting',
+    'iShares Floating Rate Loan Active ETF',
+    18,
+    UnderlyingAsset['bsc:tbrlnontesting']
+  ),
+  ofcBscToken(
+    'ca9a0439-142d-48de-ba28-b6d1210bc06a',
+    'ofcbsc:tbrtrontesting',
+    'iShares Total Return Active ETF',
+    18,
+    UnderlyingAsset['bsc:tbrtrontesting']
+  ),
+  ofcBscToken(
+    '4c5b3253-e8ce-4898-89b1-a0768a9bf342',
+    'ofcbsc:tcloaontesting',
+    'iShares AAA CLO Active ETF',
+    18,
+    UnderlyingAsset['bsc:tcloaontesting']
+  ),
+  ofcBscToken(
+    '115ee1ce-55a5-43c7-8777-0efd14c806ba',
+    'ofcbsc:tcoroontesting',
+    'iShares International Country Rotation Active ETF',
+    18,
+    UnderlyingAsset['bsc:tcoroontesting']
+  ),
+  ofcBscToken(
+    '48f47f1a-15c2-47d0-b89d-e9ff4242e2c0',
+    'ofcbsc:tdynfontesting',
+    'iShares US Equity Factor Rotation Active ETF',
+    18,
+    UnderlyingAsset['bsc:tdynfontesting']
+  ),
+  ofcBscToken(
+    '1c999c32-1335-4350-a212-3377ee96c877',
+    'ofcbsc:teuhyontesting',
+    'iShares Euro High Yield Corporate Bond USD Hedged ETF',
+    18,
+    UnderlyingAsset['bsc:teuhyontesting']
+  ),
+  ofcBscToken(
+    'c65a64d0-b28a-4a55-9336-004fb731b3a2',
+    'ofcbsc:tggovontesting',
+    'iShares Global Government Bond USD Hedged Active ETF',
+    18,
+    UnderlyingAsset['bsc:tggovontesting']
+  ),
+  ofcBscToken(
+    '3c1b0c15-c802-4a41-a8f8-3285f1dec679',
+    'ofcbsc:tiefontesting',
+    'iShares 7-10 Year Treasury Bond ETF',
+    18,
+    UnderlyingAsset['bsc:tiefontesting']
+  ),
+  ofcBscToken(
+    '17b359fe-ee35-4cf3-b875-c64c93090e72',
+    'ofcbsc:taaplontesting',
+    'Apple',
+    18,
+    UnderlyingAsset['bsc:taaplontesting']
+  ),
+  ofcBscToken(
+    'b79afddd-dfa7-45e7-92ea-3b0078cececc',
+    'ofcbsc:tamznontesting',
+    'Amazon',
+    18,
+    UnderlyingAsset['bsc:tamznontesting']
+  ),
+  ofcBscToken(
+    '0fccce2d-61c4-4e55-bf3f-de8eaad7bb9f',
+    'ofcbsc:tethaontesting',
+    'iShares Ethereum Trust',
+    18,
+    UnderlyingAsset['bsc:tethaontesting']
+  ),
+  ofcBscToken(
+    'feac8a3d-da8c-4329-9160-cc2d7edb8ce1',
+    'ofcbsc:tgooglontesting',
+    'Alphabet Class A',
+    18,
+    UnderlyingAsset['bsc:tgooglontesting']
+  ),
+  ofcBscToken(
+    '246ec86c-312e-4c91-830b-89868bb6eee0',
+    'ofcbsc:tmetaontesting',
+    'Meta Platforms',
+    18,
+    UnderlyingAsset['bsc:tmetaontesting']
+  ),
+  ofcBscToken(
+    '9a57aaca-b279-42ed-b8ff-94c8833a28d1',
+    'ofcbsc:tmsftontesting',
+    'Microsoft',
+    18,
+    UnderlyingAsset['bsc:tmsftontesting']
+  ),
+  ofcBscToken(
+    'eea32193-9f15-4d05-b008-bfe75b6268c7',
+    'ofcbsc:tnvdaontesting',
+    'NVIDIA',
+    18,
+    UnderlyingAsset['bsc:tnvdaontesting']
+  ),
+  ofcBscToken(
+    'f2d86759-510b-409b-ae22-9cffb47328d6',
+    'ofcbsc:ttslaontesting',
+    'Tesla',
+    18,
+    UnderlyingAsset['bsc:ttslaontesting']
+  ),
+  ofcBscToken(
+    '13dee16d-0ae4-48d5-bbee-c8413af569a2',
+    'ofcbsc:taggontesting',
+    'iShares Core US Aggregate Bond ETF',
+    18,
+    UnderlyingAsset['bsc:taggontesting']
+  ),
+  ofcBscToken(
+    'c02c7ff2-2c31-4496-9668-8d642357d567',
+    'ofcbsc:talabontesting',
+    'Astera Labs',
+    18,
+    UnderlyingAsset['bsc:talabontesting']
+  ),
+  ofcBscToken(
+    '96eaa6e2-6183-4904-9f13-de20c5bb6d4e',
+    'ofcbsc:tamatontesting',
+    'Applied Materials',
+    18,
+    UnderlyingAsset['bsc:tamatontesting']
+  ),
+  ofcBscToken(
+    'e3731a02-b5d5-46f9-9c36-f0d7d16e4a2d',
+    'ofcbsc:tamdontesting',
+    'AMD',
+    18,
+    UnderlyingAsset['bsc:tamdontesting']
+  ),
+  ofcBscToken(
+    '91f9c64c-06e8-4cfb-882e-53f980426b92',
+    'ofcbsc:tanetontesting',
+    'Arista Networks',
+    18,
+    UnderlyingAsset['bsc:tanetontesting']
+  ),
+  ofcBscToken(
+    'c44cc50d-9abf-4a52-86a5-7984cb1820b9',
+    'ofcbsc:tarmontesting',
+    'Arm Holdings plc',
+    18,
+    UnderlyingAsset['bsc:tarmontesting']
+  ),
+  ofcBscToken(
+    '2b393bcb-0f45-47ad-9555-d27b6447fbe9',
+    'ofcbsc:tasmlontesting',
+    'ASML Holding NV',
+    18,
+    UnderlyingAsset['bsc:tasmlontesting']
+  ),
+  ofcBscToken(
+    '4f0141dc-ec80-4bfc-bf21-d8d6aa24ac1e',
+    'ofcbsc:tavgoontesting',
+    'Broadcom',
+    18,
+    UnderlyingAsset['bsc:tavgoontesting']
+  ),
+  ofcBscToken(
+    'b38210aa-4b11-47ae-aa32-232821c19df1',
+    'ofcbsc:tbeontesting',
+    'Bloom Energy',
+    18,
+    UnderlyingAsset['bsc:tbeontesting']
+  ),
+  ofcBscToken(
+    '2a3cb91c-69ea-4685-a9d8-7c58ae060615',
+    'ofcbsc:tbotzontesting',
+    'Global X Robotics & Artificial Intelligence ETF',
+    18,
+    UnderlyingAsset['bsc:tbotzontesting']
+  ),
+  ofcBscToken(
+    'a8cb6505-536a-4a9b-85d9-4cb313514913',
+    'ofcbsc:tbrhyontesting',
+    'iShares High Yield Active ETF',
+    18,
+    UnderlyingAsset['bsc:tbrhyontesting']
+  ),
+  ofcBscToken(
+    '16fd8a43-9bd3-4c9d-8486-9cd01a06c3d1',
+    'ofcbsc:tcegontesting',
+    'Constellation Energy',
+    18,
+    UnderlyingAsset['bsc:tcegontesting']
+  ),
+  ofcBscToken(
+    'e91310c9-6e3e-4098-a047-1e4d808179f1',
+    'ofcbsc:tcienontesting',
+    'Ciena',
+    18,
+    UnderlyingAsset['bsc:tcienontesting']
+  ),
+  ofcBscToken(
+    'c917abca-a9df-484c-9be6-22e8286a8e6c',
+    'ofcbsc:tcifrontesting',
+    'Cipher Mining',
+    18,
+    UnderlyingAsset['bsc:tcifrontesting']
+  ),
+  ofcBscToken(
+    '4965be7a-56a2-4e08-9f34-f748661f6bd9',
+    'ofcbsc:tcohrontesting',
+    'Coherent',
+    18,
+    UnderlyingAsset['bsc:tcohrontesting']
+  ),
+  ofcBscToken(
+    '17c637f9-3b2b-4b3f-beca-f5ed94fcd6a8',
+    'ofcbsc:tcrdoontesting',
+    'Credo Technology Group Holding',
+    18,
+    UnderlyingAsset['bsc:tcrdoontesting']
+  ),
+  ofcBscToken(
+    'd61e4791-c66a-4955-a415-70a9863f0902',
+    'ofcbsc:tcrwvontesting',
+    'CoreWeave',
+    18,
+    UnderlyingAsset['bsc:tcrwvontesting']
+  ),
+  ofcBscToken(
+    '08b83d25-abb9-4eb1-95eb-2f415c50ea2b',
+    'ofcbsc:tdellontesting',
+    'Dell Technologies',
+    18,
+    UnderlyingAsset['bsc:tdellontesting']
+  ),
+  ofcBscToken(
+    '0d8fdfb8-1922-444c-b415-58d16ef1cb07',
+    'ofcbsc:tdramontesting',
+    'Roundhill Memory ETF',
+    18,
+    UnderlyingAsset['bsc:tdramontesting']
+  ),
+  ofcBscToken(
+    '1f2de85c-c174-43d6-9d4a-6533583d05b6',
+    'ofcbsc:tdtcrontesting',
+    'Global X Data Center & Digital Infrastructure ETF',
+    18,
+    UnderlyingAsset['bsc:tdtcrontesting']
+  ),
+  ofcBscToken(
+    'bfb2ec1c-e0a1-49a9-9c05-28a8500d8f76',
+    'ofcbsc:tetnontesting',
+    'Eaton',
+    18,
+    UnderlyingAsset['bsc:tetnontesting']
+  ),
+  ofcBscToken(
+    'd0cd473b-671e-49d3-b282-acaa946ca9bf',
+    'ofcbsc:tfnontesting',
+    'Fabrinet',
+    18,
+    UnderlyingAsset['bsc:tfnontesting']
+  ),
+  ofcBscToken(
+    'faa60e29-837f-4f94-a633-546b79e8a01d',
+    'ofcbsc:tgevontesting',
+    'GE Vernova',
+    18,
+    UnderlyingAsset['bsc:tgevontesting']
+  ),
+  ofcBscToken(
+    '8dbbdd35-a8bc-4382-9186-2d6bd2e1d53e',
+    'ofcbsc:tglwontesting',
+    'Corning',
+    18,
+    UnderlyingAsset['bsc:tglwontesting']
+  ),
+  ofcBscToken(
+    '5ecaaaa8-df90-447a-8166-c36992de74fa',
+    'ofcbsc:thygontesting',
+    'iBoxx $ High Yield Corporate Bond ETF',
+    18,
+    UnderlyingAsset['bsc:thygontesting']
+  ),
+  ofcBscToken(
+    'bdfdfee4-9b94-41e9-8d28-57830424d2da',
+    'ofcbsc:tialtontesting',
+    'iShares Systematic Alternatives Active ETF',
+    18,
+    UnderlyingAsset['bsc:tialtontesting']
+  ),
+  ofcBscToken(
+    '086e1f34-3454-49ab-acca-fdf372754e80',
+    'ofcbsc:tigebontesting',
+    'iShares Investment Grade Systematic Bond ETF',
+    18,
+    UnderlyingAsset['bsc:tigebontesting']
+  ),
+  ofcBscToken(
+    '3936cdd5-b556-4efd-8df3-24de80e82e03',
+    'ofcbsc:tigvontesting',
+    'iShares Expanded Tech-Software ETF',
+    18,
+    UnderlyingAsset['bsc:tigvontesting']
+  ),
+  ofcBscToken(
+    'a00bd428-b539-4c7e-9bd4-edd1a4dad056',
+    'ofcbsc:tinroontesting',
+    'iShares US Industry Rotation Active ETF',
+    18,
+    UnderlyingAsset['bsc:tinroontesting']
+  ),
+  ofcBscToken(
+    '960a91d1-7d58-4a3e-81e0-ba05c3a2b41b',
+    'ofcbsc:tirenontesting',
+    'IREN',
+    18,
+    UnderlyingAsset['bsc:tirenontesting']
+  ),
+  ofcBscToken(
+    '2262c6e0-3357-402f-a9c6-ef68a8b77487',
+    'ofcbsc:tklacontesting',
+    'KLA',
+    18,
+    UnderlyingAsset['bsc:tklacontesting']
+  ),
+  ofcBscToken(
+    'd52a07a9-04f7-4320-bdb4-b37fc69cc8d9',
+    'ofcbsc:tlembontesting',
+    'iShares J.P. Morgan EM Local Currency Bond ETF',
+    18,
+    UnderlyingAsset['bsc:tlembontesting']
+  ),
+  ofcBscToken(
+    '8d78a830-117a-42ff-ba1c-9f086bc5ffec',
+    'ofcbsc:tliteontesting',
+    'Lumentum Holdings',
+    18,
+    UnderlyingAsset['bsc:tliteontesting']
+  ),
+  ofcBscToken(
+    'e1aec8cf-946b-4e1a-906e-f46fedd79a61',
+    'ofcbsc:tlrcxontesting',
+    'Lam Research',
+    18,
+    UnderlyingAsset['bsc:tlrcxontesting']
+  ),
+  ofcBscToken(
+    '925cf1d5-de3b-488c-87f6-993402c03214',
+    'ofcbsc:tmrvlontesting',
+    'Marvell Technology',
+    18,
+    UnderlyingAsset['bsc:tmrvlontesting']
+  ),
+  ofcBscToken(
+    '55d75bc8-c8be-486d-ba38-58f7d3a9436c',
+    'ofcbsc:tmuontesting',
+    'Micron Technology',
+    18,
+    UnderlyingAsset['bsc:tmuontesting']
+  ),
+  ofcBscToken(
+    'bc379e60-1611-47d6-b303-fff2f36415f5',
+    'ofcbsc:tnbisontesting',
+    'Nebius Group',
+    18,
+    UnderlyingAsset['bsc:tnbisontesting']
+  ),
+  ofcBscToken(
+    '911c1d6c-8563-40f3-aaa6-a3a9109efbc5',
+    'ofcbsc:tqltaontesting',
+    'iShares Aaa - A Rated Corporate Bond ETF',
+    18,
+    UnderlyingAsset['bsc:tqltaontesting']
+  ),
+  ofcBscToken(
+    '9fe16d73-400e-46aa-b00d-efadabda6422',
+    'ofcbsc:tsataontesting',
+    'Strive Preferred',
+    18,
+    UnderlyingAsset['bsc:tsataontesting']
+  ),
+  ofcBscToken(
+    'f4dd50a6-26c2-4790-a0a4-b6c43675e97e',
+    'ofcbsc:tsgovontesting',
+    'iShares 0-3 Month Treasury Bond ETF',
+    18,
+    UnderlyingAsset['bsc:tsgovontesting']
+  ),
+  ofcBscToken(
+    '1208b1dd-d671-4826-83d7-8a3ae023a3fa',
+    'ofcbsc:tsmciontesting',
+    'Super Micro Computer',
+    18,
+    UnderlyingAsset['bsc:tsmciontesting']
+  ),
+  ofcBscToken(
+    '2e14ecc0-03c3-48ba-b588-75df01f39736',
+    'ofcbsc:tstrcontesting',
+    'Strategy Stretch Preferred',
+    18,
+    UnderlyingAsset['bsc:tstrcontesting']
+  ),
+  ofcBscToken(
+    '787f7e8b-f202-440b-b579-c4fcf6fa0dde',
+    'ofcbsc:ttsmontesting',
+    'Taiwan Semiconductor Manufacturing',
+    18,
+    UnderlyingAsset['bsc:ttsmontesting']
+  ),
+  ofcBscToken(
+    '1fb79c07-e772-4260-b86e-58683fccda57',
+    'ofcbsc:tvnqontesting',
+    'Vanguard Real Estate ETF',
+    18,
+    UnderlyingAsset['bsc:tvnqontesting']
+  ),
+  ofcBscToken(
+    '5b6899c8-d214-42a2-b38e-9b890c9b5d13',
+    'ofcbsc:tvrtontesting',
+    'Vertiv',
+    18,
+    UnderlyingAsset['bsc:tvrtontesting']
+  ),
+  ofcBscToken(
+    '28e1e26a-9bd7-4365-bbb2-71655db8abc1',
+    'ofcbsc:tvstontesting',
+    'Vistra',
+    18,
+    UnderlyingAsset['bsc:tvstontesting']
+  ),
+  ofcBscToken(
+    '51c99219-cdbe-4a47-bde7-6b69af5443ea',
+    'ofcbsc:tqyldontesting',
+    'Global X NASDAQ 100 Covered Call ETF',
+    18,
+    UnderlyingAsset['bsc:tqyldontesting']
+  ),
+  ofcBscToken(
+    '3a0967dc-a4ce-4cc0-b255-19a0ff1b2ab9',
+    'ofcbsc:txyldontesting',
+    'Global X S&P 500 Covered Call ETF',
+    18,
+    UnderlyingAsset['bsc:txyldontesting']
+  ),
+  ofcBscToken(
+    '244eee40-ff71-4aa4-aa7b-e3460aacb73b',
+    'ofcbsc:tjaaaontesting',
+    'Janus Henderson AAA CLO ETF',
+    18,
+    UnderlyingAsset['bsc:tjaaaontesting']
+  ),
   // Ondo Test Tokens OFC (BSC)
   ofcBscToken(
     '389e7bc3-fb66-4660-a2e9-ae2082ed42df',
