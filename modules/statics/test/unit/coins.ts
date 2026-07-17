@@ -1109,9 +1109,9 @@ describe('Token contract address field defaults', () => {
     });
 
     it('flags extensions with no BitGo handling code (onboarding safety gate)', () => {
-      getUnsupportedSolTokenExtensions([SolTokenExtensionType.TransferFee]).should.eql([]);
-      getUnsupportedSolTokenExtensions(['confidentialTransfer', SolTokenExtensionType.TransferHook]).should.eql([
-        'confidentialTransfer',
+      getUnsupportedSolTokenExtensions(['TransferFeeConfig', 'MetadataPointer']).should.eql([]);
+      getUnsupportedSolTokenExtensions(['ConfidentialTransferMint', 'TransferHook']).should.eql([
+        'ConfidentialTransferMint',
       ]);
     });
 

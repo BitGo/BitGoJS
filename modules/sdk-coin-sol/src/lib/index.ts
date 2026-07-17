@@ -21,3 +21,11 @@ export { WalletInitializationBuilder } from './walletInitializationBuilder';
 export { Interface, Utils };
 export { MessageBuilderFactory } from './messages';
 export { explainSolTransaction, ExplainTransactionWasmOptions } from './explainTransactionWasm';
+export {
+  MintExtensionReadResult,
+  assertExtensionCompatibility,
+  extensionTypeNames,
+  mapModeledExtensions,
+  parseMintExtensions,
+  readMintExtensions,
+} from './tokenExtensions';
