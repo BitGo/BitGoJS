@@ -20,6 +20,85 @@ export enum ProgramID {
   Token2022ProgramId = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
 }
 
+/**
+ * Token-2022 (SPL Token Extensions) that BitGo has explicit custody handling for.
+ * This set is the onboarding safety gate: a mint whose
+ * TLV data declares any extension NOT represented here must be rejected at onboarding
+ * and escalated to engineering — no soft pass.
+ */
+export enum SolTokenExtensionType {
+  TransferFee = 'transferFee',
+  TransferHook = 'transferHook',
+  PermanentDelegate = 'permanentDelegate',
+  InterestBearing = 'interestBearing',
+  ScaledUiAmount = 'scaledUiAmount',
+  DefaultAccountState = 'defaultAccountState',
+}
+
+/** On-chain authority addresses relevant to Token-2022 extensions, captured at onboarding. */
+export interface SolTokenAuthorities {
+  freezeAuthority?: string;
+  mintAuthority?: string;
+  transferFeeConfigAuthority?: string;
+  withdrawWithheldAuthority?: string;
+  permanentDelegate?: string;
+  rateAuthority?: string;
+}
+
+export interface SolTransferFeeConfig {
+  transferFeeBasisPoints: number;
+  /** Raw base units, stringified to avoid precision loss. */
+  maximumFee: string;
+}
+
+export interface SolDefaultAccountStateConfig {
+  /** True when the mint's Default Account State is Frozen. */
+  frozen: boolean;
+  /** True when a permissionless thaw program (Token ACL etc.) is associated */
+  permissionlessThaw: boolean;
+}
+
+export interface SolInterestBearingConfig {
+  /** Annual interest rate in basis points. */
+  rateBasisPoints: number;
+  /** 'continuous' (issuer mints frequently) or 'redeemOnMaturity' (accrued not transferable until settlement). */
+  settlementModel?: 'continuous' | 'redeemOnMaturity';
+}
+export interface SolScaledUiAmountConfig {
+  /** UiAmountMultiplier active at onboarding; time-series history is tracked off-chain from day one. */
+  initialMultiplier: string;
+}
+/**
+ * Per-mint Token-2022 extension configuration detected at onboarding.
+ * Absent => classic SPL / no modeled extensions.
+ */
+export interface SolTokenExtensions {
+  /** Every extension detected on the mint's TLV data. Onboarding hard-stops if any is not a SolTokenExtensionType. */
+  detected: SolTokenExtensionType[];
+  authorities?: SolTokenAuthorities;
+  /** Resolved human-readable issuer name for notifications and transaction history. */
+  issuerName?: string;
+  transferFee?: SolTransferFeeConfig;
+  /** Transfer Hook program id. The extra-account-meta list is resolved fresh at tx time — never stored. */
+  transferHookProgramId?: string;
+  interestBearing?: SolInterestBearingConfig;
+  scaledUiAmount?: SolScaledUiAmountConfig;
+  defaultAccountState?: SolDefaultAccountStateConfig;
+}
+
+/** Extensions BitGo can safely custody (the onboarding allowlist). */
+export const SUPPORTED_SOL_TOKEN_EXTENSIONS: ReadonlySet<SolTokenExtensionType> = new Set(
+  Object.values(SolTokenExtensionType)
+);
+
+/**
+ * Returns the detected extensions BitGo has no handling code for.
+ * A non-empty result MUST hard-stop onboarding.
+ */
+export function getUnsupportedSolTokenExtensions(detected: readonly string[]): string[] {
+  return detected.filter((ext) => !SUPPORTED_SOL_TOKEN_EXTENSIONS.has(ext as SolTokenExtensionType));
+}
+
 export interface AccountConstructorOptions {
   id: string;
   fullName: string;
@@ -128,6 +207,7 @@ export interface SolCoinConstructorOptions extends AccountConstructorOptions {
   tokenAddress: string;
   contractAddress: string;
   programId: string;
+  tokenExtensions?: SolTokenExtensions;
 }
 
 export interface XrpCoinConstructorOptions extends AccountConstructorOptions {
@@ -453,6 +533,7 @@ export class SolCoin extends AccountCoinToken {
   public tokenAddress: string;
   public contractAddress: string;
   public programId: string;
+  public tokenExtensions?: SolTokenExtensions;
   constructor(options: SolCoinConstructorOptions) {
     super({
       ...options,
@@ -461,6 +542,12 @@ export class SolCoin extends AccountCoinToken {
     this.tokenAddress = options.contractAddress;
     this.contractAddress = options.contractAddress;
     this.programId = options.programId;
+    this.tokenExtensions = options.tokenExtensions;
+  }
+
+  /** True if this token was onboarded with the given Token-2022 extension. */
+  public hasExtension(type: SolTokenExtensionType): boolean {
+    return this.tokenExtensions?.detected.includes(type) ?? false;
   }
 }
 
@@ -2086,7 +2173,8 @@ export function solToken(
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.main.sol,
-  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519,
+  tokenExtensions?: SolTokenExtensions
 ) {
   return Object.freeze(
     new SolCoin({
@@ -2105,6 +2193,7 @@ export function solToken(
       isToken: true,
       primaryKeyCurve,
       baseUnit: BaseUnit.SOL,
+      tokenExtensions,
     })
   );
 }
@@ -2135,7 +2224,9 @@ export function tsolToken(
   programId = ProgramID.TokenProgramId,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.test.sol
+  network: AccountNetwork = Networks.test.sol,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519,
+  tokenExtensions?: SolTokenExtensions
 ) {
   return solToken(
     id,
@@ -2149,7 +2240,9 @@ export function tsolToken(
     programId,
     prefix,
     suffix,
-    network
+    network,
+    primaryKeyCurve,
+    tokenExtensions
   );
 }
 

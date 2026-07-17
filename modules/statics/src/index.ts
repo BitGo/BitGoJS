@@ -39,6 +39,15 @@ export {
   JettonToken,
   CantonToken,
   Erc7984Coin,
+  SolTokenExtensionType,
+  SolTokenExtensions,
+  SolTokenAuthorities,
+  SolTransferFeeConfig,
+  SolDefaultAccountStateConfig,
+  SolInterestBearingConfig,
+  SolScaledUiAmountConfig,
+  SUPPORTED_SOL_TOKEN_EXTENSIONS,
+  getUnsupportedSolTokenExtensions,
 } from './account';
 export { CoinMap } from './map';
 export {

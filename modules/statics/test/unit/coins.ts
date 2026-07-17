@@ -17,6 +17,7 @@ import {
   getFormattedTokenConfigForCoin,
   getFormattedTokens,
   HederaToken,
+  KeyCurve,
   Networks,
   NetworkType,
   registerNetwork,
@@ -41,7 +42,15 @@ import {
   trimmedDynamicBaseChainConfig,
 } from './resources/amsTokenConfig';
 import { EthLikeErc20Token } from '../../../sdk-coin-evm/src';
-import { ProgramID, taptNFTCollection, terc20 } from '../../src/account';
+import {
+  AccountCoin,
+  getUnsupportedSolTokenExtensions,
+  ProgramID,
+  solToken,
+  SolTokenExtensionType,
+  taptNFTCollection,
+  terc20,
+} from '../../src/account';
 import { allCoinsAndTokens } from '../../src/allCoinsAndTokens';
 
 interface DuplicateCoinObject {
@@ -1097,6 +1106,34 @@ describe('Token contract address field defaults', () => {
         .forEach((coin) => {
           validProgramIds.should.containEql((coin as SolCoin).programId);
         });
+    });
+
+    it('flags extensions with no BitGo handling code (onboarding safety gate)', () => {
+      getUnsupportedSolTokenExtensions([SolTokenExtensionType.TransferFee]).should.eql([]);
+      getUnsupportedSolTokenExtensions(['confidentialTransfer', SolTokenExtensionType.TransferHook]).should.eql([
+        'confidentialTransfer',
+      ]);
+    });
+
+    it('exposes detected extensions via SolCoin.hasExtension', () => {
+      const token = solToken(
+        'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d',
+        'sol:testext',
+        'Test Extension Token',
+        6,
+        'Ea5SjE2Y6yvCeW5dYTn7PYMuW5ikXkvbGdcmSnXeaLjS',
+        'Ea5SjE2Y6yvCeW5dYTn7PYMuW5ikXkvbGdcmSnXeaLjS',
+        UnderlyingAsset.SOL,
+        [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
+        ProgramID.Token2022ProgramId,
+        '',
+        'TESTEXT',
+        Networks.main.sol,
+        KeyCurve.Ed25519,
+        { detected: [SolTokenExtensionType.ScaledUiAmount], scaledUiAmount: { initialMultiplier: '1' } }
+      );
+      token.hasExtension(SolTokenExtensionType.ScaledUiAmount).should.be.true();
+      token.hasExtension(SolTokenExtensionType.TransferFee).should.be.false();
     });
   });
   describe('XRP tokens', function () {
