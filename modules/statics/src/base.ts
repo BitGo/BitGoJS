@@ -4398,6 +4398,20 @@ export enum UnderlyingAsset {
   'tprividiumeth:USB-ESCROW-D' = 'tprividiumeth:USB-ESCROW-D',
   'tprividiumeth:tMMF' = 'tprividiumeth:tMMF',
 
+  // ARC mainnet tokens
+  'arcusdc:eurc' = 'arcusdc:eurc',
+  'arcusdc:usyc' = 'arcusdc:usyc',
+
+  // Scroll mainnet tokens
+  'scrolleth:scr' = 'scrolleth:scr',
+
+  // Boba mainnet tokens
+  'bobaeth:boba' = 'bobaeth:boba',
+  'bobaeth:usdt' = 'bobaeth:usdt',
+
+  // Katana mainnet tokens
+  'katanaeth:kat' = 'katanaeth:kat',
+
   // fiats
   AED = 'aed',
   AUD = 'aud',

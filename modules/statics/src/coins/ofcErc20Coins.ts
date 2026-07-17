@@ -4534,6 +4534,98 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:ehybond1')
   ),
+
+  // ARC mainnet OFC tokens
+  ofcerc20(
+    '443ee3a6-363f-4f51-9c09-db6dae3abddf',
+    'ofcarcusdc:eurc',
+    'EURC',
+    6,
+    UnderlyingAsset['arcusdc:eurc'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'arcusdc'
+  ),
+  ofcerc20(
+    'c7747fa0-1596-4f18-b142-8af65b1878f1',
+    'ofcarcusdc:usyc',
+    'US Yield Coin',
+    6,
+    UnderlyingAsset['arcusdc:usyc'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'arcusdc'
+  ),
+
+  // Scroll mainnet OFC tokens
+  ofcerc20(
+    '5ebb024c-129f-40bc-9473-00432f4b8ac3',
+    'ofcscrolleth:scr',
+    'Scroll',
+    18,
+    UnderlyingAsset['scrolleth:scr'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'scrolleth'
+  ),
+
+  // Boba mainnet OFC tokens
+  ofcerc20(
+    '03402ab8-398a-4275-b08d-12177c09a5ee',
+    'ofcbobaeth:boba',
+    'Boba Token',
+    18,
+    UnderlyingAsset['bobaeth:boba'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'bobaeth'
+  ),
+  ofcerc20(
+    'bb1cb5d2-6de2-468b-9d50-dfd921955170',
+    'ofcbobaeth:usdt',
+    'Tether USD',
+    6,
+    UnderlyingAsset['bobaeth:usdt'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'bobaeth'
+  ),
+
+  // Katana mainnet OFC tokens
+  ofcerc20(
+    'c49375bf-8c11-43a1-8420-4cb4e09fc013',
+    'ofckatanaeth:kat',
+    'Katana Network Token',
+    18,
+    UnderlyingAsset['katanaeth:kat'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'katanaeth'
+  ),
 ];
 
 export const tOfcErc20Coins = [
