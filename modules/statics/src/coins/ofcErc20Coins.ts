@@ -7099,6 +7099,34 @@ export const tOfcErc20Coins = [
     undefined,
     'tbaseeth'
   ),
+  tofcerc20(
+    '92facd39-816e-49c1-bd0f-29e9d33ae8e8',
+    'ofctbaseeth:tnmr',
+    'AlpacaNMR',
+    18,
+    UnderlyingAsset['tbaseeth:tnmr'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'tbaseeth'
+  ),
+  tofcerc20(
+    'd9c3084d-0fe3-421d-b0a3-1c7a4d0a8d87',
+    'ofctbaseeth:tabeq',
+    'AlpacaABEQ',
+    18,
+    UnderlyingAsset['tbaseeth:tabeq'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'tbaseeth'
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

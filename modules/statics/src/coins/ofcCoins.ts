@@ -4443,6 +4443,13 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['polygon:wpay']
   ),
+  ofcPolygonErc20(
+    '941505f6-876c-4fa0-9a73-b38a6841bad2',
+    'ofcpolygon:seag',
+    'Seltene Erden AG',
+    0,
+    UnderlyingAsset['polygon:seag']
+  ),
 
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',

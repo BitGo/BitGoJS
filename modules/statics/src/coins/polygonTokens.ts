@@ -1645,6 +1645,15 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:wpay'],
     POLYGON_TOKEN_FEATURES
   ),
+  polygonErc20(
+    '351c2fb8-d567-4423-8ebb-3780cbc50a3b',
+    'polygon:seag',
+    'Seltene Erden AG',
+    0,
+    '0x23d239cd82ad06b17fc04983732b3fa4dc7e99a9',
+    UnderlyingAsset['polygon:seag'],
+    POLYGON_TOKEN_FEATURES
+  ),
   tpolygonErc20(
     '13dd4ab7-2d94-493c-9a61-323f6300f7e5',
     'tpolygon:tusdl',

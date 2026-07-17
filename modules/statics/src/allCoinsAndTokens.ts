@@ -4257,6 +4257,24 @@ export const allCoinsAndTokens = [
     Networks.test.basechain
   ),
   erc20Token(
+    '83fc8008-9ac2-4a4f-a0e2-683f212fbd5b',
+    'tbaseeth:tnmr',
+    'AlpacaNMR',
+    18,
+    '0x443d8b40b2c44c696ef4833382ab948a9fbb8386',
+    UnderlyingAsset['tbaseeth:tnmr'],
+    Networks.test.basechain
+  ),
+  erc20Token(
+    '78c6bd98-0b93-462a-887b-fa6709eb662c',
+    'tbaseeth:tabeq',
+    'AlpacaABEQ',
+    18,
+    '0xb5f5c1bfb7e7501c13e13eb1ccc90126a7b568f2',
+    UnderlyingAsset['tbaseeth:tabeq'],
+    Networks.test.basechain
+  ),
+  erc20Token(
     '439fb12d-fddf-4749-8a33-b7c79fefc1b4',
     'baseeth:wave',
     'Waveform',
