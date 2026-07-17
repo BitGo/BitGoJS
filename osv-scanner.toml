@@ -1,0 +1,55 @@
+[[IgnoredVulns]]
+id = "GHSA-8qq5-rm4j-mr97"
+reason = "tar extraction CVE, lerna only packs — not exploitable"
+
+[[IgnoredVulns]]
+id = "GHSA-r6q2-hw4h-h46w"
+reason = "tar extraction CVE, packing only"
+
+[[IgnoredVulns]]
+id = "GHSA-34x7-hfp2-rc4v"
+reason = "tar extraction CVE, packing only"
+
+[[IgnoredVulns]]
+id = "GHSA-3ppc-4f35-3m26"
+reason = "minimatch ReDoS, dev tooling only with controlled inputs"
+
+[[IgnoredVulns]]
+id = "GHSA-83g3-92jg-28cx"
+reason = "tar extraction CVE, packing only"
+
+[[IgnoredVulns]]
+id = "GHSA-7r86-cg39-jmmj"
+reason = "minimatch ReDoS, dev tooling only"
+
+[[IgnoredVulns]]
+id = "GHSA-23c5-xmqv-rm74"
+reason = "minimatch ReDoS, dev tooling only"
+
+[[IgnoredVulns]]
+id = "GHSA-qffp-2rhf-9h96"
+reason = "tar hardlink path traversal, packing only"
+
+[[IgnoredVulns]]
+id = "GHSA-9ppj-qmqm-q256"
+reason = "tar extraction, packing only"
+
+[[IgnoredVulns]]
+id = "GHSA-2w8x-224x-785m"
+reason = "sjcl.ecc invalid-curve attack; macaroon uses HMAC/hash only; resolved via @bitgo/sjcl fork"
+
+[[IgnoredVulns]]
+id = "GHSA-96hv-2xvq-fx4p"
+reason = "ws server-side DoS; used only as WebSocket client"
+
+[[IgnoredVulns]]
+id = "GHSA-hmw2-7cc7-3qxx"
+reason = "form-data CRLF injection; all field names are code-controlled constants"
+
+[[IgnoredVulns]]
+id = "GHSA-wcpc-wj8m-hjx6"
+reason = "protobufjs DoS via parseAny recursion; input from trusted RPC only"
+
+[[IgnoredVulns]]
+id = "GHSA-7c78-jf6q-g5cm"
+reason = "tmp path traversal via type confusion; all args are hardcoded strings"

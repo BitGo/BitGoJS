@@ -32,7 +32,6 @@
     "html-webpack-plugin": "^5.5.0",
     "https-browserify": "^1.0.0",
     "husky": "^8.0.1",
-    "improved-yarn-audit": "^3.0.0",
     "lerna": "^9.0.0",
     "lint-staged": "^12.4.1",
     "make-dir": "^3.1.0",
@@ -260,7 +259,6 @@
   ],
   "scripts": {
     "postinstall": "test -n \"$NOYARNPOSTINSTALL\" || lerna run build --stream",
-    "audit-high": "improved-yarn-audit --min-severity high",
     "lint": "lerna run lint --stream",
     "lint-changed": "lerna run lint --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream",
     "unit-test-changed": "lerna run unit-test --since $(git merge-base HEAD~ origin/${GITHUB_REPO_BRANCH:-master}) --stream",
