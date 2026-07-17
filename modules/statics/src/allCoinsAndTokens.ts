@@ -4906,6 +4906,68 @@ export const allCoinsAndTokens = [
     Networks.main.basechain
   ),
 
+  // ARC mainnet tokens
+  erc20Token(
+    '61f600f8-9692-4d9e-af3d-f25c57b243f4',
+    'arcusdc:eurc',
+    'EURC',
+    6,
+    '0x89b50855aa3be2f677cd6303cec089b5f319d72a',
+    UnderlyingAsset['arcusdc:eurc'],
+    Networks.main.arcusdc
+  ),
+  erc20Token(
+    'e18ae504-875b-4b5c-a797-5f6797de66a7',
+    'arcusdc:usyc',
+    'US Yield Coin',
+    6,
+    '0xe9185f0c5f296ed1797aae4238d26ccabeadb86c',
+    UnderlyingAsset['arcusdc:usyc'],
+    Networks.main.arcusdc
+  ),
+
+  // Scroll mainnet tokens
+  erc20Token(
+    'a6d6b9b1-5a6d-4e88-80da-477c6c219b19',
+    'scrolleth:scr',
+    'Scroll',
+    18,
+    '0xd29687c813d741e2f938f4ac377128810e217b1b',
+    UnderlyingAsset['scrolleth:scr'],
+    Networks.main.scrolleth
+  ),
+
+  // Boba mainnet tokens
+  erc20Token(
+    '5805c7df-09f6-4e4d-abc6-fcaffee1511f',
+    'bobaeth:boba',
+    'Boba Token',
+    18,
+    '0xa18bf3994c0cc6e3b63ac420308e5383f53120d7',
+    UnderlyingAsset['bobaeth:boba'],
+    Networks.main.boba
+  ),
+  erc20Token(
+    '094716ce-6222-47b9-9125-64ced904b9eb',
+    'bobaeth:usdt',
+    'Tether USD',
+    6,
+    '0x5de1677344d3cb0d7d465c10b72a8f60699c062d',
+    UnderlyingAsset['bobaeth:usdt'],
+    Networks.main.boba
+  ),
+
+  // Katana mainnet tokens
+  erc20Token(
+    'c0e49c8f-384c-4da1-baf9-b6685fc9c651',
+    'katanaeth:kat',
+    'Katana Network Token',
+    18,
+    '0x7f1f4b4b29f5058fa32cc7a97141b8d7e5abdc2d',
+    UnderlyingAsset['katanaeth:kat'],
+    Networks.main.katanaeth
+  ),
+
   // XDC mainnet tokens
   xdcErc20(
     'b820932d-5772-49ae-a055-a59760f3e4cf',
