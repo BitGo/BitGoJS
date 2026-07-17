@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [52.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.1.0...bitgo@52.2.0) (2026-07-16)
+
+
+### Features
+
+* **sdk-core:** add argon2 re-encryption to sdk-core (WCN-174) ([8b6909e](https://github.com/BitGo/BitGoJS/commit/8b6909e717a290151eb42600825d69c644486e4f))
+
+
+
+
+
 # [52.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.0.1...bitgo@52.1.0) (2026-07-14)
 
 

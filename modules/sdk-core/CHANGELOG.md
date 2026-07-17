@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.2.0...@bitgo/sdk-core@38.3.0) (2026-07-16)
+
+
+### Features
+
+* implement safe createSafeKeys and finalize orchestrator ([a1f488e](https://github.com/BitGo/BitGoJS/commit/a1f488e82db4a06c5556d53f5a59c71d60866e71))
+* implement Safes.list and Safes.get ([7d89528](https://github.com/BitGo/BitGoJS/commit/7d89528fb06487cc62d8f0568ff1dbe58d02ca11))
+* initialize safe calls API ([984a6cf](https://github.com/BitGo/BitGoJS/commit/984a6cfdfbcd17ec627fa8a752c63966a1482fff))
+* **sdk-core:** add argon2 re-encryption to sdk-core (WCN-174) ([8b6909e](https://github.com/BitGo/BitGoJS/commit/8b6909e717a290151eb42600825d69c644486e4f))
+* **sdk-core:** allocationAllocateWithdrawn to allocationOfferWithdrawn ([ec133e7](https://github.com/BitGo/BitGoJS/commit/ec133e7ee895a380076318beb631108e29d55c45))
+* **sdk-core:** bump public-types to native attestation support ([dfc575d](https://github.com/BitGo/BitGoJS/commit/dfc575d6f68d979bc48cbb9083027b56b305968b))
+* **sdk-core:** pass optional attestation through multisig send/initiate ([a02525d](https://github.com/BitGo/BitGoJS/commit/a02525da436053ddde4361fb938e156d5d4dbcfa))
+
+
+
+
+
 # [38.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.1.0...@bitgo/sdk-core@38.2.0) (2026-07-14)
 
 

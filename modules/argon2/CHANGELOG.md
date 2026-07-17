@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/argon2@1.1.0...@bitgo/argon2@1.1.1) (2026-07-16)
+
+
+### Bug Fixes
+
+* **argon2:** add types condition to package.json exports map ([87f6e2e](https://github.com/BitGo/BitGoJS/commit/87f6e2e6a1d8250ce419cc8bfb2cffdc563aa3ca))
+
+
+
+
+
 # 1.1.0 (2026-04-22)
 
 
