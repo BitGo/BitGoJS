@@ -3090,6 +3090,7 @@ export enum UnderlyingAsset {
   'polygon:bolt' = 'polygon:bolt',
   'polygon:gmc' = 'polygon:gmc',
   'polygon:wpay' = 'polygon:wpay',
+  'polygon:seag' = 'polygon:seag',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -3535,6 +3536,8 @@ export enum UnderlyingAsset {
   'tbaseeth:ttbills' = 'tbaseeth:ttbills',
   'tbaseeth:kmusdc' = 'tbaseeth:kmusdc',
   'tbaseeth:tpdd' = 'tbaseeth:tpdd',
+  'tbaseeth:tnmr' = 'tbaseeth:tnmr',
+  'tbaseeth:tabeq' = 'tbaseeth:tabeq',
 
   // Og mainnet tokens
   'og:wog' = 'og:wog',
