@@ -275,6 +275,30 @@ describe('Polyx:', function () {
       });
     });
 
+    describe('token enablement (preApproveAsset) transaction', function () {
+      it('should return true for enabletoken type with recipients (wallet root address)', async function () {
+        // buildTokenEnablements sets recipients[0].address = wallet rootAddress and type = 'enabletoken'.
+        // verifyTransaction must short-circuit before the _to check since preApproveAsset has no destination.
+        const walletAddress = '5F8jxKE81GhFrphyfMFr5UjeAz5wS4AaZFmeFPnf8wTetD72';
+        const result = await baseCoin.verifyTransaction({
+          txPrebuild: { txHex: rawTx.preApproveAsset.signed },
+          txParams: {
+            type: 'enabletoken',
+            recipients: [{ address: walletAddress, amount: '0', tokenName: 'tpolyx:sometoken' }],
+          },
+        });
+        result.should.be.true();
+      });
+
+      it('should return true for enabletoken type with no recipients', async function () {
+        const result = await baseCoin.verifyTransaction({
+          txPrebuild: { txHex: rawTx.preApproveAsset.signed },
+          txParams: { type: 'enabletoken' },
+        });
+        result.should.be.true();
+      });
+    });
+
     describe('v8 transfer with coinSpecific.material', function () {
       const v8Amount = '1000000';
       const v8Receiver = accounts.account2;

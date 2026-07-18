@@ -157,6 +157,13 @@ export class SubstrateCoin extends BaseCoin {
     if (prebuildMaterial && typeof factory.material === 'function') {
       factory.material(prebuildMaterial);
     }
+    // Token enablement (preApproveAsset) transactions have no destination address — they are
+    // self-transactions signed by the wallet. Skip transfer recipient validation, consistent
+    // with how XRP and Algo handle enabletoken in their verifyTransaction implementations.
+    if (txParams.type === 'enabletoken') {
+      return true;
+    }
+
     const txBuilder = factory.from(txPrebuild.txHex) as unknown as NativeTransferBuilder;
     const txTo: string = txBuilder['_to'];
     const txAmount: string = txBuilder['_amount'];
