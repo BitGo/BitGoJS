@@ -4,6 +4,7 @@ import {
   bitcoin,
   BitGoBase,
   BitGoRequest,
+  type BitGoApiV1Wallets,
   CoinConstructor,
   common,
   DecryptKeysOptions,
@@ -100,6 +101,9 @@ const Markets = require('./v1/markets');
 const PendingApprovals = require('./v1/pendingapprovals');
 const TravelRule = require('./v1/travelRule');
 const TransactionBuilder = require('./v1/transactionBuilder');
+
+/** Re-export of the deprecated **v1** wallets facade type (`bitgo.wallets()`). Not v2 `IWallets`. */
+export type { BitGoApiV1Wallets } from '@bitgo/sdk-core';
 
 function validateDecryptKeysParams(params: DecryptKeysOptions): DecryptKeysOptions {
   params = params || {};
@@ -231,7 +235,7 @@ function deriveTokenIssuanceEcdhSecret(ecdhXprv: string, derivationPath: string,
 export class BitGoAPI implements BitGoBase {
   // v1 types
   protected _keychains: any;
-  protected _wallets: any;
+  protected _wallets: BitGoApiV1Wallets | null;
   protected _markets?: any;
   protected _blockchain?: any;
   protected _travelRule?: any;
@@ -1746,12 +1750,16 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
-   * Get the user's wallets object.
-   * @deprecated
+   * Get the user's **v1** wallets object (`modules/sdk-api/src/v1/wallets.ts`).
+   *
+   * Returns {@link BitGoApiV1Wallets}. This is **not** the v2 wallets API —
+   * for coin wallets use `this.coin(coinName).wallets()` ({@link IWallets}).
+   *
+   * @deprecated Prefer `coin(coinName).wallets()`.
    */
-  wallets(): any {
+  wallets(): BitGoApiV1Wallets {
     if (!this._wallets) {
-      this._wallets = new Wallets(this);
+      this._wallets = new Wallets(this) as BitGoApiV1Wallets;
     }
     return this._wallets;
   }
