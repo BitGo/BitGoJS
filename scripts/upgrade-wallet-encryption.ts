@@ -16,6 +16,11 @@
  *     [--passcodeEncryptionCode <code>] \
  *     [--dry-run]
  *
+ * OFC wallets (--coin ofc):
+ *   Only --passphrase is required. --boxD / --boxA / --boxB do not apply.
+ *   No keycard PDF is produced. The script iterates all key IDs on the wallet
+ *   and re-encrypts any that still use v1 (SJCL) encryption.
+ *
  * --accessToken: Short-lived BitGo access token. Generate this using the following guide
  *                https://developers.bitgo.com/docs/get-started-access-tokens#1-create-short-lived-access-token
  * --boxD: Box D from the original keycard. Required if the wallet passphrase has been changed since the

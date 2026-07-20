@@ -3486,11 +3486,10 @@ export class Wallet implements IWallet {
     }
 
     const keyIds = this.keyIds();
-    const [userKeychain, backupKeychain, bitgoKeychain] = await Promise.all([
-      keychainsApi.get({ id: keyIds[0] }),
-      keychainsApi.get({ id: keyIds[1] }),
-      keychainsApi.get({ id: keyIds[2] }),
-    ]);
+    const allKeychains = await Promise.all(keyIds.map((id) => keychainsApi.get({ id })));
+    const userKeychain = allKeychains.find((k) => k.source === 'user') ?? allKeychains[KeyIndices.USER];
+    const backupKeychain = allKeychains.find((k) => k.source === 'backup');
+    const bitgoKeychain = allKeychains.find((k) => k.source === 'bitgo');
 
     const updated: Array<{ type: string; id: string }> = [];
     const skipped: Array<{ type: string; reason: string }> = [];
@@ -3507,7 +3506,7 @@ export class Wallet implements IWallet {
         if (!dryRun) {
           await this.bitgo
             .put(this.baseCoin.url(`/key/${encodeURIComponent(userKeychain.id)}`))
-            .send({ encryptedPrv: newEncryptedPrv, originalEncryptedPrv: newEncryptedPrv })
+            .send({ encryptedPrv: newEncryptedPrv, originalEncryptedPrv: newEncryptedPrv, pub: userKeychain.pub })
             .result();
         }
         updated.push({ type: 'user', id: userKeychain.id });
@@ -3519,8 +3518,8 @@ export class Wallet implements IWallet {
     // Re-encrypt backup key. May be encrypted under the original passphrase if the wallet
     // password was changed after creation — fall back to originalPassphrase if current fails.
     // Source: server-stored encryptedPrv (preferred) or boxB for older/keycard-only wallets.
-    const serverStored = !!backupKeychain.encryptedPrv;
-    const backupSource = backupKeychain.encryptedPrv ?? boxB;
+    const serverStored = !!backupKeychain?.encryptedPrv;
+    const backupSource = backupKeychain?.encryptedPrv ?? boxB;
     if (backupSource) {
       if (keychainsApi.getEncryptionVersion(backupSource) === 2) {
         skipped.push({ type: 'backup', reason: 'already v2' });
@@ -3531,15 +3530,16 @@ export class Wallet implements IWallet {
           originalPassphrase,
           'backup key'
         );
-        backupKeychain.encryptedPrv = newEncryptedPrv;
-        if (!dryRun && serverStored) {
+        if (backupKeychain) backupKeychain.encryptedPrv = newEncryptedPrv;
+        if (!dryRun && serverStored && backupKeychain) {
           // Only PUT if the key was server-stored; boxB-only wallets have no server record.
           await this.bitgo
             .put(this.baseCoin.url(`/key/${encodeURIComponent(backupKeychain.id)}`))
             .send({ encryptedPrv: newEncryptedPrv })
             .result();
         }
-        updated.push({ type: serverStored ? 'backup' : 'backup (keycard only)', id: backupKeychain.id });
+        const backupId = backupKeychain?.id ?? boxB ?? 'unknown';
+        updated.push({ type: serverStored ? 'backup' : 'backup (keycard only)', id: backupId });
       }
     } else {
       skipped.push({ type: 'backup', reason: 'public key only' });
@@ -3573,7 +3573,7 @@ export class Wallet implements IWallet {
       );
       updated.push({ type: 'user reducedEncryptedPrv (keycard only)', id: userKeychain.id });
     }
-    if (boxB && backupKeychain.encryptedPrv) {
+    if (boxB && backupKeychain?.encryptedPrv) {
       // MPCv2: encryptedPrv exists server-side but reducedEncryptedPrv does not.
       // Re-encrypt boxB so the new keycard uses the reduced form instead of the full blob.
       backupKeychain.reducedEncryptedPrv = await this.reencryptCreationTimeKey(
@@ -3585,7 +3585,7 @@ export class Wallet implements IWallet {
       updated.push({ type: 'backup reducedEncryptedPrv (keycard only)', id: backupKeychain.id });
     }
 
-    if (!generatePdf) {
+    if (!generatePdf || !backupKeychain || !bitgoKeychain) {
       console.log('Done (no PDF generator provided).');
       return undefined;
     }
