@@ -10,6 +10,7 @@ import {
   V8WithdrawUnbondedBuilder,
   V8NominateBuilder,
   SingletonRegistry,
+  Interface,
 } from '../../../src/lib';
 import { BatchArgs, NominateArgs, V8BondArgs } from '../../../src/lib/iface';
 import utils from '../../../src/lib/utils';
@@ -169,6 +170,50 @@ describe('V8BatchStakingBuilder', function () {
       const v8Factory = new TransactionBuilderFactory(coins.get('tpolyx')).material(v8Material);
       const builder = v8Factory.from(rawTxHex);
       should.ok(builder instanceof V8BatchStakingBuilder);
+    });
+
+    it('factory.material(liveMaterial).from(...) forwards the live material into the rebuilt v8 batch staking builder (SI-1034)', async () => {
+      // Reproduces the custodial staking incident: the HSM signs against LIVE chain material
+      // (e.g. a specVersion bump after a runtime upgrade), but wallet-platform's getSignedTx
+      // re-verifies by calling `factory.material(liveMaterial).from(serializedTxHex)`. On the
+      // decode-success path, `getBuilder()` used to return `getV8BatchStakingBuilder()` without
+      // forwarding `this._material`, so the rebuild silently fell back to the builder's static
+      // `getV8Material()` (stale specVersion) instead of the caller's live material. Because
+      // specVersion is embedded in the raw ExtrinsicPayload bytes that are actually signed, the
+      // rebuilt signable payload would then diverge from the one the HSM signed, producing
+      // `InvalidSignature: invalid key signature` at Trust approval.
+      //
+      // Simulate a "live" chain that has moved past the pinned static testnet v8 material by
+      // bumping specVersion on a copy of it.
+      const liveMaterial = {
+        ...testnetV8Material,
+        specVersion: testnetV8Material.specVersion + 10,
+      } as unknown as Interface.Material;
+
+      const originalTx = await new V8BatchStakingBuilder(buildTestConfig())
+        .material(liveMaterial)
+        .amount(bondAmount)
+        .payee('Staked')
+        .validators([validator])
+        .sender({ address: stash })
+        .validity({ firstValid, maxDuration: 64 })
+        .referenceBlock(referenceBlock)
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: nonce })
+        .build();
+      const rawTxHex = originalTx.toBroadcastFormat();
+      const originalSignablePayload = originalTx.signablePayload.toString('hex');
+
+      const rebuiltBuilder = new TransactionBuilderFactory(coins.get('tpolyx')).material(liveMaterial).from(rawTxHex);
+      // The raw signing payload does not carry the sender address or the raw `firstValid` block
+      // number (only the encoded era), so — like any real caller re-verifying a decoded
+      // transaction — they must be supplied again before build() can run.
+      (rebuiltBuilder as V8BatchStakingBuilder).sender({ address: stash }).validity({ firstValid, maxDuration: 64 });
+      const rebuiltTx = await rebuiltBuilder.build();
+      const rebuiltSignablePayload = rebuiltTx.signablePayload.toString('hex');
+
+      // Without the SI-1034 fix, this fails: the rebuild uses the static material (specVersion
+      // 8000000) instead of liveMaterial (specVersion 8000010), so the payloads differ.
+      should.equal(rebuiltSignablePayload, originalSignablePayload);
     });
   });
 });
