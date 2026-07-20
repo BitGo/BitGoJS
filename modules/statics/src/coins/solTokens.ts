@@ -3524,6 +3524,16 @@ export const solTokens = [
     [...SOL_TOKEN_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA, CoinFeature.STABLECOIN]
   ),
   tsolToken(
+    '6a03b679-feec-4337-ae08-8ad29198d667',
+    'tsol:ttkb',
+    'TokenBloq',
+    6,
+    'BxsJva7bkwgiDCYnhPhU8SqcLVaGAsEY3WoTErpEn4Ga',
+    'BxsJva7bkwgiDCYnhPhU8SqcLVaGAsEY3WoTErpEn4Ga',
+    UnderlyingAsset['tsol:ttkb'],
+    SOL_TOKEN_FEATURES
+  ),
+  tsolToken(
     '6dcb8ff8-be59-471f-9e57-c3b68735d71e',
     'tsol:usdcv2',
     'USD Coin V2',
