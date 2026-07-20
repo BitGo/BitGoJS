@@ -1940,6 +1940,14 @@ export const ofcCoins = [
     SOL_TOKEN_FEATURES
   ),
   tofcsolToken(
+    '8a9b4003-c762-4217-a776-7f2d4c613aef',
+    'ofctsol:ttkb',
+    'testnet TokenBloq',
+    6,
+    UnderlyingAsset['tsol:ttkb'],
+    SOL_TOKEN_FEATURES
+  ),
+  tofcsolToken(
     '6fd31137-ab29-441e-9136-8b4bad4f0477',
     'ofctsol:usdc',
     'testnet USD Coin',
