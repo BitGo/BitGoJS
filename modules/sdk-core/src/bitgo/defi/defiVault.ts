@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import BigNumber from 'bignumber.js';
 import * as t from 'io-ts';
 import { GetVaultResponse, VaultProtocol } from '@bitgo/public-types';
 import {
@@ -32,6 +33,24 @@ export class ActiveOperationExistsError extends Error {
     super(`An active deposit operation already exists: ${operationId}`);
     this.name = 'ActiveOperationExistsError';
     this.operationId = operationId;
+  }
+}
+
+/**
+ * Error thrown when the wallet does not hold sufficient balance of the underlying asset
+ * to cover the requested deposit amount.
+ */
+export class InsufficientBalanceError extends Error {
+  public readonly assetToken: string;
+  public readonly available: string;
+  public readonly requested: string;
+
+  constructor(assetToken: string, available: string, requested: string) {
+    super(`Insufficient ${assetToken} balance: requested ${requested}, available ${available}`);
+    this.name = 'InsufficientBalanceError';
+    this.assetToken = assetToken;
+    this.available = available;
+    this.requested = requested;
   }
 }
 
@@ -89,6 +108,8 @@ export class DefiVault implements IDefiVault {
     }
 
     const config = await this.getVaultConfig({ vaultId: params.vaultId });
+
+    await this.assertSufficientAssetBalance(config, params.amount);
 
     if (config.protocol === VaultProtocol.CONCRETE_BTCCX) {
       return this.depositToConcreteVault(params);
@@ -292,6 +313,45 @@ export class DefiVault implements IDefiVault {
   }
 
   // ── Internal helpers ────────────────────────────────────────────────
+
+  /**
+   * Fetch a fresh wallet snapshot and assert the spendable balance of
+   * `config.assetToken` is at least `amount` (base units).
+   *
+   * Fetches with `?allTokens=true` so ERC-20 token balances are included.
+   * When `config.assetToken` equals the wallet's native coin (e.g. BTC on a
+   * BTC wallet), the top-level `spendableBalanceString` is used directly.
+   * Otherwise the `tokens` array is searched for an entry whose `tokenName`
+   * matches `config.assetToken`.
+   *
+   * Throws {@link InsufficientBalanceError} on insufficient balance and
+   * propagates network errors as-is.
+   */
+  private async assertSufficientAssetBalance(config: GetVaultResponse, amount: string): Promise<void> {
+    const walletData: Record<string, any> = await this.bitgo.get(this.wallet.url()).query({ allTokens: true }).result();
+
+    const assetToken = config.assetToken;
+    const walletCoin = config.coin;
+
+    let spendableBalance: string;
+
+    if (assetToken === walletCoin) {
+      // Native coin (e.g. BTC on a BTC wallet)
+      spendableBalance = (walletData.spendableBalanceString as string | undefined) ?? '0';
+    } else {
+      // ERC-20 or other token — look in the tokens array
+      const tokens: Record<string, any>[] = Array.isArray(walletData.tokens) ? walletData.tokens : [];
+      const tokenEntry = tokens.find((t) => t.tokenName === assetToken);
+      spendableBalance = (tokenEntry?.spendableBalanceString as string | undefined) ?? '0';
+    }
+
+    const available = new BigNumber(spendableBalance);
+    const requested = new BigNumber(amount);
+
+    if (requested.isGreaterThan(available)) {
+      throw new InsufficientBalanceError(assetToken, spendableBalance, amount);
+    }
+  }
 
   /**
    * Extract txRequestId from a sendMany result.

@@ -2,7 +2,7 @@ import sinon from 'sinon';
 import assert from 'assert';
 import 'should';
 import { VaultProtocol } from '@bitgo/public-types';
-import { ActiveOperationExistsError, DefiVault, Wallet } from '../../../../src';
+import { ActiveOperationExistsError, DefiVault, InsufficientBalanceError, Wallet } from '../../../../src';
 
 describe('DefiVault', function () {
   let wallet: Wallet;
@@ -49,6 +49,26 @@ describe('DefiVault', function () {
     };
   }
 
+  // Helper to build the wallet data response for the balance-check GET
+  function makeWalletDataForBalance(opts: {
+    spendableBalanceString?: string;
+    tokens?: { tokenName: string; spendableBalanceString: string }[];
+  }) {
+    return {
+      id: 'test-wallet-id',
+      coin: 'eth',
+      spendableBalanceString: opts.spendableBalanceString ?? '0',
+      tokens: opts.tokens ?? [],
+    };
+  }
+
+  // Sets up mockBitGo.get so the first call (vault config) returns vaultData
+  // and the second call (wallet balance check) returns walletData.
+  function mockDepositGetCalls(vaultData: any, walletData: any) {
+    mockBitGo.get.onFirstCall().returns(mockRequest(vaultData));
+    mockBitGo.get.onSecondCall().returns(mockRequest(walletData));
+  }
+
   beforeEach(function () {
     mockBitGo = {
       post: sinon.stub(),
@@ -61,7 +81,7 @@ describe('DefiVault', function () {
 
     mockBaseCoin = {
       getFamily: sinon.stub().returns('eth'),
-      url: sinon.stub(),
+      url: sinon.stub().callsFake((path: string) => `https://bitgo.com/api/v2${path}`),
       keychains: sinon.stub(),
       supportsTss: sinon.stub().returns(true),
       getMPCAlgorithm: sinon.stub(),
@@ -132,7 +152,10 @@ describe('DefiVault', function () {
   describe('depositToVault', function () {
     describe('concrete_btccx provider', function () {
       it('should call sendMany once with defi-deposit type and no recipients', async function () {
-        mockBitGo.get.returns(mockRequest(makeConcreteVault('vlt-btc-1')));
+        mockDepositGetCalls(
+          makeConcreteVault('vlt-btc-1'),
+          makeWalletDataForBalance({ spendableBalanceString: '10000000' })
+        );
 
         const sendManyStub = sinon.stub(wallet, 'sendMany').resolves({
           pendingApproval: {
@@ -163,7 +186,10 @@ describe('DefiVault', function () {
       });
 
       it('should pass walletPassphrase when provided', async function () {
-        mockBitGo.get.returns(mockRequest(makeConcreteVault('vlt-btc-2')));
+        mockDepositGetCalls(
+          makeConcreteVault('vlt-btc-2'),
+          makeWalletDataForBalance({ spendableBalanceString: '2000000' })
+        );
 
         const sendManyStub = sinon.stub(wallet, 'sendMany').resolves({
           pendingApproval: { id: 'pa-uuid-456', state: 'awaitingSignature' },
@@ -180,7 +206,10 @@ describe('DefiVault', function () {
       });
 
       it('should default state to awaitingSignature when absent from pendingApproval', async function () {
-        mockBitGo.get.returns(mockRequest(makeConcreteVault('vlt-btc-3')));
+        mockDepositGetCalls(
+          makeConcreteVault('vlt-btc-3'),
+          makeWalletDataForBalance({ spendableBalanceString: '2000000' })
+        );
 
         sinon.stub(wallet, 'sendMany').resolves({
           pendingApproval: { id: 'pa-no-state' },
@@ -191,7 +220,10 @@ describe('DefiVault', function () {
       });
 
       it('should throw when sendMany returns no pendingApproval', async function () {
-        mockBitGo.get.returns(mockRequest(makeConcreteVault('vlt-btc-4')));
+        mockDepositGetCalls(
+          makeConcreteVault('vlt-btc-4'),
+          makeWalletDataForBalance({ spendableBalanceString: '2000000' })
+        );
 
         sinon.stub(wallet, 'sendMany').resolves({ txRequest: { txRequestId: 'unexpected' } });
 
@@ -199,11 +231,48 @@ describe('DefiVault', function () {
           message: 'defi-deposit sendMany response: unknown; unknown',
         });
       });
+
+      it('should throw InsufficientBalanceError when native coin balance is too low', async function () {
+        mockDepositGetCalls(
+          makeConcreteVault('vlt-btc-5'),
+          makeWalletDataForBalance({ spendableBalanceString: '500000' })
+        );
+
+        await assert.rejects(
+          () => defiVault.depositToVault({ vaultId: 'vlt-btc-5', amount: '1000000' }),
+          (err: Error) => {
+            (err instanceof InsufficientBalanceError).should.be.true();
+            (err as InsufficientBalanceError).assetToken.should.equal('btc');
+            (err as InsufficientBalanceError).available.should.equal('500000');
+            (err as InsufficientBalanceError).requested.should.equal('1000000');
+            return true;
+          }
+        );
+      });
+
+      it('should not throw when native coin balance exactly equals the requested amount', async function () {
+        mockDepositGetCalls(
+          makeConcreteVault('vlt-btc-6'),
+          makeWalletDataForBalance({ spendableBalanceString: '1000000' })
+        );
+
+        sinon.stub(wallet, 'sendMany').resolves({
+          pendingApproval: { id: 'pa-exact', state: 'awaitingSignature' },
+        });
+
+        const result = await defiVault.depositToVault({ vaultId: 'vlt-btc-6', amount: '1000000' });
+        (result as any).pendingApprovalId.should.equal('pa-exact');
+      });
     });
 
     describe('morpho provider', function () {
+      const sufficientTokenBalance = makeWalletDataForBalance({
+        tokens: [{ tokenName: 'usdc', spendableBalanceString: '2000000' }],
+      });
+
       it('should call sendMany for approve and deposit on happy path', async function () {
-        mockBitGo.get.returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
+        mockBitGo.get.onFirstCall().returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
+        mockBitGo.get.onSecondCall().returns(mockRequest(sufficientTokenBalance));
 
         const operationId = 'op-uuid-123';
 
@@ -248,7 +317,8 @@ describe('DefiVault', function () {
       });
 
       it('should extract operationId from the lite apiVersion coinSpecific', async function () {
-        mockBitGo.get.returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
+        mockBitGo.get.onFirstCall().returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
+        mockBitGo.get.onSecondCall().returns(mockRequest(sufficientTokenBalance));
 
         const operationId = 'op-uuid-lite';
 
@@ -272,7 +342,8 @@ describe('DefiVault', function () {
       });
 
       it('should fall back to intent.operationId for forward-compat', async function () {
-        mockBitGo.get.returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
+        mockBitGo.get.onFirstCall().returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
+        mockBitGo.get.onSecondCall().returns(mockRequest(sufficientTokenBalance));
 
         const operationId = 'op-uuid-intent';
 
@@ -293,7 +364,8 @@ describe('DefiVault', function () {
       });
 
       it('should throw when operationId is absent from the approve txRequest', async function () {
-        mockBitGo.get.returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
+        mockBitGo.get.onFirstCall().returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
+        mockBitGo.get.onSecondCall().returns(mockRequest(sufficientTokenBalance));
 
         const sendManyStub = sinon.stub(wallet, 'sendMany');
         sendManyStub.onFirstCall().resolves({
@@ -330,7 +402,8 @@ describe('DefiVault', function () {
       });
 
       it('should propagate deposit sendMany failure without cleanup', async function () {
-        mockBitGo.get.returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
+        mockBitGo.get.onFirstCall().returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
+        mockBitGo.get.onSecondCall().returns(mockRequest(sufficientTokenBalance));
 
         const operationId = 'op-uuid-456';
 
@@ -353,6 +426,69 @@ describe('DefiVault', function () {
         mockBitGo.del.called.should.be.false();
       });
 
+      it('should throw InsufficientBalanceError when token balance is too low', async function () {
+        mockBitGo.get.onFirstCall().returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
+        mockBitGo.get.onSecondCall().returns(
+          mockRequest(
+            makeWalletDataForBalance({
+              tokens: [{ tokenName: 'usdc', spendableBalanceString: '500000' }],
+            })
+          )
+        );
+
+        await assert.rejects(
+          () => defiVault.depositToVault({ vaultId: 'vlt-galaxy-usdc', amount: '1000000' }),
+          (err: Error) => {
+            (err instanceof InsufficientBalanceError).should.be.true();
+            (err as InsufficientBalanceError).assetToken.should.equal('usdc');
+            (err as InsufficientBalanceError).available.should.equal('500000');
+            (err as InsufficientBalanceError).requested.should.equal('1000000');
+            return true;
+          }
+        );
+      });
+
+      it('should throw InsufficientBalanceError when token is absent from the wallet', async function () {
+        mockBitGo.get.onFirstCall().returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
+        mockBitGo.get.onSecondCall().returns(mockRequest(makeWalletDataForBalance({ tokens: [] })));
+
+        await assert.rejects(
+          () => defiVault.depositToVault({ vaultId: 'vlt-galaxy-usdc', amount: '1000000' }),
+          (err: Error) => {
+            (err instanceof InsufficientBalanceError).should.be.true();
+            (err as InsufficientBalanceError).assetToken.should.equal('usdc');
+            (err as InsufficientBalanceError).available.should.equal('0');
+            return true;
+          }
+        );
+      });
+
+      it('should not throw when token balance exactly equals the requested amount', async function () {
+        mockBitGo.get.onFirstCall().returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
+        mockBitGo.get.onSecondCall().returns(
+          mockRequest(
+            makeWalletDataForBalance({
+              tokens: [{ tokenName: 'usdc', spendableBalanceString: '1000000' }],
+            })
+          )
+        );
+
+        const operationId = 'op-exact';
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+        sendManyStub.onFirstCall().resolves({
+          txRequest: {
+            txRequestId: 'txreq-approve-exact',
+            transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
+          },
+        });
+        sendManyStub.onSecondCall().resolves({
+          txRequest: { txRequestId: 'txreq-deposit-exact' },
+        });
+
+        const result = await defiVault.depositToVault({ vaultId: 'vlt-galaxy-usdc', amount: '1000000' });
+        (result as any).operationId.should.equal(operationId);
+      });
+
       it('should throw if vaultId is missing', async function () {
         await assert.rejects(() => defiVault.depositToVault({ vaultId: '', amount: '1000000' }), {
           message: 'vaultId is required',
@@ -373,8 +509,6 @@ describe('DefiVault', function () {
     });
 
     it('should throw if amount is missing', async function () {
-      mockBitGo.get.returns(mockRequest(makeMorphoVault('vlt-1')));
-
       await assert.rejects(() => defiVault.depositToVault({ vaultId: 'vlt-1', amount: '' }), {
         message: 'amount is required',
       });
