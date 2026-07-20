@@ -228,7 +228,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           // throwing, so tryGetV8Builder never fires. See SI-981.
           const bondArgs = args.calls[0].args as { controller?: unknown };
           if (bondArgs.controller === undefined) {
-            return this.getV8BatchStakingBuilder();
+            // Forward the factory's material (set by the caller, e.g. wallet-platform's
+            // getSignedTx via `.material(liveMaterial).from(...)`). Unlike the v7 getters,
+            // getV8BatchStakingBuilder() does NOT forward this._material and would otherwise
+            // keep the builder's static getV8Material(). On the decode-success path this._material
+            // is the material that just decoded the tx, so it is the correct one to rebuild with —
+            // without this, a rebuild uses stale static specVersion and the signable no longer
+            // matches the HSM-signed bytes (InvalidSignature on combine). See SI-1034.
+            return this.getV8BatchStakingBuilder().material(this._material);
           }
           return this.getBatchBuilder();
         }
