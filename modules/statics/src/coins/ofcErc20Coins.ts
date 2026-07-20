@@ -131,7 +131,7 @@ export const ofcErc20Coins = [
   ]),
   ofcerc20(
     'ee579200-2f43-41f3-ba2e-365bcb20ff21',
-    'ofcusdm1',
+    'ofceth:usdm1',
     'USDM1',
     18,
     underlyingAssetForSymbol('eth:usdm1'),
