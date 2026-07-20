@@ -46,7 +46,7 @@ export {
   SolDefaultAccountStateConfig,
   SolInterestBearingConfig,
   SolScaledUiAmountConfig,
-  SUPPORTED_SOL_TOKEN_EXTENSIONS,
+  SUPPORTED_SOL_TOKEN_EXTENSION_NAMES,
   getUnsupportedSolTokenExtensions,
 } from './account';
 export { CoinMap } from './map';

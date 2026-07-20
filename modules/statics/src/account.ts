@@ -86,17 +86,41 @@ export interface SolTokenExtensions {
   defaultAccountState?: SolDefaultAccountStateConfig;
 }
 
-/** Extensions BitGo can safely custody (the onboarding allowlist). */
-export const SUPPORTED_SOL_TOKEN_EXTENSIONS: ReadonlySet<SolTokenExtensionType> = new Set(
-  Object.values(SolTokenExtensionType)
-);
+/**
+ * spl-token ExtensionType names BitGo recognizes at onboarding.
+ * Two groups: extensions with custody handling (modeled as SolTokenExtensionType), and
+ * holding-only extensions that need no special handling but must still be *recognized*
+ * (else common mints carrying MetadataPointer/TokenMetadata would be wrongly rejected).
+ */
+export const SUPPORTED_SOL_TOKEN_EXTENSION_NAMES: ReadonlySet<string> = new Set([
+  // Custody-impacting (handled per PRD 3.1–3.7)
+  'TransferFeeConfig',
+  'TransferHook',
+  'PermanentDelegate',
+  'InterestBearingConfig',
+  'ScaledUiAmountConfig',
+  'DefaultAccountState',
+  // Recognized, no custody handling required
+  'ImmutableOwner',
+  'MintCloseAuthority',
+  'MetadataPointer',
+  'TokenMetadata',
+  'MemoTransfer',
+  'CpiGuard',
+  'GroupPointer',
+  'TokenGroup',
+  'GroupMemberPointer',
+  'TokenGroupMember',
+  'NonTransferable',
+  'NonTransferableAccount',
+]);
 
 /**
  * Returns the detected extensions BitGo has no handling code for.
  * A non-empty result MUST hard-stop onboarding.
  */
 export function getUnsupportedSolTokenExtensions(detected: readonly string[]): string[] {
-  return detected.filter((ext) => !SUPPORTED_SOL_TOKEN_EXTENSIONS.has(ext as SolTokenExtensionType));
+  return detected.filter((name) => !SUPPORTED_SOL_TOKEN_EXTENSION_NAMES.has(name));
 }
 
 export interface AccountConstructorOptions {
