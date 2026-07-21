@@ -602,6 +602,20 @@ export enum CoinFeature {
    * This coin supports bring-your-own-validator (BYOV) staking
    */
   BYOV_VALIDATOR = 'byov-validator',
+
+  /**
+   * This coin is a tokenized equity (e.g. a tokenized stock). Drives generic
+   * behavior such as pricing off the underlying and asset-class reporting.
+   * May be set for both BitGo-issued and third-party tokenized equities.
+   */
+  TOKENIZED_EQUITY = 'tokenized-equity',
+
+  /**
+   * This coin is a BitGo first-party permissioned tokenized equity (a goStock).
+   * Drives whitelist-destination withdrawal validation and allowlist/segregation
+   * behavior. MUST only be set together with TOKENIZED_EQUITY.
+   */
+  BITGO_TOKENIZED_EQUITY = 'bitgo-tokenized-equity',
 }
 
 /**
@@ -4621,6 +4635,12 @@ export abstract class BaseCoin {
     if (requiredFeatures.size > 0) {
       // some required features were missing
       throw new MissingRequiredCoinFeatureError(options.name, Array.from(requiredFeatures));
+    }
+
+    // BITGO_TOKENIZED_EQUITY requires TOKENIZED_EQUITY to also be present
+    const featureSet = new Set(options.features);
+    if (featureSet.has(CoinFeature.BITGO_TOKENIZED_EQUITY) && !featureSet.has(CoinFeature.TOKENIZED_EQUITY)) {
+      throw new MissingRequiredCoinFeatureError(options.name, [CoinFeature.TOKENIZED_EQUITY]);
     }
 
     // assets require a valid uuid v4 id

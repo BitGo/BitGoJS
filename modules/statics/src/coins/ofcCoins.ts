@@ -1644,7 +1644,7 @@ export const ofcCoins = [
     'SPCX goStock',
     6,
     UnderlyingAsset['sol:gospcx'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
   ),
   ofcsolToken(
     'e343b3c2-dcbb-4a9f-a60e-3dd79825c5fb',
@@ -2034,7 +2034,7 @@ export const ofcCoins = [
     'Test SPCX goStock',
     6,
     UnderlyingAsset['tsol:stggospcx'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
   ),
   tofcsolToken(
     '84f901ed-5654-47a7-9d08-7ff7c27a8c16',
@@ -2042,7 +2042,7 @@ export const ofcCoins = [
     'Test SPCX goStock',
     6,
     UnderlyingAsset['tsol:gospcx'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
   ),
   tofcsolToken(
     '750f0e40-c5b9-464f-874f-dc455cf1494b',
