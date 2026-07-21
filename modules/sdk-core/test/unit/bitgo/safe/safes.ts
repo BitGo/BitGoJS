@@ -28,15 +28,15 @@ describe('Safes', function () {
   });
 
   describe('initializeSafe', function () {
-    it('POSTs to the safes collection URL and returns a Safe', async function () {
-      const send = sinon.stub().returns({ result: sinon.stub().resolves(safeDataWire) });
+    it('POSTs to the safes collection URL and returns the initializing id/status', async function () {
+      const initializeResponseWire = { id: 'test-safe-id', status: 'initializing' };
+      const send = sinon.stub().returns({ result: sinon.stub().resolves(initializeResponseWire) });
       mockBitGo.post.returns({ send });
 
       const result = await safes.initializeSafe({ label: 'my safe' });
 
-      result.should.be.instanceof(Safe);
-      result.id().should.equal('test-safe-id');
-      result.enterpriseId().should.equal('test-enterprise-id');
+      result.id.should.equal('test-safe-id');
+      result.status.should.equal('initializing');
       sinon.assert.calledWith(mockBitGo.post, '/enterprise/test-enterprise-id/safes');
       sinon.assert.calledWith(send, { label: 'my safe' });
     });
@@ -237,7 +237,7 @@ describe('Safes', function () {
 
   describe('generateSafe', function () {
     it('chains initialize → createSafeKeys → finalize, threading the safeId', async function () {
-      const initializing = new Safe(mockBitGo, { ...safeDataWire, status: 'initializing' } as any);
+      const initializing = { id: 'test-safe-id', status: 'initializing' as const };
       const rootKeys = { rootKeys: { hot: {} } } as any;
       const initStub = sinon.stub(safes, 'initializeSafe').resolves(initializing);
       const keysStub = sinon.stub(safes, 'createSafeKeys').resolves(rootKeys);

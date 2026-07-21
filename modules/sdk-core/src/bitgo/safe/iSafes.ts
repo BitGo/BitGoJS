@@ -4,6 +4,7 @@
  * @experimental The safe client surface is experimental and may change (including breaking
  * changes) before the public release.
  */
+import type { InitializeSafeResponse } from '@bitgo/public-types';
 import { FinalizeSafeOptions, InitializeSafeOptions } from './iSafe';
 import { Safe } from './safe';
 
@@ -62,10 +63,12 @@ export interface ISafes {
    */
   generateSafe(params: CreateSafeOptions): Promise<Safe>;
   /**
-   * Phase 1 — initialize a safe (metadata only, no key material).
+   * Phase 1 — initialize a safe (metadata only, no key material). The server response is just
+   * `{ id, status }` (no `label`/`enterpriseId`/`creator`/`users`/`createdAt` yet), so this
+   * returns that raw shape rather than a full `Safe`.
    * @experimental
    */
-  initializeSafe(params: InitializeSafeOptions): Promise<Safe>;
+  initializeSafe(params: InitializeSafeOptions): Promise<InitializeSafeResponse>;
   /**
    * Phase 2 — run the 4 root key ceremonies tagged with `safeId`; returns the 12 minted key ids.
    * @experimental
