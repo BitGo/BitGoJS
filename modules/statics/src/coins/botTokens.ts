@@ -1279,7 +1279,7 @@ export const botTokens = [
   AccountCtors.erc20(
     'd15d88b2-3c20-4ff4-88c3-ca2d544fec21',
     'eth:aethwsteth',
-    'Wrapped liquid staked Ether 2.0',
+    'Aave Ethereum wstETH',
     18,
     '0x0b925ed163218f6662a35e0f0371ac234f9e9371',
     'eth:aethwsteth' as unknown as UnderlyingAsset,
