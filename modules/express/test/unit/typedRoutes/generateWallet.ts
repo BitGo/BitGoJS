@@ -440,6 +440,42 @@ describe('Generate Wallet Typed Routes Tests', function () {
         evmKeyRingReferenceWalletId
       );
     });
+
+    it('should forward userKeySigningRequired to generateWallet for OFC wallet', async function () {
+      const coin = 'tofc';
+      const label = 'OFC Test Wallet';
+      const enterprise = 'enterprise123';
+
+      const mockWallet = {
+        id: 'ofcWallet123',
+        coin,
+        label,
+        toJSON: sinon.stub().returns({ id: 'ofcWallet123', coin, label }),
+      };
+
+      const walletResponse = {
+        wallet: mockWallet,
+        userKeychain: { id: 'userKey123' },
+      };
+
+      const generateWalletStub = sinon.stub().resolves(walletResponse);
+      const walletsStub = { generateWallet: generateWalletStub } as any;
+      const coinStub = { wallets: sinon.stub().returns(walletsStub) } as any;
+
+      sinon.stub(BitGo.prototype, 'coin').returns(coinStub);
+
+      const res = await agent.post(`/api/v2/${coin}/wallet/generate`).send({
+        label,
+        enterprise,
+        passphrase: 'test-passphrase',
+        type: 'trading',
+        userKeySigningRequired: false,
+      });
+
+      res.status.should.equal(200);
+      generateWalletStub.should.have.been.calledOnce();
+      generateWalletStub.firstCall.args[0].should.have.property('userKeySigningRequired', false);
+    });
   });
 
   describe('Codec Validation', function () {
@@ -574,6 +610,21 @@ describe('Generate Wallet Typed Routes Tests', function () {
       res.status.should.equal(400);
       res.body.should.have.property('error');
       res.body.error.should.match(/disableTransactionNotifications/);
+    });
+
+    it('should return 400 when userKeySigningRequired is not boolean', async function () {
+      const coin = 'tofc';
+
+      const res = await agent.post(`/api/v2/${coin}/wallet/generate`).send({
+        label: 'Test OFC Wallet',
+        enterprise: 'enterprise123',
+        type: 'trading',
+        userKeySigningRequired: 'false',
+      });
+
+      res.status.should.equal(400);
+      res.body.should.have.property('error');
+      res.body.error.should.match(/userKeySigningRequired/);
     });
   });
 

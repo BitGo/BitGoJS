@@ -262,6 +262,8 @@ export interface GenerateWalletOptions {
   encryptionVersion?: EncryptionVersion;
   /** Delegates user/backup key creation to an external signer (onchain multisig only). */
   createKeychainCallback?: CreateKeychainCallback;
+  /** OFC only. When false, BitGo signs OFC payloads on behalf of the user without requiring a user-key signature. Defaults to true (user must sign). */
+  userKeySigningRequired?: boolean;
 }
 
 export interface GenerateWalletWithExternalSignerOptions
@@ -305,6 +307,7 @@ export const GenerateGoAccountWalletOptionsCodec = t.intersection(
     t.partial({
       // Codec intentionally accepts only 2: v1 is the implicit default and never sent on the wire.
       encryptionVersion: t.literal(2),
+      userKeySigningRequired: t.boolean,
     }),
   ],
   'GenerateGoAccountWalletOptions'

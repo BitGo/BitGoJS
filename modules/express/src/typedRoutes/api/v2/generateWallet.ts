@@ -55,6 +55,8 @@ export const GenerateWalletBody = {
       passphrase: t.string,
     })
   ),
+  /** OFC only. When false, BitGo signs OFC payloads on behalf of the user without requiring a user-key signature. Defaults to true (user must sign). */
+  userKeySigningRequired: optional(t.boolean),
 } as const;
 
 export const GenerateWalletResponse200 = t.union([
