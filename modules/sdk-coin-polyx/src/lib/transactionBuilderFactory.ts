@@ -202,6 +202,17 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       return this.getPreApproveAssetBuilder();
     } else if (methodName === MethodNames.AddAndAffirmWithMediators) {
       const args = decodedTxn.method.args as AddAndAffirmWithMediatorsArgs;
+      // v8 wraps leg sender/receiver in an AssetHolder enum (`{ portfolio: { did, kind } }`)
+      // instead of the bare v7 `{ did, kind }`. The call index is unchanged between v7/v8, so
+      // decoding a v8-encoded payload with v7 metadata does not throw — it just silently drops
+      // `sender.did`. Detect that here and retry with v8 material instead of proceeding with a
+      // builder that will fail schema validation on the missing field.
+      if (!args.legs?.[0]?.fungible?.sender?.did) {
+        const v8Builder = this.tryGetV8Builder(rawTxn);
+        if (v8Builder) {
+          return v8Builder;
+        }
+      }
       if (utils.isNewMemoEncoding(args.instructionMemo)) {
         return this.getHexTokenTransferBuilder();
       }

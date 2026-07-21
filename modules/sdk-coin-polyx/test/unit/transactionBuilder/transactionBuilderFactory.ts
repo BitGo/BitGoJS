@@ -1,8 +1,14 @@
 import { coins } from '@bitgo/statics';
 import should from 'should';
-import { TransactionBuilderFactory, TransferBuilder, V8TransferBuilder, V8HexTransferBuilder } from '../../../src/lib';
+import {
+  TransactionBuilderFactory,
+  TransferBuilder,
+  V8TransferBuilder,
+  V8HexTransferBuilder,
+  V8TokenTransferBuilder,
+} from '../../../src/lib';
 import { Interface } from '../../../src';
-import { rawTx, accounts } from '../../resources';
+import { rawTx, accounts, mockTssSignature } from '../../resources';
 import * as materialData from '../../resources/materialData.json';
 import { buildTestConfig } from './base';
 
@@ -98,6 +104,104 @@ describe('Tao Transaction Builder Factory', function () {
       const factoryInst = new TransactionBuilderFactory(buildTestConfig());
       const builder = factoryInst.from(rawTx.transfer.signed);
       should.ok(builder instanceof TransferBuilder, 'expected TransferBuilder for v7 txHex');
+    });
+  });
+
+  // Regression test for the bug where getBuilder() decoded a v8 addAndAffirmWithMediators
+  // payload with v7 metadata (same call index, so no throw), silently lost sender.did, then
+  // routed to the v7 TokenTransferBuilder — causing Joi to throw
+  // 'legs[0].fungible.sender.did is required'.
+  describe('v8 token transfer routing regression', function () {
+    const FROM_DID = '0x1208d7851e6698249aea40742701ee1ef6cdcced260a7c49c1cca1a9db836342';
+    const TO_DID = '0xbc6f7ec808f361c1353ab9dc88c3cc54b98d9eb60fed9c063e67a40925b8ef61';
+    const ASSET_ID = '0x780602887b358cf48989d0d9aa6c8d28';
+    const VALIDITY = { firstValid: 3933, maxDuration: 64 };
+    const REF_BLOCK = '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d';
+
+    let unsignedHex: string;
+    let signedHex: string;
+
+    before(async function () {
+      const config = buildTestConfig();
+
+      // unsigned (no signature attached)
+      const unsignedTx = await new V8TokenTransferBuilder(config)
+        .assetId(ASSET_ID)
+        .amount('1000000')
+        .fromDID(FROM_DID)
+        .toDID(TO_DID)
+        .memo('0')
+        .sender({ address: sender.address })
+        .validity(VALIDITY)
+        .referenceBlock(REF_BLOCK)
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 1 })
+        .fee({ amount: 0, type: 'tip' })
+        .build();
+      unsignedHex = unsignedTx.toBroadcastFormat();
+
+      // signed
+      const signedBuilder = new V8TokenTransferBuilder(config)
+        .assetId(ASSET_ID)
+        .amount('1000000')
+        .fromDID(FROM_DID)
+        .toDID(TO_DID)
+        .memo('0')
+        .sender({ address: sender.address })
+        .validity(VALIDITY)
+        .referenceBlock(REF_BLOCK)
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 1 })
+        .fee({ amount: 0, type: 'tip' });
+      signedBuilder.addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
+      const signedTx = await signedBuilder.build();
+      signedHex = signedTx.toBroadcastFormat();
+    });
+
+    it('routes a v8 token transfer tx to V8TokenTransferBuilder (not TokenTransferBuilder)', function () {
+      // The call index for addAndAffirmWithMediators is identical in v7 and v8, so the v7 decode
+      // path "succeeds" but drops sender.did. The fix in getBuilder() detects the missing field
+      // and redirects to tryGetV8Builder() before Joi validation fires.
+      const factoryInst = new TransactionBuilderFactory(buildTestConfig());
+      const builder = factoryInst.from(signedHex);
+      should.ok(
+        builder instanceof V8TokenTransferBuilder,
+        'expected V8TokenTransferBuilder — v8 payload must not be silently mis-routed to v7 TokenTransferBuilder'
+      );
+      // V8TokenTransferBuilder extends TokenTransferBuilder; verify it is the v8 subclass
+      // specifically (constructor name) so a future refactor that breaks the class hierarchy
+      // is caught here rather than silently allowing a plain TokenTransferBuilder through.
+      should.equal(
+        builder.constructor.name,
+        'V8TokenTransferBuilder',
+        'constructor must be V8TokenTransferBuilder, not plain TokenTransferBuilder'
+      );
+    });
+
+    it('rebuilds from unsigned v8 token transfer hex with correct fields and matching raw output', async function () {
+      const factoryInst = new TransactionBuilderFactory(buildTestConfig());
+      const builder = factoryInst.from(unsignedHex);
+      builder.validity(VALIDITY).referenceBlock(REF_BLOCK).sender({ address: sender.address });
+      const rebuilt = await builder.build();
+
+      const json = rebuilt.toJson();
+      should.equal(json.assetId, ASSET_ID);
+      should.equal(json.amount, '1000000');
+      should.equal(json.fromDID, FROM_DID);
+      should.equal(json.toDID, TO_DID);
+      should.equal(rebuilt.toBroadcastFormat(), unsignedHex, 'unsigned round-trip hex must match original');
+    });
+
+    it('rebuilds from signed v8 token transfer hex with correct fields and matching raw output', async function () {
+      const factoryInst = new TransactionBuilderFactory(buildTestConfig());
+      const builder = factoryInst.from(signedHex);
+      builder.validity(VALIDITY).referenceBlock(REF_BLOCK);
+      const rebuilt = await builder.build();
+
+      const json = rebuilt.toJson();
+      should.equal(json.assetId, ASSET_ID);
+      should.equal(json.amount, '1000000');
+      should.equal(json.fromDID, FROM_DID);
+      should.equal(json.toDID, TO_DID);
+      should.equal(rebuilt.toBroadcastFormat(), signedHex, 'signed round-trip hex must match original');
     });
   });
 });
