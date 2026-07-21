@@ -7592,10 +7592,10 @@ aws4@^1.8.0:
   resolved "https://registry.npmjs.org/aws4/-/aws4-1.13.2.tgz"
   integrity sha512-lHe62zvbTB5eEABUVi/AwVh0ZKY9rMMDhmm+eeyuuUQbQ3+J+fONVQOZyj+DdrvD4BY33uYniyRJ4UJIaSKAfw==
 
-axios@0.25.0, axios@0.27.2, axios@1.16.1, axios@1.7.4, axios@^0.21.2, axios@^0.26.1, axios@^1.6.0, axios@^1.8.3:
-  version "1.16.1"
-  resolved "https://registry.npmjs.org/axios/-/axios-1.16.1.tgz#517e29291d19d6e8cf919ff264f4fe157261ba12"
-  integrity sha512-caYkukvroVPO8KrzuJEb50Hm07KwfBZPEC3VeFHTsqWHvKTsy54hjJz9BS/cdaypROE2rH6xvm9mHX4fgWkr3A==
+axios@0.25.0, axios@0.27.2, axios@1.18.0, axios@1.7.4, axios@^0.21.2, axios@^0.26.1, axios@^1.6.0, axios@^1.8.3:
+  version "1.18.0"
+  resolved "https://registry.npmjs.org/axios/-/axios-1.18.0.tgz#8a7f8854af280fcaae063272df2ed9f3837d2398"
+  integrity sha512-E32NzpYKp++W7XRe52rHiXV2ehxmh3wbdgO7MHeFM+vqxLBYHzt0ElkiImtOBxtOmyp0yoC8C6uESVV84Y2/hw==
   dependencies:
     follow-redirects "^1.16.0"
     form-data "^4.0.5"
