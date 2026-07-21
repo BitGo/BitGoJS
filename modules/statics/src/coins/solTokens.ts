@@ -3686,7 +3686,7 @@ export const solTokens = [
     '98iaHRfvCnaihEHcLK5EpwLq3w5yHiKKfSgpYLcxEScB',
     '98iaHRfvCnaihEHcLK5EpwLq3w5yHiKKfSgpYLcxEScB',
     UnderlyingAsset['tsol:stggospcx'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY],
     ProgramID.Token2022ProgramId
   ),
   tsolToken(
@@ -3697,7 +3697,7 @@ export const solTokens = [
     '4gvEw3Lx2gkAByv4X8hLnHujneN5bwtMGSu2ZDoip4vj',
     '4gvEw3Lx2gkAByv4X8hLnHujneN5bwtMGSu2ZDoip4vj',
     UnderlyingAsset['tsol:gospcx'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY],
     ProgramID.Token2022ProgramId
   ),
   solToken(
@@ -3708,7 +3708,7 @@ export const solTokens = [
     'AAVvaNDwkGfxGNaf1HJ5JzfwDb1PYmAgXSixRsczyrk4',
     'AAVvaNDwkGfxGNaf1HJ5JzfwDb1PYmAgXSixRsczyrk4',
     UnderlyingAsset['sol:gospcx'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY],
     ProgramID.Token2022ProgramId
   ),
   tsolToken(
