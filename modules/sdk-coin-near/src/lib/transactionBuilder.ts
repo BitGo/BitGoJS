@@ -163,7 +163,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TransactionBuilder} This transaction builder
    */
   public receiverId(accountId: string): this {
-    utils.isValidAddress(accountId);
+    if (!accountId || !utils.isValidAddress(accountId)) {
+      throw new AddressValidationError(accountId);
+    }
     this._receiverId = accountId;
     return this;
   }

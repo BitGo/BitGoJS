@@ -8,6 +8,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
 import { FT_TRANSFER, STORAGE_DEPOSIT } from './constants';
 import { ContractCallWrapper } from './contractCallWrapper';
+import { AddressValidationError } from './errors';
 import { StorageDepositInput } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
@@ -77,7 +78,9 @@ export class FungibleTokenTransferBuilder extends TransactionBuilder {
    * @param accountId the receiver account id
    */
   public ftReceiverId(accountId: string): this {
-    utils.isValidAddress(accountId);
+    if (!accountId || !utils.isValidAddress(accountId)) {
+      throw new AddressValidationError(accountId);
+    }
     this.contractCallWrapper.args = { receiver_id: accountId };
     return this;
   }

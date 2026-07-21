@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import * as base58 from 'bs58';
 
@@ -43,6 +44,37 @@ describe('Near: Storage Deposit Transfer Builder', () => {
       txBuilder.recentBlockHash(testData.blockHash.block1);
       return txBuilder;
     };
+
+    describe('should fail', function () {
+      it('should throw when beneficiaryId is empty', () => {
+        const txBuilder = factory.getStorageDepositTransferBuilder();
+        assert.throws(() => txBuilder.beneficiaryId(''), /The address '' is not a well-formed near address/);
+      });
+
+      it('should throw when beneficiaryId has spaces', () => {
+        const txBuilder = factory.getStorageDepositTransferBuilder();
+        assert.throws(
+          () => txBuilder.beneficiaryId(testData.accounts.errorsAccounts.address1),
+          /The address 'not ok' is not a well-formed near address/
+        );
+      });
+
+      it('should throw when beneficiaryId has invalid characters', () => {
+        const txBuilder = factory.getStorageDepositTransferBuilder();
+        assert.throws(
+          () => txBuilder.beneficiaryId(testData.accounts.errorsAccounts.address4),
+          /The address '\$\$\$' is not a well-formed near address/
+        );
+      });
+
+      it('should throw when beneficiaryId is too long', () => {
+        const txBuilder = factory.getStorageDepositTransferBuilder();
+        assert.throws(
+          () => txBuilder.beneficiaryId(testData.accounts.errorsAccounts.address5),
+          /is not a well-formed near address/
+        );
+      });
+    });
 
     describe('fungible token builder environment', function () {
       it('should select the right network', function () {

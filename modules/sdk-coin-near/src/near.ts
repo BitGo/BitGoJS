@@ -831,6 +831,43 @@ export class Near extends BaseCoin {
   }
 
   /**
+   * Checks whether a NEAR account exists on-chain via the `view_account` RPC query.
+   *
+   * Implicit accounts (64-character lowercase hex, i.e. a raw ed25519 public key) are excluded
+   * from this check: an unfunded implicit account also reports UNKNOWN_ACCOUNT even though a
+   * transfer to it is a valid way to create it on-chain, so treating that as "does not exist"
+   * would incorrectly block legitimate transfers.
+   *
+   * @param {string} accountId the account id to check
+   * @returns {Promise<boolean>} true if the account exists (or is an implicit account), false otherwise
+   */
+  protected async doesAccountExist(accountId: string): Promise<boolean> {
+    if (/^[0-9a-f]{64}$/.test(accountId)) {
+      return true;
+    }
+    const response = await this.getDataFromNode({
+      payload: {
+        jsonrpc: '2.0',
+        id: 'dontcare',
+        method: 'query',
+        params: {
+          request_type: 'view_account',
+          finality: 'final',
+          account_id: accountId,
+        },
+      },
+    });
+    const errorCause = response.body.error?.cause?.name;
+    if (errorCause === 'UNKNOWN_ACCOUNT') {
+      return false;
+    }
+    if (errorCause !== undefined) {
+      throw new Error(errorCause);
+    }
+    return true;
+  }
+
+  /**
    * Function to get the fungible token balance for an account
    * @param {String} accountId account for which the ft balance to be fetched
    * @param tokenContractAddress the token contract address
@@ -1085,6 +1122,17 @@ export class Near extends BaseCoin {
       }
       if (!totalAmount.isEqualTo(explainedTx.outputAmount) && txParams.type !== 'enabletoken') {
         throw new Error('Tx total amount does not match with expected total amount field');
+      }
+
+      // enabletoken recipients are the wallet's own storage/token contract accounts, not
+      // user-supplied destinations, so existence checking doesn't apply to them.
+      if (txParams.type !== 'enabletoken') {
+        for (const recipient of txParams.recipients) {
+          const exists = await this.doesAccountExist(recipient.address);
+          if (!exists) {
+            throw new Error(`Recipient account '${recipient.address}' does not exist on NEAR`);
+          }
+        }
       }
     }
 

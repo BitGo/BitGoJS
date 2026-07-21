@@ -123,4 +123,35 @@ describe('NEAR Transaction Builder', async () => {
       );
     }
   });
+
+  describe('should fail when receiverId is invalid', async () => {
+    it('should throw on empty receiverId', () => {
+      const txBuilder = factory.getTransferBuilder();
+      assert.throws(() => txBuilder.receiverId(''), /The address '' is not a well-formed near address/);
+    });
+
+    it('should throw on receiverId with spaces', () => {
+      const txBuilder = factory.getTransferBuilder();
+      assert.throws(
+        () => txBuilder.receiverId(testData.accounts.errorsAccounts.address1),
+        /The address 'not ok' is not a well-formed near address/
+      );
+    });
+
+    it('should throw on receiverId with invalid characters', () => {
+      const txBuilder = factory.getTransferBuilder();
+      assert.throws(
+        () => txBuilder.receiverId(testData.accounts.errorsAccounts.address4),
+        /The address '\$\$\$' is not a well-formed near address/
+      );
+    });
+
+    it('should throw on receiverId that is too long', () => {
+      const txBuilder = factory.getTransferBuilder();
+      assert.throws(
+        () => txBuilder.receiverId(testData.accounts.errorsAccounts.address5),
+        /is not a well-formed near address/
+      );
+    });
+  });
 });

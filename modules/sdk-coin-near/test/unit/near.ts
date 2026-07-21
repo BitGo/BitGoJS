@@ -443,6 +443,11 @@ describe('NEAR:', function () {
     });
 
     it('should verify activate staking transaction', async function () {
+      const sandBox = sinon.createSandbox();
+      sandBox.stub(Near.prototype, 'getDataFromNode' as keyof Near).resolves({
+        status: 200,
+        body: { result: { amount: '0', locked: '0', storage_usage: 0 } },
+      });
       const txBuilder = factory.getStakingActivateBuilder();
       txBuilder
         .amount(amount)
@@ -467,6 +472,7 @@ describe('NEAR:', function () {
       };
       const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
       validTransaction.should.equal(true);
+      sandBox.restore();
     });
 
     it('should verify deactivate staking transaction', async function () {
@@ -516,6 +522,119 @@ describe('NEAR:', function () {
       };
       const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
       validTransaction.should.equal(true);
+    });
+
+    describe('Recipient account existence check', () => {
+      const namedReceiverId = 'somereceiver.testnet';
+      const sandBox = sinon.createSandbox();
+
+      afterEach(() => {
+        sandBox.restore();
+      });
+
+      const buildNamedTransferTxPrebuild = async () => {
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder
+          .sender(accounts.account1.address, accounts.account1.publicKey)
+          .nonce(BigInt(1))
+          .receiverId(namedReceiverId)
+          .recentBlockHash(blockHash.block1)
+          .amount(amount);
+        txBuilder.sign({ key: accounts.account1.secretKey });
+        const tx = await txBuilder.build();
+        return { txHex: tx.toBroadcastFormat() };
+      };
+
+      it('should succeed when the named recipient account exists on-chain', async function () {
+        const stub = sandBox.stub(Near.prototype, 'getDataFromNode' as keyof Near).resolves({
+          status: 200,
+          body: { result: { amount: '0', locked: '0', storage_usage: 0 } },
+        });
+        const txPrebuild = await buildNamedTransferTxPrebuild();
+        const txParams = {
+          recipients: [{ address: namedReceiverId, amount }],
+        };
+        const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        validTransaction.should.equal(true);
+        stub.calledOnce.should.equal(true);
+      });
+
+      it('should fail when the named recipient account does not exist on-chain', async function () {
+        sandBox.stub(Near.prototype, 'getDataFromNode' as keyof Near).resolves({
+          status: 200,
+          body: { error: { cause: { name: 'UNKNOWN_ACCOUNT' } } },
+        });
+        const txPrebuild = await buildNamedTransferTxPrebuild();
+        const txParams = {
+          recipients: [{ address: namedReceiverId, amount }],
+        };
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild })
+          .should.be.rejectedWith(`Recipient account '${namedReceiverId}' does not exist on NEAR`);
+      });
+
+      it('should propagate other RPC errors from the existence check', async function () {
+        sandBox.stub(Near.prototype, 'getDataFromNode' as keyof Near).resolves({
+          status: 200,
+          body: { error: { cause: { name: 'SOME_OTHER_ERROR' } } },
+        });
+        const txPrebuild = await buildNamedTransferTxPrebuild();
+        const txParams = {
+          recipients: [{ address: namedReceiverId, amount }],
+        };
+        await basecoin.verifyTransaction({ txParams, txPrebuild }).should.be.rejectedWith('SOME_OTHER_ERROR');
+      });
+
+      it('should not call the RPC for implicit (hex) recipient accounts', async function () {
+        const stub = sandBox.stub(Near.prototype, 'getDataFromNode' as keyof Near);
+        const txPrebuild = newTxPrebuild();
+        const txParams = newTxParams();
+        const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        validTransaction.should.equal(true);
+        stub.called.should.equal(false);
+      });
+
+      it('should also check existence for staking transaction recipients', async function () {
+        const stub = sandBox.stub(Near.prototype, 'getDataFromNode' as keyof Near).resolves({
+          status: 200,
+          body: { result: { amount: '0', locked: '0', storage_usage: 0 } },
+        });
+        const txBuilder = factory.getStakingActivateBuilder();
+        txBuilder
+          .amount(amount)
+          .gas(gas)
+          .sender(accounts.account1.address, accounts.account1.publicKey)
+          .receiverId(validatorContractAddress)
+          .recentBlockHash(blockHash.block1)
+          .nonce(BigInt(1));
+        txBuilder.sign({ key: accounts.account1.secretKey });
+        const tx = await txBuilder.build();
+        const txPrebuild = { txHex: tx.toBroadcastFormat() };
+        const txParams = {
+          recipients: [{ address: validatorContractAddress, amount: '1000000' }],
+        };
+        const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        validTransaction.should.equal(true);
+        stub.calledOnce.should.equal(true);
+      });
+
+      it('should not call the RPC for enabletoken recipients', async function () {
+        const stub = sandBox.stub(Near.prototype, 'getDataFromNode' as keyof Near);
+        const txPrebuild = { txHex: testData.rawTx.selfStorageDeposit.unsigned };
+        const txParams = {
+          type: 'enabletoken',
+          recipients: [
+            {
+              address: testData.accounts.account1.address,
+              amount: '0',
+              tokenName: 'tnear:tnep24dp',
+            },
+          ],
+        };
+        const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        validTransaction.should.equal(true);
+        stub.called.should.equal(false);
+      });
     });
 
     it('should verify a spoofed consolidation transaction', async function () {

@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import * as base58 from 'bs58';
 
@@ -46,6 +47,37 @@ describe('Near: Fungible Token Transfer Builder', () => {
       txBuilder.recentBlockHash(testData.blockHash.block1);
       return txBuilder;
     };
+
+    describe('should fail', function () {
+      it('should throw when ftReceiverId is empty', () => {
+        const txBuilder = factory.getFungibleTokenTransferBuilder();
+        assert.throws(() => txBuilder.ftReceiverId(''), /The address '' is not a well-formed near address/);
+      });
+
+      it('should throw when ftReceiverId has spaces', () => {
+        const txBuilder = factory.getFungibleTokenTransferBuilder();
+        assert.throws(
+          () => txBuilder.ftReceiverId(testData.accounts.errorsAccounts.address1),
+          /The address 'not ok' is not a well-formed near address/
+        );
+      });
+
+      it('should throw when ftReceiverId has invalid characters', () => {
+        const txBuilder = factory.getFungibleTokenTransferBuilder();
+        assert.throws(
+          () => txBuilder.ftReceiverId(testData.accounts.errorsAccounts.address4),
+          /The address '\$\$\$' is not a well-formed near address/
+        );
+      });
+
+      it('should throw when ftReceiverId is too long', () => {
+        const txBuilder = factory.getFungibleTokenTransferBuilder();
+        assert.throws(
+          () => txBuilder.ftReceiverId(testData.accounts.errorsAccounts.address5),
+          /is not a well-formed near address/
+        );
+      });
+    });
 
     describe('fungible token builder environment', function () {
       it('should select the right network', function () {

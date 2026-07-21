@@ -1,3 +1,4 @@
+import assert from 'assert';
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair } from '../../../src';
 import should from 'should';
@@ -7,6 +8,37 @@ import * as base58 from 'bs58';
 
 describe('Near Transfer Builder', () => {
   const factory = getBuilderFactory('tnear');
+
+  describe('Fail', () => {
+    it('should throw on empty receiverId', () => {
+      const txBuilder = factory.getTransferBuilder();
+      assert.throws(() => txBuilder.receiverId(''), /The address '' is not a well-formed near address/);
+    });
+
+    it('should throw on receiverId with spaces', () => {
+      const txBuilder = factory.getTransferBuilder();
+      assert.throws(
+        () => txBuilder.receiverId(testData.accounts.errorsAccounts.address1),
+        /The address 'not ok' is not a well-formed near address/
+      );
+    });
+
+    it('should throw on receiverId with invalid characters', () => {
+      const txBuilder = factory.getTransferBuilder();
+      assert.throws(
+        () => txBuilder.receiverId(testData.accounts.errorsAccounts.address4),
+        /The address '\$\$\$' is not a well-formed near address/
+      );
+    });
+
+    it('should throw on receiverId that is too long', () => {
+      const txBuilder = factory.getTransferBuilder();
+      assert.throws(
+        () => txBuilder.receiverId(testData.accounts.errorsAccounts.address5),
+        /is not a well-formed near address/
+      );
+    });
+  });
 
   describe('Succeed', () => {
     it('build a transfer tx unsigned', async () => {

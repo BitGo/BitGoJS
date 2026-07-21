@@ -6,6 +6,7 @@ import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
 import { ContractCallWrapper } from './contractCallWrapper';
+import { AddressValidationError } from './errors';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { STORAGE_DEPOSIT } from './constants';
@@ -66,7 +67,9 @@ export class StorageDepositTransferBuilder extends TransactionBuilder {
    * @param accountId the receiver account id
    */
   public beneficiaryId(accountId: string): this {
-    utils.isValidAddress(accountId);
+    if (!accountId || !utils.isValidAddress(accountId)) {
+      throw new AddressValidationError(accountId);
+    }
     this.contractCallWrapper.args = { account_id: accountId };
     return this;
   }
