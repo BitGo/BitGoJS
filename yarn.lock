@@ -1032,10 +1032,10 @@
     monocle-ts "^2.3.13"
     newtype-ts "^0.3.5"
 
-"@bitgo/public-types@6.43.0":
-  version "6.43.0"
-  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-6.43.0.tgz#3d749f011ae7cad1c992ccc49c7b9cc24dbc5e1a"
-  integrity sha512-aYzRp7IH/Xbyi8/CzlYDiPpJmtQN0BlJGanqupDj4YTMJ9UjwIJLaUjOtJuVTT+ZrChcgdDZgajnmPDdPV2J1w==
+"@bitgo/public-types@6.48.0":
+  version "6.48.0"
+  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-6.48.0.tgz#acad90d78e91e92c7a31677403b77a8b2e44b40a"
+  integrity sha512-G39FD9Ul5TFReKN07fQ8jeKEY0vkkV0YJuu2pQMWFQ7EEdqByEF1PYr28Jly54X8J8/kxCziTQ56ogwm0VWhng==
   dependencies:
     fp-ts "^2.0.0"
     io-ts "npm:@bitgo-forks/io-ts@2.1.4"
@@ -13017,11 +13017,6 @@ import-meta-resolve@^4.0.0:
   version "4.1.0"
   resolved "https://registry.npmjs.org/import-meta-resolve/-/import-meta-resolve-4.1.0.tgz"
   integrity sha512-I6fiaX09Xivtk+THaMfAwnA3MVA5Big1WHF1Dfx9hFuvNIWpXnorlkzhcQf6ehrqQiiZECRt1poOAkPmer3ruw==
-
-improved-yarn-audit@^3.0.0:
-  version "3.0.4"
-  resolved "https://registry.npmjs.org/improved-yarn-audit/-/improved-yarn-audit-3.0.4.tgz"
-  integrity sha512-secfgreRqLYmnp4qzaxxICpOC/RJxcfQSrDSVvkMTXS8bssjqMSuJiueqr07PVP87OlyfTytxDR2SkzIeoTfLQ==
 
 imurmurhash@^0.1.4:
   version "0.1.4"
