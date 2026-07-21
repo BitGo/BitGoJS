@@ -266,11 +266,6 @@ jobs:
         run: |
           yarn install --frozen-lockfile
 
-      - name: Install retry
-        uses: BitGo/install-github-release-binary@v2
-        with:
-          targets: EricCrosson/retry@v1.4.8:sha256-d207746ff0eda67c706df25e88c02520f0cf3172279eb8eec8224fb0d3558911
-
       - name: Audit Dependencies
         uses: google/osv-scanner-action@9a498708959aeaef5ef730655706c5a1df1edbc2  # v2.3.8
         with:

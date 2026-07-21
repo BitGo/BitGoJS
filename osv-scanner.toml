@@ -1,55 +1,55 @@
 [[IgnoredVulns]]
 id = "GHSA-8qq5-rm4j-mr97"
-reason = "tar extraction CVE, lerna only packs — not exploitable"
+reason = "tar extraction CVE (symlink/hardlink); lerna requires tar v6 but fix only in v7.5.3+ — forcing v7.5.3 breaks lerna's packDirectory API; our usage is archive PACKING only, not extraction"
 
 [[IgnoredVulns]]
 id = "GHSA-r6q2-hw4h-h46w"
-reason = "tar extraction CVE, packing only"
+reason = "tar extraction CVE; transitive via lerna and yeoman-generator pinning tar <7.5.4; we only use tar for archive PACKING, not extraction"
 
 [[IgnoredVulns]]
 id = "GHSA-34x7-hfp2-rc4v"
-reason = "tar extraction CVE, packing only"
+reason = "tar extraction CVE (specially crafted archives); transitive via lerna and yeoman-generator requiring tar <7.5.4; our usage is limited to archive PACKING only"
 
 [[IgnoredVulns]]
 id = "GHSA-3ppc-4f35-3m26"
-reason = "minimatch ReDoS, dev tooling only with controlled inputs"
+reason = "minimatch ReDoS (<10.2.1) via repeated wildcards; transitive via lerna/depcheck/glob/mocha/yeoman-generator; dev-time tooling only with controlled (non-user-supplied) inputs; minimatch 10.x breaks lerna v9 API"
 
 [[IgnoredVulns]]
 id = "GHSA-83g3-92jg-28cx"
-reason = "tar extraction CVE, packing only"
+reason = "tar extraction CVE (specially crafted archives); transitive via lerna and yeoman-generator requiring tar <7.5.4; our usage is limited to archive PACKING only"
 
 [[IgnoredVulns]]
 id = "GHSA-7r86-cg39-jmmj"
-reason = "minimatch ReDoS, dev tooling only"
+reason = "minimatch ReDoS via crafted glob patterns (same class as GHSA-3ppc-4f35-3m26); transitive via lerna/depcheck/nyc/eslint/yeoman-generator/glob/shelljs; dev-time tooling only"
 
 [[IgnoredVulns]]
 id = "GHSA-23c5-xmqv-rm74"
-reason = "minimatch ReDoS, dev tooling only"
+reason = "minimatch ReDoS via crafted glob patterns (same class as GHSA-3ppc-4f35-3m26); transitive via lerna/depcheck/nyc/eslint/yeoman-generator/glob/shelljs; dev-time tooling with controlled inputs only"
 
 [[IgnoredVulns]]
 id = "GHSA-qffp-2rhf-9h96"
-reason = "tar hardlink path traversal, packing only"
+reason = "tar hardlink path traversal (crafted archives); transitive via lerna/yeoman-generator requiring tar <7.5.7; our usage is archive PACKING only; forcing tar v7.5.7+ breaks lerna (same constraint as GHSA-8qq5-rm4j-mr97)"
 
 [[IgnoredVulns]]
 id = "GHSA-9ppj-qmqm-q256"
-reason = "tar extraction, packing only"
+reason = "tar extraction CVE (same risk profile as other tar exclusions); we only use tar for packing; security exception approved"
 
 [[IgnoredVulns]]
 id = "GHSA-2w8x-224x-785m"
-reason = "sjcl.ecc invalid-curve attack; macaroon uses HMAC/hash only; resolved via @bitgo/sjcl fork"
+reason = "sjcl.ecc invalid-curve attack (ECDH); transitive via @bitgo/abstract-lightning > macaroon > sjcl; macaroon uses only HMAC/hash — no ECC; @bitgo/sjcl fork excludes sjcl.ecc entirely; resolved via root resolutions sjcl->@bitgo/sjcl@1.0.1; no upstream fix (first_patched_version: null)"
 
 [[IgnoredVulns]]
 id = "GHSA-96hv-2xvq-fx4p"
-reason = "ws server-side DoS; used only as WebSocket client"
+reason = "ws server-side memory exhaustion DoS; transitive via @cosmjs/socket, @ethersproject/providers, @polkadot/rpc-provider, jayson, rpc-websockets, avalanche — all requiring ws <8.21.0; we use ws exclusively as a WebSocket CLIENT for blockchain RPC, never as a server"
 
 [[IgnoredVulns]]
 id = "GHSA-hmw2-7cc7-3qxx"
-reason = "form-data CRLF injection; all field names are code-controlled constants"
+reason = "form-data CRLF injection via unescaped multipart field names; transitive via superagent and @aptos-labs/ts-sdk; all form-data field names and filenames in our code are code-controlled constants, not derived from user input"
 
 [[IgnoredVulns]]
 id = "GHSA-wcpc-wj8m-hjx6"
-reason = "protobufjs DoS via parseAny recursion; input from trusted RPC only"
+reason = "protobufjs DoS via unbounded Any expansion (parseAny recursion); transitive via @cosmjs and @hashgraph/sdk requiring protobufjs <=7.5.x; input comes from trusted blockchain RPC responses only, not arbitrary user data"
 
 [[IgnoredVulns]]
 id = "GHSA-7c78-jf6q-g5cm"
-reason = "tmp path traversal via type confusion; all args are hardcoded strings"
+reason = "tmp path traversal via type-confusion in _assertPath (non-string args); transitive via cypress/karma/lerna/nx (dev-time only, never in production); all prefix/postfix/template args are hard-coded string constants — type-confusion vector does not apply"
