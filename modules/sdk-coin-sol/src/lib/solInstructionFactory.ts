@@ -7,6 +7,7 @@ import {
   createBurnInstruction,
   createRecoverNestedInstruction,
   createTransferCheckedInstruction,
+  createTransferCheckedWithFeeInstruction,
   TOKEN_2022_PROGRAM_ID,
   createApproveInstruction,
 } from '@solana/spl-token';
@@ -47,7 +48,7 @@ import {
   CustomInstruction,
   Approve,
 } from './iface';
-import { getSolTokenFromTokenName, isValidBase64, isValidHex } from './utils';
+import { computeTransferFee, getSolTokenFromTokenName, isValidBase64, isValidHex } from './utils';
 import { depositSolInstructions, withdrawStakeInstructions } from './jitoStakePoolOperations';
 import { getToken2022Config, TransferHookConfig } from './token2022Config';
 
@@ -213,17 +214,37 @@ function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[]
   const instructions: TransactionInstruction[] = [];
 
   if (programId === TOKEN_2022_PROGRAM_ID.toString()) {
-    // Create the base transfer instruction
-    transferInstruction = createTransferCheckedInstruction(
-      new PublicKey(sourceAddress),
-      new PublicKey(tokenAddress),
-      new PublicKey(toAddress),
-      new PublicKey(fromAddress),
-      BigInt(amount),
-      decimalPlaces,
-      [],
-      TOKEN_2022_PROGRAM_ID
-    );
+    // Use transferCheckedWithFee when the token has a TransferFee extension (or an explicit fee is
+    // supplied). The instruction fails on-chain if the expected fee != live config, protecting the
+    // customer from a mid-flight fee change. PRD 3.6.
+    const feeConfig = token instanceof SolCoin ? token.tokenExtensions?.transferFee : undefined;
+    const fee =
+      data.params.fee ??
+      (feeConfig ? computeTransferFee(amount, feeConfig.transferFeeBasisPoints, feeConfig.maximumFee) : undefined);
+    if (fee !== undefined) {
+      transferInstruction = createTransferCheckedWithFeeInstruction(
+        new PublicKey(sourceAddress),
+        new PublicKey(tokenAddress),
+        new PublicKey(toAddress),
+        new PublicKey(fromAddress),
+        BigInt(amount),
+        decimalPlaces,
+        BigInt(fee),
+        [],
+        TOKEN_2022_PROGRAM_ID
+      );
+    } else {
+      transferInstruction = createTransferCheckedInstruction(
+        new PublicKey(sourceAddress),
+        new PublicKey(tokenAddress),
+        new PublicKey(toAddress),
+        new PublicKey(fromAddress),
+        BigInt(amount),
+        decimalPlaces,
+        [],
+        TOKEN_2022_PROGRAM_ID
+      );
+    }
     // Check if this token has a transfer hook configuration
     const tokenConfig = getToken2022Config(tokenAddress);
     if (tokenConfig?.transferHook) {

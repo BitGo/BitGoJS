@@ -89,6 +89,8 @@ export interface TokenTransfer {
     tokenAddress?: string;
     decimalPlaces?: number;
     programId?: string;
+    /** Withheld transfer fee in raw base units */
+    fee?: string;
   };
 }
 

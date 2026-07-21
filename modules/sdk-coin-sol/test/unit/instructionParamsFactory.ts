@@ -2,7 +2,7 @@ import should from 'should';
 import * as testData from '../resources/sol';
 import { instructionParamsFactory } from '../../src/lib/instructionParamsFactory';
 import { TransactionType } from '@bitgo/sdk-core';
-import { InstructionParams } from '../../src/lib/iface';
+import { InstructionParams, TokenTransfer } from '../../src/lib/iface';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../src/lib/constants';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import BigNumber from 'bignumber.js';
@@ -12,6 +12,7 @@ import {
   createMintToInstruction,
   createBurnInstruction,
   TOKEN_2022_PROGRAM_ID,
+  createTransferCheckedWithFeeInstruction,
 } from '@solana/spl-token';
 
 describe('Instruction Parser Tests: ', function () {
@@ -472,6 +473,29 @@ describe('Instruction Parser Tests: ', function () {
 
       const result = instructionParamsFactory(TransactionType.Send, instructions);
       should.deepEqual(result, expectedParams);
+    });
+    it('should parse a Token-2022 transferCheckedWithFee and surface the withheld fee', () => {
+      const t = testData.sol2022TokenTransfers;
+      const amount = '1000000';
+      const fee = '1000';
+      const ix = createTransferCheckedWithFeeInstruction(
+        new PublicKey(t.source),
+        new PublicKey(t.mint),
+        new PublicKey(t.owner),
+        new PublicKey(t.owner),
+        BigInt(amount),
+        t.decimals,
+        BigInt(fee),
+        [],
+        TOKEN_2022_PROGRAM_ID
+      );
+      const result = instructionParamsFactory(TransactionType.Send, [ix]);
+      const tt = result.find((i) => i.type === InstructionBuilderTypes.TokenTransfer) as TokenTransfer | undefined;
+      should.exist(tt);
+      tt!.params.fee!.should.equal(fee);
+      tt!.params.amount.should.equal(amount);
+      tt!.params.decimalPlaces!.should.equal(t.decimals);
+      tt!.params.sourceAddress.should.equal(t.source);
     });
   });
   describe('Fail ', function () {

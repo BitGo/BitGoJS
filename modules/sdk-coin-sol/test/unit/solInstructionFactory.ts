@@ -11,6 +11,7 @@ import {
   createMintToInstruction,
   createBurnInstruction,
   TOKEN_2022_PROGRAM_ID,
+  createTransferCheckedWithFeeInstruction,
 } from '@solana/spl-token';
 import BigNumber from 'bignumber.js';
 
@@ -544,5 +545,42 @@ describe('Instruction Builder Tests: ', function () {
 
       should(() => solInstructionFactory(customInstructionParams)).throwError('Missing data in custom instruction');
     });
+  });
+
+  it('Token Transfer - Token-2022 with transfer fee (transferCheckedWithFee)', () => {
+    const t = testData.sol2022TokenTransfers;
+    const amount = '1000000';
+    const fee = '1000';
+    const transferParams: InstructionParams = {
+      type: InstructionBuilderTypes.TokenTransfer,
+      params: {
+        fromAddress: t.owner, // authority
+        toAddress: t.owner, // destination
+        amount,
+        tokenName: t.name,
+        sourceAddress: t.source,
+        tokenAddress: t.mint,
+        decimalPlaces: t.decimals,
+        programId: TOKEN_2022_PROGRAM_ID.toString(),
+        fee, // explicit fee → transferCheckedWithFee path
+      },
+    };
+    const result = solInstructionFactory(transferParams);
+    result.should.have.length(1);
+    const built = result[0];
+    built.programId.equals(TOKEN_2022_PROGRAM_ID).should.be.true();
+
+    const reference = createTransferCheckedWithFeeInstruction(
+      new PublicKey(t.source),
+      new PublicKey(t.mint),
+      new PublicKey(t.owner),
+      new PublicKey(t.owner),
+      BigInt(amount),
+      t.decimals,
+      BigInt(fee),
+      [],
+      TOKEN_2022_PROGRAM_ID
+    );
+    built.data.should.deepEqual(reference.data); // discriminator + amount + decimals + fee
   });
 });
