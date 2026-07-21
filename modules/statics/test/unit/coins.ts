@@ -1328,6 +1328,15 @@ describe('Eip1559 coins', () => {
   });
 });
 
+describe('Liquid Staking Features', () => {
+  it('should have LIQUID_STAKING feature for sol:jsol and sol:stsol', () => {
+    ['sol:jsol', 'sol:stsol'].forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.LIQUID_STAKING).should.eql(true);
+    });
+  });
+});
+
 describe('create token map using config details', () => {
   it('should create a valid token map from AmsTokenConfig', () => {
     const tokenMap = createTokenMapUsingConfigDetails(amsTokenConfig);

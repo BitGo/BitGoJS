@@ -1298,7 +1298,7 @@ export const solTokens = [
     '7Q2afV64in6N6SeZsAAB81TJzwDoD6zpqmHkzi9Dcavn',
     '7Q2afV64in6N6SeZsAAB81TJzwDoD6zpqmHkzi9Dcavn',
     UnderlyingAsset['sol:jsol'],
-    SOL_TOKEN_FEATURES
+    [...SOL_TOKEN_FEATURES, CoinFeature.LIQUID_STAKING]
   ),
   solToken(
     'f98eb4de-23c4-475d-80f2-382808e8d350',
@@ -1348,7 +1348,7 @@ export const solTokens = [
     '7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj',
     '7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj',
     UnderlyingAsset.STSOL,
-    SOL_TOKEN_FEATURES
+    [...SOL_TOKEN_FEATURES, CoinFeature.LIQUID_STAKING]
   ),
   solToken(
     '039d4c7d-3e48-40b3-896d-512fcfe60f1e',
