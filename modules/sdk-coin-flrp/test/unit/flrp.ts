@@ -313,6 +313,30 @@ describe('Flrp test cases', function () {
       signedExplain.outputs[0].amount.should.equal(expectedAdjustedAmount);
     });
 
+    it('should subtract minImportToCFee from ExportInP outputAmount to show expected net C-chain receipt', async () => {
+      // The ExportInP UTXO amount is the gross amount going to C-chain, which includes
+      // the C-chain import fee that will be deducted when ImportInC is confirmed. We
+      // subtract minImportToCFee to show the minimum net amount the user will receive
+      // on C-chain, preventing the confirmation UI from showing a higher-than-actual
+      // amount and causing the display to appear as "- TFLR" instead of the correct amount.
+      const minImportToCFee = BigInt('2850000'); // from FlarePTestnet.minImportToCFee
+      const grossOutputAmount = BigInt(EXPORT_IN_P.amount); // 55000000 (includes import fee)
+      const expectedAdjustedAmount = (grossOutputAmount - minImportToCFee).toString();
+
+      // Should work for both half-signed and fully-signed ExportInP hex
+      const halfSignedExplain = await basecoin.explainTransaction({
+        halfSigned: { txHex: EXPORT_IN_P.halfSigntxHex },
+      });
+      halfSignedExplain.outputAmount.should.equal(expectedAdjustedAmount);
+      halfSignedExplain.outputs.should.be.an.Array();
+      halfSignedExplain.outputs.length.should.equal(1);
+      halfSignedExplain.outputs[0].amount.should.equal(expectedAdjustedAmount);
+
+      const signedExplain = await basecoin.explainTransaction({ txHex: EXPORT_IN_P.fullSigntxHex });
+      signedExplain.outputAmount.should.equal(expectedAdjustedAmount);
+      signedExplain.outputs[0].amount.should.equal(expectedAdjustedAmount);
+    });
+
     it('should fail when transaction hex is not provided', async () => {
       await basecoin.explainTransaction({}).should.be.rejectedWith('missing transaction hex');
     });
