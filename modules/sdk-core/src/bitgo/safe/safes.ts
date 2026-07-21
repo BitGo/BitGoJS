@@ -5,7 +5,14 @@
  * changes) before the public release.
  */
 import * as t from 'io-ts';
-import { FinalizeSafeBody, InitializeSafeBody, RootKeyTriplet, RootKeyType, SafeData } from '@bitgo/public-types';
+import {
+  FinalizeSafeBody,
+  InitializeSafeBody,
+  InitializeSafeResponse,
+  RootKeyTriplet,
+  RootKeyType,
+  SafeData,
+} from '@bitgo/public-types';
 import { Environments } from '../../common';
 import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
@@ -87,19 +94,19 @@ export class Safes implements ISafes {
    */
   async generateSafe(params: CreateSafeOptions): Promise<Safe> {
     const safe = await this.initializeSafe({ label: params.label });
-    const rootKeys = await this.createSafeKeys({ ...params, safeId: safe.id() });
-    return await this.finalizeSafe(safe.id(), rootKeys);
+    const rootKeys = await this.createSafeKeys({ ...params, safeId: safe.id });
+    return await this.finalizeSafe(safe.id, rootKeys);
   }
 
   /**
    * Phase 1 — initialize a safe (metadata only, no key material).
    * POST /api/v2/enterprise/:eId/safes { label }
+   * Response is just `{ id, status }` — the safe has no label/roster/etc. yet.
    * @experimental
    */
-  async initializeSafe(params: InitializeSafeOptions): Promise<Safe> {
+  async initializeSafe(params: InitializeSafeOptions): Promise<InitializeSafeResponse> {
     const response = await postWithCodec(this.bitgo, this.url(), InitializeSafeBody, params).result();
-    const safeData = decodeWithCodec(SafeData, response, 'SafeData');
-    return new Safe(this.bitgo, safeData);
+    return decodeWithCodec(InitializeSafeResponse, response, 'InitializeSafeResponse');
   }
 
   /**
