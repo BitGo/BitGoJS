@@ -234,7 +234,7 @@ export class Wallets implements IWallets {
     const reqId = new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
 
-    const { label, passphrase, enterprise, passcodeEncryptionCode, encryptionVersion } = params;
+    const { label, passphrase, enterprise, passcodeEncryptionCode, encryptionVersion, userKeySigningRequired } = params;
 
     const keychain = this.baseCoin.keychains().create();
 
@@ -259,6 +259,9 @@ export class Wallets implements IWallets {
       type: 'trading',
       enterprise,
       keys: [userKeychain.id],
+      ...(userKeySigningRequired !== undefined && {
+        coinSpecific: { userKeySigningRequired },
+      }),
     };
 
     const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(walletParams).result();
