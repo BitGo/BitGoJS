@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.24.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.24.0...@bitgo/utxo-lib@11.24.1) (2026-07-22)
+
+
+### Bug Fixes
+
+* **root:** clear osv-scanner HIGH/CRITICAL findings blocking release ([a39883f](https://github.com/BitGo/BitGoJS/commit/a39883fb528dd665433c6e54e3f02302f2a594b0))
+
+
+
+
+
 # [11.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.23.0...@bitgo/utxo-lib@11.24.0) (2026-06-03)
 
 

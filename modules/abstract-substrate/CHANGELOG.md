@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@2.0.3...@bitgo/abstract-substrate@2.0.4) (2026-07-22)
+
+
+### Bug Fixes
+
+* **abstract-substrate:** skip recipient validation for token enablement txns ([afe68aa](https://github.com/BitGo/BitGoJS/commit/afe68aa8439ccdbb7e7aac0d06087ca8652039e2))
+
+
+
+
+
 ## [2.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@2.0.2...@bitgo/abstract-substrate@2.0.3) (2026-07-16)
 
 **Note:** Version bump only for package @bitgo/abstract-substrate

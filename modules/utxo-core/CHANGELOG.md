@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.39.3...@bitgo/utxo-core@1.39.4) (2026-07-22)
+
+**Note:** Version bump only for package @bitgo/utxo-core
+
+
+
+
+
 ## [1.39.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.39.2...@bitgo/utxo-core@1.39.3) (2026-07-16)
 
 **Note:** Version bump only for package @bitgo/utxo-core

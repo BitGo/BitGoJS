@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [52.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.2.0...bitgo@52.3.0) (2026-07-22)
+
+
+### Features
+
+* bump public types ([821965b](https://github.com/BitGo/BitGoJS/commit/821965b54efcdf65969dcaf4320a2e7170ab24f1))
+* **sdk-core:** extend upgradeEncryption to support OFC wallets ([ef086da](https://github.com/BitGo/BitGoJS/commit/ef086dad2b046b18d7e0ae7f8d5e2e36b55226fc))
+
+
+
+
+
 # [52.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.1.0...bitgo@52.2.0) (2026-07-16)
 
 

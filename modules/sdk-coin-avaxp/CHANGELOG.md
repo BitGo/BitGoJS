@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.26](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.7.25...@bitgo/sdk-coin-avaxp@5.7.26) (2026-07-22)
+
+
+### Bug Fixes
+
+* **sdk-coin-avaxp:** prevent credential wipe, detect incomplete signing, block invalid broadcast ([17ccdf4](https://github.com/BitGo/BitGoJS/commit/17ccdf4133b84c7c41ec21abd574906ae47dd455))
+
+
+
+
+
 ## [5.7.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.7.24...@bitgo/sdk-coin-avaxp@5.7.25) (2026-07-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

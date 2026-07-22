@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.3.0...@bitgo/sdk-core@38.4.0) (2026-07-22)
+
+
+### Bug Fixes
+
+* **root:** clear osv-scanner HIGH/CRITICAL findings blocking release ([a39883f](https://github.com/BitGo/BitGoJS/commit/a39883fb528dd665433c6e54e3f02302f2a594b0))
+
+
+### Features
+
+* bump public types ([821965b](https://github.com/BitGo/BitGoJS/commit/821965b54efcdf65969dcaf4320a2e7170ab24f1))
+* **sdk-core:** extend upgradeEncryption to support OFC wallets ([ef086da](https://github.com/BitGo/BitGoJS/commit/ef086dad2b046b18d7e0ae7f8d5e2e36b55226fc))
+* **sdk-core:** type BitGoBase.wallets() as BitGoApiV1Wallets ([0dcccf8](https://github.com/BitGo/BitGoJS/commit/0dcccf82d856297c2f35555b4e913ec6eaebae5b))
+* set the initialize safe codec properly ([64d8b5d](https://github.com/BitGo/BitGoJS/commit/64d8b5dcc394e8d94ecb05d451ec2c47dab9ae1b))
+
+
+
+
+
 # [38.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.2.0...@bitgo/sdk-core@38.3.0) (2026-07-16)
 
 
