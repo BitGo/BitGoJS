@@ -271,6 +271,8 @@ jobs:
         with:
           scan-args: |-
             --config=osv-scanner.toml
+            --severity=HIGH
+            --severity=CRITICAL
             ./
 
       - name: Run dependency check
