@@ -1,4 +1,4 @@
-import { coins } from '@bitgo/statics';
+import { coins, NetworkType } from '@bitgo/statics';
 import should from 'should';
 import {
   TransactionBuilderFactory,
@@ -6,6 +6,7 @@ import {
   V8TransferBuilder,
   V8HexTransferBuilder,
   V8TokenTransferBuilder,
+  utils,
 } from '../../../src/lib';
 import { Interface } from '../../../src';
 import { rawTx, accounts, mockTssSignature } from '../../resources';
@@ -202,6 +203,48 @@ describe('Tao Transaction Builder Factory', function () {
       should.equal(json.fromDID, FROM_DID);
       should.equal(json.toDID, TO_DID);
       should.equal(rebuilt.toBroadcastFormat(), signedHex, 'signed round-trip hex must match original');
+    });
+
+    it('forwards factory live material specVersion to V8TokenTransferBuilder (SI-XXXX regression)', async function () {
+      // Regression for the bug where getV8TokenTransferBuilder() was called without
+      // .material(this._material), causing the builder to use the static placeholder
+      // specVersion (8000000) instead of the live chain specVersion. This produced a
+      // rebuilt signablePayload with wrong additional bytes, failing verifySignature.
+      const liveSpecVersion = 8000020;
+      const liveMaterial = {
+        ...utils.getV8Material(NetworkType.TESTNET),
+        specVersion: liveSpecVersion,
+      } as Interface.Material;
+
+      // Build an unsigned tx with the live material — its signable payload encodes liveSpecVersion.
+      const originalTx = await new V8TokenTransferBuilder(buildTestConfig())
+        .material(liveMaterial)
+        .assetId(ASSET_ID)
+        .amount('1000000')
+        .fromDID(FROM_DID)
+        .toDID(TO_DID)
+        .memo('0')
+        .sender({ address: sender.address })
+        .validity(VALIDITY)
+        .referenceBlock(REF_BLOCK)
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 1 })
+        .fee({ amount: 0, type: 'tip' })
+        .build();
+      const originalSignable = originalTx.signablePayload.toString('hex');
+      const signingPayloadHex = originalTx.toBroadcastFormat();
+
+      // Factory with the same live material must forward it to the created V8TokenTransferBuilder
+      // so the rebuild uses liveSpecVersion, not the static 8000000 placeholder.
+      const factoryInst = new TransactionBuilderFactory(buildTestConfig()).material(liveMaterial);
+      const rebuiltBuilder = factoryInst.from(signingPayloadHex);
+      rebuiltBuilder.sender({ address: sender.address }).validity(VALIDITY).referenceBlock(REF_BLOCK);
+      const rebuiltTx = await rebuiltBuilder.build();
+
+      should.equal(
+        rebuiltTx.signablePayload.toString('hex'),
+        originalSignable,
+        'signablePayload must match: factory must forward live material to V8TokenTransferBuilder'
+      );
     });
   });
 });

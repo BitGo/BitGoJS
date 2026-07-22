@@ -291,18 +291,36 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     }
 
     const methodName = decodedTxn.method?.name;
+    // Build a merged material that keeps the v8 metadata/registry but overrides specVersion and
+    // txVersion with the values decoded from the actual transaction bytes. The static v8 material
+    // has a placeholder specVersion (8000000); the live chain may have a higher value (e.g.
+    // 8000020). `createBaseTxInfo()` reads specVersion and txVersion from `this._material`, so
+    // using the static placeholder causes the rebuilt signable payload to have wrong additional
+    // bytes — verifySignature then fails even though the TSS signature is valid. Taking the
+    // decoded values from the transaction itself (rather than forwarding `this._material`, which
+    // may be v7) ensures the rebuild always matches the bytes the HSM signed. See SI-1034 for the
+    // analogous fix in getV8BatchStakingBuilder.
+    // specVersion is present in signing payloads (unsigned) but NOT in signed extrinsics
+    // (decodeSignedTx doesn't return it). Fall back to the static v8 value for signed txes —
+    // the signing payload path (used by getSignedTx/verifySignature) always decodes specVersion.
+    const v8MaterialWithDecodedSpec = {
+      ...v8Material,
+      specVersion: decodedTxn.specVersion ?? v8Material.specVersion,
+      txVersion: decodedTxn.transactionVersion ?? v8Material.txVersion,
+    } as Interface.Material;
+
     if (methodName === Interface.MethodNames.TransferWithMemo) {
       const args = decodedTxn.method.args as Interface.TransferWithMemoArgs;
       if (utils.isNewMemoEncoding(args.memo)) {
-        return this.getV8HexTransferBuilder();
+        return this.getV8HexTransferBuilder().material(v8MaterialWithDecodedSpec);
       }
-      return this.getV8TransferBuilder();
+      return this.getV8TransferBuilder().material(v8MaterialWithDecodedSpec);
     } else if (methodName === MethodNames.AddAndAffirmWithMediators) {
       const args = decodedTxn.method.args as AddAndAffirmWithMediatorsArgs | V8AddAndAffirmWithMediatorsArgs;
       if (utils.isNewMemoEncoding(args.instructionMemo)) {
-        return this.getV8HexTokenTransferBuilder();
+        return this.getV8HexTokenTransferBuilder().material(v8MaterialWithDecodedSpec);
       }
-      return this.getV8TokenTransferBuilder();
+      return this.getV8TokenTransferBuilder().material(v8MaterialWithDecodedSpec);
     } else if (methodName === MethodNames.RegisterDidWithCDD) {
       return this.getV8RegisterDidWithCDDBuilder();
     } else if (methodName === MethodNames.RegisterDid) {
