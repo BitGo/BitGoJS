@@ -4958,9 +4958,9 @@
   integrity sha512-0kELaGSIDBKvcgS4zkjz1PeddatrjYcmMWOlAuAPwAeccUrPHdUqo/J6LiymHHEiJT5NrF1UVwxY14f+fy4WQw==
 
 "@protobufjs/utf8@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.npmjs.org/@protobufjs/utf8/-/utf8-1.1.1.tgz#eaee5900122c110a3dbcb728c0597014a2621774"
-  integrity sha512-oOAWABowe8EAbMyWKM0tYDKi8Yaox52D+HWZhAIJqQXbqe0xI/GV7FhLWqlEKreMkfDjshR5FKgi3mnle0h6Eg==
+  version "1.1.2"
+  resolved "https://registry.npmjs.org/@protobufjs/utf8/-/utf8-1.1.2.tgz#78d476333d85d5b1c792e257bca74ba080da49a4"
+  integrity sha512-b1UQwcEZ4yCnMCD8DAL1VlbvBJE9/IX4FTIp7BG1xYpf29SLazLSrqUkj4w7Y5y7cCVP6E5tcqqcI0xemPkHug==
 
 "@puppeteer/browsers@2.6.1":
   version "2.6.1"
@@ -4978,7 +4978,7 @@
 
 "@remix-run/router@1.23.3":
   version "1.23.3"
-  resolved "https://registry.npmjs.org/@remix-run/router/-/router-1.23.3.tgz"
+  resolved "https://registry.npmjs.org/@remix-run/router/-/router-1.23.3.tgz#957c098d4393d301a8aa7dccf3ef28ea5430e36a"
   integrity sha512-4An71tdz9X8+3sI4Qqqd2LWd9vS39J7sqd9EU4Scw7TJE/qB10Flv/UuqbPVgfQV9XoK8Np6jNquZitnZq5i+Q==
 
 "@rollup/rollup-linux-x64-gnu@4.9.5":
@@ -17473,10 +17473,10 @@ propagate@^2.0.0:
   resolved "https://registry.npmjs.org/propagate/-/propagate-2.0.1.tgz"
   integrity sha512-vGrhOavPSTz4QVNuBNdcNXePNdNMaO1xj9yBeH1ScQPjk/rhg9sSlCXPhMkFuaNNW/syTvYqsnbIJxMBfRbbag==
 
-protobufjs@7.2.5, protobufjs@7.6.4, protobufjs@^6.8.8, protobufjs@^7.5.5, protobufjs@^7.5.8, protobufjs@~6.11.2, protobufjs@~6.11.3:
-  version "7.6.4"
-  resolved "https://registry.npmjs.org/protobufjs/-/protobufjs-7.6.4.tgz#8bb000300026efd63eb7951d26e5dbb38f5658f2"
-  integrity sha512-RJJPTTpvFfHcWLkIa2JFWK4XvtSzS0yEWDmunqHXli1h3JlkbcQZXDZdcWxv+JK3Xsl5/UFDPZ0iGm7DAengYw==
+protobufjs@7.2.5, protobufjs@7.6.5, protobufjs@^6.8.8, protobufjs@^7.5.5, protobufjs@^7.5.8, protobufjs@~6.11.2, protobufjs@~6.11.3:
+  version "7.6.5"
+  resolved "https://registry.npmjs.org/protobufjs/-/protobufjs-7.6.5.tgz#7b9250cdaf4a06139a9f0fe468a40d7d4febca71"
+  integrity sha512-/FPD0nUc9jH6rfFjji9IBqOz4pcSE3CsT1m7Ep6Mdb0LxSUMj8hgl6GomOvZzpNpAqqGaXA0P3VSrZLFzIhQrw==
   dependencies:
     "@protobufjs/aspromise" "^1.1.2"
     "@protobufjs/base64" "^1.1.2"
