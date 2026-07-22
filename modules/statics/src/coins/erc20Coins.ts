@@ -15019,4 +15019,12 @@ export const erc20Coins = [
     undefined,
     Networks.test.hoodi
   ),
+  terc20(
+    '97753436-903b-4131-82b2-6deea76a5e17',
+    'eth:tlto',
+    'TestingLinearTokenOnboarding',
+    6,
+    '0x1234567890abcdef1234567890abcdef12345678',
+    UnderlyingAsset['eth:tlto'],
+  ),
 ];

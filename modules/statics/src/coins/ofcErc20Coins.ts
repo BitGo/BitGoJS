@@ -7219,6 +7219,13 @@ export const tOfcErc20Coins = [
     undefined,
     'tbaseeth'
   ),
+  ofcerc20(
+    'd38204a7-b670-414e-9f58-e2df4798070c',
+    'ofceth:tlto',
+    'TestingLinearTokenOnboarding',
+    6,
+    UnderlyingAsset['eth:tlto'],
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {
