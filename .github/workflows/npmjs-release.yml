@@ -352,14 +352,16 @@ jobs:
           version=$(jq -r '.version' modules/bitgo/package.json)
           # Registry metadata can lag briefly right after publish, so retry before
           # failing the release on what might just be propagation delay.
-          if ! retry --up-to 5x --every 5s -- bash -c "
-            has_shrinkwrap=\$(curl -sL 'https://registry.npmjs.org/bitgo/${version}' | jq -r '._hasShrinkwrap // false')
-            [ \"\$has_shrinkwrap\" = 'true' ]
-          "; then
-            echo "::error::Published bitgo@${version} is missing _hasShrinkwrap metadata on the npm registry."
-            exit 1
-          fi
-          echo "✅ bitgo@${version} published with _hasShrinkwrap: true."
+          for attempt in 1 2 3 4 5; do
+            has_shrinkwrap=$(curl -sL "https://registry.npmjs.org/bitgo/${version}" | jq -r '._hasShrinkwrap // false')
+            if [ "$has_shrinkwrap" = 'true' ]; then
+              echo "✅ bitgo@${version} published with _hasShrinkwrap: true."
+              exit 0
+            fi
+            [ "$attempt" -lt 5 ] && sleep 5
+          done
+          echo "::error::Published bitgo@${version} is missing _hasShrinkwrap metadata on the npm registry."
+          exit 1
 
       - name: Generate version bump summary
         id: version-bump-summary
