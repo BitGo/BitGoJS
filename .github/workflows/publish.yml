@@ -41,6 +41,8 @@ jobs:
         with:
           scan-args: |-
             --config=osv-scanner.toml
+            --severity=HIGH
+            --severity=CRITICAL
             ./
 
       - name: Set Environment Variable for Alpha
