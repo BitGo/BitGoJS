@@ -2625,6 +2625,7 @@ export enum UnderlyingAsset {
   'eth:nowon' = 'eth:nowon',
   'eth:iwmon' = 'eth:iwmon',
   'eth:melion' = 'eth:melion',
+  'eth:tlto' = 'eth:tlto',
   'eth:tlton' = 'eth:tlton',
   'eth:grndon' = 'eth:grndon',
   'eth:figon' = 'eth:figon',

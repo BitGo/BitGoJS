@@ -13406,6 +13406,14 @@ export const erc20Coins = [
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA, CoinFeature.STABLECOIN]
   ),
   terc20(
+    '97753436-903b-4131-82b2-6deea76a5e17',
+    'eth:tlto',
+    'TestingLinearTokenOnboarding',
+    6,
+    '0x1234567890abcdef1234567890abcdef12345678',
+    UnderlyingAsset['eth:tlto']
+  ),
+  terc20(
     '6b43e702-d0ba-44c8-af93-c10cd9c2e730',
     'trlusd',
     'Test Ripple USD',
