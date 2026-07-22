@@ -1,0 +1,78 @@
+name: OSV severity gate
+description: >
+  Fails the build only when osv-scanner results contain a vulnerability at or
+  above the CVSS threshold (default 7.0, i.e. HIGH/CRITICAL). osv-scanner has
+  no severity filter of its own and exits non-zero on ANY finding, so the scan
+  step must run with `continue-on-error: true`, output JSON to a file, and let
+  this gate decide pass/fail.
+
+inputs:
+  scan-outcome:
+    description: Outcome of the osv-scanner step (`steps.<id>.outcome`)
+    required: true
+  results-file:
+    description: Path to the osv-scanner JSON results file
+    required: false
+    default: osv-results.json
+  cvss-threshold:
+    description: Minimum CVSS score that fails the build
+    required: false
+    default: "7.0"
+
+runs:
+  using: composite
+  steps:
+    - name: Evaluate scan results
+      shell: bash
+      env:
+        SCAN_OUTCOME: ${{ inputs.scan-outcome }}
+        RESULTS_FILE: ${{ inputs.results-file }}
+        CVSS_THRESHOLD: ${{ inputs.cvss-threshold }}
+      run: |
+        set -euo pipefail
+
+        # osv-scanner exit codes: 0 = no findings, 1 = findings, >1 = scan error.
+        if [[ "$SCAN_OUTCOME" == "success" ]]; then
+          echo "osv-scanner found no vulnerabilities."
+          rm -f "$RESULTS_FILE"
+          exit 0
+        fi
+
+        if ! jq -e . "$RESULTS_FILE" >/dev/null 2>&1; then
+          echo "::error::osv-scanner failed without producing valid JSON results ($RESULTS_FILE). This is a scan error (e.g. bad flags or network failure), not a vulnerability finding. Check the audit step logs."
+          exit 1
+        fi
+
+        echo "Vulnerability findings (max CVSS per advisory group):"
+        jq -r '
+          .results[]?.packages[]?
+          | .package as $p
+          | .groups[]?
+          | "  \($p.name)@\($p.version)  CVSS \(.max_severity // "" | if . == "" then "unscored" else . end)  \(.ids | join(", "))"
+        ' "$RESULTS_FILE"
+
+        TOTAL=$(jq '[.results[]?.packages[]?.groups[]?] | length' "$RESULTS_FILE")
+        UNSCORED=$(jq '[.results[]?.packages[]?.groups[]? | select((.max_severity // "") == "")] | length' "$RESULTS_FILE")
+        BLOCKING=$(jq --argjson t "$CVSS_THRESHOLD" '
+          [.results[]?.packages[]?.groups[]?
+           | .max_severity // ""
+           | select(. != "")
+           | tonumber
+           | select(. >= $t)]
+          | length
+        ' "$RESULTS_FILE")
+
+        # Keep the working tree clean for later git/publish steps.
+        rm -f "$RESULTS_FILE"
+
+        if [[ "$UNSCORED" -gt 0 ]]; then
+          echo "::warning::$UNSCORED advisory group(s) have no CVSS score and were not counted against the threshold. Review them manually."
+        fi
+
+        if [[ "$BLOCKING" -gt 0 ]]; then
+          echo "::error::$BLOCKING of $TOTAL advisory group(s) at or above CVSS $CVSS_THRESHOLD (HIGH/CRITICAL). Failing the release. Fix the dependency or add a justified exclusion to osv-scanner.toml."
+          exit 1
+        fi
+
+        echo "$TOTAL advisory group(s) found, none at or above CVSS $CVSS_THRESHOLD. Not blocking the release."
+        echo "::warning::$TOTAL medium/low advisory group(s) present — see log above. Track remediation in WCN-1550."

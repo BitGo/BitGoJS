@@ -266,14 +266,24 @@ jobs:
         run: |
           yarn install --frozen-lockfile
 
+      # osv-scanner has no severity filter and exits non-zero on ANY finding,
+      # so run it with continue-on-error and let the severity gate below
+      # decide pass/fail based on CVSS score (fails on HIGH/CRITICAL only).
       - name: Audit Dependencies
+        id: osv-scan
+        continue-on-error: true
         uses: google/osv-scanner-action/osv-scanner-action@9a498708959aeaef5ef730655706c5a1df1edbc2  # v2.3.8
         with:
           scan-args: |-
             --config=osv-scanner.toml
-            --severity=HIGH
-            --severity=CRITICAL
+            --format=json
+            --output-file=osv-results.json
             ./
+
+      - name: Enforce Vulnerability Severity Threshold
+        uses: ./.github/actions/osv-severity-gate
+        with:
+          scan-outcome: ${{ steps.osv-scan.outcome }}
 
       - name: Run dependency check
         run: |
