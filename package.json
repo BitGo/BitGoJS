@@ -104,7 +104,7 @@
     "@polkadot/keyring": "13.5.6",
     "elliptic": "^6.6.1",
     "cookie": "^0.7.1",
-    "axios": "1.16.1",
+    "axios": "1.18.0",
     "canvg": "4.0.3",
     "**/stellar-sdk/**/bignumber.js": "4.1.0",
     "**/stellar-base/**/bignumber.js": "4.1.0",
@@ -128,7 +128,7 @@
     "flatted": "3.4.2",
     "sjcl": "npm:@bitgo/sjcl@1.0.1",
     "picomatch": ">=2.3.2",
-    "fast-uri": "3.1.2",
+    "fast-uri": "3.1.3",
     "@babel/plugin-transform-modules-systemjs": "7.29.4",
     "protobufjs": "7.6.4",
     "@protobufjs/fetch": "1.1.0",
@@ -145,7 +145,9 @@
     "caniuse-lite": "1.0.30001799",
     "electron-to-chromium": "1.5.380",
     "baseline-browser-mapping": "2.10.40",
-    "sigstore": "4.1.1"
+    "sigstore": "4.1.1",
+    "uuid": "11.1.1",
+    "js-yaml": "4.3.0"
   },
   "overrides": {
     "qs": "6.15.2",
@@ -183,7 +185,7 @@
     "@polkadot/keyring": "13.5.6",
     "elliptic": "^6.6.1",
     "cookie": "^0.7.1",
-    "axios": "1.16.1",
+    "axios": "1.18.0",
     "canvg": "4.0.3",
     "bignumber.js": "9.1.2",
     "form-data": "^4.0.4",
@@ -197,12 +199,14 @@
     "flatted": "3.4.2",
     "sjcl": "npm:@bitgo/sjcl@1.0.1",
     "picomatch": ">=2.3.2",
-    "fast-uri": "3.1.2",
+    "fast-uri": "3.1.3",
     "@babel/plugin-transform-modules-systemjs": "7.29.4",
     "protobufjs": "7.6.4",
     "@protobufjs/fetch": "1.1.0",
     "@protobufjs/inquire": "1.1.0",
     "sigstore": "4.1.1",
+    "uuid": "11.1.1",
+    "js-yaml": "4.3.0",
     "cliui": {
       "strip-ansi": "6.0.1",
       "string-width": "4.2.3"
@@ -292,7 +296,7 @@
     "test:scripts": "mocha './scripts/tests/**/*.test.js'"
   },
   "dependencies": {
-    "axios": "1.16.1",
+    "axios": "1.18.0",
     "terser": "^5.14.2",
     "tmp": "^0.2.3",
     "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10"
