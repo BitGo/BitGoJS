@@ -47,10 +47,6 @@ id = "GHSA-hmw2-7cc7-3qxx"
 reason = "form-data CRLF injection via unescaped multipart field names; transitive via superagent and @aptos-labs/ts-sdk; all form-data field names and filenames in our code are code-controlled constants, not derived from user input"
 
 [[IgnoredVulns]]
-id = "GHSA-wcpc-wj8m-hjx6"
-reason = "protobufjs DoS via unbounded Any expansion (parseAny recursion); transitive via @cosmjs and @hashgraph/sdk requiring protobufjs <=7.5.x; input comes from trusted blockchain RPC responses only, not arbitrary user data"
-
-[[IgnoredVulns]]
 id = "GHSA-7c78-jf6q-g5cm"
 reason = "tmp path traversal via type-confusion in _assertPath (non-string args); transitive via cypress/karma/lerna/nx (dev-time only, never in production); all prefix/postfix/template args are hard-coded string constants — type-confusion vector does not apply"
 
@@ -65,3 +61,51 @@ reason = "tar infinite loop via negative entry size; transitive via lerna/yeoman
 [[IgnoredVulns]]
 id = "GHSA-v2hh-gcrm-f6hx"
 reason = "fast-uri host confusion via literal backslash authority (CVE-2026-16221); fixed in 3.1.4 but that release is held for SafeChain. Pinning 3.1.3 clears GHSA-4c8g-83qw-93j6 / CVE-2026-13676. Re-evaluate on 2026-07-26: bump to 3.1.4 and remove this temporary exclusion (security team guidance, WCI-1125)"
+
+[[IgnoredVulns]]
+id = "GHSA-h5c3-5r3r-rr8q"
+reason = "@octokit/plugin-paginate-rest 2.x token-leak via host-mismatch redirect; transitive via lerna/yeoman-generator dev tooling; fix requires upgrading to v9.x (major version, requires @octokit/core v5+ breaking changes); dev-time tooling only, no production API calls via this package"
+
+[[IgnoredVulns]]
+id = "GHSA-rmvr-2pp2-xj38"
+reason = "@octokit/request 5.x credential-leak via host-mismatch redirect; transitive via lerna/yeoman-generator dev tooling; fix requires v8.x (major breaking change); dev-time tooling only, no production credentials passed via this package"
+
+[[IgnoredVulns]]
+id = "GHSA-xx4v-prfh-6cgc"
+reason = "@octokit/request-error 2.x credential exposure; transitive via lerna/yeoman-generator dev tooling; fix requires v5.x (major breaking change); dev-time tooling only, no production credentials via this package"
+
+[[IgnoredVulns]]
+id = "GHSA-x3ff-w252-2g7j"
+reason = "@stablelib/ed25519 1.0.3 timing side-channel; transitive via @stablelib/ed25519; no patched version published (first_patched_version: null); used for signature operations where timing attack is not a practical threat in our server-side context"
+
+[[IgnoredVulns]]
+id = "GHSA-j965-2qgj-vjmq"
+reason = "aws-sdk 2.x credential-chain exposure risk; transitive via multiple blockchain integrations; aws-sdk v3 migration is a separate large-scale effort; no patched v2 release available (first_patched_version: null)"
+
+[[IgnoredVulns]]
+id = "GHSA-848j-6mx2-7j84"
+reason = "elliptic 6.x signature malleability (low practical risk); root resolution pins elliptic@^6.6.1; no patched version available (first_patched_version: null); mitigated by upper-layer signature validation in our crypto library"
+
+[[IgnoredVulns]]
+id = "GHSA-v2v4-37r5-5v8g"
+reason = "ip-address 9.x ReDoS; transitive via several blockchain libs; fix at 10.1.1 is a major-version breaking change requiring downstream API updates; medium severity with no known exploits in our usage patterns"
+
+[[IgnoredVulns]]
+id = "GHSA-gvwx-54wh-qm9j"
+reason = "tar 6.x/7.x extraction CVE; tar 6.x via swarm-js (packing only); tar 7.x via lerna requiring <7.5.17 — upgrading breaks lerna packDirectory API (same constraint as GHSA-8qq5-rm4j-mr97); our usage is archive PACKING only"
+
+[[IgnoredVulns]]
+id = "GHSA-vmf3-w455-68vh"
+reason = "tar 6.x/7.x extraction CVE; tar 6.x via swarm-js (packing only); tar 7.x via lerna requiring <7.5.16 — upgrading breaks lerna packDirectory API (same constraint as GHSA-8qq5-rm4j-mr97); our usage is archive PACKING only"
+
+[[IgnoredVulns]]
+id = "GHSA-w8wr-v893-vjvp"
+reason = "tar 6.x/7.x extraction CVE; tar 6.x via swarm-js (packing only); tar 7.x via lerna requiring <7.5.18 — upgrading breaks lerna packDirectory API (same constraint as GHSA-8qq5-rm4j-mr97); our usage is archive PACKING only"
+
+[[IgnoredVulns]]
+id = "GHSA-29xp-372q-xqph"
+reason = "tar 7.x extraction CVE; transitive via lerna requiring tar 7.x <7.5.2; upgrading tar within 7.x branch breaks lerna packDirectory API (same constraint as GHSA-8qq5-rm4j-mr97); our usage is archive PACKING only"
+
+[[IgnoredVulns]]
+id = "GHSA-58qx-3vcg-4xpx"
+reason = "ws 8.x DoS via crafted HTTP upgrade headers (server-side only); ws bumped to 8.20.1 via root resolutions for most consumers; residual instances via @cosmjs/socket and @ethersproject/providers requiring older ws; we use ws exclusively as a WebSocket CLIENT, never as a server"
