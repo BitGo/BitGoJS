@@ -74,7 +74,8 @@ export class StakingTransaction extends Transaction<StakingProgrammableTransacti
         ...tx.gasData,
         payment: [...tx.gasData.payment, ...this.getInputGasPaymentObjectsFromTx(tx.tx)],
       },
-      expiration: { None: null },
+      expiration: tx.expiration ?? { None: null },
+      fundsInAddressBalance: tx.fundsInAddressBalance,
     };
   }
 
@@ -191,7 +192,15 @@ export class StakingTransaction extends Transaction<StakingProgrammableTransacti
           return Inputs.Pure(amount, BCS.U64);
         }
       }
-      if (input.kind === 'Input' && (input.value.hasOwnProperty('Object') || input.value.hasOwnProperty('Pure'))) {
+      if (input.hasOwnProperty('BalanceWithdrawal')) {
+        return input;
+      }
+      if (
+        input.kind === 'Input' &&
+        (input.value.hasOwnProperty('Object') ||
+          input.value.hasOwnProperty('Pure') ||
+          input.value.hasOwnProperty('BalanceWithdrawal'))
+      ) {
         return input.value;
       }
 
@@ -206,7 +215,7 @@ export class StakingTransaction extends Transaction<StakingProgrammableTransacti
 
     return {
       sender: this._suiTransaction.sender,
-      expiration: { None: null },
+      expiration: this._suiTransaction.expiration ?? { None: null },
       gasData: {
         ...this._suiTransaction.gasData,
         payment: this._suiTransaction.gasData.payment.slice(0, MAX_GAS_OBJECTS - 1),

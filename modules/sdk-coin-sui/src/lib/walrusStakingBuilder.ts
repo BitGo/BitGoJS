@@ -11,7 +11,7 @@ import { Transaction } from './transaction';
 import utils from './utils';
 import assert from 'assert';
 import { TransferTransaction } from './transferTransaction';
-import { StakingTransaction } from './stakingTransaction';
+import { WalrusStakingTransaction } from './walrusStakingTransaction';
 import {
   Inputs,
   MoveCallTransaction,
@@ -30,7 +30,7 @@ export class WalrusStakingBuilder extends TransactionBuilder<WalrusStakingProgra
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._transaction = new StakingTransaction(_coinConfig);
+    this._transaction = new WalrusStakingTransaction(_coinConfig);
 
     // TODO improve mainnet vs. testnet configuration
     this.walrusConfig = _coinConfig.network.type === NetworkType.MAINNET ? WALRUS_PROD_CONFIG : WALRUS_TESTNET_CONFIG;
@@ -120,7 +120,7 @@ export class WalrusStakingBuilder extends TransactionBuilder<WalrusStakingProgra
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction<WalrusStakingProgrammableTransaction> {
-    const tx = new StakingTransaction(this._coinConfig);
+    const tx = new WalrusStakingTransaction(this._coinConfig);
     this.validateRawTransaction(rawTransaction);
     tx.fromRawTransaction(rawTransaction);
     this.initBuilder(tx);
@@ -147,7 +147,7 @@ export class WalrusStakingBuilder extends TransactionBuilder<WalrusStakingProgra
   /**
    * Initialize the transaction builder fields using the decoded transaction data
    *
-   * @param {StakingTransaction} tx the transaction data
+   * @param {WalrusStakingTransaction} tx the transaction data
    */
   initBuilder(tx: Transaction<WalrusStakingProgrammableTransaction>): void {
     this._transaction = tx;

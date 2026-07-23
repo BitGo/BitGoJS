@@ -383,7 +383,10 @@ export class Utils implements BaseUtils {
         const amountInputIdx = ((transaction as SplitCoinsTransaction).amounts[0] as TransactionBlockInput).index;
         amounts.push(utils.getAmount(tx.inputs[amountInputIdx] as TransactionBlockInput));
       }
-      if (transaction.kind === 'MoveCall') {
+      if (
+        transaction.kind === 'MoveCall' &&
+        (transaction as MoveCallTransaction).target.endsWith('::sui_system::request_add_stake')
+      ) {
         const validatorAddressInputIdx = ((transaction as MoveCallTransaction).arguments[2] as TransactionBlockInput)
           .index;
         const validatorAddress = utils.getAddress(tx.inputs[validatorAddressInputIdx] as TransactionBlockInput);
@@ -406,7 +409,10 @@ export class Utils implements BaseUtils {
         const amountInputIdx = ((transaction as SplitCoinsTransaction).amounts[0] as TransactionBlockInput).index;
         amounts.push(utils.getAmount(tx.inputs[amountInputIdx] as TransactionBlockInput));
       }
-      if (transaction.kind === 'MoveCall') {
+      if (
+        transaction.kind === 'MoveCall' &&
+        (transaction as MoveCallTransaction).target.endsWith('::staking::stake_with_pool')
+      ) {
         const validatorAddressInputIdx = ((transaction as MoveCallTransaction).arguments[2] as TransactionBlockInput)
           .index;
         const validatorAddress = utils.getAddress(tx.inputs[validatorAddressInputIdx] as TransactionBlockInput);

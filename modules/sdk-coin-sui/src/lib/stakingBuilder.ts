@@ -18,6 +18,7 @@ import {
   MoveCallTransaction,
   Inputs,
 } from './mystenlab/builder';
+import BigNumber from 'bignumber.js';
 import {
   ADD_STAKE_FUN_NAME,
   SUI_SYSTEM_ADDRESS,
@@ -31,6 +32,7 @@ import { MAX_COMMAND_ARGS, MAX_GAS_OBJECTS } from './constants';
 export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransaction> {
   protected _addStakeTx: RequestAddStake[];
   protected _withdrawDelegation: RequestWithdrawStakedSui;
+  protected _fundsInAddressBalance: BigNumber = new BigNumber(0);
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -108,6 +110,18 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
     return this;
   }
 
+  /**
+   * Set the amount of SUI held in the sender's address balance system.
+   * When set, the PTB will redeem this amount as a Coin<SUI> and merge it
+   * into the gas coin before splitting the stake amount.
+   *
+   * @param {string} amount - amount in MIST held in address balance
+   */
+  fundsInAddressBalance(amount: string): this {
+    this._fundsInAddressBalance = new BigNumber(amount);
+    return this;
+  }
+
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction<StakingProgrammableTransaction> {
     const tx = new StakingTransaction(this._coinConfig);
@@ -150,6 +164,21 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
     this.type(SuiTransactionType.AddStake);
     this.sender(txData.sender);
     this.gasData(txData.gasData);
+
+    if (txData.expiration && !('None' in txData.expiration)) {
+      this._expiration = txData.expiration;
+    }
+
+    // Restore fundsInAddressBalance from BalanceWithdrawal input if present.
+    const withdrawalInput = (tx.suiTransaction?.tx?.inputs as any[])?.find(
+      (input: any) =>
+        (input !== null && typeof input === 'object' && 'BalanceWithdrawal' in input) ||
+        (input?.value !== null && typeof input?.value === 'object' && 'BalanceWithdrawal' in (input.value ?? {}))
+    );
+    if (withdrawalInput) {
+      const bw = withdrawalInput.BalanceWithdrawal ?? withdrawalInput.value?.BalanceWithdrawal;
+      this._fundsInAddressBalance = new BigNumber(String(bw.reservation?.MaxAmountU64 ?? bw.amount));
+    }
 
     const requests = utils.getStakeRequests(tx.suiTransaction.tx);
     this.stake(requests);
@@ -200,6 +229,18 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
           }
         }
 
+        // When the sender has funds in the address balance system, redeem them as a
+        // Coin<SUI> and merge into the gas coin so SplitCoins can draw from the full
+        // available balance (coin objects + address balance).
+        if (this._fundsInAddressBalance.gt(0)) {
+          const [addrCoin] = programmableTxBuilder.moveCall({
+            target: '0x2::coin::redeem_funds',
+            typeArguments: ['0x2::sui::SUI'],
+            arguments: [programmableTxBuilder.withdrawal({ amount: BigInt(this._fundsInAddressBalance.toFixed()) })],
+          });
+          programmableTxBuilder.mergeCoins(programmableTxBuilder.gas, [addrCoin]);
+        }
+
         // Create a new coin with staking balance, based on the coins used as gas payment.
         this._addStakeTx.forEach((req) => {
           const coin = programmableTxBuilder.splitCoins(programmableTxBuilder.gas, [
@@ -242,6 +283,8 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
         ...this._gasData,
         payment: this._gasData.payment.slice(0, MAX_GAS_OBJECTS - 1),
       },
+      expiration: this._expiration,
+      fundsInAddressBalance: this._fundsInAddressBalance.gt(0) ? this._fundsInAddressBalance.toFixed() : undefined,
     };
   }
 }
