@@ -172,6 +172,34 @@ export const botTokens = [
     undefined,
     Networks.test.hoodi
   ),
+  AccountCtors.terc20(
+    'dab09c2a-e17b-4723-9cfe-e979d995bd7f',
+    'hteth:sachu',
+    'Sachu',
+    18,
+    '0xdbb7a34ea6859d307c4f2bb5be266e2d32356f51',
+    'hteth:sachu' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth'),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  AccountCtors.terc20(
+    'e6cfb0a2-a633-4e89-9428-9e1aa9a0d1a5',
+    'hteth:amsv5',
+    'AMS Token V5',
+    18,
+    '0xe0afea496077fb59c1c9fe1d63887ac827a7c334',
+    'hteth:amsv5' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
@@ -1279,7 +1307,7 @@ export const botTokens = [
   AccountCtors.erc20(
     'd15d88b2-3c20-4ff4-88c3-ca2d544fec21',
     'eth:aethwsteth',
-    'Wrapped liquid staked Ether 2.0',
+    'Aave Ethereum wstETH',
     18,
     '0x0b925ed163218f6662a35e0f0371ac234f9e9371',
     'eth:aethwsteth' as unknown as UnderlyingAsset,
