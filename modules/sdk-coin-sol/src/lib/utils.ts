@@ -15,6 +15,7 @@ import {
   TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
   decodeInstruction,
+  DecodedInstruction,
   TokenInstruction,
   TransferFeeInstruction,
 } from '@solana/spl-token';
@@ -414,7 +415,18 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
       ) {
         return 'TokenTransfer';
       }
-      const decodedInstruction = decodeInstruction(instruction, instruction.programId);
+      let decodedInstruction: DecodedInstruction;
+      try {
+        decodedInstruction = decodeInstruction(instruction, instruction.programId);
+      } catch (e) {
+        // decodeInstruction only supports the base token instruction set —
+        // extension-family instructions (Pause, PermissionedBurn, transfer
+        // fee ops, ...) throw TokenInvalidInstructionTypeError at EVERY
+        // @solana/spl-token version. Those must not crash classification:
+        // fall back to CustomInstruction, the same path used below for
+        // decodable-but-unmapped instruction types.
+        return 'CustomInstruction';
+      }
       const instructionTypeMap: Map<TokenInstruction, ValidInstructionTypes> = new Map();
       instructionTypeMap.set(TokenInstruction.CloseAccount, 'CloseAssociatedTokenAccount');
       instructionTypeMap.set(TokenInstruction.Burn, 'Burn');
