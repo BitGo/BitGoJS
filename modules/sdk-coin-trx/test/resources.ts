@@ -353,6 +353,96 @@ export function receiveAddressBalance(balance: number, address: string, trc20Bal
   };
 }
 
+export function receiveAddressBalanceWithoutTrc20Field(balance: number, address: string) {
+  return {
+    data: [
+      {
+        owner_permission: {
+          keys: [
+            {
+              address: address,
+              weight: 1,
+            },
+          ],
+          threshold: 1,
+          permission_name: 'owner',
+        },
+        active_permission: [
+          {
+            operations: '7fff1fc0033ec30f000000000000000000000000000000000000000000000000',
+            keys: [
+              {
+                address: address,
+                weight: 1,
+              },
+            ],
+            threshold: 1,
+            id: 2,
+            type: 'Active',
+            permission_name: 'active',
+          },
+        ],
+        balance: balance,
+        // trc20 field intentionally absent — real TRON node omits it for
+        // accounts that have never interacted with TRC20 tokens
+      },
+    ],
+  };
+}
+
+export function baseAddressBalanceWithoutTrc20Field(trxBalance: number) {
+  return {
+    data: [
+      {
+        owner_permission: {
+          keys: [
+            {
+              address: 'TTgisRP7EJWMgpLXvbNHoHh5UotkjkBPoo',
+              weight: 1,
+            },
+            {
+              address: 'TBDy8HAy8vvhoqKc5V1hHQatfjZHM1MhPb',
+              weight: 1,
+            },
+            {
+              address: 'TPHPDfQ8Vs3Yp5UKDLHr5MjoVUrr5Y69m9',
+              weight: 1,
+            },
+          ],
+          threshold: 2,
+          permission_name: 'owner',
+        },
+        balance: trxBalance,
+        // trc20 field intentionally absent — real TRON node omits it for
+        // accounts that have never interacted with TRC20 tokens
+        active_permission: [
+          {
+            operations: '7fff1fc0037e0000000000000000000000000000000000000000000000000000',
+            keys: [
+              {
+                address: 'TTgisRP7EJWMgpLXvbNHoHh5UotkjkBPoo',
+                weight: 1,
+              },
+              {
+                address: 'TBDy8HAy8vvhoqKc5V1hHQatfjZHM1MhPb',
+                weight: 1,
+              },
+              {
+                address: 'TPHPDfQ8Vs3Yp5UKDLHr5MjoVUrr5Y69m9',
+                weight: 1,
+              },
+            ],
+            threshold: 2,
+            id: 2,
+            type: 'Active',
+            permission_name: 'active0',
+          },
+        ],
+      },
+    ],
+  };
+}
+
 export function creationTransaction(fromAddress: string, toAddress: string, amount: number) {
   return {
     visible: false,
