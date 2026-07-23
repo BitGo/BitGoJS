@@ -23,11 +23,11 @@ function extractOutputs(
   parsed: WasmParsedTransaction,
   toAddressBounceable: boolean
 ): {
-  outputs: { address: string; amount: string }[];
+  outputs: { address: string; amount: string; memo?: string }[];
   outputAmount: string;
   withdrawAmount: string | undefined;
 } {
-  const outputs: { address: string; amount: string }[] = [];
+  const outputs: { address: string; amount: string; memo?: string }[] = [];
   let withdrawAmount: string | undefined;
 
   for (const action of parsed.sendActions) {
@@ -39,10 +39,14 @@ function extractOutputs(
     } else {
       // destinationBounceable is always EQ... (bounceable)
       // destination respects the original bounce flag (UQ... when bounce=false)
-      outputs.push({
+      const output: { address: string; amount: string; memo?: string } = {
         address: toAddressBounceable ? action.destinationBounceable : action.destination,
         amount: String(action.amount),
-      });
+      };
+      if (action.memo) {
+        output.memo = action.memo;
+      }
+      outputs.push(output);
     }
 
     // withdrawAmount comes from the body payload parsed by WASM (not the message TON value)
