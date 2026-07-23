@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.1.2...@bitgo/sdk-api@2.2.0) (2026-07-22)
+
+
+### Features
+
+* **sdk-core:** type BitGoBase.wallets() as BitGoApiV1Wallets ([0dcccf8](https://github.com/BitGo/BitGoJS/commit/0dcccf82d856297c2f35555b4e913ec6eaebae5b))
+
+
+
+
+
 ## [2.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.1.1...@bitgo/sdk-api@2.1.2) (2026-07-16)
 
 **Note:** Version bump only for package @bitgo/sdk-api

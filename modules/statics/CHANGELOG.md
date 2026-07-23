@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.57.0...@bitgo/statics@59.0.0) (2026-07-22)
+
+
+### Bug Fixes
+
+* **statics:** add SUPPORTS_ERC20 to arcusdc/tarcusdc ([8e8018a](https://github.com/BitGo/BitGoJS/commit/8e8018a29c7fec00aea7672252a1acfb754f0251))
+* **statics:** rename ofcusdm1 OFC symbol to ofceth:usdm1 ([e4c6925](https://github.com/BitGo/BitGoJS/commit/e4c6925fa41447689983b1d129db0abc285a85cf))
+* **statics:** update gospcx contract addresses ([16df7ff](https://github.com/BitGo/BitGoJS/commit/16df7ff856b9b98e964712d7d8b3a07271a4e48e))
+
+
+### Features
+
+* **sdk-coin-sol:** read Token-2022 mint extensions from chain ([f5d2235](https://github.com/BitGo/BitGoJS/commit/f5d2235fecd7ab1eb97c2f6e3b316599d2005811))
+* **statics:** add liquid-staking to sol:jsol and sol:stsol ([5273c60](https://github.com/BitGo/BitGoJS/commit/5273c60aeae8bf63f76372158f49634c7c6f1d69))
+* **statics:** add TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY CoinFeatures ([48beda4](https://github.com/BitGo/BitGoJS/commit/48beda4d36c03bf47fda2fa3ee24f35caf0cbdbb))
+* **statics:** model Token-2022 extensions on SolCoin ([f1998da](https://github.com/BitGo/BitGoJS/commit/f1998da76e8a84985cfe4e55e0ba9914d2c55255))
+* **statics:** onboard ARC, ScrollETH, Katana and Boba tokens ([5b77b18](https://github.com/BitGo/BitGoJS/commit/5b77b182cc2f9a3ff2936fb938a8aec54760177f))
+* **statics:** onboard sol and baseeth assets ([314598d](https://github.com/BitGo/BitGoJS/commit/314598d24e6aa6590217b3882327018e0e139dae))
+* **statics:** onboard ttkb token on test env ([e4dd4de](https://github.com/BitGo/BitGoJS/commit/e4dd4ded6dcb91ee0f847c2ed6827a1ab1704d49))
+* **statics:** set RECEIPT_TOKEN coin feature for tbaseeth:kmusdc ([a473633](https://github.com/BitGo/BitGoJS/commit/a4736335fc2894c443e15bbe69c8b52d9738b468))
+
+
+### BREAKING CHANGES
+
+* **statics:** GOSPCX token definitions have been updated
+with redeployed mints and decimal precision changed from 6 to 9.
+Applications using GOSPCX tokens must update their token
+configuration and adjust decimal handling accordingly.
+
+
+
+
+
 # [58.57.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.56.0...@bitgo/statics@58.57.0) (2026-07-16)
 
 

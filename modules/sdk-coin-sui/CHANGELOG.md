@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@6.0.3...@bitgo/sdk-coin-sui@6.0.4) (2026-07-22)
+
+
+### Bug Fixes
+
+* **root:** clear osv-scanner HIGH/CRITICAL findings blocking release ([a39883f](https://github.com/BitGo/BitGoJS/commit/a39883fb528dd665433c6e54e3f02302f2a594b0))
+
+
+
+
+
 ## [6.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@6.0.2...@bitgo/sdk-coin-sui@6.0.3) (2026-07-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

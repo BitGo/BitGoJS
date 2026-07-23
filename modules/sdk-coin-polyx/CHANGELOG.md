@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@2.0.3...@bitgo/sdk-coin-polyx@2.0.4) (2026-07-22)
+
+
+### Bug Fixes
+
+* **abstract-substrate:** skip recipient validation for token enablement txns ([afe68aa](https://github.com/BitGo/BitGoJS/commit/afe68aa8439ccdbb7e7aac0d06087ca8652039e2))
+* **sdk-coin-polyx:** forward caller material into v8 batch staking builder on decode-success path ([eb182a8](https://github.com/BitGo/BitGoJS/commit/eb182a84c6d3bc42bd24f39c00d3eade8907bf35))
+* **sdk-coin-polyx:** forward decoded specVersion to v8 transfer builders in tryGetV8Builder ([f2dc0ee](https://github.com/BitGo/BitGoJS/commit/f2dc0ee012942e46bc4597d3a3c3ddb262b7f327))
+* **sdk-coin-polyx:** route v8 token transfers correctly ([57fd25f](https://github.com/BitGo/BitGoJS/commit/57fd25f765e3e2156fd56e03d0a3f014feaca6c5))
+
+
+
+
+
 ## [2.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@2.0.2...@bitgo/sdk-coin-polyx@2.0.3) (2026-07-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polyx

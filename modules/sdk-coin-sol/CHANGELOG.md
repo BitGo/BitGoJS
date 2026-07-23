@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.1.1...@bitgo/sdk-coin-sol@8.2.0) (2026-07-22)
+
+
+### Features
+
+* bump public types ([821965b](https://github.com/BitGo/BitGoJS/commit/821965b54efcdf65969dcaf4320a2e7170ab24f1))
+* **sdk-coin-sol:** read Token-2022 mint extensions from chain ([f5d2235](https://github.com/BitGo/BitGoJS/commit/f5d2235fecd7ab1eb97c2f6e3b316599d2005811))
+
+
+
+
+
 ## [8.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.1.0...@bitgo/sdk-coin-sol@8.1.1) (2026-07-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
