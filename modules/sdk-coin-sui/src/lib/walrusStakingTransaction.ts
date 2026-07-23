@@ -68,13 +68,15 @@ export class WalrusStakingTransaction extends Transaction<WalrusStakingProgramma
     }
 
     const tx = this._suiTransaction;
+    const inputObjects = this.getInputObjectsFromTx(tx.tx);
     return {
       id: this._id,
       sender: tx.sender,
       kind: { ProgrammableTransaction: tx.tx },
       gasData: tx.gasData,
-      expiration: { None: null },
-      inputObjects: this.getInputObjectsFromTx(tx.tx),
+      expiration: tx.expiration ?? { None: null },
+      ...(inputObjects.length > 0 && { inputObjects }),
+      fundsInAddressBalance: tx.fundsInAddressBalance,
     };
   }
 
@@ -191,7 +193,15 @@ export class WalrusStakingTransaction extends Transaction<WalrusStakingProgramma
           return Inputs.Pure(amount, BCS.U64);
         }
       }
-      if (input.kind === 'Input' && (input.value.hasOwnProperty('Object') || input.value.hasOwnProperty('Pure'))) {
+      if (input.hasOwnProperty('BalanceWithdrawal')) {
+        return input;
+      }
+      if (
+        input.kind === 'Input' &&
+        (input.value.hasOwnProperty('Object') ||
+          input.value.hasOwnProperty('Pure') ||
+          input.value.hasOwnProperty('BalanceWithdrawal'))
+      ) {
         return input.value;
       }
 
@@ -206,7 +216,7 @@ export class WalrusStakingTransaction extends Transaction<WalrusStakingProgramma
 
     return {
       sender: this._suiTransaction.sender,
-      expiration: { None: null },
+      expiration: this._suiTransaction.expiration ?? { None: null },
       gasData: this._suiTransaction.gasData,
       kind: {
         ProgrammableTransaction: programmableTx,
@@ -255,28 +265,40 @@ export class WalrusStakingTransaction extends Transaction<WalrusStakingProgramma
 
   private getInputObjectsFromTx(tx: WalrusStakingProgrammableTransaction): SuiObjectRef[] {
     const inputs = tx.inputs;
-    const transaction = tx.transactions[0] as SuiTransactionBlockType;
 
-    let args: TransactionArgument[] = [];
-    if (transaction.kind === 'MergeCoins') {
-      const { destination, sources } = transaction;
-      args = [destination, ...sources];
-    } else if (transaction.kind === 'SplitCoins') {
-      args = [transaction.coin];
-    }
-
+    // Scan all transactions for MergeCoins/SplitCoins that reference ImmOrOwned
+    // coin object inputs. When fundsInAddressBalance is used, a MoveCall
+    // (redeem_funds) may appear before the first merge/split, so we cannot
+    // assume transactions[0] is the relevant one.
     const inputObjects: SuiObjectRef[] = [];
-    args.forEach((arg) => {
-      if (arg.kind === 'Input') {
-        let input = inputs[arg.index];
-        if ('value' in input) {
-          input = input.value;
-        }
-        if ('Object' in input && isImmOrOwnedObj(input.Object)) {
-          inputObjects.push(input.Object.ImmOrOwned);
-        }
+    for (const txn of tx.transactions as SuiTransactionBlockType[]) {
+      let args: TransactionArgument[] = [];
+      if (txn.kind === 'MergeCoins') {
+        const { destination, sources } = txn;
+        args = [destination, ...sources];
+      } else if (txn.kind === 'SplitCoins') {
+        args = [txn.coin];
+      } else {
+        continue;
       }
-    });
+
+      args.forEach((arg) => {
+        if (arg.kind === 'Input') {
+          let input = inputs[arg.index];
+          if ('value' in input) {
+            input = input.value;
+          }
+          if ('Object' in input && isImmOrOwnedObj(input.Object)) {
+            inputObjects.push(input.Object.ImmOrOwned);
+          }
+        }
+      });
+
+      // Stop after the first merge/split that yields coin object refs.
+      if (inputObjects.length > 0) {
+        break;
+      }
+    }
 
     return inputObjects;
   }
