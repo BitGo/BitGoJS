@@ -16,7 +16,11 @@ import {
   stakingWithdrawInstructionsIndexes,
 } from '../../src/lib/constants';
 import BigNumber from 'bignumber.js';
-import { TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {
+  TOKEN_2022_PROGRAM_ID,
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  createTransferCheckedWithFeeInstruction,
+} from '@solana/spl-token';
 
 describe('SOL util library', function () {
   describe('isValidAddress', function () {
@@ -617,5 +621,36 @@ describe('SOL util library', function () {
       });
       Utils.isIdempotentAtaInstruction(instruction).should.equal(false);
     });
+  });
+});
+
+describe('computeTransferFee', function () {
+  it('applies basis points below the cap', function () {
+    Utils.computeTransferFee('10000', 100, '1000').should.equal('100'); // 1% of 10000
+  });
+  it('caps at maximumFee (PRD 3.6 table)', function () {
+    Utils.computeTransferFee('500000', 100, '1000').should.equal('1000'); // 1% = 5000 → capped
+    Utils.computeTransferFee('1000000', 100, '1000').should.equal('1000'); // 1% = 10000 → capped
+  });
+  it('returns 0 for zero basis points', function () {
+    Utils.computeTransferFee('1000', 0, '1000').should.equal('0');
+  });
+});
+
+describe('getInstructionType - transferCheckedWithFee', function () {
+  it('classifies a Token-2022 transferCheckedWithFee as TokenTransfer', function () {
+    const t = testData.sol2022TokenTransfers;
+    const ix = createTransferCheckedWithFeeInstruction(
+      new PublicKey(t.source),
+      new PublicKey(t.mint),
+      new PublicKey(t.owner), // destination
+      new PublicKey(t.owner), // authority
+      BigInt(t.amount),
+      t.decimals,
+      1000n,
+      [],
+      TOKEN_2022_PROGRAM_ID
+    );
+    Utils.getInstructionType(ix).should.equal('TokenTransfer');
   });
 });

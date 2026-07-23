@@ -1,12 +1,15 @@
 import {
   DecodedTransferCheckedInstruction,
   decodeTransferCheckedInstruction,
+  decodeTransferCheckedWithFeeInstruction,
   DecodedBurnInstruction,
   decodeBurnInstruction,
   DecodedMintToInstruction,
   decodeMintToInstruction,
   TOKEN_2022_PROGRAM_ID,
   decodeApproveInstruction,
+  TokenInstruction,
+  TransferFeeInstruction,
 } from '@solana/spl-token';
 import {
   AllocateParams,
@@ -197,13 +200,38 @@ function parseSendInstructions(
         instructionData.push(transfer);
         break;
       case ValidInstructionTypesEnum.TokenTransfer:
-        let tokenTransferInstruction: DecodedTransferCheckedInstruction;
-        if (instruction.programId.toString() !== TOKEN_2022_PROGRAM_ID.toString()) {
-          tokenTransferInstruction = decodeTransferCheckedInstruction(instruction);
+        const isToken2022Transfer = instruction.programId.toString() === TOKEN_2022_PROGRAM_ID.toString();
+        const isTransferWithFee =
+          isToken2022Transfer &&
+          instruction.data.length >= 2 &&
+          instruction.data[0] === TokenInstruction.TransferFeeExtension &&
+          instruction.data[1] === TransferFeeInstruction.TransferCheckedWithFee;
+        let ttKeys: DecodedTransferCheckedInstruction['keys'];
+        let ttAmount: bigint;
+        let ttDecimals: number;
+        let ttFee: string | undefined;
+        if (isTransferWithFee) {
+          const decoded = decodeTransferCheckedWithFeeInstruction(instruction, TOKEN_2022_PROGRAM_ID);
+          // WithFee exposes `authority` where TransferChecked exposes `owner`; normalize to owner.
+          ttKeys = {
+            source: decoded.keys.source,
+            mint: decoded.keys.mint,
+            destination: decoded.keys.destination,
+            owner: decoded.keys.authority,
+          } as DecodedTransferCheckedInstruction['keys'];
+          ttAmount = decoded.data.amount;
+          ttDecimals = decoded.data.decimals;
+          ttFee = decoded.data.fee.toString();
         } else {
-          tokenTransferInstruction = decodeTransferCheckedInstruction(instruction, TOKEN_2022_PROGRAM_ID);
+          const decoded = decodeTransferCheckedInstruction(
+            instruction,
+            isToken2022Transfer ? TOKEN_2022_PROGRAM_ID : undefined
+          );
+          ttKeys = decoded.keys;
+          ttAmount = decoded.data.amount;
+          ttDecimals = decoded.data.decimals;
         }
-        const tokenAddress = tokenTransferInstruction.keys.mint.pubkey.toString();
+        const tokenAddress = ttKeys.mint.pubkey.toString();
         const tokenName = findTokenName(tokenAddress, instructionMetadata, _useTokenAddressTokenName);
         let programIDForTokenTransfer: string | undefined;
         if (instruction.programId) {
@@ -212,14 +240,15 @@ function parseSendInstructions(
         const tokenTransfer: TokenTransfer = {
           type: InstructionBuilderTypes.TokenTransfer,
           params: {
-            fromAddress: tokenTransferInstruction.keys.owner.pubkey.toString(),
-            toAddress: tokenTransferInstruction.keys.destination.pubkey.toString(),
-            amount: tokenTransferInstruction.data.amount.toString(),
+            fromAddress: ttKeys.owner.pubkey.toString(),
+            toAddress: ttKeys.destination.pubkey.toString(),
+            amount: ttAmount.toString(),
             tokenName,
-            sourceAddress: tokenTransferInstruction.keys.source.pubkey.toString(),
+            sourceAddress: ttKeys.source.pubkey.toString(),
             tokenAddress: tokenAddress,
             programId: programIDForTokenTransfer,
-            decimalPlaces: tokenTransferInstruction.data.decimals,
+            decimalPlaces: ttDecimals,
+            ...(ttFee !== undefined ? { fee: ttFee } : {}),
           },
         };
         instructionData.push(tokenTransfer);

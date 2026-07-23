@@ -16,6 +16,7 @@ import {
   TOKEN_2022_PROGRAM_ID,
   decodeInstruction,
   TokenInstruction,
+  TransferFeeInstruction,
 } from '@solana/spl-token';
 import {
   Keypair,
@@ -405,6 +406,14 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
       return SystemInstruction.decodeInstructionType(instruction);
     case TOKEN_PROGRAM_ID.toString():
     case TOKEN_2022_PROGRAM_ID.toString():
+      if (
+        instruction.programId.equals(TOKEN_2022_PROGRAM_ID) &&
+        instruction.data.length >= 2 &&
+        instruction.data[0] === TokenInstruction.TransferFeeExtension &&
+        instruction.data[1] === TransferFeeInstruction.TransferCheckedWithFee
+      ) {
+        return 'TokenTransfer';
+      }
       const decodedInstruction = decodeInstruction(instruction, instruction.programId);
       const instructionTypeMap: Map<TokenInstruction, ValidInstructionTypes> = new Map();
       instructionTypeMap.set(TokenInstruction.CloseAccount, 'CloseAssociatedTokenAccount');
@@ -672,4 +681,14 @@ export function isSolLegacyInstruction(
   instruction: SolInstruction | SolVersionedInstruction
 ): instruction is SolInstruction {
   return 'programId' in instruction;
+}
+
+/**
+ * Token-2022 transfer fee: min(amount * basisPoints / 10000, maximumFee), in raw base units.
+ * All math in BigInt to avoid precision loss.
+ */
+export function computeTransferFee(amount: string, basisPoints: number, maximumFee: string): string {
+  const raw = (BigInt(amount) * BigInt(basisPoints)) / 10000n;
+  const cap = BigInt(maximumFee);
+  return (raw < cap ? raw : cap).toString();
 }
