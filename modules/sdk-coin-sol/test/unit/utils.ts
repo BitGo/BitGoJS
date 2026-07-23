@@ -255,6 +255,25 @@ describe('SOL util library', function () {
       });
       Utils.getInstructionType(invalidInstruction).should.equal('CustomInstruction');
     });
+    it('should fallback to customInstruction for token instructions that cannot be decoded', function () {
+      // decodeInstruction only covers the base token instruction set;
+      // extension-family instructions (e.g. PermissionedBurnExtension = 46,
+      // PausableExtension = 44) throw TokenInvalidInstructionTypeError at
+      // every @solana/spl-token version. They must classify as
+      // CustomInstruction instead of crashing customTx validation.
+      const permissionedBurnChecked = new TransactionInstruction({
+        keys: [
+          { pubkey: new PublicKey(testData.authAccount.pub), isSigner: false, isWritable: true },
+          { pubkey: new PublicKey(testData.nonceAccount.pub), isSigner: false, isWritable: true },
+          { pubkey: new PublicKey(testData.authAccount.pub), isSigner: true, isWritable: false },
+          { pubkey: new PublicKey(testData.authAccount.pub), isSigner: true, isWritable: false },
+        ],
+        programId: TOKEN_2022_PROGRAM_ID,
+        // [46 = PermissionedBurnExtension, 2 = BurnChecked, u64 amount, u8 decimals]
+        data: Buffer.from([46, 2, 0, 202, 154, 59, 0, 0, 0, 0, 9]),
+      });
+      Utils.getInstructionType(permissionedBurnChecked).should.equal('CustomInstruction');
+    });
     it('should succeed for ComputeBudget SetComputeUnitLimit instruction', function () {
       const setComputeUnitLimitInstruction = ComputeBudgetProgram.setComputeUnitLimit({
         units: 300000,
