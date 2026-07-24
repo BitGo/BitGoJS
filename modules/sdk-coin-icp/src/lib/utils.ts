@@ -21,6 +21,8 @@ import {
   CurveType,
   AccountIdentifierHash,
   CborUnsignedTransaction,
+  IcpCertificate,
+  IcpHashTree,
   MAX_INGRESS_TTL,
 } from './iface';
 import { KeyPair as IcpKeyPair } from './keyPair';
@@ -773,6 +775,151 @@ export class Utils implements BaseUtils {
       return Buffer.concat([checksum, hashBuffer]).toString('hex').toLowerCase();
     }
     throw new Error('Invalid accountHash format');
+  }
+
+  /**
+   * Looks up a path in an ICP labeled hash tree.
+   *
+   * The ICP state tree uses a specific CBOR array encoding:
+   *   [0]            = Empty
+   *   [1, l, r]      = Fork
+   *   [2, label, t]  = Labeled
+   *   [3, value]     = Leaf
+   *   [4, hash]      = Pruned
+   *
+   * @param tree  The root node of the ICP labeled hash tree.
+   * @param path  Ordered path segments (as Buffers or strings).
+   * @returns     The leaf value as a Buffer, or undefined if not found.
+   */
+  lookupPathInTree(tree: IcpHashTree, path: (Buffer | string)[]): Buffer | undefined {
+    if (path.length === 0) {
+      if (tree[0] === 3) {
+        return Buffer.from(tree[1] as Uint8Array);
+      }
+      return undefined;
+    }
+
+    const [head, ...rest] = path;
+    const labelBytes = typeof head === 'string' ? Buffer.from(head, 'utf8') : head;
+
+    return this.findLabeledSubtree(tree, labelBytes, rest);
+  }
+
+  private findLabeledSubtree(
+    tree: IcpHashTree,
+    label: Buffer,
+    remainingPath: (Buffer | string)[]
+  ): Buffer | undefined {
+    const nodeType = tree[0];
+
+    if (nodeType === 1) {
+      // Fork: search both sides
+      const left = this.findLabeledSubtree(tree[1] as IcpHashTree, label, remainingPath);
+      if (left !== undefined) return left;
+      return this.findLabeledSubtree(tree[2] as IcpHashTree, label, remainingPath);
+    }
+
+    if (nodeType === 2) {
+      // Labeled: check if this label matches
+      const nodeLabel = Buffer.from(tree[1] as Uint8Array);
+      if (nodeLabel.equals(label)) {
+        return this.lookupPathInTree(tree[2] as IcpHashTree, remainingPath);
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Extracts the request status from an ICP v3 API call response certificate.
+   *
+   * For a `/api/v3/canister/call` response where the outer status is 'replied',
+   * the certificate tree contains the actual request outcome at the path
+   * ["request_status", <request_id>, "status"].
+   *
+   * @param certificate  The decoded ICP certificate object.
+   * @returns            Object containing the request status and optional reject message.
+   */
+  extractRequestStatusFromCertificate(certificate: IcpCertificate): {
+    requestStatus: string;
+    rejectMessage?: string;
+    rejectCode?: number;
+  } {
+    const tree = certificate.tree;
+
+    // The status node is nested under ["request_status", <request_id_bytes>, "status"].
+    // We don't know the request_id in advance, so we search the tree for any "status"
+    // leaf inside the "request_status" subtree, skipping the intermediate request_id level.
+    const statusFromSubtree = this.searchForLeafInSubtree(tree, 'request_status', 'status');
+    if (statusFromSubtree === undefined) {
+      // No request_status/status found — treat as unknown (not a rejection)
+      return { requestStatus: 'unknown' };
+    }
+
+    const requestStatus = statusFromSubtree.toString('utf8');
+
+    if (requestStatus === 'rejected') {
+      const rejectMsg = this.searchForLeafInSubtree(tree, 'request_status', 'reject_message');
+      const rejectCodeBuf = this.searchForLeafInSubtree(tree, 'request_status', 'reject_code');
+      return {
+        requestStatus,
+        rejectMessage: rejectMsg?.toString('utf8'),
+        rejectCode: rejectCodeBuf ? rejectCodeBuf.readUIntBE(0, rejectCodeBuf.length) : undefined,
+      };
+    }
+
+    return { requestStatus };
+  }
+
+  /**
+   * Searches for a labeled leaf nested inside a named outer path segment.
+   * Used to traverse the request_status subtree without knowing the intermediate
+   * request_id hash key.
+   */
+  private searchForLeafInSubtree(
+    tree: IcpHashTree,
+    outerLabel: string,
+    innerLabel: string
+  ): Buffer | undefined {
+    const outer = Buffer.from(outerLabel, 'utf8');
+    const inner = Buffer.from(innerLabel, 'utf8');
+    return this.findNestedLabel(tree, outer, inner, false);
+  }
+
+  private findNestedLabel(
+    tree: IcpHashTree,
+    outerLabel: Buffer,
+    innerLabel: Buffer,
+    insideOuter: boolean
+  ): Buffer | undefined {
+    const nodeType = tree[0];
+
+    if (nodeType === 1) {
+      // Fork
+      const left = this.findNestedLabel(tree[1] as IcpHashTree, outerLabel, innerLabel, insideOuter);
+      if (left !== undefined) return left;
+      return this.findNestedLabel(tree[2] as IcpHashTree, outerLabel, innerLabel, insideOuter);
+    }
+
+    if (nodeType === 2) {
+      const nodeLabel = Buffer.from(tree[1] as Uint8Array);
+      if (!insideOuter && nodeLabel.equals(outerLabel)) {
+        // Entered the outer subtree — now search for innerLabel anywhere inside
+        return this.findNestedLabel(tree[2] as IcpHashTree, outerLabel, innerLabel, true);
+      }
+      if (insideOuter && nodeLabel.equals(innerLabel)) {
+        // Found the inner label inside the outer subtree
+        const subtree = tree[2] as IcpHashTree;
+        if (subtree[0] === 3) {
+          return Buffer.from(subtree[1] as Uint8Array);
+        }
+        return undefined;
+      }
+      // Continue searching inside same subtree
+      return this.findNestedLabel(tree[2] as IcpHashTree, outerLabel, innerLabel, insideOuter);
+    }
+
+    return undefined;
   }
 }
 
