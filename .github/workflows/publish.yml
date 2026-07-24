@@ -1,6 +1,18 @@
 name: Publish @bitgo-beta
 on:
   workflow_dispatch:
+    inputs:
+      recovery-mode:
+        description: |
+          Recover a stuck beta publish where sigstore/Rekor already logged
+          provenance for a package's currently-computed version/tarball
+          (registry write failed) but the package never landed on npm. When
+          enabled, the publish step automatically detects the Rekor
+          conflict per-package and bumps that package's version until it
+          finds one that publishes cleanly - no manual input needed.
+        type: boolean
+        required: false
+        default: false
   # push:
   #   branches:
   #     - master
@@ -89,6 +101,9 @@ jobs:
         run: git commit -am "Auto updated ${{ env.preid }} branch" --no-verify || echo "No changes to commit"
 
       - name: Lerna Publish
+        # In recovery mode a stuck package's Rekor conflict fails this step outright; let it
+        # continue so Verify Publish below still gets a chance to bump+retry that package.
+        continue-on-error: ${{ inputs.recovery-mode }}
         run: yarn lerna publish from-package --preid ${{ env.preid }} --dist-tag ${{ env.preid }} --force-publish --yes --loglevel silly
         env:
           NPM_CONFIG_PROVENANCE: true
@@ -97,3 +112,4 @@ jobs:
         run: npx tsx ./scripts/verify-release.ts ${{ env.preid }}
         env:
           NPM_CONFIG_PROVENANCE: true
+          RECOVERY_MODE: ${{ inputs.recovery-mode }}
