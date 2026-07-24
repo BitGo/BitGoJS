@@ -25,6 +25,7 @@ module.exports = {
       '@bitgo/wasm-mps/web': path.resolve('../../node_modules/@bitgo/wasm-mps/dist/web/js/wasm/wasm_mps.js'),
       '@bitgo/wasm-mps': path.resolve('../../node_modules/@bitgo/wasm-mps/dist/esm/js/wasm/wasm_mps.js'),
       '@bitgo/utxo-ord': path.resolve('../utxo-ord/dist/esm/index.js'),
+      '@bitgo/sdk-coin-ton': path.resolve('../sdk-coin-ton/dist/esm/index.js'),
     },
     fallback: {
       constants: false,
