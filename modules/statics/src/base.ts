@@ -1266,6 +1266,7 @@ export enum UnderlyingAsset {
   'tsol:t22mint' = 'tsol:t22mint',
   'tsol:t1test' = 'tsol:t1test',
   'tsol:ttkb' = 'tsol:ttkb',
+  'tsol:testtoken' = 'tsol:testtoken',
   GAS = 'gas',
   GATE = 'gate',
   GBPT = 'gbpt',
@@ -3989,6 +3990,7 @@ export enum UnderlyingAsset {
   'sol:slx' = 'sol:slx',
   'sol:ab1' = 'sol:ab1',
   'sol:bils' = 'sol:bils',
+  'sol:testtoken' = 'sol:testtoken',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',
