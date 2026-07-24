@@ -4,6 +4,9 @@ import {
   TssVerifyAddressOptions,
 } from '@bitgo/sdk-core';
 
+export const REQUEST_STATUS_REPLIED = 'replied';
+export const REQUEST_STATUS_REJECTED = 'rejected';
+
 export const MAX_INGRESS_TTL = 5 * 60 * 1000_000_000; // 5 minutes in nanoseconds
 export const PERMITTED_DRIFT = 60 * 1000_000_000; // 60 seconds in nanoseconds
 export const LEDGER_CANISTER_ID = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 2, 1, 1]); // Uint8Array value for "00000000000000020101" and the string value is "ryjl3-tyaaa-aaaaa-aaaba-cai"
@@ -207,7 +210,26 @@ export interface UnsignedSweepRecoveryTransaction {
 
 export interface PublicNodeSubmitResponse {
   status: string;
+  certificate?: Uint8Array;
 }
+
+export interface IcpCertificate {
+  tree: IcpHashTree;
+  signature: Uint8Array;
+}
+
+// ICP labeled hash tree node types per the IC HTTP spec:
+// [0] = Empty
+// [1, left, right] = Fork
+// [2, label, subtree] = Labeled
+// [3, value] = Leaf
+// [4, hash] = Pruned
+export type IcpHashTree =
+  | [0]
+  | [1, IcpHashTree, IcpHashTree]
+  | [2, Uint8Array, IcpHashTree]
+  | [3, Uint8Array]
+  | [4, Uint8Array];
 
 export interface AccountIdentifierHash {
   hash: Buffer<ArrayBuffer>;
