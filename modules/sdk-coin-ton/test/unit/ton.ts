@@ -395,6 +395,30 @@ describe('TON:', function () {
         stub.restore();
       });
     });
+
+    it('should parse a TON transfer transaction with numeric memo (memoId)', async function () {
+      const tx = testData.signedSendTransactionWithNumericMemo;
+      const parsedTransaction = await basecoin.parseTransaction({
+        txHex: Buffer.from(tx.tx, 'base64').toString('hex'),
+      });
+
+      parsedTransaction.should.deepEqual({
+        inputs: [
+          {
+            address: tx.sender,
+            amount: tx.recipient.amount,
+            memo: tx.memoId,
+          },
+        ],
+        outputs: [
+          {
+            address: tx.recipient.address,
+            amount: tx.recipient.amount,
+            memo: tx.memoId,
+          },
+        ],
+      });
+    });
   });
 
   describe('Address Validation', () => {

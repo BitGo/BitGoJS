@@ -219,19 +219,21 @@ export class Ton extends BaseCoin {
 
     const rebuiltTransaction = await transactionBuilder.build();
     const parsedTransaction = rebuiltTransaction.toJson();
+    const inputEntry: { address: string; amount: string; memo?: string } = {
+      address: parsedTransaction.sender,
+      amount: parsedTransaction.amount,
+    };
+    const outputEntry: { address: string; amount: string; memo?: string } = {
+      address: parsedTransaction.destination,
+      amount: parsedTransaction.amount,
+    };
+    if (parsedTransaction.memoId) {
+      inputEntry.memo = parsedTransaction.memoId;
+      outputEntry.memo = parsedTransaction.memoId;
+    }
     return {
-      inputs: [
-        {
-          address: parsedTransaction.sender,
-          amount: parsedTransaction.amount,
-        },
-      ],
-      outputs: [
-        {
-          address: parsedTransaction.destination,
-          amount: parsedTransaction.amount,
-        },
-      ],
+      inputs: [inputEntry],
+      outputs: [outputEntry],
     };
   }
 
