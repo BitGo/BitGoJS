@@ -5,9 +5,9 @@ import * as testData from '../resources/ton';
 
 describe('TON WASM explainTransaction', function () {
   describe('explainTonTransaction', function () {
-    it('should explain a signed send transaction', function () {
+    it('should explain a signed send transaction', async function () {
       const txBase64 = testData.signedSendTransaction.tx;
-      const explained = explainTonTransaction({ txBase64 });
+      const explained = await explainTonTransaction({ txBase64 });
 
       explained.outputs.length.should.be.greaterThan(0);
       explained.outputs[0].amount.should.equal(testData.signedSendTransaction.recipient.amount);
@@ -17,17 +17,17 @@ describe('TON WASM explainTransaction', function () {
       should.exist(explained.id);
     });
 
-    it('should explain a signed token send transaction', function () {
+    it('should explain a signed token send transaction', async function () {
       const txBase64 = testData.signedTokenSendTransaction.tx;
-      const explained = explainTonTransaction({ txBase64 });
+      const explained = await explainTonTransaction({ txBase64 });
 
       explained.outputs.length.should.be.greaterThan(0);
       should.exist(explained.id);
     });
 
-    it('should explain a single nominator withdraw transaction', function () {
+    it('should explain a single nominator withdraw transaction', async function () {
       const txBase64 = testData.signedSingleNominatorWithdrawTransaction.tx;
-      const explained = explainTonTransaction({ txBase64 });
+      const explained = await explainTonTransaction({ txBase64 });
 
       should.exist(explained.id);
       explained.id.should.equal(testData.signedSingleNominatorWithdrawTransaction.txId);
@@ -35,25 +35,25 @@ describe('TON WASM explainTransaction', function () {
       explained.withdrawAmount!.should.equal('932178112330000');
     });
 
-    it('should explain a Ton Whales withdrawal transaction', function () {
+    it('should explain a Ton Whales withdrawal transaction', async function () {
       const txBase64 = testData.signedTonWhalesWithdrawalTransaction.tx;
-      const explained = explainTonTransaction({ txBase64 });
+      const explained = await explainTonTransaction({ txBase64 });
 
       should.exist(explained.id);
       should.exist(explained.withdrawAmount);
     });
 
-    it('should explain a Ton Whales full withdrawal transaction', function () {
+    it('should explain a Ton Whales full withdrawal transaction', async function () {
       const txBase64 = testData.signedTonWhalesFullWithdrawalTransaction.tx;
-      const explained = explainTonTransaction({ txBase64 });
+      const explained = await explainTonTransaction({ txBase64 });
 
       should.exist(explained.id);
     });
 
-    it('should respect toAddressBounceable=false', function () {
+    it('should respect toAddressBounceable=false', async function () {
       const txBase64 = testData.signedSendTransaction.tx;
-      const bounceable = explainTonTransaction({ txBase64, toAddressBounceable: true });
-      const nonBounceable = explainTonTransaction({ txBase64, toAddressBounceable: false });
+      const bounceable = await explainTonTransaction({ txBase64, toAddressBounceable: true });
+      const nonBounceable = await explainTonTransaction({ txBase64, toAddressBounceable: false });
 
       bounceable.outputs[0].address.should.equal(testData.signedSendTransaction.recipient.address);
       nonBounceable.outputs[0].address.should.equal(testData.signedSendTransaction.recipientBounceable.address);
