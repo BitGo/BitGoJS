@@ -35,6 +35,10 @@ describe('EOS:', function () {
     addressDetails.address.should.equal('ks13k3hdui24');
     addressDetails.memoId.should.equal('1');
 
+    addressDetails = basecoin.getAddressDetails('ks13k3hdui24?memoId=0');
+    addressDetails.address.should.equal('ks13k3hdui24');
+    addressDetails.memoId.should.equal('0');
+
     (() => {
       basecoin.getAddressDetails('ks13k3hdui24?memoId=1&memoId=2');
     }).should.throw();
@@ -52,6 +56,7 @@ describe('EOS:', function () {
     basecoin.isValidAddress('ks13kdh245ls').should.equal(true);
     basecoin.isValidAddress('ks13k3hdui24?memoId=1').should.equal(true);
     basecoin.isValidAddress('ks13k3hdui24?memoId=x').should.equal(true);
+    basecoin.isValidAddress('ks13k3hdui24?memoId=0').should.equal(true);
   });
 
   it('verifyAddress should work', async function () {
@@ -61,6 +66,10 @@ describe('EOS:', function () {
     });
     await basecoin.verifyAddress({
       address: 'ks13kdh245ls?memoId=1',
+      rootAddress: 'ks13kdh245ls',
+    });
+    await basecoin.verifyAddress({
+      address: 'ks13kdh245ls?memoId=0',
       rootAddress: 'ks13kdh245ls',
     });
 
@@ -83,6 +92,7 @@ describe('EOS:', function () {
   });
 
   it('isValidMemoId should work', function () {
+    basecoin.isValidMemoId('0').should.equal(true);
     basecoin.isValidMemoId('1').should.equal(true);
     basecoin.isValidMemoId('123abc').should.equal(true);
     basecoin.isValidMemoId(EosInputs.string257CharsLong).should.equal(false);
@@ -506,6 +516,21 @@ describe('EOS:', function () {
         '866489610100640000000000000100408c7a02ea3055000000000085269d000201300100a6823403ea3055000000572d3ccdcd013085b943b1b54ed700000000a8ed32322a3085b943b1b54ed720825019ab3ca98be80300000000000004454f53000000000951473733574158584700';
       const txParams = newTxParams();
       txParams.recipients[0].address = 'lionteste212';
+      txParams.txPrebuild = txPrebuild;
+
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+      validTransaction.should.equal(true);
+    });
+
+    it('should verify a transaction with memoId=0', async function () {
+      const txPrebuild = newTxPrebuild();
+      // Transaction with memo='0' (memoId zero is the first receive address)
+      txPrebuild.txHex =
+        '2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a9107468401e0c7a61a3a7b5e7c4470000000100408c7a02ea3055000000000085269d00030233330100a6823403ea3055000000572d3ccdcd0120ceb8437333427c00000000a8ed32322220ceb8437333427c20825019ab3ca98be80300000000000004454f5300000000013000000000000000000000000000000000000000000000000000000000000000000000';
+      txPrebuild.transaction.packed_trx =
+        '1e0c7a61a3a7b5e7c4470000000100408c7a02ea3055000000000085269d00030233330100a6823403ea3055000000572d3ccdcd0120ceb8437333427c00000000a8ed32322220ceb8437333427c20825019ab3ca98be80300000000000004454f5300000000013000';
+      const txParams = newTxParams();
+      txParams.recipients[0].address = 'lionteste212?memoId=0';
       txParams.txPrebuild = txPrebuild;
 
       const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
