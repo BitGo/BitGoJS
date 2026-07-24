@@ -7024,6 +7024,13 @@ export const tOfcErc20Coins = [
   ofcerc20('28e1a1f5-66e1-4e13-b9e7-6f5242337142', 'ofceth:grove', 'Grove', 18, UnderlyingAsset['eth:grove']),
   ofcerc20('cfe69d97-db40-4c05-9978-b945a7ddd203', 'ofceth:scx', 'Steelcoin X', 18, UnderlyingAsset['eth:scx']),
   ofcerc20(
+    'd38204a7-b670-414e-9f58-e2df4798070c',
+    'ofc:eth:tlto',
+    'TestingLinearTokenOnboarding',
+    6,
+    UnderlyingAsset['eth:tlto']
+  ),
+  ofcerc20(
     '47d8cf79-ed67-4e9c-8e51-422d31290282',
     'ofcbaseeth:usad',
     'Lydia',
