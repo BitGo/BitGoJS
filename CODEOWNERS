@@ -171,6 +171,6 @@
 /tsconfig.json @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/infrastructure @BitGo/ecosystem @BitGo/btc-team
 /tsconfig.packages.json @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/ecosystem @BitGo/btc-team
 /yarn.lock @BitGo/sdk-reviewers
-/.iyarc @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm @BitGo/velocity
+/.iyarc @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
 flake.nix @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
 flake.lock @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
