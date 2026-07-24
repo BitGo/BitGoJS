@@ -110,6 +110,7 @@ export enum CoinFamily {
   OPETH = 'opeth',
   OSMO = 'osmo',
   PLUME = 'plume',
+  PEARL = 'pearl',
   RBTC = 'rbtc',
   SCROLLETH = 'scrolleth', // Scroll L2
   SGB = 'sgb',
@@ -1684,6 +1685,7 @@ export enum UnderlyingAsset {
   PRDX = 'prdx',
   PRINTS = 'prints',
   PRISM = 'prism',
+  PEARL = 'pearl',
   PRO = 'pro',
   PROM = 'prom',
   PROS = 'pros',

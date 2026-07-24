@@ -33,6 +33,7 @@ const coins = {
   ZEC: 'zec',
   DASH: 'dash',
   DOGE: 'doge',
+  PEARL: 'pearl',
 } as const;
 
 export type NetworkName =
@@ -56,7 +57,9 @@ export type NetworkName =
   | 'litecoin'
   | 'litecoinTest'
   | 'zcash'
-  | 'zcashTest';
+  | 'zcashTest'
+  | 'pearl'
+  | 'pearlTest';
 
 export type Network = {
   messagePrefix: string;
@@ -345,6 +348,26 @@ export const networks: Record<NetworkName, Network> = {
     wif: 0xef,
     coin: coins.ZEC,
   },
+
+  // https://github.com/pearl-research-labs/pearl/blob/main/chaincfg/params.go
+  pearl: {
+    messagePrefix: '\x18Pearl Signed Message:\n',
+    bech32: 'prl',
+    bip32: getDefaultBip32Mainnet(),
+    pubKeyHash: 0x00,
+    scriptHash: 0x05,
+    wif: 0x80,
+    coin: coins.PEARL,
+  },
+  pearlTest: {
+    messagePrefix: '\x18Pearl Signed Message:\n',
+    bech32: 'tprl',
+    bip32: getDefaultBip32Testnet(),
+    pubKeyHash: 0x6f,
+    scriptHash: 0xc4,
+    wif: 0xef,
+    coin: coins.PEARL,
+  },
 };
 
 /**
@@ -409,6 +432,10 @@ export function getMainnet(network: Network): Network {
     case networks.dogecoin:
     case networks.dogecoinTest:
       return networks.dogecoin;
+
+    case networks.pearl:
+    case networks.pearlTest:
+      return networks.pearl;
   }
   throw new TypeError(`invalid network`);
 }
@@ -531,6 +558,14 @@ export function isDogecoin(network: Network): boolean {
 
 /**
  * @param {Network} network
+ * @returns {boolean} true iff network is pearl or pearlTest
+ */
+export function isPearl(network: Network): boolean {
+  return getMainnet(network) === networks.pearl;
+}
+
+/**
+ * @param {Network} network
  * @returns {boolean} true iff network is litecoin or litecoinTest
  */
 export function isLitecoin(network: Network): boolean {
@@ -554,9 +589,11 @@ export function isValidNetwork(network: unknown): network is Network {
 }
 
 export function supportsSegwit(network: Network): boolean {
-  return ([networks.bitcoin, networks.litecoin, networks.bitcoingold] as Network[]).includes(getMainnet(network));
+  return ([networks.bitcoin, networks.litecoin, networks.bitcoingold, networks.pearl] as Network[]).includes(
+    getMainnet(network)
+  );
 }
 
 export function supportsTaproot(network: Network): boolean {
-  return getMainnet(network) === networks.bitcoin;
+  return ([networks.bitcoin, networks.pearl] as Network[]).includes(getMainnet(network));
 }
