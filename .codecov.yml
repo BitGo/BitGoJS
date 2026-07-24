@@ -1,0 +1,20 @@
+coverage:
+  status:
+    project: off
+    patch: off
+comment:
+  layout: 'diff, flags, files'
+  require_changes: true
+flags:
+  bitgo:
+    paths:
+      - modules/bitgo
+  account-lib:
+    paths:
+      - modules/account-lib
+  statics:
+    paths:
+      - modules/statics
+  express:
+    paths:
+      - modules/express

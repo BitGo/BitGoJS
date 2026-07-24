@@ -1,0 +1,1 @@
+sh(wsh(and_v(r:after(2048),multi(2,xprv9s21ZrQH143K45bDYc9c3aEaGiTK9aPtjgtHg6wBdkryBjix1KKXRCszxPcFPejLT9tdLgNe8E8AuQXK2fy8KhNPeLAZsGoX8w9KS2PkacL/*,xprv9s21ZrQH143K2eBLSVNk4zhjDzqzqM29aS9cjr4CcoNrKLYwLHtwgTURSk7RPV3cH9zNZQeR1zGw3MEwSjvARSfWEGpxfaBmduhW3TKsH5g/*))))

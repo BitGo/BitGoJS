@@ -1,0 +1,15 @@
+# Backstage catalog descriptor. Update this file to enrich your service's entry in the developer portal.
+# Full field reference: https://backstage.io/docs/features/software-catalog/descriptor-format/
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: BitGoJS
+  annotations:
+    github.com/project-slug: BitGo/BitGoJS
+spec:
+  # The primary purpose of this component. If this repo serves multiple purposes
+  # (e.g. both a deployable service and a published library), set this to whichever
+  # role is most significant. Valid values: service, library, website, documentation, other.
+  type: other
+  lifecycle: production
+  owner: group:coins

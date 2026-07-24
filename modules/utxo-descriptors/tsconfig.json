@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist/cjs",
+    "rootDir": ".",
+    "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
+    "allowJs": false,
+    "strict": true,
+    "useUnknownInCatchVariables": false,
+    "moduleResolution": "node16",
+    "module": "node16",
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../utxo-core"
+    }
+  ]
+}

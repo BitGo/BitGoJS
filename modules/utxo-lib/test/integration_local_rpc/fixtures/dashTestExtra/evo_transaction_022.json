@@ -1,0 +1,57 @@
+{
+    "txid": "ec1469d4185524a826910c18e1b7465ce8039f1570a3e41fbae845fd96717d8c",
+    "version": 3,
+    "type": 2,
+    "size": 374,
+    "locktime": 0,
+    "vin": [
+        {
+            "txid": "6b10f8988bec8849890beeac5eda5187e201eda7c5bcbcdcb759356334246a06",
+            "vout": 0,
+            "scriptSig": {
+                "asm": "3045022100cca7ad2b1e2f03988daf0dee9f29b4b27228dac52802db124aada8589c65baa0022027845080ac768e0b2eed10597a0de1945872374e3baa47b455b7630de2cdc549[ALL]",
+                "hex": "483045022100cca7ad2b1e2f03988daf0dee9f29b4b27228dac52802db124aada8589c65baa0022027845080ac768e0b2eed10597a0de1945872374e3baa47b455b7630de2cdc54901"
+            },
+            "sequence": 4294967295
+        }
+    ],
+    "vout": [
+        {
+            "value": 1.00000000,
+            "valueSat": 100000000,
+            "n": 0,
+            "scriptPubKey": {
+                "asm": "OP_DUP OP_HASH160 0110918de657855b55fb8d21da99a13631c61fb3 OP_EQUALVERIFY OP_CHECKSIG",
+                "hex": "76a9140110918de657855b55fb8d21da99a13631c61fb388ac",
+                "reqSigs": 1,
+                "type": "pubkeyhash",
+                "addresses": [
+                    "yLR5NbigcPWUettCoCsuEvz65KafFhuiVo"
+                ]
+            }
+        },
+        {
+            "value": 499.00000000,
+            "valueSat": 49900000000,
+            "n": 1,
+            "scriptPubKey": {
+                "asm": "OP_DUP OP_HASH160 0110918de657855b55fb8d21da99a13631c61fb3 OP_EQUALVERIFY OP_CHECKSIG",
+                "hex": "76a9140110918de657855b55fb8d21da99a13631c61fb388ac",
+                "reqSigs": 1,
+                "type": "pubkeyhash",
+                "addresses": [
+                    "yLR5NbigcPWUettCoCsuEvz65KafFhuiVo"
+                ]
+            }
+        }
+    ],
+    "extraPayloadSize": 181,
+    "extraPayload": "0100c9480b27b63a0727fdfda375a8cfa99a9b1ce12cdde972437ab996e40c5c9e0f00000000000000000000ffff01010101000200e9d7f704a2eab58c07fc94484a6f0ffdd91edb3700587125cdd2bf1b13c2149982f5da271ac10e58cb83b627987f9212a0cfc35352cea7bede3c95243686d47da0c5342790081dbb96b3c468cdcd590406192407b9c14a3c94b61d0645c6ac38b4db63a9c80e16ec7acd29de11bec9e093091d81ce0bb63b91a818b692cc02b9",
+    "proUpServTx": {
+        "version": 1,
+        "proTxHash": "0f9e5c0ce496b97a4372e9dd2ce11c9b9aa9cfa875a3fdfd27073ab6270b48c9",
+        "service": "1.1.1.1:2",
+        "inputsHash": "9914c2131bbfd2cd2571580037db1ed9fd0f6f4a4894fc078cb5eaa204f7d7e9"
+    },
+    "hex": "0300020001066a2434633559b7dcbcbcc5a7ed01e28751da5eacee0b894988ec8b98f8106b0000000049483045022100cca7ad2b1e2f03988daf0dee9f29b4b27228dac52802db124aada8589c65baa0022027845080ac768e0b2eed10597a0de1945872374e3baa47b455b7630de2cdc54901ffffffff0200e1f505000000001976a9140110918de657855b55fb8d21da99a13631c61fb388ac0093459e0b0000001976a9140110918de657855b55fb8d21da99a13631c61fb388ac00000000b50100c9480b27b63a0727fdfda375a8cfa99a9b1ce12cdde972437ab996e40c5c9e0f00000000000000000000ffff01010101000200e9d7f704a2eab58c07fc94484a6f0ffdd91edb3700587125cdd2bf1b13c2149982f5da271ac10e58cb83b627987f9212a0cfc35352cea7bede3c95243686d47da0c5342790081dbb96b3c468cdcd590406192407b9c14a3c94b61d0645c6ac38b4db63a9c80e16ec7acd29de11bec9e093091d81ce0bb63b91a818b692cc02b9"
+}

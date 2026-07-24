@@ -1,0 +1,479 @@
+import * as t from 'io-ts';
+import { DklsTypes, MPSTypes } from '@bitgo/sdk-lib-mpc';
+import { MPCv2BroadcastMessage, MPCv2P2PMessage } from '@bitgo/public-types';
+
+import { EncryptionVersion, IRequestTracer } from '../../api';
+import { KeychainsTriplet, LightningKeychainsTriplet } from '../baseCoin';
+import { ApiKeyShare, Keychain, WebauthnInfo } from '../keychain';
+import { IWallet, PaginationOptions, WalletShare } from './iWallet';
+import { Wallet } from './wallet';
+
+export interface WalletWithKeychains extends KeychainsTriplet {
+  responseType: 'WalletWithKeychains';
+  wallet: IWallet;
+  warning?: string;
+  encryptedWalletPassphrase?: string;
+}
+
+export interface LightningWalletWithKeychains extends LightningKeychainsTriplet {
+  responseType: 'LightningWalletWithKeychains';
+  wallet: IWallet;
+  warning?: string;
+  encryptedWalletPassphrase?: string;
+}
+
+export interface GoAccountWalletWithUserKeychain {
+  responseType: 'GoAccountWalletWithUserKeychain';
+  wallet: IWallet;
+  userKeychain: Keychain;
+  warning?: string;
+  encryptedWalletPassphrase?: string;
+}
+
+export interface GetWalletOptions {
+  allTokens?: boolean;
+  reqId?: IRequestTracer;
+  id?: string;
+  includeBalance?: boolean;
+}
+
+export interface GenerateBaseMpcWalletOptions {
+  multisigType: 'tss';
+  label: string;
+  enterprise: string;
+  walletVersion?: number;
+}
+
+/** WebAuthn PRF-based encryption info for attaching a hardware authenticator to a key.
+ * The passphrase is the PRF-derived key used to encrypt the user private key/share
+ * before it is persisted. Never sent to the server. */
+export interface WebauthnKeyEncryptionInfo {
+  otpDeviceId: string;
+  prfSalt: string;
+  passphrase: string;
+}
+
+export interface GenerateMpcWalletOptions extends GenerateBaseMpcWalletOptions {
+  passphrase: string;
+  originalPasscodeEncryptionCode?: string;
+  webauthnInfo?: WebauthnKeyEncryptionInfo;
+  encryptionVersion?: EncryptionVersion;
+}
+export interface GenerateSMCMpcWalletOptions extends GenerateBaseMpcWalletOptions {
+  bitgoKeyId: string;
+  commonKeychain: string;
+  coldDerivationSeed?: string;
+}
+
+export interface CreateKeychainCallbackParams {
+  source: 'user' | 'backup';
+  coin: string;
+}
+
+export interface CreateKeychainCallbackResult {
+  pub: string;
+  type: 'independent';
+  source: 'user' | 'backup';
+}
+
+export type CreateKeychainCallback = (params: CreateKeychainCallbackParams) => Promise<CreateKeychainCallbackResult>;
+
+/** Per-source encrypted session state threaded through MPC rounds by the external signer. */
+export interface ExternalSignerMpcState {
+  encryptedData: string;
+  encryptedDataKey: string;
+}
+
+/** A key share supplied by the external signer — routing fields (from/to) are added by the SDK. */
+export type ExternalSignerKeyShare = Omit<ApiKeyShare, 'from' | 'to'> & {
+  privateShareProof: string;
+  vssProof: string;
+  gpgKey: string;
+};
+
+export type EcdsaMPCv2KeyGenInitializeCallback = (params: {
+  enterprise: string;
+  bitgoPublicGpgKey: string;
+}) => Promise<{
+  userGpgPublicKey: string;
+  backupGpgPublicKey: string;
+  round1Messages: DklsTypes.AuthEncMessages;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}>;
+
+export type EcdsaMPCv2KeyGenRound2Callback = (params: {
+  sessionId: string;
+  bitgoMsg1: MPCv2BroadcastMessage;
+  bitgoToUserMsg2: MPCv2P2PMessage;
+  bitgoToBackupMsg2: MPCv2P2PMessage;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}) => Promise<{
+  round2Messages: DklsTypes.AuthEncMessages;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}>;
+
+export type EcdsaMPCv2KeyGenRound3Callback = (params: {
+  sessionId: string;
+  bitgoCommitment2: string;
+  bitgoToUserMsg3: MPCv2P2PMessage;
+  bitgoToBackupMsg3: MPCv2P2PMessage;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}) => Promise<{
+  round3Messages: DklsTypes.AuthEncMessages;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}>;
+
+export type EcdsaMPCv2KeyGenFinalizeCallback = (params: {
+  sessionId: string;
+  bitgoMsg4: MPCv2BroadcastMessage;
+  bitgoCommonKeychain: string;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}) => Promise<{ commonKeychain: string }>;
+
+export interface EcdsaMPCv2KeyGenCallbacks {
+  initializeCallback: EcdsaMPCv2KeyGenInitializeCallback;
+  round2Callback: EcdsaMPCv2KeyGenRound2Callback;
+  round3Callback: EcdsaMPCv2KeyGenRound3Callback;
+  finalizeCallback: EcdsaMPCv2KeyGenFinalizeCallback;
+}
+
+export interface EddsaKeyGenInitializeResult {
+  userGpgPublicKey: string;
+  backupGpgPublicKey: string;
+  userToBitgoKeyShare: ExternalSignerKeyShare;
+  backupToBitgoKeyShare: ExternalSignerKeyShare;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+  backupToUserCounterPartyKeyShare: ExternalSignerKeyShare;
+}
+
+export type EddsaKeyGenInitializeCallback = (params: {
+  enterprise: string;
+  bitgoPublicGpgKey: string;
+}) => Promise<EddsaKeyGenInitializeResult>;
+
+export type EddsaKeyGenFinalizeResult = {
+  commonKeychain: string;
+  /** Required when the callback is invoked with source: 'user'; must be omitted for source: 'backup'. */
+  counterpartyKeyShare?: ExternalSignerKeyShare;
+};
+
+export type EddsaKeyGenFinalizeCallback = (params: {
+  source: 'user' | 'backup';
+  coin: string;
+  bitgoKeychain: Keychain;
+  counterPartyGPGKey: string;
+  counterPartyKeyShare: ExternalSignerKeyShare;
+  state: ExternalSignerMpcState;
+}) => Promise<EddsaKeyGenFinalizeResult>;
+
+export interface EddsaKeyGenCallbacks {
+  initializeCallback: EddsaKeyGenInitializeCallback;
+  finalizeCallback: EddsaKeyGenFinalizeCallback;
+}
+
+export type EddsaMPCv2KeyGenInitializeCallback = (params: {
+  enterprise: string;
+  bitgoPublicGpgKey: string;
+}) => Promise<{
+  userGpgPublicKey: string;
+  backupGpgPublicKey: string;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}>;
+
+export type EddsaMPCv2KeyGenRound1Callback = (params: {
+  bitgoPublicGpgKey: string;
+  userGpgPublicKey: string;
+  backupGpgPublicKey: string;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}) => Promise<{
+  userSignedMsg1: MPSTypes.MPSSignedMessage;
+  backupSignedMsg1: MPSTypes.MPSSignedMessage;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}>;
+
+export type EddsaMPCv2KeyGenRound2Callback = (params: {
+  bitgoMsg1: MPSTypes.MPSSignedMessage;
+  userSignedMsg1: MPSTypes.MPSSignedMessage;
+  backupSignedMsg1: MPSTypes.MPSSignedMessage;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}) => Promise<{
+  userSignedMsg2: MPSTypes.MPSSignedMessage;
+  backupSignedMsg2: MPSTypes.MPSSignedMessage;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}>;
+
+export type EddsaMPCv2KeyGenFinalizeCallback = (params: {
+  bitgoMsg2: MPSTypes.MPSSignedMessage;
+  bitgoCommonKeychain: string;
+  userState: ExternalSignerMpcState;
+  backupState: ExternalSignerMpcState;
+}) => Promise<{ commonKeychain: string }>;
+
+export interface EddsaMPCv2KeyGenCallbacks {
+  initializeCallback: EddsaMPCv2KeyGenInitializeCallback;
+  round1Callback: EddsaMPCv2KeyGenRound1Callback;
+  round2Callback: EddsaMPCv2KeyGenRound2Callback;
+  finalizeCallback: EddsaMPCv2KeyGenFinalizeCallback;
+}
+
+export interface GenerateWalletOptions {
+  label?: string;
+  passphrase?: string;
+  userKey?: string;
+  backupXpub?: string;
+  backupXpubProvider?: string;
+  passcodeEncryptionCode?: string;
+  enterprise?: string;
+  disableTransactionNotifications?: boolean;
+  gasPrice?: number;
+  eip1559?: {
+    maxFeePerGas: string;
+    maxPriorityFeePerGas: string;
+  };
+  walletVersion?: number;
+  disableKRSEmail?: boolean;
+  krsSpecific?: {
+    [index: string]: boolean | string | number;
+  };
+  coldDerivationSeed?: string;
+  rootPrivateKey?: string;
+  multisigType?: 'onchain' | 'tss' | 'blsdkg';
+  isDistributedCustody?: boolean;
+  bitgoKeyId?: string;
+  commonKeychain?: string;
+  type?: 'hot' | 'cold' | 'custodial' | 'trading' | 'advanced';
+  subType?: 'lightningCustody' | 'lightningSelfCustody';
+  evmKeyRingReferenceWalletId?: string;
+  lightningProvider?: 'amboss' | 'voltage';
+  /** Optional WebAuthn PRF-based encryption info. When provided, the user private key is additionally encrypted with the PRF-derived passphrase so the server can store a WebAuthn-protected copy. */
+  webauthnInfo?: WebauthnKeyEncryptionInfo;
+  encryptionVersion?: EncryptionVersion;
+  /** Delegates user/backup key creation to an external signer (onchain multisig only). */
+  createKeychainCallback?: CreateKeychainCallback;
+  /** OFC only. When false, BitGo signs OFC payloads on behalf of the user without requiring a user-key signature. Defaults to true (user must sign). */
+  userKeySigningRequired?: boolean;
+}
+
+export interface GenerateWalletWithExternalSignerOptions
+  extends Omit<GenerateWalletOptions, 'passphrase' | 'userKey' | 'backupXpub' | 'backupXpubProvider'> {
+  label: string;
+  createKeychainCallback?: CreateKeychainCallback;
+  /** Optional user-key signatures over backup/bitgo pubs. Omit when the external signer cannot produce them (equivalent to a cold wallet). */
+  keySignatures?: { backup: string; bitgo: string };
+  ecdsaMPCv2Callbacks?: EcdsaMPCv2KeyGenCallbacks;
+  eddsaCallbacks?: EddsaKeyGenCallbacks;
+}
+
+export const GenerateLightningWalletOptionsCodec = t.intersection(
+  [
+    t.strict({
+      label: t.string,
+      passphrase: t.string,
+      enterprise: t.string,
+      passcodeEncryptionCode: t.string,
+      subType: t.union([t.literal('lightningCustody'), t.literal('lightningSelfCustody')]),
+    }),
+    t.partial({
+      lightningProvider: t.union([t.literal('amboss'), t.literal('voltage')]),
+      // Codec intentionally accepts only 2: v1 is the implicit default and never sent on the wire.
+      encryptionVersion: t.literal(2),
+    }),
+  ],
+  'GenerateLightningWalletOptions'
+);
+export type GenerateLightningWalletOptions = t.TypeOf<typeof GenerateLightningWalletOptionsCodec>;
+
+export const GenerateGoAccountWalletOptionsCodec = t.intersection(
+  [
+    t.strict({
+      label: t.string,
+      passphrase: t.string,
+      enterprise: t.string,
+      passcodeEncryptionCode: t.string,
+      type: t.literal('trading'),
+    }),
+    t.partial({
+      // Codec intentionally accepts only 2: v1 is the implicit default and never sent on the wire.
+      encryptionVersion: t.literal(2),
+      userKeySigningRequired: t.boolean,
+    }),
+  ],
+  'GenerateGoAccountWalletOptions'
+);
+
+export type GenerateGoAccountWalletOptions = t.TypeOf<typeof GenerateGoAccountWalletOptionsCodec>;
+
+export interface GetWalletByAddressOptions {
+  address?: string;
+  reqId?: IRequestTracer;
+}
+
+export interface UpdateShareOptions {
+  walletShareId?: string;
+  state?: string;
+  encryptedPrv?: string;
+  keyId?: string;
+  signature?: string;
+  payload?: string;
+  pub?: string;
+}
+
+export interface AcceptShareOptions {
+  overrideEncryptedPrv?: string;
+  walletShareId?: string;
+  userPassword?: string;
+  newWalletPassphrase?: string;
+  encryptionVersion?: EncryptionVersion;
+}
+
+export interface BulkAcceptShareOptions {
+  walletShareIds: string[];
+  userLoginPassword: string;
+  newWalletPassphrase?: string;
+  webauthnInfo?: WebauthnKeyEncryptionInfo;
+  encryptionVersion?: EncryptionVersion;
+}
+
+export interface AcceptShareOptionsRequest {
+  walletShareId: string;
+  encryptedPrv: string;
+  /**
+   * The public associated to the encrypted private key.
+   * Required for userMultiKeyRotationRequired shares.
+   */
+  pub?: string;
+  /**
+   * Optional WebAuthn PRF-based encryption info.
+   * When provided, the wallet private key is additionally encrypted with the
+   * PRF-derived passphrase so the server can store a WebAuthn-protected copy.
+   * The passphrase itself is never sent to the server.
+   */
+  webauthnInfo?: WebauthnInfo;
+}
+
+export interface BulkUpdateWalletShareOptions {
+  shares: {
+    walletShareId: string;
+    status: 'accept' | 'reject';
+  }[];
+  userLoginPassword?: string;
+  newWalletPassphrase?: string;
+  encryptionVersion?: EncryptionVersion;
+}
+
+export interface BulkUpdateWalletShareOptionsRequest {
+  walletShareId: string;
+  encryptedPrv?: string;
+  status: 'accept' | 'reject';
+  keyId?: string;
+  signature?: string;
+  payload?: string;
+  pub?: string;
+}
+
+export interface BulkUpdateWalletShareResponse {
+  acceptedWalletShares: string[];
+  rejectedWalletShares: string[];
+  walletShareUpdateErrors: {
+    walletShareId: string;
+    reason: string;
+  }[];
+}
+
+export interface AddWalletOptions {
+  coinSpecific?: any;
+  enterprise?: string;
+  isCold?: IsCold;
+  isCustodial?: IsCustodial;
+  keys?: string[];
+  keySignatures?: KeySignatures;
+  label: string;
+  multisigType?: 'onchain' | 'tss' | 'blsdkg';
+  address?: string;
+  m?: number;
+  n?: number;
+  tags?: string[];
+  type?: string;
+  walletVersion?: number;
+  eip1559?: Eip1559;
+  clientFlags?: string[];
+  // Additional params needed for xrp
+  rootPub?: string;
+  // In XRP, XLM and CSPR this private key is used only for wallet creation purposes,
+  // once the wallet is initialized then we update its weight to 0 making it an invalid key.
+  // https://www.stellar.org/developers/guides/concepts/multi-sig.html#additional-signing-keys
+  rootPrivateKey?: string;
+  initializationTxs?: any;
+  disableTransactionNotifications?: boolean;
+  gasPrice?: number;
+  evmKeyRingReferenceWalletId?: string;
+}
+
+type KeySignatures = {
+  backup?: string;
+  bitgo?: string;
+};
+
+/** @deprecated */
+type IsCold = boolean;
+
+/** @deprecated */
+type IsCustodial = boolean;
+
+type Eip1559 = {
+  maxPriorityFeePerGas: string;
+  maxFeePerGas: string;
+};
+
+export interface ListWalletOptions extends PaginationOptions {
+  skip?: number;
+  getbalances?: boolean;
+  allTokens?: boolean;
+  skipReceiveAddress?: boolean; // If skipReceiveAddress is set to true, the receiveAddress property will not be returned in the wallet object.
+}
+
+export interface WalletShares {
+  incoming: WalletShare[]; // WalletShares that the user has to accept
+  outgoing: WalletShare[]; // WalletShares that the user has created
+}
+
+export interface AcceptShareResponse {
+  walletShareId: string;
+}
+
+export interface BulkAcceptShareResponse {
+  acceptedWalletShares: AcceptShareResponse[];
+}
+
+export interface IWallets {
+  get(params?: GetWalletOptions): Promise<Wallet>;
+  list(params?: ListWalletOptions): Promise<{ wallets: IWallet[] }>;
+  add(params?: AddWalletOptions): Promise<any>;
+  generateWallet(
+    params?: GenerateWalletOptions
+  ): Promise<WalletWithKeychains | LightningWalletWithKeychains | GoAccountWalletWithUserKeychain>;
+  generateWalletWithExternalSigner(params: GenerateWalletWithExternalSignerOptions): Promise<WalletWithKeychains>;
+  listShares(params?: Record<string, unknown>): Promise<any>;
+  getShare(params?: { walletShareId?: string }): Promise<any>;
+  updateShare(params?: UpdateShareOptions): Promise<any>;
+  resendShareInvite(params?: { walletShareId?: string }): Promise<any>;
+  cancelShare(params?: { walletShareId?: string }): Promise<any>;
+  acceptShare(params?: AcceptShareOptions): Promise<any>;
+  getWallet(params?: GetWalletOptions): Promise<IWallet>;
+  getWalletByAddress(params?: GetWalletByAddressOptions): Promise<IWallet>;
+  getTotalBalances(params?: Record<string, never>): Promise<any>;
+  bulkAcceptShare(params: BulkAcceptShareOptions): Promise<BulkAcceptShareResponse>;
+  listSharesV2(): Promise<WalletShares>;
+}

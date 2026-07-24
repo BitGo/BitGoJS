@@ -1,0 +1,6 @@
+!dist/
+.nyc_output/
+tsconfig.json
+src/
+test/
+*.tgz

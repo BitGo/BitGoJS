@@ -1,0 +1,162 @@
+import TonWeb from 'tonweb';
+import { BN } from 'bn.js';
+import { BaseUtils, isValidEd25519PublicKey } from '@bitgo/sdk-core';
+import { VESTING_CONTRACT_CODE_B64 } from './constants';
+import { VestingContractParams } from './iface';
+export class Utils implements BaseUtils {
+  /** @inheritdoc */
+  isValidAddress(address: string): boolean {
+    try {
+      if (address.length != 48) {
+        return false;
+      }
+      Buffer.from(address, 'base64');
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /** @inheritdoc */
+  isValidBlockId(hash: string): boolean {
+    try {
+      return Buffer.from(hash, 'base64').length === 32;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /** @inheritdoc */
+  isValidPrivateKey(key: string): boolean {
+    throw new Error('Method not implemented.');
+  }
+
+  /** @inheritdoc */
+  isValidPublicKey(key: string): boolean {
+    return isValidEd25519PublicKey(key);
+  }
+
+  /** @inheritdoc */
+  isValidSignature(signature: string): boolean {
+    throw new Error('Method not implemented.');
+  }
+
+  /** @inheritdoc */
+  isValidTransactionId(txId: string): boolean {
+    try {
+      return Buffer.from(txId, 'base64').length === 32;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  async getAddressFromPublicKey(publicKey: string, bounceable = true, isUserFriendly = true): Promise<string> {
+    const tonweb = new TonWeb(new TonWeb.HttpProvider(''));
+    const WalletClass = tonweb.wallet.all['v4R2'];
+    const wallet = new WalletClass(tonweb.provider, {
+      publicKey: TonWeb.utils.hexToBytes(publicKey),
+      wc: 0,
+    });
+    const address = await wallet.getAddress();
+    const legacyAddress = address.toString(isUserFriendly, true, bounceable);
+    return legacyAddress;
+  }
+
+  getAddress(address: string, bounceable = true): string {
+    if (bounceable) {
+      return new TonWeb.Address(address).isBounceable
+        ? address
+        : new TonWeb.Address(address).toString(true, true, bounceable);
+    } else {
+      return new TonWeb.Address(address).isBounceable
+        ? new TonWeb.Address(address).toString(true, true, bounceable)
+        : address;
+    }
+  }
+
+  async getMessageHashFromData(data: string): Promise<string> {
+    const cell = TonWeb.boc.Cell.oneFromBoc(TonWeb.utils.base64ToBytes(data));
+    // this is need to be confirmed by ton team
+    const message = cell.refs[0].refs[0];
+    const hash = TonWeb.utils.bytesToBase64(await message.hash());
+    return hash.toString();
+  }
+
+  getRawWalletAddressFromCell(data: string): string {
+    const cell = TonWeb.boc.Cell.oneFromBoc(TonWeb.utils.base64ToBytes(data));
+    const slice = (cell as any).beginParse();
+    const address = slice.loadAddress();
+    return address.toString();
+  }
+
+  async getVestingContractAddress(params: VestingContractParams): Promise<string> {
+    const cell = new TonWeb.boc.Cell();
+    cell.bits.writeUint(0, 32); //seq no
+    cell.bits.writeUint(params.subWalletId, 32);
+    cell.bits.writeBytes(TonWeb.utils.hexToBytes(params.publicKeyHex));
+    cell.bits.writeUint(0, 1); // empty whitelist
+    const vestingParamsCell = new TonWeb.boc.Cell();
+    vestingParamsCell.bits.writeUint(params.vestingStartTime, 64);
+    vestingParamsCell.bits.writeUint(params.vestingTotalDuration, 32);
+    vestingParamsCell.bits.writeUint(params.unlockPeriod, 32);
+    vestingParamsCell.bits.writeUint(params.cliffDuration, 32);
+    vestingParamsCell.bits.writeCoins(new BN(params.vestingTotalAmount.toString()));
+    const senderAddress = new TonWeb.Address(params.vestingSenderAddress);
+    vestingParamsCell.bits.writeAddress(senderAddress);
+    const ownerAddress = new TonWeb.Address(params.ownerAddress);
+    vestingParamsCell.bits.writeAddress(ownerAddress);
+    cell.refs.push(vestingParamsCell);
+    const contractCodeCell = TonWeb.boc.Cell.oneFromBoc(TonWeb.utils.base64ToBytes(VESTING_CONTRACT_CODE_B64));
+    const stateInit = TonWeb.Contract.createStateInit(contractCodeCell, cell);
+    const stateInitHash = await stateInit.hash();
+    const contractAddress = new TonWeb.Address('0:' + TonWeb.utils.bytesToHex(stateInitHash));
+    return contractAddress.toString(true, true, true);
+  }
+
+  /**
+   * Converts a TON address into a Base64 encoded BOC (Bag of Cells) string.
+   * This is required when passing an address as a 'slice' argument to `runGetMethod`.
+   * @param address - The TON address (friendly or raw)
+   * @returns Base64 string of the serialized address cell
+   */
+  async getAddressBoc(address: string): Promise<string> {
+    const cell = new TonWeb.boc.Cell();
+    cell.bits.writeAddress(new TonWeb.Address(address));
+    const boc = await cell.toBoc(false);
+    return TonWeb.utils.bytesToBase64(boc);
+  }
+}
+
+const DUMMY_PRIVATE_KEY = '43e8594854cb53947c4a1a2fab926af11e123f6251dcd5bd0dfb100604186430'; // This dummy private key is used only for fee estimation
+
+/**
+ * Function to estimate the fee for a transaction.
+ * This function uses the dummy private key exclusively for fee estimation.
+ * @param wallet - The wallet instance.
+ * @param toAddress - The destination address.
+ * @param amount - The amount to transfer.
+ * @param seqno - The sequence number for the transaction.
+ * @returns The estimated fee for the transaction.
+ */
+
+export async function getFeeEstimate(wallet: any, toAddress: string, amount: string, seqno: number): Promise<any> {
+  try {
+    const secretKey = TonWeb.utils.stringToBytes(DUMMY_PRIVATE_KEY);
+    const feeEstimate = await wallet.methods
+      .transfer({
+        secretKey,
+        toAddress,
+        amount,
+        seqno,
+        sendMode: 1,
+      })
+      .estimateFee();
+    return feeEstimate;
+  } catch (error) {
+    throw new Error(`Failed to estimate fee: ${error.message}`);
+  }
+}
+
+const utils = new Utils();
+
+export default utils;

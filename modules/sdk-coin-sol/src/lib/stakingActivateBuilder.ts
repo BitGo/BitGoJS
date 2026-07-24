@@ -1,0 +1,133 @@
+import { SolStakingTypeEnum } from '@bitgo/public-types';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { Transaction } from './transaction';
+import { TransactionBuilder } from './transactionBuilder';
+import { InstructionBuilderTypes } from './constants';
+
+import assert from 'assert';
+import { StakingActivate, StakingActivateExtraParams } from './iface';
+import { isValidStakingAmount, validateAddress } from './utils';
+
+export class StakingActivateBuilder extends TransactionBuilder {
+  protected _amount: string;
+  protected _stakingAddress: string;
+  protected _validator: string;
+  protected _stakingType: SolStakingTypeEnum = SolStakingTypeEnum.NATIVE;
+  protected _extraParams?: StakingActivateExtraParams;
+
+  constructor(_coinConfig: Readonly<CoinConfig>) {
+    super(_coinConfig);
+  }
+
+  protected get transactionType(): TransactionType {
+    return TransactionType.StakingActivate;
+  }
+
+  /** @inheritdoc */
+  initBuilder(tx: Transaction): void {
+    super.initBuilder(tx);
+    for (const instruction of this._instructionsData) {
+      if (instruction.type === InstructionBuilderTypes.StakingActivate) {
+        const activateInstruction: StakingActivate = instruction;
+        this.sender(activateInstruction.params.fromAddress);
+        this.stakingAddress(activateInstruction.params.stakingAddress);
+        this.amount(activateInstruction.params.amount);
+        this.validator(activateInstruction.params.validator);
+        this.stakingType(activateInstruction.params.stakingType);
+        this.extraParams(activateInstruction.params.extraParams);
+      }
+    }
+  }
+
+  /**
+   * The amount to stake expressed in Lamports, 1 SOL = 1_000_000_000 lamports.
+   *
+   * @param {string} amount expressed in Lamports.
+   * @returns {StakeBuilder} This staking builder.
+   *
+   */
+  amount(amount: string): this {
+    if (!isValidStakingAmount(amount)) {
+      throw new BuildTransactionError('Value cannot be zero or less');
+    }
+    this._amount = amount;
+    return this;
+  }
+
+  /**
+   * The address of the staking account.
+   *
+   * @param {string} stakingAddress public address of the staking account.
+   * @returns {StakingActivateBuilder} This staking builder.
+   *
+   * @see https://docs.solana.com/staking/stake-accounts#account-address
+   */
+  stakingAddress(stakingAddress: string): this {
+    validateAddress(stakingAddress, 'stakingAddress');
+    this._stakingAddress = stakingAddress;
+    return this;
+  }
+
+  /**
+   * Set validator address to delegate funds to.
+   *
+   * @param {string} validator Validator address to delegate funds to.
+   * @returns {StakingActivateBuilder} This staking builder.
+   *
+   */
+  validator(validator: string): this {
+    validateAddress(validator, 'validator');
+    this._validator = validator;
+    return this;
+  }
+
+  /**
+   * Set staking type.
+   *
+   * @param {SolStakingType} stakingType a staking type.
+   * @returns {StakingActivateBuilder} This staking builder.
+   */
+  stakingType(stakingType: SolStakingTypeEnum): this {
+    this._stakingType = stakingType;
+    return this;
+  }
+
+  /**
+   * Set parameters specific to a staking type.
+   *
+   * @param {StakingActivateExtraParams} extraParams parameters specific to a staking type.
+   * @returns {StakingActivateBuilder} This staking builder.
+   */
+  extraParams(extraParams?: StakingActivateExtraParams): this {
+    this._extraParams = extraParams;
+    return this;
+  }
+
+  /** @inheritdoc */
+  protected async buildImplementation(): Promise<Transaction> {
+    assert(this._sender, 'Sender must be set before building the transaction');
+    assert(this._stakingAddress, 'Staking Address must be set before building the transaction');
+    assert(this._validator, 'Validator must be set before building the transaction');
+    assert(this._amount, 'Amount must be set before building the transaction');
+
+    if (this._sender === this._stakingAddress) {
+      throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
+    }
+
+    const stakingAccountData: StakingActivate = {
+      type: InstructionBuilderTypes.StakingActivate,
+      params: {
+        fromAddress: this._sender,
+        stakingAddress: this._stakingAddress,
+        amount: this._amount,
+        validator: this._validator,
+        stakingType: this._stakingType,
+        extraParams: this._extraParams,
+      },
+    };
+    this._instructionsData = [stakingAccountData];
+
+    return await super.buildImplementation();
+  }
+}
