@@ -802,6 +802,41 @@ export async function handleV2IsWalletAddress(
 }
 
 /**
+ * handle v2 verifyPrivateKey - verify that a private key matches a wallet's user keychain
+ * @param req
+ */
+export async function handleV2VerifyPrivateKey(
+  req: ExpressApiRouteRequest<'express.v2.wallet.verifyPrivateKey', 'post'>
+): Promise<{ valid: boolean }> {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const { prv, encryptedPrv, walletPassphrase, multiSigType, publicKey: explicitPublicKey } = req.decoded;
+
+  if (!prv && !encryptedPrv) {
+    throw new ApiResponseError('either prv or encryptedPrv is required', 400);
+  }
+  if (encryptedPrv && !walletPassphrase) {
+    throw new ApiResponseError('walletPassphrase is required when encryptedPrv is provided', 400);
+  }
+
+  let resolvedPublicKey = explicitPublicKey;
+  if (!resolvedPublicKey) {
+    const wallet = await coin.wallets().get({ id: req.decoded.id });
+    const keychains = await coin.keychains().getKeysForSigning({ wallet });
+    const userKeychain = keychains[0];
+    resolvedPublicKey = userKeychain.commonKeychain ?? userKeychain.pub;
+  }
+
+  const auditParams =
+    prv !== undefined
+      ? { prv, multiSigType, publicKey: resolvedPublicKey }
+      : { encryptedPrv: encryptedPrv!, walletPassphrase: walletPassphrase!, multiSigType, publicKey: resolvedPublicKey };
+
+  await coin.assertIsValidKey(auditParams as any);
+  return { valid: true };
+}
+
+/**
  * handle v2 deriveAddress - locally derive and return a wallet receive address from a
  * derivation path, using public key material only.
  *
@@ -2056,6 +2091,10 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.v2.wallet.isWalletAddress', [
     prepareBitGo(config),
     typedPromiseWrapper(handleV2IsWalletAddress),
+  ]);
+  router.post('express.v2.wallet.verifyPrivateKey', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2VerifyPrivateKey),
   ]);
   router.post('express.v2.address.derive', [prepareBitGo(config), typedPromiseWrapper(handleV2DeriveAddress)]);
 
