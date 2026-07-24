@@ -2634,6 +2634,24 @@ class HemiEthTestnet extends Testnet implements EthereumNetwork {
   chainId = 743111;
   nativeCoinOperationHashPrefix = '743111';
 }
+class MidlBtc extends Mainnet implements EthereumNetwork {
+  name = 'MIDL Bitcoin';
+  family = CoinFamily.MIDLBTC;
+  explorerUrl = 'https://blockscout.mainnet.midl.xyz/tx/';
+  accountExplorerUrl = 'https://blockscout.mainnet.midl.xyz/address/';
+  chainId = 1500;
+  nativeCoinOperationHashPrefix = '1500';
+}
+
+class MidlBtcTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet MIDL Bitcoin';
+  family = CoinFamily.MIDLBTC;
+  explorerUrl = 'https://blockscout.staging.midl.xyz/tx/';
+  accountExplorerUrl = 'https://blockscout.staging.midl.xyz/address/';
+  chainId = 15001;
+  nativeCoinOperationHashPrefix = '15001';
+}
+
 class KatanaEth extends Mainnet implements EthereumNetwork {
   name = 'Katana';
   family = CoinFamily.KATANAETH;
@@ -2947,6 +2965,7 @@ export const Networks = {
     lnbtc: Object.freeze(new LightningBitcoin()),
     litecoin: Object.freeze(new Litecoin()),
     megaeth: Object.freeze(new MegaETH()),
+    midlbtc: Object.freeze(new MidlBtc()),
     mon: Object.freeze(new Monad()),
     mantle: Object.freeze(new Mantle()),
     mantra: Object.freeze(new Mantra()),
@@ -3065,6 +3084,7 @@ export const Networks = {
     hederaEVM: Object.freeze(new HederaEVMTestnet()),
     hemieth: Object.freeze(new HemiEthTestnet()),
     inketh: Object.freeze(new InkEthTestnet()),
+    midlbtc: Object.freeze(new MidlBtcTestnet()),
     icp: Object.freeze(new IcpTestnet()),
     ip: Object.freeze(new IPTestnet()),
     initia: Object.freeze(new InitiaTestnet()),
