@@ -147,6 +147,7 @@
     "electron-to-chromium": "1.5.380",
     "baseline-browser-mapping": "2.10.40",
     "sigstore": "4.1.1",
+    "**/bn.js": "5.2.3",
     "uuid": "11.1.1",
     "js-yaml": "4.3.0"
   },
@@ -207,6 +208,7 @@
     "@protobufjs/fetch": "1.1.0",
     "@protobufjs/inquire": "1.1.0",
     "sigstore": "4.1.1",
+    "bn.js": "5.2.3",
     "uuid": "11.1.1",
     "js-yaml": "4.3.0",
     "cliui": {
