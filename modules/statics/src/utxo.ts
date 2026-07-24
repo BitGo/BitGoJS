@@ -143,6 +143,7 @@ const DOGE_FEATURES = [
 const DASH_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION];
 const TDASH_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
 const ZEC_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.CUSTODY_BITGO_FRANKFURT];
+const PEARL_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.MULTISIG, CoinFeature.BULK_TRANSACTION, CoinFeature.DISTRIBUTED_CUSTODY];
 export const utxoCoins: Readonly<BaseCoin>[] = [
   utxo(
     '8d6e08d5-399f-414f-8430-6ceca1798cbf',
@@ -319,6 +320,28 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     UnderlyingAsset.ZEC,
     BaseUnit.ZEC,
     ZEC_FEATURES
+  ),
+  utxo(
+    '4518a5b9-00d3-476e-bc40-d3f87eb82250',
+    'pearl',
+    'Pearl',
+    Networks.main.pearl,
+    UnderlyingAsset.PEARL,
+    BaseUnit.BTC,
+    PEARL_FEATURES,
+    '',
+    'PEARL'
+  ),
+  utxo(
+    '5d88723a-7e86-43c7-9fb1-f4cee7abc48f',
+    'tpearl',
+    'Testnet Pearl',
+    Networks.test.pearl,
+    UnderlyingAsset.PEARL,
+    BaseUnit.BTC,
+    PEARL_FEATURES,
+    '',
+    'TPEARL'
   ),
   utxo(
     'c93a9160-458f-4a31-bea0-4a93ae8b1d2d',
