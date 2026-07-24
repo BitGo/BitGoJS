@@ -2016,13 +2016,16 @@ export class Wallets implements IWallets {
     const reqId = new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
 
-    if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+    if (multisigType === 'tss') {
       const tssSettings: TssSettings = await this.bitgo
         .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
         .result();
       const multisigTypeVersion =
         tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.custodialMultiSigTypeVersion;
-      walletVersion = this.determineEcdsaMpcWalletVersion(walletVersion, multisigTypeVersion);
+
+      if (this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+        walletVersion = this.determineEcdsaMpcWalletVersion(walletVersion, multisigTypeVersion);
+      }
     }
 
     const finalWalletParams = {
