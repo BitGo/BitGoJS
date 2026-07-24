@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.2.0...@bitgo/sdk-coin-sol@8.3.0) (2026-07-23)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** fall back to custom instruction on decode failure ([7333fd4](https://github.com/BitGo/BitGoJS/commit/7333fd469e565ed211257ba14ed38822b5585d47))
+
+
+### Features
+
+* **sdk-coin-sol:** support transferCheckedWithFee for Token-2022 ([3f96928](https://github.com/BitGo/BitGoJS/commit/3f969282d5d478933465d0f18899a0e873824a54))
+
+
+
+
+
 # [8.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.1.1...@bitgo/sdk-coin-sol@8.2.0) (2026-07-22)
 
 
