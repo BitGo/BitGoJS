@@ -2,7 +2,7 @@ import { Key, SerializedKeyPair } from 'openpgp';
 import { EncryptionVersion, IEncryptionSession, IRequestTracer } from '../../../api';
 import { type ITransactionRecipient, KeychainsTriplet, ParsedTransaction, TransactionParams } from '../../baseCoin';
 import { ApiKeyShare, Keychain, WebauthnKeyEncryptionInfo } from '../../keychain';
-import { ApiVersion, Memo, WalletType } from '../../wallet';
+import { ApiVersion, Memo, WalletType, type PrebuildTransactionFeeInfo } from '../../wallet';
 import { EDDSA, GShare, Signature, SignShare } from '../../../account-lib/mpc/tss';
 import { Signature as EcdsaSignature } from '../../../account-lib/mpc/tss/ecdsa/types';
 import { KeyShare } from './ecdsa';
@@ -531,10 +531,7 @@ export type UnsignedTransactionTss = SignableTransaction & {
   // derivation path of the signer
   derivationPath: string;
   // transaction fees
-  feeInfo?: {
-    fee: number;
-    feeString: string;
-  };
+  feeInfo?: Required<PrebuildTransactionFeeInfo>;
   coinSpecific?: Record<string, unknown>;
   parsedTx?: unknown;
   eip1559?: EIP1559FeeOptions;
@@ -769,10 +766,7 @@ export interface MPCTx {
   signableHex?: string;
   derivationPath?: string;
   parsedTx?: ParsedTransaction;
-  feeInfo?: {
-    fee: number;
-    feeString: string;
-  };
+  feeInfo?: Required<PrebuildTransactionFeeInfo>;
   coinSpecific?: {
     firstValid?: number;
     maxDuration?: number;
