@@ -740,7 +740,7 @@ export class Wallets implements IWallets {
     params: GenerateWalletWithExternalSignerOptions
   ): Promise<WalletWithKeychains> {
     const hasOnchainCallback = _.isFunction(params.createKeychainCallback);
-    const hasMpcCallbacks = !!(params.ecdsaMPCv2Callbacks || params.eddsaCallbacks);
+    const hasMpcCallbacks = !!(params.ecdsaMPCv2Callbacks || params.eddsaCallbacks || params.eddsaMPCv2Callbacks);
 
     if (hasOnchainCallback && hasMpcCallbacks) {
       throw new Error('createKeychainCallback cannot be used together with MPC TSS key generation callbacks');
@@ -1807,13 +1807,25 @@ export class Wallets implements IWallets {
         callbacks: params.ecdsaMPCv2Callbacks,
       });
     } else {
-      if (!params.eddsaCallbacks) {
-        throw new Error('eddsaCallbacks is required for EdDSA TSS wallet generation with external signer');
+      if (params.eddsaMPCv2Callbacks && params.eddsaCallbacks) {
+        throw new Error(
+          'eddsaMPCv2Callbacks and eddsaCallbacks cannot both be provided; use eddsaMPCv2Callbacks for EdDSA MPCv2'
+        );
       }
-      keychains = await new EDDSAUtils.default(this.bitgo, this.baseCoin).createKeychainsWithExternalSigner({
-        enterprise,
-        callbacks: params.eddsaCallbacks,
-      });
+      if (params.eddsaMPCv2Callbacks) {
+        keychains = await new EDDSAUtils.EddsaMPCv2Utils(this.bitgo, this.baseCoin).createKeychainsWithExternalSigner({
+          enterprise,
+          callbacks: params.eddsaMPCv2Callbacks,
+        });
+      } else {
+        if (!params.eddsaCallbacks) {
+          throw new Error('eddsaCallbacks is required for EdDSA TSS wallet generation with external signer');
+        }
+        keychains = await new EDDSAUtils.default(this.bitgo, this.baseCoin).createKeychainsWithExternalSigner({
+          enterprise,
+          callbacks: params.eddsaCallbacks,
+        });
+      }
     }
 
     const { userKeychain, backupKeychain, bitgoKeychain } = keychains;

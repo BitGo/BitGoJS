@@ -274,6 +274,7 @@ export interface GenerateWalletWithExternalSignerOptions
   keySignatures?: { backup: string; bitgo: string };
   ecdsaMPCv2Callbacks?: EcdsaMPCv2KeyGenCallbacks;
   eddsaCallbacks?: EddsaKeyGenCallbacks;
+  eddsaMPCv2Callbacks?: EddsaMPCv2KeyGenCallbacks;
 }
 
 export const GenerateLightningWalletOptionsCodec = t.intersection(
