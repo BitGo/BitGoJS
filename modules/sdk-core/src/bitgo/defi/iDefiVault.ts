@@ -1,0 +1,90 @@
+/**
+ * @prettier
+ */
+
+import { GetVaultResponse } from '@bitgo/public-types';
+
+export interface DepositToVaultOptions {
+  /** DeFi-service vault identifier */
+  vaultId: string;
+  /** Amount in base units of the underlying asset */
+  amount: string;
+  /** Wallet passphrase — required for hot wallets, omit for custody */
+  walletPassphrase?: string;
+}
+
+export interface ResumeDepositOptions {
+  /** operationId of the partially-completed deposit */
+  operationId: string;
+  /** Wallet passphrase — required for hot wallets, omit for custody */
+  walletPassphrase?: string;
+}
+
+export interface GetOperationOptions {
+  operationId: string;
+}
+
+export interface ListOperationsOptions {
+  vaultId: string;
+  state?: string;
+  type?: string;
+  limit?: number;
+  cursor?: string;
+}
+
+export interface GetVaultConfigOptions {
+  vaultId: string;
+}
+
+export interface DefiOperation {
+  operationId: string;
+  walletId: string;
+  vaultId: string;
+  type: 'DEPOSIT' | 'WITHDRAW';
+  assetAmount: string;
+  state: string;
+  txRequestId?: string;
+  associatedTxRequestId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConcreteDepositResult {
+  pendingApprovalId: string;
+  state: string;
+}
+
+export interface MorphoDepositResult {
+  operationId: string;
+  txRequestIds: { approve: string; deposit: string };
+}
+
+export type DepositResult = ConcreteDepositResult | MorphoDepositResult;
+
+export interface DefiOperationListResult {
+  items: DefiOperation[];
+  nextCursor?: string;
+}
+
+export interface WithdrawFromVaultOptions {
+  /** DeFi-service vault identifier */
+  vaultId: string;
+  /** Amount in base units of the vault share token */
+  amount: string;
+  /** Wallet passphrase — required for hot wallets, omit for custody */
+  walletPassphrase?: string;
+}
+
+export interface WithdrawResult {
+  operationId: string;
+  txRequestId: string;
+}
+
+export interface IDefiVault {
+  depositToVault(params: DepositToVaultOptions): Promise<DepositResult>;
+  resumeDeposit(params: ResumeDepositOptions): Promise<DepositResult>;
+  getOperation(params: GetOperationOptions): Promise<DefiOperation>;
+  listOperations(params: ListOperationsOptions): Promise<DefiOperationListResult>;
+  getVaultConfig(params: GetVaultConfigOptions): Promise<GetVaultResponse>;
+  withdrawFromVault(params: WithdrawFromVaultOptions): Promise<WithdrawResult>;
+}

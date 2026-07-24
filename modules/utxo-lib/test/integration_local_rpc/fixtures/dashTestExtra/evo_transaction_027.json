@@ -1,0 +1,81 @@
+{
+    "txid": "206fb765cce622c3b83c70bade155a793b95d9f8f2413c37980873d7216675f7",
+    "version": 3,
+    "type": 1,
+    "size": 696,
+    "locktime": 0,
+    "vin": [
+        {
+            "txid": "5944644d95d186ce486a106960e7ca296f5f52a210ae5f93cc204f2dab516002",
+            "vout": 0,
+            "scriptSig": {
+                "asm": "3045022100be648f51261461579a65e39f6450c0a3ef863b5f62c2fac50939a5dbceea513502207b535c32852a52ec37395d9dca93843cd782335cad033e1b539981c14b59a224[ALL]",
+                "hex": "483045022100be648f51261461579a65e39f6450c0a3ef863b5f62c2fac50939a5dbceea513502207b535c32852a52ec37395d9dca93843cd782335cad033e1b539981c14b59a22401"
+            },
+            "sequence": 4294967295
+        },
+        {
+            "txid": "6e320002fb09f8e01b0d7fcc442747d1fffcf14b9eb51ac54a177813076d6402",
+            "vout": 0,
+            "scriptSig": {
+                "asm": "3045022100e16a544d18ff60524163eb9568d6f48e75d3bc64bcc18e9ec70dea2e434787390220775ab11e27d3de01d9d0bc87bf930b87baa83dda0f6ddd267004eb1a51532856[ALL]",
+                "hex": "483045022100e16a544d18ff60524163eb9568d6f48e75d3bc64bcc18e9ec70dea2e434787390220775ab11e27d3de01d9d0bc87bf930b87baa83dda0f6ddd267004eb1a5153285601"
+            },
+            "sequence": 4294967295
+        },
+        {
+            "txid": "39ce610b05828e996fb0a7fc13d96a282dcdb847f04a49ac1cc06e60d101b302",
+            "vout": 0,
+            "scriptSig": {
+                "asm": "304402202c8041c8340a0038f9a5dea9349f256e3b8644cbd3eb6ae17182966f91f1e1a3022022869fd749c19c2c145126e55d5c3388f6cf4bdc69c8ee6b235a2243617d5c56[ALL]",
+                "hex": "47304402202c8041c8340a0038f9a5dea9349f256e3b8644cbd3eb6ae17182966f91f1e1a3022022869fd749c19c2c145126e55d5c3388f6cf4bdc69c8ee6b235a2243617d5c5601"
+            },
+            "sequence": 4294967295
+        }
+    ],
+    "vout": [
+        {
+            "value": 1000.00000000,
+            "valueSat": 100000000000,
+            "n": 0,
+            "scriptPubKey": {
+                "asm": "OP_DUP OP_HASH160 7a1f4f4b393556025a58ce857dcf5b47806e1fad OP_EQUALVERIFY OP_CHECKSIG",
+                "hex": "76a9147a1f4f4b393556025a58ce857dcf5b47806e1fad88ac",
+                "reqSigs": 1,
+                "type": "pubkeyhash",
+                "addresses": [
+                    "yXTAo3aoxPZma9q8fdv5H9BrXiMqYVjrem"
+                ]
+            }
+        },
+        {
+            "value": 395.40816328,
+            "valueSat": 39540816328,
+            "n": 1,
+            "scriptPubKey": {
+                "asm": "OP_DUP OP_HASH160 7a1f4f4b393556025a58ce857dcf5b47806e1fad OP_EQUALVERIFY OP_CHECKSIG",
+                "hex": "76a9147a1f4f4b393556025a58ce857dcf5b47806e1fad88ac",
+                "reqSigs": 1,
+                "type": "pubkeyhash",
+                "addresses": [
+                    "yXTAo3aoxPZma9q8fdv5H9BrXiMqYVjrem"
+                ]
+            }
+        }
+    ],
+    "extraPayloadSize": 274,
+    "extraPayload": "010000000000a7b0ad14f8a281f3df82dc139ccde1f15bf361c16187f75e77687231a03fa21d0000000000000000000000000000ffff0101010100014cac14a9ec988c124c7e756eb963d30c32c5a2790487a80296dafc9489233c0198dc86550cb9090fc06faa7248884fab6d91a99149816bdc992a96588a5afdf6585257b84cac14a9ec988c124c7e756eb963d30c32c5a27900001976a9147a1f4f4b393556025a58ce857dcf5b47806e1fad88ac4dd7827d3736165b8ab61fbbd3fc6bf8698e4a3c7937281a718d8b4bc89047ca412050e14d1888c5eabbb3d228d55837dc37da0d63a0d4407e2353b3b9797457f1d350fd2f85dcd111734a4956562aab5ea25b390b1079a9bb5c4a04d5fa477926ea",
+    "proRegTx": {
+        "version": 1,
+        "collateralHash": "1da23fa0317268775ef78761c161f35bf1e1cd9c13dc82dff381a2f814adb0a7",
+        "collateralIndex": 0,
+        "service": "1.1.1.1:1",
+        "ownerAddress": "yTJrMAEfvoYmTDfBxajQnDPw4eSDzpgRn8",
+        "votingAddress": "yTJrMAEfvoYmTDfBxajQnDPw4eSDzpgRn8",
+        "payoutAddress": "yXTAo3aoxPZma9q8fdv5H9BrXiMqYVjrem",
+        "pubKeyOperator": "0487a80296dafc9489233c0198dc86550cb9090fc06faa7248884fab6d91a99149816bdc992a96588a5afdf6585257b8",
+        "operatorReward": 0,
+        "inputsHash": "ca4790c84b8b8d711a2837793c4a8e69f86bfcd3bb1fb68a5b1636377d82d74d"
+    },
+    "hex": "0300010003026051ab2d4f20cc935fae10a2525f6f29cae76069106a48ce86d1954d6444590000000049483045022100be648f51261461579a65e39f6450c0a3ef863b5f62c2fac50939a5dbceea513502207b535c32852a52ec37395d9dca93843cd782335cad033e1b539981c14b59a22401ffffffff02646d071378174ac51ab59e4bf1fcffd1472744cc7f0d1be0f809fb0200326e0000000049483045022100e16a544d18ff60524163eb9568d6f48e75d3bc64bcc18e9ec70dea2e434787390220775ab11e27d3de01d9d0bc87bf930b87baa83dda0f6ddd267004eb1a5153285601ffffffff02b301d1606ec01cac494af047b8cd2d286ad913fca7b06f998e82050b61ce39000000004847304402202c8041c8340a0038f9a5dea9349f256e3b8644cbd3eb6ae17182966f91f1e1a3022022869fd749c19c2c145126e55d5c3388f6cf4bdc69c8ee6b235a2243617d5c5601ffffffff0200e87648170000001976a9147a1f4f4b393556025a58ce857dcf5b47806e1fad88acc8f9d034090000001976a9147a1f4f4b393556025a58ce857dcf5b47806e1fad88ac00000000fd1201010000000000a7b0ad14f8a281f3df82dc139ccde1f15bf361c16187f75e77687231a03fa21d0000000000000000000000000000ffff0101010100014cac14a9ec988c124c7e756eb963d30c32c5a2790487a80296dafc9489233c0198dc86550cb9090fc06faa7248884fab6d91a99149816bdc992a96588a5afdf6585257b84cac14a9ec988c124c7e756eb963d30c32c5a27900001976a9147a1f4f4b393556025a58ce857dcf5b47806e1fad88ac4dd7827d3736165b8ab61fbbd3fc6bf8698e4a3c7937281a718d8b4bc89047ca412050e14d1888c5eabbb3d228d55837dc37da0d63a0d4407e2353b3b9797457f1d350fd2f85dcd111734a4956562aab5ea25b390b1079a9bb5c4a04d5fa477926ea"
+}

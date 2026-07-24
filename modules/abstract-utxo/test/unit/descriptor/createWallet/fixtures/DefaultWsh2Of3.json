@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Wsh2Of3/external",
+    "value": "wsh(multi(2,xpub661MyMwAqRbcGZfgedgcQiBJpkHoZ37k6uotUVLoC6Px4Y46Yrdmy1CUogcJMoAsosY381gPjhGe9jFx1uYAcxy2gTHh9YFP32tUWycqHnV/0/*,xpub661MyMwAqRbcF8FoYWukS8eTn2gVEojzwf5DYETpB8uqC8t5sqDCEFnuJ39DaPjLRerBDK9QqSMvSYpT4WSugCVbUK5HEevSKAu1wUkVWsS/0/*,xpub661MyMwAqRbcFdScyinA4JpCViqkKsd37MQ6fwuZQQ4shdaGRRX9a8bWvR9QC1AFqKongweJJfyrm7uCoWmCw7UixwGZkZnCT2mchFr7cQb/0/*))#ve5dkda0",
+    "signatures": [
+      "1fe5bd14b540ae1c21110d49afb650d6fdc48621165e5e24012ffef42e97a38b0d1d9e9955692b9d8be4919b977438c4cde4d366a5e7ce5237fc9f01b4154dc4e1"
+    ]
+  },
+  {
+    "name": "Wsh2Of3/internal",
+    "value": "wsh(multi(2,xpub661MyMwAqRbcGZfgedgcQiBJpkHoZ37k6uotUVLoC6Px4Y46Yrdmy1CUogcJMoAsosY381gPjhGe9jFx1uYAcxy2gTHh9YFP32tUWycqHnV/1/*,xpub661MyMwAqRbcF8FoYWukS8eTn2gVEojzwf5DYETpB8uqC8t5sqDCEFnuJ39DaPjLRerBDK9QqSMvSYpT4WSugCVbUK5HEevSKAu1wUkVWsS/1/*,xpub661MyMwAqRbcFdScyinA4JpCViqkKsd37MQ6fwuZQQ4shdaGRRX9a8bWvR9QC1AFqKongweJJfyrm7uCoWmCw7UixwGZkZnCT2mchFr7cQb/1/*))#5em4d3ts",
+    "signatures": [
+      "2001654c1ce7a8c94dc510c0cd25a0eee5d06da44e146b3c18546084206f53bbec194e14bc4ffd97eedad97a2176db0e4215323a30f683b8fd8bebcd135f19687e"
+    ]
+  }
+]

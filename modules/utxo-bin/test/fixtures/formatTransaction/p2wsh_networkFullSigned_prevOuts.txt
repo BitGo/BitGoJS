@@ -1,0 +1,22 @@
+transaction: 2fedaa3661f6251d1a4ca23e5d4bb03fab5b75e8e471281f554755c439cd9924
+├── format: network
+├── complete: true
+├── parsedAs: bitcoin testnet
+├── version: 1
+├── hasWitnesses: true
+├── status: unknown
+├── vsize: 262vbytes (1047wu)
+├── fee [btc]: 0.00001000
+├── feeRate [sat/vbyte]: 3.82
+├─┬ inputs: 2 sum=2.00000000
+│ ├─┬ 0: ba5c40fb1f9c00aee45cfc14f9049e6bf4773bae16c6f36e555dfcfa62fb3856:1
+│ │ └─┬ sigScript: p2wsh
+│ │   └─┬ signatures: [72byte] [71byte]
+│ │     └── signed by: [0, 2]
+│ └─┬ 1: 85ed52eddf9ee786cee123208a6135a8c781741df66d2ab025e22a32ae97ace3:0
+│   └─┬ sigScript: p2wsh
+│     └─┬ signatures: [71byte] [71byte]
+│       └── signed by: [0, 2]
+└─┬ outputs: 1 sum=1.99999000
+  └─┬ 0: tb1qz4flxx37yhnhpdaus4ac9yy7sde5m0lyhnd45hn0csvmdysv8x9qw8zyk7
+    └── value: 1.99999000

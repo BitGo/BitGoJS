@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "."
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "references": [
+    { "path": "../sdk-core" },
+    { "path": "../statics" },
+    { "path": "../sdk-lib-mpc" },
+    { "path": "../secp256k1" },
+    { "path": "../sdk-api" },
+    { "path": "../sdk-test" }
+  ]
+}

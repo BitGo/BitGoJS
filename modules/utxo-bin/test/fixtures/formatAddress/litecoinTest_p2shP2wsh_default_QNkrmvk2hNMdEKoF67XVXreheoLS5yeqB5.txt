@@ -1,0 +1,14 @@
+address: QNkrmvk2hNMdEKoF67XVXreheoLS5yeqB5
+├─┬ base58
+│ └── payload: 3a179ddf848a574c6fdb30e6e564f2c8b8fc11354598e77e90 (25 bytes)
+├─┬ base58Check
+│ ├── payload: 3a179ddf848a574c6fdb30e6e564f2c8b8fc113545 (21 bytes)
+│ ├── version: 3a
+│ └── hash: 179ddf848a574c6fdb30e6e564f2c8b8fc113545 (20 bytes)
+├── format: default
+├─┬ outputScript: a914179ddf848a574c6fdb30e6e564f2c8b8fc11354587 (23 bytes)
+│ └─┬ scriptPubKey: [23byte]
+│   ├── type: scripthash
+│   ├── hex: a914179ddf848a574c6fdb30e6e564f2c8b8fc11354587
+│   └── asm: OP_HASH160 179ddf848a574c6fdb30e6e564f2c8b8fc113545 OP_EQUAL
+└── network: litecoinTest

@@ -1,0 +1,14 @@
+address: noPf7UN9gQTV7zAmd7DHj6TksVjoihVkLY
+├─┬ base58
+│ └── payload: 71d2970bfc64117e397dc5cb7a9afe9f8b22dca1f15aeeab79 (25 bytes)
+├─┬ base58Check
+│ ├── payload: 71d2970bfc64117e397dc5cb7a9afe9f8b22dca1f1 (21 bytes)
+│ ├── version: 71
+│ └── hash: d2970bfc64117e397dc5cb7a9afe9f8b22dca1f1 (20 bytes)
+├── format: default
+├─┬ outputScript: 76a914d2970bfc64117e397dc5cb7a9afe9f8b22dca1f188ac (25 bytes)
+│ └─┬ scriptPubKey: [25byte]
+│   ├── type: pubkeyhash
+│   ├── hex: 76a914d2970bfc64117e397dc5cb7a9afe9f8b22dca1f188ac
+│   └── asm: OP_DUP OP_HASH160 d2970bfc64117e397dc5cb7a9afe9f8b22dca1f1 OP_EQUALVERIFY OP_CHECKSIG
+└── network: dogecoinTest
