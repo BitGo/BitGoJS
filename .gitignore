@@ -23,3 +23,17 @@ coverage
 .claude/agents/*
 !.claude/agents/*.md
 .cursor/
+.serena/
+_bmad*
+# Local MPC p-shares (never commit)
+local-pshares/
+**/local-pshares/
+# MPCv2 two-script workspace (sensitive state; never commit)
+mpc-keygen-workspace/
+**/mpc-keygen-workspace/
+mpc-sign-workspace/
+**/mpc-sign-workspace/
+multisig-workspace/
+**/multisig-workspace/
+multisig-sign-workspace/
+**/multisig-sign-workspace/
