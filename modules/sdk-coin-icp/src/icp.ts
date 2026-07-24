@@ -31,6 +31,7 @@ import * as mpc from '@bitgo/sdk-lib-mpc';
 
 import {
   CurveType,
+  IcpCertificate,
   LEDGER_CANISTER_ID,
   TESTNET_LEDGER_CANISTER_ID,
   PayloadsData,
@@ -38,6 +39,8 @@ import {
   PublicNodeSubmitResponse,
   RecoveryOptions,
   RecoveryTransaction,
+  REQUEST_STATUS_REJECTED,
+  REQUEST_STATUS_REPLIED,
   ROOT_PATH,
   Signatures,
   SigningPayload,
@@ -284,8 +287,20 @@ export class Icp extends BaseCoin {
 
       const decodedResponse = utils.cborDecode(response.data) as PublicNodeSubmitResponse;
 
-      if (decodedResponse.status === 'replied') {
-        // it is considered a success because ICP returns response in a CBOR map with a status of 'replied'
+      if (decodedResponse.status === REQUEST_STATUS_REPLIED) {
+        // The outer status 'replied' means the IC accepted and processed the HTTP call.
+        // The certificate contains the actual canister execution result. A canister can
+        // still reject the call (e.g. insufficient funds) even when the outer status is
+        // 'replied', so we must inspect the certificate's request_status subtree.
+        if (decodedResponse.certificate) {
+          const certificate = utils.cborDecode(Buffer.from(decodedResponse.certificate)) as IcpCertificate;
+          const { requestStatus, rejectMessage } = utils.extractRequestStatusFromCertificate(certificate);
+          if (requestStatus === REQUEST_STATUS_REJECTED) {
+            throw new Error(
+              `Transaction rejected by canister: ${rejectMessage ?? 'unknown reason'}`
+            );
+          }
+        }
         return {}; // returned empty object as ICP does not return a txid
       } else {
         throw new Error(`Unexpected response status from node: ${decodedResponse.status}`);

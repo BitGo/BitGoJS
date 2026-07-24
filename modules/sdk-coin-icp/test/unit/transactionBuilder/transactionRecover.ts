@@ -148,6 +148,15 @@ describe('ICP transaction recovery', async () => {
       );
   });
 
+  it('should fail to recover if canister rejects the transaction (e.g. insufficient funds)', async () => {
+    nock.cleanAll();
+    const rejectedResponse = Buffer.from(testData.PublicNodeApiBroadcastResponseRejected, 'hex');
+    nock(nodeUrl).post(broadcastEndpoint).reply(200, rejectedResponse);
+    await icp
+      .recover(recoveryParams)
+      .should.rejectedWith(/Transaction rejected by canister/);
+  });
+
   it('should fail to recover txn if balance is low', async () => {
     sinon.restore();
     setupLowBalanceStubs();
