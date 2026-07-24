@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-sol",
-  "version": "8.2.0",
+  "version": "8.3.0",
   "description": "BitGo SDK coin library for Sol",
   "main": "./dist/cjs/src/index.js",
   "module": "./dist/esm/index.js",

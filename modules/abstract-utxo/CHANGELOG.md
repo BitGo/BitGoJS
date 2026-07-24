@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [12.0.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@12.0.4...@bitgo/abstract-utxo@12.0.5) (2026-07-23)
+
+
+### Bug Fixes
+
+* **abstract-utxo:** bump utxo-lib devDependency to 11.24.1 ([ee750bf](https://github.com/BitGo/BitGoJS/commit/ee750bf025fca96af0b05c809257847ef412bea2))
+
+
+
+
+
 ## [12.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@12.0.3...@bitgo/abstract-utxo@12.0.4) (2026-07-22)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo
