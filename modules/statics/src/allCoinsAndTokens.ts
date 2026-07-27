@@ -4250,6 +4250,16 @@ export const allCoinsAndTokens = [
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559, CoinFeature.RECEIPT_TOKEN]
   ),
   erc20Token(
+    'e7cfe8e5-e35c-4fe9-9aaf-9ca4b1e33f1c',
+    'tbaseeth:ctbtccx_99e833',
+    'Concrete BTCcx 99e833 Share',
+    18,
+    '0x878c6221a0ed90f1d857f192ef75e6c060b037be',
+    UnderlyingAsset['tbaseeth:ctbtccx_99e833'],
+    Networks.test.basechain,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559, CoinFeature.RECEIPT_TOKEN]
+  ),
+  erc20Token(
     '79fcac64-cad2-4c17-b8fc-2930b7022384',
     'tbaseeth:tpdd',
     'MarketplacePDD ALPACA',
