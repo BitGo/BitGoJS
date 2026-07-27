@@ -1,3 +1,15 @@
+> **⚠️ Deprecated.** `@bitgo/utxo-bin` is deprecated. Its successor is
+> [`wasm-utxo-cli`][wasm-cli], the command-line interface shipped with
+> `@bitgo/wasm-utxo` in the [BitGoWASM][bitgowasm] repository, which provides
+> address encoding/decoding and PSBT inspection for UTXO-based coins.
+>
+> `wasm-utxo-cli` is a native binary built from Rust (`cargo install --path .`
+> from `BitGoWASM/packages/wasm-utxo/cli`); it is not published as an npm
+> package. Migrate any `utxo-bin` usage to `wasm-utxo-cli`.
+>
+> [wasm-cli]: https://github.com/BitGo/BitGoWASM/tree/main/packages/wasm-utxo/cli
+> [bitgowasm]: https://github.com/BitGo/BitGoWASM
+
 # `utxo-bin`
 
 This repository contains a CLI tool for parsing BitGo wallet transactions (withdrawals) and
