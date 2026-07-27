@@ -17,6 +17,13 @@ import { setupAgent } from '../../lib/testutil';
  */
 
 describe('PendingApproval codec tests', function () {
+  const attestation = {
+    signature: 'signature',
+    credentialId: 'credential-id',
+    clientDataJSON: 'client-data-json',
+    authenticatorData: 'authenticator-data',
+  };
+
   describe('pendingApprovalRequestParams', function () {
     it('should validate valid params', function () {
       const validParams = {
@@ -52,6 +59,7 @@ describe('PendingApproval codec tests', function () {
         state: 'approved',
         walletPassphrase: 'mySecurePassword',
         otp: '123456',
+        attestation,
         tx: 'transactionHexString',
         xprv: 'xprvString',
         previewPendingTxs: true,
@@ -62,6 +70,7 @@ describe('PendingApproval codec tests', function () {
       assert.strictEqual(decoded.state, validBody.state);
       assert.strictEqual(decoded.walletPassphrase, validBody.walletPassphrase);
       assert.strictEqual(decoded.otp, validBody.otp);
+      assert.deepStrictEqual(decoded.attestation, attestation);
       assert.strictEqual(decoded.tx, validBody.tx);
       assert.strictEqual(decoded.xprv, validBody.xprv);
       assert.strictEqual(decoded.previewPendingTxs, validBody.previewPendingTxs);
@@ -77,6 +86,7 @@ describe('PendingApproval codec tests', function () {
       assert.strictEqual(decoded.state, validBody.state);
       assert.strictEqual(decoded.walletPassphrase, undefined);
       assert.strictEqual(decoded.otp, undefined);
+      assert.strictEqual(decoded.attestation, undefined);
       assert.strictEqual(decoded.tx, undefined);
       assert.strictEqual(decoded.xprv, undefined);
       assert.strictEqual(decoded.previewPendingTxs, undefined);
@@ -166,6 +176,21 @@ describe('PendingApproval codec tests', function () {
       const invalidBody = {
         state: 'approved',
         otp: 123456, // number instead of string
+      };
+
+      assert.throws(() => {
+        assertDecode(t.type(pendingApprovalRequestBody), invalidBody);
+      });
+    });
+
+    it('should reject an incomplete attestation', function () {
+      const invalidBody = {
+        state: 'approved',
+        attestation: {
+          credentialId: 'credential-id',
+          clientDataJSON: 'client-data-json',
+          authenticatorData: 'authenticator-data',
+        },
       };
 
       assert.throws(() => {
@@ -388,6 +413,33 @@ describe('PendingApproval codec tests', function () {
       assert.strictEqual(result.status, 200);
       assert.strictEqual(result.body.id, mockApprovedResponse.id);
       assert.strictEqual(result.body.state, 'approved');
+    });
+
+    it('should pass attestation to approve', async function () {
+      const approvalId = '123456789abcdef';
+      const requestBody = {
+        state: 'approved',
+        walletPassphrase: 'mySecurePassword',
+        attestation,
+      };
+      const approve = sinon.stub().resolves(mockApprovedResponse);
+      const mockPendingApprovalObject = {
+        approve,
+        reject: sinon.stub().resolves(mockRejectedResponse),
+      };
+
+      sinon.stub(BitGo.prototype, 'pendingApprovals').returns({
+        get: sinon.stub().resolves(mockPendingApprovalObject),
+      } as any);
+
+      const result = await agent
+        .put(`/api/v1/pendingapprovals/${approvalId}/express`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      sinon.assert.calledWith(approve, sinon.match({ walletPassphrase: 'mySecurePassword', attestation }));
     });
 
     it('should successfully approve with xprv', async function () {

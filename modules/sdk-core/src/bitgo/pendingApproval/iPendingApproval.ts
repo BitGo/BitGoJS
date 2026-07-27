@@ -1,3 +1,4 @@
+import type { AttestationPayload } from '@bitgo/public-types';
 import { IRequestTracer } from '../../api';
 
 export enum OwnerType {
@@ -28,6 +29,8 @@ export enum Type {
 export interface ApproveOptions {
   walletPassphrase?: string;
   otp?: string;
+  /** WebAuthn proof that the approver authorized the pending transaction intent. */
+  attestation?: AttestationPayload;
   tx?: string;
   xprv?: string;
   previewPendingTxs?: boolean;

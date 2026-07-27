@@ -20,6 +20,13 @@ import { BitGo } from 'bitgo';
 import { setupAgent } from '../../lib/testutil';
 
 describe('V2 PendingApproval API Tests', function () {
+  const attestation = {
+    signature: 'signature',
+    credentialId: 'credential-id',
+    clientDataJSON: 'client-data-json',
+    authenticatorData: 'authenticator-data',
+  };
+
   describe('Codec Validation Tests', function () {
     describe('PendingApprovalParams', function () {
       it('should validate valid params', function () {
@@ -50,6 +57,7 @@ describe('V2 PendingApproval API Tests', function () {
           state: 'approved',
           walletPassphrase: 'mySecurePassword',
           otp: '123456',
+          attestation,
           tx: 'transactionHexString',
           xprv: 'xprvString',
           previewPendingTxs: true,
@@ -60,6 +68,7 @@ describe('V2 PendingApproval API Tests', function () {
         assert.strictEqual(decoded.state, validBody.state);
         assert.strictEqual(decoded.walletPassphrase, validBody.walletPassphrase);
         assert.strictEqual(decoded.otp, validBody.otp);
+        assert.deepStrictEqual(decoded.attestation, attestation);
         assert.strictEqual(decoded.tx, validBody.tx);
         assert.strictEqual(decoded.xprv, validBody.xprv);
         assert.strictEqual(decoded.previewPendingTxs, validBody.previewPendingTxs);
@@ -77,6 +86,15 @@ describe('V2 PendingApproval API Tests', function () {
         assert.throws(() => assertDecode(t.type(PendingApprovalRequestBody), { walletPassphrase: 12345 }));
         assert.throws(() => assertDecode(t.type(PendingApprovalRequestBody), { otp: 123456 }));
         assert.throws(() => assertDecode(t.type(PendingApprovalRequestBody), { previewPendingTxs: 'true' }));
+        assert.throws(() =>
+          assertDecode(t.type(PendingApprovalRequestBody), {
+            attestation: {
+              credentialId: 'credential-id',
+              clientDataJSON: 'client-data-json',
+              authenticatorData: 'authenticator-data',
+            },
+          })
+        );
       });
     });
 
@@ -430,6 +448,37 @@ describe('V2 PendingApproval API Tests', function () {
 
         assert.strictEqual(result.status, 200);
         sinon.assert.calledWith(mockPendingApprovalObject.approve, sinon.match({ otp: '123456' }));
+      });
+
+      it('should pass attestation to approve', async function () {
+        const coin = 'tbtc';
+        const approvalId = '123456789abcdef';
+        const requestBody = {
+          state: 'approved',
+          walletPassphrase: 'mySecurePassword',
+          attestation,
+        };
+        const approve = sinon.stub().resolves(mockApprovedResponse);
+        const mockPendingApprovalObject = {
+          approve,
+          reject: sinon.stub().resolves(mockRejectedResponse),
+        };
+        const mockCoin = {
+          pendingApprovals: sinon.stub().returns({
+            get: sinon.stub().resolves(mockPendingApprovalObject),
+          }),
+        };
+
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .put(`/api/v2/${coin}/pendingapprovals/${approvalId}`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 200);
+        sinon.assert.calledWith(approve, sinon.match({ walletPassphrase: 'mySecurePassword', attestation }));
       });
 
       it('should handle transaction request with fanout', async function () {

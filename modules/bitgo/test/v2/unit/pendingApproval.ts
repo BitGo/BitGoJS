@@ -33,6 +33,12 @@ describe('Pending Approvals:', () => {
 
   const coin = 'tbtc';
   const walletId = 'wallet_id';
+  const attestation = {
+    signature: 'signature',
+    credentialId: 'credential-id',
+    clientDataJSON: 'client-data-json',
+    authenticatorData: 'authenticator-data',
+  };
 
   const pendingApprovalData: PendingApprovalData = {
     id: 'pa0',
@@ -145,6 +151,25 @@ describe('Pending Approvals:', () => {
     await pendingApproval.approve({});
     recreateTransactionTssStub.notCalled.should.be.true();
     recreateTransactionStub.notCalled.should.be.true();
+
+    paScope.isDone().should.be.true();
+  });
+
+  it('should pass attestation without bypassing multisig half-signing', async () => {
+    const pendingApproval = new PendingApproval(bitgo, basecoin, pendingApprovalData, wallet);
+    const halfSignedTxHex = 'half-signed-transaction';
+    const paScope = nock(bgUrl)
+      .put(`/api/v2/${coin}/pendingapprovals/${pendingApprovalData.id}`, {
+        state: 'approved',
+        attestation,
+        halfSigned: { txHex: halfSignedTxHex },
+      })
+      .reply(200, {
+        ...pendingApprovalData,
+        state: 'approved',
+      });
+
+    await pendingApproval.approve({ tx: halfSignedTxHex, attestation });
 
     paScope.isDone().should.be.true();
   });
