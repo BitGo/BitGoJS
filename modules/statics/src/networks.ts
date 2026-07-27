@@ -1431,6 +1431,31 @@ class ZCashTestnet extends Testnet implements UtxoNetwork {
   explorerUrl = 'https://testnet.zcashexplorer.app/transactions/';
 }
 
+/*
+ * Pearl is served through @bitgo/wasm-utxo and is deliberately NOT registered as a
+ * network in @bitgo/utxo-lib.
+ *
+ * `utxolibName` is required by UtxoNetwork, so it carries the wasm-utxo `CoinName`
+ * instead. It must not be resolved via `utxolib.networks[...]` - that yields
+ * undefined for Pearl and throws `TypeError: invalid network` downstream. Use the
+ * wasm-utxo coin name directly.
+ */
+class Pearl extends Mainnet implements UtxoNetwork {
+  name = 'Pearl';
+  family = CoinFamily.PEARL;
+  /** wasm-utxo CoinName, not a utxo-lib network - see note above */
+  utxolibName = 'pearl';
+  explorerUrl = undefined;
+}
+
+class PearlTestnet extends Testnet implements UtxoNetwork {
+  name = 'PearlTestnet';
+  family = CoinFamily.PEARL;
+  /** wasm-utxo CoinName, not a utxo-lib network - see note above */
+  utxolibName = 'tpearl';
+  explorerUrl = undefined;
+}
+
 class Near extends Mainnet implements AccountNetwork {
   name = 'Near';
   family = CoinFamily.NEAR;
@@ -2953,6 +2978,7 @@ export const Networks = {
     plume: Object.freeze(new Plume()),
     polygon: Object.freeze(new Polygon()),
     polyx: Object.freeze(new Polymesh()),
+    pearl: Object.freeze(new Pearl()),
     phrs: Object.freeze(new Pharos()),
     ctc: Object.freeze(new Creditcoin()),
     hypeevm: Object.freeze(new HypeEVM()),
@@ -3087,6 +3113,7 @@ export const Networks = {
     mantra: Object.freeze(new MantraTestnet()),
     polygon: Object.freeze(new PolygonTestnet()),
     polyx: Object.freeze(new PolymeshTestnet()),
+    pearl: Object.freeze(new PearlTestnet()),
     phrs: Object.freeze(new PharosTestnet()),
     ctc: Object.freeze(new CreditcoinTestnet()),
     hypeevm: Object.freeze(new HypeEVMTestnet()),
