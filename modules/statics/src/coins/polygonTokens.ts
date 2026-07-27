@@ -1654,6 +1654,15 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:seag'],
     POLYGON_TOKEN_FEATURES
   ),
+  polygonErc20(
+    '032cece7-7437-4a05-ab0d-a0766be74c0e',
+    'polygon:infra',
+    'INFRACOINN',
+    18,
+    '0x2fc03e5fe153f4b547571d996e942a07f77440e3',
+    UnderlyingAsset['polygon:infra'],
+    POLYGON_TOKEN_FEATURES
+  ),
   tpolygonErc20(
     '13dd4ab7-2d94-493c-9a61-323f6300f7e5',
     'tpolygon:tusdl',
