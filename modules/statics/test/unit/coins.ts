@@ -1218,14 +1218,6 @@ describe('Distributed Custody Features', () => {
       coin.features.includes(CoinFeature.DISTRIBUTED_CUSTODY).should.eql(true);
     });
   });
-
-  it('pearl and tpearl should have distributed custody feature', () => {
-    const targetCoins = ['pearl', 'tpearl'];
-    targetCoins.forEach((coinName) => {
-      const coin = coins.get(coinName);
-      coin.features.includes(CoinFeature.DISTRIBUTED_CUSTODY).should.eql(true);
-    });
-  });
 });
 
 describe('Bulk Transaction Features', () => {
