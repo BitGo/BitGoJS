@@ -3553,6 +3553,7 @@ export enum UnderlyingAsset {
   'tbaseeth:tpdd' = 'tbaseeth:tpdd',
   'tbaseeth:tnmr' = 'tbaseeth:tnmr',
   'tbaseeth:tabeq' = 'tbaseeth:tabeq',
+  'tbaseeth:ctbtccx_99e833' = 'tbaseeth:ctbtccx_99e833',
 
   // Og mainnet tokens
   'og:wog' = 'og:wog',
