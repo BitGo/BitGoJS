@@ -6,13 +6,11 @@
 >
 > New code should depend on `@bitgo/wasm-utxo`. Existing address generation,
 > PSBT signing, transaction building, recovery, and BIP-322 flows have already
-> been migrated off `@bitgo/utxo-lib` in `abstract-utxo` (see Linear project
-> [Remove utxolib from abstract-utxo][linear-project]). Do not build new
+> been migrated off `@bitgo/utxo-lib` in `abstract-utxo`. Do not build new
 > integrations against this package.
 >
 > [wasm-utxo]: https://github.com/BitGo/BitGoWASM/tree/main/packages/wasm-utxo
 > [bitgowasm]: https://github.com/BitGo/BitGoWASM
-> [linear-project]: https://linear.app/bitgo/project/remove-utxolib-from-abstract-utxo-0deba0897979
 
 # BitGo UTXO library
 
