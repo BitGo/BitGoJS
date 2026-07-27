@@ -14,6 +14,7 @@ describe('DefiVault', function () {
   function mockRequest(result: any) {
     return {
       send: sinon.stub().returnsThis(),
+      set: sinon.stub().returnsThis(),
       query: sinon.stub().returnsThis(),
       result: sinon.stub().resolves(result),
     };
@@ -71,6 +72,7 @@ describe('DefiVault', function () {
       id: 'test-wallet-id',
       coin: 'eth',
       keys: ['user-key', 'backup-key', 'bitgo-key'],
+      enterprise: 'test-enterprise-id',
     };
 
     wallet = new Wallet(mockBitGo, mockBaseCoin, mockWalletData);
@@ -110,6 +112,7 @@ describe('DefiVault', function () {
 
       result.should.deepEqual(vaultConfig);
       mockBitGo.get.calledWith('https://bitgo.com/api/defi-service/v1/vaults/vlt-concrete-1').should.be.true();
+      req.set.calledWith('enterprise-id', 'test-enterprise-id').should.be.true();
     });
 
     it('should throw if vaultId is missing', async function () {
