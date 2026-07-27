@@ -168,8 +168,12 @@ export class MissingEncryptedKeychainError extends Error {
 }
 
 export class IncorrectPasswordError extends Error {
+  public code = 'wallet_passphrase_incorrect';
+  public status = 401;
+
   public constructor(message?: string) {
-    super(message || 'Incorrect password');
+    super(message || 'unable to decrypt keychain with the given wallet passphrase');
+    this.name = 'IncorrectPasswordError';
   }
 }
 

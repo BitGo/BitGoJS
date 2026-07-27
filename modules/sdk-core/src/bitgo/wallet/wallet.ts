@@ -2562,7 +2562,7 @@ export class Wallet implements IWallet {
       }
       userPrv = await decryptKeychainPrivateKey(this.bitgo, userKeychain, params.walletPassphrase);
       if (!userPrv) {
-        throw new Error('failed to decrypt user keychain');
+        throw new IncorrectPasswordError();
       }
     }
     return userPrv;
@@ -4813,16 +4813,16 @@ export class Wallet implements IWallet {
     await this.tssUtils.deleteSignatureShares(txRequestId, reqId);
 
     try {
-      const signedTxRequest = await this.tssUtils.signEddsaTssUsingExternalSigner(
+      return await this.tssUtils.signEddsaTssUsingExternalSigner(
         txRequestId,
         params.customCommitmentGeneratingFunction,
         params.customRShareGeneratingFunction,
         params.customGShareGeneratingFunction,
         reqId
       );
-      return signedTxRequest;
     } catch (e) {
-      throw new Error('failed to sign transaction ' + e);
+      debug('failed to sign transaction %O', e);
+      throw e;
     }
   }
 
@@ -4919,9 +4919,9 @@ export class Wallet implements IWallet {
       throw new Error('Generator function for S share required to sign transactions with External Signer.');
     }
 
+    assert(this.tssUtils, 'tssUtils must be defined');
     try {
-      assert(this.tssUtils, 'tssUtils must be defined');
-      const signedTxRequest = await this.tssUtils.signEcdsaTssUsingExternalSigner(
+      return await this.tssUtils.signEcdsaTssUsingExternalSigner(
         {
           txRequest: txRequestId,
           reqId: params.reqId || new RequestTracer(),
@@ -4932,9 +4932,9 @@ export class Wallet implements IWallet {
         params.customMuDeltaShareGeneratingFunction,
         params.customSShareGeneratingFunction
       );
-      return signedTxRequest;
     } catch (e) {
-      throw new Error('failed to sign transaction ' + e);
+      debug('failed to sign transaction %O', e);
+      throw e;
     }
   }
 
@@ -4974,9 +4974,9 @@ export class Wallet implements IWallet {
       );
     }
 
+    assert(this.tssUtils, 'tssUtils must be defined');
     try {
-      assert(this.tssUtils, 'tssUtils must be defined');
-      const signedTxRequest = await this.tssUtils.signEddsaMPCv2TssUsingExternalSigner(
+      return await this.tssUtils.signEddsaMPCv2TssUsingExternalSigner(
         {
           txRequest: txRequestId,
           reqId: params.reqId || new RequestTracer(),
@@ -4985,9 +4985,9 @@ export class Wallet implements IWallet {
         params.customEddsaMPCv2SigningRound2GenerationFunction,
         params.customEddsaMPCv2SigningRound3GenerationFunction
       );
-      return signedTxRequest;
     } catch (e) {
-      throw new Error('failed to sign transaction ' + e);
+      debug('failed to sign transaction %O', e);
+      throw e;
     }
   }
 
@@ -5021,9 +5021,9 @@ export class Wallet implements IWallet {
       throw new Error('Generator function for MPCv2 Round 3 share required to sign transactions with External Signer.');
     }
 
+    assert(this.tssUtils, 'tssUtils must be defined');
     try {
-      assert(this.tssUtils, 'tssUtils must be defined');
-      const signedTxRequest = await this.tssUtils.signEcdsaMPCv2TssUsingExternalSigner(
+      return await this.tssUtils.signEcdsaMPCv2TssUsingExternalSigner(
         {
           txRequest: txRequestId,
           reqId: params.reqId || new RequestTracer(),
@@ -5032,9 +5032,9 @@ export class Wallet implements IWallet {
         params.customMPCv2SigningRound2GenerationFunction,
         params.customMPCv2SigningRound3GenerationFunction
       );
-      return signedTxRequest;
     } catch (e) {
-      throw new Error('failed to sign transaction ' + e);
+      debug('failed to sign transaction %O', e);
+      throw e;
     }
   }
 
@@ -5056,23 +5056,23 @@ export class Wallet implements IWallet {
       throw new Error('prv required to sign transactions with TSS');
     }
 
+    let txRequest: string | TxRequest = params.txPrebuild.txRequestId;
+    let txParams: TransactionParams | undefined = params.txPrebuild.buildParams;
+
+    // EdDSA MPCv2 re-sign path: buildParams is absent when the UI calls signAndSendTxRequest with
+    // only txRequestId. Derive txParams from the persisted intent so verifyTransaction receives
+    // the correct recipients before DSG starts. Other TSS variants are unaffected by the guard.
+    if (!txParams && this.multisigTypeVersion() === 'MPCv2' && this.baseCoin.getMPCAlgorithm() === 'eddsa') {
+      txRequest = await getTxRequest(
+        this.bitgo,
+        this.id(),
+        params.txPrebuild.txRequestId,
+        params.reqId || new RequestTracer()
+      );
+      txParams = txParamsFromIntent(txRequest.intent, this.baseCoin.getChain());
+    }
+
     try {
-      let txRequest: string | TxRequest = params.txPrebuild.txRequestId;
-      let txParams: TransactionParams | undefined = params.txPrebuild.buildParams;
-
-      // EdDSA MPCv2 re-sign path: buildParams is absent when the UI calls signAndSendTxRequest with
-      // only txRequestId. Derive txParams from the persisted intent so verifyTransaction receives
-      // the correct recipients before DSG starts. Other TSS variants are unaffected by the guard.
-      if (!txParams && this.multisigTypeVersion() === 'MPCv2' && this.baseCoin.getMPCAlgorithm() === 'eddsa') {
-        txRequest = await getTxRequest(
-          this.bitgo,
-          this.id(),
-          params.txPrebuild.txRequestId,
-          params.reqId || new RequestTracer()
-        );
-        txParams = txParamsFromIntent(txRequest.intent, this.baseCoin.getChain());
-      }
-
       return await this.tssUtils!.signTxRequest({
         txRequest,
         txParams,
@@ -5081,7 +5081,8 @@ export class Wallet implements IWallet {
         apiVersion: params.apiVersion,
       });
     } catch (e) {
-      throw new Error('failed to sign transaction ' + e);
+      debug('failed to sign transaction %O', e);
+      throw e;
     }
   }
 
@@ -5383,11 +5384,7 @@ export class Wallet implements IWallet {
     //  which means that the user is handling the signing in external signing mode
     if (!customSigningFunction && keychains?.[0]?.encryptedPrv && walletPassphrase) {
       if (!(await decryptKeychainPrivateKey(this.bitgo, keychains[0], walletPassphrase))) {
-        const error: Error & { code?: string } = new Error(
-          `unable to decrypt keychain with the given wallet passphrase`
-        );
-        error.code = 'wallet_passphrase_incorrect';
-        throw error;
+        throw new IncorrectPasswordError();
       }
     }
     return keychains;

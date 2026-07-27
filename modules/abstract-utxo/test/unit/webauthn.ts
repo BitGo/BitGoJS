@@ -45,7 +45,7 @@ describe('webauthn passphrase decryption', function () {
 
   it('should throw when all passphrases are wrong', async function () {
     await assert.rejects(() => wallet.getUserPrv({ keychain, walletPassphrase: 'wrong' }), {
-      message: 'failed to decrypt user keychain',
+      message: 'unable to decrypt keychain with the given wallet passphrase',
     });
   });
 });

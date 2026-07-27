@@ -33,7 +33,7 @@ export async function retryPromise<T>(
       if (err.code === 'ECONNREFUSED') {
         onError(err, tryCount);
       } else {
-        throw new Error(err);
+        throw err;
       }
     }
 
