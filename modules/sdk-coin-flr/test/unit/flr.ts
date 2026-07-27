@@ -117,6 +117,55 @@ describe('flr', function () {
     });
   });
 
+  describe('getSignablePayload and addSignatureToTransaction (atomic C→P export)', function () {
+    it('should return 32-byte SHA-256 hash for atomic tx', async function () {
+      const signablePayload = await tflrCoin.getSignablePayload(EXPORT_C_TEST_DATA.unsignedTxHex);
+      signablePayload.should.be.instanceof(Buffer);
+      signablePayload.length.should.equal(32);
+    });
+
+    it('should produce the same signablePayload as the FLRP builder', async function () {
+      // FLR getSignablePayload must agree with the FLRP builder's signablePayload
+      // for the same atomic tx hex — both parties of TSS must hash identically.
+      const flrpModule = await import('@bitgo/sdk-coin-flrp');
+      const flrpFactory = new flrpModule.FlrPLib.TransactionBuilderFactory(coins.get('tflrp'));
+      const txBuilder = flrpFactory.from(EXPORT_C_TEST_DATA.unsignedTxHex);
+      const tx = await txBuilder.build();
+      const expectedPayload = Buffer.from((tx as any).signablePayload);
+
+      const actualPayload = await tflrCoin.getSignablePayload(EXPORT_C_TEST_DATA.unsignedTxHex);
+      actualPayload.should.deepEqual(expectedPayload);
+    });
+
+    it('addSignatureToTransaction should produce identical result to FLRP builder sign()', async function () {
+      // Simulate TSS post-ceremony: sign the payload externally, then inject
+      // via addSignatureToTransaction. This must equal the result of signing
+      // via the FLRP builder directly (the reference path).
+      const flrpModule = await import('@bitgo/sdk-coin-flrp');
+      const flrpFactory = new flrpModule.FlrPLib.TransactionBuilderFactory(coins.get('tflrp'));
+
+      // Reference: sign via FLRP builder
+      const txBuilderForSign = flrpFactory.from(EXPORT_C_TEST_DATA.unsignedTxHex);
+      txBuilderForSign.sign({ key: EXPORT_C_TEST_DATA.privKey });
+      const signedTx = await txBuilderForSign.build();
+      const signedHexViaBuilder = signedTx.toBroadcastFormat();
+
+      // Extract the signature from the builder-signed tx, then re-inject it
+      // via FLR's addSignatureToTransaction (the TSS server path).
+      const parsedBuilder = flrpFactory.from(signedHexViaBuilder);
+      const parsedTx = await parsedBuilder.build();
+      const sigHex = parsedTx.signature[0];
+      const sigBuffer = Buffer.from(sigHex.startsWith('0x') ? sigHex.slice(2) : sigHex, 'hex');
+
+      const signedHexViaInject = await tflrCoin.addSignatureToTransaction(
+        EXPORT_C_TEST_DATA.unsignedTxHex,
+        sigBuffer
+      );
+
+      signedHexViaInject.should.equal(signedHexViaBuilder);
+    });
+  });
+
   describe('Address Validation', function () {
     it('should validate valid eth address', function () {
       const address = '0x1374a2046661f914d1687d85dbbceb9ac7910a29';

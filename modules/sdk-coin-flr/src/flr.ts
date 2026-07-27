@@ -97,6 +97,37 @@ export class Flr extends AbstractEthLikeNewCoins {
     return isAvalancheAtomicTx(unsignedTx);
   }
 
+  /**
+   * Get the signable payload for a transaction. For atomic cross-chain
+   * transactions (codec prefix 0x0000), route to the FLRP atomic builder
+   * which knows how to parse PVM/EVM atomic format and compute SHA-256(txBody).
+   * For regular EVM transactions, use the inherited EVM path.
+   */
+  async getSignablePayload(serializedTx: string): Promise<Buffer> {
+    const hexWithout0x = serializedTx.startsWith('0x') ? serializedTx.slice(2) : serializedTx;
+    if (hexWithout0x.startsWith('0000')) {
+      const txBuilder = this.getAtomicBuilder().from(serializedTx);
+      const tx = (await txBuilder.build()) as FlrPLib.Transaction;
+      return Buffer.from(tx.signablePayload);
+    }
+    return super.getSignablePayload(serializedTx);
+  }
+
+  /**
+   * Inject an MPC-produced signature into an unsigned atomic transaction.
+   * Called by the server after TSS signing to assemble the final signed tx.
+   * Only applies to cross-chain export atomic transactions (codec prefix 0x0000).
+   * @param txHex - Unsigned atomic transaction hex
+   * @param signature - 65-byte ECDSA signature (r || s || recovery)
+   * @returns Signed transaction hex
+   */
+  async addSignatureToTransaction(txHex: string, signature: Buffer): Promise<string> {
+    const txBuilder = this.getAtomicBuilder().from(txHex);
+    const tx = await txBuilder.build();
+    (tx as FlrPLib.Transaction).addExternalSignature(new Uint8Array(signature));
+    return tx.toBroadcastFormat();
+  }
+
   protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
     return this.buildUnsignedSweepTxnMPCv2(params);
   }
