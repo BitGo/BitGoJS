@@ -6,4 +6,5 @@ export * as btg from './btg';
 export * as ltc from './ltc';
 export * as dash from './dash';
 export * as doge from './doge';
+export * as pearl from './pearl';
 export * as zec from './zec';

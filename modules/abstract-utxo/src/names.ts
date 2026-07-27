@@ -1,4 +1,4 @@
-export const utxoCoinsMainnet = ['btc', 'bch', 'bcha', 'bsv', 'btg', 'dash', 'doge', 'ltc', 'zec'] as const;
+export const utxoCoinsMainnet = ['btc', 'bch', 'bcha', 'bsv', 'btg', 'dash', 'doge', 'ltc', 'pearl', 'zec'] as const;
 export const utxoCoinsTestnet = [
   'tbtc',
   'tbtc4',
@@ -11,6 +11,7 @@ export const utxoCoinsTestnet = [
   'tdash',
   'tdoge',
   'tltc',
+  'tpearl',
   'tzec',
 ] as const;
 
@@ -62,6 +63,8 @@ function getBaseNameFromMainnet(coinName: UtxoCoinNameMainnet): string {
       return 'Dogecoin';
     case 'ltc':
       return 'Litecoin';
+    case 'pearl':
+      return 'Pearl';
     case 'zec':
       return 'ZCash';
   }

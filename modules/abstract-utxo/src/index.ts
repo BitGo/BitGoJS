@@ -21,4 +21,5 @@ export * from './impl/btg';
 export * from './impl/ltc';
 export * from './impl/dash';
 export * from './impl/doge';
+export * from './impl/pearl';
 export * from './impl/zec';
