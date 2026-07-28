@@ -1473,4 +1473,18 @@ export const ofcHoodethTokens = [
     true,
     'hoodeth'
   ),
+  ofcerc20(
+    '45200a7c-7641-46c4-93df-41321bd4cab3',
+    'ofchoodeth:cashcat',
+    'Cash Cat',
+    18,
+    UnderlyingAsset['hoodeth:cashcat'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'hoodeth'
+  ),
 ];

@@ -1,5 +1,5 @@
 import { tadaToken, adaToken } from '../account';
-import { UnderlyingAsset } from '../base';
+import { CoinFeature, UnderlyingAsset } from '../base';
 import { ADA_TOKEN_FEATURES, ADA_TOKEN_FEATURES_EXCLUDE_SINGAPORE } from '../coinFeatures';
 
 export const adaTokens = [
@@ -145,5 +145,27 @@ export const adaTokens = [
     'asset19e9dq59euafqysqugza92jdvwfx882gt2hq5rm',
     UnderlyingAsset['ada:asnek'],
     ADA_TOKEN_FEATURES
+  ),
+  adaToken(
+    '397a7ea8-0439-4f10-a73e-ba02b0d3fa56',
+    'ada:usdr',
+    'RealFi USDr',
+    6,
+    '7d9e4a0ee1a3f5d5ff8159ea91a83310cf2795ee7a87170c7aea05ae',
+    'USDr',
+    'asset19k6sv4ry9cu7pd25lry27k0crt3x3hyc5zgv3g',
+    UnderlyingAsset['ada:usdr'],
+    [...ADA_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  adaToken(
+    'e9d2b3bb-a668-404d-a6bf-bf2dfefed4d2',
+    'ada:susdr',
+    'RealFi sUSDr',
+    6,
+    '7d9e4a0ee1a3f5d5ff8159ea91a83310cf2795ee7a87170c7aea05ae',
+    'sUSDr',
+    'asset1n3yafcjhhu6dg9hgfs3s7vklz0avg4ygp8dt7z',
+    UnderlyingAsset['ada:susdr'],
+    [...ADA_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
 ];

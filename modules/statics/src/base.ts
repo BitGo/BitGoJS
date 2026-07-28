@@ -2083,6 +2083,7 @@ export enum UnderlyingAsset {
   'hoodeth:zs' = 'hoodeth:zs',
   'hoodeth:spcx' = 'hoodeth:spcx',
   'hoodeth:skhy' = 'hoodeth:skhy',
+  'hoodeth:cashcat' = 'hoodeth:cashcat',
   'hemieth:hemi' = 'hemieth:hemi',
   'hemieth:hemibtc' = 'hemieth:hemibtc',
   'usdt0:stable' = 'usdt0:stable',
@@ -3108,6 +3109,7 @@ export enum UnderlyingAsset {
   'polygon:gmc' = 'polygon:gmc',
   'polygon:wpay' = 'polygon:wpay',
   'polygon:seag' = 'polygon:seag',
+  'polygon:infra' = 'polygon:infra',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -4265,6 +4267,8 @@ export enum UnderlyingAsset {
   'ada:lcc' = 'ada:lcc',
   'ada:awlf' = 'ada:awlf',
   'ada:asnek' = 'ada:asnek',
+  'ada:usdr' = 'ada:usdr',
+  'ada:susdr' = 'ada:susdr',
 
   // Canton testnet tokens
   'tcanton:testcoin1' = 'tcanton:testcoin1',

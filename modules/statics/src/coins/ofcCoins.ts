@@ -4458,6 +4458,13 @@ export const ofcCoins = [
     0,
     UnderlyingAsset['polygon:seag']
   ),
+  ofcPolygonErc20(
+    '2fc2db43-5e57-48f3-9ac6-e90963ebd23e',
+    'ofcpolygon:infra',
+    'INFRACOINN',
+    18,
+    UnderlyingAsset['polygon:infra']
+  ),
 
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
@@ -6048,7 +6055,13 @@ export const ofcCoins = [
     10,
     UnderlyingAsset['canton:ibenji']
   ),
-  ofcCantonToken('784c76fb-59c6-4826-b72e-20e996a35739', 'ofccanton:ceth', 'cETH', 10, UnderlyingAsset['canton:ceth']),
+  ofcCantonToken(
+    '784c76fb-59c6-4826-b72e-20e996a35739',
+    'ofccanton:ceth',
+    'Canton Ethereum',
+    10,
+    UnderlyingAsset['canton:ceth']
+  ),
   ofcCantonToken(
     '092883f7-c65d-446d-8a92-ad25c39e6e93',
     'ofccanton:usd1',
@@ -6331,6 +6344,8 @@ export const ofcCoins = [
     UnderlyingAsset['ada:wmtx']
   ),
   ofcAdaToken('e8f2a1b3-4c5d-4e6f-8a0b-1c2d3e4f5a6b', 'ofcada:usdcx', 'USDCx', 6, UnderlyingAsset['ada:usdcx']),
+  ofcAdaToken('ed2484fd-0dc1-4737-bd40-361a9ed091de', 'ofcada:usdr', 'RealFi USDr', 6, UnderlyingAsset['ada:usdr']),
+  ofcAdaToken('c2c5cac2-a642-4acf-926b-6923412105cb', 'ofcada:susdr', 'RealFi sUSDr', 6, UnderlyingAsset['ada:susdr']),
   tofcAdaToken(
     '1f4e7747-f825-4107-a71f-766e847d557b',
     'ofctada:water',

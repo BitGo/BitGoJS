@@ -1034,6 +1034,16 @@ export const hoodethTokens = [
     EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20Token(
+    '744a1738-6b93-41ae-8884-2faa8f1419f5',
+    'hoodeth:cashcat',
+    'Cash Cat',
+    18,
+    '0x020bfc650a365f8bb26819deaabf3e21291018b4',
+    UnderlyingAsset['hoodeth:cashcat'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
     '3493d608-fd3e-45dc-926d-783d54a8fe4d',
     'thoodeth:amzn',
     'Amazon',
