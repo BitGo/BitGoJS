@@ -210,6 +210,9 @@
       "path": "../sdk-coin-osmo"
     },
     {
+      "path": "../sdk-coin-pearl"
+    },
+    {
       "path": "../sdk-coin-polygon"
     },
     {
