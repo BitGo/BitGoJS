@@ -5,6 +5,7 @@ export const expectedColdFeatures = {
     'polygon',
     'tpolygon',
     'hteth',
+    'sepeth',
     'opeth',
     'topeth',
     'arbeth',

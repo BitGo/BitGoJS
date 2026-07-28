@@ -831,6 +831,14 @@ export const ofcCoins = [
     CoinKind.CRYPTO
   ),
   tofc(
+    '12dc5b36-de2b-4cd4-9282-e7325407db0a',
+    'ofctsepeth',
+    'Test Sepolia Ether',
+    18,
+    UnderlyingAsset.ETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
     'f43d0558-8c07-4927-af7f-33947fd310c9',
     'ofctavaxc',
     'Test Avalanche C-Chain',
