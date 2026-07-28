@@ -1,5 +1,6 @@
 import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
+import { AttestationPayload } from '@bitgo/public-types';
 import { BitgoExpressError } from '../../schemas/error';
 
 export const pendingApprovalRequestParams = {
@@ -14,6 +15,8 @@ export const pendingApprovalRequestBody = {
   walletPassphrase: optional(t.string),
   /** One-time password for 2FA verification */
   otp: optional(t.string),
+  /** WebAuthn proof that the approver authorized the pending transaction intent */
+  attestation: optional(AttestationPayload),
   /** Pre-signed transaction hex to use instead of reconstructing (for transactionRequest approvals) */
   tx: optional(t.string),
   /** Extended private key as alternative to walletPassphrase (for transactionRequest approvals) */

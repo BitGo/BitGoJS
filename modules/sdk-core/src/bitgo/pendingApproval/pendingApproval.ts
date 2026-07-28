@@ -3,6 +3,7 @@
  */
 import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
+import type { AttestationPayload } from '@bitgo/public-types';
 import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import {
@@ -31,11 +32,10 @@ type PreApproveResult = {
   halfSigned?: string;
 };
 
-// TODO(WCN-541): add optional attestation pass-through for PUT /pendingapprovals/:id (deferred
-// until multisig attestation, WCN-539, is verified end-to-end on staging).
 type ApprovePendingApprovalRequestBody = {
   state: 'approved';
   otp: string | undefined;
+  attestation?: AttestationPayload;
   halfSigned?: string | Omit<PreApproveResult, 'halfSigned'>;
 };
 
@@ -185,6 +185,9 @@ export class PendingApproval implements IPendingApproval {
       const transaction = await this.preApprove(params, reqId);
 
       const approvalParams: ApprovePendingApprovalRequestBody = { state: 'approved', otp: params.otp };
+      if (params.attestation) {
+        approvalParams.attestation = params.attestation;
+      }
       if (transaction) {
         // if the transaction already has a half signed property, we take that directly
         approvalParams.halfSigned = transaction.halfSigned || transaction;
