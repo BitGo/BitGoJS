@@ -65,6 +65,7 @@ export class DefiVault implements IDefiVault {
     }
     const raw = await this.bitgo
       .get(this.bitgo.microservicesUrl(`/api/defi-service/v1/vaults/${params.vaultId}`))
+      .set('enterprise-id', this.wallet.toJSON().enterprise)
       .result();
     return decodeWithCodec(GetVaultResponse, raw, 'getVaultConfig');
   }
