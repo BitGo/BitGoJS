@@ -392,6 +392,15 @@ export const ofcCoins = [
     UnderlyingAsset.INKETH,
     CoinKind.CRYPTO
   ),
+  ofc('76298685-14db-4dad-a7fd-ebaff74ce334', 'ofcgasevm', 'Neo X', 18, UnderlyingAsset.GASEVM, CoinKind.CRYPTO),
+  tofc(
+    '7c21f2f6-1d38-474c-bf25-290440a916c4',
+    'ofctgasevm',
+    'Testnet Neo X',
+    18,
+    UnderlyingAsset.GASEVM,
+    CoinKind.CRYPTO
+  ),
   ofc('f58a94a1-9f67-423a-bfd0-298f1b2411d8', 'ofcscrolleth', 'Scroll', 18, UnderlyingAsset.SCROLLETH, CoinKind.CRYPTO),
   tofc(
     '2995fd87-c9b8-4541-a112-17b0f9f74bfc',
