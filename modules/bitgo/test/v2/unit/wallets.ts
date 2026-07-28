@@ -4440,6 +4440,34 @@ describe('V2 Wallets:', function () {
     });
   });
 
+  describe('cancelShare', function () {
+    it('should send DELETE to /walletshare/:id and return the result', async function () {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      bitgo.initializeTestVars();
+      const basecoin = bitgo.coin('tbtc');
+      const wallets = basecoin.wallets();
+      const bgUrl = common.Environments[bitgo.getEnv()].uri;
+      const shareId = 'abc123shareId';
+
+      nock(bgUrl)
+        .delete(`/api/v2/tbtc/walletshare/${shareId}`)
+        .reply(200, { changed: true, state: 'canceled' });
+
+      const result = await wallets.cancelShare({ walletShareId: shareId });
+      result.should.have.property('changed', true);
+      result.should.have.property('state', 'canceled');
+    });
+
+    it('should throw if walletShareId is missing', async function () {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      bitgo.initializeTestVars();
+      const basecoin = bitgo.coin('tbtc');
+      const wallets = basecoin.wallets();
+
+      await wallets.cancelShare({}).should.be.rejectedWith('walletShareId must be a string');
+    });
+  });
+
   describe('List Wallets:', function () {
     it('should list wallets with skipReceiveAddress = true', async function () {
       const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });

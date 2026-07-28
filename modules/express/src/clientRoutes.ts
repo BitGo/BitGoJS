@@ -863,6 +863,15 @@ async function handleV2AcceptWalletShare(req: express.Request) {
 }
 
 /**
+ * handle cancel wallet share
+ */
+export async function handleV2CancelWalletShare(req: ExpressApiRouteRequest<'express.wallet.cancelShare', 'delete'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  return coin.wallets().cancelShare({ walletShareId: req.decoded.id });
+}
+
+/**
  * handle wallet sign transaction
  */
 async function handleV2SignTxWallet(req: ExpressApiRouteRequest<'express.wallet.signtx', 'post'>) {
@@ -2060,6 +2069,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.v2.address.derive', [prepareBitGo(config), typedPromiseWrapper(handleV2DeriveAddress)]);
 
   router.post('express.wallet.share', [prepareBitGo(config), typedPromiseWrapper(handleV2ShareWallet)]);
+  router.delete('express.wallet.cancelShare', [prepareBitGo(config), typedPromiseWrapper(handleV2CancelWalletShare)]);
   app.post(
     '/api/v2/:coin/walletshare/:id/acceptshare',
     parseBody,

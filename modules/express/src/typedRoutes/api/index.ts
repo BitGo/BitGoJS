@@ -40,6 +40,7 @@ import { PostCoinSignTx } from './v2/coinSignTx';
 import { PostWalletSignTx } from './v2/walletSignTx';
 import { PostWalletTxSignTSS } from './v2/walletTxSignTSS';
 import { PostShareWallet } from './v2/shareWallet';
+import { DeleteCancelWalletShare } from './v2/cancelWalletShare';
 import { PutExpressWalletUpdate } from './v2/expressWalletUpdate';
 import { PostFanoutUnspents } from './v2/fanoutUnspents';
 import { PostSendMany } from './v2/sendmany';
@@ -344,6 +345,9 @@ export const ExpressWalletSigningApiSpec = apiSpec({
 export const ExpressWalletManagementApiSpec = apiSpec({
   'express.wallet.share': {
     post: PostShareWallet,
+  },
+  'express.wallet.cancelShare': {
+    delete: DeleteCancelWalletShare,
   },
   'express.wallet.update': {
     put: PutExpressWalletUpdate,
