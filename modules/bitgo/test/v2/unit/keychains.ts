@@ -588,6 +588,28 @@ describe('V2 Keychains', function () {
       });
 
       ['tbsc'].forEach((coin) => {
+        it('should reject safe root creation when the resolved ceremony is legacy MPCv1', async function () {
+          nock(bgUrl).get('/api/v2/tss/settings').reply(200, {
+            coinSettings: {},
+          });
+          const createKeychains = sandbox
+            .stub(ECDSAUtils.EcdsaUtils.prototype, 'createKeychains')
+            .resolves(stubbedKeychainsTriplet);
+          await bitgo
+            .coin(coin)
+            .keychains()
+            .createMpc({
+              multisigType: 'tss',
+              passphrase: 'password',
+              enterprise: 'enterprise',
+              safeId: 'safeId',
+            })
+            .should.be.rejectedWith(/legacy MPCv1 ceremony/);
+          createKeychains.called.should.be.false();
+        });
+      });
+
+      ['tbsc'].forEach((coin) => {
         it('should pass webauthnInfo to createKeychains for ECDSA TSS', async function () {
           nock(bgUrl).get('/api/v2/tss/settings').reply(200, {
             coinSettings: {},

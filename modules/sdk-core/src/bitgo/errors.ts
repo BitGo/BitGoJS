@@ -29,6 +29,14 @@ export class UnsupportedCoinError extends BitGoJsError {
   }
 }
 
+export class SafeMpcCeremonyUnsupportedError extends BitGoJsError {
+  public constructor(coinFamily: string) {
+    super(
+      `Cannot create Wallet Safe root keys for coin family '${coinFamily}': its TSS settings resolve to the legacy MPCv1 ceremony, which does not support safe root tagging (safeId). Enable MPCv2 for '${coinFamily}' before creating a safe with this root type.`
+    );
+  }
+}
+
 export class AddressTypeChainMismatchError extends BitGoJsError {
   constructor(addressType: string, chain: number | string) {
     super(`address type ${addressType} does not correspond to chain ${chain}`);
@@ -185,13 +193,17 @@ export class ApiResponseError<ResponseBodyType = any> extends BitGoJsError {
   result?: ResponseBodyType;
   invalidToken?: boolean;
   needsOTP?: boolean;
+  // Echoed back via the `Request-ID` response header (see logging-express's `beginLogging`),
+  // so it can be used to correlate this error with the server-side request logs.
+  requestId?: string;
 
   public constructor(
     message: string,
     status: number,
     result?: ResponseBodyType,
     invalidToken?: boolean,
-    needsOTP?: boolean
+    needsOTP?: boolean,
+    requestId?: string
   ) {
     super(message);
     this.message = message;
@@ -199,6 +211,7 @@ export class ApiResponseError<ResponseBodyType = any> extends BitGoJsError {
     this.result = result;
     this.invalidToken = invalidToken;
     this.needsOTP = needsOTP;
+    this.requestId = requestId;
   }
 }
 
