@@ -79,7 +79,7 @@ export const cantonTokens = [
     'USD1',
     10,
     'https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/',
-    '12207::12207104d046b9339c2615aaa1ff7170eace89d1e4c657148eab5d0c2417583fa1a0:USD1',
+    '1220b::1220bab043849b986b52bc6271edf1ae962bab03d9f0c0713f071732d2278386bd02:USD1',
     UnderlyingAsset['canton:usd1'],
     [...CANTON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
@@ -89,7 +89,7 @@ export const cantonTokens = [
     'SoFiUSD',
     10,
     'https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/',
-    '1220f::1220f4c76343491c0951f54ede55f112b71c4b17714ed353bc6c820af96142a36f01:SOFID',
+    '12206::122064767126065d9d63e87552952f4d488a94c96786b0995c8e4594f205f2734576:SOFID',
     UnderlyingAsset['canton:sofid'],
     [...CANTON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
