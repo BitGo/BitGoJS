@@ -4,6 +4,7 @@ import * as _ from 'lodash';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
+import { SafeMpcCeremonyUnsupportedError } from '../errors';
 import { decodeOrElse, ECDSAUtils, EDDSAUtils, generateRandomPassword, RequestTracer } from '../utils';
 import {
   AddKeychainOptions,
@@ -371,11 +372,20 @@ export class Keychains implements IKeychains {
     const multisigTypeVersion =
       tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
 
+    const isMPCv2 = multisigTypeVersion === 'MPCv2';
+    if (params.safeId && !isMPCv2) {
+      // The legacy MPCv1 ceremonies accept a safeId for signature compatibility but silently
+      // ignore it (see EDDSAUtils.default.createKeychains / ECDSAUtils.EcdsaUtils.createKeychains),
+      // so the resulting keys never get tagged with the safe and WP's finalize step rejects them
+      // with a generic 400. Fail fast here instead of letting that confusing error surface later.
+      throw new SafeMpcCeremonyUnsupportedError(this.baseCoin.getFamily());
+    }
+
     let MpcUtils;
     if (this.baseCoin.getMPCAlgorithm() === 'eddsa') {
-      MpcUtils = multisigTypeVersion === 'MPCv2' ? EDDSAUtils.EddsaMPCv2Utils : EDDSAUtils.default;
+      MpcUtils = isMPCv2 ? EDDSAUtils.EddsaMPCv2Utils : EDDSAUtils.default;
     } else {
-      MpcUtils = multisigTypeVersion === 'MPCv2' ? ECDSAUtils.EcdsaMPCv2Utils : ECDSAUtils.EcdsaUtils;
+      MpcUtils = isMPCv2 ? ECDSAUtils.EcdsaMPCv2Utils : ECDSAUtils.EcdsaUtils;
     }
 
     const mpcUtils = new MpcUtils(this.bitgo, this.baseCoin);

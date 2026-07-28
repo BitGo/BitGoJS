@@ -16,6 +16,7 @@ import {
 import { Environments } from '../../common';
 import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
+import { ApiResponseError } from '../errors';
 import { decodeWithCodec } from '../utils/codecs';
 import { postWithCodec } from '../utils/postWithCodec';
 import { FinalizeSafeOptions, InitializeSafeOptions } from './iSafe';
@@ -147,7 +148,10 @@ export class Safes implements ISafes {
         hot[slots[i]] = result.value;
       } else {
         const reason = result.reason instanceof Error ? result.reason.message : String(result.reason);
-        failures.push(`${slots[i]}: ${reason}`);
+        // ApiResponseError carries the server-echoed `Request-ID` header — include it (when
+        // present) so a failed ceremony can be correlated with WP's server-side logs.
+        const requestId = result.reason instanceof ApiResponseError ? result.reason.requestId : undefined;
+        failures.push(`${slots[i]}: ${reason}${requestId ? ` (requestId: ${requestId})` : ''}`);
       }
     });
 

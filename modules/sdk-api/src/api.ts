@@ -75,7 +75,10 @@ function errFromResponse<ResponseBodyType>(res: superagent.Response): ApiRespons
   const result = res.body as ResponseBodyType;
   const invalidToken = _.has(res.header, 'x-auth-required') && res.header['x-auth-required'] === 'true';
   const needsOtp = res.body?.needsOTP !== undefined;
-  return new ApiResponseError(message, status, result, invalidToken, needsOtp);
+  // Server echoes the client's `Request-ID` header (or one it generated) back on every
+  // response, including errors — surface it so failures can be correlated with server logs.
+  const requestId = res.header?.['request-id'];
+  return new ApiResponseError(message, status, result, invalidToken, needsOtp, requestId);
 }
 
 /**
