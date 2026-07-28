@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.2.0...@bitgo/sdk-api@2.2.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* reject safe root creation on legacy MPCv1 ceremonies ([3c1d25d](https://github.com/BitGo/BitGoJS/commit/3c1d25d5207957c9082760209e7ff93b523401c4))
+
+
+
+
+
 # [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.1.2...@bitgo/sdk-api@2.2.0) (2026-07-22)
 
 

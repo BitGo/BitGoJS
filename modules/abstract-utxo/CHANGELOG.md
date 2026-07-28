@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [12.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@12.0.5...@bitgo/abstract-utxo@12.1.0) (2026-07-28)
+
+
+### Features
+
+* **abstract-utxo:** add Pearl fixed-script wallet surface ([64662cf](https://github.com/BitGo/BitGoJS/commit/64662cf466ee1cae9e960cd5fd7d2669a2add908))
+
+
+
+
+
 ## [12.0.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@12.0.4...@bitgo/abstract-utxo@12.0.5) (2026-07-23)
 
 

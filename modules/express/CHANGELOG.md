@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [16.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@16.2.1...@bitgo/express@16.3.0) (2026-07-28)
+
+
+### Features
+
+* **sdk-core,express:** plumb userKeySigningRequired through generateWallet ([805a095](https://github.com/BitGo/BitGoJS/commit/805a095bd027bc3894d78e48d4d8abed84dc3ba0))
+* **sdk-core:** export PrebuildTransactionFeeInfo type ([0152201](https://github.com/BitGo/BitGoJS/commit/01522010be58ee5b642c5eeb34d36eacf1efe7ef))
+* **sdk-core:** pass attestation through pending approvals ([a5b6b60](https://github.com/BitGo/BitGoJS/commit/a5b6b6089956d6dcbf336c70f26c90dde84f55ee))
+
+
+
+
+
 ## [16.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@16.2.0...@bitgo/express@16.2.1) (2026-07-23)
 
 **Note:** Version bump only for package @bitgo/express

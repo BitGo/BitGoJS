@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [52.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.3.1...bitgo@52.4.0) (2026-07-28)
+
+
+### Bug Fixes
+
+* reject safe root creation on legacy MPCv1 ceremonies ([3c1d25d](https://github.com/BitGo/BitGoJS/commit/3c1d25d5207957c9082760209e7ff93b523401c4))
+
+
+### Features
+
+* **bitgo:** register Pearl in the coin factory ([810dfbe](https://github.com/BitGo/BitGoJS/commit/810dfbe06f1e1f47f882e5511e70e5b81f66172c)), closes [#9347](https://github.com/BitGo/BitGoJS/issues/9347) [#9360](https://github.com/BitGo/BitGoJS/issues/9360)
+* **sdk-core:** pass attestation through pending approvals ([a5b6b60](https://github.com/BitGo/BitGoJS/commit/a5b6b6089956d6dcbf336c70f26c90dde84f55ee))
+
+
+
+
+
 ## [52.3.1](https://github.com/BitGo/BitGoJS/compare/bitgo@52.3.0...bitgo@52.3.1) (2026-07-23)
 
 **Note:** Version bump only for package bitgo

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@6.1.0...@bitgo/sdk-coin-sui@6.2.0) (2026-07-28)
+
+
+### Features
+
+* **sdk-coin-sui:** add fundsInAddressBalance to WalrusStakingBuilder ([41f7988](https://github.com/BitGo/BitGoJS/commit/41f798890b49be6b4a5d2ee6c740add3d8a61614))
+
+
+
+
+
 # [6.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@6.0.4...@bitgo/sdk-coin-sui@6.1.0) (2026-07-23)
 
 
