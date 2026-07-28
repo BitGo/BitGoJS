@@ -3,7 +3,7 @@ import { UnderlyingAsset } from '../base';
 import { EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE } from '../coinFeatures';
 import { Networks } from '../networks';
 
-// Robinhood Chain (HoodETH) stock tokens - CECHO-1213
+// Robinhood Chain (HoodETH) stock tokens - CECHO-1213 and CECHO-1803
 export const hoodethTokens = [
   erc20Token(
     '2597a273-8103-4e42-89cd-da241c231bc0',
@@ -132,6 +132,16 @@ export const hoodethTokens = [
     18,
     '0x4d21483a44bf67a86b77e3da301411880797d452',
     UnderlyingAsset['hoodeth:ba'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '80680cca-eb8a-418e-9e7f-5616d7fcf987',
+    'hoodeth:shy',
+    'iShares 1-3 Year Treasury Bond ETF',
+    18,
+    '0xbe274710bf3d9567e1b290ef6a5f9f90ca016fd8',
+    UnderlyingAsset['hoodeth:shy'],
     Networks.main.hoodeth,
     EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
@@ -1043,6 +1053,997 @@ export const hoodethTokens = [
     Networks.main.hoodeth,
     EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
+  erc20Token(
+    'e6b96f44-df26-4097-9e7c-a1d75a7f3c6f',
+    'hoodeth:wdc',
+    'Western Digital Corporation',
+    18,
+    '0xf52597345a8edf418bc4071b4a35112472277d3e',
+    UnderlyingAsset['hoodeth:wdc'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'a1f45037-8d6a-42a5-9cd7-55f2e1ba17bc',
+    'hoodeth:alab',
+    'Astera Labs, Inc.',
+    18,
+    '0x748c32c3ca24edf31ea597db1f3d330a7a6da3dc',
+    UnderlyingAsset['hoodeth:alab'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '542c97d9-59e9-443e-b122-e7b21483b3a9',
+    'hoodeth:crdo',
+    'Credo Technology Group Holding Ltd Ordinary Shares',
+    18,
+    '0x4d67253bc223e6b0e104f1084c1fb2b669ddc41b',
+    UnderlyingAsset['hoodeth:crdo'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '0e01c481-7d6f-4f1e-a802-6089d7c7925b',
+    'hoodeth:avav',
+    'AeroVironment, Inc.',
+    18,
+    '0xf6290b5e7c26502e2da514c31509849718ea76a5',
+    UnderlyingAsset['hoodeth:avav'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'c8126bc4-7a29-40ac-8c0a-7a350529a98d',
+    'hoodeth:adbe',
+    'Adobe Inc.',
+    18,
+    '0x232b8ed6377be97813853b0ac104c4cda8378d1b',
+    UnderlyingAsset['hoodeth:adbe'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '1f17b69e-e536-4f68-9e41-e3f45bc9c997',
+    'hoodeth:wulf',
+    'TeraWulf Inc.',
+    18,
+    '0x348be1a8663f15edde5cdf8a96bb69078f7ab6fd',
+    UnderlyingAsset['hoodeth:wulf'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '4cc2b153-18c6-44b6-948a-272b1c31b3ee',
+    'hoodeth:fig',
+    'Figma, Inc.',
+    18,
+    '0x41f4267525a8aff329540ef24fd83d9044758b33',
+    UnderlyingAsset['hoodeth:fig'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'd489393b-c4b4-4d52-9bd2-c7240d49ea17',
+    'hoodeth:smr',
+    'NuScale Power Corporation',
+    18,
+    '0x1eebee7f74517e0279dfb09d25b0407beec3fdd6',
+    UnderlyingAsset['hoodeth:smr'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'fd0ed8a7-ecef-4758-a718-42ae51d34f8f',
+    'hoodeth:klac',
+    'KLA Corporation',
+    18,
+    '0x96b933c74ecb4a0926b9210cef7b743ef46be2e9',
+    UnderlyingAsset['hoodeth:klac'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'de220bd2-a678-4ed4-a6a6-979e9cd1f588',
+    'hoodeth:pl',
+    'Planet Labs PBC',
+    18,
+    '0xaa4d64474c172010ab57719cb9951e6142a100d3',
+    UnderlyingAsset['hoodeth:pl'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '5c3f4dc6-31f6-4f7c-9083-428e2b40eae6',
+    'hoodeth:axti',
+    'AXT Inc',
+    18,
+    '0x141eea040c2250eec0314e336975e81f85f6585e',
+    UnderlyingAsset['hoodeth:axti'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '59d98a87-c25c-4a25-9395-7f5a6f72bbc7',
+    'hoodeth:te',
+    'T1 Energy Inc.',
+    18,
+    '0xb1969f6604ca1ae7a2cd3f1827876e914594ca2d',
+    UnderlyingAsset['hoodeth:te'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '4cbe5acb-c114-49b3-9cbe-9c3598ecca9e',
+    'hoodeth:bull',
+    'Webull Corporation',
+    18,
+    '0xcef9027c7d6985b85f0ba431125073529a947a68',
+    UnderlyingAsset['hoodeth:bull'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'fd0239c1-3534-478d-8d44-900a16ff1dda',
+    'hoodeth:joby',
+    'Joby Aviation, Inc.',
+    18,
+    '0xb334c5ce741b80b5b671f47f5c269cb193fe8e24',
+    UnderlyingAsset['hoodeth:joby'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'd5b97c34-08db-4955-810e-2571deb16692',
+    'hoodeth:tem',
+    'Tempus AI, Inc.',
+    18,
+    '0xb1cc0ec7db69cf43539119814df40071b9d61793',
+    UnderlyingAsset['hoodeth:tem'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '2b67258b-3f51-4414-bc45-3ac54db19aa0',
+    'hoodeth:lrcx',
+    'Lam Research Corporation',
+    18,
+    '0x57b0030166db0c31690d1a5aa167e2e26e2c29a4',
+    UnderlyingAsset['hoodeth:lrcx'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '71a2a3d6-679c-403f-8f2a-8f6061b7e420',
+    'hoodeth:cohr',
+    'Coherent Corp.',
+    18,
+    '0x92f9f459f1a9a5ad266b182be7bffd1c6c666894',
+    UnderlyingAsset['hoodeth:cohr'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '1644c46f-166e-4831-8802-c861d8c5bcbd',
+    'hoodeth:ktos',
+    'Kratos Defense & Security Solutions, Inc.',
+    18,
+    '0x7fd06a4d81ccfa3f351394e144d5191874c31313',
+    UnderlyingAsset['hoodeth:ktos'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '720ec462-9523-4c76-b713-503bb1a32c96',
+    'hoodeth:zeta',
+    'Zeta Global Holdings Corp.',
+    18,
+    '0xe674c5c071821f48bb2d12cadb83617eff438f9e',
+    UnderlyingAsset['hoodeth:zeta'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '4e701fec-8259-4a46-8016-f81c111a2666',
+    'hoodeth:axon',
+    'Axon Enterprise, Inc.',
+    18,
+    '0xc27dbd474af5181c5a8777903690d8d262d12648',
+    UnderlyingAsset['hoodeth:axon'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'b03eb704-756e-461a-85e1-62f088cf47a1',
+    'hoodeth:crm',
+    'Salesforce, Inc.',
+    18,
+    '0xd95b44124e475743a7589e68f3d74008a5536d44',
+    UnderlyingAsset['hoodeth:crm'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '37d99ce2-710c-4205-bc3e-6f4b1af5b16f',
+    'hoodeth:fly',
+    'Firefly Aerospace Inc.',
+    18,
+    '0x03bc731ffb162cdd7b98d3c6542bfc291126075d',
+    UnderlyingAsset['hoodeth:fly'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '2dfb4e3e-1656-43e0-8361-9274ce1e387a',
+    'hoodeth:wyfi',
+    'WhiteFiber, Inc.',
+    18,
+    '0x9e7abd3c9139d14e4c86dce0e455aab7a0c2fb3e',
+    UnderlyingAsset['hoodeth:wyfi'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '39731f59-e10f-49a4-8049-2605449eee8b',
+    'hoodeth:ttd',
+    'The Trade Desk, Inc.',
+    18,
+    '0x0b5fb4031cae9163db10b169ee72685f0edc8545',
+    UnderlyingAsset['hoodeth:ttd'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'bdcd1b9f-41bf-4e98-90c8-a2038f0d0afb',
+    'hoodeth:rcat',
+    'Red Cat Holdings, Inc.',
+    18,
+    '0xfde6b5d9bb419b10c23268c74e369abff39c0460',
+    UnderlyingAsset['hoodeth:rcat'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '52a6d49f-0fa5-4574-b69e-4ce4c83c95ac',
+    'hoodeth:infq',
+    'Infleqtion, Inc.',
+    18,
+    '0xb853bc83a753342a4f8320ea680b4b1e84118d21',
+    UnderlyingAsset['hoodeth:infq'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'ef646ecc-8fe4-4eef-bc51-8a5e8bacfe1b',
+    'hoodeth:oust',
+    'Ouster, Inc.',
+    18,
+    '0x40e7a279850e443f582059ae5dc1c3b6563e6395',
+    UnderlyingAsset['hoodeth:oust'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'e46eb096-01e0-41d7-8db1-e7982cdd73d5',
+    'hoodeth:on',
+    'ON Semiconductor Corporation',
+    18,
+    '0xbbd09f72b025360fee5c928053dca6248d35be54',
+    UnderlyingAsset['hoodeth:on'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '4d7dd73d-963d-4e4f-98fb-0a5b17d18a83',
+    'hoodeth:fico',
+    'Fair Isaac Corporation',
+    18,
+    '0xa48f22a46c0f1c46ca7d111cb6c137c271987180',
+    UnderlyingAsset['hoodeth:fico'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'f3a8f048-64d2-42ec-b290-529d7465ae30',
+    'hoodeth:ibm',
+    'International Business Machines Corporation',
+    18,
+    '0x980dcf6766fa79f5cf0c4aadb3ab477ff15a9619',
+    UnderlyingAsset['hoodeth:ibm'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '9c483bf4-7475-4205-ad62-d4a8bd58763a',
+    'hoodeth:amkr',
+    'Amkor Technology, Inc.',
+    18,
+    '0xdd356aa38f40a7b7076755ac854b6fbb1f0d305b',
+    UnderlyingAsset['hoodeth:amkr'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'e672bc11-aabc-4ea9-a7aa-cb5a0886d481',
+    'hoodeth:cien',
+    'Ciena Corporation',
+    18,
+    '0x44f6d488021f8233b9416294d1fe9b1fee28382d',
+    UnderlyingAsset['hoodeth:cien'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '7bdaafc8-570d-4273-bc24-d1b85f111bfd',
+    'hoodeth:hims',
+    'Hims & Hers Health, Inc.',
+    18,
+    '0xccee82fe024c36fa15e1005ede3e9e4787e23d09',
+    UnderlyingAsset['hoodeth:hims'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '25b52c79-3d82-4536-81f3-ea0c8a80dad3',
+    'hoodeth:cls',
+    'Celestica, Inc.',
+    18,
+    '0xbf449977089c718c004a66c554b26b94ef3ad4de',
+    UnderlyingAsset['hoodeth:cls'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'a59a547e-372a-4d6c-ae67-2f854c210f7c',
+    'hoodeth:ter',
+    'Teradyne, Inc.',
+    18,
+    '0x2778c5024d5ca2cdb0f8ead671ffc69963adcd9c',
+    UnderlyingAsset['hoodeth:ter'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'b83fd572-8ee4-4771-b924-7dd8a31e47cc',
+    'hoodeth:soun',
+    'SoundHound AI, Inc',
+    18,
+    '0x6e3dfd9f7e1649baa14d25cac18c94d62db10a54',
+    UnderlyingAsset['hoodeth:soun'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'cc6084d6-2c4f-4eab-bbd8-3c9f3725e53c',
+    'hoodeth:path',
+    'UiPath, Inc.',
+    18,
+    '0xfb2664f07b6aadd29ea7a59d8859b1aeb8645cda',
+    UnderlyingAsset['hoodeth:path'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'cbd85966-cf48-44e1-a0ef-4057e235b062',
+    'hoodeth:aehr',
+    'Aehr Test Systems',
+    18,
+    '0x5f604fba1162193a4388a5dfa56f556f3e133cc2',
+    UnderlyingAsset['hoodeth:aehr'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '224ebc1c-fb37-49db-854c-10de90d0ba9b',
+    'hoodeth:mrna',
+    'Moderna, Inc.',
+    18,
+    '0x43b07d15ce533bec5476d70c22a78a1b2b662155',
+    UnderlyingAsset['hoodeth:mrna'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'dccb637d-2174-4961-ab8d-e5adb42ed641',
+    'hoodeth:oklo',
+    'Oklo Inc.',
+    18,
+    '0x8b2f88497f15a18e9d4ffa1a8ffb8538399ae774',
+    UnderlyingAsset['hoodeth:oklo'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'ca829ec0-0028-4c35-9008-116befff68fa',
+    'hoodeth:vrt',
+    'Vertiv Holdings Co',
+    18,
+    '0xfa78c12e6488814a0262e4e802749a4a737d5fb7',
+    UnderlyingAsset['hoodeth:vrt'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'dac54fd2-ffc7-4c9f-94a5-f4328692ba03',
+    'hoodeth:mpwr',
+    'Monolithic Power Systems, Inc.',
+    18,
+    '0x52d50d0280ad1054b43f052bd70a49a212a1b128',
+    UnderlyingAsset['hoodeth:mpwr'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'bcec04e6-11b4-4b6e-b4a0-b65ce1e5a54e',
+    'hoodeth:fisv',
+    'Fiserv, Inc.',
+    18,
+    '0x9ece29a4a2397c0a35fb5fa8ee2b9509130a98cc',
+    UnderlyingAsset['hoodeth:fisv'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '05aa07d4-a9e6-4f08-b72d-54a70d16749b',
+    'hoodeth:glxy',
+    'Galaxy Digital Inc.',
+    18,
+    '0x2d427692e928fa156ec22acfabafa0447c5805b7',
+    UnderlyingAsset['hoodeth:glxy'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '19dffba0-5550-4e3d-b79d-5e55dfb05b69',
+    'hoodeth:snow',
+    'Snowflake Inc.',
+    18,
+    '0xba0cab75495255d0cb58e22b648bfed4ecd1f47e',
+    UnderlyingAsset['hoodeth:snow'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '3dc57f8e-6e1a-4cae-9956-591307457cb7',
+    'hoodeth:team',
+    'Atlassian Corporation',
+    18,
+    '0x5b97476b922f3305131b8f0b9d333172e87f4aae',
+    UnderlyingAsset['hoodeth:team'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '340b06e7-d0ce-408b-8f1c-a3a768e516cf',
+    'hoodeth:snap',
+    'Snap Inc.',
+    18,
+    '0xf6589f11bc40b669e584073f428b05562f568733',
+    UnderlyingAsset['hoodeth:snap'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '05b62b06-a9da-4e94-aed4-7d5e72595589',
+    'hoodeth:run',
+    'Sunrun Inc.',
+    18,
+    '0x756bc80af765c82da966a788858d65adf14f3793',
+    UnderlyingAsset['hoodeth:run'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'd80a927c-9e6d-4aaa-8bb2-96a13a0d834d',
+    'hoodeth:bb',
+    'BlackBerry Limited',
+    18,
+    '0x48e39e56acdba37b09020c0b734a613c9a2f100a',
+    UnderlyingAsset['hoodeth:bb'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '994918ec-792d-45e8-bd29-3bfa480d65cf',
+    'hoodeth:sls',
+    'SELLAS Life Sciences Group, Inc.',
+    18,
+    '0x285b231728c7e4333799183df1094d775246a535',
+    UnderlyingAsset['hoodeth:sls'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '1303634a-789e-4ab4-86e0-73a446ca2ba7',
+    'hoodeth:gev',
+    'GE Vernova Inc.',
+    18,
+    '0x94b8aae43a1ccc08aa64b7d1f29b4d920af4a0c9',
+    UnderlyingAsset['hoodeth:gev'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '9c058d3c-ffba-4736-b6c4-097b72cbd9fc',
+    'hoodeth:app',
+    'Applovin Corporation',
+    18,
+    '0xa249baf1063af884807c1e1400aef7784836917e',
+    UnderlyingAsset['hoodeth:app'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '2a19420f-ef19-46b0-9d10-57b2255a6bf1',
+    'hoodeth:lmt',
+    'Lockheed Martin Corp.',
+    18,
+    '0x329fcaceb9ad6f9580dd5f643fed0646900d043c',
+    UnderlyingAsset['hoodeth:lmt'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '30cb08ce-10e9-4262-8759-def028b714f4',
+    'hoodeth:ceg',
+    'Constellation Energy Corporation',
+    18,
+    '0xae517a2903e68bd929dfd15be875f8369d53e94a',
+    UnderlyingAsset['hoodeth:ceg'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'b461a71e-6504-4926-a8cb-7a92eed4e091',
+    'hoodeth:ge',
+    'GE Aerospace',
+    18,
+    '0x63b814ddbd6bf339f25fed8c36158a008d5b373e',
+    UnderlyingAsset['hoodeth:ge'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '75620425-ee7d-4c8c-b43c-6afd9f48f890',
+    'hoodeth:hwm',
+    'Howmet Aerospace Inc.',
+    18,
+    '0xaea445c5f3db1a462998ccc422a875a361ee5d99',
+    UnderlyingAsset['hoodeth:hwm'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '70fd0f4a-5e6c-444c-abfd-df2a442ecc3e',
+    'hoodeth:hpe',
+    'Hewlett Packard Enterprise Company',
+    18,
+    '0x59dd09d4900c2e4b5f75b7c0d4e6796fcc234cb1',
+    UnderlyingAsset['hoodeth:hpe'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '9b221129-8dfd-401f-9e32-ff8986cc299f',
+    'hoodeth:vsat',
+    'ViaSat, Inc.',
+    18,
+    '0x26dcbfb34fc83cabd6990f449674efdc6097ff85',
+    UnderlyingAsset['hoodeth:vsat'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'f911e52f-e90b-444f-b8d6-569f9490fd29',
+    'hoodeth:vst',
+    'Vistra Corp.',
+    18,
+    '0x561e2a49212b7ccf47f2744ccb83e200722fadbc',
+    UnderlyingAsset['hoodeth:vst'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '95665087-2985-459b-8234-d0b17af1e680',
+    'hoodeth:navn',
+    'Navan, Inc.',
+    18,
+    '0xf7181b63fdb858558a74ba96bc42732684cd7965',
+    UnderlyingAsset['hoodeth:navn'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '2d4f244b-b33f-4b72-9ae5-57bd8892df16',
+    'hoodeth:ibrx',
+    'ImmunityBio, Inc.',
+    18,
+    '0x7c148f74ac7445d1f28366b7fcdc6792a9fcd0cf',
+    UnderlyingAsset['hoodeth:ibrx'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '5cfbbe3c-0397-4b9a-8e87-e2d7659f7e18',
+    'hoodeth:fix',
+    'Comfort Systems USA, Inc.',
+    18,
+    '0x93dbb1d2dc5d63f4abacff30485273f538df68ac',
+    UnderlyingAsset['hoodeth:fix'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'e6fd37a9-d874-4ef0-beae-11e6ec946f83',
+    'hoodeth:lhx',
+    'L3Harris Technologies, Inc.',
+    18,
+    '0x48d60243c66437c6ac3c2495be94747aed5dfe25',
+    UnderlyingAsset['hoodeth:lhx'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '155c64d6-a4f5-47d7-b3aa-a1ea0cfdec1b',
+    'hoodeth:ftnt',
+    'Fortinet, Inc.',
+    18,
+    '0x3fb8976980d486084b2eb4a404bd12e72823958f',
+    UnderlyingAsset['hoodeth:ftnt'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '0dd16308-2afe-4b34-95d2-97e4cbbf99e6',
+    'hoodeth:panw',
+    'Palo Alto Networks, Inc.',
+    18,
+    '0xb039597ed45cba7b6e2fb9e8be51802969cee5be',
+    UnderlyingAsset['hoodeth:panw'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '8022d5e8-920c-4a04-b150-9e35728237d8',
+    'hoodeth:onto',
+    'Onto Innovation Inc.',
+    18,
+    '0x8ff63eaeee3fe54ba450c4f5538064ec5a893aef',
+    UnderlyingAsset['hoodeth:onto'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '67f90871-6b4a-446d-8968-3ca3c74a1ac4',
+    'hoodeth:anet',
+    'Arista Networks',
+    18,
+    '0x28babd556b60e53663b8615036479a29c2cdd1bf',
+    UnderlyingAsset['hoodeth:anet'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '56ac0f67-aea6-4d59-8380-e64e0242e048',
+    'hoodeth:aur',
+    'Aurora Innovation, Inc.',
+    18,
+    '0x373c06c4f7bde527d7dae4ba169e42b55e393ced',
+    UnderlyingAsset['hoodeth:aur'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '80d20da3-11eb-43bd-85a2-1285dfe021e4',
+    'hoodeth:ctsh',
+    'Cognizant Technology Solutions Corporation Class A',
+    18,
+    '0x63d5a3b6939a33f1e75d8bcd85759858239600db',
+    UnderlyingAsset['hoodeth:ctsh'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'b5774d29-d78f-4a0c-8adc-c5e97bca581d',
+    'hoodeth:vicr',
+    'Vicor Corporation',
+    18,
+    '0x6006ed4b2f94110851ff7509d97d034f0eed9226',
+    UnderlyingAsset['hoodeth:vicr'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '01d8683d-0d63-4750-8919-881f8be1c588',
+    'hoodeth:mtsi',
+    'MACOM Technology Solutions Holdings, Inc.',
+    18,
+    '0xc93f4d80e268ab922e871bd169156c3cc41894e6',
+    UnderlyingAsset['hoodeth:mtsi'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '528833cf-2ed1-4d85-ad18-380d4e930a9c',
+    'hoodeth:hii',
+    'Huntington Ingalls Industries, Inc.',
+    18,
+    '0xeb61c0ed490a367d4e3631ccf8a74b3bfc7e775d',
+    UnderlyingAsset['hoodeth:hii'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '7262cc27-0a89-4740-ae0f-aa5511b26e46',
+    'hoodeth:csco',
+    'Cisco Systems, Inc.',
+    18,
+    '0xf543967eebb6f1917992ef0e68de63ab07a5a0da',
+    UnderlyingAsset['hoodeth:csco'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '54b5246e-e854-40ba-8398-7e7e42b1aadc',
+    'hoodeth:pfe',
+    'Pfizer Inc.',
+    18,
+    '0x7066a64c24e4206cd62e83bf198c1e7eb361f51e',
+    UnderlyingAsset['hoodeth:pfe'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'c363b4fe-62d1-440c-a1f8-3c2faea0729a',
+    'hoodeth:qnt',
+    'Quantinuum Inc.',
+    18,
+    '0xb7edfe2f33c1ac06830a971dfb559bde8a2a3d76',
+    UnderlyingAsset['hoodeth:qnt'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '9bd161e5-4cf7-4b59-a8a8-825e7593d5bb',
+    'hoodeth:simo',
+    'Silicon Motion Technology Corporation ADS',
+    18,
+    '0x77e655e37f4d913fb9540e0d541d824171a60e81',
+    UnderlyingAsset['hoodeth:simo'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '9cc67d16-476f-41b4-8309-a7d4b2a728fd',
+    'hoodeth:docn',
+    'DigitalOcean Holdings, Inc.',
+    18,
+    '0xc02f12b9fe9e707079ec0d546f3050d3f6c1f8bd',
+    UnderlyingAsset['hoodeth:docn'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '6ffa0633-3332-4cbb-9741-a2de0c1ef3a1',
+    'hoodeth:jnj',
+    'Johnson & Johnson',
+    18,
+    '0x03dfbbe0ac4e7bcdafd08ed41a400326b77d8c80',
+    UnderlyingAsset['hoodeth:jnj'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '969b7f77-6e01-44e0-8524-e773fd9d3b77',
+    'hoodeth:unh',
+    'UnitedHealth Group Incorporated',
+    18,
+    '0xcf364ea52787e289de6f32077834056e3e70d6a8',
+    UnderlyingAsset['hoodeth:unh'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '3b05cf20-8f7c-4908-b63c-919344cba472',
+    'hoodeth:net',
+    'Cloudflare, Inc.',
+    18,
+    '0x116f00968269b7bfbad4109ce591d6e74c0601d4',
+    UnderlyingAsset['hoodeth:net'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '79d3406b-c1e5-425b-846a-a9334409a393',
+    'hoodeth:amba',
+    'Ambarella, Inc.',
+    18,
+    '0x99d9d8663545151603863c5acbd6fc3218899009',
+    UnderlyingAsset['hoodeth:amba'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'c149eb7b-7a52-4532-afd5-3d1bd10db5ed',
+    'hoodeth:abcl',
+    'AbCellera Biologics Inc.',
+    18,
+    '0x3139d77ace0cbaa5bdfd38bd1f1911a794af0b0e',
+    UnderlyingAsset['hoodeth:abcl'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '999396fb-ba02-4ee0-9ed0-dfa620c88ce6',
+    'hoodeth:smh',
+    'VanEck Semiconductor ETF',
+    18,
+    '0x072f979c2cac8e1391b0162a87fee094bf8744a0',
+    UnderlyingAsset['hoodeth:smh'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'efa045ac-5db0-4992-b854-bb0874480478',
+    'hoodeth:vti',
+    'Vanguard Total Stock Market ETF',
+    18,
+    '0x0594134df3f171a354d9c85ebd65b7a6148f6d09',
+    UnderlyingAsset['hoodeth:vti'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '1c48652e-d9f1-4484-8afb-cb995acb96f4',
+    'hoodeth:gld',
+    'SPDR Gold Shares',
+    18,
+    '0xc9a981fee1f9dec688bb123ccdecc63d0debfc4e',
+    UnderlyingAsset['hoodeth:gld'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '9577f7c5-9124-4d60-8bcf-020c4e3c7ebc',
+    'hoodeth:schd',
+    'Schwab US Dividend Equity ETF',
+    18,
+    '0xd63abb2c13d7a8421a8017a712802053568e3c1d',
+    UnderlyingAsset['hoodeth:schd'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'b4ce52dc-5cd0-4001-8b60-1ea213828326',
+    'hoodeth:jepq',
+    'JPMorgan Nasdaq Equity Premium Income ETF',
+    18,
+    '0x565d3ff42d7d880287e5796b4c708632be0ca098',
+    UnderlyingAsset['hoodeth:jepq'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'f296b843-8bfc-43e0-9b8b-e8584985d201',
+    'hoodeth:inda',
+    'iShares MSCI India ETF',
+    18,
+    '0xacef2e09adb47ad6abebad9ff06689e60615c2b6',
+    UnderlyingAsset['hoodeth:inda'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '4ba57870-9383-4e24-b9c6-397a102bcfa8',
+    'hoodeth:ewt',
+    'iShares MSCI Taiwan ETF',
+    18,
+    '0x1c690498150252222c275a5ced69d3a6b1f52d5e',
+    UnderlyingAsset['hoodeth:ewt'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '2584e415-5493-4e25-b15e-4d476ece0e63',
+    'hoodeth:amc',
+    'AMC Entertainment Holdings, Inc.',
+    18,
+    '0x05a3d1cd21d0c88145e82600e62e7e496e0f222b',
+    UnderlyingAsset['hoodeth:amc'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'e31d5fe0-cb4e-44fb-8782-975b4cc64406',
+    'hoodeth:cvna',
+    'Carvana Co.',
+    18,
+    '0xa4f319104089fe321dc8093c6e707d4fe190a988',
+    UnderlyingAsset['hoodeth:cvna'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '422518a5-02c9-4645-b107-bdc7de34d4af',
+    'hoodeth:djt',
+    'Trump Media & Technology Group Corp.',
+    18,
+    '0x1d11f0496982706c5e14a514d4e79f2e6bde4516',
+    UnderlyingAsset['hoodeth:djt'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '016e077a-fa0f-4cb1-88bd-119ffed412bd',
+    'hoodeth:kss',
+    "Kohl's Corporation",
+    18,
+    '0x12e3c047bf9aecaf9ddc98c05c31bfd1dd043993',
+    UnderlyingAsset['hoodeth:kss'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'ca44a086-a488-41cc-ac45-03a852c8ecf4',
+    'hoodeth:clov',
+    'Clover Health Investments, Corp.',
+    18,
+    '0x62200915e7deab1ec7f79fb246dadbb80eacddd0',
+    UnderlyingAsset['hoodeth:clov'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '8df82c58-a66e-4ad8-a73e-47c66eedf737',
+    'hoodeth:mod',
+    'Modine Manufacturing Co',
+    18,
+    '0xc6cbad1016b38b797610c25e1dc7d95988b1f362',
+    UnderlyingAsset['hoodeth:mod'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '597a50a1-5969-4bd0-b46d-0b3ee48189fe',
+    'hoodeth:pwr',
+    'Quanta Services, Inc.',
+    18,
+    '0x9ab02ead789b6903c3c44d0ed32f9c707cdf12fd',
+    UnderlyingAsset['hoodeth:pwr'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '95e21f82-e6a9-4705-8f17-ac8b1a980702',
+    'hoodeth:aeis',
+    'Advanced Energy Industries, Inc.',
+    18,
+    '0xfaf9cb261b5fcc1f404bb10cd39c5c6c1974e612',
+    UnderlyingAsset['hoodeth:aeis'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '18aa1731-88d4-4824-888d-f220ed617f77',
+    'hoodeth:powl',
+    'Powell Industries, Inc.',
+    18,
+    '0x237c16d66590f67b886d978acd362eaead8b18c7',
+    UnderlyingAsset['hoodeth:powl'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '6d946a34-acc7-4e5b-bb1b-db126d037a6e',
+    'hoodeth:jbl',
+    'Jabil Inc.',
+    18,
+    '0xeaf2512dfc1beac608f8794b3793cd4e02894aa6',
+    UnderlyingAsset['hoodeth:jbl'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+
   erc20Token(
     '3493d608-fd3e-45dc-926d-783d54a8fe4d',
     'thoodeth:amzn',
