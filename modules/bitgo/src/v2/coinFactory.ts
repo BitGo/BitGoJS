@@ -5,6 +5,7 @@ import { AdaToken } from '@bitgo/sdk-coin-ada';
 import { AlgoToken } from '@bitgo/sdk-coin-algo';
 import { CantonToken } from '@bitgo/sdk-coin-canton';
 import { Bcha, Tbcha } from '@bitgo/sdk-coin-bcha';
+import { Pearl, Tpearl } from '@bitgo/sdk-coin-pearl';
 import { HbarToken } from '@bitgo/sdk-coin-hbar';
 import { Near, TNear, Nep141Token } from '@bitgo/sdk-coin-near';
 import { SolToken } from '@bitgo/sdk-coin-sol';
@@ -298,6 +299,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('ofc', Ofc.createInstance);
   coinFactory.register('opeth', Opeth.createInstance);
   coinFactory.register('osmo', Osmo.createInstance);
+  coinFactory.register('pearl', Pearl.createInstance);
   coinFactory.register('polygon', Polygon.createInstance);
   coinFactory.register('polyx', Polyx.createInstance);
   coinFactory.register('rbtc', Rbtc.createInstance);
@@ -363,6 +365,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('toas', Toas.createInstance);
   coinFactory.register('topeth', Topeth.createInstance);
   coinFactory.register('tosmo', Tosmo.createInstance);
+  coinFactory.register('tpearl', Tpearl.createInstance);
   coinFactory.register('tpolygon', Tpolygon.createInstance);
   coinFactory.register('tpolyx', Tpolyx.createInstance);
   coinFactory.register('trbtc', Trbtc.createInstance);
@@ -744,6 +747,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Opeth.createInstance;
     case 'osmo':
       return Osmo.createInstance;
+    case 'pearl':
+      return Pearl.createInstance;
     case 'polygon':
       return Polygon.createInstance;
     case 'polyx':
@@ -874,6 +879,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Topeth.createInstance;
     case 'tosmo':
       return Tosmo.createInstance;
+    case 'tpearl':
+      return Tpearl.createInstance;
     case 'tpolygon':
       return Tpolygon.createInstance;
     case 'tpolyx':
