@@ -24,10 +24,14 @@ export interface CreateSafeOptions {
 
 /**
  * Handle returned by `initializeSafe`, threaded into the key ceremonies and finalize.
+ *
+ * `enabledRootSlots` is the server-decided (Flipt, evaluated once at initialize) set of root-key
+ * slots to generate; absent (older WP) falls back to all 4 slots.
  * @experimental
  */
 export interface SafeCreationHandle {
   safeId: string;
+  enabledRootSlots?: InitializeSafeResponse['enabledRootSlots'];
 }
 
 /**

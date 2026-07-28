@@ -94,7 +94,11 @@ export class Safes implements ISafes {
    */
   async generateSafe(params: CreateSafeOptions): Promise<Safe> {
     const safe = await this.initializeSafe({ label: params.label });
-    const rootKeys = await this.createSafeKeys({ ...params, safeId: safe.id });
+    const rootKeys = await this.createSafeKeys({
+      ...params,
+      safeId: safe.id,
+      enabledRootSlots: safe.enabledRootSlots,
+    });
     return await this.finalizeSafe(safe.id, rootKeys);
   }
 
@@ -123,20 +127,24 @@ export class Safes implements ISafes {
    * @experimental
    */
   async createSafeKeys(params: CreateSafeOptions & SafeCreationHandle): Promise<SafeKeys> {
-    const { safeId, passphrase } = params;
+    const { safeId, passphrase, enabledRootSlots } = params;
     const enterprise = this.enterpriseId;
 
+    // Absent `enabledRootSlots` (older WP, pre-gating) ⇒ all 4, preserving current behavior.
     // `slots` MUST stay index-aligned with the Promise.allSettled array below. Ordered by scheme:
     // the two multisig roots first, then the two MPC roots.
-    const slots: RootKeyType[] = ['secp256k1Multisig', 'ed25519Multisig', 'ecdsaMpc', 'eddsaMpc'];
-    const results = await Promise.allSettled([
+    const allSlots: RootKeyType[] = ['secp256k1Multisig', 'ed25519Multisig', 'ecdsaMpc', 'eddsaMpc'];
+    const enabled = new Set(enabledRootSlots ?? allSlots);
+    const slots = allSlots.filter((slot) => enabled.has(slot));
+    const ceremonies: Record<RootKeyType, () => Promise<RootKeyTriplet>> = {
       // Phase 2.1 — multisig roots (①④): local user/backup keypairs + BitGo key, all safeId-tagged.
-      this.createMultisigRoot('secp256k1Multisig', safeId, passphrase, enterprise),
-      this.createMultisigRoot('ed25519Multisig', safeId, passphrase, enterprise),
+      secp256k1Multisig: () => this.createMultisigRoot('secp256k1Multisig', safeId, passphrase, enterprise),
+      ed25519Multisig: () => this.createMultisigRoot('ed25519Multisig', safeId, passphrase, enterprise),
       // Phase 2.2 — MPC roots (②③): the existing DKLS (②) and EdDSA (③) ceremonies, safeId threaded.
-      this.createMpcRoot('ecdsaMpc', safeId, passphrase, enterprise),
-      this.createMpcRoot('eddsaMpc', safeId, passphrase, enterprise),
-    ]);
+      ecdsaMpc: () => this.createMpcRoot('ecdsaMpc', safeId, passphrase, enterprise),
+      eddsaMpc: () => this.createMpcRoot('eddsaMpc', safeId, passphrase, enterprise),
+    };
+    const results = await Promise.allSettled(slots.map((slot) => ceremonies[slot]()));
 
     // Single pass over the settled results: `status === 'fulfilled'` narrows `.value` to a
     // RootKeyTriplet (no cast needed), and rejections are collected per-slot for the error below.
