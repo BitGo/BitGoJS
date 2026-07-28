@@ -197,6 +197,9 @@
       "path": "./modules/sdk-coin-osmo"
     },
     {
+      "path": "./modules/sdk-coin-pearl"
+    },
+    {
       "path": "./modules/sdk-coin-polygon"
     },
     {
