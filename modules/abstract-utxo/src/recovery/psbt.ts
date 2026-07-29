@@ -34,6 +34,10 @@ interface CreateBackupKeyRecoveryPsbtOptions {
   keyRecoveryServiceFeeAddress: string | undefined;
   /** Block height for Zcash networks (required to determine consensus branch ID) */
   blockHeight?: number;
+  /** Transaction lock time (nLockTime), set on the PSBT before signing */
+  lockTime?: number;
+  /** Input sequence number applied to every input */
+  sequence?: number;
 }
 
 /**
@@ -59,6 +63,8 @@ const ZCASH_DEFAULT_BLOCK_HEIGHTS: Record<'zec' | 'tzec', number> = {
 export interface CreateEmptyWasmPsbtOptions {
   /** Block height for Zcash networks (required to determine consensus branch ID) */
   blockHeight?: number;
+  /** Transaction lock time (nLockTime) */
+  lockTime?: number;
 }
 
 /**
@@ -80,10 +86,13 @@ export function createEmptyWasmPsbt(
     const blockHeight = options?.blockHeight ?? ZCASH_DEFAULT_BLOCK_HEIGHTS[coinName];
     return fixedScriptWallet.ZcashBitGoPsbt.createEmpty(coinName, rootWalletKeys, {
       blockHeight,
+      lockTime: options?.lockTime,
     });
   }
 
-  return fixedScriptWallet.BitGoPsbt.createEmpty(coinName, rootWalletKeys);
+  return fixedScriptWallet.BitGoPsbt.createEmpty(coinName, rootWalletKeys, {
+    lockTime: options?.lockTime,
+  });
 }
 
 /**
@@ -97,7 +106,8 @@ export function createEmptyWasmPsbt(
 export function addWalletInputsToWasmPsbt(
   wasmPsbt: fixedScriptWallet.BitGoPsbt,
   unspents: WalletUnspent<bigint>[],
-  rootWalletKeys: fixedScriptWallet.RootWalletKeys
+  rootWalletKeys: fixedScriptWallet.RootWalletKeys,
+  sequence?: number
 ): void {
   unspents.forEach((unspent) => {
     const { txid, vout } = parseOutputId(unspent.id);
@@ -113,6 +123,7 @@ export function addWalletInputsToWasmPsbt(
         txid,
         vout,
         value: unspent.value,
+        sequence,
         prevTx: prevTx,
       },
       rootWalletKeys,
@@ -155,8 +166,11 @@ function createBackupKeyRecoveryPsbtWasm(
   const { feeRateSatVB, recoveryDestination, keyRecoveryServiceFee, keyRecoveryServiceFeeAddress } = options;
 
   // Create PSBT with wasm-utxo and add wallet inputs using shared utilities
-  const wasmPsbt = createEmptyWasmPsbt(coinName, rootWalletKeys, { blockHeight: options.blockHeight });
-  addWalletInputsToWasmPsbt(wasmPsbt, unspents, rootWalletKeys);
+  const wasmPsbt = createEmptyWasmPsbt(coinName, rootWalletKeys, {
+    blockHeight: options.blockHeight,
+    lockTime: options.lockTime,
+  });
+  addWalletInputsToWasmPsbt(wasmPsbt, unspents, rootWalletKeys, options.sequence);
 
   // Calculate dimensions using wasm-utxo Dimensions
   let dimensions = fixedScriptWallet.Dimensions.fromPsbt(wasmPsbt).plus(
