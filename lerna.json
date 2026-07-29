@@ -1,0 +1,11 @@
+{
+  "version": "independent",
+  "npmClient": "yarn",
+  "command": {
+    "version": {
+      "message": "chore(root): publish modules"
+    }
+  },
+  "$schema": "node_modules/lerna/schemas/lerna-schema.json",
+  "useNx": false
+}

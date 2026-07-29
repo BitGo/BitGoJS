@@ -1,0 +1,18 @@
+transaction: c7e56de8579f09fd46fd4e7b6a802c8fdba0b342c71d4c736704f1b282ad6343
+├── format: network
+├── complete: true
+├── parsedAs: bitcoin testnet
+├── version: 1
+├── hasWitnesses: true
+├── status: unknown
+├── vsize: 269vbytes (1074wu)
+├─┬ inputs: 2
+│ ├─┬ 0: ba3924f81d5a9bc64a6d24a7bf66e7620aaf82544ccf51c99e7267cc5bd89dc2:0
+│ │ └─┬ sigScript: taprootScriptPathSpend
+│ │   └── signatures: [64byte] [64byte]
+│ └─┬ 1: 0521ec6e9797c108d2f4d509304e6ccf761ad69aa65718d0e88b4b1c1eb439a2:0
+│   └─┬ sigScript: taprootScriptPathSpend
+│     └── signatures: [64byte] [64byte]
+└─┬ outputs: 1 sum=1.99999000
+  └─┬ 0: tb1paejvldmj6xx3te36sve2j5wq54lvsd4q7qw6gfm5l36hk45ymgyqtqd8cv
+    └── value: 1.99999000

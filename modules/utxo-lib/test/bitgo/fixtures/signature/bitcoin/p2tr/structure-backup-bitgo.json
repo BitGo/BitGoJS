@@ -1,0 +1,26 @@
+{
+  "publicKeys": [
+    "028fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97",
+    "03316bc27d95b96418349afc6298c259bb999c6e8f39a7217787ad53602be7c147",
+    "02e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04"
+  ],
+  "script": "",
+  "witness": [
+    "a2074b68b115e970c8c4bee9cf75c03b82bd3e3086d58801a4adb7b31b9b5f2cea4a5615a4feef74b61db6d765bb814feaf27331fad128dda55cfe106d25d44e",
+    "6bace9d49a0a7617e8ab40cd5361257829c0f09809d6f70ce130a70d7af3de1bf7409cbe379481e0494b32531b955fff67825cd969a3e95fc853c048692feda1",
+    "20316bc27d95b96418349afc6298c259bb999c6e8f39a7217787ad53602be7c147ad20e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04ac",
+    "c169d984b8967c360d084920bb8536dddef42b1ccb6337f2d310a8dabd24d43cc2a421b9ae59030e91a2b54dbc275d48b0964bbe0ecb9fe7c49a8bd83c581dfc7f5c5c9909005a0cb327f9408d7b977026ae0736b2255efb1aa80386025827669a"
+  ],
+  "scriptASM": [
+    ""
+  ],
+  "tapscriptASM": [
+    "316bc27d95b96418349afc6298c259bb999c6e8f39a7217787ad53602be7c147",
+    "OP_CHECKSIGVERIFY",
+    "e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04",
+    "OP_CHECKSIG"
+  ],
+  "classifyInput": "nonstandard",
+  "classifyWitness": "taproot",
+  "classifyTapscript": "taprootnofn"
+}

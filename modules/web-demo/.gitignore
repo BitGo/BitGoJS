@@ -1,0 +1,6 @@
+node_modules
+dist
+package-lock.json
+tsconfig.tsbuildinfo
+cypress/videos
+cypress/downloads

@@ -1,0 +1,44 @@
+transaction: 6725a9fe23fc611d26173cf24169530c7c599794a1b57e8b8364ff34e94a8a52
+├── format: network
+├── complete: true
+├── parsedAs: bitcoin mainnet
+├── version: 2
+├── locktime: 0
+├── hasWitnesses: true
+├── status: unknown
+├── vsize: 201vbytes (804wu)
+├─┬ inputs: 1
+│ └─┬ 0: 0101010101010101010101010101010101010101010101010101010101010101:0
+│   ├── sequence: fdffffff (4 bytes)
+│   ├── scriptSig:  (0 bytes)
+│   ├─┬ witness: witnessscripthash
+│   │ ├── 0:  (0 bytes)
+│   │ ├── 1: 3045022100ca24680ba04a934ea1ee49c696fae83c05e55bc57155bcb6bedc45f21d25e65d02204030196a0bb02e83b70205996082215f454421d8f0a2ea8d60f2db9c8701401a01 (72 bytes)
+│   │ ├── 2: 3045022100e6caa18f00638ccf4df22cc194900313e503825c35934bf9c3adfc7b287328c702206c70e7596ded5231efe43c6fef3e8dd6a43d9d318ae86436d6624c80ba760c5201 (72 bytes)
+│   │ └─┬ 3: 522102b3608bc87786441d199b715e05daefca8e7165fea1a8db94588bcde8bdced46d2103fdd126b6ebbbd0f19166c7529b45da837650914b546f19d2b324358de9f5cb2821023d8c537b824ead341057ecbfa6923d1ce4eb6ad75c07200858de91490c80cef153ae (105 bytes)
+│   │   └── asm: 
+│   │       OP_2
+│   │       02b3608bc87786441d199b715e05daefca8e7165fea1a8db94588bcde8bdced46d
+│   │       03fdd126b6ebbbd0f19166c7529b45da837650914b546f19d2b324358de9f5cb28
+│   │       023d8c537b824ead341057ecbfa6923d1ce4eb6ad75c07200858de91490c80cef1
+│   │       OP_3
+│   │       OP_CHECKMULTISIG
+│   └─┬ sigScript: p2wsh
+│     ├─┬ pubkeys: 3
+│     │ ├── 0: 02b3608bc87786441d199b715e05daefca8e7165fea1a8db94588bcde8bdced46d (33 bytes)
+│     │ ├── 1: 03fdd126b6ebbbd0f19166c7529b45da837650914b546f19d2b324358de9f5cb28 (33 bytes)
+│     │ └── 2: 023d8c537b824ead341057ecbfa6923d1ce4eb6ad75c07200858de91490c80cef1 (33 bytes)
+│     └── signatures: [72byte] [72byte]
+└─┬ outputs: 2 sum=0.00998390
+  ├─┬ 0: bc1qpzqxe7sqm8pkvfnkf4h8kcwmduv9yxuxpv4xdz4mzm96jpee3q3s380urc
+  │ ├── value: 0.00001111
+  │ └─┬ scriptPubKey: [34byte]
+  │   ├── type: witnessscripthash
+  │   ├── hex: 002008806cfa00d9c36626764d6e7b61db6f18521b860b2a668abb16cba907398823
+  │   └── asm: OP_0 08806cfa00d9c36626764d6e7b61db6f18521b860b2a668abb16cba907398823
+  └─┬ 1: bc1qr0vg7nmpz9q8533u80p0tgg5wj272sj2tcmxkgkkgsjjjkqkejpqu6v4tu
+    ├── value: 0.00997279
+    └─┬ scriptPubKey: [34byte]
+      ├── type: witnessscripthash
+      ├── hex: 00201bd88f4f6111407a463c3bc2f5a1147495e5424a5e366b22d64425295816cc82
+      └── asm: OP_0 1bd88f4f6111407a463c3bc2f5a1147495e5424a5e366b22d64425295816cc82

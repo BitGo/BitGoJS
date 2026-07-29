@@ -1,0 +1,72 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true,
+    "mocha": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "prettier", "import"],
+  "globals": {
+    "app": true, // BitGo side-effect from testutil
+    "ethUtil": true, // BitGo side-effect from testutil
+    "requireCommon": true
+  },
+  "extends": ["plugin:@typescript-eslint/recommended", "plugin:prettier/recommended"],
+  "parserOptions": {
+    "ecmaVersion": 6
+  },
+  "rules": {
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-member-accessibility": "off",
+    "@typescript-eslint/no-this-alias": "warn",
+    "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/no-var-requires": "off",
+    "eqeqeq": ["warn", "always"],
+    "func-names": "off",
+    "no-compare-neg-zero": "error",
+    "no-console": "warn",
+    "no-dupe-args": "error",
+    "no-dupe-keys": "error",
+    "no-duplicate-imports": "error",
+    "no-empty": ["warn", { "allowEmptyCatch": false }],
+    "no-extra-boolean-cast": "off",
+    "no-fallthrough": "error",
+    "no-inner-declarations": "off",
+    "no-octal": "error",
+    "no-path-concat": "off",
+    "no-process-env": "off",
+    "no-process-exit": "off",
+    "no-sync": "warn",
+    "no-undef": "error",
+    "no-unneeded-ternary": "error",
+    "no-unreachable": "error",
+    "@typescript-eslint/no-unused-vars": ["error", { "vars": "all", "args": "none" }],
+    "no-useless-escape": "off",
+    "no-var": "error",
+    "prefer-const": "error",
+    "prefer-rest-params": "warn",
+    "prefer-spread": "warn",
+    "quote-props": ["error", "as-needed"],
+    "radix": "error",
+    "require-yield": "off",
+    "import/no-internal-modules": [
+      "error",
+      {
+        "forbid": ["@bitgo/*/**"]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      // tsc already checks for usage of undefined variables better than eslint can,
+      // so there's no need to enable this rule for typescript files.
+      // https://github.com/typescript-eslint/typescript-eslint/blob/master/docs/getting-started/linting/FAQ.md#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
+      "files": ["*.ts"],
+      "rules": {
+        "no-undef": "off"
+      }
+    }
+  ]
+}

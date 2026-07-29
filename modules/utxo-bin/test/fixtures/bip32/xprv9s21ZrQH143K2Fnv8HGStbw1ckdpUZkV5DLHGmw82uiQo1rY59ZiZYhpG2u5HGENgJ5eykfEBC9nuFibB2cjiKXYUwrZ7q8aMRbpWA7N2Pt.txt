@@ -1,0 +1,12 @@
+xprv: xprv9s21ZrQH143K2Fnv8HGStbw1ckdpUZkV5DLHGmw82uiQo1rY59ZiZYhpG2u5HGENgJ5eykfEBC9nuFibB2cjiKXYUwrZ7q8aMRbpWA7N2Pt
+├── xpub: xpub661MyMwAqRbcEjsPEJoTFjskAnUJt2ULSSFt5ALjbFFPfpBgcgsy7M2J7Kz66TNWwfYUBSKbhqNp7YJTAeVRfQMkjFjyTw8GzJiNaPQifio
+├── lowR: false
+├── chainCode: 13cd969b6f5948b45fe7a5e3e22e9d94830c82e9c2b61448af16565131736757 (32 bytes)
+├── depth: 0
+├── index: 0
+├── parentFingerprint: 0
+├── identifier: c3b7cdefd973965dd7aef07784908ed11a3e13fb (20 bytes)
+├── fingerprint: c3b7cdef (4 bytes)
+├── compressed: true
+├── publicKey: 03faab4c92cfdb174adb4df27dddbd984dcec499d57b308a6ae343876d8015d0da (33 bytes)
+└── privateKey: ebe706fb107727a8af3a75ef3c96672c9ddf4ccd4377b047df7ec43a5020c1ab (32 bytes)

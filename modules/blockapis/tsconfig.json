@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "esModuleInterop": false,
+    "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"],
+    "allowJs": false,
+    "strict": true
+  },
+  "include": ["src/**/*", "test/**/*"],
+  "references": [
+    {
+      "path": "../utxo-lib"
+    }
+  ]
+}

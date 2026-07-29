@@ -1,0 +1,29 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist/cjs",
+    "rootDir": ".",
+    "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
+    "allowJs": false,
+    "strict": true
+  },
+  "include": ["src/**/*", "bin/**/*"],
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../blockapis"
+    },
+    {
+      "path": "../statics"
+    },
+    {
+      "path": "../sdk-core"
+    },
+    {
+      "path": "../utxo-lib"
+    },
+    {
+      "path": "../unspents"
+    }
+  ]
+}

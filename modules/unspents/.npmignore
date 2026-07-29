@@ -1,0 +1,13 @@
+!dist/
+dist/*.map
+src/
+test/
+.idea/
+git_hooks/
+scripts/
+.eslintrc.json
+CODEOWNERS
+tslint.json
+tsconfig.json
+tsconfig.build.json
+.nvmrc

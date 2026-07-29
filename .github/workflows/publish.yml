@@ -1,0 +1,115 @@
+name: Publish @bitgo-beta
+on:
+  workflow_dispatch:
+    inputs:
+      recovery-mode:
+        description: |
+          Recover a stuck beta publish where sigstore/Rekor already logged
+          provenance for a package's currently-computed version/tarball
+          (registry write failed) but the package never landed on npm. When
+          enabled, the publish step automatically detects the Rekor
+          conflict per-package and bumps that package's version until it
+          finds one that publishes cleanly - no manual input needed.
+        type: boolean
+        required: false
+        default: false
+  # push:
+  #   branches:
+  #     - master
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+env:
+  SOCKET_SECURITY_MODE: monitor  # Options: monitor (non-blocking) or block (fails on vulnerabilities)
+
+jobs:
+  publish:
+    name: Publish Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: socketdev/action@4337a545deecc20f19a909e52db7a2f6ba292f42 # v1
+        with:
+          mode: firewall-free
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install BitGoJS
+        run: sfw yarn install --with-frozen-lockfile
+
+      # osv-scanner has no severity filter and exits non-zero on ANY finding,
+      # so run it with continue-on-error and let the severity gate below
+      # decide pass/fail based on CVSS score (fails on HIGH/CRITICAL only).
+      - name: Audit Dependencies
+        id: osv-scan
+        continue-on-error: true
+        uses: google/osv-scanner-action/osv-scanner-action@9a498708959aeaef5ef730655706c5a1df1edbc2  # v2.3.8
+        with:
+          scan-args: |-
+            --config=osv-scanner.toml
+            --format=json
+            --output-file=osv-results.json
+            ./
+
+      - name: Enforce Vulnerability Severity Threshold
+        uses: ./.github/actions/osv-severity-gate
+        with:
+          scan-outcome: ${{ steps.osv-scan.outcome }}
+
+      - name: Set Environment Variable for Alpha
+        if: github.ref != 'refs/heads/master' # only publish changes if on feature branches
+        run: |
+          echo "preid=alpha" >> $GITHUB_ENV
+
+      - name: Set Environment Variable for Beta
+        if: github.ref == 'refs/heads/master' # only publish changes if on master branches
+        run: |
+          echo "preid=beta" >> $GITHUB_ENV
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'Git bot'
+          git config --global user.email 'bot@noreply.github.com'
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git checkout -b ${{ env.preid }}-$(git rev-parse --short HEAD)
+
+      - name: Configure NPM for Trusted Publishing
+        run: |
+          echo "@bitgo-beta:registry=https://registry.npmjs.org" >> .npmrc
+
+      - name: Prepare Release
+        run: |
+          rm -rfd ./modules/web-demo
+          rm -rfd ./modules/express
+          npx tsx ./scripts/prepare-release.ts ${{ env.preid }}
+
+      - name: Rebuild packages
+        run: sfw yarn
+
+      - name: Commit Local Changes
+        run: git commit -am "Auto updated ${{ env.preid }} branch" --no-verify || echo "No changes to commit"
+
+      - name: Lerna Publish
+        # In recovery mode a stuck package's Rekor conflict fails this step outright; let it
+        # continue so Verify Publish below still gets a chance to bump+retry that package.
+        continue-on-error: ${{ inputs.recovery-mode }}
+        run: yarn lerna publish from-package --preid ${{ env.preid }} --dist-tag ${{ env.preid }} --force-publish --yes --loglevel silly
+        env:
+          NPM_CONFIG_PROVENANCE: true
+
+      - name: Verify Publish
+        run: npx tsx ./scripts/verify-release.ts ${{ env.preid }}
+        env:
+          NPM_CONFIG_PROVENANCE: true
+          RECOVERY_MODE: ${{ inputs.recovery-mode }}
