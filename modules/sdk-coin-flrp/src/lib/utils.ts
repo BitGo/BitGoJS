@@ -596,5 +596,53 @@ export class Utils implements BaseUtils {
   }
 }
 
+/**
+ * Coreth (C-chain EVM) atomic import gas cost constants.
+ * Source: coreth plugin/evm/atomic/params.go and avalanchego params.
+ */
+export const ATOMIC_TX_BASE_COST = 10_000n; // AtomicTxBaseCost fixed overhead
+export const COST_PER_SIGNATURE = 1_000n; // gas per signature slot in the tx
+export const COST_PER_BYTE = 1n; // gas per byte of serialized tx
+
+/**
+ * Compute the gas units required for a C-chain atomic import transaction.
+ *
+ * Formula (from coreth import_tx.go):
+ *   gas = txByteLen × CTxBytesGas + numSigs × CCostPerSignature + AtomicTxBaseCost
+ *
+ * @param txByteLen - serialized byte length of the transaction
+ * @param numSigs   - number of signature slots in the transaction
+ * @returns gas units as bigint
+ */
+export function calcImportCGas(txByteLen: number, numSigs: number): bigint {
+  return BigInt(txByteLen) * COST_PER_BYTE + BigInt(numSigs) * COST_PER_SIGNATURE + ATOMIC_TX_BASE_COST;
+}
+
+/**
+ * Compute the fee in nFLR for a C-chain atomic import transaction.
+ *
+ * Applies a multiplier to the base gas estimate to pad against base-fee
+ * volatility between the time the transaction is built and when it is
+ * broadcast.  A value of 2n (2×) is the recommended default; callers may
+ * pass a smaller multiplier (minimum 1n) if they prefer a tighter bound.
+ *
+ * @param txByteLen       - serialized byte length of the transaction
+ * @param numSigs         - number of signature slots
+ * @param baseFeeNanoFlr  - current C-chain base fee in nFLR (e.g. 500_000_000_000n for 500 gwei)
+ * @param multiplier      - fee multiplier for volatility padding (default 2n)
+ * @returns fee in nFLR as bigint
+ */
+export function calcImportCFee(
+  txByteLen: number,
+  numSigs: number,
+  baseFeeNanoFlr: bigint,
+  multiplier = 2n
+): bigint {
+  if (multiplier < 1n) {
+    throw new Error('multiplier must be >= 1');
+  }
+  return calcImportCGas(txByteLen, numSigs) * baseFeeNanoFlr * multiplier;
+}
+
 const utils = new Utils();
 export default utils;

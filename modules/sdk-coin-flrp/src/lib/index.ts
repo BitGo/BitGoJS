@@ -1,7 +1,7 @@
 import Utils from './utils';
 export * from './iface';
 export { KeyPair } from './keyPair';
-export { Utils };
+export { Utils, calcImportCGas, calcImportCFee, ATOMIC_TX_BASE_COST, COST_PER_SIGNATURE, COST_PER_BYTE } from './utils';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { TransactionBuilder } from './transactionBuilder';
 export { Transaction } from './transaction';

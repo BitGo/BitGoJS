@@ -952,3 +952,65 @@ describe('Utils', function () {
     });
   });
 });
+
+import { calcImportCGas, calcImportCFee, ATOMIC_TX_BASE_COST, COST_PER_SIGNATURE, COST_PER_BYTE } from '../../../src/lib/utils';
+
+describe('calcImportCGas / calcImportCFee', function () {
+  describe('calcImportCGas', function () {
+    it('should compute gas for the ticket example (311 bytes, 1 sig)', function () {
+      // Expected: 311 * 1 + 1 * 1000 + 10000 = 11311
+      assert.strictEqual(calcImportCGas(311, 1), 11311n);
+    });
+
+    it('should include AtomicTxBaseCost even for zero bytes and zero sigs', function () {
+      assert.strictEqual(calcImportCGas(0, 0), ATOMIC_TX_BASE_COST);
+    });
+
+    it('should scale with byte count', function () {
+      // 100 bytes, 2 sigs: 100 + 2000 + 10000 = 12100
+      assert.strictEqual(calcImportCGas(100, 2), 12100n);
+    });
+
+    it('should use exported constants', function () {
+      assert.strictEqual(ATOMIC_TX_BASE_COST, 10_000n);
+      assert.strictEqual(COST_PER_SIGNATURE, 1_000n);
+      assert.strictEqual(COST_PER_BYTE, 1n);
+    });
+  });
+
+  describe('calcImportCFee', function () {
+    it('should reproduce the ticket failing-fee with 1× multiplier', function () {
+      // 5700 gas (old estimate) * 500 gwei = 2,850,000 nFLR (insufficient)
+      // Correct: 11311 gas * 500 gwei * 1x = 5,655,500 nFLR
+      const baseFee = 500_000_000_000n; // 500 gwei in nFLR (1 gwei = 1e9 nFLR? no — actually nFLR = wei for FLR)
+      // On Flare: 1 gwei = 1e9 nwei but nFLR is 1e-9 FLR. baseFee in nFLR = baseFee * 1 (gwei = nFLR units).
+      // The ticket says 500 gwei base fee => 500*1e9 nFLR/gas if we treat gwei as wei.
+      // But the ticket says 5700 gas * 500 gwei = 2,850,000 nFLR, so 1 gwei = 500 nFLR/5700 * 5700 →
+      // actually: 5700 * 500 = 2,850,000 nFLR means baseFee is 500 nFLR/gas = 500 gwei where 1 gwei = 1 nFLR.
+      // Wait: nFLR = nano-FLR. 1 FLR = 1e9 nFLR. 1 gwei = 1e9 wei but for FLR we use nFLR as the smallest unit.
+      // So 500 gwei (= 500 * 1e9 nwei) but FLR's base denom is nFLR. The ticket says 5700 * 500 = 2.85M nFLR.
+      // So the baseFee passed to the builder is 500 (nFLR per gas unit).
+      const baseFeePerGas = 500n; // 500 nFLR/gas
+      const fee = calcImportCFee(311, 1, baseFeePerGas, 1n);
+      assert.strictEqual(fee, 11311n * 500n);
+    });
+
+    it('should double the fee with default 2× multiplier', function () {
+      const baseFeePerGas = 500n;
+      const feeX1 = calcImportCFee(311, 1, baseFeePerGas, 1n);
+      const feeX2 = calcImportCFee(311, 1, baseFeePerGas);
+      assert.strictEqual(feeX2, feeX1 * 2n);
+    });
+
+    it('should throw for multiplier < 1', function () {
+      assert.throws(() => calcImportCFee(311, 1, 500n, 0n), /multiplier must be >= 1/);
+    });
+
+    it('the 2× fee should comfortably cover the ticket scenario (500 gwei base, 311B, 1 sig)', function () {
+      const baseFeePerGas = 500n;
+      const paddedFee = calcImportCFee(311, 1, baseFeePerGas, 2n);
+      const requiredFee = 11311n * 500n; // minimum required by the node
+      assert.ok(paddedFee >= requiredFee, `padded fee ${paddedFee} should be >= required ${requiredFee}`);
+    });
+  });
+});

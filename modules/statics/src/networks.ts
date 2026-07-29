@@ -41,6 +41,8 @@ export interface FlareNetwork extends BaseNetwork {
   addSubnetValidatorFee?: string;
   addSubnetDelegatorFee?: string;
   xChainBlockchainID?: string;
+  /** Fee multiplier applied to C-chain atomic import gas estimates to buffer base-fee volatility (default 2). */
+  importFeeMultiplier?: number;
 }
 
 import { CoinFamily } from './base';
@@ -2367,6 +2369,7 @@ export class FlareP extends Mainnet implements FlareNetwork {
   txFee = '200000'; // FLR P-chain import requires higher fee than base txFee
   baseTxFee = '1000000';
   maxImportFee = '10000000'; // defaults
+  importFeeMultiplier = 2; // 2× buffer for C-chain base-fee volatility
   createAssetTxFee = '1000000';
   createSubnetTx = '100000000'; // defaults
   transformSubnetTxFee = '100000000';
@@ -2403,6 +2406,7 @@ export class FlarePTestnet extends Testnet implements FlareNetwork {
   txFee = '200000'; // FLR P-chain import requires higher fee than base txFee
   baseTxFee = '1000000';
   maxImportFee = '10000000'; // defaults
+  importFeeMultiplier = 2; // 2× buffer for C-chain base-fee volatility
   createAssetTxFee = '1000000';
   createSubnetTx = '100000000'; // defaults
   transformSubnetTxFee = '100000000';
