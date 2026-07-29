@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.0.0...@bitgo/statics@59.1.0) (2026-07-28)
+
+
+### Features
+
+* add new tokens from AMS API ([8ae64f9](https://github.com/BitGo/BitGoJS/commit/8ae64f933bfc998cb711f060e2e3daffa6c98a97))
+* add new tokens from AMS API ([31b044e](https://github.com/BitGo/BitGoJS/commit/31b044e83cf05b7d88effa22f69dfad6fd52bf94))
+* **statics:** add ofcgasevm/ofctgasevm OFC coins for Neo X ([09a5866](https://github.com/BitGo/BitGoJS/commit/09a58663dee36805610b11b68bd1b49c164f723b))
+* **statics:** add Pearl to statics ([22a12fc](https://github.com/BitGo/BitGoJS/commit/22a12fcdcc9e0a3095e5bb50e339866a57b8f00e))
+* **statics:** onboard 99 new HoodETH stock tokens and OFC equivalents ([f7e405a](https://github.com/BitGo/BitGoJS/commit/f7e405ac767748f414f67ce1f850d1505d405790))
+* **statics:** onboard polygon:infra, hoodeth:cashcat, rename cETH ([d958209](https://github.com/BitGo/BitGoJS/commit/d958209f6d2ded6024ba59cc8181103b4ff5d0df))
+* **statics:** onboard tbaseeth:ctbtccx_99e833 vault share token ([26cbc6a](https://github.com/BitGo/BitGoJS/commit/26cbc6a6fdd28ad0a06d8bf5437df5af31fc8b28))
+* **statics:** update USD1 and SOFID contract addresses ([4e070be](https://github.com/BitGo/BitGoJS/commit/4e070bed8b07dc3513a6e63552a80719c01d9d18))
+
+
+
+
+
 # [59.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.57.0...@bitgo/statics@59.0.0) (2026-07-22)
 
 

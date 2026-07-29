@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.4.0...@bitgo/sdk-core@38.5.0) (2026-07-28)
+
+
+### Bug Fixes
+
+* reject safe root creation on legacy MPCv1 ceremonies ([3c1d25d](https://github.com/BitGo/BitGoJS/commit/3c1d25d5207957c9082760209e7ff93b523401c4))
+* **sdk-core:** stamp enterprise-id header on getVaultConfig call ([55a0150](https://github.com/BitGo/BitGoJS/commit/55a01501db2f393430fd702bd6a8fc2ddf7e96db))
+
+
+### Features
+
+* **abstract-utxo:** add Pearl fixed-script wallet surface ([64662cf](https://github.com/BitGo/BitGoJS/commit/64662cf466ee1cae9e960cd5fd7d2669a2add908))
+* **sdk-core,express:** plumb userKeySigningRequired through generateWallet ([805a095](https://github.com/BitGo/BitGoJS/commit/805a095bd027bc3894d78e48d4d8abed84dc3ba0))
+* **sdk-core:** export PrebuildTransactionFeeInfo type ([0152201](https://github.com/BitGo/BitGoJS/commit/01522010be58ee5b642c5eeb34d36eacf1efe7ef))
+* **sdk-core:** pass attestation through pending approvals ([a5b6b60](https://github.com/BitGo/BitGoJS/commit/a5b6b6089956d6dcbf336c70f26c90dde84f55ee))
+
+
+
+
+
 # [38.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.3.0...@bitgo/sdk-core@38.4.0) (2026-07-22)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.40.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.39.4...@bitgo/utxo-core@1.40.0) (2026-07-28)
+
+
+### Features
+
+* **abstract-utxo:** add Pearl fixed-script wallet surface ([64662cf](https://github.com/BitGo/BitGoJS/commit/64662cf466ee1cae9e960cd5fd7d2669a2add908))
+
+
+
+
+
 ## [1.39.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.39.3...@bitgo/utxo-core@1.39.4) (2026-07-22)
 
 **Note:** Version bump only for package @bitgo/utxo-core
