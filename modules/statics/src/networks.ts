@@ -864,6 +864,19 @@ class Hoodi extends Testnet implements EthereumNetwork {
   zamaAclContractAddress = '0x6d3faf6f86e1ff9f3b0831dda920aba1cbd5bd68';
 }
 
+class Sepolia extends Testnet implements EthereumNetwork {
+  name = 'Sepolia';
+  family = CoinFamily.ETH;
+  explorerUrl = 'https://sepolia.etherscan.io/tx/';
+  accountExplorerUrl = 'https://sepolia.etherscan.io/address/';
+  blockExplorerUrl = 'https://sepolia.etherscan.io/block/';
+  // https://chainlist.org/chain/11155111
+  chainId = 11155111;
+  nativeCoinOperationHashPrefix = 'ETHER';
+  tokenOperationHashPrefix = 'ERC20';
+  // TODO: add batcher/forwarder/wallet contract addresses once deployed on Sepolia
+}
+
 class EthereumClassic extends Mainnet implements EthereumNetwork {
   name = 'EthereumClassic';
   family = CoinFamily.ETC;
@@ -3107,6 +3120,7 @@ export const Networks = {
     goerli: Object.freeze(new Goerli()),
     holesky: Object.freeze(new Holesky()),
     hoodi: Object.freeze(new Hoodi()),
+    sepolia: Object.freeze(new Sepolia()),
     lnbtc: Object.freeze(new LightningBitcoinTestnet()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     mantle: Object.freeze(new MantleTestnet()),
