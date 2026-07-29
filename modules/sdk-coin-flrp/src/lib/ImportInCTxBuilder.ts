@@ -14,9 +14,19 @@ import {
 import utils from './utils';
 import { DecodedUtxoObj, FlareTransactionType, SECP256K1_Transfer_Output, Tx } from './iface';
 
+/**
+ * Buffer applied to a caller-supplied base fee to absorb C-chain base-fee volatility
+ * between transaction signing and broadcast. Expressed in basis points (1000 = 10%).
+ */
+const BASE_FEE_PADDING_BPS = 1000n;
+
 export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    // Unlike P-chain-oriented atomic txs, a C-chain import has no meaningful default fee.
+    // Clear the inherited network txFee default so an unset fee is detectable at build time,
+    // rather than silently building with that unrelated default value.
+    this.transaction._fee.fee = '';
   }
 
   /**
@@ -127,8 +137,15 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     if (this.transaction._to.length !== 1) {
       throw new BuildTransactionError('to is required');
     }
-    if (!this.transaction._fee.fee) {
+    const hasFee = !!this.transaction._fee.fee && BigInt(this.transaction._fee.fee) !== BigInt(0);
+    const hasBaseFee = !!this.transaction._fee.baseFee && BigInt(this.transaction._fee.baseFee) !== BigInt(0);
+    if (!hasFee && !hasBaseFee) {
       throw new BuildTransactionError('fee is required');
+    }
+    if (hasFee && hasBaseFee) {
+      throw new BuildTransactionError(
+        'fee and baseFee are mutually exclusive: use baseFee for gas-aware fee calculation, or fee for a fixed amount, not both'
+      );
     }
     if (!this.transaction._context) {
       throw new BuildTransactionError('context is required');
@@ -147,37 +164,70 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
 
     this.validateUtxoAddresses();
 
-    const actualFeeNFlr = BigInt(this.transaction._fee.fee);
     const sourceChain = 'P';
 
     // Convert decoded UTXOs to native FlareJS Utxo objects
     const assetId = utils.cb58Encode(Buffer.from(this.transaction._assetId, 'hex'));
     const nativeUtxos = utils.decodedToUtxos(this.transaction._utxos, assetId);
 
-    // Validate UTXO balance is sufficient to cover the import fee
     const totalUtxoAmount = nativeUtxos.reduce((sum, utxo) => {
       const output = utxo.output as TransferOutput;
       return sum + output.amount();
     }, BigInt(0));
 
-    if (totalUtxoAmount <= actualFeeNFlr) {
-      throw new BuildTransactionError(
-        `Insufficient UTXO balance: have ${totalUtxoAmount.toString()} nFLR, need more than ${actualFeeNFlr.toString()} nFLR to cover import fee`
-      );
-    }
-
     const signingAddresses = this.getSigningAddresses();
 
-    const importTx = evm.newImportTx(
-      this.transaction._context,
-      this.transaction._to[0],
-      signingAddresses,
-      nativeUtxos,
-      sourceChain,
-      actualFeeNFlr
-    );
+    let importTx: UnsignedTx;
 
-    const flareUnsignedTx = importTx as UnsignedTx;
+    if (hasBaseFee) {
+      // Gas-aware path: let flarejs compute the actual import gas cost (including the
+      // ~10,000 AtomicTxBaseCost) from the real tx size/inputs, instead of trusting a
+      // pre-computed fee amount. Pad the base fee to absorb volatility between signing
+      // and broadcast.
+      const suppliedBaseFee = BigInt(this.transaction._fee.baseFee as string);
+      const paddedBaseFee = (suppliedBaseFee * (10000n + BASE_FEE_PADDING_BPS)) / 10000n;
+
+      importTx = evm.newImportTxFromBaseFee(
+        this.transaction._context,
+        this.transaction._to[0],
+        signingAddresses,
+        nativeUtxos,
+        sourceChain,
+        paddedBaseFee
+      ) as UnsignedTx;
+
+      const innerImportTx = importTx.getTx() as evmSerial.ImportTx;
+      const totalOutputAmount = innerImportTx.Outs.reduce((sum, out) => sum + out.amount.value(), BigInt(0));
+      const computedFee = totalUtxoAmount - totalOutputAmount;
+      // Mirror the legacy fixed-fee path: the fee must not consume the entire UTXO amount,
+      // otherwise nothing is actually imported (totalOutputAmount would be 0).
+      if (computedFee <= BigInt(0) || totalOutputAmount <= BigInt(0)) {
+        throw new BuildTransactionError(
+          `Insufficient UTXO balance: have ${totalUtxoAmount.toString()} nFLR, computed import fee of ${computedFee.toString()} nFLR leaves nothing to import`
+        );
+      }
+      this.transaction._fee.fee = computedFee.toString();
+    } else {
+      const actualFeeNFlr = BigInt(this.transaction._fee.fee);
+
+      // Validate UTXO balance is sufficient to cover the import fee
+      if (totalUtxoAmount <= actualFeeNFlr) {
+        throw new BuildTransactionError(
+          `Insufficient UTXO balance: have ${totalUtxoAmount.toString()} nFLR, need more than ${actualFeeNFlr.toString()} nFLR to cover import fee`
+        );
+      }
+
+      importTx = evm.newImportTx(
+        this.transaction._context,
+        this.transaction._to[0],
+        signingAddresses,
+        nativeUtxos,
+        sourceChain,
+        actualFeeNFlr
+      ) as UnsignedTx;
+    }
+
+    const flareUnsignedTx = importTx;
     const innerTx = flareUnsignedTx.getTx() as evmSerial.ImportTx;
 
     const utxosWithIndex = innerTx.importedInputs.map((input) => {

@@ -1,11 +1,11 @@
 import assert from 'assert';
 import 'should';
-import { TransactionBuilderFactory, Transaction } from '../../../src/lib';
+import { TransactionBuilderFactory, Transaction, Utils } from '../../../src/lib';
 import { coins } from '@bitgo/statics';
 import { IMPORT_IN_C as testData } from '../../resources/transactionData/importInC';
 import { ON_CHAIN_TEST_WALLET } from '../../resources/account';
 import signFlowTest from './signFlowTestSuit';
-import { secp256k1, UnsignedTx } from '@flarenetwork/flarejs';
+import { secp256k1, UnsignedTx, evm, evmSerial } from '@flarenetwork/flarejs';
 
 describe('Flrp Import In C Tx Builder', () => {
   const factory = new TransactionBuilderFactory(coins.get('tflrp'));
@@ -218,6 +218,82 @@ describe('Flrp Import In C Tx Builder', () => {
       const expectedOutput = parseInt(utxo.amount, 10) - parseInt(importFee, 10);
       const outputHex = expectedOutput.toString(16).padStart(16, '0');
       hex.should.containEql(outputHex);
+    });
+  });
+
+  describe('base-fee driven gas estimation (CECHO-1821)', () => {
+    const utxo = {
+      outputID: 7,
+      amount: '30000000',
+      txid: 'nSBwNcgfLbk5S425b1qaYaqTTCiMCV75KU4Fbnq8SPUUqLq2',
+      threshold: 1,
+      addresses: [ON_CHAIN_TEST_WALLET.user.pChainAddress],
+      outputidx: '1',
+      locktime: '0',
+    };
+
+    it('should derive a fee that accounts for the AtomicTxBaseCost and exceeds a naive gas*baseFee estimate', async () => {
+      const baseFeeWei = 500n; // base fee in wei/gas used in the reported failure
+      const underpricedGasEstimate = 5700n; // naive/legacy gas estimate missing AtomicTxBaseCost
+      const underpricedFee = baseFeeWei * underpricedGasEstimate;
+
+      const txBuilder = factory
+        .getImportInCBuilder()
+        .threshold(1)
+        .locktime(0)
+        .fromPubKey([ON_CHAIN_TEST_WALLET.user.pChainAddress])
+        .to('0x96993BAEb6AaE2e06BF95F144e2775D4f8efbD35')
+        .baseFee(baseFeeWei)
+        .decodedUtxos([utxo])
+        .context(testData.context);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const actualFee = BigInt(tx.fee.fee);
+
+      // The gas-aware fee (including the real AtomicTxBaseCost, ~10,000) must exceed
+      // the underpriced legacy estimate that caused "insufficient funds" on broadcast.
+      assert(
+        actualFee > underpricedFee,
+        `Expected actualFee (${actualFee}) to be above underpricedFee (${underpricedFee})`
+      );
+    });
+
+    it('should pad the supplied base fee on top of the raw flarejs gas*baseFee estimate', async () => {
+      const baseFeeWei = 500n;
+      const fromAddress = ON_CHAIN_TEST_WALLET.user.pChainAddress;
+      const toAddress = '0x96993BAEb6AaE2e06BF95F144e2775D4f8efbD35';
+
+      const paddedTx = (await factory
+        .getImportInCBuilder()
+        .threshold(1)
+        .locktime(0)
+        .fromPubKey([fromAddress])
+        .to(toAddress)
+        .baseFee(baseFeeWei)
+        .decodedUtxos([utxo])
+        .context(testData.context)
+        .build()) as Transaction;
+      const paddedFee = BigInt(paddedTx.fee.fee);
+
+      // Reconstruct the same import tx directly via flarejs using the *unpadded* base fee,
+      // to recover the network's raw gas*baseFee requirement with no buffer applied.
+      const assetId = (coins.get('tflrp').network as unknown as { assetId: string }).assetId;
+      const nativeUtxos = Utils.decodedToUtxos([utxo], assetId);
+      const rawImportTx = evm.newImportTxFromBaseFee(
+        testData.context,
+        Utils.parseAddress(toAddress),
+        [Utils.parseAddress(fromAddress)],
+        nativeUtxos,
+        'P',
+        baseFeeWei
+      ) as UnsignedTx;
+      const rawInnerTx = rawImportTx.getTx() as evmSerial.ImportTx;
+      const rawTotalOutput = rawInnerTx.Outs.reduce((sum, out) => sum + out.amount.value(), BigInt(0));
+      const rawFee = BigInt(utxo.amount) - rawTotalOutput;
+
+      assert(paddedFee > rawFee, `Expected padded fee (${paddedFee}) to exceed the unpadded raw fee (${rawFee})`);
+      // Padding is exactly the configured 10% buffer applied to the base fee before estimation.
+      assert.strictEqual(paddedFee, (rawFee * 11000n) / 10000n);
     });
   });
 

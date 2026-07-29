@@ -163,6 +163,12 @@ export interface FlrpTransactionFee {
   fee: string;
   type?: string;
   feeState?: FlrpFeeState;
+  /**
+   * C-chain base fee (in nFLR/wei per gas) used to derive the atomic-tx fee.
+   * When set, the import builder computes the required fee from actual gas usage
+   * (including the AtomicTxBaseCost) instead of treating `fee` as a fixed amount.
+   */
+  baseFee?: string;
 }
 
 type DimensionValue = number;
