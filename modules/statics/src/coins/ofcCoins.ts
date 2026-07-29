@@ -150,6 +150,8 @@ export const ofcCoins = [
   ofc('31bae66e-a135-42f9-b9d3-1623ab9c7ecc', 'ofctrx', 'Tron', 6, UnderlyingAsset.TRX, CoinKind.CRYPTO),
   ofc('dbbceebe-9096-4d7b-ae9e-31eb8a3dc5ca', 'ofcsol', 'Solana', 9, UnderlyingAsset.SOL, CoinKind.CRYPTO),
   ofc('07301a34-7e47-417e-a2cb-00ef609d59a1', 'ofcdoge', 'Dogecoin', 8, UnderlyingAsset.DOGE, CoinKind.CRYPTO),
+  ofc('50bdb846-4f05-4267-ab59-31764e82fea7', 'ofcpearl', 'Pearl', 8, UnderlyingAsset.PEARL, CoinKind.CRYPTO),
+  tofc('2e091453-74ea-4de6-8970-920fb148f848', 'ofctpearl', 'Test Pearl', 8, UnderlyingAsset.PEARL, CoinKind.CRYPTO),
   ofc('5beca519-4479-4878-8e8a-a910226438c0', 'ofcada', 'Cardano', 6, UnderlyingAsset.ADA, CoinKind.CRYPTO),
   ofc(
     'e9b7ae6f-f893-44e6-87db-1bbb1469a3d6',
