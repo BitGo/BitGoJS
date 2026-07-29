@@ -55,6 +55,12 @@ export const TOKEN_ACL_FLAG_ACCOUNT_SEED = 'FLAG_ACCOUNT';
 /** PDA seed prefix (under the gating program) for a mint's thaw ExtraAccountMetaList account. */
 export const TOKEN_ACL_THAW_EXTRA_METAS_SEED = 'thaw_extra_account_metas';
 
+/** Solana Instructions sysvar address. Used by Token-2022 extension instructions that verify proofs in-tx. */
+export const INSTRUCTIONS_SYSVAR_ADDRESS = 'Sysvar1nstructions1111111111111111111111111';
+
+/** Solana zk-elgamal-proof program address. */
+export const ZK_ELGAMAL_PROOF_PROGRAM_ID = 'ZkE1G11tXDEfKBqrPK5G1iFbnW4mdeQTw48MYUb9Gkp';
+
 // Sdk instructions, mainly to check decoded types.
 export enum ValidInstructionTypesEnum {
   AdvanceNonceAccount = 'AdvanceNonceAccount',
@@ -83,6 +89,15 @@ export enum ValidInstructionTypesEnum {
   Approve = 'Approve',
   CustomInstruction = 'CustomInstruction',
   PermissionlessThawIdempotent = 'PermissionlessThawIdempotent',
+  ConfidentialMint = 'ConfidentialMint',
+  CreateRecordAccount = 'CreateRecordAccount',
+  WriteRecordData = 'WriteRecordData',
+  VerifyEqualityProof = 'VerifyEqualityProof',
+  VerifyValidityProof = 'VerifyValidityProof',
+  VerifyRangeProof = 'VerifyRangeProof',
+  CloseRecordAccount = 'CloseRecordAccount',
+  CloseContextState = 'CloseContextState',
+  ConfigureConfidentialTransferAccount = 'ConfigureConfidentialTransferAccount',
 }
 
 // Internal instructions types
@@ -109,6 +124,15 @@ export enum InstructionBuilderTypes {
   Approve = 'Approve',
   WithdrawStake = 'WithdrawStake',
   PermissionlessThawIdempotent = 'PermissionlessThawIdempotent',
+  ConfidentialMint = 'ConfidentialMint',
+  CreateRecordAccount = 'CreateRecordAccount',
+  WriteRecordData = 'WriteRecordData',
+  VerifyEqualityProof = 'VerifyEqualityProof',
+  VerifyValidityProof = 'VerifyValidityProof',
+  VerifyRangeProof = 'VerifyRangeProof',
+  CloseRecordAccount = 'CloseRecordAccount',
+  CloseContextState = 'CloseContextState',
+  ConfigureConfidentialTransferAccount = 'ConfigureConfidentialTransferAccount',
 }
 
 export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [

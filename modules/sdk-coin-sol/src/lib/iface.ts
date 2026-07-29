@@ -53,7 +53,16 @@ export type InstructionParams =
   | Approve
   | CustomInstruction
   | VersionedCustomInstruction
-  | PermissionlessThawIdempotent;
+  | PermissionlessThawIdempotent
+  | ConfidentialMint
+  | CreateRecordAccount
+  | WriteRecordData
+  | VerifyEqualityProof
+  | VerifyValidityProof
+  | VerifyRangeProof
+  | CloseRecordAccount
+  | CloseContextState
+  | ConfigureConfidentialTransferAccount;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -311,7 +320,16 @@ export type ValidInstructionTypes =
   | 'Burn'
   | 'Approve'
   | 'CustomInstruction'
-  | 'PermissionlessThawIdempotent';
+  | 'PermissionlessThawIdempotent'
+  | 'ConfidentialMint'
+  | 'CreateRecordAccount'
+  | 'WriteRecordData'
+  | 'VerifyEqualityProof'
+  | 'VerifyValidityProof'
+  | 'VerifyRangeProof'
+  | 'CloseRecordAccount'
+  | 'CloseContextState'
+  | 'ConfigureConfidentialTransferAccount';
 
 export type StakingAuthorizeParams = {
   stakingAddress: string;
@@ -348,6 +366,107 @@ export interface VersionedTransactionData {
     numReadonlyUnsignedAccounts: number;
   };
   recentBlockhash?: string;
+}
+
+export interface ConfidentialMint {
+  type: InstructionBuilderTypes.ConfidentialMint;
+  params: {
+    tokenAddress: string;
+    mintAddress: string;
+    authorityAddress: string;
+    equalityRecordAddress?: string;
+    ciphertextValidityRecordAddress?: string;
+    rangeRecordAddress?: string;
+    newDecryptableSupply: string;
+    mintAmountAuditorCiphertextLo: string;
+    mintAmountAuditorCiphertextHi: string;
+    equalityProofInstructionOffset: number;
+    ciphertextValidityProofInstructionOffset: number;
+    rangeProofInstructionOffset: number;
+  };
+}
+
+export interface CreateRecordAccount {
+  type: InstructionBuilderTypes.CreateRecordAccount;
+  params: {
+    payerAddress: string;
+    recordAccountAddress: string;
+    recordAccountOwnerAddress: string;
+    space: number;
+    lamports: number;
+  };
+}
+
+export interface WriteRecordData {
+  type: InstructionBuilderTypes.WriteRecordData;
+  params: {
+    recordAccountAddress: string;
+    recordAccountOwnerAddress: string;
+    offset: number;
+    data: string;
+  };
+}
+
+export interface VerifyEqualityProof {
+  type: InstructionBuilderTypes.VerifyEqualityProof;
+  params: {
+    proofAccountAddress: string;
+    contextStateAccountAddress: string;
+    contextStateAuthorityAddress: string;
+    offset?: number;
+    proofData?: string;
+  };
+}
+
+export interface VerifyValidityProof {
+  type: InstructionBuilderTypes.VerifyValidityProof;
+  params: {
+    proofAccountAddress: string;
+    contextStateAccountAddress: string;
+    contextStateAuthorityAddress: string;
+    offset?: number;
+    proofData?: string;
+  };
+}
+
+export interface VerifyRangeProof {
+  type: InstructionBuilderTypes.VerifyRangeProof;
+  params: {
+    proofAccountAddress: string;
+    offset?: number;
+    proofData?: string;
+  };
+}
+
+export interface CloseRecordAccount {
+  type: InstructionBuilderTypes.CloseRecordAccount;
+  params: {
+    recordAccountAddress: string;
+    destinationAddress: string;
+    authorityAddress: string;
+  };
+}
+
+export interface CloseContextState {
+  type: InstructionBuilderTypes.CloseContextState;
+  params: {
+    contextStateAccountAddress: string;
+    destinationAddress: string;
+    authorityAddress: string;
+  };
+}
+
+export interface ConfigureConfidentialTransferAccount {
+  type: InstructionBuilderTypes.ConfigureConfidentialTransferAccount;
+  params: {
+    tokenAddress: string;
+    mintAddress: string;
+    authorityAddress: string;
+    instructionsSysvarOrContextStateAddress?: string;
+    decryptableZeroBalance: string;
+    maximumPendingBalanceCreditCounter: string;
+    proofInstructionOffset: number;
+  };
 }
 
 export interface AddressLookupTable {
