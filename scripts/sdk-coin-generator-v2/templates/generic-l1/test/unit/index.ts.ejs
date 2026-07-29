@@ -1,0 +1,46 @@
+import { <%= constructor %> } from '../../src/<%= symbol %>';
+import { <%= testnetConstructor %> } from '../../src/<%= testnetSymbol %>';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+
+describe('<%= coin %> Coin', function () {
+  let bitgo: TestBitGoAPI;
+  let basecoin;
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.safeRegister('<%= symbol %>', <%= constructor %>.createInstance);
+    bitgo.initializeTestVars();
+    basecoin = bitgo.coin('<%= symbol %>');
+  });
+
+  it('should instantiate the coin', function () {
+    const basecoin = bitgo.coin('<%= symbol %>');
+    basecoin.should.be.an.instanceof(<%= constructor %>);
+  });
+
+  it('should return the correct coin name', function () {
+    basecoin.getChain().should.equal('<%= symbol %>');
+    basecoin.getFullName().should.equal('<%= coin %>');
+    basecoin.getBaseFactor().should.equal(<%= baseFactor %>);
+  });
+
+  describe('Testnet', function () {
+    let testnetBasecoin;
+
+    before(function () {
+      bitgo.safeRegister('<%= testnetSymbol %>', <%= testnetConstructor %>.createInstance);
+      testnetBasecoin = bitgo.coin('<%= testnetSymbol %>');
+    });
+
+    it('should instantiate the testnet coin', function () {
+      testnetBasecoin.should.be.an.instanceof(<%= testnetConstructor %>);
+    });
+
+    it('should return the correct testnet coin name', function () {
+      testnetBasecoin.getChain().should.equal('<%= testnetSymbol %>');
+      testnetBasecoin.getFullName().should.equal('Testnet <%= coin %>');
+      testnetBasecoin.getBaseFactor().should.equal(<%= baseFactor %>);
+    });
+  });
+});

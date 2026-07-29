@@ -1,0 +1,642 @@
+{
+  "staking": {
+    "transaction": {
+      "version": 2,
+      "locktime": 0,
+      "ins": [
+        {
+          "hash": "1111111111111111111111111111111111111111111111111111111111111111",
+          "index": 0,
+          "script": "",
+          "sequence": 4294967295,
+          "witness": []
+        }
+      ],
+      "outs": [
+        {
+          "script": "51203011435d07a5fbdd9e2ce1f5bcf5f43dd8b879153fb88825fe61f346bf900685",
+          "value": 55555
+        },
+        {
+          "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48",
+          "value": 610751
+        }
+      ]
+    },
+    "fee": 360
+  },
+  "stakingWithdraw": {
+    "psbt": {
+      "data": {
+        "inputs": [
+          {
+            "witnessUtxo": {
+              "script": "51203011435d07a5fbdd9e2ce1f5bcf5f43dd8b879153fb88825fe61f346bf900685",
+              "value": "55555"
+            },
+            "tapLeafScript": [
+              {
+                "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac02b5e03e8f99e45c243b3a08aab9b3d5dcfbd70b9b4c7b6eb89fd56f4b645efc604fcf01d19707c7d65d145bd77cb1ecab890dd0d8cecc16116d1438aeba66bf6",
+                "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad021027b2",
+                "leafVersion": 192
+              }
+            ],
+            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
+          }
+        ],
+        "outputs": [
+          {}
+        ],
+        "globalMap": {
+          "unsignedTx": {
+            "tx": {
+              "version": 2,
+              "locktime": 0,
+              "ins": [
+                {
+                  "hash": "93bf6c25f9a5ac3144d25dc3e46c2893f24e9b4f71a26a15673e9aac59c3f389",
+                  "index": 0,
+                  "script": "",
+                  "sequence": 10000,
+                  "witness": []
+                }
+              ],
+              "outs": [
+                {
+                  "value": "55267",
+                  "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "opts": {
+        "maximumFeeRate": 5000
+      },
+      "inputCount": 1,
+      "version": 2,
+      "locktime": 0,
+      "txInputs": [
+        {
+          "hash": "93bf6c25f9a5ac3144d25dc3e46c2893f24e9b4f71a26a15673e9aac59c3f389",
+          "index": 0,
+          "sequence": 10000
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48",
+          "value": "55267",
+          "address": "bc1q39h3hfjaat4sgkanzg0zpet5fenv5rjg0lhnvy"
+        }
+      ]
+    },
+    "fee": 288
+  },
+  "unbonding": {
+    "transaction": {
+      "version": 2,
+      "locktime": 0,
+      "ins": [
+        {
+          "hash": "93bf6c25f9a5ac3144d25dc3e46c2893f24e9b4f71a26a15673e9aac59c3f389",
+          "index": 0,
+          "script": "",
+          "sequence": 4294967295,
+          "witness": []
+        }
+      ],
+      "outs": [
+        {
+          "script": "5120df14d46b306102051a4ecd361691e8290be0e439430984431535edf28815a1ed",
+          "value": 53555
+        }
+      ]
+    },
+    "fee": 2000
+  },
+  "unbondingWithdraw": {
+    "psbt": {
+      "data": {
+        "inputs": [
+          {
+            "witnessUtxo": {
+              "script": "5120df14d46b306102051a4ecd361691e8290be0e439430984431535edf28815a1ed",
+              "value": "53555"
+            },
+            "tapLeafScript": [
+              {
+                "controlBlock": "c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac004fcf01d19707c7d65d145bd77cb1ecab890dd0d8cecc16116d1438aeba66bf6",
+                "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad022d01b2",
+                "leafVersion": 192
+              }
+            ],
+            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
+          }
+        ],
+        "outputs": [
+          {}
+        ],
+        "globalMap": {
+          "unsignedTx": {
+            "tx": {
+              "version": 2,
+              "locktime": 0,
+              "ins": [
+                {
+                  "hash": "1d7fd905b4d603768b3bc0c5b718497b9d9e3910201e963b5a4705fd237cd4f4",
+                  "index": 0,
+                  "script": "",
+                  "sequence": 301,
+                  "witness": []
+                }
+              ],
+              "outs": [
+                {
+                  "value": "53267",
+                  "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "opts": {
+        "maximumFeeRate": 5000
+      },
+      "inputCount": 1,
+      "version": 2,
+      "locktime": 0,
+      "txInputs": [
+        {
+          "hash": "1d7fd905b4d603768b3bc0c5b718497b9d9e3910201e963b5a4705fd237cd4f4",
+          "index": 0,
+          "sequence": 301
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48",
+          "value": "53267",
+          "address": "bc1q39h3hfjaat4sgkanzg0zpet5fenv5rjg0lhnvy"
+        }
+      ]
+    },
+    "fee": 288
+  },
+  "unbondingSlashing": {
+    "psbt": {
+      "data": {
+        "inputs": [
+          {
+            "witnessUtxo": {
+              "script": "5120df14d46b306102051a4ecd361691e8290be0e439430984431535edf28815a1ed",
+              "value": "53555"
+            },
+            "tapLeafScript": [
+              {
+                "controlBlock": "c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac07062c1f0dfccac577e744dc23ee55b6cc79642fce43bd21f47b1719ee693877f",
+                "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad20d23c2c25e1fcf8fd1c21b9a402c19e2e309e531e45e92fb1e9805b6056b0cc76ad200aee0509b16db71c999238a4827db945526859b13c95487ab46725357c9a9f25ac2017921cf156ccb4e73d428f996ed11b245313e37e27c978ac4d2cc21eca4672e4ba20fa9d882d45f4060bdb8042183828cd87544f1ea997380e586cab77d5fd698737ba529c",
+                "leafVersion": 192
+              }
+            ],
+            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
+          }
+        ],
+        "outputs": [
+          {},
+          {}
+        ],
+        "globalMap": {
+          "unsignedTx": {
+            "tx": {
+              "version": 2,
+              "locktime": 0,
+              "ins": [
+                {
+                  "hash": "1d7fd905b4d603768b3bc0c5b718497b9d9e3910201e963b5a4705fd237cd4f4",
+                  "index": 0,
+                  "script": "",
+                  "sequence": 4294967295,
+                  "witness": []
+                }
+              ],
+              "outs": [
+                {
+                  "value": "2678",
+                  "script": "00145be12624d08a2b424095d7c07221c33450d14bf1"
+                },
+                {
+                  "value": "45877",
+                  "script": "51206c3847465792524786d02b2bbb3833d92f0399c5d299353dc56be1bfc752e5a8"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "opts": {
+        "maximumFeeRate": 5000
+      },
+      "inputCount": 1,
+      "version": 2,
+      "locktime": 0,
+      "txInputs": [
+        {
+          "hash": "1d7fd905b4d603768b3bc0c5b718497b9d9e3910201e963b5a4705fd237cd4f4",
+          "index": 0,
+          "sequence": 4294967295
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "00145be12624d08a2b424095d7c07221c33450d14bf1",
+          "value": "2678",
+          "address": "bc1qt0sjvfxs3g45ysy46lq8ygwrx3gdzjl3kjg8ln"
+        },
+        {
+          "script": "51206c3847465792524786d02b2bbb3833d92f0399c5d299353dc56be1bfc752e5a8",
+          "value": "45877",
+          "address": "bc1pdsuyw3jhjffy0pks9v4mkwpnmyhs8xw962vn20w9d0sml36juk5qp2hajr"
+        }
+      ]
+    },
+    "fee": 5000
+  },
+  "unbondingSlashingWithdraw": {
+    "psbt": {
+      "data": {
+        "inputs": [
+          {
+            "witnessUtxo": {
+              "script": "51206c3847465792524786d02b2bbb3833d92f0399c5d299353dc56be1bfc752e5a8",
+              "value": "45877"
+            },
+            "tapLeafScript": [
+              {
+                "controlBlock": "c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
+                "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad022d01b2",
+                "leafVersion": 192
+              }
+            ],
+            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
+          }
+        ],
+        "outputs": [
+          {}
+        ],
+        "globalMap": {
+          "unsignedTx": {
+            "tx": {
+              "version": 2,
+              "locktime": 0,
+              "ins": [
+                {
+                  "hash": "457fcb478951aacbf83711beb69959fa4d42464107aaf2b8cc51923c7e673bb6",
+                  "index": 1,
+                  "script": "",
+                  "sequence": 301,
+                  "witness": []
+                }
+              ],
+              "outs": [
+                {
+                  "value": "45589",
+                  "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "opts": {
+        "maximumFeeRate": 5000
+      },
+      "inputCount": 1,
+      "version": 2,
+      "locktime": 0,
+      "txInputs": [
+        {
+          "hash": "457fcb478951aacbf83711beb69959fa4d42464107aaf2b8cc51923c7e673bb6",
+          "index": 1,
+          "sequence": 301
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48",
+          "value": "45589",
+          "address": "bc1q39h3hfjaat4sgkanzg0zpet5fenv5rjg0lhnvy"
+        }
+      ]
+    },
+    "fee": 288
+  },
+  "slashing": {
+    "psbt": {
+      "data": {
+        "inputs": [
+          {
+            "witnessUtxo": {
+              "script": "51203011435d07a5fbdd9e2ce1f5bcf5f43dd8b879153fb88825fe61f346bf900685",
+              "value": "55555"
+            },
+            "tapLeafScript": [
+              {
+                "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0791b0b1dab3fca2c76adf1c5483d7b0524f1a70d846ddd3db54fb9d2e494a797",
+                "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad20d23c2c25e1fcf8fd1c21b9a402c19e2e309e531e45e92fb1e9805b6056b0cc76ad200aee0509b16db71c999238a4827db945526859b13c95487ab46725357c9a9f25ac2017921cf156ccb4e73d428f996ed11b245313e37e27c978ac4d2cc21eca4672e4ba20fa9d882d45f4060bdb8042183828cd87544f1ea997380e586cab77d5fd698737ba529c",
+                "leafVersion": 192
+              }
+            ],
+            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
+          }
+        ],
+        "outputs": [
+          {},
+          {}
+        ],
+        "globalMap": {
+          "unsignedTx": {
+            "tx": {
+              "version": 2,
+              "locktime": 0,
+              "ins": [
+                {
+                  "hash": "93bf6c25f9a5ac3144d25dc3e46c2893f24e9b4f71a26a15673e9aac59c3f389",
+                  "index": 0,
+                  "script": "",
+                  "sequence": 4294967295,
+                  "witness": []
+                }
+              ],
+              "outs": [
+                {
+                  "value": "2778",
+                  "script": "00145be12624d08a2b424095d7c07221c33450d14bf1"
+                },
+                {
+                  "value": "47777",
+                  "script": "51206c3847465792524786d02b2bbb3833d92f0399c5d299353dc56be1bfc752e5a8"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "opts": {
+        "maximumFeeRate": 5000
+      },
+      "inputCount": 1,
+      "version": 2,
+      "locktime": 0,
+      "txInputs": [
+        {
+          "hash": "93bf6c25f9a5ac3144d25dc3e46c2893f24e9b4f71a26a15673e9aac59c3f389",
+          "index": 0,
+          "sequence": 4294967295
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "00145be12624d08a2b424095d7c07221c33450d14bf1",
+          "value": "2778",
+          "address": "bc1qt0sjvfxs3g45ysy46lq8ygwrx3gdzjl3kjg8ln"
+        },
+        {
+          "script": "51206c3847465792524786d02b2bbb3833d92f0399c5d299353dc56be1bfc752e5a8",
+          "value": "47777",
+          "address": "bc1pdsuyw3jhjffy0pks9v4mkwpnmyhs8xw962vn20w9d0sml36juk5qp2hajr"
+        }
+      ]
+    },
+    "fee": 5000
+  },
+  "slashingSigned": {
+    "data": {
+      "inputs": [
+        {
+          "witnessUtxo": {
+            "script": "51203011435d07a5fbdd9e2ce1f5bcf5f43dd8b879153fb88825fe61f346bf900685",
+            "value": "55555"
+          },
+          "tapScriptSig": [
+            {
+              "pubkey": "7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9",
+              "leafHash": "04fcf01d19707c7d65d145bd77cb1ecab890dd0d8cecc16116d1438aeba66bf6",
+              "signature": "05bec13591ed9903a814bcb8aaa4e577578f37e64ed67b77de569576b0b89008575feda800006f0f284ce0c2240f7f2d9b7a7d94093f9e9cbf89ef9524444295"
+            },
+            {
+              "pubkey": "7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9",
+              "leafHash": "2b5e03e8f99e45c243b3a08aab9b3d5dcfbd70b9b4c7b6eb89fd56f4b645efc6",
+              "signature": "ad33bf3c8676e90bdb2b75310bbfb867008d55a22de62ea36d7369004de2a0616a497b3b254cfb596e925518d5628c856424410065b1d1f62541ad9d06fccfbb"
+            },
+            {
+              "pubkey": "7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9",
+              "leafHash": "3c94ea257732e1d9a5bd5506675d0f8922399c029ae30b092c89b4ddd0509c72",
+              "signature": "b90d7644bc8a7101ccc105cc15a4db9bb0cad3af4b247c9fd6eaf8f354f57175a33bb6dc35f9698ea3683964503c0b5eca1ad1cbe26e2f412e9c2a73e297fcbc"
+            }
+          ],
+          "tapLeafScript": [
+            {
+              "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac02b5e03e8f99e45c243b3a08aab9b3d5dcfbd70b9b4c7b6eb89fd56f4b645efc604fcf01d19707c7d65d145bd77cb1ecab890dd0d8cecc16116d1438aeba66bf6",
+              "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad021027b2",
+              "leafVersion": 192
+            },
+            {
+              "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac03c94ea257732e1d9a5bd5506675d0f8922399c029ae30b092c89b4ddd0509c7204fcf01d19707c7d65d145bd77cb1ecab890dd0d8cecc16116d1438aeba66bf6",
+              "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad200aee0509b16db71c999238a4827db945526859b13c95487ab46725357c9a9f25ac2017921cf156ccb4e73d428f996ed11b245313e37e27c978ac4d2cc21eca4672e4ba20fa9d882d45f4060bdb8042183828cd87544f1ea997380e586cab77d5fd698737ba529c",
+              "leafVersion": 192
+            },
+            {
+              "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0791b0b1dab3fca2c76adf1c5483d7b0524f1a70d846ddd3db54fb9d2e494a797",
+              "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad20d23c2c25e1fcf8fd1c21b9a402c19e2e309e531e45e92fb1e9805b6056b0cc76ad200aee0509b16db71c999238a4827db945526859b13c95487ab46725357c9a9f25ac2017921cf156ccb4e73d428f996ed11b245313e37e27c978ac4d2cc21eca4672e4ba20fa9d882d45f4060bdb8042183828cd87544f1ea997380e586cab77d5fd698737ba529c",
+              "leafVersion": 192
+            }
+          ],
+          "tapBip32Derivation": [
+            {
+              "masterFingerprint": "371c45ae",
+              "pubkey": "0aee0509b16db71c999238a4827db945526859b13c95487ab46725357c9a9f25",
+              "path": "m",
+              "leafHashes": [
+                "04fcf01d19707c7d65d145bd77cb1ecab890dd0d8cecc16116d1438aeba66bf6",
+                "2b5e03e8f99e45c243b3a08aab9b3d5dcfbd70b9b4c7b6eb89fd56f4b645efc6"
+              ]
+            },
+            {
+              "masterFingerprint": "875d22c4",
+              "pubkey": "17921cf156ccb4e73d428f996ed11b245313e37e27c978ac4d2cc21eca4672e4",
+              "path": "m",
+              "leafHashes": [
+                "04fcf01d19707c7d65d145bd77cb1ecab890dd0d8cecc16116d1438aeba66bf6",
+                "2b5e03e8f99e45c243b3a08aab9b3d5dcfbd70b9b4c7b6eb89fd56f4b645efc6"
+              ]
+            },
+            {
+              "masterFingerprint": "f4ac30dd",
+              "pubkey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
+              "path": "m",
+              "leafHashes": []
+            },
+            {
+              "masterFingerprint": "b91e1e67",
+              "pubkey": "7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9",
+              "path": "m",
+              "leafHashes": [
+                "04fcf01d19707c7d65d145bd77cb1ecab890dd0d8cecc16116d1438aeba66bf6",
+                "2b5e03e8f99e45c243b3a08aab9b3d5dcfbd70b9b4c7b6eb89fd56f4b645efc6",
+                "3c94ea257732e1d9a5bd5506675d0f8922399c029ae30b092c89b4ddd0509c72"
+              ]
+            },
+            {
+              "masterFingerprint": "6b139ea8",
+              "pubkey": "d23c2c25e1fcf8fd1c21b9a402c19e2e309e531e45e92fb1e9805b6056b0cc76",
+              "path": "m",
+              "leafHashes": [
+                "04fcf01d19707c7d65d145bd77cb1ecab890dd0d8cecc16116d1438aeba66bf6"
+              ]
+            },
+            {
+              "masterFingerprint": "a5fa7460",
+              "pubkey": "fa9d882d45f4060bdb8042183828cd87544f1ea997380e586cab77d5fd698737",
+              "path": "m",
+              "leafHashes": [
+                "04fcf01d19707c7d65d145bd77cb1ecab890dd0d8cecc16116d1438aeba66bf6",
+                "2b5e03e8f99e45c243b3a08aab9b3d5dcfbd70b9b4c7b6eb89fd56f4b645efc6"
+              ]
+            }
+          ],
+          "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
+          "tapMerkleRoot": "6b9dde897562e203ecde25ec377b3c5b43ec6eba3b1c83e54972d5342686a69b"
+        }
+      ],
+      "outputs": [
+        {},
+        {}
+      ],
+      "globalMap": {
+        "unsignedTx": {
+          "tx": {
+            "version": 2,
+            "locktime": 0,
+            "ins": [
+              {
+                "hash": "93bf6c25f9a5ac3144d25dc3e46c2893f24e9b4f71a26a15673e9aac59c3f389",
+                "index": 0,
+                "script": "",
+                "sequence": 4294967295,
+                "witness": []
+              }
+            ],
+            "outs": [
+              {
+                "value": "2778",
+                "script": "00145be12624d08a2b424095d7c07221c33450d14bf1"
+              },
+              {
+                "value": "47777",
+                "script": "51206c3847465792524786d02b2bbb3833d92f0399c5d299353dc56be1bfc752e5a8"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "opts": {
+      "maximumFeeRate": 5000
+    },
+    "inputCount": 1,
+    "version": 2,
+    "locktime": 0,
+    "txInputs": [
+      {
+        "hash": "93bf6c25f9a5ac3144d25dc3e46c2893f24e9b4f71a26a15673e9aac59c3f389",
+        "index": 0,
+        "sequence": 4294967295
+      }
+    ],
+    "txOutputs": [
+      {
+        "script": "00145be12624d08a2b424095d7c07221c33450d14bf1",
+        "value": "2778",
+        "address": "bc1qt0sjvfxs3g45ysy46lq8ygwrx3gdzjl3kjg8ln"
+      },
+      {
+        "script": "51206c3847465792524786d02b2bbb3833d92f0399c5d299353dc56be1bfc752e5a8",
+        "value": "47777",
+        "address": "bc1pdsuyw3jhjffy0pks9v4mkwpnmyhs8xw962vn20w9d0sml36juk5qp2hajr"
+      }
+    ]
+  },
+  "slashingSignedBase64": "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",
+  "slashingWithdraw": {
+    "psbt": {
+      "data": {
+        "inputs": [
+          {
+            "witnessUtxo": {
+              "script": "51206c3847465792524786d02b2bbb3833d92f0399c5d299353dc56be1bfc752e5a8",
+              "value": "47777"
+            },
+            "tapLeafScript": [
+              {
+                "controlBlock": "c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
+                "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad022d01b2",
+                "leafVersion": 192
+              }
+            ],
+            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
+          }
+        ],
+        "outputs": [
+          {}
+        ],
+        "globalMap": {
+          "unsignedTx": {
+            "tx": {
+              "version": 2,
+              "locktime": 0,
+              "ins": [
+                {
+                  "hash": "52e11b5991b04c180897792cc50df738821777bec868f2ee269b98846ae191de",
+                  "index": 1,
+                  "script": "",
+                  "sequence": 301,
+                  "witness": []
+                }
+              ],
+              "outs": [
+                {
+                  "value": "47489",
+                  "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "opts": {
+        "maximumFeeRate": 5000
+      },
+      "inputCount": 1,
+      "version": 2,
+      "locktime": 0,
+      "txInputs": [
+        {
+          "hash": "52e11b5991b04c180897792cc50df738821777bec868f2ee269b98846ae191de",
+          "index": 1,
+          "sequence": 301
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48",
+          "value": "47489",
+          "address": "bc1q39h3hfjaat4sgkanzg0zpet5fenv5rjg0lhnvy"
+        }
+      ]
+    },
+    "fee": 288
+  }
+}

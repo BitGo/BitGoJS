@@ -1,0 +1,8 @@
+{
+  "extends": "../../.eslintrc.json",
+  "rules": {
+    "@typescript-eslint/explicit-module-boundary-types": "error",
+    "no-duplicate-imports": "off",
+    "indent": "off"
+  }
+}

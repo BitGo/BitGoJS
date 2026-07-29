@@ -1,0 +1,272 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.10.0...@bitgo/secp256k1@1.11.0) (2026-03-29)
+
+
+### Features
+
+* **root:** remove node engine upper bound ([9ef2ade](https://github.com/BitGo/BitGoJS/commit/9ef2adee1e8de4db6b194521a8000eb676a09db0))
+
+
+
+
+
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.9.0...@bitgo/secp256k1@1.10.0) (2026-01-30)
+
+
+### Features
+
+* support node 24 ([b998bd1](https://github.com/BitGo/BitGoJS/commit/b998bd1bdb7e267e8e2f33b3599643a5c85c21d2))
+
+
+
+
+
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.8.0...@bitgo/secp256k1@1.9.0) (2026-01-14)
+
+
+### Features
+
+* **sdk-core:** replace utxo-core with secp256k1 for bip32utils ([947beee](https://github.com/BitGo/BitGoJS/commit/947beee75680c8e59e80d25c1c42d9c1ebeb2709))
+
+
+
+
+
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.7.0...@bitgo/secp256k1@1.8.0) (2025-12-23)
+
+
+### Features
+
+* **root:** make node v20 the minimum version ([f2bd9ee](https://github.com/BitGo/BitGoJS/commit/f2bd9ee8e1b0816473dc12d614883422a3a2aa10))
+
+
+
+
+
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.6.0...@bitgo/secp256k1@1.7.0) (2025-10-24)
+
+
+### Features
+
+* **secp256k1:** implement public key recovery in recoverySignature method and add unit tests ([b963e1f](https://github.com/BitGo/BitGoJS/commit/b963e1f0e0d8a1c2e2127dc6b2cefd3524f96a9f))
+
+
+
+
+
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.5.0...@bitgo/secp256k1@1.6.0) (2025-10-16)
+
+
+### Features
+
+* configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+* **secp256k1:** export factory functions ([4930f7a](https://github.com/BitGo/BitGoJS/commit/4930f7ac14ca7050c77bb46448340300116e81ab))
+
+
+
+
+
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.4.0...@bitgo/secp256k1@1.5.0) (2025-08-22)
+
+### Bug Fixes
+
+- **secp256k1:** fix import of create-hmac ([2eb61af](https://github.com/BitGo/BitGoJS/commit/2eb61afa6149245dde9ef875d475169930e99e26))
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.3.3...@bitgo/secp256k1@1.4.0) (2025-06-05)
+
+### Features
+
+- **root:** support node 22 ([c4ad6af](https://github.com/BitGo/BitGoJS/commit/c4ad6af2e8896221417c303f0f6b84652b493216))
+
+## [1.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.3.1...@bitgo/secp256k1@1.3.3) (2025-03-04)
+
+### Bug Fixes
+
+- **root:** replace elliptic with noble/curves/secp256k1 ([50a208d](https://github.com/BitGo/BitGoJS/commit/50a208d68d8b313ccb9b8e638212f61617daf92a))
+
+## [1.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.3.1...@bitgo/secp256k1@1.3.2) (2025-02-26)
+
+### Bug Fixes
+
+- **root:** replace elliptic with noble/curves/secp256k1 ([50a208d](https://github.com/BitGo/BitGoJS/commit/50a208d68d8b313ccb9b8e638212f61617daf92a))
+
+## [1.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.3.1) (2025-02-19)
+
+### Bug Fixes
+
+- **root:** bump elliptic to 6.6.1 ([f588850](https://github.com/BitGo/BitGoJS/commit/f588850a3817db709213c3d44451b1ed93d8ac86))
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.25) (2024-01-30)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.24) (2024-01-26)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.23](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.23) (2024-01-26)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.22) (2024-01-25)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.21](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.21) (2024-01-22)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.20) (2024-01-09)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.19) (2024-01-03)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.18) (2023-12-18)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.17) (2023-12-12)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.16) (2023-12-09)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.15) (2023-12-05)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.14) (2023-11-28)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.13) (2023-11-24)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.12) (2023-11-17)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.11) (2023-11-13)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.10) (2023-11-13)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.9) (2023-11-13)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.8) (2023-10-20)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.7) (2023-10-18)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.6) (2023-09-25)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.5) (2023-09-09)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.4) (2023-09-09)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.3) (2023-09-07)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.2) (2023-09-05)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [1.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.1) (2023-09-01)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.0.1...@bitgo/secp256k1@1.2.0) (2023-08-04)
+
+### Features
+
+- **root:** add node 18 to engines and CI ([9cc6a70](https://github.com/BitGo/BitGoJS/commit/9cc6a70ba807161b7c6a0ebe3d7c47f25c7c8eca))
+
+# [1.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.0.1...@bitgo/secp256k1@1.1.0) (2023-07-28)
+
+### Features
+
+- **root:** add node 18 to engines and CI ([9cc6a70](https://github.com/BitGo/BitGoJS/commit/9cc6a70ba807161b7c6a0ebe3d7c47f25c7c8eca))
+
+## 1.0.1 (2023-04-25)
+
+**Note:** Version bump only for package @bitgo/secp256k1

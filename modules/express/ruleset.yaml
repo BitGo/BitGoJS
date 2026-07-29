@@ -1,0 +1,410 @@
+description: Recommended rules for a high quality specification.
+documentationUrl: https://quobix.com/vacuum/rulesets/recommended
+rules:
+  duplicated-entry-in-enum:
+    category:
+      description: Schemas are how request bodies and response payloads are defined. They define the data going in and the data flowing out of an operation. These rules check for structural validity, checking types, checking required fields and validating correct use of structures.
+      id: schemas
+      name: Schemas
+    description: Enum values can't be the same.
+    formats:
+      - oas3
+      - oas3_1
+      - oas2
+    given: $
+    howToFix: Make each enum value unique.
+    id: duplicated-entry-in-enum
+    recommended: true
+    severity: error
+    then:
+      function: duplicatedEnum
+    type: validation
+  no-$ref-siblings:
+    category:
+      description: Schemas are how request bodies and response payloads are defined. They define the data going in and the data flowing out of an operation. These rules check for structural validity, checking types, checking required fields and validating correct use of structures.
+      id: schemas
+      name: Schemas
+    description: $ref values can't be next to other properties.
+    formats:
+      - oas3
+      - oas3_1
+      - oas2
+    given: $
+    howToFix: Remove all sibling nodes, including descriptions.
+    id: no-$ref-siblings
+    recommended: true
+    severity: error
+    then:
+      function: refSiblings
+    type: validation
+  no-ambiguous-paths:
+    category:
+      description: Operations are the core of the contract, they define paths and HTTP methods. These rules check operations have been well constructed, looks for operationId, parameter, schema and return types in depth.
+      id: operations
+      name: Operations
+    description: Paths must resolve unambiguously from one another. For example, /{id}/ambiguous and /ambiguous/{id} are the same thing.
+    formats:
+      - oas3
+      - oas3_1
+      - oas2
+    given: $
+    howToFix: Make the path, and the variables used, unique. Check the ordering of variables and the naming of path segments.
+    id: no-ambiguous-paths
+    recommended: true
+    resolved: true
+    severity: error
+    then:
+      function: noAmbiguousPaths
+    type: validation
+  no-eval-in-markdown:
+    category:
+      description: Validation rules make sure that certain characters or patterns have not been used that may cause issues when rendering in different types of applications.
+      id: validation
+      name: Validation
+    description: Markdown descriptions can't have `eval()` statements'. Malicious actors can use these to embed code in contracts, executing when a browser reads it.
+    formats:
+      - oas3
+      - oas3_1
+      - oas2
+    given: $
+    howToFix: Remove all references to 'eval()' from the description.
+    id: no-eval-in-markdown
+    recommended: true
+    resolved: true
+    severity: error
+    then:
+      function: noEvalDescription
+      functionOptions:
+        pattern: eval\(
+    type: validation
+  no-script-tags-in-markdown:
+    category:
+      description: Validation rules make sure that certain characters or patterns have not been used that may cause issues when rendering in different types of applications.
+      id: validation
+      name: Validation
+    description: Markdown descriptions can't have `<script>` tags'. Malicious actors can use these to load remote code if a browser parses the specification.
+    formats:
+      - oas3
+      - oas3_1
+      - oas2
+    given: $
+    howToFix: Remove all references to '<script>' tags from the description.
+    id: no-script-tags-in-markdown
+    recommended: true
+    resolved: true
+    severity: error
+    then:
+      function: noEvalDescription
+      functionOptions:
+        pattern: <script
+    type: validation
+  oas-schema-check:
+    category:
+      description: Schemas are how request bodies and response payloads are defined. They define the data going in and the data flowing out of an operation. These rules check for structural validity, checking types, checking required fields and validating correct use of structures.
+      id: schemas
+      name: Schemas
+    description: All document schemas must have a valid type defined. Without a type, the schema is useless.
+    formats:
+      - oas3
+      - oas3_1
+    given: $
+    howToFix: Define the value type for the schema.
+    id: oas-schema-check
+    recommended: true
+    severity: error
+    then:
+      function: schemaTypeCheck
+    type: validation
+  oas2-anyOf:
+    category:
+      description: Schemas are how request bodies and response payloads are defined. They define the data going in and the data flowing out of an operation. These rules check for structural validity, checking types, checking required fields and validating correct use of structures.
+      id: schemas
+      name: Schemas
+    description: Can't use `anyOf` in OpenAPI 2 specifications. It was introduced in OpenAPI 3.0.
+    formats:
+      - oas2
+    given: $
+    howToFix: Remove all instances of 'anyOf'.
+    id: oas2-anyOf
+    recommended: true
+    severity: error
+    then:
+      function: oasPolymorphicAnyOf
+    type: validation
+  oas2-discriminator:
+    category:
+      description: Schemas are how request bodies and response payloads are defined. They define the data going in and the data flowing out of an operation. These rules check for structural validity, checking types, checking required fields and validating correct use of structures.
+      id: schemas
+      name: Schemas
+    description: Must use discriminator. When using polymorphism, correct use of discriminators in schemas enables other tools to understand how to compose the models when generating the code.
+    formats:
+      - oas2
+    given: $
+    howToFix: Add a correct discriminator.
+    id: oas2-discriminator
+    recommended: true
+    resolved: true
+    severity: error
+    then:
+      function: oasDiscriminator
+    type: validation
+  oas2-oneOf:
+    category:
+      description: Schemas are how request bodies and response payloads are defined. They define the data going in and the data flowing out of an operation. These rules check for structural validity, checking types, checking required fields and validating correct use of structures.
+      id: schemas
+      name: Schemas
+    description: Can't use `oneOf` in OpenAPI 2 specifications. It was introduced in OpenAPI 3.0.
+    formats:
+      - oas2
+    given: $
+    howToFix: Remove all instances of 'oneOf'.
+    id: oas2-oneOf
+    recommended: true
+    severity: error
+    then:
+      function: oasPolymorphicOneOf
+    type: validation
+  oas2-operation-security-defined:
+    category:
+      description: Security plays a central role in RESTful APIs. These rules make sure that the correct definitions have been used and put in the right places.
+      id: security
+      name: Security
+    description: Any `security` definitions for operations must match globally defined security schemes in securityDefinitions.
+    formats:
+      - oas2
+    given: $
+    howToFix: Make your `security` values match values defined in $.securityDefinitions.
+    id: oas2-operation-security-defined
+    recommended: true
+    resolved: true
+    severity: error
+    then:
+      function: oas2OpSecurityDefined
+    type: validation
+  oas2-schema:
+    category:
+      description: Validation rules make sure that certain characters or patterns have not been used that may cause issues when rendering in different types of applications.
+      id: validation
+      name: Validation
+    description: The schema isn't valid OpenAPI 2.
+    formats:
+      - oas2
+    given: $
+    howToFix: Check the errors for more details.
+    id: oas2-schema
+    recommended: true
+    severity: error
+    then:
+      function: oasDocumentSchema
+    type: validation
+  oas3-operation-security-defined:
+    category:
+      description: Security plays a central role in RESTful APIs. These rules make sure that the correct definitions have been used and put in the right places.
+      id: security
+      name: Security
+    description: Any `security` definitions for operations must match globally defined security schemes in components.securitySchemes
+    formats:
+      - oas3
+      - oas3_1
+    given: $
+    howToFix: Make your `security` values match values defined in $.components.securitySchemes.
+    id: oas3-operation-security-defined
+    recommended: true
+    resolved: true
+    severity: error
+    then:
+      function: oasOpSecurityDefined
+      functionOptions:
+        schemesPath: $.components.securitySchemes
+    type: validation
+  oas3-schema:
+    category:
+      description: Schemas are how request bodies and response payloads are defined. They define the data going in and the data flowing out of an operation. These rules check for structural validity, checking types, checking required fields and validating correct use of structures.
+      id: schemas
+      name: Schemas
+    description: The schema isn't valid OpenAPI 3.
+    formats:
+      - oas3
+    given: $
+    howToFix: Check the errors for more details
+    id: oas3-schema
+    recommended: true
+    severity: error
+    then:
+      function: oasDocumentSchema
+    type: validation
+  operation-operationId:
+    category:
+      description: Operations are the core of the contract, they define paths and HTTP methods. These rules check operations have been well constructed, looks for operationId, parameter, schema and return types in depth.
+      id: operations
+      name: Operations
+    description: Missing `operationId`. Every operation requires a unique `operationId`. Among other things, this identifies the route on the Developer Portal.
+    formats:
+      - oas3
+      - oas3_1
+      - oas2
+    given: $
+    howToFix: Add `@operationId my.operation.id` to the JSDoc.
+    id: operation-operationId
+    recommended: true
+    severity: error
+    then:
+      function: oasOpId
+    type: validation
+  operation-operationId-unique:
+    category:
+      description: Operations are the core of the contract, they define paths and HTTP methods. These rules check operations have been well constructed, looks for operationId, parameter, schema and return types in depth.
+      id: operations
+      name: Operations
+    description: Any`operationId`s must be unique. Among other things, this identifies the route on the Developer Portal.
+    formats:
+      - oas3
+      - oas3_1
+      - oas2
+    given: $.paths
+    howToFix: Make the `@operationId` in the JSDoc for your route(s) unique.
+    id: operation-operationId-unique
+    recommended: true
+    resolved: true
+    severity: error
+    then:
+      function: oasOpIdUnique
+    type: validation
+  operation-operationId-valid-in-url:
+    category:
+      description: Operations are the core of the contract, they define paths and HTTP methods. These rules check operations have been well constructed, looks for operationId, parameter, schema and return types in depth.
+      id: operations
+      name: Operations
+    description: Any `operationId` must be URL friendly. The `operationId` is part of the URL to the API reference on the Developer Portal.
+    formats:
+      - oas3
+      - oas3_1
+      - oas2
+    given: $.paths[*][*]
+    howToFix: Remove non-standard URL characters and capitalization.
+    id: operation-operationId-valid-in-url
+    recommended: true
+    resolved: true
+    severity: error
+    then:
+      field: operationId
+      function: pattern
+      functionOptions:
+        match: ^[A-Za-z0-9-._~:/?#\[\]@!\$&'()*+,;=]*$
+    type: validation
+  operation-parameters:
+    category:
+      description: Operations are the core of the contract, they define paths and HTTP methods. These rules check operations have been well constructed, looks for operationId, parameter, schema and return types in depth.
+      id: operations
+      name: Operations
+    description: Operation parameters must be unique and non-repeating.
+    formats:
+      - oas3
+      - oas3_1
+      - oas2
+    given: $.paths
+    howToFix: Make all the operation parameters unique and non-repeating. Don't duplicate names or re-use parameter names in the same operation.
+    id: operation-parameters
+    recommended: true
+    resolved: true
+    severity: error
+    then:
+      function: oasOpParams
+    type: validation
+  path-declarations-must-exist:
+    category:
+      description: Operations are the core of the contract, they define paths and HTTP methods. These rules check operations have been well constructed, looks for operationId, parameter, schema and return types in depth.
+      id: operations
+      name: Operations
+    description: Path parameter declarations can't be empty. For example, `/api/{}` is invalid. Paths define the endpoint for operations. Without paths, there is no API.
+    formats:
+      - oas3
+      - oas3_1
+      - oas2
+    given: $.paths
+    howToFix: Add 'paths' to the root of the specification.
+    id: path-declarations-must-exist
+    recommended: true
+    resolved: true
+    severity: error
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: '{}'
+    type: validation
+  path-not-include-query:
+    category:
+      description: Operations are the core of the contract, they define paths and HTTP methods. These rules check operations have been well constructed, looks for operationId, parameter, schema and return types in depth.
+      id: operations
+      name: Operations
+    description: Paths can't include query strings, because operations define query strings as parameters.
+    formats:
+      - oas3
+      - oas3_1
+      - oas2
+    given: $.paths
+    howToFix: Remove query strings from paths and define them as parameters.
+    id: path-not-include-query
+    recommended: true
+    resolved: true
+    severity: error
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: \?
+    type: validation
+  path-params:
+    category:
+      description: Operations are the core of the contract, they define paths and HTTP methods. These rules check operations have been well constructed, looks for operationId, parameter, schema and return types in depth.
+      id: operations
+      name: Operations
+    description: Path parameters must be defined and valid. Path parameters must match with the parameters defined for the path, or in an operation that sits under that path.
+    formats:
+      - oas3
+      - oas3_1
+      - oas2
+    given: $
+    howToFix: Define all path parameters.
+    id: path-params
+    recommended: true
+    resolved: true
+    severity: error
+    then:
+      function: oasPathParam
+    type: validation
+  operation-tags:
+    category:
+      description: Tags are used as meta-data for operations. They are mainly used by tooling as a taxonomy mechanism to build navigation, search and more. Tags are important as they help consumers navigate the contract when using documentation, testing, code generation or analysis tools.
+      id: tags
+      name: Tags
+    description: Some `tags` are missing or empty. The `tag` determines where an API specification resides in the API reference on the Developer Portal. For example, `@tag Admin` groups the operation in the internal Admin section. View all external tags at https://github.com/BitGo/dev-portal/blob/master/app/lib/apiDocs/apiNavGroups.ts. View all internal tags under the Internal section at https://developers.bitgo-dev.com/api/overview
+    formats:
+      - oas3
+      - oas3_1
+      - oas2
+    given: $
+    howToFix: Add 1 tag, and only 1 tag, to the `@tag` in the JSDoc for the operation.
+    id: operation-tags
+    recommended: true
+    resolved: true
+    severity: error
+    then:
+      function: oasOperationTags
+    type: validation
+  operation-singular-tag:
+    category:
+      description: Tags are used as meta-data for operations. They are mainly used by tooling as a taxonomy mechanism to build navigation, search and more. Tags are important as they help consumers navigate the contract when using documentation, testing, code generation or analysis tools.
+      id: tags
+      name: Tags
+    description: Operation can't have more than a single `tag` defined. The `tag` determines where an API specification resides in the API reference on the Developer Portal. For example, `@tag Admin` groups the operation in the internal Admin section. Rendering 1 specification in multiple places is a confusing user experience. View all external tags at https://github.com/BitGo/dev-portal/blob/master/app/lib/apiDocs/apiNavGroups.ts. View all internal tags under the Internal section at https://developers.bitgo-dev.com/api/overview.
+    formats:
+      - oas3
+      - oas3_1
+      - oas2
+    given: $
+    howToFix: Remove additional tags from `@tag` in the JSDoc, so that there's only 1.
+    id: operation-singular-tag
+    severity: error
+    then:
+      function: oasOpSingleTag
+    type: validation

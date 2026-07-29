@@ -1,0 +1,11 @@
+export const ENTERPRISE_ID = 'enterprise-abc';
+export const WALLET_ID = 'wallet-hot-123';
+export const KEYCHAIN_ID = 'key-user-001';
+export const COIN = 'tbtc';
+export const EXISTING_PASSPHRASE = 'my-existing-passphrase';
+export const PRF_OUTPUT = new Uint8Array([0xde, 0xad, 0xbe, 0xef, 0xca, 0xfe, 0x01, 0x02]).buffer;
+export const CREDENTIAL_ID = 'Y3JlZC1pZC00NTY';
+export const DEVICE_MONGO_ID = 'device-mongo-id-1';
+export const BASE_SALT = 'ZqJ64M2dL65zn2-Jxd58SMN2ILc9QjbCFxUTGHd_LC8';
+export const REGISTER_CHALLENGE = Buffer.from('random-challenge').toString('base64');
+export const ASSERTION_CHALLENGE = Buffer.from('assertion-challenge').toString('base64');
