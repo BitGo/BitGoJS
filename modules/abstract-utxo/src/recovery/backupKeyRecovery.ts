@@ -100,6 +100,16 @@ export interface RecoverParams {
   recoveryProvider?: RecoveryProvider;
   /** Satoshi per byte */
   feeRate?: number;
+  /**
+   * Transaction lock time (nLockTime). Set before signing — it is part of the sighash.
+   * Used for ECX replay-protection sweeps (e.g. 499_999_999) and other custom lock-time needs.
+   */
+  lockTime?: number;
+  /**
+   * Input sequence number applied to every input. Defaults to 0xFFFFFFFE (RBF, non-final)
+   * which already satisfies the non-final requirement for lockTime to take effect.
+   */
+  sequence?: number;
 }
 
 /**
@@ -260,6 +270,10 @@ export interface RecoverWithUnspentsParams {
   krsFee?: bigint;
   /** KRS fee address (required if krsFee > 0) */
   krsFeeAddress?: string;
+  /** Transaction lock time (nLockTime), set on the PSBT before signing */
+  lockTime?: number;
+  /** Input sequence number applied to every input */
+  sequence?: number;
 }
 
 function hasPrivateKey(key: BIP32): boolean {
@@ -299,6 +313,8 @@ export function backupKeyRecoveryWithWalletUnspents(
     recoveryDestination: recoveryDestination,
     keyRecoveryServiceFee: krsFee ?? BigInt(0),
     keyRecoveryServiceFeeAddress: krsFeeAddress,
+    lockTime: params.lockTime,
+    sequence: params.sequence,
   });
 
   const userHasPrivateKey = hasPrivateKey(keys[0]);
@@ -549,6 +565,8 @@ export async function backupKeyRecovery(
       feeRateSatVB,
       krsFee,
       krsFeeAddress,
+      lockTime: params.lockTime,
+      sequence: params.sequence,
     },
     unspents
   );
