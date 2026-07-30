@@ -6,12 +6,28 @@
  * This is BitGo-specific business logic that lives outside the wasm package.
  */
 
-import {
-  Transaction as WasmTonTransaction,
-  parseTransaction,
-  type ParsedTransaction as WasmParsedTransaction,
-} from '@bitgo/wasm-ton';
+import type { ParsedTransaction as WasmParsedTransaction } from '@bitgo/wasm-ton';
 import { TransactionExplanation } from './iface';
+
+/**
+ * @bitgo/wasm-ton is loaded lazily (not via a static top-level import) so this
+ * module doesn't drag the eagerly-registered `Ton`/`Tton` coin classes into
+ * the same async-WASM-initialization chain in bundlers, which breaks
+ * synchronous coin registration in the browser.
+ *
+ * This uses `require()`, not dynamic `import()`: Node's `import()` always
+ * resolves the package's "import" condition (the ESM build), and that build
+ * loads its .wasm binary via a raw ESM import, which throws
+ * ERR_UNKNOWN_FILE_EXTENSION on Node 20 without an experimental flag. The CJS
+ * build (resolved by `require()`) instantiates the same .wasm file
+ * synchronously via `fs.readFileSync`, which works on every supported Node
+ * version. In the browser, webpack's `@bitgo/sdk-coin-ton`/`@bitgo/wasm-ton`
+ * aliases rewrite the resolved path regardless of require/import syntax, so
+ * this still routes to the ESM build there.
+ */
+async function loadWasmTon() {
+  return require('@bitgo/wasm-ton') as typeof import('@bitgo/wasm-ton');
+}
 
 export interface ExplainTonTransactionWasmOptions {
   txBase64: string;
@@ -63,7 +79,8 @@ function extractOutputs(
  * then derives the transaction type, extracts outputs/inputs, and maps
  * to BitGoJS TransactionExplanation format.
  */
-export function explainTonTransaction(params: ExplainTonTransactionWasmOptions): TransactionExplanation {
+export async function explainTonTransaction(params: ExplainTonTransactionWasmOptions): Promise<TransactionExplanation> {
+  const { Transaction: WasmTonTransaction, parseTransaction } = await loadWasmTon();
   const toAddressBounceable = params.toAddressBounceable !== false;
   const tx = WasmTonTransaction.fromBytes(Buffer.from(params.txBase64, 'base64'));
   const parsed: WasmParsedTransaction = parseTransaction(tx);
@@ -80,4 +97,28 @@ export function explainTonTransaction(params: ExplainTonTransactionWasmOptions):
     fee: { fee: 'UNKNOWN' },
     withdrawAmount,
   };
+}
+
+/**
+ * Get the signable payload (SHA-256 hash of the sign body cell) for a serialized TON transaction.
+ *
+ * Isolated behind this module (rather than imported directly in ton.ts) so the
+ * eagerly-registered `Ton`/`Tton` coin classes don't carry @bitgo/wasm-ton's
+ * async WASM initialization into their own module's top-level import graph.
+ */
+export async function getSignablePayloadWasm(serializedTx: string): Promise<Buffer> {
+  const { Transaction: WasmTonTransaction } = await loadWasmTon();
+  const tx = WasmTonTransaction.fromBytes(Buffer.from(serializedTx, 'base64'));
+  return Buffer.from(tx.signablePayload());
+}
+
+/**
+ * Convert an already memoId-stripped TON address to its bounceable (EQ...) form.
+ *
+ * See {@link getSignablePayloadWasm} for why this lives here rather than in ton.ts.
+ */
+export async function toBounceableAddressWasm(strippedAddress: string): Promise<string> {
+  const { decode: wasmDecode, encode: wasmEncode } = await loadWasmTon();
+  const decoded = wasmDecode(strippedAddress);
+  return wasmEncode(decoded.workchainId, decoded.addressHash, true);
 }
