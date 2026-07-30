@@ -14964,7 +14964,7 @@ export const erc20Coins = [
     'hteth:wbtc',
     'Hoodi Testnet Wrapped Bitcoin',
     8,
-    '0xbe19716adc7e0b8bb75f5ba12657ecff05c531cb',
+    '0x219d33e6fcd0c8cdbc12b10205592f286d458a33',
     UnderlyingAsset['hteth:wbtc'],
     undefined,
     undefined,

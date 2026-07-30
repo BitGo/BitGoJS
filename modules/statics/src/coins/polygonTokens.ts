@@ -1663,6 +1663,15 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:infra'],
     POLYGON_TOKEN_FEATURES
   ),
+  polygonErc20(
+    '3b746d2c-ec3f-43cb-a4ce-a08eb4d8c65f',
+    'polygon:sofid',
+    'SoFiUSD',
+    6,
+    '0x5572728e36b5510010ade1db6bbaea1c402411cc',
+    UnderlyingAsset['polygon:sofid'],
+    POLYGON_TOKEN_FEATURES
+  ),
   tpolygonErc20(
     '13dd4ab7-2d94-493c-9a61-323f6300f7e5',
     'tpolygon:tusdl',
@@ -1679,6 +1688,24 @@ export const polygonTokens = [
     6,
     '0x4d70b96e2fb36f8cd4edfcde011ae4e151fcf10d',
     UnderlyingAsset['tpolygon:tusdlt'],
+    [...POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.STABLECOIN]
+  ),
+  tpolygonErc20(
+    '6a36c634-7761-4fad-bb76-4f06110faee7',
+    'tpolygon:sofid',
+    'Test SoFiUSD',
+    6,
+    '0xa7171032d2f41828dffd793149823e13f79c456e',
+    UnderlyingAsset['tpolygon:sofid'],
+    [...POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.STABLECOIN]
+  ),
+  tpolygonErc20(
+    'f7f8d537-fdaf-42aa-8bc9-4a645f34f6f8',
+    'tpolygon:stgsofid',
+    'Test SoFiUSD',
+    6,
+    '0xf5618919e1b0931f8b0f93f1fc9e8fb6f90f0f93',
+    UnderlyingAsset['tpolygon:stgsofid'],
     [...POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.STABLECOIN]
   ),
 ];

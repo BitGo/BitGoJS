@@ -524,6 +524,15 @@ export const allCoinsAndTokens = [
       CoinFeature.SUPPORTS_ERC20,
     ]
   ),
+  erc20Token(
+    '2ffbb405-f474-48b8-b4e9-dacd6ace3d49',
+    'gasevm:usd1',
+    'USD1',
+    18,
+    '0x8d0d000ee44948fc98c9b98a4fa4921476f08b0d',
+    UnderlyingAsset['gasevm:usd1'],
+    Networks.main.gasevm
+  ),
   account(
     'e7fdbd6f-93ff-4dda-8a57-81580827188e',
     'txtzevm',
@@ -1140,6 +1149,24 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.SUPPORTS_ERC20,
     ]
+  ),
+  erc20Token(
+    'bcd18a2e-8b19-4c6a-9f0a-9350ad5c29cf',
+    'tgasevm:usd1',
+    'USD1',
+    18,
+    '0xf5618919e1b0931f8b0f93f1fc9e8fb6f90f0f93',
+    UnderlyingAsset['tgasevm:usd1'],
+    Networks.test.tgasevm
+  ),
+  erc20Token(
+    '72741d8c-6766-43f5-84d8-8fefdec546bc',
+    'tgasevm:stgusd1',
+    'USD1',
+    18,
+    '0x60c4371e34e2def89875727fa0912897140e4181',
+    UnderlyingAsset['tgasevm:stgusd1'],
+    Networks.test.tgasevm
   ),
   account(
     '9fbfb875-fb80-4a37-b844-48b9e48dfcdd',
@@ -3724,6 +3751,20 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
+  tip20Token(
+    'e6e78290-a680-4ea2-a205-b4abc5ba5cd8',
+    'tempo:sofid',
+    'SoFiUSD',
+    6,
+    '0x20c00000000000000000000050f1d06232a0290f',
+    UnderlyingAsset['tempo:sofid'],
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
   // Tempo TIP20 testnet tokens
   ttip20Token(
     'e1872fd8-14ee-4dc9-bc5e-fd52552d9c60',
@@ -3858,6 +3899,34 @@ export const allCoinsAndTokens = [
     6,
     '0x20c0000000000000000000007b20a5729bbc4f2d',
     UnderlyingAsset['ttempo:scaasacme'],
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
+  ttip20Token(
+    '25488f95-b36f-45a7-a116-32b38bd79400',
+    'ttempo:sofid',
+    'Test SoFiUSD',
+    6,
+    '0x20c00000000000000000000050f10565fddd36c4',
+    UnderlyingAsset['ttempo:sofid'],
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
+  ttip20Token(
+    '765996aa-5a19-453b-bbd5-8a5c39af1db7',
+    'ttempo:stgsofid',
+    'Test SoFiUSD',
+    6,
+    '0x20c00000000000000000000050f1d06232a0290f',
+    UnderlyingAsset['ttempo:stgsofid'],
     [
       ...TEMPO_FEATURES,
       CoinFeature.STABLECOIN,
@@ -5094,6 +5163,14 @@ export const allCoinsAndTokens = [
     '0x754704bc059f8c67012fed69bc8a327a5aafb603',
     UnderlyingAsset['mon:usdc']
   ),
+  monErc20(
+    'c930fcc3-c762-43d3-969b-41f51def8143',
+    'mon:sofid',
+    'SoFiUSD',
+    6,
+    '0x5572728e36b5510010ade1db6bbaea1c402411cc',
+    UnderlyingAsset['mon:sofid']
+  ),
 
   // MON testnet tokens
   tmonErc20(
@@ -5103,6 +5180,22 @@ export const allCoinsAndTokens = [
     6,
     '0x119abe0ba145873072e94baa98da26e11da067ad',
     UnderlyingAsset['tmon:tmt']
+  ),
+  tmonErc20(
+    '25f2f4a8-000f-4c5c-816b-1b7bc2f167ad',
+    'tmon:sofid',
+    'Test SoFiUSD',
+    6,
+    '0xa7171032d2f41828dffd793149823e13f79c456e',
+    UnderlyingAsset['tmon:sofid']
+  ),
+  tmonErc20(
+    '774faf6c-c8b0-4b07-9e26-d75e9752ab92',
+    'tmon:stgsofid',
+    'Test SoFiUSD',
+    6,
+    '0xf5618919e1b0931f8b0f93f1fc9e8fb6f90f0f93',
+    UnderlyingAsset['tmon:stgsofid']
   ),
 
   // hypeeevm testnet tokens

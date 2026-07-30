@@ -6354,6 +6354,36 @@ export const tOfcErc20Coins = [
     true,
     'mon'
   ),
+  ofcerc20(
+    'a59c0575-4bf1-4789-8fdf-292ebc1a649c',
+    'ofcmon:sofid',
+    'SoFiUSD',
+    6,
+    underlyingAssetForSymbol('mon:sofid'),
+    undefined,
+    [...OfcCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    '',
+    undefined,
+    undefined,
+    true,
+    'mon'
+  ),
+
+  // GasEVM (Neo X) tokens
+  ofcerc20(
+    'f8a70f88-cf11-4057-8701-c1985417f309',
+    'ofcgasevm:usd1',
+    'USD1',
+    18,
+    underlyingAssetForSymbol('gasevm:usd1'),
+    undefined,
+    [...OfcCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    '',
+    undefined,
+    undefined,
+    true,
+    'gasevm'
+  ),
 
   // XDC Network tokens
   ofcerc20(
