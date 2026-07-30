@@ -21,6 +21,7 @@ import {
   ManageUnspentsOptions,
   MessageStandardType,
   MessageTypes,
+  NeedUserSignupError,
   PopulatedIntent,
   PrebuildTransactionOptions,
   PrebuildTransactionWithIntentOptions,
@@ -2142,6 +2143,85 @@ describe('V2 Wallet:', function () {
       stub.calledOnce.should.be.true();
       getSharingKeyNock.isDone().should.be.True();
       getKeyNock.isDone().should.be.True();
+    });
+
+    it('should throw NeedUserSignupError when recipient has no ECDH pubkey (spend permission)', async function () {
+      const userId = '456';
+      const email = 'nopubkey@sdktest.com';
+      const permissions = 'view,spend';
+      const walletPassphrase = 'bitgo1234';
+      const pub = 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk';
+      const encXprv = await bitgo.encrypt({ input: 'xprv1', password: walletPassphrase });
+
+      // Server returns empty pubkey — user has not completed ECDH keychain setup
+      const getSharingKeyNock = nock(bgUrl)
+        .post('/api/v1/user/sharingkey', { email })
+        .reply(200, { userId, pubkey: '', path: 'm/999999/1/1' });
+
+      // Key fetch must succeed so decryption can proceed before the pubkey check
+      const getKeyNock = nock(bgUrl).get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`).reply(200, {
+        id: wallet.keyIds()[0],
+        pub,
+        source: 'user',
+        encryptedPrv: encXprv,
+        coinSpecific: {},
+      });
+
+      await wallet
+        .shareWallet({ email, permissions, walletPassphrase })
+        .should.be.rejectedWith(NeedUserSignupError);
+
+      getSharingKeyNock.isDone().should.be.True();
+      getKeyNock.isDone().should.be.True();
+    });
+
+    it('should throw NeedUserSignupError when recipient pubkey is missing (spend permission)', async function () {
+      const userId = '456';
+      const email = 'nopubkey@sdktest.com';
+      const permissions = 'view,spend';
+      const walletPassphrase = 'bitgo1234';
+      const pub = 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk';
+      const encXprv = await bitgo.encrypt({ input: 'xprv1', password: walletPassphrase });
+
+      // Server returns no pubkey field at all
+      const getSharingKeyNock = nock(bgUrl)
+        .post('/api/v1/user/sharingkey', { email })
+        .reply(200, { userId, path: 'm/999999/1/1' });
+
+      const getKeyNock = nock(bgUrl).get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`).reply(200, {
+        id: wallet.keyIds()[0],
+        pub,
+        source: 'user',
+        encryptedPrv: encXprv,
+        coinSpecific: {},
+      });
+
+      await wallet
+        .shareWallet({ email, permissions, walletPassphrase })
+        .should.be.rejectedWith(NeedUserSignupError);
+
+      getSharingKeyNock.isDone().should.be.True();
+      getKeyNock.isDone().should.be.True();
+    });
+
+    it('should not throw NeedUserSignupError when recipient has no pubkey but permission is view-only', async function () {
+      const userId = '456';
+      const email = 'nopubkey@sdktest.com';
+      const permissions = 'view';
+
+      // No pubkey — but view-only shares do not need keychain, so should succeed
+      const getSharingKeyNock = nock(bgUrl)
+        .post('/api/v1/user/sharingkey', { email })
+        .reply(200, { userId, pubkey: '', path: 'm/999999/1/1' });
+
+      const createShareNock = nock(bgUrl)
+        .post(`/api/v2/tbtc/wallet/${wallet.id()}/share`)
+        .reply(200, {});
+
+      await wallet.shareWallet({ email, permissions });
+
+      getSharingKeyNock.isDone().should.be.True();
+      createShareNock.isDone().should.be.True();
     });
 
     describe('OFC multi-key-user-Key Wallet Sharing', function () {
