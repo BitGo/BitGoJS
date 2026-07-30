@@ -314,7 +314,7 @@ export function getSTXAddressFromPubKeys(
 export function signMessage(keyPair: KeyPair, data: string): string {
   const prv = keyPair.getKeys().prv;
   if (prv) {
-    return signWithKey(createStacksPrivateKey(prv), data).data;
+    return signWithKey(createStacksPrivateKey(prv), Buffer.from(data).toString('hex')).data;
   } else {
     throw new SigningError('Missing private key');
   }
@@ -342,7 +342,7 @@ export function verifySignature(message: string, signature: string, publicKey: s
 
   const messageSig = createMessageSignature(signature);
 
-  const foundKey = publicKeyFromSignature(message, messageSig, keyEncoding);
+  const foundKey = publicKeyFromSignature(Buffer.from(message).toString('hex'), messageSig, keyEncoding);
 
   return foundKey === publicKey;
 }

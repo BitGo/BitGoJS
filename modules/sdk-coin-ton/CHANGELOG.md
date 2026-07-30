@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@4.0.5...@bitgo/sdk-coin-ton@4.0.6) (2026-07-30)
+
+
+### Bug Fixes
+
+* **sdk-coin-ton:** add dual ESM/CJS build for browser WASM support ([5dd9d3f](https://github.com/BitGo/BitGoJS/commit/5dd9d3f031dd820f135874fd76556f44326940b4))
+
+
+
+
+
 ## [4.0.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@4.0.4...@bitgo/sdk-coin-ton@4.0.5) (2026-07-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ton
