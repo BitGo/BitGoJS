@@ -8,9 +8,9 @@
  * - Environment (test/prod)
  * - Activation code
  * - Encrypted wallet passphrase from Box D of keycard
- * 
+ *
  * You need to install node and BitGoJS SDK to run this script.
- * 
+ *
  * To install node, you can follow the instructions here: https://nodejs.org/en/download
  *
  * To install BitGoJS SDK, you can use the following command:
@@ -55,6 +55,42 @@ async function main(): Promise<void> {
     const bitgo = new BitGoAPI({
       env: env,
     });
+
+    // Get login credentials from stdin
+    const username = await askQuestion('\nEnter your BitGo username: ');
+    const password = await askQuestion('Enter your BitGo password: ');
+    const loginOtp = await askQuestion('Enter your OTP code for login: ');
+
+    console.log('\nAuthenticating with BitGo (via /api/v2/user/login)...');
+
+    // Authenticate with BitGo via /api/v2/user/login (avoids Cloudflare challenge on /api/auth/v1/session)
+    const loginResponse = await bitgo
+      .post(bitgo.url('/user/login', 2))
+      .send({ email: username, password, otp: loginOtp })
+      .result();
+
+    let accessToken: string;
+    if (loginResponse.access_token) {
+      accessToken = loginResponse.access_token;
+    } else if (loginResponse.encryptedToken) {
+      // Legacy accounts return an ECDH-encrypted token instead of a plain access_token
+      const { token } = await bitgo.handleTokenIssuance(loginResponse, password);
+      accessToken = token;
+    } else {
+      throw new Error('Login did not return a usable token (no access_token or encryptedToken).');
+    }
+
+    bitgo.authenticateWithAccessToken({ accessToken });
+
+    console.log('Authentication successful.');
+
+    // Get a fresh OTP for session unlock
+    const unlockOtp = await askQuestion('\nEnter a new OTP code for session unlock: ');
+
+    // Unlock session
+    console.log('Unlocking session...');
+    await bitgo.unlock({ otp: unlockOtp });
+    console.log('Session unlocked successfully.');
 
     // Get activation code
     const activationCode = await askQuestion('Enter activation code: ');
