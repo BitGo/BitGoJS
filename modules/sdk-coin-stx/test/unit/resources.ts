@@ -65,12 +65,12 @@ export const defaultKeyPairFromPub = new StxLib.KeyPair({
 export const message1 = 'abc';
 // when signed with secretKey1
 export const expectedSignature1 =
-  '0157a170fae4a310c4b59b8d173289b4adacb79b0a187a6e132cdf02374c22b59519b862d95240af464808faaed341fe42d740c9b89850b52f5f7f906deba67064';
+  '00e047c0a5146df934522795a9ec08fea37e1450287ec2ab697ee50e0b39502d695372444acf47d117bec621bb38dd8f3b92a47972a209c302049d9555d912afa9';
 
 export const message2 = 'hello';
 // when signed with secretKey2
 export const expectedSignature2 =
-  '007a86b0a5486987605f7274272cb4eaefa37af216bdf0c88c5b985a70923d550032b3cf226a8384ad2b96d0b3794b9a6f8e6ed191582fb0cc4f830b2ef14d05fe';
+  '010c755303af74860b752972a69651fe740ad8f09fbf85dc2fc06fc63e012c1ca532baf20d1c9cb81d9303216efc6f6cc6bd7753fe2e8eaa7a06d77bdd3ceda853';
 
 // seed is Buffer.alloc(64) -- all zero bytes
 export const defaultSeedSecretKey = 'eafd15702fca3f80beb565e66f19e20bbad0a34b46bb12075cbf1c5d94bb27d2';
