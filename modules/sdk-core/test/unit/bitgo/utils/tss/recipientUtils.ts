@@ -31,7 +31,7 @@ describe('recipientUtils', function () {
         'defiDeposit',
         'defiWithdraw',
         'contractCall',
-        // Staking
+        // Staking — 'delegate' also covers SOL solDelegateIntent
         'delegate',
         'undelegate',
         'switchValidator',
@@ -53,6 +53,8 @@ describe('recipientUtils', function () {
         // Avalanche / Flare cross-chain atomic imports
         'import',
         'importtoc',
+        // SOL: deactivate stake account (solDeactivateIntent)
+        'deactivate',
       ];
       expected.forEach((t) => assert.ok(NO_RECIPIENT_TX_TYPES.has(t), `${t} should be in NO_RECIPIENT_TX_TYPES`));
       assert.strictEqual(NO_RECIPIENT_TX_TYPES.size, expected.length);
@@ -77,12 +79,7 @@ describe('recipientUtils', function () {
       const txRequest = makeTxRequest({
         intent: {
           intentType: 'payment',
-          recipients: [
-            {
-              address: { address: '0xabc' },
-              amount: { value: '500', symbol: 'eth' },
-            },
-          ],
+          recipients: [{ address: { address: '0xabc' }, amount: { value: '500', symbol: 'eth' } }],
         } as any,
       });
       const result = resolveEffectiveTxParams(txRequest, {});
@@ -92,9 +89,7 @@ describe('recipientUtils', function () {
     });
 
     it('resolves txType from intent.intentType when txParams.type is absent', function () {
-      const txRequest = makeTxRequest({
-        intent: { intentType: 'consolidate' } as any,
-      });
+      const txRequest = makeTxRequest({ intent: { intentType: 'consolidate' } as any });
       const result = resolveEffectiveTxParams(txRequest, {});
       assert.strictEqual(result.type, 'consolidate');
     });
@@ -110,6 +105,7 @@ describe('recipientUtils', function () {
         'pledge',
         'import',
         'importtoc',
+        'deactivate',
       ]) {
         const txRequest = makeTxRequest();
         assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, { type: txType }));
@@ -181,6 +177,193 @@ describe('recipientUtils', function () {
       const txParams = { recipients: [{ address: '0xcaller', amount: '100' }] };
       const result = resolveEffectiveTxParams(txRequest, txParams);
       assert.strictEqual(result.recipients?.[0].address, '0xcaller');
+    });
+
+    it('preserves data field from intent recipients', function () {
+      const txRequest = makeTxRequest({
+        intent: {
+          intentType: 'payment',
+          recipients: [{ address: { address: '0xabc' }, amount: { value: '100', symbol: 'eth' }, data: '0xdeadbeef' }],
+        } as any,
+      });
+      const result = resolveEffectiveTxParams(txRequest, {});
+      assert.strictEqual(result.recipients?.[0].data, '0xdeadbeef');
+    });
+
+    describe('tokenName preservation regression tests', function () {
+      it('preserves tokenName from amount.symbol when it differs from chainName', function () {
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            recipients: [
+              {
+                address: { address: 'UserWalletAddress111111111111111111111111111' },
+                amount: { value: '1000000', symbol: 'tsol:usdc' },
+              },
+            ],
+          } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {}, 'tsol');
+        assert.strictEqual(result.recipients?.length, 1);
+        assert.strictEqual(result.recipients?.[0].tokenName, 'tsol:usdc');
+      });
+
+      it('does NOT set tokenName when symbol equals chainName (native SOL transfer)', function () {
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            recipients: [
+              {
+                address: { address: 'RecipientAddress111111111111111111111111111' },
+                amount: { value: '5000000000', symbol: 'tsol' },
+              },
+            ],
+          } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {}, 'tsol');
+        assert.strictEqual(result.recipients?.[0].tokenName, undefined);
+      });
+
+      it('prefers tokenData.tokenName over amount.symbol (uses distinct values to verify)', function () {
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            recipients: [
+              {
+                address: { address: 'RecipientAddress111111111111111111111111111' },
+                amount: { value: '500000', symbol: 'tsol:usdc-alt' },
+                tokenData: { tokenType: 'fungible', tokenQuantity: '500000', tokenName: 'canonical-token-name' },
+              },
+            ],
+          } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {}, 'tsol');
+        assert.strictEqual(result.recipients?.[0].tokenName, 'canonical-token-name');
+      });
+
+      it('falls back to amount.symbol when tokenData.tokenName is absent', function () {
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            recipients: [
+              {
+                address: { address: 'RecipientAddress111111111111111111111111111' },
+                amount: { value: '200000', symbol: 'sol:usdc' },
+                tokenData: { tokenType: 'fungible', tokenQuantity: '200000' },
+              },
+            ],
+          } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {}, 'sol');
+        assert.strictEqual(result.recipients?.[0].tokenName, 'sol:usdc');
+      });
+
+      it('falls back to amount.symbol when tokenData.tokenName is empty string', function () {
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            recipients: [
+              {
+                address: { address: 'RecipientAddress111111111111111111111111111' },
+                amount: { value: '100000', symbol: 'tsol:usdc' },
+                tokenData: { tokenType: 'fungible', tokenQuantity: '100000', tokenName: '' },
+              },
+            ],
+          } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {}, 'tsol');
+        assert.strictEqual(result.recipients?.[0].tokenName, 'tsol:usdc');
+      });
+
+      it('does NOT set tokenName when chainName is absent (legacy ECDSA callers, no tokenData)', function () {
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            recipients: [{ address: { address: '0xabc' }, amount: { value: '100', symbol: 'eth' } }],
+          } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {});
+        assert.strictEqual(result.recipients?.[0].tokenName, undefined);
+        assert.strictEqual(result.recipients?.[0].address, '0xabc');
+      });
+
+      it('preserves tokenData.tokenName when chainName is absent (legacy ECDSA with tokenData)', function () {
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'transferToken',
+            recipients: [
+              {
+                address: { address: '0xabc' },
+                amount: { value: '1000', symbol: 'erc20:usdc' },
+                tokenData: { tokenType: 'fungible', tokenQuantity: '1000', tokenName: 'eth:usdc' },
+              },
+            ],
+          } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {});
+        assert.strictEqual(result.recipients?.[0].tokenName, 'eth:usdc');
+      });
+
+      it('sendMany tsol:usdc: does not throw and preserves tokenName in full round-trip', function () {
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            recipients: [
+              {
+                address: { address: 'SolUserWallet1111111111111111111111111111111' },
+                amount: { value: '2000000', symbol: 'tsol:usdc' },
+              },
+              {
+                address: { address: 'SolUserWallet2222222222222222222222222222222' },
+                amount: { value: '3000000', symbol: 'tsol:usdc' },
+              },
+            ],
+          } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {}, 'tsol');
+        assert.strictEqual(result.recipients?.length, 2);
+        result.recipients!.forEach((r) => assert.strictEqual(r.tokenName, 'tsol:usdc'));
+        assert.strictEqual(result.recipients![0].amount, '2000000');
+        assert.strictEqual(result.recipients![1].amount, '3000000');
+      });
+
+      it('handles mixed native + token recipients correctly', function () {
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            recipients: [
+              {
+                address: { address: 'SolNative111111111111111111111111111111111' },
+                amount: { value: '1000000000', symbol: 'tsol' },
+              },
+              {
+                address: { address: 'SolToken111111111111111111111111111111111' },
+                amount: { value: '500000', symbol: 'tsol:usdc' },
+              },
+            ],
+          } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {}, 'tsol');
+        assert.strictEqual(result.recipients![0].tokenName, undefined);
+        assert.strictEqual(result.recipients![1].tokenName, 'tsol:usdc');
+      });
+    });
+
+    describe('SOL no-recipient intent types', function () {
+      it('does not throw for "delegate" (solDelegateIntent)', function () {
+        const txRequest = makeTxRequest({ intent: { intentType: 'delegate' } as any });
+        assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, {}));
+      });
+
+      it('does not throw for "deactivate" (solDeactivateIntent)', function () {
+        const txRequest = makeTxRequest({ intent: { intentType: 'deactivate' } as any });
+        assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, {}));
+      });
+
+      it('throws for stakingAuthorize — must be validated at coin layer', function () {
+        const txRequest = makeTxRequest({ intent: { intentType: 'stakingAuthorize' } as any });
+        assert.throws(() => resolveEffectiveTxParams(txRequest, {}), InvalidTransactionError);
+      });
     });
   });
 });

@@ -34,7 +34,8 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   // Smart contract invocations with no explicit SDK-level recipients
   'contractCall',
 
-  // BSC/BNB delegation-based staking — intentType strings from TxRequest.intent.intentType
+  // BSC/BNB delegation-based staking — intentType strings from TxRequest.intent.intentType.
+  // Note: SOL solDelegateIntent also uses intentType "delegate".
   'delegate',
   'undelegate',
   'switchValidator',
@@ -65,6 +66,9 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   // with intentType 'import' (P-chain) or 'importtoc' (C-chain).
   'import',
   'importtoc',
+
+  // SOL: deactivate stake account — no on-chain transfer recipient.
+  'deactivate',
 ]);
 
 /**
@@ -74,6 +78,9 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
  * (native amount = 0, so buildParams is empty). Falls back to intent recipients
  * mapped to ITransactionRecipient shape when txParams.recipients is absent.
  *
+ * tokenName is derived from tokenData.tokenName when present, otherwise from
+ * amount.symbol when chainName is provided and symbol differs from it.
+ *
  * Staking intents (BSC delegate/undelegate, CELO stake/unstake, etc.) are
  * identified generically by the presence of `stakingRequestId` on the intent —
  * a required field on BaseStakeIntent in @bitgo/public-types. These intents
@@ -81,16 +88,31 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
  *
  * Throws InvalidTransactionError if no recipients can be resolved and the
  * transaction is not a known no-recipient type.
+ *
+ * @param txRequest - the transaction request containing the persisted intent
+ * @param txParams - the caller-supplied transaction parameters (may be undefined)
+ * @param chainName - the base chain name (e.g. 'sol', 'tsol') used to exclude
+ *   native-coin transfers from tokenName; pass baseCoin.getChain()
  */
 export function resolveEffectiveTxParams(
   txRequest: TxRequest,
-  txParams: TransactionParams | undefined
+  txParams: TransactionParams | undefined,
+  chainName?: string
 ): TransactionParams {
-  const intentRecipients = (txRequest.intent as PopulatedIntent)?.recipients?.map((intentRecipient) => ({
-    address: intentRecipient.address.address,
-    amount: intentRecipient.amount.value,
-    data: intentRecipient.data,
-  }));
+  const intentRecipients = (txRequest.intent as PopulatedIntent)?.recipients?.map((intentRecipient) => {
+    // Prefer tokenData.tokenName; fall back to amount.symbol when chainName is
+    // provided and differs from it. When absent, skip the symbol fallback.
+    const { symbol } = intentRecipient.amount;
+    const tokenName =
+      intentRecipient.tokenData?.tokenName ||
+      (chainName !== undefined && symbol && symbol !== chainName ? symbol : undefined);
+    return {
+      address: intentRecipient.address.address,
+      amount: intentRecipient.amount.value,
+      data: intentRecipient.data,
+      ...(tokenName && { tokenName }),
+    };
+  });
 
   const effectiveTxParams: TransactionParams = {
     ...txParams,
