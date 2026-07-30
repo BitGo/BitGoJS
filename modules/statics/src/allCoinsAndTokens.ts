@@ -5015,6 +5015,69 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:wpay'],
     Networks.main.basechain
   ),
+  erc20Token(
+    'bac1bb58-f375-436a-8f89-168656f8722a',
+    'baseeth:degen',
+    'Degen',
+    18,
+    '0x4ed4e862860bed51a9570b96d89af5e1b0efefed',
+    UnderlyingAsset['baseeth:degen'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '3e6e6880-733e-405d-8192-ee3e0710bb7e',
+    'baseeth:soso',
+    'SoSoValue',
+    18,
+    '0x624e2e7fdc8903165f64891672267ab0fcb98831',
+    UnderlyingAsset['baseeth:soso'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '92cdd34e-0242-471d-8cfe-5542aecaf36a',
+    'baseeth:sign',
+    'Sign',
+    18,
+    '0x868fced65edbf0056c4163515dd840e9f287a4c3',
+    UnderlyingAsset['baseeth:sign'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'bd2acc7c-bd9c-4ede-80b4-292b097dd6c3',
+    'baseeth:synd',
+    'Syndicate',
+    18,
+    '0x11dc28d01984079b7efe7763b533e6ed9e3722b9',
+    UnderlyingAsset['baseeth:synd'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '410bbc11-8c69-4ba9-aca5-8608fdd1a8e0',
+    'baseeth:flock',
+    'FLock.io',
+    18,
+    '0x5ab3d4c385b400f3abb49e80de2faf6a88a7b691',
+    UnderlyingAsset['baseeth:flock'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '1b35f049-4aba-4b61-98ad-b059149804a1',
+    'baseeth:gps',
+    'GoPlus Security',
+    18,
+    '0x0c1dc73159e30c4b06170f2593d3118968a0dca5',
+    UnderlyingAsset['baseeth:gps'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '7c046412-c08d-4cd3-9b6e-832491171552',
+    'baseeth:elsa',
+    'HeyElsa',
+    18,
+    '0x29cc30f9d113b356ce408667aa6433589cecbdca',
+    UnderlyingAsset['baseeth:elsa'],
+    Networks.main.basechain
+  ),
 
   // ARC mainnet tokens
   erc20Token(
@@ -7376,6 +7439,22 @@ export const allCoinsAndTokens = [
     '0x899438713f62b04d6cd8e8709986f7256fb6e3d9',
     UnderlyingAsset['arbeth:pert']
   ),
+  arbethErc20(
+    'f444d879-7bce-4598-a309-7ca3aec49c6f',
+    'arbeth:obt',
+    'Orbiter Finance',
+    18,
+    '0x1cd9a56c8c2ea913c70319a44da75e99255aa46f',
+    UnderlyingAsset['arbeth:obt']
+  ),
+  arbethErc20(
+    '6ca4369e-3f27-4d5b-883c-4c79f0359228',
+    'arbeth:magic',
+    'Treasure',
+    18,
+    '0x539bde0d7dbd336b79148aa742883198bbf60342',
+    UnderlyingAsset['arbeth:magic']
+  ),
 
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
@@ -7626,6 +7705,14 @@ export const allCoinsAndTokens = [
     18,
     '0x082fade8b84b18c441d506e1d3a43a387cc59d20',
     UnderlyingAsset['zketh:link']
+  ),
+  zkethErc20(
+    'f684b83f-f2b7-4bff-9347-4510063b4809',
+    'zketh:zk',
+    'zkSync',
+    18,
+    '0x5a7d6b2f92c77fad6ccabd7ee0624e64907eaf3e',
+    UnderlyingAsset['zketh:zk']
   ),
   tzkethErc20(
     'ef49b6d1-b7a7-4c5c-8c53-43d22c15cc17',

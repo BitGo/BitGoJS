@@ -4581,6 +4581,13 @@ export const ofcCoins = [
     undefined,
     [CoinFeature.STABLECOIN]
   ),
+  tofcPolygonErc20(
+    'f5c13836-635e-404f-8174-bea3e1775e18',
+    'ofctpolygon:activ',
+    'Activ',
+    18,
+    UnderlyingAsset['tpolygon:activ']
+  ),
 
   ofcAlgoToken(
     'fec37305-8fb8-4c23-b42c-b4696d579eb9',
@@ -5924,6 +5931,20 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['arbeth:week']
   ),
+  ofcArbethErc20(
+    '059358fd-2bc6-441f-a7a8-882eea02b587',
+    'ofcarbeth:obt',
+    'Orbiter Finance',
+    18,
+    UnderlyingAsset['arbeth:obt']
+  ),
+  ofcArbethErc20(
+    '6181ebd7-e456-4b6c-94b9-5e3381fe36fe',
+    'ofcarbeth:magic',
+    'Treasure',
+    18,
+    UnderlyingAsset['arbeth:magic']
+  ),
   // New SOL OFC tokens
   ofcsolToken(
     '68a1c4e8-9a22-4177-9fae-d0356f245a85',
@@ -6427,7 +6448,58 @@ export const ofcCoins = [
     UnderlyingAsset['sol:jsol']
   ),
   ofcsolToken('a903ea3b-de91-4d57-9fc1-56fdf8b3b249', 'ofcsol:bils', 'BILS', 6, UnderlyingAsset['sol:bils']),
+  ofcsolToken('adf5aa35-7d60-4e8b-8bc6-355fc4cf9d71', 'ofcsol:holo', 'Holoworld AI', 9, UnderlyingAsset['sol:holo']),
+  ofcsolToken('49845484-6f3b-4b01-b5b2-a6f4f022e3cc', 'ofcsol:birb', 'Moonbirds', 6, UnderlyingAsset['sol:birb']),
+  ofcsolToken('625f2874-a582-41ed-841b-3bee98837651', 'ofcsol:pybobo', 'Capybobo', 6, UnderlyingAsset['sol:pybobo']),
+  ofcsolToken(
+    'b89a5df2-060e-4f7f-bb86-18087ac2f56a',
+    'ofcsol:usdpt',
+    'U.S. Dollar Payment Token',
+    6,
+    UnderlyingAsset['sol:usdpt'],
+    [...SOL_OFC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
   ofcBscToken('3a9daeda-7e08-494d-a47c-d2c89dd1c735', 'ofcbsc:godl', 'GODL', 18, UnderlyingAsset['bsc:godl']),
   ofcBscToken('93a459bc-c661-4001-be26-9175046c9a36', 'ofcbsc:gdl', 'GDL', 18, UnderlyingAsset['bsc:gdl']),
   ofcBscToken('9febc919-85af-48eb-9821-e9d18e4cd98e', 'ofcbsc:usgd', 'USGD', 18, UnderlyingAsset['bsc:usgd']),
+  ofcBscToken('001a6c5d-b37d-4362-9061-5afe17eed852', 'ofcbsc:fhe', 'Mind Network', 18, UnderlyingAsset['bsc:fhe']),
+  ofcBscToken(
+    'e1fcbff4-46d7-4cd6-a99e-3e288f1f5582',
+    'ofcbsc:babydoge',
+    'Baby Doge Coin',
+    9,
+    UnderlyingAsset['bsc:babydoge']
+  ),
+  ofcBscToken(
+    'b8f9ff56-0f36-4878-855e-3dd22c7826c8',
+    'ofcbsc:pieverse',
+    'Pieverse',
+    18,
+    UnderlyingAsset['bsc:pieverse']
+  ),
+  ofcBscToken('34de28f8-32de-451e-88d3-4407e9ad32c6', 'ofcbsc:br', 'Bedrock', 18, UnderlyingAsset['bsc:br']),
+  ofcBscToken('8fc2e7d0-537c-43b4-8045-29d2c15eb9cd', 'ofcbsc:cgpt', 'ChainGPT', 18, UnderlyingAsset['bsc:cgpt']),
+  ofcBscToken('bc9d830c-0d6f-46a7-a6e0-8f2b1e603252', 'ofcbsc:ta', 'Trusta.AI', 18, UnderlyingAsset['bsc:ta']),
+  ofcBscToken('4b845a6b-4452-4f31-a0aa-4e79e7965126', 'ofcbsc:token', 'TokenFi', 9, UnderlyingAsset['bsc:token']),
+  ofcBscToken(
+    '9a36b327-a660-4b9f-9797-a0e83fa8cd47',
+    'ofcbsc:hygwon',
+    'iShares High Yield Corporate Bond BuyWrite Strategy ETF',
+    18,
+    UnderlyingAsset['bsc:hygwon']
+  ),
+  ofcBscToken(
+    'cf4029dc-211c-4562-88c4-f0f966cd2d33',
+    'ofcbsc:secuon',
+    'iShares Securitized Income Active ETF',
+    18,
+    UnderlyingAsset['bsc:secuon']
+  ),
+  ofcBscToken(
+    '3cdef39f-6708-4aab-af47-3e305ef1aac7',
+    'ofcbsc:sysbon',
+    'iShares Systematic Bond ETF',
+    18,
+    UnderlyingAsset['bsc:sysbon']
+  ),
 ];

@@ -4172,6 +4172,48 @@ export const solTokens = [
     SOL_TOKEN_FEATURES,
     ProgramID.Token2022ProgramId
   ),
+  solToken(
+    '138b5df8-1c9b-4041-99bc-4e03e4435d21',
+    'sol:holo',
+    'Holoworld AI',
+    9,
+    '69RX85eQoEsnZvXGmLNjYcWgVkp9r2JjahVm99KbJETU', // https://solscan.io/token/69RX85eQoEsnZvXGmLNjYcWgVkp9r2JjahVm99KbJETU
+    '69RX85eQoEsnZvXGmLNjYcWgVkp9r2JjahVm99KbJETU',
+    UnderlyingAsset['sol:holo'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
+  solToken(
+    'c39a1da6-c7b2-476e-8248-981ad1ac7022',
+    'sol:birb',
+    'Moonbirds',
+    6,
+    'G7vQWurMkMMm2dU3iZpXYFTHT9Biio4F4gZCrwFpKNwG', // https://solscan.io/token/G7vQWurMkMMm2dU3iZpXYFTHT9Biio4F4gZCrwFpKNwG
+    'G7vQWurMkMMm2dU3iZpXYFTHT9Biio4F4gZCrwFpKNwG',
+    UnderlyingAsset['sol:birb'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'f6f5c758-f207-48d9-8270-545b3e462bab',
+    'sol:pybobo',
+    'Capybobo',
+    6,
+    'D6xWgRCSHoMEB5fqPwk3p6Stxirn5ytm2WwboSTTx4oE', // https://solscan.io/token/D6xWgRCSHoMEB5fqPwk3p6Stxirn5ytm2WwboSTTx4oE
+    'D6xWgRCSHoMEB5fqPwk3p6Stxirn5ytm2WwboSTTx4oE',
+    UnderlyingAsset['sol:pybobo'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'a88ed0b7-17c2-4225-8218-0ebce689c99b',
+    'sol:usdpt',
+    'U.S. Dollar Payment Token',
+    6,
+    'HVWf8JmLoHs99Lw8Psf3fyqAtA4crWxCPkrmSdNjhNH3', // https://solscan.io/token/HVWf8JmLoHs99Lw8Psf3fyqAtA4crWxCPkrmSdNjhNH3
+    'HVWf8JmLoHs99Lw8Psf3fyqAtA4crWxCPkrmSdNjhNH3',
+    UnderlyingAsset['sol:usdpt'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
+    ProgramID.Token2022ProgramId
+  ),
   tsolToken(
     '5f4de23d-67b5-4a8f-bb31-9c1c72f62489',
     'tsol:gousd',
