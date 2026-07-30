@@ -129,14 +129,16 @@ export const CELO_TOKEN_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES].filter(
     feature !== CoinFeature.CUSTODY_BITGO_INDIA
 );
 
+// CUSTODY_BITGO_SINGAPORE is inherited via ACCOUNT_COIN_DEFAULT_FEATURES -> ETH_FEATURES, so it must be
+// explicitly filtered out below (not just omitted from the list) to actually keep Singapore trusts
+// excluded from RBTC custody. See COIN-5477 / CECHO-1849.
 export const RBTC_FEATURES = [
   ...ETH_FEATURES,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
-  CoinFeature.CUSTODY_BITGO_SINGAPORE,
-];
+].filter((feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE);
 export const XLM_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.SUPPORTS_TOKENS,
