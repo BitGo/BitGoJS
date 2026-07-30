@@ -21,6 +21,7 @@ import {
   ManageUnspentsOptions,
   MessageStandardType,
   MessageTypes,
+  NeedUserSignupError,
   PopulatedIntent,
   PrebuildTransactionOptions,
   PrebuildTransactionWithIntentOptions,
@@ -1991,6 +1992,48 @@ describe('V2 Wallet:', function () {
 
       getSharingKeyNock.isDone().should.be.True();
       getKeyNock.isDone().should.be.True();
+      createShareNock.isDone().should.be.True();
+    });
+
+    it('should throw NeedUserSignupError when recipient pubkey is missing and spend permission is requested', async function () {
+      const userId = '456';
+      const email = 'newuser@sdktest.com';
+      const permissions = 'view,spend';
+      const walletPassphrase = 'bitgo1234';
+
+      // Simulate a user who has not yet logged in / set up their ECDH key
+      const getSharingKeyNock = nock(bgUrl)
+        .post('/api/v1/user/sharingkey', { email })
+        .reply(200, { userId });
+
+      await wallet
+        .shareWallet({ email, permissions, walletPassphrase })
+        .should.be.rejectedWith(NeedUserSignupError);
+
+      getSharingKeyNock.isDone().should.be.True();
+    });
+
+    it('should not throw NeedUserSignupError when recipient pubkey is missing but spend permission is not requested', async function () {
+      const userId = '456';
+      const email = 'newuser@sdktest.com';
+      const permissions = 'view';
+
+      // Sharing key without pubkey is fine for view-only shares
+      const getSharingKeyNock = nock(bgUrl)
+        .post('/api/v1/user/sharingkey', { email })
+        .reply(200, { userId });
+
+      const createShareNock = nock(bgUrl)
+        .post(`/api/v2/tbtc/wallet/${wallet.id()}/share`, {
+          user: userId,
+          permissions,
+          skipKeychain: true,
+        })
+        .reply(200, {});
+
+      await wallet.shareWallet({ email, permissions });
+
+      getSharingKeyNock.isDone().should.be.True();
       createShareNock.isDone().should.be.True();
     });
 
