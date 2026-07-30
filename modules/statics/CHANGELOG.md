@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.1.0...@bitgo/statics@59.2.0) (2026-07-30)
+
+
+### Features
+
+* **statics:** add ofcpearl and ofctpearl OFC coins (CECHO-1824) ([cea90dc](https://github.com/BitGo/BitGoJS/commit/cea90dcdba8c0829300e090ef8555ed2098862f0))
+* **statics:** add sepolia on testnet ([f78eab1](https://github.com/BitGo/BitGoJS/commit/f78eab1cdb7ee601535f0eccc66c757894737cc1))
+
+
+
+
+
 # [59.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.0.0...@bitgo/statics@59.1.0) (2026-07-28)
 
 
