@@ -407,7 +407,7 @@ export const allCoinsAndTokens = [
     'Sepolia Testnet Ethereum',
     Networks.test.sepolia,
     18,
-    UnderlyingAsset.ETH,
+    UnderlyingAsset.SEPETH,
     BaseUnit.ETH,
     [
       ...ETH_FEATURES_WITH_STAKING_AND_MMI,

@@ -728,6 +728,7 @@ export enum UnderlyingAsset {
   SCROLLETH = 'scrolleth', // Scroll L2
   SEI = 'sei',
   SEIEVM = 'seievm',
+  SEPETH = 'sepeth', // Sepolia Ethereum testnet
   SGB = 'sgb',
   SOL = 'sol',
   SOMI = 'somi', // Somnia Chain

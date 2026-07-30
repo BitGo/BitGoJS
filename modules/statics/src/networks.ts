@@ -874,7 +874,7 @@ class Sepolia extends Testnet implements EthereumNetwork {
   chainId = 11155111;
   nativeCoinOperationHashPrefix = 'ETHER';
   tokenOperationHashPrefix = 'ERC20';
-  // TODO: add batcher/forwarder/wallet contract addresses once deployed on Sepolia
+  // TODO: [CECHO-1729] add batcher/forwarder/wallet contract addresses once deployed on Sepolia
 }
 
 class EthereumClassic extends Mainnet implements EthereumNetwork {
