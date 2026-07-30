@@ -286,9 +286,9 @@ describe('EdDSA MPS DKG', function () {
       const restoredBackup = new EddsaMPSDkg.DKG(3, 2, 1);
       const restoredBitgo = new EddsaMPSDkg.DKG(3, 2, 2);
 
-      restoredUser.restoreSession(userSession);
-      restoredBackup.restoreSession(backupSession);
-      restoredBitgo.restoreSession(bitgoSession);
+      await restoredUser.restoreSession(userSession);
+      await restoredBackup.restoreSession(backupSession);
+      await restoredBitgo.restoreSession(bitgoSession);
 
       assert.strictEqual(restoredUser.getState(), user.getState(), 'Restored state should match original');
       assert.strictEqual(restoredBackup.getState(), backup.getState(), 'Restored backup state should match original');
