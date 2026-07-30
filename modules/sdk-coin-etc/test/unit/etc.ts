@@ -9,6 +9,61 @@ import { getBuilder } from './getBuilder';
 import { FullySignedTransaction } from '@bitgo/sdk-core';
 import * as should from 'should';
 
+describe('queryAddressBalance', function () {
+  let bitgo: TestBitGoAPI;
+  let etcCoin: Etc;
+  let sandbox: sinon.SinonSandbox;
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.initializeTestVars();
+    bitgo.safeRegister('etc', Etc.createInstance);
+    bitgo.safeRegister('tetc', Tetc.createInstance);
+  });
+
+  beforeEach(function () {
+    sandbox = sinon.createSandbox();
+    etcCoin = bitgo.coin('etc') as Etc;
+  });
+
+  afterEach(function () {
+    sandbox.restore();
+  });
+
+  it('should return the correct balance for a standard hex response', async function () {
+    sandbox.stub(etcCoin, 'recoveryBlockchainExplorerQuery').resolves({ result: '0x1bc16d674ec80000' });
+    const balance = await etcCoin.queryAddressBalance('0x1234');
+    balance.toString().should.equal('2000000000000000000');
+  });
+
+  it('should return zero for a "0x0" response', async function () {
+    sandbox.stub(etcCoin, 'recoveryBlockchainExplorerQuery').resolves({ result: '0x0' });
+    const balance = await etcCoin.queryAddressBalance('0x1234');
+    balance.toString().should.equal('0');
+  });
+
+  it('should return zero for a bare "0x" response (zero balance edge case)', async function () {
+    sandbox.stub(etcCoin, 'recoveryBlockchainExplorerQuery').resolves({ result: '0x' });
+    const balance = await etcCoin.queryAddressBalance('0x1234');
+    balance.toString().should.equal('0');
+  });
+
+  it('should throw for a missing result', async function () {
+    sandbox.stub(etcCoin, 'recoveryBlockchainExplorerQuery').resolves(null);
+    await etcCoin.queryAddressBalance('0x1234').should.be.rejectedWith(/Empty object response/);
+  });
+
+  it('should throw for an error result', async function () {
+    sandbox.stub(etcCoin, 'recoveryBlockchainExplorerQuery').resolves({ error: 'node error' });
+    await etcCoin.queryAddressBalance('0x1234').should.be.rejectedWith(/node error/);
+  });
+
+  it('should throw for a non-hex result', async function () {
+    sandbox.stub(etcCoin, 'recoveryBlockchainExplorerQuery').resolves({ result: 'not-a-hex' });
+    await etcCoin.queryAddressBalance('0x1234').should.be.rejectedWith(/Incorrect Balance Hex/);
+  });
+});
+
 describe('Ethereum Classic', function () {
   let bitgo: TestBitGoAPI;
 
