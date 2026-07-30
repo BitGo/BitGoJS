@@ -266,7 +266,7 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        assert.strictEqual(result.status, 500);
+        assert.strictEqual(result.status, 401);
         result.body.should.have.property('error');
       });
 

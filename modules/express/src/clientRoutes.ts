@@ -27,6 +27,7 @@ import {
   encryptRsaWithAesGcm,
   GetNetworkPartnersResponse,
   GShare,
+  IncorrectPasswordError,
   MPCType,
   multisigTypes,
   ShareType,
@@ -433,7 +434,11 @@ async function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: str
   try {
     return await bg.decrypt({ password: walletPw, input: encryptedPrivKey });
   } catch (e) {
-    throw new Error(`Error when trying to decrypt private key: ${e}`);
+    const detail = e instanceof Error ? e.message : String(e);
+    if (/not valid JSON|unknown envelope version|salt must be|iv must be/i.test(detail)) {
+      throw new Error(`Error when trying to decrypt private key: ${detail}`);
+    }
+    throw new IncorrectPasswordError();
   }
 }
 
@@ -1702,6 +1707,7 @@ function handleRequestHandlerError(res: express.Response, error: unknown) {
     name: err.name || 'BitGoExpressError',
     bitgoJsVersion: version,
     bitgoExpressVersion: pjson.version,
+    ...(err.code ? { code: err.code } : {}),
   });
   const status = err.status || 500;
   if (!(status >= 200 && status < 300)) {

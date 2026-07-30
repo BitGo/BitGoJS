@@ -935,8 +935,8 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Verify error response - runtime errors return 500
-        assert.strictEqual(result.status, 500);
+        // Verify error response - wrong passphrase returns 401
+        assert.strictEqual(result.status, 401);
         assert.ok(result.body);
       });
 
