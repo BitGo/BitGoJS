@@ -1708,4 +1708,13 @@ export const polygonTokens = [
     UnderlyingAsset['tpolygon:stgsofid'],
     [...POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.STABLECOIN]
   ),
+  tpolygonErc20(
+    '88ad17a3-8356-415f-a046-dbed523a781d',
+    'tpolygon:activ',
+    'Activ',
+    18,
+    '0x41802a0fdf81f0643647162bea9786e9769e4228',
+    UnderlyingAsset['tpolygon:activ'],
+    POLYGON_TOKEN_FEATURES
+  ),
 ];

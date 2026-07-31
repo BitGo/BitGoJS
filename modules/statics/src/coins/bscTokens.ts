@@ -2998,6 +2998,96 @@ export const bscTokens = [
     UnderlyingAsset['bsc:skyai'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    '864127de-56a4-475e-b9aa-9fa8eed9c3ad',
+    'bsc:fhe',
+    'Mind Network',
+    18,
+    '0xd55c9fb62e176a8eb6968f32958fefdd0962727e',
+    UnderlyingAsset['bsc:fhe'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '163c0add-a5a8-42bb-a7df-7e2f46e11ac9',
+    'bsc:babydoge',
+    'Baby Doge Coin',
+    9,
+    '0xc748673057861a797275cd8a068abb95a902e8de',
+    UnderlyingAsset['bsc:babydoge'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'f53582c8-fb2d-4d4d-a7c6-a8e7ef13d68a',
+    'bsc:pieverse',
+    'Pieverse',
+    18,
+    '0x0e63b9c287e32a05e6b9ab8ee8df88a2760225a9',
+    UnderlyingAsset['bsc:pieverse'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '024d5d91-bd06-4b01-8b6f-5e11fcd1f0eb',
+    'bsc:br',
+    'Bedrock',
+    18,
+    '0xff7d6a96ae471bbcd7713af9cb1feeb16cf56b41',
+    UnderlyingAsset['bsc:br'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '4366be67-7b14-433b-bea5-df116849cf0d',
+    'bsc:cgpt',
+    'ChainGPT',
+    18,
+    '0x9840652dc04fb9db2c43853633f0f62be6f00f98',
+    UnderlyingAsset['bsc:cgpt'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'e9188852-cf9b-4df0-88b3-616f5e126d03',
+    'bsc:ta',
+    'Trusta.AI',
+    18,
+    '0x539ae81a166e5e80aed211731563e549c411b140',
+    UnderlyingAsset['bsc:ta'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '2fecfe8c-d252-4676-a911-74d087d15e7b',
+    'bsc:token',
+    'TokenFi',
+    9,
+    '0x4507cef57c46789ef8d1a19ea45f4216bae2b528',
+    UnderlyingAsset['bsc:token'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'e5eef611-58a0-40fe-b718-473e54c36e10',
+    'bsc:hygwon',
+    'iShares High Yield Corporate Bond BuyWrite Strategy ETF',
+    18,
+    '0x85b53a9344884ae428e0e15f05a1819d280d4be7',
+    UnderlyingAsset['bsc:hygwon'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'c9707bf7-037f-42ae-881d-4c7df3c89afa',
+    'bsc:secuon',
+    'iShares Securitized Income Active ETF',
+    18,
+    '0xb0d7d4b65a654d43f91272bb94e011ce6812a2ef',
+    UnderlyingAsset['bsc:secuon'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '4a2da8ad-a22c-4cd2-a526-e30f4a6be7ff',
+    'bsc:sysbon',
+    'iShares Systematic Bond ETF',
+    18,
+    '0xebe1408a7cce4f38de15467e5139c3d82e4641f8',
+    UnderlyingAsset['bsc:sysbon'],
+    BSC_TOKEN_FEATURES
+  ),
   tbscToken(
     '2d4e4f61-1acd-416c-9d38-3d80d95a38d4',
     'tbsc:stgscaasacme',

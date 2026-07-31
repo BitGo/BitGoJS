@@ -3479,6 +3479,17 @@ export enum UnderlyingAsset {
   'bsc:sqd' = 'bsc:sqd',
   'bsc:skyai' = 'bsc:skyai',
   'bsc:zktc' = 'bsc:zktc',
+  // Bitkub & Ondo batch (CSHLD-1278)
+  'bsc:fhe' = 'bsc:fhe',
+  'bsc:babydoge' = 'bsc:babydoge',
+  'bsc:pieverse' = 'bsc:pieverse',
+  'bsc:br' = 'bsc:br',
+  'bsc:cgpt' = 'bsc:cgpt',
+  'bsc:ta' = 'bsc:ta',
+  'bsc:token' = 'bsc:token',
+  'bsc:hygwon' = 'bsc:hygwon',
+  'bsc:secuon' = 'bsc:secuon',
+  'bsc:sysbon' = 'bsc:sysbon',
 
   // BSC NFTs
   // generic NFTs
@@ -3507,6 +3518,8 @@ export enum UnderlyingAsset {
   'tpolygon:tusdlt' = 'tpolygon:tusdlt',
   'tpolygon:sofid' = 'tpolygon:sofid',
   'tpolygon:stgsofid' = 'tpolygon:stgsofid',
+  // CSHLD-1278 testnet token
+  'tpolygon:activ' = 'tpolygon:activ',
 
   // generic NFTs
   'terc721:polygontoken' = 'terc721:polygontoken',
@@ -3588,6 +3601,9 @@ export enum UnderlyingAsset {
   'arbeth:chlt' = 'arbeth:chlt',
   'arbeth:bolt' = 'arbeth:bolt',
   'arbeth:pert' = 'arbeth:pert',
+  // Bitkub batch (CSHLD-1278)
+  'arbeth:obt' = 'arbeth:obt',
+  'arbeth:magic' = 'arbeth:magic',
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
@@ -3648,6 +3664,14 @@ export enum UnderlyingAsset {
   'baseeth:vbtcb' = 'baseeth:vbtcb',
   'baseeth:gldy' = 'baseeth:gldy',
   'baseeth:wpay' = 'baseeth:wpay',
+  // Bitkub batch (CSHLD-1278)
+  'baseeth:degen' = 'baseeth:degen',
+  'baseeth:soso' = 'baseeth:soso',
+  'baseeth:sign' = 'baseeth:sign',
+  'baseeth:synd' = 'baseeth:synd',
+  'baseeth:flock' = 'baseeth:flock',
+  'baseeth:gps' = 'baseeth:gps',
+  'baseeth:elsa' = 'baseeth:elsa',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -3810,6 +3834,8 @@ export enum UnderlyingAsset {
 
   // zkSync mainnet tokens
   'zketh:link' = 'zketh:link',
+  // Bitkub batch (CSHLD-1278)
+  'zketh:zk' = 'zketh:zk',
 
   // zkSync testnet tokens
   'tzketh:link' = 'tzketh:link',
@@ -4108,6 +4134,11 @@ export enum UnderlyingAsset {
   'sol:slx' = 'sol:slx',
   'sol:ab1' = 'sol:ab1',
   'sol:bils' = 'sol:bils',
+  // Bitkub batch (CSHLD-1278)
+  'sol:holo' = 'sol:holo',
+  'sol:birb' = 'sol:birb',
+  'sol:pybobo' = 'sol:pybobo',
+  'sol:usdpt' = 'sol:usdpt',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',

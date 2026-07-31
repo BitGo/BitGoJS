@@ -52,6 +52,7 @@ describe('OFC Token Naming Convention Tests', function () {
         'ofctnear:usdc', // "USD Coin"
         'ofctnear:stnear', // "stNEAR"
         'ofctbaseeth', // "Base Sepolia Chain"
+        'ofctpolygon:activ', // "Activ"
       ];
 
       if (!knownExceptions.includes(token.name)) {
