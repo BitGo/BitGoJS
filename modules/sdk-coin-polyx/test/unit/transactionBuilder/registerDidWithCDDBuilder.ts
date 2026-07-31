@@ -7,6 +7,7 @@ import { utils } from '../../../src';
 import {
   accounts,
   rawTx,
+  mainnetRawTx,
   chainName,
   mainChainName,
   genesisHash,
@@ -14,7 +15,7 @@ import {
   mockTssSignature,
 } from '../../resources';
 import { buildTestConfig, buildMainnetConfig } from './base';
-import { testnetMaterial } from '../../../src/resources';
+import { testnetMaterial, mainnetMaterial } from '../../../src/resources';
 
 describe('Polyx Register DID with CDD builder Builder - Testnet', () => {
   let builder: RegisterDidWithCDDBuilder;
@@ -218,10 +219,10 @@ describe('Polyx Register DID with CDD builder Builder - Mainnet', () => {
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, mainGenesisHash);
-      should.deepEqual(txJson.specVersion, Number(testnetMaterial.specVersion));
+      should.deepEqual(txJson.specVersion, Number(mainnetMaterial.specVersion));
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, Number(testnetMaterial.txVersion));
+      should.deepEqual(txJson.transactionVersion, Number(mainnetMaterial.txVersion));
       should.deepEqual(txJson.chainName, mainChainName);
       should.deepEqual(txJson.eraPeriod, 64);
 
@@ -251,10 +252,10 @@ describe('Polyx Register DID with CDD builder Builder - Mainnet', () => {
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, mainGenesisHash);
-      should.deepEqual(txJson.specVersion, Number(testnetMaterial.specVersion));
+      should.deepEqual(txJson.specVersion, Number(mainnetMaterial.specVersion));
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, Number(testnetMaterial.txVersion));
+      should.deepEqual(txJson.transactionVersion, Number(mainnetMaterial.txVersion));
       should.deepEqual(txJson.chainName, mainChainName);
       should.deepEqual(txJson.eraPeriod, 0);
 
@@ -283,16 +284,16 @@ describe('Polyx Register DID with CDD builder Builder - Mainnet', () => {
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, mainGenesisHash);
-      should.deepEqual(txJson.specVersion, Number(testnetMaterial.specVersion));
+      should.deepEqual(txJson.specVersion, Number(mainnetMaterial.specVersion));
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, Number(testnetMaterial.txVersion));
+      should.deepEqual(txJson.transactionVersion, Number(mainnetMaterial.txVersion));
       should.deepEqual(txJson.chainName, mainChainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
     it('should build from raw signed tx', async () => {
-      builder.from(rawTx.cddTransaction.signed);
+      builder.from(mainnetRawTx.cddTransaction.signed);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
@@ -304,16 +305,16 @@ describe('Polyx Register DID with CDD builder Builder - Mainnet', () => {
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, mainGenesisHash);
-      should.deepEqual(txJson.specVersion, Number(testnetMaterial.specVersion));
+      should.deepEqual(txJson.specVersion, Number(mainnetMaterial.specVersion));
       should.deepEqual(txJson.nonce, 1);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, Number(testnetMaterial.txVersion));
+      should.deepEqual(txJson.transactionVersion, Number(mainnetMaterial.txVersion));
       should.deepEqual(txJson.chainName, mainChainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
     it('should build from raw unsigned tx', async () => {
-      builder.from(rawTx.cddTransaction.unsigned);
+      builder.from(mainnetRawTx.cddTransaction.unsigned);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
@@ -328,11 +329,11 @@ describe('Polyx Register DID with CDD builder Builder - Mainnet', () => {
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, mainGenesisHash);
-      should.deepEqual(txJson.specVersion, Number(testnetMaterial.specVersion));
+      should.deepEqual(txJson.specVersion, Number(mainnetMaterial.specVersion));
       should.deepEqual(txJson.nonce, 1);
       should.deepEqual(txJson.eraPeriod, 64);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, Number(testnetMaterial.txVersion));
+      should.deepEqual(txJson.transactionVersion, Number(mainnetMaterial.txVersion));
       should.deepEqual(txJson.chainName, mainChainName);
     });
   });
