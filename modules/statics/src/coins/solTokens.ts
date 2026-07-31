@@ -4194,4 +4194,15 @@ export const solTokens = [
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
     ProgramID.Token2022ProgramId
   ),
+  tsolToken(
+    '430b6729-cdc8-48b7-9afc-7f5885657029',
+    'sol:test',
+    'TestToken',
+    9,
+    'So11111111111111111111111111111111111111117',
+    'So11111111111111111111111111111111111111117',
+    UnderlyingAsset['tsol:test'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId,
+  ),
 ];
