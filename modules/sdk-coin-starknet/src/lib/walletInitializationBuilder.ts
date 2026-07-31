@@ -81,6 +81,9 @@ export class WalletInitializationBuilder extends TransactionBuilder {
       tip: this._tip,
     });
 
+    // Preserve signature if already signed
+    const existingSignature = this._transaction.starknetTransactionData?.signature;
+
     const data: StarknetTransactionData = {
       senderAddress: contractAddress,
       contractAddress,
@@ -94,6 +97,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
       classHash: this._classHash,
       constructorCalldata,
       contractAddressSalt,
+      ...(existingSignature && existingSignature.length > 0 ? { signature: existingSignature } : {}),
     };
 
     this._transaction.starknetTransactionData = data;

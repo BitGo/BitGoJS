@@ -161,6 +161,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       tip: this._tip,
     });
 
+    // Preserve signature if already signed
+    const existingSignature = this._transaction.starknetTransactionData?.signature;
+
     const data: StarknetTransactionData = {
       senderAddress: sender,
       calls: this._calls,
@@ -171,6 +174,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       tip: this._tip,
       transactionHash,
       compiledCalldata,
+      ...(existingSignature && existingSignature.length > 0 ? { signature: existingSignature } : {}),
     };
 
     this._transaction.starknetTransactionData = data;

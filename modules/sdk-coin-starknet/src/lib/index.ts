@@ -9,3 +9,4 @@ export { WalletInitializationBuilder } from './walletInitializationBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { Transaction } from './transaction';
 export { Utils };
+export * from './recovery';
