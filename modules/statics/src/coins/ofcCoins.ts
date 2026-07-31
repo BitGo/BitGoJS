@@ -846,7 +846,7 @@ export const ofcCoins = [
     'ofctsepeth',
     'Test Sepolia Ether',
     18,
-    UnderlyingAsset.ETH,
+    UnderlyingAsset.SEPETH,
     CoinKind.CRYPTO
   ),
   tofc(
