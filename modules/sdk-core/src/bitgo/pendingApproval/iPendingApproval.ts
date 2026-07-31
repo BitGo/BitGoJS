@@ -43,7 +43,7 @@ export interface PendingApprovalInfo {
     coinSpecific: { [key: string]: any };
     recipients: any;
     buildParams: {
-      type?: 'fanout' | 'consolidate';
+      type?: 'fanout' | 'consolidate' | 'enabletoken';
       [index: string]: any;
     };
     sourceWallet?: string;

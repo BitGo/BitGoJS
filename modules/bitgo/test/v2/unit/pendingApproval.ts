@@ -382,4 +382,72 @@ describe('Pending Approvals:', () => {
       sandbox.verify();
     });
   });
+
+  describe('recreateAndSignTransaction', function () {
+    it('should preserve the verifyTokenEnablement verification flag when rebuilding an enabletoken pending approval (CSHLD-1358)', async () => {
+      const enableTokenPendingApprovalData: PendingApprovalData = {
+        id: 'pa-enabletoken',
+        info: {
+          type: Type.TRANSACTION_REQUEST,
+          transactionRequest: {
+            coinSpecific: {
+              [coin]: {},
+            },
+            recipients: [],
+            buildParams: {
+              type: 'enabletoken',
+            },
+            sourceWallet: walletId,
+          },
+        },
+        state: State.PENDING,
+        creator: 'test',
+      };
+      const pendingApproval = new PendingApproval(bitgo, basecoin, enableTokenPendingApprovalData, wallet);
+
+      const prebuildAndSignStub = sandbox
+        .stub(Wallet.prototype, 'prebuildAndSignTransaction')
+        .resolves({ txHex: 'signed-tx-hex' });
+      sandbox.stub(basecoin, 'parseTransaction').resolves({});
+
+      await pendingApproval.recreateAndSignTransaction({});
+
+      prebuildAndSignStub.calledOnce.should.be.true();
+      const prebuildParamsArg = prebuildAndSignStub.getCall(0).args[0]!;
+      prebuildParamsArg.verification!.should.have.property('verifyTokenEnablement', true);
+    });
+
+    it('should not set verifyTokenEnablement for non-enabletoken pending approvals', async () => {
+      const fanoutPendingApprovalData: PendingApprovalData = {
+        id: 'pa-fanout',
+        info: {
+          type: Type.TRANSACTION_REQUEST,
+          transactionRequest: {
+            coinSpecific: {
+              [coin]: {},
+            },
+            recipients: [],
+            buildParams: {
+              type: 'fanout',
+            },
+            sourceWallet: walletId,
+          },
+        },
+        state: State.PENDING,
+        creator: 'test',
+      };
+      const pendingApproval = new PendingApproval(bitgo, basecoin, fanoutPendingApprovalData, wallet);
+
+      const prebuildAndSignStub = sandbox
+        .stub(Wallet.prototype, 'prebuildAndSignTransaction')
+        .resolves({ txHex: 'signed-tx-hex' });
+      sandbox.stub(basecoin, 'parseTransaction').resolves({});
+
+      await pendingApproval.recreateAndSignTransaction({});
+
+      prebuildAndSignStub.calledOnce.should.be.true();
+      const prebuildParamsArg = prebuildAndSignStub.getCall(0).args[0]!;
+      (prebuildParamsArg.verification === undefined).should.be.true();
+    });
+  });
 });

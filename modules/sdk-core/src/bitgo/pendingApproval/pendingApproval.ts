@@ -298,6 +298,14 @@ export class PendingApproval implements IPendingApproval {
       prebuildParams.hop = true;
     }
 
+    if (transactionRequest.buildParams && transactionRequest.buildParams.type === 'enabletoken') {
+      // preserve the verification mode used for the original enable-token build so that
+      // verifyTransaction() takes the trustline verification path instead of falling through
+      // to the generic createAccount/payment check, which has no matching operations to verify
+      // for a changeTrust transaction (see CSHLD-1358)
+      prebuildParams.verification = _.extend({}, prebuildParams.verification, { verifyTokenEnablement: true });
+    }
+
     const reqTracer = reqId || new RequestTracer();
     if (transactionRequest.buildParams && transactionRequest.buildParams.type === 'consolidate') {
       // consolidate tag is in the build params - this is a consolidation transaction, so
