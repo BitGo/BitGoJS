@@ -3210,6 +3210,7 @@ export enum UnderlyingAsset {
   'polygon:wpay' = 'polygon:wpay',
   'polygon:seag' = 'polygon:seag',
   'polygon:infra' = 'polygon:infra',
+  'polygon:sofid' = 'polygon:sofid',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -3503,6 +3504,8 @@ export enum UnderlyingAsset {
   'tpolygon:copr3' = 'tpolygon:copr3',
   'tpolygon:tusdl' = 'tpolygon:tusdl',
   'tpolygon:tusdlt' = 'tpolygon:tusdlt',
+  'tpolygon:sofid' = 'tpolygon:sofid',
+  'tpolygon:stgsofid' = 'tpolygon:stgsofid',
 
   // generic NFTs
   'terc721:polygontoken' = 'terc721:polygontoken',
@@ -3695,9 +3698,19 @@ export enum UnderlyingAsset {
   // Monad mainnet tokens
   'mon:usdc' = 'mon:usdc',
   'mon:wmon' = 'mon:wmon',
+  'mon:sofid' = 'mon:sofid',
 
   // Monad testnet tokens
   'tmon:tmt' = 'tmon:tmt',
+  'tmon:sofid' = 'tmon:sofid',
+  'tmon:stgsofid' = 'tmon:stgsofid',
+
+  // GasEVM (Neo X) mainnet tokens
+  'gasevm:usd1' = 'gasevm:usd1',
+
+  // GasEVM (Neo X) testnet tokens
+  'tgasevm:usd1' = 'tgasevm:usd1',
+  'tgasevm:stgusd1' = 'tgasevm:stgusd1',
 
   // XDC mainnet tokens
   'xdc:usdc' = 'xdc:usdc',
@@ -4506,6 +4519,7 @@ export enum UnderlyingAsset {
   'tempo:syrupusdc' = 'tempo:syrupusdc',
   'tempo:cusd' = 'tempo:cusd',
   'tempo:stcusd' = 'tempo:stcusd',
+  'tempo:sofid' = 'tempo:sofid',
 
   // Tempo testnet tokens
   'ttempo:pathusd' = 'ttempo:pathusd',
@@ -4518,6 +4532,8 @@ export enum UnderlyingAsset {
   'ttempo:stggousd' = 'ttempo:stggousd',
   'ttempo:stgscaasacme' = 'ttempo:stgscaasacme',
   'ttempo:scaasacme' = 'ttempo:scaasacme',
+  'ttempo:sofid' = 'ttempo:sofid',
+  'ttempo:stgsofid' = 'ttempo:stgsofid',
 
   // Prividium Ethereum testnet tokens
   'tprividiumeth:USB-ESCROW-D' = 'tprividiumeth:USB-ESCROW-D',

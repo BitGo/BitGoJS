@@ -4484,6 +4484,13 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['polygon:infra']
   ),
+  ofcPolygonErc20(
+    '5ef81cb6-da18-4227-accd-e4322354db62',
+    'ofcpolygon:sofid',
+    'SoFiUSD',
+    6,
+    UnderlyingAsset['polygon:sofid']
+  ),
 
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
@@ -4553,6 +4560,24 @@ export const ofcCoins = [
     'Test USDLT',
     6,
     UnderlyingAsset['tpolygon:tusdlt'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  tofcPolygonErc20(
+    'e4cc0881-3458-4fbb-ab94-d958269b054e',
+    'ofctpolygon:sofid',
+    'Test SoFiUSD',
+    6,
+    UnderlyingAsset['tpolygon:sofid'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  tofcPolygonErc20(
+    '488edbf0-a7fe-4792-bf71-7e7cd105dd76',
+    'ofctpolygon:stgsofid',
+    'Test SoFiUSD',
+    6,
+    UnderlyingAsset['tpolygon:stgsofid'],
     undefined,
     [CoinFeature.STABLECOIN]
   ),
@@ -6218,6 +6243,7 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['tempo:stcusd']
   ),
+  ofcTempoToken('003c69c6-5a4a-4768-bea1-cb57718ea719', 'ofctempo:sofid', 'SoFiUSD', 6, UnderlyingAsset['tempo:sofid']),
   // Tempo testnet OFC tokens
   tofcTempoToken(
     '7912e76e-5a5c-4f1b-86e9-1fc2a51f5a98',
@@ -6288,6 +6314,20 @@ export const ofcCoins = [
     'Testnet Acme USD',
     6,
     UnderlyingAsset['ttempo:scaasacme']
+  ),
+  tofcTempoToken(
+    '02c146be-1e54-4513-8d51-69b20ffacef1',
+    'ofcttempo:sofid',
+    'Test SoFiUSD',
+    6,
+    UnderlyingAsset['ttempo:sofid']
+  ),
+  tofcTempoToken(
+    '517b41b2-8714-4193-8178-a57316567d1e',
+    'ofcttempo:stgsofid',
+    'Test SoFiUSD',
+    6,
+    UnderlyingAsset['ttempo:stgsofid']
   ),
   ofc('6f0246cf-b792-483a-b720-9755b158c614', 'ofcunieth', 'Unichain', 18, UnderlyingAsset.UNIETH, CoinKind.CRYPTO),
   tofc(
