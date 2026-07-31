@@ -1,6 +1,5 @@
-import { type BinaryLike, type KeyObject } from 'crypto';
+import { type BinaryLike, createHash, type KeyObject } from 'crypto';
 import * as urlLib from 'url';
-import * as sjcl from '@bitgo/sjcl';
 import {
   CalculateHmacSubjectOptions,
   CalculateRequestHeadersOptions,
@@ -91,8 +90,7 @@ export function calculateRequestHeaders<T extends string | Buffer = string>(
   const hmac = calculateRequestHMAC({ url, text, timestamp, token, method, authVersion }, useOriginalPath);
 
   // calculate the SHA256 hash of the token
-  const hashDigest = sjcl.hash.sha256.hash(token);
-  const tokenHash = sjcl.codec.hex.fromBits(hashDigest);
+  const tokenHash = createHash('sha256').update(token).digest('hex');
   return {
     hmac,
     timestamp,
