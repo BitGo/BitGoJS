@@ -63,14 +63,26 @@ async function main(): Promise<void> {
     const password = await askQuestion('Enter your BitGo password: ');
     const loginOtp = await askQuestion('Enter your OTP code for login: ');
 
-    console.log('\nAuthenticating with BitGo...');
+    console.log('\nAuthenticating with BitGo (via /api/v2/user/login)...');
 
-    // Authenticate with BitGo
-    await bitgo.authenticate({
-      username,
-      password,
-      otp: loginOtp,
-    });
+    // Authenticate with BitGo via /api/v2/user/login (avoids Cloudflare challenge on /api/auth/v1/session)
+    const loginResponse = await bitgo
+      .post(bitgo.url('/user/login', 2))
+      .send({ email: username, password, otp: loginOtp })
+      .result();
+
+    let accessToken: string;
+    if (loginResponse.access_token) {
+      accessToken = loginResponse.access_token;
+    } else if (loginResponse.encryptedToken) {
+      // Legacy accounts return an ECDH-encrypted token instead of a plain access_token
+      const { token } = await bitgo.handleTokenIssuance(loginResponse, password);
+      accessToken = token;
+    } else {
+      throw new Error('Login did not return a usable token (no access_token or encryptedToken).');
+    }
+
+    bitgo.authenticateWithAccessToken({ accessToken });
 
     console.log('Authentication successful.');
 
@@ -127,7 +139,7 @@ Recovery information received:
     console.log('\nDecrypting wallet password using recovery information...');
 
     // Decrypt the original password
-    const decryptedPassword = bitgo.decrypt({
+    const decryptedPassword = await bitgo.decrypt({
       password: passcodeEncryptionCode,
       input: encryptedPrv,
     });
