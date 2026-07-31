@@ -7,7 +7,6 @@ import {
   calculateRequestHeaders,
   verifyResponse,
 } from '../src/hmac';
-import * as sjcl from '@bitgo/sjcl';
 import { createSecretKey } from 'crypto';
 
 // Mock Date.now for consistent timestamp values
@@ -203,8 +202,9 @@ describe('HMAC Utility Functions', () => {
         method: 'post',
         authVersion: 3,
       });
-      const hashDigest = sjcl.hash.sha256.hash('test-token');
-      const tokenHash = sjcl.codec.hex.fromBits(hashDigest);
+      // sha256('test-token'), asserted against a fixed known-good value so the
+      // test is independent of the implementation under test.
+      const tokenHash = '4c5dc9b7708905f77f5e5d16316b5dfb425e68cb326dcd55a860e90a7707031e';
 
       expect(headers).to.include({
         hmac: headers.hmac, // Verify hmac exists
