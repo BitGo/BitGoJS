@@ -130,52 +130,6 @@ describe('HBAR Account Update Builder', () => {
         const txJson = tx.toJson();
         txJson.instructionsData.params.accountId.should.deepEqual(testData.ACCOUNT_2.accountId);
       });
-
-      it('a stake-to-account transaction with stakedAccountId', async () => {
-        const txBuilder = factory.getAccountUpdateBuilder();
-        txBuilder.fee({ fee: testData.FEE });
-        txBuilder.source({ address: testData.ACCOUNT_1.accountId });
-        txBuilder.stakedAccountId(testData.ACCOUNT_2.accountId);
-        txBuilder.validDuration(1000000);
-        txBuilder.node({ nodeId: '0.0.2345' });
-        txBuilder.startTime('1596110493.372646570');
-        const tx = await txBuilder.build();
-        const txJson = tx.toJson();
-        txJson.instructionsData.params.stakedAccountId.should.deepEqual(testData.ACCOUNT_2.accountId);
-        txJson.instructionsData.params.accountId.should.deepEqual(testData.ACCOUNT_1.accountId);
-        should.not.exist(txJson.instructionsData.params.stakedNodeId);
-        tx.type.should.equal(TransactionType.AccountUpdate);
-      });
-
-      it('an unstake-from-account transaction with sentinel 0.0.0', async () => {
-        const txBuilder = factory.getAccountUpdateBuilder();
-        txBuilder.fee({ fee: testData.FEE });
-        txBuilder.source({ address: testData.ACCOUNT_1.accountId });
-        txBuilder.stakedAccountId('0.0.0');
-        txBuilder.validDuration(1000000);
-        txBuilder.node({ nodeId: '0.0.2345' });
-        txBuilder.startTime('1596110493.372646570');
-        const tx = await txBuilder.build();
-        const txJson = tx.toJson();
-        txJson.instructionsData.params.stakedAccountId.should.deepEqual('0.0.0');
-        should.not.exist(txJson.instructionsData.params.stakedNodeId);
-        tx.type.should.equal(TransactionType.AccountUpdate);
-      });
-
-      it('a stake-to-account transaction with declineReward', async () => {
-        const txBuilder = factory.getAccountUpdateBuilder();
-        txBuilder.fee({ fee: testData.FEE });
-        txBuilder.source({ address: testData.ACCOUNT_1.accountId });
-        txBuilder.stakedAccountId(testData.ACCOUNT_2.accountId);
-        txBuilder.declineStakingReward(true);
-        txBuilder.validDuration(1000000);
-        txBuilder.node({ nodeId: '0.0.2345' });
-        txBuilder.startTime('1596110493.372646570');
-        const tx = await txBuilder.build();
-        const txJson = tx.toJson();
-        txJson.instructionsData.params.stakedAccountId.should.deepEqual(testData.ACCOUNT_2.accountId);
-        txJson.instructionsData.params.declineReward.should.equal(true);
-      });
     });
 
     describe('serialized transactions', () => {
@@ -210,54 +164,16 @@ describe('HBAR Account Update Builder', () => {
         tx2.toJson().instructionsData.params.accountId.should.deepEqual(testData.ACCOUNT_1.accountId);
         tx2.toJson().instructionsData.params.stakedNodeId.should.deepEqual(NODE_ID.toString());
       });
-
-      it('a stakedAccountId transaction round-trip', async () => {
-        const txBuilder = factory.getAccountUpdateBuilder();
-        txBuilder.fee({ fee: testData.FEE });
-        txBuilder.source({ address: testData.ACCOUNT_1.accountId });
-        txBuilder.stakedAccountId(testData.ACCOUNT_2.accountId);
-        txBuilder.validDuration(1000000);
-        txBuilder.node({ nodeId: '0.0.2345' });
-        txBuilder.startTime('1596110493.372646570');
-        const tx = await txBuilder.build();
-        const serialized = tx.toBroadcastFormat();
-
-        const builder2 = factory.from(serialized);
-        const tx2 = await builder2.build();
-        tx2.type.should.equal(TransactionType.AccountUpdate);
-        tx2.toJson().instructionsData.params.stakedAccountId.should.deepEqual(testData.ACCOUNT_2.accountId);
-        should.not.exist(tx2.toJson().instructionsData.params.stakedNodeId);
-      });
     });
   });
 
   describe('should fail', () => {
-    it('a stake transaction without stakedNodeId or stakedAccountId', async () => {
+    it('a stake transaction without stakedNodeId', async () => {
       const txBuilder = factory.getAccountUpdateBuilder();
       txBuilder.fee({ fee: testData.FEE });
       txBuilder.source({ address: testData.ACCOUNT_1.accountId });
       txBuilder.node({ nodeId: '0.0.2345' });
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing stakedNodeId or stakedAccountId');
-    });
-
-    it('a stake transaction with both stakedNodeId and stakedAccountId', async () => {
-      const txBuilder = factory.getAccountUpdateBuilder();
-      txBuilder.fee({ fee: testData.FEE });
-      txBuilder.source({ address: testData.ACCOUNT_1.accountId });
-      txBuilder.stakedNodeId(NODE_ID);
-      txBuilder.stakedAccountId(testData.ACCOUNT_2.accountId);
-      txBuilder.node({ nodeId: '0.0.2345' });
-      await txBuilder
-        .build()
-        .should.be.rejectedWith('Invalid transaction: cannot set both stakedNodeId and stakedAccountId');
-    });
-
-    it('a stake transaction with an invalid stakedAccountId', () => {
-      const txBuilder = factory.getAccountUpdateBuilder();
-      assert.throws(
-        () => txBuilder.stakedAccountId('invalidAccountId'),
-        (e: any) => e.message === 'Invalid stakedAccountId: invalidAccountId'
-      );
+      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing stakedNodeId');
     });
 
     it('a stake transaction with an invalid account id', () => {

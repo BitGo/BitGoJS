@@ -11,7 +11,6 @@ export class AccountUpdateBuilder extends TransactionBuilder {
   private readonly _txBodyData: proto.CryptoUpdateTransactionBody;
   private _accountId: string;
   private _stakedNodeId?: Long;
-  private _stakedAccountId?: string;
   private _declineStakingReward?: boolean;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -30,9 +29,6 @@ export class AccountUpdateBuilder extends TransactionBuilder {
       }
       if (updateBody.stakedNodeId != null) {
         this._stakedNodeId = Long.fromValue(updateBody.stakedNodeId);
-      }
-      if (updateBody.stakedAccountId) {
-        this._stakedAccountId = stringifyAccountId(updateBody.stakedAccountId);
       }
       if (updateBody.declineReward != null) {
         const raw = updateBody.declineReward;
@@ -55,9 +51,6 @@ export class AccountUpdateBuilder extends TransactionBuilder {
     if (this._stakedNodeId !== undefined) {
       this._txBodyData.stakedNodeId = this._stakedNodeId;
     }
-    if (this._stakedAccountId !== undefined) {
-      this._txBodyData.stakedAccountId = buildHederaAccountID(this._stakedAccountId);
-    }
     if (this._declineStakingReward !== undefined) {
       this._txBodyData.declineReward = { value: this._declineStakingReward };
     }
@@ -67,11 +60,8 @@ export class AccountUpdateBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   validateMandatoryFields(): void {
-    if (this._stakedNodeId === undefined && this._stakedAccountId === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing stakedNodeId or stakedAccountId');
-    }
-    if (this._stakedNodeId !== undefined && this._stakedAccountId !== undefined) {
-      throw new BuildTransactionError('Invalid transaction: cannot set both stakedNodeId and stakedAccountId');
+    if (this._stakedNodeId === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing stakedNodeId');
     }
     super.validateMandatoryFields();
   }
@@ -101,20 +91,6 @@ export class AccountUpdateBuilder extends TransactionBuilder {
       throw new BuildTransactionError('Invalid stakedNodeId: only -1 is a valid sentinel for unstaking');
     }
     this._stakedNodeId = Long.fromNumber(nodeId);
-    return this;
-  }
-
-  /**
-   * Set the staked account ID for indirect staking. Use "0.0.0" to unstake.
-   *
-   * @param {string} accountId - The account ID to stake to in format <shard>.<realm>.<account>, or "0.0.0" to clear
-   * @returns {AccountUpdateBuilder} - This builder
-   */
-  stakedAccountId(accountId: string): this {
-    if (!isValidAddress(accountId)) {
-      throw new BuildTransactionError('Invalid stakedAccountId: ' + accountId);
-    }
-    this._stakedAccountId = accountId;
     return this;
   }
 
