@@ -9,13 +9,21 @@
  * BITGO_GENERATE_SHRINKWRAP=true (set by the release workflow) — otherwise a plain
  * local/offline `npm pack` would force a network install of the full dependency tree.
  *
- * `@bitgo/*` siblings are deliberately excluded from the resolved tree: `lerna
- * publish` bumps and packs every package in the same operation, so a sibling's
- * newly-bumped version is not guaranteed to be live on the registry yet when bitgo
- * is packed — resolving it here would either fail the release outright or silently
- * pin a stale sibling version. Excluding them means consumers resolve `@bitgo/*`
- * siblings normally (by then they are published); everything beneath those siblings
- * still gets pinned via `overrides` for whichever version ends up installed.
+ * `@bitgo/*` siblings are resolved as part of the same tree as everything else.
+ * `lerna publish` publishes packages in dependency-topological order, so by the
+ * time bitgo (which depends on every sibling) is packed, the sibling versions it
+ * references are already live on the registry. Resolving them here — rather than
+ * excluding them and patching their names back into the shrinkwrap metadata after
+ * the fact — is what makes the generated `packages["node_modules/@bitgo/..."]`
+ * entries (version/resolved/integrity) actually present, which is what npm uses to
+ * populate node_modules for consumers. A shrinkwrap that lists a dependency in
+ * `packages[''].dependencies` without a matching resolved `packages[...]` entry is
+ * silently dropped from the install by npm rather than falling back to normal
+ * resolution — that's what an earlier version of this script did, which broke
+ * `npm install bitgo` for every consumer (siblings never landed in node_modules).
+ * If a sibling version isn't resolvable yet, the `npm install` below fails loudly
+ * and the release fails — which is correct: better a failed release than a
+ * silently broken shrinkwrap.
  *
  * `npm shrinkwrap` isn't workspace-aware and modules/bitgo/.npmrc sets
  * `package-lock=false`, so generation happens in an isolated temp copy outside the
@@ -49,16 +57,13 @@ async function main() {
   try {
     const siblingNames = Object.keys(bitgoPackageJson.dependencies ?? {}).filter((name) => name.startsWith('@bitgo/'));
     if (siblingNames.length > 0) {
-      console.log(`Excluding ${siblingNames.length} @bitgo/* siblings from shrinkwrap resolution:`);
+      console.log(`Resolving ${siblingNames.length} @bitgo/* siblings as part of the shrinkwrap:`);
       siblingNames.forEach((name) => console.log(`  - ${name}`));
     }
 
     const isolatedPackageJson: Record<string, unknown> = { ...bitgoPackageJson };
     delete isolatedPackageJson.devDependencies;
     delete isolatedPackageJson.scripts;
-    isolatedPackageJson.dependencies = Object.fromEntries(
-      Object.entries(bitgoPackageJson.dependencies ?? {}).filter(([name]) => !name.startsWith('@bitgo/'))
-    );
     const directDeps = new Set(Object.keys(bitgoPackageJson.dependencies ?? {}));
     const filteredOverrides = Object.fromEntries(
       Object.entries(rootPackageJson.overrides as Record<string, unknown>).filter(
@@ -81,13 +86,22 @@ async function main() {
       throw new Error(`npm shrinkwrap did not produce a file at ${shrinkwrapPath}`);
     }
 
-    // The shrinkwrap was generated against a package.json with @bitgo/* siblings
-    // removed, so its top-level `dependencies` no longer lists them. Restore the
-    // real dependency list so the shipped shrinkwrap matches what's published.
     const shrinkwrap = JSON.parse(fs.readFileSync(shrinkwrapPath, 'utf-8'));
-    shrinkwrap.dependencies = bitgoPackageJson.dependencies;
-    if (shrinkwrap.packages?.['']) {
-      shrinkwrap.packages[''].dependencies = bitgoPackageJson.dependencies;
+
+    // Every @bitgo/* sibling must have a resolved node_modules entry — that's what
+    // npm actually installs from. A sibling present only in `packages[''].dependencies`
+    // (or missing entirely) would be silently skipped by consumers' installs.
+    const resolvedPackageNames = new Set(
+      Object.keys(shrinkwrap.packages ?? {})
+        .filter((key) => key.startsWith('node_modules/'))
+        .map((key) => key.slice('node_modules/'.length))
+    );
+    const unresolvedSiblings = siblingNames.filter((name) => !resolvedPackageNames.has(name));
+    if (unresolvedSiblings.length > 0) {
+      throw new Error(
+        `The following @bitgo/* siblings have no resolved node_modules entry in the generated ` +
+          `shrinkwrap and would be silently missing from consumers' installs: ${unresolvedSiblings.join(', ')}`
+      );
     }
 
     fs.writeFileSync(path.join(bitgoDir, 'npm-shrinkwrap.json'), JSON.stringify(shrinkwrap, null, 2) + '\n');
