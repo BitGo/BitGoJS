@@ -1,9 +1,11 @@
+import * as sinon from 'sinon';
 import {
   BaseCoin,
   BitgoGPGPublicKey,
   common,
   ECDSAUtils,
   EDDSAUtils,
+  InvalidTransactionError,
   RequestTracer,
   RequestType,
   SignatureShareRecord,
@@ -417,6 +419,133 @@ describe('signTxRequest:', function () {
     nockPromises[1].isDone().should.be.true();
     nockPromises[2].isDone().should.be.true();
     nockPromises[3].isDone().should.be.false();
+  });
+
+  describe('resolveEffectiveTxParams guard (WCI-1111)', function () {
+    let sandbox: sinon.SinonSandbox;
+
+    beforeEach(function () {
+      sandbox = sinon.createSandbox();
+    });
+
+    afterEach(function () {
+      sandbox.restore();
+    });
+
+    it('throws InvalidTransactionError when txParams is absent and intent has no recipients (malicious/empty-recipient path)', async function () {
+      // Simulate the stakingAuthorize attack vector: intent has no recipients
+      // and intentType is not on the NO_RECIPIENT_TX_TYPES allowlist.
+      const maliciousTxRequest: TxRequest = {
+        ...txRequest,
+        intent: { intentType: 'stakingAuthorize' } as any,
+      };
+      const userPrvBase64 = Buffer.from(userKeyShare).toString('base64');
+      await tssUtils
+        .signTxRequest({
+          txRequest: maliciousTxRequest,
+          prv: userPrvBase64,
+          reqId,
+          // No txParams — the re-sign path that was previously vulnerable
+        })
+        .should.be.rejectedWith(InvalidTransactionError);
+    });
+
+    it('throws InvalidTransactionError when txParams has empty recipients and intentType is not allowlisted', async function () {
+      const maliciousTxRequest: TxRequest = {
+        ...txRequest,
+        intent: { intentType: 'payment' } as any,
+      };
+      const userPrvBase64 = Buffer.from(userKeyShare).toString('base64');
+      await tssUtils
+        .signTxRequest({
+          txRequest: maliciousTxRequest,
+          prv: userPrvBase64,
+          reqId,
+          txParams: { recipients: [] },
+        })
+        .should.be.rejectedWith(InvalidTransactionError);
+    });
+
+    it('does not throw for allowlisted no-recipient intentType (deactivate)', async function () {
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
+      const nockPromises = await getNockPromisesForEddsaSigning(txRequest);
+      await Promise.all(nockPromises);
+
+      const noRecipientTxRequest: TxRequest = {
+        ...txRequest,
+        intent: { intentType: 'deactivate' } as any,
+      };
+      const userPrvBase64 = Buffer.from(userKeyShare).toString('base64');
+      await tssUtils.signTxRequest({
+        txRequest: noRecipientTxRequest,
+        prv: userPrvBase64,
+        reqId,
+        // No txParams — legitimate no-recipient flow
+      });
+    });
+
+    it('does not throw for allowlisted no-recipient intentType (consolidate)', async function () {
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
+      const nockPromises = await getNockPromisesForEddsaSigning(txRequest);
+      await Promise.all(nockPromises);
+
+      const consolidateTxRequest: TxRequest = {
+        ...txRequest,
+        intent: { intentType: 'consolidate' } as any,
+      };
+      const userPrvBase64 = Buffer.from(userKeyShare).toString('base64');
+      await tssUtils.signTxRequest({
+        txRequest: consolidateTxRequest,
+        prv: userPrvBase64,
+        reqId,
+      });
+    });
+
+    it('uses intent recipients when txParams is absent and intent has recipients', async function () {
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
+      const nockPromises = await getNockPromisesForEddsaSigning(txRequest);
+      await Promise.all(nockPromises);
+
+      const intentRecipientTxRequest: TxRequest = {
+        ...txRequest,
+        intent: {
+          intentType: 'payment',
+          recipients: [
+            {
+              address: { address: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs' },
+              amount: { value: '999990000', symbol: 'sol' },
+            },
+          ],
+        } as any,
+      };
+      const userPrvBase64 = Buffer.from(userKeyShare).toString('base64');
+      // Should not throw — intent provides the recipients
+      await tssUtils.signTxRequest({
+        txRequest: intentRecipientTxRequest,
+        prv: userPrvBase64,
+        reqId,
+      });
+    });
+
+    it('does not throw for staking intent with stakingRequestId (generic staking signal)', async function () {
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
+      const nockPromises = await getNockPromisesForEddsaSigning(txRequest);
+      await Promise.all(nockPromises);
+
+      const stakingTxRequest: TxRequest = {
+        ...txRequest,
+        intent: {
+          intentType: 'delegate',
+          stakingRequestId: 'staking-req-id-123',
+        } as any,
+      };
+      const userPrvBase64 = Buffer.from(userKeyShare).toString('base64');
+      await tssUtils.signTxRequest({
+        txRequest: stakingTxRequest,
+        prv: userPrvBase64,
+        reqId,
+      });
+    });
   });
 
   async function getNockPromisesForEddsaSigning(
