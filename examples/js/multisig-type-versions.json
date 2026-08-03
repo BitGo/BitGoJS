@@ -1,0 +1,49 @@
+{
+  "generatedAt": "2026-02-06T09:07:10.366Z",
+  "bitgoEnv": "test",
+  "coins": [
+    {
+      "coin": "eth",
+      "family": "eth",
+      "multiSigTypeVersion": "MPCv2",
+      "coldMultiSigTypeVersion": "MPCv2",
+      "custodialMultiSigTypeVersion": "MPCv2"
+    },
+    {
+      "coin": "btc",
+      "family": "btc"
+    },
+    {
+      "coin": "sol",
+      "family": "sol"
+    },
+    {
+      "coin": "bsc",
+      "family": "bsc",
+      "multiSigTypeVersion": "MPCv2",
+      "coldMultiSigTypeVersion": "MPCv2",
+      "custodialMultiSigTypeVersion": "MPCv2"
+    },
+    {
+      "coin": "polygon",
+      "family": "polygon",
+      "multiSigTypeVersion": "MPCv2",
+      "coldMultiSigTypeVersion": "MPCv2",
+      "custodialMultiSigTypeVersion": "MPCv2"
+    },
+    {
+      "coin": "sonic",
+      "family": "sonic",
+      "multiSigTypeVersion": "MPCv2",
+      "coldMultiSigTypeVersion": "MPCv2",
+      "custodialMultiSigTypeVersion": "MPCv2"
+    },
+    {
+      "coin": "usdt",
+      "family": "eth",
+      "multiSigTypeVersion": "MPCv2",
+      "coldMultiSigTypeVersion": "MPCv2",
+      "custodialMultiSigTypeVersion": "MPCv2"
+    }
+  ]
+}
