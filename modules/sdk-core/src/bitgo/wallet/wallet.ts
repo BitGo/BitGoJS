@@ -26,6 +26,7 @@ import { BitGoBase } from '../bitgoBase';
 import { getSharedSecret } from '../ecdh';
 import {
   AddressGenerationError,
+  ApiResponseError,
   IncorrectPasswordError,
   MethodNotImplementedError,
   MissingEncryptedKeychainError,
@@ -1714,7 +1715,18 @@ export class Wallet implements IWallet {
 
       const params = { id: this._wallet.keys[index] };
 
-      const keychain = await this.baseCoin.keychains().get(params);
+      let keychain: Keychain;
+      try {
+        keychain = await this.baseCoin.keychains().get(params);
+      } catch (e) {
+        // A 404 means the key record does not exist on the server (e.g. cold wallet keys
+        // or KMS-backed keys that have no keychain entry). Treat this the same as a key
+        // without an encryptedPrv and try the next one.
+        if (e instanceof ApiResponseError && e.status === 404) {
+          return tryKeyChain(index + 1);
+        }
+        throw e;
+      }
       // If we find the prv, then this is probably the user keychain we're looking for
       if (keychain.encryptedPrv) {
         return keychain as KeychainWithEncryptedPrv;

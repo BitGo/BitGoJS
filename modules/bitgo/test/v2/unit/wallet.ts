@@ -1994,6 +1994,37 @@ describe('V2 Wallet:', function () {
       createShareNock.isDone().should.be.True();
     });
 
+    it('should share wallet when key fetch returns 404 (cold wallet with missing key records)', async function () {
+      const userId = '123';
+      const email = 'shareto@sdktest.com';
+      const permissions = 'view,spend';
+
+      const getSharingKeyNock = nock(bgUrl).post('/api/v1/user/sharingkey', { email }).reply(200, { userId });
+
+      // Simulate cold storage wallets where key records do not exist on the backend (404)
+      const getKeyNock = nock(bgUrl)
+        .get(`/api/v2/tbtc/key/${coldWallet.keyIds()[0]}`)
+        .reply(404, { error: 'key not found' })
+        .get(`/api/v2/tbtc/key/${coldWallet.keyIds()[1]}`)
+        .reply(404, { error: 'key not found' })
+        .get(`/api/v2/tbtc/key/${coldWallet.keyIds()[2]}`)
+        .reply(404, { error: 'key not found' });
+
+      const createShareNock = nock(bgUrl)
+        .post(`/api/v2/tbtc/wallet/${coldWallet.id()}/share`, {
+          user: userId,
+          permissions,
+          skipKeychain: true,
+        })
+        .reply(200, {});
+
+      await coldWallet.shareWallet({ email, permissions });
+
+      getSharingKeyNock.isDone().should.be.True();
+      getKeyNock.isDone().should.be.True();
+      createShareNock.isDone().should.be.True();
+    });
+
     describe('Hot Wallet Sharing', function () {
       const userId = '123';
       const email = 'shareto@sdktest.com';
