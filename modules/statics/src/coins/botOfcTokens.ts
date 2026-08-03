@@ -601,4 +601,16 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.ofcsolToken(
+    'd3ee9998-a84d-48d4-9a18-84e99d7836e6',
+    'ofcsol:ansem',
+    'ofcThe Black Bull',
+    6,
+    'sol:ansem' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
