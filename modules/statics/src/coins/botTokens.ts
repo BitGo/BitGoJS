@@ -172,6 +172,24 @@ export const botTokens = [
     undefined,
     Networks.test.hoodi
   ),
+  AccountCtors.tsolToken(
+    '19d74fd8-6afd-4885-bc05-458cd3deb322',
+    'tsol:amssol',
+    'AmsSol',
+    9,
+    '7Soz4BFKoHnj5uREwGk1EEa8xBjyt2r6J7X6ebNXJtqh',
+    '7Soz4BFKoHnj5uREwGk1EEa8xBjyt2r6J7X6ebNXJtqh',
+    'tsol:amssol' as unknown as UnderlyingAsset,
+    getTokenFeatures('sol', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    AccountCtors.ProgramID.TokenProgramId,
+    undefined,
+    undefined,
+    Networks.test.sol
+  ),
   AccountCtors.terc20(
     'dab09c2a-e17b-4723-9cfe-e979d995bd7f',
     'hteth:sachu',
@@ -199,6 +217,24 @@ export const botTokens = [
     undefined,
     undefined,
     Networks.test.hoodi
+  ),
+  AccountCtors.tsolToken(
+    '4f76b727-3ffc-4855-a591-b4f5cac89268',
+    'tsol:amssolv5',
+    'AmsSolv5',
+    9,
+    'Q5GAGXeTLSHhenj7TwYtK8MGwPoSCCeS7aKaoxLJm5m',
+    'Q5GAGXeTLSHhenj7TwYtK8MGwPoSCCeS7aKaoxLJm5m',
+    'tsol:amssolv5' as unknown as UnderlyingAsset,
+    getTokenFeatures('sol', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    AccountCtors.ProgramID.TokenProgramId,
+    undefined,
+    undefined,
+    Networks.test.sol
   ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
@@ -2063,6 +2099,20 @@ export const botTokens = [
     '0x086f405146ce90135750bbec9a063a8b20a8bffb',
     'eth:brev' as unknown as UnderlyingAsset,
     getTokenFeatures('eth', ['custody-bitgo-new-york' as CoinFeature, 'custody-bitgo-germany' as CoinFeature]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.solToken(
+    '1c1bb4f5-1deb-4c2b-bd73-cd71e0efbc9e',
+    'sol:ansem',
+    'The Black Bull',
+    6,
+    '9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump',
+    '9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump',
+    'sol:ansem' as unknown as UnderlyingAsset,
+    getTokenFeatures('sol', ['custody-bitgo-new-york' as CoinFeature, 'custody-bitgo-germany' as CoinFeature]),
+    AccountCtors.ProgramID.Token2022ProgramId,
     undefined,
     undefined,
     undefined
