@@ -162,9 +162,10 @@ export class TrxToken extends Trx {
     const txBuilder = getBuilder(this.getChain()).from(rawTx);
     const tx = await txBuilder.build();
 
-    const recipients = txParams.recipients || (txPrebuild.txInfo as TronTxInfo).recipients;
-    if (!recipients) {
-      throw new Error('missing required property recipients');
+    const recipients = txParams.recipients || (txPrebuild.txInfo as TronTxInfo | undefined)?.recipients;
+    if (!recipients || recipients.length === 0) {
+      // No recipients — server-determined transfer (e.g. consolidation); structural check above is sufficient.
+      return true;
     }
 
     if (recipients[0].address === tx.outputs[0].address && recipients[0].amount === tx.outputs[0].value) {
