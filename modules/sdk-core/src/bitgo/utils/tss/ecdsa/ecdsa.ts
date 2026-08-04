@@ -51,6 +51,7 @@ import {
 import { BaseEcdsaUtils } from './base';
 import { EncryptionVersion, IRequestTracer } from '../../../../api';
 import { resolveEffectiveTxParams } from '../recipientUtils';
+import { shouldVerifyWithSerializedTxHex } from '../serializedTxHexVerify';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -813,13 +814,9 @@ export class EcdsaUtils extends BaseEcdsaUtils {
 
       // For some coins, signableHex is not a parseable transaction. Pass
       // serializedTxHex so verifyTransaction can decode the full tx bytes.
-      // - ICP: signableHex is a hash; serializedTxHex is the CBOR-encoded tx.
-      // - BSC/XDC (legacy EIP-155): signableHex is RLP(..., chainId, 0, 0), which
-      //   fails ethereumjs fromSerializedTx EIP-155 v validation; serializedTxHex
-      //   is the unsigned broadcast form and parses cleanly.
-      // For other coins, verification is typically done using just the signableHex.
-      const coinFamily = this.baseCoin.getConfig().family;
-      if (coinFamily === 'icp' || coinFamily === 'bsc' || coinFamily === 'xdc') {
+      // Gated by CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX (ICP hash digests,
+      // BSC/XDC legacy EIP-155 RLP with v=chainId, etc.).
+      if (shouldVerifyWithSerializedTxHex(this.baseCoin)) {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
           txParams: resolveEffectiveTxParams(txRequest, params.txParams),

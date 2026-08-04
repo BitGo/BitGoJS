@@ -1273,6 +1273,22 @@ describe('ERC20 Bulk Transaction Feature', () => {
   });
 });
 
+describe('TSS Verify Use Serialized Tx Hex Feature', () => {
+  it('should have TSS_VERIFY_USE_SERIALIZED_TX_HEX for coins whose signableHex is not parseable', () => {
+    const coinsNeedingSerializedTxHexVerify = ['bsc', 'tbsc', 'xdc', 'txdc', 'icp', 'ticp'];
+    coinsNeedingSerializedTxHexVerify.forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX).should.eql(true);
+    });
+  });
+
+  it('should have TSS_VERIFY_USE_SERIALIZED_TX_HEX on BSC and XDC tokens', () => {
+    coins.get('bsc:busd').features.includes(CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX).should.eql(true);
+    coins.get('xdc:usdc').features.includes(CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX).should.eql(true);
+    coins.get('txdc:tmt').features.includes(CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX).should.eql(true);
+  });
+});
+
 describe('Custody Bulk Withdrawal Features', () => {
   it('should have CUSTODY_BULK_TRANSACTION feature for appropriate coins', () => {
     const custodyBulkWithdrawalCoins = [
