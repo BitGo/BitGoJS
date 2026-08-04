@@ -115,9 +115,13 @@ describe('Walrus Withdraw Builder', () => {
         value: AMOUNT_UNKNOWN_TEXT,
         coin: 'tsui:wal',
       });
+      tx.toJson().expiration.should.deepEqual({ None: null });
 
       const rawTx = tx.toBroadcastFormat();
       await assertRebuild(rawTx);
+
+      const rebuiltForExpiration = await factory.from(rawTx).build();
+      rebuiltForExpiration.toJson().expiration.should.deepEqual({ None: null });
 
       tx.suiTransaction.gasData.owner.should.equal(testData.gasData.owner);
       tx.suiTransaction.gasData.price.should.equal(testData.gasData.price);
