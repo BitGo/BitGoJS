@@ -292,7 +292,8 @@ describe('V2 Keychains', function () {
         assert.ok(Object.keys(keys).length === expectedLength, 'should have the expected number of keys');
         for (const [key, value] of Object.entries(keys)) {
           assert.ok(key.includes('xpub') || key.includes('randomid'), 'key should be xpub or randomid');
-          const decryptedPrv = await bitgo.decrypt({ input: value, password: newPassword });
+          JSON.parse(value as string).v.should.equal(2, 'password change must always emit v2 envelopes');
+          const decryptedPrv = await bitgo.decrypt({ input: value as string, password: newPassword });
           decryptedPrv.should.startWith('xprv');
         }
       };
@@ -390,7 +391,7 @@ describe('V2 Keychains', function () {
         decryptedPrv.should.equal(prv);
       });
 
-      it('single keychain password update preserves v2 (Argon2id) envelope', async () => {
+      it('single keychain password update emits a v2 (Argon2id) envelope for a v2 input', async () => {
         const prv = 'xprvtest-v2';
         const encryptedPrv = await bitgo.encrypt({ input: prv, password: oldPassword, encryptionVersion: 2 });
         const envelope = JSON.parse(encryptedPrv);
@@ -408,7 +409,24 @@ describe('V2 Keychains', function () {
         await bitgo.decrypt({ input: newKeychain.encryptedPrv, password: oldPassword }).should.be.rejected();
       });
 
-      it('updatePassword handles a mix of v1 and v2 keychains', async function () {
+      it('single keychain password update upgrades a v1 (SJCL) envelope to v2', async () => {
+        const prv = 'xprvtest-v1';
+        const encryptedPrv = await bitgo.encrypt({ input: prv, password: oldPassword, encryptionVersion: 1 });
+        JSON.parse(encryptedPrv).should.not.have.property('v', 2, 'pre-condition: input must not be v2');
+
+        const keychain = { xpub: 'xpub123', encryptedPrv };
+        const newKeychain = await keychains.updateSingleKeychainPassword({ keychain, oldPassword, newPassword });
+
+        const newEnvelope = JSON.parse(newKeychain.encryptedPrv);
+        newEnvelope.v.should.equal(2, 'v1 keychain must be upgraded to v2 after password change');
+
+        const decryptedPrv = await bitgo.decrypt({ input: newKeychain.encryptedPrv, password: newPassword });
+        decryptedPrv.should.equal(prv, 'new password must decrypt to original prv');
+
+        await bitgo.decrypt({ input: newKeychain.encryptedPrv, password: oldPassword }).should.be.rejected();
+      });
+
+      it('updatePassword upgrades v1 keychains to v2 and keeps v2 keychains as v2', async function () {
         const v1Prv = 'xprv-v1';
         const v2Prv = 'xprv-v2';
 
@@ -445,10 +463,11 @@ describe('V2 Keychains', function () {
         assert.ok(updatedV1, 'v1 keychain must be in the result');
         assert.ok(updatedV2, 'v2 keychain must be in the result');
 
-        (await bitgo.decrypt({ input: updatedV1, password: newPassword })).should.equal(v1Prv);
+        JSON.parse(updatedV1).v.should.equal(2, 'v1 keychain must be upgraded to v2 on password change');
+        const decryptedV1 = await bitgo.decrypt({ input: updatedV1, password: newPassword });
+        decryptedV1.should.equal(v1Prv);
 
-        const updatedV2Envelope = JSON.parse(updatedV2);
-        updatedV2Envelope.v.should.equal(2, 'v2 keychain must remain v2 after password change');
+        JSON.parse(updatedV2).v.should.equal(2, 'v2 keychain must remain v2 after password change');
         const decryptedV2 = await bitgo.decrypt({ input: updatedV2, password: newPassword });
         decryptedV2.should.equal(v2Prv);
       });

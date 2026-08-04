@@ -174,8 +174,9 @@ export class Keychains implements IKeychains {
   }
 
   /**
-   * Update the password used to decrypt a single keychain, with support for v2 (Argon2id) envelopes.
-   * Automatically detects and preserves the envelope version — a v2-encrypted key stays v2 after the password change.
+   * Update the password used to decrypt a single keychain, always re-encrypting as a v2
+   * (Argon2id + AES-256-GCM) envelope. A password change is a natural upgrade point, so
+   * v1 (SJCL) keychains are transparently promoted to v2; v2 keychains stay v2.
    * @param params
    * @param params.keychain - The keychain whose password should be updated
    * @param params.oldPassword - The old password used for encrypting the key
@@ -198,11 +199,10 @@ export class Keychains implements IKeychains {
     const oldEncryptedPrv = params.keychain.encryptedPrv;
     try {
       const decryptedPrv = await this.bitgo.decrypt({ input: oldEncryptedPrv, password: params.oldPassword });
-      const encryptionVersion = this.getEncryptionVersion(oldEncryptedPrv);
       const newEncryptedPrv = await this.bitgo.encrypt({
         input: decryptedPrv,
         password: params.newPassword,
-        encryptionVersion,
+        encryptionVersion: 2,
       });
       return _.assign({}, params.keychain, { encryptedPrv: newEncryptedPrv });
     } catch (e) {
