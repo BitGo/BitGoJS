@@ -5,6 +5,7 @@ import { TransactionBuilder } from './transactionBuilder/transactionBuilder';
 import { TransferBuilder } from './transactionBuilder/transferBuilder';
 import { AddressInitializationBuilder } from './transactionBuilder/addressInitializationBuilder';
 import { FlushTokenTransactionBuilder } from './transactionBuilder/flushTokenTransactionBuilder';
+import { FlushCoinsTransactionBuilder } from './transactionBuilder/flushCoinsTransactionBuilder';
 import { ExitDelegationBuilder } from './transactionBuilder/exitDelegationBuilder';
 import { BurnNftBuilder } from './transactionBuilder/burnNftBuilder';
 import { ClaimRewardsBuilder } from './transactionBuilder/claimRewardsBuilder';
@@ -12,6 +13,7 @@ import { Transaction } from './transaction/transaction';
 import utils from './utils';
 import { AddressInitializationTransaction } from './transaction/addressInitializationTransaction';
 import { FlushTokenTransaction } from './transaction/flushTokenTransaction';
+import { FlushCoinsTransaction } from './transaction/flushCoinsTransaction';
 import { ExitDelegationTransaction } from './transaction/exitDelegation';
 import { BurnNftTransaction } from './transaction/burnNftTransaction';
 import { ClaimRewardsTransaction } from './transaction/claimRewards';
@@ -59,6 +61,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const flushTokenTx = new FlushTokenTransaction(this._coinConfig);
           flushTokenTx.fromDeserializedSignedTransaction(signedTx);
           return this.getFlushTokenTransactionBuilder(flushTokenTx);
+        case TransactionType.FlushCoins:
+          const flushCoinsTx = new FlushCoinsTransaction(this._coinConfig);
+          flushCoinsTx.fromDeserializedSignedTransaction(signedTx);
+          return this.getFlushCoinsTransactionBuilder(flushCoinsTx);
         case TransactionType.SendToken:
           const tokenTransferTx = new TokenTransaction(this._coinConfig);
           tokenTransferTx.fromDeserializedSignedTransaction(signedTx);
@@ -130,6 +136,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getFlushTokenTransactionBuilder(tx?: FlushTokenTransaction): FlushTokenTransactionBuilder {
     return this.initializeBuilder(tx, new FlushTokenTransactionBuilder(this._coinConfig));
+  }
+
+  getFlushCoinsTransactionBuilder(tx?: FlushCoinsTransaction): FlushCoinsTransactionBuilder {
+    return this.initializeBuilder(tx, new FlushCoinsTransactionBuilder(this._coinConfig));
   }
 
   getTokenTransactionBuilder(tx?: Transaction): TokenTransactionBuilder {
