@@ -348,22 +348,15 @@ describe('EdDSA MPS DSG helper functions', async () => {
 
   it('verifyPeerMessageRoundThree should verify a valid BitGo round-3 message', async () => {
     const messageBuffer = Buffer.from(signableHex, 'hex');
-    const userDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER);
-    await userDsg.initDsg(userKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
-    const userMsg1 = userDsg.getFirstMessage();
-
-    const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
-    await bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
-    const bitgoMsg1 = bitgoDsg.getFirstMessage();
-
-    const [bitgoMsg2] = bitgoDsg.handleIncomingMessages([bitgoMsg1, userMsg1]);
-    const bitgoSignedMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg1.payload), bitgoGpgPrivKey);
-    const bitgoDeserializedMsg1 = await verifyPeerMessageRoundOne(
-      { type: 'round1Output', data: { msg1: bitgoSignedMsg1 } },
-      bitgoGpgPubKey
-    );
-    const [userMsg2] = userDsg.handleIncomingMessages([userMsg1, bitgoDeserializedMsg1]);
-    const [bitgoMsg3] = bitgoDsg.handleIncomingMessages([bitgoMsg2, userMsg2]);
+    const [, [bitgoMsg3]] = (await MPSUtil.executeTillRound(
+      2,
+      new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER),
+      new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO),
+      userKeyShare,
+      bitgoKeyShare,
+      messageBuffer,
+      derivationPath
+    )) as MPSTypes.DeserializedMessages[];
     const bitgoSignedMsg3 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg3.payload), bitgoGpgPrivKey);
 
     const round3Output = {
