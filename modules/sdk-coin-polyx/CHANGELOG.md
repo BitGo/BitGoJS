@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@2.0.6...@bitgo/sdk-coin-polyx@2.0.7) (2026-08-04)
+
+
+### Bug Fixes
+
+* **sdk-coin-polyx:** replace stale mainnet v8 material with live metadata ([2333587](https://github.com/BitGo/BitGoJS/commit/2333587da934c877d5b1e37342d41ed727e96e00))
+
+
+
+
+
 ## [2.0.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@2.0.5...@bitgo/sdk-coin-polyx@2.0.6) (2026-07-30)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polyx

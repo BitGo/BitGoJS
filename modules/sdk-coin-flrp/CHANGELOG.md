@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.17.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.17.2...@bitgo/sdk-coin-flrp@1.17.3) (2026-08-04)
+
+
+### Bug Fixes
+
+* **sdk-coin-flrp:** compute Flare C-chain import fee from real gas usage ([7c4cc6c](https://github.com/BitGo/BitGoJS/commit/7c4cc6c668418cadd1f43dbcc57ab7f244ba57a9))
+
+
+
+
+
 ## [1.17.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.17.1...@bitgo/sdk-coin-flrp@1.17.2) (2026-07-30)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp

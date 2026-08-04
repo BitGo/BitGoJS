@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@6.2.1...@bitgo/sdk-coin-sui@6.2.2) (2026-08-04)
+
+
+### Bug Fixes
+
+* **sdk-coin-sui:** wire ValidDuring through Walrus withdraw builder ([45d918b](https://github.com/BitGo/BitGoJS/commit/45d918b3cc90a20b58e7f39cc8c500f8ff039983))
+
+
+
+
+
 ## [6.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@6.2.0...@bitgo/sdk-coin-sui@6.2.1) (2026-07-30)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

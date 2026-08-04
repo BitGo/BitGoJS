@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/abstract-lightning",
-  "version": "8.2.2",
+  "version": "8.2.3",
   "description": "BitGo SDK coin library for base Lightning Network coin implementation",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,8 +40,8 @@
   },
   "dependencies": {
     "@bitgo/public-types": "6.48.0",
-    "@bitgo/sdk-core": "^38.5.1",
-    "@bitgo/statics": "^59.2.0",
+    "@bitgo/sdk-core": "^38.5.2",
+    "@bitgo/statics": "^59.3.0",
     "@bitgo/utxo-lib": "^11.24.2",
     "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4",
     "bs58check": "^2.1.2",

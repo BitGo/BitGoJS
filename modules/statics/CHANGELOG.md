@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.2.0...@bitgo/statics@59.3.0) (2026-08-04)
+
+
+### Bug Fixes
+
+* **statics:** update contract address for tbaseeth:ctbtccx_99e833 ([4dc6b07](https://github.com/BitGo/BitGoJS/commit/4dc6b0793bad933191c13e6506ba74e2000b1206))
+
+
+### Features
+
+* add new tokens from AMS API ([87ea276](https://github.com/BitGo/BitGoJS/commit/87ea2768f65a4a29f80a258fefe06a0fe8b058f1))
+* **statics:** add SHARED_EVM_SDK and SHARED_EVM_SIGNING to irys and tirys ([ec22b60](https://github.com/BitGo/BitGoJS/commit/ec22b60a5f035d5aa06025be80b58112cbd75601))
+* **statics:** add SHARED_EVM_SDK and SHARED_EVM_SIGNING to irys mainnet ([10cc852](https://github.com/BitGo/BitGoJS/commit/10cc852e0385d0b88dc544bca4c452f3e2631d52))
+* **statics:** add SoFiUSD and USD1 token definitions on Tempo, Monad, Polygon, GasEVM ([262de79](https://github.com/BitGo/BitGoJS/commit/262de79ab617d90f4f21bf3be2b167aa69d1c518))
+* **statics:** onboard CSHLD-1278 Bitkub and Ondo tokens ([c09c3e8](https://github.com/BitGo/BitGoJS/commit/c09c3e8f378ab4b2443fce14279bf51ebe23065b))
+* **statics:** update sepeth underlying asset ([3877aa7](https://github.com/BitGo/BitGoJS/commit/3877aa7c05c4ad7b9aef110483e7016ab1345f78))
+
+
+
+
+
 # [59.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.1.0...@bitgo/statics@59.2.0) (2026-07-30)
 
 
