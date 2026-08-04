@@ -943,16 +943,20 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         );
       }
 
-      // For ICP and Avalanche atomic transactions, signableHex is a digest (not
-      // a parseable transaction).  Pass serializedTxHex so verifyTransaction can
-      // parse the full transaction bytes.
+      // For some coins, signableHex is not a parseable transaction. Pass
+      // serializedTxHex so verifyTransaction can decode the full tx bytes.
       // - ICP: signableHex is a hash; serializedTxHex is the CBOR-encoded tx.
       // - Avalanche atomic (FLRP/FLR cross-chain): signableHex is SHA-256(txBody);
       //   serializedTxHex is the PVM/EVM atomic tx (codec prefix 0x0000).
-      // For all other coins, signableHex IS the unsigned transaction (e.g. RLP bytes).
-      const isIcp = this.baseCoin.getConfig().family === 'icp';
+      // - BSC/XDC (legacy EIP-155): signableHex is RLP(..., chainId, 0, 0), which
+      //   fails ethereumjs fromSerializedTx EIP-155 v validation; serializedTxHex
+      //   is the unsigned broadcast form and parses cleanly.
+      // For other coins, signableHex IS the unsigned transaction (e.g. EIP-1559 RLP).
+      const coinFamily = this.baseCoin.getConfig().family;
+      const isIcp = coinFamily === 'icp';
+      const isLegacyEip155Evm = coinFamily === 'bsc' || coinFamily === 'xdc';
       const isPreHashed = shouldUsePreHashedSignable(this.baseCoin, unsignedTx);
-      if (isIcp || isPreHashed) {
+      if (isIcp || isPreHashed || isLegacyEip155Evm) {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
           txParams: resolveEffectiveTxParams(txRequest, params.txParams),
