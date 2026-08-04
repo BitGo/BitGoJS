@@ -6,8 +6,11 @@
  *   - verifyTransaction (TSS and multisig paths)
  *   - verifyTransaction (confidential transfer / SendERC7984 path)
  *   - decodeTokenAddressesFromDelegationCalldata (round-trip and forwarder-wrapped)
+ *   - recover() (ERC-7984 confidential token recovery)
+ *   - queryConfidentialBalance()
  */
 import should from 'should';
+import sinon from 'sinon';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { TransactionType, Wallet } from '@bitgo/sdk-core';
@@ -18,6 +21,7 @@ import {
   wrapInCallFromParent,
   decodeTokenAddressesFromDelegationCalldata,
   TransferBuilderERC7984,
+  confidentialTransferNoProofMethodId,
 } from '@bitgo/abstract-eth';
 import { Erc7984Token } from '../../src/erc7984Token';
 import { TransactionBuilder } from '../../src/lib';
@@ -1145,5 +1149,334 @@ describe('verifyTransaction – confidential consolidation (FlushERC7984Forwarde
         wallet,
       })
       .should.be.rejectedWith(/parent address mismatch/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// recover() – ERC-7984 confidential token recovery
+// ---------------------------------------------------------------------------
+
+describe('Erc7984Token – recover()', function () {
+  let bitgo: TestBitGoAPI;
+  let coin: Erc7984Token;
+  let explorerStub: sinon.SinonStub;
+
+  const WALLET_CONTRACT = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
+  const RECOVERY_DEST = '0x19645032c7f1533395d44a629462e751084d3e4c';
+  const HANDLE = '0x' + 'ab'.repeat(32);
+  const ZERO_HANDLE = '0x' + '00'.repeat(32);
+
+  const USER_KEY = testData.PRIVATE_KEY;
+  const BACKUP_KEY = testData.PRIVATE_KEY;
+  const WALLET_PASSPHRASE = 'test wallet passphrase';
+
+  // Encrypted keys for test (encrypt with the test passphrase)
+  let encryptedUserKey: string;
+  let encryptedBackupKey: string;
+
+  before(async function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.initializeTestVars();
+    register(bitgo);
+    coin = bitgo.coin('hteth:ctest1') as Erc7984Token;
+
+    encryptedUserKey = await bitgo.encrypt({ input: USER_KEY, password: WALLET_PASSPHRASE });
+    encryptedBackupKey = await bitgo.encrypt({ input: BACKUP_KEY, password: WALLET_PASSPHRASE });
+  });
+
+  beforeEach(function () {
+    explorerStub = sinon.stub(coin, 'recoveryBlockchainExplorerQuery' as any);
+  });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  function mockExplorerForRecovery(handle: string = HANDLE) {
+    explorerStub.callsFake(async (query: Record<string, string>) => {
+      if (query.action === 'txlist') {
+        // getAddressNonce: return empty tx list (nonce = 0)
+        return { result: [] };
+      }
+      if (query.action === 'balance') {
+        // queryAddressBalance: return enough ETH for gas
+        return { result: '100000000000000000' }; // 0.1 ETH
+      }
+      if (query.action === 'eth_call' && query.data?.startsWith('a0b7967b')) {
+        // querySequenceId: getNextSequenceId
+        return { result: '0x0000000000000000000000000000000000000000000000000000000000000005' };
+      }
+      if (query.action === 'eth_call' && query.to === CTEST1_TOKEN_ADDRESS) {
+        // queryConfidentialBalance
+        return { result: handle };
+      }
+      throw new Error(`Unexpected explorer query: ${JSON.stringify(query)}`);
+    });
+  }
+
+  it('should build a full balance sweep recovery transaction', async function () {
+    mockExplorerForRecovery();
+
+    const result = await coin.recover({
+      userKey: encryptedUserKey,
+      backupKey: encryptedBackupKey,
+      walletPassphrase: WALLET_PASSPHRASE,
+      walletContractAddress: WALLET_CONTRACT,
+      recoveryDestination: RECOVERY_DEST,
+    });
+
+    should.exist(result);
+    result.should.have.property('id');
+    result.should.have.property('tx');
+    (result as any).tx.should.be.a.String();
+    (result as any).tx.length.should.be.greaterThan(0);
+  });
+
+  it('should use user-provided encryptedHandle and skip auto-query', async function () {
+    const userHandle = '0x' + 'ff'.repeat(32);
+
+    explorerStub.callsFake(async (query: Record<string, string>) => {
+      if (query.action === 'txlist') {
+        return { result: [] };
+      }
+      if (query.action === 'balance') {
+        return { result: '100000000000000000' };
+      }
+      if (query.action === 'eth_call' && query.data?.startsWith('a0b7967b')) {
+        return { result: '0x0000000000000000000000000000000000000000000000000000000000000005' };
+      }
+      if (query.action === 'eth_call' && query.to === CTEST1_TOKEN_ADDRESS) {
+        throw new Error('Should not query confidentialBalanceOf when handle is provided');
+      }
+      throw new Error(`Unexpected explorer query: ${JSON.stringify(query)}`);
+    });
+
+    const result = await coin.recover({
+      userKey: encryptedUserKey,
+      backupKey: encryptedBackupKey,
+      walletPassphrase: WALLET_PASSPHRASE,
+      walletContractAddress: WALLET_CONTRACT,
+      recoveryDestination: RECOVERY_DEST,
+      encryptedHandle: userHandle,
+    });
+
+    should.exist(result);
+    result.should.have.property('tx');
+  });
+
+  it('should still build a recovery tx even with a zero-value handle (encrypted handles are always non-zero)', async function () {
+    mockExplorerForRecovery(ZERO_HANDLE);
+
+    const result = await coin.recover({
+      userKey: encryptedUserKey,
+      backupKey: encryptedBackupKey,
+      walletPassphrase: WALLET_PASSPHRASE,
+      walletContractAddress: WALLET_CONTRACT,
+      recoveryDestination: RECOVERY_DEST,
+    });
+
+    should.exist(result);
+    result.should.have.property('tx');
+  });
+
+  it('should return unsigned sweep format when isUnsignedSweep is true', async function () {
+    mockExplorerForRecovery();
+
+    const result = await coin.recover({
+      userKey: testData.PUBLIC_KEY,
+      backupKey: testData.PUBLIC_KEY,
+      walletContractAddress: WALLET_CONTRACT,
+      recoveryDestination: RECOVERY_DEST,
+      isUnsignedSweep: true,
+    });
+
+    should.exist(result);
+    result.should.have.property('tx');
+    result.should.have.property('userKey');
+    result.should.have.property('backupKey');
+  });
+
+  it('should return KRS recovery format with backupKey and coin', async function () {
+    explorerStub.callsFake(async (query: Record<string, string>) => {
+      if (query.action === 'txlist') {
+        return { result: [] };
+      }
+      if (query.action === 'balance') {
+        return { result: '100000000000000000' };
+      }
+      if (query.action === 'eth_call' && query.data?.startsWith('a0b7967b')) {
+        return { result: '0x0000000000000000000000000000000000000000000000000000000000000005' };
+      }
+      if (query.action === 'eth_call' && query.to === CTEST1_TOKEN_ADDRESS) {
+        return { result: HANDLE };
+      }
+      throw new Error(`Unexpected explorer query: ${JSON.stringify(query)}`);
+    });
+
+    const result = (await coin.recover({
+      userKey: encryptedUserKey,
+      backupKey: testData.PUBLIC_KEY,
+      walletPassphrase: WALLET_PASSPHRASE,
+      walletContractAddress: WALLET_CONTRACT,
+      recoveryDestination: RECOVERY_DEST,
+      krsProvider: 'keyternal',
+    })) as any;
+
+    should.exist(result);
+    result.should.have.property('tx');
+    result.should.have.property('backupKey', testData.PUBLIC_KEY);
+    result.should.have.property('coin', 'hteth:ctest1');
+  });
+
+  it('should throw when backup key has insufficient gas', async function () {
+    explorerStub.callsFake(async (query: Record<string, string>) => {
+      if (query.action === 'txlist') {
+        return { result: [] };
+      }
+      if (query.action === 'balance') {
+        // Very low balance, not enough for 12M gas
+        return { result: '100' };
+      }
+      throw new Error(`Unexpected explorer query: ${JSON.stringify(query)}`);
+    });
+
+    await coin
+      .recover({
+        userKey: encryptedUserKey,
+        backupKey: encryptedBackupKey,
+        walletPassphrase: WALLET_PASSPHRASE,
+        walletContractAddress: WALLET_CONTRACT,
+        recoveryDestination: RECOVERY_DEST,
+      })
+      .should.be.rejectedWith(/has balance.*Gwei/);
+  });
+
+  it('should throw when userKey is missing', async function () {
+    await coin
+      .recover({
+        userKey: undefined as any,
+        backupKey: encryptedBackupKey,
+        walletPassphrase: WALLET_PASSPHRASE,
+        walletContractAddress: WALLET_CONTRACT,
+        recoveryDestination: RECOVERY_DEST,
+      })
+      .should.be.rejectedWith(/missing userKey/);
+  });
+
+  it('should throw when walletContractAddress is invalid', async function () {
+    await coin
+      .recover({
+        userKey: encryptedUserKey,
+        backupKey: encryptedBackupKey,
+        walletPassphrase: WALLET_PASSPHRASE,
+        walletContractAddress: 'not-an-address',
+        recoveryDestination: RECOVERY_DEST,
+      })
+      .should.be.rejectedWith(/invalid walletContractAddress/);
+  });
+
+  it('should produce tx with inner calldata matching confidentialTransfer selector 0x5bebed7e', async function () {
+    mockExplorerForRecovery();
+
+    const result = (await coin.recover({
+      userKey: encryptedUserKey,
+      backupKey: encryptedBackupKey,
+      walletPassphrase: WALLET_PASSPHRASE,
+      walletContractAddress: WALLET_CONTRACT,
+      recoveryDestination: RECOVERY_DEST,
+    })) as any;
+
+    should.exist(result.tx);
+    // The serialized tx contains the sendMultiSig calldata which wraps confidentialTransfer.
+    // The confidentialTransfer selector (5bebed7e) must appear somewhere in the serialized tx.
+    const selectorNoPrefix = confidentialTransferNoProofMethodId.slice(2);
+    result.tx.should.containEql(selectorNoPrefix);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// queryConfidentialBalance() tests
+// ---------------------------------------------------------------------------
+
+describe('Erc7984Token – queryConfidentialBalance()', function () {
+  let bitgo: TestBitGoAPI;
+  let coin: Erc7984Token;
+  let explorerStub: sinon.SinonStub;
+
+  const WALLET_ADDRESS = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
+  const HANDLE = '0x' + 'ab'.repeat(32);
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.initializeTestVars();
+    register(bitgo);
+    coin = bitgo.coin('hteth:ctest1') as Erc7984Token;
+  });
+
+  beforeEach(function () {
+    explorerStub = sinon.stub(coin, 'recoveryBlockchainExplorerQuery' as any);
+  });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  it('should return a valid bytes32 handle from eth_call', async function () {
+    explorerStub.resolves({ result: HANDLE });
+
+    const result = await coin.queryConfidentialBalance(WALLET_ADDRESS);
+    result.should.equal(HANDLE);
+  });
+
+  it('should verify the eth_call is made to the correct token contract', async function () {
+    explorerStub.resolves({ result: HANDLE });
+
+    await coin.queryConfidentialBalance(WALLET_ADDRESS);
+
+    explorerStub.calledOnce.should.be.true();
+    const callArgs = explorerStub.firstCall.args[0];
+    callArgs.should.have.property('action', 'eth_call');
+    callArgs.should.have.property('to', CTEST1_TOKEN_ADDRESS);
+    callArgs.should.have.property('module', 'proxy');
+  });
+
+  it('should throw when explorer returns no result', async function () {
+    explorerStub.resolves({ result: null });
+
+    await coin.queryConfidentialBalance(WALLET_ADDRESS).should.be.rejectedWith(/Could not obtain confidential balance/);
+  });
+
+  it('should throw when response format is unexpected (not 66 chars)', async function () {
+    explorerStub.resolves({ result: '0xabcd' });
+
+    await coin
+      .queryConfidentialBalance(WALLET_ADDRESS)
+      .should.be.rejectedWith(/Unexpected confidentialBalanceOf response format/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// setGasLimit() override tests
+// ---------------------------------------------------------------------------
+
+describe('Erc7984Token – setGasLimit()', function () {
+  let bitgo: TestBitGoAPI;
+  let coin: Erc7984Token;
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.initializeTestVars();
+    register(bitgo);
+    coin = bitgo.coin('hteth:ctest1') as Erc7984Token;
+  });
+
+  it('should return 800000 as default gas limit', function () {
+    const gasLimit = coin.setGasLimit();
+    gasLimit.should.equal(800000);
+  });
+
+  it('should accept user-provided gas limit', function () {
+    const gasLimit = coin.setGasLimit(1000000);
+    gasLimit.should.equal(1000000);
   });
 });

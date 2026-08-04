@@ -1,8 +1,16 @@
 /**
  * @prettier
  */
-import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
-
+import {
+  BitGoBase,
+  CoinConstructor,
+  checkKrsProvider,
+  getIsKrsRecovery,
+  getIsUnsignedSweep,
+  MPCAlgorithm,
+  NamedCoinConstructor,
+  Util,
+} from '@bitgo/sdk-core';
 import { coins, Erc7984TokenConfig, EthereumNetwork, tokens } from '@bitgo/statics';
 import {
   CoinNames,
@@ -14,10 +22,17 @@ import {
   decodeSendMultiSigFlushERC7984Data,
   sendMultisigMethodId,
   confidentialTransferWithProofMethodId,
+  buildConfidentialTransferByHandleCalldata,
+  optionalDeps,
+  RecoverOptions,
+  RecoveryInfo,
+  OfflineVaultTxInfo,
   VerifyEthTransactionOptions,
   aclMulticallMethodId,
   callFromParentMethodId,
 } from '@bitgo/abstract-eth';
+import { bip32 } from '@bitgo/secp256k1';
+import * as _ from 'lodash';
 
 import { Eth } from './eth';
 import { TransactionBuilder } from './lib';
@@ -544,6 +559,256 @@ export class Erc7984Token extends Eth {
 
       return true;
     }
+  }
+
+  /**
+   * Override gas limit for ERC-7984 confidential token recovery.
+   * Actual on-chain usage is ~506-530k gas based on testnet results.
+   * Default: 800,000 (comfortable buffer over observed usage).
+   */
+  setGasLimit(userGasLimit?: number): number {
+    if (!userGasLimit) {
+      return 800000;
+    }
+    return super.setGasLimit(userGasLimit);
+  }
+
+  /**
+   * Queries the encrypted balance handle for a wallet address via eth_call to the
+   * token contract's confidentialBalanceOf(address) function.
+   *
+   * @param walletAddress - the wallet contract address to query balance for
+   * @param apiKey - optional Etherscan API key
+   * @returns bytes32 encrypted handle (0x-prefixed, 66 chars).
+   *   Note: handles are always non-zero even for zero balances (encrypted domain).
+   */
+  async queryConfidentialBalance(walletAddress: string, apiKey?: string): Promise<string> {
+    const methodSignature = optionalDeps.ethAbi.methodID('confidentialBalanceOf', ['address']);
+    const encodedArgs = optionalDeps.ethAbi.rawEncode(['address'], [walletAddress]);
+    const calldata = Buffer.concat([methodSignature, encodedArgs]).toString('hex');
+
+    const result = await this.recoveryBlockchainExplorerQuery(
+      {
+        chainid: this.getChainId().toString(),
+        module: 'proxy',
+        action: 'eth_call',
+        to: this.tokenContractAddress,
+        data: calldata,
+        tag: 'latest',
+      },
+      apiKey
+    );
+
+    if (!result || !result.result) {
+      throw new Error(
+        `Could not obtain confidential balance for ${walletAddress} from token ${this.tokenContractAddress}`
+      );
+    }
+
+    const handle = result.result as string;
+    if (!handle.startsWith('0x') || handle.length !== 66) {
+      throw new Error(`Unexpected confidentialBalanceOf response format: ${handle}`);
+    }
+
+    return handle;
+  }
+
+  /**
+   * Builds a non-BitGo recovery transaction for ERC-7984 confidential tokens.
+   *
+   * Uses the no-proof handle sweep: confidentialTransfer(recipient, handle) with 2 args.
+   * No FHE decryption or proof generation is needed — the wallet transfers its entire
+   * encrypted balance handle without knowing the plaintext amount.
+   *
+   * The outer transaction shape is:
+   *   tx.to   = walletContractAddress
+   *   tx.data = sendMultiSig(tokenContractAddr, 0, confidentialTransfer(recoveryDest, handle), ...)
+   */
+  async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+    if (params.isTss === true) {
+      throw new Error('ERC-7984 TSS recovery is not yet supported');
+    }
+
+    if (_.isUndefined(params.userKey)) {
+      throw new Error('missing userKey');
+    }
+
+    if (_.isUndefined(params.backupKey)) {
+      throw new Error('missing backupKey');
+    }
+
+    if (_.isUndefined(params.walletPassphrase) && !params.userKey.startsWith('xpub')) {
+      throw new Error('missing wallet passphrase');
+    }
+
+    if (_.isUndefined(params.walletContractAddress) || !this.isValidAddress(params.walletContractAddress)) {
+      throw new Error('invalid walletContractAddress');
+    }
+
+    if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    const isKrsRecovery = getIsKrsRecovery(params);
+    const isUnsignedSweep = getIsUnsignedSweep(params);
+
+    if (isKrsRecovery) {
+      checkKrsProvider(this, params.krsProvider, { checkCoinFamilySupport: false });
+    }
+
+    let userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+
+    const gasPrice = params.eip1559
+      ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
+      : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
+    const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
+
+    let userPrv: string | undefined;
+    if (!isUnsignedSweep) {
+      if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
+        try {
+          userKey = await this.bitgo.decrypt({
+            input: userKey,
+            password: params.walletPassphrase,
+          });
+        } catch (e) {
+          throw new Error(`Error decrypting user keychain: ${(e as Error).message}`);
+        }
+      }
+      userPrv = userKey;
+    }
+
+    let backupKeyAddress: string;
+    let backupSigningKey: Buffer;
+
+    if (isKrsRecovery || isUnsignedSweep) {
+      const backupHDNode = bip32.fromBase58(backupKey);
+      backupSigningKey = backupHDNode.publicKey;
+      backupKeyAddress = `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
+    } else {
+      let backupPrv: string;
+      try {
+        backupPrv = await this.bitgo.decrypt({
+          input: backupKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting backup keychain: ${(e as Error).message}`);
+      }
+
+      const backupHDNode = bip32.fromBase58(backupPrv);
+      backupSigningKey = backupHDNode.privateKey as Buffer;
+      backupKeyAddress = `0x${optionalDeps.ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
+    }
+
+    const backupKeyNonce = await this.getAddressNonce(backupKeyAddress, params.apiKey);
+
+    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress, params.apiKey);
+    const totalGasNeeded = gasPrice.mul(gasLimit);
+    const weiToGwei = 10 ** 9;
+    if (backupKeyBalance.lt(totalGasNeeded)) {
+      throw new Error(
+        `Backup key address ${backupKeyAddress} has balance ${(backupKeyBalance / weiToGwei).toString()} Gwei.` +
+          `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
+          ` Gwei to perform recoveries. Try sending some ETH to this address then retry.`
+      );
+    }
+
+    // Get the encrypted balance handle (auto-query or user-provided)
+    let encryptedHandle: string;
+    if (params.encryptedHandle) {
+      encryptedHandle = params.encryptedHandle;
+    } else {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      encryptedHandle = await this.queryConfidentialBalance(params.walletContractAddress, params.apiKey);
+    }
+
+    // Note: encrypted handles are always non-zero even for zero balances (encrypted domain).
+    // The transfer will execute but move 0 tokens if the wallet is empty.
+
+    // Build the inner calldata: confidentialTransfer(recoveryDestination, handle)
+    const innerCalldata = buildConfidentialTransferByHandleCalldata(params.recoveryDestination, encryptedHandle);
+
+    // For sendMultiSig: recipient is the token contract, amount is 0, data carries the confidentialTransfer calldata
+    const recipients = [
+      {
+        address: this.tokenContractAddress,
+        amount: '0',
+        data: optionalDeps.ethUtil.stripHexPrefix(innerCalldata),
+      },
+    ];
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const sequenceId = await this.querySequenceId(params.walletContractAddress, params.apiKey);
+
+    let operationHash: string | undefined;
+    let signature: string | undefined;
+    if (!isUnsignedSweep) {
+      operationHash = this.getOperationSha3ForExecuteAndConfirm(recipients, this.getDefaultExpireTime(), sequenceId);
+      signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv!));
+
+      try {
+        Util.ecRecoverEthAddress(operationHash, signature);
+      } catch (e) {
+        throw new Error('Invalid signature');
+      }
+    }
+
+    const txInfo = {
+      recipient: recipients[0],
+      expireTime: this.getDefaultExpireTime(),
+      contractSequenceId: sequenceId,
+      operationHash: operationHash,
+      signature: signature ?? '',
+      gasLimit: gasLimit.toString(10),
+    };
+
+    const sendMethodArgs = this.getSendMethodArgs(txInfo);
+    const methodSignature = optionalDeps.ethAbi.methodID(this.sendMethodName, _.map(sendMethodArgs, 'type'));
+    const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+    const sendData = Buffer.concat([methodSignature, encodedArgs]);
+
+    let tx = Eth.buildTransaction({
+      to: params.walletContractAddress,
+      nonce: backupKeyNonce,
+      value: 0,
+      gasPrice: gasPrice,
+      gasLimit: gasLimit,
+      data: sendData,
+      eip1559: params.eip1559,
+      replayProtectionOptions: params.replayProtectionOptions,
+    });
+
+    if (isUnsignedSweep) {
+      return this.formatForOfflineVault(
+        txInfo,
+        tx,
+        userKey,
+        backupKey,
+        gasPrice,
+        gasLimit,
+        params.eip1559,
+        params.replayProtectionOptions,
+        params.apiKey
+      ) as any;
+    }
+
+    if (!isKrsRecovery) {
+      tx = tx.sign(backupSigningKey);
+    }
+
+    const signedTx: RecoveryInfo = {
+      id: optionalDeps.ethUtil.bufferToHex(tx.hash()),
+      tx: tx.serialize().toString('hex'),
+    };
+
+    if (isKrsRecovery) {
+      signedTx.backupKey = backupKey;
+      signedTx.coin = this.getChain();
+    }
+
+    return signedTx;
   }
 
   /**
