@@ -112,6 +112,11 @@ export class WalrusWithdrawStakeBuilder extends TransactionBuilder<WalrusWithdra
     this.type(tx.suiTransaction.type);
     this.sender(txData.sender);
     this.gasData(txData.gasData);
+
+    if (txData.expiration && !('None' in txData.expiration)) {
+      this._expiration = txData.expiration;
+    }
+
     const parsed = utils.getWalrusWithdrawStakeRequests(tx.suiTransaction.tx);
     this.requestWithdrawStake({
       stakedWal: {
@@ -194,6 +199,7 @@ export class WalrusWithdrawStakeBuilder extends TransactionBuilder<WalrusWithdra
         ...this._gasData,
         payment: this._gasData.payment.slice(0, MAX_GAS_OBJECTS - 1),
       },
+      expiration: this._expiration,
     };
   }
 }
