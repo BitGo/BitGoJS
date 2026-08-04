@@ -124,7 +124,10 @@ export type GetNetworkAllocationByIdResponse = {
   allocation: NetworkAllocation;
 };
 
-export type PrepareNetworkAllocationParams = Omit<CreateNetworkAllocationParams, 'payload' | 'signature'> & {
+export type PrepareNetworkAllocationParams = Omit<
+  CreateNetworkAllocationParams,
+  'payload' | 'signature' | 'clientExternalId' | 'nonce'
+> & {
   walletPassphrase?: string;
   clientExternalId?: string;
   nonce?: string;
