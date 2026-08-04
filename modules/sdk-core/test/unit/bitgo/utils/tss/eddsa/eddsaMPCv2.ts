@@ -34,6 +34,7 @@ import {
   getSignatureShareRoundThree,
   verifyPeerMessageRoundOne,
   verifyPeerMessageRoundTwo,
+  verifyPeerMessageRoundThree,
 } from '../../../../../../src/bitgo/tss/eddsa/eddsaMPCv2';
 import { getInitializedMpcInstance } from '../../../../../../src/bitgo/tss/eddsa/eddsa';
 import { getBitgoSignatureShare } from '../../../../../../src/bitgo/tss/common';
@@ -343,6 +344,54 @@ describe('EdDSA MPS DSG helper functions', async () => {
     assert.strictEqual(parsed.type, 'round3Input');
     assert.ok(parsed.data.msg3.message, 'msg3.message should be set');
     assert.ok(parsed.data.msg3.signature, 'msg3.signature should be set');
+  });
+
+  it('verifyPeerMessageRoundThree should verify a valid BitGo round-3 message', async () => {
+    const messageBuffer = Buffer.from(signableHex, 'hex');
+    const userDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER);
+    await userDsg.initDsg(userKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.BITGO);
+    const userMsg1 = userDsg.getFirstMessage();
+
+    const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
+    await bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
+    const bitgoMsg1 = bitgoDsg.getFirstMessage();
+
+    const [bitgoMsg2] = bitgoDsg.handleIncomingMessages([bitgoMsg1, userMsg1]);
+    const bitgoSignedMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg1.payload), bitgoGpgPrivKey);
+    const bitgoDeserializedMsg1 = await verifyPeerMessageRoundOne(
+      { type: 'round1Output', data: { msg1: bitgoSignedMsg1 } },
+      bitgoGpgPubKey
+    );
+    const [userMsg2] = userDsg.handleIncomingMessages([userMsg1, bitgoDeserializedMsg1]);
+    const [bitgoMsg3] = bitgoDsg.handleIncomingMessages([bitgoMsg2, userMsg2]);
+    const bitgoSignedMsg3 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg3.payload), bitgoGpgPrivKey);
+
+    const round3Output = {
+      type: 'round3Output' as const,
+      data: { msg3: bitgoSignedMsg3 },
+    };
+
+    const result = await verifyPeerMessageRoundThree(round3Output, bitgoGpgPubKey);
+
+    assert.strictEqual(result.from, MPCv2PartiesEnum.BITGO);
+    assert.ok(result.payload.length > 0, 'payload should be non-empty');
+  });
+
+  it('verifyPeerMessageRoundThree should throw on a tampered message', async () => {
+    const round3Output = {
+      type: 'round3Output' as const,
+      data: {
+        msg3: {
+          message: Buffer.from('tampered').toString('base64'),
+          signature: '-----BEGIN PGP SIGNATURE-----\n\nINVALID\n-----END PGP SIGNATURE-----\n',
+        },
+      },
+    };
+
+    await assert.rejects(
+      verifyPeerMessageRoundThree(round3Output, bitgoGpgPubKey),
+      'should throw on invalid signature'
+    );
   });
 });
 
