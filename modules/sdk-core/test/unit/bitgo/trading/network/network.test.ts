@@ -11,7 +11,12 @@ describe('TradingNetwork', function () {
   const signature = 'signature';
   let mockBitGo: any;
   let mockWallet: any;
-  let requestCalls: Array<{ method: string; url: string; headers: Record<string, string>; body: unknown }>;
+  let requestCalls: Array<{
+    method: string;
+    url: string;
+    headers: Record<string, string>;
+    body: unknown;
+  }>;
   let tradingNetwork: TradingNetwork;
   let tradingAccount: { signPayload: sinon.SinonStub };
 
@@ -85,13 +90,16 @@ describe('TradingNetwork', function () {
     assert.strictEqual(prepared.signature, signature);
     assert.match(prepared.clientExternalId, /^[0-9a-f-]{36}$/);
     assert.match(prepared.nonce, /^[0-9a-f]{64}$/);
-    assert.strictEqual(prepared.payload, JSON.stringify({
-      connectionId: 'connection-id',
-      amount: { currency: 'tbtc', quantity: '100' },
-      notes: 'test',
-      clientExternalId: prepared.clientExternalId,
-      nonce: prepared.nonce,
-    }));
+    assert.strictEqual(
+      prepared.payload,
+      JSON.stringify({
+        connectionId: 'connection-id',
+        amount: { currency: 'tbtc', quantity: '100' },
+        notes: 'test',
+        clientExternalId: prepared.clientExternalId,
+        nonce: prepared.nonce,
+      })
+    );
     sinon.assert.calledOnceWithExactly(tradingAccount.signPayload, {
       payload: prepared.payload,
       walletPassphrase: undefined,
