@@ -4356,7 +4356,7 @@ export const allCoinsAndTokens = [
     'tbaseeth:ctbtccx_99e833',
     'Concrete BTCcx 99e833 Share',
     18,
-    '0x878c6221a0ed90f1d857f192ef75e6c060b037be',
+    '0x46ee9c9db4c932db2dc92cf1aa0ccc16d96ba2a1',
     UnderlyingAsset['tbaseeth:ctbtccx_99e833'],
     Networks.test.basechain,
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559, CoinFeature.RECEIPT_TOKEN]
