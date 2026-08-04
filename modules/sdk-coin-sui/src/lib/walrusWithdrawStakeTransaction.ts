@@ -59,7 +59,7 @@ export class WalrusWithdrawStakeTransaction extends Transaction<WalrusWithdrawSt
       sender: tx.sender,
       kind: { ProgrammableTransaction: tx.tx },
       gasData: tx.gasData,
-      expiration: { None: null },
+      expiration: tx.expiration ?? { None: null },
       inputObjects: [utils.getWalrusWithdrawStakeRequests(tx.tx).stakedWal],
     };
   }
@@ -186,7 +186,7 @@ export class WalrusWithdrawStakeTransaction extends Transaction<WalrusWithdrawSt
 
     return {
       sender: this._suiTransaction.sender,
-      expiration: { None: null },
+      expiration: this._suiTransaction.expiration ?? { None: null },
       gasData: this._suiTransaction.gasData,
       kind: {
         ProgrammableTransaction: programmableTx,

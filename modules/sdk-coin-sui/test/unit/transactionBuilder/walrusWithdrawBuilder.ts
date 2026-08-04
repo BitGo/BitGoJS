@@ -115,9 +115,13 @@ describe('Walrus Withdraw Builder', () => {
         value: AMOUNT_UNKNOWN_TEXT,
         coin: 'tsui:wal',
       });
+      tx.toJson().expiration.should.deepEqual({ None: null });
 
       const rawTx = tx.toBroadcastFormat();
       await assertRebuild(rawTx);
+
+      const rebuiltForExpiration = await factory.from(rawTx).build();
+      rebuiltForExpiration.toJson().expiration.should.deepEqual({ None: null });
 
       tx.suiTransaction.gasData.owner.should.equal(testData.gasData.owner);
       tx.suiTransaction.gasData.price.should.equal(testData.gasData.price);
@@ -130,6 +134,80 @@ describe('Walrus Withdraw Builder', () => {
       ptb.transactions[0].kind.should.equal('MoveCall');
       (ptb.transactions[0] as MoveCallTransaction).target.should.endWith('::staking::withdraw_stake');
       ptb.transactions[1].kind.should.equal('TransferObjects');
+    });
+
+    it('should round-trip ValidDuring expiration on a request withdraw tx', async function () {
+      const GENESIS_CHAIN_ID = 'GAFpCCcRCxTdFfUEMbQbkLBaZy2RNiGAfvFBhMNpq2kT';
+      const txBuilder = factory.getWalrusRequestWithdrawStakeBuilder();
+      txBuilder.type(SuiTransactionType.WalrusRequestWithdrawStake);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.requestWithdrawStake(testData.requestWalrusWithdrawFull);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.expiration({
+        ValidDuring: {
+          minEpoch: { Some: 1156 },
+          maxEpoch: { Some: 1157 },
+          minTimestamp: { None: null },
+          maxTimestamp: { None: null },
+          chain: GENESIS_CHAIN_ID,
+          nonce: 12345678,
+        },
+      });
+
+      const tx = await txBuilder.build();
+      const validDuring = (tx.toJson().expiration as any)?.ValidDuring;
+      should.exist(validDuring, 'ValidDuring expiration must be set when building');
+      Number(validDuring.minEpoch.Some).should.equal(1156);
+      Number(validDuring.maxEpoch.Some).should.equal(1157);
+
+      const rawTx = tx.toBroadcastFormat();
+      await assertRebuild(rawTx);
+
+      const rebuilder = factory.from(rawTx);
+      const rebuiltTx = await rebuilder.build();
+      const rebuiltValidDuring = (rebuiltTx.toJson().expiration as any)?.ValidDuring;
+      should.exist(rebuiltValidDuring, 'ValidDuring expiration must survive from(raw) restore');
+      Number(rebuiltValidDuring.minEpoch.Some).should.equal(1156);
+      Number(rebuiltValidDuring.maxEpoch.Some).should.equal(1157);
+      rebuiltValidDuring.chain.should.equal(GENESIS_CHAIN_ID);
+      Number(rebuiltValidDuring.nonce).should.equal(12345678);
+    });
+
+    it('should round-trip ValidDuring expiration on a withdraw tx', async function () {
+      const GENESIS_CHAIN_ID = 'GAFpCCcRCxTdFfUEMbQbkLBaZy2RNiGAfvFBhMNpq2kT';
+      const txBuilder = factory.getWalrusRequestWithdrawStakeBuilder();
+      txBuilder.type(SuiTransactionType.WalrusWithdrawStake);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.requestWithdrawStake(testData.requestWalrusWithdrawFull);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.expiration({
+        ValidDuring: {
+          minEpoch: { Some: 2000 },
+          maxEpoch: { Some: 2001 },
+          minTimestamp: { None: null },
+          maxTimestamp: { None: null },
+          chain: GENESIS_CHAIN_ID,
+          nonce: 87654321,
+        },
+      });
+
+      const tx = await txBuilder.build();
+      const validDuring = (tx.toJson().expiration as any)?.ValidDuring;
+      should.exist(validDuring, 'ValidDuring expiration must be set when building');
+      Number(validDuring.minEpoch.Some).should.equal(2000);
+      Number(validDuring.maxEpoch.Some).should.equal(2001);
+
+      const rawTx = tx.toBroadcastFormat();
+      await assertRebuild(rawTx);
+
+      const rebuilder = factory.from(rawTx);
+      const rebuiltTx = await rebuilder.build();
+      const rebuiltValidDuring = (rebuiltTx.toJson().expiration as any)?.ValidDuring;
+      should.exist(rebuiltValidDuring, 'ValidDuring expiration must survive from(raw) restore');
+      Number(rebuiltValidDuring.minEpoch.Some).should.equal(2000);
+      Number(rebuiltValidDuring.maxEpoch.Some).should.equal(2001);
+      rebuiltValidDuring.chain.should.equal(GENESIS_CHAIN_ID);
+      Number(rebuiltValidDuring.nonce).should.equal(87654321);
     });
   });
 
