@@ -82,7 +82,7 @@ describe('TradingNetwork', function () {
   it('prepares a signed allocation with generated identifiers', async function () {
     const prepared = await tradingNetwork.prepareAllocation({
       connectionId: 'connection-id',
-      amount: { currency: 'tbtc', quantity: '100' },
+      amount: { currency: 'tbtc', quantity: '100' } as const,
       notes: 'test',
     });
 
