@@ -549,6 +549,7 @@ export async function handleV2GenerateShareTSS(
 }
 
 export async function handleV2SignTSSWalletTx(req: ExpressApiRouteRequest<'express.wallet.signtxtss', 'post'>) {
+  assertWalletIdMatchesRoute(req.decoded.id, req.decoded.txPrebuild?.walletId);
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const wallet = await coin.wallets().get({ id: req.decoded.id });
@@ -868,9 +869,19 @@ async function handleV2AcceptWalletShare(req: express.Request) {
 }
 
 /**
+ * Ensure a prebuild cannot direct a wallet route to sign for a different wallet.
+ */
+function assertWalletIdMatchesRoute(routeWalletId: string, prebuildWalletId: string | undefined): void {
+  if (prebuildWalletId !== undefined && prebuildWalletId !== routeWalletId) {
+    throw new ApiResponseError('Wallet ID in txPrebuild does not match the route wallet ID', 400);
+  }
+}
+
+/**
  * handle wallet sign transaction
  */
 async function handleV2SignTxWallet(req: ExpressApiRouteRequest<'express.wallet.signtx', 'post'>) {
+  assertWalletIdMatchesRoute(req.decoded.id, req.decoded.txPrebuild?.walletId);
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const wallet = await coin.wallets().get({ id: req.decoded.id });
