@@ -55,6 +55,8 @@ describe('recipientUtils', function () {
         'importtoc',
         // SOL: deactivate stake account (solDeactivateIntent)
         'deactivate',
+        // SOL: authorize stake account (solAuthorizeIntent)
+        'authorize',
       ];
       expected.forEach((t) => assert.ok(NO_RECIPIENT_TX_TYPES.has(t), `${t} should be in NO_RECIPIENT_TX_TYPES`));
       assert.strictEqual(NO_RECIPIENT_TX_TYPES.size, expected.length);
@@ -357,6 +359,11 @@ describe('recipientUtils', function () {
 
       it('does not throw for "deactivate" (solDeactivateIntent)', function () {
         const txRequest = makeTxRequest({ intent: { intentType: 'deactivate' } as any });
+        assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, {}));
+      });
+
+      it('does not throw for "authorize" (solAuthorizeIntent)', function () {
+        const txRequest = makeTxRequest({ intent: { intentType: 'authorize' } as any });
         assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, {}));
       });
 

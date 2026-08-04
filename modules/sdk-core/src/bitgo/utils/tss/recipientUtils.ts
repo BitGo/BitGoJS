@@ -69,6 +69,9 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
 
   // SOL: deactivate stake account — no on-chain transfer recipient.
   'deactivate',
+
+  // SOL: authorize stake account — no transfer recipient.
+  'authorize',
 ]);
 
 /**
