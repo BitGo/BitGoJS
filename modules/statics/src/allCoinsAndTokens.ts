@@ -2222,6 +2222,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.SHARED_EVM_SIGNING,
     ]
   ),
   account(
