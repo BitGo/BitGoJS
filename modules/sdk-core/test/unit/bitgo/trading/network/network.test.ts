@@ -3,7 +3,7 @@
  */
 import assert from 'assert';
 import sinon from 'sinon';
-import { TradingNetwork } from '../../../../../src/bitgo/trading/network';
+import { TradingNetwork } from '../../../../../src';
 
 describe('TradingNetwork', function () {
   const enterpriseId = 'enterprise-id';
