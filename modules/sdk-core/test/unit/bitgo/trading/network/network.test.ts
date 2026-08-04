@@ -100,7 +100,8 @@ describe('TradingNetwork', function () {
         nonce: prepared.nonce,
       })
     );
-    sinon.assert.calledOnceWithExactly(tradingAccount.signPayload, {
+    tradingAccount.signPayload.calledOnce.should.be.true();
+    tradingAccount.signPayload.firstCall.args[0].should.deepEqual({
       payload: prepared.payload,
       walletPassphrase: undefined,
     });
