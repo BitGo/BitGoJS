@@ -119,6 +119,7 @@ export class Keychains implements IKeychains {
             keychain: key,
             oldPassword: params.oldPassword,
             newPassword: params.newPassword,
+            encryptionVersion: params.encryptionVersion,
           });
           if (updatedKeychain.encryptedPrv) {
             // Both TSS and multi-user-ofc keys have multiple public keys in their key document and thus need to use objectID
@@ -174,13 +175,15 @@ export class Keychains implements IKeychains {
   }
 
   /**
-   * Update the password used to decrypt a single keychain, always re-encrypting as a v2
-   * (Argon2id + AES-256-GCM) envelope. A password change is a natural upgrade point, so
-   * v1 (SJCL) keychains are transparently promoted to v2; v2 keychains stay v2.
+   * Update the password used to decrypt a single keychain. Defaults to re-encrypting as v2
+   * (Argon2id + AES-256-GCM), so v1 (SJCL) keychains are transparently upgraded to v2 as part
+   * of the password change. Callers that still need v1 output (e.g. the UI until the Sept 15
+   * breaking-change window closes) can pass `encryptionVersion: 1`.
    * @param params
    * @param params.keychain - The keychain whose password should be updated
    * @param params.oldPassword - The old password used for encrypting the key
    * @param params.newPassword - The new password to be used for encrypting the key
+   * @param params.encryptionVersion - Optional envelope version to emit; defaults to 2 (Argon2id)
    * @returns {Promise<Keychain>}
    */
   async updateSingleKeychainPassword(params: UpdateSingleKeychainPasswordOptions = {}): Promise<Keychain> {
@@ -202,7 +205,7 @@ export class Keychains implements IKeychains {
       const newEncryptedPrv = await this.bitgo.encrypt({
         input: decryptedPrv,
         password: params.newPassword,
-        encryptionVersion: 2,
+        encryptionVersion: params.encryptionVersion ?? 2,
       });
       return _.assign({}, params.keychain, { encryptedPrv: newEncryptedPrv });
     } catch (e) {

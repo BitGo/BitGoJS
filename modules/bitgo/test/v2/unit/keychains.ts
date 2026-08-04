@@ -426,6 +426,24 @@ describe('V2 Keychains', function () {
         await bitgo.decrypt({ input: newKeychain.encryptedPrv, password: oldPassword }).should.be.rejected();
       });
 
+      it('single keychain password update keeps a v1 envelope as v1 when encryptionVersion: 1 is passed', async () => {
+        const prv = 'xprvtest-v1-opt-out';
+        const encryptedPrv = await bitgo.encrypt({ input: prv, password: oldPassword, encryptionVersion: 1 });
+
+        const keychain = { xpub: 'xpub123', encryptedPrv };
+        const newKeychain = await keychains.updateSingleKeychainPassword({
+          keychain,
+          oldPassword,
+          newPassword,
+          encryptionVersion: 1,
+        });
+
+        JSON.parse(newKeychain.encryptedPrv).should.not.have.property('v', 2, 'v1 opt-out must not emit v2');
+
+        const decryptedPrv = await bitgo.decrypt({ input: newKeychain.encryptedPrv, password: newPassword });
+        decryptedPrv.should.equal(prv, 'new password must decrypt to original prv');
+      });
+
       it('updatePassword upgrades v1 keychains to v2 and keeps v2 keychains as v2', async function () {
         const v1Prv = 'xprv-v1';
         const v2Prv = 'xprv-v2';
