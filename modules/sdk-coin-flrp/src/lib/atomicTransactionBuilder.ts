@@ -80,6 +80,19 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
   }
 
   /**
+   * Set the C-chain base fee (nFLR/wei per gas unit) to derive the atomic-tx fee from.
+   * When set, the fee amount is computed from actual gas usage (including the
+   * AtomicTxBaseCost) instead of being taken as a fixed, externally-supplied amount.
+   *
+   * @param {string | bigint} baseFeeValue - the current C-chain base fee
+   */
+  baseFee(baseFeeValue: string | bigint): this {
+    const baseFee = typeof baseFeeValue === 'string' ? baseFeeValue : baseFeeValue.toString();
+    (this.transaction as Transaction)._fee.baseFee = baseFee;
+    return this;
+  }
+
+  /**
    * Set the fee state for dynamic fee calculation (P-chain transactions)
    *
    * @param {FlrpFeeState} state - the fee state from the network
