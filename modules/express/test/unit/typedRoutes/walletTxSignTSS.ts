@@ -34,6 +34,36 @@ describe('WalletTxSignTSS codec tests', function () {
       sinon.restore();
     });
 
+    it('should reject a prebuild belonging to a different wallet', async function () {
+      const requestBody = {
+        txPrebuild: {
+          txHex: 'transaction',
+          walletId: 'different-wallet-id',
+        },
+        walletPassphrase: 'test_passphrase_12345',
+        apiVersion: 'lite' as const,
+      };
+
+      const mockWallet = {
+        ensureCleanSigSharesAndSignTransaction: sinon.stub().resolves(mockFullySignedResponse),
+      };
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      sinon.stub(BitGo.prototype, 'coin').returns({
+        wallets: sinon.stub().returns({ get: walletsGetStub }),
+      } as any);
+
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/signtxtss`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 400);
+      result.body.error.should.match(/does not match the route wallet ID/);
+      walletsGetStub.called.should.be.false();
+      mockWallet.ensureCleanSigSharesAndSignTransaction.called.should.be.false();
+    });
+
     it('should successfully sign a TSS wallet transaction', async function () {
       const requestBody = {
         txPrebuild: {
