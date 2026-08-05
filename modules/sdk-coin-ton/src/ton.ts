@@ -1,10 +1,13 @@
+import assert from 'assert';
 import BigNumber from 'bignumber.js';
 import * as _ from 'lodash';
 import TonWeb from 'tonweb';
 import {
   BaseCoin,
   BitGoBase,
+  decryptKeychainPrivateKey,
   EDDSAMethods,
+  EDDSAUtils,
   InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
@@ -42,6 +45,8 @@ export interface TonParseTransactionOptions extends ParseTransactionOptions {
   fromAddressBounceable?: boolean;
   toAddressBounceable?: boolean;
 }
+
+type TonSigningMaterial = { version: 'v1'; userPrv: string } | { version: 'v2'; encryptedUserKey: string };
 
 export class Ton extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -314,6 +319,76 @@ export class Ton extends BaseCoin {
     return new TransactionBuilderFactory(coins.get(this.getChain()));
   }
 
+  /**
+   * Discriminated union carrying keycard version and decrypted V1 user key (to avoid re-decryption).
+   * V1 keycards are JSON; V2 keycards are CBOR-encoded reduced key shares.
+   */
+  private async isMpcV2Keycard(userKey: string, walletPassphrase: string): Promise<TonSigningMaterial> {
+    const normalized = userKey.replace(/\s/g, '');
+    let isV1: boolean;
+    try {
+      isV1 = await EDDSAUtils.isEddsaMpcV1SigningMaterial(normalized, walletPassphrase, this.bitgo);
+    } catch (e) {
+      throw new Error(`Error decrypting user keychain: ${e instanceof Error ? e.message : String(e)}`);
+    }
+    if (isV1) {
+      const userPrv = await this.decryptKeychain(normalized, walletPassphrase, 'user');
+      return { version: 'v1', userPrv };
+    }
+    return { version: 'v2', encryptedUserKey: normalized };
+  }
+
+  private async decryptKeychain(encryptedKey: string, passphrase: string, label: string): Promise<string> {
+    const prv = await decryptKeychainPrivateKey(this.bitgo, { encryptedPrv: encryptedKey }, passphrase);
+    if (!prv) {
+      throw new Error(`Error decrypting ${label} keychain: invalid password or corrupted key`);
+    }
+    return prv;
+  }
+
+  private async addRecoverySignature(
+    signingMaterial: TonSigningMaterial,
+    txBuilder: TransactionBuilder,
+    senderAddr: string,
+    unsignedTransaction: any,
+    currPath: string,
+    bitgoKey: string,
+    backupKey: string,
+    walletPassphrase: string
+  ): Promise<void> {
+    if (signingMaterial.version === 'v2') {
+      const { userKeyShare, backupKeyShare, commonKeyChain } =
+        await EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
+          signingMaterial.encryptedUserKey,
+          backupKey,
+          walletPassphrase,
+          this.bitgo
+        );
+      if (commonKeyChain.toLowerCase() !== bitgoKey.toLowerCase()) {
+        throw new Error('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+      }
+      const signature = await EDDSAUtils.signRecoveryEddsaMPCv2(
+        unsignedTransaction.signablePayload,
+        currPath,
+        userKeyShare,
+        backupKeyShare,
+        commonKeyChain
+      );
+      txBuilder.addSignature({ pub: senderAddr } as PublicKey, signature);
+    } else {
+      const userSigningMaterial = JSON.parse(signingMaterial.userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+      const backupPrv = await this.decryptKeychain(backupKey, walletPassphrase, 'backup');
+      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+      const signatureHex = await EDDSAMethods.getTSSSignature(
+        userSigningMaterial,
+        backupSigningMaterial,
+        currPath,
+        unsignedTransaction
+      );
+      txBuilder.addSignature({ pub: senderAddr } as PublicKey, signatureHex);
+    }
+  }
+
   async recover(
     params: MPCRecoveryOptions & { jettonMaster?: string; senderJettonAddress?: string }
   ): Promise<MPCTx | MPCSweepTxs> {
@@ -440,52 +515,20 @@ export class Ton extends BaseCoin {
     }
 
     if (!isUnsignedSweep) {
-      if (!params.userKey) {
-        throw new Error('missing userKey');
-      }
-      if (!params.backupKey) {
-        throw new Error('missing backupKey');
-      }
-      if (!params.walletPassphrase) {
-        throw new Error('missing wallet passphrase');
-      }
-
-      // Clean up whitespace from entered values
-      const userKey = params.userKey.replace(/\s/g, '');
-      const backupKey = params.backupKey.replace(/\s/g, '');
-
-      let userPrv;
-
-      try {
-        userPrv = await this.bitgo.decrypt({
-          input: userKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting user keychain: ${e.message}`);
-      }
-      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
-
-      let backupPrv;
-      try {
-        backupPrv = await this.bitgo.decrypt({
-          input: backupKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting backup keychain: ${e.message}`);
-      }
-      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-
-      const signatureHex = await EDDSAMethods.getTSSSignature(
-        userSigningMaterial,
-        backupSigningMaterial,
+      assert(params.userKey, 'missing userKey');
+      assert(params.backupKey, 'missing backupKey');
+      assert(params.walletPassphrase, 'missing wallet passphrase');
+      const signingMaterial = await this.isMpcV2Keycard(params.userKey, params.walletPassphrase);
+      await this.addRecoverySignature(
+        signingMaterial,
+        txBuilder,
+        senderAddr,
+        unsignedTransaction,
         currPath,
-        unsignedTransaction
+        bitgoKey,
+        params.backupKey.replace(/\s/g, ''),
+        params.walletPassphrase
       );
-
-      const publicKeyObj = { pub: senderAddr };
-      txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
     }
 
     const walletCoin = this.getChain();

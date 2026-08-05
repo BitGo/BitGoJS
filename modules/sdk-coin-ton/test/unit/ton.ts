@@ -1,13 +1,14 @@
 import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import { Ton, TonParseTransactionOptions, Tton } from '../../src';
 import * as sinon from 'sinon';
 import assert from 'assert';
 import * as testData from '../resources/ton';
-import { EDDSAMethods, TransactionExplanation } from '@bitgo/sdk-core';
+import { EDDSAMethods, MPCRecoveryOptions, MPCTx, TransactionExplanation } from '@bitgo/sdk-core';
 import should from 'should';
 import utils from '../../src/lib/utils';
 import Tonweb from 'tonweb';
+import { MPSUtil } from '@bitgo/sdk-lib-mpc';
 
 describe('TON:', function () {
   let basecoin;
@@ -714,10 +715,12 @@ describe('TON:', function () {
       };
 
       sandbox.stub(Tonweb, 'HttpProvider').returns(mockProvider);
+      sandbox.stub(basecoin as any, 'isMpcV2Keycard').resolves({
+        version: 'v1',
+        userPrv: JSON.stringify({ dummy: 'userSigningMaterial' }),
+      });
 
-      const decryptStub = sandbox.stub(bitgo, 'decrypt');
-      decryptStub.onFirstCall().resolves(JSON.stringify({ dummy: 'userSigningMaterial' }));
-      decryptStub.onSecondCall().resolves(JSON.stringify({ dummy: 'backupSigningMaterial' }));
+      sandbox.stub(bitgo, 'decrypt').resolves(JSON.stringify({ dummy: 'backupSigningMaterial' }));
 
       sandbox
         .stub(EDDSAMethods, 'getTSSSignature')
@@ -808,6 +811,7 @@ describe('TON:', function () {
       result.txRequests[0].should.have.property('transactions');
       result.txRequests[0].transactions[0].should.have.property('unsignedTx');
       result.txRequests[0].transactions[0].unsignedTx.should.equal(mockUnsignedTx);
+      sandbox.restore();
     });
 
     it('should take OVC output and generate a signed sweep transaction', async function () {
@@ -845,6 +849,150 @@ describe('TON:', function () {
       );
       recoveryTxn.transactions[0].scanIndex.should.equal(0);
       recoveryTxn.lastScanIndex.should.equal(0);
+    });
+
+    describe('MPCv2 signed recovery', function () {
+      const walletPassphrase = 'test-passphrase-mpcv2';
+      const recoveryDestination = 'UQBL2idCXR4ATdQtaNa4VpofcpSxuxIgHH7_slOZfdOXSadJ';
+      const apiKey = 'db2554641c61e60a979cc6c0053f2ec91da9b13e71d287768c93c2fb556be53b';
+
+      let mpcV2UserKey: string;
+      let mpcV2BackupKey: string;
+      let mpcV2CommonKeyChain: string;
+      let mpcV2WalletAddress: string;
+      let mpcV2RecoverParams: MPCRecoveryOptions & { apiKey: string };
+
+      let mockProvider: {
+        getBalance: sinon.SinonStub;
+        getEstimateFee: sinon.SinonStub;
+        call: sinon.SinonStub;
+        send: sinon.SinonStub;
+      };
+
+      before(async function () {
+        const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+        mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+        mpcV2UserKey = await encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+        mpcV2BackupKey = await encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+
+        const mpc = await EDDSAMethods.getInitializedMpcInstance();
+        const accountId = mpc.deriveUnhardened(mpcV2CommonKeyChain, 'm/0').slice(0, 64);
+        mpcV2WalletAddress = await utils.getAddressFromPublicKey(accountId);
+
+        mpcV2RecoverParams = {
+          userKey: mpcV2UserKey,
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mpcV2CommonKeyChain,
+          recoveryDestination,
+          walletPassphrase,
+          apiKey,
+        };
+      });
+
+      beforeEach(function () {
+        mockProvider = {
+          getBalance: sandbox.stub().resolves('1000000000'),
+          getEstimateFee: sandbox.stub().resolves({
+            source_fees: { in_fwd_fee: 1000, storage_fee: 1000, gas_fee: 1000, fwd_fee: 1000 },
+          }),
+          call: sandbox.stub(),
+          send: sandbox.stub().callsFake((method: string) => {
+            if (method === 'runGetMethod') {
+              return Promise.resolve({ gas_used: 0, stack: [['num', '0']] });
+            }
+            return Promise.resolve({});
+          }),
+        };
+
+        sandbox.stub(Tonweb, 'HttpProvider').returns(mockProvider as any);
+      });
+
+      it('should recover native TON using MPCv2 signing material', async function () {
+        const getTSSSignatureSpy = sandbox.spy(EDDSAMethods, 'getTSSSignature');
+
+        const result = (await basecoin.recover(mpcV2RecoverParams)) as MPCTx;
+
+        result.should.not.be.empty();
+        result.should.hasOwnProperty('serializedTx');
+        result.should.hasOwnProperty('scanIndex');
+        should.equal(result.scanIndex, 0);
+        (result.serializedTx as string).should.be.a.String().and.not.be.empty();
+        sandbox.assert.calledWith(mockProvider.getBalance, mpcV2WalletAddress);
+        sandbox.assert.notCalled(getTSSSignatureSpy);
+      });
+
+      it('should recover jetton using MPCv2 signing material', async function () {
+        mockProvider.call.callsFake((address: string, method: string) => {
+          if (method === 'get_wallet_data') {
+            return Promise.resolve({
+              stack: [
+                ['num', '5000000000'],
+                ['num', '0'],
+                ['cell', { bytes: '' }],
+                ['cell', { bytes: '' }],
+              ],
+            });
+          }
+          return Promise.resolve({ stack: [] });
+        });
+
+        const getTSSSignatureSpy = sandbox.spy(EDDSAMethods, 'getTSSSignature');
+
+        const jettonParams = {
+          ...mpcV2RecoverParams,
+          senderJettonAddress: recoveryDestination,
+        };
+
+        const result = (await basecoin.recover(jettonParams)) as MPCTx;
+
+        result.should.not.be.empty();
+        result.should.hasOwnProperty('serializedTx');
+        result.should.hasOwnProperty('scanIndex');
+        should.equal(result.scanIndex, 0);
+        (result.serializedTx as string).should.be.a.String().and.not.be.empty();
+        sandbox.assert.calledWith(mockProvider.getBalance, mpcV2WalletAddress);
+        sandbox.assert.notCalled(getTSSSignatureSpy);
+      });
+
+      it('should use MPCv1 path when signing material is MPCv1 format', async function () {
+        sandbox.stub(basecoin as any, 'isMpcV2Keycard').resolves({
+          version: 'v1',
+          userPrv: JSON.stringify({ uShare: {}, bitgoYShare: {} }),
+        });
+
+        const getTSSSignatureStub = sandbox
+          .stub(EDDSAMethods, 'getTSSSignature')
+          .resolves(
+            Buffer.from(
+              '1baafa0d62174bf0c78f3256318613ffc44b6dd54ab1a63c2185232f92ede9da' +
+                'e1b2818dbeb52a8215fd56f5a5f2a9f94c079ce89e4dc3b1ce6ed6e84ce71857',
+              'hex'
+            )
+          );
+
+        sandbox.stub(bitgo, 'decrypt').resolves(JSON.stringify({ bShare: {}, yShares: {} }));
+
+        const result = (await basecoin.recover(mpcV2RecoverParams)) as MPCTx;
+
+        result.should.not.be.empty();
+        result.should.hasOwnProperty('serializedTx');
+        result.should.hasOwnProperty('scanIndex');
+        should.equal(result.scanIndex, 0);
+        (result.serializedTx as string).should.be.a.String().and.not.be.empty();
+        sandbox.assert.calledOnce(getTSSSignatureStub);
+      });
+
+      it('should throw when commonKeyChain from MPCv2 keycard does not match bitgoKey', async function () {
+        const mismatchedBitgoKey = mpcV2CommonKeyChain.slice(0, -8) + '00000000';
+        const mismatchedParams = {
+          ...mpcV2RecoverParams,
+          bitgoKey: mismatchedBitgoKey,
+        };
+
+        await basecoin
+          .recover(mismatchedParams)
+          .should.be.rejectedWith('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+      });
     });
   });
 });
