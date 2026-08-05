@@ -1668,7 +1668,7 @@ export const polygonTokens = [
     'polygon:sofid',
     'SoFiUSD',
     6,
-    '0x5572728e36b5510010ade1db6bbaea1c402411cc',
+    '0x0cb6d03b0ac88a463f67b7ad99f9f3ec4678092e',
     UnderlyingAsset['polygon:sofid'],
     POLYGON_TOKEN_FEATURES
   ),
