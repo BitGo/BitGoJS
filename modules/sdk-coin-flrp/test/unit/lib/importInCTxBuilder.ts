@@ -232,6 +232,21 @@ describe('Flrp Import In C Tx Builder', () => {
       locktime: '0',
     };
 
+    it('should fall back to network.txFee when neither fee nor baseFee is set', async () => {
+      const networkTxFee = (coins.get('tflrp').network as unknown as { txFee: string }).txFee;
+      const txBuilder = factory
+        .getImportInCBuilder()
+        .threshold(1)
+        .locktime(0)
+        .fromPubKey([ON_CHAIN_TEST_WALLET.user.pChainAddress])
+        .to('0x96993BAEb6AaE2e06BF95F144e2775D4f8efbD35')
+        .decodedUtxos([utxo])
+        .context(testData.context);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      tx.fee.fee.should.equal(networkTxFee);
+    });
+
     it('should derive a fee that accounts for the AtomicTxBaseCost and exceeds a naive gas*baseFee estimate', async () => {
       const baseFeeWei = 500n; // base fee in wei/gas used in the reported failure
       const underpricedGasEstimate = 5700n; // naive/legacy gas estimate missing AtomicTxBaseCost

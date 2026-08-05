@@ -137,15 +137,22 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     if (this.transaction._to.length !== 1) {
       throw new BuildTransactionError('to is required');
     }
-    const hasFee = !!this.transaction._fee.fee && BigInt(this.transaction._fee.fee) !== BigInt(0);
+    let hasFee = !!this.transaction._fee.fee && BigInt(this.transaction._fee.fee) !== BigInt(0);
     const hasBaseFee = !!this.transaction._fee.baseFee && BigInt(this.transaction._fee.baseFee) !== BigInt(0);
-    if (!hasFee && !hasBaseFee) {
-      throw new BuildTransactionError('fee is required');
-    }
     if (hasFee && hasBaseFee) {
       throw new BuildTransactionError(
         'fee and baseFee are mutually exclusive: use baseFee for gas-aware fee calculation, or fee for a fixed amount, not both'
       );
+    }
+    // Constructor clears the inherited network.txFee so an unset fee is distinguishable from an
+    // explicit fee() call (needed for the baseFee-only path). When the caller sets neither fee
+    // nor baseFee, fall back to network.txFee to preserve pre-CECHO-1821 behavior.
+    if (!hasFee && !hasBaseFee) {
+      this.transaction._fee.fee = this.fixedFee;
+      hasFee = !!this.transaction._fee.fee && BigInt(this.transaction._fee.fee) !== BigInt(0);
+      if (!hasFee) {
+        throw new BuildTransactionError('Either fee or baseFee is required');
+      }
     }
     if (!this.transaction._context) {
       throw new BuildTransactionError('context is required');
