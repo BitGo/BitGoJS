@@ -1,14 +1,16 @@
 import should from 'should';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import { Iota, TransactionBuilderFactory, TransferTransaction } from '../../src';
 import assert from 'assert';
 import { coins, GasTankAccountCoin } from '@bitgo/statics';
 import * as testData from '../resources/iota';
-import { TransactionType } from '@bitgo/sdk-core';
+import { EDDSAMethods, TransactionType } from '@bitgo/sdk-core';
 import { createTransferBuilderWithGas } from './helpers/testHelpers';
 import sinon from 'sinon';
 import { keys } from '../resources/iota';
+import { MPSUtil } from '@bitgo/sdk-lib-mpc';
+import utils from '../../src/lib/utils';
 
 describe('IOTA:', function () {
   let bitgo: TestBitGoAPI;
@@ -670,6 +672,177 @@ describe('IOTA:', function () {
 
       sandBox.assert.callCount(basecoin.fetchOwnedObjects, 1);
       sandBox.assert.callCount(basecoin.estimateGas, 1);
+    });
+  });
+
+  describe('Recover Transactions (MPCv2):', () => {
+    const sandBox = sinon.createSandbox();
+    const recoveryDestination = '0xda97e166d40fa6a0c949b6aeb862e391c29139b563ae0430b2419c589a02a6e0';
+    const walletPassphrase = 'p$Sw<RjvAgf{nYAYI2xM';
+    const tokenContractAddress = '0xabcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789';
+    const validDigest = '7BJLb32LKN7wt5uv4xgXW4AbFKoMNcPE76o41TQEvUZb';
+
+    let mpcV2UserKey: string;
+    let mpcV2BackupKey: string;
+    let mpcV2CommonKeyChain: string;
+    let mpcV2SenderAddress: string;
+    let mismatchedBitgoKey: string;
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      const [otherUserDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+
+      mpcV2UserKey = await encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+      mpcV2BackupKey = await encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+      mismatchedBitgoKey = otherUserDkg.getCommonKeychain();
+
+      const mpc = await EDDSAMethods.getInitializedMpcInstance();
+      const derivedPublicKey = mpc.deriveUnhardened(mpcV2CommonKeyChain, 'm/0').slice(0, 64);
+      mpcV2SenderAddress = utils.getAddressFromPublicKey(derivedPublicKey);
+    });
+
+    afterEach(() => {
+      sandBox.restore();
+    });
+
+    it('should route to MPCv2 path for native IOTA recovery when keycard is MPCv2', async function () {
+      sandBox.stub(Iota.prototype, 'fetchOwnedObjects' as keyof Iota).resolves([
+        {
+          objectId: '0xc05c765e26e6ae84c78fa245f38a23fb20406a5cf3f61b57bd323a0df9d98003',
+          version: '195',
+          digest: validDigest,
+          balance: '1900000000',
+        },
+      ]);
+      sandBox.stub(Iota.prototype, 'fetchGasPrice' as keyof Iota).resolves(1000);
+      sandBox.stub(Iota.prototype, 'estimateGas' as keyof Iota).resolves(1997880);
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+      const res = await basecoin.recover({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        recoveryDestination,
+        walletPassphrase,
+      });
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('transactions');
+      const tx = res.transactions[0];
+      tx.scanIndex.should.equal(0);
+      tx.recoveryAmount.should.equal('1897802332');
+
+      const sigBuffer = Buffer.from(tx.signature, 'base64');
+      sigBuffer.length.should.equal(97); // 1 flag byte + 64-byte signature + 32-byte public key
+      sigBuffer[0].should.equal(0x00);
+
+      sandBox.assert.notCalled(getTSSSignatureSpy);
+    });
+
+    it('should throw when MPCv2 commonKeyChain does not match bitgoKey', async function () {
+      sandBox.stub(Iota.prototype, 'fetchOwnedObjects' as keyof Iota).resolves([
+        {
+          objectId: '0xc05c765e26e6ae84c78fa245f38a23fb20406a5cf3f61b57bd323a0df9d98003',
+          version: '195',
+          digest: validDigest,
+          balance: '1900000000',
+        },
+      ]);
+      sandBox.stub(Iota.prototype, 'fetchGasPrice' as keyof Iota).resolves(1000);
+      sandBox.stub(Iota.prototype, 'estimateGas' as keyof Iota).resolves(1997880);
+
+      await basecoin
+        .recover({
+          userKey: mpcV2UserKey,
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mismatchedBitgoKey,
+          recoveryDestination,
+          walletPassphrase,
+        })
+        .should.be.rejectedWith('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+    });
+
+    it('should route to MPCv2 path for token recovery when keycard is MPCv2', async function () {
+      sandBox.stub(Iota.prototype, 'hasTokenBalance' as keyof Iota).callsFake(function (addr: string) {
+        return Promise.resolve(addr === mpcV2SenderAddress);
+      });
+      sandBox
+        .stub(Iota.prototype, 'fetchOwnedObjects' as keyof Iota)
+        .callsFake(function (addr: string, _rpc: unknown, coinType: string) {
+          if (addr === mpcV2SenderAddress && coinType === tokenContractAddress) {
+            return Promise.resolve([
+              {
+                objectId: '0xaaaa' + mpcV2SenderAddress.slice(6),
+                version: '100',
+                digest: validDigest,
+                balance: '1000',
+              },
+            ]);
+          }
+          if (addr === mpcV2SenderAddress && !coinType) {
+            return Promise.resolve([
+              {
+                objectId: '0xbbbb' + mpcV2SenderAddress.slice(6),
+                version: '200',
+                digest: validDigest,
+                balance: '500000000',
+              },
+            ]);
+          }
+          return Promise.resolve([]);
+        });
+      sandBox.stub(Iota.prototype, 'fetchGasPrice' as keyof Iota).resolves(1000);
+      sandBox.stub(Iota.prototype, 'estimateGas' as keyof Iota).resolves(2345504);
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+      const res = await basecoin.recover({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        recoveryDestination,
+        walletPassphrase,
+        tokenContractAddress,
+      });
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('transactions');
+      const tx = res.transactions[0];
+      tx.scanIndex.should.equal(0);
+      tx.recoveryAmount.should.equal('1000');
+      tx.coin.should.equal(tokenContractAddress);
+
+      const sigBuffer = Buffer.from(tx.signature, 'base64');
+      sigBuffer.length.should.equal(97);
+      sigBuffer[0].should.equal(0x00);
+
+      sandBox.assert.notCalled(getTSSSignatureSpy);
+    });
+
+    it('should still use the MPCv1 signing path when the keycard is MPCv1 (regression)', async function () {
+      sandBox.stub(Iota.prototype, 'fetchOwnedObjects' as keyof Iota).resolves([
+        {
+          objectId: '0xc05c765e26e6ae84c78fa245f38a23fb20406a5cf3f61b57bd323a0df9d98003',
+          version: '195',
+          digest: validDigest,
+          balance: '1900000000',
+        },
+      ]);
+      sandBox.stub(Iota.prototype, 'fetchGasPrice' as keyof Iota).resolves(1000);
+      sandBox.stub(Iota.prototype, 'estimateGas' as keyof Iota).resolves(1997880);
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+      const res = await basecoin.recover({
+        userKey: keys.userKey,
+        backupKey: keys.backupKey,
+        bitgoKey: keys.bitgoKey,
+        recoveryDestination,
+        walletPassphrase: 'p$Sw<RjvAgf{nYAYI2xM',
+      });
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('transactions');
+      sandBox.assert.calledOnce(getTSSSignatureSpy);
     });
   });
 
