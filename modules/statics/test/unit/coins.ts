@@ -1353,8 +1353,18 @@ describe('Eip1559 coins', () => {
 });
 
 describe('Liquid Staking Features', () => {
-  it('should have LIQUID_STAKING feature for sol:jsol and sol:stsol', () => {
-    ['sol:jsol', 'sol:stsol'].forEach((coinName) => {
+  it('should have LIQUID_STAKING feature for true LST assets', () => {
+    [
+      'reth-rocket',
+      'ofcreth-rocket',
+      'near:stnear',
+      'tnear:stnear',
+      'ofcnear:stnear',
+      'ofctnear:stnear',
+      'sol:jsol',
+      'sol:stsol',
+      'ofcsol:jsol',
+    ].forEach((coinName) => {
       const coin = coins.get(coinName);
       coin.features.includes(CoinFeature.LIQUID_STAKING).should.eql(true);
     });
