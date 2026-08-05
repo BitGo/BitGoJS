@@ -295,26 +295,53 @@ jobs:
       - name: Verify all packages exist on npm
         uses: ./.github/actions/verify-npm-packages
 
-      - name: Publish new version
+      # Version bump only — no publish. Separated from publishing (WCN-1818) so the
+      # two-phase publish below can run identically whether this step just bumped
+      # versions (normal path) or recovery-mode skipped it (rel/latest already
+      # holds the versions to resume from).
+      - name: Bump version
         if: ${{ inputs.dry-run == false && !inputs.recovery-mode }}
         run: |
-          yarn lerna publish --sign-git-tag --sign-git-commit --include-merged-tags --conventional-commits --conventional-graduate --yes
+          yarn lerna version --sign-git-tag --sign-git-commit --include-merged-tags --conventional-commits --conventional-graduate --yes
+
+      # Two-phase publish (WCN-1818): bitgo's `prepack` script resolves its
+      # siblings from the registry, but a single combined `lerna publish` packs
+      # every package's lifecycle hooks before uploading any of them — so bitgo
+      # would try to resolve siblings that aren't live yet (this is what broke
+      # `npm install bitgo` for every consumer, WCI-1200). Hold bitgo back
+      # (private), publish siblings first, then restore and publish bitgo alone
+      # once its siblings are actually resolvable. Runs identically for the
+      # normal path (after the version bump above) and the recovery path (no
+      # preceding bump) — `from-package` only publishes what's missing from npm
+      # either way, so re-running is idempotent.
+      - name: Hold back bitgo umbrella for the siblings publish pass
+        if: inputs.dry-run == false
+        run: npx tsx ./scripts/set-umbrella-publishable.ts false
+
+      - name: Publish siblings (pass 1)
+        if: inputs.dry-run == false
+        run: |
+          # `from-package` reads each package.json's `version`, queries npm,
+          # and publishes only versions missing from the registry.
+          yarn lerna publish from-package --yes
+        env:
+          NPM_CONFIG_PROVENANCE: true
+
+      - name: Restore bitgo umbrella for its own publish pass
+        if: ${{ always() && inputs.dry-run == false }}
+        run: npx tsx ./scripts/set-umbrella-publishable.ts true
+
+      - name: Publish bitgo (pass 2)
+        if: inputs.dry-run == false
+        run: |
+          yarn lerna publish from-package --yes
         env:
           NPM_CONFIG_PROVENANCE: true
           # Tells bitgo's `prepack` script (scripts/generate-bitgo-shrinkwrap.ts) to
           # actually generate npm-shrinkwrap.json — kept opt-in so a plain local
           # `npm pack` doesn't force a network install of the full dependency tree.
-          BITGO_GENERATE_SHRINKWRAP: true
-
-      - name: Publish missing versions (recovery)
-        if: ${{ inputs.dry-run == false && inputs.recovery-mode }}
-        run: |
-          # `from-package` reads each package.json's `version`, queries npm,
-          # and publishes only versions missing from the registry. No bump,
-          # no tag, no git push.
-          yarn lerna publish from-package --yes
-        env:
-          NPM_CONFIG_PROVENANCE: true
+          # Siblings published in the pass above are live on the registry by now,
+          # so resolution succeeds.
           BITGO_GENERATE_SHRINKWRAP: true
 
       - name: Verify recovery published the missing versions
