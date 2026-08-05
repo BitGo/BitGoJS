@@ -1689,7 +1689,49 @@ interface RequestHandler extends express.RequestHandler<ParamsDictionary, any, R
     | Promise<RequestHandlerResponse>;
 }
 
-function handleRequestHandlerError(res: express.Response, error: unknown) {
+const SENSITIVE_REQUEST_KEYS = new Set([
+  'password',
+  'passphrase',
+  'walletpassphrase',
+  'prv',
+  'privatekey',
+  'encryptedprv',
+  'secret',
+]);
+
+function collectSensitiveRequestValues(value: unknown, values = new Set<string>()): Set<string> {
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectSensitiveRequestValues(item, values));
+  } else if (value !== null && typeof value === 'object') {
+    Object.entries(value).forEach(([key, item]) => {
+      if (SENSITIVE_REQUEST_KEYS.has(key.toLowerCase()) && typeof item === 'string' && item.length > 0) {
+        values.add(item);
+      }
+      collectSensitiveRequestValues(item, values);
+    });
+  }
+  return values;
+}
+
+function redactSensitiveValues(value: unknown, sensitiveValues: Set<string>): unknown {
+  if (typeof value === 'string') {
+    return [...sensitiveValues].reduce((redacted, secret) => redacted.split(secret).join('[REDACTED]'), value);
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => redactSensitiveValues(item, sensitiveValues));
+  }
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [
+        key,
+        SENSITIVE_REQUEST_KEYS.has(key.toLowerCase()) ? '[REDACTED]' : redactSensitiveValues(item, sensitiveValues),
+      ])
+    );
+  }
+  return value;
+}
+
+function handleRequestHandlerError(res: express.Response, error: unknown, requestBody?: unknown) {
   let err;
   if (error instanceof Error) {
     err = error;
@@ -1699,11 +1741,11 @@ function handleRequestHandlerError(res: express.Response, error: unknown) {
     err = new BitGoExpressError('(object_error) ' + JSON.stringify(error));
   }
 
-  const message = err.message || 'local error';
-  // use attached result, or make one
-  let result = err.result || { error: message };
+  const sensitiveValues = collectSensitiveRequestValues(requestBody);
+  const message = (redactSensitiveValues(err.message, sensitiveValues) as string) || 'local error';
+  let result = redactSensitiveValues(err.result || { error: message }, sensitiveValues);
   result = _.extend({}, result, {
-    message: err.message,
+    message,
     name: err.name || 'BitGoExpressError',
     bitgoJsVersion: version,
     bitgoExpressVersion: pjson.version,
@@ -1711,13 +1753,13 @@ function handleRequestHandlerError(res: express.Response, error: unknown) {
   });
   const status = err.status || 500;
   if (!(status >= 200 && status < 300)) {
-    console.log('error %s: %s', status, err.message);
+    console.log('error %s: %s', status, message);
   }
   if (status >= 500 && status <= 599) {
     if (err.response && err.response.request) {
       console.log(`failed to make ${err.response.request.method} request to ${err.response.request.url}`);
     }
-    console.log(err.stack);
+    console.log(redactSensitiveValues(err.stack, sensitiveValues));
   }
   res.status(status).send(result);
 }
@@ -1738,7 +1780,7 @@ export function promiseWrapper(promiseRequestHandler: RequestHandler) {
         res.status(200).send(result);
       }
     } catch (e) {
-      handleRequestHandlerError(res, e);
+      handleRequestHandlerError(res, e, req.body);
     }
   };
 }
@@ -1755,7 +1797,7 @@ export function typedPromiseWrapper(promiseRequestHandler: TypedRequestHandler) 
         res.status(200).send(result);
       }
     } catch (e) {
-      handleRequestHandlerError(res, e);
+      handleRequestHandlerError(res, e, req.body);
     }
   };
 }
