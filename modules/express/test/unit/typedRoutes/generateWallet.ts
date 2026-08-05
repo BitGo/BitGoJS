@@ -467,7 +467,6 @@ describe('Generate Wallet Typed Routes Tests', function () {
       const res = await agent.post(`/api/v2/${coin}/wallet/generate`).send({
         label,
         enterprise,
-        passphrase: 'test-passphrase',
         type: 'trading',
         userKeySigningRequired: false,
       });

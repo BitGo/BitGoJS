@@ -46,4 +46,42 @@ describe('wallet options codecs with encryptionVersion', () => {
   it('GenerateGoAccountWalletOptionsCodec works without encryptionVersion', () => {
     assert.ok(isRight(GenerateGoAccountWalletOptionsCodec.decode(goAccountBase)));
   });
+
+  it('GenerateGoAccountWalletOptionsCodec accepts password fields when user key signing is disabled', () => {
+    assert.ok(
+      isRight(
+        GenerateGoAccountWalletOptionsCodec.decode({
+          ...goAccountBase,
+          userKeySigningRequired: false,
+        })
+      )
+    );
+  });
+
+  it('GenerateGoAccountWalletOptionsCodec accepts omitted password fields when user key signing is disabled', () => {
+    assert.ok(
+      isRight(
+        GenerateGoAccountWalletOptionsCodec.decode({
+          label: 'test',
+          enterprise: 'ent',
+          type: 'trading',
+          userKeySigningRequired: false,
+        })
+      )
+    );
+  });
+
+  it('GenerateGoAccountWalletOptionsCodec rejects a single password field when user key signing is disabled', () => {
+    assert.ok(
+      isLeft(
+        GenerateGoAccountWalletOptionsCodec.decode({
+          label: 'test',
+          passphrase: 'pass',
+          enterprise: 'ent',
+          type: 'trading',
+          userKeySigningRequired: false,
+        })
+      )
+    );
+  });
 });
