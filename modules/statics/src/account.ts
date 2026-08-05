@@ -10,6 +10,7 @@ import {
   COSMOS_SIDECHAIN_FEATURES,
   ERC7984_TOKEN_FEATURES,
   TEMPO_FEATURES,
+  XDC_TOKEN_FEATURES,
 } from './coinFeatures';
 
 /**
@@ -3201,7 +3202,7 @@ export function xdcErc20(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
-  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  features: CoinFeature[] = XDC_TOKEN_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.main.xdc,
@@ -3248,7 +3249,7 @@ export function txdcErc20(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
-  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  features: CoinFeature[] = XDC_TOKEN_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.xdc,

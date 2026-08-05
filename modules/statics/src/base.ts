@@ -617,6 +617,13 @@ export enum CoinFeature {
    * behavior. MUST only be set together with TOKENIZED_EQUITY.
    */
   BITGO_TOKENIZED_EQUITY = 'bitgo-tokenized-equity',
+
+  /**
+   * TSS transaction verification should use serializedTxHex rather than signableHex.
+   * Needed when signableHex is not a parseable transaction (e.g. ICP hash digest, or
+   * legacy EIP-155 RLP with v=chainId that fails ethereumjs fromSerializedTx).
+   */
+  TSS_VERIFY_USE_SERIALIZED_TX_HEX = 'tss-verify-use-serialized-tx-hex',
 }
 
 /**

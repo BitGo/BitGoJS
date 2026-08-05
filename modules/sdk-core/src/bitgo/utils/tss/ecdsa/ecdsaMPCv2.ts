@@ -51,6 +51,7 @@ import {
   SignableTransaction,
 } from '../baseTypes';
 import { shouldUsePreHashedSignable } from '../preHashedSignable';
+import { shouldVerifyWithSerializedTxHex } from '../serializedTxHexVerify';
 import { BaseEcdsaUtils } from './base';
 import { EcdsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './ecdsaMPCv2KeyGenSender';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
@@ -943,16 +944,14 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         );
       }
 
-      // For ICP and Avalanche atomic transactions, signableHex is a digest (not
-      // a parseable transaction).  Pass serializedTxHex so verifyTransaction can
-      // parse the full transaction bytes.
-      // - ICP: signableHex is a hash; serializedTxHex is the CBOR-encoded tx.
+      // For some coins, signableHex is not a parseable transaction. Pass
+      // serializedTxHex so verifyTransaction can decode the full tx bytes.
+      // - CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX: ICP hash digests,
+      //   BSC/XDC legacy EIP-155 RLP with v=chainId, etc.
       // - Avalanche atomic (FLRP/FLR cross-chain): signableHex is SHA-256(txBody);
       //   serializedTxHex is the PVM/EVM atomic tx (codec prefix 0x0000).
-      // For all other coins, signableHex IS the unsigned transaction (e.g. RLP bytes).
-      const isIcp = this.baseCoin.getConfig().family === 'icp';
-      const isPreHashed = shouldUsePreHashedSignable(this.baseCoin, unsignedTx);
-      if (isIcp || isPreHashed) {
+      // For other coins, signableHex IS the unsigned transaction (e.g. EIP-1559 RLP).
+      if (shouldVerifyWithSerializedTxHex(this.baseCoin) || shouldUsePreHashedSignable(this.baseCoin, unsignedTx)) {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
           txParams: resolveEffectiveTxParams(txRequest, params.txParams),

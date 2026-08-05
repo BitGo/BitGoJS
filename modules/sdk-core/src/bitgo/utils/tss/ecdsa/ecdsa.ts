@@ -51,6 +51,7 @@ import {
 import { BaseEcdsaUtils } from './base';
 import { EncryptionVersion, IRequestTracer } from '../../../../api';
 import { resolveEffectiveTxParams } from '../recipientUtils';
+import { shouldVerifyWithSerializedTxHex } from '../serializedTxHexVerify';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -811,11 +812,11 @@ export class EcdsaUtils extends BaseEcdsaUtils {
         );
       }
 
-      // For ICP transactions, the HSM signs the serializedTxHex, while the user signs the signableHex separately.
-      // Verification cannot be performed directly on the signableHex alone. However, we can parse the serializedTxHex
-      // to regenerate the signableHex and compare it against the provided value for verification.
-      // In contrast, for other coin families, verification is typically done using just the signableHex.
-      if (this.baseCoin.getConfig().family === 'icp') {
+      // For some coins, signableHex is not a parseable transaction. Pass
+      // serializedTxHex so verifyTransaction can decode the full tx bytes.
+      // Gated by CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX (ICP hash digests,
+      // BSC/XDC legacy EIP-155 RLP with v=chainId, etc.).
+      if (shouldVerifyWithSerializedTxHex(this.baseCoin)) {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
           txParams: resolveEffectiveTxParams(txRequest, params.txParams),

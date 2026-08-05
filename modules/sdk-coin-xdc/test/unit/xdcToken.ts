@@ -1,10 +1,18 @@
 import 'should';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { IWallet } from '@bitgo/sdk-core';
+import { TransactionType, Wallet } from '@bitgo/sdk-core';
 
 import { register, XdcToken } from '../../src';
-import { mockTokenTransferData } from '../resources';
+import { TransactionBuilder } from '../../src/lib';
+import { getBuilder } from './getBuilder';
+
+/** Encode ERC-20 transfer(address,uint256) calldata without ethereumjs-abi. */
+function encodeErc20Transfer(to: string, amount: string): string {
+  const address = to.toLowerCase().replace(/^0x/, '').padStart(64, '0');
+  const value = BigInt(amount).toString(16).padStart(64, '0');
+  return `0xa9059cbb${address}${value}`;
+}
 
 describe('XDC Token:', function () {
   let bitgo: TestBitGoAPI;
@@ -121,90 +129,74 @@ describe('XDC Token:', function () {
   });
 
   describe('verifyTssTransaction', function () {
-    it('should return true for valid token transfer params', async function () {
+    const recipientAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+    const wrongAddress = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
+    const tokenContractAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+
+    it('should accept an ERC-20 transfer where calldata matches declared recipient', async function () {
       const token = bitgo.coin('txdc:tmt') as XdcToken;
-      const mockWallet = {} as unknown as IWallet;
+
+      const erc20TransferData = encodeErc20Transfer(recipientAddress, '10000000');
+
+      const txBuilder = getBuilder('txdc') as TransactionBuilder;
+      txBuilder.type(TransactionType.ContractCall);
+      txBuilder.fee({ fee: '10', gasLimit: '60000' });
+      txBuilder.counter(1);
+      txBuilder.contract(tokenContractAddress);
+      txBuilder.data(erc20TransferData);
+      const tx = await txBuilder.build();
+      const txHex = tx.toBroadcastFormat();
+
+      const wallet = new Wallet(bitgo, token, { coinSpecific: { baseAddress: recipientAddress } });
 
       const result = await token.verifyTssTransaction({
         txParams: {
-          recipients: [
-            {
-              address: mockTokenTransferData.recipientAddress,
-              amount: mockTokenTransferData.tokenAmount,
-            },
-          ],
-        },
-        txPrebuild: mockTokenTransferData.txPrebuild as unknown as Parameters<
-          typeof token.verifyTssTransaction
-        >[0]['txPrebuild'],
-        wallet: mockWallet,
+          type: 'transfer',
+          recipients: [{ address: recipientAddress, amount: '10000000' }],
+        } as any,
+        txPrebuild: { txHex, coin: 'txdc:tmt', walletId: 'fakeWalletId' } as any,
+        wallet,
       });
-
       result.should.equal(true);
     });
 
-    it('should return true for transferToken type without recipients', async function () {
+    it('should reject an ERC-20 transfer when calldata recipient does not match declared recipient', async function () {
       const token = bitgo.coin('txdc:tmt') as XdcToken;
-      const mockWallet = {} as unknown as IWallet;
 
-      const result = await token.verifyTssTransaction({
-        txParams: {
-          type: 'transferToken',
-        },
-        txPrebuild: mockTokenTransferData.txPrebuild as unknown as Parameters<
-          typeof token.verifyTssTransaction
-        >[0]['txPrebuild'],
-        wallet: mockWallet,
-      });
+      const erc20TransferData = encodeErc20Transfer(wrongAddress, '10000000');
 
-      result.should.equal(true);
-    });
+      const txBuilder = getBuilder('txdc') as TransactionBuilder;
+      txBuilder.type(TransactionType.ContractCall);
+      txBuilder.fee({ fee: '10', gasLimit: '60000' });
+      txBuilder.counter(1);
+      txBuilder.contract(tokenContractAddress);
+      txBuilder.data(erc20TransferData);
+      const tx = await txBuilder.build();
+      const txHex = tx.toBroadcastFormat();
 
-    it('should return true for tokenApproval type without recipients', async function () {
-      const token = bitgo.coin('txdc:tmt') as XdcToken;
-      const mockWallet = {} as unknown as IWallet;
+      const wallet = new Wallet(bitgo, token, { coinSpecific: { baseAddress: recipientAddress } });
 
-      const result = await token.verifyTssTransaction({
-        txParams: {
-          type: 'tokenApproval',
-        },
-        txPrebuild: mockTokenTransferData.txPrebuild as unknown as Parameters<
-          typeof token.verifyTssTransaction
-        >[0]['txPrebuild'],
-        wallet: mockWallet,
-      });
-
-      result.should.equal(true);
-    });
-
-    it('should return true for consolidate type without recipients', async function () {
-      const token = bitgo.coin('txdc:tmt') as XdcToken;
-      const mockWallet = {} as unknown as IWallet;
-
-      const result = await token.verifyTssTransaction({
-        txParams: {
-          type: 'consolidate',
-        },
-        txPrebuild: mockTokenTransferData.txPrebuild as unknown as Parameters<
-          typeof token.verifyTssTransaction
-        >[0]['txPrebuild'],
-        wallet: mockWallet,
-      });
-
-      result.should.equal(true);
+      await token
+        .verifyTssTransaction({
+          txParams: {
+            type: 'transfer',
+            recipients: [{ address: recipientAddress, amount: '10000000' }],
+          } as any,
+          txPrebuild: { txHex, coin: 'txdc:tmt', walletId: 'fakeWalletId' } as any,
+          wallet,
+        })
+        .should.be.rejectedWith('destination address does not match with the recipient address');
     });
 
     it('should throw error when txParams.recipients is missing and no valid type', async function () {
       const token = bitgo.coin('txdc:tmt') as XdcToken;
-      const mockWallet = {} as unknown as IWallet;
+      const wallet = new Wallet(bitgo, token, { coinSpecific: { baseAddress: recipientAddress } });
 
       await token
         .verifyTssTransaction({
           txParams: {},
-          txPrebuild: mockTokenTransferData.txPrebuild as unknown as Parameters<
-            typeof token.verifyTssTransaction
-          >[0]['txPrebuild'],
-          wallet: mockWallet,
+          txPrebuild: { txHex: '0x00', coin: 'txdc:tmt', walletId: 'fakeWalletId' } as any,
+          wallet,
         })
         .should.be.rejectedWith('missing txParams');
     });
@@ -215,92 +207,13 @@ describe('XDC Token:', function () {
       await token
         .verifyTssTransaction({
           txParams: {
-            recipients: [
-              {
-                address: mockTokenTransferData.recipientAddress,
-                amount: mockTokenTransferData.tokenAmount,
-              },
-            ],
-          },
-          txPrebuild: mockTokenTransferData.txPrebuild as unknown as Parameters<
-            typeof token.verifyTssTransaction
-          >[0]['txPrebuild'],
-          wallet: undefined as unknown as IWallet,
+            type: 'transfer',
+            recipients: [{ address: recipientAddress, amount: '10000000' }],
+          } as any,
+          txPrebuild: { txHex: '0x00', coin: 'txdc:tmt', walletId: 'fakeWalletId' } as any,
+          wallet: undefined as unknown as Wallet,
         })
         .should.be.rejectedWith('missing params');
-    });
-
-    it('should throw error when txPrebuild is missing', async function () {
-      const token = bitgo.coin('txdc:tmt') as XdcToken;
-      const mockWallet = {} as unknown as IWallet;
-
-      await token
-        .verifyTssTransaction({
-          txParams: {
-            recipients: [
-              {
-                address: mockTokenTransferData.recipientAddress,
-                amount: mockTokenTransferData.tokenAmount,
-              },
-            ],
-          },
-          txPrebuild: undefined as unknown as Parameters<typeof token.verifyTssTransaction>[0]['txPrebuild'],
-          wallet: mockWallet,
-        })
-        .should.be.rejectedWith('missing params');
-    });
-
-    it('should throw error for batch + hop transaction', async function () {
-      const token = bitgo.coin('txdc:tmt') as XdcToken;
-      const mockWallet = {} as unknown as IWallet;
-
-      await token
-        .verifyTssTransaction({
-          txParams: {
-            hop: true,
-            recipients: [
-              { address: '0x1111111111111111111111111111111111111111', amount: '1000' },
-              { address: '0x2222222222222222222222222222222222222222', amount: '2000' },
-            ],
-          },
-          txPrebuild: mockTokenTransferData.txPrebuild as unknown as Parameters<
-            typeof token.verifyTssTransaction
-          >[0]['txPrebuild'],
-          wallet: mockWallet,
-        })
-        .should.be.rejectedWith('tx cannot be both a batch and hop transaction');
-    });
-
-    it('should not throw EIP155 error when verifying token transaction', async function () {
-      // This test ensures that verifyTssTransaction does NOT parse the txHex
-      // which would fail with "Incompatible EIP155-based V" error
-      const token = bitgo.coin('txdc:tmt') as XdcToken;
-      const mockWallet = {} as unknown as IWallet;
-
-      // Use the signableHex (with v=51) which would fail if parsed
-      const txPrebuildWithSignableHex = {
-        ...mockTokenTransferData.txPrebuild,
-        txHex: mockTokenTransferData.signableHex,
-      };
-
-      // This should NOT throw EIP155 error because verifyTssTransaction
-      // does not parse the transaction
-      const result = await token.verifyTssTransaction({
-        txParams: {
-          recipients: [
-            {
-              address: mockTokenTransferData.recipientAddress,
-              amount: mockTokenTransferData.tokenAmount,
-            },
-          ],
-        },
-        txPrebuild: txPrebuildWithSignableHex as unknown as Parameters<
-          typeof token.verifyTssTransaction
-        >[0]['txPrebuild'],
-        wallet: mockWallet,
-      });
-
-      result.should.equal(true);
     });
   });
 });

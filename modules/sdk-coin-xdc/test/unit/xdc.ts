@@ -7,9 +7,19 @@ import { Xdc, Txdc } from '../../src/index';
 import { UnsignedSweepTxMPCv2 } from '@bitgo/abstract-eth';
 import { mockDataUnsignedSweep, mockDataNonBitGoRecovery } from '../resources';
 import nock from 'nock';
-import { common } from '@bitgo/sdk-core';
+import { common, TransactionType, Wallet } from '@bitgo/sdk-core';
 import { Transaction } from '@ethereumjs/tx';
 import { stripHexPrefix } from '@ethereumjs/util';
+
+import { TransactionBuilder } from '../../src/lib';
+import { getBuilder } from './getBuilder';
+
+/** Encode ERC-20 transfer(address,uint256) calldata without ethereumjs-abi. */
+function encodeErc20Transfer(to: string, amount: string): string {
+  const address = to.toLowerCase().replace(/^0x/, '').padStart(64, '0');
+  const value = BigInt(amount).toString(16).padStart(64, '0');
+  return `0xa9059cbb${address}${value}`;
+}
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
 
@@ -43,6 +53,119 @@ describe('xdc', function () {
       txdc.getBaseFactor().should.equal(1e18);
       txdc.supportsTss().should.equal(true);
       txdc.allowsAccountConsolidations().should.equal(false);
+    });
+  });
+
+  describe('verifyTssTransaction', function () {
+    const recipientAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+    const wrongAddress = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
+    const tokenContractAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+    const transferAmount = '1000000000000000000';
+
+    it('should accept a native XDC transfer where txHex matches declared recipient', async function () {
+      const coin = bitgo.coin('txdc') as Txdc;
+
+      const txBuilder = getBuilder('txdc') as TransactionBuilder;
+      txBuilder.type(TransactionType.SingleSigSend);
+      txBuilder.fee({ fee: '10', gasLimit: '21000' });
+      txBuilder.counter(1);
+      txBuilder.contract(recipientAddress);
+      txBuilder.value(transferAmount);
+      const tx = await txBuilder.build();
+      const txHex = tx.toBroadcastFormat();
+
+      const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: recipientAddress } });
+
+      const result = await coin.verifyTssTransaction({
+        txParams: {
+          type: 'transfer',
+          recipients: [{ address: recipientAddress, amount: transferAmount }],
+        } as any,
+        txPrebuild: { txHex, coin: 'txdc', walletId: 'fakeWalletId' } as any,
+        wallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should reject a native XDC transfer when txHex recipient does not match declared recipient', async function () {
+      const coin = bitgo.coin('txdc') as Txdc;
+
+      const txBuilder = getBuilder('txdc') as TransactionBuilder;
+      txBuilder.type(TransactionType.SingleSigSend);
+      txBuilder.fee({ fee: '10', gasLimit: '21000' });
+      txBuilder.counter(1);
+      txBuilder.contract(wrongAddress);
+      txBuilder.value(transferAmount);
+      const tx = await txBuilder.build();
+      const txHex = tx.toBroadcastFormat();
+
+      const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: recipientAddress } });
+
+      await coin
+        .verifyTssTransaction({
+          txParams: {
+            type: 'transfer',
+            recipients: [{ address: recipientAddress, amount: transferAmount }],
+          } as any,
+          txPrebuild: { txHex, coin: 'txdc', walletId: 'fakeWalletId' } as any,
+          wallet,
+        })
+        .should.be.rejectedWith('destination address does not match with the recipient address');
+    });
+
+    it('should accept an ERC-20 token transfer where calldata matches declared recipient', async function () {
+      const coin = bitgo.coin('txdc') as Txdc;
+
+      const erc20TransferData = encodeErc20Transfer(recipientAddress, '10000000');
+
+      const txBuilder = getBuilder('txdc') as TransactionBuilder;
+      txBuilder.type(TransactionType.ContractCall);
+      txBuilder.fee({ fee: '10', gasLimit: '60000' });
+      txBuilder.counter(1);
+      txBuilder.contract(tokenContractAddress);
+      txBuilder.data(erc20TransferData);
+      const tx = await txBuilder.build();
+      const txHex = tx.toBroadcastFormat();
+
+      const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: recipientAddress } });
+
+      const result = await coin.verifyTssTransaction({
+        txParams: {
+          type: 'transfer',
+          recipients: [{ address: recipientAddress, amount: '10000000' }],
+        } as any,
+        txPrebuild: { txHex, coin: 'txdc', walletId: 'fakeWalletId' } as any,
+        wallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should reject an ERC-20 token transfer when calldata recipient does not match declared recipient', async function () {
+      const coin = bitgo.coin('txdc') as Txdc;
+
+      const erc20TransferData = encodeErc20Transfer(wrongAddress, '10000000');
+
+      const txBuilder = getBuilder('txdc') as TransactionBuilder;
+      txBuilder.type(TransactionType.ContractCall);
+      txBuilder.fee({ fee: '10', gasLimit: '60000' });
+      txBuilder.counter(1);
+      txBuilder.contract(tokenContractAddress);
+      txBuilder.data(erc20TransferData);
+      const tx = await txBuilder.build();
+      const txHex = tx.toBroadcastFormat();
+
+      const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: recipientAddress } });
+
+      await coin
+        .verifyTssTransaction({
+          txParams: {
+            type: 'transfer',
+            recipients: [{ address: recipientAddress, amount: '10000000' }],
+          } as any,
+          txPrebuild: { txHex, coin: 'txdc', walletId: 'fakeWalletId' } as any,
+          wallet,
+        })
+        .should.be.rejectedWith('destination address does not match with the recipient address');
     });
   });
 });
