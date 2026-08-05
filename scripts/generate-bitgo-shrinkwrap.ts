@@ -25,8 +25,9 @@
  * package's lifecycle hooks (bitgo's `prepack` included) before uploading any of
  * them, so bitgo's siblings are not yet published at the point this script tries to
  * resolve them. The release workflow is responsible for publishing siblings in a
- * separate, earlier pass (with bitgo held back via `set-umbrella-publishable.ts`)
- * before invoking a second pass that packs bitgo with generation enabled. If a
+ * separate, earlier pass — bitgo is committed `private`, so `lerna publish
+ * from-package` filters it out of that pass — before invoking a second pass that
+ * re-includes bitgo (`--include-private`) and packs it with generation enabled. If a
  * sibling version genuinely isn't resolvable (wrong pass ordering, a sibling publish
  * that itself failed, etc.), the `npm install` below fails loudly and the release
  * fails — which is correct: better a failed release than a silently broken

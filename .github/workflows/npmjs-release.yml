@@ -304,44 +304,19 @@ jobs:
         run: |
           yarn lerna version --sign-git-tag --sign-git-commit --include-merged-tags --conventional-commits --conventional-graduate --yes
 
-      # Two-phase publish (WCN-1818): bitgo's `prepack` script resolves its
-      # siblings from the registry, but a single combined `lerna publish` packs
-      # every package's lifecycle hooks before uploading any of them — so bitgo
-      # would try to resolve siblings that aren't live yet (this is what broke
-      # `npm install bitgo` for every consumer, WCI-1200). Hold bitgo back
-      # (private), publish siblings first, then restore and publish bitgo alone
-      # once its siblings are actually resolvable. Runs identically for the
-      # normal path (after the version bump above) and the recovery path (no
-      # preceding bump) — `from-package` only publishes what's missing from npm
-      # either way, so re-running is idempotent.
-      - name: Hold back bitgo umbrella for the siblings publish pass
-        if: inputs.dry-run == false
-        run: npx tsx ./scripts/set-umbrella-publishable.ts false
-
       - name: Publish siblings (pass 1)
         if: inputs.dry-run == false
-        run: |
-          # `from-package` reads each package.json's `version`, queries npm,
-          # and publishes only versions missing from the registry.
-          yarn lerna publish from-package --yes
+        run: yarn lerna publish from-package --yes
         env:
           NPM_CONFIG_PROVENANCE: true
-
-      - name: Restore bitgo umbrella for its own publish pass
-        if: ${{ always() && inputs.dry-run == false }}
-        run: npx tsx ./scripts/set-umbrella-publishable.ts true
 
       - name: Publish bitgo (pass 2)
         if: inputs.dry-run == false
         run: |
-          yarn lerna publish from-package --yes
+          bitgo_name=$(jq -r '.name' modules/bitgo/package.json)
+          yarn lerna publish from-package --include-private "$bitgo_name" --yes
         env:
           NPM_CONFIG_PROVENANCE: true
-          # Tells bitgo's `prepack` script (scripts/generate-bitgo-shrinkwrap.ts) to
-          # actually generate npm-shrinkwrap.json — kept opt-in so a plain local
-          # `npm pack` doesn't force a network install of the full dependency tree.
-          # Siblings published in the pass above are live on the registry by now,
-          # so resolution succeeds.
           BITGO_GENERATE_SHRINKWRAP: true
 
       - name: Verify recovery published the missing versions
@@ -353,7 +328,7 @@ jobs:
           # (e.g., another transient registry error).
           missing=()
           for f in modules/*/package.json; do
-            if [ "$(jq -r '.private // false' "$f")" = "true" ]; then continue; fi
+            if [ "$(jq -r '.private // false' "$f")" = "true" ] && [ "$f" != "modules/bitgo/package.json" ]; then continue; fi
             name=$(jq -r '.name' "$f")
             version=$(jq -r '.version' "$f")
             code=$(curl -sL -o /dev/null -w "%{http_code}" -- "https://registry.npmjs.org/${name}/${version}")
