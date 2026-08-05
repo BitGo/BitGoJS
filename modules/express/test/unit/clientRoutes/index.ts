@@ -180,5 +180,37 @@ describe('common methods', () => {
       res.status.calledWith(500).should.be.true();
       res.send.calledWithMatch((result: any) => result.name === 'BitGoExpressError').should.be.true();
     });
+
+    it('should redact signing secrets from error responses and logs', async () => {
+      const privateKey = 'private-key-value';
+      const walletPassphrase = 'wallet-passphrase-value';
+      const error = Object.assign(new Error(`failed with ${privateKey} and ${walletPassphrase}`), {
+        result: { prv: privateKey, walletPassphrase },
+      });
+      const handler = sandbox.stub().rejects(error);
+      const req: any = {
+        body: {
+          prv: privateKey,
+          walletPassphrase,
+        },
+      };
+      const res: any = {
+        status: sandbox.stub().returnsThis(),
+        send: sandbox.stub().returnsThis(),
+      };
+      const next = sandbox.stub();
+      const consoleLog = sandbox.stub(console, 'log');
+
+      await promiseWrapper(handler)(req, res, next);
+
+      const response = res.send.firstCall.args[0];
+      response.message.should.equal('failed with [REDACTED] and [REDACTED]');
+      response.prv.should.equal('[REDACTED]');
+      response.walletPassphrase.should.equal('[REDACTED]');
+      JSON.stringify(response).should.not.containEql(privateKey);
+      JSON.stringify(response).should.not.containEql(walletPassphrase);
+      consoleLog.args.flat().join(' ').should.not.containEql(privateKey);
+      consoleLog.args.flat().join(' ').should.not.containEql(walletPassphrase);
+    });
   });
 });
