@@ -120,20 +120,16 @@ export class TradingNetwork implements ITradingNetwork {
    */
   async prepareAllocation({
     walletPassphrase,
+    clientExternalId = uuidV4(),
+    nonce = crypto.randomBytes(32).toString('hex'),
     ...body
   }: PrepareNetworkAllocationParams): Promise<CreateNetworkAllocationParams> {
-    if (!body.clientExternalId) {
-      body.clientExternalId = uuidV4();
-    }
-    if (!body.nonce) {
-      body.nonce = crypto.randomBytes(32).toString('hex');
-    }
-
-    const payload = JSON.stringify(body);
+    const allocation = { ...body, clientExternalId, nonce };
+    const payload = JSON.stringify(allocation);
     const signature = await this.wallet.toTradingAccount().signPayload({ payload, walletPassphrase });
 
     return {
-      ...body,
+      ...allocation,
       payload,
       signature,
     };
