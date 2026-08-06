@@ -1,42 +1,13 @@
 /**
- * Generates modules/bitgo/npm-shrinkwrap.json so npm consumers who install `bitgo`
- * as a dependency get the same pinned transitive versions that yarn `resolutions`
- * (mirrored as npm `overrides` in the root package.json) already give internal builds.
+ * Generates modules/bitgo/npm-shrinkwrap.json, pinning the same resolved
+ * versions as internal builds (yarn `resolutions`/npm `overrides`) so
+ * `npm install bitgo` installs its workspace siblings correctly (WCI-1200).
  *
- * Runs as bitgo's `prepack` script, so it fires after lerna has bumped the version
- * on disk but before the tarball is packed — the generated shrinkwrap's top-level
- * name/version always matches what actually gets published. Only runs when
- * BITGO_GENERATE_SHRINKWRAP=true (set by the release workflow) — otherwise a plain
- * local/offline `npm pack` would force a network install of the full dependency tree.
- *
- * Workspace siblings are resolved as part of the same tree as everything else, not
- * stripped out. Resolving them here — rather than excluding them and patching their
- * names back into the shrinkwrap metadata after the fact — is what makes the
- * generated `packages["node_modules/<sibling>"]` entries (version/resolved/integrity)
- * actually present, which is what npm uses to populate node_modules for consumers.
- * A shrinkwrap that lists a dependency in `packages[''].dependencies` without a
- * matching resolved `packages[...]` entry is silently dropped from the install by
- * npm rather than falling back to normal resolution — that's what an earlier version
- * of this script did, which broke `npm install bitgo` for every consumer (siblings
- * never landed in node_modules).
- *
- * This assumes sibling versions are already live on the registry when this script
- * runs. That is NOT true of a single combined `lerna publish` — lerna runs every
- * package's lifecycle hooks (bitgo's `prepack` included) before uploading any of
- * them, so bitgo's siblings are not yet published at the point this script tries to
- * resolve them. The release workflow is responsible for publishing siblings in a
- * separate, earlier pass — bitgo is committed `private`, so `lerna publish
- * from-package` filters it out of that pass — before invoking a second pass that
- * re-includes bitgo (`--include-private`) and packs it with generation enabled. If a
- * sibling version genuinely isn't resolvable (wrong pass ordering, a sibling publish
- * that itself failed, etc.), the `npm install` below fails loudly and the release
- * fails — which is correct: better a failed release than a silently broken
- * shrinkwrap. A short retry accounts for ordinary registry propagation lag right
- * after a sibling publish; see `npmInstallWithRetry`.
- *
- * `npm shrinkwrap` isn't workspace-aware and modules/bitgo/.npmrc sets
- * `package-lock=false`, so generation happens in an isolated temp copy outside the
- * workspace, resolving against the real npm registry.
+ * Runs as bitgo's `prepack` script, gated on BITGO_GENERATE_SHRINKWRAP=true.
+ * Assumes siblings are already published on the registry — the release
+ * workflow guarantees this by publishing siblings first, then bitgo via
+ * `--include-private` (WCN-1818). An unresolvable sibling fails the release
+ * loudly rather than shipping a broken shrinkwrap.
  */
 
 import fs from 'fs';
@@ -49,16 +20,9 @@ const bitgoDir = path.join(rootDir, 'modules/bitgo');
 const modulesDir = path.join(rootDir, 'modules');
 
 /**
- * Names of every package in the `modules/*` workspace, read from each package's own
- * (possibly rescoped) package.json — e.g. `@bitgo/sdk-core` normally, `@bitgo-beta/sdk-core`
- * on beta/alpha channels after `prepare-release.ts` re-scopes the workspace. Reading
- * the current on-disk names, rather than hardcoding a scope prefix, is what makes
- * sibling detection work regardless of which scope is active: `prepare-release.ts`
- * rewrites both a module's own `name` and bitgo's `dependencies` keys to the same
- * target scope, so intersecting bitgo's dependencies against this set matches
- * correctly on every channel. A hardcoded `@bitgo/` prefix check matches nothing on
- * alpha/beta (where everything is `@bitgo-beta/*`), which would make the safety check
- * below silently verify zero siblings instead of catching a real problem.
+ * Workspace package names, read from disk rather than a hardcoded `@bitgo/`
+ * prefix — on alpha/beta these get rescoped to `@bitgo-beta/*`, and a fixed
+ * prefix would silently match nothing there.
  */
 function getWorkspacePackageNames(): Set<string> {
   const names = new Set<string>();
@@ -73,12 +37,8 @@ function getWorkspacePackageNames(): Set<string> {
 }
 
 /**
- * Runs `npm install --package-lock-only --ignore-scripts`, retrying a bounded number
- * of times if the failure looks like a sibling that was *just* published not having
- * propagated to the registry yet (ETARGET/E404) — the two-phase publish flow runs
- * this immediately after the sibling-publish pass completes, so a brief propagation
- * lag is expected occasionally, not a sign of a real problem. Any other failure (or
- * exhausting the retries) is rethrown as-is.
+ * Retries on ETARGET/E404 only — covers a just-published sibling not yet
+ * propagated to the registry. Any other failure throws immediately.
  */
 async function npmInstallWithRetry(cwd: string, attempts = 5, delayMs = 5000): Promise<void> {
   for (let attempt = 1; attempt <= attempts; attempt++) {
@@ -164,13 +124,8 @@ async function main() {
 
     const shrinkwrap = JSON.parse(fs.readFileSync(shrinkwrapPath, 'utf-8'));
 
-    // Every workspace sibling must have a fully-resolved node_modules entry — that's
-    // what npm actually installs from. A sibling present only in
-    // `packages[''].dependencies` (or missing entirely, or present but missing
-    // version/resolved/integrity) would be silently skipped or under-specified in
-    // consumers' installs. Checking only for key presence previously let this pass
-    // for entries npm still couldn't act on; require the actual install-relevant
-    // fields to be strings, not just truthy.
+    // Require version + resolved + integrity, not just key presence — a
+    // partially-specified entry is still unusable by npm.
     const packages = (shrinkwrap.packages ?? {}) as Record<string, Record<string, unknown>>;
     const unresolvedSiblings = siblingNames.filter((name) => {
       const entry = packages[`node_modules/${name}`];
