@@ -8,7 +8,6 @@ import { UnderlyingAsset } from '../base';
  * Balances are stored as encrypted ciphertexts; plaintext amounts require ACL-delegated
  * decryption via the Zama Gateway before they can be displayed.
  *
- * Mainnet contract addresses are TBD pending Zama fhEVM mainnet launch.
  * Testnet tokens (hteth:*) are deployed on Hoodi using Zama's cleartext FHE stack.
  *   Hoodi ACL: 0x6D3FAf6f86e1fF9F3B0831Dda920AbA1cBd5bd68  (Networks.test.hoodi.zamaAclContractAddress)
  *   Hoodi RPC: https://rpc.hoodi.ethpandaops.io  (chain ID 560048)
@@ -18,14 +17,38 @@ import { UnderlyingAsset } from '../base';
  *   cUSDT: 0x4E7B06D78965594eB5EF5414c357ca21E1554491
  */
 export const erc7984Tokens = [
-  // Mainnet tokens (contract addresses TBD pending Zama fhEVM mainnet launch)
+  // Mainnet tokens
   erc7984(
     'f47ac10b-58cc-4372-a567-0e02b2c3d479',
     'eth:czama',
-    'Zama Test Token',
+    'Confidential Zama',
     6,
-    '0xeb5015ff021db115ace010f23f55c2591059bba0', // https://etherscan.io/address/0xeb5015ff021db115ace010f23f55c2591059bba0
+    '0x80cb147fd86dc6dee3eee7e4cee33d1397d98071', // https://etherscan.io/token/0x80CB147Fd86dC6dEe3Eee7e4Cee33d1397d98071
     UnderlyingAsset['eth:czama']
+  ),
+  erc7984(
+    'c9d5d51b-15b7-4d93-b079-9af313160e66',
+    'eth:cxaut',
+    'Zama Confidential XAUT',
+    6,
+    '0x73cc9af9d6befdb3c3faf8a5e8c05cb95fdaeef1', // https://etherscan.io/token/0x73cc9aF9d6BEFdb3c3fAf8a5E8c05Cb95FdaEEf1
+    UnderlyingAsset['eth:cxaut']
+  ),
+  erc7984(
+    '0d1b01c8-ee4a-4ca4-a1af-2ab3132d91ee',
+    'eth:ctgbp',
+    'Zama Confidential TGBP',
+    6,
+    '0xa873750ccbafd5ec7dd13bfd5237d7129832edd9', // https://etherscan.io/token/0xa873750ccBafD5ec7Dd13bfD5237d7129832eDD9
+    UnderlyingAsset['eth:ctgbp']
+  ),
+  erc7984(
+    '2fbf960e-9747-4d38-b93b-28029e78b5d4',
+    'eth:cweth',
+    'Zama Confidential WETH',
+    6,
+    '0xda9396b82634ea99243ce51258b6a5ae512d4893', // https://etherscan.io/token/0xda9396b82634Ea99243cE51258B6A5Ae512D4893
+    UnderlyingAsset['eth:cweth']
   ),
   erc7984(
     'f47ac10b-58cc-4372-a567-0e02b2c3d480',

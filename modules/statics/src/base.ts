@@ -4391,8 +4391,11 @@ export enum UnderlyingAsset {
   'eth:drv' = 'eth:drv',
   'eth:prn' = 'eth:prn',
   'eth:zama' = 'eth:zama',
-  // ERC-7984 confidential tokens (Zama fhEVM - mainnet, contract addresses TBD pending Zama mainnet launch)
+  // ERC-7984 confidential tokens (Zama fhEVM - mainnet)
   'eth:czama' = 'eth:czama',
+  'eth:cxaut' = 'eth:cxaut',
+  'eth:ctgbp' = 'eth:ctgbp',
+  'eth:cweth' = 'eth:cweth',
   'eth:cusdt' = 'eth:cusdt',
   'eth:cusdc' = 'eth:cusdc',
   // ERC-7984 confidential tokens (Zama fhEVM - testnet / hteth)
