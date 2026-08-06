@@ -287,6 +287,8 @@ export type RecoverOptions = {
   derivationSeed?: string;
   apiKey?: string; // optional API key to use instead of the one from the environment
   isUnsignedSweep?: boolean; // specify if this is an unsigned recovery
+  /** ERC-7984: skip auto-query and use this encrypted balance handle directly (bytes32, 0x-prefixed) */
+  encryptedHandle?: string;
 } & TSSRecoverOptions;
 
 export type GetBatchExecutionInfoRT = {
