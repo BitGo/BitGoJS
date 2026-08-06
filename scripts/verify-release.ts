@@ -67,7 +67,8 @@ async function verifyPackage(dir: string, preid = 'beta'): Promise<boolean> {
   const json = JSON.parse(
     readFileSync(path.join(cwd, 'package.json'), { encoding: 'utf-8' }),
   );
-  if (json.private) {
+  // bitgo is private but still published via lerna --include-private.
+  if (json.private && path.basename(cwd) !== 'bitgo') {
     return true;
   }
 

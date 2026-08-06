@@ -30,7 +30,8 @@ const walkDependencies = (
     .filter((dep) => graph[dep])
     .map((name) => managedModules.find((mod) => mod.name === name));
   managedDeps.forEach((module) => {
-    if (module && !module.private && !setDeps.has(module)) {
+    // bitgo is private but still shipped in the express image, so keep walking it.
+    if (module && (!module.private || module.name === 'bitgo') && !setDeps.has(module)) {
       setDeps.add(module);
       walkDependencies(module.name, setDeps, graph, managedModules);
     }

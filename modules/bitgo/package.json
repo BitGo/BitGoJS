@@ -2,6 +2,7 @@
   "name": "bitgo",
   "version": "52.4.1",
   "description": "BitGo JavaScript SDK",
+  "private": true,
   "main": "./dist/src/index.js",
   "types": "./dist/types/src/index.d.ts",
   "keywords": [

@@ -16,7 +16,8 @@ async function getPublicPackages() {
     if (!fs.existsSync(pkgPath)) continue;
 
     const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
-    if (pkg.private) continue;
+    // bitgo is private but still published via lerna --include-private.
+    if (pkg.private && entry.name !== "bitgo") continue;
 
     packages.push({ name: pkg.name, dir: entry.name });
   }
