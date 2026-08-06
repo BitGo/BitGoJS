@@ -11,6 +11,7 @@ import {
   EddsaMPCv2SignatureShareRound2Input,
   EddsaMPCv2SignatureShareRound2Output,
   EddsaMPCv2SignatureShareRound3Input,
+  EddsaMPCv2SignatureShareRound3Output,
 } from '@bitgo/public-types';
 import {
   BitGoBase,
@@ -359,8 +360,8 @@ describe('EdDSA MPS DSG helper functions', async () => {
     )) as MPSTypes.DeserializedMessages[];
     const bitgoSignedMsg3 = await MPSComms.detachSignMpsMessage(Buffer.from(bitgoMsg3.payload), bitgoGpgPrivKey);
 
-    const round3Output = {
-      type: 'round3Output' as const,
+    const round3Output: EddsaMPCv2SignatureShareRound3Output = {
+      type: 'round3Output',
       data: { msg3: bitgoSignedMsg3 },
     };
 
@@ -371,8 +372,8 @@ describe('EdDSA MPS DSG helper functions', async () => {
   });
 
   it('verifyPeerMessageRoundThree should throw on a tampered message', async () => {
-    const round3Output = {
-      type: 'round3Output' as const,
+    const round3Output: EddsaMPCv2SignatureShareRound3Output = {
+      type: 'round3Output',
       data: {
         msg3: {
           message: Buffer.from('tampered').toString('base64'),
