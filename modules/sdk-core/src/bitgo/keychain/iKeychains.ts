@@ -94,9 +94,10 @@ export interface UpdatePasswordOptions {
   oldPassword: string;
   newPassword: string;
   /**
-   * Envelope version to emit for the re-encrypted keychains. Defaults to `2` (Argon2id),
-   * so v1 (SJCL) keychains are transparently upgraded to v2 as part of the password change.
-   * Pass `1` to keep emitting legacy v1 envelopes (used by the UI until the Sept 15 breaking-change window closes).
+   * Envelope version to emit for the re-encrypted keychains. Defaults to preserving each
+   * keychain's existing envelope version (no forced migration). Pass `2` to opt in to the
+   * Argon2id upgrade for v1 (SJCL) keychains once the caller is ready (e.g. after the
+   * Sept 15 breaking-change window closes).
    */
   encryptionVersion?: EncryptionVersion;
 }
@@ -106,8 +107,8 @@ export interface UpdateSingleKeychainPasswordOptions {
   oldPassword?: string;
   newPassword?: string;
   /**
-   * Envelope version to emit. Defaults to `2` (Argon2id).
-   * Pass `1` to keep emitting legacy v1 (SJCL) envelopes.
+   * Envelope version to emit. Defaults to preserving the source envelope's version.
+   * Pass `2` to opt in to the Argon2id upgrade.
    */
   encryptionVersion?: EncryptionVersion;
 }

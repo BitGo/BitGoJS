@@ -175,15 +175,16 @@ export class Keychains implements IKeychains {
   }
 
   /**
-   * Update the password used to decrypt a single keychain. Defaults to re-encrypting as v2
-   * (Argon2id + AES-256-GCM), so v1 (SJCL) keychains are transparently upgraded to v2 as part
-   * of the password change. Callers that still need v1 output (e.g. the UI until the Sept 15
-   * breaking-change window closes) can pass `encryptionVersion: 1`.
+   * Update the password used to decrypt a single keychain. Defaults to preserving the
+   * source envelope version (v1 stays v1, v2 stays v2), so this is a no-op with respect to
+   * encryption version unless the caller opts in. Pass `encryptionVersion: 2` to explicitly
+   * upgrade a v1 (SJCL) keychain to v2 (Argon2id + AES-256-GCM) as part of the password change
+   * (e.g. once a caller is ready, after the Sept 15 breaking-change window closes).
    * @param params
    * @param params.keychain - The keychain whose password should be updated
    * @param params.oldPassword - The old password used for encrypting the key
    * @param params.newPassword - The new password to be used for encrypting the key
-   * @param params.encryptionVersion - Optional envelope version to emit; defaults to 2 (Argon2id)
+   * @param params.encryptionVersion - Optional envelope version to emit; defaults to the source envelope's version
    * @returns {Promise<Keychain>}
    */
   async updateSingleKeychainPassword(params: UpdateSingleKeychainPasswordOptions = {}): Promise<Keychain> {
@@ -205,7 +206,7 @@ export class Keychains implements IKeychains {
       const newEncryptedPrv = await this.bitgo.encrypt({
         input: decryptedPrv,
         password: params.newPassword,
-        encryptionVersion: params.encryptionVersion ?? 2,
+        encryptionVersion: params.encryptionVersion ?? this.getEncryptionVersion(oldEncryptedPrv),
       });
       return _.assign({}, params.keychain, { encryptedPrv: newEncryptedPrv });
     } catch (e) {
