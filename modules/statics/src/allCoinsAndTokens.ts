@@ -2896,6 +2896,15 @@ export const allCoinsAndTokens = [
     GENERIC_TOKEN_FEATURES
   ),
 
+  erc721Token(
+    '32504f75-1aa2-4e01-8c4b-9fa38b4a6e16',
+    'hbarevm:mclmongp',
+    'MCLMONGP',
+    '0x5d173fba12a7fa0cd1b8b9685b2ab98543bc42ba',
+    Networks.main.hederaEVM,
+    GENERIC_TOKEN_FEATURES
+  ),
+
   account(
     '8f6ed7e4-cce2-4686-bdab-ae8f54e2c05e',
     'tfluenteth',
