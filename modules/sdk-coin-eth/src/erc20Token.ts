@@ -31,7 +31,7 @@ export class Erc20Token extends Eth {
   };
 
   constructor(bitgo: BitGoBase, tokenConfig: Erc20TokenConfig) {
-    const staticsCoin = coins.get(Erc20Token.coinNames[tokenConfig.network]);
+    const staticsCoin = coins.get(tokenConfig.coin);
     super(bitgo, staticsCoin);
     this.tokenConfig = tokenConfig;
     this.sendMethodName = 'sendMultiSigToken';

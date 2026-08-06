@@ -35,12 +35,13 @@ describe('ETH Register', function () {
       assert.ok(registeredNames.includes('gteth'));
       assert.ok(registeredNames.includes('teth'));
       assert.ok(registeredNames.includes('hteth'));
+      assert.ok(registeredNames.includes('sepeth'));
 
       // ERC20, ERC721 and ERC7984 tokens should be registered
       const erc20Count = Erc20Token.createTokenConstructors().length;
       const erc721Count = Erc721Token.createTokenConstructors().length;
       const erc7984Count = Erc7984Token.createTokenConstructors().length;
-      assert.strictEqual(registerSpy.callCount, 4 + erc20Count + erc721Count + erc7984Count);
+      assert.strictEqual(registerSpy.callCount, 5 + erc20Count + erc721Count + erc7984Count);
     });
   });
 
@@ -55,6 +56,7 @@ describe('ETH Register', function () {
       assert.ok(registeredNames.includes('gteth'));
       assert.ok(registeredNames.includes('teth'));
       assert.ok(registeredNames.includes('hteth'));
+      assert.ok(registeredNames.includes('sepeth'));
     });
 
     it('should add dynamic ERC20 tokens to the global coin map', function () {
