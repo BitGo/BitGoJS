@@ -33,7 +33,7 @@ export class Erc7984Token extends Eth {
   };
 
   constructor(bitgo: BitGoBase, tokenConfig: Erc7984TokenConfig) {
-    const staticsCoin = coins.get(Erc7984Token.coinNames[tokenConfig.network]);
+    const staticsCoin = coins.get(tokenConfig.coin);
     super(bitgo, staticsCoin);
     this.tokenConfig = tokenConfig;
     // ERC7984 confidential transfers use sendMultiSig (not sendMultiSigToken) because

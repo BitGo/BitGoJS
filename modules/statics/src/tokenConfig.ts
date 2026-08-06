@@ -332,6 +332,9 @@ function getErc20TokenConfig(coin: Erc20Coin): Erc20TokenConfig {
     case Networks.test.hoodi.name:
       baseCoin = 'hteth';
       break;
+    case Networks.test.sepolia.name:
+      baseCoin = 'sepeth';
+      break;
     default:
       throw new Error(`Erc20 token ${coin.name} has an unsupported network`);
   }
@@ -369,6 +372,9 @@ function getErc7984TokenConfig(coin: Erc7984Coin): Erc7984TokenConfig {
     case Networks.test.holesky.name:
     case Networks.test.hoodi.name:
       baseCoin = 'hteth';
+      break;
+    case Networks.test.sepolia.name:
+      baseCoin = 'sepeth';
       break;
     default:
       throw new Error(`ERC-7984 token ${coin.name} has an unsupported network`);

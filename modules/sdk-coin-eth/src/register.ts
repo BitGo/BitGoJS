@@ -5,6 +5,7 @@ import { Erc7984Token } from './erc7984Token';
 import { Eth } from './eth';
 import { Gteth } from './gteth';
 import { Hteth } from './hteth';
+import { Sepeth } from './sepeth';
 import { Teth } from './teth';
 import { type CoinMap, getFormattedErc20Tokens, getFormattedErc7984Tokens } from '@bitgo/statics';
 
@@ -13,6 +14,7 @@ export const register = (sdk: BitGoBase): void => {
   sdk.register('gteth', Gteth.createInstance);
   sdk.register('teth', Teth.createInstance);
   sdk.register('hteth', Hteth.createInstance);
+  sdk.register('sepeth', Sepeth.createInstance);
   Erc20Token.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     sdk.register(name, coinConstructor);
   });
@@ -29,6 +31,7 @@ export const registerWithCoinMap = (sdk: BitGoBase, coinMap: CoinMap): void => {
   sdk.register('gteth', Gteth.createInstance);
   sdk.register('teth', Teth.createInstance);
   sdk.register('hteth', Hteth.createInstance);
+  sdk.register('sepeth', Sepeth.createInstance);
   Erc721Token.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     sdk.register(name, coinConstructor);
   });
