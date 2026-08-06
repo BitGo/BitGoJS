@@ -443,6 +443,122 @@ describe('DKLS Dsg 2x3', function () {
     convertedSignature.split(':').length.should.equal(4);
   });
 
+  it('should fail when round messages from an independent, concurrent sign session are replayed into another session for the same message', async function () {
+    const vector = vectors[0];
+    const buildParty = (partyIdx: number) =>
+      new DklsDsg.Dsg(
+        fs.readFileSync(shareFiles[partyIdx]),
+        partyIdx,
+        vector.derivationPath,
+        crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
+      );
+
+    // Session A and Session B are two independent DSG sessions signing the *same* message with the
+    // *same* parties, as would happen if two concurrent sign attempts were made for one request.
+    const partyA1 = buildParty(vector.party1);
+    const partyA2 = buildParty(vector.party2);
+    const [, partyA2Round2Messages] = (await executeTillRound(2, partyA1, partyA2)) as DeserializedMessages[];
+
+    const partyB1 = buildParty(vector.party1);
+    const partyB2 = buildParty(vector.party2);
+    const [partyB1Round2Messages] = (await executeTillRound(2, partyB1, partyB2)) as DeserializedMessages[];
+
+    const serializeMessages = (messages: DeserializedMessages) =>
+      JSON.stringify({
+        p2pMessages: messages.p2pMessages.map((message) => ({
+          payload: Buffer.from(message.payload).toString('hex'),
+          from: message.from,
+          to: message.to,
+        })),
+        broadcastMessages: messages.broadcastMessages.map((message) => ({
+          payload: Buffer.from(message.payload).toString('hex'),
+          from: message.from,
+        })),
+      });
+
+    serializeMessages(partyA2Round2Messages).should.not.equal(serializeMessages(partyB1Round2Messages));
+
+    // A fresh copy of session B accepts its own round-2 output, proving the rejection below is caused
+    // by replaying session A's messages rather than by malformed or otherwise invalid input.
+    const partyBControl1 = buildParty(vector.party1);
+    const partyBControl2 = buildParty(vector.party2);
+    const [, partyBControl2Round2Messages] = (await executeTillRound(
+      2,
+      partyBControl1,
+      partyBControl2
+    )) as DeserializedMessages[];
+    partyBControl1.handleIncomingMessages({
+      p2pMessages: partyBControl2Round2Messages.p2pMessages,
+      broadcastMessages: partyBControl2Round2Messages.broadcastMessages,
+    });
+
+    // Replay session A's round-2 output into session B's round-3 step, in place of session B's own
+    // round-2 output. A captured/replayed message from an unrelated session must not be silently
+    // accepted as if it belonged to this session.
+    let err: Error | undefined;
+    try {
+      partyB1.handleIncomingMessages({
+        p2pMessages: partyA2Round2Messages.p2pMessages,
+        broadcastMessages: partyA2Round2Messages.broadcastMessages,
+      });
+    } catch (e) {
+      err = e;
+    }
+    should.exist(err);
+    err!.message.should.match(/Error while creating messages|Signing aborted/);
+  });
+
+  it('should fail if a stale round-3 message is replayed after the session has already advanced to round 4', async function () {
+    const vector = vectors[0];
+    const party1 = new DklsDsg.Dsg(
+      fs.readFileSync(shareFiles[vector.party1]),
+      vector.party1,
+      vector.derivationPath,
+      crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
+    );
+    const party2 = new DklsDsg.Dsg(
+      fs.readFileSync(shareFiles[vector.party2]),
+      vector.party2,
+      vector.derivationPath,
+      crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
+    );
+
+    const party1Round1Message = await party1.init();
+    const party2Round1Message = await party2.init();
+    const party2Round2Messages = party2.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: [party1Round1Message],
+    });
+    const party1Round2Messages = party1.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: [party2Round1Message],
+    });
+    const party2Round3Messages = party2.handleIncomingMessages({
+      p2pMessages: party1Round2Messages.p2pMessages,
+      broadcastMessages: [],
+    });
+    // Capture the exact round-3 input that legitimately advances party1 to round 4.
+    const staleRound3Input = {
+      p2pMessages: party2Round2Messages.p2pMessages,
+      broadcastMessages: [] as DeserializedMessages['broadcastMessages'],
+    };
+    party1.handleIncomingMessages(staleRound3Input);
+    const roundAfterFirstReplay = decode(new Uint8Array(Buffer.from(party1.getSession(), 'base64'))).round;
+    (typeof roundAfterFirstReplay === 'object' && 'WaitMsg4' in roundAfterFirstReplay).should.equal(true);
+    // party1 is now in round 4, expecting a combine-shaped message. Replaying the same round-3
+    // input again (as an attacker who captured it in transit might attempt) must not be
+    // reprocessed as if it were still valid for the current round.
+    let err: Error | undefined;
+    try {
+      party1.handleIncomingMessages(staleRound3Input);
+    } catch (e) {
+      err = e;
+    }
+    should.exist(err);
+    err!.message.should.match(/Error while creating messages|Signing aborted/);
+    void party2Round3Messages;
+  });
+
   it('should handle WaitMsg4 round in _deserializeState without throwing', async function () {
     const vector = vectors[0];
     const party1 = new DklsDsg.Dsg(
