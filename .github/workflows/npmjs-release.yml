@@ -295,10 +295,7 @@ jobs:
       - name: Verify all packages exist on npm
         uses: ./.github/actions/verify-npm-packages
 
-      # Version bump only — no publish. Separated from publishing (WCN-1818) so the
-      # two-phase publish below can run identically whether this step just bumped
-      # versions (normal path) or recovery-mode skipped it (rel/latest already
-      # holds the versions to resume from).
+      # Version bump only — publishing is separate (two-phase, WCN-1818).
       - name: Bump version
         if: ${{ inputs.dry-run == false && !inputs.recovery-mode }}
         run: |
