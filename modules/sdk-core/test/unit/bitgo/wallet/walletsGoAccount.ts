@@ -17,7 +17,7 @@ describe('Wallets - GoAccount (OFC trading) wallet creation', function () {
   beforeEach(function () {
     mockKeychains = {
       create: sinon.stub().returns({ pub: userPub, prv: userPrv }),
-      add: sinon.stub().resolves({ id: 'user-key-id', pub: userPub, encryptedPrv: 'encrypted-prv' }),
+      add: sinon.stub().callsFake(async (params) => ({ id: 'user-key-id', ...params })),
     };
 
     const mockWalletData = { id: 'wallet-id', keys: ['user-key-id'] };
@@ -56,7 +56,7 @@ describe('Wallets - GoAccount (OFC trading) wallet creation', function () {
   });
 
   it('should forward userKeySigningRequired: false in coinSpecific when provided', async function () {
-    await wallets.generateWallet({
+    const result = await wallets.generateWallet({
       label: 'Test OFC Wallet',
       passphrase: 'test-passphrase',
       enterprise: 'enterprise-123',
@@ -69,6 +69,11 @@ describe('Wallets - GoAccount (OFC trading) wallet creation', function () {
     const sentParams = postChain.send.firstCall.args[0];
     sentParams.should.have.property('coinSpecific');
     sentParams.coinSpecific.should.have.property('userKeySigningRequired', false);
+
+    const keychainParams = mockKeychains.add.firstCall.args[0];
+    keychainParams.should.have.property('encryptedPrv', `encrypted:test-passphrase:${userPrv}`);
+    keychainParams.should.have.property('originalPasscodeEncryptionCode', 'pce-code');
+    result.should.have.property('encryptedWalletPassphrase', 'encrypted:pce-code:test-passphrase');
   });
 
   it('should forward userKeySigningRequired: true in coinSpecific when explicitly set', async function () {
@@ -96,5 +101,41 @@ describe('Wallets - GoAccount (OFC trading) wallet creation', function () {
 
     const sentParams = postChain.send.firstCall.args[0];
     sentParams.should.not.have.property('coinSpecific');
+  });
+
+  it('should generate a public-only user key when user key signing is disabled and password fields are omitted', async function () {
+    const result = await wallets.generateWallet({
+      label: 'Passwordless OFC Wallet',
+      enterprise: 'enterprise-123',
+      type: 'trading',
+      userKeySigningRequired: false,
+    });
+
+    assert.ok(mockKeychains.add.calledOnce, 'user key should be uploaded once');
+    const keychainParams = mockKeychains.add.firstCall.args[0];
+    keychainParams.should.have.property('pub', userPub);
+    keychainParams.should.not.have.property('encryptedPrv');
+    keychainParams.should.not.have.property('originalPasscodeEncryptionCode');
+
+    assert.ok(postChain.send.calledOnce, 'POST /wallet/add should be called once');
+    postChain.send.firstCall.args[0].coinSpecific.should.have.property('userKeySigningRequired', false);
+    result.should.not.have.property('encryptedWalletPassphrase');
+    result.should.not.have.property('warning');
+  });
+
+  it('should reject passwordless generation when only one password field is supplied', async function () {
+    await assert.rejects(
+      wallets.generateWallet({
+        label: 'Passwordless OFC Wallet',
+        enterprise: 'enterprise-123',
+        type: 'trading',
+        userKeySigningRequired: false,
+        passphrase: 'partial-password-input',
+      }),
+      /error\(s\) parsing generate go account request params/
+    );
+
+    assert.strictEqual(mockKeychains.add.called, false);
+    assert.strictEqual(postChain.send.called, false);
   });
 });

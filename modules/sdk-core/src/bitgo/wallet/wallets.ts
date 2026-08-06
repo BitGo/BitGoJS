@@ -240,15 +240,18 @@ export class Wallets implements IWallets {
 
     const keychainParams: AddKeychainOptions = {
       pub: keychain.pub,
-      encryptedPrv: await this.bitgo.encrypt({
-        password: passphrase,
-        input: keychain.prv,
-        encryptionVersion,
-      }),
-      originalPasscodeEncryptionCode: passcodeEncryptionCode,
       keyType: 'independent',
       source: 'user',
     };
+
+    if (passphrase !== undefined && passcodeEncryptionCode !== undefined) {
+      keychainParams.encryptedPrv = await this.bitgo.encrypt({
+        password: passphrase,
+        input: keychain.prv,
+        encryptionVersion,
+      });
+      keychainParams.originalPasscodeEncryptionCode = passcodeEncryptionCode;
+    }
 
     const userKeychain = await this.baseCoin.keychains().add(keychainParams);
 
@@ -351,11 +354,13 @@ export class Wallets implements IWallets {
       );
 
       const walletData = await this.generateGoAccountWallet(options);
-      walletData.encryptedWalletPassphrase = await this.bitgo.encrypt({
-        input: options.passphrase,
-        password: options.passcodeEncryptionCode,
-        encryptionVersion: options.encryptionVersion,
-      });
+      if (options.passphrase !== undefined && options.passcodeEncryptionCode !== undefined) {
+        walletData.encryptedWalletPassphrase = await this.bitgo.encrypt({
+          input: options.passphrase,
+          password: options.passcodeEncryptionCode,
+          encryptionVersion: options.encryptionVersion,
+        });
+      }
       return walletData;
     }
 

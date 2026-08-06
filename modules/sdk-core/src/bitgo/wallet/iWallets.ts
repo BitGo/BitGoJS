@@ -295,20 +295,42 @@ export const GenerateLightningWalletOptionsCodec = t.intersection(
 );
 export type GenerateLightningWalletOptions = t.TypeOf<typeof GenerateLightningWalletOptionsCodec>;
 
+const GenerateGoAccountWalletBaseOptionsCodec = t.intersection([
+  t.strict({
+    label: t.string,
+    enterprise: t.string,
+    type: t.literal('trading'),
+  }),
+  t.partial({
+    // Codec intentionally accepts only 2: v1 is the implicit default and never sent on the wire.
+    encryptionVersion: t.literal(2),
+  }),
+]);
+
+const GenerateGoAccountWalletPasswordOptionsCodec = t.intersection([
+  t.strict({
+    passphrase: t.string,
+    passcodeEncryptionCode: t.string,
+  }),
+  t.partial({
+    userKeySigningRequired: t.boolean,
+  }),
+]);
+
+const GenerateGoAccountWalletPasswordlessOptionsCodec = t.intersection([
+  t.strict({
+    userKeySigningRequired: t.literal(false),
+  }),
+  t.partial({
+    passphrase: t.undefined,
+    passcodeEncryptionCode: t.undefined,
+  }),
+]);
+
 export const GenerateGoAccountWalletOptionsCodec = t.intersection(
   [
-    t.strict({
-      label: t.string,
-      passphrase: t.string,
-      enterprise: t.string,
-      passcodeEncryptionCode: t.string,
-      type: t.literal('trading'),
-    }),
-    t.partial({
-      // Codec intentionally accepts only 2: v1 is the implicit default and never sent on the wire.
-      encryptionVersion: t.literal(2),
-      userKeySigningRequired: t.boolean,
-    }),
+    GenerateGoAccountWalletBaseOptionsCodec,
+    t.union([GenerateGoAccountWalletPasswordOptionsCodec, GenerateGoAccountWalletPasswordlessOptionsCodec]),
   ],
   'GenerateGoAccountWalletOptions'
 );
