@@ -2006,7 +2006,7 @@ export class BitGoAPI implements BitGoBase {
    * @param oldPassword {String} - the current password
    * @param newPassword {String} - the new password
    */
-  async changePassword({ oldPassword, newPassword }: ChangePasswordOptions): Promise<any> {
+  async changePassword({ oldPassword, newPassword, encryptionVersion }: ChangePasswordOptions): Promise<any> {
     if (!_.isString(oldPassword)) {
       throw new Error('expected string oldPassword');
     }
@@ -2029,7 +2029,7 @@ export class BitGoAPI implements BitGoBase {
     // we just need to choose a coin that exists in the current environment
     const coin = common.Environments[this.getEnv()].network === 'bitcoin' ? 'btc' : 'tbtc';
 
-    const updateKeychainPasswordParams = { oldPassword, newPassword };
+    const updateKeychainPasswordParams = { oldPassword, newPassword, encryptionVersion };
     const v1KeychainUpdatePWResult = await this.keychains().updatePassword(updateKeychainPasswordParams);
     const v2Keychains = await this.coin(coin).keychains().updatePassword(updateKeychainPasswordParams);
 

@@ -268,6 +268,12 @@ export interface GetEcdhSecretOptions {
 export interface ChangePasswordOptions {
   oldPassword: string;
   newPassword: string;
+  /**
+   * Envelope version to emit for the re-encrypted keychains. Defaults to preserving each
+   * keychain's existing envelope version (no forced migration). Pass `2` to opt in to the
+   * Argon2id upgrade for v1 (SJCL) keychains once the caller is ready.
+   */
+  encryptionVersion?: EncryptionVersion;
 }
 
 /**
