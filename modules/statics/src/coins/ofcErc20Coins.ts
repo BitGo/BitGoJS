@@ -7037,6 +7037,34 @@ export const tOfcErc20Coins = [
   ),
   ofcerc20('66f600c7-5858-482f-9e5f-823930b1f4f4', 'ofceth:zama', 'Zama', 18, UnderlyingAsset['eth:zama']),
   ofcerc20(
+    '903139a4-b3f0-4d2f-8d0c-0680635685dc',
+    'ofceth:czama',
+    'Confidential Zama',
+    6,
+    UnderlyingAsset['eth:czama']
+  ),
+  ofcerc20(
+    'c89917e6-3ffd-4213-b80c-76d868da5969',
+    'ofceth:cxaut',
+    'Zama Confidential XAUT',
+    6,
+    UnderlyingAsset['eth:cxaut']
+  ),
+  ofcerc20(
+    '11477fe1-6056-4fd8-8389-39f1e7290360',
+    'ofceth:ctgbp',
+    'Zama Confidential TGBP',
+    6,
+    UnderlyingAsset['eth:ctgbp']
+  ),
+  ofcerc20(
+    '6878ebf2-d2b5-412c-a367-5fd64029e150',
+    'ofceth:cweth',
+    'Zama Confidential WETH',
+    6,
+    UnderlyingAsset['eth:cweth']
+  ),
+  ofcerc20(
     'b2efa51c-3628-419b-ae40-249c27c677ab',
     'ofceth:mony',
     'My OnChain Net Yield Fund',
