@@ -35,6 +35,12 @@ export const JITO_STAKE_POOL_RESERVE_ACCOUNT_TESTNET = 'rrWBQqRqBXYZw3CmPCCcjFxQ
 export const JITO_MANAGER_FEE_ACCOUNT = 'feeeFLLsam6xZJFc6UQFrHqkvVt4jfmVvi2BRLkUZ4i';
 export const JITO_MANAGER_FEE_ACCOUNT_TESTNET = 'DH7tmjoQ5zjqcgfYJU22JqmXhP5EY1tkbYpgVWUS2oNo';
 
+/** Solana Instructions sysvar address. Used by Token-2022 extension instructions that verify proofs in-tx. */
+export const INSTRUCTIONS_SYSVAR_ADDRESS = 'Sysvar1nstructions1111111111111111111111111';
+
+/** Solana zk-elgamal-proof program address. */
+export const ZK_ELGAMAL_PROOF_PROGRAM_ID = 'ZkE1G11tXDEfKBqrPK5G1iFbnW4mdeQTw48MYUb9Gkp';
+
 // Sdk instructions, mainly to check decoded types.
 export enum ValidInstructionTypesEnum {
   AdvanceNonceAccount = 'AdvanceNonceAccount',
@@ -62,6 +68,15 @@ export enum ValidInstructionTypesEnum {
   WithdrawStake = 'WithdrawStake',
   Approve = 'Approve',
   CustomInstruction = 'CustomInstruction',
+  ConfidentialMint = 'ConfidentialMint',
+  CreateRecordAccount = 'CreateRecordAccount',
+  WriteRecordData = 'WriteRecordData',
+  VerifyEqualityProof = 'VerifyEqualityProof',
+  VerifyValidityProof = 'VerifyValidityProof',
+  VerifyRangeProof = 'VerifyRangeProof',
+  CloseRecordAccount = 'CloseRecordAccount',
+  CloseContextState = 'CloseContextState',
+  ConfigureConfidentialTransferAccount = 'ConfigureConfidentialTransferAccount',
 }
 
 // Internal instructions types
@@ -87,6 +102,15 @@ export enum InstructionBuilderTypes {
   VersionedCustomInstruction = 'VersionedCustomInstruction',
   Approve = 'Approve',
   WithdrawStake = 'WithdrawStake',
+  ConfidentialMint = 'ConfidentialMint',
+  CreateRecordAccount = 'CreateRecordAccount',
+  WriteRecordData = 'WriteRecordData',
+  VerifyEqualityProof = 'VerifyEqualityProof',
+  VerifyValidityProof = 'VerifyValidityProof',
+  VerifyRangeProof = 'VerifyRangeProof',
+  CloseRecordAccount = 'CloseRecordAccount',
+  CloseContextState = 'CloseContextState',
+  ConfigureConfidentialTransferAccount = 'ConfigureConfidentialTransferAccount',
 }
 
 export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
