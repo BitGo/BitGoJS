@@ -83,6 +83,258 @@ describe('Tokenized Equity CoinFeatures', function () {
     coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
   });
 
+  it('sol:goamzn should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('sol:goamzn');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('tsol:goamzn should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('tsol:goamzn');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('tsol:stggoamzn should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('tsol:stggoamzn');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofcsol:goamzn should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofcsol:goamzn');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofctsol:goamzn should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofctsol:goamzn');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofctsol:stggoamzn should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofctsol:stggoamzn');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('sol:gobtgo should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('sol:gobtgo');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('tsol:gobtgo should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('tsol:gobtgo');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('tsol:stggobtgo should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('tsol:stggobtgo');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofcsol:gobtgo should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofcsol:gobtgo');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofctsol:gobtgo should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofctsol:gobtgo');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofctsol:stggobtgo should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofctsol:stggobtgo');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('sol:gogoogl should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('sol:gogoogl');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('tsol:gogoogl should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('tsol:gogoogl');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('tsol:stggogoogl should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('tsol:stggogoogl');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofcsol:gogoogl should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofcsol:gogoogl');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofctsol:gogoogl should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofctsol:gogoogl');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofctsol:stggogoogl should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofctsol:stggogoogl');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('sol:gometa should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('sol:gometa');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('tsol:gometa should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('tsol:gometa');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('tsol:stggometa should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('tsol:stggometa');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofcsol:gometa should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofcsol:gometa');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofctsol:gometa should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofctsol:gometa');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofctsol:stggometa should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofctsol:stggometa');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('sol:gomsft should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('sol:gomsft');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('tsol:gomsft should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('tsol:gomsft');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('tsol:stggomsft should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('tsol:stggomsft');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofcsol:gomsft should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofcsol:gomsft');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofctsol:gomsft should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofctsol:gomsft');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofctsol:stggomsft should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofctsol:stggomsft');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('sol:gonvda should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('sol:gonvda');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('tsol:gonvda should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('tsol:gonvda');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('tsol:stggonvda should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('tsol:stggonvda');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofcsol:gonvda should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofcsol:gonvda');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofctsol:gonvda should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofctsol:gonvda');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofctsol:stggonvda should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofctsol:stggonvda');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('sol:gotsla should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('sol:gotsla');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('tsol:gotsla should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('tsol:gotsla');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('tsol:stggotsla should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('tsol:stggotsla');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofcsol:gotsla should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofcsol:gotsla');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofctsol:gotsla should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofctsol:gotsla');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
+  it('ofctsol:stggotsla should have both TOKENIZED_EQUITY and BITGO_TOKENIZED_EQUITY', function () {
+    const coin = coins.get('ofctsol:stggotsla');
+    coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+    coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+  });
+
   it('invariant: BITGO_TOKENIZED_EQUITY without TOKENIZED_EQUITY should throw MissingRequiredCoinFeatureError', function () {
     let threw = false;
     let errorMessage = '';

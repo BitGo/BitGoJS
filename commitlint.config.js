@@ -64,6 +64,7 @@ module.exports = {
         'SC-',
         'ST-',
         'STLX-',
+        'STONKS-',
         'TMS-',
         'TRUST-',
         'T1-',
