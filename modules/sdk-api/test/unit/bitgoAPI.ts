@@ -1008,6 +1008,8 @@ describe('Constructor', function () {
     const ROOT = 'https://app.example.local';
     let bitgo: BitGoAPI;
     let sandbox: sinon.SinonSandbox;
+    let v1UpdatePasswordStub: sinon.SinonStub;
+    let v2UpdatePasswordStub: sinon.SinonStub;
 
     beforeEach(function () {
       sandbox = sinon.createSandbox();
@@ -1031,13 +1033,15 @@ describe('Constructor', function () {
 
       sandbox.stub(bitgo, 'verifyPassword').resolves(true);
 
+      v1UpdatePasswordStub = sandbox.stub().resolves({ keychains: { k1: 'v1enc' }, version: 25 });
       sandbox.stub(bitgo, 'keychains').returns({
-        updatePassword: sandbox.stub().resolves({ keychains: { k1: 'v1enc' }, version: 25 }),
+        updatePassword: v1UpdatePasswordStub,
       } as any);
 
+      v2UpdatePasswordStub = sandbox.stub().resolves({ v2k1: 'v2enc' });
       sandbox.stub(bitgo, 'coin').returns({
         keychains: () => ({
-          updatePassword: sandbox.stub().resolves({ v2k1: 'v2enc' }),
+          updatePassword: v2UpdatePasswordStub,
         }),
       } as any);
     });
@@ -1087,6 +1091,18 @@ describe('Constructor', function () {
       await bitgo.changePassword({ oldPassword: 'oldpw', newPassword: 'newpw' });
 
       legacyScope.isDone().should.be.true();
+    });
+
+    it('forwards encryptionVersion to both v1 and v2 keychains().updatePassword calls', async function () {
+      nock(ROOT).get('/api/v2/user/checkBatchingPasswordFlow').query(true).reply(200, { isBatchingFlowEnabled: false });
+      nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !!body.keychains && !!body.v2_keychains)
+        .reply(200, {});
+
+      await bitgo.changePassword({ oldPassword: 'oldpw', newPassword: 'newpw', encryptionVersion: 2 });
+
+      sinon.assert.calledWithMatch(v1UpdatePasswordStub, { encryptionVersion: 2 });
+      sinon.assert.calledWithMatch(v2UpdatePasswordStub, { encryptionVersion: 2 });
     });
   });
 
