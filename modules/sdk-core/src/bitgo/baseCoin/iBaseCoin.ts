@@ -2,7 +2,7 @@ import { BaseTokenConfig, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { IRequestTracer } from '../../api';
 import { IEnterprises } from '../enterprise';
-import { IKeychains, Keychain } from '../keychain';
+import { ApiKeyShare, IKeychains, Keychain } from '../keychain';
 import { IMarkets } from '../market';
 import { IPendingApprovals } from '../pendingApproval';
 import { InitiateRecoveryOptions } from '../recovery';
@@ -14,7 +14,7 @@ import { TokenEnablement } from '@bitgo/public-types';
 import { Hash } from 'crypto';
 import { TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
-import { MessageStandardType, MPCTx, PopulatedIntent, TokenTransferRecipientParams, TokenType } from '../utils';
+import { MessageStandardType, MPCTx, PopulatedIntent, TokenTransferRecipientParams, TokenType, Triple } from '../utils';
 import type { SignableTransaction } from '../utils/tss/baseTypes';
 import { IWebhooks } from '../webhook/iWebhooks';
 
@@ -442,6 +442,16 @@ export interface TransactionPrebuild extends BaseSignable {
   txInfo?: unknown;
 }
 
+export interface XpubWithDerivationPath {
+  xpub: string;
+  derivedFromParentWithSeed?: string;
+}
+
+export interface ColdTransactionPrebuild {
+  pubs?: string[];
+  xpubsWithDerivationPath?: Partial<Record<ApiKeyShare['from'], XpubWithDerivationPath>>;
+}
+
 export interface Message extends BaseSignable {
   messageRaw: string;
   messageEncoded?: string;
@@ -672,6 +682,10 @@ export interface IBaseCoin {
   supportsDeriveKeyWithSeed(): boolean;
   isEVM(): boolean;
   supportsBlsDkg(): boolean;
+  prepareColdTransaction<T extends TransactionPrebuild>(
+    txPrebuild: T,
+    keychains: Triple<Keychain>
+  ): T & ColdTransactionPrebuild;
   getBaseFactor(): number | string;
   baseUnitsToBigUnits(baseUnits: string | number): string;
   bigUnitsToBaseUnits(bigUnits: string | number): string;

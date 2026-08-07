@@ -7,6 +7,7 @@ import {
   AddressCoinSpecific,
   BaseCoin,
   BitGoBase,
+  ColdTransactionPrebuild,
   CreateAddressFormat,
   ExtraPrebuildParamsOptions,
   HalfSignedUtxoTransaction,
@@ -17,6 +18,7 @@ import {
   IRequestTracer,
   isTriple,
   IWallet,
+  Keychain,
   KeychainsTriplet,
   KeyIndices,
   MismatchedRecipient,
@@ -1066,6 +1068,17 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
 
   valuelessTransferAllowed(): boolean {
     return false;
+  }
+
+  prepareColdTransaction<T extends BaseTransactionPrebuild>(
+    txPrebuild: T,
+    keychains: Triple<Keychain>
+  ): T & ColdTransactionPrebuild {
+    // PSBTs already carry BIP-32 derivation info inline, so offline signers do not need the extra information
+    if (typeof txPrebuild.txHex === 'string' && hasPsbtMagic(stringToBufferTryFormats(txPrebuild.txHex, ['hex']))) {
+      return txPrebuild as T & ColdTransactionPrebuild;
+    }
+    return super.prepareColdTransaction(txPrebuild, keychains);
   }
 
   getRecoveryProvider(apiToken?: string): RecoveryProvider {

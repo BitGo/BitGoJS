@@ -13,7 +13,7 @@ import { signMessage } from '../bip32util';
 import { NotImplementedError } from '../../account-lib';
 import { BitGoBase } from '../bitgoBase';
 import { Enterprises } from '../enterprise';
-import { Keychains, KeyIndices } from '../keychain';
+import { ApiKeyShare, Keychain, Keychains, KeyIndices } from '../keychain';
 import { Markets } from '../market';
 import { PendingApprovals } from '../pendingApproval';
 import { IWallet, Wallet, Wallets } from '../wallet';
@@ -22,6 +22,7 @@ import {
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
   BuildNftTransferDataOptions,
+  ColdTransactionPrebuild,
   DeriveKeyWithSeedOptions,
   ExtraPrebuildParamsOptions,
   FeeEstimateOptions,
@@ -57,6 +58,7 @@ import {
   PopulatedIntent,
   PrebuildTransactionWithIntentOptions,
   TokenTransferRecipientParams,
+  Triple,
 } from '../utils';
 
 export abstract class BaseCoin implements IBaseCoin {
@@ -242,6 +244,44 @@ export abstract class BaseCoin implements IBaseCoin {
    */
   supportsBlsDkg(): boolean {
     return false;
+  }
+
+  /**
+   * Prepare a built transaction for cold (offline) signing by attaching the
+   * xpubs / xpub derivation paths the offline signer (OVC) needs in order to
+   * sign it. Coins whose tx format already carries this information inline
+   * (e.g. PSBT) can override this to skip attaching it.
+   * @param txPrebuild The built transaction JSON returned by the platform
+   * @param keychains The user/backup/bitgo keychains for this wallet, in that order
+   * @returns The txPrebuild JSON, augmented with `pubs` and `xpubsWithDerivationPath`
+   */
+  prepareColdTransaction<T extends TransactionPrebuild>(
+    txPrebuild: T,
+    keychains: Triple<Keychain>
+  ): T & ColdTransactionPrebuild {
+    const [user, backup, bitgo] = keychains;
+    const sources: Array<[ApiKeyShare['from'], Keychain]> = [
+      ['user', user],
+      ['backup', backup],
+      ['bitgo', bitgo],
+    ];
+    const pubs: string[] = [];
+    const xpubsWithDerivationPath: NonNullable<ColdTransactionPrebuild['xpubsWithDerivationPath']> = {};
+    for (const [source, keychain] of sources) {
+      // MPC keychains only have a commonKeychain, not a pub - skip those.
+      if (keychain.pub) {
+        pubs.push(keychain.pub);
+        xpubsWithDerivationPath[source] = {
+          xpub: keychain.pub,
+          derivedFromParentWithSeed: keychain.derivedFromParentWithSeed,
+        };
+      }
+    }
+    return {
+      ...txPrebuild,
+      pubs,
+      xpubsWithDerivationPath,
+    };
   }
 
   /**
