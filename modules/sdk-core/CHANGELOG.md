@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [38.5.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.5.1...@bitgo/sdk-core@38.5.2) (2026-08-04)
+
+
+### Bug Fixes
+
+* **sdk-core,sdk-coin-xlm:** fix enabletoken approval failing with no operations ([fc3f21b](https://github.com/BitGo/BitGoJS/commit/fc3f21b5c950f19cb4f4b7d42022dd2590a364de))
+* **sdk-core:** add authorize to NO_RECIPIENT_TX_TYPES ([fba4bbd](https://github.com/BitGo/BitGoJS/commit/fba4bbd8f53d0198c3a4395c3b3c5360a7652758))
+* **sdk-core:** preserve tokenName and add SOL no-recipient intents ([25aeba9](https://github.com/BitGo/BitGoJS/commit/25aeba9a81c48649dbe513088c64fcecbee731a1)), closes [#9117](https://github.com/BitGo/BitGoJS/issues/9117) [#9117](https://github.com/BitGo/BitGoJS/issues/9117)
+* **sdk-core:** return clear 401 for wrong wallet passphrase ([108fd50](https://github.com/BitGo/BitGoJS/commit/108fd50650c11071d61796f59ad3bf8d67464a35))
+* **sdk-core:** wire resolveEffectiveTxParams into EddsaMPCv2Utils ([070fb5d](https://github.com/BitGo/BitGoJS/commit/070fb5dcfcc7dd2a42f6ac4e9983068593b23006))
+
+
+
+
+
 ## [38.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.5.0...@bitgo/sdk-core@38.5.1) (2026-07-30)
 
 **Note:** Version bump only for package @bitgo/sdk-core

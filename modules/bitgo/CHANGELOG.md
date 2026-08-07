@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [52.4.2](https://github.com/BitGo/BitGoJS/compare/bitgo@52.4.1...bitgo@52.4.2) (2026-08-04)
+
+
+### Bug Fixes
+
+* **sdk-core,sdk-coin-xlm:** fix enabletoken approval failing with no operations ([fc3f21b](https://github.com/BitGo/BitGoJS/commit/fc3f21b5c950f19cb4f4b7d42022dd2590a364de))
+* **sdk-core:** wire resolveEffectiveTxParams into EddsaMPCv2Utils ([070fb5d](https://github.com/BitGo/BitGoJS/commit/070fb5dcfcc7dd2a42f6ac4e9983068593b23006))
+
+
+
+
+
 ## [52.4.1](https://github.com/BitGo/BitGoJS/compare/bitgo@52.4.0...bitgo@52.4.1) (2026-07-30)
 
 **Note:** Version bump only for package bitgo

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [16.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@16.3.1...@bitgo/express@16.3.2) (2026-08-04)
+
+
+### Bug Fixes
+
+* **sdk-core:** return clear 401 for wrong wallet passphrase ([108fd50](https://github.com/BitGo/BitGoJS/commit/108fd50650c11071d61796f59ad3bf8d67464a35))
+
+
+
+
+
 ## [16.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@16.3.0...@bitgo/express@16.3.1) (2026-07-30)
 
 **Note:** Version bump only for package @bitgo/express

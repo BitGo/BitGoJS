@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@4.0.6...@bitgo/sdk-coin-stx@4.0.7) (2026-08-04)
+
+
+### Bug Fixes
+
+* sdk-coin-stx hex-encoding fixes ([4ad1b25](https://github.com/BitGo/BitGoJS/commit/4ad1b25e7ac376f073eae253c9bb03d8f7eb17d7))
+
+
+
+
+
 ## [4.0.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@4.0.5...@bitgo/sdk-coin-stx@4.0.6) (2026-07-30)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx
