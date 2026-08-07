@@ -88,6 +88,55 @@ jobs:
           AWS_SESSION_TOKEN: ${{ steps.inference-role.outputs.aws-session-token }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # The agent prompt promises a job summary ("report ... in the job summary,
+      # including the Still blocked breakdown so the result is auditable"), so
+      # render the agent's own report there instead of leaving it log-only.
+      - name: Write agent report to job summary
+        if: always()
+        env:
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+        run: |
+          # Deliberately NOT `set -e`: this step is reporting only and must never
+          # be the reason the job goes red. Failures degrade to a note instead.
+          set -uo pipefail
+          EVENTS=''
+          if [ -n "${EXECUTION_FILE:-}" ] && [ -f "$EXECUTION_FILE" ]; then
+            EVENTS="$(jq -c 'if type=="array" then . else [.] end' "$EXECUTION_FILE" 2>/dev/null)"
+          fi
+          REPORT=''
+          META=''
+          if [ -n "$EVENTS" ]; then
+            REPORT="$(printf '%s' "$EVENTS" | jq -r '.[] | select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text' 2>/dev/null)"
+            # Allowlist, not del(.result): the execution-file schema is upstream and
+            # may grow fields we have not audited, so name what we publish.
+            META="$(printf '%s' "$EVENTS" | jq -S 'map(select(.type=="result"))[-1] // empty
+              | {is_error, subtype, terminal_reason, stop_reason, num_turns,
+                 duration_ms, total_cost_usd, session_id,
+                 output_tokens: .usage.output_tokens}
+              | with_entries(select(.value != null))' 2>/dev/null)"
+          fi
+          {
+            echo "## osv-scanner-prune report"
+            echo
+            if [ -z "$EVENTS" ]; then
+              echo "> No readable Claude execution file was produced — see the agent step logs."
+            elif [ -n "$REPORT" ]; then
+              echo "$REPORT"
+            else
+              echo "> The agent produced no text output — see the agent step logs."
+            fi
+            if [ -n "$META" ]; then
+              echo
+              echo "<details><summary>Run metadata</summary>"
+              echo
+              echo '```json'
+              echo "$META"
+              echo '```'
+              echo
+              echo "</details>"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Surface Claude error and fail on is_error
         if: always()
         env:
@@ -99,7 +148,7 @@ jobs:
           fi
           EVENTS="$(jq -c 'if type=="array" then . else [.] end' "$EXECUTION_FILE")"
           echo "=== result event (metadata only) ==="
-          echo "$EVENTS" | jq -c 'map(select(.type=="result"))[-1] // empty'
+          echo "$EVENTS" | jq -c 'map(select(.type=="result"))[-1] // empty | del(.result)'
           echo "=== assistant text turns (no tool output) ==="
           echo "$EVENTS" | jq -r '.[] | select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text'
           RES="$(echo "$EVENTS" | jq -c 'map(select(.type=="result"))[-1] // empty')"
