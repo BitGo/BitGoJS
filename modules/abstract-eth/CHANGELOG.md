@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@25.0.7...@bitgo/abstract-eth@25.1.0) (2026-08-07)
+
+
+### Features
+
+* **sdk-coin-eth:** add ERC-7984 confidential token non-BitGo recovery ([178bb27](https://github.com/BitGo/BitGoJS/commit/178bb278e3c38dafcaa8b1c3c79f7dd8a5c13260))
+
+
+
+
+
 ## [25.0.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@25.0.6...@bitgo/abstract-eth@25.0.7) (2026-08-04)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

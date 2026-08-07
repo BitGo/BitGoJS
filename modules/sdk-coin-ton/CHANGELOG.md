@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@4.0.7...@bitgo/sdk-coin-ton@4.1.0) (2026-08-07)
+
+
+### Features
+
+* **sdk-coin-ton:** add MPCv2 signed hot recovery to Ton.recover() ([2b8391a](https://github.com/BitGo/BitGoJS/commit/2b8391a6044c12c0656aa4f1a6afb5aab7069040))
+
+
+
+
+
 ## [4.0.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@4.0.6...@bitgo/sdk-coin-ton@4.0.7) (2026-08-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ton

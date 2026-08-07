@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.17.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.17.3...@bitgo/sdk-coin-flrp@1.17.4) (2026-08-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-flrp:** fall back to network.txFee when no fee/baseFee is set on C-chain import ([1be45be](https://github.com/BitGo/BitGoJS/commit/1be45bedb4f079cb68633f6aa381c16d6f58fe25))
+
+
+
+
+
 ## [1.17.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.17.2...@bitgo/sdk-coin-flrp@1.17.3) (2026-08-04)
 
 
