@@ -152,6 +152,7 @@ export const CoinSignResponse = {
  *
  * **Configuration Requirements:**
  * - `signerFileSystemPath`: Path to JSON file containing encrypted private keys
+ * - `signerAuthToken` / `BITGO_SIGNER_AUTH_TOKEN`: required bearer token for all signer routes
  * - Environment variable: `WALLET_{walletId}_PASSPHRASE` for each wallet
  *
  * **Request Body:**

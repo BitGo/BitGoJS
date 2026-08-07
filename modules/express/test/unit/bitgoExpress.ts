@@ -477,6 +477,7 @@ describe('Bitgo Express', function () {
         env: 'test',
         signerMode: 'signerMode',
         signerFileSystemPath: 'signerFileSystemPath',
+        signerAuthToken: 'test-signer-auth-token',
       };
 
       app(args);
@@ -505,8 +506,26 @@ describe('Bitgo Express', function () {
 
       const readFileStub = sinon.stub(fs, 'readFileSync').returns(validPrvJSON);
       args.signerMode = 'signerMode';
+      args.signerAuthToken = 'test-signer-auth-token';
       (() => expressApp(args)).should.not.throw();
 
+      readFileStub.restore();
+    });
+
+    it('should require signerAuthToken when running in signer mode', function () {
+      const readFileStub = sinon.stub(fs, 'readFileSync').returns(validPrvJSON);
+      const args: any = {
+        env: 'test',
+        signerMode: 'signerMode',
+        signerFileSystemPath: 'signerFileSystemPath',
+      };
+      (() => expressApp(args)).should.throw({
+        name: 'ExternalSignerConfigError',
+        message:
+          'signerAuthToken must be set when running in external signing mode or when externalSignerUrl is configured. Set --signerAuthToken or BITGO_SIGNER_AUTH_TOKEN.',
+      });
+      args.signerAuthToken = 'test-signer-auth-token';
+      (() => expressApp(args)).should.not.throw();
       readFileStub.restore();
     });
 
@@ -515,6 +534,7 @@ describe('Bitgo Express', function () {
         env: 'test',
         signerMode: 'signerMode',
         externalSignerUrl: 'externalSignerUrl',
+        signerAuthToken: 'test-signer-auth-token',
       };
       (() => expressApp(args)).should.throw({
         name: 'ExternalSignerConfigError',
@@ -549,6 +569,7 @@ describe('Bitgo Express', function () {
         env: 'test',
         signerMode: 'signerMode',
         signerFileSystemPath: 'invalidSignerFileSystemPath',
+        signerAuthToken: 'test-signer-auth-token',
       };
       (() => expressApp(args)).should.throw();
 

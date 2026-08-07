@@ -59,6 +59,7 @@ describe('CoinSign codec tests (External Signer Mode)', function () {
       agent = setupAgent({
         signerMode: true,
         signerFileSystemPath: signerFilePath,
+        signerAuthToken: 'test_access_token_12345',
       });
     });
 
@@ -147,6 +148,42 @@ describe('CoinSign codec tests (External Signer Mode)', function () {
       const signTxCall = mockCoin.signTransaction.firstCall.args[0];
       assert.strictEqual(signTxCall.prv, decryptedPrivKey);
       assert.strictEqual(signTxCall.isLastSignature, true);
+    });
+
+    it('should reject unauthenticated sign requests in external signer mode', async function () {
+      const requestBody = {
+        txPrebuild: {
+          walletId: walletId,
+          txHex:
+            '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+        },
+        isLastSignature: true,
+      };
+
+      const result = await agent.post(`/api/v2/${coin}/sign`).set('Content-Type', 'application/json').send(requestBody);
+
+      assert.strictEqual(result.status, 401);
+      result.body.should.have.property('message', 'Unauthorized');
+    });
+
+    it('should reject sign requests with an incorrect signer auth token', async function () {
+      const requestBody = {
+        txPrebuild: {
+          walletId: walletId,
+          txHex:
+            '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+        },
+        isLastSignature: true,
+      };
+
+      const result = await agent
+        .post(`/api/v2/${coin}/sign`)
+        .set('Authorization', 'Bearer wrong-token')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 401);
+      result.body.should.have.property('message', 'Unauthorized');
     });
 
     it('should successfully sign with derivationSeed', async function () {

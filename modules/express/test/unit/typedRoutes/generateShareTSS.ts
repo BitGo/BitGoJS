@@ -66,6 +66,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
       agent = setupAgent({
         signerMode: true,
         signerFileSystemPath: signerFilePath,
+        signerAuthToken: 'test_access_token_12345',
       });
     });
 

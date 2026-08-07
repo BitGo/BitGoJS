@@ -18,6 +18,7 @@ describe('Custom signing function', () => {
       debug: true,
       env: 'test',
       externalSignerUrl,
+      signerAuthToken: 'test-signer-auth-token',
       timeout: 60000,
     };
 
@@ -42,6 +43,7 @@ describe('Custom signing function', () => {
     // setup nock to external signer
     const signernock = nock(externalSignerUrl)
       .post('/api/v2/btc/sign')
+      .matchHeader('authorization', 'Bearer test-signer-auth-token')
       .reply(200, { externalSigner: 'external signer response' });
 
     // setup nock to wallet platform GET /wallet/fakeid

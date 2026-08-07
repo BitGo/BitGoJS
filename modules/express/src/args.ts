@@ -106,6 +106,10 @@ parser.addArgument(['--signerFileSystemPath'], {
   help: 'Local path specifying where an Express signer machine keeps encrypted user private keys.',
 });
 
+parser.addArgument(['--signerAuthToken'], {
+  help: 'Shared bearer token required to call external-signer routes (also BITGO_SIGNER_AUTH_TOKEN). Required in signerMode and when externalSignerUrl is set.',
+});
+
 parser.addArgument(['--lightningSignerFileSystemPath'], {
   help: 'Local path specifying where an Express machine keeps lightning signer urls.',
 });

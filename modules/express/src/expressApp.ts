@@ -210,6 +210,7 @@ function checkPreconditions(config: Config) {
     externalSignerUrl,
     signerMode,
     signerFileSystemPath,
+    signerAuthToken,
     lightningSignerFileSystemPath,
   } = config;
 
@@ -257,6 +258,14 @@ function checkPreconditions(config: Config) {
   if (signerMode !== undefined && lightningSignerFileSystemPath !== undefined) {
     throw new LightningSignerConfigError(
       'signerMode and lightningSignerFileSystemPath cannot be set at the same time.'
+    );
+  }
+
+  // External signing routes hold user private keys. Require a shared secret so unauthenticated
+  // network clients cannot use the machine as a signing oracle (CWE-306).
+  if ((signerMode !== undefined || externalSignerUrl !== undefined) && !signerAuthToken) {
+    throw new ExternalSignerConfigError(
+      'signerAuthToken must be set when running in external signing mode or when externalSignerUrl is configured. Set --signerAuthToken or BITGO_SIGNER_AUTH_TOKEN.'
     );
   }
 
