@@ -39,7 +39,7 @@
     "@bitgo/utxo-lib": "^11.24.2",
     "lodash": "^4.18.0",
     "tcomb": "~3.2.29",
-    "varuint-bitcoin": "^1.0.4"
+    "varuint-bitcoin": "~1.1.2"
   },
   "lint-staged": {
     "*.{js,ts}": [
