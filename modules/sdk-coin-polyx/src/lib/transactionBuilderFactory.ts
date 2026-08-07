@@ -1,4 +1,4 @@
-import { BaseTransactionBuilderFactory, NotImplementedError } from '@bitgo/sdk-core';
+import { BaseTransactionBuilderFactory } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { decode } from '@substrate/txwrapper-polkadot';
 import { TransferBuilder } from './transferBuilder';
@@ -153,8 +153,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return new V8NominateBuilder(this._coinConfig);
   }
 
-  getWalletInitializationBuilder(): void {
-    throw new NotImplementedError(`walletInitialization for ${this._coinConfig.name} not implemented`);
+  getWalletInitializationBuilder(): RegisterDidWithCDDBuilder {
+    return this.getRegisterDidWithCDDBuilder();
   }
 
   from(rawTxn: string): TransactionBuilder<TxMethod, SupportedTransaction> {
