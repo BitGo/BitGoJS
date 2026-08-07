@@ -645,7 +645,7 @@ export class BitGoAPI implements BitGoBase {
       req.isV2Authenticated = true;
       req.authenticationToken = this._token ?? (strategyAuthenticated ? 'strategy-authenticated' : undefined);
       // some of the older tokens appear to be only 40 characters long
-      if ((this._token && this._token.length !== 67 && this._token.indexOf('v2x') !== 0) || req.forceV1Auth) {
+      if (this._token && ((this._token.length !== 67 && this._token.indexOf('v2x') !== 0) || req.forceV1Auth)) {
         // use the old method
         req.isV2Authenticated = false;
 

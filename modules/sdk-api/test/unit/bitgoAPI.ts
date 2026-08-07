@@ -1192,3 +1192,45 @@ describe('wallets() v1 facade', function () {
     wallets.resendShareInvite.should.be.a.Function();
   });
 });
+
+describe('undefined accessToken in testnet (WCI-1213)', function () {
+  const ROOT = 'https://app.bitgo-test.com';
+
+  afterEach(function () {
+    nock.cleanAll();
+  });
+
+  it('does not send "Bearer undefined" when accessToken is undefined (no forceV1Auth)', async function () {
+    const bitgo = new BitGoAPI({ env: 'test', accessToken: undefined });
+
+    let receivedAuthHeader: string | null = null;
+    nock(ROOT)
+      .post('/api/auth/v1/session')
+      .reply(function (uri, body) {
+        receivedAuthHeader = this.req.headers['authorization']?.[0] ?? null;
+        return [200, { user: { username: 'test@example.com' }, access_token: 'v2xtoken' }];
+      });
+
+    await bitgo.authenticate({ username: 'test@example.com', password: 'pw', otp: '000000' });
+
+    // With no token set, the v1 path must not be entered — so no 'Bearer undefined'
+    assert.notStrictEqual(receivedAuthHeader, 'Bearer undefined');
+  });
+
+  it('does not send "Bearer undefined" when accessToken is undefined and forceV1Auth is set', async function () {
+    const bitgo = new BitGoAPI({ env: 'test', accessToken: undefined });
+
+    let receivedAuthHeader: string | null = null;
+    nock(ROOT)
+      .post('/api/auth/v1/session')
+      .reply(function (uri, body) {
+        receivedAuthHeader = this.req.headers['authorization']?.[0] ?? null;
+        return [200, { user: { username: 'test@example.com' }, access_token: 'v2xtoken' }];
+      });
+
+    await bitgo.authenticate({ username: 'test@example.com', password: 'pw', otp: '000000', forceV1Auth: true });
+
+    // forceV1Auth must not bypass the token guard — header must not be 'Bearer undefined'
+    assert.notStrictEqual(receivedAuthHeader, 'Bearer undefined');
+  });
+});
