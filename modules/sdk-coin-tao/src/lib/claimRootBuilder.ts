@@ -56,9 +56,7 @@ export class ClaimRootBuilder extends TransactionBuilder {
   private validateFields(hotkey: string): void {
     const validationResult = Schema.ClaimRootWithHotkeyTransactionSchema.validate({ hotkey });
     if (validationResult.error) {
-      throw new InvalidTransactionError(
-        `ClaimRoot Transaction validation failed: ${validationResult.error.message}`
-      );
+      throw new InvalidTransactionError(`ClaimRoot Transaction validation failed: ${validationResult.error.message}`);
     }
   }
 
@@ -68,9 +66,7 @@ export class ClaimRootBuilder extends TransactionBuilder {
       const txMethod = decodedTxn.method.args as unknown as Interface.ClaimRootWithHotkeyArgs;
       const validationResult = Schema.ClaimRootWithHotkeyTransactionSchema.validate({ hotkey: txMethod.hotkey });
       if (validationResult.error) {
-        throw new InvalidTransactionError(
-          `ClaimRoot Transaction validation failed: ${validationResult.error.message}`
-        );
+        throw new InvalidTransactionError(`ClaimRoot Transaction validation failed: ${validationResult.error.message}`);
       }
     }
   }
