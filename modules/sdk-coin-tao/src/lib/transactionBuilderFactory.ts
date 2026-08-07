@@ -8,6 +8,7 @@ import { StakingBuilder } from './stakingBuilder';
 import { UnstakeBuilder } from './unstakeBuilder';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
 import { MoveStakeBuilder } from './moveStakeBuilder';
+import { ClaimRootBuilder } from './claimRootBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected _material: Interface.Material;
@@ -35,6 +36,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getMoveStakeBuilder(): MoveStakeBuilder {
     return new MoveStakeBuilder(this._coinConfig).material(this._material);
+  }
+
+  getClaimRootBuilder(): ClaimRootBuilder {
+    return new ClaimRootBuilder(this._coinConfig).material(this._material);
   }
 
   getWalletInitializationBuilder(): void {
@@ -70,6 +75,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       return this.getTokenTransferBuilder();
     } else if (methodName === Interface.MethodNames.MoveStake) {
       return this.getMoveStakeBuilder();
+    } else if (methodName === Interface.MethodNames.ClaimRootWithHotkey) {
+      return this.getClaimRootBuilder();
     } else {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }

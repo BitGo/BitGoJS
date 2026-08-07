@@ -83,6 +83,10 @@ export const MethodNames = {
    * Move stake from one hotkey to another.
    */
   MoveStake: 'moveStake' as const,
+  /**
+   * Claim root network rewards with a hotkey.
+   */
+  ClaimRootWithHotkey: 'claimRootWithHotkey' as const,
 } as const;
 
 /**
@@ -207,6 +211,10 @@ export interface MoveStakeArgs extends Args {
   alphaAmount: string;
 }
 
+export interface ClaimRootWithHotkeyArgs extends Args {
+  hotkey: string;
+}
+
 /**
  * Decoded TxMethod from a transaction hex
  */
@@ -224,7 +232,8 @@ export interface TxMethod {
     | WithdrawUnbondedArgs
     | BatchArgs
     | TransferStakeArgs
-    | MoveStakeArgs;
+    | MoveStakeArgs
+    | ClaimRootWithHotkeyArgs;
   name: MethodNamesValues;
   pallet: string;
 }
