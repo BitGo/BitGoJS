@@ -72,11 +72,19 @@ export function generateAddressWithChainAndIndex(
  */
 export function generateAddress(coinName: UtxoCoinName, params: GenerateFixedScriptAddressOptions): string {
   let derivationIndex = 0;
-  if (_.isInteger(params.index) && (params.index as number) > 0) {
+  if (!_.isUndefined(params.index)) {
+    if (!_.isInteger(params.index) || (params.index as number) < 0) {
+      throw new InvalidAddressDerivationPropertyError(`address validation failure: invalid index (${params.index})`);
+    }
+
     derivationIndex = params.index as number;
   }
 
   const { keychains, chain, segwit = false, bech32 = false } = params as GenerateFixedScriptAddressOptions;
+
+  if (!_.isUndefined(chain) && !_.isInteger(chain)) {
+    throw new InvalidAddressDerivationPropertyError(`address validation failure: invalid chain (${chain})`);
+  }
 
   if (_.isNumber(chain) && _.isInteger(chain) && !fixedScriptWallet.ChainCode.is(chain)) {
     throw new InvalidAddressDerivationPropertyError(`address validation failure: unrecognised chain code (${chain})`);
@@ -157,7 +165,13 @@ export function assertFixedScriptWalletAddress(
     address: string;
   }
 ): void {
-  if ((_.isUndefined(chain) && _.isUndefined(index)) || !(_.isFinite(chain) && _.isFinite(index))) {
+  if (
+    (_.isUndefined(chain) && _.isUndefined(index)) ||
+    !(_.isFinite(chain) && _.isFinite(index)) ||
+    !_.isInteger(chain) ||
+    !_.isInteger(index) ||
+    (index as number) < 0
+  ) {
     throw new InvalidAddressDerivationPropertyError(
       `address validation failure: invalid chain (${chain}) or index (${index})`
     );
