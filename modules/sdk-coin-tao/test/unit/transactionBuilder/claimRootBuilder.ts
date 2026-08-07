@@ -151,6 +151,8 @@ describe('Tao ClaimRoot Builder', function () {
       explanation.outputAmount.should.equal('0');
       explanation.changeAmount.should.equal('0');
       explanation.fee.type.should.equal('tip');
+      // tip=0 is falsy → || '0' fallback fires; assert the fee value is correct
+      explanation.fee.fee.should.equal('0');
       explanation.outputs.length.should.equal(1);
       explanation.outputs[0].address.should.equal(hotkey);
       explanation.outputs[0].amount.should.equal('0');

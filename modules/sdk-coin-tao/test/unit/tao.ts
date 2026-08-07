@@ -573,6 +573,14 @@ describe('Tao:', function () {
         result.should.be.true();
       });
 
+      it('should return true for lowercase stakingclaim type (WalletPlatform intentType)', async function () {
+        const result = await baseCoin.verifyTransaction({
+          txPrebuild: { txHex: claimSignedHex },
+          txParams: { type: 'stakingclaim' },
+        });
+        result.should.be.true();
+      });
+
       it('should return true for transfer tx with no recipients provided', async function () {
         const result = await baseCoin.verifyTransaction({
           txPrebuild: { txHex: rawTx.transfer.signed },

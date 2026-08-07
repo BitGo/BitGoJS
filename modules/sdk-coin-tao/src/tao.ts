@@ -59,7 +59,8 @@ export class Tao extends SubstrateCoin {
   /** @inheritDoc */
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     // claimRootWithHotkey carries no transfer recipient — skip recipient validation.
-    if (params.txParams?.type === 'StakingClaim') {
+    // Compare case-insensitively: WalletPlatform may deliver intentType as lowercase.
+    if (params.txParams?.type?.toLowerCase() === 'stakingclaim') {
       return true;
     }
     return super.verifyTransaction(params);

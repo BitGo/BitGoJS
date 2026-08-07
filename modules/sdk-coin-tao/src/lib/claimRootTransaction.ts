@@ -30,6 +30,9 @@ export class ClaimRootTransaction extends SubstrateTransaction {
       return;
     }
 
+    this._outputs = [];
+    this._inputs = [];
+
     super.loadInputsAndOutputs();
 
     const decodedTx = decode(this._substrateTransaction, {
