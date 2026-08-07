@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.5.2...@bitgo/sdk-core@38.6.0) (2026-08-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-bsc:** verify TSS txs via serializedTxHex like ICP ([8c5562e](https://github.com/BitGo/BitGoJS/commit/8c5562e3d04ca818dcb55cb9400138936bbb209e))
+* **sdk-core,express:** allow passwordless OFC wallet generation ([5c49714](https://github.com/BitGo/BitGoJS/commit/5c4971473419d67c6c7c1d8f493589ed7b7549c1))
+* **sdk-core:** make prepared allocation ids optional ([393a9cb](https://github.com/BitGo/BitGoJS/commit/393a9cb71e56277aaaca9049da10392bc59a3e51))
+* **sdk-core:** narrow generated allocation fields ([b84a7bd](https://github.com/BitGo/BitGoJS/commit/b84a7bdc7f299ce647c6fb64b034ec4386180e77))
+
+
+### Features
+
+* **sdk-core:** allow opting out of v2 on password change ([b635b5b](https://github.com/BitGo/BitGoJS/commit/b635b5b0169fea7f49cc090c2d6f20105379a330))
+* **sdk-core:** always upgrade to v2 on password change ([f12d8da](https://github.com/BitGo/BitGoJS/commit/f12d8da74ffdb2c1f2ea73ca3d6a14143dc46242))
+
+
+
+
+
 ## [38.5.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.5.1...@bitgo/sdk-core@38.5.2) (2026-08-04)
 
 

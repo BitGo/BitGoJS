@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [22.12.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.12.19...@bitgo/sdk-coin-bsc@22.12.20) (2026-08-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-bsc:** verify TSS txs via serializedTxHex like ICP ([8c5562e](https://github.com/BitGo/BitGoJS/commit/8c5562e3d04ca818dcb55cb9400138936bbb209e))
+
+
+
+
+
 ## [22.12.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.12.18...@bitgo/sdk-coin-bsc@22.12.19) (2026-08-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bsc

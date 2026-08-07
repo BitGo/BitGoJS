@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.3.0...@bitgo/statics@59.4.0) (2026-08-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-eth:** complete sepeth registration and fix testnet coin resolution ([ddc6a57](https://github.com/BitGo/BitGoJS/commit/ddc6a571f14a09db39dc0ce212bb8ebc591aa1bd))
+* **statics:** correct mon:sofid and polygon:sofid contract address ([ea38a71](https://github.com/BitGo/BitGoJS/commit/ea38a717c5713dcb0eeedbe4ad342c811d54add5))
+* **statics:** drop liquid-staking from weth and eigen ([4a712fd](https://github.com/BitGo/BitGoJS/commit/4a712fdf32ed11c4b18c1f82afd8c76d73bbe1b8))
+
+
+### Features
+
+* **statics:** add MCLMONGP ERC721 NFT token on hbarevm ([e1db439](https://github.com/BitGo/BitGoJS/commit/e1db43939d68416a9f4b7d2137f0b4fa06ec5d06))
+* **statics:** add OFC equivalents for Zama confidential tokens ([029edf9](https://github.com/BitGo/BitGoJS/commit/029edf924d52f5dcc53fbf6e622651397f301f46))
+* **statics:** add statics for 7 stock token equities ([94db7e5](https://github.com/BitGo/BitGoJS/commit/94db7e598a21a703326e65d739a58430d0b49823))
+* **statics:** add unique mint addresses for 7 goStock tokens ([a19db0a](https://github.com/BitGo/BitGoJS/commit/a19db0a9fa71175e7514aad5a0a8fe2428da1b6d))
+* **statics:** onboard Zama confidential tokens CXAUT, CTGBP, CWETH ([ec43392](https://github.com/BitGo/BitGoJS/commit/ec433924718bccdcf9a9209dbadf5b78b2e466b2))
+
+
+### Reverts
+
+* **statics:** remove OFC entries for Zama confidential tokens ([5ec7e77](https://github.com/BitGo/BitGoJS/commit/5ec7e7715d7972e28e9447b2351e76e03591faca))
+
+
+
+
+
 # [59.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.2.0...@bitgo/statics@59.3.0) (2026-08-04)
 
 

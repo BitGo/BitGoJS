@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@26.0.7...@bitgo/sdk-coin-eth@26.1.0) (2026-08-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-eth:** complete sepeth registration and fix testnet coin resolution ([ddc6a57](https://github.com/BitGo/BitGoJS/commit/ddc6a571f14a09db39dc0ce212bb8ebc591aa1bd))
+
+
+### Features
+
+* **sdk-coin-eth:** add ERC-7984 confidential token non-BitGo recovery ([178bb27](https://github.com/BitGo/BitGoJS/commit/178bb278e3c38dafcaa8b1c3c79f7dd8a5c13260))
+
+
+
+
+
 ## [26.0.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@26.0.6...@bitgo/sdk-coin-eth@26.0.7) (2026-08-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

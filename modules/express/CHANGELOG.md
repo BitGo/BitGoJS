@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [16.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@16.3.2...@bitgo/express@16.3.3) (2026-08-07)
+
+
+### Bug Fixes
+
+* **express:** bind wallet signing to route wallet ID ([fafecda](https://github.com/BitGo/BitGoJS/commit/fafecdab451a7910c4aab2cbb4a6dd4330b1116d)), closes [#9419](https://github.com/BitGo/BitGoJS/issues/9419)
+* **express:** redact signing secrets from errors ([9209bc2](https://github.com/BitGo/BitGoJS/commit/9209bc273bf524f976d084017f0244a238c66e0a)), closes [#9429](https://github.com/BitGo/BitGoJS/issues/9429)
+* **sdk-core,express:** allow passwordless OFC wallet generation ([5c49714](https://github.com/BitGo/BitGoJS/commit/5c4971473419d67c6c7c1d8f493589ed7b7549c1))
+
+
+
+
+
 ## [16.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@16.3.1...@bitgo/express@16.3.2) (2026-08-04)
 
 
