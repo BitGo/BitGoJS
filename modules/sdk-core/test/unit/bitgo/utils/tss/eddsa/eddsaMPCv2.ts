@@ -27,6 +27,8 @@ import {
   SignatureShareRecord,
   SignatureShareType,
   TxRequest,
+  isMpcV2Keycard,
+  signEddsaMpcV2RecoveryTx,
 } from '../../../../../../src';
 import {
   getSignatureShareRoundOne,
@@ -350,13 +352,20 @@ describe('getEddsaMPCv2RecoveryKeyShares', () => {
   const walletPassphrase = 'testPass';
 
   const encryptKey = (keyShare: Buffer): string => sjcl.encrypt(walletPassphrase, keyShare.toString('base64'));
+  const makeSjclBitgo = (): BitGoBase =>
+    ({
+      decrypt: sinon
+        .stub()
+        .callsFake(async ({ input, password }: { input: string; password: string }) => sjcl.decrypt(password, input)),
+    } as unknown as BitGoBase);
 
-  it('should return recovery key shares from v1-encrypted reduced keys (no bitgo instance)', async () => {
+  it('should return recovery key shares from v1-encrypted reduced keys via bitgo.decrypt', async () => {
     const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
     const result = await EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
       encryptKey(userDkg.getReducedKeyShare()),
       encryptKey(backupDkg.getReducedKeyShare()),
-      walletPassphrase
+      walletPassphrase,
+      makeSjclBitgo()
     );
 
     assert.deepStrictEqual(result.userKeyShare, userDkg.getKeyShare());
@@ -364,7 +373,7 @@ describe('getEddsaMPCv2RecoveryKeyShares', () => {
     assert.strictEqual(result.commonKeyChain, userDkg.getCommonKeychain());
   });
 
-  it('should route decryption through bitgo.decrypt when a bitgo instance is provided', async () => {
+  it('should route decryption through bitgo.decrypt (verifies delegation, simulates v2 envelope)', async () => {
     // sdk-core has no devDependency on sdk-api or argon2, so we cannot encrypt with a real v2 envelope here.
     // The stub verifies that the function delegates to bitgo.decrypt (which supports v1 + v2 in
     // production) rather than falling back to sjcl.decrypt.
@@ -396,7 +405,8 @@ describe('getEddsaMPCv2RecoveryKeyShares', () => {
       EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
         malformedKey,
         encryptKey(userDkg.getReducedKeyShare()),
-        walletPassphrase
+        walletPassphrase,
+        makeSjclBitgo()
       ),
       /unable to decode reduced key share/
     );
@@ -409,7 +419,8 @@ describe('getEddsaMPCv2RecoveryKeyShares', () => {
       EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
         encryptKey(userDkg.getReducedKeyShare()),
         encryptKey(backupDkg.getReducedKeyShare()),
-        walletPassphrase
+        walletPassphrase,
+        makeSjclBitgo()
       ),
       /pub keys do not match/
     );
@@ -436,7 +447,8 @@ describe('getEddsaMPCv2RecoveryKeyShares', () => {
         EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
           encryptKey(userReducedKeyShare),
           encryptKey(backupReducedKeyShare),
-          walletPassphrase
+          walletPassphrase,
+          makeSjclBitgo()
         ),
         /rootChainCodes do not match/
       );
@@ -1865,10 +1877,9 @@ describe('EDDSAUtils.isEddsaMpcV1SigningMaterial', () => {
 
   const MPCv2_CBOR_BYTES = Buffer.from([0xd9, 0x01, 0x04, 0xa3, 0x61, 0x78, 0x18, 0x00]).toString('base64');
 
+  // Routes to sjcl.decrypt for v1 SJCL envelopes and returns fake CBOR for simulated v2 envelopes.
   let mockBitgo: BitGoBase;
   beforeEach(() => {
-    // sdk-core has no devDependency on sdk-api/argon2, so v2 envelopes are simulated here.
-    // Real bitgo.decrypt routes v2 to Argon2id; the stub returns MPCv2 CBOR plaintext instead.
     mockBitgo = {
       decrypt: sinon.stub().callsFake(async (params: { input: string; password: string }) => {
         if (isV2Envelope(params.input)) {
@@ -1881,17 +1892,17 @@ describe('EDDSAUtils.isEddsaMpcV1SigningMaterial', () => {
 
   it('returns true for MPCv1 SJCL-encrypted keycard with backupYShare + correct passphrase', async () => {
     const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL_BACKUP));
-    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE), true);
+    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE, mockBitgo), true);
   });
 
   it('returns true for MPCv1 SJCL-encrypted keycard with userYShare + correct passphrase', async () => {
     const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL_USER));
-    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE), true);
+    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE, mockBitgo), true);
   });
 
   it('returns false for MPCv2 CBOR content wrapped in SJCL envelope + correct passphrase', async () => {
     const encrypted = sjcl.encrypt(PASSPHRASE, MPCv2_CBOR_BYTES);
-    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE), false);
+    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE, mockBitgo), false);
   });
 
   it('returns false for MPCv2 Argon2id envelope (v2) + correct passphrase (forward-compat)', async () => {
@@ -1902,7 +1913,7 @@ describe('EDDSAUtils.isEddsaMpcV1SigningMaterial', () => {
   it('throws on wrong passphrase', async () => {
     const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL_BACKUP));
     await assert.rejects(
-      EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, 'wrong-passphrase'),
+      EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, 'wrong-passphrase', mockBitgo),
       /ccm: tag doesn't match/
     );
   });
@@ -1910,7 +1921,7 @@ describe('EDDSAUtils.isEddsaMpcV1SigningMaterial', () => {
   it('returns false when neither backupYShare.u nor userYShare.u is present', async () => {
     const partial = { uShare: { seed: 'abc' }, bitgoYShare: { u: 'xyz' } };
     const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(partial));
-    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE), false);
+    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE, mockBitgo), false);
   });
 });
 
@@ -1980,6 +1991,141 @@ describe('signRecoveryEddsaMPCv2', () => {
         ),
       /EdDSA MPCv2 recovery signature verification failed/
     );
+  });
+});
+
+describe('isMpcV2Keycard', () => {
+  const PASSPHRASE = 'test-passphrase';
+
+  const MPCv1_MATERIAL = {
+    uShare: { i: 1, t: 2, n: 3, y: 'aabbcc', seed: 'deadbeef01234567', chaincode: '00' },
+    bitgoYShare: { i: 3, j: 1, y: 'aabbcc', u: 'bitgo-u-value', chaincode: '00' },
+    backupYShare: { i: 2, j: 1, y: 'aabbcc', u: 'backup-u-value', chaincode: '00' },
+  };
+
+  it('returns { version: v1, userPrv } for MPCv1 JSON keycard', async () => {
+    const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL));
+    const mockBitgo = {
+      decrypt: sinon.stub().resolves(JSON.stringify(MPCv1_MATERIAL)),
+    } as unknown as BitGoBase;
+
+    const result = await isMpcV2Keycard(encrypted, PASSPHRASE, mockBitgo);
+
+    assert.strictEqual(result.version, 'v1');
+    assert.ok('userPrv' in result);
+  });
+
+  it('returns { version: v2, encryptedUserKey } for MPCv2 CBOR keycard', async () => {
+    const MPCv2_CBOR_BYTES = Buffer.from([0xd9, 0x01, 0x04, 0xa3, 0x61, 0x78, 0x18, 0x00]).toString('base64');
+    const encrypted = sjcl.encrypt(PASSPHRASE, MPCv2_CBOR_BYTES);
+    const normalizedKey = encrypted.replace(/\s/g, '');
+    const mockBitgo = {
+      decrypt: sinon
+        .stub()
+        .callsFake(async ({ input, password }: { input: string; password: string }) => sjcl.decrypt(password, input)),
+    } as unknown as BitGoBase;
+
+    const result = await isMpcV2Keycard(encrypted, PASSPHRASE, mockBitgo);
+
+    assert.strictEqual(result.version, 'v2');
+    assert.ok('encryptedUserKey' in result);
+    assert.strictEqual((result as { version: 'v2'; encryptedUserKey: string }).encryptedUserKey, normalizedKey);
+  });
+
+  it('throws with context message when decryption fails', async () => {
+    const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL));
+    const mockBitgo = {
+      decrypt: sinon.stub().rejects(new Error('ccm: tag does not match')),
+    } as unknown as BitGoBase;
+    await assert.rejects(
+      () => isMpcV2Keycard(encrypted, 'wrong-passphrase', mockBitgo),
+      /Error decrypting user keychain/
+    );
+  });
+});
+
+describe('signEddsaMpcV2RecoveryTx', () => {
+  const derivationPath = 'm/0/0';
+  const walletPassphrase = 'testPass';
+
+  const makeDecryptBitgo = (userKeyBase64: string, backupKeyBase64: string): BitGoBase =>
+    ({
+      decrypt: sinon.stub().onFirstCall().resolves(userKeyBase64).onSecondCall().resolves(backupKeyBase64),
+    } as unknown as BitGoBase);
+
+  it('returns a 64-byte signature that verifies against the derived public key', async () => {
+    const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const message = Buffer.from('deadbeef', 'hex');
+    const commonKeyChain = userDkg.getCommonKeychain();
+    const mockBitgo = makeDecryptBitgo(
+      userDkg.getReducedKeyShare().toString('base64'),
+      backupDkg.getReducedKeyShare().toString('base64')
+    );
+
+    const result = await signEddsaMpcV2RecoveryTx({
+      message,
+      userKey: 'encrypted-user-key',
+      backupKey: 'encrypted-backup-key',
+      walletPassphrase,
+      bitgoKey: commonKeyChain,
+      derivationPath,
+      bitgo: mockBitgo,
+    });
+
+    assert.strictEqual(result.length, 64);
+    const mpc = await getInitializedMpcInstance();
+    const derivedKeychain = mpc.deriveUnhardened(commonKeyChain, derivationPath);
+    const publicKeyBytes = Buffer.from(derivedKeychain.slice(0, 64), 'hex');
+    const ok = ed25519.verify(new Uint8Array(result), new Uint8Array(message), new Uint8Array(publicKeyBytes));
+    assert.strictEqual(ok, true);
+  });
+
+  it('throws when commonKeyChain does not match bitgoKey', async () => {
+    const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const message = Buffer.from('deadbeef', 'hex');
+    const mockBitgo = makeDecryptBitgo(
+      userDkg.getReducedKeyShare().toString('base64'),
+      backupDkg.getReducedKeyShare().toString('base64')
+    );
+
+    await assert.rejects(
+      () =>
+        signEddsaMpcV2RecoveryTx({
+          message,
+          userKey: 'encrypted-user-key',
+          backupKey: 'encrypted-backup-key',
+          walletPassphrase,
+          bitgoKey: 'bbbb'.repeat(32),
+          derivationPath,
+          bitgo: mockBitgo,
+        }),
+      /commonKeyChain from keycard does not match bitgoKey/
+    );
+  });
+
+  it('passes userKey, backupKey, passphrase, and bitgo to getEddsaMpcV2RecoveryKeySharesFromReducedKey', async () => {
+    const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const message = Buffer.from('deadbeef', 'hex');
+    const decryptStub = sinon
+      .stub()
+      .onFirstCall()
+      .resolves(userDkg.getReducedKeyShare().toString('base64'))
+      .onSecondCall()
+      .resolves(backupDkg.getReducedKeyShare().toString('base64'));
+    const mockBitgo = { decrypt: decryptStub } as unknown as BitGoBase;
+
+    await signEddsaMpcV2RecoveryTx({
+      message,
+      userKey: 'u-key',
+      backupKey: 'b-key',
+      walletPassphrase,
+      bitgoKey: userDkg.getCommonKeychain(),
+      derivationPath,
+      bitgo: mockBitgo,
+    });
+
+    sinon.assert.calledWith(decryptStub.firstCall, { input: 'u-key', password: walletPassphrase });
+    sinon.assert.calledWith(decryptStub.secondCall, { input: 'b-key', password: walletPassphrase });
   });
 });
 

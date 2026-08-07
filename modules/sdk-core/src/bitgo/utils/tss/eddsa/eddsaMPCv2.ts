@@ -1,6 +1,5 @@
 import assert from 'assert';
 import * as pgp from 'openpgp';
-import * as sjcl from '@bitgo/sjcl';
 import { NonEmptyString } from 'io-ts-types';
 import {
   EddsaMPCv2KeyGenRound1Request,
@@ -1077,17 +1076,14 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
  * @param encryptedKeyShare encrypted user or backup keycard
  * @param walletPassphrase passphrase used to encrypt the keycard
  * @param bitgo optional BitGoBase instance; when provided, decrypts via
- *   bitgo.decrypt (supports both v1 SJCL and v2 Argon2id envelopes);
- *   when absent, falls back to sjcl.decrypt (v1 only)
+ *   bitgo.decrypt supports both v1 (SJCL) and v2 (Argon2id) envelopes.
  */
 export async function isEddsaMpcV1SigningMaterial(
   encryptedKeyShare: string,
   walletPassphrase: string,
-  bitgo?: BitGoBase
+  bitgo: BitGoBase
 ): Promise<boolean> {
-  const prv = bitgo
-    ? await bitgo.decrypt({ input: encryptedKeyShare, password: walletPassphrase })
-    : sjcl.decrypt(walletPassphrase, encryptedKeyShare);
+  const prv = await bitgo.decrypt({ input: encryptedKeyShare, password: walletPassphrase });
 
   try {
     const m = JSON.parse(prv);
@@ -1112,18 +1108,17 @@ export async function isEddsaMpcV1SigningMaterial(
  * @param encryptedUserKey encrypted EdDSA MPCv2 reduced user key
  * @param encryptedBackupKey encrypted EdDSA MPCv2 reduced backup key
  * @param walletPassphrase password for user and backup keys
+ * @param bitgo BitGoBase instance used for decryption (supports v1 SJCL and v2 Argon2id)
  * @returns EdDSA MPCv2 recovery key shares and common keychain
  */
 export async function getEddsaMpcV2RecoveryKeySharesFromReducedKey(
   encryptedUserKey: string,
   encryptedBackupKey: string,
-  walletPassphrase?: string,
-  bitgo?: BitGoBase
+  walletPassphrase: string,
+  bitgo: BitGoBase
 ): Promise<EddsaMPCv2RecoveryKeyShares> {
   const decodeKey = async (encryptedKey: string): Promise<MPSTypes.EddsaReducedKeyShare> => {
-    const decrypted = bitgo
-      ? await bitgo.decrypt({ input: encryptedKey, password: walletPassphrase })
-      : sjcl.decrypt(walletPassphrase, encryptedKey);
+    const decrypted = await bitgo.decrypt({ input: encryptedKey, password: walletPassphrase });
     let reduced: MPSTypes.EddsaReducedKeyShare;
     try {
       reduced = MPSTypes.getDecodedReducedKeyShare(Buffer.from(decrypted, 'base64'));
@@ -1208,8 +1203,69 @@ export async function signRecoveryEddsaMPCv2(
   return signature;
 }
 
+/**
+ * Discriminated union representing EdDSA signing material detected from a keycard.
+ * v1: MPCv1 JSON keycard — userPrv is the decrypted plaintext.
+ * v2: MPCv2 CBOR keycard — encryptedUserKey is returned as-is for MPS DSG.
+ */
+export type EddsaSigningMaterial = { version: 'v1'; userPrv: string } | { version: 'v2'; encryptedUserKey: string };
+
+/**
+ * Detects MPCv1 vs MPCv2 keycard format and returns typed signing material.
+ * For v1: decrypts the userKey and returns the plaintext.
+ * For v2: returns the encrypted key as-is for use with signEddsaMpcV2RecoveryTx.
+ * Identical logic across all EdDSA coin recovery implementations.
+ */
+export async function isMpcV2Keycard(
+  userKey: string,
+  walletPassphrase: string,
+  bitgo: BitGoBase
+): Promise<EddsaSigningMaterial> {
+  const normalized = userKey.replace(/\s/g, '');
+  let isV1: boolean;
+  try {
+    isV1 = await isEddsaMpcV1SigningMaterial(normalized, walletPassphrase, bitgo);
+  } catch (e) {
+    throw new Error(`Error decrypting user keychain: ${e instanceof Error ? e.message : String(e)}`);
+  }
+  if (isV1) {
+    const userPrv = await bitgo.decrypt({ input: normalized, password: walletPassphrase });
+    return { version: 'v1', userPrv };
+  }
+  return { version: 'v2', encryptedUserKey: normalized };
+}
+
+/**
+ * Full MPCv2 recovery signing flow: decrypt key shares → validate commonKeyChain → MPS DSG.
+ * Returns raw 64-byte Ed25519 signature Buffer.
+ * Caller is responsible for any coin-specific envelope
+ * (e.g. 0x00 Substrate prefix, SUI flag+pubkey wrapper, or raw for NEAR/ADA/TON).
+ */
+export async function signEddsaMpcV2RecoveryTx(params: {
+  message: Buffer;
+  userKey: string;
+  backupKey: string;
+  walletPassphrase: string;
+  bitgoKey: string;
+  derivationPath: string;
+  bitgo: BitGoBase;
+}): Promise<Buffer> {
+  const { userKeyShare, backupKeyShare, commonKeyChain } = await getEddsaMpcV2RecoveryKeySharesFromReducedKey(
+    params.userKey,
+    params.backupKey,
+    params.walletPassphrase,
+    params.bitgo
+  );
+  if (commonKeyChain.toLowerCase() !== params.bitgoKey.toLowerCase()) {
+    throw new Error('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+  }
+  return signRecoveryEddsaMPCv2(params.message, params.derivationPath, userKeyShare, backupKeyShare, commonKeyChain);
+}
+
 export const EddsaMPCv2RecoveryFunctions = {
   isEddsaMpcV1SigningMaterial,
   getEddsaMpcV2RecoveryKeySharesFromReducedKey,
   signRecoveryEddsaMPCv2,
+  isMpcV2Keycard,
+  signEddsaMpcV2RecoveryTx,
 };
