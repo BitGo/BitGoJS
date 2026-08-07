@@ -58,6 +58,7 @@ import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils, { EddsaMPCv2Utils } from '../utils/tss/eddsa';
 import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
 import { buildParamKeys, BuildParams } from './BuildParams';
+import { fetchRootKeychainForSafeChild } from './safeKeychain';
 import {
   AccelerateTransactionOptions,
   AddressesByBalanceOptions,
@@ -376,6 +377,10 @@ export class Wallet implements IWallet {
 
   multisigTypeVersion(): 'MPCv2' | undefined {
     return this._wallet.multisigTypeVersion;
+  }
+
+  safeId(): string | undefined {
+    return this._wallet.safeId;
   }
 
   subType(): SubWalletType | undefined {
@@ -2215,7 +2220,7 @@ export class Wallet implements IWallet {
       walletPassphrase,
     });
     const userKeychain = keychains[0];
-    if (!userKeychain || !userKeychain.encryptedPrv) {
+    if (!userKeychain || (!userKeychain.encryptedPrv && !(this.safeId() && userKeychain.parent))) {
       throw new Error('the user keychain does not have property encryptedPrv');
     }
 
@@ -2317,7 +2322,7 @@ export class Wallet implements IWallet {
         walletPassphrase: params.walletPassphrase,
       });
       const userKeychain = keychains[0];
-      if (!userKeychain || !userKeychain.encryptedPrv) {
+      if (!userKeychain || (!userKeychain.encryptedPrv && !(this.safeId() && userKeychain.parent))) {
         throw new Error('the user keychain does not have property encryptedPrv');
       }
       params.keychain = userKeychain;
@@ -2533,36 +2538,63 @@ export class Wallet implements IWallet {
       throw new Error('prv must be a string');
     }
 
+    // Auto-populate coldDerivationSeed only for public-only child key docs (SMC / safe
+    // root-share spenders). Individually-added hardened safe spenders already store a
+    // child-level encryptedPrv; applying non-hardened deriveKeyWithSeed to it would
+    // silently produce the wrong key.
     if (
       params.coldDerivationSeed === undefined &&
       params.keychain !== undefined &&
       params.keychain.derivedFromParentWithSeed !== undefined &&
-      this.multisigType() === 'onchain'
+      this.multisigType() === 'onchain' &&
+      !params.keychain.encryptedPrv
     ) {
       params.coldDerivationSeed = params.keychain.derivedFromParentWithSeed;
     }
 
+    if (!userPrv) {
+      if (!userKeychain || typeof userKeychain !== 'object') {
+        throw new Error('keychain must be an object');
+      }
+      if (!userKeychain.encryptedPrv) {
+        // Safe child wallet detour: the child key doc is public-only; the
+        // root keychain holds the actual encryptedPrv.
+        if (!(this.safeId() && userKeychain.parent)) {
+          throw new Error('keychain does not have property encryptedPrv');
+        }
+        if (!params.walletPassphrase) {
+          throw new Error('walletPassphrase property missing');
+        }
+        // Fetch root, decrypt it — userPrv is now the ROOT xprv.
+        // Derivation below consumes it with params.coldDerivationSeed
+        // (already set from derivedFromParentWithSeed above) to produce the child-level key.
+        // params.keychain stays as the child doc so downstream TSS code
+        // (WCN-1201) still sees the child commonKeychain + seed.
+        const rootKeychain = await fetchRootKeychainForSafeChild(this.baseCoin.keychains(), userKeychain);
+        userPrv = await decryptKeychainPrivateKey(this.bitgo, rootKeychain, params.walletPassphrase);
+        if (!userPrv) {
+          throw new IncorrectPasswordError();
+        }
+      } else {
+        if (!params.walletPassphrase) {
+          throw new Error('walletPassphrase property missing');
+        }
+        userPrv = await decryptKeychainPrivateKey(this.bitgo, userKeychain, params.walletPassphrase);
+        if (!userPrv) {
+          throw new IncorrectPasswordError();
+        }
+      }
+    }
+
+    // Derive after decrypt so the safe-child root detour (and any future decrypt path
+    // that needs seed derivation) flows into the same deriveKeyWithSeed branch.
+    // Previously decrypt and derive were mutually exclusive if/else if arms.
     if (userPrv && params.coldDerivationSeed) {
       const derivation = this.baseCoin.deriveKeyWithSeed({
         key: userPrv,
         seed: params.coldDerivationSeed,
       });
       userPrv = derivation.key;
-    } else if (!userPrv) {
-      if (!userKeychain || typeof userKeychain !== 'object') {
-        throw new Error('keychain must be an object');
-      }
-      const userEncryptedPrv = userKeychain.encryptedPrv;
-      if (!userEncryptedPrv) {
-        throw new Error('keychain does not have property encryptedPrv');
-      }
-      if (!params.walletPassphrase) {
-        throw new Error('walletPassphrase property missing');
-      }
-      userPrv = await decryptKeychainPrivateKey(this.bitgo, userKeychain, params.walletPassphrase);
-      if (!userPrv) {
-        throw new IncorrectPasswordError();
-      }
     }
     return userPrv;
   }

@@ -15,7 +15,9 @@ import {
   Ecdsa,
   ECDSAUtils,
   EDDSAUtils,
+  fetchRootKeychainForSafeChild,
   GetUserPrvOptions,
+  InvalidRootKeychainSourceError,
   Keychains,
   KeyType,
   ManageUnspentsOptions,
@@ -353,7 +355,7 @@ describe('V2 Wallet:', function () {
         prv,
         coldDerivationSeed: '123',
       };
-      wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
+      (await wallet.getUserPrv(userPrvOptions)).should.eql(derivedPrv);
     });
 
     it('should use the user keychain derivedFromParentWithSeed as the cold derivation seed if none is provided', async () => {
@@ -366,7 +368,7 @@ describe('V2 Wallet:', function () {
           type: 'independent',
         },
       };
-      wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
+      (await wallet.getUserPrv(userPrvOptions)).should.eql(derivedPrv);
     });
 
     it('should prefer the explicit cold derivation seed to the user keychain derivedFromParentWithSeed', async () => {
@@ -380,7 +382,7 @@ describe('V2 Wallet:', function () {
           type: 'independent',
         },
       };
-      wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
+      (await wallet.getUserPrv(userPrvOptions)).should.eql(derivedPrv);
     });
 
     it('should return the prv provided for TSS SMC', async () => {
@@ -408,7 +410,157 @@ describe('V2 Wallet:', function () {
         prv,
         keychain,
       };
-      wallet.getUserPrv(userPrvOptions).should.eql(prv);
+      (await wallet.getUserPrv(userPrvOptions)).should.eql(prv);
+    });
+
+    it('should throw when keychain has no encryptedPrv on a non-safe wallet', async () => {
+      await wallet
+        .getUserPrv({
+          keychain: {
+            id: 'child-key',
+            pub: 'pub',
+            type: 'independent',
+          },
+          walletPassphrase: 'pass',
+        })
+        .should.be.rejectedWith('keychain does not have property encryptedPrv');
+    });
+
+    it('should fetch root and derive child key for safe root-share spender', async () => {
+      const passphrase = 'test-passphrase';
+      const rootKeyId = 'root-key-id';
+      const encryptedPrv = await bitgo.encrypt({ input: prv, password: passphrase });
+      const safeWallet = new Wallet(bitgo, basecoin, {
+        ...walletData,
+        safeId: 'safe-id-1',
+      });
+      const getStub = sinon.stub(Keychains.prototype, 'get').resolves({
+        id: rootKeyId,
+        source: 'user',
+        encryptedPrv,
+        type: 'independent',
+        pub: 'root-pub',
+      });
+
+      const result = await safeWallet.getUserPrv({
+        keychain: {
+          id: 'child-key',
+          pub: 'child-pub',
+          type: 'independent',
+          parent: rootKeyId,
+          derivedFromParentWithSeed: '123',
+        },
+        walletPassphrase: passphrase,
+      });
+
+      result.should.eql(derivedPrv);
+      getStub.calledOnceWithExactly({ id: rootKeyId }).should.be.true();
+    });
+
+    it('should decrypt child encryptedPrv as-is for hardened individual safe spender', async () => {
+      const passphrase = 'test-passphrase';
+      const childPrv =
+        'xprv9s21ZrQH143K4CKrcVoGt6cy1qhV9gxjbRcSbJEbAqRSQx3tMJjUAV5a2y5HiS4ezS5ZbhRP4HQS2abZcYVpGgEbLjBS2oWFsVcNS98GQ1E';
+      const encryptedPrv = await bitgo.encrypt({ input: childPrv, password: passphrase });
+      const safeWallet = new Wallet(bitgo, basecoin, {
+        ...walletData,
+        safeId: 'safe-id-1',
+      });
+      const getStub = sinon.stub(Keychains.prototype, 'get');
+
+      const result = await safeWallet.getUserPrv({
+        keychain: {
+          id: 'child-key',
+          pub: 'child-pub',
+          type: 'independent',
+          parent: 'root-key-id',
+          derivedFromParentWithSeed: '123',
+          encryptedPrv,
+        },
+        walletPassphrase: passphrase,
+      });
+
+      result.should.eql(childPrv);
+      getStub.notCalled.should.be.true();
+    });
+
+    it('should not auto-populate coldDerivationSeed when explicit prv and encryptedPrv are present', async () => {
+      const childPrv =
+        'xprv9s21ZrQH143K4CKrcVoGt6cy1qhV9gxjbRcSbJEbAqRSQx3tMJjUAV5a2y5HiS4ezS5ZbhRP4HQS2abZcYVpGgEbLjBS2oWFsVcNS98GQ1E';
+      const encryptedPrv = await bitgo.encrypt({ input: childPrv, password: 'unused' });
+      const safeWallet = new Wallet(bitgo, basecoin, {
+        ...walletData,
+        safeId: 'safe-id-1',
+      });
+
+      const result = await safeWallet.getUserPrv({
+        prv: childPrv,
+        keychain: {
+          id: 'child-key',
+          pub: 'child-pub',
+          type: 'independent',
+          parent: 'root-key-id',
+          derivedFromParentWithSeed: '123',
+          encryptedPrv,
+        },
+      });
+
+      // Must return the explicit child prv, not deriveKeyWithSeed(childPrv, '123')
+      result.should.eql(childPrv);
+      result.should.not.eql(derivedPrv);
+    });
+
+    it('should still auto-populate coldDerivationSeed for SMC with params.prv and no encryptedPrv', async () => {
+      const result = await wallet.getUserPrv({
+        prv,
+        keychain: {
+          id: 'smc-key',
+          pub: 'smc-pub',
+          type: 'independent',
+          derivedFromParentWithSeed: '123',
+        },
+      });
+      result.should.eql(derivedPrv);
+    });
+
+    describe('fetchRootKeychainForSafeChild', () => {
+      it('should throw InvalidRootKeychainSourceError when root source is backup', async () => {
+        const getStub = sinon.stub(Keychains.prototype, 'get').resolves({
+          id: 'root-key-id',
+          source: 'backup',
+          encryptedPrv: 'enc',
+          type: 'independent',
+          pub: 'root-pub',
+        });
+
+        await fetchRootKeychainForSafeChild(basecoin.keychains(), {
+          id: 'child-key',
+          parent: 'root-key-id',
+          type: 'independent',
+          pub: 'child-pub',
+        }).should.be.rejectedWith(InvalidRootKeychainSourceError);
+
+        getStub.calledOnce.should.be.true();
+      });
+
+      it('should return the root keychain when source is user', async () => {
+        const root = {
+          id: 'root-key-id',
+          source: 'user' as const,
+          encryptedPrv: 'enc-root',
+          type: 'independent' as KeyType,
+          pub: 'root-pub',
+        };
+        sinon.stub(Keychains.prototype, 'get').resolves(root);
+
+        const result = await fetchRootKeychainForSafeChild(basecoin.keychains(), {
+          id: 'child-key',
+          parent: 'root-key-id',
+          type: 'independent',
+          pub: 'child-pub',
+        });
+        result.should.eql(root);
+      });
     });
   });
 
@@ -4156,6 +4308,41 @@ describe('V2 Wallet:', function () {
           })
           .should.be.rejectedWith('txRequestId required to sign transactions with TSS');
       });
+
+      it('should allow hot-wallet signing for safe child keychain without encryptedPrv', async function () {
+        const safeSolWallet = new Wallet(bitgo, tsol, {
+          ...walletData,
+          type: 'hot',
+          safeId: 'safe-id-1',
+        });
+        const getKeysStub = sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([
+          {
+            commonKeychain: 'test',
+            id: 'child-key',
+            pub: 'child-pub',
+            type: 'tss',
+            parent: 'root-key-id',
+          },
+        ]);
+        const getUserPrvStub = sandbox.stub(Wallet.prototype, 'getUserPrv').resolves('derived-prv');
+        const signTxRequest = sandbox.stub(TssUtils.prototype, 'signTxRequest').resolves(txRequest);
+
+        const signedTransaction = await safeSolWallet.signTransaction({
+          reqId,
+          walletPassphrase: 'passphrase',
+          txPrebuild: {
+            walletId: safeSolWallet.id(),
+            wallet: safeSolWallet,
+            txRequestId: 'id',
+            txHex: 'ababcdcd',
+          },
+        });
+
+        signedTransaction.should.deepEqual(txRequest);
+        getKeysStub.calledOnce.should.be.true();
+        getUserPrvStub.calledOnce.should.be.true();
+        signTxRequest.calledOnce.should.be.true();
+      });
     });
 
     describe('getUserKeyAndSignTssTransaction', function () {
@@ -4211,6 +4398,33 @@ describe('V2 Wallet:', function () {
 
             getKeysStub.calledOnce.should.be.true();
             signTransactionStub.notCalled.should.be.true();
+          });
+
+          it('should proceed for safe child keychain without encryptedPrv', async function () {
+            const safeWallet = new Wallet(bitgo, wallet.baseCoin, {
+              ...(keyCurve === 'eddsa' ? walletData : ethWalletData),
+              type: 'hot',
+              safeId: 'safe-id-1',
+            });
+            getKeysStub.resolves([
+              {
+                commonKeychain: 'test',
+                id: 'child-key',
+                pub: 'child-pub',
+                type: 'tss',
+                parent: 'root-key-id',
+              },
+            ]);
+            const params = {
+              walletPassphrase: TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE as string,
+              txRequestId: 'id',
+            };
+
+            const response = await safeWallet.getUserKeyAndSignTssTransaction(params);
+            response.should.deepEqual({ ...txRequestFull, state: 'signed' });
+
+            getKeysStub.calledOnce.should.be.true();
+            signTransactionStub.calledOnce.should.be.true();
           });
 
           it('should throw if password is invalid', async function () {

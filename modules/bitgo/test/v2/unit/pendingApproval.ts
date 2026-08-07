@@ -12,6 +12,7 @@ import {
   ECDSAUtils,
   EddsaUtils,
   Environments,
+  Keychains,
   PendingApproval,
   PendingApprovalData,
   PendingApprovalInfo,
@@ -380,6 +381,66 @@ describe('Pending Approvals:', () => {
       recreatedTx.should.be.deepEqual({ txHex: txRequest.transactions![0].unsignedTx.serializedTxHex });
 
       sandbox.verify();
+    });
+
+    it('should use getUserPrv for safe child wallets instead of getPrv', async () => {
+      pendingApprovalData['txRequestId'] = 'requestTxIdTest';
+      const safeWalletData = {
+        ...walletData,
+        coin: 'tsol',
+        multisigType: 'tss',
+        safeId: 'safe-id-1',
+      };
+      const safeWallet = new Wallet(bitgo, coin, safeWalletData);
+      const pendingApproval = new PendingApproval(bitgo, coin, pendingApprovalData, safeWallet);
+      const reqId = new RequestTracer();
+      const txRequestId = 'test';
+      const walletPassphrase = 'test';
+      const decryptedPrvResponse = 'decryptedPrv';
+      const params = { txRequestId, walletPassphrase };
+      const childUserKeychain = {
+        id: 'child-key',
+        pub: 'child-pub',
+        type: 'tss' as const,
+        parent: 'root-key-id',
+        derivedFromParentWithSeed: 'seed',
+      };
+      const txRequest: TxRequest = {
+        apiVersion: 'lite',
+        txRequestId: txRequestId,
+        unsignedTxs: [{ signableHex: 'randomhex', serializedTxHex: 'randomhex2', derivationPath: 'm/0' }],
+        signatureShares: [],
+        transactions: [],
+        userId: 'userId',
+        date: new Date().toISOString(),
+        intent: {
+          intentType: 'payment',
+        },
+        latest: true,
+        walletId: 'walletId',
+        version: 1,
+        policiesChecked: false,
+        walletType: 'hot',
+        state: 'pendingUserSignature',
+      };
+
+      const getPrvStub = sandbox.stub(Wallet.prototype, 'getPrv');
+      const getKeysStub = sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([childUserKeychain]);
+      const getUserPrvStub = sandbox.stub(Wallet.prototype, 'getUserPrv').resolves(decryptedPrvResponse);
+      const recreateTxRequest = sandbox.stub(TssUtils.prototype, 'recreateTxRequest').resolves(txRequest);
+
+      const recreatedTx = await pendingApproval.recreateAndSignTSSTransaction(params, reqId);
+      recreatedTx.should.be.deepEqual({ txHex: txRequest.unsignedTxs[0].serializedTxHex });
+
+      getPrvStub.notCalled.should.be.true();
+      getKeysStub.calledOnce.should.be.true();
+      getUserPrvStub
+        .calledOnceWithExactly({
+          keychain: childUserKeychain,
+          walletPassphrase,
+        })
+        .should.be.true();
+      recreateTxRequest.calledOnceWithExactly(txRequest.txRequestId, decryptedPrvResponse, reqId).should.be.true();
     });
   });
 

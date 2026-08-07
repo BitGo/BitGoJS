@@ -254,7 +254,24 @@ export class PendingApproval implements IPendingApproval {
       throw new Error('txRequestId not found');
     }
 
-    const decryptedPrv = await this.wallet.getPrv({ walletPassphrase });
+    let decryptedPrv: string;
+    if (this.wallet.safeId()) {
+      // Safe child wallet: the user key doc has no encryptedPrv.
+      // getPrv → getEncryptedUserKeychain throws MissingEncryptedKeychainError.
+      // Fetch the child user keychain and delegate to getUserPrv, which
+      // applies the root-fetch detour.
+      const childKeychains = await this.wallet.baseCoin.keychains().getKeysForSigning({ wallet: this.wallet, reqId });
+      const childUserKeychain = childKeychains[0];
+      if (!childUserKeychain) {
+        throw new Error('user keychain not found');
+      }
+      decryptedPrv = await this.wallet.getUserPrv({
+        keychain: childUserKeychain,
+        walletPassphrase: walletPassphrase!,
+      });
+    } else {
+      decryptedPrv = await this.wallet.getPrv({ walletPassphrase });
+    }
     const txRequest = await this.tssUtils!.recreateTxRequest(txRequestId, decryptedPrv, reqId);
     if (txRequest.apiVersion === 'lite') {
       if (!txRequest.unsignedTxs || txRequest.unsignedTxs.length === 0) {
