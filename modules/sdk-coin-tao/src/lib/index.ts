@@ -18,4 +18,5 @@ export { MoveStakeBuilder } from './moveStakeBuilder';
 export { MoveStakeTransaction } from './moveStakeTransaction';
 export { ClaimRootBuilder } from './claimRootBuilder';
 export { ClaimRootTransaction } from './claimRootTransaction';
+export type { ClaimRootTxData } from './iface';
 export { Utils, default as utils } from './utils';
