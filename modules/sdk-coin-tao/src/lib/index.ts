@@ -16,4 +16,6 @@ export { StakingBuilder } from './stakingBuilder';
 export { UnstakeBuilder } from './unstakeBuilder';
 export { MoveStakeBuilder } from './moveStakeBuilder';
 export { MoveStakeTransaction } from './moveStakeTransaction';
+export { ClaimRootBuilder } from './claimRootBuilder';
+export { ClaimRootTransaction } from './claimRootTransaction';
 export { Utils, default as utils } from './utils';
