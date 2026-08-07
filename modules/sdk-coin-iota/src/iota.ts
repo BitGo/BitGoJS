@@ -4,6 +4,7 @@ import {
   BitGoBase,
   EDDSAMethods,
   EDDSAMethodTypes,
+  EDDSAUtils,
   Environments,
   KeyPair,
   MPCAlgorithm,
@@ -303,6 +304,21 @@ export class Iota extends BaseCoin {
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
 
+    // Detect MPCv2 keycard format once up front. Unsigned sweeps have no keycard to
+    // inspect and default to MPCv1 (their signing path is unaffected either way).
+    let isMpcV2 = false;
+    if (params.walletPassphrase) {
+      if (!params.userKey) {
+        throw new Error('missing userKey');
+      }
+      const isV1 = await EDDSAUtils.isEddsaMpcV1SigningMaterial(
+        params.userKey.replace(/\s/g, ''),
+        params.walletPassphrase,
+        this.bitgo
+      );
+      isMpcV2 = !isV1;
+    }
+
     for (let idx = startIdx; idx < endIdx; idx++) {
       const derivationPath = (params.seed ? getDerivationPath(params.seed) : 'm') + `/${idx}`;
       const derivedPublicKey = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
@@ -337,7 +353,8 @@ export class Iota extends BaseCoin {
             derivationPath,
             derivedPublicKey,
             idx,
-            bitgoKey
+            bitgoKey,
+            isMpcV2
           );
         } catch (e) {
           continue;
@@ -398,7 +415,9 @@ export class Iota extends BaseCoin {
         params,
         derivationPath,
         derivedPublicKey,
-        unsignedTx
+        unsignedTx,
+        isMpcV2,
+        bitgoKey
       );
 
       // Build and return signed transaction
@@ -706,7 +725,8 @@ export class Iota extends BaseCoin {
     derivationPath: string,
     derivedPublicKey: string,
     idx: number,
-    bitgoKey: string
+    bitgoKey: string,
+    isMpcV2: boolean
   ): Promise<MPCTxs | MPCSweepTxs> {
     tokenObjectsWithBalance = tokenObjectsWithBalance.sort((a, b) => (BigInt(b.balance) > BigInt(a.balance) ? 1 : -1));
     if (tokenObjectsWithBalance.length > MAX_OBJECT_LIMIT) {
@@ -780,7 +800,9 @@ export class Iota extends BaseCoin {
       params,
       derivationPath,
       derivedPublicKey,
-      unsignedTx
+      unsignedTx,
+      isMpcV2,
+      bitgoKey
     );
 
     const finalTx = (await txBuilder.build()) as TransferTransaction;
@@ -805,7 +827,9 @@ export class Iota extends BaseCoin {
     params: IotaRecoveryOptions,
     derivationPath: string,
     derivedPublicKey: string,
-    unsignedTx: TransferTransaction
+    unsignedTx: TransferTransaction,
+    isMpcV2: boolean,
+    bitgoKey: string
   ): Promise<string> {
     if (!params.userKey) {
       throw new Error('missing userKey');
@@ -820,30 +844,54 @@ export class Iota extends BaseCoin {
     const userKey = params.userKey.replace(/\s/g, '');
     const backupKey = params.backupKey.replace(/\s/g, '');
 
-    // Decrypt private keys from KeyCard values
-    let userPrv: string;
-    try {
-      userPrv = await this.bitgo.decrypt({ input: userKey, password: params.walletPassphrase });
-    } catch (e) {
-      throw new Error(`Error decrypting user keychain: ${(e as Error).message}`);
-    }
-    const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+    let signatureBuffer: Buffer;
 
-    let backupPrv: string;
-    try {
-      backupPrv = await this.bitgo.decrypt({ input: backupKey, password: params.walletPassphrase });
-    } catch (e) {
-      throw new Error(`Error decrypting backup keychain: ${(e as Error).message}`);
-    }
-    const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+    if (!isMpcV2) {
+      // Decrypt private keys from KeyCard values
+      let userPrv: string;
+      try {
+        userPrv = await this.bitgo.decrypt({ input: userKey, password: params.walletPassphrase });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${(e as Error).message}`);
+      }
+      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
 
-    // Generate TSS signature
-    const signatureBuffer = await EDDSAMethods.getTSSSignature(
-      userSigningMaterial,
-      backupSigningMaterial,
-      derivationPath,
-      unsignedTx
-    );
+      let backupPrv: string;
+      try {
+        backupPrv = await this.bitgo.decrypt({ input: backupKey, password: params.walletPassphrase });
+      } catch (e) {
+        throw new Error(`Error decrypting backup keychain: ${(e as Error).message}`);
+      }
+      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+
+      // Generate TSS signature
+      signatureBuffer = await EDDSAMethods.getTSSSignature(
+        userSigningMaterial,
+        backupSigningMaterial,
+        derivationPath,
+        unsignedTx
+      );
+    } else {
+      const { userKeyShare, backupKeyShare, commonKeyChain } =
+        await EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
+          userKey,
+          backupKey,
+          params.walletPassphrase,
+          this.bitgo
+        );
+
+      if (commonKeyChain.toLowerCase() !== bitgoKey.toLowerCase()) {
+        throw new Error('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+      }
+
+      signatureBuffer = await EDDSAUtils.signRecoveryEddsaMPCv2(
+        unsignedTx.signablePayload,
+        derivationPath,
+        userKeyShare,
+        backupKeyShare,
+        commonKeyChain
+      );
+    }
 
     // Build full signature: scheme_flag (1 byte) + signature (64 bytes) + public_key (32 bytes)
     const schemeFlag = Buffer.alloc(1, 0x00); // Ed25519 scheme
