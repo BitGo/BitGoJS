@@ -1449,9 +1449,11 @@ export class BitGoAPI implements BitGoBase {
       const authUrl = this.microservicesUrl('/api/auth/v1/accesstoken');
       const request = this.post(authUrl);
 
-      const strategyAuthenticated = this._hmacAuthStrategy.isAuthenticated?.() ?? false;
-      if (!this._ecdhXprv && !strategyAuthenticated) {
-        // No ECDH key and no authenticated HMAC strategy — fall back to V1 Bearer auth.
+      if (!this._ecdhXprv) {
+        // No ECDH key — server cannot encrypt the response token for us. Fall back to V1
+        // so the server returns the plaintext token directly. This covers SSO/enterprise
+        // users (Okta, Entra) who never receive ecdhXprv at login because they have no
+        // BitGo password. HMAC request signing is orthogonal and continues to work.
         request.forceV1Auth = true;
         debug('forcing v1 auth for adding access token using token %s', this._token?.substr(0, 8));
       }
@@ -1465,10 +1467,6 @@ export class BitGoAPI implements BitGoBase {
       // verify the authenticity of the server's response before proceeding any further
       await verifyResponseAsync(this, this._token, 'post', request, response, this._authVersion);
 
-      // When ecdhXprv is available, the server returns an ECDH-encrypted token that
-      // must be decrypted. When the HMAC strategy is authenticated but ecdhXprv is
-      // absent (e.g. SSO/WebCrypto users), the server includes the plain token
-      // directly in response.body.token — no decryption step needed.
       if (this._ecdhXprv) {
         const responseDetails = await this.handleTokenIssuance(response.body);
         response.body.token = responseDetails.token;

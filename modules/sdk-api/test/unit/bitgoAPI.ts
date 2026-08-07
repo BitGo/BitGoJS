@@ -667,13 +667,16 @@ describe('Constructor', function () {
         duration: 3600,
       };
 
-      it('should use HMAC auth when ecdhXprv is absent but hmacAuthStrategy is authenticated', async function () {
+      it('should force V1 auth and return plain token when ecdhXprv is absent, even if hmacAuthStrategy is authenticated (SSO/enterprise users)', async function () {
+        // Regression test for WCN-1790 / ANT-963: HMAC request signing and ECDH response
+        // encryption are orthogonal. forceV1Auth tells the server to return a plaintext token
+        // instead of ECDH-encrypting it. It must be set whenever ecdhXprv is absent,
+        // regardless of whether the HMAC strategy is active.
         const { strategy } = makeStrategy({
           isAuthenticated: sinon.stub().returns(true),
         });
         const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
-        // Do NOT set _ecdhXprv — simulates SSO/WebCrypto session
-        // Set a v2x token so the request goes through the v2 auth path
+        // Do NOT set _ecdhXprv — simulates SSO/enterprise session (Okta, Entra, etc.)
         bitgo.authenticateWithAccessToken({ accessToken: 'v2xstrategytoken' });
 
         const scope = nock(ROOT).post('/api/auth/v1/accesstoken').reply(200, {
@@ -684,13 +687,12 @@ describe('Constructor', function () {
         const result = await bitgo.addAccessToken(validParams);
 
         scope.isDone().should.be.true();
-        // forceV1Auth should NOT have been set, so no downgrade warning
-        (result as any).should.not.have.property('warning');
-        // The plain token from the response body should be returned directly
+        // forceV1Auth MUST be set — server returns plaintext token since we have no decryption key
+        (result as any).warning.should.match(/protocol downgrade/);
         result.token.should.equal('v2xnewplaintoken');
       });
 
-      it('should return plain token from response body when ecdhXprv is absent but strategyAuthenticated', async function () {
+      it('should not call handleTokenIssuance when ecdhXprv is absent', async function () {
         const handleTokenSpy = sinon.spy(BitGoAPI.prototype, 'handleTokenIssuance');
         const { strategy } = makeStrategy({
           isAuthenticated: sinon.stub().returns(true),
@@ -705,14 +707,14 @@ describe('Constructor', function () {
 
         const result = await bitgo.addAccessToken(validParams);
 
-        // handleTokenIssuance should NOT be called — no ECDH decryption needed
+        // handleTokenIssuance must not be called — no ecdhXprv to decrypt with
         handleTokenSpy.called.should.be.false();
         result.token.should.equal('v2xplaintoken');
 
         handleTokenSpy.restore();
       });
 
-      it('should still force V1 auth when neither ecdhXprv nor strategy is authenticated', async function () {
+      it('should force V1 auth when ecdhXprv is absent and strategy is not authenticated', async function () {
         const { strategy } = makeStrategy({
           isAuthenticated: sinon.stub().returns(false),
         });
@@ -726,13 +728,11 @@ describe('Constructor', function () {
 
         const result = await bitgo.addAccessToken(validParams);
 
-        // V1 auth path should add the downgrade warning
         (result as any).warning.should.match(/protocol downgrade/);
       });
 
-      it('should still force V1 auth when isAuthenticated is not defined on strategy', async function () {
+      it('should force V1 auth when isAuthenticated is not defined on strategy', async function () {
         const { strategy } = makeStrategy();
-        // strategy has no isAuthenticated method by default from makeStrategy
         const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
         bitgo.authenticateWithAccessToken({ accessToken: 'v2xnoauthmethod' });
 
