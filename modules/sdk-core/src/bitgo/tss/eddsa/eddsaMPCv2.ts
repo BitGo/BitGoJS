@@ -6,6 +6,7 @@ import {
   EddsaMPCv2SignatureShareRound2Input,
   EddsaMPCv2SignatureShareRound2Output,
   EddsaMPCv2SignatureShareRound3Input,
+  EddsaMPCv2SignatureShareRound3Output,
 } from '@bitgo/public-types';
 import { SignatureShareRecord, SignatureShareType } from '../../utils/tss/baseTypes';
 import { MPCv2PartiesEnum } from '../../utils/tss/ecdsa/typesMPCv2';
@@ -98,6 +99,19 @@ export async function verifyPeerMessageRoundTwo(
     from: peerPartyId,
     payload: new Uint8Array(rawBytes),
   };
+}
+
+/**
+ * Verifies the peer's round-3 PGP signature and returns the raw deserialized
+ * message ready for `DSG.handleIncomingMessages`.
+ */
+export async function verifyPeerMessageRoundThree(
+  parsedRound3Output: EddsaMPCv2SignatureShareRound3Output,
+  peerGpgKey: openpgp.Key,
+  peerPartyId: MPCv2PartiesEnum = MPCv2PartiesEnum.BITGO
+): Promise<MPSTypes.DeserializedMessage> {
+  const rawBytes = await MPSComms.verifyMpsMessage(parsedRound3Output.data.msg3, peerGpgKey);
+  return { from: peerPartyId, payload: new Uint8Array(rawBytes) };
 }
 
 /**
