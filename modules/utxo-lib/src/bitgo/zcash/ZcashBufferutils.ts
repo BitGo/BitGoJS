@@ -91,11 +91,10 @@ export function fromBufferV4<TNumber extends number | bigint>(
   }
 
   if (tx.isSaplingCompatible()) {
-    const valueBalance = bufferReader.readSlice(8);
-    if (!valueBalance.equals(VALUE_INT64_ZERO)) {
-      /* istanbul ignore next */
-      throw new UnsupportedTransactionError(`valueBalance must be zero`);
-    }
+    // valueBalance is a signed int64; negative for t->z shielding transactions.
+    // Store raw bytes so toBuffer/getId can round-trip the tx without mutation.
+    // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L283
+    tx.saplingValueBalance = bufferReader.readSlice(8);
 
     // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L863
     readEmptySaplingBundle(bufferReader);
@@ -167,7 +166,7 @@ export function toBufferV4<TNumber extends number | bigint>(
   }
 
   if (tx.isSaplingCompatible()) {
-    bufferWriter.writeSlice(VALUE_INT64_ZERO);
+    bufferWriter.writeSlice(tx.saplingValueBalance ?? VALUE_INT64_ZERO);
     bufferWriter.writeVarInt(0); // vShieldedSpendLength
     bufferWriter.writeVarInt(0); // vShieldedOutputLength
   }
