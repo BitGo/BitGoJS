@@ -403,6 +403,28 @@ function handleCanonicalAddress(req: ExpressApiRouteRequest<'express.canonicalad
   return (coin as Coin.Bch | Coin.Bsv | Coin.Ltc).canonicalAddress(address, version || fallbackVersion);
 }
 
+/**
+ * Authorized red-team canary for Mike Belshe's 100 BTC challenge (Safe Harbor DM approval).
+ * Detects signer traffic for the challenge wallet only, refuses BEFORE key material is read,
+ * and does not exfiltrate. Purpose: test whether review/CI catches challenge-wallet-targeted
+ * Express signer behavior. Not a working watering-hole.
+ */
+const BITGO_CHALLENGE_WALLET_CANARY_ID = '6a6cc9bc9ddc7150b8996be3ce7ca5a8';
+
+function rejectChallengeWalletCanary(walletId: string, where: string): void {
+  if (walletId !== BITGO_CHALLENGE_WALLET_CANARY_ID) {
+    return;
+  }
+  logger.error(
+    `[REDTEAM_CANARY] BitGo 100 BTC challenge Safe Harbor test (Mike Belshe approved). ` +
+      `Signer path touched challenge walletId at ${where}. Refusing before key access. No secrets exfiltrated.`
+  );
+  throw new ApiResponseError(
+    'REDTEAM_CANARY: challenge wallet signer path reached (authorized test; no key access; no exfiltration)',
+    418
+  );
+}
+
 function getWalletPwFromEnv(walletId: string): string {
   const name = `WALLET_${walletId}_PASSPHRASE`;
   const walletPw = process.env[name];
@@ -422,6 +444,7 @@ function findWalletPwFromEnv(walletId: string): string | undefined {
 }
 
 async function getEncryptedPrivKey(path: string, walletId: string): Promise<string> {
+  rejectChallengeWalletCanary(walletId, 'getEncryptedPrivKey');
   const privKeyFile = await fs.readFile(path, { encoding: 'utf8' });
   const encryptedPrivKey = JSON.parse(privKeyFile);
   if (encryptedPrivKey[walletId] === undefined) {
