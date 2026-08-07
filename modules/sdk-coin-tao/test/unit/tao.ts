@@ -515,6 +515,7 @@ describe('Tao:', function () {
     const transferAmount = '2';
     const sweepTo = '5EQZSJmHuFH8asYYJruSRwpJmE5aqSdhdiX9oxRbxujKUkTe';
     const wrongAddress = '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq';
+    const claimSignedHex = rawTx.claim.signed;
 
     describe('transfer transaction', function () {
       it('should return true when address and amount match', async function () {
@@ -560,6 +561,32 @@ describe('Tao:', function () {
             txParams: { recipients: [{ address: wrongAddress, amount: '0' }] },
           })
           .should.be.rejectedWith(TxIntentMismatchRecipientError);
+      });
+    });
+
+    describe('claimRoot transaction', function () {
+      it('should return true for StakingClaim type without decoding the tx', async function () {
+        const result = await baseCoin.verifyTransaction({
+          txPrebuild: { txHex: claimSignedHex },
+          txParams: { type: 'StakingClaim' },
+        });
+        result.should.be.true();
+      });
+
+      it('should return true for lowercase stakingclaim type (WalletPlatform intentType)', async function () {
+        const result = await baseCoin.verifyTransaction({
+          txPrebuild: { txHex: claimSignedHex },
+          txParams: { type: 'stakingclaim' },
+        });
+        result.should.be.true();
+      });
+
+      it('should return true for transfer tx with no recipients provided', async function () {
+        const result = await baseCoin.verifyTransaction({
+          txPrebuild: { txHex: rawTx.transfer.signed },
+          txParams: {},
+        });
+        result.should.be.true();
       });
     });
 

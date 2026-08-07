@@ -3,6 +3,7 @@ import {
   BitGoBase,
   Environments,
   SignTransactionOptions as BaseSignTransactionOptions,
+  VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { coins, BaseCoin as StaticsBaseCoin, SubstrateSpecNameType } from '@bitgo/statics';
 import { Interface, SubstrateCoin } from '@bitgo/abstract-substrate';
@@ -53,6 +54,16 @@ export class Tao extends SubstrateCoin {
 
   getBuilder(): TransactionBuilderFactory {
     return new TransactionBuilderFactory(coins.get(this.getChain()));
+  }
+
+  /** @inheritDoc */
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    // claimRootWithHotkey carries no transfer recipient — skip recipient validation.
+    // Compare case-insensitively: WalletPlatform may deliver intentType as lowercase.
+    if (params.txParams?.type?.toLowerCase() === 'stakingclaim') {
+      return true;
+    }
+    return super.verifyTransaction(params);
   }
 
   getMaxValidityDurationBlocks(): number {
