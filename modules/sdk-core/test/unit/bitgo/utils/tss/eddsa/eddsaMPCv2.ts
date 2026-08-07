@@ -352,20 +352,13 @@ describe('getEddsaMPCv2RecoveryKeyShares', () => {
   const walletPassphrase = 'testPass';
 
   const encryptKey = (keyShare: Buffer): string => sjcl.encrypt(walletPassphrase, keyShare.toString('base64'));
-  const makeSjclBitgo = (): BitGoBase =>
-    ({
-      decrypt: sinon
-        .stub()
-        .callsFake(async ({ input, password }: { input: string; password: string }) => sjcl.decrypt(password, input)),
-    } as unknown as BitGoBase);
 
-  it('should return recovery key shares from v1-encrypted reduced keys via bitgo.decrypt', async () => {
+  it('should return recovery key shares from v1-encrypted reduced keys (no bitgo instance)', async () => {
     const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
     const result = await EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
       encryptKey(userDkg.getReducedKeyShare()),
       encryptKey(backupDkg.getReducedKeyShare()),
-      walletPassphrase,
-      makeSjclBitgo()
+      walletPassphrase
     );
 
     assert.deepStrictEqual(result.userKeyShare, userDkg.getKeyShare());
@@ -373,7 +366,7 @@ describe('getEddsaMPCv2RecoveryKeyShares', () => {
     assert.strictEqual(result.commonKeyChain, userDkg.getCommonKeychain());
   });
 
-  it('should route decryption through bitgo.decrypt (verifies delegation, simulates v2 envelope)', async () => {
+  it('should route decryption through bitgo.decrypt when a bitgo instance is provided', async () => {
     // sdk-core has no devDependency on sdk-api or argon2, so we cannot encrypt with a real v2 envelope here.
     // The stub verifies that the function delegates to bitgo.decrypt (which supports v1 + v2 in
     // production) rather than falling back to sjcl.decrypt.
@@ -405,8 +398,7 @@ describe('getEddsaMPCv2RecoveryKeyShares', () => {
       EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
         malformedKey,
         encryptKey(userDkg.getReducedKeyShare()),
-        walletPassphrase,
-        makeSjclBitgo()
+        walletPassphrase
       ),
       /unable to decode reduced key share/
     );
@@ -419,8 +411,7 @@ describe('getEddsaMPCv2RecoveryKeyShares', () => {
       EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
         encryptKey(userDkg.getReducedKeyShare()),
         encryptKey(backupDkg.getReducedKeyShare()),
-        walletPassphrase,
-        makeSjclBitgo()
+        walletPassphrase
       ),
       /pub keys do not match/
     );
@@ -447,8 +438,7 @@ describe('getEddsaMPCv2RecoveryKeyShares', () => {
         EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
           encryptKey(userReducedKeyShare),
           encryptKey(backupReducedKeyShare),
-          walletPassphrase,
-          makeSjclBitgo()
+          walletPassphrase
         ),
         /rootChainCodes do not match/
       );
@@ -1877,9 +1867,10 @@ describe('EDDSAUtils.isEddsaMpcV1SigningMaterial', () => {
 
   const MPCv2_CBOR_BYTES = Buffer.from([0xd9, 0x01, 0x04, 0xa3, 0x61, 0x78, 0x18, 0x00]).toString('base64');
 
-  // Routes to sjcl.decrypt for v1 SJCL envelopes and returns fake CBOR for simulated v2 envelopes.
   let mockBitgo: BitGoBase;
   beforeEach(() => {
+    // sdk-core has no devDependency on sdk-api/argon2, so v2 envelopes are simulated here.
+    // Real bitgo.decrypt routes v2 to Argon2id; the stub returns MPCv2 CBOR plaintext instead.
     mockBitgo = {
       decrypt: sinon.stub().callsFake(async (params: { input: string; password: string }) => {
         if (isV2Envelope(params.input)) {
@@ -1892,17 +1883,17 @@ describe('EDDSAUtils.isEddsaMpcV1SigningMaterial', () => {
 
   it('returns true for MPCv1 SJCL-encrypted keycard with backupYShare + correct passphrase', async () => {
     const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL_BACKUP));
-    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE, mockBitgo), true);
+    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE), true);
   });
 
   it('returns true for MPCv1 SJCL-encrypted keycard with userYShare + correct passphrase', async () => {
     const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL_USER));
-    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE, mockBitgo), true);
+    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE), true);
   });
 
   it('returns false for MPCv2 CBOR content wrapped in SJCL envelope + correct passphrase', async () => {
     const encrypted = sjcl.encrypt(PASSPHRASE, MPCv2_CBOR_BYTES);
-    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE, mockBitgo), false);
+    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE), false);
   });
 
   it('returns false for MPCv2 Argon2id envelope (v2) + correct passphrase (forward-compat)', async () => {
@@ -1913,7 +1904,7 @@ describe('EDDSAUtils.isEddsaMpcV1SigningMaterial', () => {
   it('throws on wrong passphrase', async () => {
     const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL_BACKUP));
     await assert.rejects(
-      EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, 'wrong-passphrase', mockBitgo),
+      EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, 'wrong-passphrase'),
       /ccm: tag doesn't match/
     );
   });
@@ -1921,7 +1912,7 @@ describe('EDDSAUtils.isEddsaMpcV1SigningMaterial', () => {
   it('returns false when neither backupYShare.u nor userYShare.u is present', async () => {
     const partial = { uShare: { seed: 'abc' }, bitgoYShare: { u: 'xyz' } };
     const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(partial));
-    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE, mockBitgo), false);
+    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(encrypted, PASSPHRASE), false);
   });
 });
 
@@ -2019,13 +2010,8 @@ describe('isMpcV2Keycard', () => {
     const MPCv2_CBOR_BYTES = Buffer.from([0xd9, 0x01, 0x04, 0xa3, 0x61, 0x78, 0x18, 0x00]).toString('base64');
     const encrypted = sjcl.encrypt(PASSPHRASE, MPCv2_CBOR_BYTES);
     const normalizedKey = encrypted.replace(/\s/g, '');
-    const mockBitgo = {
-      decrypt: sinon
-        .stub()
-        .callsFake(async ({ input, password }: { input: string; password: string }) => sjcl.decrypt(password, input)),
-    } as unknown as BitGoBase;
 
-    const result = await isMpcV2Keycard(encrypted, PASSPHRASE, mockBitgo);
+    const result = await isMpcV2Keycard(encrypted, PASSPHRASE);
 
     assert.strictEqual(result.version, 'v2');
     assert.ok('encryptedUserKey' in result);
@@ -2034,12 +2020,14 @@ describe('isMpcV2Keycard', () => {
 
   it('throws with context message when decryption fails', async () => {
     const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL));
-    const mockBitgo = {
-      decrypt: sinon.stub().rejects(new Error('ccm: tag does not match')),
-    } as unknown as BitGoBase;
+    await assert.rejects(() => isMpcV2Keycard(encrypted, 'wrong-passphrase'), /Error decrypting user keychain/);
+  });
+
+  it('throws when bitgo instance is missing for v1 keycard decryption', async () => {
+    const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL));
     await assert.rejects(
-      () => isMpcV2Keycard(encrypted, 'wrong-passphrase', mockBitgo),
-      /Error decrypting user keychain/
+      () => isMpcV2Keycard(encrypted, PASSPHRASE),
+      /bitgo instance required for MPCv1 keycard decryption/
     );
   });
 });
