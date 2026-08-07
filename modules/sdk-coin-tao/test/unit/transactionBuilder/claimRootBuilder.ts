@@ -135,7 +135,7 @@ describe('Tao ClaimRoot Builder', function () {
   });
 
   describe('transaction explanation', function () {
-    it('should provide correct explanation', async function () {
+    it('should provide correct explanation including outputs with hotkey', async function () {
       builder
         .hotkey({ address: hotkey })
         .sender({ address: sender.address })
@@ -147,10 +147,13 @@ describe('Tao ClaimRoot Builder', function () {
       const tx = await builder.build();
       const explanation = tx.explainTransaction();
 
-      explanation.should.have.properties(['outputAmount', 'changeAmount', 'fee', 'type']);
+      explanation.should.have.properties(['outputAmount', 'changeAmount', 'fee', 'type', 'outputs']);
       explanation.outputAmount.should.equal('0');
       explanation.changeAmount.should.equal('0');
       explanation.fee.type.should.equal('tip');
+      explanation.outputs.length.should.equal(1);
+      explanation.outputs[0].address.should.equal(hotkey);
+      explanation.outputs[0].amount.should.equal('0');
     });
   });
 
@@ -186,6 +189,12 @@ describe('Tao ClaimRoot Builder', function () {
       );
     });
 
+    it('should silently pass validateDecodedTransaction for non-matching method name', function () {
+      should.doesNotThrow(() => {
+        builder.validateDecodedTransaction({ method: { name: 'addStake', args: {} } } as any);
+      });
+    });
+
     it('should not throw when building with valid hotkey', function () {
       should.doesNotThrow(() => {
         builder
@@ -196,6 +205,90 @@ describe('Tao ClaimRoot Builder', function () {
           .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
           .fee({ amount: 0, type: 'tip' });
       });
+    });
+  });
+
+  describe('signed transaction round-trip via from()', function () {
+    it('should parse a signed claimRootWithHotkey hex back to a ClaimRootBuilder', async function () {
+      builder
+        .hotkey({ address: hotkey })
+        .sender({ address: sender.address })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock(referenceBlock)
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
+        .fee({ amount: 0, type: 'tip' })
+        .addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
+
+      const signedTx = await builder.build();
+      const signedHex = signedTx.toBroadcastFormat();
+
+      const config = buildTestConfig();
+      const parsedBuilder = new ClaimRootBuilder(config).material(testnetMaterialV2 as any);
+      parsedBuilder.from(signedHex);
+      parsedBuilder
+        .sender({ address: sender.address })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock(referenceBlock);
+
+      const rebuiltTx = await parsedBuilder.build();
+      const rebuiltJson = rebuiltTx.toJson();
+
+      rebuiltJson.hotkey.should.equal(hotkey);
+      rebuiltJson.sender.should.equal(sender.address);
+    });
+
+    it('should load outputs after building', async function () {
+      builder
+        .hotkey({ address: hotkey })
+        .sender({ address: sender.address })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock(referenceBlock)
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
+        .fee({ amount: 0, type: 'tip' });
+
+      const tx = await builder.build();
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].address.should.equal(hotkey);
+      tx.outputs[0].value.should.equal('0');
+    });
+  });
+
+  describe('loadInputsAndOutputs null safety', function () {
+    it('should not crash when called on uninitialized transaction', function () {
+      const config = buildTestConfig();
+      const { ClaimRootTransaction } = require('../../../src/lib/claimRootTransaction');
+      const txInstance = new ClaimRootTransaction(config);
+      should.doesNotThrow(() => txInstance.loadInputsAndOutputs());
+    });
+  });
+
+  describe('factory dispatch', function () {
+    it('should dispatch claimRootWithHotkey hex to ClaimRootBuilder via factory.from()', async function () {
+      builder
+        .hotkey({ address: hotkey })
+        .sender({ address: sender.address })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock(referenceBlock)
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
+        .fee({ amount: 0, type: 'tip' });
+
+      const tx = await builder.build();
+      const rawHex = tx.toBroadcastFormat();
+
+      const { TransactionBuilderFactory } = require('../../../src/lib/transactionBuilderFactory');
+      const config = buildTestConfig();
+      const factory = new TransactionBuilderFactory(config).material(testnetMaterialV2 as any);
+
+      const dispatchedBuilder = factory.from(rawHex);
+      dispatchedBuilder.should.be.instanceOf(ClaimRootBuilder);
+
+      dispatchedBuilder
+        .sender({ address: sender.address })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock(referenceBlock);
+
+      const rebuiltTx = await dispatchedBuilder.build();
+      rebuiltTx.toJson().hotkey.should.equal(hotkey);
     });
   });
 

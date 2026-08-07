@@ -26,6 +26,10 @@ export class ClaimRootTransaction extends SubstrateTransaction {
 
   /** @inheritdoc */
   loadInputsAndOutputs(): void {
+    if (!this._substrateTransaction) {
+      return;
+    }
+
     super.loadInputsAndOutputs();
 
     const decodedTx = decode(this._substrateTransaction, {
