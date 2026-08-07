@@ -27,6 +27,8 @@ import {
   VerifyTransactionOptions,
   EDDSAUtils,
   decryptKeychainPrivateKey,
+  isMpcV2Keycard as sharedIsMpcV2Keycard,
+  EddsaSigningMaterial,
 } from '@bitgo/sdk-core';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { KeyPair as SubstrateKeyPair, Transaction } from './lib';
@@ -39,12 +41,6 @@ import BigNumber from 'bignumber.js';
 import { ApiPromise } from '@polkadot/api';
 
 export const DEFAULT_SCAN_FACTOR = 20;
-
-/**
- * Discriminated union carrying keycard version and decrypted V1 user key (to avoid re-decryption).
- * V1 keycards are JSON; V2 keycards are CBOR-encoded reduced key shares.
- */
-type SubstrateSigningMaterial = { version: 'v1'; userPrv: string } | { version: 'v2'; encryptedUserKey: string };
 
 export class SubstrateCoin extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -520,23 +516,8 @@ export class SubstrateCoin extends BaseCoin {
     return prv;
   }
 
-  /**
-   * Probes the key format and returns a discriminated union so callers avoid a second decrypt.
-   * V1 keycards are JSON; V2 keycards are CBOR-encoded reduced key shares.
-   */
-  protected async isMpcV2Keycard(userKey: string, walletPassphrase: string): Promise<SubstrateSigningMaterial> {
-    const normalized = userKey.replace(/\s/g, '');
-    let isV1: boolean;
-    try {
-      isV1 = await EDDSAUtils.isEddsaMpcV1SigningMaterial(normalized, walletPassphrase, this.bitgo);
-    } catch (e) {
-      throw new Error(`Error decrypting user keychain: ${e instanceof Error ? e.message : String(e)}`);
-    }
-    if (isV1) {
-      const userPrv = await this.decryptKeychain(normalized, walletPassphrase, 'user');
-      return { version: 'v1', userPrv };
-    }
-    return { version: 'v2', encryptedUserKey: normalized };
+  protected async isMpcV2Keycard(userKey: string, walletPassphrase: string): Promise<EddsaSigningMaterial> {
+    return sharedIsMpcV2Keycard(userKey, walletPassphrase, this.bitgo);
   }
 
   // Protected so tests can stub via instance overrides without adding new test dependencies.
@@ -569,7 +550,7 @@ export class SubstrateCoin extends BaseCoin {
    */
   protected async addSubstrateRecoverySignature(
     txBuilder: NativeTransferBuilder,
-    signingMaterial: SubstrateSigningMaterial,
+    signingMaterial: EddsaSigningMaterial,
     backupKey: string,
     walletPassphrase: string,
     unsignedTransaction: Transaction,
