@@ -1,5 +1,4 @@
 import assert from 'assert';
-import crypto from 'crypto';
 import * as pgp from 'openpgp';
 import * as sjcl from '@bitgo/sjcl';
 import { NonEmptyString } from 'io-ts-types';
@@ -51,12 +50,7 @@ import { BaseEddsaUtils } from './base';
 import { resolveEffectiveTxParams } from '../recipientUtils';
 import { EddsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './eddsaMPCv2KeyGenSender';
 import { EddsaMPCv2RecoveryKeyShares } from './types';
-
-export type EddsaRetrofitData = {
-  s_i_0: string;
-  expectedPk: string;
-  chainCode: string;
-};
+import { SigningMaterial } from '../../../tss';
 
 export class EddsaMPCv2Utils extends BaseEddsaUtils {
   private static readonly MPS_DSG_SIGNING_USER_GPG_KEY = 'MPS_DSG_SIGNING_USER_GPG_KEY';
@@ -1076,42 +1070,67 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 
   // #region retrofit
 
-  getMpcV2RetrofitDataFromMpcV1Keys(params: {
-    mpcv1UserKeyShare: string;
-    mpcv1BackupKeyShare: string;
-  }): {
-    userRetrofitData: EddsaRetrofitData;
-    backupRetrofitData: EddsaRetrofitData;
-  } {
-    const userKey = JSON.parse(params.mpcv1UserKeyShare);
-    assert(typeof userKey?.pShare?.y === 'string', 'MPCv1 user key missing pShare.y (aggregate public key)');
-    const expectedPk: string = userKey.pShare.y;
+  async getMpcV2RetrofitDataFromMpcV1Keys(params: { mpcv1UserKeyShare: string; mpcv1BackupKeyShare: string }): Promise<{
+    userRetrofitData: MPSTypes.EddsaRetrofitData;
+    backupRetrofitData: MPSTypes.EddsaRetrofitData;
+  }> {
+    const MPC = await getInitializedMpcInstance();
+    const userRetrofitData = EddsaMPCv2Utils.getMpcV2RetrofitDataFromMpcV1Key(
+      params.mpcv1UserKeyShare,
+      MPCv2PartiesEnum.USER,
+      MPC
+    );
+    const backupRetrofitData = EddsaMPCv2Utils.getMpcV2RetrofitDataFromMpcV1Key(
+      params.mpcv1BackupKeyShare,
+      MPCv2PartiesEnum.BACKUP,
+      MPC
+    );
 
-    return {
-      userRetrofitData: EddsaMPCv2Utils.getMpcV2RetrofitDataFromMpcV1Key(params.mpcv1UserKeyShare, expectedPk),
-      backupRetrofitData: EddsaMPCv2Utils.getMpcV2RetrofitDataFromMpcV1Key(params.mpcv1BackupKeyShare, expectedPk),
-    };
+    assert(
+      userRetrofitData.expectedPk === backupRetrofitData.expectedPk,
+      'MPCv1 user and backup keys combine to different aggregate public keys'
+    );
+    assert(
+      userRetrofitData.chainCode === backupRetrofitData.chainCode,
+      'MPCv1 user and backup keys combine to different chain codes'
+    );
+
+    return { userRetrofitData, backupRetrofitData };
   }
 
   private static getMpcV2RetrofitDataFromMpcV1Key(
-    decryptedKeyShare: string,
-    expectedPk: string
-  ): EddsaRetrofitData {
-    const key = JSON.parse(decryptedKeyShare);
-    assert(typeof key?.uShare?.seed === 'string', 'MPCv1 key missing uShare.seed');
-    assert(typeof key?.uShare?.chaincode === 'string', 'MPCv1 key missing uShare.chaincode');
+    mpcv1PartyKeyShare: string,
+    mpcv1PartyIndex: MPCv2PartiesEnum.USER | MPCv2PartiesEnum.BACKUP,
+    mpc: Awaited<ReturnType<typeof getInitializedMpcInstance>>
+  ): MPSTypes.EddsaRetrofitData {
+    const signingMaterial: SigningMaterial = JSON.parse(mpcv1PartyKeyShare);
+    assert(signingMaterial.uShare, 'MPCv1 key material missing uShare');
+    assert(signingMaterial.bitgoYShare, 'MPCv1 key material missing bitgoYShare');
 
-    const seedBytes = Buffer.from(key.uShare.seed, 'hex');
-    const hash = crypto.createHash('sha512').update(seedBytes).digest();
-    const scalar = Buffer.from(hash.subarray(0, 32));
-    scalar[0] &= 248;
-    scalar[31] &= 127;
-    scalar[31] |= 64;
+    let pShare;
+    switch (mpcv1PartyIndex) {
+      case MPCv2PartiesEnum.USER:
+        assert(signingMaterial.backupYShare, 'User MPCv1 key material missing backupYShare');
+        pShare = mpc.keyCombine(signingMaterial.uShare, [
+          signingMaterial.bitgoYShare,
+          signingMaterial.backupYShare,
+        ]).pShare;
+        break;
+      case MPCv2PartiesEnum.BACKUP:
+        assert(signingMaterial.userYShare, 'Backup MPCv1 key material missing userYShare');
+        pShare = mpc.keyCombine(signingMaterial.uShare, [
+          signingMaterial.bitgoYShare,
+          signingMaterial.userYShare,
+        ]).pShare;
+        break;
+      default:
+        throw new Error('Invalid participant index');
+    }
 
     return {
-      s_i_0: scalar.toString('hex'),
-      expectedPk,
-      chainCode: key.uShare.chaincode,
+      s_i_0: pShare.u,
+      expectedPk: pShare.y,
+      chainCode: pShare.chaincode,
     };
   }
 
