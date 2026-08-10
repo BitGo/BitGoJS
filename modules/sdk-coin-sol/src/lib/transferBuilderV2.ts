@@ -211,7 +211,10 @@ export class TransferBuilderV2 extends TransactionBuilder {
             tokenName: tokenName,
             mintAddress: tokenAddress,
             ataAddress: recipientTokenAddress,
-            payerAddress: this._sender,
+            // Match transactionBuilder fee payer selection: when a distinct fee payer
+            // is set (e.g. gas tank on consolidation), it must fund ATA rent — the
+            // token sender/authority often has no SOL.
+            payerAddress: this._feePayer ?? this._sender,
             programId: programId,
           },
         };

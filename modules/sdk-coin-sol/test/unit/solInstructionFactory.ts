@@ -6,7 +6,7 @@ import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../src/lib/constant
 import { InstructionParams } from '../../src/lib/iface';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import {
-  createAssociatedTokenAccountInstruction,
+  createAssociatedTokenAccountIdempotentInstruction,
   createTransferCheckedInstruction,
   createMintToInstruction,
   createBurnInstruction,
@@ -14,6 +14,7 @@ import {
   createTransferCheckedWithFeeInstruction,
 } from '@solana/spl-token';
 import BigNumber from 'bignumber.js';
+import { isIdempotentAtaInstruction } from '../../src/lib/utils';
 
 describe('Instruction Builder Tests: ', function () {
   describe('Succeed ', function () {
@@ -109,14 +110,43 @@ describe('Instruction Builder Tests: ', function () {
       };
 
       const result = solInstructionFactory(createATAParams);
-      should.deepEqual(result, [
-        createAssociatedTokenAccountInstruction(
-          new PublicKey(payerAddress),
-          new PublicKey(ataAddress),
-          new PublicKey(ownerAddress),
-          new PublicKey(mintAddress)
-        ),
-      ]);
+      const expected = createAssociatedTokenAccountIdempotentInstruction(
+        new PublicKey(payerAddress),
+        new PublicKey(ataAddress),
+        new PublicKey(ownerAddress),
+        new PublicKey(mintAddress)
+      );
+      should.deepEqual(result, [expected]);
+      isIdempotentAtaInstruction(result[0]).should.equal(true);
+    });
+
+    it('Create associated token account for Token-2022', () => {
+      const mintAddress = testData.associatedTokenAccounts.mintId;
+      const ataAddress = testData.associatedTokenAccounts.accounts[0].ata;
+      const ownerAddress = testData.associatedTokenAccounts.accounts[0].pub;
+      const payerAddress = testData.associatedTokenAccounts.accounts[0].pub;
+      const createATAParams: InstructionParams = {
+        type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
+        params: {
+          mintAddress,
+          ataAddress,
+          ownerAddress,
+          payerAddress,
+          tokenName: testData.associatedTokenAccounts.mint,
+          programId: TOKEN_2022_PROGRAM_ID.toString(),
+        },
+      };
+
+      const result = solInstructionFactory(createATAParams);
+      const expected = createAssociatedTokenAccountIdempotentInstruction(
+        new PublicKey(payerAddress),
+        new PublicKey(ataAddress),
+        new PublicKey(ownerAddress),
+        new PublicKey(mintAddress),
+        TOKEN_2022_PROGRAM_ID
+      );
+      should.deepEqual(result, [expected]);
+      isIdempotentAtaInstruction(result[0]).should.equal(true);
     });
 
     it('Token Transfer', () => {
