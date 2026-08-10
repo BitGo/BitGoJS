@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [52.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.4.2...bitgo@52.5.0) (2026-08-07)
+
+
+### Bug Fixes
+
+* hold bitgo back via committed private + --include-private ([90afaa0](https://github.com/BitGo/BitGoJS/commit/90afaa0e3e5d61ecd3b2242d5a7553b0905c34fc))
+
+
+### Features
+
+* **sdk-core:** allow opting out of v2 on password change ([b635b5b](https://github.com/BitGo/BitGoJS/commit/b635b5b0169fea7f49cc090c2d6f20105379a330))
+* **sdk-core:** always upgrade to v2 on password change ([f12d8da](https://github.com/BitGo/BitGoJS/commit/f12d8da74ffdb2c1f2ea73ca3d6a14143dc46242))
+
+
+
+
+
 ## [52.4.2](https://github.com/BitGo/BitGoJS/compare/bitgo@52.4.1...bitgo@52.4.2) (2026-08-04)
 
 

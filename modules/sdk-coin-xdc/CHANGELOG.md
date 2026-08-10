@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xdc@1.10.9...@bitgo/sdk-coin-xdc@1.10.10) (2026-08-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-xdc:** remove weak verifyTssTransaction override ([67c754e](https://github.com/BitGo/BitGoJS/commit/67c754ee245fc5d37affbc019bc49b0d8a19807a))
+
+
+
+
+
 ## [1.10.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xdc@1.10.8...@bitgo/sdk-coin-xdc@1.10.9) (2026-08-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xdc
