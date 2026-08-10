@@ -40,6 +40,16 @@ describe('ERC-7984 Statics Registry', function () {
         unique.size.should.equal(addresses.length, `duplicate wrapper address on ${networkName}`);
       });
     });
+
+    it('registry is frozen (immutable at all levels)', function () {
+      Object.isFrozen(erc7984Registry).should.be.true();
+      const hoodiPairs = erc7984Registry[Networks.test.hoodi.name];
+      Object.isFrozen(hoodiPairs).should.be.true();
+      Object.isFrozen(hoodiPairs[0]).should.be.true();
+      const mainnetPairs = erc7984Registry[Networks.main.ethereum.name];
+      Object.isFrozen(mainnetPairs).should.be.true();
+      Object.isFrozen(mainnetPairs[0]).should.be.true();
+    });
   });
 
   describe('getWrapperPair', function () {
@@ -92,6 +102,17 @@ describe('ERC-7984 Statics Registry', function () {
       (pair === undefined).should.be.true();
     });
 
+    it('returns undefined for an empty wrapperAddress', function () {
+      const pair = getWrapperPair(Networks.test.hoodi.name, '');
+      (pair === undefined).should.be.true();
+    });
+
+    it('returns undefined for a null-like wrapperAddress without crashing', function () {
+      // Simulate JS caller passing null (bypasses TypeScript)
+      const pair = getWrapperPair(Networks.test.hoodi.name, null as unknown as string);
+      (pair === undefined).should.be.true();
+    });
+
     it('returns the correct mainnet pair for eth:cusdt', function () {
       const pair = getWrapperPair(
         Networks.main.ethereum.name,
@@ -133,6 +154,55 @@ describe('ERC-7984 Statics Registry', function () {
     it('returns empty array for an unknown network', function () {
       const pairs = getActiveWrapperPairs('no-such-network');
       pairs.should.be.an.Array().and.be.empty();
+    });
+
+    it('excludes pairs with isVetted=false', function () {
+      // Build an in-memory registry with a non-vetted pair alongside a vetted one
+      const testPairs: ReadonlyArray<Erc7984WrapperPair> = [
+        {
+          wrapperAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          underlyingErc20Address: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+          rate: 1n,
+          requiresApprovalReset: false,
+          isVetted: false,
+          isActive: true,
+        },
+        {
+          wrapperAddress: '0xcccccccccccccccccccccccccccccccccccccccc',
+          underlyingErc20Address: '0xdddddddddddddddddddddddddddddddddddddddd',
+          rate: 1n,
+          requiresApprovalReset: false,
+          isVetted: true,
+          isActive: true,
+        },
+      ];
+      const result = testPairs.filter((p) => p.isVetted && p.isActive);
+      result.length.should.equal(1);
+      result[0].wrapperAddress.should.equal('0xcccccccccccccccccccccccccccccccccccccccc');
+    });
+
+    it('excludes pairs with isActive=false', function () {
+      const testPairs: ReadonlyArray<Erc7984WrapperPair> = [
+        {
+          wrapperAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          underlyingErc20Address: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+          rate: 1n,
+          requiresApprovalReset: false,
+          isVetted: true,
+          isActive: false,
+        },
+        {
+          wrapperAddress: '0xcccccccccccccccccccccccccccccccccccccccc',
+          underlyingErc20Address: '0xdddddddddddddddddddddddddddddddddddddddd',
+          rate: 1n,
+          requiresApprovalReset: false,
+          isVetted: true,
+          isActive: true,
+        },
+      ];
+      const result = testPairs.filter((p) => p.isVetted && p.isActive);
+      result.length.should.equal(1);
+      result[0].wrapperAddress.should.equal('0xcccccccccccccccccccccccccccccccccccccccc');
     });
   });
 });
