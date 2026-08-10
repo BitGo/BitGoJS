@@ -2551,6 +2551,9 @@ export enum UnderlyingAsset {
   'eth:lngvx' = 'eth:lngvx',
   'eth:eqtyx' = 'eth:eqtyx',
   'eth:deuro' = 'eth:deuro',
+  'eth:strusd' = 'eth:strusd',
+  'eth:u' = 'eth:u',
+  'eth:bliquid' = 'eth:bliquid',
   'eth:usat' = 'eth:usat',
   'eth:usdf' = 'eth:usdf',
   'eth:ausd' = 'eth:ausd',
@@ -2959,6 +2962,7 @@ export enum UnderlyingAsset {
   'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU' = 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU',
   'txlm:TST-GC26PEYGETD7L6PUW2VCU3PSC7LCLRRPOSUILSHD2RT23IQUEAN4TQBQ' = 'txlm:TST-GC26PEYGETD7L6PUW2VCU3PSC7LCLRRPOSUILSHD2RT23IQUEAN4TQBQ',
   'txlm:BTGT-GCCUFJV5P32QGVZVW73SF7P53ZH2OXJ5C3DYSXDECSRCP3FU2GJ2PXGE' = 'txlm:BTGT-GCCUFJV5P32QGVZVW73SF7P53ZH2OXJ5C3DYSXDECSRCP3FU2GJ2PXGE',
+  'txlm:yGHS-GCF46XLX3R7OXIDAFZ3HH6DEY5VT3BJJRSTKSSOKPLGNH6H7QYV3A2OA' = 'txlm:yGHS-GCF46XLX3R7OXIDAFZ3HH6DEY5VT3BJJRSTKSSOKPLGNH6H7QYV3A2OA',
 
   // Algorand testnet tokens
   'talgo:USON-16026728' = 'talgo:USON-16026728',
@@ -3398,6 +3402,7 @@ export enum UnderlyingAsset {
   'bsc:ftm' = 'bsc:ftm',
   'bsc:comp' = 'bsc:comp',
   'bsc:uni' = 'bsc:uni',
+  'bsc:u' = 'bsc:u',
   'bsc:yfi' = 'bsc:yfi',
   'bsc:link' = 'bsc:link',
   'bsc:cusdo' = 'bsc:cusdo',
@@ -3700,6 +3705,8 @@ export enum UnderlyingAsset {
   'baseeth:flock' = 'baseeth:flock',
   'baseeth:gps' = 'baseeth:gps',
   'baseeth:elsa' = 'baseeth:elsa',
+  'baseeth:allo' = 'baseeth:allo',
+  'baseeth:gro' = 'baseeth:gro',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -4167,6 +4174,7 @@ export enum UnderlyingAsset {
   'sol:birb' = 'sol:birb',
   'sol:pybobo' = 'sol:pybobo',
   'sol:usdpt' = 'sol:usdpt',
+  'sol:bliquid' = 'sol:bliquid',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',
@@ -4550,6 +4558,7 @@ export enum UnderlyingAsset {
   // Canton mainnet tokens
   'canton:usdcx' = 'canton:usdcx',
   'canton:usd1' = 'canton:usd1',
+  'canton:usdm1' = 'canton:usdm1',
   'canton:cbtc' = 'canton:cbtc',
   'canton:usdxlr' = 'canton:usdxlr',
   'canton:cltc' = 'canton:cltc',

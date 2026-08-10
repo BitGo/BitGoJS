@@ -3503,6 +3503,26 @@ export const solTokens = [
     SOL_TOKEN_FEATURES,
     ProgramID.Token2022ProgramId
   ),
+  // CECHO-1893 batch 0803 tokens
+  solToken(
+    'e0b4ee3f-8958-4cf3-a24f-9b9400e978d4',
+    'sol:bliquid',
+    'BNY Dreyfus On-Chain Liquidity Fund',
+    2,
+    '33J6F2wAHrFXAQJpgz3mLfzbvSNkVVfXTbZVMGxXF8Ab',
+    '33J6F2wAHrFXAQJpgz3mLfzbvSNkVVfXTbZVMGxXF8Ab',
+    UnderlyingAsset['sol:bliquid'],
+    SolCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      SOL_TOKEN_FEATURES
+    ),
+    ProgramID.Token2022ProgramId
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',

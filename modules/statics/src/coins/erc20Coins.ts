@@ -12367,6 +12367,40 @@ export const erc20Coins = [
     '0x7cf9a80db3b29ee8efe3710aadb7b95270572d47',
     UnderlyingAsset['eth:nil']
   ),
+  // CECHO-1893 batch 0803 tokens
+  erc20(
+    '52f48b8e-33c3-480c-973a-12e492adfde8',
+    'eth:strusd',
+    'Tori Staked trUSD',
+    18,
+    '0x280839980a7ed0d7717f64125fe241012e5f5815',
+    UnderlyingAsset['eth:strusd']
+  ),
+  erc20(
+    '809067fa-017d-47eb-8abb-fa29085e037f',
+    'eth:u',
+    'United Stables',
+    18,
+    '0xce24439f2d9c6a2289f741120fe202248b666666',
+    UnderlyingAsset['eth:u']
+  ),
+  erc20(
+    '9056302f-1748-4675-b563-dfddcb2c9bb2',
+    'eth:bliquid',
+    'BNY Dreyfus On-Chain Liquidity Fund',
+    2,
+    '0x80fdea151e79d6904859b12b0b3fb40d4209e462',
+    UnderlyingAsset['eth:bliquid'],
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',

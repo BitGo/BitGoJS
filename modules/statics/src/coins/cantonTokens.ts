@@ -233,6 +233,17 @@ export const cantonTokens = [
     UnderlyingAsset['canton:912810rc4'],
     [...CANTON_TOKEN_FEATURES]
   ),
+  // CECHO-1893 batch 0803 tokens
+  cantonToken(
+    '4f056316-2286-4d7b-8064-43f4401ecadd',
+    'canton:usdm1',
+    'USDM1',
+    10,
+    'https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/',
+    'M1-validator-1::12207b40944692e083593819697e1cd87a94026afca2564253d16ff8696b233a6637',
+    UnderlyingAsset['canton:usdm1'],
+    CANTON_TOKEN_FEATURES
+  ),
   // testnet tokens
   tcantonToken(
     '46356790-0ac4-4c3b-8b70-39094106d772',

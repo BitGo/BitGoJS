@@ -6276,6 +6276,50 @@ export const tOfcErc20Coins = [
   ofcerc20('253e2858-a27b-4d39-b1fc-b8f719584d1f', 'ofceth:nvylds', 'NUVA YLDS', 12, UnderlyingAsset['eth:nvylds']),
   ofcerc20('e68260cc-3f0c-4429-9681-5a2cd46a6c87', 'ofceth:nvheloc', 'NUVA HELOC', 12, UnderlyingAsset['eth:nvheloc']),
   ofcerc20('02a7867a-754e-4132-8802-1b4aa979a441', 'ofceth:nil', 'Nillion', 6, UnderlyingAsset['eth:nil']),
+  // CECHO-1893 batch 0803 tokens
+  ofcerc20(
+    '07c67706-5e28-4117-b181-38d4b8424b73',
+    'ofceth:strusd',
+    'Tori Staked trUSD',
+    18,
+    UnderlyingAsset['eth:strusd']
+  ),
+  ofcerc20('d4e7002b-4299-442a-bda4-0e35a80c079a', 'ofceth:u', 'United Stables', 18, UnderlyingAsset['eth:u']),
+  ofcerc20(
+    'c9fb114e-e8cd-46b3-ae72-9f0e4cb842c1',
+    'ofceth:bliquid',
+    'BNY Dreyfus On-Chain Liquidity Fund',
+    2,
+    UnderlyingAsset['eth:bliquid']
+  ),
+  ofcerc20(
+    '14aa687a-ee62-431e-bfe5-a78764cca714',
+    'ofcbaseeth:allo',
+    'Allora',
+    18,
+    UnderlyingAsset['baseeth:allo'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    'e5612640-d0fa-493e-a799-e7d02ab69069',
+    'ofcbaseeth:gro',
+    'GromaCoin',
+    18,
+    UnderlyingAsset['baseeth:gro'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
   ofcerc20('14912a5e-254c-4c6f-9f9c-f9ce11b7b293', 'ofceth:bard', 'Lombard', 18, UnderlyingAsset['eth:bard']),
   ofcerc20('a31a6330-cbd6-49b0-b8b1-a7f9a48e770c', 'ofceth:sfp', 'SafePal Token', 18, UnderlyingAsset['eth:sfp']),
   ofcerc20('60f825f0-ed18-46b2-a03f-fd93b5e94f43', 'ofceth:aztec', 'Aztec', 18, UnderlyingAsset['eth:aztec']),
