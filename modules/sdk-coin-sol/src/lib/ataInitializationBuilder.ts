@@ -176,7 +176,8 @@ export class AtaInitializationBuilder extends TransactionBuilder {
             mintAddress: tokenAddress,
             ataAddress: ataPk,
             ownerAddress: recipient.ownerAddress,
-            payerAddress: this._sender,
+            // Match transactionBuilder fee payer selection when a distinct fee payer is set.
+            payerAddress: this._feePayer ?? this._sender,
             tokenName: recipient.tokenName,
             programId: programId,
           },

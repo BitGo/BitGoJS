@@ -797,4 +797,48 @@ describe('Sol Token Transfer Builder', () => {
       ).throwError('Invalid token name, got: ' + invalidTokenName);
     });
   });
+
+  describe('Create ATA rent payer selection', () => {
+    const feePayerAccount = new KeyPair(testData.feePayerAccount).getKeys();
+
+    before(async () => {
+      ataAddress = await Utils.getAssociatedTokenAccountAddress(mintUSDC, otherAccount.pub);
+    });
+
+    it('uses feePayer as Create-ATA rent payer when feePayer is set', async () => {
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.nonce(recentBlockHash);
+      txBuilder.feePayer(feePayerAccount.pub);
+      txBuilder.sender(walletPK);
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
+      txBuilder.createAssociatedTokenAccount({
+        ownerAddress: otherAccount.pub,
+        tokenName: nameUSDC,
+        ataAddress,
+      });
+      txBuilder.setPriorityFee(priorityFee);
+      const tx = await txBuilder.build();
+      const createAta = tx.toJson().instructionsData.find((i) => i.type === 'CreateAssociatedTokenAccount');
+      should.exist(createAta);
+      createAta.params.payerAddress.should.equal(feePayerAccount.pub);
+      createAta.params.payerAddress.should.not.equal(walletPK);
+    });
+
+    it('falls back to sender as Create-ATA rent payer when feePayer is unset', async () => {
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.nonce(recentBlockHash);
+      txBuilder.sender(walletPK);
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
+      txBuilder.createAssociatedTokenAccount({
+        ownerAddress: otherAccount.pub,
+        tokenName: nameUSDC,
+        ataAddress,
+      });
+      txBuilder.setPriorityFee(priorityFee);
+      const tx = await txBuilder.build();
+      const createAta = tx.toJson().instructionsData.find((i) => i.type === 'CreateAssociatedTokenAccount');
+      should.exist(createAta);
+      createAta.params.payerAddress.should.equal(walletPK);
+    });
+  });
 });

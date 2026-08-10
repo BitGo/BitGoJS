@@ -1,7 +1,7 @@
 import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { SolCoin } from '@bitgo/statics';
 import {
-  createAssociatedTokenAccountInstruction,
+  createAssociatedTokenAccountIdempotentInstruction,
   createCloseAccountInstruction,
   createMintToInstruction,
   createBurnInstruction,
@@ -520,10 +520,14 @@ function stakingWithdrawInstruction(data: StakingWithdraw): TransactionInstructi
 }
 
 /**
- * Construct Create and Initialize Nonce Solana instructions
+ * Construct an idempotent Create Associated Token Account instruction.
  *
- * @param {WalletInit} data - the data to build the instruction
- * @returns {TransactionInstruction[]} An array containing Create and Initialize Nonce Solana instruction
+ * Uses createAssociatedTokenAccountIdempotentInstruction so the instruction is a
+ * no-op when the ATA already exists (discriminator byte = 1), instead of failing
+ * like the legacy createAssociatedTokenAccountInstruction (empty data).
+ *
+ * @param {AtaInit} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing the Create ATA instruction
  */
 function createATAInstruction(data: AtaInit): TransactionInstruction[] {
   const {
@@ -536,7 +540,7 @@ function createATAInstruction(data: AtaInit): TransactionInstruction[] {
 
   let associatedTokenAccountInstruction: TransactionInstruction;
   if (programId && programId === TOKEN_2022_PROGRAM_ID.toString()) {
-    associatedTokenAccountInstruction = createAssociatedTokenAccountInstruction(
+    associatedTokenAccountInstruction = createAssociatedTokenAccountIdempotentInstruction(
       new PublicKey(payerAddress),
       new PublicKey(ataAddress),
       new PublicKey(ownerAddress),
@@ -544,7 +548,7 @@ function createATAInstruction(data: AtaInit): TransactionInstruction[] {
       TOKEN_2022_PROGRAM_ID
     );
   } else {
-    associatedTokenAccountInstruction = createAssociatedTokenAccountInstruction(
+    associatedTokenAccountInstruction = createAssociatedTokenAccountIdempotentInstruction(
       new PublicKey(payerAddress),
       new PublicKey(ataAddress),
       new PublicKey(ownerAddress),

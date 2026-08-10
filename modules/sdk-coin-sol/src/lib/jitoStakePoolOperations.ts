@@ -11,7 +11,7 @@ import {
 } from '@solana/spl-stake-pool';
 import {
   createApproveInstruction,
-  createAssociatedTokenAccountInstruction,
+  createAssociatedTokenAccountIdempotentInstruction,
   getAssociatedTokenAddressSync,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
@@ -129,7 +129,7 @@ export function depositSolInstructions(
   const instructions: TransactionInstruction[] = [];
 
   if (createAssociatedTokenAccount) {
-    instructions.push(createAssociatedTokenAccountInstruction(from, associatedAddress, from, poolMint));
+    instructions.push(createAssociatedTokenAccountIdempotentInstruction(from, associatedAddress, from, poolMint));
   }
 
   instructions.push(

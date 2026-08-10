@@ -191,7 +191,9 @@ export class TokenTransferBuilder extends TransactionBuilder {
             ownerAddress: recipient.ownerAddress,
             mintAddress: tokenAddress,
             ataAddress,
-            payerAddress: this._sender,
+            // Match transactionBuilder fee payer selection: when a distinct fee payer
+            // is set (e.g. gas tank), it must fund ATA rent — not the token sender.
+            payerAddress: this._feePayer ?? this._sender,
             tokenName: tokenName,
             programId: programId,
           },
