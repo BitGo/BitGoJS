@@ -62,3 +62,10 @@ export {
   generateErc20Token,
   generateTestErc20Token,
 } from './coins/generateERC20';
+export {
+  Erc7984WrapperPair,
+  Erc7984Registry,
+  erc7984Registry,
+  getWrapperPair,
+  getActiveWrapperPairs,
+} from './erc7984Registry';
