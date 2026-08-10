@@ -22,6 +22,7 @@ import {
   EDDSAUtils,
   EddsaMPCv2KeyGenCallbacks,
   EddsaMPCv2Utils,
+  EddsaRetrofitData,
   IBaseCoin,
   IWallet,
   RequestTracer,
@@ -2175,6 +2176,140 @@ describe('EddsaMPCv2Utils.createKeychainsWithExternalSigner', function () {
     await assert.rejects(
       () => utils.createKeychainsWithExternalSigner({ enterprise, callbacks }),
       /Failed to get BitGo EdDSA MPCv2 GPG public key/
+    );
+  });
+});
+
+describe('EddsaMPCv2Utils.getMpcV2RetrofitDataFromMpcV1Keys', () => {
+  // 32-byte seed and chaincode values used across all tests
+  const userSeed = randomBytes(32).toString('hex');
+  const backupSeed = randomBytes(32).toString('hex');
+  const userChaincode = randomBytes(32).toString('hex');
+  const backupChaincode = randomBytes(32).toString('hex');
+  const aggregatePk = randomBytes(32).toString('hex');
+
+  const userMpcV1Key = JSON.stringify({
+    uShare: { i: 1, seed: userSeed, chaincode: userChaincode, y: randomBytes(32).toString('hex') },
+    pShare: { y: aggregatePk },
+    bitgoYShare: { u: randomBytes(32).toString('hex') },
+    backupYShare: { u: randomBytes(32).toString('hex') },
+  });
+
+  const backupMpcV1Key = JSON.stringify({
+    uShare: { i: 2, seed: backupSeed, chaincode: backupChaincode, y: randomBytes(32).toString('hex') },
+    bitgoYShare: { u: randomBytes(32).toString('hex') },
+    userYShare: { u: randomBytes(32).toString('hex') },
+  });
+
+  let utils: EddsaMPCv2Utils;
+
+  beforeEach(() => {
+    const mockBitGo = {} as unknown as BitGoBase;
+    const mockCoin = {} as unknown as IBaseCoin;
+    utils = new EddsaMPCv2Utils(mockBitGo, mockCoin);
+  });
+
+  function deriveScalar(seedHex: string): string {
+    const { createHash } = require('crypto');
+    const seedBytes = Buffer.from(seedHex, 'hex');
+    const hash = createHash('sha512').update(seedBytes).digest();
+    const scalar = Buffer.from(hash.subarray(0, 32));
+    scalar[0] &= 248;
+    scalar[31] &= 127;
+    scalar[31] |= 64;
+    return scalar.toString('hex');
+  }
+
+  it('returns EddsaRetrofitData for user and backup with matching expectedPk', () => {
+    const result = utils.getMpcV2RetrofitDataFromMpcV1Keys({
+      mpcv1UserKeyShare: userMpcV1Key,
+      mpcv1BackupKeyShare: backupMpcV1Key,
+    });
+
+    const { userRetrofitData, backupRetrofitData } = result as {
+      userRetrofitData: EddsaRetrofitData;
+      backupRetrofitData: EddsaRetrofitData;
+    };
+
+    assert.strictEqual(userRetrofitData.expectedPk, aggregatePk);
+    assert.strictEqual(backupRetrofitData.expectedPk, aggregatePk);
+  });
+
+  it('returns correct chainCode per party', () => {
+    const { userRetrofitData, backupRetrofitData } = utils.getMpcV2RetrofitDataFromMpcV1Keys({
+      mpcv1UserKeyShare: userMpcV1Key,
+      mpcv1BackupKeyShare: backupMpcV1Key,
+    });
+
+    assert.strictEqual(userRetrofitData.chainCode, userChaincode);
+    assert.strictEqual(backupRetrofitData.chainCode, backupChaincode);
+  });
+
+  it('returns correctly clamped s_i_0 scalars', () => {
+    const { userRetrofitData, backupRetrofitData } = utils.getMpcV2RetrofitDataFromMpcV1Keys({
+      mpcv1UserKeyShare: userMpcV1Key,
+      mpcv1BackupKeyShare: backupMpcV1Key,
+    });
+
+    assert.strictEqual(userRetrofitData.s_i_0, deriveScalar(userSeed));
+    assert.strictEqual(backupRetrofitData.s_i_0, deriveScalar(backupSeed));
+  });
+
+  it('scalar byte[0] has low 3 bits cleared, byte[31] has bit7 cleared and bit6 set', () => {
+    const { userRetrofitData } = utils.getMpcV2RetrofitDataFromMpcV1Keys({
+      mpcv1UserKeyShare: userMpcV1Key,
+      mpcv1BackupKeyShare: backupMpcV1Key,
+    });
+
+    const scalarBytes = Buffer.from(userRetrofitData.s_i_0, 'hex');
+    assert.strictEqual(scalarBytes[0] & 0b111, 0, 'byte[0] low 3 bits should be cleared');
+    assert.strictEqual(scalarBytes[31] & 0b10000000, 0, 'byte[31] bit7 should be cleared');
+    assert.strictEqual(scalarBytes[31] & 0b01000000, 0b01000000, 'byte[31] bit6 should be set');
+  });
+
+  it('throws if user key is missing pShare.y', () => {
+    const keyNoPShare = JSON.stringify({
+      uShare: { i: 1, seed: userSeed, chaincode: userChaincode },
+      bitgoYShare: { u: 'x' },
+    });
+    assert.throws(
+      () =>
+        utils.getMpcV2RetrofitDataFromMpcV1Keys({
+          mpcv1UserKeyShare: keyNoPShare,
+          mpcv1BackupKeyShare: backupMpcV1Key,
+        }),
+      /MPCv1 user key missing pShare\.y/
+    );
+  });
+
+  it('throws if user key is missing uShare.seed', () => {
+    const keyNoSeed = JSON.stringify({
+      uShare: { i: 1, chaincode: userChaincode },
+      pShare: { y: aggregatePk },
+      bitgoYShare: { u: 'x' },
+    });
+    assert.throws(
+      () =>
+        utils.getMpcV2RetrofitDataFromMpcV1Keys({
+          mpcv1UserKeyShare: keyNoSeed,
+          mpcv1BackupKeyShare: backupMpcV1Key,
+        }),
+      /MPCv1 key missing uShare\.seed/
+    );
+  });
+
+  it('throws if backup key is missing uShare.seed', () => {
+    const backupNoSeed = JSON.stringify({
+      uShare: { i: 2, chaincode: backupChaincode },
+      bitgoYShare: { u: 'x' },
+    });
+    assert.throws(
+      () =>
+        utils.getMpcV2RetrofitDataFromMpcV1Keys({
+          mpcv1UserKeyShare: userMpcV1Key,
+          mpcv1BackupKeyShare: backupNoSeed,
+        }),
+      /MPCv1 key missing uShare\.seed/
     );
   });
 });
