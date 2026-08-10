@@ -139,9 +139,7 @@ export const erc7984Registry: Erc7984Registry = Object.freeze({
         throw new Error(`erc7984Registry[${networkName}]: rate must be ≥ 1n for '${p.wrapperAddress}'`);
       }
       if (seen.has(p.wrapperAddress)) {
-        throw new Error(
-          `erc7984Registry[${networkName}]: duplicate wrapperAddress '${p.wrapperAddress}'`
-        );
+        throw new Error(`erc7984Registry[${networkName}]: duplicate wrapperAddress '${p.wrapperAddress}'`);
       }
       seen.add(p.wrapperAddress);
     }
