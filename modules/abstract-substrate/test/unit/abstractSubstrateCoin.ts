@@ -72,10 +72,9 @@ describe('SubstrateCoin MPCv2 recovery helpers:', function () {
   });
 
   describe('addSubstrateRecoverySignature()', function () {
-    // EDDSAUtils.* are exported via `export * as Namespace`, compiling to non-configurable
-    // property getters — sinon cannot replace them. Instead, SubstrateCoin exposes
-    // getEddsaMpcV2RecoveryKeyShares() and signEddsaMpcV2Recovery() as protected methods
-    // so they can be stubbed on the instance (own property shadows the prototype).
+    // signEddsaMpcV2RecoveryTx is a directly-imported module binding — sinon cannot intercept
+    // it after import. SubstrateCoin exposes signSubstrateMpcV2Recovery() as a protected
+    // wrapper so tests can stub it on the instance (own property shadows the prototype).
     // EDDSAMethods.getTSSSignature is a regular writable property — sinon can stub it directly.
     let addSignatureStub: sinon.SinonStub;
     let coin: SubstrateCoinTestAccessor;
@@ -89,12 +88,7 @@ describe('SubstrateCoin MPCv2 recovery helpers:', function () {
 
     it('should prepend ED25519 0x00 discriminant on MPCv2 path', async function () {
       const rawSig = Buffer.alloc(64, 0xab);
-      sinon.stub(coin as unknown, 'getEddsaMpcV2RecoveryKeyShares').resolves({
-        userKeyShare: 'ks1',
-        backupKeyShare: 'ks2',
-        commonKeyChain: MOCK_BITGO_KEY,
-      });
-      sinon.stub(coin as unknown, 'signEddsaMpcV2Recovery').resolves(rawSig);
+      sinon.stub(coin as unknown, 'signSubstrateMpcV2Recovery').resolves(rawSig);
 
       await coin.addSubstrateRecoverySignature(
         { addSignature: addSignatureStub },
@@ -114,11 +108,9 @@ describe('SubstrateCoin MPCv2 recovery helpers:', function () {
     });
 
     it('should throw when commonKeyChain does not match bitgoKey on MPCv2 path', async function () {
-      sinon.stub(coin as unknown, 'getEddsaMpcV2RecoveryKeyShares').resolves({
-        userKeyShare: 'ks1',
-        backupKeyShare: 'ks2',
-        commonKeyChain: 'mismatch',
-      });
+      sinon
+        .stub(coin as unknown, 'signSubstrateMpcV2Recovery')
+        .rejects(new Error('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey'));
 
       await coin
         .addSubstrateRecoverySignature(
