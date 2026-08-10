@@ -7,7 +7,9 @@ import {
   BitGoBase,
   decryptKeychainPrivateKey,
   EDDSAMethods,
-  EDDSAUtils,
+  isMpcV2Keycard as sharedIsMpcV2Keycard,
+  signEddsaMpcV2RecoveryTx,
+  EddsaSigningMaterial,
   InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
@@ -45,8 +47,6 @@ export interface TonParseTransactionOptions extends ParseTransactionOptions {
   fromAddressBounceable?: boolean;
   toAddressBounceable?: boolean;
 }
-
-type TonSigningMaterial = { version: 'v1'; userPrv: string } | { version: 'v2'; encryptedUserKey: string };
 
 export class Ton extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -323,19 +323,8 @@ export class Ton extends BaseCoin {
    * Discriminated union carrying keycard version and decrypted V1 user key (to avoid re-decryption).
    * V1 keycards are JSON; V2 keycards are CBOR-encoded reduced key shares.
    */
-  private async isMpcV2Keycard(userKey: string, walletPassphrase: string): Promise<TonSigningMaterial> {
-    const normalized = userKey.replace(/\s/g, '');
-    let isV1: boolean;
-    try {
-      isV1 = await EDDSAUtils.isEddsaMpcV1SigningMaterial(normalized, walletPassphrase, this.bitgo);
-    } catch (e) {
-      throw new Error(`Error decrypting user keychain: ${e instanceof Error ? e.message : String(e)}`);
-    }
-    if (isV1) {
-      const userPrv = await this.decryptKeychain(normalized, walletPassphrase, 'user');
-      return { version: 'v1', userPrv };
-    }
-    return { version: 'v2', encryptedUserKey: normalized };
+  private async isMpcV2Keycard(userKey: string, walletPassphrase: string): Promise<EddsaSigningMaterial> {
+    return sharedIsMpcV2Keycard(userKey, walletPassphrase, this.bitgo);
   }
 
   private async decryptKeychain(encryptedKey: string, passphrase: string, label: string): Promise<string> {
@@ -347,7 +336,7 @@ export class Ton extends BaseCoin {
   }
 
   private async addRecoverySignature(
-    signingMaterial: TonSigningMaterial,
+    signingMaterial: EddsaSigningMaterial,
     txBuilder: TransactionBuilder,
     senderAddr: string,
     unsignedTransaction: any,
@@ -357,23 +346,15 @@ export class Ton extends BaseCoin {
     walletPassphrase: string
   ): Promise<void> {
     if (signingMaterial.version === 'v2') {
-      const { userKeyShare, backupKeyShare, commonKeyChain } =
-        await EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
-          signingMaterial.encryptedUserKey,
-          backupKey,
-          walletPassphrase,
-          this.bitgo
-        );
-      if (commonKeyChain.toLowerCase() !== bitgoKey.toLowerCase()) {
-        throw new Error('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
-      }
-      const signature = await EDDSAUtils.signRecoveryEddsaMPCv2(
-        unsignedTransaction.signablePayload,
-        currPath,
-        userKeyShare,
-        backupKeyShare,
-        commonKeyChain
-      );
+      const signature = await signEddsaMpcV2RecoveryTx({
+        message: unsignedTransaction.signablePayload,
+        userKey: signingMaterial.encryptedUserKey,
+        backupKey,
+        walletPassphrase,
+        bitgoKey,
+        derivationPath: currPath,
+        bitgo: this.bitgo,
+      });
       txBuilder.addSignature({ pub: senderAddr } as PublicKey, signature);
     } else {
       const userSigningMaterial = JSON.parse(signingMaterial.userPrv) as EDDSAMethodTypes.UserSigningMaterial;
