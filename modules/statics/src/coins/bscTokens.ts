@@ -1447,6 +1447,16 @@ export const bscTokens = [
     UnderlyingAsset['bsc:rekt'],
     BSC_TOKEN_FEATURES
   ),
+  // CECHO-1893 batch 0803 tokens
+  bscToken(
+    '3d20d5c4-ba91-4ee5-83af-62b92029432e',
+    'bsc:u',
+    'United Stables',
+    18,
+    '0xce24439f2d9c6a2289f741120fe202248b666666',
+    UnderlyingAsset['bsc:u'],
+    BSC_TOKEN_FEATURES
+  ),
   tbscToken(
     'b31aa2b5-8d8c-4ac1-b5e5-0f9d59377eab',
     'tbsc:busd',

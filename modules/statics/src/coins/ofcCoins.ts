@@ -3022,6 +3022,8 @@ export const ofcCoins = [
   ofcBscToken('822d85d7-f42d-40de-a14c-220a375eda3f', 'ofcbsc:sfp', 'SafePal Token', 18, UnderlyingAsset['bsc:sfp']),
   ofcBscToken('f5a0b8c3-7d4e-4f9b-9a2c-6e8d9f3b5c7a', 'ofcbsc:btr', 'Bitlayer', 18, UnderlyingAsset['bsc:btr']),
   ofcBscToken('10226e82-2fac-49f4-8ee0-e0f7affeaeec', 'ofcbsc:mask', 'Mask Network', 18, UnderlyingAsset['bsc:mask']),
+  // CECHO-1893 batch 0803 tokens
+  ofcBscToken('13c89c60-5ffd-42c8-acbc-b7b5fa22a5bd', 'ofcbsc:u', 'United Stables', 18, UnderlyingAsset['bsc:u']),
   ofcBscToken(
     'a1380903-6d91-4555-b8ef-74b1bcd993d0',
     'ofcbsc:usdt',
@@ -6252,6 +6254,14 @@ export const ofcCoins = [
   ),
   ofcsolToken('4c928099-4b07-457a-944e-58ed464418de', 'ofcsol:slx', 'Solstice', 6, UnderlyingAsset['sol:slx']),
   ofcsolToken('8ff32b48-1bab-4769-b239-d34afbb74a89', 'ofcsol:ab1', 'Animoca', 0, UnderlyingAsset['sol:ab1']),
+  // CECHO-1893 batch 0803 tokens
+  ofcsolToken(
+    '0f1801dc-befd-46af-b57c-80437406c6d2',
+    'ofcsol:bliquid',
+    'BNY Dreyfus On-Chain Liquidity Fund',
+    2,
+    UnderlyingAsset['sol:bliquid']
+  ),
   // New Canton OFC tokens
   ofcCantonToken(
     '02ab6bd2-83e6-46fc-bfd7-93b8be125648',
@@ -6312,6 +6322,14 @@ export const ofcCoins = [
     UnderlyingAsset['canton:sofid'],
     undefined,
     [CoinFeature.STABLECOIN]
+  ),
+  // CECHO-1893 batch 0803 tokens
+  ofcCantonToken(
+    '010e9b79-ec36-406f-b933-e973d81cf3cf',
+    'ofccanton:usdm1',
+    'USDM1',
+    10,
+    UnderlyingAsset['canton:usdm1']
   ),
   tofcCantonToken(
     'd7297535-c1d4-429d-b3c5-d36351b110e5',

@@ -5091,6 +5091,25 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:elsa'],
     Networks.main.basechain
   ),
+  // CECHO-1893 batch 0803 tokens
+  erc20Token(
+    '12d3d4ee-12ab-45b4-bb6e-46b6f223c04d',
+    'baseeth:allo',
+    'Allora',
+    18,
+    '0x032d86656db142138ac97d2c5c4e3766e8c0482d',
+    UnderlyingAsset['baseeth:allo'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'a5666ecd-2ec3-4282-b4d5-283ccd467658',
+    'baseeth:gro',
+    'GromaCoin',
+    18,
+    '0x3dcce9e05fc9c30a6a4e9fc1c0ec1ff15c16e0b5',
+    UnderlyingAsset['baseeth:gro'],
+    Networks.main.basechain
+  ),
 
   // ARC mainnet tokens
   erc20Token(
@@ -6404,6 +6423,18 @@ export const allCoinsAndTokens = [
     AccountCoin.DEFAULT_FEATURES,
     '',
     'TXLM:BTGT'
+  ),
+  // CECHO-1893 batch 0803 tokens
+  tstellarToken(
+    '02f4297e-e0dc-4a14-af6c-15e0063d1ec6',
+    'txlm:yGHS-GCF46XLX3R7OXIDAFZ3HH6DEY5VT3BJJRSTKSSOKPLGNH6H7QYV3A2OA',
+    'yGHS',
+    7,
+    UnderlyingAsset['txlm:yGHS-GCF46XLX3R7OXIDAFZ3HH6DEY5VT3BJJRSTKSSOKPLGNH6H7QYV3A2OA'],
+    '',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'TXLM:yGHS'
   ),
   ttronToken(
     '4ece7f15-a5c9-4302-8c82-787d7eb7e3c9',
