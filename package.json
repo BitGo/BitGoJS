@@ -154,7 +154,8 @@
     "js-yaml": "4.3.1",
     "ip-address": "10.4.0",
     "socket.io-parser": "4.2.7",
-    "nanoid": "3.3.17"
+    "nanoid": "3.3.17",
+    "sanitize-html": "2.17.5"
   },
   "overrides": {
     "qs": "6.15.2",
@@ -220,6 +221,7 @@
     "js-yaml": "4.3.1",
     "ip-address": "10.4.0",
     "socket.io-parser": "4.2.7",
+    "sanitize-html": "2.17.5",
     "cliui": {
       "strip-ansi": "6.0.1",
       "string-width": "4.2.3"
