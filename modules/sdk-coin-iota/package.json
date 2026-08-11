@@ -44,7 +44,7 @@
     "@bitgo/sdk-core": "^38.6.0",
     "@bitgo/statics": "^59.4.0",
     "@iota/bcs": "^1.2.0",
-    "@iota/iota-sdk": "^1.6.0",
+    "@iota/iota-sdk": ">=1.6.0 <1.11.0",
     "bignumber.js": "^9.1.2",
     "lodash": "^4.18.0"
   },
