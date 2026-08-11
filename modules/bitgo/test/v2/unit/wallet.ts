@@ -1572,6 +1572,62 @@ describe('V2 Wallet:', function () {
     });
   });
 
+  describe('Custody sBTC bridging/withdraw params pass-through', function () {
+    const bridgingParams = {
+      sbtc: {
+        amount: 100000,
+        stacksRecipient: 'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7',
+        maxFee: 5000,
+        lockTime: 144,
+      },
+    };
+    const sbtcWithdrawParams = {
+      amount: '100000',
+      btcAddress: '2N9Ego9KidiZR8tMP82g6RaggQtcbR9zNzH',
+      maxFee: '5000',
+    };
+
+    afterEach(function () {
+      nock.cleanAll();
+    });
+
+    it('should pass bridgingParams through sendMany to tx/initiate for custodial wallets', async function () {
+      const custodialWallet = new Wallet(bitgo, bitgo.coin('tbtc'), {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'tbtc',
+        type: 'custodial',
+        keys: ['5b3424f91bf349930e340175'],
+      });
+
+      const initiatePath = `/api/v2/${custodialWallet.coin()}/wallet/${custodialWallet.id()}/tx/initiate`;
+      const response = nock(bgUrl)
+        .post(initiatePath, _.matches({ type: 'bridging', bridgingParams }))
+        .reply(200, { status: 'accepted', txRequestId: 'mock-tx-request-id' });
+
+      const result = await custodialWallet.sendMany({ type: 'bridging', bridgingParams });
+      response.isDone().should.be.true();
+      (result as any).status.should.equal('accepted');
+    });
+
+    it('should pass sbtcWithdrawParams through sendMany to tx/initiate for custodial wallets', async function () {
+      const custodialWallet = new Wallet(bitgo, bitgo.coin('tbtc'), {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'tbtc',
+        type: 'custodial',
+        keys: ['5b3424f91bf349930e340175'],
+      });
+
+      const initiatePath = `/api/v2/${custodialWallet.coin()}/wallet/${custodialWallet.id()}/tx/initiate`;
+      const response = nock(bgUrl)
+        .post(initiatePath, _.matches({ sbtcWithdrawParams }))
+        .reply(200, { status: 'accepted', txRequestId: 'mock-tx-request-id' });
+
+      const result = await custodialWallet.sendMany({ sbtcWithdrawParams } as any);
+      response.isDone().should.be.true();
+      (result as any).status.should.equal('accepted');
+    });
+  });
+
   describe('Transaction prebuilds', function () {
     let ethWallet;
 
