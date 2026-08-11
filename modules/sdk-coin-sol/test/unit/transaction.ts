@@ -1122,4 +1122,69 @@ describe('Sol Transaction', () => {
       });
     });
   });
+
+  describe('StakingAuthorize explainTransaction (non-WASM path)', () => {
+    // The 'sol' coin (mainnet) uses the legacy non-WASM explainTransaction path,
+    // unlike 'tsol' which routes through the WASM explainer. This ensures the new
+    // case InstructionBuilderTypes.StakingAuthorize block in transaction.ts is covered.
+    const solCoin = coins.get('sol');
+    const factory = getBuilderFactory('sol');
+    const wallet = new KeyPair(testData.authAccount).getKeys();
+    const stakeAccount = new KeyPair(testData.stakeAccount).getKeys();
+    const newWithdrawKey = new KeyPair(testData.authAccount2).getKeys();
+    const blockHash = testData.blockHashes.validBlockHashes[0];
+
+    it('should populate stakingAuthorize with Withdrawer fields from a standard two-instruction authorize tx', async () => {
+      const tx = await factory
+        .getStakingAuthorizeBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .newAuthorizedAddress(newWithdrawKey.pub)
+        .oldAuthorizedAddress(wallet.pub)
+        .fee({ amount: 5000 })
+        .build();
+
+      const rawTxBase64 = tx.toBroadcastFormat();
+      const solTx = new Transaction(solCoin);
+      solTx.fromRawTransaction(rawTxBase64);
+      const explained = solTx.explainTransaction();
+
+      should.exist(explained.stakingAuthorize);
+      explained.stakingAuthorize!.stakingAddress.should.equal(stakeAccount.pub);
+      explained.stakingAuthorize!.oldWithdrawAddress.should.equal(wallet.pub);
+      explained.stakingAuthorize!.newWithdrawAddress.should.equal(newWithdrawKey.pub);
+    });
+
+    it('should leave withdraw fields empty for a staker-only authorize tx', async () => {
+      const tx = await factory
+        .getStakingAuthorizeBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .newAuthorizedAddress(newWithdrawKey.pub)
+        .oldAuthorizedAddress(wallet.pub)
+        .fee({ amount: 5000 })
+        .build();
+
+      // Drop the Withdrawer instruction, keeping only the Staker authorize instruction.
+      const full = SolTransaction.from(Buffer.from(tx.toBroadcastFormat(), 'base64'));
+      const stakerOnly = new SolTransaction();
+      stakerOnly.recentBlockhash = full.recentBlockhash;
+      stakerOnly.feePayer = full.feePayer;
+      stakerOnly.add(full.instructions[0]);
+
+      const solTx = new Transaction(solCoin);
+      solTx.fromRawTransaction(
+        stakerOnly.serialize({ requireAllSignatures: false, verifySignatures: false }).toString('base64')
+      );
+      const explained = solTx.explainTransaction();
+
+      should.exist(explained.stakingAuthorize);
+      explained.stakingAuthorize!.oldWithdrawAddress.should.equal('');
+      explained.stakingAuthorize!.newWithdrawAddress.should.equal('');
+      explained.stakingAuthorize!.oldStakingAuthorityAddress!.should.equal(wallet.pub);
+      explained.stakingAuthorize!.newStakingAuthorityAddress!.should.equal(newWithdrawKey.pub);
+    });
+  });
 });

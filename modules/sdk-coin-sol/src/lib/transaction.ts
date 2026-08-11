@@ -33,6 +33,7 @@ import {
   Memo,
   Nonce,
   StakingActivate,
+  StakingAuthorize,
   StakingAuthorizeParams,
   StakingWithdraw,
   TokenTransfer,
@@ -540,6 +541,7 @@ export class Transaction extends BaseTransaction {
     const outputs: TransactionRecipient[] = [];
     // Create a separate array for token enablements
     const tokenEnablements: ITokenEnablement[] = [];
+    let stakingAuthorize: StakingAuthorizeParams | undefined = undefined;
 
     for (const instruction of decodedInstructions) {
       switch (instruction.type) {
@@ -598,6 +600,36 @@ export class Transaction extends BaseTransaction {
             tokenAddress: ataInit.params.mintAddress,
           });
           break;
+        case InstructionBuilderTypes.StakingAuthorize: {
+          const authorizeInstruction = instruction as StakingAuthorize;
+          // Neither instruction parser surfaces Solana's stakeAuthorizationType, so a
+          // Withdrawer-type authorize is identified by its custodian key: the standard
+          // parser surfaces it as newWithdrawAddress, the raw parser as custodianAddress.
+          // A standard authorize tx carries both a Staker and a Withdrawer instruction;
+          // the Withdrawer one wins because newWithdrawAddress is what verifyTransaction
+          // validates. Staker-only instructions must not populate the withdraw fields,
+          // otherwise a staker address would be compared against an intended withdraw key.
+          const isWithdrawerAuthorize = !!(
+            authorizeInstruction.params.newWithdrawAddress || authorizeInstruction.params.custodianAddress
+          );
+          if (isWithdrawerAuthorize) {
+            stakingAuthorize = {
+              stakingAddress: authorizeInstruction.params.stakingAddress,
+              oldWithdrawAddress: authorizeInstruction.params.oldAuthorizeAddress,
+              newWithdrawAddress: authorizeInstruction.params.newAuthorizeAddress,
+              custodianAddress: authorizeInstruction.params.custodianAddress,
+            };
+          } else if (!stakingAuthorize) {
+            stakingAuthorize = {
+              stakingAddress: authorizeInstruction.params.stakingAddress,
+              oldWithdrawAddress: '',
+              newWithdrawAddress: '',
+              oldStakingAuthorityAddress: authorizeInstruction.params.oldAuthorizeAddress,
+              newStakingAuthorityAddress: authorizeInstruction.params.newAuthorizeAddress,
+            };
+          }
+          break;
+        }
         case InstructionBuilderTypes.CustomInstruction:
           // Custom instructions are arbitrary and cannot be explained
           break;
@@ -617,7 +649,7 @@ export class Transaction extends BaseTransaction {
       }
     }
 
-    return this.getExplainedTransaction(outputAmount, outputs, memo, durableNonce, tokenEnablements);
+    return this.getExplainedTransaction(outputAmount, outputs, memo, durableNonce, tokenEnablements, stakingAuthorize);
   }
 
   private calculateFee(): string {
@@ -638,7 +670,8 @@ export class Transaction extends BaseTransaction {
     outputs: TransactionRecipient[],
     memo: undefined | string = undefined,
     durableNonce: undefined | DurableNonceParams = undefined,
-    tokenEnablements: ITokenEnablement[] = []
+    tokenEnablements: ITokenEnablement[] = [],
+    stakingAuthorize: StakingAuthorizeParams | undefined = undefined
   ): TransactionExplanation {
     const feeString = this.calculateFee();
 
@@ -674,6 +707,7 @@ export class Transaction extends BaseTransaction {
       blockhash: this.getNonce(),
       durableNonce: durableNonce,
       tokenEnablements: tokenEnablements,
+      ...(stakingAuthorize && { stakingAuthorize }),
     };
 
     return explanation;

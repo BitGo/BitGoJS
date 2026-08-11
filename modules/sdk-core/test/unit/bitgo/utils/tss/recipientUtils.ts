@@ -371,6 +371,38 @@ describe('recipientUtils', function () {
         const txRequest = makeTxRequest({ intent: { intentType: 'stakingAuthorize' } as any });
         assert.throws(() => resolveEffectiveTxParams(txRequest, {}), InvalidTransactionError);
       });
+
+      it('propagates newWithdrawPublicKey from authorize intent into effectiveTxParams', function () {
+        const txRequest = makeTxRequest({
+          intent: { intentType: 'authorize', newWithdrawPublicKey: 'SomePubkey123' } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {});
+        assert.strictEqual(result.newWithdrawPublicKey, 'SomePubkey123');
+      });
+
+      it('propagates stakeAccount from authorize intent into effectiveTxParams', function () {
+        const txRequest = makeTxRequest({
+          intent: { intentType: 'authorize', stakeAccount: 'StakeAcct456' } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {});
+        assert.strictEqual(result.stakeAccount, 'StakeAcct456');
+      });
+
+      it('does not overwrite existing newWithdrawPublicKey in txParams', function () {
+        const txRequest = makeTxRequest({
+          intent: { intentType: 'authorize', newWithdrawPublicKey: 'IntentKey' } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, { newWithdrawPublicKey: 'CallerKey' } as any);
+        assert.strictEqual(result.newWithdrawPublicKey, 'CallerKey');
+      });
+
+      it('does not overwrite existing stakeAccount in txParams', function () {
+        const txRequest = makeTxRequest({
+          intent: { intentType: 'authorize', stakeAccount: 'IntentAcct' } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, { stakeAccount: 'CallerAcct' } as any);
+        assert.strictEqual(result.stakeAccount, 'CallerAcct');
+      });
     });
   });
 });

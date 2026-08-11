@@ -272,11 +272,17 @@ export function explainSolTransaction(params: ExplainTransactionWasmOptions): So
   }
 
   // --- Staking authorize ---
+  // A standard authorize tx contains two instructions: one for Staker and one
+  // for Withdrawer authority. Prefer the Withdrawer instruction for the
+  // stakingAuthorize summary because newWithdrawAddress is the security-critical
+  // field validated in verifyTransaction. Fall back to the first instruction
+  // if no Withdrawer instruction is present.
   let stakingAuthorize: StakingAuthorizeParams | undefined;
   for (const instr of parsed.instructionsData) {
     if (instr.type === 'StakingAuthorize') {
-      stakingAuthorize = mapStakingAuthorize(instr);
-      break;
+      if (!stakingAuthorize || instr.authorizeType === 'Withdrawer') {
+        stakingAuthorize = mapStakingAuthorize(instr);
+      }
     }
   }
 

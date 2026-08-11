@@ -1000,6 +1000,143 @@ describe('SOL:', function () {
       } as any);
       validTransaction.should.equal(true);
     });
+
+    describe('staking authorize transaction verification', function () {
+      const newWithdrawKey = new KeyPair(resources.authAccount2).getKeys();
+      // a key that is not involved in the authorize tx — used to simulate malicious substitution
+      const differentKey = new KeyPair(resources.splitStakeAccount).getKeys();
+
+      const buildAuthorizeTx = async (newAuthorizedAddress: string) => {
+        const tx = await factory
+          .getStakingAuthorizeBuilder()
+          .stakingAddress(stakeAccount.pub)
+          .sender(wallet.pub)
+          .nonce(blockHash)
+          .newAuthorizedAddress(newAuthorizedAddress)
+          .oldAuthorizedAddress(wallet.pub)
+          .fee({ amount: 5000 })
+          .build();
+        return tx.toBroadcastFormat();
+      };
+
+      it('should verify a valid staking authorize transaction with all intent fields', async function () {
+        const txBase64 = await buildAuthorizeTx(newWithdrawKey.pub);
+        const txParams = newTxParams();
+        const txPrebuild = newTxPrebuild();
+        txPrebuild.txBase64 = txBase64;
+        txPrebuild.txInfo.nonce = blockHash;
+        txParams.recipients = [];
+        txParams.type = 'authorize';
+        txParams.newWithdrawPublicKey = newWithdrawKey.pub;
+        txParams.stakeAccount = stakeAccount.pub;
+        const result = await basecoin.verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet: walletObj,
+        } as any);
+        result.should.equal(true);
+      });
+
+      it('should verify a valid staking authorize transaction without optional intent fields', async function () {
+        const txBase64 = await buildAuthorizeTx(newWithdrawKey.pub);
+        const txParams = newTxParams();
+        const txPrebuild = newTxPrebuild();
+        txPrebuild.txBase64 = txBase64;
+        txPrebuild.txInfo.nonce = blockHash;
+        txParams.recipients = [];
+        txParams.type = 'authorize';
+        // newWithdrawPublicKey and stakeAccount not set — skips those checks
+        const result = await basecoin.verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet: walletObj,
+        } as any);
+        result.should.equal(true);
+      });
+
+      it('should reject a staking authorize transaction where newWithdrawAddress was swapped to attacker key', async function () {
+        const txBase64 = await buildAuthorizeTx(differentKey.pub);
+        const txParams = newTxParams();
+        const txPrebuild = newTxPrebuild();
+        txPrebuild.txBase64 = txBase64;
+        txPrebuild.txInfo.nonce = blockHash;
+        txParams.recipients = [];
+        txParams.type = 'authorize';
+        // Intent says newWithdrawPublicKey should be newWithdrawKey, but tx has attacker key
+        txParams.newWithdrawPublicKey = newWithdrawKey.pub;
+        txParams.stakeAccount = stakeAccount.pub;
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: walletObj } as any)
+          .should.rejectedWith(/StakingAuthorize newWithdrawAddress does not match intended newWithdrawPublicKey/);
+      });
+
+      it('should reject a staking authorize transaction where stakeAccount does not match', async function () {
+        const txBase64 = await buildAuthorizeTx(newWithdrawKey.pub);
+        const txParams = newTxParams();
+        const txPrebuild = newTxPrebuild();
+        txPrebuild.txBase64 = txBase64;
+        txPrebuild.txInfo.nonce = blockHash;
+        txParams.recipients = [];
+        txParams.type = 'authorize';
+        txParams.newWithdrawPublicKey = newWithdrawKey.pub;
+        // Pass a different stakeAccount (attacker has replaced it)
+        txParams.stakeAccount = differentKey.pub;
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: walletObj } as any)
+          .should.rejectedWith(/StakingAuthorize stakingAddress does not match intended stakeAccount/);
+      });
+
+      it('should reject a staking authorize transaction where oldWithdrawAddress does not match wallet root', async function () {
+        // Build tx where oldAuthorizedAddress is NOT wallet.pub
+        const tx = await factory
+          .getStakingAuthorizeBuilder()
+          .stakingAddress(stakeAccount.pub)
+          .sender(newWithdrawKey.pub)
+          .nonce(blockHash)
+          .newAuthorizedAddress(newWithdrawKey.pub)
+          .oldAuthorizedAddress(newWithdrawKey.pub) // different from walletObj root
+          .fee({ amount: 5000 })
+          .build();
+        const txBase64 = tx.toBroadcastFormat();
+        const txParams = newTxParams();
+        const txPrebuild = newTxPrebuild();
+        txPrebuild.txBase64 = txBase64;
+        txPrebuild.txInfo.nonce = blockHash;
+        txParams.recipients = [];
+        txParams.type = 'authorize';
+        txParams.newWithdrawPublicKey = newWithdrawKey.pub;
+        txParams.stakeAccount = stakeAccount.pub;
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: walletObj } as any)
+          .should.rejectedWith(/StakingAuthorize oldWithdrawAddress does not match wallet root address/);
+      });
+
+      it('should still enforce the fee payer check on a staking authorize transaction', async function () {
+        // oldAuthorizedAddress stays the wallet root so the authorize checks pass, but the
+        // fee payer is someone else — the authorize branch must not short-circuit that check.
+        const tx = await factory
+          .getStakingAuthorizeBuilder()
+          .stakingAddress(stakeAccount.pub)
+          .sender(wallet.pub)
+          .nonce(blockHash)
+          .newAuthorizedAddress(newWithdrawKey.pub)
+          .oldAuthorizedAddress(wallet.pub)
+          .feePayer(differentKey.pub)
+          .fee({ amount: 5000 })
+          .build();
+        const txParams = newTxParams();
+        const txPrebuild = newTxPrebuild();
+        txPrebuild.txBase64 = tx.toBroadcastFormat();
+        txPrebuild.txInfo.nonce = blockHash;
+        txParams.recipients = [];
+        txParams.type = 'authorize';
+        txParams.newWithdrawPublicKey = newWithdrawKey.pub;
+        txParams.stakeAccount = stakeAccount.pub;
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: walletObj } as any)
+          .should.rejectedWith('Tx fee payer is not the wallet root address');
+      });
+    });
   });
 
   describe('getAmountBasedOnEndianness', () => {

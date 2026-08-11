@@ -138,6 +138,17 @@ export function resolveEffectiveTxParams(
     effectiveTxParams.stakingRequestId = intentStakingRequestId;
   }
 
+  // Propagate SOL authorize-specific fields from the intent so sol.ts:verifyTransaction
+  // can validate the decoded instruction against what the user intended.
+  const intentNewWithdrawPublicKey = (txRequest.intent as PopulatedIntent)?.newWithdrawPublicKey;
+  if (intentNewWithdrawPublicKey && !effectiveTxParams.newWithdrawPublicKey) {
+    effectiveTxParams.newWithdrawPublicKey = intentNewWithdrawPublicKey;
+  }
+  const intentStakeAccount = (txRequest.intent as PopulatedIntent)?.stakeAccount;
+  if (intentStakeAccount && !effectiveTxParams.stakeAccount) {
+    effectiveTxParams.stakeAccount = intentStakeAccount;
+  }
+
   // All staking intents (BSC delegate/undelegate, CELO stake/unstake, etc.) carry
   // stakingRequestId as a required field on BaseStakeIntent (@bitgo/public-types).
   // Use its presence as a generic staking signal — no need to enumerate every intentType.
