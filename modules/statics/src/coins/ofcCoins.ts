@@ -4903,6 +4903,14 @@ export const ofcCoins = [
     7,
     UnderlyingAsset['txlm:TST-GC26PEYGETD7L6PUW2VCU3PSC7LCLRRPOSUILSHD2RT23IQUEAN4TQBQ']
   ),
+  // CECHO-1893 batch 0803 tokens
+  tofcStellarToken(
+    '3415e5a2-8341-4fa1-bc6a-850bbffff69b',
+    'ofctxlm:yghs',
+    'yGHS',
+    7,
+    UnderlyingAsset['txlm:yGHS-GCF46XLX3R7OXIDAFZ3HH6DEY5VT3BJJRSTKSSOKPLGNH6H7QYV3A2OA']
+  ),
   tofcArbethErc20(
     '2489c0e2-c13f-4287-bd1f-03dcd0a8562e',
     'ofctarbeth:link',
