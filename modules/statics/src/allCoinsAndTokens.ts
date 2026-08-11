@@ -6424,6 +6424,17 @@ export const allCoinsAndTokens = [
     '',
     'TXLM:BTGT'
   ),
+  tstellarToken(
+    'fcd97a11-2f68-4add-941d-a2f765852da1',
+    'txlm:TUSDTC-GC26PEYGETD7L6PUW2VCU3PSC7LCLRRPOSUILSHD2RT23IQUEAN4TQBQ',
+    'Test USD Coin',
+    7,
+    UnderlyingAsset['txlm:TUSDTC-GC26PEYGETD7L6PUW2VCU3PSC7LCLRRPOSUILSHD2RT23IQUEAN4TQBQ'],
+    'bitgo.com',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'TXLM:TUSDTC'
+  ),
   // CECHO-1893 batch 0803 tokens
   tstellarToken(
     '02f4297e-e0dc-4a14-af6c-15e0063d1ec6',
