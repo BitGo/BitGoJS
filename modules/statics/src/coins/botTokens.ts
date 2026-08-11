@@ -236,6 +236,22 @@ export const botTokens = [
     undefined,
     Networks.test.sol
   ),
+  AccountCtors.terc20(
+    '0e5cb41c-7ec4-4b30-90e7-33d23547ad67',
+    'hteth:tgku',
+    'Hoodi Gokubu',
+    18,
+    '0xa3e27ba64c528b2440266e6ded824becb6dcfae8',
+    'hteth:tgku' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
