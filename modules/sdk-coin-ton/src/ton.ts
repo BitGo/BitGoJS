@@ -7,7 +7,7 @@ import {
   BitGoBase,
   decryptKeychainPrivateKey,
   EDDSAMethods,
-  isMpcV2Keycard as sharedIsMpcV2Keycard,
+  getEddsaSigningMaterial as sharedGetEddsaSigningMaterial,
   signEddsaMpcV2RecoveryTx,
   EddsaSigningMaterial,
   InvalidAddressError,
@@ -323,8 +323,8 @@ export class Ton extends BaseCoin {
    * Discriminated union carrying keycard version and decrypted V1 user key (to avoid re-decryption).
    * V1 keycards are JSON; V2 keycards are CBOR-encoded reduced key shares.
    */
-  private async isMpcV2Keycard(userKey: string, walletPassphrase: string): Promise<EddsaSigningMaterial> {
-    return sharedIsMpcV2Keycard(userKey, walletPassphrase, this.bitgo);
+  private async getEddsaSigningMaterial(userKey: string, walletPassphrase: string): Promise<EddsaSigningMaterial> {
+    return sharedGetEddsaSigningMaterial(userKey, walletPassphrase, this.bitgo);
   }
 
   private async decryptKeychain(encryptedKey: string, passphrase: string, label: string): Promise<string> {
@@ -499,7 +499,7 @@ export class Ton extends BaseCoin {
       assert(params.userKey, 'missing userKey');
       assert(params.backupKey, 'missing backupKey');
       assert(params.walletPassphrase, 'missing wallet passphrase');
-      const signingMaterial = await this.isMpcV2Keycard(params.userKey, params.walletPassphrase);
+      const signingMaterial = await this.getEddsaSigningMaterial(params.userKey, params.walletPassphrase);
       await this.addRecoverySignature(
         signingMaterial,
         txBuilder,

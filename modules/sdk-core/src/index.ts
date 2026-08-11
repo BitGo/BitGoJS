@@ -33,7 +33,7 @@ import { EddsaMPCv2Utils } from './bitgo/utils/tss/eddsa/eddsaMPCv2';
 export { EddsaMPCv2Utils };
 export type { EddsaSigningMaterial } from './bitgo/utils/tss/eddsa/eddsaMPCv2';
 export {
-  isMpcV2Keycard,
+  getEddsaSigningMaterial,
   signEddsaMpcV2RecoveryTx,
   isEddsaMpcV1SigningMaterial,
   getEddsaMpcV2RecoveryKeySharesFromReducedKey,

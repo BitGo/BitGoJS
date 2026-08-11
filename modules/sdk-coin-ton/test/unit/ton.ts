@@ -715,7 +715,7 @@ describe('TON:', function () {
       };
 
       sandbox.stub(Tonweb, 'HttpProvider').returns(mockProvider);
-      sandbox.stub(basecoin as any, 'isMpcV2Keycard').resolves({
+      sandbox.stub(basecoin as any, 'getEddsaSigningMaterial').resolves({
         version: 'v1',
         userPrv: JSON.stringify({ dummy: 'userSigningMaterial' }),
       });
@@ -955,7 +955,7 @@ describe('TON:', function () {
       });
 
       it('should use MPCv1 path when signing material is MPCv1 format', async function () {
-        sandbox.stub(basecoin as any, 'isMpcV2Keycard').resolves({
+        sandbox.stub(basecoin as any, 'getEddsaSigningMaterial').resolves({
           version: 'v1',
           userPrv: JSON.stringify({ uShare: {}, bitgoYShare: {} }),
         });

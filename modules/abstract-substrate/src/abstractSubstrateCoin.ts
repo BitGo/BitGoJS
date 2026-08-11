@@ -26,7 +26,7 @@ import {
   verifyEddsaTssWalletAddress,
   VerifyTransactionOptions,
   decryptKeychainPrivateKey,
-  isMpcV2Keycard as sharedIsMpcV2Keycard,
+  getEddsaSigningMaterial as sharedGetEddsaSigningMaterial,
   signEddsaMpcV2RecoveryTx,
   EddsaSigningMaterial,
 } from '@bitgo/sdk-core';
@@ -360,7 +360,7 @@ export class SubstrateCoin extends BaseCoin {
         throw new Error('missing wallet passphrase');
       }
 
-      const signingMaterial = await this.isMpcV2Keycard(params.userKey!, params.walletPassphrase!);
+      const signingMaterial = await this.getEddsaSigningMaterial(params.userKey!, params.walletPassphrase!);
       await this.addSubstrateRecoverySignature(
         txBuilder,
         signingMaterial,
@@ -505,8 +505,8 @@ export class SubstrateCoin extends BaseCoin {
     return { transactions: consolidationTransactions, lastScanIndex };
   }
 
-  protected async isMpcV2Keycard(userKey: string, walletPassphrase: string): Promise<EddsaSigningMaterial> {
-    return sharedIsMpcV2Keycard(userKey, walletPassphrase, this.bitgo);
+  protected async getEddsaSigningMaterial(userKey: string, walletPassphrase: string): Promise<EddsaSigningMaterial> {
+    return sharedGetEddsaSigningMaterial(userKey, walletPassphrase, this.bitgo);
   }
 
   // Protected so tests can stub via instance overrides — direct module function bindings

@@ -59,7 +59,7 @@ import {
   DeriveAddressOptions,
   DeriveAddressResult,
   UnexpectedAddressError,
-  isMpcV2Keycard,
+  getEddsaSigningMaterial,
   signEddsaMpcV2RecoveryTx,
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
@@ -1701,7 +1701,7 @@ export class Sol extends BaseCoin {
     const userKey = params.userKey?.replace(/\s/g, '') ?? '';
 
     const isMpcV2 = params.walletPassphrase
-      ? (await isMpcV2Keycard(userKey, params.walletPassphrase, this.bitgo)).version === 'v2'
+      ? (await getEddsaSigningMaterial(userKey, params.walletPassphrase, this.bitgo)).version === 'v2'
       : false;
 
     const index = params.index || 0;
@@ -1820,7 +1820,7 @@ export class Sol extends BaseCoin {
     // Detect once at the top to avoid decrypting the keycard on every iteration of the scan loop.
     // For unsigned sweep (no passphrase), isMpcV2 is false — cold MPCv2 is out of scope.
     const isMpcV2 = params.walletPassphrase
-      ? (await isMpcV2Keycard(userKey, params.walletPassphrase, this.bitgo)).version === 'v2'
+      ? (await getEddsaSigningMaterial(userKey, params.walletPassphrase, this.bitgo)).version === 'v2'
       : false;
 
     const baseAddressIndex = 0;
@@ -1985,7 +1985,7 @@ export class Sol extends BaseCoin {
     if (!walletPassphrase) return false;
     if (!userKey) throw new Error('missing userKey');
     if (!backupKey) throw new Error('missing backupKey');
-    const material = await isMpcV2Keycard(userKey.replace(/\s/g, ''), walletPassphrase, this.bitgo);
+    const material = await getEddsaSigningMaterial(userKey.replace(/\s/g, ''), walletPassphrase, this.bitgo);
     return material.version === 'v2';
   }
 

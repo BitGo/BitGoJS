@@ -28,7 +28,7 @@ import {
   SignatureShareRecord,
   SignatureShareType,
   TxRequest,
-  isMpcV2Keycard,
+  getEddsaSigningMaterial,
   signEddsaMpcV2RecoveryTx,
 } from '../../../../../../src';
 import {
@@ -2028,7 +2028,7 @@ describe('signRecoveryEddsaMPCv2', () => {
   });
 });
 
-describe('isMpcV2Keycard', () => {
+describe('getEddsaSigningMaterial', () => {
   const PASSPHRASE = 'test-passphrase';
 
   const MPCv1_MATERIAL = {
@@ -2039,14 +2039,15 @@ describe('isMpcV2Keycard', () => {
 
   it('returns { version: v1, userPrv } for MPCv1 JSON keycard', async () => {
     const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL));
-    const mockBitgo = {
-      decrypt: sinon.stub().resolves(JSON.stringify(MPCv1_MATERIAL)),
-    } as unknown as BitGoBase;
+    const decryptStub = sinon.stub().resolves(JSON.stringify(MPCv1_MATERIAL));
+    const mockBitgo = { decrypt: decryptStub } as unknown as BitGoBase;
 
-    const result = await isMpcV2Keycard(encrypted, PASSPHRASE, mockBitgo);
+    const result = await getEddsaSigningMaterial(encrypted, PASSPHRASE, mockBitgo);
 
     assert.strictEqual(result.version, 'v1');
-    assert.ok('userPrv' in result);
+    assert.strictEqual((result as { version: 'v1'; userPrv: string }).userPrv, JSON.stringify(MPCv1_MATERIAL));
+    sinon.assert.calledOnce(decryptStub);
+    sinon.assert.calledWithMatch(decryptStub, { input: sinon.match.string, password: PASSPHRASE });
   });
 
   it('returns { version: v2, encryptedUserKey } for MPCv2 CBOR keycard', async () => {
@@ -2054,7 +2055,7 @@ describe('isMpcV2Keycard', () => {
     const encrypted = sjcl.encrypt(PASSPHRASE, MPCv2_CBOR_BYTES);
     const normalizedKey = encrypted.replace(/\s/g, '');
 
-    const result = await isMpcV2Keycard(encrypted, PASSPHRASE);
+    const result = await getEddsaSigningMaterial(encrypted, PASSPHRASE);
 
     assert.strictEqual(result.version, 'v2');
     assert.ok('encryptedUserKey' in result);
@@ -2063,15 +2064,17 @@ describe('isMpcV2Keycard', () => {
 
   it('throws with context message when decryption fails', async () => {
     const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL));
-    await assert.rejects(() => isMpcV2Keycard(encrypted, 'wrong-passphrase'), /Error decrypting user keychain/);
+    await assert.rejects(
+      () => getEddsaSigningMaterial(encrypted, 'wrong-passphrase'),
+      /Error decrypting user keychain/
+    );
   });
 
-  it('throws when bitgo instance is missing for v1 keycard decryption', async () => {
+  it('returns v1 via sjcl fallback when bitgo is omitted', async () => {
     const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL));
-    await assert.rejects(
-      () => isMpcV2Keycard(encrypted, PASSPHRASE),
-      /bitgo instance required for MPCv1 keycard decryption/
-    );
+    const result = await getEddsaSigningMaterial(encrypted, PASSPHRASE);
+    assert.strictEqual(result.version, 'v1');
+    assert.strictEqual((result as { version: 'v1'; userPrv: string }).userPrv, JSON.stringify(MPCv1_MATERIAL));
   });
 });
 

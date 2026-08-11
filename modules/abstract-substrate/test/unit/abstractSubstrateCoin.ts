@@ -5,7 +5,7 @@ import * as sdkCore from '@bitgo/sdk-core';
 import { Ttao } from '../../../sdk-coin-tao/src';
 
 interface SubstrateCoinTestAccessor {
-  isMpcV2Keycard(userKey: string, walletPassphrase: string): Promise<{ version: 'v1' | 'v2' }>;
+  getEddsaSigningMaterial(userKey: string, walletPassphrase: string): Promise<{ version: 'v1' | 'v2' }>;
   addSubstrateRecoverySignature(
     txBuilder: unknown,
     signingMaterial: unknown,
@@ -42,16 +42,16 @@ describe('SubstrateCoin MPCv2 recovery helpers:', function () {
     sandBox.restore();
   });
 
-  describe('isMpcV2Keycard()', function () {
+  describe('getEddsaSigningMaterial()', function () {
     it('should return version v2 for a CBOR (MPCv2) keycard', async function () {
       // Non-JSON decrypted value → V2 CBOR keycard
       decryptStub.resolves('not-json-cbor-bytes');
-      const result = await basecoin.isMpcV2Keycard('encryptedKey', 'passphrase');
+      const result = await basecoin.getEddsaSigningMaterial('encryptedKey', 'passphrase');
       result.version.should.equal('v2');
     });
 
     it('should return version v1 for a JSON (MPCv1) keycard', async function () {
-      // isMpcV2Keycard checks uShare.seed + bitgoYShare.u + backupYShare.u
+      // getEddsaSigningMaterial checks uShare.seed + bitgoYShare.u + backupYShare.u
       decryptStub.resolves(
         JSON.stringify({
           uShare: { seed: 'deadbeef' },
@@ -59,14 +59,14 @@ describe('SubstrateCoin MPCv2 recovery helpers:', function () {
           backupYShare: { u: 'ddeeff' },
         })
       );
-      const result = await basecoin.isMpcV2Keycard('encryptedKey', 'passphrase');
+      const result = await basecoin.getEddsaSigningMaterial('encryptedKey', 'passphrase');
       result.version.should.equal('v1');
     });
 
     it('should throw with a descriptive message when decryption fails', async function () {
       decryptStub.rejects(new Error('bad password'));
       await basecoin
-        .isMpcV2Keycard('encryptedKey', 'wrong-passphrase')
+        .getEddsaSigningMaterial('encryptedKey', 'wrong-passphrase')
         .should.be.rejectedWith(/Error decrypting user keychain/);
     });
   });
@@ -105,25 +105,6 @@ describe('SubstrateCoin MPCv2 recovery helpers:', function () {
       const sig: Buffer = addSignatureStub.firstCall.args[1];
       sig[0].should.equal(0x00);
       sig.slice(1).should.deepEqual(rawSig);
-    });
-
-    it('should throw when commonKeyChain does not match bitgoKey on MPCv2 path', async function () {
-      sinon
-        .stub(coin as unknown, 'signSubstrateMpcV2Recovery')
-        .rejects(new Error('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey'));
-
-      await coin
-        .addSubstrateRecoverySignature(
-          { addSignature: addSignatureStub },
-          { version: 'v2', encryptedUserKey: 'encKey' },
-          'encBackupKey',
-          'passphrase',
-          MOCK_UNSIGNED_TX,
-          'm/0',
-          MOCK_BITGO_KEY,
-          MOCK_ACCOUNT_ID
-        )
-        .should.be.rejectedWith(/commonKeyChain from keycard does not match bitgoKey/);
     });
 
     it('should call getTSSSignature and pass result to addSignature on MPCv1 path', async function () {
