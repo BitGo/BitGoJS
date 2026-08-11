@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.6.0...@bitgo/sdk-core@38.7.0) (2026-08-11)
+
+
+### Features
+
+* add needsXpubsForColdSigning capability method ([9b7024d](https://github.com/BitGo/BitGoJS/commit/9b7024d5a61f0b40bd1dd4873b1ae3c9b6854a2e))
+* **sdk-core:** add verifyPeerMessageRoundThree to EddsaDSGMethods ([89afad6](https://github.com/BitGo/BitGoJS/commit/89afad613e18a9cc8f49bb30a4b30b232bca5c5a))
+* **sdk-core:** bump public-types to use real Round3Output type ([a930010](https://github.com/BitGo/BitGoJS/commit/a930010ab442d5df94f60d1a0cdf623f538d4d3c)), closes [BitGo/public-types#365](https://github.com/BitGo/public-types/issues/365)
+* **sdk-core:** make v2 opt-in on password change ([15d157b](https://github.com/BitGo/BitGoJS/commit/15d157b7721ec15f20dde532e6a369ada273210c))
+
+
+
+
+
 # [38.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.5.2...@bitgo/sdk-core@38.6.0) (2026-08-07)
 
 

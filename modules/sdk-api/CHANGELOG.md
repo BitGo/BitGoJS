@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.2.4...@bitgo/sdk-api@2.3.0) (2026-08-11)
+
+
+### Bug Fixes
+
+* force V1 auth when ecdhXprv is absent for addAccessToken ([423eda2](https://github.com/BitGo/BitGoJS/commit/423eda2c044108792a006c9be8e3478271f2e2ca))
+
+
+### Features
+
+* **sdk-api:** allow changePassword to pass through encryptionVersion ([f8b1005](https://github.com/BitGo/BitGoJS/commit/f8b1005a4f9650da70432d842889bb5c252bf919))
+
+
+
+
+
 ## [2.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.2.3...@bitgo/sdk-api@2.2.4) (2026-08-07)
 
 **Note:** Version bump only for package @bitgo/sdk-api

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.15.14...@bitgo/sdk-coin-tempo@1.15.15) (2026-08-11)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-tempo
+
+
+
+
+
 ## [1.15.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.15.13...@bitgo/sdk-coin-tempo@1.15.14) (2026-08-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-tempo

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@2.0.8...@bitgo/abstract-substrate@2.1.0) (2026-08-11)
+
+
+### Features
+
+* **sdk-coin-tao:** build claimRootWithHotkey extrinsic from intent ([1b6fc41](https://github.com/BitGo/BitGoJS/commit/1b6fc417160d152079bda1eb19d66c807f1f3b75))
+
+
+
+
+
 ## [2.0.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@2.0.7...@bitgo/abstract-substrate@2.0.8) (2026-08-07)
 
 **Note:** Version bump only for package @bitgo/abstract-substrate

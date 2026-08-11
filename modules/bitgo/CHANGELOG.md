@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [52.6.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.5.0...bitgo@52.6.0) (2026-08-11)
+
+
+### Features
+
+* **sdk-core:** make v2 opt-in on password change ([15d157b](https://github.com/BitGo/BitGoJS/commit/15d157b7721ec15f20dde532e6a369ada273210c))
+
+
+
+
+
 # [52.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.4.2...bitgo@52.5.0) (2026-08-07)
 
 

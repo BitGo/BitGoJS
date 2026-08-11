@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@2.0.8...@bitgo/sdk-coin-iota@2.0.9) (2026-08-11)
+
+
+### Bug Fixes
+
+* **sdk-coin-iota:** constrain @iota/iota-sdk to node-20 range ([0b980ff](https://github.com/BitGo/BitGoJS/commit/0b980ffc5b300d32e032eba21be544a79a8cd2af))
+
+
+
+
+
 ## [2.0.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@2.0.7...@bitgo/sdk-coin-iota@2.0.8) (2026-08-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-iota
