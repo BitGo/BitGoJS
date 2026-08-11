@@ -15,3 +15,7 @@ export interface MoveStakeTxData extends Interface.TxData {
   destinationNetuid: string;
   alphaAmount: string;
 }
+
+export interface ClaimRootTxData extends Interface.TxData {
+  hotkey: string;
+}
