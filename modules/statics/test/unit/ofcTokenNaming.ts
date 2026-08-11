@@ -53,6 +53,7 @@ describe('OFC Token Naming Convention Tests', function () {
         'ofctnear:stnear', // "stNEAR"
         'ofctbaseeth', // "Base Sepolia Chain"
         'ofctpolygon:activ', // "Activ"
+        'ofctxlm:yghs', // "yGHS"
       ];
 
       if (!knownExceptions.includes(token.name)) {
