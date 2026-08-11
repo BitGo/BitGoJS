@@ -31,6 +31,10 @@ jobs:
   publish:
     name: Publish Release
     runs-on: ubuntu-latest
+    # Restricts @bitgo-beta/@bitgo-alpha publishing to protected branches via
+    # a deployment branch policy on this environment, so the job cannot run
+    # from arbitrary PR branches even though it is manually dispatched.
+    environment: beta-alpha-release
 
     steps:
       - uses: socketdev/action@4337a545deecc20f19a909e52db7a2f6ba292f42 # v1
