@@ -515,7 +515,6 @@ describe('Tao:', function () {
     const transferAmount = '2';
     const sweepTo = '5EQZSJmHuFH8asYYJruSRwpJmE5aqSdhdiX9oxRbxujKUkTe';
     const wrongAddress = '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq';
-
     describe('transfer transaction', function () {
       it('should return true when address and amount match', async function () {
         const result = await baseCoin.verifyTransaction({
@@ -560,6 +559,37 @@ describe('Tao:', function () {
             txParams: { recipients: [{ address: wrongAddress, amount: '0' }] },
           })
           .should.be.rejectedWith(TxIntentMismatchRecipientError);
+      });
+    });
+
+    describe('claimRoot transaction', function () {
+      // claimRootWithHotkey carries no recipients — the base class returns true when
+      // txParams.recipients is undefined, after decoding the tx via factory.from().
+      // These tests use a transfer hex (spec-224 compatible) with a StakingClaim
+      // intentType to prove the base-class recipients-undefined fallthrough, which
+      // is the same path all staking builders (stake/unstake/switch/claim) rely on.
+      it('should return true for StakingClaim type with no recipients', async function () {
+        const result = await baseCoin.verifyTransaction({
+          txPrebuild: { txHex: rawTx.transfer.signed },
+          txParams: { type: 'StakingClaim' },
+        });
+        result.should.be.true();
+      });
+
+      it('should return true for lowercase stakingclaim type with no recipients', async function () {
+        const result = await baseCoin.verifyTransaction({
+          txPrebuild: { txHex: rawTx.transfer.signed },
+          txParams: { type: 'stakingclaim' },
+        });
+        result.should.be.true();
+      });
+
+      it('should return true for any staking tx with no recipients provided', async function () {
+        const result = await baseCoin.verifyTransaction({
+          txPrebuild: { txHex: rawTx.transfer.signed },
+          txParams: {},
+        });
+        result.should.be.true();
       });
     });
 
