@@ -1,6 +1,6 @@
 import assert from 'assert';
-import * as pgp from 'openpgp';
 import * as sjcl from '@bitgo/sjcl';
+import * as pgp from 'openpgp';
 import { NonEmptyString } from 'io-ts-types';
 import {
   EddsaMPCv2KeyGenRound1Request,
@@ -1081,26 +1081,31 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
  *   bitgo.decrypt (supports both v1 SJCL and v2 Argon2id envelopes);
  *   when absent, falls back to sjcl.decrypt (v1 only)
  */
+function parseEddsaMpcV1Material(decrypted: string): string | null {
+  try {
+    const m = JSON.parse(decrypted);
+    if (
+      typeof m?.uShare?.seed === 'string' &&
+      typeof m?.bitgoYShare?.u === 'string' &&
+      (typeof m?.backupYShare?.u === 'string' || typeof m?.userYShare?.u === 'string')
+    ) {
+      return decrypted;
+    }
+  } catch {
+    // Not JSON → MPCv2 CBOR
+  }
+  return null;
+}
+
 export async function isEddsaMpcV1SigningMaterial(
   encryptedKeyShare: string,
   walletPassphrase: string,
   bitgo?: BitGoBase
 ): Promise<boolean> {
-  const prv = bitgo
+  const decrypted = bitgo
     ? await bitgo.decrypt({ input: encryptedKeyShare, password: walletPassphrase })
     : sjcl.decrypt(walletPassphrase, encryptedKeyShare);
-
-  try {
-    const m = JSON.parse(prv);
-    return (
-      typeof m?.uShare?.seed === 'string' &&
-      typeof m?.bitgoYShare?.u === 'string' &&
-      (typeof m?.backupYShare?.u === 'string' || typeof m?.userYShare?.u === 'string')
-    );
-  } catch {
-    // JSON parse error indicates MPCv2 CBOR format, not JSON.
-    return false;
-  }
+  return parseEddsaMpcV1Material(decrypted) !== null;
 }
 
 /**
@@ -1209,8 +1214,68 @@ export async function signRecoveryEddsaMPCv2(
   return signature;
 }
 
+/**
+ * Discriminated union representing EdDSA signing material detected from a keycard.
+ * v1: MPCv1 JSON keycard — userPrv is the decrypted plaintext.
+ * v2: MPCv2 CBOR keycard — encryptedUserKey is returned as-is for MPS DSG.
+ */
+export type EddsaSigningMaterial = { version: 'v1'; userPrv: string } | { version: 'v2'; encryptedUserKey: string };
+
+/**
+ * Detects MPCv1 vs MPCv2 keycard format and returns typed signing material.
+ * For v1: decrypts once and returns the plaintext as userPrv.
+ * For v2: returns the encrypted key as-is for use with signEddsaMpcV2RecoveryTx.
+ * When bitgo is omitted, falls back to sjcl (v1 only).
+ */
+export async function getEddsaSigningMaterial(
+  userKey: string,
+  walletPassphrase: string,
+  bitgo?: BitGoBase
+): Promise<EddsaSigningMaterial> {
+  const normalized = userKey.replace(/\s/g, '');
+  let decrypted: string;
+  try {
+    decrypted = bitgo
+      ? await bitgo.decrypt({ input: normalized, password: walletPassphrase })
+      : sjcl.decrypt(walletPassphrase, normalized);
+  } catch (e) {
+    throw new Error(`Error decrypting user keychain: ${e instanceof Error ? e.message : String(e)}`);
+  }
+  const userPrv = parseEddsaMpcV1Material(decrypted);
+  return userPrv !== null ? { version: 'v1', userPrv } : { version: 'v2', encryptedUserKey: normalized };
+}
+
+/**
+ * Full MPCv2 recovery signing flow: decrypt key shares → validate commonKeyChain → MPS DSG.
+ * Returns raw 64-byte Ed25519 signature Buffer.
+ * Caller is responsible for any coin-specific envelope
+ * (e.g. 0x00 Substrate prefix, SUI flag+pubkey wrapper, or raw for NEAR/ADA/TON).
+ */
+export async function signEddsaMpcV2RecoveryTx(params: {
+  message: Buffer;
+  userKey: string;
+  backupKey: string;
+  walletPassphrase: string;
+  bitgoKey: string;
+  derivationPath: string;
+  bitgo?: BitGoBase;
+}): Promise<Buffer> {
+  const { userKeyShare, backupKeyShare, commonKeyChain } = await getEddsaMpcV2RecoveryKeySharesFromReducedKey(
+    params.userKey,
+    params.backupKey,
+    params.walletPassphrase,
+    params.bitgo
+  );
+  if (commonKeyChain.toLowerCase() !== params.bitgoKey.toLowerCase()) {
+    throw new Error('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+  }
+  return signRecoveryEddsaMPCv2(params.message, params.derivationPath, userKeyShare, backupKeyShare, commonKeyChain);
+}
+
 export const EddsaMPCv2RecoveryFunctions = {
   isEddsaMpcV1SigningMaterial,
   getEddsaMpcV2RecoveryKeySharesFromReducedKey,
   signRecoveryEddsaMPCv2,
+  getEddsaSigningMaterial,
+  signEddsaMpcV2RecoveryTx,
 };

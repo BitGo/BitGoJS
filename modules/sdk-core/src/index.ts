@@ -31,6 +31,15 @@ import { EcdsaMPCv2Utils } from './bitgo/utils/tss/ecdsa/ecdsaMPCv2';
 export { EcdsaMPCv2Utils };
 import { EddsaMPCv2Utils } from './bitgo/utils/tss/eddsa/eddsaMPCv2';
 export { EddsaMPCv2Utils };
+export type { EddsaSigningMaterial } from './bitgo/utils/tss/eddsa/eddsaMPCv2';
+export {
+  getEddsaSigningMaterial,
+  signEddsaMpcV2RecoveryTx,
+  isEddsaMpcV1SigningMaterial,
+  getEddsaMpcV2RecoveryKeySharesFromReducedKey,
+  signRecoveryEddsaMPCv2,
+  EddsaMPCv2RecoveryFunctions,
+} from './bitgo/utils/tss/eddsa/eddsaMPCv2';
 export { verifyEddsaTssWalletAddress, verifyMPCWalletAddress } from './bitgo/utils/tss/addressVerification';
 export { GShare, SignShare, YShare } from './account-lib/mpc/tss/eddsa/types';
 export { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage } from './bitgo/tss/types';

@@ -28,6 +28,8 @@ import {
   SignatureShareRecord,
   SignatureShareType,
   TxRequest,
+  getEddsaSigningMaterial,
+  signEddsaMpcV2RecoveryTx,
 } from '../../../../../../src';
 import {
   getSignatureShareRoundOne,
@@ -2023,6 +2025,141 @@ describe('signRecoveryEddsaMPCv2', () => {
         ),
       /EdDSA MPCv2 recovery signature verification failed/
     );
+  });
+});
+
+describe('getEddsaSigningMaterial', () => {
+  const PASSPHRASE = 'test-passphrase';
+
+  const MPCv1_MATERIAL = {
+    uShare: { i: 1, t: 2, n: 3, y: 'aabbcc', seed: 'deadbeef01234567', chaincode: '00' },
+    bitgoYShare: { i: 3, j: 1, y: 'aabbcc', u: 'bitgo-u-value', chaincode: '00' },
+    backupYShare: { i: 2, j: 1, y: 'aabbcc', u: 'backup-u-value', chaincode: '00' },
+  };
+
+  it('returns { version: v1, userPrv } for MPCv1 JSON keycard', async () => {
+    const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL));
+    const decryptStub = sinon.stub().resolves(JSON.stringify(MPCv1_MATERIAL));
+    const mockBitgo = { decrypt: decryptStub } as unknown as BitGoBase;
+
+    const result = await getEddsaSigningMaterial(encrypted, PASSPHRASE, mockBitgo);
+
+    assert.strictEqual(result.version, 'v1');
+    assert.strictEqual((result as { version: 'v1'; userPrv: string }).userPrv, JSON.stringify(MPCv1_MATERIAL));
+    sinon.assert.calledOnce(decryptStub);
+    sinon.assert.calledWithMatch(decryptStub, { input: sinon.match.string, password: PASSPHRASE });
+  });
+
+  it('returns { version: v2, encryptedUserKey } for MPCv2 CBOR keycard', async () => {
+    const MPCv2_CBOR_BYTES = Buffer.from([0xd9, 0x01, 0x04, 0xa3, 0x61, 0x78, 0x18, 0x00]).toString('base64');
+    const encrypted = sjcl.encrypt(PASSPHRASE, MPCv2_CBOR_BYTES);
+    const normalizedKey = encrypted.replace(/\s/g, '');
+
+    const result = await getEddsaSigningMaterial(encrypted, PASSPHRASE);
+
+    assert.strictEqual(result.version, 'v2');
+    assert.ok('encryptedUserKey' in result);
+    assert.strictEqual((result as { version: 'v2'; encryptedUserKey: string }).encryptedUserKey, normalizedKey);
+  });
+
+  it('throws with context message when decryption fails', async () => {
+    const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL));
+    await assert.rejects(
+      () => getEddsaSigningMaterial(encrypted, 'wrong-passphrase'),
+      /Error decrypting user keychain/
+    );
+  });
+
+  it('returns v1 via sjcl fallback when bitgo is omitted', async () => {
+    const encrypted = sjcl.encrypt(PASSPHRASE, JSON.stringify(MPCv1_MATERIAL));
+    const result = await getEddsaSigningMaterial(encrypted, PASSPHRASE);
+    assert.strictEqual(result.version, 'v1');
+    assert.strictEqual((result as { version: 'v1'; userPrv: string }).userPrv, JSON.stringify(MPCv1_MATERIAL));
+  });
+});
+
+describe('signEddsaMpcV2RecoveryTx', () => {
+  const derivationPath = 'm/0/0';
+  const walletPassphrase = 'testPass';
+
+  const makeDecryptBitgo = (userKeyBase64: string, backupKeyBase64: string): BitGoBase =>
+    ({
+      decrypt: sinon.stub().onFirstCall().resolves(userKeyBase64).onSecondCall().resolves(backupKeyBase64),
+    } as unknown as BitGoBase);
+
+  it('returns a 64-byte signature that verifies against the derived public key', async () => {
+    const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const message = Buffer.from('deadbeef', 'hex');
+    const commonKeyChain = userDkg.getCommonKeychain();
+    const mockBitgo = makeDecryptBitgo(
+      userDkg.getReducedKeyShare().toString('base64'),
+      backupDkg.getReducedKeyShare().toString('base64')
+    );
+
+    const result = await signEddsaMpcV2RecoveryTx({
+      message,
+      userKey: 'encrypted-user-key',
+      backupKey: 'encrypted-backup-key',
+      walletPassphrase,
+      bitgoKey: commonKeyChain,
+      derivationPath,
+      bitgo: mockBitgo,
+    });
+
+    assert.strictEqual(result.length, 64);
+    const mpc = await getInitializedMpcInstance();
+    const derivedKeychain = mpc.deriveUnhardened(commonKeyChain, derivationPath);
+    const publicKeyBytes = Buffer.from(derivedKeychain.slice(0, 64), 'hex');
+    const ok = ed25519.verify(new Uint8Array(result), new Uint8Array(message), new Uint8Array(publicKeyBytes));
+    assert.strictEqual(ok, true);
+  });
+
+  it('throws when commonKeyChain does not match bitgoKey', async () => {
+    const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const message = Buffer.from('deadbeef', 'hex');
+    const mockBitgo = makeDecryptBitgo(
+      userDkg.getReducedKeyShare().toString('base64'),
+      backupDkg.getReducedKeyShare().toString('base64')
+    );
+
+    await assert.rejects(
+      () =>
+        signEddsaMpcV2RecoveryTx({
+          message,
+          userKey: 'encrypted-user-key',
+          backupKey: 'encrypted-backup-key',
+          walletPassphrase,
+          bitgoKey: 'bbbb'.repeat(32),
+          derivationPath,
+          bitgo: mockBitgo,
+        }),
+      /commonKeyChain from keycard does not match bitgoKey/
+    );
+  });
+
+  it('passes userKey, backupKey, passphrase, and bitgo to getEddsaMpcV2RecoveryKeySharesFromReducedKey', async () => {
+    const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const message = Buffer.from('deadbeef', 'hex');
+    const decryptStub = sinon
+      .stub()
+      .onFirstCall()
+      .resolves(userDkg.getReducedKeyShare().toString('base64'))
+      .onSecondCall()
+      .resolves(backupDkg.getReducedKeyShare().toString('base64'));
+    const mockBitgo = { decrypt: decryptStub } as unknown as BitGoBase;
+
+    await signEddsaMpcV2RecoveryTx({
+      message,
+      userKey: 'u-key',
+      backupKey: 'b-key',
+      walletPassphrase,
+      bitgoKey: userDkg.getCommonKeychain(),
+      derivationPath,
+      bitgo: mockBitgo,
+    });
+
+    sinon.assert.calledWith(decryptStub.firstCall, { input: 'u-key', password: walletPassphrase });
+    sinon.assert.calledWith(decryptStub.secondCall, { input: 'b-key', password: walletPassphrase });
   });
 });
 

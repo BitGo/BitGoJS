@@ -25,8 +25,10 @@ import {
   UnexpectedAddressError,
   verifyEddsaTssWalletAddress,
   VerifyTransactionOptions,
-  EDDSAUtils,
   decryptKeychainPrivateKey,
+  getEddsaSigningMaterial as sharedGetEddsaSigningMaterial,
+  signEddsaMpcV2RecoveryTx,
+  EddsaSigningMaterial,
 } from '@bitgo/sdk-core';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { KeyPair as SubstrateKeyPair, Transaction } from './lib';
@@ -39,12 +41,6 @@ import BigNumber from 'bignumber.js';
 import { ApiPromise } from '@polkadot/api';
 
 export const DEFAULT_SCAN_FACTOR = 20;
-
-/**
- * Discriminated union carrying keycard version and decrypted V1 user key (to avoid re-decryption).
- * V1 keycards are JSON; V2 keycards are CBOR-encoded reduced key shares.
- */
-type SubstrateSigningMaterial = { version: 'v1'; userPrv: string } | { version: 'v2'; encryptedUserKey: string };
 
 export class SubstrateCoin extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -364,7 +360,7 @@ export class SubstrateCoin extends BaseCoin {
         throw new Error('missing wallet passphrase');
       }
 
-      const signingMaterial = await this.isMpcV2Keycard(params.userKey!, params.walletPassphrase!);
+      const signingMaterial = await this.getEddsaSigningMaterial(params.userKey!, params.walletPassphrase!);
       await this.addSubstrateRecoverySignature(
         txBuilder,
         signingMaterial,
@@ -509,57 +505,14 @@ export class SubstrateCoin extends BaseCoin {
     return { transactions: consolidationTransactions, lastScanIndex };
   }
 
-  /**
-   * Decrypts an encrypted keychain value, wrapping errors with a descriptive message.
-   */
-  private async decryptKeychain(encryptedKey: string, passphrase: string, label: string): Promise<string> {
-    const prv = await decryptKeychainPrivateKey(this.bitgo, { encryptedPrv: encryptedKey }, passphrase);
-    if (!prv) {
-      throw new Error(`Error decrypting ${label} keychain: invalid password or corrupted key`);
-    }
-    return prv;
+  protected async getEddsaSigningMaterial(userKey: string, walletPassphrase: string): Promise<EddsaSigningMaterial> {
+    return sharedGetEddsaSigningMaterial(userKey, walletPassphrase, this.bitgo);
   }
 
-  /**
-   * Probes the key format and returns a discriminated union so callers avoid a second decrypt.
-   * V1 keycards are JSON; V2 keycards are CBOR-encoded reduced key shares.
-   */
-  protected async isMpcV2Keycard(userKey: string, walletPassphrase: string): Promise<SubstrateSigningMaterial> {
-    const normalized = userKey.replace(/\s/g, '');
-    let isV1: boolean;
-    try {
-      isV1 = await EDDSAUtils.isEddsaMpcV1SigningMaterial(normalized, walletPassphrase, this.bitgo);
-    } catch (e) {
-      throw new Error(`Error decrypting user keychain: ${e instanceof Error ? e.message : String(e)}`);
-    }
-    if (isV1) {
-      const userPrv = await this.decryptKeychain(normalized, walletPassphrase, 'user');
-      return { version: 'v1', userPrv };
-    }
-    return { version: 'v2', encryptedUserKey: normalized };
-  }
-
-  // Protected so tests can stub via instance overrides without adding new test dependencies.
-  protected async getEddsaMpcV2RecoveryKeyShares(
-    encryptedUserKey: string,
-    encryptedBackupKey: string,
-    walletPassphrase: string
-  ): ReturnType<typeof EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey> {
-    return EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
-      encryptedUserKey,
-      encryptedBackupKey,
-      walletPassphrase,
-      this.bitgo
-    );
-  }
-
-  // Protected so tests can stub via instance overrides without adding new test dependencies.
-  protected async signEddsaMpcV2Recovery(
-    signablePayload: Buffer,
-    currPath: string,
-    ...args: Parameters<typeof EDDSAUtils.signRecoveryEddsaMPCv2> extends [Buffer, string, ...infer R] ? R : never
-  ): Promise<Buffer> {
-    return EDDSAUtils.signRecoveryEddsaMPCv2(signablePayload, currPath, ...args);
+  // Protected so tests can stub via instance overrides — direct module function bindings
+  // cannot be intercepted by sinon after import.
+  protected async signSubstrateMpcV2Recovery(params: Parameters<typeof signEddsaMpcV2RecoveryTx>[0]): Promise<Buffer> {
+    return signEddsaMpcV2RecoveryTx(params);
   }
 
   /**
@@ -569,7 +522,7 @@ export class SubstrateCoin extends BaseCoin {
    */
   protected async addSubstrateRecoverySignature(
     txBuilder: NativeTransferBuilder,
-    signingMaterial: SubstrateSigningMaterial,
+    signingMaterial: EddsaSigningMaterial,
     backupKey: string,
     walletPassphrase: string,
     unsignedTransaction: Transaction,
@@ -581,26 +534,23 @@ export class SubstrateCoin extends BaseCoin {
     const substrateKeyPair = new SubstrateKeyPair({ pub: accountId });
 
     if (signingMaterial.version === 'v2') {
-      const { userKeyShare, backupKeyShare, commonKeyChain } = await this.getEddsaMpcV2RecoveryKeyShares(
-        signingMaterial.encryptedUserKey,
+      const rawSig = await this.signSubstrateMpcV2Recovery({
+        message: unsignedTransaction.signablePayload,
+        userKey: signingMaterial.encryptedUserKey,
         backupKey,
-        walletPassphrase
-      );
-      if (commonKeyChain.toLowerCase() !== bitgoKey.toLowerCase()) {
-        throw new Error('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
-      }
-      const rawSig = await this.signEddsaMpcV2Recovery(
-        unsignedTransaction.signablePayload,
-        currPath,
-        userKeyShare,
-        backupKeyShare,
-        commonKeyChain
-      );
+        walletPassphrase,
+        bitgoKey,
+        derivationPath: currPath,
+        bitgo: this.bitgo,
+      });
       const substrateSig = Buffer.concat([Buffer.from([ED25519_MULTI_SIGNATURE_PREFIX]), rawSig]);
       txBuilder.addSignature({ pub: substrateKeyPair.getKeys().pub }, substrateSig);
     } else {
       const userSigningMaterial = JSON.parse(signingMaterial.userPrv) as EDDSAMethodTypes.UserSigningMaterial;
-      const backupPrv = await this.decryptKeychain(backupKey, walletPassphrase, 'backup');
+      const backupPrv = await decryptKeychainPrivateKey(this.bitgo, { encryptedPrv: backupKey }, walletPassphrase);
+      if (!backupPrv) {
+        throw new Error('Error decrypting backup keychain: invalid password or corrupted key');
+      }
       const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
 
       const signatureHex = await EDDSAMethods.getTSSSignature(
