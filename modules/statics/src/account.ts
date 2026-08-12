@@ -203,6 +203,12 @@ export interface Erc721ConstructorOptions extends AccountConstructorOptions {
 
 export interface Erc7984ConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
+  /** Plain ERC-20 locked in the wrapper as escrow. Set for Hoodi test pairs first. */
+  underlyingErc20Address?: string;
+  /** On-chain `rate()` as a decimal string (uint256). Set for Hoodi test pairs first. */
+  rate?: string;
+  /** When true, non-zero→non-zero approve may revert (USDT-style); WP must approve(0) first. */
+  requiresApprovalReset?: boolean;
 }
 
 export interface NFTCollectionIdConstructorOptions extends AccountConstructorOptions {
@@ -415,11 +421,23 @@ export class Erc1155Coin extends ContractAddressDefinedToken {}
  * Token balances are stored as FHE-encrypted ciphertexts; transfers use confidentialTransfer()
  * instead of the standard ERC-20 transfer(). Balance reads require delegated decryption via ACL.
  *
+ * Wrapper metadata (`underlyingErc20Address`, `rate`, `requiresApprovalReset`) lives on the coin —
+ * same pattern as `Nep141Token.storageDepositAmount` / `XrpMptCoin.canTransfer`. Currently
+ * populated for Hoodi test pairs only so mainnet served configs stay unchanged. Allowlisting /
+ * vetting for shield/unshield is owned by AMS, not statics.
+ *
  * {@link https://eips.ethereum.org/EIPS/eip-7984 EIP-7984}
  */
 export class Erc7984Coin extends ContractAddressDefinedToken {
+  public underlyingErc20Address?: string;
+  public rate?: string;
+  public requiresApprovalReset?: boolean;
+
   constructor(options: Erc7984ConstructorOptions) {
     super(options);
+    this.underlyingErc20Address = options.underlyingErc20Address?.toLowerCase();
+    this.rate = options.rate;
+    this.requiresApprovalReset = options.requiresApprovalReset;
   }
 }
 
@@ -1266,6 +1284,9 @@ export function terc20(
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to Ethereum main network.
  * @param primaryKeyCurve The elliptic curve for this chain/token
+ * @param underlyingErc20Address? Plain ERC-20 locked in the wrapper as escrow
+ * @param rate? On-chain `rate()` as a decimal string (uint256)
+ * @param requiresApprovalReset? USDT-style approve(0) reset required before approve(amount)
  */
 export function erc7984(
   id: string,
@@ -1278,7 +1299,10 @@ export function erc7984(
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: EthereumNetwork = Networks.main.ethereum,
-  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
+  underlyingErc20Address?: string,
+  rate?: string,
+  requiresApprovalReset?: boolean
 ) {
   return Object.freeze(
     new Erc7984Coin({
@@ -1287,6 +1311,9 @@ export function erc7984(
       fullName,
       network,
       contractAddress,
+      underlyingErc20Address,
+      rate,
+      requiresApprovalReset,
       prefix,
       suffix,
       features,
@@ -1301,12 +1328,16 @@ export function erc7984(
 
 /**
  * Factory function for testnet ERC-7984 confidential token instances (Zama fhEVM).
+ * Requires wrapper↔underlying metadata used by shield/unshield flows.
  *
  * @param id uuid v4
  * @param name unique identifier of the token (e.g. 'hteth:ctkn')
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param contractAddress Contract address of this token
+ * @param contractAddress Contract address of this token (wrapper)
+ * @param underlyingErc20Address Plain ERC-20 locked in the wrapper as escrow
+ * @param rate On-chain `rate()` as a decimal string (uint256)
+ * @param requiresApprovalReset USDT-style approve(0) reset required before approve(amount)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param features? Features of this coin. Defaults to ERC7984_TOKEN_FEATURES
  * @param prefix? Optional token prefix. Defaults to empty string
@@ -1320,6 +1351,9 @@ export function terc7984(
   fullName: string,
   decimalPlaces: number,
   contractAddress: string,
+  underlyingErc20Address: string,
+  rate: string,
+  requiresApprovalReset: boolean,
   asset: UnderlyingAsset,
   features: CoinFeature[] = ERC7984_TOKEN_FEATURES,
   prefix = '',
@@ -1338,7 +1372,10 @@ export function terc7984(
     prefix,
     suffix,
     network,
-    primaryKeyCurve
+    primaryKeyCurve,
+    underlyingErc20Address,
+    rate,
+    requiresApprovalReset
   );
 }
 

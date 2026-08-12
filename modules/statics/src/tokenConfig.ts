@@ -70,7 +70,12 @@ export type EosTokenConfig = BaseContractAddressConfig & {
   contractAddress: string;
 };
 export type Erc20TokenConfig = BaseContractAddressConfig;
-export type Erc7984TokenConfig = BaseContractAddressConfig;
+export type Erc7984TokenConfig = BaseContractAddressConfig & {
+  /** Present for Hoodi test pairs; omitted on mainnet until shield/unshield ships there. */
+  underlyingErc20Address?: string;
+  rate?: string;
+  requiresApprovalReset?: boolean;
+};
 export type TrxTokenConfig = BaseContractAddressConfig;
 export type StellarTokenConfig = BaseNetworkConfig;
 
@@ -386,6 +391,13 @@ function getErc7984TokenConfig(coin: Erc7984Coin): Erc7984TokenConfig {
     name: coin.fullName,
     tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
     decimalPlaces: coin.decimalPlaces,
+    ...(coin.underlyingErc20Address !== undefined && {
+      underlyingErc20Address: coin.underlyingErc20Address.toLowerCase(),
+    }),
+    ...(coin.rate !== undefined && { rate: coin.rate }),
+    ...(coin.requiresApprovalReset !== undefined && {
+      requiresApprovalReset: coin.requiresApprovalReset,
+    }),
   };
 }
 
