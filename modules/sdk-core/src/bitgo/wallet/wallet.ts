@@ -2008,12 +2008,20 @@ export class Wallet implements IWallet {
     walletPassphrase: string | undefined,
     pubkey: string,
     path: string,
-    encryptionVersion?: EncryptionVersion
+    encryptionVersion?: EncryptionVersion,
+    recipientEmail?: string
   ): Promise<SharedKeyChain> {
     try {
       const decryptedKeychain = await this.getDecryptedKeychainForSharing(walletPassphrase);
       if (!decryptedKeychain) {
         return {};
+      }
+      if (!pubkey) {
+        const recipient = recipientEmail ?? 'The recipient';
+        throw new NeedUserSignupError(
+          `${recipient} does not have an ECDH keychain set up. ` +
+            `They must log into the BitGo web application at least once before receiving a wallet share.`
+        );
       }
       return await this.encryptPrvForUser(
         decryptedKeychain.prv,
@@ -2071,7 +2079,8 @@ export class Wallet implements IWallet {
         params.walletPassphrase,
         sharing.pubkey,
         sharing.path,
-        params.encryptionVersion
+        params.encryptionVersion,
+        params.email
       );
     }
 
