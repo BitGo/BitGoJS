@@ -529,7 +529,7 @@ export const allCoinsAndTokens = [
     'gasevm:usd1',
     'USD1',
     18,
-    '0x8d0d000ee44948fc98c9b98a4fa4921476f08b0d',
+    '0x111111d2bf19e43c34263401e0cad979ed1cdb61',
     UnderlyingAsset['gasevm:usd1'],
     Networks.main.gasevm
   ),
