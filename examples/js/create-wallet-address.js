@@ -9,13 +9,13 @@ const Promise = require('bluebird');
 // change this to env: 'production' when you are ready for production
 const bitgo = new BitGoJS.BitGo({ env: 'test' });
 
-const coin = 'talgo';
+const coin = 'hteth';
 // TODO: set your access token here
-const accessToken = '';
+const accessToken = 'v2xb58badf7783094daa13f95dcc1459ba8a34664d0fc37e2b81201886d0c8cd66a';
 
 // set your wallet from the YYYYY parameter here in the URL on app.bitgo-test.com
 // https://test.bitgo.com/enterprise/XXXXXXXXX/coin/talgo/YYYYY/transactions
-const walletId = '';
+const walletId = '6a026814bfd7a52ae607883d0da5a7c7';
 
 Promise.coroutine(function* () {
   bitgo.authenticateWithAccessToken({ accessToken: accessToken });
