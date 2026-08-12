@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.4.0...@bitgo/statics@59.5.0) (2026-08-11)
+
+
+### Features
+
+* **sdk-coin-zec:** add pallas curve in statics ([b2ac85a](https://github.com/BitGo/BitGoJS/commit/b2ac85a68842f876f3288a6e7af8177784d0ed90))
+* **statics:** add ofctxlm:yghs OFC counterpart ([155796a](https://github.com/BitGo/BitGoJS/commit/155796a30e63987a468f132b89a9ac0baf909764))
+* **statics:** onboard batch 0803 tokens (CECHO-1893) ([bcffe0f](https://github.com/BitGo/BitGoJS/commit/bcffe0fe4e0c08a5cfe914748b54b4d3ba657f7a))
+
+
+
+
+
 # [59.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.3.0...@bitgo/statics@59.4.0) (2026-08-07)
 
 

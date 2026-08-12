@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [12.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@12.2.2...@bitgo/abstract-utxo@12.3.0) (2026-08-11)
+
+
+### Features
+
+* add needsXpubsForColdSigning capability method ([9b7024d](https://github.com/BitGo/BitGoJS/commit/9b7024d5a61f0b40bd1dd4873b1ae3c9b6854a2e))
+
+
+
+
+
 ## [12.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@12.2.1...@bitgo/abstract-utxo@12.2.2) (2026-08-07)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

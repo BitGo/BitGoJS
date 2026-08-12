@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.16.18...@bitgo/sdk-coin-tao@1.17.0) (2026-08-11)
+
+
+### Features
+
+* **sdk-coin-tao:** build claimRootWithHotkey extrinsic from intent ([1b6fc41](https://github.com/BitGo/BitGoJS/commit/1b6fc417160d152079bda1eb19d66c807f1f3b75))
+
+
+
+
+
 ## [1.16.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.16.17...@bitgo/sdk-coin-tao@1.16.18) (2026-08-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-tao
