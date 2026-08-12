@@ -1,8 +1,17 @@
 import assert from 'assert';
-import crypto from 'crypto';
+import crypto, { createHash } from 'crypto';
 import { x25519 } from '@noble/curves/ed25519';
-import { EddsaMPSDkg, MPSTypes } from '../../../../src/tss/eddsa-mps';
+import { EddsaMPSDkg, MPSTypes, type EddsaRetrofitData } from '../../../../src/tss/eddsa-mps';
 import { generateEdDsaDKGKeyShares } from './util';
+import { Ed25519Curve } from '../../../../src/curves/ed25519';
+import { Shamir } from '../../../../src/shamir/shamir';
+import {
+  bigIntFromBufferLE,
+  bigIntToBufferLE,
+  bigIntFromBufferBE,
+  bigIntToBufferBE,
+  clamp,
+} from '../../../../src/util';
 
 function makeKeypair(seed?: Buffer) {
   const privKey = seed ? Buffer.from(seed.subarray(0, 32)) : crypto.randomBytes(32);
@@ -309,6 +318,209 @@ describe('EdDSA MPS DKG', function () {
       assert.throws(() => {
         bitgo.getSession();
       }, /DKG session is complete. Exporting the session is not allowed./);
+    });
+  });
+
+  describe('Retrofit DKG (ed25519_dkg_round0_import)', function () {
+    const curve = new Ed25519Curve();
+    const shamir = new Shamir(curve);
+    // 2^256 — same base used by the Eddsa class for chaincode arithmetic
+    const base = BigInt('0x010000000000000000000000000000000000000000000000000000000000000000');
+
+    /**
+     * Mirrors Eddsa.keyShare(index, 2, 3) + Eddsa.keyCombine() from sdk-core.
+     * Returns per-party EddsaRetrofitData with:
+     *   s_i_0    = pShare.u  (combined clamped scalar, distinct per party)
+     *   expectedPk = pShare.y (aggregate Ed25519 public key, same across all parties)
+     *   chainCode  = pShare.chaincode (combined 32-byte chain code, same across all parties)
+     */
+    function buildRetrofitData(seeds: Buffer[]): EddsaRetrofitData[] {
+      // Step 1: keyShare — derive per-party (u, y, chaincode, split_u)
+      type PartyRaw = { u: bigint; y: bigint; chaincode: bigint; splitU: Record<number, bigint> };
+      const n = seeds.length;
+      const parties: PartyRaw[] = seeds.map((seed) => {
+        const h = createHash('sha512').update(seed.subarray(0, 32)).digest();
+        const u = clamp(bigIntFromBufferLE(h.subarray(0, 32) as Buffer));
+        const y = curve.basePointMult(u);
+        const chaincode = bigIntFromBufferBE(seed.subarray(32, 64) as Buffer);
+        const { shares: splitU } = shamir.split(u, 2, n);
+        return { u, y, chaincode, splitU };
+      });
+
+      // Step 2: keyCombine — aggregate y and chaincode; pick u_i for each party i
+      const aggY = parties.map((p) => p.y).reduce((acc, y) => curve.pointAdd(acc, y));
+      const aggChaincode = parties.map((p) => p.chaincode).reduce((acc, cc) => (acc + cc) % base);
+      const expectedPk = bigIntToBufferLE(aggY, 32).toString('hex');
+      // Eddsa.keyCombine stores pShare.chaincode as bigIntToBufferBE — match that encoding
+      const chainCode = bigIntToBufferBE(aggChaincode, 32).toString('hex');
+
+      return parties.map((party, idx) => ({
+        s_i_0: bigIntToBufferLE(party.u, 32).toString('hex'),
+        expectedPk,
+        chainCode,
+      }));
+    }
+
+    // Deterministic per-party seeds: 64 bytes each (first 32 = key seed, last 32 = chaincode).
+    // buildRetrofitData calls Ed25519Curve.basePointMult which requires libsodium to be
+    // initialized — run it inside before() rather than at describe-scope.
+    const seeds = [
+      Buffer.from(
+        'a304733c16cc821fe171d5c7dbd7276fd90deae808b7553d17a1e55e4a76b270' +
+          '9d91c2e6353202cf61f8f275158b3468e9a00f7872fc2fd310b72cd026e2e2f9',
+        'hex'
+      ),
+      Buffer.from(
+        '33c749b635cdba7f9fbf51ad0387431cde47e20d8dc13acd1f51a9a0ad06ebfe' +
+          'b415844d27dd9320f282d6d8ecd8387f0e9fbf9198664e28a2f66e6f5b87c381',
+        'hex'
+      ),
+      Buffer.from(
+        'ae02d3f7464313d0f72f9f3862694579fa11f8983fc3fe42183cd137e3f3f30a' +
+          '44d85ab746decb8f0f0c62be0498542ddf58f31d9ed24bd1f62b1b1be17fce0f',
+        'hex'
+      ),
+    ];
+    let retrofitUser: EddsaRetrofitData;
+    let retrofitBackup: EddsaRetrofitData;
+    let retrofitBitgo: EddsaRetrofitData;
+
+    before(function () {
+      [retrofitUser, retrofitBackup, retrofitBitgo] = buildRetrofitData(seeds);
+    });
+
+    it('each party has a distinct s_i_0 but shared expectedPk and chainCode', function () {
+      assert.notStrictEqual(retrofitUser.s_i_0, retrofitBackup.s_i_0, 'user and backup s_i_0 must differ');
+      assert.notStrictEqual(retrofitBackup.s_i_0, retrofitBitgo.s_i_0, 'backup and bitgo s_i_0 must differ');
+      assert.strictEqual(retrofitUser.expectedPk, retrofitBackup.expectedPk, 'all parties share expectedPk');
+      assert.strictEqual(retrofitBackup.expectedPk, retrofitBitgo.expectedPk, 'all parties share expectedPk');
+      assert.strictEqual(retrofitUser.chainCode, retrofitBackup.chainCode, 'all parties share chainCode');
+    });
+
+    it('should route getFirstMessage through ed25519_dkg_round0_import and all parties agree on public key', async function () {
+      const [user, backup, bitgo] = await generateEdDsaDKGKeyShares(
+        undefined,
+        undefined,
+        undefined,
+        retrofitUser,
+        retrofitBackup,
+        retrofitBitgo
+      );
+
+      const userPk = user.getSharePublicKey().toString('hex');
+      const backupPk = backup.getSharePublicKey().toString('hex');
+      const bitgoPk = bitgo.getSharePublicKey().toString('hex');
+
+      assert.strictEqual(userPk, backupPk, 'user and backup must agree on public key after retrofit DKG');
+      assert.strictEqual(backupPk, bitgoPk, 'backup and bitgo must agree on public key after retrofit DKG');
+      assert.strictEqual(userPk.length, 64, 'public key must be 32 bytes (64 hex chars)');
+    });
+
+    it('retrofit DKG produces a different public key than a fresh DKG', async function () {
+      const [retrofitParty] = await generateEdDsaDKGKeyShares(
+        undefined,
+        undefined,
+        undefined,
+        retrofitUser,
+        retrofitBackup,
+        retrofitBitgo
+      );
+      const [freshParty] = await generateEdDsaDKGKeyShares();
+
+      assert.notStrictEqual(
+        retrofitParty.getSharePublicKey().toString('hex'),
+        freshParty.getSharePublicKey().toString('hex'),
+        'retrofit and fresh DKG should produce distinct public keys'
+      );
+    });
+
+    it('retrofit DKG is deterministic: same retrofitData produces same public key', async function () {
+      const [run1] = await generateEdDsaDKGKeyShares(
+        undefined,
+        undefined,
+        undefined,
+        retrofitUser,
+        retrofitBackup,
+        retrofitBitgo
+      );
+      const [run2] = await generateEdDsaDKGKeyShares(
+        undefined,
+        undefined,
+        undefined,
+        retrofitUser,
+        retrofitBackup,
+        retrofitBitgo
+      );
+
+      assert.strictEqual(
+        run1.getSharePublicKey().toString('hex'),
+        run2.getSharePublicKey().toString('hex'),
+        'retrofit DKG must be deterministic: same inputs must produce same public key'
+      );
+    });
+
+    it('session export/restore: restored party completes full retrofit DKG and agrees on public key', async function () {
+      const userKP = makeKeypair();
+      const backupKP = makeKeypair();
+      const bitgoKP = makeKeypair();
+
+      // --- Simulate party 0 persisting its session before round 0 ---
+      const user = new EddsaMPSDkg.DKG(3, 2, 0, retrofitUser);
+      await user.initDkg(userKP.privKey, [backupKP.pubKey, bitgoKP.pubKey]);
+
+      const session = user.getSession();
+      const parsed = JSON.parse(session);
+      assert.deepStrictEqual(parsed.retrofitData, retrofitUser, 'getSession must include retrofitData');
+
+      // Restore party 0 into a fresh instance.
+      // initDkg loads the WASM module; restoreSession then overwrites state/keys from the blob.
+      const restoredUser = new EddsaMPSDkg.DKG(3, 2, 0);
+      await restoredUser.initDkg(userKP.privKey, [backupKP.pubKey, bitgoKP.pubKey]);
+      restoredUser.restoreSession(session);
+
+      // --- Run parties 1 and 2 normally ---
+      const backup = new EddsaMPSDkg.DKG(3, 2, 1, retrofitBackup);
+      const bitgo = new EddsaMPSDkg.DKG(3, 2, 2, retrofitBitgo);
+      await backup.initDkg(backupKP.privKey, [userKP.pubKey, bitgoKP.pubKey]);
+      await bitgo.initDkg(bitgoKP.privKey, [userKP.pubKey, backupKP.pubKey]);
+
+      // --- Round 0 ---
+      const r1Messages = [restoredUser.getFirstMessage(), backup.getFirstMessage(), bitgo.getFirstMessage()];
+
+      // --- Round 1 ---
+      const r2Messages = [
+        ...restoredUser.handleIncomingMessages(r1Messages),
+        ...backup.handleIncomingMessages(r1Messages),
+        ...bitgo.handleIncomingMessages(r1Messages),
+      ];
+
+      // --- Round 2 (completes DKG) ---
+      restoredUser.handleIncomingMessages(r2Messages);
+      backup.handleIncomingMessages(r2Messages);
+      bitgo.handleIncomingMessages(r2Messages);
+
+      // All three parties must agree on the same public key
+      const userPk = restoredUser.getSharePublicKey().toString('hex');
+      const backupPk = backup.getSharePublicKey().toString('hex');
+      const bitgoPk = bitgo.getSharePublicKey().toString('hex');
+
+      assert.strictEqual(userPk, backupPk, 'restored user and backup must agree on public key');
+      assert.strictEqual(backupPk, bitgoPk, 'backup and bitgo must agree on public key');
+
+      // The public key must match the one from a non-restored retrofit run with the same inputs
+      const [refUser] = await generateEdDsaDKGKeyShares(
+        undefined,
+        undefined,
+        undefined,
+        retrofitUser,
+        retrofitBackup,
+        retrofitBitgo
+      );
+      assert.strictEqual(
+        userPk,
+        refUser.getSharePublicKey().toString('hex'),
+        'restored session must produce same public key as non-restored retrofit run'
+      );
     });
   });
 });

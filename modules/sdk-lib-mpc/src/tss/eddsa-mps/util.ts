@@ -3,7 +3,7 @@ import assert from 'assert';
 import { x25519 } from '@noble/curves/ed25519';
 import { DKG } from './dkg';
 import { DSG } from './dsg';
-import { DeserializedMessages } from './types';
+import { DeserializedMessages, EddsaRetrofitData } from './types';
 
 /**
  * Concatenates multiple Uint8Array instances into a single Uint8Array
@@ -40,15 +40,18 @@ function validateSeed(seed?: EdDsaDKGPartySeed): EdDsaDKGPartySeed {
 export async function generateEdDsaDKGKeyShares(
   seedUser?: EdDsaDKGPartySeed,
   seedBackup?: EdDsaDKGPartySeed,
-  seedBitgo?: EdDsaDKGPartySeed
+  seedBitgo?: EdDsaDKGPartySeed,
+  retrofitUser?: EddsaRetrofitData,
+  retrofitBackup?: EddsaRetrofitData,
+  retrofitBitgo?: EddsaRetrofitData
 ): Promise<[DKG, DKG, DKG]> {
   const { encKey: userEncKey, dkgSeed: userDkgSeed } = validateSeed(seedUser);
   const { encKey: backupEncKey, dkgSeed: backupDkgSeed } = validateSeed(seedBackup);
   const { encKey: bitgoEncKey, dkgSeed: bitgoDkgSeed } = validateSeed(seedBitgo);
 
-  const user = new DKG(3, 2, 0);
-  const backup = new DKG(3, 2, 1);
-  const bitgo = new DKG(3, 2, 2);
+  const user = new DKG(3, 2, 0, retrofitUser);
+  const backup = new DKG(3, 2, 1, retrofitBackup);
+  const bitgo = new DKG(3, 2, 2, retrofitBitgo);
 
   const userKP = generateX25519Keypair(userEncKey);
   const backupKP = generateX25519Keypair(backupEncKey);

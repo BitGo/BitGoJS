@@ -1,7 +1,7 @@
 import type { MsgState, Share } from '@bitgo/wasm-mps';
 import { encode } from 'cbor-x';
 import crypto from 'crypto';
-import { DeserializedMessage, DeserializedMessages, DkgState, EddsaReducedKeyShare } from './types';
+import { DeserializedMessage, DeserializedMessages, DkgState, EddsaReducedKeyShare, EddsaRetrofitData } from './types';
 
 type NodeWasmer = typeof import('@bitgo/wasm-mps');
 type WebWasmer = typeof import('@bitgo/wasm-mps/web');
@@ -44,13 +44,16 @@ export class DKG {
   private shareChaincode: Buffer | null = null;
   /** Lazily loaded WASM module */
   private wasmMps: WasmMps | null = null;
+  /** Optional MPCv1 retrofit data; when set, round0 uses ed25519_dkg_round0_import */
+  private retrofitData: EddsaRetrofitData | undefined;
 
   protected dkgState: DkgState = DkgState.Uninitialized;
 
-  constructor(n: number, t: number, partyIdx: number) {
+  constructor(n: number, t: number, partyIdx: number, retrofitData?: EddsaRetrofitData) {
     this.n = n;
     this.t = t;
     this.partyIdx = partyIdx;
+    this.retrofitData = retrofitData;
   }
 
   private async loadWasmMps(): Promise<void> {
@@ -124,13 +127,26 @@ export class DKG {
     const wasm = this.getWasmMps();
     let result: MsgState;
     try {
-      result = wasm.ed25519_dkg_round0_process(this.partyIdx, this.decryptionKey!, this.otherPubKeys!, seed);
+      if (this.retrofitData) {
+        result = wasm.ed25519_dkg_round0_import(
+          this.partyIdx,
+          this.decryptionKey!,
+          this.otherPubKeys!,
+          Buffer.from(this.retrofitData.s_i_0, 'hex'),
+          Buffer.from(this.retrofitData.expectedPk, 'hex'),
+          Buffer.from(this.retrofitData.chainCode, 'hex')
+        );
+      } else {
+        result = wasm.ed25519_dkg_round0_process(this.partyIdx, this.decryptionKey!, this.otherPubKeys!, seed);
+      }
     } catch (err) {
       throw new Error(`Error while creating the first message from party ${this.partyIdx}: ${err}`);
     }
 
     this.dkgStateBytes = Buffer.from(result.state);
     this.dkgState = DkgState.WaitMsg1;
+    // Clear retrofit key material once consumed — it is not needed after round 0
+    this.retrofitData = undefined;
     return { payload: new Uint8Array(result.msg), from: this.partyIdx };
   }
 
@@ -267,6 +283,7 @@ export class DKG {
       dkgRound: this.dkgState,
       decryptionKey: this.decryptionKey?.toString('base64') ?? null,
       otherPubKeys: this.otherPubKeys?.map((k) => k.toString('base64')) ?? null,
+      retrofitData: this.retrofitData,
     });
   }
 
@@ -280,5 +297,6 @@ export class DKG {
     this.dkgState = data.dkgRound;
     this.decryptionKey = data.decryptionKey ? Buffer.from(data.decryptionKey, 'base64') : null;
     this.otherPubKeys = data.otherPubKeys ? (data.otherPubKeys as string[]).map((k) => Buffer.from(k, 'base64')) : null;
+    this.retrofitData = data.retrofitData ?? undefined;
   }
 }
