@@ -4903,6 +4903,13 @@ export const ofcCoins = [
     7,
     UnderlyingAsset['txlm:TST-GC26PEYGETD7L6PUW2VCU3PSC7LCLRRPOSUILSHD2RT23IQUEAN4TQBQ']
   ),
+  tofcStellarToken(
+    '87c55966-70ed-462c-9369-eab58c6d9a14',
+    'ofctxlm:tusdtc',
+    'Test USD Coin',
+    7,
+    UnderlyingAsset['txlm:TUSDTC-GC26PEYGETD7L6PUW2VCU3PSC7LCLRRPOSUILSHD2RT23IQUEAN4TQBQ']
+  ),
   // CECHO-1893 batch 0803 tokens
   tofcStellarToken(
     '3415e5a2-8341-4fa1-bc6a-850bbffff69b',
