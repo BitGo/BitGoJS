@@ -5,9 +5,10 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
-import { cvToString } from '@stacks/transactions';
+import { cvToString, pubKeyfromPrivKey, publicKeyToString } from '@stacks/transactions';
 
 import * as testData from '../fixtures';
+import * as resources from './resources';
 import { Stx, StxLib, Tstx } from '../../src';
 import { RecoveryInfo, RecoveryOptions, RecoveryTransaction } from '../../src/lib/iface';
 
@@ -428,6 +429,88 @@ describe('STX:', function () {
       await basecoin
         .verifyTransaction({ txPrebuild, txParams })
         .should.be.rejectedWith('Tx memo does not match with expected txParams recipient memo');
+    });
+  });
+
+  describe('Verify sBTC Withdraw Transaction', function () {
+    const factory = new StxLib.TransactionBuilderFactory(coins.get('tstx'));
+    const prvKeysString = resources.prvKeysString.slice(0, 2);
+
+    const buildWithdrawTx = async (withdrawParams: { amount: string; btcAddress: string; maxFee: string }) => {
+      const builder = factory.getSbtcWithdrawBuilder();
+      builder.fee({ fee: '1000' });
+      builder.nonce(1);
+      const pubKeys = prvKeysString.map((prv) => publicKeyToString(pubKeyfromPrivKey(prv)));
+      builder.fromPubKey(pubKeys);
+      builder.numberSignatures(2);
+      builder.withdraw(withdrawParams);
+      builder.sign({ key: prvKeysString[0] });
+      builder.sign({ key: prvKeysString[1] });
+      const tx = await builder.build();
+      return tx.toBroadcastFormat();
+    };
+
+    it('should succeed to verify a matching sBTC withdrawal', async function () {
+      const withdrawParams = {
+        amount: '1000',
+        btcAddress: 'bc1prxl88w47srqh703pxv567q47e7epzume4nlz8cgewfhtuenn8ngqgwm80w',
+        maxFee: '10000',
+      };
+      const txHex = await buildWithdrawTx(withdrawParams);
+      const txParams = {
+        sbtcWithdrawParams: withdrawParams,
+        recipients: [{ address: 'SM1K9VF5GN48Q0AC2C7SB8WM5N5NR6DYC9VM3QEJE', amount: '10' }],
+      };
+      const result = await basecoin.verifyTransaction({ txPrebuild: { txHex }, txParams });
+      result.should.equal(true);
+    });
+
+    it('should fail to verify with wrong amount', async function () {
+      const withdrawParams = {
+        amount: '1000',
+        btcAddress: 'bc1prxl88w47srqh703pxv567q47e7epzume4nlz8cgewfhtuenn8ngqgwm80w',
+        maxFee: '10000',
+      };
+      const txHex = await buildWithdrawTx(withdrawParams);
+      const txParams = {
+        sbtcWithdrawParams: { ...withdrawParams, amount: '9999' },
+        recipients: [{ address: 'SM1K9VF5GN48Q0AC2C7SB8WM5N5NR6DYC9VM3QEJE', amount: '10' }],
+      };
+      await basecoin
+        .verifyTransaction({ txPrebuild: { txHex }, txParams })
+        .should.be.rejectedWith(/sBTC withdrawal amount does not match/);
+    });
+
+    it('should fail to verify with wrong maxFee', async function () {
+      const withdrawParams = {
+        amount: '1000',
+        btcAddress: 'bc1prxl88w47srqh703pxv567q47e7epzume4nlz8cgewfhtuenn8ngqgwm80w',
+        maxFee: '10000',
+      };
+      const txHex = await buildWithdrawTx(withdrawParams);
+      const txParams = {
+        sbtcWithdrawParams: { ...withdrawParams, maxFee: '1' },
+        recipients: [{ address: 'SM1K9VF5GN48Q0AC2C7SB8WM5N5NR6DYC9VM3QEJE', amount: '10' }],
+      };
+      await basecoin
+        .verifyTransaction({ txPrebuild: { txHex }, txParams })
+        .should.be.rejectedWith(/sBTC withdrawal maxFee does not match/);
+    });
+
+    it('should fail to verify with wrong btcAddress', async function () {
+      const withdrawParams = {
+        amount: '1000',
+        btcAddress: 'bc1prxl88w47srqh703pxv567q47e7epzume4nlz8cgewfhtuenn8ngqgwm80w',
+        maxFee: '10000',
+      };
+      const txHex = await buildWithdrawTx(withdrawParams);
+      const txParams = {
+        sbtcWithdrawParams: { ...withdrawParams, btcAddress: '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2' },
+        recipients: [{ address: 'SM1K9VF5GN48Q0AC2C7SB8WM5N5NR6DYC9VM3QEJE', amount: '10' }],
+      };
+      await basecoin
+        .verifyTransaction({ txPrebuild: { txHex }, txParams })
+        .should.be.rejectedWith(/sBTC withdrawal btcAddress does not match/);
     });
   });
 

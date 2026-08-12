@@ -105,6 +105,35 @@ export class SbtcWithdrawBuilder extends AbstractContractBuilder {
     this._isDeserialized = true;
   }
 
+  /**
+   * Get the withdrawal params decoded from the deserialized/built transaction, including the
+   * raw sBTC recipient version and hash bytes (as opposed to a btcAddress string, which cannot
+   * be recovered from the on-chain args alone).
+   */
+  getWithdrawParams():
+    | { amount: string; maxFee: string; recipientVersion: number; recipientHashBytes: Buffer }
+    | undefined {
+    if (!this._withdrawParams) {
+      return undefined;
+    }
+    const payload = this.transaction.stxTransaction.payload as ContractCallPayload;
+    const recipientTuple = payload.functionArgs[1];
+    if (recipientTuple?.type !== ClarityType.Tuple) {
+      return undefined;
+    }
+    const versionBuf = recipientTuple.data['version'];
+    const hashbytesBuf = recipientTuple.data['hashbytes'];
+    if (versionBuf?.type !== ClarityType.Buffer || hashbytesBuf?.type !== ClarityType.Buffer) {
+      return undefined;
+    }
+    return {
+      amount: this._withdrawParams.amount,
+      maxFee: this._withdrawParams.maxFee,
+      recipientVersion: versionBuf.buffer[0],
+      recipientHashBytes: Buffer.from(hashbytesBuf.buffer),
+    };
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     if (!this._withdrawParams) {

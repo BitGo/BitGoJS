@@ -11,6 +11,7 @@ import {
   MultisigType,
   multisigTypes,
   SignedTransaction,
+  TransactionParams,
   TransactionRecipient,
   TransactionType,
   VerifyAddressOptions,
@@ -114,6 +115,11 @@ export class Stx extends BaseCoin {
     if (!rawTx) {
       throw new Error('missing required tx prebuild property txHex');
     }
+
+    if (this.hasSbtcWithdrawParams(txParams)) {
+      return this.verifySbtcWithdrawTransaction(rawTx, txParams.sbtcWithdrawParams);
+    }
+
     const explainedTx = await this.explainTransaction({ txHex: rawTx, feeInfo: { fee: '' } });
     const recipient = txParams.recipients?.[0];
     if (recipient !== undefined && explainedTx) {
@@ -146,6 +152,54 @@ export class Stx extends BaseCoin {
         throw new Error('Tx total amount does not match with expected total amount field');
       }
     }
+    return true;
+  }
+
+  private hasSbtcWithdrawParams(
+    txParams: TransactionParams
+  ): txParams is TransactionParams & { sbtcWithdrawParams: StxLib.SbtcWithdrawParams } {
+    return 'sbtcWithdrawParams' in txParams && txParams.sbtcWithdrawParams !== undefined;
+  }
+
+  /**
+   * Verify an sBTC withdrawal (burn) transaction matches the expected withdrawal params.
+   *
+   * @param rawTx - the raw (built) transaction hex from txPrebuild
+   * @param expected - the sbtcWithdrawParams supplied by the caller in txParams
+   */
+  private async verifySbtcWithdrawTransaction(rawTx: string, expected: StxLib.SbtcWithdrawParams): Promise<boolean> {
+    const factory = new StxLib.TransactionBuilderFactory(coins.get(this.getChain()));
+    const builder = factory.from(rawTx);
+    if (!(builder instanceof StxLib.SbtcWithdrawBuilder)) {
+      throw new Error('Tx is not a valid sBTC withdrawal transaction');
+    }
+
+    const actual = builder.getWithdrawParams();
+    if (!actual) {
+      throw new Error('Unable to parse sBTC withdrawal params from tx');
+    }
+
+    if (BigInt(actual.amount) !== BigInt(expected.amount)) {
+      throw new Error(
+        `Tx sBTC withdrawal amount does not match expected amount: expected ${expected.amount} but got ${actual.amount}`
+      );
+    }
+    if (BigInt(actual.maxFee) !== BigInt(expected.maxFee)) {
+      throw new Error(
+        `Tx sBTC withdrawal maxFee does not match expected maxFee: expected ${expected.maxFee} but got ${actual.maxFee}`
+      );
+    }
+
+    const decodedExpected = StxLib.decodeBtcAddress(expected.btcAddress);
+    if (
+      decodedExpected.version !== actual.recipientVersion ||
+      !decodedExpected.hashBytes.equals(actual.recipientHashBytes)
+    ) {
+      throw new Error(
+        `Tx sBTC withdrawal btcAddress does not match expected btcAddress: expected ${expected.btcAddress}`
+      );
+    }
+
     return true;
   }
 
