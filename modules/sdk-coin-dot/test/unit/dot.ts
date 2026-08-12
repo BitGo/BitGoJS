@@ -1,17 +1,19 @@
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { randomBytes } from 'crypto';
 import should = require('should');
 import assert = require('assert');
+import nacl from 'tweetnacl';
 import { Dot, Tdot, KeyPair } from '../../src';
 import * as testData from '../fixtures';
 import { chainName, txVersion, genesisHash, specVersion } from '../resources';
 import * as sinon from 'sinon';
-import { TransactionType, Wallet } from '@bitgo/sdk-core';
+import { EDDSAMethods, MPCTx, TransactionType, Wallet } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 import { buildTransaction, type BuildContext, type Material } from '@bitgo/wasm-dot';
+import { MPSUtil } from '@bitgo/sdk-lib-mpc';
 import utils from '../../src/lib/utils';
-import { explainDotTransaction } from '../../src/lib';
+import { explainDotTransaction, SingletonRegistry } from '../../src/lib';
 
 describe('DOT:', function () {
   let bitgo: TestBitGoAPI;
@@ -435,6 +437,195 @@ describe('DOT:', function () {
       should.deepEqual(txJson.transactionVersion, txVersion);
       should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, basecoin.SWEEP_TXN_DURATION);
+    });
+  });
+
+  describe('Recover Transactions (MPCv2):', () => {
+    const mpcV2SandBox = sinon.createSandbox();
+    const walletPassphrase = testData.wrwUser.walletPassphrase;
+    const nonce = 7;
+    const recoveryDestination = testData.accounts.account1.address;
+
+    let mpcV2UserKey: string;
+    let mpcV2BackupKey: string;
+    let mpcV2CommonKeyChain: string;
+    let mpcV2WalletAddress: string;
+    let mismatchedBitgoKey: string;
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      const [otherUserDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+
+      mpcV2UserKey = await encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+      mpcV2BackupKey = await encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+      mismatchedBitgoKey = otherUserDkg.getCommonKeychain();
+
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const accountId = MPC.deriveUnhardened(mpcV2CommonKeyChain, 'm/0').slice(0, 64);
+      mpcV2WalletAddress = basecoin.getAddressFromPublicKey(accountId);
+    });
+
+    beforeEach(function () {
+      const accountInfoCB = mpcV2SandBox.stub(Dot.prototype, 'getAccountInfo' as keyof Dot);
+      accountInfoCB.withArgs(mpcV2WalletAddress).resolves({
+        nonce,
+        freeBalance: 1510000000000,
+      });
+      const headerInfoCB = mpcV2SandBox.stub(Dot.prototype, 'getHeaderInfo' as keyof Dot);
+      headerInfoCB.resolves({
+        headerNumber: testData.westendBlock.blockNumber,
+        headerHash: testData.westendBlock.hash,
+      });
+      const getFeeCB = mpcV2SandBox.stub(Dot.prototype, 'getFee' as keyof Dot);
+      getFeeCB.resolves(15783812856);
+      const getMaterialCB = mpcV2SandBox.stub(Dot.prototype, 'getMaterial' as keyof Dot);
+      getMaterialCB.resolves(utils.getMaterial(coins.get('tdot')));
+    });
+
+    afterEach(function () {
+      mpcV2SandBox.restore();
+    });
+
+    it('should route to MPCv2 path and return a signed recovery transaction', async function () {
+      const getTSSSignatureSpy = mpcV2SandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+      const result = (await basecoin.recover({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        recoveryDestination,
+      })) as MPCTx;
+
+      result.should.not.be.empty();
+      result.should.hasOwnProperty('serializedTx');
+      result.should.hasOwnProperty('scanIndex');
+      should.equal(result.scanIndex, 0);
+      mpcV2SandBox.assert.notCalled(getTSSSignatureSpy);
+    });
+
+    it('should encode a valid 64-byte Ed25519 signature with the Substrate 0x00 discriminant', async function () {
+      const result = (await basecoin.recover({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        recoveryDestination,
+      })) as MPCTx;
+
+      const material = utils.getMaterial(coins.get('tdot'));
+      const registry = SingletonRegistry.getInstance(material);
+      // recoverSignatureFromRawTx strips exactly one leading 0x00 Ed25519 discriminant byte and
+      // returns the raw signature bytes. A double-prefix corruption bug (the exact bug found and
+      // fixed while implementing this ticket) would shift every subsequent field by one byte, but
+      // this extrinsic type still decodes a fixed 64-byte signature field either way -- a bare
+      // length check on this value cannot tell a correct signature apart from a corrupted one.
+      // Verifying against the transaction's actual signable payload and derived pubkey can.
+      const recoveredSignature = utils.recoverSignatureFromRawTx(result.serializedTx, { registry });
+      recoveredSignature.length.should.equal(128);
+
+      // Rebuild the Transaction object from the signed broadcast hex (mirrors the existing
+      // "unsigned-sweep recoveries" test above) so we can read back its signablePayload -- the
+      // exact bytes the MPCv2 DSG protocol signed inside addRecoverySignature.
+      const txBuilder = basecoin.getBuilder().from(result.serializedTx);
+      txBuilder
+        .validity({
+          firstValid: testData.westendBlock.blockNumber,
+          maxDuration: basecoin.MAX_VALIDITY_DURATION,
+        })
+        .referenceBlock(testData.westendBlock.hash)
+        .sender({ address: mpcV2WalletAddress });
+      const tx = await txBuilder.build();
+
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const accountId = MPC.deriveUnhardened(mpcV2CommonKeyChain, 'm/0').slice(0, 64);
+      const isValid = nacl.sign.detached.verify(
+        new Uint8Array(tx.signablePayload),
+        new Uint8Array(Buffer.from(recoveredSignature, 'hex')),
+        new Uint8Array(Buffer.from(accountId, 'hex'))
+      );
+      isValid.should.be.true();
+    });
+
+    it('should throw when MPCv2 keycard commonKeyChain does not match bitgoKey', async function () {
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const accountId = MPC.deriveUnhardened(mismatchedBitgoKey, 'm/0').slice(0, 64);
+      const mismatchedAddress = basecoin.getAddressFromPublicKey(accountId);
+      (Dot.prototype as unknown as { getAccountInfo: sinon.SinonStub }).getAccountInfo
+        .withArgs(mismatchedAddress)
+        .resolves({
+          nonce,
+          freeBalance: 1510000000000,
+        });
+
+      await basecoin
+        .recover({
+          userKey: mpcV2UserKey,
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mismatchedBitgoKey,
+          walletPassphrase,
+          recoveryDestination,
+        })
+        .should.be.rejectedWith('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+    });
+
+    it('should throw missing userKey when backupKey and walletPassphrase are present but userKey is not', async function () {
+      await basecoin
+        .recover({
+          userKey: undefined,
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mpcV2CommonKeyChain,
+          walletPassphrase,
+          recoveryDestination,
+        })
+        .should.be.rejectedWith('missing userKey');
+    });
+
+    it('should throw missing backupKey when userKey and walletPassphrase are present but backupKey is not', async function () {
+      await basecoin
+        .recover({
+          userKey: mpcV2UserKey,
+          backupKey: undefined,
+          bitgoKey: mpcV2CommonKeyChain,
+          walletPassphrase,
+          recoveryDestination,
+        })
+        .should.be.rejectedWith('missing backupKey');
+    });
+
+    it('should throw missing wallet passphrase when userKey and backupKey are present but walletPassphrase is not', async function () {
+      await basecoin
+        .recover({
+          userKey: mpcV2UserKey,
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mpcV2CommonKeyChain,
+          walletPassphrase: undefined,
+          recoveryDestination,
+        })
+        .should.be.rejectedWith('missing wallet passphrase');
+    });
+
+    it('should still use the MPCv1 path (getTSSSignature) for MPCv1 JSON keycards', async function () {
+      const getTSSSignatureSpy = mpcV2SandBox.spy(EDDSAMethods, 'getTSSSignature');
+      (Dot.prototype as unknown as { getAccountInfo: sinon.SinonStub }).getAccountInfo
+        .withArgs(testData.wrwUser.walletAddress0)
+        .resolves({
+          nonce,
+          freeBalance: 1510000000000,
+        });
+
+      const result = (await basecoin.recover({
+        userKey: testData.wrwUser.userKey,
+        backupKey: testData.wrwUser.backupKey,
+        bitgoKey: testData.wrwUser.bitgoKey,
+        walletPassphrase: testData.wrwUser.walletPassphrase,
+        recoveryDestination,
+      })) as MPCTx;
+
+      result.should.not.be.empty();
+      result.should.hasOwnProperty('serializedTx');
+      mpcV2SandBox.assert.calledOnce(getTSSSignatureSpy);
     });
   });
 
