@@ -1,5 +1,10 @@
 import * as assert from 'assert';
-import { BuildParams, buildParamKeys, AttestationPayload } from '../../../../src/bitgo/wallet/BuildParams';
+import {
+  BuildParams,
+  buildParamKeys,
+  AttestationPayload,
+  SbtcWithdrawParams,
+} from '../../../../src/bitgo/wallet/BuildParams';
 
 describe('BuildParams', function () {
   it('enforces codec', function () {
@@ -105,5 +110,11 @@ describe('BuildParams', function () {
     };
     assert.strictEqual(AttestationPayload.is(valid), true);
     assert.strictEqual(AttestationPayload.is({ ...valid, signature: undefined }), false);
+  });
+
+  it('SbtcWithdrawParams codec accepts partial string fields', function () {
+    assert.strictEqual(SbtcWithdrawParams.is({ amount: '100000', btcAddress: 'mtbtcaddr', maxFee: '5000' }), true);
+    assert.strictEqual(SbtcWithdrawParams.is({}), true);
+    assert.strictEqual(SbtcWithdrawParams.is({ amount: 100000 }), false); // must be string, not number
   });
 });
