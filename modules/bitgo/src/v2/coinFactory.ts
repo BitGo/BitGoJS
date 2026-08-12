@@ -127,6 +127,7 @@ import {
   Rune,
   Rbtc,
   Sei,
+  Sepeth,
   Sgb,
   Sip10Token,
   Sol,
@@ -305,6 +306,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('rbtc', Rbtc.createInstance);
   coinFactory.register('thorchain:rune', Rune.createInstance);
   coinFactory.register('sei', Sei.createInstance);
+  coinFactory.register('sepeth', Sepeth.createInstance);
   coinFactory.register('sgb', Sgb.createInstance);
   coinFactory.register('sol', Sol.createInstance);
   coinFactory.register('soneium', Soneium.createInstance);
@@ -759,6 +761,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Rune.createInstance;
     case 'sei':
       return Sei.createInstance;
+    case 'sepeth':
+      return Sepeth.createInstance;
     case 'sgb':
       return Sgb.createInstance;
     case 'sol':

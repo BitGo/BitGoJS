@@ -4,6 +4,7 @@ export * from './erc7984Token';
 export * from './eth';
 export * from './gteth';
 export * from './hteth';
+export * from './sepeth';
 export * from './teth';
 export * from './lib';
 export * from './register';
