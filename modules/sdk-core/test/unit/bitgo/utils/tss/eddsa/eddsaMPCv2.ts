@@ -2467,3 +2467,149 @@ describe('EddsaMPCv2Utils.getMpcV2RetrofitDataFromMpcV1Keys', () => {
     );
   });
 });
+
+describe('EddsaMPCv2Utils.getUserAndBackupSession', () => {
+  let utils: EddsaMPCv2Utils;
+  let userSigningMaterial: Record<string, unknown>;
+  let backupSigningMaterial: Record<string, unknown>;
+
+  before(async () => {
+    const MPC = await getInitializedMpcInstance();
+    const user = MPC.keyShare(1, 2, 3);
+    const backup = MPC.keyShare(2, 2, 3);
+    const bitgo = MPC.keyShare(3, 2, 3);
+    userSigningMaterial = {
+      uShare: user.uShare,
+      bitgoYShare: bitgo.yShares[1],
+      backupYShare: backup.yShares[1],
+    };
+    backupSigningMaterial = {
+      uShare: backup.uShare,
+      bitgoYShare: bitgo.yShares[2],
+      userYShare: user.yShares[2],
+    };
+  });
+
+  beforeEach(() => {
+    const mockBitGo = {} as unknown as BitGoBase;
+    const mockCoin = {} as unknown as IBaseCoin;
+    utils = new EddsaMPCv2Utils(mockBitGo, mockCoin);
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('returns plain DKG sessions when retrofit is undefined', async () => {
+    const { userDkg, backupDkg } = await (utils as any).getUserAndBackupSession(undefined);
+    assert.ok(userDkg, 'user DKG should be created');
+    assert.ok(backupDkg, 'backup DKG should be created');
+  });
+
+  it('returns retrofit-seeded DKG sessions when retrofit payload is supplied', async () => {
+    const retrofit = {
+      decryptedUserKey: JSON.stringify(userSigningMaterial),
+      decryptedBackupKey: JSON.stringify(backupSigningMaterial),
+      walletId: 'wallet-123',
+    };
+    const { userDkg, backupDkg } = await (utils as any).getUserAndBackupSession(retrofit);
+    assert.ok(userDkg, 'user DKG should be created with retrofit data');
+    assert.ok(backupDkg, 'backup DKG should be created with retrofit data');
+  });
+});
+
+describe('EddsaMPCv2Utils.createKeychains with retrofit wiring', () => {
+  let utils: EddsaMPCv2Utils;
+  let userSigningMaterial: Record<string, unknown>;
+  let backupSigningMaterial: Record<string, unknown>;
+  let bitgoGpgPublicKeyArmored: string;
+  const enterprise = 'enterprise-id';
+  const sessionId = 'session-001';
+  const walletId = 'wallet-retrofit-123';
+
+  before(async () => {
+    const MPC = await getInitializedMpcInstance();
+    const user = MPC.keyShare(1, 2, 3);
+    const backup = MPC.keyShare(2, 2, 3);
+    const bitgo = MPC.keyShare(3, 2, 3);
+    userSigningMaterial = {
+      uShare: user.uShare,
+      bitgoYShare: bitgo.yShares[1],
+      backupYShare: backup.yShares[1],
+    };
+    backupSigningMaterial = {
+      uShare: backup.uShare,
+      bitgoYShare: bitgo.yShares[2],
+      userYShare: user.yShares[2],
+    };
+    // Generate a real Ed25519 GPG key to stand in for the BitGo GPG key
+    const bitgoGpgKeyPair = await generateGPGKeyPair('ed25519');
+    bitgoGpgPublicKeyArmored = bitgoGpgKeyPair.publicKey;
+  });
+
+  beforeEach(() => {
+    const mockBitGo = {
+      getEnv: sinon.stub().returns('dev'),
+      encrypt: sinon.stub().resolves('encrypted'),
+    } as any;
+    const mockKeychains = {
+      add: sinon
+        .stub()
+        .callsFake((params: any) =>
+          Promise.resolve({ id: `${params.source}-key-id`, commonKeychain: 'a'.repeat(128), isMPCv2: true })
+        ),
+    };
+    const mockCoin = {
+      keychains: sinon.stub().returns(mockKeychains),
+    } as any;
+
+    utils = new EddsaMPCv2Utils(mockBitGo, mockCoin);
+    sinon.stub(utils, 'getBitgoGpgPubkeyBasedOnFeatureFlags' as any).resolves({ eddsaMpcv2PublicKey: null });
+    // Use a real armored GPG public key so pgp.readKey() succeeds inside createKeychains
+    (utils as any).bitgoEddsaMpcv2PublicGpgKey = { armor: () => bitgoGpgPublicKeyArmored };
+    sinon.stub(utils as any, 'addBitgoKeychain').resolves({ id: 'bitgo-key-id', commonKeychain: 'a'.repeat(128) });
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('spreads walletId into round-1 payload when retrofit is provided', async () => {
+    const capturedPayloads: any[] = [];
+    sinon.stub(utils, 'sendKeyGenerationRound1').callsFake(async (_enterprise: string, payload: any) => {
+      capturedPayloads.push(payload);
+      // Return a bad bitgoMsg1 to short-circuit the ceremony after R1 capture
+      return { sessionId: sessionId as any, bitgoMsg1: { message: '', signature: '' } as any };
+    });
+
+    const retrofit = {
+      decryptedUserKey: JSON.stringify(userSigningMaterial),
+      decryptedBackupKey: JSON.stringify(backupSigningMaterial),
+      walletId,
+    };
+
+    await assert.rejects(
+      () => utils.createKeychains({ passphrase: 'test', enterprise, retrofit }),
+      () => true
+    );
+
+    assert.strictEqual(capturedPayloads.length, 1, 'sendKeyGenerationRound1 should be called once');
+    assert.strictEqual(capturedPayloads[0].walletId, walletId, 'walletId must be present in round-1 payload');
+  });
+
+  it('omits walletId from round-1 payload when retrofit is absent', async () => {
+    const capturedPayloads: any[] = [];
+    sinon.stub(utils, 'sendKeyGenerationRound1').callsFake(async (_enterprise: string, payload: any) => {
+      capturedPayloads.push(payload);
+      return { sessionId: sessionId as any, bitgoMsg1: { message: '', signature: '' } as any };
+    });
+
+    await assert.rejects(
+      () => utils.createKeychains({ passphrase: 'test', enterprise }),
+      () => true
+    );
+
+    assert.strictEqual(capturedPayloads.length, 1, 'sendKeyGenerationRound1 should be called once');
+    assert.strictEqual(capturedPayloads[0].walletId, undefined, 'walletId must be absent when no retrofit');
+  });
+});
