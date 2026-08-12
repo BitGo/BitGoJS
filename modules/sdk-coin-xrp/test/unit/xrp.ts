@@ -352,6 +352,138 @@ describe('XRP:', function () {
       .should.be.rejectedWith('txHex needs to be either hex or JSON string for XRP');
   });
 
+  it('Should explain an AccountDelete transaction (no fallthrough to Payment shape)', async function () {
+    // Previously AccountDelete had no branch in the coin-level explainTransaction and fell
+    // through to the Payment shape, producing undefined outputAmount/outputs. It must now
+    // return a 0-value placeholder (full sweep, exact amount unknown at build time).
+    const txHex = JSON.stringify({
+      TransactionType: 'AccountDelete',
+      Account: 'rNTfZB1h4TDdF9QXw37nbWk9euZmRby4qn',
+      Destination: 'raBSn6ipeWXYe7rNbNafZSx9dV2fU3zRyP',
+      DestinationTag: 12345,
+      Flags: 2147483648,
+      Fee: '45',
+      Sequence: 7,
+      LastLedgerSequence: 1000007,
+    });
+    const explanation = await basecoin.explainTransaction({ txHex });
+    explanation.outputAmount.should.equal('0');
+    explanation.outputs.should.have.length(1);
+    explanation.outputs[0].amount.should.equal('0');
+    explanation.outputs[0].address.should.startWith('raBSn6ipeWXYe7rNbNafZSx9dV2fU3zRyP');
+    explanation.outputs[0].address.should.containEql('dt=12345');
+    explanation.fee.fee.should.equal('45');
+  });
+
+  it('Should explain a SignerListSet transaction (no fallthrough to Payment shape)', async function () {
+    const txHex = JSON.stringify({
+      TransactionType: 'SignerListSet',
+      Account: 'rNTfZB1h4TDdF9QXw37nbWk9euZmRby4qn',
+      SignerQuorum: 2,
+      SignerEntries: [
+        { SignerEntry: { Account: 'rwFcXstMseu91iejAdoYWCPaVR4GgdiV5i', SignerWeight: 1 } },
+        { SignerEntry: { Account: 'r45kBeT5cmtaW6DHGAXzfjYHQzsVFhPX3M', SignerWeight: 1 } },
+        { SignerEntry: { Account: 'r3mykfPQZt4eJZKLUGMNVB49eDSJiE9zh3', SignerWeight: 1 } },
+      ],
+      Flags: 2147483648,
+      Fee: '45',
+      Sequence: 7,
+    });
+    const explanation = await basecoin.explainTransaction({ txHex });
+    explanation.outputAmount.should.equal(0);
+    explanation.outputs.should.have.length(0);
+    explanation.signerListSet.signerQuorum.should.equal(2);
+    explanation.signerListSet.signerEntries.should.have.length(3);
+  });
+
+  it('Should reject an unsupported transaction type instead of falling through to Payment', async function () {
+    // SetRegularKey is a valid XRPL type that the explainer does not handle. Before the fix
+    // it fell through to a Payment-shaped return with undefined Destination/Amount. Pre-encode
+    // to valid hex so the test exercises the explain path (not the internal JSON-encode path).
+    const txHex = xrpl.encode({
+      TransactionType: 'SetRegularKey',
+      Account: 'rNTfZB1h4TDdF9QXw37nbWk9euZmRby4qn',
+      RegularKey: 'rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG',
+      Flags: 2147483648,
+      Fee: '45',
+      Sequence: 7,
+      SigningPubKey: '',
+    } as any);
+    await basecoin
+      .explainTransaction({ txHex })
+      .should.be.rejectedWith(/Unsupported XRP transaction type: SetRegularKey/);
+  });
+
+  it('Should flag a partial payment (tfPartialPayment) without metadata', async function () {
+    // tfPartialPayment = 0x00020000 (131072); combined with tfCanonical (0x80000000) = 2147614720.
+    // Without metadata the delivered amount is unknown, so outputAmount stays as the requested
+    // Amount and partialPayment is surfaced.
+    const txHex = JSON.stringify({
+      TransactionType: 'Payment',
+      Account: 'rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG',
+      Destination: 'rfjub8A4dpSD5nnszUFTsLprxu1W398jwc',
+      DestinationTag: 0,
+      Amount: '253481',
+      Flags: 2147614720,
+      LastLedgerSequence: 1626225,
+      Fee: '45',
+      Sequence: 7,
+    });
+    const explanation = await basecoin.explainTransaction({ txHex });
+    explanation.partialPayment.should.equal(true);
+    explanation.outputAmount.should.equal('253481');
+  });
+
+  it('Should use delivered_amount from metadata for a partial payment', async function () {
+    const txHex = JSON.stringify({
+      TransactionType: 'Payment',
+      Account: 'rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG',
+      Destination: 'rfjub8A4dpSD5nnszUFTsLprxu1W398jwc',
+      DestinationTag: 0,
+      Amount: '253481',
+      Flags: 2147614720,
+      LastLedgerSequence: 1626225,
+      Fee: '45',
+      Sequence: 7,
+    });
+    const explanation = await basecoin.explainTransaction({
+      txHex,
+      meta: { delivered_amount: '100000' } as any,
+    });
+    explanation.partialPayment.should.equal(true);
+    explanation.outputAmount.should.equal('100000');
+    explanation.outputs[0].amount.should.equal('100000');
+  });
+
+  it('Should flag a partial payment with issued-currency delivered_amount from metadata', async function () {
+    const txHex = JSON.stringify({
+      TransactionType: 'Payment',
+      Account: 'rsgg4mwHTGPRP7A4eGUmrpTxTeDZHQrHkQ',
+      Destination: 'raJ4NmhHr2j2SGkmVFeMqKR5MUSWXjNF9a',
+      DestinationTag: 1,
+      Amount: {
+        value: '0.01',
+        currency: '524C555344000000000000000000000000000000',
+        issuer: 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV',
+      },
+      Flags: 2147614720,
+      Fee: '45',
+      Sequence: 1760661,
+    });
+    const explanation = await basecoin.explainTransaction({
+      txHex,
+      meta: {
+        delivered_amount: {
+          value: '0.005',
+          currency: '524C555344000000000000000000000000000000',
+          issuer: 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV',
+        },
+      } as any,
+    });
+    explanation.partialPayment.should.equal(true);
+    explanation.outputAmount.should.equal('0.005');
+  });
+
   describe('Fee Management', () => {
     const nockBasecoin: any = bitgo.coin('txrp');
 
@@ -763,7 +895,7 @@ describe('XRP:', function () {
         recipients: [
           {
             address: 'raJ4NmhHr2j2SGkmVFeMqKR5MUSWXjNF9a?dt=1',
-            amount: '10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+            amount: '10000000000000',
           },
         ],
       };
@@ -832,7 +964,7 @@ describe('XRP:', function () {
         recipients: [
           {
             address: 'raJ4NmhHr2j2SGkmVFeMqKR5MUSWXjNF9a?dt=1',
-            amount: '10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+            amount: '10000000000000',
           },
         ],
       };
@@ -842,6 +974,55 @@ describe('XRP:', function () {
         txPrebuild,
       });
       validTransaction.should.equal(true);
+    });
+
+    it('should fail to verify a token transfer when the amount does not match (object Amount)', async function () {
+      // F2: previously the object-Amount case skipped the comparison entirely, so a mismatched
+      // cross-currency transfer passed verification. Now Amount.value is compared (in base
+      // units) against the recipient amount.
+      const txPrebuild = {
+        txHex:
+          '{"Account":"rsgg4mwHTGPRP7A4eGUmrpTxTeDZHQrHkQ","Fee":"45","Sequence":1760661,"Flags":2147483648,"TransactionType":"Payment","Destination":"raJ4NmhHr2j2SGkmVFeMqKR5MUSWXjNF9a","Amount":{"value":"0.01","currency":"524C555344000000000000000000000000000000","issuer":"rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV"},"DestinationTag":1}',
+      };
+      const txParams = {
+        coin: 'txrp:rlusd',
+        recipients: [
+          {
+            // 0.01 RLUSD at 15 decimal places = 1e13 base units; use a wrong value (2e13).
+            address: 'raJ4NmhHr2j2SGkmVFeMqKR5MUSWXjNF9a?dt=1',
+            amount: '20000000000000',
+          },
+        ],
+      };
+
+      await token
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith('transaction prebuild does not match expected output');
+    });
+
+    it('should reject a partial payment (tfPartialPayment) prebuild', async function () {
+      // F1: BitGo never builds partial payments; a tfPartialPayment prebuild cannot match a
+      // send intent and must be rejected by verifyTransaction.
+      const txPrebuild = {
+        txHex: JSON.stringify({
+          TransactionType: 'Payment',
+          Account: 'rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG',
+          Destination: 'rfjub8A4dpSD5nnszUFTsLprxu1W398jwc',
+          DestinationTag: 0,
+          Amount: '253481',
+          Flags: 2147614720, // tfCanonical | tfPartialPayment
+          LastLedgerSequence: 1626225,
+          Fee: '45',
+          Sequence: 7,
+        }),
+      };
+      const txParams = {
+        recipients: [{ address: 'rfjub8A4dpSD5nnszUFTsLprxu1W398jwc', amount: '253481' }],
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith('Partial payment (tfPartialPayment) is not permitted for verified send transactions');
     });
   });
 
