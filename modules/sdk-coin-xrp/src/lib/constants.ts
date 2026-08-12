@@ -26,3 +26,11 @@ export const VALID_ACCOUNT_SET_FLAGS = [
 export const USER_KEY_SETTING_FLAG = 65536;
 export const MASTER_KEY_DEACTIVATION_FLAG = 1048576;
 export const REQUIRE_DESTINATION_TAG_FLAG = 131072;
+
+// https://xrpl.org/payment.html#payment-flags
+// tfPartialPayment allows a Payment to deliver less than the Amount field. The actual
+// delivered value is in the transaction metadata (meta.delivered_amount), NOT in the signed
+// blob. NOTE: 0x00020000 is numerically identical to REQUIRE_DESTINATION_TAG_FLAG above —
+// they are different flag spaces (Payment tx flag vs AccountRoot ledger flag) and must not
+// be reused interchangeably.
+export const TF_PARTIAL_PAYMENT = 0x00020000;

@@ -16,6 +16,7 @@ import BigNumber from 'bignumber.js';
 import { MPTokenAuthorize, Signer } from 'xrpl';
 import {
   AccountSetTransactionExplanation,
+  PaymentTransactionExplanation,
   SignerListSetTransactionExplanation,
   TransactionExplanation,
   TxData,
@@ -249,7 +250,7 @@ export class Transaction extends BaseTransaction {
     };
   }
 
-  private explainPaymentTransaction(): BaseTransactionExplanation {
+  private explainPaymentTransaction(): PaymentTransactionExplanation {
     const tx = this._xrpTransaction as xrpl.Payment;
     const address = utils.normalizeAddress({ address: tx.Destination, destinationTag: tx.DestinationTag });
     let amount: string | number;
@@ -261,8 +262,22 @@ export class Transaction extends BaseTransaction {
       amount = (tx.Amount as xrpl.IssuedCurrencyAmount).value;
     }
 
+    // The lib-level explainer only has the decoded signed blob, not transaction metadata, so
+    // it cannot resolve meta.delivered_amount. When tfPartialPayment is set, `amount` is the
+    // *requested* amount, not what was actually delivered — surface that via the flag so
+    // consumers don't treat outputAmount as the settled value.
+    const partialPayment = utils.isPartialPayment(tx.Flags as number);
+
     return {
-      displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
+      displayOrder: [
+        'id',
+        'outputAmount',
+        'changeAmount',
+        'outputs',
+        'changeOutputs',
+        'fee',
+        ...(partialPayment ? ['partialPayment'] : []),
+      ],
       id: this._id as string,
       changeOutputs: [],
       outputAmount: amount,
@@ -277,6 +292,7 @@ export class Transaction extends BaseTransaction {
         fee: tx.Fee as string,
         feeRate: undefined,
       },
+      ...(partialPayment ? { partialPayment: true } : {}),
     };
   }
 
@@ -441,6 +457,12 @@ export class Transaction extends BaseTransaction {
       } else {
         value = (Amount as xrpl.IssuedCurrencyAmount).value;
       }
+      // NOTE: `value` reflects the requested `Amount`, not the delivered amount. If the
+      // tfPartialPayment flag is set the actual delivered value lives in metadata
+      // (meta.delivered_amount), which is not available on the decoded signed blob here.
+      // This path is used for build/sign flows (BitGo never builds partial payments); for
+      // display/verification of external partial payments use explainTransaction, which
+      // honors meta.delivered_amount and surfaces partialPayment: true.
       this.inputs.push({ address: Account, value, coin });
       this.outputs.push({
         address: utils.normalizeAddress({ address: Destination, destinationTag: DestinationTag }),

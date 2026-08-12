@@ -297,28 +297,94 @@ export class Xrp extends BaseCoin {
         mptIssuanceId: transaction.MPTokenIssuanceID,
         ...(transaction.MPTHolder !== undefined && { mptHolder: transaction.MPTHolder }),
       };
+    } else if (transaction.TransactionType === 'AccountDelete') {
+      // AccountDelete sweeps the full account balance (minus fee) to Destination; the exact
+      // amount is unknown at build time, so we record '0' as a placeholder (matches the
+      // Transaction-class explainer in lib/transaction.ts). Without this branch the method
+      // previously fell through to the Payment shape and returned undefined outputAmount/amount,
+      // since AccountDelete carries no Amount field.
+      const address =
+        transaction.Destination + (transaction.DestinationTag >= 0 ? '?dt=' + transaction.DestinationTag : '');
+      return {
+        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
+        id: id,
+        changeOutputs: [],
+        outputAmount: '0',
+        changeAmount: 0,
+        outputs: [
+          {
+            address,
+            amount: '0',
+          },
+        ],
+        fee: {
+          fee: transaction.Fee,
+          feeRate: undefined,
+          size: txHex.length / 2,
+        },
+      };
+    } else if (transaction.TransactionType === 'SignerListSet') {
+      return {
+        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'signerListSet'],
+        id: id,
+        changeOutputs: [],
+        outputAmount: 0,
+        changeAmount: 0,
+        outputs: [],
+        fee: {
+          fee: transaction.Fee,
+          feeRate: undefined,
+          size: txHex.length / 2,
+        },
+        signerListSet: {
+          signerQuorum: transaction.SignerQuorum,
+          signerEntries: transaction.SignerEntries,
+        },
+      };
+    } else if (transaction.TransactionType === 'Payment') {
+      const address =
+        transaction.Destination + (transaction.DestinationTag >= 0 ? '?dt=' + transaction.DestinationTag : '');
+      // When tfPartialPayment is set, tx.Amount is the *requested* amount, not the delivered
+      // one. Prefer meta.delivered_amount when metadata was supplied; otherwise keep Amount
+      // and surface partialPayment: true so consumers know the value is not the settlement.
+      const partialPayment = utils.isPartialPayment(transaction.Flags as number);
+      const deliveredValue = partialPayment ? utils.getDeliveredAmountValue(params.meta) : undefined;
+      const outputAmount = deliveredValue !== undefined ? deliveredValue : transaction.Amount;
+      return {
+        displayOrder: [
+          'id',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          ...(partialPayment ? ['partialPayment'] : []),
+        ],
+        id: id,
+        changeOutputs: [],
+        outputAmount: outputAmount,
+        changeAmount: 0,
+        outputs: [
+          {
+            address,
+            amount: outputAmount,
+          },
+        ],
+        fee: {
+          fee: transaction.Fee,
+          feeRate: undefined,
+          size: txHex.length / 2,
+        },
+        ...(partialPayment ? { partialPayment: true } : {}),
+      };
     }
 
-    const address =
-      transaction.Destination + (transaction.DestinationTag >= 0 ? '?dt=' + transaction.DestinationTag : '');
-    return {
-      displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
-      id: id,
-      changeOutputs: [],
-      outputAmount: transaction.Amount,
-      changeAmount: 0,
-      outputs: [
-        {
-          address,
-          amount: transaction.Amount,
-        },
-      ],
-      fee: {
-        fee: transaction.Fee,
-        feeRate: undefined,
-        size: txHex.length / 2,
-      },
-    };
+    // No silent fallthrough: every other TransactionType (AMM*, Offer*, Escrow*, NFToken*,
+    // Check*, pseudo-tx, etc.) is unsupported by this explainer. Throwing here mirrors the
+    // safe switch in lib/transaction.ts:196-211 and prevents callers (verifyTransaction,
+    // recover) from receiving a Payment-shaped object with undefined fields for types that
+    // have no Amount/Destination.
+    throw new Error(`Unsupported XRP transaction type: ${transaction.TransactionType}`);
   }
 
   getTransactionTypeRawTxHex(txHex: string): XrpTransactionType | undefined {
@@ -474,20 +540,41 @@ export class Xrp extends BaseCoin {
     const output = [...explanation.outputs, ...explanation.changeOutputs][0];
     const expectedOutput = txParams.recipients && txParams.recipients[0];
 
+    // A Payment carrying the tfPartialPayment flag may deliver less than its Amount field.
+    // BitGo never builds partial payments, so such a prebuild cannot match a send intent —
+    // reject it rather than risk verifying a transaction that under-delivers.
+    if ('partialPayment' in explanation && explanation.partialPayment === true) {
+      throw new Error('Partial payment (tfPartialPayment) is not permitted for verified send transactions');
+    }
+
+    // XRP Payment amounts arrive in two shapes:
+    //  - string (XRP drops, base units) — recipient amount is also base units, compare directly.
+    //  - object (IssuedCurrencyAmount / MPTAmount) — `value` is in display units, while the
+    //    recipient amount from txParams is in base units. Convert the display value via the
+    //    coin's base factor (getBaseFactor() returns 10^decimalPlaces and is overridden by
+    //    XrpToken to use the *token's* decimals, not the base coin's). Previously the object
+    //    case skipped the comparison entirely, leaving every cross-currency / token transfer
+    //    unverified.
+    const toBaseUnits = (amount: any): string => {
+      if (amount === undefined || amount === null) {
+        return '';
+      }
+      if (typeof amount === 'object' && 'value' in amount) {
+        return new BigNumber(amount.value).times(this.getBaseFactor()).toFixed();
+      }
+      return new BigNumber(amount).toFixed();
+    };
+
     const comparator = (recipient1, recipient2) => {
       if (utils.getAddressDetails(recipient1.address).address !== utils.getAddressDetails(recipient2.address).address) {
         return false;
       }
-      const amount1 = new BigNumber(recipient1.amount);
-      const amount2 = new BigNumber(recipient2.amount);
+      const amount1 = new BigNumber(toBaseUnits(recipient1.amount));
+      const amount2 = new BigNumber(toBaseUnits(recipient2.amount));
       return amount1.toFixed() === amount2.toFixed();
     };
 
-    if (
-      (txParams.type === undefined || txParams.type === 'payment') &&
-      typeof output.amount !== 'object' &&
-      !comparator(output, expectedOutput)
-    ) {
+    if ((txParams.type === undefined || txParams.type === 'payment') && !comparator(output, expectedOutput)) {
       throw new Error('transaction prebuild does not match expected output');
     }
 

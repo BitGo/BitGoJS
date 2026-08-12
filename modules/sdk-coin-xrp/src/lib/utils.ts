@@ -11,7 +11,7 @@ import * as rippleKeypairs from 'ripple-keypairs';
 import * as url from 'url';
 import * as xrpl from 'xrpl';
 import { Amount, IssuedCurrencyAmount, isMPTAmount, MPTAmount } from 'xrpl';
-import { VALID_ACCOUNT_SET_FLAGS } from './constants';
+import { TF_PARTIAL_PAYMENT, VALID_ACCOUNT_SET_FLAGS } from './constants';
 import { Address, SignerDetails } from './iface';
 import { KeyPair as XrpKeyPair } from './keyPair';
 import assert from 'assert';
@@ -232,6 +232,40 @@ class Utils implements BaseUtils {
    */
   public isMPTAmount(amount: Amount | MPTAmount): amount is MPTAmount {
     return isMPTAmount(amount);
+  }
+
+  /**
+   * Returns true when the Payment `tfPartialPayment` flag is set on a transaction's Flags
+   * field. When set, the delivered amount is in `meta.delivered_amount`, not `tx.Amount`.
+   */
+  public isPartialPayment(flags: number | undefined): boolean {
+    return (Number(flags) & TF_PARTIAL_PAYMENT) !== 0;
+  }
+
+  /**
+   * Extracts the numeric/string delivered amount value from XRP transaction metadata.
+   * `meta.delivered_amount` is an `Amount | 'unavailable'`:
+   *   - string → XRP drops (or the literal 'unavailable' for pre-2014 txs)
+   *   - IssuedCurrencyAmount → `{ currency, issuer, value }`
+   * Returns undefined when metadata is missing, the field is 'unavailable', or the shape
+   * is unexpected — callers must fall back to `tx.Amount` in that case and surface the
+   * partial-payment flag so consumers know the value is requested, not delivered.
+   */
+  public getDeliveredAmountValue(meta?: xrpl.TransactionMetadata): string | undefined {
+    const delivered = meta?.delivered_amount;
+    if (delivered === undefined || delivered === 'unavailable') {
+      return undefined;
+    }
+    if (typeof delivered === 'string') {
+      return delivered;
+    }
+    if (this.isIssuedCurrencyAmount(delivered)) {
+      return delivered.value;
+    }
+    if (this.isMPTAmount(delivered)) {
+      return delivered.value;
+    }
+    return undefined;
   }
 
   /**
