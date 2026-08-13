@@ -20,7 +20,14 @@ import {
 } from '@bitgo/sdk-core';
 
 import { KeyPair } from './keyPair';
-import { ETHTransactionType, Fee, FlushERC7984ForwarderTokenData, SignatureParts, TxData } from './iface';
+import {
+  ETHTransactionType,
+  Fee,
+  FlushERC7984ForwarderTokenData,
+  SignatureParts,
+  TxData,
+  WrapERC7984Data,
+} from './iface';
 import {
   calculateForwarderAddress,
   calculateForwarderV1Address,
@@ -30,6 +37,7 @@ import {
   decodeFlushERC721TokensData,
   decodeFlushERC1155TokensData,
   decodeFlushERC7984ForwarderTokenData,
+  decodeWrapERC7984Data,
   decodeWalletCreationData,
   flushCoinsData,
   flushTokensData,
@@ -43,7 +51,7 @@ import {
   getV1WalletInitializationData,
   getCreateForwarderParamsAndTypes,
 } from './utils';
-import { buildFlushERC7984ForwarderTokenCalldata } from './zamaUtils';
+import { buildFlushERC7984ForwarderTokenCalldata, buildWrapCalldata } from './zamaUtils';
 import { defaultWalletVersion, walletSimpleConstructor } from './walletUtil';
 import { ERC1155TransferBuilder } from './transferBuilders/transferBuilderERC1155';
 import { ERC721TransferBuilder } from './transferBuilders/transferBuilderERC721';
@@ -83,6 +91,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _tokenContractAddress: string;
   private _encryptedHandle: string; // bytes32 hex from confidentialBalanceOf
   private _parentAddress: string; // where flushed tokens go (wallet base address)
+
+  // WrapERC7984 parameters
+  private _wrapRecipient: string; // wrap(to, ...) recipient of confidential mint
+  private _wrapAmount: string; // underlying amount to wrap (base units)
+  private _wrapRate: string; // on-chain rate() for uint64 validation
 
   // Send and AddressInitialization transaction specific parameters
   protected _transfer: TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder | TransferBuilderERC7984;
@@ -170,6 +183,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         return this.buildGenericContractCallTransaction();
       case TransactionType.FlushERC7984ForwarderToken:
         return this.buildFlushERC7984ForwarderTokenTransaction();
+      case TransactionType.WrapERC7984:
+        return this.buildWrapERC7984Transaction();
       default:
         throw new BuildTransactionError('Unsupported transaction type');
     }
@@ -322,6 +337,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         this.tokenContractAddress(erc7984Data.tokenContractAddress);
         this.encryptedHandle(erc7984Data.encryptedHandle);
         this.parentAddress(erc7984Data.parentAddress);
+        break;
+      }
+      case TransactionType.WrapERC7984: {
+        this.setContract(transactionJson.to);
+        const wrapData: WrapERC7984Data = decodeWrapERC7984Data(transactionJson.data, transactionJson.to!);
+        this.wrapRecipient(wrapData.to);
+        this.wrapAmount(wrapData.amount);
+        // rate is not encoded in calldata; callers that rebuild must set wrapRate() again
         break;
       }
       default:
@@ -482,6 +505,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         this.validateEncryptedHandle();
         this.validateParentAddress();
         break;
+      case TransactionType.WrapERC7984:
+        this.validateContractAddress();
+        this.validateWrapRecipient();
+        this.validateWrapAmount();
+        break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
     }
@@ -562,6 +590,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private validateParentAddress(): void {
     if (!this._parentAddress) {
       throw new BuildTransactionError('Invalid transaction: missing parentAddress');
+    }
+  }
+
+  private validateWrapRecipient(): void {
+    if (!this._wrapRecipient) {
+      throw new BuildTransactionError('Invalid transaction: missing wrapRecipient');
+    }
+  }
+
+  private validateWrapAmount(): void {
+    if (!this._wrapAmount) {
+      throw new BuildTransactionError('Invalid transaction: missing wrapAmount');
     }
   }
 
@@ -1090,6 +1130,44 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._parentAddress,
       this._encryptedHandle
     );
+    return this.buildBase(data);
+  }
+
+  // endregion
+
+  // region WrapERC7984 builder methods
+
+  /**
+   * Set the wrap recipient (`to` argument of wrap(address,uint256)).
+   * Self-directed shields use the wallet base address.
+   */
+  wrapRecipient(address: string): void {
+    if (!isValidEthAddress(address)) {
+      throw new BuildTransactionError('Invalid address: ' + address);
+    }
+    this._wrapRecipient = address;
+  }
+
+  /**
+   * Set the underlying amount to wrap (base units, decimal string).
+   */
+  wrapAmount(amount: string): void {
+    this._wrapAmount = amount;
+  }
+
+  /**
+   * Set the wrapper on-chain `rate()` used for amount × rate uint64 validation.
+   */
+  wrapRate(rate: string): void {
+    this._wrapRate = rate;
+  }
+
+  /**
+   * Build a WrapERC7984 (shield) transaction: wrap(to, amount) against the wrapper contract.
+   * Does not set gasLimit — WP owns gas.
+   */
+  private buildWrapERC7984Transaction(): TxData {
+    const data = buildWrapCalldata(this._wrapRecipient, this._wrapAmount, this._wrapRate);
     return this.buildBase(data);
   }
 

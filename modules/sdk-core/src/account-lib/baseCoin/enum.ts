@@ -161,6 +161,8 @@ export enum TransactionType {
   // Flush ERC-7984 confidential tokens from a forwarder address to the parent wallet
   // via forwarder.callFromParent(tokenAddr, 0, confidentialTransfer(parentAddr, handle))
   FlushERC7984ForwarderToken,
+  // Wrap (shield) an underlying ERC-20 into an ERC-7984 confidential token via wrap(to, amount)
+  WrapERC7984,
 }
 
 /**

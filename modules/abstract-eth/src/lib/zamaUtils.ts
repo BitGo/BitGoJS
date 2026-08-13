@@ -12,6 +12,10 @@ export const delegateForUserDecryptionTypes = ['address', 'address', 'uint64'] a
 export const callFromParentTypes = ['address', 'uint256', 'bytes'] as const;
 export const aclMulticallTypes = ['bytes[]'] as const;
 export const approveTypes = ['address', 'uint256'] as const;
+export const wrapTypes = ['address', 'uint256'] as const;
+
+/** Max value for Solidity `uint64` / ERC-7984 confidential amount domain (`euint64`). */
+export const UINT64_MAX = 18446744073709551615n;
 
 /**
  * Function selector for ACL.delegateForUserDecryption(address,address,uint64)
@@ -45,9 +49,48 @@ export const callFromParentMethodId = addHexPrefix(
  */
 export const approveMethodId = addHexPrefix(EthereumAbi.methodID('approve', [...approveTypes]).toString('hex'));
 
+/**
+ * Function selector for ERC-7984 wrap(address,uint256)
+ * = keccak256('wrap(address,uint256)')[0:4]
+ * Locks underlying ERC-20 in the wrapper and mints an encrypted balance to `to`.
+ */
+export const wrapMethodId = addHexPrefix(EthereumAbi.methodID('wrap', [...wrapTypes]).toString('hex'));
+
 // ---------------------------------------------------------------------------
 // Encoding functions
 // ---------------------------------------------------------------------------
+
+/**
+ * Asserts that `amount * rate` fits in uint64 (ERC-7984 confidential mint domain).
+ *
+ * @throws {Error} if amount or rate is invalid, or the product exceeds uint64
+ */
+export function assertAmountTimesRateFitsUint64(
+  amount: string | number | bigint,
+  rate: string | number | bigint
+): void {
+  let amountBn: bigint;
+  let rateBn: bigint;
+  try {
+    amountBn = typeof amount === 'bigint' ? amount : BigInt(amount);
+  } catch {
+    throw new Error(`assertAmountTimesRateFitsUint64: invalid amount '${amount}'`);
+  }
+  try {
+    rateBn = typeof rate === 'bigint' ? rate : BigInt(rate);
+  } catch {
+    throw new Error(`assertAmountTimesRateFitsUint64: invalid rate '${rate}'`);
+  }
+  if (amountBn <= 0n) {
+    throw new Error('assertAmountTimesRateFitsUint64: amount must be > 0');
+  }
+  if (rateBn <= 0n) {
+    throw new Error('assertAmountTimesRateFitsUint64: rate must be > 0');
+  }
+  if (amountBn * rateBn > UINT64_MAX) {
+    throw new Error('assertAmountTimesRateFitsUint64: amount × rate exceeds uint64');
+  }
+}
 
 /**
  * Encodes ERC-20 `approve(spender, amount)` calldata for ERC-7984 shield.
@@ -85,6 +128,71 @@ export function buildApproveCalldata(wrapperAddress: string, amount: string | nu
   const method = EthereumAbi.methodID('approve', [...approveTypes]);
   const args = EthereumAbi.rawEncode([...approveTypes], [checksummedWrapper, amountBn.toString()]);
   return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Encodes ERC-7984 `wrap(to, amount)` calldata for the shield path.
+ *
+ * Calldata is sent to the confidential wrapper contract. `to` is the recipient of
+ * the minted encrypted balance (self-directed shields use the wallet base address).
+ * When `rate` is provided, validates that `amount × rate` fits uint64 (`euint64`).
+ * `rate` is not encoded in calldata (deserialize round-trips omit it).
+ *
+ * Does not set gasLimit — WP owns gas.
+ *
+ * @param to      Recipient of confidential tokens (checksummed / lowercased accepted)
+ * @param amount  Underlying ERC-20 amount to wrap (base units); must be > 0
+ * @param rate    Optional on-chain wrapper `rate()` for uint64 validation
+ * @returns ABI-encoded calldata hex string (0x-prefixed)
+ * @throws {Error} if address/amount/rate is invalid or amount × rate exceeds uint64
+ */
+export function buildWrapCalldata(
+  to: string,
+  amount: string | number | bigint,
+  rate?: string | number | bigint
+): string {
+  let checksummedTo: string;
+  try {
+    checksummedTo = ethers.utils.getAddress(to);
+  } catch {
+    throw new Error(`buildWrapCalldata: invalid to address '${to}'`);
+  }
+
+  let amountBn: bigint;
+  try {
+    amountBn = typeof amount === 'bigint' ? amount : BigInt(amount);
+  } catch {
+    throw new Error(`buildWrapCalldata: invalid amount '${amount}'`);
+  }
+  if (amountBn <= 0n) {
+    throw new Error('buildWrapCalldata: amount must be > 0');
+  }
+
+  if (rate !== undefined) {
+    assertAmountTimesRateFitsUint64(amountBn, rate);
+  }
+
+  const method = EthereumAbi.methodID('wrap', [...wrapTypes]);
+  const args = EthereumAbi.rawEncode([...wrapTypes], [checksummedTo, amountBn.toString()]);
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Decodes ERC-7984 `wrap(to, amount)` calldata.
+ *
+ * @param data ABI-encoded wrap calldata (0x-prefixed)
+ * @returns `{ to, amount }` with checksummed `to` and decimal-string `amount`
+ */
+export function decodeWrapCalldata(data: string): { to: string; amount: string } {
+  if (!data.toLowerCase().startsWith(wrapMethodId.toLowerCase())) {
+    throw new Error(`decodeWrapCalldata: expected wrap selector ${wrapMethodId}, got ${data.slice(0, 10)}`);
+  }
+  const abiCoder = new ethers.utils.AbiCoder();
+  const decoded = abiCoder.decode([...wrapTypes], '0x' + data.slice(10));
+  return {
+    to: ethers.utils.getAddress(decoded[0]),
+    amount: decoded[1].toString(),
+  };
 }
 
 /**
