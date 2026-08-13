@@ -4410,7 +4410,7 @@ export const allCoinsAndTokens = [
     '965c1796-d1a4-4222-9472-1ba303cc0851',
     'baseeth:sbp',
     'Sustainable Bitcoin Protocol',
-    6,
+    8,
     '0x7d5411da3a86395397369e94aff65f4b77ad4112',
     UnderlyingAsset['baseeth:sbp'],
     Networks.main.basechain
