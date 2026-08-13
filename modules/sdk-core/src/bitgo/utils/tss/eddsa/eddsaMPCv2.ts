@@ -16,7 +16,7 @@ import { EddsaMPCv2KeyGenCallbacks } from '../../../wallet/iWallets';
 import { ed25519 } from '@noble/curves/ed25519';
 import { EddsaMPSDkg, EddsaMPSDsg, MPSComms, MPSTypes, MPSUtil } from '@bitgo/sdk-lib-mpc';
 import { KeychainsTriplet } from '../../../baseCoin';
-import { AddKeychainOptions, Keychain, KeyType, WebauthnKeyEncryptionInfo } from '../../../keychain';
+import { AddKeychainOptions, DecryptedRetrofitPayload, Keychain, KeyType, WebauthnKeyEncryptionInfo } from '../../../keychain';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoEddsaMpcv2PubKey } from '../../../tss/bitgoPubKeys';
 import { getBitgoSignatureShare, getTxRequest, sendSignatureShareV2, sendTxRequest } from '../../../tss/common';
 import { decodeWithCodec } from '../../codecs';
@@ -63,6 +63,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     passphrase: string;
     enterprise: string;
     originalPasscodeEncryptionCode?: string;
+    retrofit?: DecryptedRetrofitPayload;
     webauthnInfo?: WebauthnKeyEncryptionInfo;
     encryptionVersion?: EncryptionVersion;
     // Wallet Safes v1 (@experimental): tags the resulting user/backup/bitgo root keys with this safe.
@@ -93,8 +94,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     const bitgoPk = await MPSComms.extractEd25519PublicKey(bitgoKeyObj);
 
     // Create DKG sessions for user (party 0) and backup (party 1)
-    const userDkg = new EddsaMPSDkg.DKG(3, 2, MPCv2PartiesEnum.USER);
-    const backupDkg = new EddsaMPSDkg.DKG(3, 2, MPCv2PartiesEnum.BACKUP);
+    const { userDkg, backupDkg } = await this.getUserAndBackupSession(params.retrofit);
 
     // #region round 1
     await userDkg.initDkg(userSk, [backupPk, bitgoPk]);
@@ -116,6 +116,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
         backupGpgPublicKey,
         userMsg1: userSignedMsg1,
         backupMsg1: backupSignedMsg1,
+        ...(params.retrofit?.walletId ? { walletId: params.retrofit.walletId } : {}),
       },
       params.safeId
     );
@@ -459,7 +460,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 
   async sendKeyGenerationRound1(
     enterprise: string,
-    payload: EddsaMPCv2KeyGenRound1Request,
+    payload: EddsaMPCv2KeyGenRound1Request & { walletId?: string },
     safeId?: string
   ): Promise<EddsaMPCv2KeyGenRound1Response> {
     return this.sendKeyGenerationRound1BySender(KeyGenSenderForEnterprise(this.bitgo, enterprise, safeId), payload);
@@ -467,7 +468,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 
   async sendKeyGenerationRound1BySender(
     senderFn: EddsaMPCv2KeyGenSendFn<EddsaMPCv2KeyGenRound1Response>,
-    payload: EddsaMPCv2KeyGenRound1Request
+    payload: EddsaMPCv2KeyGenRound1Request & { walletId?: string }
   ): Promise<EddsaMPCv2KeyGenRound1Response> {
     return senderFn(MPCv2KeyGenStateEnum['MPCv2-R1'], payload);
   }
@@ -1069,6 +1070,26 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
   // #endregion
 
   // #region retrofit
+
+  private async getUserAndBackupSession(retrofit?: DecryptedRetrofitPayload): Promise<{
+    userDkg: EddsaMPSDkg.DKG;
+    backupDkg: EddsaMPSDkg.DKG;
+  }> {
+    if (retrofit) {
+      const { userRetrofitData, backupRetrofitData } = await this.getMpcV2RetrofitDataFromMpcV1Keys({
+        mpcv1UserKeyShare: retrofit.decryptedUserKey,
+        mpcv1BackupKeyShare: retrofit.decryptedBackupKey,
+      });
+      return {
+        userDkg: new EddsaMPSDkg.DKG(3, 2, MPCv2PartiesEnum.USER, userRetrofitData),
+        backupDkg: new EddsaMPSDkg.DKG(3, 2, MPCv2PartiesEnum.BACKUP, backupRetrofitData),
+      };
+    }
+    return {
+      userDkg: new EddsaMPSDkg.DKG(3, 2, MPCv2PartiesEnum.USER),
+      backupDkg: new EddsaMPSDkg.DKG(3, 2, MPCv2PartiesEnum.BACKUP),
+    };
+  }
 
   async getMpcV2RetrofitDataFromMpcV1Keys(params: { mpcv1UserKeyShare: string; mpcv1BackupKeyShare: string }): Promise<{
     userRetrofitData: MPSTypes.EddsaRetrofitData;
