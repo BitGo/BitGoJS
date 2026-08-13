@@ -2817,6 +2817,13 @@ export const ofcCoins = [
     UnderlyingAsset['avaxc:link']
   ),
   tofcAvaxErc20(
+    'e88a14d9-e699-4212-8bdd-ac93929c4f7a',
+    'ofctavaxc:aggy',
+    'Test AGGY Avalanche ',
+    18,
+    UnderlyingAsset['tavaxc:aggy']
+  ),
+  tofcAvaxErc20(
     '75c2f266-e1a1-4ba0-b7b5-ca6d701d8b70',
     'ofctavaxc:tkula',
     'Test KULA',
@@ -4670,6 +4677,13 @@ export const ofcCoins = [
     UnderlyingAsset['tpolygon:link']
   ),
   tofcPolygonErc20(
+    'e3135b8f-0eaf-46c7-b8b8-02fb85e3d42c',
+    'ofctpolygon:abld',
+    'Test ABLD Poly',
+    18,
+    UnderlyingAsset['tpolygon:abld']
+  ),
+  tofcPolygonErc20(
     '47f2a012-400b-48c1-bad8-e6abfd5da568',
     'ofctpolygon:usdc',
     'USD Coin',
@@ -6109,6 +6123,7 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['arbeth:next']
   ),
+  ofcArbethErc20('fc837e28-5de8-4685-a04f-8eff25e956ff', 'ofcarbeth:mxnb', 'MXNB', 6, UnderlyingAsset['arbeth:mxnb']),
   ofcArbethErc20(
     'db174d8d-b074-4682-ad77-bb42d0a1f768',
     'ofcarbeth:week',

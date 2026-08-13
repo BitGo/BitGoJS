@@ -3898,6 +3898,20 @@ export const ofcErc20Coins = [
     'baseeth'
   ),
   ofcerc20(
+    '384ccf64-7df0-46dc-be54-851576ad3148',
+    'ofcbaseeth:sbp',
+    'Sustainable Bitcoin Protocol',
+    8,
+    UnderlyingAsset['baseeth:sbp'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
     '24f6d6b1-524b-4945-8a36-15f60c3bad75',
     'ofcbaseeth:kaito',
     'Kaito',
