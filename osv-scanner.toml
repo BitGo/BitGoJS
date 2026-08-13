@@ -65,3 +65,7 @@ reason = "tar infinite loop via negative entry size; transitive via lerna/yeoman
 [[IgnoredVulns]]
 id = "GHSA-v2hh-gcrm-f6hx"
 reason = "fast-uri host confusion via literal backslash authority (CVE-2026-16221); fixed in 3.1.4 but that release is held for SafeChain. Pinning 3.1.3 clears GHSA-4c8g-83qw-93j6 / CVE-2026-13676. Re-evaluate on 2026-07-26: bump to 3.1.4 and remove this temporary exclusion (security team guidance, WCI-1125)"
+
+[[IgnoredVulns]]
+id = "GHSA-jmr9-qjv8-65gv"
+reason = "extract-zip unvalidated symlink path traversal on extraction (CVE-2026-56876); transitive via cypress and @puppeteer/browsers, both dev-only tooling; extracted archives are Cypress/Chromium binary release downloads from trusted sources, never untrusted user-supplied zips; no upstream fix (last_affected: 2.0.1, which is the latest release). Re-evaluate on 2026-11-13: drop this exclusion if extract-zip ships a patched release"
