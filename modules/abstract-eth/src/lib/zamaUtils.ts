@@ -11,6 +11,7 @@ import { confidentialTransferNoProofMethodId, confidentialTransferNoProofTypes }
 export const delegateForUserDecryptionTypes = ['address', 'address', 'uint64'] as const;
 export const callFromParentTypes = ['address', 'uint256', 'bytes'] as const;
 export const aclMulticallTypes = ['bytes[]'] as const;
+export const approveTypes = ['address', 'uint256'] as const;
 
 /**
  * Function selector for ACL.delegateForUserDecryption(address,address,uint64)
@@ -37,9 +38,54 @@ export const callFromParentMethodId = addHexPrefix(
   EthereumAbi.methodID('callFromParent', [...callFromParentTypes]).toString('hex')
 );
 
+/**
+ * Function selector for ERC-20 approve(address,uint256)
+ * = keccak256('approve(address,uint256)')[0:4]
+ * Used for exact-amount (and approve(0) reset) approvals of the ERC-7984 wrapper as spender.
+ */
+export const approveMethodId = addHexPrefix(EthereumAbi.methodID('approve', [...approveTypes]).toString('hex'));
+
 // ---------------------------------------------------------------------------
 // Encoding functions
 // ---------------------------------------------------------------------------
+
+/**
+ * Encodes ERC-20 `approve(spender, amount)` calldata for ERC-7984 shield.
+ *
+ * The spender is the confidential wrapper contract; the resulting calldata is
+ * sent to the underlying ERC-20. Exact-amount approve is used for the shield
+ * path; `amount = 0` is the USDT-style allowance reset used when
+ * `requiresApprovalReset` is set on the wrapper pair.
+ *
+ * Does not set gasLimit — WP owns gas.
+ *
+ * @param wrapperAddress  ERC-7984 wrapper contract (spender)
+ * @param amount          Exact allowance to set (base units); `0` for reset
+ * @returns ABI-encoded calldata hex string (0x-prefixed)
+ * @throws {Error} if the wrapper address is invalid or amount is negative
+ */
+export function buildApproveCalldata(wrapperAddress: string, amount: string | number | bigint): string {
+  let checksummedWrapper: string;
+  try {
+    checksummedWrapper = ethers.utils.getAddress(wrapperAddress);
+  } catch {
+    throw new Error(`buildApproveCalldata: invalid wrapper address '${wrapperAddress}'`);
+  }
+
+  let amountBn: bigint;
+  try {
+    amountBn = typeof amount === 'bigint' ? amount : BigInt(amount);
+  } catch {
+    throw new Error(`buildApproveCalldata: invalid amount '${amount}'`);
+  }
+  if (amountBn < 0n) {
+    throw new Error('buildApproveCalldata: amount must be >= 0');
+  }
+
+  const method = EthereumAbi.methodID('approve', [...approveTypes]);
+  const args = EthereumAbi.rawEncode([...approveTypes], [checksummedWrapper, amountBn.toString()]);
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
 
 /**
  * Encodes a single ACL.delegateForUserDecryption() call.

@@ -1,12 +1,14 @@
 import should from 'should';
 import EthereumAbi from 'ethereumjs-abi';
 import {
+  buildApproveCalldata,
   buildDelegationCalldata,
   buildMulticallDelegationCalldata,
   buildConfidentialTransferByHandleCalldata,
   buildFlushERC7984ForwarderTokenCalldata,
   decodeFlushERC7984ForwarderTokenCalldata,
   wrapInCallFromParent,
+  approveMethodId,
   delegateForUserDecryptionMethodId,
   aclMulticallMethodId,
   callFromParentMethodId,
@@ -20,6 +22,8 @@ describe('Zama Utils', () => {
   const TOKEN_ADDRESS_2 = '0x4E7B06D78965594eB5EF5414c357ca21E1554491';
   const TOKEN_ADDRESS_3 = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
   const FORWARDER_ADDRESS = '0xDeADbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF';
+  // Hoodi hteth:cusdt wrapper (spender for exact-amount approve)
+  const WRAPPER_ADDRESS = '0x2debbe0487ef921df4457f9e36ed05be2df1ac75';
   const EXPIRY = Math.floor(Date.now() / 1000) + 365 * 86400;
 
   // Helper: decode a delegateForUserDecryption call
@@ -43,9 +47,97 @@ describe('Zama Utils', () => {
       callFromParentMethodId.should.equal('0x77e60b35');
     });
 
+    it('should have correct selector for approve(address,uint256)', () => {
+      approveMethodId.should.equal('0x095ea7b3');
+    });
+
     it('method IDs should all be distinct', () => {
-      const ids = new Set([delegateForUserDecryptionMethodId, aclMulticallMethodId, callFromParentMethodId]);
-      ids.size.should.equal(3);
+      const ids = new Set([
+        delegateForUserDecryptionMethodId,
+        aclMulticallMethodId,
+        callFromParentMethodId,
+        approveMethodId,
+      ]);
+      ids.size.should.equal(4);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  describe('buildApproveCalldata', () => {
+    const EXACT_AMOUNT = '1000000'; // 1 USDT (6 decimals)
+
+    describe('output format', () => {
+      it('should produce a 0x-prefixed hex string', () => {
+        const calldata = buildApproveCalldata(WRAPPER_ADDRESS, EXACT_AMOUNT);
+        calldata.should.be.a.String();
+        calldata.should.startWith('0x');
+      });
+
+      it('should have exact length: 4-byte selector + 2 × 32-byte ABI words = 68 bytes (138 chars)', () => {
+        const calldata = buildApproveCalldata(WRAPPER_ADDRESS, EXACT_AMOUNT);
+        calldata.length.should.equal(138); // '0x' + 136 hex chars
+      });
+
+      it('should start with approve selector 0x095ea7b3', () => {
+        const calldata = buildApproveCalldata(WRAPPER_ADDRESS, EXACT_AMOUNT);
+        calldata.slice(0, 10).should.equal(approveMethodId);
+        calldata.slice(0, 10).should.equal('0x095ea7b3');
+      });
+    });
+
+    describe('ABI parameter encoding', () => {
+      it('should encode wrapper as spender in the first ABI word', () => {
+        const calldata = buildApproveCalldata(WRAPPER_ADDRESS, EXACT_AMOUNT);
+        const word1 = calldata.slice(10, 74);
+        word1.should.equal(WRAPPER_ADDRESS.slice(2).toLowerCase().padStart(64, '0'));
+      });
+
+      it('should encode exact amount in the second ABI word', () => {
+        const calldata = buildApproveCalldata(WRAPPER_ADDRESS, EXACT_AMOUNT);
+        const word2 = calldata.slice(74, 138);
+        word2.should.equal(BigInt(EXACT_AMOUNT).toString(16).padStart(64, '0'));
+      });
+
+      it('should encode approve(0) reset when amount is 0', () => {
+        const calldata = buildApproveCalldata(WRAPPER_ADDRESS, 0);
+        calldata.slice(0, 10).should.equal(approveMethodId);
+        calldata.slice(74, 138).should.equal('0'.repeat(64));
+      });
+
+      it('should accept amount as bigint', () => {
+        const calldata = buildApproveCalldata(WRAPPER_ADDRESS, 1000000n);
+        calldata.slice(74, 138).should.equal(BigInt(EXACT_AMOUNT).toString(16).padStart(64, '0'));
+      });
+
+      it('should accept amount as number', () => {
+        const calldata = buildApproveCalldata(WRAPPER_ADDRESS, 1000000);
+        calldata.slice(74, 138).should.equal(BigInt(EXACT_AMOUNT).toString(16).padStart(64, '0'));
+      });
+    });
+
+    describe('validation', () => {
+      it('should reject an invalid wrapper address', () => {
+        (() => buildApproveCalldata('not-an-address', EXACT_AMOUNT)).should.throw(/invalid wrapper address/);
+      });
+
+      it('should reject a bad EIP-55 checksum', () => {
+        // Mixed case that does not match the correct checksum
+        const badChecksum = '0x2Debbe0487ef921df4457f9e36ed05be2df1ac75';
+        (() => buildApproveCalldata(badChecksum, EXACT_AMOUNT)).should.throw(/invalid wrapper address/);
+      });
+
+      it('should accept all-lowercase addresses', () => {
+        const calldata = buildApproveCalldata(WRAPPER_ADDRESS.toLowerCase(), EXACT_AMOUNT);
+        calldata.slice(0, 10).should.equal(approveMethodId);
+      });
+
+      it('should reject a negative amount', () => {
+        (() => buildApproveCalldata(WRAPPER_ADDRESS, -1)).should.throw(/amount must be >= 0/);
+      });
+
+      it('should reject a non-numeric amount string', () => {
+        (() => buildApproveCalldata(WRAPPER_ADDRESS, 'abc')).should.throw(/invalid amount/);
+      });
     });
   });
 
