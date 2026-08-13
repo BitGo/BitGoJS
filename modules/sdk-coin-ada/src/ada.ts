@@ -33,6 +33,10 @@ import {
   AuditDecryptedKeyParams,
   extractCommonKeychain,
   TssVerifyAddressOptions,
+  decryptKeychainPrivateKey,
+  getEddsaSigningMaterial as sharedGetEddsaSigningMaterial,
+  signEddsaMpcV2RecoveryTx,
+  EddsaSigningMaterial,
 } from '@bitgo/sdk-core';
 import { KeyPair as AdaKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import type { Asset } from './lib/transaction';
@@ -362,6 +366,22 @@ export class Ada extends BaseCoin {
   }
 
   /**
+   * Detects MPCv1 vs MPCv2 keycard format from the encrypted user key and returns
+   * typed signing material accordingly. Wrapped as protected so tests can stub it.
+   */
+  protected async getEddsaSigningMaterial(userKey: string, passphrase: string): Promise<EddsaSigningMaterial> {
+    return sharedGetEddsaSigningMaterial(userKey, passphrase, this.bitgo);
+  }
+
+  /**
+   * Runs the MPS DSG protocol locally to sign a recovery transaction for MPCv2 keycards.
+   * Wrapped as protected so tests can stub it.
+   */
+  protected async signAdaMpcV2Recovery(params: Parameters<typeof signEddsaMpcV2RecoveryTx>[0]): Promise<Buffer> {
+    return signEddsaMpcV2RecoveryTx(params);
+  }
+
+  /**
    * Builds funds recovery transaction(s) without BitGo
    *
    * @param {MPCRecoveryOptions} params parameters needed to construct and
@@ -447,53 +467,49 @@ export class Ada extends BaseCoin {
 
     let serializedTx = unsignedTransaction.toBroadcastFormat();
     if (!isUnsignedSweep) {
-      if (!params.userKey) {
-        throw new Error('missing userKey');
-      }
-      if (!params.backupKey) {
-        throw new Error('missing backupKey');
-      }
-      if (!params.walletPassphrase) {
-        throw new Error('missing wallet passphrase');
-      }
+      assert(params.userKey, 'missing userKey');
+      assert(params.backupKey, 'missing backupKey');
+      assert(params.walletPassphrase, 'missing wallet passphrase');
 
       // Clean up whitespace from entered values
       const userKey = params.userKey.replace(/\s/g, '');
       const backupKey = params.backupKey.replace(/\s/g, '');
 
-      // Decrypt private keys from KeyCard values
-      let userPrv;
-      try {
-        userPrv = await this.bitgo.decrypt({
-          input: userKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting user keychain: ${e.message}`);
-      }
-      /** TODO BG-52419 Implement Codec for parsing */
-      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+      const signingMaterial = await this.getEddsaSigningMaterial(userKey, params.walletPassphrase);
 
-      let backupPrv;
-      try {
-        backupPrv = await this.bitgo.decrypt({
-          input: backupKey,
-          password: params.walletPassphrase,
+      let signature: Buffer;
+      if (signingMaterial.version === 'v2') {
+        signature = await this.signAdaMpcV2Recovery({
+          message: unsignedTransaction.signablePayload,
+          userKey: signingMaterial.encryptedUserKey,
+          backupKey,
+          walletPassphrase: params.walletPassphrase,
+          bitgoKey,
+          derivationPath: currPath,
+          bitgo: this.bitgo,
         });
-      } catch (e) {
-        throw new Error(`Error decrypting backup keychain: ${e.message}`);
-      }
-      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+      } else {
+        /** TODO BG-52419 Implement Codec for parsing */
+        const userSigningMaterial = JSON.parse(signingMaterial.userPrv) as EDDSAMethodTypes.UserSigningMaterial;
 
-      // add signature
-      const signatureHex = await EDDSAMethods.getTSSSignature(
-        userSigningMaterial,
-        backupSigningMaterial,
-        currPath,
-        unsignedTransaction
-      );
+        const backupPrv = await decryptKeychainPrivateKey(
+          this.bitgo,
+          { encryptedPrv: backupKey },
+          params.walletPassphrase
+        );
+        assert(backupPrv, 'Error decrypting backup keychain: invalid password or corrupted key');
+        const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+
+        signature = await EDDSAMethods.getTSSSignature(
+          userSigningMaterial,
+          backupSigningMaterial,
+          currPath,
+          unsignedTransaction
+        );
+      }
+
       const adaKeyPair = new AdaKeyPair({ pub: accountId });
-      txBuilder.addSignature({ pub: adaKeyPair.getKeys().pub }, signatureHex);
+      txBuilder.addSignature({ pub: adaKeyPair.getKeys().pub }, signature);
       const signedTransaction = await txBuilder.build();
       serializedTx = signedTransaction.toBroadcastFormat();
     } else {

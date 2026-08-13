@@ -26,7 +26,8 @@ import { Ada, KeyPair, Tada } from '../../src';
 import { Transaction } from '../../src/lib';
 import { TransactionType } from '../../../sdk-core/src/account-lib/baseCoin/enum';
 import assert from 'assert';
-import { common, Wallet } from '@bitgo/sdk-core';
+import { common, EDDSAMethods, MPCRecoveryOptions, MPCTx, Wallet } from '@bitgo/sdk-core';
+import { MPSUtil } from '@bitgo/sdk-lib-mpc';
 import nock from 'nock';
 
 describe('ADA', function () {
@@ -801,6 +802,107 @@ describe('ADA', function () {
       const fee = Number(tx.explainTransaction().fee.fee);
       const totalBalance = testnetUTXO.UTXO_1.value + testnetUTXO.UTXO_TOKEN.value;
       should.deepEqual(Number(adaOutput!.amount), totalBalance - minADAForToken - fee);
+    });
+  });
+
+  describe('Recover Transactions (MPCv2):', function () {
+    const walletPassphrase = 'test-passphrase-mpcv2';
+    const destAddr = address.address2;
+    const sandbox = sinon.createSandbox();
+
+    let mpcV2UserKey: string;
+    let mpcV2BackupKey: string;
+    let mpcV2CommonKeyChain: string;
+    let mpcV2RecoverParams: MPCRecoveryOptions;
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+      mpcV2UserKey = await encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+      mpcV2BackupKey = await encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+
+      mpcV2RecoverParams = {
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        recoveryDestination: destAddr,
+        walletPassphrase,
+      };
+    });
+
+    beforeEach(function () {
+      const callBack = sandbox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack.withArgs('address_info', sinon.match.any).resolves(endpointResponses.addressInfoResponse.OneUTXO);
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+    });
+
+    afterEach(function () {
+      sandbox.restore();
+    });
+
+    it('should recover ADA using MPCv2 signing material', async function () {
+      const getTSSSignatureSpy = sandbox.spy(EDDSAMethods, 'getTSSSignature');
+
+      const result = (await basecoin.recover(mpcV2RecoverParams)) as MPCTx;
+
+      result.should.not.be.empty();
+      result.should.hasOwnProperty('serializedTx');
+      (result.serializedTx as string).should.be.a.String().and.not.be.empty();
+      sandbox.assert.notCalled(getTSSSignatureSpy);
+    });
+
+    it('should use MPCv1 path when signing material is MPCv1 format', async function () {
+      sandbox.stub(basecoin as unknown as { getEddsaSigningMaterial: unknown }, 'getEddsaSigningMaterial').resolves({
+        version: 'v1',
+        userPrv: JSON.stringify({ uShare: {}, bitgoYShare: {} }),
+      });
+
+      const getTSSSignatureStub = sandbox
+        .stub(EDDSAMethods, 'getTSSSignature')
+        .resolves(
+          Buffer.from(
+            '1baafa0d62174bf0c78f3256318613ffc44b6dd54ab1a63c2185232f92ede9da' +
+              'e1b2818dbeb52a8215fd56f5a5f2a9f94c079ce89e4dc3b1ce6ed6e84ce71857',
+            'hex'
+          )
+        );
+
+      sandbox.stub(bitgo, 'decrypt').resolves(JSON.stringify({ bShare: {}, yShares: {} }));
+
+      const result = (await basecoin.recover(mpcV2RecoverParams)) as MPCTx;
+
+      result.should.not.be.empty();
+      result.should.hasOwnProperty('serializedTx');
+      (result.serializedTx as string).should.be.a.String().and.not.be.empty();
+      sandbox.assert.calledOnce(getTSSSignatureStub);
+    });
+
+    it('should return an unsigned sweep transaction when walletPassphrase is missing', async function () {
+      const getEddsaSigningMaterialSpy = sandbox.spy(
+        basecoin as unknown as { getEddsaSigningMaterial: () => unknown },
+        'getEddsaSigningMaterial'
+      );
+
+      const result = await basecoin.recover({
+        bitgoKey: mpcV2CommonKeyChain,
+        recoveryDestination: destAddr,
+      });
+
+      result.should.not.be.empty();
+      result.txRequests[0].transactions[0].unsignedTx.should.hasOwnProperty('serializedTx');
+      sandbox.assert.notCalled(getEddsaSigningMaterialSpy);
+    });
+
+    it('should throw when commonKeyChain from MPCv2 keycard does not match bitgoKey', async function () {
+      const mismatchedBitgoKey = mpcV2CommonKeyChain.slice(0, -8) + '00000000';
+      const mismatchedParams = {
+        ...mpcV2RecoverParams,
+        bitgoKey: mismatchedBitgoKey,
+      };
+
+      await basecoin
+        .recover(mismatchedParams)
+        .should.be.rejectedWith('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
     });
   });
 
