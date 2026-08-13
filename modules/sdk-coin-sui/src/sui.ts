@@ -336,8 +336,10 @@ export class Sui extends BaseCoin {
    *
    * @returns {MPCTx | MPCSweepTxs} array of the serialized transaction hex strings and indices
    * of the addresses being swept
+   * @param {EddsaSigningMaterial} [precomputedMaterial] signing material detected once by the
+   * caller (e.g. recoverConsolidations) to avoid re-decrypting the keycard on every loop iteration
    */
-  async recover(params: MPCRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
+  async recover(params: MPCRecoveryOptions, precomputedMaterial?: EddsaSigningMaterial): Promise<MPCTxs | MPCSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -388,7 +390,16 @@ export class Sui extends BaseCoin {
         } catch (e) {
           continue;
         }
-        return this.recoverSuiToken(params, token, senderAddress, derivationPath, derivedPublicKey, idx, bitgoKey);
+        return this.recoverSuiToken(
+          params,
+          token,
+          senderAddress,
+          derivationPath,
+          derivedPublicKey,
+          idx,
+          bitgoKey,
+          precomputedMaterial
+        );
       }
 
       let inputCoins = await this.getInputCoins(senderAddress);
@@ -468,7 +479,14 @@ export class Sui extends BaseCoin {
         return this.buildUnsignedSweepTransaction(txBuilder, senderAddress, bitgoKey, idx, derivationPath);
       }
 
-      await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey, false);
+      await this.signRecoveryTransaction(
+        txBuilder,
+        params,
+        derivationPath,
+        derivedPublicKey,
+        false,
+        precomputedMaterial
+      );
       const tx = (await txBuilder.build()) as TransferTransaction;
       return {
         transactions: [
@@ -496,7 +514,8 @@ export class Sui extends BaseCoin {
     derivationPath: string,
     derivedPublicKey: string,
     idx: number,
-    bitgoKey: string
+    bitgoKey: string,
+    precomputedMaterial?: EddsaSigningMaterial
   ): Promise<MPCTxs | MPCSweepTxs> {
     const coinType = `${token.packageId}::${token.module}::${token.symbol}`;
     let tokenObjects = await this.getInputCoins(senderAddress, coinType);
@@ -559,7 +578,7 @@ export class Sui extends BaseCoin {
       return this.buildUnsignedSweepTransaction(txBuilder, senderAddress, bitgoKey, idx, derivationPath, token);
     }
 
-    await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey, true);
+    await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey, true, precomputedMaterial);
     const tx = (await txBuilder.build()) as TokenTransferTransaction;
     return {
       transactions: [
@@ -656,7 +675,8 @@ export class Sui extends BaseCoin {
     params: MPCRecoveryOptions,
     derivationPath: string,
     derivedPublicKey: string,
-    isTokenTransaction: boolean
+    isTokenTransaction: boolean,
+    precomputedMaterial?: EddsaSigningMaterial
   ) {
     // TODO(BG-51092): This looks like a common part which can be extracted out too
     const unsignedTx = isTokenTransaction
@@ -671,7 +691,8 @@ export class Sui extends BaseCoin {
     const backupKey = params.backupKey.replace(/\s/g, '');
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
 
-    const signingMaterial = await this.getEddsaSigningMaterial(userKey, params.walletPassphrase);
+    const signingMaterial =
+      precomputedMaterial ?? (await this.getEddsaSigningMaterial(userKey, params.walletPassphrase));
 
     if (signingMaterial.version === 'v2') {
       const signature = await this.signSuiMpcV2Recovery({
@@ -806,6 +827,14 @@ export class Sui extends BaseCoin {
     }
 
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const userKey = params.userKey?.replace(/\s/g, '');
+
+    // Detect signing material once to avoid re-decrypting the keycard on every loop iteration.
+    const signingMaterial =
+      userKey && params.walletPassphrase
+        ? await this.getEddsaSigningMaterial(userKey, params.walletPassphrase)
+        : undefined;
+
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
     const derivationPath = (params.seed ? getDerivationPath(params.seed) : 'm') + '/0';
     const derivedPublicKey = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
@@ -828,7 +857,7 @@ export class Sui extends BaseCoin {
 
       let recoveryTransaction: MPCTxs | MPCSweepTxs;
       try {
-        recoveryTransaction = await this.recover(recoverParams);
+        recoveryTransaction = await this.recover(recoverParams, signingMaterial);
       } catch (e) {
         if (e.message.startsWith('Did not find an address with sufficient funds to recover.')) {
           lastScanIndex = idx;
