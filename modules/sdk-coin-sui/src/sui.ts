@@ -1,3 +1,4 @@
+import assert from 'assert';
 import crypto from 'crypto';
 import {
   BaseBroadcastTransactionOptions,
@@ -5,9 +6,12 @@ import {
   BaseCoin,
   BaseTransaction,
   BitGoBase,
+  decryptKeychainPrivateKey,
   EDDSAMethods,
   EDDSAMethodTypes,
+  EddsaSigningMaterial,
   Environments,
+  getEddsaSigningMaterial as sharedGetEddsaSigningMaterial,
   KeyPair,
   MPCAlgorithm,
   MPCRecoveryOptions,
@@ -20,6 +24,7 @@ import {
   ParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
   RecoveryTxRequest,
+  signEddsaMpcV2RecoveryTx,
   SignedTransaction,
   SignTransactionOptions,
   TransactionExplanation,
@@ -463,7 +468,7 @@ export class Sui extends BaseCoin {
         return this.buildUnsignedSweepTransaction(txBuilder, senderAddress, bitgoKey, idx, derivationPath);
       }
 
-      await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey, false);
+      await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey, bitgoKey, false);
       const tx = (await txBuilder.build()) as TransferTransaction;
       return {
         transactions: [
@@ -554,7 +559,7 @@ export class Sui extends BaseCoin {
       return this.buildUnsignedSweepTransaction(txBuilder, senderAddress, bitgoKey, idx, derivationPath, token);
     }
 
-    await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey, true);
+    await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey, bitgoKey, true);
     const tx = (await txBuilder.build()) as TokenTransferTransaction;
     return {
       transactions: [
@@ -630,55 +635,64 @@ export class Sui extends BaseCoin {
     return { txRequests: [txRequest] };
   }
 
+  /**
+   * Detects whether a keycard's decrypted plaintext is MPCv1 JSON or MPCv2 CBOR.
+   * Protected so tests can stub it via sinon; wraps the shared sdk-core helper.
+   */
+  protected async getEddsaSigningMaterial(userKey: string, walletPassphrase: string): Promise<EddsaSigningMaterial> {
+    return sharedGetEddsaSigningMaterial(userKey, walletPassphrase, this.bitgo);
+  }
+
+  // Protected so tests can stub via instance overrides — direct module function bindings
+  // cannot be intercepted by sinon after import.
+  protected async signSuiMpcV2Recovery(params: Parameters<typeof signEddsaMpcV2RecoveryTx>[0]): Promise<Buffer> {
+    return signEddsaMpcV2RecoveryTx(params);
+  }
+
   private async signRecoveryTransaction(
     txBuilder: TransactionBuilder,
     params: MPCRecoveryOptions,
     derivationPath: string,
     derivedPublicKey: string,
+    bitgoKey: string,
     isTokenTransaction: boolean
   ) {
     // TODO(BG-51092): This looks like a common part which can be extracted out too
     const unsignedTx = isTokenTransaction
       ? ((await txBuilder.build()) as TokenTransferTransaction)
       : ((await txBuilder.build()) as TransferTransaction);
-    if (!params.userKey) {
-      throw new Error('missing userKey');
-    }
-    if (!params.backupKey) {
-      throw new Error('missing backupKey');
-    }
-    if (!params.walletPassphrase) {
-      throw new Error('missing wallet passphrase');
-    }
+    assert(params.userKey, 'missing userKey');
+    assert(params.backupKey, 'missing backupKey');
+    assert(params.walletPassphrase, 'missing wallet passphrase');
 
     // Clean up whitespace from entered values
     const userKey = params.userKey.replace(/\s/g, '');
     const backupKey = params.backupKey.replace(/\s/g, '');
 
-    // Decrypt private keys from KeyCard values
-    let userPrv: string;
-    try {
-      userPrv = await this.bitgo.decrypt({
-        input: userKey,
-        password: params.walletPassphrase,
-      });
-    } catch (e) {
-      throw new Error(`Error decrypting user keychain: ${e.message}`);
-    }
-    /** TODO BG-52419 Implement Codec for parsing */
-    const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+    const signingMaterial = await this.getEddsaSigningMaterial(userKey, params.walletPassphrase);
 
-    let backupPrv: string;
-    try {
-      backupPrv = await this.bitgo.decrypt({
-        input: backupKey,
-        password: params.walletPassphrase,
+    if (signingMaterial.version === 'v2') {
+      const signature = await this.signSuiMpcV2Recovery({
+        message: unsignedTx.signablePayload,
+        userKey: signingMaterial.encryptedUserKey,
+        backupKey,
+        walletPassphrase: params.walletPassphrase,
+        bitgoKey,
+        derivationPath,
+        bitgo: this.bitgo,
       });
-    } catch (e) {
-      throw new Error(`Error decrypting backup keychain: ${e.message}`);
+      txBuilder.addSignature({ pub: derivedPublicKey }, signature);
+      return;
+    }
+
+    /** TODO BG-52419 Implement Codec for parsing */
+    const userSigningMaterial = JSON.parse(signingMaterial.userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+
+    const backupPrv = await decryptKeychainPrivateKey(this.bitgo, { encryptedPrv: backupKey }, params.walletPassphrase);
+    if (!backupPrv) {
+      throw new Error('Error decrypting backup keychain: invalid password or corrupted key');
     }
     const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-    /* ********************** END ***********************************/
 
     // add signature
     const signatureHex = await EDDSAMethods.getTSSSignature(

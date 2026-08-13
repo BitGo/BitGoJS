@@ -1,19 +1,22 @@
 import should from 'should';
 
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import { Sui, TokenTransferTransaction, TransferTransaction, Tsui } from '../../src';
 import * as testData from '../resources/sui';
 import _ from 'lodash';
 import sinon from 'sinon';
 import BigNumber from 'bignumber.js';
 import assert from 'assert';
+import nacl from 'tweetnacl';
 import { SuiTransactionType } from '../../src/lib/iface';
 import { getBuilderFactory } from './getBuilderFactory';
 import { keys } from '../resources/sui';
 import { Buffer } from 'buffer';
-import { common, TransactionPrebuild, Wallet } from '@bitgo/sdk-core';
+import { common, EDDSAMethods, TransactionPrebuild, Wallet } from '@bitgo/sdk-core';
+import { MPSUtil } from '@bitgo/sdk-lib-mpc';
 import nock from 'nock';
+import utils from '../../src/lib/utils';
 
 describe('SUI:', function () {
   let bitgo: TestBitGoAPI;
@@ -728,6 +731,169 @@ describe('SUI:', function () {
     });
   });
 
+  describe('Recover Transactions (MPCv2):', () => {
+    const sandBox = sinon.createSandbox();
+    const recoveryDestination = '0x00e4eaa6a291fe02918452e645b5653cd260a5fc0fb35f6193d580916aa9e389';
+    const walletPassphrase = 'p$Sw<RjvAgf{nYAYI2xM';
+
+    let mpcV2UserKey: string;
+    let mpcV2BackupKey: string;
+    let mpcV2CommonKeyChain: string;
+    let mpcV2WalletAddress: string;
+    let mismatchedBitgoKey: string;
+    let mismatchedWalletAddress: string;
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      const [otherUserDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+
+      mpcV2UserKey = await encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+      mpcV2BackupKey = await encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+      mismatchedBitgoKey = otherUserDkg.getCommonKeychain();
+
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      mpcV2WalletAddress = utils.getAddressFromPublicKey(MPC.deriveUnhardened(mpcV2CommonKeyChain, 'm/0').slice(0, 64));
+      mismatchedWalletAddress = utils.getAddressFromPublicKey(
+        MPC.deriveUnhardened(mismatchedBitgoKey, 'm/0').slice(0, 64)
+      );
+    });
+
+    beforeEach(function () {
+      const getBalanceStub = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
+      getBalanceStub
+        .withArgs(mpcV2WalletAddress)
+        .resolves({ totalBalance: '1900000000', coinObjectBalance: '1900000000', fundsInAddressBalance: '0' });
+      getBalanceStub
+        .withArgs(mismatchedWalletAddress)
+        .resolves({ totalBalance: '1900000000', coinObjectBalance: '1900000000', fundsInAddressBalance: '0' });
+
+      const getInputCoinsStub = sandBox.stub(Sui.prototype, 'getInputCoins' as keyof Sui);
+      const coinObject = {
+        coinType: '0x2::sui::SUI',
+        objectId: '0xc05c765e26e6ae84c78fa245f38a23fb20406a5cf3f61b57bd323a0df9d98003',
+        version: '195',
+        digest: '7BJLb32LKN7wt5uv4xgXW4AbFKoMNcPE76o41TQEvUZb',
+        balance: new BigNumber('1900000000'),
+      };
+      getInputCoinsStub.withArgs(mpcV2WalletAddress).resolves([coinObject]);
+      getInputCoinsStub.withArgs(mismatchedWalletAddress).resolves([coinObject]);
+
+      const getFeeEstimateStub = sandBox.stub(Sui.prototype, 'getFeeEstimate' as keyof Sui);
+      getFeeEstimateStub.resolves(new BigNumber(1997880));
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should route to MPCv2 path and return a signed recovery transaction', async function () {
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+      const res = await basecoin.recover({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        recoveryDestination,
+      });
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('transactions');
+      const tx = res.transactions[0];
+      tx.scanIndex.should.equal(0);
+      tx.should.hasOwnProperty('serializedTx');
+      tx.should.hasOwnProperty('signature');
+      sandBox.assert.notCalled(getTSSSignatureSpy);
+    });
+
+    it('should produce a signature that verifies against the signable payload and derived pubkey', async function () {
+      const res = await basecoin.recover({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        recoveryDestination,
+      });
+      const tx = res.transactions[0];
+
+      const rebuilt = new TransferTransaction(basecoin);
+      rebuilt.fromRawTransaction(tx.serializedTx);
+
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const accountId = MPC.deriveUnhardened(mpcV2CommonKeyChain, 'm/0').slice(0, 64);
+      // tx.signature is the SUI envelope: 1-byte scheme flag + 64-byte signature + 32-byte pubkey.
+      const serializedSig = Buffer.from(tx.signature, 'base64');
+      const rawSignature = serializedSig.subarray(1, 65);
+
+      const isValid = nacl.sign.detached.verify(
+        new Uint8Array(rebuilt.signablePayload),
+        new Uint8Array(rawSignature),
+        new Uint8Array(Buffer.from(accountId, 'hex'))
+      );
+      isValid.should.be.true();
+    });
+
+    it('should throw when MPCv2 commonKeyChain does not match bitgoKey', async function () {
+      await basecoin
+        .recover({
+          userKey: mpcV2UserKey,
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mismatchedBitgoKey,
+          walletPassphrase,
+          recoveryDestination,
+        })
+        .should.be.rejectedWith('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+    });
+
+    it('should call getEddsaSigningMaterial exactly once per recover() call', async function () {
+      const getEddsaMaterialSpy = sandBox.spy(
+        basecoin as unknown as { getEddsaSigningMaterial: unknown },
+        'getEddsaSigningMaterial'
+      );
+
+      const res = await basecoin.recover({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        recoveryDestination,
+      });
+
+      res.should.not.be.empty();
+      sandBox.assert.calledOnce(getEddsaMaterialSpy);
+    });
+
+    it('should still use the MPCv1 path (getTSSSignature) for MPCv1 JSON keycards (regression)', async function () {
+      const senderAddress0 = '0x91f25e237b83a00a62724fdc4a81e43f494dc6b41a1241492826d36e4d131da3';
+      (Sui.prototype as unknown as { getBalance: sinon.SinonStub }).getBalance
+        .withArgs(senderAddress0)
+        .resolves({ totalBalance: '1900000000', coinObjectBalance: '1900000000', fundsInAddressBalance: '0' });
+      (Sui.prototype as unknown as { getInputCoins: sinon.SinonStub }).getInputCoins.withArgs(senderAddress0).resolves([
+        {
+          coinType: '0x2::sui::SUI',
+          objectId: '0xc05c765e26e6ae84c78fa245f38a23fb20406a5cf3f61b57bd323a0df9d98003',
+          version: '195',
+          digest: '7BJLb32LKN7wt5uv4xgXW4AbFKoMNcPE76o41TQEvUZb',
+          balance: new BigNumber('1900000000'),
+        },
+      ]);
+
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+      const res = await basecoin.recover({
+        userKey: keys.userKey,
+        backupKey: keys.backupKey,
+        bitgoKey: keys.bitgoKey,
+        walletPassphrase,
+        recoveryDestination,
+      });
+
+      res.should.not.be.empty();
+      sandBox.assert.calledOnce(getTSSSignatureSpy);
+    });
+  });
+
   describe('Recover Token Transactions:', () => {
     const sandBox = sinon.createSandbox();
     const coinType = '0x36dbef866a1d62bf7328989a10fb2f07d769f4ee587c0de4a0a256e57e0a58a8::deep::DEEP';
@@ -1035,6 +1201,105 @@ describe('SUI:', function () {
       sandBox.assert.callCount(basecoin.getBalance, 3);
       sandBox.assert.callCount(basecoin.getInputCoins, 2);
       sandBox.assert.callCount(basecoin.getFeeEstimate, 1);
+    });
+  });
+
+  describe('Recover Token Transactions (MPCv2):', () => {
+    const sandBox = sinon.createSandbox();
+    const coinType = '0x36dbef866a1d62bf7328989a10fb2f07d769f4ee587c0de4a0a256e57e0a58a8::deep::DEEP';
+    const recoveryDestination = '0x00e4eaa6a291fe02918452e645b5653cd260a5fc0fb35f6193d580916aa9e389';
+    const walletPassphrase = 'p$Sw<RjvAgf{nYAYI2xM';
+    const tokenContractAddress = '0x36dbef866a1d62bf7328989a10fb2f07d769f4ee587c0de4a0a256e57e0a58a8';
+
+    let mpcV2UserKey: string;
+    let mpcV2BackupKey: string;
+    let mpcV2CommonKeyChain: string;
+    let mpcV2WalletAddress: string;
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+
+      mpcV2UserKey = await encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+      mpcV2BackupKey = await encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      mpcV2WalletAddress = utils.getAddressFromPublicKey(MPC.deriveUnhardened(mpcV2CommonKeyChain, 'm/0').slice(0, 64));
+    });
+
+    beforeEach(function () {
+      const getBalanceStub = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
+      getBalanceStub
+        .withArgs(mpcV2WalletAddress)
+        .resolves({ totalBalance: '1900000000', coinObjectBalance: '1900000000', fundsInAddressBalance: '0' });
+      getBalanceStub
+        .withArgs(mpcV2WalletAddress, coinType)
+        .resolves({ totalBalance: '1000', coinObjectBalance: '1000', fundsInAddressBalance: '0' });
+
+      const getInputCoinsStub = sandBox.stub(Sui.prototype, 'getInputCoins' as keyof Sui);
+      getInputCoinsStub.withArgs(mpcV2WalletAddress, coinType).resolves([
+        {
+          coinType,
+          objectId: '0x924ab69ebba304f2975a588372b41e4e1f5db7fa824868f84199eeb1e0a15a2d',
+          version: '34696807',
+          digest: '7XRbWQTiwAUCjLLsZVpJMrABCheJBkzKVfCr7aTZZVkd',
+          balance: new BigNumber(1000),
+        },
+      ]);
+      getInputCoinsStub.withArgs(mpcV2WalletAddress).resolves([
+        {
+          coinType: '0x2::sui::SUI',
+          objectId: '0x9146928f557cb8ab1915a5886c1362435a05b4709b586bb01d4c70e85bb53161',
+          version: '239',
+          digest: 'GLSzR6HJ319nPKAFm5x3TWHcaHZzCFSBCqhvZ1qwT5wr',
+          balance: new BigNumber('1230261076'),
+        },
+      ]);
+
+      const getFeeEstimateStub = sandBox.stub(Sui.prototype, 'getFeeEstimate' as keyof Sui);
+      getFeeEstimateStub.resolves(new BigNumber(2345504));
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should route token recovery to the MPCv2 path and return a signed, verifiable transaction', async function () {
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+      const res = await basecoin.recover({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        recoveryDestination,
+        tokenContractAddress,
+      });
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('transactions');
+      const tx = res.transactions[0];
+      tx.scanIndex.should.equal(0);
+      tx.should.hasOwnProperty('serializedTx');
+      tx.should.hasOwnProperty('signature');
+      sandBox.assert.notCalled(getTSSSignatureSpy);
+
+      const rebuilt = new TokenTransferTransaction(basecoin);
+      rebuilt.fromRawTransaction(tx.serializedTx);
+      should.equal(rebuilt.toJson().sender, mpcV2WalletAddress);
+
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const accountId = MPC.deriveUnhardened(mpcV2CommonKeyChain, 'm/0').slice(0, 64);
+      // tx.signature is the SUI envelope: 1-byte scheme flag + 64-byte signature + 32-byte pubkey.
+      const serializedSig = Buffer.from(tx.signature, 'base64');
+      const rawSignature = serializedSig.subarray(1, 65);
+
+      const isValid = nacl.sign.detached.verify(
+        new Uint8Array(rebuilt.signablePayload),
+        new Uint8Array(rawSignature),
+        new Uint8Array(Buffer.from(accountId, 'hex'))
+      );
+      isValid.should.be.true();
     });
   });
 
