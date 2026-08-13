@@ -26,7 +26,8 @@ import { Ada, KeyPair, Tada } from '../../src';
 import { Transaction } from '../../src/lib';
 import { TransactionType } from '../../../sdk-core/src/account-lib/baseCoin/enum';
 import assert from 'assert';
-import { common, Wallet } from '@bitgo/sdk-core';
+import { common, EDDSAMethods, Wallet } from '@bitgo/sdk-core';
+import { MPSUtil } from '@bitgo/sdk-lib-mpc';
 import nock from 'nock';
 
 describe('ADA', function () {
@@ -804,6 +805,121 @@ describe('ADA', function () {
     });
   });
 
+  describe('Recover Transactions (MPCv2):', () => {
+    const destAddr = address.address2;
+    const sandBox = sinon.createSandbox();
+    const walletPassphrase = wrwUser.walletPassphrase;
+    let mpcV2UserKey: string;
+    let mpcV2BackupKey: string;
+    let mpcV2CommonKeyChain: string;
+    let mpcV2WalletAddress: string;
+    let mismatchedBitgoKey: string;
+    let mismatchedWalletAddress: string;
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      const [otherUserDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+
+      mpcV2UserKey = await encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+      mpcV2BackupKey = await encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+      mismatchedBitgoKey = otherUserDkg.getCommonKeychain();
+
+      mpcV2WalletAddress = (await basecoin.getAdaAddressAndAccountId({ bitgoKey: mpcV2CommonKeyChain, index: 0 }))
+        .address;
+      mismatchedWalletAddress = (await basecoin.getAdaAddressAndAccountId({ bitgoKey: mismatchedBitgoKey, index: 0 }))
+        .address;
+    });
+
+    let callBack: sinon.SinonStub;
+
+    beforeEach(function () {
+      callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack
+        .withArgs('address_info', { _addresses: [mpcV2WalletAddress] })
+        .resolves(endpointResponses.addressInfoResponse.OneUTXO);
+      callBack
+        .withArgs('address_info', { _addresses: [mismatchedWalletAddress] })
+        .resolves(endpointResponses.addressInfoResponse.OneUTXO);
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should route to MPCv2 path for native ADA recovery when keycard is MPCv2', async function () {
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+      const res = await basecoin.recover({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        recoveryDestination: destAddr,
+      });
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.notCalled(getTSSSignatureSpy);
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(res.serializedTx);
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.outputs[0].address, destAddr);
+    });
+
+    it('should throw when MPCv2 commonKeyChain does not match bitgoKey', async function () {
+      await basecoin
+        .recover({
+          userKey: mpcV2UserKey,
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mismatchedBitgoKey,
+          walletPassphrase,
+          recoveryDestination: destAddr,
+        })
+        .should.be.rejectedWith('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+    });
+
+    it('should call getEddsaSigningMaterial exactly once per recover() call', async function () {
+      const getEddsaMaterialSpy = sandBox.spy(
+        basecoin as unknown as { getEddsaSigningMaterial: unknown },
+        'getEddsaSigningMaterial'
+      );
+
+      const res = await basecoin.recover({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        recoveryDestination: destAddr,
+      });
+
+      res.should.not.be.empty();
+      sandBox.assert.calledOnce(getEddsaMaterialSpy);
+    });
+
+    it('should route to MPCv1 path when keycard is MPCv1 (regression)', async function () {
+      callBack
+        .withArgs('address_info', { _addresses: [wrwUser.walletAddress0] })
+        .resolves(endpointResponses.addressInfoResponse.OneUTXO);
+
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+      const res = await basecoin.recover({
+        userKey: wrwUser.userKey,
+        backupKey: wrwUser.backupKey,
+        bitgoKey: wrwUser.bitgoKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destAddr,
+      });
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledOnce(getTSSSignatureSpy);
+    });
+  });
+
   describe('Recover Transactions Multiple UTXO:', () => {
     const destAddr = address.address2;
     const sandBox = sinon.createSandbox();
@@ -1188,6 +1304,121 @@ describe('ADA', function () {
       });
       res.should.not.be.empty();
       res.transactions.length.should.equal(2);
+    });
+  });
+
+  describe('Build Consolidation Recoveries (MPCv2):', () => {
+    const sandBox = sinon.createSandbox();
+    const walletPassphrase = wrwUser.walletPassphrase;
+    let mpcV2UserKey: string;
+    let mpcV2BackupKey: string;
+    let mpcV2CommonKeyChain: string;
+    let baseAddr: string;
+    let mpcV2Address1: string;
+    let mpcV2Address2: string;
+    let mpcV2Address3: string;
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+
+      mpcV2UserKey = await encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+      mpcV2BackupKey = await encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+
+      baseAddr = (await basecoin.getAdaAddressAndAccountId({ bitgoKey: mpcV2CommonKeyChain, index: 0 })).address;
+      mpcV2Address1 = (await basecoin.getAdaAddressAndAccountId({ bitgoKey: mpcV2CommonKeyChain, index: 1 })).address;
+      mpcV2Address2 = (await basecoin.getAdaAddressAndAccountId({ bitgoKey: mpcV2CommonKeyChain, index: 2 })).address;
+      mpcV2Address3 = (await basecoin.getAdaAddressAndAccountId({ bitgoKey: mpcV2CommonKeyChain, index: 3 })).address;
+    });
+
+    beforeEach(function () {
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack
+        .withArgs('address_info', { _addresses: [mpcV2Address1] })
+        .resolves(endpointResponses.addressInfoResponse.ZeroUTXO);
+      callBack
+        .withArgs('address_info', { _addresses: [mpcV2Address2] })
+        .resolves(endpointResponses.addressInfoResponse.OneUTXO);
+      callBack
+        .withArgs('address_info', { _addresses: [mpcV2Address3] })
+        .resolves(endpointResponses.addressInfoResponse.OneUTXO2);
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should build MPCv2 signed consolidation recoveries across 2+ funded indexes, sweeping to the MPCv2 base address', async function () {
+      const getEddsaMaterialSpy = sandBox.spy(
+        basecoin as unknown as { getEddsaSigningMaterial: unknown },
+        'getEddsaSigningMaterial'
+      );
+
+      const res = await basecoin.recoverConsolidations({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(2);
+      res.lastScanIndex.should.equal(3);
+
+      const tx1 = new Transaction(basecoin);
+      tx1.fromRawTransaction(res.transactions[0].serializedTx);
+      should.deepEqual(tx1.toJson().outputs[0].address, baseAddr);
+
+      // recoverConsolidations must detect signing material exactly once at the top of the scan
+      // loop, not per-iteration inside recover() — precomputedMaterial bypasses per-call detection.
+      sandBox.assert.calledOnce(getEddsaMaterialSpy);
+    });
+
+    it('should leave MPCv1 base address derivation and signing unchanged (regression)', async function () {
+      sandBox.restore();
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack
+        .withArgs('address_info', { _addresses: [consolidationWrwUser.walletAddress1] })
+        .resolves(endpointResponses.addressInfoResponse.ZeroUTXO);
+      callBack
+        .withArgs('address_info', { _addresses: [consolidationWrwUser.walletAddress2] })
+        .resolves(endpointResponses.addressInfoResponse.OneUTXO);
+      callBack
+        .withArgs('address_info', { _addresses: [consolidationWrwUser.walletAddress3] })
+        .resolves(endpointResponses.addressInfoResponse.OneUTXO2);
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+      const res = await basecoin.recoverConsolidations({
+        userKey: consolidationWrwUser.userKey,
+        backupKey: consolidationWrwUser.backupKey,
+        bitgoKey: consolidationWrwUser.bitgoKey,
+        walletPassphrase: consolidationWrwUser.walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+
+      res.should.not.be.empty();
+      sandBox.assert.called(getTSSSignatureSpy);
+
+      const tx1 = new Transaction(basecoin);
+      tx1.fromRawTransaction(res.transactions[0].serializedTx);
+      should.deepEqual(tx1.toJson().outputs[0].address, consolidationWrwUser.walletAddress0);
+    });
+
+    it('should leave the unsigned (no passphrase) cold path unchanged when keycard is MPCv2', async function () {
+      const res = await basecoin.recoverConsolidations({
+        bitgoKey: mpcV2CommonKeyChain,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+
+      res.should.not.be.empty();
+      res.txRequests.length.should.equal(2);
     });
   });
 
