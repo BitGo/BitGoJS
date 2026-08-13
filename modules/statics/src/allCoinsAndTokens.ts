@@ -4407,6 +4407,15 @@ export const allCoinsAndTokens = [
     Networks.main.basechain
   ),
   erc20Token(
+    '965c1796-d1a4-4222-9472-1ba303cc0851',
+    'baseeth:sbp',
+    'Sustainable Bitcoin Protocol',
+    6,
+    '0x7d5411da3a86395397369e94aff65f4b77ad4112',
+    UnderlyingAsset['baseeth:sbp'],
+    Networks.main.basechain
+  ),
+  erc20Token(
     '01c87cfe-3ba2-43db-9712-b37e9af9f422',
     'baseeth:soon',
     'Soon Token',
@@ -6847,6 +6856,14 @@ export const allCoinsAndTokens = [
     18,
     '0xf97f4df75117a78c1a5a0dbb814af92458539fb4',
     UnderlyingAsset['arbeth:link']
+  ),
+  arbethErc20(
+    '5cfdea4d-2d4b-460e-9743-aa647a506f8d',
+    'arbeth:mxnb',
+    'MXNB',
+    6,
+    '0xf197ffc28c23e0309b5559e7a166f2c6164c80aa',
+    UnderlyingAsset['arbeth:mxnb']
   ),
   arbethErc20(
     '67c9fa5c-e9e0-4586-abe2-f2921d7a83cd',

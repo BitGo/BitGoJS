@@ -1340,6 +1340,15 @@ export const polygonTokens = [
     POLYGON_TOKEN_FEATURES
   ),
   tpolygonErc20(
+    '4962c696-1172-4084-81b4-fcc3c3ea7cc4',
+    'tpolygon:abld',
+    'ABLD Poly',
+    18,
+    '0xfdc1fdc1f3a09a223e6eb51f89b9c66fa32b5779',
+    UnderlyingAsset['tpolygon:abld'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  tpolygonErc20(
     'e2411508-ebec-4956-a2d3-bb2b0441fe31',
     'tpolygon:txusd',
     'Test StraitsX USD',

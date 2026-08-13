@@ -3012,6 +3012,7 @@ export enum UnderlyingAsset {
   'tavaxc:tkula' = 'tavaxc:tkula',
   'avaxc:usdc-e' = 'avaxc:usdc-e',
   'avaxc:usdt-e' = 'avaxc:usdt-e',
+  'tavaxc:aggy' = 'tavaxc:aggy',
   // Begin FTX missing AVAXC tokens
   'avaxc:yeti' = 'avaxc:yeti',
   'avaxc:spell' = 'avaxc:spell',
@@ -3552,6 +3553,7 @@ export enum UnderlyingAsset {
   'tpolygon:tusdlt' = 'tpolygon:tusdlt',
   'tpolygon:sofid' = 'tpolygon:sofid',
   'tpolygon:stgsofid' = 'tpolygon:stgsofid',
+  'tpolygon:abld' = 'tpolygon:abld',
   // CSHLD-1278 testnet token
   'tpolygon:activ' = 'tpolygon:activ',
 
@@ -3635,6 +3637,7 @@ export enum UnderlyingAsset {
   'arbeth:chlt' = 'arbeth:chlt',
   'arbeth:bolt' = 'arbeth:bolt',
   'arbeth:pert' = 'arbeth:pert',
+  'arbeth:mxnb' = 'arbeth:mxnb',
   // Bitkub batch (CSHLD-1278)
   'arbeth:obt' = 'arbeth:obt',
   'arbeth:magic' = 'arbeth:magic',
@@ -3657,6 +3660,7 @@ export enum UnderlyingAsset {
   'baseeth:frnt' = 'baseeth:frnt',
   'baseeth:soon' = 'baseeth:soon',
   'baseeth:wave' = 'baseeth:wave',
+  'baseeth:sbp' = 'baseeth:sbp',
 
   'baseeth:spec' = 'baseeth:spec',
   'baseeth:tig' = 'baseeth:tig',
