@@ -5,6 +5,8 @@ on:
     branches:
       - master
       - rel/**
+  merge_group:
+    types: [checks_requested]
 
 env:
   STATIC_ANALYSIS_BOT_APP_ID: 1819979
@@ -16,7 +18,7 @@ jobs:
       - name: Checkout PR
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -68,13 +70,13 @@ jobs:
       - name: Checkout PR
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
 
       - name: Find and checkout merge base
         run: |
-          git fetch origin ${{ github.event.pull_request.base.ref }}
-          MERGE_BASE=$(git merge-base HEAD origin/${{ github.event.pull_request.base.ref }})
+          git fetch origin ${{ github.event.pull_request.base.ref || 'master' }}
+          MERGE_BASE=$(git merge-base HEAD origin/${{ github.event.pull_request.base.ref || 'master' }})
           echo "Merge base commit: $MERGE_BASE"
           git checkout $MERGE_BASE
 
@@ -158,7 +160,7 @@ jobs:
       - name: Checkout PR head for ruleset
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Download head API spec artifact
         uses: actions/download-artifact@v8
