@@ -451,15 +451,9 @@ export class Ada extends BaseCoin {
 
     let serializedTx = unsignedTransaction.toBroadcastFormat();
     if (!isUnsignedSweep) {
-      if (!params.userKey) {
-        throw new Error('missing userKey');
-      }
-      if (!params.backupKey) {
-        throw new Error('missing backupKey');
-      }
-      if (!params.walletPassphrase) {
-        throw new Error('missing wallet passphrase');
-      }
+      assert(params.userKey, 'missing userKey');
+      assert(params.backupKey, 'missing backupKey');
+      assert(params.walletPassphrase, 'missing wallet passphrase');
 
       // Clean up whitespace from entered values
       const userKey = params.userKey.replace(/\s/g, '');

@@ -3,6 +3,7 @@
  */
 
 import should = require('should');
+import nacl from 'tweetnacl';
 import { randomBytes } from 'crypto';
 import * as sinon from 'sinon';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
@@ -918,6 +919,76 @@ describe('ADA', function () {
       res.should.hasOwnProperty('serializedTx');
       sandBox.assert.calledOnce(getTSSSignatureSpy);
     });
+
+    it('should produce a cryptographically valid Ed25519 signature', async function () {
+      const signRecoverySpy = sandBox.spy(
+        basecoin as unknown as { signAdaMpcV2Recovery: unknown },
+        'signAdaMpcV2Recovery'
+      );
+
+      await basecoin.recover({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        recoveryDestination: destAddr,
+      });
+
+      const rawSig: Buffer = await (signRecoverySpy.firstCall.returnValue as Promise<Buffer>);
+      const signablePayload: Buffer = (signRecoverySpy.firstCall.args[0] as { message: Buffer }).message;
+
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const accountId = MPC.deriveUnhardened(mpcV2CommonKeyChain, 'm/0').slice(0, 64);
+
+      const isValid = nacl.sign.detached.verify(
+        new Uint8Array(signablePayload),
+        new Uint8Array(rawSig),
+        new Uint8Array(Buffer.from(accountId, 'hex'))
+      );
+      isValid.should.be.true();
+    });
+
+    it('should throw missing userKey when backupKey and walletPassphrase are present but userKey is not', async function () {
+      callBack.resolves(endpointResponses.addressInfoResponse.OneUTXO);
+      await basecoin
+        .recover({
+          userKey: undefined,
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mpcV2CommonKeyChain,
+          walletPassphrase,
+          recoveryDestination: destAddr,
+        })
+        .should.be.rejectedWith('missing userKey');
+    });
+
+    it('should throw missing backupKey when userKey and walletPassphrase are present but backupKey is not', async function () {
+      callBack.resolves(endpointResponses.addressInfoResponse.OneUTXO);
+      await basecoin
+        .recover({
+          userKey: mpcV2UserKey,
+          backupKey: undefined,
+          bitgoKey: mpcV2CommonKeyChain,
+          walletPassphrase,
+          recoveryDestination: destAddr,
+        })
+        .should.be.rejectedWith('missing backupKey');
+    });
+
+    it('should throw a clear error when the MPCv1 backup keycard fails to decrypt', async function () {
+      callBack
+        .withArgs('address_info', { _addresses: [wrwUser.walletAddress0] })
+        .resolves(endpointResponses.addressInfoResponse.OneUTXO);
+
+      await basecoin
+        .recover({
+          userKey: wrwUser.userKey,
+          backupKey: 'not-a-valid-encrypted-keycard',
+          bitgoKey: wrwUser.bitgoKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destAddr,
+        })
+        .should.be.rejectedWith('Error decrypting backup keychain: invalid password or corrupted key');
+    });
   });
 
   describe('Recover Transactions Multiple UTXO:', () => {
@@ -1419,6 +1490,26 @@ describe('ADA', function () {
 
       res.should.not.be.empty();
       res.txRequests.length.should.equal(2);
+    });
+
+    it('should throw missing userKey before scanning when walletPassphrase is set but userKey is omitted', async function () {
+      const getEddsaMaterialSpy = sandBox.spy(
+        basecoin as unknown as { getEddsaSigningMaterial: unknown },
+        'getEddsaSigningMaterial'
+      );
+
+      await basecoin
+        .recoverConsolidations({
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mpcV2CommonKeyChain,
+          walletPassphrase,
+          startingScanIndex: 1,
+          endingScanIndex: 4,
+        })
+        .should.be.rejectedWith('missing userKey');
+
+      sandBox.assert.notCalled(getEddsaMaterialSpy);
+      sandBox.assert.notCalled(basecoin.getDataFromNode as sinon.SinonStub);
     });
   });
 
