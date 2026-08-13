@@ -6426,6 +6426,20 @@ export const tOfcErc20Coins = [
     true,
     'mon'
   ),
+  tofcerc20(
+    '9ec5268d-74dd-4db2-8e53-f7fae33b73ee',
+    'ofctmon:sofid',
+    'Test SoFiUSD',
+    6,
+    underlyingAssetForSymbol('tmon:sofid'),
+    undefined,
+    [...OfcCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    '',
+    undefined,
+    undefined,
+    true,
+    'tmon'
+  ),
 
   // GasEVM (Neo X) tokens
   ofcerc20(
