@@ -8,13 +8,13 @@ import { UnderlyingAsset } from '../base';
  * Balances are stored as encrypted ciphertexts; plaintext amounts require ACL-delegated
  * decryption via the Zama Gateway before they can be displayed.
  *
+ * Wrapper↔underlying metadata (`underlyingErc20Address`, `rate`, `requiresApprovalReset`)
+ * is wired on Hoodi test pairs only for now so mainnet served configs stay unchanged.
+ * Allowlisting is owned by AMS.
+ *
  * Testnet tokens (hteth:*) are deployed on Hoodi using Zama's cleartext FHE stack.
  *   Hoodi ACL: 0x6D3FAf6f86e1fF9F3B0831Dda920AbA1cBd5bd68  (Networks.test.hoodi.zamaAclContractAddress)
  *   Hoodi RPC: https://rpc.hoodi.ethpandaops.io  (chain ID 560048)
- *
- * Sandbox development contracts (Sepolia, real FHE stack):
- *   CTKN:  0x94167129172A35ab093B44b8b96213DDbc3cD387
- *   cUSDT: 0x4E7B06D78965594eB5EF5414c357ca21E1554491
  */
 export const erc7984Tokens = [
   // Mainnet tokens
@@ -74,6 +74,9 @@ export const erc7984Tokens = [
     'Zama Token Test 1',
     6,
     '0x7b1d59bbcd291daa59cb6c8c5bc04de1afc4aba1',
+    '0x7740f913dc24d4f9e1a72531372c3170452b2f87',
+    '1000000000000', // 1e12
+    false,
     UnderlyingAsset['hteth:ctest1']
   ),
   terc7984(
@@ -82,6 +85,9 @@ export const erc7984Tokens = [
     'Zama USDT',
     6,
     '0x2debbe0487ef921df4457f9e36ed05be2df1ac75',
+    '0x51a63b5621d78de54d2f4d098a23a5a69e76f30b',
+    '1',
+    false,
     UnderlyingAsset['hteth:cusdt']
   ),
 ];
