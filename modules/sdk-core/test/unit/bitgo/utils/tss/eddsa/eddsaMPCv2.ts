@@ -2315,3 +2315,155 @@ describe('EddsaMPCv2Utils.createKeychainsWithExternalSigner', function () {
     );
   });
 });
+
+describe('EddsaMPCv2Utils.getMpcV2RetrofitDataFromMpcV1Keys', () => {
+  let utils: EddsaMPCv2Utils;
+  // Real 3-party MPCv1 EdDSA key shares: 1 = user, 2 = backup, 3 = bitgo.
+  let userSigningMaterial: Record<string, unknown>;
+  let backupSigningMaterial: Record<string, unknown>;
+  let expectedUserPShare: { y: string; u: string; chaincode: string };
+  let expectedBackupPShare: { y: string; u: string; chaincode: string };
+
+  before(async () => {
+    const MPC = await getInitializedMpcInstance();
+    const user = MPC.keyShare(1, 2, 3);
+    const backup = MPC.keyShare(2, 2, 3);
+    const bitgo = MPC.keyShare(3, 2, 3);
+
+    expectedUserPShare = MPC.keyCombine(user.uShare, [backup.yShares[1], bitgo.yShares[1]]).pShare;
+    expectedBackupPShare = MPC.keyCombine(backup.uShare, [user.yShares[2], bitgo.yShares[2]]).pShare;
+
+    userSigningMaterial = {
+      uShare: user.uShare,
+      bitgoYShare: bitgo.yShares[1],
+      backupYShare: backup.yShares[1],
+    };
+    backupSigningMaterial = {
+      uShare: backup.uShare,
+      bitgoYShare: bitgo.yShares[2],
+      userYShare: user.yShares[2],
+    };
+  });
+
+  beforeEach(() => {
+    const mockBitGo = {} as unknown as BitGoBase;
+    const mockCoin = {} as unknown as IBaseCoin;
+    utils = new EddsaMPCv2Utils(mockBitGo, mockCoin);
+  });
+
+  it('derives matching expectedPk and chainCode for user and backup from real MPCv1 key combine', async () => {
+    const { userRetrofitData, backupRetrofitData } = await utils.getMpcV2RetrofitDataFromMpcV1Keys({
+      mpcv1UserKeyShare: JSON.stringify(userSigningMaterial),
+      mpcv1BackupKeyShare: JSON.stringify(backupSigningMaterial),
+    });
+
+    assert.strictEqual(userRetrofitData.expectedPk, expectedUserPShare.y);
+    assert.strictEqual(backupRetrofitData.expectedPk, expectedBackupPShare.y);
+    assert.strictEqual(userRetrofitData.expectedPk, backupRetrofitData.expectedPk);
+
+    assert.strictEqual(userRetrofitData.chainCode, expectedUserPShare.chaincode);
+    assert.strictEqual(backupRetrofitData.chainCode, expectedBackupPShare.chaincode);
+    assert.strictEqual(userRetrofitData.chainCode, backupRetrofitData.chainCode);
+  });
+
+  it('derives s_i_0 as the combined pShare.u (clamped scalar) for each party', async () => {
+    const { userRetrofitData, backupRetrofitData } = await utils.getMpcV2RetrofitDataFromMpcV1Keys({
+      mpcv1UserKeyShare: JSON.stringify(userSigningMaterial),
+      mpcv1BackupKeyShare: JSON.stringify(backupSigningMaterial),
+    });
+
+    assert.strictEqual(userRetrofitData.s_i_0, expectedUserPShare.u);
+    assert.strictEqual(backupRetrofitData.s_i_0, expectedBackupPShare.u);
+    assert.notStrictEqual(userRetrofitData.s_i_0, backupRetrofitData.s_i_0);
+  });
+
+  it('throws if user key is missing uShare', async () => {
+    const keyNoUShare = JSON.stringify({
+      bitgoYShare: userSigningMaterial.bitgoYShare,
+      backupYShare: userSigningMaterial.backupYShare,
+    });
+    await assert.rejects(
+      () =>
+        utils.getMpcV2RetrofitDataFromMpcV1Keys({
+          mpcv1UserKeyShare: keyNoUShare,
+          mpcv1BackupKeyShare: JSON.stringify(backupSigningMaterial),
+        }),
+      /MPCv1 key material missing uShare/
+    );
+  });
+
+  it('throws if user key is missing bitgoYShare', async () => {
+    const keyNoBitgoYShare = JSON.stringify({
+      uShare: userSigningMaterial.uShare,
+      backupYShare: userSigningMaterial.backupYShare,
+    });
+    await assert.rejects(
+      () =>
+        utils.getMpcV2RetrofitDataFromMpcV1Keys({
+          mpcv1UserKeyShare: keyNoBitgoYShare,
+          mpcv1BackupKeyShare: JSON.stringify(backupSigningMaterial),
+        }),
+      /MPCv1 key material missing bitgoYShare/
+    );
+  });
+
+  it('throws if user key is missing backupYShare', async () => {
+    const keyNoBackupYShare = JSON.stringify({
+      uShare: userSigningMaterial.uShare,
+      bitgoYShare: userSigningMaterial.bitgoYShare,
+    });
+    await assert.rejects(
+      () =>
+        utils.getMpcV2RetrofitDataFromMpcV1Keys({
+          mpcv1UserKeyShare: keyNoBackupYShare,
+          mpcv1BackupKeyShare: JSON.stringify(backupSigningMaterial),
+        }),
+      /User MPCv1 key material missing backupYShare/
+    );
+  });
+
+  it('throws if backup key is missing uShare', async () => {
+    const keyNoUShare = JSON.stringify({
+      bitgoYShare: backupSigningMaterial.bitgoYShare,
+      userYShare: backupSigningMaterial.userYShare,
+    });
+    await assert.rejects(
+      () =>
+        utils.getMpcV2RetrofitDataFromMpcV1Keys({
+          mpcv1UserKeyShare: JSON.stringify(userSigningMaterial),
+          mpcv1BackupKeyShare: keyNoUShare,
+        }),
+      /MPCv1 key material missing uShare/
+    );
+  });
+
+  it('throws if backup key is missing bitgoYShare', async () => {
+    const keyNoBitgoYShare = JSON.stringify({
+      uShare: backupSigningMaterial.uShare,
+      userYShare: backupSigningMaterial.userYShare,
+    });
+    await assert.rejects(
+      () =>
+        utils.getMpcV2RetrofitDataFromMpcV1Keys({
+          mpcv1UserKeyShare: JSON.stringify(userSigningMaterial),
+          mpcv1BackupKeyShare: keyNoBitgoYShare,
+        }),
+      /MPCv1 key material missing bitgoYShare/
+    );
+  });
+
+  it('throws if backup key is missing userYShare', async () => {
+    const keyNoUserYShare = JSON.stringify({
+      uShare: backupSigningMaterial.uShare,
+      bitgoYShare: backupSigningMaterial.bitgoYShare,
+    });
+    await assert.rejects(
+      () =>
+        utils.getMpcV2RetrofitDataFromMpcV1Keys({
+          mpcv1UserKeyShare: JSON.stringify(userSigningMaterial),
+          mpcv1BackupKeyShare: keyNoUserYShare,
+        }),
+      /Backup MPCv1 key material missing userYShare/
+    );
+  });
+});

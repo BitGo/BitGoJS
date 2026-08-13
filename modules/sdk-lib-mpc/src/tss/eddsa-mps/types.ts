@@ -2,6 +2,20 @@ import { decode } from 'cbor-x';
 import { isLeft } from 'fp-ts/Either';
 import * as t from 'io-ts';
 
+/**
+ * Retrofit data derived from an existing MPCv1 EdDSA key share, used to seed
+ * an MPCv2 (MPS) DKG retrofit ceremony (`ed25519_dkg_round0_import`).
+ *
+ * @property s_i_0 - Party's clamped additive scalar (pShare.u), 32 bytes LE hex.
+ * @property expectedPk - Aggregate Ed25519 public key (pShare.y), 32 bytes hex.
+ * @property chainCode - Combined 32-byte BIP32 chain code (pShare.chaincode), hex.
+ */
+export type EddsaRetrofitData = {
+  s_i_0: string;
+  expectedPk: string;
+  chainCode: string;
+};
+
 export const ReducedKeyShareType = t.type({
   keyShare: t.array(t.number),
   pub: t.array(t.number),
