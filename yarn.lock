@@ -1059,10 +1059,10 @@
   resolved "https://registry.npmjs.org/@bitgo/wasm-dot/-/wasm-dot-1.7.0.tgz"
   integrity sha512-KoXavJvyDHlEN+sWcigbgxYJtdFaU7gS0EkYQbNH4npVjNlzo6rL6gwjyWbyOy7oEs65DhpJ9vY5kRbE/bKiTQ==
 
-"@bitgo/wasm-mps@1.11.0":
-  version "1.11.0"
-  resolved "https://registry.npmjs.org/@bitgo/wasm-mps/-/wasm-mps-1.11.0.tgz#642f0a970f3545e6e4fa4b7df1920a7309952923"
-  integrity sha512-+RnpCdBpF41//duuvdeoreEzDMUANSB14H/wTRKOxLLOOPCA6WiXVKV4/20mGMvI1Gcx39xDdQM62M9a2kUwtA==
+"@bitgo/wasm-mps@1.12.0":
+  version "1.12.0"
+  resolved "https://registry.npmjs.org/@bitgo/wasm-mps/-/wasm-mps-1.12.0.tgz#03f9fc8eaa25d3dcb5af61915bba890759110c65"
+  integrity sha512-rude1gS5ml/I/qpkCoeBwvMbveNQp4cWxWzh3wUO4SsXebJMHVmGmWE27EsTBDEiaYI470q5H4aI/oyAfENOUg==
 
 "@bitgo/wasm-solana@^2.6.0":
   version "2.6.0"
