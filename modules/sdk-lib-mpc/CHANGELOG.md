@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.15.0...@bitgo/sdk-lib-mpc@10.16.0) (2026-08-14)
+
+
+### Bug Fixes
+
+* **sdk-core:** derive EdDSA retrofit data via real MPCv1 keyCombine ([9957029](https://github.com/BitGo/BitGoJS/commit/9957029ed0d4124bab64b932eb0eb0ed1eb35c60))
+
+
+### Features
+
+* **sdk-lib-mpc:** add RedPallas DKG wrapper for FROST keygen ([73c1177](https://github.com/BitGo/BitGoJS/commit/73c11773e53686f26ba3872b7b31337bee479311))
+
+
+
+
+
 # [10.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.14.1...@bitgo/sdk-lib-mpc@10.15.0) (2026-07-07)
 
 

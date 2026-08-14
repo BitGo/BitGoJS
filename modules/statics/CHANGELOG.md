@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.5.0...@bitgo/statics@59.6.0) (2026-08-14)
+
+
+### Features
+
+* onboard ofc tokens for the CECHO-1917 ([d48d4fc](https://github.com/BitGo/BitGoJS/commit/d48d4fc4ce4b8d0ef62bc39cc81e16346eb89849))
+* onboard the tokens for ticket CECHO-1917 ([425901d](https://github.com/BitGo/BitGoJS/commit/425901dc8cabcce2cac9245b3cf1cf0860fe0b24))
+* **statics:** add ERC-7984 wrapper metadata for Hoodi test pairs ([04cbec3](https://github.com/BitGo/BitGoJS/commit/04cbec35c67a4218830b79ba17778849474aef9e))
+* **statics:** add ofctmon:sofid testnet OFC coin ([033a71c](https://github.com/BitGo/BitGoJS/commit/033a71ce798550a64def6ba414cee9f7a4ce675e))
+* **statics:** onboard txlm:TUSDTC test token for XLM signing tests ([adedeb2](https://github.com/BitGo/BitGoJS/commit/adedeb2f7b161df1d184d824b9980147942a5513))
+
+
+
+
+
 # [59.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.4.0...@bitgo/statics@59.5.0) (2026-08-11)
 
 

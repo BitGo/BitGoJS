@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.4.0...@bitgo/sdk-coin-sol@8.5.0) (2026-08-14)
+
+
+### Features
+
+* **sdk-core:** extract and consume shared EdDSA MPCv2 recovery helpers ([0fc9771](https://github.com/BitGo/BitGoJS/commit/0fc97712282d41678551b0924aa0376189bb78fe))
+
+
+
+
+
 # [8.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.3.4...@bitgo/sdk-coin-sol@8.4.0) (2026-08-11)
 
 

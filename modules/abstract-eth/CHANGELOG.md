@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@25.1.1...@bitgo/abstract-eth@25.2.0) (2026-08-14)
+
+
+### Features
+
+* **abstract-eth:** add buildApproveCalldata for ERC-7984 shield ([2366d75](https://github.com/BitGo/BitGoJS/commit/2366d7585325f3d5e8a26c977ef5b63f5e1a24e9))
+
+
+
+
+
 ## [25.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@25.1.0...@bitgo/abstract-eth@25.1.1) (2026-08-11)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

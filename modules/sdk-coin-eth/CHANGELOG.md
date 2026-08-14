@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [26.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@26.1.1...@bitgo/sdk-coin-eth@26.1.2) (2026-08-14)
+
+
+### Bug Fixes
+
+* **bitgo:** register sepeth coin in coinFactory ([730a840](https://github.com/BitGo/BitGoJS/commit/730a840bd1c1577ff21504339b999b2a1d611800))
+
+
+
+
+
 ## [26.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@26.1.0...@bitgo/sdk-coin-eth@26.1.1) (2026-08-11)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

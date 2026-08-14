@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [27.23.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.23.17...@bitgo/account-lib@27.23.18) (2026-08-14)
+
+
+### Bug Fixes
+
+* **account-lib:** register sepeth ETH transaction builder ([813a53f](https://github.com/BitGo/BitGoJS/commit/813a53fc8486e021784e17ed52310680cbe1853c))
+
+
+
+
+
 ## [27.23.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.23.16...@bitgo/account-lib@27.23.17) (2026-08-11)
 
 **Note:** Version bump only for package @bitgo/account-lib
