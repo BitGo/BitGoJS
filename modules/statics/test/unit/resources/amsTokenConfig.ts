@@ -153,7 +153,7 @@ export const amsTokenConfig = {
         type: 'testnet',
         name: 'AlgorandTestnet',
         family: 'algo',
-        explorerUrl: 'https://explorer.bitquery.io/algorand_testnet/tx/',
+        explorerUrl: 'https://testnet.explorer.perawallet.app/tx/',
       },
       primaryKeyCurve: 'ed25519',
     },
