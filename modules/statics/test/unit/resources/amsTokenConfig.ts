@@ -1209,4 +1209,27 @@ export const reducedTokenConfigForAllChains = {
       excludedFeatures: [],
     },
   ],
+  'tcanton:faketoken': [
+    {
+      id: '9d4e8c1a-2b3f-4a5d-8e6f-7c8d9a0b1c2d',
+      fullName: 'Canton fake token',
+      name: 'tcanton:faketoken',
+      prefix: '',
+      suffix: 'TCANTON:FAKETOKEN',
+      baseUnit: 'canton',
+      kind: 'crypto',
+      family: 'canton',
+      isToken: true,
+      decimalPlaces: 10,
+      asset: 'tcanton:faketoken',
+      primaryKeyCurve: 'ed25519',
+      baseUrl: 'https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/',
+      contractAddress: 'fake-registrar::1220abcdef0123456789abcdef0123456789abcdef0123456789abcdef012345:FAKETOKEN',
+      network: {
+        name: 'CantonTestnet',
+      },
+      additionalFeatures: [],
+      excludedFeatures: [],
+    },
+  ],
 };

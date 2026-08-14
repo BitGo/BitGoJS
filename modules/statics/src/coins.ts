@@ -6,6 +6,7 @@ import {
   avaxErc20,
   beraErc20,
   bscToken,
+  cantonToken,
   celoToken,
   cosmosToken,
   eosToken,
@@ -97,6 +98,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     mon: erc20Token,
     xdc: erc20Token,
     bsc: bscToken,
+    canton: cantonToken,
     celo: celoToken,
     cosmos: cosmosToken,
     eth: erc20,
@@ -366,6 +368,13 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     case 'ton':
       return initializer(
         ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        token.contractAddress, // contractAddress
+        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+      );
+    case 'canton':
+      return initializer(
+        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        token.baseUrl, // baseUrl
         token.contractAddress, // contractAddress
         ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
       );
