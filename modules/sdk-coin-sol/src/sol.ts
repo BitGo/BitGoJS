@@ -576,18 +576,38 @@ export class Sol extends BaseCoin {
       transaction.type === TransactionType.StakingAuthorizeRaw ||
       txParams.type === 'authorize';
     if (isStakingAuthorizeTx) {
+      // This check exists to stop a compromised server from substituting a txHex that rotates the
+      // withdraw authority to an attacker key, so every branch below fails closed: a missing
+      // intent field or a missing explanation aborts the signature rather than skipping the
+      // comparison. SolAuthorizeIntent declares stakeAccount and newWithdrawPublicKey as required,
+      // so their absence means the intent did not survive intact and must not be signed against.
       const authorizeParams = explainedTx.stakingAuthorize;
       if (!authorizeParams) {
         throw new Error('StakingAuthorize transaction is missing stakingAuthorize explanation fields');
       }
-      // oldWithdrawAddress is '' for staker-only instructions (no Withdrawer authority change).
-      // Only validate when it is a non-empty string — an empty string indicates the instruction
-      // changes staker authority only, not withdrawer, so the wallet root check does not apply.
-      if (
-        walletRootAddress &&
-        authorizeParams.oldWithdrawAddress &&
-        authorizeParams.oldWithdrawAddress !== walletRootAddress
-      ) {
+      if (!txParams.newWithdrawPublicKey) {
+        throw new Error('StakingAuthorize intent is missing newWithdrawPublicKey, cannot verify withdraw authority');
+      }
+      if (!txParams.stakeAccount) {
+        throw new Error('StakingAuthorize intent is missing stakeAccount, cannot verify the stake account');
+      }
+      if (!walletRootAddress) {
+        throw new Error('StakingAuthorize verification requires the wallet root address');
+      }
+      // Empty when the transaction changes only the staker authority. Comparing it against the
+      // intended withdraw key then fails here, which is correct: an authorize intent always
+      // transfers the withdraw authority, so a staker-only transaction does not fulfil it.
+      if (authorizeParams.newWithdrawAddress !== txParams.newWithdrawPublicKey) {
+        throw new Error(
+          'StakingAuthorize newWithdrawAddress does not match intended newWithdrawPublicKey: expected ' +
+            txParams.newWithdrawPublicKey +
+            ' but got ' +
+            (authorizeParams.newWithdrawAddress || '<no withdraw authority change>')
+        );
+      }
+      // The wallet must be the authority it is signing away, otherwise the transaction is
+      // re-authorising some other account's stake.
+      if (authorizeParams.oldWithdrawAddress !== walletRootAddress) {
         throw new Error(
           'StakingAuthorize oldWithdrawAddress does not match wallet root address: expected ' +
             walletRootAddress +
@@ -595,15 +615,7 @@ export class Sol extends BaseCoin {
             authorizeParams.oldWithdrawAddress
         );
       }
-      if (txParams.newWithdrawPublicKey && authorizeParams.newWithdrawAddress !== txParams.newWithdrawPublicKey) {
-        throw new Error(
-          'StakingAuthorize newWithdrawAddress does not match intended newWithdrawPublicKey: expected ' +
-            txParams.newWithdrawPublicKey +
-            ' but got ' +
-            authorizeParams.newWithdrawAddress
-        );
-      }
-      if (txParams.stakeAccount && authorizeParams.stakingAddress !== txParams.stakeAccount) {
+      if (authorizeParams.stakingAddress !== txParams.stakeAccount) {
         throw new Error(
           'StakingAuthorize stakingAddress does not match intended stakeAccount: expected ' +
             txParams.stakeAccount +

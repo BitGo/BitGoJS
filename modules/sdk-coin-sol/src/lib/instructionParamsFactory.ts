@@ -20,6 +20,7 @@ import {
   DelegateStakeParams,
   InitializeStakeParams,
   SplitStakeParams,
+  StakeAuthorizationLayout,
   StakeInstruction,
   StakeProgram,
   SystemInstruction,
@@ -41,6 +42,7 @@ import {
   Memo,
   MintTo,
   Nonce,
+  StakeAuthorizeType,
   StakingActivate,
   StakingAuthorize,
   StakingDeactivate,
@@ -1172,6 +1174,35 @@ function parseAtaCloseInstructions(instructions: TransactionInstruction[]): Arra
 }
 
 /**
+ * Map Solana's numeric `stakeAuthorizationType` onto our discriminator.
+ *
+ * `StakeAuthorizationLayout` defines `Staker = 0` and `Withdrawer = 1`. Any other value is
+ * rejected rather than defaulted, so an unrecognised authority type can never be silently
+ * treated as a staker change (which would suppress the withdraw-authority validation).
+ */
+function toStakeAuthorizeType(index: number): StakeAuthorizeType {
+  if (index === StakeAuthorizationLayout.Withdrawer.index) {
+    return 'Withdrawer';
+  }
+  if (index === StakeAuthorizationLayout.Staker.index) {
+    return 'Staker';
+  }
+  throw new NotSupported(`Invalid transaction, unknown stake authorization type: ${index}`);
+}
+
+/**
+ * Decode the authority type of a raw `AuthorizeChecked` instruction.
+ *
+ * The raw path exists because web3.js cannot decode `AuthorizeChecked`, so the type is read
+ * straight from the instruction data: a little-endian u32 opcode (10) followed by a
+ * little-endian u32 `StakeAuthorize` discriminant.
+ */
+function decodeRawAuthorizeType(instruction: TransactionInstruction): StakeAuthorizeType {
+  assert(instruction.data.length >= 8, 'Invalid authorize instruction data');
+  return toStakeAuthorizeType(instruction.data.readUInt32LE(4));
+}
+
+/**
  * Parses Solana instructions to authorized staking account params
  * Only supports Nonce, Authorize instructions
  *
@@ -1210,7 +1241,9 @@ function parseStakingAuthorizeInstructions(
             stakingAddress: authorize.stakePubkey.toString(),
             oldAuthorizeAddress: authorize.authorizedPubkey.toString(),
             newAuthorizeAddress: authorize.newAuthorizedPubkey.toString(),
+            // The custodian (lockup authority) account, not a withdraw authority — see iface.
             newWithdrawAddress: authorize.custodianPubkey?.toString() || '',
+            authorizeType: toStakeAuthorizeType(authorize.stakeAuthorizationType.index),
           },
         });
         break;
@@ -1229,7 +1262,9 @@ function parseStakingAuthorizeInstructions(
  */
 function parseStakingAuthorizeRawInstructions(instructions: TransactionInstruction[]): Array<Nonce | StakingAuthorize> {
   const instructionData: Array<Nonce | StakingAuthorize> = [];
-  assert(instructions.length === 2, 'Invalid number of instructions');
+  // validateRawMsgInstruction accepts a nonce advance followed by one or two authorize
+  // instructions (a Staker change, a Withdrawer change, or both).
+  assert(instructions.length === 2 || instructions.length === 3, 'Invalid number of instructions');
   const advanceNonceInstruction = SystemInstruction.decodeNonceAdvance(instructions[0]);
   const nonce: Nonce = {
     type: InstructionBuilderTypes.NonceAdvance,
@@ -1239,17 +1274,21 @@ function parseStakingAuthorizeRawInstructions(instructions: TransactionInstructi
     },
   };
   instructionData.push(nonce);
-  const authorize = instructions[1];
-  assert(authorize.keys.length === 5, 'Invalid number of keys in authorize instruction');
-  instructionData.push({
-    type: InstructionBuilderTypes.StakingAuthorize,
-    params: {
-      stakingAddress: authorize.keys[0].pubkey.toString(),
-      oldAuthorizeAddress: authorize.keys[2].pubkey.toString(),
-      newAuthorizeAddress: authorize.keys[3].pubkey.toString(),
-      custodianAddress: authorize.keys[4].pubkey.toString(),
-    },
-  });
+  for (const authorize of instructions.slice(1)) {
+    // AuthorizeChecked accounts: [0] stake, [1] clock sysvar, [2] current authority,
+    // [3] new authority, [4] optional lockup custodian.
+    assert(authorize.keys.length === 5, 'Invalid number of keys in authorize instruction');
+    instructionData.push({
+      type: InstructionBuilderTypes.StakingAuthorize,
+      params: {
+        stakingAddress: authorize.keys[0].pubkey.toString(),
+        oldAuthorizeAddress: authorize.keys[2].pubkey.toString(),
+        newAuthorizeAddress: authorize.keys[3].pubkey.toString(),
+        custodianAddress: authorize.keys[4].pubkey.toString(),
+        authorizeType: decodeRawAuthorizeType(authorize),
+      },
+    });
+  }
   return instructionData;
 }
 

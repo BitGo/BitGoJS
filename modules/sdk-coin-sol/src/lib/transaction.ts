@@ -1,3 +1,4 @@
+import assert from 'assert';
 import {
   BaseTransaction,
   Entry,
@@ -43,6 +44,7 @@ import {
   VersionedTransactionData,
   WalletInit,
 } from './iface';
+import { AuthorizeInstructionView, summarizeStakingAuthorize } from './stakingAuthorizeSummary';
 import { instructionParamsFactory } from './instructionParamsFactory';
 import {
   getInstructionType,
@@ -541,7 +543,7 @@ export class Transaction extends BaseTransaction {
     const outputs: TransactionRecipient[] = [];
     // Create a separate array for token enablements
     const tokenEnablements: ITokenEnablement[] = [];
-    let stakingAuthorize: StakingAuthorizeParams | undefined = undefined;
+    const authorizeInstructions: AuthorizeInstructionView[] = [];
 
     for (const instruction of decodedInstructions) {
       switch (instruction.type) {
@@ -601,33 +603,19 @@ export class Transaction extends BaseTransaction {
           });
           break;
         case InstructionBuilderTypes.StakingAuthorize: {
-          const authorizeInstruction = instruction as StakingAuthorize;
-          // Neither instruction parser surfaces Solana's stakeAuthorizationType, so a
-          // Withdrawer-type authorize is identified by its custodian key: the standard
-          // parser surfaces it as newWithdrawAddress, the raw parser as custodianAddress.
-          // A standard authorize tx carries both a Staker and a Withdrawer instruction;
-          // the Withdrawer one wins because newWithdrawAddress is what verifyTransaction
-          // validates. Staker-only instructions must not populate the withdraw fields,
-          // otherwise a staker address would be compared against an intended withdraw key.
-          const isWithdrawerAuthorize = !!(
-            authorizeInstruction.params.newWithdrawAddress || authorizeInstruction.params.custodianAddress
-          );
-          if (isWithdrawerAuthorize) {
-            stakingAuthorize = {
-              stakingAddress: authorizeInstruction.params.stakingAddress,
-              oldWithdrawAddress: authorizeInstruction.params.oldAuthorizeAddress,
-              newWithdrawAddress: authorizeInstruction.params.newAuthorizeAddress,
-              custodianAddress: authorizeInstruction.params.custodianAddress,
-            };
-          } else if (!stakingAuthorize) {
-            stakingAuthorize = {
-              stakingAddress: authorizeInstruction.params.stakingAddress,
-              oldWithdrawAddress: '',
-              newWithdrawAddress: '',
-              oldStakingAuthorityAddress: authorizeInstruction.params.oldAuthorizeAddress,
-              newStakingAuthorityAddress: authorizeInstruction.params.newAuthorizeAddress,
-            };
-          }
+          const { params } = instruction as StakingAuthorize;
+          // Collect every Authorize instruction and summarise them once, after the loop.
+          // Selecting per-instruction here is what allowed a decoy instruction to overwrite
+          // the real withdraw-authority change — see summarizeStakingAuthorize.
+          authorizeInstructions.push({
+            stakingAddress: params.stakingAddress,
+            oldAuthorizeAddress: params.oldAuthorizeAddress,
+            newAuthorizeAddress: params.newAuthorizeAddress,
+            authorizeType: params.authorizeType,
+            // The legacy parser reports the custodian in newWithdrawAddress; the raw parser
+            // in custodianAddress. Neither indicates which authority is being changed.
+            custodianAddress: params.custodianAddress || params.newWithdrawAddress || undefined,
+          });
           break;
         }
         case InstructionBuilderTypes.CustomInstruction:
@@ -649,7 +637,14 @@ export class Transaction extends BaseTransaction {
       }
     }
 
-    return this.getExplainedTransaction(outputAmount, outputs, memo, durableNonce, tokenEnablements, stakingAuthorize);
+    return this.getExplainedTransaction(
+      outputAmount,
+      outputs,
+      memo,
+      durableNonce,
+      tokenEnablements,
+      summarizeStakingAuthorize(authorizeInstructions)
+    );
   }
 
   private calculateFee(): string {
@@ -720,22 +715,28 @@ export class Transaction extends BaseTransaction {
       walletNonceAddress: nonceInstruction.noncePubkey.toString(),
       authWalletAddress: nonceInstruction.authorizedPubkey.toString(),
     };
-    const data = instructions[1].data.toString('hex');
-    const stakingAuthorizeParams: StakingAuthorizeParams =
-      data === validInstructionData
-        ? {
-            stakingAddress: instructions[1].keys[0].pubkey.toString(),
-            oldWithdrawAddress: instructions[1].keys[2].pubkey.toString(),
-            newWithdrawAddress: instructions[1].keys[3].pubkey.toString(),
-            custodianAddress: instructions[1].keys[4].pubkey.toString(),
-          }
-        : {
-            stakingAddress: instructions[1].keys[0].pubkey.toString(),
-            oldWithdrawAddress: '',
-            newWithdrawAddress: '',
-            oldStakingAuthorityAddress: instructions[1].keys[2].pubkey.toString(),
-            newStakingAuthorityAddress: instructions[1].keys[3].pubkey.toString(),
-          };
+    // validateRawMsgInstruction accepts a nonce advance followed by one or two AuthorizeChecked
+    // instructions, so summarise all of them rather than only instructions[1]. Reading just the
+    // first one reported empty withdraw fields whenever the Staker change came first, which made
+    // verifyTransaction reject a legitimate two-instruction authorize.
+    const stakingAuthorizeParams = summarizeStakingAuthorize(
+      instructions.slice(1).map((instruction) => {
+        // AuthorizeChecked requires the stake account, clock sysvar, current authority and new
+        // authority; the lockup custodian is optional. Fail explicitly rather than reading past
+        // the end of a malformed key list.
+        assert(instruction.keys.length >= 4, 'Invalid number of keys in authorize instruction');
+        return {
+          stakingAddress: instruction.keys[0].pubkey.toString(),
+          oldAuthorizeAddress: instruction.keys[2].pubkey.toString(),
+          newAuthorizeAddress: instruction.keys[3].pubkey.toString(),
+          custodianAddress: instruction.keys[4]?.pubkey.toString(),
+          // The authority type is the trailing u32 of the instruction data; validateRawMsgInstruction
+          // has already constrained it to exactly these two encodings.
+          authorizeType:
+            instruction.data.toString('hex') === validInstructionData ? ('Withdrawer' as const) : ('Staker' as const),
+        };
+      })
+    );
     const feeString = this.calculateFee();
     return {
       displayOrder: [

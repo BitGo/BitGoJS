@@ -3,7 +3,14 @@ import should from 'should';
 import { coins } from '@bitgo/statics';
 import { KeyPair, Transaction } from '../../src/lib';
 import * as testData from '../resources/sol';
-import { PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
+import {
+  PublicKey,
+  StakeProgram,
+  SystemProgram,
+  SYSVAR_CLOCK_PUBKEY,
+  Transaction as SolTransaction,
+  TransactionInstruction,
+} from '@solana/web3.js';
 import { getBuilderFactory } from './getBuilderFactory';
 
 describe('Sol Transaction', () => {
@@ -1120,6 +1127,94 @@ describe('Sol Transaction', () => {
         tokenEnablements: [],
         ataOwnerMap: {},
       });
+    });
+  });
+
+  describe('StakingAuthorize explainTransaction (raw AuthorizeChecked message path)', () => {
+    // validateRawMsgInstruction accepts a nonce advance followed by one OR two AuthorizeChecked
+    // instructions. explainRawMsgAuthorizeTransaction used to read only instructions[1], so a
+    // two-instruction message whose Staker change came first reported empty withdraw fields.
+    const solCoin = coins.get('sol');
+    const wallet = new KeyPair(testData.authAccount).getKeys();
+    const stakeAccount = new KeyPair(testData.stakeAccount).getKeys();
+    const newWithdrawKey = new KeyPair(testData.authAccount2).getKeys();
+    const custodian = new KeyPair(testData.splitStakeAccount).getKeys();
+    const nonceAccount = new KeyPair(testData.nonceAccount).getKeys();
+    const blockHash = testData.blockHashes.validBlockHashes[0];
+
+    /** Build an AuthorizeChecked instruction; web3.js has no encoder for this opcode. */
+    const authorizeChecked = (newAuthority: string, type: 'Staker' | 'Withdrawer') =>
+      new TransactionInstruction({
+        programId: StakeProgram.programId,
+        // [0] stake, [1] clock sysvar, [2] current authority, [3] new authority, [4] custodian
+        keys: [
+          { pubkey: new PublicKey(stakeAccount.pub), isSigner: false, isWritable: true },
+          { pubkey: SYSVAR_CLOCK_PUBKEY, isSigner: false, isWritable: false },
+          { pubkey: new PublicKey(wallet.pub), isSigner: true, isWritable: false },
+          { pubkey: new PublicKey(newAuthority), isSigner: true, isWritable: false },
+          { pubkey: new PublicKey(custodian.pub), isSigner: true, isWritable: false },
+        ],
+        // u32 opcode 10 (AuthorizeChecked) then u32 StakeAuthorize (0 Staker / 1 Withdrawer)
+        data: Buffer.from(type === 'Withdrawer' ? '0a00000001000000' : '0a00000000000000', 'hex'),
+      });
+
+    const buildRawMsg = (instructions: TransactionInstruction[]) => {
+      const solTx = new SolTransaction();
+      solTx.recentBlockhash = blockHash;
+      solTx.feePayer = new PublicKey(wallet.pub);
+      solTx.add(
+        SystemProgram.nonceAdvance({
+          noncePubkey: new PublicKey(nonceAccount.pub),
+          authorizedPubkey: new PublicKey(wallet.pub),
+        })
+      );
+      instructions.forEach((instruction) => solTx.add(instruction));
+      const tx = new Transaction(solCoin);
+      tx.fromRawTransaction(
+        solTx.serialize({ verifySignatures: false, requireAllSignatures: false }).toString('base64')
+      );
+      return tx;
+    };
+
+    it('should report the Withdrawer change when the Staker change comes first', () => {
+      const explained = buildRawMsg([
+        authorizeChecked(custodian.pub, 'Staker'),
+        authorizeChecked(newWithdrawKey.pub, 'Withdrawer'),
+      ]).explainTransaction();
+
+      should.exist(explained.stakingAuthorize);
+      explained.stakingAuthorize!.stakingAddress.should.equal(stakeAccount.pub);
+      explained.stakingAuthorize!.oldWithdrawAddress.should.equal(wallet.pub);
+      explained.stakingAuthorize!.newWithdrawAddress.should.equal(newWithdrawKey.pub);
+    });
+
+    it('should report the Withdrawer change when the Staker change comes second', () => {
+      const explained = buildRawMsg([
+        authorizeChecked(newWithdrawKey.pub, 'Withdrawer'),
+        authorizeChecked(custodian.pub, 'Staker'),
+      ]).explainTransaction();
+
+      explained.stakingAuthorize!.newWithdrawAddress.should.equal(newWithdrawKey.pub);
+    });
+
+    it('should leave withdraw fields empty for a staker-only raw message', () => {
+      const explained = buildRawMsg([authorizeChecked(newWithdrawKey.pub, 'Staker')]).explainTransaction();
+
+      explained.stakingAuthorize!.newWithdrawAddress.should.equal('');
+      explained.stakingAuthorize!.oldWithdrawAddress.should.equal('');
+      explained.stakingAuthorize!.newStakingAuthorityAddress!.should.equal(newWithdrawKey.pub);
+    });
+
+    it('should decode the authority type into toJson for a two-instruction raw message', () => {
+      const txJson = buildRawMsg([
+        authorizeChecked(custodian.pub, 'Staker'),
+        authorizeChecked(newWithdrawKey.pub, 'Withdrawer'),
+      ]).toJson();
+
+      // Previously asserted instructions.length === 2 and dropped the second authorize entirely.
+      txJson.instructionsData.length.should.equal(3);
+      (txJson.instructionsData[1].params as { authorizeType: string }).authorizeType.should.equal('Staker');
+      (txJson.instructionsData[2].params as { authorizeType: string }).authorizeType.should.equal('Withdrawer');
     });
   });
 
