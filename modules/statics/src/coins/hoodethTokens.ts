@@ -146,6 +146,16 @@ export const hoodethTokens = [
     EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20Token(
+    'd83afbd0-22a5-4d09-88e8-4ae3aa2b76b4',
+    'hoodeth:bnd',
+    'Vanguard Total Bond Market ETF',
+    18,
+    '0x2f62fc9fabb470c690f141c28340ed832bb27020',
+    UnderlyingAsset['hoodeth:bnd'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
     '9d7ae82e-0452-4f84-a395-0cc26aa7281b',
     'hoodeth:avgo',
     'Broadcom',

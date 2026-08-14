@@ -2213,6 +2213,7 @@ export enum UnderlyingAsset {
   'hoodeth:powl' = 'hoodeth:powl',
   'hoodeth:jbl' = 'hoodeth:jbl',
   'hoodeth:shy' = 'hoodeth:shy',
+  'hoodeth:bnd' = 'hoodeth:bnd',
   'hemieth:hemi' = 'hemieth:hemi',
   'hemieth:hemibtc' = 'hemieth:hemibtc',
   'usdt0:stable' = 'usdt0:stable',

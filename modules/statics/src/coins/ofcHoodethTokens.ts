@@ -1502,6 +1502,20 @@ export const ofcHoodethTokens = [
     'hoodeth'
   ),
   ofcerc20(
+    'a635493f-c328-4f0e-9327-bfffa1e33567',
+    'ofchoodeth:bnd',
+    'Vanguard Total Bond Market ETF',
+    18,
+    UnderlyingAsset['hoodeth:bnd'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'hoodeth'
+  ),
+  ofcerc20(
     '741054b2-d716-4b45-9a5d-c20659128287',
     'ofchoodeth:fig',
     'Figma, Inc.',
