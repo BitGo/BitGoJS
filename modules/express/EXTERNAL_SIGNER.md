@@ -18,8 +18,8 @@ Here is an example json file containing two wallet IDs and their corresponding e
 
 ```
 {
-"61f039aad587c2000745c687373e0fa9":"{\"iv\":\"+1u1Y9cvsYuRMeyH2slnXQ==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"54kOXTqJ9mc=\",\"ct\":\"JF5wQ82wa1dYyFxFlbHCvK4a+A6MTHdhOqc5uXsz2icWhkY2Lin/3Ab8ZwvwDaR1JYKmC/g1gXIGwVZEOl1M/bRHY420h7sDtmTS6Ebse5NWbF0ItfUJlk6HVATGa+C6mkbaVxJ4kQW/ehnT3riqzU069ATPz8E=\"}",
-"61fb21819c54dd000755f8de3a18e46f":"{\"iv\":\"ULAkh1Ia2B2oJbVWRt+xMw==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"SVkVei5M1qU=\",\"ct\":\"NxfG1HQWGcrwCHkQh8DKeMaZrRic+SSBQHtuOSsSJzW5MDOpwqDta8PDdh52lp9eqtaY+CGN6rPhaGbeZDrEyV2PoBGeb48GicMTVAehkyoF9mr8edtsWDCxcmmde+1zv3czy2n/bgXYNGvX39D30GDRpfovSYc=\"}"
+"<walletId1>":"<encryptedPrivateKey1>",
+"<walletId2>":"<encryptedPrivateKey2>"
 }
 ```
 
@@ -71,8 +71,8 @@ Set as an environment variable in the format `WALLET_<walletId>_PASSPHRASE`. Not
 The environment variable can be set using `export`. For example, the wallet passphrases for the private keys above can be set with the following:
 
 ```
-export WALLET_61f039aad587c2000745c687373e0fa9_PASSPHRASE=wDX058%c4plL1@pP
-export WALLET_61fb21819c54dd000755f8de3a18e46f_PASSPHRASE=wDX058%c4plL1@pP
+export WALLET_<walletId1>_PASSPHRASE=<YOUR_WALLET_PASSPHRASE>
+export WALLET_<walletId2>_PASSPHRASE=<YOUR_WALLET_PASSPHRASE>
 ```
 
 ### External signer mode configuration values

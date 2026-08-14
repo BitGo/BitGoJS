@@ -19,11 +19,11 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
     const walletPassphrase = 'test_wallet_passphrase_ofc';
 
     const path = require('path');
-    const signerFilePath = path.join(__dirname, '../../../encryptedPrivKeys.json');
+    const os = require('os');
+    const signerFilePath = path.join(os.tmpdir(), `encryptedPrivKeys-${process.pid}-${Date.now()}.json`);
 
     let fsReadFileStub: sinon.SinonStub;
     let agent: ReturnType<typeof setupAgent>;
-    let originalFileContent: string;
 
     const mockSignerFileContent = JSON.stringify({
       [walletId]: encryptedPrivKey,
@@ -36,12 +36,6 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
     };
 
     before(function () {
-      try {
-        originalFileContent = fsSync.readFileSync(signerFilePath, 'utf8');
-      } catch (e) {
-        originalFileContent = '{}';
-      }
-
       fsSync.writeFileSync(signerFilePath, mockSignerFileContent);
 
       agent = setupAgent({
@@ -51,7 +45,11 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
     });
 
     after(function () {
-      fsSync.writeFileSync(signerFilePath, originalFileContent);
+      try {
+        fsSync.unlinkSync(signerFilePath);
+      } catch (e) {
+        // ignore
+      }
     });
 
     beforeEach(function () {

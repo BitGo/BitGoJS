@@ -142,12 +142,11 @@ describe('Sign an arbitrary payload with trading account key', function () {
 describe('With the handler to sign an arbitrary payload in external signing mode', () => {
   let bitgo: BitGo;
 
-  const walletId = '61f039aad587c2000745c687373e0fa9';
-  const walletPassword = 'wDX058%c4plL1@pP';
+  const walletId = 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6';
+  const walletPassword = 'test-wallet-passphrase';
   const secret =
     'xprv9s21ZrQH143K3EuPWCBuqnWxydaQV6et9htQige4EswvcHKEzNmkVmwTwKoadyHzJYppuADB7Us7AbaNLToNvoFoSxuWqndQRYtnNy5DUY2';
-  const validPrv =
-    '{"61f039aad587c2000745c687373e0fa9":"{\\"iv\\":\\"+1u1Y9cvsYuRMeyH2slnXQ==\\",\\"v\\":1,\\"iter\\":10000,\\"ks\\":256,\\"ts\\":64,\\"mode\\":\\"ccm\\",\\"adata\\":\\"\\",\\"cipher\\":\\"aes\\",\\"salt\\":\\"54kOXTqJ9mc=\\",\\"ct\\":\\"JF5wQ82wa1dYyFxFlbHCvK4a+A6MTHdhOqc5uXsz2icWhkY2Lin/3Ab8ZwvwDaR1JYKmC/g1gXIGwVZEOl1M/bRHY420h7sDtmTS6Ebse5NWbF0ItfUJlk6HVATGa+C6mkbaVxJ4kQW/ehnT3riqzU069ATPz8E=\\"}"}';
+  let validPrv: string;
 
   const payload = {
     this: {
@@ -157,16 +156,20 @@ describe('With the handler to sign an arbitrary payload in external signing mode
     },
   };
 
-  before(() => {
+  before(async () => {
     bitgo = new BitGo({ env: 'test' });
+    const encryptedPrv = await bitgo.encrypt({
+      password: walletPassword,
+      input: secret,
+      encryptionVersion: 1,
+    });
+    validPrv = JSON.stringify({ [walletId]: encryptedPrv });
   });
 
   it('should return a payload signed with trading account key read from the local file system', async () => {
     const stubbedSignature = Buffer.from('mysign');
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
-    const envStub = sinon
-      .stub(process, 'env')
-      .value({ WALLET_61f039aad587c2000745c687373e0fa9_PASSPHRASE: walletPassword });
+    const envStub = sinon.stub(process, 'env').value({ [`WALLET_${walletId}_PASSPHRASE`]: walletPassword });
 
     const signMessageStub = sinon.stub(Coin.Ofc.prototype, 'signMessage').resolves(stubbedSignature);
 
@@ -248,9 +251,7 @@ describe('With the handler to sign an arbitrary payload in external signing mode
   it('should prioritize request body passphrase over environment variable', async () => {
     const stubbedSignature = Buffer.from('mysign');
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
-    const envStub = sinon
-      .stub(process, 'env')
-      .value({ WALLET_61f039aad587c2000745c687373e0fa9_PASSPHRASE: walletPassword });
+    const envStub = sinon.stub(process, 'env').value({ [`WALLET_${walletId}_PASSPHRASE`]: walletPassword });
 
     const signMessageStub = sinon.stub(Coin.Ofc.prototype, 'signMessage').resolves(stubbedSignature);
 
@@ -290,7 +291,7 @@ describe('With the handler to sign an arbitrary payload in external signing mode
   });
 
   describe('With invalid setup', () => {
-    const invalidPrv = '{"61f039aad587c2000745c687373e0fa9":"invalid"}';
+    const invalidPrv = JSON.stringify({ [walletId]: 'invalid' });
 
     it('should throw an error with missing wallet passphrase in env', async () => {
       const req = {
@@ -306,14 +307,12 @@ describe('With the handler to sign an arbitrary payload in external signing mode
       } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
       await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith(
-        'Could not find wallet passphrase WALLET_61f039aad587c2000745c687373e0fa9_PASSPHRASE in environment'
+        `Could not find wallet passphrase WALLET_${walletId}_PASSPHRASE in environment`
       );
     });
 
     it('should throw an error with undefined signerFileSystemPath in env', async () => {
-      const envStub = sinon
-        .stub(process, 'env')
-        .value({ WALLET_61f039aad587c2000745c687373e0fa9_PASSPHRASE: walletPassword });
+      const envStub = sinon.stub(process, 'env').value({ [`WALLET_${walletId}_PASSPHRASE`]: walletPassword });
 
       const req = {
         bitgo,
@@ -338,9 +337,7 @@ describe('With the handler to sign an arbitrary payload in external signing mode
 
     it('should throw error when trying to decrypt with invalid private key', async () => {
       const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(invalidPrv);
-      const envStub = sinon
-        .stub(process, 'env')
-        .value({ WALLET_61f039aad587c2000745c687373e0fa9_PASSPHRASE: walletPassword });
+      const envStub = sinon.stub(process, 'env').value({ [`WALLET_${walletId}_PASSPHRASE`]: walletPassword });
 
       const req = {
         bitgo,
@@ -367,9 +364,7 @@ describe('With the handler to sign an arbitrary payload in external signing mode
 
     it('should throw error when trying to decrypt with invalid wallet passphrase key', async () => {
       const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
-      const envStub = sinon
-        .stub(process, 'env')
-        .value({ WALLET_61f039aad587c2000745c687373e0fa9_PASSPHRASE: 'invalidPassphrase' });
+      const envStub = sinon.stub(process, 'env').value({ [`WALLET_${walletId}_PASSPHRASE`]: 'invalidPassphrase' });
 
       const req = {
         bitgo,
