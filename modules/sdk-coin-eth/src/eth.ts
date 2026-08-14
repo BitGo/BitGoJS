@@ -429,7 +429,7 @@ export class Eth extends AbstractEthLikeNewCoins {
       nonce:
         params.signingKeyNonce !== undefined ? params.signingKeyNonce : params.txPrebuild.halfSigned?.backupKeyNonce,
       value: 0,
-      gasPrice: new optionalDeps.ethUtil.BN(txPrebuild.gasPrice),
+      gasPrice: txPrebuild.eip1559 ? undefined : new optionalDeps.ethUtil.BN(txPrebuild.gasPrice),
       gasLimit: new optionalDeps.ethUtil.BN(txPrebuild.gasLimit),
       data: sendData,
     };
