@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@4.0.9...@bitgo/sdk-coin-stx@4.0.10) (2026-08-14)
+
+
+### Bug Fixes
+
+* **sdk-coin-stx:** validate sbtcWithdrawParams in verifyTransaction ([2ca0baf](https://github.com/BitGo/BitGoJS/commit/2ca0baf8753d4e8a5a91afe009fafc246110766c))
+
+
+
+
+
 ## [4.0.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@4.0.8...@bitgo/sdk-coin-stx@4.0.9) (2026-08-11)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

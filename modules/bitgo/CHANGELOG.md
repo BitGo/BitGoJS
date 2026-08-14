@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [52.7.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.6.0...bitgo@52.7.0) (2026-08-14)
+
+
+### Bug Fixes
+
+* **bitgo:** register sepeth coin in coinFactory ([730a840](https://github.com/BitGo/BitGoJS/commit/730a840bd1c1577ff21504339b999b2a1d611800))
+
+
+### Features
+
+* pass bridgingParams/sbtcWithdrawParams to tx/initiate ([0edead3](https://github.com/BitGo/BitGoJS/commit/0edead3f96f21cf8e63020f9640cc4e28ff4a888))
+
+
+
+
+
 # [52.6.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.5.0...bitgo@52.6.0) (2026-08-11)
 
 

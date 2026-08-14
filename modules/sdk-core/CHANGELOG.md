@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.7.0...@bitgo/sdk-core@38.8.0) (2026-08-14)
+
+
+### Bug Fixes
+
+* **sdk-core:** derive EdDSA retrofit data via real MPCv1 keyCombine ([9957029](https://github.com/BitGo/BitGoJS/commit/9957029ed0d4124bab64b932eb0eb0ed1eb35c60))
+
+
+### Features
+
+* pass bridgingParams/sbtcWithdrawParams to tx/initiate ([0edead3](https://github.com/BitGo/BitGoJS/commit/0edead3f96f21cf8e63020f9640cc4e28ff4a888))
+* **sdk-core:** add getMpcV2RetrofitDataFromMpcV1Keys for EdDSA ([4af287d](https://github.com/BitGo/BitGoJS/commit/4af287de2845b8d20453f99a2b8dc0de64d42aff))
+* **sdk-core:** extract and consume shared EdDSA MPCv2 recovery helpers ([0fc9771](https://github.com/BitGo/BitGoJS/commit/0fc97712282d41678551b0924aa0376189bb78fe))
+
+
+
+
+
 # [38.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.6.0...@bitgo/sdk-core@38.7.0) (2026-08-11)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@4.1.1...@bitgo/sdk-coin-ton@4.2.0) (2026-08-14)
+
+
+### Features
+
+* **sdk-coin-ton:** consume shared EdDSA MPCv2 recovery helpers ([2cbfef9](https://github.com/BitGo/BitGoJS/commit/2cbfef9117b5ec757ae49c0c4fd0cb9ce3c98ac7))
+
+
+
+
+
 ## [4.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@4.1.0...@bitgo/sdk-coin-ton@4.1.1) (2026-08-11)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ton
