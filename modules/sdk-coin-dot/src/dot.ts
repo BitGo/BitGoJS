@@ -352,7 +352,7 @@ export class Dot extends BaseCoin {
    * @returns {MPCTx} the serialized transaction hex string and index
    * of the address being swept
    */
-  async recover(params: MPCRecoveryOptions): Promise<MPCTx | MPCSweepTxs> {
+  async recover(params: MPCRecoveryOptions, precomputedMaterial?: EddsaSigningMaterial): Promise<MPCTx | MPCSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -402,7 +402,8 @@ export class Dot extends BaseCoin {
       assert(params.backupKey, 'missing backupKey');
       assert(params.walletPassphrase, 'missing wallet passphrase');
 
-      const signingMaterial = await this.getEddsaSigningMaterial(params.userKey, params.walletPassphrase);
+      const signingMaterial =
+        precomputedMaterial ?? (await this.getEddsaSigningMaterial(params.userKey, params.walletPassphrase));
       await this.addRecoverySignature(
         signingMaterial,
         params.backupKey.replace(/\s/g, ''),
@@ -485,10 +486,16 @@ export class Dot extends BaseCoin {
     const accountId = MPC.deriveUnhardened(bitgoKey, basePath).slice(0, 64);
     const baseAddress = this.getAddressFromPublicKey(accountId);
 
+    // Detect signing material once to avoid re-decrypting the keycard on every loop iteration.
+    const signingMaterial =
+      params.walletPassphrase && params.userKey
+        ? await this.getEddsaSigningMaterial(params.userKey.replace(/\s/g, ''), params.walletPassphrase)
+        : undefined;
+
     const consolidationTransactions: any[] = [];
     let lastScanIndex = startIdx;
     for (let i = startIdx; i < endIdx; i++) {
-      const recoverParams = {
+      const recoverParams: MPCRecoveryOptions = {
         userKey: params.userKey,
         backupKey: params.backupKey,
         bitgoKey: params.bitgoKey,
@@ -500,7 +507,7 @@ export class Dot extends BaseCoin {
 
       let recoveryTransaction;
       try {
-        recoveryTransaction = await this.recover(recoverParams);
+        recoveryTransaction = await this.recover(recoverParams, signingMaterial);
       } catch (e) {
         if (e.message === 'Did not find address with funds to recover') {
           lastScanIndex = i;
