@@ -7,6 +7,8 @@ on:
     branches:
       - master
       - rel/**
+  merge_group:
+    types: [checks_requested]
 
   workflow_dispatch:
 
@@ -19,8 +21,8 @@ env:
 
 jobs:
   # Detect which file groups changed so downstream jobs can skip when irrelevant.
-  # Only runs on pull_request — on push/workflow_dispatch it is skipped, which causes
-  # downstream jobs (via `needs.changes.result == 'skipped'`) to run unconditionally.
+  # Only runs on pull_request — on push/workflow_dispatch/merge_group it is skipped,
+  # which causes downstream jobs (via `needs.changes.result == 'skipped'`) to run unconditionally.
   changes:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
@@ -66,7 +68,7 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
 
       - name: Setup node:${{ matrix.node-version }}
@@ -85,7 +87,7 @@ jobs:
 
       - name: Fetch Base Ref
         run: |
-          git fetch origin $GITHUB_BASE_REF
+          git fetch origin ${GITHUB_BASE_REF:-master}
 
       - name: restore lerna dependencies
         id: lerna-cache
@@ -136,7 +138,7 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup node 20
         uses: actions/setup-node@v6
@@ -165,10 +167,10 @@ jobs:
         run: yarn run check-fmt
 
       - name: Lint Commit Messages
-        if: matrix.check == 'commit-lint'
+        if: matrix.check == 'commit-lint' && github.event_name != 'merge_group'
         run: |
-          git fetch --unshallow origin $GITHUB_BASE_REF
-          GITHUB_REPO_BRANCH=$GITHUB_BASE_REF yarn run check-commits
+          git fetch --unshallow origin ${GITHUB_BASE_REF:-master}
+          GITHUB_REPO_BRANCH=${GITHUB_BASE_REF:-master} yarn run check-commits
 
       - name: Check Package Dependencies
         if: matrix.check == 'dependencies'
@@ -193,7 +195,7 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup node 20
         uses: actions/setup-node@v6
@@ -287,7 +289,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Generate build info
         id: build-info
@@ -361,7 +363,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Verify argon2 vendor integrity
         run: modules/argon2/scripts/verify-vendor.sh
@@ -372,7 +374,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Verify all packages exist on npm
         uses: ./.github/actions/verify-npm-packages
@@ -389,7 +391,7 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup node 22
         uses: actions/setup-node@v6
