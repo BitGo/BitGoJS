@@ -516,6 +516,12 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
     }
   );
 
+  CantonToken.createTokenConstructors([...tokens.bitcoin.canton.tokens, ...tokens.testnet.canton.tokens]).forEach(
+    ({ name, coinConstructor }) => {
+      coinFactory.register(name, coinConstructor);
+    }
+  );
+
   HbarToken.createTokenConstructors([...tokens.bitcoin.hbar.tokens, ...tokens.testnet.hbar.tokens]).forEach(
     ({ name, coinConstructor }) => {
       coinFactory.register(name, coinConstructor);
