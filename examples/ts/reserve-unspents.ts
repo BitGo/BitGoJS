@@ -52,6 +52,17 @@ async function releaseUnspentReservation() {
   console.log('released ' + JSON.stringify(reserveResult, null, 2));
 }
 
+async function listUnspentReservations() {
+  bitgo.authenticateWithAccessToken({ accessToken });
+  const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
+
+  const listResult = await wallet.manageUnspentReservations({
+    list: { limit: 25 },
+  });
+  console.log('reserved unspents: ' + JSON.stringify(listResult, null, 2));
+}
+
 // createUnspentReservation().catch(console.error);
 // modifyUnspentReservation().catch(console.error);
 // releaseUnspentReservation().catch(console.error);
+// listUnspentReservations().catch(console.error);
