@@ -240,8 +240,8 @@ export function explainSolTransaction(params: ExplainTransactionWasmOptions): So
   }
 
   // --- Staking authorize ---
-  // Summarised by the same rules as the legacy and raw parse paths, so all three agree on which
-  // instruction defines the withdraw authority that verifyTransaction validates.
+  // Display summary only — same rules as the legacy and raw explain paths. Signature validation
+  // walks every Authorize instruction in Sol.verifyStakingAuthorizeInstructions instead.
   const stakingAuthorize = summarizeStakingAuthorize(
     parsed.instructionsData
       .filter(

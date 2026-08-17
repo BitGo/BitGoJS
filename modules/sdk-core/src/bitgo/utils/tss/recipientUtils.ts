@@ -139,7 +139,7 @@ export function resolveEffectiveTxParams(
   }
 
   // Propagate SOL authorize-specific fields from the intent so sol.ts:verifyTransaction
-  // can validate the decoded instruction against what the user intended.
+  // can validate every decoded Authorize instruction against what the user intended.
   const intentNewWithdrawPublicKey = (txRequest.intent as PopulatedIntent)?.newWithdrawPublicKey;
   if (intentNewWithdrawPublicKey && !effectiveTxParams.newWithdrawPublicKey) {
     effectiveTxParams.newWithdrawPublicKey = intentNewWithdrawPublicKey;

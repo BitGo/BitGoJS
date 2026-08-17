@@ -70,7 +70,12 @@ import {
   TransactionBuilderFactory,
   explainSolTransaction,
 } from './lib';
-import { AtaClose, AtaRecoverNested, TransactionExplanation as SolLibTransactionExplanation } from './lib/iface';
+import {
+  AtaClose,
+  AtaRecoverNested,
+  StakingAuthorize,
+  TransactionExplanation as SolLibTransactionExplanation,
+} from './lib/iface';
 import { InstructionBuilderTypes } from './lib/constants';
 import {
   getAssociatedTokenAccountAddress,
@@ -519,6 +524,93 @@ export class Sol extends BaseCoin {
     return true;
   }
 
+  /**
+   * Validate every Authorize instruction in a staking authorize transaction against the intent.
+   *
+   * This exists to stop a compromised server substituting a txHex that rotates a stake account's
+   * authorities to keys the user never asked for, so it fails closed throughout: a missing intent
+   * field aborts the signature rather than skipping a comparison. `SolAuthorizeIntent` declares
+   * `stakeAccount` and `newWithdrawPublicKey` as required, so their absence means the intent did
+   * not reach us intact and must not be signed against.
+   *
+   * Every instruction is checked, not just a representative one. Solana executes all of them, so
+   * summarising the transaction down to a single authority change would leave the rest
+   * unconstrained — a second instruction could re-authorise a different stake account, or hand the
+   * staker authority to an attacker, while the summarised one still matched the intent.
+   */
+  private verifyStakingAuthorizeInstructions(
+    transaction: Transaction,
+    txParams: TransactionParams,
+    walletRootAddress: string | undefined
+  ): void {
+    if (!txParams.newWithdrawPublicKey) {
+      throw new Error('StakingAuthorize intent is missing newWithdrawPublicKey, cannot verify withdraw authority');
+    }
+    if (!txParams.stakeAccount) {
+      throw new Error('StakingAuthorize intent is missing stakeAccount, cannot verify the stake account');
+    }
+    if (!walletRootAddress) {
+      throw new Error('StakingAuthorize verification requires the wallet root address');
+    }
+
+    const authorizeInstructions = transaction
+      .toJson()
+      .instructionsData.filter((instruction) => instruction.type === InstructionBuilderTypes.StakingAuthorize)
+      .map((instruction) => (instruction as StakingAuthorize).params);
+
+    if (authorizeInstructions.length === 0) {
+      throw new Error('StakingAuthorize transaction contains no authorize instructions');
+    }
+
+    let withdrawerChanges = 0;
+    for (const params of authorizeInstructions) {
+      // Confines the transaction to the one stake account the intent names, so a second
+      // instruction cannot re-authorise an unrelated account the wallet also controls.
+      if (params.stakingAddress !== txParams.stakeAccount) {
+        throw new Error(
+          'StakingAuthorize stakingAddress does not match intended stakeAccount: expected ' +
+            txParams.stakeAccount +
+            ' but got ' +
+            params.stakingAddress
+        );
+      }
+      // The wallet must be the authority it is signing away.
+      if (params.oldAuthorizeAddress !== walletRootAddress) {
+        throw new Error(
+          'StakingAuthorize oldAuthorizeAddress does not match wallet root address: expected ' +
+            walletRootAddress +
+            ' but got ' +
+            params.oldAuthorizeAddress
+        );
+      }
+      // Applied to staker changes as well as withdrawer changes: the intent carries a single new
+      // authority key, and the builder points both authorities at it, so a staker change to any
+      // other key is not something the user asked for.
+      if (params.newAuthorizeAddress !== txParams.newWithdrawPublicKey) {
+        throw new Error(
+          'StakingAuthorize newAuthorizeAddress does not match intended newWithdrawPublicKey: expected ' +
+            txParams.newWithdrawPublicKey +
+            ' but got ' +
+            params.newAuthorizeAddress +
+            ' (' +
+            (params.authorizeType ?? 'unknown') +
+            ' authority)'
+        );
+      }
+      if (params.authorizeType === 'Withdrawer') {
+        withdrawerChanges++;
+      }
+    }
+
+    // An authorize intent always transfers the withdraw authority, so a transaction that only
+    // touches the staker authority does not fulfil it.
+    if (withdrawerChanges === 0) {
+      throw new Error(
+        'StakingAuthorize transaction does not transfer the withdraw authority: <no withdraw authority change>'
+      );
+    }
+  }
+
   async verifyTransaction(params: SolVerifyTransactionOptions): Promise<boolean> {
     // asset name to transfer amount map
     const totalAmount: Record<string, BigNumber> = {};
@@ -576,53 +668,7 @@ export class Sol extends BaseCoin {
       transaction.type === TransactionType.StakingAuthorizeRaw ||
       txParams.type === 'authorize';
     if (isStakingAuthorizeTx) {
-      // This check exists to stop a compromised server from substituting a txHex that rotates the
-      // withdraw authority to an attacker key, so every branch below fails closed: a missing
-      // intent field or a missing explanation aborts the signature rather than skipping the
-      // comparison. SolAuthorizeIntent declares stakeAccount and newWithdrawPublicKey as required,
-      // so their absence means the intent did not survive intact and must not be signed against.
-      const authorizeParams = explainedTx.stakingAuthorize;
-      if (!authorizeParams) {
-        throw new Error('StakingAuthorize transaction is missing stakingAuthorize explanation fields');
-      }
-      if (!txParams.newWithdrawPublicKey) {
-        throw new Error('StakingAuthorize intent is missing newWithdrawPublicKey, cannot verify withdraw authority');
-      }
-      if (!txParams.stakeAccount) {
-        throw new Error('StakingAuthorize intent is missing stakeAccount, cannot verify the stake account');
-      }
-      if (!walletRootAddress) {
-        throw new Error('StakingAuthorize verification requires the wallet root address');
-      }
-      // Empty when the transaction changes only the staker authority. Comparing it against the
-      // intended withdraw key then fails here, which is correct: an authorize intent always
-      // transfers the withdraw authority, so a staker-only transaction does not fulfil it.
-      if (authorizeParams.newWithdrawAddress !== txParams.newWithdrawPublicKey) {
-        throw new Error(
-          'StakingAuthorize newWithdrawAddress does not match intended newWithdrawPublicKey: expected ' +
-            txParams.newWithdrawPublicKey +
-            ' but got ' +
-            (authorizeParams.newWithdrawAddress || '<no withdraw authority change>')
-        );
-      }
-      // The wallet must be the authority it is signing away, otherwise the transaction is
-      // re-authorising some other account's stake.
-      if (authorizeParams.oldWithdrawAddress !== walletRootAddress) {
-        throw new Error(
-          'StakingAuthorize oldWithdrawAddress does not match wallet root address: expected ' +
-            walletRootAddress +
-            ' but got ' +
-            authorizeParams.oldWithdrawAddress
-        );
-      }
-      if (authorizeParams.stakingAddress !== txParams.stakeAccount) {
-        throw new Error(
-          'StakingAuthorize stakingAddress does not match intended stakeAccount: expected ' +
-            txParams.stakeAccount +
-            ' but got ' +
-            authorizeParams.stakingAddress
-        );
-      }
+      this.verifyStakingAuthorizeInstructions(transaction, txParams, walletRootAddress);
     }
 
     const isTokenEnablementTx = txParams.type === 'enabletoken';

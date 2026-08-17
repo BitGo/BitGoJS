@@ -58,8 +58,7 @@ describe('summarizeStakingAuthorize', () => {
     summary!.newStakingAuthorityAddress!.should.equal('last');
   });
 
-  // An undecodable authority type must not be reported as a withdraw-authority change, otherwise
-  // verifyTransaction would compare an unknown address against the intended withdraw key.
+  // An undecodable authority type must not be reported as a withdraw-authority change.
   it('leaves withdraw fields empty when the authority type is unknown', () => {
     const summary = summarizeStakingAuthorize([view(undefined, 'unknown', 'custodian')]);
     summary!.newWithdrawAddress.should.equal('');

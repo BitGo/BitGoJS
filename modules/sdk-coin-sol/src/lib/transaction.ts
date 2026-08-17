@@ -717,8 +717,7 @@ export class Transaction extends BaseTransaction {
     };
     // validateRawMsgInstruction accepts a nonce advance followed by one or two AuthorizeChecked
     // instructions, so summarise all of them rather than only instructions[1]. Reading just the
-    // first one reported empty withdraw fields whenever the Staker change came first, which made
-    // verifyTransaction reject a legitimate two-instruction authorize.
+    // first one reported empty withdraw fields whenever the Staker change came first.
     const stakingAuthorizeParams = summarizeStakingAuthorize(
       instructions.slice(1).map((instruction) => {
         // AuthorizeChecked requires the stake account, clock sysvar, current authority and new

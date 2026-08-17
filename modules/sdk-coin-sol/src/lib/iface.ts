@@ -199,8 +199,9 @@ export interface StakingAuthorize {
     /**
      * The lockup custodian account, NOT a withdraw authority. Named `newWithdrawAddress` for
      * historical reasons: {@link stakingAuthorizeInstruction} passes it as `custodianPubkey`, and
-     * the decoder reads that account back into this field. Its presence is orthogonal to whether
-     * the instruction changes the staker or the withdrawer — use `authorizeType` for that.
+     * the decoder reads that account back into this field. Solana documents the custodian as
+     * optional for Withdrawer changes under lockup; the encoding can still attach or omit it
+     * independently of `authorizeType` — use `authorizeType` for the authority being changed.
      */
     newWithdrawAddress?: string;
     /** The lockup custodian account, as decoded by the raw (AuthorizeChecked) parser. */

@@ -1276,15 +1276,16 @@ function parseStakingAuthorizeRawInstructions(instructions: TransactionInstructi
   instructionData.push(nonce);
   for (const authorize of instructions.slice(1)) {
     // AuthorizeChecked accounts: [0] stake, [1] clock sysvar, [2] current authority,
-    // [3] new authority, [4] optional lockup custodian.
-    assert(authorize.keys.length === 5, 'Invalid number of keys in authorize instruction');
+    // [3] new authority, [4] lockup custodian. The custodian is optional in Solana, so require
+    // only the four mandatory accounts — matching the explain path, which accepts the same shape.
+    assert(authorize.keys.length >= 4, 'Invalid number of keys in authorize instruction');
     instructionData.push({
       type: InstructionBuilderTypes.StakingAuthorize,
       params: {
         stakingAddress: authorize.keys[0].pubkey.toString(),
         oldAuthorizeAddress: authorize.keys[2].pubkey.toString(),
         newAuthorizeAddress: authorize.keys[3].pubkey.toString(),
-        custodianAddress: authorize.keys[4].pubkey.toString(),
+        custodianAddress: authorize.keys[4]?.pubkey.toString(),
         authorizeType: decodeRawAuthorizeType(authorize),
       },
     });
