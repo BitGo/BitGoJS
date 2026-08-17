@@ -11,6 +11,7 @@ const EXCLUDED_ASSETS = new Set<string>([
   'inj', // replaced by a v2
   'knc', // replaced by a v2
   'tgbp', // confusion with the fiat version
+  'ofceth:at', // testnet OFC token named with mainnet eth: prefix (addressCoin is teth)
 ]);
 
 const EXCLUDED_ASSETS_FOR_DECIMAL_CHECK = new Set<string>([
@@ -98,6 +99,9 @@ describe('OFC Coin parity tests', function () {
 
     ofcCoinsWithAddressCoin.forEach((coin) => {
       const ofcCoin = coin as OfcCoin;
+      if (EXCLUDED_ASSETS.has(ofcCoin.name)) {
+        return;
+      }
       const addressCoin = ofcCoin.addressCoin;
 
       // Verify addressCoin refers to a real coin
