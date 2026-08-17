@@ -84,12 +84,11 @@ describe('External signer', () => {
   let mpcEcdsa: Ecdsa;
   let hdTree: HDTree;
 
-  const walletId = '61f039aad587c2000745c687373e0fa9';
-  const walletPassword = 'wDX058%c4plL1@pP';
+  const walletId = 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6';
+  const walletPassword = 'test-wallet-passphrase';
   const secret =
     'xprv9s21ZrQH143K3EuPWCBuqnWxydaQV6et9htQige4EswvcHKEzNmkVmwTwKoadyHzJYppuADB7Us7AbaNLToNvoFoSxuWqndQRYtnNy5DUY2';
-  const validPrv =
-    '{"61f039aad587c2000745c687373e0fa9":"{\\"iv\\":\\"+1u1Y9cvsYuRMeyH2slnXQ==\\",\\"v\\":1,\\"iter\\":10000,\\"ks\\":256,\\"ts\\":64,\\"mode\\":\\"ccm\\",\\"adata\\":\\"\\",\\"cipher\\":\\"aes\\",\\"salt\\":\\"54kOXTqJ9mc=\\",\\"ct\\":\\"JF5wQ82wa1dYyFxFlbHCvK4a+A6MTHdhOqc5uXsz2icWhkY2Lin/3Ab8ZwvwDaR1JYKmC/g1gXIGwVZEOl1M/bRHY420h7sDtmTS6Ebse5NWbF0ItfUJlk6HVATGa+C6mkbaVxJ4kQW/ehnT3riqzU069ATPz8E=\\"}"}';
+  let validPrv: string;
 
   before(async function () {
     if (!nock.isActive()) {
@@ -98,6 +97,13 @@ describe('External signer', () => {
 
     bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
+
+    const encryptedPrv = await bitgo.encrypt({
+      password: walletPassword,
+      input: secret,
+      encryptionVersion: 1,
+    });
+    validPrv = JSON.stringify({ [walletId]: encryptedPrv });
 
     bgUrl = common.Environments[bitgo.getEnv()].uri;
     hdTree = await Ed25519BIP32.initialize();
@@ -122,9 +128,7 @@ describe('External signer', () => {
 
   it('should read an encrypted prv from signerFileSystemPath and pass it to coin.signTransaction', async () => {
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
-    const envStub = sinon
-      .stub(process, 'env')
-      .value({ WALLET_61f039aad587c2000745c687373e0fa9_PASSPHRASE: walletPassword });
+    const envStub = sinon.stub(process, 'env').value({ [`WALLET_${walletId}_PASSPHRASE`]: walletPassword });
     const signTransactionStub = sinon
       .stub(Coin.Btc.prototype, 'signTransaction')
       .resolves({ txHex: 'signedTx', txRequestId: '' } as SignedTransaction);

@@ -39,40 +39,31 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
       'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
     const walletPassphrase = 'test_wallet_passphrase';
     const path = require('path');
-    const signerFilePath = path.join(__dirname, '../../../encryptedPrivKeys.json');
+    const os = require('os');
+    const signerFilePath = path.join(os.tmpdir(), `encryptedPrivKeys-${process.pid}-${Date.now()}.json`);
 
     let fsReadFileStub: sinon.SinonStub;
     let agent: ReturnType<typeof setupAgent>;
-    let originalFileContent: string;
 
-    // Mock encrypted private keys JSON content
     const mockSignerFileContent = JSON.stringify({
       [walletId]: encryptedPrivKey,
     });
 
-    // Setup the express app with signer mode before all tests
     before(function () {
-      // Save the original content of encryptedPrivKeys.json
-      try {
-        originalFileContent = fsSync.readFileSync(signerFilePath, 'utf8');
-      } catch (e) {
-        originalFileContent = '{}';
-      }
-
-      // Temporarily write mock data to the existing file
       fsSync.writeFileSync(signerFilePath, mockSignerFileContent);
 
-      // Create agent with signerMode enabled for external signing
       agent = setupAgent({
         signerMode: true,
         signerFileSystemPath: signerFilePath,
       });
     });
 
-    // Restore the original file content after all tests
     after(function () {
-      // Restore original content
-      fsSync.writeFileSync(signerFilePath, originalFileContent);
+      try {
+        fsSync.unlinkSync(signerFilePath);
+      } catch (e) {
+        // ignore
+      }
     });
 
     beforeEach(function () {

@@ -27,7 +27,7 @@ proxyquire.noPreserveCache();
 describe('Bitgo Express', function () {
   describe('server initialization', function () {
     const validPrvJSON =
-      '{"61f039aad587c2000745c687373e0fa9":"xprv9s21ZrQH143K3EuPWCBuqnWxydaQV6et9htQige4EswvcHKEzNmkVmwTwKoadyHzJYppuADB7Us7AbaNLToNvoFoSxuWqndQRYtnNy5DUY2"}';
+      '{"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6":"xprv9s21ZrQH143K3EuPWCBuqnWxydaQV6et9htQige4EswvcHKEzNmkVmwTwKoadyHzJYppuADB7Us7AbaNLToNvoFoSxuWqndQRYtnNy5DUY2"}';
     const validLightningSignerConfigJSON = '{"fakeid":{"url": "https://127.0.0.1:8080","tlsCert":"dummy"}}';
 
     it('should require NODE_ENV to be production when running against prod env', function () {
