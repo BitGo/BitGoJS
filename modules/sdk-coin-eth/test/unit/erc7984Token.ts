@@ -18,6 +18,7 @@ import {
   buildMulticallDelegationCalldata,
   buildFlushERC7984ForwarderTokenCalldata,
   buildWrapCalldata,
+  buildUnwrapCalldata,
   sendMultiSigData,
   wrapInCallFromParent,
   decodeTokenAddressesFromDelegationCalldata,
@@ -1571,6 +1572,156 @@ describe('verifyTransaction – WrapERC7984', function () {
         wallet,
       })
       .should.be.rejectedWith(/amount mismatch/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// verifyTransaction – UnwrapERC7984 (unshield phase-1)
+// ---------------------------------------------------------------------------
+
+const UNWRAP_BASE_ADDRESS = '0x1111111111111111111111111111111111111111';
+const UNWRAP_ENCRYPTED_AMOUNT = '0x' + 'ab'.repeat(32);
+const UNWRAP_INPUT_PROOF = '0x' + 'cd'.repeat(64);
+
+async function buildDirectUnwrapTxHex(
+  tokenAddress: string,
+  from: string,
+  to: string,
+  encryptedAmount: string,
+  inputProof: string
+): Promise<string> {
+  const txBuilder = getBuilder('hteth') as TransactionBuilder;
+  txBuilder.fee({ fee: '1000000000', gasLimit: '200000' });
+  txBuilder.counter(1);
+  txBuilder.type(TransactionType.UnwrapERC7984);
+  txBuilder.contract(tokenAddress);
+  txBuilder.unwrapFrom(from);
+  txBuilder.unwrapTo(to);
+  txBuilder.unwrapEncryptedAmount(encryptedAmount);
+  txBuilder.unwrapInputProof(inputProof);
+  const tx = await txBuilder.build();
+  return tx.toBroadcastFormat();
+}
+
+async function buildMultisigUnwrapTxHex(
+  tokenAddress: string,
+  from: string,
+  to: string,
+  encryptedAmount: string,
+  inputProof: string
+): Promise<string> {
+  const unwrapCalldata = buildUnwrapCalldata(from, to, encryptedAmount, inputProof);
+  const sendData = sendMultiSigData(
+    tokenAddress,
+    '0',
+    unwrapCalldata,
+    Math.floor(Date.now() / 1000) + 3600,
+    14,
+    DUMMY_MULTISIG_SIGNATURE
+  );
+
+  const txBuilder = getBuilder('hteth') as TransactionBuilder;
+  txBuilder.fee({ fee: '1000000000', gasLimit: '200000' });
+  txBuilder.counter(1);
+  txBuilder.type(TransactionType.ContractCall);
+  txBuilder.contract(MULTISIG_WALLET_CONTRACT);
+  txBuilder.data(sendData);
+  const tx = await txBuilder.build();
+  return tx.toBroadcastFormat();
+}
+
+describe('verifyTransaction – UnwrapERC7984', function () {
+  let bitgo: TestBitGoAPI;
+  let coin: Erc7984Token;
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.initializeTestVars();
+    register(bitgo);
+    coin = bitgo.coin('hteth:ctest1') as Erc7984Token;
+  });
+
+  it('should verify a valid direct unwrap tx (TSS shape)', async function () {
+    const txHex = await buildDirectUnwrapTxHex(
+      CTEST1_TOKEN_ADDRESS,
+      UNWRAP_BASE_ADDRESS,
+      UNWRAP_BASE_ADDRESS,
+      UNWRAP_ENCRYPTED_AMOUNT,
+      UNWRAP_INPUT_PROOF
+    );
+    const wallet = new Wallet(bitgo, coin, {
+      coinSpecific: { baseAddress: UNWRAP_BASE_ADDRESS },
+    });
+
+    const result = await coin.verifyTransaction({
+      txParams: { type: 'unwrap' } as any,
+      txPrebuild: { txHex } as any,
+      wallet,
+    });
+    result.should.equal(true);
+  });
+
+  it('should verify a valid multisig unwrap tx (sendMultiSig → unwrap)', async function () {
+    const txHex = await buildMultisigUnwrapTxHex(
+      CTEST1_TOKEN_ADDRESS,
+      UNWRAP_BASE_ADDRESS,
+      UNWRAP_BASE_ADDRESS,
+      UNWRAP_ENCRYPTED_AMOUNT,
+      UNWRAP_INPUT_PROOF
+    );
+    const wallet = new Wallet(bitgo, coin, {
+      coinSpecific: { baseAddress: UNWRAP_BASE_ADDRESS },
+    });
+
+    const result = await coin.verifyTransaction({
+      txParams: { type: 'unwrap' } as any,
+      txPrebuild: { txHex } as any,
+      wallet,
+    });
+    result.should.equal(true);
+  });
+
+  it('should reject unwrap when from does not match wallet base address', async function () {
+    const txHex = await buildDirectUnwrapTxHex(
+      CTEST1_TOKEN_ADDRESS,
+      UNWRAP_BASE_ADDRESS,
+      UNWRAP_BASE_ADDRESS,
+      UNWRAP_ENCRYPTED_AMOUNT,
+      UNWRAP_INPUT_PROOF
+    );
+    const wallet = new Wallet(bitgo, coin, {
+      coinSpecific: { baseAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
+    });
+
+    await coin
+      .verifyTransaction({
+        txParams: { type: 'unwrap' } as any,
+        txPrebuild: { txHex } as any,
+        wallet,
+      })
+      .should.be.rejectedWith(/unwrap from must equal wallet base address/);
+  });
+
+  it('should reject unwrap when to differs from from (non-self-directed)', async function () {
+    const other = '0x2222222222222222222222222222222222222222';
+    const txHex = await buildDirectUnwrapTxHex(
+      CTEST1_TOKEN_ADDRESS,
+      UNWRAP_BASE_ADDRESS,
+      other,
+      UNWRAP_ENCRYPTED_AMOUNT,
+      UNWRAP_INPUT_PROOF
+    );
+    const wallet = new Wallet(bitgo, coin, {
+      coinSpecific: { baseAddress: UNWRAP_BASE_ADDRESS },
+    });
+
+    await coin
+      .verifyTransaction({
+        txParams: { type: 'unwrap' } as any,
+        txPrebuild: { txHex } as any,
+        wallet,
+      })
+      .should.be.rejectedWith(/unwrap to must equal wallet base address/);
   });
 });
 

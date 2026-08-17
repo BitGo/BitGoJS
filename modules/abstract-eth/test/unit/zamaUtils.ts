@@ -4,6 +4,8 @@ import {
   buildApproveCalldata,
   buildWrapCalldata,
   decodeWrapCalldata,
+  buildUnwrapCalldata,
+  decodeUnwrapCalldata,
   buildDelegationCalldata,
   buildMulticallDelegationCalldata,
   buildConfidentialTransferByHandleCalldata,
@@ -13,6 +15,7 @@ import {
   approveMethodId,
   wrapMethodId,
   UINT64_MAX,
+  unwrapMethodId,
   delegateForUserDecryptionMethodId,
   aclMulticallMethodId,
   callFromParentMethodId,
@@ -59,6 +62,10 @@ describe('Zama Utils', () => {
       wrapMethodId.should.equal('0xbf376c7a');
     });
 
+    it('should have correct selector for unwrap(address,address,bytes32,bytes)', () => {
+      unwrapMethodId.should.equal('0x5bf4ef06');
+    });
+
     it('method IDs should all be distinct', () => {
       const ids = new Set([
         delegateForUserDecryptionMethodId,
@@ -66,8 +73,9 @@ describe('Zama Utils', () => {
         callFromParentMethodId,
         approveMethodId,
         wrapMethodId,
+        unwrapMethodId,
       ]);
-      ids.size.should.equal(5);
+      ids.size.should.equal(6);
     });
   });
 
@@ -231,6 +239,60 @@ describe('Zama Utils', () => {
       it('should encode without rate when rate is omitted (deserialize path)', () => {
         const calldata = buildWrapCalldata(RECIPIENT, EXACT_AMOUNT);
         calldata.slice(0, 10).should.equal(wrapMethodId);
+      });
+    });
+  });
+
+  describe('buildUnwrapCalldata', () => {
+    const FROM = '0x1111111111111111111111111111111111111111';
+    const TO = '0x1111111111111111111111111111111111111111';
+    const ENCRYPTED_AMOUNT = '0x' + 'ab'.repeat(32);
+    const INPUT_PROOF = '0x' + 'cd'.repeat(64);
+
+    describe('output format', () => {
+      it('should produce a 0x-prefixed hex string starting with unwrap selector', () => {
+        const calldata = buildUnwrapCalldata(FROM, TO, ENCRYPTED_AMOUNT, INPUT_PROOF);
+        calldata.should.be.a.String();
+        calldata.should.startWith(unwrapMethodId);
+        calldata.slice(0, 10).should.equal('0x5bf4ef06');
+      });
+
+      it('should round-trip through decodeUnwrapCalldata', () => {
+        const calldata = buildUnwrapCalldata(FROM, TO, ENCRYPTED_AMOUNT, INPUT_PROOF);
+        const decoded = decodeUnwrapCalldata(calldata);
+        decoded.from.toLowerCase().should.equal(FROM.toLowerCase());
+        decoded.to.toLowerCase().should.equal(TO.toLowerCase());
+        decoded.encryptedAmount.should.equal(ENCRYPTED_AMOUNT);
+        decoded.inputProof.should.equal(INPUT_PROOF);
+      });
+    });
+
+    describe('validation', () => {
+      it('should reject an invalid from address', () => {
+        (() => buildUnwrapCalldata('not-an-address', TO, ENCRYPTED_AMOUNT, INPUT_PROOF)).should.throw(
+          /invalid from address/
+        );
+      });
+
+      it('should reject an invalid to address', () => {
+        (() => buildUnwrapCalldata(FROM, 'not-an-address', ENCRYPTED_AMOUNT, INPUT_PROOF)).should.throw(
+          /invalid to address/
+        );
+      });
+
+      it('should reject a bad EIP-55 checksum', () => {
+        const badChecksum = '0x2Debbe0487ef921df4457f9e36ed05be2df1ac75';
+        (() => buildUnwrapCalldata(badChecksum, TO, ENCRYPTED_AMOUNT, INPUT_PROOF)).should.throw(
+          /invalid from address/
+        );
+      });
+
+      it('should reject a non-32-byte encryptedAmount', () => {
+        (() => buildUnwrapCalldata(FROM, TO, '0xabcd', INPUT_PROOF)).should.throw(/encryptedAmount must be a 32-byte/);
+      });
+
+      it('should reject an empty inputProof', () => {
+        (() => buildUnwrapCalldata(FROM, TO, ENCRYPTED_AMOUNT, '0x')).should.throw(/inputProof must be a non-empty/);
       });
     });
   });
