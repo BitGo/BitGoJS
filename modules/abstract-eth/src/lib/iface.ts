@@ -166,3 +166,12 @@ export interface FlushERC7984ForwarderTokenData {
   encryptedHandle: string; // bytes32 hex
   parentAddress: string;
 }
+
+export interface WrapERC7984Data {
+  /** Confidential wrapper contract (tx.to) */
+  wrapperAddress: string;
+  /** Recipient of minted confidential balance (wrap `to` arg) */
+  to: string;
+  /** Underlying amount wrapped (base units, decimal string) */
+  amount: string;
+}

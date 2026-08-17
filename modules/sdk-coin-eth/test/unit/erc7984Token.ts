@@ -17,6 +17,7 @@ import { TransactionType, Wallet } from '@bitgo/sdk-core';
 import {
   buildMulticallDelegationCalldata,
   buildFlushERC7984ForwarderTokenCalldata,
+  buildWrapCalldata,
   sendMultiSigData,
   wrapInCallFromParent,
   decodeTokenAddressesFromDelegationCalldata,
@@ -1452,6 +1453,124 @@ describe('Erc7984Token – queryConfidentialBalance()', function () {
     await coin
       .queryConfidentialBalance(WALLET_ADDRESS)
       .should.be.rejectedWith(/Unexpected confidentialBalanceOf response format/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// verifyTransaction – WrapERC7984 (shield)
+// ---------------------------------------------------------------------------
+
+const WRAP_BASE_ADDRESS = '0x1111111111111111111111111111111111111111';
+const WRAP_AMOUNT = '1000000';
+const WRAP_RATE = '1';
+
+async function buildDirectWrapTxHex(tokenAddress: string, recipient: string, amount: string): Promise<string> {
+  const txBuilder = getBuilder('hteth') as TransactionBuilder;
+  txBuilder.fee({ fee: '1000000000', gasLimit: '200000' });
+  txBuilder.counter(1);
+  txBuilder.type(TransactionType.WrapERC7984);
+  txBuilder.contract(tokenAddress);
+  txBuilder.wrapRecipient(recipient);
+  txBuilder.wrapAmount(amount);
+  txBuilder.wrapRate(WRAP_RATE);
+  const tx = await txBuilder.build();
+  return tx.toBroadcastFormat();
+}
+
+async function buildMultisigWrapTxHex(tokenAddress: string, recipient: string, amount: string): Promise<string> {
+  const wrapCalldata = buildWrapCalldata(recipient, amount, WRAP_RATE);
+  const sendData = sendMultiSigData(
+    tokenAddress,
+    '0',
+    wrapCalldata,
+    Math.floor(Date.now() / 1000) + 3600,
+    14,
+    DUMMY_MULTISIG_SIGNATURE
+  );
+
+  const txBuilder = getBuilder('hteth') as TransactionBuilder;
+  txBuilder.fee({ fee: '1000000000', gasLimit: '200000' });
+  txBuilder.counter(1);
+  txBuilder.type(TransactionType.ContractCall);
+  txBuilder.contract(MULTISIG_WALLET_CONTRACT);
+  txBuilder.data(sendData);
+  const tx = await txBuilder.build();
+  return tx.toBroadcastFormat();
+}
+
+describe('verifyTransaction – WrapERC7984', function () {
+  let bitgo: TestBitGoAPI;
+  let coin: Erc7984Token;
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.initializeTestVars();
+    register(bitgo);
+    coin = bitgo.coin('hteth:ctest1') as Erc7984Token;
+  });
+
+  it('should verify a valid direct wrap tx (TSS shape)', async function () {
+    const txHex = await buildDirectWrapTxHex(CTEST1_TOKEN_ADDRESS, WRAP_BASE_ADDRESS, WRAP_AMOUNT);
+    const wallet = new Wallet(bitgo, coin, {
+      coinSpecific: { baseAddress: WRAP_BASE_ADDRESS },
+    });
+
+    const result = await coin.verifyTransaction({
+      txParams: {
+        type: 'wrap',
+        recipients: [{ address: WRAP_BASE_ADDRESS, amount: WRAP_AMOUNT }],
+      } as any,
+      txPrebuild: { txHex } as any,
+      wallet,
+    });
+    result.should.equal(true);
+  });
+
+  it('should verify a valid multisig wrap tx (sendMultiSig → wrap)', async function () {
+    const txHex = await buildMultisigWrapTxHex(CTEST1_TOKEN_ADDRESS, WRAP_BASE_ADDRESS, WRAP_AMOUNT);
+    const wallet = new Wallet(bitgo, coin, {
+      coinSpecific: { baseAddress: WRAP_BASE_ADDRESS },
+    });
+
+    const result = await coin.verifyTransaction({
+      txParams: {
+        type: 'wrap',
+        recipients: [{ address: WRAP_BASE_ADDRESS, amount: WRAP_AMOUNT }],
+      } as any,
+      txPrebuild: { txHex } as any,
+      wallet,
+    });
+    result.should.equal(true);
+  });
+
+  it('should reject wrap when recipient does not match wallet base address', async function () {
+    const txHex = await buildDirectWrapTxHex(CTEST1_TOKEN_ADDRESS, WRAP_BASE_ADDRESS, WRAP_AMOUNT);
+    const wallet = new Wallet(bitgo, coin, {
+      coinSpecific: { baseAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
+    });
+
+    await coin
+      .verifyTransaction({
+        txParams: { type: 'wrap', recipients: [{ address: WRAP_BASE_ADDRESS, amount: WRAP_AMOUNT }] } as any,
+        txPrebuild: { txHex } as any,
+        wallet,
+      })
+      .should.be.rejectedWith(/wrap recipient must equal wallet base address/);
+  });
+
+  it('should reject wrap when amount mismatches recipients', async function () {
+    const txHex = await buildDirectWrapTxHex(CTEST1_TOKEN_ADDRESS, WRAP_BASE_ADDRESS, WRAP_AMOUNT);
+    const wallet = new Wallet(bitgo, coin, {
+      coinSpecific: { baseAddress: WRAP_BASE_ADDRESS },
+    });
+
+    await coin
+      .verifyTransaction({
+        txParams: { type: 'wrap', recipients: [{ address: WRAP_BASE_ADDRESS, amount: '999' }] } as any,
+        txPrebuild: { txHex } as any,
+        wallet,
+      })
+      .should.be.rejectedWith(/amount mismatch/);
   });
 });
 

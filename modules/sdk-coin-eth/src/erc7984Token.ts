@@ -30,6 +30,10 @@ import {
   VerifyEthTransactionOptions,
   aclMulticallMethodId,
   callFromParentMethodId,
+  decodeWrapCalldata,
+  wrapMethodId,
+  assertAmountTimesRateFitsUint64,
+  decodeTransferData,
 } from '@bitgo/abstract-eth';
 import { bip32 } from '@bitgo/secp256k1';
 import * as _ from 'lodash';
@@ -150,6 +154,9 @@ export class Erc7984Token extends Eth {
     if (params.txParams?.type === 'enabletoken') {
       return this.verifyEnableTokenTransaction(params);
     }
+    if (params.txParams?.type === 'wrap') {
+      return this.verifyWrapTransaction(params);
+    }
     if (this.isConsolidationTransaction(params)) {
       return this.verifyConfidentialConsolidation(params);
     }
@@ -168,6 +175,105 @@ export class Erc7984Token extends Eth {
       txParams?.type === 'consolidateToken' ||
       txParams?.prebuildTx?.consolidateId
     );
+  }
+
+  /**
+   * Verifies WrapERC7984 (shield) transactions.
+   *
+   * TSS / direct shape:
+   *   tx.to   = wrapper contract
+   *   tx.data = wrap(baseAddress, amount)
+   *
+   * Multisig shape:
+   *   tx.to   = wallet contract
+   *   tx.data = sendMultiSig(wrapper, 0, wrap(baseAddress, amount), ...)
+   *
+   * Checks: wrapper address, self-directed `to` == base, amount > 0, amount matches
+   * recipients, and amount × rate fits uint64 when statics rate is present.
+   */
+  private async verifyWrapTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
+    const { txParams, txPrebuild, wallet } = params;
+
+    if (!txPrebuild?.txHex) {
+      throw new Error('verifyWrapTransaction: missing txHex in txPrebuild');
+    }
+
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txPrebuild.txHex);
+    const tx = await txBuilder.build();
+    const txJson = tx.toJson();
+
+    let wrapperAddress: string;
+    let wrapCalldata: string;
+
+    try {
+      if (txJson.data.toLowerCase().startsWith(sendMultisigMethodId.toLowerCase())) {
+        const decoded = decodeTransferData(txJson.data);
+        wrapperAddress = decoded.to;
+        wrapCalldata = decoded.data as string;
+        if (decoded.amount !== '0') {
+          throw new Error(`expected sendMultiSig value 0 but got ${decoded.amount}`);
+        }
+      } else if (txJson.data.toLowerCase().startsWith(wrapMethodId.toLowerCase())) {
+        wrapperAddress = txJson.to as string;
+        wrapCalldata = txJson.data;
+      } else {
+        throw new Error(`unexpected method ID ${txJson.data.slice(0, 10)}`);
+      }
+    } catch (e) {
+      throw new Error(`verifyWrapTransaction: failed to decode wrap calldata — ${(e as Error).message}`);
+    }
+
+    if (wrapperAddress.toLowerCase() !== this.tokenContractAddress.toLowerCase()) {
+      throw new Error(
+        `verifyWrapTransaction: wrapper address mismatch — ` +
+          `expected ${this.tokenContractAddress}, got ${wrapperAddress}`
+      );
+    }
+
+    let to: string;
+    let amount: string;
+    try {
+      ({ to, amount } = decodeWrapCalldata(wrapCalldata));
+    } catch (e) {
+      throw new Error(`verifyWrapTransaction: invalid wrap inner calldata — ${(e as Error).message}`);
+    }
+
+    if (!Erc7984Token.isPositiveIntegerString(amount)) {
+      throw new Error(`verifyWrapTransaction: amount must be a positive integer string, got '${amount}'`);
+    }
+
+    const baseAddress = this.getWalletBaseAddress(wallet);
+    if (!baseAddress) {
+      throw new Error('verifyWrapTransaction: unable to determine wallet base address');
+    }
+    if (to.toLowerCase() !== baseAddress.toLowerCase()) {
+      throw new Error(
+        `verifyWrapTransaction: wrap recipient must equal wallet base address — expected ${baseAddress}, got ${to}`
+      );
+    }
+
+    const expectedAmount = txParams?.recipients?.[0]?.amount ?? txPrebuild.buildParams?.recipients?.[0]?.amount;
+    if (expectedAmount !== undefined && String(expectedAmount) !== amount) {
+      throw new Error(
+        `verifyWrapTransaction: amount mismatch — calldata has '${amount}' but params have '${expectedAmount}'`
+      );
+    }
+
+    const rate = this.tokenConfig.rate;
+    if (rate !== undefined) {
+      try {
+        assertAmountTimesRateFitsUint64(amount, rate);
+      } catch (e) {
+        throw new Error(`verifyWrapTransaction: ${(e as Error).message}`);
+      }
+    }
+
+    if (txJson.value !== undefined && txJson.value !== '0' && txJson.value !== 0) {
+      throw new Error(`verifyWrapTransaction: expected transaction value 0 but got ${txJson.value}`);
+    }
+
+    return true;
   }
 
   private getWalletBaseAddress(wallet: VerifyEthTransactionOptions['wallet']): string | undefined {

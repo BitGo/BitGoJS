@@ -2,6 +2,8 @@ import should from 'should';
 import EthereumAbi from 'ethereumjs-abi';
 import {
   buildApproveCalldata,
+  buildWrapCalldata,
+  decodeWrapCalldata,
   buildDelegationCalldata,
   buildMulticallDelegationCalldata,
   buildConfidentialTransferByHandleCalldata,
@@ -9,6 +11,8 @@ import {
   decodeFlushERC7984ForwarderTokenCalldata,
   wrapInCallFromParent,
   approveMethodId,
+  wrapMethodId,
+  UINT64_MAX,
   delegateForUserDecryptionMethodId,
   aclMulticallMethodId,
   callFromParentMethodId,
@@ -51,14 +55,19 @@ describe('Zama Utils', () => {
       approveMethodId.should.equal('0x095ea7b3');
     });
 
+    it('should have correct selector for wrap(address,uint256)', () => {
+      wrapMethodId.should.equal('0xbf376c7a');
+    });
+
     it('method IDs should all be distinct', () => {
       const ids = new Set([
         delegateForUserDecryptionMethodId,
         aclMulticallMethodId,
         callFromParentMethodId,
         approveMethodId,
+        wrapMethodId,
       ]);
-      ids.size.should.equal(4);
+      ids.size.should.equal(5);
     });
   });
 
@@ -137,6 +146,91 @@ describe('Zama Utils', () => {
 
       it('should reject a non-numeric amount string', () => {
         (() => buildApproveCalldata(WRAPPER_ADDRESS, 'abc')).should.throw(/invalid amount/);
+      });
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  describe('buildWrapCalldata', () => {
+    const RECIPIENT = '0x1111111111111111111111111111111111111111';
+    const EXACT_AMOUNT = '1000000';
+    const RATE_ONE = '1';
+    const RATE_1E12 = '1000000000000'; // hteth:ctest1
+
+    describe('output format', () => {
+      it('should produce a 0x-prefixed hex string', () => {
+        const calldata = buildWrapCalldata(RECIPIENT, EXACT_AMOUNT, RATE_ONE);
+        calldata.should.be.a.String();
+        calldata.should.startWith('0x');
+      });
+
+      it('should have exact length: 4-byte selector + 2 × 32-byte ABI words = 68 bytes (138 chars)', () => {
+        const calldata = buildWrapCalldata(RECIPIENT, EXACT_AMOUNT, RATE_ONE);
+        calldata.length.should.equal(138);
+      });
+
+      it('should start with wrap selector 0xbf376c7a', () => {
+        const calldata = buildWrapCalldata(RECIPIENT, EXACT_AMOUNT, RATE_ONE);
+        calldata.slice(0, 10).should.equal(wrapMethodId);
+        calldata.slice(0, 10).should.equal('0xbf376c7a');
+      });
+    });
+
+    describe('ABI parameter encoding', () => {
+      it('should encode recipient in the first ABI word', () => {
+        const calldata = buildWrapCalldata(RECIPIENT, EXACT_AMOUNT, RATE_ONE);
+        const word1 = calldata.slice(10, 74);
+        word1.should.equal(RECIPIENT.slice(2).toLowerCase().padStart(64, '0'));
+      });
+
+      it('should encode amount in the second ABI word', () => {
+        const calldata = buildWrapCalldata(RECIPIENT, EXACT_AMOUNT, RATE_ONE);
+        const word2 = calldata.slice(74, 138);
+        word2.should.equal(BigInt(EXACT_AMOUNT).toString(16).padStart(64, '0'));
+      });
+
+      it('should round-trip through decodeWrapCalldata', () => {
+        const calldata = buildWrapCalldata(RECIPIENT, EXACT_AMOUNT, RATE_ONE);
+        const decoded = decodeWrapCalldata(calldata);
+        decoded.to.toLowerCase().should.equal(RECIPIENT.toLowerCase());
+        decoded.amount.should.equal(EXACT_AMOUNT);
+      });
+    });
+
+    describe('validation', () => {
+      it('should reject an invalid to address', () => {
+        (() => buildWrapCalldata('not-an-address', EXACT_AMOUNT, RATE_ONE)).should.throw(/invalid to address/);
+      });
+
+      it('should reject a bad EIP-55 checksum', () => {
+        // Mixed case that does not match the correct checksum (same pattern as approve tests)
+        const badChecksum = '0x2Debbe0487ef921df4457f9e36ed05be2df1ac75';
+        (() => buildWrapCalldata(badChecksum, EXACT_AMOUNT, RATE_ONE)).should.throw(/invalid to address/);
+      });
+
+      it('should reject amount 0', () => {
+        (() => buildWrapCalldata(RECIPIENT, 0, RATE_ONE)).should.throw(/amount must be > 0/);
+      });
+
+      it('should reject a negative amount', () => {
+        (() => buildWrapCalldata(RECIPIENT, -1, RATE_ONE)).should.throw(/amount must be > 0/);
+      });
+
+      it('should reject when amount × rate exceeds uint64', () => {
+        // UINT64_MAX / 1e12 + 1 overflows for ctest1-style rate
+        const tooLarge = (UINT64_MAX / BigInt(RATE_1E12) + 1n).toString();
+        (() => buildWrapCalldata(RECIPIENT, tooLarge, RATE_1E12)).should.throw(/exceeds uint64/);
+      });
+
+      it('should accept amount × rate that fits uint64 for rate 1e12', () => {
+        const ok = (UINT64_MAX / BigInt(RATE_1E12)).toString();
+        const calldata = buildWrapCalldata(RECIPIENT, ok, RATE_1E12);
+        calldata.slice(0, 10).should.equal(wrapMethodId);
+      });
+
+      it('should encode without rate when rate is omitted (deserialize path)', () => {
+        const calldata = buildWrapCalldata(RECIPIENT, EXACT_AMOUNT);
+        calldata.slice(0, 10).should.equal(wrapMethodId);
       });
     });
   });
