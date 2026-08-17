@@ -224,7 +224,7 @@ class Algorand extends Mainnet implements AccountNetwork {
 class AlgorandTestnet extends Testnet implements AccountNetwork {
   name = 'AlgorandTestnet';
   family = CoinFamily.ALGO;
-  explorerUrl = 'https://explorer.bitquery.io/algorand_testnet/tx/';
+  explorerUrl = 'https://testnet.explorer.perawallet.app/tx/';
 }
 
 class Ada extends Mainnet implements AdaNetwork {
