@@ -304,6 +304,7 @@ export interface AmsTokenConfig {
   addressCoin?: string;
   assetName?: string;
   policyId?: string;
+  baseUrl?: string;
 }
 
 export interface AmsNetworkConfig extends DynamicNetworkOptions {
@@ -1140,7 +1141,7 @@ function getCantonTokenConfig(coin: CantonToken): CantonTokenConfig {
     contractAddress: coin.contractAddress,
   };
 }
-const getFormattedCantonTokens = (customCoinMap = coins) =>
+export const getFormattedCantonTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: CantonTokenConfig[], coin) => {
     if (coin instanceof CantonToken) {
       acc.push(getCantonTokenConfig(coin));
