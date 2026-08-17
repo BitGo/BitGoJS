@@ -1343,6 +1343,7 @@ describe('Eip1559 coins', () => {
     'toas',
     'coredao',
     'tcoredao',
+    'sushi',
   ];
   it('should have EIP1559 feature', () => {
     eip1559Coins.forEach((coinName) => {
