@@ -59,6 +59,11 @@ import EddsaUtils, { EddsaMPCv2Utils } from '../utils/tss/eddsa';
 import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
 import { buildParamKeys, BuildParams } from './BuildParams';
 import {
+  fetchRootKeychainForSafeChild,
+  isSafeChildPublicOnlyKeychain,
+  resolveSafeOwnerSigningPrv,
+} from './safeKeychain';
+import {
   AccelerateTransactionOptions,
   AddressesByBalanceOptions,
   AddressesOptions,
@@ -233,6 +238,8 @@ export class Wallet implements IWallet {
   private _defi?: DefiVault;
   private readonly tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | EddsaMPCv2Utils | undefined;
   private readonly _permissions?: string[];
+  /** Root keychain from passphrase preflight; consumed by getUserPrv to avoid a second GET. */
+  private validatedSafeRootKeychain?: KeychainWithEncryptedPrv;
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, walletData: any) {
     this.bitgo = bitgo;
@@ -376,6 +383,10 @@ export class Wallet implements IWallet {
 
   multisigTypeVersion(): 'MPCv2' | undefined {
     return this._wallet.multisigTypeVersion;
+  }
+
+  safeId(): string | undefined {
+    return this._wallet.safeId;
   }
 
   subType(): SubWalletType | undefined {
@@ -2215,7 +2226,7 @@ export class Wallet implements IWallet {
       walletPassphrase,
     });
     const userKeychain = keychains[0];
-    if (!userKeychain || !userKeychain.encryptedPrv) {
+    if (!userKeychain || (!userKeychain.encryptedPrv && !isSafeChildPublicOnlyKeychain(this.safeId(), userKeychain))) {
       throw new Error('the user keychain does not have property encryptedPrv');
     }
 
@@ -2317,7 +2328,10 @@ export class Wallet implements IWallet {
         walletPassphrase: params.walletPassphrase,
       });
       const userKeychain = keychains[0];
-      if (!userKeychain || !userKeychain.encryptedPrv) {
+      if (
+        !userKeychain ||
+        (!userKeychain.encryptedPrv && !isSafeChildPublicOnlyKeychain(this.safeId(), userKeychain))
+      ) {
         throw new Error('the user keychain does not have property encryptedPrv');
       }
       params.keychain = userKeychain;
@@ -2533,27 +2547,44 @@ export class Wallet implements IWallet {
       throw new Error('prv must be a string');
     }
 
+    // Auto-populate coldDerivationSeed for SMC keys that lack encryptedPrv.
+    // Safe owners use hardened derivation; sharees already hold a child-level encryptedPrv.
     if (
       params.coldDerivationSeed === undefined &&
       params.keychain !== undefined &&
       params.keychain.derivedFromParentWithSeed !== undefined &&
-      this.multisigType() === 'onchain'
+      this.multisigType() === 'onchain' &&
+      !params.keychain.encryptedPrv &&
+      !this.safeId()
     ) {
       params.coldDerivationSeed = params.keychain.derivedFromParentWithSeed;
     }
 
-    if (userPrv && params.coldDerivationSeed) {
-      const derivation = this.baseCoin.deriveKeyWithSeed({
-        key: userPrv,
-        seed: params.coldDerivationSeed,
-      });
-      userPrv = derivation.key;
-    } else if (!userPrv) {
+    if (!userPrv) {
       if (!userKeychain || typeof userKeychain !== 'object') {
         throw new Error('keychain must be an object');
       }
-      const userEncryptedPrv = userKeychain.encryptedPrv;
-      if (!userEncryptedPrv) {
+
+      // Safe owner: resolve signing prv from the root (child keychain stays in params for TSS).
+      if (isSafeChildPublicOnlyKeychain(this.safeId(), userKeychain)) {
+        if (!params.walletPassphrase) {
+          throw new Error('walletPassphrase property missing');
+        }
+        const rootKeychain = this.validatedSafeRootKeychain;
+        this.validatedSafeRootKeychain = undefined;
+        return resolveSafeOwnerSigningPrv({
+          bitgo: this.bitgo,
+          keychains: this.baseCoin.keychains(),
+          walletId: this.id(),
+          multisigType: this.multisigType(),
+          coinFamily: this.baseCoin.getFamily(),
+          childKeychain: userKeychain,
+          walletPassphrase: params.walletPassphrase,
+          rootKeychain,
+        });
+      }
+
+      if (!userKeychain.encryptedPrv) {
         throw new Error('keychain does not have property encryptedPrv');
       }
       if (!params.walletPassphrase) {
@@ -2563,6 +2594,12 @@ export class Wallet implements IWallet {
       if (!userPrv) {
         throw new IncorrectPasswordError();
       }
+    } else if (userPrv && params.coldDerivationSeed) {
+      const derivation = this.baseCoin.deriveKeyWithSeed({
+        key: userPrv,
+        seed: params.coldDerivationSeed,
+      });
+      userPrv = derivation.key;
     }
     return userPrv;
   }
@@ -5364,13 +5401,24 @@ export class Wallet implements IWallet {
     reqId,
   }: PrebuildTransactionOptions & WalletSignTransactionOptions): Promise<Keychain[]> {
     const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId });
+    this.validatedSafeRootKeychain = undefined;
 
     // Doing a sanity check for password here to avoid doing further work if we know it's wrong
     // we ignore this check with if customSigningFunction is provided
     //  which means that the user is handling the signing in external signing mode
-    if (!customSigningFunction && keychains?.[0]?.encryptedPrv && walletPassphrase) {
-      if (!(await decryptKeychainPrivateKey(this.bitgo, keychains[0], walletPassphrase))) {
-        throw new IncorrectPasswordError();
+    if (!customSigningFunction && walletPassphrase) {
+      const userKeychain = keychains?.[0];
+      let keychainToValidate = userKeychain;
+      // Owner child keys have no encryptedPrv; check the passphrase against the root key instead.
+      if (isSafeChildPublicOnlyKeychain(this.safeId(), userKeychain)) {
+        this.validatedSafeRootKeychain = await fetchRootKeychainForSafeChild(this.baseCoin.keychains(), userKeychain);
+        keychainToValidate = this.validatedSafeRootKeychain;
+      }
+      if (keychainToValidate?.encryptedPrv) {
+        if (!(await decryptKeychainPrivateKey(this.bitgo, keychainToValidate, walletPassphrase))) {
+          this.validatedSafeRootKeychain = undefined;
+          throw new IncorrectPasswordError();
+        }
       }
     }
     return keychains;

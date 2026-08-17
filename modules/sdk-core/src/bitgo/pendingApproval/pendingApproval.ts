@@ -17,6 +17,7 @@ import {
 } from '../pendingApproval';
 import { RequestTracer, RequestType } from '../utils';
 import { IWallet } from '../wallet';
+import { isSafeChildPublicOnlyKeychain } from '../wallet/safeKeychain';
 import { BuildParams } from '../wallet/BuildParams';
 import { IRequestTracer } from '../../api';
 import BaseTssUtils from '../utils/tss/baseTSSUtils';
@@ -254,7 +255,16 @@ export class PendingApproval implements IPendingApproval {
       throw new Error('txRequestId not found');
     }
 
-    const decryptedPrv = await this.wallet.getPrv({ walletPassphrase });
+    const childUserKeychain = (
+      await this.wallet.baseCoin.keychains().getKeysForSigning({ wallet: this.wallet, reqId })
+    )[0];
+
+    const decryptedPrv = isSafeChildPublicOnlyKeychain(this.wallet.safeId(), childUserKeychain)
+      ? await this.wallet.getUserPrv({
+          keychain: childUserKeychain,
+          walletPassphrase,
+        })
+      : await this.wallet.getPrv({ walletPassphrase });
     const txRequest = await this.tssUtils!.recreateTxRequest(txRequestId, decryptedPrv, reqId);
     if (txRequest.apiVersion === 'lite') {
       if (!txRequest.unsignedTxs || txRequest.unsignedTxs.length === 0) {

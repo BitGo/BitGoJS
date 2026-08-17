@@ -49,6 +49,8 @@ export interface Keychain {
   reducedEncryptedPrv?: string;
   derivationPath?: string;
   derivedFromParentWithSeed?: string;
+  /** Safe root key id this child key was derived from (WCN-1172). */
+  parent?: string;
   commonPub?: string;
   commonKeychain?: string;
   keyShares?: ApiKeyShare[];
