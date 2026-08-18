@@ -114,6 +114,10 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
   // Block height after which this transactions will expire, or 0 to disable expiry
   expiryHeight = 0;
   consensusBranchId: number;
+  // Raw 8-byte little-endian signed int64 valueBalance field for Sapling v4 txs.
+  // Negative when value flows from the transparent pool into the shielded pool
+  // (t->z shielding). Stored verbatim so toBuffer/getId round-trip correctly.
+  saplingValueBalance: Buffer = VALUE_INT64_ZERO;
 
   constructor(public network: ZcashNetwork, tx?: ZcashTransaction<bigint | number>, amountType?: 'bigint' | 'number') {
     super(network, tx, amountType);
@@ -123,6 +127,7 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
       this.overwintered = tx.overwintered;
       this.versionGroupId = tx.versionGroupId;
       this.expiryHeight = tx.expiryHeight;
+      this.saplingValueBalance = tx.saplingValueBalance;
 
       if (tx.consensusBranchId !== undefined) {
         consensusBranchId = tx.consensusBranchId;
@@ -378,7 +383,7 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
     bufferWriter.writeUInt32(this.locktime);
     bufferWriter.writeUInt32(this.expiryHeight);
     if (this.isSaplingCompatible()) {
-      bufferWriter.writeSlice(VALUE_INT64_ZERO);
+      bufferWriter.writeSlice(this.saplingValueBalance);
     }
     bufferWriter.writeInt32(hashType);
 
