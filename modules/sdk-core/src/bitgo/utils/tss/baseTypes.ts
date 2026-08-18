@@ -375,6 +375,8 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   cantonCommandParams?: CantonCommandParams;
   /** DeFi vault intent fields for defi-approve / defi-deposit intents. */
   defiParams?: DefiIntentParams;
+  /** ERC-7984 shield intent fields for wrapApprove / wrap. */
+  shieldParams?: { tokenName: string; amount: string };
   /** Canton party ID of the end investor to onboard (cantonEndInvestorOnboardingOffer intent). */
   endInvestorPartyId?: string;
   /** Reason for rejecting the onboarding offer (cantonEndInvestorOnboardingReject intent). */

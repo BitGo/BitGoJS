@@ -16,6 +16,7 @@ import { BitGoBase } from '../bitgoBase';
 import { Keychain, KeychainWithEncryptedPrv } from '../keychain';
 import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
 import { IDefiVault } from '../defi';
+import { ShieldTokenOptions, ShieldTokenResult } from '../confidential';
 import { IGoStakingWallet, IStakingWallet } from '../staking';
 import { ITradingAccount } from '../trading';
 import {
@@ -951,6 +952,11 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
     actionType?: string;
     operationId?: string;
   };
+  /** ERC-7984 shield intent fields for wrapApprove / wrap. */
+  shieldParams?: {
+    tokenName: string;
+    amount: string;
+  };
 }
 
 export interface FetchCrossChainUTXOsOptions {
@@ -1252,6 +1258,11 @@ export interface IWallet {
   toJSON(): WalletData;
   createLightningInvoice(params: CreateLightningInvoiceParams): Promise<LightningInvoiceResponse>;
   readonly defi: IDefiVault;
+  /**
+   * Shield (wrap) an underlying ERC-20 into an ERC-7984 confidential token.
+   * Creates wrapApprove only; waits for WP-created wrap and signs it for hot wallets.
+   */
+  shieldToken(params: ShieldTokenOptions): Promise<ShieldTokenResult>;
   toTradingAccount(): ITradingAccount;
   toStakingWallet(): IStakingWallet;
   toGoStakingWallet(): IGoStakingWallet;

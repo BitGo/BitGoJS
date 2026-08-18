@@ -31,6 +31,9 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   'defiApprove',
   'defiDeposit',
   'defiWithdraw',
+  // ERC-7984 shield — recipients/calldata built server-side from shieldParams
+  'wrapApprove',
+  'wrap',
   // Smart contract invocations with no explicit SDK-level recipients
   'contractCall',
 

@@ -9,6 +9,7 @@ export * from './bitgoBase';
 export * from './config';
 export * from './coinFactory';
 export * from './defi';
+export * from './confidential';
 export * from './ecdh';
 export * from './enterprise';
 export * from './environments';

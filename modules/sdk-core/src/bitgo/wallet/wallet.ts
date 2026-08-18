@@ -39,6 +39,7 @@ import { CreateLightningInvoiceParams, LightningInvoiceResponse } from '../../li
 import { getLightningAuthKey } from '../lightning/lightningWalletUtil';
 import { IPendingApproval, PendingApproval, PendingApprovals } from '../pendingApproval';
 import { DefiVault } from '../defi';
+import { ConfidentialToken, ShieldTokenOptions, ShieldTokenResult } from '../confidential';
 import { GoStakingWallet, StakingWallet } from '../staking';
 import { TradingAccount } from '../trading';
 import { getTxRequest } from '../tss';
@@ -236,6 +237,7 @@ export class Wallet implements IWallet {
   public readonly baseCoin: IBaseCoin;
   public _wallet: WalletData;
   private _defi?: DefiVault;
+  private _confidential?: ConfidentialToken;
   private readonly tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | EddsaMPCv2Utils | undefined;
   private readonly _permissions?: string[];
   /** Root keychain from passphrase preflight; consumed by getUserPrv to avoid a second GET. */
@@ -3343,6 +3345,17 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * Shield (wrap) an underlying ERC-20 into an ERC-7984 confidential token.
+   * Creates wrapApprove only; waits for WP-created wrap and signs it for hot wallets.
+   */
+  async shieldToken(params: ShieldTokenOptions): Promise<ShieldTokenResult> {
+    if (!this._confidential) {
+      this._confidential = new ConfidentialToken(this);
+    }
+    return this._confidential.shieldToken(params);
+  }
+
+  /**
    * Create a staking wallet from this wallet
    */
   toStakingWallet(): StakingWallet {
@@ -4780,6 +4793,28 @@ export class Wallet implements IWallet {
         );
         break;
       }
+      case 'wrapApprove':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'wrapApprove',
+            shieldParams: params.shieldParams as { tokenName: string; amount: string },
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      case 'wrap':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'wrap',
+            shieldParams: params.shieldParams as { tokenName: string; amount: string },
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
       default:
         throw new Error(`transaction type not supported: ${params.type}`);
     }
