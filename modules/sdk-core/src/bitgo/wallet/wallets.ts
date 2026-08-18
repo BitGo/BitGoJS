@@ -1308,67 +1308,76 @@ export class Wallets implements IWallets {
     });
     const newWalletPassphrase = params.newWalletPassphrase || params.userLoginPassword;
     const webauthnInfo = params.webauthnInfo;
-    const keysForWalletShares = (
-      await Promise.all(
-        walletShares.map(async (walletShare) => {
-          // Handle userMultiKeyRotationRequired case - these shares don't have keychains
-          if (walletShare.userMultiKeyRotationRequired) {
-            if (!params.userLoginPassword) {
-              throw new Error('userLoginPassword param must be provided to generate user keychain');
-            }
-            const walletKeychain = this.baseCoin.keychains().create();
-            const encryptedPrv = await this.bitgo.encrypt({
-              password: newWalletPassphrase,
-              input: walletKeychain.prv,
-              encryptionVersion: params.encryptionVersion,
-            });
-            return [
-              {
-                walletShareId: walletShare.id,
-                encryptedPrv: encryptedPrv,
-                pub: walletKeychain.pub,
-              },
-            ];
-          }
 
-          // Standard case: shares with keychains
-          if (!walletShare.keychain) {
-            return [];
-          }
-          const secret = getSharedSecret(
-            bip32.fromBase58(sharingKeychain.prv).derivePath(sanitizeLegacyPath(walletShare.keychain.path)),
-            Buffer.from(walletShare.keychain.fromPubKey, 'hex')
-          ).toString('hex');
+    // Each decrypt/encrypt call runs Argon2id inside a WebAssembly instance that reserves ~2 GiB of
+    // virtual address space. Running all shares concurrently via Promise.all exhausts the browser's
+    // WASM memory at scale (e.g. 96 wallets). Process in small batches so only a bounded number of
+    // WASM instances are alive at once.
+    const BATCH_SIZE = 16;
 
-          const decryptedSharedWalletPrv = await this.bitgo.decrypt({
-            password: secret,
-            input: walletShare.keychain.encryptedPrv,
-          });
-          const newEncryptedPrv = await this.bitgo.encrypt({
-            password: newWalletPassphrase,
+    const processShare = async (walletShare: WalletShare): Promise<AcceptShareOptionsRequest[]> => {
+      // Handle userMultiKeyRotationRequired case - these shares don't have keychains
+      if (walletShare.userMultiKeyRotationRequired) {
+        if (!params.userLoginPassword) {
+          throw new Error('userLoginPassword param must be provided to generate user keychain');
+        }
+        const walletKeychain = this.baseCoin.keychains().create();
+        const encryptedPrv = await this.bitgo.encrypt({
+          password: newWalletPassphrase,
+          input: walletKeychain.prv,
+          encryptionVersion: params.encryptionVersion,
+        });
+        return [
+          {
+            walletShareId: walletShare.id,
+            encryptedPrv: encryptedPrv,
+            pub: walletKeychain.pub,
+          },
+        ];
+      }
+
+      // Standard case: shares with keychains
+      if (!walletShare.keychain) {
+        return [];
+      }
+      const secret = getSharedSecret(
+        bip32.fromBase58(sharingKeychain.prv).derivePath(sanitizeLegacyPath(walletShare.keychain.path)),
+        Buffer.from(walletShare.keychain.fromPubKey, 'hex')
+      ).toString('hex');
+
+      const decryptedSharedWalletPrv = await this.bitgo.decrypt({
+        password: secret,
+        input: walletShare.keychain.encryptedPrv,
+      });
+      const newEncryptedPrv = await this.bitgo.encrypt({
+        password: newWalletPassphrase,
+        input: decryptedSharedWalletPrv,
+        encryptionVersion: params.encryptionVersion,
+      });
+      const entry: AcceptShareOptionsRequest = {
+        walletShareId: walletShare.id,
+        encryptedPrv: newEncryptedPrv,
+      };
+      if (webauthnInfo) {
+        entry.webauthnInfo = {
+          otpDeviceId: webauthnInfo.otpDeviceId,
+          prfSalt: webauthnInfo.prfSalt,
+          encryptedPrv: await this.bitgo.encrypt({
+            password: webauthnInfo.passphrase,
             input: decryptedSharedWalletPrv,
             encryptionVersion: params.encryptionVersion,
-          });
-          const entry: AcceptShareOptionsRequest = {
-            walletShareId: walletShare.id,
-            encryptedPrv: newEncryptedPrv,
-          };
-          if (webauthnInfo) {
-            entry.webauthnInfo = {
-              otpDeviceId: webauthnInfo.otpDeviceId,
-              prfSalt: webauthnInfo.prfSalt,
-              encryptedPrv: await this.bitgo.encrypt({
-                password: webauthnInfo.passphrase,
-                input: decryptedSharedWalletPrv,
-                encryptionVersion: params.encryptionVersion,
-                adata: walletShare.enterprise,
-              }),
-            };
-          }
-          return [entry];
-        })
-      )
-    ).flat();
+            adata: walletShare.enterprise,
+          }),
+        };
+      }
+      return [entry];
+    };
+
+    const keysForWalletShares: AcceptShareOptionsRequest[] = [];
+    for (const batch of _.chunk(walletShares, BATCH_SIZE)) {
+      const batchResults = await Promise.all(batch.map((walletShare) => processShare(walletShare)));
+      keysForWalletShares.push(...batchResults.flat());
+    }
 
     return this.bulkAcceptShareRequest(keysForWalletShares);
   }

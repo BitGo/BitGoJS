@@ -135,6 +135,59 @@ describe('Wallets - encryptionVersion threading', function () {
       const call = mockBitGo.encrypt.firstCall;
       assert.strictEqual(call.args[0].encryptionVersion, undefined);
     });
+
+    it('processes shares in batches of 16 to avoid WASM memory exhaustion', async function () {
+      // 20 shares → 2 batches (16 + 4), verifying the batch boundary is crossed
+      const manyShares = Array.from({ length: 20 }, (_, i) => ({
+        id: `share-${i}`,
+        userMultiKeyRotationRequired: true,
+        keychain: null,
+        permissions: ['spend'],
+      }));
+      mockBitGo.get.returns({
+        result: sinon.stub().resolves({ incoming: manyShares, outgoing: [] }),
+      });
+
+      await wallets.bulkAcceptShare({
+        walletShareIds: manyShares.map((s) => s.id),
+        userLoginPassword: 'login-password',
+      });
+
+      // All 20 shares should have been encrypted (one encrypt call per share)
+      assert.strictEqual(mockBitGo.encrypt.callCount, 20);
+    });
+
+    it('never runs more than 16 shares concurrently', async function () {
+      let inFlight = 0;
+      let maxInFlight = 0;
+
+      mockBitGo.encrypt.callsFake(() => {
+        inFlight++;
+        maxInFlight = Math.max(maxInFlight, inFlight);
+        return Promise.resolve('encrypted').then((r) => {
+          inFlight--;
+          return r;
+        });
+      });
+
+      const manyShares = Array.from({ length: 20 }, (_, i) => ({
+        id: `share-${i}`,
+        userMultiKeyRotationRequired: true,
+        keychain: null,
+        permissions: ['spend'],
+      }));
+      mockBitGo.get.returns({
+        result: sinon.stub().resolves({ incoming: manyShares, outgoing: [] }),
+      });
+
+      await wallets.bulkAcceptShare({
+        walletShareIds: manyShares.map((s) => s.id),
+        userLoginPassword: 'login-password',
+      });
+
+      assert.ok(maxInFlight <= 16, `expected max concurrency <= 16, got ${maxInFlight}`);
+      assert.strictEqual(mockBitGo.encrypt.callCount, 20);
+    });
   });
 
   describe('Wallet.shareWallet / createBulkWalletShare', function () {
