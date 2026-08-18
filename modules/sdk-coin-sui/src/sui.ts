@@ -1,3 +1,4 @@
+import assert from 'assert';
 import crypto from 'crypto';
 import {
   BaseBroadcastTransactionOptions,
@@ -5,9 +6,12 @@ import {
   BaseCoin,
   BaseTransaction,
   BitGoBase,
+  decryptKeychainPrivateKey,
   EDDSAMethods,
   EDDSAMethodTypes,
+  EddsaSigningMaterial,
   Environments,
+  getEddsaSigningMaterial as sharedGetEddsaSigningMaterial,
   KeyPair,
   MPCAlgorithm,
   MPCRecoveryOptions,
@@ -20,6 +24,7 @@ import {
   ParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
   RecoveryTxRequest,
+  signEddsaMpcV2RecoveryTx,
   SignedTransaction,
   SignTransactionOptions,
   TransactionExplanation,
@@ -630,6 +635,22 @@ export class Sui extends BaseCoin {
     return { txRequests: [txRequest] };
   }
 
+  /**
+   * Detects MPCv1 vs MPCv2 keycard format and returns typed signing material.
+   * Wrapped as a protected method so sinon can stub it in tests.
+   */
+  protected async getEddsaSigningMaterial(userKey: string, passphrase: string): Promise<EddsaSigningMaterial> {
+    return sharedGetEddsaSigningMaterial(userKey, passphrase, this.bitgo);
+  }
+
+  /**
+   * Runs the MPCv2 (MPS) recovery signing flow and returns the raw 64-byte Ed25519 signature.
+   * Wrapped as a protected method so sinon can stub it in tests.
+   */
+  protected async signSuiMpcV2Recovery(params: Parameters<typeof signEddsaMpcV2RecoveryTx>[0]): Promise<Buffer> {
+    return signEddsaMpcV2RecoveryTx(params);
+  }
+
   private async signRecoveryTransaction(
     txBuilder: TransactionBuilder,
     params: MPCRecoveryOptions,
@@ -641,44 +662,37 @@ export class Sui extends BaseCoin {
     const unsignedTx = isTokenTransaction
       ? ((await txBuilder.build()) as TokenTransferTransaction)
       : ((await txBuilder.build()) as TransferTransaction);
-    if (!params.userKey) {
-      throw new Error('missing userKey');
-    }
-    if (!params.backupKey) {
-      throw new Error('missing backupKey');
-    }
-    if (!params.walletPassphrase) {
-      throw new Error('missing wallet passphrase');
-    }
+    assert(params.userKey, 'missing userKey');
+    assert(params.backupKey, 'missing backupKey');
+    assert(params.walletPassphrase, 'missing wallet passphrase');
 
     // Clean up whitespace from entered values
     const userKey = params.userKey.replace(/\s/g, '');
     const backupKey = params.backupKey.replace(/\s/g, '');
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
 
-    // Decrypt private keys from KeyCard values
-    let userPrv: string;
-    try {
-      userPrv = await this.bitgo.decrypt({
-        input: userKey,
-        password: params.walletPassphrase,
+    const signingMaterial = await this.getEddsaSigningMaterial(userKey, params.walletPassphrase);
+
+    if (signingMaterial.version === 'v2') {
+      const signature = await this.signSuiMpcV2Recovery({
+        message: unsignedTx.signablePayload,
+        userKey: signingMaterial.encryptedUserKey,
+        backupKey,
+        walletPassphrase: params.walletPassphrase,
+        bitgoKey,
+        derivationPath,
+        bitgo: this.bitgo,
       });
-    } catch (e) {
-      throw new Error(`Error decrypting user keychain: ${e.message}`);
+      txBuilder.addSignature({ pub: derivedPublicKey }, signature);
+      return;
     }
+
     /** TODO BG-52419 Implement Codec for parsing */
-    const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+    const userSigningMaterial = JSON.parse(signingMaterial.userPrv) as EDDSAMethodTypes.UserSigningMaterial;
 
-    let backupPrv: string;
-    try {
-      backupPrv = await this.bitgo.decrypt({
-        input: backupKey,
-        password: params.walletPassphrase,
-      });
-    } catch (e) {
-      throw new Error(`Error decrypting backup keychain: ${e.message}`);
-    }
+    const backupPrv = await decryptKeychainPrivateKey(this.bitgo, { encryptedPrv: backupKey }, params.walletPassphrase);
+    assert(backupPrv, 'Error decrypting backup keychain: invalid password or corrupted key');
     const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-    /* ********************** END ***********************************/
 
     // add signature
     const signatureHex = await EDDSAMethods.getTSSSignature(
