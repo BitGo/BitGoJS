@@ -35,6 +35,9 @@ import {
   assertAmountTimesRateFitsUint64,
   decodeUnwrapCalldata,
   unwrapMethodId,
+  decodeFinalizeUnwrapCalldata,
+  finalizeUnwrapMethodId,
+  UINT64_MAX,
   decodeTransferData,
 } from '@bitgo/abstract-eth';
 import { bip32 } from '@bitgo/secp256k1';
@@ -161,6 +164,9 @@ export class Erc7984Token extends Eth {
     }
     if (params.txParams?.type === 'unwrap') {
       return this.verifyUnwrapTransaction(params);
+    }
+    if (params.txParams?.type === 'finalizeUnwrap') {
+      return this.verifyFinalizeUnwrapTransaction(params);
     }
     if (this.isConsolidationTransaction(params)) {
       return this.verifyConfidentialConsolidation(params);
@@ -367,6 +373,98 @@ export class Erc7984Token extends Eth {
 
     if (txJson.value !== undefined && txJson.value !== '0' && txJson.value !== 0) {
       throw new Error(`verifyUnwrapTransaction: expected transaction value 0 but got ${txJson.value}`);
+    }
+
+    return true;
+  }
+
+  /**
+   * Verifies FinalizeUnwrapERC7984 (unshield phase-2) transactions.
+   *
+   * TSS / direct shape:
+   *   tx.to   = wrapper contract
+   *   tx.data = finalizeUnwrap(requestId, cleartextAmount, decryptionProof)
+   *
+   * Multisig shape:
+   *   tx.to   = wallet contract
+   *   tx.data = sendMultiSig(wrapper, 0, finalizeUnwrap(...), ...)
+   */
+  private async verifyFinalizeUnwrapTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
+    const { txParams, txPrebuild } = params;
+
+    if (!txPrebuild?.txHex) {
+      throw new Error('verifyFinalizeUnwrapTransaction: missing txHex in txPrebuild');
+    }
+
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txPrebuild.txHex);
+    const tx = await txBuilder.build();
+    const txJson = tx.toJson();
+
+    let wrapperAddress: string;
+    let finalizeCalldata: string;
+
+    try {
+      if (txJson.data.toLowerCase().startsWith(sendMultisigMethodId.toLowerCase())) {
+        const decoded = decodeTransferData(txJson.data);
+        wrapperAddress = decoded.to;
+        finalizeCalldata = decoded.data as string;
+        if (decoded.amount !== '0') {
+          throw new Error(`expected sendMultiSig value 0 but got ${decoded.amount}`);
+        }
+      } else if (txJson.data.toLowerCase().startsWith(finalizeUnwrapMethodId.toLowerCase())) {
+        wrapperAddress = txJson.to as string;
+        finalizeCalldata = txJson.data;
+      } else {
+        throw new Error(`unexpected method ID ${txJson.data.slice(0, 10)}`);
+      }
+    } catch (e) {
+      throw new Error(
+        `verifyFinalizeUnwrapTransaction: failed to decode finalizeUnwrap calldata — ${(e as Error).message}`
+      );
+    }
+
+    if (wrapperAddress.toLowerCase() !== this.tokenContractAddress.toLowerCase()) {
+      throw new Error(
+        `verifyFinalizeUnwrapTransaction: wrapper address mismatch — expected ${this.tokenContractAddress}, got ${wrapperAddress}`
+      );
+    }
+
+    let requestId: string;
+    let cleartextAmount: string;
+    let decryptionProof: string;
+    try {
+      ({ requestId, cleartextAmount, decryptionProof } = decodeFinalizeUnwrapCalldata(finalizeCalldata));
+    } catch (e) {
+      throw new Error(
+        `verifyFinalizeUnwrapTransaction: invalid finalizeUnwrap inner calldata — ${(e as Error).message}`
+      );
+    }
+
+    if (!requestId || requestId === '0x' || /^0x0+$/.test(requestId)) {
+      throw new Error('verifyFinalizeUnwrapTransaction: requestId is missing or empty');
+    }
+    if (!Erc7984Token.isPositiveIntegerString(cleartextAmount)) {
+      throw new Error(
+        `verifyFinalizeUnwrapTransaction: cleartextAmount must be a positive integer string, got '${cleartextAmount}'`
+      );
+    }
+    if (BigInt(cleartextAmount) > UINT64_MAX) {
+      throw new Error('verifyFinalizeUnwrapTransaction: cleartextAmount exceeds uint64');
+    }
+    if (!decryptionProof || decryptionProof === '0x') {
+      throw new Error('verifyFinalizeUnwrapTransaction: decryptionProof is missing or empty');
+    }
+
+    const expectedAmount = txParams?.recipients?.[0]?.amount ?? txPrebuild.buildParams?.recipients?.[0]?.amount;
+    if (expectedAmount !== undefined && String(expectedAmount) !== cleartextAmount) {
+      throw new Error(
+        `verifyFinalizeUnwrapTransaction: amount mismatch — calldata has '${cleartextAmount}' but params have '${expectedAmount}'`
+      );
+    }
+
+    if (txJson.value !== undefined && txJson.value !== '0' && txJson.value !== 0) {
+      throw new Error(`verifyFinalizeUnwrapTransaction: expected transaction value 0 but got ${txJson.value}`);
     }
 
     return true;

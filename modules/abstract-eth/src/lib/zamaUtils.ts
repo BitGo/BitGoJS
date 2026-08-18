@@ -14,6 +14,7 @@ export const aclMulticallTypes = ['bytes[]'] as const;
 export const approveTypes = ['address', 'uint256'] as const;
 export const wrapTypes = ['address', 'uint256'] as const;
 export const unwrapTypes = ['address', 'address', 'bytes32', 'bytes'] as const;
+export const finalizeUnwrapTypes = ['bytes32', 'uint64', 'bytes'] as const;
 
 /** Max value for Solidity `uint64` / ERC-7984 confidential amount domain (`euint64`). */
 export const UINT64_MAX = 18446744073709551615n;
@@ -62,6 +63,15 @@ export const wrapMethodId = addHexPrefix(EthereumAbi.methodID('wrap', [...wrapTy
  * Burns confidential balance and requests release of underlying ERC-20 escrow.
  */
 export const unwrapMethodId = addHexPrefix(EthereumAbi.methodID('unwrap', [...unwrapTypes]).toString('hex'));
+
+/**
+ * Function selector for ERC-7984 finalizeUnwrap(bytes32,uint64,bytes)
+ * = keccak256('finalizeUnwrap(bytes32,uint64,bytes)')[0:4]
+ * Completes unshield after oracle decryption of the phase-1 unwrap request.
+ */
+export const finalizeUnwrapMethodId = addHexPrefix(
+  EthereumAbi.methodID('finalizeUnwrap', [...finalizeUnwrapTypes]).toString('hex')
+);
 
 // ---------------------------------------------------------------------------
 // Encoding functions
@@ -269,6 +279,84 @@ export function decodeUnwrapCalldata(data: string): {
     to: ethers.utils.getAddress(decoded[1]),
     encryptedAmount: ethers.utils.hexlify(decoded[2]),
     inputProof: ethers.utils.hexlify(decoded[3]),
+  };
+}
+
+/**
+ * Encodes ERC-7984 `finalizeUnwrap(requestId, cleartextAmount, decryptionProof)` calldata.
+ *
+ * Calldata is sent to the confidential wrapper to complete unshield phase-2 after
+ * the Zama oracle returns a cleartext amount and decryption proof for the unwrap
+ * request created in phase-1.
+ *
+ * Does not set gasLimit — WP owns gas.
+ *
+ * @param requestId         bytes32 unwrap request id (0x-prefixed)
+ * @param cleartextAmount   Decrypted confidential amount (uint64 domain); must be > 0
+ * @param decryptionProof   Oracle decryption proof bytes (0x-prefixed)
+ * @returns ABI-encoded calldata hex string (0x-prefixed)
+ * @throws {Error} if requestId, amount, or proof is invalid
+ */
+export function buildFinalizeUnwrapCalldata(
+  requestId: string,
+  cleartextAmount: string | number | bigint,
+  decryptionProof: string
+): string {
+  if (!ethers.utils.isHexString(requestId) || ethers.utils.hexDataLength(requestId) !== 32) {
+    throw new Error(`buildFinalizeUnwrapCalldata: requestId must be a 32-byte hex string, got '${requestId}'`);
+  }
+
+  let amountBn: bigint;
+  try {
+    amountBn = typeof cleartextAmount === 'bigint' ? cleartextAmount : BigInt(cleartextAmount);
+  } catch {
+    throw new Error(`buildFinalizeUnwrapCalldata: invalid cleartextAmount '${cleartextAmount}'`);
+  }
+  if (amountBn <= 0n) {
+    throw new Error('buildFinalizeUnwrapCalldata: cleartextAmount must be > 0');
+  }
+  if (amountBn > UINT64_MAX) {
+    throw new Error('buildFinalizeUnwrapCalldata: cleartextAmount exceeds uint64');
+  }
+
+  if (!ethers.utils.isHexString(decryptionProof) || ethers.utils.hexDataLength(decryptionProof) === 0) {
+    throw new Error(
+      `buildFinalizeUnwrapCalldata: decryptionProof must be a non-empty hex string, got '${decryptionProof}'`
+    );
+  }
+
+  const method = EthereumAbi.methodID('finalizeUnwrap', [...finalizeUnwrapTypes]);
+  const args = EthereumAbi.rawEncode(
+    [...finalizeUnwrapTypes],
+    [toBuffer(requestId), amountBn.toString(), toBuffer(decryptionProof)]
+  );
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Decodes ERC-7984 `finalizeUnwrap(requestId, cleartextAmount, decryptionProof)` calldata.
+ *
+ * @param data ABI-encoded finalizeUnwrap calldata (0x-prefixed)
+ */
+export function decodeFinalizeUnwrapCalldata(data: string): {
+  requestId: string;
+  cleartextAmount: string;
+  decryptionProof: string;
+} {
+  if (!data.toLowerCase().startsWith(finalizeUnwrapMethodId.toLowerCase())) {
+    throw new Error(
+      `decodeFinalizeUnwrapCalldata: expected finalizeUnwrap selector ${finalizeUnwrapMethodId}, got ${data.slice(
+        0,
+        10
+      )}`
+    );
+  }
+  const abiCoder = new ethers.utils.AbiCoder();
+  const decoded = abiCoder.decode([...finalizeUnwrapTypes], '0x' + data.slice(10));
+  return {
+    requestId: ethers.utils.hexlify(decoded[0]),
+    cleartextAmount: decoded[1].toString(),
+    decryptionProof: ethers.utils.hexlify(decoded[2]),
   };
 }
 

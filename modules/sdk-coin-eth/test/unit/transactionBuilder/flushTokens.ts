@@ -15,6 +15,7 @@ import {
   runFlushERC7984Tests,
   runWrapERC7984Tests,
   runUnwrapERC7984Tests,
+  runFinalizeUnwrapERC7984Tests,
 } from '@bitgo/abstract-eth/test/unit/transactionBuilder';
 /* eslint-enable import/no-internal-modules */
 
@@ -36,6 +37,11 @@ describe('ETH WrapERC7984 Tests (from abstract-eth)', () => {
 // Run the shared UnwrapERC7984 tests from abstract-eth
 describe('ETH UnwrapERC7984 Tests (from abstract-eth)', () => {
   runUnwrapERC7984Tests('eth', getBuilder);
+});
+
+// Run the shared FinalizeUnwrapERC7984 tests from abstract-eth
+describe('ETH FinalizeUnwrapERC7984 Tests (from abstract-eth)', () => {
+  runFinalizeUnwrapERC7984Tests('eth', getBuilder);
 });
 
 describe('Eth Transaction builder flush tokens (ETH-specific)', function () {
