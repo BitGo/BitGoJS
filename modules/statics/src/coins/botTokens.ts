@@ -268,6 +268,22 @@ export const botTokens = [
     undefined,
     Networks.test.hoodi
   ),
+  AccountCtors.terc20(
+    '62c5d357-b508-4748-9a07-878d3414b472',
+    'hteth:stzamadfns',
+    'Mock Dfns Staked ZAMA',
+    20,
+    '0x5278ab58212949c60a8eeef1e3cbb7bc6588d7b9',
+    'hteth:stzamadfns' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
@@ -3117,6 +3133,48 @@ export const botTokens = [
       'custody-bitgo-germany' as CoinFeature,
       'custody-bitgo-korea' as CoinFeature,
     ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    'd46c2e2c-1a8a-4d6d-a9a1-b70b64963562',
+    'eth:rif',
+    'Rootstock Infrastructure Framework',
+    18,
+    '0x01b603be3d545f096015741e6503440282bf45fb',
+    'eth:rif' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.solToken(
+    'e1bcb46d-ac8f-40b1-968a-142e5361e652',
+    'sol:usds',
+    'USDS',
+    6,
+    'USDSwr9ApdHk5bvJKMjzff41FfuX8bSxdKcR81vTwcA',
+    'USDSwr9ApdHk5bvJKMjzff41FfuX8bSxdKcR81vTwcA',
+    'sol:usds' as unknown as UnderlyingAsset,
+    getTokenFeatures('sol'),
+    AccountCtors.ProgramID.TokenProgramId,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '7e91a1e1-7c15-4743-8981-a135274d872d',
+    'eth:fonq',
+    'FONQ',
+    18,
+    '0x4cff203005b24aa1083b35063d684a76b1080f22',
+    'eth:fonq' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth'),
     undefined,
     undefined,
     undefined
