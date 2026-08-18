@@ -37,10 +37,13 @@ import {
   AtaInit,
   AtaRecoverNested,
   Burn,
+  CustomInstruction,
   InstructionParams,
   Memo,
   MintTo,
   Nonce,
+  SetComputeUnitLimit,
+  SetPriorityFee,
   StakingActivate,
   StakingAuthorize,
   StakingDeactivate,
@@ -49,9 +52,6 @@ import {
   TokenTransfer,
   Transfer,
   WalletInit,
-  SetComputeUnitLimit,
-  SetPriorityFee,
-  CustomInstruction,
   Approve,
 } from './iface';
 import { getInstructionType } from './utils';
@@ -97,6 +97,37 @@ export function instructionParamsFactory(
       return parseCustomInstructions(instructions, instructionMetadata);
     default:
       throw new NotSupported('Invalid transaction, transaction type not supported: ' + type);
+  }
+}
+
+/**
+ * Parse a confidential transfer instruction from raw instruction data and metadata.
+ *
+ * @param {TransactionInstruction} instruction - the solana instruction
+ * @param {InstructionParams} metadata - the stored instruction metadata
+ * @returns {InstructionParams | undefined} parsed params or undefined if not a confidential transfer instruction
+ */
+function parseConfidentialTransferInstruction(
+  instruction: TransactionInstruction,
+  metadata?: InstructionParams
+): InstructionParams | undefined {
+  if (!metadata) {
+    return undefined;
+  }
+
+  switch (metadata.type) {
+    case InstructionBuilderTypes.ConfigureConfidentialTransferAccount:
+    case InstructionBuilderTypes.ConfidentialMint:
+    case InstructionBuilderTypes.CreateRecordAccount:
+    case InstructionBuilderTypes.WriteRecordData:
+    case InstructionBuilderTypes.VerifyEqualityProof:
+    case InstructionBuilderTypes.VerifyValidityProof:
+    case InstructionBuilderTypes.VerifyRangeProof:
+    case InstructionBuilderTypes.CloseRecordAccount:
+    case InstructionBuilderTypes.CloseContextState:
+      return metadata;
+    default:
+      return undefined;
   }
 }
 
@@ -1263,11 +1294,19 @@ function parseStakingAuthorizeRawInstructions(instructions: TransactionInstructi
 function parseCustomInstructions(
   instructions: TransactionInstruction[],
   instructionMetadata?: InstructionParams[]
-): CustomInstruction[] {
-  const instructionData: CustomInstruction[] = [];
+): InstructionParams[] {
+  const instructionData: InstructionParams[] = [];
 
   for (let i = 0; i < instructions.length; i++) {
     const instruction = instructions[i];
+
+    // Prefer stored metadata for confidential transfer instructions, which cannot be
+    // reliably decoded by @solana/spl-token / @solana/web3.js.
+    const confidentialMetadata = parseConfidentialTransferInstruction(instruction, instructionMetadata?.[i]);
+    if (confidentialMetadata) {
+      instructionData.push(confidentialMetadata);
+      continue;
+    }
 
     // Check if we have metadata for this instruction position
     if (

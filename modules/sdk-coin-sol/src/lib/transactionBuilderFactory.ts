@@ -2,6 +2,7 @@ import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { AtaInitializationBuilder } from './ataInitializationBuilder';
 import { CloseAtaBuilder } from './closeAtaBuilder';
+import { ConfidentialMintBuilder } from './confidentialMintBuilder';
 import { RecoverNestedAtaBuilder } from './recoverNestedAtaBuilder';
 import { CustomInstructionBuilder } from './customInstructionBuilder';
 import { StakingActivateBuilder } from './stakingActivateBuilder';
@@ -191,6 +192,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getCustomInstructionBuilder(tx?: Transaction): CustomInstructionBuilder {
     return this.initializeBuilder(tx, new CustomInstructionBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns the builder to create a Token-2022 confidential mint transaction using the
+   * proof-account approach (create-record → write → verify × 3 → confidentialMint).
+   */
+  getConfidentialMintBuilder(tx?: Transaction): ConfidentialMintBuilder {
+    return this.initializeBuilder(tx, new ConfidentialMintBuilder(this._coinConfig));
   }
 
   /**

@@ -62,6 +62,7 @@
     "@bitgo/sdk-lib-mpc": "^10.16.0",
     "@bitgo/statics": "^59.6.0",
     "@bitgo/wasm-solana": "^2.6.0",
+    "@solana/buffer-layout": "^4.0.1",
     "@solana/spl-stake-pool": "1.1.8",
     "@solana/spl-token": "0.4.9",
     "@solana/web3.js": "1.92.1",
