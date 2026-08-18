@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@26.1.2...@bitgo/sdk-coin-eth@26.2.0) (2026-08-18)
+
+
+### Features
+
+* **abstract-eth:** add buildFinalizeUnwrapCalldata and FinalizeUnwrapERC7984 ([26d219a](https://github.com/BitGo/BitGoJS/commit/26d219ab56fab652e26c19e16e8e8b03e18b5757))
+* **abstract-eth:** add buildUnwrapCalldata and UnwrapERC7984 explain/verify ([28163b1](https://github.com/BitGo/BitGoJS/commit/28163b10f7defcb144b20e4343db6eea90b56bc3))
+* **abstract-eth:** add buildWrapCalldata and WrapERC7984 explain/verify ([15dbe7a](https://github.com/BitGo/BitGoJS/commit/15dbe7a57d78c54b007454a82bc54ec01925e414))
+
+
+
+
+
 ## [26.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@26.1.1...@bitgo/sdk-coin-eth@26.1.2) (2026-08-14)
 
 

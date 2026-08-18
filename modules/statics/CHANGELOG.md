@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.6.0...@bitgo/statics@59.7.0) (2026-08-18)
+
+
+### Bug Fixes
+
+* **statics:** replace dead algorand testnet explorer url with pera ([4b86dfc](https://github.com/BitGo/BitGoJS/commit/4b86dfc392ed46be7cdcce640884eea094a5de76))
+* **statics:** update ofc ticket to ofcsepeth ([4376bce](https://github.com/BitGo/BitGoJS/commit/4376bce5910642a165fa73b9278446a7146e06ea))
+
+
+### Features
+
+* add new tokens from AMS API ([f99363d](https://github.com/BitGo/BitGoJS/commit/f99363d8e21c014cceed375f8c15d7b4dcc7f2f4))
+* add new tokens from AMS API ([505c5e8](https://github.com/BitGo/BitGoJS/commit/505c5e8d134314a4b55fb3fcb76310225a3309d6))
+* add new tokens from AMS API ([f02b14a](https://github.com/BitGo/BitGoJS/commit/f02b14aed453cf32c33abf70aa61089ccbaa8e09))
+* onboard hoodeth vanguard token and ofc ([90cfd92](https://github.com/BitGo/BitGoJS/commit/90cfd92dcd54e94d7810dc86dae6e74c80ecf127))
+* **statics:** add dynamic Canton token construction ([357ab26](https://github.com/BitGo/BitGoJS/commit/357ab26a45b8ace5dc3a0fe736bdfa6c2cf811fb))
+* **statics:** add ofctgasevm:usd1 and ofctgasevm:stgusd1 testnet OFC coins ([421b23f](https://github.com/BitGo/BitGoJS/commit/421b23f85d886c381130e0ab12565756e4784326))
+
+
+
+
+
 # [59.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.5.0...@bitgo/statics@59.6.0) (2026-08-14)
 
 

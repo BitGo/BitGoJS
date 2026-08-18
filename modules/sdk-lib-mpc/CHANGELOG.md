@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.16.0...@bitgo/sdk-lib-mpc@10.17.0) (2026-08-18)
+
+
+### Features
+
+* **sdk-lib-mpc:** add eddsa retrofit data type and dkg retrofit constructor ([06cf112](https://github.com/BitGo/BitGoJS/commit/06cf112f2f2bfc2d2944b2d8d78798983ba3fb16))
+
+
+
+
+
 # [10.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.15.0...@bitgo/sdk-lib-mpc@10.16.0) (2026-08-14)
 
 
