@@ -16,6 +16,7 @@ import {
   verifyMPCWalletAddress,
   UnexpectedAddressError,
   SignableTransaction,
+  ECDSAUtils,
 } from '@bitgo/sdk-core';
 import { coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { createHash, Hash } from 'crypto';
@@ -24,6 +25,7 @@ import { StarknetTransactionExplanation, TransactionHexParams, TssVerifyStarknet
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
 import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
+import { recoverStarknetWallet } from './lib/recovery';
 
 export class Starknet extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -192,4 +194,31 @@ export class Starknet extends BaseCoin {
     }
     auditEcdsaPrivateKey(prv as string, publicKey as string);
   }
+
+  public async signRecoveryTransaction(
+    messageHash: Buffer,
+    userKeyShare: Buffer,
+    backupKeyShare: Buffer,
+    commonKeyChain: string
+  ): Promise<{ r: string; s: string; recid: number }> {
+    return ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);
+  }
+
+  /** @inheritDoc */
+  async recover(params: StarknetRecoveryOptions): Promise<any> {
+    return recoverStarknetWallet(this, params);
+  }
+}
+
+export interface StarknetRecoveryOptions {
+  userKey?: string;
+  backupKey?: string;
+  bitgoKey?: string;
+  walletPassphrase?: string;
+  recoveryDestination: string;
+  nodeUrl?: string;
+  starknetNodeUrl?: string;
+  tokenContractAddress?: string;
+  index?: number;
+  fee?: string;
 }
