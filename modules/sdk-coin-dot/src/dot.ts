@@ -1,3 +1,4 @@
+import assert from 'assert';
 import * as _ from 'lodash';
 import {
   BaseCoin,
@@ -30,6 +31,10 @@ import {
   AuditDecryptedKeyParams,
   verifyEddsaTssWalletAddress,
   TxIntentMismatchRecipientError,
+  getEddsaSigningMaterial as sharedGetEddsaSigningMaterial,
+  signEddsaMpcV2RecoveryTx,
+  EddsaSigningMaterial,
+  decryptKeychainPrivateKey,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo/statics';
 import {
@@ -393,53 +398,21 @@ export class Dot extends BaseCoin {
 
     let serializedTx = unsignedTransaction.toBroadcastFormat();
     if (!isUnsignedSweep) {
-      if (!params.userKey) {
-        throw new Error('missing userKey');
-      }
-      if (!params.backupKey) {
-        throw new Error('missing backupKey');
-      }
-      if (!params.walletPassphrase) {
-        throw new Error('missing wallet passphrase');
-      }
+      assert(params.userKey, 'missing userKey');
+      assert(params.backupKey, 'missing backupKey');
+      assert(params.walletPassphrase, 'missing wallet passphrase');
 
-      // Clean up whitespace from entered values
-      const userKey = params.userKey.replace(/\s/g, '');
-      const backupKey = params.backupKey.replace(/\s/g, '');
-
-      // Decrypt private keys from KeyCard values
-      let userPrv;
-      try {
-        userPrv = await this.bitgo.decrypt({
-          input: userKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting user keychain: ${e.message}`);
-      }
-      /** TODO BG-52419 Implement Codec for parsing */
-      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
-
-      let backupPrv;
-      try {
-        backupPrv = await this.bitgo.decrypt({
-          input: backupKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting backup keychain: ${e.message}`);
-      }
-      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-
-      // add signature
-      const signatureHex = await EDDSAMethods.getTSSSignature(
-        userSigningMaterial,
-        backupSigningMaterial,
+      const signingMaterial = await this.getEddsaSigningMaterial(params.userKey, params.walletPassphrase);
+      await this.addRecoverySignature(
+        signingMaterial,
+        params.backupKey.replace(/\s/g, ''),
+        params.walletPassphrase,
+        txnBuilder,
+        accountId,
+        unsignedTransaction,
         currPath,
-        unsignedTransaction
+        bitgoKey
       );
-      const dotKeyPair = new DotKeyPair({ pub: accountId });
-      txnBuilder.addSignature({ pub: dotKeyPair.getKeys().pub }, signatureHex);
       const signedTransaction = await txnBuilder.build();
       serializedTx = signedTransaction.toBroadcastFormat();
     } else {
@@ -740,6 +713,67 @@ export class Dot extends BaseCoin {
 
   private getBuilder(): TransactionBuilderFactory {
     return new TransactionBuilderFactory(coins.get(this.getChain()));
+  }
+
+  /**
+   * Detects whether a keycard's decrypted plaintext is MPCv1 JSON or MPCv2 CBOR.
+   * Unsigned sweeps (no walletPassphrase) have no keycard to inspect and default to MPCv1.
+   */
+  protected async getEddsaSigningMaterial(userKey: string, walletPassphrase: string): Promise<EddsaSigningMaterial> {
+    return sharedGetEddsaSigningMaterial(userKey.replace(/\s/g, ''), walletPassphrase, this.bitgo);
+  }
+
+  protected async signDotMpcV2Recovery(params: Parameters<typeof signEddsaMpcV2RecoveryTx>[0]): Promise<Buffer> {
+    return signEddsaMpcV2RecoveryTx(params);
+  }
+
+  /**
+   * Adds an MPCv1 or MPCv2 signature to a DOT transaction builder.
+   *
+   * Transaction#constructSignedPayload already prepends the 0x00 type-tag (the Substrate
+   * MultiSignature enum discriminant for Ed25519) to whatever signature buffer is passed to
+   * addSignature, so both paths here hand off the raw 64-byte signature untouched.
+   */
+  private async addRecoverySignature(
+    signingMaterial: EddsaSigningMaterial,
+    backupKey: string,
+    walletPassphrase: string,
+    txnBuilder: NativeTransferBuilder,
+    accountId: string,
+    unsignedTransaction: Transaction,
+    currPath: string,
+    bitgoKey: string
+  ): Promise<void> {
+    const dotKeyPair = new DotKeyPair({ pub: accountId });
+
+    if (signingMaterial.version === 'v2') {
+      const rawSig = await this.signDotMpcV2Recovery({
+        message: unsignedTransaction.signablePayload,
+        userKey: signingMaterial.encryptedUserKey,
+        backupKey,
+        walletPassphrase,
+        bitgoKey,
+        derivationPath: currPath,
+        bitgo: this.bitgo,
+      });
+      txnBuilder.addSignature({ pub: dotKeyPair.getKeys().pub }, rawSig);
+    } else {
+      /** TODO BG-52419 Implement Codec for parsing */
+      const userSigningMaterial = JSON.parse(signingMaterial.userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+      const backupPrv = await decryptKeychainPrivateKey(this.bitgo, { encryptedPrv: backupKey }, walletPassphrase);
+      if (!backupPrv) {
+        throw new Error('Error decrypting backup keychain: invalid password or corrupted key');
+      }
+      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+
+      const signatureHex = await EDDSAMethods.getTSSSignature(
+        userSigningMaterial,
+        backupSigningMaterial,
+        currPath,
+        unsignedTransaction
+      );
+      txnBuilder.addSignature({ pub: dotKeyPair.getKeys().pub }, signatureHex);
+    }
   }
 
   /** @inheritDoc */
