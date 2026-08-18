@@ -188,3 +188,14 @@ export interface UnwrapERC7984Data {
   /** Encryption input proof */
   inputProof: string;
 }
+
+export interface FinalizeUnwrapERC7984Data {
+  /** Confidential wrapper contract (tx.to) */
+  wrapperAddress: string;
+  /** bytes32 unwrap request id from phase-1 */
+  requestId: string;
+  /** Cleartext confidential amount released (uint64 domain, decimal string) */
+  cleartextAmount: string;
+  /** Zama decryption proof bytes */
+  decryptionProof: string;
+}

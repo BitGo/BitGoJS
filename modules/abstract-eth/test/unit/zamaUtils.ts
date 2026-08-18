@@ -6,6 +6,8 @@ import {
   decodeWrapCalldata,
   buildUnwrapCalldata,
   decodeUnwrapCalldata,
+  buildFinalizeUnwrapCalldata,
+  decodeFinalizeUnwrapCalldata,
   buildDelegationCalldata,
   buildMulticallDelegationCalldata,
   buildConfidentialTransferByHandleCalldata,
@@ -16,6 +18,7 @@ import {
   wrapMethodId,
   UINT64_MAX,
   unwrapMethodId,
+  finalizeUnwrapMethodId,
   delegateForUserDecryptionMethodId,
   aclMulticallMethodId,
   callFromParentMethodId,
@@ -66,6 +69,10 @@ describe('Zama Utils', () => {
       unwrapMethodId.should.equal('0x5bf4ef06');
     });
 
+    it('should have correct selector for finalizeUnwrap(bytes32,uint64,bytes)', () => {
+      finalizeUnwrapMethodId.should.equal('0x5bb67a05');
+    });
+
     it('method IDs should all be distinct', () => {
       const ids = new Set([
         delegateForUserDecryptionMethodId,
@@ -74,8 +81,9 @@ describe('Zama Utils', () => {
         approveMethodId,
         wrapMethodId,
         unwrapMethodId,
+        finalizeUnwrapMethodId,
       ]);
-      ids.size.should.equal(6);
+      ids.size.should.equal(7);
     });
   });
 
@@ -293,6 +301,60 @@ describe('Zama Utils', () => {
 
       it('should reject an empty inputProof', () => {
         (() => buildUnwrapCalldata(FROM, TO, ENCRYPTED_AMOUNT, '0x')).should.throw(/inputProof must be a non-empty/);
+      });
+    });
+  });
+
+  describe('buildFinalizeUnwrapCalldata', () => {
+    const REQUEST_ID = '0x' + '11'.repeat(32);
+    const CLEARTEXT_AMOUNT = '1000000';
+    const DECRYPTION_PROOF = '0x' + 'ee'.repeat(64);
+
+    describe('output format', () => {
+      it('should produce a 0x-prefixed hex string starting with finalizeUnwrap selector', () => {
+        const calldata = buildFinalizeUnwrapCalldata(REQUEST_ID, CLEARTEXT_AMOUNT, DECRYPTION_PROOF);
+        calldata.should.be.a.String();
+        calldata.should.startWith(finalizeUnwrapMethodId);
+        calldata.slice(0, 10).should.equal('0x5bb67a05');
+      });
+
+      it('should round-trip through decodeFinalizeUnwrapCalldata', () => {
+        const calldata = buildFinalizeUnwrapCalldata(REQUEST_ID, CLEARTEXT_AMOUNT, DECRYPTION_PROOF);
+        const decoded = decodeFinalizeUnwrapCalldata(calldata);
+        decoded.requestId.should.equal(REQUEST_ID);
+        decoded.cleartextAmount.should.equal(CLEARTEXT_AMOUNT);
+        decoded.decryptionProof.should.equal(DECRYPTION_PROOF);
+      });
+    });
+
+    describe('validation', () => {
+      it('should reject a non-32-byte requestId', () => {
+        (() => buildFinalizeUnwrapCalldata('0xabcd', CLEARTEXT_AMOUNT, DECRYPTION_PROOF)).should.throw(
+          /requestId must be a 32-byte/
+        );
+      });
+
+      it('should reject cleartextAmount of 0', () => {
+        (() => buildFinalizeUnwrapCalldata(REQUEST_ID, '0', DECRYPTION_PROOF)).should.throw(
+          /cleartextAmount must be > 0/
+        );
+      });
+
+      it('should reject cleartextAmount exceeding uint64', () => {
+        (() => buildFinalizeUnwrapCalldata(REQUEST_ID, (UINT64_MAX + 1n).toString(), DECRYPTION_PROOF)).should.throw(
+          /cleartextAmount exceeds uint64/
+        );
+      });
+
+      it('should accept cleartextAmount equal to UINT64_MAX', () => {
+        const calldata = buildFinalizeUnwrapCalldata(REQUEST_ID, UINT64_MAX.toString(), DECRYPTION_PROOF);
+        decodeFinalizeUnwrapCalldata(calldata).cleartextAmount.should.equal(UINT64_MAX.toString());
+      });
+
+      it('should reject an empty decryptionProof', () => {
+        (() => buildFinalizeUnwrapCalldata(REQUEST_ID, CLEARTEXT_AMOUNT, '0x')).should.throw(
+          /decryptionProof must be a non-empty/
+        );
       });
     });
   });

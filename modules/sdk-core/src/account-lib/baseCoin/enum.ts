@@ -165,6 +165,8 @@ export enum TransactionType {
   WrapERC7984,
   // Unwrap (unshield) an ERC-7984 confidential token via unwrap(from, to, encryptedAmount, inputProof)
   UnwrapERC7984,
+  // Finalize unwrap (unshield phase-2) via finalizeUnwrap(requestId, cleartextAmount, decryptionProof)
+  FinalizeUnwrapERC7984,
 }
 
 /**

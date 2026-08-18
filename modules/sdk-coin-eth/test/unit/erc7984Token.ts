@@ -19,6 +19,7 @@ import {
   buildFlushERC7984ForwarderTokenCalldata,
   buildWrapCalldata,
   buildUnwrapCalldata,
+  buildFinalizeUnwrapCalldata,
   sendMultiSigData,
   wrapInCallFromParent,
   decodeTokenAddressesFromDelegationCalldata,
@@ -1722,6 +1723,146 @@ describe('verifyTransaction – UnwrapERC7984', function () {
         wallet,
       })
       .should.be.rejectedWith(/unwrap to must equal wallet base address/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// verifyTransaction – FinalizeUnwrapERC7984 (unshield phase-2)
+// ---------------------------------------------------------------------------
+
+const FINALIZE_REQUEST_ID = '0x' + '11'.repeat(32);
+const FINALIZE_CLEARTEXT_AMOUNT = '1000000';
+const FINALIZE_DECRYPTION_PROOF = '0x' + 'ee'.repeat(64);
+
+async function buildDirectFinalizeUnwrapTxHex(
+  tokenAddress: string,
+  requestId: string,
+  cleartextAmount: string,
+  decryptionProof: string
+): Promise<string> {
+  const txBuilder = getBuilder('hteth') as TransactionBuilder;
+  txBuilder.fee({ fee: '1000000000', gasLimit: '200000' });
+  txBuilder.counter(1);
+  txBuilder.type(TransactionType.FinalizeUnwrapERC7984);
+  txBuilder.contract(tokenAddress);
+  txBuilder.finalizeUnwrapRequestId(requestId);
+  txBuilder.finalizeUnwrapCleartextAmount(cleartextAmount);
+  txBuilder.finalizeUnwrapDecryptionProof(decryptionProof);
+  const tx = await txBuilder.build();
+  return tx.toBroadcastFormat();
+}
+
+async function buildMultisigFinalizeUnwrapTxHex(
+  tokenAddress: string,
+  requestId: string,
+  cleartextAmount: string,
+  decryptionProof: string
+): Promise<string> {
+  const finalizeCalldata = buildFinalizeUnwrapCalldata(requestId, cleartextAmount, decryptionProof);
+  const sendData = sendMultiSigData(
+    tokenAddress,
+    '0',
+    finalizeCalldata,
+    Math.floor(Date.now() / 1000) + 3600,
+    14,
+    DUMMY_MULTISIG_SIGNATURE
+  );
+
+  const txBuilder = getBuilder('hteth') as TransactionBuilder;
+  txBuilder.fee({ fee: '1000000000', gasLimit: '200000' });
+  txBuilder.counter(1);
+  txBuilder.type(TransactionType.ContractCall);
+  txBuilder.contract(MULTISIG_WALLET_CONTRACT);
+  txBuilder.data(sendData);
+  const tx = await txBuilder.build();
+  return tx.toBroadcastFormat();
+}
+
+describe('verifyTransaction – FinalizeUnwrapERC7984', function () {
+  let bitgo: TestBitGoAPI;
+  let coin: Erc7984Token;
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.initializeTestVars();
+    register(bitgo);
+    coin = bitgo.coin('hteth:ctest1') as Erc7984Token;
+  });
+
+  it('should verify a valid direct finalizeUnwrap tx (TSS shape)', async function () {
+    const txHex = await buildDirectFinalizeUnwrapTxHex(
+      CTEST1_TOKEN_ADDRESS,
+      FINALIZE_REQUEST_ID,
+      FINALIZE_CLEARTEXT_AMOUNT,
+      FINALIZE_DECRYPTION_PROOF
+    );
+
+    const result = await coin.verifyTransaction({
+      txParams: {
+        type: 'finalizeUnwrap',
+        recipients: [{ address: UNWRAP_BASE_ADDRESS, amount: FINALIZE_CLEARTEXT_AMOUNT }],
+      } as any,
+      txPrebuild: { txHex } as any,
+      wallet: {} as any,
+    });
+    result.should.equal(true);
+  });
+
+  it('should verify a valid multisig finalizeUnwrap tx (sendMultiSig → finalizeUnwrap)', async function () {
+    const txHex = await buildMultisigFinalizeUnwrapTxHex(
+      CTEST1_TOKEN_ADDRESS,
+      FINALIZE_REQUEST_ID,
+      FINALIZE_CLEARTEXT_AMOUNT,
+      FINALIZE_DECRYPTION_PROOF
+    );
+
+    const result = await coin.verifyTransaction({
+      txParams: {
+        type: 'finalizeUnwrap',
+        recipients: [{ address: UNWRAP_BASE_ADDRESS, amount: FINALIZE_CLEARTEXT_AMOUNT }],
+      } as any,
+      txPrebuild: { txHex } as any,
+      wallet: {} as any,
+    });
+    result.should.equal(true);
+  });
+
+  it('should reject finalizeUnwrap when amount mismatches recipients', async function () {
+    const txHex = await buildDirectFinalizeUnwrapTxHex(
+      CTEST1_TOKEN_ADDRESS,
+      FINALIZE_REQUEST_ID,
+      FINALIZE_CLEARTEXT_AMOUNT,
+      FINALIZE_DECRYPTION_PROOF
+    );
+
+    await coin
+      .verifyTransaction({
+        txParams: {
+          type: 'finalizeUnwrap',
+          recipients: [{ address: UNWRAP_BASE_ADDRESS, amount: '999' }],
+        } as any,
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/amount mismatch/);
+  });
+
+  it('should reject finalizeUnwrap when wrapper address mismatches token', async function () {
+    const wrongWrapper = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    const txHex = await buildDirectFinalizeUnwrapTxHex(
+      wrongWrapper,
+      FINALIZE_REQUEST_ID,
+      FINALIZE_CLEARTEXT_AMOUNT,
+      FINALIZE_DECRYPTION_PROOF
+    );
+
+    await coin
+      .verifyTransaction({
+        txParams: { type: 'finalizeUnwrap' } as any,
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/wrapper address mismatch/);
   });
 });
 
