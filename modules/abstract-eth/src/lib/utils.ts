@@ -43,6 +43,7 @@ import {
   WalletInitializationData,
   ForwarderInitializationData,
   WrapERC7984Data,
+  UnwrapERC7984Data,
 } from './iface';
 import { KeyPair } from './keyPair';
 import {
@@ -95,8 +96,10 @@ import {
   callFromParentTypes,
   decodeFlushERC7984ForwarderTokenCalldata,
   decodeWrapCalldata,
+  decodeUnwrapCalldata,
   delegateForUserDecryptionMethodId,
   wrapMethodId,
+  unwrapMethodId,
 } from './zamaUtils';
 
 /**
@@ -849,6 +852,23 @@ export function decodeWrapERC7984Data(data: string, to: string): WrapERC7984Data
 }
 
 /**
+ * Decode an UnwrapERC7984 transaction's calldata into its component parts.
+ *
+ * @param data The unwrap(address,address,bytes32,bytes) calldata hex
+ * @param to   The transaction `to` field (wrapper contract address)
+ */
+export function decodeUnwrapERC7984Data(data: string, to: string): UnwrapERC7984Data {
+  const decoded = decodeUnwrapCalldata(data);
+  return {
+    wrapperAddress: to,
+    from: decoded.from,
+    to: decoded.to,
+    encryptedAmount: decoded.encryptedAmount,
+    inputProof: decoded.inputProof,
+  };
+}
+
+/**
  * Classify the given transaction data based as a transaction type.
  * ETH transactions are defined by the first 8 bytes of the transaction data, also known as the method id
  *
@@ -934,6 +954,7 @@ const transactionTypesMap = {
   // explicitly when building from a known delegation template.
   [delegateForUserDecryptionMethodId]: TransactionType.DecryptionDelegation,
   [wrapMethodId]: TransactionType.WrapERC7984,
+  [unwrapMethodId]: TransactionType.UnwrapERC7984,
 };
 
 /**

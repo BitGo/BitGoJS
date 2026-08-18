@@ -33,6 +33,8 @@ import {
   decodeWrapCalldata,
   wrapMethodId,
   assertAmountTimesRateFitsUint64,
+  decodeUnwrapCalldata,
+  unwrapMethodId,
   decodeTransferData,
 } from '@bitgo/abstract-eth';
 import { bip32 } from '@bitgo/secp256k1';
@@ -157,6 +159,9 @@ export class Erc7984Token extends Eth {
     if (params.txParams?.type === 'wrap') {
       return this.verifyWrapTransaction(params);
     }
+    if (params.txParams?.type === 'unwrap') {
+      return this.verifyUnwrapTransaction(params);
+    }
     if (this.isConsolidationTransaction(params)) {
       return this.verifyConfidentialConsolidation(params);
     }
@@ -271,6 +276,97 @@ export class Erc7984Token extends Eth {
 
     if (txJson.value !== undefined && txJson.value !== '0' && txJson.value !== 0) {
       throw new Error(`verifyWrapTransaction: expected transaction value 0 but got ${txJson.value}`);
+    }
+
+    return true;
+  }
+
+  /**
+   * Verifies UnwrapERC7984 (unshield phase-1) transactions.
+   *
+   * TSS / direct shape:
+   *   tx.to   = wrapper contract
+   *   tx.data = unwrap(base, base, encryptedAmount, inputProof)
+   *
+   * Multisig shape:
+   *   tx.to   = wallet contract
+   *   tx.data = sendMultiSig(wrapper, 0, unwrap(base, base, ...), ...)
+   *
+   * v1 is self-directed only: from == to == wallet base address.
+   */
+  private async verifyUnwrapTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
+    const { txPrebuild, wallet } = params;
+
+    if (!txPrebuild?.txHex) {
+      throw new Error('verifyUnwrapTransaction: missing txHex in txPrebuild');
+    }
+
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txPrebuild.txHex);
+    const tx = await txBuilder.build();
+    const txJson = tx.toJson();
+
+    let wrapperAddress: string;
+    let unwrapCalldata: string;
+
+    try {
+      if (txJson.data.toLowerCase().startsWith(sendMultisigMethodId.toLowerCase())) {
+        const decoded = decodeTransferData(txJson.data);
+        wrapperAddress = decoded.to;
+        unwrapCalldata = decoded.data as string;
+        if (decoded.amount !== '0') {
+          throw new Error(`expected sendMultiSig value 0 but got ${decoded.amount}`);
+        }
+      } else if (txJson.data.toLowerCase().startsWith(unwrapMethodId.toLowerCase())) {
+        wrapperAddress = txJson.to as string;
+        unwrapCalldata = txJson.data;
+      } else {
+        throw new Error(`unexpected method ID ${txJson.data.slice(0, 10)}`);
+      }
+    } catch (e) {
+      throw new Error(`verifyUnwrapTransaction: failed to decode unwrap calldata — ${(e as Error).message}`);
+    }
+
+    if (wrapperAddress.toLowerCase() !== this.tokenContractAddress.toLowerCase()) {
+      throw new Error(
+        `verifyUnwrapTransaction: wrapper address mismatch — expected ${this.tokenContractAddress}, got ${wrapperAddress}`
+      );
+    }
+
+    let from: string;
+    let to: string;
+    let encryptedAmount: string;
+    let inputProof: string;
+    try {
+      ({ from, to, encryptedAmount, inputProof } = decodeUnwrapCalldata(unwrapCalldata));
+    } catch (e) {
+      throw new Error(`verifyUnwrapTransaction: invalid unwrap inner calldata — ${(e as Error).message}`);
+    }
+
+    const baseAddress = this.getWalletBaseAddress(wallet);
+    if (!baseAddress) {
+      throw new Error('verifyUnwrapTransaction: unable to determine wallet base address');
+    }
+    if (from.toLowerCase() !== baseAddress.toLowerCase()) {
+      throw new Error(
+        `verifyUnwrapTransaction: unwrap from must equal wallet base address — expected ${baseAddress}, got ${from}`
+      );
+    }
+    if (to.toLowerCase() !== baseAddress.toLowerCase()) {
+      throw new Error(
+        `verifyUnwrapTransaction: unwrap to must equal wallet base address — expected ${baseAddress}, got ${to}`
+      );
+    }
+
+    if (!encryptedAmount || encryptedAmount === '0x' || /^0x0+$/.test(encryptedAmount)) {
+      throw new Error('verifyUnwrapTransaction: encryptedAmount is missing or empty');
+    }
+    if (!inputProof || inputProof === '0x') {
+      throw new Error('verifyUnwrapTransaction: inputProof is missing or empty');
+    }
+
+    if (txJson.value !== undefined && txJson.value !== '0' && txJson.value !== 0) {
+      throw new Error(`verifyUnwrapTransaction: expected transaction value 0 but got ${txJson.value}`);
     }
 
     return true;

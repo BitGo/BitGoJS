@@ -175,3 +175,16 @@ export interface WrapERC7984Data {
   /** Underlying amount wrapped (base units, decimal string) */
   amount: string;
 }
+
+export interface UnwrapERC7984Data {
+  /** Confidential wrapper contract (tx.to) */
+  wrapperAddress: string;
+  /** Source of confidential balance */
+  from: string;
+  /** Recipient of released underlying ERC-20 */
+  to: string;
+  /** bytes32 encrypted amount handle */
+  encryptedAmount: string;
+  /** Encryption input proof */
+  inputProof: string;
+}

@@ -163,6 +163,8 @@ export enum TransactionType {
   FlushERC7984ForwarderToken,
   // Wrap (shield) an underlying ERC-20 into an ERC-7984 confidential token via wrap(to, amount)
   WrapERC7984,
+  // Unwrap (unshield) an ERC-7984 confidential token via unwrap(from, to, encryptedAmount, inputProof)
+  UnwrapERC7984,
 }
 
 /**

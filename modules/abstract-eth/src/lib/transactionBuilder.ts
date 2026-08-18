@@ -27,6 +27,7 @@ import {
   SignatureParts,
   TxData,
   WrapERC7984Data,
+  UnwrapERC7984Data,
 } from './iface';
 import {
   calculateForwarderAddress,
@@ -38,6 +39,7 @@ import {
   decodeFlushERC1155TokensData,
   decodeFlushERC7984ForwarderTokenData,
   decodeWrapERC7984Data,
+  decodeUnwrapERC7984Data,
   decodeWalletCreationData,
   flushCoinsData,
   flushTokensData,
@@ -51,7 +53,7 @@ import {
   getV1WalletInitializationData,
   getCreateForwarderParamsAndTypes,
 } from './utils';
-import { buildFlushERC7984ForwarderTokenCalldata, buildWrapCalldata } from './zamaUtils';
+import { buildFlushERC7984ForwarderTokenCalldata, buildWrapCalldata, buildUnwrapCalldata } from './zamaUtils';
 import { defaultWalletVersion, walletSimpleConstructor } from './walletUtil';
 import { ERC1155TransferBuilder } from './transferBuilders/transferBuilderERC1155';
 import { ERC721TransferBuilder } from './transferBuilders/transferBuilderERC721';
@@ -96,6 +98,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _wrapRecipient: string; // wrap(to, ...) recipient of confidential mint
   private _wrapAmount: string; // underlying amount to wrap (base units)
   private _wrapRate: string; // on-chain rate() for uint64 validation
+
+  // UnwrapERC7984 parameters
+  private _unwrapFrom: string;
+  private _unwrapTo: string;
+  private _unwrapEncryptedAmount: string;
+  private _unwrapInputProof: string;
 
   // Send and AddressInitialization transaction specific parameters
   protected _transfer: TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder | TransferBuilderERC7984;
@@ -185,6 +193,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         return this.buildFlushERC7984ForwarderTokenTransaction();
       case TransactionType.WrapERC7984:
         return this.buildWrapERC7984Transaction();
+      case TransactionType.UnwrapERC7984:
+        return this.buildUnwrapERC7984Transaction();
       default:
         throw new BuildTransactionError('Unsupported transaction type');
     }
@@ -345,6 +355,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         this.wrapRecipient(wrapData.to);
         this.wrapAmount(wrapData.amount);
         // rate is not encoded in calldata; callers that rebuild must set wrapRate() again
+        break;
+      }
+      case TransactionType.UnwrapERC7984: {
+        this.setContract(transactionJson.to);
+        const unwrapData: UnwrapERC7984Data = decodeUnwrapERC7984Data(transactionJson.data, transactionJson.to!);
+        this.unwrapFrom(unwrapData.from);
+        this.unwrapTo(unwrapData.to);
+        this.unwrapEncryptedAmount(unwrapData.encryptedAmount);
+        this.unwrapInputProof(unwrapData.inputProof);
         break;
       }
       default:
@@ -510,6 +529,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         this.validateWrapRecipient();
         this.validateWrapAmount();
         break;
+      case TransactionType.UnwrapERC7984:
+        this.validateContractAddress();
+        this.validateUnwrapFrom();
+        this.validateUnwrapTo();
+        this.validateUnwrapEncryptedAmount();
+        this.validateUnwrapInputProof();
+        break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
     }
@@ -602,6 +628,30 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private validateWrapAmount(): void {
     if (!this._wrapAmount) {
       throw new BuildTransactionError('Invalid transaction: missing wrapAmount');
+    }
+  }
+
+  private validateUnwrapFrom(): void {
+    if (!this._unwrapFrom) {
+      throw new BuildTransactionError('Invalid transaction: missing unwrapFrom');
+    }
+  }
+
+  private validateUnwrapTo(): void {
+    if (!this._unwrapTo) {
+      throw new BuildTransactionError('Invalid transaction: missing unwrapTo');
+    }
+  }
+
+  private validateUnwrapEncryptedAmount(): void {
+    if (!this._unwrapEncryptedAmount) {
+      throw new BuildTransactionError('Invalid transaction: missing unwrapEncryptedAmount');
+    }
+  }
+
+  private validateUnwrapInputProof(): void {
+    if (!this._unwrapInputProof) {
+      throw new BuildTransactionError('Invalid transaction: missing unwrapInputProof');
     }
   }
 
@@ -1168,6 +1218,58 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   private buildWrapERC7984Transaction(): TxData {
     const data = buildWrapCalldata(this._wrapRecipient, this._wrapAmount, this._wrapRate);
+    return this.buildBase(data);
+  }
+
+  // endregion
+
+  // region UnwrapERC7984 builder methods
+
+  /**
+   * Set the unwrap `from` address (source of confidential balance).
+   */
+  unwrapFrom(address: string): void {
+    if (!isValidEthAddress(address)) {
+      throw new BuildTransactionError('Invalid address: ' + address);
+    }
+    this._unwrapFrom = address;
+  }
+
+  /**
+   * Set the unwrap `to` address (recipient of released ERC-20).
+   */
+  unwrapTo(address: string): void {
+    if (!isValidEthAddress(address)) {
+      throw new BuildTransactionError('Invalid address: ' + address);
+    }
+    this._unwrapTo = address;
+  }
+
+  /**
+   * Set the bytes32 encrypted amount handle for unwrap.
+   */
+  unwrapEncryptedAmount(encryptedAmount: string): void {
+    this._unwrapEncryptedAmount = encryptedAmount;
+  }
+
+  /**
+   * Set the encryption input proof for unwrap.
+   */
+  unwrapInputProof(inputProof: string): void {
+    this._unwrapInputProof = inputProof;
+  }
+
+  /**
+   * Build an UnwrapERC7984 (unshield phase-1) transaction.
+   * Does not set gasLimit — WP owns gas.
+   */
+  private buildUnwrapERC7984Transaction(): TxData {
+    const data = buildUnwrapCalldata(
+      this._unwrapFrom,
+      this._unwrapTo,
+      this._unwrapEncryptedAmount,
+      this._unwrapInputProof
+    );
     return this.buildBase(data);
   }
 

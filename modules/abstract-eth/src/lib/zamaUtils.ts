@@ -13,10 +13,10 @@ export const callFromParentTypes = ['address', 'uint256', 'bytes'] as const;
 export const aclMulticallTypes = ['bytes[]'] as const;
 export const approveTypes = ['address', 'uint256'] as const;
 export const wrapTypes = ['address', 'uint256'] as const;
+export const unwrapTypes = ['address', 'address', 'bytes32', 'bytes'] as const;
 
 /** Max value for Solidity `uint64` / ERC-7984 confidential amount domain (`euint64`). */
 export const UINT64_MAX = 18446744073709551615n;
-
 /**
  * Function selector for ACL.delegateForUserDecryption(address,address,uint64)
  * = keccak256('delegateForUserDecryption(address,address,uint64)')[0:4]
@@ -55,6 +55,13 @@ export const approveMethodId = addHexPrefix(EthereumAbi.methodID('approve', [...
  * Locks underlying ERC-20 in the wrapper and mints an encrypted balance to `to`.
  */
 export const wrapMethodId = addHexPrefix(EthereumAbi.methodID('wrap', [...wrapTypes]).toString('hex'));
+
+/**
+ * Function selector for ERC-7984 unwrap(address,address,bytes32,bytes)
+ * = keccak256('unwrap(address,address,bytes32,bytes)')[0:4]
+ * Burns confidential balance and requests release of underlying ERC-20 escrow.
+ */
+export const unwrapMethodId = addHexPrefix(EthereumAbi.methodID('unwrap', [...unwrapTypes]).toString('hex'));
 
 // ---------------------------------------------------------------------------
 // Encoding functions
@@ -192,6 +199,76 @@ export function decodeWrapCalldata(data: string): { to: string; amount: string }
   return {
     to: ethers.utils.getAddress(decoded[0]),
     amount: decoded[1].toString(),
+  };
+}
+
+/**
+ * Encodes ERC-7984 `unwrap(from, to, encryptedAmount, inputProof)` calldata for unshield.
+ *
+ * Calldata is sent to the confidential wrapper. Phase-1 unshield is self-directed:
+ * `from` and `to` are both the wallet base address. `encryptedAmount` is the
+ * FHE-encrypted burn amount (bytes32 handle) and `inputProof` is the Zama
+ * encryption proof — both produced by WP `ZamaRelayerService.encryptAmount`.
+ *
+ * Does not set gasLimit — WP owns gas.
+ *
+ * @param from             Source of confidential balance (base address)
+ * @param to               Recipient of released ERC-20 (base address in v1)
+ * @param encryptedAmount  bytes32 encrypted amount handle (0x-prefixed)
+ * @param inputProof       Encryption input proof bytes (0x-prefixed)
+ * @returns ABI-encoded calldata hex string (0x-prefixed)
+ * @throws {Error} if addresses or ciphertext fields are invalid
+ */
+export function buildUnwrapCalldata(from: string, to: string, encryptedAmount: string, inputProof: string): string {
+  let checksummedFrom: string;
+  let checksummedTo: string;
+  try {
+    checksummedFrom = ethers.utils.getAddress(from);
+  } catch {
+    throw new Error(`buildUnwrapCalldata: invalid from address '${from}'`);
+  }
+  try {
+    checksummedTo = ethers.utils.getAddress(to);
+  } catch {
+    throw new Error(`buildUnwrapCalldata: invalid to address '${to}'`);
+  }
+
+  if (!ethers.utils.isHexString(encryptedAmount) || ethers.utils.hexDataLength(encryptedAmount) !== 32) {
+    throw new Error(`buildUnwrapCalldata: encryptedAmount must be a 32-byte hex string, got '${encryptedAmount}'`);
+  }
+  if (!ethers.utils.isHexString(inputProof) || ethers.utils.hexDataLength(inputProof) === 0) {
+    throw new Error(`buildUnwrapCalldata: inputProof must be a non-empty hex string, got '${inputProof}'`);
+  }
+
+  const method = EthereumAbi.methodID('unwrap', [...unwrapTypes]);
+  const args = EthereumAbi.rawEncode(
+    [...unwrapTypes],
+    [checksummedFrom, checksummedTo, toBuffer(encryptedAmount), toBuffer(inputProof)]
+  );
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Decodes ERC-7984 `unwrap(from, to, encryptedAmount, inputProof)` calldata.
+ *
+ * @param data ABI-encoded unwrap calldata (0x-prefixed)
+ */
+export function decodeUnwrapCalldata(data: string): {
+  from: string;
+  to: string;
+  encryptedAmount: string;
+  inputProof: string;
+} {
+  if (!data.toLowerCase().startsWith(unwrapMethodId.toLowerCase())) {
+    throw new Error(`decodeUnwrapCalldata: expected unwrap selector ${unwrapMethodId}, got ${data.slice(0, 10)}`);
+  }
+  const abiCoder = new ethers.utils.AbiCoder();
+  const decoded = abiCoder.decode([...unwrapTypes], '0x' + data.slice(10));
+  return {
+    from: ethers.utils.getAddress(decoded[0]),
+    to: ethers.utils.getAddress(decoded[1]),
+    encryptedAmount: ethers.utils.hexlify(decoded[2]),
+    inputProof: ethers.utils.hexlify(decoded[3]),
   };
 }
 

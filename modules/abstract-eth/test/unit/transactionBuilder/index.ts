@@ -5,3 +5,4 @@ export * from './flushNft';
 export * from './decryptionDelegation';
 export * from './flushERC7984';
 export * from './wrapERC7984';
+export * from './unwrapERC7984';
