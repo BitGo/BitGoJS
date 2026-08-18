@@ -284,6 +284,38 @@ export const botTokens = [
     undefined,
     Networks.test.hoodi
   ),
+  AccountCtors.terc20(
+    'ea110ecd-75c4-4f7a-8c70-e6ba33e9cbc2',
+    'hteth:stzamafig',
+    'Mock Figment Staked ZAMA',
+    20,
+    '0x6570756591ed9351d0d53d840d3e8f321887f4fa',
+    'hteth:stzamafig' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  AccountCtors.terc20(
+    '3394c368-a50b-4187-9654-d3b5c83fb3a6',
+    'hteth:stzamacop',
+    'Mock Coprocessor Staked ZAMA',
+    20,
+    '0xc1ba8ed5c9bfe4e1d185d81ddca1edf999e45107',
+    'hteth:stzamacop' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
@@ -3175,6 +3207,22 @@ export const botTokens = [
     '0x4cff203005b24aa1083b35063d684a76b1080f22',
     'eth:fonq' as unknown as UnderlyingAsset,
     getTokenFeatures('eth'),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '3cd32510-99dd-4a28-9971-8d9cce8ade56',
+    'eth:kitev2',
+    'KiteV2',
+    18,
+    '0x118b70df4f06fa5678e7d543e6066e028c8ea0c0',
+    'eth:kitev2' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
     undefined,
     undefined,
     undefined
