@@ -62,7 +62,7 @@ jobs:
         node-version: [20.x, 22.x, 24.x]
 
     steps:
-      - uses: socketdev/action@v1
+      - uses: socketdev/action@937f824ec476dfd164d4a4d9995751427b0be143 # v1.3.0
         with:
           mode: firewall-free
 
@@ -132,7 +132,7 @@ jobs:
         check: ['lint', 'format', 'commit-lint', 'dependencies', 'scripts']
 
     steps:
-      - uses: socketdev/action@v1
+      - uses: socketdev/action@937f824ec476dfd164d4a4d9995751427b0be143 # v1.3.0
         with:
           mode: firewall-free
 
@@ -189,7 +189,7 @@ jobs:
     if: always() && (needs.changes.result == 'skipped' || needs.changes.outputs.source == 'true')
 
     steps:
-      - uses: socketdev/action@v1
+      - uses: socketdev/action@937f824ec476dfd164d4a4d9995751427b0be143 # v1.3.0
         with:
           mode: firewall-free
 
@@ -385,7 +385,7 @@ jobs:
     if: always() && (needs.changes.result == 'skipped' || needs.changes.outputs.docker == 'true')
 
     steps:
-      - uses: socketdev/action@v1
+      - uses: socketdev/action@937f824ec476dfd164d4a4d9995751427b0be143 # v1.3.0
         with:
           mode: firewall-free
 
