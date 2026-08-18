@@ -1585,4 +1585,16 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.ofcerc20(
+    '00092ed8-efc5-4c8c-8695-edf15a4406ea',
+    'ofceth:kitev2',
+    'KiteV2',
+    18,
+    'eth:kitev2' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
