@@ -37,6 +37,7 @@ import {
   AtaInit,
   AtaRecoverNested,
   Burn,
+  ExtraAccountMeta,
   InstructionParams,
   Memo,
   MintTo,
@@ -237,6 +238,12 @@ function parseSendInstructions(
         if (instruction.programId) {
           programIDForTokenTransfer = instruction.programId.toString();
         }
+        const transferHookAccounts = findTransferHookAccounts(
+          ttKeys.owner.pubkey.toString(),
+          ttKeys.destination.pubkey.toString(),
+          tokenAddress,
+          instructionMetadata
+        );
         const tokenTransfer: TokenTransfer = {
           type: InstructionBuilderTypes.TokenTransfer,
           params: {
@@ -249,6 +256,7 @@ function parseSendInstructions(
             programId: programIDForTokenTransfer,
             decimalPlaces: ttDecimals,
             ...(ttFee !== undefined ? { fee: ttFee } : {}),
+            ...(transferHookAccounts ? { transferHookAccounts } : {}),
           },
         };
         instructionData.push(tokenTransfer);
@@ -1333,4 +1341,26 @@ export function findTokenName(
   assert(token);
 
   return token;
+}
+
+export function findTransferHookAccounts(
+  fromAddress: string,
+  toAddress: string,
+  tokenAddress: string,
+  instructionMetadata?: InstructionParams[]
+): ExtraAccountMeta[] | undefined {
+  let transferHookAccounts: ExtraAccountMeta[] | undefined;
+
+  instructionMetadata?.forEach((instruction) => {
+    if (
+      instruction.type === InstructionBuilderTypes.TokenTransfer &&
+      instruction.params.tokenAddress === tokenAddress &&
+      instruction.params.fromAddress === fromAddress &&
+      instruction.params.toAddress === toAddress
+    ) {
+      transferHookAccounts = instruction.params.transferHookAccounts;
+    }
+  });
+
+  return transferHookAccounts;
 }

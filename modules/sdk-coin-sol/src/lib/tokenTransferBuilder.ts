@@ -10,7 +10,7 @@ import {
   validateOwnerAddress,
 } from './utils';
 import { InstructionBuilderTypes } from './constants';
-import { AtaInit, TokenAssociateRecipient, TokenTransfer, SetPriorityFee } from './iface';
+import { AtaInit, ExtraAccountMeta, TokenAssociateRecipient, TokenTransfer, SetPriorityFee } from './iface';
 import assert from 'assert';
 import { TransactionBuilder } from './transactionBuilder';
 import _ from 'lodash';
@@ -29,10 +29,26 @@ const UNSIGNED_BIGINT_MAX = BigInt('18446744073709551615');
 export class TokenTransferBuilder extends TransactionBuilder {
   private _sendParams: SendParams[] = [];
   private _createAtaParams: TokenAssociateRecipient[];
+  private _transferHookAccounts?: ExtraAccountMeta[];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._createAtaParams = [];
+  }
+
+  /**
+   * Set the resolved Token-2022 Transfer Hook extra account metas for this transfer.
+   *
+   * These must be resolved live by the caller (e.g. via `Sol.resolveTransferHookAccounts`)
+   * since builders remain offline and never perform RPC. The order is significant and
+   * must match the hook's ExtraAccountMetaList.
+   *
+   * @param {ExtraAccountMeta[]} metas - resolved extra account metas, in hook order
+   * @returns {TokenTransferBuilder} This transaction builder
+   */
+  transferHookAccounts(metas: ExtraAccountMeta[]): this {
+    this._transferHookAccounts = metas;
+    return this;
   }
 
   protected get transactionType(): TransactionType {
@@ -153,6 +169,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
             tokenAddress: tokenAddress,
             programId: programId,
             decimalPlaces: decimals,
+            ...(this._transferHookAccounts ? { transferHookAccounts: this._transferHookAccounts } : {}),
           },
         };
       })

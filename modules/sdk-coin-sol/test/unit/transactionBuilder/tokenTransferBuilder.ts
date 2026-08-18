@@ -3,6 +3,8 @@ import { KeyPair, Utils } from '../../../src';
 import should from 'should';
 import * as testData from '../../resources/sol';
 import { FeeOptions } from '@bitgo/sdk-core';
+import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
+import { ExtraAccountMeta } from '../../../src/lib/iface';
 
 describe('Sol Token Transfer Builder', () => {
   let ataAddress;
@@ -839,6 +841,55 @@ describe('Sol Token Transfer Builder', () => {
       const createAta = tx.toJson().instructionsData.find((i) => i.type === 'CreateAssociatedTokenAccount');
       should.exist(createAta);
       createAta.params.payerAddress.should.equal(walletPK);
+    });
+  });
+
+  describe('Transfer Hook accounts', () => {
+    const t22Name = testData.sol2022TokenTransfers.name;
+    const t22Mint = testData.sol2022TokenTransfers.mint;
+    const t22Decimals = 6;
+    const transferHookAccounts: ExtraAccountMeta[] = [
+      { pubkey: '98wFF5MpMjMQbfDF2MPzo8LCGX37unZR1ohRA1mU9GmJ', isSigner: false, isWritable: true },
+      { pubkey: '48n7YGEww7fKMfJ5gJ3sQC3rM6RWGjpUsghqVfXVkR5A', isSigner: false, isWritable: false },
+      { pubkey: '9sQhAH7vV3RKTCK13VY4EiNjs3qBq1srSYxdNufdAAXm', isSigner: false, isWritable: false },
+    ];
+
+    const buildToken2022Transfer = () => {
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.nonce(recentBlockHash);
+      txBuilder.sender(walletPK);
+      txBuilder.send({
+        address: otherAccount.pub,
+        amount,
+        tokenName: t22Name,
+        tokenAddress: t22Mint,
+        programId: TOKEN_2022_PROGRAM_ID.toString(),
+        decimalPlaces: t22Decimals,
+      });
+      return txBuilder;
+    };
+
+    it('threads resolved transfer hook accounts into the built TokenTransfer params', async () => {
+      const txBuilder = buildToken2022Transfer();
+      txBuilder.transferHookAccounts(transferHookAccounts);
+      const tx = await txBuilder.build();
+
+      const tokenTransfer = tx.toJson().instructionsData.find((i) => i.type === 'TokenTransfer');
+      should.exist(tokenTransfer);
+      tokenTransfer.params.transferHookAccounts.should.deepEqual(transferHookAccounts);
+    });
+
+    it('omits transfer hook accounts and matches the plain transfer when none are set', async () => {
+      const withHooks = await buildToken2022Transfer().transferHookAccounts(transferHookAccounts).build();
+      const withoutHooks = await buildToken2022Transfer().build();
+
+      const plainTransfer = withoutHooks.toJson().instructionsData.find((i) => i.type === 'TokenTransfer');
+      should.exist(plainTransfer);
+      should.equal(plainTransfer.params.transferHookAccounts, undefined);
+
+      // Appending the resolved hook accounts changes the serialized transaction.
+      withHooks.toBroadcastFormat().should.not.equal(withoutHooks.toBroadcastFormat());
+      should.equal(Utils.isValidRawTransaction(withoutHooks.toBroadcastFormat()), true);
     });
   });
 });

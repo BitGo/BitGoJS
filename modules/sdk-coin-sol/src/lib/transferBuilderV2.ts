@@ -11,7 +11,7 @@ import {
 } from './utils';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import assert from 'assert';
-import { AtaInit, TokenAssociateRecipient, TokenTransfer, Transfer, SetPriorityFee } from './iface';
+import { AtaInit, ExtraAccountMeta, TokenAssociateRecipient, TokenTransfer, Transfer, SetPriorityFee } from './iface';
 import { InstructionBuilderTypes } from './constants';
 import _ from 'lodash';
 
@@ -29,9 +29,25 @@ const UNSIGNED_BIGINT_MAX = BigInt('18446744073709551615');
 export class TransferBuilderV2 extends TransactionBuilder {
   private _sendParams: SendParams[] = [];
   private _createAtaParams: TokenAssociateRecipient[];
+  private _transferHookAccounts?: ExtraAccountMeta[];
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._createAtaParams = [];
+  }
+
+  /**
+   * Set the resolved Token-2022 Transfer Hook extra account metas for this transfer.
+   *
+   * These must be resolved live by the caller (e.g. via `Sol.resolveTransferHookAccounts`)
+   * since builders remain offline and never perform RPC. The order is significant and
+   * must match the hook's ExtraAccountMetaList.
+   *
+   * @param {ExtraAccountMeta[]} metas - resolved extra account metas, in hook order
+   * @returns {TransferBuilderV2} This transaction builder
+   */
+  transferHookAccounts(metas: ExtraAccountMeta[]): this {
+    this._transferHookAccounts = metas;
+    return this;
   }
 
   protected get transactionType(): TransactionType {
@@ -164,6 +180,7 @@ export class TransferBuilderV2 extends TransactionBuilder {
               tokenAddress: tokenAddress,
               programId: programId,
               decimalPlaces: decimals,
+              ...(this._transferHookAccounts ? { transferHookAccounts: this._transferHookAccounts } : {}),
             },
           };
         } else {

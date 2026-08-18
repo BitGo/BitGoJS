@@ -1,9 +1,8 @@
 import should from 'should';
 import * as testData from '../resources/sol';
 import { solInstructionFactory } from '../../src/lib/solInstructionFactory';
-import { getToken2022Config } from '../../src/lib/token2022Config';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../src/lib/constants';
-import { InstructionParams } from '../../src/lib/iface';
+import { ExtraAccountMeta, InstructionParams } from '../../src/lib/iface';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import {
   createAssociatedTokenAccountIdempotentInstruction,
@@ -181,15 +180,11 @@ describe('Instruction Builder Tests: ', function () {
       ]);
     });
 
-    it('Token Transfer - Token-2022 with transfer hook config', () => {
-      const tokenConfig = getToken2022Config('4MmJVdwYN8LwvbGeCowYjSx7KoEi6BJWg8XXnW4fDDp6');
-      should.exist(tokenConfig);
-      should.exist(tokenConfig?.transferHook);
-      const transferHook = tokenConfig!.transferHook!;
-
+    it('Token Transfer - Token-2022 without transfer hook accounts is plain transferChecked', () => {
       const fromAddress = testData.authAccount.pub;
       const toAddress = testData.nonceAccount.pub;
       const sourceAddress = testData.associatedTokenAccounts.accounts[0].ata;
+      const mintAddress = testData.sol2022TokenTransfers.mint;
       const amount = '500000';
 
       const transferParams: InstructionParams = {
@@ -198,11 +193,66 @@ describe('Instruction Builder Tests: ', function () {
           fromAddress,
           toAddress,
           amount,
-          tokenName: 'tbill',
+          tokenName: testData.sol2022TokenTransfers.name,
           sourceAddress,
-          tokenAddress: tokenConfig!.mintAddress,
+          tokenAddress: mintAddress,
           decimalPlaces: 6,
           programId: TOKEN_2022_PROGRAM_ID.toString(),
+        },
+      };
+
+      const result = solInstructionFactory(transferParams);
+      should.deepEqual(result, [
+        createTransferCheckedInstruction(
+          new PublicKey(sourceAddress),
+          new PublicKey(mintAddress),
+          new PublicKey(toAddress),
+          new PublicKey(fromAddress),
+          BigInt(amount),
+          6,
+          [],
+          TOKEN_2022_PROGRAM_ID
+        ),
+      ]);
+    });
+
+    it('Token Transfer - Token-2022 with resolved transfer hook accounts', () => {
+      const fromAddress = testData.authAccount.pub;
+      const toAddress = testData.nonceAccount.pub;
+      const sourceAddress = testData.associatedTokenAccounts.accounts[0].ata;
+      const mintAddress = testData.sol2022TokenTransfers.mint;
+      const amount = '500000';
+
+      const transferHookAccounts: ExtraAccountMeta[] = [
+        {
+          pubkey: '98wFF5MpMjMQbfDF2MPzo8LCGX37unZR1ohRA1mU9GmJ',
+          isSigner: false,
+          isWritable: true,
+        },
+        {
+          pubkey: '48n7YGEww7fKMfJ5gJ3sQC3rM6RWGjpUsghqVfXVkR5A',
+          isSigner: false,
+          isWritable: false,
+        },
+        {
+          pubkey: '9sQhAH7vV3RKTCK13VY4EiNjs3qBq1srSYxdNufdAAXm',
+          isSigner: false,
+          isWritable: false,
+        },
+      ];
+
+      const transferParams: InstructionParams = {
+        type: InstructionBuilderTypes.TokenTransfer,
+        params: {
+          fromAddress,
+          toAddress,
+          amount,
+          tokenName: testData.sol2022TokenTransfers.name,
+          sourceAddress,
+          tokenAddress: mintAddress,
+          decimalPlaces: 6,
+          programId: TOKEN_2022_PROGRAM_ID.toString(),
+          transferHookAccounts,
         },
       };
 
@@ -214,7 +264,7 @@ describe('Instruction Builder Tests: ', function () {
 
       const baseInstruction = createTransferCheckedInstruction(
         new PublicKey(sourceAddress),
-        new PublicKey(tokenConfig!.mintAddress),
+        new PublicKey(mintAddress),
         new PublicKey(toAddress),
         new PublicKey(fromAddress),
         BigInt(amount),
@@ -226,14 +276,13 @@ describe('Instruction Builder Tests: ', function () {
       const baseKeyCount = baseInstruction.keys.length;
       builtInstruction.keys.slice(0, baseKeyCount).should.deepEqual(baseInstruction.keys);
 
+      // Extra accounts are appended in the exact order supplied.
       const extraKeys = builtInstruction.keys.slice(baseKeyCount);
-      const expectedExtraKeys = [
-        ...transferHook.extraAccountMetas.map((meta) => ({
-          pubkey: new PublicKey(meta.pubkey),
-          isSigner: meta.isSigner,
-          isWritable: meta.isWritable,
-        })),
-      ];
+      const expectedExtraKeys = transferHookAccounts.map((meta) => ({
+        pubkey: new PublicKey(meta.pubkey),
+        isSigner: meta.isSigner,
+        isWritable: meta.isWritable,
+      }));
       extraKeys.should.deepEqual(expectedExtraKeys);
 
       for (const expectedMeta of expectedExtraKeys) {

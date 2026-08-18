@@ -30,6 +30,7 @@ import {
   AtaClose,
   AtaInit,
   AtaRecoverNested,
+  ExtraAccountMeta,
   InstructionParams,
   Memo,
   MintTo,
@@ -50,7 +51,6 @@ import {
 } from './iface';
 import { computeTransferFee, getSolTokenFromTokenName, isValidBase64, isValidHex } from './utils';
 import { depositSolInstructions, withdrawStakeInstructions } from './jitoStakePoolOperations';
-import { getToken2022Config, TransferHookConfig } from './token2022Config';
 
 /**
  * Construct Solana instructions from instructions params
@@ -245,10 +245,10 @@ function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[]
         TOKEN_2022_PROGRAM_ID
       );
     }
-    // Check if this token has a transfer hook configuration
-    const tokenConfig = getToken2022Config(tokenAddress);
-    if (tokenConfig?.transferHook) {
-      addTransferHookAccounts(transferInstruction, tokenConfig.transferHook);
+    // Append any resolved Transfer Hook extra accounts. These are resolved live by
+    // the caller (offline builders never fetch) and supplied in the required order.
+    if (data.params.transferHookAccounts?.length) {
+      addTransferHookAccounts(transferInstruction, data.params.transferHookAccounts);
     }
   } else {
     transferInstruction = createTransferCheckedInstruction(
@@ -787,22 +787,16 @@ function upsertAccountMeta(keys: AccountMeta[], meta: AccountMeta): void {
   }
 }
 
-function buildStaticTransferHookAccounts(transferHook: TransferHookConfig): AccountMeta[] {
-  const metas: AccountMeta[] = [];
-  if (transferHook.extraAccountMetas?.length) {
-    for (const meta of transferHook.extraAccountMetas) {
-      metas.push({
-        pubkey: new PublicKey(meta.pubkey),
-        isSigner: meta.isSigner,
-        isWritable: meta.isWritable,
-      });
-    }
-  }
-  return metas;
+function buildTransferHookAccountMetas(extraAccountMetas: ExtraAccountMeta[]): AccountMeta[] {
+  return extraAccountMetas.map((meta) => ({
+    pubkey: new PublicKey(meta.pubkey),
+    isSigner: meta.isSigner,
+    isWritable: meta.isWritable,
+  }));
 }
 
-function addTransferHookAccounts(instruction: TransactionInstruction, transferHook: TransferHookConfig): void {
-  const extraMetas = buildStaticTransferHookAccounts(transferHook);
+function addTransferHookAccounts(instruction: TransactionInstruction, extraAccountMetas: ExtraAccountMeta[]): void {
+  const extraMetas = buildTransferHookAccountMetas(extraAccountMetas);
   for (const meta of extraMetas) {
     upsertAccountMeta(instruction.keys, meta);
   }
