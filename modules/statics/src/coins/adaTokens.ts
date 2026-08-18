@@ -25,6 +25,29 @@ export const adaTokens = [
     UnderlyingAsset['tada:tusda'],
     ADA_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
+  // CECHO-1969 batch 0818 tokens
+  tadaToken(
+    '4409cdea-b1c2-4a3d-ab4c-e8583e043916',
+    'tada:usdr',
+    'Testnet RealFi USDr',
+    6,
+    '0684f582b8abeb4236b20688744eca788a61cd9881422a7113637f6b55534472',
+    'USDr',
+    'asset1phc5mnwh5p5tsqqxuf2mtvcvpsm6f6vjf8ue08',
+    UnderlyingAsset['tada:usdr'],
+    [...ADA_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tadaToken(
+    'a84eff6c-4f7e-48b1-a92f-f535dcccc28c',
+    'tada:susdr',
+    'Testnet RealFi sUSDr',
+    6,
+    '0684f582b8abeb4236b20688744eca788a61cd9881422a7113637f6b7355534472',
+    'sUSDr',
+    'asset1vmllsc8gkach2vqh8tqlyj7sl4rk788htll9pq',
+    UnderlyingAsset['tada:susdr'],
+    [...ADA_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
   adaToken(
     '2d1f9c55-808d-4a6e-b494-62bdb54a16a4',
     'ada:min',

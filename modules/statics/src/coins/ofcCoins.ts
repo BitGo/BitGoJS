@@ -6292,6 +6292,14 @@ export const ofcCoins = [
     2,
     UnderlyingAsset['sol:bliquid']
   ),
+  // CECHO-1969 batch 0818 tokens
+  ofcsolToken(
+    '79882838-b836-451a-b3f7-cb50dfb01cc2',
+    'ofcsol:audm',
+    'Macropod Stablecoin',
+    6,
+    UnderlyingAsset['sol:audm']
+  ),
   // New Canton OFC tokens
   ofcCantonToken(
     '02ab6bd2-83e6-46fc-bfd7-93b8be125648',
@@ -6655,6 +6663,21 @@ export const ofcCoins = [
     'Testnet USDA',
     6,
     UnderlyingAsset['tada:tusda']
+  ),
+  // CECHO-1969 batch 0818 tokens
+  tofcAdaToken(
+    'c4a975a7-3cc0-4c52-b453-9aa6f48bccfd',
+    'ofctada:usdr',
+    'Testnet RealFi USDr',
+    6,
+    UnderlyingAsset['tada:usdr']
+  ),
+  tofcAdaToken(
+    'e1c44e27-ebea-4b31-a60f-05b9bfbe8726',
+    'ofctada:susdr',
+    'Testnet RealFi sUSDr',
+    6,
+    UnderlyingAsset['tada:susdr']
   ),
   ofcsolToken(
     'b3bbf580-1cdf-418e-a3aa-bc7d573e6720',

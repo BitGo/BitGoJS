@@ -6334,6 +6334,22 @@ export const tOfcErc20Coins = [
     true,
     'baseeth'
   ),
+  // CECHO-1969 batch 0818 tokens
+  ofcerc20('24b51786-0200-4e87-aa7b-e37f3e7b9a53', 'ofceth:zsmb', 'Zivoe SMB Credit', 18, UnderlyingAsset['eth:zsmb']),
+  ofcerc20(
+    'bb6992c2-b07b-416f-8fd2-d88567584c2b',
+    'ofcbaseeth:jvhhusdc',
+    'jvhhVault',
+    18,
+    UnderlyingAsset['baseeth:jvhhusdc'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
   ofcerc20('14912a5e-254c-4c6f-9f9c-f9ce11b7b293', 'ofceth:bard', 'Lombard', 18, UnderlyingAsset['eth:bard']),
   ofcerc20('a31a6330-cbd6-49b0-b8b1-a7f9a48e770c', 'ofceth:sfp', 'SafePal Token', 18, UnderlyingAsset['eth:sfp']),
   ofcerc20('60f825f0-ed18-46b2-a03f-fd93b5e94f43', 'ofceth:aztec', 'Aztec', 18, UnderlyingAsset['eth:aztec']),

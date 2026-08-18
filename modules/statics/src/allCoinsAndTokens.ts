@@ -5119,6 +5119,16 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:gro'],
     Networks.main.basechain
   ),
+  // CECHO-1969 batch 0818 tokens
+  erc20Token(
+    '731ff716-7b6d-4541-b929-3cddbd87b195',
+    'baseeth:jvhhusdc',
+    'jvhhVault',
+    18,
+    '0x5e03f8965e2957291b3c6990c6cb9023c36d3d30',
+    UnderlyingAsset['baseeth:jvhhusdc'],
+    Networks.main.basechain
+  ),
 
   // ARC mainnet tokens
   erc20Token(
