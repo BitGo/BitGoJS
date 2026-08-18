@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [52.8.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.7.0...bitgo@52.8.0) (2026-08-18)
+
+
+### Features
+
+* **sdk-coin-canton:** add runtime registration via registerWithCoinMap ([8492a06](https://github.com/BitGo/BitGoJS/commit/8492a067516015ea2c5f4e616085af561148c204))
+* **sdk-core:** add root-fetch detour in getUserPrv for safe child wallets ([b767ca2](https://github.com/BitGo/BitGoJS/commit/b767ca2ac1bcd47e350c9802a3831e0a6f3f4d32))
+
+
+
+
+
 # [52.7.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.6.0...bitgo@52.7.0) (2026-08-14)
 
 
