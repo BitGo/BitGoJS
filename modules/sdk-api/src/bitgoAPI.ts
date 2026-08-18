@@ -874,7 +874,8 @@ export class BitGoAPI implements BitGoBase {
     } catch (error) {
       if (
         error.message.includes("ccm: tag doesn't match") ||
-        error.message.includes('The operation failed for an operation-specific reason')
+        error.message.includes('The operation failed for an operation-specific reason') ||
+        error.message.includes('Unsupported state or unable to authenticate data')
       ) {
         throw new Error('incorrect password');
       }
