@@ -6456,6 +6456,34 @@ export const tOfcErc20Coins = [
     true,
     'gasevm'
   ),
+  tofcerc20(
+    'cce57090-db6e-41d2-bf7b-b907e9eb719b',
+    'ofctgasevm:usd1',
+    'Test USD1 Token',
+    18,
+    underlyingAssetForSymbol('tgasevm:usd1'),
+    undefined,
+    [...OfcCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    '',
+    undefined,
+    undefined,
+    true,
+    'tgasevm'
+  ),
+  tofcerc20(
+    '360c3293-b28b-4117-952c-6b21f8f0c657',
+    'ofctgasevm:stgusd1',
+    'Test USD1 Token',
+    18,
+    underlyingAssetForSymbol('tgasevm:stgusd1'),
+    undefined,
+    [...OfcCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    '',
+    undefined,
+    undefined,
+    true,
+    'tgasevm'
+  ),
 
   // XDC Network tokens
   ofcerc20(
