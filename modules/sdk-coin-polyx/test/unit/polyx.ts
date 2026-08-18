@@ -1,6 +1,6 @@
 import should from 'should';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import { Polyx, Tpolyx } from '../../src';
 import { POLYX_ADDRESS_FORMAT, TPOLYX_ADDRESS_FORMAT } from '../../src/lib/constants';
 import utils from '../../src/lib/utils';
@@ -9,9 +9,10 @@ import * as sinon from 'sinon';
 import * as testData from '../resources/wrwUsers';
 import { afterEach } from 'mocha';
 import { genesisHash, specVersion, txVersion, rawTx, accounts, mockTssSignature } from '../resources';
-import { TxIntentMismatchRecipientError } from '@bitgo/sdk-core';
-import { V8TransferBuilder } from '../../src/lib';
+import { EDDSAMethods, MPCRecoveryOptions, MPCTx, TxIntentMismatchRecipientError } from '@bitgo/sdk-core';
+import { TransferBuilder, V8TransferBuilder } from '../../src/lib';
 import { testnetV8Material } from '../../src/resources';
+import { MPSUtil } from '@bitgo/sdk-lib-mpc';
 
 describe('Polyx:', function () {
   let bitgo: TestBitGoAPI;
@@ -185,6 +186,151 @@ describe('Polyx:', function () {
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
       should.deepEqual(txJson.eraPeriod, baseCoin.SWEEP_TXN_DURATION);
+    });
+
+    describe('MPCv2 signed recovery', function () {
+      const walletPassphrase = 'test-passphrase-mpcv2';
+      let mpcV2UserKey: string;
+      let mpcV2BackupKey: string;
+      let mpcV2CommonKeyChain: string;
+      let mpcV2RecoverParams: MPCRecoveryOptions;
+
+      before(async function () {
+        const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+        mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+        mpcV2UserKey = await encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+        mpcV2BackupKey = await encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+
+        mpcV2RecoverParams = {
+          userKey: mpcV2UserKey,
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mpcV2CommonKeyChain,
+          recoveryDestination,
+          walletPassphrase,
+        };
+      });
+
+      beforeEach(function () {
+        // Use unrestricted resolves (not .withArgs) since the mismatched-bitgoKey test
+        // derives a different sender address than mpcV2WalletAddress.
+        accountInfoCB.resolves({ nonce: 0, freeBalance: 100007000000 });
+        headerInfoCB.resolves({
+          headerNumber: testData.testnetBlock.blockNumber,
+          headerHash: testData.testnetBlock.hash,
+        });
+        getFeeCB.resolves(74401);
+      });
+
+      it('should recover a tx using MPCv2 signing material', async function () {
+        const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+        const addSignatureSpy = sandBox.spy(TransferBuilder.prototype, 'addSignature');
+
+        const result = (await baseCoin.recover(mpcV2RecoverParams)) as MPCTx;
+
+        result.should.not.be.empty();
+        result.should.hasOwnProperty('serializedTx');
+        result.should.hasOwnProperty('scanIndex');
+        should.equal(result.scanIndex, 0);
+        (result.serializedTx as string).should.be.a.String().and.not.be.empty();
+        sandBox.assert.notCalled(getTSSSignatureSpy);
+
+        // Substrate MultiSignature Ed25519 discriminant (0x00) must prefix the 64-byte signature.
+        sandBox.assert.calledOnce(addSignatureSpy);
+        const signature: Buffer = addSignatureSpy.firstCall.args[1];
+        signature.length.should.equal(65);
+        signature[0].should.equal(0x00);
+      });
+
+      it('should produce a cryptographically valid Ed25519 signature', async function () {
+        const addSignatureSpy = sandBox.spy(TransferBuilder.prototype, 'addSignature');
+        const signRecoverySpy = sandBox.spy(
+          baseCoin as unknown as { signSubstrateMpcV2Recovery: unknown },
+          'signSubstrateMpcV2Recovery'
+        );
+
+        await baseCoin.recover(mpcV2RecoverParams);
+
+        // 65-byte sig: 0x00 discriminant + 64-byte Ed25519 sig; signatureVerify handles the prefix.
+        const signature: Buffer = addSignatureSpy.firstCall.args[1];
+
+        // Capture the exact bytes signed by the DSG protocol inside signSubstrateMpcV2Recovery.
+        const signablePayload: Buffer = (signRecoverySpy.firstCall.args[0] as { message: Buffer }).message;
+
+        const MPC = await EDDSAMethods.getInitializedMpcInstance();
+        const accountId = MPC.deriveUnhardened(mpcV2CommonKeyChain, 'm/0').slice(0, 64);
+
+        const senderAddr = baseCoin.getAddressFromPublicKey(accountId);
+        const isValid = utils.verifySignature(
+          `0x${signablePayload.toString('hex')}`,
+          `0x${signature.toString('hex')}`,
+          senderAddr
+        );
+        isValid.should.be.true();
+      });
+
+      it('should use MPCv1 path when signing material is MPCv1 format', async function () {
+        const userPrv = JSON.stringify({ uShare: { seed: 'aa' }, bitgoYShare: { u: 'bb' }, backupYShare: { u: 'cc' } });
+        sandBox
+          .stub(baseCoin as unknown as { getEddsaSigningMaterial: unknown }, 'getEddsaSigningMaterial')
+          .resolves({ version: 'v1', userPrv });
+
+        const getTSSSignatureStub = sandBox
+          .stub(EDDSAMethods, 'getTSSSignature')
+          .resolves(
+            Buffer.from(
+              '1baafa0d62174bf0c78f3256318613ffc44b6dd54ab1a63c2185232f92ede9da' +
+                'e1b2818dbeb52a8215fd56f5a5f2a9f94c079ce89e4dc3b1ce6ed6e84ce71857',
+              'hex'
+            )
+          );
+
+        sandBox
+          .stub(bitgo, 'decrypt')
+          .withArgs(sinon.match({ input: mpcV2BackupKey.replace(/\s/g, '') }))
+          .resolves(JSON.stringify({ bShare: {}, yShares: {} }));
+
+        const result = (await baseCoin.recover(mpcV2RecoverParams)) as MPCTx;
+
+        result.should.not.be.empty();
+        result.should.hasOwnProperty('serializedTx');
+        result.should.hasOwnProperty('scanIndex');
+        should.equal(result.scanIndex, 0);
+        (result.serializedTx as string).should.be.a.String().and.not.be.empty();
+        sandBox.assert.calledOnce(getTSSSignatureStub);
+      });
+
+      it('should throw a descriptive error when user keychain decryption fails on the MPCv1 path', async function () {
+        sandBox.stub(bitgo, 'decrypt').rejects(new Error('password error'));
+
+        await baseCoin.recover(mpcV2RecoverParams).should.be.rejectedWith(/Error decrypting user keychain/);
+      });
+
+      it('should throw when commonKeyChain from MPCv2 keycard does not match bitgoKey', async function () {
+        const mismatchedBitgoKey = mpcV2CommonKeyChain.slice(0, -8) + '00000000';
+        const mismatchedParams = {
+          ...mpcV2RecoverParams,
+          bitgoKey: mismatchedBitgoKey,
+        };
+
+        await baseCoin
+          .recover(mismatchedParams)
+          .should.be.rejectedWith('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+      });
+
+      it('should throw missing userKey when backupKey and walletPassphrase are present but userKey is not', async function () {
+        const paramsWithoutUserKey = { ...mpcV2RecoverParams, userKey: undefined };
+        await baseCoin.recover(paramsWithoutUserKey).should.be.rejectedWith('missing userKey');
+      });
+
+      it('should throw missing backupKey when userKey and walletPassphrase are present but backupKey is not', async function () {
+        const paramsWithoutBackupKey = { ...mpcV2RecoverParams, backupKey: undefined };
+        await baseCoin.recover(paramsWithoutBackupKey).should.be.rejectedWith('missing backupKey');
+      });
+
+      it('should throw missing wallet passphrase when userKey and backupKey are present but walletPassphrase is not', async function () {
+        const paramsWithoutPassphrase = { ...mpcV2RecoverParams, walletPassphrase: undefined };
+        await baseCoin.recover(paramsWithoutPassphrase).should.be.rejectedWith('missing wallet passphrase');
+      });
     });
   });
 
