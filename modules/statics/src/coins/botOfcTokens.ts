@@ -1549,4 +1549,40 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.ofcerc20(
+    'bcdd6ba1-645e-4832-b665-8e46bb8d3827',
+    'ofceth:rif',
+    'Rootstock Infrastructure Framework',
+    18,
+    'eth:rif' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcsolToken(
+    '07dd9ce8-e74e-4629-bfaa-2355c9122bef',
+    'ofcsol:usds',
+    'ofcUSDS',
+    6,
+    'sol:usds' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcerc20(
+    '6cb021d7-ea8e-4919-b3cd-13caeb92ee28',
+    'ofceth:fonq',
+    'FONQ',
+    18,
+    'eth:fonq' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
