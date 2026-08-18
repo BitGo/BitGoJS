@@ -181,14 +181,38 @@ export interface StakingWithdraw {
   params: { fromAddress: string; stakingAddress: string; amount: string };
 }
 
+/**
+ * Which stake authority an Authorize instruction changes. Mirrors Solana's `StakeAuthorize`
+ * enum (`StakeAuthorizationLayout`: `Staker` = 0, `Withdrawer` = 1) and the `authorizeType`
+ * emitted by the WASM parser, so all parse paths share one vocabulary.
+ */
+export type StakeAuthorizeType = 'Staker' | 'Withdrawer';
+
 export interface StakingAuthorize {
   type: InstructionBuilderTypes.StakingAuthorize;
   params: {
     stakingAddress: string;
-    oldAuthorizeAddress;
+    /** The authority signing the change — the staker or the withdrawer, per `authorizeType`. */
+    oldAuthorizeAddress: string;
+    /** The new authority — the new staker or the new withdrawer, per `authorizeType`. */
     newAuthorizeAddress: string;
+    /**
+     * The lockup custodian account, NOT a withdraw authority. Named `newWithdrawAddress` for
+     * historical reasons: {@link stakingAuthorizeInstruction} passes it as `custodianPubkey`, and
+     * the decoder reads that account back into this field. Solana documents the custodian as
+     * optional for Withdrawer changes under lockup; the encoding can still attach or omit it
+     * independently of `authorizeType` — use `authorizeType` for the authority being changed.
+     */
     newWithdrawAddress?: string;
+    /** The lockup custodian account, as decoded by the raw (AuthorizeChecked) parser. */
     custodianAddress?: string;
+    /**
+     * Which authority this instruction changes, decoded from Solana's `stakeAuthorizationType`.
+     * This is the only authoritative discriminator; do not infer it from custodian presence.
+     * Optional because transaction *builders* construct these params before encoding, where the
+     * type is implied by the builder. Both instruction parsers always populate it.
+     */
+    authorizeType?: StakeAuthorizeType;
   };
 }
 

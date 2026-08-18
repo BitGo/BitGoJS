@@ -1,8 +1,9 @@
 import { ITokenEnablement } from '@bitgo/sdk-core';
 import { Transaction, parseTransaction, type ParsedTransaction, type InstructionParams } from '@bitgo/wasm-solana';
 import { UNAVAILABLE_TEXT } from './constants';
-import { StakingAuthorizeParams, TransactionExplanation as SolLibTransactionExplanation } from './iface';
+import { TransactionExplanation as SolLibTransactionExplanation } from './iface';
 import { findTokenName } from './instructionParamsFactory';
+import { summarizeStakingAuthorize } from './stakingAuthorizeSummary';
 
 export interface ExplainTransactionWasmOptions {
   txBase64: string;
@@ -133,39 +134,6 @@ function extractTransactionId(signatures: string[]): string | undefined {
 }
 
 // =============================================================================
-// Staking authorize mapping
-// =============================================================================
-
-/**
- * Map WASM StakingAuthorize instruction to the legacy BitGoJS shape.
- * BitGoJS uses different field names for Staker vs Withdrawer authority changes.
- */
-function mapStakingAuthorize(instr: {
-  stakingAddress: string;
-  oldAuthorizeAddress: string;
-  newAuthorizeAddress: string;
-  authorizeType: 'Staker' | 'Withdrawer';
-  custodianAddress?: string;
-}): StakingAuthorizeParams {
-  if (instr.authorizeType === 'Withdrawer') {
-    return {
-      stakingAddress: instr.stakingAddress,
-      oldWithdrawAddress: instr.oldAuthorizeAddress,
-      newWithdrawAddress: instr.newAuthorizeAddress,
-      custodianAddress: instr.custodianAddress,
-    };
-  }
-  // Staker authority change
-  return {
-    stakingAddress: instr.stakingAddress,
-    oldWithdrawAddress: '',
-    newWithdrawAddress: '',
-    oldStakingAuthorityAddress: instr.oldAuthorizeAddress,
-    newStakingAuthorityAddress: instr.newAuthorizeAddress,
-  };
-}
-
-// =============================================================================
 // Main explain function
 // =============================================================================
 
@@ -272,13 +240,21 @@ export function explainSolTransaction(params: ExplainTransactionWasmOptions): So
   }
 
   // --- Staking authorize ---
-  let stakingAuthorize: StakingAuthorizeParams | undefined;
-  for (const instr of parsed.instructionsData) {
-    if (instr.type === 'StakingAuthorize') {
-      stakingAuthorize = mapStakingAuthorize(instr);
-      break;
-    }
-  }
+  // Display summary only — same rules as the legacy and raw explain paths. Signature validation
+  // walks every Authorize instruction in Sol.verifyStakingAuthorizeInstructions instead.
+  const stakingAuthorize = summarizeStakingAuthorize(
+    parsed.instructionsData
+      .filter(
+        (instr): instr is Extract<InstructionParams, { type: 'StakingAuthorize' }> => instr.type === 'StakingAuthorize'
+      )
+      .map((instr) => ({
+        stakingAddress: instr.stakingAddress,
+        oldAuthorizeAddress: instr.oldAuthorizeAddress,
+        newAuthorizeAddress: instr.newAuthorizeAddress,
+        authorizeType: instr.authorizeType,
+        custodianAddress: instr.custodianAddress,
+      }))
+  );
 
   // --- Resolve token names and convert bigint to string at serialization boundary ---
   const resolvedOutputs = outputs.map((o) => ({

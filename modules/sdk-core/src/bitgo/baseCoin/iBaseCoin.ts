@@ -287,6 +287,10 @@ export interface TransactionParams {
   memo?: Memo;
   enableTokens?: TokenEnablement[];
   stakingRequestId?: string;
+  /** SOL authorize: new withdraw authority public key from the intent. */
+  newWithdrawPublicKey?: string;
+  /** SOL authorize: stake account address from the intent. */
+  stakeAccount?: string;
 }
 
 export interface AddressVerificationData {

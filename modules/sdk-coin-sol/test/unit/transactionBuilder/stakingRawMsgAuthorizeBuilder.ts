@@ -219,6 +219,8 @@ describe('Sol Staking Raw Message Authorize Builder', () => {
       oldAuthorizeAddress: '6xgesG4vajCYfAQpknodrarD49ZCnXGvYA4H1DLuGV7Y',
       newAuthorizeAddress: '4p1VdN6BngTAbWR7Q5JPpbB6dc4k4y8wn1knmmWEjc9i',
       custodianAddress: 'DHCVjKy7kN6D6vM69nHcEeEeS685qtonFbiFNBW5bGiq',
+      // Decoded from the instruction data (0a00000001000000): AuthorizeChecked, StakeAuthorize 1.
+      authorizeType: 'Withdrawer',
     });
   });
 

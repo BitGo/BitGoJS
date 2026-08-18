@@ -5,6 +5,7 @@ import * as should from 'should';
 import * as sinon from 'sinon';
 
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { PublicKey, StakeAuthorizationLayout, StakeProgram, Transaction as SolTransaction } from '@solana/web3.js';
 
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import {
@@ -999,6 +1000,296 @@ describe('SOL:', function () {
         wallet: walletObj,
       } as any);
       validTransaction.should.equal(true);
+    });
+
+    describe('staking authorize transaction verification', function () {
+      const newWithdrawKey = new KeyPair(resources.authAccount2).getKeys();
+      // a key that is not involved in the authorize tx — used to simulate malicious substitution
+      const differentKey = new KeyPair(resources.splitStakeAccount).getKeys();
+
+      /**
+       * Verify a hand-crafted transaction against an authorize intent naming `newWithdrawKey`
+       * on both `tsol` and `sol`. Verification reads Authorize instructions via `toJson()` /
+       * `instructionParamsFactory` on both chains (not the explain / WASM path).
+       */
+      const rejectOnBothChains = async (solTx: SolTransaction, matcher: RegExp) => {
+        for (const chain of ['tsol', 'sol']) {
+          const coin = bitgo.coin(chain) as Sol;
+          coin.getChain().should.equal(chain);
+          const txParams = newTxParams();
+          const txPrebuild = newTxPrebuild();
+          txPrebuild.txBase64 = solTx
+            .serialize({ verifySignatures: false, requireAllSignatures: false })
+            .toString('base64');
+          txPrebuild.txInfo.nonce = blockHash;
+          txParams.recipients = [];
+          txParams.type = 'authorize';
+          txParams.newWithdrawPublicKey = newWithdrawKey.pub;
+          txParams.stakeAccount = stakeAccount.pub;
+          await coin
+            .verifyTransaction({ txParams, txPrebuild, wallet: walletObj } as any)
+            .should.be.rejectedWith(matcher, `expected ${chain} to reject the crafted transaction`);
+        }
+      };
+
+      const buildAuthorizeTx = async (newAuthorizedAddress: string) => {
+        const tx = await factory
+          .getStakingAuthorizeBuilder()
+          .stakingAddress(stakeAccount.pub)
+          .sender(wallet.pub)
+          .nonce(blockHash)
+          .newAuthorizedAddress(newAuthorizedAddress)
+          .oldAuthorizedAddress(wallet.pub)
+          .fee({ amount: 5000 })
+          .build();
+        return tx.toBroadcastFormat();
+      };
+
+      it('should verify a valid staking authorize transaction with all intent fields', async function () {
+        const txBase64 = await buildAuthorizeTx(newWithdrawKey.pub);
+        const txParams = newTxParams();
+        const txPrebuild = newTxPrebuild();
+        txPrebuild.txBase64 = txBase64;
+        txPrebuild.txInfo.nonce = blockHash;
+        txParams.recipients = [];
+        txParams.type = 'authorize';
+        txParams.newWithdrawPublicKey = newWithdrawKey.pub;
+        txParams.stakeAccount = stakeAccount.pub;
+        const result = await basecoin.verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet: walletObj,
+        } as any);
+        result.should.equal(true);
+      });
+
+      // The intent fields are what the decoded transaction is judged against, so a missing one
+      // must abort rather than skip the comparison — otherwise a server that simply omits the
+      // field disables the very check that is meant to constrain it.
+      it('should reject a staking authorize transaction when newWithdrawPublicKey is absent from the intent', async function () {
+        const txBase64 = await buildAuthorizeTx(newWithdrawKey.pub);
+        const txParams = newTxParams();
+        const txPrebuild = newTxPrebuild();
+        txPrebuild.txBase64 = txBase64;
+        txPrebuild.txInfo.nonce = blockHash;
+        txParams.recipients = [];
+        txParams.type = 'authorize';
+        txParams.stakeAccount = stakeAccount.pub;
+        // newWithdrawPublicKey deliberately not set
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: walletObj } as any)
+          .should.rejectedWith(/StakingAuthorize intent is missing newWithdrawPublicKey/);
+      });
+
+      it('should reject a staking authorize transaction when stakeAccount is absent from the intent', async function () {
+        const txBase64 = await buildAuthorizeTx(newWithdrawKey.pub);
+        const txParams = newTxParams();
+        const txPrebuild = newTxPrebuild();
+        txPrebuild.txBase64 = txBase64;
+        txPrebuild.txInfo.nonce = blockHash;
+        txParams.recipients = [];
+        txParams.type = 'authorize';
+        txParams.newWithdrawPublicKey = newWithdrawKey.pub;
+        // stakeAccount deliberately not set
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: walletObj } as any)
+          .should.rejectedWith(/StakingAuthorize intent is missing stakeAccount/);
+      });
+
+      it('should reject a staking authorize transaction where newWithdrawAddress was swapped to attacker key', async function () {
+        const txBase64 = await buildAuthorizeTx(differentKey.pub);
+        const txParams = newTxParams();
+        const txPrebuild = newTxPrebuild();
+        txPrebuild.txBase64 = txBase64;
+        txPrebuild.txInfo.nonce = blockHash;
+        txParams.recipients = [];
+        txParams.type = 'authorize';
+        // Intent says newWithdrawPublicKey should be newWithdrawKey, but tx has attacker key
+        txParams.newWithdrawPublicKey = newWithdrawKey.pub;
+        txParams.stakeAccount = stakeAccount.pub;
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: walletObj } as any)
+          .should.rejectedWith(/StakingAuthorize newAuthorizeAddress does not match intended newWithdrawPublicKey/);
+      });
+
+      it('should reject a staking authorize transaction where stakeAccount does not match', async function () {
+        const txBase64 = await buildAuthorizeTx(newWithdrawKey.pub);
+        const txParams = newTxParams();
+        const txPrebuild = newTxPrebuild();
+        txPrebuild.txBase64 = txBase64;
+        txPrebuild.txInfo.nonce = blockHash;
+        txParams.recipients = [];
+        txParams.type = 'authorize';
+        txParams.newWithdrawPublicKey = newWithdrawKey.pub;
+        // Pass a different stakeAccount (attacker has replaced it)
+        txParams.stakeAccount = differentKey.pub;
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: walletObj } as any)
+          .should.rejectedWith(/StakingAuthorize stakingAddress does not match intended stakeAccount/);
+      });
+
+      it('should reject a staking authorize transaction where oldAuthorizeAddress does not match wallet root', async function () {
+        // Build tx where oldAuthorizedAddress is NOT wallet.pub
+        const tx = await factory
+          .getStakingAuthorizeBuilder()
+          .stakingAddress(stakeAccount.pub)
+          .sender(newWithdrawKey.pub)
+          .nonce(blockHash)
+          .newAuthorizedAddress(newWithdrawKey.pub)
+          .oldAuthorizedAddress(newWithdrawKey.pub) // different from walletObj root
+          .fee({ amount: 5000 })
+          .build();
+        const txBase64 = tx.toBroadcastFormat();
+        const txParams = newTxParams();
+        const txPrebuild = newTxPrebuild();
+        txPrebuild.txBase64 = txBase64;
+        txPrebuild.txInfo.nonce = blockHash;
+        txParams.recipients = [];
+        txParams.type = 'authorize';
+        txParams.newWithdrawPublicKey = newWithdrawKey.pub;
+        txParams.stakeAccount = stakeAccount.pub;
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: walletObj } as any)
+          .should.rejectedWith(/StakingAuthorize oldAuthorizeAddress does not match wallet root address/);
+      });
+
+      it('should still enforce the fee payer check on a staking authorize transaction', async function () {
+        // oldAuthorizedAddress stays the wallet root so the authorize checks pass, but the
+        // fee payer is someone else — the authorize branch must not short-circuit that check.
+        const tx = await factory
+          .getStakingAuthorizeBuilder()
+          .stakingAddress(stakeAccount.pub)
+          .sender(wallet.pub)
+          .nonce(blockHash)
+          .newAuthorizedAddress(newWithdrawKey.pub)
+          .oldAuthorizedAddress(wallet.pub)
+          .feePayer(differentKey.pub)
+          .fee({ amount: 5000 })
+          .build();
+        const txParams = newTxParams();
+        const txPrebuild = newTxPrebuild();
+        txPrebuild.txBase64 = tx.toBroadcastFormat();
+        txPrebuild.txInfo.nonce = blockHash;
+        txParams.recipients = [];
+        txParams.type = 'authorize';
+        txParams.newWithdrawPublicKey = newWithdrawKey.pub;
+        txParams.stakeAccount = stakeAccount.pub;
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: walletObj } as any)
+          .should.rejectedWith('Tx fee payer is not the wallet root address');
+      });
+
+      it('should reject a crafted transaction that hides a Withdrawer change behind a decoy Staker change', async function () {
+        // A lockup custodian is orthogonal to StakeAuthorize: Solana permits a Staker change to
+        // carry one. A transaction that pairs a real Withdrawer change to an attacker key with a
+        // later Staker change to the expected key therefore looks, to any custodian-presence
+        // heuristic, like two Withdrawer changes — and the decoy would be reported as the withdraw
+        // authority. Selection must come from stakeAuthorizationType so the real change is seen.
+        const solTx = new SolTransaction();
+        solTx.recentBlockhash = blockHash;
+        solTx.feePayer = new PublicKey(wallet.pub);
+        solTx.add(
+          StakeProgram.authorize({
+            stakePubkey: new PublicKey(stakeAccount.pub),
+            authorizedPubkey: new PublicKey(wallet.pub),
+            newAuthorizedPubkey: new PublicKey(differentKey.pub),
+            stakeAuthorizationType: StakeAuthorizationLayout.Withdrawer,
+            custodianPubkey: new PublicKey(differentKey.pub),
+          })
+        );
+        solTx.add(
+          StakeProgram.authorize({
+            stakePubkey: new PublicKey(stakeAccount.pub),
+            authorizedPubkey: new PublicKey(wallet.pub),
+            newAuthorizedPubkey: new PublicKey(newWithdrawKey.pub),
+            stakeAuthorizationType: StakeAuthorizationLayout.Staker,
+            custodianPubkey: new PublicKey(newWithdrawKey.pub),
+          })
+        );
+
+        // Asserted on both chains via toJson() instruction parsing.
+        await rejectOnBothChains(
+          solTx,
+          /StakingAuthorize newAuthorizeAddress does not match intended newWithdrawPublicKey/
+        );
+      });
+
+      it('should reject a staker-only authorize transaction against a withdraw-authority intent', async function () {
+        const solTx = new SolTransaction();
+        solTx.recentBlockhash = blockHash;
+        solTx.feePayer = new PublicKey(wallet.pub);
+        solTx.add(
+          StakeProgram.authorize({
+            stakePubkey: new PublicKey(stakeAccount.pub),
+            authorizedPubkey: new PublicKey(wallet.pub),
+            newAuthorizedPubkey: new PublicKey(newWithdrawKey.pub),
+            stakeAuthorizationType: StakeAuthorizationLayout.Staker,
+            custodianPubkey: new PublicKey(newWithdrawKey.pub),
+          })
+        );
+
+        await rejectOnBothChains(solTx, /<no withdraw authority change>/);
+      });
+
+      it('should reject a second Withdrawer change smuggled onto a different stake account', async function () {
+        // Solana executes every instruction, so validating only the instruction that matches the
+        // intent leaves the rest unconstrained. Here the intent names stakeAccount, and the
+        // matching instruction is entirely correct — but an earlier instruction re-authorises a
+        // different stake account the same wallet controls, to an attacker key.
+        const otherStakeAccount = new KeyPair(resources.nonceAccount).getKeys();
+        const solTx = new SolTransaction();
+        solTx.recentBlockhash = blockHash;
+        solTx.feePayer = new PublicKey(wallet.pub);
+        solTx.add(
+          StakeProgram.authorize({
+            stakePubkey: new PublicKey(otherStakeAccount.pub),
+            authorizedPubkey: new PublicKey(wallet.pub),
+            newAuthorizedPubkey: new PublicKey(differentKey.pub),
+            stakeAuthorizationType: StakeAuthorizationLayout.Withdrawer,
+            custodianPubkey: new PublicKey(differentKey.pub),
+          })
+        );
+        solTx.add(
+          StakeProgram.authorize({
+            stakePubkey: new PublicKey(stakeAccount.pub),
+            authorizedPubkey: new PublicKey(wallet.pub),
+            newAuthorizedPubkey: new PublicKey(newWithdrawKey.pub),
+            stakeAuthorizationType: StakeAuthorizationLayout.Withdrawer,
+            custodianPubkey: new PublicKey(newWithdrawKey.pub),
+          })
+        );
+
+        await rejectOnBothChains(solTx, /StakingAuthorize stakingAddress does not match intended stakeAccount/);
+      });
+
+      it('should reject a Staker change to a key other than the intended new authority', async function () {
+        // The intent carries one new authority key and the builder points both authorities at it,
+        // so a staker change to some other key was never requested. Its holder can delegate,
+        // deactivate and split the stake even though the withdraw authority is correct.
+        const solTx = new SolTransaction();
+        solTx.recentBlockhash = blockHash;
+        solTx.feePayer = new PublicKey(wallet.pub);
+        solTx.add(
+          StakeProgram.authorize({
+            stakePubkey: new PublicKey(stakeAccount.pub),
+            authorizedPubkey: new PublicKey(wallet.pub),
+            newAuthorizedPubkey: new PublicKey(differentKey.pub),
+            stakeAuthorizationType: StakeAuthorizationLayout.Staker,
+            custodianPubkey: new PublicKey(differentKey.pub),
+          })
+        );
+        solTx.add(
+          StakeProgram.authorize({
+            stakePubkey: new PublicKey(stakeAccount.pub),
+            authorizedPubkey: new PublicKey(wallet.pub),
+            newAuthorizedPubkey: new PublicKey(newWithdrawKey.pub),
+            stakeAuthorizationType: StakeAuthorizationLayout.Withdrawer,
+            custodianPubkey: new PublicKey(newWithdrawKey.pub),
+          })
+        );
+
+        await rejectOnBothChains(solTx, /Staker authority\)/);
+      });
     });
   });
 

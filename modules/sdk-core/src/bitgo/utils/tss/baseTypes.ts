@@ -491,6 +491,10 @@ export interface PopulatedIntent extends PopulatedIntentBase, DefiIntentFields {
   clientOnboarder?: string;
   /** Optional ISO 8601 expiration timestamp (cantonParticipantOnboardingRequest intent). */
   expirationIso?: string;
+  /** SOL authorize intent: new withdraw authority public key. */
+  newWithdrawPublicKey?: string;
+  /** SOL authorize intent: stake account address being re-authorized. */
+  stakeAccount?: string;
 }
 
 export type TxRequestState =
