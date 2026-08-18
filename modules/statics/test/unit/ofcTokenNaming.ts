@@ -5,7 +5,7 @@ import { NetworkType } from '../../src/networks';
 describe('OFC Token Naming Convention Tests', function () {
   it('should have all testnet tokens on test network and mainnet tokens on main network', function () {
     // Known exceptions for testnet tokens that don't follow the typical naming pattern
-    const testnetExceptions = ['ofcgteth', 'ofchteth', 'ofchooditeth'];
+    const testnetExceptions = ['ofcgteth', 'ofchteth', 'ofchooditeth', 'ofcsepeth'];
 
     ofcCoins.forEach((token) => {
       if (token.network.type === NetworkType.TESTNET) {
