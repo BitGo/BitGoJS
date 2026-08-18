@@ -5,6 +5,7 @@ import {
   EDDSAMethods,
   EDDSAMethodTypes,
   Environments,
+  getEddsaSigningMaterial,
   KeyPair,
   MPCAlgorithm,
   MPCConsolidationRecoveryOptions,
@@ -20,6 +21,7 @@ import {
   PopulatedIntent,
   PrebuildTransactionWithIntentOptions,
   RecoveryTxRequest,
+  signEddsaMpcV2RecoveryTx,
   SignedTransaction,
   SignTransactionOptions,
   TransactionRecipient,
@@ -303,6 +305,9 @@ export class Iota extends BaseCoin {
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
 
+    // Detect MPCv2 keycard format once up front, to avoid decrypting on every scan iteration.
+    const isMpcV2 = await this.isMpcv2SigningMaterial(params.userKey, params.backupKey, params.walletPassphrase);
+
     for (let idx = startIdx; idx < endIdx; idx++) {
       const derivationPath = (params.seed ? getDerivationPath(params.seed) : 'm') + `/${idx}`;
       const derivedPublicKey = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
@@ -337,7 +342,8 @@ export class Iota extends BaseCoin {
             derivationPath,
             derivedPublicKey,
             idx,
-            bitgoKey
+            bitgoKey,
+            isMpcV2
           );
         } catch (e) {
           continue;
@@ -398,7 +404,9 @@ export class Iota extends BaseCoin {
         params,
         derivationPath,
         derivedPublicKey,
-        unsignedTx
+        unsignedTx,
+        isMpcV2,
+        bitgoKey
       );
 
       // Build and return signed transaction
@@ -706,7 +714,8 @@ export class Iota extends BaseCoin {
     derivationPath: string,
     derivedPublicKey: string,
     idx: number,
-    bitgoKey: string
+    bitgoKey: string,
+    isMpcV2: boolean
   ): Promise<MPCTxs | MPCSweepTxs> {
     tokenObjectsWithBalance = tokenObjectsWithBalance.sort((a, b) => (BigInt(b.balance) > BigInt(a.balance) ? 1 : -1));
     if (tokenObjectsWithBalance.length > MAX_OBJECT_LIMIT) {
@@ -780,7 +789,9 @@ export class Iota extends BaseCoin {
       params,
       derivationPath,
       derivedPublicKey,
-      unsignedTx
+      unsignedTx,
+      isMpcV2,
+      bitgoKey
     );
 
     const finalTx = (await txBuilder.build()) as TransferTransaction;
@@ -800,12 +811,26 @@ export class Iota extends BaseCoin {
     };
   }
 
+  private async isMpcv2SigningMaterial(
+    userKey?: string,
+    backupKey?: string,
+    walletPassphrase?: string
+  ): Promise<boolean> {
+    if (!walletPassphrase) return false;
+    if (!userKey) throw new Error('missing userKey');
+    if (!backupKey) throw new Error('missing backupKey');
+    const material = await getEddsaSigningMaterial(userKey.replace(/\s/g, ''), walletPassphrase, this.bitgo);
+    return material.version === 'v2';
+  }
+
   private async signRecoveryTransaction(
     txBuilder: TransactionBuilder,
     params: IotaRecoveryOptions,
     derivationPath: string,
     derivedPublicKey: string,
-    unsignedTx: TransferTransaction
+    unsignedTx: TransferTransaction,
+    isMpcV2: boolean,
+    bitgoKey: string
   ): Promise<string> {
     if (!params.userKey) {
       throw new Error('missing userKey');
@@ -820,30 +845,44 @@ export class Iota extends BaseCoin {
     const userKey = params.userKey.replace(/\s/g, '');
     const backupKey = params.backupKey.replace(/\s/g, '');
 
-    // Decrypt private keys from KeyCard values
-    let userPrv: string;
-    try {
-      userPrv = await this.bitgo.decrypt({ input: userKey, password: params.walletPassphrase });
-    } catch (e) {
-      throw new Error(`Error decrypting user keychain: ${(e as Error).message}`);
-    }
-    const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+    let signatureBuffer: Buffer;
 
-    let backupPrv: string;
-    try {
-      backupPrv = await this.bitgo.decrypt({ input: backupKey, password: params.walletPassphrase });
-    } catch (e) {
-      throw new Error(`Error decrypting backup keychain: ${(e as Error).message}`);
-    }
-    const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+    if (!isMpcV2) {
+      // Decrypt private keys from KeyCard values
+      let userPrv: string;
+      try {
+        userPrv = await this.bitgo.decrypt({ input: userKey, password: params.walletPassphrase });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${(e as Error).message}`);
+      }
+      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
 
-    // Generate TSS signature
-    const signatureBuffer = await EDDSAMethods.getTSSSignature(
-      userSigningMaterial,
-      backupSigningMaterial,
-      derivationPath,
-      unsignedTx
-    );
+      let backupPrv: string;
+      try {
+        backupPrv = await this.bitgo.decrypt({ input: backupKey, password: params.walletPassphrase });
+      } catch (e) {
+        throw new Error(`Error decrypting backup keychain: ${(e as Error).message}`);
+      }
+      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+
+      // Generate TSS signature
+      signatureBuffer = await EDDSAMethods.getTSSSignature(
+        userSigningMaterial,
+        backupSigningMaterial,
+        derivationPath,
+        unsignedTx
+      );
+    } else {
+      signatureBuffer = await signEddsaMpcV2RecoveryTx({
+        message: unsignedTx.signablePayload,
+        userKey,
+        backupKey,
+        walletPassphrase: params.walletPassphrase,
+        bitgoKey,
+        derivationPath,
+        bitgo: this.bitgo,
+      });
+    }
 
     // Build full signature: scheme_flag (1 byte) + signature (64 bytes) + public_key (32 bytes)
     const schemeFlag = Buffer.alloc(1, 0x00); // Ed25519 scheme

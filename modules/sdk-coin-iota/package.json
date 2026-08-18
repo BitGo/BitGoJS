@@ -51,7 +51,8 @@
   "devDependencies": {
     "@bitgo/sdk-api": "^2.3.2",
     "@bitgo/sdk-lib-mpc": "^10.17.0",
-    "@bitgo/sdk-test": "^9.1.68"
+    "@bitgo/sdk-test": "^9.1.68",
+    "tweetnacl": "^1.0.3"
   },
   "files": [
     "dist"
