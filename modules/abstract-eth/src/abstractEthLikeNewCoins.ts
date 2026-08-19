@@ -62,7 +62,7 @@ import {
 } from '@bitgo/statics';
 import type * as EthLikeCommon from '@ethereumjs/common';
 import type * as EthLikeTxLib from '@ethereumjs/tx';
-import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction } from '@ethereumjs/tx';
+import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction, TransactionFactory } from '@ethereumjs/tx';
 import { RLP } from '@ethereumjs/rlp';
 import { SignTypedDataVersion, TypedDataUtils, TypedMessage } from '@metamask/eth-sig-util';
 import { BigNumber } from 'bignumber.js';
@@ -3177,15 +3177,11 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    *
   /** @inheritdoc CoinWithSignableConsistency */
   assertSignableConsistency(serializedTxHex: string, signableHex: string): void {
-    const txBytes = Buffer.from(stripHexPrefix(serializedTxHex), 'hex');
-    let derivedSignableHex: string;
-    try {
-      const eip1559Tx = FeeMarketEIP1559Transaction.fromSerializedTx(txBytes);
-      derivedSignableHex = eip1559Tx.getMessageToSign(false).toString('hex');
-    } catch {
-      const legacyTx = LegacyTransaction.fromSerializedTx(txBytes);
-      derivedSignableHex = Buffer.from(RLP.encode(bufArrToArr(legacyTx.getMessageToSign(false)))).toString('hex');
-    }
+    const ethTx = TransactionFactory.fromSerializedData(toBuffer(addHexPrefix(serializedTxHex)));
+    const derivedSignableHex =
+      ethTx instanceof FeeMarketEIP1559Transaction
+        ? ethTx.getMessageToSign(false).toString('hex')
+        : Buffer.from(RLP.encode(bufArrToArr((ethTx as LegacyTransaction).getMessageToSign(false)))).toString('hex');
     if (derivedSignableHex !== signableHex) {
       throw new InvalidTransactionError('signableHex is inconsistent with serializedTxHex: possible server tampering');
     }
