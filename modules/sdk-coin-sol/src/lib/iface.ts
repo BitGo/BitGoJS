@@ -78,6 +78,21 @@ export interface Transfer {
   };
 }
 
+/**
+ * Extra account metadata required by a Token-2022 Transfer Hook.
+ *
+ * These are resolved live (in the order the hook's ExtraAccountMetaList requires)
+ * and supplied to the instruction factory. See {@link TokenTransfer}.
+ */
+export interface ExtraAccountMeta {
+  /** The base58-encoded public key of the account */
+  pubkey: string;
+  /** Whether the account must sign the transaction */
+  isSigner: boolean;
+  /** Whether the account is writable */
+  isWritable: boolean;
+}
+
 export interface TokenTransfer {
   type: InstructionBuilderTypes.TokenTransfer;
   params: {
@@ -91,6 +106,12 @@ export interface TokenTransfer {
     programId?: string;
     /** Withheld transfer fee in raw base units */
     fee?: string;
+    /**
+     * Resolved Transfer Hook extra account metas, in the exact order the hook
+     * requires. Only used for Token-2022 transfers whose mint has a Transfer
+     * Hook extension; resolved live by the caller (offline builders never fetch).
+     */
+    transferHookAccounts?: ExtraAccountMeta[];
   };
 }
 

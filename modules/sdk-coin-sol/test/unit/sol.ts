@@ -4,7 +4,8 @@ import nock from 'nock';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { getExtraAccountMetaAddress, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { PublicKey } from '@solana/web3.js';
 
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import {
@@ -35,7 +36,7 @@ import {
   Tsol,
 } from '../../src';
 import { Transaction } from '../../src/lib';
-import { AtaInit, InstructionParams, TokenTransfer } from '../../src/lib/iface';
+import { AtaInit, ExtraAccountMeta, InstructionParams, TokenTransfer } from '../../src/lib/iface';
 import { getAssociatedTokenAccountAddress } from '../../src/lib/utils';
 import * as testData from '../fixtures/sol';
 import * as resources from '../resources/sol';
@@ -5004,6 +5005,166 @@ describe('SOL:', function () {
 
       const address = basecoin.getAddressFromPublicKey(publicKey);
       address.should.equal(expectedAddress);
+    });
+  });
+
+  describe('resolveTransferHookAccounts', () => {
+    const sandBox = sinon.createSandbox();
+    const mintAddress = resources.sol2022TokenTransfers.mint;
+    const sourceAddress = resources.associatedTokenAccountsForSol2022.accounts[0].ata;
+    const destinationAddress = resources.associatedTokenAccounts.accounts[0].ata;
+    const ownerAddress = resources.authAccount.pub;
+    const amount = '500000';
+    const decimals = 6;
+    // Arbitrary but valid base58 pubkeys used purely as fixtures.
+    const hookProgramId = new PublicKey('GbQ8ZiEFzGGTeYoXwtZtcoxwPcMyUcmZDduMVNdUPKpX');
+    const extraMetas: ExtraAccountMeta[] = [
+      { pubkey: '98wFF5MpMjMQbfDF2MPzo8LCGX37unZR1ohRA1mU9GmJ', isSigner: false, isWritable: true },
+      { pubkey: '48n7YGEww7fKMfJ5gJ3sQC3rM6RWGjpUsghqVfXVkR5A', isSigner: false, isWritable: false },
+      { pubkey: '9sQhAH7vV3RKTCK13VY4EiNjs3qBq1srSYxdNufdAAXm', isSigner: false, isWritable: false },
+    ];
+
+    // Token-2022 mint account layout: 82-byte base MintLayout, padded to the
+    // 165-byte account size, an account-type byte (1 = Mint), then the extension
+    // TLV. TransferHook is extension type 14 with 64 bytes (authority + programId).
+    const buildMintWithTransferHook = (mintDecimals: number, hookProgram: PublicKey): Buffer => {
+      const data = Buffer.alloc(234);
+      data.writeUInt8(mintDecimals, 44); // MintLayout.decimals
+      data.writeUInt8(1, 45); // MintLayout.isInitialized
+      data.writeUInt8(1, 165); // AccountType.Mint
+      data.writeUInt16LE(14, 166); // extension type: TransferHook
+      data.writeUInt16LE(64, 168); // extension length
+      // authority occupies [170, 202); programId occupies [202, 234)
+      hookProgram.toBuffer().copy(data, 202);
+      return data;
+    };
+
+    // Plain SPL/Token-2022 mint with no extensions (base MintLayout only).
+    const buildBaseMint = (mintDecimals: number): Buffer => {
+      const data = Buffer.alloc(82);
+      data.writeUInt8(mintDecimals, 44);
+      data.writeUInt8(1, 45);
+      return data;
+    };
+
+    // ExtraAccountMetaList account: u64 discriminator + u32 length + u32 count,
+    // then 35-byte ExtraAccountMeta entries (discriminator 0 = fixed address).
+    const buildExtraAccountMetaList = (metas: ExtraAccountMeta[]): Buffer => {
+      const headerSize = 16;
+      const data = Buffer.alloc(headerSize + metas.length * 35);
+      data.writeUInt32LE(4 + metas.length * 35, 8); // length
+      data.writeUInt32LE(metas.length, 12); // count
+      let offset = headerSize;
+      for (const meta of metas) {
+        data.writeUInt8(0, offset); // discriminator: fixed address
+        new PublicKey(meta.pubkey).toBuffer().copy(data, offset + 1); // addressConfig
+        data.writeUInt8(meta.isSigner ? 1 : 0, offset + 33);
+        data.writeUInt8(meta.isWritable ? 1 : 0, offset + 34);
+        offset += 35;
+      }
+      return data;
+    };
+
+    const accountInfoResponse = (data: Buffer | null, owner: string) => ({
+      status: 200,
+      body: {
+        result: {
+          value:
+            data === null
+              ? null
+              : {
+                  data: [data.toString('base64'), 'base64'],
+                  executable: false,
+                  owner,
+                  lamports: 1,
+                  rentEpoch: 0,
+                },
+        },
+      },
+    });
+
+    const stubNode = (accounts: Record<string, { data: Buffer | null; owner: string }>): void => {
+      const callBack = sandBox.stub(Sol.prototype, 'getDataFromNode' as keyof Sol);
+      callBack.callsFake(async (...args: unknown[]) => {
+        const params = args[0] as { payload?: { params?: unknown[] } };
+        const requestedPubkey = params.payload?.params?.[0] as string;
+        const account = accounts[requestedPubkey];
+        if (!account) {
+          return accountInfoResponse(null, TOKEN_2022_PROGRAM_ID.toBase58());
+        }
+        return accountInfoResponse(account.data, account.owner);
+      });
+    };
+
+    afterEach(() => {
+      sandBox.restore();
+    });
+
+    it('resolves the ordered extra accounts for a mint with a transfer hook', async function () {
+      const validationStatePubkey = getExtraAccountMetaAddress(new PublicKey(mintAddress), hookProgramId);
+      stubNode({
+        [mintAddress]: {
+          data: buildMintWithTransferHook(decimals, hookProgramId),
+          owner: TOKEN_2022_PROGRAM_ID.toBase58(),
+        },
+        [validationStatePubkey.toBase58()]: {
+          data: buildExtraAccountMetaList(extraMetas),
+          owner: hookProgramId.toBase58(),
+        },
+      });
+
+      const result = await basecoin.resolveTransferHookAccounts(
+        mintAddress,
+        sourceAddress,
+        destinationAddress,
+        ownerAddress,
+        amount
+      );
+
+      // extra accounts, then the hook program, then the validation state account
+      result.should.have.length(extraMetas.length + 2);
+      result.slice(0, extraMetas.length).should.deepEqual(extraMetas);
+      result[extraMetas.length].should.deepEqual({
+        pubkey: hookProgramId.toBase58(),
+        isSigner: false,
+        isWritable: false,
+      });
+      result[extraMetas.length + 1].should.deepEqual({
+        pubkey: validationStatePubkey.toBase58(),
+        isSigner: false,
+        isWritable: false,
+      });
+    });
+
+    it('returns an empty array for a mint without a transfer hook', async function () {
+      stubNode({
+        [mintAddress]: {
+          data: buildBaseMint(decimals),
+          owner: TOKEN_2022_PROGRAM_ID.toBase58(),
+        },
+      });
+
+      const result = await basecoin.resolveTransferHookAccounts(
+        mintAddress,
+        sourceAddress,
+        destinationAddress,
+        ownerAddress,
+        amount
+      );
+      result.should.deepEqual([]);
+    });
+
+    it('returns an empty array when the mint account is not found', async function () {
+      stubNode({});
+
+      const result = await basecoin.resolveTransferHookAccounts(
+        mintAddress,
+        sourceAddress,
+        destinationAddress,
+        ownerAddress,
+        amount
+      );
+      result.should.deepEqual([]);
     });
   });
 });

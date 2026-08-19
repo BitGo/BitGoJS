@@ -2,7 +2,21 @@
  * @prettier
  */
 
-import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {
+  TOKEN_2022_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+  addExtraAccountMetasForExecute,
+  createTransferCheckedInstruction,
+  getTransferHook,
+  unpackMint,
+} from '@solana/spl-token';
+import {
+  AccountInfo,
+  Commitment,
+  Connection,
+  PublicKey as SolPublicKey,
+  TransactionInstruction,
+} from '@solana/web3.js';
 import BigNumber from 'bignumber.js';
 import * as base58 from 'bs58';
 import * as _ from 'lodash';
@@ -71,7 +85,12 @@ import {
   TransactionBuilderFactory,
   explainSolTransaction,
 } from './lib';
-import { AtaClose, AtaRecoverNested, TransactionExplanation as SolLibTransactionExplanation } from './lib/iface';
+import {
+  AtaClose,
+  AtaRecoverNested,
+  ExtraAccountMeta,
+  TransactionExplanation as SolLibTransactionExplanation,
+} from './lib/iface';
 import { InstructionBuilderTypes } from './lib/constants';
 import {
   getAssociatedTokenAccountAddress,
@@ -1176,6 +1195,141 @@ export class Sol extends BaseCoin {
       pubKey: pubKey,
       info: response.body.result.value.data.parsed.info,
     };
+  }
+
+  /**
+   * Build a minimal `Connection`-like shim backed by {@link getDataFromNode}.
+   *
+   * `@solana/spl-token`'s transfer-hook resolution helpers only require
+   * `getAccountInfo(publicKey)` returning an `AccountInfo<Buffer>`. Rather than
+   * open a second RPC transport, we reuse the existing public-node request path.
+   *
+   * @param {string} [apiKey] - optional Alchemy API key threaded to the node URL
+   * @returns {Connection} a shim exposing `getAccountInfo`, cast to `Connection`
+   */
+  protected buildTransferHookConnection(apiKey?: string): Connection {
+    const getAccountInfo = async (
+      publicKey: SolPublicKey,
+      _commitmentOrConfig?: Commitment
+    ): Promise<AccountInfo<Buffer> | null> => {
+      const response = await this.getDataFromNode(
+        {
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getAccountInfo',
+            params: [publicKey.toBase58(), { encoding: 'base64' }],
+          },
+        },
+        apiKey
+      );
+      if (response.status !== 200) {
+        throw new Error('Account not found');
+      }
+      const value = response.body?.result?.value;
+      if (!value) {
+        return null;
+      }
+      const [data] = value.data as [string, string];
+      return {
+        executable: value.executable,
+        owner: new SolPublicKey(value.owner),
+        lamports: value.lamports,
+        data: Buffer.from(data, 'base64'),
+        rentEpoch: value.rentEpoch,
+      };
+    };
+    return { getAccountInfo } as unknown as Connection;
+  }
+
+  /**
+   * Resolve the Token-2022 Transfer Hook extra accounts for a specific transfer.
+   *
+   * This is generic: it works for any Token-2022 mint by reading the mint's
+   * TransferHook extension and the hook program's ExtraAccountMetaList live from
+   * the node, then resolving each extra account (including seed-derived PDAs) via
+   * the standard `spl-transfer-hook-interface` helpers. The returned metas are in
+   * the exact order the hook requires and are suitable for
+   * `TokenTransfer.params.transferHookAccounts`.
+   *
+   * Builders remain offline, so the caller (e.g. wallet-platform) is responsible
+   * for invoking this and threading the result into the token-transfer builder via
+   * `transferHookAccounts(...)`. When the mint has no Transfer Hook, this returns
+   * an empty array and callers can omit the param.
+   *
+   * @param {string} mint - the Token-2022 mint address
+   * @param {string} source - the source token account (sender ATA)
+   * @param {string} destination - the destination token account (recipient ATA)
+   * @param {string} owner - the source account owner / transfer authority
+   * @param {string} amount - the raw transfer amount in base units
+   * @param {string} [apiKey] - optional Alchemy API key threaded to the node URL
+   * @returns {Promise<ExtraAccountMeta[]>} ordered extra account metas, or [] when no hook
+   */
+  async resolveTransferHookAccounts(
+    mint: string,
+    source: string,
+    destination: string,
+    owner: string,
+    amount: string,
+    apiKey?: string
+  ): Promise<ExtraAccountMeta[]> {
+    const mintPubkey = new SolPublicKey(mint);
+    const connection = this.buildTransferHookConnection(apiKey);
+
+    // Read the mint and detect whether a Transfer Hook extension is configured.
+    const mintAccountInfo = await connection.getAccountInfo(mintPubkey);
+    if (!mintAccountInfo) {
+      return [];
+    }
+    const mintState = unpackMint(mintPubkey, mintAccountInfo, TOKEN_2022_PROGRAM_ID);
+    const transferHook = getTransferHook(mintState);
+    if (!transferHook || transferHook.programId.equals(SolPublicKey.default)) {
+      return [];
+    }
+
+    const sourcePubkey = new SolPublicKey(source);
+    const destinationPubkey = new SolPublicKey(destination);
+    const ownerPubkey = new SolPublicKey(owner);
+    const transferAmount = BigInt(amount);
+
+    // Start from a base transferChecked instruction; addExtraAccountMetasForExecute
+    // appends the resolved extra accounts, the hook program, and the validation
+    // state account in the required order.
+    const instruction = createTransferCheckedInstruction(
+      sourcePubkey,
+      mintPubkey,
+      destinationPubkey,
+      ownerPubkey,
+      transferAmount,
+      mintState.decimals,
+      [],
+      TOKEN_2022_PROGRAM_ID
+    );
+    const baseKeyCount = instruction.keys.length;
+    await addExtraAccountMetasForExecute(
+      connection,
+      instruction,
+      transferHook.programId,
+      sourcePubkey,
+      mintPubkey,
+      destinationPubkey,
+      ownerPubkey,
+      transferAmount
+    );
+
+    return this.toExtraAccountMetas(instruction, baseKeyCount);
+  }
+
+  /**
+   * Map the extra keys appended to a resolved transfer instruction into the
+   * serializable {@link ExtraAccountMeta} shape.
+   */
+  private toExtraAccountMetas(instruction: TransactionInstruction, baseKeyCount: number): ExtraAccountMeta[] {
+    return instruction.keys.slice(baseKeyCount).map((meta) => ({
+      pubkey: meta.pubkey.toBase58(),
+      isSigner: meta.isSigner,
+      isWritable: meta.isWritable,
+    }));
   }
 
   /** inherited doc */
