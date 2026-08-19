@@ -1438,6 +1438,16 @@ export class Sol extends BaseCoin {
     let totalFee = new BigNumber(0);
     let totalFeeForTokenRecovery = new BigNumber(0);
 
+    // Warn if durable nonce is not provided for SOL recovery.
+    // With SIMD-525 (200ms slots), the blockhash validity window drops from ~60s to ~30s.
+    // Recovery flows that don't use durable nonce must complete build-sign-broadcast within that window.
+    if (!params.durableNonce) {
+      logger.warn(
+        'SOL recovery without durable nonce: transaction must be signed and broadcast within the blockhash validity window (~30s at 200ms slots). ' +
+          'Provide params.durableNonce for flows that may exceed this window.'
+      );
+    }
+
     // check for possible token recovery, recover the token provide by user
     if (params.tokenContractAddress) {
       let isUnsupportedToken = false;
