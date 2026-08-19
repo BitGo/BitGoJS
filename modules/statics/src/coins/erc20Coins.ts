@@ -6,6 +6,7 @@ import {
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_MENA_FZE,
   EIGEN_FEATURES,
+  ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE,
   ETH_FEATURES,
   ETH_FEATURES_EXCLUDE_EUROPE,
   ETH_FEATURES_WITH_FRANKFURT,
@@ -13529,7 +13530,8 @@ export const erc20Coins = [
     'Invesco QQQ (Ondo Tokenized)',
     18,
     '0x0e397938c1aa0680954093495b70a9f5e2249aba',
-    UnderlyingAsset['eth:qqqon']
+    UnderlyingAsset['eth:qqqon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e13d7445-f465-4a45-aef1-3e32d4bd0f9c',
@@ -13537,7 +13539,8 @@ export const erc20Coins = [
     'SPDR S&P 500 ETF (Ondo Tokenized)',
     18,
     '0xfedc5f4a6c38211c1338aa411018dfaf26612c08',
-    UnderlyingAsset['eth:spyon']
+    UnderlyingAsset['eth:spyon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'f5d7b0b3-42de-4555-8b14-82430b6ac372',
@@ -13545,7 +13548,8 @@ export const erc20Coins = [
     'NVIDIA (Ondo Tokenized)',
     18,
     '0x2d1f7226bd1f780af6b9a49dcc0ae00e8df4bdee',
-    UnderlyingAsset['eth:nvdaon']
+    UnderlyingAsset['eth:nvdaon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '70493e8f-4ee7-4eaf-b115-f7f64c7cbb9c',
@@ -13553,7 +13557,8 @@ export const erc20Coins = [
     'Tesla (Ondo Tokenized)',
     18,
     '0xf6b1117ec07684d3958cad8beb1b302bfd21103f',
-    UnderlyingAsset['eth:tslaon']
+    UnderlyingAsset['eth:tslaon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'c7a9ac82-3d84-4e88-86d6-0c5c69b717d5',
@@ -13561,7 +13566,8 @@ export const erc20Coins = [
     'Apple (Ondo Tokenized)',
     18,
     '0x14c3abf95cb9c93a8b82c1cdcb76d72cb87b2d4c',
-    UnderlyingAsset['eth:aaplon']
+    UnderlyingAsset['eth:aaplon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'bcead26f-3bba-4fa4-bf4a-f3cb93a5c1d7',
@@ -13569,7 +13575,8 @@ export const erc20Coins = [
     'MicroStrategy (Ondo Tokenized)',
     18,
     '0xcabd955322dfbf94c084929ac5e9eca3feb5556f',
-    UnderlyingAsset['eth:mstron']
+    UnderlyingAsset['eth:mstron'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '47ece7cd-2e8c-4ca7-8e7b-3c40c54d9e24',
@@ -13577,7 +13584,8 @@ export const erc20Coins = [
     'Palantir Technologies (Ondo Tokenized)',
     18,
     '0x0c666485b02f7a87d21add7aeb9f5e64975aa490',
-    UnderlyingAsset['eth:pltron']
+    UnderlyingAsset['eth:pltron'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'a9f5d8e4-28b0-4f89-9b7a-c8c75e415f9e',
@@ -13585,7 +13593,8 @@ export const erc20Coins = [
     'Robinhood Markets (Ondo Tokenized)',
     18,
     '0x998f02a9e343ef6e3e6f28700d5a20f839fd74e6',
-    UnderlyingAsset['eth:hoodon']
+    UnderlyingAsset['eth:hoodon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e6b47c58-fb0a-4b92-a2c6-7f1c3d5b11d6',
@@ -13593,7 +13602,8 @@ export const erc20Coins = [
     'Circle Internet Group (Ondo Tokenized)',
     18,
     '0x3632dea96a953c11dac2f00b4a05a32cd1063fae',
-    UnderlyingAsset['eth:crclon']
+    UnderlyingAsset['eth:crclon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'c13df8a2-eb9b-4c5c-92bd-68a73abb19e0',
@@ -13601,7 +13611,8 @@ export const erc20Coins = [
     'Coinbase (Ondo Tokenized)',
     18,
     '0xf042cfa86cf1d598a75bdb55c3507a1f39f9493b',
-    UnderlyingAsset['eth:coinon']
+    UnderlyingAsset['eth:coinon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '93ba482c-0152-48d1-96c4-678d8a1a3c7f',
@@ -13609,7 +13620,8 @@ export const erc20Coins = [
     'Amazon (Ondo Tokenized)',
     18,
     '0xbb8774fb97436d23d74c1b882e8e9a69322cfd31',
-    UnderlyingAsset['eth:amznon']
+    UnderlyingAsset['eth:amznon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '16a4d879-62ca-4f20-a8d0-2c8d7e2a25a9',
@@ -13617,7 +13629,8 @@ export const erc20Coins = [
     'Alphabet Class A (Ondo Tokenized)',
     18,
     '0xba47214edd2bb43099611b208f75e4b42fdcfedc',
-    UnderlyingAsset['eth:googlon']
+    UnderlyingAsset['eth:googlon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '29fb5687-d0f9-4ccd-8fa9-6b3e2d83695a',
@@ -13625,7 +13638,8 @@ export const erc20Coins = [
     'Meta Platforms (Ondo Tokenized)',
     18,
     '0x59644165402b611b350645555b50afb581c71eb2',
-    UnderlyingAsset['eth:metaon']
+    UnderlyingAsset['eth:metaon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '452b7183-a1d2-4d6c-aad7-5e2b5f3e076d',
@@ -13633,7 +13647,8 @@ export const erc20Coins = [
     'Alibaba (Ondo Tokenized)',
     18,
     '0x41765f0fcddc276309195166c7a62ae522fa09ef',
-    UnderlyingAsset['eth:babaon']
+    UnderlyingAsset['eth:babaon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'bff5ad0c-cb1c-4a15-ba6e-45f3af5b9aea',
@@ -13641,7 +13656,8 @@ export const erc20Coins = [
     'Microsoft (Ondo Tokenized)',
     18,
     '0xb812837b81a3a6b81d7cd74cfb19a7f2784555e5',
-    UnderlyingAsset['eth:msfton']
+    UnderlyingAsset['eth:msfton'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '8d7c3e9f-6ae4-4f8a-9d17-d1c3a4f72ae9',
@@ -13649,7 +13665,8 @@ export const erc20Coins = [
     'S&P Global (Ondo Tokenized)',
     18,
     '0xbc843b147db4c7e00721d76037b8b92e13afe13f',
-    UnderlyingAsset['eth:spgion']
+    UnderlyingAsset['eth:spgion'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '7a2be40d-1f5e-45d3-81a9-3642c57a9f8b',
@@ -13657,7 +13674,8 @@ export const erc20Coins = [
     'Taiwan Semiconductor Manufacturing (Ondo Tokenized)',
     18,
     '0x3cafdbfe682aec17d5ace2f97a2f3ab3dcf6a4a9',
-    UnderlyingAsset['eth:tsmon']
+    UnderlyingAsset['eth:tsmon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '6a9e0c2f-1d7a-4b83-ba5e-9fd3e78a4d5e',
@@ -13665,7 +13683,8 @@ export const erc20Coins = [
     'AMD (Ondo Tokenized)',
     18,
     '0x0c1f3412a44ff99e40bf14e06e5ea321ae7b3938',
-    UnderlyingAsset['eth:amdon']
+    UnderlyingAsset['eth:amdon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'b9c12a83-4e5f-47d2-a8b6-2c9e3d8c4f7e',
@@ -13673,7 +13692,8 @@ export const erc20Coins = [
     'UnitedHealth (Ondo Tokenized)',
     18,
     '0x075756f3b6381a79633438faa8964946bf40163d',
-    UnderlyingAsset['eth:unhon']
+    UnderlyingAsset['eth:unhon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e8f5a7c2-d3b9-41e6-9c8a-7d0f2e9b1a5c',
@@ -13681,7 +13701,8 @@ export const erc20Coins = [
     'JPMorgan Chase (Ondo Tokenized)',
     18,
     '0x03c1ec4ca9dbb168e6db0def827c085999cbffaf',
-    UnderlyingAsset['eth:jpmon']
+    UnderlyingAsset['eth:jpmon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '2f7d9e6a-1c4b-48a3-9e5d-7b8c3f2a1d9e',
@@ -13689,7 +13710,8 @@ export const erc20Coins = [
     'Oracle (Ondo Tokenized)',
     18,
     '0x8a23c6baadb88512b30475c83df6a63881e33e1e',
-    UnderlyingAsset['eth:orclon']
+    UnderlyingAsset['eth:orclon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'c1a9e7d8-3f5b-42e6-8d7a-9c4f2e3b1d5a',
@@ -13697,7 +13719,8 @@ export const erc20Coins = [
     'Visa (Ondo Tokenized)',
     18,
     '0xac37c20c1d0e5285035e056101a64e263ff94a41',
-    UnderlyingAsset['eth:von']
+    UnderlyingAsset['eth:von'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'd7e9a6c2-4f8b-4e3d-8a1c-9b8e7a4f6d3c',
@@ -13705,7 +13728,8 @@ export const erc20Coins = [
     'Mastercard (Ondo Tokenized)',
     18,
     '0xa29dc2102dfc2a0a4a5dcb84af984315567c9858',
-    UnderlyingAsset['eth:maon']
+    UnderlyingAsset['eth:maon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '3e8f7c9a-6d2b-4a5c-9e1d-8f7a6b3c2e9d',
@@ -13713,7 +13737,8 @@ export const erc20Coins = [
     'Eli Lilly (Ondo Tokenized)',
     18,
     '0xf192957ae52db3eb088654403cc2eded014ae556',
-    UnderlyingAsset['eth:llyon']
+    UnderlyingAsset['eth:llyon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'f6a9d8c7-3e5b-4a2d-9f7c-1e8a6d9b3c5f',
@@ -13721,7 +13746,8 @@ export const erc20Coins = [
     'Netflix (Ondo Tokenized)',
     18,
     '0x032dec3372f25c41ea8054b4987a7c4832cdb338',
-    UnderlyingAsset['eth:nflxon']
+    UnderlyingAsset['eth:nflxon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '9d8e7f6a-5c4b-4e2d-9a9f-8b7c6e5d4a3b',
@@ -13729,7 +13755,8 @@ export const erc20Coins = [
     'Costco (Ondo Tokenized)',
     18,
     '0x0c8276e4fec072cf7854be69c70f7773d1610857',
-    UnderlyingAsset['eth:coston']
+    UnderlyingAsset['eth:coston'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'a3b9c8d7-6e5f-4a2d-9c9e-8f7b6a5d4c3e',
@@ -13737,7 +13764,8 @@ export const erc20Coins = [
     'iShares Gold Trust (Ondo Tokenized)',
     18,
     '0x4f0ca3df1c2e6b943cf82e649d576ffe7b2fabcf',
-    UnderlyingAsset['eth:iauon']
+    UnderlyingAsset['eth:iauon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e7d9c8b6-5a4f-4e2d-9b9a-7c6f5e4d3b2a',
@@ -13745,7 +13773,8 @@ export const erc20Coins = [
     'iShares Core S&P 500 ETF (Ondo Tokenized)',
     18,
     '0x62ca254a363dc3c748e7e955c20447ab5bf06ff7',
-    UnderlyingAsset['eth:ivvon']
+    UnderlyingAsset['eth:ivvon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'c9b8a7d6-5e4f-4a2d-9b9c-8e7f6a5d4b3c',
@@ -13753,7 +13782,8 @@ export const erc20Coins = [
     'iShares Silver Trust (Ondo Tokenized)',
     18,
     '0xf3e4872e6a4cf365888d93b6146a2baa7348f1a4',
-    UnderlyingAsset['eth:slvon']
+    UnderlyingAsset['eth:slvon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '1e1f447e-b5ab-4cf9-90ac-d677280c788f',
@@ -13761,7 +13791,8 @@ export const erc20Coins = [
     'Unilever (Ondo Tokenized)',
     18,
     '0x1598f7d25d0b0e1261eab9bd2ad7924291eb26bb',
-    UnderlyingAsset['eth:ulon']
+    UnderlyingAsset['eth:ulon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e32ea649-043c-46f1-8dec-b5e573bc6e87',
@@ -13769,7 +13800,8 @@ export const erc20Coins = [
     'iShares Russell 2000 Value ETF (Ondo Tokenized)',
     18,
     '0x9dcf7f739b8c0270e2fc0cc8d0dabe355a150dba',
-    UnderlyingAsset['eth:iwnon']
+    UnderlyingAsset['eth:iwnon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '48efa2ef-1cea-40e1-a130-561976d1bb8e',
@@ -13777,7 +13809,8 @@ export const erc20Coins = [
     'iShares Core S&amp;P Total US Stock Market ETF (Ondo Tokenized)',
     18,
     '0x0692481c369e2bdc728a69ae31b848343a4567be',
-    UnderlyingAsset['eth:itoton']
+    UnderlyingAsset['eth:itoton'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '3fdf54c2-5032-4856-8185-4f4e235be08d',
@@ -13785,7 +13818,8 @@ export const erc20Coins = [
     'iShares TIPS Bond ETF (Ondo Tokenized)',
     18,
     '0x2df38ca485d01fc15e4fd85847ed26b7ef871c1c',
-    UnderlyingAsset['eth:tipon']
+    UnderlyingAsset['eth:tipon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e6b97fee-44c3-4726-ada0-2a700e08bb53',
@@ -13793,7 +13827,8 @@ export const erc20Coins = [
     'D-Wave Quantum (Ondo Tokenized)',
     18,
     '0x3807562a482b824c08a564dfefcc471806d3e00a',
-    UnderlyingAsset['eth:qbtson']
+    UnderlyingAsset['eth:qbtson'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '712afbc4-ff86-4bae-ba5b-3d37f2d9e2d3',
@@ -13801,7 +13836,8 @@ export const erc20Coins = [
     'Equinix (Ondo Tokenized)',
     18,
     '0x73d2ccee12c120e7da265a2de9d9f952a0101b4f',
-    UnderlyingAsset['eth:eqixon']
+    UnderlyingAsset['eth:eqixon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '61647067-392a-4aae-952a-45e7ded39a7b',
@@ -13809,7 +13845,8 @@ export const erc20Coins = [
     'GameStop (Ondo Tokenized)',
     18,
     '0x71d24baeb0a033ec5f90ff65c4210545af378d97',
-    UnderlyingAsset['eth:gmeon']
+    UnderlyingAsset['eth:gmeon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'd6189e7e-e198-4d28-b229-f35ff99f2f68',
@@ -13817,7 +13854,8 @@ export const erc20Coins = [
     'iBoxx $ High Yield Corporate Bond ETF (Ondo Tokenized)',
     18,
     '0xed3618bb8778f8ebbe2f241da532227591771d04',
-    UnderlyingAsset['eth:hygon']
+    UnderlyingAsset['eth:hygon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '41b406e4-009b-4aa8-b04d-b1feed854d27',
@@ -13825,7 +13863,8 @@ export const erc20Coins = [
     'Petrobras (Ondo Tokenized)',
     18,
     '0xd08ddb436e731f32455fe302723ee0fd2e9e8706',
-    UnderlyingAsset['eth:pbron']
+    UnderlyingAsset['eth:pbron'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '2fcf389c-59a0-4bbd-a93f-3008a13dd480',
@@ -13833,7 +13872,8 @@ export const erc20Coins = [
     'MARA Holdings (Ondo Tokenized)',
     18,
     '0x4604b0b581269843ac7a6b70a5fc019e7762e511',
-    UnderlyingAsset['eth:maraon']
+    UnderlyingAsset['eth:maraon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '9df0207e-f45b-4580-acc0-a5e65c9feb36',
@@ -13841,7 +13881,8 @@ export const erc20Coins = [
     'Comcast (Ondo Tokenized)',
     18,
     '0x85fd8dfd987988ede1777935d9d09c7ac7f09f0b',
-    UnderlyingAsset['eth:cmcsaon']
+    UnderlyingAsset['eth:cmcsaon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '19e98277-beb1-41f1-8cbf-b24a492c3c59',
@@ -13849,7 +13890,8 @@ export const erc20Coins = [
     'Pfizer (Ondo Tokenized)',
     18,
     '0x06954faa913fa14c28eb1b2e459594f22f33f3de',
-    UnderlyingAsset['eth:pfeon']
+    UnderlyingAsset['eth:pfeon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'aa08d2d5-69f5-4e36-b09a-0ed3fc4dfbad',
@@ -13857,7 +13899,8 @@ export const erc20Coins = [
     'Sony (Ondo Tokenized)',
     18,
     '0xaf1382692f9927fd6a6c25add60285628a1879e5',
-    UnderlyingAsset['eth:sonyon']
+    UnderlyingAsset['eth:sonyon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '5069ef9b-de44-4c9f-a053-f1331863aee7',
@@ -13865,7 +13908,8 @@ export const erc20Coins = [
     'iShares MSCI Emerging Markets ETF (Ondo Tokenized)',
     18,
     '0x77a1a02e4a888ada8620b93c30de8a41e621126c',
-    UnderlyingAsset['eth:eemon']
+    UnderlyingAsset['eth:eemon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '65dcb76e-1f0c-4c5e-8ea5-73673787dede',
@@ -13873,7 +13917,8 @@ export const erc20Coins = [
     'Abbott (Ondo Tokenized)',
     18,
     '0x3859385363f7bb4dfe42811ccf3f294fcd41dd1d',
-    UnderlyingAsset['eth:abton']
+    UnderlyingAsset['eth:abton'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '8c603a12-50b6-4f88-a5bb-91352b142951',
@@ -13881,7 +13926,8 @@ export const erc20Coins = [
     'Riot Platforms (Ondo Tokenized)',
     18,
     '0x21deafd91116fce9fe87c8f15bde03f99a309b72',
-    UnderlyingAsset['eth:rioton']
+    UnderlyingAsset['eth:rioton'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '9ed93514-eb96-4423-a52f-a11caf522861',
@@ -13889,7 +13935,8 @@ export const erc20Coins = [
     'Novo Nordisk (Ondo Tokenized)',
     18,
     '0x28151f5888833d3d767c4d6945a0ee50d1b193e3',
-    UnderlyingAsset['eth:nvoon']
+    UnderlyingAsset['eth:nvoon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '27c879cb-a2a4-47bc-beb8-106144d24b93',
@@ -13897,7 +13944,8 @@ export const erc20Coins = [
     'iShares MSCI EAFE ETF (Ondo Tokenized)',
     18,
     '0x4111b60bc87f2bd1e81e783e271d7f0ec6ee088b',
-    UnderlyingAsset['eth:efaon']
+    UnderlyingAsset['eth:efaon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e8ba2011-e687-42c7-b473-df67a9dc4d14',
@@ -13913,7 +13961,8 @@ export const erc20Coins = [
     'Nike (Ondo Tokenized)',
     18,
     '0xd8e26fcc879b30cb0a0b543925a2b3500f074d81',
-    UnderlyingAsset['eth:nkeon']
+    UnderlyingAsset['eth:nkeon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '79da38a1-0cbe-4c07-99f7-2cddae006c08',
@@ -13921,7 +13970,8 @@ export const erc20Coins = [
     'Intel (Ondo Tokenized)',
     18,
     '0xfda09936dbd717368de0835ba441d9e62069d36f',
-    UnderlyingAsset['eth:intcon']
+    UnderlyingAsset['eth:intcon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e8a4d8a1-23b2-4ea2-8b41-45e50c9af5dc',
@@ -13929,7 +13979,8 @@ export const erc20Coins = [
     'iShares Core MSCI EAFE ETF (Ondo Tokenized)',
     18,
     '0xfeff7a377a86462f5a2a872009722c154707f09e',
-    UnderlyingAsset['eth:iefaon']
+    UnderlyingAsset['eth:iefaon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '7c399746-d8fe-4f2e-aeef-4a5f768d3c88',
@@ -13937,7 +13988,8 @@ export const erc20Coins = [
     'Super Micro Computer (Ondo Tokenized)',
     18,
     '0x2ca12a3f9635fd69c21580def14f25c210ca9612',
-    UnderlyingAsset['eth:smcion']
+    UnderlyingAsset['eth:smcion'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '45104057-7344-44a1-96f3-1c34c89d9593',
@@ -13945,7 +13997,8 @@ export const erc20Coins = [
     'Marvell Technology (Ondo Tokenized)',
     18,
     '0xf404e5f887dbd5508e16a1198fcdd5de1a4296b8',
-    UnderlyingAsset['eth:mrvlon']
+    UnderlyingAsset['eth:mrvlon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e00196a2-869d-4826-b3ad-94a048247ede',
@@ -13953,7 +14006,8 @@ export const erc20Coins = [
     'iShares Core US Aggregate Bond ETF (Ondo Tokenized)',
     18,
     '0xff7cf16aa2ffc463b996db2f7b7cf0130336899d',
-    UnderlyingAsset['eth:aggon']
+    UnderlyingAsset['eth:aggon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '12fe5e16-9f63-420d-8ed2-6643f8a421d6',
@@ -13961,7 +14015,8 @@ export const erc20Coins = [
     'Uber (Ondo Tokenized)',
     18,
     '0x5bcd8195e3ef58f677aef9ebc276b5087c027050',
-    UnderlyingAsset['eth:uberon']
+    UnderlyingAsset['eth:uberon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'd9beb283-2672-474c-be26-efa5732c1fc8',
@@ -13969,7 +14024,8 @@ export const erc20Coins = [
     'Hims &amp; Hers Health (Ondo Tokenized)',
     18,
     '0xca468554e5c0423ee858fe3942c9568c51fcaa79',
-    UnderlyingAsset['eth:himson']
+    UnderlyingAsset['eth:himson'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'a0050ace-b59c-479e-9ff9-546f7edfeb2b',
@@ -13977,7 +14033,8 @@ export const erc20Coins = [
     'Airbnb (Ondo Tokenized)',
     18,
     '0xb035c3d5083bdc80074f380aebc9fcb68aba0a28',
-    UnderlyingAsset['eth:abnbon']
+    UnderlyingAsset['eth:abnbon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '12af47e3-ace4-446f-b06a-3566a2b5812f',
@@ -13985,7 +14042,8 @@ export const erc20Coins = [
     'Cisco Systems (Ondo Tokenized)',
     18,
     '0x980a1001ee94e54142b231f44c7ca7c9df71fbe1',
-    UnderlyingAsset['eth:cscoon']
+    UnderlyingAsset['eth:cscoon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'fb349c8f-95a8-4936-9ce3-2da12606682f',
@@ -13993,7 +14051,8 @@ export const erc20Coins = [
     'Qualcomm (Ondo Tokenized)',
     18,
     '0xe3419710c1f77d44b4dab02316d3f048818c4e59',
-    UnderlyingAsset['eth:qcomon']
+    UnderlyingAsset['eth:qcomon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '8c2fe23c-78dc-4bcb-aebb-ba673539a9de',
@@ -14001,7 +14060,8 @@ export const erc20Coins = [
     'Starbucks (Ondo Tokenized)',
     18,
     '0xf15fbc1349ab99abad63db3f9a510bf413be3bef',
-    UnderlyingAsset['eth:sbuxon']
+    UnderlyingAsset['eth:sbuxon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'fca01660-6bad-41fd-a941-9ecab72b60f5',
@@ -14009,7 +14069,8 @@ export const erc20Coins = [
     'Futu Holdings (Ondo Tokenized)',
     18,
     '0x5ce215d9c37a195df88e294a06b8396c296b4e15',
-    UnderlyingAsset['eth:futuon']
+    UnderlyingAsset['eth:futuon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e537c47d-5061-4d56-9859-f7c1c9890b48',
@@ -14017,7 +14078,8 @@ export const erc20Coins = [
     'Chipotle (Ondo Tokenized)',
     18,
     '0x25018520138bbab60684ad7983d4432e8b8e926b',
-    UnderlyingAsset['eth:cmgon']
+    UnderlyingAsset['eth:cmgon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '1016eb17-7614-4212-870b-2b5ef66e33fa',
@@ -14025,7 +14087,8 @@ export const erc20Coins = [
     'Coca-Cola (Ondo Tokenized)',
     18,
     '0x74a03d741226f738098c35da8188e57aca50d146',
-    UnderlyingAsset['eth:koon']
+    UnderlyingAsset['eth:koon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'c195a542-99e1-4fdc-9c69-a78f6a46bbda',
@@ -14033,7 +14096,8 @@ export const erc20Coins = [
     'iShares Russell 1000 Growth ETF (Ondo Tokenized)',
     18,
     '0x8d05432c2786e3f93f1a9a62b9572dbf54f3ea06',
-    UnderlyingAsset['eth:iwfon']
+    UnderlyingAsset['eth:iwfon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'c45d816e-22fe-431c-a926-78e2929fcae5',
@@ -14041,7 +14105,8 @@ export const erc20Coins = [
     'Arm Holdings plc (Ondo Tokenized)',
     18,
     '0x5bf1b2a808598c0ef4af1673a5457d86fe6d7b3d',
-    UnderlyingAsset['eth:armon']
+    UnderlyingAsset['eth:armon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '72afc4ad-8c34-41eb-bf42-46b5a815c237',
@@ -14049,7 +14114,8 @@ export const erc20Coins = [
     'Linde plc (Ondo Tokenized)',
     18,
     '0x01b19c68f8a9ee3a480da788ba401cfabdf19b93',
-    UnderlyingAsset['eth:linon']
+    UnderlyingAsset['eth:linon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '2f67edfe-8c54-4210-b55f-00ceb31f580a',
@@ -14057,7 +14123,8 @@ export const erc20Coins = [
     'JD.com (Ondo Tokenized)',
     18,
     '0xdeb6b89088ca9b7d7756087c8a0f7c6df46f319c',
-    UnderlyingAsset['eth:jdon']
+    UnderlyingAsset['eth:jdon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'daa15dbd-3081-4c68-94ee-36f78569837d',
@@ -14065,7 +14132,8 @@ export const erc20Coins = [
     'PayPal (Ondo Tokenized)',
     18,
     '0x4efd92f372898b57f292de69fce377dd7d912bdd',
-    UnderlyingAsset['eth:pyplon']
+    UnderlyingAsset['eth:pyplon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '76f74843-fb90-4a3c-9f02-276d70bd22d7',
@@ -14073,7 +14141,8 @@ export const erc20Coins = [
     'Micron Technology (Ondo Tokenized)',
     18,
     '0x050362ab1072cb2ce74d74770e22a3203ad04ee5',
-    UnderlyingAsset['eth:muon']
+    UnderlyingAsset['eth:muon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '0bd21792-82ae-444d-9eaa-10f7d3cdee3f',
@@ -14081,7 +14150,8 @@ export const erc20Coins = [
     'Walmart (Ondo Tokenized)',
     18,
     '0x82106347ddbb23ce44cf4ce4053ef1adf8b9323b',
-    UnderlyingAsset['eth:wmton']
+    UnderlyingAsset['eth:wmton'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '2749a3ff-d426-43e5-b636-74c84b83f545',
@@ -14089,7 +14159,8 @@ export const erc20Coins = [
     'Shopify (Ondo Tokenized)',
     18,
     '0x908266c1192628371cff7ad2f5eba4de061a0ac5',
-    UnderlyingAsset['eth:shopon']
+    UnderlyingAsset['eth:shopon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '62afa416-5852-4eab-ba30-c278bf2b2d6c',
@@ -14097,7 +14168,8 @@ export const erc20Coins = [
     'Reddit (Ondo Tokenized)',
     18,
     '0xa9431d354cfad3c6b76e50f0e73b43d48be80cd0',
-    UnderlyingAsset['eth:rddton']
+    UnderlyingAsset['eth:rddton'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'c7f0576d-0223-4ddb-afb2-393fccb8b84e',
@@ -14105,7 +14177,8 @@ export const erc20Coins = [
     'Toyota (Ondo Tokenized)',
     18,
     '0xab02fc332e9278ebcbbc6b4a8038050c01d15f69',
-    UnderlyingAsset['eth:tmon']
+    UnderlyingAsset['eth:tmon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '78f3865e-6b4d-40c2-b4ea-a3831949202a',
@@ -14113,7 +14186,8 @@ export const erc20Coins = [
     'Disney (Ondo Tokenized)',
     18,
     '0xc3d93b45249e8e06cfeb01d25a96337e8893265d',
-    UnderlyingAsset['eth:dison']
+    UnderlyingAsset['eth:dison'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e85ce98e-75ec-4616-a8d5-0ad7c9be810f',
@@ -14121,7 +14195,8 @@ export const erc20Coins = [
     'Wells Fargo (Ondo Tokenized)',
     18,
     '0x4ad2118da8a65eaa81402a3d583fef6ee76bdf3f',
-    UnderlyingAsset['eth:wfcon']
+    UnderlyingAsset['eth:wfcon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '5d109a80-d831-43a7-adee-079f1dbaed4f',
@@ -14129,7 +14204,8 @@ export const erc20Coins = [
     'Apollo Global Management (Ondo Tokenized)',
     18,
     '0x4d21affd27183b07335935f81a5c26b6a5a15355',
-    UnderlyingAsset['eth:apoon']
+    UnderlyingAsset['eth:apoon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e6e5499c-38b1-4af7-befb-bea5397257db',
@@ -14137,7 +14213,8 @@ export const erc20Coins = [
     'PepsiCo (Ondo Tokenized)',
     18,
     '0x3ce219d498d807317f840f4cb0f03fa27dd65046',
-    UnderlyingAsset['eth:pepon']
+    UnderlyingAsset['eth:pepon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'b207f5fc-7ed3-41d4-9286-ec1e35593688',
@@ -14145,7 +14222,8 @@ export const erc20Coins = [
     'Baidu (Ondo Tokenized)',
     18,
     '0x9d4c6ad12b55e4645b585209f90cc26614061e91',
-    UnderlyingAsset['eth:biduon']
+    UnderlyingAsset['eth:biduon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'c154401e-847c-4961-a165-70e49abed89d',
@@ -14153,7 +14231,8 @@ export const erc20Coins = [
     'Morgan Stanley (Ondo Tokenized)',
     18,
     '0xb7cba7593baafffc96f9bbc86e578026369dec55',
-    UnderlyingAsset['eth:mson']
+    UnderlyingAsset['eth:mson'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '14b26633-6e15-48e2-acad-a02716e5027b',
@@ -14161,7 +14240,8 @@ export const erc20Coins = [
     'Broadcom (Ondo Tokenized)',
     18,
     '0x0d54d4279b9e8c54cd8547c2c75a8ee81a0bcae8',
-    UnderlyingAsset['eth:avgoon']
+    UnderlyingAsset['eth:avgoon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '380318d1-1796-4bc2-a6f8-18f04ae308b6',
@@ -14169,7 +14249,8 @@ export const erc20Coins = [
     'Procter &amp; Gamble (Ondo Tokenized)',
     18,
     '0x339ce23a355ed6d513dd3e1462975c4ecd86823a',
-    UnderlyingAsset['eth:pgon']
+    UnderlyingAsset['eth:pgon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '605022fb-532d-44ac-993e-0d447a3f6264',
@@ -14177,7 +14258,8 @@ export const erc20Coins = [
     'Chevron (Ondo Tokenized)',
     18,
     '0x8f3e41b378ae010c46d255f36bfc1d303b52dceb',
-    UnderlyingAsset['eth:cvxon']
+    UnderlyingAsset['eth:cvxon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '5d7a8901-e72e-4c83-bac9-01cc4b6b766b',
@@ -14185,7 +14267,8 @@ export const erc20Coins = [
     'Palo Alto Networks (Ondo Tokenized)',
     18,
     '0x34bfdff25f0fda6d3ad0c33f1e06c0d40bd68885',
-    UnderlyingAsset['eth:panwon']
+    UnderlyingAsset['eth:panwon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'f3550164-57ce-422f-bf33-8aee82a635cf',
@@ -14193,7 +14276,8 @@ export const erc20Coins = [
     'Salesforce (Ondo Tokenized)',
     18,
     '0x55720ef5b023fd043ae5f8d2e526030207978950',
-    UnderlyingAsset['eth:crmon']
+    UnderlyingAsset['eth:crmon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'f9d1f755-f0b2-47e5-935c-85fee23fba9a',
@@ -14201,7 +14285,8 @@ export const erc20Coins = [
     'Snowflake (Ondo Tokenized)',
     18,
     '0x5d1a9a9b118ff19721e0111f094f2360b6ef7a2f',
-    UnderlyingAsset['eth:snowon']
+    UnderlyingAsset['eth:snowon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '2e656f29-7f6a-44ea-95e0-80953395670c',
@@ -14209,7 +14294,8 @@ export const erc20Coins = [
     'DoorDash (Ondo Tokenized)',
     18,
     '0x241958c86c7744d15d5f6314ba1ea4c81dda2896',
-    UnderlyingAsset['eth:dashon']
+    UnderlyingAsset['eth:dashon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'ac1d349c-0439-4dd9-9c1c-d92ffcb61204',
@@ -14217,7 +14303,8 @@ export const erc20Coins = [
     'Accenture (Ondo Tokenized)',
     18,
     '0xaba9ae731aad63335c604e5f6e6a5db2e05f549d',
-    UnderlyingAsset['eth:acnon']
+    UnderlyingAsset['eth:acnon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '46dc2ab6-451b-462f-8276-293a66c31ba7',
@@ -14225,7 +14312,8 @@ export const erc20Coins = [
     'American Express (Ondo Tokenized)',
     18,
     '0x2bc7ff0c5da9f1a4a51f96e77c5b0f7165dc06d2',
-    UnderlyingAsset['eth:axpon']
+    UnderlyingAsset['eth:axpon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '99b78bcd-dffa-45fc-aeea-8f68d381c834',
@@ -14233,7 +14321,8 @@ export const erc20Coins = [
     'IBM (Ondo Tokenized)',
     18,
     '0x25d3f236b2d61656eebdea86ac6d42168e340011',
-    UnderlyingAsset['eth:ibmon']
+    UnderlyingAsset['eth:ibmon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '70145616-c086-4cbf-bc1e-0264584e5f7a',
@@ -14241,7 +14330,8 @@ export const erc20Coins = [
     'iShares Core S&amp;P MidCap ETF (Ondo Tokenized)',
     18,
     '0xfd50fc4e3686a8da814c5c3d6121d8ab98a537f0',
-    UnderlyingAsset['eth:ijhon']
+    UnderlyingAsset['eth:ijhon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'fe4d3d43-f44b-473b-9e18-77411f8e839a',
@@ -14249,7 +14339,8 @@ export const erc20Coins = [
     'Boeing (Ondo Tokenized)',
     18,
     '0x57270d35a840bc5c094da6fbeca033fb71ea6ab0',
-    UnderlyingAsset['eth:baon']
+    UnderlyingAsset['eth:baon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'c61e0441-a67c-4c84-a983-d681030dc18c',
@@ -14257,7 +14348,8 @@ export const erc20Coins = [
     'General Electric (Ondo Tokenized)',
     18,
     '0xd904bcf89b7cedf5c89f9df7e829191d695f847e',
-    UnderlyingAsset['eth:geon']
+    UnderlyingAsset['eth:geon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '985db1b9-1444-44fe-a815-99b15c6b65b0',
@@ -14265,7 +14357,8 @@ export const erc20Coins = [
     'Lockheed (Ondo Tokenized)',
     18,
     '0x691b126cf619707ed5d16cab1b27c000aa8de300',
-    UnderlyingAsset['eth:lmton']
+    UnderlyingAsset['eth:lmton'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'cfb1300d-6636-45b0-aefb-645a3fe36038',
@@ -14273,7 +14366,8 @@ export const erc20Coins = [
     'Intuit (Ondo Tokenized)',
     18,
     '0x6cc0afd51ce4cb6920b775f3d6376ab82b9a93bb',
-    UnderlyingAsset['eth:intuon']
+    UnderlyingAsset['eth:intuon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '875cbb70-0458-4ea2-9062-9449b56d6d01',
@@ -14281,7 +14375,8 @@ export const erc20Coins = [
     'McDonald&#39;s (Ondo Tokenized)',
     18,
     '0x4c82c8cd9a218612dce60b156b73a36705645e3b',
-    UnderlyingAsset['eth:mcdon']
+    UnderlyingAsset['eth:mcdon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '74ff3971-5004-4ab2-bcce-28a6ecadc6eb',
@@ -14289,7 +14384,8 @@ export const erc20Coins = [
     'Goldman Sachs (Ondo Tokenized)',
     18,
     '0xdb57d9c14e357fc01e49035a808779df41e9b4e2',
-    UnderlyingAsset['eth:gson']
+    UnderlyingAsset['eth:gson'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '7d4055fd-4a0f-4f03-8cd4-925ea6109247',
@@ -14297,7 +14393,8 @@ export const erc20Coins = [
     'Adobe (Ondo Tokenized)',
     18,
     '0x7042a8ffc7c7049684bfbc2fcb41b72380755a43',
-    UnderlyingAsset['eth:adbeon']
+    UnderlyingAsset['eth:adbeon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'df689060-b30d-44c0-b556-10c0a3c2380b',
@@ -14305,7 +14402,8 @@ export const erc20Coins = [
     'AppLovin (Ondo Tokenized)',
     18,
     '0xd5c5b2883735fa9b658dd52e2fcc8d7c0f1a42ce',
-    UnderlyingAsset['eth:appon']
+    UnderlyingAsset['eth:appon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'b5b0eeab-bb72-4721-bda7-04eb97c72a76',
@@ -14313,7 +14411,8 @@ export const erc20Coins = [
     'ASML Holding NV (Ondo Tokenized)',
     18,
     '0xe51ba774ebf6392c45bf1d9e6b334d07992460d3',
-    UnderlyingAsset['eth:asmlon']
+    UnderlyingAsset['eth:asmlon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '01a63604-29ed-4c25-a67c-3c9eb7883adb',
@@ -14321,7 +14420,8 @@ export const erc20Coins = [
     'Spotify (Ondo Tokenized)',
     18,
     '0x590f21186489ca1612f49a4b1ff5c66acd6796a9',
-    UnderlyingAsset['eth:spoton']
+    UnderlyingAsset['eth:spoton'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'bf720fa6-769f-4b65-9165-7f94cb7f863f',
@@ -14329,7 +14429,8 @@ export const erc20Coins = [
     'iShares Russell 2000 ETF (Ondo Tokenized)',
     18,
     '0x070d79021dd7e841123cb0cf554993bf683c511d',
-    UnderlyingAsset['eth:iwmon']
+    UnderlyingAsset['eth:iwmon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '1e3711d4-7f08-4b3a-abbc-da84eda80b27',
@@ -14337,7 +14438,8 @@ export const erc20Coins = [
     'ServiceNow (Ondo Tokenized)',
     18,
     '0x8bcf9012f4b0c1c3d359edb7133c294f82f80790',
-    UnderlyingAsset['eth:nowon']
+    UnderlyingAsset['eth:nowon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'c04d12f3-c130-46c4-9011-dbb64cbe1ead',
@@ -14345,7 +14447,8 @@ export const erc20Coins = [
     'Blackrock, Inc. (Ondo Tokenized)',
     18,
     '0x7a0f89c1606f71499950aa2590d547c3975b728e',
-    UnderlyingAsset['eth:blkon']
+    UnderlyingAsset['eth:blkon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'b62da56f-c040-44c4-9bbb-f422579290ba',
@@ -14353,7 +14456,8 @@ export const erc20Coins = [
     'iShares 20+ Year Treasury Bond ETF (Ondo Tokenized)',
     18,
     '0x992651bfeb9a0dcc4457610e284ba66d86489d4d',
-    UnderlyingAsset['eth:tlton']
+    UnderlyingAsset['eth:tlton'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'b74d8bd3-b305-44d1-a4e8-6be5f82227f0',
@@ -14361,7 +14465,8 @@ export const erc20Coins = [
     'Grindr (Ondo Tokenized)',
     18,
     '0xe5b26ba77e6a4d79a7c54a5296d81254269d9700',
-    UnderlyingAsset['eth:grndon']
+    UnderlyingAsset['eth:grndon'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'b8dee336-29aa-4eab-9abd-1811826cb02b',
@@ -14393,7 +14498,8 @@ export const erc20Coins = [
     'MercadoLibre (Ondo Tokenized)',
     18,
     '0x2816169a49953c548bfeb3948dcf05c4a0e4657d',
-    UnderlyingAsset['eth:melion']
+    UnderlyingAsset['eth:melion'],
+    ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   // Ondo Test Tokens (Mainnet Gated)
   erc20(

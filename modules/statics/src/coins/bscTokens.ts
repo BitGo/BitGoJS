@@ -1681,7 +1681,7 @@ export const bscTokens = [
     18,
     '0x2659dd96def34ced3679901e5500779be297fe5a',
     UnderlyingAsset['bsc:baion'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '93e7e645-5a6d-4c3c-9e8a-e99356c43f19',
@@ -1690,7 +1690,7 @@ export const bscTokens = [
     18,
     '0x940f442746d9ae699e63c378d52c4494ea02684f',
     UnderlyingAsset['bsc:bincon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '4a00681b-7fb3-4249-b228-9776b43601b7',
@@ -1699,7 +1699,7 @@ export const bscTokens = [
     18,
     '0x398ae5b33505f121c359f22b300fbcfa81db79ae',
     UnderlyingAsset['bsc:blcron'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '83934a86-b6ab-4fc2-8cb3-87ab45e09cf3',
@@ -1708,7 +1708,7 @@ export const bscTokens = [
     18,
     '0xd41829dec8b51119176ee0a6b73bc8b2718546a9',
     UnderlyingAsset['bsc:brlnon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '635bce3b-78e0-4b01-8a4d-5f9ff59afcb5',
@@ -1717,7 +1717,7 @@ export const bscTokens = [
     18,
     '0x463196cc72cbad2d1ac1896cde0766bfbbd64443',
     UnderlyingAsset['bsc:brtron'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '73387f25-4a44-4562-9925-9514b1c4f8a6',
@@ -1726,7 +1726,7 @@ export const bscTokens = [
     18,
     '0x4ef383f521e803863a33fca8f3f861e53ef9ef9b',
     UnderlyingAsset['bsc:cloaon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '264a2185-06a1-48be-89cd-d9e534ca6353',
@@ -1735,7 +1735,7 @@ export const bscTokens = [
     18,
     '0x23def658ea0b4081161d9ab8fdfeef5345bcafbd',
     UnderlyingAsset['bsc:coroon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'a9a8a99b-2979-4206-a91b-3c9d73b55b11',
@@ -1744,7 +1744,7 @@ export const bscTokens = [
     18,
     '0x96a1b43c8146e6d1f6e66b226a3c520cbe3d8a50',
     UnderlyingAsset['bsc:dynfon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'e1001732-b860-4e76-9d08-e755d31c3009',
@@ -1753,7 +1753,7 @@ export const bscTokens = [
     18,
     '0x93eb8376ec73dd07f46ba7ae1ee9b0bbd937ad93',
     UnderlyingAsset['bsc:euhyon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '90c7dc4a-b8b3-49f5-963d-0786fc3d33d5',
@@ -1762,7 +1762,7 @@ export const bscTokens = [
     18,
     '0x8dd51e233e2344498f876c231a3bd962e9750a6c',
     UnderlyingAsset['bsc:ggovon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'da615404-8ff6-4372-899b-04298c742e22',
@@ -1771,7 +1771,7 @@ export const bscTokens = [
     18,
     '0xcb2a0f46f67dc4c58a316f1c008edef5c2311795',
     UnderlyingAsset['bsc:iauon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'f45e4223-ec27-4195-a6b5-03e74e3324d8',
@@ -1780,7 +1780,7 @@ export const bscTokens = [
     18,
     '0x68b07cef227cea1b2b6683921c8c825cd5c69ec7',
     UnderlyingAsset['bsc:ibiton'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '9cabe732-aa99-4191-8be4-f9f836a6dccd',
@@ -1789,7 +1789,7 @@ export const bscTokens = [
     18,
     '0xa486a0a05250e8621ba3b26c3bbc517145eba619',
     UnderlyingAsset['bsc:iefon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '9602637d-13e4-43c6-9de7-1b571a4348dd',
@@ -1798,7 +1798,7 @@ export const bscTokens = [
     18,
     '0x390a684ef9cade28a7ad0dfa61ab1eb3842618c4',
     UnderlyingAsset['bsc:aaplon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '37bd074c-f8db-4db5-a4b5-335b554e2c3b',
@@ -1807,7 +1807,7 @@ export const bscTokens = [
     18,
     '0x4553cfe1c09f37f38b12dc509f676964e392f8fc',
     UnderlyingAsset['bsc:amznon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '358c2f7c-64b6-472f-bfe0-8c376479ce01',
@@ -1816,7 +1816,7 @@ export const bscTokens = [
     18,
     '0x04b16ff1f9673146f68aa5d5f57aa45adcf068e1',
     UnderlyingAsset['bsc:ethaon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '406fa6d9-c404-4ab0-9caa-b223eb22dbde',
@@ -1825,7 +1825,7 @@ export const bscTokens = [
     18,
     '0x091fc7778e6932d4009b087b191d1ee3bac5729a',
     UnderlyingAsset['bsc:googlon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '51359fb6-b6e1-4d0d-9021-92993d2c9425',
@@ -1834,7 +1834,7 @@ export const bscTokens = [
     18,
     '0xd7df5863a3e742f0c767768cdfcb63f09e0422f6',
     UnderlyingAsset['bsc:metaon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'a113d6fb-11f1-443d-b68d-e4c06a5bf19c',
@@ -1843,7 +1843,7 @@ export const bscTokens = [
     18,
     '0x6bfe75d1ad432050ea973c3a3dcd88f02e2444c3',
     UnderlyingAsset['bsc:msfton'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '3b64b84c-1694-48d0-bc83-698d6dc141e0',
@@ -1852,7 +1852,7 @@ export const bscTokens = [
     18,
     '0xa9ee28c80f960b889dfbd1902055218cba016f75',
     UnderlyingAsset['bsc:nvdaon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'dadb05eb-00b5-42a3-ad16-7cc35898ec76',
@@ -1861,7 +1861,7 @@ export const bscTokens = [
     18,
     '0x2494b603319d4d9f9715c9f4496d9e0364b59d93',
     UnderlyingAsset['bsc:tslaon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'eb29d3cb-0be4-4176-9521-2c3dad1ee805',
@@ -1870,7 +1870,7 @@ export const bscTokens = [
     18,
     '0x08ce97f3d5cf11e577d091ab048bc5e2eae3fabb',
     UnderlyingAsset['bsc:aggon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '293fd37d-4146-4eca-95d3-79a4d2863843',
@@ -1879,7 +1879,7 @@ export const bscTokens = [
     18,
     '0x573e11cc667a8e5be0c7af2410403371088d3d0d',
     UnderlyingAsset['bsc:alabon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '2e756ab7-74b4-4df6-ba78-cc2d8107a1d5',
@@ -1888,7 +1888,7 @@ export const bscTokens = [
     18,
     '0x5ecc352c4640f1d26bd231dbbd171f40f7d0eec6',
     UnderlyingAsset['bsc:amaton'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '0dc0e668-d956-4b73-a349-a49a62944444',
@@ -1897,7 +1897,7 @@ export const bscTokens = [
     18,
     '0x9f16e46c73b43bdb70861247d537bee4ea18f639',
     UnderlyingAsset['bsc:amdon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '58174035-7fb9-42b2-9444-8d4587fb1103',
@@ -1906,7 +1906,7 @@ export const bscTokens = [
     18,
     '0x538e2838f9ebc9b891399df4a8dcc42890d9dc20',
     UnderlyingAsset['bsc:aneton'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '2c74e8f5-808f-4762-8bce-5d39c37fce55',
@@ -1915,7 +1915,7 @@ export const bscTokens = [
     18,
     '0x527c6436e1eaa4f2065cde4090f798cb5d031dd6',
     UnderlyingAsset['bsc:armon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '2eb5048b-ac5a-4fc9-855c-1fc00be71ed2',
@@ -1924,7 +1924,7 @@ export const bscTokens = [
     18,
     '0xb034f6cb52b7f2fd5a7eeeffca6b9adcd6b9a6f6',
     UnderlyingAsset['bsc:asmlon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '131769bc-52ae-43b4-bee7-b73fbbc12f2e',
@@ -1933,7 +1933,7 @@ export const bscTokens = [
     18,
     '0x0ed2e3180edf393e6bf8db124bd15ddd54de150a',
     UnderlyingAsset['bsc:avgoon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '3998c73b-c6d7-4d22-b1c5-bf789e4eceba',
@@ -1942,7 +1942,7 @@ export const bscTokens = [
     18,
     '0x17d03ae104a9d12e9e5794efb109b817dd7f3404',
     UnderlyingAsset['bsc:beon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '627cd04e-b541-45e8-9fe5-d4491968f5de',
@@ -1951,7 +1951,7 @@ export const bscTokens = [
     18,
     '0xb42f5597eadd424de67b46fe5d1ec4b61367a4e5',
     UnderlyingAsset['bsc:botzon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'df5803c4-26f5-4267-abc8-6704939044aa',
@@ -1960,7 +1960,7 @@ export const bscTokens = [
     18,
     '0x6860a2f969a8133a23421ddce21397995139d7e8',
     UnderlyingAsset['bsc:brhyon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'fc2c4c79-b934-448c-9b4e-29cc3d4a08f8',
@@ -1969,7 +1969,7 @@ export const bscTokens = [
     18,
     '0x65d84f0990b7394209d591380c2952c83d778aa3',
     UnderlyingAsset['bsc:cegon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'd1c2e0c2-0bae-472f-a5fb-dc937a59ab0f',
@@ -1978,7 +1978,7 @@ export const bscTokens = [
     18,
     '0x89a9f7114be6b220fae645ba0cbb720889867415',
     UnderlyingAsset['bsc:cienon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '141e2141-19e2-4437-83cf-92e1b298099b',
@@ -1987,7 +1987,7 @@ export const bscTokens = [
     18,
     '0xdad07d0ca26ed4109bc00893dbee3ed4ce8ce2a4',
     UnderlyingAsset['bsc:cifron'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '83011ddb-96dd-4c73-b687-e486083b440e',
@@ -1996,7 +1996,7 @@ export const bscTokens = [
     18,
     '0x0585756aafb241b0f8a9df62db26c566091bde0b',
     UnderlyingAsset['bsc:cohron'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'bfd3d347-a586-4cb1-a2b3-df88f40afbec',
@@ -2005,7 +2005,7 @@ export const bscTokens = [
     18,
     '0xf157481bebd0c0686780fd0f61806c900a6137e8',
     UnderlyingAsset['bsc:crdoon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '8d4d0f01-2965-4388-9d5f-9c00fcc3a575',
@@ -2014,7 +2014,7 @@ export const bscTokens = [
     18,
     '0x76e39171cb665a35981e744e2ceb7012f76caeac',
     UnderlyingAsset['bsc:crwvon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'cf63d4e6-3f74-4942-8736-8f56200ce490',
@@ -2023,7 +2023,7 @@ export const bscTokens = [
     18,
     '0xf26518958935654878de15be7bc79a26971583ba',
     UnderlyingAsset['bsc:dellon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '86805d31-636e-464e-b3ac-6e9e447d2513',
@@ -2032,7 +2032,7 @@ export const bscTokens = [
     18,
     '0x087b5761b161429013d41ea54cd2fb6022a21564',
     UnderlyingAsset['bsc:dramon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '31558e87-bce8-45f5-8ee5-24a0b8186dcf',
@@ -2041,7 +2041,7 @@ export const bscTokens = [
     18,
     '0xec4c1944682b8c7ba6c825e9a8b2b32cb5ecace5',
     UnderlyingAsset['bsc:dtcron'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '12269d20-f50f-4631-9a0e-217c44e9d548',
@@ -2050,7 +2050,7 @@ export const bscTokens = [
     18,
     '0x4697b2a050f7b5a8e1ebc27c325f9d78d094f041',
     UnderlyingAsset['bsc:etnon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'e4376017-ab01-4196-b8bb-d6bc1fb5dd01',
@@ -2059,7 +2059,7 @@ export const bscTokens = [
     18,
     '0xa1daab37da2a29a1ec721922b55962eb8b481001',
     UnderlyingAsset['bsc:fnon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '0c7fb363-8d2d-4561-88d9-d98000f2bd64',
@@ -2068,7 +2068,7 @@ export const bscTokens = [
     18,
     '0x2aea1d415d45ccf3eabe565d45dcaf4ea2035b9c',
     UnderlyingAsset['bsc:gevon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '93fea111-6298-4221-8c32-fd35fecae138',
@@ -2077,7 +2077,7 @@ export const bscTokens = [
     18,
     '0x25a4dbae9a0cd8c75656d6b50ffdf4900cc20d8f',
     UnderlyingAsset['bsc:glwon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '83a2c3b8-9cf2-45f0-be34-f0da3550d3da',
@@ -2086,7 +2086,7 @@ export const bscTokens = [
     18,
     '0x0dae81a905b645a3d1e67129b89cd0acda224e9a',
     UnderlyingAsset['bsc:hygon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'f77b2c25-8480-4f29-a729-79e32c959095',
@@ -2095,7 +2095,7 @@ export const bscTokens = [
     18,
     '0x879fc0d8dfdb13b4af3513d9838f82c4df8f57e8',
     UnderlyingAsset['bsc:ialton'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '645c4519-5dd0-4912-a0b1-61621032599d',
@@ -2104,7 +2104,7 @@ export const bscTokens = [
     18,
     '0x9e609e96b688927aa49dcd9758e2081f0c48ccab',
     UnderlyingAsset['bsc:igebon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'a50a7ca0-5405-4f11-a06c-1e97ae9a5d11',
@@ -2113,7 +2113,7 @@ export const bscTokens = [
     18,
     '0xa046c2f0a1ac0a0e8829efc12163ae892ceafac2',
     UnderlyingAsset['bsc:igvon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '07892635-e09f-4426-9199-4aa3f5500e0a',
@@ -2122,7 +2122,7 @@ export const bscTokens = [
     18,
     '0x790cfb394b1f399a3543ba1f835dde114a387eeb',
     UnderlyingAsset['bsc:inroon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'e5c87b04-eba7-4c16-8b11-7bbd7f53939a',
@@ -2131,7 +2131,7 @@ export const bscTokens = [
     18,
     '0x8fd70ee385f470c8d6fda2d93a4e49c849bac6a6',
     UnderlyingAsset['bsc:irenon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '21d5207f-f5e8-4619-8d2d-ac2bfb0a22f8',
@@ -2140,7 +2140,7 @@ export const bscTokens = [
     18,
     '0xfc263946439b0d802bf4c5a6fcd34e2885259f91',
     UnderlyingAsset['bsc:klacon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'b0aba914-6e7d-4450-a8d5-e83610299936',
@@ -2149,7 +2149,7 @@ export const bscTokens = [
     18,
     '0x653156b9a46e21906dddc82414871bbdb0261319',
     UnderlyingAsset['bsc:lembon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'a156c2a5-abc7-4188-bdc6-334c03990b68',
@@ -2158,7 +2158,7 @@ export const bscTokens = [
     18,
     '0x0facafb97ffdba3cae88512070af49bd30674cd9',
     UnderlyingAsset['bsc:liteon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '3c586f0b-51e4-4364-bc75-a6ea45dc00ac',
@@ -2167,7 +2167,7 @@ export const bscTokens = [
     18,
     '0x35895a1fa1aff7fb3204fb01257409fd75acb24c',
     UnderlyingAsset['bsc:lrcxon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '8df09818-ee44-4add-8295-a33aee323ec6',
@@ -2176,7 +2176,7 @@ export const bscTokens = [
     18,
     '0x1501ec83ffef405b4331cc4f73277a40fb0c627d',
     UnderlyingAsset['bsc:mrvlon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'a9c16af3-a81c-489f-b3d3-4b1f5104ad63',
@@ -2185,7 +2185,7 @@ export const bscTokens = [
     18,
     '0x8b6acf6041a81567f012ff6a4c6d96d5818d74bf',
     UnderlyingAsset['bsc:muon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '51eb315c-e82f-4e73-9c9d-210315aebf45',
@@ -2194,7 +2194,7 @@ export const bscTokens = [
     18,
     '0xee268780473e7a0e47bac41547c6e01512555a16',
     UnderlyingAsset['bsc:nbison'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '0714957b-6d45-4383-8eca-3a19ddec693f',
@@ -2203,7 +2203,7 @@ export const bscTokens = [
     18,
     '0xbc34d36b70e5a256f3d16f9ca9d3ca3838f6cc4f',
     UnderlyingAsset['bsc:qltaon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'a3b83ee2-b8aa-4aee-95f3-86a713160bac',
@@ -2212,7 +2212,7 @@ export const bscTokens = [
     18,
     '0x732823512ba98d1bcde471ca023ee2a0c9f117b7',
     UnderlyingAsset['bsc:sataon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'dbb5b0e3-309d-4f2e-93d5-a8ae0fff4966',
@@ -2221,7 +2221,7 @@ export const bscTokens = [
     18,
     '0xc008c5f579ec1450f20099c39f587547e27c7523',
     UnderlyingAsset['bsc:sgovon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'eea19977-6d29-48ac-9929-ce32d881582e',
@@ -2230,7 +2230,7 @@ export const bscTokens = [
     18,
     '0xc142ba8ccd36d80c3a001342fb83e4c3d218a873',
     UnderlyingAsset['bsc:smcion'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'dbb63557-05d5-4bd0-89b1-415c983e8e44',
@@ -2239,7 +2239,7 @@ export const bscTokens = [
     18,
     '0x71e9dc9debc18650bd2342b93623b88c2ad00c89',
     UnderlyingAsset['bsc:strcon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '978ba50b-6217-480e-903d-af0b652e3e4c',
@@ -2248,7 +2248,7 @@ export const bscTokens = [
     18,
     '0xc37042a7a4fa510d8884a433762ab87257b91965',
     UnderlyingAsset['bsc:tsmon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'f7a09884-8fa1-4af9-b543-d569b8063a01',
@@ -2257,7 +2257,7 @@ export const bscTokens = [
     18,
     '0x10b58a3d9dcec59bb1c3bf6b9c9414eafce711c9',
     UnderlyingAsset['bsc:vnqon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'ae819376-122d-4982-9fa4-c779a4ec74c3',
@@ -2266,7 +2266,7 @@ export const bscTokens = [
     18,
     '0x9cea8a7be1ab0320b709d368ad60d8500f55995f',
     UnderlyingAsset['bsc:vrton'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '6fcea697-7872-4656-9a7c-1d86b59eac3e',
@@ -2275,7 +2275,7 @@ export const bscTokens = [
     18,
     '0xf2c24c47805f4f72d3919c8674bfdd401505794b',
     UnderlyingAsset['bsc:vston'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '838dfb98-65b4-4e4a-a8f7-aeefd69af32f',
@@ -2284,7 +2284,7 @@ export const bscTokens = [
     18,
     '0x64e023411215c3b75b9f339b7b77f179cd04c527',
     UnderlyingAsset['bsc:qyldon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'b1ead340-026c-4a38-8285-264701e2e277',
@@ -2293,7 +2293,7 @@ export const bscTokens = [
     18,
     '0x1fe12abdf560c753acbc63533519d74801e04958',
     UnderlyingAsset['bsc:xyldon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '5ddad893-6720-4303-a59d-4c9f3179853a',
@@ -2302,7 +2302,7 @@ export const bscTokens = [
     18,
     '0x84719a1082ed487c7eeac7d69885e3cc2009ea78',
     UnderlyingAsset['bsc:jaaaon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   // Ondo Test Tokens (Mainnet Gated) - hyphen-free symbols
   bscToken(
@@ -2312,7 +2312,7 @@ export const bscTokens = [
     18,
     '0x23e503406593ef3b453050b57578395e05254f7a',
     UnderlyingAsset['bsc:tbaiontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '799fafc0-9a77-420d-9e4a-ad0009177365',
@@ -2321,7 +2321,7 @@ export const bscTokens = [
     18,
     '0x1344fab5b7cb7119aa6fe40148f4533d12ba7341',
     UnderlyingAsset['bsc:tblcrontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'b8a7ec70-9db6-4278-93cb-b3273a32cd4f',
@@ -2330,7 +2330,7 @@ export const bscTokens = [
     18,
     '0x6ca242ac4fffd13efa6b113174be813729b576ea',
     UnderlyingAsset['bsc:tbrlnontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '716cf359-22df-4600-ac14-cebca3bd6611',
@@ -2339,7 +2339,7 @@ export const bscTokens = [
     18,
     '0xa350c11289e9a738bd679e35eb583b740084fe78',
     UnderlyingAsset['bsc:tbrtrontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'c2c9817f-90b8-413f-ab13-8ed169573dba',
@@ -2348,7 +2348,7 @@ export const bscTokens = [
     18,
     '0xf9575d39a8bbe67077572a5654466de3a1abdcee',
     UnderlyingAsset['bsc:tcloaontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '60da258b-b4a7-4e7e-ac94-19edd073936c',
@@ -2357,7 +2357,7 @@ export const bscTokens = [
     18,
     '0xc6508e6f2eea646c31394380f8f3b94cd966ae35',
     UnderlyingAsset['bsc:tcoroontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'f30cacf6-17db-48a5-82d5-3ba512578c94',
@@ -2366,7 +2366,7 @@ export const bscTokens = [
     18,
     '0x47184b1d86b72531ebc0508f054c95bbe2daba15',
     UnderlyingAsset['bsc:tdynfontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'cbe4a86f-4a61-49c1-846d-60bb5e8b8703',
@@ -2375,7 +2375,7 @@ export const bscTokens = [
     18,
     '0x8bdb1ae2d79c9d83e5330b1ba31de515fac70e7a',
     UnderlyingAsset['bsc:teuhyontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'e53fad08-738a-4fa8-9c55-563f6e850a74',
@@ -2384,7 +2384,7 @@ export const bscTokens = [
     18,
     '0xe0aaa778f92220b1ab9fb1b0dbf34c15de10f30a',
     UnderlyingAsset['bsc:tggovontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '673be51f-c378-4c02-aba6-029f6f144999',
@@ -2393,7 +2393,7 @@ export const bscTokens = [
     18,
     '0x334eb9d190969bc498771f6fae993dc8a50ce025',
     UnderlyingAsset['bsc:tiefontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '14ab8d9e-cc89-432e-8969-a000b45e1fda',
@@ -2402,7 +2402,7 @@ export const bscTokens = [
     18,
     '0x6113baef1c838c187938803e720c84d80b85b9ae',
     UnderlyingAsset['bsc:taaplontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '7ec66713-aad8-4000-b43f-4abc75a45650',
@@ -2411,7 +2411,7 @@ export const bscTokens = [
     18,
     '0xeaa190c01459f4b3ae8e9467256ed09c8909f814',
     UnderlyingAsset['bsc:tamznontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '73cade76-3103-46a7-b1cc-3020570fa59f',
@@ -2420,7 +2420,7 @@ export const bscTokens = [
     18,
     '0xdbb3733c8d51e9a3aa42fa9f8c926e30b9bf5aa9',
     UnderlyingAsset['bsc:tethaontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'e667efbf-a58f-4d72-95de-712aa01347bf',
@@ -2429,7 +2429,7 @@ export const bscTokens = [
     18,
     '0x8d45871e0e902ce4e112649fd9675333a4b99f61',
     UnderlyingAsset['bsc:tgooglontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'ff21f629-8d44-400f-8390-4f64fbf69c5b',
@@ -2438,7 +2438,7 @@ export const bscTokens = [
     18,
     '0x4b61620e9803d8e1977521783689bd3917a8996f',
     UnderlyingAsset['bsc:tmetaontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '3f3ea7ab-9e0c-4885-9649-b20c79dc783d',
@@ -2447,7 +2447,7 @@ export const bscTokens = [
     18,
     '0xaedf1077342cd9693d7c798313d464e6935f6f0f',
     UnderlyingAsset['bsc:tmsftontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '2d125d16-4dc3-45ff-bfd8-8f5cd8ff2cf7',
@@ -2456,7 +2456,7 @@ export const bscTokens = [
     18,
     '0x125966236efeb12209d0f347d733a3509f6513ed',
     UnderlyingAsset['bsc:tnvdaontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '6d765d34-5538-4aab-a11a-5f45609eb827',
@@ -2465,7 +2465,7 @@ export const bscTokens = [
     18,
     '0xb0d24ded78a1059812a853ca54941d926b058c4a',
     UnderlyingAsset['bsc:ttslaontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'b9d4bf7c-d89d-437e-bc7f-01e2e0186892',
@@ -2474,7 +2474,7 @@ export const bscTokens = [
     18,
     '0x01390f96919f2130727100f60be274d000eaaf4a',
     UnderlyingAsset['bsc:taggontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'a8c6502c-a116-4283-a67b-91f5b03d260a',
@@ -2483,7 +2483,7 @@ export const bscTokens = [
     18,
     '0x2446862fb34230873f18b62ec7e2c7f57ba76b72',
     UnderlyingAsset['bsc:talabontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '0a3164f3-6ee6-49dc-ac8a-57bd9b13c52d',
@@ -2492,7 +2492,7 @@ export const bscTokens = [
     18,
     '0x3c04becc592d499cea7bd0aa0b14579389a20c78',
     UnderlyingAsset['bsc:tamatontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '4e670324-6be7-4b79-acfc-fd4ceb6b1b5b',
@@ -2501,7 +2501,7 @@ export const bscTokens = [
     18,
     '0xf90b021b04fc336e0ba9af356c5f385a435360eb',
     UnderlyingAsset['bsc:tamdontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'be110018-faa0-41d8-98dd-27bb1b025673',
@@ -2510,7 +2510,7 @@ export const bscTokens = [
     18,
     '0x28ce7d13692a52cf77b888cecc96ca42bd068cd6',
     UnderlyingAsset['bsc:tanetontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '88958765-62f8-4d1c-bce0-3f71d973cb3a',
@@ -2519,7 +2519,7 @@ export const bscTokens = [
     18,
     '0xcfd54832bb662a12984f27c89919f63c2ef5ef31',
     UnderlyingAsset['bsc:tarmontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'a22d79eb-067b-4444-bc8f-f19d2f799649',
@@ -2528,7 +2528,7 @@ export const bscTokens = [
     18,
     '0x637e2a222ee6ac9d6ec59fea8261692d6aafbc89',
     UnderlyingAsset['bsc:tasmlontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '2b8e5448-2998-473f-9719-9741051bfd1a',
@@ -2537,7 +2537,7 @@ export const bscTokens = [
     18,
     '0x017ab88085fbec18be537adae42a589491222dc0',
     UnderlyingAsset['bsc:tavgoontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '95d249e1-323c-4277-a2a5-b36e8d381234',
@@ -2546,7 +2546,7 @@ export const bscTokens = [
     18,
     '0x8fef945c7388e37dbc5333a2c78eba99830a235c',
     UnderlyingAsset['bsc:tbeontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '655345d9-96ea-4fb6-bb0b-bf44cb83444b',
@@ -2555,7 +2555,7 @@ export const bscTokens = [
     18,
     '0x2e228d7cc0abf1075aa45f9bece28562ea1b1bb4',
     UnderlyingAsset['bsc:tbotzontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '992b631f-739c-4d11-b475-713c887ff893',
@@ -2564,7 +2564,7 @@ export const bscTokens = [
     18,
     '0x23a13ec03145bb2ba5c9d4088b1e03572ac5c685',
     UnderlyingAsset['bsc:tbrhyontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '28b213aa-cde7-46b7-9aec-b6513207a211',
@@ -2573,7 +2573,7 @@ export const bscTokens = [
     18,
     '0xcc0d1091b54ec1607b690e67aa34d02bf8c082b6',
     UnderlyingAsset['bsc:tcegontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '2adad8bd-ed95-48c7-855b-83f595017414',
@@ -2582,7 +2582,7 @@ export const bscTokens = [
     18,
     '0x1dea8acf5fb4041b57e696e3d33999e54c52222b',
     UnderlyingAsset['bsc:tcienontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'd16fd09a-7417-4c6e-8c1c-816c62d0fa32',
@@ -2591,7 +2591,7 @@ export const bscTokens = [
     18,
     '0xc24ef219c39af48ddfd0bf5a27eb6a47eff55e18',
     UnderlyingAsset['bsc:tcifrontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '2a7a172b-6cc5-4eb4-a870-8177bc92d0ea',
@@ -2600,7 +2600,7 @@ export const bscTokens = [
     18,
     '0x113210eacc3f005548ae5acd782b50fa1dd4c055',
     UnderlyingAsset['bsc:tcohrontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '6052889c-843a-4372-8bfa-0f3847203a85',
@@ -2609,7 +2609,7 @@ export const bscTokens = [
     18,
     '0x677ed35e4638f4c65cde3a3ef089f96850aa1569',
     UnderlyingAsset['bsc:tcrdoontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '7119687a-7d32-44b9-b1fb-83d4fa7129ca',
@@ -2618,7 +2618,7 @@ export const bscTokens = [
     18,
     '0x108c70b095fc0a84b92c2bf4e0c865b100896aac',
     UnderlyingAsset['bsc:tcrwvontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '014e6b81-8427-41ff-812f-4d5ad172a5cc',
@@ -2627,7 +2627,7 @@ export const bscTokens = [
     18,
     '0x7d5446997c8b924a6238f5675eadde5020625fe2',
     UnderlyingAsset['bsc:tdellontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'bc7a6ad1-544e-45df-b272-ca0fec9c2002',
@@ -2636,7 +2636,7 @@ export const bscTokens = [
     18,
     '0xfdd45d07f7c851c082cf1a6812c53dc20200bb77',
     UnderlyingAsset['bsc:tdramontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '357a9d9c-fa63-46aa-b055-b25e2d9237c1',
@@ -2645,7 +2645,7 @@ export const bscTokens = [
     18,
     '0x772d6d57c00269fda7012b4628019c0ce5cca83f',
     UnderlyingAsset['bsc:tdtcrontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '606acd0b-e593-4728-84d8-8f70acd501a0',
@@ -2654,7 +2654,7 @@ export const bscTokens = [
     18,
     '0x87810b623a4803e6e324052f58123b65dc7d39b0',
     UnderlyingAsset['bsc:tetnontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '2e8dbbf7-c79f-479a-8bc6-b3ceeb169fb8',
@@ -2663,7 +2663,7 @@ export const bscTokens = [
     18,
     '0xb5abc0e2fb7401b382f07dd33f248374e510cca0',
     UnderlyingAsset['bsc:tfnontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '88d2955d-99e4-473e-8a8a-e04149303062',
@@ -2672,7 +2672,7 @@ export const bscTokens = [
     18,
     '0x4fa028f14b904180d174c463388663aa6161faeb',
     UnderlyingAsset['bsc:tgevontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'a7418fb1-384f-4d69-ac68-3c5840ffa18c',
@@ -2681,7 +2681,7 @@ export const bscTokens = [
     18,
     '0xf7fd97bfd46d301fd5d45dd852185d876e476a3c',
     UnderlyingAsset['bsc:tglwontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '20b29025-2c11-440b-9d7e-c2ceae2f88ec',
@@ -2690,7 +2690,7 @@ export const bscTokens = [
     18,
     '0x9e003c103e26ccba4150f8a2a50d545deb2165e3',
     UnderlyingAsset['bsc:thygontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '553a0337-351c-44d1-9ca7-0bec8b0d4441',
@@ -2699,7 +2699,7 @@ export const bscTokens = [
     18,
     '0x203aa79164b9c91005174fc03584c404eb34533d',
     UnderlyingAsset['bsc:tialtontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '2332268c-29bc-418b-a667-63e2bcd4f094',
@@ -2708,7 +2708,7 @@ export const bscTokens = [
     18,
     '0x068bf93d8b43897c545156dd354e3f17bd919945',
     UnderlyingAsset['bsc:tigebontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '4116f1bf-e694-42f4-9774-b965e351ae68',
@@ -2717,7 +2717,7 @@ export const bscTokens = [
     18,
     '0x84b51310b9d9addb3085156f1fc109a64f651741',
     UnderlyingAsset['bsc:tigvontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'a140dc12-162b-4e29-9947-14d71c6169d2',
@@ -2726,7 +2726,7 @@ export const bscTokens = [
     18,
     '0x2044b9e82625e2458e3cdf814414f1dc6cfef59c',
     UnderlyingAsset['bsc:tinroontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '8717f576-7af1-4a99-9b9d-86ef9f66682a',
@@ -2735,7 +2735,7 @@ export const bscTokens = [
     18,
     '0x37f69069319592371779a077df42b4bbd7de2f18',
     UnderlyingAsset['bsc:tirenontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'acb8eaaf-e5be-4b5c-b417-ce460e5049d5',
@@ -2744,7 +2744,7 @@ export const bscTokens = [
     18,
     '0x1202495d2ffb8664440bb38809588a1188b797d5',
     UnderlyingAsset['bsc:tklacontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '7dc45569-12fd-414a-bf0b-6f5b24b2bb62',
@@ -2753,7 +2753,7 @@ export const bscTokens = [
     18,
     '0x9079353b4880814fc3308421f0b42fb53d71a81a',
     UnderlyingAsset['bsc:tlembontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '9eba5dc4-f271-4630-95a7-c03ba6fdf072',
@@ -2762,7 +2762,7 @@ export const bscTokens = [
     18,
     '0x657c2ff2c1e4e3b7c825d43ab3db2c4b538ba7f2',
     UnderlyingAsset['bsc:tliteontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '9454207f-4d65-4ef8-94c0-8daf03662b38',
@@ -2771,7 +2771,7 @@ export const bscTokens = [
     18,
     '0xf8042d0339aea4c5e791aa3a7a6f6b55207dc13f',
     UnderlyingAsset['bsc:tlrcxontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '5e53a772-6ce2-4fbf-ac6c-a6605eb59e15',
@@ -2780,7 +2780,7 @@ export const bscTokens = [
     18,
     '0x094a51378a33e1359ab5f5887c99b7e6621ff001',
     UnderlyingAsset['bsc:tmrvlontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'a8427685-6a63-45f1-80f0-e46b0103354b',
@@ -2789,7 +2789,7 @@ export const bscTokens = [
     18,
     '0xebe7099c2ea4e446795d4dc64059126b30d73436',
     UnderlyingAsset['bsc:tmuontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'c48a9bac-9aa2-4f8d-b013-48cf5b498c11',
@@ -2798,7 +2798,7 @@ export const bscTokens = [
     18,
     '0xa57cbfd5a449b1173b5ff8df60e817af3df492fc',
     UnderlyingAsset['bsc:tnbisontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '0d733742-9871-49dc-836d-5e304c83df6e',
@@ -2807,7 +2807,7 @@ export const bscTokens = [
     18,
     '0x9a1f7cdc1b0aec65f7b23ff3859f49f6e2fbe057',
     UnderlyingAsset['bsc:tqltaontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'b057d61b-a602-446f-9ac0-8395daa91bdf',
@@ -2816,7 +2816,7 @@ export const bscTokens = [
     18,
     '0x9e7de628ba81185f93e6f0e73ae8e5ee1cef4abf',
     UnderlyingAsset['bsc:tsataontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '98d7bf21-052d-48f6-8926-13c32a696e9d',
@@ -2825,7 +2825,7 @@ export const bscTokens = [
     18,
     '0x2cfb1b9cd287f87d3afe25af37b2cadad6600d87',
     UnderlyingAsset['bsc:tsgovontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'e028129b-cbdd-46a0-a5f2-9d59138400b2',
@@ -2834,7 +2834,7 @@ export const bscTokens = [
     18,
     '0x1f79e09e63b8fbc67f966bfcfed03ea952780466',
     UnderlyingAsset['bsc:tsmciontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'cdc86a81-86ae-49b0-b567-7486a3af118f',
@@ -2843,7 +2843,7 @@ export const bscTokens = [
     18,
     '0xfde9d2229352f755924130aab560c1bf3ac27ce5',
     UnderlyingAsset['bsc:tstrcontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'be881fee-e022-4b79-bf22-95dcf0c234f0',
@@ -2852,7 +2852,7 @@ export const bscTokens = [
     18,
     '0xe33ff03a4937ab9b735c158972e413b081bdc6ff',
     UnderlyingAsset['bsc:ttsmontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'e9fa7fc0-b2b8-472e-81a3-3a6a31279d4c',
@@ -2861,7 +2861,7 @@ export const bscTokens = [
     18,
     '0xf6ad5af8814ccfb6a1333d9a31cc74cce079c4ba',
     UnderlyingAsset['bsc:tvnqontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '84d3a187-3de3-4381-9fe8-70e01fcb5491',
@@ -2870,7 +2870,7 @@ export const bscTokens = [
     18,
     '0xa80e663c1189bb010e67cf2031727d2416b0acda',
     UnderlyingAsset['bsc:tvrtontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'd95b4743-75fb-44bb-ba1e-49cb6e5f1f7f',
@@ -2879,7 +2879,7 @@ export const bscTokens = [
     18,
     '0xd8bfe91e8caad68599a199273289859b26f4208d',
     UnderlyingAsset['bsc:tvstontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '88292852-cae7-45d5-988a-8383e8dc2cb7',
@@ -2888,7 +2888,7 @@ export const bscTokens = [
     18,
     '0x55e952eb912d6775e944a7592f2623ad47a8bcac',
     UnderlyingAsset['bsc:tqyldontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '08fc5320-ef86-40ff-af49-031619a16e94',
@@ -2897,7 +2897,7 @@ export const bscTokens = [
     18,
     '0xe83cb13ff5d0610a36cf82f0e47b8dd5055fb2d2',
     UnderlyingAsset['bsc:txyldontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'a367a51e-6cd3-4f7e-a7b9-48ec48a774cf',
@@ -2906,7 +2906,7 @@ export const bscTokens = [
     18,
     '0x48276073a449b43fe5be961f70fe090fc8f07aad',
     UnderlyingAsset['bsc:tjaaaontesting'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   // Ondo Test Tokens (Mainnet Gated)
   bscToken(
@@ -2916,7 +2916,7 @@ export const bscTokens = [
     18,
     '0x904d33dc5e5afef460efcfdde273b7bb9077261f',
     UnderlyingAsset['bsc:t-bincon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '1284e04c-8922-4f79-9fc6-b4828ec865ee',
@@ -2925,7 +2925,7 @@ export const bscTokens = [
     18,
     '0xf51c954bf744da45530b1ad68d1b8ad8e1733a3f',
     UnderlyingAsset['bsc:t-iauon'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '00819077-3203-4adf-a88d-6396c3f1c573',
@@ -2943,7 +2943,7 @@ export const bscTokens = [
     18,
     '0x5bd0885b43acd57d3a023cc6eb8c24bc54785aac',
     UnderlyingAsset['bsc:t-ibiton'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'c9fcf59a-be49-4f88-a960-b9d088684b13',
