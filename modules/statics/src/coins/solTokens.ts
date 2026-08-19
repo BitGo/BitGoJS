@@ -3488,7 +3488,7 @@ export const solTokens = [
     'XDZNiWPHH8fyb8PCyTeiJsVsBnBhkBZbcYoxvVpondo',
     'XDZNiWPHH8fyb8PCyTeiJsVsBnBhkBZbcYoxvVpondo',
     UnderlyingAsset['sol:shvon'],
-    SOL_TOKEN_FEATURES,
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE,
     ProgramID.Token2022ProgramId
   ),
   // Ondo Test Tokens (Mainnet Gated) - hyphen-free symbols
@@ -3500,7 +3500,7 @@ export const solTokens = [
     'ogWN69D5Se26pz8dHtvExhHMDiR9FWUUo8s92GEondo',
     'ogWN69D5Se26pz8dHtvExhHMDiR9FWUUo8s92GEondo',
     UnderlyingAsset['sol:tshvontesting'],
-    SOL_TOKEN_FEATURES,
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE,
     ProgramID.Token2022ProgramId
   ),
   // CECHO-1893 batch 0803 tokens
