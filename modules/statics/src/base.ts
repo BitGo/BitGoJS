@@ -2555,6 +2555,7 @@ export enum UnderlyingAsset {
   'eth:strusd' = 'eth:strusd',
   'eth:u' = 'eth:u',
   'eth:bliquid' = 'eth:bliquid',
+  'eth:zsmb' = 'eth:zsmb',
   'eth:usat' = 'eth:usat',
   'eth:usdf' = 'eth:usdf',
   'eth:ausd' = 'eth:ausd',
@@ -3713,6 +3714,7 @@ export enum UnderlyingAsset {
   'baseeth:elsa' = 'baseeth:elsa',
   'baseeth:allo' = 'baseeth:allo',
   'baseeth:gro' = 'baseeth:gro',
+  'baseeth:jvhhusdc' = 'baseeth:jvhhusdc',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -4181,6 +4183,7 @@ export enum UnderlyingAsset {
   'sol:pybobo' = 'sol:pybobo',
   'sol:usdpt' = 'sol:usdpt',
   'sol:bliquid' = 'sol:bliquid',
+  'sol:audm' = 'sol:audm',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',
@@ -4444,6 +4447,8 @@ export enum UnderlyingAsset {
   // ADA testnet tokens
   'tada:water' = 'tada:water',
   'tada:tusda' = 'tada:tusda',
+  'tada:usdr' = 'tada:usdr',
+  'tada:susdr' = 'tada:susdr',
 
   // ADA mainnet tokens
   'ada:min' = 'ada:min',

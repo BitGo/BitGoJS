@@ -12401,6 +12401,15 @@ export const erc20Coins = [
       ETH_FEATURES
     )
   ),
+  // CECHO-1969 batch 0818 tokens
+  erc20(
+    'e4ca0bb3-bb52-4b8b-a477-1cdc248be7fe',
+    'eth:zsmb',
+    'Zivoe SMB Credit',
+    18,
+    '0x49c8919162dae24468965557c9344ba2aa8121b8',
+    UnderlyingAsset['eth:zsmb']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',

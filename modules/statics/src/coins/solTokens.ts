@@ -3523,6 +3523,18 @@ export const solTokens = [
     ),
     ProgramID.Token2022ProgramId
   ),
+  // CECHO-1969 batch 0818 tokens
+  solToken(
+    '8ac27086-e376-4f26-964a-3f2954108e11',
+    'sol:audm',
+    'Macropod Stablecoin',
+    6,
+    'CiYXBwHPrdNkMtxR8YEWKv78K6bQjFoEWhPQrZqEmubi',
+    'CiYXBwHPrdNkMtxR8YEWKv78K6bQjFoEWhPQrZqEmubi',
+    UnderlyingAsset['sol:audm'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',
