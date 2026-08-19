@@ -2078,6 +2078,9 @@ export class Wallet implements IWallet {
     })) as any;
     let sharedKeychain;
     if (needsKeychain) {
+      if (!sharing.pubkey) {
+        throw new NeedUserSignupError(sharing.userId);
+      }
       sharedKeychain = await this.prepareSharedKeychain(
         params.walletPassphrase,
         sharing.pubkey,
