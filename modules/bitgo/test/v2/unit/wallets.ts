@@ -992,6 +992,73 @@ describe('V2 Wallets:', function () {
     });
   });
 
+  describe('Generate shielded wallet:', function () {
+    const tzec = bitgo.coin('tzec');
+
+    it('should create a new shielded custodial wallet', async function () {
+      const keys = ['1', '2', '3'];
+
+      const walletParams: GenerateWalletOptions = {
+        label: 'shielded wallet',
+        isShielded: true,
+        enterprise: 'enterprise',
+        type: 'custodial',
+      };
+
+      const walletNock = nock('https://bitgo.fakeurl')
+        .post('/api/v2/tzec/wallet/add', (body) => {
+          body.multisigType.should.equal(multisigTypes.tss);
+          body.coinSpecific.should.deepEqual({ isShielded: true });
+          return true;
+        })
+        .times(1)
+        .reply(200, { ...walletParams, multisigType: multisigTypes.tss, keys });
+
+      const shieldedWallets = new Wallets(bitgo, tzec);
+
+      const res = await shieldedWallets.generateWallet(walletParams);
+      if (!isWalletWithKeychains(res)) {
+        throw new Error('wallet missing required keychains');
+      }
+      res.wallet.label().should.equal(walletParams.label);
+      should.equal(res.wallet.type(), walletParams.type);
+      res.wallet.toJSON().enterprise.should.equal(walletParams.enterprise);
+      res.wallet.multisigType().should.equal(multisigTypes.tss);
+      res.userKeychain.type.should.equal('tss');
+      res.backupKeychain.type.should.equal('tss');
+      res.bitgoKeychain.type.should.equal('tss');
+
+      walletNock.isDone().should.be.true();
+    });
+
+    it('should reject a non-custodial shielded wallet', async function () {
+      const walletParams: GenerateWalletOptions = {
+        label: 'shielded wallet',
+        isShielded: true,
+        enterprise: 'enterprise',
+        type: 'hot',
+      };
+
+      const shieldedWallets = new Wallets(bitgo, tzec);
+
+      await shieldedWallets
+        .generateWallet(walletParams)
+        .should.be.rejectedWith('shielded wallets can only be created as custodial wallets');
+    });
+
+    it('should reject a shielded wallet without an enterprise', async function () {
+      const walletParams: GenerateWalletOptions = {
+        label: 'shielded wallet',
+        isShielded: true,
+        type: 'custodial',
+      };
+
+      const shieldedWallets = new Wallets(bitgo, tzec);
+
+      await shieldedWallets.generateWallet(walletParams).should.be.rejectedWith('enterprise is required');
+    });
+  });
+
   describe('Generate TSS MPCv2 wallet:', async function () {
     const sandbox = sinon.createSandbox();
 

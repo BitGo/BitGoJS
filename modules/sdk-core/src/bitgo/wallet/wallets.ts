@@ -481,6 +481,22 @@ export class Wallets implements IWallets {
       return walletData;
     }
 
+    // Transparent zcash wallets are multisig and isTSS is not set inherently.
+    // Shielded zcash wallets are MPC
+    if (params.isShielded) {
+      assert(enterprise, 'enterprise is required for shielded wallet');
+      if (type !== 'custodial') {
+        throw new Error('shielded wallets can only be created as custodial wallets');
+      }
+      return this.generateCustodialMpcWallet({
+        multisigType: 'tss',
+        isShielded: true,
+        label,
+        enterprise,
+        walletVersion: params.walletVersion,
+      });
+    }
+
     // Handle distributed custody
     if (isDistributedCustody) {
       if (!enterprise) {
@@ -2090,6 +2106,7 @@ export class Wallets implements IWallets {
   private async generateCustodialMpcWallet({
     label,
     multisigType,
+    isShielded,
     enterprise,
     walletVersion,
   }: GenerateBaseMpcWalletOptions): Promise<WalletWithKeychains> {
@@ -2112,6 +2129,7 @@ export class Wallets implements IWallets {
       enterprise,
       walletVersion,
       type: 'custodial',
+      ...(isShielded && { coinSpecific: { isShielded: true } }),
     };
 
     // Create Wallet
