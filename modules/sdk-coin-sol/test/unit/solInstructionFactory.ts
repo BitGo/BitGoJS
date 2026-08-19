@@ -1,7 +1,12 @@
 import should from 'should';
 import * as testData from '../resources/sol';
 import { solInstructionFactory } from '../../src/lib/solInstructionFactory';
-import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../src/lib/constants';
+import {
+  InstructionBuilderTypes,
+  MEMO_PROGRAM_PK,
+  THAW_PERMISSIONLESS_IDEMPOTENT_DISCRIMINATOR,
+  TOKEN_ACL_PROGRAM_ID,
+} from '../../src/lib/constants';
 import { ExtraAccountMeta, InstructionParams } from '../../src/lib/iface';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import {
@@ -288,6 +293,87 @@ describe('Instruction Builder Tests: ', function () {
       for (const expectedMeta of expectedExtraKeys) {
         builtInstruction.keys.filter((meta) => meta.pubkey.equals(expectedMeta.pubkey)).should.have.length(1);
       }
+    });
+
+    it('Permissionless Thaw Idempotent - Token ACL with resolved extra accounts', () => {
+      const authority = testData.authAccount.pub;
+      const mint = testData.sol2022TokenTransfers.mint;
+      const tokenAccount = testData.associatedTokenAccounts.accounts[0].ata;
+      const tokenAccountOwner = testData.nonceAccount.pub;
+      const gatingProgram = 'GbQ8ZiEFzGGTeYoXwtZtcoxwPcMyUcmZDduMVNdUPKpX';
+      const flagAccount = '98wFF5MpMjMQbfDF2MPzo8LCGX37unZR1ohRA1mU9GmJ';
+      const mintConfig = '48n7YGEww7fKMfJ5gJ3sQC3rM6RWGjpUsghqVfXVkR5A';
+      const extraAccounts: ExtraAccountMeta[] = [
+        { pubkey: '9sQhAH7vV3RKTCK13VY4EiNjs3qBq1srSYxdNufdAAXm', isSigner: false, isWritable: false },
+        { pubkey: testData.authAccount.pub, isSigner: false, isWritable: true },
+      ];
+
+      const thawParams: InstructionParams = {
+        type: InstructionBuilderTypes.PermissionlessThawIdempotent,
+        params: {
+          authority,
+          mint,
+          tokenAccount,
+          tokenAccountOwner,
+          gatingProgram,
+          flagAccount,
+          mintConfig,
+          extraAccounts,
+        },
+      };
+
+      const result = solInstructionFactory(thawParams);
+      result.should.have.length(1);
+
+      const ix = result[0];
+      ix.programId.toString().should.equal(TOKEN_ACL_PROGRAM_ID);
+      // The instruction data is the single discriminator byte (9).
+      ix.data.should.deepEqual(Buffer.from([THAW_PERMISSIONLESS_IDEMPOTENT_DISCRIMINATOR]));
+      ix.data.should.have.length(1);
+
+      // The first nine accounts are fixed, in exact order and with exact flags.
+      const expectedFixedKeys = [
+        { pubkey: new PublicKey(authority), isSigner: true, isWritable: false },
+        { pubkey: new PublicKey(mint), isSigner: false, isWritable: false },
+        { pubkey: new PublicKey(tokenAccount), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(flagAccount), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(tokenAccountOwner), isSigner: false, isWritable: false },
+        { pubkey: new PublicKey(mintConfig), isSigner: false, isWritable: false },
+        { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
+        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+        { pubkey: new PublicKey(gatingProgram), isSigner: false, isWritable: false },
+      ];
+      ix.keys.slice(0, 9).should.deepEqual(expectedFixedKeys);
+
+      // The resolved extra accounts are appended, in the exact order supplied.
+      const expectedExtraKeys = extraAccounts.map((meta) => ({
+        pubkey: new PublicKey(meta.pubkey),
+        isSigner: meta.isSigner,
+        isWritable: meta.isWritable,
+      }));
+      ix.keys.slice(9).should.deepEqual(expectedExtraKeys);
+    });
+
+    it('Permissionless Thaw Idempotent - defaults token and system programs', () => {
+      const thawParams: InstructionParams = {
+        type: InstructionBuilderTypes.PermissionlessThawIdempotent,
+        params: {
+          authority: testData.authAccount.pub,
+          mint: testData.sol2022TokenTransfers.mint,
+          tokenAccount: testData.associatedTokenAccounts.accounts[0].ata,
+          tokenAccountOwner: testData.nonceAccount.pub,
+          gatingProgram: 'GbQ8ZiEFzGGTeYoXwtZtcoxwPcMyUcmZDduMVNdUPKpX',
+          flagAccount: '98wFF5MpMjMQbfDF2MPzo8LCGX37unZR1ohRA1mU9GmJ',
+          mintConfig: '48n7YGEww7fKMfJ5gJ3sQC3rM6RWGjpUsghqVfXVkR5A',
+          extraAccounts: [],
+        },
+      };
+
+      const defaultsIx = solInstructionFactory(thawParams)[0];
+      // No extra accounts => exactly the nine fixed accounts.
+      defaultsIx.keys.should.have.length(9);
+      defaultsIx.keys[6].pubkey.equals(TOKEN_2022_PROGRAM_ID).should.be.true();
+      defaultsIx.keys[7].pubkey.equals(SystemProgram.programId).should.be.true();
     });
 
     it('Mint To - Standard SPL Token', () => {

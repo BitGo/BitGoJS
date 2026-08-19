@@ -42,6 +42,7 @@ import {
   Memo,
   MintTo,
   Nonce,
+  PermissionlessThawIdempotent,
   StakingActivate,
   StakingAuthorize,
   StakingDeactivate,
@@ -156,6 +157,7 @@ function parseSendInstructions(
   | MintTo
   | Burn
   | Approve
+  | PermissionlessThawIdempotent
 > {
   const instructionData: Array<
     | Nonce
@@ -169,6 +171,7 @@ function parseSendInstructions(
     | MintTo
     | Burn
     | Approve
+    | PermissionlessThawIdempotent
   > = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
@@ -386,6 +389,32 @@ function parseSendInstructions(
           },
         };
         instructionData.push(burn);
+        break;
+      case ValidInstructionTypesEnum.PermissionlessThawIdempotent:
+        // Account order matches the fixed layout emitted by solInstructionFactory:
+        // [authority, mint, tokenAccount, flagAccount, tokenAccountOwner, mintConfig,
+        //  tokenProgram, systemProgram, gatingProgram, ...extraAccounts].
+        const thawExtraAccounts: ExtraAccountMeta[] = instruction.keys.slice(9).map((key) => ({
+          pubkey: key.pubkey.toString(),
+          isSigner: key.isSigner,
+          isWritable: key.isWritable,
+        }));
+        const permissionlessThaw: PermissionlessThawIdempotent = {
+          type: InstructionBuilderTypes.PermissionlessThawIdempotent,
+          params: {
+            authority: instruction.keys[0].pubkey.toString(),
+            mint: instruction.keys[1].pubkey.toString(),
+            tokenAccount: instruction.keys[2].pubkey.toString(),
+            flagAccount: instruction.keys[3].pubkey.toString(),
+            tokenAccountOwner: instruction.keys[4].pubkey.toString(),
+            mintConfig: instruction.keys[5].pubkey.toString(),
+            tokenProgram: instruction.keys[6].pubkey.toString(),
+            systemProgram: instruction.keys[7].pubkey.toString(),
+            gatingProgram: instruction.keys[8].pubkey.toString(),
+            extraAccounts: thawExtraAccounts,
+          },
+        };
+        instructionData.push(permissionlessThaw);
         break;
       default:
         throw new NotSupported(

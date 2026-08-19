@@ -892,4 +892,69 @@ describe('Sol Token Transfer Builder', () => {
       should.equal(Utils.isValidRawTransaction(withoutHooks.toBroadcastFormat()), true);
     });
   });
+
+  describe('Permissionless thaw bundling', () => {
+    const t22Name = testData.sol2022TokenTransfers.name;
+    const t22Mint = testData.sol2022TokenTransfers.mint;
+    const t22Decimals = 6;
+    // Resolved thaw params (as produced by Sol.resolvePermissionlessThaw). Arbitrary but valid
+    // base58 pubkeys used purely as fixtures — the offline builder never fetches them.
+    const thawParams = {
+      authority: walletPK,
+      mint: t22Mint,
+      tokenAccount: '98wFF5MpMjMQbfDF2MPzo8LCGX37unZR1ohRA1mU9GmJ',
+      tokenAccountOwner: otherAccount.pub,
+      gatingProgram: 'GbQ8ZiEFzGGTeYoXwtZtcoxwPcMyUcmZDduMVNdUPKpX',
+      flagAccount: '48n7YGEww7fKMfJ5gJ3sQC3rM6RWGjpUsghqVfXVkR5A',
+      mintConfig: '9sQhAH7vV3RKTCK13VY4EiNjs3qBq1srSYxdNufdAAXm',
+      extraAccounts: [{ pubkey: nonceAccount.pub, isSigner: false, isWritable: false }],
+    };
+
+    const buildToken2022TransferWithAta = () => {
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.nonce(recentBlockHash);
+      txBuilder.sender(walletPK);
+      txBuilder.send({
+        address: otherAccount.pub,
+        amount,
+        tokenName: t22Name,
+        tokenAddress: t22Mint,
+        programId: TOKEN_2022_PROGRAM_ID.toString(),
+        decimalPlaces: t22Decimals,
+      });
+      txBuilder.createAssociatedTokenAccount({
+        ownerAddress: otherAccount.pub,
+        tokenName: t22Name,
+        tokenAddress: t22Mint,
+        programId: TOKEN_2022_PROGRAM_ID.toString(),
+      });
+      return txBuilder;
+    };
+
+    it('bundles instructions in the order [create, thaw, transfer]', async () => {
+      const txBuilder = buildToken2022TransferWithAta();
+      txBuilder.permissionlessThaw(thawParams);
+      const tx = await txBuilder.build();
+
+      const types = tx.toJson().instructionsData.map((i) => i.type);
+      types.should.deepEqual(['CreateAssociatedTokenAccount', 'PermissionlessThawIdempotent', 'TokenTransfer']);
+
+      const thaw = tx.toJson().instructionsData.find((i) => i.type === 'PermissionlessThawIdempotent');
+      should.exist(thaw);
+      thaw.params.gatingProgram.should.equal(thawParams.gatingProgram);
+      thaw.params.mintConfig.should.equal(thawParams.mintConfig);
+      thaw.params.flagAccount.should.equal(thawParams.flagAccount);
+      thaw.params.extraAccounts.should.deepEqual(thawParams.extraAccounts);
+    });
+
+    it('omits the thaw instruction when permissionlessThaw is not set', async () => {
+      const tx = await buildToken2022TransferWithAta().build();
+      const types = tx.toJson().instructionsData.map((i) => i.type);
+      types.should.deepEqual(['CreateAssociatedTokenAccount', 'TokenTransfer']);
+      should.equal(
+        tx.toJson().instructionsData.find((i) => i.type === 'PermissionlessThawIdempotent'),
+        undefined
+      );
+    });
+  });
 });

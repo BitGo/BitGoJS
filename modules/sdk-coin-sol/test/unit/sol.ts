@@ -5,7 +5,7 @@ import * as should from 'should';
 import * as sinon from 'sinon';
 
 import { getExtraAccountMetaAddress, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { PublicKey } from '@solana/web3.js';
+import { PublicKey, SystemProgram } from '@solana/web3.js';
 
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import {
@@ -37,6 +37,12 @@ import {
 } from '../../src';
 import { Transaction } from '../../src/lib';
 import { AtaInit, ExtraAccountMeta, InstructionParams, TokenTransfer } from '../../src/lib/iface';
+import {
+  TOKEN_ACL_FLAG_ACCOUNT_SEED,
+  TOKEN_ACL_MINT_CONFIG_SEED,
+  TOKEN_ACL_PROGRAM_ID,
+  TOKEN_ACL_THAW_EXTRA_METAS_SEED,
+} from '../../src/lib/constants';
 import { getAssociatedTokenAccountAddress } from '../../src/lib/utils';
 import * as testData from '../fixtures/sol';
 import * as resources from '../resources/sol';
@@ -5165,6 +5171,149 @@ describe('SOL:', function () {
         amount
       );
       result.should.deepEqual([]);
+    });
+  });
+
+  describe('resolvePermissionlessThaw', () => {
+    const sandBox = sinon.createSandbox();
+    const mintAddress = resources.sol2022TokenTransfers.mint;
+    const tokenAccount = resources.associatedTokenAccountsForSol2022.accounts[0].ata;
+    const tokenAccountOwner = resources.authAccount.pub;
+    const authority = resources.nonceAccount.pub;
+    // Arbitrary but valid base58 pubkey used purely as the gating program fixture.
+    const gatingProgram = new PublicKey('GbQ8ZiEFzGGTeYoXwtZtcoxwPcMyUcmZDduMVNdUPKpX');
+    const tokenAclProgramId = new PublicKey(TOKEN_ACL_PROGRAM_ID);
+
+    // Fixed-address extra account metas the gating program requires (discriminator 0 entries).
+    const extraMetas: ExtraAccountMeta[] = [
+      { pubkey: '98wFF5MpMjMQbfDF2MPzo8LCGX37unZR1ohRA1mU9GmJ', isSigner: false, isWritable: true },
+      { pubkey: '9sQhAH7vV3RKTCK13VY4EiNjs3qBq1srSYxdNufdAAXm', isSigner: false, isWritable: false },
+    ];
+
+    const [mintConfigPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from(TOKEN_ACL_MINT_CONFIG_SEED), new PublicKey(mintAddress).toBuffer()],
+      tokenAclProgramId
+    );
+    const [flagAccountPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from(TOKEN_ACL_FLAG_ACCOUNT_SEED), new PublicKey(tokenAccount).toBuffer()],
+      tokenAclProgramId
+    );
+    const [thawExtraMetasPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from(TOKEN_ACL_THAW_EXTRA_METAS_SEED), new PublicKey(mintAddress).toBuffer()],
+      gatingProgram
+    );
+
+    // MintConfig layout: u8 discriminator, u8 bump, bool thaw, bool freeze, pubkey mint(32),
+    // pubkey freezeAuthority(32), pubkey gatingProgram(32). Total 100 bytes.
+    const buildMintConfig = (enablePermissionlessThaw: boolean, gateProgram: PublicKey): Buffer => {
+      const data = Buffer.alloc(100);
+      data.writeUInt8(1, 0); // discriminator
+      data.writeUInt8(255, 1); // bump
+      data.writeUInt8(enablePermissionlessThaw ? 1 : 0, 2);
+      data.writeUInt8(0, 3); // enablePermissionlessFreeze
+      new PublicKey(mintAddress).toBuffer().copy(data, 4);
+      tokenAclProgramId.toBuffer().copy(data, 36); // freezeAuthority
+      gateProgram.toBuffer().copy(data, 68);
+      return data;
+    };
+
+    // ExtraAccountMetaList account: u64 discriminator + u32 length + u32 count, then 35-byte
+    // ExtraAccountMeta entries (discriminator 0 = fixed address).
+    const buildExtraAccountMetaList = (metas: ExtraAccountMeta[]): Buffer => {
+      const headerSize = 16;
+      const data = Buffer.alloc(headerSize + metas.length * 35);
+      data.writeUInt32LE(4 + metas.length * 35, 8); // length
+      data.writeUInt32LE(metas.length, 12); // count
+      let offset = headerSize;
+      for (const meta of metas) {
+        data.writeUInt8(0, offset); // discriminator: fixed address
+        new PublicKey(meta.pubkey).toBuffer().copy(data, offset + 1);
+        data.writeUInt8(meta.isSigner ? 1 : 0, offset + 33);
+        data.writeUInt8(meta.isWritable ? 1 : 0, offset + 34);
+        offset += 35;
+      }
+      return data;
+    };
+
+    const accountInfoResponse = (data: Buffer | null, owner: string) => ({
+      status: 200,
+      body: {
+        result: {
+          value:
+            data === null
+              ? null
+              : {
+                  data: [data.toString('base64'), 'base64'],
+                  executable: false,
+                  owner,
+                  lamports: 1,
+                  rentEpoch: 0,
+                },
+        },
+      },
+    });
+
+    const stubNode = (accounts: Record<string, { data: Buffer | null; owner: string }>): void => {
+      const callBack = sandBox.stub(Sol.prototype, 'getDataFromNode' as keyof Sol);
+      callBack.callsFake(async (...args: unknown[]) => {
+        const params = args[0] as { payload?: { params?: unknown[] } };
+        const requestedPubkey = params.payload?.params?.[0] as string;
+        const account = accounts[requestedPubkey];
+        if (!account) {
+          return accountInfoResponse(null, TOKEN_2022_PROGRAM_ID.toBase58());
+        }
+        return accountInfoResponse(account.data, account.owner);
+      });
+    };
+
+    afterEach(() => {
+      sandBox.restore();
+    });
+
+    it('resolves the thaw params for a Token ACL mint with permissionless thaw enabled', async function () {
+      stubNode({
+        [mintConfigPda.toBase58()]: {
+          data: buildMintConfig(true, gatingProgram),
+          owner: TOKEN_ACL_PROGRAM_ID,
+        },
+        [thawExtraMetasPda.toBase58()]: {
+          data: buildExtraAccountMetaList(extraMetas),
+          owner: gatingProgram.toBase58(),
+        },
+      });
+
+      const result = await basecoin.resolvePermissionlessThaw(mintAddress, tokenAccount, tokenAccountOwner, authority);
+
+      result.applicable.should.be.true();
+      result.gatingProgram!.should.equal(gatingProgram.toBase58());
+      result.flagAccount!.should.equal(flagAccountPda.toBase58());
+      result.mintConfig!.should.equal(mintConfigPda.toBase58());
+      result.tokenProgram!.should.equal(TOKEN_2022_PROGRAM_ID.toBase58());
+      result.systemProgram!.should.equal(SystemProgram.programId.toBase58());
+      // extra accounts = [thawExtraMetas, ...resolved fixed-address extras]
+      result.extraAccounts!.should.deepEqual([
+        { pubkey: thawExtraMetasPda.toBase58(), isSigner: false, isWritable: false },
+        ...extraMetas,
+      ]);
+    });
+
+    it('returns applicable:false for a mint with no Token ACL MintConfig', async function () {
+      stubNode({});
+
+      const result = await basecoin.resolvePermissionlessThaw(mintAddress, tokenAccount, tokenAccountOwner, authority);
+      result.should.deepEqual({ applicable: false });
+    });
+
+    it('returns applicable:false when permissionless thaw is disabled', async function () {
+      stubNode({
+        [mintConfigPda.toBase58()]: {
+          data: buildMintConfig(false, gatingProgram),
+          owner: TOKEN_ACL_PROGRAM_ID,
+        },
+      });
+
+      const result = await basecoin.resolvePermissionlessThaw(mintAddress, tokenAccount, tokenAccountOwner, authority);
+      result.should.deepEqual({ applicable: false });
     });
   });
 });

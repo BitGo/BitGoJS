@@ -52,7 +52,8 @@ export type InstructionParams =
   | Burn
   | Approve
   | CustomInstruction
-  | VersionedCustomInstruction;
+  | VersionedCustomInstruction
+  | PermissionlessThawIdempotent;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -112,6 +113,44 @@ export interface TokenTransfer {
      * Hook extension; resolved live by the caller (offline builders never fetch).
      */
     transferHookAccounts?: ExtraAccountMeta[];
+  };
+}
+
+/**
+ * sRFC-37 Token ACL permissionless thaw (idempotent) instruction.
+ *
+ * Emitted for allowlist/blocklist (DefaultAccountState) Token-2022 mints so a freshly created
+ * (frozen) token account can be thawed atomically in the same transaction as the transfer. The
+ * gating-program dependencies (`flagAccount`, `mintConfig`, `gatingProgram`, `extraAccounts`) are
+ * resolved live by the caller (see `Sol.resolvePermissionlessThaw`) because builders never fetch.
+ */
+export interface PermissionlessThawIdempotent {
+  type: InstructionBuilderTypes.PermissionlessThawIdempotent;
+  params: {
+    /** The signer invoking the thaw (fee payer / authority). */
+    authority: string;
+    /** The Token-2022 mint of the token account being thawed. */
+    mint: string;
+    /** The token account (ATA) to thaw. */
+    tokenAccount: string;
+    /** The owner of the token account. */
+    tokenAccountOwner: string;
+    /** The Token ACL gating program that authorizes the thaw. */
+    gatingProgram: string;
+    /** PDA (under the Token ACL program) tracking the token account's thaw flag. */
+    flagAccount: string;
+    /** PDA (under the Token ACL program) holding the mint's Token ACL config. */
+    mintConfig: string;
+    /** Token program id; defaults to the Token-2022 program when omitted. */
+    tokenProgram?: string;
+    /** System program id; defaults to the System program when omitted. */
+    systemProgram?: string;
+    /**
+     * Resolved extra account metas required by the gating program, in the exact order the
+     * gating program's thaw ExtraAccountMetaList requires. The first entry is the thaw
+     * ExtraAccountMetaList PDA itself, followed by any seed/account-derived dependencies.
+     */
+    extraAccounts: ExtraAccountMeta[];
   };
 }
 
@@ -271,7 +310,8 @@ export type ValidInstructionTypes =
   | 'MintTo'
   | 'Burn'
   | 'Approve'
-  | 'CustomInstruction';
+  | 'CustomInstruction'
+  | 'PermissionlessThawIdempotent';
 
 export type StakingAuthorizeParams = {
   stakingAddress: string;

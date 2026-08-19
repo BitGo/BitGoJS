@@ -58,6 +58,7 @@ import {
   jitoStakingActivateInstructionsIndexes,
   jitoStakingDeactivateInstructionsIndexes,
   jitoStakingActivateWithATAInstructionsIndexes,
+  TOKEN_ACL_PROGRAM_ID,
 } from './constants';
 import { ValidInstructionTypes } from './iface';
 import { STAKE_POOL_INSTRUCTION_LAYOUTS, STAKE_POOL_PROGRAM_ID } from '@solana/spl-stake-pool';
@@ -448,6 +449,9 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
       return instructionKey;
     case StakeProgram.programId.toString():
       return StakeInstruction.decodeInstructionType(instruction);
+    case TOKEN_ACL_PROGRAM_ID:
+      // The Token ACL program has a single instruction the SDK builds — the permissionless thaw.
+      return ValidInstructionTypesEnum.PermissionlessThawIdempotent;
     case ASSOCIATED_TOKEN_PROGRAM_ID.toString():
       // TODO: change this when @spl-token supports decoding associated token instructions
       // Support both legacy ATA creation (data.length === 0) and idempotent ATA creation (discriminator = 1)

@@ -25,7 +25,12 @@ import {
 } from '@solana/web3.js';
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
-import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from './constants';
+import {
+  InstructionBuilderTypes,
+  MEMO_PROGRAM_PK,
+  THAW_PERMISSIONLESS_IDEMPOTENT_DISCRIMINATOR,
+  TOKEN_ACL_PROGRAM_ID,
+} from './constants';
 import {
   AtaClose,
   AtaInit,
@@ -36,6 +41,7 @@ import {
   MintTo,
   Burn,
   Nonce,
+  PermissionlessThawIdempotent,
   StakingActivate,
   StakingAuthorize,
   StakingDeactivate,
@@ -98,6 +104,8 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return burnInstruction(instructionToBuild);
     case InstructionBuilderTypes.CustomInstruction:
       return customInstruction(instructionToBuild);
+    case InstructionBuilderTypes.PermissionlessThawIdempotent:
+      return permissionlessThawIdempotentInstruction(instructionToBuild);
     default:
       throw new Error(`Invalid instruction type or not supported`);
   }
@@ -775,6 +783,57 @@ function customInstruction(data: InstructionParams): TransactionInstruction[] {
   });
 
   return [convertedInstruction];
+}
+
+/**
+ * Construct the sRFC-37 Token ACL `ThawPermissionlessIdempotent` instruction.
+ *
+ * The first nine accounts are fixed (authority, mint, tokenAccount, flagAccount, tokenAccountOwner,
+ * mintConfig, tokenProgram, systemProgram, gatingProgram) in that exact order and with the flags the
+ * program expects. Any gating-program extra accounts (resolved live by the caller) are appended
+ * afterwards. The instruction data is the single discriminator byte.
+ *
+ * @param {PermissionlessThawIdempotent} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing the permissionless thaw instruction
+ */
+function permissionlessThawIdempotentInstruction(data: PermissionlessThawIdempotent): TransactionInstruction[] {
+  const {
+    params: { authority, mint, tokenAccount, tokenAccountOwner, gatingProgram, flagAccount, mintConfig, extraAccounts },
+  } = data;
+  assert(authority, 'Missing authority param');
+  assert(mint, 'Missing mint param');
+  assert(tokenAccount, 'Missing tokenAccount param');
+  assert(tokenAccountOwner, 'Missing tokenAccountOwner param');
+  assert(gatingProgram, 'Missing gatingProgram param');
+  assert(flagAccount, 'Missing flagAccount param');
+  assert(mintConfig, 'Missing mintConfig param');
+
+  const tokenProgram = data.params.tokenProgram ?? TOKEN_2022_PROGRAM_ID.toString();
+  const systemProgram = data.params.systemProgram ?? SystemProgram.programId.toString();
+
+  const keys: AccountMeta[] = [
+    { pubkey: new PublicKey(authority), isSigner: true, isWritable: false },
+    { pubkey: new PublicKey(mint), isSigner: false, isWritable: false },
+    { pubkey: new PublicKey(tokenAccount), isSigner: false, isWritable: true },
+    { pubkey: new PublicKey(flagAccount), isSigner: false, isWritable: true },
+    { pubkey: new PublicKey(tokenAccountOwner), isSigner: false, isWritable: false },
+    { pubkey: new PublicKey(mintConfig), isSigner: false, isWritable: false },
+    { pubkey: new PublicKey(tokenProgram), isSigner: false, isWritable: false },
+    { pubkey: new PublicKey(systemProgram), isSigner: false, isWritable: false },
+    { pubkey: new PublicKey(gatingProgram), isSigner: false, isWritable: false },
+    ...(extraAccounts ?? []).map((meta) => ({
+      pubkey: new PublicKey(meta.pubkey),
+      isSigner: meta.isSigner,
+      isWritable: meta.isWritable,
+    })),
+  ];
+
+  const thawInstruction = new TransactionInstruction({
+    keys,
+    programId: new PublicKey(TOKEN_ACL_PROGRAM_ID),
+    data: Buffer.from([THAW_PERMISSIONLESS_IDEMPOTENT_DISCRIMINATOR]),
+  });
+  return [thawInstruction];
 }
 
 function upsertAccountMeta(keys: AccountMeta[], meta: AccountMeta): void {
