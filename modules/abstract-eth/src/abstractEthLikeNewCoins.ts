@@ -16,6 +16,7 @@ import {
   HalfSignedTransaction,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
+  InvalidTransactionError,
   IWallet,
   KeyPair,
   MPCSweepRecoveryOptions,
@@ -47,6 +48,7 @@ import {
   DeriveAddressOptions,
   DeriveAddressResult,
   NO_RECIPIENT_TX_TYPES,
+  CoinWithSignableConsistency,
 } from '@bitgo/sdk-core';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/secp256k1';
@@ -60,7 +62,7 @@ import {
 } from '@bitgo/statics';
 import type * as EthLikeCommon from '@ethereumjs/common';
 import type * as EthLikeTxLib from '@ethereumjs/tx';
-import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction } from '@ethereumjs/tx';
+import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction, TransactionFactory } from '@ethereumjs/tx';
 import { RLP } from '@ethereumjs/rlp';
 import { SignTypedDataVersion, TypedDataUtils, TypedMessage } from '@metamask/eth-sig-util';
 import { BigNumber } from 'bignumber.js';
@@ -509,7 +511,7 @@ export const optionalDeps = {
   },
 };
 
-export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
+export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implements CoinWithSignableConsistency {
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
   protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
 
@@ -3173,6 +3175,19 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
   /**
    * Verify if a tss transaction is valid
    *
+  /** @inheritdoc CoinWithSignableConsistency */
+  assertSignableConsistency(serializedTxHex: string, signableHex: string): void {
+    const ethTx = TransactionFactory.fromSerializedData(toBuffer(addHexPrefix(serializedTxHex)));
+    const derivedSignableHex =
+      ethTx instanceof FeeMarketEIP1559Transaction
+        ? ethTx.getMessageToSign(false).toString('hex')
+        : Buffer.from(RLP.encode(bufArrToArr((ethTx as LegacyTransaction).getMessageToSign(false)))).toString('hex');
+    if (derivedSignableHex !== signableHex) {
+      throw new InvalidTransactionError('signableHex is inconsistent with serializedTxHex: possible server tampering');
+    }
+  }
+
+  /**
    * @param {VerifyEthTransactionOptions} params
    * @param {TransactionParams} params.txParams - params object passed to send
    * @param {TransactionPrebuild} params.txPrebuild - prebuild object returned by server
@@ -3211,6 +3226,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     if (!wallet || !txPrebuild) {
       throw new Error('missing params');
     }
+
     if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
       throw new Error('tx cannot be both a batch and hop transaction');
     }

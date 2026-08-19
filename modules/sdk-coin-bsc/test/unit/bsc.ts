@@ -3,6 +3,9 @@ import 'should';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TransactionType, Wallet } from '@bitgo/sdk-core';
+import { Transaction as LegacyTransaction } from '@ethereumjs/tx';
+import { RLP } from '@ethereumjs/rlp';
+import { bufArrToArr } from 'ethereumjs-util';
 
 import { Bsc, Tbsc } from '../../src/index';
 import { TransactionBuilder } from '../../src/lib';
@@ -221,6 +224,45 @@ describe('Native BNB', function () {
           wallet,
         })
         .should.be.rejectedWith('destination address does not match with the recipient address');
+    });
+
+    describe('assertSignableConsistency (Gap 2 / WCI-1398)', function () {
+      function stripHex(hex: string): string {
+        return hex.startsWith('0x') ? hex.slice(2) : hex;
+      }
+
+      async function buildSerializedTxHex(address: string): Promise<string> {
+        const txBuilder = getBuilder('tbsc') as TransactionBuilder;
+        txBuilder.type(TransactionType.SingleSigSend);
+        txBuilder.fee({ fee: '10', gasLimit: '21000' });
+        txBuilder.counter(1);
+        txBuilder.contract(address);
+        txBuilder.value(transferAmount);
+        const tx = await txBuilder.build();
+        return stripHex(tx.toBroadcastFormat());
+      }
+
+      function deriveSignableHex(serializedTxHex: string): string {
+        const legacyTx = LegacyTransaction.fromSerializedTx(Buffer.from(serializedTxHex, 'hex'));
+        return Buffer.from(RLP.encode(bufArrToArr(legacyTx.getMessageToSign(false)))).toString('hex');
+      }
+
+      it('should pass when signableHex is consistent with serializedTxHex', async function () {
+        const coin = bitgo.coin('tbsc') as Tbsc;
+        const serializedTxHex = await buildSerializedTxHex(recipientAddress);
+        const signableHex = deriveSignableHex(serializedTxHex);
+        coin.assertSignableConsistency(serializedTxHex, signableHex);
+      });
+
+      it('should throw when signableHex does not match serializedTxHex (Gap 2 attack)', async function () {
+        const coin = bitgo.coin('tbsc') as Tbsc;
+        const benignSerializedTxHex = await buildSerializedTxHex(recipientAddress);
+        const maliciousSerializedTxHex = await buildSerializedTxHex(wrongAddress);
+        const tamperedSignableHex = deriveSignableHex(maliciousSerializedTxHex);
+        (() => coin.assertSignableConsistency(benignSerializedTxHex, tamperedSignableHex)).should.throw(
+          'signableHex is inconsistent with serializedTxHex: possible server tampering'
+        );
+      });
     });
   });
 });
