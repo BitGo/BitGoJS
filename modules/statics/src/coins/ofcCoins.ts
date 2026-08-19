@@ -2120,6 +2120,14 @@ export const ofcCoins = [
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
   ),
   tofcsolToken(
+    'c5410a9e-3e95-4aba-97fd-78088513dc9c',
+    'ofctsol:usdcv2',
+    'Testnet USD Coin V2',
+    6,
+    UnderlyingAsset['tsol:usdc'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tofcsolToken(
     'a42e9d17-540e-4a0d-9dd1-ce9d997517bb',
     'ofctsol:goamzn',
     'Test AMZN goStock',
