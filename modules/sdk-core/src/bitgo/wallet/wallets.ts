@@ -42,7 +42,7 @@ import {
   WalletShares,
   WalletWithKeychains,
 } from './iWallets';
-import { WalletShare } from './iWallet';
+import { ShareWalletOptions, WalletShare } from './iWallet';
 import { Wallet } from './wallet';
 import { TssSettings } from '@bitgo/public-types';
 import { createEvmKeyRingWallet, validateEvmKeyRingWalletParams } from '../evm/evmUtils';
@@ -1094,23 +1094,44 @@ export class Wallets implements IWallets {
       [...enterpriseUsersResponse?.adminUsers, ...enterpriseUsersResponse?.nonAdminUsers].map((obj) => [obj.id, obj])
     );
 
-    if (wallet._wallet.users) {
-      for (const user of wallet._wallet.users) {
-        const userObject = usersMap.get(user.user);
-        if (user.permissions.includes('spend') && !user.permissions.includes('admin') && userObject) {
-          const shareParams = {
-            walletId: walletId,
-            user: user.user,
-            permissions: user.permissions.join(','),
-            walletPassphrase: userPassword,
-            email: userObject.email.email,
-            reshare: true,
-            skipKeychain: false,
-            encryptionVersion,
-          };
-          await wallet.shareWallet(shareParams);
-        }
-      }
+    if (!wallet._wallet.users) {
+      return;
+    }
+
+    const spenders = wallet._wallet.users.filter(
+      (user) => user.permissions.includes('spend') && !user.permissions.includes('admin') && usersMap.has(user.user)
+    );
+
+    if (spenders.length === 0) {
+      return;
+    }
+
+    // Decrypt the wallet keychain once and thread the plaintext into each shareWallet call.
+    // Without this, shareWallet would internally re-decrypt the same encryptedPrv under the same
+    // walletPassphrase N times (one Argon2id per recipient). Per-recipient encrypt still uses a
+    // unique ECDH-derived secret so no session amortization is possible on that side.
+    let decryptedKeychain;
+    try {
+      decryptedKeychain = await wallet.getDecryptedKeychainForSharing(userPassword);
+    } catch (e) {
+      // MissingEncryptedKeychainError -> cold wallet, let shareWallet handle it per-recipient
+    }
+
+    // Sequential loop to bound concurrent Argon2id WASM instances on the per-recipient ECDH
+    // encrypt side (each recipient's secret is unique so Promise.all could OOM at scale).
+    for (const user of spenders) {
+      const userObject = usersMap.get(user.user)!;
+      await wallet.shareWallet({
+        walletId: walletId,
+        user: user.user,
+        permissions: user.permissions.join(','),
+        walletPassphrase: userPassword,
+        email: userObject.email.email,
+        reshare: true,
+        skipKeychain: false,
+        encryptionVersion,
+        decryptedKeychain,
+      } as ShareWalletOptions & { walletId: string; user: string });
     }
   }
 

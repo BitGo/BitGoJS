@@ -796,6 +796,13 @@ export interface ShareWalletOptions {
   skipKeychain?: boolean;
   disableEmail?: boolean;
   encryptionVersion?: EncryptionVersion;
+  /**
+   * Pre-decrypted wallet keychain. When supplied, shareWallet skips its internal
+   * getDecryptedKeychainForSharing call — useful when the caller is sharing the same wallet
+   * with many recipients under one walletPassphrase and wants to avoid N-1 redundant Argon2id
+   * decryptions of the user's wallet keychain.
+   */
+  decryptedKeychain?: DecryptedKeychainData;
 }
 
 export interface BulkCreateShareOption {
