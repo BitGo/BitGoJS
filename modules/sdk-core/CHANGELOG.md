@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [38.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.9.0...@bitgo/sdk-core@38.9.1) (2026-08-20)
+
+
+### Bug Fixes
+
+* add batching for keys accept decrypt ([4878592](https://github.com/BitGo/BitGoJS/commit/4878592fb2708a0ca009b6f27b8e61326af745de))
+
+
+
+
+
 # [38.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.8.0...@bitgo/sdk-core@38.9.0) (2026-08-18)
 
 

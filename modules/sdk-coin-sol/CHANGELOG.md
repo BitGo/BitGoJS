@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.5.1...@bitgo/sdk-coin-sol@8.6.0) (2026-08-20)
+
+
+### Features
+
+* **sdk-coin-sol:** add sRFC-37 Token ACL permissionless thaw ([0292282](https://github.com/BitGo/BitGoJS/commit/029228200786896ac7da423464202547dc933f42))
+* **sdk-coin-sol:** resolve Token-2022 transfer hook accounts live ([3509f03](https://github.com/BitGo/BitGoJS/commit/3509f034dc521c3df62daa7c81ab84f598a1fce5))
+
+
+
+
+
 ## [8.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.5.0...@bitgo/sdk-coin-sol@8.5.1) (2026-08-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

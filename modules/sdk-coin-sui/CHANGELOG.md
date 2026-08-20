@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@6.2.6...@bitgo/sdk-coin-sui@6.3.0) (2026-08-20)
+
+
+### Features
+
+* **sdk-coin-sui:** support MPCv2 signed hot recovery ([a4090f2](https://github.com/BitGo/BitGoJS/commit/a4090f23892ff9bc5380346f0d39c80946bd0dd4))
+
+
+
+
+
 ## [6.2.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@6.2.5...@bitgo/sdk-coin-sui@6.2.6) (2026-08-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

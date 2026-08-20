@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@2.0.11...@bitgo/sdk-coin-polyx@2.1.0) (2026-08-20)
+
+
+### Features
+
+* **sdk-coin-polyx:** add MPCv2 signed hot recovery ([fb53e52](https://github.com/BitGo/BitGoJS/commit/fb53e52d9c53d60c99dbda23011848ed427be19b))
+
+
+
+
+
 ## [2.0.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@2.0.10...@bitgo/sdk-coin-polyx@2.0.11) (2026-08-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polyx
