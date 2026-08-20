@@ -185,4 +185,41 @@ describe('decryptV1 (native, SJCL-free)', () => {
       assert.ok(warnings[0].includes('SJCL fallback succeeded'));
     });
   });
+
+  describe('browser runtime (isBrowser = true)', () => {
+    it('skips native and decrypts via SJCL without warning', async () => {
+      const ct = await encrypt(password, plaintext, { encryptionVersion: 1 });
+      const neverCalled = async (): Promise<string> => {
+        throw new Error('native should not be attempted in the browser');
+      };
+      // eslint-disable-next-line no-console
+      const originalWarn = console.warn;
+      const warnings: string[] = [];
+      // eslint-disable-next-line no-console
+      console.warn = (...args: unknown[]) => {
+        warnings.push(args.join(' '));
+      };
+      try {
+        const result = await decryptV1WithFallback(password, ct, neverCalled, true);
+        assert.strictEqual(result, plaintext);
+        assert.deepStrictEqual(warnings, []);
+      } finally {
+        // eslint-disable-next-line no-console
+        console.warn = originalWarn;
+      }
+    });
+
+    it('still enforces the iter cap before running PBKDF2', async () => {
+      const envelope = JSON.parse(await encrypt(password, plaintext, { encryptionVersion: 1 }));
+      envelope.iter = V1_MAX_ITER + 1;
+      const start = Date.now();
+      await assert.rejects(() => decryptV1WithFallback(password, JSON.stringify(envelope), decryptV1, true), /iter/);
+      assert.ok(Date.now() - start < 100, 'must reject before any KDF work');
+    });
+
+    it('rejects wrong password via SJCL auth failure', async () => {
+      const ct = await encrypt(password, plaintext, { encryptionVersion: 1 });
+      await assert.rejects(() => decryptV1WithFallback('wrongPassword', ct, decryptV1, true));
+    });
+  });
 });

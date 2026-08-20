@@ -1,8 +1,35 @@
 import * as sjcl from '@bitgo/sjcl';
 import { randomBytes } from 'crypto';
 
-import { decryptV1 } from './decryptV1';
+import { decryptV1, V1_MAX_ITER } from './decryptV1';
 import { decryptV2, encryptV2 } from './encryptV2';
+
+/**
+ * True when running in a bundled browser build. `browserify-aes` -- the AES
+ * polyfill webpack substitutes for `node:crypto` in browser bundles -- has no
+ * AES-CCM mode at all, so native v1 decrypt fails on literally every call
+ * there. There's no point paying for the doomed native attempt (a full
+ * PBKDF2 run) before falling back; go straight to SJCL.
+ */
+const isBrowserRuntime = typeof window !== 'undefined';
+
+/**
+ * SJCL has no upper bound on `iter`, so a hostile v1 envelope could burn CPU
+ * running an inflated PBKDF2. Native decrypt's codec normally catches this
+ * before any KDF work runs; the browser path skips native entirely, so it
+ * needs this narrow check to preserve the same DoS protection.
+ */
+function assertIterWithinCap(ciphertext: string): void {
+  let iter: unknown;
+  try {
+    iter = JSON.parse(ciphertext)?.iter;
+  } catch {
+    return; // malformed JSON -- let sjcl.decrypt raise its own error
+  }
+  if (typeof iter === 'number' && iter > V1_MAX_ITER) {
+    throw new Error(`v1 decrypt: iter ${iter} exceeds cap of ${V1_MAX_ITER}`);
+  }
+}
 
 /**
  * convert a 4 element Uint8Array to a 4 byte Number
@@ -92,12 +119,19 @@ function isIterCapViolation(err: unknown): boolean {
  *
  * `native` defaults to the module's `decryptV1` but is exposed as a parameter
  * so tests can inject a throwing version to exercise the fallback path.
+ * `isBrowser` defaults to a real runtime check but is exposed so tests can
+ * exercise the browser-only branch under Node.
  */
 export async function decryptV1WithFallback(
   password: string,
   ciphertext: string,
-  native: (pw: string, ct: string) => Promise<string> = decryptV1
+  native: (pw: string, ct: string) => Promise<string> = decryptV1,
+  isBrowser: boolean = isBrowserRuntime
 ): Promise<string> {
+  if (isBrowser) {
+    assertIterWithinCap(ciphertext);
+    return sjcl.decrypt(password, ciphertext);
+  }
   try {
     return await native(password, ciphertext);
   } catch (nativeErr) {
