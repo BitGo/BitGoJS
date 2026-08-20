@@ -3274,6 +3274,197 @@ describe('V2 Wallets:', function () {
           })
           .should.be.rejectedWith('Request Entity Too Large');
       });
+
+      describe('EncryptionSession (HKDF)', function () {
+        async function stubForShares(shareCount: number, decryptedWalletPrv: string, walletPassphrase: string) {
+          const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+          const path = 'm/999999/1/1';
+          const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+          const eckey = makeRandomKey();
+          const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
+          const senderEncryptedPrv = await bitgo.encrypt({ password: secret, input: decryptedWalletPrv });
+
+          const shareIds = Array.from({ length: shareCount }, (_, i) => `hkdf-share-${i}`);
+          const shares = shareIds.map((id, index) => ({
+            id,
+            coin: 'tsol',
+            walletLabel: `w${index}`,
+            fromUser: 'from',
+            toUser: 'to',
+            wallet: `w${index}`,
+            enterprise: `ent-${index}`,
+            permissions: ['spend'],
+            state: 'active' as const,
+            keychain: {
+              path,
+              fromPubKey: eckey.publicKey.toString('hex'),
+              encryptedPrv: senderEncryptedPrv,
+              toPubKey: pubkey,
+              pub: pubkey,
+            },
+          }));
+
+          sinon.stub(Wallets.prototype, 'listSharesV2').resolves({ incoming: shares, outgoing: [] });
+
+          const ecdh = await bitgo.keychains().create();
+          sinon.stub(bitgo, 'getECDHKeychain').resolves({
+            encryptedXprv: await bitgo.encrypt({ input: ecdh.xprv, password: walletPassphrase }),
+          });
+
+          const decryptStub = sinon.stub(bitgo, 'decrypt');
+          decryptStub.onFirstCall().resolves(ecdh.xprv);
+          decryptStub.resolves(decryptedWalletPrv);
+          sinon.stub(moduleBitgo, 'getSharedSecret').resolves(secret);
+
+          return { shareIds };
+        }
+
+        it('opens one session per passphrase and destroys them after the loop', async function () {
+          const walletPassphrase = 'strong-outer-passphrase';
+          const decryptedWalletPrv = 'plaintext-wallet-prv';
+          const { shareIds } = await stubForShares(3, decryptedWalletPrv, walletPassphrase);
+
+          const realSession = await bitgo.createEncryptionSession(walletPassphrase);
+          const destroySpy = sinon.spy(realSession, 'destroy');
+          const sessionStub = sinon.stub(bitgo, 'createEncryptionSession').resolves(realSession);
+
+          nock(bgUrl)
+            .put('/api/v2/walletshares/accept')
+            .reply(200, {
+              acceptedWalletShares: shareIds.map((id) => ({ walletShareId: id })),
+            });
+
+          await wallets.bulkAcceptShare({ walletShareIds: shareIds, userLoginPassword: walletPassphrase });
+
+          sessionStub.callCount.should.equal(1);
+          sessionStub.firstCall.args[0].should.equal(walletPassphrase);
+          destroySpy.called.should.equal(true);
+        });
+
+        it('produces standalone-decryptable v2 envelopes with unique per-envelope hkdfSalts', async function () {
+          const walletPassphrase = 'session-passphrase-42';
+          const decryptedWalletPrv = 'secret-wallet-material';
+          const { shareIds } = await stubForShares(4, decryptedWalletPrv, walletPassphrase);
+
+          let captured: any;
+          nock(bgUrl)
+            .put('/api/v2/walletshares/accept', (body) => {
+              captured = body;
+              return true;
+            })
+            .reply(200, {
+              acceptedWalletShares: shareIds.map((id) => ({ walletShareId: id })),
+            });
+
+          await wallets.bulkAcceptShare({ walletShareIds: shareIds, userLoginPassword: walletPassphrase });
+
+          const entries = captured.keysForWalletShares as AcceptShareOptionsRequest[];
+          entries.should.have.length(4);
+          const envelopes = entries.map((e) => JSON.parse(e.encryptedPrv as string));
+
+          for (const env of envelopes) {
+            env.should.have.property('v', 2);
+            env.should.have.property('hkdfSalt');
+            env.should.have.property('salt');
+          }
+          // Same session ⇒ same Argon2 salt across envelopes
+          const argonSalts = new Set(envelopes.map((e) => e.salt));
+          argonSalts.size.should.equal(1);
+          // Unique HKDF salt per envelope ⇒ independent AES keys
+          const hkdfSalts = new Set(envelopes.map((e) => e.hkdfSalt));
+          hkdfSalts.size.should.equal(4);
+          // Cross-wallet isolation: every envelope decrypts back under the same passphrase
+          for (const env of envelopes) {
+            const roundTrip = await bitgo.decrypt({ password: walletPassphrase, input: JSON.stringify(env) });
+            roundTrip.should.equal(decryptedWalletPrv);
+          }
+        });
+
+        it('opens a second, independent session for webauthnInfo.passphrase and binds adata per share', async function () {
+          const walletPassphrase = 'outer-pw';
+          const webauthnPassphrase = 'webauthn-prf-pw';
+          const decryptedWalletPrv = 'wallet-prv-webauthn-case';
+          const { shareIds } = await stubForShares(2, decryptedWalletPrv, walletPassphrase);
+
+          const sessionSpy = sinon.spy(bitgo, 'createEncryptionSession');
+          let captured: any;
+          nock(bgUrl)
+            .put('/api/v2/walletshares/accept', (body) => {
+              captured = body;
+              return true;
+            })
+            .reply(200, { acceptedWalletShares: shareIds.map((id) => ({ walletShareId: id })) });
+
+          await wallets.bulkAcceptShare({
+            walletShareIds: shareIds,
+            userLoginPassword: walletPassphrase,
+            webauthnInfo: { otpDeviceId: 'dev', prfSalt: 'salt', passphrase: webauthnPassphrase },
+          });
+
+          sessionSpy.callCount.should.equal(2);
+          const passwords = sessionSpy.getCalls().map((c) => c.args[0]);
+          passwords.should.containEql(walletPassphrase);
+          passwords.should.containEql(webauthnPassphrase);
+
+          const entries = captured.keysForWalletShares as AcceptShareOptionsRequest[];
+          for (let i = 0; i < entries.length; i++) {
+            const webEnv = JSON.parse(entries[i].webauthnInfo!.encryptedPrv as string);
+            webEnv.should.have.property('adata', `ent-${i}`);
+            const rt = await bitgo.decrypt({ password: webauthnPassphrase, input: JSON.stringify(webEnv) });
+            rt.should.equal(decryptedWalletPrv);
+          }
+        });
+
+        it('destroys the session even when the accept API call fails', async function () {
+          const walletPassphrase = 'pw-error';
+          const decryptedWalletPrv = 'x';
+          const { shareIds } = await stubForShares(2, decryptedWalletPrv, walletPassphrase);
+
+          const realSession = await bitgo.createEncryptionSession(walletPassphrase);
+          const destroySpy = sinon.spy(realSession, 'destroy');
+          sinon.stub(bitgo, 'createEncryptionSession').resolves(realSession);
+
+          nock(bgUrl).put('/api/v2/walletshares/accept').reply(500, { error: 'boom' });
+
+          await wallets
+            .bulkAcceptShare({ walletShareIds: shareIds, userLoginPassword: walletPassphrase })
+            .should.be.rejected();
+
+          destroySpy.called.should.equal(true);
+        });
+
+        it('threads encryptionVersion=1 into the factory so v1 envelopes are produced', async function () {
+          const walletPassphrase = 'v1-caller';
+          const decryptedWalletPrv = 'legacy';
+          const { shareIds } = await stubForShares(2, decryptedWalletPrv, walletPassphrase);
+          const sessionSpy = sinon.spy(bitgo, 'createEncryptionSession');
+
+          let captured: any;
+          nock(bgUrl)
+            .put('/api/v2/walletshares/accept', (body) => {
+              captured = body;
+              return true;
+            })
+            .reply(200, { acceptedWalletShares: shareIds.map((id) => ({ walletShareId: id })) });
+
+          await wallets.bulkAcceptShare({
+            walletShareIds: shareIds,
+            userLoginPassword: walletPassphrase,
+            encryptionVersion: 1,
+          });
+
+          // Factory is still called uniformly, but with encryptionVersion=1
+          sessionSpy.callCount.should.equal(1);
+          sessionSpy.firstCall.args[1].should.equal(1);
+
+          const entries = captured.keysForWalletShares as AcceptShareOptionsRequest[];
+          const envelopes = entries.map((e) => JSON.parse(e.encryptedPrv as string));
+          for (const env of envelopes) {
+            env.should.not.have.property('hkdfSalt');
+            env.should.have.property('iter'); // v1 SJCL
+          }
+        });
+      });
     });
 
     describe('bulkUpdateWalletShare', function () {
