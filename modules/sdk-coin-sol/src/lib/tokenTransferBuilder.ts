@@ -10,7 +10,14 @@ import {
   validateOwnerAddress,
 } from './utils';
 import { InstructionBuilderTypes } from './constants';
-import { AtaInit, ExtraAccountMeta, TokenAssociateRecipient, TokenTransfer, SetPriorityFee } from './iface';
+import {
+  AtaInit,
+  ExtraAccountMeta,
+  PermissionlessThawIdempotent,
+  TokenAssociateRecipient,
+  TokenTransfer,
+  SetPriorityFee,
+} from './iface';
 import assert from 'assert';
 import { TransactionBuilder } from './transactionBuilder';
 import _ from 'lodash';
@@ -30,10 +37,28 @@ export class TokenTransferBuilder extends TransactionBuilder {
   private _sendParams: SendParams[] = [];
   private _createAtaParams: TokenAssociateRecipient[];
   private _transferHookAccounts?: ExtraAccountMeta[];
+  private _permissionlessThaw?: PermissionlessThawIdempotent['params'];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._createAtaParams = [];
+  }
+
+  /**
+   * Set the resolved sRFC-37 Token ACL permissionless-thaw params for this transfer.
+   *
+   * These must be resolved live by the caller (e.g. via `Sol.resolvePermissionlessThaw`) since
+   * builders remain offline and never perform RPC. When set, the built transaction bundles a
+   * `PermissionlessThawIdempotent` instruction after any ATA creation and before the transfer, so
+   * a freshly created (frozen) allowlist/blocklist token account is thawed atomically with the
+   * transfer — all-or-nothing.
+   *
+   * @param {PermissionlessThawIdempotent['params']} params - resolved thaw params
+   * @returns {TokenTransferBuilder} This transaction builder
+   */
+  permissionlessThaw(params: PermissionlessThawIdempotent['params']): this {
+    this._permissionlessThaw = params;
+    return this;
   }
 
   /**
@@ -224,11 +249,22 @@ export class TokenTransferBuilder extends TransactionBuilder {
       },
     };
 
+    // When resolved, emit the permissionless thaw between ATA creation and the transfer so the
+    // built order is [CreateATA?, PermissionlessThawIdempotent, TokenTransfer].
+    const thawInstructions: PermissionlessThawIdempotent[] = this._permissionlessThaw
+      ? [{ type: InstructionBuilderTypes.PermissionlessThawIdempotent, params: this._permissionlessThaw }]
+      : [];
+
     if (!this._priorityFee || this._priorityFee === Number(0)) {
-      this._instructionsData = [...createAtaInstructions, ...sendInstructions];
+      this._instructionsData = [...createAtaInstructions, ...thawInstructions, ...sendInstructions];
     } else {
       // order is important, createAtaInstructions must be before sendInstructions
-      this._instructionsData = [addPriorityFeeInstruction, ...createAtaInstructions, ...sendInstructions];
+      this._instructionsData = [
+        addPriorityFeeInstruction,
+        ...createAtaInstructions,
+        ...thawInstructions,
+        ...sendInstructions,
+      ];
     }
     return await super.buildImplementation();
   }

@@ -7,14 +7,18 @@ import {
   TOKEN_PROGRAM_ID,
   addExtraAccountMetasForExecute,
   createTransferCheckedInstruction,
+  getExtraAccountMetas,
   getTransferHook,
+  resolveExtraAccountMeta,
   unpackMint,
 } from '@solana/spl-token';
 import {
   AccountInfo,
+  AccountMeta,
   Commitment,
   Connection,
   PublicKey as SolPublicKey,
+  SystemProgram,
   TransactionInstruction,
 } from '@solana/web3.js';
 import BigNumber from 'bignumber.js';
@@ -91,7 +95,14 @@ import {
   ExtraAccountMeta,
   TransactionExplanation as SolLibTransactionExplanation,
 } from './lib/iface';
-import { InstructionBuilderTypes } from './lib/constants';
+import {
+  InstructionBuilderTypes,
+  THAW_PERMISSIONLESS_IDEMPOTENT_DISCRIMINATOR,
+  TOKEN_ACL_FLAG_ACCOUNT_SEED,
+  TOKEN_ACL_MINT_CONFIG_SEED,
+  TOKEN_ACL_PROGRAM_ID,
+  TOKEN_ACL_THAW_EXTRA_METAS_SEED,
+} from './lib/constants';
 import {
   getAssociatedTokenAccountAddress,
   getSolTokenFromAddress,
@@ -121,6 +132,24 @@ export interface TxInfo {
   recipients: TransactionRecipient[];
   from: string;
   txid: string;
+}
+
+/**
+ * Result of resolving the sRFC-37 Token ACL permissionless thaw for a mint / token account.
+ *
+ * When `applicable` is false (the mint has no Token ACL MintConfig, or permissionless thaw is
+ * disabled) all other fields are omitted and the caller should not emit a thaw instruction.
+ * When `applicable` is true, the fields are ready to thread into the token-transfer builder via
+ * `permissionlessThaw(...)`.
+ */
+export interface ResolvePermissionlessThawResult {
+  applicable: boolean;
+  gatingProgram?: string;
+  flagAccount?: string;
+  mintConfig?: string;
+  tokenProgram?: string;
+  systemProgram?: string;
+  extraAccounts?: ExtraAccountMeta[];
 }
 
 export interface SolSignTransactionOptions extends SignTransactionOptions {
@@ -1330,6 +1359,150 @@ export class Sol extends BaseCoin {
       isSigner: meta.isSigner,
       isWritable: meta.isWritable,
     }));
+  }
+
+  /**
+   * Resolve the sRFC-37 Token ACL permissionless-thaw dependencies for a token account.
+   *
+   * This is generic: it works for ANY allowlist/blocklist (DefaultAccountState) Token-2022 mint
+   * gated by the Token ACL program — no issuer is hardcoded. It reads the mint's MintConfig PDA
+   * live from the node, and only when permissionless thaw is enabled does it derive the flag /
+   * mint-config / thaw-extra-metas PDAs and resolve the gating program's extra account metas (in
+   * the exact order the gating program requires, mirroring `resolveExtraMetas`).
+   *
+   * Builders remain offline, so the caller (e.g. wallet-platform) invokes this and threads the
+   * result into the token-transfer builder via `permissionlessThaw(...)`, which bundles the thaw
+   * atomically with any ATA creation and the transfer. When the mint is not a Token ACL mint, or
+   * permissionless thaw is disabled, this returns `{ applicable: false }` and callers skip the thaw.
+   *
+   * @param {string} mint - the Token-2022 mint address
+   * @param {string} tokenAccount - the token account (ATA) to thaw
+   * @param {string} tokenAccountOwner - the owner of the token account
+   * @param {string} authority - the signer invoking the thaw (fee payer / authority)
+   * @param {string} [apiKey] - optional Alchemy API key threaded to the node URL
+   * @returns {Promise<ResolvePermissionlessThawResult>} the resolved thaw params, or `{ applicable: false }`
+   */
+  async resolvePermissionlessThaw(
+    mint: string,
+    tokenAccount: string,
+    tokenAccountOwner: string,
+    authority: string,
+    apiKey?: string
+  ): Promise<ResolvePermissionlessThawResult> {
+    const mintPubkey = new SolPublicKey(mint);
+    const tokenAccountPubkey = new SolPublicKey(tokenAccount);
+    const tokenAccountOwnerPubkey = new SolPublicKey(tokenAccountOwner);
+    const authorityPubkey = new SolPublicKey(authority);
+    const tokenAclProgramId = new SolPublicKey(TOKEN_ACL_PROGRAM_ID);
+    const connection = this.buildTransferHookConnection(apiKey);
+
+    // 1. Read the mint's MintConfig PDA. Absent => the mint is not a Token ACL mint.
+    const [mintConfigPda] = SolPublicKey.findProgramAddressSync(
+      [Buffer.from(TOKEN_ACL_MINT_CONFIG_SEED), mintPubkey.toBuffer()],
+      tokenAclProgramId
+    );
+    const mintConfigAccount = await connection.getAccountInfo(mintConfigPda);
+    if (!mintConfigAccount) {
+      return { applicable: false };
+    }
+
+    // 2. Decode the MintConfig; permissionless thaw must be enabled.
+    const mintConfig = this.decodeTokenAclMintConfig(mintConfigAccount.data);
+    if (!mintConfig.enablePermissionlessThaw) {
+      return { applicable: false };
+    }
+    const gatingProgramPubkey = mintConfig.gatingProgram;
+
+    // 3. Derive the remaining PDAs (flag account under Token ACL, thaw extra metas under gating).
+    const [flagAccountPda] = SolPublicKey.findProgramAddressSync(
+      [Buffer.from(TOKEN_ACL_FLAG_ACCOUNT_SEED), tokenAccountPubkey.toBuffer()],
+      tokenAclProgramId
+    );
+    const [thawExtraMetasPda] = SolPublicKey.findProgramAddressSync(
+      [Buffer.from(TOKEN_ACL_THAW_EXTRA_METAS_SEED), mintPubkey.toBuffer()],
+      gatingProgramPubkey
+    );
+
+    // 4. Build the 6-account can-thaw context (all readonly), then resolve the gating program's
+    //    extra account metas onto it.
+    const canThawContext: AccountMeta[] = [
+      { pubkey: authorityPubkey, isSigner: false, isWritable: false },
+      { pubkey: tokenAccountPubkey, isSigner: false, isWritable: false },
+      { pubkey: mintPubkey, isSigner: false, isWritable: false },
+      { pubkey: tokenAccountOwnerPubkey, isSigner: false, isWritable: false },
+      { pubkey: flagAccountPda, isSigner: false, isWritable: false },
+      { pubkey: thawExtraMetasPda, isSigner: false, isWritable: false },
+    ];
+    const resolvedMetas = await this.resolveTokenAclExtraMetas(
+      connection,
+      thawExtraMetasPda,
+      canThawContext,
+      gatingProgramPubkey
+    );
+
+    // 5. Drop the first five context accounts; the remainder ([thawExtraMetas, ...extras]) are the
+    //    accounts appended after the thaw instruction's fixed nine.
+    const extraAccounts = resolvedMetas.slice(5).map((meta) => ({
+      pubkey: meta.pubkey.toBase58(),
+      isSigner: meta.isSigner,
+      isWritable: meta.isWritable,
+    }));
+
+    return {
+      applicable: true,
+      gatingProgram: gatingProgramPubkey.toBase58(),
+      flagAccount: flagAccountPda.toBase58(),
+      mintConfig: mintConfigPda.toBase58(),
+      tokenProgram: TOKEN_2022_PROGRAM_ID.toBase58(),
+      systemProgram: SystemProgram.programId.toBase58(),
+      extraAccounts,
+    };
+  }
+
+  /**
+   * Decode the fields of a Token ACL MintConfig account we depend on.
+   *
+   * Layout: `u8 discriminator, u8 bump, bool enablePermissionlessThaw, bool enablePermissionlessFreeze,
+   * pubkey mint(32), pubkey freezeAuthority(32), pubkey gatingProgram(32)`.
+   */
+  private decodeTokenAclMintConfig(data: Buffer): { enablePermissionlessThaw: boolean; gatingProgram: SolPublicKey } {
+    const enablePermissionlessThaw = data[2] === 1;
+    const gatingProgram = new SolPublicKey(data.subarray(68, 100));
+    return { enablePermissionlessThaw, gatingProgram };
+  }
+
+  /**
+   * Resolve the gating program's thaw ExtraAccountMetaList onto a can-thaw context.
+   *
+   * Mirrors the reference `resolveExtraMetas`: fetch the extra-metas account, unpack its
+   * ExtraAccountMeta entries, then resolve each one (fixed address, PDA, or account-data derived)
+   * against the accumulating metas using the spl-token transfer-hook helpers. When the extra-metas
+   * account does not exist, there are no extras to append.
+   */
+  private async resolveTokenAclExtraMetas(
+    connection: Connection,
+    extraMetasAddress: SolPublicKey,
+    previousMetas: AccountMeta[],
+    gatingProgram: SolPublicKey
+  ): Promise<AccountMeta[]> {
+    const instructionData = Buffer.from([THAW_PERMISSIONLESS_IDEMPOTENT_DISCRIMINATOR]);
+    const resolvedMetas: AccountMeta[] = [...previousMetas];
+    const extraMetasAccount = await connection.getAccountInfo(extraMetasAddress);
+    if (!extraMetasAccount) {
+      return resolvedMetas;
+    }
+    const extraAccountMetas = getExtraAccountMetas(extraMetasAccount);
+    for (const extraAccountMeta of extraAccountMetas) {
+      const resolvedMeta = await resolveExtraAccountMeta(
+        connection,
+        extraAccountMeta,
+        resolvedMetas,
+        instructionData,
+        gatingProgram
+      );
+      resolvedMetas.push(resolvedMeta);
+    }
+    return resolvedMetas;
   }
 
   /** inherited doc */

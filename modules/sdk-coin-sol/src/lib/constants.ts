@@ -35,6 +35,26 @@ export const JITO_STAKE_POOL_RESERVE_ACCOUNT_TESTNET = 'rrWBQqRqBXYZw3CmPCCcjFxQ
 export const JITO_MANAGER_FEE_ACCOUNT = 'feeeFLLsam6xZJFc6UQFrHqkvVt4jfmVvi2BRLkUZ4i';
 export const JITO_MANAGER_FEE_ACCOUNT_TESTNET = 'DH7tmjoQ5zjqcgfYJU22JqmXhP5EY1tkbYpgVWUS2oNo';
 
+/**
+ * On-chain program id of the sRFC-37 Token ACL program. This single program gates every
+ * allowlist/blocklist (DefaultAccountState) Token-2022 mint, so the value is generic and never
+ * tied to a specific issuer.
+ */
+export const TOKEN_ACL_PROGRAM_ID = 'TACLkU6CiCdkQN2MjoyDkVg2yAH9zkxiHDsiztQ52TP';
+
+/**
+ * Instruction discriminator (a single u8 byte) for the Token ACL `ThawPermissionlessIdempotent`
+ * instruction.
+ */
+export const THAW_PERMISSIONLESS_IDEMPOTENT_DISCRIMINATOR = 9;
+
+/** PDA seed prefix (under the Token ACL program) for a mint's MintConfig account. */
+export const TOKEN_ACL_MINT_CONFIG_SEED = 'MINT_CONFIG';
+/** PDA seed prefix (under the Token ACL program) for a token account's thaw flag account. */
+export const TOKEN_ACL_FLAG_ACCOUNT_SEED = 'FLAG_ACCOUNT';
+/** PDA seed prefix (under the gating program) for a mint's thaw ExtraAccountMetaList account. */
+export const TOKEN_ACL_THAW_EXTRA_METAS_SEED = 'thaw_extra_account_metas';
+
 // Sdk instructions, mainly to check decoded types.
 export enum ValidInstructionTypesEnum {
   AdvanceNonceAccount = 'AdvanceNonceAccount',
@@ -62,6 +82,7 @@ export enum ValidInstructionTypesEnum {
   WithdrawStake = 'WithdrawStake',
   Approve = 'Approve',
   CustomInstruction = 'CustomInstruction',
+  PermissionlessThawIdempotent = 'PermissionlessThawIdempotent',
 }
 
 // Internal instructions types
@@ -87,6 +108,7 @@ export enum InstructionBuilderTypes {
   VersionedCustomInstruction = 'VersionedCustomInstruction',
   Approve = 'Approve',
   WithdrawStake = 'WithdrawStake',
+  PermissionlessThawIdempotent = 'PermissionlessThawIdempotent',
 }
 
 export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
@@ -115,6 +137,7 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
   ValidInstructionTypesEnum.DepositSol,
   ValidInstructionTypesEnum.WithdrawStake,
   ValidInstructionTypesEnum.CustomInstruction,
+  ValidInstructionTypesEnum.PermissionlessThawIdempotent,
 ];
 
 /** Const to check the order of the Wallet Init instructions when decode */
