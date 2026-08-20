@@ -36,13 +36,15 @@ export interface FinalizeSafeOptions {
  */
 export type WalletShareData = WalletShare;
 
-// ---- per-safe operation options (bodies land in WCN-1203 / WCN-1204) ----
+// ---- per-safe operation options ----
 
 export interface CreateSafeWalletOptions {
   coin: string;
   label: string;
-  type?: string;
-  multisigTypeVersion?: string;
+  passphrase: string;
+  type?: 'hot';
+  /** `tss` throws until MPC mint lands. Defaults to `onchain`. */
+  multisigType?: 'onchain' | 'tss';
 }
 
 interface AddSafeMemberBase {

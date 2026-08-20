@@ -4,11 +4,17 @@
  * @experimental The safe client surface is experimental and may change (including breaking
  * changes) before the public release.
  */
-import { FreezeSafeBody, SafeData, SafeShareData, SafeShareState } from '@bitgo/public-types';
+import * as t from 'io-ts';
+import { FreezeSafeBody, SafeData, SafeShareData, SafeShareState, type RootKeyType } from '@bitgo/public-types';
+import { KeyCurve } from '@bitgo/statics';
+import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { decodeWithCodec } from '../utils/codecs';
+import { IncorrectPasswordError } from '../errors';
+import { decryptKeychainPrivateKey } from '../keychain';
+import { boundedInt, decodeWithCodec } from '../utils/codecs';
 import { postWithCodec } from '../utils/postWithCodec';
 import { Wallet } from '../wallet';
+import { InvalidRootKeychainSourceError } from '../wallet/safeKeychain';
 import {
   AcceptSafeShareOptions,
   AddSafeMemberOptions,
@@ -17,6 +23,50 @@ import {
   ISafe,
   WalletShareData,
 } from './iSafe';
+import { deriveAndSelfCheckSafeChildHardened } from './safeDerivation';
+
+const SafeRootKeySlot = t.keyof({
+  secp256k1Multisig: null,
+  ecdsaMpc: null,
+  eddsaMpc: null,
+  ed25519Multisig: null,
+});
+
+const GetDerivationIndexResponse = t.type({
+  slot: SafeRootKeySlot,
+  index: boundedInt(0, 0x7fffffff, 'derivationIndex'),
+});
+
+const CreateWalletInSafeBody = t.strict({
+  coin: t.string,
+  label: t.string,
+  type: t.literal('hot'),
+  multisigType: t.literal('onchain'),
+  keys: t.tuple([t.string]),
+});
+
+function onchainSlotForCoin(coin: IBaseCoin): Extract<RootKeyType, 'secp256k1Multisig'> {
+  if (coin.getDefaultMultisigType() === 'tss') {
+    throw new Error('MPC safe wallet minting is not yet implemented; use a slot-1 onchain coin');
+  }
+  const curve = coin.getConfig().primaryKeyCurve;
+  if (curve === KeyCurve.Secp256k1) {
+    return 'secp256k1Multisig';
+  }
+  if (curve === KeyCurve.Ed25519) {
+    throw new Error('ed25519 coin safe wallet minting is not yet supported');
+  }
+  throw new Error(`Coin '${coin.getChain()}' is not supported for safe wallet minting`);
+}
+
+function userRootIdFromSafe(safe: SafeData, slot: RootKeyType): string | undefined {
+  const triplet = safe.rootKeys?.hot?.[slot];
+  if (!triplet || triplet.length !== 3) {
+    return undefined;
+  }
+  const userRootId = triplet[0];
+  return userRootId.length > 0 ? userRootId : undefined;
+}
 
 /**
  * @experimental
@@ -55,11 +105,73 @@ export class Safe implements ISafe {
   }
 
   /**
-   * Mint a child wallet in this safe (server-side public derivation — no ceremony).
-   * Body lands in WCN-1203.
+   * Mint a child wallet: peek the sequential index, hardened-derive the user child,
+   * register it public-only, then mint. Backup and BitGo children are soft-derived on the server.
    */
   async createWallet(params: CreateSafeWalletOptions): Promise<Wallet> {
-    throw new Error('Safe.createWallet is not yet implemented (WCN-1203)');
+    if (params.passphrase.length === 0) {
+      throw new Error('passphrase is required to mint a safe wallet');
+    }
+    if (params.type !== undefined && params.type !== 'hot') {
+      throw new Error('Safe wallets are hot-only in v1');
+    }
+    if (params.multisigType === 'tss') {
+      throw new Error('MPC safe wallet minting is not yet implemented; use multisigType "onchain"');
+    }
+
+    const coin = this.bitgo.coin(params.coin);
+    const slot = onchainSlotForCoin(coin);
+
+    const indexResponse = await this.bitgo.get(this.url('/derivation-index')).query({ slot }).result();
+    const peeked = decodeWithCodec(GetDerivationIndexResponse, indexResponse, 'GetDerivationIndexResponse');
+    if (peeked.slot !== slot) {
+      throw new Error(`derivation-index returned slot '${peeked.slot}', expected '${slot}'`);
+    }
+    const { index } = peeked;
+
+    const userRootId = userRootIdFromSafe(this._safe, slot) ?? userRootIdFromSafe(await this.fetchSafeData(), slot);
+    if (userRootId === undefined) {
+      throw new Error(`Safe ${this.id()} is missing rootKeys.hot.${slot}`);
+    }
+
+    const keychains = coin.keychains();
+    const rootKeychain = await keychains.get({ id: userRootId });
+    if (rootKeychain.source !== 'user') {
+      throw new InvalidRootKeychainSourceError(rootKeychain.id, rootKeychain.source);
+    }
+    const rootPrv = await decryptKeychainPrivateKey(this.bitgo, rootKeychain, params.passphrase);
+    if (!rootPrv) {
+      throw new IncorrectPasswordError();
+    }
+
+    const derived = deriveAndSelfCheckSafeChildHardened(rootPrv, index);
+
+    const child = await keychains.add({
+      pub: derived.pub,
+      source: 'user',
+      keyType: 'independent',
+      parent: userRootId,
+      safeId: this.id(),
+    });
+    const childId = child.id;
+    if (childId.length === 0) {
+      throw new Error('safe child key registration returned an empty id');
+    }
+    const keys: [string] = [childId];
+
+    const response = await postWithCodec(this.bitgo, this.url('/wallets'), CreateWalletInSafeBody, {
+      coin: params.coin,
+      label: params.label,
+      type: 'hot',
+      multisigType: 'onchain',
+      keys,
+    }).result();
+    return new Wallet(this.bitgo, coin, response);
+  }
+
+  private async fetchSafeData(): Promise<SafeData> {
+    const response = await this.bitgo.get(this.url()).result();
+    return decodeWithCodec(SafeData, response, 'SafeData');
   }
 
   /**
