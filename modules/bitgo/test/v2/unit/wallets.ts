@@ -22,6 +22,7 @@ import {
   decryptKeychainPrivateKey,
   makeRandomKey,
   getSharedSecret,
+  BulkUpdateWalletShareOptionsRequest,
   BulkWalletShareOptions,
   AcceptShareOptionsRequest,
   KeychainWithEncryptedPrv,
@@ -3455,7 +3456,7 @@ describe('V2 Wallets:', function () {
 
           // Factory is still called uniformly, but with encryptionVersion=1
           sessionSpy.callCount.should.equal(1);
-          sessionSpy.firstCall.args[1].should.equal(1);
+          sessionSpy.firstCall.args[1]!.should.equal(1);
 
           const entries = captured.keysForWalletShares as AcceptShareOptionsRequest[];
           const envelopes = entries.map((e) => JSON.parse(e.encryptedPrv as string));
@@ -4178,10 +4179,10 @@ describe('V2 Wallets:', function () {
           const walletPassphrase = 'shared-argon2-salt-test';
           const { shareIds } = await stubForAcceptShares(4, 'plaintext-prv', walletPassphrase);
 
-          let capturedShares: BulkWalletShareOptions[] = [];
+          let capturedShares: BulkUpdateWalletShareOptionsRequest[] = [];
           sinon
             .stub(Wallets.prototype, 'bulkUpdateWalletShareRequest')
-            .callsFake(async (shares: BulkWalletShareOptions[]) => {
+            .callsFake(async (shares: BulkUpdateWalletShareOptionsRequest[]) => {
               capturedShares = shares;
               return { acceptedWalletShares: shareIds, rejectedWalletShares: [], walletShareUpdateErrors: [] };
             });
@@ -4295,6 +4296,149 @@ describe('V2 Wallets:', function () {
           (typeof sessionArg!.encrypt).should.equal('function');
           (typeof sessionArg!.destroy).should.equal('function');
         });
+      });
+    });
+
+    describe('reshareWalletWithSpenders', function () {
+      afterEach(function () {
+        nock.cleanAll();
+        nock.pendingMocks().length.should.equal(0);
+        sinon.restore();
+      });
+
+      // Build a mock wallet with N spender users on the same enterprise.
+      function stubForReshare(spenderCount: number, walletId: string, enterprise: string) {
+        const users = Array.from({ length: spenderCount }, (_, i) => ({
+          user: `spender-${i}`,
+          permissions: ['view', 'spend'],
+        }));
+
+        const walletObj = {
+          id: walletId,
+          coin: 'tsol',
+          enterprise,
+          users,
+          keys: ['userKeyId', 'backupKeyId', 'bitgoKeyId'],
+        };
+
+        // wallets.get(walletId) -> Wallet wrapping walletObj
+        sinon.stub(Wallets.prototype, 'get').resolves(new Wallet(bitgo, bitgo.coin('tsol'), walletObj));
+
+        nock(bgUrl)
+          .get(`/api/v1/enterprise/${enterprise}/user`)
+          .reply(200, {
+            adminUsers: [],
+            nonAdminUsers: users.map((u, i) => ({ id: u.user, email: { email: `spender-${i}@example.com` } })),
+          });
+
+        return { walletObj, users };
+      }
+
+      it('decrypts the wallet keychain once and threads it into every shareWallet call', async function () {
+        const walletId = 'reshare-wallet-1';
+        const enterprise = 'ent-1';
+        const userPassword = 'shared-passphrase';
+        const decryptedKeychain = { prv: 'plaintext-prv', pub: 'wallet-pub' };
+
+        const { users } = stubForReshare(3, walletId, enterprise);
+
+        // getDecryptedKeychainForSharing is what runs Argon2id on the wallet's encryptedPrv.
+        // Assert it fires exactly once regardless of spender count.
+        const decryptStub = sinon.stub(Wallet.prototype, 'getDecryptedKeychainForSharing').resolves(decryptedKeychain);
+
+        const shareWalletStub = sinon.stub(Wallet.prototype, 'shareWallet').resolves({ shared: true });
+
+        await wallets.reshareWalletWithSpenders(walletId, userPassword);
+
+        decryptStub.callCount.should.equal(1);
+        decryptStub.firstCall.args[0]!.should.equal(userPassword);
+
+        // shareWallet called once per spender, each with decryptedKeychain threaded in
+        shareWalletStub.callCount.should.equal(users.length);
+        for (let i = 0; i < users.length; i++) {
+          const call = shareWalletStub.getCall(i);
+          const shareArg = call.args[0]!;
+          shareArg.should.have.property('decryptedKeychain').eql(decryptedKeychain);
+          shareArg.should.have.property('user', users[i].user);
+          shareArg.should.have.property('walletPassphrase', userPassword);
+        }
+      });
+
+      it('runs shareWallet calls sequentially so per-recipient Argon2id is bounded', async function () {
+        const walletId = 'reshare-wallet-seq';
+        const enterprise = 'ent-2';
+        stubForReshare(5, walletId, enterprise);
+
+        sinon.stub(Wallet.prototype, 'getDecryptedKeychainForSharing').resolves({ prv: 'p', pub: 'q' });
+
+        // Track concurrent in-flight shareWallet calls. Sequential -> max concurrent is 1.
+        let inFlight = 0;
+        let maxInFlight = 0;
+        sinon.stub(Wallet.prototype, 'shareWallet').callsFake(async () => {
+          inFlight++;
+          maxInFlight = Math.max(maxInFlight, inFlight);
+          await new Promise((r) => setTimeout(r, 5));
+          inFlight--;
+          return { shared: true };
+        });
+
+        await wallets.reshareWalletWithSpenders(walletId, 'pw');
+
+        maxInFlight.should.equal(1);
+      });
+
+      it('returns early when the wallet has no spender users', async function () {
+        const walletId = 'reshare-empty';
+        const enterprise = 'ent-empty';
+
+        sinon.stub(Wallets.prototype, 'get').resolves(
+          new Wallet(bitgo, bitgo.coin('tsol'), {
+            id: walletId,
+            coin: 'tsol',
+            enterprise,
+            users: [{ user: 'admin-only', permissions: ['admin', 'view', 'spend'] }],
+            keys: ['userKeyId', 'backupKeyId', 'bitgoKeyId'],
+          })
+        );
+        nock(bgUrl)
+          .get(`/api/v1/enterprise/${enterprise}/user`)
+          .reply(200, {
+            adminUsers: [{ id: 'admin-only', email: { email: 'admin@example.com' } }],
+            nonAdminUsers: [],
+          });
+
+        const decryptStub = sinon.stub(Wallet.prototype, 'getDecryptedKeychainForSharing');
+        const shareWalletStub = sinon.stub(Wallet.prototype, 'shareWallet');
+
+        await wallets.reshareWalletWithSpenders(walletId, 'pw');
+
+        // No decrypt burned, no shares attempted
+        decryptStub.called.should.equal(false);
+        shareWalletStub.called.should.equal(false);
+      });
+
+      it('proceeds with per-recipient shareWallet even when the wallet is cold (no decryptedKeychain)', async function () {
+        const walletId = 'reshare-cold';
+        const enterprise = 'ent-cold';
+        stubForReshare(2, walletId, enterprise);
+
+        // Simulate cold wallet: getDecryptedKeychainForSharing throws MissingEncryptedKeychainError
+        // (which we catch inside reshareWalletWithSpenders and fall through).
+        sinon
+          .stub(Wallet.prototype, 'getDecryptedKeychainForSharing')
+          .rejects(Object.assign(new Error('missing encrypted keychain'), { name: 'MissingEncryptedKeychainError' }));
+
+        const shareWalletStub = sinon.stub(Wallet.prototype, 'shareWallet').resolves({ shared: true });
+
+        await wallets.reshareWalletWithSpenders(walletId, 'pw');
+
+        // Still fires per recipient; each call gets undefined decryptedKeychain and shareWallet
+        // can fall back to its own decrypt path (or a no-op for cold wallets internally).
+        shareWalletStub.callCount.should.equal(2);
+        for (let i = 0; i < 2; i++) {
+          const shareArg = shareWalletStub.getCall(i).args[0]!;
+          assert.strictEqual(shareArg.decryptedKeychain, undefined);
+        }
       });
     });
   });
