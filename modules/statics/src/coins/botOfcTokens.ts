@@ -1633,4 +1633,28 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.ofcerc20(
+    'beeed9c2-10c5-4aa5-908c-647c629b1dd7',
+    'ofceth:metal',
+    'Metal Blockchain',
+    18,
+    'eth:metal' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcerc20(
+    '4d4113b1-adb0-41fe-af13-09c2c8857cae',
+    'ofceth:ft',
+    'Flying Tulip',
+    18,
+    'eth:ft' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
 ];

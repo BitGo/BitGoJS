@@ -3316,4 +3316,32 @@ export const botTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.erc20(
+    'b2b4c1fb-61fc-4c97-95ae-a2522fea1d5b',
+    'eth:metal',
+    'Metal Blockchain',
+    18,
+    '0x294559fa758c88d639fd085751e463fee7806eab',
+    'eth:metal' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '214b6ad3-b26e-4852-9f7f-8908cf35a85c',
+    'eth:ft',
+    'Flying Tulip',
+    18,
+    '0x5dd1a7a369e8273371d2dbf9d83356057088082c',
+    'eth:ft' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [], ['custody-bitgo-singapore' as CoinFeature, 'custody-bitgo-india' as CoinFeature]),
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
