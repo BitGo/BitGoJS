@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.7.0...@bitgo/statics@59.8.0) (2026-08-20)
+
+
+### Bug Fixes
+
+* **statics:** fixed ada token policy id ([c2138b1](https://github.com/BitGo/BitGoJS/commit/c2138b12d2d13eb6cba252b55e7580000731d949))
+
+
+### Features
+
+* add new tokens from AMS API ([df10f25](https://github.com/BitGo/BitGoJS/commit/df10f250a72252d3d412ba2848b71dc150179e0c))
+* add new tokens from AMS API ([3038810](https://github.com/BitGo/BitGoJS/commit/3038810f84020eb83fd7b85134dc6b5e162172b2))
+* add new tokens from AMS API ([90cec75](https://github.com/BitGo/BitGoJS/commit/90cec75bb3e6e1e75cce38a8bb834db9b3a0a63b))
+* add ofc tsol:usdcv2 ([adcb4cd](https://github.com/BitGo/BitGoJS/commit/adcb4cdbbf76da27b22ec3b08f839958baaf7eef))
+* **statics:** gate Ondo tokens for Singapore trust ([7cced7f](https://github.com/BitGo/BitGoJS/commit/7cced7f95a6cf5ab94db02c1abdb96f9508fed8e))
+* **statics:** onboard batch 0818 tokens (CECHO-1969) ([8ac2bcc](https://github.com/BitGo/BitGoJS/commit/8ac2bcca07a51115c7240b8d9463349a3b149a8e))
+
+
+
+
+
 # [59.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.6.0...@bitgo/statics@59.7.0) (2026-08-18)
 
 

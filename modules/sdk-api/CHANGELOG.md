@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.3.2...@bitgo/sdk-api@2.4.0) (2026-08-20)
+
+
+### Features
+
+* **sdk-api:** drop-in native replacement for sjcl v1 decrypt ([49c9cbb](https://github.com/BitGo/BitGoJS/commit/49c9cbbdea8ab2a0cab736c6291139bd0e408a7a))
+
+
+
+
+
 ## [2.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.3.1...@bitgo/sdk-api@2.3.2) (2026-08-18)
 
 **Note:** Version bump only for package @bitgo/sdk-api

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@5.0.11...@bitgo/sdk-coin-dot@5.1.0) (2026-08-20)
+
+
+### Features
+
+* **sdk-coin-dot:** add MPCv2 signed hot recovery ([8378a5a](https://github.com/BitGo/BitGoJS/commit/8378a5a41773950b89000b3166b5ae933f188822))
+
+
+
+
+
 ## [5.0.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@5.0.10...@bitgo/sdk-coin-dot@5.0.11) (2026-08-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot
