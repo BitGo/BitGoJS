@@ -388,6 +388,78 @@ describe('encryption methods tests', () => {
     });
   });
 
+  describe('createEncryptionSession with encryptionVersion=1 (v1 shim)', () => {
+    const password = 'v1-shim-password';
+    const plaintext = 'legacy consumer data';
+
+    it('produces v1 (SJCL) envelopes', async () => {
+      const session = await createEncryptionSession(password, { encryptionVersion: 1 });
+      const ct = await session.encrypt(plaintext);
+      const envelope = JSON.parse(ct);
+      // v1 SJCL envelopes carry iter/mode/ks fields; no hkdfSalt/argon2 params
+      assert.ok(envelope.iter, 'v1 envelope must have iter');
+      assert.ok(envelope.mode, 'v1 envelope must have mode');
+      assert.notStrictEqual(envelope.v, 2);
+      assert.strictEqual(envelope.hkdfSalt, undefined);
+      session.destroy();
+    });
+
+    it('round-trips via session.decrypt', async () => {
+      const session = await createEncryptionSession(password, { encryptionVersion: 1 });
+      const ct = await session.encrypt(plaintext);
+      const rt = await session.decrypt(ct);
+      assert.strictEqual(rt, plaintext);
+      session.destroy();
+    });
+
+    it('produced envelopes decrypt via the standard decrypt() with the same password', async () => {
+      const session = await createEncryptionSession(password, { encryptionVersion: 1 });
+      const ct = await session.encrypt(plaintext);
+      session.destroy();
+      const rt = await decrypt(password, ct);
+      assert.strictEqual(rt, plaintext);
+    });
+
+    it('multiple encrypts produce distinct ciphertexts (per-call SJCL salt/iv)', async () => {
+      const session = await createEncryptionSession(password, { encryptionVersion: 1 });
+      const ct1 = await session.encrypt(plaintext);
+      const ct2 = await session.encrypt(plaintext);
+      assert.notStrictEqual(ct1, ct2);
+      const e1 = JSON.parse(ct1);
+      const e2 = JSON.parse(ct2);
+      // v1 salts are per-call, so they must differ across envelopes even under same password
+      assert.notStrictEqual(e1.salt, e2.salt);
+      session.destroy();
+    });
+
+    it('forwards adata to the v1 envelope', async () => {
+      const session = await createEncryptionSession(password, { encryptionVersion: 1 });
+      const ct = await session.encrypt(plaintext, 'enterprise-id-42');
+      const envelope = JSON.parse(ct);
+      assert.strictEqual(envelope.adata, 'enterprise-id-42');
+      session.destroy();
+    });
+
+    it('destroy blocks further encrypt calls', async () => {
+      const session = await createEncryptionSession(password, { encryptionVersion: 1 });
+      session.destroy();
+      await assert.rejects(() => session.encrypt(plaintext), /destroyed/);
+    });
+
+    it('destroy blocks further decrypt calls', async () => {
+      const session = await createEncryptionSession(password, { encryptionVersion: 1 });
+      const ct = await session.encrypt(plaintext);
+      session.destroy();
+      await assert.rejects(() => session.decrypt(ct), /destroyed/);
+    });
+
+    it('destroy is idempotent', async () => {
+      const session = await createEncryptionSession(password, { encryptionVersion: 1 });
+      session.destroy();
+      session.destroy();
+    });
+  });
+
   describe('BitGoAPI.encrypt', () => {
     let bitgo: BitGoAPI;
     const password = 'test-password';
