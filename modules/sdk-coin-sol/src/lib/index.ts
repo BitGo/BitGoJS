@@ -29,3 +29,10 @@ export {
   parseMintExtensions,
   readMintExtensions,
 } from './tokenExtensions';
+export {
+  ResolvePermissionlessThawResult,
+  SolAccountFetcher,
+  buildSolAccountConnection,
+  resolvePermissionlessThaw,
+  resolveTransferHookAccounts,
+} from './token2022Resolve';
