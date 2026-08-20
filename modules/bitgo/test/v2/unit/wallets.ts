@@ -3900,12 +3900,10 @@ describe('V2 Wallets:', function () {
           encryptedXprv: await bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
         });
 
-        // Setup decrypt and encrypt stubs
+        // Setup decrypt stubs
         const decryptStub = sinon.stub(bitgo, 'decrypt');
         decryptStub.onFirstCall().resolves(myEcdhKeychain.xprv); // For sharing keychain
         decryptStub.onSecondCall().resolves(originalPrivKey); // For wallet keychain
-
-        const encryptStub = sinon.stub(bitgo, 'encrypt').resolves('newEncryptedPrv');
 
         // Mock getSharedSecret
         sinon.stub(moduleBitgo, 'getSharedSecret').returns(Buffer.from(sharedSecret));
@@ -3934,20 +3932,17 @@ describe('V2 Wallets:', function () {
         bulkUpdateStub.calledOnce.should.be.true();
         const updateParams = bulkUpdateStub.firstCall.args[0];
         updateParams.should.have.lengthOf(1);
-
-        // Param should be for share1 with accept status and encryptedPrv
-        updateParams.should.containDeep([
-          {
-            walletShareId: 'share1',
-            status: 'accept',
-            encryptedPrv: 'newEncryptedPrv',
-          },
-        ]);
-
-        // Verify encrypt was called with correct parameters
-        encryptStub.calledOnce.should.be.true();
-        encryptStub.firstCall.args[0].should.have.property('password', 'newPassphrase');
-        encryptStub.firstCall.args[0].should.have.property('input', originalPrivKey);
+        updateParams[0].should.have.property('walletShareId', 'share1');
+        updateParams[0].should.have.property('status', 'accept');
+        // encryptedPrv is now emitted by the session; verify it's a real v2 envelope that
+        // decrypts back to the original prv under newPassphrase.
+        const envelope = JSON.parse(updateParams[0].encryptedPrv as string);
+        envelope.should.have.property('v', 2);
+        envelope.should.have.property('hkdfSalt');
+        // Session encrypt bypasses bitgo.decrypt's stub -- restore then decrypt the envelope
+        decryptStub.restore();
+        const rt = await bitgo.decrypt({ password: 'newPassphrase', input: updateParams[0].encryptedPrv as string });
+        rt.should.equal(originalPrivKey);
       });
 
       it('should handle rejected promises and add them to walletShareUpdateErrors', async () => {
@@ -4077,7 +4072,6 @@ describe('V2 Wallets:', function () {
         decryptAsyncStub.onFirstCall().resolves(myEcdhKeychain.xprv); // ECDH keychain
         decryptAsyncStub.onSecondCall().resolves(originalPrivKey); // wallet share prv
 
-        const encryptStub = sinon.stub(bitgo, 'encrypt').resolves('newEncryptedPrv');
         sinon.stub(moduleBitgo, 'getSharedSecret').returns(Buffer.from(sharedSecret));
 
         const bulkUpdateStub = sinon.stub(Wallets.prototype, 'bulkUpdateWalletShareRequest').resolves({
@@ -4101,8 +4095,206 @@ describe('V2 Wallets:', function () {
         // Both decrypt calls must have gone through decrypt
         assert.equal(decryptAsyncStub.callCount, 2);
         bulkUpdateStub.calledOnce.should.be.true();
-        encryptStub.calledOnce.should.be.true();
-        encryptStub.firstCall.args[0].should.have.property('input', originalPrivKey);
+        // Encryption now goes through the session; assert a real v2 envelope round-trips
+        const updateParams = bulkUpdateStub.firstCall.args[0];
+        const envelope = JSON.parse(updateParams[0].encryptedPrv as string);
+        envelope.should.have.property('v', 2);
+        envelope.should.have.property('hkdfSalt');
+        decryptAsyncStub.restore();
+        const rt = await bitgo.decrypt({ password: 'newPassphrase', input: updateParams[0].encryptedPrv as string });
+        rt.should.equal(originalPrivKey);
+      });
+
+      describe('EncryptionSession (HKDF)', function () {
+        // Build a set of accept-status shares with realistic ECDH-encrypted keychains so
+        // bulkUpdateWalletShare walks the standard re-encrypt path for every share.
+        async function stubForAcceptShares(shareCount: number, decryptedWalletPrv: string, walletPassphrase: string) {
+          const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef03deadbeef03deadbeef03deadbeef03', 'hex'));
+          const path = 'm/999999/1/1';
+          const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+          const eckey = makeRandomKey();
+          const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
+          const senderEncryptedPrv = await bitgo.encrypt({ password: secret, input: decryptedWalletPrv });
+
+          const shareIds = Array.from({ length: shareCount }, (_, i) => `bulk-update-share-${i}`);
+          const shares = shareIds.map((id, index) => ({
+            id,
+            coin: 'tsol',
+            walletLabel: `w${index}`,
+            fromUser: 'from',
+            toUser: 'to',
+            wallet: `w${index}`,
+            permissions: ['spend'],
+            state: 'active' as const,
+            keychain: {
+              path,
+              fromPubKey: eckey.publicKey.toString('hex'),
+              encryptedPrv: senderEncryptedPrv,
+              toPubKey: pubkey,
+              pub: pubkey,
+            },
+          }));
+
+          sinon.stub(Wallets.prototype, 'listSharesV2').resolves({ incoming: shares, outgoing: [] });
+
+          const ecdh = await bitgo.keychains().create();
+          sinon.stub(bitgo, 'getECDHKeychain').resolves({
+            encryptedXprv: await bitgo.encrypt({ input: ecdh.xprv, password: walletPassphrase }),
+          });
+
+          const decryptStub = sinon.stub(bitgo, 'decrypt');
+          decryptStub.onFirstCall().resolves(ecdh.xprv);
+          decryptStub.resolves(decryptedWalletPrv);
+          sinon.stub(moduleBitgo, 'getSharedSecret').returns(Buffer.from(secret));
+
+          return { shareIds };
+        }
+
+        it('opens one session over the outer passphrase and destroys it after the loop', async function () {
+          const walletPassphrase = 'update-passphrase';
+          const { shareIds } = await stubForAcceptShares(3, 'plaintext-prv', walletPassphrase);
+
+          const realSession = await bitgo.createEncryptionSession(walletPassphrase);
+          const destroySpy = sinon.spy(realSession, 'destroy');
+          const sessionStub = sinon.stub(bitgo, 'createEncryptionSession').resolves(realSession);
+
+          sinon.stub(Wallets.prototype, 'bulkUpdateWalletShareRequest').resolves({
+            acceptedWalletShares: shareIds,
+            rejectedWalletShares: [],
+            walletShareUpdateErrors: [],
+          });
+
+          await wallets.bulkUpdateWalletShare({
+            shares: shareIds.map((id) => ({ walletShareId: id, status: 'accept' as const })),
+            userLoginPassword: walletPassphrase,
+          });
+
+          sessionStub.callCount.should.equal(1);
+          sessionStub.firstCall.args[0].should.equal(walletPassphrase);
+          destroySpy.called.should.equal(true);
+        });
+
+        it('threads the session into processAcceptShare so envelopes carry the same argon2 salt', async function () {
+          const walletPassphrase = 'shared-argon2-salt-test';
+          const { shareIds } = await stubForAcceptShares(4, 'plaintext-prv', walletPassphrase);
+
+          let capturedShares: BulkWalletShareOptions[] = [];
+          sinon
+            .stub(Wallets.prototype, 'bulkUpdateWalletShareRequest')
+            .callsFake(async (shares: BulkWalletShareOptions[]) => {
+              capturedShares = shares;
+              return { acceptedWalletShares: shareIds, rejectedWalletShares: [], walletShareUpdateErrors: [] };
+            });
+
+          await wallets.bulkUpdateWalletShare({
+            shares: shareIds.map((id) => ({ walletShareId: id, status: 'accept' as const })),
+            userLoginPassword: walletPassphrase,
+          });
+
+          capturedShares.should.have.length(4);
+          const envelopes = capturedShares.map((s) => JSON.parse(s.encryptedPrv as string));
+          for (const env of envelopes) {
+            env.should.have.property('v', 2);
+            env.should.have.property('hkdfSalt');
+          }
+          const argonSalts = new Set(envelopes.map((e) => e.salt));
+          argonSalts.size.should.equal(1); // one session -> one argon2 salt
+          const hkdfSalts = new Set(envelopes.map((e) => e.hkdfSalt));
+          hkdfSalts.size.should.equal(4); // per-envelope key isolation
+          // Cross-envelope round-trip: each envelope decrypts under the same passphrase
+          for (const env of envelopes) {
+            const rt = await bitgo.decrypt({ password: walletPassphrase, input: JSON.stringify(env) });
+            rt.should.equal('plaintext-prv');
+          }
+        });
+
+        it('does not open a session when the bulk contains only rejects', async function () {
+          sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+            incoming: [
+              {
+                id: 'reject-1',
+                coin: 'tsol',
+                walletLabel: 'x',
+                fromUser: 'a',
+                toUser: 'b',
+                wallet: 'w',
+                permissions: ['view'],
+                state: 'active',
+              },
+            ],
+            outgoing: [],
+          });
+
+          const sessionStub = sinon.stub(bitgo, 'createEncryptionSession');
+          sinon.stub(Wallets.prototype, 'bulkUpdateWalletShareRequest').resolves({
+            acceptedWalletShares: [],
+            rejectedWalletShares: ['reject-1'],
+            walletShareUpdateErrors: [],
+          });
+
+          await wallets.bulkUpdateWalletShare({
+            shares: [{ walletShareId: 'reject-1', status: 'reject' }],
+            userLoginPassword: 'irrelevant',
+          });
+
+          sessionStub.callCount.should.equal(0);
+        });
+
+        it('threads the session through createUserKeychain in the special override path', async function () {
+          const walletPassphrase = 'override-pw';
+          const shareId = 'override-share-1';
+          const walletId = 'override-wallet';
+
+          sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+            incoming: [
+              {
+                id: shareId,
+                coin: 'ofc',
+                walletLabel: 'x',
+                fromUser: 'a',
+                toUser: 'b',
+                wallet: walletId,
+                permissions: ['admin', 'spend', 'view'],
+                state: 'active',
+                keychainOverrideRequired: true,
+              },
+            ],
+            outgoing: [],
+          });
+
+          const testKeychain = bitgo.coin('ofc').keychains().create();
+          // Short-circuit createUserKeychain so the test doesn't hit the /key API dance; the
+          // point of this test is verifying the session argument threading, nothing more.
+          const createUserKeychainStub = sinon.stub(ofcWallets.baseCoin.keychains(), 'createUserKeychain').resolves({
+            id: 'new-keychain-id',
+            pub: testKeychain.pub,
+            encryptedPrv: 'stubbed-encrypted-prv',
+            type: 'independent',
+          });
+
+          // specialOverrideCase pulls the sharing keychain up front, so stub it.
+          sinon.stub(bitgo, 'getECDHKeychain').resolves({ encryptedXprv: 'stubbed-encrypted-xprv' });
+          sinon.stub(ofcWallets.baseCoin, 'signMessage').resolves(Buffer.from('signature-bytes'));
+          sinon.stub(bitgo, 'decrypt').resolves(testKeychain.prv);
+          sinon.stub(Wallets.prototype, 'bulkUpdateWalletShareRequest').resolves({
+            acceptedWalletShares: [shareId],
+            rejectedWalletShares: [],
+            walletShareUpdateErrors: [],
+          });
+          sinon.stub(Wallets.prototype, 'reshareWalletWithSpenders').resolves();
+
+          await ofcWallets.bulkUpdateWalletShare({
+            shares: [{ walletShareId: shareId, status: 'accept' }],
+            userLoginPassword: walletPassphrase,
+          });
+
+          createUserKeychainStub.calledOnce.should.equal(true);
+          // 3rd positional arg is the session
+          const sessionArg = createUserKeychainStub.firstCall.args[2];
+          should.exist(sessionArg);
+          (typeof sessionArg!.encrypt).should.equal('function');
+          (typeof sessionArg!.destroy).should.equal('function');
+        });
       });
     });
   });

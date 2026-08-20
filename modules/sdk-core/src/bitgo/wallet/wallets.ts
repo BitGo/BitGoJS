@@ -7,7 +7,7 @@ import { bip32 } from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import { CoinFeature } from '@bitgo/statics';
 
-import { EncryptionVersion, sanitizeLegacyPath } from '../../api';
+import { EncryptionVersion, IEncryptionSession, sanitizeLegacyPath } from '../../api';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
@@ -1491,38 +1491,62 @@ export class Wallets implements IWallets {
       });
     }
 
-    const settledUpdates = await Promise.allSettled(
-      resolvedShares.map(async (share) => {
-        const { walletShareId, status, walletShare } = share;
+    // One session over the outer re-encrypt password. Covers all three accept paths in
+    // processAcceptShare — specialOverrideCase (threaded through createUserKeychain),
+    // userMultiKeyRotationRequired, and standard ECDH re-encrypt — since they all use the
+    // same `newWalletPassphrase || userLoginPassword`. Skip session creation when there's
+    // nothing to encrypt (reject-only bulks).
+    const sessionPassword = newWalletPassphrase || userLoginPassword;
+    const hasSharesToEncrypt = resolvedShares.some((share) => share.status === 'accept');
+    const session =
+      sessionPassword && hasSharesToEncrypt
+        ? await this.bitgo.createEncryptionSession(sessionPassword, encryptionVersion)
+        : undefined;
 
-        // Handle accept case
-        if (status === 'accept') {
-          return this.processAcceptShare(
-            walletShareId,
-            walletShare,
-            userLoginPassword,
-            newWalletPassphrase,
-            sharingKeychainPrv,
-            encryptionVersion
-          );
-        }
+    // Mirror the bulkAcceptShare BATCH_SIZE guard. The per-share ECDH-derived decrypt secret is
+    // still unique, so bounded WASM instances matter on the decrypt side when the sender's
+    // keychain is v2.
+    const BATCH_SIZE = 16;
 
-        // Handle reject case
-        return [
-          {
-            walletShareId,
-            status: 'reject' as const,
-          },
-        ];
-      })
-    );
+    let response: BulkUpdateWalletShareResponse;
+    let failedUpdates: Array<{ walletShareId: string; reason: string }> = [];
+    try {
+      const settledUpdates: PromiseSettledResult<BulkUpdateWalletShareOptionsRequest[]>[] = [];
+      for (const batch of _.chunk(resolvedShares, BATCH_SIZE)) {
+        const batchResults = await Promise.allSettled(
+          batch.map(async (share) => {
+            const { walletShareId, status, walletShare } = share;
 
-    // Extract successful updates
-    const successfulUpdates = settledUpdates.flatMap((result) => (result.status === 'fulfilled' ? result.value : []));
+            // Handle accept case
+            if (status === 'accept') {
+              return this.processAcceptShare(
+                walletShareId,
+                walletShare,
+                userLoginPassword,
+                newWalletPassphrase,
+                sharingKeychainPrv,
+                encryptionVersion,
+                session
+              );
+            }
 
-    // Extract failed updates - only from rejected promises
-    const failedUpdates = settledUpdates.reduce<Array<{ walletShareId: string; reason: string }>>(
-      (acc, result, index) => {
+            // Handle reject case
+            return [
+              {
+                walletShareId,
+                status: 'reject' as const,
+              },
+            ];
+          })
+        );
+        settledUpdates.push(...batchResults);
+      }
+
+      // Extract successful updates
+      const successfulUpdates = settledUpdates.flatMap((result) => (result.status === 'fulfilled' ? result.value : []));
+
+      // Extract failed updates - only from rejected promises
+      failedUpdates = settledUpdates.reduce<Array<{ walletShareId: string; reason: string }>>((acc, result, index) => {
         if (result.status === 'rejected') {
           const rejectedResult = result;
           acc.push({
@@ -1531,12 +1555,13 @@ export class Wallets implements IWallets {
           });
         }
         return acc;
-      },
-      []
-    );
+      }, []);
 
-    // Send successful updates to the server
-    const response = await this.bulkUpdateWalletShareRequest(successfulUpdates);
+      // Send successful updates to the server
+      response = await this.bulkUpdateWalletShareRequest(successfulUpdates);
+    } finally {
+      session?.destroy();
+    }
 
     // Process accepted special override cases - reshare with spenders
     if (response.acceptedWalletShares && response.acceptedWalletShares.length > 0 && userLoginPassword) {
@@ -1582,7 +1607,8 @@ export class Wallets implements IWallets {
     userLoginPassword?: string,
     newWalletPassphrase?: string,
     sharingKeychainPrv?: string,
-    encryptionVersion?: EncryptionVersion
+    encryptionVersion?: EncryptionVersion,
+    session?: IEncryptionSession
   ): Promise<BulkUpdateWalletShareOptionsRequest[]> {
     // Special override case: requires user keychain and signing
     if (
@@ -1594,9 +1620,11 @@ export class Wallets implements IWallets {
         throw new Error('userLoginPassword param must be provided to decrypt shared key');
       }
 
+      // Thread the outer session into createUserKeychain so its internal encrypt uses HKDF
+      // instead of running another Argon2id under the same password.
       const walletKeychain = await this.baseCoin
         .keychains()
-        .createUserKeychain(newWalletPassphrase || userLoginPassword, encryptionVersion);
+        .createUserKeychain(newWalletPassphrase || userLoginPassword, encryptionVersion, session);
       if (!walletKeychain.encryptedPrv) {
         throw new Error('encryptedPrv was not found on wallet keychain');
       }
@@ -1627,16 +1655,15 @@ export class Wallets implements IWallets {
 
     // Multi-user-key case: requires user to provide their own public key
     if (walletShare.userMultiKeyRotationRequired) {
-      if (!(newWalletPassphrase || userLoginPassword)) {
+      const password = newWalletPassphrase || userLoginPassword;
+      if (!password) {
         throw new Error('userLoginPassword param must be provided to generate user keychain');
       }
 
       const walletKeychain = this.baseCoin.keychains().create();
-      const encryptedPrv = await this.bitgo.encrypt({
-        password: newWalletPassphrase || userLoginPassword,
-        input: walletKeychain.prv,
-        encryptionVersion,
-      });
+      const encryptedPrv = session
+        ? await session.encrypt(walletKeychain.prv)
+        : await this.bitgo.encrypt({ password, input: walletKeychain.prv, encryptionVersion });
 
       return [
         {
@@ -1677,12 +1704,15 @@ export class Wallets implements IWallets {
       input: walletShare.keychain.encryptedPrv,
     });
 
-    // We will now re-encrypt the wallet with our own password
-    const encryptedPrv = await this.bitgo.encrypt({
-      password: newWalletPassphrase || userLoginPassword,
-      input: decryptedPrv,
-      encryptionVersion,
-    });
+    // Re-encrypt for the accepter. The per-recipient ECDH decrypt above still runs its own
+    // Argon2 when the sender's keychain is v2 (unique password per share, no session possible).
+    const encryptedPrv = session
+      ? await session.encrypt(decryptedPrv)
+      : await this.bitgo.encrypt({
+          password: newWalletPassphrase || userLoginPassword,
+          input: decryptedPrv,
+          encryptionVersion,
+        });
 
     return [
       {
