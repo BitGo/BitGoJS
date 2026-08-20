@@ -1,6 +1,7 @@
 import * as sinon from 'sinon';
 import 'should';
-import { Enterprise, Safe, Safes } from '../../../../src';
+import { InitializeSafeResponse } from '@bitgo/public-types';
+import { Enterprise, Safe, SafeKeys, Safes } from '../../../../src';
 
 describe('Safes', function () {
   let safes: Safes;
@@ -39,6 +40,23 @@ describe('Safes', function () {
       result.status.should.equal('initializing');
       sinon.assert.calledWith(mockBitGo.post, '/enterprise/test-enterprise-id/safes');
       sinon.assert.calledWith(send, { label: 'my safe' });
+    });
+
+    it('decodes enabledRootSlots when the server returns them', async function () {
+      const initializeResponseWire = {
+        id: 'test-safe-id',
+        status: 'initializing',
+        enabledRootSlots: ['secp256k1Multisig', 'ecdsaMpc'],
+      };
+      const send = sinon.stub().returns({ result: sinon.stub().resolves(initializeResponseWire) });
+      mockBitGo.post.returns({ send });
+
+      const result = await safes.initializeSafe({ label: 'my safe' });
+
+      if (result.enabledRootSlots === undefined) {
+        throw new Error('expected enabledRootSlots');
+      }
+      result.enabledRootSlots.should.deepEqual(['secp256k1Multisig', 'ecdsaMpc']);
     });
   });
 
@@ -164,6 +182,26 @@ describe('Safes', function () {
       started.should.equal(4);
     });
 
+    it('runs only the enabled ceremonies when enabledRootSlots is a subset', async function () {
+      const result = await safes.createSafeKeys({
+        label: 'my safe',
+        passphrase: 'pw',
+        safeId: 'safe-1',
+        enabledRootSlots: ['ecdsaMpc', 'eddsaMpc'],
+      });
+
+      result.should.deepEqual({
+        rootKeys: {
+          hot: {
+            ecdsaMpc: ['hteth-user', 'hteth-backup', 'hteth-bitgo'],
+            eddsaMpc: ['tsol-user', 'tsol-backup', 'tsol-bitgo'],
+          },
+        },
+      });
+      keychainsByCoin.should.not.have.property('tbtc');
+      keychainsByCoin.should.not.have.property('txlm');
+    });
+
     it('archives the safe and throws listing every failed ceremony', async function () {
       // Two ceremonies fail (an MPC and a multisig root).
       keychainsByCoin['hteth'] = makeKeychains('hteth');
@@ -236,9 +274,13 @@ describe('Safes', function () {
   });
 
   describe('generateSafe', function () {
-    it('chains initialize → createSafeKeys → finalize, threading the safeId', async function () {
-      const initializing = { id: 'test-safe-id', status: 'initializing' as const };
-      const rootKeys = { rootKeys: { hot: {} } } as any;
+    it('chains initialize → createSafeKeys → finalize, threading the safeId and enabledRootSlots', async function () {
+      const initializing: InitializeSafeResponse = {
+        id: 'test-safe-id',
+        status: 'initializing',
+        enabledRootSlots: ['ecdsaMpc', 'eddsaMpc'],
+      };
+      const rootKeys: SafeKeys = { rootKeys: { hot: {} } };
       const initStub = sinon.stub(safes, 'initializeSafe').resolves(initializing);
       const keysStub = sinon.stub(safes, 'createSafeKeys').resolves(rootKeys);
       const finalizeStub = sinon.stub(safes, 'finalizeSafe').resolves(new Safe(mockBitGo, safeDataWire as any));
@@ -246,7 +288,12 @@ describe('Safes', function () {
       const result = await safes.generateSafe({ label: 'my safe', passphrase: 'pw' });
 
       sinon.assert.calledWithMatch(initStub, { label: 'my safe' });
-      sinon.assert.calledWithMatch(keysStub, { label: 'my safe', passphrase: 'pw', safeId: 'test-safe-id' });
+      sinon.assert.calledWithMatch(keysStub, {
+        label: 'my safe',
+        passphrase: 'pw',
+        safeId: 'test-safe-id',
+        enabledRootSlots: ['ecdsaMpc', 'eddsaMpc'],
+      });
       sinon.assert.calledWith(finalizeStub, 'test-safe-id', rootKeys);
       sinon.assert.callOrder(initStub, keysStub, finalizeStub);
       result.status().should.equal('active');
