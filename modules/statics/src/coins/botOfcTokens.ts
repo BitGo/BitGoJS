@@ -1646,7 +1646,7 @@ export const botOfcTokens = [
     undefined
   ),
   AccountCtors.ofcerc20(
-    '4d4113b1-adb0-41fe-af13-09c2c8857cae',
+    'c03bd9a0-84a0-4577-bcec-07d0a49ea226',
     'ofceth:ft',
     'Flying Tulip',
     18,
