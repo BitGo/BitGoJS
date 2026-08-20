@@ -1312,8 +1312,18 @@ export class Wallets implements IWallets {
     // Each decrypt/encrypt call runs Argon2id inside a WebAssembly instance that reserves ~2 GiB of
     // virtual address space. Running all shares concurrently via Promise.all exhausts the browser's
     // WASM memory at scale (e.g. 96 wallets). Process in small batches so only a bounded number of
-    // WASM instances are alive at once.
+    // WASM instances are alive at once. The decrypt side still hits Argon2 per share (each share's
+    // ECDH-derived secret is unique); the encrypt side is collapsed via the session below.
     const BATCH_SIZE = 16;
+
+    // One session over newWalletPassphrase (and one more for webauthnInfo.passphrase when
+    // present). v2: one Argon2id derivation total, per-envelope AES keys via HKDF with fresh
+    // salts (cross-envelope independence preserved). v1: shim runs SJCL per call so callers
+    // pinning encryptionVersion=1 still get v1 envelopes without any branching here.
+    const walletSession = await this.bitgo.createEncryptionSession(newWalletPassphrase, params.encryptionVersion);
+    const webauthnSession = webauthnInfo
+      ? await this.bitgo.createEncryptionSession(webauthnInfo.passphrase, params.encryptionVersion)
+      : undefined;
 
     const processShare = async (walletShare: WalletShare): Promise<AcceptShareOptionsRequest[]> => {
       // Handle userMultiKeyRotationRequired case - these shares don't have keychains
@@ -1322,11 +1332,7 @@ export class Wallets implements IWallets {
           throw new Error('userLoginPassword param must be provided to generate user keychain');
         }
         const walletKeychain = this.baseCoin.keychains().create();
-        const encryptedPrv = await this.bitgo.encrypt({
-          password: newWalletPassphrase,
-          input: walletKeychain.prv,
-          encryptionVersion: params.encryptionVersion,
-        });
+        const encryptedPrv = await walletSession.encrypt(walletKeychain.prv);
         return [
           {
             walletShareId: walletShare.id,
@@ -1349,37 +1355,33 @@ export class Wallets implements IWallets {
         password: secret,
         input: walletShare.keychain.encryptedPrv,
       });
-      const newEncryptedPrv = await this.bitgo.encrypt({
-        password: newWalletPassphrase,
-        input: decryptedSharedWalletPrv,
-        encryptionVersion: params.encryptionVersion,
-      });
+      const newEncryptedPrv = await walletSession.encrypt(decryptedSharedWalletPrv);
       const entry: AcceptShareOptionsRequest = {
         walletShareId: walletShare.id,
         encryptedPrv: newEncryptedPrv,
       };
-      if (webauthnInfo) {
+      if (webauthnInfo && webauthnSession) {
         entry.webauthnInfo = {
           otpDeviceId: webauthnInfo.otpDeviceId,
           prfSalt: webauthnInfo.prfSalt,
-          encryptedPrv: await this.bitgo.encrypt({
-            password: webauthnInfo.passphrase,
-            input: decryptedSharedWalletPrv,
-            encryptionVersion: params.encryptionVersion,
-            adata: walletShare.enterprise,
-          }),
+          encryptedPrv: await webauthnSession.encrypt(decryptedSharedWalletPrv, walletShare.enterprise),
         };
       }
       return [entry];
     };
 
-    const keysForWalletShares: AcceptShareOptionsRequest[] = [];
-    for (const batch of _.chunk(walletShares, BATCH_SIZE)) {
-      const batchResults = await Promise.all(batch.map((walletShare) => processShare(walletShare)));
-      keysForWalletShares.push(...batchResults.flat());
-    }
+    try {
+      const keysForWalletShares: AcceptShareOptionsRequest[] = [];
+      for (const batch of _.chunk(walletShares, BATCH_SIZE)) {
+        const batchResults = await Promise.all(batch.map((walletShare) => processShare(walletShare)));
+        keysForWalletShares.push(...batchResults.flat());
+      }
 
-    return this.bulkAcceptShareRequest(keysForWalletShares);
+      return await this.bulkAcceptShareRequest(keysForWalletShares);
+    } finally {
+      walletSession.destroy();
+      webauthnSession?.destroy();
+    }
   }
 
   /**
