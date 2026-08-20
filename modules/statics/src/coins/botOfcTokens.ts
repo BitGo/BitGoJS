@@ -1597,4 +1597,64 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.ofcsolToken(
+    '12d2b3f7-979d-472e-814f-926ffad471d0',
+    'ofcsol:carv',
+    'ofcCARV',
+    6,
+    'sol:carv' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcsolToken(
+    'bd04588c-372a-4f92-bfcf-446c6ffc79fe',
+    'ofcsol:bp',
+    'ofcBackpack',
+    9,
+    'sol:bp' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcerc20(
+    '8c188ce0-7597-4dca-8b19-574ba0f66390',
+    'ofceth:btse',
+    'BTSE Token',
+    8,
+    'eth:btse' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcerc20(
+    'beeed9c2-10c5-4aa5-908c-647c629b1dd7',
+    'ofceth:metal',
+    'Metal Blockchain',
+    18,
+    'eth:metal' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcerc20(
+    'c03bd9a0-84a0-4577-bcec-07d0a49ea226',
+    'ofceth:ft',
+    'Flying Tulip',
+    18,
+    'eth:ft' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
