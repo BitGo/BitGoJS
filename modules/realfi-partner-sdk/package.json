@@ -1,0 +1,69 @@
+{
+  "name": "@bitgo/realfi-partner-sdk",
+  "version": "2.14.0",
+  "private": true,
+  "description": "BitGo fork of RealFi partner SDK for Cardano sUSDr liquid staking (Plutus order txs).",
+  "type": "module",
+  "sideEffects": false,
+  "license": "UNLICENSED",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./tx-builder": {
+      "require": "./dist/cjs/tx-builder/index.js",
+      "import": "./dist/esm/tx-builder/index.js",
+      "types": "./dist/types/tx-builder/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "CHANGELOG.md",
+    "README.md",
+    "UPSTREAM.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "echo 'Prebuilt dist from upstream @realfi-co/realfi-partner-sdk@2.14.0 — see UPSTREAM.md'",
+    "prepare": "npm run build",
+    "test": "echo 'No unit tests in fork yet'"
+  },
+  "dependencies": {
+    "@blaze-cardano/blueprint": "0.8.2",
+    "@blaze-cardano/core": "0.8.0",
+    "@blaze-cardano/data": "0.6.6",
+    "@blaze-cardano/emulator": "^0.4.4",
+    "@blaze-cardano/query": "0.5.6",
+    "@blaze-cardano/sdk": "0.2.47",
+    "@blaze-cardano/uplc": "0.4.3",
+    "@blaze-cardano/vm": "0.2.3",
+    "@blaze-cardano/wallet": "^0.5.2",
+    "@cardano-sdk/core": "0.46.15",
+    "@sundaeswap/asset": "1.0.11",
+    "@sundaeswap/core": "^2.13.1",
+    "cbor": "10.0.11"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/realfi-partner-sdk"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "cardano",
+    "realfi",
+    "susdr",
+    "staking"
+  ],
+  "author": "BitGo Inc. (fork of RealFi)"
+}

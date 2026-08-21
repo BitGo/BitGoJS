@@ -1,0 +1,1 @@
+{"version":3,"file":"network-registry.d.ts","sourceRoot":"","sources":["../../../../src/sdk/shared/network-registry.ts"],"names":[],"mappings":"AAIA,OAAO,KAAK,EAAE,YAAY,EAAE,MAAM,oBAAoB,CAAC;AAEvD,MAAM,MAAM,cAAc,GAAG,SAAS,GAAG,SAAS,GAAG,SAAS,CAAC;AA2B/D,eAAO,MAAM,gBAAgB,EAAE,QAAQ,CAAC,MAAM,CAAC,cAAc,EAAE,YAAY,CAAC,CAoExE,CAAC"}

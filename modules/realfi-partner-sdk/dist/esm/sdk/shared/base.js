@@ -1,0 +1,329 @@
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+import { Core } from "@blaze-cardano/sdk";
+import { DEFAULT_CLIENT_SOURCE, SDK_VERSION } from "./client-id.js";
+import { buildOrderOriginMetadatum, ORDER_ORIGIN_METADATA_LABEL, resolveTimelockNativeScript } from "./timelock.js";
+import { addDirectOutput, credentialFromScript, deployScript, getReferenceInputs, readSingletonDatum, rewardAccountFromScript } from "./utils.js";
+
+/**
+ * Base interface for SDK version implementations.
+ * Each version implements this with version-specific logic.
+ */
+
+/**
+ * Extended interface for SDK versions with treasury support (V0_1+)
+ */
+
+const isRecord = value => typeof value === "object" && value !== null;
+const isFlatProxySettings = value => isRecord(value) && "mint_permission" in value && "burn_permission" in value && "withdraw_permission" in value && "deposit_permission" in value && "stake_permission" in value && "unstake_permission" in value && Array.isArray(value.reserve_assets);
+const isNestedProxySettings = value => isRecord(value) && isRecord(value.permissions) && "mint" in value.permissions && "burn" in value.permissions && "withdraw" in value.permissions && "deposit" in value.permissions && "stake" in value.permissions && "unstake" in value.permissions && isRecord(value.config) && Array.isArray(value.config.reserve_assets);
+/**
+ * Abstract base class for SDK versions.
+ * Provides common implementation and utilities.
+ */
+export class RealfiSDKBase {
+  constructor(blaze, params, cachedReferenceInputs) {
+    /** Blaze instance for blockchain interactions */
+    _defineProperty(this, "blaze", void 0);
+    /** Bootstrap parameters */
+    _defineProperty(this, "proxyBootstrap", void 0);
+    /** Asset name hex for the stablecoin */
+    _defineProperty(this, "assetNameHex", void 0);
+    /** Cached reference inputs for performance (populated on first fetch) */
+    _defineProperty(this, "cachedReferenceInputs", void 0);
+    /**
+     * Address used to deploy reference scripts and to resolve them from.
+     * When undefined, Blaze's burn address is used for both.
+     */
+    _defineProperty(this, "scriptDeploymentAddress", void 0);
+    /** Cached raw proxy datum result (populated on first fetch) */
+    _defineProperty(this, "cachedRawProxyDatumResult", void 0);
+    /** Cached parsed proxy datum result (populated on first fetch) */
+    _defineProperty(this, "cachedProxyDatumResult", void 0);
+    /** One-shot output reference (derived from bootstrap) */
+    _defineProperty(this, "oneShotTxoRef", void 0);
+    /** Enable trace output in Plutus scripts */
+    _defineProperty(this, "enableTrace", void 0);
+    /** Origin attached to all built order transactions. */
+    _defineProperty(this, "clientSource", void 0);
+    /** SDK version attached to all built order transactions. */
+    _defineProperty(this, "sdkVersion", void 0);
+    // Abstract properties - each version must provide these
+    _defineProperty(this, "version", void 0);
+    _defineProperty(this, "stablecoinPolicyId", void 0);
+    _defineProperty(this, "oneShotPolicyId", void 0);
+    _defineProperty(this, "protocolScriptHash", void 0);
+    // Scripts - each version stores its own instantiated scripts
+    _defineProperty(this, "oneShotScript", void 0);
+    _defineProperty(this, "protocolScript", void 0);
+    _defineProperty(this, "mintProxyScript", void 0);
+    this.blaze = blaze;
+    this.proxyBootstrap = params.proxyBootstrap;
+    this.assetNameHex = params.assetNameHex;
+    this.enableTrace = params.enableTrace ?? false;
+    this.cachedReferenceInputs = cachedReferenceInputs ?? {};
+    this.scriptDeploymentAddress = params.scriptDeploymentAddress;
+    this.clientSource = params.clientSource ?? DEFAULT_CLIENT_SOURCE;
+    this.sdkVersion = SDK_VERSION;
+    this.oneShotTxoRef = {
+      transaction_id: params.proxyBootstrap.txHash,
+      output_index: params.proxyBootstrap.outputIndex
+    };
+  }
+
+  /** Get the network from blaze */
+  get network() {
+    return this.blaze.provider.network;
+  }
+
+  /**
+   * Start a transaction with a single setMetadata call. Origin label (55534473) is always
+   * present and not overridable; extra labels are merged in before the origin is set.
+   */
+  newOrderTransaction(extraLabels) {
+    const map = new Map(extraLabels ?? []);
+    map.set(ORDER_ORIGIN_METADATA_LABEL, buildOrderOriginMetadatum(this.clientSource, this.sdkVersion));
+    return this.blaze.newTransaction().setMetadata(new Core.Metadata(map));
+  }
+
+  /**
+   * Helper to get reference inputs for scripts.
+   * Fetched values are cached for subsequent calls.
+   */
+  async getScriptReferenceInputs(scriptHashes) {
+    const cached = {};
+    if (this.cachedReferenceInputs.protocolRefInput) {
+      cached.protocol = this.cachedReferenceInputs.protocolRefInput;
+    }
+    if (this.cachedReferenceInputs.proxyRefInput) {
+      cached.proxy = this.cachedReferenceInputs.proxyRefInput;
+    }
+    if (this.cachedReferenceInputs.treasuryRefInput) {
+      cached.treasury = this.cachedReferenceInputs.treasuryRefInput;
+    }
+    if (this.cachedReferenceInputs.orderRefInput) {
+      cached.order = this.cachedReferenceInputs.orderRefInput;
+    }
+    if (this.cachedReferenceInputs.stakingVaultRefInput) {
+      cached.stakingVault = this.cachedReferenceInputs.stakingVaultRefInput;
+    }
+    // V1.0 additional protocol scripts
+    if (this.cachedReferenceInputs.protocolMintRefInput) {
+      cached.protocolMint = this.cachedReferenceInputs.protocolMintRefInput;
+    }
+    if (this.cachedReferenceInputs.protocolStakeRefInput) {
+      cached.protocolStake = this.cachedReferenceInputs.protocolStakeRefInput;
+    }
+    if (this.cachedReferenceInputs.protocolManagementRefInput) {
+      cached.protocolManagement = this.cachedReferenceInputs.protocolManagementRefInput;
+    }
+    const result = await getReferenceInputs(this.blaze, scriptHashes, cached, this.scriptDeploymentAddress);
+    // Cache fetched values for subsequent calls
+    if (result.protocol && !this.cachedReferenceInputs.protocolRefInput) {
+      this.cachedReferenceInputs.protocolRefInput = result.protocol;
+    }
+    if (result.proxy && !this.cachedReferenceInputs.proxyRefInput) {
+      this.cachedReferenceInputs.proxyRefInput = result.proxy;
+    }
+    if (result.treasury && !this.cachedReferenceInputs.treasuryRefInput) {
+      this.cachedReferenceInputs.treasuryRefInput = result.treasury;
+    }
+    if (result.order && !this.cachedReferenceInputs.orderRefInput) {
+      this.cachedReferenceInputs.orderRefInput = result.order;
+    }
+    if (result.stakingVault && !this.cachedReferenceInputs.stakingVaultRefInput) {
+      this.cachedReferenceInputs.stakingVaultRefInput = result.stakingVault;
+    }
+    // V1.0 additional protocol scripts caching
+    if (result.protocolMint && !this.cachedReferenceInputs.protocolMintRefInput) {
+      this.cachedReferenceInputs.protocolMintRefInput = result.protocolMint;
+    }
+    if (result.protocolStake && !this.cachedReferenceInputs.protocolStakeRefInput) {
+      this.cachedReferenceInputs.protocolStakeRefInput = result.protocolStake;
+    }
+    if (result.protocolManagement && !this.cachedReferenceInputs.protocolManagementRefInput) {
+      this.cachedReferenceInputs.protocolManagementRefInput = result.protocolManagement;
+    }
+    return result;
+  }
+
+  /**
+   * Resolve the bootstrap UTXO from the provider.
+   * This will fail if the UTXO has already been consumed (i.e., the one-shot token was minted).
+   */
+  async resolveBootstrapUtxo() {
+    const utxos = await this.blaze.provider.resolveUnspentOutputs([new Core.TransactionInput(this.oneShotTxoRef.transaction_id, this.oneShotTxoRef.output_index)]);
+    const utxo = utxos[0];
+    if (!utxo) {
+      throw new Error("Bootstrap UTXO not found. It may have already been consumed (one-shot token already minted).");
+    }
+    return utxo;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Common Protocol Operations (shared across all versions)
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Deploy the protocol script as a reference script.
+   */
+  async deployProtocol() {
+    return deployScript(this.blaze, this.protocolScript, this.scriptDeploymentAddress);
+  }
+
+  /**
+   * Deploy the mint proxy script as a reference script.
+   */
+  async deployMintProxy() {
+    return deployScript(this.blaze, this.mintProxyScript, this.scriptDeploymentAddress);
+  }
+
+  /**
+   * Register the protocol stake credential.
+   */
+  registerProtocolStake() {
+    const stakeCredential = credentialFromScript(this.protocolScript);
+    const registerTx = this.blaze.newTransaction().addRegisterStake(stakeCredential);
+    return registerTx;
+  }
+
+  /**
+   * Get the protocol reward account.
+   */
+  getProtocolRewardAccount() {
+    return rewardAccountFromScript(this.protocolScript, this.network);
+  }
+
+  /**
+   * Get version-agnostic proxy settings.
+   * Extracts only the common fields shared across V0_2+ protocol versions.
+   */
+  async getSettings() {
+    const {
+      parsedProxyDatum
+    } = await this.getParsedProxyDatum();
+    const settings = parsedProxyDatum.settings;
+    if (isFlatProxySettings(settings)) {
+      return {
+        mint_permission: settings.mint_permission,
+        burn_permission: settings.burn_permission,
+        withdraw_permission: settings.withdraw_permission,
+        deposit_permission: settings.deposit_permission,
+        stake_permission: settings.stake_permission,
+        unstake_permission: settings.unstake_permission,
+        reserve_assets: settings.reserve_assets
+      };
+    }
+    if (isNestedProxySettings(settings)) {
+      return {
+        mint_permission: settings.permissions.mint,
+        burn_permission: settings.permissions.burn,
+        withdraw_permission: settings.permissions.withdraw,
+        deposit_permission: settings.permissions.deposit,
+        stake_permission: settings.permissions.stake,
+        unstake_permission: settings.permissions.unstake,
+        reserve_assets: settings.config.reserve_assets
+      };
+    }
+    throw new Error(`getSettings() is not supported for protocol version ${this.version}`);
+  }
+
+  /** The USDr asset ID (stablecoin policy + USDr asset name). */
+  getUsdrAssetId() {
+    return Core.AssetId(this.stablecoinPolicyId + this.assetNameHex);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Timelock Operations (shared across versions with staking support)
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Build a transaction that claims USDr locked in a timelock address after
+   * the unstake cooldown has expired.
+   *
+   * Reconstructs the timelock native script for the owner's key hash and the
+   * original unlock slot, then spends the UTxO. `owner` is the timelock owner
+   * (defaults to the connected wallet) and is set as the required signer, so a
+   * custodian holding the user's key can claim. The released USDr goes to
+   * `destination`, or to `owner` when only an owner is given; with neither it
+   * returns to the connected wallet.
+   *
+   * A single owner key has two timelock shapes in the protocol, differing only
+   * in element order: `buildUnstakeOrderTx` locks to
+   * `AllOf { Signature, After }` and the treasury/multisig unstake path to
+   * `AllOf { After, Signature }`. They hash differently, so which one applies
+   * is read off the UTxO's own locking address rather than assumed.
+   */
+  async buildClaimTimelockTx(params) {
+    const ownerAddress = params.owner ?? (await this.blaze.wallet.getChangeAddress());
+    const ownerKeyHash = ownerAddress.getProps().paymentPart?.hash;
+    if (!ownerKeyHash) {
+      throw new Error("Timelock owner address has no payment key credential");
+    }
+    const input = new Core.TransactionInput(Core.TransactionId(params.resultUtxo.txHash), BigInt(params.resultUtxo.index));
+    const [utxo] = await this.blaze.provider.resolveUnspentOutputs([input]);
+    if (!utxo) {
+      throw new Error(`Could not resolve UTxO ${params.resultUtxo.txHash}#${params.resultUtxo.index}`);
+    }
+    const nativeScript = resolveTimelockNativeScript(utxo.output().address(), ownerKeyHash, params.unlockSlot);
+    const scriptWrapped = Core.Script.newNativeScript(nativeScript);
+    const tx = this.newOrderTransaction().setValidFrom(Core.Slot(Number(params.unlockSlot))).provideScript(scriptWrapped).addRequiredSigner(Core.Ed25519KeyHashHex(ownerKeyHash)).addInput(utxo);
+
+    // Route funds to `destination`, else to an explicit `owner` (so a custodial
+    // claim reaches the user); with neither, value returns to the connected
+    // wallet as change.
+    const recipient = params.destination ?? params.owner;
+    if (recipient) {
+      addDirectOutput(tx, recipient, utxo.output().amount());
+    }
+    return tx;
+  }
+
+  /**
+   * Fetch the live proxy UTxO and inline datum without attempting a
+   * version-specific parse. Cached after first fetch.
+   *
+   * `readSingletonDatum` both retries the lookup (a not-found answer is the
+   * provider's index lagging the UTxO's latest move, not a missing proxy —
+   * Blockfrost returns HTTP 404 in that window, Sentry TREASURY-ADMIN-API-G)
+   * and repairs a datum the provider reports as a hash.
+   */
+  async getRawProxyDatum() {
+    if (this.cachedRawProxyDatumResult) {
+      return this.cachedRawProxyDatumResult;
+    }
+    if (this.cachedProxyDatumResult) {
+      const {
+        proxyUtxo,
+        proxyDatum
+      } = this.cachedProxyDatumResult;
+      this.cachedRawProxyDatumResult = {
+        proxyUtxo,
+        proxyDatum
+      };
+      return this.cachedRawProxyDatumResult;
+    }
+    const {
+      utxo: proxyUtxo,
+      datum: proxyDatum
+    } = await readSingletonDatum(this.blaze.provider, Core.AssetId(this.oneShotPolicyId));
+    const result = {
+      proxyUtxo,
+      proxyDatum
+    };
+    this.cachedRawProxyDatumResult = result;
+    return result;
+  }
+
+  /**
+   * @deprecated Use getParsedProxyDatum() or getRawProxyDatum() depending on
+   * whether the caller needs a version-specific schema parse.
+   */
+  async getProxyDatum() {
+    return this.getParsedProxyDatum();
+  }
+
+  // Abstract methods - each version must implement these
+}
+//# sourceMappingURL=base.js.map
