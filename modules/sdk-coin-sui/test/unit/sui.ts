@@ -1811,6 +1811,167 @@ describe('SUI:', function () {
     });
   });
 
+  describe('Build Consolidation Recoveries (MPCv2):', () => {
+    const sandBox = sinon.createSandbox();
+    const walletPassphrase = 'p$Sw<RjvAgf{nYAYI2xM';
+
+    let mpcV2UserKey: string;
+    let mpcV2BackupKey: string;
+    let mpcV2CommonKeyChain: string;
+    let baseAddr: string;
+    let mpcV2Address1: string;
+    let mpcV2Address2: string;
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+
+      mpcV2UserKey = await encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+      mpcV2BackupKey = await encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      baseAddr = utils.getAddressFromPublicKey(MPC.deriveUnhardened(mpcV2CommonKeyChain, 'm/0').slice(0, 64));
+      mpcV2Address1 = utils.getAddressFromPublicKey(MPC.deriveUnhardened(mpcV2CommonKeyChain, 'm/1').slice(0, 64));
+      mpcV2Address2 = utils.getAddressFromPublicKey(MPC.deriveUnhardened(mpcV2CommonKeyChain, 'm/2').slice(0, 64));
+    });
+
+    beforeEach(function () {
+      const getBalanceStub = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
+      getBalanceStub
+        .withArgs(mpcV2Address1)
+        .resolves({ totalBalance: '0', coinObjectBalance: '0', fundsInAddressBalance: '0' });
+      getBalanceStub
+        .withArgs(mpcV2Address2)
+        .resolves({ totalBalance: '200000000', coinObjectBalance: '200000000', fundsInAddressBalance: '0' });
+
+      const getInputCoinsStub = sandBox.stub(Sui.prototype, 'getInputCoins' as keyof Sui);
+      getInputCoinsStub.withArgs(mpcV2Address2).resolves([
+        {
+          coinType: '0x2::sui::SUI',
+          objectId: '0xfa04105eedebdabf729dccecf01d0cf5f1b770892fac2ed8f1e69d71a32a2d24',
+          version: '202',
+          digest: 'DeApRVSrTa9ttXvNyLexT4PJcAkyyxSpi3JQeUg4ua8Q',
+          balance: new BigNumber('200000000'),
+        },
+      ]);
+
+      const getFeeEstimateStub = sandBox.stub(Sui.prototype, 'getFeeEstimate' as keyof Sui);
+      getFeeEstimateStub.resolves(new BigNumber('1997880'));
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should build MPCv2 signed consolidation recoveries, sweeping to the MPCv2 base address', async function () {
+      const res = await basecoin.recoverConsolidations({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 3,
+      });
+
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(1);
+      res.lastScanIndex.should.equal(2);
+
+      const rebuilt = new TransferTransaction(basecoin);
+      rebuilt.fromRawTransaction(res.transactions[0].serializedTx);
+      should.equal(rebuilt.toJson().gasData.owner, mpcV2Address2);
+
+      const outputs = rebuilt.explainTransaction().outputs;
+      outputs[0].address.should.equal(baseAddr);
+    });
+
+    it('should detect signing material exactly once at the top of the scan loop, not per iteration', async function () {
+      const getEddsaMaterialSpy = sandBox.spy(
+        basecoin as unknown as { getEddsaSigningMaterial: unknown },
+        'getEddsaSigningMaterial'
+      );
+
+      await basecoin.recoverConsolidations({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 3,
+      });
+
+      sandBox.assert.calledOnce(getEddsaMaterialSpy);
+    });
+
+    it('should leave MPCv1 base address derivation and signing unchanged (regression)', async function () {
+      const receiveAddress1 = '0x32d8e57ee6d91e5558da0677154c2f085795348e317f95acc9efade1b4112fcc';
+      const receiveAddress2 = '0xdf407e3e25e9400f9779ac7571537c2361684194f1aa5db126a8f574b5ed851c';
+      (Sui.prototype as unknown as { getBalance: sinon.SinonStub }).getBalance
+        .withArgs(receiveAddress1)
+        .resolves({ totalBalance: '200101976', coinObjectBalance: '200101976', fundsInAddressBalance: '0' });
+      (Sui.prototype as unknown as { getBalance: sinon.SinonStub }).getBalance
+        .withArgs(receiveAddress2)
+        .resolves({ totalBalance: '200000000', coinObjectBalance: '200000000', fundsInAddressBalance: '0' });
+      (Sui.prototype as unknown as { getInputCoins: sinon.SinonStub }).getInputCoins
+        .withArgs(receiveAddress1)
+        .resolves([
+          {
+            coinType: '0x2::sui::SUI',
+            objectId: '0x996aab365d4551b6d1274f520bbfa7b0a566d548b2d590b5565c623812e7e76d',
+            version: '201',
+            digest: 'HXpNTfx9TBdxFcXHi4RziZsQuDAHavRasK6Ri15rVwuA',
+            balance: new BigNumber('200000000'),
+          },
+          {
+            coinType: '0x2::sui::SUI',
+            objectId: '0xb39c5f380208cce7fe1ba1258c8d19befb02a80f14952617ed37098dbd4d2df0',
+            version: '199',
+            digest: 'mqk37hXLkiUYgkYxk2MyqNykCkCXwe97uMus7bDPhe2',
+            balance: new BigNumber('101976'),
+          },
+        ]);
+      (Sui.prototype as unknown as { getInputCoins: sinon.SinonStub }).getInputCoins
+        .withArgs(receiveAddress2)
+        .resolves([
+          {
+            coinType: '0x2::sui::SUI',
+            objectId: '0xfa04105eedebdabf729dccecf01d0cf5f1b770892fac2ed8f1e69d71a32a2d24',
+            version: '202',
+            digest: 'DeApRVSrTa9ttXvNyLexT4PJcAkyyxSpi3JQeUg4ua8Q',
+            balance: new BigNumber('200000000'),
+          },
+        ]);
+      (Sui.prototype as unknown as { getFeeEstimate: sinon.SinonStub }).getFeeEstimate.resolves(
+        new BigNumber('1997880')
+      );
+
+      const getTSSSignatureSpy = sandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+      const res = await basecoin.recoverConsolidations({
+        userKey: keys.userKey,
+        backupKey: keys.backupKey,
+        bitgoKey: keys.bitgoKey,
+        walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 3,
+      });
+
+      res.should.not.be.empty();
+      sandBox.assert.calledTwice(getTSSSignatureSpy);
+    });
+
+    it('should leave the unsigned (no passphrase) cold path unchanged when keycard is MPCv2', async function () {
+      const res = await basecoin.recoverConsolidations({
+        bitgoKey: mpcV2CommonKeyChain,
+        startingScanIndex: 1,
+        endingScanIndex: 3,
+      });
+
+      res.should.not.be.empty();
+      res.txRequests.length.should.equal(1);
+    });
+  });
+
   describe('Recover Token Consolidation Transactions', () => {
     const sandBox = sinon.createSandbox();
     const walletPassphrase = 'p$Sw<RjvAgf{nYAYI2xM';
