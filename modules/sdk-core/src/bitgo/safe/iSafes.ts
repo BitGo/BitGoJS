@@ -24,15 +24,19 @@ export interface CreateSafeOptions {
 
 /**
  * Handle returned by `initializeSafe`, threaded into the key ceremonies and finalize.
+ *
+ * `enabledRootSlots` is the server-decided (Flipt, evaluated once at initialize) set of root-key
+ * slots to generate; absent (older WP) falls back to all 4 slots.
  * @experimental
  */
 export interface SafeCreationHandle {
   safeId: string;
+  enabledRootSlots?: InitializeSafeResponse['enabledRootSlots'];
 }
 
 /**
- * The 12 minted root key ids produced by `createSafeKeys`, as 4 ordered [user, backup, bitgo]
- * triplets — exactly the payload `finalizeSafe` consumes.
+ * The minted root key ids produced by `createSafeKeys`, as ordered [user, backup, bitgo]
+ * triplets for the enabled slots — exactly the payload `finalizeSafe` consumes.
  * @experimental
  */
 export type SafeKeys = FinalizeSafeOptions;
@@ -58,24 +62,25 @@ export interface GetSafeOptions {
 export interface ISafes {
   /**
    * One-call convenience wrapper chaining the three creation phases:
-   * initialize → createSafeKeys (4 safeId-tagged ceremonies) → finalize. HOT custody only in v1.
+   * initialize → createSafeKeys (safeId-tagged ceremonies for the enabled root slots) → finalize.
+   * HOT custody only in v1.
    * @experimental
    */
   generateSafe(params: CreateSafeOptions): Promise<Safe>;
   /**
-   * Phase 1 — initialize a safe (metadata only, no key material). The server response is just
-   * `{ id, status }` (no `label`/`enterpriseId`/`creator`/`users`/`createdAt` yet), so this
-   * returns that raw shape rather than a full `Safe`.
+   * Phase 1 — initialize a safe (metadata only, no key material). The server response is
+   * `{ id, status }` plus optional `enabledRootSlots` (no `label`/`enterpriseId`/`creator`/`users`/
+   * `createdAt` yet), so this returns that raw shape rather than a full `Safe`.
    * @experimental
    */
   initializeSafe(params: InitializeSafeOptions): Promise<InitializeSafeResponse>;
   /**
-   * Phase 2 — run the 4 root key ceremonies tagged with `safeId`; returns the 12 minted key ids.
+   * Phase 2 — run the enabled root key ceremonies tagged with `safeId`; returns the minted key ids.
    * @experimental
    */
   createSafeKeys(params: CreateSafeOptions & SafeCreationHandle): Promise<SafeKeys>;
   /**
-   * Phase 3 — finalize a safe with the 12 root key ids. Idempotent.
+   * Phase 3 — finalize a safe with the minted root key ids. Idempotent.
    * @experimental
    */
   finalizeSafe(safeId: string, params: FinalizeSafeOptions): Promise<Safe>;

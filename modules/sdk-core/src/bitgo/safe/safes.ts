@@ -9,6 +9,7 @@ import {
   FinalizeSafeBody,
   InitializeSafeBody,
   InitializeSafeResponse,
+  RootKeysByType,
   RootKeyTriplet,
   RootKeyType,
   SafeData,
@@ -86,7 +87,7 @@ export class Safes implements ISafes {
 
   /**
    * One-call convenience wrapper chaining the three creation phases:
-   * initialize (Phase 1) → createSafeKeys (Phase 2, 4 safeId-tagged ceremonies) →
+   * initialize (Phase 1) → createSafeKeys (Phase 2, enabled-slot ceremonies) →
    * finalize (Phase 3). HOT custody only in v1.
    *
    * If a key ceremony fails, `createSafeKeys` archives the safe before throwing, so a failed run
@@ -95,14 +96,18 @@ export class Safes implements ISafes {
    */
   async generateSafe(params: CreateSafeOptions): Promise<Safe> {
     const safe = await this.initializeSafe({ label: params.label });
-    const rootKeys = await this.createSafeKeys({ ...params, safeId: safe.id });
+    const rootKeys = await this.createSafeKeys({
+      ...params,
+      safeId: safe.id,
+      enabledRootSlots: safe.enabledRootSlots,
+    });
     return await this.finalizeSafe(safe.id, rootKeys);
   }
 
   /**
    * Phase 1 — initialize a safe (metadata only, no key material).
    * POST /api/v2/enterprise/:eId/safes { label }
-   * Response is just `{ id, status }` — the safe has no label/roster/etc. yet.
+   * Response is `{ id, status }` plus optional `enabledRootSlots` (absent on older WP).
    * @experimental
    */
   async initializeSafe(params: InitializeSafeOptions): Promise<InitializeSafeResponse> {
@@ -111,10 +116,11 @@ export class Safes implements ISafes {
   }
 
   /**
-   * Phase 2 — run the 4 root key ceremonies tagged with `safeId`; returns the 12 minted key ids
-   * as 4 ordered [user, backup, bitgo] triplets. HOT custody only in v1.
+   * Phase 2 — run the enabled root key ceremonies tagged with `safeId`; returns ordered
+   * [user, backup, bitgo] triplets for those slots. HOT custody only in v1.
    *
-   * All 4 ceremonies (2.1 multisig ①④, 2.2 MPC ②③) run in parallel. If any of them fail, the
+   * Absent `enabledRootSlots` (older WP, pre-gating) runs all 4 slots. Enabled ceremonies
+   * (2.1 multisig ①④, 2.2 MPC ②③) run in parallel. If any of them fail, the
    * partially-created safe is archived (a legal `initializing → archived` transition, so the
    * orphaned tagged keys are inert) and an error listing every ceremony failure is thrown —
    * create a new safe and retry.
@@ -124,24 +130,27 @@ export class Safes implements ISafes {
    * @experimental
    */
   async createSafeKeys(params: CreateSafeOptions & SafeCreationHandle): Promise<SafeKeys> {
-    const { safeId, passphrase } = params;
+    const { safeId, passphrase, enabledRootSlots } = params;
     const enterprise = this.enterpriseId;
 
-    // `slots` MUST stay index-aligned with the Promise.allSettled array below. Ordered by scheme:
-    // the two multisig roots first, then the two MPC roots.
-    const slots: RootKeyType[] = ['secp256k1Multisig', 'ed25519Multisig', 'ecdsaMpc', 'eddsaMpc'];
-    const results = await Promise.allSettled([
+    // Absent `enabledRootSlots` (older WP, pre-gating) ⇒ all 4, preserving current behavior.
+    // Ordered by scheme: the two multisig roots first, then the two MPC roots.
+    const allSlots: RootKeyType[] = ['secp256k1Multisig', 'ed25519Multisig', 'ecdsaMpc', 'eddsaMpc'];
+    const enabled = new Set(enabledRootSlots ?? allSlots);
+    const slots = allSlots.filter((slot) => enabled.has(slot));
+    const ceremonies: Record<RootKeyType, () => Promise<RootKeyTriplet>> = {
       // Phase 2.1 — multisig roots (①④): local user/backup keypairs + BitGo key, all safeId-tagged.
-      this.createMultisigRoot('secp256k1Multisig', safeId, passphrase, enterprise),
-      this.createMultisigRoot('ed25519Multisig', safeId, passphrase, enterprise),
+      secp256k1Multisig: () => this.createMultisigRoot('secp256k1Multisig', safeId, passphrase, enterprise),
+      ed25519Multisig: () => this.createMultisigRoot('ed25519Multisig', safeId, passphrase, enterprise),
       // Phase 2.2 — MPC roots (②③): the existing DKLS (②) and EdDSA (③) ceremonies, safeId threaded.
-      this.createMpcRoot('ecdsaMpc', safeId, passphrase, enterprise),
-      this.createMpcRoot('eddsaMpc', safeId, passphrase, enterprise),
-    ]);
+      ecdsaMpc: () => this.createMpcRoot('ecdsaMpc', safeId, passphrase, enterprise),
+      eddsaMpc: () => this.createMpcRoot('eddsaMpc', safeId, passphrase, enterprise),
+    };
+    const results = await Promise.allSettled(slots.map((slot) => ceremonies[slot]()));
 
     // Single pass over the settled results: `status === 'fulfilled'` narrows `.value` to a
-    // RootKeyTriplet (no cast needed), and rejections are collected per-slot for the error below.
-    const hot = {} as SafeKeys['rootKeys']['hot'];
+    // RootKeyTriplet, and rejections are collected per-slot for the error below.
+    const hot: RootKeysByType = {};
     const failures: string[] = [];
     results.forEach((result, i) => {
       if (result.status === 'fulfilled') {
@@ -192,7 +201,7 @@ export class Safes implements ISafes {
   }
 
   /**
-   * Phase 3 — finalize a safe with the 12 root key ids as 4 ordered [user, backup, bitgo] triplets.
+   * Phase 3 — finalize a safe with the minted root key ids as ordered [user, backup, bitgo] triplets.
    * POST /api/v2/enterprise/:eId/safes/:safeId/finalize { rootKeys }.
    * Idempotent: re-finalizing with the same `rootKeys` returns the active safe again (200).
    * @experimental
