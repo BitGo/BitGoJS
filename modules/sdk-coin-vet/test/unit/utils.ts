@@ -64,6 +64,7 @@ describe('Vechain util library', function () {
 
   it('should get correct transaction type from clause', function () {
     should.equal(TransactionType.Send, utils.getTransactionTypeFromClause(testData.TRANSFER_CLAUSE));
+    should.equal(TransactionType.FlushCoins, utils.getTransactionTypeFromClause(testData.FLUSH_COINS_CLAUSE));
   });
 
   it('is valid public key', function () {

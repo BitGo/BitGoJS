@@ -5,6 +5,7 @@ import { BaseUtils, TransactionRecipient, TransactionType } from '@bitgo/sdk-cor
 import {
   v4CreateForwarderMethodId,
   flushForwarderTokensMethodIdV4,
+  flushCoinsMethodId,
   getRawDecoded,
   getBufferedByteCode,
 } from '@bitgo/abstract-eth';
@@ -96,6 +97,8 @@ export class Utils implements BaseUtils {
       return TransactionType.AddressInitialization;
     } else if (clauses[0].data.startsWith(flushForwarderTokensMethodIdV4)) {
       return TransactionType.FlushTokens;
+    } else if (clauses[0].data.startsWith(flushCoinsMethodId)) {
+      return TransactionType.FlushCoins;
     } else if (clauses[0].data.startsWith(TRANSFER_TOKEN_METHOD_ID)) {
       return TransactionType.SendToken;
     } else if (clauses[0].data.startsWith(STAKING_METHOD_ID)) {
