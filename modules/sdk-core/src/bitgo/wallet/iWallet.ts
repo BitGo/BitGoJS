@@ -1016,8 +1016,8 @@ export interface WalletData {
   evmKeyRingReferenceWalletId?: string;
   isParent?: boolean;
   enabledChildChains?: string[];
-  /** Set on child wallets that belong to a safe. */
-  safeId?: string;
+  /** @experimental Public id of the parent safe this wallet was minted in */
+  safe?: string;
   /**
    * @deprecated Read from `coinSpecific.userKeySigningRequired` instead. Retained
    * temporarily as a fallback while the field migrates from the top level to the OFC
@@ -1187,6 +1187,7 @@ export interface IWallet {
   subType(): SubWalletType | undefined;
   multisigType(): 'onchain' | 'tss';
   multisigTypeVersion(): 'MPCv2' | undefined;
+  /** @experimental Public id of the parent safe this wallet was minted in */
   safeId(): string | undefined;
   label(): string;
   keyIds(): string[];

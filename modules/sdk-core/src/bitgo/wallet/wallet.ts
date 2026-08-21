@@ -385,8 +385,12 @@ export class Wallet implements IWallet {
     return this._wallet.multisigTypeVersion;
   }
 
+  /**
+   * Public id of the parent safe, if this wallet was minted in one.
+   * @experimental
+   */
   safeId(): string | undefined {
-    return this._wallet.safeId;
+    return this._wallet.safe;
   }
 
   subType(): SubWalletType | undefined {
