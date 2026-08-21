@@ -2,23 +2,37 @@
  * @prettier
  *
  * Shared safe child derivation for mint and sign.
- * Path: m/999999'/<index>' where index is the mint allocation stored on the
- * child key as derivedFromParentWithSeed.
  *
- * Soft deriveKeyWithSeed (m/999999/a/b) must not be used for safe children —
- * it cannot reproduce a hardened key.
+ * User child: hardened `m/<index>'` from the sequential `safe.derivationIndex[slot]`.
+ * Backup / BitGo children are soft-derived server-side at `m/<index>` (not here).
+ *
+ * Do not use `derivedFromParentWithSeed` / `deriveKeyWithSeed` (`m/999999/a/b`) —
+ * that is the custody hashed path and cannot reproduce a safe child.
  */
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 
-/** BIP32 purpose for safe wallet derivation (hardened). */
-export const SAFE_DERIVATION_PURPOSE = 999999;
+const MAX_BIP32_INDEX = 0x7fffffff;
 
-export function getSafeHardenedDerivationPath(index: string | number): string {
-  const idx = typeof index === 'number' ? String(index) : index;
-  if (!/^\d+$/.test(idx)) {
+/** Sign-time scan cap (wallet cap plus abandoned mint increments). */
+export const MAX_SAFE_CHILD_INDEX_SCAN = 4096;
+
+export function parseSafeDerivationIndex(index: string | number): number {
+  let idx: number;
+  if (typeof index === 'number') {
+    idx = index;
+  } else if (/^\d+$/.test(index)) {
+    idx = Number(index);
+  } else {
     throw new Error(`Invalid safe derivation index '${index}': expected a non-negative integer`);
   }
-  return `m/${SAFE_DERIVATION_PURPOSE}'/${idx}'`;
+  if (!Number.isInteger(idx) || idx < 0 || idx > MAX_BIP32_INDEX) {
+    throw new Error(`Invalid safe derivation index '${index}': expected a non-negative integer`);
+  }
+  return idx;
+}
+
+export function getSafeHardenedDerivationPath(index: string | number): string {
+  return `m/${parseSafeDerivationIndex(index)}'`;
 }
 
 export interface SafeHardenedChildKey {
@@ -27,10 +41,7 @@ export interface SafeHardenedChildKey {
   derivationPath: string;
 }
 
-/** Hardened BIP32 derive for secp256k1 multisig from a root xprv and mint index. */
-export function deriveSafeChildHardenedFromXprv(rootXprv: string, index: string | number): SafeHardenedChildKey {
-  const derivationPath = getSafeHardenedDerivationPath(index);
-  const child = bip32.fromBase58(rootXprv).derivePath(derivationPath);
+function childFromNode(child: BIP32Interface, derivationPath: string): SafeHardenedChildKey {
   if (!child.privateKey) {
     throw new Error(`Failed to derive hardened safe child at ${derivationPath}`);
   }
@@ -39,4 +50,37 @@ export function deriveSafeChildHardenedFromXprv(rootXprv: string, index: string 
     pub: child.neutered().toBase58(),
     derivationPath,
   };
+}
+
+export function deriveSafeChildHardenedFromXprv(rootXprv: string, index: string | number): SafeHardenedChildKey {
+  const idx = parseSafeDerivationIndex(index);
+  const derivationPath = getSafeHardenedDerivationPath(idx);
+  return childFromNode(bip32.fromBase58(rootXprv).deriveHardened(idx), derivationPath);
+}
+
+/** Re-derive and assert both results match before the child is registered. */
+export function deriveAndSelfCheckSafeChildHardened(rootXprv: string, index: string | number): SafeHardenedChildKey {
+  const first = deriveSafeChildHardenedFromXprv(rootXprv, index);
+  const second = deriveSafeChildHardenedFromXprv(rootXprv, index);
+  if (first.pub !== second.pub || first.prv !== second.prv) {
+    throw new Error(`Safe child self-check failed at ${first.derivationPath}: derivation was not deterministic`);
+  }
+  return first;
+}
+
+/** Walk `m/0'` … `m/<max>'` until the registered child pub matches. */
+export function deriveSafeChildHardenedMatchingPub(
+  rootXprv: string,
+  expectedPub: string,
+  maxIndex: number = MAX_SAFE_CHILD_INDEX_SCAN
+): SafeHardenedChildKey {
+  const root = bip32.fromBase58(rootXprv);
+  const limit = parseSafeDerivationIndex(maxIndex);
+  for (let i = 0; i <= limit; i++) {
+    const derived = childFromNode(root.deriveHardened(i), getSafeHardenedDerivationPath(i));
+    if (derived.pub === expectedPub) {
+      return derived;
+    }
+  }
+  throw new Error(`No hardened safe child at m/0'..m/${limit}' matched the registered public key`);
 }

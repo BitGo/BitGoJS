@@ -146,6 +146,8 @@ export interface AddKeychainOptions {
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
   derivedFromParentWithSeed?: any;
+  /** Safe user-root key id this child was derived from. @experimental */
+  parent?: string;
   disableKRSEmail?: boolean;
   provider?: string;
   reqId?: IRequestTracer;

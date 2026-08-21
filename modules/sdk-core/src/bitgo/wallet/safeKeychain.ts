@@ -3,7 +3,7 @@
  */
 import { BitGoBase } from '../bitgoBase';
 import { decryptKeychainPrivateKey, IKeychains, Keychain, KeychainWithEncryptedPrv } from '../keychain';
-import { deriveSafeChildHardenedFromXprv } from '../safe/safeDerivation';
+import { deriveSafeChildHardenedMatchingPub } from '../safe/safeDerivation';
 import { IncorrectPasswordError } from '../errors';
 
 export class InvalidRootKeychainSourceError extends Error {
@@ -86,8 +86,8 @@ export interface ResolveSafeOwnerSigningPrvParams {
 /**
  * Resolve signing material for a safe owner (child key has no encryptedPrv).
  *
- * Onchain secp256k1: decrypt root → hardened-derive at `derivedFromParentWithSeed` →
- * verify derived pub against the registered child pub.
+ * Onchain secp256k1: decrypt root → walk sequential `m/<n>'` children until the
+ * registered pub matches (the mint index is not stored on the child key).
  * TSS and ed25519 onchain: throw — do not return root material or BIP32-derive the wrong curve.
  *
  * Do not use for wallet sharing — that must not receive root key material.
@@ -116,18 +116,15 @@ export async function resolveSafeOwnerSigningPrv(params: ResolveSafeOwnerSigning
     throw new IncorrectPasswordError();
   }
 
-  if (childKeychain.derivedFromParentWithSeed === undefined) {
-    throw new Error(`Safe wallet ${walletId}: child keychain is missing derivedFromParentWithSeed (derivation index)`);
-  }
-
-  const derived = deriveSafeChildHardenedFromXprv(rootPrv, childKeychain.derivedFromParentWithSeed);
-
   if (!childKeychain.pub) {
     throw new Error(`Safe wallet ${walletId}: child keychain is missing pub for pre-sign verification`);
   }
-  if (derived.pub !== childKeychain.pub) {
-    throw new SafeDerivedPublicKeyMismatchError(walletId, childKeychain.pub, derived.pub);
-  }
 
-  return derived.prv;
+  try {
+    const derived = deriveSafeChildHardenedMatchingPub(rootPrv, childKeychain.pub);
+    return derived.prv;
+  } catch (e) {
+    const detail = e instanceof Error ? e.message : String(e);
+    throw new SafeDerivedPublicKeyMismatchError(walletId, childKeychain.pub, detail);
+  }
 }
