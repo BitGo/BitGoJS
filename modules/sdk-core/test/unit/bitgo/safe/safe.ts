@@ -133,7 +133,7 @@ describe('Safe', function () {
     let derivationQuery: sinon.SinonStub;
     let mintSend: sinon.SinonStub;
 
-    function stubCoin(primaryKeyCurve: string, opts: { getDefaultMultisigType?: string } = {}) {
+    function stubCoin(chain: string, opts: { getDefaultMultisigType?: string } = {}) {
       keychainsGet = sinon.stub().resolves({
         id: 'user-root-id',
         source: 'user',
@@ -143,8 +143,7 @@ describe('Safe', function () {
       });
       keychainsAdd = sinon.stub().resolves({ id: 'child-key-id', pub: childAt0.pub, type: 'independent' });
       mockBitGo.coin = sinon.stub().returns({
-        getChain: sinon.stub().returns('tbtc'),
-        getConfig: sinon.stub().returns({ primaryKeyCurve }),
+        getChain: sinon.stub().returns(chain),
         getDefaultMultisigType: sinon.stub().returns(opts.getDefaultMultisigType),
         supportsTss: sinon.stub().returns(false),
         keychains: sinon.stub().returns({ get: keychainsGet, add: keychainsAdd }),
@@ -152,7 +151,7 @@ describe('Safe', function () {
     }
 
     beforeEach(function () {
-      stubCoin('secp256k1');
+      stubCoin('tbtc');
       mockBitGo.decrypt = sinon.stub().callsFake(({ input, password }: { input: string; password: string }) => {
         if (password !== 'pw') {
           throw new Error('bad password');
@@ -173,7 +172,7 @@ describe('Safe', function () {
         type: 'hot',
         multisigType: 'onchain',
         enterprise: 'test-enterprise-id',
-        safeId: 'test-safe-id',
+        safe: 'test-safe-id',
       });
       mintSend = sinon.stub().returns({ result: mintResult });
       mockBitGo.post.returns({ send: mintSend });
@@ -219,7 +218,7 @@ describe('Safe', function () {
     });
 
     it('rejects a TSS-default coin even without multisigType tss', async function () {
-      stubCoin('secp256k1', { getDefaultMultisigType: 'tss' });
+      stubCoin('hteth', { getDefaultMultisigType: 'tss' });
       await safe
         .createWallet({ coin: 'hteth', label: 'evm', passphrase: 'pw' })
         .should.be.rejectedWith(/MPC safe wallet minting is not yet implemented/);
@@ -235,7 +234,7 @@ describe('Safe', function () {
     });
 
     it('rejects ed25519 onchain coins', async function () {
-      stubCoin('ed25519');
+      stubCoin('txlm');
       await safe
         .createWallet({ coin: 'txlm', label: 'xlm', passphrase: 'pw' })
         .should.be.rejectedWith(/ed25519 coin safe wallet minting is not yet supported/);

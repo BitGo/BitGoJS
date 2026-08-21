@@ -213,7 +213,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
     });
 
     it('throws for a safe wallet when keychain has no parent', async function () {
-      const wallet = makeWallet({ safeId: 'safe-id-1' });
+      const wallet = makeWallet({ safe: 'safe-id-1' });
       await wallet
         .getUserPrv({
           keychain: {
@@ -228,7 +228,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
     });
 
     it('fetches root and hardened-derives child key for safe owner', async function () {
-      const wallet = makeWallet({ safeId: 'safe-id-1' });
+      const wallet = makeWallet({ safe: 'safe-id-1' });
       keychainsGetStub.resolves({
         id: rootKeyId,
         source: 'user',
@@ -254,7 +254,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
     });
 
     it('fails closed for TSS safe owner instead of returning the root prv', async function () {
-      const wallet = makeWallet({ safeId: 'safe-id-1', multisigType: 'tss' });
+      const wallet = makeWallet({ safe: 'safe-id-1', multisigType: 'tss' });
 
       await wallet
         .getUserPrv({
@@ -275,7 +275,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
 
     it('fails closed for ed25519 onchain safe owner instead of BIP32-deriving', async function () {
       mockBaseCoin.getFamily.returns('xlm');
-      const wallet = makeWallet({ safeId: 'safe-id-1', coin: 'txlm' });
+      const wallet = makeWallet({ safe: 'safe-id-1', coin: 'txlm' });
 
       await wallet
         .getUserPrv({
@@ -294,7 +294,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
     });
 
     it('aborts locally when derived pub does not match registered child pub', async function () {
-      const wallet = makeWallet({ safeId: 'safe-id-1' });
+      const wallet = makeWallet({ safe: 'safe-id-1' });
       keychainsGetStub.resolves({
         id: rootKeyId,
         source: 'user',
@@ -319,7 +319,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
 
     it('decrypts child encryptedPrv as-is for wallet sharee (hardened child prv)', async function () {
       const childPrv = 'child-level-prv';
-      const wallet = makeWallet({ safeId: 'safe-id-1' });
+      const wallet = makeWallet({ safe: 'safe-id-1' });
 
       const result = await wallet.getUserPrv({
         keychain: {
@@ -340,7 +340,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
 
     it('does not auto-populate coldDerivationSeed when explicit prv and encryptedPrv are present', async function () {
       const childPrv = 'child-level-prv';
-      const wallet = makeWallet({ safeId: 'safe-id-1' });
+      const wallet = makeWallet({ safe: 'safe-id-1' });
 
       const result = await wallet.getUserPrv({
         prv: childPrv,
@@ -410,7 +410,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
 
   describe('getEncryptedUserKeychain', function () {
     it('still fails for a safe owner so wallet sharing cannot obtain root material', async function () {
-      const wallet = makeWallet({ safeId: 'safe-id-1' });
+      const wallet = makeWallet({ safe: 'safe-id-1' });
       keychainsGetStub.resolves({
         id: 'user-key',
         pub: 'child-pub',
@@ -427,7 +427,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
   describe('signing guards', function () {
     it('getUserKeyAndSignTssTransaction allows safe child keychain without encryptedPrv', async function () {
       const wallet = makeWallet({
-        safeId: 'safe-id-1',
+        safe: 'safe-id-1',
         multisigType: 'tss',
         type: 'hot',
       });
@@ -464,7 +464,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
 
     it('getUserKeyAndSignTssTransaction rejects wrong passphrase early for safe child wallets', async function () {
       const wallet = makeWallet({
-        safeId: 'safe-id-1',
+        safe: 'safe-id-1',
         multisigType: 'tss',
         type: 'hot',
       });
@@ -501,7 +501,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
 
     it('signTransaction does not pass the root prv into TSS signing for a safe owner', async function () {
       const wallet = makeWallet({
-        safeId: 'safe-id-1',
+        safe: 'safe-id-1',
         multisigType: 'tss',
         type: 'hot',
       });

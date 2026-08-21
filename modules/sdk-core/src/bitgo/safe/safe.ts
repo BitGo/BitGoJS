@@ -6,7 +6,7 @@
  */
 import * as t from 'io-ts';
 import { FreezeSafeBody, SafeData, SafeShareData, SafeShareState, type RootKeyType } from '@bitgo/public-types';
-import { KeyCurve } from '@bitgo/statics';
+import { coins, KeyCurve } from '@bitgo/statics';
 import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { IncorrectPasswordError } from '../errors';
@@ -49,7 +49,7 @@ function onchainSlotForCoin(coin: IBaseCoin): Extract<RootKeyType, 'secp256k1Mul
   if (coin.getDefaultMultisigType() === 'tss') {
     throw new Error('MPC safe wallet minting is not yet implemented; use a slot-1 onchain coin');
   }
-  const curve = coin.getConfig().primaryKeyCurve;
+  const curve = coins.get(coin.getChain()).primaryKeyCurve;
   if (curve === KeyCurve.Secp256k1) {
     return 'secp256k1Multisig';
   }

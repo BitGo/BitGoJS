@@ -1,7 +1,7 @@
 /**
  * @prettier
  *
- * Shared safe child derivation for mint and sign.
+ * @experimental Shared safe child derivation for mint and sign.
  *
  * User child: hardened `m/<index>'` from the sequential `safe.derivationIndex[slot]`.
  * Backup / BitGo children are soft-derived server-side at `m/<index>` (not here).
