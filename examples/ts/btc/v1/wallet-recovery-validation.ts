@@ -65,7 +65,6 @@ async function main(): Promise<void> {
 
     console.log('\nAuthenticating with BitGo (via /api/v2/user/login)...');
 
-    // Authenticate with BitGo via /api/v2/user/login (avoids Cloudflare challenge on /api/auth/v1/session)
     const loginResponse = await bitgo
       .post(bitgo.url('/user/login', 2))
       .send({ email: username, password, otp: loginOtp })
