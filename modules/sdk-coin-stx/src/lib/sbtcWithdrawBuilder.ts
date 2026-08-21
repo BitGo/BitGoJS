@@ -184,7 +184,7 @@ export class SbtcWithdrawBuilder extends AbstractContractBuilder {
           this._numberSignatures
         ).address,
         FungibleConditionCode.Equal,
-        amount,
+        amount.toString(),
         createAssetInfo(sbtcContractAddress, SBTC_TOKEN_CONTRACT_NAME, SBTC_TOKEN_ASSET_NAME)
       ),
     ];

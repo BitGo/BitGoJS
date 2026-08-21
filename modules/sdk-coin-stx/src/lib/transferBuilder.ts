@@ -54,12 +54,12 @@ export class TransferBuilder extends TransactionBuilder {
   private buildTokenTransferOptions(): UnsignedTokenTransferOptions | UnsignedMultiSigTokenTransferOptions {
     const defaultOpts: TokenTransferOptions = {
       recipient: this._toAddress,
-      amount: this._amount,
+      amount: this._amount.toString(),
       memo: this._memo,
       anchorMode: this._anchorMode,
       network: this._network,
-      fee: new BigNum(this._fee.fee),
-      nonce: new BigNum(this._nonce),
+      fee: new BigNum(this._fee.fee).toString(),
+      nonce: new BigNum(this._nonce).toString(),
     };
     if (this._fromPubKeys.length > 0) {
       if (this._fromPubKeys.length === 1) {

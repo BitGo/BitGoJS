@@ -157,7 +157,7 @@ export class FungibleTokenTransferBuilder extends AbstractContractBuilder {
           this._numberSignatures
         ).address,
         FungibleConditionCode.Equal,
-        amount,
+        amount.toString(),
         `${this._contractAddress}.${this._contractName}::${this._tokenName}`
       ),
     ];

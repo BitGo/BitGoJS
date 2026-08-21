@@ -76,7 +76,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._numberSignatures = 1;
       if (tx.stxTransaction.auth.spendingCondition.signature.data !== emptyMessageSignature().data) {
         const signature = tx.stxTransaction.auth.spendingCondition.signature;
-        sigHash = makeSigHashPreSign(sigHash, authType, new BigNum(this._fee.fee), new BigNum(this._nonce));
+        sigHash = makeSigHashPreSign(
+          sigHash,
+          authType,
+          new BigNum(this._fee.fee).toString(),
+          new BigNum(this._nonce).toString()
+        );
         this._signatures.push({ ...signature, index: 0, sigHash });
         this._fromPubKeys = [publicKeyFromSignature(sigHash, signature)];
       }
@@ -88,8 +93,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
           const nextVerify = nextVerification(
             sigHash,
             authType,
-            new BigNum(this._fee.fee),
-            new BigNum(this._nonce),
+            new BigNum(this._fee.fee).toString(),
+            new BigNum(this._nonce).toString(),
             PubKeyEncoding.Compressed, // useless param as Compressed is hardcoded in stacks lib
             signature
           );
@@ -119,8 +124,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     const isMultiSig: boolean = this._fromPubKeys.length > 1;
-    this._transaction.stxTransaction.setFee(new BigNum(this._fee.fee));
-    this._transaction.stxTransaction.setNonce(new BigNum(this._nonce));
+    this._transaction.stxTransaction.setFee(new BigNum(this._fee.fee).toString());
+    this._transaction.stxTransaction.setNonce(new BigNum(this._nonce).toString());
 
     for (let index = 0; index < this._fromPubKeys.length; index++) {
       const pubKey = this._fromPubKeys[index];
