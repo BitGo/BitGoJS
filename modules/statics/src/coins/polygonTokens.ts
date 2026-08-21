@@ -1726,4 +1726,14 @@ export const polygonTokens = [
     UnderlyingAsset['tpolygon:activ'],
     POLYGON_TOKEN_FEATURES
   ),
+  // CECHO-1941 batch tokens
+  polygonErc20(
+    'd133a2fc-0e5d-4ab4-b652-ab7692f4a0da',
+    'polygon:apepe',
+    'Ape and Pepe',
+    18,
+    '0xa3f751662e282e83ec3cbc387d225ca56dd63d3a',
+    UnderlyingAsset['polygon:apepe'],
+    POLYGON_TOKEN_FEATURES
+  ),
 ];
