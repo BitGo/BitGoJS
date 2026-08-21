@@ -1,0 +1,10 @@
+node_modules/
+*.tsbuildinfo
+.nyc_output
+coverage
+*.log
+.env
+.DS_Store
+
+# Dist is vendored from upstream prebuild (see UPSTREAM.md). Root gitignore
+# ignores modules/**/dist/ — force-add dist when updating the pin.
