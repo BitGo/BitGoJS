@@ -1916,6 +1916,10 @@ export class Sol extends BaseCoin {
    * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
    */
   async recoverConsolidations(params: SolConsolidationRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
+    if (!params.bitgoKey) {
+      throw new Error('missing bitgoKey');
+    }
+
     const isUnsignedSweep = !params.walletPassphrase;
     const startIdx = params.startingScanIndex || 1;
     const endIdx = params.endingScanIndex || startIdx + DEFAULT_SCAN_FACTOR;
