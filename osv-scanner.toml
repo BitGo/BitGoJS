@@ -1,4 +1,8 @@
 [[IgnoredVulns]]
+id = "GHSA-r292-9mhp-454m"
+reason = "tar stack-overflow DoS via uncontrolled recursion in mapHas/filesFilter, triggered only when tar.t()/tar.x() is called with a member-selection list; fix is 7.5.21+ but forcing that version breaks lerna's packDirectory (lerna's bundled code does __toESM(require('tar')).default.create(), which resolves to undefined against tar 7.5.21's new dual ESM/CJS export shape -- verified by reproducing the exact TypeError in a real publish run); our usage is archive PACKING only (tar.create()) plus tar.list() with no member-selection filter, so the vulnerable code path is never exercised regardless of tar version"
+
+[[IgnoredVulns]]
 id = "GHSA-8qq5-rm4j-mr97"
 reason = "tar extraction CVE (symlink/hardlink); lerna requires tar v6 but fix only in v7.5.3+ — forcing v7.5.3 breaks lerna's packDirectory API; our usage is archive PACKING only, not extraction"
 
