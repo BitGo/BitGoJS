@@ -31,6 +31,7 @@ import {
   getAmountBasedOnEndianness,
   KeyPair,
   Sol,
+  SolConsolidationRecoveryOptions,
   SolRecoveryOptions,
   SolVerifyTransactionOptions,
   Tsol,
@@ -2592,6 +2593,37 @@ describe('SOL:', function () {
       sandBox.assert.callCount(solCoin.getDataFromNode, 4);
     });
 
+    it('should recover a txn for unsigned sweep recoveries when userKey/backupKey are empty strings', async function () {
+      // Regression test: WRW's cold-wallet sweep form sends userKey/backupKey as empty strings
+      // (rather than omitting them) to satisfy TS typing. Empty string and undefined must be
+      // handled identically by the unsigned-sweep gate (`!params.walletPassphrase`) and by
+      // isMpcv2SigningMaterial's early `!walletPassphrase` short-circuit.
+      const unsignedSweepTxn = (await basecoin.recover({
+        userKey: '',
+        backupKey: '',
+        bitgoKey: testData.keys.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey,
+        durableNonce: {
+          publicKey: testData.keys.durableNoncePubKey,
+          secretKey: testData.keys.durableNoncePrivKey,
+        },
+      })) as MPCSweepTxs;
+
+      unsignedSweepTxn.should.not.be.empty();
+      unsignedSweepTxn.txRequests[0].transactions[0].unsignedTx.should.hasOwnProperty('serializedTx');
+      should.equal(unsignedSweepTxn.txRequests[0].transactions[0].unsignedTx.scanIndex, 0);
+
+      const unsignedSweepTxnDeserialize = new Transaction(coin);
+      unsignedSweepTxnDeserialize.fromRawTransaction(
+        unsignedSweepTxn.txRequests[0].transactions[0].unsignedTx.serializedTx
+      );
+      const unsignedSweepTxnJson = unsignedSweepTxnDeserialize.toJson();
+
+      should.equal(unsignedSweepTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
+      should.equal(unsignedSweepTxnJson.feePayer, testData.accountInfo.bs58EncodedPublicKey);
+      should.equal(unsignedSweepTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
+    });
+
     it('should handle error in recover function if a required field is missing/incorrect', async function () {
       // missing userkey
       await basecoin
@@ -3889,6 +3921,41 @@ describe('SOL:', function () {
       should.equal(latestBlockhashTxnJson1.numSignatures, testData.SolInputData.unsignedSweepSignatures);
     });
 
+    it('should build signed token consolidation recoveries (hot wallet)', async function () {
+      // Regression test: hot-wallet SPL-token consolidation must produce a *signed* transaction
+      // when userKey/backupKey/walletPassphrase are supplied — mirrors the WRW hot-wallet flow.
+      const res = (await basecoin.recoverConsolidations({
+        userKey: testData.wrwUser.userKey,
+        backupKey: testData.wrwUser.backupKey,
+        bitgoKey: testData.wrwUser.bitgoKey,
+        walletPassphrase: testData.wrwUser.walletPassphrase,
+        startingScanIndex: 3,
+        endingScanIndex: 5,
+        tokenContractAddress: usdtMintAddress,
+        durableNonces: durableNonces,
+      })) as MPCTxs;
+
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(1);
+
+      const txn1 = res.transactions[0] as MPCTx;
+      txn1.should.hasOwnProperty('serializedTx');
+      txn1.should.hasOwnProperty('scanIndex');
+      (txn1.scanIndex ?? 0).should.equal(4);
+
+      const tokenConsolidationTxnDeserialize = new Transaction(coin);
+      tokenConsolidationTxnDeserialize.fromRawTransaction(txn1.serializedTx);
+      const tokenConsolidationTxnJson = tokenConsolidationTxnDeserialize.toJson();
+
+      const nonce1 = testData.SolResponses.getAccountInfoResponse.body.result.value.data.parsed.info.blockhash;
+      should.equal(tokenConsolidationTxnJson.nonce, nonce1);
+      should.equal(tokenConsolidationTxnJson.feePayer, testData.wrwUser.walletAddress5);
+      // Signed (durable nonce + recovery signature) must have MORE signatures than an unsigned sweep
+      // of the same transaction shape — proves walletPassphrase actually drove a signed path.
+      should.equal(tokenConsolidationTxnJson.numSignatures, testData.SolInputData.durableNonceSignatures);
+      tokenConsolidationTxnJson.numSignatures.should.be.above(testData.SolInputData.unsignedSweepSignatures);
+    });
+
     it('should skip building consolidate transaction if balance is equal to zero', async function () {
       await basecoin
         .recoverConsolidations({
@@ -3901,6 +3968,18 @@ describe('SOL:', function () {
           durableNonces: durableNonces,
         })
         .should.rejectedWith('Did not find an address with funds to recover');
+    });
+
+    it('should throw if bitgoKey is missing', async () => {
+      await basecoin
+        .recoverConsolidations({
+          userKey: testData.wrwUser.userKey,
+          backupKey: testData.wrwUser.backupKey,
+          startingScanIndex: 1,
+          endingScanIndex: 2,
+          durableNonces: durableNonces,
+        } as SolConsolidationRecoveryOptions)
+        .should.be.rejectedWith('missing bitgoKey');
     });
 
     it('should throw if startingScanIndex is not ge to 1', async () => {
