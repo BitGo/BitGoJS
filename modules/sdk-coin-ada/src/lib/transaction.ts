@@ -471,6 +471,40 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
+   * Detects whether the parsed transaction carries any Plutus-related content
+   * (script data hash, collateral, reference inputs, plutus datums/scripts/redeemers).
+   * Used to route prebuilt Plutus txs (e.g. RealFi) through the sign-only passthrough
+   * path, which preserves fields the generic builder does not reconstruct.
+   */
+  hasPlutusData(): boolean {
+    if (!this._transaction) {
+      return false;
+    }
+    const body = this._transaction.body();
+    const witnessSet = this._transaction.witness_set();
+    if (
+      body.script_data_hash() !== undefined ||
+      body.collateral() !== undefined ||
+      body.collateral_return() !== undefined ||
+      body.total_collateral() !== undefined ||
+      body.reference_inputs() !== undefined ||
+      witnessSet.plutus_scripts() !== undefined ||
+      witnessSet.plutus_data() !== undefined ||
+      witnessSet.redeemers() !== undefined
+    ) {
+      return true;
+    }
+    const outputs = body.outputs();
+    for (let i = 0; i < outputs.len(); i++) {
+      const output = outputs.get(i);
+      if (output.has_plutus_data() || output.has_script_ref()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Get transaction fee
    */
   get getFee(): string {

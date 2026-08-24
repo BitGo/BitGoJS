@@ -576,8 +576,69 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this.transaction;
   }
 
+  /**
+   * Sign-only path for prebuilt Plutus transactions (e.g. RealFi order CBOR from WP).
+   *
+   * Does not rebuild body or recompute fees/outputs — reuses the parsed body and
+   * auxiliary data verbatim so Plutus fields survive. Only regenerates vkeys;
+   * other witness content is copied through as-is.
+   */
+  private buildPlutusPassthrough(): Transaction {
+    const originalTx = this._transaction.transaction;
+    const body = originalTx.body();
+    const originalWitnessSet = originalTx.witness_set();
+    const txHash = CardanoWasm.hash_transaction(body);
+
+    const vkeyWitnesses = CardanoWasm.Vkeywitnesses.new();
+    this._signers.forEach((keyPair) => {
+      const prv = keyPair.getKeys().prv as string;
+      const vkeyWitness = CardanoWasm.make_vkey_witness(
+        txHash,
+        CardanoWasm.PrivateKey.from_normal_bytes(Buffer.from(prv, 'hex'))
+      );
+      vkeyWitnesses.add(vkeyWitness);
+    });
+
+    this._transaction.signature.length = 0;
+    this.getAllSignatures().forEach((signature) => {
+      const vkey = CardanoWasm.Vkey.new(CardanoWasm.PublicKey.from_bytes(Buffer.from(signature.publicKey.pub, 'hex')));
+      const ed255Sig = CardanoWasm.Ed25519Signature.from_bytes(signature.signature);
+      vkeyWitnesses.add(CardanoWasm.Vkeywitness.new(vkey, ed255Sig));
+      this._transaction.signature.push(signature.signature.toString('hex'));
+    });
+
+    const witnessSet = CardanoWasm.TransactionWitnessSet.new();
+    witnessSet.set_vkeys(vkeyWitnesses);
+    if (originalWitnessSet.native_scripts() !== undefined) {
+      witnessSet.set_native_scripts(originalWitnessSet.native_scripts()!);
+    }
+    if (originalWitnessSet.bootstraps() !== undefined) {
+      witnessSet.set_bootstraps(originalWitnessSet.bootstraps()!);
+    }
+    if (originalWitnessSet.plutus_scripts() !== undefined) {
+      witnessSet.set_plutus_scripts(originalWitnessSet.plutus_scripts()!);
+    }
+    if (originalWitnessSet.plutus_data() !== undefined) {
+      witnessSet.set_plutus_data(originalWitnessSet.plutus_data()!);
+    }
+    if (originalWitnessSet.redeemers() !== undefined) {
+      witnessSet.set_redeemers(originalWitnessSet.redeemers()!);
+    }
+
+    // Preserve metadata when present — omitting it leaves auxiliary_data_hash dangling.
+    const auxiliaryData = originalTx.auxiliary_data();
+    this._transaction.transaction =
+      auxiliaryData !== undefined
+        ? CardanoWasm.Transaction.new(body, witnessSet, auxiliaryData)
+        : CardanoWasm.Transaction.new(body, witnessSet);
+    return this.transaction;
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    if (this._transaction.hasPlutusData()) {
+      return this.buildPlutusPassthrough();
+    }
     if (this._explicitOutputs.length > 0) {
       return this.processExplicitOutputsBuild();
     }
