@@ -1228,6 +1228,38 @@ describe('Distributed Custody Features', () => {
   });
 });
 
+describe('ZEC RedPallas shielded coins', () => {
+  ['zecshielded', 'tzecshielded'].forEach((coinName) => {
+    it(`${coinName} should exist, use the Pallas curve, and be TSS-only`, () => {
+      const coin = coins.get(coinName) as UtxoCoin;
+      coin.should.be.instanceof(UtxoCoin);
+      coin.asset.should.equal(UnderlyingAsset.ZEC);
+      coin.baseUnit.should.equal(BaseUnit.ZEC);
+      coin.primaryKeyCurve.should.equal(KeyCurve.Pallas);
+      coin.features.includes(CoinFeature.TSS).should.eql(true);
+      coin.features.includes(CoinFeature.TSS_COLD).should.eql(true);
+      coin.features.includes(CoinFeature.MPCV2).should.eql(true);
+      coin.features.includes(CoinFeature.MULTISIG).should.eql(false);
+      coin.features.includes(CoinFeature.MULTISIG_COLD).should.eql(false);
+    });
+  });
+
+  it('zecshielded should be mainnet and tzecshielded should be testnet', () => {
+    coins.get('zecshielded').network.type.should.equal(NetworkType.MAINNET);
+    coins.get('tzecshielded').network.type.should.equal(NetworkType.TESTNET);
+  });
+
+  it('should not have mutated the existing transparent zec/tzec coin configs', () => {
+    const zec = coins.get('zec') as UtxoCoin;
+    const tzec = coins.get('tzec') as UtxoCoin;
+    [zec, tzec].forEach((coin) => {
+      coin.primaryKeyCurve.should.equal(KeyCurve.Secp256k1);
+      coin.features.includes(CoinFeature.TSS_COLD).should.eql(false);
+      coin.features.includes(CoinFeature.MULTISIG_COLD).should.eql(true);
+    });
+  });
+});
+
 describe('Bulk Transaction Features', () => {
   it('Tokens supports Bulk Withdrawal', () => {
     coins.forEach((coin) => {

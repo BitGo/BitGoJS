@@ -1445,6 +1445,27 @@ class ZCashTestnet extends Testnet implements UtxoNetwork {
 }
 
 /*
+ * ZCashShielded represents the Zcash Orchard shielded pool, which uses RedPallas/TSS
+ * signing and note-commitment based shielded addresses rather than transparent UTXO
+ * addresses. It shares the same underlying Zcash consensus network as `ZCash`, but is
+ * registered under its own coin family (mirroring the AVAXC/AVAXP pattern) since a
+ * shielded address is not interchangeable with a transparent one.
+ */
+class ZCashShielded extends Mainnet implements UtxoNetwork {
+  name = 'ZCashShielded';
+  family = CoinFamily.ZECSHIELDED;
+  utxolibName = 'zcash';
+  explorerUrl = 'https://mainnet.zcashexplorer.app/transactions/';
+}
+
+class ZCashShieldedTestnet extends Testnet implements UtxoNetwork {
+  name = 'ZCashShieldedTestnet';
+  family = CoinFamily.ZECSHIELDED;
+  utxolibName = 'zcashTest';
+  explorerUrl = 'https://testnet.zcashexplorer.app/transactions/';
+}
+
+/*
  * Pearl is served through @bitgo/wasm-utxo and is deliberately NOT registered as a
  * network in @bitgo/utxo-lib.
  *
@@ -3039,6 +3060,7 @@ export const Networks = {
     xtz: Object.freeze(new Xtz()),
     xtzevm: Object.freeze(new XtzEvm()),
     zCash: Object.freeze(new ZCash()),
+    zCashShielded: Object.freeze(new ZCashShielded()),
     zeta: Object.freeze(new Zeta()),
     zkSync: Object.freeze(new ZkSync()),
     zkSyncEra: Object.freeze(new ZkSyncEra()),
@@ -3177,6 +3199,7 @@ export const Networks = {
     xtz: Object.freeze(new XtzTestnet()),
     xtzevm: Object.freeze(new XtzEvmTestnet()),
     zCash: Object.freeze(new ZCashTestnet()),
+    zCashShielded: Object.freeze(new ZCashShieldedTestnet()),
     zeta: Object.freeze(new ZetaTestnet()),
     zkSync: Object.freeze(new ZkSyncTestnet()),
     zkSyncEra: Object.freeze(new ZkSyncEraTestnet()),

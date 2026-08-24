@@ -143,6 +143,18 @@ const DOGE_FEATURES = [
 const DASH_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION];
 const TDASH_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
 const ZEC_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.CUSTODY_BITGO_FRANKFURT];
+/**
+ * Zcash shielded (Orchard/RedPallas) pool coin. This is a distinct coin entry from `zec`/`tzec`
+ * because shielded addresses are not interchangeable with transparent UTXO addresses - they use
+ * a different note-commitment transaction model and are only supported via TSS (MPCv2), never
+ * via legacy multisig. Hence MULTISIG/MULTISIG_COLD are dropped and TSS/TSS_COLD/MPCV2 are added.
+ */
+const ZEC_SHIELDED_FEATURES = [
+  ...ZEC_FEATURES.filter((feature) => ![CoinFeature.MULTISIG, CoinFeature.MULTISIG_COLD].includes(feature)),
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
+];
 const PEARL_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.DISTRIBUTED_CUSTODY];
 export const utxoCoins: Readonly<BaseCoin>[] = [
   utxo(
@@ -320,6 +332,30 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     UnderlyingAsset.ZEC,
     BaseUnit.ZEC,
     ZEC_FEATURES
+  ),
+  utxo(
+    '3589db64-bbf6-47c5-a55f-18ac6948c67b',
+    'zecshielded',
+    'ZCash Shielded',
+    Networks.main.zCashShielded,
+    UnderlyingAsset.ZEC,
+    BaseUnit.ZEC,
+    ZEC_SHIELDED_FEATURES,
+    '',
+    'ZEC',
+    KeyCurve.Pallas
+  ),
+  utxo(
+    '1eab8d83-343b-4bad-a68a-caae4ff9527f',
+    'tzecshielded',
+    'Testnet ZCash Shielded',
+    Networks.test.zCashShielded,
+    UnderlyingAsset.ZEC,
+    BaseUnit.ZEC,
+    ZEC_SHIELDED_FEATURES,
+    '',
+    'TZEC',
+    KeyCurve.Pallas
   ),
   utxo(
     '4518a5b9-00d3-476e-bc40-d3f87eb82250',

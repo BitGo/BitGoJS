@@ -139,6 +139,7 @@ export enum CoinFamily {
   XTZ = 'xtz',
   XTZEVM = 'xtzevm', // Etherlink (XTZ EVM L2)
   ZEC = 'zec',
+  ZECSHIELDED = 'zecshielded', // Zcash shielded (Orchard/RedPallas) pool
   ZETA = 'zeta',
   ZKETH = 'zketh',
   ZKSYNCERA = 'zksyncera', // ZkSync Era

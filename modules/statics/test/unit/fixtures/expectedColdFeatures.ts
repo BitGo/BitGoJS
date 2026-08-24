@@ -250,6 +250,8 @@ export const expectedColdFeatures = {
     'tsonic',
     'tunieth',
     'tusdt0',
+    'zecshielded',
+    'tzecshielded',
   ],
   neither: [
     'ethw',
