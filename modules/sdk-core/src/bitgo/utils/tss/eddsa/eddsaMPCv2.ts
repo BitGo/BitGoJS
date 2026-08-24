@@ -214,6 +214,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       params.passphrase,
       params.originalPasscodeEncryptionCode,
       params.encryptionVersion,
+      params.enterprise,
       params.safeId
     );
     const bitgoKeychainPromise = this.addBitgoKeychain(userCommonKeychain, params.safeId);
@@ -313,8 +314,8 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 
     const keychains = this.baseCoin.keychains();
     const [userKeychain, backupKeychain, bitgoKeychain] = await Promise.all([
-      keychains.add({ source: 'user', keyType: 'tss' as KeyType, commonKeychain, isMPCv2: true }),
-      keychains.add({ source: 'backup', keyType: 'tss' as KeyType, commonKeychain, isMPCv2: true }),
+      keychains.add({ source: 'user', keyType: 'tss' as KeyType, commonKeychain, isMPCv2: true, enterprise }),
+      keychains.add({ source: 'backup', keyType: 'tss' as KeyType, commonKeychain, isMPCv2: true, enterprise }),
       this.addBitgoKeychain(commonKeychain),
     ]);
 
@@ -379,6 +380,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       originalPasscodeEncryptionCode,
       isMPCv2: true,
       safeId,
+      enterprise,
     };
 
     if (webauthnInfo && participantIndex === MPCv2PartiesEnum.USER && privateMaterialBase64) {
@@ -432,6 +434,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     passphrase: string,
     originalPasscodeEncryptionCode?: string,
     encryptionVersion?: EncryptionVersion,
+    enterprise?: string,
     safeId?: string
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
@@ -443,7 +446,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       originalPasscodeEncryptionCode,
       undefined,
       encryptionVersion,
-      undefined,
+      enterprise,
       safeId
     );
   }

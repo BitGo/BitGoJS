@@ -609,7 +609,7 @@ describe('V2 Keychains', function () {
 
       ['tbsc'].forEach((coin) => {
         it('should create ECDSA TSS Keychains', async function () {
-          nock(bgUrl).get('/api/v2/tss/settings').reply(200, {
+          nock(bgUrl).get('/api/v2/tss/settings').query(true).reply(200, {
             coinSettings: {},
           });
           sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
@@ -620,6 +620,38 @@ describe('V2 Keychains', function () {
             originalPasscodeEncryptionCode: 'originalPasscodeEncryptionCode',
           });
           keychains.should.deepEqual(stubbedKeychainsTriplet);
+        });
+      });
+
+      ['tsol'].forEach((coin) => {
+        it('should forward the enterprise param on the GET /tss/settings call', async function () {
+          // Exact query match (not .query(true)) — this only passes if `enterprise` is actually
+          // forwarded on the request, proving WCI-1358's fix rather than just tolerating it.
+          const tssSettingsNock = nock(bgUrl)
+            .get('/api/v2/tss/settings')
+            .query({ enterprise: 'enterprise-123' })
+            .reply(200, { coinSettings: {} });
+          sandbox.stub(EDDSAUtils.default.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
+          await bitgo.coin(coin).keychains().createMpc({
+            multisigType: 'tss',
+            passphrase: 'password',
+            enterprise: 'enterprise-123',
+            originalPasscodeEncryptionCode: 'originalPasscodeEncryptionCode',
+          });
+          tssSettingsNock.isDone().should.be.true();
+        });
+      });
+
+      ['tsol'].forEach((coin) => {
+        it('should send no enterprise query param on GET /tss/settings when enterprise is not supplied', async function () {
+          const tssSettingsNock = nock(bgUrl).get('/api/v2/tss/settings').reply(200, { coinSettings: {} });
+          sandbox.stub(EDDSAUtils.default.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
+          await bitgo.coin(coin).keychains().createMpc({
+            multisigType: 'tss',
+            passphrase: 'password',
+            originalPasscodeEncryptionCode: 'originalPasscodeEncryptionCode',
+          });
+          tssSettingsNock.isDone().should.be.true();
         });
       });
 
@@ -646,7 +678,7 @@ describe('V2 Keychains', function () {
 
       ['tbsc'].forEach((coin) => {
         it('should reject safe root creation when the resolved ceremony is legacy MPCv1', async function () {
-          nock(bgUrl).get('/api/v2/tss/settings').reply(200, {
+          nock(bgUrl).get('/api/v2/tss/settings').query(true).reply(200, {
             coinSettings: {},
           });
           const createKeychains = sandbox
@@ -668,7 +700,7 @@ describe('V2 Keychains', function () {
 
       ['tbsc'].forEach((coin) => {
         it('should pass webauthnInfo to createKeychains for ECDSA TSS', async function () {
-          nock(bgUrl).get('/api/v2/tss/settings').reply(200, {
+          nock(bgUrl).get('/api/v2/tss/settings').query(true).reply(200, {
             coinSettings: {},
           });
           const webauthnInfo = {
@@ -702,6 +734,7 @@ describe('V2 Keychains', function () {
       beforeEach(function () {
         nock(bgUrl)
           .get('/api/v2/tss/settings')
+          .query(true)
           .reply(200, {
             coinSettings: {
               eth: {

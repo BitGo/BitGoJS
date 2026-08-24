@@ -376,7 +376,10 @@ export class Keychains implements IKeychains {
       throw new Error('Unsupported multi-sig type');
     }
 
-    const tssSettings: TssSettings = await this.bitgo.get(this.bitgo.microservicesUrl('/api/v2/tss/settings')).result();
+    const tssSettings: TssSettings = await this.bitgo
+      .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
+      .query({ enterprise: params.enterprise })
+      .result();
     const multisigTypeVersion =
       tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
 

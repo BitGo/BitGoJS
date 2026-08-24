@@ -131,6 +131,7 @@ export class Wallets implements IWallets {
       if (params.multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa' && params.walletVersion === 3) {
         const tssSettings: TssSettings = await this.bitgo
           .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
+          .query({ enterprise: params.enterprise })
           .result();
         const multisigTypeVersion =
           tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
@@ -1800,6 +1801,7 @@ export class Wallets implements IWallets {
       }
       const tssSettings: TssSettings = await this.bitgo
         .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
+        .query({ enterprise })
         .result();
       const multisigTypeVersion =
         tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
@@ -1875,6 +1877,7 @@ export class Wallets implements IWallets {
     if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
       const tssSettings: TssSettings = await this.bitgo
         .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
+        .query({ enterprise })
         .result();
       const multisigTypeVersion =
         tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
@@ -1945,6 +1948,7 @@ export class Wallets implements IWallets {
     if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
       const tssSettings: TssSettings = await this.bitgo
         .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
+        .query({ enterprise })
         .result();
       multisigTypeVersion =
         tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.coldMultiSigTypeVersion;
@@ -2033,6 +2037,7 @@ export class Wallets implements IWallets {
     if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
       const tssSettings: TssSettings = await this.bitgo
         .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
+        .query({ enterprise })
         .result();
       const multisigTypeVersion =
         tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.custodialMultiSigTypeVersion;
