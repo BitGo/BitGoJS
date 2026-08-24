@@ -5093,6 +5093,48 @@ export const tOfcErc20Coins = [
     undefined,
     'hteth'
   ),
+  tofcerc20(
+    'ba7d610c-4aad-4347-bbd1-3a19ebf85901',
+    'ofcsepeth:usdc',
+    'Sepolia Testnet USD Coin',
+    6,
+    UnderlyingAsset['sepeth:usdc'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'sepeth'
+  ),
+  tofcerc20(
+    'd2ef380d-a9d6-4564-b583-5becda61927f',
+    'ofcsepeth:pyusd',
+    'Sepolia Testnet PayPal USD',
+    6,
+    UnderlyingAsset['sepeth:pyusd'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'sepeth'
+  ),
+  tofcerc20(
+    '2ed97531-56c9-4a7a-a2da-4bf4a4f379f8',
+    'ofcsepeth:wtgxx',
+    'Sepolia Testnet WisdomTree Government Money Market Digital Fund',
+    18,
+    UnderlyingAsset['sepeth:wtgxx'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'sepeth'
+  ),
 
   ofcerc20(
     'cc2a92cf-d799-463b-b08c-e9a4d5e87934',

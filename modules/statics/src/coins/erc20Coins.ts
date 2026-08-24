@@ -15168,4 +15168,40 @@ export const erc20Coins = [
     undefined,
     Networks.test.hoodi
   ),
+  terc20(
+    '62705940-65f5-45c3-a5d6-9e043d5a5902',
+    'sepeth:usdc',
+    'Sepolia Testnet USD Coin',
+    6,
+    '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238',
+    UnderlyingAsset['sepeth:usdc'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.sepolia
+  ),
+  terc20(
+    '837c0a8e-6c29-483e-9ba5-6b0cfd88e155',
+    'sepeth:pyusd',
+    'Sepolia Testnet PayPal USD',
+    6,
+    '0xcac524bca292aaade2df8a05cc58f0a65b1b3bb9',
+    UnderlyingAsset['sepeth:pyusd'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.sepolia
+  ),
+  terc20(
+    '5b0fc727-e05b-4eed-9d33-1c5efbaa6861',
+    'sepeth:wtgxx',
+    'Sepolia Testnet WisdomTree Government Money Market Digital Fund',
+    18,
+    '0x0b2517eef907389f36fd87add36e9118d364bd67',
+    UnderlyingAsset['sepeth:wtgxx'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE],
+    undefined,
+    undefined,
+    Networks.test.sepolia
+  ),
 ];
