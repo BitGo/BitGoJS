@@ -13,6 +13,13 @@ import {
 import utils from './utils';
 import { Tx, FlareTransactionType, ExportEVMOptions, DecodedUtxoObj } from './iface';
 
+/**
+ * Buffer applied to a caller-supplied base fee to absorb C-chain base-fee volatility
+ * between transaction signing and broadcast. Expressed in basis points (1000 = 10%).
+ * Mirrors the padding applied to Flare atomic imports (CECHO-1821).
+ */
+const BASE_FEE_PADDING_BPS = 1000n;
+
 export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
   private _nonce: bigint;
 
@@ -147,7 +154,13 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
       throw new BuildTransactionError('context is required');
     }
 
-    const fee = BigInt(this.transaction._fee.fee);
+    // The supplied fee is a C-chain base fee (per gas), not a literal total fee: flarejs's
+    // newExportTxFromBaseFee derives the actual export cost from the real tx size/inputs.
+    // Pad it to absorb base-fee volatility between signing and broadcast, mirroring the
+    // padding applied to Flare atomic imports (CECHO-1821), and fixing insufficient-funds
+    // broadcast failures caused by an unpadded base fee (CECHO-2004).
+    const suppliedBaseFee = BigInt(this.transaction._fee.fee);
+    const fee = (suppliedBaseFee * (10000n + BASE_FEE_PADDING_BPS)) / 10000n;
     const fromAddressBytes = this.transaction._fromAddresses[0];
     const sortedToAddresses = [...this.transaction._to].sort((a, b) => {
       const aHex = Buffer.from(a).toString('hex');

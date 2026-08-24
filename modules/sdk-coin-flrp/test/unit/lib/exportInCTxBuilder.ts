@@ -179,6 +179,37 @@ describe('ExportInCTxBuilder', function () {
         });
     });
 
+    it('should pad the supplied base fee by 10% to absorb C-chain base-fee volatility (CECHO-2004)', async () => {
+      const buildWithFee = async (fee: string) => {
+        const tx = await factory
+          .getExportInCBuilder()
+          .fromPubKey(testData.cHexAddress)
+          .nonce(testData.nonce)
+          .amount(testData.amount)
+          .threshold(testData.threshold)
+          .locktime(testData.locktime)
+          .to(testData.pAddresses)
+          .fee(fee)
+          .context(CONTEXT as FlrpContext)
+          .build();
+        const json = tx.toJson();
+        return BigInt(json.inputs[0].value) - BigInt(json.outputs[0].value);
+      };
+
+      const suppliedBaseFee = BigInt(testData.fee);
+      const actualFee = await buildWithFee(testData.fee);
+      // actualFee = paddedBaseFee * gasUnits, where paddedBaseFee = suppliedBaseFee * 1.10.
+      // gasUnits is recovered by dividing by the padded base fee and must be a whole number.
+      const paddedBaseFee = (suppliedBaseFee * 11000n) / 10000n;
+      const gasUnits = actualFee / paddedBaseFee;
+      const expectedFee = paddedBaseFee * gasUnits;
+      actualFee.should.equal(expectedFee);
+
+      // Sanity check the padding is actually non-trivial (not silently a no-op).
+      const unpaddedEquivalentFee = suppliedBaseFee * gasUnits;
+      (actualFee > unpaddedEquivalentFee).should.be.true();
+    });
+
     it('should compute correct tx id for on-chain verified signed export', async () => {
       const signedExportHex =
         '0x0000000000010000007278db5c30bed04c05ce209179812850bbb3fe6d46d7eef3744d814c0da555247900000000000000000000000000000000000000000000000000000000000000000000000117dbd11b9dd1c9be337353db7c14f9fb3662e5b50000000002ff3d1658734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd00000000000000050000000158734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd000000070000000002faf080000000000000000000000002000000033329be7d01cd3ebaae6654d7327dd9f17a2e15817e918a5e8083ae4c9f2f0ed77055c24bf3665001c7324437c96c7c8a6a152da2385c1db5c3ab1f910000000100000009000000018d1ac79d2e26d1c9689ca93b3b191c077dced2f201bdda132e74c3fc5ab9b10b6c85fd318dd6c0a99b327145977ac6ea6ff54cb8e9b7093b6bbe3545b3cc126400';
