@@ -5,12 +5,15 @@ import _ from 'lodash';
 import sinon from 'sinon';
 import nock from 'nock';
 import assert from 'assert';
+import nacl from 'tweetnacl';
 
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
-import { common, TransactionPrebuild, Wallet } from '@bitgo/sdk-core';
+import { common, EDDSAMethods, MPCTx, TransactionPrebuild, Wallet } from '@bitgo/sdk-core';
+import { MPSUtil } from '@bitgo/sdk-lib-mpc';
 
+import * as nearAPI from 'near-api-js';
 import { KeyPair, Near, TNear, Transaction } from '../../src';
 import nearUtils from '../../src/lib/utils';
 import { getBuilderFactory } from './getBuilderFactory';
@@ -1563,6 +1566,339 @@ describe('NEAR:', function () {
         'commonKeychain',
         '8699d2e05d60a3f7ab733a74ccf707f3407494b60f4253616187f5262e20737519a1763de0bcc4d165a7fa0e4dde67a1426ec4cc9fcd0820d749e6589dcfa08e'
       );
+    });
+  });
+
+  describe('Recover Transactions (MPCv2):', () => {
+    const mpcV2SandBox = sinon.createSandbox();
+    let callBack: sinon.SinonStub;
+    let mpcV2UserKey: string;
+    let mpcV2BackupKey: string;
+    let mpcV2CommonKeyChain: string;
+    let mpcV2AccountId: string;
+    let mpcV2Bs58EncodedPublicKey: string;
+    let mpcV2TokenUserKey: string;
+    let mpcV2TokenBackupKey: string;
+    let mpcV2TokenCommonKeyChain: string;
+    let mpcV2TokenAccountId: string;
+    let mpcV2TokenBs58EncodedPublicKey: string;
+    let mismatchedBitgoKey: string;
+    const walletPassphrase = 'test-passphrase-mpcv2';
+    const coin = coins.get('tnear');
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      const [tokenUserDkg, tokenBackupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      const [otherUserDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+
+      mpcV2UserKey = await encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+      mpcV2BackupKey = await encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+
+      const mpc = await EDDSAMethods.getInitializedMpcInstance();
+      mpcV2AccountId = mpc.deriveUnhardened(mpcV2CommonKeyChain, 'm/0').slice(0, 64);
+      mpcV2Bs58EncodedPublicKey = nearAPI.utils.serialize.base_encode(
+        new Uint8Array(Buffer.from(mpcV2AccountId, 'hex'))
+      );
+
+      mismatchedBitgoKey = otherUserDkg.getCommonKeychain();
+
+      mpcV2TokenUserKey = await encrypt(walletPassphrase, tokenUserDkg.getReducedKeyShare().toString('base64'));
+      mpcV2TokenBackupKey = await encrypt(walletPassphrase, tokenBackupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2TokenCommonKeyChain = tokenUserDkg.getCommonKeychain();
+      mpcV2TokenAccountId = mpc.deriveUnhardened(mpcV2TokenCommonKeyChain, 'm/0').slice(0, 64);
+      mpcV2TokenBs58EncodedPublicKey = nearAPI.utils.serialize.base_encode(
+        new Uint8Array(Buffer.from(mpcV2TokenAccountId, 'hex'))
+      );
+    });
+
+    beforeEach(() => {
+      callBack = mpcV2SandBox.stub(Near.prototype, 'getDataFromNode' as keyof Near);
+      callBack.withArgs().resolves(NearResponses.getProtocolConfigResp);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'gas_price',
+            params: [accountInfo.blockHash],
+          },
+        })
+        .resolves(NearResponses.getGasPriceResponse);
+    });
+
+    afterEach(() => {
+      mpcV2SandBox.restore();
+    });
+
+    it('should route to MPCv2 path for native NEAR recovery when keycard is MPCv2', async function () {
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_access_key',
+              finality: 'final',
+              account_id: mpcV2AccountId,
+              public_key: mpcV2Bs58EncodedPublicKey,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccessKeyResponse);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_account',
+              finality: 'final',
+              account_id: mpcV2AccountId,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccountResponse);
+
+      const getTSSSignatureSpy = mpcV2SandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+      const result = await basecoin.recover({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        recoveryDestination: accountInfo.recoveryDestination,
+        walletPassphrase,
+      });
+
+      result.should.not.be.empty();
+      result.should.hasOwnProperty('serializedTx');
+      result.should.hasOwnProperty('scanIndex');
+      should.equal((result as MPCTx).scanIndex, 0);
+      mpcV2SandBox.assert.notCalled(getTSSSignatureSpy);
+
+      const recovered = new Transaction(coin);
+      recovered.fromRawTransaction((result as MPCTx).serializedTx);
+      const json = recovered.toJson();
+      should.equal(json.signerId, mpcV2AccountId);
+      should.equal(json.publicKey, 'ed25519:' + mpcV2Bs58EncodedPublicKey);
+
+      const rawSignature = nearAPI.utils.serialize.base_decode(recovered.signature[0]);
+      const isValidSignature = nacl.sign.detached.verify(
+        new Uint8Array(recovered.signablePayload),
+        new Uint8Array(rawSignature),
+        new Uint8Array(Buffer.from(mpcV2AccountId, 'hex'))
+      );
+      isValidSignature.should.be.true();
+    });
+
+    it('should throw missing userKey error on MPCv2 path', async function () {
+      await basecoin
+        .recover({
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mpcV2CommonKeyChain,
+          recoveryDestination: accountInfo.recoveryDestination,
+          walletPassphrase,
+        })
+        .should.be.rejectedWith('missing userKey');
+    });
+
+    it('should throw missing backupKey error on MPCv2 path', async function () {
+      await basecoin
+        .recover({
+          userKey: mpcV2UserKey,
+          bitgoKey: mpcV2CommonKeyChain,
+          recoveryDestination: accountInfo.recoveryDestination,
+          walletPassphrase,
+        })
+        .should.be.rejectedWith('missing backupKey');
+    });
+
+    it('should still use the MPCv1 signing path when the keycard is MPCv1 (regression)', async function () {
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_access_key',
+              finality: 'final',
+              account_id: accountInfo.accountId,
+              public_key: accountInfo.bs58EncodedPublicKey,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccessKeyResponse);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_account',
+              finality: 'final',
+              account_id: accountInfo.accountId,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccountResponse);
+
+      const getTSSSignatureSpy = mpcV2SandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+      const result = await basecoin.recover({
+        userKey: keys.userKey,
+        backupKey: keys.backupKey,
+        bitgoKey: keys.bitgoKey,
+        recoveryDestination: accountInfo.recoveryDestination,
+        walletPassphrase: 'Ghghjkg!455544llll',
+      });
+
+      result.should.not.be.empty();
+      result.should.hasOwnProperty('serializedTx');
+      mpcV2SandBox.assert.calledOnce(getTSSSignatureSpy);
+    });
+
+    it('should throw when MPCv2 commonKeyChain does not match bitgoKey', async function () {
+      const mismatchedAccountId = (await EDDSAMethods.getInitializedMpcInstance())
+        .deriveUnhardened(mismatchedBitgoKey, 'm/0')
+        .slice(0, 64);
+      const mismatchedBs58 = nearAPI.utils.serialize.base_encode(
+        new Uint8Array(Buffer.from(mismatchedAccountId, 'hex'))
+      );
+
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_access_key',
+              finality: 'final',
+              account_id: mismatchedAccountId,
+              public_key: mismatchedBs58,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccessKeyResponse);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_account',
+              finality: 'final',
+              account_id: mismatchedAccountId,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccountResponse);
+
+      await basecoin
+        .recover({
+          userKey: mpcV2UserKey,
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mismatchedBitgoKey,
+          recoveryDestination: accountInfo.recoveryDestination,
+          walletPassphrase,
+        })
+        .should.be.rejectedWith('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
+    });
+
+    it('should route to MPCv2 path for NEP141 FT token recovery when keycard is MPCv2', async function () {
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_access_key',
+              finality: 'final',
+              account_id: mpcV2TokenAccountId,
+              public_key: mpcV2TokenBs58EncodedPublicKey,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccessKeyResponse);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_account',
+              finality: 'final',
+              account_id: mpcV2TokenAccountId,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccountResponse);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'call_function',
+              finality: 'final',
+              account_id: accountInfo.tokenContractAddress,
+              method_name: 'ft_balance_of',
+              args_base64: nearUtils.convertToBase64({ account_id: mpcV2TokenAccountId }),
+            },
+          },
+        })
+        .resolves(NearResponses.getAccountFungibleTokenBalanceResponse);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'call_function',
+              finality: 'final',
+              account_id: accountInfo.tokenContractAddress,
+              method_name: 'storage_balance_of',
+              args_base64: nearUtils.convertToBase64({ account_id: accountInfo.recoveryDestination }),
+            },
+          },
+        })
+        .resolves(NearResponses.getStorageBalanceResponsePresent);
+
+      const getTSSSignatureSpy = mpcV2SandBox.spy(EDDSAMethods, 'getTSSSignature');
+
+      const result = await basecoin.recover({
+        userKey: mpcV2TokenUserKey,
+        backupKey: mpcV2TokenBackupKey,
+        bitgoKey: mpcV2TokenCommonKeyChain,
+        recoveryDestination: accountInfo.recoveryDestination,
+        walletPassphrase,
+        tokenContractAddress: accountInfo.tokenContractAddress,
+      });
+
+      result.should.not.be.empty();
+      result.should.hasOwnProperty('serializedTx');
+      result.should.hasOwnProperty('scanIndex');
+      should.equal((result as MPCTx).scanIndex, 0);
+      mpcV2SandBox.assert.notCalled(getTSSSignatureSpy);
+
+      const recovered = new Transaction(coin);
+      recovered.fromRawTransaction((result as MPCTx).serializedTx);
+      const rawSignature = nearAPI.utils.serialize.base_decode(recovered.signature[0]);
+      const isValidSignature = nacl.sign.detached.verify(
+        new Uint8Array(recovered.signablePayload),
+        new Uint8Array(rawSignature),
+        new Uint8Array(Buffer.from(mpcV2TokenAccountId, 'hex'))
+      );
+      isValidSignature.should.be.true();
     });
   });
 });
