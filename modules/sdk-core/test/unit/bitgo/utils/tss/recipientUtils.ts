@@ -30,6 +30,7 @@ describe('recipientUtils', function () {
         'defiApprove',
         'defiDeposit',
         'defiWithdraw',
+        'wrapApprove',
         'contractCall',
         // Staking — 'delegate' also covers SOL solDelegateIntent
         'delegate',
@@ -112,6 +113,21 @@ describe('recipientUtils', function () {
         const txRequest = makeTxRequest();
         assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, { type: txType }));
       }
+    });
+
+    it('does not require recipients for a wrapApprove intent', function () {
+      const txRequest = makeTxRequest({
+        intent: {
+          intentType: 'wrapApprove',
+          tokenName: 'hteth:cusdt',
+          amount: '1000000',
+        } as any,
+      });
+
+      const result = resolveEffectiveTxParams(txRequest, {});
+
+      assert.strictEqual(result.type, 'wrapApprove');
+      assert.strictEqual(result.recipients, undefined);
     });
 
     it('does not throw for Avalanche cross-chain imports resolved from intent.intentType', function () {

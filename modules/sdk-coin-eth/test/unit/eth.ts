@@ -903,6 +903,38 @@ describe('ETH:', function () {
       isTransactionVerified.should.equal(true);
     });
 
+    it('should verify TSS transaction with wrapApprove type and no recipients', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: {
+          baseAddress: '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be',
+        },
+      });
+
+      // WP derives the underlying token contract, wrapper spender, and approve
+      // calldata from tokenName and amount, so the client intent has no recipients.
+      const txParams = {
+        type: 'wrapApprove',
+        tokenName: 'hteth:cusdt',
+        amount: '1000000',
+      };
+      const txPrebuild = {
+        txHex: '0x',
+        coin: 'hteth',
+        walletId: 'fakeWalletId',
+      };
+
+      const isTransactionVerified = await coin.verifyTransaction({
+        txParams: txParams as any,
+        txPrebuild: txPrebuild as any,
+        wallet,
+        verification: {},
+        walletType: 'tss',
+      });
+
+      isTransactionVerified.should.equal(true);
+    });
+
     it('should verify TSS transaction with defiDeposit type', async function () {
       const coin = bitgo.coin('hteth') as Hteth;
       const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';

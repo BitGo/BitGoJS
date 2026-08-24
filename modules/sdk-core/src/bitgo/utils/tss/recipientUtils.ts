@@ -9,7 +9,7 @@ import { PopulatedIntent, TxRequest } from './baseTypes';
  * Mirrors the bypass list in abstractEthLikeNewCoins.ts verifyTssTransaction.
  *
  * ECDSA types: acceleration, fillNonce, transferToken, tokenApproval, consolidate,
- *              bridgeFunds, enableToken, customTx, contractCall
+ *              bridgeFunds, enableToken, customTx, wrapApprove, contractCall
  * BSC/BNB delegation-based staking: delegate, undelegate, switchValidator
  * CELO/ETH lock-based staking: stake, unstake, stakeWithCallData, unstakeWithCallData,
  *              transferStake, increaseStake, goUnstake
@@ -31,6 +31,8 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   'defiApprove',
   'defiDeposit',
   'defiWithdraw',
+  // ERC-7984 shielding: approve calldata is built server-side from the wrap intent
+  'wrapApprove',
   // Smart contract invocations with no explicit SDK-level recipients
   'contractCall',
 
