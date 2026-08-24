@@ -2336,6 +2336,8 @@ export const ofcCoins = [
   ),
   ofcTronToken('d953a72b-b7b9-4c8d-97bd-f03394e30608', 'ofctrx:trxs', 'Staked TRX', 18, UnderlyingAsset['trx:trxs']),
   ofcTronToken('d1f624a6-8d53-4c59-abdb-65fc12204ea3', 'ofctrx:jst', 'Just', 18, UnderlyingAsset['trx:jst']),
+  // CECHO-1941 batch tokens
+  ofcTronToken('cb344940-e0ab-4ac6-845e-67850e9cb5a2', 'ofctrx:real', 'RealLink', 6, UnderlyingAsset['trx:real']),
   ofcXrpToken(
     '6a173023-5faf-4a0a-af38-b8be98abe94f',
     'ofcxrp:rlusd',
@@ -4676,6 +4678,14 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['polygon:sofid']
   ),
+  // CECHO-1941 batch tokens
+  ofcPolygonErc20(
+    'b284f83e-54fa-4161-be35-1d1daa9d716c',
+    'ofcpolygon:apepe',
+    'Ape and Pepe',
+    18,
+    UnderlyingAsset['polygon:apepe']
+  ),
 
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
@@ -5252,6 +5262,97 @@ export const ofcCoins = [
   ),
   ofcBscToken('d08948fa-0378-4736-a5ab-0b4ec9182b8a', 'ofcbsc:xter', 'Xterio', 18, UnderlyingAsset['bsc:xter']),
   ofcBscToken('b73d634a-a60d-4e2d-835b-3d8a527979b1', 'ofcbsc:usdau', 'USD GOLD', 18, UnderlyingAsset['bsc:usdau']),
+  // CECHO-1941 batch tokens
+  ofcBscToken('ab82c723-c87a-4a3f-90ab-6a75b4c10651', 'ofcbsc:beat', 'Beat Token', 18, UnderlyingAsset['bsc:beat']),
+  ofcBscToken('1071e926-051f-4d60-9dcc-e1d28166663d', 'ofcbsc:velvet', 'Velvet', 18, UnderlyingAsset['bsc:velvet']),
+  ofcBscToken('d74ac55f-e823-485a-ab1d-544b4106586b', 'ofcbsc:genius', 'Genius', 18, UnderlyingAsset['bsc:genius']),
+  ofcBscToken('1e0efee5-fd0e-47bd-a085-e9bdef854259', 'ofcbsc:tag', 'Tagger', 18, UnderlyingAsset['bsc:tag']),
+  ofcBscToken('c74eba5b-42d3-4905-b0fb-06c0023c9234', 'ofcbsc:ab', 'AB', 18, UnderlyingAsset['bsc:ab']),
+  ofcBscToken(
+    'fe2cfa3d-2c8a-4cb4-955b-b79f0fad79e1',
+    'ofcbsc:cheems',
+    'Cheems (cheems.pet)',
+    18,
+    UnderlyingAsset['bsc:cheems']
+  ),
+  ofcBscToken(
+    '5c9764f5-39ef-4938-be5a-33549139815c',
+    'ofcbsc:bank',
+    'Lorenzo Protocol',
+    18,
+    UnderlyingAsset['bsc:bank']
+  ),
+  ofcBscToken('7a6c31ef-37c6-4927-a79a-2f68b7a8aeb6', 'ofcbsc:wfi', 'WeFi', 18, UnderlyingAsset['bsc:wfi']),
+  ofcBscToken('1bbd7386-7ac8-44d0-bd85-efa62bf4c764', 'ofcbsc:uai', 'UnifAI', 18, UnderlyingAsset['bsc:uai']),
+  ofcBscToken('81a8f1cd-812f-47fc-a6be-d72a9e8988c6', 'ofcbsc:nila', 'MindWave', 18, UnderlyingAsset['bsc:nila']),
+  ofcBscToken('fc5ac0a8-c1e7-45f4-9080-87b807d994d8', 'ofcbsc:xpin', 'XPIN Token', 18, UnderlyingAsset['bsc:xpin']),
+  ofcBscToken('44df840e-a01e-478b-83b7-21adad4003f7', 'ofcbsc:gps', 'GoPlus Security', 18, UnderlyingAsset['bsc:gps']),
+  ofcBscToken('cc71e087-4790-4f1d-b3d8-ecf92a1b02b2', 'ofcbsc:lab', 'LAB', 18, UnderlyingAsset['bsc:lab']),
+  ofcBscToken('68f91158-d384-4ea3-adf8-0d7ab77ba203', 'ofcbsc:bdca', 'BitDCA', 18, UnderlyingAsset['bsc:bdca']),
+  ofcBscToken('7826c6b7-5601-4868-b3cb-e4cb4dcfb4b7', 'ofcbsc:glidr', 'Glidr', 18, UnderlyingAsset['bsc:glidr']),
+  ofcBscToken('3dc6978f-dbdc-4f41-9013-f2a0c91c425a', 'ofcbsc:cross', 'Cross', 18, UnderlyingAsset['bsc:cross']),
+  ofcBscToken('47ea2dfd-f578-4f5f-a78a-608f0b65a920', 'ofcbsc:pm', 'PumpMeme', 18, UnderlyingAsset['bsc:pm']),
+  ofcBscToken('4ca94ab4-46a7-4db4-ab83-e88a87e2057a', 'ofcbsc:bsb', 'Block Street', 18, UnderlyingAsset['bsc:bsb']),
+  ofcBscToken('54b2b1b7-0121-4c27-9b17-919b1dec95a8', 'ofcbsc:lusd', 'Liquity USD', 18, UnderlyingAsset['bsc:lusd']),
+  ofcBscToken('ecf737d7-3145-4410-971f-0c07d234e95d', 'ofcbsc:wkc', 'Wiki Cat', 18, UnderlyingAsset['bsc:wkc']),
+  ofcBscToken('8370d021-71fd-4826-b906-10ea36eccd27', 'ofcbsc:aio', 'OLAXBT', 18, UnderlyingAsset['bsc:aio']),
+  ofcBscToken(
+    '041a99f2-fab2-4f6e-a1e2-11c31731dba9',
+    'ofcbsc:collect',
+    'Collect on Fanable',
+    18,
+    UnderlyingAsset['bsc:collect']
+  ),
+  ofcBscToken('f28034d9-42e5-4d84-a9ad-53ce9e38094d', 'ofcbsc:ain', 'Infinity Ground', 18, UnderlyingAsset['bsc:ain']),
+  ofcBscToken('af9f32ac-fcc5-439c-80d8-a72983a8cbde', 'ofcbsc:b2', 'BSquared Network', 18, UnderlyingAsset['bsc:b2']),
+  ofcBscToken(
+    '05522e48-2d44-4340-b5ae-8a3846ca4d93',
+    'ofcbsc:giggle',
+    'Giggle Fund',
+    18,
+    UnderlyingAsset['bsc:giggle']
+  ),
+  ofcBscToken('4af433ba-d683-418c-9f12-b11d7d1e0eb7', 'ofcbsc:aleo', 'Aleo', 6, UnderlyingAsset['bsc:aleo']),
+  ofcBscToken('a47f494d-154e-40cb-a186-b137e374b8f5', 'ofcbsc:lista', 'Lista DAO', 18, UnderlyingAsset['bsc:lista']),
+  ofcBscToken('68f8eb46-9631-4403-afa8-f705d5f77a1c', 'ofcbsc:tpt', 'Token Pocket', 4, UnderlyingAsset['bsc:tpt']),
+  ofcBscToken(
+    'a460e874-f87f-4113-a1c4-15313782d9b7',
+    'ofcbsc:gcb',
+    'Global Commercial Business',
+    18,
+    UnderlyingAsset['bsc:gcb']
+  ),
+  ofcBscToken('eb41e9c2-0f3a-4f61-9367-0de6b41113d3', 'ofcbsc:xny', 'Codatta', 18, UnderlyingAsset['bsc:xny']),
+  ofcBscToken('f662f91e-1878-43f6-8ef6-c642fe415c8a', 'ofcbsc:tac', 'TAC', 18, UnderlyingAsset['bsc:tac']),
+  ofcBscToken('6c523408-88bc-4fbf-a6b5-3832c5f51750', 'ofcbsc:idol', 'MEET48 Token', 18, UnderlyingAsset['bsc:idol']),
+  ofcBscToken('552288ad-cc0b-4201-8242-4f19dd209647', 'ofcbsc:bluai', 'Bluwhale AI', 18, UnderlyingAsset['bsc:bluai']),
+  ofcBscToken('1fa7a800-c90d-431d-b483-55c636d1d5bf', 'ofcbsc:clo', 'Yei Finance', 18, UnderlyingAsset['bsc:clo']),
+  ofcBscToken('5cc2a68e-e1ff-4dcd-9693-9765c82bbcae', 'ofcbsc:hajimi', '哈基米', 18, UnderlyingAsset['bsc:hajimi']),
+  ofcBscToken('2f207694-49fe-4fd3-869d-a519d33b0c69', 'ofcbsc:bdx', 'Beldex', 9, UnderlyingAsset['bsc:bdx']),
+  ofcBscToken(
+    '39d49763-dba9-4bb8-a2e7-d3dbdfd2de03',
+    'ofcbsc:spcxb',
+    'SpaceX (Tokenized bStocks)',
+    18,
+    UnderlyingAsset['bsc:spcxb']
+  ),
+  ofcBscToken(
+    '8a1f734d-63c2-45ee-a245-24f069870406',
+    'ofcbsc:sndkb',
+    'SanDisk (Tokenized bStocks)',
+    18,
+    UnderlyingAsset['bsc:sndkb']
+  ),
+  ofcBscToken(
+    '4f979150-68b5-45f1-990f-10860976389d',
+    'ofcbsc:bananas31',
+    'Banana For Scale',
+    18,
+    UnderlyingAsset['bsc:bananas31']
+  ),
+  ofcBscToken('5edc712c-6d22-47c2-9f67-d46d41bcc311', 'ofcbsc:coai', 'ChainOpera AI', 18, UnderlyingAsset['bsc:coai']),
+  ofcBscToken('b50fba92-d362-47d1-9a4f-c656b21c778d', 'ofcbsc:nes', 'Nesa', 18, UnderlyingAsset['bsc:nes']),
+  ofcBscToken('2d43e6e0-997c-4f2b-bc9a-5f503abe3bc3', 'ofcbsc:mgo', 'Mango Network', 9, UnderlyingAsset['bsc:mgo']),
   // Ondo Tokens OFC (BSC Mainnet Ungated)
   ofcBscToken(
     'cf2b0030-bd09-427f-b645-e3c0e8ebf42d',
@@ -6152,6 +6253,15 @@ export const ofcCoins = [
     'Treasure',
     18,
     UnderlyingAsset['arbeth:magic']
+  ),
+  // CECHO-1941 batch tokens
+  ofcArbethErc20('5e6e4eb5-adb5-418a-b32d-8c66c47cf9cb', 'ofcarbeth:rain', 'Rain', 18, UnderlyingAsset['arbeth:rain']),
+  ofcArbethErc20(
+    'd9e3b2d5-1036-4d69-8cdd-7717e2823862',
+    'ofcarbeth:mlk',
+    'MiL.k Alliance',
+    8,
+    UnderlyingAsset['arbeth:mlk']
   ),
   // New SOL OFC tokens
   ofcsolToken(

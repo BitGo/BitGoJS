@@ -5129,6 +5129,79 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:jvhhusdc'],
     Networks.main.basechain
   ),
+  // CECHO-1941 batch tokens
+  erc20Token(
+    'b093cec3-96c5-44c9-821f-2c7efa370256',
+    'baseeth:awe',
+    'AWE Network',
+    18,
+    '0x1b4617734c43f6159f3a70b7e06d883647512778',
+    UnderlyingAsset['baseeth:awe'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '0edc79f9-aa85-4b4c-8f8e-c411399d9517',
+    'baseeth:tibbir',
+    'Ribbita by Virtuals',
+    18,
+    '0xa4a2e2ca3fbfe21aed83471d28b6f65a233c6e00',
+    UnderlyingAsset['baseeth:tibbir'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '7324ad58-7c81-4a7b-be5e-4a7c9e0dbda7',
+    'baseeth:kta',
+    'Keeta',
+    18,
+    '0xc0634090f2fe6c6d75e61be2b949464abb498973',
+    UnderlyingAsset['baseeth:kta'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '00dd3e72-b0c4-49a1-86e4-93b0c42cc367',
+    'baseeth:diem',
+    'Diem',
+    18,
+    '0xf4d97f2da56e8c3098f3a8d538db630a2606a024',
+    UnderlyingAsset['baseeth:diem'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'ea08b069-74a5-4cfd-8a5e-eb096d409d4e',
+    'baseeth:bnkr',
+    'BankrCoin',
+    18,
+    '0x22af33fe49fd1fa80c7149773dde5890d3c76f3b',
+    UnderlyingAsset['baseeth:bnkr'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '9d1a3d2d-d664-4469-b0be-21a3c47796d9',
+    'baseeth:fai',
+    'Freysa AI',
+    18,
+    '0xb33ff54b9f7242ef1593d2c9bcd8f9df46c77935',
+    UnderlyingAsset['baseeth:fai'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '96d6236f-87a1-4919-baf1-597ea24f6926',
+    'baseeth:roll',
+    'Roll',
+    18,
+    '0xab6363da0c80cef3ae105bd6241e30872355d021',
+    UnderlyingAsset['baseeth:roll'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '47eb05a5-cd44-432a-8096-a7151a9d0c73',
+    'baseeth:zen',
+    'Horizen',
+    18,
+    '0xf43eb8de897fbc7f2502483b2bef7bb9ea179229',
+    UnderlyingAsset['baseeth:zen'],
+    Networks.main.basechain
+  ),
 
   // ARC mainnet tokens
   erc20Token(
@@ -6189,6 +6262,15 @@ export const allCoinsAndTokens = [
     18,
     'TUPM7K8REVzD2UdV4R5fe5M8XbnR2DdoJ6',
     UnderlyingAsset['trx:htx']
+  ),
+  // CECHO-1941 batch tokens
+  tronToken(
+    '78dcfae4-6ddf-45ea-bd30-6fc796e774f7',
+    'trx:real',
+    'RealLink',
+    6,
+    'TGBfBt6Y2Dm3RHdNpZAdqywBsvfdysf834',
+    UnderlyingAsset['trx:real']
   ),
   tronToken(
     '888fb35c-1b3d-425d-af65-e6aa7453edce',
@@ -7536,6 +7618,23 @@ export const allCoinsAndTokens = [
     18,
     '0x539bde0d7dbd336b79148aa742883198bbf60342',
     UnderlyingAsset['arbeth:magic']
+  ),
+  // CECHO-1941 batch tokens
+  arbethErc20(
+    'fd8517e7-7a2b-42f3-a07a-1cddc90a85c3',
+    'arbeth:rain',
+    'Rain',
+    18,
+    '0x25118290e6a5f4139381d072181157035864099d',
+    UnderlyingAsset['arbeth:rain']
+  ),
+  arbethErc20(
+    '6f36ac81-eebb-4a83-83cb-efa479d1cd3a',
+    'arbeth:mlk',
+    'MiL.k Alliance',
+    8,
+    '0x374c5fb7979d5fdbaad2d95409e235e5cbdfd43c',
+    UnderlyingAsset['arbeth:mlk']
   ),
 
   opethErc20(
