@@ -2,7 +2,7 @@
  * @prettier
  */
 import * as t from 'io-ts';
-import { GetVaultResponse, VaultProtocol } from '@bitgo/public-types';
+import { GetVaultResponse, VaultProtocol, VaultProtocolType } from '@bitgo/public-types';
 import {
   ConcreteDepositResult,
   MorphoDepositResult,
@@ -56,18 +56,49 @@ export class DefiVault implements IDefiVault {
   }
 
   /**
+   * Minimal dispatch codec. The deposit path reads only `protocol` to choose
+   * between the concrete and morpho flows, so it must not hard-fail on the
+   * validity of unrelated response fields (e.g. `composition[]`) it never
+   * consumes. A code path must not fail on the validity of data it does not
+   * consume.
+   */
+  private static readonly VaultDispatch = t.type({ protocol: VaultProtocolType });
+
+  /**
+   * Fetch the raw vault config from defi-service. Shared by callers that
+   * decode the full response and callers that decode only what they use.
+   */
+  private async fetchVaultRaw(vaultId: string): Promise<unknown> {
+    if (!vaultId) {
+      throw new Error('vaultId is required');
+    }
+    return await this.bitgo
+      .get(this.bitgo.microservicesUrl(`/api/defi-service/v1/vaults/${vaultId}`))
+      .set('enterprise-id', this.wallet.toJSON().enterprise)
+      .result();
+  }
+
+  /**
    * Fetch vault config from defi-service. Used internally to determine
    * which deposit path to take (Concrete vs Morpho).
    */
   async getVaultConfig(params: GetVaultConfigOptions): Promise<GetVaultResponse> {
-    if (!params.vaultId) {
-      throw new Error('vaultId is required');
-    }
-    const raw = await this.bitgo
-      .get(this.bitgo.microservicesUrl(`/api/defi-service/v1/vaults/${params.vaultId}`))
-      .set('enterprise-id', this.wallet.toJSON().enterprise)
-      .result();
-    return decodeWithCodec(GetVaultResponse, raw, 'getVaultConfig');
+    return decodeWithCodec(GetVaultResponse, await this.fetchVaultRaw(params.vaultId), 'getVaultConfig');
+  }
+
+  /**
+   * Fetch only the vault protocol from defi-service. Decodes the minimal
+   * `VaultDispatch` shape rather than the full `GetVaultResponse`, so callers
+   * that need only the protocol are not hostage to the validity of unrelated
+   * response fields (e.g. `composition[]`) they never consume.
+   */
+  async getVaultProtocol(params: GetVaultConfigOptions): Promise<VaultProtocol> {
+    const { protocol } = decodeWithCodec(
+      DefiVault.VaultDispatch,
+      await this.fetchVaultRaw(params.vaultId),
+      'vaultDispatch'
+    );
+    return protocol;
   }
 
   /**
@@ -89,14 +120,14 @@ export class DefiVault implements IDefiVault {
       throw new Error('amount is required');
     }
 
-    const config = await this.getVaultConfig({ vaultId: params.vaultId });
+    const protocol = await this.getVaultProtocol({ vaultId: params.vaultId });
 
-    if (config.protocol === VaultProtocol.CONCRETE_BTCCX) {
+    if (protocol === VaultProtocol.CONCRETE_BTCCX) {
       return this.depositToConcreteVault(params);
-    } else if (config.protocol === VaultProtocol.MORPHO) {
+    } else if (protocol === VaultProtocol.MORPHO) {
       return this.depositToMorphoVault(params);
     } else {
-      throw new Error(`Unsupported vault protocol: ${config.protocol}`);
+      throw new Error(`Unsupported vault protocol: ${protocol}`);
     }
   }
 

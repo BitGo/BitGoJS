@@ -50,6 +50,17 @@ describe('DefiVault', function () {
     };
   }
 
+  // A vault response whose `composition[]` no longer matches the strict
+  // GetVaultResponse codec — mirrors the prod incident where a display-only
+  // nested field was narrowed/removed server-side. The deposit dispatch path
+  // must not hard-fail on it because it only reads `protocol`.
+  function makeConcreteVaultWithStaleComposition(id: string) {
+    return {
+      ...makeConcreteVault(id),
+      composition: [{ asset: 'btc', apy: 'not-a-number' /* stale shape */ }],
+    };
+  }
+
   beforeEach(function () {
     mockBitGo = {
       post: sinon.stub(),
@@ -132,6 +143,51 @@ describe('DefiVault', function () {
     });
   });
 
+  describe('getVaultProtocol', function () {
+    it('should fetch only the protocol for a given vaultId', async function () {
+      mockBitGo.get.returns(mockRequest(makeMorphoVault('vlt-morpho-1')));
+
+      const protocol = await defiVault.getVaultProtocol({ vaultId: 'vlt-morpho-1' });
+
+      protocol.should.equal(VaultProtocol.MORPHO);
+      mockBitGo.get.calledWith('https://bitgo.com/api/defi-service/v1/vaults/vlt-morpho-1').should.be.true();
+    });
+
+    it('should return CONCRETE_BTCCX for a concrete vault', async function () {
+      mockBitGo.get.returns(mockRequest(makeConcreteVault('vlt-concrete-1')));
+
+      const protocol = await defiVault.getVaultProtocol({ vaultId: 'vlt-concrete-1' });
+
+      protocol.should.equal(VaultProtocol.CONCRETE_BTCCX);
+    });
+
+    it('should tolerate a stale/invalid composition[] field the full GetVaultResponse codec would reject', async function () {
+      // The dispatch codec reads only `protocol`, so a display-only nested
+      // field going stale server-side must not break this call.
+      mockBitGo.get.returns(mockRequest(makeConcreteVaultWithStaleComposition('vlt-stale-1')));
+
+      const protocol = await defiVault.getVaultProtocol({ vaultId: 'vlt-stale-1' });
+
+      protocol.should.equal(VaultProtocol.CONCRETE_BTCCX);
+    });
+
+    it('should throw if vaultId is missing', async function () {
+      await assert.rejects(() => defiVault.getVaultProtocol({ vaultId: '' }), {
+        message: 'vaultId is required',
+      });
+    });
+
+    it('should propagate errors from the API (e.g. 404)', async function () {
+      const req = mockRequest(null);
+      req.result.rejects(new Error('Not Found'));
+      mockBitGo.get.returns(req);
+
+      await assert.rejects(() => defiVault.getVaultProtocol({ vaultId: 'vlt-not-found' }), {
+        message: 'Not Found',
+      });
+    });
+  });
+
   describe('depositToVault', function () {
     describe('concrete_btccx provider', function () {
       it('should call sendMany once with defi-deposit type and no recipients', async function () {
@@ -191,6 +247,22 @@ describe('DefiVault', function () {
 
         const result = await defiVault.depositToVault({ vaultId: 'vlt-btc-3', amount: '1000000' });
         (result as any).state.should.equal('awaitingSignature');
+      });
+
+      it('should tolerate a stale/invalid composition[] field that the full GetVaultResponse codec would reject', async function () {
+        // Regression guard for the cross-repo codec-drift incident: the
+        // deposit dispatch path reads only `protocol`, so a display-only
+        // nested field going stale server-side must not break deposits.
+        mockBitGo.get.returns(mockRequest(makeConcreteVaultWithStaleComposition('vlt-btc-stale')));
+
+        const sendManyStub = sinon.stub(wallet, 'sendMany').resolves({
+          pendingApproval: { id: 'pa-stale', state: 'awaitingSignature' },
+        });
+
+        const result = await defiVault.depositToVault({ vaultId: 'vlt-btc-stale', amount: '1000000' });
+
+        (result as any).pendingApprovalId.should.equal('pa-stale');
+        sendManyStub.calledOnce.should.be.true();
       });
 
       it('should throw when sendMany returns no pendingApproval', async function () {

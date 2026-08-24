@@ -2,7 +2,7 @@
  * @prettier
  */
 
-import { GetVaultResponse } from '@bitgo/public-types';
+import { GetVaultResponse, VaultProtocol } from '@bitgo/public-types';
 
 export interface DepositToVaultOptions {
   /** DeFi-service vault identifier */
@@ -86,5 +86,6 @@ export interface IDefiVault {
   getOperation(params: GetOperationOptions): Promise<DefiOperation>;
   listOperations(params: ListOperationsOptions): Promise<DefiOperationListResult>;
   getVaultConfig(params: GetVaultConfigOptions): Promise<GetVaultResponse>;
+  getVaultProtocol(params: GetVaultConfigOptions): Promise<VaultProtocol>;
   withdrawFromVault(params: WithdrawFromVaultOptions): Promise<WithdrawResult>;
 }
