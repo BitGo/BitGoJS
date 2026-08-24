@@ -69,3 +69,5 @@ JavaScript package managers should allow you to install this package with any ve
 # Notes for Developers
 
 See [DEVELOPERS.md](https://github.com/BitGo/BitGoJS/blob/master/DEVELOPERS.md)
+
+<!-- PLAT-364 permission probe -->
