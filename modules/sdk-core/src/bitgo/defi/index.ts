@@ -1,2 +1,2 @@
 export * from './iDefiVault';
-export { DefiVault, ActiveOperationExistsError } from './defiVault';
+export { DefiVault, ActiveOperationExistsError, InsufficientBalanceError } from './defiVault';
