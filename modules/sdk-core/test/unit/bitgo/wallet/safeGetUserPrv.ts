@@ -3,10 +3,12 @@
  */
 import 'should';
 import * as sinon from 'sinon';
+import { bip32 } from '@bitgo/utxo-lib';
 import {
   deriveSafeChildHardenedFromXprv,
   fetchRootKeychainForSafeChild,
   getSafeHardenedDerivationPath,
+  parseDerivedFromParentWithHardenedPath,
   IncorrectPasswordError,
   InvalidRootKeychainSourceError,
   MissingEncryptedKeychainError,
@@ -23,9 +25,11 @@ require('should-sinon');
 describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
   const prv =
     'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g';
-  // Soft deriveKeyWithSeedBip32(prv, '123') — must NOT be used for safe owners.
-  const softDerivedPrv =
-    'xprv9yoG67Td11uwjXwbV8zEmrySVXERu5FZAsLD9suBeEJbgJqANs8Yng5dEJoii7hag5JermK6PbfxgDmSzW7ewWeLmeJEkmPfmZUSLdETtHx';
+  const softDerivedNode = BaseCoin.deriveKeyWithSeedBip32(bip32.fromBase58(prv), '123');
+  if (!softDerivedNode.key.privateKey) {
+    throw new Error('expected deriveKeyWithSeedBip32 to return a private key');
+  }
+  const softDerivedPrv = softDerivedNode.key.toBase58();
   const hardened = deriveSafeChildHardenedFromXprv(prv, '123');
   const passphrase = 'test-passphrase';
   const rootKeyId = 'root-key-id';
@@ -115,6 +119,15 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
     it('hardened-derives a child that differs from soft deriveKeyWithSeed', function () {
       hardened.derivationPath.should.eql("m/123'");
       hardened.prv.should.not.eql(softDerivedPrv);
+    });
+
+    it('parses derivedFromParentWithHardenedPath as m/<n> primed', function () {
+      parseDerivedFromParentWithHardenedPath("m/0'").should.eql(0);
+      parseDerivedFromParentWithHardenedPath("m/123'").should.eql(123);
+      (() => parseDerivedFromParentWithHardenedPath('m/0')).should.throw(/derivedFromParentWithHardenedPath/);
+      (() => parseDerivedFromParentWithHardenedPath('m/999999/a/b')).should.throw(/derivedFromParentWithHardenedPath/);
+      (() => parseDerivedFromParentWithHardenedPath("not-a-path'")).should.throw(/derivedFromParentWithHardenedPath/);
+      (() => parseDerivedFromParentWithHardenedPath("m/0''")).should.throw(/derivedFromParentWithHardenedPath/);
     });
   });
 
@@ -243,6 +256,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
           pub: hardened.pub,
           type: 'independent',
           parent: rootKeyId,
+          derivedFromParentWithHardenedPath: "m/123'",
         },
         walletPassphrase: passphrase,
       });
@@ -251,6 +265,77 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
       result.should.not.eql(softDerivedPrv);
       keychainsGetStub.calledOnceWithExactly({ id: rootKeyId }).should.be.true();
       mockBaseCoin.deriveKeyWithSeed.notCalled.should.be.true();
+    });
+
+    it('requires derivedFromParentWithHardenedPath on the child keychain', async function () {
+      const wallet = makeWallet({ safe: 'safe-id-1' });
+      keychainsGetStub.resolves({
+        id: rootKeyId,
+        source: 'user',
+        encryptedPrv: `enc:${prv}`,
+        type: 'independent',
+        pub: 'root-pub',
+      });
+
+      await wallet
+        .getUserPrv({
+          keychain: {
+            id: 'child-key',
+            pub: hardened.pub,
+            type: 'independent',
+            parent: rootKeyId,
+          },
+          walletPassphrase: passphrase,
+        })
+        .should.be.rejectedWith(/missing derivedFromParentWithHardenedPath/);
+    });
+
+    it('fails closed when derivedFromParentWithHardenedPath does not match the registered pub', async function () {
+      const wallet = makeWallet({ safe: 'safe-id-1' });
+      keychainsGetStub.resolves({
+        id: rootKeyId,
+        source: 'user',
+        encryptedPrv: `enc:${prv}`,
+        type: 'independent',
+        pub: 'root-pub',
+      });
+
+      await wallet
+        .getUserPrv({
+          keychain: {
+            id: 'child-key',
+            pub: hardened.pub,
+            type: 'independent',
+            parent: rootKeyId,
+            derivedFromParentWithHardenedPath: "m/0'",
+          },
+          walletPassphrase: passphrase,
+        })
+        .should.be.rejectedWith(SafeDerivedPublicKeyMismatchError);
+    });
+
+    it('rejects a malformed derivedFromParentWithHardenedPath', async function () {
+      const wallet = makeWallet({ safe: 'safe-id-1' });
+      keychainsGetStub.resolves({
+        id: rootKeyId,
+        source: 'user',
+        encryptedPrv: `enc:${prv}`,
+        type: 'independent',
+        pub: 'root-pub',
+      });
+
+      await wallet
+        .getUserPrv({
+          keychain: {
+            id: 'child-key',
+            pub: hardened.pub,
+            type: 'independent',
+            parent: rootKeyId,
+            derivedFromParentWithHardenedPath: "not-a-path'",
+          },
+          walletPassphrase: passphrase,
+        })
+        .should.be.rejectedWith(/derivedFromParentWithHardenedPath/);
     });
 
     it('fails closed for TSS safe owner instead of returning the root prv', async function () {
@@ -310,7 +395,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
             pub: 'xpub-wrong-registered-key',
             type: 'independent',
             parent: rootKeyId,
-            derivedFromParentWithSeed: '123',
+            derivedFromParentWithHardenedPath: "m/123'",
           },
           walletPassphrase: passphrase,
         })

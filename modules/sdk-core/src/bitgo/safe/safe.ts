@@ -23,7 +23,7 @@ import {
   ISafe,
   WalletShareData,
 } from './iSafe';
-import { deriveAndSelfCheckSafeChildHardened } from './safeDerivation';
+import { deriveAndSelfCheckSafeChildHardened, DerivedFromParentWithHardenedPath } from './safeDerivation';
 
 const SafeRootKeySlot = t.keyof({
   secp256k1Multisig: null,
@@ -145,6 +145,11 @@ export class Safe implements ISafe {
     }
 
     const derived = deriveAndSelfCheckSafeChildHardened(rootPrv, index);
+    const derivedFromParentWithHardenedPath = decodeWithCodec(
+      DerivedFromParentWithHardenedPath,
+      derived.derivationPath,
+      'derivedFromParentWithHardenedPath'
+    );
 
     const child = await keychains.add({
       pub: derived.pub,
@@ -152,6 +157,7 @@ export class Safe implements ISafe {
       keyType: 'independent',
       parent: userRootId,
       safeId: this.id(),
+      derivedFromParentWithHardenedPath,
     });
     const childId = child.id;
     if (childId.length === 0) {
