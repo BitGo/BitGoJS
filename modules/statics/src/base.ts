@@ -2004,6 +2004,10 @@ export enum UnderlyingAsset {
   'hteth:htusdl' = 'hteth:htusdl',
   'hteth:htusdlt' = 'hteth:htusdlt',
   'hteth:tprn' = 'hteth:tprn',
+  // Sepolia testnet ERC-20 tokens
+  'sepeth:usdc' = 'sepeth:usdc',
+  'sepeth:pyusd' = 'sepeth:pyusd',
+  'sepeth:wtgxx' = 'sepeth:wtgxx',
   // Robinhood Chain testnet ERC-20 tokens
   'thoodeth:amzn' = 'thoodeth:amzn',
   'thoodeth:tsla' = 'thoodeth:tsla',
