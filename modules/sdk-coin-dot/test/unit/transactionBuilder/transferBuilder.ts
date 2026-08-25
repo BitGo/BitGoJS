@@ -1,7 +1,8 @@
 import assert from 'assert';
 import should from 'should';
 import sinon from 'sinon';
-import { TransferBuilder } from '../../../src/lib';
+import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
+import { SingletonRegistry, TransferBuilder } from '../../../src/lib';
 import { ProxyType } from '../../../src/lib/iface';
 import utils from '../../../src/lib/utils';
 import { accounts, rawTx, chainName, txVersion, genesisHash, specVersion, mockTssSignature } from '../../resources';
@@ -408,6 +409,17 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.transactionVersion, txVersion);
       should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
+
+      const extras = SingletonRegistry.getInstance(utils.getMaterial(buildTestConfig()))
+        .createType('ExtrinsicPayload', tx.toBroadcastFormat(), { version: EXTRINSIC_VERSION })
+        .toJSON() as { tip?: string | number; assetId?: unknown; mode?: number | string };
+      should.equal(Number(extras.tip ?? 0), 0);
+      should.equal(Number(extras.mode ?? 0), 0);
+      should.equal(
+        extras.assetId === null || extras.assetId === undefined,
+        true,
+        `expected ChargeAsset assetId None, got ${JSON.stringify(extras.assetId)}`
+      );
 
       const inputs = tx.inputs[0];
       should.deepEqual(inputs.address, sender.address);

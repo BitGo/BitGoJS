@@ -11,8 +11,9 @@ import { EDDSAMethods, MPCTx, MPCTxs, TransactionType, Wallet } from '@bitgo/sdk
 import { coins } from '@bitgo/statics';
 import { buildTransaction, type BuildContext, type Material } from '@bitgo/wasm-dot';
 import { MPSUtil } from '@bitgo/sdk-lib-mpc';
+import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
 import utils from '../../src/lib/utils';
-import { explainDotTransaction } from '../../src/lib';
+import { explainDotTransaction, SingletonRegistry } from '../../src/lib';
 
 describe('DOT:', function () {
   let bitgo: TestBitGoAPI;
@@ -436,6 +437,19 @@ describe('DOT:', function () {
       should.deepEqual(txJson.transactionVersion, txVersion);
       should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, basecoin.SWEEP_TXN_DURATION);
+
+      const extras = SingletonRegistry.getInstance(utils.getMaterial(coins.get('tdot')))
+        .createType('ExtrinsicPayload', res.txRequests[0].transactions[0].unsignedTx.serializedTx, {
+          version: EXTRINSIC_VERSION,
+        })
+        .toJSON() as { tip?: string | number; assetId?: unknown; mode?: number | string };
+      should.equal(Number(extras.tip ?? 0), 0);
+      should.equal(Number(extras.mode ?? 0), 0);
+      should.equal(
+        extras.assetId === null || extras.assetId === undefined,
+        true,
+        `expected ChargeAsset assetId None, got ${JSON.stringify(extras.assetId)}`
+      );
     });
   });
 
@@ -598,6 +612,28 @@ describe('DOT:', function () {
       })) as MPCTx;
 
       res.should.not.be.empty();
+      sandBox.assert.calledOnce(getEddsaMaterialSpy);
+    });
+
+    it('should ignore a non-signing-material second arg (WRW openSSL WASM buffer)', async function () {
+      const getEddsaMaterialSpy = sandBox.spy(
+        basecoin as unknown as { getEddsaSigningMaterial: unknown },
+        'getEddsaSigningMaterial'
+      );
+
+      const res = (await basecoin.recover(
+        {
+          userKey: mpcV2UserKey,
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mpcV2CommonKeyChain,
+          walletPassphrase,
+          recoveryDestination: destAddr,
+        },
+        new ArrayBuffer(8)
+      )) as MPCTx;
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
       sandBox.assert.calledOnce(getEddsaMaterialSpy);
     });
   });
