@@ -517,8 +517,14 @@ export class SubstrateCoin extends BaseCoin {
 
   /**
    * Adds an MPCv1 or MPCv2 signature to a Substrate transaction builder.
-   * MPCv2 signatures are prefixed with ED25519_MULTI_SIGNATURE_PREFIX (Ed25519 discriminant
-   * in the Substrate MultiSignature enum).
+   *
+   * Both branches hand off the raw 64-byte Ed25519 signature untouched.
+   * Transaction#constructSignedPayload already prepends the 0x00 type-tag
+   * (the Substrate MultiSignature enum discriminant for Ed25519) to whatever
+   * signature buffer is passed to addSignature, so wrapping the signature
+   * here would produce a double discriminant, corrupting the on-wire sig
+   * bytes and causing the chain to reject the extrinsic with `1010: Bad
+   * signature`.
    */
   protected async addSubstrateRecoverySignature(
     txBuilder: NativeTransferBuilder,
@@ -530,7 +536,6 @@ export class SubstrateCoin extends BaseCoin {
     bitgoKey: string,
     accountId: string
   ): Promise<void> {
-    const ED25519_MULTI_SIGNATURE_PREFIX = 0x00;
     const substrateKeyPair = new SubstrateKeyPair({ pub: accountId });
 
     if (signingMaterial.version === 'v2') {
@@ -543,8 +548,7 @@ export class SubstrateCoin extends BaseCoin {
         derivationPath: currPath,
         bitgo: this.bitgo,
       });
-      const substrateSig = Buffer.concat([Buffer.from([ED25519_MULTI_SIGNATURE_PREFIX]), rawSig]);
-      txBuilder.addSignature({ pub: substrateKeyPair.getKeys().pub }, substrateSig);
+      txBuilder.addSignature({ pub: substrateKeyPair.getKeys().pub }, rawSig);
     } else {
       const userSigningMaterial = JSON.parse(signingMaterial.userPrv) as EDDSAMethodTypes.UserSigningMaterial;
       const backupPrv = await decryptKeychainPrivateKey(this.bitgo, { encryptedPrv: backupKey }, walletPassphrase);
