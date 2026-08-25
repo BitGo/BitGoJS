@@ -23,6 +23,7 @@ import {
   getEddsaSigningMaterial as sharedGetEddsaSigningMaterial,
   KeyPair,
   MPCAlgorithm,
+  MPCConsolidationRecoveryOptions,
   MPCRecoveryOptions,
   MPCSweepRecoveryOptions,
   MPCSweepTxs,
@@ -347,8 +348,10 @@ export class Near extends BaseCoin {
   /**
    * Builds a funds recovery transaction without BitGo
    * @param params
+   * @param {EddsaSigningMaterial} [precomputedMaterial] signing material detected once by the
+   * caller (e.g. recoverConsolidations) to avoid re-decrypting the keycard on every loop iteration
    */
-  async recover(params: MPCRecoveryOptions): Promise<MPCTx | MPCSweepTxs> {
+  async recover(params: MPCRecoveryOptions, precomputedMaterial?: EddsaSigningMaterial): Promise<MPCTx | MPCSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -449,7 +452,8 @@ export class Near extends BaseCoin {
           bitgoKey,
           isStorageDepositEnabled,
           availableTokenBalance,
-          isUnsignedSweep
+          isUnsignedSweep,
+          precomputedMaterial
         );
       }
 
@@ -483,7 +487,7 @@ export class Near extends BaseCoin {
       const unsignedTransaction = (await txBuilder.build()) as Transaction;
       let serializedTx = unsignedTransaction.toBroadcastFormat();
       if (!isUnsignedSweep) {
-        serializedTx = await this.signRecoveryTransaction(txBuilder, params, currPath, accountId);
+        serializedTx = await this.signRecoveryTransaction(txBuilder, params, currPath, accountId, precomputedMaterial);
       } else {
         return this.buildUnsignedSweepTransaction(
           txBuilder,
@@ -499,6 +503,97 @@ export class Near extends BaseCoin {
       return { serializedTx: serializedTx, scanIndex: i };
     }
     throw new Error('Did not find an address with funds to recover');
+  }
+
+  /**
+   * Consolidates funds from multiple receive addresses to the base address (index 0).
+   * If walletPassphrase is not provided, returns unsigned transactions for offline signing
+   * (cold/custody wallet recovery). Otherwise, returns signed transactions.
+   *
+   * @param params - Consolidation recovery parameters
+   * @param params.bitgoKey - The commonKeychain (combined TSS public key)
+   * @param params.startingScanIndex - Starting address index to scan (default: 1)
+   * @param params.endingScanIndex - Ending address index to scan (default: startingScanIndex + 20)
+   * @param params.walletPassphrase - Optional passphrase for signing (omit for unsigned transactions)
+   * @returns MPCTxs (signed) or MPCSweepTxs (unsigned) containing all consolidation transactions
+   * @throws Error if no addresses with funds are found in the scan range
+   */
+  async recoverConsolidations(params: MPCConsolidationRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
+    const isUnsignedSweep = !params.walletPassphrase;
+
+    const startIdx = params.startingScanIndex ?? 1;
+    if (!Number.isInteger(startIdx) || startIdx < 1) {
+      throw new Error('Invalid starting index to scan for addresses');
+    }
+    const endIdx = params.endingScanIndex ?? startIdx + 20;
+    if (!Number.isInteger(endIdx) || endIdx <= startIdx || endIdx - startIdx > 200) {
+      throw new Error(
+        `Invalid starting or ending index to scan for addresses. startingScanIndex: ${startIdx}, endingScanIndex: ${endIdx}.`
+      );
+    }
+
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const userKey = params.userKey?.replace(/\s/g, '');
+
+    // Detect signing material once to avoid re-decrypting the keycard on every loop iteration.
+    const signingMaterial =
+      userKey && params.walletPassphrase
+        ? await this.getEddsaSigningMaterial(userKey, params.walletPassphrase)
+        : undefined;
+
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    const baseAccountId = MPC.deriveUnhardened(bitgoKey, 'm/0').slice(0, 64);
+
+    const consolidationTransactions: Array<MPCTx | RecoveryTxRequest> = [];
+    let lastScanIndex = startIdx;
+
+    for (let idx = startIdx; idx < endIdx; idx++) {
+      const recoverParams: MPCRecoveryOptions = {
+        userKey: params.userKey,
+        backupKey: params.backupKey,
+        bitgoKey: params.bitgoKey,
+        walletPassphrase: params.walletPassphrase,
+        seed: params.seed,
+        tokenContractAddress: params.tokenContractAddress,
+        recoveryDestination: baseAccountId, // Consolidate to base address
+        startingScanIndex: idx,
+        scan: 1,
+      };
+
+      let recoveryTransaction: MPCTx | MPCSweepTxs;
+      try {
+        recoveryTransaction = await this.recover(recoverParams, signingMaterial);
+      } catch (e) {
+        if ((e as Error).message.startsWith('Did not find an address with funds to recover')) {
+          lastScanIndex = idx;
+          continue;
+        }
+        throw e;
+      }
+
+      if (isUnsignedSweep) {
+        consolidationTransactions.push((recoveryTransaction as MPCSweepTxs).txRequests[0]);
+      } else {
+        consolidationTransactions.push(recoveryTransaction as MPCTx);
+      }
+      lastScanIndex = idx;
+    }
+
+    if (consolidationTransactions.length === 0) {
+      throw new Error(
+        `Did not find an address with sufficient funds to recover. Please start the next scan at address index ${
+          lastScanIndex + 1
+        }.`
+      );
+    }
+
+    if (isUnsignedSweep) {
+      const txRequests = consolidationTransactions as RecoveryTxRequest[];
+      txRequests[txRequests.length - 1].transactions[0].unsignedTx.coinSpecific!.lastScanIndex = lastScanIndex;
+      return { txRequests };
+    }
+
+    return { transactions: consolidationTransactions as MPCTx[], lastScanIndex };
   }
 
   /**
@@ -523,7 +618,8 @@ export class Near extends BaseCoin {
     bitgoKey: string,
     isStorageDepositEnabled: boolean,
     availableTokenBalance: BigNumber,
-    isUnsignedSweep: boolean
+    isUnsignedSweep: boolean,
+    precomputedMaterial?: EddsaSigningMaterial
   ): Promise<MPCTx | MPCSweepTxs> {
     const factory = new TransactionBuilderFactory(token);
     const bs58EncodedPublicKey = nearAPI.utils.serialize.base_encode(new Uint8Array(Buffer.from(senderAddress, 'hex')));
@@ -558,7 +654,13 @@ export class Near extends BaseCoin {
         token
       );
     } else {
-      const serializedTx = await this.signRecoveryTransaction(txBuilder, params, derivationPath, senderAddress);
+      const serializedTx = await this.signRecoveryTransaction(
+        txBuilder,
+        params,
+        derivationPath,
+        senderAddress,
+        precomputedMaterial
+      );
       return { serializedTx: serializedTx, scanIndex: idx };
     }
   }
@@ -656,7 +758,8 @@ export class Near extends BaseCoin {
     txBuilder: TransactionBuilder,
     params: MPCRecoveryOptions,
     derivationPath: string,
-    senderAddress: string
+    senderAddress: string,
+    precomputedMaterial?: EddsaSigningMaterial
   ): Promise<string> {
     const unsignedTransaction = (await txBuilder.build()) as Transaction;
 
@@ -673,7 +776,8 @@ export class Near extends BaseCoin {
     const backupKey = params.backupKey.replace(/\s/g, '');
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
 
-    const signingMaterial = await this.getEddsaSigningMaterial(params.userKey, params.walletPassphrase);
+    const signingMaterial =
+      precomputedMaterial ?? (await this.getEddsaSigningMaterial(params.userKey, params.walletPassphrase));
 
     let signatureHex: Buffer;
     if (signingMaterial.version === 'v2') {

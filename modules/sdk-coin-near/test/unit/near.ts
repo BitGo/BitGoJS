@@ -1901,4 +1901,206 @@ describe('NEAR:', function () {
       isValidSignature.should.be.true();
     });
   });
+
+  describe('Recover Consolidations (MPCv2):', () => {
+    const consolidationSandbox = sinon.createSandbox();
+    const walletPassphrase = 'test-passphrase-mpcv2-consolidation';
+    let callBack: sinon.SinonStub;
+    let mpcV2UserKey: string;
+    let mpcV2BackupKey: string;
+    let mpcV2CommonKeyChain: string;
+    let baseAccountId: string;
+    let address1: string;
+    let address2: string;
+    let bs58Address1: string;
+    let bs58Address2: string;
+    const coin = coins.get('tnear');
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      mpcV2UserKey = await encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+      mpcV2BackupKey = await encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+
+      const mpc = await EDDSAMethods.getInitializedMpcInstance();
+      baseAccountId = mpc.deriveUnhardened(mpcV2CommonKeyChain, 'm/0').slice(0, 64);
+      address1 = mpc.deriveUnhardened(mpcV2CommonKeyChain, 'm/1').slice(0, 64);
+      address2 = mpc.deriveUnhardened(mpcV2CommonKeyChain, 'm/2').slice(0, 64);
+      bs58Address1 = nearAPI.utils.serialize.base_encode(new Uint8Array(Buffer.from(address1, 'hex')));
+      bs58Address2 = nearAPI.utils.serialize.base_encode(new Uint8Array(Buffer.from(address2, 'hex')));
+    });
+
+    beforeEach(() => {
+      callBack = consolidationSandbox.stub(Near.prototype, 'getDataFromNode' as keyof Near);
+      callBack.withArgs().resolves(NearResponses.getProtocolConfigResp);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'gas_price',
+            params: [accountInfo.blockHash],
+          },
+        })
+        .resolves(NearResponses.getGasPriceResponse);
+
+      for (const [addr, bs58] of [
+        [address1, bs58Address1],
+        [address2, bs58Address2],
+      ]) {
+        callBack
+          .withArgs({
+            payload: {
+              jsonrpc: '2.0',
+              id: 'dontcare',
+              method: 'query',
+              params: {
+                request_type: 'view_access_key',
+                finality: 'final',
+                account_id: addr,
+                public_key: bs58,
+              },
+            },
+          })
+          .resolves(NearResponses.getAccessKeyResponse);
+        callBack
+          .withArgs({
+            payload: {
+              jsonrpc: '2.0',
+              id: 'dontcare',
+              method: 'query',
+              params: {
+                request_type: 'view_account',
+                finality: 'final',
+                account_id: addr,
+              },
+            },
+          })
+          .resolves(NearResponses.getAccountResponse);
+      }
+    });
+
+    afterEach(() => {
+      consolidationSandbox.restore();
+    });
+
+    it('should detect MPCv2 signing material once and sweep two recoveries to the base address', async function () {
+      const getEddsaSigningMaterialSpy = consolidationSandbox.spy(
+        Near.prototype as unknown as { getEddsaSigningMaterial: unknown },
+        'getEddsaSigningMaterial'
+      );
+
+      const res = (await basecoin.recoverConsolidations({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 3,
+      })) as { transactions: Array<{ scanIndex: number; serializedTx: string }> };
+
+      res.transactions.length.should.equal(2);
+      res.transactions[0].scanIndex.should.equal(1);
+      res.transactions[1].scanIndex.should.equal(2);
+
+      const recovered1 = new Transaction(coin);
+      recovered1.fromRawTransaction(res.transactions[0].serializedTx);
+      recovered1.toJson().receiverId.should.equal(baseAccountId);
+
+      const recovered2 = new Transaction(coin);
+      recovered2.fromRawTransaction(res.transactions[1].serializedTx);
+      recovered2.toJson().receiverId.should.equal(baseAccountId);
+
+      // Detected once up front in recoverConsolidations(), not per scanned index.
+      consolidationSandbox.assert.calledOnce(getEddsaSigningMaterialSpy);
+    });
+
+    it('should return unsigned MPCv2 consolidation sweeps when walletPassphrase is absent', async function () {
+      const res = (await basecoin.recoverConsolidations({
+        bitgoKey: mpcV2CommonKeyChain,
+        startingScanIndex: 1,
+        endingScanIndex: 3,
+      })) as { txRequests: Array<{ transactions: Array<{ unsignedTx: { scanIndex: number } }> }> };
+
+      res.txRequests.length.should.equal(2);
+      res.txRequests[0].transactions[0].unsignedTx.scanIndex.should.equal(1);
+      res.txRequests[1].transactions[0].unsignedTx.scanIndex.should.equal(2);
+    });
+  });
+
+  describe('Recover Consolidations (MPCv1 regression):', () => {
+    const sandBox = sinon.createSandbox();
+    const coin = coins.get('tnear');
+    const address1Info = {
+      accountId: 'f6842bf4a8e980704fbd9fb799bfbe0a116fd5d8d06f6774e792c68c907d9b20',
+      bs58EncodedPublicKey: 'HbJBqyagBqtSNUR74fLMQSjQ8HyQVs66fyMySPhZLXz7',
+      blockHash: '844N9aWefd4TvJwdiBgXDVPz4W9z436kohTiXnp5y4fq',
+    };
+
+    beforeEach(function () {
+      const callBack = sandBox.stub(Near.prototype, 'getDataFromNode' as keyof Near);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_access_key',
+              finality: 'final',
+              account_id: address1Info.accountId,
+              public_key: address1Info.bs58EncodedPublicKey,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccessKeyResponse);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_account',
+              finality: 'final',
+              account_id: address1Info.accountId,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccountResponse);
+      callBack.withArgs().resolves(NearResponses.getProtocolConfigResp);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'gas_price',
+            params: [address1Info.blockHash],
+          },
+        })
+        .resolves(NearResponses.getGasPriceResponse);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should sweep an MPCv1 signed consolidation to the legacy-derived base address, unchanged', async function () {
+      const res = (await basecoin.recoverConsolidations({
+        userKey: keys.userKey,
+        backupKey: keys.backupKey,
+        bitgoKey: keys.bitgoKey,
+        walletPassphrase: 'Ghghjkg!455544llll',
+        startingScanIndex: 1,
+        endingScanIndex: 2,
+      })) as { transactions: Array<{ scanIndex: number; serializedTx: string }> };
+
+      res.transactions.length.should.equal(1);
+      res.transactions[0].scanIndex.should.equal(1);
+
+      const recovered = new Transaction(coin);
+      recovered.fromRawTransaction(res.transactions[0].serializedTx);
+      recovered.toJson().receiverId.should.equal(accountInfo.accountId);
+    });
+  });
 });
