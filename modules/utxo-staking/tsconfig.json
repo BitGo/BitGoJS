@@ -19,6 +19,9 @@
     },
     {
       "path": "../utxo-core"
+    },
+    {
+      "path": "../utxo-descriptors"
     }
   ]
 }

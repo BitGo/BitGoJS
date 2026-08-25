@@ -70,7 +70,7 @@ export class SendmanyBuilder extends AbstractContractBuilder {
           this._numberSignatures
         ).address,
         FungibleConditionCode.Equal,
-        sum
+        sum.toString()
       ),
     ];
   }

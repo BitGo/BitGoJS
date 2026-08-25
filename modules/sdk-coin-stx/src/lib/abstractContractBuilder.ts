@@ -66,8 +66,8 @@ export abstract class AbstractContractBuilder extends TransactionBuilder {
       postConditions: this._postConditions,
       anchorMode: this._anchorMode,
       network: this._network,
-      fee: new BigNum(this._fee.fee),
-      nonce: new BigNum(this._nonce),
+      fee: new BigNum(this._fee.fee).toString(),
+      nonce: new BigNum(this._nonce).toString(),
     };
     if (this._fromPubKeys.length === 1) {
       return {
