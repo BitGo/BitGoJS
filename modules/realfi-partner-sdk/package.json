@@ -11,19 +11,18 @@
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
-      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/esm/index.js",
-      "types": "./dist/types/index.d.ts"
+      "require": "./dist/cjs/index.js"
     },
     "./tx-builder": {
-      "require": "./dist/cjs/tx-builder/index.js",
+      "types": "./dist/types/tx-builder/index.d.ts",
       "import": "./dist/esm/tx-builder/index.js",
-      "types": "./dist/types/tx-builder/index.d.ts"
+      "require": "./dist/cjs/tx-builder/index.js"
     }
   },
   "files": [
     "dist",
-    "src",
     "CHANGELOG.md",
     "README.md",
     "UPSTREAM.md"
@@ -32,8 +31,8 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "echo 'Prebuilt dist from upstream @realfi-co/realfi-partner-sdk@2.14.0 — see UPSTREAM.md'",
-    "prepare": "npm run build",
+    "build": "node ./build.mjs",
+    "prepublishOnly": "npm run build",
     "test": "echo 'No unit tests in fork yet'"
   },
   "dependencies": {

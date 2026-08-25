@@ -1,1 +1,0 @@
-{"version":3,"file":"index.js","names":[],"sources":["../../../src/admin/index.ts"],"sourcesContent":["export * from \"./settings/index.js\";\n"],"mappings":"AAAA,cAAc,qBAAqB","ignoreList":[]}

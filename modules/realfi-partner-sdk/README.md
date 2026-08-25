@@ -6,4 +6,6 @@ BitGo fork of [`@realfi-co/realfi-partner-sdk`](https://github.com/realfi-co/rea
 Used by Wallet Platform to build RealFi sUSDr Plutus order transactions on Cardano.
 BitGoJS `sdk-coin-ada` only pledge-signs the resulting CBOR — it does not depend on this package.
 
+`src/` is tracked; `dist/` is built locally / at publish (`yarn workspace @bitgo/realfi-partner-sdk build`).
+
 See `UPSTREAM.md` for rebase notes. Ticket: SI-1292.
