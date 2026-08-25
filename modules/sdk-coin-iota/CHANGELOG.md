@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@2.1.0...@bitgo/sdk-coin-iota@2.2.0) (2026-08-25)
+
+
+### Features
+
+* **sdk-coin-iota:** support MPCv2 consolidation recovery ([15655e0](https://github.com/BitGo/BitGoJS/commit/15655e0ff1dbd640ffea35b995b2e55bc947a4ee))
+
+
+
+
+
 # [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@2.0.11...@bitgo/sdk-coin-iota@2.1.0) (2026-08-20)
 
 

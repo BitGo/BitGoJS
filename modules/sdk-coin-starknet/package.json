@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-starknet",
-  "version": "1.7.11",
+  "version": "1.7.12",
   "description": "BitGo SDK coin library for Starknet",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -41,16 +41,16 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^38.9.1",
+    "@bitgo/sdk-core": "^38.10.0",
     "@bitgo/sdk-lib-mpc": "^10.17.0",
     "@bitgo/secp256k1": "^1.11.0",
-    "@bitgo/statics": "^59.8.0",
+    "@bitgo/statics": "^59.9.0",
     "@scure/starknet": "^1.1.0",
     "bignumber.js": "^9.1.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^2.4.0",
-    "@bitgo/sdk-test": "^9.1.69"
+    "@bitgo/sdk-api": "^2.4.1",
+    "@bitgo/sdk-test": "^9.1.70"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [

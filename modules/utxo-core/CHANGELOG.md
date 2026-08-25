@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.41.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.40.0...@bitgo/utxo-core@1.41.0) (2026-08-25)
+
+
+### Features
+
+* **utxo-descriptors:** add PoX-5 lockup primitives ([f2c33df](https://github.com/BitGo/BitGoJS/commit/f2c33df4c9db21bbc1795c53f0ad853d0d344ac1))
+
+
+
+
+
 # [1.40.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.39.4...@bitgo/utxo-core@1.40.0) (2026-07-28)
 
 

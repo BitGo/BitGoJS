@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@2.2.2...@bitgo/abstract-substrate@2.2.3) (2026-08-25)
+
+
+### Bug Fixes
+
+* **abstract-substrate:** remove double Ed25519 prefix in MPCv2 recovery ([06ec943](https://github.com/BitGo/BitGoJS/commit/06ec943b2a7ea0c0a842d88e17c23a91d6483abe))
+
+
+
+
+
 ## [2.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@2.2.1...@bitgo/abstract-substrate@2.2.2) (2026-08-20)
 
 **Note:** Version bump only for package @bitgo/abstract-substrate

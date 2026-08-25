@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@5.1.0...@bitgo/sdk-coin-dot@5.2.0) (2026-08-25)
+
+
+### Bug Fixes
+
+* bump polkadot 16 for tDOT recovery signatures ([368c8a4](https://github.com/BitGo/BitGoJS/commit/368c8a45834f95752b32143e67702a5c2e656028))
+
+
+### Features
+
+* **sdk-coin-dot:** add MPCv2 support to recoverConsolidations ([f22faac](https://github.com/BitGo/BitGoJS/commit/f22faac91b39cfe555dcc61f6cf3e0c95f5fda9c))
+
+
+
+
+
 # [5.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@5.0.11...@bitgo/sdk-coin-dot@5.1.0) (2026-08-20)
 
 

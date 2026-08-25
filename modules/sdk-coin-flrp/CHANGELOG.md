@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.17.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.17.8...@bitgo/sdk-coin-flrp@1.17.9) (2026-08-25)
+
+
+### Bug Fixes
+
+* **sdk-coin-flrp:** pad base fee for Flare atomic exports ([f919efe](https://github.com/BitGo/BitGoJS/commit/f919efe027bdbeba9a7f50e327b769608105c60f))
+
+
+
+
+
 ## [1.17.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.17.7...@bitgo/sdk-coin-flrp@1.17.8) (2026-08-20)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp

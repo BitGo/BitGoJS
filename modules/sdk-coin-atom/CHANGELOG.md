@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [13.13.23](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.13.22...@bitgo/sdk-coin-atom@13.13.23) (2026-08-25)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-atom
+
+
+
+
+
 ## [13.13.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.13.21...@bitgo/sdk-coin-atom@13.13.22) (2026-08-20)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-atom
