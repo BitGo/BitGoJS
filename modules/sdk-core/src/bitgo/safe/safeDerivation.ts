@@ -9,12 +9,12 @@
  * Do not use `derivedFromParentWithSeed` / `deriveKeyWithSeed` (`m/999999/a/b`) —
  * that is the custody hashed path and cannot reproduce a safe child.
  */
+import * as t from 'io-ts';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
+import { decodeWithCodec } from '../utils/codecs';
 
 const MAX_BIP32_INDEX = 0x7fffffff;
-
-/** Sign-time scan cap (wallet cap plus abandoned mint increments). */
-export const MAX_SAFE_CHILD_INDEX_SCAN = 4096;
+export const DERIVED_FROM_PARENT_WITH_HARDENED_PATH = /^m\/(\d+)'$/;
 
 export function parseSafeDerivationIndex(index: string | number): number {
   let idx: number;
@@ -33,6 +33,39 @@ export function parseSafeDerivationIndex(index: string | number): number {
 
 export function getSafeHardenedDerivationPath(index: string | number): string {
   return `m/${parseSafeDerivationIndex(index)}'`;
+}
+
+export interface DerivedFromParentWithHardenedPathBrand {
+  readonly DerivedFromParentWithHardenedPath: unique symbol;
+}
+
+export type DerivedFromParentWithHardenedPath = t.Branded<string, DerivedFromParentWithHardenedPathBrand>;
+
+export const DerivedFromParentWithHardenedPath = t.brand(
+  t.string,
+  (s): s is DerivedFromParentWithHardenedPath => parseDerivedFromParentWithHardenedPathIndex(s) !== undefined,
+  'DerivedFromParentWithHardenedPath'
+);
+
+function parseDerivedFromParentWithHardenedPathIndex(path: string): number | undefined {
+  const match = DERIVED_FROM_PARENT_WITH_HARDENED_PATH.exec(path);
+  if (!match) {
+    return undefined;
+  }
+  try {
+    return parseSafeDerivationIndex(match[1]);
+  } catch {
+    return undefined;
+  }
+}
+
+export function parseDerivedFromParentWithHardenedPath(path: string): number {
+  const validated = decodeWithCodec(DerivedFromParentWithHardenedPath, path, 'derivedFromParentWithHardenedPath');
+  const index = parseDerivedFromParentWithHardenedPathIndex(validated);
+  if (index === undefined) {
+    throw new Error(`Invalid derivedFromParentWithHardenedPath '${path}': expected m/<n>'`);
+  }
+  return index;
 }
 
 export interface SafeHardenedChildKey {
@@ -66,21 +99,4 @@ export function deriveAndSelfCheckSafeChildHardened(rootXprv: string, index: str
     throw new Error(`Safe child self-check failed at ${first.derivationPath}: derivation was not deterministic`);
   }
   return first;
-}
-
-/** Walk `m/0'` … `m/<max>'` until the registered child pub matches. */
-export function deriveSafeChildHardenedMatchingPub(
-  rootXprv: string,
-  expectedPub: string,
-  maxIndex: number = MAX_SAFE_CHILD_INDEX_SCAN
-): SafeHardenedChildKey {
-  const root = bip32.fromBase58(rootXprv);
-  const limit = parseSafeDerivationIndex(maxIndex);
-  for (let i = 0; i <= limit; i++) {
-    const derived = childFromNode(root.deriveHardened(i), getSafeHardenedDerivationPath(i));
-    if (derived.pub === expectedPub) {
-      return derived;
-    }
-  }
-  throw new Error(`No hardened safe child at m/0'..m/${limit}' matched the registered public key`);
 }

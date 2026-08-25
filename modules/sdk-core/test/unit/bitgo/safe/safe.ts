@@ -128,6 +128,7 @@ describe('Safe', function () {
 
   describe('createWallet (WCN-1203)', function () {
     const childAt0 = deriveSafeChildHardenedFromXprv(ROOT_XPRV, 0);
+    const childAt7 = deriveSafeChildHardenedFromXprv(ROOT_XPRV, 7);
     let keychainsAdd: sinon.SinonStub;
     let keychainsGet: sinon.SinonStub;
     let derivationQuery: sinon.SinonStub;
@@ -191,9 +192,11 @@ describe('Safe', function () {
         keyType: 'independent',
         parent: 'user-root-id',
         safeId: 'test-safe-id',
+        derivedFromParentWithHardenedPath: "m/0'",
       });
       addArgs.should.not.have.property('encryptedPrv');
       addArgs.should.not.have.property('derivedFromParentWithSeed');
+      addArgs.should.not.have.property('path');
 
       mockBitGo.post.calledWith('/enterprise/test-enterprise-id/safes/test-safe-id/wallets').should.be.true();
       mintSend.firstCall.args[0].should.eql({
@@ -209,6 +212,21 @@ describe('Safe', function () {
         throw new Error('expected minted wallet to include safeId');
       }
       mintedSafeId.should.equal('test-safe-id');
+    });
+
+    it('registers the child with derivedFromParentWithHardenedPath at a non-zero mint index', async function () {
+      derivationQuery.returns({
+        result: sinon.stub().resolves({ slot: 'secp256k1Multisig', index: 7 }),
+      });
+      keychainsAdd.resolves({ id: 'child-key-id', pub: childAt7.pub, type: 'independent' });
+
+      await safe.createWallet({ coin: 'tbtc', label: 'desk 8', passphrase: 'pw' });
+
+      const addArgs = keychainsAdd.firstCall.args[0];
+      addArgs.pub.should.equal(childAt7.pub);
+      addArgs.derivedFromParentWithHardenedPath.should.equal("m/7'");
+      addArgs.should.not.have.property('path');
+      addArgs.should.not.have.property('derivedFromParentWithSeed');
     });
 
     it('rejects TSS minting', async function () {

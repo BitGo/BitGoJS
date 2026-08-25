@@ -49,6 +49,8 @@ export interface Keychain {
   reducedEncryptedPrv?: string;
   derivationPath?: string;
   derivedFromParentWithSeed?: string;
+  /** Hardened path from the safe parent (`m/<n>'`). @experimental */
+  derivedFromParentWithHardenedPath?: string;
   /** Safe root key id this child key was derived from (WCN-1172). */
   parent?: string;
   commonPub?: string;
@@ -145,7 +147,9 @@ export interface AddKeychainOptions {
   source?: string;
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
-  derivedFromParentWithSeed?: any;
+  derivedFromParentWithSeed?: string;
+  /** Hardened path from the safe parent (`m/<n>'`). @experimental */
+  derivedFromParentWithHardenedPath?: string;
   /** Safe user-root key id this child was derived from. @experimental */
   parent?: string;
   disableKRSEmail?: boolean;
