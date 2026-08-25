@@ -86,7 +86,12 @@ describe('SubstrateCoin MPCv2 recovery helpers:', function () {
       (coin as unknown as { bitgo: unknown }).bitgo = { decrypt: instanceDecryptStub };
     });
 
-    it('should prepend ED25519 0x00 discriminant on MPCv2 path', async function () {
+    it('should pass the raw 64-byte signature to addSignature on MPCv2 path', async function () {
+      // Regression: previously wrapped rawSig with a manual Ed25519 discriminant
+      // (0x00) before addSignature. constructSignedPayload already prepends that
+      // discriminant, so wrapping here caused a double prefix that shifted the
+      // on-wire signature by one byte, dropping the last byte of `sigma` and
+      // producing `1010: Bad signature` on-chain.
       const rawSig = Buffer.alloc(64, 0xab);
       sinon.stub(coin as unknown, 'signSubstrateMpcV2Recovery').resolves(rawSig);
 
@@ -103,8 +108,8 @@ describe('SubstrateCoin MPCv2 recovery helpers:', function () {
 
       addSignatureStub.calledOnce.should.be.true();
       const sig: Buffer = addSignatureStub.firstCall.args[1];
-      sig[0].should.equal(0x00);
-      sig.slice(1).should.deepEqual(rawSig);
+      sig.length.should.equal(64);
+      sig.should.deepEqual(rawSig);
     });
 
     it('should call getTSSSignature and pass result to addSignature on MPCv1 path', async function () {
