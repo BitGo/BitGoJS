@@ -3018,6 +3018,25 @@ describe('SUI:', function () {
 
       sandBox.assert.callCount(basecoin.getBalance, 10);
     });
+
+    it('should surface RPC errors from getBalance instead of reporting no funds', async function () {
+      const callBack = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
+      callBack.rejects(new Error('Method not found'));
+
+      await basecoin
+        .recover({
+          userKey: keys.userKey,
+          backupKey: keys.backupKey,
+          bitgoKey: keys.bitgoKey,
+          recoveryDestination,
+          walletPassphrase,
+          startingScanIndex: '0',
+          scan: 1,
+        })
+        .should.be.rejectedWith(/Failed to query Sui balance.*Method not found/);
+
+      sandBox.assert.callCount(basecoin.getBalance, 1);
+    });
   });
 
   describe('Consolidation Transaction Failures:', () => {
