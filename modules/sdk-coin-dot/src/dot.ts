@@ -71,6 +71,22 @@ export interface VerifiedTransactionParameters {
 
 const dotUtils = Utils.default;
 
+function isEddsaSigningMaterial(value: unknown): value is EddsaSigningMaterial {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  if (!('version' in value)) {
+    return false;
+  }
+  if (value.version === 'v1') {
+    return 'userPrv' in value && typeof value.userPrv === 'string';
+  }
+  if (value.version === 'v2') {
+    return 'encryptedUserKey' in value && typeof value.encryptedUserKey === 'string';
+  }
+  return false;
+}
+
 export class Dot extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   readonly MAX_VALIDITY_DURATION = 2400;
@@ -348,6 +364,8 @@ export class Dot extends BaseCoin {
    * Builds a funds recovery transaction without BitGo
    * @param {MPCRecoveryOptions} params parameters needed to construct and
    * (maybe) sign the transaction
+   * @param {EddsaSigningMaterial} [precomputedMaterial] optional decrypted
+   * material from recoverConsolidations; non-matching values are ignored
    *
    * @returns {MPCTx} the serialized transaction hex string and index
    * of the address being swept
@@ -402,8 +420,9 @@ export class Dot extends BaseCoin {
       assert(params.backupKey, 'missing backupKey');
       assert(params.walletPassphrase, 'missing wallet passphrase');
 
-      const signingMaterial =
-        precomputedMaterial ?? (await this.getEddsaSigningMaterial(params.userKey, params.walletPassphrase));
+      const signingMaterial = isEddsaSigningMaterial(precomputedMaterial)
+        ? precomputedMaterial
+        : await this.getEddsaSigningMaterial(params.userKey, params.walletPassphrase);
       await this.addRecoverySignature(
         signingMaterial,
         params.backupKey.replace(/\s/g, ''),
