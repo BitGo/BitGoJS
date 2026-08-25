@@ -15,9 +15,11 @@ async function getLernaModuleLocations(): Promise<void> {
   lernaModuleLocations = modules.map(({ location }) => location);
 }
 
-function isRekorConflict(output: string): boolean {
+function isRecoverablePublishConflict(output: string): boolean {
   return (
     output.includes('TLOG_CREATE_ENTRY_ERROR') ||
+    output.includes('previously staged version') ||
+    (output.includes('409 Conflict') && output.includes('transparency log')) ||
     (output.includes('(409)') && output.includes('transparency log'))
   );
 }
@@ -38,12 +40,12 @@ async function publishWithRecovery(
       );
     } catch (e: any) {
       const output = `${e.stdout ?? ''}\n${e.stderr ?? ''}`;
-      if (!RECOVERY_MODE || !isRekorConflict(output)) {
+      if (!RECOVERY_MODE || !isRecoverablePublishConflict(output)) {
         throw e;
       }
       if (attempt === maxAttempts) {
         throw new Error(
-          `${json.name}: still hitting a Rekor tarball-digest conflict after ${maxAttempts} version bumps`,
+          `${json.name}: still hitting a publish conflict after ${maxAttempts} version bumps`,
         );
       }
       const next = inc(json.version, 'prerelease', undefined, preid);
@@ -54,7 +56,7 @@ async function publishWithRecovery(
         JSON.stringify(json, null, 2) + '\n',
       );
       console.warn(
-        `${json.name}: Rekor conflict, retrying with bumped version ${json.version} (attempt ${attempt + 1}/${maxAttempts})`,
+        `${json.name}: publish conflict, retrying with bumped version ${json.version} (attempt ${attempt + 1}/${maxAttempts})`,
       );
     }
   }
@@ -110,5 +112,5 @@ async function verify(preid?: string) {
   }
 }
 
-// e.g. for alpha releases: `npx tsx ./scripts/verify-beta.ts alpha`
+// e.g. for alpha releases: `npx tsx ./scripts/verify-release.ts alpha`
 verify(process.argv.slice(2)[0]);
