@@ -837,4 +837,13 @@ export const avaxTokens = [
     '0xf9d118f8835b3a4261c3d3b2de89034022153e53',
     UnderlyingAsset['tavaxc:tkula']
   ),
+  tavaxErc20(
+    'e51de6a4-b5a4-4d34-93a7-1eab3d0e4a29',
+    'tavaxc:usdc',
+    'USD Coin',
+    6,
+    '0x5425890298aed601595a70ab815c96711a31bc65',
+    UnderlyingAsset['tavaxc:usdc'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
 ];

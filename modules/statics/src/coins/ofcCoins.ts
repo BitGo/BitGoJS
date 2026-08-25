@@ -2357,6 +2357,15 @@ export const ofcCoins = [
     [CoinFeature.STABLECOIN]
   ),
   ofcXrpToken('da12fc69-9373-4437-ad3c-076df9207379', 'ofcxrp:usdc', 'USDC', 15, UnderlyingAsset['xrp:usdc']),
+  tofcXrpToken(
+    '1d5655d3-9e2a-4136-9749-50e5a9c93c16',
+    'ofctxrp:usdc',
+    'Test USDC',
+    15,
+    UnderlyingAsset['txrp:usdc'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcXrpToken(
     'c9da00b4-ee95-40c2-a96d-e73587bfd4ea',
     'ofcxrp:eurcv',
@@ -2839,6 +2848,15 @@ export const ofcCoins = [
     'Test KULA',
     18,
     UnderlyingAsset['tavaxc:tkula']
+  ),
+  tofcAvaxErc20(
+    '9ab4b461-a8fe-44dc-93ee-c750645d555b',
+    'ofctavaxc:usdc',
+    'Test USD Coin',
+    6,
+    UnderlyingAsset['tavaxc:usdc'],
+    undefined,
+    [CoinFeature.STABLECOIN]
   ),
   ofcAvaxErc20(
     '49608052-e4ea-4623-9732-595368ff053b',
@@ -4929,6 +4947,15 @@ export const ofcCoins = [
   ),
 
   tofcStellarToken(
+    '7b909f95-f4e5-44e5-aaca-1b254d87cc02',
+    'ofctxlm:usdc',
+    'Test Stellar USDC',
+    7,
+    UnderlyingAsset['txlm:USDC-GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'],
+    undefined,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tofcStellarToken(
     '4883a062-c38c-43d9-92c6-7cec9aaef995',
     'ofctxlm:tst',
     'Test Stellar BitGo Test Token',
@@ -4963,6 +4990,15 @@ export const ofcCoins = [
     'Test BULL',
     18,
     UnderlyingAsset['arbeth:bull']
+  ),
+  tofcArbethErc20(
+    'afe072d6-16e7-482b-9873-1d36ba7a0061',
+    'ofctarbeth:usdc',
+    'Test USD Coin',
+    6,
+    UnderlyingAsset['tarbeth:usdc'],
+    undefined,
+    [CoinFeature.STABLECOIN]
   ),
   ofcaptToken('6d027643-3d96-4627-8312-1151a793d4f8', 'ofcapt:usdc', 'USD Coin', 6, UnderlyingAsset['apt:usdc'], [
     ...APT_OFC_TOKEN_FEATURES,
@@ -5030,6 +5066,14 @@ export const ofcCoins = [
     'Test USD1 Token',
     6,
     UnderlyingAsset['tapt:usd1'],
+    [...APT_OFC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tofcaptToken(
+    '4aeed279-3b43-46bb-a8d8-ea7ce65e99bd',
+    'ofctapt:usdc',
+    'Test USD Coin',
+    6,
+    UnderlyingAsset['tapt:usdc'],
     [...APT_OFC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   ofcStxToken('2d2f9c7f-7d10-480e-a0ef-6893cf4d3493', 'ofcstx:sbtc', 'sBTC', 8, UnderlyingAsset['stx:sbtc']),
@@ -6558,6 +6602,15 @@ export const ofcCoins = [
     UnderlyingAsset['sui:fdusd']
   ),
   ofcSuiToken('8095c9b6-d0d0-4817-9ec8-0592ee3417c7', 'ofcsui:usdc', 'USDC', 6, UnderlyingAsset['sui:usdc']),
+  tofcSuiToken(
+    '23ec86e0-c0b8-4d69-819b-8e29f9becdb9',
+    'ofctsui:usdc',
+    'Test USDC',
+    6,
+    UnderlyingAsset['tsui:usdc'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcSuiToken('924f76d4-783f-4dbe-9471-863ff3de45e2', 'ofcsui:wusdc', 'Wormhole USDC', 6, UnderlyingAsset['sui:wusdc']),
   ofcSuiToken('102bc501-37a0-4cd8-8e50-2ffc321a7ffd', 'ofcsui:afsui', 'afSUI', 9, UnderlyingAsset['sui:afsui']),
   ofcSuiToken('7937e0da-1ffc-4cf2-92d2-7a56c3426911', 'ofcsui:sca', 'Scallop', 9, UnderlyingAsset['sui:sca']),
