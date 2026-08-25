@@ -775,6 +775,17 @@ describe('IOTA:', function () {
     });
 
     it('should throw missing userKey error on MPCv2 path', async function () {
+      sandBox.stub(Iota.prototype, 'fetchOwnedObjects' as keyof Iota).resolves([
+        {
+          objectId: '0xc05c765e26e6ae84c78fa245f38a23fb20406a5cf3f61b57bd323a0df9d98003',
+          version: '195',
+          digest: validDigest,
+          balance: '1900000000',
+        },
+      ]);
+      sandBox.stub(Iota.prototype, 'fetchGasPrice' as keyof Iota).resolves(1000);
+      sandBox.stub(Iota.prototype, 'estimateGas' as keyof Iota).resolves(1997880);
+
       await basecoin
         .recover({
           backupKey: mpcV2BackupKey,
@@ -786,6 +797,17 @@ describe('IOTA:', function () {
     });
 
     it('should throw missing backupKey error on MPCv2 path', async function () {
+      sandBox.stub(Iota.prototype, 'fetchOwnedObjects' as keyof Iota).resolves([
+        {
+          objectId: '0xc05c765e26e6ae84c78fa245f38a23fb20406a5cf3f61b57bd323a0df9d98003',
+          version: '195',
+          digest: validDigest,
+          balance: '1900000000',
+        },
+      ]);
+      sandBox.stub(Iota.prototype, 'fetchGasPrice' as keyof Iota).resolves(1000);
+      sandBox.stub(Iota.prototype, 'estimateGas' as keyof Iota).resolves(1997880);
+
       await basecoin
         .recover({
           userKey: mpcV2UserKey,
@@ -1084,6 +1106,72 @@ describe('IOTA:', function () {
 
       sandBox.assert.callCount(basecoin.fetchOwnedObjects, 2);
       sandBox.assert.callCount(basecoin.estimateGas, 2);
+    });
+  });
+
+  describe('Recover Consolidations (MPCv2):', () => {
+    const consolidationSandbox = sinon.createSandbox();
+    const walletPassphrase = 'p$Sw<RjvAgf{nYAYI2xM';
+    let mpcV2UserKey: string;
+    let mpcV2BackupKey: string;
+    let mpcV2CommonKeyChain: string;
+    let mpcV2Address1: string;
+    let mpcV2Address2: string;
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      mpcV2UserKey = await encrypt(walletPassphrase, userDkg.getReducedKeyShare().toString('base64'));
+      mpcV2BackupKey = await encrypt(walletPassphrase, backupDkg.getReducedKeyShare().toString('base64'));
+      mpcV2CommonKeyChain = userDkg.getCommonKeychain();
+      const mpc = await EDDSAMethods.getInitializedMpcInstance();
+      mpcV2Address1 = utils.getAddressFromPublicKey(mpc.deriveUnhardened(mpcV2CommonKeyChain, 'm/1').slice(0, 64));
+      mpcV2Address2 = utils.getAddressFromPublicKey(mpc.deriveUnhardened(mpcV2CommonKeyChain, 'm/2').slice(0, 64));
+    });
+
+    beforeEach(function () {
+      consolidationSandbox
+        .stub(Iota.prototype, 'fetchOwnedObjects' as keyof Iota)
+        .withArgs(mpcV2Address1)
+        .resolves([
+          {
+            objectId: '0x' + '1'.repeat(64),
+            version: '1',
+            digest: '7BJLb32LKN7wt5uv4xgXW4AbFKoMNcPE76o41TQEvUZb',
+            balance: '200000000',
+          },
+        ])
+        .withArgs(mpcV2Address2)
+        .resolves([
+          {
+            objectId: '0x' + '2'.repeat(64),
+            version: '2',
+            digest: '7BJLb32LKN7wt5uv4xgXW4AbFKoMNcPE76o41TQEvUZb',
+            balance: '200000000',
+          },
+        ]);
+      consolidationSandbox.stub(Iota.prototype, 'fetchGasPrice' as keyof Iota).resolves(1000);
+      consolidationSandbox.stub(Iota.prototype, 'estimateGas' as keyof Iota).resolves(1997880);
+    });
+
+    afterEach(function () {
+      consolidationSandbox.restore();
+    });
+
+    it('should sign two recoveries and sweep them to the MPCv2 base address', async function () {
+      const res = (await basecoin.recoverConsolidations({
+        userKey: mpcV2UserKey,
+        backupKey: mpcV2BackupKey,
+        bitgoKey: mpcV2CommonKeyChain,
+        walletPassphrase,
+        startingScanIndex: 1,
+        endingScanIndex: 3,
+      })) as { transactions: Array<{ scanIndex: number; serializedTx: string }> };
+
+      res.transactions.length.should.equal(2);
+      res.transactions[0].scanIndex.should.equal(1);
+      res.transactions[1].scanIndex.should.equal(2);
+      res.transactions[0].serializedTx.should.be.String();
+      res.transactions[1].serializedTx.should.be.String();
     });
   });
 
