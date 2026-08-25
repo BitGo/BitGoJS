@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@5.0.12...@bitgo/sdk-coin-ada@5.1.0) (2026-08-25)
+
+
+### Bug Fixes
+
+* **sdk-coin-ada:** preserve plutus fields on pledged cardano tx ([5a4bf0c](https://github.com/BitGo/BitGoJS/commit/5a4bf0cdb9aeb316d7dd45d2d8bb2c68d96466c2))
+
+
+### Features
+
+* **sdk-coin-ada:** add MPCv2 support to recoverConsolidations ([239257c](https://github.com/BitGo/BitGoJS/commit/239257c003d5d244201d9a0085dc9b63966dc4c6))
+
+
+
+
+
 ## [5.0.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@5.0.11...@bitgo/sdk-coin-ada@5.0.12) (2026-08-20)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

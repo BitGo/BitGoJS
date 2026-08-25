@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@4.0.12...@bitgo/sdk-coin-stx@4.0.13) (2026-08-25)
+
+
+### Bug Fixes
+
+* **sdk-coin-stx:** pass numeric values as strings ([a441627](https://github.com/BitGo/BitGoJS/commit/a4416279f5404a04058a8b94dffc2148dbc252a2))
+
+
+
+
+
 ## [4.0.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@4.0.11...@bitgo/sdk-coin-stx@4.0.12) (2026-08-20)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [52.8.2](https://github.com/BitGo/BitGoJS/compare/bitgo@52.8.1...bitgo@52.8.2) (2026-08-25)
+
+**Note:** Version bump only for package bitgo
+
+
+
+
+
 ## [52.8.1](https://github.com/BitGo/BitGoJS/compare/bitgo@52.8.0...bitgo@52.8.1) (2026-08-20)
 
 **Note:** Version bump only for package bitgo

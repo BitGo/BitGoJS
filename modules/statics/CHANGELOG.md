@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.8.0...@bitgo/statics@59.9.0) (2026-08-25)
+
+
+### Features
+
+* add new tokens from AMS API ([368efc0](https://github.com/BitGo/BitGoJS/commit/368efc0e7d2377617fbc9ce180457893a9cb2cec))
+* onboards usdc on multiple chains ([d768450](https://github.com/BitGo/BitGoJS/commit/d76845007c07a1de3440df702723cb7b2d864a11))
+* **statics:** add USDC, PYUSD, WTGXX sepolia tokens ([3d4fcfb](https://github.com/BitGo/BitGoJS/commit/3d4fcfb732fba31453fdbd631ac7eb79161a3787))
+* **statics:** enable ERC20 token batching for hoodeth ([4d4e7db](https://github.com/BitGo/BitGoJS/commit/4d4e7dbdab0b20d5004ead8ddcd7d377170bc116))
+* **statics:** onboard CECHO-1941 top-1000 unsupported tokens ([60198da](https://github.com/BitGo/BitGoJS/commit/60198da5d5b0f09d525ef72ecbfbc92f27e5e8fa))
+
+
+
+
+
 # [59.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.7.0...@bitgo/statics@59.8.0) (2026-08-20)
 
 

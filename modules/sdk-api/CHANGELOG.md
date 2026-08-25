@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.4.0...@bitgo/sdk-api@2.4.1) (2026-08-25)
+
+
+### Bug Fixes
+
+* **sdk-api:** skip doomed native v1 decrypt attempt in browser ([33cf9a6](https://github.com/BitGo/BitGoJS/commit/33cf9a62a24fd10b84905fa86be92a750e21546b))
+
+
+
+
+
 # [2.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.3.2...@bitgo/sdk-api@2.4.0) (2026-08-20)
 
 

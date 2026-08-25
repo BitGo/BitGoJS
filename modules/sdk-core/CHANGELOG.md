@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.9.1...@bitgo/sdk-core@38.10.0) (2026-08-25)
+
+
+### Bug Fixes
+
+* read wallet.safe from WP and resolve mint slot ([a828082](https://github.com/BitGo/BitGoJS/commit/a828082a56e0b6bc32224dfadc399639c40d6314))
+* **sdk-coin-sui:** use live JSON-RPC nodes and surface recover errors ([66f2c98](https://github.com/BitGo/BitGoJS/commit/66f2c985d9f85fcbf1576fc5572ae35c78bbc295))
+* **sdk-core:** decode only protocol in deposit dispatch path ([98f11fa](https://github.com/BitGo/BitGoJS/commit/98f11fa6737a6d44b3865d135a28a790ebb78c8a))
+
+
+### Features
+
+* filter safe key ceremonies by enabled root slots ([16041b1](https://github.com/BitGo/BitGoJS/commit/16041b19fd1bdd03f0bb7b3921ad590a81d4c0b9))
+* mint safe wallets via hardened user-child derivation ([ce61ce5](https://github.com/BitGo/BitGoJS/commit/ce61ce5ab84bb3ab47ea8ca205ae8ae60f20e20b))
+* **sdk-core:** allow wrapApprove TSS signing without recipients ([2d1ad53](https://github.com/BitGo/BitGoJS/commit/2d1ad53e1edb14189624f2de890622caa7b37a31))
+* **sdk-core:** wire EdDSA retrofit keychain creation ([ea83766](https://github.com/BitGo/BitGoJS/commit/ea837668f8947b95df6e82fc194b7fe008d38352))
+
+
+
+
+
 ## [38.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.9.0...@bitgo/sdk-core@38.9.1) (2026-08-20)
 
 

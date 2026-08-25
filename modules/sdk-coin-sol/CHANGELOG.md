@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.6.0...@bitgo/sdk-coin-sol@8.6.1) (2026-08-25)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** validate bitgoKey in recoverConsolidations, add coverage ([684728c](https://github.com/BitGo/BitGoJS/commit/684728c791fc23204b1be413bf78842483496686))
+
+
+
+
+
 # [8.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.5.1...@bitgo/sdk-coin-sol@8.6.0) (2026-08-20)
 
 

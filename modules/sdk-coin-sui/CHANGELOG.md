@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@6.3.0...@bitgo/sdk-coin-sui@6.4.0) (2026-08-25)
+
+
+### Bug Fixes
+
+* **sdk-coin-sui:** use live JSON-RPC nodes and surface recover errors ([66f2c98](https://github.com/BitGo/BitGoJS/commit/66f2c985d9f85fcbf1576fc5572ae35c78bbc295))
+
+
+### Features
+
+* **sdk-coin-sui:** add MPCv2 support to recoverConsolidations ([d721c21](https://github.com/BitGo/BitGoJS/commit/d721c213bfa25147f0d67e5d9c2a6a0f41d426df))
+
+
+
+
+
 # [6.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@6.2.6...@bitgo/sdk-coin-sui@6.3.0) (2026-08-20)
 
 
