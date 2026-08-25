@@ -368,7 +368,11 @@ export class Sui extends BaseCoin {
         availableBalance = new BigNumber(balanceInfo.totalBalance);
         fundsInAddressBalance = new BigNumber(balanceInfo.fundsInAddressBalance);
       } catch (e) {
-        continue;
+        throw new Error(
+          `Failed to query Sui balance for address ${senderAddress} at index ${idx} via ${this.getPublicNodeUrl()}: ${
+            (e as Error).message
+          }`
+        );
       }
       if (availableBalance.minus(MAX_GAS_BUDGET).toNumber() <= 0) {
         continue;
