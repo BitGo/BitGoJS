@@ -692,6 +692,33 @@ describe('Constructor', function () {
         result.token.should.equal('v2xnewplaintoken');
       });
 
+      it('should not call handleTokenIssuance when ecdhXprv is present but the server returned a plaintext token', async function () {
+        const handleTokenSpy = sinon.spy(BitGoAPI.prototype, 'handleTokenIssuance');
+        const { strategy } = makeStrategy({
+          isAuthenticated: sinon.stub().returns(true),
+        });
+        const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
+        bitgo.fromJSON({
+          user: { username: 'test@example.com' },
+          token: 'a'.repeat(40),
+          ecdhXprv: 'xprv-test-key',
+        });
+
+        nock(ROOT).post('/api/auth/v1/accesstoken').reply(200, {
+          token: 'v2xplaintextfromv1',
+          label: 'test-token',
+        });
+
+        try {
+          const result = await bitgo.addAccessToken(validParams);
+
+          handleTokenSpy.called.should.be.false();
+          result.token.should.equal('v2xplaintextfromv1');
+        } finally {
+          handleTokenSpy.restore();
+        }
+      });
+
       it('should not call handleTokenIssuance when ecdhXprv is absent', async function () {
         const handleTokenSpy = sinon.spy(BitGoAPI.prototype, 'handleTokenIssuance');
         const { strategy } = makeStrategy({
