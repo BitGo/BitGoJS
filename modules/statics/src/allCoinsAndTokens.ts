@@ -2730,6 +2730,16 @@ export const allCoinsAndTokens = [
     Networks.main.inketh
   ),
   erc20Token(
+    'f25e85e8-09f8-477d-af35-8f67ee47bf43',
+    'tinketh:usdc',
+    'Test USDC',
+    6,
+    '0xfabab97dce620294d2b0b0e46c68964e326300ac',
+    UnderlyingAsset['tinketh:usdc'],
+    Networks.test.inketh,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  erc20Token(
     'a9fb0064-51c0-48ad-bc01-603872cbb3cb',
     'inketh:usdt0',
     'USDT0',
@@ -3174,6 +3184,16 @@ export const allCoinsAndTokens = [
     '0x078d782b760474a361dda0af3839290b0ef57ad6',
     UnderlyingAsset['unieth:usdc'],
     Networks.main.unieth
+  ),
+  erc20Token(
+    'e385606b-e79c-49a1-9f1f-c0d31f939390',
+    'tunieth:usdc',
+    'Test USDC',
+    6,
+    '0x31d0220469e10c4e71834a79b1f276d740d3768f',
+    UnderlyingAsset['tunieth:usdc'],
+    Networks.test.unieth,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20Token(
     '28ce84a6-05cd-4b2b-a691-f505411c129c',
@@ -5334,6 +5354,14 @@ export const allCoinsAndTokens = [
     '0xb283ec8dad644effc5c4c50bb7bb21442ac3c2db',
     UnderlyingAsset['txdc:tmt']
   ),
+  txdcErc20(
+    '0bc83eda-788d-4070-9bd8-75346531814a',
+    'txdc:usdc',
+    'USD Coin',
+    6,
+    '0xb5ab69f7bbada22b28e79c8ffaece55ef1c771d4',
+    UnderlyingAsset['txdc:usdc']
+  ),
 
   // MON mainnet tokens
   monErc20(
@@ -5385,6 +5413,14 @@ export const allCoinsAndTokens = [
     6,
     '0xf5618919e1b0931f8b0f93f1fc9e8fb6f90f0f93',
     UnderlyingAsset['tmon:stgsofid']
+  ),
+  tmonErc20(
+    '9c2a9b64-5e0a-4e07-9d3c-b7c9a86432ff',
+    'tmon:usdc',
+    'Monad Testnet USDC',
+    6,
+    '0x534b2f3a21130d7a60830c2df862319e593943a3',
+    UnderlyingAsset['tmon:usdc']
   ),
 
   // hypeeevm testnet tokens
@@ -6495,6 +6531,17 @@ export const allCoinsAndTokens = [
     '0x78d74402093e002b84d36a40d9b47ee06186ab4e'
   ),
   tstellarToken(
+    '853a61c1-c03e-4899-9d27-ad658f4abb7d',
+    'txlm:USDC-GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+    'Test Stellar USDC',
+    7,
+    UnderlyingAsset['txlm:USDC-GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'],
+    'centre.io',
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    '',
+    'TXLM:USDC'
+  ),
+  tstellarToken(
     '47887cb5-98bb-4942-bd25-3ccca0847f36',
     'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU',
     'BitGo Shield Token',
@@ -7279,6 +7326,15 @@ export const allCoinsAndTokens = [
     6,
     '0x63681558c1b680e43bbcadc0ced21075854bba87',
     UnderlyingAsset['tarbeth:xsgd']
+  ),
+  tarbethErc20(
+    '31c8fa64-e6b3-4d6e-9f1a-6ef8a6c2f0c5',
+    'tarbeth:usdc',
+    'USD Coin',
+    6,
+    '0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
+    UnderlyingAsset['tarbeth:usdc'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   tarbethErc20(
     '23209716-c220-4ef7-ac4c-ea1c151f14cb',
@@ -8253,6 +8309,18 @@ export const allCoinsAndTokens = [
     'straitsx.com',
     UnderlyingAsset['txrp:xsgd']
   ),
+  txrpToken(
+    '16ba1bbf-1caa-4058-89e2-74422a27983d',
+    'txrp:usdc',
+    'USDC',
+    15,
+    'rHuGNhqTG32mfmAvWA8hUyWRLV3tCSwKQt',
+    '5553444300000000000000000000000000000000',
+    'rHuGNhqTG32mfmAvWA8hUyWRLV3tCSwKQt::5553444300000000000000000000000000000000',
+    'circle.com',
+    UnderlyingAsset['txrp:usdc'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
   txrpMptToken(
     'b8016d32-12d1-4bbd-b0f7-5e543557c0f7',
     'txrp:sec0',
@@ -8628,6 +8696,18 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['tsui:tmerog'],
     SUI_TOKEN_FEATURES
   ),
+  tsuiToken(
+    '50b52d91-cad2-49eb-be18-f9d71b5f75cd',
+    'tsui:usdc',
+    'Test USDC',
+    6,
+    '0xa1ec7fc00a6f40db9693ad1415d0c193ad3906494428cf252621037bd7117e29',
+    'usdc',
+    'USDC',
+    '0xa1ec7fc00a6f40db9693ad1415d0c193ad3906494428cf252621037bd7117e29::usdc::USDC',
+    UnderlyingAsset['tsui:usdc'],
+    [...SUI_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
   ttaoToken(
     'b8b5fded-65f8-49eb-8f83-ad97d08d07f2',
     'ttao:apex',
@@ -8761,6 +8841,15 @@ export const allCoinsAndTokens = [
     6,
     '0xd5d0d561493ea2b9410f67da804653ae44e793c2423707d4f11edb2e38192050',
     UnderlyingAsset['tapt:usdt'],
+    [...APT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  taptToken(
+    '7f6a5c9d-3b1e-4a8f-9c2d-e4b8a1f6d0c7',
+    'tapt:usdc',
+    'USD Coin',
+    6,
+    '0x69091fbab5f7d635ee7ac5098cf0c1efbe31d68fec0f2cd565e8d168daf52832',
+    UnderlyingAsset['tapt:usdc'],
     [...APT_FEATURES, CoinFeature.STABLECOIN]
   ),
   aptNFTCollection(

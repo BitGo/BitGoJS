@@ -106,6 +106,20 @@ export const ofcErc20Coins = [
     'unieth'
   ),
   ofcerc20(
+    'ac0ccb52-0813-4e2f-9b87-606a26bb9a86',
+    'ofctunieth:usdc',
+    'Test USDC',
+    6,
+    UnderlyingAsset['tunieth:usdc'],
+    undefined,
+    [...OfcCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    true,
+    'tunieth'
+  ),
+  ofcerc20(
     '46fe479e-a4eb-47dc-a0a2-3753310859f3',
     'ofcunieth:uni',
     'Uniswap',
@@ -4124,6 +4138,20 @@ export const ofcErc20Coins = [
     'inketh'
   ),
   ofcerc20(
+    '67fb30f1-8d09-4d4c-89a6-ec45c289bbe5',
+    'ofctinketh:usdc',
+    'Test USDC',
+    6,
+    underlyingAssetForSymbol('tinketh:usdc'),
+    undefined,
+    [...OfcCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    '',
+    undefined,
+    undefined,
+    true,
+    'tinketh'
+  ),
+  ofcerc20(
     'e115bc45-6771-4088-82f3-aa3cdcaba416',
     'ofcinketh:usdt0',
     'USDT0',
@@ -5926,6 +5954,21 @@ export const tOfcErc20Coins = [
   ),
 
   ofcerc20(
+    '68bb2434-95d2-4e38-ac97-8890d4174dad',
+    'ofcthypeevm:usdc',
+    'Test HyperEVM USD Coin',
+    6,
+    UnderlyingAsset['thypeevm:usdc'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    '',
+    undefined,
+    undefined,
+    true,
+    'thypeevm'
+  ),
+
+  ofcerc20(
     '735662e8-4f38-4b59-996c-b7890cd38e41',
     'ofchypeevm:usdt0',
     'USDT0',
@@ -6457,6 +6500,20 @@ export const tOfcErc20Coins = [
     'mon'
   ),
   ofcerc20(
+    '0a48b37f-f5df-4566-9adf-883533ef5976',
+    'ofctmon:usdc',
+    'Test MON:USDC',
+    6,
+    underlyingAssetForSymbol('tmon:usdc'),
+    undefined,
+    [...OfcCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    '',
+    undefined,
+    undefined,
+    true,
+    'tmon'
+  ),
+  ofcerc20(
     '7a8631a5-deed-43c5-92a0-13e3322429ba',
     'ofcmon:wmon',
     'Wrapped MON',
@@ -6557,6 +6614,20 @@ export const tOfcErc20Coins = [
     undefined,
     true,
     'xdc'
+  ),
+  ofcerc20(
+    '5dfff12b-1f30-4224-8687-b8e4dbb05bc5',
+    'ofctxdc:usdc',
+    'Test USD Coin (XDC)',
+    6,
+    underlyingAssetForSymbol('txdc:usdc'),
+    undefined,
+    [...OfcCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    '',
+    undefined,
+    undefined,
+    true,
+    'txdc'
   ),
   ofcerc20(
     'b4666353-81d0-491b-a554-bdd8e677be24',

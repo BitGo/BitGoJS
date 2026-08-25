@@ -2224,6 +2224,7 @@ export enum UnderlyingAsset {
   'hppeth:hpp' = 'hppeth:hpp',
   'unieth:usdc' = 'unieth:usdc',
   'unieth:uni' = 'unieth:uni',
+  'tunieth:usdc' = 'tunieth:usdc',
   THKD = 'thkd',
   THUNDER = 'thunder',
   TIO = 'tio',
@@ -2965,6 +2966,7 @@ export enum UnderlyingAsset {
   CAT = 'cat',
 
   // Stellar testnet tokens
+  'txlm:USDC-GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5' = 'txlm:USDC-GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
   'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU' = 'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU',
   'txlm:TST-GC26PEYGETD7L6PUW2VCU3PSC7LCLRRPOSUILSHD2RT23IQUEAN4TQBQ' = 'txlm:TST-GC26PEYGETD7L6PUW2VCU3PSC7LCLRRPOSUILSHD2RT23IQUEAN4TQBQ',
   'txlm:BTGT-GCCUFJV5P32QGVZVW73SF7P53ZH2OXJ5C3DYSXDECSRCP3FU2GJ2PXGE' = 'txlm:BTGT-GCCUFJV5P32QGVZVW73SF7P53ZH2OXJ5C3DYSXDECSRCP3FU2GJ2PXGE',
@@ -3019,6 +3021,7 @@ export enum UnderlyingAsset {
   'avaxc:usdc-e' = 'avaxc:usdc-e',
   'avaxc:usdt-e' = 'avaxc:usdt-e',
   'tavaxc:aggy' = 'tavaxc:aggy',
+  'tavaxc:usdc' = 'tavaxc:usdc',
   // Begin FTX missing AVAXC tokens
   'avaxc:yeti' = 'avaxc:yeti',
   'avaxc:spell' = 'avaxc:spell',
@@ -3776,6 +3779,7 @@ export enum UnderlyingAsset {
   'tmon:tmt' = 'tmon:tmt',
   'tmon:sofid' = 'tmon:sofid',
   'tmon:stgsofid' = 'tmon:stgsofid',
+  'tmon:usdc' = 'tmon:usdc',
 
   // GasEVM (Neo X) mainnet tokens
   'gasevm:usd1' = 'gasevm:usd1',
@@ -3795,6 +3799,7 @@ export enum UnderlyingAsset {
 
   // XDC testnet tokens
   'txdc:tmt' = 'txdc:tmt',
+  'txdc:usdc' = 'txdc:usdc',
 
   // hypeeevm testnet tokens
   'thypeevm:usdc' = 'thypeevm:usdc',
@@ -3846,6 +3851,7 @@ export enum UnderlyingAsset {
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
   'tarbeth:xsgd' = 'tarbeth:xsgd',
+  'tarbeth:usdc' = 'tarbeth:usdc',
 
   // Optimism mainnet tokens
   'opeth:link' = 'opeth:link',
@@ -3946,6 +3952,7 @@ export enum UnderlyingAsset {
   'inketh:kbtc' = 'inketh:kbtc',
   'inketh:usdc' = 'inketh:usdc',
   'inketh:usdt0' = 'inketh:usdt0',
+  'tinketh:usdc' = 'tinketh:usdc',
   // XTZ EVM (Etherlink) tokens - CECHO-1183
   'xtzevm:usdt' = 'xtzevm:usdt',
   'xtzevm:usdc' = 'xtzevm:usdc',
@@ -4229,6 +4236,7 @@ export enum UnderlyingAsset {
   'xrp:key' = 'xrp:key',
   // XRP testnet tokens
   'txrp:xsgd' = 'txrp:xsgd',
+  'txrp:usdc' = 'txrp:usdc',
   // XRP MPT testnet tokens
   'txrp:sec0' = 'txrp:sec0',
   'txrp:sec2' = 'txrp:sec2',
@@ -4264,6 +4272,7 @@ export enum UnderlyingAsset {
   'tsui:deep' = 'tsui:deep',
   'tsui:wal' = 'tsui:wal',
   'tsui:tmerog' = 'tsui:tmerog',
+  'tsui:usdc' = 'tsui:usdc',
 
   // Apt tokens
   'apt:usd1' = 'apt:usd1',
@@ -4281,6 +4290,7 @@ export enum UnderlyingAsset {
   'tapt:stgusd1' = 'tapt:stgusd1',
   'tapt:usd1' = 'tapt:usd1',
   'tapt:usdt' = 'tapt:usdt',
+  'tapt:usdc' = 'tapt:usdc',
 
   // Apt testnet NFT collections
   'tapt:nftcollection1' = 'tapt:nftcollection1',
