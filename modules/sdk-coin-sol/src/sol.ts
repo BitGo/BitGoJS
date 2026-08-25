@@ -278,6 +278,11 @@ export class Sol extends BaseCoin {
     return true;
   }
 
+  /** @inheritDoc */
+  allowsTokenConsolidation(): boolean {
+    return true;
+  }
+
   supportsTss(): boolean {
     return true;
   }

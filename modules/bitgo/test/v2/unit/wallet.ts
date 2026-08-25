@@ -1381,6 +1381,47 @@ describe('V2 Wallet:', function () {
       await solWallet.buildTokenEnablements(params);
       txRequestNock.isDone().should.equal(true);
     });
+
+    describe('sendMany zero-amount guard for closeAssociatedTokenAccount', function () {
+      afterEach(function () {
+        sinon.restore();
+      });
+
+      it('should not reject a zero-amount recipient when type is closeAssociatedTokenAccount', async function () {
+        const sendManyTxRequestsStub = sinon
+          .stub(solWallet as any, 'sendManyTxRequests')
+          .resolves({ txid: 'fake-txid' });
+
+        const result = await solWallet.sendMany({
+          type: 'closeAssociatedTokenAccount',
+          recipients: [{ address: 'GnAfDFBLDGRQ6RKbxednRxdAKgvNLfo7kjUkcV51TLNS', amount: '0' }],
+        });
+
+        result.should.deepEqual({ txid: 'fake-txid' });
+        sinon.assert.calledOnce(sendManyTxRequestsStub);
+      });
+
+      it('should reject a zero-amount recipient for a regular sendMany (no type / non closeAssociatedTokenAccount)', async function () {
+        await solWallet
+          .sendMany({
+            recipients: [{ address: 'GnAfDFBLDGRQ6RKbxednRxdAKgvNLfo7kjUkcV51TLNS', amount: '0' }],
+          })
+          .should.be.rejectedWith(
+            'invalid argument for amount - positive number greater than zero or numeric string expected'
+          );
+      });
+
+      it('should reject a negative-amount recipient even when type is closeAssociatedTokenAccount', async function () {
+        await solWallet
+          .sendMany({
+            type: 'closeAssociatedTokenAccount',
+            recipients: [{ address: 'GnAfDFBLDGRQ6RKbxednRxdAKgvNLfo7kjUkcV51TLNS', amount: '-1' }],
+          })
+          .should.be.rejectedWith(
+            'invalid argument for amount - positive number greater than zero or numeric string expected'
+          );
+      });
+    });
   });
 
   describe('Accelerate Transaction', function () {

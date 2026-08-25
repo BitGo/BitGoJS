@@ -308,9 +308,17 @@ export class Wallet implements IWallet {
 
   /**
    * This is a strict sub-set of prebuildWhitelistedParams
+   *
+   * `tokenName` is only included for coins that declare support for
+   * single-asset consolidation via `allowsTokenConsolidation()` (e.g. Sol).
+   * Callers that omit `tokenName` are unaffected either way — consolidation
+   * continues to default to sweeping every balance on the account's receive
+   * addresses. Whether a `tokenName` request actually results in a
+   * single-asset consolidation for a given wallet/enterprise is still
+   * decided server-side.
    */
   prebuildConsolidateAccountParams(): string[] {
-    return [
+    const params = [
       'consolidateAddresses',
       'nftCollectionId',
       'nftId',
@@ -323,6 +331,12 @@ export class Wallet implements IWallet {
       'keepAlive',
       'apiVersion',
     ];
+
+    if (this.baseCoin.allowsTokenConsolidation()) {
+      params.push('tokenName');
+    }
+
+    return params;
   }
 
   /**
@@ -3099,8 +3113,22 @@ export class Wallet implements IWallet {
     this.bitgo.setRequestTracer(reqId);
     const coin = this.baseCoin;
     if (_.isObject(params.recipients)) {
+      // closeAssociatedTokenAccount recipients intentionally carry amount === '0' — no value is
+      // transferred, the intent only closes the ATA and reclaims its rent to the wallet root.
+      // Skip the coin's generic zero-amount guard for this intent type (still reject negative
+      // amounts); the zero amount is otherwise enforced by the coin-specific intent validation
+      // downstream.
+      const isCloseAssociatedTokenAccount = params.type === 'closeAssociatedTokenAccount';
       params.recipients.forEach(function (recipient) {
-        coin.checkRecipient(recipient);
+        if (isCloseAssociatedTokenAccount) {
+          if (recipient.amount !== 'max' && new BigNumber(recipient.amount).isNegative()) {
+            throw new Error(
+              'invalid argument for amount - positive number greater than zero or numeric string expected'
+            );
+          }
+        } else {
+          coin.checkRecipient(recipient);
+        }
       });
     }
 

@@ -674,6 +674,7 @@ export interface IBaseCoin {
   sweepWithSendMany(): boolean;
   transactionDataAllowed(): boolean;
   allowsAccountConsolidations(): boolean;
+  allowsTokenConsolidation(): boolean;
   supportsResourceDelegation(): boolean;
   getTokenEnablementConfig(): TokenEnablementConfig;
   supportsTss(): boolean;

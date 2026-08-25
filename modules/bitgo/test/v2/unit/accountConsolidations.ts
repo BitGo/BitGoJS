@@ -309,4 +309,157 @@ describe('Account Consolidations:', function () {
       });
     });
   }
+
+  describe('Single-asset (tokenName) consolidation:', function () {
+    let solWallet;
+    let solBasecoin;
+    let algoWallet;
+    let algoBasecoin;
+    let algoConsolidationFixtures;
+
+    before(function () {
+      bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
+      bitgo.initializeTestVars();
+      bgUrl = common.Environments[bitgo.getEnv()].uri;
+      algoConsolidationFixtures = algoFixtures.prebuild();
+
+      solBasecoin = bitgo.coin('tsol');
+      solWallet = new Wallet(bitgo, solBasecoin, {
+        id: '5e4168f4403d0c5c1c3bdd15486e75aa',
+        coin: 'tsol',
+      });
+
+      algoBasecoin = bitgo.coin('talgo');
+      algoWallet = new Wallet(bitgo, algoBasecoin, {
+        id: '5e4168f4403d0c5c1c3bdd15486e75bb',
+        coin: 'talgo',
+      });
+    });
+
+    describe('Capability flag', function () {
+      it('should report that tsol supports single-asset consolidation', function () {
+        solBasecoin.allowsTokenConsolidation().should.be.true();
+      });
+
+      it('should report that talgo does not support single-asset consolidation', function () {
+        algoBasecoin.allowsTokenConsolidation().should.be.false();
+      });
+    });
+
+    describe('prebuildConsolidateAccountParams whitelist', function () {
+      it('should include tokenName for a coin that supports single-asset consolidation', function () {
+        solWallet.prebuildConsolidateAccountParams().should.containEql('tokenName');
+      });
+
+      it('should not include tokenName for a coin that does not support single-asset consolidation', function () {
+        algoWallet.prebuildConsolidateAccountParams().should.not.containEql('tokenName');
+      });
+    });
+
+    describe('Building', function () {
+      it('should forward tokenName to the build request for tsol', async function () {
+        const tokenName = 'tsol:usdc';
+        const scope = nock(bgUrl)
+          .post(`/api/v2/${solWallet.coin()}/wallet/${solWallet.id()}/consolidateAccount/build`, { tokenName })
+          .query({})
+          .reply(200, algoConsolidationFixtures.buildAccountConsolidation);
+
+        const build = await solWallet.buildAccountConsolidations({ tokenName });
+
+        build.length.should.equal(2);
+        scope.isDone().should.be.True();
+      });
+
+      it('should not include tokenName in the build request for tsol when omitted (regression)', async function () {
+        const scope = nock(bgUrl)
+          .post(`/api/v2/${solWallet.coin()}/wallet/${solWallet.id()}/consolidateAccount/build`, {})
+          .query({})
+          .reply(200, algoConsolidationFixtures.buildAccountConsolidation);
+
+        const build = await solWallet.buildAccountConsolidations();
+
+        build.length.should.equal(2);
+        scope.isDone().should.be.True();
+      });
+
+      it('should strip tokenName from the build request for a coin that does not support it', async function () {
+        const scope = nock(bgUrl)
+          .post(`/api/v2/${algoWallet.coin()}/wallet/${algoWallet.id()}/consolidateAccount/build`, {})
+          .query({})
+          .reply(200, algoConsolidationFixtures.buildAccountConsolidation);
+
+        const build = await algoWallet.buildAccountConsolidations({ tokenName: 'talgo:usdt' });
+
+        build.length.should.equal(2);
+        scope.isDone().should.be.True();
+      });
+
+      it('should continue to build multi-asset consolidations for talgo exactly as before (no tokenName)', async function () {
+        const scope = nock(bgUrl)
+          .post(`/api/v2/${algoWallet.coin()}/wallet/${algoWallet.id()}/consolidateAccount/build`, {})
+          .query({})
+          .reply(200, algoConsolidationFixtures.buildAccountConsolidation);
+
+        const build = await algoWallet.buildAccountConsolidations();
+
+        build.length.should.equal(2);
+        scope.isDone().should.be.True();
+      });
+    });
+
+    describe('Sending', function () {
+      afterEach(function () {
+        sinon.restore();
+      });
+
+      it('should forward tokenName through the full send (build + send) flow for tsol', async function () {
+        const tokenName = 'tsol:usdc';
+        const scopeBuild = nock(bgUrl)
+          .post(`/api/v2/${solWallet.coin()}/wallet/${solWallet.id()}/consolidateAccount/build`, {
+            apiVersion: 'full',
+            tokenName,
+          })
+          .query({})
+          .reply(200, algoConsolidationFixtures.buildAccountConsolidation);
+
+        const sendAccountConsolidationStub = sinon
+          .stub(solWallet, 'sendAccountConsolidation')
+          .resolves(algoConsolidationFixtures.signedAccountConsolidationBuilds[0]);
+        sinon.stub(solWallet, 'getKeychainsAndValidatePassphrase').resolves([]);
+        solWallet.tssUtils = {
+          supportedTxRequestVersions: () => ['lite', 'full'],
+        };
+
+        await solWallet.sendAccountConsolidations({ tokenName });
+
+        sinon.assert.calledWith(sendAccountConsolidationStub, sinon.match({ tokenName }));
+        scopeBuild.isDone().should.be.True();
+      });
+
+      it('should continue to send multi-asset consolidations for tsol exactly as before (no tokenName)', async function () {
+        const scopeBuild = nock(bgUrl)
+          .post(`/api/v2/${solWallet.coin()}/wallet/${solWallet.id()}/consolidateAccount/build`, {
+            apiVersion: 'full',
+          })
+          .query({})
+          .reply(200, algoConsolidationFixtures.buildAccountConsolidation);
+
+        const sendAccountConsolidationStub = sinon
+          .stub(solWallet, 'sendAccountConsolidation')
+          .resolves(algoConsolidationFixtures.signedAccountConsolidationBuilds[0]);
+        sinon.stub(solWallet, 'getKeychainsAndValidatePassphrase').resolves([]);
+        solWallet.tssUtils = {
+          supportedTxRequestVersions: () => ['lite', 'full'],
+        };
+
+        await solWallet.sendAccountConsolidations();
+
+        sinon.assert.calledWith(
+          sendAccountConsolidationStub,
+          sinon.match((params) => !('tokenName' in params))
+        );
+        scopeBuild.isDone().should.be.True();
+      });
+    });
+  });
 });

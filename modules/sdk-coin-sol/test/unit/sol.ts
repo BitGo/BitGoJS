@@ -195,6 +195,22 @@ describe('SOL:', function () {
     basecoin.getFullName().should.equal('Testnet Solana');
     basecoin.getBaseFactor().should.equal(1000000000);
   });
+
+  describe('Account consolidation capabilities', () => {
+    it('should allow account consolidations', function () {
+      basecoin.allowsAccountConsolidations().should.be.true();
+    });
+
+    it('should allow single-asset (tokenName) consolidation', function () {
+      basecoin.allowsTokenConsolidation().should.be.true();
+    });
+
+    it('should allow single-asset consolidation for mainnet sol as well', function () {
+      const mainnetBasecoin = bitgo.coin('sol') as Sol;
+      mainnetBasecoin.allowsTokenConsolidation().should.be.true();
+    });
+  });
+
   describe('verify transactions', () => {
     const walletData = {
       id: '5b34252f1bf349930e34020a00000000',

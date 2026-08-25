@@ -176,6 +176,19 @@ export abstract class BaseCoin implements IBaseCoin {
     return false;
   }
 
+  /**
+   * Flag for determining whether this coin supports consolidating a single
+   * token/asset (via `tokenName`) rather than sweeping every balance held by
+   * an account's receive addresses. Coins that return true here are allowed
+   * to forward `tokenName` through to the consolidateAccount/build endpoint;
+   * whether single-asset consolidation is actually enabled for a given
+   * wallet/enterprise is still decided server-side.
+   * @returns {boolean} True if this coin supports single-asset consolidation; false otherwise
+   */
+  allowsTokenConsolidation(): boolean {
+    return false;
+  }
+
   supportsResourceDelegation(): boolean {
     return false;
   }

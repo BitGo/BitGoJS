@@ -36,4 +36,13 @@ describe('SOL Token:', function () {
   it('should return SPL token type for testnet token', function () {
     (bitgo.coin('tsol:usdc') as SolToken).getTokenType().should.equal('SPL');
   });
+
+  it('should inherit account consolidation capabilities from Sol', function () {
+    solTokenCoin.allowsAccountConsolidations().should.be.true();
+    solTokenCoin.allowsTokenConsolidation().should.be.true();
+  });
+
+  it('should inherit single-asset consolidation capability for testnet tokens too', function () {
+    (bitgo.coin('tsol:usdc') as SolToken).allowsTokenConsolidation().should.be.true();
+  });
 });
