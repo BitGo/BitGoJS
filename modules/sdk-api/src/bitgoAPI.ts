@@ -1468,7 +1468,8 @@ export class BitGoAPI implements BitGoBase {
       // verify the authenticity of the server's response before proceeding any further
       await verifyResponseAsync(this, this._token, 'post', request, response, this._authVersion);
 
-      if (this._ecdhXprv) {
+      // Skip ECDH decrypt when the server returned a v1 plaintext token.
+      if (this._ecdhXprv && response.body.encryptedToken) {
         const responseDetails = await this.handleTokenIssuance(response.body);
         response.body.token = responseDetails.token;
       }
