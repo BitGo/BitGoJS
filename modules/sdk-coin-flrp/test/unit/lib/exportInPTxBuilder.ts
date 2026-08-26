@@ -566,7 +566,7 @@ describe('FLRP credential guard regression', () => {
   const factory = new TransactionBuilderFactory(coinConfig);
 
   it('treats an established empty credential array as credentials', async () => {
-    const tx = (await factory.from(EXPORT_IN_P.fullSigntxHex).build()) as Transaction;
+    const tx = (await factory.from(testData.fullSigntxHex).build()) as Transaction;
     const flareTx = tx.getFlareTransaction() as UnsignedTx;
     flareTx.credentials = [];
 
@@ -575,12 +575,12 @@ describe('FLRP credential guard regression', () => {
   });
 
   it('rejects a real signature alongside an address placeholder', async () => {
-    const tx = (await factory.from(EXPORT_IN_P.fullSigntxHex).build()) as Transaction;
+    const tx = (await factory.from(testData.fullSigntxHex).build()) as Transaction;
     const flareTx = tx.getFlareTransaction() as UnsignedTx;
     const credentials = flareTx.credentials;
     credentials.length.should.be.greaterThan(0);
 
-    const placeholder = Buffer.from(''.padStart(90, '0') + '00'.repeat(20), 'hex');
+    const placeholder = Buffer.from(''.padStart(90, '0') + '11'.repeat(20), 'hex');
     credentials[0].setSignature(0, placeholder);
     assert.throws(
       () => tx.toBroadcastFormat(),
