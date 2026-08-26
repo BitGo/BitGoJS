@@ -315,6 +315,119 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
       console.log(fullSignedTx.toJson());
     });
   });
+  describe('Credential guard bypass regression (CSHLD-1550)', () => {
+    // PR #9287 (CECHO-1697) hardened deprecatedTransaction.ts against credential corruption
+    // but explicitly (and incorrectly) marked PermissionlessValidatorTxBuilder as "not
+    // affected". CSHLD-1550 is an AddPermissionlessValidatorTx broadcast rejected on-chain
+    // with "invalid signature" -- this suite confirms transaction.ts now carries the same
+    // guards that were added to deprecatedTransaction.ts.
+    const buildHalfSigned = async (): Promise<string> => {
+      const unixNow = BigInt(Math.round(new Date().getTime() / 1000));
+      const startTime = unixNow + BigInt(60);
+      const endTime = startTime + BigInt(60 * 60 * 24 + 600);
+      const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp'))
+        .getPermissionlessValidatorTxBuilder()
+        .threshold(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.threshold)
+        .locktime(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.locktime)
+        .recoverMode(false)
+        .fromPubKey(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.bitgoAddresses)
+        .startTime(startTime.toString())
+        .endTime(endTime.toString())
+        .stakeAmount(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.stakeAmount)
+        .delegationFeeRate(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.delegationFeeRate)
+        .nodeID(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.nodeId)
+        .blsPublicKey(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.blsPublicKey)
+        .blsSignature(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.blsSignature)
+        .utxos(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.utxos);
+      await txBuilder.build();
+      txBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.userPrivateKey });
+      const halfSigned = await txBuilder.build();
+      return halfSigned.toBroadcastFormat();
+    };
+
+    it('hasCredentials returns true for credentials=[] preventing silent credential regeneration', async () => {
+      const halfSignedHex = await buildHalfSigned();
+      const signer2Builder = factory.from(halfSignedHex) as any;
+      const internalTx = signer2Builder.transaction;
+      // Simulate the bug trigger: credentials=[] on the parsed tx
+      internalTx._avaxTransaction.credentials = [];
+      internalTx.hasCredentials.should.be.true(
+        'hasCredentials must return true for credentials=[] to block credential regeneration in calculateUtxos()'
+      );
+    });
+
+    it('sign() throws on empty credentials rather than silently producing a bad tx', async () => {
+      const halfSignedHex = await buildHalfSigned();
+      const signer2Builder = factory.from(halfSignedHex) as any;
+      signer2Builder.sign({ key: testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.backupPrivateKey });
+      signer2Builder.transaction._avaxTransaction.credentials = [];
+      await signer2Builder
+        .build()
+        .then(() => assert.fail('Expected sign to throw on empty credentials'))
+        .catch((e: any) => {
+          e.message.should.equal('empty credentials to sign');
+        });
+    });
+
+    it('signature getter exposes incomplete signing across all credentials via intersection', async () => {
+      const halfSignedHex = await buildHalfSigned();
+      const halfBuilder = factory.from(halfSignedHex) as any;
+      const halfTx = await halfBuilder.build();
+      halfTx.signature.length.should.equal(
+        1,
+        'should expose exactly 1 real ECDSA after first signer -- second signer slot is still empty'
+      );
+
+      const fullBuilder = factory.from(halfSignedHex) as any;
+      fullBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.backupPrivateKey });
+      const fullTx = await fullBuilder.build();
+      fullTx.signature.length.should.equal(2, 'sanity: fully signed tx should have 2 signatures');
+
+      // Corrupt one slot of one credential back to an empty (zeroed) signature. A union of
+      // per-credential signatures would still report 2 (masking the corruption); the
+      // intersection must drop to however many signatures remain common to every credential.
+      const creds = (fullTx as any).credentials;
+      assert.ok(creds && creds.length > 0, 'fully signed tx must have credentials');
+      const zeroSig = Buffer.from(''.padStart(130, '0'), 'hex');
+      creds[0].setSignature(0, zeroSig);
+
+      fullTx.signature.length.should.be.lessThan(
+        2,
+        'intersection must detect that credentials[0] is missing a signature -- incomplete signing visible'
+      );
+    });
+
+    it('toBroadcastFormat() throws when a real ECDSA coexists with an address placeholder', async () => {
+      const halfSignedHex = await buildHalfSigned();
+      const fullBuilder = factory.from(halfSignedHex) as any;
+      fullBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.backupPrivateKey });
+      const fullTx = (await fullBuilder.build()) as any;
+
+      const creds = fullTx.credentials;
+      assert.ok(creds && creds.length > 0, 'fully signed tx must have credentials');
+      // 90 zero hex chars (45-byte prefix) + 20-byte address -- the exact placeholder shape
+      // produced by calculateUtxos() for an unfilled signer slot.
+      const addrPlaceholder = Buffer.from(''.padStart(90, '0') + 'df32717bd7b7a2d50a715202795940250c7ba9e4', 'hex');
+      creds[0].setSignature(0, addrPlaceholder);
+
+      assert.throws(
+        () => fullTx.toBroadcastFormat(),
+        (e: any) =>
+          e.message ===
+          'transaction has a real ECDSA alongside an address placeholder (r=0): incomplete signing detected, refusing broadcast'
+      );
+    });
+
+    it('full sign from half-signed hex still produces a valid fully-signed tx', async () => {
+      const halfSignedHex = await buildHalfSigned();
+      const fullBuilder = factory.from(halfSignedHex);
+      fullBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.backupPrivateKey });
+      const fullTx = await fullBuilder.build();
+      fullTx.signature.length.should.equal(2, 'both signer slots must be filled with real ECDSAs');
+      assert.doesNotThrow(() => fullTx.toBroadcastFormat());
+    });
+  });
+
   it('Should fail to build if utxos change output 0', async () => {
     const unixNow = BigInt(Math.round(new Date().getTime() / 1000));
     const startTime = unixNow + BigInt(60);
