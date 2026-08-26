@@ -393,6 +393,26 @@ export const botTokens = [
     undefined,
     Networks.test.hoodi
   ),
+  AccountCtors.tsolToken(
+    '9196db88-87d6-4fb2-b1c9-4e188c64dace',
+    'tsol:thook',
+    'sol thook',
+    9,
+    '71H52RsWiLbMXQuBtH5a1hLSzUnbTgiDjFhktuJrJT1m',
+    '71H52RsWiLbMXQuBtH5a1hLSzUnbTgiDjFhktuJrJT1m',
+    'tsol:thook' as unknown as UnderlyingAsset,
+    getTokenFeatures('sol', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    AccountCtors.ProgramID.Token2022ProgramId,
+    undefined,
+    undefined,
+    Networks.test.sol
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
