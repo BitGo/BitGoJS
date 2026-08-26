@@ -2889,6 +2889,15 @@ export const allCoinsAndTokens = [
   ),
 
   erc721Token(
+    'bbf99e39-c911-4ccd-a23d-c71f5189e41f',
+    'erc721:hbarevmtoken',
+    'Generic Hedera EVM NFT',
+    '0xerc721:hbarevmtoken',
+    Networks.main.hederaEVM,
+    GENERIC_TOKEN_FEATURES
+  ),
+
+  erc721Token(
     '48a79873-fd50-46ed-9c78-e8fc1b6ef08a',
     'thbarevm:tmnft',
     'Testnet HBAREVM ERC721 Token',
