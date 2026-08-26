@@ -12,6 +12,7 @@ import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { getSharedSecret } from '../ecdh';
+import { MissingEncryptedKeychainError } from '../errors';
 import { AddKeychainOptions, Keychain, KeyIndices } from '../keychain';
 import { decodeOrElse, ECDSAUtils, EDDSAUtils, promiseProps, RequestTracer } from '../utils';
 import {
@@ -42,7 +43,7 @@ import {
   WalletShares,
   WalletWithKeychains,
 } from './iWallets';
-import { ShareWalletOptions, WalletShare } from './iWallet';
+import { DecryptedKeychainData, ShareWalletOptions, WalletShare } from './iWallet';
 import { Wallet } from './wallet';
 import { TssSettings } from '@bitgo/public-types';
 import { createEvmKeyRingWallet, validateEvmKeyRingWalletParams } from '../evm/evmUtils';
@@ -55,6 +56,11 @@ export function isWalletWithKeychains(
 ): wallet is WalletWithKeychains {
   return wallet.responseType === 'WalletWithKeychains';
 }
+
+// Bound concurrent Argon2id WASM instances across bulk share flows. Each decrypt/encrypt call
+// reserves ~2 GiB of virtual address space; running all shares concurrently OOMs the browser
+// at scale (e.g. 96 wallets). 16 keeps enough parallelism without exhausting memory.
+const BULK_SHARE_BATCH_SIZE = 16;
 
 export class Wallets implements IWallets {
   private readonly bitgo: BitGoBase;
@@ -1110,20 +1116,24 @@ export class Wallets implements IWallets {
     // Without this, shareWallet would internally re-decrypt the same encryptedPrv under the same
     // walletPassphrase N times (one Argon2id per recipient). Per-recipient encrypt still uses a
     // unique ECDH-derived secret so no session amortization is possible on that side.
-    let decryptedKeychain;
+    let decryptedKeychain: DecryptedKeychainData | undefined;
     try {
       decryptedKeychain = await wallet.getDecryptedKeychainForSharing(userPassword);
     } catch (e) {
-      // MissingEncryptedKeychainError -> cold wallet, let shareWallet handle it per-recipient
+      if (!(e instanceof MissingEncryptedKeychainError)) {
+        throw e;
+      }
+      // Cold wallet: no encrypted keychain to decrypt. Fall through and let shareWallet handle
+      // it per-recipient (which will also throw MissingEncryptedKeychainError but at a point
+      // where the caller expects it).
     }
 
     // Sequential loop to bound concurrent Argon2id WASM instances on the per-recipient ECDH
     // encrypt side (each recipient's secret is unique so Promise.all could OOM at scale).
     for (const user of spenders) {
-      const userObject = usersMap.get(user.user)!;
-      await wallet.shareWallet({
-        walletId: walletId,
-        user: user.user,
+      const userObject = usersMap.get(user.user);
+      assert(userObject, `User ${user.user} not found in enterprise users map`);
+      const shareOptions: ShareWalletOptions = {
         permissions: user.permissions.join(','),
         walletPassphrase: userPassword,
         email: userObject.email.email,
@@ -1131,7 +1141,8 @@ export class Wallets implements IWallets {
         skipKeychain: false,
         encryptionVersion,
         decryptedKeychain,
-      } as ShareWalletOptions & { walletId: string; user: string });
+      };
+      await wallet.shareWallet(shareOptions);
     }
   }
 
@@ -1330,21 +1341,23 @@ export class Wallets implements IWallets {
     const newWalletPassphrase = params.newWalletPassphrase || params.userLoginPassword;
     const webauthnInfo = params.webauthnInfo;
 
-    // Each decrypt/encrypt call runs Argon2id inside a WebAssembly instance that reserves ~2 GiB of
-    // virtual address space. Running all shares concurrently via Promise.all exhausts the browser's
-    // WASM memory at scale (e.g. 96 wallets). Process in small batches so only a bounded number of
-    // WASM instances are alive at once. The decrypt side still hits Argon2 per share (each share's
-    // ECDH-derived secret is unique); the encrypt side is collapsed via the session below.
-    const BATCH_SIZE = 16;
-
     // One session over newWalletPassphrase (and one more for webauthnInfo.passphrase when
     // present). v2: one Argon2id derivation total, per-envelope AES keys via HKDF with fresh
     // salts (cross-envelope independence preserved). v1: shim runs SJCL per call so callers
     // pinning encryptionVersion=1 still get v1 envelopes without any branching here.
     const walletSession = await this.bitgo.createEncryptionSession(newWalletPassphrase, params.encryptionVersion);
-    const webauthnSession = webauthnInfo
-      ? await this.bitgo.createEncryptionSession(webauthnInfo.passphrase, params.encryptionVersion)
-      : undefined;
+    let webauthnSession: IEncryptionSession | undefined;
+    try {
+      webauthnSession = webauthnInfo
+        ? await this.bitgo.createEncryptionSession(webauthnInfo.passphrase, params.encryptionVersion)
+        : undefined;
+    } catch (e) {
+      // If the webauthn session fails to initialize (e.g. WASM OOM), destroy the wallet session
+      // to avoid leaking its HKDF root. Preserves the invariant that no session outlives a
+      // failure in this method.
+      walletSession.destroy();
+      throw e;
+    }
 
     const processShare = async (walletShare: WalletShare): Promise<AcceptShareOptionsRequest[]> => {
       // Handle userMultiKeyRotationRequired case - these shares don't have keychains
@@ -1381,7 +1394,8 @@ export class Wallets implements IWallets {
         walletShareId: walletShare.id,
         encryptedPrv: newEncryptedPrv,
       };
-      if (webauthnInfo && webauthnSession) {
+      if (webauthnInfo) {
+        assert(webauthnSession, 'webauthnSession must exist when webauthnInfo is provided');
         entry.webauthnInfo = {
           otpDeviceId: webauthnInfo.otpDeviceId,
           prfSalt: webauthnInfo.prfSalt,
@@ -1393,7 +1407,7 @@ export class Wallets implements IWallets {
 
     try {
       const keysForWalletShares: AcceptShareOptionsRequest[] = [];
-      for (const batch of _.chunk(walletShares, BATCH_SIZE)) {
+      for (const batch of _.chunk(walletShares, BULK_SHARE_BATCH_SIZE)) {
         const batchResults = await Promise.all(batch.map((walletShare) => processShare(walletShare)));
         keysForWalletShares.push(...batchResults.flat());
       }
@@ -1524,16 +1538,11 @@ export class Wallets implements IWallets {
         ? await this.bitgo.createEncryptionSession(sessionPassword, encryptionVersion)
         : undefined;
 
-    // Mirror the bulkAcceptShare BATCH_SIZE guard. The per-share ECDH-derived decrypt secret is
-    // still unique, so bounded WASM instances matter on the decrypt side when the sender's
-    // keychain is v2.
-    const BATCH_SIZE = 16;
-
     let response: BulkUpdateWalletShareResponse;
     let failedUpdates: Array<{ walletShareId: string; reason: string }> = [];
     try {
       const settledUpdates: PromiseSettledResult<BulkUpdateWalletShareOptionsRequest[]>[] = [];
-      for (const batch of _.chunk(resolvedShares, BATCH_SIZE)) {
+      for (const batch of _.chunk(resolvedShares, BULK_SHARE_BATCH_SIZE)) {
         const batchResults = await Promise.allSettled(
           batch.map(async (share) => {
             const { walletShareId, status, walletShare } = share;

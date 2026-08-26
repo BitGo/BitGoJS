@@ -29,6 +29,7 @@ import {
   WalletWithKeychains,
   multisigTypes,
   IncorrectPasswordError,
+  MissingEncryptedKeychainError,
   NeedUserSignupError,
 } from '@bitgo/sdk-core';
 import { BitGo } from '../../../src';
@@ -3347,7 +3348,7 @@ describe('V2 Wallets:', function () {
           const decryptedWalletPrv = 'secret-wallet-material';
           const { shareIds } = await stubForShares(4, decryptedWalletPrv, walletPassphrase);
 
-          let captured: any;
+          let captured: { keysForWalletShares: AcceptShareOptionsRequest[] } | undefined;
           nock(bgUrl)
             .put('/api/v2/walletshares/accept', (body) => {
               captured = body;
@@ -3359,7 +3360,7 @@ describe('V2 Wallets:', function () {
 
           await wallets.bulkAcceptShare({ walletShareIds: shareIds, userLoginPassword: walletPassphrase });
 
-          const entries = captured.keysForWalletShares as AcceptShareOptionsRequest[];
+          const entries = captured!.keysForWalletShares;
           entries.should.have.length(4);
           const envelopes = entries.map((e) => JSON.parse(e.encryptedPrv as string));
 
@@ -3388,7 +3389,7 @@ describe('V2 Wallets:', function () {
           const { shareIds } = await stubForShares(2, decryptedWalletPrv, walletPassphrase);
 
           const sessionSpy = sinon.spy(bitgo, 'createEncryptionSession');
-          let captured: any;
+          let captured: { keysForWalletShares: AcceptShareOptionsRequest[] } | undefined;
           nock(bgUrl)
             .put('/api/v2/walletshares/accept', (body) => {
               captured = body;
@@ -3407,7 +3408,7 @@ describe('V2 Wallets:', function () {
           passwords.should.containEql(walletPassphrase);
           passwords.should.containEql(webauthnPassphrase);
 
-          const entries = captured.keysForWalletShares as AcceptShareOptionsRequest[];
+          const entries = captured!.keysForWalletShares;
           for (let i = 0; i < entries.length; i++) {
             const webEnv = JSON.parse(entries[i].webauthnInfo!.encryptedPrv as string);
             webEnv.should.have.property('adata', `ent-${i}`);
@@ -3440,7 +3441,7 @@ describe('V2 Wallets:', function () {
           const { shareIds } = await stubForShares(2, decryptedWalletPrv, walletPassphrase);
           const sessionSpy = sinon.spy(bitgo, 'createEncryptionSession');
 
-          let captured: any;
+          let captured: { keysForWalletShares: AcceptShareOptionsRequest[] } | undefined;
           nock(bgUrl)
             .put('/api/v2/walletshares/accept', (body) => {
               captured = body;
@@ -3458,7 +3459,7 @@ describe('V2 Wallets:', function () {
           sessionSpy.callCount.should.equal(1);
           sessionSpy.firstCall.args[1]!.should.equal(1);
 
-          const entries = captured.keysForWalletShares as AcceptShareOptionsRequest[];
+          const entries = captured!.keysForWalletShares;
           const envelopes = entries.map((e) => JSON.parse(e.encryptedPrv as string));
           for (const env of envelopes) {
             env.should.not.have.property('hkdfSalt');
@@ -4209,6 +4210,37 @@ describe('V2 Wallets:', function () {
           }
         });
 
+        it('bounds concurrent processAcceptShare calls at BULK_SHARE_BATCH_SIZE (16)', async function () {
+          const walletPassphrase = 'batch-cap-pw';
+          const { shareIds } = await stubForAcceptShares(20, 'plaintext-prv', walletPassphrase);
+
+          sinon.stub(Wallets.prototype, 'bulkUpdateWalletShareRequest').resolves({
+            acceptedWalletShares: shareIds,
+            rejectedWalletShares: [],
+            walletShareUpdateErrors: [],
+          });
+
+          // Track concurrent in-flight processAcceptShare invocations. The batching in
+          // bulkUpdateWalletShare should cap this at BULK_SHARE_BATCH_SIZE (16).
+          let inFlight = 0;
+          let maxInFlight = 0;
+          sinon.stub(Wallets.prototype as any, 'processAcceptShare').callsFake(async (...args: unknown[]) => {
+            const walletShareId = args[0] as string;
+            inFlight++;
+            maxInFlight = Math.max(maxInFlight, inFlight);
+            await new Promise((r) => setTimeout(r, 5));
+            inFlight--;
+            return [{ walletShareId, status: 'accept' as const }];
+          });
+
+          await wallets.bulkUpdateWalletShare({
+            shares: shareIds.map((id) => ({ walletShareId: id, status: 'accept' as const })),
+            userLoginPassword: walletPassphrase,
+          });
+
+          maxInFlight.should.be.lessThanOrEqual(16);
+        });
+
         it('does not open a session when the bulk contains only rejects', async function () {
           sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
             incoming: [
@@ -4359,7 +4391,6 @@ describe('V2 Wallets:', function () {
           const call = shareWalletStub.getCall(i);
           const shareArg = call.args[0]!;
           shareArg.should.have.property('decryptedKeychain').eql(decryptedKeychain);
-          shareArg.should.have.property('user', users[i].user);
           shareArg.should.have.property('walletPassphrase', userPassword);
         }
       });
@@ -4424,9 +4455,7 @@ describe('V2 Wallets:', function () {
 
         // Simulate cold wallet: getDecryptedKeychainForSharing throws MissingEncryptedKeychainError
         // (which we catch inside reshareWalletWithSpenders and fall through).
-        sinon
-          .stub(Wallet.prototype, 'getDecryptedKeychainForSharing')
-          .rejects(Object.assign(new Error('missing encrypted keychain'), { name: 'MissingEncryptedKeychainError' }));
+        sinon.stub(Wallet.prototype, 'getDecryptedKeychainForSharing').rejects(new MissingEncryptedKeychainError());
 
         const shareWalletStub = sinon.stub(Wallet.prototype, 'shareWallet').resolves({ shared: true });
 
