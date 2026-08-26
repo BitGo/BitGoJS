@@ -4816,6 +4816,7 @@ export interface BaseCoinConstructorOptions {
   asset: UnderlyingAsset;
   network: BaseNetwork;
   primaryKeyCurve: KeyCurve;
+  otherSupportedKeyCurves?: KeyCurve[];
 }
 
 export abstract class BaseCoin {
@@ -4861,6 +4862,12 @@ export abstract class BaseCoin {
    * The primary elliptic curve BitGo signs and generates keys against.
    */
   public readonly primaryKeyCurve: KeyCurve;
+
+  /**
+   * Additional elliptic curves this coin supports besides its primary key curve,
+   * e.g. for shielded pools requiring a different curve than the coin's base transactions.
+   */
+  public readonly otherSupportedKeyCurves?: KeyCurve[];
 
   /**
    * Set of features which are required by a coin subclass
@@ -4945,6 +4952,7 @@ export abstract class BaseCoin {
     this.asset = options.asset;
     this.network = options.network;
     this.primaryKeyCurve = options.primaryKeyCurve;
+    this.otherSupportedKeyCurves = options.otherSupportedKeyCurves;
   }
 
   /**

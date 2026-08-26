@@ -12,6 +12,7 @@ interface UtxoConstructorOptions {
   prefix?: string;
   suffix?: string;
   primaryKeyCurve: KeyCurve;
+  otherSupportedKeyCurves?: KeyCurve[];
 }
 
 export class UtxoCoin extends BaseCoin {
@@ -65,6 +66,7 @@ export class UtxoCoin extends BaseCoin {
  * @param prefix? Optional coin prefix. Defaults to empty string
  * @param suffix? Optional coin suffix. Defaults to coin name.
  * @param primaryKeyCurve The elliptic curve for this chain/token
+ * @param otherSupportedKeyCurves? Additional elliptic curves this coin supports, e.g. for shielded pools
  */
 export function utxo(
   id: string,
@@ -77,7 +79,8 @@ export function utxo(
   prefix = '',
   suffix: string = name.toUpperCase(),
   /** All UTXOs BitGo supports are SECP256K1 **/
-  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
+  otherSupportedKeyCurves?: KeyCurve[]
 ) {
   return Object.freeze(
     new UtxoCoin({
@@ -90,6 +93,7 @@ export function utxo(
       features,
       asset,
       primaryKeyCurve,
+      otherSupportedKeyCurves,
       baseUnit,
     })
   );
@@ -310,7 +314,11 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     Networks.main.zCash,
     UnderlyingAsset.ZEC,
     BaseUnit.ZEC,
-    ZEC_FEATURES
+    ZEC_FEATURES,
+    '',
+    'ZEC',
+    KeyCurve.Secp256k1,
+    [KeyCurve.Pallas]
   ),
   utxo(
     '549a4499-387c-42d3-9048-c01d6724d98a',
@@ -319,7 +327,11 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     Networks.test.zCash,
     UnderlyingAsset.ZEC,
     BaseUnit.ZEC,
-    ZEC_FEATURES
+    ZEC_FEATURES,
+    '',
+    'TZEC',
+    KeyCurve.Secp256k1,
+    [KeyCurve.Pallas]
   ),
   utxo(
     '4518a5b9-00d3-476e-bc40-d3f87eb82250',
