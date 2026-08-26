@@ -24,8 +24,24 @@ function isEmptySignature(signature: string): boolean {
   return !!signature && utils.removeHexPrefix(signature).startsWith(''.padStart(90, '0'));
 }
 
+/**
+ * An address placeholder is 90 zero hex chars (45-byte prefix) followed by a 20-byte address.
+ * A purely empty slot is all zeros. Non-zero bytes after position 90 distinguish the two.
+ * A real ECDSA alongside an addr placeholder in the same credential set means one signer's
+ * pass never replaced the placeholder -- signing is incomplete and must not be broadcast.
+ * @see CECHO-1697, CSHLD-1550
+ */
+function isAddrPlaceholder(signature: string): boolean {
+  if (!isEmptySignature(signature)) {
+    return false;
+  }
+  const stripped = utils.removeHexPrefix(signature);
+  const suffix = stripped.substring(90);
+  return suffix.length > 0 && suffix !== ''.padStart(suffix.length, '0');
+}
+
 interface CheckSignature {
-  (sigature: string, addressHex: string): boolean;
+  (signature: string, addressHex: string): boolean;
 }
 
 function generateSelectorSignature(signatures: string[]): CheckSignature {
@@ -86,10 +102,27 @@ export class Transaction extends BaseTransaction {
   }
 
   get signature(): string[] {
-    if (this.credentials.length === 0) {
+    if (!this.credentials || this.credentials.length === 0) {
       return [];
     }
-    return this.credentials[0].getSignatures().filter((s) => !isEmptySignature(s));
+    // Use the intersection of non-empty signatures across all credentials. A signer's
+    // ECDSA is counted only if it appears in every credential (every input), so a
+    // credential that is still missing a signature another credential already has
+    // does not surface a false-complete signature set.
+    let intersection: Set<string> | null = null;
+    for (const c of this.credentials) {
+      const credSigs = new Set<string>(c.getSignatures().filter((s) => !isEmptySignature(s)));
+      if (intersection === null) {
+        intersection = credSigs;
+      } else {
+        for (const sig of intersection) {
+          if (!credSigs.has(sig)) {
+            intersection.delete(sig);
+          }
+        }
+      }
+    }
+    return intersection ? [...intersection] : [];
   }
 
   get credentials(): Credential[] {
@@ -97,7 +130,10 @@ export class Transaction extends BaseTransaction {
   }
 
   get hasCredentials(): boolean {
-    return this.credentials !== undefined && this.credentials.length > 0;
+    // Guard against credential regeneration whenever credentials have been set from a parsed
+    // tx. Must use != null (not a length check) so credentials=[] is still recognized as an
+    // established (if buggy) state rather than "never built".
+    return this.credentials != null;
   }
 
   /** @inheritdoc */
@@ -119,7 +155,7 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('empty transaction to sign');
     }
-    if (!this.hasCredentials) {
+    if (!this.credentials || this.credentials.length === 0) {
       throw new InvalidTransactionError('empty credentials to sign');
     }
     const unsignedTx = this._avaxTransaction as UnsignedTx;
@@ -160,6 +196,30 @@ export class Transaction extends BaseTransaction {
   toBroadcastFormat(): string {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
+    }
+    // credentials=[] is always a bug: hasCredentials treats it as "established" so a rebuild
+    // won't silently regenerate placeholders over it, but an empty array means no signer has
+    // actually touched the tx -- serializing it would produce a zero-credential tx.
+    if (this.credentials != null && this.credentials.length === 0) {
+      throw new InvalidTransactionError('transaction has no credentials — cannot broadcast');
+    }
+    if (this.credentials && this.credentials.length > 0) {
+      let hasRealSig = false;
+      let hasAddrPlaceholder = false;
+      for (const c of this.credentials) {
+        for (const s of c.getSignatures()) {
+          if (!isEmptySignature(s)) {
+            hasRealSig = true;
+          } else if (isAddrPlaceholder(s)) {
+            hasAddrPlaceholder = true;
+          }
+        }
+      }
+      if (hasRealSig && hasAddrPlaceholder) {
+        throw new InvalidTransactionError(
+          'transaction has a real ECDSA alongside an address placeholder (r=0): incomplete signing detected, refusing broadcast'
+        );
+      }
     }
     return this.toHexString(avaxUtils.addChecksum((this._avaxTransaction as UnsignedTx).getSignedTx().toBytes()));
   }

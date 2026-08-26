@@ -401,7 +401,11 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         utxos.push(new Utxo(utxoId, assetId, transferInputs));
 
         inputs.push(input);
-        if (!this.transaction.credentials || this.transaction.credentials.length == 0) {
+        // Only populate fresh placeholder credentials the first time this tx is built.
+        // Must be a null check, not a length check: an already-established credentials=[]
+        // is a bug state (see Transaction.hasCredentials) and must surface via the sign()/
+        // toBroadcastFormat() guards, not be silently regenerated over here.
+        if (this.transaction.credentials == null) {
           if (buildOutputs) {
             // For the bitgo signature we create an empty signature
             // For the user/backup signature we store the address that matches the key
