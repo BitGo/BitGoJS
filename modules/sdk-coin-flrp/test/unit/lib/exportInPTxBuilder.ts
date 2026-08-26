@@ -582,9 +582,6 @@ describe('FLRP credential guard regression', () => {
 
     const placeholder = Buffer.from(''.padStart(90, '0') + '11'.repeat(20), 'hex');
     credentials[0].setSignature(0, placeholder);
-    assert.throws(
-      () => tx.toBroadcastFormat(),
-      /real ECDSA alongside an address placeholder \(r=0\)/
-    );
+    assert.throws(() => tx.toBroadcastFormat(), /real ECDSA alongside an address placeholder \(r=0\)/);
   });
 });
