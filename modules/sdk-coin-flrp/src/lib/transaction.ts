@@ -43,6 +43,19 @@ function isEmptySignature(signature: string): boolean {
 }
 
 /**
+ * Checks whether an empty signature contains an address placeholder.
+ * A real signature alongside one means signing is incomplete.
+ */
+function isAddressPlaceholder(signature: string): boolean {
+  if (!isEmptySignature(signature)) {
+    return false;
+  }
+  const stripped = utils.removeHexPrefix(signature);
+  const suffix = stripped.substring(90);
+  return suffix.length > 0 && suffix !== ''.padStart(suffix.length, '0');
+}
+
+/**
  * Interface for signature slot checking
  */
 interface CheckSignature {
@@ -126,10 +139,25 @@ export class Transaction extends BaseTransaction {
   }
 
   get signature(): string[] {
-    if (!this.hasCredentials) {
+    if (!this.credentials || this.credentials.length === 0) {
       return [];
     }
-    return this.credentials[0].getSignatures().filter((s) => !isEmptySignature(s));
+
+    // A signature is complete only when it is present in every credential.
+    let intersection: Set<string> | null = null;
+    for (const credential of this.credentials) {
+      const signatures = new Set(credential.getSignatures().filter((s) => !isEmptySignature(s)));
+      if (intersection === null) {
+        intersection = signatures;
+      } else {
+        for (const signature of intersection) {
+          if (!signatures.has(signature)) {
+            intersection.delete(signature);
+          }
+        }
+      }
+    }
+    return intersection ? [...intersection] : [];
   }
 
   get credentials(): Credential[] {
@@ -137,7 +165,7 @@ export class Transaction extends BaseTransaction {
   }
 
   get hasCredentials(): boolean {
-    return this.credentials !== undefined && this.credentials.length > 0;
+    return this.credentials != null;
   }
 
   /** @inheritdoc */
@@ -153,7 +181,7 @@ export class Transaction extends BaseTransaction {
     if (!this._flareTransaction) {
       throw new InvalidTransactionError('empty transaction to sign');
     }
-    if (!this.hasCredentials) {
+    if (!this.credentials || this.credentials.length === 0) {
       throw new InvalidTransactionError('empty credentials to sign');
     }
 
@@ -277,7 +305,30 @@ export class Transaction extends BaseTransaction {
     if (!this._flareTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    // If we have the original raw signed bytes, use them directly to preserve exact format
+    const credentials = (this._flareTransaction as UnsignedTx).credentials;
+    if (credentials != null && credentials.length === 0) {
+      throw new InvalidTransactionError('transaction has no credentials -- cannot broadcast');
+    }
+    if (credentials) {
+      let hasRealSignature = false;
+      let hasAddressPlaceholder = false;
+      for (const credential of credentials) {
+        for (const signature of credential.getSignatures()) {
+          if (isEmptySignature(signature)) {
+            hasAddressPlaceholder ||= isAddressPlaceholder(signature);
+          } else {
+            hasRealSignature = true;
+          }
+        }
+      }
+      if (hasRealSignature && hasAddressPlaceholder) {
+        throw new InvalidTransactionError(
+          'transaction has a real ECDSA alongside an address placeholder (r=0): incomplete signing detected, refusing broadcast'
+        );
+      }
+    }
+
+    // If we have the original raw signed bytes, use them directly to preserve exact format.
     if (this._rawSignedBytes) {
       return FlareUtils.bufferToHex(this._rawSignedBytes);
     }
