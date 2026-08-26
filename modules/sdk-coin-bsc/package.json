@@ -48,7 +48,10 @@
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^2.4.1",
-    "@bitgo/sdk-test": "^9.1.70"
+    "@bitgo/sdk-test": "^9.1.70",
+    "@ethereumjs/rlp": "^4.0.0",
+    "@ethereumjs/tx": "^3.3.0",
+    "ethereumjs-util": "7.1.5"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [
