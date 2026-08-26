@@ -356,6 +356,19 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
       );
     });
 
+    it('toBroadcastFormat() throws when credentials=[] rather than serializing a zero-credential tx', async () => {
+      const halfSignedHex = await buildHalfSigned();
+      const builder = factory.from(halfSignedHex) as any;
+      const tx = (await builder.build()) as any;
+      // Force credentials=[] directly on a built tx, bypassing sign() entirely, to exercise
+      // the toBroadcastFormat() guard in isolation.
+      tx._avaxTransaction.credentials = [];
+      assert.throws(
+        () => tx.toBroadcastFormat(),
+        (e: any) => e.message === 'transaction has no credentials — cannot broadcast'
+      );
+    });
+
     it('sign() throws on empty credentials rather than silently producing a bad tx', async () => {
       const halfSignedHex = await buildHalfSigned();
       const signer2Builder = factory.from(halfSignedHex) as any;

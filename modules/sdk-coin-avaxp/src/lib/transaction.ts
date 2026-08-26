@@ -41,7 +41,7 @@ function isAddrPlaceholder(signature: string): boolean {
 }
 
 interface CheckSignature {
-  (sigature: string, addressHex: string): boolean;
+  (signature: string, addressHex: string): boolean;
 }
 
 function generateSelectorSignature(signatures: string[]): CheckSignature {
@@ -201,7 +201,7 @@ export class Transaction extends BaseTransaction {
     // won't silently regenerate placeholders over it, but an empty array means no signer has
     // actually touched the tx -- serializing it would produce a zero-credential tx.
     if (this.credentials != null && this.credentials.length === 0) {
-      throw new InvalidTransactionError('transaction has no credentials -- cannot broadcast');
+      throw new InvalidTransactionError('transaction has no credentials — cannot broadcast');
     }
     if (this.credentials && this.credentials.length > 0) {
       let hasRealSig = false;
