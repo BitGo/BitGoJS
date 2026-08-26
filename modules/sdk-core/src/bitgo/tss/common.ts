@@ -4,6 +4,7 @@ import openpgp from 'openpgp';
 import { MPCv2SigningState } from '@bitgo/public-types';
 import { BitGoBase } from '../bitgoBase';
 import { TxRequestChallengeResponse } from './types';
+import { MPCAlgorithm } from '../baseCoin';
 import {
   RequestType,
   TxRequest,
@@ -144,7 +145,7 @@ export async function sendSignatureShareV2(
   txRequestId: string,
   signatureShares: SignatureShareRecord[],
   requestType: RequestType,
-  mpcAlgorithm: 'eddsa' | 'ecdsa',
+  mpcAlgorithm: MPCAlgorithm,
   signerGpgPublicKey: string,
   signerShare?: string,
   multisigTypeVersion?: 'MPCv2' | undefined,

@@ -146,7 +146,22 @@ const DOGE_FEATURES = [
 ];
 const DASH_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION];
 const TDASH_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
-const ZEC_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.CUSTODY_BITGO_FRANKFURT];
+const ZEC_FEATURES = [
+  ...UtxoCoin.DEFAULT_FEATURES,
+  CoinFeature.BULK_TRANSACTION,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  /**
+   * Zcash also supports a RedPallas/Orchard shielded pool, selectable via
+   * `otherSupportedKeyCurves` (see the `zec`/`tzec` entries below). TSS/TSS_COLD/MPCV2 are added
+   * here (alongside the existing MULTISIG/MULTISIG_COLD used for transparent addresses) so
+   * downstream OVC/BitGo tooling can treat this coin as TSS-eligible for shielded DKG, without
+   * touching the existing transparent multisig flows which remain keyed on `primaryKeyCurve`
+   * (secp256k1).
+   */
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
+];
 const PEARL_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.DISTRIBUTED_CUSTODY];
 export const utxoCoins: Readonly<BaseCoin>[] = [
   utxo(

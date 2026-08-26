@@ -625,7 +625,14 @@ export interface MessagePrep {
   encodeMessage(message: string): string;
 }
 
-export type MPCAlgorithm = 'ecdsa' | 'eddsa';
+/**
+ * 'redpallas' is a DKG-only MPC algorithm (no signing support in this SDK) used for the
+ * Zcash Orchard shielded pool. It is additive: existing coins never return it from
+ * `getMPCAlgorithm()` unless explicitly implemented to do so, so this does not change
+ * behavior for any existing ECDSA/EdDSA coin or for ZEC's existing transparent
+ * (secp256k1) multisig/TSS flows.
+ */
+export type MPCAlgorithm = 'ecdsa' | 'eddsa' | 'redpallas';
 
 export type NFTTransferOptions = {
   tokenContractAddress: string;
