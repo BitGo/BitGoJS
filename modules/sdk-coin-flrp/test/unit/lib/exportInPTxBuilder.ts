@@ -560,3 +560,31 @@ describe('Flrp Export In P Tx Builder', () => {
     });
   });
 });
+
+describe('FLRP credential guard regression', () => {
+  const coinConfig = coins.get('tflrp');
+  const factory = new TransactionBuilderFactory(coinConfig);
+
+  it('treats an established empty credential array as credentials', async () => {
+    const tx = (await factory.from(EXPORT_IN_P.fullSigntxHex).build()) as Transaction;
+    const flareTx = tx.getFlareTransaction() as UnsignedTx;
+    flareTx.credentials = [];
+
+    tx.hasCredentials.should.be.true();
+    assert.throws(() => tx.toBroadcastFormat(), /transaction has no credentials/);
+  });
+
+  it('rejects a real signature alongside an address placeholder', async () => {
+    const tx = (await factory.from(EXPORT_IN_P.fullSigntxHex).build()) as Transaction;
+    const flareTx = tx.getFlareTransaction() as UnsignedTx;
+    const credentials = flareTx.credentials;
+    credentials.length.should.be.greaterThan(0);
+
+    const placeholder = Buffer.from(''.padStart(90, '0') + '00'.repeat(20), 'hex');
+    credentials[0].setSignature(0, placeholder);
+    assert.throws(
+      () => tx.toBroadcastFormat(),
+      /real ECDSA alongside an address placeholder \(r=0\)/
+    );
+  });
+});
