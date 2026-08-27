@@ -412,6 +412,10 @@ describe('EdDSA MPS DKG', function () {
 
       assert.strictEqual(userPk, backupPk, 'user and backup must agree on public key after retrofit DKG');
       assert.strictEqual(backupPk, bitgoPk, 'backup and bitgo must agree on public key after retrofit DKG');
+      assert.strictEqual(userPk, retrofitUser.expectedPk, 'retrofit DKG must preserve the original public key');
+      assert.strictEqual(user.getCommonKeychain(), backup.getCommonKeychain());
+      assert.strictEqual(user.getCommonKeychain(), bitgo.getCommonKeychain());
+      assert.strictEqual(user.getCommonKeychain(), retrofitUser.expectedPk + retrofitUser.chainCode);
       assert.strictEqual(userPk.length, 64, 'public key must be 32 bytes (64 hex chars)');
     });
 
