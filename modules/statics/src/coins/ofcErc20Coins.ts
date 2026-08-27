@@ -105,7 +105,7 @@ export const ofcErc20Coins = [
     true,
     'unieth'
   ),
-  ofcerc20(
+  tofcerc20(
     'ac0ccb52-0813-4e2f-9b87-606a26bb9a86',
     'ofctunieth:usdc',
     'Test USDC',
@@ -4137,7 +4137,7 @@ export const ofcErc20Coins = [
     true,
     'inketh'
   ),
-  ofcerc20(
+  tofcerc20(
     '67fb30f1-8d09-4d4c-89a6-ec45c289bbe5',
     'ofctinketh:usdc',
     'Test USDC',
@@ -5953,7 +5953,7 @@ export const tOfcErc20Coins = [
     'hypeevm'
   ),
 
-  ofcerc20(
+  tofcerc20(
     '68bb2434-95d2-4e38-ac97-8890d4174dad',
     'ofcthypeevm:usdc',
     'Test HyperEVM USD Coin',
@@ -6499,7 +6499,7 @@ export const tOfcErc20Coins = [
     true,
     'mon'
   ),
-  ofcerc20(
+  tofcerc20(
     '0a48b37f-f5df-4566-9adf-883533ef5976',
     'ofctmon:usdc',
     'Test MON:USDC',
@@ -6615,7 +6615,7 @@ export const tOfcErc20Coins = [
     true,
     'xdc'
   ),
-  ofcerc20(
+  tofcerc20(
     '5dfff12b-1f30-4224-8687-b8e4dbb05bc5',
     'ofctxdc:usdc',
     'Test USD Coin (XDC)',
