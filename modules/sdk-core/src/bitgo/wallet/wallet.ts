@@ -4870,6 +4870,10 @@ export class Wallet implements IWallet {
    * Signs and sends a transaction request from a TSS (hot) wallet, or a SMC (cold) wallet with an external signer.
    * Meant to be used for a transaction request where the signing process is aborted.
    *
+   * Always clears any existing signature shares before signing, for both full and lite transaction
+   * requests, so a resumed/retried sign (including one picked up by a different user than whoever
+   * last touched this transaction request) restarts cleanly instead of building on stale shares.
+   *
    * @param params
    *    txRequestId - The ID of the transaction request.
    *    walletPassphrase - The passphrase for the wallet.
@@ -4877,9 +4881,7 @@ export class Wallet implements IWallet {
    * @returns A promise that resolves to a SignedTransaction.
    */
   public async signAndSendTxRequest(params: SignAndSendTxRequestOptions): Promise<SignedTransaction> {
-    if (params.isTxRequestFull) {
-      await this.tssUtils?.deleteSignatureShares(params.txRequestId);
-    }
+    await this.tssUtils?.deleteSignatureShares(params.txRequestId);
 
     const ret = await this.getUserKeyAndSignTssTransaction({
       walletPassphrase: params.walletPassphrase,
