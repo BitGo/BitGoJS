@@ -4308,6 +4308,7 @@ describe('V2 Wallet:', function () {
       });
 
       it('should sign lite transaction', async function () {
+        const deleteSignatureSharesSpy = sandbox.stub(TssUtils.prototype, 'deleteSignatureShares');
         const getUserKeyAndSignTssTxSpy = sandbox.stub(tssSolWallet, 'getUserKeyAndSignTssTransaction');
         getUserKeyAndSignTssTxSpy.resolves(exampleSignedTx);
         const submitTxSpy = sandbox.stub(tssSolWallet, 'submitTransaction');
@@ -4319,6 +4320,7 @@ describe('V2 Wallet:', function () {
           isTxRequestFull: false,
         });
 
+        sandbox.assert.calledOnce(deleteSignatureSharesSpy);
         sandbox.assert.calledOnce(getUserKeyAndSignTssTxSpy);
         sandbox.assert.calledOnce(submitTxSpy);
         signedTx.should.deepEqual(exampleSignedTx);
