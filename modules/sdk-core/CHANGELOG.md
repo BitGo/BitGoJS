@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.10.0...@bitgo/sdk-core@38.11.0) (2026-08-27)
+
+
+### Bug Fixes
+
+* **abstract-eth,sdk-core:** enforce signableHex/serializedTxHex consistency for BSC and XDC ([d7d2867](https://github.com/BitGo/BitGoJS/commit/d7d2867c380c54bf3b5eda7d5ec63fb46bd7e300))
+* **sdk-core:** clean up stale signature shares before every TSS sign ([866f7f3](https://github.com/BitGo/BitGoJS/commit/866f7f3c1fa00f1df91ae25b1c2f3184299b4399))
+
+
+### Features
+
+* add RedPallas MPCv2 DKG support for ZEC ([7e3dfc0](https://github.com/BitGo/BitGoJS/commit/7e3dfc0347c77bc425d4dc470060e901e633efbe))
+* add RedPallas pubkey to constants and tss/pubkey ([4b3b8d1](https://github.com/BitGo/BitGoJS/commit/4b3b8d1e44de439103f555de52750f283bec6ef0))
+* keep only red pallas custodial implementations ([063b5bb](https://github.com/BitGo/BitGoJS/commit/063b5bb24d5ebeddd1c901c3fcea780fcb6de715))
+* persist hardened parent path on safe child mint ([6684036](https://github.com/BitGo/BitGoJS/commit/6684036a16fdd04752933c3cd6f0b1d4079658a1))
+
+
+
+
+
 # [38.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.9.1...@bitgo/sdk-core@38.10.0) (2026-08-25)
 
 

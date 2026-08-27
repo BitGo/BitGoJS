@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.36](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.7.35...@bitgo/sdk-coin-avaxp@5.7.36) (2026-08-27)
+
+
+### Bug Fixes
+
+* **sdk-coin-avaxp:** address PR [#9571](https://github.com/BitGo/BitGoJS/issues/9571) review feedback ([2d1a085](https://github.com/BitGo/BitGoJS/commit/2d1a08544f4e2485440f60e85f1bb2556e9822be))
+* **sdk-coin-avaxp:** port credential guard bypass fix to permissionless validator path ([b7abe37](https://github.com/BitGo/BitGoJS/commit/b7abe373171c9071ffcfbe421fec4f7f01d5f5df)), closes [#9287](https://github.com/BitGo/BitGoJS/issues/9287)
+
+
+
+
+
 ## [5.7.35](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.7.34...@bitgo/sdk-coin-avaxp@5.7.35) (2026-08-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

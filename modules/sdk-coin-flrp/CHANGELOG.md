@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.17.9...@bitgo/sdk-coin-flrp@1.18.0) (2026-08-27)
+
+
+### Features
+
+* add RedPallas MPCv2 DKG support for ZEC ([7e3dfc0](https://github.com/BitGo/BitGoJS/commit/7e3dfc0347c77bc425d4dc470060e901e633efbe))
+
+
+
+
+
 ## [1.17.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.17.8...@bitgo/sdk-coin-flrp@1.17.9) (2026-08-25)
 
 

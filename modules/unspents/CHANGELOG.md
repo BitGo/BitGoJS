@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.51.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.51.8...@bitgo/unspents@0.51.9) (2026-08-27)
+
+
+### Bug Fixes
+
+* **unspents:** pin varuint-bitcoin as explicit direct dependency ([f4263a8](https://github.com/BitGo/BitGoJS/commit/f4263a832f503b3082aa6dbbe6b552cdfc9c2225))
+
+
+
+
+
 ## [0.51.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.51.7...@bitgo/unspents@0.51.8) (2026-07-28)
 
 **Note:** Version bump only for package @bitgo/unspents

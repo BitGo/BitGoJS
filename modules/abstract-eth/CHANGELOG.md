@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [25.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@25.3.2...@bitgo/abstract-eth@25.3.3) (2026-08-27)
+
+
+### Bug Fixes
+
+* **abstract-eth,sdk-core:** enforce signableHex/serializedTxHex consistency for BSC and XDC ([d7d2867](https://github.com/BitGo/BitGoJS/commit/d7d2867c380c54bf3b5eda7d5ec63fb46bd7e300))
+* **abstract-eth:** use TransactionFactory for cleaner signable derivation; add XDC test ([d2abc13](https://github.com/BitGo/BitGoJS/commit/d2abc13c20a53137f4448576c3a3cf9b2b4f6bff))
+
+
+
+
+
 ## [25.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@25.3.1...@bitgo/abstract-eth@25.3.2) (2026-08-25)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

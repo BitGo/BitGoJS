@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.24.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.24.2...@bitgo/utxo-lib@11.24.3) (2026-08-27)
+
+
+### Bug Fixes
+
+* **utxo-lib:** serialize Zcash Sapling valueBalance as signed int64 ([6afc97e](https://github.com/BitGo/BitGoJS/commit/6afc97ed0c2e12f34c9878dfdc09c513c6084559))
+
+
+
+
+
 ## [11.24.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.24.1...@bitgo/utxo-lib@11.24.2) (2026-07-28)
 
 **Note:** Version bump only for package @bitgo/utxo-lib

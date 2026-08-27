@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.9.0...@bitgo/statics@59.10.0) (2026-08-27)
+
+
+### Bug Fixes
+
+* change order of xlm tokens ([d4abcba](https://github.com/BitGo/BitGoJS/commit/d4abcba27fb72f0f5a26fa41475854051774c77a))
+
+
+### Features
+
+* add RedPallas MPCv2 DKG support for ZEC ([7e3dfc0](https://github.com/BitGo/BitGoJS/commit/7e3dfc0347c77bc425d4dc470060e901e633efbe))
+* **statics:** add mainnet erc721:hbarevmtoken generic placeholder ([43ecde0](https://github.com/BitGo/BitGoJS/commit/43ecde00d768889091e66539f9a890a4db22ff40))
+* **statics:** add otherSupportedKeyCurves to support Pallas curve for ZEC ([001e8ad](https://github.com/BitGo/BitGoJS/commit/001e8ad75ec33b28461b6a1b70ec151ea685eb2f))
+
+
+
+
+
 # [59.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.8.0...@bitgo/statics@59.9.0) (2026-08-25)
 
 

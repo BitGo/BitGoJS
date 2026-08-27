@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.4.1...@bitgo/sdk-api@2.4.2) (2026-08-27)
+
+
+### Bug Fixes
+
+* skip ECDH decrypt for plaintext access tokens ([2d40a3d](https://github.com/BitGo/BitGoJS/commit/2d40a3da65b4a263805994558e27ddeff6834e28))
+
+
+
+
+
 ## [2.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.4.0...@bitgo/sdk-api@2.4.1) (2026-08-25)
 
 

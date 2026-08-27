@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xdc@1.10.15...@bitgo/sdk-coin-xdc@1.10.16) (2026-08-27)
+
+
+### Bug Fixes
+
+* **abstract-eth:** use TransactionFactory for cleaner signable derivation; add XDC test ([d2abc13](https://github.com/BitGo/BitGoJS/commit/d2abc13c20a53137f4448576c3a3cf9b2b4f6bff))
+* **sdk-coin-bsc,sdk-coin-xdc:** declare test dependencies for ethereumjs packages ([b29025d](https://github.com/BitGo/BitGoJS/commit/b29025d00bbc7b26a7a2c16f9caa0e19baa14dfb))
+
+
+
+
+
 ## [1.10.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xdc@1.10.14...@bitgo/sdk-coin-xdc@1.10.15) (2026-08-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xdc

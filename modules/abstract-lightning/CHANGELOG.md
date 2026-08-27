@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@8.2.9...@bitgo/abstract-lightning@8.3.0) (2026-08-27)
+
+
+### Features
+
+* add RedPallas MPCv2 DKG support for ZEC ([7e3dfc0](https://github.com/BitGo/BitGoJS/commit/7e3dfc0347c77bc425d4dc470060e901e633efbe))
+
+
+
+
+
 ## [8.2.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@8.2.8...@bitgo/abstract-lightning@8.2.9) (2026-08-25)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning
