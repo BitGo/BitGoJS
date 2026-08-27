@@ -413,6 +413,20 @@ export const botTokens = [
     undefined,
     Networks.test.sol
   ),
+  AccountCtors.tsolToken(
+    '9ed0c30b-7b1c-4c76-881f-625d65e2e058',
+    'tsol:tgku',
+    'Solana Gokubu',
+    9,
+    '2etoKEczEX5Ua71mt4XU8q2ycne7VBvcskFQxtrGaxuM',
+    '2etoKEczEX5Ua71mt4XU8q2ycne7VBvcskFQxtrGaxuM',
+    'tsol:tgku' as unknown as UnderlyingAsset,
+    getTokenFeatures('sol', ['custody-bitgo-germany' as CoinFeature, 'custody-bitgo-korea' as CoinFeature]),
+    AccountCtors.ProgramID.TokenProgramId,
+    undefined,
+    undefined,
+    Networks.test.sol
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',

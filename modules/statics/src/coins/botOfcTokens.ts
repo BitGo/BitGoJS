@@ -313,6 +313,18 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.tofcsolToken(
+    'f510c434-f161-4eae-a55a-d091dfa349fe',
+    'ofctsol:tgku',
+    'ofcSolana Gokubu',
+    9,
+    'tsol:tgku' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
   AccountCtors.ofcerc20(
     '26f46d44-700d-4e32-8845-fb181e6d8027',
     'ofceth:gusdcq',
