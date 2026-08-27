@@ -224,6 +224,7 @@ export async function sendTxRequest(
  * @param {EncryptedSignerShareRecord} encryptedSignerShare - the client encrypted signer share
  * @param {string} [apiMode] - the txRequest api mode (full or lite) - defaults to lite
  * @param {IRequestTracer} reqId - the request tracer request Id
+ * @param requestType - The type of request being submitted (either tx or message for signing) - defaults to tx
  * @returns {Promise<ExchangeCommitmentResponse>} - the server commitment share
  */
 export async function exchangeEddsaCommitments(
@@ -233,11 +234,12 @@ export async function exchangeEddsaCommitments(
   commitmentShare: CommitmentShareRecord,
   encryptedSignerShare: EncryptedSignerShareRecord,
   apiMode: 'full' | 'lite' = 'lite',
-  reqId?: IRequestTracer
+  reqId?: IRequestTracer,
+  requestType: RequestType = RequestType.tx
 ): Promise<ExchangeCommitmentResponse> {
   let addendum = '';
   if (apiMode === 'full') {
-    addendum = '/transactions/0';
+    addendum = requestType === RequestType.message ? '/messages/0' : '/transactions/0';
   }
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/commit';
   const reqTracer = reqId || new RequestTracer();

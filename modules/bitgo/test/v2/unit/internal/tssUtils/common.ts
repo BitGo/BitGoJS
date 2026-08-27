@@ -88,13 +88,11 @@ export async function nockExchangeCommitments(params: {
   txRequestId: string;
   response: ExchangeCommitmentResponse;
   apiMode?: 'lite' | 'full';
+  requestType?: RequestType;
   notPersist?: boolean;
 }): Promise<nock.Scope> {
-  const { apiMode = 'lite' } = params;
-  let addendum = '';
-  if (apiMode === 'full') {
-    addendum = '/transactions/0';
-  }
+  const { apiMode = 'lite', requestType = RequestType.tx } = params;
+  const addendum = getRoute('eddsa', requestType, apiMode);
   return nock('https://bitgo.fakeurl')
     .persist(true)
     .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId}${addendum}/commit`)

@@ -955,6 +955,7 @@ describe('TSS Utils:', async function () {
         txRequestId: txRequest.txRequestId,
         response: exchangeCommitResponse,
         apiMode: 'full',
+        requestType: RequestType.message,
       });
     });
 

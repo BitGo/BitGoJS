@@ -806,7 +806,8 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       commitmentShare,
       encryptedSignerShare,
       apiVersion,
-      params.reqId
+      params.reqId,
+      requestType
     );
 
     await offerUserToBitgoRShare(
