@@ -1706,7 +1706,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     const txBuilder = this.getTransactionBuilder(params.common) as TransactionBuilder;
     const txHex = buildResponse.txHex;
     txBuilder.from(txHex);
-    if (buildResponse.walletVersion) {
+    if (buildResponse.walletVersion !== undefined) {
       // If walletVersion is provided, set it in the txBuilder
       txBuilder.walletVersion(buildResponse.walletVersion);
     }
