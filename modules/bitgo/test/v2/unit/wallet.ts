@@ -4420,6 +4420,27 @@ describe('V2 Wallet:', function () {
           txRequest.should.deepEqual(txRequestForMessageSigning);
         });
 
+        it('should include preparedTransaction in the msgrequests body when provided', async function () {
+          const preparedTransaction = 'base64-prepared-transaction-bytes';
+          let capturedBody: any;
+          nock(bgUrl)
+            .post(`/api/v2/wallet/${tssEthWallet.id()}/msgrequests`, (body) => {
+              capturedBody = body;
+              return true;
+            })
+            .reply(200, txRequestForMessageSigning);
+
+          await tssEthWallet.buildSignMessageRequest({
+            message: {
+              messageRaw,
+              messageStandardType: MessageStandardType.EIP191,
+              preparedTransaction,
+            },
+          });
+
+          capturedBody.intent.preparedTransaction.should.equal(preparedTransaction);
+        });
+
         it(`[${coinName}] should sign message`, async function () {
           const signMessageTssSpy = sinon.spy(tssEthWallet, 'signMessageTss' as any);
           nock(bgUrl)
@@ -4473,6 +4494,25 @@ describe('V2 Wallet:', function () {
           actualArg.message?.messageEncoded?.should.equal(
             Buffer.from(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`).toString('hex')
           );
+        });
+
+        it(`[${coinName}] should include preparedTransaction when signing a fresh message request`, async function () {
+          const preparedTransaction = 'base64-prepared-transaction-bytes';
+          let capturedBody: any;
+          nock(bgUrl)
+            .post(`/api/v2/wallet/${tssEthWallet.id()}/msgrequests`, (body) => {
+              capturedBody = body;
+              return true;
+            })
+            .reply(200, txRequestForMessageSigning);
+
+          await tssEthWallet.signMessage({
+            reqId,
+            message: { messageRaw, messageStandardType: MessageStandardType.EIP191, preparedTransaction },
+            prv: 'secretKey',
+          });
+
+          capturedBody.intent.preparedTransaction.should.equal(preparedTransaction);
         });
 
         it('should fail to sign message with empty prv', async function () {
