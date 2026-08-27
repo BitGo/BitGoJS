@@ -6540,17 +6540,6 @@ export const allCoinsAndTokens = [
     '0x78d74402093e002b84d36a40d9b47ee06186ab4e'
   ),
   tstellarToken(
-    '853a61c1-c03e-4899-9d27-ad658f4abb7d',
-    'txlm:USDC-GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
-    'Test Stellar USDC',
-    7,
-    UnderlyingAsset['txlm:USDC-GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'],
-    'centre.io',
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
-    '',
-    'TXLM:USDC'
-  ),
-  tstellarToken(
     '47887cb5-98bb-4942-bd25-3ccca0847f36',
     'txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU',
     'BitGo Shield Token',
@@ -6605,6 +6594,17 @@ export const allCoinsAndTokens = [
     AccountCoin.DEFAULT_FEATURES,
     '',
     'TXLM:yGHS'
+  ),
+  tstellarToken(
+    '853a61c1-c03e-4899-9d27-ad658f4abb7d',
+    'txlm:USDC-GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+    'Test Stellar USDC',
+    7,
+    UnderlyingAsset['txlm:USDC-GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'],
+    'centre.io',
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    '',
+    'TXLM:USDC'
   ),
   ttronToken(
     '4ece7f15-a5c9-4302-8c82-787d7eb7e3c9',
