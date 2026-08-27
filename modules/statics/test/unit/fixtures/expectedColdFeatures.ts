@@ -16,6 +16,8 @@ export const expectedColdFeatures = {
     'ttrx',
     'hyperliquid',
     'thyperliquid',
+    'zec',
+    'tzec',
   ],
   justMultiSig: [
     'algo',
@@ -61,12 +63,10 @@ export const expectedColdFeatures = {
     'txlm',
     'txrp',
     'txtz',
-    'tzec',
     'tzketh',
     'xlm',
     'xrp',
     'xtz',
-    'zec',
     'zketh',
   ],
   justTSS: [

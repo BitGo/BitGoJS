@@ -57,6 +57,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   protected bitgoPublicGpgKey: openpgp.Key;
   protected bitgoMPCv2PublicGpgKey: openpgp.Key | undefined;
   protected bitgoEddsaMpcv2PublicGpgKey: openpgp.Key | undefined;
+  protected bitgoRedpallasMpcv2PublicGpgKey: openpgp.Key | undefined;
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, wallet?: IWallet) {
     super(bitgo, baseCoin);
@@ -71,7 +72,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   }
 
   protected async setBitgoGpgPubKey(bitgo) {
-    const { mpcV1, mpcV2, eddsaMpcV2 } = await getBitgoGpgPubKey(bitgo);
+    const { mpcV1, mpcV2, eddsaMpcV2, redpallasMpcV2 } = await getBitgoGpgPubKey(bitgo);
     // Do not unset the MPCv1 key if it is already set. This is to avoid unsetting if extra constants api calls fail.
     if (mpcV1 !== undefined) {
       this.bitgoPublicGpgKey = mpcV1;
@@ -84,13 +85,18 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     if (eddsaMpcV2 !== undefined) {
       this.bitgoEddsaMpcv2PublicGpgKey = eddsaMpcV2;
     }
+    // Do not unset the RedPallas MPCv2 key if it is already set
+    if (redpallasMpcV2 !== undefined) {
+      this.bitgoRedpallasMpcv2PublicGpgKey = redpallasMpcV2;
+    }
   }
 
   public async pickBitgoPubGpgKeyForSigning(
     isMpcv2: boolean,
     reqId?: IRequestTracer,
     enterpriseId?: string,
-    isEddsaMpcv2?: boolean
+    isEddsaMpcv2?: boolean,
+    isRedpallasMpcv2?: boolean
   ): Promise<openpgp.Key> {
     let bitgoGpgPubKey;
     try {
@@ -102,7 +108,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
         armoredKey: getBitgoMpcGpgPubKey(
           this.bitgo.getEnv(),
           bitgoKeyChain.hsmType === 'nitro' ? 'nitro' : 'onprem',
-          isEddsaMpcv2 ? 'eddsaMpcv2' : isMpcv2 ? 'mpcv2' : 'mpcv1'
+          isRedpallasMpcv2 ? 'redpallasMpcv2' : isEddsaMpcv2 ? 'eddsaMpcv2' : isMpcv2 ? 'mpcv2' : 'mpcv1'
         ),
       });
     } catch (e) {
@@ -112,7 +118,10 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
         );
         // First try to get the key based on feature flags, if that fails, fallback to the default key from constants api.
         bitgoGpgPubKey = await this.getBitgoGpgPubkeyBasedOnFeatureFlags(enterpriseId, isMpcv2, reqId)
-          .then(async ({ mpcv2PublicKey, eddsaMpcv2PublicKey }) => {
+          .then(async ({ mpcv2PublicKey, eddsaMpcv2PublicKey, redpallasMpcv2PublicKey }) => {
+            if (isRedpallasMpcv2) {
+              return redpallasMpcv2PublicKey ?? (await this.getBitgoRedpallasMpcv2PublicGpgKey());
+            }
             if (isEddsaMpcv2) {
               return eddsaMpcv2PublicKey ?? (await this.getBitgoEddsaMpcv2PublicGpgKey());
             }
@@ -121,6 +130,9 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
             );
           })
           .catch(async () => {
+            if (isRedpallasMpcv2) {
+              return this.getBitgoRedpallasMpcv2PublicGpgKey();
+            }
             if (isEddsaMpcv2) {
               return this.getBitgoEddsaMpcv2PublicGpgKey();
             }
@@ -169,6 +181,18 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     }
 
     return this.bitgoEddsaMpcv2PublicGpgKey;
+  }
+
+  async getBitgoRedpallasMpcv2PublicGpgKey(): Promise<openpgp.Key> {
+    if (!this.bitgoRedpallasMpcv2PublicGpgKey) {
+      // retry getting bitgo's gpg key
+      await this.setBitgoGpgPubKey(this.bitgo);
+      if (!this.bitgoRedpallasMpcv2PublicGpgKey) {
+        throw new Error("Failed to get Bitgo's RedPallas MPCv2 gpg key");
+      }
+    }
+
+    return this.bitgoRedpallasMpcv2PublicGpgKey;
   }
 
   async createBitgoHeldBackupKeyShare(
@@ -598,7 +622,8 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   /**
    * It gets the appropriate BitGo GPG public keys for key creation based on a
    * combination of coin and the feature flags on the user and their enterprise if set.
-   * Returns both the default MPCv2 key and the EdDSA-specific MPCv2 key (if present).
+   * Returns the default MPCv2 key, the EdDSA-specific MPCv2 key, and the RedPallas-specific
+   * MPCv2 key (each if present).
    * @param enterpriseId - enterprise under which user wants to create the wallet
    * @param isMPCv2 - true to get the MPCv2 GPG public key, defaults to false
    * @param reqId - request tracer request id
@@ -607,7 +632,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     enterpriseId: string | undefined,
     isMPCv2 = false,
     reqId?: IRequestTracer
-  ): Promise<{ mpcv2PublicKey: Key; eddsaMpcv2PublicKey: Key | undefined }> {
+  ): Promise<{ mpcv2PublicKey: Key; eddsaMpcv2PublicKey: Key | undefined; redpallasMpcv2PublicKey: Key | undefined }> {
     const reqTracer = reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqTracer);
     const response: BitgoGPGPublicKey = await this.bitgo
@@ -621,7 +646,10 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     const eddsaMpcv2PublicKey = response.eddsaMpcv2PublicKey
       ? await readKey({ armoredKey: response.eddsaMpcv2PublicKey })
       : undefined;
-    return { mpcv2PublicKey, eddsaMpcv2PublicKey };
+    const redpallasMpcv2PublicKey = response.redpallasMpcv2PublicKey
+      ? await readKey({ armoredKey: response.redpallasMpcv2PublicKey })
+      : undefined;
+    return { mpcv2PublicKey, eddsaMpcv2PublicKey, redpallasMpcv2PublicKey };
   }
 
   /**

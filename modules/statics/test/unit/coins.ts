@@ -1210,6 +1210,41 @@ describe('Cold Wallet Features', () => {
   });
 });
 
+describe('ZEC RedPallas otherSupportedKeyCurves (shielded pool DKG)', () => {
+  it('zec and tzec should keep secp256k1 as primary curve and expose Pallas as an other supported curve', () => {
+    ['zec', 'tzec'].forEach((coinName) => {
+      const coin = coins.get(coinName) as UtxoCoin;
+      coin.should.be.instanceof(UtxoCoin);
+      coin.asset.should.equal(UnderlyingAsset.ZEC);
+      coin.baseUnit.should.equal(BaseUnit.ZEC);
+      coin.primaryKeyCurve.should.equal(KeyCurve.Secp256k1);
+      coin.otherSupportedKeyCurves.should.deepEqual([KeyCurve.Pallas]);
+    });
+  });
+
+  it('zec and tzec should still support existing transparent multisig cold features unchanged', () => {
+    ['zec', 'tzec'].forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.MULTISIG).should.eql(true);
+      coin.features.includes(CoinFeature.MULTISIG_COLD).should.eql(true);
+    });
+  });
+
+  it('zec and tzec should now also be TSS-eligible for shielded RedPallas DKG', () => {
+    ['zec', 'tzec'].forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.TSS).should.eql(true);
+      coin.features.includes(CoinFeature.TSS_COLD).should.eql(true);
+      coin.features.includes(CoinFeature.MPCV2).should.eql(true);
+    });
+  });
+
+  it('coins without an explicit otherSupportedKeyCurves should leave it undefined', () => {
+    const btc = coins.get('btc');
+    (btc.otherSupportedKeyCurves === undefined).should.be.true();
+  });
+});
+
 describe('Distributed Custody Features', () => {
   it('btc and tbtc should have distributed custody feature', () => {
     const targetCoins = ['tbtc', 'btc'];

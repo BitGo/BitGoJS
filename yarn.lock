@@ -1021,10 +1021,10 @@
     "@scure/base" "1.1.5"
     micro-eth-signer "0.7.2"
 
-"@bitgo/public-types@6.58.0":
-  version "6.58.0"
-  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-6.58.0.tgz#9c63e1703456cca8e9498d6251aeb6e51c938ec0"
-  integrity sha512-2yrxrj5c0dxc02MeeNLYxiCirxejVUpMswjRldNrTv7ipsL+rGU7aHmi0bPh8MHm0vAb0ikkhwbGDKVwQBDD/Q==
+"@bitgo/public-types@6.63.0":
+  version "6.63.0"
+  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-6.63.0.tgz#8f19956f043f4e4e20f6dc52b04ae03a8d227489"
+  integrity sha512-SaZOl4kCxr7HzJQtupIvqofMrdAQhX42KyRmxfG51j6Hh7mPnO2Ny7dTiKUwU1zh5u8MmTXpyIFwscyVW00BpA==
   dependencies:
     fp-ts "^2.0.0"
     io-ts "npm:@bitgo-forks/io-ts@2.1.4"
@@ -1037,10 +1037,10 @@
   resolved "https://registry.npmjs.org/@bitgo/wasm-dot/-/wasm-dot-1.7.0.tgz"
   integrity sha512-KoXavJvyDHlEN+sWcigbgxYJtdFaU7gS0EkYQbNH4npVjNlzo6rL6gwjyWbyOy7oEs65DhpJ9vY5kRbE/bKiTQ==
 
-"@bitgo/wasm-mps@1.12.0":
-  version "1.12.0"
-  resolved "https://registry.npmjs.org/@bitgo/wasm-mps/-/wasm-mps-1.12.0.tgz#03f9fc8eaa25d3dcb5af61915bba890759110c65"
-  integrity sha512-rude1gS5ml/I/qpkCoeBwvMbveNQp4cWxWzh3wUO4SsXebJMHVmGmWE27EsTBDEiaYI470q5H4aI/oyAfENOUg==
+"@bitgo/wasm-mps@1.13.0":
+  version "1.13.0"
+  resolved "https://registry.npmjs.org/@bitgo/wasm-mps/-/wasm-mps-1.13.0.tgz#375dd227ff3b531a6a740e0b1220717fff7e69de"
+  integrity sha512-Q+15btbNLbe3vMAaGqcMwXI9oAFTb85Ix951KjwOs97Worrj25RtJdri4vOFzRkzkwQsGCmeEDo4U1DvFmjykw==
 
 "@bitgo/wasm-solana@^2.6.0":
   version "2.6.0"
@@ -12795,7 +12795,18 @@ html-minifier-terser@^6.0.2:
     tapable "^1.1.3"
     util.promisify "1.0.0"
 
-"html-webpack-plugin-5@npm:html-webpack-plugin@^5", html-webpack-plugin@^5.5.0:
+"html-webpack-plugin-5@npm:html-webpack-plugin@^5":
+  version "5.6.4"
+  resolved "https://registry.npmjs.org/html-webpack-plugin/-/html-webpack-plugin-5.6.4.tgz"
+  integrity sha512-V/PZeWsqhfpE27nKeX9EO2sbR+D17A+tLf6qU+ht66jdUsN0QLKJN27Z+1+gHrVMKgndBahes0PU6rRihDgHTw==
+  dependencies:
+    "@types/html-minifier-terser" "^6.0.0"
+    html-minifier-terser "^6.0.2"
+    lodash "^4.17.21"
+    pretty-error "^4.0.0"
+    tapable "^2.0.0"
+
+html-webpack-plugin@^5.5.0:
   version "5.6.4"
   resolved "https://registry.npmjs.org/html-webpack-plugin/-/html-webpack-plugin-5.6.4.tgz"
   integrity sha512-V/PZeWsqhfpE27nKeX9EO2sbR+D17A+tLf6qU+ht66jdUsN0QLKJN27Z+1+gHrVMKgndBahes0PU6rRihDgHTw==
@@ -21360,7 +21371,16 @@ workerpool@^6.5.1:
   resolved "https://registry.npmjs.org/workerpool/-/workerpool-6.5.1.tgz"
   integrity sha512-Fs4dNYcsdpYSAfVxhnl1L5zTksjvOJxtC5hzMNl+1t9B8hTJTdKDyZ5ju7ztgPy+ft9tBFXoOlDNiOT9WUXZlA==
 
-"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@7.0.0, wrap-ansi@^7.0.0:
+"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
+  version "7.0.0"
+  resolved "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-7.0.0.tgz"
+  integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
+  dependencies:
+    ansi-styles "^4.0.0"
+    string-width "^4.1.0"
+    strip-ansi "^6.0.0"
+
+wrap-ansi@7.0.0, wrap-ansi@^7.0.0:
   version "7.0.0"
   resolved "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-7.0.0.tgz"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
