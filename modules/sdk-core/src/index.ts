@@ -34,6 +34,7 @@ export { EddsaMPCv2Utils };
 export type { EddsaSigningMaterial } from './bitgo/utils/tss/eddsa/eddsaMPCv2';
 export {
   getEddsaSigningMaterial,
+  isEddsaSigningMaterial,
   signEddsaMpcV2RecoveryTx,
   isEddsaMpcV1SigningMaterial,
   getEddsaMpcV2RecoveryKeySharesFromReducedKey,
