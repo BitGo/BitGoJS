@@ -12,6 +12,7 @@ import {
   InvalidAddressVerificationObjectPropertyError,
   MPCSweepTxs,
   TransactionType,
+  TxIntentMismatchRecipientError,
   UnexpectedAddressError,
   Wallet,
 } from '@bitgo/sdk-core';
@@ -54,6 +55,22 @@ describe('ETH:', function () {
   const hopTxid = '0x4af65143bc77da2b50f35b3d13cacb4db18f026bf84bc0743550bc57b9b53351';
   const userReqSig =
     '0x404db307f6147f0d8cd338c34c13906ef46a6faa7e0e119d5194ef05aec16e6f3d710f9b7901460f97e924066b62efd74443bd34402c6d40b49c203a559ff2c8';
+
+  const buildDefiTxHex = async (data: string): Promise<string> => {
+    const txBuilder = getBuilder('hteth') as TransactionBuilder;
+    txBuilder.type(TransactionType.ContractCall);
+    txBuilder.fee({ fee: '10', gasLimit: '100000' });
+    txBuilder.counter(1);
+    txBuilder.contract(address1);
+    txBuilder.data(data);
+    return (await txBuilder.build()).toBroadcastFormat();
+  };
+
+  const defiCalldata = (signature: string, values: string[]): string => {
+    const types = signature.slice(signature.indexOf('(') + 1, -1).split(',');
+    const methodId = EthereumAbi.methodID(signature.split('(')[0], types);
+    return '0x' + Buffer.concat([methodId, EthereumAbi.rawEncode(types, values)]).toString('hex');
+  };
 
   before(function () {
     const bitgoKeyXprv =
@@ -665,6 +682,17 @@ describe('ETH:', function () {
   });
 
   describe('TSS Transaction Verification', function () {
+    const expectDefiRejection = async (p: Promise<unknown>, messagePattern: RegExp) => {
+      try {
+        await p;
+      } catch (err) {
+        err.should.be.instanceOf(TxIntentMismatchRecipientError);
+        (err as Error).message.should.match(messagePattern);
+        return;
+      }
+      throw new Error('expected verifyTransaction to be rejected, but it resolved');
+    };
+
     it('should verify TSS consolidation transaction when txPrebuild has consolidateId', async function () {
       const coin = bitgo.coin('hteth') as Hteth;
       const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
@@ -886,7 +914,7 @@ describe('ETH:', function () {
       };
 
       const txPrebuild = {
-        txHex: '0x',
+        txHex: await buildDefiTxHex(defiCalldata('approve(address,uint256)', [address1, '10'])),
         coin: 'hteth',
         walletId: 'fakeWalletId',
       };
@@ -952,7 +980,7 @@ describe('ETH:', function () {
       };
 
       const txPrebuild = {
-        txHex: '0x',
+        txHex: await buildDefiTxHex(defiCalldata('deposit(uint256,address)', ['10', address1])),
         coin: 'hteth',
         walletId: 'fakeWalletId',
       };
@@ -964,6 +992,151 @@ describe('ETH:', function () {
         txPrebuild: txPrebuild as any,
         wallet,
         verification,
+        walletType: 'tss',
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should reject DeFi calldata that redirects funds or grants excess approval', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+      const verify = async (type: string, defiParams: Record<string, unknown> | undefined, data: string) =>
+        coin.verifyTransaction({
+          txParams: { type, defiParams, wallet } as any,
+          txPrebuild: { txHex: await buildDefiTxHex(data), coin: 'hteth', walletId: 'fakeWalletId' } as any,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        });
+
+      // defiApprove: attacker approve(attacker, MAX_UINT256) disguised as defiApprove
+      await expectDefiRejection(
+        verify(
+          'defiApprove',
+          { vaultId: 'vault', amount: '10' },
+          defiCalldata('approve(address,uint256)', [address2, '1000000000000000000'])
+        ),
+        /amount does not match/
+      );
+      // defiDeposit: funds redirected to attacker receiver
+      await expectDefiRejection(
+        verify(
+          'defiDeposit',
+          { vaultId: 'vault', amount: '10' },
+          defiCalldata('deposit(uint256,address)', ['10', address2])
+        ),
+        /receiver does not match/
+      );
+      // defiWithdraw: receiver and owner both attacker
+      await expectDefiRejection(
+        verify(
+          'defiWithdraw',
+          { vaultId: 'vault', amount: '10' },
+          defiCalldata('redeem(uint256,address,address)', ['5', address2, address2])
+        ),
+        /receiver and owner/
+      );
+    });
+
+    it('should reject DeFi calldata with wrong selector, wrong owner alone, or wrong deposit amount', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+      const verify = async (type: string, defiParams: Record<string, unknown>, data: string) =>
+        coin.verifyTransaction({
+          txParams: { type, defiParams, wallet } as any,
+          txPrebuild: { txHex: await buildDefiTxHex(data), coin: 'hteth', walletId: 'fakeWalletId' } as any,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        });
+      const defiParams = { vaultId: 'vault', amount: '10' };
+
+      // defiApprove with a non-approve selector (transfer disguised as approve)
+      await expectDefiRejection(
+        verify('defiApprove', defiParams, defiCalldata('transfer(address,uint256)', [address2, '10'])),
+        /approve\(address,uint256\)/
+      );
+      // defiDeposit with a non-deposit selector
+      await expectDefiRejection(
+        verify('defiDeposit', defiParams, defiCalldata('approve(address,uint256)', [address1, '10'])),
+        /deposit\(uint256,address\)/
+      );
+      // defiWithdraw with a non-redeem selector
+      await expectDefiRejection(
+        verify('defiWithdraw', defiParams, defiCalldata('approve(address,uint256)', [address1, '10'])),
+        /redeem\(uint256,address,address\)/
+      );
+      // defiWithdraw: receiver ok but owner is attacker
+      await expectDefiRejection(
+        verify('defiWithdraw', defiParams, defiCalldata('redeem(uint256,address,address)', ['10', address1, address2])),
+        /receiver and owner/
+      );
+      // defiWithdraw: receiver and owner ok but shares do not match defiParams.amount
+      await expectDefiRejection(
+        verify(
+          'defiWithdraw',
+          defiParams,
+          defiCalldata('redeem(uint256,address,address)', ['999', address1, address1])
+        ),
+        /shares do not match/
+      );
+      // defiDeposit: receiver ok but amount mismatch
+      await expectDefiRejection(
+        verify('defiDeposit', defiParams, defiCalldata('deposit(uint256,address)', ['999', address1])),
+        /amount does not match/
+      );
+    });
+
+    it('should fail closed when defi intent parameters are missing or calldata is short', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+      const verify = async (type: string, defiParams: Record<string, unknown> | undefined, data: string) =>
+        coin.verifyTransaction({
+          txParams: { type, defiParams, wallet } as any,
+          txPrebuild: { txHex: await buildDefiTxHex(data), coin: 'hteth', walletId: 'fakeWalletId' } as any,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        });
+
+      // Missing defiParams for each defi type -> fail closed
+      await expectDefiRejection(
+        verify('defiApprove', undefined, defiCalldata('approve(address,uint256)', [address1, '10'])),
+        /missing required intent parameters/
+      );
+      await expectDefiRejection(
+        verify('defiDeposit', undefined, defiCalldata('deposit(uint256,address)', ['10', address1])),
+        /missing required intent parameters/
+      );
+      await expectDefiRejection(
+        verify('defiWithdraw', undefined, defiCalldata('redeem(uint256,address,address)', ['5', address1, address1])),
+        /missing required intent parameters/
+      );
+      // Short/empty calldata with no valid selector prefix -> selector mismatch (fail closed)
+      await expectDefiRejection(
+        verify('defiApprove', { vaultId: 'vault', amount: '10' }, '0x'),
+        /approve\(address,uint256\)/
+      );
+    });
+
+    it('should verify TSS transaction with defiWithdraw type', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+      const txParams = {
+        type: 'defiWithdraw',
+        defiParams: { vaultId: 'hteth-usdc-test', amount: '10' },
+        wallet,
+      };
+      const txPrebuild = {
+        txHex: await buildDefiTxHex(defiCalldata('redeem(uint256,address,address)', ['10', address1, address1])),
+        coin: 'hteth',
+        walletId: 'fakeWalletId',
+      };
+      const isTransactionVerified = await coin.verifyTransaction({
+        txParams: txParams as any,
+        txPrebuild: txPrebuild as any,
+        wallet,
+        verification: {},
         walletType: 'tss',
       });
       isTransactionVerified.should.equal(true);

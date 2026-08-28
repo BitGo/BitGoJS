@@ -6,6 +6,7 @@ import {
   BitGoBase,
   BuildNftTransferDataOptions,
   common,
+  DefiIntentParams,
   Ecdsa,
   ECDSAMethodTypes,
   ECDSAUtils,
@@ -380,6 +381,7 @@ interface EthTransactionParams extends TransactionParams {
   prebuildTx?: PrebuildTransactionResult;
   tokenName?: string;
   feeToken?: string;
+  defiParams?: DefiIntentParams;
 }
 
 export interface VerifyEthTransactionOptions extends VerifyTransactionOptions {
@@ -3290,6 +3292,94 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
               { address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() },
             ]);
           }
+        }
+      }
+    }
+
+    if (txParams.type && ['defiApprove', 'defiDeposit', 'defiWithdraw'].includes(txParams.type)) {
+      if (!txPrebuild.txHex) {
+        throw new Error('missing txHex in txPrebuild');
+      }
+
+      const baseAddress = wallet.coinSpecific()?.baseAddress;
+      const defiParams = txParams.defiParams;
+      if (!baseAddress || !defiParams) {
+        await throwRecipientMismatch('DeFi transaction is missing required intent parameters', []);
+        return false;
+      }
+
+      const validatedBaseAddress = baseAddress as string;
+      const validatedDefiParams = defiParams;
+      const txBuilder = this.getTransactionBuilder();
+      txBuilder.from(txPrebuild.txHex);
+      const txJson = (await txBuilder.build()).toJson();
+      const mismatch = async (message: string, address = txJson.to, amount = txJson.value): Promise<never> =>
+        throwRecipientMismatch(message, [{ address: address || '', amount: amount || '' }]);
+      const data = txJson.data || '';
+
+      if (txParams.type === 'defiApprove') {
+        const selector = addHexPrefix(optionalDeps.ethAbi.methodID('approve', ['address', 'uint256']).toString('hex'));
+        if (!data.startsWith(selector)) {
+          await mismatch('defiApprove transaction must use ERC-20 approve(address,uint256) calldata');
+        }
+        const [, amount] = getRawDecoded(['address', 'uint256'], getBufferedByteCode(selector, data));
+        if (amount.toString() !== validatedDefiParams.amount) {
+          await mismatch(
+            'defiApprove transaction amount does not match the requested amount',
+            txJson.to,
+            amount.toString()
+          );
+        }
+      } else if (txParams.type === 'defiDeposit') {
+        const selector = addHexPrefix(optionalDeps.ethAbi.methodID('deposit', ['uint256', 'address']).toString('hex'));
+        if (!data.startsWith(selector)) {
+          await mismatch('defiDeposit transaction must use deposit(uint256,address) calldata');
+        }
+        const [amount, receiver] = getRawDecoded(['uint256', 'address'], getBufferedByteCode(selector, data));
+        const decodedReceiver = addHexPrefix(receiver.toString()).toLowerCase();
+        if (decodedReceiver !== validatedBaseAddress.toLowerCase()) {
+          await mismatch(
+            'defiDeposit transaction receiver does not match wallet base address',
+            decodedReceiver,
+            amount.toString()
+          );
+        }
+        if (amount.toString() !== validatedDefiParams.amount) {
+          await mismatch(
+            'defiDeposit transaction amount does not match the requested amount',
+            decodedReceiver,
+            amount.toString()
+          );
+        }
+      } else {
+        const selector = addHexPrefix(
+          optionalDeps.ethAbi.methodID('redeem', ['uint256', 'address', 'address']).toString('hex')
+        );
+        if (!data.startsWith(selector)) {
+          await mismatch('defiWithdraw transaction must use redeem(uint256,address,address) calldata');
+        }
+        const [shares, receiver, owner] = getRawDecoded(
+          ['uint256', 'address', 'address'],
+          getBufferedByteCode(selector, data)
+        );
+        const decodedReceiver = addHexPrefix(receiver.toString()).toLowerCase();
+        const decodedOwner = addHexPrefix(owner.toString()).toLowerCase();
+        if (
+          decodedReceiver !== validatedBaseAddress.toLowerCase() ||
+          decodedOwner !== validatedBaseAddress.toLowerCase()
+        ) {
+          await mismatch(
+            'defiWithdraw transaction receiver and owner must match wallet base address',
+            decodedReceiver,
+            shares.toString()
+          );
+        }
+        if (shares.toString() !== validatedDefiParams.amount) {
+          await mismatch(
+            'defiWithdraw transaction shares do not match the requested amount',
+            decodedReceiver,
+            shares.toString()
+          );
         }
       }
     }
