@@ -854,10 +854,13 @@ export class BitGoAPI implements BitGoBase {
 
   /**
    * Create an encryption session for multi-call operations.
-   * Runs Argon2id once; all subsequent calls derive keys via HKDF.
+   *
+   * v2 (default): runs Argon2id once, all subsequent calls derive per-envelope AES keys via HKDF.
+   * v1: returns a shim that satisfies the same interface but runs SJCL PBKDF2 per call. Lets
+   * callers that must produce v1 envelopes use the same factory as v2 callers.
    */
-  async createEncryptionSession(password: string) {
-    return createEncryptionSession(password);
+  async createEncryptionSession(password: string, encryptionVersion?: EncryptionVersion) {
+    return createEncryptionSession(password, { encryptionVersion });
   }
 
   /**

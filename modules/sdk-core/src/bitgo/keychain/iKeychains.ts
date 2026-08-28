@@ -1,4 +1,4 @@
-import { EncryptionVersion, IRequestTracer } from '../../api';
+import { EncryptionVersion, IEncryptionSession, IRequestTracer } from '../../api';
 import { KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitgoPubKeyType } from '../utils/tss/baseTypes';
 import { IWallet } from '../wallet';
@@ -288,6 +288,10 @@ export interface IKeychains {
   createMpc(params: CreateMpcOptions): Promise<KeychainsTriplet>;
   recreateMpc(params: RecreateMpcOptions): Promise<KeychainsTriplet>;
   createTssBitGoKeyFromOvcShares(ovcOutput: OvcToBitGoJSON, enterprise?: string): Promise<BitGoKeyFromOvcShares>;
-  createUserKeychain(userPassword: string, encryptionVersion?: EncryptionVersion): Promise<Keychain>;
+  createUserKeychain(
+    userPassword: string,
+    encryptionVersion?: EncryptionVersion,
+    session?: IEncryptionSession
+  ): Promise<Keychain>;
   rotateKeychain(params: RotateKeychainOptions): Promise<Keychain>;
 }

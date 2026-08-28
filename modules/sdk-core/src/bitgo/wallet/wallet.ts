@@ -2023,20 +2023,17 @@ export class Wallet implements IWallet {
     walletPassphrase: string | undefined,
     pubkey: string,
     path: string,
-    encryptionVersion?: EncryptionVersion
+    encryptionVersion?: EncryptionVersion,
+    decryptedKeychain?: DecryptedKeychainData
   ): Promise<SharedKeyChain> {
     try {
-      const decryptedKeychain = await this.getDecryptedKeychainForSharing(walletPassphrase);
-      if (!decryptedKeychain) {
+      // Callers that share the same wallet with many recipients can pass the pre-decrypted
+      // keychain to avoid re-running Argon2id per recipient. When absent, decrypt on demand.
+      const keychain = decryptedKeychain ?? (await this.getDecryptedKeychainForSharing(walletPassphrase));
+      if (!keychain) {
         return {};
       }
-      return await this.encryptPrvForUser(
-        decryptedKeychain.prv,
-        decryptedKeychain.pub,
-        pubkey,
-        path,
-        encryptionVersion
-      );
+      return await this.encryptPrvForUser(keychain.prv, keychain.pub, pubkey, path, encryptionVersion);
     } catch (e) {
       if (e instanceof MissingEncryptedKeychainError) {
         // ignore this error because this looks like a cold wallet
@@ -2086,7 +2083,8 @@ export class Wallet implements IWallet {
         params.walletPassphrase,
         sharing.pubkey,
         sharing.path,
-        params.encryptionVersion
+        params.encryptionVersion,
+        params.decryptedKeychain
       );
     }
 

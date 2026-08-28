@@ -2,6 +2,7 @@ import {
   BitGoRequest,
   DecryptKeysOptions,
   DecryptOptions,
+  EncryptionVersion,
   EncryptOptions,
   GetSharingKeyOptions,
   IEncryptionSession,
@@ -43,7 +44,7 @@ export interface BitGoBase {
   decryptKeys(params: DecryptKeysOptions): Promise<string[]>;
   del(url: string): BitGoRequest;
   encrypt(params: EncryptOptions): Promise<string>;
-  createEncryptionSession(password: string): Promise<IEncryptionSession>;
+  createEncryptionSession(password: string, encryptionVersion?: EncryptionVersion): Promise<IEncryptionSession>;
   readonly env: EnvironmentName;
   fetchConstants(): Promise<any>;
   get(url: string): BitGoRequest;

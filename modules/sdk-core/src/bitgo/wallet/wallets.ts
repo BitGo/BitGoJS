@@ -7,11 +7,12 @@ import { bip32 } from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import { CoinFeature } from '@bitgo/statics';
 
-import { EncryptionVersion, sanitizeLegacyPath } from '../../api';
+import { EncryptionVersion, IEncryptionSession, sanitizeLegacyPath } from '../../api';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { getSharedSecret } from '../ecdh';
+import { MissingEncryptedKeychainError } from '../errors';
 import { AddKeychainOptions, Keychain, KeyIndices } from '../keychain';
 import { decodeOrElse, ECDSAUtils, EDDSAUtils, promiseProps, RequestTracer } from '../utils';
 import {
@@ -42,7 +43,7 @@ import {
   WalletShares,
   WalletWithKeychains,
 } from './iWallets';
-import { WalletShare } from './iWallet';
+import { DecryptedKeychainData, ShareWalletOptions, WalletShare } from './iWallet';
 import { Wallet } from './wallet';
 import { TssSettings } from '@bitgo/public-types';
 import { createEvmKeyRingWallet, validateEvmKeyRingWalletParams } from '../evm/evmUtils';
@@ -55,6 +56,11 @@ export function isWalletWithKeychains(
 ): wallet is WalletWithKeychains {
   return wallet.responseType === 'WalletWithKeychains';
 }
+
+// Bound concurrent Argon2id WASM instances across bulk share flows. Each decrypt/encrypt call
+// reserves ~2 GiB of virtual address space; running all shares concurrently OOMs the browser
+// at scale (e.g. 96 wallets). 16 keeps enough parallelism without exhausting memory.
+const BULK_SHARE_BATCH_SIZE = 16;
 
 export class Wallets implements IWallets {
   private readonly bitgo: BitGoBase;
@@ -1095,23 +1101,49 @@ export class Wallets implements IWallets {
       [...enterpriseUsersResponse?.adminUsers, ...enterpriseUsersResponse?.nonAdminUsers].map((obj) => [obj.id, obj])
     );
 
-    if (wallet._wallet.users) {
-      for (const user of wallet._wallet.users) {
-        const userObject = usersMap.get(user.user);
-        if (user.permissions.includes('spend') && !user.permissions.includes('admin') && userObject) {
-          const shareParams = {
-            walletId: walletId,
-            user: user.user,
-            permissions: user.permissions.join(','),
-            walletPassphrase: userPassword,
-            email: userObject.email.email,
-            reshare: true,
-            skipKeychain: false,
-            encryptionVersion,
-          };
-          await wallet.shareWallet(shareParams);
-        }
+    if (!wallet._wallet.users) {
+      return;
+    }
+
+    const spenders = wallet._wallet.users.filter(
+      (user) => user.permissions.includes('spend') && !user.permissions.includes('admin') && usersMap.has(user.user)
+    );
+
+    if (spenders.length === 0) {
+      return;
+    }
+
+    // Decrypt the wallet keychain once and thread the plaintext into each shareWallet call.
+    // Without this, shareWallet would internally re-decrypt the same encryptedPrv under the same
+    // walletPassphrase N times (one Argon2id per recipient). Per-recipient encrypt still uses a
+    // unique ECDH-derived secret so no session amortization is possible on that side.
+    let decryptedKeychain: DecryptedKeychainData | undefined;
+    try {
+      decryptedKeychain = await wallet.getDecryptedKeychainForSharing(userPassword);
+    } catch (e) {
+      if (!(e instanceof MissingEncryptedKeychainError)) {
+        throw e;
       }
+      // Cold wallet: no encrypted keychain to decrypt. Fall through and let shareWallet handle
+      // it per-recipient (which will also throw MissingEncryptedKeychainError but at a point
+      // where the caller expects it).
+    }
+
+    // Sequential loop to bound concurrent Argon2id WASM instances on the per-recipient ECDH
+    // encrypt side (each recipient's secret is unique so Promise.all could OOM at scale).
+    for (const user of spenders) {
+      const userObject = usersMap.get(user.user);
+      assert(userObject, `User ${user.user} not found in enterprise users map`);
+      const shareOptions: ShareWalletOptions = {
+        permissions: user.permissions.join(','),
+        walletPassphrase: userPassword,
+        email: userObject.email.email,
+        reshare: true,
+        skipKeychain: false,
+        encryptionVersion,
+        decryptedKeychain,
+      };
+      await wallet.shareWallet(shareOptions);
     }
   }
 
@@ -1310,11 +1342,23 @@ export class Wallets implements IWallets {
     const newWalletPassphrase = params.newWalletPassphrase || params.userLoginPassword;
     const webauthnInfo = params.webauthnInfo;
 
-    // Each decrypt/encrypt call runs Argon2id inside a WebAssembly instance that reserves ~2 GiB of
-    // virtual address space. Running all shares concurrently via Promise.all exhausts the browser's
-    // WASM memory at scale (e.g. 96 wallets). Process in small batches so only a bounded number of
-    // WASM instances are alive at once.
-    const BATCH_SIZE = 16;
+    // One session over newWalletPassphrase (and one more for webauthnInfo.passphrase when
+    // present). v2: one Argon2id derivation total, per-envelope AES keys via HKDF with fresh
+    // salts (cross-envelope independence preserved). v1: shim runs SJCL per call so callers
+    // pinning encryptionVersion=1 still get v1 envelopes without any branching here.
+    const walletSession = await this.bitgo.createEncryptionSession(newWalletPassphrase, params.encryptionVersion);
+    let webauthnSession: IEncryptionSession | undefined;
+    try {
+      webauthnSession = webauthnInfo
+        ? await this.bitgo.createEncryptionSession(webauthnInfo.passphrase, params.encryptionVersion)
+        : undefined;
+    } catch (e) {
+      // If the webauthn session fails to initialize (e.g. WASM OOM), destroy the wallet session
+      // to avoid leaking its HKDF root. Preserves the invariant that no session outlives a
+      // failure in this method.
+      walletSession.destroy();
+      throw e;
+    }
 
     const processShare = async (walletShare: WalletShare): Promise<AcceptShareOptionsRequest[]> => {
       // Handle userMultiKeyRotationRequired case - these shares don't have keychains
@@ -1323,11 +1367,7 @@ export class Wallets implements IWallets {
           throw new Error('userLoginPassword param must be provided to generate user keychain');
         }
         const walletKeychain = this.baseCoin.keychains().create();
-        const encryptedPrv = await this.bitgo.encrypt({
-          password: newWalletPassphrase,
-          input: walletKeychain.prv,
-          encryptionVersion: params.encryptionVersion,
-        });
+        const encryptedPrv = await walletSession.encrypt(walletKeychain.prv);
         return [
           {
             walletShareId: walletShare.id,
@@ -1350,37 +1390,34 @@ export class Wallets implements IWallets {
         password: secret,
         input: walletShare.keychain.encryptedPrv,
       });
-      const newEncryptedPrv = await this.bitgo.encrypt({
-        password: newWalletPassphrase,
-        input: decryptedSharedWalletPrv,
-        encryptionVersion: params.encryptionVersion,
-      });
+      const newEncryptedPrv = await walletSession.encrypt(decryptedSharedWalletPrv);
       const entry: AcceptShareOptionsRequest = {
         walletShareId: walletShare.id,
         encryptedPrv: newEncryptedPrv,
       };
       if (webauthnInfo) {
+        assert(webauthnSession, 'webauthnSession must exist when webauthnInfo is provided');
         entry.webauthnInfo = {
           otpDeviceId: webauthnInfo.otpDeviceId,
           prfSalt: webauthnInfo.prfSalt,
-          encryptedPrv: await this.bitgo.encrypt({
-            password: webauthnInfo.passphrase,
-            input: decryptedSharedWalletPrv,
-            encryptionVersion: params.encryptionVersion,
-            adata: walletShare.enterprise,
-          }),
+          encryptedPrv: await webauthnSession.encrypt(decryptedSharedWalletPrv, walletShare.enterprise),
         };
       }
       return [entry];
     };
 
-    const keysForWalletShares: AcceptShareOptionsRequest[] = [];
-    for (const batch of _.chunk(walletShares, BATCH_SIZE)) {
-      const batchResults = await Promise.all(batch.map((walletShare) => processShare(walletShare)));
-      keysForWalletShares.push(...batchResults.flat());
-    }
+    try {
+      const keysForWalletShares: AcceptShareOptionsRequest[] = [];
+      for (const batch of _.chunk(walletShares, BULK_SHARE_BATCH_SIZE)) {
+        const batchResults = await Promise.all(batch.map((walletShare) => processShare(walletShare)));
+        keysForWalletShares.push(...batchResults.flat());
+      }
 
-    return this.bulkAcceptShareRequest(keysForWalletShares);
+      return await this.bulkAcceptShareRequest(keysForWalletShares);
+    } finally {
+      walletSession.destroy();
+      webauthnSession?.destroy();
+    }
   }
 
   /**
@@ -1490,38 +1527,57 @@ export class Wallets implements IWallets {
       });
     }
 
-    const settledUpdates = await Promise.allSettled(
-      resolvedShares.map(async (share) => {
-        const { walletShareId, status, walletShare } = share;
+    // One session over the outer re-encrypt password. Covers all three accept paths in
+    // processAcceptShare — specialOverrideCase (threaded through createUserKeychain),
+    // userMultiKeyRotationRequired, and standard ECDH re-encrypt — since they all use the
+    // same `newWalletPassphrase || userLoginPassword`. Skip session creation when there's
+    // nothing to encrypt (reject-only bulks).
+    const sessionPassword = newWalletPassphrase || userLoginPassword;
+    const hasSharesToEncrypt = resolvedShares.some((share) => share.status === 'accept');
+    const session =
+      sessionPassword && hasSharesToEncrypt
+        ? await this.bitgo.createEncryptionSession(sessionPassword, encryptionVersion)
+        : undefined;
 
-        // Handle accept case
-        if (status === 'accept') {
-          return this.processAcceptShare(
-            walletShareId,
-            walletShare,
-            userLoginPassword,
-            newWalletPassphrase,
-            sharingKeychainPrv,
-            encryptionVersion
-          );
-        }
+    let response: BulkUpdateWalletShareResponse;
+    let failedUpdates: Array<{ walletShareId: string; reason: string }> = [];
+    try {
+      const settledUpdates: PromiseSettledResult<BulkUpdateWalletShareOptionsRequest[]>[] = [];
+      for (const batch of _.chunk(resolvedShares, BULK_SHARE_BATCH_SIZE)) {
+        const batchResults = await Promise.allSettled(
+          batch.map(async (share) => {
+            const { walletShareId, status, walletShare } = share;
 
-        // Handle reject case
-        return [
-          {
-            walletShareId,
-            status: 'reject' as const,
-          },
-        ];
-      })
-    );
+            // Handle accept case
+            if (status === 'accept') {
+              return this.processAcceptShare(
+                walletShareId,
+                walletShare,
+                userLoginPassword,
+                newWalletPassphrase,
+                sharingKeychainPrv,
+                encryptionVersion,
+                session
+              );
+            }
 
-    // Extract successful updates
-    const successfulUpdates = settledUpdates.flatMap((result) => (result.status === 'fulfilled' ? result.value : []));
+            // Handle reject case
+            return [
+              {
+                walletShareId,
+                status: 'reject' as const,
+              },
+            ];
+          })
+        );
+        settledUpdates.push(...batchResults);
+      }
 
-    // Extract failed updates - only from rejected promises
-    const failedUpdates = settledUpdates.reduce<Array<{ walletShareId: string; reason: string }>>(
-      (acc, result, index) => {
+      // Extract successful updates
+      const successfulUpdates = settledUpdates.flatMap((result) => (result.status === 'fulfilled' ? result.value : []));
+
+      // Extract failed updates - only from rejected promises
+      failedUpdates = settledUpdates.reduce<Array<{ walletShareId: string; reason: string }>>((acc, result, index) => {
         if (result.status === 'rejected') {
           const rejectedResult = result;
           acc.push({
@@ -1530,12 +1586,13 @@ export class Wallets implements IWallets {
           });
         }
         return acc;
-      },
-      []
-    );
+      }, []);
 
-    // Send successful updates to the server
-    const response = await this.bulkUpdateWalletShareRequest(successfulUpdates);
+      // Send successful updates to the server
+      response = await this.bulkUpdateWalletShareRequest(successfulUpdates);
+    } finally {
+      session?.destroy();
+    }
 
     // Process accepted special override cases - reshare with spenders
     if (response.acceptedWalletShares && response.acceptedWalletShares.length > 0 && userLoginPassword) {
@@ -1581,7 +1638,8 @@ export class Wallets implements IWallets {
     userLoginPassword?: string,
     newWalletPassphrase?: string,
     sharingKeychainPrv?: string,
-    encryptionVersion?: EncryptionVersion
+    encryptionVersion?: EncryptionVersion,
+    session?: IEncryptionSession
   ): Promise<BulkUpdateWalletShareOptionsRequest[]> {
     // Special override case: requires user keychain and signing
     if (
@@ -1593,9 +1651,11 @@ export class Wallets implements IWallets {
         throw new Error('userLoginPassword param must be provided to decrypt shared key');
       }
 
+      // Thread the outer session into createUserKeychain so its internal encrypt uses HKDF
+      // instead of running another Argon2id under the same password.
       const walletKeychain = await this.baseCoin
         .keychains()
-        .createUserKeychain(newWalletPassphrase || userLoginPassword, encryptionVersion);
+        .createUserKeychain(newWalletPassphrase || userLoginPassword, encryptionVersion, session);
       if (!walletKeychain.encryptedPrv) {
         throw new Error('encryptedPrv was not found on wallet keychain');
       }
@@ -1626,16 +1686,15 @@ export class Wallets implements IWallets {
 
     // Multi-user-key case: requires user to provide their own public key
     if (walletShare.userMultiKeyRotationRequired) {
-      if (!(newWalletPassphrase || userLoginPassword)) {
+      const password = newWalletPassphrase || userLoginPassword;
+      if (!password) {
         throw new Error('userLoginPassword param must be provided to generate user keychain');
       }
 
       const walletKeychain = this.baseCoin.keychains().create();
-      const encryptedPrv = await this.bitgo.encrypt({
-        password: newWalletPassphrase || userLoginPassword,
-        input: walletKeychain.prv,
-        encryptionVersion,
-      });
+      const encryptedPrv = session
+        ? await session.encrypt(walletKeychain.prv)
+        : await this.bitgo.encrypt({ password, input: walletKeychain.prv, encryptionVersion });
 
       return [
         {
@@ -1676,12 +1735,15 @@ export class Wallets implements IWallets {
       input: walletShare.keychain.encryptedPrv,
     });
 
-    // We will now re-encrypt the wallet with our own password
-    const encryptedPrv = await this.bitgo.encrypt({
-      password: newWalletPassphrase || userLoginPassword,
-      input: decryptedPrv,
-      encryptionVersion,
-    });
+    // Re-encrypt for the accepter. The per-recipient ECDH decrypt above still runs its own
+    // Argon2 when the sender's keychain is v2 (unique password per share, no session possible).
+    const encryptedPrv = session
+      ? await session.encrypt(decryptedPrv)
+      : await this.bitgo.encrypt({
+          password: newWalletPassphrase || userLoginPassword,
+          input: decryptedPrv,
+          encryptionVersion,
+        });
 
     return [
       {

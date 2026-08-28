@@ -25,7 +25,7 @@ import {
   UpdateSingleKeychainPasswordOptions,
 } from './iKeychains';
 import { BitGoKeyFromOvcShares, BitGoToOvcJSON, OvcToBitGoJSON } from './ovcJsonCodec';
-import { EncryptionVersion } from '../../api';
+import { EncryptionVersion, IEncryptionSession } from '../../api';
 
 export class Keychains implements IKeychains {
   private readonly bitgo: BitGoBase;
@@ -578,16 +578,24 @@ export class Keychains implements IKeychains {
    * @param walletPassphrase
    * @returns Keychain including the decrypted private key
    */
-  async createUserKeychain(walletPassphrase: string, encryptionVersion?: EncryptionVersion): Promise<Keychain> {
+  async createUserKeychain(
+    walletPassphrase: string,
+    encryptionVersion?: EncryptionVersion,
+    session?: IEncryptionSession
+  ): Promise<Keychain> {
     const keychains = this.baseCoin.keychains();
     const newKeychain = keychains.create();
     const originalPasscodeEncryptionCode = generateRandomPassword(5);
 
-    const encryptedPrv = await this.bitgo.encrypt({
-      password: walletPassphrase,
-      input: newKeychain.prv,
-      encryptionVersion,
-    });
+    // When a session is threaded in (typically from a bulk operation that already ran the KDF
+    // once), reuse it so this envelope's AES key derives via HKDF instead of another Argon2.
+    const encryptedPrv = session
+      ? await session.encrypt(newKeychain.prv)
+      : await this.bitgo.encrypt({
+          password: walletPassphrase,
+          input: newKeychain.prv,
+          encryptionVersion,
+        });
 
     return {
       ...(await keychains.add({

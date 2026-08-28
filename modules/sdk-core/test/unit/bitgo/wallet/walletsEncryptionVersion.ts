@@ -25,6 +25,13 @@ describe('Wallets - encryptionVersion threading', function () {
         .stub()
         .callsFake(async ({ password, input }: { password: string; input: string }) => `enc:${password}:${input}`),
       decrypt: sinon.stub().resolves('decryptedPrv'),
+      createEncryptionSession: sinon.stub().callsFake(async (password: string, encryptionVersion?: 1 | 2) => ({
+        encrypt: sinon
+          .stub()
+          .callsFake(async (input: string) => `session-enc:${password}:${encryptionVersion}:${input}`),
+        decrypt: sinon.stub().resolves('session-decrypted'),
+        destroy: sinon.stub(),
+      })),
       get: sinon.stub().returns({ result: sinon.stub(), query: sinon.stub().returnsThis() }),
       post: sinon.stub().returns({ send: sinon.stub().returns({ result: sinon.stub().resolves({}) }) }),
       put: sinon.stub().returns({
@@ -113,27 +120,27 @@ describe('Wallets - encryptionVersion threading', function () {
       mockBitGo.get.returns({ result: sinon.stub().resolves(walletSharesList) });
     });
 
-    it('passes encryptionVersion: 2 to encrypt on the multiUserKeyRotationRequired path', async function () {
+    it('passes encryptionVersion: 2 to the encryption session', async function () {
       await wallets.bulkAcceptShare({
         walletShareIds: ['share-id'],
         userLoginPassword: 'login-password',
         encryptionVersion: 2,
       });
 
-      assert.ok(mockBitGo.encrypt.called);
-      const call = mockBitGo.encrypt.firstCall;
-      assert.strictEqual(call.args[0].encryptionVersion, 2);
+      assert.ok(mockBitGo.createEncryptionSession.called);
+      const call = mockBitGo.createEncryptionSession.firstCall;
+      assert.strictEqual(call.args[1], 2);
     });
 
-    it('passes encryptionVersion: undefined when not set', async function () {
+    it('passes encryptionVersion: undefined to the encryption session when not set', async function () {
       await wallets.bulkAcceptShare({
         walletShareIds: ['share-id'],
         userLoginPassword: 'login-password',
       });
 
-      assert.ok(mockBitGo.encrypt.called);
-      const call = mockBitGo.encrypt.firstCall;
-      assert.strictEqual(call.args[0].encryptionVersion, undefined);
+      assert.ok(mockBitGo.createEncryptionSession.called);
+      const call = mockBitGo.createEncryptionSession.firstCall;
+      assert.strictEqual(call.args[1], undefined);
     });
 
     it('processes shares in batches of 16 to avoid WASM memory exhaustion', async function () {
@@ -148,26 +155,40 @@ describe('Wallets - encryptionVersion threading', function () {
         result: sinon.stub().resolves({ incoming: manyShares, outgoing: [] }),
       });
 
+      // Capture the session so we can inspect its encrypt call count
+      const sessionEncryptStub = sinon.stub().callsFake(async (input: string) => `session-enc:${input}`);
+      mockBitGo.createEncryptionSession = sinon.stub().resolves({
+        encrypt: sessionEncryptStub,
+        decrypt: sinon.stub(),
+        destroy: sinon.stub(),
+      });
+
       await wallets.bulkAcceptShare({
         walletShareIds: manyShares.map((s) => s.id),
         userLoginPassword: 'login-password',
       });
 
-      // All 20 shares should have been encrypted (one encrypt call per share)
-      assert.strictEqual(mockBitGo.encrypt.callCount, 20);
+      // Session created once, session.encrypt called once per share
+      assert.strictEqual(mockBitGo.createEncryptionSession.callCount, 1);
+      assert.strictEqual(sessionEncryptStub.callCount, 20);
     });
 
     it('never runs more than 16 shares concurrently', async function () {
       let inFlight = 0;
       let maxInFlight = 0;
 
-      mockBitGo.encrypt.callsFake(() => {
+      const sessionEncryptStub = sinon.stub().callsFake(() => {
         inFlight++;
         maxInFlight = Math.max(maxInFlight, inFlight);
         return Promise.resolve('encrypted').then((r) => {
           inFlight--;
           return r;
         });
+      });
+      mockBitGo.createEncryptionSession = sinon.stub().resolves({
+        encrypt: sessionEncryptStub,
+        decrypt: sinon.stub(),
+        destroy: sinon.stub(),
       });
 
       const manyShares = Array.from({ length: 20 }, (_, i) => ({
@@ -186,7 +207,7 @@ describe('Wallets - encryptionVersion threading', function () {
       });
 
       assert.ok(maxInFlight <= 16, `expected max concurrency <= 16, got ${maxInFlight}`);
-      assert.strictEqual(mockBitGo.encrypt.callCount, 20);
+      assert.strictEqual(sessionEncryptStub.callCount, 20);
     });
   });
 

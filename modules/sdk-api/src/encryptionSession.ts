@@ -1,5 +1,6 @@
 import { randomBytes } from 'crypto';
 
+import { decrypt, encrypt } from './encrypt';
 import {
   aesGcmDecrypt,
   aesGcmEncrypt,
@@ -100,11 +101,68 @@ export class EncryptionSession {
   }
 }
 
-/** Create an EncryptionSession. Runs Argon2id once; all subsequent calls derive keys via HKDF. */
+/**
+ * v1 (SJCL) shim that satisfies the same contract as EncryptionSession but does not open a
+ * real session. Every encrypt/decrypt call runs its own SJCL PBKDF2 derivation via encrypt() /
+ * decrypt(). Exists so callers that pin `encryptionVersion: 1` can use the same
+ * `createEncryptionSession(pw, ver)` factory as v2 callers — no per-site useV2 branching.
+ * Once the sjcl-replacement rollout removes v1 encrypt, this collapses to nothing.
+ */
+export class V1EncryptionSession {
+  private password: string | null;
+
+  constructor(password: string) {
+    this.password = password;
+  }
+
+  async encrypt(input: string, adata?: string): Promise<string> {
+    return encrypt(this.getPasswordOrThrow(), input, { adata, encryptionVersion: 1 });
+  }
+
+  async decrypt(ciphertext: string): Promise<string> {
+    return decrypt(this.getPasswordOrThrow(), ciphertext);
+  }
+
+  destroy(): void {
+    this.password = null;
+  }
+
+  private getPasswordOrThrow(): string {
+    if (this.password === null) {
+      throw new Error('V1EncryptionSession has been destroyed');
+    }
+    return this.password;
+  }
+}
+
+/**
+ * Create an EncryptionSession.
+ *
+ * When encryptionVersion is undefined or 2 (the default), runs Argon2id once so every
+ * subsequent encrypt/decrypt derives a per-call AES key via HKDF (<1ms, native WebCrypto).
+ *
+ * When encryptionVersion is 1, returns a V1EncryptionSession shim that runs SJCL PBKDF2 on
+ * every call. The shim satisfies the same interface so callers that must produce v1 (SJCL)
+ * envelopes for legacy consumers use one factory regardless of version. No useV2 branching
+ * needed at the call site.
+ *
+ * Callers MUST call destroy() to clear the HKDF root (or retained password in v1 mode) from
+ * memory. Use-after-destroy throws.
+ */
 export async function createEncryptionSession(
   password: string,
-  options?: { memorySize?: number; iterations?: number; parallelism?: number; salt?: Uint8Array }
-): Promise<EncryptionSession> {
+  options?: {
+    memorySize?: number;
+    iterations?: number;
+    parallelism?: number;
+    salt?: Uint8Array;
+    encryptionVersion?: 1 | 2;
+  }
+): Promise<EncryptionSession | V1EncryptionSession> {
+  if (options?.encryptionVersion === 1) {
+    return new V1EncryptionSession(password);
+  }
+
   const memorySize = options?.memorySize ?? ARGON2_DEFAULTS.memorySize;
   const iterations = options?.iterations ?? ARGON2_DEFAULTS.iterations;
   const parallelism = options?.parallelism ?? ARGON2_DEFAULTS.parallelism;
