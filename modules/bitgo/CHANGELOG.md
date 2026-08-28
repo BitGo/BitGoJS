@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [52.9.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.8.2...bitgo@52.9.0) (2026-08-27)
+
+
+### Bug Fixes
+
+* **sdk-core:** clean up stale signature shares before every TSS sign ([866f7f3](https://github.com/BitGo/BitGoJS/commit/866f7f3c1fa00f1df91ae25b1c2f3184299b4399))
+
+
+### Features
+
+* add RedPallas MPCv2 DKG support for ZEC ([7e3dfc0](https://github.com/BitGo/BitGoJS/commit/7e3dfc0347c77bc425d4dc470060e901e633efbe))
+* persist hardened parent path on safe child mint ([6684036](https://github.com/BitGo/BitGoJS/commit/6684036a16fdd04752933c3cd6f0b1d4079658a1))
+
+
+
+
+
 ## [52.8.2](https://github.com/BitGo/BitGoJS/compare/bitgo@52.8.1...bitgo@52.8.2) (2026-08-25)
 
 **Note:** Version bump only for package bitgo

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.6.1...@bitgo/sdk-coin-sol@8.7.0) (2026-08-27)
+
+
+### Features
+
+* add RedPallas MPCv2 DKG support for ZEC ([7e3dfc0](https://github.com/BitGo/BitGoJS/commit/7e3dfc0347c77bc425d4dc470060e901e633efbe))
+
+
+
+
+
 ## [8.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.6.0...@bitgo/sdk-coin-sol@8.6.1) (2026-08-25)
 
 
