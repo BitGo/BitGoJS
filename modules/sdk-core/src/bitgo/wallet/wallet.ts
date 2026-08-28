@@ -2527,6 +2527,7 @@ export class Wallet implements IWallet {
         messageRaw,
         messageStandardType,
         signerAddress: params.message.signerAddress,
+        preparedTransaction: params.message.preparedTransaction,
       };
 
       if (!this.tssUtils) {
@@ -5143,6 +5144,7 @@ export class Wallet implements IWallet {
           messageRaw,
           messageStandardType: params.message.messageStandardType,
           signerAddress: params.message.signerAddress,
+          preparedTransaction: params.message.preparedTransaction,
         };
         txRequest = await this.tssUtils!.buildSignMessageRequest(intentOption);
         params.message.txRequestId = txRequest.txRequestId;

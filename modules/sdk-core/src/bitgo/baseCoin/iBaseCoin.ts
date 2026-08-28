@@ -457,6 +457,8 @@ export interface Message extends BaseSignable {
   messageEncoded?: string;
   messageStandardType?: MessageStandardType;
   signerAddress?: string;
+  /** Base64-encoded prepared transaction bytes required by Canton message signing. */
+  preparedTransaction?: string;
 }
 
 export interface MessageTypeProperty {
