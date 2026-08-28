@@ -34,6 +34,7 @@ import {
   extractCommonKeychain,
   TssVerifyAddressOptions,
   getEddsaSigningMaterial as sharedGetEddsaSigningMaterial,
+  isEddsaSigningMaterial,
   signEddsaMpcV2RecoveryTx,
   EddsaSigningMaterial,
   decryptKeychainPrivateKey,
@@ -459,8 +460,9 @@ export class Ada extends BaseCoin {
       const userKey = params.userKey.replace(/\s/g, '');
       const backupKey = params.backupKey.replace(/\s/g, '');
       const adaKeyPair = new AdaKeyPair({ pub: accountId });
-      const signingMaterial =
-        precomputedMaterial ?? (await this.getEddsaSigningMaterial(userKey, params.walletPassphrase));
+      const signingMaterial = isEddsaSigningMaterial(precomputedMaterial)
+        ? precomputedMaterial
+        : await this.getEddsaSigningMaterial(userKey, params.walletPassphrase);
 
       if (signingMaterial.version === 'v2') {
         const signature = await this.signAdaMpcV2Recovery({

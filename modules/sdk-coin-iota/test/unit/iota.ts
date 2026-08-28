@@ -774,6 +774,42 @@ describe('IOTA:', function () {
       sandBox.assert.notCalled(getTSSSignatureSpy);
     });
 
+    it('should ignore a malformed precomputedMaterial and detect signing material itself (regression: WRW openSSLBytes collision)', async function () {
+      // WRW's generic Electron 'recover' IPC handler passes openSSLBytes (an ArrayBuffer)
+      // as a second positional argument to every coin's recover(), regardless of whether
+      // that coin uses it. Previously this was blindly trusted as precomputedMaterial,
+      // producing `JSON.parse(undefined)` -> SyntaxError: "undefined" is not valid JSON.
+      sandBox.stub(Iota.prototype, 'fetchOwnedObjects' as keyof Iota).resolves([
+        {
+          objectId: '0xc05c765e26e6ae84c78fa245f38a23fb20406a5cf3f61b57bd323a0df9d98003',
+          version: '195',
+          digest: validDigest,
+          balance: '1900000000',
+        },
+      ]);
+      sandBox.stub(Iota.prototype, 'fetchGasPrice' as keyof Iota).resolves(1000);
+      sandBox.stub(Iota.prototype, 'estimateGas' as keyof Iota).resolves(1997880);
+      const getEddsaMaterialSpy = sandBox.spy(
+        basecoin as unknown as { getEddsaSigningMaterial: unknown },
+        'getEddsaSigningMaterial'
+      );
+
+      const res = await basecoin.recover(
+        {
+          userKey: mpcV2UserKey,
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mpcV2CommonKeyChain,
+          recoveryDestination,
+          walletPassphrase,
+        },
+        new ArrayBuffer(8) as any
+      );
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('transactions');
+      sandBox.assert.calledOnce(getEddsaMaterialSpy);
+    });
+
     it('should throw missing userKey error on MPCv2 path', async function () {
       sandBox.stub(Iota.prototype, 'fetchOwnedObjects' as keyof Iota).resolves([
         {

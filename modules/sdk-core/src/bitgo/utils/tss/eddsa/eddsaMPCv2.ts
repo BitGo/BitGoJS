@@ -1345,6 +1345,31 @@ export async function getEddsaSigningMaterial(
 }
 
 /**
+ * Type guard validating that a value has the shape of EddsaSigningMaterial.
+ *
+ * Coin `recover()` implementations accept an optional precomputed signing-material
+ * parameter (set by recoverConsolidations() to avoid re-decrypting the keycard per
+ * scanned index). Some callers pass an unrelated second positional argument to
+ * recover() for other purposes (e.g. openSSLBytes for EVM-like coins); validating
+ * the shape here prevents that from being misinterpreted as signing material.
+ */
+export function isEddsaSigningMaterial(value: unknown): value is EddsaSigningMaterial {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  if (!('version' in value)) {
+    return false;
+  }
+  if (value.version === 'v1') {
+    return 'userPrv' in value && typeof value.userPrv === 'string';
+  }
+  if (value.version === 'v2') {
+    return 'encryptedUserKey' in value && typeof value.encryptedUserKey === 'string';
+  }
+  return false;
+}
+
+/**
  * Full MPCv2 recovery signing flow: decrypt key shares → validate commonKeyChain → MPS DSG.
  * Returns raw 64-byte Ed25519 signature Buffer.
  * Caller is responsible for any coin-specific envelope
@@ -1376,5 +1401,6 @@ export const EddsaMPCv2RecoveryFunctions = {
   getEddsaMpcV2RecoveryKeySharesFromReducedKey,
   signRecoveryEddsaMPCv2,
   getEddsaSigningMaterial,
+  isEddsaSigningMaterial,
   signEddsaMpcV2RecoveryTx,
 };

@@ -29,6 +29,7 @@ import {
   SignatureShareType,
   TxRequest,
   getEddsaSigningMaterial,
+  isEddsaSigningMaterial,
   signEddsaMpcV2RecoveryTx,
 } from '../../../../../../src';
 import {
@@ -2075,6 +2076,53 @@ describe('getEddsaSigningMaterial', () => {
     const result = await getEddsaSigningMaterial(encrypted, PASSPHRASE);
     assert.strictEqual(result.version, 'v1');
     assert.strictEqual((result as { version: 'v1'; userPrv: string }).userPrv, JSON.stringify(MPCv1_MATERIAL));
+  });
+});
+
+describe('isEddsaSigningMaterial', () => {
+  it('returns true for a valid v1 shape', () => {
+    assert.strictEqual(isEddsaSigningMaterial({ version: 'v1', userPrv: '{}' }), true);
+  });
+
+  it('returns true for a valid v2 shape', () => {
+    assert.strictEqual(isEddsaSigningMaterial({ version: 'v2', encryptedUserKey: 'abc123' }), true);
+  });
+
+  it('returns false for a v1 shape with a non-string userPrv', () => {
+    assert.strictEqual(isEddsaSigningMaterial({ version: 'v1', userPrv: 123 }), false);
+  });
+
+  it('returns false for a v2 shape with a non-string encryptedUserKey', () => {
+    assert.strictEqual(isEddsaSigningMaterial({ version: 'v2', encryptedUserKey: 123 }), false);
+  });
+
+  it('returns false for an unrecognized version value', () => {
+    assert.strictEqual(isEddsaSigningMaterial({ version: 'v3', userPrv: '{}' }), false);
+  });
+
+  it('returns false for an object missing a version field', () => {
+    assert.strictEqual(isEddsaSigningMaterial({ userPrv: '{}' }), false);
+  });
+
+  it('returns false for null', () => {
+    assert.strictEqual(isEddsaSigningMaterial(null), false);
+  });
+
+  it('returns false for undefined', () => {
+    assert.strictEqual(isEddsaSigningMaterial(undefined), false);
+  });
+
+  it('returns false for primitive values', () => {
+    assert.strictEqual(isEddsaSigningMaterial('a string'), false);
+    assert.strictEqual(isEddsaSigningMaterial(42), false);
+    assert.strictEqual(isEddsaSigningMaterial(true), false);
+  });
+
+  it('returns false for an ArrayBuffer (regression: WRW openSSLBytes collision)', () => {
+    // WRW's generic Electron 'recover' IPC handler passes openSSLBytes as a second
+    // positional argument to every coin's recover(), colliding with precomputedMaterial
+    // on coins that accept it. This must be rejected rather than misread as signing material.
+    assert.strictEqual(isEddsaSigningMaterial(new ArrayBuffer(8)), false);
   });
 });
 

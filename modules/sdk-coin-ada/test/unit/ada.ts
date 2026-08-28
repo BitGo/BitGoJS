@@ -900,6 +900,32 @@ describe('ADA', function () {
       sandBox.assert.calledOnce(getEddsaMaterialSpy);
     });
 
+    it('should ignore a malformed precomputedMaterial and detect signing material itself (regression: WRW openSSLBytes collision)', async function () {
+      // WRW's generic Electron 'recover' IPC handler passes openSSLBytes (an ArrayBuffer)
+      // as a second positional argument to every coin's recover(), regardless of whether
+      // that coin uses it. Previously this was blindly trusted as precomputedMaterial,
+      // producing `JSON.parse(undefined)` -> SyntaxError: "undefined" is not valid JSON.
+      const getEddsaMaterialSpy = sandBox.spy(
+        basecoin as unknown as { getEddsaSigningMaterial: unknown },
+        'getEddsaSigningMaterial'
+      );
+
+      const res = await basecoin.recover(
+        {
+          userKey: mpcV2UserKey,
+          backupKey: mpcV2BackupKey,
+          bitgoKey: mpcV2CommonKeyChain,
+          walletPassphrase,
+          recoveryDestination: destAddr,
+        },
+        new ArrayBuffer(8) as any
+      );
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledOnce(getEddsaMaterialSpy);
+    });
+
     it('should route to MPCv1 path when keycard is MPCv1 (regression)', async function () {
       callBack
         .withArgs('address_info', { _addresses: [wrwUser.walletAddress0] })
