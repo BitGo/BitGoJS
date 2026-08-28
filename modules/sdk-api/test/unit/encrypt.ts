@@ -1,8 +1,44 @@
 import assert from 'assert';
-import { randomBytes } from 'crypto';
+import { randomBytes, webcrypto } from 'crypto';
 
 import { decrypt, decryptV2, encrypt, encryptV2, V2Envelope, createEncryptionSession } from '../../src';
 import { BitGoAPI } from '../../src/bitgoAPI';
+
+const subtle = globalThis.crypto?.subtle ?? webcrypto.subtle;
+
+/**
+ * Build an HKDF-only v2 envelope independently of the SDK. Nothing in the SDK emits this
+ * shape yet -- senders start doing so in WCN-2504 -- so the wire format is pinned here.
+ * The info string must stay in sync with HKDF_ONLY_INFO in encryptV2.ts.
+ */
+async function makeHkdfOnlyEnvelope(
+  password: string,
+  plaintext: string,
+  opts: { adata?: string; hkdfSalt?: Uint8Array } = {}
+): Promise<string> {
+  const hkdfSalt = opts.hkdfSalt ?? new Uint8Array(randomBytes(32));
+  const iv = new Uint8Array(randomBytes(12));
+  const ikm = await subtle.importKey('raw', new TextEncoder().encode(password), 'HKDF', false, ['deriveKey']);
+  const aesKey = await subtle.deriveKey(
+    { name: 'HKDF', hash: 'SHA-256', salt: hkdfSalt, info: new TextEncoder().encode('bitgo-v2-hkdf') },
+    ikm,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt']
+  );
+  const params: AesGcmParams = { name: 'AES-GCM', iv, tagLength: 128 };
+  if (opts.adata) params.additionalData = new TextEncoder().encode(opts.adata);
+  const ct = await subtle.encrypt(params, aesKey, new TextEncoder().encode(plaintext));
+
+  const envelope: V2Envelope = {
+    v: 2,
+    hkdfSalt: Buffer.from(hkdfSalt).toString('base64'),
+    iv: Buffer.from(iv).toString('base64'),
+    ct: Buffer.from(new Uint8Array(ct)).toString('base64'),
+  };
+  if (opts.adata) envelope.adata = opts.adata;
+  return JSON.stringify(envelope);
+}
 
 describe('encryption methods tests', () => {
   describe('encrypt (async, default v2)', () => {
@@ -251,6 +287,97 @@ describe('encryption methods tests', () => {
     });
   });
 
+  describe('v2 HKDF-only decrypt (high-entropy IKM, no Argon2)', () => {
+    // ECDH-shaped input: 256-bit secret as hex, matching encryptPrvForUser.
+    const highEntropyPassword = Buffer.alloc(32, 0xab).toString('hex');
+    const plaintext = 'shared-wallet-prv';
+
+    it('decrypts an HKDF-only envelope via decryptV2', async () => {
+      const ciphertext = await makeHkdfOnlyEnvelope(highEntropyPassword, plaintext);
+      assert.strictEqual(await decryptV2(highEntropyPassword, ciphertext), plaintext);
+    });
+
+    it('decrypts an HKDF-only envelope via decrypt auto-detect', async () => {
+      const ciphertext = await makeHkdfOnlyEnvelope(highEntropyPassword, plaintext);
+      assert.strictEqual(await decrypt(highEntropyPassword, ciphertext), plaintext);
+    });
+
+    it('decrypts a fixed HKDF-only envelope (wire format is pinned)', async () => {
+      const ciphertext = await makeHkdfOnlyEnvelope(highEntropyPassword, plaintext, {
+        hkdfSalt: new Uint8Array(32).fill(0xcd),
+      });
+      const envelope: V2Envelope = JSON.parse(ciphertext);
+      assert.strictEqual(envelope.v, 2);
+      assert.ok(envelope.hkdfSalt, 'must have hkdf salt');
+      assert.strictEqual(envelope.m, undefined);
+      assert.strictEqual(envelope.t, undefined);
+      assert.strictEqual(envelope.p, undefined);
+      assert.strictEqual(envelope.salt, undefined);
+      assert.strictEqual(await decryptV2(highEntropyPassword, ciphertext), plaintext);
+    });
+
+    it('throws on wrong password', async () => {
+      const ciphertext = await makeHkdfOnlyEnvelope(highEntropyPassword, plaintext);
+      await assert.rejects(() => decryptV2('wrong-password', ciphertext));
+    });
+
+    it('decrypts an HKDF-only envelope carrying adata', async () => {
+      const adata = 'wallet-share';
+      const ciphertext = await makeHkdfOnlyEnvelope(highEntropyPassword, plaintext, { adata });
+      assert.strictEqual(await decryptV2(highEntropyPassword, ciphertext), plaintext);
+    });
+
+    it('adata mismatch causes GCM decryption failure', async () => {
+      const ciphertext = await makeHkdfOnlyEnvelope(highEntropyPassword, plaintext, { adata: 'context-A' });
+      const envelope = JSON.parse(ciphertext);
+      envelope.adata = 'context-B';
+      await assert.rejects(
+        () => decryptV2(highEntropyPassword, JSON.stringify(envelope)),
+        /operation-specific reason|incorrect/i
+      );
+    });
+
+    it('rejects mixed envelopes (hkdfSalt plus incomplete Argon2 params)', async () => {
+      const envelope = { v: 2, m: 1024, hkdfSalt: 'AAAA', iv: 'AAAA', ct: 'AAAA' };
+      await assert.rejects(() => decryptV2(highEntropyPassword, JSON.stringify(envelope)), /invalid envelope/);
+    });
+
+    it('rejects envelopes with neither Argon2 params nor hkdfSalt', async () => {
+      const envelope = { v: 2, iv: 'AAAA', ct: 'AAAA' };
+      await assert.rejects(() => decryptV2(highEntropyPassword, JSON.stringify(envelope)), /invalid envelope/);
+    });
+
+    it('Argon2 and HKDF-only envelopes stay distinguishable and both decrypt', async () => {
+      const argon2ct = await encryptV2(highEntropyPassword, plaintext, {
+        memorySize: 1024,
+        iterations: 1,
+        parallelism: 1,
+      });
+      const hkdfct = await makeHkdfOnlyEnvelope(highEntropyPassword, plaintext);
+      assert.strictEqual(await decryptV2(highEntropyPassword, argon2ct), plaintext);
+      assert.strictEqual(await decryptV2(highEntropyPassword, hkdfct), plaintext);
+      const argon2env = JSON.parse(argon2ct);
+      const hkdfenv = JSON.parse(hkdfct);
+      assert.ok(argon2env.salt);
+      assert.ok(hkdfenv.hkdfSalt);
+      assert.strictEqual(argon2env.hkdfSalt, undefined);
+      assert.strictEqual(hkdfenv.salt, undefined);
+    });
+
+    it('no SDK encrypt path emits HKDF-only envelopes yet', async () => {
+      const fromEncrypt: V2Envelope = JSON.parse(await encrypt(highEntropyPassword, plaintext));
+      const fromEncryptV2: V2Envelope = JSON.parse(await encryptV2(highEntropyPassword, plaintext));
+      for (const envelope of [fromEncrypt, fromEncryptV2]) {
+        assert.strictEqual(envelope.v, 2);
+        assert.ok(envelope.m, 'must still emit Argon2 params');
+        assert.ok(envelope.t);
+        assert.ok(envelope.p);
+        assert.ok(envelope.salt);
+        assert.strictEqual(envelope.hkdfSalt, undefined);
+      }
+    });
+  });
+
   describe('EncryptionSession (HKDF caching)', () => {
     const opts = { memorySize: 1024, iterations: 1, parallelism: 1 };
     const password = 'test-password';
@@ -401,6 +528,8 @@ describe('encryption methods tests', () => {
       const ct = await bitgo.encrypt({ input: plaintext, password });
       const envelope: V2Envelope = JSON.parse(ct);
       assert.strictEqual(envelope.v, 2);
+      assert.ok(envelope.salt, 'public encrypt must still emit Argon2 params');
+      assert.strictEqual(envelope.hkdfSalt, undefined);
       assert.strictEqual(await decrypt(password, ct), plaintext);
     });
 
