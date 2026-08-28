@@ -467,6 +467,15 @@ export interface GetTransactionOptions extends PaginationOptions {
   includeRbf?: boolean;
 }
 
+export interface GetPotentialStuckTxsOptions {
+  /** Only return transactions unconfirmed longer than this many minutes. */
+  minUnconfirmedMinutes?: number;
+  /** Only return transactions unconfirmed longer than this many blocks. */
+  minUnconfirmedBlocks?: number;
+  expandSendTransferMetadata?: boolean;
+  txid?: string;
+}
+
 export interface TransfersOptions extends PaginationOptions {
   txHash?: string;
   allTokens?: boolean;
@@ -1198,6 +1207,7 @@ export interface IWallet {
   pendingApprovals(): IPendingApproval[];
   refresh(params?: Record<string, never>): Promise<IWallet>;
   transactions(params?: PaginationOptions): Promise<any>;
+  getPotentialStuckTxs(params?: GetPotentialStuckTxsOptions): Promise<any>;
   getTransaction(params?: GetTransactionOptions): Promise<any>;
   transfers(params?: TransfersOptions): Promise<any>;
   getTransfer(params?: GetTransferOptions): Promise<any>;

@@ -96,6 +96,7 @@ import {
   FundForwardersOptions,
   GetAddressOptions,
   GetPrvOptions,
+  GetPotentialStuckTxsOptions,
   GetTransactionOptions,
   GetTransferOptions,
   GetUserPrvOptions,
@@ -497,6 +498,25 @@ export class Wallet implements IWallet {
 
     return await this.bitgo
       .get(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx'))
+      .query(query)
+      .result();
+  }
+
+  /**
+   * List potentially stuck transactions for this wallet.
+   * Age thresholds are opt-in; when both are supplied, the API uses OR semantics.
+   */
+  async getPotentialStuckTxs(params: GetPotentialStuckTxsOptions = {}): Promise<any> {
+    const query: GetPotentialStuckTxsOptions = {};
+    if (params.minUnconfirmedMinutes !== undefined) query.minUnconfirmedMinutes = params.minUnconfirmedMinutes;
+    if (params.minUnconfirmedBlocks !== undefined) query.minUnconfirmedBlocks = params.minUnconfirmedBlocks;
+    if (params.expandSendTransferMetadata !== undefined) {
+      query.expandSendTransferMetadata = params.expandSendTransferMetadata;
+    }
+    if (params.txid !== undefined) query.txid = params.txid;
+
+    return this.bitgo
+      .get(this.baseCoin.url('/wallet/' + this._wallet.id + '/potentialStuckTxs'))
       .query(query)
       .result();
   }
