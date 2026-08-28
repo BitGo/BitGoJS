@@ -1,12 +1,14 @@
 import 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { CantonCommand, IWallet } from '@bitgo/sdk-core';
+import { CantonCommand, IWallet, TransactionType } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 
-import { Canton, CantonTransactionParams, Tcanton, TransactionBuilderFactory } from '../../src';
+import { Canton, CantonTransactionParams, Tcanton, Transaction, TransactionBuilderFactory } from '../../src';
 import { CantonPrepareCommandResponse } from '../../src/lib/iface';
 import {
+  AllocationRejection,
+  CantonAllocationRejectPrepareResponse,
   CantonExerciseCommandPrepareResponse,
   CantonCreateCommandPrepareResponse,
   CantonTokenPreApprovalPrepareResponse,
@@ -40,6 +42,21 @@ function buildOneStepPreApprovalRawTx(
 /** Returns a mock wallet whose coinSpecific().rootAddress matches the given party ID. */
 function walletWithRootAddress(rootAddress: string): IWallet {
   return { coinSpecific: () => ({ rootAddress }) } as unknown as IWallet;
+}
+
+/** Builds a base64-encoded raw transaction for a non-OneStep txType (e.g. AllocationReject). */
+function buildRawTx(txType: string, prepareResponse: unknown, commandId: string): string {
+  const data = {
+    prepareCommandResponse: prepareResponse,
+    txType,
+    preparedTransaction: '',
+    partySignatures: { signatures: [] },
+    deduplicationPeriod: { Empty: {} },
+    submissionId: commandId,
+    hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
+    minLedgerTime: { time: { Empty: {} } },
+  };
+  return Buffer.from(JSON.stringify(data)).toString('base64');
 }
 
 describe('Canton coin:', function () {
@@ -245,6 +262,50 @@ describe('Canton verifyTransaction:', function () {
           .should.be.rejectedWith(/OneStepPreApproval receiver mismatch/);
       });
     });
+  });
+});
+
+describe('Canton verifyTransaction - AllocationReject:', function () {
+  let bitgo: TestBitGoAPI;
+  let basecoin: Canton;
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.safeRegister('canton', Canton.createInstance);
+    bitgo.safeRegister('tcanton', Tcanton.createInstance);
+    bitgo.initializeTestVars();
+    basecoin = bitgo.coin('tcanton') as Canton;
+  });
+
+  it('should return true for an AllocationReject transaction (no recipient info to verify)', async function () {
+    const txHex = buildRawTx('AllocationReject', CantonAllocationRejectPrepareResponse, AllocationRejection.commandId);
+    const result = await basecoin.verifyTransaction({
+      txPrebuild: { txHex },
+      txParams: {},
+      wallet: {} as any,
+    });
+    result.should.equal(true);
+  });
+});
+
+describe('Canton explainTransaction - AllocationReject:', function () {
+  it('should return an empty explanation (no funds move on an AllocationRequest reject)', function () {
+    // AllocationRequest_Reject fires before the actor has allocated their leg — no Holding
+    // was ever locked for this trade, so nothing is returned. Unlike TransferReject (which
+    // unwinds a real fund movement), this is a pure "decline to trade" signal with no
+    // balance impact, so it intentionally falls through to the default (empty) explanation
+    // rather than being reported as an input.
+    const tx = new Transaction(coins.get('tcanton'));
+    tx.id = AllocationRejection.commandId;
+    tx.transactionType = TransactionType.AllocationReject;
+    tx.prepareCommand = CantonAllocationRejectPrepareResponse;
+
+    const explanation = tx.explainTransaction();
+
+    explanation.inputs!.length.should.equal(0);
+    explanation.inputAmount!.should.equal('0');
+    explanation.outputs!.length.should.equal(0);
+    explanation.outputAmount!.should.equal('0');
   });
 });
 
