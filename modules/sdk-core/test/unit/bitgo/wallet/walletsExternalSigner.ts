@@ -365,7 +365,9 @@ describe('Wallets - external signer onchain wallet generation', function () {
         post: sinon.stub().returns({
           send: sinon.stub().returns({ result: sinon.stub().resolves({ id: 'tss-wallet-id' }) }),
         }),
-        get: sinon.stub().returns({ result: sinon.stub().resolves({ coinSettings: {} }) }),
+        get: sinon
+          .stub()
+          .returns({ query: sinon.stub().returnsThis(), result: sinon.stub().resolves({ coinSettings: {} }) }),
         setRequestTracer: sinon.stub(),
         microservicesUrl: sinon.stub().returns('/api/v2/tss/settings'),
       };
@@ -546,7 +548,9 @@ describe('Wallets - external signer onchain wallet generation', function () {
         send = sinon.stub().returns({ result: sinon.stub().resolves({ id: 'tss-wallet-id' }) });
         const integrationBitGo = {
           post: sinon.stub().returns({ send }),
-          get: sinon.stub().returns({ result: sinon.stub().resolves({ coinSettings: {} }) }),
+          get: sinon
+            .stub()
+            .returns({ query: sinon.stub().returnsThis(), result: sinon.stub().resolves({ coinSettings: {} }) }),
           setRequestTracer: sinon.stub(),
           microservicesUrl: sinon.stub().returns('/api/v2/tss/settings'),
           ...bitgoOverrides,
@@ -593,6 +597,7 @@ describe('Wallets - external signer onchain wallet generation', function () {
           { isEVM: sinon.stub().returns(true) },
           {
             get: sinon.stub().returns({
+              query: sinon.stub().returnsThis(),
               result: sinon.stub().resolves({
                 coinSettings: { eth: { walletCreationSettings: { multiSigTypeVersion: 'MPCv2' } } },
               }),

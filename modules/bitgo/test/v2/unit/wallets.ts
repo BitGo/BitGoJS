@@ -570,6 +570,7 @@ describe('V2 Wallets:', function () {
     beforeEach(function () {
       nock('https://bitgo.fakeurl')
         .get(`/api/v2/tss/settings`)
+        .query(true)
         .times(2)
         .reply(200, {
           coinSettings: {
@@ -825,6 +826,7 @@ describe('V2 Wallets:', function () {
       // FLRP is ECDSA, so generateCustodialMpcWallet fetches TSS settings
       nock('https://bitgo.fakeurl')
         .get('/api/v2/tss/settings')
+        .query(true)
         .reply(200, { coinSettings: { flrp: { walletCreationSettings: {} } } });
 
       const walletNock = nock('https://bitgo.fakeurl')
@@ -1052,7 +1054,7 @@ describe('V2 Wallets:', function () {
           },
         },
       };
-      nock('https://bitgo.fakeurl').get(`/api/v2/tss/settings`).times(2).reply(200, tssSettings);
+      nock('https://bitgo.fakeurl').get(`/api/v2/tss/settings`).query(true).times(2).reply(200, tssSettings);
     });
 
     afterEach(function () {
@@ -1424,7 +1426,7 @@ describe('V2 Wallets:', function () {
           },
         },
       };
-      nock('https://bitgo.fakeurl').get(`/api/v2/tss/settings`).times(2).reply(200, tssSettings);
+      nock('https://bitgo.fakeurl').get(`/api/v2/tss/settings`).query(true).times(2).reply(200, tssSettings);
     });
 
     afterEach(function () {
@@ -1487,6 +1489,7 @@ describe('V2 Wallets:', function () {
       nock.cleanAll();
       nock('https://bitgo.fakeurl')
         .get('/api/v2/tss/settings')
+        .query(true)
         .reply(200, { coinSettings: { sol: { walletCreationSettings: {} } } });
 
       const testCoin = bitgo.coin('tsol');
