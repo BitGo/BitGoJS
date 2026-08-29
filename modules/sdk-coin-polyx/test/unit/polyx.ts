@@ -506,4 +506,15 @@ describe('Polyx:', function () {
       });
     });
   });
+
+  describe('requiresWalletInitializationTransaction', function () {
+    it('returns true for polyx', function () {
+      const polyxCoin = bitgo.coin('polyx') as Polyx;
+      polyxCoin.requiresWalletInitializationTransaction().should.be.true();
+    });
+
+    it('returns true for tpolyx', function () {
+      baseCoin.requiresWalletInitializationTransaction().should.be.true();
+    });
+  });
 });
