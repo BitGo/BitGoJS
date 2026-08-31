@@ -3496,4 +3496,13 @@ export const bscTokens = [
     UnderlyingAsset['bsc:mgo'],
     BSC_TOKEN_FEATURES_TRUST_ONLY
   ),
+  bscToken(
+    'aab70211-e646-485f-a6cc-0fb7f1c56863',
+    'bsc:real',
+    'RealLink',
+    6,
+    '0x65e7a112db1142eae919201b1232f7aa488ed83c',
+    UnderlyingAsset['bsc:real'],
+    BSC_TOKEN_FEATURES_TRUST_ONLY
+  ),
 ];
