@@ -52,6 +52,7 @@ import {
 } from '../baseTypes';
 import { shouldUsePreHashedSignable } from '../preHashedSignable';
 import { shouldVerifyWithSerializedTxHex } from '../serializedTxHexVerify';
+import { isCoinWithSignableConsistency } from '../signableConsistency';
 import { BaseEcdsaUtils } from './base';
 import { EcdsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './ecdsaMPCv2KeyGenSender';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
@@ -958,6 +959,9 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
         });
+        if (shouldVerifyWithSerializedTxHex(this.baseCoin) && isCoinWithSignableConsistency(this.baseCoin)) {
+          this.baseCoin.assertSignableConsistency(unsignedTx.serializedTxHex, unsignedTx.signableHex);
+        }
       } else {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.signableHex },

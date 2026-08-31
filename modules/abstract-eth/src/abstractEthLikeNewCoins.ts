@@ -3179,7 +3179,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    *
   /** @inheritdoc CoinWithSignableConsistency */
   assertSignableConsistency(serializedTxHex: string, signableHex: string): void {
-    const ethTx = TransactionFactory.fromSerializedData(toBuffer(addHexPrefix(serializedTxHex)));
+    const common = AbstractEthLikeNewCoins.getCustomChainCommon(this.getChainId());
+    // getCustomChainCommon defaults to the london hardfork, which is only valid for chains
+    // that activated EIP-1559. Chains without it (e.g. BSC, XDC) sign under petersburg.
+    if (!this.staticsCoin?.features.includes(CoinFeature.EIP1559)) {
+      common.setHardfork(optionalDeps.EthCommon.Hardfork.Petersburg);
+    }
+    const ethTx = TransactionFactory.fromSerializedData(toBuffer(addHexPrefix(serializedTxHex)), { common });
     const derivedSignableHex =
       ethTx instanceof FeeMarketEIP1559Transaction
         ? ethTx.getMessageToSign(false).toString('hex')

@@ -4,11 +4,11 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 
 import { Xdc, Txdc } from '../../src/index';
-import { UnsignedSweepTxMPCv2 } from '@bitgo/abstract-eth';
+import { AbstractEthLikeNewCoins, UnsignedSweepTxMPCv2 } from '@bitgo/abstract-eth';
 import { mockDataUnsignedSweep, mockDataNonBitGoRecovery } from '../resources';
 import nock from 'nock';
 import { common, TransactionType, Wallet } from '@bitgo/sdk-core';
-import { Transaction } from '@ethereumjs/tx';
+import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx';
 import { RLP } from '@ethereumjs/rlp';
 import { stripHexPrefix } from '@ethereumjs/util';
 import { bufArrToArr } from 'ethereumjs-util';
@@ -186,15 +186,16 @@ describe('xdc', function () {
         return stripHex(tx.toBroadcastFormat());
       }
 
-      function deriveSignableHex(serializedTxHex: string): string {
-        const legacyTx = Transaction.fromSerializedTx(Buffer.from(serializedTxHex, 'hex'));
+      function deriveSignableHex(serializedTxHex: string, coin: Txdc): string {
+        const common = AbstractEthLikeNewCoins.getCustomChainCommon(coin.getChainId());
+        const legacyTx = Transaction.fromSerializedTx(Buffer.from(serializedTxHex, 'hex'), { common });
         return Buffer.from(RLP.encode(bufArrToArr(legacyTx.getMessageToSign(false)))).toString('hex');
       }
 
       it('should pass when signableHex is consistent with serializedTxHex', async function () {
         const coin = bitgo.coin('txdc') as Txdc;
         const serializedTxHex = await buildSerializedTxHex(recipientAddress);
-        const signableHex = deriveSignableHex(serializedTxHex);
+        const signableHex = deriveSignableHex(serializedTxHex, coin);
         coin.assertSignableConsistency(serializedTxHex, signableHex);
       });
 
@@ -202,9 +203,27 @@ describe('xdc', function () {
         const coin = bitgo.coin('txdc') as Txdc;
         const benignSerializedTxHex = await buildSerializedTxHex(recipientAddress);
         const maliciousSerializedTxHex = await buildSerializedTxHex(wrongAddress);
-        const tamperedSignableHex = deriveSignableHex(maliciousSerializedTxHex);
+        const tamperedSignableHex = deriveSignableHex(maliciousSerializedTxHex, coin);
         (() => coin.assertSignableConsistency(benignSerializedTxHex, tamperedSignableHex)).should.throw(
           'signableHex is inconsistent with serializedTxHex: possible server tampering'
+        );
+      });
+
+      it('should reject an EIP-1559 typed tx since XDC is pinned to the petersburg hardfork', function () {
+        const coin = bitgo.coin('txdc') as Txdc;
+        const typedTx = FeeMarketEIP1559Transaction.fromTxData(
+          {
+            nonce: 1,
+            maxFeePerGas: 10,
+            maxPriorityFeePerGas: 1,
+            gasLimit: 21000,
+            to: recipientAddress,
+            value: 1000,
+          },
+          { common: AbstractEthLikeNewCoins.getCustomChainCommon(coin.getChainId()) }
+        );
+        (() => coin.assertSignableConsistency(stripHex(typedTx.serialize().toString('hex')), '')).should.throw(
+          /EIP-1559 not enabled on Common/
         );
       });
     });
