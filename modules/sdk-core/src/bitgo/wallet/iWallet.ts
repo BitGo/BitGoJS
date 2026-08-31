@@ -476,7 +476,26 @@ export interface GetPotentialStuckTxsOptions {
   txid?: string;
 }
 
-export interface TransfersOptions extends PaginationOptions {
+export interface GetPotentialStuckTxsResult {
+  txId?: string;
+  cause?: string;
+  message?: string;
+  nonce?: number;
+  txHex?: string;
+  txType?: string;
+  sendTransfer?: Record<string, unknown>;
+  gasAccelerationFee?: {
+    gasPrice?: string;
+    maxFeePerGas?: string;
+    maxPriorityFeePerGas?: string;
+  };
+  userActionDisabled?: boolean;
+  rbf?: boolean;
+  coin?: string;
+  wallet?: string;
+  isFeeAddress?: boolean;
+}
+
   txHash?: string;
   allTokens?: boolean;
   searchLabel?: string;
@@ -1207,7 +1226,7 @@ export interface IWallet {
   pendingApprovals(): IPendingApproval[];
   refresh(params?: Record<string, never>): Promise<IWallet>;
   transactions(params?: PaginationOptions): Promise<any>;
-  getPotentialStuckTxs(params?: GetPotentialStuckTxsOptions): Promise<any>;
+  getPotentialStuckTxs(params?: GetPotentialStuckTxsOptions): Promise<GetPotentialStuckTxsResult[]>;
   getTransaction(params?: GetTransactionOptions): Promise<any>;
   transfers(params?: TransfersOptions): Promise<any>;
   getTransfer(params?: GetTransferOptions): Promise<any>;

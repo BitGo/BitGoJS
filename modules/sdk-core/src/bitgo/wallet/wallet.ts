@@ -97,6 +97,7 @@ import {
   GetAddressOptions,
   GetPrvOptions,
   GetPotentialStuckTxsOptions,
+  GetPotentialStuckTxsResult,
   GetTransactionOptions,
   GetTransferOptions,
   GetUserPrvOptions,
@@ -506,7 +507,9 @@ export class Wallet implements IWallet {
    * List potentially stuck transactions for this wallet.
    * Age thresholds are opt-in; when both are supplied, the API uses OR semantics.
    */
-  async getPotentialStuckTxs(params: GetPotentialStuckTxsOptions = {}): Promise<any> {
+  async getPotentialStuckTxs(
+    params: GetPotentialStuckTxsOptions = {}
+  ): Promise<GetPotentialStuckTxsResult[]> {
     const query: GetPotentialStuckTxsOptions = {};
     if (params.minUnconfirmedMinutes !== undefined) query.minUnconfirmedMinutes = params.minUnconfirmedMinutes;
     if (params.minUnconfirmedBlocks !== undefined) query.minUnconfirmedBlocks = params.minUnconfirmedBlocks;
