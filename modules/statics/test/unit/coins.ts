@@ -734,6 +734,59 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_INDIA,
     ],
   },
+  wtgxx: {
+    features: [
+      CoinFeature.ACCOUNT_MODEL,
+      CoinFeature.REQUIRES_BIG_NUMBER,
+      CoinFeature.VALUELESS_TRANSFER,
+      CoinFeature.TRANSACTION_DATA,
+      CoinFeature.CUSTODY,
+      CoinFeature.CUSTODY_BITGO_TRUST,
+    ],
+  },
+  'arbeth:wtgxx': {
+    features: [
+      CoinFeature.ACCOUNT_MODEL,
+      CoinFeature.REQUIRES_BIG_NUMBER,
+      CoinFeature.VALUELESS_TRANSFER,
+      CoinFeature.TRANSACTION_DATA,
+      CoinFeature.CUSTODY,
+      CoinFeature.CUSTODY_BITGO_TRUST,
+    ],
+  },
+  'opeth:wtgxx': {
+    features: [
+      CoinFeature.ACCOUNT_MODEL,
+      CoinFeature.REQUIRES_BIG_NUMBER,
+      CoinFeature.VALUELESS_TRANSFER,
+      CoinFeature.TRANSACTION_DATA,
+      CoinFeature.CUSTODY,
+      CoinFeature.CUSTODY_BITGO_TRUST,
+    ],
+  },
+  'sepeth:wtgxx': {
+    features: [
+      CoinFeature.ACCOUNT_MODEL,
+      CoinFeature.REQUIRES_BIG_NUMBER,
+      CoinFeature.VALUELESS_TRANSFER,
+      CoinFeature.TRANSACTION_DATA,
+      CoinFeature.CUSTODY,
+      CoinFeature.CUSTODY_BITGO_TRUST,
+    ],
+  },
+  'sol:wtgxx': {
+    features: [
+      CoinFeature.ACCOUNT_MODEL,
+      CoinFeature.REQUIRES_BIG_NUMBER,
+      CoinFeature.VALUELESS_TRANSFER,
+      CoinFeature.TRANSACTION_DATA,
+      CoinFeature.CUSTODY,
+      CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.TSS,
+      CoinFeature.TSS_COLD,
+      CoinFeature.BULK_TRANSACTION,
+    ],
+  },
 };
 
 describe('CoinMap', function () {
@@ -1025,6 +1078,43 @@ coins.forEach((coin, coinName) => {
         coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(coinSupportsCustody);
       });
     }
+  });
+});
+
+describe('WTGXX Trust-only custody', () => {
+  const nonTrustCustodyFeatures = [
+    CoinFeature.CUSTODY_BITGO_MENA_FZE,
+    CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+    CoinFeature.CUSTODY_BITGO_SINGAPORE,
+    CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+    CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    CoinFeature.CUSTODY_BITGO_INDIA,
+    CoinFeature.CUSTODY_BITGO_KOREA,
+    CoinFeature.CUSTODY_BITGO_GERMANY,
+    CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+    CoinFeature.CUSTODY_BITGO_NEW_YORK,
+    CoinFeature.CUSTODY_BITGO_SISTER_TRUST_ONE,
+  ];
+
+  [
+    'wtgxx',
+    'arbeth:wtgxx',
+    'opeth:wtgxx',
+    'sepeth:wtgxx',
+    'sol:wtgxx',
+    'ofcwtgxx',
+    'ofcarbeth:wtgxx',
+    'ofcopeth:wtgxx',
+    'ofcsol:wtgxx',
+    'ofcsepeth:wtgxx',
+  ].forEach((name) => {
+    it(`${name} is licensed only for BitGo Trust`, function () {
+      const coin = coins.get(name);
+      coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(true);
+      nonTrustCustodyFeatures.forEach((feature) => {
+        coin.features.includes(feature).should.eql(false);
+      });
+    });
   });
 });
 

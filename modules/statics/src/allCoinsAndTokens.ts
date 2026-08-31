@@ -7496,7 +7496,7 @@ export const allCoinsAndTokens = [
     18,
     '0xfeb26f0943c3885b2cb85a9f933975356c81c33d',
     UnderlyingAsset['arbeth:wtgxx'],
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY
   ),
   arbethErc20(
     '54f5fdda-954e-4296-994b-a89247ad311f',
@@ -7890,7 +7890,7 @@ export const allCoinsAndTokens = [
     18,
     '0x870fd36b3bf7f5abeeea2c8d4abdf1dc4e33109d',
     UnderlyingAsset['opeth:wtgxx'],
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY
   ),
   opethErc20(
     '42729d3e-e010-43a9-91ea-378565b0aa51',

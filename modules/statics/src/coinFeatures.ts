@@ -325,6 +325,9 @@ export const SOL_TOKEN_FEATURES = [
 export const SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE = SOL_TOKEN_FEATURES.filter(
   (feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE
 );
+export const SOL_TOKEN_FEATURES_TRUST_ONLY = SOL_TOKEN_FEATURES.filter(
+  (feature) => feature === CoinFeature.CUSTODY_BITGO_TRUST || !BITGO_CUSTODY_JURISDICTIONS.includes(feature)
+);
 export const SOL_OFC_TOKEN_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
 export const APT_OFC_TOKEN_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
 

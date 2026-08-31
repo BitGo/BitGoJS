@@ -25,6 +25,7 @@ import {
   ZETA_EVM_FEATURES,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE,
+  ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY,
 } from '../coinFeatures';
 
 export const erc20Coins = [
@@ -7064,7 +7065,7 @@ export const erc20Coins = [
     18,
     '0x1fecf3d9d4fee7f2c02917a66028a48c6706c179',
     UnderlyingAsset.WTGXX,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY
   ),
   erc20(
     'acf1b526-75e0-47f8-b812-32893f85b180',
@@ -15199,7 +15200,7 @@ export const erc20Coins = [
     18,
     '0x0b2517eef907389f36fd87add36e9118d364bd67',
     UnderlyingAsset['sepeth:wtgxx'],
-    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY],
     undefined,
     undefined,
     Networks.test.sepolia
